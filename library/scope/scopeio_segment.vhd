@@ -208,7 +208,7 @@ begin
 			d => (0 => latency))
 		port map (
 			clk   => video_clk,
-			di(0) => hdot,
+			di(0) => '0', --hdot,
 			do(0) => trigger_dot);
 
 	end block;

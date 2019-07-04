@@ -80,8 +80,8 @@ package scopeiopkg is
 			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
-			grid_width      =>   15,
-			grid_height     =>    8,
+			grid_width      => 15*32+1,
+			grid_height     =>  8*32+1,
 			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  1*8,
@@ -96,8 +96,8 @@ package scopeiopkg is
 			display_height   =>  64,
 			num_of_segments  =>    1,
 			division_size    =>    8,
-			grid_width       =>   11,
-			grid_height      =>    7,
+			grid_width       => 11*8+1,
+			grid_height      =>  7*8+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    7,
 			vtaxis_width     =>    7,
@@ -112,15 +112,15 @@ package scopeiopkg is
 			display_height   =>  600,
 			num_of_segments  =>    4,
 			division_size    =>   16,
-			grid_width       =>   46,
-			grid_height      =>    8,
+			grid_width       => 46*16+1,
+			grid_height      =>  8*16+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
 			textbox_width    =>  0,
 			main_margin      => (others => 0),
-			main_gap         => (others => 4),
+			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		oled96x64 => (
@@ -128,8 +128,8 @@ package scopeiopkg is
 			display_height   =>   128,
 			num_of_segments  =>    2,
 			division_size    =>    8,
-			grid_width       =>   11,
-			grid_height      =>    7,
+			grid_width       => 11*8+1,
+			grid_height      =>  7*8+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    7,
 			vtaxis_width     =>    7,
@@ -144,8 +144,8 @@ package scopeiopkg is
 			display_height   =>  720,
 			num_of_segments  =>    3,
 			division_size    =>   32,
-			grid_width       =>   30,
-			grid_height      =>    8,
+			grid_width       => 30*32+1,
+			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
@@ -160,8 +160,8 @@ package scopeiopkg is
 			display_height   =>  720,
 			num_of_segments  =>    4,
 			division_size    =>   32,
-			grid_width       =>   30,
-			grid_height      =>    8,
+			grid_width       => 30*32+1,
+			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
@@ -176,8 +176,8 @@ package scopeiopkg is
 			display_height   => 1080,
 			num_of_segments  =>    4,
 			division_size    =>   32,
-			grid_width       =>   50,
-			grid_height      =>    8,
+			grid_width       => 50*32+1,
+			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
@@ -394,14 +394,14 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_width*layout.division_size+1;
+		return layout.grid_width;
 	end;
 
 	function grid_height (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*layout.division_size+1;
+		return layout.grid_height;
 	end;
 
 	function grid_divisionsize (
@@ -482,7 +482,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*layout.division_size;
+		return layout.grid_height;
 	end;
 
 	function hzaxis_x (

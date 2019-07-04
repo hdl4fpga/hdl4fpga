@@ -486,15 +486,14 @@ begin
 						box_y     => y);
 
 					rgtrout_p : process (video_clk)
-						variable nx : std_logic;
+						variable init_layout : std_logic;
 					begin
 						if rising_edge(video_clk) then
 							sgmntbox_vxon <= xon;
-							sgmntbox_vyon <= yon and not nx;
---							sgmntbox_vyon <= yon;
+							sgmntbox_vyon <= yon and not init_layout;
 							sgmntbox_vx   <= x;
 							sgmntbox_vy   <= y;
-							nx := nexty;
+							init_layout   := nexty;
 						end if;
 					end process;
 
