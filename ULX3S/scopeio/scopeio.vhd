@@ -23,7 +23,7 @@ architecture beh of ulx3s is
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment
-        constant vlayout_id: integer := 7;
+        constant vlayout_id: integer := 6;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -35,7 +35,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -502,7 +502,7 @@ begin
                 default_gridbg   => b"000000",
                 default_hzfg     => b"111111",
                 default_hzbg     => b"000000",
-                default_vtfg     => b"111111",
+                default_vtfg     => C_tracesfg(0 to vga_rgb'length-1),
                 default_vtbg     => b"000000",
                 default_textbg   => b"000000",
                 default_sgmntbg  => b"110000",
