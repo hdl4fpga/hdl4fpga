@@ -549,21 +549,21 @@ begin
                 -- rgtr2daisy must serialize commands - schedule them slowly
                 case to_integer(R_after_trace_select(R_after_trace_select'high-1 downto 0)) is
                   when 16 =>
-                    -- switch to selected new vertical scale (no change)
+                    -- redraw new channel vertical scale (no value change)
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
                     R_B(C_vertical_scale_offset'range) <= (others => '0'); -- no change just redraw
                     R_action_id <= C_action_vertical_scale_offset_change;
                   when 32 =>
-                    -- switch to selected new trigger level (no change)
+                    -- trigger on new channel (no value change)
                     R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
                     R_B(C_trigger_level'range) <= (others => '0'); -- no change
                     R_action_id <= C_action_trigger_level_change;
                   when 48 =>
-                    -- set frame color as trace selected
+                    -- set lower left corner box color as trace selected
                     R_A(C_color_bits-1 downto 0) <=
                       signed(C_trace_color(to_integer(R_trace_selected))); -- color value
                     R_B(palette_bf(paletteid_id)-1 downto 0) <=
-                      signed(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
+                      signed(to_unsigned(7,palette_bf(paletteid_id))); -- 7: corner box color indicates selected channel/trace
                     R_action_id <= C_action_set_color;
                   when others =>
                     R_action_id <= C_action_nop;
@@ -575,7 +575,7 @@ begin
                     -- set hzscale bgcolor blue when trigger freeze
                     R_A(C_color_bits-1 downto 0) <= (0 => R_trigger_freeze, others => '0'); -- color value
                     R_B(palette_bf(paletteid_id)-1 downto 0) <=
-                      signed(to_unsigned(3,palette_bf(paletteid_id))); -- 3: hzscale color indicates trigger freeze
+                      signed(to_unsigned(4,palette_bf(paletteid_id))); -- 4: hzscale bg color indicates trigger freeze
                     R_action_id <= C_action_set_color;
                   when others =>
                     R_action_id <= C_action_nop;
@@ -680,7 +680,7 @@ begin
             --R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
             R_rgtr_data(F_bitfield(palette_bf,paletteid_id)(1)
                  downto F_bitfield(palette_bf,paletteid_id)(0)) <=
-              std_logic_vector(to_unsigned(4,palette_bf(paletteid_id))); -- 4: vertical scale color indicates selected channel/trace
+              std_logic_vector(to_unsigned(1,palette_bf(paletteid_id))); -- 1: vertical scale color indicates selected channel/trace
             if unsigned(S_APB(R_trace_selected'range)) < C_inputs then
               R_rgtr_data(F_bitfield(palette_bf,palettecolor_id)(0)+C_color_bits-1
                    downto F_bitfield(palette_bf,palettecolor_id)(0)) <=
