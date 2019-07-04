@@ -884,8 +884,11 @@ begin
 						box_y     => y);
 
 					rgtrout_p: process (video_clk)
-						variable box_on : std_logic;
+						constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
+						variable vt_mask : unsigned(x'range);
+						variable hz_mask : unsigned(y'range);
 					begin
+						if rising_edge(video_clk) then
 							vt_mask := unsigned(x) srl font_bits;
 							if vtaxis_width(layout)=0  then
 								if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
