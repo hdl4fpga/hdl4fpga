@@ -899,7 +899,7 @@ begin
 							else
 								vt_on <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							end if;
-							hz_mask := unsigned(y) srl 3;
+							hz_mask := unsigned(y) srl fonts_bits;
 							if hzaxis_height(layout)=0  then
 								hz_on <= setif((hz_mask'range => '0')=hz_mask) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							else
