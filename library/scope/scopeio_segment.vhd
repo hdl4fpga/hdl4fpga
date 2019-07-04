@@ -208,7 +208,7 @@ begin
 			d => (0 => latency))
 		port map (
 			clk   => video_clk,
-			di(0) => '0', --hdot,
+			di(0) => hdot,
 			do(0) => trigger_dot);
 
 	end block;
@@ -220,10 +220,20 @@ begin
 		subtype sample is std_logic_vector(samples'length/inputs-1 downto 0);
 
 		signal samples2  : std_logic_vector(samples'range);
+		signal delayed_y : std_logic_vector(y'range);
 		signal trace_ena : std_logic;
 	begin
 
-		align_e :entity hdl4fpga.align
+		delay_y_e :entity hdl4fpga.align
+		generic map (
+			n => y'length,
+			d => (0 to y'length-1 => input_latency+offset_latency))
+		port map (
+			clk => video_clk,
+			di  => y,
+			do  => delayed_y);
+
+		delay_ena_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
 			d => (0 => input_latency+offset_latency))
@@ -256,7 +266,7 @@ begin
 		port map (
 			clk     => video_clk,
 			ena     => trace_ena,
-			y       => y,
+			y       => delayed_y,
 			samples => samples2,
 			dots    => traces_dots);
 	end block;

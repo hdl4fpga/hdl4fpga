@@ -56,6 +56,7 @@ package scopeiopkg is
 		axis_fontsize    : natural;            -- Axis font size
 		hzaxis_height    : natural;            -- Height of the horizontal axis 
 		vtaxis_width     : natural;            -- Width of the vetical axis 
+--		vtaxis_chars     : natural;            -- Vertical ticks length
 		vttick_rotate    : rotate;             -- Vertical label rotating
 		textbox_width    : natural;            -- Width of the text box
 		main_margin      : margin_vector;      -- Main Margin
@@ -112,11 +113,11 @@ package scopeiopkg is
 			display_height   =>  600,
 			num_of_segments  =>    4,
 			division_size    =>   16,
-			grid_width       => 46*16+1,
-			grid_height      =>  8*16+1,
+			grid_width       => 46*16,
+			grid_height      =>  8*16,
 			axis_fontsize    =>    8,
-			hzaxis_height    =>    8,
-			vtaxis_width     =>  6*8,
+			hzaxis_height    =>    0,
+			vtaxis_width     =>  0, --6*8,
 			vttick_rotate    => ccw0,
 			textbox_width    =>  0,
 			main_margin      => (others => 0),
