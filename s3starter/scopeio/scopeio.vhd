@@ -52,8 +52,9 @@ architecture beh of s3starter is
 		for i in 0 to x1-x0 loop
 			y := 127.0; --*sin(2.0*MATH_PI*real((i+x0))/64.0);
 			if (i mod 1024)=0 then
-				aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
 			end if;
+			y := real((2**(n-1)-1))*sin(2.0*MATH_PI*real((i+x0))/64.0);
+				aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
 		end loop;
 		return aux;
 	end;
