@@ -245,12 +245,19 @@ begin
 		offset_p : process (video_clk)
 			variable samples1 : unsigned(samples'length-1 downto 0);
 			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
+			variable sign     : std_logic;
 		begin
 			if rising_edge(video_clk) then
 				samples1 := unsigned(samples);
 				offsets  := unsigned(vt_offsets);
 				for i in 0 to inputs-1 loop
+					sign := samples1(sample'left) xor offsets(sample'left);
 					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
+					if sign='1' then
+						if offsets(sample'left)=samples1(sample'left) then
+							samples1(sample'range) := not samples1(sample'left) & (1 to samples1'length-1 => samples1(sample'left));
+						end if;
+					end if;
 					samples1 := samples1 ror sample'length;
 					offsets  := offsets  ror (vt_offsets'length/inputs);
 				end loop;

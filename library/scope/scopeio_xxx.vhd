@@ -277,7 +277,7 @@ begin
 				if sample=(sample'range => sample(0)) then
 					aux1(storage_word'length-1 downto 0) := aux2(storage_word'length-1 downto 0);
 				else
-					aux1(storage_word'length-1 downto 0) := sample(0) & (1 to storage_word'length-1 => '1' xor sample(0));
+					aux1(storage_word'length-1 downto 0) := sample(0) & (1 to storage_word'length-1 => not sample(0));
 				end if;
 				aux1 := aux1 rol storage_word'length;
 				aux2 := aux2 rol triggersample_data'length/inputs;
