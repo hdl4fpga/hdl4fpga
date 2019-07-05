@@ -408,7 +408,7 @@ begin
 
 	-- NOTE: during the period when 1-shot trigger is armed,
         -- storage continuously records data while waiting for trigger.
-        -- Same memory currently recorded is at the same displayed,
+        -- Same memory currently recorded is at the same time displayed,
 	-- so the traces may flicker or become dotted or dashed.
 	-- This is considered as normal for now but can be improved.
 	-- When display is frozen, it will display correct waveform.
@@ -417,10 +417,11 @@ begin
 	-- in the buffer.
 
 	-- one-shot trigger states:
-	-- state 0: start recording first half of the buffer (decrementing counter)
-	-- state 1: wait for trigger (don't decrement during waiting)
-	-- state 2: decrement counter until it wraps around to -1 and stop
-	-- state 3: wait for re-arm (counter is at -1)
+	-- state 0: decrement counter without recording while counter < buffer_length
+	-- state 1: start recording before trigger (decrementing counter until counter = C_samples_after_trigger)
+	-- state 2: keep recording indefinitely until trigger event (don't decrement counter while waiting for trigger)
+	-- state 3: record after trigger, decrement counter until it wraps around to -1 and stop
+	-- state 4: wait for re-arm (counter is at -1)
 	--          re-armed by event, initializing counter to buffer length
 
 	-- auto trigger is special case of 1-shot trigger
