@@ -263,16 +263,28 @@ begin
 		output_data    => triggersample_data);
 
 	resize_p : process (triggersample_data)
-		variable aux1 : unsigned(storage_word'length*inputs-1 downto 0);
-		variable aux2 : unsigned(triggersample_data'length-1  downto 0);
+		variable aux1   : signed(storage_word'length*inputs-1 downto 0);
+		variable aux2   : signed(triggersample_data'length-1 downto 0);
+		variable sample : signed(0 to triggersample_data'length/inputs-1); 
 	begin
 		aux1 := (others => '-');
-		aux2 := unsigned(triggersample_data);
-		for i in 0 to inputs-1 loop
-			aux1(storage_word'range) := aux2(storage_word'range);
-			aux1 := aux1 rol storage_word'length;
-			aux2 := aux2 rol triggersample_data'length/inputs;
-		end loop;
+		aux2 := signed(triggersample_data);
+		if sample'length > storage_word'length then
+			for i in 0 to inputs-1 loop
+				-- sample := aux2(sample'reverse_range);
+				sample := aux2(sample'length-1 downto 0);
+				sample := shift_right(sample,(storage_word'length-1));
+				if sample=(sample'range => sample(0)) then
+					aux1(storage_word'length-1 downto 0) := aux2(storage_word'length-1 downto 0);
+				else
+					aux1(storage_word'length-1 downto 0) := sample(0) & (1 to storage_word'length-1 => '1' xor sample(0));
+				end if;
+				aux1 := aux1 rol storage_word'length;
+				aux2 := aux2 rol triggersample_data'length/inputs;
+			end loop;
+		else
+			aux1 := aux2;
+		end if;
 		resizedsample_data <= std_logic_vector(aux1);
 	end process;
 	resizedsample_dv  <= triggersample_dv;
