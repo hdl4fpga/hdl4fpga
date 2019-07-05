@@ -74,6 +74,9 @@ entity scopeio_video is
 		video_pixel   : out std_logic_vector;
 		video_hsync   : out std_logic;
 		video_vsync   : out std_logic;
+
+		video_vton    : out std_logic;
+		video_hzon    : out std_logic;
 		video_blank   : out std_logic;
 		video_sync    : out std_logic);
 
@@ -94,8 +97,8 @@ architecture beh of scopeio_video is
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
-	signal video_vton    : std_logic;
-	signal video_hzon    : std_logic;
+	signal video_vton1   : std_logic;
+	signal video_hzon1    : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_vld     : std_logic;
@@ -158,10 +161,10 @@ begin
 		video_vtsync => video_vtsync,
 		video_hzcntr => video_hzcntr,
 		video_vtcntr => video_vtcntr,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton);
+		video_hzon   => video_hzon1,
+		video_vton   => video_vton1);
 
-	video_vld <= video_hzon and video_vton;
+	video_vld <= video_hzon1 and video_vton1;
 
 	vgaio_e : entity hdl4fpga.align
 	generic map (
@@ -196,8 +199,8 @@ begin
 			video_clk  => video_clk,
 			video_x    => video_hzcntr,
 			video_y    => video_vtcntr,
-			video_xon  => video_hzon,
-			video_yon  => video_vton,
+			video_xon  => video_hzon1,
+			video_yon  => video_vton1,
 			box_xedge  => mainbox_xedge,
 			box_yedge  => mainbox_yedge,
 			box_eox    => mainbox_eox,
@@ -517,6 +520,8 @@ begin
 	video_color <= scope_color or (video_color'range => pointer_dot);
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
+	video_vton  <= video_vton1;
+	video_hzon  <= video_hzon1;
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);

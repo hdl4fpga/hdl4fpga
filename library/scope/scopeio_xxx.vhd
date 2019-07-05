@@ -96,16 +96,8 @@ architecture beh of scopeio is
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
 
-	signal video_hzsync       : std_logic;
-	signal video_vtsync       : std_logic;
-	signal video_vton         : std_logic;
-	signal video_hzon         : std_logic;
 	signal video_vld          : std_logic;
-	signal video_vtcntr       : std_logic_vector(11-1 downto 0);
-	signal video_hzcntr       : std_logic_vector(11-1 downto 0);
 
-	signal video_io           : std_logic_vector(0 to 3-1);
-	
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
 	signal rgtr_data          : std_logic_vector(32-1 downto 0);
@@ -131,9 +123,10 @@ architecture beh of scopeio is
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
+	signal video_vton         : std_logic;
+	signal video_hzon         : std_logic;
 
 	signal hz_offset          : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_segment         : std_logic_vector(hz_offset'range);
 
 	signal hz_scale           : std_logic_vector(4-1 downto 0);
 	signal hz_dv              : std_logic;
@@ -155,18 +148,8 @@ architecture beh of scopeio is
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal pointer_dv         : std_logic;
-	signal pointer_x          : std_logic_vector(video_hzcntr'range);
-	signal pointer_y          : std_logic_vector(video_vtcntr'range);
-
-	signal wu_frm             : std_logic;
-	signal wu_irdy            : std_logic;
-	signal wu_trdy            : std_logic;
-	signal wu_unit            : std_logic_vector(4-1 downto 0);
-	signal wu_neg             : std_logic;
-	signal wu_sign            : std_logic;
-	signal wu_align           : std_logic;
-	signal wu_value           : std_logic_vector(4*4-1 downto 0);
-	signal wu_format          : std_logic_vector(8*4-1 downto 0);
+	signal pointer_x          : std_logic_vector(11-1 downto 0);
+	signal pointer_y          : std_logic_vector(11-1 downto 0);
 
 begin
 
@@ -345,6 +328,8 @@ begin
 		video_pixel      => video_pixel,
 		video_hsync      => video_hsync,
 		video_vsync      => video_vsync,
+		video_vton       => video_vton,
+		video_hzon       => video_hzon,
 		video_blank      => video_blank,
 		video_sync       => video_sync);
 
