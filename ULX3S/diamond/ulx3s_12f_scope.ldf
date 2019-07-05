@@ -84,10 +84,19 @@
     <Source name="../../library/common/pll2ser.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/scope/scopeio_xxx.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
+    <Source name="../../library/scope/scopeio_capture.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
+    <Source name="../../library/scope/scopeio_resize.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
+    <Source name="../../library/scope/scopeio_video.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/scope/scopeio_pointer.vhd" type="VHDL" type_short="VHDL">
