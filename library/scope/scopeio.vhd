@@ -630,7 +630,7 @@ begin
 		process(input_clk)
 		begin
 			if rising_edge(input_clk) then
-				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr));
+				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr) - to_signed(1,capture_addr'length));
 			end if;
 		end process;
 	end block;
