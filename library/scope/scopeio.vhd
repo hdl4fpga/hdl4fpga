@@ -439,6 +439,7 @@ begin
 
 	storage_1shot_trig_b : block
 		constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
+		constant C_align_to_grid: integer := -1; -- aligns triggered edge of a squarewave with the grid
 
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
@@ -568,7 +569,7 @@ begin
 						        -- NOTE: disable line which is updating "capture_addr"
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
-							capture_addr <= wr_addr; -- mark triggering point in the buffer
+							capture_addr <= std_logic_vector(signed(wr_addr) + to_signed(C_align_to_grid, wr_addr'length)); -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
@@ -630,7 +631,7 @@ begin
 		process(input_clk)
 		begin
 			if rising_edge(input_clk) then
-				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr) - to_signed(1,capture_addr'length));
+				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr));
 			end if;
 		end process;
 	end block;
