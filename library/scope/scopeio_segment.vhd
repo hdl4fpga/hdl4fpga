@@ -256,7 +256,7 @@ begin
 					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
 					if sign='1' then
 						if offsets(sample'left)=samples1(sample'left) then
-							samples1(sample'range) := not samples1(sample'left) & (1 to samples1'length-1 => samples1(sample'left));
+							samples1(sample'range) := not samples1(sample'left) & (1 to sample'length-1 => samples1(sample'left));
 						end if;
 					end if;
 					samples1 := samples1 ror sample'length;
