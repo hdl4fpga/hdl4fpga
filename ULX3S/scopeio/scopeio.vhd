@@ -32,7 +32,7 @@ architecture beh of ulx3s is
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
 	constant C_adc_bits: integer := 12; -- don't touch
 	constant C_adc_channels: integer := 4; -- don't touch
-	constant inputs: natural := 4; -- number of input channels (traces)
+	constant inputs: natural := 1; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
@@ -91,8 +91,8 @@ architecture beh of ulx3s is
 
 	-- assign default colors to the traces
 	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-        --b"111100";
-          b"111100_001111_001100_110111";
+          b"111100";
+        --b"111100_001111_001100_110111";
         --b"111100_001111_001100_110111_110100";
         --b"111100_001111_001100_110111_110100_000111_011011_111000 111010 001011";
         --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
@@ -493,8 +493,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
-	        C_experimental_trigger => true,
+	        --axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
+	        --C_experimental_trigger => true,
 		vlayout_id       => vlayout_id,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",

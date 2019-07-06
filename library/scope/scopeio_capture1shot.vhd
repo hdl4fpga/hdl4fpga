@@ -50,9 +50,10 @@ end;
 
 architecture beh of scopeio_capture1shot is
 	constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
-	constant C_align_to_grid: integer := -1; -- aligns triggered edge of a squarewave with the grid
+	constant C_align_to_grid: integer := -1; -- FIXME normally should be 0 here, aligns triggered edge of a squarewave with the grid
 
-	signal capture_addr : unsigned(captured_addr'range);
+	signal t0_addr      : unsigned(captured_addr'range);
+	signal scrolled_addr: unsigned(captured_addr'range);
 	signal rd_addr      : unsigned(captured_addr'range);
 	signal wr_addr      : unsigned(captured_addr'range);
 	signal wr_ena       : std_logic;
@@ -169,11 +170,11 @@ begin
 							-- to reduce flicker of the trace displayed,
 						        -- re-arming of the trigger should be
 						        -- precisely timed, prediced in advance to
-						        -- minimize changing of "capture_addr" here
-						        -- NOTE: disable line which is updating "capture_addr"
+						        -- minimize changing of "t0_addr" here
+						        -- NOTE: disable line which is updating "t0_addr"
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
-							capture_addr <= std_logic_vector(signed(wr_addr) + resize(signed(input_delay),wr_addr'length) + to_signed(C_align_to_grid, wr_addr'length)); -- mark triggering point in the buffer
+							t0_addr <= unsigned(wr_addr) + to_unsigned(C_align_to_grid, wr_addr'length); -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
@@ -213,9 +214,19 @@ begin
 	end process;
 
 	wr_ena  <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
-	-- "captured_addr" is requested by display system
-	-- "capture_addr" is locally determined address of T=0 triggering point
-	rd_addr <= unsigned(captured_addr) + capture_addr;
+
+	-- "captured_addr" is addr for drawing traces, requested by display system
+	-- "input_delay" is horizontal scrolling offset, requested by display system
+	P_horizontal_scroll:
+	process(input_clk)
+	begin
+		if rising_edge(input_clk) then
+			scrolled_addr <= unsigned(captured_addr) + resize(unsigned(input_delay),scrolled_addr'length);
+		end if; -- rising_edge
+	end process;
+
+	-- "t0_addr" is locally determined address of T=0 triggering point
+	rd_addr <= scrolled_addr + t0_addr;
 
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (

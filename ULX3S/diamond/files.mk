@@ -35,8 +35,11 @@ VHDL_LIB_FILES = \
   ../../library/common/btod.vhd \
   ../../library/common/btof.vhd \
   ../../library/common/pll2ser.vhd \
-  ../../library/scope/scopeio.vhd \
+  ../../library/scope/scopeio_xxx.vhd \
   ../../library/scope/scopeiopkg.vhd \
+  ../../library/scope/scopeio_capture1shot.vhd \
+  ../../library/scope/scopeio_resize.vhd \
+  ../../library/scope/scopeio_video.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
@@ -77,6 +80,10 @@ VHDL_LIB_FILES = \
   ../../library/video/cga_rom.vhd \
   ../../library/video/vga2dvid.vhd \
   ../../library/video/tmds_encoder.vhd \
+
+# for new code, replace scopeio.vhd -> scopeio_xxx.vhd
+#  ../../library/scope/scopeio.vhd \
+#  ../../library/scope/scopeio_xxx.vhd \
 
 VERILOG_FILES = \
   $(VERILOG_CLOCK_FILE)
