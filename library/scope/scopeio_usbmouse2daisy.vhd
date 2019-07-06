@@ -47,7 +47,6 @@ architecture def of scopeio_usbmouse2daisy is
   signal mouse_rgtr_id   : std_logic_vector(8-1 downto 0);
   signal mouse_rgtr_data : std_logic_vector(32-1 downto 0);
   
-  signal S_step_ps3, S_step_cmd: std_logic_vector(7 downto 0);
   signal S_valid: std_logic;
   signal R_valid: std_logic_vector(1 downto 0);
   signal S_hid_report: std_logic_vector(31 downto 0);
@@ -57,6 +56,10 @@ architecture def of scopeio_usbmouse2daisy is
   alias A_mouse_dz  : std_logic_vector(7 downto 0) is S_hid_report(31 downto 24);
   signal S_mouse_update: std_logic;
   signal S_mouse_dy : std_logic_vector(7 downto 0); -- Y axis is negative
+  signal S_mouse_dz : std_logic_vector(7 downto 0); -- Z axis is negative
+  signal S_dbg_step_ps3, S_dbg_step_cmd: std_logic_vector(7 downto 0);
+  signal R_dbg_step_ps3, R_dbg_step_cmd: std_logic_vector(7 downto 0);
+  signal R_dbg_btn: std_logic_vector(2 downto 0);
 begin
   usbhid_host_inst: entity usbhid_host
   generic map
@@ -73,20 +76,23 @@ begin
     usb_ddata => usb_dif,
     hid_report => S_hid_report(31 downto 0),
     hid_valid => S_valid,
-    dbg_step_ps3 => dbg_step_ps3, -- debug
-    dbg_step_cmd => dbg_step_cmd, -- debug
+    dbg_step_ps3 => S_dbg_step_ps3, -- debug
+    dbg_step_cmd => S_dbg_step_cmd, -- debug
     leds => open -- led/open debug
   );
-  dbg_btn <= A_mouse_btn;
   -- cross clock domain
   process(clk)
   begin
     if rising_edge(clk) then
       R_valid <= S_valid & R_valid(R_valid'high downto 1);
+      R_dbg_step_ps3 <= S_dbg_step_ps3;
+      R_dbg_step_cmd <= S_dbg_step_cmd;
+      R_dbg_btn <= A_mouse_btn;
     end if; -- rising_edge clk
   end process;
   S_mouse_update <= '1' when R_valid = "10" else '0'; -- rising edge of S_valid
   S_mouse_dy <= std_logic_vector(-signed(A_mouse_dy));
+  S_mouse_dz <= std_logic_vector(-signed(A_mouse_dz));
 
   mouse2rgtr_e: entity hdl4fpga.scopeio_mouse2rgtr
   generic map
@@ -102,7 +108,7 @@ begin
     mouse_update => S_mouse_update,
     mouse_dx    => signed(A_mouse_dx),
     mouse_dy    => signed(S_mouse_dy),
-    mouse_dz    => signed(A_mouse_dz),
+    mouse_dz    => signed(S_mouse_dz),
     mouse_btn   => A_mouse_btn,
 
     pointer_dv  => pointer_dv,
@@ -133,4 +139,9 @@ begin
     chaino_irdy => chaino_irdy,
     chaino_data => chaino_data
   );
+
+  dbg_step_ps3 <= R_dbg_step_ps3;
+  dbg_step_cmd <= R_dbg_step_cmd;
+  dbg_btn <= R_dbg_btn;
+
 end;
