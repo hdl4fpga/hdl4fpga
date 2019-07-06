@@ -43,27 +43,26 @@ architecture beh of s3starter is
 
 	function sintab (
 		constant base : integer;
-		constant size : integer)
+		constant size : natural)
 		return integer_vector is
-		variable y      : real;
 		variable offset : natural;
 		variable retval : integer_vector(0 to size-1);
 	begin
 		for i in 0 to size-1 loop
 			offset := base + i;
-			y := sin(2.0*MATH_PI*real((offset))/64.0);
-			y := 127.0; --*sin(2.0*MATH_PI*real((offset))/64.0);
-			if size=size-10 then
-				retval(i) := integer(y);
+			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
+			retval(i) := 0;
+			if i=0 then
+				retval(i) := 127;
 			end if;
 			if i=735 then
-				retval(i) := integer(-y/2.0);
+				retval(i) := -63;
 			end if;
 		end loop;
 		return retval;
 	end;
 
-	signal input_addr : std_logic_vector(14-1 downto 0);
+	signal input_addr : std_logic_vector(10-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
 	constant baudrate      : natural := 115200;

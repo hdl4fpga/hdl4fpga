@@ -52,7 +52,7 @@ architecture beh of scopeio_capture is
 	signal wr_ena    : std_logic;
 	signal null_data : std_logic_vector(input_data'range);
 
-	signal counter   : signed(0 to input_delay'length);
+	signal counter   : unsigned(0 to input_delay'length);
 
 begin
  
@@ -61,7 +61,7 @@ begin
 		if rising_edge(input_clk) then
 			if capture_req='0' then
 				base_addr <= unsigned(wr_addr);
-				counter   <= resize(signed(input_delay) + (2**input_delay'length-2**capture_addr'length)+1, counter'length);
+				counter   <= resize(unsigned(input_delay) + (2**input_delay'length-2**capture_addr'length)+1, counter'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
 					counter <= counter + 1;
