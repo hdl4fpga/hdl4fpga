@@ -93,7 +93,7 @@ begin
 				wr_addr <= (others => '0'); -- reset address
 			else
 				if input_ena = '1' and wr_cntr(1) = '0' then -- runs address only when recording
-					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+					wr_addr <= wr_addr + 1;
 				end if;
 			end if;
 		end if;
