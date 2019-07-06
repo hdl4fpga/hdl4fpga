@@ -39,11 +39,12 @@ const registers = {
 const objects = {
 	background   : { defcolor : '#000000', pid : 8 },
 	segmentbg    : { defcolor : '#00ffff', pid : 7 },
-	textbg       : { defcolor : '#000000', pid : 6 },
-	verticalbg   : { defcolor : '#0000ff', pid : 5 },
-	horizontalbg : { defcolor : '#0000ff', pid : 3 },
-	horizontalfg : { defcolor : '#ffffff', pid : 2 },
-	gridbg       : { defcolor : '#ff0000', pid : 1 },
+	gridbg       : { defcolor : '#ff0000', pid : 6 },
+	textbg       : { defcolor : '#000000', pid : 5 },
+	horizontalbg : { defcolor : '#0000ff', pid : 4 },
+	horizontalfg : { defcolor : '#ffffff', pid : 3 },
+	verticalbg   : { defcolor : '#0000ff', pid : 2 },
+	verticalfg   : { defcolor : '#ffffff', pid : 1 },
 	gridfg       : { defcolor : '#000000', pid : 0 } };
 
 const colorTab = [

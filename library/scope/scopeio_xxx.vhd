@@ -289,6 +289,20 @@ begin
 		captured_data => capture_data,
 		captured_vld  => open);
 
+--	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+--	port map (
+--		input_clk     => input_clk,
+--		capture_req   => capture_req,
+--		capture_rdy   => capture_rdy,
+--		input_ena     => downsample_dv,
+--		input_data    => downsample_data,
+--		input_delay   => hz_offset,
+--
+--		capture_clk  => video_clk,
+--		capture_addr => capture_addr,
+--		capture_data => capture_data,
+--		capture_vld  => open);
+
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
 		vlayout_id       => vlayout_id,

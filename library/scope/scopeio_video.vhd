@@ -85,16 +85,18 @@ end;
 
 architecture beh of scopeio_video is
 
-	constant storageaddr_latency : natural := 1;
-	constant storagebram_latency : natural := 2;
-	constant input_latency       : natural := storageaddr_latency+storagebram_latency;
-	constant mainrgtrin_latency  : natural := 1;
-	constant mainrgtrout_latency : natural := 1;
-	constant mainrgtrio_latency  : natural := mainrgtrin_latency+mainrgtrout_latency;
-	constant sgmntrgtrio_latency : natural := 2;
-	constant segmment_latency    : natural := 5;
-	constant palette_latency     : natural := 3;
-	constant vgaio_latency       : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
+	constant storageaddr_latency  : natural := 1;
+	constant storagebram_latency  : natural := 2;
+	constant input_latency        : natural := storageaddr_latency+storagebram_latency;
+	constant mainrgtrin_latency   : natural := 1;
+	constant mainrgtrout_latency  : natural := 1;
+	constant mainrgtrio_latency   : natural := mainrgtrin_latency+mainrgtrout_latency;
+	constant sgmntrgtrin_latency  : natural := 1;
+	constant sgmntrgtrout_latency : natural := 1;
+	constant sgmntrgtrio_latency  : natural := sgmntrgtrout_latency+sgmntrgtrin_latency;
+	constant segmment_latency     : natural := 5;
+	constant palette_latency      : natural := 3;
+	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
@@ -244,6 +246,7 @@ begin
 			signal sgmntbox_xon    : std_logic;
 			signal sgmntbox_yon    : std_logic;
 			signal sgmntbox_eox    : std_logic;
+			signal sgmntbox_sel    : std_logic_vector(sgmnt_decode'range);
 
 			signal grid_on         : std_logic;
 			signal hz_on           : std_logic;
@@ -332,7 +335,6 @@ begin
 				signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
 				signal x     : std_logic_vector(sgmntbox_x'range);
 				signal y     : std_logic_vector(sgmntbox_y'range);
-				signal box_on : std_logic;
 			begin
 
 				rgtrin_p : process (video_clk)
@@ -359,13 +361,14 @@ begin
 					box_x     => x,
 					box_y     => y);
 
-				box_on <= xon and yon;
 				rgtrout_p: process (video_clk)
 					constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
 					variable vt_mask : unsigned(x'range);
 					variable hz_mask : unsigned(y'range);
+					variable box_on  : std_logic;
 				begin
 					if rising_edge(video_clk) then
+						box_on  := xon and yon;
 						vt_mask := unsigned(x) srl font_bits;
 						if vtaxis_width(layout)=0  then
 							if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
@@ -390,13 +393,22 @@ begin
 				end process;
 			end block;
 
+			decode_e : entity hdl4fpga.align
+			generic map (
+				n => sgmnt_decode'length,
+				d => (sgmnt_decode'range => mainrgtrout_latency+sgmntrgtrio_latency))
+			port map (
+				clk => video_clk,
+				di  => sgmnt_decode,
+				do  => sgmntbox_sel);
+
 			capture_addr_p : process (video_clk)
 				variable base : unsigned(0 to capture_addr'length-1);
 			begin
 				if rising_edge(video_clk) then
 					base := (others => '0');
 					for i in 0 to layout.num_of_segments-1 loop
-						if sgmnt_decode(i)='1' then
+						if sgmntbox_sel(i)='1' then
 							base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_divisionsize(layout))*i, base'length);
 						end if;
 					end loop;
