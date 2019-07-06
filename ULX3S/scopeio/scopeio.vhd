@@ -24,10 +24,10 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
-        constant C_mouse_ps2: boolean := true;
-        constant C_mouse_usb: boolean := false;
+        constant C_mouse_ps2: boolean := false;
+        constant C_mouse_usb: boolean := true;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
-        constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
@@ -36,7 +36,7 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -342,20 +342,20 @@ begin
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
 
-	trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
-	--trace_yellow(C_adc_binary_gain+4) <= usb_fpga_bd_dp;
+	--trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	trace_yellow(C_adc_binary_gain+4) <= usb_fpga_bd_dp;
 	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
 
-	trace_cyan(C_adc_binary_gain+4) <= adc_miso;
-	--trace_cyan(C_adc_binary_gain+4) <= usb_fpga_bd_dn;
+	--trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	trace_cyan(C_adc_binary_gain+4) <= usb_fpga_bd_dn;
 	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
-	trace_green(C_adc_binary_gain+3) <= adc_csn;
-	--trace_green(C_adc_binary_gain+3) <= usb_fpga_dp;
+	--trace_green(C_adc_binary_gain+3) <= adc_csn;
+	trace_green(C_adc_binary_gain+3) <= '0';
 	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
 
-	trace_violet(C_adc_binary_gain+3) <= adc_sclk;
-	--trace_violet(C_adc_binary_gain+3) <= '0';
+	--trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	trace_violet(C_adc_binary_gain+3) <= usb_fpga_dp;
 	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
 	end generate;
 
