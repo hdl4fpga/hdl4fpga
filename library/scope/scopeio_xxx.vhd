@@ -33,6 +33,7 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
+		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
 
 		inputs      : natural;
 		vt_gains    : natural_vector := (
