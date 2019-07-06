@@ -31,6 +31,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
+		test : boolean := false;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
@@ -271,6 +272,7 @@ begin
 		output_dv    => downsample_dv ,
 		output_data  => downsample_data);
 
+	emard : if not test generate
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture1shot
 	port map (
 		input_clk     => input_clk,
@@ -288,20 +290,23 @@ begin
 		captured_addr => capture_addr,
 		captured_data => capture_data,
 		captured_vld  => open);
+	end generate;
 
---	scopeio_capture_e : entity hdl4fpga.scopeio_capture
---	port map (
---		input_clk     => input_clk,
---		capture_req   => capture_req,
---		capture_rdy   => capture_rdy,
---		input_ena     => downsample_dv,
---		input_data    => downsample_data,
---		input_delay   => hz_offset,
---
---		capture_clk  => video_clk,
---		capture_addr => capture_addr,
---		capture_data => capture_data,
---		capture_vld  => open);
+	xxx : if test generate
+	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	port map (
+		input_clk     => input_clk,
+		capture_req   => capture_req,
+		capture_rdy   => capture_rdy,
+		input_ena     => downsample_dv,
+		input_data    => downsample_data,
+		input_delay   => hz_offset,
+
+		capture_clk  => video_clk,
+		capture_addr => capture_addr,
+		capture_data => capture_data,
+		capture_vld  => open);
+	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
