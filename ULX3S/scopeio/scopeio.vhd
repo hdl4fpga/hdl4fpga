@@ -24,6 +24,8 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
+        constant C_mouse_ps2: boolean := true;
+        constant C_mouse_usb: boolean := false;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -125,6 +127,11 @@ architecture beh of ulx3s is
 
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
+	
+	signal clk_usb         : std_logic; -- 7.5 MHz
+	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
+	signal dbg_btn: std_logic_vector(2 downto 0);
+
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	signal S_adc_dv: std_logic;
@@ -157,9 +164,6 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 	
-	-- pullups 1.5k for the PS/2 mouse connected to US2 port
-	ps2_clock_pullup <= '1';
-	ps2_data_pullup  <= '1';
 
         clk_25M: entity work.clk_verilog
         port map
@@ -339,15 +343,19 @@ begin
 	S_input_ena <= '1';
 
 	trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	--trace_yellow(C_adc_binary_gain+4) <= usb_fpga_bd_dp;
 	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
 
 	trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	--trace_cyan(C_adc_binary_gain+4) <= usb_fpga_bd_dn;
 	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
 	trace_green(C_adc_binary_gain+3) <= adc_csn;
+	--trace_green(C_adc_binary_gain+3) <= usb_fpga_dp;
 	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
 
 	trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	--trace_violet(C_adc_binary_gain+3) <= '0';
 	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
 	end generate;
 
@@ -457,7 +465,10 @@ begin
 	(
 	  clk => clk_oled, -- 40/75 MHz
 	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
-	  data(47 downto 0) => S_adc_data(47 downto 0),
+	  data(18 downto 16) => dbg_btn,
+	  data(15 downto 8) => dbg_step_ps3,
+	  data(7 downto 0) => dbg_step_cmd,	  
+	  --data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
@@ -468,7 +479,11 @@ begin
 	);
 	end generate;
 
-	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
+	G_mouse_ps2: if C_mouse_ps2 generate
+	-- pullups 1.5k for the PS/2 mouse connected to US2 port
+	ps2_clock_pullup <= '1';
+	ps2_data_pullup  <= '1';
+	E_ps2mouse2daisy: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
@@ -489,6 +504,50 @@ begin
 		chaino_irdy => frommousedaisy_irdy,
 		chaino_data => frommousedaisy_data
 	);
+	end generate; -- PS/2 mouse
+
+	G_mouse_usb: if C_mouse_usb generate
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '0';
+	usb_fpga_pu_dn <= '0';
+
+        clk_usb: entity work.clk_25M_100M_7M5_12M_60M
+        port map
+        (
+          CLKI   => clk_25MHz,
+          CLKOP  => open,    -- clk_100MHz,
+          CLKOS  => clk_usb, -- clk_7M5Hz,
+          CLKOS2 => open,    -- clk_12MHz,
+          CLKOS3 => open     -- clk_60MHz
+        );
+	
+	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
+	generic map(
+		C_inputs    => inputs,
+		C_tracesfg  => C_tracesfg,
+		vlayout_id  => vlayout_id
+	)
+	port map (
+		clk         => clk_mouse,
+		clk_usb     => clk_usb,
+		usb_reset   => rst,
+		usb_dp      => usb_fpga_bd_dp,
+		usb_dn      => usb_fpga_bd_dn,
+		usb_dif     => usb_fpga_dp,
+		dbg_step_ps3=> dbg_step_ps3,
+		dbg_step_cmd=> dbg_step_cmd,
+		dbg_btn     => dbg_btn,
+		
+		-- daisy input
+		chaini_frm  => fromistreamdaisy_frm,
+		chaini_irdy => fromistreamdaisy_irdy,
+		chaini_data => fromistreamdaisy_data,
+		-- daisy output
+		chaino_frm  => frommousedaisy_frm,
+		chaino_irdy => frommousedaisy_irdy,
+		chaino_data => frommousedaisy_data
+	);
+	end generate; -- usb mouse
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
