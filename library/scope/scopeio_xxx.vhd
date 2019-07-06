@@ -34,6 +34,7 @@ entity scopeio is
 		test : boolean := false;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
+		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
 
 		inputs      : natural;
 		vt_gains    : natural_vector := (
@@ -311,6 +312,7 @@ begin
 	generic map (
 		vlayout_id       => vlayout_id,
 		inputs           => inputs,
+		axis_unit        => axis_unit,
 		default_tracesfg => default_tracesfg,
 		default_gridfg   => default_gridfg,
 		default_gridbg   => default_gridbg,

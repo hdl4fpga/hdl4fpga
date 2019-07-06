@@ -32,6 +32,7 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio is
 	generic (
 		vlayout_id  : natural;
+		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
 
 		C_experimental_trigger : boolean := false;
 
@@ -407,7 +408,7 @@ begin
 
 	-- NOTE: during the period when 1-shot trigger is armed,
         -- storage continuously records data while waiting for trigger.
-        -- Same memory currently recorded is at the same displayed,
+        -- Same memory currently recorded is at the same time displayed,
 	-- so the traces may flicker or become dotted or dashed.
 	-- This is considered as normal for now but can be improved.
 	-- When display is frozen, it will display correct waveform.
@@ -416,10 +417,11 @@ begin
 	-- in the buffer.
 
 	-- one-shot trigger states:
-	-- state 0: start recording first half of the buffer (decrementing counter)
-	-- state 1: wait for trigger (don't decrement during waiting)
-	-- state 2: decrement counter until it wraps around to -1 and stop
-	-- state 3: wait for re-arm (counter is at -1)
+	-- state 0: decrement counter without recording while counter < buffer_length
+	-- state 1: start recording before trigger (decrementing counter until counter = C_samples_after_trigger)
+	-- state 2: keep recording indefinitely until trigger event (don't decrement counter while waiting for trigger)
+	-- state 3: record after trigger, decrement counter until it wraps around to -1 and stop
+	-- state 4: wait for re-arm (counter is at -1)
 	--          re-armed by event, initializing counter to buffer length
 
 	-- auto trigger is special case of 1-shot trigger
@@ -438,6 +440,7 @@ begin
 
 	storage_1shot_trig_b : block
 		constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
+		constant C_align_to_grid: integer := -1; -- aligns triggered edge of a squarewave with the grid
 
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
@@ -567,7 +570,7 @@ begin
 						        -- NOTE: disable line which is updating "capture_addr"
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
-							capture_addr <= wr_addr; -- mark triggering point in the buffer
+							capture_addr <= std_logic_vector(signed(wr_addr) + to_signed(C_align_to_grid, wr_addr'length)); -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
@@ -939,6 +942,7 @@ begin
 					input_latency => input_latency,
 					latency       => segmment_latency+input_latency,
 					inputs        => inputs,
+					axis_unit     => axis_unit,
 					layout        => layout)
 				port map (
 					in_clk        => si_clk,

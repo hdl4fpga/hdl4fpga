@@ -32,6 +32,7 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_video is
 	generic (
 		vlayout_id       : natural;
+		axis_unit        : std_logic_vector;
 		inputs           : natural;
 		default_tracesfg : std_logic_vector;
 		default_gridfg   : std_logic_vector;
@@ -423,6 +424,7 @@ begin
 				input_latency => input_latency,
 				latency       => segmment_latency+input_latency,
 				inputs        => inputs,
+				axis_unit     => axis_unit,
 				layout        => layout)
 			port map (
 				in_clk        => si_clk,

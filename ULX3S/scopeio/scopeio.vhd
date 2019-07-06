@@ -22,10 +22,12 @@ architecture beh of ulx3s is
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 7:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment
+	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
+        constant C_mouse_ps2: boolean := false;
+        constant C_mouse_usb: boolean := true;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
-        constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
@@ -34,7 +36,7 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -125,6 +127,11 @@ architecture beh of ulx3s is
 
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
+	
+	signal clk_usb         : std_logic; -- 7.5 MHz
+	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
+	signal dbg_btn: std_logic_vector(2 downto 0);
+
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	signal S_adc_dv: std_logic;
@@ -157,9 +164,6 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 	
-	-- pullups 1.5k for the PS/2 mouse connected to US2 port
-	ps2_clock_pullup <= '1';
-	ps2_data_pullup  <= '1';
 
         clk_25M: entity work.clk_verilog
         port map
@@ -168,11 +172,10 @@ begin
           clkout      =>  clk_pll
         );
         -- 800x600
-        G_vga_clk: if not C_oled_vga generate
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
-        clk <= clk_pll(3); -- 25 MHz
+        clk <= clk_pll(1); -- 25 MHz pulse sinewave function
         --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
         clk_adc <= clk_pll(1); -- 40/75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
         clk_uart <= clk_pll(1); -- 40/75 MHz same as vga_clk
@@ -180,7 +183,6 @@ begin
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
-        end generate;
 
         process(clk_mouse)
         begin
@@ -190,9 +192,9 @@ begin
         end process;
         clk_ena_oled <= clk_ena_mouse; -- same clock, same ena
 
-	process(clk)
+	process(vga_clk)
 	begin
-          if rising_edge(clk) then
+          if rising_edge(vga_clk) then
             if btn(0) = '0' then -- BTN0 = 0 when pressed
               if(reset_counter(reset_counter'high) = '0') then
                 reset_counter <= reset_counter + 1;
@@ -340,16 +342,20 @@ begin
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
 
-	trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	--trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	trace_yellow(C_adc_binary_gain+4) <= usb_fpga_bd_dp;
 	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
 
-	trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	--trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	trace_cyan(C_adc_binary_gain+4) <= usb_fpga_bd_dn;
 	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
-	trace_green(C_adc_binary_gain+3) <= adc_csn;
+	--trace_green(C_adc_binary_gain+3) <= adc_csn;
+	trace_green(C_adc_binary_gain+3) <= '0';
 	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
 
-	trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	--trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	trace_violet(C_adc_binary_gain+3) <= usb_fpga_dp;
 	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
 	end generate;
 
@@ -459,7 +465,10 @@ begin
 	(
 	  clk => clk_oled, -- 40/75 MHz
 	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
-	  data(47 downto 0) => S_adc_data(47 downto 0),
+	  data(18 downto 16) => dbg_btn,
+	  data(15 downto 8) => dbg_step_ps3,
+	  data(7 downto 0) => dbg_step_cmd,	  
+	  --data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
@@ -470,7 +479,11 @@ begin
 	);
 	end generate;
 
-	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
+	G_mouse_ps2: if C_mouse_ps2 generate
+	-- pullups 1.5k for the PS/2 mouse connected to US2 port
+	ps2_clock_pullup <= '1';
+	ps2_data_pullup  <= '1';
+	E_ps2mouse2daisy: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
@@ -491,11 +504,55 @@ begin
 		chaino_irdy => frommousedaisy_irdy,
 		chaino_data => frommousedaisy_data
 	);
+	end generate; -- PS/2 mouse
+
+	G_mouse_usb: if C_mouse_usb generate
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '0';
+	usb_fpga_pu_dn <= '0';
+
+        clk_usb: entity work.clk_25M_100M_7M5_12M_60M
+        port map
+        (
+          CLKI   => clk_25MHz,
+          CLKOP  => open,    -- clk_100MHz,
+          CLKOS  => clk_usb, -- clk_7M5Hz,
+          CLKOS2 => open,    -- clk_12MHz,
+          CLKOS3 => open     -- clk_60MHz
+        );
+	
+	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
+	generic map(
+		C_inputs    => inputs,
+		C_tracesfg  => C_tracesfg,
+		vlayout_id  => vlayout_id
+	)
+	port map (
+		clk         => clk_mouse,
+		clk_usb     => clk_usb,
+		usb_reset   => rst,
+		usb_dp      => usb_fpga_bd_dp,
+		usb_dn      => usb_fpga_bd_dn,
+		usb_dif     => usb_fpga_dp,
+		dbg_step_ps3=> dbg_step_ps3,
+		dbg_step_cmd=> dbg_step_cmd,
+		dbg_btn     => dbg_btn,
+		
+		-- daisy input
+		chaini_frm  => fromistreamdaisy_frm,
+		chaini_irdy => fromistreamdaisy_irdy,
+		chaini_data => fromistreamdaisy_data,
+		-- daisy output
+		chaino_frm  => frommousedaisy_frm,
+		chaino_irdy => frommousedaisy_irdy,
+		chaino_data => frommousedaisy_data
+	);
+	end generate; -- usb mouse
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        C_experimental_trigger => true,
+	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 		vlayout_id       => vlayout_id,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
@@ -624,18 +681,7 @@ begin
     G_oled_vga: if C_oled_vga generate
     B_oled_vga: block
       signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
-      signal clk_vga: std_logic;
-      signal R_downclk: unsigned(7 downto 0);
     begin
-      clk_oled <= clk_pll(1); -- 40 MHz
-      clk <= clk_pll(1); -- 40 MHz
-      --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-      clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-      clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
-      clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
-
-      vga_clk <= clk_oled;
-
       S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
       S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
       S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);

@@ -125,8 +125,8 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		oled96x64 => (
 			display_width    =>   96,
-			display_height   =>   128,
-			num_of_segments  =>    2,
+			display_height   =>   64,
+			num_of_segments  =>    1,
 			division_size    =>    8,
 			grid_width       => 11*8+1,
 			grid_height      =>  7*8+1,
