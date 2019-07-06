@@ -50,7 +50,6 @@ end;
 
 architecture beh of scopeio_capture1shot is
 	constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
-	constant C_align_to_grid: integer := -1; -- FIXME normally should be 0 here, aligns triggered edge of a squarewave with the grid
 
 	signal t0_addr      : unsigned(captured_addr'range);
 	signal scrolled_addr: unsigned(captured_addr'range);
@@ -174,7 +173,7 @@ begin
 						        -- NOTE: disable line which is updating "t0_addr"
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
-							t0_addr <= unsigned(wr_addr) + to_unsigned(C_align_to_grid, wr_addr'length); -- mark triggering point in the buffer
+							t0_addr <= unsigned(wr_addr); -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
