@@ -293,6 +293,7 @@ begin
 	generic map (
 		vlayout_id       => vlayout_id,
 		inputs           => inputs,
+		axis_unit        => axis_unit,
 		default_tracesfg => default_tracesfg,
 		default_gridfg   => default_gridfg,
 		default_gridbg   => default_gridbg,
