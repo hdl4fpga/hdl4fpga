@@ -95,7 +95,7 @@ function sendCommand(e) {
 			this.colors.vtaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		case 'hzaxis' :
-			pid = 2;
+			pid = objects.horizontalfg.pid; 
 			this.colors.hzaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		}

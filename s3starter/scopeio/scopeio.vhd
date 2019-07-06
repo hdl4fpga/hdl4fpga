@@ -42,21 +42,25 @@ architecture beh of s3starter is
 	constant sample_size : natural := 14;
 
 	function sintab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : integer)
-		return std_logic_vector is
-		variable y   : real;
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1) := (others => '0');
+		constant base : integer;
+		constant size : integer)
+		return integer_vector is
+		variable y      : real;
+		variable offset : natural;
+		variable retval : integer_vector(0 to size-1);
 	begin
-		for i in 0 to x1-x0 loop
-			y := 127.0; --*sin(2.0*MATH_PI*real((i+x0))/64.0);
-			if (i mod 1024)=0 then
+		for i in 0 to size-1 loop
+			offset := base + i;
+			y := sin(2.0*MATH_PI*real((offset))/64.0);
+			y := 127.0; --*sin(2.0*MATH_PI*real((offset))/64.0);
+			if size=size-10 then
+				retval(i) := integer(y);
 			end if;
-			y := real((2**(n-1)-1))*sin(2.0*MATH_PI*real((i+x0))/64.0);
-				aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
+			if i=735 then
+				retval(i) := integer(-y/2.0);
+			end if;
 		end loop;
-		return aux;
+		return retval;
 	end;
 
 	signal input_addr : std_logic_vector(14-1 downto 0);
@@ -139,7 +143,7 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => sintab(0, 2**input_addr'length-1, sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length-1), sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,

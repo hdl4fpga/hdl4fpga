@@ -545,8 +545,7 @@ package body std is
 		variable retval : unsigned(0 to data'length*size-1);
 	begin
 		for i in data'range loop
-			retval(0 to size-1) := to_unsigned(data(i), size);
-			retval := retval rol size;
+			retval(i*size to (i+1)*size-1) := to_unsigned(data(i), size);
 		end loop;
 		return std_logic_vector(retval);
 	end;
@@ -558,8 +557,7 @@ package body std is
 		variable retval : signed(0 to data'length*size-1);
 	begin
 		for i in data'range loop
-			retval(0 to size-1) := to_signed(data(i), size);
-			retval := retval rol size;
+			retval(i*size to (i+1)*size-1) := to_signed(data(i), size);
 		end loop;
 		return std_logic_vector(retval);
 	end;

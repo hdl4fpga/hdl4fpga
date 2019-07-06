@@ -279,10 +279,10 @@ begin
 		input_data    => downsample_data,
 		input_delay   => hz_offset,
 
-		captured_clk  => video_clk,
-		captured_addr => capture_addr,
-		captured_data => capture_data,
-		captured_vld  => open);
+		capture_clk  => video_clk,
+		capture_addr => capture_addr,
+		capture_data => capture_data,
+		capture_vld  => open);
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
