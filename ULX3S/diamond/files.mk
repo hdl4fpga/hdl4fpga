@@ -7,6 +7,7 @@ VHDL_FILES = \
   $(TOP_MODULE_FILE) \
   ../scopeio/scopeio.vhd \
   ../common/clk_verilog.vhd \
+  ../common/clk_25M_100M_7M5_12M_60M.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
@@ -42,7 +43,11 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_video.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
+  ../../library/scope/scopeio_usbmouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
+  ../../library/usbmouse/usbhid_host.vhd \
+  ../../library/usbmouse/usb_req_gen_func_pack.vhd \
+  ../../library/usbmouse/usb_enum_logitech_mouse_pack.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
