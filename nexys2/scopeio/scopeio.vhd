@@ -255,6 +255,8 @@ begin
 	si_clk <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		test => true,
+		axis_unit   => std_logic_vector(to_unsigned(25,5)),
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"111_111_11",
