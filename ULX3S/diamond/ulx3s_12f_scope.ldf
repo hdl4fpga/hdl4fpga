@@ -111,6 +111,9 @@
     <Source name="../../library/scope/scopeio_usbmouse2daisy.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
+    <Source name="../../library/scope/scopeio_hostmouse2daisy.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
     <Source name="../../library/ps2mouse/mousem.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
