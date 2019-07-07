@@ -44,6 +44,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
   ../../library/scope/scopeio_usbmouse2daisy.vhd \
+  ../../library/scope/scopeio_hostmouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
   ../../library/usbmouse/usbhid_host.vhd \
   ../../library/usbmouse/usb_req_gen_func_pack.vhd \
