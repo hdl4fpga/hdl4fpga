@@ -120,8 +120,8 @@ architecture beh of scopeio is
 	signal trigger_shot       : std_logic;
 	signal scaler_sync        : std_logic;
 
-	signal capture_rdy        : std_logic;
-	signal capture_req        : std_logic;
+	signal capture_finish        : std_logic;
+	signal capture_start        : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -256,8 +256,8 @@ begin
 
 	triggers_modes_b : block
 	begin
-		capture_req <= not capture_rdy or video_vton or not trigger_shot;
-		scaler_sync <= not capture_req;
+		capture_start <= not capture_finish or video_vton or not trigger_shot;
+		scaler_sync <= not capture_start;
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -276,8 +276,8 @@ begin
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture1shot
 	port map (
 		input_clk     => input_clk,
-		capture_req   => capture_req,
-		capture_rdy   => capture_rdy,
+		capture_req   => capture_start,
+		capture_rdy   => capture_finish,
 		input_ena     => downsample_dv,
 		input_data    => downsample_data,
 		input_delay   => hz_offset,
@@ -295,17 +295,17 @@ begin
 	xxx : if test generate
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
-		input_clk     => input_clk,
-		capture_req   => capture_req,
-		capture_rdy   => capture_rdy,
-		input_ena     => downsample_dv,
-		input_data    => downsample_data,
-		input_delay   => hz_offset,
+		input_clk      => input_clk,
+		capture_start  => capture_start,
+		capture_finish => capture_finish,
+		input_ena      => downsample_dv,
+		input_data     => downsample_data,
+		input_delay    => hz_offset,
 
-		capture_clk  => video_clk,
-		capture_addr => capture_addr,
-		capture_data => capture_data,
-		capture_vld  => open);
+		capture_clk    => video_clk,
+		capture_addr   => capture_addr,
+		capture_data   => capture_data,
+		capture_valid  => open);
 	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
