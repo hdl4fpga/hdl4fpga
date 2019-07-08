@@ -214,18 +214,20 @@ begin
 
 	wr_ena  <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
 
-	-- "captured_addr" is addr for drawing traces, requested by display system
 	-- "input_delay" is horizontal scrolling offset, requested by display system
+	-- Latency is allowed so we offload arithmetic stage with register:
 	P_horizontal_scroll:
 	process(input_clk)
 	begin
 		if rising_edge(input_clk) then
-			scrolled_addr <= unsigned(captured_addr) + resize(unsigned(input_delay),scrolled_addr'length);
+			scrolled_addr <= t0_addr + resize(unsigned(input_delay),scrolled_addr'length);
 		end if; -- rising_edge
 	end process;
 
-	-- "t0_addr" is locally determined address of T=0 triggering point
-	rd_addr <= scrolled_addr + t0_addr;
+	-- "scrolled_addr" is triggering point scrolled by "input_delay".
+	-- "captured_addr" is addr for drawing traces, requested by display system
+	-- No latency is allowed for "captured_addr" so combinatorial logic here:
+	rd_addr <= scrolled_addr + unsigned(captured_addr);
 
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
