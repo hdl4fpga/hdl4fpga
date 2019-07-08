@@ -72,9 +72,26 @@ begin
 		end if;
 	end process;
 	capture_finish <= counter(0);
-	capture_valid  <= setif(counter(0 to input_delay'length-capture_addr'length)=(0 to input_delay'length-capture_addr'length => '1'));
 
-	if input_delay-delay < 2**capture_addr'length
+	capture_valid_p : process (delay, input_delay, capture_addr, counter)
+		variable valid : std_logic;
+	begin
+		if delay+(2**input_delay'length-2**capture_addr'length) > 2**n then
+			if counter(0)='1' then
+				valid := setif(capture_addr+input_delay < 2**input_delay'length);
+			else
+				valid := setif(capture_addr+input_delay < counter);
+			end if;
+		else
+			if counter(0)='1' then
+				valid := setif(delay <= capture_addr+input_delay) and setif(capture_addr+input_delay < delay+2**capture_addr'length));
+			else
+				valid := setif(delay <= capture_addr+input_delay) and setif(capture_addr+(2**input_delay'length-2**capture_addr'length) < counter);
+			end if;
+		end if;
+		capture_valid <= valid;
+	end process;
+
 	wr_addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
