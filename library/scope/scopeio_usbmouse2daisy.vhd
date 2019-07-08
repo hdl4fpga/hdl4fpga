@@ -50,6 +50,9 @@ architecture def of scopeio_usbmouse2daisy is
   signal S_valid: std_logic;
   signal R_valid: std_logic_vector(1 downto 0);
   signal S_hid_report: std_logic_vector(31 downto 0);
+  -- TODO move report decoder to separate module.
+  -- this works for one logitech mouse, other models
+  -- may have different report structure
   alias A_mouse_btn : std_logic_vector(2 downto 0) is S_hid_report( 2 downto 0);  
   alias A_mouse_dx  : std_logic_vector(7 downto 0) is S_hid_report(15 downto 8);
   alias A_mouse_dy  : std_logic_vector(7 downto 0) is S_hid_report(23 downto 16);
@@ -64,7 +67,7 @@ begin
   usbhid_host_inst: entity usbhid_host
   generic map
   (
-    C_differential_mode => true, -- try both true/false, one may work
+    C_differential_mode => false, -- try both true/false, one may work
     report_len => 4 -- bytes, don't touch
   )
   port map

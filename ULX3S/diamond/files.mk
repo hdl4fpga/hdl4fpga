@@ -38,6 +38,7 @@ VHDL_LIB_FILES = \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio_xxx.vhd \
   ../../library/scope/scopeiopkg.vhd \
+  ../../library/scope/scopeio_capture.vhd \
   ../../library/scope/scopeio_capture1shot.vhd \
   ../../library/scope/scopeio_resize.vhd \
   ../../library/scope/scopeio_video.vhd \

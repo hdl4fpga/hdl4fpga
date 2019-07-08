@@ -25,11 +25,11 @@ architecture beh of ulx3s is
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
         constant C_mouse_ps2: boolean := false;
-        constant C_mouse_usb: boolean := false;
+        constant C_mouse_usb: boolean := true;
         constant C_mouse_host: boolean := true;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
-        constant C_adc_binary_gain: integer := 5; -- 2**n
+        constant C_adc_binary_gain: integer := 1; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -125,6 +125,10 @@ architecture beh of ulx3s is
 	signal frommousedaisy_frm  : std_logic;
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
+
+	signal dummy_frommousedaisy_frm  : std_logic;
+	signal dummy_frommousedaisy_irdy : std_logic;
+	signal dummy_frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
@@ -527,6 +531,35 @@ begin
           CLKOS2 => open,    -- clk_12MHz,
           CLKOS3 => open     -- clk_60MHz
         );
+	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
+	generic map
+	(
+		C_inputs    => inputs,
+		C_tracesfg  => C_tracesfg,
+		vlayout_id  => vlayout_id
+	)
+	port map
+	(
+		clk         => clk_mouse,
+		clk_usb     => clk_usb,
+		-- USB interface
+		usb_reset   => rst,
+		usb_dp      => usb_fpga_bd_dp,
+		usb_dn      => usb_fpga_bd_dn,
+		usb_dif     => usb_fpga_dp,
+		-- USB debug
+		dbg_step_ps3 => dbg_step_ps3,
+		dbg_step_cmd => dbg_step_cmd,
+		dbg_btn      => dbg_btn,
+		-- daisy input
+		chaini_frm  => '0', -- fromistreamdaisy_frm,
+		chaini_irdy => '0', -- fromistreamdaisy_irdy,
+		chaini_data => x"00", -- fromistreamdaisy_data,
+		-- daisy output
+		chaino_frm  => dummy_frommousedaisy_frm,
+		chaino_irdy => dummy_frommousedaisy_irdy,
+		chaino_data => dummy_frommousedaisy_data
+	);
 	end generate; -- USB mouse
 
 	G_mouse_host: if C_mouse_host generate
@@ -535,12 +568,14 @@ begin
 	-- passed to GUI module "mouse2rgtr"
 	-- which outputs modified rgtr commands for scopeio control
 	E_hostmouse2daisy: entity hdl4fpga.scopeio_hostmouse2daisy
-	generic map(
+	generic map
+	(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
 	)
-	port map (
+	port map
+	(
 		clk         => clk_mouse,
 		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,

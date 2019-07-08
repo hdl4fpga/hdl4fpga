@@ -38,6 +38,7 @@ if __name__ == '__main__':
     # this string will search for mouse in list of evdev inputs
     # Usually this should match a part of USB mouse device name
     mouse_input_name = 'Mouse'
+    touchpad_input_name = 'Synaptics'
     # this port is scopeio serial port
     serial_port = '/dev/ttyUSB0'
 
@@ -50,6 +51,7 @@ if __name__ == '__main__':
     BTN_LEFT = 0
     BTN_RIGHT = 0
     BTN_MIDDLE = 0
+    TOUCH = 0
 
     DEVICE = None
 
@@ -60,7 +62,6 @@ if __name__ == '__main__':
             DEVICE = d
             print('Found %s at %s...' % (d.name, d.path))
             break
-
 
     if DEVICE:
         scopeio = serial.Serial(serial_port, 115200, timeout=1)
@@ -93,6 +94,47 @@ if __name__ == '__main__':
                     BTN_MIDDLE = event.value
                 if event.code == evdev.ecodes.ecodes['BTN_RIGHT']:
                     BTN_RIGHT = event.value
+                #print('BTN_LEFT=%d BTN_MIDDLE=%d BTN_RIGHT=%d' % (BTN_LEFT, BTN_MIDDLE, BTN_RIGHT))
+                packet = mouse_report(0,0,0,BTN_LEFT,BTN_MIDDLE,BTN_RIGHT)
+                #print_packet(packet)
+                scopeio.write(packet)
+
+    for d in DEVICES:
+        if touchpad_input_name in d.name:
+            DEVICE = d
+            print('Found %s at %s...' % (d.name, d.path))
+            break
+
+    if DEVICE:
+        scopeio = serial.Serial(serial_port, 115200, timeout=1)
+        print("Sending touchpad events to serial port %s" % scopeio.name)
+        print('Started listening to device')
+        for event in DEVICE.read_loop():
+            if event.type == evdev.ecodes.EV_ABS:
+                if event.code == evdev.ecodes.ABS_X:
+                    if TOUCH == 0:
+                      DX = event.value - X
+                    X = event.value
+                if event.code == evdev.ecodes.ABS_Y:
+                    if TOUCH == 0:
+                      DY = event.value - Y
+                    Y = event.value
+                packet = mouse_report(DX,DY,DZ,BTN_LEFT,BTN_MIDDLE,BTN_RIGHT)
+                DZ = 0
+                DX = 0
+                DY = 0
+                TOUCH = 0
+                #print_packet(packet)
+                scopeio.write(packet)
+
+            if event.type == evdev.ecodes.EV_KEY:
+                if event.code == evdev.ecodes.ecodes['BTN_LEFT']:
+                    BTN_LEFT = event.value
+                if event.code == evdev.ecodes.ecodes['BTN_RIGHT']:
+                    BTN_RIGHT = event.value
+                if event.code == evdev.ecodes.ecodes['BTN_TOUCH']:
+                    # TOUCH = event.value
+                    TOUCH = 1
                 #print('BTN_LEFT=%d BTN_MIDDLE=%d BTN_RIGHT=%d' % (BTN_LEFT, BTN_MIDDLE, BTN_RIGHT))
                 packet = mouse_report(0,0,0,BTN_LEFT,BTN_MIDDLE,BTN_RIGHT)
                 #print_packet(packet)
