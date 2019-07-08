@@ -3,7 +3,8 @@ use IEEE.std_logic_1164.ALL;
 use IEEE.std_logic_arith.ALL;
 use IEEE.std_logic_unsigned.ALL;
 
--- see http://www.usbmadesimple.co.uk/
+-- http://www.usbmadesimple.co.uk/
+-- http://www.zeroplus.com.tw/software_download/USB%202.0%20Signal%20Analysis%20Skills_EN.pdf
 
 library hdl4fpga;
 use hdl4fpga.usb_req_gen_func_pack.ALL; -- we need reverse_any_vector()
