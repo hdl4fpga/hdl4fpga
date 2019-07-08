@@ -28,6 +28,7 @@ port
   -- USB core debug
   dbg_step_ps3, dbg_step_cmd: out std_logic_vector(7 downto 0);
   dbg_btn: out std_logic_vector(2 downto 0);
+  dbg_hid_valid : out std_logic;
   -- daisy in
   chaini_frm    : in  std_logic := '0';
   chaini_irdy   : in  std_logic := '1';
@@ -146,5 +147,6 @@ begin
   dbg_step_ps3 <= R_dbg_step_ps3;
   dbg_step_cmd <= R_dbg_step_cmd;
   dbg_btn <= R_dbg_btn;
+  dbg_hid_valid <= R_valid(R_valid'high);
 
 end;

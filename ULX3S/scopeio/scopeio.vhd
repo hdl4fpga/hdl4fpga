@@ -138,6 +138,8 @@ architecture beh of ulx3s is
 	signal clk_usb         : std_logic; -- 7.5 MHz
 	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
 	signal dbg_btn: std_logic_vector(2 downto 0);
+	signal dbg_hid_valid: std_logic;
+	signal dbg_clk_usb_count: unsigned(2 downto 0);
 
 	-- HOST mouse (uses "rgtr" from scopeio)
 	--signal S_rgtr_id       : std_logic_vector(8-1 downto 0);
@@ -362,7 +364,8 @@ begin
 	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
 	--trace_green(C_adc_binary_gain+3) <= adc_csn;
-	trace_green(C_adc_binary_gain+3) <= '0';
+	trace_green(C_adc_binary_gain+4) <= dbg_hid_valid;
+	trace_green(C_adc_binary_gain+2) <= dbg_clk_usb_count(dbg_clk_usb_count'high);
 	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
 
 	--trace_violet(C_adc_binary_gain+3) <= adc_sclk;
@@ -531,6 +534,17 @@ begin
           CLKOS2 => open,    -- clk_12MHz,
           CLKOS3 => open     -- clk_60MHz
         );
+        -- 0-5 clk_usb counter to easier align scoped data
+        process(clk_usb)
+        begin
+          if rising_edge(clk_usb) then
+            if dbg_clk_usb_count(dbg_clk_usb_count'high) = '1' then -- 4
+              dbg_clk_usb_count <= (others => '0');
+            else
+              dbg_clk_usb_count <= dbg_clk_usb_count + 1;
+            end if;
+          end if;
+        end process;
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
 	(
@@ -551,6 +565,7 @@ begin
 		dbg_step_ps3 => dbg_step_ps3,
 		dbg_step_cmd => dbg_step_cmd,
 		dbg_btn      => dbg_btn,
+		dbg_hid_valid => dbg_hid_valid,
 		-- daisy input
 		chaini_frm  => '0', -- fromistreamdaisy_frm,
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
