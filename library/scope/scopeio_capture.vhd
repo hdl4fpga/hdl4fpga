@@ -41,10 +41,12 @@ entity scopeio_capture is
 		capture_clk    : in  std_logic;
 		capture_addr   : in  std_logic_vector;
 		capture_data   : out std_logic_vector;
-		capture_valid  : out std_logic);
+		capture_valid  : inout std_logic);
 end;
 
 architecture beh of scopeio_capture is
+
+	constant bram_latency : natural := 2;
 
 	signal base_addr : unsigned(capture_addr'range);
 	signal rd_addr   : unsigned(capture_addr'range);
@@ -53,17 +55,18 @@ architecture beh of scopeio_capture is
 	signal null_data : std_logic_vector(input_data'range);
 
 	signal counter   : unsigned(0 to input_delay'length);
-	signal delay     : unsigned(input_delay'range);
+	signal delay     : unsigned(0 to input_delay'length);
+	signal valid     : std_logic;
 
 begin
  
 	capture_addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			if capture_start='1' then
+			if capture_start='0' then
 				base_addr <= unsigned(wr_addr);
 				counter   <= resize(unsigned(input_delay) + (2**input_delay'length-2**capture_addr'length)+1, counter'length);
-				delay     <= unsigned(input_delay);
+				delay     <= resize(unsigned(input_delay), delay'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
 					counter <= counter + 1;
@@ -74,23 +77,36 @@ begin
 	capture_finish <= counter(0);
 
 	capture_valid_p : process (delay, input_delay, capture_addr, counter)
-		variable valid : std_logic;
+		variable idelay : unsigned(delay'range);
+		variable addr   : unsigned(capture_addr'range);
 	begin
-		if delay+(2**input_delay'length-2**capture_addr'length) > 2**n then
+		idelay := resize(unsigned(input_delay), idelay'length);
+		addr   := resize(unsigned(capture_addr), addr'length);
+		if (2**input_delay'length-2**capture_addr'length) > delay then
 			if counter(0)='1' then
-				valid := setif(capture_addr+input_delay < 2**input_delay'length);
+				valid <= setif(delay <= addr+idelay) and setif(addr+idelay < delay+2**capture_addr'length);
 			else
-				valid := setif(capture_addr+input_delay < counter);
+				valid <= setif(delay <= addr+idelay) and setif(addr+(2**input_delay'length-2**capture_addr'length) < counter);
 			end if;
 		else
 			if counter(0)='1' then
-				valid := setif(delay <= capture_addr+input_delay) and setif(capture_addr+input_delay < delay+2**capture_addr'length));
+				valid <= setif(addr+idelay < 2**input_delay'length);
 			else
-				valid := setif(delay <= capture_addr+input_delay) and setif(capture_addr+(2**input_delay'length-2**capture_addr'length) < counter);
+				valid <= setif(addr+idelay < counter);
 			end if;
 		end if;
-		capture_valid <= valid;
 	end process;
+
+	valid_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => bram_latency))
+	port map (
+		clk   => capture_clk,
+		di(0) => valid,
+		do(0) => capture_valid);
+
+--	capture_data <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not capture_valid);
 
 	wr_addr_p : process (input_clk)
 	begin
