@@ -10,6 +10,10 @@ use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_storage is
+	generic (
+		-- use "align_to_grid" to compensate latency of "storage_mark_t0" signal.
+		align_to_grid          : integer := 0  -- -left, +right shift T=0 triggered edge
+	);
 	port (
 		storage_clk            : in  std_logic;
 		storage_reset_addr     : in  std_logic;
@@ -57,7 +61,8 @@ begin
 	process(storage_clk)
 	begin
 		if rising_edge(storage_clk) then
-			scrolled_addr <= t0_addr + resize(unsigned(captured_scroll),scrolled_addr'length);
+			scrolled_addr <= t0_addr + resize(unsigned(captured_scroll),scrolled_addr'length)
+			               + to_unsigned(-align_to_grid,scrolled_addr'length);
 		end if; -- rising_edge
 	end process;
 
