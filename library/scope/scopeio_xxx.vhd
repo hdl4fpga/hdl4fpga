@@ -115,6 +115,7 @@ architecture beh of scopeio is
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
 	constant capture_bits     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+--	constant capture_bits     : natural := 8;
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;

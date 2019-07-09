@@ -47,6 +47,7 @@ end;
 architecture beh of scopeio_capture is
 
 	constant bram_latency : natural := 2;
+	constant bias : natural := (2**input_delay'length-2**capture_addr'length);
 
 	signal base_addr : unsigned(capture_addr'range);
 	signal rd_addr   : unsigned(capture_addr'range);
@@ -55,7 +56,7 @@ architecture beh of scopeio_capture is
 	signal null_data : std_logic_vector(input_data'range);
 
 	signal counter   : unsigned(0 to input_delay'length);
-	signal delay     : unsigned(0 to input_delay'length);
+	signal delay     : unsigned(input_delay'range);
 	signal valid     : std_logic;
 
 begin
@@ -65,7 +66,7 @@ begin
 		if rising_edge(input_clk) then
 			if capture_start='0' then
 				base_addr <= unsigned(wr_addr);
-				counter   <= resize(unsigned(input_delay) + (2**input_delay'length-2**capture_addr'length)+1, counter'length);
+				counter   <= resize(bias+1-unsigned(input_delay), counter'length);
 				delay     <= resize(unsigned(input_delay), delay'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
@@ -82,18 +83,22 @@ begin
 	begin
 		idelay := resize(unsigned(input_delay), idelay'length);
 		addr   := resize(unsigned(capture_addr), addr'length);
-		if (2**input_delay'length-2**capture_addr'length) > delay then
+		valid  <= '0';
+		if bias < delay then
 			if counter(0)='1' then
-				valid <= setif(delay <= addr+idelay) and setif(addr+idelay < delay+2**capture_addr'length);
+				valid <= setif((bias+delay) <= (bias+addr+idelay));
+				--and setif((idelay+bias+addr) < (delay+bias+2**capture_addr'length));
 			else
-				valid <= setif(delay <= addr+idelay) and setif(addr+(2**input_delay'length-2**capture_addr'length) < counter);
+				valid <= setif(delay <= idelay+addr) and setif(addr < (counter-bias));
 			end if;
+--			valid <= '1';
 		else
 			if counter(0)='1' then
 				valid <= setif(addr+idelay < 2**input_delay'length);
 			else
 				valid <= setif(addr+idelay < counter);
 			end if;
+			valid <= '0';
 		end if;
 	end process;
 
@@ -106,7 +111,7 @@ begin
 		di(0) => valid,
 		do(0) => capture_valid);
 
---	capture_data <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not capture_valid);
+	capture_data <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not capture_valid);
 
 	wr_addr_p : process (input_clk)
 	begin
@@ -119,17 +124,17 @@ begin
 	wr_ena  <= (not counter(0) or not capture_start) and input_ena;
 	rd_addr <= unsigned(capture_addr) + base_addr + resize(unsigned(input_delay), capture_addr'length);
 
-	mem_e : entity hdl4fpga.bram(inference)
-	port map (
-		clka  => input_clk,
-		addra => std_logic_vector(wr_addr),
-		wea   => wr_ena,
-		dia   => input_data,
-		doa   => null_data,
-
-		clkb  => capture_clk,
-		addrb => std_logic_vector(rd_addr),
-		dib   => null_data,
-		dob   => capture_data);
+--	mem_e : entity hdl4fpga.bram(inference)
+--	port map (
+--		clka  => input_clk,
+--		addra => std_logic_vector(wr_addr),
+--		wea   => wr_ena,
+--		dia   => input_data,
+--		doa   => null_data,
+--
+--		clkb  => capture_clk,
+--		addrb => std_logic_vector(rd_addr),
+--		dib   => null_data,
+--		dob   => capture_data);
 
 end;
