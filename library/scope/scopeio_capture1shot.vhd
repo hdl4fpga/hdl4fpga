@@ -1,26 +1,5 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---   EMARD                                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- AUTHOR=EMARD
+-- LICENSE=GPL
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -31,74 +10,52 @@ use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture1shot is
+	generic (
+		C_trigger_deflicker    : boolean := true; -- complex deflickering calculation
+		C_auto_trigger_wait    : natural := 0     -- 2**n video frames frozen until auto re-arming trigger
+	);
 	port (
-		input_clk     : in  std_logic;
-		capture_req   : in  std_logic;
-		capture_rdy   : out std_logic;
-		input_ena     : in  std_logic := '1';
-		input_data    : in  std_logic_vector;
-		input_delay   : in  std_logic_vector; --FIXME: horizontal scrolling dosen't belong to storage module
-		video_vton    : in  std_logic;
-		trigger_freeze: in  std_logic;
-		trigger_shot  : in  std_logic;
+		input_clk              : in  std_logic;
+		input_ena              : in  std_logic := '1'; -- for downsampling
 
-		captured_clk  : in  std_logic;
-		captured_addr : in  std_logic_vector;
-		captured_data : out std_logic_vector;
-		captured_vld  : out std_logic);
+		video_vton             : in  std_logic; -- video vertical ON = not(vertical_blank)
+		trigger_freeze         : in  std_logic; -- user input
+		trigger_shot           : in  std_logic; -- trigger level comparator
+
+		storage_reset_addr     : out std_logic;
+		storage_increment_addr : out std_logic;
+		storage_mark_t0        : out std_logic;
+		storage_write          : out std_logic;
+		storage_addr           : in  std_logic_vector -- used for range
+		-- "storage_addr" is used as input if C_trigger_deflicker = false
+	);
 end;
 
 architecture beh of scopeio_capture1shot is
-	constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
-
-	signal t0_addr      : unsigned(captured_addr'range);
-	signal scrolled_addr: unsigned(captured_addr'range);
-	signal rd_addr      : unsigned(captured_addr'range);
-	signal wr_addr      : unsigned(captured_addr'range);
-	signal wr_ena       : std_logic;
-	signal null_data    : std_logic_vector(input_data'range);
-
-	--8<-----------------------------------------------
-	-- ***** EMARD added for 1-shot function *****
-	signal last_wr_addr : unsigned(captured_addr'range);
+	signal last_wr_addr : unsigned(storage_addr'range);
 	-- "C_samples_after_trigger" sets position
 	-- of the triggering point in the storage buffer.
 	-- By default it is set at center of the storage buffer
 	-- > 2**(wr_addr'length-1) : record more data after trigger
 	-- = 2**(wr_addr'length-1) : record same amount of data before and after trigger (default)
 	-- < 2**(wr_addr'length-1) : record more data before trigger
-	constant C_samples_after_trigger: integer range 0 to 2**(wr_addr'length)-1 := 2**(wr_addr'length-1); -- configure this
+	constant C_samples_after_trigger: integer range 0 to 2**(storage_addr'length)-1 := 2**(storage_addr'length-1); -- configure this
 	-- calculate how many samples after the trigger:
-	--constant C_samples_before_trigger: integer range 0 to 2**(wr_addr'length)-1 := 2**(wr_addr'length)-C_samples_after_trigger;
+	--constant C_samples_before_trigger: integer range 0 to 2**(storage_addr'length)-1 := 2**(storage_addr'length)-C_samples_after_trigger;
 	constant C_wr_cntr_extra_bits : unsigned(0 to 1) := (others => '0');
-	signal wr_cntr   : unsigned(0 to wr_addr'length+C_wr_cntr_extra_bits'length-1); -- counts down when trigger is armed, extra bits to adjust re-arming
+	signal wr_cntr   : unsigned(0 to storage_addr'length+C_wr_cntr_extra_bits'length-1); -- counts down when trigger is armed, extra bits to adjust re-arming
 	constant C_samples_after_trigger_unsigned : unsigned(0 to wr_cntr'length-2) := to_unsigned(C_samples_after_trigger, wr_cntr'length-1);
-	constant C_rearm_wr_cntr_0: unsigned(wr_addr'range) := (others => '0'); -- default value for re-arming: full buffer length
-	signal rearm_wr_cntr: unsigned(wr_addr'range) := C_rearm_wr_cntr_0; -- re-arming and deflickering
+	constant C_rearm_wr_cntr_0: unsigned(storage_addr'range) := (others => '0'); -- default value for re-arming: full buffer length
+	signal rearm_wr_cntr: unsigned(storage_addr'range) := C_rearm_wr_cntr_0; -- re-arming and deflickering
 	signal sync_tf   : std_logic;
 	signal sync_videofrm : std_logic;
 	signal prev_sync_videofrm : std_logic;
-	constant C_auto_trigger_wait: natural := 0; -- 2**n video frames frozen until auto re-arming trigger
 	signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
 	signal prev_trigger_shot: std_logic; -- for rising edge detection
-	signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(wr_addr'range);
+	signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(storage_addr'range);
 	signal S_trigger_edge: std_logic;
 	signal S_rearm_condition: std_logic;
-	--8<---------------------------------------------------------------------
 begin
-	process(input_clk)
-	begin
-		if rising_edge(input_clk) then
-			if wr_cntr(0) = '1' then -- storage is not armed
-				wr_addr <= (others => '0'); -- reset address
-			else
-				if input_ena = '1' and wr_cntr(1) = '0' then -- runs address only when recording
-					wr_addr <= wr_addr + 1;
-				end if;
-			end if;
-		end if;
-	end process;
-
 	process(input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -173,19 +130,19 @@ begin
 						        -- NOTE: disable line which is updating "t0_addr"
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
-							t0_addr <= unsigned(wr_addr); -- mark triggering point in the buffer
+							--t0_addr <= unsigned(wr_addr); -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
 						if input_ena = '1' then
 							wr_cntr <= wr_cntr - 1;
 						end if;
-						-- at last trigger during writing,_wr_addr will contain
+						-- at last trigger during writing, storage_addr will contain
 						-- remainder value that can be used for deflickering
 						-- in the next rearming. This is a LUT saver,
 						-- traces will still shake a bit.
 						if S_trigger_edge = '1' and input_ena = '1' then
-							last_wr_addr <= wr_addr;
+							last_wr_addr <= storage_addr;
 						end if;
 					end if;
 					-- reset frame counter for temporary
@@ -212,34 +169,9 @@ begin
 		end if; -- rising_edge
 	end process;
 
-	wr_ena  <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
-
-	-- "input_delay" is horizontal scrolling offset, requested by display system
-	-- Latency is allowed so we offload arithmetic stage with register:
-	P_horizontal_scroll:
-	process(input_clk)
-	begin
-		if rising_edge(input_clk) then
-			scrolled_addr <= t0_addr + resize(unsigned(input_delay),scrolled_addr'length);
-		end if; -- rising_edge
-	end process;
-
-	-- "scrolled_addr" is triggering point scrolled by "input_delay".
-	-- "captured_addr" is addr for drawing traces, requested by display system
-	-- No latency is allowed for "captured_addr" so combinatorial logic here:
-	rd_addr <= scrolled_addr + unsigned(captured_addr);
-
-	mem_e : entity hdl4fpga.bram(inference)
-	port map (
-		clka  => input_clk,
-		addra => std_logic_vector(wr_addr),
-		wea   => wr_ena,
-		dia   => input_data,
-		doa   => null_data,
-
-		clkb  => captured_clk,
-		addrb => std_logic_vector(rd_addr),
-		dib   => null_data,
-		dob   => captured_data);
-
+	-- output to storage module
+	storage_reset_addr     <= wr_cntr(0);
+	storage_increment_addr <= input_ena and not wr_cntr(1);
+	storage_mark_t0        <= '1' when S_trigger_edge = '1' and wr_cntr = '0' & C_samples_after_trigger_unsigned else '0';
+	storage_write          <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
 end;
