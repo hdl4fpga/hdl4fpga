@@ -24,19 +24,31 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
-        constant C_mouse_ps2: boolean := false;
-        constant C_mouse_usb: boolean := true;
+        -- GUI pointing device type (enable max 1)
+        constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 wheel mouse
+        constant C_mouse_usb:  boolean := false; -- USB mouse soft-core, unreliable
+        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        -- serial port type (enable max 1)
+	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
+        constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
+        constant C_usbserial:  boolean := false; -- USB-serial soft-core (D+/D- lines)
+        -- internally connected "probes" (enable max 1)
+        constant C_view_adc:   boolean := true;  -- ADC analog view
+        constant C_view_spi:   boolean := false; -- SPI digital view
+        constant C_view_usb:   boolean := false; -- USB or PS/2 digital view
+        constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
+        -- ADC SPI core
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
-        constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
-        constant C_adc_binary_gain: integer := 5; -- 2**n
+        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
 	constant C_adc_bits: integer := 12; -- don't touch
 	constant C_adc_channels: integer := 4; -- don't touch
+        -- scopeio
 	constant inputs: natural := 4; -- number of input channels (traces)
-        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
+	-- OLED (enable max 1)
+        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -105,7 +117,6 @@ architecture beh of ulx3s is
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
-	constant C_uart_original: boolean := false; -- true: use Miguel's, false: use EMARD's uart core
 	constant baudrate    : natural := 115200;
 	constant uart_clk_hz : natural := 40000000; -- Hz
 
@@ -125,13 +136,28 @@ architecture beh of ulx3s is
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
+	signal dummy_frommousedaisy_frm  : std_logic;
+	signal dummy_frommousedaisy_irdy : std_logic;
+	signal dummy_frommousedaisy_data : std_logic_vector(8-1 downto 0);
+
+	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
 	
+	-- USB mouse
 	signal clk_usb         : std_logic; -- 7.5 MHz
 	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
 	signal dbg_btn: std_logic_vector(2 downto 0);
+	signal dbg_hid_valid: std_logic;
+	signal dbg_clk_usb_count: unsigned(2 downto 0);
 
+	-- USB serial
+	signal dbg_sync_err, dbg_bit_stuff_err, dbg_byte_err: std_logic;
+
+	-- HOST mouse (uses "rgtr" from scopeio)
+	--signal S_rgtr_id       : std_logic_vector(8-1 downto 0);
+        --signal S_rgtr_dv       : std_logic;
+        --signal S_rgtr_data     : std_logic_vector(32-1 downto 0);
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	signal S_adc_dv: std_logic;
@@ -339,27 +365,43 @@ begin
 		addr => input_addr,
 		data => trace_sine);
 	
-	G_not_analog_view: if not C_adc_analog_view generate
+	G_view_usb: if C_view_usb generate
 	S_input_ena <= '1';
 
-	--trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
-	trace_yellow(C_adc_binary_gain+4) <= usb_fpga_bd_dp;
-	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
+	trace_yellow(C_view_binary_gain+4) <= usb_fpga_bd_dp;
+	--trace_yellow(C_view_binary_gain+1 downto C_view_binary_gain) <= "00";  -- y offset
 
-	--trace_cyan(C_adc_binary_gain+4) <= adc_miso;
-	trace_cyan(C_adc_binary_gain+4) <= usb_fpga_bd_dn;
-	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
+	trace_cyan(C_view_binary_gain+4) <= usb_fpga_bd_dn;
+	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
 
-	--trace_green(C_adc_binary_gain+3) <= adc_csn;
-	trace_green(C_adc_binary_gain+3) <= '0';
-	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
+	trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 
-	--trace_violet(C_adc_binary_gain+3) <= adc_sclk;
-	trace_violet(C_adc_binary_gain+3) <= usb_fpga_dp;
-	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
+	--trace_violet(C_view_binary_gain+4) <= dbg_hid_valid;
+	--trace_violet(C_view_binary_gain+2) <= dbg_clk_usb_count(dbg_clk_usb_count'high);
+	trace_violet(C_view_binary_gain+4) <= dbg_sync_err;
+	trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
+	trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
+	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
 	end generate;
 
-	G_yes_analog_view: if C_adc_analog_view generate
+	G_view_spi: if C_view_spi generate
+	S_input_ena <= '1';
+
+	trace_yellow(C_view_binary_gain+4) <= adc_mosi;
+	--trace_yellow(C_view_binary_gain+1 downto C_view_binary_gain) <= "00";  -- y offset
+
+	trace_cyan(C_view_binary_gain+4) <= adc_miso;
+	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
+
+	trace_green(C_view_binary_gain+3) <= adc_csn;
+	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
+
+	trace_violet(C_view_binary_gain+3) <= adc_sclk;
+	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
+	end generate;
+
+	G_view_adc: if C_view_adc generate
 	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_adc_view_low_bits generate
@@ -375,7 +417,7 @@ begin
 	  trace_violet(trace_violet'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
-	
+
 	G_inputs1: if inputs >= 1 generate
 	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
 	end generate;
@@ -393,7 +435,7 @@ begin
 	samples(4*sample_size to (4+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
 	end generate;
 
-	G_uart_miguel: if C_uart_original generate
+	G_uart_miguel: if C_origserial generate
 	process (clk_uart)
 		constant max_count : natural := (uart_clk_hz+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
@@ -421,7 +463,7 @@ begin
 		uart_rxd  => uart_rxd);
 	end generate;
 
-	G_uart_emard: if not C_uart_original generate
+	G_uart_emard: if C_extserial generate
 	uartrx_e : entity hdl4fpga.uart_rx_f32c
 	generic map
 	(
@@ -432,6 +474,41 @@ begin
 	(
 		clk  => clk_uart,
 		rxd  => ftdi_txd,
+		dv   => uart_rxdv,
+		byte => uart_rxd
+	);
+	end generate;
+
+	G_uart_usbserial: if C_usbserial generate
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+
+        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  open,    -- clk_60MHz,
+          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_7M5Hz
+        );
+
+	usbserial_e : entity work.usbserial_rxd
+	port map
+	(
+		clk_usb => clk_usb, -- 48 MHz USB core clock
+		-- USB interface
+		usb_fpga_dp    => usb_fpga_dp,
+		--usb_fpga_dn    => usb_fpga_dn,
+		usb_fpga_bd_dp => usb_fpga_bd_dp,
+		usb_fpga_bd_dn => usb_fpga_bd_dn,
+		-- debug
+                sync_err       => dbg_sync_err,
+                bit_stuff_err  => dbg_bit_stuff_err,
+                byte_err       => dbg_byte_err,
+		-- output data
+		clk  => clk_uart,  -- UART application clock
 		dv   => uart_rxdv,
 		byte => uart_rxd
 	);
@@ -511,7 +588,7 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-        clk_usb: entity work.clk_25M_100M_7M5_12M_60M
+        E_clk_usb: entity work.clk_25M_100M_7M5_12M_60M
         port map
         (
           CLKI   => clk_25MHz,
@@ -520,24 +597,64 @@ begin
           CLKOS2 => open,    -- clk_12MHz,
           CLKOS3 => open     -- clk_60MHz
         );
-	
+        -- 0-5 clk_usb counter to easier align scoped data
+        process(clk_usb)
+        begin
+          if rising_edge(clk_usb) then
+            if dbg_clk_usb_count(dbg_clk_usb_count'high) = '1' then -- 4
+              dbg_clk_usb_count <= (others => '0');
+            else
+              dbg_clk_usb_count <= dbg_clk_usb_count + 1;
+            end if;
+          end if;
+        end process;
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
-	generic map(
+	generic map
+	(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
 	)
-	port map (
+	port map
+	(
 		clk         => clk_mouse,
 		clk_usb     => clk_usb,
+		-- USB interface
 		usb_reset   => rst,
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
 		usb_dif     => usb_fpga_dp,
-		dbg_step_ps3=> dbg_step_ps3,
-		dbg_step_cmd=> dbg_step_cmd,
-		dbg_btn     => dbg_btn,
-		
+		-- USB debug
+		dbg_step_ps3 => dbg_step_ps3,
+		dbg_step_cmd => dbg_step_cmd,
+		dbg_btn      => dbg_btn,
+		dbg_hid_valid => dbg_hid_valid,
+		-- daisy input
+		chaini_frm  => '0', -- fromistreamdaisy_frm,
+		chaini_irdy => '0', -- fromistreamdaisy_irdy,
+		chaini_data => x"00", -- fromistreamdaisy_data,
+		-- daisy output
+		chaino_frm  => dummy_frommousedaisy_frm,
+		chaino_irdy => dummy_frommousedaisy_irdy,
+		chaino_data => dummy_frommousedaisy_data
+	);
+	end generate; -- USB mouse
+
+	G_mouse_host: if C_mouse_host generate
+	-- linux HOST mouse
+	-- input daisy is interpreted as mouse reports
+	-- passed to GUI module "mouse2rgtr"
+	-- which outputs modified rgtr commands for scopeio control
+	E_hostmouse2daisy: entity hdl4fpga.scopeio_hostmouse2daisy
+	generic map
+	(
+		C_inputs    => inputs,
+		C_tracesfg  => C_tracesfg,
+		vlayout_id  => vlayout_id
+	)
+	port map
+	(
+		clk         => clk_mouse,
 		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,
 		chaini_irdy => fromistreamdaisy_irdy,
@@ -547,7 +664,7 @@ begin
 		chaino_irdy => frommousedaisy_irdy,
 		chaino_data => frommousedaisy_data
 	);
-	end generate; -- usb mouse
+	end generate; -- host mouse
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -571,6 +688,9 @@ begin
 		si_irdy     => frommousedaisy_irdy,
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
+	        --o_rgtr_id   => S_rgtr_id,
+	        --o_rgtr_dv   => S_rgtr_dv,
+	        --o_rgtr_data => S_rgtr_data,
 		input_clk   => clk_adc,
 		input_ena   => S_input_ena,
 		input_data  => samples,

@@ -28,6 +28,7 @@ port
   -- USB core debug
   dbg_step_ps3, dbg_step_cmd: out std_logic_vector(7 downto 0);
   dbg_btn: out std_logic_vector(2 downto 0);
+  dbg_hid_valid : out std_logic;
   -- daisy in
   chaini_frm    : in  std_logic := '0';
   chaini_irdy   : in  std_logic := '1';
@@ -50,6 +51,9 @@ architecture def of scopeio_usbmouse2daisy is
   signal S_valid: std_logic;
   signal R_valid: std_logic_vector(1 downto 0);
   signal S_hid_report: std_logic_vector(31 downto 0);
+  -- TODO move report decoder to separate module.
+  -- this works for one logitech mouse, other models
+  -- may have different report structure
   alias A_mouse_btn : std_logic_vector(2 downto 0) is S_hid_report( 2 downto 0);  
   alias A_mouse_dx  : std_logic_vector(7 downto 0) is S_hid_report(15 downto 8);
   alias A_mouse_dy  : std_logic_vector(7 downto 0) is S_hid_report(23 downto 16);
@@ -64,7 +68,7 @@ begin
   usbhid_host_inst: entity usbhid_host
   generic map
   (
-    C_differential_mode => true, -- try both true/false, one may work
+    C_differential_mode => false, -- try both true/false, one may work
     report_len => 4 -- bytes, don't touch
   )
   port map
@@ -143,5 +147,6 @@ begin
   dbg_step_ps3 <= R_dbg_step_ps3;
   dbg_step_cmd <= R_dbg_step_cmd;
   dbg_btn <= R_dbg_btn;
+  dbg_hid_valid <= R_valid(R_valid'high);
 
 end;

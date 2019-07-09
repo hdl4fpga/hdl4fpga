@@ -352,7 +352,7 @@ begin
     signal R_vertical_scale_offset: T_vertical_scale_offset;
     signal S_vertical_scale_offset: signed(C_vertical_scale_offset'range);
     signal S_vertical_scale_offset_snapped: signed(C_vertical_scale_offset'range);
-    signal R_snap_to_vertical_grid: std_logic;
+    signal R_snap_to_vertical_grid: std_logic_vector(C_inputs-1 downto 0);
     constant C_snap_to_grid_bits: integer := unsigned_num_bits(layout.division_size)-1;
     signal R_after_trace_select: unsigned(6 downto 0);
     signal R_after_trigger_level: unsigned(4 downto 0);
@@ -421,15 +421,18 @@ begin
     S_vertical_scale_offset <= R_vertical_scale_offset(to_integer(R_trace_selected));
     S_vertical_scale_offset_snapped(C_vertical_scale_offset'high downto C_snap_to_grid_bits) <=
       S_vertical_scale_offset(C_vertical_scale_offset'high downto C_snap_to_grid_bits);
-    S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
-      when R_snap_to_vertical_grid = '1'
-      else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
     G_single_segment: if C_num_segments = 1 generate
+      S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
+        when R_snap_to_vertical_grid(0) = '1'
+        else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
       R_trigger_on_screen <= resize(C_click_to_trigger(0) - S_vertical_scale_offset_snapped, C_XY_coordinate_bits);
     end generate;
     -- a screen arithmetic required to set trigger with the left click
     -- depending on the segment where the cursor is we have different y offsets
     G_multiple_segments: if C_num_segments > 1 generate
+    S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
+      when R_snap_to_vertical_grid(to_integer(R_trace_selected)) = '1'
+      else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
     process(clk)
     begin
       if rising_edge(clk) then
@@ -456,10 +459,10 @@ begin
                     R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
                     if R_mouse_btn(0) = '1' then
-                      R_snap_to_vertical_grid <= '0';
+                      R_snap_to_vertical_grid(to_integer(R_trace_selected)) <= '0';
                     else
                       if R_mouse_btn(1) = '1' then
-                        R_snap_to_vertical_grid <= '1';
+                        R_snap_to_vertical_grid(to_integer(R_trace_selected)) <= '1';
                       end if;
                     end if;
                   else
@@ -605,7 +608,7 @@ begin
             R_rgtr_data(F_bitfield(vtoffset_bf,vtoffset_id)(1)
                  downto F_bitfield(vtoffset_bf,vtoffset_id)(0) + C_snap_to_grid_bits) <=
               std_logic_vector(S_APB(C_vertical_scale_offset'high downto C_snap_to_grid_bits));
-            if R_snap_to_vertical_grid = '1' then
+            if R_snap_to_vertical_grid(to_integer(R_trace_selected)) = '1' then
               R_rgtr_data(F_bitfield(vtoffset_bf,vtoffset_id)(0) + C_snap_to_grid_bits-1
                    downto F_bitfield(vtoffset_bf,vtoffset_id)(0)) <= (others => '0'); -- yes snap
             else

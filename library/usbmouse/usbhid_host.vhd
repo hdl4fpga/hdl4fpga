@@ -3,6 +3,9 @@ use IEEE.std_logic_1164.ALL;
 use IEEE.std_logic_arith.ALL;
 use IEEE.std_logic_unsigned.ALL;
 
+-- http://www.usbmadesimple.co.uk/
+-- http://www.zeroplus.com.tw/software_download/USB%202.0%20Signal%20Analysis%20Skills_EN.pdf
+
 library hdl4fpga;
 use hdl4fpga.usb_req_gen_func_pack.ALL; -- we need reverse_any_vector()
 use hdl4fpga.hid_enum_pack.ALL;
@@ -1211,7 +1214,7 @@ if rising_edge(clk) then
 						counter_TRAME:=0;
 						frame_number:=frame_number+1;
 						
-						if interval>bInterval+1 then
+						if interval=bInterval then
 							interval:=x"00";
 							step_ps3:=35;
 						else

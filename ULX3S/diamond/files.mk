@@ -6,8 +6,10 @@ TOP_MODULE_FILE = ../common/ulx3s.vhd
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
   ../scopeio/scopeio.vhd \
+  ../scopeio/usbserial_rxd.vhd \
   ../common/clk_verilog.vhd \
   ../common/clk_25M_100M_7M5_12M_60M.vhd \
+  ../common/clk_200m_60m_48m_12m_7m5.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
@@ -38,12 +40,15 @@ VHDL_LIB_FILES = \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio_xxx.vhd \
   ../../library/scope/scopeiopkg.vhd \
+  ../../library/scope/scopeio_capture.vhd \
   ../../library/scope/scopeio_capture1shot.vhd \
+  ../../library/scope/scopeio_storage.vhd \
   ../../library/scope/scopeio_resize.vhd \
   ../../library/scope/scopeio_video.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
   ../../library/scope/scopeio_usbmouse2daisy.vhd \
+  ../../library/scope/scopeio_hostmouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
   ../../library/usbmouse/usbhid_host.vhd \
   ../../library/usbmouse/usb_req_gen_func_pack.vhd \
@@ -79,6 +84,15 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
+  ../../library/usbserial/usb_serial/usbtest.vhd \
+  ../../library/usbserial/usb_serial/usb_serial.vhd \
+  ../../library/usbserial/usb_serial/usb_transact.vhd \
+  ../../library/usbserial/usb_serial/usb_packet.vhd \
+  ../../library/usbserial/usb_serial/usb_init.vhd \
+  ../../library/usbserial/usb_serial/usb_control.vhd \
+  ../../library/usbserial/usb11_phy_vhdl/usb_phy.vhd \
+  ../../library/usbserial/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
+  ../../library/usbserial/usb11_phy_vhdl/usb_tx_phy.vhd \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \

@@ -274,23 +274,59 @@ begin
 		output_data  => downsample_data);
 
 	emard : if not test generate
-	scopeio_capture_e : entity hdl4fpga.scopeio_capture1shot
+	scopeio_capture1shot_b : block
+		signal storage_reset_addr     : std_logic;
+		signal storage_increment_addr : std_logic;
+		signal storage_mark_t0        : std_logic;
+		signal storage_write          : std_logic;
+		signal storage_addr           : std_logic_vector(capture_addr'range);
+	begin
+	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
+	generic map (
+		deflicker              => true,
+		strobe                 => 1 -- (more->slower) temporary freeze triggered wave for viewing
+	)
 	port map (
-		input_clk     => input_clk,
-		capture_req   => capture_start,
-		capture_rdy   => capture_finish,
-		input_ena     => downsample_dv,
-		input_data    => downsample_data,
-		input_delay   => hz_offset,
+		input_clk              => input_clk,
+		input_ena              => downsample_dv,
 
-		video_vton    => video_vton,
-		trigger_freeze=> trigger_freeze,
-		trigger_shot  => trigger_shot,
+		video_vton             => video_vton,
+		trigger_freeze         => trigger_freeze,
+		trigger_shot           => trigger_shot,
+		-- to storage module
+		storage_reset_addr     => storage_reset_addr,
+		storage_increment_addr => storage_increment_addr,
+		storage_mark_t0        => storage_mark_t0,
+		storage_write          => storage_write,
+		-- from storage module
+		storage_addr           => storage_addr
+	);
+	scopeio_storage_e : entity hdl4fpga.scopeio_storage
+	generic map (
+		align_to_grid          => 1 -- (-left,+right) shift triggered edge 1 pixel to the right
+	)
+	port map (
+		storage_clk            => input_clk,
 
-		captured_clk  => video_clk,
-		captured_addr => capture_addr,
-		captured_data => capture_data,
-		captured_vld  => open);
+		-- from capture1shot module
+		storage_reset_addr     => storage_reset_addr,
+		storage_increment_addr => storage_increment_addr,
+		storage_mark_t0        => storage_mark_t0,
+		storage_write          => storage_write,
+		-- to capture1shot module
+		storage_addr           => storage_addr,
+
+		-- from sample source
+		storage_data           => downsample_data,
+
+		-- from display
+		captured_clk           => video_clk,
+		captured_scroll        => hz_offset,
+		captured_addr          => capture_addr,
+		-- to display
+		captured_data          => capture_data
+	);
+	end block;
 	end generate;
 
 	xxx : if test generate

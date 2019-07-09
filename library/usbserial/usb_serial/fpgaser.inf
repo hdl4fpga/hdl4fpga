@@ -1,0 +1,50 @@
+[Version] 
+Signature="$Windows NT$" 
+Class=Ports 
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318} 
+
+Provider=%JORIS% 
+LayoutFile=layout.inf 
+DriverVer=10/15/1999,5.0.2153.1 
+
+[Manufacturer] 
+%JORIS%=JORIS 
+
+[JORIS] 
+%FPGASER%=Reader, USB\VID_FB9A&PID_FB9A
+
+[Reader_Install.NTx86] 
+;Windows2000 
+
+[DestinationDirs] 
+DefaultDestDir=12 
+Reader.NT.Copy=12 
+
+[Reader.NT] 
+CopyFiles=Reader.NT.Copy 
+AddReg=Reader.NT.AddReg 
+
+[Reader.NT.Copy] 
+usbser.sys 
+
+[Reader.NT.AddReg] 
+HKR,,DevLoader,,*ntkern 
+HKR,,NTMPDriver,,usbser.sys 
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider" 
+
+[Reader.NT.Services] 
+AddService = usbser, 0x00000002, Service_Inst 
+
+[Service_Inst] 
+DisplayName = %Serial.SvcDesc% 
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER 
+StartType = 3 ; SERVICE_DEMAND_START 
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL 
+ServiceBinary = %12%\usbser.sys 
+LoadOrderGroup = Base 
+
+[Strings] 
+JORIS = "Joris" 
+FPGASER = "FPGA Serial" 
+Serial.SvcDesc = "USB Serial emulation driver" 
+
