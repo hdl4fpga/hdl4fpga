@@ -47,18 +47,23 @@ end;
 architecture beh of scopeio_capture is
 
 	constant bram_latency : natural := 2;
-	constant bias : natural := (2**input_delay'length-2**capture_addr'length);
 
-	signal base_addr : unsigned(capture_addr'range);
-	signal rd_addr   : unsigned(capture_addr'range);
-	signal wr_addr   : unsigned(capture_addr'range);
-	signal wr_ena    : std_logic;
-	signal null_data : std_logic_vector(input_data'range);
+	constant capture_size : natural := 2**capture_addr'length;
+	constant delay_size   : natural := 2**input_delay'length;
 
-	signal counter   : unsigned(0 to input_delay'length);
-	signal delay     : unsigned(input_delay'range);
-	constant bias1 : natural := (2**delay'length-2**capture_addr'length);
-	signal valid     : std_logic;
+	signal index   : signed(input_delay'range);
+	signal bound   : signed(input_delay'range);
+	signal base    : signed(capture_addr'range);
+	signal rd_addr : signed(capture_addr'range);
+	signal wr_addr : signed(capture_addr'range);
+	signal wr_ena  : std_logic;
+	signal no_data : std_logic_vector(input_data'range);
+
+	signal cntr    : unsigned(0 to input_delay'length);
+	alias  finish  : std_logic is cntr(0);
+	signal delay   : signed(input_delay'range);
+	signal valid   : std_logic;
+
 
 begin
  
@@ -66,46 +71,23 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if capture_start='0' then
-				base_addr <= unsigned(wr_addr);
-				counter   <= resize(unsigned(input_delay)+bias+1, counter'length);
-				delay     <= resize(unsigned(input_delay), delay'length);
-			elsif counter(0)='0' then
+				base  <= signed(wr_addr);
+				delay <= signed(input_delay);
+				cntr  <= resize((delay_size-capture_size+1)-unsigned(input_delay), cntr'length);
+			elsif cntr(0)='0' then
 				if input_ena='1' then
-					counter <= counter + 1;
+					cntr <= cntr + 1;
 				end if;
 			end if;
 		end if;
 	end process;
-	capture_finish <= counter(0);
 
-	capture_valid_p : process (delay, input_delay, capture_addr, counter)
-		variable idelay : unsigned(delay'range);
-		variable addr   : unsigned(capture_addr'range);
-	begin
-		idelay := resize(unsigned(input_delay), idelay'length);
-		addr   := resize(unsigned(capture_addr), addr'length);
-		valid  <= '0';
-		if counter(0)='1' then
-			if delay < addr and bias < idelay+addr then
-				valid <= '1';
-			elsif delay+unsigned(addr) < bias then
-				valid <=  '0';
-						  -- setif((bias+delay) <= (bias+addr+idelay));
-				--and 
-						  -- setif((idelay+bias+addr) < (delay+bias+2**capture_addr'length));
---			else
---				valid <= setif(delay <= idelay+addr) and setif(addr < (counter-bias));
-			end if;
---			valid <= '1';
---		else
---			if counter(0)='1' then
---				valid <= setif(addr+idelay < 2**input_delay'length);
---			else
---				valid <= setif(addr+idelay < counter);
---			end if;
---			valid <= '0';
-		end if;
-	end process;
+	index <= signed(input_delay)+signed(resize(unsigned(capture_addr), input_delay'length));
+	bound <= signed(resize(cntr, input_delay'length));
+
+	capture_valid_p : valid <=
+		setif(delay <= index and index < delay+capture_size) when finish='1' else '0';
+--		setif(index > -capture_size and delay <= index and index < delay+capture_size+bound);
 
 	valid_e : entity hdl4fpga.align
 	generic map (
@@ -117,6 +99,7 @@ begin
 		do(0) => capture_valid);
 
 	capture_data <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not capture_valid);
+	capture_finish <= finish;
 
 	wr_addr_p : process (input_clk)
 	begin
@@ -126,8 +109,8 @@ begin
 			end if;
 		end if;
 	end process;
-	wr_ena  <= (not counter(0) or not capture_start) and input_ena;
-	rd_addr <= unsigned(capture_addr) + base_addr + resize(unsigned(input_delay), capture_addr'length);
+	wr_ena  <= (not finish or not capture_start) and input_ena;
+	rd_addr <= base + resize(index, rd_addr'length);
 
 --	mem_e : entity hdl4fpga.bram(inference)
 --	port map (
@@ -135,11 +118,11 @@ begin
 --		addra => std_logic_vector(wr_addr),
 --		wea   => wr_ena,
 --		dia   => input_data,
---		doa   => null_data,
+--		doa   => no_data,
 --
 --		clkb  => capture_clk,
 --		addrb => std_logic_vector(rd_addr),
---		dib   => null_data,
+--		dib   => no_data,
 --		dob   => capture_data);
 
 end;
