@@ -57,6 +57,7 @@ architecture beh of scopeio_capture is
 
 	signal counter   : unsigned(0 to input_delay'length);
 	signal delay     : unsigned(input_delay'range);
+	constant bias1 : natural := (2**delay'length-2**capture_addr'length);
 	signal valid     : std_logic;
 
 begin
@@ -66,7 +67,7 @@ begin
 		if rising_edge(input_clk) then
 			if capture_start='0' then
 				base_addr <= unsigned(wr_addr);
-				counter   <= resize(bias+1-unsigned(input_delay), counter'length);
+				counter   <= resize(unsigned(input_delay)+bias+1, counter'length);
 				delay     <= resize(unsigned(input_delay), delay'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
@@ -84,21 +85,25 @@ begin
 		idelay := resize(unsigned(input_delay), idelay'length);
 		addr   := resize(unsigned(capture_addr), addr'length);
 		valid  <= '0';
-		if bias < delay then
-			if counter(0)='1' then
-				valid <= setif((bias+delay) <= (bias+addr+idelay));
-				--and setif((idelay+bias+addr) < (delay+bias+2**capture_addr'length));
-			else
-				valid <= setif(delay <= idelay+addr) and setif(addr < (counter-bias));
+		if counter(0)='1' then
+			if delay < addr and bias < idelay+addr then
+				valid <= '1';
+			elsif delay+unsigned(addr) < bias then
+				valid <=  '0';
+						  -- setif((bias+delay) <= (bias+addr+idelay));
+				--and 
+						  -- setif((idelay+bias+addr) < (delay+bias+2**capture_addr'length));
+--			else
+--				valid <= setif(delay <= idelay+addr) and setif(addr < (counter-bias));
 			end if;
 --			valid <= '1';
-		else
-			if counter(0)='1' then
-				valid <= setif(addr+idelay < 2**input_delay'length);
-			else
-				valid <= setif(addr+idelay < counter);
-			end if;
-			valid <= '0';
+--		else
+--			if counter(0)='1' then
+--				valid <= setif(addr+idelay < 2**input_delay'length);
+--			else
+--				valid <= setif(addr+idelay < counter);
+--			end if;
+--			valid <= '0';
 		end if;
 	end process;
 
