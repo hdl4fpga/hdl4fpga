@@ -86,8 +86,8 @@ begin
 	bound <= signed(resize(cntr, input_delay'length));
 
 	capture_valid_p : valid <=
-		setif(delay <= index and index < delay+capture_size) when finish='1' else '0';
---		setif(index > -capture_size and delay <= index and index < delay+capture_size+bound);
+		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when finish='1' else
+		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
 
 	valid_e : entity hdl4fpga.align
 	generic map (

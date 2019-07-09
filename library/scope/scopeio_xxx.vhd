@@ -258,7 +258,7 @@ begin
 	triggers_modes_b : block
 	begin
 		capture_start <= not capture_finish or video_vton or not trigger_shot;
-		scaler_sync <= not capture_start;
+		scaler_sync   <= not capture_start;
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
