@@ -282,8 +282,8 @@ begin
 	begin
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
-		C_trigger_deflicker    => true,
-		C_auto_trigger_wait    => 0
+		deflicker              => true,
+		strobe                 => 1 -- (more->slower) temporary freeze triggered wave for viewing
 	)
 	port map (
 		input_clk              => input_clk,
@@ -301,6 +301,9 @@ begin
 		storage_addr           => storage_addr
 	);
 	scopeio_storage_e : entity hdl4fpga.scopeio_storage
+	generic map (
+		align_to_grid          => 1 -- (-left,+right) shift triggered edge 1 pixel to the right
+	)
 	port map (
 		storage_clk            => input_clk,
 
