@@ -24,11 +24,11 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
-        constant C_mouse_ps2: boolean := false;
-        constant C_mouse_usb: boolean := true;
-        constant C_mouse_host: boolean := true;
+        constant C_mouse_ps2: boolean := true;
+        constant C_mouse_usb: boolean := false;
+        constant C_mouse_host: boolean := false;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
-        constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
+        constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 1; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
@@ -37,7 +37,7 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
