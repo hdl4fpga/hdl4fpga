@@ -144,7 +144,7 @@ begin
 						-- in the next rearming. This is a LUT saver,
 						-- traces will still shake a bit.
 						if S_trigger_edge = '1' and input_ena = '1' then
-							last_wr_addr <= storage_addr;
+							last_wr_addr <= unsigned(storage_addr);
 						end if;
 					end if;
 					-- reset frame counter for temporary
