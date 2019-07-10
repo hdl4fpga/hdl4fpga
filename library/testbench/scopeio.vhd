@@ -41,21 +41,29 @@ architecture scopeio of testbench is
 	constant sample_size : natural := 14;
 
 	function sintab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : integer)
-		return std_logic_vector is
-		variable y   : real;
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+		constant base : integer;
+		constant size : natural)
+		return integer_vector is
+		variable offset : natural;
+		variable retval : integer_vector(0 to size-1);
 	begin
-		for i in 0 to x1-x0 loop
-			y := 127.0*sin(2.0*MATH_PI*real((i+x0))/64.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
+		for i in 0 to size-1 loop
+			offset := base + i;
+			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
+			retval(i) := 0;
+			if i=0 then
+				retval(i) := 127;
+			end if;
+			if i=735 then
+				retval(i) := -63;
+			end if;
 		end loop;
-		return aux;
+		return retval;
 	end;
 
-	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal input_addr : unsigned(11-1 downto 0) :=(others => '0');
+	signal input_ena  : std_logic := '1';
+	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
 	constant baudrate      : natural := 115200;
@@ -111,21 +119,33 @@ begin
 	sys_clk <= not sys_clk after 20 ns;
 	vga_clk <= not vga_clk after 25 ns;
 
+	input_ena <= uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+			if input_ena='1' then
+				input_addr <= input_addr + 1;
+			end if;
 		end if;
 	end process;
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => sintab(-1024+256, 1023+256, sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length-1), sample_size))
 	port map (
 		clk  => sys_clk,
-		addr => input_addr,
+		addr => std_logic_vector(input_addr),
 		data => sample);
+
+	ena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => sys_clk,
+		di(0) => input_ena,
+		do(0) => input_dv);
 
 	process (sys_clk)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
@@ -193,6 +213,7 @@ begin
 		so_data     => so_data,
 		input_clk   => sys_clk,
 		input_data  => sample,
+		input_ena   => input_dv,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
