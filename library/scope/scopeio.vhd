@@ -104,7 +104,7 @@ architecture beh of scopeio is
 	signal rgtr_dv            : std_logic;
 	signal rgtr_data          : std_logic_vector(32-1 downto 0);
 
-	signal ampsample_ena      : std_logic;
+	signal ampsample_dv      : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
@@ -115,7 +115,6 @@ architecture beh of scopeio is
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
 	constant capture_bits     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
---	constant capture_bits     : natural := 8;
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;
@@ -223,15 +222,15 @@ begin
 				gains => vt_gains)
 			port map (
 				input_clk     => input_clk,
-				input_ena     => input_ena,
+				input_dv      => input_ena,
 				input_sample  => input_sample,
 				gain_id       => gain_id,
-				output_ena    => output_ena(i),
+				output_dv     => output_ena(i),
 				output_sample => ampsample_data(sample_range));
 
 		end generate;
 
-		ampsample_ena <= output_ena(0);
+		ampsample_dv <= output_ena(0);
 	end block;
 
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -239,13 +238,16 @@ begin
 		inputs => inputs)
 	port map (
 		input_clk      => input_clk,
-		input_ena      => ampsample_ena,
+		input_dv       => ampsample_dv,
 		input_data     => ampsample_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
+--		trigger_chanid => "0", --trigger_chanid,
+--		trigger_level  => b"00_0010",
+--		trigger_edge   => '0',
 		trigger_shot   => trigger_shot,
-		output_ena     => triggersample_dv,
+		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
 
 	resizedsample_dv <= triggersample_dv;
@@ -340,6 +342,7 @@ begin
 		input_dv       => downsample_dv,
 		input_data     => downsample_data,
 		input_delay    => hz_offset,
+--		input_delay    => "00_0000_0000_0000",
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,

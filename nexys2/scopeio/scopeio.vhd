@@ -76,7 +76,7 @@ architecture beh of nexys2 is
 
 	constant baudrate : natural := 115200;
 
-	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal input_addr : unsigned(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
 	signal uart_rxc  : std_logic;
@@ -144,18 +144,17 @@ begin
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+			input_addr <= input_addr + 1;
 		end if;
 	end process;
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => sintab(-1024+256, 1023+256, sample_size))
---		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
 	port map (
 		clk  => sys_clk,
-		addr => input_addr,
+		addr => std_logic_vector(input_addr),
 		data => sample);
 
 	uart_rxc <= sys_clk;

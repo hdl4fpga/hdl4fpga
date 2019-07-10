@@ -55,12 +55,12 @@ architecture beh of scopeio_capture is
 	signal bound   : signed(input_delay'range);
 	signal base    : signed(capture_addr'range);
 	signal rd_addr : signed(capture_addr'range);
-	signal wr_addr : signed(capture_addr'range);
+	signal wr_addr : signed(capture_addr'range) := (others => '0');
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
-	signal cntr    : unsigned(0 to input_delay'length);
-	alias  finish  : std_logic is cntr(0);
+	signal cntr    : signed(0 to input_delay'length) := (others => '1');
+	alias  running  : std_logic is cntr(0);
 	signal delay   : signed(input_delay'range);
 	signal valid   : std_logic;
 
@@ -73,8 +73,8 @@ begin
 			if capture_start='0' then
 				base  <= signed(wr_addr);
 				delay <= signed(input_delay);
-				cntr  <= resize((delay_size-capture_size+1)-unsigned(input_delay), cntr'length);
-			elsif cntr(0)='0' then
+				cntr  <= '1' & ((delay_size-capture_size)-signed(input_delay));
+			elsif cntr(0)='1' then
 				if input_dv='1' then
 					cntr <= cntr + 1;
 				end if;
@@ -86,7 +86,7 @@ begin
 	bound <= signed(resize(cntr, input_delay'length));
 
 	capture_valid_p : valid <=
-		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when finish='1' else
+		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
 
 	valid_e : entity hdl4fpga.align
@@ -98,7 +98,7 @@ begin
 		di(0) => '1', --valid,
 		do(0) => capture_dv);
 
-	capture_finish <= finish;
+	capture_finish <= not running;
 
 	wr_addr_p : process (input_clk)
 	begin
@@ -108,7 +108,7 @@ begin
 			end if;
 		end if;
 	end process;
-	wr_ena  <= (not finish or not capture_start) and input_dv;
+	wr_ena  <= (running or not capture_start) and input_dv;
 	rd_addr <= base + resize(index, rd_addr'length);
 
 	mem_e : entity hdl4fpga.bram(inference)

@@ -34,10 +34,10 @@ entity scopeio_amp is
 		lat : natural := 0);
 	port (
 		input_clk     : in  std_logic;
-		input_ena     : in  std_logic;
+		input_dv      : in  std_logic;
 		input_sample  : in  std_logic_vector;
 		gain_id       : in  std_logic_vector;
-		output_ena    : out std_logic;
+		output_dv     : out std_logic;
 		output_sample : out std_logic_vector);
 end;
 
@@ -52,13 +52,14 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			if input_ena='1' then
-				p <= b*g;
+			if input_dv='1' then
 				b <= signed(input_sample);
+				p <= b*g;
+				g <= to_signed(-gains(to_integer(unsigned(gain_id))),g'length);
 			end if;
-			g <= to_signed(-gains(to_integer(unsigned(gain_id))),g'length);
 		end if;
 	end process;
 	output_sample <= std_logic_vector(resize(p(0 to input_sample'length), input_sample'length));
-	output_ena    <= input_ena;
+	output_dv <= input_dv;
+
 end;

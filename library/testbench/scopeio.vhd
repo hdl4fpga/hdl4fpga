@@ -54,7 +54,7 @@ architecture scopeio of testbench is
 			if i=0 then
 				retval(i) := 127;
 			end if;
-			if i=735 then
+			if i=88 then
 				retval(i) := -63;
 			end if;
 		end loop;
@@ -132,7 +132,7 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length-1), sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => std_logic_vector(input_addr),
@@ -193,6 +193,7 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		test => true,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_1_1",

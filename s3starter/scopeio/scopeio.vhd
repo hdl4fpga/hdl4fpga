@@ -132,7 +132,7 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
-	input_ena <= uart_ena;
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
@@ -145,7 +145,7 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length-1), sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,

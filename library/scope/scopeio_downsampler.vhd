@@ -45,7 +45,7 @@ begin
 		data => factor);
 
 	process (input_clk)
-		variable scaler : unsigned(factor'range);
+		variable scaler : unsigned(factor'range) := (others => '0');
 	begin
 		if rising_edge(input_clk) then
 			if scaler_sync='1' then
@@ -64,13 +64,12 @@ begin
 		end if;
 	end process;
 
-	lat_e : entity hdl4fpga.align
+	latency_e : entity hdl4fpga.align
 	generic map (
 		n => input_data'length,
 		d => (1 to input_data'length => 1))
 	port map (
 		clk => input_clk,
-		ena => input_dv,
 		di  => input_data,
 		do  => output_data);
 end;
