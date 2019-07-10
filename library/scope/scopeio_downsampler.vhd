@@ -70,6 +70,7 @@ begin
 		d => (1 to input_data'length => 1))
 	port map (
 		clk => input_clk,
+		ena => input_dv,
 		di  => input_data,
 		do  => output_data);
 end;

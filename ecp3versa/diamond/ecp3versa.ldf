@@ -245,9 +245,6 @@
         <Source name="../../library/scope/scopeio_capture.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_xxx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/scope/scopeio_resize.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -255,6 +252,12 @@
             <Options/>
         </Source>
         <Source name="../../library/scope/scopeio_video.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_storage.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

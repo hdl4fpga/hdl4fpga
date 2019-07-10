@@ -52,19 +52,13 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			p <= b*g;
+			if input_ena='1' then
+				p <= b*g;
+				b <= signed(input_sample);
+			end if;
 			g <= to_signed(-gains(to_integer(unsigned(gain_id))),g'length);
-			b <= signed(input_sample);
 		end if;
 	end process;
 	output_sample <= std_logic_vector(resize(p(0 to input_sample'length), input_sample'length));
-
-	lat_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 => lat+2))
-	port map (
-		clk   => input_clk,
-		di(0) => input_ena,
-		do(0) => output_ena);
+	output_ena    <= input_ena;
 end;

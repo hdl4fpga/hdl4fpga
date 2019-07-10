@@ -47,7 +47,8 @@ entity scopeio_segment is
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
 
-		samples       : in  std_logic_vector;
+		sample_dv     : in  std_logic;
+		sample_data   : in  std_logic_vector;
 
 		hz_dot        : out std_logic;
 		vt_dot        : out std_logic;
@@ -218,10 +219,11 @@ begin
 		constant offset_latency  : natural := 1;
 		constant tracer_latency  : natural := 4;
 
-		subtype sample is std_logic_vector(samples'length/inputs-1 downto 0);
+		subtype sample is std_logic_vector(sample_data'length/inputs-1 downto 0);
 
-		signal samples2  : std_logic_vector(samples'range);
+		signal samples2  : std_logic_vector(sample_data'range);
 		signal delayed_y : std_logic_vector(y'range);
+		signal trace_on  : std_logic;
 		signal trace_ena : std_logic;
 	begin
 
@@ -241,15 +243,15 @@ begin
 		port map (
 			clk   => video_clk,
 			di(0) => grid_on,
-			do(0) => trace_ena);
+			do(0) => trace_on);
 
 		offset_p : process (video_clk)
-			variable samples1 : unsigned(samples'length-1 downto 0);
+			variable samples1 : unsigned(sample_data'length-1 downto 0);
 			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
 			variable sign     : std_logic;
 		begin
 			if rising_edge(video_clk) then
-				samples1 := unsigned(samples);
+				samples1 := unsigned(sample_data);
 				offsets  := unsigned(vt_offsets);
 				for i in 0 to inputs-1 loop
 					sign := samples1(sample'left) xor offsets(sample'left);
@@ -266,6 +268,7 @@ begin
 			end if;
 		end process;
 
+		trace_ena <= trace_on and '1'; --sample_dv;
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
 			latency => latency-(input_latency+offset_latency),

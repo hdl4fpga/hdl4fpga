@@ -121,8 +121,9 @@ architecture beh of scopeio is
 	signal trigger_shot       : std_logic;
 	signal scaler_sync        : std_logic;
 
-	signal capture_finish        : std_logic;
-	signal capture_start        : std_logic;
+	signal capture_finish     : std_logic;
+	signal capture_start      : std_logic;
+	signal capture_dv         : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -255,12 +256,6 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	triggers_modes_b : block
-	begin
-		capture_start <= not capture_finish or video_vton or not trigger_shot;
-		scaler_sync   <= not capture_start;
-	end block;
-
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
@@ -327,7 +322,14 @@ begin
 		captured_data          => capture_data
 	);
 	end block;
+	capture_dv <= '1';
 	end generate;
+
+	triggers_modes_b : block
+	begin
+		capture_start <= not capture_finish or not trigger_shot or video_vton; -- or not downsample_dv;
+		scaler_sync   <= not capture_start;
+	end block;
 
 	xxx : if test generate
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
@@ -335,14 +337,14 @@ begin
 		input_clk      => input_clk,
 		capture_start  => capture_start,
 		capture_finish => capture_finish,
-		input_ena      => downsample_dv,
+		input_dv       => downsample_dv,
 		input_data     => downsample_data,
 		input_delay    => hz_offset,
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,
 		capture_data   => capture_data,
-		capture_valid  => open);
+		capture_dv     => capture_dv);
 	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
@@ -382,6 +384,7 @@ begin
 
 		capture_addr     => capture_addr,
 		capture_data     => capture_data,
+		capture_dv       => capture_dv,
 
 		pointer_x        => pointer_x,
 		pointer_y        => pointer_y,
