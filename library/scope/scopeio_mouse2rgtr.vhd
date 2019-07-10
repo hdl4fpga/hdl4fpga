@@ -365,7 +365,7 @@ begin
     constant C_trigger_level: signed(triggerlevel_maxsize-1 downto 0) := (others => '0');
     type T_trigger_level is array (0 to C_inputs-1) of signed(C_trigger_level'range);
     signal R_trigger_level: T_trigger_level;
-    signal R_trigger_edge: std_logic;
+    signal R_trigger_edge: std_logic_vector(C_inputs-1 downto 0);
     signal R_trigger_freeze: std_logic;
     signal R_trigger_on_screen: signed(C_XY_coordinate_bits-1 downto 0);
     -- FIXME trace color list should not be hardcoded
@@ -468,7 +468,7 @@ begin
                   else
                     if R_mouse_btn(0) = '0' and R_prev_mouse_btn(0) = '1' then
                       -- after left click, directy set the trigger level
-                      R_A(R_A'high)   <= R_trigger_edge;
+                      R_A(R_A'high)   <= R_trigger_edge(to_integer(R_trace_selected));
                       R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
                       R_A(R_A'high-2) <= R_trigger_freeze;
                       R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
@@ -500,7 +500,7 @@ begin
                     end if;
                     -- click wheel to change edge, right click to freeze
                     -- HACK: using free bits in the adder to toggle 0/1
-                    R_A(R_A'high)   <= R_trigger_edge;
+                    R_A(R_A'high)   <= R_trigger_edge(to_integer(R_trace_selected));
                     R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
                     R_A(R_A'high-2) <= R_trigger_freeze;
                     R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
@@ -526,7 +526,7 @@ begin
                   else -- click to change trigger edge/freeze
                     if R_mouse_btn(1) = '1' or R_mouse_btn(2) = '1' then
                       -- HACK: using free bits in the adder to toggle 0/1
-                      R_A(R_A'high)   <= R_trigger_edge;
+                      R_A(R_A'high)   <= R_trigger_edge(to_integer(R_trace_selected));
                       R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
                       R_A(R_A'high-2) <= R_trigger_freeze;
                       R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
@@ -558,8 +558,12 @@ begin
                     R_action_id <= C_action_vertical_scale_offset_change;
                   when 32 =>
                     -- trigger on new channel (no value change)
+                    R_A(R_A'high)   <= R_trigger_edge(to_integer(R_trace_selected));
+                    R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
+                    R_A(R_A'high-2) <= R_trigger_freeze;
+                    R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
                     R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
-                    R_B(C_trigger_level'range) <= (others => '0'); -- no change
+                    R_B <= (others => '0'); -- no change
                     R_action_id <= C_action_trigger_level_change;
                   when 48 =>
                     -- set lower left corner box color as trace selected
@@ -653,7 +657,7 @@ begin
             R_rgtr_data(F_bitfield(trigger_bf,trigger_ena_id)(0)) <=
               S_APB(S_APB'high-2);
             R_trigger_level(to_integer(R_trace_selected)) <= S_APB(C_trigger_level'range);
-            R_trigger_edge <= S_APB(S_APB'high);
+            R_trigger_edge(to_integer(R_trace_selected)) <= S_APB(S_APB'high);
             R_trigger_freeze <= S_APB(S_APB'high-2);
           when C_action_horizontal_scale_offset_change =>
             R_rgtr_dv <= '1';
