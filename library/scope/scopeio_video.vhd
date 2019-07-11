@@ -67,6 +67,7 @@ entity scopeio_video is
 
 		capture_addr  : out std_logic_vector;
 		capture_data  : in  std_logic_vector;
+		capture_dv    : in  std_logic;
 
 		pointer_x     : in  std_logic_vector;
 		pointer_y     : in  std_logic_vector;
@@ -458,7 +459,8 @@ begin
 				vt_on         => vt_on,
 				grid_on       => grid_on,
 
-				samples       => capture_data,
+				sample_dv     => capture_dv,
+				sample_data   => capture_data,
 				trigger_level => trigger_level,
 				grid_dot      => grid_dot,
 				hz_dot        => hz_dot,

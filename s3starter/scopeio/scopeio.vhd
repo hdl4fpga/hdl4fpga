@@ -62,7 +62,9 @@ architecture beh of s3starter is
 		return retval;
 	end;
 
-	signal input_addr : std_logic_vector(10-1 downto 0);
+	signal input_addr : std_logic_vector(14-1 downto 0);
+	signal input_ena  : std_logic := '1';
+	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
 	constant baudrate      : natural := 115200;
@@ -130,11 +132,12 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
+			if input_ena='1' then
 				input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-			if uart_ena='1' then
 			end if;
 		end if;
 	end process;
@@ -142,11 +145,19 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length-1), sample_size))
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
 		data => sample);
+	ena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => sys_clk,
+		di(0) => input_ena,
+		do(0) => input_dv);
 
 	process (sys_clk)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
@@ -260,6 +271,7 @@ begin
 		si_data     => si_data,
 		so_data     => so_data,
 		input_clk   => sys_clk,
+		input_ena   => input_dv,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,

@@ -105,7 +105,7 @@ architecture beh of scopeio is
 	signal rgtr_dv            : std_logic;
 	signal rgtr_data          : std_logic_vector(32-1 downto 0);
 
-	signal ampsample_ena      : std_logic;
+	signal ampsample_dv      : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
@@ -115,14 +115,16 @@ architecture beh of scopeio is
 	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
+
 	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;
-	signal scaler_sync        : std_logic;
+	signal downsample_shot    : std_logic;
 
-	signal capture_finish        : std_logic;
-	signal capture_start        : std_logic;
+	signal capture_shot       : std_logic;
+	signal capture_end        : std_logic;
+	signal capture_dv         : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -222,15 +224,15 @@ begin
 				gains => vt_gains)
 			port map (
 				input_clk     => input_clk,
-				input_ena     => input_ena,
+				input_dv      => input_ena,
 				input_sample  => input_sample,
 				gain_id       => gain_id,
-				output_ena    => output_ena(i),
+				output_dv     => output_ena(i),
 				output_sample => ampsample_data(sample_range));
 
 		end generate;
 
-		ampsample_ena <= output_ena(0);
+		ampsample_dv <= output_ena(0);
 	end block;
 
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -238,13 +240,16 @@ begin
 		inputs => inputs)
 	port map (
 		input_clk      => input_clk,
-		input_ena      => ampsample_ena,
+		input_dv       => ampsample_dv,
 		input_data     => ampsample_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
+--		trigger_chanid => "0",             -- Debug purpose
+--		trigger_level  => b"00_0010",      -- Debug purpose
+--		trigger_edge   => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
-		output_ena     => triggersample_dv,
+		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
 
 	resizedsample_dv <= triggersample_dv;
@@ -255,22 +260,17 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	triggers_modes_b : block
-	begin
-		capture_start <= not capture_finish or video_vton or not trigger_shot;
-		scaler_sync   <= not capture_start;
-	end block;
-
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
 	port map (
 		factor_id    => hz_scale,
 		input_clk    => input_clk,
-		scaler_sync  => scaler_sync,
 		input_dv     => resizedsample_dv,
+		input_shot   => trigger_shot,
 		input_data   => resizedsample_data,
-		output_dv    => downsample_dv ,
+		output_dv    => downsample_dv,
+		output_shot  => downsample_shot,
 		output_data  => downsample_data);
 
 	emard : if not test generate
@@ -327,22 +327,30 @@ begin
 		captured_data          => capture_data
 	);
 	end block;
+	capture_dv <= '1';
 	end generate;
+
+	triggers_modes_b : block
+	begin
+		capture_shot <= downsample_shot and not video_vton;
+--		capture_shot <= capture_end and downsample_shot;  --Debug purpose
+	end block;
 
 	xxx : if test generate
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,
-		capture_start  => capture_start,
-		capture_finish => capture_finish,
-		input_ena      => downsample_dv,
+		capture_shot   => capture_shot,
+		capture_end    => capture_end,
+		input_dv       => downsample_dv,
 		input_data     => downsample_data,
 		input_delay    => hz_offset,
+--		input_delay    => b"00_0000_0000_0000",  --Debug purpose
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,
 		capture_data   => capture_data,
-		capture_valid  => open);
+		capture_dv     => capture_dv);
 	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
@@ -382,6 +390,7 @@ begin
 
 		capture_addr     => capture_addr,
 		capture_data     => capture_data,
+		capture_dv       => capture_dv,
 
 		pointer_x        => pointer_x,
 		pointer_y        => pointer_y,

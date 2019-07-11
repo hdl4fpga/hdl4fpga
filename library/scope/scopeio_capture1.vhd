@@ -32,8 +32,8 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_capture is
 	port (
 		input_clk      : in  std_logic;
-		capture_shot  : in  std_logic;
-		capture_end : out std_logic;
+		capture_shot   : in  std_logic;
+		capture_end    : out std_logic;
 		input_dv       : in  std_logic := '1';
 		input_data     : in  std_logic_vector;
 		input_delay    : in  std_logic_vector;
@@ -46,98 +46,105 @@ end;
 
 architecture beh of scopeio_capture is
 
+	constant delay_size   : natural := 2**input_delay'length;
+
 	constant bram_latency : natural := 2;
 
 	constant capture_size : natural := 2**capture_addr'length;
-	constant delay_size   : natural := 2**input_delay'length;
 
-	signal index   : signed(input_delay'range);
-	signal bound   : signed(input_delay'range);
-	signal base    : signed(capture_addr'range);
-	signal rd_addr : signed(capture_addr'range);
-	signal wr_addr : signed(capture_addr'range); -- := (others => '0'); -- Debug purpose
+	signal capture_req : std_logic;
+
+	signal wr_addr : std_logic_vector(capture_addr'range); -- := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
-	signal running : std_logic;
-	signal delay   : signed(input_delay'range);
 	signal valid   : std_logic;
 
 
 begin
  
-	capture_addr_p : process (input_clk)
-		variable cntr : signed(0 to input_delay'length); -- := (others => '1'); -- Debug purpose
+	valid_b : block
+	begin
+		capture_valid_p : valid <=
+			setif(unsigned(capture_addr) < unsigned(wr_addr));
+
+		valid_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => bram_latency))
+		port map (
+			clk   => capture_clk,
+			di(0) => '1', --valid,
+			do(0) => capture_dv);
+
+	--	For debugging
+--		debug_b : block
+--			signal di : std_logic_vector(capture_data'range);
+--		begin
+--			di <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not valid);
+--			xxx_e : entity hdl4fpga.align
+--			generic map (
+--				n => capture_data'length,
+--				d => (0 to capture_data'length-1 => bram_latency))
+--			port map (
+--				clk => capture_clk,
+--				di  => di,
+--				do  => capture_data);
+--		end block;
+
+	end block;
+
+
+	delay_p : process (input_clk)
+		variable cntr : unsigned(input_delay'length downto 0);
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if capture_shot='1' then
-					cntr  <= '1' & ((delay_size-capture_size)-signed(input_delay));
-					base  <= wr_addr;
-					delay <= signed(input_delay);
-				elsif cntr(0)='1' then
-					cntr <= cntr + 1;
+				if capture_shot='0' then
+					cntr := unsigned(input_delay);
+				elsif cntr(cntr'left)='0' then
+					cntr := cntr - 1;
 				end if;
 			end if;
-			bound   <= signed(resize(cntr, input_delay'length));
-			running <= cntr(0);
+			capture_req <= cntr(0);
 		end if;
 	end process;
 
-	index <= signed(input_delay)+signed(resize(unsigned(capture_addr), input_delay'length));
 
-	capture_valid_p : valid <=
-		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
-		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
-
-	valid_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => bram_latency))
-	port map (
-		clk   => capture_clk,
-		di(0) => '1', --valid,
-		do(0) => capture_dv);
-
-	capture_end <= not running;
-
-	wr_addr_p : process (input_clk)
+	storage_b : block
+		signal capture_req : std_logic;
+		signal capture_rdy : std_logic;
 	begin
-		if rising_edge(input_clk) then
-			if input_dv='1' then
-				wr_addr := wr_addr + 1;
+
+		capture_addr_p : process (input_clk)
+			variable cntr : signed(capture_addr'length downto 0); -- := (others => '1'); -- Debug purpose
+		begin
+			if rising_edge(input_clk) then
+				if input_dv='1' then
+					if capture_req='0' then
+						cntr  := to_signed(-capture_size, cntr'length);
+					elsif cntr(cntr'left)='1' then
+						cntr := cntr + 1;
+					end if;
+				end if;
+				wr_addr <= std_logic_vector(cntr(wr_addr'range));
+				wr_ena  <= cntr(capture_addr'length);
 			end if;
-		end if;
-	end process;
-	wr_ena  <= running and input_dv;
-	rd_addr <= base + resize(index, rd_addr'length);
+		end process;
+		capture_rdy <= wr_ena;
 
-	mem_e : entity hdl4fpga.bram(inference)
-	port map (
-		clka  => input_clk,
-		addra => std_logic_vector(wr_addr),
-		wea   => wr_ena,
-		dia   => input_data,
-		doa   => no_data,
+		mem_e : entity hdl4fpga.bram(inference)
+		port map (
+			clka  => input_clk,
+			addra => wr_addr,
+			wea   => wr_ena,
+			dia   => input_data,
+			doa   => no_data,
 
-		clkb  => capture_clk,
-		addrb => std_logic_vector(rd_addr),
-		dib   => no_data,
-		dob   => capture_data);
+			clkb  => capture_clk,
+			addrb => capture_addr,
+			dib   => no_data,
+			dob   => capture_data);
 
---	For debugging
---	debug_b : block
---		signal di : std_logic_vector(capture_data'range);
---	begin
---		di <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not valid);
---		xxx_e : entity hdl4fpga.align
---		generic map (
---			n => capture_data'length,
---			d => (0 to capture_data'length-1 => bram_latency))
---		port map (
---			clk => capture_clk,
---			di  => di,
---			do  => capture_data);
---	end block;
-
+	end block;
 end;

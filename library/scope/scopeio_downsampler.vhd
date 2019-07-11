@@ -11,10 +11,11 @@ entity scopeio_downsampler is
 	port (
 		factor_id     : in  std_logic_vector;
 		input_clk     : in  std_logic;
-		scaler_sync   : in  std_logic;
 		input_dv      : in  std_logic;
 		input_data    : in  std_logic_vector;
+		input_shot    : in  std_logic;
 		output_dv     : out std_logic;
+		output_shot   : out std_logic;
 		output_data   : out std_logic_vector);
 end;
 
@@ -44,13 +45,13 @@ begin
 		addr => factor_id,
 		data => factor);
 
-	process (input_clk)
-		variable scaler : unsigned(factor'range);
+	scaler_p : process (input_clk)
+		variable scaler : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
-			if scaler_sync='1' then
+			if input_shot='1' then
 				scaler    := (others => '1');
-				output_dv <= '1';
+				output_dv <= input_dv;
 			elsif input_dv='1' then
 				if scaler(0)='1' then
 					scaler := unsigned(factor);
@@ -64,7 +65,7 @@ begin
 		end if;
 	end process;
 
-	lat_e : entity hdl4fpga.align
+	datalatency_e : entity hdl4fpga.align
 	generic map (
 		n => input_data'length,
 		d => (1 to input_data'length => 1))
@@ -72,4 +73,14 @@ begin
 		clk => input_clk,
 		di  => input_data,
 		do  => output_data);
+
+	shotlatency_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (1 to 1 => 1))
+	port map (
+		clk   => input_clk,
+		ena   => input_dv,
+		di(0) => input_shot,
+		do(0) => output_shot);
 end;
