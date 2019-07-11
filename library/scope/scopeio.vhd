@@ -35,6 +35,7 @@ entity scopeio is
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
+		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
 
 		inputs      : natural;
 		vt_gains    : natural_vector := (
@@ -114,7 +115,8 @@ architecture beh of scopeio is
 	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
-	constant capture_bits     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+
+	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;

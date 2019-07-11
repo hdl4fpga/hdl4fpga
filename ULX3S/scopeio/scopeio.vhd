@@ -28,6 +28,7 @@ architecture beh of ulx3s is
         constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 wheel mouse
         constant C_mouse_usb:  boolean := false; -- USB mouse soft-core, unreliable
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_usbtest:    boolean := false; -- USB test for host mode, no function yet
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -204,6 +205,7 @@ begin
         clk <= clk_pll(1); -- 25 MHz pulse sinewave function
         --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
         clk_adc <= clk_pll(1); -- 40/75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+        --clk_adc <= clk_usb; -- 7.5/48 MHz
         clk_uart <= clk_pll(1); -- 40/75 MHz same as vga_clk
         clk_mouse <= clk_pll(1); -- 40/75 MHz same as vga_clk
         -- 1920x1080
@@ -514,6 +516,41 @@ begin
 	);
 	end generate;
 
+	G_usb_host_test: if C_usbtest generate
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '0'; -- D+ pulldown for USB1.1 host mode
+	usb_fpga_pu_dn <= '0'; -- D- pulldown for USB1.1 host mode
+
+        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  open,    -- clk_60MHz,
+          CLKOS       =>  open,    -- clk_48MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  clk_usb  -- clk_7M5Hz
+        );
+
+	usbserial_e : entity work.usbserial_rxd
+	port map
+	(
+		clk_usb => clk_usb, -- 48 MHz USB core clock
+		-- USB interface
+		usb_fpga_dp    => usb_fpga_dp,
+		--usb_fpga_dn    => usb_fpga_dn,
+		usb_fpga_bd_dp => usb_fpga_bd_dp,
+		usb_fpga_bd_dn => usb_fpga_bd_dn,
+		-- debug
+                sync_err       => dbg_sync_err,
+                bit_stuff_err  => dbg_bit_stuff_err,
+                byte_err       => dbg_byte_err,
+		-- output data
+		clk  => clk_uart,  -- UART application clock
+		dv   => open,
+		byte => open
+	);
+	end generate;
+
 	led <= uart_rxd;
 
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
@@ -671,6 +708,7 @@ begin
 	        inputs           => inputs, -- number of input channels
 	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 		vlayout_id       => vlayout_id,
+		min_storage      => 4096, -- samples
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
                 default_gridbg   => b"000000",
