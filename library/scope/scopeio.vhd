@@ -118,10 +118,10 @@ architecture beh of scopeio is
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;
-	signal scaler_sync        : std_logic;
+	signal downsample_shot    : std_logic;
 
-	signal capture_finish     : std_logic;
-	signal capture_start      : std_logic;
+	signal capture_shot       : std_logic;
+	signal capture_end        : std_logic;
 	signal capture_dv         : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -243,9 +243,9 @@ begin
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
---		trigger_chanid => "0", --trigger_chanid,
---		trigger_level  => b"00_0010",
---		trigger_edge   => '0',
+--		trigger_chanid => "0",             -- Debug purpose
+--		trigger_level  => b"00_0010",      -- Debug purpose
+--		trigger_edge   => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
@@ -264,10 +264,11 @@ begin
 	port map (
 		factor_id    => hz_scale,
 		input_clk    => input_clk,
-		scaler_sync  => scaler_sync,
 		input_dv     => resizedsample_dv,
+		input_shot   => trigger_shot,
 		input_data   => resizedsample_data,
-		output_dv    => downsample_dv ,
+		output_dv    => downsample_dv,
+		output_shot  => downsample_shot,
 		output_data  => downsample_data);
 
 	emard : if not test generate
@@ -329,20 +330,20 @@ begin
 
 	triggers_modes_b : block
 	begin
-		capture_start <= not capture_finish or not trigger_shot or video_vton; -- or not downsample_dv;
-		scaler_sync   <= not capture_start;
+		capture_shot <= downsample_shot and not video_vton;
+--		capture_shot <= capture_end and downsample_shot;  --Debug purpose
 	end block;
 
 	xxx : if test generate
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,
-		capture_start  => capture_start,
-		capture_finish => capture_finish,
+		capture_shot   => capture_shot,
+		capture_end    => capture_end,
 		input_dv       => downsample_dv,
 		input_data     => downsample_data,
 		input_delay    => hz_offset,
---		input_delay    => "00_0000_0000_0000",
+--		input_delay    => b"00_0000_0000_0000",  --Debug purpose
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,

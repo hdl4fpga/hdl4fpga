@@ -62,7 +62,7 @@ architecture beh of s3starter is
 		return retval;
 	end;
 
-	signal input_addr : std_logic_vector(12-1 downto 0);
+	signal input_addr : std_logic_vector(14-1 downto 0);
 	signal input_ena  : std_logic := '1';
 	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);

@@ -61,7 +61,7 @@ architecture scopeio of testbench is
 		return retval;
 	end;
 
-	signal input_addr : unsigned(11-1 downto 0) :=(others => '0');
+	signal input_addr : unsigned(10-1 downto 0) :=(others => '0');
 	signal input_ena  : std_logic := '1';
 	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
@@ -119,7 +119,7 @@ begin
 	sys_clk <= not sys_clk after 20 ns;
 	vga_clk <= not vga_clk after 25 ns;
 
-	input_ena <= uart_ena;
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then

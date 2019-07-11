@@ -32,8 +32,8 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_capture is
 	port (
 		input_clk      : in  std_logic;
-		capture_start  : in  std_logic;
-		capture_finish : out std_logic;
+		capture_shot  : in  std_logic;
+		capture_end : out std_logic;
 		input_dv       : in  std_logic := '1';
 		input_data     : in  std_logic_vector;
 		input_delay    : in  std_logic_vector;
@@ -55,12 +55,11 @@ architecture beh of scopeio_capture is
 	signal bound   : signed(input_delay'range);
 	signal base    : signed(capture_addr'range);
 	signal rd_addr : signed(capture_addr'range);
-	signal wr_addr : signed(capture_addr'range) := (others => '0');
+	signal wr_addr : signed(capture_addr'range); -- := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
-	signal cntr    : signed(0 to input_delay'length) := (others => '1');
-	alias  running  : std_logic is cntr(0);
+	signal running : std_logic;
 	signal delay   : signed(input_delay'range);
 	signal valid   : std_logic;
 
@@ -68,22 +67,24 @@ architecture beh of scopeio_capture is
 begin
  
 	capture_addr_p : process (input_clk)
+		variable cntr : signed(0 to input_delay'length); -- := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
-			if capture_start='0' then
-				base  <= signed(wr_addr);
-				delay <= signed(input_delay);
-				cntr  <= '1' & ((delay_size-capture_size)-signed(input_delay));
-			elsif cntr(0)='1' then
-				if input_dv='1' then
+			if input_dv='1' then
+				if capture_shot='1' then
+					cntr  <= '1' & ((delay_size-capture_size)-signed(input_delay));
+					base  <= wr_addr;
+					delay <= signed(input_delay);
+				elsif cntr(0)='1' then
 					cntr <= cntr + 1;
 				end if;
 			end if;
+			bound   <= signed(resize(cntr, input_delay'length));
+			running <= cntr(0);
 		end if;
 	end process;
 
 	index <= signed(input_delay)+signed(resize(unsigned(capture_addr), input_delay'length));
-	bound <= signed(resize(cntr, input_delay'length));
 
 	capture_valid_p : valid <=
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
@@ -98,17 +99,17 @@ begin
 		di(0) => '1', --valid,
 		do(0) => capture_dv);
 
-	capture_finish <= not running;
+	capture_end <= not running;
 
 	wr_addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				wr_addr <= wr_addr + 1;
+				wr_addr := wr_addr + 1;
 			end if;
 		end if;
 	end process;
-	wr_ena  <= (running or not capture_start) and input_dv;
+	wr_ena  <= running and input_dv;
 	rd_addr <= base + resize(index, rd_addr'length);
 
 	mem_e : entity hdl4fpga.bram(inference)
@@ -138,4 +139,5 @@ begin
 --			di  => di,
 --			do  => capture_data);
 --	end block;
+
 end;

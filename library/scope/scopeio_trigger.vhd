@@ -22,28 +22,27 @@ entity scopeio_trigger is
 end;
 
 architecture beh of scopeio_trigger is
-
-	signal shot   : std_logic;
-	signal sample : signed(input_data'length/inputs-1 downto 0);
-
 begin
 
 	shot_p : process (input_clk)
-		variable ge   : std_logic;
-		variable lt   : std_logic;
-		variable edge : std_logic;
+		variable sample : signed(input_data'length/inputs-1 downto 0);
+		variable shot   : std_logic;
+		variable ge     : std_logic;
+		variable lt     : std_logic;
+		variable edge   : std_logic;
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				shot   <= (lt and ge and not edge) or (not lt and not ge and edge);
+				shot   := (lt and ge and not edge) or (not lt and not ge and edge);
 				lt     := not ge;
 				ge     := setif(sample >= signed(trigger_level));
 				edge   := not trigger_edge;
-				sample <= signed(word2byte(input_data, trigger_chanid, sample'length));
+				sample := signed(word2byte(input_data, trigger_chanid, sample'length));
 			end if;
+			trigger_shot <= shot;
 		end if;
 	end process;
-	trigger_shot <= shot and input_dv;
+	output_dv <= input_dv;
 
 	datalat_e : entity hdl4fpga.align
 	generic map (
@@ -55,5 +54,4 @@ begin
 		di  => input_data,
 		do  => output_data);
 
-	output_dv <= input_dv;
 end;
