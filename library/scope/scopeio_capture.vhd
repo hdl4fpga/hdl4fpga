@@ -67,20 +67,37 @@ architecture beh of scopeio_capture is
 begin
  
 	capture_addr_p : process (input_clk)
+		variable full : std_logic;
 		variable cntr : signed(0 to input_delay'length); -- := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if capture_shot='1' then
-					cntr  <= '1' & ((delay_size-capture_size)-signed(input_delay));
-					base  <= wr_addr;
-					delay <= signed(input_delay);
-				elsif cntr(0)='1' then
-					cntr <= cntr + 1;
+				if signed(input_delay) < 0 then
+					if capture_shot='1' then
+						if full='0' then
+							cntr  <= to_signed(-capture_size);
+						else
+							base  <= wr_addr;
+							delay <= signed(input_delay);
+							cntr  <= to_signed(-signed(input_delay)-capture_size);
+						end if;
+					elsif full='1' then
+					elsif cntr(0)='1' then
+						cntr <= cntr + 1;
+					end if;
+					full := setif(setif(cntr > signed(-input_delay));
+				else
+					if capture_shot='1' then
+						cntr  <= to_signed(-signed(input_delay)-capture_size);
+						base  <= wr_addr;
+						delay <= signed(input_delay);
+					elsif cntr(0)='1' then
+						cntr <= cntr + 1;
+					end if;
 				end if;
+				bound   <= signed(resize(cntr, input_delay'length));
+				running <= cntr(0);
 			end if;
-			bound   <= signed(resize(cntr, input_delay'length));
-			running <= cntr(0);
 		end if;
 	end process;
 
