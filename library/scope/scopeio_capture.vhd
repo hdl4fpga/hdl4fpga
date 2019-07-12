@@ -75,24 +75,24 @@ begin
 				if signed(input_delay) < 0 then
 					if capture_shot='1' then
 						if full='0' then
-							cntr  <= to_signed(-capture_size);
+							cntr  := to_signed(-capture_size, cntr'length);
 						else
 							base  <= wr_addr;
 							delay <= signed(input_delay);
-							cntr  <= to_signed(-signed(input_delay)-capture_size);
+							cntr  := resize(-signed(input_delay)-capture_size, cntr'length);
 						end if;
 					elsif full='1' then
 					elsif cntr(0)='1' then
-						cntr <= cntr + 1;
+						cntr := cntr + 1;
 					end if;
-					full := setif(setif(cntr > signed(-input_delay));
+					full := setif(cntr+signed(input_delay) > 0);
 				else
 					if capture_shot='1' then
-						cntr  <= to_signed(-signed(input_delay)-capture_size);
+						cntr  := resize(-signed(input_delay)-capture_size, cntr'length);
 						base  <= wr_addr;
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
-						cntr <= cntr + 1;
+						cntr := cntr + 1;
 					end if;
 				end if;
 				bound   <= signed(resize(cntr, input_delay'length));
@@ -122,7 +122,7 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				wr_addr := wr_addr + 1;
+				wr_addr <= wr_addr + 1;
 			end if;
 		end if;
 	end process;
