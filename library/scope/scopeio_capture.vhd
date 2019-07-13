@@ -108,7 +108,7 @@ begin
 				else
 					-- Delayed trigger
 					if capture_shot='1' then
-						cntr  := resize(-signed(input_delay)-capture_size, cntr'length);
+						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
 						base  <= wr_addr;
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
@@ -150,7 +150,7 @@ begin
 				end if;
 			end if;
 		end process;
-		wr_ena  <= running and input_dv;
+		wr_ena  <= (running or capture_shot) and input_dv;
 
 		mem_e : entity hdl4fpga.bram(inference)
 		port map (

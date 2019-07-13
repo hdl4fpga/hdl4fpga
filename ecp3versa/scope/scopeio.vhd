@@ -42,30 +42,28 @@ architecture beh of ecp3versa is
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
+
 	constant sample_size : natural := 9;
 
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : natural)
-		return std_logic_vector is
-		variable y   : real;
-		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
-		constant freq : real := 4*8.0;
+	function sintab (
+		constant base : integer;
+		constant size : natural)
+		return integer_vector is
+		variable offset : natural;
+		variable retval : integer_vector(0 to size-1);
 	begin
-		for i in x0 to x1 loop
-			y := real(2**(n-2)-1)*64.0*(8.0/freq);
-			if i/=0 then
-				y := y*sin((2.0*MATH_PI*real(i)*freq)/real(x1-x0+1))/real(i);
-			else
-				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
+		for i in 0 to size-1 loop
+			offset := base + i;
+			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
+			retval(i) := 0;
+			if i=0 then
+				retval(i) := 127;
 			end if;
-			y := y - (64.0+24.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
-			y := 128.0*sin(2.0*MATH_PI*real((i+x0))/64.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
+			if i=735 then
+				retval(i) := -63;
+			end if;
 		end loop;
-		return aux;
+		return retval;
 	end;
 
 	signal uart_rxc  : std_logic;
@@ -92,8 +90,10 @@ architecture beh of ecp3versa is
 
 	signal sample     : std_logic_vector(0 to sample_size-1);
 
-	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
+	signal input_addr : unsigned(11-1 downto 0);
+	signal input_ena  : std_logic := '1';
+	signal input_dv   : std_logic;
 
 	constant baudrate : natural := 115200;
 
@@ -136,21 +136,33 @@ begin
 			lock        => lock);
 	end block;
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		latency => 2,
-		bitrom => sinctab(-1024+256, 1023+256, sample_size))
-	port map (
-		clk  => clk,
-		addr => input_addr,
-		data => sample);
-
+	input_ena <= '1'; --uart_ena;
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+			if input_ena='1' then
+				input_addr <= input_addr + 1;
+			end if;
 		end if;
 	end process;
+
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		latency => 2,
+		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
+	port map (
+		clk  => clk,
+		addr => std_logic_vector(input_addr),
+		data => sample);
+
+	ena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => clk,
+		di(0) => input_ena,
+		do(0) => input_dv);
 
 	uart_rxc <= phy1_rxc;
 	process (uart_rxc)
@@ -220,6 +232,7 @@ begin
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		test => true,
 		inputs   => inputs,
 		vlayout_id  => 5)
 	port map (
@@ -234,6 +247,7 @@ begin
 		so_data     => so_data,
 		input_clk   => clk,
 		input_data  => sample,
+		input_ena   => input_dv,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
