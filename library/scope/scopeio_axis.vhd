@@ -187,7 +187,7 @@ begin
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
-				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,4), unsigned(axis_unit));
+				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit));
 			else
 				aux := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));

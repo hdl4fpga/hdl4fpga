@@ -141,7 +141,6 @@ begin
 	storage_b : block
 	begin
 
---		rd_addr <= base + signed(resize(unsigned(index), rd_addr'length));
 		rd_addr <= base + index(rd_addr'range);
 		wr_addr_p : process (input_clk)
 		begin
