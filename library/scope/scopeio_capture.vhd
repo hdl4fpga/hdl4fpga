@@ -52,11 +52,11 @@ architecture beh of scopeio_capture is
 	constant capture_size : natural := 2**capture_addr'length;
 	constant delay_size   : natural := 2**input_delay'length;
 
-	signal index   : signed(input_delay'range);
-	signal bound   : signed(input_delay'range);
-	signal base    : signed(capture_addr'range);
-	signal rd_addr : signed(capture_addr'range);
-	signal wr_addr : signed(capture_addr'range); -- := (others => '0'); -- Debug purpose
+	signal index   : signed(input_delay'length-1  downto 0);
+	signal bound   : signed(input_delay'length-1  downto 0);
+	signal base    : signed(capture_addr'length-1 downto 0);
+	signal rd_addr : signed(capture_addr'length-1 downto 0);
+	signal wr_addr : signed(capture_addr'length-1 downto 0); -- := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
@@ -141,7 +141,8 @@ begin
 	storage_b : block
 	begin
 
-		rd_addr <= base + resize(index, rd_addr'length);
+--		rd_addr <= base + signed(resize(unsigned(index), rd_addr'length));
+		rd_addr <= base + index(rd_addr'range);
 		wr_addr_p : process (input_clk)
 		begin
 			if rising_edge(input_clk) then
