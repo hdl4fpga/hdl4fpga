@@ -332,7 +332,7 @@ begin
 
 	triggers_modes_b : block
 	begin
-		capture_shot <= downsample_shot and not video_vton;
+		capture_shot <= capture_end and downsample_shot and not video_vton;
 --		capture_shot <= capture_end and downsample_shot;  --Debug purpose
 	end block;
 

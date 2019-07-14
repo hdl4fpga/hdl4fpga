@@ -32,8 +32,9 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_capture is
 	port (
 		input_clk      : in  std_logic;
-		capture_shot  : in  std_logic;
-		capture_end : out std_logic;
+		capture_shot   : in  std_logic;
+		capture_end    : out std_logic;
+
 		input_dv       : in  std_logic := '1';
 		input_data     : in  std_logic_vector;
 		input_delay    : in  std_logic_vector;
@@ -51,11 +52,11 @@ architecture beh of scopeio_capture is
 	constant capture_size : natural := 2**capture_addr'length;
 	constant delay_size   : natural := 2**input_delay'length;
 
-	signal index   : signed(input_delay'range);
-	signal bound   : signed(input_delay'range);
-	signal base    : signed(capture_addr'range);
-	signal rd_addr : signed(capture_addr'range);
-	signal wr_addr : signed(capture_addr'range); -- := (others => '0'); -- Debug purpose
+	signal index   : signed(input_delay'length-1  downto 0);
+	signal bound   : signed(input_delay'length-1  downto 0);
+	signal base    : signed(capture_addr'length-1 downto 0);
+	signal rd_addr : signed(capture_addr'length-1 downto 0);
+	signal wr_addr : signed(capture_addr'length-1 downto 0); -- := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
@@ -68,35 +69,54 @@ begin
  
 	capture_addr_p : process (input_clk)
 		variable full : std_logic;
+		variable pre  : std_logic;
 		variable cntr : signed(0 to input_delay'length); -- := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
 				if signed(input_delay) < 0 then
+					-- Pre-trigger
 					if capture_shot='1' then
 						if full='0' then
-							cntr  := to_signed(-capture_size, cntr'length);
+							pre  := '0';
+							cntr := to_signed(-capture_size, cntr'length);
+							base <= (others => '-');
 						else
-							base  <= wr_addr;
-							delay <= signed(input_delay);
-							cntr  := resize(-signed(input_delay)-capture_size, cntr'length);
+							pre  := '1';
+							cntr := resize(-signed(input_delay)-capture_size, cntr'length);
+							base <= wr_addr;
 						end if;
-					elsif full='1' then
+						delay   <= signed(input_delay);
+						bound   <= signed(resize(cntr, bound'length));
+						running <= cntr(0);
+					elsif full='0' then
+						cntr    := cntr + 1;
+						full    := setif(cntr+delay > 0);
+						bound   <= to_signed(-capture_size, bound'length);
+						running <= '1';
+					elsif pre='0' then
+						cntr    := cntr + 1;
+						full    := '1';
+						bound   <= to_signed(-capture_size, bound'length);
+						running <= '1';
 					elsif cntr(0)='1' then
-						cntr := cntr + 1;
+						cntr    := cntr + 1;
+						full    := '1';
+						bound   <= signed(resize(cntr, bound'length));
+						running <= cntr(0);
 					end if;
-					full := setif(cntr+signed(input_delay) > 0);
 				else
+					-- Delayed trigger
 					if capture_shot='1' then
-						cntr  := resize(-signed(input_delay)-capture_size, cntr'length);
+						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
 						base  <= wr_addr;
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
 						cntr := cntr + 1;
 					end if;
+					bound   <= signed(resize(cntr, bound'length));
+					running <= cntr(0);
 				end if;
-				bound   <= signed(resize(cntr, input_delay'length));
-				running <= cntr(0);
 			end if;
 		end if;
 	end process;
@@ -118,29 +138,35 @@ begin
 
 	capture_end <= not running;
 
-	wr_addr_p : process (input_clk)
+	storage_b : block
 	begin
-		if rising_edge(input_clk) then
-			if input_dv='1' then
-				wr_addr <= wr_addr + 1;
+
+--		rd_addr <= base + signed(resize(unsigned(index), rd_addr'length));
+		rd_addr <= base + index(rd_addr'range);
+		wr_addr_p : process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_dv='1' then
+					wr_addr <= wr_addr + 1;
+				end if;
 			end if;
-		end if;
-	end process;
-	wr_ena  <= running and input_dv;
-	rd_addr <= base + resize(index, rd_addr'length);
+		end process;
+		wr_ena  <= (running or capture_shot) and input_dv;
 
-	mem_e : entity hdl4fpga.bram(inference)
-	port map (
-		clka  => input_clk,
-		addra => std_logic_vector(wr_addr),
-		wea   => wr_ena,
-		dia   => input_data,
-		doa   => no_data,
+		mem_e : entity hdl4fpga.bram(inference)
+		port map (
+			clka  => input_clk,
+			addra => std_logic_vector(wr_addr),
+			wea   => wr_ena,
+			dia   => input_data,
+			doa   => no_data,
 
-		clkb  => capture_clk,
-		addrb => std_logic_vector(rd_addr),
-		dib   => no_data,
-		dob   => capture_data);
+			clkb  => capture_clk,
+			addrb => std_logic_vector(rd_addr),
+			dib   => no_data,
+			dob   => capture_data);
+
+	end block;
 
 --	For debugging
 --	debug_b : block

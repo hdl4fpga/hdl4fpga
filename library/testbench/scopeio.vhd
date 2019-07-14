@@ -61,7 +61,7 @@ architecture scopeio of testbench is
 		return retval;
 	end;
 
-	signal input_addr : unsigned(10-1 downto 0) :=(others => '0');
+	signal input_addr : unsigned(14-1 downto 0) :=(others => '0');
 	signal input_ena  : std_logic := '1';
 	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
@@ -106,7 +106,7 @@ architecture scopeio of testbench is
 	constant video_params : displayparam_vector(0 to 2) := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode600px16 => (layout => 7, mul => 4, div => 5));
+		mode600px16 => (layout => 6, mul => 4, div => 5));
 
 	constant video_mode : natural := mode600px16;
 

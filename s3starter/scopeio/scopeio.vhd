@@ -62,7 +62,7 @@ architecture beh of s3starter is
 		return retval;
 	end;
 
-	signal input_addr : std_logic_vector(14-1 downto 0);
+	signal input_addr : unsigned(12-1 downto 0);
 	signal input_ena  : std_logic := '1';
 	signal input_dv   : std_logic;
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
@@ -137,7 +137,7 @@ begin
 	begin
 		if rising_edge(sys_clk) then
 			if input_ena='1' then
-				input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+				input_addr <= input_addr + 1;
 			end if;
 		end if;
 	end process;
@@ -148,7 +148,7 @@ begin
 		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
 	port map (
 		clk  => sys_clk,
-		addr => input_addr,
+		addr => std_logic_vector(input_addr),
 		data => sample);
 	ena_e : entity hdl4fpga.align
 	generic map (
