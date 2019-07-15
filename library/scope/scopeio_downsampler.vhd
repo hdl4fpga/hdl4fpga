@@ -34,7 +34,8 @@ architecture beh of scopeio_downsampler is
 
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
-	signal factor : std_logic_vector(0 to scaler_bits-1);
+	signal factor   : std_logic_vector(0 to scaler_bits-1);
+	signal shot_dis : std_logic;
 
 begin
 
@@ -46,19 +47,21 @@ begin
 		data => factor);
 
 	scaler_p : process (input_clk)
-		variable scaler : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
+		variable scaler   : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
-			if input_shot='1' then
-				scaler    := (others => '1');
-				output_dv <= input_dv;
-			elsif input_dv='1' then
-				if scaler(0)='1' then
-					scaler := unsigned(factor);
+			if input_dv='1' then
+				if input_shot='1' and shot_dis='0' then
+					scaler    := (others => '1');
+					output_dv <= input_dv;
 				else
-					scaler := scaler - 1;
+					if scaler(0)='1' then
+						scaler := unsigned(factor);
+					else
+						scaler := scaler - 1;
+					end if;
+					output_dv <= scaler(0);
 				end if;
-				output_dv <= scaler(0);
 			else
 				output_dv <= '0';
 			end if;
@@ -71,6 +74,7 @@ begin
 		d => (1 to input_data'length => 1))
 	port map (
 		clk => input_clk,
+		ena => input_dv,
 		di  => input_data,
 		do  => output_data);
 
@@ -82,5 +86,6 @@ begin
 		clk   => input_clk,
 		ena   => input_dv,
 		di(0) => input_shot,
-		do(0) => output_shot);
+		do(0) => shot_dis);
+	output_shot <= shot_dis;
 end;

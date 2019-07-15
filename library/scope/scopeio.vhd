@@ -109,9 +109,12 @@ architecture beh of scopeio is
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
+	signal trigger_shot       : std_logic;
 
 	signal resizedsample_dv   : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal downsample_oshot   : std_logic;
+	signal downsample_ishot  : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
@@ -119,8 +122,6 @@ architecture beh of scopeio is
 	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
-	signal trigger_shot       : std_logic;
-	signal downsample_shot    : std_logic;
 
 	signal capture_shot       : std_logic;
 	signal capture_end        : std_logic;
@@ -260,6 +261,7 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
+	downsample_ishot <= capture_end and trigger_shot;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
@@ -267,10 +269,10 @@ begin
 		factor_id    => hz_scale,
 		input_clk    => input_clk,
 		input_dv     => resizedsample_dv,
-		input_shot   => trigger_shot,
+		input_shot   => downsample_ishot,
 		input_data   => resizedsample_data,
 		output_dv    => downsample_dv,
-		output_shot  => downsample_shot,
+		output_shot  => downsample_oshot,
 		output_data  => downsample_data);
 
 	emard : if not test generate
@@ -332,8 +334,8 @@ begin
 
 	triggers_modes_b : block
 	begin
-		capture_shot <= capture_end and downsample_shot and not video_vton;
---		capture_shot <= capture_end and downsample_shot;  --Debug purpose
+		capture_shot <= capture_end and downsample_oshot and not video_vton;
+--		capture_shot <= capture_end and downsample_oshot;  --Debug purpose
 	end block;
 
 	xxx : if test generate
