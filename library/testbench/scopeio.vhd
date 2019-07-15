@@ -54,7 +54,7 @@ architecture scopeio of testbench is
 			if i=0 then
 				retval(i) := 127;
 			end if;
-			if i=88 then
+			if i mod 8=3 then
 				retval(i) := -63;
 			end if;
 		end loop;
@@ -106,7 +106,7 @@ architecture scopeio of testbench is
 	constant video_params : displayparam_vector(0 to 2) := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode600px16 => (layout => 6, mul => 4, div => 5));
+		mode600px16 => (layout => 7, mul => 4, div => 5));
 
 	constant video_mode : natural := mode600px16;
 
@@ -119,7 +119,7 @@ begin
 	sys_clk <= not sys_clk after 20 ns;
 	vga_clk <= not vga_clk after 25 ns;
 
-	input_ena <= '1'; --uart_ena;
+	input_ena <= uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
