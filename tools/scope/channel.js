@@ -272,11 +272,18 @@ function vtControl (parent, number, color) {
 	slope = {};
 	slope.positive = document.createElement("input");
 	slope.positive.type = 'radio';
+	slope.positive.type = 'radio';
 	slope.positive.name  = 'slope';
 	slope.positive.value = 'positive';
-	slope.positive.text  = 'positive';
 	c.appendChild(slope.positive);
 	c.appendChild(document.createTextNode('positive'));
+	slope.positive.style.display = 'block';
+	slope.negative = document.createElement("input");
+	slope.negative.type  = 'radio';
+	slope.negative.name  = 'slope';
+	slope.negative.value = 'negative';
+	c.appendChild(slope.negative);
+	c.appendChild(document.createTextNode('negative'));
 	this.inputControl['slope'] = slope;
 
 	br = document.createElement("br");

@@ -261,7 +261,6 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	downsample_ishot <= capture_end and trigger_shot;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
@@ -276,6 +275,7 @@ begin
 		output_data  => downsample_data);
 
 	emard : if not test generate
+	downsample_ishot <= '0';
 	scopeio_capture1shot_b : block
 		signal storage_reset_addr     : std_logic;
 		signal storage_increment_addr : std_logic;
@@ -339,6 +339,7 @@ begin
 	end block;
 
 	xxx : if test generate
+	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,
