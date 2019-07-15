@@ -83,7 +83,7 @@ begin
 							base <= (others => '-');
 						else
 							pre  := '1';
-							cntr := resize(-signed(input_delay)-capture_size, cntr'length);
+							cntr := resize(-signed(input_delay)-capture_size+1, cntr'length);
 							base <= wr_addr;
 						end if;
 						delay   <= signed(input_delay);

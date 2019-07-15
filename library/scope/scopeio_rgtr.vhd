@@ -17,7 +17,7 @@ entity scopeio_rgtr is
 
 		hz_dv           : out std_logic;
 		hz_scale        : out std_logic_vector;
-		hz_offset       : out std_logic_vector;
+		hz_slider       : out std_logic_vector;
 		vt_dv           : out std_logic;
 		vt_chanid       : out std_logic_vector;
 		vt_offsets      : out std_logic_vector;
@@ -81,7 +81,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if hzaxis_ena='1' then
-				hz_offset <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_offset'length));
+				hz_slider <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_slider'length));
 				hz_scale  <= bitfield(rgtr_data, hzscale_id,  hzoffset_bf);
 			end if;
 			hz_dv <= hzaxis_ena;
