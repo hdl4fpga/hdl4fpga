@@ -265,18 +265,46 @@ function vtControl (parent, number, color) {
 
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
-	c.style['vertical-align'] = 'top';
+	c.style['vertical-align'] = 'bottom';
+	c.style['align'] = 'center';
 	trigger.appendChild(c);
 
-	slope = document.createElement("input");
-	slope['id']        = 'slope:'+number;
-	slope['type']      = 'range';
-	slope['className'] = 'vertical';
-	slope['value']     = 0;
-	slope['min']       = 0;
-	slope['max']       = 1;
-	c.appendChild(slope);
+	slope = {};
+	slope.positive = document.createElement("input");
+	slope.positive.type = 'radio';
+	slope.positive.type = 'radio';
+	slope.positive.name  = 'slope';
+	slope.positive.value = 'positive';
+	c.appendChild(slope.positive);
+	c.appendChild(document.createTextNode('positive'));
+	slope.positive.style.display = 'block';
+	slope.negative = document.createElement("input");
+	slope.negative.type  = 'radio';
+	slope.negative.name  = 'slope';
+	slope.negative.value = 'negative';
+	c.appendChild(slope.negative);
+	c.appendChild(document.createTextNode('negative'));
 	this.inputControl['slope'] = slope;
+
+	br = document.createElement("br");
+	c.appendChild(br);
+	mode  = document.createElement("select");
+	mode.style['width']        = '100%';
+	mode.style['margin'] = '5';
+	mode.style['display']        = 'inline';
+	option = document.createElement("option");
+	option.text = "Continuos";
+	mode.add(option);
+	option = document.createElement("option");
+	option.text = "One shot";
+	mode.add(option);
+	option = document.createElement("option");
+	option.text = "Freeze";
+	mode.add(option);
+	mode['id']        = 'mode:'+number;
+	mode['value']     = 0;
+	c.appendChild(mode);
+	this.inputControl['mode'] = mode;
 
 	level.level = level;
 	level.slope = slope;

@@ -132,7 +132,7 @@ architecture beh of scopeio is
 	signal video_vton         : std_logic;
 	signal video_hzon         : std_logic;
 
-	signal hz_offset          : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_slider          : std_logic_vector(hzoffset_bits-1 downto 0);
 
 	signal hz_scale           : std_logic_vector(4-1 downto 0);
 	signal hz_dv              : std_logic;
@@ -184,7 +184,7 @@ begin
 
 		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
-		hz_offset      => hz_offset,
+		hz_slider      => hz_slider,
 		vt_dv          => vt_dv,
 		vt_offsets     => vt_offsets,
 		vt_chanid      => vt_chanid,
@@ -261,7 +261,6 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	downsample_ishot <= capture_end and trigger_shot;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
@@ -276,6 +275,7 @@ begin
 		output_data  => downsample_data);
 
 	emard : if not test generate
+	downsample_ishot <= '0';
 	scopeio_capture1shot_b : block
 		signal storage_reset_addr     : std_logic;
 		signal storage_increment_addr : std_logic;
@@ -323,7 +323,7 @@ begin
 
 		-- from display
 		captured_clk           => video_clk,
-		captured_scroll        => hz_offset,
+		captured_scroll        => hz_slider,
 		captured_addr          => capture_addr,
 		-- to display
 		captured_data          => capture_data
@@ -339,6 +339,7 @@ begin
 	end block;
 
 	xxx : if test generate
+	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,
@@ -346,7 +347,7 @@ begin
 		capture_end    => capture_end,
 		input_dv       => downsample_dv,
 		input_data     => downsample_data,
-		input_delay    => hz_offset,
+		input_delay    => hz_slider,
 --		input_delay    => b"00_0000_0000_0000",  --Debug purpose
 
 		capture_clk    => video_clk,
@@ -374,7 +375,7 @@ begin
 		si_clk           => si_clk,
 		hz_dv            => hz_dv,
 		hz_scale         => hz_scale,
-		hz_offset        => hz_offset,
+		hz_offset        => hz_slider,
                                           
 		vt_dv            => vt_dv,
 		vt_offsets       => vt_offsets,
