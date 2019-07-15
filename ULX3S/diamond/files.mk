@@ -23,7 +23,6 @@ VHDL_FILES = \
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
   ../../library/common/align.vhd \
-  ../../library/common/pipe_le.vhd \
   ../../library/common/std.vhd \
   ../../library/common/bram.vhd \
   ../../library/common/dpram.vhd \
