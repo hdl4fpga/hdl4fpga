@@ -38,6 +38,8 @@ architecture beh of scopeio_downsampler is
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
 	signal data_in  : std_logic_vector(0 to input_data'length-1);
 	signal data_out : std_logic_vector(0 to output_data'length-1);
+	signal scaler_ena : std_logic;
+	signal data_shot : std_logic;
 	signal data_vld : std_logic;
 
 begin
@@ -51,7 +53,7 @@ begin
 
 	scaler_p : process (input_clk)
 		variable shot_dis : std_logic;
-		variable scaler   : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
+		variable scaler   : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
@@ -62,13 +64,14 @@ begin
 				else
 					scaler := scaler - 1;
 				end if;
+				scaler_ena <= scaler(0);
 				shot_dis := input_shot;
-				data_vld <= scaler(0);
+				data_vld <= input_dv;
 			else
 				data_vld <= '0';
 			end if;
-			data_in     <= input_data;
-			output_shot <= shot_dis;
+			data_in   <= input_data;
+			data_shot <= shot_dis;
 		end if;
 	end process;
 
@@ -76,8 +79,8 @@ begin
 		constant sel_max : std_logic := '0';
 		constant sel_min : std_logic := not sel_max;
 
-		signal sel_in  : std_logic;
-		signal sel_out : std_logic;
+		signal sel_in  : std_logic := '0'; -- Debuging pupose
+		signal sel_out : std_logic := '0'; -- Debuging pupose
 		signal sample  : signed(0 to input_data'length/inputs-1);
 		signal maxx    : signed(sample'range);
 		signal minn    : signed(sample'range);
@@ -87,13 +90,16 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					maxx    <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
-					minn    <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
-					sel_out <= sel_in;
-				else
-					sel_in  <= not sel_out;
-					maxx    <= hdl4fpga.std.max(maxx, sample);
-					minn    <= hdl4fpga.std.min(minn, sample);
+					if scaler_ena='1' then
+						maxx    <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
+						minn    <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
+						sel_out <= sel_in;
+						output_shot <= data_shot;
+					else
+						sel_in  <= not sel_out;
+						maxx    <= hdl4fpga.std.max(maxx, sample);
+						minn    <= hdl4fpga.std.min(minn, sample);
+					end if;
 				end if;
 			end if;
 		end process;

@@ -56,7 +56,7 @@ architecture beh of scopeio_capture is
 	signal bound   : signed(input_delay'length-1  downto 0);
 	signal base    : signed(capture_addr'length-1 downto 0);
 	signal rd_addr : signed(capture_addr'length-1 downto 0);
-	signal wr_addr : signed(capture_addr'length-1 downto 0); -- := (others => '0'); -- Debug purpose
+	signal wr_addr : signed(capture_addr'length-1 downto 0) := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
@@ -70,7 +70,7 @@ begin
 	capture_addr_p : process (input_clk)
 		variable full : std_logic;
 		variable pre  : std_logic;
-		variable cntr : signed(0 to input_delay'length); -- := (others => '1'); -- Debug purpose
+		variable cntr : signed(0 to input_delay'length) := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then

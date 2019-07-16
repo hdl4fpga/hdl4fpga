@@ -51,10 +51,10 @@ architecture scopeio of testbench is
 			offset := base + i;
 			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
 			retval(i) := 0;
-			if i=0 then
+			if i mod 8=1 then
 				retval(i) := 127;
 			end if;
-			if i mod 8=3 then
+			if i mod 8=5 then
 				retval(i) := -63;
 			end if;
 		end loop;
