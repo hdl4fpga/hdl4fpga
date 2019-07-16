@@ -243,12 +243,12 @@ begin
 		input_clk      => input_clk,
 		input_dv       => ampsample_dv,
 		input_data     => ampsample_data,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
---		trigger_chanid => "0",             -- Debug purpose
---		trigger_level  => b"00_0010",      -- Debug purpose
---		trigger_edge   => '1',             -- Debug purpose
+--		trigger_chanid => trigger_chanid,
+--		trigger_level  => trigger_level,
+--		trigger_edge   => trigger_edge,
+		trigger_chanid => "0",             -- Debug purpose
+		trigger_level  => b"00_0010",      -- Debug purpose
+		trigger_edge   => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
@@ -321,8 +321,8 @@ begin
 	xxx : if test generate
 	triggers_modes_b : block
 	begin
-		capture_shot <= capture_end and downsample_oshot and not video_vton;
---		capture_shot <= capture_end and downsample_oshot;  --Debug purpose
+--		capture_shot <= capture_end and downsample_oshot and not video_vton;
+		capture_shot <= capture_end and downsample_oshot;  --Debug purpose
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -330,8 +330,8 @@ begin
 		inputs  => inputs,
 		factors => hz_factors)
 	port map (
-		factor_id    => hz_scale,
---		factor_id    => b"0001",
+--		factor_id    => hz_scale,
+		factor_id    => b"0001",
 		input_clk    => input_clk,
 		input_dv     => resizedsample_dv,
 		input_shot   => downsample_ishot,
@@ -348,8 +348,8 @@ begin
 		capture_end    => capture_end,
 		input_dv       => downsample_dv,
 		input_data     => downsample_data,
-		input_delay    => hz_slider,
---		input_delay    => b"00_0000_0000_0000",  --Debug purpose
+--		input_delay    => hz_slider,
+		input_delay    => b"00_0000_0000_0000",  --Debug purpose
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,
