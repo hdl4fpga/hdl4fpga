@@ -149,7 +149,7 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
-	input_ena <= uart_ena;
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then

@@ -174,6 +174,11 @@ package std is
 		return std_logic_vector;
 
 	function word2byte (
+		constant word : signed;
+		constant addr : std_logic)
+		return signed;
+
+	function word2byte (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
@@ -822,6 +827,14 @@ package body std is
 		return std_logic_vector is
 	begin
 		return word2byte(word, (0 to 0 => addr));
+	end;
+
+	function word2byte (
+		constant word : signed;
+		constant addr : std_logic)
+		return signed is
+	begin
+		return signed(word2byte(std_logic_vector(word), (0 to 0 => addr)));
 	end;
 
 	function word2byte (

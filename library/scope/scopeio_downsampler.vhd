@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_downsampler is
 	generic (
+		inputs  : natural;
 		factors : natural_vector);
 	port (
 		factor_id     : in  std_logic_vector;
@@ -35,6 +36,8 @@ architecture beh of scopeio_downsampler is
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
+	signal data_in  : std_logic_vector(0 to input_data'length-1);
+	signal data_out : std_logic_vector(0 to output_data'length-1);
 	signal data_vld : std_logic;
 
 begin
@@ -64,30 +67,40 @@ begin
 			else
 				data_vld <= '0';
 			end if;
+			data_in     <= input_data;
 			output_shot <= shot_dis;
 		end if;
 	end process;
-	output_dv <= data_vld;
 
-	envelope_g : for i in 0 to inputsi-1 generate
-		signal sample : signed(0 to input_data'length/inputs-1);
-		signal maxx   : signed(sample'range);
-		signal minn   : signed(sample'range);
+	envelope_g : for i in 0 to inputs-1 generate
+		constant sel_max : std_logic := '0';
+		constant sel_min : std_logic := not sel_max;
+
+		signal sel_in  : std_logic;
+		signal sel_out : std_logic;
+		signal sample  : signed(0 to input_data'length/inputs-1);
+		signal maxx    : signed(sample'range);
+		signal minn    : signed(sample'range);
 	begin
-		sample <= signed(word2byte(input_data, i, sample'length));
+		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					maxx <= word2byte(max(maxx, sample), sample,     sel);
-					minn <= word2byte(min(minn, sample), sample, not sel);
+					maxx    <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
+					minn    <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
+					sel_out <= sel_in;
 				else
-					maxx <= max(maxx, sample);
-					minn <= min(minn, sample);
+					sel_in  <= not sel_out;
+					maxx    <= hdl4fpga.std.max(maxx, sample);
+					minn    <= hdl4fpga.std.min(minn, sample);
 				end if;
 			end if;
 		end process;
-		output_data(i*sample'length to (i+1)*sample'length) <= word2byte(maxx, minn, sel);
-	end loop;
+		data_out(i*sample'length to (i+1)*sample'length-1) <=
+			std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
+	end generate;
+	output_dv   <= data_vld;
+	output_data <= data_out;
 
 end;
