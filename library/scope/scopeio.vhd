@@ -277,7 +277,7 @@ begin
 		factor_id    => hz_scale,
 		input_clk    => input_clk,
 		input_dv     => resizedsample_dv,
-		input_shot   => '0', -- for deflickering "downsample_dv" must be independend from trigger level
+		input_shot   => '0', -- for deflickering "downsample_dv" must be independent from trigger level
 		input_data   => resizedsample_data, -- not used
 		output_dv    => downsample_dv,
 		output_shot  => open,
@@ -285,8 +285,11 @@ begin
 
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
-		deflicker              => false,
-		strobe                 => 2 -- (more->slower) temporary freeze triggered wave for viewing
+		deflicker_differential => false,
+		deflicker_linear       => true,
+		deflicker_simple       => false,
+		strobe                 => 1, -- 2**n frames (more->slower) temporary freeze triggered wave for viewing (doesn't work with deflicker_simple)
+		untriggered            => 2  -- 2**n frames timeout to untriggered mode (deflicker_linear only)
 	)
 	port map (
 		input_clk              => input_clk,
