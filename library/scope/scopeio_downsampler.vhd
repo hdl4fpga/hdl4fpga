@@ -35,7 +35,7 @@ architecture beh of scopeio_downsampler is
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
-	signal shot_dis : std_logic;
+	signal data_vld : std_logic;
 
 begin
 
@@ -47,45 +47,47 @@ begin
 		data => factor);
 
 	scaler_p : process (input_clk)
+		variable shot_dis : std_logic;
 		variable scaler   : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
 				if input_shot='1' and shot_dis='0' then
-					scaler    := (others => '1');
-					output_dv <= input_dv;
+					scaler := (others => '1');
+				elsif scaler(0)='1' then
+					scaler := unsigned(factor);
 				else
-					if scaler(0)='1' then
-						scaler := unsigned(factor);
-					else
-						scaler := scaler - 1;
-					end if;
-					output_dv <= scaler(0);
+					scaler := scaler - 1;
 				end if;
+				shot_dis := input_shot;
+				data_vld <= scaler(0);
 			else
-				output_dv <= '0';
+				data_vld <= '0';
 			end if;
+			output_shot <= shot_dis;
 		end if;
 	end process;
+	output_dv <= data_vld;
 
-	datalatency_e : entity hdl4fpga.align
-	generic map (
-		n => input_data'length,
-		d => (1 to input_data'length => 1))
-	port map (
-		clk => input_clk,
-		ena => input_dv,
-		di  => input_data,
-		do  => output_data);
+	envelope_g : for i in 0 to inputsi-1 generate
+		signal sample : signed(0 to input_data'length/inputs-1);
+		signal maxx   : signed(sample'range);
+		signal minn   : signed(sample'range);
+	begin
+		sample <= signed(word2byte(input_data, i, sample'length));
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if data_vld='1' then
+					maxx <= word2byte(max(maxx, sample), sample,     sel);
+					minn <= word2byte(min(minn, sample), sample, not sel);
+				else
+					maxx <= max(maxx, sample);
+					minn <= min(minn, sample);
+				end if;
+			end if;
+		end process;
+		output_data(i*sample'length to (i+1)*sample'length) <= word2byte(maxx, minn, sel);
+	end loop;
 
-	shotlatency_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (1 to 1 => 1))
-	port map (
-		clk   => input_clk,
-		ena   => input_dv,
-		di(0) => input_shot,
-		do(0) => shot_dis);
-	output_shot <= shot_dis;
 end;
