@@ -236,13 +236,18 @@ package std is
 		return integer;
 
 	function max (
-		constant left : integer; 
-		constant right: integer)
+		constant arg1 : integer; 
+		constant arg2 : integer)
+		return integer;
+
+	function max (
+		constant arg1 : signed; 
+		constant arg2 : signed)
 		return integer;
 
 	function min (
-		constant left : integer; 
-		constant right: integer)
+		constant arg1 : integer; 
+		constant arg2 : integer)
 		return integer;
 
 	procedure swap (
@@ -944,26 +949,38 @@ package body std is
 	end;
 
 	function max (
-		constant left : integer; 
-		constant right: integer)
+		constant arg1 : integer; 
+		constant arg2 : integer)
 		return integer is
 	begin
-		if left > right then
-			return left;
+		if arg1 > arg2 then
+			return arg1;
 		else 
-			return right;
+			return arg2;
+		end if;
+	end;
+
+	function max (
+		constant arg1 : signed; 
+		constant arg2 : signed)
+		return integer is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else 
+			return arg2;
 		end if;
 	end;
 
 	function min (
-		constant left : integer;
-		constant right: integer)
+		constant arg1 : integer;
+		constant arg2 : integer)
 		return integer is
 	begin
-		if left < right then
-			return left;
+		if arg1 < arg2 then
+			return arg1;
 		else
-			return right;
+			return arg2;
 		end if;
 	end;
 
