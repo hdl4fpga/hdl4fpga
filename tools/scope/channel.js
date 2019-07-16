@@ -270,11 +270,13 @@ function vtControl (parent, number, color) {
 	trigger.appendChild(c);
 
 	slope = {};
-	slope.positive = document.createElement("input");
-	slope.positive.type = 'radio';
-	slope.positive.type = 'radio';
-	slope.positive.name  = 'slope';
-	slope.positive.value = 'positive';
+	slope.positive = document.createElement("label");
+	slope.positive.appendChild(document.createTextNode('positive'));
+	slope.positive.input = document.createElement("input");
+	slope.positive.input.type  = 'radio';
+	slope.positive.input.name  = 'slope';
+	slope.positive.input.value = 'positive';
+	slope.positive.appendChild(slope.positive.input);
 	c.appendChild(slope.positive);
 	c.appendChild(document.createTextNode('positive'));
 	slope.positive.style.display = 'block';
