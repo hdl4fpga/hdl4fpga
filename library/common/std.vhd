@@ -243,12 +243,17 @@ package std is
 	function max (
 		constant arg1 : signed; 
 		constant arg2 : signed)
-		return integer;
+		return signed;
 
 	function min (
 		constant arg1 : integer; 
 		constant arg2 : integer)
 		return integer;
+
+	function min (
+		constant arg1 : signed; 
+		constant arg2 : signed)
+		return signed;
 
 	procedure swap (
 		variable arg1 : inout std_logic_vector;
@@ -963,7 +968,7 @@ package body std is
 	function max (
 		constant arg1 : signed; 
 		constant arg2 : signed)
-		return integer is
+		return signed is
 	begin
 		if arg1 > arg2 then
 			return arg1;
@@ -976,6 +981,18 @@ package body std is
 		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer is
+	begin
+		if arg1 < arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function min (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed is
 	begin
 		if arg1 < arg2 then
 			return arg1;
