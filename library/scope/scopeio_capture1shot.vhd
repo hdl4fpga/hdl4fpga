@@ -12,7 +12,7 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_capture1shot is
 	generic (
 		deflicker              : boolean := true; -- complex deflickering calculation
-		strobe                 : natural := 0     -- 2**n video frames frozen until auto re-arming trigger
+		strobe                 : natural := 1     -- 2**n video frames frozen until auto re-arming trigger
 	);
 	port (
 		input_clk              : in  std_logic;
@@ -51,11 +51,16 @@ architecture beh of scopeio_capture1shot is
 	signal sync_videofrm : std_logic;
 	signal prev_sync_videofrm : std_logic;
 	signal videofrm_without_trigger : unsigned(0 to strobe); -- counts video frames without trigger event before free shot triggering
+	signal R_videofrm_until_trigger : unsigned(0 to strobe); -- nonzero if trigger is slower than video frame
+	constant C_videofrm_0: unsigned(0 to strobe) := (others => '0'); -- first video frame without trigger
+	constant C_videofrm_1: unsigned(0 to strobe) := (strobe => '1', others => '0'); -- first video frame without trigger
+	constant C_videofrm_before_last: unsigned(0 to strobe) := (0 => '0', others => '1'); -- video frame before last without trigger
 	signal prev_trigger_shot: std_logic; -- for rising edge detection
 	signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(storage_addr'range);
 	signal S_trigger_edge: std_logic;
 	signal S_rearm_condition: std_logic;
 	signal R_storage_mark_t0: std_logic;
+	signal R_trigger_captured: std_logic;
 begin
 	process(input_clk)
 	begin
@@ -71,6 +76,7 @@ begin
 	G_yes_deflicker: if deflicker generate
 		-- predict value of "rearm_wr_cntr" in order to minimize flickering
 		-- by overwriting waveform over the same values to the same locations in storage buffer.
+		P_deflicker_predictor:
 		process(input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -114,9 +120,22 @@ begin
 		-- similar as abuve but a LUT saver, traces will shake a bit
 		rearm_wr_cntr <= unsigned(last_wr_addr);
 		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= videofrm_without_trigger(0) or S_trigger_edge;
+
+		G_strobe_0: if strobe = 0 generate
+		S_rearm_condition <= '1' when videofrm_without_trigger(0) = '1' -- force re-arming at first frame without trigger
+		                  or S_trigger_edge = '1'
+		                  else '0';
+		end generate;
+
+		G_strobe_not_0: if strobe /= 0 generate
+		S_rearm_condition <= '1' when videofrm_without_trigger(0 to 1) = "11" -- force re-arming at last frame without trigger
+				  or (S_trigger_edge = '1' and R_videofrm_until_trigger /= C_videofrm_0) -- re-arm at trigger if trigger is slower than video frame
+		                  -- or (S_trigger_edge = '1' and videofrm_without_trigger = C_videofrm_before_last) -- re-arm at trigger 1 frame before last frame
+		                  else '0';
+		end generate;
 	end generate;
 
+	P_rearm_and_capture:
 	process(input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -132,6 +151,8 @@ begin
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
 							R_storage_mark_t0 <= '1';
+							R_trigger_captured <= '1';
+							R_videofrm_until_trigger <= videofrm_without_trigger;
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
@@ -147,18 +168,9 @@ begin
 							last_wr_addr <= unsigned(storage_addr);
 						end if;
 					end if;
-					-- reset frame counter for temporary
-					-- freezing display after the trigger
-					videofrm_without_trigger <= (others => '0');
 				else -- wr_cntr(0)='1' storage is not armed (not recording data)
 					R_storage_mark_t0 <= '0';
-					-- count configurable number of video frames
-					-- before re-arming the trigger
-					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
-						if videofrm_without_trigger(0) = '0' then
-							videofrm_without_trigger <= videofrm_without_trigger + 1;
-						end if;
-					end if;
+					R_trigger_captured <= '0';
 					-- in auto trig mode, wait a frame or more
 					-- for user to view temporary frozen display and then re-arm
 					if sync_tf = '0' then -- if not frozen
@@ -169,6 +181,24 @@ begin
 						end if;
 					end if; -- re-arming the storage
 				end if; -- storage is (not) armed
+		end if; -- rising_edge
+	end process;
+
+	P_videoframe_counter:
+	process(input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if R_trigger_captured = '1' then
+				videofrm_without_trigger <= (others => '0');
+			else
+				if prev_sync_videofrm = '1' and sync_videofrm = '0' then
+					if videofrm_without_trigger(0) = '0' then
+						videofrm_without_trigger <= videofrm_without_trigger + 1;
+					else
+						videofrm_without_trigger <= (others => '1');
+					end if;
+				end if;
+			end if;
 		end if; -- rising_edge
 	end process;
 
