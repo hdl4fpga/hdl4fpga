@@ -25,7 +25,7 @@ architecture beh of ulx3s is
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-        constant vlayout_id: integer := 7;
+        constant vlayout_id: integer := 6;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 wheel mouse
         constant C_mouse_usb:  boolean := false; -- USB mouse soft-core, unreliable
