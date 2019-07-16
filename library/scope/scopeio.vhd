@@ -269,10 +269,24 @@ begin
 		signal storage_write          : std_logic;
 		signal storage_addr           : std_logic_vector(capture_addr'range);
 	begin
+
+	downsampler_e : entity hdl4fpga.scopeio_downsampler
+	generic map (
+		factors => hz_factors)
+	port map (
+		factor_id    => hz_scale,
+		input_clk    => input_clk,
+		input_dv     => resizedsample_dv,
+		input_shot   => '0', -- for deflickering "downsample_dv" must be independend from trigger level
+		input_data   => resizedsample_data, -- not used
+		output_dv    => downsample_dv,
+		output_shot  => open,
+		output_data  => downsample_data); -- not used
+
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
 		deflicker              => false,
-		strobe                 => 1 -- (more->slower) temporary freeze triggered wave for viewing
+		strobe                 => 2 -- (more->slower) temporary freeze triggered wave for viewing
 	)
 	port map (
 		input_clk              => input_clk,
@@ -289,9 +303,10 @@ begin
 		-- from storage module
 		storage_addr           => storage_addr
 	);
+
 	scopeio_storage_e : entity hdl4fpga.scopeio_storage
 	generic map (
-		align_to_grid          => 0 -- (-left,+right) shift triggered edge n pixels
+		align_to_grid          => 1 -- (-left,+right) shift triggered edge n pixels
 	)
 	port map (
 		storage_clk            => input_clk,
@@ -305,7 +320,7 @@ begin
 		storage_addr           => storage_addr,
 
 		-- from sample source
-		storage_data           => downsample_data,
+		storage_data           => resizedsample_data,
 
 		-- from display
 		captured_clk           => video_clk,
