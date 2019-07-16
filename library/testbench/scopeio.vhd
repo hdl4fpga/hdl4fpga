@@ -119,7 +119,7 @@ begin
 	sys_clk <= not sys_clk after 20 ns;
 	vga_clk <= not vga_clk after 25 ns;
 
-	input_ena <= uart_ena;
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then

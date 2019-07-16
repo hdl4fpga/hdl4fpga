@@ -80,7 +80,7 @@ begin
 		constant sel_min : std_logic := not sel_max;
 
 		signal sel_in  : std_logic := '0'; -- Debuging pupose
-		signal sel_out : std_logic := '0'; -- Debuging pupose
+		signal sel_out : std_logic := '1'; -- Debuging pupose
 		signal sample  : signed(0 to input_data'length/inputs-1);
 		signal maxx    : signed(sample'range);
 		signal minn    : signed(sample'range);
@@ -95,18 +95,18 @@ begin
 						minn    <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
 						sel_out <= sel_in;
 						output_shot <= data_shot;
+		data_out(i*sample'length to (i+1)*sample'length-1) <=
+			std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
 					else
 						sel_in  <= not sel_out;
 						maxx    <= hdl4fpga.std.max(maxx, sample);
 						minn    <= hdl4fpga.std.min(minn, sample);
 					end if;
 				end if;
+			output_dv <= data_vld and scaler_ena;
 			end if;
 		end process;
-		data_out(i*sample'length to (i+1)*sample'length-1) <=
-			std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
 	end generate;
-	output_dv   <= data_vld;
 	output_data <= data_out;
 
 end;
