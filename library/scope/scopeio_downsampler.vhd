@@ -91,12 +91,12 @@ begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
 					if scaler_ena='1' then
-						maxx    <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
-						minn    <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
-						sel_out <= sel_in;
+						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
+						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
+						data_out(i*sample'length to (i+1)*sample'length-1) <=
+							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
 						output_shot <= data_shot;
-		data_out(i*sample'length to (i+1)*sample'length-1) <=
-			std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
+						sel_out     <= sel_in;
 					else
 						sel_in  <= not sel_out;
 						maxx    <= hdl4fpga.std.max(maxx, sample);
