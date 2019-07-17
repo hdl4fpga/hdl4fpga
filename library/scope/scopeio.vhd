@@ -286,7 +286,6 @@ begin
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
 		track_addr             => true,  -- improves deflickering
-		track_trigger          => true,  -- enables "persistence"
 		persistence            => 1      -- 2**n frames persistence
 	)
 	port map (
