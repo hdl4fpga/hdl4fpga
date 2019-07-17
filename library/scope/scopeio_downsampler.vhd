@@ -87,23 +87,25 @@ begin
 	begin
 		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
+			variable shot : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
 					if scaler_ena='1' then
-						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max));
-						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min));
+						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max or TRUE) or data_shot);
+						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min or TRUE) or data_shot);
 						data_out(i*sample'length to (i+1)*sample'length-1) <=
-							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max)));
-						output_shot <= data_shot;
-						sel_out     <= sel_in;
+							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max or TRUE)));
+						output_shot <= shot;
+						shot        := data_shot;
+						sel_out     <= sel_in and not data_shot;
 					else
 						sel_in  <= not sel_out;
 						maxx    <= hdl4fpga.std.max(maxx, sample);
 						minn    <= hdl4fpga.std.min(minn, sample);
 					end if;
 				end if;
-			output_dv <= data_vld and scaler_ena;
+				output_dv <= data_vld and scaler_ena;
 			end if;
 		end process;
 	end generate;
