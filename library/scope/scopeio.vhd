@@ -285,11 +285,9 @@ begin
 
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
-		deflicker_differential => false,
-		deflicker_linear       => true,
-		deflicker_simple       => false,
-		strobe                 => 1, -- 2**n frames (more->slower) temporary freeze triggered wave for viewing (doesn't work with deflicker_simple)
-		untriggered            => 2  -- 2**n frames timeout to untriggered mode (deflicker_linear only)
+		track_addr             => true,  -- improves deflickering
+		track_trigger          => true,  -- enables "persistence"
+		persistence            => 1      -- 2**n frames persistence
 	)
 	port map (
 		input_clk              => input_clk,

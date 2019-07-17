@@ -13,19 +13,15 @@ entity scopeio_capture1shot is
 	generic (
 		-- Measures period.
 		-- To deflicker it can rearm anytime.
-		-- "strobe" should work.
+		-- "persistence" should work.
 		-- this deflicker was working with old display system, but now is non-functional. 
 		deflicker_differential : boolean := false;
-		-- Tracks virtual wr_addr.
-		-- To deflicker, it must rearm exactly at trigger edge.
-		-- "strobe" works.
-		deflicker_linear       : boolean := false;
-		-- Takes real wr_addr.
-		-- To deflicker, it must rearm exactly at trigger edge.
-		-- "strobe" doesn't work.
-		deflicker_simple       : boolean := true;
-		untriggered            : natural := 2;    -- 2**n video frames without trigger considered as trigger is lost
-		strobe                 : natural := 1     -- 2**n video frames frozen until auto re-arming trigger
+		-- If differential is disabled, we can use options below:
+		-- To deflicker, those must rearm exactly at trigger edge.
+		track_addr             : boolean := true; -- improves deflickering
+		track_trigger          : boolean := true; -- enables "persistence" and "untrigged"
+		persistence            : natural := 1;    -- 2**n video frames persistence (frozen) until auto re-arming trigger
+		auto                   : natural := 1     -- 2**(n+persistence) video frames without trigger to auto-rearm
 	);
 	port (
 		input_clk              : in  std_logic;
@@ -40,7 +36,7 @@ entity scopeio_capture1shot is
 		storage_mark_t0        : out std_logic;
 		storage_write          : out std_logic;
 		storage_addr           : in  std_logic_vector -- used for range
-		-- "storage_addr" is used as input if deflicker = false
+		-- "storage_addr" is used as input if "track_addr" = false
 	);
 end;
 
@@ -65,17 +61,16 @@ architecture beh of scopeio_capture1shot is
 	signal sync_tf   : std_logic;
 	signal sync_videofrm : std_logic;
 	signal prev_sync_videofrm : std_logic;
-	signal videofrm_without_trigger : unsigned(0 to untriggered); -- counts video frames without trigger event before free shot triggering
-	signal videofrm_without_rearm : unsigned(0 to strobe); -- counts video frames without trigger event before re-arming
---	constant C_videofrm_0: unsigned(0 to strobe) := (others => '0'); -- first video frame without trigger
---	constant C_videofrm_1: unsigned(0 to strobe) := (strobe => '1', others => '0'); -- first video frame without trigger
---	constant C_videofrm_before_last: unsigned(0 to strobe) := (0 => '0', others => '1'); -- video frame before last without trigger
+	signal videofrm_without_rearm   : unsigned(0 to persistence); -- counts video frames without trigger event before re-arming
+	signal videofrm_without_trigger : unsigned(0 to persistence+auto); -- counts video frames without trigger event before free shot triggering
+--	constant C_videofrm_0: unsigned(0 to persistence) := (others => '0'); -- first video frame without trigger
+--	constant C_videofrm_1: unsigned(0 to persistence) := (persistence => '1', others => '0'); -- first video frame without trigger
+--	constant C_videofrm_before_last: unsigned(0 to persistence) := (0 => '0', others => '1'); -- video frame before last without trigger
 	signal prev_trigger_shot: std_logic; -- for rising edge detection
 	signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(storage_addr'range);
 	signal S_trigger_edge: std_logic;
 	signal S_rearm_condition: std_logic;
 	signal R_storage_mark_t0: std_logic;
-	signal R_trigger_captured: std_logic;
 begin
 	process(input_clk)
 	begin
@@ -131,8 +126,7 @@ begin
 		S_rearm_condition <= videofrm_without_rearm(0);
 	end generate; -- differential_deflicker
 
-	G_deflicker_linear: if deflicker_linear generate
-
+	G_yes_track_addr: if track_addr generate
 		P_deflickering_tracker:
 		-- tracks virtual storage address "wr_addr" as if it were constantly triggered.
 		-- calculates "rearm_wr_cntr" as last "wr_addr" remainder.
@@ -153,7 +147,14 @@ begin
 			end if;
 		end if; -- rising_edge
 		end process;
+	end generate; -- track_addr
+
+	G_not_track_addr: if not track_addr generate
+		-- similar as abuve but a LUT saver, traces will shake a bit
+		rearm_wr_cntr <= unsigned(last_wr_addr);
+	end generate; -- not track_addr
 	
+	G_yes_track_trigger: if track_trigger generate
 		P_videoframe_counter: 
 		-- detects if trigger is lost
 		process(input_clk)
@@ -172,16 +173,14 @@ begin
 		end process;
 
 		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= S_trigger_edge and videofrm_without_rearm(0) when videofrm_without_trigger(0) = '0' -- when triggered
-		                else videofrm_without_rearm(0); -- when trigger is lost
-	end generate; -- linear_deflicker
+		S_rearm_condition <= (S_trigger_edge and videofrm_without_rearm(0)) -- when triggered
+		                  or videofrm_without_trigger(0); -- when trigger is lost
+	end generate; -- track_trigger
 
-	G_deflicker_simple: if deflicker_simple generate
-		-- similar as abuve but a LUT saver, traces will shake a bit
-		rearm_wr_cntr <= unsigned(last_wr_addr);
+	G_not_track_trigger: if not track_trigger generate
 		-- "rearm_wr_cntr" is valid for use only at trigger edge.
 		S_rearm_condition <= S_trigger_edge or videofrm_without_rearm(0);
-	end generate; -- simple_deflicker
+	end generate; -- not track_trigger
 
 	P_rearm_and_capture:
 	process(input_clk)
@@ -199,7 +198,6 @@ begin
 						        -- to check if trigger really hits the same data - then
 						        -- the traces should be more-or-less X-stable.
 							R_storage_mark_t0 <= '1';
-							R_trigger_captured <= '1';
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
 					else -- regular countdown before and after trigger
@@ -218,7 +216,6 @@ begin
 					videofrm_without_rearm <= (others => '0');
 				else -- wr_cntr(0)='1' storage is not armed (not recording data)
 					R_storage_mark_t0 <= '0';
-					R_trigger_captured <= '0';
 					-- wait a frame or more
 					-- for user to view temporary frozen display and then re-arm
 					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
