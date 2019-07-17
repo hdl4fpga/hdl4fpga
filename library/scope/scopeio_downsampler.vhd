@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_downsampler is
 	generic (
+		inputs  : natural;
 		factors : natural_vector);
 	port (
 		factor_id     : in  std_logic_vector;
@@ -35,7 +36,11 @@ architecture beh of scopeio_downsampler is
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
-	signal shot_dis : std_logic;
+	signal data_in  : std_logic_vector(0 to input_data'length-1);
+	signal data_out : std_logic_vector(0 to output_data'length-1);
+	signal scaler_ena : std_logic;
+	signal data_shot : std_logic;
+	signal data_vld : std_logic;
 
 begin
 
@@ -47,45 +52,63 @@ begin
 		data => factor);
 
 	scaler_p : process (input_clk)
-		variable scaler   : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
+		variable shot_dis : std_logic;
+		variable scaler   : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
 				if input_shot='1' and shot_dis='0' then
-					scaler    := (others => '1');
-					output_dv <= input_dv;
+					scaler := (others => '1');
+				elsif scaler(0)='1' then
+					scaler := unsigned(factor);
 				else
-					if scaler(0)='1' then
-						scaler := unsigned(factor);
-					else
-						scaler := scaler - 1;
-					end if;
-					output_dv <= scaler(0);
+					scaler := scaler - 1;
 				end if;
+				scaler_ena <= scaler(0);
+				shot_dis := input_shot;
+				data_vld <= input_dv;
 			else
-				output_dv <= '0';
+				data_vld <= '0';
 			end if;
+			data_in   <= input_data;
+			data_shot <= shot_dis;
 		end if;
 	end process;
 
-	datalatency_e : entity hdl4fpga.align
-	generic map (
-		n => input_data'length,
-		d => (1 to input_data'length => 1))
-	port map (
-		clk => input_clk,
-		ena => input_dv,
-		di  => input_data,
-		do  => output_data);
+	envelope_g : for i in 0 to inputs-1 generate
+		constant sel_max : std_logic := '0';
+		constant sel_min : std_logic := not sel_max;
 
-	shotlatency_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (1 to 1 => 1))
-	port map (
-		clk   => input_clk,
-		ena   => input_dv,
-		di(0) => input_shot,
-		do(0) => shot_dis);
-	output_shot <= shot_dis;
+		signal sel_in  : std_logic := '0'; -- Debuging pupose
+		signal sel_out : std_logic := '1'; -- Debuging pupose
+		signal sample  : signed(0 to input_data'length/inputs-1);
+		signal maxx    : signed(sample'range);
+		signal minn    : signed(sample'range);
+	begin
+		sample <= signed(word2byte(data_in, i, sample'length));
+		process (input_clk)
+			variable shot : std_logic;
+		begin
+			if rising_edge(input_clk) then
+				if data_vld='1' then
+					if scaler_ena='1' then
+						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max or TRUE) or data_shot);
+						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min or TRUE) or data_shot);
+						data_out(i*sample'length to (i+1)*sample'length-1) <=
+							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max or TRUE)));
+						output_shot <= shot;
+						shot        := data_shot;
+						sel_out     <= sel_in and not data_shot;
+					else
+						sel_in  <= not sel_out;
+						maxx    <= hdl4fpga.std.max(maxx, sample);
+						minn    <= hdl4fpga.std.min(minn, sample);
+					end if;
+				end if;
+				output_dv <= data_vld and scaler_ena;
+			end if;
+		end process;
+	end generate;
+	output_data <= data_out;
+
 end;

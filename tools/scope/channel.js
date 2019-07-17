@@ -265,48 +265,37 @@ function vtControl (parent, number, color) {
 
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
-	c.style['vertical-align'] = 'bottom';
-	c.style['align'] = 'center';
+	c.style['vertical-align'] = 'top';
+	c.style['text-align']     = 'left';
 	trigger.appendChild(c);
 
 	slope = {};
-	slope.positive = document.createElement("label");
-	slope.positive.appendChild(document.createTextNode('positive'));
-	slope.positive.input = document.createElement("input");
-	slope.positive.input.type  = 'radio';
-	slope.positive.input.name  = 'slope';
-	slope.positive.input.value = 'positive';
-	slope.positive.appendChild(slope.positive.input);
-	c.appendChild(slope.positive);
-	c.appendChild(document.createTextNode('positive'));
-	slope.positive.style.display = 'block';
-	slope.negative = document.createElement("input");
-	slope.negative.type  = 'radio';
-	slope.negative.name  = 'slope';
-	slope.negative.value = 'negative';
-	c.appendChild(slope.negative);
-	c.appendChild(document.createTextNode('negative'));
-	this.inputControl['slope'] = slope;
+	['positive', 'negative'].forEach(item => {
+		slope[item] = document.createElement("label");
+		slope[item].style.display = 'block';
+		slope[item].style.align   = 'left';
+		slope[item].input         = document.createElement("input");
+		slope[item].input.type    = 'radio';
+		slope[item].input.name    = 'slope';
+		slope[item].input.value   = item;
+		slope[item].appendChild(slope[item].input);
+		slope[item].appendChild(document.createTextNode(item));
+		c.appendChild(slope[item]); });
+//	this.inputControl['slope'] = slope;
 
-	br = document.createElement("br");
-	c.appendChild(br);
-	mode  = document.createElement("select");
-	mode.style['width']        = '100%';
-	mode.style['margin'] = '5';
-	mode.style['display']        = 'inline';
-	option = document.createElement("option");
-	option.text = "Continuos";
-	mode.add(option);
-	option = document.createElement("option");
-	option.text = "One shot";
-	mode.add(option);
-	option = document.createElement("option");
-	option.text = "Freeze";
-	mode.add(option);
-	mode['id']        = 'mode:'+number;
-	mode['value']     = 0;
-	c.appendChild(mode);
-	this.inputControl['mode'] = mode;
+	mode = {};
+	['continuos', 'one shot', 'stop'].forEach(item => {
+		mode[item] = document.createElement("label");
+		mode[item].style.display = 'block';
+		mode[item].style.align   = 'left';
+		mode[item].input         = document.createElement("input");
+		mode[item].input.type    = 'radio';
+		mode[item].input.name    = 'mode';
+		mode[item].input.value   = item;
+		mode[item].appendChild(mode[item].input);
+		mode[item].appendChild(document.createTextNode(item));
+		c.appendChild(mode[item]); });
+//	this.inputControl['mode'] = mode;
 
 	level.level = level;
 	level.slope = slope;
