@@ -1,7 +1,8 @@
-Artix-7 ScopeIO Architecture
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ScopeIO on Digilent Starter Spartan 3 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../arty/scope/scopeio.vhd
+.. literalinclude:: ../s3starter/scopeio/scopeio.vhd
+   :tab-width: 4
    :language: vhdl
    :linenos:
 

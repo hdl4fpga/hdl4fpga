@@ -1,9 +1,6 @@
 DIGILENT Spartan-3E Starter Board
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. |starter3e| image:: slides/images/starter3.png 
-   :target: _images/starter3.png
-
 .. list-table::
    :widths: auto
 
@@ -12,5 +9,4 @@ DIGILENT Spartan-3E Starter Board
        * 64 MB fast Micron DDRAM
        * 16 MB StrataFlash Flash 
        * VGA, PS/2, and serial ports
-     - |starter3e|
 

@@ -3,7 +3,7 @@ Analizador de nueve canales en Arty
 
 .. raw:: html
 
-    <video controls width="924px">
-      <source src="_images/Arty_Artix-7_as_a_9-Channel_Oscilloscope.mp4" type="video/mp4">
-    </video>
+    <div style="text-align:center;position: relative; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+      <iframe width="608" height="342" frameborder="0" src="https://www.youtube.com/embed/rSdEprgKkq4" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
 

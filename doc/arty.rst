@@ -1,9 +1,6 @@
 Arty
 ~~~~
 
-.. |image| image:: slides/images/arty.jpg 
-   :target: _images/arty.jpg
-
 .. list-table::
    :widths: auto
 
@@ -14,5 +11,4 @@ Arty
        * Four Pmod interfaces (32 I/O)   
        * Arduino/ChipKit shield connector
        * 16 MB Quad-SPI Flash            
-     - |image|
 
