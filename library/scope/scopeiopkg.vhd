@@ -34,6 +34,7 @@ package scopeiopkg is
 	constant max_inputs    : natural := 64;
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
+	constant max_pixelsize : natural := 24;
 
 	type border        is (left, right, top, bottom);
 	type rotate        is (ccw0, ccw90, ccw270);

@@ -31,20 +31,19 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		test : boolean := false;
+		test        : boolean := false;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
 		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
 
 		inputs      : natural;
+
 		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
 			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
 			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
-		vt_factsyms : std_logic_vector := (0 to 0 => '0');
-		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
 		hz_factors  : natural_vector := (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
@@ -52,10 +51,7 @@ entity scopeio is
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
 			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
-		hz_factsyms      : std_logic_vector := (0 to 0 => '0');
-		hz_untsyms       : std_logic_vector := (0 to 0 => '0');
 
-		max_pixelsize    : natural := 24;
 		default_tracesfg : std_logic_vector := b"1_1_1";
 		default_gridfg   : std_logic_vector := b"1_0_0";
 		default_gridbg   : std_logic_vector := b"0_0_0";
@@ -114,7 +110,7 @@ architecture beh of scopeio is
 	signal resizedsample_dv   : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal downsample_oshot   : std_logic;
-	signal downsample_ishot  : std_logic;
+	signal downsample_ishot   : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
