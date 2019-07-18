@@ -272,6 +272,7 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
+		inputs  => 1,
 		factors => hz_factors)
 	port map (
 		factor_id    => hz_scale,
