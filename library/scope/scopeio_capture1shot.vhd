@@ -19,9 +19,7 @@ entity scopeio_capture1shot is
 		-- If differential is disabled, we can use options below:
 		-- To deflicker, those must rearm exactly at trigger edge.
 		track_addr             : boolean := true; -- improves deflickering
-		track_trigger          : boolean := true; -- enables "persistence" and "untrigged"
-		persistence            : natural := 1;    -- 2**n video frames persistence (frozen) until auto re-arming trigger
-		auto                   : natural := 1     -- 2**(n+persistence) video frames without trigger to auto-rearm
+		persistence            : natural := 1     -- 2**n video frames persistence (frozen) until auto re-arming trigger
 	);
 	port (
 		input_clk              : in  std_logic;
@@ -62,7 +60,6 @@ architecture beh of scopeio_capture1shot is
 	signal sync_videofrm : std_logic;
 	signal prev_sync_videofrm : std_logic;
 	signal videofrm_without_rearm   : unsigned(0 to persistence); -- counts video frames without trigger event before re-arming
-	signal videofrm_without_trigger : unsigned(0 to persistence+auto); -- counts video frames without trigger event before free shot triggering
 --	constant C_videofrm_0: unsigned(0 to persistence) := (others => '0'); -- first video frame without trigger
 --	constant C_videofrm_1: unsigned(0 to persistence) := (persistence => '1', others => '0'); -- first video frame without trigger
 --	constant C_videofrm_before_last: unsigned(0 to persistence) := (0 => '0', others => '1'); -- video frame before last without trigger
@@ -126,6 +123,7 @@ begin
 		S_rearm_condition <= videofrm_without_rearm(0);
 	end generate; -- differential_deflicker
 
+	G_not_deflicker_differential: if not deflicker_differential generate
 	G_yes_track_addr: if track_addr generate
 		P_deflickering_tracker:
 		-- tracks virtual storage address "wr_addr" as if it were constantly triggered.
@@ -150,37 +148,14 @@ begin
 	end generate; -- track_addr
 
 	G_not_track_addr: if not track_addr generate
-		-- similar as abuve but a LUT saver, traces will shake a bit
+		-- similar as above but a LUT saver, traces will shake a bit
 		rearm_wr_cntr <= unsigned(last_wr_addr);
 	end generate; -- not track_addr
-	
-	G_yes_track_trigger: if track_trigger generate
-		P_videoframe_counter: 
-		-- detects if trigger is lost
-		process(input_clk)
-		begin
-		if rising_edge(input_clk) then
-			if S_trigger_edge = '1' then
-				videofrm_without_trigger <= (others => '0');
-			else
-				if prev_sync_videofrm = '1' and sync_videofrm = '0' then
-					if videofrm_without_trigger(0) = '0' then
-						videofrm_without_trigger <= videofrm_without_trigger + 1;
-					end if;
-				end if;
-			end if;
-		end if; -- rising_edge
-		end process;
 
-		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= (S_trigger_edge and videofrm_without_rearm(0)) -- when triggered
-		                  or videofrm_without_trigger(0); -- when trigger is lost
-	end generate; -- track_trigger
-
-	G_not_track_trigger: if not track_trigger generate
-		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= S_trigger_edge or videofrm_without_rearm(0);
-	end generate; -- not track_trigger
+	-- "rearm_wr_cntr" is valid for use only at trigger edge.
+	S_rearm_condition <= (S_trigger_edge and videofrm_without_rearm(1)) -- when triggered
+	                  or videofrm_without_rearm(0); -- when trigger is lost
+	end generate; -- not differential_deflicker
 
 	P_rearm_and_capture:
 	process(input_clk)

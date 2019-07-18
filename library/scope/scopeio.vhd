@@ -272,6 +272,7 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
+		inputs  => 1,
 		factors => hz_factors)
 	port map (
 		factor_id    => hz_scale,
@@ -286,7 +287,6 @@ begin
 	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
 	generic map (
 		track_addr             => true,  -- improves deflickering
-		track_trigger          => true,  -- enables "persistence"
 		persistence            => 1      -- 2**n frames persistence
 	)
 	port map (
