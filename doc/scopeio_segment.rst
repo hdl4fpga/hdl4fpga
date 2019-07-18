@@ -1,7 +1,7 @@
-Arquitectura del segmento de ScopeIO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scopeio_segment
+~~~~~~~~~~~~~~~
 
-.. _scopeio-segment-label:
+.. _scopeiosegment-label:
 
 .. literalinclude:: ../library/scope/scopeio_segment.vhd
    :language: vhdl

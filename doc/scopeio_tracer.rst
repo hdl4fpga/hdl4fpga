@@ -1,7 +1,7 @@
-Arquitectura del trazador de ScopeIO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scopeio_tracer
+~~~~~~~~~~~~~~
 
-.. _scopeio-tracer-label:
+.. _scopeiotracer-label:
 
 .. literalinclude:: ../library/scope/scopeio_tracer.vhd
    :language: vhdl

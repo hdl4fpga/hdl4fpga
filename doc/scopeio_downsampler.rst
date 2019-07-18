@@ -1,9 +1,9 @@
-Arquitectura del segmento de ScopeIO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scopeio_downsampler.vhd
+~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _scopeio-segment-label:
+.. _scopeiodownsampler-label:
 
-.. literalinclude:: ../library/scope/scopeio_segment.vhd
+.. literalinclude:: ../library/scope/scopeio_downsampler.vhd
    :language: vhdl
    :linenos:
 

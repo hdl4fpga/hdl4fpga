@@ -1,9 +1,9 @@
-Arquitectura del segmento de ScopeIO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scopeio_video
+~~~~~~~~~~~~~
 
-.. _scopeio-segment-label:
+.. _scopeiovideo-label:
 
-.. literalinclude:: ../library/scope/scopeio_segment.vhd
+.. literalinclude:: ../library/scope/scopeio_video.vhd
    :language: vhdl
    :linenos:
 

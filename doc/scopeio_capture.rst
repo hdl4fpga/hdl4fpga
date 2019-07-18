@@ -1,9 +1,9 @@
-Arquitectura del segmento de ScopeIO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scopeio_capture
+~~~~~~~~~~~~~~~
 
-.. _scopeio-segment-label:
+.. _scopeiocapture-label:
 
-.. literalinclude:: ../library/scope/scopeio_segment.vhd
+.. literalinclude:: ../library/scope/scopeio_capture.vhd
    :language: vhdl
    :linenos:
 
