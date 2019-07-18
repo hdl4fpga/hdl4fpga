@@ -105,7 +105,9 @@ begin
 						minn    <= hdl4fpga.std.min(minn, sample);
 					end if;
 				end if;
-				output_dv <= data_vld and scaler_ena;
+				if i=0 then
+					output_dv <= data_vld and scaler_ena;
+				end if;
 			end if;
 		end process;
 	end generate;
