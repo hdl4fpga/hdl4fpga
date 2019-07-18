@@ -11,7 +11,6 @@ HDL4FPGA's documentation
    :caption: Contents:
 
    library
-   std
    scopeio
    slides
 
