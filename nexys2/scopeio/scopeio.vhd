@@ -73,6 +73,9 @@ architecture beh of nexys2 is
 			if i=0 then
 				retval(i) := 127;
 			end if;
+			if i=300 then
+				retval(i) := -63;
+			end if;
 			if i=735 then
 				retval(i) := -63;
 			end if;
@@ -149,7 +152,7 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
-	input_ena <= uart_ena;
+	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then

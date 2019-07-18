@@ -174,6 +174,11 @@ package std is
 		return std_logic_vector;
 
 	function word2byte (
+		constant word : signed;
+		constant addr : std_logic)
+		return signed;
+
+	function word2byte (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
@@ -236,14 +241,24 @@ package std is
 		return integer;
 
 	function max (
-		constant left : integer; 
-		constant right: integer)
+		constant arg1 : integer; 
+		constant arg2 : integer)
+		return integer;
+
+	function max (
+		constant arg1 : signed; 
+		constant arg2 : signed)
+		return signed;
+
+	function min (
+		constant arg1 : integer; 
+		constant arg2 : integer)
 		return integer;
 
 	function min (
-		constant left : integer; 
-		constant right: integer)
-		return integer;
+		constant arg1 : signed; 
+		constant arg2 : signed)
+		return signed;
 
 	procedure swap (
 		variable arg1 : inout std_logic_vector;
@@ -815,6 +830,14 @@ package body std is
 	end;
 
 	function word2byte (
+		constant word : signed;
+		constant addr : std_logic)
+		return signed is
+	begin
+		return signed(word2byte(std_logic_vector(word), (0 to 0 => addr)));
+	end;
+
+	function word2byte (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
@@ -944,26 +967,50 @@ package body std is
 	end;
 
 	function max (
-		constant left : integer; 
-		constant right: integer)
+		constant arg1 : integer; 
+		constant arg2 : integer)
 		return integer is
 	begin
-		if left > right then
-			return left;
+		if arg1 > arg2 then
+			return arg1;
 		else 
-			return right;
+			return arg2;
+		end if;
+	end;
+
+	function max (
+		constant arg1 : signed; 
+		constant arg2 : signed)
+		return signed is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else 
+			return arg2;
 		end if;
 	end;
 
 	function min (
-		constant left : integer;
-		constant right: integer)
+		constant arg1 : integer;
+		constant arg2 : integer)
 		return integer is
 	begin
-		if left < right then
-			return left;
+		if arg1 < arg2 then
+			return arg1;
 		else
-			return right;
+			return arg2;
+		end if;
+	end;
+
+	function min (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed is
+	begin
+		if arg1 < arg2 then
+			return arg1;
+		else
+			return arg2;
 		end if;
 	end;
 
