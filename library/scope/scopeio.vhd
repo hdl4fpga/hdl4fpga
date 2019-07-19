@@ -303,7 +303,7 @@ begin
 
 	scopeio_storage_e : entity hdl4fpga.scopeio_storage
 	generic map (
-		align_to_grid          => 1 -- (-left,+right) shift triggered edge n pixels
+		align_to_grid          => 0 -- (-left,+right) shift triggered edge n pixels
 	)
 	port map (
 		storage_clk            => input_clk,
