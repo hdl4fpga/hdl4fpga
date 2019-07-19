@@ -58,7 +58,8 @@ entity usb_phy is
     -- RX debug interface
     sync_err_o, bit_stuff_err_o, byte_err_o: out std_logic;
     -- UTMI Interface
-    DataOut_i        : in  std_logic_vector(7 downto 0);
+    KeepAlive_i      : IN  STD_LOGIC := '0'; -- 1: for low speed send End-Of-Packet (optional 20ms K state for resume, 2 bits drive Single-Ended 0, 1 bit drive J state)
+    DataOut_i        : in  std_logic_vector(7 downto 0); -- KeepAlive_i=0: DataOut_i=byte_to_send, KeepAlive_i=1: DataOut_i(0)=0 -> KEEPALIVE, DataOut_i(0)=1 -> RESUME 20ms K
     TxValid_i        : in  std_logic;
     TxReady_o        : out std_logic;
     DataIn_o         : out std_logic_vector(7 downto 0);
@@ -134,6 +135,7 @@ begin
     txdn       => txdn,
     txoe       => txoe_out,
     -- UTMI Interface
+    KeepAlive_i=> KeepAlive_i,
     DataOut_i  => DataOut_i,
     TxValid_i  => TxValid_i,
     TxReady_o  => TxReady_o
