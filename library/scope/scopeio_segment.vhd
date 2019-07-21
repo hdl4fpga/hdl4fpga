@@ -48,8 +48,8 @@ entity scopeio_segment is
 		vt_on         : in  std_logic;
 
 		sample_dv     : in  std_logic;
-		samples_to    : in  std_logic_vector;
-		samples_from  : in  std_logic_vector;
+		samples_y0    : in  std_logic_vector;
+		samples_y1    : in  std_logic_vector;
 
 		hz_dot        : out std_logic;
 		vt_dot        : out std_logic;
@@ -238,10 +238,10 @@ begin
 		port map (
 			clk      => video_clk,
 			ena      => trace_ena,
-			y        => y,
+			vline    => y,
 			offsets  => vt_offsets,
-			samples1 => samples_to,
-			samples2 => samples_from,
+			y0s      => samples_y0,
+			y1s      => samples_y1,
 			dots     => traces_dots);
 	end block;
 

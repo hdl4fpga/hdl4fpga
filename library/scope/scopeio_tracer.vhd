@@ -10,13 +10,13 @@ entity scopeio_tracer is
 		latency   : natural;
 		vt_height : natural);
 	port (
-		clk       : in  std_logic;
-		ena       : in  std_logic;
-		y         : in  std_logic_vector;
-		offsets   : in  std_logic_vector;
-		samples1  : in  std_logic_vector;
-		samples2  : in  std_logic_vector;
-		dots      : out std_logic_vector);
+		clk     : in  std_logic;
+		ena     : in  std_logic;
+		vline   : in  std_logic_vector;
+		offsets : in  std_logic_vector;
+		y0s     : in  std_logic_vector;
+		y1s     : in  std_logic_vector;
+		dots    : out std_logic_vector);
 end;
 
 architecture def of scopeio_tracer is
@@ -25,24 +25,24 @@ begin
 
 	trace_g : for i in dots'range generate
 
-		signal y1   : signed(0 to samples1'length/dots'length-1);
-		signal y2   : signed(0 to samples2'length/dots'length-1);
+		signal y0   : signed(0 to y0s'length/dots'length-1);
+		signal y1   : signed(0 to y1s'length/dots'length-1);
 		signal bias : signed(0 to offsets'length/dots'length-1);
-		signal row  : signed(y'range);
+		signal row  : signed(vline'range);
 
 	begin
 
-		y1   <= signed(word2byte(samples1, i, y1'length));
-		y2   <= signed(word2byte(samples2, i, y2'length));
+		y0   <= signed(word2byte(y0s, i, y0'length));
+		y1   <= signed(word2byte(y1s, i, y1'length));
 		bias <= signed(word2byte(offsets,  i, bias'length));
-		row  <= signed(y)-vt_height/2;
+		row  <= signed(vline)-vt_height/2;
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		port map (
 			ena  => ena,
 			row  => std_logic_vector(row),
-			y1   => std_logic_vector(y1),
-			y2   => std_logic_vector(y2),
+			y1   => std_logic_vector(y0),
+			y2   => std_logic_vector(y1),
 			dot  => dots(i));
 
 	end generate;

@@ -123,6 +123,7 @@ architecture beh of scopeio is
 	signal capture_end        : std_logic;
 	signal capture_dv         : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal plot_data          : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_vton         : std_logic;
@@ -353,6 +354,16 @@ begin
 		capture_dv     => capture_dv);
 	end generate;
 
+	plot_data(capture_data'range) <= capture_data;
+	plot_data_e : entity hdl4fpga.align
+	generic map (
+		n => capture_data'length,
+		d => (capture_data'range => 1))
+	port map (
+		clk => video_clk,
+		di  => plot_data(capture_data'range),
+		do  => plot_data(capture_data'length to plot_data'right));
+
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
 		vlayout_id       => vlayout_id,
@@ -389,7 +400,7 @@ begin
 		trigger_level    => trigger_level,
 
 		capture_addr     => capture_addr,
-		capture_data     => capture_data,
+		capture_data     => plot_data,
 		capture_dv       => capture_dv,
 
 		pointer_x        => pointer_x,

@@ -41,6 +41,8 @@ architecture beh of scopeio_downsampler is
 	signal scaler_ena : std_logic;
 	signal data_shot : std_logic;
 	signal data_vld : std_logic;
+	signal max_ini : std_logic;
+	signal min_ini : std_logic;
 
 begin
 
@@ -75,42 +77,39 @@ begin
 		end if;
 	end process;
 
-	envelope_g : for i in 0 to inputs-1 generate
-		constant sel_max : std_logic := '0';
-		constant sel_min : std_logic := not sel_max;
+	max_ini <= scaler_ena; 
+	data_vld_p : process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if data_vld='1' then
+				min_ini <= max_ini;
+				if scaler_ena='1' then
+					output_shot <= data_shot;
+				end if;
+			end if;
+			output_dv <= data_vld and (max_ini or min_ini);
+		end if;
+	end process;
 
-		signal sel_in  : std_logic := '0'; -- Debuging pupose
-		signal sel_out : std_logic := '1'; -- Debuging pupose
-		signal sample  : signed(0 to input_data'length/inputs-1);
-		signal maxx    : signed(sample'range);
-		signal minn    : signed(sample'range);
+	compress_g : for i in 0 to inputs-1 generate
+		signal sample : signed(0 to input_data'length/inputs-1);
+		signal maxx   : signed(sample'range);
+		signal minn   : signed(sample'range);
 	begin
 		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
-			variable shot : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					if scaler_ena='1' then
-						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max or TRUE) or data_shot);
-						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min or TRUE) or data_shot);
-						data_out(i*sample'length to (i+1)*sample'length-1) <=
-							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max or TRUE)));
-						output_shot <= shot;
-						shot        := data_shot;
-						sel_out     <= sel_in and not data_shot;
-					else
-						sel_in  <= not sel_out;
-						maxx    <= hdl4fpga.std.max(maxx, sample);
-						minn    <= hdl4fpga.std.min(minn, sample);
-					end if;
-				end if;
-				if i=0 then
-					output_dv <= data_vld and scaler_ena;
+					maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, max_ini);
+					minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
 				end if;
 			end if;
 		end process;
+		data_out(i*sample'length to (i+1)*sample'length-1) <= 
+			word2byte(std_logic_vector(minn & maxx), max_ini);
 	end generate;
+
 	output_data <= data_out;
 
 end;
