@@ -49,6 +49,7 @@ entity scopeio_segment is
 
 		sample_dv     : in  std_logic;
 		sample_data   : in  std_logic_vector;
+		sample_data1  : in  std_logic_vector;
 
 		hz_dot        : out std_logic;
 		vt_dot        : out std_logic;
@@ -227,59 +228,29 @@ begin
 		signal trace_ena : std_logic;
 	begin
 
-		delay_y_e :entity hdl4fpga.align
-		generic map (
-			n => y'length,
-			d => (0 to y'length-1 => input_latency+offset_latency))
-		port map (
-			clk => video_clk,
-			di  => y,
-			do  => delayed_y);
-
 		delay_ena_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => input_latency+offset_latency))
+			d => (0 => input_latency)
 		port map (
 			clk   => video_clk,
 			di(0) => grid_on,
 			do(0) => trace_on);
 
-		offset_p : process (video_clk)
-			variable samples1 : unsigned(sample_data'length-1 downto 0);
-			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
-			variable sign     : std_logic;
-		begin
-			if rising_edge(video_clk) then
-				samples1 := unsigned(sample_data);
-				offsets  := unsigned(vt_offsets);
-				for i in 0 to inputs-1 loop
-					sign := samples1(sample'left) xor offsets(sample'left);
-					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
-					if sign='1' then
-						if offsets(sample'left)=samples1(sample'left) then
-							samples1(sample'range) := not samples1(sample'left) & (1 to sample'length-1 => samples1(sample'left));
-						end if;
-					end if;
-					samples1 := samples1 ror sample'length;
-					offsets  := offsets  ror (vt_offsets'length/inputs);
-				end loop;
-				samples2 <= std_logic_vector(samples1);
-			end if;
-		end process;
-
 		trace_ena <= trace_on and '1'; --sample_dv;
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
-			latency => latency-(input_latency+offset_latency),
+			latency => latency-input_latency),
 			inputs  => inputs,
 			vt_height => vt_height)
 		port map (
-			clk     => video_clk,
-			ena     => trace_ena,
-			y       => delayed_y,
-			samples => samples2,
-			dots    => traces_dots);
+			clk      => video_clk,
+			ena      => trace_ena,
+			row      => y,
+			offsets  => offsets,
+			samples1 => samples_data1
+			samples2 => samples_data2
+			dots     => traces_dots);
 	end block;
 
 end;
