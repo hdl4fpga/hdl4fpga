@@ -460,7 +460,8 @@ begin
 				grid_on       => grid_on,
 
 				sample_dv     => capture_dv,
-				sample_data   => capture_data,
+				samples_to     => capture_data,
+				samples_from   => capture_data,
 				trigger_level => trigger_level,
 				grid_dot      => grid_dot,
 				hz_dot        => hz_dot,
