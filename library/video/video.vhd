@@ -350,10 +350,12 @@ entity draw_vline is
 end;
 
 architecture def of draw_vline is
-	signal enad : std_logic;
-				lt2 := setif(unsigned(row1) < unsigned(row2));
-				eq2 := setif(unsigned(row1) = unsigned(row2));
+	signal lt1 : std_logic;
+	signal eq1 : std_logic;
+	signal lt2 : std_logic;
+	signal eq2 : std_logic;
 begin
+
 	lt1 <= setif(signed(y1) < signed(row));
 	eq1 <= setif(signed(y1) = signed(row));
 	lt2 <= setif(signed(y2) < signed(row));

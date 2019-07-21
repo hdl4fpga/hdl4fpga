@@ -8,7 +8,6 @@ use hdl4fpga.std.all;
 entity scopeio_tracer is
 	generic (
 		latency   : natural;
-		inputs    : natural;
 		vt_height : natural);
 	port (
 		clk       : in  std_logic;
@@ -21,13 +20,15 @@ entity scopeio_tracer is
 end;
 
 architecture def of scopeio_tracer is
+	signal dots1 : std_logic_vector(0 to dots'length-1);
 begin
 
-	trace_g : for i in 0 to inputs-1 generate
+	trace_g : for i in dots'range generate
 
-		signal y1   : unsigned(0 to samples1'length/inputs-1);
-		signal y2   : unsigned(0 to samples2'length/inputs-1);
-		signal bias : unsigned(0 to offsets'length/inputs-1);
+		signal y1   : signed(0 to samples1'length/dots'length-1);
+		signal y2   : signed(0 to samples2'length/dots'length-1);
+		signal bias : signed(0 to offsets'length/dots'length-1);
+		signal row  : signed(y'range);
 
 	begin
 
