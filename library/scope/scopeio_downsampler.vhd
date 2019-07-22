@@ -77,12 +77,12 @@ begin
 		end if;
 	end process;
 
-	max_ini <= scaler_ena; 
+	max_ini <= scaler_ena and not min_ini;
 	data_vld_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 			if data_vld='1' then
-				min_ini <= max_ini;
+				min_ini <= not max_ini;
 				if scaler_ena='1' then
 					output_shot <= data_shot;
 				end if;
