@@ -82,12 +82,14 @@ ARCHITECTURE RTL of usb_tx_phy is
   SIGNAL ld_data            : STD_LOGIC;
   SIGNAL ld_data_d          : STD_LOGIC;
   SIGNAL ld_sop_d           : STD_LOGIC;
-  SIGNAL R_KeepAlive_i            : STD_LOGIC;
+  SIGNAL R_KeepAlive_i      : STD_LOGIC;
   SIGNAL R_resume_i         : STD_LOGIC;
+  SIGNAL R_busreset_i       : STD_LOGIC;
   SIGNAL bit_cnt            : STD_LOGIC_VECTOR(15 DOWNTO 0); -- 20ms resume @ 6MHz: (15 downto 0)
   SIGNAL sft_done_e         : STD_LOGIC;
   SIGNAL any_eop_state      : STD_LOGIC;
   SIGNAL append_eop         : STD_LOGIC;
+  SIGNAL se_state           : STD_LOGIC;
   SIGNAL data_xmit          : STD_LOGIC;
   SIGNAL hold_reg_d         : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL one_cnt            : STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -340,11 +342,11 @@ BEGIN
     ELSIF rising_edge(clk) THEN
       IF fs_ce ='1' THEN
         IF phy_mode ='1' THEN
-          txdp <= NOT append_eop AND     sd_nrzi_o;
-          txdn <= NOT append_eop AND NOT sd_nrzi_o;
+          txdp <= NOT se_state AND     sd_nrzi_o;
+          txdn <= NOT se_state AND NOT sd_nrzi_o;
         ELSE
           txdp <= sd_nrzi_o;
-          txdn <= append_eop;
+          txdn <= se_state;
         END IF;
       END IF;
     END IF;
@@ -366,6 +368,7 @@ BEGIN
           WHEN IDLE_STATE => IF TxValid_i ='1' THEN
                                R_KeepAlive_i <= KeepAlive_i;
                                R_resume_i <= DataOut_i(0);
+                               R_busreset_i <= DataOut_i(1);
 --                               IF DataOut_i(0) = '0' THEN
 --                                 state <= EOP1_STATE; -- fast but txready_o wrong
 --                               ELSE
@@ -399,7 +402,8 @@ BEGIN
     END IF;
   END PROCESS;
  
-  append_eop <= '1' WHEN state(3 DOWNTO 2) = "11" ELSE '0';  -- EOP4_STATE OR EOP5_STATE
+  append_eop <= '1' WHEN (state(3 DOWNTO 2) = "11") ELSE '0'; -- EOP4_STATE OR EOP5_STATE
+  se_state   <= '1' WHEN append_eop = '1' OR (state /= WAIT_STATE AND R_KeepAlive_i = '1' AND R_resume_i = '1' AND R_busreset_i = '1') ELSE '0';
   ld_sop_d   <= TxValid_i  WHEN state = IDLE_STATE ELSE '0';
   ld_data_d  <= sft_done_e WHEN state = SOP_STATE OR (state = DATA_STATE AND data_xmit ='1') ELSE '0';
   S_resume   <= '0' WHEN state /= WAIT_STATE AND R_resume_i = '1' ELSE '1';
