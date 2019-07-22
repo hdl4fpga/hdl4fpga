@@ -87,7 +87,7 @@ begin
 					output_shot <= data_shot;
 				end if;
 			end if;
-			output_dv <= data_vld and (max_ini or min_ini);
+			output_dv <= data_vld and min_ini;
 		end if;
 	end process;
 
@@ -102,12 +102,11 @@ begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
 					maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, max_ini);
-					minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
+					minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, min_ini);
 				end if;
 			end if;
 		end process;
-		data_out(i*sample'length to (i+1)*sample'length-1) <= 
-			word2byte(std_logic_vector(minn & maxx), max_ini);
+		data_out(2*i*sample'length to 2*(i+1)*sample'length-1) <= std_logic_vector(maxx & minn);
 	end generate;
 
 	output_data <= data_out;
