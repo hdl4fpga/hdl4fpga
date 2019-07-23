@@ -77,7 +77,7 @@ begin
 		end if;
 	end process;
 
-	max_ini <= scaler_ena and not min_ini;
+	max_ini <= scaler_ena and not max_ini;
 	data_vld_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -102,7 +102,7 @@ begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
 					maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, max_ini);
-					minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, min_ini);
+					minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
 				end if;
 			end if;
 		end process;
