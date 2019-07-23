@@ -32,6 +32,7 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_capture is
 	port (
 		input_clk      : in  std_logic;
+		downsampler_on : in  std_logic := '0';
 		capture_shot   : in  std_logic;
 		capture_end    : out std_logic;
 
@@ -56,7 +57,7 @@ architecture beh of scopeio_capture is
 	signal bound   : signed(input_delay'length-1  downto 0);
 	signal base    : signed(capture_addr'length-1 downto 0);
 	signal rd_addr : signed(capture_addr'length-1 downto 0);
-	signal wr_addr : signed(capture_addr'length-1 downto 0) := (others => '0'); -- Debug purpose
+	signal wr_addr : signed(capture_addr'length-1 downto 1) := (others => '0'); -- Debug purpose
 	signal wr_ena  : std_logic;
 	signal no_data : std_logic_vector(input_data'range);
 
@@ -84,7 +85,7 @@ begin
 						else
 							pre  := '1';
 							cntr := resize(-signed(input_delay)-capture_size+1, cntr'length);
-							base <= wr_addr;
+							base <= shift_left(resize(wr_addr,base'length),1);
 						end if;
 						delay   <= signed(input_delay);
 						bound   <= signed(resize(cntr, bound'length));
@@ -109,7 +110,7 @@ begin
 					-- Delayed trigger
 					if capture_shot='1' then
 						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
-						base  <= wr_addr;
+						base  <= shift_left(resize(wr_addr, base'length), 1);
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
 						cntr := cntr + 1;
@@ -139,6 +140,8 @@ begin
 	capture_end <= not running;
 
 	storage_b : block
+		signal rd_data : std_logic_Vector(capture_data'range);
+		signal y0      : std_logic_Vector(0 to capture_data'length/2-1);
 	begin
 
 		rd_addr <= base + index(rd_addr'range);
@@ -161,25 +164,19 @@ begin
 			doa   => no_data,
 
 			clkb  => capture_clk,
-			addrb => std_logic_vector(rd_addr),
+			addrb => std_logic_vector(rd_addr(rd_addr'left downto 1)),
 			dib   => no_data,
-			dob   => capture_data);
+			dob   => rd_data);
+
+
+		process (capture_clk)
+		begin
+			if rising_edge(capture_clk) then
+				y0 <= word2byte(rd_data, rd_addr(0));
+			end if;
+		end process;
+		capture_data <= word2byte(y0 & word2byte(rd_data, rd_addr(0)) & rd_data, downsampler_on);
 
 	end block;
-
---	For debugging
---	debug_b : block
---		signal di : std_logic_vector(capture_data'range);
---	begin
---		di <= (0 to 3-1 => '1') & (3 to capture_data'length-1 => not valid);
---		xxx_e : entity hdl4fpga.align
---		generic map (
---			n => capture_data'length,
---			d => (0 to capture_data'length-1 => bram_latency))
---		port map (
---			clk => capture_clk,
---			di  => di,
---			do  => capture_data);
---	end block;
 
 end;

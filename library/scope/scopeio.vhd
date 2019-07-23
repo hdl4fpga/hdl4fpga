@@ -112,7 +112,7 @@ architecture beh of scopeio is
 	signal downsample_oshot   : std_logic;
 	signal downsample_ishot   : std_logic;
 	signal downsample_dv      : std_logic;
-	signal downsample_data    : std_logic_vector(resizedsample_data'range);
+	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 
 
 	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
@@ -122,7 +122,7 @@ architecture beh of scopeio is
 	signal capture_shot       : std_logic;
 	signal capture_end        : std_logic;
 	signal capture_dv         : std_logic;
-	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal capture_data       : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 	signal plot_data          : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -240,12 +240,12 @@ begin
 		input_clk      => input_clk,
 		input_dv       => ampsample_dv,
 		input_data     => ampsample_data,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
---		trigger_chanid => "0",             -- Debug purpose
---		trigger_level  => b"00_0010",      -- Debug purpose
---		trigger_edge   => '1',             -- Debug purpose
+--		trigger_chanid => trigger_chanid,
+--		trigger_level  => trigger_level,
+--		trigger_edge   => trigger_edge,
+		trigger_chanid => "0",             -- Debug purpose
+		trigger_level  => b"00_0010",      -- Debug purpose
+		trigger_edge   => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
@@ -253,7 +253,7 @@ begin
 	resizedsample_dv <= triggersample_dv;
 	scopeio_resize_e : entity hdl4fpga.scopeio_resize
 	generic map (
-		inputs => inputs)
+		inputs => 2*inputs)
 	port map (
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
@@ -312,14 +312,25 @@ begin
 		captured_data          => capture_data
 	);
 	end block;
+
 	capture_dv <= '1';
+	plot_data(capture_data'range) <= capture_data;
+	plot_data_e : entity hdl4fpga.align
+	generic map (
+		n => resizedsample_data'length,
+		d => (resizedsample_data'range => 1))
+	port map (
+		clk => video_clk,
+		di  => plot_data(resizedsample_data'range),
+		do  => plot_data(resizedsample_data'length to plot_data'right));
+
 	end generate;
 
 	xxx : if test generate
 	triggers_modes_b : block
 	begin
-		capture_shot <= capture_end and downsample_oshot and not video_vton;
---		capture_shot <= capture_end and downsample_oshot;  --Debug purpose
+--		capture_shot <= capture_end and downsample_oshot and not video_vton;
+		capture_shot <= capture_end and downsample_oshot;  --Debug purpose
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -327,8 +338,8 @@ begin
 		inputs  => inputs,
 		factors => hz_factors)
 	port map (
-		factor_id    => hz_scale,
---		factor_id    => b"0001",
+--		factor_id    => hz_scale,
+		factor_id    => b"0000",
 		input_clk    => input_clk,
 		input_dv     => resizedsample_dv,
 		input_shot   => downsample_ishot,
@@ -337,7 +348,8 @@ begin
 		output_shot  => downsample_oshot,
 		output_data  => downsample_data);
 
-	downsample_ishot <= capture_end and trigger_shot;
+--	downsample_ishot <= capture_end and trigger_shot;
+	downsample_ishot <= trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,
@@ -345,8 +357,8 @@ begin
 		capture_end    => capture_end,
 		input_dv       => downsample_dv,
 		input_data     => downsample_data,
-		input_delay    => hz_slider,
---		input_delay    => b"00_0000_0000_0000",  --Debug purpose
+--		input_delay    => hz_slider,
+		input_delay    => b"00_0000_0000_0000",  --Debug purpose
 
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,
@@ -357,12 +369,12 @@ begin
 	plot_data(capture_data'range) <= capture_data;
 	plot_data_e : entity hdl4fpga.align
 	generic map (
-		n => capture_data'length,
-		d => (capture_data'range => 1))
+		n => resizedsample_data'length,
+		d => (resizedsample_data'range => 1))
 	port map (
 		clk => video_clk,
-		di  => plot_data(capture_data'range),
-		do  => plot_data(capture_data'length to plot_data'right));
+		di  => plot_data(resizedsample_data'range),
+		do  => plot_data(resizedsample_data'length to plot_data'right));
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (

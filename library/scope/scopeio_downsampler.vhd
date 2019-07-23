@@ -41,8 +41,8 @@ architecture beh of scopeio_downsampler is
 	signal scaler_ena : std_logic;
 	signal data_shot : std_logic;
 	signal data_vld : std_logic;
-	signal max_ini : std_logic;
-	signal min_ini : std_logic;
+	signal max_ini : std_logic := '0';
+	signal min_ini : std_logic := '0';
 
 begin
 
@@ -95,18 +95,27 @@ begin
 		signal sample : signed(0 to input_data'length/inputs-1);
 		signal maxx   : signed(sample'range);
 		signal minn   : signed(sample'range);
+		signal swap   : std_logic;
 	begin
-		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, max_ini);
+					sample <= signed(word2byte(data_in, i, sample'length));
+					if max_ini='1' then
+						maxx <= sample;
+						swap <= '0';
+					elsif maxx < sample then
+						maxx <= sample;
+						swap <= '1';
+					end if;
 					minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
 				end if;
 			end if;
 		end process;
-		data_out(2*i*sample'length to 2*(i+1)*sample'length-1) <= std_logic_vector(maxx & minn);
+		data_out(2*i*sample'length to 2*(i+1)*sample'length-1) <= std_logic_vector(
+			word2byte(maxx & minn, swap) &
+		   	word2byte(minn & maxx, swap));
 	end generate;
 
 	output_data <= data_out;
