@@ -176,6 +176,7 @@ begin
 			end if;
 		end process;
 		capture_data <= word2byte(y0 & word2byte(rd_data, rd_addr(0)) & rd_data, downsampler_on);
+--		capture_data <= b"0_00_0000" & b"0_11_1111";
 
 	end block;
 

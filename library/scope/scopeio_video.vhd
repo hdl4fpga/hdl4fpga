@@ -140,12 +140,7 @@ architecture beh of scopeio_video is
 	signal sgmntbox_bgon : std_logic;
 	signal pointer_dot   : std_logic;
 
-	signal samples_y0    : std_logic_vector(0 to capture_data'length/2-1);
-	signal samples_y1    : std_logic_vector(0 to capture_data'length/2-1);
 begin
-
-	samples_y0 <= word2byte(capture_data, 0, samples_y0'length);
-	samples_y1 <= word2byte(capture_data, 1, samples_y1'length);
 
 	formatu_e : entity hdl4fpga.scopeio_formatu
 	port map (
@@ -467,8 +462,7 @@ begin
 				grid_on       => grid_on,
 
 				sample_dv     => capture_dv,
-				samples_y0    => samples_y0,
-				samples_y1    => samples_y1,
+				sample_data   => capture_data,
 				trigger_level => trigger_level,
 				grid_dot      => grid_dot,
 				hz_dot        => hz_dot,

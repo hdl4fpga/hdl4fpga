@@ -48,8 +48,7 @@ entity scopeio_segment is
 		vt_on         : in  std_logic;
 
 		sample_dv     : in  std_logic;
-		samples_y0    : in  std_logic_vector;
-		samples_y1    : in  std_logic_vector;
+		sample_data   : in  std_logic_vector;
 
 		hz_dot        : out std_logic;
 		vt_dot        : out std_logic;
@@ -240,8 +239,7 @@ begin
 			ena      => trace_ena,
 			vline    => y,
 			offsets  => vt_offsets,
-			y0s      => samples_y0,
-			y1s      => samples_y1,
+			ys       => sample_data,
 			dots     => traces_dots);
 	end block;
 

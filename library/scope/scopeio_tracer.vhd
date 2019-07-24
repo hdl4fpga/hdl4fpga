@@ -14,8 +14,7 @@ entity scopeio_tracer is
 		ena     : in  std_logic;
 		vline   : in  std_logic_vector;
 		offsets : in  std_logic_vector;
-		y0s     : in  std_logic_vector;
-		y1s     : in  std_logic_vector;
+		ys      : in  std_logic_vector;
 		dots    : out std_logic_vector);
 end;
 
@@ -25,15 +24,15 @@ begin
 
 	trace_g : for i in dots'range generate
 
-		signal y0   : signed(0 to y0s'length/dots'length-1);
-		signal y1   : signed(0 to y1s'length/dots'length-1);
+		signal y0   : signed(0 to ys'length/2/dots'length-1);
+		signal y1   : signed(0 to ys'length/2/dots'length-1);
 		signal bias : signed(0 to offsets'length/dots'length-1);
 		signal row  : signed(vline'range);
 
 	begin
 
-		y0   <= signed(word2byte(y0s, i, y0'length));
-		y1   <= signed(word2byte(y1s, i, y1'length));
+		y0   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 0, y0'length));
+		y1   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 1, y1'length));
 		bias <= signed(word2byte(offsets,  i, bias'length));
 		row  <= signed(vline)-vt_height/2;
 
