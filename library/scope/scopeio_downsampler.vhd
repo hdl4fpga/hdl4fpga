@@ -15,7 +15,7 @@ entity scopeio_downsampler is
 		input_dv       : in  std_logic;
 		input_data     : in  std_logic_vector;
 		input_shot     : in  std_logic;
-		downsampler_on : out std_logic;
+		downsampler_on : inout std_logic;
 		output_dv      : out std_logic;
 		output_shot    : out std_logic;
 		output_data    : out std_logic_vector);
@@ -113,14 +113,29 @@ begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
 					sample <= signed(word2byte(data_in, i, sample'length));
-					if max_ini='1' then
-						maxx <= sample;
-						swap <= '0';
-					elsif maxx < sample then
-						maxx <= sample;
-						swap <= '1';
+					if downsampler_on='0' then
+						if max_ini='1' then
+							maxx <= sample;
+							swap <= '0';
+						elsif maxx < sample then
+							maxx <= sample;
+							swap <= '1';
+						end if;
+						minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
+					else
+						if max_ini='1' then
+							maxx <= hdl4fpga.std.max(minn, sample);
+							minn <= hdl4fpga.std.min(maxx, sample);
+						else
+							if maxx < sample then
+								maxx <= sample;
+							end if;
+							if minn > sample then
+								minn <= sample;
+							end if;
+						end if;
+						swap <= '-';
 					end if;
-					minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
 				end if;
 			end if;
 		end process;
