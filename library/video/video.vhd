@@ -341,7 +341,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity draw_vline is
+	generic (
+		sync : boolean := false);
 	port(
+		clk  : in  std_logic := '-';
 		ena  : in  std_logic := '1';
 		y1   : in  std_logic_vector;
 		y2   : in  std_logic_vector;
@@ -354,12 +357,27 @@ architecture def of draw_vline is
 	signal eq1 : std_logic;
 	signal lt2 : std_logic;
 	signal eq2 : std_logic;
+	signal don : std_logic;
 begin
 
-	lt1 <= setif(signed(y1) < signed(row));
-	eq1 <= setif(signed(y1) = signed(row));
-	lt2 <= setif(signed(y2) < signed(row));
-	eq2 <= setif(signed(y2) = signed(row));
+	process (ena, row, y1, y2, clk)
+	begin
+		if sync then
+			if rising_edge(clk) then
+				don <= ena;
+				lt1 <= setif(signed(y1) < signed(row));
+				eq1 <= setif(signed(y1) = signed(row));
+				lt2 <= setif(signed(y2) < signed(row));
+				eq2 <= setif(signed(y2) = signed(row));
+			end if;
+		else
+			don <= ena;
+			lt1 <= setif(signed(y1) < signed(row));
+			eq1 <= setif(signed(y1) = signed(row));
+			lt2 <= setif(signed(y2) < signed(row));
+			eq2 <= setif(signed(y2) = signed(row));
+		end if;
+	end process;
 
-	dot <= ((lt1 xor lt2) or eq2 or eq1) and ena;
+	dot <= ((lt1 xor lt2) or eq2 or eq1) and don;
 end;

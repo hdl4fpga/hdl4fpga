@@ -128,7 +128,7 @@ architecture beh of scopeio_video is
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
 	signal trigger_dot   : std_logic;
-	signal traces_dots   : std_logic_vector(0 to inputs-1);
+	signal trace_dots   : std_logic_vector(0 to inputs-1);
 	signal grid_dot      : std_logic;
 	signal grid_bgon     : std_logic;
 	signal hz_dot        : std_logic;
@@ -468,7 +468,7 @@ begin
 				hz_dot        => hz_dot,
 				vt_dot        => vt_dot,
 				trigger_dot   => trigger_dot,
-				traces_dots   => traces_dots);
+				trace_dots    => trace_dots);
 
 			bg_e : entity hdl4fpga.align
 			generic map (
@@ -511,7 +511,7 @@ begin
 		wr_palette       => palette_id,
 		wr_color         => palette_color,
 		video_clk        => video_clk,
-		traces_dots      => traces_dots, 
+		trace_dots       => trace_dots, 
 		trigger_dot      => trigger_dot,
 		trigger_chanid   => trigger_chanid,
 		grid_dot         => grid_dot,
