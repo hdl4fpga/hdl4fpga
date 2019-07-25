@@ -341,7 +341,7 @@ begin
 		factors => hz_factors)
 	port map (
 		factor_id    => hz_scale,
---		factor_id    => b"0001",  --Debug purpose
+--		factor_id    => b"0000",  --Debug purpose
 		input_clk    => input_clk,
 		input_dv     => resizedsample_dv,
 		input_shot   => downsample_ishot,
@@ -352,7 +352,6 @@ begin
 		output_data  => downsample_data);
 
 	downsample_ishot <= capture_end and trigger_shot;
---	downsample_ishot <= trigger_shot; --Debug purpose
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk      => input_clk,

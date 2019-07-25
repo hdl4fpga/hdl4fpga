@@ -95,7 +95,9 @@ begin
 			if data_vld='1' then
 				min_ini <= max_ini;
 				if scaler_ena='1' then
-					output_shot <= data_shot;
+					if max_ini='1' then
+						output_shot <= data_shot;
+					end if;
 				end if;
 			end if;
 		end if;
