@@ -50,7 +50,7 @@ architecture beh of scopeio_capture is
 
 	constant bram_latency : natural := 2;
 
-	constant capture_size : natural := 2**capture_addr'length;
+	constant capture_size : natural := 2**capture_addr'length/2;
 	constant delay_size   : natural := 2**input_delay'length;
 
 	signal index   : signed(input_delay'length-1  downto 0);
@@ -85,7 +85,7 @@ begin
 						else
 							pre  := '1';
 							cntr := resize(-signed(input_delay)-capture_size+1, cntr'length);
-							base <= shift_left(resize(wr_addr,base'length),1);
+							base  <= word2byte(shift_left(resize(wr_addr, base'length), 1) & resize(wr_addr, base'length), downsampler_on);
 						end if;
 						delay   <= signed(input_delay);
 						bound   <= signed(resize(cntr, bound'length));
@@ -110,7 +110,7 @@ begin
 					-- Delayed trigger
 					if capture_shot='1' then
 						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
-						base  <= shift_left(resize(wr_addr, base'length), 1);
+						base  <= word2byte(shift_left(resize(wr_addr, base'length), 1) & resize(wr_addr, base'length), downsampler_on);
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
 						cntr := cntr + 1;
@@ -140,7 +140,7 @@ begin
 	capture_end <= not running;
 
 	storage_b : block
-		signal addrb   : std_logic_vector(capture_addr'length-1 downto 1);
+		signal addrb   : std_logic_vector(wr_addr'range);
 		signal rd_data : std_logic_Vector(capture_data'range);
 		signal y0      : std_logic_Vector(0 to capture_data'length/2-1);
 		signal updn    : std_logic;

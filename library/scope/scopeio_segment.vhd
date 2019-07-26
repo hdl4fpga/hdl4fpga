@@ -217,21 +217,31 @@ begin
 
 	trace_b : block
 		constant drawvline_latency : natural := 1;
-		constant pp : natural := 2;
+		constant traceena_latency  : natural := 2;
 
+		signal gon  : std_logic;
 		signal ton  : std_logic;
 		signal tena : std_logic;
 		signal dots : std_logic_vector(0 to trace_dots'length-1);
 		signal vline : std_logic_vector(y'range);
 	begin
 
+		process (video_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(video_clk) then
+				gon <= q and grid_on;
+				q   := grid_on;
+			end if;
+		end process;
+
 		delay_ena_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => input_latency))
+			d => (0 => input_latency-traceena_latency))
 		port map (
 			clk   => video_clk,
-			di(0) => grid_on,
+			di(0) => gon,
 			do(0) => ton);
 
 		delay_y_e :entity hdl4fpga.align

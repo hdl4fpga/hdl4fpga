@@ -57,8 +57,8 @@ architecture scopeio of testbench is
 			if i=31 then
 				retval(i) := -63;
 			end if;
-			if i=32 then
-				retval(i) := -1;
+			if i=96 then
+				retval(i) := -15;
 			end if;
 		end loop;
 		return retval;

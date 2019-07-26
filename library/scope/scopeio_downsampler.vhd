@@ -90,6 +90,7 @@ begin
 
 	max_ini <= scaler_ena and (not min_ini or data_shot);
 	data_vld_p : process (input_clk)
+		variable shot : std_logic;
 	begin
 		if rising_edge(input_clk) then
 			if data_vld='1' then
@@ -97,6 +98,7 @@ begin
 				if scaler_ena='1' then
 					if max_ini='1' then
 						output_shot <= data_shot;
+						shot := data_shot;
 					end if;
 				end if;
 			end if;
@@ -110,11 +112,11 @@ begin
 		signal minn   : signed(sample'range);
 		signal swap   : std_logic;
 	begin
+		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					sample <= signed(word2byte(data_in, i, sample'length));
 					if downsampler_on='0' then
 						if max_ini='1' then
 							maxx <= sample;

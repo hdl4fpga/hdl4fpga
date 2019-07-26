@@ -88,7 +88,7 @@ architecture beh of scopeio_video is
 
 	constant storageaddr_latency  : natural := 1;
 	constant storagebram_latency  : natural := 2;
-	constant input_latency        : natural := storageaddr_latency+storagebram_latency;
+	constant input_latency        : natural := storageaddr_latency+storagebram_latency+1; -- (+1) because two samples are needed
 	constant mainrgtrin_latency   : natural := 1;
 	constant mainrgtrout_latency  : natural := 1;
 	constant mainrgtrio_latency   : natural := mainrgtrin_latency+mainrgtrout_latency;
