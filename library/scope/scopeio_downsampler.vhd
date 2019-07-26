@@ -88,7 +88,7 @@ begin
 		end if;
 	end process;
 
-	max_ini <= scaler_ena and not min_ini;
+	max_ini <= scaler_ena and (not min_ini or data_shot);
 	data_vld_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then

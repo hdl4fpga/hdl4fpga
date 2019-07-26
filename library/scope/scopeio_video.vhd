@@ -102,7 +102,7 @@ architecture beh of scopeio_video is
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	signal video_vton1   : std_logic;
-	signal video_hzon1    : std_logic;
+	signal video_hzon1   : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_vld     : std_logic;

@@ -25,14 +25,14 @@ begin
 		signal y0   : signed(0 to ys'length/2/dots'length-1);
 		signal y1   : signed(0 to ys'length/2/dots'length-1);
 		signal bias : signed(0 to offsets'length/dots'length-1);
-		signal row  : signed(vline'range);
+		signal row  : signed(bias'range);
 
 	begin
 
 		y0   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 0, y0'length));
 		y1   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 1, y1'length));
-		bias <= signed(word2byte(offsets,  i, bias'length));
-		row  <= signed(vline)-vt_height/2;
+		bias <= signed(word2byte(offsets, i, bias'length));
+		row  <= signed(vline)-vt_height/2+bias;
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (

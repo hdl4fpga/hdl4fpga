@@ -58,6 +58,9 @@ architecture beh of s3starter is
 			if i=400	then
 				retval(i) := -63;
 			end if;
+			if i=401	then
+				retval(i) := -63/2;
+			end if;
 			if i=735 then
 				retval(i) := -63;
 			end if;

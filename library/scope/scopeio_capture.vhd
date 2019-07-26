@@ -143,6 +143,7 @@ begin
 		signal addrb   : std_logic_vector(capture_addr'length-1 downto 1);
 		signal rd_data : std_logic_Vector(capture_data'range);
 		signal y0      : std_logic_Vector(0 to capture_data'length/2-1);
+		signal updn    : std_logic;
 	begin
 
 		rd_addr <= base + index(rd_addr'range);
@@ -166,19 +167,27 @@ begin
 			doa   => no_data,
 
 			clkb  => capture_clk,
-			addrb => addrb, --std_logic_vector(rd_addr(rd_addr'left downto 1)),
+			addrb => addrb,
 			dib   => no_data,
 			dob   => rd_data);
+
+		align_addr0_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => 2))
+		port map (
+			clk => capture_clk,
+			di(0) => rd_addr(0),
+			do(0) => updn);
 
 
 		process (capture_clk)
 		begin
 			if rising_edge(capture_clk) then
-				y0 <= word2byte(rd_data, rd_addr(0));
+				y0 <= word2byte(rd_data, updn);
 			end if;
 		end process;
-		capture_data <= word2byte(y0 & word2byte(rd_data, rd_addr(0)) & rd_data, downsampler_on);
---		capture_data <= b"0_00_0000" & b"0_11_1111";
+		capture_data <= word2byte(y0 & word2byte(rd_data, updn) & rd_data, downsampler_on);
 
 	end block;
 

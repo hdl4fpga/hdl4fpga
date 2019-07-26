@@ -50,16 +50,16 @@ architecture scopeio of testbench is
 		for i in 0 to size-1 loop
 			offset := base + i;
 			retval(i) := integer(31.0*sin(2.0*MATH_PI*real((offset))/64.0));
---			retval(i) := 0;
---			if i=0 then
---				retval(i) := 127;
---			end if;
---			if i=31 then
---				retval(i) := -63;
---			end if;
---			if i=32 then
---				retval(i) := -1;
---			end if;
+			retval(i) := 0;
+			if i=0 then
+				retval(i) := 127;
+			end if;
+			if i=31 then
+				retval(i) := -63;
+			end if;
+			if i=32 then
+				retval(i) := -1;
+			end if;
 		end loop;
 		return retval;
 	end;
