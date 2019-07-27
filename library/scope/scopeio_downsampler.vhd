@@ -130,6 +130,8 @@ begin
 						if max_ini='1' then
 							maxx <= hdl4fpga.std.max(min0, sample);
 							minn <= hdl4fpga.std.min(max0, sample);
+							max0 <= sample;
+							minn <= sample;
 						else
 							if maxx < sample then
 								maxx <= sample;
