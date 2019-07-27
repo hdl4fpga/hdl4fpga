@@ -244,7 +244,7 @@ begin
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
 --		trigger_chanid => "0",             -- Debug purpose
---		trigger_level  => b"00_0010",      -- Debug purpose
+--		trigger_level  => b"11_1110",      -- Debug purpose
 --		trigger_edge   => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
