@@ -57,9 +57,7 @@ architecture beh of scopeio_capture is
 	signal bound   : signed(input_delay'length-1  downto 0);
 	signal base    : signed(capture_addr'length-1 downto 0);
 	signal rd_addr : signed(capture_addr'length-1 downto 0);
-	signal wr_addr : signed(capture_addr'length-1 downto 1) := (others => '0'); -- Debug purpose
-	signal wr_ena  : std_logic;
-	signal no_data : std_logic_vector(input_data'range);
+	signal wr_addr : signed(capture_addr'length-1 downto 0) := (others => '0'); -- Debug purpose
 
 	signal running : std_logic;
 	signal delay   : signed(input_delay'range);
@@ -85,7 +83,7 @@ begin
 						else
 							pre  := '1';
 							cntr := resize(-signed(input_delay)-capture_size+1, cntr'length);
-							base  <= word2byte(shift_left(resize(wr_addr, base'length), 1) & resize(wr_addr, base'length), downsampler_on);
+							base  <= wr_addr;
 						end if;
 						delay   <= signed(input_delay);
 						bound   <= signed(resize(cntr, bound'length));
@@ -110,7 +108,7 @@ begin
 					-- Delayed trigger
 					if capture_shot='1' then
 						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
-						base  <= word2byte(shift_left(resize(wr_addr, base'length), 1) & resize(wr_addr, base'length), downsampler_on);
+						base  <= wr_addr;
 						delay <= signed(input_delay);
 					elsif cntr(0)='1' then
 						cntr := cntr + 1;
@@ -139,37 +137,47 @@ begin
 
 	capture_end <= not running;
 
+	rd_addr <= base + index(rd_addr'range);
 	storage_b : block
-		signal addrb   : std_logic_vector(wr_addr'range);
-		signal rd_data : std_logic_Vector(capture_data'range);
-		signal y0      : std_logic_Vector(0 to capture_data'length/2-1);
-		signal updn    : std_logic;
+		signal addra : signed(capture_addr'length-1 downto 1);
+		signal wea   : std_logic;
+		signal addrb : unsigned(addra'range);
+		signal dob   : std_logic_Vector(capture_data'range);
+		signal dll   : std_logic_vector(input_data'range);
+		signal y0    : std_logic_Vector(0 to capture_data'length/2-1);
+		signal updn  : std_logic;
 	begin
 
-		rd_addr <= base + index(rd_addr'range);
-		wr_addr_p : process (input_clk)
+		wr_addr <= 
+			shift_left(resize(addra, wr_addr'length), 1) when downsampler_on='0' else
+			shift_left(resize(addra, wr_addr'length), 0);
+
+		addra_p : process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
-					wr_addr <= wr_addr + 1;
+					addra <= addra + 1;
 				end if;
 			end if;
 		end process;
-		wr_ena  <= (running or capture_shot) and input_dv;
+		wea <= (running or capture_shot) and input_dv;
 
-		addrb <= std_logic_vector(word2byte(rd_addr(rd_addr'left downto 1) & rd_addr(rd_addr'left-1 downto 0), downsampler_on));
+		addrb <= 
+			resize(unsigned(rd_addr) srl 1, addrb'length) when downsampler_on='0' else
+			resize(unsigned(rd_addr) srl 0, addrb'length);
+
 		mem_e : entity hdl4fpga.bram(inference)
 		port map (
 			clka  => input_clk,
-			addra => std_logic_vector(wr_addr),
-			wea   => wr_ena,
+			addra => std_logic_vector(addra),
+			wea   => wea,
 			dia   => input_data,
-			doa   => no_data,
+			doa   => dll,
 
 			clkb  => capture_clk,
-			addrb => addrb,
-			dib   => no_data,
-			dob   => rd_data);
+			addrb => std_logic_vector(addrb),
+			dib   => dll,
+			dob   => dob);
 
 		align_addr0_e : entity hdl4fpga.align
 		generic map (
@@ -181,13 +189,16 @@ begin
 			do(0) => updn);
 
 
-		process (capture_clk)
+		y0_p : process (capture_clk)
 		begin
 			if rising_edge(capture_clk) then
-				y0 <= word2byte(rd_data, updn);
+				y0 <= word2byte(dob, updn);
 			end if;
 		end process;
-		capture_data <= word2byte(y0 & word2byte(rd_data, updn) & rd_data, downsampler_on);
+
+		capture_data <= 
+			y0 & word2byte(dob, updn) when downsampler_on='0' else
+			dob;
 
 	end block;
 
