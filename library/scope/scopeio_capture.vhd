@@ -139,7 +139,7 @@ begin
 
 	rd_addr <= base + index(rd_addr'range);
 	storage_b : block
-		signal addra : signed(capture_addr'length-1 downto 1) := (others => '0'); -- Debug purpose
+		signal addra : signed(capture_addr'length-1 downto 1); -- := (others => '0'); -- Debug purpose
 		signal wea   : std_logic;
 		signal addrb : unsigned(addra'range);
 		signal dob   : std_logic_Vector(capture_data'range);
