@@ -45,8 +45,10 @@
 -- +-------+-----------+-------+------------------------------------------------------+ --
 -- | Vers. | Date      | Autor | Comment                                              | --
 -- +-------+-----------+-------+------------------------------------------------------+ --
--- |  2.1  |20 Jul 2019| EMARD | KeepAlive_i: 0: normal data tx, 1: KEEPALIVE/RESUME  | --
--- |       |           |       | DataOut_i(0): 0: KEEPALIVE, 1: RESUME                | --
+-- |  2.1  |20 Jul 2019| EMARD | LineCtrl_i: 0: Data TX, 1: KEEPALIVE/RESUME/RESET    | --
+-- |       |           |       | DataOut_i(1 downto 0)="00": KEEPALIVE (2 clk of SE0) | --
+-- |       |           |       | DataOut_i(1 downto 0)="01": RESUME (20ms of K)       | --
+-- |       |           |       | DataOut_i(1 downto 0)="11": RESET (20ms of SE0)      | --
 -- |  2.0  | 3 Jul 2016|  MN   | Changed eop logic due to USB spec violation          | --
 -- |  1.1  |23 Apr 2011|  MN   | Added missing 'rst' in process sensitivity lists     | --
 -- |       |           |       | Added ELSE constructs in next_state process to       | --
@@ -69,8 +71,8 @@ ENTITY usb_tx_phy is
     -- Transciever Interface
     txdp, txdn, txoe : OUT STD_LOGIC;
     -- UTMI Interface
-    KeepAlive_i      : IN  STD_LOGIC; -- 0: data tx, 1: send End-Of-Packet (no data, 2 bits drive Single-Ended 0, 1 bit drive Idle state)
-    DataOut_i        : IN  STD_LOGIC_VECTOR(7 DOWNTO 0); -- KeepAlive_i=0: DataOut_i=byte_to_send, KeepAlive_i=1: DataOut_i(0)=0 -> KEEPALIVE, DataOut_i(0)=1 -> RESUME
+    LineCtrl_i       : IN  STD_LOGIC; -- 0: Data TX, 1: LineCtrl
+    DataOut_i        : IN  STD_LOGIC_VECTOR(7 DOWNTO 0); -- TX byte or LineCtrl mode
     TxValid_i        : IN  STD_LOGIC;
     TxReady_o        : OUT STD_LOGIC
   );
@@ -82,12 +84,14 @@ ARCHITECTURE RTL of usb_tx_phy is
   SIGNAL ld_data            : STD_LOGIC;
   SIGNAL ld_data_d          : STD_LOGIC;
   SIGNAL ld_sop_d           : STD_LOGIC;
-  SIGNAL R_KeepAlive_i            : STD_LOGIC;
-  SIGNAL R_resume_i         : STD_LOGIC;
-  SIGNAL bit_cnt            : STD_LOGIC_VECTOR(15 DOWNTO 0); -- 20ms resume @ 6MHz: (15 downto 0)
+  SIGNAL R_LineCtrl_i       : STD_LOGIC;
+  SIGNAL R_long_i           : STD_LOGIC;
+  SIGNAL R_busreset_i       : STD_LOGIC;
+  SIGNAL bit_cnt            : STD_LOGIC_VECTOR(15 DOWNTO 0); -- 20ms long @ 6MHz: (15 downto 0)
   SIGNAL sft_done_e         : STD_LOGIC;
   SIGNAL any_eop_state      : STD_LOGIC;
   SIGNAL append_eop         : STD_LOGIC;
+  SIGNAL se_state           : STD_LOGIC;
   SIGNAL data_xmit          : STD_LOGIC;
   SIGNAL hold_reg_d         : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL one_cnt            : STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -101,7 +105,7 @@ ARCHITECTURE RTL of usb_tx_phy is
   SIGNAL tx_ip              : STD_LOGIC;
   SIGNAL tx_ip_sync         : STD_LOGIC;
   SIGNAL txoe_r1, txoe_r2   : STD_LOGIC;
-  SIGNAL S_resume           : STD_LOGIC;
+  SIGNAL S_long             : STD_LOGIC;
  
   CONSTANT IDLE_STATE       : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
   CONSTANT SOP_STATE        : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0001";
@@ -125,7 +129,7 @@ BEGIN
     IF rst ='0' THEN
       TxReady_o <= '0';
     ELSIF rising_edge(clk) THEN
-      TxReady_o <= (ld_data_d OR (R_KeepAlive_i AND any_eop_state)) AND TxValid_i;
+      TxReady_o <= (ld_data_d OR (R_LineCtrl_i AND any_eop_state)) AND TxValid_i;
     END IF;
   END PROCESS;
  
@@ -215,7 +219,7 @@ BEGIN
       sft_done   <= '0';
       sft_done_r <= '0';
     ELSIF rising_edge(clk) THEN
-      IF bit_cnt(bit_cnt'HIGH) = (R_KeepAlive_i AND R_resume_i) AND bit_cnt(2 DOWNTO 0) = "111" THEN
+      IF bit_cnt(bit_cnt'HIGH) = (R_LineCtrl_i AND R_long_i) AND bit_cnt(2 DOWNTO 0) = "111" THEN
         sft_done <= NOT stuff;
       ELSE
         sft_done <= '0';
@@ -293,9 +297,9 @@ BEGIN
     IF rst ='0' THEN
       sd_nrzi_o <= '1';
     ELSIF rising_edge(clk) THEN
-      IF tx_ip_sync = '0' OR txoe_r1 = '0' OR R_KeepAlive_i = '1' THEN
-        IF R_KeepAlive_i = '1' THEN
-          sd_nrzi_o <= S_resume;
+      IF tx_ip_sync = '0' OR txoe_r1 = '0' OR R_LineCtrl_i = '1' THEN
+        IF R_LineCtrl_i = '1' THEN
+          sd_nrzi_o <= S_long;
         ELSE
           sd_nrzi_o <= '1';
         END IF;
@@ -340,11 +344,11 @@ BEGIN
     ELSIF rising_edge(clk) THEN
       IF fs_ce ='1' THEN
         IF phy_mode ='1' THEN
-          txdp <= NOT append_eop AND     sd_nrzi_o;
-          txdn <= NOT append_eop AND NOT sd_nrzi_o;
+          txdp <= NOT se_state AND     sd_nrzi_o;
+          txdn <= NOT se_state AND NOT sd_nrzi_o;
         ELSE
           txdp <= sd_nrzi_o;
-          txdn <= append_eop;
+          txdn <= se_state;
         END IF;
       END IF;
     END IF;
@@ -364,8 +368,9 @@ BEGIN
       IF any_eop_state = '0' THEN
         CASE (state) IS
           WHEN IDLE_STATE => IF TxValid_i ='1' THEN
-                               R_KeepAlive_i <= KeepAlive_i;
-                               R_resume_i <= DataOut_i(0);
+                               R_LineCtrl_i <= LineCtrl_i;
+                               R_long_i <= DataOut_i(0);
+                               R_busreset_i <= DataOut_i(1);
 --                               IF DataOut_i(0) = '0' THEN
 --                                 state <= EOP1_STATE; -- fast but txready_o wrong
 --                               ELSE
@@ -399,9 +404,10 @@ BEGIN
     END IF;
   END PROCESS;
  
-  append_eop <= '1' WHEN state(3 DOWNTO 2) = "11" ELSE '0';  -- EOP4_STATE OR EOP5_STATE
+  append_eop <= '1' WHEN (state(3 DOWNTO 2) = "11") ELSE '0'; -- EOP4_STATE OR EOP5_STATE
+  se_state   <= '1' WHEN append_eop = '1' OR (state /= WAIT_STATE AND R_LineCtrl_i = '1' AND R_long_i = '1' AND R_busreset_i = '1') ELSE '0';
   ld_sop_d   <= TxValid_i  WHEN state = IDLE_STATE ELSE '0';
   ld_data_d  <= sft_done_e WHEN state = SOP_STATE OR (state = DATA_STATE AND data_xmit ='1') ELSE '0';
-  S_resume   <= '0' WHEN state /= WAIT_STATE AND R_resume_i = '1' ELSE '1';
+  S_long     <= '0' WHEN state /= WAIT_STATE AND R_long_i = '1' ELSE '1';
 
 END RTL;
