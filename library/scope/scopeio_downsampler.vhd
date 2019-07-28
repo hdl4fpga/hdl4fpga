@@ -10,15 +10,15 @@ entity scopeio_downsampler is
 		inputs  : natural;
 		factors : natural_vector);
 	port (
-		factor_id      : in  std_logic_vector;
-		input_clk      : in  std_logic;
-		input_dv       : in  std_logic;
-		input_data     : in  std_logic_vector;
-		input_shot     : in  std_logic;
-		downsampler_on : inout std_logic;
-		output_dv      : out std_logic;
-		output_shot    : out std_logic;
-		output_data    : out std_logic_vector);
+		factor_id    : in  std_logic_vector;
+		input_clk    : in  std_logic;
+		input_dv     : in  std_logic;
+		input_data   : in  std_logic_vector;
+		input_shot   : in  std_logic;
+		downsampling : buffer std_logic;
+		output_dv    : out std_logic;
+		output_shot  : out std_logic;
+		output_data  : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
@@ -56,10 +56,10 @@ begin
 
 	downsampleron_p: process (factor_id)
 	begin
-		downsampler_on <= '0';
+		downsampling <= '0';
 		for i in 1 to 2**factor_id'length-1 loop
 			if unsigned(factor_id)=i then
-				downsampler_on <= setif(factors(0)/=factors(i));
+				downsampling <= setif(factors(0)/=factors(i));
 			end if;
 		end loop;
 	end process;
@@ -117,7 +117,7 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					if downsampler_on='0' then
+					if downsampling='0' then
 						if max_ini='1' then
 							maxx <= sample;
 							swap <= '0';

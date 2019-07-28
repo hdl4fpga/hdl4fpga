@@ -112,7 +112,7 @@ architecture beh of scopeio is
 	signal downsample_oshot   : std_logic;
 	signal downsample_ishot   : std_logic;
 	signal downsample_dv      : std_logic;
-	signal downsampler_on     : std_logic;
+	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 
 
@@ -346,7 +346,7 @@ begin
 		input_dv     => resizedsample_dv,
 		input_shot   => downsample_ishot,
 		input_data   => resizedsample_data,
-		downsampler_on => downsampler_on,
+		downsampling => downsampling,
 		output_dv    => downsample_dv,
 		output_shot  => downsample_oshot,
 		output_data  => downsample_data);
@@ -354,20 +354,20 @@ begin
 	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
-		input_clk      => input_clk,
-		capture_shot   => capture_shot,
-		capture_end    => capture_end,
-		input_dv       => downsample_dv,
-		input_data     => downsample_data,
-		input_delay    => hz_slider,
---		input_delay    => b"00_0000_0000_0000",  --Debug purpose
+		input_clk    => input_clk,
+		capture_shot => capture_shot,
+		capture_end  => capture_end,
+		input_dv     => downsample_dv,
+		input_data   => downsample_data,
+		input_delay  => hz_slider,
+--		input_delay  => b"00_0000_0000_0000",  --Debug purpose
 
-		downsampler_on => downsampler_on,
-		capture_clk    => video_clk,
-		capture_addr   => capture_addr,
-		capture_data   => capture_data,
-		capture_av     => capture_av,
-		capture_dv     => capture_dv);
+		downsampling => downsampling,
+		capture_clk  => video_clk,
+		capture_addr => capture_addr,
+		capture_data => capture_data,
+		capture_av   => capture_av,
+		capture_dv   => capture_dv);
 	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video

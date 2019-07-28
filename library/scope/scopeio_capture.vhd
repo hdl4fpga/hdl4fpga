@@ -31,20 +31,20 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture is
 	port (
-		input_clk      : in  std_logic;
-		downsampler_on : in  std_logic := '0';
-		capture_shot   : in  std_logic;
-		capture_end    : out std_logic;
+		input_clk    : in  std_logic;
+		downsampling : in  std_logic := '0';
+		capture_shot : in  std_logic;
+		capture_end  : out std_logic;
 
-		input_dv       : in  std_logic := '1';
-		input_data     : in  std_logic_vector;
-		input_delay    : in  std_logic_vector;
+		input_dv     : in  std_logic := '1';
+		input_data   : in  std_logic_vector;
+		input_delay  : in  std_logic_vector;
 
-		capture_clk    : in  std_logic;
-		capture_addr   : in  std_logic_vector;
-		capture_av     : in  std_logic := '1';
-		capture_data   : out std_logic_vector;
-		capture_dv     : out std_logic);
+		capture_clk  : in  std_logic;
+		capture_addr : in  std_logic_vector;
+		capture_av   : in  std_logic := '1';
+		capture_data : out std_logic_vector;
+		capture_dv   : out std_logic);
 end;
 
 architecture beh of scopeio_capture is
@@ -129,10 +129,10 @@ begin
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
 
-	process (downsampler_on, capture_av, capture_clk)
+	process (downsampling, capture_av, capture_clk)
 		variable q : std_logic;
 	begin
-		if downsampler_on='0' then
+		if downsampling='0' then
 			dv1 <= q and capture_av;
 		else
 			dv1 <= capture_av;
@@ -174,7 +174,7 @@ begin
 	begin
 
 		wr_addr <= 
-			shift_left(resize(addra, wr_addr'length), 1) when downsampler_on='0' else
+			shift_left(resize(addra, wr_addr'length), 1) when downsampling='0' else
 			shift_left(resize(addra, wr_addr'length), 0);
 
 		addra_p : process (input_clk)
@@ -188,7 +188,7 @@ begin
 		wea <= (running or capture_shot) and input_dv;
 
 		addrb <= 
-			resize(unsigned(rd_addr) srl 1, addrb'length) when downsampler_on='0' else
+			resize(unsigned(rd_addr) srl 1, addrb'length) when downsampling='0' else
 			resize(unsigned(rd_addr) srl 0, addrb'length);
 
 		mem_e : entity hdl4fpga.bram(inference)
@@ -222,7 +222,7 @@ begin
 		end process;
 
 		capture_data <= 
-			word2byte(word2byte(dob, uplw) & y0, dv2) & word2byte(dob, uplw) when downsampler_on='0' else
+			word2byte(word2byte(dob, uplw) & y0, dv2) & word2byte(dob, uplw) when downsampling='0' else
 			dob;
 
 	end block;
