@@ -66,6 +66,7 @@ entity scopeio_video is
 		trigger_level : in  std_logic_vector;
 
 		capture_addr  : out std_logic_vector;
+		capture_av    : out std_logic;
 		capture_data  : in  std_logic_vector;
 		capture_dv    : in  std_logic;
 
@@ -88,7 +89,7 @@ architecture beh of scopeio_video is
 
 	constant storageaddr_latency  : natural := 1;
 	constant storagebram_latency  : natural := 2;
-	constant input_latency        : natural := storageaddr_latency+storagebram_latency+1; -- (+1) because two samples are needed
+	constant input_latency        : natural := storageaddr_latency+storagebram_latency;
 	constant mainrgtrin_latency   : natural := 1;
 	constant mainrgtrout_latency  : natural := 1;
 	constant mainrgtrio_latency   : natural := mainrgtrin_latency+mainrgtrout_latency;
@@ -417,6 +418,7 @@ begin
 					end loop;
 										   
 					capture_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), capture_addr'length));
+					capture_av   <= grid_on;
 					hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 														  
 				end if;

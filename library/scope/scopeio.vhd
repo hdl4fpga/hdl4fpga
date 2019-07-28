@@ -122,6 +122,7 @@ architecture beh of scopeio is
 
 	signal capture_shot       : std_logic;
 	signal capture_end        : std_logic;
+	signal capture_av         : std_logic;
 	signal capture_dv         : std_logic;
 	signal capture_data       : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -365,6 +366,7 @@ begin
 		capture_clk    => video_clk,
 		capture_addr   => capture_addr,
 		capture_data   => capture_data,
+		capture_av     => capture_av,
 		capture_dv     => capture_dv);
 	end generate;
 
@@ -404,6 +406,7 @@ begin
 		trigger_level    => trigger_level,
 
 		capture_addr     => capture_addr,
+		capture_av       => capture_av,
 		capture_data     => capture_data,
 		capture_dv       => capture_dv,
 

@@ -42,6 +42,7 @@ entity scopeio_capture is
 
 		capture_clk    : in  std_logic;
 		capture_addr   : in  std_logic_vector;
+		capture_av     : in  std_logic := '1';
 		capture_data   : out std_logic_vector;
 		capture_dv     : out std_logic);
 end;
@@ -62,6 +63,8 @@ architecture beh of scopeio_capture is
 	signal running : std_logic;
 	signal delay   : signed(input_delay'range);
 	signal valid   : std_logic;
+	signal dv2     : std_logic;
+	signal dv1     : std_logic;
 
 
 begin
@@ -126,14 +129,36 @@ begin
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
 		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
 
-	valid_e : entity hdl4fpga.align
+	process (downsampler_on, capture_av, capture_clk)
+		variable q : std_logic;
+	begin
+		if downsampler_on='0' then
+			dv1 <= q and capture_av;
+		else
+			dv1 <= capture_av;
+		end if;
+		if rising_edge(capture_clk) then
+			q := capture_av;
+		end if;
+	end process;
+
+	dv2_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
 		d => (0 to 0 => bram_latency))
 	port map (
 		clk   => capture_clk,
-		di(0) => '1', --valid,
+		di(0) => capture_av,
 		do(0) => capture_dv);
+
+	dv1_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => bram_latency))
+	port map (
+		clk   => capture_clk,
+		di(0) => dv1,
+		do(0) => dv2);
 
 	capture_end <= not running;
 
@@ -145,7 +170,7 @@ begin
 		signal dob   : std_logic_Vector(capture_data'range);
 		signal dll   : std_logic_vector(input_data'range);
 		signal y0    : std_logic_Vector(0 to capture_data'length/2-1);
-		signal updn  : std_logic;
+		signal uplw  : std_logic;
 	begin
 
 		wr_addr <= 
@@ -182,22 +207,22 @@ begin
 		align_addr0_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => 2))
+			d => (0 => bram_latency))
 		port map (
 			clk => capture_clk,
 			di(0) => rd_addr(0),
-			do(0) => updn);
+			do(0) => uplw);
 
 
 		y0_p : process (capture_clk)
 		begin
 			if rising_edge(capture_clk) then
-				y0 <= word2byte(dob, updn);
+				y0 <= word2byte(dob, uplw);
 			end if;
 		end process;
 
 		capture_data <= 
-			y0 & word2byte(dob, updn) when downsampler_on='0' else
+			word2byte(word2byte(dob, uplw) & y0, dv2) & word2byte(dob, uplw) when downsampler_on='0' else
 			dob;
 
 	end block;
