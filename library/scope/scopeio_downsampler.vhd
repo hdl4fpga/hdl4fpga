@@ -131,7 +131,7 @@ begin
 							maxx <= hdl4fpga.std.max(min0, sample);
 							minn <= hdl4fpga.std.min(max0, sample);
 							max0 <= sample;
-							minn <= sample;
+							min0 <= sample;
 						else
 							if maxx < sample then
 								maxx <= sample;

@@ -51,19 +51,19 @@ architecture beh of s3starter is
 		for i in 0 to size-1 loop
 			offset := base + i;
 			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
-			retval(i) := 0;
-			if i=0 then
-				retval(i) := 127;
-			end if;
-			if i=400	then
-				retval(i) := -63;
-			end if;
-			if i=401	then
-				retval(i) := -63/2;
-			end if;
-			if i=735 then
-				retval(i) := -63;
-			end if;
+--			retval(i) := 0;
+--			if i=0 then
+--				retval(i) := 127;
+--			end if;
+--			if i=400	then
+--				retval(i) := -63;
+--			end if;
+--			if i=401	then
+--				retval(i) := -63/2;
+--			end if;
+--			if i=735 then
+--				retval(i) := -63;
+--			end if;
 		end loop;
 		return retval;
 	end;
