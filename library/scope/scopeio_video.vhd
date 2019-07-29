@@ -66,6 +66,7 @@ entity scopeio_video is
 		trigger_level : in  std_logic_vector;
 
 		capture_addr  : out std_logic_vector;
+		capture_av    : out std_logic;
 		capture_data  : in  std_logic_vector;
 		capture_dv    : in  std_logic;
 
@@ -102,7 +103,7 @@ architecture beh of scopeio_video is
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	signal video_vton1   : std_logic;
-	signal video_hzon1    : std_logic;
+	signal video_hzon1   : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_vld     : std_logic;
@@ -128,7 +129,7 @@ architecture beh of scopeio_video is
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
 	signal trigger_dot   : std_logic;
-	signal traces_dots   : std_logic_vector(0 to inputs-1);
+	signal trace_dots   : std_logic_vector(0 to inputs-1);
 	signal grid_dot      : std_logic;
 	signal grid_bgon     : std_logic;
 	signal hz_dot        : std_logic;
@@ -141,6 +142,7 @@ architecture beh of scopeio_video is
 	signal pointer_dot   : std_logic;
 
 begin
+
 	formatu_e : entity hdl4fpga.scopeio_formatu
 	port map (
 		clk    => si_clk,
@@ -336,6 +338,7 @@ begin
 				signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
 				signal x     : std_logic_vector(sgmntbox_x'range);
 				signal y     : std_logic_vector(sgmntbox_y'range);
+
 			begin
 
 				rgtrin_p : process (video_clk)
@@ -415,6 +418,7 @@ begin
 					end loop;
 										   
 					capture_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), capture_addr'length));
+					capture_av   <= grid_on;
 					hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 														  
 				end if;
@@ -466,7 +470,7 @@ begin
 				hz_dot        => hz_dot,
 				vt_dot        => vt_dot,
 				trigger_dot   => trigger_dot,
-				traces_dots   => traces_dots);
+				trace_dots    => trace_dots);
 
 			bg_e : entity hdl4fpga.align
 			generic map (
@@ -509,7 +513,7 @@ begin
 		wr_palette       => palette_id,
 		wr_color         => palette_color,
 		video_clk        => video_clk,
-		traces_dots      => traces_dots, 
+		trace_dots       => trace_dots, 
 		trigger_dot      => trigger_dot,
 		trigger_chanid   => trigger_chanid,
 		grid_dot         => grid_dot,

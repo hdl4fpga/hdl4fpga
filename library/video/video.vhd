@@ -341,75 +341,43 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity draw_vline is
+	generic (
+		sync : boolean := false);
 	port(
-		clk  : in  std_logic;
+		clk  : in  std_logic := '-';
 		ena  : in  std_logic := '1';
-		row1 : in  std_logic_vector;
-		row2 : in  std_logic_vector;
+		y1   : in  std_logic_vector;
+		y2   : in  std_logic_vector;
+		row  : in  std_logic_vector;
 		dot  : out std_logic);
 end;
 
 architecture def of draw_vline is
-	signal enad : std_logic;
+	signal lt1 : std_logic;
+	signal eq1 : std_logic;
+	signal lt2 : std_logic;
+	signal eq2 : std_logic;
+	signal don : std_logic;
 begin
-	ena_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => 2))
-	port map (
-		clk => clk,
-		di(0) => ena,
-		do(0) => enad);
 
-	process (clk)
-		variable lt1, lt2 : std_logic;
-		variable eq1, eq2 : std_logic;
+	process (ena, row, y1, y2, clk)
 	begin
-		if rising_edge(clk) then
-			dot <= ((lt1 xor lt2) or eq2 or eq1) and enad;
-			lt1 := lt2;
-			eq1 := eq2;
-			if ena='0' then
-				lt2 := lt1;
-				eq2 := '0';
-			else
-				lt2 := setif(unsigned(row1) < unsigned(row2));
-				eq2 := setif(unsigned(row1) = unsigned(row2));
+		if sync then
+			if rising_edge(clk) then
+				don <= ena;
+				lt1 <= setif(signed(y1) < signed(row));
+				eq1 <= setif(signed(y1) = signed(row));
+				lt2 <= setif(signed(y2) < signed(row));
+				eq2 <= setif(signed(y2) = signed(row));
 			end if;
+		else
+			don <= ena;
+			lt1 <= setif(signed(y1) < signed(row));
+			eq1 <= setif(signed(y1) = signed(row));
+			lt2 <= setif(signed(y2) < signed(row));
+			eq2 <= setif(signed(y2) = signed(row));
 		end if;
 	end process;
-end;
 
---architecture serial_arith of draw_vline is
---	signal lt1, lt2 : std_logic;
---	signal eq1, eq2 : std_logic;
---	signal enad : std_logic;
---begin
---	ena_e : entity hdl4fpga.align
---	generic map (
---		n => 1,
---		d => (0 to 0 => row1'length+1))
---	port map (
---		clk => clk,
---		di(0) => ena,
---		do(0) => enad);
---
---	leq_e : entity hdl4fpga.pipe_le
---	generic map (
---		n => row1'length)
---	port map (
---		clk => clk,
---		a   => row1,
---		b   => row2,
---		le  => lt2,
---		eq  => eq2);
---
---	process (clk)
---	begin
---		if rising_edge(clk) then
---			dot <= ((lt1 xor lt2) or eq2 or eq1) and enad;
---			lt1 <= lt2;
---			eq1 <= eq2;
---		end if;
---	end process;
---end;
+	dot <= ((lt1 xor lt2) or eq2 or eq1) and don;
+end;
