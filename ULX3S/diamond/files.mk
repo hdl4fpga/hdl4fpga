@@ -52,6 +52,7 @@ VHDL_LIB_FILES = \
   ../../library/ps2mouse/mousem.vhd \
   ../../library/usbmouse/usbh_host_hid.vhd \
   ../../library/usbmouse/usbh_setup_logitech_mouse_pack.vhd \
+  ../../library/usbmouse/usbh_report_decoder_logitech_mouse.vhd \
   ../../library/usbmouse/usbh_sie_vhdl.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \

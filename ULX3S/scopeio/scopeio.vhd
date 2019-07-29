@@ -25,10 +25,10 @@ architecture beh of ulx3s is
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-        constant vlayout_id: integer := 6;
+        constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 wheel mouse
-        constant C_mouse_usb:  boolean := false; -- USB mouse soft-core, unreliable
+        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 wheel mouse
+        constant C_mouse_usb:  boolean := true; -- USB mouse soft-core, unreliable
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
@@ -51,7 +51,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED (enable max 1)
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
