@@ -50,6 +50,7 @@ package usbh_setup_pack is
 --  D+ ___-_-_-_--__-__---_____
 --  D- ---_-_-_-__--_--_____---
   );
+  constant C_setup_retry     : integer := 3;  -- 2**n times retry setup and then detach
   constant C_setup_interval  : integer := 12; -- 2**n clocks 0.7 ms interval between setup packets
   constant C_report_interval : integer := 12; -- 2**n clocks 0.7 ms interval between report packets
   constant C_report_endpoint : integer := 1;  -- endpoint which answers IN transfer with HID report
