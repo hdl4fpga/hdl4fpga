@@ -23,12 +23,13 @@ architecture beh of ulx3s is
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
-        constant vlayout_id: integer := 6;
+	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
+	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
+        constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 wheel mouse
-        constant C_mouse_usb:  boolean := false; -- USB mouse soft-core, unreliable
+        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 wheel mouse
+        constant C_mouse_usb:  boolean := true; -- USB mouse soft-core, unreliable
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
-        constant C_usbtest:    boolean := false; -- USB test for host mode, no function yet
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -50,7 +51,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED (enable max 1)
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -137,20 +138,12 @@ architecture beh of ulx3s is
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
-	signal dummy_frommousedaisy_frm  : std_logic;
-	signal dummy_frommousedaisy_irdy : std_logic;
-	signal dummy_frommousedaisy_data : std_logic_vector(8-1 downto 0);
-
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
 	
 	-- USB mouse
 	signal clk_usb         : std_logic; -- 7.5 MHz
-	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
-	signal dbg_btn: std_logic_vector(2 downto 0);
-	signal dbg_hid_valid: std_logic;
-	signal dbg_clk_usb_count: unsigned(2 downto 0);
 
 	-- USB serial
 	signal dbg_sync_err, dbg_bit_stuff_err, dbg_byte_err: std_logic;
@@ -516,41 +509,6 @@ begin
 	);
 	end generate;
 
-	G_usb_host_test: if C_usbtest generate
-	-- pulldown 15k for USB HOST mode
-	usb_fpga_pu_dp <= '0'; -- D+ pulldown for USB1.1 host mode
-	usb_fpga_pu_dn <= '0'; -- D- pulldown for USB1.1 host mode
-
-        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  open,    -- clk_60MHz,
-          CLKOS       =>  open,    -- clk_48MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  clk_usb  -- clk_7M5Hz
-        );
-
-	usbserial_e : entity work.usbserial_rxd
-	port map
-	(
-		clk_usb => clk_usb, -- 48 MHz USB core clock
-		-- USB interface
-		usb_fpga_dp    => usb_fpga_dp,
-		--usb_fpga_dn    => usb_fpga_dn,
-		usb_fpga_bd_dp => usb_fpga_bd_dp,
-		usb_fpga_bd_dn => usb_fpga_bd_dn,
-		-- debug
-                sync_err       => dbg_sync_err,
-                bit_stuff_err  => dbg_bit_stuff_err,
-                byte_err       => dbg_byte_err,
-		-- output data
-		clk  => clk_uart,  -- UART application clock
-		dv   => open,
-		byte => open
-	);
-	end generate;
-
 	led <= uart_rxd;
 
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
@@ -579,10 +537,7 @@ begin
 	(
 	  clk => clk_oled, -- 40/75 MHz
 	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
-	  data(18 downto 16) => dbg_btn,
-	  data(15 downto 8) => dbg_step_ps3,
-	  data(7 downto 0) => dbg_step_cmd,	  
-	  --data(47 downto 0) => S_adc_data(47 downto 0),
+	  data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
@@ -625,26 +580,13 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-        E_clk_usb: entity work.clk_25M_100M_7M5_12M_60M
+        E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
-          CLKI   => clk_25MHz,
-          CLKOP  => open,    -- clk_100MHz,
-          CLKOS  => clk_usb, -- clk_7M5Hz,
-          CLKOS2 => open,    -- clk_12MHz,
-          CLKOS3 => open     -- clk_60MHz
+          clkin       =>  clk_pixel_shift, -- clk_200MHz,
+          clkout(3)   =>  clk_usb -- 0:48 1:24 2:12 3:6
         );
-        -- 0-5 clk_usb counter to easier align scoped data
-        process(clk_usb)
-        begin
-          if rising_edge(clk_usb) then
-            if dbg_clk_usb_count(dbg_clk_usb_count'high) = '1' then -- 4
-              dbg_clk_usb_count <= (others => '0');
-            else
-              dbg_clk_usb_count <= dbg_clk_usb_count + 1;
-            end if;
-          end if;
-        end process;
+
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
 	(
@@ -657,23 +599,18 @@ begin
 		clk         => clk_mouse,
 		clk_usb     => clk_usb,
 		-- USB interface
-		usb_reset   => rst,
+		usb_reset   => '0',
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
 		usb_dif     => usb_fpga_dp,
-		-- USB debug
-		dbg_step_ps3 => dbg_step_ps3,
-		dbg_step_cmd => dbg_step_cmd,
-		dbg_btn      => dbg_btn,
-		dbg_hid_valid => dbg_hid_valid,
 		-- daisy input
 		chaini_frm  => '0', -- fromistreamdaisy_frm,
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
 		chaini_data => x"00", -- fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => dummy_frommousedaisy_frm,
-		chaino_irdy => dummy_frommousedaisy_irdy,
-		chaino_data => dummy_frommousedaisy_data
+		chaino_frm  => frommousedaisy_frm,
+		chaino_irdy => frommousedaisy_irdy,
+		chaino_data => frommousedaisy_data
 	);
 	end generate; -- USB mouse
 

@@ -58,7 +58,8 @@ entity usb_phy is
     -- RX debug interface
     sync_err_o, bit_stuff_err_o, byte_err_o: out std_logic;
     -- UTMI Interface
-    DataOut_i        : in  std_logic_vector(7 downto 0);
+    LineCtrl_i       : IN  STD_LOGIC := '0'; -- 0: normal data TX, 1: line control (for low speed usb)
+    DataOut_i        : in  std_logic_vector(7 downto 0); -- byte_to_send or LineCtrl mode (see usb_tx_phy)
     TxValid_i        : in  std_logic;
     TxReady_o        : out std_logic;
     DataIn_o         : out std_logic_vector(7 downto 0);
@@ -134,6 +135,7 @@ begin
     txdn       => txdn,
     txoe       => txoe_out,
     -- UTMI Interface
+    LineCtrl_i => LineCtrl_i,
     DataOut_i  => DataOut_i,
     TxValid_i  => TxValid_i,
     TxReady_o  => TxReady_o

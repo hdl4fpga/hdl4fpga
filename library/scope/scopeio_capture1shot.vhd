@@ -11,8 +11,15 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture1shot is
 	generic (
-		deflicker              : boolean := true; -- complex deflickering calculation
-		strobe                 : natural := 0     -- 2**n video frames frozen until auto re-arming trigger
+		-- Measures period.
+		-- To deflicker it can rearm anytime.
+		-- "persistence" should work.
+		-- this deflicker was working with old display system, but now is non-functional. 
+		deflicker_differential : boolean := false;
+		-- If differential is disabled, we can use options below:
+		-- To deflicker, those must rearm exactly at trigger edge.
+		track_addr             : boolean := true; -- improves deflickering
+		persistence            : natural := 1     -- 2**n video frames persistence (frozen) until auto re-arming trigger
 	);
 	port (
 		input_clk              : in  std_logic;
@@ -27,12 +34,13 @@ entity scopeio_capture1shot is
 		storage_mark_t0        : out std_logic;
 		storage_write          : out std_logic;
 		storage_addr           : in  std_logic_vector -- used for range
-		-- "storage_addr" is used as input if deflicker = false
+		-- "storage_addr" is used as input if "track_addr" = false
 	);
 end;
 
 architecture beh of scopeio_capture1shot is
 	signal last_wr_addr : unsigned(storage_addr'range);
+	signal track_wr_addr : unsigned(storage_addr'range);
 	-- "C_samples_after_trigger" sets position
 	-- of the triggering point in the storage buffer.
 	-- By default it is set at center of the storage buffer
@@ -41,16 +49,20 @@ architecture beh of scopeio_capture1shot is
 	-- < 2**(wr_addr'length-1) : record more data before trigger
 	constant C_samples_after_trigger: integer range 0 to 2**(storage_addr'length)-1 := 2**(storage_addr'length-1); -- configure this
 	-- calculate how many samples after the trigger:
-	--constant C_samples_before_trigger: integer range 0 to 2**(storage_addr'length)-1 := 2**(storage_addr'length)-C_samples_after_trigger;
-	constant C_wr_cntr_extra_bits : unsigned(0 to 1) := (others => '0');
-	signal wr_cntr   : unsigned(0 to storage_addr'length+C_wr_cntr_extra_bits'length-1); -- counts down when trigger is armed, extra bits to adjust re-arming
+	constant C_samples_before_trigger: integer range 0 to 2**(storage_addr'length)-1 := 2**(storage_addr'length)-C_samples_after_trigger;
+	constant C_wr_cntr_extra_bits_0 : unsigned(0 to 1) := (others => '0');
+	signal wr_cntr : unsigned(0 to storage_addr'length+C_wr_cntr_extra_bits_0'length-1); -- counts down when trigger is armed, extra bits to adjust re-arming
+	signal track_wr_cntr : unsigned(wr_cntr'range);
 	constant C_samples_after_trigger_unsigned : unsigned(0 to wr_cntr'length-2) := to_unsigned(C_samples_after_trigger, wr_cntr'length-1);
 	constant C_rearm_wr_cntr_0: unsigned(storage_addr'range) := (others => '0'); -- default value for re-arming: full buffer length
 	signal rearm_wr_cntr: unsigned(storage_addr'range) := C_rearm_wr_cntr_0; -- re-arming and deflickering
 	signal sync_tf   : std_logic;
 	signal sync_videofrm : std_logic;
 	signal prev_sync_videofrm : std_logic;
-	signal videofrm_without_trigger : unsigned(0 to strobe); -- counts video frames without trigger event before free shot triggering
+	signal videofrm_without_rearm   : unsigned(0 to persistence); -- counts video frames without trigger event before re-arming
+--	constant C_videofrm_0: unsigned(0 to persistence) := (others => '0'); -- first video frame without trigger
+--	constant C_videofrm_1: unsigned(0 to persistence) := (persistence => '1', others => '0'); -- first video frame without trigger
+--	constant C_videofrm_before_last: unsigned(0 to persistence) := (0 => '0', others => '1'); -- video frame before last without trigger
 	signal prev_trigger_shot: std_logic; -- for rising edge detection
 	signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(storage_addr'range);
 	signal S_trigger_edge: std_logic;
@@ -68,9 +80,10 @@ begin
 	end process;
 	S_trigger_edge <= '1' when prev_trigger_shot = '0' and trigger_shot = '1' else '0';
 
-	G_yes_deflicker: if deflicker generate
+	G_deflicker_differential: if deflicker_differential generate
 		-- predict value of "rearm_wr_cntr" in order to minimize flickering
 		-- by overwriting waveform over the same values to the same locations in storage buffer.
+		P_deflicker_predictor:
 		process(input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -107,16 +120,44 @@ begin
 		end process;
 		-- "rearm_wr_cntr" is constantly updated to a valid value
 		-- so trigger can be re-armed at any time
-		S_rearm_condition <= videofrm_without_trigger(0);
-	end generate; -- G_yes_deflicker
+		S_rearm_condition <= videofrm_without_rearm(0);
+	end generate; -- differential_deflicker
 
-	G_not_deflicker: if not deflicker generate
-		-- similar as abuve but a LUT saver, traces will shake a bit
+	G_not_deflicker_differential: if not deflicker_differential generate
+	G_yes_track_addr: if track_addr generate
+		P_deflickering_tracker:
+		-- tracks virtual storage address "wr_addr" as if it were constantly triggered.
+		-- calculates "rearm_wr_cntr" as last "wr_addr" remainder.
+		process(input_clk)
+		begin
+		if rising_edge(input_clk) then
+			if track_wr_cntr(0) = '1' then
+				if S_trigger_edge = '1' then
+					track_wr_cntr <= '0' & C_samples_after_trigger_unsigned;
+					rearm_wr_cntr <= track_wr_addr;
+					track_wr_addr <= to_unsigned(C_samples_before_trigger, track_wr_addr'length);
+				end if;
+			else
+				if input_ena = '1' then
+					track_wr_cntr <= track_wr_cntr - 1;
+					track_wr_addr <= track_wr_addr + 1;
+				end if;
+			end if;
+		end if; -- rising_edge
+		end process;
+	end generate; -- track_addr
+
+	G_not_track_addr: if not track_addr generate
+		-- similar as above but a LUT saver, traces will shake a bit
 		rearm_wr_cntr <= unsigned(last_wr_addr);
-		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= videofrm_without_trigger(0) or S_trigger_edge;
-	end generate;
+	end generate; -- not track_addr
 
+	-- "rearm_wr_cntr" is valid for use only at trigger edge.
+	S_rearm_condition <= (S_trigger_edge and videofrm_without_rearm(1)) -- when triggered
+	                  or videofrm_without_rearm(0); -- when trigger is lost
+	end generate; -- not differential_deflicker
+
+	P_rearm_and_capture:
 	process(input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -147,20 +188,16 @@ begin
 							last_wr_addr <= unsigned(storage_addr);
 						end if;
 					end if;
-					-- reset frame counter for temporary
-					-- freezing display after the trigger
-					videofrm_without_trigger <= (others => '0');
+					videofrm_without_rearm <= (others => '0');
 				else -- wr_cntr(0)='1' storage is not armed (not recording data)
 					R_storage_mark_t0 <= '0';
-					-- count configurable number of video frames
-					-- before re-arming the trigger
+					-- wait a frame or more
+					-- for user to view temporary frozen display and then re-arm
 					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
-						if videofrm_without_trigger(0) = '0' then
-							videofrm_without_trigger <= videofrm_without_trigger + 1;
+						if videofrm_without_rearm(0) = '0' then
+							videofrm_without_rearm <= videofrm_without_rearm + 1;
 						end if;
 					end if;
-					-- in auto trig mode, wait a frame or more
-					-- for user to view temporary frozen display and then re-arm
 					if sync_tf = '0' then -- if not frozen
 						-- re-arm, initialize counter for at least full buffer length countdown
 						-- or more as required for deflickering
@@ -171,11 +208,11 @@ begin
 				end if; -- storage is (not) armed
 		end if; -- rising_edge
 	end process;
-
+	
 	-- output to storage module
 	storage_reset_addr     <= wr_cntr(0);
 	storage_increment_addr <= input_ena and not wr_cntr(1);
 	--storage_mark_t0        <= '1' when S_trigger_edge = '1' and wr_cntr = '0' & C_samples_after_trigger_unsigned else '0';
 	storage_mark_t0        <= R_storage_mark_t0; -- Same as above expr but with 1 clock latency. Latency compensated in storage with "align_to_grid".
-	storage_write          <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
+	storage_write          <= '1' when input_ena = '1' and wr_cntr(C_wr_cntr_extra_bits_0'range) = C_wr_cntr_extra_bits_0 else '0';
 end;

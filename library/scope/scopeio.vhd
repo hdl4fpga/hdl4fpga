@@ -31,7 +31,6 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		test        : boolean := false;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
@@ -259,77 +258,7 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	emard : if not test generate
-		signal capture_data1 : std_logic_vector(0 to capture_data'length/2-1);
-	begin
-	scopeio_capture1shot_b : block
-		signal storage_reset_addr     : std_logic;
-		signal storage_increment_addr : std_logic;
-		signal storage_mark_t0        : std_logic;
-		signal storage_write          : std_logic;
-		signal storage_addr           : std_logic_vector(capture_addr'range);
-	begin
-	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
-	generic map (
-		deflicker              => true,
-		strobe                 => 1 -- (more->slower) temporary freeze triggered wave for viewing
-	)
-	port map (
-		input_clk              => input_clk,
-		input_ena              => downsample_dv,
 
-		video_vton             => video_vton,
-		trigger_freeze         => trigger_freeze,
-		trigger_shot           => trigger_shot,
-		-- to storage module
-		storage_reset_addr     => storage_reset_addr,
-		storage_increment_addr => storage_increment_addr,
-		storage_mark_t0        => storage_mark_t0,
-		storage_write          => storage_write,
-		-- from storage module
-		storage_addr           => storage_addr
-	);
-	scopeio_storage_e : entity hdl4fpga.scopeio_storage
-	generic map (
-		align_to_grid          => 1 -- (-left,+right) shift triggered edge 1 pixel to the right
-	)
-	port map (
-		storage_clk            => input_clk,
-
-		-- from capture1shot module
-		storage_reset_addr     => storage_reset_addr,
-		storage_increment_addr => storage_increment_addr,
-		storage_mark_t0        => storage_mark_t0,
-		storage_write          => storage_write,
-		-- to capture1shot module
-		storage_addr           => storage_addr,
-
-		-- from sample source
-		storage_data           => downsample_data,
-
-		-- from display
-		captured_clk           => video_clk,
-		captured_scroll        => hz_slider,
-		captured_addr          => capture_addr,
-		-- to display
-		captured_data          => capture_data1
-	);
-	end block;
-
-	capture_dv <= '1';
-	capture_data(capture_data1'range) <= capture_data1;
-	plot_data_e : entity hdl4fpga.align
-	generic map (
-		n =>  capture_data1'length,
-		d => (capture_data1'range => 1))
-	port map (
-		clk => video_clk,
-		di  => capture_data(capture_data'range),
-		do  => capture_data(capture_data'length to capture_data'right));
-
-	end generate;
-
-	xxx : if test generate
 	triggers_modes_b : block
 	begin
 		capture_shot <= capture_end and downsample_oshot and not video_vton;
@@ -368,7 +297,6 @@ begin
 		capture_data => capture_data,
 		capture_av   => capture_av,
 		capture_dv   => capture_dv);
-	end generate;
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (

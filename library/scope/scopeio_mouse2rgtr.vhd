@@ -423,7 +423,7 @@ begin
       S_vertical_scale_offset(C_vertical_scale_offset'high downto C_snap_to_grid_bits);
     G_single_segment: if C_num_segments = 1 generate
       S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
-        when R_snap_to_vertical_grid(0) = '1'
+        when R_snap_to_vertical_grid(to_integer(R_trace_selected)) = '1'
         else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
       R_trigger_on_screen <= resize(C_click_to_trigger(0) - S_vertical_scale_offset_snapped, C_XY_coordinate_bits);
     end generate;
