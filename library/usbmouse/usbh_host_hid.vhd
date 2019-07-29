@@ -9,9 +9,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-library ecp5u;
-use ecp5u.components.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.usbh_setup_pack.all;
@@ -63,7 +60,7 @@ architecture Behavioral of usbh_host_hid is
   -- UTMI debug
   signal S_sync_err, S_bit_stuff_err, S_byte_err: std_logic;
 
-  signal R_setup_rom_addr: std_logic_vector(7 downto 0) := (others => '0');
+  signal R_setup_rom_addr, R_setup_rom_addr_acked: std_logic_vector(7 downto 0) := (others => '0');
   constant C_setup_rom_len: std_logic_vector(R_setup_rom_addr'range) := 
     std_logic_vector(to_unsigned(C_setup_rom'length,8));
 
@@ -174,13 +171,21 @@ architecture Behavioral of usbh_host_hid is
     if rising_edge(clk_usb) then
       if sof_transfer_i = '1' then
         R_setup_rom_addr <= (others => '0');
+        R_setup_rom_addr_acked <= (others => '0');
         R_reset_pending <= '0';
       else
         if bus_reset = '1' then
           R_reset_pending <= '1';
         end if;
-        if tx_pop_o = '1' then
-          R_setup_rom_addr <= R_setup_rom_addr + 1;
+        if timeout_o = '1' then
+          R_setup_rom_addr <= R_setup_rom_addr_acked;
+        else
+          if rx_done_o = '1' and response_o = x"D2" then
+            R_setup_rom_addr_acked <= R_setup_rom_addr;
+          end if;
+          if tx_pop_o = '1' then
+            R_setup_rom_addr <= R_setup_rom_addr + 1;
+          end if;
         end if;
       end if;
 
@@ -329,29 +334,32 @@ architecture Behavioral of usbh_host_hid is
   );
 
   B_report_reader: block
-    -- TODO: replace shifting with addressed write
-    signal R_hid_report_shift: std_logic_vector(C_report_length*8-1 downto 0);
-    signal R_hid_report      : std_logic_vector(C_report_length*8-1 downto 0);
-    signal R_hid_valid       : std_logic;
+    type T_report_buf is array(0 to C_report_length-1) of std_logic_vector(7 downto 0);
+    signal R_report_buf: T_report_buf;
+    signal R_rx_count: std_logic_vector(rx_count_o'range);
+    signal R_hid_valid: std_logic;
   begin
     process(clk_usb)
     begin
       if rising_edge(clk_usb) then
+        R_rx_count <= rx_count_o; -- to offload routing (apart from this, "rx_count_o" could be used directly)
         if rx_push_o = '1' then
-          R_hid_report_shift <= rx_data_o & R_hid_report_shift(R_hid_report_shift'high downto rx_data_o'length);
+          R_report_buf(conv_integer(R_rx_count)) <= rx_data_o;
         end if;
         if rx_done_o = '1' and crc_err_o = '0' and timeout_o = '0' 
         and R_state = C_STATE_RESPONSE
-        and rx_count_o = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length))
+        and R_rx_count = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length))
         then
-          R_hid_report <= R_hid_report_shift;
           R_hid_valid <= '1';
         else
           R_hid_valid <= '0';
         end if;
       end if;  
     end process;
-    hid_report <= R_hid_report;
+    G_report: 
+    for i in 0 to C_report_length-1 generate
+      hid_report(i*8+7 downto i*8) <= R_report_buf(i);
+    end generate;
     hid_valid <= R_hid_valid;
   end block;
 end Behavioral;
