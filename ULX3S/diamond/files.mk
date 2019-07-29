@@ -10,6 +10,7 @@ VHDL_FILES = \
   ../common/clk_verilog.vhd \
   ../common/clk_25M_100M_7M5_12M_60M.vhd \
   ../common/clk_200m_60m_48m_12m_7m5.vhd \
+  ../common/clk_200_48_24_12_6.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
@@ -49,9 +50,9 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_usbmouse2daisy.vhd \
   ../../library/scope/scopeio_hostmouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
-  ../../library/usbmouse/usbhid_host.vhd \
-  ../../library/usbmouse/usb_req_gen_func_pack.vhd \
-  ../../library/usbmouse/usb_enum_logitech_mouse_pack.vhd \
+  ../../library/usbmouse/usbh_host_hid.vhd \
+  ../../library/usbmouse/usbh_setup_logitech_mouse_pack.vhd \
+  ../../library/usbmouse/usbh_sie_vhdl.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
@@ -100,7 +101,11 @@ VHDL_LIB_FILES = \
   ../../library/video/tmds_encoder.vhd \
 
 VERILOG_FILES = \
-  $(VERILOG_CLOCK_FILE)
+  $(VERILOG_CLOCK_FILE) \
+  ../common/clk_200_48_24_12_6_v.v \
+  ../../library/usbmouse/usbh_sie.v \
+  ../../library/usbmouse/usbh_crc5.v \
+  ../../library/usbmouse/usbh_crc16.v \
 
 # for mouse support, in VHDL_LIB_FILES: 
 # replace "scopeio.vhd" -> "scopeio_pointer.vhd"

@@ -138,20 +138,12 @@ architecture beh of ulx3s is
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
-	signal dummy_frommousedaisy_frm  : std_logic;
-	signal dummy_frommousedaisy_irdy : std_logic;
-	signal dummy_frommousedaisy_data : std_logic_vector(8-1 downto 0);
-
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
 	
 	-- USB mouse
 	signal clk_usb         : std_logic; -- 7.5 MHz
-	signal dbg_step_ps3, dbg_step_cmd: std_logic_vector(7 downto 0);
-	signal dbg_btn: std_logic_vector(2 downto 0);
-	signal dbg_hid_valid: std_logic;
-	signal dbg_clk_usb_count: unsigned(2 downto 0);
 
 	-- USB serial
 	signal dbg_sync_err, dbg_bit_stuff_err, dbg_byte_err: std_logic;
@@ -545,10 +537,7 @@ begin
 	(
 	  clk => clk_oled, -- 40/75 MHz
 	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
-	  data(18 downto 16) => dbg_btn,
-	  data(15 downto 8) => dbg_step_ps3,
-	  data(7 downto 0) => dbg_step_cmd,	  
-	  --data(47 downto 0) => S_adc_data(47 downto 0),
+	  data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
@@ -591,26 +580,13 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-        E_clk_usb: entity work.clk_25M_100M_7M5_12M_60M
+        E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
-          CLKI   => clk_25MHz,
-          CLKOP  => open,    -- clk_100MHz,
-          CLKOS  => clk_usb, -- clk_7M5Hz,
-          CLKOS2 => open,    -- clk_12MHz,
-          CLKOS3 => open     -- clk_60MHz
+          clkin       =>  clk_pixel_shift, -- clk_200MHz,
+          clkout(3)   =>  clk_usb -- 0:48 1:24 2:12 3:6
         );
-        -- 0-5 clk_usb counter to easier align scoped data
-        process(clk_usb)
-        begin
-          if rising_edge(clk_usb) then
-            if dbg_clk_usb_count(dbg_clk_usb_count'high) = '1' then -- 4
-              dbg_clk_usb_count <= (others => '0');
-            else
-              dbg_clk_usb_count <= dbg_clk_usb_count + 1;
-            end if;
-          end if;
-        end process;
+
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
 	(
@@ -623,23 +599,18 @@ begin
 		clk         => clk_mouse,
 		clk_usb     => clk_usb,
 		-- USB interface
-		usb_reset   => rst,
+		usb_reset   => '0',
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
 		usb_dif     => usb_fpga_dp,
-		-- USB debug
-		dbg_step_ps3 => dbg_step_ps3,
-		dbg_step_cmd => dbg_step_cmd,
-		dbg_btn      => dbg_btn,
-		dbg_hid_valid => dbg_hid_valid,
 		-- daisy input
 		chaini_frm  => '0', -- fromistreamdaisy_frm,
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
 		chaini_data => x"00", -- fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => dummy_frommousedaisy_frm,
-		chaino_irdy => dummy_frommousedaisy_irdy,
-		chaino_data => dummy_frommousedaisy_data
+		chaino_frm  => frommousedaisy_frm,
+		chaino_irdy => frommousedaisy_irdy,
+		chaino_data => frommousedaisy_data
 	);
 	end generate; -- USB mouse
 
