@@ -10,14 +10,15 @@ entity scopeio_downsampler is
 		inputs  : natural;
 		factors : natural_vector);
 	port (
-		factor_id     : in  std_logic_vector;
-		input_clk     : in  std_logic;
-		input_dv      : in  std_logic;
-		input_data    : in  std_logic_vector;
-		input_shot    : in  std_logic;
-		output_dv     : out std_logic;
-		output_shot   : out std_logic;
-		output_data   : out std_logic_vector);
+		factor_id    : in  std_logic_vector;
+		input_clk    : in  std_logic;
+		input_dv     : in  std_logic;
+		input_data   : in  std_logic_vector;
+		input_shot   : in  std_logic;
+		downsampling : buffer std_logic;
+		output_dv    : out std_logic;
+		output_shot  : out std_logic;
+		output_data  : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
@@ -37,10 +38,12 @@ architecture beh of scopeio_downsampler is
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
 	signal data_in  : std_logic_vector(0 to input_data'length-1);
-	signal data_out : std_logic_vector(0 to output_data'length-1);
-	signal scaler_ena : std_logic;
-	signal data_shot : std_logic;
-	signal data_vld : std_logic;
+	signal data_out : signed(0 to output_data'length-1);
+	signal start : std_logic;
+	signal data_shot  : std_logic;
+	signal data_vld   : std_logic;
+	signal max_ini    : std_logic := '0';
+	signal min_ini    : std_logic := '0';
 
 begin
 
@@ -50,6 +53,16 @@ begin
 	port map (
 		addr => factor_id,
 		data => factor);
+
+	downsampleron_p: process (factor_id)
+	begin
+		downsampling <= '0';
+		for i in 1 to 2**factor_id'length-1 loop
+			if unsigned(factor_id)=i then
+				downsampling <= setif(factors(0)/=factors(i));
+			end if;
+		end loop;
+	end process;
 
 	scaler_p : process (input_clk)
 		variable shot_dis : std_logic;
@@ -64,7 +77,7 @@ begin
 				else
 					scaler := scaler - 1;
 				end if;
-				scaler_ena <= scaler(0);
+				start <= scaler(0);
 				shot_dis := input_shot;
 				data_vld <= input_dv;
 			else
@@ -75,42 +88,76 @@ begin
 		end if;
 	end process;
 
-	envelope_g : for i in 0 to inputs-1 generate
-		constant sel_max : std_logic := '0';
-		constant sel_min : std_logic := not sel_max;
+	max_ini <= start and (not min_ini or data_shot);
+	shot_p : process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if data_vld='1' then
+				min_ini <= max_ini;
+				if start='1' then
+					if max_ini='1' then
+						output_shot <= data_shot;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+	output_dv <= data_vld and max_ini;
 
-		signal sel_in  : std_logic := '0'; -- Debuging pupose
-		signal sel_out : std_logic := '1'; -- Debuging pupose
-		signal sample  : signed(0 to input_data'length/inputs-1);
-		signal maxx    : signed(sample'range);
-		signal minn    : signed(sample'range);
+	compress_g : for i in 0 to inputs-1 generate
+		signal sample : signed(0 to input_data'length/inputs-1);
+		signal swap   : std_logic;
+		signal maxx   : signed(sample'range);
+		signal minn   : signed(sample'range);
+		signal max0   : signed(sample'range);
+		signal min0   : signed(sample'range);
 	begin
 		sample <= signed(word2byte(data_in, i, sample'length));
 		process (input_clk)
-			variable shot : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if data_vld='1' then
-					if scaler_ena='1' then
-						maxx <= word2byte(hdl4fpga.std.max(maxx, sample) & sample, setif(sel_out=sel_max or TRUE) or data_shot);
-						minn <= word2byte(hdl4fpga.std.min(minn, sample) & sample, setif(sel_out=sel_min or TRUE) or data_shot);
-						data_out(i*sample'length to (i+1)*sample'length-1) <=
-							std_logic_vector(word2byte(minn & maxx, setif(sel_out=sel_max or TRUE)));
-						output_shot <= shot;
-						shot        := data_shot;
-						sel_out     <= sel_in and not data_shot;
+					if downsampling='0' then
+						if max_ini='1' then
+							maxx <= sample;
+							swap <= '0';
+						elsif maxx < sample then
+							maxx <= sample;
+							swap <= '1';
+						end if;
+						minn <= hdl4fpga.std.min(word2byte(minn & maxx, min_ini), sample);
 					else
-						sel_in  <= not sel_out;
-						maxx    <= hdl4fpga.std.max(maxx, sample);
-						minn    <= hdl4fpga.std.min(minn, sample);
+						if max_ini='1' then
+							maxx <= hdl4fpga.std.max(min0, sample);
+							minn <= hdl4fpga.std.min(max0, sample);
+							max0 <= sample;
+							min0 <= sample;
+						else
+							if maxx < sample then
+								maxx <= sample;
+								max0 <= sample;
+							elsif maxx < sample then
+								max0 <= sample;
+							end if;
+
+							if minn > sample then
+								minn <= sample;
+								min0 <= sample;
+							elsif min0 > sample then
+								min0 <= sample;
+							end if;
+						end if;
+						swap <= '-';
 					end if;
-				end if;
-				if i=0 then
-					output_dv <= data_vld and scaler_ena;
 				end if;
 			end if;
 		end process;
+		data_out(2*i*sample'length to 2*(i+1)*sample'length-1) <= 
+			maxx & minn when swap='0' else
+			minn & maxx;
+
 	end generate;
-	output_data <= data_out;
+
+	output_data <= std_logic_vector(data_out);
 
 end;

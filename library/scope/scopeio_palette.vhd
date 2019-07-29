@@ -34,7 +34,7 @@ entity scopeio_palette is
 		vt_bgon     : in  std_logic;
 		text_bgon   : in  std_logic;
 		sgmnt_bgon  : in  std_logic;
-		traces_dots : in  std_logic_vector;
+		trace_dots  : in  std_logic_vector;
 		video_color : out std_logic_vector);
 end;
 
@@ -53,8 +53,8 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
-	constant paletteid_size : natural := unsigned_num_bits(traces_dots'length + 9 - 1); 
-	constant paletteid_data : std_logic_vector := std_logic_vector(unsigned(id_codes(traces_dots'length + 9)) ror paletteid_size*traces_dots'length); 
+	constant paletteid_size : natural := unsigned_num_bits(trace_dots'length + 9 - 1); 
+	constant paletteid_data : std_logic_vector := std_logic_vector(unsigned(id_codes(trace_dots'length + 9)) ror paletteid_size*trace_dots'length); 
 	constant palette_ids    : std_logic_vector(0 to paletteid_data'length-1) := paletteid_data;
 
 	signal trace_on   : std_logic;
@@ -65,7 +65,7 @@ architecture beh of scopeio_palette is
 	signal fgbg_id    : std_logic_vector(trace_id'range);
 
 
-	signal wr_addr    : std_logic_vector(0 to unsigned_num_bits(traces_dots'length+9-1)-1);
+	signal wr_addr    : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+9-1)-1);
 	signal wr_data    : std_logic_vector(video_color'range);
 	signal rd_addr    : std_logic_vector(wr_addr'range);
 	signal rd_data    : std_logic_vector(wr_data'range);
@@ -88,15 +88,15 @@ begin
 	traceid_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			trace_id <= primux(palette_ids(0 to paletteid_size*traces_dots'length-1), traces_dots);
-			trace_on <= setif(traces_dots/=(traces_dots'range => '0'));
+			trace_id <= primux(palette_ids(0 to paletteid_size*trace_dots'length-1), trace_dots);
+			trace_on <= setif(trace_dots/=(trace_dots'range => '0'));
 		end if;
 	end process;
 
 	triggerio_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			trigger_id <= word2byte(palette_ids(0 to paletteid_size*traces_dots'length-1), trigger_chanid, paletteid_size);
+			trigger_id <= word2byte(palette_ids(0 to paletteid_size*trace_dots'length-1), trigger_chanid, paletteid_size);
 			trigger_on <= trigger_dot;
 		end if;
 	end process;
@@ -105,7 +105,7 @@ begin
 		variable aux : std_logic_vector(palette_ids'range);
 	begin
 		if rising_edge(video_clk) then
-			aux     := std_logic_vector(unsigned(palette_ids) rol paletteid_size*traces_dots'length);
+			aux     := std_logic_vector(unsigned(palette_ids) rol paletteid_size*trace_dots'length);
 --			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & text_bgon & sgmnt_bgon & '1');
 			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & '1');
 		end if;
@@ -123,7 +123,7 @@ begin
 --	process (video_clk)
 --	begin
 --		if rising_edge(video_clk) then
---			rd_addr     <= priencoder(traces_dots & trigger_dot & grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & '1');
+--			rd_addr     <= priencoder(trace_dots & trigger_dot & grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & '1');
 --			video_color <= rd_data;
 --		end if;
 --	end process;
