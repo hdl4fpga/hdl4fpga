@@ -202,7 +202,7 @@ begin
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge);
-	
+
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);
