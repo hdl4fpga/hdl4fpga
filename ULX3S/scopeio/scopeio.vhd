@@ -27,8 +27,8 @@ architecture beh of ulx3s is
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
         constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 wheel mouse
-        constant C_mouse_usb:  boolean := true; -- USB mouse soft-core, unreliable
+        constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb:  boolean := true;  -- USB mouse
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
@@ -137,6 +137,10 @@ architecture beh of ulx3s is
 	signal frommousedaisy_frm  : std_logic;
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
+
+	signal usbmouse_frommousedaisy_frm  : std_logic;
+	signal usbmouse_frommousedaisy_irdy : std_logic;
+	signal usbmouse_frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
@@ -608,10 +612,17 @@ begin
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
 		chaini_data => x"00", -- fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => frommousedaisy_frm,
-		chaino_irdy => frommousedaisy_irdy,
-		chaino_data => frommousedaisy_data
+		chaino_frm  => usbmouse_frommousedaisy_frm,
+		chaino_irdy => usbmouse_frommousedaisy_irdy,
+		chaino_data => usbmouse_frommousedaisy_data
 	);
+	-- C_mouse_host, if enabled, will control GUI instead of C_mouse_usb
+        G_attach_usbmouse:
+        if not C_mouse_host generate
+          frommousedaisy_frm  <= usbmouse_frommousedaisy_frm;
+          frommousedaisy_irdy <= usbmouse_frommousedaisy_irdy;
+          frommousedaisy_data <= usbmouse_frommousedaisy_data;
+        end generate; -- attach USB mouse if not host mouse
 	end generate; -- USB mouse
 
 	G_mouse_host: if C_mouse_host generate
