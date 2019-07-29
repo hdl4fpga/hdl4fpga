@@ -1,4 +1,4 @@
-[ ] device-specific report decoder as separate module
+[x] device-specific report decoder as separate module
 [x] get report with addressed write instead of shifting
 [ ] test will CRC reject bad data
 [x] retry setup packets until ACK is received
