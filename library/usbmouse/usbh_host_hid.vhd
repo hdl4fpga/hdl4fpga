@@ -9,9 +9,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-library ecp5u;
-use ecp5u.components.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.usbh_setup_pack.all;
