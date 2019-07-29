@@ -657,6 +657,7 @@ begin
 	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
+		trig1shot        => true,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
                 default_gridbg   => b"000000",
