@@ -25,10 +25,10 @@ architecture beh of ulx3s is
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-        constant vlayout_id: integer := 7;
+        constant vlayout_id: integer := 8;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 wheel mouse
-        constant C_mouse_usb:  boolean := true; -- USB mouse soft-core, unreliable
+        constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb:  boolean := true;  -- USB mouse
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
@@ -51,7 +51,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED (enable max 1)
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -138,6 +138,10 @@ architecture beh of ulx3s is
 	signal frommousedaisy_irdy : std_logic;
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
+	signal usbmouse_frommousedaisy_frm  : std_logic;
+	signal usbmouse_frommousedaisy_irdy : std_logic;
+	signal usbmouse_frommousedaisy_data : std_logic_vector(8-1 downto 0);
+
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
@@ -183,7 +187,6 @@ begin
 
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
-	
 
         clk_25M: entity work.clk_verilog
         port map
@@ -580,12 +583,18 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
+	G_usb_200_6: if vlayout_id >= 5 and vlayout_id <= 7 generate
         E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
           clkin       =>  clk_pixel_shift, -- clk_200MHz,
           clkout(3)   =>  clk_usb -- 0:48 1:24 2:12 3:6
         );
+        end generate;
+
+	G_usb_6: if vlayout_id = 8 generate
+	clk_usb <= clk_pll(3); -- 6 MHz
+        end generate;
 
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
@@ -598,8 +607,8 @@ begin
 	(
 		clk         => clk_mouse,
 		clk_usb     => clk_usb,
+		usb_reset   => '0', -- '1' will force USB bus reset
 		-- USB interface
-		usb_reset   => '0',
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
 		usb_dif     => usb_fpga_dp,
@@ -608,10 +617,17 @@ begin
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
 		chaini_data => x"00", -- fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => frommousedaisy_frm,
-		chaino_irdy => frommousedaisy_irdy,
-		chaino_data => frommousedaisy_data
+		chaino_frm  => usbmouse_frommousedaisy_frm,
+		chaino_irdy => usbmouse_frommousedaisy_irdy,
+		chaino_data => usbmouse_frommousedaisy_data
 	);
+	-- C_mouse_host, if enabled, will control GUI instead of C_mouse_usb
+        G_attach_usbmouse:
+        if not C_mouse_host generate
+          frommousedaisy_frm  <= usbmouse_frommousedaisy_frm;
+          frommousedaisy_irdy <= usbmouse_frommousedaisy_irdy;
+          frommousedaisy_data <= usbmouse_frommousedaisy_data;
+        end generate; -- attach USB mouse if not host mouse
 	end generate; -- USB mouse
 
 	G_mouse_host: if C_mouse_host generate
@@ -646,6 +662,7 @@ begin
 	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
+		trig1shot        => true,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
                 default_gridbg   => b"000000",
