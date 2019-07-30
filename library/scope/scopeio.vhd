@@ -171,7 +171,7 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
 
-	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
+	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtrfile
 	generic map (
 		inputs         => inputs)
 	port map (
@@ -203,7 +203,7 @@ begin
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge);
-	
+
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);

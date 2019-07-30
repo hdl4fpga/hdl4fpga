@@ -232,7 +232,6 @@ begin
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		test => true,
 		inputs   => inputs,
 		vlayout_id  => 5)
 	port map (
