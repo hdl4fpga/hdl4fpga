@@ -11,7 +11,7 @@ use ecp5u.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
---use work.std.all;
+use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
 	-- vlayout_id
@@ -49,8 +49,12 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
         -- scopeio
 	constant inputs: natural := 4; -- number of input channels (traces)
-	-- OLED (enable max 1)
-        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
+	-- OLED HEX - what to display (enable max 1)
+	constant C_oled_hex_view_usb : boolean := true;
+	constant C_oled_hex_view_adc : boolean := false;
+	constant C_oled_hex_view_uart: boolean := false;
+	-- OLED HEX or VGA (enable max 1)
+        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -79,6 +83,7 @@ architecture beh of ulx3s is
 
 	signal clk_oled : std_logic := '0';
 	signal clk_ena_oled : std_logic := '1';
+	signal R_oled_data: std_logic_vector(63 downto 0);
 
 	signal clk_adc : std_logic := '0';
 
@@ -105,22 +110,21 @@ architecture beh of ulx3s is
 	end;
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
-	-- assign default colors to the traces
-	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-        --b"111100";
-          b"111100_001111_001100_110111";
-        --b"111100_001111_001100_110111_110100";
-        --b"111100_001111_001100_110111_110100_000111_011011_111000 111010 001011";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9
-        --  yellow cyan   green  violet orange blue   lila   brown  red    turqui
+	-- color palette, not easy to have so many distinct colors
+	constant C_color_palette: std_logic_vector(0 to 65) :=
+          b"111100_001111_001100_110111_111111_110100_111010_111000_001011_000111_011011";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9 trace10
+        --  yellow cyan   green  violet white  orange red    brown  turqui blue   lila
+        -- subset of colors for enabled inputs
+	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) := C_color_palette(0 to inputs*vga_rgb'length-1);
 
 	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz
+	constant uart_clk_hz : natural := 30000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -128,8 +132,8 @@ architecture beh of ulx3s is
 	--signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(0 to 7);
-	signal so_null    : std_logic_vector(0 to 7);
+	signal uart_rxd   : std_logic_vector(7 downto 0);
+	signal so_null    : std_logic_vector(7 downto 0);
 
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
@@ -147,7 +151,12 @@ architecture beh of ulx3s is
 	signal clk_ena_mouse   : std_logic := '1';
 	
 	-- USB mouse
-	signal clk_usb         : std_logic; -- 7.5 MHz
+	signal clk_usb         : std_logic; -- 6 MHz
+	constant C_hid_report_length_ltd: integer := min(7,C_report_length);
+	signal S_hid_report    : std_logic_vector(C_report_length*8-1 downto 0);
+	signal S_hid_valid     : std_logic;
+	signal S_usb_rx_count  : std_logic_vector(15 downto 0);
+	signal S_usb_rx_done   : std_logic;
 
 	-- USB serial
 	signal dbg_sync_err, dbg_bit_stuff_err, dbg_byte_err: std_logic;
@@ -529,6 +538,40 @@ begin
 		chaino_data => fromistreamdaisy_data
 	);
 
+	G_oled_hex_view_uart: if C_oled_hex_view_uart generate
+	  process(clk_uart)
+	  begin
+	    if rising_edge(clk_uart) then
+	      if uart_rxdv = '1' then
+                R_oled_data(uart_rxd'range) <= uart_rxd;
+              end if;
+            end if;
+          end process;
+	end generate;
+
+	G_oled_hex_view_adc_report: if C_oled_hex_view_adc generate
+	  process(clk_adc)
+	  begin
+	    if rising_edge(clk_adc) then
+	      if S_adc_dv = '1' then
+                R_oled_data(S_adc_data'range) <= S_adc_data;
+	      end if;
+	    end if;
+	  end process;
+	end generate;
+
+	C_oled_hex_view_hid_report: if C_oled_hex_view_usb generate
+	  process(clk_usb)
+	  begin
+	    if rising_edge(clk_usb) then
+              R_oled_data(C_hid_report_length_ltd*8-1 downto 0) <= S_hid_report(C_hid_report_length_ltd*8-1 downto 0);
+              if S_usb_rx_done = '1' and S_usb_rx_count(7 downto 0) /= x"00" then
+                R_oled_data(63 downto 56) <= S_usb_rx_count(7 downto 0);
+              end if;
+	    end if;
+	  end process;
+	end generate;
+
 	G_oled: if C_oled_hex generate
 	-- OLED display for debugging
 	oled_e: entity work.oled_hex_decoder
@@ -540,9 +583,7 @@ begin
 	(
 	  clk => clk_oled, -- 40/75 MHz
 	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
-	  data(47 downto 0) => S_adc_data(47 downto 0),
-	  --data(15 downto 8) => uart_rxd, -- uart latch
-	  --data(7 downto 0) => (others => '0'),
+	  data => R_oled_data,
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
@@ -612,6 +653,11 @@ begin
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
 		usb_dif     => usb_fpga_dp,
+		-- debug
+		report_data   => S_hid_report,
+		report_valid  => S_hid_valid,
+		rx_count      => S_usb_rx_count,
+		rx_done       => S_usb_rx_done,
 		-- daisy input
 		chaini_frm  => '0', -- fromistreamdaisy_frm,
 		chaini_irdy => '0', -- fromistreamdaisy_irdy,
