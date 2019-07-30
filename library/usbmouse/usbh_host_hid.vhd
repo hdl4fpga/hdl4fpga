@@ -44,7 +44,6 @@ architecture Behavioral of usbh_host_hid is
   signal S_DATABUS16_8: std_logic;
   signal S_RESET: std_logic;
   signal S_XCVRSELECT: std_logic_vector(1 downto 0);
-  signal R_BUSRESET: std_logic := '1';
   signal S_OPMODE: std_logic_vector(1 downto 0);
   signal S_LINESTATE: std_logic_vector(1 downto 0);
   signal S_LINECTRL: std_logic;
@@ -64,7 +63,7 @@ architecture Behavioral of usbh_host_hid is
   constant C_setup_rom_len: std_logic_vector(R_setup_rom_addr'range) := 
     std_logic_vector(to_unsigned(C_setup_rom'length,8));
 
-  signal S_DATAOUT_reset: std_logic_vector(7 downto 0); -- mixed in reset signal
+  --signal S_DATAOUT_reset: std_logic_vector(7 downto 0); -- mixed in reset signal
 
   signal   R_state:          std_logic_vector(2 downto 0)    := "000";
   constant C_STATE_DETACHED: std_logic_vector(R_state'range) := "000";
@@ -73,8 +72,10 @@ architecture Behavioral of usbh_host_hid is
   constant C_STATE_REQUEST:  std_logic_vector(R_state'range) := "011";
   constant C_STATE_RESPONSE: std_logic_vector(R_state'range) := "100";
 
+  signal R_retry: std_logic_vector(C_setup_retry downto 0);
   signal R_slow: std_logic_vector(17 downto 0) := (others => '0'); -- 2**17 clocks = 20 ms interval at 6 MHz
   signal R_reset_pending : std_logic;
+  signal R_timeout: std_logic; -- rising edge tracking
 
   -- sie wires
   signal  rst_i             :  std_logic;
@@ -143,7 +144,7 @@ architecture Behavioral of usbh_host_hid is
     -- UTMI interface to usb-serial core
     LineCtrl_i => S_LINECTRL,
     TxValid_i => S_TXVALID,
-    DataOut_i => S_dataout_reset, -- S_DATAOUT, -- 8-bit TX
+    DataOut_i => S_DATAOUT, -- 8-bit TX
     TxReady_o => S_TXREADY,
     RxValid_o => S_RXVALID,
     DataIn_o => S_DATAIN, -- 8-bit RX
@@ -162,33 +163,42 @@ architecture Behavioral of usbh_host_hid is
     txdn => S_txdn, -- single-ended output to D-
     txoe => S_txoe  -- 3-state control: 0-output, 1-input
   );
-  -- HACK: R_BUSRESET sets lower 2 bits which makes PHY send bus reset instead of keepalive
-  -- this should be moved to SIE
-  S_dataout_reset <= S_DATAOUT(7 downto 2) & (S_DATAOUT(1) or R_BUSRESET) & (S_DATAOUT(0) or R_BUSRESET);
 
   process(clk_usb)
   begin
     if rising_edge(clk_usb) then
+      R_timeout <= timeout_o;
       if sof_transfer_i = '1' then
         R_setup_rom_addr <= (others => '0');
         R_setup_rom_addr_acked <= (others => '0');
+        R_retry <= (others => '0');
         R_reset_pending <= '0';
       else
         if bus_reset = '1' then
           R_reset_pending <= '1';
         end if;
-        if timeout_o = '1' then
+        if timeout_o = '1' and R_timeout = '0' then -- timeout rising edge
           R_setup_rom_addr <= R_setup_rom_addr_acked;
+          if R_retry(R_retry'high) = '0' and R_state = C_STATE_SETUP then
+            R_retry <= R_retry + 1;
+          end if;
         else
           if rx_done_o = '1' and response_o = x"D2" then
             R_setup_rom_addr_acked <= R_setup_rom_addr;
+            R_retry <= (others => '0');
           end if;
           if tx_pop_o = '1' then
             R_setup_rom_addr <= R_setup_rom_addr + 1;
           end if;
-        end if;
-      end if;
+        end if; -- timeout rising edge
+      end if; -- reset accepted
+    end if; -- rising edge
+  end process;
+  tx_data_i <= C_setup_rom(conv_integer(R_setup_rom_addr));
 
+  process(clk_usb)
+  begin
+    if rising_edge(clk_usb) then
       case R_state is
         when C_STATE_DETACHED =>
           if S_LINESTATE = "01" then
@@ -196,33 +206,36 @@ architecture Behavioral of usbh_host_hid is
               R_slow <= R_slow + 1;
             else
               R_slow <= (others => '0');
-              R_BUSRESET      <= '1';
-              sof_transfer_i  <= '1';
+              sof_transfer_i  <= '1';   -- transfer SOF or linectrl
+              in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+              token_pid_i(1 downto 0) <= "11"; -- linectrl: bus reset
               resp_expected_i <= '0';
               start_i         <= '1';
               R_state <= C_STATE_RESET;
             end if;
           else
+            start_i <= '0';
             R_slow <= (others => '0');
           end if;
         when C_STATE_RESET =>
+          sof_transfer_i <= '0';
+          start_i        <= '0';
           if idle_o = '1' then
-            if R_slow(R_slow'high) = '0' then
+            if R_slow(C_setup_interval) = '0' then
               R_slow <= R_slow + 1;
             else
               R_slow <= (others => '0');
-              R_BUSRESET <= '0';
               R_state <= C_STATE_SETUP;
             end if;
-          else
-            sof_transfer_i <= '0';
-            start_i <= '0';
           end if;
         when C_STATE_SETUP =>
           if R_setup_rom_addr /= C_setup_rom_len then
             if idle_o = '1' then
               if R_slow(C_setup_interval) = '0' then
                 R_slow <= R_slow + 1;
+                if R_retry(R_retry'high) = '1' then
+                  R_state <= C_STATE_DETACHED;
+                end if;
               else
                 R_slow <= (others => '0');
                 in_transfer_i   <= '0';
@@ -289,7 +302,6 @@ architecture Behavioral of usbh_host_hid is
       end case;
     end if;
   end process;
-  tx_data_i <= C_setup_rom(conv_integer(R_setup_rom_addr(4 downto 0)));
 
   -- USB SIE-core
   usb_sie_core: entity hdl4fpga.usbh_sie_vhdl

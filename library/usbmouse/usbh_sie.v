@@ -193,7 +193,12 @@ begin
         begin
             // Data sent?
             if (utmi_txready_i)
-                next_state_r = STATE_TX_TOKEN2;
+            begin
+                if (utmi_linectrl_r)
+                    next_state_r = STATE_TX_IFS;
+                else
+                    next_state_r = STATE_TX_TOKEN2;
+            end
         end
         //-----------------------------------------
         // TX_TOKEN2 (byte 2 of token)
@@ -202,7 +207,7 @@ begin
         begin
             // Data sent?
             if (utmi_txready_i)
-                next_state_r = STATE_TX_TOKEN3;        
+                next_state_r = STATE_TX_TOKEN3;
         end
         //-----------------------------------------
         // TX_TOKEN3 (byte 3 of token)
@@ -439,7 +444,7 @@ begin
  
     // DATA0/1
     send_data1_q    <= data_idx_i;
-    utmi_linectrl_r <= full_speed ? 1'b0 : sof_transfer_i;
+    utmi_linectrl_r <= sof_transfer_i & in_transfer_i;
     send_sof_q      <= sof_transfer_i;
 end
  
