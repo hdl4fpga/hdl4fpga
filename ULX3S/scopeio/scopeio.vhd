@@ -27,8 +27,8 @@ architecture beh of ulx3s is
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
         constant vlayout_id: integer := 8;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := true; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := false;  -- USB mouse
+        constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb:  boolean := true;  -- USB mouse
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
@@ -54,7 +54,7 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -110,22 +110,21 @@ architecture beh of ulx3s is
 	end;
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
-	-- assign default colors to the traces
-	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-        --b"111100";
-          b"111100_001111_001100_110111";
-        --b"111100_001111_001100_110111_110100";
-        --b"111100_001111_001100_110111_110100_000111_011011_111000 111010 001011";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9
-        --  yellow cyan   green  violet orange blue   lila   brown  red    turqui
+	-- color palette, not easy to have so many distinct colors
+	constant C_color_palette: std_logic_vector(0 to 65) :=
+          b"111100_001111_001100_110111_111111_110100_111010_111000_001011_000111_011011";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9 trace10
+        --  yellow cyan   green  violet white  orange red    brown  turqui blue   lila
+        -- subset of colors for enabled inputs
+	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) := C_color_palette(0 to inputs*vga_rgb'length-1);
 
 	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz
+	constant uart_clk_hz : natural := 30000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -133,8 +132,8 @@ architecture beh of ulx3s is
 	--signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(0 to 7);
-	signal so_null    : std_logic_vector(0 to 7);
+	signal uart_rxd   : std_logic_vector(7 downto 0);
+	signal so_null    : std_logic_vector(7 downto 0);
 
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
