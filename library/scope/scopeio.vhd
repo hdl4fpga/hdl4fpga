@@ -347,6 +347,7 @@ begin
 
 	scopeio_storage_e : entity hdl4fpga.scopeio_storage
 	generic map (
+		inputs                 => inputs,
 		align_to_grid          => 0 -- (-left,+right) shift triggered edge n pixels
 	)
 	port map (
@@ -362,6 +363,10 @@ begin
 
 		-- from sample source
 		storage_data           => downsample_data,
+
+		-- special case for downsampling = 0
+		-- 2 samples stored at the same address
+		downsampling           => downsampling,
 
 		-- from display
 		captured_clk           => video_clk,
