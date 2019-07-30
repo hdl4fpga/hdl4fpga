@@ -76,6 +76,9 @@ architecture beh of s3estarter is
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(8-1 downto 0);
 
+	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale  : std_logic_vector(4-1 downto 0);
+
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
 	signal so_trdy   : std_logic;
@@ -137,7 +140,7 @@ begin
 
 		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
 		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
-		spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
+		spi_mosi  <= amp_sdi when amp_spi='1' else dac_sdi;
 
 		spi_sck_e : entity hdl4fpga.ddro
 		port map (
@@ -288,8 +291,8 @@ begin
 	uart_rxc <= e_rx_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		baudrate => baudrate,
-		clk_rate => 16*baudrate)
+		baudrate  => baudrate,
+		clk_rate  => 16*baudrate)
 	port map (
 		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,
@@ -335,6 +338,38 @@ begin
 		chaino_data => si_data);
 	
 	si_clk <= e_rx_clk;
+
+	scopeio_export_b : block
+
+		signal rgtr_id   : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv   : std_logic;
+		signal rgtr_data : std_logic_vector(32-1 downto 0);
+
+	begin
+
+		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		port map (
+			sin_clk   => si_clk,
+			sin_frm   => si_frm,
+			sin_irdy  => si_irdy,
+			sin_data  => si_data,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data);
+
+		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+		port map (
+			clk       => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			hz_dv     => hz_dv,
+			hz_scale  => hz_scale,
+			hz_slider => hz_slider);
+
+	end block;
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		axis_unit   => std_logic_vector(to_unsigned(25,5)),
