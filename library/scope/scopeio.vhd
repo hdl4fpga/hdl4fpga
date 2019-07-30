@@ -170,7 +170,7 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
 
-	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
+	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtrfile
 	generic map (
 		inputs         => inputs)
 	port map (

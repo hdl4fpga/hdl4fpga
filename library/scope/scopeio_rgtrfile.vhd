@@ -6,7 +6,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_rgtr is
+entity scopeio_rgtrfile is
 	generic (
 		inputs          : in  natural);
 	port (
@@ -41,7 +41,7 @@ entity scopeio_rgtr is
 
 end;
 
-architecture def of scopeio_rgtr is
+architecture def of scopeio_rgtrfile is
 
 begin
 
