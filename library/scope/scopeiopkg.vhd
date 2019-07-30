@@ -74,6 +74,7 @@ package scopeiopkg is
 	constant oled96x64  : natural := 6;
 	constant lcd800x480: natural := 7;
 	constant lcd1024x600: natural := 8;
+	constant vesa640x480: natural := 9;
 
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
@@ -140,6 +141,22 @@ package scopeiopkg is
 			textbox_width    =>    0, -- no textbox
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
+			sgmnt_margin     => (others => 0),
+			sgmnt_gap        => (others => 0)),
+		vesa640x480 => (
+			display_width    =>  640,
+			display_height   =>  480,
+			num_of_segments  =>    3,
+			division_size    =>   16,
+			grid_width       => 36*16+1,
+			grid_height      =>  9*16+1,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    8,
+			vtaxis_width     =>  6*8,
+			vttick_rotate    => ccw0,
+			textbox_width    =>    0,
+			main_margin      => (others => 0),
+			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		lcd800x480 => (
