@@ -43,106 +43,77 @@ end;
 
 architecture def of scopeio_rgtr is
 
-	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
-
-	signal hzaxis_ena  : std_logic;
-	signal palette_ena : std_logic;
-	signal gain_ena    : std_logic;
-	signal trigger_ena : std_logic;
-	signal vtaxis_ena  : std_logic;
-	signal pointer_ena : std_logic;
-
 begin
 
-	vtaxis_ena  <= rgtr_dv when rgtr_id=rid_vtaxis  else '0';
-	vtaxis_p : process(clk)
-		constant offset_size : natural := vt_offsets'length/inputs;
-		variable offsets     : unsigned(0 to vt_offsets'length-1); 
-		variable chanid      : std_logic_vector(0 to chanid_maxsize-1);
-	begin
-		if rising_edge(clk) then
-			if vtaxis_ena='1' then
-				chanid := bitfield(rgtr_data, vtchanid_id, vtoffset_bf);
-				for i in 0 to inputs-1 loop
-					if to_unsigned(i, chanid_maxsize)=unsigned(chanid) then
-						offsets(0 to offset_size-1) := unsigned(bitfield(rgtr_data, vtoffset_id, vtoffset_bf));
-					end if;
-					offsets := offsets rol offset_size;
-				end loop;
-				vt_chanid  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), vt_chanid'length));
-				vt_offsets <= std_logic_vector(offsets);
-			end if;
-			vt_dv <= vtaxis_ena;
-		end if;
-	end process;
+	vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	generic map (
+		inputs  => inputs)
+	port map (
+		clk        => clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
 
-	hzaxis_ena  <= rgtr_dv when rgtr_id=rid_hzaxis  else '0';
-	hzaxis_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if hzaxis_ena='1' then
-				hz_slider <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_slider'length));
-				hz_scale  <= bitfield(rgtr_data, hzscale_id,  hzoffset_bf);
-			end if;
-			hz_dv <= hzaxis_ena;
-		end if;
-	end process;
+		vt_dv      => vt_dv,
+		vt_chanid  => vt_chanid,
+		vt_offsets => vt_offsets);
 
-	palette_ena <= rgtr_dv when rgtr_id=rid_palette else '0';
-	palette_p : block
-	begin
-		palette_dv    <= palette_ena;
-		palette_id    <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
-		palette_color <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
-	end block;
+	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	port map (
+		clk       => clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-	gain_ena <= rgtr_dv when rgtr_id=rid_gain else '0';
-	gain_p : process(clk) 
-		constant gainid_size : natural := gain_ids'length/inputs;
-		variable ids         : unsigned(0 to gain_ids'length-1); 
-		variable chanid      : std_logic_vector(0 to chanid_maxsize-1);
-	begin
-		if rising_edge(clk) then
-			if gain_ena='1' then
-				chanid := bitfield(rgtr_data, gainchanid_id, gain_bf);
-				for i in 0 to inputs-1 loop
-					if to_unsigned(i, chanid_maxsize)=unsigned(chanid) then
-						ids(0 to gainid_size-1) := resize(unsigned(bitfield(rgtr_data, gainid_id, gain_bf)), gainid_size);
-					end if;
-					ids := ids rol gainid_size;
-				end loop;
-			end if;
-			gain_dv  <= gain_ena;
-			gain_ids <= std_logic_vector(ids);
-		end if;
-	end process;
+		hz_dv     => hz_dv,
+		hz_scale  => hz_scale,
+		hz_slider => hz_slider);
+		
+	palette_e : entity hdl4fpga.scopeio_rgtrpalette
+	port map (
+		clk           => clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
 
-	trigger_ena <= rgtr_dv when rgtr_id=rid_trigger else '0';
-	trigger_p : process(clk)
-		variable level : signed(trigger_level'range);
-	begin
-		if rising_edge(clk) then
-			level := resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length);
-			if trigger_ena='1' then
-				trigger_freeze <= bitfield(rgtr_data, trigger_ena_id,    trigger_bf)(0);
-				trigger_edge   <= bitfield(rgtr_data, trigger_edge_id,   trigger_bf)(0);
-				trigger_level  <= std_logic_vector(level);
-				trigger_chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), trigger_chanid'length));
-			end if;
-			trigger_dv <= trigger_ena;
-		end if;
-	end process;
+		palette_dv    => palette_dv,
+		palette_id    => palette_id,
+		palette_color => palette_color);
+		
+	gain_e : entity hdl4fpga.scopeio_rgtrgain
+	generic map (
+		inputs  => inputs)
+	port map (
+		clk       => clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-	pointer_ena <= rgtr_dv when rgtr_id=rid_pointer else '0';
-	pointer_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if pointer_ena='1' then
-				pointer_x <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointerx_id, pointer_bf)), pointer_x'length));
-				pointer_y <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointery_id, pointer_bf)), pointer_y'length));
-			end if;
-			pointer_dv <= pointer_ena;
-		end if;
-	end process;
+		gain_dv   => gain_dv,
+		gain_ids  => gain_ids);
+		
+	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		clk            => clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
+		trigger_dv     => trigger_dv,
+		trigger_freeze => trigger_freeze,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+		trigger_edge   => trigger_edge);
+		
+	pointer_e : entity hdl4fpga.scopeio_rgtrpointer
+	port map (
+		clk        => clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
+
+		pointer_dv => pointer_dv,
+		pointer_x  => pointer_x,
+		pointer_y  => pointer_y);
+		
 end;
