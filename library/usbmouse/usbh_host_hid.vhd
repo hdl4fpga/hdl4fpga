@@ -169,28 +169,46 @@ architecture Behavioral of usbh_host_hid is
     if rising_edge(clk_usb) then
       R_timeout <= timeout_o;
       if sof_transfer_i = '1' then
-        R_setup_rom_addr <= (others => '0');
+        R_setup_rom_addr       <= (others => '0');
         R_setup_rom_addr_acked <= (others => '0');
-        R_retry <= (others => '0');
+        R_retry                <= (others => '0');
         R_reset_pending <= '0';
       else
         if bus_reset = '1' then
           R_reset_pending <= '1';
         end if;
-        if timeout_o = '1' and R_timeout = '0' then -- timeout rising edge
-          R_setup_rom_addr <= R_setup_rom_addr_acked;
-          if R_retry(R_retry'high) = '0' and R_state = C_STATE_SETUP then
-            R_retry <= R_retry + 1;
+        if rx_done_o = '1' or (timeout_o = '1' and R_timeout = '0') then
+          -- tranmission is over (either rx done or timeout rising edge).
+          if R_state = C_STATE_SETUP then
+            -- decide to continue with next setup or to retry
+            if rx_done_o = '1' and response_o = x"D2" then -- ACK
+              -- continue with next setup
+              R_setup_rom_addr_acked <= R_setup_rom_addr;
+              R_retry <= (others => '0');
+            else -- failed, rewind to unacknowledged setup and retry
+              R_setup_rom_addr <= R_setup_rom_addr_acked;
+              if R_retry(R_retry'high) = '0' then
+                R_retry <= R_retry + 1;
+              end if;
+            end if;
+          end if; -- not in SETUP
+          if R_state = C_STATE_RESPONSE then
+            -- multiple timeouts at waiting for response will detach
+            if timeout_o = '1' and R_timeout = '0' then
+              if R_retry(R_retry'high) = '0' then
+                R_retry <= R_retry + 1;
+              end if;
+            else
+              if rx_done_o = '1' then
+                R_retry <= (others => '0');
+              end if;
+            end if;
           end if;
-        else
-          if rx_done_o = '1' and response_o = x"D2" then
-            R_setup_rom_addr_acked <= R_setup_rom_addr;
-            R_retry <= (others => '0');
-          end if;
+        else -- transmission is going on
           if tx_pop_o = '1' then
             R_setup_rom_addr <= R_setup_rom_addr + 1;
           end if;
-        end if; -- timeout rising edge
+        end if; -- transmission done
       end if; -- reset accepted
     end if; -- rising edge
   end process;
@@ -292,7 +310,7 @@ architecture Behavioral of usbh_host_hid is
               R_slow <= R_slow + 1;
             else
               R_slow <= (others => '0');
-              if R_reset_pending = '1' or S_LINESTATE = "00" then
+              if R_reset_pending = '1' or S_LINESTATE = "00" or R_retry(R_retry'high) = '1' then
                 R_state <= C_STATE_DETACHED;
               else
                 R_state <= C_STATE_REQUEST;
