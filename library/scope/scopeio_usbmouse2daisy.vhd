@@ -19,8 +19,9 @@ generic
 port
 (
   clk           : in  std_logic; -- 16-108 MHz usually same as VGA pixel clock
-  clk_usb       : in  std_logic; -- 7.5 MHz for USB1.0
-  -- mouse needs reset after replugging (no hotplug detectin yet)
+  clk_usb       : in  std_logic; -- 6 MHz for USB1.0
+  -- hotplug detection and retry logic should we working
+  -- so this reset is not needed
   usb_reset     : in  std_logic := '0'; -- USB mouse core reset
   -- USB interface
   usb_dp        : inout std_logic; -- USB D+ single ended
