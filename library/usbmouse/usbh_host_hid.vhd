@@ -26,7 +26,10 @@ entity usbh_host_hid is
     usb_dp, usb_dn: inout std_logic; -- single ended bidirectional
     -- force bus reset and setup (similar to re-plugging USB device)
     bus_reset: in std_logic := '0';
-    -- HID report
+    -- HID debugging
+    rx_count: out std_logic_vector(15 downto 0); -- rx response length
+    rx_done: out std_logic; -- rx done
+    -- HID report (filtered with expected length)
     hid_report: out std_logic_vector(C_report_length*8-1 downto 0);
     hid_valid: out std_logic
   );
@@ -378,7 +381,8 @@ architecture Behavioral of usbh_host_hid is
         end if;
         if rx_done_o = '1' and crc_err_o = '0' and timeout_o = '0' 
         and R_state = C_STATE_RESPONSE
-        and R_rx_count = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length))
+        -- and R_rx_count = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length)) -- strict
+        and R_rx_count /= x"0000" -- more flexible
         then
           R_hid_valid <= '1';
         else
@@ -391,5 +395,8 @@ architecture Behavioral of usbh_host_hid is
       hid_report(i*8+7 downto i*8) <= R_report_buf(i);
     end generate;
     hid_valid <= R_hid_valid;
+    -- directly from SIE
+    rx_count <= rx_count_o;
+    rx_done <= rx_done_o;
   end block;
 end Behavioral;

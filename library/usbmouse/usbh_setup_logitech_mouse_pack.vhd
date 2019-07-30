@@ -54,7 +54,7 @@ package usbh_setup_pack is
   constant C_setup_interval  : integer := 12; -- 2**n clocks 0.7 ms interval between setup packets
   constant C_report_interval : integer := 12; -- 2**n clocks 0.7 ms interval between report packets
   constant C_report_endpoint : integer := 1;  -- endpoint which answers IN transfer with HID report
-  constant C_report_length   : integer := 5;  -- bytes in the report: 4 for M-BT58, 5 for LX3
+  constant C_report_length   : integer := 8;  -- report buffer length: 4 for M-BT58, 5 for LX3, 8 enough
   constant C_device_address  : integer := 0;  -- default is 0 if set address is not used
 
 -- to generate this package:

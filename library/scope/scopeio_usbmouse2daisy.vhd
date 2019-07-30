@@ -27,6 +27,11 @@ port
   usb_dp        : inout std_logic; -- USB D+ single ended
   usb_dn        : inout std_logic; -- UDB D- single ended
   usb_dif       : in    std_logic; -- USB D+,D- differential pair input
+  -- HID report to display (clk_usb domain) - help for unsupported mouse.
+  report_data   : out std_logic_vector;
+  report_valid  : out std_logic;
+  rx_count      : out std_logic_vector(15 downto 0); -- count of received report bytes
+  rx_done       : out std_logic; -- take count when RX is done
   -- daisy in
   chaini_frm    : in  std_logic := '0';
   chaini_irdy   : in  std_logic := '1';
@@ -65,6 +70,8 @@ begin
     usb_dp => usb_dp,
     usb_dn => usb_dn,
     usb_dif => usb_dif,
+    rx_count => rx_count,
+    rx_done => rx_done,
     hid_report => S_hid_report,
     hid_valid => S_valid
   );
@@ -135,4 +142,6 @@ begin
     chaino_irdy => chaino_irdy,
     chaino_data => chaino_data
   );
+  report_data   <= S_hid_report;
+  report_valid  <= S_valid;
 end;
