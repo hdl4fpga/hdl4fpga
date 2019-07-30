@@ -110,14 +110,16 @@ architecture beh of s3starter is
 	constant mode600p    : natural := 0;
 	constant mode1080p   : natural := 1;
 	constant mode600px16 : natural := 2;
+	constant mode480p : natural := 3;
 
 	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 2) := (
+	constant video_params : displayparam_vector(0 to 3) := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
+		mode480p    => (layout => 8, mul => 3, div => 5),
 		mode600px16 => (layout => 6, mul => 4, div => 5));
 
-	constant video_mode : natural := mode600px16;
+	constant video_mode : natural := mode480p;
 
 begin
 
