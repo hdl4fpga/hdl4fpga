@@ -31,6 +31,7 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.videopkg.all;
 
 entity mii_display is
 	port (
@@ -48,26 +49,23 @@ architecture struct of mii_display is
 
 	signal video_frm   : std_logic;
 	signal video_hon   : std_logic;
-	signal video_nhl   : std_logic;
 	signal video_vld   : std_logic;
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
 begin
 
-	video_e : entity hdl4fpga.video_vga
+	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 7,
-		n    => 11)
+		mode => 7)
 	port map (
-		clk   => video_clk,
-		hsync => video_hs,
-		vsync => video_vs,
-		hcntr => video_hcntr,
-		vcntr => video_vcntr,
-		don   => video_hon,
-		frm   => video_frm,
-		nhl   => video_nhl);
+		video_clk   => video_clk,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
+		video_hzcntr => video_hcntr,
+		video_vtcntr => video_vcntr,
+		video_hzon   => video_hon,
+		video_vton   => video_frm);
 
 	cgaadapter_b : block
 		signal font_col  : std_logic_vector(3-1 downto 0);
@@ -204,7 +202,7 @@ begin
 
 		cgarom_e : entity hdl4fpga.rom
 		generic map (
-			synchronous => 2,
+			latency => 2,
 			bitrom => psf1cp850x8x16)
 		port map (
 			clk  => video_clk,
