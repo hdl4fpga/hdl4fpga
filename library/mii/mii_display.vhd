@@ -66,7 +66,7 @@ begin
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
 		video_vton   => video_frm);
-	video_dot <= video_hon and video_frm;
+--	video_dot <= video_hon and video_frm;
 
 	cgaadapter_b : block
 		signal font_col  : std_logic_vector(3-1 downto 0);
@@ -77,7 +77,7 @@ begin
 		signal cga_clk   : std_logic;
 		signal cga_ena   : std_logic;
 		signal cga_rdata : std_logic_vector(byte'range);
-		signal cga_wdata : std_logic_vector(byte'length*2-1 downto 0);
+		signal cga_wdata : std_logic_vector(byte'range);
 		signal cga_addr  : std_logic_vector(13-1 downto 0) := (others => '0');
 
 		signal video_on  : std_logic;
@@ -128,19 +128,7 @@ begin
 				end if;
 			end process;
 
-			process (rxd8)
-				constant tab  : byte_vector(0 to 16-1) := to_bytevector(to_stdlogicvector(string'("0123456789ABCDEF")));
-				variable rxd  : unsigned(rxd8'range);
-				variable data : unsigned(2*byte'length-1 downto 0);
-			begin
-				rxd := unsigned(reverse(rxd8));
-				for i in 0 to rxd'length/4-1 loop
-					data := data ror byte'length;
-					data(byte'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
-					rxd  := rxd sll 4;
-				end loop;
-				cga_wdata <= std_logic_vector(data);
-			end process;
+			cga_wdata <= rxd8;
 
 			process (video_vcntr, video_hcntr)
 				variable aux : unsigned(video_addr'range);
@@ -154,7 +142,7 @@ begin
 			cgaram_e : entity hdl4fpga.bram(inference)
 			port map (
 				clka  => cga_clk,
-				addra => cga_addra,
+				addra => cga_addr,
 				wea   => cga_ena,
 				dia   => cga_wdata,
 				doa   => dll,
@@ -162,7 +150,7 @@ begin
 				clkb  => video_clk,
 				addrb => video_addr,
 				dib   => dll,
-				dob   => cga_data);
+				dob   => cga_rdata);
 
 		end block;
 
