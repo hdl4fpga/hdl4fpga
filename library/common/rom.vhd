@@ -60,7 +60,7 @@ architecture def of rom is
 		return retval;
 	end;
 
-	signal rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom, 2**addr'length);
+	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom, 2**addr'length);
 
 begin
 
