@@ -32,10 +32,12 @@ entity scopeio_storage is
 end;
 
 architecture beh of scopeio_storage is
+	-- "_ds" suffix means "downsampling"
 	constant sample_bits: natural := storage_data'length / inputs / 2;
 	signal t0_addr      : unsigned(storage_addr'range);
-	signal scrolled_addr: unsigned(t0_addr'range);
-	signal rd_addr      : unsigned(t0_addr'range);
+	signal t0_addr_ds   : unsigned(0 to t0_addr'length);
+	signal scrolled_addr: unsigned(t0_addr_ds'range);
+	signal rd_addr      : unsigned(t0_addr_ds'range);
 	signal wr_addr      : unsigned(t0_addr'range);
 	signal wr_ena       : std_logic;
 	signal null_data    : std_logic_vector(storage_data'range);
@@ -61,13 +63,18 @@ begin
 		end if;
 	end process;
 
+	-- special case treatment: at downsampling=0
+	-- t0_addr actually holds double address
+	t0_addr_ds <= '0' & t0_addr when downsampling = '1'
+	         else t0_addr & '0';
+
 	-- "captured_scroll" is horizontal scrolling offset, requested by display system
 	-- Latency is allowed so we can offload arithmetic stage with a register:
 	P_horizontal_scroll:
 	process(storage_clk)
 	begin
 		if rising_edge(storage_clk) then
-			scrolled_addr <= t0_addr + resize(unsigned(captured_scroll),scrolled_addr'length)
+			scrolled_addr <= t0_addr_ds + resize(unsigned(captured_scroll),scrolled_addr'length)
 			               + to_unsigned(-align_to_grid,scrolled_addr'length);
 		end if; -- rising_edge
 	end process;
@@ -77,10 +84,11 @@ begin
 	-- No latency is allowed for "captured_addr", therefore combinatorial logic here:
 	-- Registered latency will cause display artefacts.
 	rd_addr <= scrolled_addr + unsigned(captured_addr);
-	
+
 	-- if downsampling = 0 special case: right shift rd_addr value
-	rd_addr_ds <= rd_addr when downsampling = '1' 
-	         else ('0' & rd_addr(0 to rd_addr'high-1));
+	-- if downsampling = 1 just discard MSB bit
+	rd_addr_ds <= rd_addr(1 to rd_addr'high) when downsampling = '1' 
+	         else rd_addr(0 to rd_addr'high-1);
 
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
@@ -97,8 +105,7 @@ begin
 
 	-- HACK reconstruct special case of downsampling=0
 	-- where 2 samples are stored at address
-	-- it works if readout is sequential 
-	
+	-- it works because video read is sequential
 	process(captured_clk)
 	begin
 		if rising_edge(captured_clk) then
@@ -106,7 +113,7 @@ begin
 		end if; -- rising_edge
 	end process;
 
-	G_inputs_data0:
+	G_split_double_samples:
 	for i in 0 to inputs-1 generate
 	  rd_data_0(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
 	  <= pr_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1)
