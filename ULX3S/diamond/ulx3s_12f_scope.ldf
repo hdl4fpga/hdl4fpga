@@ -6,7 +6,7 @@
     <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
       <Options top_module="ulx3s"/>
     </Source>
-    <Source name="../scopeio/scopeio.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../scopeio/scopeio_top.vhd" type="VHDL" type_short="VHDL">
       <Options/>
     </Source>
     <Source name="../scopeio/usbserial_rxd.vhd" type="VHDL" type_short="VHDL">
@@ -297,7 +297,7 @@
     <Source name="../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../common/clk_25_150_30_66_6.v" type="Verilog" type_short="Verilog">
+    <Source name="../common/clk_25_200_40_66_6.v" type="Verilog" type_short="Verilog">
       <Options/>
     </Source>
     <Source name="../common/clk_200_48_24_12_6_v.v" type="Verilog" type_short="Verilog">

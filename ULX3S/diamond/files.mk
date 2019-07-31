@@ -5,7 +5,7 @@ TOP_MODULE_FILE = ../common/ulx3s.vhd
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
-  ../scopeio/scopeio.vhd \
+  ../scopeio/scopeio_top.vhd \
   ../scopeio/usbserial_rxd.vhd \
   ../common/clk_verilog.vhd \
   ../common/clk_25M_100M_7M5_12M_60M.vhd \

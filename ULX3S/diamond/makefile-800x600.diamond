@@ -38,9 +38,9 @@ CLK0_OPTIONS = \
   --clkout0=200 \
   --clkout1=40 \
   --clkout2=66.66 \
-  --clkout3=25
+  --clkout3=6
 
-VERILOG_CLOCK_FILE = ../common/clk_25_200_40_66_25.v
+VERILOG_CLOCK_FILE = ../common/clk_25_200_40_66_6.v
 
 include files.mk
 

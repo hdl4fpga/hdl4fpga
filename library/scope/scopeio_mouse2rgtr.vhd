@@ -180,26 +180,29 @@ architecture def of scopeio_mouse2rgtr is
   signal R_box_id, R_clicked_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
   
   -- generate click to trigger ROM
-  -- one bit more to have always positive signed numbers
+  -- +2 compensates
+  -- "not R_mouse_y" used instead of "-R_mouse_y" in 1st pipeline stage
+  -- and similar use of "not" in the arithmetic helper for click to trigger
   type T_click_to_trigger is array (0 to C_num_segments-1) of signed(C_XY_coordinate_bits-1 downto 0);
   function F_click_to_trigger
   (
     constant C_base_y0: integer;
     constant C_segment_step: integer;
-    constant C_num_segments: integer
+    constant C_num_segments: integer;
+    constant C_bits: integer
   )
   return T_click_to_trigger is
     variable V_click_to_trigger: T_click_to_trigger;
   begin
     for i in 0 to C_num_segments-1 loop
-      V_click_to_trigger(i) := to_signed(C_base_y0 + i*C_segment_step, C_XY_coordinate_bits);
+      V_click_to_trigger(i) := to_signed(C_base_y0 + i*C_segment_step + 2, C_bits);
     end loop; -- segments
     return V_click_to_trigger;
   end; -- function
   constant C_click_to_trigger: T_click_to_trigger := F_click_to_trigger
   (
     grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),
-    C_segment_step, C_num_segments
+    C_segment_step, C_num_segments, C_XY_coordinate_bits
   );
 -- example what would this function do for 3 segments:
 --  constant C_click_to_trigger: T_click_to_trigger :=
@@ -334,7 +337,7 @@ begin
     constant C_max_inputs_bits: integer := chanid_maxsize;
 
     -- pipelined stage for rgtr update arithmetic
-    signal R_A, R_B, S_APB: signed(15 downto 0); -- for register arithmetic function unit
+    signal R_A, R_B, S_APB: signed(19 downto 0); -- for register arithmetic function unit
     constant C_action_nop: integer := 0;
     constant C_action_trace_select: integer := 1;
     constant C_action_set_color: integer := 2;
@@ -367,7 +370,7 @@ begin
     signal R_trigger_level: T_trigger_level;
     signal R_trigger_edge: std_logic_vector(C_inputs-1 downto 0);
     signal R_trigger_freeze: std_logic;
-    signal R_trigger_on_screen: signed(C_XY_coordinate_bits-1 downto 0);
+    signal R_trigger_on_screen: signed(C_trigger_level'range);
     -- FIXME trace color list should not be hardcoded
     -- It is used to set frame color to the same (or visually similar)
     -- color of selected trace (input channel).
@@ -425,7 +428,7 @@ begin
       S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
         when R_snap_to_vertical_grid(to_integer(R_trace_selected)) = '1'
         else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
-      R_trigger_on_screen <= resize(C_click_to_trigger(0) - S_vertical_scale_offset_snapped, C_XY_coordinate_bits);
+      R_trigger_on_screen <= resize(C_click_to_trigger(0) + not S_vertical_scale_offset_snapped, R_trigger_on_screen'length+1)(R_trigger_on_screen'range);
     end generate;
     -- a screen arithmetic required to set trigger with the left click
     -- depending on the segment where the cursor is we have different y offsets
@@ -436,13 +439,16 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
+        -- for the arithmetic to work when clicked
+        -- anyhere high or low, first resize to one bit more
+        -- and then slice to required number of bits
         R_trigger_on_screen <= resize(
           -- segment number converted to Y offset:
           -- HACK: bitwise arithmetic to calculate segment number from box ID:
           -- C_max_boxes_bits is for the step of repeating segments
           C_click_to_trigger(to_integer(R_clicked_box_id(R_clicked_box_id'high downto C_max_boxes_bits)))
-          - S_vertical_scale_offset_snapped, -- current trigger setting
-          C_XY_coordinate_bits); -- resize to required number of bits
+          + not S_vertical_scale_offset_snapped, -- current trigger setting
+          R_trigger_on_screen'length+1)(R_trigger_on_screen'range);
       end if;
     end process;
     end generate;
@@ -472,9 +478,9 @@ begin
                       R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
                       R_A(R_A'high-2) <= R_trigger_freeze;
                       R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
-                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
+                      R_A(C_trigger_level'range) <= R_trigger_on_screen(C_trigger_level'range);
                       R_B(R_B'high downto R_B'high-3) <= (others => '0'); -- don't change edge/freeze
-                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      R_B(C_trigger_level'range) <= signed(not resize(unsigned(std_logic_vector(R_mouse_y)), C_trigger_level'length)); -- simplified -R_mouse_y
                       R_action_id <= C_action_trigger_level_change;
                     else -- rotate wheel to change vertical gain
                       R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
@@ -490,8 +496,8 @@ begin
                   else  -- not dragging: clicking or wheel rotation
                     if R_mouse_btn(0) = '1' and R_prev_mouse_btn(0) = '0' then
                       -- left click to directy set the trigger level
-                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
-                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      R_A(C_trigger_level'range) <= R_trigger_on_screen(C_trigger_level'range);
+                      R_B(C_trigger_level'range) <= signed(not resize(unsigned(std_logic_vector(R_mouse_y)), C_trigger_level'length)); -- simplified -R_mouse_y
                       --R_B(R_trigger_on_screen'range) <= (others => '0'); -- -R_mouse_y;
                     else
                       -- rotate wheel to change trigger level
