@@ -75,7 +75,8 @@ begin
 			CLKOS_TRIM_DELAY=> 0, CLKOS_TRIM_POL=> "RISING", 
 			CLKOP_TRIM_DELAY=> 0, CLKOP_TRIM_POL=> "RISING", 
 			PHASE_DELAY_CNTL=> "STATIC", DUTY=>  8, PHASEADJ=> "0.0", 
-			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+--			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+			CLKOK_DIV=>  2, CLKOP_DIV=> 15, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
 			FIN=> "100.000000")
 		port map (
 			rst         => '0' , 
@@ -93,6 +94,15 @@ begin
 			clkok2      => open,
 			lock        => lock);
 	end block;
+
+--	process (clk)
+--		variable cntr : unsigned(0 to 2-1);
+--	begin
+--		if rising_edge(clk) then
+--			cntr := cntr + 1;
+--			video_clk <= cntr(0);
+--		end if;
+--	end process;
 
 	txc <= phy1_125clk;
 	process (fpga_gsrn, txc)

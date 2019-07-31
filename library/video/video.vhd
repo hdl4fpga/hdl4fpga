@@ -45,8 +45,8 @@ architecture def of box_edges is
 
 	signal rd_addr : std_logic_vector(unsigned_num_bits(edges'length-1)-1 downto 0); 
 	signal rd_data : std_logic_vector(video_pos'range);
-	signal wr_addr : std_logic_vector(rd_addr'range);
-	signal wr_data : std_logic_vector(rd_data'range);
+--	signal wr_addr : std_logic_vector(rd_addr'range);
+--	signal wr_data : std_logic_vector(rd_data'range);
 
 begin
 
@@ -80,6 +80,7 @@ begin
 	generic map (
 		bitrom => to_bitrom(edges, video_pos'length))
 	port map (
+		clk  => video_clk,
 		addr => rd_addr,
 		data => rd_data);
 

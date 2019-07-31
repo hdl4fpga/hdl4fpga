@@ -1,0 +1,4 @@
+#!/bin/sh
+pushd ..
+svn checkout https://github.com/hdl4fpga/hdl4fpga.github.io/trunk hdl4fpga.pages --username hdl4fpga@gmail.com
+popd
