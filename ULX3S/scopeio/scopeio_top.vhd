@@ -23,9 +23,10 @@ architecture beh of ulx3s is
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
-	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
+	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-        constant vlayout_id: integer := 8;
+	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
+        constant vlayout_id: integer := 10;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb:  boolean := true;  -- USB mouse
@@ -35,9 +36,9 @@ architecture beh of ulx3s is
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial:  boolean := false; -- USB-serial soft-core (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := true;  -- ADC analog view
+        constant C_view_adc:   boolean := false;  -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := false; -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := true; -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
@@ -124,7 +125,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 30000000; -- Hz
+	constant uart_clk_hz : natural := 40000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -624,18 +625,7 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-	G_usb_200_6: if vlayout_id >= 5 and vlayout_id <= 7 generate
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          clkin       =>  clk_pixel_shift, -- clk_200MHz,
-          clkout(3)   =>  clk_usb -- 0:48 1:24 2:12 3:6
-        );
-        end generate;
-
-	G_usb_6: if vlayout_id = 8 generate
 	clk_usb <= clk_pll(3); -- 6 MHz
-        end generate;
 
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
