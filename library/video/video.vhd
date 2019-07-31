@@ -80,6 +80,7 @@ begin
 	generic map (
 		bitrom => to_bitrom(edges, video_pos'length))
 	port map (
+		clk  => video_clk,
 		addr => rd_addr,
 		data => rd_data);
 

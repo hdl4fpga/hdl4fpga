@@ -55,13 +55,13 @@ architecture beh of ecp3versa is
 		for i in 0 to size-1 loop
 			offset := base + i;
 			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
-			retval(i) := 0;
-			if i=0 then
-				retval(i) := 127;
-			end if;
-			if i=735 then
-				retval(i) := -63;
-			end if;
+--			retval(i) := 0;
+--			if i=0 then
+--				retval(i) := 127;
+--			end if;
+--			if i=735 then
+--				retval(i) := -63;
+--			end if;
 		end loop;
 		return retval;
 	end;
@@ -129,12 +129,21 @@ begin
 			fda3        => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
 			clkintfb    => clkfb,
 			clkfb       => clkfb,
-			clkop       => vga_clk, 
+			clkop       => open, --vga_clk, 
 			clkos       => open,
 			clkok       => open,
 			clkok2      => open,
 			lock        => lock);
 	end block;
+
+	process (clk)
+		variable cntr : unsigned(0 to 2-1);
+	begin 
+		if rising_edge(clk) then
+			cntr := cntr + 1;
+			vga_clk <= cntr(0);
+		end if;
+	end process;
 
 	input_ena <= '1'; --uart_ena;
 	process (clk)
@@ -233,7 +242,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
-		vlayout_id  => 5)
+		vlayout_id  => 6)
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
