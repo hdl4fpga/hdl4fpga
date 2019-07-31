@@ -6,7 +6,7 @@
     <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
       <Options top_module="ulx3s"/>
     </Source>
-    <Source name="../scopeio/scopeio.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../scopeio/scopeio_top.vhd" type="VHDL" type_short="VHDL">
       <Options/>
     </Source>
     <Source name="../scopeio/usbserial_rxd.vhd" type="VHDL" type_short="VHDL">
