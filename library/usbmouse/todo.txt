@@ -1,6 +1,6 @@
 [x] device-specific report decoder as separate module
 [x] get report with addressed write instead of shifting
-[ ] test will CRC reject bad data
+[x] test will CRC reject bad data
 [x] retry setup packets until ACK is received
 [x] limit number of setup retries and detach
 [ ] send keepalive signals if interval >1 ms (>12 bit)

@@ -67,4 +67,9 @@ package usbh_setup_pack is
 -- plug USB device
 -- find 8-byte data from sniffed "URB setup" source host
 -- e.g. 80 06 00 01 00 00 12 00 and copy it here as x"80", x"06", ...
+
+-- very useful
+-- online USB descriptor parser
+-- https://eleccelerator.com/usbdescreqparser/
+
 end;
