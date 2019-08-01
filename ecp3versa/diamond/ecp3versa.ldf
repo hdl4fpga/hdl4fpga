@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="mii_debug">
+<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="scopeio">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -84,6 +84,9 @@
             <Options/>
         </Source>
         <Source name="mii_debug.xcf" type="Programming Project File" type_short="Programming">
+            <Options/>
+        </Source>
+        <Source name="pru/pru.spf" type="Simulation Project File" type_short="SPF">
             <Options/>
         </Source>
     </Implementation>
