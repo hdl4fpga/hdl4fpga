@@ -4,6 +4,11 @@
 -- USB HOST for HID devices
 -- drives SIE directly
 
+-- suggested reading
+-- http://www.usbmadesimple.co.uk/
+-- online USB descriptor parser
+-- https://eleccelerator.com/usbdescreqparser/
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -371,6 +376,8 @@ architecture Behavioral of usbh_host_hid is
     signal R_report_buf: T_report_buf;
     signal R_rx_count: std_logic_vector(rx_count_o'range);
     signal R_hid_valid: std_logic;
+    signal R_crc_err: std_logic;
+    signal R_rx_done: std_logic;
   begin
     process(clk_usb)
     begin
@@ -379,7 +386,18 @@ architecture Behavioral of usbh_host_hid is
         if rx_push_o = '1' then
           R_report_buf(conv_integer(R_rx_count)) <= rx_data_o;
         end if;
-        if rx_done_o = '1' and crc_err_o = '0' and timeout_o = '0' 
+        -- rx_done_o is '1' for several clocks...
+        -- action on falling edge
+        R_rx_done <= rx_done_o;
+        if R_rx_done = '1' and rx_done_o = '0' then
+          R_crc_err <= '0';
+        else
+          if crc_err_o = '1' then
+            R_crc_err <= '1';
+          end if;
+        end if;
+        -- at falling edge of rx_done it should not accumulate any crc error
+        if R_rx_done = '1' and rx_done_o = '0' and R_crc_err = '0' and timeout_o = '0'
         and R_state = C_STATE_RESPONSE
         -- and R_rx_count = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length)) -- strict
         and R_rx_count /= x"0000" -- more flexible
