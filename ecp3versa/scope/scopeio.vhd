@@ -36,6 +36,8 @@ architecture beh of ecp3versa is
 	attribute oddrapps : string;
 	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 	
+	signal expansionx4_d : std_logic_vector(expansionx4'range);
+
 	constant inputs : natural := 1;
 	signal rst        : std_logic := '0';
 	signal vga_clk    : std_logic;
@@ -54,7 +56,7 @@ architecture beh of ecp3versa is
 	begin
 		for i in 0 to size-1 loop
 			offset := base + i;
-			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
+			retval(i) := integer(floor(127.0*sin(2.0*MATH_PI*real((offset))/64.0)));
 --			retval(i) := 0;
 --			if i=0 then
 --				retval(i) := 127;
@@ -97,6 +99,29 @@ architecture beh of ecp3versa is
 
 	constant baudrate : natural := 115200;
 
+	type display_param is record
+		layout    : natural;
+		clkok_div : natural;
+		clkop_div : natural;
+		clkfb_div : natural;
+		clki_div  : natural; 
+	end record;
+
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16);
+
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode1080p   => (layout => 0, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		mode600px16 => (layout => 6, clkok_div => 2, clkop_div => 32, clkfb_div => 1, clki_div => 4));
+
+	constant video_mode : layout_mode := mode600px16;
+--	constant layout     : natural := video_params(1).layout;
+	constant layout     : natural := video_params(video_mode).layout;
+
 begin
 
 --	rst <= not fpga_gsrn;
@@ -111,13 +136,17 @@ begin
 	begin
 		pll_i : ehxpllf
         generic map (
-			FEEDBK_PATH  => "INTERNAL", CLKOK_BYPASS=> "DISABLED", 
-			CLKOS_BYPASS => "DISABLED", CLKOP_BYPASS=> "DISABLED", 
+			FEEDBK_PATH  => "CLKOP",
+			CLKOK_BYPASS=> "DISABLED", CLKOS_BYPASS => "DISABLED", CLKOP_BYPASS=> "DISABLED", 
 			CLKOK_INPUT  => "CLKOP", DELAY_PWD=> "DISABLED", DELAY_VAL=>  0, 
 			CLKOS_TRIM_DELAY=> 0, CLKOS_TRIM_POL=> "RISING", 
 			CLKOP_TRIM_DELAY=> 0, CLKOP_TRIM_POL=> "RISING", 
 			PHASE_DELAY_CNTL=> "STATIC", DUTY=>  8, PHASEADJ=> "0.0", 
-			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+-- 			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+ 			CLKOK_DIV => video_params(video_mode).clkok_div,
+			CLKOP_DIV => video_params(video_mode).clkop_div,
+			CLKFB_DIV => video_params(video_mode).clkfb_div,
+			CLKI_DIV  => video_params(video_mode).clki_div,
 			FIN=> "100.000000")
 		port map (
 			rst         => rst, 
@@ -127,23 +156,23 @@ begin
 			drpai3      => '0', drpai2 => '0', drpai1 => '0', drpai0 => '0', 
 			dfpai3      => '0', dfpai2 => '0', dfpai1 => '0', dfpai0 => '0', 
 			fda3        => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
-			clkintfb    => clkfb,
-			clkfb       => clkfb,
-			clkop       => open, --vga_clk, 
+			clkintfb    => open,
+			clkfb       => vga_clk,
+			clkop       => vga_clk, 
 			clkos       => open,
 			clkok       => open,
 			clkok2      => open,
 			lock        => lock);
 	end block;
 
-	process (clk)
-		variable cntr : unsigned(0 to 2-1);
-	begin 
-		if rising_edge(clk) then
-			cntr := cntr + 1;
-			vga_clk <= cntr(0);
-		end if;
-	end process;
+--	process (clk)
+--		variable cntr : unsigned(0 to 2-1);
+--	begin 
+--		if rising_edge(clk) then
+--			cntr := cntr + 1;
+--			vga_clk <= cntr(0);
+--		end if;
+--	end process;
 
 	input_ena <= '1'; --uart_ena;
 	process (clk)
@@ -241,8 +270,8 @@ begin
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		inputs   => inputs,
-		vlayout_id  => 6)
+		inputs      => inputs,
+		vlayout_id  => layout)
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
@@ -262,19 +291,20 @@ begin
 		video_vsync => vga_vsync,
 		video_blank => open);
 
-	expansionx4io_e : entity hdl4fpga.align
-	generic map (
-		n => expansionx4'length,
-		i => (expansionx4'range => '-'),
-		d => (expansionx4'range => 1))
-	port map (
-		clk   => vga_clk,
-		di(0) => vga_rgb(1),
-		di(1) => vga_rgb(2),
-		di(2) => vga_rgb(0),
-		di(3) => vga_hsync,
-		di(4) => vga_vsync,
-		do    => expansionx4);
+	expansionx4_d(3) <= vga_rgb(1);
+	expansionx4_d(4) <= vga_rgb(2);
+	expansionx4_d(5) <= vga_rgb(0);
+	expansionx4_d(6) <= vga_hsync;
+	expansionx4_d(7) <= vga_vsync;
+
+	expansion_g : for i in expansionx4'range generate
+	begin
+		oreg : OFD1S3AX
+		port map (
+			sclk => vga_clk,
+			d    => expansionx4_d(i),
+			q    => expansionx4(i));
+	end generate;
 
 	gtx_clk_i : oddrxd1
 	port map (

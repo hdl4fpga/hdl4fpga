@@ -69,16 +69,16 @@ architecture beh of nexys2 is
 		for i in 0 to size-1 loop
 			offset := base + i;
 			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
-			retval(i) := 0;
-			if i=0 then
-				retval(i) := 127;
-			end if;
-			if i=300 then
-				retval(i) := -63;
-			end if;
-			if i=735 then
-				retval(i) := -63;
-			end if;
+--			retval(i) := 0;
+--			if i=0 then
+--				retval(i) := 127;
+--			end if;
+--			if i=300 then
+--				retval(i) := -63;
+--			end if;
+--			if i=735 then
+--				retval(i) := -63;
+--			end if;
 		end loop;
 		return retval;
 	end;
@@ -121,17 +121,20 @@ architecture beh of nexys2 is
 		div    : natural;
 	end record;
 
-	constant mode600p    : natural := 0;
-	constant mode1080p   : natural := 1;
-	constant mode600px16 : natural := 2;
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 2) := (
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode600px16 => (layout => 6, mul => 4, div => 5));
+		mode480p    => (layout => 8, mul => 3, div => 5),
+		mode600px16 => (layout => 6, mul => 2, div => 4));
 
-	constant video_mode : natural := mode600px16;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 
@@ -277,7 +280,6 @@ begin
 	si_clk <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		test => true,
 		axis_unit   => std_logic_vector(to_unsigned(25,5)),
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,

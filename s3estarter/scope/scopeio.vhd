@@ -31,6 +31,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture beh of s3estarter is
 
@@ -56,7 +57,6 @@ architecture beh of s3estarter is
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
 	signal input_ena : std_logic;
-	signal tdiv      : std_logic_vector(4-1 downto 0) := b"1111";
 	signal vga_rgb   : std_logic_vector(3-1 downto 0);
 	signal ipcfg_req : std_logic;
 
@@ -76,8 +76,11 @@ architecture beh of s3estarter is
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(8-1 downto 0);
 
+	constant max_delay   : natural := 2**14;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal hz_scale  : std_logic_vector(4-1 downto 0);
+	signal hz_dv : std_logic;
 
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
@@ -91,15 +94,20 @@ architecture beh of s3estarter is
 		div    : natural;
 	end record;
 
-	constant mode600p  : natural := 0;
-	constant mode1080p : natural := 1;
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 1) := (
-		mode600p  => (layout => 1, mul => 4, div => 5),
-		mode1080p => (layout => 0, mul => 3, div => 1));
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, mul => 4, div => 5),
+		mode1080p   => (layout => 0, mul => 3, div => 1),
+		mode480p    => (layout => 8, mul => 3, div => 5),
+		mode600px16 => (layout => 6, mul => 2, div => 4));
 
-	constant video_mode : natural := mode1080p;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 
@@ -237,7 +245,7 @@ begin
 						ad_conv <= not amp_spi;
 					end if;
 
-					if tdiv=(1 to 4 => '0') then
+					if hz_scale=(hz_scale'range=> '0') then
 						adcdac_sel := '0';
 						ad_conv    <= '1';
 					else 
@@ -374,6 +382,13 @@ begin
 	generic map (
 		axis_unit   => std_logic_vector(to_unsigned(25,5)),
 		vlayout_id       => video_params(video_mode).layout,
+		hz_factors  => (
+			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
+			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
+			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
+			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
+		
+
 		inputs           => inputs,
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",

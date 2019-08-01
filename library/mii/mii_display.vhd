@@ -35,9 +35,9 @@ use hdl4fpga.videopkg.all;
 
 entity mii_display is
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
+--		mii_rxc   : in  std_logic;
+--		mii_rxdv  : in  std_logic;
+--		mii_rxd   : in  std_logic_vector;
 
 		video_clk : in  std_logic;
 		video_dot : out std_logic;
@@ -66,7 +66,12 @@ begin
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
 		video_vton   => video_frm);
-	video_dot <= video_hon and video_frm;
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			video_dot <= video_hon and video_frm;
+		end if;
+	end process;
 
 --	cgaadapter_b : block
 --		signal font_col  : std_logic_vector(3-1 downto 0);
@@ -77,7 +82,7 @@ begin
 --		signal cga_clk   : std_logic;
 --		signal cga_ena   : std_logic;
 --		signal cga_rdata : std_logic_vector(byte'range);
---		signal cga_wdata : std_logic_vector(byte'length*2-1 downto 0);
+--		signal cga_wdata : std_logic_vector(byte'range);
 --		signal cga_addr  : std_logic_vector(13-1 downto 0) := (others => '0');
 --
 --		signal video_on  : std_logic;
@@ -85,8 +90,7 @@ begin
 --	
 --		cgabram_b : block
 --			signal video_addr : std_logic_vector(14-1 downto 0);
---			signal rd_addr    : std_logic_vector(video_addr'range);
---			signal rd_data    : std_logic_vector(cga_rdata'range);
+--			signal dll       : std_logic_vector(cga_rdata'range);
 --			signal rxd8       : std_logic_vector(0 to 8-1);
 --			signal cga_eol    : std_logic;
 --		begin
@@ -129,19 +133,7 @@ begin
 --				end if;
 --			end process;
 --
---			process (rxd8)
---				constant tab  : byte_vector(0 to 16-1) := to_bytevector(to_stdlogicvector(string'("0123456789ABCDEF")));
---				variable rxd  : unsigned(rxd8'range);
---				variable data : unsigned(2*byte'length-1 downto 0);
---			begin
---				rxd := unsigned(reverse(rxd8));
---				for i in 0 to rxd'length/4-1 loop
---					data := data ror byte'length;
---					data(byte'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
---					rxd  := rxd sll 4;
---				end loop;
---				cga_wdata <= std_logic_vector(data);
---			end process;
+--			cga_wdata <= rxd8;
 --
 --			process (video_vcntr, video_hcntr)
 --				variable aux : unsigned(video_addr'range);
@@ -152,32 +144,18 @@ begin
 --				video_addr <= std_logic_vector(aux);
 --			end process;
 --
---			rdaddr_e : entity hdl4fpga.align
---			generic map (
---				n   => video_addr'length,
---				d   => (video_addr'range => 1))
+--			cgaram_e : entity hdl4fpga.bram(inference)
 --			port map (
---				clk => video_clk,
---				di  => video_addr,
---				do  => rd_addr);
+--				clka  => cga_clk,
+--				addra => cga_addr,
+--				wea   => cga_ena,
+--				dia   => cga_wdata,
+--				doa   => dll,
 --
---			cgaram_e : entity hdl4fpga.dpram
---			port map (
---				wr_clk  => cga_clk,
---				wr_ena  => cga_ena,
---				wr_addr => cga_addr,
---				wr_data => cga_wdata,
---				rd_addr => rd_addr,
---				rd_data => rd_data);
---
---			rddata_e : entity hdl4fpga.align
---			generic map (
---				n => cga_rdata'length,
---				d => (cga_rdata'range => 1))
---			port map (
---				clk => video_clk,
---				di  => rd_data,
---				do  => cga_rdata);
+--				clkb  => video_clk,
+--				addrb => video_addr,
+--				dib   => dll,
+--				dob   => cga_rdata);
 --
 --		end block;
 --
@@ -222,5 +200,5 @@ begin
 --		video_dot <= word2byte(font_line, font_col)(0) and video_on;
 --
 --	end block;
-
+--
 end;
