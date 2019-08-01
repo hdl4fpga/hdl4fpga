@@ -39,7 +39,7 @@ architecture beh of s3starter is
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
-	constant sample_size : natural := 14;
+	constant sample_size : natural := 9;
 
 	function sintab (
 		constant base : integer;
@@ -107,19 +107,20 @@ architecture beh of s3starter is
 		div    : natural;
 	end record;
 
-	constant mode600p    : natural := 0;
-	constant mode1080p   : natural := 1;
-	constant mode600px16 : natural := 2;
-	constant mode480p : natural := 3;
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 3) := (
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
 		mode480p    => (layout => 8, mul => 3, div => 5),
 		mode600px16 => (layout => 6, mul => 2, div => 4));
 
-	constant video_mode : natural := mode600px16;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 

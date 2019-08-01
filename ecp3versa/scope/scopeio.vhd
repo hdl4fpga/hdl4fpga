@@ -45,7 +45,7 @@ architecture beh of ecp3versa is
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
 
-	constant sample_size : natural := 14;
+	constant sample_size : natural := 9;
 
 	function sintab (
 		constant base : integer;
@@ -56,7 +56,7 @@ architecture beh of ecp3versa is
 	begin
 		for i in 0 to size-1 loop
 			offset := base + i;
-			retval(i) := integer(127.0*sin(2.0*MATH_PI*real((offset))/64.0));
+			retval(i) := integer(floor(127.0*sin(2.0*MATH_PI*real((offset))/64.0)));
 --			retval(i) := 0;
 --			if i=0 then
 --				retval(i) := 127;
@@ -99,6 +99,29 @@ architecture beh of ecp3versa is
 
 	constant baudrate : natural := 115200;
 
+	type display_param is record
+		layout    : natural;
+		clkok_div : natural;
+		clkop_div : natural;
+		clkfb_div : natural;
+		clki_div  : natural; 
+	end record;
+
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16);
+
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode1080p   => (layout => 0, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		mode600px16 => (layout => 6, clkok_div => 2, clkop_div => 32, clkfb_div => 1, clki_div => 4));
+
+	constant video_mode : layout_mode := mode600px16;
+--	constant layout     : natural := video_params(1).layout;
+	constant layout     : natural := video_params(video_mode).layout;
+
 begin
 
 --	rst <= not fpga_gsrn;
@@ -113,13 +136,17 @@ begin
 	begin
 		pll_i : ehxpllf
         generic map (
-			FEEDBK_PATH  => "CLKOP", CLKOK_BYPASS=> "DISABLED", 
-			CLKOS_BYPASS => "DISABLED", CLKOP_BYPASS=> "DISABLED", 
+			FEEDBK_PATH  => "CLKOP",
+			CLKOK_BYPASS=> "DISABLED", CLKOS_BYPASS => "DISABLED", CLKOP_BYPASS=> "DISABLED", 
 			CLKOK_INPUT  => "CLKOP", DELAY_PWD=> "DISABLED", DELAY_VAL=>  0, 
 			CLKOS_TRIM_DELAY=> 0, CLKOS_TRIM_POL=> "RISING", 
 			CLKOP_TRIM_DELAY=> 0, CLKOP_TRIM_POL=> "RISING", 
 			PHASE_DELAY_CNTL=> "STATIC", DUTY=>  8, PHASEADJ=> "0.0", 
-			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+-- 			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+ 			CLKOK_DIV => video_params(video_mode).clkok_div,
+			CLKOP_DIV => video_params(video_mode).clkop_div,
+			CLKFB_DIV => video_params(video_mode).clkfb_div,
+			CLKI_DIV  => video_params(video_mode).clki_div,
 			FIN=> "100.000000")
 		port map (
 			rst         => rst, 
@@ -243,8 +270,8 @@ begin
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		inputs   => inputs,
-		vlayout_id  => 0)
+		inputs      => inputs,
+		vlayout_id  => layout)
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
