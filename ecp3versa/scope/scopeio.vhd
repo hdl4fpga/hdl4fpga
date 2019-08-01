@@ -45,7 +45,7 @@ architecture beh of ecp3versa is
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
 
-	constant sample_size : natural := 9;
+	constant sample_size : natural := 14;
 
 	function sintab (
 		constant base : integer;
