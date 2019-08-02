@@ -50,12 +50,12 @@ package usbh_setup_pack is
 --  D+ ___-_-_-_--__-__---_____
 --  D- ---_-_-_-__--_--_____---
   );
-  constant C_setup_retry     : integer := 3;  -- 2**n times retry setup and then detach
-  constant C_setup_interval  : integer := 12; -- 2**n clocks 0.7 ms interval between setup packets
-  constant C_report_interval : integer := 12; -- 2**n clocks 0.7 ms interval between report packets
-  constant C_report_endpoint : integer := 1;  -- endpoint which answers IN transfer with HID report
-  constant C_report_length   : integer := 8;  -- report buffer length: 4 for M-BT58, 5 for LX3, 8 enough
-  constant C_device_address  : integer := 0;  -- default is 0 if set address is not used
+  constant C_setup_retry       : integer := 3;  -- 2**n times retry setup and then detach
+  constant C_setup_interval    : integer := 17; -- 2**n clocks 17=21.85 ms wait before sending next setup request
+  constant C_report_interval   : integer := 15; -- 2**n clocks 15=5.46 ms wait before sending next request for report
+  constant C_report_endpoint   : integer := 1;  -- endpoint which answers IN transfer with HID report
+  constant C_report_length     : integer := 8;  -- report buffer length: 4 for M-BT58, 5 for LX3, 8 enough
+  constant C_device_address    : integer := 0;  -- default is 0 if set address is not used
 
 -- to generate this package:
 -- modprobe usbmon
@@ -68,8 +68,10 @@ package usbh_setup_pack is
 -- find 8-byte data from sniffed "URB setup" source host
 -- e.g. 80 06 00 01 00 00 12 00 and copy it here as x"80", x"06", ...
 
--- very useful
--- online USB descriptor parser
+-- USB hid descriptor describes data format of the report:
+-- apt-get install usbutils
+-- usbhid-dump
+-- copy hex output to online USB descriptor parser
 -- https://eleccelerator.com/usbdescreqparser/
 
 end;
