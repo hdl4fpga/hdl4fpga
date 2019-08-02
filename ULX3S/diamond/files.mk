@@ -11,6 +11,7 @@ VHDL_FILES = \
   ../common/clk_25M_100M_7M5_12M_60M.vhd \
   ../common/clk_200m_60m_48m_12m_7m5.vhd \
   ../common/clk_200_48_24_12_6.vhd \
+  ../common/clk_25_200_40_66_6.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \

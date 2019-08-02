@@ -198,12 +198,27 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
-        clk_25M: entity work.clk_verilog
+--        G_verilog_clk: if false generate
+--        clk_verilog_25_200: entity work.clk_verilog
+--        port map
+--        (
+--          clkin       =>  clk_25MHz,
+--          clkout      =>  clk_pll
+--        );
+--        end generate;
+
+	G_vhdl_clk: if true generate
+        clk_vhdl_25_200: entity work.clk_25_200_40_66_6
         port map
         (
-          clkin       =>  clk_25MHz,
-          clkout      =>  clk_pll
+          clki        =>  clk_25MHz,
+          clkop       =>  clk_pll(0), -- 200 MHz
+          clkos       =>  clk_pll(1), --  40 MHz
+          clkos2      =>  clk_pll(2), --  66.667 MHz
+          clkos3      =>  clk_pll(3)  --   6 MHz
         );
+        end generate;
+
         -- 800x600
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
