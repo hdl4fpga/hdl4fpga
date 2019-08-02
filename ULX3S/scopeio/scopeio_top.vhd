@@ -29,16 +29,16 @@ architecture beh of ulx3s is
         constant vlayout_id: integer := 10;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := true;  -- USB mouse
+        constant C_mouse_usb:  boolean := true;  -- USB  or USB+PS/2 mouse
         constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial:  boolean := false; -- USB-serial soft-core (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := false;  -- ADC analog view
+        constant C_view_adc:   boolean := false; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := true; -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
@@ -51,9 +51,9 @@ architecture beh of ulx3s is
         -- scopeio
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
-	constant C_oled_hex_view_usb : boolean := true;
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
+	constant C_oled_hex_view_usb : boolean := true;
 	-- OLED HEX or VGA (enable max 1)
         constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
@@ -695,7 +695,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
+--	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
+	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		trig1shot        => true,
