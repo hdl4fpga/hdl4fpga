@@ -80,7 +80,7 @@ architecture beh of s3estarter is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal hz_scale  : std_logic_vector(4-1 downto 0);
-	signal hz_dv : std_logic;
+	signal hz_dv     : std_logic;
 
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
@@ -381,13 +381,12 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		axis_unit   => std_logic_vector(to_unsigned(25,5)),
-		vlayout_id       => video_params(video_mode).layout,
+		vlayout_id  => video_params(video_mode).layout,
 		hz_factors  => (
 			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
 			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
 			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
 			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
-		
 
 		inputs           => inputs,
 		default_tracesfg => b"1_1_1",

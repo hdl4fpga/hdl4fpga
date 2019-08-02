@@ -25,13 +25,16 @@ architecture beh of arty is
 	signal samples  : std_logic_vector(0 to 9*sample_size-1);
 	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
 
-
 	signal input_addr : std_logic_vector(11-1 downto 0);
-
 
 	signal eth_rxclk_bufg : std_logic;
 	signal eth_txclk_bufg : std_logic;
-	signal tdiv           : std_logic_vector(0 to 4-1);
+
+	constant max_delay   : natural := 2**14;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale  : std_logic_vector(4-1 downto 0);
+	signal hz_dv     : std_logic;
 
 	signal ipcfg_req : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
@@ -42,6 +45,28 @@ architecture beh of arty is
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(eth_rxd'range);
 	signal so_data   : std_logic_vector(eth_txd'range);
+
+	type display_param is record
+		layout : natural;
+		mul    : natural;
+		div    : natural;
+	end record;
+
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
+
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, mul => 4, div => 5),
+		mode1080p   => (layout => 0, mul => 3, div => 1),
+		mode480p    => (layout => 8, mul => 3, div => 5),
+		mode600px16 => (layout => 6, mul => 2, div => 4));
+
+	constant video_mode : layout_mode := mode1080p;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -76,7 +101,7 @@ begin
 		generic map (
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 12.0,		-- 200 MHz
-			clkout0_divide_f => 8.0,
+			clkout0_divide_f =>  8.0,
 			clkout1_divide   => 75,
 			bandwidth        => "LOW")
 		port map (
@@ -185,11 +210,11 @@ begin
 		process(input_clk)
 			variable reset     : std_logic := '1';
 			variable den_req   : std_logic := '1';
-			variable tdiv_aux  : std_logic_vector(tdiv'range);
+			variable scale     : std_logic_vector(hz_scale'range);
 			variable cfg_req   : std_logic := '0';
 			variable cfg_state : unsigned(0 to 1) := "00";
 			variable drp_rdy   : std_logic;
-			variable aux : std_logic_vector(tdiv_aux'range);
+			variable aux : std_logic_vector(scale'range);
 		begin
 			if rising_edge(input_clk) then
 				if reset='0' then 
@@ -211,7 +236,7 @@ begin
 								den       <= '1';
 								daddr     <= b"100_1001";
 								dwe       <= '1';
-								case tdiv is
+								case hz_scale is
 								when "0000" =>
 									di <= x"0000";
 									channel_ena <= b"1000_0000_0";
@@ -244,10 +269,10 @@ begin
 							den     <= '1';
 							drp_rdy := '0';
 						end if;
-						if tdiv_aux /= tdiv then
+						if scale /= hz_scale then
 							cfg_req := '1';
 						end if;
-						tdiv_aux := tdiv;
+						scale := hz_scale;
 					end if;
 				else
 					den <= '1';
@@ -262,7 +287,6 @@ begin
 		end process;
 	end block;
 
-			
 	led(1) <= btn(0);
 	process (btn(0), eth_txclk_bufg)
 	begin
@@ -300,7 +324,59 @@ begin
 		chaino_data => si_data);
 	
 	si_clk <= eth_rxclk_bufg;
+
+	scopeio_export_b : block
+
+		signal rgtr_id   : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv   : std_logic;
+		signal rgtr_data : std_logic_vector(32-1 downto 0);
+
+	begin
+
+		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		port map (
+			sin_clk   => si_clk,
+			sin_frm   => si_frm,
+			sin_irdy  => si_irdy,
+			sin_data  => si_data,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data);
+
+		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+		port map (
+			clk       => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			hz_dv     => hz_dv,
+			hz_scale  => hz_scale,
+			hz_slider => hz_slider);
+
+	end block;
+
 	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		inputs           => inputs,
+		axis_unit        => std_logic_vector(to_unsigned(25,5)),
+		vlayout_id       => video_params(video_mode).layout,
+		hz_factors       => (
+			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
+			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
+			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
+			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
+
+		default_tracesfg => b"1_1_1",
+		default_gridfg   => b"1_0_0",
+		default_gridbg   => b"0_0_0",
+		default_hzfg     => b"1_1_1",
+		default_hzbg     => b"0_0_1",
+		default_vtfg     => b"1_1_1",
+		default_vtbg     => b"0_0_1",
+		default_textbg   => b"0_0_0",
+		default_sgmntbg  => b"0_1_1",
+		default_bg       => b"1_1_1")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
