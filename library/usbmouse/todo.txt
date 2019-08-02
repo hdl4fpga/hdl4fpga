@@ -3,5 +3,5 @@
 [x] test will CRC reject bad data
 [x] retry setup packets until ACK is received
 [x] limit number of setup retries and detach
-[ ] send keepalive signals if interval >1 ms (>12 bit)
+[x] send keepalive signals if interval >1 ms (>12 bit)
 [x] let SIE handle BUS_RESET
