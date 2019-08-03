@@ -376,7 +376,7 @@ begin
 		captured_data          => capture_data
 	);
 	end block;
-	capture_dv <= '1';
+	capture_dv <= capture_av; -- to prevent traces drawn over the vtscale
 	end generate; -- yes trig1shot
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
