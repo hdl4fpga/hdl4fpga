@@ -41,6 +41,8 @@ VHDL_LIB_FILES = \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
+  ../../library/scope/tcs/scopeio_trigger_capture_storage_entity.vhd \
+  ../../library/scope/tcs/1shot/scopeio_trigger_capture_storage.vhd \
   ../../library/scope/scopeio_capture.vhd \
   ../../library/scope/scopeio_capture1shot.vhd \
   ../../library/scope/scopeio_storage.vhd \
