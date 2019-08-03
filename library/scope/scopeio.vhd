@@ -109,11 +109,6 @@ architecture beh of scopeio is
 
 	signal resizedsample_dv   : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_oshot   : std_logic;
-	signal downsample_ishot   : std_logic;
-	signal downsample_dv      : std_logic;
-	signal downsampling       : std_logic;
-	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 
 
 	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
@@ -259,125 +254,28 @@ begin
 		input_data  => triggersample_data,
 		output_data => resizedsample_data);
 
-	not_trig1shot_g: if not trig1shot generate
-	triggers_modes_b : block
-	begin
-		capture_shot <= capture_end and downsample_oshot and not video_vton;
-	end block;
-
-	downsampler_e : entity hdl4fpga.scopeio_downsampler
+	scopeio_storage_e : entity hdl4fpga.scopeio_trigger_capture_storage
 	generic map (
-		inputs  => inputs,
-		factors => hz_factors)
-	port map (
-		factor_id    => hz_scale,
---		factor_id    => b"0000",  --Debug purpose
-		input_clk    => input_clk,
-		input_dv     => resizedsample_dv,
-		input_shot   => downsample_ishot,
-		input_data   => resizedsample_data,
-		downsampling => downsampling,
-		output_dv    => downsample_dv,
-		output_shot  => downsample_oshot,
-		output_data  => downsample_data);
-
-	downsample_ishot <= capture_end and trigger_shot;
-	scopeio_capture_e : entity hdl4fpga.scopeio_capture
-	port map (
-		input_clk    => input_clk,
-		capture_shot => capture_shot,
-		capture_end  => capture_end,
-		input_dv     => downsample_dv,
-		input_data   => downsample_data,
-		input_delay  => hz_slider,
---		input_delay  => b"00_0000_0000_0000",  --Debug purpose
-
-		downsampling => downsampling,
-		capture_clk  => video_clk,
-		capture_addr => capture_addr,
-		capture_data => capture_data,
-		capture_av   => capture_av,
-		capture_dv   => capture_dv);
-	end generate; -- not trig1shot
-
-	yes_trig1shot_g: if trig1shot generate
-	scopeio_capture1shot_b : block
-		signal storage_reset_addr     : std_logic;
-		signal storage_increment_addr : std_logic;
-		signal storage_mark_t0        : std_logic;
-		signal storage_write          : std_logic;
-		signal storage_addr           : std_logic_vector(capture_addr'range);
-	begin
-
-	downsampler_e : entity hdl4fpga.scopeio_downsampler
-	generic map (
-		inputs  => inputs,
-		factors => hz_factors)
-	port map (
-		factor_id    => hz_scale,
-		input_clk    => input_clk,
-		input_dv     => resizedsample_dv,
-		input_shot   => '0', -- for deflickering "downsample_dv" must be independent from trigger level
-		input_data   => resizedsample_data,
-		downsampling => downsampling,
-		output_dv    => downsample_dv,
-		output_shot  => open,
-		output_data  => downsample_data);
-
-	scopeio_capture1shot_e : entity hdl4fpga.scopeio_capture1shot
-	generic map (
-		track_addr             => true,  -- improves deflickering
-		persistence            => 1      -- 2**n frames persistence
+		inputs			=> inputs,
+		hz_factors		=> hz_factors
 	)
 	port map (
-		input_clk              => input_clk,
-		input_ena              => downsample_dv,
+		input_clk		=> input_clk,
+		resizedsample_dv	=> resizedsample_dv,
+		resizedsample_data	=> resizedsample_data,
+		trigger_shot		=> trigger_shot,
 
-		video_vton             => video_vton,
-		trigger_freeze         => trigger_freeze,
-		trigger_shot           => trigger_shot,
-		-- to storage module
-		storage_reset_addr     => storage_reset_addr,
-		storage_increment_addr => storage_increment_addr,
-		storage_mark_t0        => storage_mark_t0,
-		storage_write          => storage_write,
-		-- from storage module
-		storage_addr           => storage_addr
+		trigger_freeze		=> trigger_freeze,
+		hz_scale		=> hz_scale,
+
+		video_clk		=> video_clk,
+		video_vton		=> video_vton,
+		hz_slider		=> hz_slider,
+		capture_addr		=> capture_addr,
+		capture_av		=> capture_av,
+		capture_dv		=> capture_dv,
+		capture_data		=> capture_data
 	);
-
-	scopeio_storage_e : entity hdl4fpga.scopeio_storage
-	generic map (
-		inputs                 => inputs,
-		align_to_grid          => 0 -- (-left,+right) shift triggered edge n pixels
-	)
-	port map (
-		storage_clk            => input_clk,
-
-		-- from capture1shot module
-		storage_reset_addr     => storage_reset_addr,
-		storage_increment_addr => storage_increment_addr,
-		storage_mark_t0        => storage_mark_t0,
-		storage_write          => storage_write,
-		-- to capture1shot module
-		storage_addr           => storage_addr,
-
-		-- from sample source
-		storage_data           => downsample_data,
-
-		-- special case for downsampling = 0
-		-- 2 samples stored at the same address
-		downsampling           => downsampling,
-
-		-- from display
-		captured_clk           => video_clk,
-		captured_scroll        => hz_slider,
-		captured_addr          => capture_addr,
-		-- to display
-		captured_data          => capture_data
-	);
-	end block;
-	capture_dv <= capture_av; -- to prevent traces drawn over the vtscale
-	end generate; -- yes trig1shot
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
