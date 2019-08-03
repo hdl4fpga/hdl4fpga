@@ -105,6 +105,12 @@
     <Source name="../../library/scope/scopeio_capture.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
+    <Source name="../../library/scope/tcs/scopeio_trigger_capture_storage_entity.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
+    <Source name="../../library/scope/tcs/1shot/scopeio_trigger_capture_storage.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
     <Source name="../../library/scope/scopeio_capture1shot.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
