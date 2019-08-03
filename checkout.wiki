@@ -1,0 +1,4 @@
+#!/bin/sh
+pushd ..
+svn checkout https://github.com/hdl4fpga/hdl4fpga.wiki wiki --username hdl4fpga@gmail.com
+popd
