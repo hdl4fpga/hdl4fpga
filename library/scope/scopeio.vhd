@@ -307,6 +307,7 @@ begin
 		signal storage_mark_t0        : std_logic;
 		signal storage_write          : std_logic;
 		signal storage_addr           : std_logic_vector(capture_addr'range);
+		signal trace_visible          : std_logic;
 	begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -373,10 +374,11 @@ begin
 		captured_scroll        => hz_slider,
 		captured_addr          => capture_addr,
 		-- to display
+		captured_visible       => trace_visible,
 		captured_data          => capture_data
 	);
+	capture_dv <= capture_av and trace_visible; -- to prevent traces drawn over the vtscale
 	end block;
-	capture_dv <= capture_av; -- to prevent traces drawn over the vtscale
 	end generate; -- yes trig1shot
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
