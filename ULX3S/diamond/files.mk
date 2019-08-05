@@ -92,8 +92,8 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
-  ../../library/usbserial/usb_serial/usbtest.vhd \
   ../../library/usbserial/usb_serial/usb_serial.vhd \
+  ../../library/usbserial/usb_serial/usb_cdc_descriptor_pack.vhd \
   ../../library/usbserial/usb_serial/usb_transact.vhd \
   ../../library/usbserial/usb_serial/usb_packet.vhd \
   ../../library/usbserial/usb_serial/usb_init.vhd \
@@ -114,3 +114,4 @@ VERILOG_FILES = \
   ../../library/usbmouse/usbh_sie.v \
   ../../library/usbmouse/usbh_crc5.v \
   ../../library/usbmouse/usbh_crc16.v \
+

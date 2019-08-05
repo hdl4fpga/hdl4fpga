@@ -26,15 +26,17 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 10;
+        constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := true;  -- USB  or USB+PS/2 mouse
-        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_usb:  boolean := false;  -- USB  or USB+PS/2 mouse
+        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
-        constant C_usbserial:  boolean := false; -- USB-serial soft-core (D+/D- lines)
+        constant C_usbserial:  boolean := false; -- USB-CDC core in serial mode (D+/D- lines)
+        -- USB ethernet network
+        constant C_usbeth:     boolean := true; -- USB-CDC core in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
         constant C_view_adc:   boolean := false; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
@@ -52,11 +54,11 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
-	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := true;
+	constant C_oled_hex_view_uart: boolean := true;
+	constant C_oled_hex_view_usb : boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -537,6 +539,46 @@ begin
 	);
 	end generate;
 
+	G_uart_usbeth: if C_usbeth generate
+	-- USB-CDC core in ethernet mode
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+
+        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  open,    -- clk_60MHz,
+          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_7M5Hz
+        );
+
+	usbserial_e : entity work.usbserial_rxd
+	generic map
+	(
+	  ethernet => true
+	)
+	port map
+	(
+		clk_usb => clk_usb, -- 48 MHz USB core clock
+		-- USB interface
+		usb_fpga_dp    => usb_fpga_dp,
+		--usb_fpga_dn    => usb_fpga_dn,
+		usb_fpga_bd_dp => usb_fpga_bd_dp,
+		usb_fpga_bd_dn => usb_fpga_bd_dn,
+		-- debug
+                sync_err       => dbg_sync_err,
+                bit_stuff_err  => dbg_bit_stuff_err,
+                byte_err       => dbg_byte_err,
+		-- output data
+		clk  => clk_uart,  -- UART application clock
+		dv   => open,
+		byte => open
+	);
+	end generate;
+
 	led <= uart_rxd;
 
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
@@ -559,7 +601,7 @@ begin
 	  begin
 	    if rising_edge(clk_uart) then
 	      if uart_rxdv = '1' then
-                R_oled_data(uart_rxd'range) <= uart_rxd;
+                R_oled_data <= R_oled_data(R_oled_data'high-uart_rxd'length downto 0) & uart_rxd;
               end if;
             end if;
           end process;

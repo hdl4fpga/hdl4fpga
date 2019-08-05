@@ -255,10 +255,10 @@
     <Source name="../../library/mii/miitx_dll.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/usbserial/usb_serial/usbtest.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/usbserial/usb_serial/usb_serial.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/usbserial/usb_serial/usb_serial.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/usbserial/usb_serial/usb_cdc_descriptor_pack.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/usbserial/usb_serial/usb_transact.vhd" type="VHDL" type_short="VHDL">

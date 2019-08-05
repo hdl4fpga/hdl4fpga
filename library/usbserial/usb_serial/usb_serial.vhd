@@ -1,5 +1,5 @@
 --
---  USB 2.0 Serial data transfer entity
+--  USB 2.0 Serial/Etherneet data transfer entity
 --
 --  This entity implements a USB 2.0 device that carries a bidirectional
 --  byte stream over the bus. It communicates with the host according to
@@ -63,12 +63,23 @@
 --  CLK for application side (tested at 7.5, 12, 48, 60, 100 and 200 MHz)
 --  CLK_PHY for UTMI PHY side (tested at 48 and 60 MHz)
 
+--  EMARD 2019-08-06 update:
+--  Depending on USB descriptor, this core can work as USB-Serial or USB-Ethernet
+--  small test:
+--  ifconfig enx00aabbccddee 192.168.99.1
+--  nping --send-eth -e enx00aabbccddee  --dest-mac 00:11:22:33:44:55 192.168.99.2
+
 library ieee;
 use ieee.std_logic_1164.all, ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.usb_cdc_descriptor.all;
 
 entity usb_serial is
 
     generic (
+        descrom_fscfg : t_byte_array := USBFS_CDC_config_serial; -- serial/ethernet
+        descrom_hscfg : t_byte_array := USBHS_CDC_config_serial; -- serial/ethernet
 
         -- Vendor ID to report in device descriptor.
         VENDORID :      std_logic_vector(15 downto 0);
@@ -86,6 +97,7 @@ entity usb_serial is
         PRODUCTSTR :    string := "";
 
         -- Optional product serial number (max 126 characters).
+        -- For network this is used as MAC, should be 12 HEX chars
         SERIALSTR :     string := "";
 
         -- Support high speed mode.
@@ -99,7 +111,7 @@ entity usb_serial is
         RXBUFSIZE_BITS: integer range 7 to 12 := 11;
 
         -- Size of transmit buffer as 2-logarithm of the number of bytes.
-        TXBUFSIZE_BITS: integer range 7 to 12 := 10 );
+        TXBUFSIZE_BITS: integer range 7 to 12 := 11 );
 
     port (
         -- application-side clock, tested at 7.5,12,48,60,100,200 MHz
@@ -179,9 +191,6 @@ end entity usb_serial;
 
 architecture usb_serial_arch of usb_serial is
 
-    -- Byte array type
-    type t_byte_array is array(natural range <>) of std_logic_vector(7 downto 0);
-
     -- Conditional expression.
     function choose_int(z: boolean; a, b: integer)
         return integer is
@@ -228,30 +237,7 @@ architecture usb_serial_arch of usb_serial is
     constant data_endpt :   std_logic_vector(3 downto 0) := "0001";
     constant notify_endpt : std_logic_vector(3 downto 0) := "0010";
 
-    -- Descriptor ROM
-    --   addr   0 ..  17 : device descriptor
-    --   addr  20 ..  29 : device qualifier
-    --   addr  32 ..  98 : full speed configuration descriptor 
-    --   addr 112 .. 178 : high speed configuration descriptor
-    --   addr 179 :        other_speed_configuration hack
-    --   addr 192 .. 195 : string descriptor 0 = supported languages
-    --   addr 196 ..     : 3 string descriptors: vendor, product, serial
-    constant DESC_DEV_ADDR :        integer := 0;
-    constant DESC_DEV_LEN  :        integer := 18;
-    constant DESC_QUAL_ADDR :       integer := 20;
-    constant DESC_QUAL_LEN :        integer := 10;
-    constant DESC_FSCFG_ADDR :      integer := 32;
-    constant DESC_FSCFG_LEN :       integer := 67;
-    constant DESC_HSCFG_ADDR :      integer := 112;
-    constant DESC_HSCFG_LEN :       integer := 67;
-    constant DESC_OTHERSPEED_ADDR : integer := 179;
-    constant DESC_STRLANG :         integer := 192;
-    constant DESC_STRVENDOR :       integer := 196;
-    constant DESC_STRPRODUCT :      integer := DESC_STRVENDOR + 2 + 2*VENDORSTR'length;
-    constant DESC_STRSERIAL :       integer := DESC_STRPRODUCT + 2 + 2*PRODUCTSTR'length;
-    constant DESC_END :             integer := DESC_STRSERIAL + 2 + 2*SERIALSTR'length;
-
-    constant descrom_dev: t_byte_array(0 to 19) := (
+    constant descrom_dev: t_byte_array := (
         -- 18 bytes device descriptor
         X"12",                  -- bLength = 18 bytes
         X"01",                  -- bDescriptorType = device descriptor
@@ -270,11 +256,10 @@ architecture usb_serial_arch of usb_serial is
         choose_byte(VENDORSTR'length > 0,  X"01", X"00"),   -- iManufacturer
         choose_byte(PRODUCTSTR'length > 0, X"02", X"00"),   -- iProduct
         choose_byte(SERIALSTR'length > 0,  X"03", X"00"),   -- iSerialNumber
-        X"01",                  -- bNumConfigurations = 1
-        -- 2 bytes padding
-        X"00", X"00" );
+        X"01"                   -- bNumConfigurations = 1
+        );
 
-    constant descrom_qual: t_byte_array(0 to 11) := (
+    constant descrom_qual: t_byte_array := (
         -- 10 bytes device qualifier
         X"0a",                  -- bLength = 10 bytes
         X"06",                  -- bDescriptorType = device qualifier
@@ -284,180 +269,50 @@ architecture usb_serial_arch of usb_serial is
         X"00",                  -- bDeviceProtocol = none
         X"40",                  -- bMaxPacketSize0 = 64 bytes
         X"01",                  -- bNumConfigurations = 1
-        X"00",                  -- bReserved
-        -- 2 bytes padding
-        X"00", X"00" );
+        X"00"                   -- bReserved
+        );
 
-    constant descrom_fscfg: t_byte_array(0 to 79) := (
-        -- 67 bytes full-speed configuration descriptor
-        -- 9 bytes configuration header
-        X"09",                  -- bLength = 9 bytes
-        X"02",                  -- bDescriptorType = configuration descriptor
-        X"43", X"00",           -- wTotalLength = 67 bytes
-        X"02",                  -- bNumInterfaces = 2
-        X"01",                  -- bConfigurationValue = 1
-        X"00",                  -- iConfiguration = none
-        choose_byte(SELFPOWERED, X"c0", X"80"), -- bmAttributes
-        X"fa",                  -- bMaxPower = 500 mA
-        -- 9 bytes interface descriptor (communication control class)
-        X"09",                  -- bLength = 9 bytes
-        X"04",                  -- bDescriptorType = interface descriptor
-        X"00",                  -- bInterfaceNumber = 0
-        X"00",                  -- bAlternateSetting = 0
-        X"01",                  -- bNumEndpoints = 1
-        X"02",                  -- bInterfaceClass = Communication Interface
-        X"02",                  -- bInterfaceSubClass = Abstract Control Model
-        X"01",                  -- bInterfaceProtocol = V.25ter (required for Linux CDC-ACM driver)
-        X"00",                  -- iInterface = none
-        -- 5 bytes functional descriptor (header)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"00",                  -- bDescriptorSubtype = header
-        X"10", X"01",           -- bcdCDC = 1.10
-        -- 4 bytes functional descriptor (abstract control management)
-        X"04",                  -- bLength = 4 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"02",                  -- bDescriptorSubtype = Abstract Control Mgmnt
-        X"00",                  -- bmCapabilities = none
-        -- X"04",                  -- bmCapabilities = sends break
-        -- 5 bytes functional descriptor (union)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"06",                  -- bDescriptorSubtype = union
-        X"00",                  -- bMasterInterface = 0
-        X"01",                  -- bSlaveInterface0 = 1
-        -- 5 bytes functional descriptor (call management)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"01",                  -- bDescriptorSubType = Call Management
-        X"00",                  -- bmCapabilities = no call mgmnt
-        X"01",                  -- bDataInterface = 1
-        -- 7 bytes endpoint descriptor (notify IN)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"82",                  -- bEndpointAddress = IN 2
-        X"03",                  -- bmAttributes = interrupt data
-        X"08", X"00",           -- wMaxPacketSize = 8 bytes
-        X"ff",                  -- bInterval = 255 frames
-        -- 9 bytes interface descriptor (data class)
-        X"09",                  -- bLength = 9 bytes
-        X"04",                  -- bDescriptorType = interface descriptor
-        X"01",                  -- bInterfaceNumber = 1
-        X"00",                  -- bAlternateSetting = 0
-        X"02",                  -- bNumEndpoints = 2
-        X"0a",                  -- bInterfaceClass = Data Interface
-        X"00",                  -- bInterfaceSubClass = none
-        X"00",                  -- bInterafceProtocol = none
-        X"00",                  -- iInterface = none
-	-- 7 bytes endpoint descriptor (data IN)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"81",                  -- bEndpointAddress = IN 1
-        X"02",                  -- bmAttributes = bulk data
-        X"40", X"00",           -- wMaxPacketSize = 64 bytes
-        X"00",                  -- bInterval
-        -- 7 bytes endpoint descriptor (data OUT)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"01",                  -- bEndpointAddress = OUT 1
-        X"02",                  -- bmAttributes = bulk data
-        X"40", X"00",           -- wMaxPacketSize = 64 bytes
-        X"00",                  -- bInterval
-        -- 13 bytes padding
-        X"00", X"00", X"00", X"00", X"00", X"00", X"00", X"00",
-        X"00", X"00", X"00", X"00", X"00" );
-
-    constant descrom_hscfg: t_byte_array(0 to 79) := (
-        -- 67 bytes high-speed configuration descriptor
-        -- 9 bytes configuration header
-        X"09",                  -- bLength = 9 bytes
-        X"02",                  -- bDescriptorType = configuration descriptor
-        X"43", X"00",           -- wTotalLength = 67 bytes
-        X"02",                  -- bNumInterfaces = 2
-        X"01",                  -- bConfigurationValue = 1
-        X"00",                  -- iConfiguration = none
-        choose_byte(SELFPOWERED, X"c0", X"80" ), -- bmAttributes = self-powered
-        X"fa",                  -- bMaxPower = 500 mA
-        -- 9 bytes interface descriptor (communication control class)
-        X"09",                  -- bLength = 9 bytes
-        X"04",                  -- bDescriptorType = interface descriptor
-        X"00",                  -- bInterfaceNumber = 0
-        X"00",                  -- bAlternateSetting = 0
-        X"01",                  -- bNumEndpoints = 1
-        X"02",                  -- bInterfaceClass = Communication Interface
-        X"02",                  -- bInterfaceSubClass = Abstract Control Model
-        X"01",                  -- bInterfaceProtocol = V.25ter (required for Linux CDC-ACM driver)
-        X"00",                  -- iInterface = none
-        -- 5 bytes functional descriptor (header)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"00",                  -- bDescriptorSubtype = header
-        X"10", X"01",           -- bcdCDC = 1.10
-        -- 4 bytes functional descriptor (abstract control management)
-        X"04",                  -- bLength = 4 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"02",                  -- bDescriptorSubtype = Abstract Control Mgmnt
-        X"00",                  -- bmCapabilities = none
-        --X"04",                  -- bmCapabilities = sends break
-        -- 5 bytes functional descriptor (union)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"06",                  -- bDescriptorSubtype = union
-        X"00",                  -- bMasterInterface = 0
-        X"01",                  -- bSlaveInterface0 = 1
-        -- 5 bytes functional descriptor (call management)
-        X"05",                  -- bLength = 5 bytes
-        X"24",                  -- bDescriptorType = CS_INTERFACE
-        X"01",                  -- bDescriptorSubType = Call Management
-        X"00",                  -- bmCapabilities = no call mgmnt
-        X"01",                  -- bDataInterface = 1
-        -- 7 bytes endpoint descriptor (notify IN)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"82",                  -- bEndpointAddress = IN 2
-        X"03",                  -- bmAttributes = interrupt data
-        X"08", X"00",           -- wMaxPacketSize = 8 bytes
-        X"0f",                  -- bInterval = 2**14 frames
-        -- 9 bytes interface descriptor (data class)
-        X"09",                  -- bLength = 9 bytes
-        X"04",                  -- bDescriptorType = interface descriptor
-        X"01",                  -- bInterfaceNumber = 1
-        X"00",                  -- bAlternateSetting = 0
-        X"02",                  -- bNumEndpoints = 2
-        X"0a",                  -- bInterfaceClass = Data Interface
-        X"00",                  -- bInterfaceSubClass = none
-        X"00",                  -- bInterafceProtocol = none
-        X"00",                  -- iInterface = none
-	-- 7 bytes endpoint descriptor (data IN)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"81",                  -- bEndpointAddress = IN 1
-        X"02",                  -- bmAttributes = bulk data
-        X"00", X"02",           -- wMaxPacketSize = 512 bytes
-        X"00",                  -- bInterval
-        -- 7 bytes endpoint descriptor (data OUT)
-        X"07",                  -- bLength = 7 bytes
-        X"05",                  -- bDescriptorType = endpoint descriptor
-        X"01",                  -- bEndpointAddress = OUT 1
-        X"02",                  -- bmAttributes = bulk data
-        X"00", X"02",           -- wMaxPacketSize = 512 bytes
-        X"00",                  -- bInterval = never NAK
-        -- other_speed_configuration hack
+    constant descrom_oscfg: t_byte_array := (
+        -- other_speed_configuration
         X"07",
-        -- 12 bytes padding
-        X"00", X"00", X"00", X"00", X"00", X"00", X"00", X"00",
-        X"00", X"00", X"00", X"00" );
+        -- 7 bytes 0
+        X"00", X"00", X"00", X"00", X"00", X"00", X"00"
+        );
 
-    constant descrom_str0: t_byte_array(0 to 3) := (
+    constant descrom_str0: t_byte_array := (
         -- string descriptor 0 (supported languages)
         X"04",                  -- bLength = 4
         X"03",                  -- bDescriptorType = string descriptor
-        X"09", X"04" );         -- wLangId[0] = 0x0409 = English U.S.
+        X"09", X"04"            -- wLangId[0] = 0x0409 = English U.S.
+        );
+
+    -- Descriptor ROM addresses and lengths (numbers here are approximate)
+    --   addr   0 ..  17 : device descriptor
+    --   addr  20 ..  29 : device qualifier
+    --   addr  32 ..  98 : full speed configuration descriptor 
+    --   addr 112 .. 178 : high speed configuration descriptor
+    --   addr 179 :        other_speed_configuration hack
+    --   addr 192 .. 195 : string descriptor 0 = supported languages
+    --   addr 196 ..     : 3 string descriptors: vendor, product, serial
+    constant DESC_DEV_ADDR :        integer := 0;
+    constant DESC_DEV_LEN  :        integer := to_integer(unsigned(descrom_dev(0)));
+    constant DESC_QUAL_ADDR :       integer := DESC_DEV_ADDR + descrom_dev'length;
+    constant DESC_QUAL_LEN :        integer := to_integer(unsigned(descrom_qual(0)));
+    constant DESC_FSCFG_ADDR :      integer := DESC_QUAL_ADDR + descrom_qual'length;
+    constant DESC_FSCFG_LEN :       integer := to_integer(unsigned(descrom_fscfg(2))) + 256 * to_integer(unsigned(descrom_fscfg(3)));
+    constant DESC_HSCFG_ADDR :      integer := DESC_FSCFG_ADDR + descrom_fscfg'length;
+    constant DESC_HSCFG_LEN :       integer := to_integer(unsigned(descrom_hscfg(2))) + 256 * to_integer(unsigned(descrom_hscfg(3)));
+    constant DESC_OTHERSPEED_ADDR : integer := DESC_HSCFG_ADDR + descrom_hscfg'length;
+    constant DESC_STRLANG :         integer := DESC_OTHERSPEED_ADDR + descrom_oscfg'length;
+    constant DESC_STRVENDOR :       integer := DESC_STRLANG + descrom_str0'length;
+    constant DESC_STRPRODUCT :      integer := DESC_STRVENDOR + 2 + 2*VENDORSTR'length;
+    constant DESC_STRSERIAL :       integer := DESC_STRPRODUCT + 2 + 2*PRODUCTSTR'length;
+    constant DESC_END :             integer := DESC_STRSERIAL + 2 + 2*SERIALSTR'length;
 
     -- Concatenate all descriptors.
     constant descrom_pre: t_byte_array(0 to DESC_END-1) :=
         descrom_dev & descrom_qual &
-        descrom_fscfg & descrom_hscfg &
+        descrom_fscfg & descrom_hscfg & descrom_oscfg &
         descrom_str0 &
         strdesc_from_string(VENDORSTR) &
         strdesc_from_string(PRODUCTSTR) &

@@ -6,16 +6,21 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
-library ecp5u;
-use ecp5u.components.all;
+use IEEE.NUMERIC_STD.ALL;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.usb_cdc_descriptor.all;
 
 entity usbserial_rxd is
 generic
 (
+  ethernet: boolean := true;
+  ping: boolean := true; -- echo reply to raw pings
+  -- debug for usb_serial in network mode will reply to nping
+  -- ifconfig enx00aabbccddee 192.168.99.1
+  -- nping -c 100 --privileged -delay 10ms -q1 --send-eth -e enx00aabbccddee --dest-mac 00:11:22:33:44:AA --data 0011223344556677  192.168.99.2
+  -- tcpdump -i enx00aabbccddee -e -XX -n icmp
   test: boolean := false
 );
 port
@@ -101,7 +106,13 @@ architecture Behavioral of usbserial_rxd is
     signal usb_txdat :      std_logic_vector(7 downto 0);
     signal usb_txrdy :      std_logic;
     signal usb_txroom :     std_logic_vector(TXBUFSIZE_BITS-1 downto 0);
+    signal usb_txcork :     std_logic := '0';
 
+    function choose_descriptor(z: boolean; a, b: t_byte_array)
+        return t_byte_array is
+    begin
+        if z then return a; else return b; end if;
+    end function;
 
 begin
   -- USB1.1 PHY soft-core
@@ -148,41 +159,43 @@ begin
   usb_fpga_bd_dn <= S_txdn when S_txoe = '0' else 'Z';
 
   -- USB-SERIAL soft-core loopback test
-  G_loopback_test: if test generate
-  usb_serial_core: entity hdl4fpga.usbtest
-  port map
-  (
-    CLK => clk_usb, -- application clock, any freq 7.5-200 MHz
-    led => S_led,
-    dsctyp => S_dsctyp, -- debug shows descriptor type
-    BREAK => S_BREAK,
-    PHY_DATABUS16_8 => S_DATABUS16_8,
-    PHY_RESET => S_RESET,
-    PHY_XCVRSELECT => S_XCVRSELECT,
-    PHY_TERMSELECT => S_TERMSELECT,
-    PHY_OPMODE => S_OPMODE,
-    PHY_CLKOUT => clk_usb, -- 48 or 60 MHz
-    PHY_TXVALID => S_TXVALID,
-    PHY_DATAOUT => S_DATAOUT,
-    PHY_TXREADY => S_TXREADY,
-    PHY_RXVALID => S_RXVALID,
-    PHY_DATAIN => S_DATAIN,
-    PHY_RXACTIVE => S_RXACTIVE,
-    PHY_RXERROR => S_RXERROR,
-    PHY_LINESTATE => S_LINESTATE
-  );
-  end generate;
+--  G_loopback_test: if test generate
+--  usb_serial_core: entity hdl4fpga.usbtest
+--  port map
+--  (
+--    CLK => clk_usb, -- application clock, any freq 7.5-200 MHz
+--    led => S_led,
+--    dsctyp => S_dsctyp, -- debug shows descriptor type
+--    BREAK => S_BREAK,
+--    PHY_DATABUS16_8 => S_DATABUS16_8,
+--    PHY_RESET => S_RESET,
+--    PHY_XCVRSELECT => S_XCVRSELECT,
+--    PHY_TERMSELECT => S_TERMSELECT,
+--    PHY_OPMODE => S_OPMODE,
+--    PHY_CLKOUT => clk_usb, -- 48 or 60 MHz
+--    PHY_TXVALID => S_TXVALID,
+--    PHY_DATAOUT => S_DATAOUT,
+--    PHY_TXREADY => S_TXREADY,
+--    PHY_RXVALID => S_RXVALID,
+--    PHY_DATAIN => S_DATAIN,
+--    PHY_RXACTIVE => S_RXACTIVE,
+--    PHY_RXERROR => S_RXERROR,
+--    PHY_LINESTATE => S_LINESTATE
+--  );
+--  end generate;
 
   G_usbserial_normal: if not test generate
     -- Direct interface to serial data transfer component
-    E_usb_serial: entity work.usb_serial
+    E_usb_serial: entity hdl4fpga.usb_serial
         generic map (
+            descrom_fscfg   => choose_descriptor(ethernet, USBFS_CDC_config_ethernet, USBFS_CDC_config_serial), -- serial/ethernet
+            descrom_hscfg   => choose_descriptor(ethernet, USBHS_CDC_config_ethernet, USBHS_CDC_config_serial), -- serial/ethernet
             VENDORID        => X"fb9a",
             PRODUCTID       => X"fb9a",
             VERSIONBCD      => X"0031",
             VENDORSTR       => "HDL4FPGA",
             PRODUCTSTR      => "Scopeio",
-            SERIALSTR       => "20190710",
+            SERIALSTR       => "00AABBCCDDEE", -- MAC for ethernet
             HSSUPPORT       => false,
             SELFPOWERED     => false,
             RXBUFSIZE_BITS  => RXBUFSIZE_BITS,
@@ -202,7 +215,7 @@ begin
             TXDAT           => usb_txdat,
             TXRDY           => usb_txrdy,
             TXROOM          => usb_txroom,
-            TXCORK          => '0',
+            TXCORK          => usb_txcork,
             -- BREAK           => BREAK,
             -- dsctyp          => dsctyp, -- debugging
             PHY_CLK         => clk_usb,
@@ -225,4 +238,73 @@ begin
   usb_rxrdy <= '1';
   dv <= usb_rxval;
   byte <= usb_rxdat;
+
+  G_ping_reply: if ping generate
+  B_send_ping_packets: block
+  signal R_packet_raddr, R_packet_waddr, R_packet_addr_last: std_logic_vector(11 downto 0);
+  type T_packet_buffer is array(0 to 2047) of std_logic_vector(7 downto 0);
+  signal R_packet_buffer: T_packet_buffer := (others => x"00");
+  signal R_usb_rxval: std_logic;
+  signal S_start_tx: std_logic;
+
+  -- rom swapper to simulate icmp echo response
+  type T_swap_header is array(natural range <>) of integer range 0 to 35;
+  constant C_swap_header : T_swap_header :=
+  (
+    6, 7, 8, 9,10,11, -- swap MAC
+    0, 1, 2, 3, 4, 5,
+
+    12,13,14,15,16,17,18,19,20,21,22,23,24,25,
+
+    30,31,32,33, -- swap IP
+    26,27,28,29,
+
+    34,34  -- overwrites 0x80 with 0x00 to look like echo reply
+  );
+  signal S_swap_addr: integer;
+  begin
+  S_swap_addr <= C_swap_header(conv_integer(R_packet_waddr)) 
+            when conv_integer(R_packet_waddr) < C_swap_header'length
+            else conv_integer(R_packet_waddr);
+
+  -- packet_receiver
+  process(clk)
+  begin
+    if rising_edge(clk) then
+      S_start_tx <= '0';
+      if usb_rxval = '1' then
+        R_packet_buffer(S_swap_addr) <= usb_rxdat;
+        R_packet_waddr <= R_packet_waddr + 1;
+      else
+        if R_usb_rxval = '1' and usb_rxval = '0' then -- falling edge of rxval
+          R_packet_addr_last <= R_packet_waddr - 1;
+          R_packet_waddr <= (others => '0');
+          S_start_tx <= '1';
+        end if;
+      end if;
+      R_usb_rxval <= usb_rxval; -- for edge detection
+    end if;
+  end process;
+
+  -- packet sender
+  process(clk)
+  begin
+    if rising_edge(clk) then
+      if S_start_tx = '1' and usb_txval = '0' and usb_txrdy = '1' then
+        R_packet_raddr <= (others => '0');
+        usb_txval <= '1';
+      else
+        if R_packet_raddr /= R_packet_addr_last then
+          R_packet_raddr <= R_packet_raddr + 1;
+        else
+          usb_txval <= '0';
+        end if;
+      end if;
+    end if;
+  end process;
+  usb_txcork <= usb_txval; -- after filling buffer, remove cork to burst out the packet
+  usb_txdat <= R_packet_buffer(conv_integer(R_packet_raddr));
+  end block;
+  end generate;
+
 end Behavioral;
