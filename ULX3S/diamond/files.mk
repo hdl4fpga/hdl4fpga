@@ -114,9 +114,3 @@ VERILOG_FILES = \
   ../../library/usbmouse/usbh_sie.v \
   ../../library/usbmouse/usbh_crc5.v \
   ../../library/usbmouse/usbh_crc16.v \
-
-# for mouse support, in VHDL_LIB_FILES: 
-# replace "scopeio.vhd" -> "scopeio_pointer.vhd"
-#  ../../library/scope/scopeio_pointer.vhd \
-# and add this source:
-#  ../../library/scope/scopeio_mouse2rgtr.vhd \
