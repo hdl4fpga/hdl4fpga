@@ -60,7 +60,7 @@ begin
   (
     clk         => clk, -- by default made for 25 MHz
     clk_ena     => clk_ena, -- used to reduce clk to 20-30 MHz
-    ps2m_reset  => ps2m_reset, -- after replugging mouse, it needs reset
+    ps2m_reset  => ps2m_reset,
     ps2m_clk    => ps2m_clk,
     ps2m_dat    => ps2m_dat,
     update      => S_mouse_update,
