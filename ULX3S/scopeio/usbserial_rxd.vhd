@@ -15,8 +15,8 @@ use hdl4fpga.usb_cdc_descriptor.all;
 entity usbserial_rxd is
 generic
 (
-  ethernet: boolean := true;
-  ping: boolean := true; -- echo reply to raw pings
+  ethernet: boolean := false;
+  ping: boolean := false; -- echo reply to raw pings
   -- debug for usb_serial in network mode will reply to nping
   -- ifconfig enx00aabbccddee 192.168.99.1
   -- nping -c 100 --privileged -delay 10ms -q1 --send-eth -e enx00aabbccddee --dest-mac 00:11:22:33:44:AA --data 0011223344556677  192.168.99.2
