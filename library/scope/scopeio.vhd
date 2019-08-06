@@ -101,23 +101,11 @@ architecture beh of scopeio is
 
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
-	signal triggersample_dv   : std_logic;
-	signal triggersample_data : std_logic_vector(input_data'range);
-	signal trigger_shot       : std_logic;
-
-	signal resizedsample_dv   : std_logic;
-	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_oshot   : std_logic;
-	signal downsample_ishot   : std_logic;
-	signal downsample_dv      : std_logic;
-	signal downsampling       : std_logic;
-	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-
 
 	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
 
 	signal video_addr         : std_logic_vector(0 to capture_bits-1);
-	signal video_av           : std_logic;
+	signal video_frm          : std_logic;
 	signal video_dv           : std_logic;
 	signal video_data         : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -145,6 +133,7 @@ architecture beh of scopeio is
 	signal trigger_edge       : std_logic;
 	signal trigger_freeze     : std_logic;
 	signal trigger_level      : std_logic_vector(storage_word'range);
+	signal trigger_data       : std_logic_vector(chanid_bits+storage_word'length+2-1 downto 0);
 
 	signal pointer_dv         : std_logic;
 	signal pointer_x          : std_logic_vector(11-1 downto 0);
@@ -229,21 +218,25 @@ begin
 		ampsample_dv <= output_ena(0);
 	end block;
 
+	trigger_data <= trigger_chanid & trigger_level & trigger_edge & trigger_freeze;
+
 	scopeio_tds_e : scopeio_tds
 	generic map  (
 		inputs       => inputs,
+		storageword_size => storage_word'length,
 		time_factors => hz_factors)
 	port map (
 		input_clk    => input_clk,
-		input_dv     => input_dv,
+		input_dv     => input_ena,
 		input_data   => input_data,
 		trigger_dv   => trigger_dv,
 		trigger_data => trigger_data,
-		time_dv      => time_dv,
-		time_scale   => time_scale,
-		time_offset  => time_offset,
+		time_dv      => hz_dv,
+		time_scale   => hz_scale,
+		time_offset  => hz_slider,
 		video_clk    => video_clk,
 		video_addr   => video_addr,  
+		video_vton   => video_vton,  
 		video_frm    => video_frm,  
 		video_dv     => video_dv,  
 		video_data   => video_data);
@@ -284,7 +277,7 @@ begin
 		trigger_level    => trigger_level,
 
 		video_addr       => video_addr,
-		video_av         => video_av,
+		video_frm        => video_frm,
 		video_data       => video_data,
 		video_dv         => video_dv,
 

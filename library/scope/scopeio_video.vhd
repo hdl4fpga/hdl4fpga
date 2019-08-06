@@ -65,10 +65,10 @@ entity scopeio_video is
 		trigger_chanid: in  std_logic_vector;
 		trigger_level : in  std_logic_vector;
 
-		capture_addr  : out std_logic_vector;
-		capture_av    : out std_logic;
-		capture_data  : in  std_logic_vector;
-		capture_dv    : in  std_logic;
+		video_addr    : out std_logic_vector;
+		video_frm     : out std_logic;
+		video_data    : in  std_logic_vector;
+		video_dv      : in  std_logic;
 
 		pointer_x     : in  std_logic_vector;
 		pointer_y     : in  std_logic_vector;
@@ -407,7 +407,7 @@ begin
 				do  => sgmntbox_sel);
 
 			capture_addr_p : process (video_clk)
-				variable base : unsigned(0 to capture_addr'length-1);
+				variable base : unsigned(0 to video_addr'length-1);
 			begin
 				if rising_edge(video_clk) then
 					base := (others => '0');
@@ -417,8 +417,8 @@ begin
 						end if;
 					end loop;
 										   
-					capture_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), capture_addr'length));
-					capture_av   <= grid_on;
+					video_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), video_addr'length));
+					video_frm  <= grid_on;
 					hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 														  
 				end if;
@@ -463,8 +463,8 @@ begin
 				vt_on         => vt_on,
 				grid_on       => grid_on,
 
-				sample_dv     => capture_dv,
-				sample_data   => capture_data,
+				sample_dv     => video_dv,
+				sample_data   => video_data,
 				trigger_level => trigger_level,
 				grid_dot      => grid_dot,
 				hz_dot        => hz_dot,
