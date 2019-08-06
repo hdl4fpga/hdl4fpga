@@ -38,30 +38,30 @@ entity scopeio_capture is
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
-		input_delay  : in  std_logic_vector;
+		time_offset  : in  std_logic_vector;
 
-		capture_clk  : in  std_logic;
-		capture_addr : in  std_logic_vector;
-		capture_av   : in  std_logic := '1';
-		capture_data : out std_logic_vector;
-		capture_dv   : out std_logic);
+		video_clk  : in  std_logic;
+		video_addr : in  std_logic_vector;
+		video_frm  : in  std_logic := '1';
+		video_data : out std_logic_vector;
+		video_dv   : out std_logic);
 end;
 
 architecture beh of scopeio_capture is
 
 	constant bram_latency : natural := 2;
 
-	constant capture_size : natural := 2**capture_addr'length/2;
-	constant delay_size   : natural := 2**input_delay'length;
+	constant video_size : natural := 2**video_addr'length/2;
+	constant delay_size   : natural := 2**time_offset'length;
 
-	signal index   : signed(input_delay'length-1  downto 0);
-	signal bound   : signed(input_delay'length-1  downto 0);
-	signal base    : signed(capture_addr'length-1 downto 0);
-	signal rd_addr : signed(capture_addr'length-1 downto 0);
-	signal wr_addr : signed(capture_addr'length-1 downto 0);
+	signal index   : signed(time_offset'length-1  downto 0);
+	signal bound   : signed(time_offset'length-1  downto 0);
+	signal base    : signed(video_addr'length-1 downto 0);
+	signal rd_addr : signed(video_addr'length-1 downto 0);
+	signal wr_addr : signed(video_addr'length-1 downto 0);
 
 	signal running : std_logic;
-	signal delay   : signed(input_delay'range);
+	signal delay   : signed(time_offset'range);
 	signal valid   : std_logic;
 	signal dv2     : std_logic;
 	signal dv1     : std_logic;
@@ -69,37 +69,37 @@ architecture beh of scopeio_capture is
 
 begin
  
-	capture_addr_p : process (input_clk)
+	video_addr_p : process (input_clk)
 		variable full : std_logic;
 		variable pre  : std_logic;
-		variable cntr : signed(0 to input_delay'length) := (others => '1'); -- Debug purpose
+		variable cntr : signed(0 to time_offset'length) := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if signed(input_delay) < 0 then
+				if signed(time_offset) < 0 then
 					-- Pre-trigger
 					if capture_shot='1' then
 						if full='0' then
 							pre  := '0';
-							cntr := to_signed(-capture_size, cntr'length);
+							cntr := to_signed(-video_size, cntr'length);
 							base <= (others => '-');
 						else
 							pre  := '1';
-							cntr := resize(-signed(input_delay)-capture_size+1, cntr'length);
+							cntr := resize(-signed(time_offset)-video_size+1, cntr'length);
 							base  <= wr_addr;
 						end if;
-						delay   <= signed(input_delay);
+						delay   <= signed(time_offset);
 						bound   <= signed(resize(cntr, bound'length));
 						running <= cntr(0);
 					elsif full='0' then
 						cntr    := cntr + 1;
 						full    := setif(cntr+delay > 0);
-						bound   <= to_signed(-capture_size, bound'length);
+						bound   <= to_signed(-video_size, bound'length);
 						running <= '1';
 					elsif pre='0' then
 						cntr    := cntr + 1;
 						full    := '1';
-						bound   <= to_signed(-capture_size, bound'length);
+						bound   <= to_signed(-video_size, bound'length);
 						running <= '1';
 					elsif cntr(0)='1' then
 						cntr    := cntr + 1;
@@ -110,9 +110,9 @@ begin
 				else
 					-- Delayed trigger
 					if capture_shot='1' then
-						cntr  := resize(-signed(input_delay)-capture_size+1, cntr'length);
+						cntr  := resize(-signed(time_offset)-video_size+1, cntr'length);
 						base  <= wr_addr;
-						delay <= signed(input_delay);
+						delay <= signed(time_offset);
 					elsif cntr(0)='1' then
 						cntr := cntr + 1;
 					end if;
@@ -123,22 +123,22 @@ begin
 		end if;
 	end process;
 
-	index <= signed(input_delay)+signed(resize(unsigned(capture_addr), input_delay'length));
+	index <= signed(time_offset)+signed(resize(unsigned(video_addr), time_offset'length));
 
-	capture_valid_p : valid <=
-		setif(index > -capture_size and delay <= index and -capture_size < delay-index) when not running='1' else
-		setif(index > -capture_size and delay <= index and -capture_size < delay-index+bound);
+	video_valid_p : valid <=
+		setif(index > -video_size and delay <= index and -video_size < delay-index) when not running='1' else
+		setif(index > -video_size and delay <= index and -video_size < delay-index+bound);
 
-	process (downsampling, capture_av, capture_clk)
+	process (downsampling, video_frm, video_clk)
 		variable q : std_logic;
 	begin
 		if downsampling='0' then
-			dv1 <= q and capture_av;
+			dv1 <= q and video_frm;
 		else
-			dv1 <= capture_av;
+			dv1 <= video_frm;
 		end if;
-		if rising_edge(capture_clk) then
-			q := capture_av;
+		if rising_edge(video_clk) then
+			q := video_frm;
 		end if;
 	end process;
 
@@ -147,16 +147,16 @@ begin
 		n => 1,
 		d => (0 to 0 => bram_latency))
 	port map (
-		clk   => capture_clk,
-		di(0) => capture_av,
-		do(0) => capture_dv);
+		clk   => video_clk,
+		di(0) => video_frm,
+		do(0) => video_dv);
 
 	dv1_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
 		d => (0 to 0 => bram_latency))
 	port map (
-		clk   => capture_clk,
+		clk   => video_clk,
 		di(0) => dv1,
 		do(0) => dv2);
 
@@ -164,12 +164,12 @@ begin
 
 	rd_addr <= base + index(rd_addr'range);
 	storage_b : block
-		signal addra : signed(capture_addr'length-1 downto 1); -- := (others => '0'); -- Debug purpose
+		signal addra : signed(video_addr'length-1 downto 1); -- := (others => '0'); -- Debug purpose
 		signal wea   : std_logic;
 		signal addrb : unsigned(addra'range);
-		signal dob   : std_logic_Vector(capture_data'range);
+		signal dob   : std_logic_Vector(video_data'range);
 		signal dll   : std_logic_vector(input_data'range);
-		signal y0    : std_logic_Vector(0 to capture_data'length/2-1);
+		signal y0    : std_logic_Vector(0 to video_data'length/2-1);
 		signal uplw  : std_logic;
 	begin
 
@@ -199,7 +199,7 @@ begin
 			dia   => input_data,
 			doa   => dll,
 
-			clkb  => capture_clk,
+			clkb  => video_clk,
 			addrb => std_logic_vector(addrb),
 			dib   => dll,
 			dob   => dob);
@@ -209,19 +209,19 @@ begin
 			n => 1,
 			d => (0 => bram_latency))
 		port map (
-			clk => capture_clk,
+			clk => video_clk,
 			di(0) => rd_addr(0),
 			do(0) => uplw);
 
 
-		y0_p : process (capture_clk)
+		y0_p : process (video_clk)
 		begin
-			if rising_edge(capture_clk) then
+			if rising_edge(video_clk) then
 				y0 <= word2byte(dob, uplw);
 			end if;
 		end process;
 
-		capture_data <= 
+		video_data <= 
 			word2byte(word2byte(dob, uplw) & y0, dv2) & word2byte(dob, uplw) when downsampling='0' else
 			dob;
 

@@ -31,8 +31,9 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_tds is
 	generic (
-		inputs      : natural;
-		hz_factors  : natural_vector);
+		inputs       : natural;
+		time_factors   : natural_vector;
+		storageword_size : natural);
 	port (
 		input_clk        : in  std_logic;
 		input_dv         : in  std_logic;
@@ -40,11 +41,12 @@ entity scopeio_tds is
 		trigger_dv       : in  std_logic;
 		trigger_data     : in  std_logic_vector;
 		time_dv          : in  std_logic;
-		time_scale       : in  std_logic_vector:
+		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
 		video_clk        : in  std_logic;
-		video_frm        : out std_logic;
-		video_addr       : out std_logic_vector;
+		video_vton       : in  std_logic;
+		video_frm        : in  std_logic;
+		video_addr       : in  std_logic_vector;
 		video_dv         : out std_logic;
 		video_data       : out std_logic_vector);
 
@@ -54,7 +56,7 @@ end;
 
 architecture beh of scopeio_tds is
 
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
 
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
@@ -68,11 +70,9 @@ architecture beh of scopeio_tds is
 	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 
-	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
 	signal capture_shot       : std_logic;
 	signal capture_end        : std_logic;
 
-	signal trigger_dv         : std_logic;
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_edge       : std_logic;
 	signal trigger_freeze     : std_logic;
@@ -85,8 +85,8 @@ begin
 		inputs => inputs)
 	port map (
 		input_clk      => input_clk,
-		input_dv       => ampsample_dv,
-		input_data     => ampsample_data,
+		input_dv       => input_dv,
+		input_data     => input_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
@@ -113,7 +113,7 @@ begin
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		inputs  => inputs,
-		factors => hz_factors)
+		factors => time_factors)
 	port map (
 		factor_id    => time_scale,
 --		factor_id    => b"0000",  --Debug purpose
