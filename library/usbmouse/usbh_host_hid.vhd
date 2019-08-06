@@ -1,5 +1,5 @@
 -- (c)EMARD
--- License=BSD
+-- License=GPL
 
 -- USB HOST for HID devices
 -- drives SIE directly

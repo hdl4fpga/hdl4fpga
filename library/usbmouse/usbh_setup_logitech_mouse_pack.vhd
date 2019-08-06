@@ -1,5 +1,5 @@
 -- (c) EMARD
--- License=BSD
+-- License=GPL
 
 -- USB enumeration sequence sniffed with wireshark
 -- For Logitech mouse and other similar USB low-speed HID devices.
