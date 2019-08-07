@@ -32,7 +32,7 @@ port
   mii_rxdata  : out std_logic_vector(7 downto 0);
 
   -- debug
-  sync_err, bit_stuff_err, byte_err:  std_logic 
+  sync_err, bit_stuff_err, byte_err:  out std_logic 
 );
 end;
 

@@ -143,12 +143,6 @@ architecture beh of ulx3s is
 	signal net_rxdv   : std_logic;
 	signal net_rxd    : std_logic_vector(7 downto 0);
 	
-	signal mii_clk    : std_logic;
-	signal mii_rxvalid, mii_txvalid: std_logic;
-	signal mii_rxdata,  mii_txdata : std_logic_vector(0 to 7);
-	signal ipcfg_req : std_logic;
-
-	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
 
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
@@ -592,8 +586,8 @@ begin
 	);
 	end generate;
 
---	led <= uart_rxd;
-	led <= mii_rxdata;
+	led <= uart_rxd;
+--	led <= mii_rxdata;
 --	led <= net_rxd;
 
 	G_not_usb_ethernet_mii: if not C_usbmii generate
@@ -614,6 +608,13 @@ begin
 	end generate;
 
 	G_usb_ethernet_mii: if C_usbmii generate
+	B_usb_ethernet_mii: block
+	signal mii_clk    : std_logic;
+	signal mii_rxvalid, mii_txvalid: std_logic;
+	signal mii_rxdata,  mii_txdata, mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
+	signal ipcfg_req : std_logic;
+	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
+	begin
 	-- USB-CDC core in ethernet mode
 	-- pulldown 15k for USB HOST mode
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
@@ -645,11 +646,14 @@ begin
                 byte_err       => dbg_byte_err,
 		-- I/O data
 		mii_clk        => mii_clk,    -- <- MII application clock
-		mii_rxvalid    => mii_rxvalid, -- <-
-		mii_rxdata     => mii_rxdata,  -- <-
-		mii_txvalid    => mii_txvalid, -- ->
-		mii_txdata     => mii_txdata   -- ->
+		mii_rxvalid    => mii_rxvalid, -- ->
+		mii_rxdata     => mii_rxdata,  -- ->
+		mii_txvalid    => mii_txvalid, -- <-
+		mii_txdata     => mii_txdata   -- <-
 	);
+
+	mii_txdata <= reverse(mii_txdata_reverse);
+	mii_rxdata_reverse <= reverse(mii_rxdata);
 
 	process(mii_clk)
 	begin
@@ -664,11 +668,11 @@ begin
 
 		phy_rxc     => mii_clk,
 		phy_rx_dv   => mii_rxvalid,
-		phy_rx_d    => mii_rxdata,
+		phy_rx_d    => mii_rxdata_reverse,
 
 		phy_txc     => mii_clk, 
 		phy_tx_en   => mii_txvalid,
-		phy_tx_d    => mii_txdata,
+		phy_tx_d    => mii_txdata_reverse,
 	
 		chaini_sel  => '0',
 
@@ -680,6 +684,7 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
         );
+        end block;
 	end generate;
 
 	G_oled_hex_view_uart: if C_oled_hex_view_uart generate
