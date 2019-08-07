@@ -32,6 +32,7 @@ use hdl4fpga.std.all;
 
 entity mii_ipcfg is
 	generic (
+		preamble_disable : boolean := false;
 		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc       : in  std_logic;
@@ -351,6 +352,8 @@ begin
 				mii_txd  => mymac_txd);
 
 			mii_mac_e : entity hdl4fpga.miitx_dll
+			generic map (
+				preamble_disable => preamble_disable)
 			port map (
 				mii_txc  => mii_txc,
 				mii_rxdv => dll_txdv,
@@ -413,6 +416,8 @@ begin
 		rx_b : block
 		begin
 			mii_pre_e : entity hdl4fpga.miirx_pre 
+			generic map (
+				preamble_disable => preamble_disable)
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
