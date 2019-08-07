@@ -51,16 +51,14 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_usbmouse2daisy.vhd \
   ../../library/scope/scopeio_hostmouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \
-  ../../library/usbmouse/usbh_host_hid.vhd \
-  ../../library/usbmouse/usbh_setup_logitech_mouse_pack.vhd \
-  ../../library/usbmouse/usbh_report_decoder_logitech_mouse.vhd \
-  ../../library/usbmouse/usbh_sie_vhdl.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
   ../../library/scope/scopeio_istream.vhd \
   ../../library/scope/scopeio_istreamdaisy.vhd \
   ../../library/scope/scopeio_sin.vhd \
+  ../../library/scope/scopeio_udpipdaisy.vhd \
+  ../../library/scope/scopeio_miiudp.vhd \
   ../../library/scope/scopeio_rgtrfile.vhd \
   ../../library/scope/scopeio_rgtrtrigger.vhd \
   ../../library/scope/scopeio_rgtrgain.vhd \
@@ -92,15 +90,20 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
-  ../../library/usbserial/usb_serial/usbtest.vhd \
-  ../../library/usbserial/usb_serial/usb_serial.vhd \
-  ../../library/usbserial/usb_serial/usb_transact.vhd \
-  ../../library/usbserial/usb_serial/usb_packet.vhd \
-  ../../library/usbserial/usb_serial/usb_init.vhd \
-  ../../library/usbserial/usb_serial/usb_control.vhd \
-  ../../library/usbserial/usb11_phy_vhdl/usb_phy.vhd \
-  ../../library/usbserial/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
-  ../../library/usbserial/usb11_phy_vhdl/usb_tx_phy.vhd \
+  ../../library/usb/usbcdc/usb_serial.vhd \
+  ../../library/usb/usbcdc/usb_mii.vhd \
+  ../../library/usb/usbcdc/usb_cdc_descriptor_pack.vhd \
+  ../../library/usb/usbcdc/usb_transact.vhd \
+  ../../library/usb/usbcdc/usb_packet.vhd \
+  ../../library/usb/usbcdc/usb_init.vhd \
+  ../../library/usb/usbcdc/usb_control.vhd \
+  ../../library/usb/usbhost/usbh_host_hid.vhd \
+  ../../library/usb/usbhost/usbh_setup_logitech_mouse_pack.vhd \
+  ../../library/usb/usbhost/usbh_report_decoder_logitech_mouse.vhd \
+  ../../library/usb/usbhost/usbh_sie_vhdl.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \
@@ -111,12 +114,7 @@ VHDL_LIB_FILES = \
 VERILOG_FILES = \
   $(VERILOG_CLOCK_FILE) \
   ../common/clk_200_48_24_12_6_v.v \
-  ../../library/usbmouse/usbh_sie.v \
-  ../../library/usbmouse/usbh_crc5.v \
-  ../../library/usbmouse/usbh_crc16.v \
+  ../../library/usb/usbhost/usbh_sie.v \
+  ../../library/usb/usbhost/usbh_crc5.v \
+  ../../library/usb/usbhost/usbh_crc16.v \
 
-# for mouse support, in VHDL_LIB_FILES: 
-# replace "scopeio.vhd" -> "scopeio_pointer.vhd"
-#  ../../library/scope/scopeio_pointer.vhd \
-# and add this source:
-#  ../../library/scope/scopeio_mouse2rgtr.vhd \
