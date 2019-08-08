@@ -562,14 +562,14 @@ begin
 				signal requ_set    : std_logic;
 			begin
 				
-				process (requ_rcv, rply_req, mii_txc)
+				process (mii_rxc)
 				begin
-					if rply_req='0' then
-						if requ_rcv='1' then
-							requ_set <= '1';
-						end if;
-					elsif rising_edge(mii_txc) then
-						if rply_rdy='1' then
+					if rising_edge(mii_rxc) then
+						if rply_req='0' then
+							if requ_rcv='1' then
+								requ_set <= '1';
+							end if;
+						else
 							requ_set <= '0';
 						end if;
 					end if;
