@@ -559,21 +559,29 @@ begin
 
 				signal txdv        : std_logic;
 				signal txd         : std_logic_vector(mii_txd'range);
+				signal requ_set    : std_logic;
 			begin
 				
+				process (requ_rcv, rply_req, mii_txc)
+				begin
+					if rply_req='0' then
+						if requ_rcv='1' then
+							requ_set <= '1';
+						end if;
+					elsif rising_edge(mii_txc) then
+						if rply_rdy='1' then
+							requ_set <= '0';
+						end if;
+					end if;
+				end process;
+
 				process (mii_txc)
-					variable rply : std_logic;
 				begin
 					if rising_edge(mii_txc) then
 						if rply_rdy='1' then
 							rply_req <= '0';
-							rply     := '0';
-						elsif mii_rxdv='1' then
-							rply_req <= '0';
-							rply     := requ_rcv;
-						elsif rply='1' then
-							rply_req <= '1';
-							rply     := '0';
+						else
+							rply_req <= requ_set;
 						end if;
 --						rply_req <= btn;
 					end if;
