@@ -580,7 +580,7 @@ begin
 					if rising_edge(mii_txc) then
 						if rply_rdy='1' then
 							rply_req <= '0';
-						else
+						elsif rply_req='0' then
 							rply_req <= requ_set;
 						end if;
 --						rply_req <= btn;
