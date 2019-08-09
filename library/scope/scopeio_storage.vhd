@@ -12,6 +12,7 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_storage is
 	generic (
 		inputs                 : natural;
+		visibility_register    : boolean := false; -- true: with latency but fmax friendly
 		-- use "align_to_grid" to compensate latency of "storage_mark_t0" signal.
 		align_to_grid          : integer := 0  -- -left, +right shift T=0 triggered edge
 	);
@@ -27,15 +28,18 @@ entity scopeio_storage is
 		captured_clk           : in  std_logic;
 		captured_addr          : in  std_logic_vector;
 		captured_scroll        : in  std_logic_vector;
+		captured_visible       : out std_logic;
 		captured_data          : out std_logic_vector
 	);
 end;
 
 architecture beh of scopeio_storage is
+	-- "_ds" suffix used to treat special case of "downsampling"
 	constant sample_bits: natural := storage_data'length / inputs / 2;
 	signal t0_addr      : unsigned(storage_addr'range);
-	signal scrolled_addr: unsigned(t0_addr'range);
-	signal rd_addr      : unsigned(t0_addr'range);
+	signal t0_addr_ds   : unsigned(0 to t0_addr'length);
+	signal scrolled_addr: unsigned(t0_addr_ds'range);
+	signal rd_addr      : unsigned(t0_addr_ds'range);
 	signal wr_addr      : unsigned(t0_addr'range);
 	signal wr_ena       : std_logic;
 	signal null_data    : std_logic_vector(storage_data'range);
@@ -43,6 +47,9 @@ architecture beh of scopeio_storage is
 	signal rd_data_ds   : std_logic_vector(captured_data'range);
 	signal pr_data_ds   : std_logic_vector(captured_data'range);
 	signal rd_data_0, rd_data_1: std_logic_vector(captured_data'range);
+	signal visible_addr : unsigned(0 to captured_scroll'length-1);
+	signal visible_addr_ds : unsigned(0 to visible_addr'length-2);
+	signal visible_addr_ds_compare : unsigned(0 to visible_addr_ds'length-rd_addr_ds'length);
 begin
 	P_write_address:
 	process(storage_clk)
@@ -61,13 +68,18 @@ begin
 		end if;
 	end process;
 
+	-- special case treatment: at downsampling=0
+	-- t0_addr actually holds double address
+	t0_addr_ds <= '0' & t0_addr when downsampling = '1'
+	         else t0_addr & '0';
+
 	-- "captured_scroll" is horizontal scrolling offset, requested by display system
 	-- Latency is allowed so we can offload arithmetic stage with a register:
 	P_horizontal_scroll:
 	process(storage_clk)
 	begin
 		if rising_edge(storage_clk) then
-			scrolled_addr <= t0_addr + resize(unsigned(captured_scroll),scrolled_addr'length)
+			scrolled_addr <= t0_addr_ds + resize(unsigned(captured_scroll),scrolled_addr'length)
 			               + to_unsigned(-align_to_grid,scrolled_addr'length);
 		end if; -- rising_edge
 	end process;
@@ -77,10 +89,11 @@ begin
 	-- No latency is allowed for "captured_addr", therefore combinatorial logic here:
 	-- Registered latency will cause display artefacts.
 	rd_addr <= scrolled_addr + unsigned(captured_addr);
-	
+
 	-- if downsampling = 0 special case: right shift rd_addr value
-	rd_addr_ds <= rd_addr when downsampling = '1' 
-	         else ('0' & rd_addr(0 to rd_addr'high-1));
+	-- if downsampling = 1 just discard MSB bit
+	rd_addr_ds <= rd_addr(1 to rd_addr'high) when downsampling = '1' 
+	         else rd_addr(0 to rd_addr'high-1);
 
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
@@ -97,8 +110,7 @@ begin
 
 	-- HACK reconstruct special case of downsampling=0
 	-- where 2 samples are stored at address
-	-- it works if readout is sequential 
-	
+	-- it works because video read is sequential
 	process(captured_clk)
 	begin
 		if rising_edge(captured_clk) then
@@ -106,7 +118,7 @@ begin
 		end if; -- rising_edge
 	end process;
 
-	G_inputs_data0:
+	G_split_double_samples:
 	for i in 0 to inputs-1 generate
 	  rd_data_0(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
 	  <= pr_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1)
@@ -132,4 +144,45 @@ begin
 --                  else rd_data_ds(0 to rd_data_ds'length/2-1)
 --                     & rd_data_ds(rd_data_ds'length/2 to rd_data_ds'high);
 
+	-- draw traces only for buffer content (no wraparound)
+	visible_addr <= resize(unsigned(captured_addr),visible_addr'length) + unsigned(captured_scroll);
+	visible_addr_ds_compare <= (others => visible_addr_ds(0)); -- condition to be visible
+
+	G_yes_visibility_register:
+	if visibility_register generate
+	-- generate signal for trace visibility
+	-- registered to offload timing
+	-- at downsampling = 0, two samples from end of the buffer
+	-- will be drawn wrong at beginning of the buffer
+	P_trace_visibility:
+	process(storage_clk)
+	begin
+		if rising_edge(storage_clk) then
+			if downsampling = '1' then
+				visible_addr_ds <= visible_addr(1 to visible_addr'high);
+			else
+				visible_addr_ds <= visible_addr(0 to visible_addr'high-1);
+			end if;
+			if visible_addr_ds(visible_addr_ds_compare'range)
+	                           = visible_addr_ds_compare
+			then
+	                        captured_visible <= '1';
+			else
+				captured_visible <= '0';
+			end if;
+		end if; -- rising_edge
+	end process;
+	end generate;
+
+	G_not_visibility_register:
+	-- fully combinatorial logic
+	if not visibility_register generate
+	-- at downsampling = 0, one sample from end of the buffer
+	-- will be drawn wrong at beginning of the buffer
+	visible_addr_ds <= visible_addr(1 to visible_addr'high) when downsampling = '1'
+		      else visible_addr(0 to visible_addr'high-1);
+	captured_visible <= '1' when visible_addr_ds(visible_addr_ds_compare'range)
+	                           = visible_addr_ds_compare
+	               else '0';
+	end generate;
 end;

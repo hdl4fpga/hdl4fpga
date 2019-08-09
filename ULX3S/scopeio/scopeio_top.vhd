@@ -23,21 +23,25 @@ architecture beh of ulx3s is
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
-	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 4 segments
+	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-        constant vlayout_id: integer := 8;
+	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
+        constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := true;  -- USB mouse
-        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_usb:  boolean := false;  -- USB  or USB+PS/2 mouse
+        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
-        constant C_usbserial:  boolean := false; -- USB-serial soft-core (D+/D- lines)
+        constant C_usbserial:  boolean := false; -- USB-CDC core in serial mode (D+/D- lines)
+        constant C_usbmii:     boolean := true;  -- USB-CDC core network in ethernet mode (D+/D- lines)
+        -- USB ethernet network test
+        constant C_usbeth_test:boolean := false; -- USB-CDC core test in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := true;  -- ADC analog view
+        constant C_view_adc:   boolean := false; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := false; -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
@@ -50,12 +54,13 @@ architecture beh of ulx3s is
         -- scopeio
 	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
-	constant C_oled_hex_view_usb : boolean := true;
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
+	constant C_oled_hex_view_usb : boolean := false;
+	constant C_oled_hex_view_net : boolean := true;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -124,7 +129,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 30000000; -- Hz
+	constant uart_clk_hz : natural := 40000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -134,6 +139,10 @@ architecture beh of ulx3s is
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(7 downto 0);
 	signal so_null    : std_logic_vector(7 downto 0);
+
+	signal net_rxdv   : std_logic;
+	signal net_rxd    : std_logic_vector(7 downto 0);
+	
 
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
@@ -197,12 +206,27 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
-        clk_25M: entity work.clk_verilog
+--        G_verilog_clk: if false generate
+--        clk_verilog_25_200: entity work.clk_verilog
+--        port map
+--        (
+--          clkin       =>  clk_25MHz,
+--          clkout      =>  clk_pll
+--        );
+--        end generate;
+
+	G_vhdl_clk: if true generate
+        clk_vhdl_25_200: entity work.clk_25_200_40_66_6
         port map
         (
-          clkin       =>  clk_25MHz,
-          clkout      =>  clk_pll
+          clki        =>  clk_25MHz,
+          clkop       =>  clk_pll(0), -- 200 MHz
+          clkos       =>  clk_pll(1), --  40 MHz
+          clkos2      =>  clk_pll(2), --  66.667 MHz
+          clkos3      =>  clk_pll(3)  --   6 MHz
         );
+        end generate;
+
         -- 800x600
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
@@ -521,8 +545,52 @@ begin
 	);
 	end generate;
 
-	led <= uart_rxd;
+	G_uart_usbeth: if C_usbeth_test generate
+	-- USB-CDC core in ethernet mode
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
+        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  open,    -- clk_60MHz,
+          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_7M5Hz
+        );
+
+	usbserial_e : entity work.usbserial_rxd
+	generic map
+	(
+	  ethernet => true,
+	  ping => true
+	)
+	port map
+	(
+		clk_usb => clk_usb, -- 48 MHz USB core clock
+		-- USB interface
+		usb_fpga_dp    => usb_fpga_dp,
+		--usb_fpga_dn    => usb_fpga_dn,
+		usb_fpga_bd_dp => usb_fpga_bd_dp,
+		usb_fpga_bd_dn => usb_fpga_bd_dn,
+		-- debug
+                sync_err       => dbg_sync_err,
+                bit_stuff_err  => dbg_bit_stuff_err,
+                byte_err       => dbg_byte_err,
+		-- output data
+		clk  => clk_uart,  -- UART application clock
+		dv   => net_rxdv,
+		byte => net_rxd
+	);
+	end generate;
+
+	led <= uart_rxd;
+--	led <= mii_rxdata;
+--	led <= net_rxd;
+
+	G_not_usb_ethernet_mii: if not C_usbmii generate
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	port map (
 		stream_clk  => clk_uart,
@@ -537,13 +605,105 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
 	);
+	end generate;
+
+	G_usb_ethernet_mii: if C_usbmii generate
+	B_usb_ethernet_mii: block
+	signal mii_clk    : std_logic;
+	signal mii_rxvalid, mii_txvalid: std_logic;
+	signal mii_rxdata,  mii_txdata, mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
+	signal ipcfg_req : std_logic;
+	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
+	begin
+	-- USB-CDC core in ethernet mode
+	-- pulldown 15k for USB HOST mode
+	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+
+        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  open,    -- clk_60MHz,
+          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_7M5Hz
+        );
+        mii_clk <= clk_uart;
+
+	usbmii_e : entity hdl4fpga.usb_mii
+	port map
+	(
+		clk_usb => clk_usb, -- 48 MHz USB core clock
+		-- USB interface
+		usb_fpga_dp    => usb_fpga_dp,
+		--usb_fpga_dn    => usb_fpga_dn,
+		usb_fpga_bd_dp => usb_fpga_bd_dp,
+		usb_fpga_bd_dn => usb_fpga_bd_dn,
+		-- debug
+                sync_err       => dbg_sync_err,
+                bit_stuff_err  => dbg_bit_stuff_err,
+                byte_err       => dbg_byte_err,
+		-- I/O data
+		mii_clk        => mii_clk,    -- <- MII application clock
+		mii_rxvalid    => mii_rxvalid, -- ->
+		mii_rxdata     => mii_rxdata,  -- ->
+		mii_txvalid    => mii_txvalid, -- <-
+		mii_txdata     => mii_txdata   -- <-
+	);
+
+	mii_txdata <= reverse(mii_txdata_reverse);
+	mii_rxdata_reverse <= reverse(mii_rxdata);
+
+	process(mii_clk)
+	begin
+	  if rising_edge(mii_clk) then
+	    ipcfg_req <= btn(1);
+	  end if;
+	end process;
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => mii_clk,
+		phy_rx_dv   => mii_rxvalid,
+		phy_rx_d    => mii_rxdata_reverse,
+
+		phy_txc     => mii_clk, 
+		phy_tx_en   => mii_txvalid,
+		phy_tx_d    => mii_txdata_reverse,
+	
+		chaini_sel  => '0',
+
+		chaini_frm  => '0',
+		chaini_irdy => open,
+		chaini_data => dummy_udpdaisy_data,
+
+		chaino_frm  => fromistreamdaisy_frm,
+		chaino_irdy => fromistreamdaisy_irdy,
+		chaino_data => fromistreamdaisy_data
+        );
+        end block;
+	end generate;
 
 	G_oled_hex_view_uart: if C_oled_hex_view_uart generate
 	  process(clk_uart)
 	  begin
 	    if rising_edge(clk_uart) then
 	      if uart_rxdv = '1' then
-                R_oled_data(uart_rxd'range) <= uart_rxd;
+                R_oled_data <= R_oled_data(R_oled_data'high-uart_rxd'length downto 0) & uart_rxd;
+              end if;
+            end if;
+          end process;
+	end generate;
+
+	G_oled_hex_view_net: if C_oled_hex_view_net generate
+	  process(clk_uart)
+	  begin
+	    if rising_edge(clk_uart) then
+	      if net_rxdv = '1' then
+                R_oled_data <= R_oled_data(R_oled_data'high-net_rxd'length downto 0) & net_rxd;
               end if;
             end if;
           end process;
@@ -624,18 +784,7 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-	G_usb_200_6: if vlayout_id >= 5 and vlayout_id <= 7 generate
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          clkin       =>  clk_pixel_shift, -- clk_200MHz,
-          clkout(3)   =>  clk_usb -- 0:48 1:24 2:12 3:6
-        );
-        end generate;
-
-	G_usb_6: if vlayout_id = 8 generate
 	clk_usb <= clk_pll(3); -- 6 MHz
-        end generate;
 
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
@@ -705,7 +854,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
+--	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
+	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		trig1shot        => true,

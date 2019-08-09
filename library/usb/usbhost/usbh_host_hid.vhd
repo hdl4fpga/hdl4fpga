@@ -1,8 +1,13 @@
 -- (c)EMARD
--- License=BSD
+-- License=GPL
 
 -- USB HOST for HID devices
 -- drives SIE directly
+
+-- suggested reading
+-- http://www.usbmadesimple.co.uk/
+-- online USB descriptor parser
+-- https://eleccelerator.com/usbdescreqparser/
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -68,16 +73,15 @@ architecture Behavioral of usbh_host_hid is
 
   --signal S_DATAOUT_reset: std_logic_vector(7 downto 0); -- mixed in reset signal
 
-  signal   R_state:          std_logic_vector(2 downto 0)    := "000";
-  constant C_STATE_DETACHED: std_logic_vector(R_state'range) := "000";
-  constant C_STATE_RESET:    std_logic_vector(R_state'range) := "001";
-  constant C_STATE_SETUP:    std_logic_vector(R_state'range) := "010";
-  constant C_STATE_REQUEST:  std_logic_vector(R_state'range) := "011";
-  constant C_STATE_RESPONSE: std_logic_vector(R_state'range) := "100";
+  signal   R_state:           std_logic_vector(1 downto 0)    := "00";
+  constant C_STATE_DETACHED : std_logic_vector(R_state'range) := "00";
+  constant C_STATE_SETUP    : std_logic_vector(R_state'range) := "01";
+  constant C_STATE_REPORT   : std_logic_vector(R_state'range) := "10";
 
   signal R_retry: std_logic_vector(C_setup_retry downto 0);
   signal R_slow: std_logic_vector(17 downto 0) := (others => '0'); -- 2**17 clocks = 20 ms interval at 6 MHz
-  signal R_reset_pending : std_logic;
+  signal R_reset_pending: std_logic;
+  signal R_reset_accepted : std_logic;
   signal R_timeout: std_logic; -- rising edge tracking
 
   -- sie wires
@@ -171,7 +175,7 @@ architecture Behavioral of usbh_host_hid is
   begin
     if rising_edge(clk_usb) then
       R_timeout <= timeout_o;
-      if sof_transfer_i = '1' then
+      if R_reset_accepted = '1' then
         R_setup_rom_addr       <= (others => '0');
         R_setup_rom_addr_acked <= (others => '0');
         R_retry                <= (others => '0');
@@ -181,7 +185,7 @@ architecture Behavioral of usbh_host_hid is
           R_reset_pending <= '1';
         end if;
         if rx_done_o = '1' or (timeout_o = '1' and R_timeout = '0') then
-          -- tranmission is over (either rx done or timeout rising edge).
+          -- transmission is over (either rx done or timeout rising edge).
           if R_state = C_STATE_SETUP then
             -- decide to continue with next setup or to retry
             if rx_done_o = '1' and response_o = x"D2" then -- ACK
@@ -195,7 +199,7 @@ architecture Behavioral of usbh_host_hid is
               end if;
             end if;
           end if; -- not in SETUP
-          if R_state = C_STATE_RESPONSE then
+          if R_state = C_STATE_REPORT then
             -- multiple timeouts at waiting for response will detach
             if timeout_o = '1' and R_timeout = '0' then
               if R_retry(R_retry'high) = '0' then
@@ -221,7 +225,8 @@ architecture Behavioral of usbh_host_hid is
   begin
     if rising_edge(clk_usb) then
       case R_state is
-        when C_STATE_DETACHED =>
+        when C_STATE_DETACHED => -- start from unitialized device
+          R_reset_accepted <= '0';
           if S_LINESTATE = "01" then
             if R_slow(R_slow'high) = '0' then
               R_slow <= R_slow + 1;
@@ -232,33 +237,34 @@ architecture Behavioral of usbh_host_hid is
               token_pid_i(1 downto 0) <= "11"; -- linectrl: bus reset
               resp_expected_i <= '0';
               start_i         <= '1';
-              R_state <= C_STATE_RESET;
+              R_state <= C_STATE_SETUP;
             end if;
           else
             start_i <= '0';
             R_slow <= (others => '0');
           end if;
-        when C_STATE_RESET =>
-          sof_transfer_i <= '0';
-          start_i        <= '0';
-          if idle_o = '1' then
-            if R_slow(C_setup_interval) = '0' then
-              R_slow <= R_slow + 1;
-            else
-              R_slow <= (others => '0');
-              R_state <= C_STATE_SETUP;
-            end if;
-          end if;
-        when C_STATE_SETUP =>
+        when C_STATE_SETUP => -- send setup sequence (enumeration)
           if R_setup_rom_addr /= C_setup_rom_len then
             if idle_o = '1' then
               if R_slow(C_setup_interval) = '0' then
                 R_slow <= R_slow + 1;
                 if R_retry(R_retry'high) = '1' then
+                  R_reset_accepted <= '1';
                   R_state <= C_STATE_DETACHED;
+                end if;
+                if R_slow(11 downto 0) = x"880" then -- keepalive: first at 0.35 ms, then every 0.68 ms
+                  -- keepalive signal
+                  sof_transfer_i  <= '1';   -- transfer SOF or linectrl
+                  in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+                  token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                  resp_expected_i <= '0';
+                  start_i         <= '1';
+                else
+                  start_i         <= '0';
                 end if;
               else
                 R_slow <= (others => '0');
+                sof_transfer_i  <= '0';
                 in_transfer_i   <= '0';
                 token_pid_i     <= x"2D";
                 token_dev_i     <= (others => '0');
@@ -273,53 +279,48 @@ architecture Behavioral of usbh_host_hid is
             end if;
           else
             start_i <= '0';
-            if idle_o = '1' then
-              if R_slow(C_setup_interval) = '0' then
-                R_slow <= R_slow + 1;
-              else
-                R_state <= C_STATE_REQUEST;
-              end if;
-            end if;
+            R_state <= C_STATE_REPORT;
           end if;
-        when C_STATE_REQUEST =>
+        when C_STATE_REPORT => -- request report (send IN request)
           if idle_o = '1' then
             if R_slow(C_report_interval) = '0' then
-                R_slow <= R_slow + 1;
-                start_i <= '0';
+              R_slow <= R_slow + 1;
+              if R_slow(11 downto 0) = x"880" then -- keepalive: first at 0.35 ms, then every 0.68 ms
+                -- keepalive signal
+                sof_transfer_i  <= '1';   -- transfer SOF or linectrl
+                in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+                token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                resp_expected_i <= '0';
+                start_i         <= '1';
+              else
+                start_i         <= '0';
+              end if;
             else
-                R_slow <= (others => '0');
+              R_slow <= (others => '0');
 -- HOST: < SYNC ><  IN  ><ADR0>EP1 CRC5
 -- D+ ___-_-_-_---_--___-_-_-_-__-_-_--________
 -- D- ---_-_-_-___-__---_-_-_-_--_-_-__--__----
 --       00000001100101100000000100000101
 --       < 0  8 >< 9  6 ><  0  ><1 ><CRC>
-                in_transfer_i   <= '1';
-                token_pid_i     <= x"69";
-                token_dev_i     <= std_logic_vector(to_unsigned(C_device_address,7));
-                token_ep_i      <= std_logic_vector(to_unsigned(C_report_endpoint,4));
-                data_len_i      <= (others => '0');
-                data_idx_i      <= '0';
-                resp_expected_i <= '1';
-                start_i         <= '1';
-                R_state <= C_STATE_RESPONSE;
+              sof_transfer_i  <= '0';
+              in_transfer_i   <= '1';
+              token_pid_i     <= x"69";
+              token_dev_i     <= std_logic_vector(to_unsigned(C_device_address,7));
+              token_ep_i      <= std_logic_vector(to_unsigned(C_report_endpoint,4));
+              data_len_i      <= (others => '0');
+              data_idx_i      <= '0';
+              resp_expected_i <= '1';
+              start_i         <= '1';
+              if R_reset_pending = '1' or S_LINESTATE = "00" or R_retry(R_retry'high) = '1' then
+                R_reset_accepted <= '1';
+                R_state <= C_STATE_DETACHED;
+              end if;
             end if;
           else
             start_i <= '0';
           end if;
-        when others => -- C_STATE_RESPONSE
-          start_i <= '0';
-          if idle_o = '1' then
-            if R_slow(C_report_interval) = '0' then
-              R_slow <= R_slow + 1;
-            else
-              R_slow <= (others => '0');
-              if R_reset_pending = '1' or S_LINESTATE = "00" or R_retry(R_retry'high) = '1' then
-                R_state <= C_STATE_DETACHED;
-              else
-                R_state <= C_STATE_REQUEST;
-              end if;
-            end if;
-          end if;
+        when others => -- undefined state, we should never be here
+          R_state <= C_STATE_DETACHED;
       end case;
     end if;
   end process;
@@ -371,6 +372,8 @@ architecture Behavioral of usbh_host_hid is
     signal R_report_buf: T_report_buf;
     signal R_rx_count: std_logic_vector(rx_count_o'range);
     signal R_hid_valid: std_logic;
+    signal R_crc_err: std_logic;
+    signal R_rx_done: std_logic;
   begin
     process(clk_usb)
     begin
@@ -379,8 +382,19 @@ architecture Behavioral of usbh_host_hid is
         if rx_push_o = '1' then
           R_report_buf(conv_integer(R_rx_count)) <= rx_data_o;
         end if;
-        if rx_done_o = '1' and crc_err_o = '0' and timeout_o = '0' 
-        and R_state = C_STATE_RESPONSE
+        -- rx_done_o is '1' for several clocks...
+        -- action on falling edge
+        R_rx_done <= rx_done_o;
+        if R_rx_done = '1' and rx_done_o = '0' then
+          R_crc_err <= '0';
+        else
+          if crc_err_o = '1' then
+            R_crc_err <= '1';
+          end if;
+        end if;
+        -- at falling edge of rx_done it should not accumulate any crc error
+        if R_rx_done = '1' and rx_done_o = '0' and R_crc_err = '0' and timeout_o = '0'
+        and R_state = C_STATE_REPORT
         -- and R_rx_count = std_logic_vector(to_unsigned(C_report_length,rx_count_o'length)) -- strict
         and R_rx_count /= x"0000" -- more flexible
         then

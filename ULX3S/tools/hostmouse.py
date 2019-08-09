@@ -8,6 +8,11 @@
 # Currently it can only move mouse pointer.
 # Mouse clicks are received but not supported yet.
 
+# lsinput
+# /dev/input/event7
+#    name    : "Logitech USB-PS/2 Optical Mouse"
+# chmod a+rw /dev/input/event7
+
 import evdev
 import serial
 import struct

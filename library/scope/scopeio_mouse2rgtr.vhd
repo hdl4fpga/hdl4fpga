@@ -126,6 +126,79 @@ architecture def of scopeio_mouse2rgtr is
      C_XY_min, C_XY_max, C_XY_min, C_XY_max
      -- termination record has to match always (any pointer location) for this algorithm to work
   );
+  -- for small displays, set vtaxis_width=hzaxis_height=0
+  -- to draw numbers on the grid. Currently this needs
+  -- different GUI box but maybe it could be integrated into one.
+  function F_select_vtaxis_width
+  (
+    constant fontsize: natural;
+    constant rotation: rotate
+  )
+  return natural is
+  begin
+    if rotation = ccw0 then
+      return fontsize*6;
+    else
+      return fontsize;
+    end if;
+  end;
+  constant C_vtaxis_width:  natural := F_select_vtaxis_width(layout.axis_fontsize, layout.vttick_rotate);
+  constant C_hzaxis_height: natural := layout.axis_fontsize;
+
+  constant C_list_box1_ongrid: T_list_box1 :=
+  (
+     -- 0: top left window (vertical scale) C_window_vtaxis
+     to_unsigned(   grid_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
+
+     -- 1: C_window_grid top center window (the grid) C_window_grid
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height+1,      C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
+
+     -- 2: top right window (text) C_window_textbox
+     --to_unsigned(textbox_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     --to_unsigned(textbox_x(layout)+layout.main_margin(left)+textbox_width(layout), C_XY_coordinate_bits), -- Xmax
+     --to_unsigned(textbox_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     --to_unsigned(textbox_y(layout)+layout.main_margin(top)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
+
+     -- 2: area on top left corner, above vtscale and left of hzscale
+     to_unsigned(   grid_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymax
+
+     -- 3: thin window above the grid (horizontal scale) C_window_hzaxis
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymax
+
+     -- 4: termination record
+     -- Xmin, Xmax, Ymin, Ymax
+     C_XY_min, C_XY_max, C_XY_min, C_XY_max
+     -- termination record has to match always (any pointer location) for this algorithm to work
+  );
+  -- depending on hzscale/vtscale select
+  -- layout with numbers separated or on-the-grid
+  function F_select_geometry
+  (
+    constant list_box_window: T_list_box1;
+    constant list_box_ongrid: T_list_box1;
+    constant vtaxis_width:  integer;
+    constant hzaxis_height: integer
+  )
+  return T_list_box1 is
+  begin
+    if vtaxis_width = 0 and hzaxis_height = 0 then
+      return list_box_ongrid;
+    else
+      return list_box_window;
+    end if;
+  end;
   -- C_list_box1 will be copied to C_list_box
   -- with layout repeated to make all segments clickable.
   -- To save LUTs, set C_num_segments=1, then only first
@@ -170,7 +243,11 @@ architecture def of scopeio_mouse2rgtr is
     return V_list;
   end; -- function
   constant C_segment_step: integer := layout.sgmnt_margin(top)+grid_height(layout)+hzaxis_height(layout)+layout.sgmnt_margin(bottom)+layout.main_gap(vertical);
-  constant C_list_box: T_list_box := F_repeat_segment_boxes(C_list_box1, 
+  constant C_list_box: T_list_box := F_repeat_segment_boxes(
+    F_select_geometry(
+    C_list_box1,         -- numbers in windows, separated from the grid
+    C_list_box1_ongrid,  -- numbers on the grid: hzaxis_height = vtaxis_width = 0
+    vtaxis_width(layout), hzaxis_height(layout)), -- parameters used to select geometry
     C_segment_step, C_max_boxes, C_num_segments);
   constant C_list_box_count: integer := C_list_box'length/4; -- how many boxes, including termination record
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
@@ -180,26 +257,29 @@ architecture def of scopeio_mouse2rgtr is
   signal R_box_id, R_clicked_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
   
   -- generate click to trigger ROM
-  -- one bit more to have always positive signed numbers
+  -- +2 compensates
+  -- "not R_mouse_y" used instead of "-R_mouse_y" in 1st pipeline stage
+  -- and similar use of "not" in the arithmetic helper for click to trigger
   type T_click_to_trigger is array (0 to C_num_segments-1) of signed(C_XY_coordinate_bits-1 downto 0);
   function F_click_to_trigger
   (
     constant C_base_y0: integer;
     constant C_segment_step: integer;
-    constant C_num_segments: integer
+    constant C_num_segments: integer;
+    constant C_bits: integer
   )
   return T_click_to_trigger is
     variable V_click_to_trigger: T_click_to_trigger;
   begin
     for i in 0 to C_num_segments-1 loop
-      V_click_to_trigger(i) := to_signed(C_base_y0 + i*C_segment_step, C_XY_coordinate_bits);
+      V_click_to_trigger(i) := to_signed(C_base_y0 + i*C_segment_step + 2, C_bits);
     end loop; -- segments
     return V_click_to_trigger;
   end; -- function
   constant C_click_to_trigger: T_click_to_trigger := F_click_to_trigger
   (
     grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),
-    C_segment_step, C_num_segments
+    C_segment_step, C_num_segments, C_XY_coordinate_bits
   );
 -- example what would this function do for 3 segments:
 --  constant C_click_to_trigger: T_click_to_trigger :=
@@ -334,7 +414,7 @@ begin
     constant C_max_inputs_bits: integer := chanid_maxsize;
 
     -- pipelined stage for rgtr update arithmetic
-    signal R_A, R_B, S_APB: signed(15 downto 0); -- for register arithmetic function unit
+    signal R_A, R_B, S_APB: signed(19 downto 0); -- for register arithmetic function unit
     constant C_action_nop: integer := 0;
     constant C_action_trace_select: integer := 1;
     constant C_action_set_color: integer := 2;
@@ -367,7 +447,7 @@ begin
     signal R_trigger_level: T_trigger_level;
     signal R_trigger_edge: std_logic_vector(C_inputs-1 downto 0);
     signal R_trigger_freeze: std_logic;
-    signal R_trigger_on_screen: signed(C_XY_coordinate_bits-1 downto 0);
+    signal R_trigger_on_screen: signed(C_trigger_level'range);
     -- FIXME trace color list should not be hardcoded
     -- It is used to set frame color to the same (or visually similar)
     -- color of selected trace (input channel).
@@ -425,7 +505,7 @@ begin
       S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
         when R_snap_to_vertical_grid(to_integer(R_trace_selected)) = '1'
         else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
-      R_trigger_on_screen <= resize(C_click_to_trigger(0) - S_vertical_scale_offset_snapped, C_XY_coordinate_bits);
+      R_trigger_on_screen <= resize(C_click_to_trigger(0) + not S_vertical_scale_offset_snapped, R_trigger_on_screen'length+1)(R_trigger_on_screen'range);
     end generate;
     -- a screen arithmetic required to set trigger with the left click
     -- depending on the segment where the cursor is we have different y offsets
@@ -436,13 +516,16 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
+        -- for the arithmetic to work when clicked
+        -- anyhere high or low, first resize to one bit more
+        -- and then slice to required number of bits
         R_trigger_on_screen <= resize(
           -- segment number converted to Y offset:
           -- HACK: bitwise arithmetic to calculate segment number from box ID:
           -- C_max_boxes_bits is for the step of repeating segments
           C_click_to_trigger(to_integer(R_clicked_box_id(R_clicked_box_id'high downto C_max_boxes_bits)))
-          - S_vertical_scale_offset_snapped, -- current trigger setting
-          C_XY_coordinate_bits); -- resize to required number of bits
+          + not S_vertical_scale_offset_snapped, -- current trigger setting
+          R_trigger_on_screen'length+1)(R_trigger_on_screen'range);
       end if;
     end process;
     end generate;
@@ -472,9 +555,9 @@ begin
                       R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
                       R_A(R_A'high-2) <= R_trigger_freeze;
                       R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
-                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
+                      R_A(C_trigger_level'range) <= R_trigger_on_screen(C_trigger_level'range);
                       R_B(R_B'high downto R_B'high-3) <= (others => '0'); -- don't change edge/freeze
-                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      R_B(C_trigger_level'range) <= signed(not resize(unsigned(std_logic_vector(R_mouse_y)), C_trigger_level'length)); -- simplified -R_mouse_y
                       R_action_id <= C_action_trigger_level_change;
                     else -- rotate wheel to change vertical gain
                       R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
@@ -490,8 +573,8 @@ begin
                   else  -- not dragging: clicking or wheel rotation
                     if R_mouse_btn(0) = '1' and R_prev_mouse_btn(0) = '0' then
                       -- left click to directy set the trigger level
-                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
-                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      R_A(C_trigger_level'range) <= R_trigger_on_screen(C_trigger_level'range);
+                      R_B(C_trigger_level'range) <= signed(not resize(unsigned(std_logic_vector(R_mouse_y)), C_trigger_level'length)); -- simplified -R_mouse_y
                       --R_B(R_trigger_on_screen'range) <= (others => '0'); -- -R_mouse_y;
                     else
                       -- rotate wheel to change trigger level

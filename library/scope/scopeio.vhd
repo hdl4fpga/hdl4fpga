@@ -218,6 +218,7 @@ begin
 		ampsample_dv <= output_ena(0);
 	end block;
 
+
 	trigger_data <= trigger_chanid & trigger_level & trigger_edge & trigger_freeze;
 
 	scopeio_tds_e : scopeio_tds
