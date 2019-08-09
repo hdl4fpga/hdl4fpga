@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miirx_pre is
+	generic (
+		preamble_disable : boolean := false);
     port (
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
@@ -70,6 +72,6 @@ begin
 			end if;
 		end if;
 	end process;
-	mii_rdy <= rdy and mii_rxdv;
+	mii_rdy <= (rdy or setif(preamble_disable)) and mii_rxdv;
 
 end;

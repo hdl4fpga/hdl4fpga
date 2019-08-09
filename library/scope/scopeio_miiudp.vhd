@@ -30,6 +30,8 @@ use hdl4fpga.std.all;
 
 entity scopeio_miiudp is
 	generic (
+		preamble_disable : boolean := false;
+		crc_disable : boolean := false;
 		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc  : in  std_logic;
@@ -55,6 +57,7 @@ begin
 
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
+		preamble_disable => preamble_disable,
 		mac       => x"00_40_00_01_02_03")
 	port map (
 		mii_req   => mii_req,
@@ -72,12 +75,12 @@ begin
 
 	clip_crc_b : block
 		constant lat    : natural := 32/mii_rxd'length;
-		constant latrxd : natural := lat+1;
 
 		signal dv : std_logic;
+		signal data : std_logic_vector(mii_rxd'range);
 	begin
 
-		lat_vld_e : entity hdl4fpga.align
+		dvlat_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
 			d => (0 => lat))
@@ -89,18 +92,34 @@ begin
 		process (mii_rxc)
 		begin
 			if rising_edge(mii_rxc) then
-				so_dv <= dv and udpdports_vld(0);
+				if not crc_disable then
+					so_dv <= udpdports_vld(0) and dv;
+				else	
+					so_dv <= udpdports_vld(0) and udpddata_vld;
+				end if;
 			end if;
 		end process;
 
-		lat_rxd_e : entity hdl4fpga.align
+		datalat_e : entity hdl4fpga.align
 		generic map (
 			n => mii_rxd'length,
-			d => (1 to mii_rxd'length => latrxd))
+			d => (1 to mii_rxd'length => lat))
 		port map (
 			clk => mii_rxc,
 			di  => mii_rxd,
-			do  => so_data);
+			do  => data);
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				if not crc_disable then
+					so_data <= data;
+				else	
+					so_data <= mii_rxd;
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 	so_clk  <= mii_rxc;

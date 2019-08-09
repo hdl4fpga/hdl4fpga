@@ -30,13 +30,14 @@ use hdl4fpga.std.all;
 
 entity mii_cmp is
     port (
-        mii_rxc  : in  std_logic;
-		mii_req  : in  std_logic;
-		mii_rdy  : in  std_logic;
-		mii_ena  : in  std_logic := '1';
-        mii_rxd1 : in  std_logic_vector;
-        mii_rxd2 : in  std_logic_vector;
-		mii_equ  : out std_logic);
+        mii_rxc    : in  std_logic;
+		mii_req    : in  std_logic;
+		mii_rdy    : in  std_logic;
+		mii_ena    : in  std_logic := '1';
+        mii_rxd1   : in  std_logic_vector;
+        mii_rxd2   : in  std_logic_vector;
+		mii_equ    : out std_logic;
+		mii_equrdy : out std_logic);
 end;
 
 architecture def of mii_cmp is
@@ -58,5 +59,6 @@ begin
 			end if;
 		end if;
 	end process;
-	mii_equ <= mii_rdy and eq;
+	mii_equ    <= eq;
+	mii_equrdy <= eq and mii_rdy;
 end;

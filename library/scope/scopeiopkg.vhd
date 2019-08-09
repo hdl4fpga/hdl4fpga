@@ -416,6 +416,28 @@ package scopeiopkg is
 		pointery_id => pointery_maxsize, 
 		pointerx_id => pointerx_maxsize);
 
+	component scopeio_tds
+		generic (
+			inputs           : natural;
+			time_factors     : natural_vector;
+			storageword_size : natural);
+		port (
+			input_clk        : in  std_logic;
+			input_dv         : in  std_logic;
+			input_data       : in  std_logic_vector;
+			trigger_dv       : in  std_logic;
+			trigger_data     : in  std_logic_vector;
+			time_dv          : in  std_logic;
+			time_scale       : in  std_logic_vector;
+			time_offset      : in  std_logic_vector;
+			video_clk        : in  std_logic;
+			video_vton       : in  std_logic;
+			video_frm        : in  std_logic;
+			video_addr       : in  std_logic_vector;
+			video_dv         : out std_logic;
+			video_data       : out std_logic_vector);
+	end component;
+
 end;
 
 package body scopeiopkg is

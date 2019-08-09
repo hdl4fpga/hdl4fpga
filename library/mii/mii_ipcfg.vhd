@@ -32,6 +32,7 @@ use hdl4fpga.std.all;
 
 entity mii_ipcfg is
 	generic (
+		preamble_disable : boolean := false;
 		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc       : in  std_logic;
@@ -351,6 +352,8 @@ begin
 				mii_txd  => mymac_txd);
 
 			mii_mac_e : entity hdl4fpga.miitx_dll
+			generic map (
+				preamble_disable => preamble_disable)
 			port map (
 				mii_txc  => mii_txc,
 				mii_rxdv => dll_txdv,
@@ -413,6 +416,8 @@ begin
 		rx_b : block
 		begin
 			mii_pre_e : entity hdl4fpga.miirx_pre 
+			generic map (
+				preamble_disable => preamble_disable)
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
@@ -506,6 +511,7 @@ begin
 				constant arp_tpa : field := (ethertype.offset+ethertype.size+24, 4);
 				signal   sha_ena : std_logic;
 				signal   tpa_ena : std_logic;
+				signal   cmp_equ : std_logic;
 
 			begin
 
@@ -520,7 +526,18 @@ begin
 					mii_rdy  => ipsaddr_rrdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_rtxd,
-					mii_equ  => requ_rcv);
+					mii_equ  => cmp_equ);
+
+				process(mii_rxc)
+				begin
+					if rising_edge(mii_rxc) then
+						if ipsaddr_rrdy='1' then
+							requ_rcv <= cmp_equ;
+						elsif arpproto_vld='0' then
+							requ_rcv <= cmp_equ;
+						end if;
+					end if;
+				end process;
 
 				ethsmac_vld  <= arpproto_vld and sha_ena;
 				ipsaddr_rreq <= arpproto_vld;
@@ -554,21 +571,31 @@ begin
 
 				signal txdv        : std_logic;
 				signal txd         : std_logic_vector(mii_txd'range);
+				signal requ_set    : std_logic;
 			begin
 				
+				process (mii_rxc)
+					variable edge : std_logic;
+				begin
+					if rising_edge(mii_rxc) then
+						if rply_req='0' then
+							if edge='0' and requ_rcv='1' then
+								requ_set <= '1';
+							end if;
+						else
+							requ_set <= '0';
+						end if;
+						edge := requ_rcv;
+					end if;
+				end process;
+
 				process (mii_txc)
-					variable rply : std_logic;
 				begin
 					if rising_edge(mii_txc) then
 						if rply_rdy='1' then
 							rply_req <= '0';
-							rply     := '0';
-						elsif mii_rxdv='1' then
-							rply_req <= '0';
-							rply     := requ_rcv;
-						elsif rply='1' then
-							rply_req <= '1';
-							rply     := '0';
+						elsif rply_req='0' then
+							rply_req <= requ_set;
 						end if;
 --						rply_req <= btn;
 					end if;

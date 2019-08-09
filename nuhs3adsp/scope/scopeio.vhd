@@ -57,15 +57,20 @@ architecture beh of nuhs3adsp is
 		div    : natural;
 	end record;
 
-	constant mode600p  : natural := 0;
-	constant mode1080p : natural := 1;
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 1) := (
-		mode600p  => (layout => 1, mul =>  2, div => 1),
-		mode1080p => (layout => 0, mul => 15, div => 2));
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, mul =>  2, div => 1),
+		mode1080p   => (layout => 0, mul => 15, div => 2),
+		mode480p    => (layout => 8, mul =>  3, div => 2),
+		mode600px16 => (layout => 6, mul =>  5, div => 4));
 
-	constant video_mode : natural := mode1080p;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 
@@ -193,10 +198,9 @@ begin
 	si_clk <= mii_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		test => true,
-		axis_unit   => std_logic_vector(to_unsigned(25,5)),
-		vlayout_id       => video_params(video_mode).layout,
 		inputs           => inputs,
+		axis_unit        => std_logic_vector(to_unsigned(25,5)),
+		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"11111111_11111111_11111111",
 		default_gridfg   => b"11111111_00000000_00000000",
 		default_gridbg   => b"00000000_00000000_00000000",
@@ -240,8 +244,6 @@ begin
             vga_hsync1 := vga_hsync;
             vga_vsync1 := vga_vsync;
             vga_blank1 := vga_blank;
-
-
 		end if;
 	end process;
 	psave <= '1';
