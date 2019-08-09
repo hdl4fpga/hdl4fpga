@@ -227,8 +227,8 @@ begin
 		time_factors => hz_factors)
 	port map (
 		input_clk    => input_clk,
-		input_dv     => input_ena,
-		input_data   => input_data,
+		input_dv     => ampsample_dv,
+		input_data   => ampsample_data,
 		trigger_dv   => trigger_dv,
 		trigger_data => trigger_data,
 		time_dv      => hz_dv,
