@@ -511,6 +511,7 @@ begin
 				constant arp_tpa : field := (ethertype.offset+ethertype.size+24, 4);
 				signal   sha_ena : std_logic;
 				signal   tpa_ena : std_logic;
+				signal   cmp_equ : std_logic;
 
 			begin
 
@@ -525,7 +526,18 @@ begin
 					mii_rdy  => ipsaddr_rrdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_rtxd,
-					mii_equ  => requ_rcv);
+					mii_equ  => cmp_equ);
+
+				process(mii_rxc)
+				begin
+					if rising_edge(mii_rxc) then
+						if ipsaddr_rrdy='1' then
+							requ_rcv <= cmp_equ;
+						elsif arpproto_vld='0' then
+							requ_rcv <= cmp_equ;
+						end if;
+					end if;
+				end process;
 
 				ethsmac_vld  <= arpproto_vld and sha_ena;
 				ipsaddr_rreq <= arpproto_vld;
@@ -563,15 +575,17 @@ begin
 			begin
 				
 				process (mii_rxc)
+					variable edge : std_logic;
 				begin
 					if rising_edge(mii_rxc) then
 						if rply_req='0' then
-							if requ_rcv='1' then
+							if edge='0' and requ_rcv='1' then
 								requ_set <= '1';
 							end if;
 						else
 							requ_set <= '0';
 						end if;
+						edge := requ_rcv;
 					end if;
 				end process;
 
