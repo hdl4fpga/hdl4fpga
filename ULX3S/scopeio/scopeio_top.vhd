@@ -39,9 +39,9 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := false; -- ADC analog view
+        constant C_view_adc:   boolean := true; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
@@ -901,8 +901,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
---	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
-	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
+	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
+--	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		trig1shot        => true,
