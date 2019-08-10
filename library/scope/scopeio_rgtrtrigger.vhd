@@ -15,8 +15,8 @@ entity scopeio_rgtrtrigger is
 
 		trigger_dv      : out std_logic;
 		trigger_freeze  : out std_logic;
-		trigger_chanid  : out std_logic_vector;
-		trigger_level   : out std_logic_vector;
+		trigger_chanid  : buffer std_logic_vector;
+		trigger_level   : buffer std_logic_vector;
 		trigger_edge    : out std_logic);
 
 end;
