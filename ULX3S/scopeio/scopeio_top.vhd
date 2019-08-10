@@ -28,16 +28,16 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 7;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := false;  -- USB  or USB+PS/2 mouse
-        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb:  boolean := false; -- USB  or USB+PS/2 mouse
+        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
-        constant C_usbserial:  boolean := false; -- USB-CDC core in serial mode (D+/D- lines)
-        constant C_usbmii:     boolean := true;  -- USB-CDC core network in ethernet mode (D+/D- lines)
-        -- USB ethernet network test
-        constant C_usbeth_test:boolean := false; -- USB-CDC core test in ethernet mode (D+/D- lines)
+        constant C_usbserial:  boolean := false; -- USB-CDC Serial (D+/D- lines)
+        constant C_usbethernet:boolean := false; -- USB-CDC Ethernet (D+/D- lines)
+        -- USB ethernet network ping test
+        constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
         constant C_view_adc:   boolean := false; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
@@ -57,7 +57,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
 	constant C_oled_hex_view_usb : boolean := false;
-	constant C_oled_hex_view_net : boolean := true;
+	constant C_oled_hex_view_net : boolean := false;
+	constant C_oled_hex_view_istream: boolean := true;
 	-- OLED HEX or VGA (enable max 1)
         constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
@@ -140,10 +141,6 @@ architecture beh of ulx3s is
 	signal uart_rxd   : std_logic_vector(7 downto 0);
 	signal so_null    : std_logic_vector(7 downto 0);
 
-	signal net_rxdv   : std_logic;
-	signal net_rxd    : std_logic_vector(7 downto 0);
-	
-
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
 	signal fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
@@ -154,6 +151,10 @@ architecture beh of ulx3s is
 	signal usbmouse_frommousedaisy_frm  : std_logic;
 	signal usbmouse_frommousedaisy_irdy : std_logic;
 	signal usbmouse_frommousedaisy_data : std_logic_vector(8-1 downto 0);
+
+	signal net_fromistreamdaisy_frm  : std_logic;
+	signal net_fromistreamdaisy_irdy : std_logic;
+	signal net_fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
 
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
@@ -169,6 +170,10 @@ architecture beh of ulx3s is
 
 	-- USB serial
 	signal dbg_sync_err, dbg_bit_stuff_err, dbg_byte_err: std_logic;
+
+	signal mii_rxvalid, mii_txvalid: std_logic;
+	signal mii_rxdata,  mii_txdata: std_logic_vector(7 downto 0);
+	signal monitor: std_logic_vector(2 downto 0);
 
 	-- HOST mouse (uses "rgtr" from scopeio)
 	--signal S_rgtr_id       : std_logic_vector(8-1 downto 0);
@@ -399,20 +404,20 @@ begin
 	G_view_usb: if C_view_usb generate
 	S_input_ena <= '1';
 
-	trace_yellow(C_view_binary_gain+4) <= usb_fpga_bd_dp;
+	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
 	--trace_yellow(C_view_binary_gain+1 downto C_view_binary_gain) <= "00";  -- y offset
 
-	trace_cyan(C_view_binary_gain+4) <= usb_fpga_bd_dn;
+	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
 	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
 
 	trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	--trace_green(C_view_binary_gain+2) <= monitor(1);
 	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 
-	--trace_violet(C_view_binary_gain+4) <= dbg_hid_valid;
-	--trace_violet(C_view_binary_gain+2) <= dbg_clk_usb_count(dbg_clk_usb_count'high);
-	trace_violet(C_view_binary_gain+4) <= dbg_sync_err;
-	trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
-	trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
+	trace_violet(C_view_binary_gain+2) <= monitor(0);
+	--trace_violet(C_view_binary_gain+4) <= dbg_sync_err;
+	--trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
+	--trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
 	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
 	end generate;
 
@@ -545,8 +550,13 @@ begin
 	);
 	end generate;
 
-	G_uart_usbeth: if C_usbeth_test generate
-	-- USB-CDC core in ethernet mode
+	G_uart_usbethernet: if C_usbping_test generate
+	-- USB-CDC core in ethernet mode, ping debug
+        -- usb_serial in network mode will reply to raw nping
+        -- ifconfig enx00aabbccddee 192.168.18.254
+        -- nping -c 100 --privileged -delay 10ms -q1 --send-eth -e enx00aabbccddee --dest-mac 00:11:22:33:44:AA --data 0011223344556677  192.168.18.1
+        -- tcpdump -i enx00aabbccddee -e -XX -n icmp
+
 	-- pulldown 15k for USB HOST mode
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
@@ -581,16 +591,15 @@ begin
                 byte_err       => dbg_byte_err,
 		-- output data
 		clk  => clk_uart,  -- UART application clock
-		dv   => net_rxdv,
-		byte => net_rxd
+		dv   => mii_rxvalid,
+		byte => mii_rxdata
 	);
 	end generate;
 
 	led <= uart_rxd;
 --	led <= mii_rxdata;
---	led <= net_rxd;
 
-	G_not_usb_ethernet_mii: if not C_usbmii generate
+	G_not_usb_ethernet_mii: if not C_usbethernet generate
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	port map (
 		stream_clk  => clk_uart,
@@ -607,13 +616,18 @@ begin
 	);
 	end generate;
 
-	G_usb_ethernet_mii: if C_usbmii generate
+	G_usb_ethernet_mii: if C_usbethernet generate
+	-- /sbin/ifconfig enx00aabbccddee 192.168.18.254
+	-- cat /etc/dnsmasq.d/interface.conf
+	-- listen-address=192.168.18.254
+	-- /usr/sbin/service dnsmasq restart
+	-- /usr/sbin/tcpdump -i enx00aabbccddee -e -XX -n
 	B_usb_ethernet_mii: block
 	signal mii_clk    : std_logic;
-	signal mii_rxvalid, mii_txvalid: std_logic;
-	signal mii_rxdata,  mii_txdata, mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
-	signal ipcfg_req : std_logic;
+	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
 	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
+	signal R_btn_debounce: unsigned(19 downto 0);
+	signal R_btn_debounced: std_logic_vector(6 downto 1);
 	begin
 	-- USB-CDC core in ethernet mode
 	-- pulldown 15k for USB HOST mode
@@ -631,7 +645,7 @@ begin
         );
         mii_clk <= clk_uart;
 
-	usbmii_e : entity hdl4fpga.usb_mii
+	usbethernet_e : entity hdl4fpga.usb_mii
 	port map
 	(
 		clk_usb => clk_usb, -- 48 MHz USB core clock
@@ -658,13 +672,28 @@ begin
 	process(mii_clk)
 	begin
 	  if rising_edge(mii_clk) then
-	    ipcfg_req <= btn(1);
+	    if btn(6 downto 1) /= "000000" and R_btn_debounce(R_btn_debounce'high) = '0' then
+	      R_btn_debounce <= R_btn_debounce + 1;
+            else
+              if btn(6 downto 1) = "000000" then
+                R_btn_debounce <= (others => '0');
+              end if;
+            end if;
+            if R_btn_debounce(R_btn_debounce'high) = '1' then
+              R_btn_debounced <= btn(6 downto 1);
+            else
+              R_btn_debounced <= "000000";
+            end if;
 	  end if;
 	end process;
 
 	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	generic map(
+	        preamble_disable => true,
+	        crc_disable => true
+	)
 	port map (
-		ipcfg_req   => ipcfg_req,
+		ipcfg_req   => R_btn_debounced(1),
 
 		phy_rxc     => mii_clk,
 		phy_rx_dv   => mii_rxvalid,
@@ -673,7 +702,7 @@ begin
 		phy_txc     => mii_clk, 
 		phy_tx_en   => mii_txvalid,
 		phy_tx_d    => mii_txdata_reverse,
-	
+--		monitor     => monitor, btn => R_btn_debounced(2),
 		chaini_sel  => '0',
 
 		chaini_frm  => '0',
@@ -698,12 +727,23 @@ begin
           end process;
 	end generate;
 
+	G_oled_hex_view_istream: if C_oled_hex_view_istream generate
+	  process(clk_uart)
+	  begin
+	    if rising_edge(clk_uart) then
+	      if fromistreamdaisy_irdy = '1' then
+                R_oled_data <= R_oled_data(R_oled_data'high-fromistreamdaisy_data'length downto 0) & fromistreamdaisy_data;
+              end if;
+            end if;
+          end process;
+	end generate;
+
 	G_oled_hex_view_net: if C_oled_hex_view_net generate
 	  process(clk_uart)
 	  begin
 	    if rising_edge(clk_uart) then
-	      if net_rxdv = '1' then
-                R_oled_data <= R_oled_data(R_oled_data'high-net_rxd'length downto 0) & net_rxd;
+	      if mii_rxvalid = '1' then
+                R_oled_data <= R_oled_data(R_oled_data'high-mii_rxdata'length downto 0) & mii_rxdata;
               end if;
             end if;
           end process;
@@ -737,7 +777,7 @@ begin
 	oled_e: entity work.oled_hex_decoder
 	generic map
 	(
-	  C_data_len => 64 -- number of input bits
+	  C_data_len => R_oled_data'length -- number of input bits
 	)
 	port map
 	(
@@ -824,6 +864,13 @@ begin
           frommousedaisy_data <= usbmouse_frommousedaisy_data;
         end generate; -- attach USB mouse if not host mouse
 	end generate; -- USB mouse
+
+        G_no_mouse:
+        if not (C_mouse_ps2 or C_mouse_usb or C_mouse_host) generate
+          frommousedaisy_frm  <= fromistreamdaisy_frm;
+          frommousedaisy_irdy <= fromistreamdaisy_irdy;
+          frommousedaisy_data <= fromistreamdaisy_data;
+        end generate; -- attach USB mouse if not host mouse
 
 	G_mouse_host: if C_mouse_host generate
 	-- linux HOST mouse
