@@ -95,7 +95,7 @@ begin
 		bitrom => default_gridfg & default_vtfg & default_vtbg & default_hzfg & default_hzbg & default_textbg & default_gridbg & default_sgmntbg & default_bg & default_tracesfg)
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_ena  => rgtr_dv,
+		wr_ena  => palette_dv,
 		wr_addr => wr_addr,
 		wr_data => wr_data,
 
