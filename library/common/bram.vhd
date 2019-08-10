@@ -45,57 +45,6 @@ entity bram is
 		
 end;
 
---library hdl4fpga;
---
---architecture bram_true2p_2clk of bram is
---	signal rd_addr   : std_logic_vector(addra'range);
---	signal rd_data   : std_logic_vector(dia'range);
---begin
---
---	process (clkb)
---	begin 
---		if rising_edge(clkb) then
---			rd_addr <= addrb;
---		end if;
---	end process;
---
---	process (clkb)
---	begin 
---		if rising_edge(clkb) then
---			dob <= rd_data;
---		end if;
---	end process;
---
---	mem_e: entity hdl4fpga.bram_true2p_2clk
---	generic map
---	(
---	    pass_thru_a => true,			-- True or False doesn't change LUTs consumption on
---	    pass_thru_b => true,			-- Diamond 3.10.2.115, neither does this
---		data_width => dia'length,
---		addr_width => addra'length
---	)
---	port map
---	(
---		clk_a      => clka,
---		we_a       => wea,
---		addr_a     => addra,
---		data_in_a  => dia,
---
---		clk_b      => clkb,
---		we_b       => '0',
---		addr_b     => rd_addr,
---		data_out_b => rd_data
---	);
---
---
---end;
-
--- Less LUTs consuption on Lattisemi Diamond 3.10.2.115
--- Less tested than bram_true2p_2clk for portability
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-
 architecture inference of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
