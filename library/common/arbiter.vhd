@@ -30,11 +30,9 @@ use hdl4fpga.std.all;
 
 entity arbiter is
 	port (
-		clk      : in  std_logic;
-		bus_req  : in  std_logic_vector;
-		bus_gnt  : out std_logic_vector;
-		bus_busy : out std_logic;
-		dev_id   : out std_logic_vector);
+		clk     : in  std_logic;
+		bus_req : in  std_logic_vector;
+		bus_gnt : out std_logic_vector);
 end;
 
 architecture mix of arbiter is
@@ -43,7 +41,7 @@ architecture mix of arbiter is
 begin
 
 	process(clk)
-		variable id : unsigned(dev_id'range);
+		variable id : unsigned(0 to unsigned_num_bits(bus_req'length-1)-1);
 	begin
 		if rising_edge(clk) then
 			if id=(id'range => '0')then
@@ -70,6 +68,5 @@ begin
 	end process;
 
 	bus_gnt  <= gnt and req;
-	bus_busy <= setif(bus_req/=(bus_req'range => '0'));
 
 end;
