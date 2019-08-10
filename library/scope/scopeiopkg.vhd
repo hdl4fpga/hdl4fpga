@@ -422,14 +422,19 @@ package scopeiopkg is
 			time_factors     : natural_vector;
 			storageword_size : natural);
 		port (
+			rgtr_clk         : in  std_logic;
+			rgtr_dv          : in  std_logic;
+			rgtr_id          : in  std_logic_vector(8-1 downto 0);
+			rgtr_data        : in  std_logic_vector;
+
 			input_clk        : in  std_logic;
 			input_dv         : in  std_logic;
 			input_data       : in  std_logic_vector;
-			trigger_dv       : in  std_logic;
-			trigger_data     : in  std_logic_vector;
 			time_dv          : in  std_logic;
 			time_scale       : in  std_logic_vector;
 			time_offset      : in  std_logic_vector;
+			trigger_chanid   : buffer std_logic_vector;
+			trigger_level    : buffer std_logic_vector;
 			video_clk        : in  std_logic;
 			video_vton       : in  std_logic;
 			video_frm        : in  std_logic;

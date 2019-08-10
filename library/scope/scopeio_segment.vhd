@@ -14,7 +14,10 @@ entity scopeio_segment is
 		axis_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5));
 		inputs        : natural);
 	port (
-		in_clk        : in  std_logic;
+		rgtr_clk      : in  std_logic;
+		rgtr_dv       : in  std_logic;
+		rgtr_id       : in  std_logic_vector(8-1 downto 0);
+		rgtr_data     : in  std_logic_vector;
 
 		wu_frm        : out std_logic;
 		wu_irdy       : out std_logic;
@@ -33,9 +36,6 @@ entity scopeio_segment is
 
 		gain_dv       : in  std_logic;
 		gain_ids      : in  std_logic_vector;
-		vt_dv         : in  std_logic;
-		vt_chanid     : in  std_logic_vector;
-		vt_offsets    : in  std_logic_vector;
 
 		trigger_level : in  std_logic_vector;
 
@@ -59,6 +59,10 @@ end;
 
 architecture def of scopeio_segment is
 
+	signal vt_dv           : std_logic;
+	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
+
 	constant division_size : natural := grid_divisionsize(layout);
 	constant font_size     : natural := axis_fontsize(layout);
 	constant vt_height     : natural := grid_height(layout);
@@ -78,6 +82,19 @@ architecture def of scopeio_segment is
 
 
 begin
+
+	scopeio_rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	generic map (
+		inputs  => inputs)
+	port map (
+		rgtr_clk   => rgtr_clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
+
+		vt_dv      => vt_dv,
+		vt_chanid  => vt_chanid,
+		vt_offsets => vt_offsets);
 
 	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
 	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
@@ -114,9 +131,9 @@ begin
 	axis_b : block
 		signal v_offset : std_logic_vector(vt_offset'range);
 	begin
-		process (in_clk)
+		process (rgtr_clk)
 		begin
-			if rising_edge(in_clk) then
+			if rising_edge(rgtr_clk) then
 				if vt_dv='1' or gain_dv='1' then
 					axis_sel <= '1';
 					axis_dv  <= '1';
@@ -130,10 +147,10 @@ begin
 		end process;
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		bias_p : process (in_clk)
+		bias_p : process (rgtr_clk)
 			constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
 		begin
-			if rising_edge(in_clk) then
+			if rising_edge(rgtr_clk) then
 				v_offset <= std_logic_vector(unsigned(vt_offset) - bias);
 			end if;
 		end process;
@@ -151,7 +168,7 @@ begin
 			axis_unit   => axis_unit,
 			layout      => layout)
 		port map (
-			clk         => in_clk,
+			clk         => rgtr_clk,
 
 			axis_dv     => axis_dv,
 			axis_sel    => axis_sel,
@@ -187,9 +204,9 @@ begin
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
-		process (in_clk)
+		process (rgtr_clk)
 		begin
-			if rising_edge(in_clk) then
+			if rising_edge(rgtr_clk) then
 				offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
 			end if;
 		end process;

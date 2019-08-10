@@ -26,15 +26,6 @@ entity scopeio_rgtrfile is
 		palette_id      : out std_logic_vector;
 		palette_color   : out std_logic_vector;
 	
-		gain_dv         : out std_logic;
-		gain_ids        : out std_logic_vector;
-
-		trigger_dv      : out std_logic;
-		trigger_freeze  : out std_logic;
-		trigger_chanid  : out std_logic_vector;
-		trigger_level   : out std_logic_vector;
-		trigger_edge    : out std_logic;
-
 		pointer_dv      : out std_logic;
 		pointer_x       : out std_logic_vector;
 		pointer_y       : out std_logic_vector);
@@ -79,41 +70,5 @@ begin
 		palette_dv    => palette_dv,
 		palette_id    => palette_id,
 		palette_color => palette_color);
-		
-	gain_e : entity hdl4fpga.scopeio_rgtrgain
-	generic map (
-		inputs  => inputs)
-	port map (
-		clk       => clk,
-		rgtr_dv   => rgtr_dv,
-		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_data,
-
-		gain_dv   => gain_dv,
-		gain_ids  => gain_ids);
-		
-	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-	port map (
-		clk            => clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
-
-		trigger_dv     => trigger_dv,
-		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
-		
-	pointer_e : entity hdl4fpga.scopeio_rgtrpointer
-	port map (
-		clk        => clk,
-		rgtr_dv    => rgtr_dv,
-		rgtr_id    => rgtr_id,
-		rgtr_data  => rgtr_data,
-
-		pointer_dv => pointer_dv,
-		pointer_x  => pointer_x,
-		pointer_y  => pointer_y);
 		
 end;

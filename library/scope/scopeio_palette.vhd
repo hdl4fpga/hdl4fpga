@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_palette is
 	generic (
@@ -18,10 +19,10 @@ entity scopeio_palette is
 		default_sgmntbg  : in  std_logic_vector;
 		default_bg       : in  std_logic_vector);
 	port (
-		wr_clk      : in  std_logic;
-		wr_dv       : in  std_logic;
-		wr_palette  : in  std_logic_vector;
-		wr_color    : in  std_logic_vector;
+		rgtr_clk    : in  std_logic;
+		rgtr_dv     : in  std_logic;
+		rgtr_id     : in  std_logic_vector(8-1 downto 0);
+		rgtr_data   : in  std_logic_vector;
 		
 		video_clk   : in  std_logic;
 		trigger_chanid : in std_logic_vector;
@@ -53,6 +54,10 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
+	signal palette_dv       : std_logic;
+	signal palette_id       : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_color    : std_logic_vector(max_pixelsize-1 downto 0);
+
 	constant paletteid_size : natural := unsigned_num_bits(trace_dots'length + 9 - 1); 
 	constant paletteid_data : std_logic_vector := std_logic_vector(unsigned(id_codes(trace_dots'length + 9)) ror paletteid_size*trace_dots'length); 
 	constant palette_ids    : std_logic_vector(0 to paletteid_data'length-1) := paletteid_data;
@@ -71,14 +76,26 @@ architecture beh of scopeio_palette is
 	signal rd_data    : std_logic_vector(wr_data'range);
 
 begin
-	wr_data <= std_logic_vector(resize(unsigned(wr_color),   wr_data'length));
-	wr_addr <= std_logic_vector(resize(unsigned(wr_palette), wr_addr'length));
+
+	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
+	port map (
+		rgtr_clk      => rgtr_clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
+
+		palette_dv    => palette_dv,
+		palette_id    => palette_id,
+		palette_color => palette_color);
+		
+	wr_data <= std_logic_vector(resize(unsigned(palette_color), wr_data'length));
+	wr_addr <= std_logic_vector(resize(unsigned(palette_id),    wr_addr'length));
 	mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => default_gridfg & default_vtfg & default_vtbg & default_hzfg & default_hzbg & default_textbg & default_gridbg & default_sgmntbg & default_bg & default_tracesfg)
 	port map (
-		wr_clk  => wr_clk,
-		wr_ena  => wr_dv,
+		wr_clk  => rgtr_clk,
+		wr_ena  => rgtr_dv,
 		wr_addr => wr_addr,
 		wr_data => wr_data,
 

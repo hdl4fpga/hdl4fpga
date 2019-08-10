@@ -31,18 +31,23 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_tds is
 	generic (
-		inputs       : natural;
-		time_factors   : natural_vector;
+		inputs           : natural;
+		time_factors     : natural_vector;
 		storageword_size : natural);
 	port (
+		rgtr_clk         : in  std_logic;
+		rgtr_dv          : in  std_logic;
+		rgtr_id          : in  std_logic_vector(8-1 downto 0);
+		rgtr_data        : in  std_logic_vector;
+
 		input_clk        : in  std_logic;
 		input_dv         : in  std_logic;
 		input_data       : in  std_logic_vector;
-		trigger_dv       : in  std_logic;
-		trigger_data     : in  std_logic_vector;
 		time_dv          : in  std_logic;
 		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
+		trigger_chanid   : buffer std_logic_vector;
+		trigger_level    : buffer std_logic_vector;
 		video_clk        : in  std_logic;
 		video_vton       : in  std_logic;
 		video_frm        : in  std_logic;
@@ -54,7 +59,7 @@ entity scopeio_tds is
 
 end;
 
-architecture beh of scopeio_tds is
+architecture mix of scopeio_tds is
 
 	subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
 
@@ -73,13 +78,25 @@ architecture beh of scopeio_tds is
 	signal capture_shot       : std_logic;
 	signal capture_end        : std_logic;
 
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_dv         : std_logic;
 	signal trigger_edge       : std_logic;
 	signal trigger_freeze     : std_logic;
-	signal trigger_level      : std_logic_vector(storage_word'range);
 
 begin
 
+	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
+
+		trigger_dv     => trigger_dv,
+		trigger_freeze => trigger_freeze,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+		trigger_edge   => trigger_edge);
+		
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)

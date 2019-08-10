@@ -113,31 +113,16 @@ architecture beh of scopeio is
 	signal video_vton         : std_logic;
 	signal video_hzon         : std_logic;
 
-	signal hz_slider          : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal time_offset        : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal time_scale         : std_logic_vector(4-1 downto 0);
+	signal time_dv              : std_logic;
 
-	signal hz_scale           : std_logic_vector(4-1 downto 0);
-	signal hz_dv              : std_logic;
-	signal vt_dv              : std_logic;
-	signal vt_offsets         : std_logic_vector(inputs*(5+8)-1 downto 0);
-	signal vt_chanid          : std_logic_vector(chanid_maxsize-1 downto 0);
-
-	signal palette_dv         : std_logic;
-	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
-	signal palette_color      : std_logic_vector(max_pixelsize-1 downto 0);
+	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal gain_dv            : std_logic;
 	signal gain_ids           : std_logic_vector(0 to inputs*gainid_size-1);
 
-	signal trigger_dv         : std_logic;
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_edge       : std_logic;
-	signal trigger_freeze     : std_logic;
-	signal trigger_level      : std_logic_vector(storage_word'range);
-	signal trigger_data       : std_logic_vector(chanid_bits+storage_word'length+2-1 downto 0);
-
-	signal pointer_dv         : std_logic;
-	signal pointer_x          : std_logic_vector(11-1 downto 0);
-	signal pointer_y          : std_logic_vector(11-1 downto 0);
 
 begin
 
@@ -151,47 +136,28 @@ begin
 		sin_frm   => si_frm,
 		sin_irdy  => si_irdy,
 		sin_data  => si_data,
+
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
-
-	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtrfile
-	generic map (
-		inputs         => inputs)
-	port map (
-		clk            => si_clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
-
-		hz_dv          => hz_dv,
-		hz_scale       => hz_scale,
-		hz_slider      => hz_slider,
-		vt_dv          => vt_dv,
-		vt_offsets     => vt_offsets,
-		vt_chanid      => vt_chanid,
-	
-		pointer_dv     => pointer_dv,
-		pointer_y      => pointer_y,
-		pointer_x      => pointer_x,
-
-		palette_dv     => palette_dv,
-		palette_id     => palette_id,
-		palette_color  => palette_color,
-
-		gain_dv        => gain_dv,
-		gain_ids       => gain_ids,
-
-		trigger_dv     => trigger_dv,
-		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);
 	begin
+
+		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+		generic map (
+			inputs  => inputs)
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			gain_dv   => gain_dv,
+			gain_ids  => gain_ids);
+		
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
@@ -218,23 +184,26 @@ begin
 		ampsample_dv <= output_ena(0);
 	end block;
 
-
-	trigger_data <= trigger_chanid & trigger_level & trigger_edge & trigger_freeze;
-
 	scopeio_tds_e : scopeio_tds
 	generic map  (
 		inputs       => inputs,
 		storageword_size => storage_word'length,
 		time_factors => hz_factors)
 	port map (
+		rgtr_clk     => si_clk,
+		rgtr_dv      => rgtr_dv,
+		rgtr_id      => rgtr_id,
+		rgtr_data    => rgtr_data,
+
 		input_clk    => input_clk,
 		input_dv     => ampsample_dv,
 		input_data   => ampsample_data,
-		trigger_dv   => trigger_dv,
-		trigger_data => trigger_data,
-		time_dv      => hz_dv,
-		time_scale   => hz_scale,
-		time_offset  => hz_slider,
+		time_dv      => time_dv,
+		time_scale   => time_scale,
+		time_offset  => time_offset,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+
 		video_clk    => video_clk,
 		video_addr   => video_addr,  
 		video_vton   => video_vton,  
@@ -258,18 +227,14 @@ begin
 		default_sgmntbg  => default_sgmntbg,
 		default_bg       => default_bg)
 	port map (
-		si_clk           => si_clk,
-		hz_dv            => hz_dv,
-		hz_scale         => hz_scale,
-		hz_offset        => hz_slider,
-                                          
-		vt_dv            => vt_dv,
-		vt_offsets       => vt_offsets,
-		vt_chanid        => vt_chanid,
-                                          
-		palette_dv       => palette_dv,
-		palette_id       => palette_id,
-		palette_color    => palette_color,
+		rgtr_clk         => si_clk,
+		rgtr_dv          => rgtr_dv,
+		rgtr_id          => rgtr_id,
+		rgtr_data        => rgtr_data,
+
+		time_dv          => time_dv,
+		time_scale       => time_scale,
+		time_offset      => time_offset,
                                           
 		gain_dv          => gain_dv,
 		gain_ids         => gain_ids,
@@ -281,9 +246,6 @@ begin
 		video_frm        => video_frm,
 		video_data       => video_data,
 		video_dv         => video_dv,
-
-		pointer_x        => pointer_x,
-		pointer_y        => pointer_y,
 
 		video_clk        => video_clk,
 		video_pixel      => video_pixel,

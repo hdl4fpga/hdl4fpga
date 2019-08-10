@@ -8,7 +8,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_rgtrhzaxis is
 	port (
-		clk             : in  std_logic;
+		rgtr_clk        : in  std_logic;
 		rgtr_dv         : in  std_logic;
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
@@ -26,9 +26,9 @@ architecture def of scopeio_rgtrhzaxis is
 begin
 
 	hzaxis_ena  <= rgtr_dv when rgtr_id=rid_hzaxis  else '0';
-	hzaxis_p : process(clk)
+	hzaxis_p : process(rgtr_clk)
 	begin
-		if rising_edge(clk) then
+		if rising_edge(rgtr_clk) then
 			if hzaxis_ena='1' then
 				hz_slider <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_slider'length));
 				hz_scale  <= bitfield(rgtr_data, hzscale_id,  hzoffset_bf);

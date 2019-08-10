@@ -33,9 +33,12 @@ entity scopeio_pointer is
 	generic (
 		latency      : integer := 0);
 	port (
+		rgtr_clk     : in  std_logic;
+		rgtr_dv      : in  std_logic;
+		rgtr_id      : in  std_logic_vector(8-1 downto 0);
+		rgtr_data    : in  std_logic_vector;
+
 		video_clk    : in  std_logic;
-		pointer_x    : in  std_logic_vector;
-		pointer_y    : in  std_logic_vector;
 		video_hzcntr : in  std_logic_vector;
 		video_vtcntr : in  std_logic_vector;
 		video_dot    : out std_logic);
@@ -46,8 +49,22 @@ architecture beh of scopeio_pointer is
 
 	signal x_bar : std_logic;
 
+	signal pointer_dv : std_logic;
+	signal pointer_x  : std_logic_vector(11-1 downto 0);
+	signal pointer_y  : std_logic_vector(11-1 downto 0);
 begin
 
+	scopeio_rgtrpointer_e : entity hdl4fpga.scopeio_rgtrpointer
+	port map (
+		rgtr_clk   => rgtr_clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
+
+		pointer_dv => pointer_dv,
+		pointer_x  => pointer_x,
+		pointer_y  => pointer_y);
+		
 	xbar_p : process(video_clk)
 		variable hz_bar : std_logic;
 		variable vt_bar : std_logic;
