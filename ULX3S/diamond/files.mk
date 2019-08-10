@@ -59,7 +59,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_sin.vhd \
   ../../library/scope/scopeio_udpipdaisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
-  ../../library/scope/scopeio_tds.vhd \
+  ../../library/scope/scopeio_tds_1shot.vhd \
   ../../library/scope/scopeio_rgtrtrigger.vhd \
   ../../library/scope/scopeio_rgtrgain.vhd \
   ../../library/scope/scopeio_rgtrpointer.vhd \
