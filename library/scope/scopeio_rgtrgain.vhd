@@ -10,7 +10,7 @@ entity scopeio_rgtrgain is
 	generic (
 		inputs          : in  natural);
 	port (
-		clk             : in  std_logic;
+		rgtr_clk        : in  std_logic;
 		rgtr_dv         : in  std_logic;
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
@@ -27,12 +27,12 @@ architecture def of scopeio_rgtrgain is
 begin
 
 	gain_ena <= rgtr_dv when rgtr_id=rid_gain else '0';
-	gain_p : process(clk) 
+	gain_p : process(rgtr_clk) 
 		constant gainid_size : natural := gain_ids'length/inputs;
 		variable ids         : unsigned(0 to gain_ids'length-1); 
 		variable chanid      : std_logic_vector(0 to chanid_maxsize-1);
 	begin
-		if rising_edge(clk) then
+		if rising_edge(rgtr_clk) then
 			if gain_ena='1' then
 				chanid := bitfield(rgtr_data, gainchanid_id, gain_bf);
 				for i in 0 to inputs-1 loop

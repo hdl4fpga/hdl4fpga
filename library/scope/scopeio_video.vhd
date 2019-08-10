@@ -45,43 +45,35 @@ entity scopeio_video is
 		default_sgmntbg  : std_logic_vector;
 		default_bg       : std_logic_vector);
 	port (
-		si_clk        : in  std_logic;
+		rgtr_clk         : in  std_logic;
+		rgtr_dv          : in  std_logic;
+		rgtr_id          : in  std_logic_vector(8-1 downto 0);
+		rgtr_data        : in  std_logic_vector;
 
-		hz_dv         : in  std_logic;
-		hz_scale      : in  std_logic_vector(4-1 downto 0);
-		hz_offset     : in  std_logic_vector;
+		time_dv          : in  std_logic;
+		time_scale       : in  std_logic_vector;
+		time_offset      : in  std_logic_vector;
 
-		vt_dv         : in  std_logic;
-		vt_offsets    : in  std_logic_vector(inputs*(5+8)-1 downto 0);
-		vt_chanid     : in  std_logic_vector(chanid_maxsize-1 downto 0);
+		gain_dv          : in  std_logic;
+		gain_ids         : in  std_logic_vector;
 
-		palette_dv    : in  std_logic;
-		palette_id    : in  std_logic_vector;
-		palette_color : in  std_logic_vector;
+		trigger_chanid   : in  std_logic_vector;
+		trigger_level    : in  std_logic_vector;
 
-		gain_dv       : in  std_logic;
-		gain_ids      : in  std_logic_vector;
+		video_addr       : out std_logic_vector;
+		video_frm        : out std_logic;
+		video_data       : in  std_logic_vector;
+		video_dv         : in  std_logic;
 
-		trigger_chanid: in  std_logic_vector;
-		trigger_level : in  std_logic_vector;
+		video_clk        : in  std_logic;
+		video_pixel      : out std_logic_vector;
+		video_hsync      : out std_logic;
+		video_vsync      : out std_logic;
 
-		video_addr    : out std_logic_vector;
-		video_frm     : out std_logic;
-		video_data    : in  std_logic_vector;
-		video_dv      : in  std_logic;
-
-		pointer_x     : in  std_logic_vector;
-		pointer_y     : in  std_logic_vector;
-
-		video_clk     : in  std_logic;
-		video_pixel   : out std_logic_vector;
-		video_hsync   : out std_logic;
-		video_vsync   : out std_logic;
-
-		video_vton    : out std_logic;
-		video_hzon    : out std_logic;
-		video_blank   : out std_logic;
-		video_sync    : out std_logic);
+		video_vton       : out std_logic;
+		video_hzon       : out std_logic;
+		video_blank      : out std_logic;
+		video_sync       : out std_logic);
 
 end;
 
@@ -114,7 +106,10 @@ architecture beh of scopeio_video is
 
 	signal scope_color   : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal hz_segment    : std_logic_vector(hz_offset'range);
+	signal hz_dv         : std_logic;
+	signal hz_scale      : std_logic_vector(4-1 downto 0);
+	signal hz_slider     : std_logic_vector(time_offset'range);
+	signal hz_segment    : std_logic_vector(hz_slider'range);
 
 	signal wu_frm        : std_logic;
 	signal wu_irdy       : std_logic;
@@ -143,9 +138,20 @@ architecture beh of scopeio_video is
 
 begin
 
+	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+
+		hz_dv     => hz_dv,
+		hz_scale  => hz_scale,
+		hz_slider => hz_slider);
+		
 	formatu_e : entity hdl4fpga.scopeio_formatu
 	port map (
-		clk    => si_clk,
+		clk    => rgtr_clk,
 		frm    => wu_frm,
 		irdy   => wu_irdy,
 		trdy   => wu_trdy,
@@ -419,7 +425,7 @@ begin
 										   
 					video_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), video_addr'length));
 					video_frm  <= grid_on;
-					hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
+					hz_segment   <= std_logic_vector(base + resize(unsigned(hz_slider(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 														  
 				end if;
 			end process;
@@ -432,7 +438,10 @@ begin
 				axis_unit     => axis_unit,
 				layout        => layout)
 			port map (
-				in_clk        => si_clk,
+				rgtr_clk      => rgtr_clk,
+				rgtr_dv       => rgtr_dv,
+				rgtr_id       => rgtr_id,
+				rgtr_data     => rgtr_data,
 
 				wu_frm        => wu_frm ,
 				wu_irdy       => wu_irdy,
@@ -446,14 +455,11 @@ begin
 
 				hz_dv         => hz_dv,
 				hz_scale      => hz_scale,
-				hz_base       => hz_offset(hz_offset'left downto axisx_backscale+hztick_bits),
+				hz_base       => hz_slider(hz_slider'left downto axisx_backscale+hztick_bits),
 				hz_offset     => hz_segment,
 
 				gain_dv       => gain_dv,
 				gain_ids      => gain_ids,
-				vt_dv         => vt_dv,
-				vt_chanid     => vt_chanid,
-				vt_offsets    => vt_offsets,
 
 				video_clk     => video_clk,
 				x             => sgmntbox_x,
@@ -508,10 +514,11 @@ begin
 		default_sgmntbg  => default_sgmntbg, 
 		default_bg       => default_bg)
 	port map (
-		wr_clk           => si_clk,
-		wr_dv            => palette_dv,
-		wr_palette       => palette_id,
-		wr_color         => palette_color,
+		rgtr_clk         => rgtr_clk,
+		rgtr_dv          => rgtr_dv,
+		rgtr_id          => rgtr_id,
+		rgtr_data        => rgtr_data,
+
 		video_clk        => video_clk,
 		trace_dots       => trace_dots, 
 		trigger_dot      => trigger_dot,
@@ -530,9 +537,12 @@ begin
 	generic map (
 		latency => vgaio_latency)
 	port map (
+		rgtr_clk   => rgtr_clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
+
 		video_clk    => video_clk,
-		pointer_x    => pointer_x,
-		pointer_y    => pointer_y,
 		video_hzcntr => video_hzcntr,
 		video_vtcntr => video_vtcntr,
 		video_dot    => pointer_dot);

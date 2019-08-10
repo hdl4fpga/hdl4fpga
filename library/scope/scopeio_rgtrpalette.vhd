@@ -8,7 +8,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_rgtrpalette is
 	port (
-		clk             : in  std_logic;
+		rgtr_clk        : in  std_logic;
 		rgtr_dv         : in  std_logic;
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;

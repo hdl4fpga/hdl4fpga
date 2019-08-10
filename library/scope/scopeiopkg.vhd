@@ -72,9 +72,7 @@ package scopeiopkg is
 	constant sd600x16 : natural := 4;
 	constant sd600x16fs : natural := 5;
 	constant oled96x64  : natural := 6;
-	constant oled96x64ongrid  : natural := 11;
 	constant lcd800x480: natural := 7;
-	constant lcd800x480ongrid: natural := 10;
 	constant lcd1024x600: natural := 8;
 	constant vesa640x480: natural := 9;
 
@@ -145,22 +143,6 @@ package scopeiopkg is
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
-		oled96x64ongrid => (
-			display_width    =>   96,
-			display_height   =>   64,
-			num_of_segments  =>    1,
-			division_size    =>   16,
-			grid_width       => 6*16,
-			grid_height      => 4*16,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    0,
-			vtaxis_width     =>    0,
-			vttick_rotate    => ccw90,
-			textbox_width    =>    0, -- no textbox
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
 		vesa640x480 => (
 			display_width    =>  640,
 			display_height   =>  480,
@@ -182,8 +164,8 @@ package scopeiopkg is
 			display_height   =>  480,
 			num_of_segments  =>    3,
 			division_size    =>   16,
-			grid_width       =>   16*46+1,
-			grid_height      =>   16*9+1,
+			grid_width       => 46*16+1,
+			grid_height      =>  9*16+1,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
@@ -191,22 +173,6 @@ package scopeiopkg is
 			textbox_width    =>    0,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd800x480ongrid => (
-			display_width    =>  800,
-			display_height   =>  480,
-			num_of_segments  =>    3,
-			division_size    =>   32,
-			grid_width       =>   32*25,
-			grid_height      =>   32*5,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    0,
-			vtaxis_width     =>    0,
-			vttick_rotate    => ccw0,
-			textbox_width    =>    0,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		lcd1024x600 => (
@@ -291,8 +257,7 @@ package scopeiopkg is
 		6 => (mode_id => pclk23_75m640x480Cat60,    layout_id => vesa640x480),
 		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
 		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
-	       10 => (mode_id => pclk38_25m800x600Cat60,    layout_id => lcd800x480ongrid),
-		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid));
+		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
@@ -422,14 +387,19 @@ package scopeiopkg is
 			time_factors     : natural_vector;
 			storageword_size : natural);
 		port (
+			rgtr_clk         : in  std_logic;
+			rgtr_dv          : in  std_logic;
+			rgtr_id          : in  std_logic_vector(8-1 downto 0);
+			rgtr_data        : in  std_logic_vector;
+
 			input_clk        : in  std_logic;
 			input_dv         : in  std_logic;
 			input_data       : in  std_logic_vector;
-			trigger_dv       : in  std_logic;
-			trigger_data     : in  std_logic_vector;
 			time_dv          : in  std_logic;
 			time_scale       : in  std_logic_vector;
 			time_offset      : in  std_logic_vector;
+			trigger_chanid   : buffer std_logic_vector;
+			trigger_level    : buffer std_logic_vector;
 			video_clk        : in  std_logic;
 			video_vton       : in  std_logic;
 			video_frm        : in  std_logic;

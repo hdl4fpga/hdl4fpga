@@ -8,7 +8,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_rgtrtrigger is
 	port (
-		clk             : in  std_logic;
+		rgtr_clk        : in  std_logic;
 		rgtr_dv         : in  std_logic;
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
@@ -28,10 +28,10 @@ architecture def of scopeio_rgtrtrigger is
 begin
 
 	trigger_ena <= rgtr_dv when rgtr_id=rid_trigger else '0';
-	trigger_p : process(clk)
+	trigger_p : process(rgtr_clk)
 		variable level : signed(trigger_level'range);
 	begin
-		if rising_edge(clk) then
+		if rising_edge(rgtr_clk) then
 			level := resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length);
 			if trigger_ena='1' then
 				trigger_freeze <= bitfield(rgtr_data, trigger_ena_id,  trigger_bf)(0);
