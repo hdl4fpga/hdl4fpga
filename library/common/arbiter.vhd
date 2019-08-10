@@ -37,40 +37,39 @@ entity arbiter is
 		dev_id   : out std_logic_vector);
 end;
 
-architecture pri of arbiter is
-	signal id  : unsigned(dev_id'range);
-	signal req : std_logic_vector(1 to bus_req'length);
+architecture mix of arbiter is
+	alias  req : std_logic_vector(1 to bus_req'length) is bus_req;
 	signal gnt : std_logic_vector(1 to bus_gnt'length);
 begin
 
-	req <= bus_req;
 	process(clk)
+		variable id : unsigned(dev_id'range);
 	begin
 		if rising_edge(clk) then
 			if id=(id'range => '0')then
 				for i in req'range loop
 					if req(i)/='0' then
-						id     <= to_unsigned(i, id'length);
+						id     := to_unsigned(i, id'length);
 						gnt(i) <= req(i);
 						exit;
 					end if;
 				end loop;
 			elsif req(to_integer(id))='0' then
-				id  <= (others => '0');
+				id  := (others => '0');
 				gnt <= (gnt'range => '0');
 				for i in req'range loop
 					if req(i)/='0' then
-						id     <= to_unsigned(i, id'length);
+						id     := to_unsigned(i, id'length);
 						gnt(i) <= req(i);
 						exit;
 					end if;
 				end loop;
 			end if;
+			dev_id <= std_logic_vector(id);
 		end if;
 	end process;
 
 	bus_gnt  <= gnt and req;
 	bus_busy <= setif(bus_req/=(bus_req'range => '0'));
-	dev_id   <= std_logic_vector(id);
 
 end;
