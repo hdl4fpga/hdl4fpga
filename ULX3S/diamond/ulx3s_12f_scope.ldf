@@ -156,7 +156,7 @@
     <Source name="../../library/scope/scopeio_miiudp.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/scope/scopeio_rgtrfile.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/scope/scopeio_tds_1shot.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/scope/scopeio_rgtrtrigger.vhd" type="VHDL" type_short="VHDL">
