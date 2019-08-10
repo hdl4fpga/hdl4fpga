@@ -16,9 +16,10 @@
 import evdev
 import serial
 import struct
+import socket
 
 # fix packet with header, escapes, trailer
-def to_packet(p):
+def escape(p):
   retval = struct.pack("BB", 0, 0)
   for char in p:
     if char == 0 or char == 0x5C:
@@ -29,10 +30,10 @@ def to_packet(p):
   
 def pointer(x,y):
   rgtr = (y & 0xFFF)*(2**12) + (x & 0xFFF)
-  return to_packet(struct.pack(">BBI", 0x15, 3, rgtr))
+  return struct.pack(">BBI", 0x15, 3, rgtr)
 
 def mouse_report(dx,dy,dz,btn_left,btn_middle,btn_right):
-  return to_packet(struct.pack(">BBBBBB", 0x0F, 3, (-dz) & 0xFF, (-dy) & 0xFF, dx & 0xFF, (btn_left & 1) + (btn_right & 1)*(2**1) + (btn_middle & 1)*(2**2)))
+  return struct.pack(">BBBBBB", 0x0F, 3, (-dz) & 0xFF, (-dy) & 0xFF, dx & 0xFF, (btn_left & 1) + (btn_right & 1)*(2**1) + (btn_middle & 1)*(2**2))
 
 def print_packet(x):
   for c in x:
@@ -44,8 +45,13 @@ if __name__ == '__main__':
     # Usually this should match a part of USB mouse device name
     mouse_input_name = 'Mouse'
     touchpad_input_name = 'Synaptics'
+    # scopeio network host or ip
+    udp_host = "192.168.18.186"
+    #udp_port = 57001 # use UDP, not serial port
+    udp_port = 0 # use serial port, not UDP
     # this port is scopeio serial port
     serial_port = '/dev/ttyUSB0'
+
 
     X = 0
     Y = 0
@@ -69,8 +75,12 @@ if __name__ == '__main__':
             break
 
     if DEVICE:
-        scopeio = serial.Serial(serial_port, 115200, timeout=1)
-        print("Sending mouse events to serial port %s" % scopeio.name)
+        if udp_port > 0:
+          scopeio_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+          print("Sending mouse events to %s:%s" % (udp_host,udp_port))
+        else:
+          scopeio = serial.Serial(serial_port, 115200, timeout=1)
+          print("Sending mouse events to serial port %s" % scopeio.name)
         print('Started listening to device')
         for event in DEVICE.read_loop():
             if event.type == evdev.ecodes.EV_REL:
@@ -90,7 +100,10 @@ if __name__ == '__main__':
                 DX = 0
                 DY = 0
                 #print_packet(packet)
-                scopeio.write(packet)
+                if udp_port > 0:
+                  scopeio_udp.sendto(packet, (udp_host, udp_port))
+                else:
+                  scopeio.write(escape(packet))
 
             if event.type == evdev.ecodes.EV_KEY:
                 if event.code == evdev.ecodes.ecodes['BTN_LEFT']:
@@ -102,7 +115,10 @@ if __name__ == '__main__':
                 #print('BTN_LEFT=%d BTN_MIDDLE=%d BTN_RIGHT=%d' % (BTN_LEFT, BTN_MIDDLE, BTN_RIGHT))
                 packet = mouse_report(0,0,0,BTN_LEFT,BTN_MIDDLE,BTN_RIGHT)
                 #print_packet(packet)
-                scopeio.write(packet)
+                if udp_port > 0:
+                  scopeio_udp.sendto(packet, (udp_host, udp_port))
+                else:
+                  scopeio.write(escape(packet))
 
     for d in DEVICES:
         if touchpad_input_name in d.name:
@@ -130,7 +146,10 @@ if __name__ == '__main__':
                 DY = 0
                 TOUCH = 0
                 #print_packet(packet)
-                scopeio.write(packet)
+                if udp_port > 0:
+                  scopeio_udp.sendto(packet, (udp_host, udp_port))
+                else:
+                  scopeio.write(escape(packet))
 
             if event.type == evdev.ecodes.EV_KEY:
                 if event.code == evdev.ecodes.ecodes['BTN_LEFT']:
@@ -143,4 +162,7 @@ if __name__ == '__main__':
                 #print('BTN_LEFT=%d BTN_MIDDLE=%d BTN_RIGHT=%d' % (BTN_LEFT, BTN_MIDDLE, BTN_RIGHT))
                 packet = mouse_report(0,0,0,BTN_LEFT,BTN_MIDDLE,BTN_RIGHT)
                 #print_packet(packet)
-                scopeio.write(packet)
+                if udp_port > 0:
+                  scopeio_udp.sendto(packet, (udp_host, udp_port))
+                else:
+                  scopeio.write(escape(packet))
