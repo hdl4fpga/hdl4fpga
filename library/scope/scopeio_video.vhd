@@ -51,8 +51,8 @@ entity scopeio_video is
 		rgtr_data        : in  std_logic_vector;
 
 		time_dv          : in  std_logic;
-		time_scale       : in  std_logic_vector;
-		time_offset      : in  std_logic_vector;
+		time_scale       : out std_logic_vector;
+		time_offset      : out std_logic_vector;
 
 		gain_dv          : in  std_logic;
 		gain_ids         : in  std_logic_vector;
@@ -556,4 +556,6 @@ begin
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);
 
+	time_scale  <= hz_scale;
+	time_offset <= hz_slider;
 end;
