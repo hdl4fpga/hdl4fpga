@@ -29,6 +29,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_udpipdaisy is
+	generic (
+		preamble_disable : boolean := false;
+		crc_disable      : boolean := false
+	);
 	port (
 		ipcfg_req   : in  std_logic := '-';
 
@@ -67,6 +71,10 @@ begin
 		severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
+	generic map (
+		preamble_disable => preamble_disable,
+		crc_disable      => crc_disable
+	)
 	port map (
 		mii_rxc  => phy_rxc,
 		mii_rxdv => phy_rx_dv,

@@ -3,6 +3,10 @@
 
 -- USB-Ethernet MII
 
+-- difference from wired MII:
+-- do not send or expect to receive 8-byte preamble at beginning of the packet
+-- do not send or expect to receive 4-byte CRC at the end of packet
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -149,7 +153,7 @@ begin
             ONLINE          => usb_online,
             RXVAL           => mii_rxvalid,
             RXDAT           => mii_rxdata,
-            RXRDY           => usb_rxrdy,
+            RXRDY           => '1', -- eveready
             RXLEN           => usb_rxlen,
             TXVAL           => mii_txvalid,
             TXDAT           => mii_txdata,
