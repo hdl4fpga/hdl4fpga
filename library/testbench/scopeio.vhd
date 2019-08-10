@@ -29,9 +29,6 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 architecture scopeio of testbench is
 
 	signal sys_clk : std_logic := '0';
@@ -196,7 +193,6 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		test => true,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_1_1",
