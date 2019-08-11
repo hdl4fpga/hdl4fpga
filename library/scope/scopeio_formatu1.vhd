@@ -62,7 +62,7 @@ begin
 
 	btofbin_frm  <= wirebus(bin_frm,  bus_gnt and frm);
 	btofbin_irdy <= wirebus(bin_irdy, bus_gnt and irdy);
-	btofbin_trdy <= bus_gnt and bin_trdy;
+	btofbin_trdy <= bus_gnt and btofbin_trdy and btofbcd_end and btofbcd_trdy;
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
@@ -79,9 +79,8 @@ begin
 		bcd_unit  => unit,
 		bcd_prec  => prec,
 		bcd_irdy  => btofbcd_irdy,
+		bcd_trdy  => btofbcd_trdy,
 		bcd_end   => btofbcd_end,
 		bcd_do    => btofbcd_do);
 
-	bin_frm  <= wirebus(frm,  bus_gnt and frm);
-	bin_irdy <= wirebus(irdy, bus_gnt and irdy);
 end;
