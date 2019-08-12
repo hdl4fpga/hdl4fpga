@@ -39,6 +39,8 @@ package std is
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
+	subtype ascii is std_logic_vector(8-1 downto 0);
+
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
@@ -78,6 +80,10 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 	
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector;
+
 	function to_bcd (
 		constant arg : string)
 		return std_logic_vector;
@@ -482,6 +488,18 @@ package body std is
 		retval := unsigned(queue);
 		retval := retval srl element'length;
 		retval(0 to element'length-1) := unsigned(element);
+		return std_logic_vector(retval);
+	end;
+
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector is
+		variable retval : unsigned(ascii'length*arg'length-1 downto 0) := (others => '0');
+	begin
+		for i in arg'range loop
+			retval := retval sll ascii'length;
+			retval(ascii'range) := to_unsigned(character'pos(arg(i)), ascii'length);
+		end loop;
 		return std_logic_vector(retval);
 	end;
 

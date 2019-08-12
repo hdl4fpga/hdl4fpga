@@ -30,18 +30,19 @@ use hdl4fpga.std.all;
 
 entity scopeio_formatu is
 	port (
-		clk    : in  std_logic;
-		bin_frm    : in  std_logic;
-		bin_irdy   : in  std_logic := '1';
-		trdy   : out std_logic;
-		float  : in  std_logic_vector;
-		width  : in  std_logic_vector := b"1000";
-		neg    : in  std_logic;
-		sign   : in  std_logic;
-		align  : in  std_logic;
-		unit   : in  std_logic_vector := b"0000";
-		prec   : in  std_logic_vector := b"1101";
-		format : out std_logic_vector);
+		clk      : in  std_logic;
+		bin_frm  : in  std_logic_vector;
+		bin_irdy : in  std_logic_vector;
+		bin_trdy : in  std_logic_vector;
+		float    : in  std_logic_vector;
+		width    : in  std_logic_vector := b"1000";
+		neg      : in  std_logic;
+		sign     : in  std_logic;
+		align    : in  std_logic;
+		unit     : in  std_logic_vector := b"0000";
+		prec     : in  std_logic_vector := b"1101";
+		bcd_do   : out std_logic_vector;
+		ascii_do : out std_logic_vector);
 end;
 
 architecture def of scopeio_formatu is
@@ -60,9 +61,9 @@ begin
 		bus_req => bus_req,
 		bus_gnt => bus_gnt,
 
-	btofbin_frm  <= wirebus(bin_frm,  bus_gnt and frm);
-	btofbin_irdy <= wirebus(bin_irdy, bus_gnt and irdy);
-	btofbin_trdy <= bus_gnt and btofbin_trdy and btofbcd_end and btofbcd_trdy;
+	btofbin_frm  <= wirebus(bin_frm,  bus_gnt and bin_frm);
+	btofbin_irdy <= wirebus(bin_irdy, bus_gnt and bin_irdy);
+	bin_trdy     <= bus_gnt and btofbin_trdy and btofbcd_end and btofbcd_trdy;
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
@@ -83,4 +84,16 @@ begin
 		bcd_end   => btofbcd_end,
 		bcd_do    => btofbcd_do);
 
+	block
+		constant bcd2ascii_tab : std_logic_vector(to_ascii("0123456789"));
+	begin
+		wr_ena <= btofbcd_irdy;
+		process 
+			if btofbcd_irdy='1' then
+				wr_addr <= wr_addr + 1;
+			end if;
+		end process;
+		bcd_do   <= btofbcd_do;
+		ascii_do <= word2byte(bcd2ascii_tab, btofbcd_do, ascii'length);
+	end block;
 end;
