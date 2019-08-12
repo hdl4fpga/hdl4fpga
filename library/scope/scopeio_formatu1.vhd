@@ -41,18 +41,18 @@ entity scopeio_formatu is
 		align    : in  std_logic;
 		unit     : in  std_logic_vector := b"0000";
 		prec     : in  std_logic_vector := b"1101";
+		bcd_frm  : out std_logic_vector;
+		bcd_irdy : out std_logic_vector;
+		bcd_trdy : out std_logic_vector;
 		bcd_do   : out std_logic_vector;
 		ascii_do : out std_logic_vector);
 end;
 
 architecture def of scopeio_formatu is
-	signal ser_irdy : std_logic;
-	signal ser_trdy : std_logic;
-	signal ser_data : std_logic_vector(4-1 downto 0);
-	signal flt      : std_logic := '0';
-	signal bcd_irdy : std_logic;
-	signal bcd_end  : std_logic;
-	signal bcd_do   : std_logic_vector(4-1 downto 0);
+	signal flt          : std_logic := '0';
+	signal btofbcd_irdy : std_logic;
+	signal btofbcd_end  : std_logic;
+	signal btofbcd_do   : std_logic_vector(4-1 downto 0);
 begin
 
 	arbiter_e : entity hdl4fpga.arbiter
@@ -68,7 +68,7 @@ begin
 	btof_e : entity hdl4fpga.btof
 	port map (
 		clk       => clk,
-		frm       => frm,
+		frm       => btofbin_frm,
 		bin_irdy  => btofbin_irdy,
 		bin_trdy  => btofbin_trdy,
 		bin_di    => btofbin_data,
@@ -84,8 +84,10 @@ begin
 		bcd_end   => btofbcd_end,
 		bcd_do    => btofbcd_do);
 
+	bcd_do   <= btofbcd_do;
+	ascii_do <= word2byte(to_ascii("0123456789 .+-"), btofbcd_do, ascii'length);
+
 	block
-		constant bcd2ascii_tab : std_logic_vector(to_ascii("0123456789"));
 	begin
 		wr_ena <= btofbcd_irdy;
 		process 
@@ -93,7 +95,5 @@ begin
 				wr_addr <= wr_addr + 1;
 			end if;
 		end process;
-		bcd_do   <= btofbcd_do;
-		ascii_do <= word2byte(bcd2ascii_tab, btofbcd_do, ascii'length);
 	end block;
 end;
