@@ -34,7 +34,7 @@ entity pll2ser is
 		pll_data : in  std_logic_vector;
 		ser_trdy : in  std_logic := '1';
 		ser_irdy : out std_logic;
-		ser_last : out std_logic;
+		ser_end  : out std_logic;
 		ser_data : out std_logic_vector);
 end;
 
@@ -59,7 +59,7 @@ begin
 				end if;
 			end if;
 			pll_trdy <= sr(0) and ser_trdy;
-			ser_last <= sr(0);
+			ser_end  <= sr(0);
 			ser_data <= std_logic_vector(data(0 to ser_data'length-1));
 			frm1     := frm;
 		end if;

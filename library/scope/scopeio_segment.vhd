@@ -19,15 +19,17 @@ entity scopeio_segment is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		wu_frm        : out std_logic;
-		wu_irdy       : out std_logic;
-		wu_trdy       : in  std_logic;
-		wu_unit       : out std_logic_vector;
-		wu_neg        : out std_logic;
-		wu_sign       : out std_logic;
-		wu_align      : out std_logic;
-		wu_value      : out std_logic_vector;
-		wu_format     : in  std_logic_vector;
+		btof_frm      : out std_logic;
+		btof_binirdy  : out std_logic;
+		btof_bintrdy  : in  std_logic;
+		btof_bindi    : out std_logic_vector;
+		btof_unit     : out std_logic_vector;
+		btof_neg      : out std_logic;
+		btof_sign     : out std_logic;
+		btof_align    : out std_logic;
+		btof_bcdirdy  : out std_logic;
+		btof_bcdtrdy  : in  std_logic;
+		btof_bcddo    : in  std_logic_vector;
 
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
@@ -175,15 +177,17 @@ begin
 			axis_base   => axis_base,
 			axis_scale  => axis_scale,
 
-			wu_frm      => wu_frm,
-			wu_irdy     => wu_irdy,
-			wu_trdy     => wu_trdy,
-			wu_unit     => wu_unit,
-			wu_neg      => wu_neg,
-			wu_sign     => wu_sign,
-			wu_value    => wu_value,
-			wu_align    => wu_align,
-			wu_format   => wu_format,
+			btof_frm     => btof_frm,
+			btof_binirdy => btof_binirdy,
+			btof_bintrdy => btof_bintrdy,
+			btof_bindi   => btof_bindi,
+			btof_unit    => btof_unit,
+			btof_neg     => btof_neg,
+			btof_sign    => btof_sign,
+			btof_align   => btof_align,
+			btof_bcdirdy => btof_bcdirdy,
+			btof_bcdtrdy => btof_bcdtrdy,
+			btof_bcddo   => btof_bcddo,
 
 			video_clk   => video_clk,
 			video_hcntr => x,

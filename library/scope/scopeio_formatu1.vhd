@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_formatu is
+entity scopeio_btof is
 	port (
 		clk      : in  std_logic;
 		bin_frm  : in  std_logic_vector;
@@ -44,11 +44,10 @@ entity scopeio_formatu is
 		bcd_frm  : out std_logic_vector;
 		bcd_irdy : out std_logic_vector;
 		bcd_trdy : out std_logic_vector;
-		bcd_do   : out std_logic_vector;
-		ascii_do : out std_logic_vector);
+		bcd_do   : out std_logic_vector);
 end;
 
-architecture def of scopeio_formatu is
+architecture def of scopeio_btof is
 	signal flt          : std_logic := '0';
 	signal btofbcd_irdy : std_logic;
 	signal btofbcd_end  : std_logic;
@@ -63,7 +62,7 @@ begin
 
 	btofbin_frm  <= wirebus(bin_frm,  bus_gnt and bin_frm);
 	btofbin_irdy <= wirebus(bin_irdy, bus_gnt and bin_irdy);
-	bin_trdy     <= bus_gnt and btofbin_trdy and btofbcd_end and btofbcd_trdy;
+	bin_trdy     <= bus_gnt and btofbin_trdy;
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
@@ -85,15 +84,39 @@ begin
 		bcd_do    => btofbcd_do);
 
 	bcd_do   <= btofbcd_do;
-	ascii_do <= word2byte(to_ascii("0123456789 .+-"), btofbcd_do, ascii'length);
 
-	block
+end;
+
+entity scopeio_write is
+	port (
+		clk        : in  std_logic;
+		bcd_frm    : in  std_logic;
+		bcd_irdy   : in  std_logic;
+		bcd_trdy   : buffer std_logic := '1';
+		bcd_di     : in  std_logic_vector;
+		ascii_frm  : in  std_logic;
+		ascii_irdy : in  std_logic;
+		ascii_trdy : buffer std_logic := '1';
+		ascii_di   : in  std_logic_vector;
+		cga_we     : out std_logic_vector;
+		cga_addr   : out std_logic_vector;
+		cga_do     : out std_logic_vector);
+		
+architecture mix of scopeio_write is
+begin
+	cga_we <= bcd_irdy or ascii_irdy;
+	process (clk)
 	begin
-		wr_ena <= btofbcd_irdy;
-		process 
-			if btofbcd_irdy='1' then
-				wr_addr <= wr_addr + 1;
+		if rising_edge(clk) then
+			if bcd_irdy='1' then
+				if bcd_trdy='1' then
+					cga_addr <= cga_addr + 1;
+				end if;
 			end if;
-		end process;
-	end block;
+		end if;
+	end process;
+	cga_do <= 
+		 word2byte(to_ascii("0123456789 .+-"), bcd_di, ascii'length) when bcd_frm='1' else
+		 ascii_di when ascii_frm='1' else
+		 (others => '-');
 end;

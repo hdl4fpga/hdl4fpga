@@ -43,15 +43,17 @@ entity scopeio_axis is
 		axis_scale  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
 
-		wu_frm      : out std_logic;
-		wu_irdy     : out std_logic;
-		wu_trdy     : in  std_logic;
-		wu_unit     : out std_logic_vector;
-		wu_neg      : out std_logic;
-		wu_sign     : out std_logic;
-		wu_align    : out std_logic;
-		wu_value    : out std_logic_vector;
-		wu_format   : in  std_logic_vector;
+		btof_frm     : out std_logic;
+		btof_binirdy : out std_logic;
+		btof_bintrdy : in  std_logic;
+		btof_bindi   : out std_logic_vector;
+		btof_unit    : out std_logic_vector;
+		btof_neg     : out std_logic;
+		btof_sign    : out std_logic;
+		btof_align   : out std_logic;
+		btof_bcdirdy : out std_logic;
+		btof_bcdtrdy : in  std_logic;
+		btof_bcddo   : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
@@ -140,16 +142,21 @@ architecture def of scopeio_axis is
 begin
 
 	ticks_b : block
-		signal frm   : std_logic := '0';
-		signal irdy  : std_logic;
-		signal trdy  : std_logic;
+		signal frm  : std_logic := '0';
+		signal irdy : std_logic;
+		signal trdy : std_logic;
 
-		signal value : std_logic_vector(3*4-1 downto 0);
-		signal base  : std_logic_vector(value'range);
-		signal step  : std_logic_vector(value'range);
+		signal base : std_logic_vector(value'range);
+		signal step : std_logic_vector(value'range);
 
-		signal last  : std_logic_vector(8-1 downto 0);
-		signal updn  : std_logic;
+		signal last : std_logic_vector(8-1 downto 0);
+		signal updn : std_logic;
+
+		signal tick_frm   : std_logic;
+		signal tick_irdy  : std_logic;
+		signal tick_trdy  : std_logic;
+		signal tick_value : std_logic_vector(3*4-1 downto 0);
+
 	begin
 
 		process(clk)
@@ -201,28 +208,29 @@ begin
 
 		updn <= axis_sel;
 		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
+
 		ticks_e : entity hdl4fpga.scopeio_ticks
 		port map (
-			clk      => clk,
-			frm      => frm,
-			irdy     => irdy,
-			trdy     => trdy,
-			last     => last,
-			base     => base,
-			step     => step,
-			updn     => updn,
-			wu_frm   => wu_frm,
-			wu_irdy  => wu_irdy,
-			wu_trdy  => wu_trdy,
-			wu_value => value);
+			clk        => clk,
+			frm        => frm,
+			irdy       => irdy,
+			trdy       => trdy,
+			last       => last,
+			base       => base,
+			step       => step,
+			updn       => updn,
+			tick_frm   => tick_frm,
+			tick_irdy  => tick_irdy,
+			tick_trdy  => tick_trdy,
+			tick_value => tick_value);
 
-		wu_align <=
+		btof_align <=
 			not axis_sel when vtaxis_tickrotate(layout)=ccw0 else
 			not axis_sel when vtaxis_tickrotate(layout)=ccw270 else
 			'1';
-		wu_neg   <= value(value'left);
-		wu_sign  <= value(value'left) or axis_sel;
-		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
+		btof_neg   <= tick_value(tick_value'left);
+		btof_sign  <= tick_value(tick_value'left) or axis_sel;
+		btof_bindi <= word2byte(scale_1245(neg(tick_value, tick_value(value'left)), axis_scale) & x"f", pll, bcd'length);
 
 	end block;
 
