@@ -31,9 +31,9 @@ end;
 
 architecture Behavioral of usbh_report_decoder is
 begin
-  btn    <= hid_report( 2 downto 0);
-  dx     <= hid_report(15 downto 8);
-  dy     <= std_logic_vector(-signed(hid_report(27 downto 20)));
-  dz     <= std_logic_vector(-signed(hid_report(39 downto 32)));
+  btn    <= hid_report(10 downto 8);
+  dx     <= hid_report(23 downto 16);
+  dy     <= std_logic_vector(-signed(hid_report(35 downto 28)));
+  dz     <= std_logic_vector(-signed(hid_report(47 downto 40)));
   update <= hid_valid;
 end Behavioral;
