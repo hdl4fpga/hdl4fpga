@@ -138,24 +138,26 @@ architecture def of scopeio_axis is
 
 	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vtstep_bits);
 	signal hz_taddr    : std_logic_vector(13-1 downto hzstep_bits);
+	signal tickbcd_trdy  : std_logic;
+	signal tick_bcdvalue : std_logic_vector(btof_bcddo'length*4-1 downto 0);
 
 begin
 
 	ticks_b : block
-		signal frm  : std_logic := '0';
-		signal irdy : std_logic;
-		signal trdy : std_logic;
-
-		signal base : std_logic_vector(value'range);
-		signal step : std_logic_vector(value'range);
-
-		signal last : std_logic_vector(8-1 downto 0);
-		signal updn : std_logic;
-
 		signal tick_frm   : std_logic;
 		signal tick_irdy  : std_logic;
 		signal tick_trdy  : std_logic;
 		signal tick_value : std_logic_vector(3*4-1 downto 0);
+
+		signal frm  : std_logic := '0';
+		signal irdy : std_logic;
+		signal trdy : std_logic;
+
+		signal base : std_logic_vector(tick_value'range);
+		signal step : std_logic_vector(tick_value'range);
+
+		signal last : std_logic_vector(8-1 downto 0);
+		signal updn : std_logic;
 
 	begin
 
@@ -179,7 +181,7 @@ begin
 			if rising_edge(clk) then
 				if frm='0' then
 					cntr := (others => '1');
-				elsif wu_trdy='1' then
+				elsif tick_trdy='1' then
 					cntr := cntr + 1;
 				end if;
 				hz_taddr <= std_logic_vector(cntr(hz_taddr'length-1 downto 0));
@@ -230,7 +232,7 @@ begin
 			'1';
 		btof_neg   <= tick_value(tick_value'left);
 		btof_sign  <= tick_value(tick_value'left) or axis_sel;
-		btof_bindi <= word2byte(scale_1245(neg(tick_value, tick_value(value'left)), axis_scale) & x"f", pll, bcd'length);
+		btof_bindi <= word2byte(scale_1245(neg(tick_value, tick_value(tick_value'left)), axis_scale) & x"f", pll, btof_bindi'length);
 
 	end block;
 
@@ -258,7 +260,7 @@ begin
 		hz_b : block
 
 			signal x      : unsigned(hz_taddr'left downto 0);
-			signal tick   : std_logic_vector(wu_format'range);
+			signal tick   : std_logic_vector(tick_bcdvalue'range);
 
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(x'range);
@@ -275,15 +277,15 @@ begin
 				end if;
 			end process;
 
-			wr_ena <= wu_trdy and not axis_sel;
+			wr_ena <= tickbcd_trdy and not axis_sel;
 			hzmem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**hz_taddr'length*wu_format'length-1 => '1'))
+				bitrom => (0 to 2**hz_taddr'length*tick_bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
 				wr_ena  => wr_ena,
 				wr_addr => hz_taddr,
-				wr_data => wu_format,
+				wr_data => tick_bcdvalue,
 
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
@@ -336,7 +338,7 @@ begin
 
 		vt_b : block
 			signal y      : unsigned(vt_taddr'left downto 0);
-			signal tick   : std_logic_vector(wu_format'range);
+			signal tick   : std_logic_vector(tick_bcdvalue'range);
 
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
@@ -358,15 +360,15 @@ begin
 				end if;
 			end process;
 
-			wr_ena <= wu_trdy and axis_sel;
+			wr_ena <= tickbcd_trdy and axis_sel;
 			vt_mem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**vt_taddr'length*wu_format'length-1 => '1'))
+				bitrom => (0 to 2**vt_taddr'length*tick_bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
 				wr_ena  => wr_ena,
 				wr_addr => vt_taddr,
-				wr_data => wu_format,
+				wr_data => tick_bcdvalue,
 
 				rd_addr => vaddr(vt_taddr'range),
 				rd_data => vdata);

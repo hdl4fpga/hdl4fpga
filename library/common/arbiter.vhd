@@ -63,7 +63,6 @@ begin
 					end if;
 				end loop;
 			end if;
-			dev_id <= std_logic_vector(id);
 		end if;
 	end process;
 

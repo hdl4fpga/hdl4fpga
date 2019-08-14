@@ -39,10 +39,10 @@ entity scopeio_ticks is
 		step     : in  std_logic_vector;
 		updn     : in  std_logic := '0';
 
-		wu_frm   : out std_logic;
-		wu_irdy  : out std_logic;
-		wu_trdy  : in  std_logic;
-		wu_value : out std_logic_vector);
+		tick_frm   : out std_logic;
+		tick_irdy  : out std_logic;
+		tick_trdy  : in  std_logic;
+		tick_value : out std_logic_vector);
 end;
 
 architecture def of scopeio_ticks is
@@ -84,15 +84,15 @@ begin
 							wfrm := '0';
 							trdy <= '1';
 						end if;
-					elsif wu_trdy='1' then
+					elsif tick_trdy='1' then
 						wfrm := '0';
 						trdy <= '0';
 					end if;
 				end if;
 			end if;
-			wu_frm   <= wfrm;
-			wu_irdy  <= wfrm;
-			wu_value <= std_logic_vector(accm);
+			tick_frm   <= wfrm;
+			tick_irdy  <= wfrm;
+			tick_value <= std_logic_vector(accm);
 		end if;
 	end process;
 	

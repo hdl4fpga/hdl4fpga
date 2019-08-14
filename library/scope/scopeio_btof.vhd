@@ -28,78 +28,73 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_formatu is
+entity scopeio_btof is
 	port (
-		clk    : in  std_logic;
-		frm    : in  std_logic;
-		irdy   : in  std_logic := '1';
-		trdy   : out std_logic;
-		float  : in  std_logic_vector;
-		width  : in  std_logic_vector := b"1000";
-		neg    : in  std_logic;
-		sign   : in  std_logic;
-		align  : in  std_logic;
-		unit   : in  std_logic_vector := b"0000";
-		prec   : in  std_logic_vector := b"1101";
-		format : out std_logic_vector);
+		clk      : in  std_logic;
+		bin_frm  : in  std_logic_vector;
+		bin_irdy : in  std_logic_vector;
+		bin_trdy : out std_logic_vector;
+		bin_flt  : in  std_logic;
+		bin_di   : in  std_logic_vector;
+		width    : in  std_logic_vector := b"1000";
+		neg      : in  std_logic;
+		sign     : in  std_logic;
+		align    : in  std_logic;
+		unit     : in  std_logic_vector := b"0000";
+		prec     : in  std_logic_vector := b"1101";
+		bcd_frm  : out std_logic_vector;
+		bcd_irdy : out std_logic_vector;
+		bcd_trdy : in  std_logic_vector;
+		bcd_do   : out std_logic_vector);
 end;
 
-architecture def of scopeio_formatu is
-	signal ser_irdy : std_logic;
-	signal ser_trdy : std_logic;
-	signal ser_data : std_logic_vector(4-1 downto 0);
-	signal flt      : std_logic := '0';
-	signal bcd_irdy : std_logic;
-	signal bcd_end  : std_logic;
-	signal bcd_do   : std_logic_vector(4-1 downto 0);
+architecture def of scopeio_btof is
+	signal btof_req     : std_logic_vector(bin_frm'range);
+	signal btof_gnt     : std_logic_vector(bin_frm'range);
+
+	signal btofbin_frm  : std_logic_vector(0 to 0);
+	signal btofbin_irdy : std_logic_vector(0 to 0);
+	signal btofbin_trdy : std_logic;
+	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
+	signal btofbcd_irdy : std_logic;
+	signal btofbcd_trdy : std_logic_vector(0 to 0);
+	signal btofbcd_end  : std_logic;
+	signal btofbcd_do   : std_logic_vector(4-1 downto 0);
 begin
 
-
-	pll2ser_e : entity hdl4fpga.pll2ser
+	btof_req <= bin_frm;
+	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk      => clk,
-		frm      => frm,
-		pll_irdy => irdy,
-		pll_trdy => open,
-		pll_data => float,
-		ser_trdy => ser_trdy,
-		ser_irdy => ser_irdy,
-		ser_end  => flt,
-		ser_data => ser_data);
+		clk     => clk,
+		bus_req => btof_req,
+		bus_gnt => btof_gnt);
 
+	bin_trdy     <= btof_gnt and (btof_gnt'range => btofbin_trdy);
+	btofbin_frm  <= wirebus(bin_frm,  btof_gnt);
+	btofbin_irdy <= wirebus(bin_irdy, btof_gnt);
+	btofbin_di   <= wirebus(bin_di,   btof_gnt);
+		
 	btof_e : entity hdl4fpga.btof
 	port map (
 		clk       => clk,
-		frm       => frm,
-		bin_irdy  => ser_irdy,
-		bin_trdy  => ser_trdy,
-		bin_di    => ser_data,
-		bin_flt   => flt,
+		frm       => btofbin_frm(0),
+		bin_irdy  => btofbin_irdy(0),
+		bin_trdy  => btofbin_trdy,
+		bin_di    => btofbin_di,
+		bin_flt   => bin_flt,
 		bin_sign  => sign,
 		bin_neg   => neg,
 		bcd_align => align,
 		bcd_width => width,
 		bcd_unit  => unit,
 		bcd_prec  => prec,
-		bcd_irdy  => bcd_irdy,
-		bcd_end   => bcd_end,
-		bcd_do    => bcd_do);
+		bcd_irdy  => btofbcd_irdy,
+		bcd_trdy  => btofbcd_trdy(0),
+		bcd_end   => btofbcd_end,
+		bcd_do    => btofbcd_do);
 
-	ser2pll_e : entity hdl4fpga.ser2pll
-	port map(
-		clk      => clk,
-		ser_irdy => bcd_irdy,
-		ser_data => bcd_do,
-		pll_data => format);
+	btofbcd_trdy <= wirebus(bcd_trdy, btof_gnt);
+	bcd_irdy <= btof_gnt and (btof_gnt'range => btofbcd_irdy);
+	bcd_do   <= btofbcd_do;
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			if frm='0' then
-				trdy <= '0';
-			else
-				trdy <= bcd_end and bcd_irdy;
-			end if;
-		end if;
-	end process;
 end;
