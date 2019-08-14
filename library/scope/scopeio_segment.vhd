@@ -19,7 +19,7 @@ entity scopeio_segment is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		btof_frm      : out std_logic;
+		btof_binfrm   : out std_logic;
 		btof_binirdy  : out std_logic;
 		btof_bintrdy  : in  std_logic;
 		btof_bindi    : out std_logic_vector;
@@ -27,6 +27,7 @@ entity scopeio_segment is
 		btof_neg      : out std_logic;
 		btof_sign     : out std_logic;
 		btof_align    : out std_logic;
+		btof_bcdfrm   : in  std_logic;
 		btof_bcdirdy  : out std_logic;
 		btof_bcdtrdy  : in  std_logic;
 		btof_bcddo    : in  std_logic_vector;
@@ -177,7 +178,7 @@ begin
 			axis_base   => axis_base,
 			axis_scale  => axis_scale,
 
-			btof_frm     => btof_frm,
+			btof_frm     => btof_binfrm,
 			btof_binirdy => btof_binirdy,
 			btof_bintrdy => btof_bintrdy,
 			btof_bindi   => btof_bindi,

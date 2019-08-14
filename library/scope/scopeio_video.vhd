@@ -111,20 +111,32 @@ architecture beh of scopeio_video is
 	signal hz_slider     : std_logic_vector(time_offset'range);
 	signal hz_segment    : std_logic_vector(hz_slider'range);
 
-	signal wu_frm        : std_logic;
-	signal wu_irdy       : std_logic;
-	signal wu_trdy       : std_logic;
-	signal wu_unit       : std_logic_vector(4-1 downto 0);
-	signal wu_neg        : std_logic;
-	signal wu_sign       : std_logic;
-	signal wu_align      : std_logic;
-	signal wu_value      : std_logic_vector(4*4-1 downto 0);
-	signal wu_format     : std_logic_vector(8*4-1 downto 0);
+	signal btof_binfrm  : std_logic_vector(0 to 0);
+	signal btof_binirdy : std_logic_vector(0 to 0);
+	signal btof_bintrdy : std_logic_vector(0 to 0);
+	signal btof_bcdfrm  : std_logic_vector(0 to 0);
+	signal btof_bcdirdy : std_logic_vector(0 to 0);
+	signal btof_bcdtrdy : std_logic_vector(0 to 0);
+	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
+
+
+	signal sgmntbtof_binfrm  : std_logic;
+	signal sgmntbtof_binirdy : std_logic;
+	signal sgmntbtof_bintrdy : std_logic;
+	signal sgmntbtof_bindi   : std_logic_vector(4*4-1 downto 0);
+	signal sgmntbtof_unit    : std_logic_vector(4-1 downto 0);
+	signal sgmntbtof_neg     : std_logic;
+	signal sgmntbtof_sign    : std_logic;
+	signal sgmntbtof_align   : std_logic;
+	signal sgmntbtof_bcdfrm  : std_logic;
+	signal sgmntbtof_bcdirdy : std_logic;
+	signal sgmntbtof_bcdtrdy : std_logic;
+	signal sgmntbtof_bcddo   : std_logic_vector(8*4-1 downto 0);
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
 	signal trigger_dot   : std_logic;
-	signal trace_dots   : std_logic_vector(0 to inputs-1);
+	signal trace_dots    : std_logic_vector(0 to inputs-1);
 	signal grid_dot      : std_logic;
 	signal grid_bgon     : std_logic;
 	signal hz_dot        : std_logic;
@@ -148,21 +160,28 @@ begin
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
 		hz_slider => hz_slider);
-		
-	formatu_e : entity hdl4fpga.scopeio_formatu
+
+	btof_binfrm(0)  <= sgmntbtof_binfrm;
+	btof_binirdy(0) <= sgmntbtof_binirdy;
+	sgmntbtof_bintrdy <= btof_bintrdy(0);
+	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
-		clk    => rgtr_clk,
-		frm    => wu_frm,
-		irdy   => wu_irdy,
-		trdy   => wu_trdy,
-		float  => wu_value,
-		width  => b"1000",
-		sign   => wu_sign,
-		neg    => wu_neg,
-		unit   => wu_unit,
-		align  => wu_align,
-		prec   => b"1111",
-		format => wu_format);
+		clk      => rgtr_clk,
+		bin_frm  => btof_binfrm,
+		bin_irdy => btof_binirdy,
+		bin_trdy => btof_bintrdy,
+		bin_di    => sgmntbtof_bindi,
+		bin_flt    => '0',
+		width    => b"1000",
+		sign     => sgmntbtof_sign,
+		neg      => sgmntbtof_neg,
+		unit     => sgmntbtof_unit,
+		align    => sgmntbtof_align,
+		prec     => b"1111",
+		bcd_frm  => btof_bcdfrm,
+		bcd_irdy => btof_bcdirdy,
+		bcd_trdy => btof_bcdtrdy,
+		bcd_do   => btof_bcddo);
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
@@ -443,15 +462,18 @@ begin
 				rgtr_id       => rgtr_id,
 				rgtr_data     => rgtr_data,
 
-				wu_frm        => wu_frm ,
-				wu_irdy       => wu_irdy,
-				wu_trdy       => wu_trdy,
-				wu_unit       => wu_unit,
-				wu_neg        => wu_neg,
-				wu_sign       => wu_sign,
-				wu_align      => wu_align,
-				wu_value      => wu_value,
-				wu_format     => wu_format,
+				btof_binfrm      => sgmntbtof_binfrm ,
+				btof_binirdy     => sgmntbtof_binirdy,
+				btof_bintrdy     => sgmntbtof_bintrdy,
+				btof_bindi    => sgmntbtof_bindi,
+				btof_unit     => sgmntbtof_unit,
+				btof_neg      => sgmntbtof_neg,
+				btof_sign     => sgmntbtof_sign,
+				btof_align    => sgmntbtof_align,
+				btof_bcdfrm   => sgmntbtof_bcdfrm,
+				btof_bcdirdy  => sgmntbtof_bcdirdy,
+				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
+				btof_bcddo    => sgmntbtof_bcddo,
 
 				hz_dv         => hz_dv,
 				hz_scale      => hz_scale,
