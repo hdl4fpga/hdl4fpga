@@ -185,8 +185,8 @@ begin
 				end if;
 			end if;
 		end process;
-		hz_taddr <= taddr(hz_taddr'range);
-		vt_taddr <= taddr(vt_taddr'range);
+		hz_taddr <= taddr(hz_taddr'length-1 downto 0);
+		vt_taddr <= taddr(vt_taddr'length-1 downto 0);
 
 		start <= hz_start when axis_sel='0' else vt_start;
 		stop  <= hz_stop  when axis_sel='0' else vt_stop;
@@ -214,8 +214,8 @@ begin
 
 		btof_bindi <= word2byte(scale_1245(neg(std_logic_vector(value), value(value'left)), axis_scale) & x"f", bindi_sel, btof_bindi'length);
 
-		hz_tv <= not axis_sel;
-		vt_tv <=     axis_sel;
+		hz_tv <= not axis_sel and btod_bcdend and btof_bcdtdry;
+		vt_tv <=     axis_sel and btod_bcdend and btof_bcdtdry;
 	end block;
 
 	video_b : block
