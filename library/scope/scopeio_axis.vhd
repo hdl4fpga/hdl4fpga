@@ -1,4 +1,4 @@
---                                                                            --
+vtr--                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
 --                                                                            --
@@ -136,103 +136,58 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vtstep_bits);
-	signal hz_taddr    : std_logic_vector(13-1 downto hzstep_bits);
 	signal tickbcd_trdy  : std_logic;
 	signal tick_bcdvalue : std_logic_vector(btof_bcddo'length*4-1 downto 0);
 
 begin
 
 	ticks_b : block
-		signal tick_frm   : std_logic;
-		signal tick_irdy  : std_logic;
-		signal tick_trdy  : std_logic;
-		signal tick_value : std_logic_vector(3*4-1 downto 0);
 
-		signal frm  : std_logic := '0';
-		signal irdy : std_logic;
-		signal trdy : std_logic;
+		signal tick_frm  : std_logic;
+		signal tick_irdy : std_logic;
+		signal tick_trdy : std_logic;
 
-		signal base : std_logic_vector(tick_value'range);
-		signal step : std_logic_vector(tick_value'range);
-
-		signal last : std_logic_vector(8-1 downto 0);
-		signal updn : std_logic;
+		signal value : signed(3*4-1 downto 0);
+		signal ended : std_logic;
+		signal init  : std_logic;
+		signal start : signed(value'range);
+		signal stop  : signed(value'range);
+		signal step  : signed(value'range);
 
 	begin
 
 		process(clk)
 		begin
 			if rising_edge(clk) then
-				if frm='0' then
+				if tick_frm='0' then
 					if axis_dv='1' then
-						frm <= '1';
+						tick_frm <= '1';
 					end if;
-				elsif trdy='1' then
-					frm  <= '0';
-				end if;
-			end if;
-		end process;
-		irdy <= frm;
-
-		process (clk)
-			variable cntr : unsigned(max(hz_taddr'length, vt_taddr'length) downto 0);
-		begin
-			if rising_edge(clk) then
-				if frm='0' then
-					cntr := (others => '1');
 				elsif tick_trdy='1' then
-					cntr := cntr + 1;
+					tick_frm  <= '0';
 				end if;
-				hz_taddr <= std_logic_vector(cntr(hz_taddr'length-1 downto 0));
-				vt_taddr <= std_logic_vector(cntr(vt_taddr'length-1 downto 0));
 			end if;
 		end process;
+		tick_irdy <= tick_frm;
 
-		process (axis_base, axis_sel)
-			variable aux : signed(base'range);
-		begin
-			aux  := (others => '0');
-			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
-			if axis_sel='1' then
-				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
-				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit));
-			else
-				aux := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
-				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
-			end if;
-			base <= std_logic_vector(aux);
-		end process;
+		start <= hz_start when axis_sel='0' else vt_start;
+		stop  <= hz_stop  when axis_sel='0' else vt_stop;
+		step  <= hz_step  when axis_sel='0' else vt_step;
 
-		last <= 
-			x"7e" when axis_sel='0' else 
-			std_logic_vector(to_unsigned(2**vtheight_bits/2**vtstep_bits-1,last'length)); 
-
-		updn <= axis_sel;
-		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
-
-		ticks_e : entity hdl4fpga.scopeio_ticks
+		ticks_e : entity hdl4fpga.scopeio_iterator
 		port map (
-			clk        => clk,
-			frm        => frm,
-			irdy       => irdy,
-			trdy       => trdy,
-			last       => last,
-			base       => base,
-			step       => step,
-			updn       => updn,
-			tick_frm   => tick_frm,
-			tick_irdy  => tick_irdy,
-			tick_trdy  => tick_trdy,
-			tick_value => tick_value);
+			clk   => clk,
+			init  => init,
+			start => start,
+			stop  => stop,
+			step  => step,
+			ended => ended,
+			value => value);
 
-		btof_align <=
-			not axis_sel when vtaxis_tickrotate(layout)=ccw0 else
-			not axis_sel when vtaxis_tickrotate(layout)=ccw270 else
-			'1';
-		btof_neg   <= tick_value(tick_value'left);
-		btof_sign  <= tick_value(tick_value'left) or axis_sel;
-		btof_bindi <= word2byte(scale_1245(neg(tick_value, tick_value(tick_value'left)), axis_scale) & x"f", pll, btof_bindi'length);
+		btof_align <= hz_align when axis_sel='0' else vt_align;
+		btof_neg   <= value(value'left);
+		btof_sign  <= value(value'left) or axis_sel;
+		btof_bindi <= word2byte(scale_1245(neg(value, value(value'left)), axis_scale) & x"f", pll, btof_bindi'length);
 
 	end block;
 
@@ -259,14 +214,41 @@ begin
 
 		hz_b : block
 
-			signal x      : unsigned(hz_taddr'left downto 0);
-			signal tick   : std_logic_vector(tick_bcdvalue'range);
+			signal hz_start : signed(value'range);
+			signal hz_stop  : signed(value'range);
+			signal hz_step  : signed(value'range);
+			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
+			signal hz_align : std_logic;
 
-			signal wr_ena : std_logic;
-			signal vaddr  : std_logic_vector(x'range);
-			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
+			signal x        : unsigned(hz_taddr'left downto 0);
+			signal tick     : std_logic_vector(tick_bcdvalue'range);
+
+			signal wr_ena   : std_logic;
+			signal vaddr    : std_logic_vector(x'range);
+			signal vdata    : std_logic_vector(tick'range);
+			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
+
 		begin 
+
+			iterator_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					if tick_frm='0' then
+						hz_taddr <= (others => '1');
+					elsif tick_trdy='1' then
+						hz_taddr <= hz_taddr + 1;
+					end if;
+				end if;
+			end process;
+
+			hz_start <= 
+				mul(to_signed(1,1), unsigned(axis_unit)) +
+				shift_left(
+					resize(mul(signed(axis_base), unsigned(axis_unit)), start'length),
+					axisx_backscale+hztick_bits-hz_taddr'right);
+			hz_stop  <= x"7e";
+			hz_step  <= resize( signed(axis_unit), hz_step'length));
+			hz_align <= '1';
 
 			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
@@ -284,7 +266,7 @@ begin
 			port map (
 				wr_clk  => clk,
 				wr_ena  => wr_ena,
-				wr_addr => hz_taddr,
+				wr_addr => std_logic_vector(hz_taddr),
 				wr_data => tick_bcdvalue,
 
 				rd_addr => vaddr(hz_taddr'range),
@@ -337,6 +319,13 @@ begin
 		end block;
 
 		vt_b : block
+
+			signal vt_start : signed(value'range);
+			signal vt_stop  : signed(value'range);
+			signal vt_step  : signed(value'range);
+			signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
+			signal vt_align : std_logic;
+
 			signal y      : unsigned(vt_taddr'left downto 0);
 			signal tick   : std_logic_vector(tick_bcdvalue'range);
 
@@ -351,6 +340,26 @@ begin
 			signal rot_ccol   : std_logic_vector(vt_ccol'range);
 
 		begin 
+
+			iterator_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					if tick_frm='0' then
+						vt_taddr <= (others => '1');
+					elsif tick_trdy='1' then
+						vt_taddr <= vt_taddr + 1;
+					end if;
+				end if;
+			end process;
+
+			vt_start <=
+				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit)) +
+				shift_left(
+					resize(mul(-signed(axis_base), unsigned(axis_unit)), start'length),
+					vt_offset'length-vt_taddr'right);
+			vt_stop <= to_signed(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
+			vt_step <= resize(-signed(axis_unit), vt_step'length);
+			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)
@@ -367,7 +376,7 @@ begin
 			port map (
 				wr_clk  => clk,
 				wr_ena  => wr_ena,
-				wr_addr => vt_taddr,
+				wr_addr => std_logic_vector(vt_taddr),
 				wr_data => tick_bcdvalue,
 
 				rd_addr => vaddr(vt_taddr'range),
