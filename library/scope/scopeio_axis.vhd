@@ -137,24 +137,24 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal value    : signed(3*4-1 downto 0);
-	signal hz_start : signed(value'range);
-	signal hz_stop  : signed(value'range);
-	signal hz_step  : signed(value'range);
+	signal binvalue : signed(3*4-1 downto 0);
+	signal bcdvalue : std_logic_vector(btof_bcddo'length*8-1 downto 0);
+
+	signal hz_start : signed(binvalue'range);
+	signal hz_stop  : signed(binvalue'range);
+	signal hz_step  : signed(binvalue'range);
 	signal hz_taddr : unsigned(13-1 downto hzstep_bits);
 	signal hz_align : std_logic;
 	signal hz_sign  : std_logic;
 	signal hz_tv    : std_logic;
 
-	signal vt_start : signed(value'range);
-	signal vt_stop  : signed(value'range);
-	signal vt_step  : signed(value'range);
+	signal vt_start : signed(binvalue'range);
+	signal vt_stop  : signed(binvalue'range);
+	signal vt_step  : signed(binvalue'range);
 	signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
 	signal vt_align : std_logic;
 	signal vt_sign  : std_logic;
 	signal vt_tv    : std_logic;
-
-	signal tick_bcdvalue : std_logic_vector(btof_bcddo'length*4-1 downto 0);
 
 begin
 
@@ -166,9 +166,9 @@ begin
 		signal taddr : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 		signal ended : std_logic;
 		signal init  : std_logic;
-		signal start : signed(value'range);
-		signal stop  : signed(value'range);
-		signal step  : signed(value'range);
+		signal start : signed(binvalue'range);
+		signal stop  : signed(binvalue'range);
+		signal step  : signed(binvalue'range);
 
 		signal bindi_sel : std_logic_vector(0 to 0);
 	begin
@@ -200,22 +200,31 @@ begin
 			stop  => stop,
 			step  => step,
 			ended => ended,
-			value => value);
+			value => binvalue);
 
 		btof_align <= hz_align when axis_sel='0' else vt_align;
 		btof_sign  <= hz_sign  when axis_sel='0' else vt_sign;
-		btof_neg   <= value(value'left);
+		btof_neg   <= binvalue(binvalue'left);
 
-		process (clk)
+		bindi_sel_p : process (clk)
 		begin
 			if rising_edge(clk) then
+				if axis_dv='0' then
+					bindi_sel <= (others => '0');
+				elsif axis_dv='1' then
+					bindi_sel <= std_logic_vector(unsigned(bin_sel) + 1);
+				end if;
 			end if;
 		end process;
 
-		btof_bindi <= word2byte(scale_1245(neg(std_logic_vector(value), value(value'left)), axis_scale) & x"f", bindi_sel, btof_bindi'length);
+		btof_bindi <= word2byte(
+			scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), axis_scale) & x"f",
+			bindi_sel, 
+			btof_bindi'length);
 
 		hz_tv <= not axis_sel and btod_bcdend and btof_bcdtdry;
 		vt_tv <=     axis_sel and btod_bcdend and btof_bcdtdry;
+
 	end block;
 
 	video_b : block
@@ -242,7 +251,7 @@ begin
 		hz_b : block
 
 			signal x        : unsigned(hz_taddr'left downto 0);
-			signal tick     : std_logic_vector(tick_bcdvalue'range);
+			signal tick     : std_logic_vector(bcdvalue'range);
 
 			signal vaddr    : std_logic_vector(x'range);
 			signal vdata    : std_logic_vector(tick'range);
@@ -271,12 +280,12 @@ begin
 
 			hzmem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**hz_taddr'length*tick_bcdvalue'length-1 => '1'))
+				bitrom => (0 to 2**hz_taddr'length*bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
 				wr_ena  => hz_tv,
 				wr_addr => std_logic_vector(hz_taddr),
-				wr_data => tick_bcdvalue,
+				wr_data => bcdvalue,
 
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
@@ -330,7 +339,7 @@ begin
 		vt_b : block
 
 			signal y      : unsigned(vt_taddr'left downto 0);
-			signal tick   : std_logic_vector(tick_bcdvalue'range);
+			signal tick   : std_logic_vector(bcdvalue'range);
 
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
@@ -363,12 +372,12 @@ begin
 
 			vt_mem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**vt_taddr'length*tick_bcdvalue'length-1 => '1'))
+				bitrom => (0 to 2**vt_taddr'length*bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
 				wr_ena  => vt_tv,
 				wr_addr => std_logic_vector(vt_taddr),
-				wr_data => tick_bcdvalue,
+				wr_data => bcdvalue,
 
 				rd_addr => vaddr(vt_taddr'range),
 				rd_data => vdata);
