@@ -27,13 +27,13 @@ use ieee.numeric_std.all;
 
 entity scopeio_iterator is
 	port (
-		clk    : in  std_logic;
-		init   : in  std_logic;
-		start  : in  signed;
-		stop   : in  signed;
-		step   : in  signed;
-		finish : buffer std_logic;
-		value  : buffer signed);
+		clk   : in  std_logic;
+		init  : in  std_logic;
+		start : in  signed;
+		stop  : in  signed;
+		step  : in  signed;
+		ended : buffer std_logic;
+		value : buffer signed);
 end;
 
 architecture def of scopeio_iterator is
@@ -43,10 +43,10 @@ begin
 		if rising_edge(clk) then
 			if init='0' then
 				value <= start;
-			elsif finish='0' then
+			elsif ended='0' then
 				value <= value + step;
 			end if;
 		end if;
 	end process;
-	finish <= not setif((step > 0 and value < stop) or (step < 0 and value > stop));
+	ended <= '0' when (step > 0 and value < stop) or (step < 0 and value > stop) else '1';
 end;

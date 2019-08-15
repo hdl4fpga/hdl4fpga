@@ -1,4 +1,4 @@
-vtr--                                                                            --
+--                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
 --                                                                            --
@@ -53,6 +53,7 @@ entity scopeio_axis is
 		btof_align   : out std_logic;
 		btof_bcdirdy : out std_logic;
 		btof_bcdtrdy : in  std_logic;
+		btof_bcdend  : out std_logic;
 		btof_bcddo   : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
@@ -136,39 +137,56 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal tickbcd_trdy  : std_logic;
+	signal value    : signed(3*4-1 downto 0);
+	signal hz_start : signed(value'range);
+	signal hz_stop  : signed(value'range);
+	signal hz_step  : signed(value'range);
+	signal hz_taddr : unsigned(13-1 downto hzstep_bits);
+	signal hz_align : std_logic;
+	signal hz_sign  : std_logic;
+	signal hz_tv    : std_logic;
+
+	signal vt_start : signed(value'range);
+	signal vt_stop  : signed(value'range);
+	signal vt_step  : signed(value'range);
+	signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
+	signal vt_align : std_logic;
+	signal vt_sign  : std_logic;
+	signal vt_tv    : std_logic;
+
 	signal tick_bcdvalue : std_logic_vector(btof_bcddo'length*4-1 downto 0);
 
 begin
 
 	ticks_b : block
 
-		signal tick_frm  : std_logic;
 		signal tick_irdy : std_logic;
 		signal tick_trdy : std_logic;
 
-		signal value : signed(3*4-1 downto 0);
+		signal taddr : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 		signal ended : std_logic;
 		signal init  : std_logic;
 		signal start : signed(value'range);
 		signal stop  : signed(value'range);
 		signal step  : signed(value'range);
 
+		signal bindi_sel : std_logic_vector(0 to 0);
 	begin
 
-		process(clk)
+		taddr_p : process (clk)
 		begin
 			if rising_edge(clk) then
-				if tick_frm='0' then
-					if axis_dv='1' then
-						tick_frm <= '1';
+				if axis_dv='0' then
+					taddr <= (others => '1');
+				elsif btof_bcdtrdy='1' then
+					if btof_bcdtrdy='1' then
+						taddr <= taddr + 1;
 					end if;
-				elsif tick_trdy='1' then
-					tick_frm  <= '0';
 				end if;
 			end if;
 		end process;
-		tick_irdy <= tick_frm;
+		hz_taddr <= taddr(hz_taddr'range);
+		vt_taddr <= taddr(vt_taddr'range);
 
 		start <= hz_start when axis_sel='0' else vt_start;
 		stop  <= hz_stop  when axis_sel='0' else vt_stop;
@@ -185,10 +203,19 @@ begin
 			value => value);
 
 		btof_align <= hz_align when axis_sel='0' else vt_align;
+		btof_sign  <= hz_sign  when axis_sel='0' else vt_sign;
 		btof_neg   <= value(value'left);
-		btof_sign  <= value(value'left) or axis_sel;
-		btof_bindi <= word2byte(scale_1245(neg(value, value(value'left)), axis_scale) & x"f", pll, btof_bindi'length);
 
+		process (clk)
+		begin
+			if rising_edge(clk) then
+			end if;
+		end process;
+
+		btof_bindi <= word2byte(scale_1245(neg(std_logic_vector(value), value(value'left)), axis_scale) & x"f", bindi_sel, btof_bindi'length);
+
+		hz_tv <= not axis_sel;
+		vt_tv <=     axis_sel;
 	end block;
 
 	video_b : block
@@ -214,41 +241,24 @@ begin
 
 		hz_b : block
 
-			signal hz_start : signed(value'range);
-			signal hz_stop  : signed(value'range);
-			signal hz_step  : signed(value'range);
-			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
-			signal hz_align : std_logic;
-
 			signal x        : unsigned(hz_taddr'left downto 0);
 			signal tick     : std_logic_vector(tick_bcdvalue'range);
 
-			signal wr_ena   : std_logic;
 			signal vaddr    : std_logic_vector(x'range);
 			signal vdata    : std_logic_vector(tick'range);
 			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
 
 		begin 
 
-			iterator_p : process (clk)
-			begin
-				if rising_edge(clk) then
-					if tick_frm='0' then
-						hz_taddr <= (others => '1');
-					elsif tick_trdy='1' then
-						hz_taddr <= hz_taddr + 1;
-					end if;
-				end if;
-			end process;
-
 			hz_start <= 
 				mul(to_signed(1,1), unsigned(axis_unit)) +
 				shift_left(
-					resize(mul(signed(axis_base), unsigned(axis_unit)), start'length),
+					resize(mul(signed(axis_base), unsigned(axis_unit)), hz_start'length),
 					axisx_backscale+hztick_bits-hz_taddr'right);
-			hz_stop  <= x"7e";
-			hz_step  <= resize( signed(axis_unit), hz_step'length));
+			hz_stop  <= resize(x"7e", hz_stop'length);
+			hz_step  <= resize( signed(axis_unit), hz_step'length);
 			hz_align <= '1';
+			hz_sign  <= '1';
 
 			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
@@ -259,13 +269,12 @@ begin
 				end if;
 			end process;
 
-			wr_ena <= tickbcd_trdy and not axis_sel;
 			hzmem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**hz_taddr'length*tick_bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => wr_ena,
+				wr_ena  => hz_tv,
 				wr_addr => std_logic_vector(hz_taddr),
 				wr_data => tick_bcdvalue,
 
@@ -320,16 +329,9 @@ begin
 
 		vt_b : block
 
-			signal vt_start : signed(value'range);
-			signal vt_stop  : signed(value'range);
-			signal vt_step  : signed(value'range);
-			signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
-			signal vt_align : std_logic;
-
 			signal y      : unsigned(vt_taddr'left downto 0);
 			signal tick   : std_logic_vector(tick_bcdvalue'range);
 
-			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
 			signal vcol   : std_logic_vector(vttick_bits-1 downto font_bits);
@@ -341,25 +343,15 @@ begin
 
 		begin 
 
-			iterator_p : process (clk)
-			begin
-				if rising_edge(clk) then
-					if tick_frm='0' then
-						vt_taddr <= (others => '1');
-					elsif tick_trdy='1' then
-						vt_taddr <= vt_taddr + 1;
-					end if;
-				end if;
-			end process;
-
 			vt_start <=
 				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit)) +
 				shift_left(
-					resize(mul(-signed(axis_base), unsigned(axis_unit)), start'length),
+					resize(mul(-signed(axis_base), unsigned(axis_unit)), vt_start'length),
 					vt_offset'length-vt_taddr'right);
-			vt_stop <= to_signed(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-			vt_step <= resize(-signed(axis_unit), vt_step'length);
+			vt_stop  <= to_signed(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
+			vt_step  <= resize(-signed(axis_unit), vt_step'length);
 			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
+			vt_sign  <= '0';
 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)
@@ -369,13 +361,12 @@ begin
 				end if;
 			end process;
 
-			wr_ena <= tickbcd_trdy and axis_sel;
 			vt_mem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**vt_taddr'length*tick_bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => wr_ena,
+				wr_ena  => vt_tv,
 				wr_addr => std_logic_vector(vt_taddr),
 				wr_data => tick_bcdvalue,
 

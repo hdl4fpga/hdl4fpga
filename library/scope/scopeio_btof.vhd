@@ -45,6 +45,7 @@ entity scopeio_btof is
 		bcd_frm  : out std_logic_vector;
 		bcd_irdy : out std_logic_vector;
 		bcd_trdy : in  std_logic_vector;
+		bcd_end  : out std_logic;
 		bcd_do   : out std_logic_vector);
 end;
 
@@ -58,7 +59,6 @@ architecture def of scopeio_btof is
 	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
 	signal btofbcd_irdy : std_logic;
 	signal btofbcd_trdy : std_logic_vector(0 to 0);
-	signal btofbcd_end  : std_logic;
 	signal btofbcd_do   : std_logic_vector(4-1 downto 0);
 begin
 
@@ -90,7 +90,7 @@ begin
 		bcd_prec  => prec,
 		bcd_irdy  => btofbcd_irdy,
 		bcd_trdy  => btofbcd_trdy(0),
-		bcd_end   => btofbcd_end,
+		bcd_end   => bcd_end,
 		bcd_do    => btofbcd_do);
 
 	btofbcd_trdy <= wirebus(bcd_trdy, btof_gnt);
