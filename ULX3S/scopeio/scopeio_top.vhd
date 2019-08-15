@@ -52,7 +52,7 @@ architecture beh of ulx3s is
 	constant C_adc_bits: integer := 12; -- don't touch
 	constant C_adc_channels: integer := 4; -- don't touch
         -- scopeio
-	constant inputs: natural := 2; -- number of input channels (traces)
+	constant inputs: natural := 3; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
@@ -410,7 +410,8 @@ begin
 	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
 	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
 
-	trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	--trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	trace_green <= S_usb_rx_count(trace_green'range);
 	--trace_green(C_view_binary_gain+2) <= monitor(1);
 	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 
