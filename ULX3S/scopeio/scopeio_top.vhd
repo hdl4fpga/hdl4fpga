@@ -15,22 +15,22 @@ use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
 	-- vlayout_id
-	-- 0: 1920x1080 @ 60Hz 150MHz unreachable
-	-- 1:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 2 segments
-	-- 2: 1920x1080 @ 30Hz  75MHz
-	-- 3: 1280x768  @ 60Hz  75MHz
-	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
-	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
-	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
+	-- 0: 1920x1080 @ 60Hz 148MHz 16-pix grid 8-pix font 2 segments
+	-- 1:  800x600  @ 60Hz  40MHz
+	-- 2: 1920x1080 @ 30Hz  75MHz NOTE: HARD OVERCLOCK
+	-- 3: 1280x768  @ 60Hz  75MHz NOTE: HARD OVERCLOCK
+	-- 4: 1280x1024 @ 60Hz 108MHz  8-pix grid 4-pix font 1 segment
+	-- 5:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
+	-- 6:  640x480  @ 60Hz  25MHz
 	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 7;
+        constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := true;  -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := false; -- USB  or USB+PS/2 mouse
-        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb:  boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -39,12 +39,12 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := true; -- ADC analog view
+        constant C_view_adc:   boolean := false; -- ADC analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
-        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
+        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
@@ -52,16 +52,16 @@ architecture beh of ulx3s is
 	constant C_adc_bits: integer := 12; -- don't touch
 	constant C_adc_channels: integer := 4; -- don't touch
         -- scopeio
-	constant inputs: natural := 4; -- number of input channels (traces)
+	constant inputs: natural := 3; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := false;
+	constant C_oled_hex_view_usb : boolean := true;
 	constant C_oled_hex_view_net : boolean := false;
-	constant C_oled_hex_view_istream: boolean := true;
+	constant C_oled_hex_view_istream: boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -410,7 +410,8 @@ begin
 	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
 	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
 
-	trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	--trace_green(C_view_binary_gain+3) <= usb_fpga_dp;
+	trace_green <= S_usb_rx_count(trace_green'range);
 	--trace_green(C_view_binary_gain+2) <= monitor(1);
 	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 
@@ -904,7 +905,7 @@ begin
 	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
 --	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
-		min_storage      => 4096, -- samples
+		min_storage      => 8192, -- samples
 		trig1shot        => true,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
