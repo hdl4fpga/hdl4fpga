@@ -91,11 +91,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/scope/scopeio_ticks.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="30"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="13"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
     <file xil_pn:name="../../../library/common/bcddiv2e.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="31"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="9"/>
@@ -169,11 +164,6 @@
     <file xil_pn:name="../../../library/scope/scopeio_downsampler.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="47"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="54"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
-    <file xil_pn:name="../../../library/scope/scopeio_rgtrfile.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="48"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="51"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_trigger.vhd" xil_pn:type="FILE_VHDL">

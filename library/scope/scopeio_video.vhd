@@ -132,7 +132,6 @@ architecture beh of scopeio_video is
 	signal sgmntbtof_bcdfrm  : std_logic;
 	signal sgmntbtof_bcdirdy : std_logic;
 	signal sgmntbtof_bcdtrdy : std_logic;
-	signal sgmntbtof_bcddo   : std_logic_vector(8*4-1 downto 0);
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
@@ -476,11 +475,11 @@ begin
 				btof_bcdirdy  => sgmntbtof_bcdirdy,
 				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
 				btof_bcdend   => btof_bcdend,
-				btof_bcddo    => sgmntbtof_bcddo,
+				btof_bcddo    => btof_bcddo,
 
 				hz_dv         => hz_dv,
 				hz_scale      => hz_scale,
-				hz_base       => hz_slider(hz_slider'left downto axisx_backscale+hztick_bits),
+				hz_base       => hz_slider(time_offset'left downto axisx_backscale+hztick_bits),
 				hz_offset     => hz_segment,
 
 				gain_dv       => gain_dv,

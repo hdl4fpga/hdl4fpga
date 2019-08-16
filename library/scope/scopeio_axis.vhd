@@ -138,7 +138,7 @@ architecture def of scopeio_axis is
 	end;
 
 	signal binvalue : signed(3*4-1 downto 0);
-	signal bcdvalue : unsigned(btof_bcddo'length*8-1 downto 0);
+	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
 	signal hz_start : signed(binvalue'range);
 	signal hz_stop  : signed(binvalue'range);
