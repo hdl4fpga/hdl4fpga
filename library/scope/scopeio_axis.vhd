@@ -51,8 +51,9 @@ entity scopeio_axis is
 		btof_neg     : out std_logic;
 		btof_sign    : out std_logic;
 		btof_align   : out std_logic;
+		btof_bcdfrm  : in  std_logic;
 		btof_bcdirdy : in  std_logic;
-		btof_bcdtrdy : buffer std_logic;
+		btof_bcdtrdy : buffer std_logic := '1';
 		btof_bcdend  : in  std_logic;
 		btof_bcddo   : in  std_logic_vector;
 
@@ -160,9 +161,6 @@ begin
 
 	ticks_b : block
 
-		signal tick_irdy : std_logic;
-		signal tick_trdy : std_logic;
-
 		signal taddr : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 		signal init  : std_logic;
 		signal ena   : std_logic;
@@ -179,7 +177,7 @@ begin
 			if rising_edge(clk) then
 				if axis_dv='0' then
 					taddr <= (others => '1');
-				elsif btof_bcdtrdy='1' then
+				elsif btof_bcdirdy='1' then
 					if btof_bcdtrdy='1' then
 						taddr <= taddr + 1;
 					end if;
@@ -222,13 +220,16 @@ begin
 				if btof_binfrm='1' then
 					if btof_bcdtrdy <= '1' then
 						if btof_bcdend='1' then
-							btof_binfrm <= '0';
+							btof_binfrm  <= '0';
+							btof_binirdy <= '0';
 						end if;
 					end if;
 				elsif axis_dv='1' then
-					btof_binfrm <= '1';
+					btof_binfrm  <= '1';
+					btof_binirdy <= '1';
 				elsif init='0' then
-					btof_binfrm <= '1';
+					btof_binfrm  <= '1';
+					btof_binirdy <= '1';
 				end if;
 			end if;
 		end process;
@@ -255,11 +256,13 @@ begin
 
 
 		bcdvalue_p : process (clk)
+			variable value : unsigned(bcdvalue'range);
 		begin
 			if rising_edge(clk) then
 				if btof_bcdtrdy='1' then
-					bcdvalue(btof_bcddo'range) <= unsigned(btof_bcddo);
-					bcdvalue <= bcdvalue sll btof_bcddo'length;
+					value    := value sll btof_bcddo'length;
+					value(btof_bcddo'length-1 downto 0) := unsigned(btof_bcddo);
+					bcdvalue <= value;
 				end if;
 				hz_tv <= btof_bcdend and btof_bcdtrdy and not axis_sel;
 				vt_tv <= btof_bcdend and btof_bcdtrdy and     axis_sel;

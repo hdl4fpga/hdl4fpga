@@ -115,7 +115,7 @@ architecture beh of scopeio_video is
 	signal btof_binirdy : std_logic_vector(0 to 0);
 	signal btof_bintrdy : std_logic_vector(0 to 0);
 	signal btof_bcdfrm  : std_logic_vector(0 to 0);
-	signal btof_bcdirdy : std_logic_vector(0 to 0);
+	signal btof_bcdirdy : std_logic;
 	signal btof_bcdtrdy : std_logic_vector(0 to 0);
 	signal btof_bcdend  : std_logic;
 	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
@@ -130,7 +130,6 @@ architecture beh of scopeio_video is
 	signal sgmntbtof_bcdsign  : std_logic;
 	signal sgmntbtof_bcdalign : std_logic;
 	signal sgmntbtof_bcdfrm   : std_logic;
-	signal sgmntbtof_bcdirdy  : std_logic;
 	signal sgmntbtof_bcdtrdy  : std_logic;
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
@@ -163,7 +162,8 @@ begin
 
 	btof_binfrm(0)  <= sgmntbtof_binfrm;
 	btof_binirdy(0) <= sgmntbtof_binirdy;
-	sgmntbtof_bintrdy <= btof_bintrdy(0);
+	btof_binirdy(0) <= sgmntbtof_binirdy;
+	btof_bcdtrdy(0) <= sgmntbtof_bcdtrdy;
 	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
 		clk       => rgtr_clk,
@@ -183,6 +183,8 @@ begin
 		bcd_trdy  => btof_bcdtrdy,
 		bcd_end   => btof_bcdend,
 		bcd_do    => btof_bcddo);
+	sgmntbtof_bcdfrm  <= btof_bcdfrm(0);
+	sgmntbtof_bintrdy <= btof_bintrdy(0);
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
@@ -472,7 +474,7 @@ begin
 				btof_sign     => sgmntbtof_bcdsign,
 				btof_align    => sgmntbtof_bcdalign,
 				btof_bcdfrm   => sgmntbtof_bcdfrm,
-				btof_bcdirdy  => sgmntbtof_bcdirdy,
+				btof_bcdirdy  => btof_bcdirdy,
 				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
 				btof_bcdend   => btof_bcdend,
 				btof_bcddo    => btof_bcddo,

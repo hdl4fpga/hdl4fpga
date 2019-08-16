@@ -16,6 +16,7 @@ entity btof is
 		bin_flt    : in  std_logic;
 		bin_di     : in  std_logic_vector;
 
+		bcd_frm    : out std_logic;
 		bcd_trdy   : in  std_logic := '1';
 		bcd_irdy   : out std_logic;
 
@@ -216,8 +217,9 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_end  <= stof_end;
+	bcd_frm  <= frm;
 	bcd_irdy <= stof_trdy;
+	bcd_end  <= stof_end;
 	bcd_do   <= stof_do;
 
 end;

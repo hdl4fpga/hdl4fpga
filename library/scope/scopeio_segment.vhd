@@ -187,6 +187,7 @@ begin
 			btof_neg     => btof_neg,
 			btof_sign    => btof_sign,
 			btof_align   => btof_align,
+			btof_bcdfrm  => btof_bcdfrm,
 			btof_bcdirdy => btof_bcdirdy,
 			btof_bcdtrdy => btof_bcdtrdy,
 			btof_bcdend  => btof_bcdend,
