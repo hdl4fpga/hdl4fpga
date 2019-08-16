@@ -30,6 +30,7 @@ entity scopeio_segment is
 		btof_bcdfrm   : in  std_logic;
 		btof_bcdirdy  : out std_logic;
 		btof_bcdtrdy  : in  std_logic;
+		btof_bcdend   : in  std_logic;
 		btof_bcddo    : in  std_logic_vector;
 
 		hz_dv         : in  std_logic;
@@ -188,6 +189,7 @@ begin
 			btof_align   => btof_align,
 			btof_bcdirdy => btof_bcdirdy,
 			btof_bcdtrdy => btof_bcdtrdy,
+			btof_bcdend  => btof_bcdend,
 			btof_bcddo   => btof_bcddo,
 
 			video_clk   => video_clk,

@@ -117,6 +117,7 @@ architecture beh of scopeio_video is
 	signal btof_bcdfrm  : std_logic_vector(0 to 0);
 	signal btof_bcdirdy : std_logic_vector(0 to 0);
 	signal btof_bcdtrdy : std_logic_vector(0 to 0);
+	signal btof_bcdend  : std_logic;
 	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
 
 
@@ -181,6 +182,7 @@ begin
 		bcd_frm  => btof_bcdfrm,
 		bcd_irdy => btof_bcdirdy,
 		bcd_trdy => btof_bcdtrdy,
+		bcd_end  => btof_bcdend,
 		bcd_do   => btof_bcddo);
 
 	video_e : entity hdl4fpga.video_sync
@@ -462,9 +464,9 @@ begin
 				rgtr_id       => rgtr_id,
 				rgtr_data     => rgtr_data,
 
-				btof_binfrm      => sgmntbtof_binfrm ,
-				btof_binirdy     => sgmntbtof_binirdy,
-				btof_bintrdy     => sgmntbtof_bintrdy,
+				btof_binfrm   => sgmntbtof_binfrm ,
+				btof_binirdy  => sgmntbtof_binirdy,
+				btof_bintrdy  => sgmntbtof_bintrdy,
 				btof_bindi    => sgmntbtof_bindi,
 				btof_unit     => sgmntbtof_unit,
 				btof_neg      => sgmntbtof_neg,
@@ -473,6 +475,7 @@ begin
 				btof_bcdfrm   => sgmntbtof_bcdfrm,
 				btof_bcdirdy  => sgmntbtof_bcdirdy,
 				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
+				btof_bcdend   => btof_bcdend,
 				btof_bcddo    => sgmntbtof_bcddo,
 
 				hz_dv         => hz_dv,

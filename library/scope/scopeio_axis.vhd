@@ -53,7 +53,7 @@ entity scopeio_axis is
 		btof_align   : out std_logic;
 		btof_bcdirdy : out std_logic;
 		btof_bcdtrdy : in  std_logic;
-		btof_bcdend  : out std_logic;
+		btof_bcdend  : in  std_logic;
 		btof_bcddo   : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
@@ -138,7 +138,7 @@ architecture def of scopeio_axis is
 	end;
 
 	signal binvalue : signed(3*4-1 downto 0);
-	signal bcdvalue : std_logic_vector(btof_bcddo'length*8-1 downto 0);
+	signal bcdvalue : unsigned(btof_bcddo'length*8-1 downto 0);
 
 	signal hz_start : signed(binvalue'range);
 	signal hz_stop  : signed(binvalue'range);
@@ -212,7 +212,7 @@ begin
 				if axis_dv='0' then
 					bindi_sel <= (others => '0');
 				elsif axis_dv='1' then
-					bindi_sel <= std_logic_vector(unsigned(bin_sel) + 1);
+					bindi_sel <= std_logic_vector(unsigned(bindi_sel) + 1);
 				end if;
 			end if;
 		end process;
@@ -222,8 +222,18 @@ begin
 			bindi_sel, 
 			btof_bindi'length);
 
-		hz_tv <= not axis_sel and btod_bcdend and btof_bcdtdry;
-		vt_tv <=     axis_sel and btod_bcdend and btof_bcdtdry;
+
+		bcdvalue_p : process (clk)
+		begin
+			if rising_edge(clk) then
+				if btof_bcdtrdy='1' then
+					hz_tv    <= btof_bcdend and not axis_sel;
+					vt_tv    <= btof_bcdend and     axis_sel;
+					bcdvalue(btof_bcddo'range) <= unsigned(btof_bcddo);
+					bcdvalue <= bcdvalue sll btof_bcddo'length;
+				end if;
+			end if;
+		end process;
 
 	end block;
 
@@ -285,7 +295,7 @@ begin
 				wr_clk  => clk,
 				wr_ena  => hz_tv,
 				wr_addr => std_logic_vector(hz_taddr),
-				wr_data => bcdvalue,
+				wr_data => std_logic_vector(bcdvalue),
 
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
@@ -377,7 +387,7 @@ begin
 				wr_clk  => clk,
 				wr_ena  => vt_tv,
 				wr_addr => std_logic_vector(vt_taddr),
-				wr_data => bcdvalue,
+				wr_data => std_logic_vector(bcdvalue),
 
 				rd_addr => vaddr(vt_taddr'range),
 				rd_data => vdata);
