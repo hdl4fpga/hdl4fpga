@@ -29,6 +29,7 @@ entity scopeio_iterator is
 	port (
 		clk   : in  std_logic;
 		init  : in  std_logic;
+		ena   : in  std_logic;
 		start : in  signed;
 		stop  : in  signed;
 		step  : in  signed;
@@ -41,10 +42,12 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if init='0' then
+			if init='1' then
 				value <= start;
-			elsif ended='0' then
-				value <= value + step;
+			elsif ena='1' then
+				if ended='0' then
+					value <= value + step;
+				end if;
 			end if;
 		end if;
 	end process;

@@ -43,7 +43,7 @@ entity scopeio_axis is
 		axis_scale  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
 
-		btof_frm     : out std_logic;
+		btof_binfrm  : buffer std_logic;
 		btof_binirdy : out std_logic;
 		btof_bintrdy : in  std_logic;
 		btof_bindi   : out std_logic_vector;
@@ -51,8 +51,8 @@ entity scopeio_axis is
 		btof_neg     : out std_logic;
 		btof_sign    : out std_logic;
 		btof_align   : out std_logic;
-		btof_bcdirdy : out std_logic;
-		btof_bcdtrdy : in  std_logic;
+		btof_bcdirdy : in  std_logic;
+		btof_bcdtrdy : buffer std_logic;
 		btof_bcdend  : in  std_logic;
 		btof_bcddo   : in  std_logic_vector;
 
@@ -164,11 +164,12 @@ begin
 		signal tick_trdy : std_logic;
 
 		signal taddr : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
-		signal ended : std_logic;
 		signal init  : std_logic;
+		signal ena   : std_logic;
 		signal start : signed(binvalue'range);
 		signal stop  : signed(binvalue'range);
 		signal step  : signed(binvalue'range);
+		signal ended : std_logic;
 
 		signal bindi_sel : std_logic_vector(0 to 0);
 	begin
@@ -192,15 +193,45 @@ begin
 		stop  <= hz_stop  when axis_sel='0' else vt_stop;
 		step  <= hz_step  when axis_sel='0' else vt_step;
 
+		init_p : process (clk)
+		begin
+			if rising_edge(clk) then
+				if axis_dv='1' then
+					init <= '0';
+				elsif ended='1' then
+					init <= '1';
+				end if;
+			end if;
+		end process;
+
+		ena <= btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		ticks_e : entity hdl4fpga.scopeio_iterator
 		port map (
 			clk   => clk,
 			init  => init,
+			ena   => ena,
 			start => start,
 			stop  => stop,
 			step  => step,
 			ended => ended,
 			value => binvalue);
+
+		frm_p : process (clk)
+		begin
+			if rising_edge(clk) then
+				if btof_binfrm='1' then
+					if btof_bcdtrdy <= '1' then
+						if btof_bcdend='1' then
+							btof_binfrm <= '0';
+						end if;
+					end if;
+				elsif axis_dv='1' then
+					btof_binfrm <= '1';
+				elsif init='0' then
+					btof_binfrm <= '1';
+				end if;
+			end if;
+		end process;
 
 		btof_align <= hz_align when axis_sel='0' else vt_align;
 		btof_sign  <= hz_sign  when axis_sel='0' else vt_sign;
@@ -227,11 +258,11 @@ begin
 		begin
 			if rising_edge(clk) then
 				if btof_bcdtrdy='1' then
-					hz_tv    <= btof_bcdend and not axis_sel;
-					vt_tv    <= btof_bcdend and     axis_sel;
 					bcdvalue(btof_bcddo'range) <= unsigned(btof_bcddo);
 					bcdvalue <= bcdvalue sll btof_bcddo'length;
 				end if;
+				hz_tv <= btof_bcdend and btof_bcdtrdy and not axis_sel;
+				vt_tv <= btof_bcdend and btof_bcdtrdy and     axis_sel;
 			end if;
 		end process;
 

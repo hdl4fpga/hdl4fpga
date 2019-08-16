@@ -30,23 +30,23 @@ use hdl4fpga.std.all;
 
 entity scopeio_btof is
 	port (
-		clk      : in  std_logic;
-		bin_frm  : in  std_logic_vector;
-		bin_irdy : in  std_logic_vector;
-		bin_trdy : out std_logic_vector;
-		bin_flt  : in  std_logic;
-		bin_di   : in  std_logic_vector;
-		width    : in  std_logic_vector := b"1000";
-		neg      : in  std_logic;
-		sign     : in  std_logic;
-		align    : in  std_logic;
-		unit     : in  std_logic_vector := b"0000";
-		prec     : in  std_logic_vector := b"1101";
-		bcd_frm  : out std_logic_vector;
-		bcd_irdy : out std_logic_vector;
-		bcd_trdy : in  std_logic_vector;
-		bcd_end  : out std_logic;
-		bcd_do   : out std_logic_vector);
+		clk       : in  std_logic;
+		bin_frm   : in  std_logic_vector;
+		bin_irdy  : in  std_logic_vector;
+		bin_trdy  : out std_logic_vector;
+		bin_flt   : in  std_logic;
+		bin_di    : in  std_logic_vector;
+		bcd_width : in  std_logic_vector := b"1000";
+		bcd_neg   : in  std_logic;
+		bcd_sign  : in  std_logic;
+		bcd_align : in  std_logic;
+		bcd_unit  : in  std_logic_vector := b"0000";
+		bcd_prec  : in  std_logic_vector := b"1101";
+		bcd_frm   : out std_logic_vector;
+		bcd_irdy  : out std_logic_vector;
+		bcd_trdy  : in  std_logic_vector;
+		bcd_end   : out std_logic;
+		bcd_do    : out std_logic_vector);
 end;
 
 architecture def of scopeio_btof is
@@ -82,19 +82,18 @@ begin
 		bin_trdy  => btofbin_trdy,
 		bin_di    => btofbin_di,
 		bin_flt   => bin_flt,
-		bin_sign  => sign,
-		bin_neg   => neg,
-		bcd_align => align,
-		bcd_width => width,
-		bcd_unit  => unit,
-		bcd_prec  => prec,
+		bin_sign  => bcd_sign,
+		bin_neg   => bcd_neg,
+		bcd_align => bcd_align,
+		bcd_width => bcd_width,
+		bcd_unit  => bcd_unit,
+		bcd_prec  => bcd_prec,
 		bcd_irdy  => btofbcd_irdy,
 		bcd_trdy  => btofbcd_trdy(0),
 		bcd_end   => bcd_end,
-		bcd_do    => btofbcd_do);
+		bcd_do    => bcd_do);
 
 	btofbcd_trdy <= wirebus(bcd_trdy, btof_gnt);
 	bcd_irdy <= btof_gnt and (btof_gnt'range => btofbcd_irdy);
-	bcd_do   <= btofbcd_do;
 
 end;

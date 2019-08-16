@@ -121,17 +121,17 @@ architecture beh of scopeio_video is
 	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
 
 
-	signal sgmntbtof_binfrm  : std_logic;
-	signal sgmntbtof_binirdy : std_logic;
-	signal sgmntbtof_bintrdy : std_logic;
-	signal sgmntbtof_bindi   : std_logic_vector(4*4-1 downto 0);
-	signal sgmntbtof_unit    : std_logic_vector(4-1 downto 0);
-	signal sgmntbtof_neg     : std_logic;
-	signal sgmntbtof_sign    : std_logic;
-	signal sgmntbtof_align   : std_logic;
-	signal sgmntbtof_bcdfrm  : std_logic;
-	signal sgmntbtof_bcdirdy : std_logic;
-	signal sgmntbtof_bcdtrdy : std_logic;
+	signal sgmntbtof_binfrm   : std_logic;
+	signal sgmntbtof_binirdy  : std_logic;
+	signal sgmntbtof_bintrdy  : std_logic;
+	signal sgmntbtof_bindi    : std_logic_vector(4*4-1 downto 0);
+	signal sgmntbtof_bcdunit  : std_logic_vector(4-1 downto 0);
+	signal sgmntbtof_bcdneg   : std_logic;
+	signal sgmntbtof_bcdsign  : std_logic;
+	signal sgmntbtof_bcdalign : std_logic;
+	signal sgmntbtof_bcdfrm   : std_logic;
+	signal sgmntbtof_bcdirdy  : std_logic;
+	signal sgmntbtof_bcdtrdy  : std_logic;
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
@@ -166,23 +166,23 @@ begin
 	sgmntbtof_bintrdy <= btof_bintrdy(0);
 	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
-		clk      => rgtr_clk,
-		bin_frm  => btof_binfrm,
-		bin_irdy => btof_binirdy,
-		bin_trdy => btof_bintrdy,
+		clk       => rgtr_clk,
+		bin_frm   => btof_binfrm,
+		bin_irdy  => btof_binirdy,
+		bin_trdy  => btof_bintrdy,
 		bin_di    => sgmntbtof_bindi,
-		bin_flt    => '0',
-		width    => b"1000",
-		sign     => sgmntbtof_sign,
-		neg      => sgmntbtof_neg,
-		unit     => sgmntbtof_unit,
-		align    => sgmntbtof_align,
-		prec     => b"1111",
-		bcd_frm  => btof_bcdfrm,
-		bcd_irdy => btof_bcdirdy,
-		bcd_trdy => btof_bcdtrdy,
-		bcd_end  => btof_bcdend,
-		bcd_do   => btof_bcddo);
+		bin_flt   => '0',
+		bcd_width => b"1000",
+		bcd_sign  => sgmntbtof_bcdsign,
+		bcd_neg   => sgmntbtof_bcdneg,
+		bcd_unit  => sgmntbtof_bcdunit,
+		bcd_align => sgmntbtof_bcdalign,
+		bcd_prec  => b"1111",
+		bcd_frm   => btof_bcdfrm,
+		bcd_irdy  => btof_bcdirdy,
+		bcd_trdy  => btof_bcdtrdy,
+		bcd_end   => btof_bcdend,
+		bcd_do    => btof_bcddo);
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
@@ -463,14 +463,14 @@ begin
 				rgtr_id       => rgtr_id,
 				rgtr_data     => rgtr_data,
 
-				btof_binfrm   => sgmntbtof_binfrm ,
+				btof_binfrm   => sgmntbtof_binfrm,
 				btof_binirdy  => sgmntbtof_binirdy,
 				btof_bintrdy  => sgmntbtof_bintrdy,
 				btof_bindi    => sgmntbtof_bindi,
-				btof_unit     => sgmntbtof_unit,
-				btof_neg      => sgmntbtof_neg,
-				btof_sign     => sgmntbtof_sign,
-				btof_align    => sgmntbtof_align,
+				btof_unit     => sgmntbtof_bcdunit,
+				btof_neg      => sgmntbtof_bcdneg,
+				btof_sign     => sgmntbtof_bcdsign,
+				btof_align    => sgmntbtof_bcdalign,
 				btof_bcdfrm   => sgmntbtof_bcdfrm,
 				btof_bcdirdy  => sgmntbtof_bcdirdy,
 				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
