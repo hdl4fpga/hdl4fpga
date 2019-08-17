@@ -169,23 +169,7 @@ begin
 		signal step  : signed(binvalue'range);
 		signal ended : std_logic;
 
-		signal bindi_sel : std_logic_vector(0 to 0);
 	begin
-
-		taddr_p : process (clk)
-		begin
-			if rising_edge(clk) then
-				if axis_dv='0' then
-					taddr <= (others => '1');
-				elsif btof_bcdirdy='1' then
-					if btof_bcdtrdy='1' then
-						taddr <= taddr + 1;
-					end if;
-				end if;
-			end if;
-		end process;
-		hz_taddr <= taddr(hz_taddr'length-1 downto 0);
-		vt_taddr <= taddr(vt_taddr'length-1 downto 0);
 
 		start <= hz_start when axis_sel='0' else vt_start;
 		stop  <= hz_stop  when axis_sel='0' else vt_stop;
@@ -202,7 +186,7 @@ begin
 			end if;
 		end process;
 
-		ena <= btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
+		ena <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		ticks_e : entity hdl4fpga.scopeio_iterator
 		port map (
 			clk   => clk,
@@ -238,21 +222,36 @@ begin
 		btof_sign  <= hz_sign  when axis_sel='0' else vt_sign;
 		btof_neg   <= binvalue(binvalue'left);
 
-		bindi_sel_p : process (clk)
+		bindi_p : process (clk)
+			variable sel : std_logic_vector(0 to unsigned_num_bits(binvalue'length/btof_bindi'length)-1);
 		begin
 			if rising_edge(clk) then
-				if axis_dv='0' then
-					bindi_sel <= (others => '0');
-				elsif axis_dv='1' then
-					bindi_sel <= std_logic_vector(unsigned(bindi_sel) + 1);
+				if btof_binfrm='0' then
+					sel := (others => '0');
+				elsif btof_bintrdy='1' then
+					sel := std_logic_vector(unsigned(sel) + 1);
 				end if;
+
+				btof_bindi <= word2byte(
+					scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), axis_scale) & x"f",
+					sel, 
+					btof_bindi'length);
+
 			end if;
 		end process;
 
-		btof_bindi <= word2byte(
-			scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), axis_scale) & x"f",
-			bindi_sel, 
-			btof_bindi'length);
+		taddr_p : process (clk)
+		begin
+			if rising_edge(clk) then
+				if axis_dv='0' then
+					taddr <= (others => '1');
+				elsif ena='1' then
+					taddr <= taddr + 1;
+				end if;
+			end if;
+		end process;
+		hz_taddr <= taddr(hz_taddr'length-1 downto 0);
+		vt_taddr <= taddr(vt_taddr'length-1 downto 0);
 
 
 		bcdvalue_p : process (clk)

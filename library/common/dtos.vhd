@@ -87,7 +87,7 @@ begin
 		bcd_do  => dtos_do,
 		bcd_cy  => dtos_cy);
 
-	process (frm, clk)
+	process (clk)
 	begin
 		if rising_edge(clk) then
 			case state is

@@ -132,13 +132,13 @@ begin
 	process (downsampling, video_frm, video_clk)
 		variable q : std_logic;
 	begin
+		if rising_edge(video_clk) then
+			q := video_frm;
+		end if;
 		if downsampling='0' then
 			dv1 <= q and video_frm;
 		else
 			dv1 <= video_frm;
-		end if;
-		if rising_edge(video_clk) then
-			q := video_frm;
 		end if;
 	end process;
 

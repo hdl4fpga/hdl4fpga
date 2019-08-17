@@ -94,6 +94,6 @@ begin
 		bcd_do    => bcd_do);
 
 	bin_trdy <= btof_gnt and (btof_gnt'range => btofbin_trdy);
-	bcd_frm  <= btof_gnt and (btof_gnt'range => btofbcd_frm);
+	bcd_frm  <= btof_gnt and (btof_gnt'range => bin_frm(0));
 
 end;
