@@ -52,6 +52,10 @@ architecture scopeio_axis of testbench is
 	signal btof_bcdend   : std_logic;
 	signal btof_bcddo    : std_logic_vector(4-1 downto 0);
 
+	signal hz_offset     : std_logic_vector(12-1 downto 0);
+	signal vt_offset     : std_logic_vector(9-1 downto 0);
+	signal video_hcntr     : std_logic_vector(12-1 downto 0);
+	signal video_vcntr     : std_logic_vector(12-1 downto 0);
 begin
 
 	rst <= '1', '0' after 20 ns;
@@ -95,18 +99,20 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
+		latency       => 4,
+		axis_unit     => std_logic_vector(to_unsigned(25,5)),
 		layout        => displaylayout_table(1))
 	port map (
 		clk           => clk,
 		axis_dv       => axis_dv,
-		axis_sel      => axis_sel,
-		axis_base     => axis_base,
-		axis_scale    => axis_scale,
+		axis_sel      => '0',
+		axis_base     => x"0",
+		axis_scale    => x"0",
 		btof_binfrm   => btof_binfrm(0),
 		btof_binirdy  => btof_binirdy(0),
 		btof_bintrdy  => btof_bintrdy(0),
 		btof_bindi => btof_bindi,
---		btof_bcdunit  => btof_bcdunit,
+		btof_bcdunit  => btof_bcdunit,
 		btof_bcdneg   => btof_bcdneg,
 		btof_bcdsign  => btof_bcdsign,
 		btof_bcdalign => btof_bcdalign,
@@ -114,5 +120,16 @@ begin
 		btof_bcdirdy  => btof_bcdirdy,
 		btof_bcdtrdy  => btof_bcdtrdy(0),
 		btof_bcdend   => btof_bcdend,
-		btof_bcddo    => btof_bcddo);
+		btof_bcddo    => btof_bcddo,
+
+		video_clk    => '1',
+		video_hcntr  => video_hcntr,
+		video_vcntr  => video_vcntr,
+
+		hz_offset    => hz_offset,
+		video_hzon   => '0',
+
+		vt_offset    => vt_offset,
+		video_vton   => '0');
+
 end;

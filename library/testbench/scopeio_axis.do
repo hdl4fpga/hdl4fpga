@@ -1,14 +1,19 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /testbench/rst
-add wave -noupdate /testbench/clk
-add wave -noupdate /testbench/axis_dv
-add wave -noupdate /testbench/axis_sel
-add wave -noupdate /testbench/axis_scale
-add wave -noupdate /testbench/axis_base
+add wave -noupdate /testbench/axis_e/axis_dv
+add wave -noupdate /testbench/axis_e/axis_sel
+add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_scale
+add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_base
+add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/init
+add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/ena
+add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/start
+add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/stop
+add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/step
+add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/ended
+add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/value
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ns} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {38 ns} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
