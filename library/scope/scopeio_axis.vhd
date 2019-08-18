@@ -243,9 +243,9 @@ begin
 		taddr_p : process (clk)
 		begin
 			if rising_edge(clk) then
-				if axis_dv='0' then
+				if init='1' then
 					taddr <= (others => '1');
-				elsif ena='1' then
+				elsif true or ena='1' then
 					taddr <= taddr + 1;
 				end if;
 			end if;
@@ -263,7 +263,8 @@ begin
 					value(btof_bcddo'length-1 downto 0) := unsigned(btof_bcddo);
 					bcdvalue <= value;
 				end if;
-				hz_tv <= btof_bcdend and btof_bcdtrdy and not axis_sel;
+				bcdvalue <= x"1234567";
+				hz_tv <= not init; --btof_bcdend and btof_bcdtrdy and not axis_sel;
 				vt_tv <= btof_bcdend and btof_bcdtrdy and     axis_sel;
 			end if;
 		end process;
