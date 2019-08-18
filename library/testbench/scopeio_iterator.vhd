@@ -27,66 +27,33 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture scopeio_formatu of testbench is
+architecture scopeio_iterator of testbench is
 
-	signal rst      : std_logic := '0';
-	signal clk      : std_logic := '0';
-	signal frm      : std_logic;
-	signal irdy     : std_logic;
-	signal trdy     : std_logic;
-	signal wu_frm   : std_logic;
-	signal wu_irdy  : std_logic;
-	signal wu_trdy  : std_logic;
-	signal wu_value : std_logic_vector(4*4-1 downto 0);
-	signal value    : std_logic_vector(3*4-1 downto 0);
-	signal format   : std_logic_vector(0 to 8*4-1);
+	signal clk   : std_logic := '0';
+
+	signal value : signed(3*4-1 downto 0);
+
+	signal init  : std_logic;
+	signal ena   : std_logic := '1';
+	signal start : signed(value'range) := x"000";
+	signal stop  : signed(value'range) := x"010";
+	signal step  : signed(value'range) := x"003";
+	signal ended : std_logic;
 
 begin
 
-	rst <= '1', '0' after 35 ns;
-	clk <= not clk after 10 ns;
+	init <= ended;
+	clk  <= not clk after 10 ns;
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			if rst='1' then
-				frm  <= '0';
-			else
-				frm <= '1';
-			end if;
-		end if;
-	end process;
-
-	irdy <= frm;
-	ticks_e : entity hdl4fpga.scopeio_ticks
+	iterator_e : entity hdl4fpga.scopeio_iterator
 	port map (
-		clk      => clk,
-		frm      => frm,
-		irdy     => irdy,
-		trdy     => trdy,
-		base     => x"000",
-		step     => x"019",
-		last     => x"005",
-		wu_frm   => wu_frm,
-		wu_irdy  => wu_irdy,
-		wu_trdy  => wu_trdy,
-		wu_value => value);
-	
-	wu_value <= value & x"f";
-
-	du : entity hdl4fpga.scopeio_formatu
-	port map (
-		clk    => clk,
-		frm    => wu_frm,
-		irdy   => wu_irdy,
-		trdy   => wu_trdy,
-		width  => b"1000",
-		unit   => b"0000",
-		sign   => '1',
-		neg    => '1',
-		align  => '0',
-		prec   => b"1111",
-		float  => wu_value,
-		format => format);
+		clk   => clk,
+		init  => init,
+		ena   => ena,
+		start => start,
+		stop  => stop,
+		step  => step,
+		ended => ended,
+		value => value);
 
 end;
