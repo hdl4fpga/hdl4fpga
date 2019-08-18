@@ -79,7 +79,7 @@ architecture def of scopeio_segment is
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
 	signal vt_offset : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 
-	signal axis_dv      : std_logic := '0';
+	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
@@ -133,31 +133,14 @@ begin
 	end block;
 
 	axis_b : block
+		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
 		signal v_offset : std_logic_vector(vt_offset'range);
 	begin
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if vt_dv='1' or gain_dv='1' then
-					axis_sel <= '1';
-					axis_dv  <= '1';
-				elsif hz_dv='1' then
-					axis_sel <= '0';
-					axis_dv  <= '1';
-				else
-					axis_dv  <= '0';
-				end if;
-			end if;
-		end process;
+		axis_sel   <= vt_dv;
+		axis_dv    <= vt_dv or hz_dv;
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		bias_p : process (rgtr_clk)
-			constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
-		begin
-			if rising_edge(rgtr_clk) then
-				v_offset <= std_logic_vector(unsigned(vt_offset) - bias);
-			end if;
-		end process;
+		v_offset   <= std_logic_vector(unsigned(vt_offset) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);

@@ -97,7 +97,7 @@ begin
 	end process;
  
 	rgtr_id   <= rid(rgtr_id'length-1 downto 0);
-	rgtr_dv   <= ena and len(0) and ptr(0);
+	rgtr_dv   <= ena and dv and len(0) and ptr(0);
 	rgtr_data <= val;
 
 --	mem_b : block

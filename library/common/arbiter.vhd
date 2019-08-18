@@ -36,36 +36,19 @@ entity arbiter is
 end;
 
 architecture mix of arbiter is
-	alias  req : std_logic_vector(1 to bus_req'length) is bus_req;
-	signal gnt : std_logic_vector(1 to bus_gnt'length);
 begin
 
 	process(clk)
-		variable id : unsigned(0 to unsigned_num_bits(bus_req'length-1)-1);
 	begin
 		if rising_edge(clk) then
-			if id=(id'range => '0')then
-				for i in req'range loop
-					if req(i)/='0' then
-						id     := to_unsigned(i, id'length);
-						gnt(i) <= req(i);
-						exit;
-					end if;
-				end loop;
-			elsif req(to_integer(id))='0' then
-				id  := (others => '0');
-				gnt <= (gnt'range => '0');
-				for i in req'range loop
-					if req(i)/='0' then
-						id     := to_unsigned(i, id'length);
-						gnt(i) <= req(i);
-						exit;
-					end if;
-				end loop;
-			end if;
+			bus_gnt <= (bus_gnt'range => '0');
+			for i in bus_req'range loop
+				if bus_req(i)='1' then
+					bus_gnt(i) <= bus_req(i); 
+					exit;
+				end if;
+			end loop;
 		end if;
 	end process;
-
-	bus_gnt  <= gnt and req;
 
 end;

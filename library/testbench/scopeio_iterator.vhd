@@ -42,7 +42,7 @@ architecture scopeio_iterator of testbench is
 
 begin
 
-	init <= ended;
+	init <= '1', '0' after 20 ns; --ended;
 	clk  <= not clk after 10 ns;
 
 	iterator_e : entity hdl4fpga.scopeio_iterator
