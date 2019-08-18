@@ -138,25 +138,25 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal binvalue : signed(3*4-1 downto 0);
+	signal binvalue : std_logic_vector(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	signal hz_start : signed(binvalue'range);
-	signal hz_stop  : signed(binvalue'range);
-	signal hz_step  : signed(binvalue'range);
+	signal hz_start : std_logic_vector(binvalue'range);
+	signal hz_stop  : std_logic_vector(binvalue'range);
+	signal hz_step  : std_logic_vector(binvalue'range);
 	signal hz_taddr : unsigned(13-1 downto hzstep_bits);
 	signal hz_align : std_logic;
 	signal hz_sign  : std_logic;
-	signal hz_ena : std_logic;
+	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	signal vt_start : signed(binvalue'range);
-	signal vt_stop  : signed(binvalue'range);
-	signal vt_step  : signed(binvalue'range);
+	signal vt_start : std_logic_vector(binvalue'range);
+	signal vt_stop  : std_logic_vector(binvalue'range);
+	signal vt_step  : std_logic_vector(binvalue'range);
 	signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
 	signal vt_align : std_logic;
 	signal vt_sign  : std_logic;
-	signal vt_ena : std_logic;
+	signal vt_ena   : std_logic;
 	signal vt_tv    : std_logic;
 
 begin
@@ -166,9 +166,9 @@ begin
 		signal taddr : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 		signal init  : std_logic;
 		signal ena   : std_logic;
-		signal start : signed(binvalue'range);
-		signal stop  : signed(binvalue'range);
-		signal step  : signed(binvalue'range);
+		signal start : std_logic_vector(binvalue'range);
+		signal stop  : std_logic_vector(binvalue'range);
+		signal step  : std_logic_vector(binvalue'range);
 		signal ended : std_logic;
 
 	begin
@@ -310,13 +310,13 @@ begin
 
 		begin 
 
-			hz_start <= 
+			hz_start <= std_logic_vector(
 				mul(to_signed(1,1), unsigned(axis_unit)) +
 				shift_left(
 					resize(mul(signed(axis_base), unsigned(axis_unit)), hz_start'length),
-					axisx_backscale+hztick_bits-hz_taddr'right);
-			hz_stop  <= resize(x"7e", hz_stop'length);
-			hz_step  <= resize( signed(axis_unit), hz_step'length);
+					axisx_backscale+hztick_bits-hz_taddr'right));
+			hz_stop  <= std_logic_vector(resize(signed'(x"7e"), hz_stop'length));
+			hz_step  <= std_logic_vector(resize(signed(axis_unit), hz_step'length));
 			hz_align <= '1';
 			hz_sign  <= '1';
 
@@ -403,13 +403,13 @@ begin
 
 		begin 
 
-			vt_start <=
+			vt_start <= std_logic_vector(
 				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit)) +
 				shift_left(
 					resize(mul(-signed(axis_base), unsigned(axis_unit)), vt_start'length),
-					vt_offset'length-vt_taddr'right);
-			vt_stop  <= to_signed(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-			vt_step  <= resize(-signed(axis_unit), vt_step'length);
+					vt_offset'length-vt_taddr'right));
+			vt_stop  <= std_logic_vector(to_signed(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length)); 
+			vt_step  <= std_logic_vector(resize(-signed(axis_unit), vt_step'length));
 			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 			vt_sign  <= '0';
 

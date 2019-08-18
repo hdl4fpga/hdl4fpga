@@ -23,10 +23,10 @@ entity scopeio_segment is
 		btof_binirdy  : out std_logic;
 		btof_bintrdy  : in  std_logic;
 		btof_bindi    : out std_logic_vector;
-		btof_unit     : out std_logic_vector;
-		btof_neg      : out std_logic;
-		btof_sign     : out std_logic;
-		btof_align    : out std_logic;
+		btof_bcdunit  : out std_logic_vector;
+		btof_bcdneg   : out std_logic;
+		btof_bcdsign  : out std_logic;
+		btof_bcdalign : out std_logic;
 		btof_bcdfrm   : in  std_logic;
 		btof_bcdirdy  : in  std_logic;
 		btof_bcdtrdy  : buffer std_logic;
@@ -151,42 +151,42 @@ begin
 
 		axis_e : entity hdl4fpga.scopeio_axis
 		generic map (
-			latency     => latency,
-			axis_unit   => axis_unit,
-			layout      => layout)
+			latency       => latency,
+			axis_unit     => axis_unit,
+			layout        => layout)
 		port map (
-			clk         => rgtr_clk,
+			clk           => rgtr_clk,
 
-			axis_dv     => axis_dv,
-			axis_sel    => axis_sel,
-			axis_base   => axis_base,
-			axis_scale  => axis_scale,
+			axis_dv       => axis_dv,
+			axis_sel      => axis_sel,
+			axis_base     => axis_base,
+			axis_scale    => axis_scale,
 
-			btof_binfrm  => btof_binfrm,
-			btof_binirdy => btof_binirdy,
-			btof_bintrdy => btof_bintrdy,
-			btof_bindi   => btof_bindi,
-			btof_unit    => btof_unit,
-			btof_neg     => btof_neg,
-			btof_sign    => btof_sign,
-			btof_align   => btof_align,
-			btof_bcdfrm  => btof_bcdfrm,
-			btof_bcdirdy => btof_bcdirdy,
-			btof_bcdtrdy => btof_bcdtrdy,
-			btof_bcdend  => btof_bcdend,
-			btof_bcddo   => btof_bcddo,
+			btof_binfrm   => btof_binfrm,
+			btof_binirdy  => btof_binirdy,
+			btof_bintrdy  => btof_bintrdy,
+			btof_bindi    => btof_bindi,
+			btof_bcdunit  => btof_bcdunit,
+			btof_bcdneg   => btof_bcdneg,
+			btof_bcdsign  => btof_bcdsign,
+			btof_bcdalign => btof_bcdalign,
+			btof_bcdfrm   => btof_bcdfrm,
+			btof_bcdirdy  => btof_bcdirdy,
+			btof_bcdtrdy  => btof_bcdtrdy,
+			btof_bcdend   => btof_bcdend,
+			btof_bcddo    => btof_bcddo,
 
-			video_clk   => video_clk,
-			video_hcntr => x,
-			video_vcntr => y,
+			video_clk     => video_clk,
+			video_hcntr   => x,
+			video_vcntr   => y,
 
-			hz_offset   => hz_offset,
-			video_hzon  => hz_on,
-			video_hzdot => hz_dot,
+			hz_offset     => hz_offset,
+			video_hzon    => hz_on,
+			video_hzdot   => hz_dot,
 
-			vt_offset   => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
-			video_vton  => vt_on,
-			video_vtdot => vt_dot);
+			vt_offset     => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
+			video_vton    => vt_on,
+			video_vtdot   => vt_dot);
 	end block;
 
 	trigger_b : block 

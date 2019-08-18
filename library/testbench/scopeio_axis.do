@@ -4,15 +4,14 @@ add wave -noupdate /testbench/axis_e/axis_dv
 add wave -noupdate /testbench/axis_e/axis_sel
 add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_scale
 add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_base
-add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/init
-add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/ena
+add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/clk
 add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/start
 add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/stop
 add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/step
-add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/ended
 add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/scopeio_iterator_e/value
+add wave -noupdate /testbench/axis_e/ticks_b/scopeio_iterator_e/ended
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {38 ns} 0}
+WaveRestoreCursors {{Cursor 1} {9979 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -28,4 +27,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {1 us}
+WaveRestoreZoom {0 ns} {10500 ns}

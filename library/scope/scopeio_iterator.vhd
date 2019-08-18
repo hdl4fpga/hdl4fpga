@@ -26,15 +26,17 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity scopeio_iterator is
+	generic (
+		signed_number : boolean := false);
 	port (
 		clk   : in  std_logic;
 		init  : in  std_logic;
 		ena   : in  std_logic;
-		start : in  signed;
-		stop  : in  signed;
-		step  : in  signed;
+		start : in  std_logic_vector;
+		stop  : in  std_logic_vector;
+		step  : in  std_logic_vector;
 		ended : buffer std_logic;
-		value : buffer signed);
+		value : buffer std_logic_vector);
 end;
 
 architecture def of scopeio_iterator is
@@ -46,10 +48,14 @@ begin
 				value <= start;
 			elsif ena='1' then
 				if ended='0' then
-					value <= value + step;
+					value <= std_logic_vector(unsigned(value) + unsigned(step));
 				end if;
 			end if;
 		end if;
 	end process;
-	ended <= '0' when (step > 0 and value < stop) or (step < 0 and value > stop) else '1';
+	ended <= 
+		'0' when signed_number=true  and   signed(value) <   signed(stop) and signed(step) > 0 else
+		'0' when signed_number=true  and   signed(value) >   signed(stop) and signed(step) < 0 else
+		'0' when signed_number=false and unsigned(value) < unsigned(stop) else
+		'1';
 end;
