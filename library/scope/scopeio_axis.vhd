@@ -190,16 +190,15 @@ begin
 			end if;
 		end process;
 
---		ena <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
-		ena <= '1'; --btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
+		ena <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		scopeio_iterator_e : entity hdl4fpga.scopeio_iterator
 		port map (
 			clk   => clk,
 			init  => init,
 			ena   => ena,
-			start => x"000", --start,
-			stop  => x"ff0", --stop,
-			step  => x"001", --step,
+			start => start,
+			stop  => stop,
+			step  => step,
 			ended => ended,
 			value => binvalue);
 

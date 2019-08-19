@@ -479,7 +479,7 @@ begin
 				btof_bcdirdy  => btof_bcdirdy,
 				btof_bcdtrdy  => sgmntbtof_bcdtrdy,
 				btof_bcdend   => btof_bcdend,
-				btof_bcddo    => b"0101", --btof_bcddo,
+				btof_bcddo    => btof_bcddo,
 
 				hz_dv         => hz_dv,
 				hz_scale      => hz_scale,
