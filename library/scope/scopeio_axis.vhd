@@ -315,7 +315,7 @@ begin
 					resize(mul(signed(axis_base), unsigned(axis_unit)), hz_start'length),
 					axisx_backscale+hztick_bits-hz_taddr'right));
 			hz_stop  <= std_logic_vector(resize(signed'(x"7e"), hz_stop'length));
-			hz_step  <= std_logic_vector(resize(signed(axis_unit), hz_step'length));
+			hz_step  <= std_logic_vector(resize(unsigned(axis_unit), hz_step'length));
 			hz_align <= '1';
 			hz_sign  <= '1';
 
