@@ -272,9 +272,6 @@
         <Source name="../../library/scope/scopeio_btof.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_iterator.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/common/arbiter.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
