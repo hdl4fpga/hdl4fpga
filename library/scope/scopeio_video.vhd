@@ -112,12 +112,13 @@ architecture beh of scopeio_video is
 	signal hz_segment    : std_logic_vector(hz_slider'range);
 
 	signal btof_binfrm  : std_logic_vector(0 to 0);
-	signal btof_binirdy : std_logic_vector(0 to 0);
-	signal btof_bintrdy : std_logic_vector(0 to 0);
-	signal btof_bindi   : std_logic_vector(4*btof_binfrm'length-1 downto 0);
-	signal btof_bcdfrm  : std_logic_vector(0 to 0);
+	signal btof_binirdy : std_logic_vector(0 to btof_binfrm'length-1);
+	signal btof_bintrdy : std_logic_vector(0 to btof_binfrm'length-1);
+	signal btof_bindi   : std_logic_vector(0 to 4*btof_binfrm'length-1);
+	signal btof_binexp  : std_logic_vector(0 to btof_binfrm'length-1);
+	signal btof_bcdfrm  : std_logic_vector(0 to btof_binfrm'length-1);
 	signal btof_bcdirdy : std_logic;
-	signal btof_bcdtrdy : std_logic_vector(0 to 0);
+	signal btof_bcdtrdy : std_logic_vector(0 to btof_binfrm'length-1);
 	signal btof_bcdend  : std_logic;
 	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
 
@@ -126,6 +127,7 @@ architecture beh of scopeio_video is
 	signal sgmntbtof_binirdy  : std_logic;
 	signal sgmntbtof_bintrdy  : std_logic;
 	signal sgmntbtof_bindi    : std_logic_vector(4-1 downto 0);
+	signal sgmntbtof_binexp   : std_logic;
 	signal sgmntbtof_bcdunit  : std_logic_vector(4-1 downto 0);
 	signal sgmntbtof_bcdneg   : std_logic;
 	signal sgmntbtof_bcdsign  : std_logic;
@@ -165,6 +167,7 @@ begin
 	btof_binirdy(0) <= sgmntbtof_binirdy;
 	btof_binirdy(0) <= sgmntbtof_binirdy;
 	btof_bindi      <= sgmntbtof_bindi;
+	btof_binexp(0)  <= sgmntbtof_binexp;
 	btof_bcdtrdy(0) <= sgmntbtof_bcdtrdy;
 	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
@@ -173,7 +176,7 @@ begin
 		bin_irdy  => btof_binirdy,
 		bin_trdy  => btof_bintrdy,
 		bin_di    => btof_bindi,
-		bin_flt   => '0',
+		bin_exp   => btof_binexp,
 		bcd_width => b"1000",
 		bcd_sign  => sgmntbtof_bcdsign,
 		bcd_neg   => sgmntbtof_bcdneg,
@@ -471,6 +474,7 @@ begin
 				btof_binirdy  => sgmntbtof_binirdy,
 				btof_bintrdy  => sgmntbtof_bintrdy,
 				btof_bindi    => sgmntbtof_bindi,
+				btof_binexp   => sgmntbtof_binexp,
 				btof_bcdunit  => sgmntbtof_bcdunit,
 				btof_bcdneg   => sgmntbtof_bcdneg,
 				btof_bcdsign  => sgmntbtof_bcdsign,

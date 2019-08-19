@@ -34,7 +34,7 @@ entity scopeio_btof is
 		bin_frm   : in  std_logic_vector;
 		bin_irdy  : in  std_logic_vector;
 		bin_trdy  : out std_logic_vector;
-		bin_flt   : in  std_logic;
+		bin_exp   : in  std_logic_vector;
 		bin_di    : in  std_logic_vector;
 		bcd_width : in  std_logic_vector := b"1000";
 		bcd_neg   : in  std_logic;
@@ -57,6 +57,7 @@ architecture def of scopeio_btof is
 	signal btofbin_irdy : std_logic_vector(0 to 0);
 	signal btofbin_trdy : std_logic;
 	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
+	signal btofbin_exp  : std_logic_vector(0 to 0);
 	signal btofbcd_frm  : std_logic;
 	signal btofbcd_trdy : std_logic_vector(0 to 0);
 begin
@@ -71,6 +72,7 @@ begin
 	btofbin_frm  <= wirebus(bin_frm,  btof_gnt);
 	btofbin_irdy <= wirebus(bin_irdy, btof_gnt);
 	btofbin_di   <= wirebus(bin_di,   btof_gnt);
+	btofbin_exp  <= wirebus(bin_exp,  btof_gnt);
 	btofbcd_trdy <= wirebus(bcd_trdy, btof_gnt);
 		
 	btof_e : entity hdl4fpga.btof
@@ -80,12 +82,12 @@ begin
 		bin_irdy  => btofbin_irdy(0),
 		bin_trdy  => btofbin_trdy,
 		bin_di    => btofbin_di,
-		bin_flt   => bin_flt,
+		bin_flt   => btofbin_exp(0),
 		bin_sign  => bcd_sign,
 		bin_neg   => bcd_neg,
 		bcd_align => bcd_align,
 		bcd_width => bcd_width,
-		bcd_unit  => bcd_unit,
+		bcd_unit  => x"0", --bcd_unit,
 		bcd_prec  => bcd_prec,
 		bcd_frm   => btofbcd_frm,
 		bcd_irdy  => bcd_irdy,

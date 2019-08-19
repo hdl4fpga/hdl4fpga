@@ -23,6 +23,7 @@ entity scopeio_segment is
 		btof_binirdy  : out std_logic;
 		btof_bintrdy  : in  std_logic;
 		btof_bindi    : out std_logic_vector;
+		btof_binexp   : out std_logic;
 		btof_bcdunit  : out std_logic_vector;
 		btof_bcdneg   : out std_logic;
 		btof_bcdsign  : out std_logic;
@@ -166,6 +167,7 @@ begin
 			btof_binirdy  => btof_binirdy,
 			btof_bintrdy  => btof_bintrdy,
 			btof_bindi    => btof_bindi,
+			btof_binexp   => btof_binexp,
 			btof_bcdunit  => btof_bcdunit,
 			btof_bcdneg   => btof_bcdneg,
 			btof_bcdsign  => btof_bcdsign,

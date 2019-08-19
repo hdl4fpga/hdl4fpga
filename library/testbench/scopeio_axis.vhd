@@ -41,6 +41,7 @@ architecture scopeio_axis of testbench is
 	signal btof_binfrm   : std_logic_vector(0 to 0);
 	signal btof_binirdy  : std_logic_vector(0 to 0);
 	signal btof_bintrdy  : std_logic_vector(0 to 0);
+	signal btof_binexp   : std_logic_vector(0 to 0);
 	signal btof_bindi    : std_logic_vector(4-1 downto 0);
 	signal btof_bcdunit  : std_logic_vector(4-1 downto 0);
 	signal btof_bcdneg   : std_logic;
@@ -84,7 +85,7 @@ begin
 		bin_irdy  => btof_binirdy,
 		bin_trdy  => btof_bintrdy,
 		bin_di    => btof_bindi,
-		bin_flt   => '0',
+		bin_exp   => btof_binexp,
 		bcd_width => b"1000",
 		bcd_sign  => btof_bcdsign,
 		bcd_neg   => btof_bcdneg,
@@ -112,6 +113,7 @@ begin
 		btof_binirdy  => btof_binirdy(0),
 		btof_bintrdy  => btof_bintrdy(0),
 		btof_bindi => btof_bindi,
+		btof_binexp => btof_binexp(0),
 		btof_bcdunit  => btof_bcdunit,
 		btof_bcdneg   => btof_bcdneg,
 		btof_bcdsign  => btof_bcdsign,
