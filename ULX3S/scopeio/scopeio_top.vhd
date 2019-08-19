@@ -30,7 +30,7 @@ architecture beh of ulx3s is
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb:  boolean := true; -- USB  or USB+PS/2 mouse
-        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -39,18 +39,22 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := false; -- ADC analog view
+        constant C_view_adc:   boolean := true; -- ADC onboard analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
-        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
+        constant C_buttons_test: boolean := false; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
-	constant C_adc_bits: integer := 12; -- don't touch
-	constant C_adc_channels: integer := 4; -- don't touch
+	constant C_adc_bits: integer := 8; -- don't touch 12 for onboard ADC
+	constant C_adc_channels: integer := 4; -- don't touch 4 for onboard ADC
+	-- ADC software simulation
+	constant C_adc_simulator: boolean := false;
+        -- External ADC AN108 with PCB https://oshpark.com/profiles/gojimmypi
+        constant C_adc_an108: boolean := true; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
 	constant inputs: natural := 3; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
@@ -67,6 +71,12 @@ architecture beh of ulx3s is
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
 	alias ps2_clock_pullup : std_logic is usb_fpga_pu_dp;
 	alias ps2_data_pullup  : std_logic is usb_fpga_pu_dn;
+	
+
+--	alias ad_clk : std_logic is gn(15);
+--	alias ad     : std_logic_vector(7 downto 0) is std_logic_vector((7=>gp(16),6=>gn(16),5=>gp(17),4=>gn(17),3=>gp(18),2=>gn(18),1=>gp(19),0=>gn(19)));
+--	alias da_clk : std_logic is gn(25);
+--	alias da     : std_logic_vector(7 downto 0) is std_logic_vector((7=>gp(25),6=>gn(24),5=>gp(24),4=>gn(23),3=>gp(23),2=>gn(22),1=>gp(22),0=>gn(21)));
 
 	signal rst        : std_logic := '0';
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
@@ -85,7 +95,7 @@ architecture beh of ulx3s is
 	signal vga_rgb_test   : std_logic_vector(0 to 6-1);
         signal dvid_crgb      : std_logic_vector(7 downto 0);
         signal ddr_d          : std_logic_vector(3 downto 0);
-	constant sample_size  : natural := 12;
+	constant sample_size  : natural := 8;
 
 	signal clk_oled : std_logic := '0';
 	signal clk_ena_oled : std_logic := '1';
@@ -109,7 +119,7 @@ architecture beh of ulx3s is
 			else
 				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
 			end if;
-			y := y - (64.0+24.0);
+			-- y := y - (64.0+24.0);
 			aux((i+1)*n-1 downto i*n) := std_logic_vector(to_signed(integer(trunc(y)),n));
 		end loop;
 		return aux;
@@ -269,7 +279,7 @@ begin
 	rst <= reset_counter(reset_counter'high);
 
         -- replacement for ADC that manifests the problem
-	G_not_adc: if not C_adc generate
+	G_adc_simulator: if C_adc_simulator generate
 	  B_slow_pulse_generator: block
 	    signal R_pulse_counter: unsigned(10 downto 0);
 	    signal R_pulse_ena: std_logic;
@@ -306,6 +316,57 @@ begin
 	  end block;
 	end generate;
 
+	G_yes_adc_an108: if C_adc_an108 generate
+	  B_adc_an108: block
+	    signal R_sawtooth: unsigned(7 downto 0);
+	    signal R_ad, R_da: std_logic_vector(7 downto 0);
+	    signal ad_clk : std_logic;
+            signal ad     : std_logic_vector(7 downto 0);
+            signal da_clk : std_logic;
+            signal da     : std_logic_vector(7 downto 0);
+	  begin
+--	    ad_clk <= not clk_adc; -- 40 MHz is too fast
+            gn(15) <= ad_clk; -- clk_adc/2 -- 20 MHz OK
+	    da_clk <= not clk_adc;
+            gn(25) <= da_clk; -- clk_adc
+            da <= R_sawtooth; -- (R_sawtooth'high) & not std_logic_vector(R_sawtooth(R_sawtooth'high-1 downto 0));
+--            da <= trace_sine(trace_sine'high) & not std_logic_vector(trace_sine(trace_sine'high-1 downto 0));
+	    process(clk_adc)
+	    begin
+	      if rising_edge(clk_adc) then
+	        ad_clk <= not ad_clk; -- half clock rate 40MHz -> 20MHz
+	        if ad_clk = '0' then -- falling edge
+	        -- ADC pinout wiring (board labels GP/GN swapped, corrected here)
+--                  ad <= (7=>not gp(16),6=>gn(16),5=>gp(17),4=>gn(17),3=>gp(18),2=>gn(18),1=>gp(19),0=>gn(19));
+                  ad(7) <= not gp(16);
+                  ad(6) <=     gn(16);
+                  ad(5) <=     gp(17);
+                  ad(4) <=     gn(17);
+                  ad(3) <=     gp(18);
+                  ad(2) <=     gn(18);
+                  ad(1) <=     gp(19);
+                  ad(0) <=     gn(19);
+                end if;
+                -- DAC pinout wiring (board labels GP/GN swapped, corrected here)
+                gp(25) <=     da(7);
+                gn(24) <= not da(6);
+                gp(24) <= not da(5);
+                gn(23) <= not da(4);
+                gp(23) <= not da(3);
+                gn(22) <= not da(2);
+                gp(22) <= not da(1);
+                gn(21) <= not da(0);
+                -- Sawtooth signal generator
+	        R_sawtooth <= R_sawtooth + 1;
+	      end if;
+	    end process;
+            -- to scope display
+            S_adc_data(7+C_adc_bits*0 downto 0+C_adc_bits*0) <= ad; -- ch0 yellow shows ADC
+            S_adc_data(7+C_adc_bits*1 downto 0+C_adc_bits*1) <= da; -- ch1 cyan shows DAC
+            S_adc_dv <= '1';
+          end block;
+	end generate;
+
 	G_yes_adc: if C_adc generate
 	G_yes_adc_slowdown: if C_adc_slowdown generate
 	process (clk_adc)
@@ -319,6 +380,7 @@ begin
 		end if;
 	end process;
 	end generate;
+
 
 	adc_e: entity work.max1112x_reader
 	generic map
