@@ -24,7 +24,7 @@ library hdl4fpga;
 
 package usbh_setup_pack is
 
-  constant C_setup_retry       : integer := 3;  -- 2**n retries 3:8 setup retries and then detach
+  constant C_setup_retry       : integer := 4;  -- 2**n retries 3:8 setup retries and then detach
   constant C_setup_interval    : integer := 15; -- 2**n clocks 15:5.46 ms wait before sending next setup request
   constant C_report_interval   : integer := 15; -- 2**n clocks 15:5.46 ms wait before sending next request for report
   constant C_report_endpoint   : integer := 1;  -- default=1 endpoint which answers IN transfer with HID report
@@ -73,9 +73,13 @@ package usbh_setup_pack is
     -- set_address 1, Microsoft IntelliMouse needs address > 0 to activate reports --
     x"00", x"05", x"01", x"00", x"00", x"00", x"00", x"00",
     -- get_device_descriptor, requested length 0x12 = 18 bytes, no known device needs this --
-    --x"80", x"06", x"00", x"01", x"00", x"00", x"12", x"00",
+--    x"80", x"06", x"00", x"01", x"00", x"00", x"12", x"00",
+    -- set report request 0x200 with 1 byte data 0x00, no known device needs this --
+--    x"21", x"09", x"00", x"02", x"00", x"00", x"01", x"00", x"00",
     -- set_configuration 1, most devices need configuration = 1 to activate reports --
     x"00", x"09", x"01", x"00", x"00", x"00", x"00", x"00"
+    -- NOTE: last setup packet currently must be a non-data phase packet
+    -- like set configuration, there's a bug that skips data phase at last packet
   );
 
 -- to generate this package:
