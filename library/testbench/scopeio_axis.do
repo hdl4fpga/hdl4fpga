@@ -8,7 +8,8 @@ add wave -noupdate /testbench/axis_e/axis_sel
 add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_scale
 add wave -noupdate -radix hexadecimal /testbench/axis_e/axis_base
 add wave -noupdate /testbench/axis_e/ticks_b/init
-add wave -noupdate -radix unsigned /testbench/axis_e/ticks_b/stop
+add wave -noupdate -radix unsigned -childformat {{/testbench/axis_e/ticks_b/stop(11) -radix unsigned} {/testbench/axis_e/ticks_b/stop(10) -radix unsigned} {/testbench/axis_e/ticks_b/stop(9) -radix unsigned} {/testbench/axis_e/ticks_b/stop(8) -radix unsigned} {/testbench/axis_e/ticks_b/stop(7) -radix unsigned} {/testbench/axis_e/ticks_b/stop(6) -radix unsigned} {/testbench/axis_e/ticks_b/stop(5) -radix unsigned} {/testbench/axis_e/ticks_b/stop(4) -radix unsigned} {/testbench/axis_e/ticks_b/stop(3) -radix unsigned} {/testbench/axis_e/ticks_b/stop(2) -radix unsigned} {/testbench/axis_e/ticks_b/stop(1) -radix unsigned} {/testbench/axis_e/ticks_b/stop(0) -radix unsigned}} -subitemconfig {/testbench/axis_e/ticks_b/stop(11) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(10) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(9) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(8) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(7) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(6) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(5) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(4) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(3) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(2) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(1) {-height 29 -radix unsigned} /testbench/axis_e/ticks_b/stop(0) {-height 29 -radix unsigned}} /testbench/axis_e/ticks_b/stop
+add wave -noupdate -radix decimal -childformat {{/testbench/axis_e/ticks_b/iterator(11) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(10) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(9) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(8) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(7) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(6) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(5) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(4) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(3) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(2) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(1) -radix hexadecimal} {/testbench/axis_e/ticks_b/iterator(0) -radix hexadecimal}} -subitemconfig {/testbench/axis_e/ticks_b/iterator(11) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(10) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(9) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(8) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(7) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(6) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(5) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(4) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(3) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(2) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(1) {-height 29 -radix hexadecimal} /testbench/axis_e/ticks_b/iterator(0) {-height 29 -radix hexadecimal}} /testbench/axis_e/ticks_b/iterator
 add wave -noupdate -radix decimal /testbench/axis_e/ticks_b/start
 add wave -noupdate -radix decimal -childformat {{/testbench/axis_e/ticks_b/step(11) -radix decimal} {/testbench/axis_e/ticks_b/step(10) -radix decimal} {/testbench/axis_e/ticks_b/step(9) -radix decimal} {/testbench/axis_e/ticks_b/step(8) -radix decimal} {/testbench/axis_e/ticks_b/step(7) -radix decimal} {/testbench/axis_e/ticks_b/step(6) -radix decimal} {/testbench/axis_e/ticks_b/step(5) -radix decimal} {/testbench/axis_e/ticks_b/step(4) -radix decimal} {/testbench/axis_e/ticks_b/step(3) -radix decimal} {/testbench/axis_e/ticks_b/step(2) -radix decimal} {/testbench/axis_e/ticks_b/step(1) -radix decimal} {/testbench/axis_e/ticks_b/step(0) -radix decimal}} -subitemconfig {/testbench/axis_e/ticks_b/step(11) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(10) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(9) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(8) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(7) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(6) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(5) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(4) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(3) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(2) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(1) {-height 29 -radix decimal} /testbench/axis_e/ticks_b/step(0) {-height 29 -radix decimal}} /testbench/axis_e/ticks_b/step
 add wave -noupdate /testbench/axis_e/ticks_b/complete
@@ -31,6 +32,7 @@ add wave -noupdate /testbench/btof_e/btof_e/bin_irdy
 add wave -noupdate /testbench/btof_e/btof_e/bin_trdy
 add wave -noupdate /testbench/btof_e/btof_e/bin_flt
 add wave -noupdate -radix hexadecimal /testbench/btof_e/btof_e/bin_di
+add wave -noupdate /testbench/btof_e/btof_e/bin_neg
 add wave -noupdate /testbench/btof_e/btof_e/bcd_frm
 add wave -noupdate /testbench/btof_e/btof_e/bcd_irdy
 add wave -noupdate -divider {New Divider}
@@ -47,7 +49,7 @@ add wave -noupdate -radix hexadecimal /testbench/btof_e/btof_e/bcd_sign
 add wave -noupdate /testbench/btof_e/btof_e/bcd_end
 add wave -noupdate -radix hexadecimal /testbench/btof_e/btof_e/bcd_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16214 ns} 0}
+WaveRestoreCursors {{Cursor 1} {5330 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 264
 configure wave -valuecolwidth 194
@@ -63,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {21 us}
+WaveRestoreZoom {37506 ns} {40132 ns}
