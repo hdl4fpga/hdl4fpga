@@ -70,6 +70,7 @@ architecture Behavioral of usbh_host_hid is
   signal R_setup_rom_addr, R_setup_rom_addr_acked: std_logic_vector(7 downto 0) := (others => '0');
   constant C_setup_rom_len: std_logic_vector(R_setup_rom_addr'range) := 
     std_logic_vector(to_unsigned(C_setup_rom'length,8));
+  signal R_setup_byte_counter: std_logic_vector(2 downto 0) := (others => '0');
 
   signal ctrlin : std_logic;
   
@@ -116,7 +117,12 @@ architecture Behavioral of usbh_host_hid is
   signal R_dev_address_confirmed :  std_logic_vector(token_dev_i'range);
   
   signal R_stored_response: std_logic_vector(7 downto 0);
+  signal R_wLength        : std_logic_vector(15 downto 0);
+  signal R_bytes_remaining: std_logic_vector(15 downto 0);
+  signal S_expected_response: std_logic_vector(7 downto 0);
   
+  signal R_advance_data : std_logic := '0';
+
   begin
   G_usb_full_speed: if C_usb_speed = '1' generate
   clk_usb <= clk; -- 48 MHz with "usb_rx_phy_48MHz.vhd" or 60 MHz with "usb_rx_phy_60MHz.vhd"
@@ -193,6 +199,7 @@ architecture Behavioral of usbh_host_hid is
       if R_reset_accepted = '1' then
         R_setup_rom_addr       <= (others => '0');
         R_setup_rom_addr_acked <= (others => '0');
+        R_setup_byte_counter   <= (others => '0');
         R_retry                <= (others => '0');
         R_reset_pending <= '0';
       else
@@ -222,6 +229,7 @@ architecture Behavioral of usbh_host_hid is
             else -- transmission is going on -- advance address
               if tx_pop_o = '1' then
                 R_setup_rom_addr <= R_setup_rom_addr + 1;
+                R_setup_byte_counter <= R_setup_byte_counter + 1;
               end if;
             end if;
             R_stored_response <= x"00";
@@ -240,18 +248,37 @@ architecture Behavioral of usbh_host_hid is
             end if;
           when others => -- C_STATE_DATA =>
             if S_transmission_over = '1' then
-              if timeout_o = '1' and R_timeout = '0' then
-                if R_retry(R_retry'high) = '0' then
-                  R_retry <= R_retry + 1;
-                end if;
-              else
-                if rx_done_o = '1' then
-                  R_retry <= (others => '0');
-                  R_stored_response <= response_o;
-                  if response_o = x"4B" then -- SIE quirk: set address resturns 4B = PID_DATA1 instead of D2
-                    R_dev_address_confirmed <= R_dev_address_requested;
+              case token_pid_i is
+                when x"E1" =>
+                  if rx_done_o = '1' and response_o = x"D2" then -- ACK to DATA OUT
+                    R_stored_response <= response_o;
+                    -- continue with next setup
+                    R_setup_rom_addr_acked <= R_setup_rom_addr;
+                    R_retry <= (others => '0');
+                  else -- failed, rewind to unacknowledged setup and retry
+                    R_setup_rom_addr <= R_setup_rom_addr_acked;
+                    if R_retry(R_retry'high) = '0' then
+                      R_retry <= R_retry + 1;
+                    end if;
                   end if;
-                end if;
+                when others => -- x"69"
+                  if timeout_o = '1' and R_timeout = '0' then
+                    if R_retry(R_retry'high) = '0' then
+                      R_retry <= R_retry + 1;
+                    end if;
+                  else
+                    if rx_done_o = '1' then
+                      R_retry <= (others => '0');
+                      R_stored_response <= response_o;
+                      if response_o = x"4B" then -- SIE quirk: set address resturns 4B = PID_DATA1 instead of D2
+                        R_dev_address_confirmed <= R_dev_address_requested;
+                      end if;
+                    end if;
+                  end if;
+              end case;
+            else -- transmission is going on -- advance address but only data, not setup counter
+              if tx_pop_o = '1' then
+                R_setup_rom_addr <= R_setup_rom_addr + 1;
               end if;
             end if;
         end case;
@@ -275,8 +302,9 @@ architecture Behavioral of usbh_host_hid is
         when C_STATE_DETACHED =>
           R_dev_address_requested <= (others => '0');
           R_set_address_found <= '0';
+          R_wLength <= x"0000";
         when C_STATE_SETUP =>
-          case R_setup_rom_addr(2 downto 0) is
+          case R_setup_byte_counter(2 downto 0) is
             when "000" => -- every 8 bytes, 1st byte
               if tx_data_i = x"00" then
                 R_first_byte_0_found <= '1';
@@ -287,21 +315,29 @@ architecture Behavioral of usbh_host_hid is
               if tx_data_i = x"05" then
                 R_set_address_found <= R_first_byte_0_found;
               end if;
+              R_wLength <= x"0000";
             when "010" => -- every 8 bytes, 3rd byte
               if R_set_address_found = '1' then -- every 8 bytes, 3rd byte
                 R_dev_address_requested <= tx_data_i(token_dev_i'range);
               end if;
+            when "110" => -- every 8 bytes, 7th byte
+              R_wLength(7 downto 0) <= tx_data_i;
+            when "111" => -- every 8 bytes, 8th byte wLength high byte currently forced to 0
+              R_wLength(15 downto 8) <= x"00"; -- tx_data_i;
           end case;
         when others =>
+          R_wLength <= x"0000";
           R_set_address_found <= '0';
       end case;
     end if;
   end process;
   end block;
 
+  S_expected_response <= x"4B" when data_idx_i = '1' else x"C3";
   process(clk_usb)
   begin
     if rising_edge(clk_usb) then
+      R_advance_data <= '0'; -- default
       case R_state is
         when C_STATE_DETACHED => -- start from unitialized device
           R_reset_accepted <= '0';
@@ -355,11 +391,16 @@ architecture Behavioral of usbh_host_hid is
                 in_transfer_i   <= '0';
                 token_pid_i     <= x"2D";
                 data_len_i      <= x"0008";
-                data_idx_i      <= '0';
-                if R_set_address_found = '1' or ctrlin = '1' then
-                  ctrlin  <= '0';
+                if R_set_address_found = '1' or ctrlin = '1' or R_wLength /= x"0000" then
+                  R_bytes_remaining <= R_wLength;
+--                  R_bytes_remaining <= x"0000";
+                  if R_set_address_found = '1' then
+                    ctrlin  <= '1';
+                  end if;
+                  data_idx_i <= '1'; -- next sending as DATA1
                   R_state <= C_STATE_DATA;
                 else
+                  data_idx_i <= '0'; -- send as DATA0
                   ctrlin           <= tx_data_i(7);
                   R_packet_counter <= R_packet_counter + 1;
                   start_i          <= '1';
@@ -427,21 +468,68 @@ architecture Behavioral of usbh_host_hid is
             else -- time to send request
               R_slow <= (others => '0');
               sof_transfer_i  <= '0';
-              in_transfer_i   <= '1';
-              token_pid_i     <= x"69"; -- 69=IN or E1=OUT
-              token_ep_i      <= x"0";
-              data_len_i      <= (others => '0');
-              data_idx_i      <= '1';
-              resp_expected_i <= '1';
-              if R_stored_response = x"4B" then -- SIE quirk: 4B is returned for 0-len packet instead of D2 ACK
-                R_state <= C_STATE_SETUP;
+              in_transfer_i   <= ctrlin;
+              if ctrlin = '1' then
+                token_pid_i     <= x"69"; -- 69=IN
               else
-                R_packet_counter <= R_packet_counter + 1;
-                start_i          <= '1';
+                token_pid_i     <= x"E1"; -- E1=OUT
+              end if;
+              token_ep_i      <= x"0";
+              resp_expected_i <= '1';
+              if R_bytes_remaining /= x"0000" then
+                if R_bytes_remaining(R_bytes_remaining'high downto 3) /= x"000" & '0' then -- 8 or more remaining bytes
+                  data_len_i <= x"0008"; -- transmit 8 bytes in a packet
+                else -- less than 8 remaining
+                  data_len_i <= x"000" & '0' & R_bytes_remaining(2 downto 0); -- transmit remaining bytes (less than 8)
+                end if;
+              else
+                data_len_i <= x"0000";
+              end if;
+              if ctrlin = '1' then
+                if R_stored_response = x"4B" or R_stored_response = x"C3" then -- SIE quirk: 4B is returned for 0-len packet instead of D2 ACK
+                  R_advance_data  <= '1';
+                  -- FIXME: after all IN packets, send 0-length OUT packet as confirmation
+                  if R_bytes_remaining(R_bytes_remaining'high downto 3) = x"000" & '0' then
+                    ctrlin  <= '0';
+                    R_state <= C_STATE_SETUP;
+                  else
+                    R_packet_counter <= R_packet_counter + 1;
+                    start_i          <= '1';
+                  end if;
+                else
+                  R_packet_counter <= R_packet_counter + 1;
+                  start_i          <= '1';
+                end if;
+              else -- ctrlin = 0
+                if R_stored_response = x"D2" then
+                  R_advance_data   <= '1';
+                  if R_bytes_remaining = x"0000" then
+                    ctrlin <= '1'; -- OUT phase will finish with IN 0-length packet
+                  end if;
+                else
+                  R_packet_counter <= R_packet_counter + 1;
+                  start_i <= '1';
+                end if;
               end if;
             end if;
           else
             start_i <= '0';
+          end if;
+          -- always during C_STATE_DATA
+          -- counts bytes required for DATA state, then exit
+          if R_advance_data = '1' then
+              if R_bytes_remaining /= x"0000" then
+                if R_bytes_remaining(R_bytes_remaining'high downto 3) /= x"000" & '0' then -- 8 or more remaining bytes
+                  R_bytes_remaining(R_bytes_remaining'high downto 3) <= R_bytes_remaining(R_bytes_remaining'high downto 3) - 1;
+                else -- less than 8 remaining
+                  R_bytes_remaining(2 downto 0) <= "000";
+                end if;
+                data_idx_i <= not data_idx_i; -- alternates DATA 0/1
+              else
+                if ctrlin = '1' then
+                  data_idx_i <= '1'; -- always DATA1 at last IN
+                end if;
+              end if;
           end if;
       end case;
     end if;
@@ -531,9 +619,10 @@ architecture Behavioral of usbh_host_hid is
       hid_report(i*8+7 downto i*8) <= R_report_buf(i);
     end generate;
     hid_valid <= R_hid_valid;
-    rx_count <= rx_count_o; -- report byte count directly from SIE
-    --rx_count <= R_packet_counter; -- debugging setup problems
+    --rx_count <= rx_count_o; -- report byte count directly from SIE
+    rx_count <= R_packet_counter; -- debugging setup problems
     --rx_count(7 downto 0) <= R_stored_response;
+    --rx_count(7 downto 0) <= R_E1_response;
     --rx_count(R_retry'range) <= R_retry; -- debugging report problems
     rx_done <= rx_done_o;
   end block;
