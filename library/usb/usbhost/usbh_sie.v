@@ -91,7 +91,7 @@ reg                 in_transfer_q;
  
 reg [2:0]           rx_time_q;
 reg                 rx_time_en_q;
-reg [7:0]           last_tx_time_q;
+reg [8:0]           last_tx_time_q;
  
 reg                 send_data1_q;
 reg                 send_sof_q;
@@ -115,8 +115,8 @@ reg [3:0]           state_q;
 //-----------------------------------------------------------------
 // Definitions
 //-----------------------------------------------------------------
-localparam RX_TIMEOUT       = 8'd255; // ~5uS @ 48MHz
-localparam TX_IFS           = 8'd7; // 2 FS bit times (x5 CLKs @ 60MHz, x4 CLKs @ 48MHz)
+localparam RX_TIMEOUT       = 9'd511; // 10.6uS @ 48MHz, 85us @ 6MHz
+localparam TX_IFS           = 9'd7; // 2 FS bit times (x5 CLKs @ 60MHz, x4 CLKs @ 48MHz)
  
 localparam PID_OUT          = 8'hE1;
 localparam PID_IN           = 8'h69;
@@ -375,14 +375,15 @@ else if (state_q == STATE_TX_TOKEN1 && utmi_txready_i)
 //-----------------------------------------------------------------
 always @ (posedge clk_i or posedge rst_i)
 if (rst_i)
-    last_tx_time_q <= 8'd0;
+    last_tx_time_q <= 9'd0;
 // Start counting from last Tx
 else if (state_q == STATE_IDLE || (utmi_txvalid_o && utmi_txready_i))
-    last_tx_time_q <= 8'd0;
+    last_tx_time_q <= 9'd0;
 // Increment the Tx timeout
 else if (last_tx_time_q != RX_TIMEOUT)
-    last_tx_time_q <= last_tx_time_q + 8'd1;
- 
+    last_tx_time_q <= last_tx_time_q + 9'd1;
+
+
 //-----------------------------------------------------------------
 // Transmit / Receive counter
 //-----------------------------------------------------------------
