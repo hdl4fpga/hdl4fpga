@@ -33,42 +33,43 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_axis is
 	generic (
 		latency       : natural;
-		axis_unit     : std_logic_vector;
+		hz_unit       : std_logic_vector;
+		vt_unit       : std_logic_vector;
 		layout        : display_layout);
 	port (
-		clk         : in  std_logic;
+		clk           : in  std_logic;
 
-		axis_dv     : in  std_logic;
-		axis_sel    : in  std_logic;
-		axis_scale  : in  std_logic_vector;
-		axis_base   : in  std_logic_vector;
+		axis_dv       : in  std_logic;
+		axis_sel      : in  std_logic;
+		axis_scale    : in  std_logic_vector;
+		axis_base     : in  std_logic_vector;
 
-		btof_binfrm  : buffer std_logic;
-		btof_binirdy : out std_logic;
-		btof_bintrdy : in  std_logic;
-		btof_bindi   : out std_logic_vector;
-		btof_binneg  : out std_logic;
-		btof_binexp  : out std_logic;
+		btof_binfrm   : buffer std_logic;
+		btof_binirdy  : out std_logic;
+		btof_bintrdy  : in  std_logic;
+		btof_bindi    : out std_logic_vector;
+		btof_binneg   : out std_logic;
+		btof_binexp   : out std_logic;
 		btof_bcdunit  : out std_logic_vector;
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
-		btof_bcdfrm  : in  std_logic;
-		btof_bcdirdy : in  std_logic;
-		btof_bcdtrdy : buffer std_logic := '1';
-		btof_bcdend  : in  std_logic;
-		btof_bcddo   : in  std_logic_vector;
+		btof_bcdfrm   : in  std_logic;
+		btof_bcdirdy  : in  std_logic;
+		btof_bcdtrdy  : buffer std_logic := '1';
+		btof_bcdend   : in  std_logic;
+		btof_bcddo    : in  std_logic_vector;
 
-		video_clk   : in  std_logic;
-		video_hcntr : in  std_logic_vector;
-		video_vcntr : in  std_logic_vector;
+		video_clk     : in  std_logic;
+		video_hcntr   : in  std_logic_vector;
+		video_vcntr   : in  std_logic_vector;
 
-		hz_offset   : in  std_logic_vector;
-		video_hzon  : in  std_logic;
-		video_hzdot : out std_logic;
+		hz_offset     : in  std_logic_vector;
+		video_hzon    : in  std_logic;
+		video_hzdot   : out std_logic;
 
-		vt_offset   : in  std_logic_vector;
-		video_vton  : in  std_logic;
-		video_vtdot : out std_logic);
+		vt_offset     : in  std_logic_vector;
+		video_vton    : in  std_logic;
+		video_vtdot   : out std_logic);
 
 end;
 
@@ -164,6 +165,7 @@ begin
 
 	ticks_b : block
 
+		signal scale    : std_logic_vector(axis_scale'range);
 		signal init     : std_logic;
 		signal ena      : std_logic;
 		signal start    : signed(binvalue'range);
@@ -175,9 +177,9 @@ begin
 		signal taddr  : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 	begin
 
-		start <= hz_start when true and axis_sel='0' else vt_start;
-		stop  <= hz_stop  when axis_sel='0' else vt_stop;
-		step  <= hz_step  when axis_sel='0' else vt_step;
+		start <= hz_start when vt_ena='0' else vt_start;
+		stop  <= hz_stop  when vt_ena='0' else vt_stop;
+		step  <= hz_step  when vt_ena='0' else vt_step;
 
 		init_p : process (clk)
 		begin
@@ -186,6 +188,7 @@ begin
 					init   <= '0';
 					hz_ena <= not axis_sel;
 					vt_ena <=     axis_sel;
+					scale  <= axis_scale;
 				elsif complete='1' then
 					init  <= '1';
 				end if;
@@ -229,8 +232,8 @@ begin
 			end if;
 		end process;
 
-		btof_bcdalign <= hz_align when axis_sel='0' else vt_align;
-		btof_bcdsign  <= hz_sign  when axis_sel='0' else vt_sign;
+		btof_bcdalign <= hz_align when vt_ena='0' else vt_align;
+		btof_bcdsign  <= hz_sign  when vt_ena='0' else vt_sign;
 		btof_binneg   <= binvalue(binvalue'left);
 
 		bindi_p : process (clk)
@@ -244,7 +247,7 @@ begin
 				end if;
 
 				btof_bindi <= word2byte(
-					scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), axis_scale) & x"f",
+					scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), scale) & x"f",
 					std_logic_vector(sel), 
 					btof_bindi'length);
 				btof_binexp <= setif(sel >= binvalue'length/btof_bindi'length);
@@ -314,14 +317,14 @@ begin
 		begin 
 
 			hz_start <= 
-				mul(to_signed(1,1), unsigned(axis_unit)) +
+				mul(to_signed(1,1), unsigned(hz_unit)) +
 				shift_left(
-					resize(mul(signed(axis_base), unsigned(axis_unit)), hz_start'length),
+					resize(mul(signed(axis_base), unsigned(hz_unit)), hz_start'length),
 					axisx_backscale+hztick_bits-hz_taddr'right);
 			hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
-			hz_step  <= signed(resize(unsigned(axis_unit), hz_step'length));
+			hz_step  <= signed(resize(unsigned(hz_unit), hz_step'length));
 			hz_align <= '1';
-			hz_sign  <= '1';
+			hz_sign  <= '0';
 
 			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
@@ -406,15 +409,15 @@ begin
 
 		begin 
 
-			vt_start <=
-				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(axis_unit)) +
+			vt_start <= 
+				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(vt_unit)) +
 				shift_left(
-					resize(mul(-signed(axis_base), unsigned(axis_unit)), vt_start'length),
+					resize(mul(-signed(axis_base), unsigned(vt_unit)), vt_start'length),
 					vt_offset'length-vt_taddr'right);
 			vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-			vt_step  <= -signed(resize(unsigned(axis_unit), vt_step'length));
+			vt_step  <= -signed(resize(unsigned(vt_unit), vt_step'length));
 			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
-			vt_sign  <= '0';
+			vt_sign  <= '1';
 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)

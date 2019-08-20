@@ -33,7 +33,8 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
-		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
+		hz_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
+		vt_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
 		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
 		trig1shot   : boolean := false;
 
@@ -215,7 +216,8 @@ begin
 	generic map (
 		vlayout_id       => vlayout_id,
 		inputs           => inputs,
-		axis_unit        => axis_unit,
+		hz_unit          => hz_unit,
+		vt_unit          => vt_unit,
 		default_tracesfg => default_tracesfg,
 		default_gridfg   => default_gridfg,
 		default_gridbg   => default_gridbg,

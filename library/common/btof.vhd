@@ -19,7 +19,7 @@ entity btof is
 		bcd_trdy   : in  std_logic := '1';
 		bcd_irdy   : out std_logic;
 
-		bcd_sign   : in  std_logic := '1';
+		bcd_sign   : in  std_logic;
 		bcd_width  : in  std_logic_vector;
 		bcd_unit   : in  std_logic_vector;
 		bcd_prec   : in  std_logic_vector;
