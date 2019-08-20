@@ -199,13 +199,16 @@ begin
 				if init/='0' then
 					iterator := (others => '0');
 					binvalue <= start;
+					complete <= '0';
 				elsif ena='1' then
-					if iterator  < unsigned(stop) then
-						iterator := iterator + 1;
-						binvalue <= binvalue + step;
+					if complete='0' then
+						if iterator  < unsigned(stop) then
+							iterator := iterator + 1;
+							binvalue <= binvalue + step;
+						end if;
 					end if;
+					complete <= not setif(iterator <= stop);
 				end if;
-				complete <= setif(iterator >= stop);
 			end if;
 		end process;
 
@@ -260,10 +263,10 @@ begin
 				elsif ena='1' then
 					taddr <= taddr + 1;
 				end if;
+				hz_taddr <= taddr(hz_taddr'length-1 downto 0);
+				vt_taddr <= taddr(vt_taddr'length-1 downto 0);
 			end if;
 		end process;
-		hz_taddr <= taddr(hz_taddr'length-1 downto 0);
-		vt_taddr <= taddr(vt_taddr'length-1 downto 0);
 
 		bcdvalue_p : process (clk)
 			variable value : unsigned(bcdvalue'range);
@@ -412,7 +415,7 @@ begin
 					resize(mul(-signed(axis_base), unsigned(axis_unit)), vt_start'length),
 					vt_offset'length-vt_taddr'right);
 			vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-			vt_step  <= resize(-signed(axis_unit), vt_step'length);
+			vt_step  <= -signed(resize(unsigned(axis_unit), vt_step'length));
 			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 			vt_sign  <= '0';
 

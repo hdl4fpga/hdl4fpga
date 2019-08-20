@@ -106,7 +106,7 @@ begin
 	port map (
 		clk           => clk,
 		axis_dv       => axis_dv,
-		axis_sel      => '0',
+		axis_sel      => '1',
 		axis_base     => x"0",
 		axis_scale    => x"0",
 		btof_binfrm   => btof_binfrm(0),
