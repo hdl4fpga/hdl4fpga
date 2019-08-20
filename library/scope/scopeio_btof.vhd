@@ -35,9 +35,9 @@ entity scopeio_btof is
 		bin_irdy  : in  std_logic_vector;
 		bin_trdy  : out std_logic_vector;
 		bin_exp   : in  std_logic_vector;
+		bin_neg   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 		bcd_width : in  std_logic_vector := b"1000";
-		bcd_neg   : in  std_logic;
 		bcd_sign  : in  std_logic;
 		bcd_align : in  std_logic;
 		bcd_unit  : in  std_logic_vector := b"0000";
@@ -83,8 +83,8 @@ begin
 		bin_trdy  => btofbin_trdy,
 		bin_di    => btofbin_di,
 		bin_flt   => btofbin_exp(0),
-		bin_sign  => bcd_sign,
-		bin_neg   => bcd_neg,
+		bin_neg   => bin_neg,
+		bcd_sign  => bcd_sign,
 		bcd_align => bcd_align,
 		bcd_width => bcd_width,
 		bcd_unit  => x"0", --bcd_unit,

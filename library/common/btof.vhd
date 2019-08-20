@@ -11,7 +11,6 @@ entity btof is
 		frm        : in  std_logic;
 		bin_irdy   : in  std_logic := '1';
 		bin_trdy   : out std_logic;
-		bin_sign   : in  std_logic;
 		bin_neg    : in  std_logic;
 		bin_flt    : in  std_logic;
 		bin_di     : in  std_logic_vector;
@@ -20,12 +19,12 @@ entity btof is
 		bcd_trdy   : in  std_logic := '1';
 		bcd_irdy   : out std_logic;
 
+		bcd_sign   : in  std_logic := '1';
 		bcd_width  : in  std_logic_vector;
 		bcd_unit   : in  std_logic_vector;
 		bcd_prec   : in  std_logic_vector;
 		bcd_endian : in  std_logic := '0';
 		bcd_align  : in  std_logic := '0';
-		bcd_sign   : in  std_logic := '1';
 
 		bcd_end    : out std_logic;
 		bcd_do     : out std_logic_vector);
@@ -87,7 +86,7 @@ begin
 			case state is
 			when init_s =>
 				state <= btod_s;
-				stof_sign <= bin_sign;
+				stof_sign <= bcd_sign or bin_neg;
 				stof_neg  <= bin_neg;
 			when btod_s =>
 				if bin_irdy = '1' then
@@ -171,16 +170,15 @@ begin
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => bcd_width, 
-		sign      => stof_sign,
-		neg       => stof_neg,
-		unit      => bcd_unit,  
-		prec      => bcd_prec,  
-		align     => bcd_align, 
-		endian    => bcd_endian,
+		bcd_width  => bcd_width, 
+		bcd_sign   => stof_sign,
+		bcd_neg    => stof_neg,
+		bcd_unit   => bcd_unit,  
+		bcd_prec   => bcd_prec,  
+		bcd_align  => bcd_align, 
+		bcd_endian => bcd_endian,
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
-		bcd_prec  => vector_right,
 		bcd_di    => vector_do,
 		bcd_irdy  => stof_irdy,
 		bcd_trdy  => stof_trdy,

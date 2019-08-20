@@ -127,9 +127,9 @@ architecture beh of scopeio_video is
 	signal sgmntbtof_binirdy  : std_logic;
 	signal sgmntbtof_bintrdy  : std_logic;
 	signal sgmntbtof_bindi    : std_logic_vector(4-1 downto 0);
+	signal sgmntbtof_binneg   : std_logic;
 	signal sgmntbtof_binexp   : std_logic;
 	signal sgmntbtof_bcdunit  : std_logic_vector(4-1 downto 0);
-	signal sgmntbtof_bcdneg   : std_logic;
 	signal sgmntbtof_bcdsign  : std_logic;
 	signal sgmntbtof_bcdalign : std_logic;
 	signal sgmntbtof_bcdfrm   : std_logic;
@@ -176,10 +176,10 @@ begin
 		bin_irdy  => btof_binirdy,
 		bin_trdy  => btof_bintrdy,
 		bin_di    => btof_bindi,
+		bin_neg   => sgmntbtof_binneg,
 		bin_exp   => btof_binexp,
 		bcd_width => b"1000",
 		bcd_sign  => sgmntbtof_bcdsign,
-		bcd_neg   => sgmntbtof_bcdneg,
 		bcd_unit  => sgmntbtof_bcdunit,
 		bcd_align => sgmntbtof_bcdalign,
 		bcd_prec  => b"1111",
@@ -474,9 +474,9 @@ begin
 				btof_binirdy  => sgmntbtof_binirdy,
 				btof_bintrdy  => sgmntbtof_bintrdy,
 				btof_bindi    => sgmntbtof_bindi,
+				btof_binneg   => sgmntbtof_binneg,
 				btof_binexp   => sgmntbtof_binexp,
 				btof_bcdunit  => sgmntbtof_bcdunit,
-				btof_bcdneg   => sgmntbtof_bcdneg,
 				btof_bcdsign  => sgmntbtof_bcdsign,
 				btof_bcdalign => sgmntbtof_bcdalign,
 				btof_bcdfrm   => sgmntbtof_bcdfrm,

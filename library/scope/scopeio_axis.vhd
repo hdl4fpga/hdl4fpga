@@ -47,9 +47,9 @@ entity scopeio_axis is
 		btof_binirdy : out std_logic;
 		btof_bintrdy : in  std_logic;
 		btof_bindi   : out std_logic_vector;
+		btof_binneg  : out std_logic;
 		btof_binexp  : out std_logic;
 		btof_bcdunit  : out std_logic_vector;
-		btof_bcdneg   : out std_logic;
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
 		btof_bcdfrm  : in  std_logic;
@@ -164,17 +164,18 @@ begin
 
 	ticks_b : block
 
-		signal init   : std_logic;
-		signal ena    : std_logic;
-		signal start  : signed(binvalue'range);
-		signal stop   : unsigned(binvalue'range);
-		signal step   : signed(binvalue'range);
+		signal init     : std_logic;
+		signal ena      : std_logic;
+		signal start    : signed(binvalue'range);
+		signal stop     : unsigned(binvalue'range);
+		signal step     : signed(binvalue'range);
+		signal iterator : unsigned(stop'range);
 		signal complete : std_logic;
 
 		signal taddr  : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 	begin
 
-		start <= hz_start when axis_sel='0' else vt_start;
+		start <= hz_start when true and axis_sel='0' else vt_start;
 		stop  <= hz_stop  when axis_sel='0' else vt_stop;
 		step  <= hz_step  when axis_sel='0' else vt_step;
 
@@ -193,24 +194,20 @@ begin
 
 		ena <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
-			variable iterator : unsigned(stop'range);
 		begin
 			if rising_edge(clk) then
 				if init/='0' then
-					iterator := (others => '0');
+					iterator <= (others => '0');
 					binvalue <= start;
-					complete <= '0';
 				elsif ena='1' then
-					if complete='0' then
-						if iterator  < unsigned(stop) then
-							iterator := iterator + 1;
-							binvalue <= binvalue + step;
-						end if;
+					if iterator  < unsigned(stop) then
+						iterator <= iterator + 1;
+						binvalue <= binvalue + step;
 					end if;
-					complete <= not setif(iterator <= stop);
 				end if;
 			end if;
 		end process;
+		complete <= not setif(iterator < stop) and ena;
 
 		frm_p : process (clk)
 		begin
@@ -234,7 +231,7 @@ begin
 
 		btof_bcdalign <= hz_align when axis_sel='0' else vt_align;
 		btof_bcdsign  <= hz_sign  when axis_sel='0' else vt_sign;
-		btof_bcdneg   <= binvalue(binvalue'left);
+		btof_binneg   <= binvalue(binvalue'left);
 
 		bindi_p : process (clk)
 			variable sel : unsigned(0 to unsigned_num_bits(binvalue'length/btof_bindi'length)-1) := (others => '0');
