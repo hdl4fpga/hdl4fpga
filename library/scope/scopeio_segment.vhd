@@ -138,8 +138,8 @@ begin
 		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
 		signal v_offset : std_logic_vector(vt_offset'range);
 	begin
-		axis_sel   <= vt_dv;
-		axis_dv    <= vt_dv or hz_dv;
+		axis_sel   <= gain_dv or vt_dv;
+		axis_dv    <= gain_dv or vt_dv or hz_dv;
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
 		v_offset   <= std_logic_vector(unsigned(vt_offset) - bias);
