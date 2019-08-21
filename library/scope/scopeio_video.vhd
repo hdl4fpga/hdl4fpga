@@ -135,7 +135,6 @@ architecture beh of scopeio_video is
 	signal sgmntbtof_bcdfrm   : std_logic;
 	signal sgmntbtof_bcdirdy  : std_logic;
 
-
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 

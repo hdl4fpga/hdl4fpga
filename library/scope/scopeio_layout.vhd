@@ -66,7 +66,6 @@ architecture beh of scopeio_layout is
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-
 	signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
 	signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
 	signal mainbox_xedge : std_logic;
@@ -77,6 +76,7 @@ architecture beh of scopeio_layout is
 	signal mainbox_yon   : std_logic;
 
 	signal sgmnt_decode  : std_logic_vector(0 to layout.num_of_segments-1);
+
 begin
 
 	mainlayout_e : entity hdl4fpga.videobox_layout
