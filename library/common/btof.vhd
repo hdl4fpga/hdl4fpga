@@ -16,8 +16,8 @@ entity btof is
 		bin_di     : in  std_logic_vector;
 
 		bcd_frm    : out std_logic;
-		bcd_trdy   : in  std_logic := '1';
-		bcd_irdy   : out std_logic;
+		bcd_trdy   : out std_logic;
+		bcd_irdy   : in  std_logic := '1';
 
 		bcd_sign   : in  std_logic;
 		bcd_width  : in  std_logic_vector;
@@ -165,7 +165,7 @@ begin
 		mem_di        => dtos_do,
 		mem_do        => vector_do);
 
-	stof_irdy <= bcd_trdy;
+	stof_irdy <= bcd_irdy;
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
@@ -216,7 +216,7 @@ begin
 		vector_right => vector_right);
 
 	bcd_frm  <= frm;
-	bcd_irdy <= stof_trdy;
+	bcd_trdy <= stof_trdy;
 	bcd_end  <= stof_end;
 	bcd_do   <= stof_do;
 

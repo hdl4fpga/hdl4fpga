@@ -54,8 +54,8 @@ entity scopeio_axis is
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
 		btof_bcdfrm   : in  std_logic;
-		btof_bcdirdy  : in  std_logic;
-		btof_bcdtrdy  : buffer std_logic := '1';
+		btof_bcdirdy  : buffer std_logic := '1';
+		btof_bcdtrdy  : in  std_logic;
 		btof_bcdend   : in  std_logic;
 		btof_bcddo    : in  std_logic_vector;
 
@@ -272,13 +272,13 @@ begin
 			variable value : unsigned(bcdvalue'range);
 		begin
 			if rising_edge(clk) then
-				if btof_bcdirdy='1' then
+				if btof_bcdtrdy='1' then
 					value    := value sll btof_bcddo'length;
 					value(btof_bcddo'length-1 downto 0) := unsigned(btof_bcddo);
 				end if;
 				bcdvalue <= value;
-				hz_tv <= btof_bcdend and btof_bcdirdy and hz_ena;
-				vt_tv <= btof_bcdend and btof_bcdirdy and vt_ena;
+				hz_tv <= btof_bcdend and btof_bcdtrdy and hz_ena;
+				vt_tv <= btof_bcdend and btof_bcdtrdy and vt_ena;
 			end if;
 		end process;
 

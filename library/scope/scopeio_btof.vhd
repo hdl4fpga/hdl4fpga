@@ -43,8 +43,8 @@ entity scopeio_btof is
 		bcd_unit  : in  std_logic_vector := b"0000";
 		bcd_prec  : in  std_logic_vector := b"1101";
 		bcd_frm   : out std_logic_vector;
-		bcd_irdy  : out std_logic;
-		bcd_trdy  : in  std_logic_vector;
+		bcd_irdy  : in  std_logic_vector;
+		bcd_trdy  : out std_logic;
 		bcd_end   : out std_logic;
 		bcd_do    : out std_logic_vector);
 end;
@@ -59,7 +59,7 @@ architecture def of scopeio_btof is
 	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
 	signal btofbin_exp  : std_logic_vector(0 to 0);
 	signal btofbcd_frm  : std_logic;
-	signal btofbcd_trdy : std_logic_vector(0 to 0);
+	signal btofbcd_irdy : std_logic_vector(0 to 0);
 begin
 
 	btof_req <= bin_frm;
@@ -73,7 +73,7 @@ begin
 	btofbin_irdy <= wirebus(bin_irdy, btof_gnt);
 	btofbin_di   <= wirebus(bin_di,   btof_gnt);
 	btofbin_exp  <= wirebus(bin_exp,  btof_gnt);
-	btofbcd_trdy <= wirebus(bcd_trdy, btof_gnt);
+	btofbcd_irdy <= wirebus(bcd_irdy, btof_gnt);
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
@@ -90,8 +90,8 @@ begin
 		bcd_unit  => x"0", --bcd_unit,
 		bcd_prec  => bcd_prec,
 		bcd_frm   => btofbcd_frm,
-		bcd_irdy  => bcd_irdy,
-		bcd_trdy  => btofbcd_trdy(0),
+		bcd_irdy  => btofbcd_irdy(0),
+		bcd_trdy  => bcd_trdy,
 		bcd_end   => bcd_end,
 		bcd_do    => bcd_do);
 

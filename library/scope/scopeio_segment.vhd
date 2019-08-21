@@ -30,8 +30,8 @@ entity scopeio_segment is
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
 		btof_bcdfrm   : in  std_logic;
-		btof_bcdirdy  : in  std_logic;
-		btof_bcdtrdy  : buffer std_logic;
+		btof_bcdirdy  : buffer  std_logic;
+		btof_bcdtrdy  : in  std_logic;
 		btof_bcdend   : in  std_logic;
 		btof_bcddo    : in  std_logic_vector;
 
