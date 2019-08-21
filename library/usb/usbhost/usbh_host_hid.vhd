@@ -73,7 +73,9 @@ architecture Behavioral of usbh_host_hid is
   signal R_setup_byte_counter: std_logic_vector(2 downto 0) := (others => '0');
 
   signal ctrlin : std_logic;
-  
+  signal datastatus : std_logic := '0';
+  constant C_datastatus_enable : std_logic := '0';
+
   signal R_packet_counter : std_logic_vector(15 downto 0);
   
   signal   R_state:           std_logic_vector(1 downto 0)    := "00";
@@ -396,6 +398,9 @@ architecture Behavioral of usbh_host_hid is
 --                  R_bytes_remaining <= x"0000";
                   if R_set_address_found = '1' then
                     ctrlin  <= '1';
+                    datastatus <= '0';
+                  else
+                    datastatus <= C_datastatus_enable; -- after IN send status OUT
                   end if;
                   data_idx_i <= '1'; -- next sending as DATA1
                   R_state <= C_STATE_DATA;
@@ -488,11 +493,15 @@ architecture Behavioral of usbh_host_hid is
               if ctrlin = '1' then
                 if R_stored_response = x"4B" or R_stored_response = x"C3" then -- SIE quirk: 4B is returned for 0-len packet instead of D2 ACK
                   R_advance_data  <= '1';
-                  -- FIXME: after all IN packets, send 0-length OUT packet as confirmation
                   if R_bytes_remaining(R_bytes_remaining'high downto 3) = x"000" & '0' then
                     ctrlin  <= '0';
-                    R_state <= C_STATE_SETUP;
+                    if datastatus = '0' then
+                      R_state <= C_STATE_SETUP;
+                    end if;
+                    -- after all IN packets, send 0-length OUT packet as confirmation.
+                    -- TODO: see standard what is correct data_idx_i = 0 or 1
                   else
+                    R_advance_data  <= '1';
                     R_packet_counter <= R_packet_counter + 1;
                     start_i          <= '1';
                   end if;
@@ -503,8 +512,12 @@ architecture Behavioral of usbh_host_hid is
               else -- ctrlin = 0
                 if R_stored_response = x"D2" then
                   R_advance_data   <= '1';
-                  if R_bytes_remaining = x"0000" then
-                    ctrlin <= '1'; -- OUT phase will finish with IN 0-length packet
+                  if datastatus = '1' then
+                    R_state <= C_STATE_SETUP;
+                  else
+                    if R_bytes_remaining = x"0000" then
+                      ctrlin <= '1'; -- OUT phase will finish with IN 0-length packet
+                    end if;
                   end if;
                 else
                   R_packet_counter <= R_packet_counter + 1;
