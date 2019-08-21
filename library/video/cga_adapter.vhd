@@ -42,16 +42,16 @@ entity cga_adapter is
 
 		video_clk   : in  std_logic;
 		video_addr  : in std_logic_vector;
-		video_vcntr : in std_logic_vector;
-		video_hcntr : in std_logic_vector;
+		video_vcntr : in std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
+		video_hcntr : in std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
 		video_hon   : in std_logic;
 
 		video_dot : out std_logic);
 end;
 
 architecture struct of cga_adapter is
-	signal font_col : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-	signal font_row : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
+	signal font_col : std_logic_vector(video_vcntr'range);
+	signal font_row : std_logic_vector(video_hcntr'range);
 
 	signal cga_code : std_logic_vector(byte'range);
 	signal dll      : std_logic_vector(cga_code'range);
@@ -79,7 +79,7 @@ begin
 		d   => (font_row'range => 2))
 	port map (
 		clk => video_clk,
-		di  => video_vcntr(font_row'range),
+		di  => video_vcntr,
 		do  => font_row);
 
 	hsync_e : entity hdl4fpga.align
@@ -88,7 +88,7 @@ begin
 		d   => (font_col'range => 2))
 	port map (
 		clk => video_clk,
-		di  => video_hcntr(font_col'range),
+		di  => video_hcntr,
 		do  => font_col);
 
 	rom_e : entity hdl4fpga.cga_rom
