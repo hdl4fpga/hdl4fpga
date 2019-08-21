@@ -32,23 +32,39 @@ entity arbiter is
 	port (
 		clk     : in  std_logic;
 		bus_req : in  std_logic_vector;
-		bus_gnt : out std_logic_vector);
+		bus_gnt : buffer std_logic_vector);
 end;
 
 architecture mix of arbiter is
+	function primask (
+		constant arg : std_logic_vector )
+		return std_logic_vector is
+		variable retval : std_logic_vector(arg'range);
+	begin
+		retval := (others => '0');
+		for i in arg'range loop
+			retval(i) := arg(i);
+			exit when arg(i)='1';
+		end loop;
+		return retval;
+	end;
+
+	signal gnt  : std_logic_vector(bus_gnt'range);
+	signal gnt1 : std_logic_vector(bus_gnt'range);
+
 begin
 
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			bus_gnt <= (bus_gnt'range => '0');
-			for i in bus_req'range loop
-				if bus_req(i)='1' then
-					bus_gnt(i) <= bus_req(i); 
-					exit;
-				end if;
-			end loop;
+			if gnt=(gnt'range => '0') then
+				gnt <= primask(bus_req);
+			elsif bus_req=(bus_req'range => '0') then
+				gnt <= (others => '0');
+			end if;
+			gnt1 <= bus_gnt;
 		end if;
 	end process;
 
+	bus_gnt <= gnt and bus_req;
 end;
