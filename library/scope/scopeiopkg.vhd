@@ -65,18 +65,18 @@ package scopeiopkg is
 		sgmnt_gap        : gap_vector;         -- Segment Padding
 	end record;
 
-	constant sd600  : natural := 0;
-	constant hd720  : natural := 1;
-	constant hd1080 : natural := 2;
-	constant vesa1280x1024: natural := 3;
-	constant sd600x16 : natural := 4;
-	constant sd600x16fs : natural := 5;
-	constant oled96x64  : natural := 6;
+	constant sd600            : natural := 0;
+	constant hd720            : natural := 1;
+	constant hd1080           : natural := 2;
+	constant vesa1280x1024    : natural := 3;
+	constant sd600x16         : natural := 4;
+	constant sd600x16fs       : natural := 5;
+	constant oled96x64        : natural := 6;
 	constant oled96x64ongrid  : natural := 11;
-	constant lcd800x480: natural := 7;
-	constant lcd800x480ongrid: natural := 10;
-	constant lcd1024x600: natural := 8;
-	constant vesa640x480: natural := 9;
+	constant lcd800x480       : natural := 7;
+	constant lcd800x480ongrid : natural := 10;
+	constant lcd1024x600      : natural := 8;
+	constant vesa640x480      : natural := 9;
 
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
@@ -443,6 +443,10 @@ package scopeiopkg is
 			video_data       : out std_logic_vector);
 	end component;
 
+	function scale_1245 (
+		constant val   : std_logic_vector;
+		constant scale : std_logic_vector)
+		return std_logic_vector;
 end;
 
 package body scopeiopkg is
@@ -845,4 +849,33 @@ package body scopeiopkg is
 		return (0 to 0 => '-');
 	end;
 
+	function scale_1245 (
+		constant val   : std_logic_vector;
+		constant scale : std_logic_vector)
+		return std_logic_vector is
+		variable sel  : std_logic_vector(scale'length-1 downto 0);
+		variable by1  : signed(val'range);
+		variable by2  : signed(val'range);
+		variable by4  : signed(val'range);
+		variable rval : signed(val'range);
+	begin
+		by1 := shift_left(signed(val), 0);
+		by2 := shift_left(signed(val), 1);
+		by4 := shift_left(signed(val), 2);
+		sel := scale;
+		case sel(2-1 downto 0) is
+		when "00" =>
+			rval := by1;
+		when "01" =>
+			rval := by2;
+		when "10" =>
+			rval := by4;
+		when "11" =>
+			rval := by4 + by1;
+		when others =>
+			rval := (others => '-');
+		end case;
+		return std_logic_vector(rval);
+	end;
+		
 end;

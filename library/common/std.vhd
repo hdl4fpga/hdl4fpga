@@ -92,6 +92,17 @@ package std is
 		constant arg : std_logic_vector;
 		constant ena : std_logic := '1')
 		return std_logic_vector;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned;
+
 	--------------------
 	-- Counter functions
 	--------------------
@@ -673,6 +684,48 @@ package body std is
 		return std_logic_vector is
 	begin
 		return std_logic_vector(unsigned(arg xor (arg'range => ena)) + unsigned'((0 to 0 => ena)));
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed is
+		variable muld : signed(op1'length-1 downto 0);
+		variable mulr : unsigned(op2'length-1 downto 0);
+		variable rval : signed(0 to muld'length+mulr'length-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		for i in mulr'range loop
+			rval := shift_right(rval, 1);
+			if mulr(0)='1' then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr srl 1;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned is
+		variable mulr : natural;
+		variable muld : unsigned(op1'length-1 downto 0);
+		variable rval : unsigned(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		while mulr /= 0 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr / 2;
+		end loop;
+		return rval;
 	end;
 
 	--------------------

@@ -91,55 +91,6 @@ architecture def of scopeio_axis is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
-	function scale_1245 (
-		constant val   : std_logic_vector;
-		constant scale : std_logic_vector)
-		return std_logic_vector is
-		variable sel  : std_logic_vector(scale'length-1 downto 0);
-		variable by1  : signed(val'range);
-		variable by2  : signed(val'range);
-		variable by4  : signed(val'range);
-		variable rval : signed(val'range);
-	begin
-		by1 := shift_left(signed(val), 0);
-		by2 := shift_left(signed(val), 1);
-		by4 := shift_left(signed(val), 2);
-		sel := scale;
-		case sel(2-1 downto 0) is
-		when "00" =>
-			rval := by1;
-		when "01" =>
-			rval := by2;
-		when "10" =>
-			rval := by4;
-		when "11" =>
-			rval := by4 + by1;
-		when others =>
-			rval := (others => '-');
-		end case;
-		return std_logic_vector(rval);
-	end;
-		
-	function mul (
-		constant op1 : signed;
-		constant op2 : unsigned)
-		return signed is
-		variable muld : signed(op1'length-1 downto 0);
-		variable mulr : unsigned(op2'length-1 downto 0);
-		variable rval : signed(0 to muld'length+mulr'length-1);
-	begin
-		muld := op1;
-		mulr := op2;
-		rval := (others => '0');
-		for i in mulr'reverse_range loop
-			rval := shift_right(rval, 1);
-			if mulr(i)='1' then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
-			end if;
-		end loop;
-		return rval;
-	end;
-
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
