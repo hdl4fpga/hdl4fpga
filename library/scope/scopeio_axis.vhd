@@ -51,6 +51,8 @@ entity scopeio_axis is
 		btof_binneg   : out std_logic;
 		btof_binexp   : out std_logic;
 		btof_bcdunit  : out std_logic_vector;
+		btof_bcdwidth : out std_logic_vector;
+		btof_bcdprec  : out std_logic_vector;
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
 		btof_bcdirdy  : buffer std_logic := '1';
@@ -182,9 +184,12 @@ begin
 			end if;
 		end process;
 
+		btof_binneg   <= binvalue(binvalue'left);
+		btof_bcdprec  <= b"1111";
+		btof_bcdunit  <= b"1111";
+		btof_bcdwidth <= b"1000";
 		btof_bcdalign <= hz_align when vt_ena='0' else vt_align;
 		btof_bcdsign  <= hz_sign  when vt_ena='0' else vt_sign;
-		btof_binneg   <= binvalue(binvalue'left);
 
 		bindi_p : process (clk)
 			variable sel : unsigned(0 to unsigned_num_bits(binvalue'length/btof_bindi'length)-1) := (others => '0');

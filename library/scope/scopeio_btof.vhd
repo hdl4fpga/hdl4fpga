@@ -49,20 +49,22 @@ entity scopeio_btof is
 end;
 
 architecture def of scopeio_btof is
-	signal btof_req     : std_logic_vector(bin_frm'range);
-	signal btof_gnt     : std_logic_vector(bin_frm'range);
+	signal btof_req      : std_logic_vector(bin_frm'range);
+	signal btof_gnt      : std_logic_vector(bin_frm'range);
 
-	signal btofbin_frm  : std_logic_vector(0 to 0);
-	signal btofbin_irdy : std_logic_vector(0 to 0);
-	signal btofbin_trdy : std_logic;
-	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
-	signal btofbin_exp  : std_logic_vector(0 to 0);
-	signal btofbin_neg  : std_logic_vector(0 to 0);
+	signal btofbin_frm   : std_logic_vector(0 to 0);
+	signal btofbin_irdy  : std_logic_vector(0 to 0);
+	signal btofbin_trdy  : std_logic;
+	signal btofbin_di    : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
+	signal btofbin_exp   : std_logic_vector(0 to 0);
+	signal btofbin_neg   : std_logic_vector(0 to 0);
+	signal btofbcd_unit  : std_logic_vector(bcd_unit'length/bin_frm'length-1 downto 0);
+	signal btofbcd_width : std_logic_vector(bcd_width'length/bin_frm'length-1 downto 0);
 	signal btofbcd_sign  : std_logic_vector(0 to 0);
 	signal btofbcd_align : std_logic_vector(0 to 0);
-	signal btofbcd_frm  : std_logic;
-	signal btofbcd_irdy : std_logic_vector(0 to 0);
-	signal btofbcd_trdy : std_logic;
+	signal btofbcd_frm   : std_logic;
+	signal btofbcd_irdy  : std_logic_vector(0 to 0);
+	signal btofbcd_trdy  : std_logic;
 begin
 
 	btof_req <= bin_frm;
@@ -72,14 +74,16 @@ begin
 		bus_req => btof_req,
 		bus_gnt => btof_gnt);
 
-	btofbin_frm  <= wirebus(bin_frm,  btof_gnt);
-	btofbin_irdy <= wirebus(bin_irdy, btof_gnt);
-	btofbin_di   <= wirebus(bin_di,   btof_gnt);
-	btofbin_exp  <= wirebus(bin_exp,  btof_gnt);
-	btofbin_neg  <= wirebus(bin_neg,  btof_gnt);
-	btofbcd_align <= wirebus(bcd_align,  btof_gnt);
+	btofbin_frm   <= wirebus(bin_frm,   btof_gnt);
+	btofbin_irdy  <= wirebus(bin_irdy,  btof_gnt);
+	btofbin_di    <= wirebus(bin_di,    btof_gnt);
+	btofbin_exp   <= wirebus(bin_exp,   btof_gnt);
+	btofbin_neg   <= wirebus(bin_neg,   btof_gnt);
+	btofbcd_unit  <= wirebus(bcd_unit,  btof_gnt);
+	btofbcd_width <= wirebus(bcd_width, btof_gnt);
+	btofbcd_align <= wirebus(bcd_align, btof_gnt);
 	btofbcd_sign  <= wirebus(bcd_sign,  btof_gnt);
-	btofbcd_irdy <= wirebus(bcd_irdy, btof_gnt);
+	btofbcd_irdy  <= wirebus(bcd_irdy,  btof_gnt);
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
@@ -92,8 +96,8 @@ begin
 		bin_neg   => btofbin_neg(0),
 		bcd_sign  => btofbcd_sign(0),
 		bcd_align => btofbcd_align(0),
-		bcd_width => bcd_width,
-		bcd_unit  => x"0", --bcd_unit,
+		bcd_width => btofbcd_width,
+		bcd_unit  => btofbcd_unit,
 		bcd_prec  => bcd_prec,
 		bcd_irdy  => btofbcd_irdy(0),
 		bcd_trdy  => btofbcd_trdy,

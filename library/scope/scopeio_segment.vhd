@@ -27,6 +27,8 @@ entity scopeio_segment is
 		btof_binneg   : out std_logic;
 		btof_binexp   : out std_logic;
 		btof_bcdunit  : out std_logic_vector;
+		btof_bcdwidth : out std_logic_vector;
+		btof_bcdprec  : out std_logic_vector;
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
 		btof_bcdirdy  : buffer  std_logic;
@@ -170,6 +172,8 @@ begin
 			btof_bindi    => btof_bindi,
 			btof_binneg   => btof_binneg,
 			btof_binexp   => btof_binexp,
+			btof_bcdwidth => btof_bcdwidth,
+			btof_bcdprec  => btof_bcdprec,
 			btof_bcdunit  => btof_bcdunit,
 			btof_bcdsign  => btof_bcdsign,
 			btof_bcdalign => btof_bcdalign,
