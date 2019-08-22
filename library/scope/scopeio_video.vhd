@@ -138,8 +138,8 @@ architecture beh of scopeio_video is
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-	signal sgmntbox_x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal sgmntbox_y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
+	signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
 	signal grid_on         : std_logic;
 	signal hz_on           : std_logic;
@@ -236,8 +236,8 @@ begin
 
 		hz_slider    => hz_slider,
 		hz_segment   => hz_segment,
-		sgmntbox_x   => sgmntbox_x,
-		sgmntbox_y   => sgmntbox_y,
+		x            => x,
+		y            => y,
 		sgmntbox_on  => sgmntbox_on,
 		video_addr   => video_addr,
 		video_frm    => video_frm,
@@ -284,8 +284,8 @@ begin
 		gain_ids      => gain_ids,
 
 		video_clk     => video_clk,
-		x             => sgmntbox_x,
-		y             => sgmntbox_y,
+		x             => x,
+		y             => y,
 
 		hz_on         => hz_on,
 		vt_on         => vt_on,

@@ -117,7 +117,7 @@ begin
 	ticks_b : block
 
 		signal scale    : std_logic_vector(axis_scale'range);
-		signal init     : std_logic;
+		signal init     : std_logic := '1';
 		signal ena      : std_logic;
 		signal start    : signed(binvalue'range);
 		signal stop     : unsigned(binvalue'range);
@@ -150,7 +150,7 @@ begin
 		iterator_e : process(clk)
 		begin
 			if rising_edge(clk) then
-				if init/='0' then
+				if init='1' then
 					iterator <= (others => '0');
 					binvalue <= start;
 				elsif ena='1' then

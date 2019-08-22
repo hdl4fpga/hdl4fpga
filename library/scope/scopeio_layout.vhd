@@ -41,8 +41,8 @@ entity scopeio_layout is
 
 		hz_slider    : in  std_logic_vector;
 		hz_segment   : out std_logic_vector;
-		sgmntbox_x   : buffer std_logic_vector;
-		sgmntbox_y   : buffer std_logic_vector;
+		x            : buffer std_logic_vector;
+		y            : buffer std_logic_vector;
 		sgmntbox_on  : buffer std_logic;
 		video_addr   : out std_logic_vector;
 		video_frm    : out std_logic;
@@ -209,8 +209,6 @@ begin
 			signal yedge : std_logic;
 			signal xdiv  : std_logic_vector(sgmntbox_xdiv'range);
 			signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
-			signal x     : std_logic_vector(sgmntbox_x'range);
-			signal y     : std_logic_vector(sgmntbox_y'range);
 
 		begin
 
@@ -264,8 +262,6 @@ begin
 					end if;
 					grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					text_on    <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-					sgmntbox_x <= x;
-					sgmntbox_y <= y;
 				end if;
 			end process;
 		end block;
@@ -290,7 +286,7 @@ begin
 					end if;
 				end loop;
 									   
-				video_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), video_addr'length));
+				video_addr <= std_logic_vector(base + resize(unsigned(x), video_addr'length));
 				video_frm  <= grid_on;
 				hz_segment   <= std_logic_vector(base + resize(unsigned(hz_slider(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 													  
