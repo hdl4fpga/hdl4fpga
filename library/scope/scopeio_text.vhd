@@ -8,9 +8,10 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_text is
 	generic(
-		latency       : natural;
-		layout        : display_layout;
-		inputs        : natural);
+		layout      : display_layout;
+		font_bitrom : std_logic_vector := psf1cp850x8x16;
+		font_height : natural := 16;
+		font_width  : natural := 8);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -32,11 +33,22 @@ entity scopeio_text is
 		btof_bcdend   : in  std_logic;
 		btof_bcddo    : in  std_logic_vector;
 
-		text_bg       : out std_logic);
+		video_hcntr   : in std_logic_vector;
+		video_vcntr   : in std_logic_vector;
+		text_on       : in  std_logic := '1';
 		text_dot      : out std_logic);
 end;
 
 architecture def of scopeio_text is
+
+	constant layout        : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+	constant cga_size      : natural := textbox_width(layout)*textbox_height(layout)/(font_width*font_height);
+
+	signal cga_addr        : std_logic_vector(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal video_addr      : std_logic_vector(cga_addr'range);
+
+	signal font_hcntr      : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+	signal font_vcntr      : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
 
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
@@ -86,18 +98,35 @@ begin
 	end process;
 
 	cga_we <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
+	video_addr_p : process (video_hcntr, video_vcntr)
+		variable addr : unsigned(video_vcntr'length-1 downto 0);
+		variable col  : unsigned(video_hctnr'length-1 downto 0);
+	begin
+		addr := unsigned(video_vcntr);
+		addr := addr srl font_vcntr'length;
+		addr := mul(row, textbox_width/font_width);
+		col  := unsigned(video_hcntr) srl font_hcntr'length;
+		addr := addr + col;
+		video_addr <= addr;
+	end process;
+
 	cga_adapter_e : entity hdl4fpga.cga_adapter
-	port (
+	generic map (
+		font_bitrom => font_bitrom,
+		font_height => font_height,
+		font_width  => font_width)
+	port map (
 		cga_clk  => rgtr_clk,
-		cga_we   => 
-		cga_addr => 
+		cga_we   => cga_we,
+		cga_addr => cga_addr,
 		cga_data => 
 
-		video_clk =>
-		video_vcntr =>
-		video_hcntr =>
-		video_hon   =>
-		video_dot   =>);
+		video_clk  => video_clk,
+		video_addr => video_addr,
+		font_hcntr => video_hcntr(font_hcntr'range),
+		font_vcntr => video_vcntr(font_vcntr'range),
+		video_hon  => text_on,
+		video_dot  => text_dot);
 
 
 
