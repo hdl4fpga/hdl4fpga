@@ -35,16 +35,15 @@ entity scopeio_btof is
 		bin_irdy  : in  std_logic_vector;
 		bin_trdy  : out std_logic_vector;
 		bin_exp   : in  std_logic_vector;
-		bin_neg   : in  std_logic;
+		bin_neg   : in  std_logic_vector;
 		bin_di    : in  std_logic_vector;
 		bcd_width : in  std_logic_vector := b"1000";
-		bcd_sign  : in  std_logic;
-		bcd_align : in  std_logic;
+		bcd_sign  : in  std_logic_vector;
+		bcd_align : in  std_logic_vector;
 		bcd_unit  : in  std_logic_vector := b"0000";
 		bcd_prec  : in  std_logic_vector := b"1101";
-		bcd_frm   : out std_logic_vector;
 		bcd_irdy  : in  std_logic_vector;
-		bcd_trdy  : out std_logic;
+		bcd_trdy  : out std_logic_vector;
 		bcd_end   : out std_logic;
 		bcd_do    : out std_logic_vector);
 end;
@@ -58,8 +57,12 @@ architecture def of scopeio_btof is
 	signal btofbin_trdy : std_logic;
 	signal btofbin_di   : std_logic_vector(bin_di'length/bin_frm'length-1 downto 0);
 	signal btofbin_exp  : std_logic_vector(0 to 0);
+	signal btofbin_neg  : std_logic_vector(0 to 0);
+	signal btofbcd_sign  : std_logic_vector(0 to 0);
+	signal btofbcd_align : std_logic_vector(0 to 0);
 	signal btofbcd_frm  : std_logic;
 	signal btofbcd_irdy : std_logic_vector(0 to 0);
+	signal btofbcd_trdy : std_logic;
 begin
 
 	btof_req <= bin_frm;
@@ -73,6 +76,9 @@ begin
 	btofbin_irdy <= wirebus(bin_irdy, btof_gnt);
 	btofbin_di   <= wirebus(bin_di,   btof_gnt);
 	btofbin_exp  <= wirebus(bin_exp,  btof_gnt);
+	btofbin_neg  <= wirebus(bin_neg,  btof_gnt);
+	btofbcd_align <= wirebus(bcd_align,  btof_gnt);
+	btofbcd_sign  <= wirebus(bcd_sign,  btof_gnt);
 	btofbcd_irdy <= wirebus(bcd_irdy, btof_gnt);
 		
 	btof_e : entity hdl4fpga.btof
@@ -83,19 +89,18 @@ begin
 		bin_trdy  => btofbin_trdy,
 		bin_di    => btofbin_di,
 		bin_flt   => btofbin_exp(0),
-		bin_neg   => bin_neg,
-		bcd_sign  => bcd_sign,
-		bcd_align => bcd_align,
+		bin_neg   => btofbin_neg(0),
+		bcd_sign  => btofbcd_sign(0),
+		bcd_align => btofbcd_align(0),
 		bcd_width => bcd_width,
 		bcd_unit  => x"0", --bcd_unit,
 		bcd_prec  => bcd_prec,
-		bcd_frm   => btofbcd_frm,
 		bcd_irdy  => btofbcd_irdy(0),
-		bcd_trdy  => bcd_trdy,
+		bcd_trdy  => btofbcd_trdy,
 		bcd_end   => bcd_end,
 		bcd_do    => bcd_do);
 
 	bin_trdy <= btof_gnt and (btof_gnt'range => btofbin_trdy);
-	bcd_frm  <= btof_gnt and (btof_gnt'range => bin_frm(0));
+	bcd_trdy <= btof_gnt and (btof_gnt'range => btofbcd_trdy);
 
 end;

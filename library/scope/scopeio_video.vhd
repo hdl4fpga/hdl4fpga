@@ -111,29 +111,24 @@ architecture beh of scopeio_video is
 	signal hz_slider     : std_logic_vector(time_offset'range);
 	signal hz_segment    : std_logic_vector(hz_slider'range);
 
-	signal btof_binfrm  : std_logic_vector(0 to 0);
-	signal btof_binirdy : std_logic_vector(0 to btof_binfrm'length-1);
-	signal btof_bintrdy : std_logic_vector(0 to btof_binfrm'length-1);
-	signal btof_bindi   : std_logic_vector(0 to 4*btof_binfrm'length-1);
-	signal btof_binexp  : std_logic_vector(0 to btof_binfrm'length-1);
-	signal btof_bcdfrm  : std_logic_vector(0 to btof_binfrm'length-1);
-	signal btof_bcdtrdy : std_logic;
-	signal btof_bcdirdy : std_logic_vector(0 to btof_binfrm'length-1);
-	signal btof_bcdend  : std_logic;
-	signal btof_bcddo   : std_logic_vector(4-1 downto 0);
+	constant sgmnt_id : natural := 0;
+	constant text_id  : natural := 1;
 
-
-	signal sgmntbtof_binfrm   : std_logic;
-	signal sgmntbtof_binirdy  : std_logic;
-	signal sgmntbtof_bintrdy  : std_logic;
-	signal sgmntbtof_bindi    : std_logic_vector(4-1 downto 0);
-	signal sgmntbtof_binneg   : std_logic;
-	signal sgmntbtof_binexp   : std_logic;
-	signal sgmntbtof_bcdunit  : std_logic_vector(4-1 downto 0);
-	signal sgmntbtof_bcdsign  : std_logic;
-	signal sgmntbtof_bcdalign : std_logic;
-	signal sgmntbtof_bcdfrm   : std_logic;
-	signal sgmntbtof_bcdirdy  : std_logic;
+	signal btof_binfrm   : std_logic_vector(0 to text_id);
+	signal btof_binirdy  : std_logic_vector(btof_binfrm'range);
+	signal btof_bintrdy  : std_logic_vector(btof_binfrm'range);
+	signal btof_bindi    : std_logic_vector(0 to 4*btof_binfrm'length-1);
+	signal btof_binexp   : std_logic_vector(btof_binfrm'range);
+	signal btof_binneg   : std_logic_vector(btof_binfrm'range);
+	signal btof_bcdalign : std_logic_vector(btof_binfrm'range);
+	signal btof_bcdprec  : std_logic_vector(0 to 4*btof_binfrm'length-1);
+	signal btof_bcdunit  : std_logic_vector(0 to 4*btof_binfrm'length-1);
+	signal btof_bcdwidth : std_logic_vector(0 to 4*btof_binfrm'length-1);
+	signal btof_bcdsign  : std_logic_vector(0 to btof_binfrm'length-1);
+	signal btof_bcdtrdy  : std_logic_vector(btof_binfrm'range);
+	signal btof_bcdirdy  : std_logic_vector(btof_binfrm'range);
+	signal btof_bcdend   : std_logic;
+	signal btof_bcddo    : std_logic_vector(4-1 downto 0);
 
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
@@ -154,6 +149,7 @@ architecture beh of scopeio_video is
 	signal hz_bgon       : std_logic;
 	signal vt_dot        : std_logic;
 	signal vt_bgon       : std_logic;
+	signal text_dot      : std_logic;
 	signal text_bgon     : std_logic;
 	signal sgmntbox_bgon : std_logic;
 	signal pointer_dot   : std_logic;
@@ -171,12 +167,6 @@ begin
 		hz_scale  => hz_scale,
 		hz_slider => hz_slider);
 
-	btof_binfrm(0)  <= sgmntbtof_binfrm;
-	btof_binirdy(0) <= sgmntbtof_binirdy;
-	btof_binirdy(0) <= sgmntbtof_binirdy;
-	btof_bindi      <= sgmntbtof_bindi;
-	btof_binexp(0)  <= sgmntbtof_binexp;
-	btof_bcdirdy(0) <= sgmntbtof_bcdirdy;
 	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
 		clk       => rgtr_clk,
@@ -184,20 +174,17 @@ begin
 		bin_irdy  => btof_binirdy,
 		bin_trdy  => btof_bintrdy,
 		bin_di    => btof_bindi,
-		bin_neg   => sgmntbtof_binneg,
+		bin_neg   => btof_binneg,
 		bin_exp   => btof_binexp,
 		bcd_width => b"1000",
-		bcd_sign  => sgmntbtof_bcdsign,
-		bcd_unit  => sgmntbtof_bcdunit,
-		bcd_align => sgmntbtof_bcdalign,
+		bcd_sign  => btof_bcdsign,
+		bcd_unit  => btof_bcdunit,
+		bcd_align => btof_bcdalign,
 		bcd_prec  => b"1111",
-		bcd_frm   => btof_bcdfrm,
 		bcd_irdy  => btof_bcdirdy,
 		bcd_trdy  => btof_bcdtrdy,
 		bcd_end   => btof_bcdend,
 		bcd_do    => btof_bcddo);
-	sgmntbtof_bcdfrm  <= btof_bcdfrm(0);
-	sgmntbtof_bintrdy <= btof_bintrdy(0);
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
@@ -246,6 +233,37 @@ begin
 		vt_on        => vt_on,
 		text_on      => text_on);
 
+	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
+	generic map (
+		layout        => layout)
+	port map (
+		rgtr_clk      => rgtr_clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
+
+		btof_binfrm   => btof_binfrm(text_id),
+		btof_binirdy  => btof_binirdy(text_id),
+		btof_bintrdy  => btof_bintrdy(text_id),
+		btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
+		btof_binneg   => btof_binneg(text_id),
+		btof_binexp   => btof_binexp(text_id),
+		btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
+		btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
+		btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
+		btof_bcdsign  => btof_bcdsign(text_id),
+		btof_bcdalign => btof_bcdalign(text_id),
+		btof_bcdirdy  => btof_bcdirdy(text_id),
+		btof_bcdtrdy  => btof_bcdtrdy(text_id),
+		btof_bcdend   => btof_bcdend,
+		btof_bcddo    => btof_bcddo,
+
+		video_clk     => video_clk,
+		video_hcntr   => x,
+		video_vcntr   => y,
+		text_on       => text_on,
+		text_dot      => text_dot);
+
 	scopeio_segment_e : entity hdl4fpga.scopeio_segment
 	generic map (
 		input_latency => input_latency,
@@ -260,18 +278,17 @@ begin
 		rgtr_id       => rgtr_id,
 		rgtr_data     => rgtr_data,
 
-		btof_binfrm   => sgmntbtof_binfrm,
-		btof_binirdy  => sgmntbtof_binirdy,
-		btof_bintrdy  => sgmntbtof_bintrdy,
-		btof_bindi    => sgmntbtof_bindi,
-		btof_binneg   => sgmntbtof_binneg,
-		btof_binexp   => sgmntbtof_binexp,
-		btof_bcdunit  => sgmntbtof_bcdunit,
-		btof_bcdsign  => sgmntbtof_bcdsign,
-		btof_bcdalign => sgmntbtof_bcdalign,
-		btof_bcdfrm   => sgmntbtof_bcdfrm,
-		btof_bcdtrdy  => btof_bcdtrdy,
-		btof_bcdirdy  => sgmntbtof_bcdirdy,
+		btof_binfrm   => btof_binfrm(sgmnt_id),
+		btof_binirdy  => btof_binirdy(sgmnt_id),
+		btof_bintrdy  => btof_bintrdy(sgmnt_id),
+		btof_bindi    => btof_bindi(4*sgmnt_id to 4*(sgmnt_id+1)-1),
+		btof_binneg   => btof_binneg(sgmnt_id),
+		btof_binexp   => btof_binexp(sgmnt_id),
+		btof_bcdunit  => btof_bcdunit(4*sgmnt_id to 4*(sgmnt_id+1)-1),
+		btof_bcdsign  => btof_bcdsign(sgmnt_id),
+		btof_bcdalign => btof_bcdalign(sgmnt_id),
+		btof_bcdtrdy  => btof_bcdtrdy(sgmnt_id),
+		btof_bcdirdy  => btof_bcdirdy(sgmnt_id),
 		btof_bcdend   => btof_bcdend,
 		btof_bcddo    => btof_bcddo,
 

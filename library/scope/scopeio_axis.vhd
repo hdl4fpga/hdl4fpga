@@ -53,7 +53,6 @@ entity scopeio_axis is
 		btof_bcdunit  : out std_logic_vector;
 		btof_bcdsign  : out std_logic;
 		btof_bcdalign : out std_logic;
-		btof_bcdfrm   : in  std_logic;
 		btof_bcdirdy  : buffer std_logic := '1';
 		btof_bcdtrdy  : in  std_logic;
 		btof_bcdend   : in  std_logic;
@@ -146,7 +145,7 @@ begin
 			end if;
 		end process;
 
-		ena <= btof_bcdfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
+		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
 		begin
 			if rising_edge(clk) then

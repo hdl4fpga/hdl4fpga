@@ -114,7 +114,6 @@ begin
 
 	mainbox_b : block
 
-
 		signal sgmntbox_vyon   : std_logic;
 		signal sgmntbox_vxon   : std_logic;
 		signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
