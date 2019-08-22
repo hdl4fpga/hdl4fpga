@@ -37,11 +37,11 @@ entity scopeio_btof is
 		bin_exp   : in  std_logic_vector;
 		bin_neg   : in  std_logic_vector;
 		bin_di    : in  std_logic_vector;
-		bcd_width : in  std_logic_vector := b"1000";
+		bcd_width : in  std_logic_vector;
 		bcd_sign  : in  std_logic_vector;
 		bcd_align : in  std_logic_vector;
-		bcd_unit  : in  std_logic_vector := b"0000";
-		bcd_prec  : in  std_logic_vector := b"1101";
+		bcd_unit  : in  std_logic_vector;
+		bcd_prec  : in  std_logic_vector;
 		bcd_irdy  : in  std_logic_vector;
 		bcd_trdy  : out std_logic_vector;
 		bcd_end   : out std_logic;
@@ -60,6 +60,7 @@ architecture def of scopeio_btof is
 	signal btofbin_neg   : std_logic_vector(0 to 0);
 	signal btofbcd_unit  : std_logic_vector(bcd_unit'length/bin_frm'length-1 downto 0);
 	signal btofbcd_width : std_logic_vector(bcd_width'length/bin_frm'length-1 downto 0);
+	signal btofbcd_prec  : std_logic_vector(bcd_prec'length/bin_frm'length-1 downto 0);
 	signal btofbcd_sign  : std_logic_vector(0 to 0);
 	signal btofbcd_align : std_logic_vector(0 to 0);
 	signal btofbcd_frm   : std_logic;
@@ -81,6 +82,7 @@ begin
 	btofbin_neg   <= wirebus(bin_neg,   btof_gnt);
 	btofbcd_unit  <= wirebus(bcd_unit,  btof_gnt);
 	btofbcd_width <= wirebus(bcd_width, btof_gnt);
+	btofbcd_prec  <= wirebus(bcd_prec , btof_gnt);
 	btofbcd_align <= wirebus(bcd_align, btof_gnt);
 	btofbcd_sign  <= wirebus(bcd_sign,  btof_gnt);
 	btofbcd_irdy  <= wirebus(bcd_irdy,  btof_gnt);
@@ -98,7 +100,7 @@ begin
 		bcd_align => btofbcd_align(0),
 		bcd_width => btofbcd_width,
 		bcd_unit  => btofbcd_unit,
-		bcd_prec  => bcd_prec,
+		bcd_prec  => btofbcd_prec,
 		bcd_irdy  => btofbcd_irdy(0),
 		bcd_trdy  => btofbcd_trdy,
 		bcd_end   => bcd_end,

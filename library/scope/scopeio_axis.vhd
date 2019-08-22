@@ -185,7 +185,7 @@ begin
 		end process;
 
 		btof_binneg   <= binvalue(binvalue'left);
-		btof_bcdprec  <= b"1111";
+		btof_bcdprec  <= b"1110";
 		btof_bcdunit  <= b"1111";
 		btof_bcdwidth <= b"1000";
 		btof_bcdalign <= hz_align when vt_ena='0' else vt_align;
@@ -213,7 +213,7 @@ begin
 		taddr_p : process (clk)
 		begin
 			if rising_edge(clk) then
-				if init/='0' then
+				if init='1' then
 					taddr <= (others => '1');
 				elsif ena='1' then
 					taddr <= taddr + 1;

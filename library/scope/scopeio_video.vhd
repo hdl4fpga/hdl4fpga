@@ -117,14 +117,14 @@ architecture beh of scopeio_video is
 	signal btof_binfrm   : std_logic_vector(0 to text_id);
 	signal btof_binirdy  : std_logic_vector(btof_binfrm'range);
 	signal btof_bintrdy  : std_logic_vector(btof_binfrm'range);
-	signal btof_bindi    : std_logic_vector(0 to 4*btof_binfrm'length-1);
 	signal btof_binexp   : std_logic_vector(btof_binfrm'range);
 	signal btof_binneg   : std_logic_vector(btof_binfrm'range);
-	signal btof_bcdalign : std_logic_vector(btof_binfrm'range);
+	signal btof_bindi    : std_logic_vector(0 to 4*btof_binfrm'length-1);
 	signal btof_bcdprec  : std_logic_vector(0 to 4*btof_binfrm'length-1);
 	signal btof_bcdunit  : std_logic_vector(0 to 4*btof_binfrm'length-1);
 	signal btof_bcdwidth : std_logic_vector(0 to 4*btof_binfrm'length-1);
-	signal btof_bcdsign  : std_logic_vector(0 to btof_binfrm'length-1);
+	signal btof_bcdalign : std_logic_vector(btof_binfrm'range);
+	signal btof_bcdsign  : std_logic_vector(btof_binfrm'range);
 	signal btof_bcdtrdy  : std_logic_vector(btof_binfrm'range);
 	signal btof_bcdirdy  : std_logic_vector(btof_binfrm'range);
 	signal btof_bcdend   : std_logic;
@@ -176,7 +176,7 @@ begin
 		bin_di    => btof_bindi,
 		bin_neg   => btof_binneg,
 		bin_exp   => btof_binexp,
-		bcd_width => b"1000",
+		bcd_width => btof_bcdwidth,
 		bcd_sign  => btof_bcdsign,
 		bcd_unit  => btof_bcdunit,
 		bcd_align => btof_bcdalign,

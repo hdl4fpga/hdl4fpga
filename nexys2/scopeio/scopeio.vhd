@@ -117,8 +117,8 @@ architecture beh of nexys2 is
 
 	type display_param is record
 		layout : natural;
-		mul    : natural;
-		div    : natural;
+		dcm_mul    : natural;
+		dcm_div    : natural;
 	end record;
 
 	type layout_mode is (
@@ -129,10 +129,10 @@ architecture beh of nexys2 is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, mul => 4, div => 5),
-		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode480p    => (layout => 8, mul => 3, div => 5),
-		mode600px16 => (layout => 6, mul => 2, div => 4));
+		mode600p    => display_param'(layout => 1, dcm_mul => 4, dcm_div => 5),
+		mode1080p   => display_param'(layout => 0, dcm_mul => 3, dcm_div => 1),
+		mode480p    => display_param'(layout => 8, dcm_mul => 3, dcm_div => 5),
+		mode600px16 => display_param'(layout => 6, dcm_mul => 2, dcm_div => 4));
 
 	constant video_mode : layout_mode := mode600p;
 
@@ -147,8 +147,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).mul,
-		dfs_div => video_params(video_mode).div)
+		dfs_mul => video_params(video_mode).dcm_mul,
+		dfs_div => video_params(video_mode).dcm_div)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,

@@ -50,8 +50,8 @@ entity cga_adapter is
 end;
 
 architecture struct of cga_adapter is
-	signal font_col : std_logic_vector(font_vcntr'range);
-	signal font_row : std_logic_vector(font_hcntr'range);
+	signal font_col : std_logic_vector(font_hcntr'range);
+	signal font_row : std_logic_vector(font_vcntr'range);
 
 	signal cga_code : std_logic_vector(byte'range);
 	signal dll      : std_logic_vector(cga_code'range);

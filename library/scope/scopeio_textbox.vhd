@@ -69,8 +69,9 @@ begin
 					end if;
 				end if;
 			elsif rgtr_dv='1' then
-				btof_binfrm <= '1';
-				frac <= scale_1245(value, scale);
+				btof_binfrm <= '0';
+--				frac <= scale_1245(value, scale);
+				frac <= scale_1245(x"fff", scale);
 			end if;
 		end if;
 	end process;

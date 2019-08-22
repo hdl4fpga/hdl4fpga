@@ -209,6 +209,8 @@ begin
 			signal xdiv  : std_logic_vector(sgmntbox_xdiv'range);
 			signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
 
+			signal sgmntbox_x : std_logic_vector(x'range);
+			signal sgmntbox_y : std_logic_vector(y'range);
 		begin
 
 			rgtrin_p : process (video_clk)
@@ -232,8 +234,8 @@ begin
 				video_eox => eox,
 				box_xedge => xedge,
 				box_yedge => yedge,
-				box_x     => x,
-				box_y     => y);
+				box_x     => sgmntbox_x,
+				box_y     => sgmntbox_y);
 
 			rgtrout_p: process (video_clk)
 				constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
@@ -259,8 +261,10 @@ begin
 					else
 						hz_on <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					end if;
-					grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-					text_on    <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+					grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+					text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+					x       <= sgmntbox_x;
+					y       <= sgmntbox_y;
 				end if;
 			end process;
 		end block;
