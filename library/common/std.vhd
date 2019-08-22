@@ -89,9 +89,9 @@ package std is
 		return std_logic_vector;
 
 	function neg (
-		constant arg : std_logic_vector;
+		constant arg : signed;
 		constant ena : std_logic := '1')
-		return std_logic_vector;
+		return signed;
 
 	function mul (
 		constant op1 : signed;
@@ -679,11 +679,14 @@ package body std is
 	end;
 
 	function neg (
-		constant arg : std_logic_vector;
+		constant arg : signed;
 		constant ena : std_logic := '1')
-		return std_logic_vector is
+		return signed is
 	begin
-		return std_logic_vector(unsigned(arg xor (arg'range => ena)) + unsigned'((0 to 0 => ena)));
+		if ena='1' then
+			return -arg;
+		end if;
+		return arg;
 	end;
 
 	function mul (

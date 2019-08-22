@@ -198,7 +198,7 @@ begin
 				end if;
 
 				btof_bindi <= word2byte(
-					scale_1245(neg(std_logic_vector(binvalue), binvalue(binvalue'left)), scale) & x"f",
+					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & x"f"),
 					std_logic_vector(sel), 
 					btof_bindi'length);
 				btof_binexp <= setif(sel >= binvalue'length/btof_bindi'length);

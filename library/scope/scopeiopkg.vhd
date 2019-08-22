@@ -444,9 +444,9 @@ package scopeiopkg is
 	end component;
 
 	function scale_1245 (
-		constant val   : std_logic_vector;
+		constant val   : signed;
 		constant scale : std_logic_vector)
-		return std_logic_vector;
+		return signed;
 end;
 
 package body scopeiopkg is
@@ -850,18 +850,18 @@ package body scopeiopkg is
 	end;
 
 	function scale_1245 (
-		constant val   : std_logic_vector;
+		constant val   : signed;
 		constant scale : std_logic_vector)
-		return std_logic_vector is
+		return signed is
 		variable sel  : std_logic_vector(scale'length-1 downto 0);
 		variable by1  : signed(val'range);
 		variable by2  : signed(val'range);
 		variable by4  : signed(val'range);
 		variable rval : signed(val'range);
 	begin
-		by1 := shift_left(signed(val), 0);
-		by2 := shift_left(signed(val), 1);
-		by4 := shift_left(signed(val), 2);
+		by1 := shift_left(val, 0);
+		by2 := shift_left(val, 1);
+		by4 := shift_left(val, 2);
 		sel := scale;
 		case sel(2-1 downto 0) is
 		when "00" =>
@@ -875,7 +875,7 @@ package body scopeiopkg is
 		when others =>
 			rval := (others => '-');
 		end case;
-		return std_logic_vector(rval);
+		return rval;
 	end;
 		
 end;
