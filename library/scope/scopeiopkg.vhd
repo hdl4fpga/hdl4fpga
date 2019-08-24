@@ -427,6 +427,18 @@ package scopeiopkg is
 	constant pltid_sgmntbg   : natural :=  8;
 	constant pltid_scopeiobg : natural :=  9;
 
+	constant pltid_order : natural_vector := (
+		0 => pltid_vtfg,
+		1 => pltid_hzfg,
+		2 => pltid_textfg,      
+		3 => pltid_gridfg,
+		4 => pltid_vtbg,
+		5 => pltid_hzbg,
+		6 => pltid_textbg,      
+		7 => pltid_gridbg,
+		8 => pltid_sgmntbg,
+		9 => pltid_scopeiobg);
+
 	function layer_priority(
 		constant traces : natural)
 		return natural_vector;
@@ -874,7 +886,7 @@ package body scopeiopkg is
 		end loop;
 
 		for i in 0 to pltid_scopeiobg loop
-			retval(traces+1+i) := i;
+			retval(traces+1+i) := pltid_order(i);
 		end loop;
 
 		return retval;

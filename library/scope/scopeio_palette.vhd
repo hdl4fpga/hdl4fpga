@@ -43,7 +43,7 @@ end;
 
 architecture beh of scopeio_palette is
 
-	constant bgon     : std_logic := '1';
+	constant scopeio_bgon     : std_logic := '1';
 
 	function palette_ids (
 		constant statics : natural;
@@ -54,13 +54,13 @@ architecture beh of scopeio_palette is
 		constant size    : natural := unsigned_num_bits(n-1);
 		variable retval : unsigned(0 to n*size-1);
 	begin
-		for i in 0 to statics-2 loop
+		for i in 0 to statics-1 loop
 			retval(0 to size-1) := to_unsigned(i, size);
 			retval := retval rol size;
 		end loop;
 		retval(0 to size-1) := resize(unsigned(trigger_chanid)+statics, size);
 		retval := retval rol size;
-		for i in statics to statics+traces-1 loop
+		for i in statics to statics+traces-2 loop
 			retval(0 to size-1) := to_unsigned(i, size);
 			retval := retval rol size;
 		end loop;
@@ -92,7 +92,9 @@ architecture beh of scopeio_palette is
 	signal color_addr    : std_logic_vector(palette_addr'range);
 	signal dll           : std_logic_vector(palette_data'range);
 
-	constant p : natural_vector := layer_priority(trace_dots'length);
+	signal pp : std_logic_vector(0 to 13*4-1);
+	signal ppp : std_logic_vector(0 to 13-1);
+
 begin
 
 	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
@@ -110,10 +112,12 @@ begin
 	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
-	color_addr <= primux(
-		reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length, trigger_chanid), layer_priority(trace_dots'length)),
-		reshuffle(grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & bgon & trace_dots & trigger_dot, layer_priority(trace_dots'length)));
+--	pp  <= reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length+1, trigger_chanid), layer_priority(trace_dots'length));
+--	ppp <= reshuffle(grid_dot & grid_bgon & vt_dot & vt_bgon & hz_dot & hz_bgon & text_dot & text_bgon & sgmnt_bgon & scopeio_bgon & trace_dots & trigger_dot, layer_priority(trace_dots'length));
 
+	color_addr <= primux(
+		reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length+1, trigger_chanid), layer_priority(trace_dots'length)),
+		reshuffle(grid_dot & grid_bgon & vt_dot & vt_bgon & hz_dot & hz_bgon & text_dot & text_bgon & sgmnt_bgon & scopeio_bgon & trigger_dot & trace_dots, layer_priority(trace_dots'length)));
 	lookup_b : block
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(palette_data'range);

@@ -64,10 +64,10 @@ begin
 		rgtr_id     => x"00",
 		rgtr_data   => x"00000000",
 		
-		trigger_chanid => "0",
+		trigger_chanid => x"2",
 
 		video_clk   => clk,
-		trigger_dot => '1',
+		trigger_dot => '0',
 		grid_dot    => '1',
 		grid_bgon   => '1',
 		hz_dot      => '1',
@@ -77,7 +77,7 @@ begin
 		text_dot    => '1',
 		text_bgon   => '1',
 		sgmnt_bgon  => '1',
-		trace_dots  => "1",
+		trace_dots  => "01",
 		video_color => color);
 end;
 
