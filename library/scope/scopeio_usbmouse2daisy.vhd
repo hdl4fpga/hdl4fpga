@@ -11,6 +11,7 @@ use hdl4fpga.usbh_setup_pack.all;
 entity scopeio_usbmouse2daisy is
 generic
 (
+  C_usb_speed    : std_logic := '0'; -- '0' low speed is most often, '1' full speed very rare
   -- to render things correctly, GUI system needs to know:
   C_inputs       : integer; -- number of inputs
   C_tracesfg     : std_logic_vector; -- colors of traces
@@ -63,6 +64,10 @@ architecture def of scopeio_usbmouse2daisy is
   signal S_mouse_update: std_logic;
 begin
   usbhid_host_inst: entity hdl4fpga.usbh_host_hid
+  generic map
+  (
+    C_usb_speed => C_usb_speed
+  )
   port map
   (
     clk => clk_usb,

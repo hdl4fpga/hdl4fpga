@@ -21,7 +21,7 @@ use hdl4fpga.usbh_setup_pack.all;
 entity usbh_host_hid is
   generic
   (
-    C_usb_speed: std_logic := '0' -- '0':6 MHz low speed '1':48 MHz full speed 
+    C_usb_speed: std_logic := '1' -- '0':6 MHz low speed '1':48 MHz full speed 
   );
   port
   (
@@ -370,13 +370,13 @@ architecture Behavioral of usbh_host_hid is
                 R_reset_accepted <= '1';
                 R_state <= C_STATE_DETACHED;
               end if;
-              if R_slow(11 downto 0) = x"880" then -- keepalive: first at 0.35 ms, then every 0.68 ms
+              if R_slow(C_keepalive_phase'range) = C_keepalive_phase and C_keepalive_setup = '1' then -- keepalive: first at 0.35 ms, then every 0.68 ms
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
-                in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+                in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
                 token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
                 resp_expected_i <= '0';
-                start_i         <= C_keepalive_setup;
+                start_i         <= '1';
               else
                 start_i         <= '0';
               end if;
@@ -387,8 +387,9 @@ architecture Behavioral of usbh_host_hid is
               resp_expected_i <= '1';
               token_dev_i <= R_dev_address_confirmed;
               if R_setup_rom_addr = C_setup_rom_len then
-                R_state <= C_STATE_REPORT;
+                data_len_i <= x"0000";
                 start_i <= '0';
+                R_state <= C_STATE_REPORT;
               else
                 in_transfer_i   <= '0';
                 token_pid_i     <= x"2D";
@@ -419,13 +420,13 @@ architecture Behavioral of usbh_host_hid is
           if idle_o = '1' then
             if R_slow(C_report_interval) = '0' then
               R_slow <= R_slow + 1;
-              if R_slow(11 downto 0) = x"880" then -- keepalive: first at 0.35 ms, then every 0.68 ms
+              if R_slow(C_keepalive_phase'range) = C_keepalive_phase and C_keepalive_report = '1' then -- keepalive: first at 0.35 ms, then every 0.68 ms
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
-                in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+                in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
                 token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
                 resp_expected_i <= '0';
-                start_i         <= C_keepalive_report;
+                start_i         <= '1';
               else
                 start_i         <= '0';
               end if;
@@ -460,13 +461,13 @@ architecture Behavioral of usbh_host_hid is
                 R_reset_accepted <= '1';
                 R_state <= C_STATE_DETACHED;
               end if;
-              if R_slow(11 downto 0) = x"880" then -- keepalive: first at 0.35 ms, then every 0.68 ms
+              if R_slow(C_keepalive_phase'range) = C_keepalive_phase and C_keepalive_status = '1' then -- keepalive: first at 0.35 ms, then every 0.68 ms
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
-                in_transfer_i   <= '1';   -- 0:SOF, 1:linectrl
+                in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
                 token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
                 resp_expected_i <= '0';
-                start_i         <= C_keepalive_status;
+                start_i         <= '1';
               else
                 start_i         <= '0';
               end if;
@@ -550,10 +551,6 @@ architecture Behavioral of usbh_host_hid is
 
   -- USB SIE-core
   usb_sie_core: entity hdl4fpga.usbh_sie_vhdl
-  generic map
-  (
-    full_speed  => C_usb_speed
-  )
   port map
   (
     clk_i             => clk_usb, -- low speed: 6 MHz or 7.5 MHz, high speed: 48 MHz or 60 MHz
@@ -632,8 +629,8 @@ architecture Behavioral of usbh_host_hid is
       hid_report(i*8+7 downto i*8) <= R_report_buf(i);
     end generate;
     hid_valid <= R_hid_valid;
-    --rx_count <= rx_count_o; -- report byte count directly from SIE
-    rx_count <= R_packet_counter; -- debugging setup problems
+    rx_count <= rx_count_o; -- report byte count directly from SIE
+    --rx_count <= R_packet_counter; -- debugging setup problems
     --rx_count(7 downto 0) <= R_stored_response;
     --rx_count(7 downto 0) <= R_E1_response;
     --rx_count(R_retry'range) <= R_retry; -- debugging report problems

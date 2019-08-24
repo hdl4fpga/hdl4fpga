@@ -25,14 +25,16 @@ library hdl4fpga;
 package usbh_setup_pack is
 
   constant C_setup_retry       : integer := 4;  -- 2**n retries 3:8 setup retries and then detach
-  constant C_setup_interval    : integer := 15; -- 2**n clocks 15:5.46 ms wait before sending next setup request
-  constant C_report_interval   : integer := 15; -- 2**n clocks 15:5.46 ms wait before sending next request for report
+  constant C_setup_interval    : integer := 17; -- 2**n clocks 15:5.46 ms wait before sending next setup request
+  constant C_report_interval   : integer := 16; -- 2**n clocks 15:5.46 ms wait before sending next request for report
   constant C_report_endpoint   : integer := 1;  -- default=1 endpoint which answers IN transfer with HID report
-  constant C_report_length     : integer := 8;  -- report buffer length: 4 for M-BT58, 5 for LX3, 8 enough
+  constant C_report_length     : integer := 20; -- report buffer length: 4:M-BT58, 5:LX3, 8:keyboard, 20:XBOX360
 
-  constant C_keepalive_setup   : std_logic := '1'; -- enable keepalive during setup
-  constant C_keepalive_status  : std_logic := '1'; -- enable keepalive during setup status OUT 0-length
-  constant C_keepalive_report  : std_logic := '1'; -- enable keepalive during report IN
+  constant C_keepalive_setup   : std_logic := '1';  -- enable keepalive during setup
+  constant C_keepalive_status  : std_logic := '1';  -- enable keepalive during setup status OUT 0-length
+  constant C_keepalive_report  : std_logic := '1';  -- enable keepalive during report IN
+  constant C_keepalive_type    : std_logic := '1';  -- '0':SOF '1':K-pulse
+  constant C_keepalive_phase   : std_logic_vector(11 downto 0) := x"F00"; -- near the end of 0.68 ms interval
 
   type T_setup_rom is array(natural range <>) of std_logic_vector(7 downto 0);
   constant C_setup_rom: T_setup_rom :=

@@ -30,7 +30,8 @@ architecture beh of ulx3s is
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb:  boolean := true; -- USB  or USB+PS/2 mouse
-        constant C_mouse_host: boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_usb_speed: std_logic := '1'; -- '0':Low Speed, '1':Full Speed
+        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -39,9 +40,9 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := true; -- ADC onboard analog view
+        constant C_view_adc:   boolean := false; -- ADC onboard analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
         -- ADC SPI core
         constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
@@ -887,11 +888,26 @@ begin
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
 
-	clk_usb <= clk_pll(3); -- 6 MHz
+	G_mouse_usb_low_speed: if C_mouse_usb_speed = '0' generate
+	  clk_usb <= clk_pll(3); -- 6 MHz
+        end generate;
+
+	G_mouse_usb_full_speed: if C_mouse_usb_speed = '1' generate
+          E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+          port map
+          (
+            CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+            CLKOP       =>  open,    -- clk_60MHz,
+            CLKOS       =>  clk_usb, -- clk_48MHz,
+            CLKOS2      =>  open,    -- clk_12MHz,
+            CLKOS3      =>  open     -- clk_7M5Hz
+          );
+        end generate;
 
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map
 	(
+	        C_usb_speed => C_mouse_usb_speed,
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
@@ -900,7 +916,7 @@ begin
 	(
 		clk         => clk_mouse,
 		clk_usb     => clk_usb,
-		usb_reset   => '0', -- '1' will force USB bus reset
+		usb_reset   => btn(6), -- '1' will force USB bus reset
 		-- USB interface
 		usb_dp      => usb_fpga_bd_dp,
 		usb_dn      => usb_fpga_bd_dn,
