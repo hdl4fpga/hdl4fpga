@@ -8,24 +8,25 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_palette is
 	generic (
-		default_tracesfg : in  std_logic_vector;
-		default_gridfg   : in  std_logic_vector;
-		default_gridbg   : in  std_logic_vector;
-		default_hzfg     : in  std_logic_vector;
-		default_hzbg     : in  std_logic_vector;
-		default_vtfg     : in  std_logic_vector;
-		default_vtbg     : in  std_logic_vector;
-		default_textbg   : in  std_logic_vector;
-		default_sgmntbg  : in  std_logic_vector;
-		default_bg       : in  std_logic_vector);
+		dflt_tracesfg : in  std_logic_vector;
+		dflt_gridfg   : in  std_logic_vector;
+		dflt_gridbg   : in  std_logic_vector;
+		dflt_hzfg     : in  std_logic_vector;
+		dflt_hzbg     : in  std_logic_vector;
+		dflt_vtfg     : in  std_logic_vector;
+		dflt_vtbg     : in  std_logic_vector;
+		dflt_textbg   : in  std_logic_vector;
+		dflt_sgmntbg  : in  std_logic_vector;
+		dflt_bg       : in  std_logic_vector);
 	port (
 		rgtr_clk    : in  std_logic;
 		rgtr_dv     : in  std_logic;
 		rgtr_id     : in  std_logic_vector(8-1 downto 0);
 		rgtr_data   : in  std_logic_vector;
 		
-		video_clk   : in  std_logic;
 		trigger_chanid : in std_logic_vector;
+
+		video_clk   : in  std_logic;
 		trigger_dot : in  std_logic;
 		grid_dot    : in  std_logic;
 		grid_bgon   : in  std_logic;
@@ -33,6 +34,7 @@ entity scopeio_palette is
 		hz_bgon     : in  std_logic;
 		vt_dot      : in  std_logic;
 		vt_bgon     : in  std_logic;
+		text_dot    : in  std_logic;
 		text_bgon   : in  std_logic;
 		sgmnt_bgon  : in  std_logic;
 		trace_dots  : in  std_logic_vector;
@@ -41,39 +43,52 @@ end;
 
 architecture beh of scopeio_palette is
 
-	function id_codes (
-		constant n : natural)
+	constant bgon     : std_logic := '1';
+	constant priority : natural_vector := (0 => 0);
+	constant statics : natural := 10;
+
+	function palette_ids (
+		constant statics : natural;
+		constant traces  : natural;
+		constant trigger_chanid : std_logic_vector)
 		return std_logic_vector is
-		constant size   : natural := unsigned_num_bits(n-1);
-		variable retval : unsigned(0 to n*size-1);
+		constant n       : natural := statics+traces;
+		constant size    : natural := unsigned_num_bits(n-1);
+		variable retval  : unsigned(0 to n*size-1);
 	begin
-		for i in 0 to n-1 loop
+		for i in 0 to n-2 loop
 			retval(0 to size-1) := to_unsigned(i, size);
+			retval := retval rol size;
+		end loop;
+		retval(0 to size-1) := resize(unsigned(trigger_chanid)+statics, size);
+		retval := retval rol size;
+		return std_logic_vector(retval);
+	end;
+
+	function reshuffle (
+		constant queue    : std_logic_vector;
+		constant priority : natural_vector)
+		return std_logic_vector is
+		constant size   : natural := queue'length/priority'length;
+		variable temp   : unsigned(0 to queue'length);
+		variable retval : unsigned(0 to queue'length);
+	begin
+		for i in priority'range loop
+			temp   := unsigned(queue) rol (priority(i)*size);
+			retval(0 to size-1) := temp(0 to size-1);
 			retval := retval rol size;
 		end loop;
 		return std_logic_vector(retval);
 	end;
 
-	signal palette_dv       : std_logic;
-	signal palette_id       : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
-	signal palette_color    : std_logic_vector(max_pixelsize-1 downto 0);
+	signal palette_dv    : std_logic;
+	signal palette_id    : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_color : std_logic_vector(max_pixelsize-1 downto 0);
 
-	constant paletteid_size : natural := unsigned_num_bits(trace_dots'length + 9 - 1); 
-	constant paletteid_data : std_logic_vector := std_logic_vector(unsigned(id_codes(trace_dots'length + 9)) ror paletteid_size*trace_dots'length); 
-	constant palette_ids    : std_logic_vector(0 to paletteid_data'length-1) := paletteid_data;
-
-	signal trace_on   : std_logic;
-	signal trigger_on : std_logic;
-	signal fgbg_on    : std_logic;
-	signal trace_id   : std_logic_vector(0 to paletteid_size-1);
-	signal trigger_id : std_logic_vector(trace_id'range);
-	signal fgbg_id    : std_logic_vector(trace_id'range);
-
-
-	signal wr_addr    : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+9-1)-1);
-	signal wr_data    : std_logic_vector(video_color'range);
-	signal rd_addr    : std_logic_vector(wr_addr'range);
-	signal rd_data    : std_logic_vector(wr_data'range);
+	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+9-1)-1);
+	signal palette_data  : std_logic_vector(video_color'range);
+	signal color_addr    : std_logic_vector(palette_addr'range);
+	signal dll           : std_logic_vector(palette_data'range);
 
 begin
 
@@ -87,62 +102,28 @@ begin
 		palette_dv    => palette_dv,
 		palette_id    => palette_id,
 		palette_color => palette_color);
-		
-	wr_data <= std_logic_vector(resize(unsigned(palette_color), wr_data'length));
-	wr_addr <= std_logic_vector(resize(unsigned(palette_id),    wr_addr'length));
-	mem_e : entity hdl4fpga.dpram
+	
+
+	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
+	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
+
+	color_addr <= primux(
+		reshuffle(palette_ids(statics, trace_dots'length, trigger_chanid), priority),
+		reshuffle(grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & bgon & trace_dots & trigger_dot, priority));
+
+	lookup_e : entity hdl4fpga.bram
 	generic map (
-		bitrom => default_gridfg & default_vtfg & default_vtbg & default_hzfg & default_hzbg & default_textbg & default_gridbg & default_sgmntbg & default_bg & default_tracesfg)
+		bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_tracesfg)
 	port map (
-		wr_clk  => rgtr_clk,
-		wr_ena  => palette_dv,
-		wr_addr => wr_addr,
-		wr_data => wr_data,
+		clka  => rgtr_clk,
+		addra => palette_addr,
+		wea   => palette_dv,
+		dia   => palette_data,
+		doa   => dll,
 
-		rd_addr => rd_addr,
-		rd_data => rd_data);
-
-	traceid_p : process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			trace_id <= primux(palette_ids(0 to paletteid_size*trace_dots'length-1), trace_dots);
-			trace_on <= setif(trace_dots/=(trace_dots'range => '0'));
-		end if;
-	end process;
-
-	triggerio_p : process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			trigger_id <= word2byte(palette_ids(0 to paletteid_size*trace_dots'length-1), trigger_chanid, paletteid_size);
-			trigger_on <= trigger_dot;
-		end if;
-	end process;
-
-	fgbg_p : process (video_clk)
-		variable aux : std_logic_vector(palette_ids'range);
-	begin
-		if rising_edge(video_clk) then
-			aux     := std_logic_vector(unsigned(palette_ids) rol paletteid_size*trace_dots'length);
---			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & text_bgon & sgmnt_bgon & '1');
-			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & '1');
-		end if;
-	end process;
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			fgbg_on     <= '1';
-			rd_addr     <= primux(trace_id & trigger_id & fgbg_id, trace_on & trigger_on & fgbg_on);
-			video_color <= rd_data;
-		end if;
-	end process;
---
---	process (video_clk)
---	begin
---		if rising_edge(video_clk) then
---			rd_addr     <= priencoder(trace_dots & trigger_dot & grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & '1');
---			video_color <= rd_data;
---		end if;
---	end process;
+		clkb  => video_clk,
+		addrb => color_addr,
+		dib   => dll,
+		dob   => video_color);
 
 end;

@@ -366,6 +366,7 @@ begin
 		hz_bgon          => hz_bgon,
 		vt_dot           => vt_dot,
 		vt_bgon          => vt_bgon,
+		text_dot         => text_dot,
 		text_bgon        => text_bgon,
 		sgmnt_bgon       => sgmntbox_bgon,
 		video_color      => scope_color);
