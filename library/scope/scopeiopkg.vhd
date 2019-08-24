@@ -416,6 +416,21 @@ package scopeiopkg is
 		pointery_id => pointery_maxsize, 
 		pointerx_id => pointerx_maxsize);
 
+	constant pltid_gridfg    : natural :=  0;
+	constant pltid_gridbg    : natural :=  1;
+	constant pltid_vtfg      : natural :=  2;
+	constant pltid_vtbg      : natural :=  3;
+	constant pltid_hzfg      : natural :=  4;
+	constant pltid_hzbg      : natural :=  5;
+	constant pltid_textfg    : natural :=  6;
+	constant pltid_textbg    : natural :=  7;
+	constant pltid_sgmntbg   : natural :=  8;
+	constant pltid_scopeiobg : natural :=  9;
+
+	function layer_priority(
+		constant traces : natural)
+		return natural_vector;
+
 	component scopeio_tds
 		generic (
 			inputs           : natural;
@@ -847,6 +862,28 @@ package body scopeiopkg is
 			end loop;
 		end if;
 		return (0 to 0 => '-');
+	end;
+
+	function layer_priority(
+		constant traces : natural)
+		return natural_vector is
+		variable retval : natural_vector(0 to traces+1+pltid_scopeiobg);
+	begin
+		for i in 0 to traces loop
+			retval(i) := pltid_scopeiobg+1+i;
+		end loop;
+
+		retval(pltid_vtfg)      := retval(traces)+1;
+		retval(pltid_hzfg)      := retval(pltid_vtfg)+1;
+		retval(pltid_textfg)    := retval(pltid_hzfg)+1;
+		retval(pltid_gridfg)    := retval(pltid_textfg)+1;
+		retval(pltid_gridbg)    := retval(pltid_gridfg)+1;
+		retval(pltid_vtfg)      := retval(pltid_gridbg)+1;
+		retval(pltid_hzfg)      := retval(pltid_vtfg)+1;
+		retval(pltid_sgmntbg)   := retval(pltid_hzfg)+1;
+		retval(pltid_scopeiobg) := retval(pltid_sgmntbg)+1;
+		return retval;
+
 	end;
 
 	function scale_1245 (

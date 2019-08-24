@@ -214,48 +214,48 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
-		vlayout_id       => vlayout_id,
-		inputs           => inputs,
-		hz_unit          => hz_unit,
-		vt_unit          => vt_unit,
-		default_tracesfg => default_tracesfg,
-		default_gridfg   => default_gridfg,
-		default_gridbg   => default_gridbg,
-		default_hzfg     => default_hzfg,
-		default_hzbg     => default_hzbg,
-		default_vtfg     => default_vtfg,
-		default_vtbg     => default_vtbg,
-		default_textbg   => default_textbg,
-		default_sgmntbg  => default_sgmntbg,
-		default_bg       => default_bg)
+		vlayout_id     => vlayout_id,
+		inputs         => inputs,
+		hz_unit        => hz_unit,
+		vt_unit        => vt_unit,
+		dflt_tracesfg  => default_tracesfg,
+		dflt_gridfg    => default_gridfg,
+		dflt_gridbg    => default_gridbg,
+		dflt_hzfg      => default_hzfg,
+		dflt_hzbg      => default_hzbg,
+		dflt_vtfg      => default_vtfg,
+		dflt_vtbg      => default_vtbg,
+		dflt_textbg    => default_textbg,
+		dflt_sgmntbg   => default_sgmntbg,
+		dflt_bg        => default_bg)
 	port map (
-		rgtr_clk         => si_clk,
-		rgtr_dv          => rgtr_dv,
-		rgtr_id          => rgtr_id,
-		rgtr_data        => rgtr_data,
+		rgtr_clk       => si_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
-		time_dv          => time_dv,
-		time_scale       => time_scale,
-		time_offset      => time_offset,
-                                          
-		gain_dv          => gain_dv,
-		gain_ids         => gain_ids,
+		time_dv        => time_dv,
+		time_scale     => time_scale,
+		time_offset    => time_offset,
+                                        
+		gain_dv        => gain_dv,
+		gain_ids       => gain_ids,
 
-		trigger_chanid   => trigger_chanid,
-		trigger_level    => trigger_level,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
 
-		video_addr       => video_addr,
-		video_frm        => video_frm,
-		video_data       => video_data,
-		video_dv         => video_dv,
+		video_addr     => video_addr,
+		video_frm      => video_frm,
+		video_data     => video_data,
+		video_dv       => video_dv,
 
-		video_clk        => video_clk,
-		video_pixel      => video_pixel,
-		video_hsync      => video_hsync,
-		video_vsync      => video_vsync,
-		video_vton       => video_vton,
-		video_hzon       => video_hzon,
-		video_blank      => video_blank,
-		video_sync       => video_sync);
+		video_clk      => video_clk,
+		video_pixel    => video_pixel,
+		video_hsync    => video_hsync,
+		video_vsync    => video_vsync,
+		video_vton     => video_vton,
+		video_hzon     => video_hzon,
+		video_blank    => video_blank,
+		video_sync     => video_sync);
 
 end;

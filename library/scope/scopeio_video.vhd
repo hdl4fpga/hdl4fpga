@@ -35,16 +35,16 @@ entity scopeio_video is
 		hz_unit          : std_logic_vector;
 		vt_unit          : std_logic_vector;
 		inputs           : natural;
-		default_tracesfg : std_logic_vector;
-		default_gridfg   : std_logic_vector;
-		default_gridbg   : std_logic_vector;
-		default_hzfg     : std_logic_vector;
-		default_hzbg     : std_logic_vector;
-		default_vtfg     : std_logic_vector;
-		default_vtbg     : std_logic_vector;
-		default_textbg   : std_logic_vector;
-		default_sgmntbg  : std_logic_vector;
-		default_bg       : std_logic_vector);
+		dflt_tracesfg : std_logic_vector;
+		dflt_gridfg   : std_logic_vector;
+		dflt_gridbg   : std_logic_vector;
+		dflt_hzfg     : std_logic_vector;
+		dflt_hzbg     : std_logic_vector;
+		dflt_vtfg     : std_logic_vector;
+		dflt_vtbg     : std_logic_vector;
+		dflt_textbg   : std_logic_vector;
+		dflt_sgmntbg  : std_logic_vector;
+		dflt_bg       : std_logic_vector);
 	port (
 		rgtr_clk         : in  std_logic;
 		rgtr_dv          : in  std_logic;
@@ -340,16 +340,16 @@ begin
 
 	scopeio_palette_e : entity hdl4fpga.scopeio_palette
 	generic map (
-		default_tracesfg => default_tracesfg,
-		default_gridfg   => default_gridfg, 
-		default_gridbg   => default_gridbg, 
-		default_hzfg     => default_hzfg,
-		default_hzbg     => default_hzbg, 
-		default_vtfg     => default_vtfg,
-		default_vtbg     => default_vtbg, 
-		default_textbg   => default_textbg, 
-		default_sgmntbg  => default_sgmntbg, 
-		default_bg       => default_bg)
+		dflt_tracesfg => dflt_tracesfg,
+		dflt_gridfg   => dflt_gridfg, 
+		dflt_gridbg   => dflt_gridbg, 
+		dflt_hzfg     => dflt_hzfg,
+		dflt_hzbg     => dflt_hzbg, 
+		dflt_vtfg     => dflt_vtfg,
+		dflt_vtbg     => dflt_vtbg, 
+		dflt_textbg   => dflt_textbg, 
+		dflt_sgmntbg  => dflt_sgmntbg, 
+		dflt_bg       => dflt_bg)
 	port map (
 		rgtr_clk         => rgtr_clk,
 		rgtr_dv          => rgtr_dv,

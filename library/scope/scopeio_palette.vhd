@@ -44,8 +44,6 @@ end;
 architecture beh of scopeio_palette is
 
 	constant bgon     : std_logic := '1';
-	constant priority : natural_vector := (0 => 0);
-	constant statics : natural := 10;
 
 	function palette_ids (
 		constant statics : natural;
@@ -54,14 +52,18 @@ architecture beh of scopeio_palette is
 		return std_logic_vector is
 		constant n       : natural := statics+traces;
 		constant size    : natural := unsigned_num_bits(n-1);
-		variable retval  : unsigned(0 to n*size-1);
+		variable retval : unsigned(0 to n*size-1);
 	begin
-		for i in 0 to n-2 loop
+		for i in 0 to statics-2 loop
 			retval(0 to size-1) := to_unsigned(i, size);
 			retval := retval rol size;
 		end loop;
 		retval(0 to size-1) := resize(unsigned(trigger_chanid)+statics, size);
 		retval := retval rol size;
+		for i in statics to statics+traces-1 loop
+			retval(0 to size-1) := to_unsigned(i, size);
+			retval := retval rol size;
+		end loop;
 		return std_logic_vector(retval);
 	end;
 
@@ -108,8 +110,8 @@ begin
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
 	color_addr <= primux(
-		reshuffle(palette_ids(statics, trace_dots'length, trigger_chanid), priority),
-		reshuffle(grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & bgon & trace_dots & trigger_dot, priority));
+		reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length, trigger_chanid), layer_priority(trace_dots'length)),
+		reshuffle(grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & bgon & trace_dots & trigger_dot, layer_priority(trace_dots'length)));
 
 	lookup_e : entity hdl4fpga.bram
 	generic map (
