@@ -24,81 +24,60 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use  hdl4fpga.scopeiopkg.all;
 
-entity bram is
-	generic (
-		bitrom : std_logic_vector := (0 to 0 => '-'));
-	port (
-		clka  : in  std_logic;
-		addra : in  std_logic_vector;
-		enaa  : in  std_logic := '1';
-		wea   : in  std_logic := '0';
-		dia   : in  std_logic_vector;
-		doa   : out std_logic_vector;
+architecture scopeio_palette of testbench is
 
-		clkb  : in  std_logic;
-		addrb : in  std_logic_vector;
-		enab  : in  std_logic := '1';
-		web   : in  std_logic := '0';
-		dib   : in  std_logic_vector;
-		dob   : out std_logic_vector);
-		
-end;
-
-architecture inference of bram is
-	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
-	type word_vector is array (natural range <>) of word;
-
-
-	function init_ram (
-		constant bitrom : std_logic_vector;
-		constant size   : natural)
-		return   word_vector is
-		variable aux    : std_logic_vector(0 to size*word'length-1);
-		variable retval : word_vector(0 to size-1);
-	begin
-		aux(0 to bitrom'length-1) := bitrom;
-		for i in retval'range loop
-			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
-		end loop;
-		return retval;
-	end;
-
-	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
-
-	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
-
+	signal rst : std_logic;
+	signal clk : std_logic := '0';
+	signal color : std_logic_vector(0 to 2);
 begin
 
-	process (clka)
-		variable addr : std_logic_vector(addra'range);
+	rst <= '1', '0' after 20 ns;
+	clk <= not clk  after 10 ns;
+
+	process (rst, clk)
+		variable dv : std_logic;
 	begin
-		if rising_edge(clka) then
-			if enaa='1' then
-				doa <= ram(to_integer(unsigned(addr)));
-				if wea='1' then
-					ram(to_integer(unsigned(addra))) := dia;
-				end if;
-				addr := addra;
-			end if;
+		if rst='1' then
+		elsif rising_edge(clk) then
 		end if;
 	end process;
 
-	process (clkb)
-		variable addr : std_logic_vector(addrb'range);
-	begin
-		if rising_edge(clkb) then
-			if enab='1' then
-				dob <= ram(to_integer(unsigned(addr)));
-				if web='1' then
-					ram(to_integer(unsigned(addrb))) := dib;
-				end if;
-				addr := addrb;
-			end if;
-		end if;
-	end process;
+	scopeio_palette_e : entity hdl4fpga.scopeio_palette
+	generic map (
+		dflt_tracesfg => b"1_1_1",
+		dflt_gridfg   => b"1_0_0",
+		dflt_gridbg   => b"0_0_0",
+		dflt_hzfg     => b"1_1_1",
+		dflt_hzbg     => b"0_0_1",
+		dflt_vtfg     => b"1_1_1",
+		dflt_vtbg     => b"0_0_1",
+		dflt_textbg   => b"0_0_0",
+		dflt_sgmntbg  => b"1_1_1",
+		dflt_bg       => b"0_0_0")
+	port map (
+		rgtr_clk    => clk,
+		rgtr_dv     => '0',
+		rgtr_id     => x"00",
+		rgtr_data   => x"00000000",
+		
+		trigger_chanid => "0",
+
+		video_clk   => clk,
+		trigger_dot => '1',
+		grid_dot    => '1',
+		grid_bgon   => '1',
+		hz_dot      => '1',
+		hz_bgon     => '1',
+		vt_dot      => '1',
+		vt_bgon     => '1',
+		text_dot    => '1',
+		text_bgon   => '1',
+		sgmnt_bgon  => '1',
+		trace_dots  => "1",
+		video_color => color);
 end;
+

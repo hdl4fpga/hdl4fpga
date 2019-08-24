@@ -873,15 +873,10 @@ package body scopeiopkg is
 			retval(i) := pltid_scopeiobg+1+i;
 		end loop;
 
-		retval(pltid_vtfg)      := retval(traces)+1;
-		retval(pltid_hzfg)      := retval(pltid_vtfg)+1;
-		retval(pltid_textfg)    := retval(pltid_hzfg)+1;
-		retval(pltid_gridfg)    := retval(pltid_textfg)+1;
-		retval(pltid_gridbg)    := retval(pltid_gridfg)+1;
-		retval(pltid_vtfg)      := retval(pltid_gridbg)+1;
-		retval(pltid_hzfg)      := retval(pltid_vtfg)+1;
-		retval(pltid_sgmntbg)   := retval(pltid_hzfg)+1;
-		retval(pltid_scopeiobg) := retval(pltid_sgmntbg)+1;
+		for i in 0 to pltid_scopeiobg loop
+			retval(traces+1+i) := i;
+		end loop;
+
 		return retval;
 
 	end;

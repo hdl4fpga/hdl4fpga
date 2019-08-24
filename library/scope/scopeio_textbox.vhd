@@ -53,7 +53,7 @@ architecture def of scopeio_textbox is
 	signal cga_code   : ascii;
 	signal video_addr : std_logic_vector(cga_addr'range);
 
-	signal value : signed(0 to 0);
+	signal value : signed(0 to 12-1) := x"fff";
 	signal frac  : signed(value'range);
 	signal scale : std_logic_vector(0 to 2-1);
 
@@ -70,8 +70,7 @@ begin
 				end if;
 			elsif rgtr_dv='1' then
 				btof_binfrm <= '0';
---				frac <= scale_1245(value, scale);
-				frac <= scale_1245(x"fff", scale);
+				frac <= scale_1245(value, scale);
 			end if;
 		end if;
 	end process;

@@ -72,8 +72,8 @@ architecture beh of scopeio_palette is
 		constant priority : natural_vector)
 		return std_logic_vector is
 		constant size   : natural := queue'length/priority'length;
-		variable temp   : unsigned(0 to queue'length);
-		variable retval : unsigned(0 to queue'length);
+		variable temp   : unsigned(0 to queue'length-1);
+		variable retval : unsigned(0 to queue'length-1);
 	begin
 		for i in priority'range loop
 			temp   := unsigned(queue) rol (priority(i)*size);
@@ -92,6 +92,7 @@ architecture beh of scopeio_palette is
 	signal color_addr    : std_logic_vector(palette_addr'range);
 	signal dll           : std_logic_vector(palette_data'range);
 
+	constant p : natural_vector := layer_priority(trace_dots'length);
 begin
 
 	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
@@ -113,19 +114,31 @@ begin
 		reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length, trigger_chanid), layer_priority(trace_dots'length)),
 		reshuffle(grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & bgon & trace_dots & trigger_dot, layer_priority(trace_dots'length)));
 
-	lookup_e : entity hdl4fpga.bram
-	generic map (
-		bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_tracesfg)
-	port map (
-		clka  => rgtr_clk,
-		addra => palette_addr,
-		wea   => palette_dv,
-		dia   => palette_data,
-		doa   => dll,
+	lookup_b : block
+		signal rd_addr : std_logic_vector(palette_addr'range);
+		signal rd_data : std_logic_vector(palette_data'range);
+	begin
 
-		clkb  => video_clk,
-		addrb => color_addr,
-		dib   => dll,
-		dob   => video_color);
+		mem_e : entity hdl4fpga.dpram
+		generic map (
+			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_tracesfg)
+		port map (
+			wr_clk  => rgtr_clk,
+			wr_addr => palette_addr,
+			wr_ena  => palette_dv,
+			wr_data => palette_data,
+
+			rd_addr => color_addr,
+			rd_data => rd_data);
+
+		rd_rgtr_p : process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				rd_addr <= color_addr;
+				video_color <= rd_data;
+			end if;
+		end process;
+
+	end block;
 
 end;
