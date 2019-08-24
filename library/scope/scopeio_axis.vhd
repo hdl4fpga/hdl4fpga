@@ -271,15 +271,22 @@ begin
 
 		begin 
 
-			hz_start <= 
-				mul(to_signed(1,1), unsigned(hz_unit)) +
-				shift_left(
-					resize(mul(signed(axis_base), unsigned(hz_unit)), hz_start'length),
-					axisx_backscale+hztick_bits-hz_taddr'right);
-			hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
-			hz_step  <= signed(resize(unsigned(hz_unit), hz_step'length));
-			hz_align <= '1';
-			hz_sign  <= '0';
+			init_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					if axis_dv='1' then
+						hz_start <= 
+							mul(to_signed(1,1), unsigned(hz_unit)) +
+							shift_left(
+								resize(mul(signed(axis_base), unsigned(hz_unit)), hz_start'length),
+								axisx_backscale+hztick_bits-hz_taddr'right);
+						hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
+						hz_step  <= signed(resize(unsigned(hz_unit), hz_step'length));
+						hz_align <= '1';
+						hz_sign  <= '0';
+					end if;
+				end if;
+			end process;
 
 			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
@@ -364,15 +371,22 @@ begin
 
 		begin 
 
-			vt_start <= 
-				mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(vt_unit)) +
-				shift_left(
-					resize(mul(-signed(axis_base), unsigned(vt_unit)), vt_start'length),
-					vt_offset'length-vt_taddr'right);
-			vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-			vt_step  <= -signed(resize(unsigned(vt_unit), vt_step'length));
-			vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
-			vt_sign  <= '1';
+			init_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					if axis_dv='1' then
+						vt_start <= 
+							mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(vt_unit)) +
+							shift_left(
+								resize(mul(-signed(axis_base), unsigned(vt_unit)), vt_start'length),
+								vt_offset'length-vt_taddr'right);
+						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
+						vt_step  <= -signed(resize(unsigned(vt_unit), vt_step'length));
+						vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
+						vt_sign  <= '1';
+					end if;
+				end if;
+			end process;
 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)
