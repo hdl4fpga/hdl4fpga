@@ -70,7 +70,7 @@ architecture inference of bram is
 
 	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
 
-	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
+	shared variable ram : word_vector(0 to 2**addr_size-1);-- := init_ram(bitrom, 2**addr_size);
 
 begin
 

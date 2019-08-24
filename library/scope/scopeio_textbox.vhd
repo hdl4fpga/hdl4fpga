@@ -55,7 +55,7 @@ architecture def of scopeio_textbox is
 
 	signal value : signed(0 to 12-1) := x"fff";
 	signal frac  : signed(value'range);
-	signal scale : std_logic_vector(0 to 2-1);
+	signal scale : std_logic_vector(0 to 2-1) := "00";
 
 begin
 
@@ -65,11 +65,13 @@ begin
 			if btof_binfrm='1' then
 				if btof_bcdtrdy='1' then
 					if btof_bcdend='1' then
-						btof_binfrm <= '0';
+						btof_binfrm  <= '0';
+						btof_bcdirdy <= '0';
 					end if;
 				end if;
 			elsif rgtr_dv='1' then
-				btof_binfrm <= '0';
+				btof_binfrm  <= '1';
+				btof_bcdirdy <= '1';
 				frac <= scale_1245(value, scale);
 			end if;
 		end if;
