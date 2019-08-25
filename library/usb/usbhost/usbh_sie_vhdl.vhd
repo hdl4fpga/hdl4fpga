@@ -14,10 +14,6 @@ use ieee.std_logic_arith.all;
 library hdl4fpga;
 
 entity usbh_sie_vhdl is
-  generic
-  (
-    full_speed        : std_logic
-  );
   port
   (
     clk_i             : in  std_logic;
@@ -56,10 +52,6 @@ end;
 
 architecture syn of usbh_sie_vhdl is
 component usbh_sie -- verilog name and its parameters
-  generic
-  (
-    full_speed        : std_logic
-  );
   port (
     clk_i             : in  std_logic;
     rst_i             : in  std_logic;
@@ -108,9 +100,6 @@ begin
     token_ep_i(0) & token_ep_i(1) & token_ep_i(2) & token_ep_i(3);
 
   usbh_sie_verilog_inst: usbh_sie
-  generic map (
-    full_speed        => full_speed
-  )
   port map (
     clk_i             => clk_i,
     rst_i             => rst_i,
