@@ -63,7 +63,6 @@ architecture def of scopeio_btof is
 	signal btofbcd_prec  : std_logic_vector(bcd_prec'length/bin_frm'length-1 downto 0);
 	signal btofbcd_sign  : std_logic_vector(0 to 0);
 	signal btofbcd_align : std_logic_vector(0 to 0);
-	signal btofbcd_frm   : std_logic;
 	signal btofbcd_irdy  : std_logic_vector(0 to 0);
 	signal btofbcd_trdy  : std_logic;
 begin

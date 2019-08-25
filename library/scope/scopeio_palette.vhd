@@ -132,7 +132,7 @@ begin
 			wr_ena  => palette_dv,
 			wr_data => palette_data,
 
-			rd_addr => color_addr,
+			rd_addr => rd_addr,
 			rd_data => rd_data);
 
 		rd_rgtr_p : process (video_clk)
