@@ -117,6 +117,7 @@ begin
 
 	ticks_b : block
 
+		signal dv       : std_logic;
 		signal scale    : std_logic_vector(axis_scale'range);
 		signal init     : std_logic := '1';
 		signal ena      : std_logic;
@@ -129,23 +130,30 @@ begin
 		signal taddr  : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
 	begin
 
-		start <= hz_start when vt_ena='0' else vt_start;
-		stop  <= hz_stop  when vt_ena='0' else vt_stop;
-		step  <= hz_step  when vt_ena='0' else vt_step;
+		rgtr_p : process (clk)
+		begin
+			if rising_edge(clk) then
+				dv <= axis_dv;
+				if axis_dv='1' then
+					scale <= axis_scale;
+				end if;
+			end if;
+		end process;
 
 		init_p : process (clk)
 		begin
 			if rising_edge(clk) then
-				if axis_dv='1' then
-					init   <= '0';
-					hz_ena <= not axis_sel;
-					vt_ena <=     axis_sel;
-					scale  <= axis_scale;
+				if dv='1' then
+					init <= '0';
 				elsif complete='1' then
-					init  <= '1';
+					init <= '1';
 				end if;
 			end if;
 		end process;
+
+		start <= hz_start when vt_ena='0' else vt_start;
+		stop  <= hz_stop  when vt_ena='0' else vt_stop;
+		step  <= hz_step  when vt_ena='0' else vt_step;
 
 		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
@@ -275,6 +283,7 @@ begin
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
+						hz_ena   <= not axis_sel;
 						hz_start <= 
 							mul(to_signed(1,1), unsigned(hz_unit)) +
 							shift_left(
@@ -375,6 +384,7 @@ begin
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
+						vt_ena   <=  axis_sel;
 						vt_start <= 
 							mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(vt_unit)) +
 							shift_left(
