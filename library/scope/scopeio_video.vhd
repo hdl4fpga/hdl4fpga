@@ -114,7 +114,7 @@ architecture beh of scopeio_video is
 	constant sgmnt_id : natural := 0;
 	constant text_id  : natural := 1;
 
-	signal btof_binfrm   : std_logic_vector(0 to sgmnt_id);
+	signal btof_binfrm   : std_logic_vector(0 to text_id);
 	signal btof_binirdy  : std_logic_vector(btof_binfrm'range);
 	signal btof_bintrdy  : std_logic_vector(btof_binfrm'range);
 	signal btof_binexp   : std_logic_vector(btof_binfrm'range);
@@ -233,37 +233,37 @@ begin
 		vt_on        => vt_on,
 		text_on      => text_on);
 
---	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
---	generic map (
---		layout        => layout)
---	port map (
---		rgtr_clk      => rgtr_clk,
---		rgtr_dv       => rgtr_dv,
---		rgtr_id       => rgtr_id,
---		rgtr_data     => rgtr_data,
---
---		btof_binfrm   => btof_binfrm(text_id),
---		btof_binirdy  => btof_binirdy(text_id),
---		btof_bintrdy  => btof_bintrdy(text_id),
---		btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
---		btof_binneg   => btof_binneg(text_id),
---		btof_binexp   => btof_binexp(text_id),
---		btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
---		btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
---		btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
---		btof_bcdsign  => btof_bcdsign(text_id),
---		btof_bcdalign => btof_bcdalign(text_id),
---		btof_bcdirdy  => btof_bcdirdy(text_id),
---		btof_bcdtrdy  => btof_bcdtrdy(text_id),
---		btof_bcdend   => btof_bcdend,
---		btof_bcddo    => btof_bcddo,
---
---		video_clk     => video_clk,
---		video_hcntr   => x,
---		video_vcntr   => y,
---		text_on       => text_on,
---		text_dot      => text_dot);
---
+	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
+	generic map (
+		layout        => layout)
+	port map (
+		rgtr_clk      => rgtr_clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
+
+		btof_binfrm   => btof_binfrm(text_id),
+		btof_binirdy  => btof_binirdy(text_id),
+		btof_bintrdy  => btof_bintrdy(text_id),
+		btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
+		btof_binneg   => btof_binneg(text_id),
+		btof_binexp   => btof_binexp(text_id),
+		btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
+		btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
+		btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
+		btof_bcdsign  => btof_bcdsign(text_id),
+		btof_bcdalign => btof_bcdalign(text_id),
+		btof_bcdirdy  => btof_bcdirdy(text_id),
+		btof_bcdtrdy  => btof_bcdtrdy(text_id),
+		btof_bcdend   => btof_bcdend,
+		btof_bcddo    => btof_bcddo,
+
+		video_clk     => video_clk,
+		video_hcntr   => x,
+		video_vcntr   => y,
+		text_on       => text_on,
+		text_dot      => text_dot);
+
 	scopeio_segment_e : entity hdl4fpga.scopeio_segment
 	generic map (
 		input_latency => input_latency,
