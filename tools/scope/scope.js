@@ -91,7 +91,7 @@ function sendCommand(e) {
 		var pid = param[2];
 		switch(param[1]) {
 		case 'channel' :
-			pid += 9;
+			pid += Object.keys(objects).length;
 			this.colors.vtaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		case 'hzaxis' :
