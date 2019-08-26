@@ -15,6 +15,7 @@ entity scopeio_palette is
 		dflt_hzbg     : in  std_logic_vector;
 		dflt_vtfg     : in  std_logic_vector;
 		dflt_vtbg     : in  std_logic_vector;
+		dflt_textfg   : in  std_logic_vector;
 		dflt_textbg   : in  std_logic_vector;
 		dflt_sgmntbg  : in  std_logic_vector;
 		dflt_bg       : in  std_logic_vector);
@@ -129,7 +130,7 @@ begin
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
-			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textbg & dflt_tracesfg)
+			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg)
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,

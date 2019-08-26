@@ -235,6 +235,7 @@ begin
 
 	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 	generic map (
+		latency       => segmment_latency+input_latency,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
@@ -348,6 +349,7 @@ begin
 		dflt_vtfg     => dflt_vtfg,
 		dflt_vtbg     => dflt_vtbg, 
 		dflt_textbg   => dflt_textbg, 
+		dflt_textfg   => dflt_vtfg, 
 		dflt_sgmntbg  => dflt_sgmntbg, 
 		dflt_bg       => dflt_bg)
 	port map (

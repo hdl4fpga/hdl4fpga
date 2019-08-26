@@ -49,8 +49,8 @@ architecture mix of arbiter is
 		return retval;
 	end;
 
-	signal reqd : std_logic_vector(bus_gnt'range);
-	signal gntd : std_logic_vector(bus_gnt'range);
+	signal reqd : std_logic_vector(bus_req'range) := (others => '0');
+	signal gntd : std_logic_vector(bus_gnt'range) := (others => '0');
 
 begin
 
@@ -64,6 +64,6 @@ begin
 		end if;
 	end process;
 
-	bus_gnt <= primask(word2byte(bus_req & (reqd and bus_req), not setif(gntd=(gntd'range => '0'))));
+	bus_gnt <= primask(word2byte((bus_req and reqd) & bus_req, setif(gntd=(gntd'range => '0'))));
 
 end;

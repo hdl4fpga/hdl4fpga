@@ -21,6 +21,8 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -30,6 +32,28 @@ use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
+
+	subtype i18n_langs is natural range 0 to 2-1;
+	constant lang_EN : i18n_langs := 0;
+	constant lang_ES : i18n_langs := 1;
+
+	subtype i18n_labels is natural range 0 to 4-1;
+	constant lbel_horizontal : i18n_labels := 0;
+	constant lbel_vertical   : i18n_labels := 1;
+	constant lbel_position   : i18n_labels := 2;
+	constant lbel_scale      : i18n_labels := 3;
+
+	constant i18n_text : string := 
+		"Horizontal" & NUL & 
+		"Vertical"   & NUL & 
+		"Position"   & NUL & 
+		"Scale"      & NUL & 
+		NUL &
+		"Horizontal" & NUL &
+		"Vertical"   & NUL &
+		"Posición"   & NUL & 
+		"Escala"     & NUL & 
+		NUL;
 
 	constant max_inputs    : natural := 64;
 	constant axisy_backscale : natural := 0;
@@ -41,6 +65,9 @@ package scopeiopkg is
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
 	type margin_vector is array (border)    of natural;
+
+	constant textfont_width  : natural :=  8;
+	constant textfont_height : natural := 16;
 
 	type style is record 
 		gap    : gap_vector;
@@ -470,6 +497,15 @@ package scopeiopkg is
 		constant val   : signed;
 		constant scale : std_logic_vector)
 		return signed;
+		
+	function i18n_label (
+		constant i18n_lang  : i18n_langs;
+		constant i18n_label : i18n_labels)
+		return string;
+
+	function text_mask (
+		constant layout : display_layout)
+		return std_logic_vector;
 end;
 
 package body scopeiopkg is
@@ -899,6 +935,63 @@ package body scopeiopkg is
 			rval := (others => '-');
 		end case;
 		return rval;
+	end;
+		
+	function i18n_label (
+		constant i18n_lang  : i18n_langs;
+		constant i18n_label : i18n_labels)
+		return string is
+		variable lbel : i18n_labels;
+		variable pos0 : natural;
+		variable pos1 : natural;
+		variable n    : natural;
+	begin
+		n := 1;
+		lang_l : for lang in i18n_langs loop
+			lbel := 0;
+			while i18n_text(n) /= NUL loop
+				pos0 := n;
+				while i18n_text(n) /= NUL loop
+					n := n + 1;
+				end loop;
+				pos1 := n - 1;
+				n    := n + 1;
+				exit lang_l when lbel = i18n_label and lang = i18n_lang;
+				if i18n_text(n) /= NUL then
+					lbel := lbel + 1;
+				end if;
+			end loop;
+			n := n + 1;
+		end loop;
+		return i18n_text(pos0 to pos1);
+	end;
+
+	function text_mask (
+		constant layout : display_layout)
+		return std_logic_vector is
+		constant text_cols   : natural := textbox_width(layout)/textfont_width;
+		constant text_rows   : natural := textbox_height(layout)/textfont_height;
+		constant text_size   : natural := text_rows*text_cols;
+		variable retval      : unsigned(0 to ascii'length*text_size-1);
+		constant line_size   : natural := text_cols*ascii'length;
+
+		constant lang : i18n_langs := lang_en;
+		constant ascii_hz    : std_logic_vector := to_ascii(i18n_label(lang, lbel_horizontal));
+		constant ascii_vt    : std_logic_vector := to_ascii(i18n_label(lang, lbel_vertical));
+		constant ascii_scale : std_logic_vector := to_ascii(i18n_label(lang, lbel_scale));
+		constant ascii_pos   : std_logic_vector := to_ascii(i18n_label(lang, lbel_position));
+	begin
+		retval(0 to ascii_hz'length-1)    := unsigned(ascii_hz);
+		retval := retval rol line_size;
+		retval(0 to ascii_vt'length-1)    := unsigned(ascii_vt);
+		retval := retval rol line_size;
+		retval(0 to ascii_scale'length-1) := unsigned(ascii_scale);
+		retval := retval rol line_size;
+		retval(0 to ascii_pos'length-1)   := unsigned(ascii_pos);
+		retval := retval rol line_size;
+
+		retval := retval ror 4*line_size;
+		return std_logic_vector(retval);
 	end;
 		
 end;

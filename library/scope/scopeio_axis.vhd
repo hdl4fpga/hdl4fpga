@@ -119,7 +119,7 @@ begin
 
 		signal dv       : std_logic;
 		signal scale    : std_logic_vector(axis_scale'range);
-		signal init     : std_logic := '1';
+		signal init     : std_logic;
 		signal ena      : std_logic;
 		signal start    : signed(binvalue'range);
 		signal stop     : unsigned(binvalue'range);

@@ -31,6 +31,7 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
 	generic (
+		cga_bitrom  : std_logic_vector := (0 to 0 => '-');
 		font_bitrom : std_logic_vector := psf1cp850x8x16;
 		font_height : natural := 16;
 		font_width  : natural := 8);
@@ -61,6 +62,8 @@ architecture struct of cga_adapter is
 begin
 
 	cgamem_e : entity hdl4fpga.bram
+	generic map (
+		bitrom => cga_bitrom)
 	port map (
 		clka  => cga_clk,
 		addra => cga_addr,

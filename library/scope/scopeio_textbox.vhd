@@ -10,6 +10,7 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_textbox is
 	generic(
 		layout        : display_layout;
+		latency       : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16;
 		font_width    : natural := 8);
@@ -44,14 +45,18 @@ end;
 
 architecture def of scopeio_textbox is
 
+	constant cgaadapter_latency : natural := 4;
 	constant font_wbits : natural := unsigned_num_bits(font_width-1);
 	constant font_hbits : natural := unsigned_num_bits(font_height-1);
-	constant cga_size   : natural := textbox_width(layout)*textbox_height(layout)/(font_width*font_height);
+	constant cga_cols   : natural := textbox_width(layout)/font_width;
+	constant cga_rows   : natural := textbox_height(layout)/font_height;
+	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
 	signal cga_we     : std_logic;
 	signal cga_addr   : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code   : ascii;
 	signal video_addr : std_logic_vector(cga_addr'range);
+	signal char_dot   : std_logic;
 
 	signal value : signed(0 to 12-1) := x"fff";
 	signal frac  : signed(value'range);
@@ -92,7 +97,7 @@ begin
 
 	btof_bcdalign <= '0';
 	btof_bcdsign  <= '1';
-	btof_bcdprec  <= b"1100";
+	btof_bcdprec  <= b"1011";
 	btof_bcdunit  <= b"1111";
 	btof_bcdwidth <= b"1000";
 
@@ -111,11 +116,13 @@ begin
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl font_hbits, textbox_width(layout)/font_width) +
-		unsigned(video_hcntr) srl font_wbits,
+		(unsigned(video_hcntr) srl font_wbits),
 		video_addr'length));
 
+--	video_addr <= std_logic_vector(resize(unsigned(video_hcntr) srl font_wbits, video_addr'length)+textbox_width(layout)/font_width);
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
+		cga_bitrom  => text_mask(layout),
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)
@@ -130,6 +137,14 @@ begin
 		font_hcntr  => video_hcntr(font_wbits-1 downto 0),
 		font_vcntr  => video_vcntr(font_hbits-1 downto 0),
 		video_hon   => text_on,
-		video_dot   => text_dot);
+		video_dot   => char_dot);
 
+	lat_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 => latency-cgaadapter_latency))
+	port map (
+		clk => video_clk,
+		di(0) => char_dot,
+		do(0) => text_dot);
 end;

@@ -20,85 +20,49 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
+use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use  hdl4fpga.std.all;
+use  hdl4fpga.scopeiopkg.all;
 
-entity bram is
-	generic (
-		bitrom : std_logic_vector := (0 to 0 => '-'));
-	port (
-		clka  : in  std_logic;
-		addra : in  std_logic_vector;
-		enaa  : in  std_logic := '1';
-		wea   : in  std_logic := '0';
-		dia   : in  std_logic_vector;
-		doa   : out std_logic_vector;
+architecture arbiter of testbench is
 
-		clkb  : in  std_logic;
-		addrb : in  std_logic_vector;
-		enab  : in  std_logic := '1';
-		web   : in  std_logic := '0';
-		dib   : in  std_logic_vector;
-		dob   : out std_logic_vector);
-		
-end;
+	signal rst : std_logic;
+	signal clk : std_logic := '0';
+	signal req : std_logic_vector(0 to 1);
+	signal bus_req : std_logic_vector(0 to 1);
+	signal bus_gnt : std_logic_vector(0 to 1);
 
-architecture inference of bram is
-	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
-	type word_vector is array (natural range <>) of word;
-
-
-	function init_ram (
-		constant bitrom : std_logic_vector;
-		constant size   : natural)
-		return   word_vector is
-		variable aux    : std_logic_vector(0 to size*word'length-1);
-		variable retval : word_vector(0 to size-1);
-	begin
-		aux(0 to bitrom'length-1) := bitrom;
-		for i in retval'range loop
-			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
-		end loop;
-		return retval;
-	end;
-
-	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
-
-	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
-
+	constant pp : string := i18n_label(en, vertical);
 begin
 
-	process (clka)
-		variable addr : std_logic_vector(addra'range);
-	begin
-		if rising_edge(clka) then
-			if enaa='1' then
-				doa <= ram(to_integer(unsigned(addr)));
-				if wea='1' then
-					ram(to_integer(unsigned(addra))) := dia;
-				end if;
-				addr := addra;
-			end if;
-		end if;
-	end process;
+	rst <= '1', '0' after 20 ns;
+	clk <= not clk  after 10 ns;
 
-	process (clkb)
-		variable addr : std_logic_vector(addrb'range);
+	process (rst, clk)
+		variable dv : std_logic;
 	begin
-		if rising_edge(clkb) then
-			if enab='1' then
-				dob <= ram(to_integer(unsigned(addr)));
-				if web='1' then
-					ram(to_integer(unsigned(addrb))) := dib;
-				end if;
-				addr := addrb;
+		if rst='1' then
+			req <= "00";
+			dv := '1';
+		elsif rising_edge(clk) then
+			if dv='1' then 
+				req <= std_logic_vector(unsigned(req) + 1); 
 			end if;
+			dv := not dv;
 		end if;
 	end process;
+				bus_req <= req;
+
+	arbiter_e : entity hdl4fpga.arbiter
+	port map (
+		clk => clk,
+		bus_req => bus_req,
+		bus_gnt => bus_gnt);
 end;
+
