@@ -48,7 +48,7 @@ begin
 
 	scopeio_palette_e : entity hdl4fpga.scopeio_palette
 	generic map (
-		dflt_tracesfg => b"1_1_1",
+		dflt_tracesfg => b"1_1_1_1_1_1",
 		dflt_gridfg   => b"1_0_0",
 		dflt_gridbg   => b"0_0_0",
 		dflt_hzfg     => b"1_1_1",
@@ -69,15 +69,15 @@ begin
 		video_clk   => clk,
 		trigger_dot => '0',
 		grid_dot    => '1',
-		grid_bgon   => '1',
-		hz_dot      => '1',
-		hz_bgon     => '1',
-		vt_dot      => '1',
-		vt_bgon     => '1',
-		text_dot    => '1',
-		text_bgon   => '1',
-		sgmnt_bgon  => '1',
-		trace_dots  => "01",
+		grid_bgon   => '0',
+		hz_dot      => '0',
+		hz_bgon     => '0',
+		vt_dot      => '0',
+		vt_bgon     => '0',
+		text_dot    => '0',
+		text_bgon   => '0',
+		sgmnt_bgon  => '0',
+		trace_dots  => "00",
 		video_color => color);
 end;
 

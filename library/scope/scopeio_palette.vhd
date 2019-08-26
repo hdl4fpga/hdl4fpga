@@ -46,54 +46,51 @@ architecture beh of scopeio_palette is
 	constant scopeio_bgon     : std_logic := '1';
 
 	function palette_ids (
-		constant statics : natural;
-		constant traces  : natural;
 		constant trigger_chanid : std_logic_vector)
 		return std_logic_vector is
-		constant n       : natural := statics+traces;
+		constant n       : natural := pltid_order'length+trace_dots'length+1;
 		constant size    : natural := unsigned_num_bits(n-1);
 		variable retval : unsigned(0 to n*size-1);
 	begin
-		for i in 0 to statics-1 loop
-			retval(0 to size-1) := to_unsigned(i, size);
+		for i in 0 to trace_dots'length-1 loop
+			retval(0 to size-1) := to_unsigned(pltid_order'length+i, size);
 			retval := retval rol size;
 		end loop;
-		retval(0 to size-1) := resize(unsigned(trigger_chanid)+statics, size);
+		retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
 		retval := retval rol size;
-		for i in statics to statics+traces-2 loop
-			retval(0 to size-1) := to_unsigned(i, size);
+		for i in pltid_order'range loop
+			retval(0 to size-1) := to_unsigned(pltid_order(i), size);
 			retval := retval rol size;
 		end loop;
 		return std_logic_vector(retval);
 	end;
 
-	function reshuffle (
-		constant queue    : std_logic_vector;
-		constant priority : natural_vector)
+	function shuffle (
+		constant arg : std_logic_vector)
 		return std_logic_vector is
-		constant size   : natural := queue'length/priority'length;
-		variable temp   : unsigned(0 to queue'length-1);
-		variable retval : unsigned(0 to queue'length-1);
+		variable temp   : std_logic_vector(0 to arg'length-1) := arg;
+		variable retval : unsigned(0 to temp'length-1);
 	begin
-		for i in priority'range loop
-			temp   := unsigned(queue) rol (priority(i)*size);
-			retval(0 to size-1) := temp(0 to size-1);
-			retval := retval rol size;
+		for i in 0 to trace_dots'length-1 loop
+			retval(0) := temp(pltid_order'length+i);
+			retval := retval rol 1;
+		end loop;
+		retval(0) := temp(pltid_order'length+trace_dots'length);
+		retval := retval rol 1;
+		for i in pltid_order'range loop
+			retval(0) := temp(pltid_order(i));
+			retval := retval rol 1;
 		end loop;
 		return std_logic_vector(retval);
 	end;
 
 	signal palette_dv    : std_logic;
-	signal palette_id    : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_id    : std_logic_vector(0 to unsigned_num_bits(max_inputs+1+pltid_order'length-1)-1);
 	signal palette_color : std_logic_vector(max_pixelsize-1 downto 0);
 
-	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+9-1)-1);
+	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+1+pltid_order'length-1)-1);
 	signal palette_data  : std_logic_vector(video_color'range);
 	signal color_addr    : std_logic_vector(palette_addr'range);
-	signal dll           : std_logic_vector(palette_data'range);
-
-	signal pp : std_logic_vector(0 to 13*4-1);
-	signal ppp : std_logic_vector(0 to 13-1);
 
 begin
 
@@ -107,17 +104,24 @@ begin
 		palette_dv    => palette_dv,
 		palette_id    => palette_id,
 		palette_color => palette_color);
-	
 
 	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
---	pp  <= reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length+1, trigger_chanid), layer_priority(trace_dots'length));
---	ppp <= reshuffle(grid_dot & grid_bgon & vt_dot & vt_bgon & hz_dot & hz_bgon & text_dot & text_bgon & sgmnt_bgon & scopeio_bgon & trace_dots & trigger_dot, layer_priority(trace_dots'length));
-
 	color_addr <= primux(
-		reshuffle(palette_ids(pltid_scopeiobg+1, trace_dots'length+1, trigger_chanid), layer_priority(trace_dots'length)),
-		reshuffle(grid_dot & grid_bgon & vt_dot & vt_bgon & hz_dot & hz_bgon & text_dot & text_bgon & sgmnt_bgon & scopeio_bgon & trigger_dot & trace_dots, layer_priority(trace_dots'length)));
+		palette_ids(trigger_chanid),
+		shuffle((
+			pltid_gridfg    => grid_dot,
+			pltid_gridbg    => grid_bgon,
+			pltid_vtfg      => vt_dot,
+			pltid_vtbg      => vt_bgon,
+			pltid_hzfg      => hz_dot,
+			pltid_hzbg      => hz_bgon,
+			pltid_textfg    => text_dot,
+			pltid_textbg    => text_bgon,
+			pltid_sgmntbg   => sgmnt_bgon,
+			pltid_scopeiobg => scopeio_bgon) & trace_dots & trigger_dot));
+	
 	lookup_b : block
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(palette_data'range);
@@ -125,7 +129,7 @@ begin
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
-			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_tracesfg)
+			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textbg & dflt_tracesfg)
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,

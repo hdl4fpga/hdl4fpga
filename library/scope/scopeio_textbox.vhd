@@ -73,6 +73,7 @@ begin
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
 				frac <= scale_1245(value, scale);
+				value <= value + 1;
 			end if;
 		end if;
 	end process;
@@ -81,7 +82,7 @@ begin
 	port map (
 		clk      => rgtr_clk,
 		frac     => frac,
-		exp      => x"f",
+		exp      => x"d",
 		bin_frm  => btof_binfrm,
 		bin_irdy => btof_binirdy,
 		bin_trdy => btof_bintrdy,
@@ -91,7 +92,7 @@ begin
 
 	btof_bcdalign <= '0';
 	btof_bcdsign  <= '1';
-	btof_bcdprec  <= b"1111";
+	btof_bcdprec  <= b"1100";
 	btof_bcdunit  <= b"1111";
 	btof_bcdwidth <= b"1000";
 
@@ -99,7 +100,7 @@ begin
 	cga_addr_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if rgtr_dv='1' then
+			if btof_binfrm='0' then
 				cga_addr <= (others => '0');
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
