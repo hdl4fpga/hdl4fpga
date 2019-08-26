@@ -42,8 +42,9 @@ architecture beh of ulx3s is
         -- internally connected "probes" (enable max 1)
         constant C_view_adc:   boolean := false; -- ADC onboard analog view
         constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := true;  -- USB or PS/2 digital view
+        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
+        constant C_view_utmi:  boolean := true; -- USB3300 PHY linestate digital view
         -- ADC SPI core
         constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_buttons_test: boolean := false; -- false: normal use, true: pressing buttons will test ADC channels
@@ -55,9 +56,11 @@ architecture beh of ulx3s is
 	-- ADC software simulation
 	constant C_adc_simulator: boolean := false;
         -- External ADC AN108 with PCB https://oshpark.com/profiles/gojimmypi
-        constant C_adc_an108: boolean := true; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
+        constant C_adc_an108: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
+        -- External USB3300 PHY ULPI
+        constant C_usb3300_phy: boolean := true; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
-	constant inputs: natural := 3; -- number of input channels (traces)
+	constant inputs: natural := 2; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
@@ -170,7 +173,10 @@ architecture beh of ulx3s is
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
 	signal clk_ena_mouse   : std_logic := '1';
-	
+
+	-- UTMI sniffer
+        signal R_utmi_linestate: std_logic_vector(1 downto 0);
+
 	-- USB mouse
 	signal clk_usb         : std_logic; -- 6 MHz
 	constant C_hid_report_length_ltd: integer := min(7,C_report_length);
@@ -278,6 +284,122 @@ begin
           end if;
 	end process;
 	rst <= reset_counter(reset_counter'high);
+
+        G_yes_usb3300_phy: if C_usb3300_phy generate
+          -- Ignore fake glitches displayed occasionally.
+          -- glitches maybe because of using non clock-capable pin?
+          -- Otherwise it's useable to see what's happening at D+/D- online.
+          B_usb3300_phy: block
+            -- aliases exactly what is written on ULPI board
+            alias  phy_stp    : std_logic is gp(21);
+            alias  phy_nxt    : std_logic is gp(22);
+            alias  phy_dir    : std_logic is gp(23);
+            alias  phy_clkout : std_logic is gp(24);
+            --   GP24 is not clock capable but can be used with acceptable phase shift
+            --   documented clock  capable: GP17
+            -- undocumented clock  capable: GN17 GN16 GP16
+            alias  phy_reset  : std_logic is gp(25);
+            alias  phy_d7     : std_logic is gn(21);
+            alias  phy_d6     : std_logic is gn(22);
+            alias  phy_d5     : std_logic is gn(23);
+            alias  phy_d4     : std_logic is gn(24);
+            alias  phy_d3     : std_logic is gn(25);
+            alias  phy_d2     : std_logic is gn(26);
+            alias  phy_d1     : std_logic is gn(27);
+            alias  phy_d0     : std_logic is gp(27);
+
+            signal phy_di, phy_do    : std_logic_vector(7 downto 0);
+
+            signal ulpi_clk60_i      : std_logic;
+            signal ulpi_rst_i        : std_logic;
+            signal ulpi_data_out_i   : std_logic_vector(7 downto 0);
+            signal ulpi_data_in_o    : std_logic_vector(7 downto 0);
+            signal ulpi_dir_i        : std_logic;
+            signal ulpi_nxt_i        : std_logic;
+            signal ulpi_stp_o        : std_logic;
+
+            signal utmi_txvalid_i    : std_logic := '0';
+            signal utmi_txready_o    : std_logic;
+            signal utmi_rxvalid_o    : std_logic;
+            signal utmi_rxactive_o   : std_logic;
+            signal utmi_rxerror_o    : std_logic;
+            signal utmi_data_in_o    : std_logic_vector(7 downto 0);
+            signal utmi_data_out_i   : std_logic_vector(7 downto 0) := x"00";
+            signal utmi_xcvrselect_i : std_logic_vector(1 downto 0) := "00";
+            signal utmi_termselect_i : std_logic := '0';
+            signal utmi_op_mode_i    : std_logic_vector(1 downto 0) := "01"; -- non-driving
+            signal utmi_dppulldown_i : std_logic := '0';
+            signal utmi_dmpulldown_i : std_logic := '0';
+            signal utmi_linestate_o  : std_logic_vector(1 downto 0);
+            
+            signal R_utmi_linestate_o: std_logic_vector(1 downto 0);
+          begin
+            phy_di(0)  <= phy_d0;
+            phy_di(1)  <= phy_d1;
+            phy_di(2)  <= phy_d2;
+            phy_di(3)  <= phy_d3;
+            phy_di(4)  <= phy_d4;
+            phy_di(5)  <= phy_d5;
+            phy_di(6)  <= phy_d6;
+            phy_di(7)  <= phy_d7;
+
+            phy_d0     <= phy_do(0) when phy_dir = '0' else 'Z';
+            phy_d1     <= phy_do(1) when phy_dir = '0' else 'Z';
+            phy_d2     <= phy_do(2) when phy_dir = '0' else 'Z';
+            phy_d3     <= phy_do(3) when phy_dir = '0' else 'Z';
+            phy_d4     <= phy_do(4) when phy_dir = '0' else 'Z';
+            phy_d5     <= phy_do(5) when phy_dir = '0' else 'Z';
+            phy_d6     <= phy_do(6) when phy_dir = '0' else 'Z';
+            phy_d7     <= phy_do(7) when phy_dir = '0' else 'Z';
+
+            ulpi_clk60_i    <= not phy_clkout and btn(0);
+            ulpi_rst_i      <= phy_reset;
+            ulpi_dir_i      <= phy_dir;
+            ulpi_nxt_i      <= phy_nxt;
+            ulpi_data_out_i <= phy_di;
+            phy_do          <= ulpi_data_in_o;
+            phy_stp         <= ulpi_stp_o;
+
+            ulpi_wrapper_inst: entity work.ulpi_wrapper_vhdl
+            port map
+            (
+              ulpi_clk60_i       => ulpi_clk60_i,
+              ulpi_rst_i         => ulpi_rst_i,
+              ulpi_dir_i         => ulpi_dir_i,
+              ulpi_nxt_i         => ulpi_nxt_i,
+              ulpi_data_out_i    => ulpi_data_out_i,
+              ulpi_data_in_o     => ulpi_data_in_o,
+              ulpi_stp_o         => ulpi_stp_o,
+
+              utmi_txvalid_i     => utmi_txvalid_i,
+              utmi_txready_o     => utmi_txready_o,
+              utmi_rxvalid_o     => utmi_rxvalid_o,
+              utmi_rxactive_o    => utmi_rxactive_o,
+              utmi_rxerror_o     => utmi_rxerror_o,
+              utmi_data_in_o     => utmi_data_in_o,
+              utmi_data_out_i    => utmi_data_out_i,
+              utmi_xcvrselect_i  => utmi_xcvrselect_i,
+              utmi_termselect_i  => utmi_termselect_i,
+              utmi_op_mode_i     => utmi_op_mode_i,
+              utmi_dppulldown_i  => utmi_dppulldown_i,
+              utmi_dmpulldown_i  => utmi_dmpulldown_i,
+              utmi_linestate_o   => utmi_linestate_o
+            );
+            process(ulpi_clk60_i)
+            begin
+              if rising_edge(ulpi_clk60_i) then
+                R_utmi_linestate_o <= utmi_linestate_o;
+              end if;
+            end process;
+            process(clk_adc)
+            begin
+              if rising_edge(clk_adc) then
+                R_utmi_linestate <= R_utmi_linestate_o;
+              end if;
+            end process;
+          end block;
+        end generate;
+
 
         -- replacement for ADC that manifests the problem
 	G_adc_simulator: if C_adc_simulator generate
@@ -483,6 +605,12 @@ begin
 	--trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
 	--trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
 	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
+	end generate;
+
+	G_view_utmi: if C_view_utmi generate
+	S_input_ena <= '1';
+	trace_yellow(C_view_binary_gain+3) <= R_utmi_linestate(0); -- D+
+	trace_cyan(C_view_binary_gain+3) <= R_utmi_linestate(1); -- D-
 	end generate;
 
 	G_view_spi: if C_view_spi generate
