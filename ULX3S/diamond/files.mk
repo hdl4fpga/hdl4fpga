@@ -104,6 +104,7 @@ VHDL_LIB_FILES = \
   ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \
+  ../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \
@@ -117,4 +118,5 @@ VERILOG_FILES = \
   ../../library/usb/usbhost/usbh_sie.v \
   ../../library/usb/usbhost/usbh_crc5.v \
   ../../library/usb/usbhost/usbh_crc16.v \
+  ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
