@@ -31,6 +31,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
+		lang        : i18n_langs := lang_es;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		hz_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
@@ -213,6 +214,7 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
+		lang           => lang,
 		vlayout_id     => vlayout_id,
 		inputs         => inputs,
 		hz_unit        => hz_unit,

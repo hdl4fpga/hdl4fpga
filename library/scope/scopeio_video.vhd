@@ -31,10 +31,11 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		vlayout_id       : natural;
-		hz_unit          : std_logic_vector;
-		vt_unit          : std_logic_vector;
-		inputs           : natural;
+		lang          : i18n_langs := lang_en;
+		vlayout_id    : natural;
+		hz_unit       : std_logic_vector;
+		vt_unit       : std_logic_vector;
+		inputs        : natural;
 		dflt_tracesfg : std_logic_vector;
 		dflt_gridfg   : std_logic_vector;
 		dflt_gridbg   : std_logic_vector;
@@ -235,6 +236,7 @@ begin
 
 	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 	generic map (
+		lang          => lang,
 		latency       => segmment_latency+input_latency,
 		layout        => layout)
 	port map (

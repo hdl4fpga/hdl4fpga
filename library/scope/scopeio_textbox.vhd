@@ -9,6 +9,7 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
+		lang          : i18n_langs;
 		layout        : display_layout;
 		latency       : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
@@ -46,24 +47,45 @@ end;
 architecture def of scopeio_textbox is
 
 	constant cgaadapter_latency : natural := 4;
+
 	constant font_wbits : natural := unsigned_num_bits(font_width-1);
 	constant font_hbits : natural := unsigned_num_bits(font_height-1);
 	constant cga_cols   : natural := textbox_width(layout)/font_width;
 	constant cga_rows   : natural := textbox_height(layout)/font_height;
 	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	signal cga_we     : std_logic;
-	signal cga_addr   : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_code   : ascii;
-	signal video_addr : std_logic_vector(cga_addr'range);
-	signal char_dot   : std_logic;
+	signal cga_we       : std_logic;
+	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_code     : ascii;
+	signal video_addr   : std_logic_vector(cga_addr'range);
+	signal char_dot     : std_logic;
 
-	signal value : signed(0 to 12-1) := x"fff";
-	signal frac  : signed(value'range);
-	signal scale : std_logic_vector(0 to 2-1) := "00";
+	signal value       : signed(0 to 12-1) := x"fff";
+	signal frac        : signed(value'range);
+	signal scale       : std_logic_vector(0 to 2-1) := "00";
+
+	signal trigger_dv     : std_logic;
+	signal trigger_chanid : std_logic_vector(chanid_maxsize-1 downto 0);
+	signal trigger_level  : std_logic_vector(triggerlevel_maxsize-1 downto 0);
+	signal trigger_edge   : std_logic;
+	signal trigger_freeze : std_logic;
 
 begin
 
+	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		rgtr_clk        => rgtr_clk,
+		rgtr_dv         => rgtr_dv,
+		rgtr_id         => rgtr_id,
+		rgtr_data       => rgtr_data,
+
+		trigger_dv		=> trigger_dv,
+		trigger_freeze	=> trigger_freeze,
+		trigger_chanid	=> trigger_chanid,
+		trigger_level	=> trigger_level,
+		trigger_edge	=> trigger_edge);
+
+	value <= resize(signed(trigger_level) sll 1, value'length);
 	frm_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -78,7 +100,6 @@ begin
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
 				frac <= scale_1245(value, scale);
-				value <= value + 1;
 			end if;
 		end if;
 	end process;
@@ -87,7 +108,7 @@ begin
 	port map (
 		clk      => rgtr_clk,
 		frac     => frac,
-		exp      => x"d",
+		exp      => x"f",
 		bin_frm  => btof_binfrm,
 		bin_irdy => btof_binirdy,
 		bin_trdy => btof_bintrdy,
@@ -97,8 +118,8 @@ begin
 
 	btof_bcdalign <= '0';
 	btof_bcdsign  <= '1';
-	btof_bcdprec  <= b"1011";
-	btof_bcdunit  <= b"1111";
+	btof_bcdprec  <= b"1110";
+	btof_bcdunit  <= b"0000";
 	btof_bcdwidth <= b"1000";
 
 	cga_we <= btof_binfrm and btof_bcdtrdy;
@@ -106,7 +127,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				cga_addr <= (others => '0');
+				cga_addr <= to_unsigned(12, cga_addr'length);
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			end if;
@@ -119,10 +140,9 @@ begin
 		(unsigned(video_hcntr) srl font_wbits),
 		video_addr'length));
 
---	video_addr <= std_logic_vector(resize(unsigned(video_hcntr) srl font_wbits, video_addr'length)+textbox_width(layout)/font_width);
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => text_mask(layout),
+		cga_bitrom  => text_mask(lang, layout),
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)

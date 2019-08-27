@@ -37,22 +37,25 @@ package scopeiopkg is
 	constant lang_EN : i18n_langs := 0;
 	constant lang_ES : i18n_langs := 1;
 
-	subtype i18n_labels is natural range 0 to 4-1;
+	subtype i18n_labels is natural range 0 to 5-1;
 	constant lbel_horizontal : i18n_labels := 0;
 	constant lbel_vertical   : i18n_labels := 1;
-	constant lbel_position   : i18n_labels := 2;
+	constant lbel_level      : i18n_labels := 2;
 	constant lbel_scale      : i18n_labels := 3;
+	constant lbel_trigger    : i18n_labels := 4;
 
 	constant i18n_text : string := 
 		"Horizontal" & NUL & 
 		"Vertical"   & NUL & 
-		"Position"   & NUL & 
+		"Level"      & NUL & 
 		"Scale"      & NUL & 
+		"Trigger"      & NUL & 
 		NUL &
 		"Horizontal" & NUL &
 		"Vertical"   & NUL &
-		"Posición"   & NUL & 
+		"Nivel"      & NUL & 
 		"Escala"     & NUL & 
+		"Disparo"    & NUL & 
 		NUL;
 
 	constant max_inputs    : natural := 64;
@@ -504,6 +507,7 @@ package scopeiopkg is
 		return string;
 
 	function text_mask (
+		constant lang   : i18n_langs;
 		constant layout : display_layout)
 		return std_logic_vector;
 end;
@@ -967,6 +971,7 @@ package body scopeiopkg is
 	end;
 
 	function text_mask (
+		constant lang   : i18n_langs;
 		constant layout : display_layout)
 		return std_logic_vector is
 		constant text_cols   : natural := textbox_width(layout)/textfont_width;
@@ -975,22 +980,17 @@ package body scopeiopkg is
 		variable retval      : unsigned(0 to ascii'length*text_size-1);
 		constant line_size   : natural := text_cols*ascii'length;
 
-		constant lang : i18n_langs := lang_en;
-		constant ascii_hz    : std_logic_vector := to_ascii(i18n_label(lang, lbel_horizontal));
-		constant ascii_vt    : std_logic_vector := to_ascii(i18n_label(lang, lbel_vertical));
-		constant ascii_scale : std_logic_vector := to_ascii(i18n_label(lang, lbel_scale));
-		constant ascii_pos   : std_logic_vector := to_ascii(i18n_label(lang, lbel_position));
-	begin
-		retval(0 to ascii_hz'length-1)    := unsigned(ascii_hz);
-		retval := retval rol line_size;
-		retval(0 to ascii_vt'length-1)    := unsigned(ascii_vt);
-		retval := retval rol line_size;
-		retval(0 to ascii_scale'length-1) := unsigned(ascii_scale);
-		retval := retval rol line_size;
-		retval(0 to ascii_pos'length-1)   := unsigned(ascii_pos);
-		retval := retval rol line_size;
 
-		retval := retval ror 4*line_size;
+		constant label_maxsize : natural := 12;
+		variable ascii_buffer  : std_logic_vector(0 to ascii'length*label_maxsize-1);
+
+	begin
+		for i in i18n_labels loop
+			ascii_buffer := fill(to_ascii(i18n_label(lang, i)), ascii_buffer'length, true);
+			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
+			retval := retval rol line_size;
+		end loop;
+		retval := retval ror 5*line_size;
 		return std_logic_vector(retval);
 	end;
 		
