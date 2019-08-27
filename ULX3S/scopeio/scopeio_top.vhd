@@ -28,23 +28,24 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2:  boolean := false;  -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb:  boolean := true; -- USB  or USB+PS/2 mouse
-        constant C_mouse_usb_speed: std_logic := '1'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host: boolean := true; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := true;  -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
+        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
-	constant C_origserial: boolean := false; -- use Miguel's uart receiver (RXD line)
-        constant C_extserial:  boolean := true;  -- use Emard's uart receiver (RXD line)
-        constant C_usbserial:  boolean := false; -- USB-CDC Serial (D+/D- lines)
-        constant C_usbethernet:boolean := false; -- USB-CDC Ethernet (D+/D- lines)
+	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
+        constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
+        constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
+        constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
+        constant C_rmiiethernet : boolean := false; -- RMII (LAN8720) Ethernet GPN9-13
         -- USB ethernet network ping test
-        constant C_usbping_test:boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
+        constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc:   boolean := false; -- ADC onboard analog view
-        constant C_view_spi:   boolean := false; -- SPI digital view
-        constant C_view_usb:   boolean := false;  -- USB or PS/2 digital view
-        constant C_view_binary_gain: integer := 1; -- 2**n -- for SPI/USB digital view
-        constant C_view_utmi:  boolean := true; -- USB3300 PHY linestate digital view
+        constant C_view_adc     : boolean := false; -- ADC onboard analog view
+        constant C_view_spi     : boolean := false; -- SPI digital view
+        constant C_view_usb     : boolean := true;  -- USB or PS/2 digital view
+        constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
+        constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         -- ADC SPI core
         constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_buttons_test: boolean := false; -- false: normal use, true: pressing buttons will test ADC channels
@@ -58,7 +59,7 @@ architecture beh of ulx3s is
         -- External ADC AN108 with PCB https://oshpark.com/profiles/gojimmypi
         constant C_adc_an108: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- External USB3300 PHY ULPI
-        constant C_usb3300_phy: boolean := true; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
+        constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
 	constant inputs: natural := 2; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
@@ -742,7 +743,7 @@ begin
 	);
 	end generate;
 
-	G_uart_usbethernet: if C_usbping_test generate
+	G_usbping_test: if C_usbping_test generate
 	-- USB-CDC core in ethernet mode, ping debug
         -- usb_serial in network mode will reply to raw nping
         -- ifconfig enx00aabbccddee 192.168.18.254
@@ -894,6 +895,96 @@ begin
 		phy_txc     => mii_clk, 
 		phy_tx_en   => mii_txvalid,
 		phy_tx_d    => mii_txdata_reverse,
+--		monitor     => monitor, btn => R_btn_debounced(2),
+		chaini_sel  => '0',
+
+		chaini_frm  => '0',
+		chaini_irdy => open,
+		chaini_data => dummy_udpdaisy_data,
+
+		chaino_frm  => fromistreamdaisy_frm,
+		chaino_irdy => fromistreamdaisy_irdy,
+		chaino_data => fromistreamdaisy_data
+        );
+        end block;
+	end generate;
+
+	G_wired_ethernet_rmii: if C_rmiiethernet generate
+	-- /sbin/ifconfig enx00aabbccddee 192.168.18.254
+	-- cat /etc/dnsmasq.d/interface.conf
+	-- listen-address=192.168.18.254
+	-- /usr/sbin/service dnsmasq restart
+	-- /usr/sbin/tcpdump -i enx00aabbccddee -e -XX -n
+	B_wired_ethernet_rmii: block
+	signal mii_clk    : std_logic;
+	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
+	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
+	signal R_btn_debounce: unsigned(19 downto 0);
+	signal R_btn_debounced: std_logic_vector(6 downto 1);
+	signal R_blink: unsigned(23 downto 0);
+	-- RMII pins as labeled on the board and connected to ULX3S with flat cable
+	alias rmii_tx1   : std_logic is gp(9);
+	alias rmii_tx_en : std_logic is gp(10);
+	alias rmii_rx0   : std_logic is gp(11);
+	alias rmii_nint  : std_logic is gp(12);
+	alias rmii_mdio  : std_logic is gp(13);
+	alias rmii_tx0   : std_logic is gn(10);
+	alias rmii_rx1   : std_logic is gn(11);
+	alias rmii_crs   : std_logic is gn(12); -- this is RX data valid signal
+	alias rmii_mdc   : std_logic is gn(13);
+	signal mii_rxdata,  mii_txdata  : std_logic_vector(0 to 1);
+	signal mii_rxvalid, mii_txvalid : std_logic;
+	begin
+
+        mii_clk <= rmii_nint; -- nINT pin is CLOCK
+        mii_rxdata(0) <= rmii_rx0;
+        mii_rxdata(1) <= rmii_rx1;
+        mii_rxvalid   <= rmii_crs;
+        rmii_tx0      <= mii_txdata(0);
+        rmii_tx1      <= mii_txdata(1);
+        rmii_tx_en    <= mii_txvalid;
+
+--	process(mii_clk)
+--	begin
+--	  if rising_edge(mii_clk) then
+--	    R_blink <= R_blink + 1;
+--          end if;
+--        end process;
+--        led(0) <= R_blink(R_blink'high);
+
+	process(mii_clk)
+	begin
+	  if rising_edge(mii_clk) then
+	    if btn(6 downto 1) /= "000000" and R_btn_debounce(R_btn_debounce'high) = '0' then
+	      R_btn_debounce <= R_btn_debounce + 1;
+            else
+              if btn(6 downto 1) = "000000" then
+                R_btn_debounce <= (others => '0');
+              end if;
+            end if;
+            if R_btn_debounce(R_btn_debounce'high) = '1' then
+              R_btn_debounced <= btn(6 downto 1);
+            else
+              R_btn_debounced <= "000000";
+            end if;
+	  end if;
+	end process;
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	generic map(
+	        preamble_disable => false,
+	        crc_disable => false
+	)
+	port map (
+		ipcfg_req   => R_btn_debounced(1),
+
+		phy_rxc     => mii_clk,
+		phy_rx_dv   => mii_rxvalid,
+		phy_rx_d    => mii_rxdata,
+
+		phy_txc     => mii_clk, 
+		phy_tx_en   => mii_txvalid,
+		phy_tx_d    => mii_txdata,
 --		monitor     => monitor, btn => R_btn_debounced(2),
 		chaini_sel  => '0',
 
