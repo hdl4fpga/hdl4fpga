@@ -48,21 +48,21 @@ architecture def of scopeio_textbox is
 
 	constant cgaadapter_latency : natural := 4;
 
-	constant font_wbits : natural := unsigned_num_bits(font_width-1);
-	constant font_hbits : natural := unsigned_num_bits(font_height-1);
-	constant cga_cols   : natural := textbox_width(layout)/font_width;
-	constant cga_rows   : natural := textbox_height(layout)/font_height;
-	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant font_wbits   : natural := unsigned_num_bits(font_width-1);
+	constant font_hbits   : natural := unsigned_num_bits(font_height-1);
+	constant cga_cols     : natural := textbox_width(layout)/font_width;
+	constant cga_rows     : natural := textbox_height(layout)/font_height;
+	constant cga_size     : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	signal cga_we       : std_logic;
-	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_code     : ascii;
-	signal video_addr   : std_logic_vector(cga_addr'range);
-	signal char_dot     : std_logic;
+	signal cga_we         : std_logic;
+	signal cga_addr       : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_code       : ascii;
+	signal video_addr     : std_logic_vector(cga_addr'range);
+	signal char_dot       : std_logic;
 
-	signal value       : signed(0 to 12-1) := x"fff";
-	signal frac        : signed(value'range);
-	signal scale       : std_logic_vector(0 to 2-1) := "00";
+	signal value          : signed(0 to 12-1) := x"fff";
+	signal frac           : signed(value'range);
+	signal scale          : std_logic_vector(0 to 2-1) := "00";
 
 	signal trigger_dv     : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_maxsize-1 downto 0);
@@ -85,7 +85,7 @@ begin
 		trigger_level	=> trigger_level,
 		trigger_edge	=> trigger_edge);
 
-	value <= resize(signed(trigger_level) sll 1, value'length);
+	value <= resize(signed(trigger_level), value'length) sll 1;
 	frm_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -96,7 +96,7 @@ begin
 						btof_bcdirdy <= '0';
 					end if;
 				end if;
-			elsif rgtr_dv='1' then
+			elsif trigger_dv='1' then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
 				frac <= scale_1245(value, scale);
@@ -116,7 +116,7 @@ begin
 		bin_exp  => btof_binexp,
 		bin_di   => btof_bindi);
 
-	btof_bcdalign <= '0';
+	btof_bcdalign <= '1';
 	btof_bcdsign  <= '1';
 	btof_bcdprec  <= b"1110";
 	btof_bcdunit  <= b"0000";
@@ -127,7 +127,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				cga_addr <= to_unsigned(12, cga_addr'length);
+				cga_addr <= to_unsigned(10, cga_addr'length);
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			end if;
