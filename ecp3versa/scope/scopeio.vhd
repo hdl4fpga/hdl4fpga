@@ -122,6 +122,7 @@ architecture beh of ecp3versa is
 --	constant layout     : natural := video_params(1).layout;
 	constant layout     : natural := video_params(video_mode).layout;
 
+		signal lock  : std_logic;
 begin
 
 --	rst <= not fpga_gsrn;
@@ -132,7 +133,6 @@ begin
 		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
 
 		signal clkfb : std_logic;
-		signal lock  : std_logic;
 	begin
 		pll_i : ehxpllf
         generic map (
@@ -219,7 +219,7 @@ begin
 	end process;
 
 	uart_sin <= expansionx3(5);
-	led  <= (others => not expansionx3(5));
+	led  <= (others => not lock);
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,

@@ -37,12 +37,13 @@ package scopeiopkg is
 	constant lang_EN : i18n_langs := 0;
 	constant lang_ES : i18n_langs := 1;
 
-	subtype i18n_labels is natural range 0 to 5-1;
-	constant lbel_horizontal : i18n_labels := 0;
-	constant lbel_vertical   : i18n_labels := 1;
-	constant lbel_level      : i18n_labels := 2;
-	constant lbel_scale      : i18n_labels := 3;
-	constant lbel_trigger    : i18n_labels := 4;
+	subtype i18n_labelids is natural range 0 to 5-1;
+	type i18nlabelid_vector is array (natural range <>) of i18n_labelids;
+	constant lbel_horizontal : i18n_labelids := 0;
+	constant lbel_vertical   : i18n_labelids := 1;
+	constant lbel_level      : i18n_labelids := 2;
+	constant lbel_scale      : i18n_labelids := 3;
+	constant lbel_trigger    : i18n_labelids := 4;
 
 	constant i18n_text : string := 
 		"Horizontal" & NUL & 
@@ -319,10 +320,10 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
 		6 => (mode_id => pclk23_75m640x480Cat60,    layout_id => vesa640x480),
+		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid),
 		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
 		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
-	       10 => (mode_id => pclk38_25m800x600Cat60,    layout_id => lcd800x480ongrid),
-		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid));
+	   10 => (mode_id => pclk38_25m800x600Cat60,    layout_id => lcd800x480ongrid));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
@@ -503,7 +504,7 @@ package scopeiopkg is
 		
 	function i18n_label (
 		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labels)
+		constant i18n_label : i18n_labelids)
 		return string;
 
 	function text_mask (
@@ -943,9 +944,9 @@ package body scopeiopkg is
 		
 	function i18n_label (
 		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labels)
+		constant i18n_label : i18n_labelids)
 		return string is
-		variable lbel : i18n_labels;
+		variable lbel : i18n_labelids;
 		variable pos0 : natural;
 		variable pos1 : natural;
 		variable n    : natural;
@@ -970,6 +971,29 @@ package body scopeiopkg is
 		return i18n_text(pos0 to pos1);
 	end;
 
+	function text_field (
+		constant field  : std_logic_vector;
+		constant layout : display_layout)
+		return std_logic_vector is
+		constant text_cols  : natural := textbox_width(layout)/textfont_width;
+		constant text_rows  : natural := textbox_height(layout)/textfont_height;
+		constant text_size  : natural := text_rows*text_cols;
+		variable retval     : unsigned(0 to ascii'length*text_size-1);
+		constant line_size  : natural := text_cols*ascii'length;
+		variable text_addr  : std_logic_vector(0 to unsigned_num_bits(text_size-1)-1);
+
+	begin
+		case to_integer(unsigned(field)) is
+		when 0 => 
+			text_addr := std_logic_vector(to_unsigned(12, text_addr'length));
+		when 1 => 
+			text_addr := std_logic_vector(to_unsigned(12+8, text_addr'length));
+		when others =>
+			text_addr := std_logic_vector(resize(mul(unsigned(field), 16)+(8+2*text_cols), text_addr'length));
+		end case;
+		return text_addr;
+	end;
+		
 	function text_mask (
 		constant lang   : i18n_langs;
 		constant layout : display_layout)
@@ -983,14 +1007,19 @@ package body scopeiopkg is
 
 		constant label_maxsize : natural := 12;
 		variable ascii_buffer  : std_logic_vector(0 to ascii'length*label_maxsize-1);
+		constant labelids : i18nlabelid_vector := (
+			0 => lbel_horizontal,
+			1 => lbel_trigger,
+			2 => lbel_level,
+			3 => lbel_scale);
 
 	begin
-		for i in i18n_labels loop
-			ascii_buffer := fill(to_ascii(i18n_label(lang, i)), ascii_buffer'length, true);
+		for i in labelids'range loop
+			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(i))), ascii_buffer'length, true);
 			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
 			retval := retval rol line_size;
 		end loop;
-		retval := retval ror 5*line_size;
+		retval := retval ror labelids'length*line_size;
 		return std_logic_vector(retval);
 	end;
 		
