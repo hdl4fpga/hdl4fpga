@@ -29,26 +29,28 @@ architecture beh of ulx3s is
         constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true;  -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
-        constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
+        constant C_extserial    : boolean := true; -- use Emard's uart receiver (RXD line)
         constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
-        constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
+        constant C_usbethernet  : boolean := false;  -- USB-CDC Ethernet (D+/D- lines)
         constant C_rmiiethernet : boolean := false; -- RMII (LAN8720) Ethernet GPN9-13
+        constant C_istream_bits : natural := 8;     -- default 8, for RMII 2
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := false; -- ADC onboard analog view
+        constant C_view_adc     : boolean := true; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := true;  -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
+        constant C_view_istream : boolean := false;  -- NET output
         -- ADC SPI core
-        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
-        constant C_buttons_test: boolean := false; -- false: normal use, true: pressing buttons will test ADC channels
+        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
+        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -61,13 +63,13 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
-	constant inputs: natural := 2; -- number of input channels (traces)
+	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := true;
+	constant C_oled_hex_view_usb : boolean := false;
 	constant C_oled_hex_view_net : boolean := false;
-	constant C_oled_hex_view_istream: boolean := false;
+	constant C_oled_hex_view_istream: boolean := true;
 	-- OLED HEX or VGA (enable max 1)
         constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
@@ -149,19 +151,25 @@ architecture beh of ulx3s is
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
+	signal clk_istream : std_logic;
+	signal clk_input : std_logic;
+	signal clk_daisy : std_logic := '0';
+
 
 	--signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(7 downto 0);
-	signal so_null    : std_logic_vector(7 downto 0);
+
+	signal so_null    : std_logic_vector(C_istream_bits-1 downto 0); -- (1 downto 0) for LAN8720 RMII ETH
 
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
-	signal fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
-	signal frommousedaisy_frm  : std_logic;
-	signal frommousedaisy_irdy : std_logic;
-	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
+	signal fromistreamdaisy_data : std_logic_vector(so_null'range);
+
+	signal istream_frm  : std_logic;
+	signal istream_irdy : std_logic;
+	signal istream_data : std_logic_vector(so_null'range);
 
 	signal usbmouse_frommousedaisy_frm  : std_logic;
 	signal usbmouse_frommousedaisy_irdy : std_logic;
@@ -169,7 +177,7 @@ architecture beh of ulx3s is
 
 	signal net_fromistreamdaisy_frm  : std_logic;
 	signal net_fromistreamdaisy_irdy : std_logic;
-	signal net_fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
+	signal net_fromistreamdaisy_data : std_logic_vector(1 downto 0);
 
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
@@ -204,27 +212,37 @@ architecture beh of ulx3s is
 
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
+        constant C_btn_idle: std_logic_vector(btn'range) := "0000001";
+        signal R_btn_debounced: std_logic_vector(btn'range) := C_btn_idle;
 begin
+    B_btn_debounce: block
+      signal R_btn_debounce: unsigned(20 downto 0);
+    begin
+	process(clk)
+	begin
+	  if rising_edge(clk) then
+	    if btn /= C_btn_idle and R_btn_debounce(R_btn_debounce'high) = '0' then
+	      R_btn_debounce <= R_btn_debounce + 1;
+            else
+              if btn = C_btn_idle then
+                R_btn_debounce <= (others => '0');
+              end if;
+            end if;
+            if R_btn_debounce(R_btn_debounce'high) = '1' then
+              R_btn_debounced <= btn;
+            else
+              R_btn_debounced <= C_btn_idle;
+            end if;
+	  end if;
+	end process;
+    end block;
+
     -- EXIT from this bitstream:
-    -- Pressing (debounced) of BTN0 will pull down PROGRAMN and
+    -- Pressing BTN0 (debounced) will pull down PROGRAMN and
     -- initiate jump to the next multiboot image.
     -- multiboot image can be made with lattice deployment tool "ddt_cmd"
     -- or opensource prjtrellis "ecpmulti".
-    B_exit_this_bitstream: block
-      signal R_progn: unsigned(20 downto 0) := (others => '0');
-    begin
-      process(clk)
-      begin
-        if rising_edge(clk) then
-          if btn(0) = '0' then
-            R_progn <= R_progn + 1; -- BTN0 is pressed
-          else
-            R_progn <= (others => '0'); -- BTN0 is not pressed
-          end if;
-        end if;
-      end process;
-      user_programn <= not R_progn(R_progn'high);
-    end block;
+    user_programn <= R_btn_debounced(0);
 
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
@@ -270,7 +288,13 @@ begin
             clk_ena_mouse <= not clk_ena_mouse; -- reduce clk 2x
           end if;
         end process;
-        clk_ena_oled <= clk_ena_mouse; -- same clock, same ena
+
+        process(clk_oled)
+        begin
+          if rising_edge(clk_oled) then
+            clk_ena_oled <= not clk_ena_oled; -- reduce clk 2x
+          end if;
+        end process;
 
 	process(vga_clk)
 	begin
@@ -614,20 +638,19 @@ begin
 	trace_cyan(C_view_binary_gain+3) <= R_utmi_linestate(1); -- D-
 	end generate;
 
+	G_view_istream: if C_view_istream generate
+	S_input_ena <= '1';
+	trace_yellow(C_view_binary_gain+3) <= net_fromistreamdaisy_irdy;
+	trace_cyan(C_view_binary_gain+net_fromistreamdaisy_data'high downto C_view_binary_gain) <= net_fromistreamdaisy_data;
+	clk_input <= clk_istream;
+	end generate;
+
 	G_view_spi: if C_view_spi generate
 	S_input_ena <= '1';
-
 	trace_yellow(C_view_binary_gain+4) <= adc_mosi;
-	--trace_yellow(C_view_binary_gain+1 downto C_view_binary_gain) <= "00";  -- y offset
-
 	trace_cyan(C_view_binary_gain+4) <= adc_miso;
-	--trace_cyan(C_view_binary_gain+1 downto C_view_binary_gain) <= "01"; -- y offset
-
 	trace_green(C_view_binary_gain+3) <= adc_csn;
-	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
-
 	trace_violet(C_view_binary_gain+3) <= adc_sclk;
-	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 	end generate;
 
 	G_view_adc: if C_view_adc generate
@@ -645,6 +668,7 @@ begin
 	  trace_green (trace_green'high  downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
 	  trace_violet(trace_violet'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
+	  clk_input <= clk_adc;
 	end generate;
 
 	G_inputs1: if inputs >= 1 generate
@@ -792,7 +816,7 @@ begin
 	led <= uart_rxd;
 --	led <= mii_rxdata;
 
-	G_not_usb_ethernet_mii: if not C_usbethernet generate
+	G_not_usb_ethernet_mii: if C_extserial generate
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	port map (
 		stream_clk  => clk_uart,
@@ -807,6 +831,7 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
 	);
+	clk_daisy <= clk_uart;
 	end generate;
 
 	G_usb_ethernet_mii: if C_usbethernet generate
@@ -819,8 +844,6 @@ begin
 	signal mii_clk    : std_logic;
 	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
 	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
-	signal R_btn_debounce: unsigned(19 downto 0);
-	signal R_btn_debounced: std_logic_vector(6 downto 1);
 	begin
 	-- USB-CDC core in ethernet mode
 	-- pulldown 15k for USB HOST mode
@@ -862,24 +885,6 @@ begin
 	mii_txdata <= reverse(mii_txdata_reverse);
 	mii_rxdata_reverse <= reverse(mii_rxdata);
 
-	process(mii_clk)
-	begin
-	  if rising_edge(mii_clk) then
-	    if btn(6 downto 1) /= "000000" and R_btn_debounce(R_btn_debounce'high) = '0' then
-	      R_btn_debounce <= R_btn_debounce + 1;
-            else
-              if btn(6 downto 1) = "000000" then
-                R_btn_debounce <= (others => '0');
-              end if;
-            end if;
-            if R_btn_debounce(R_btn_debounce'high) = '1' then
-              R_btn_debounced <= btn(6 downto 1);
-            else
-              R_btn_debounced <= "000000";
-            end if;
-	  end if;
-	end process;
-
 	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 	generic map(
 	        preamble_disable => true,
@@ -906,98 +911,10 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
         );
+        clk_daisy <= mii_clk;
         end block;
-	end generate;
+	end generate; -- end USB ethernet
 
-	G_wired_ethernet_rmii: if C_rmiiethernet generate
-	-- /sbin/ifconfig enx00aabbccddee 192.168.18.254
-	-- cat /etc/dnsmasq.d/interface.conf
-	-- listen-address=192.168.18.254
-	-- /usr/sbin/service dnsmasq restart
-	-- /usr/sbin/tcpdump -i enx00aabbccddee -e -XX -n
-	B_wired_ethernet_rmii: block
-	signal mii_clk    : std_logic;
-	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
-	signal dummy_udpdaisy_data : std_logic_vector(8-1 downto 0);
-	signal R_btn_debounce: unsigned(19 downto 0);
-	signal R_btn_debounced: std_logic_vector(6 downto 1);
-	signal R_blink: unsigned(23 downto 0);
-	-- RMII pins as labeled on the board and connected to ULX3S with flat cable
-	alias rmii_tx1   : std_logic is gp(9);
-	alias rmii_tx_en : std_logic is gp(10);
-	alias rmii_rx0   : std_logic is gp(11);
-	alias rmii_nint  : std_logic is gp(12);
-	alias rmii_mdio  : std_logic is gp(13);
-	alias rmii_tx0   : std_logic is gn(10);
-	alias rmii_rx1   : std_logic is gn(11);
-	alias rmii_crs   : std_logic is gn(12); -- this is RX data valid signal
-	alias rmii_mdc   : std_logic is gn(13);
-	signal mii_rxdata,  mii_txdata  : std_logic_vector(0 to 1);
-	signal mii_rxvalid, mii_txvalid : std_logic;
-	begin
-
-        mii_clk <= rmii_nint; -- nINT pin is CLOCK
-        mii_rxdata(0) <= rmii_rx0;
-        mii_rxdata(1) <= rmii_rx1;
-        mii_rxvalid   <= rmii_crs;
-        rmii_tx0      <= mii_txdata(0);
-        rmii_tx1      <= mii_txdata(1);
-        rmii_tx_en    <= mii_txvalid;
-
---	process(mii_clk)
---	begin
---	  if rising_edge(mii_clk) then
---	    R_blink <= R_blink + 1;
---          end if;
---        end process;
---        led(0) <= R_blink(R_blink'high);
-
-	process(mii_clk)
-	begin
-	  if rising_edge(mii_clk) then
-	    if btn(6 downto 1) /= "000000" and R_btn_debounce(R_btn_debounce'high) = '0' then
-	      R_btn_debounce <= R_btn_debounce + 1;
-            else
-              if btn(6 downto 1) = "000000" then
-                R_btn_debounce <= (others => '0');
-              end if;
-            end if;
-            if R_btn_debounce(R_btn_debounce'high) = '1' then
-              R_btn_debounced <= btn(6 downto 1);
-            else
-              R_btn_debounced <= "000000";
-            end if;
-	  end if;
-	end process;
-
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	generic map(
-	        preamble_disable => false,
-	        crc_disable => false
-	)
-	port map (
-		ipcfg_req   => R_btn_debounced(1),
-
-		phy_rxc     => mii_clk,
-		phy_rx_dv   => mii_rxvalid,
-		phy_rx_d    => mii_rxdata,
-
-		phy_txc     => mii_clk, 
-		phy_tx_en   => mii_txvalid,
-		phy_tx_d    => mii_txdata,
---		monitor     => monitor, btn => R_btn_debounced(2),
-		chaini_sel  => '0',
-
-		chaini_frm  => '0',
-		chaini_irdy => open,
-		chaini_data => dummy_udpdaisy_data,
-
-		chaino_frm  => fromistreamdaisy_frm,
-		chaino_irdy => fromistreamdaisy_irdy,
-		chaino_data => fromistreamdaisy_data
-        );
-        end block;
-	end generate;
 
 	G_oled_hex_view_uart: if C_oled_hex_view_uart generate
 	  process(clk_uart)
@@ -1011,11 +928,11 @@ begin
 	end generate;
 
 	G_oled_hex_view_istream: if C_oled_hex_view_istream generate
-	  process(clk_uart)
+	  process(clk_istream)
 	  begin
-	    if rising_edge(clk_uart) then
-	      if fromistreamdaisy_irdy = '1' then
-                R_oled_data <= R_oled_data(R_oled_data'high-fromistreamdaisy_data'length downto 0) & fromistreamdaisy_data;
+	    if rising_edge(clk_istream) then
+	      if istream_irdy = '1' then
+                R_oled_data <= R_oled_data(R_oled_data'high-istream_data'length downto 0) & istream_data;
               end if;
             end if;
           end process;
@@ -1096,10 +1013,11 @@ begin
 		chaini_irdy => fromistreamdaisy_irdy,
 		chaini_data => fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => frommousedaisy_frm,
-		chaino_irdy => frommousedaisy_irdy,
-		chaino_data => frommousedaisy_data
+		chaino_frm  => istream_frm,
+		chaino_irdy => istream_irdy,
+		chaino_data => istream_data
 	);
+	clk_istream <= clk_mouse;
 	end generate; -- PS/2 mouse
 
 	G_mouse_usb: if C_mouse_usb generate
@@ -1155,19 +1073,84 @@ begin
 		chaino_data => usbmouse_frommousedaisy_data
 	);
 	-- C_mouse_host, if enabled, will control GUI instead of C_mouse_usb
-        G_attach_usbmouse:
-        if not C_mouse_host generate
-          frommousedaisy_frm  <= usbmouse_frommousedaisy_frm;
-          frommousedaisy_irdy <= usbmouse_frommousedaisy_irdy;
-          frommousedaisy_data <= usbmouse_frommousedaisy_data;
+        G_not_mouse_host: if not C_mouse_host generate
+          clk_istream  <= clk_mouse;
+          istream_frm  <= usbmouse_frommousedaisy_frm;
+          istream_irdy <= usbmouse_frommousedaisy_irdy;
+          istream_data <= usbmouse_frommousedaisy_data;
+        end generate; -- attach USB mouse if not host mouse
+        G_yes_mouse_host: if C_mouse_host generate
+--          clk_istream  <= clk_uart;
         end generate; -- attach USB mouse if not host mouse
 	end generate; -- USB mouse
 
+	G_wired_ethernet_rmii: if C_rmiiethernet generate
+	-- /sbin/ifconfig enx00aabbccddee 192.168.18.254
+	-- cat /etc/dnsmasq.d/interface.conf
+	-- listen-address=192.168.18.254
+	-- /usr/sbin/service dnsmasq restart
+	-- /usr/sbin/tcpdump -i enx00aabbccddee -e -XX -n
+	B_wired_ethernet_rmii: block
+	signal mii_clk: std_logic;
+	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
+	-- RMII pins as labeled on the board and connected to ULX3S with flat cable
+	alias rmii_tx1   : std_logic is gp(9);
+	alias rmii_tx_en : std_logic is gp(10);
+	alias rmii_rx0   : std_logic is gp(11);
+	alias rmii_nint  : std_logic is gp(12);
+	alias rmii_mdio  : std_logic is gp(13);
+	alias rmii_tx0   : std_logic is gn(10);
+	alias rmii_rx1   : std_logic is gn(11);
+	alias rmii_crs   : std_logic is gn(12);
+	alias rmii_mdc   : std_logic is gn(13);
+	signal mii_rxdata,  mii_txdata  : std_logic_vector(0 to 1);
+	signal mii_rxvalid, mii_txvalid : std_logic;
+	begin
+
+        mii_clk       <= rmii_nint; -- nINT pin is CLOCK
+        mii_rxdata(0) <= rmii_rx0;
+        mii_rxdata(1) <= rmii_rx1;
+        mii_rxvalid   <= rmii_crs;
+        rmii_tx0      <= mii_txdata(0);
+        rmii_tx1      <= mii_txdata(1);
+        rmii_tx_en    <= mii_txvalid;
+        rmii_mdc      <= 'Z';
+        rmii_mdio     <= 'Z';
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_miiudp
+	generic map(
+	        preamble_disable => false,
+	        crc_disable => false
+	)
+	port map (
+		mii_req   => R_btn_debounced(1),
+
+		mii_rxc     => mii_clk,
+		mii_rxdv    => mii_rxvalid,
+		mii_rxd     => mii_rxdata,
+
+		mii_txc     => mii_clk, 
+		mii_txdv    => mii_txvalid,
+		mii_txd     => mii_txdata,
+
+		so_clk      => open,
+		so_dv       => net_fromistreamdaisy_irdy,
+		so_data     => net_fromistreamdaisy_data
+        );
+        net_fromistreamdaisy_frm <= net_fromistreamdaisy_irdy;
+        clk_daisy                <= mii_clk;
+        fromistreamdaisy_frm     <=         net_fromistreamdaisy_frm;
+        fromistreamdaisy_irdy    <=         net_fromistreamdaisy_irdy;
+        fromistreamdaisy_data    <= reverse(net_fromistreamdaisy_data);
+        end block;
+	end generate;
+
         G_no_mouse:
         if not (C_mouse_ps2 or C_mouse_usb or C_mouse_host) generate
-          frommousedaisy_frm  <= fromistreamdaisy_frm;
-          frommousedaisy_irdy <= fromistreamdaisy_irdy;
-          frommousedaisy_data <= fromistreamdaisy_data;
+          clk_istream  <= clk_daisy;
+          istream_frm  <= fromistreamdaisy_frm;
+          istream_irdy <= fromistreamdaisy_irdy;
+          istream_data <= fromistreamdaisy_data;
         end generate; -- attach USB mouse if not host mouse
 
 	G_mouse_host: if C_mouse_host generate
@@ -1184,16 +1167,17 @@ begin
 	)
 	port map
 	(
-		clk         => clk_mouse,
+		clk         => clk_daisy,
 		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,
 		chaini_irdy => fromistreamdaisy_irdy,
 		chaini_data => fromistreamdaisy_data,
 		-- daisy output
-		chaino_frm  => frommousedaisy_frm,
-		chaino_irdy => frommousedaisy_irdy,
-		chaino_data => frommousedaisy_data
+		chaino_frm  => istream_frm,
+		chaino_irdy => istream_irdy,
+		chaino_data => istream_data
 	);
+	clk_istream <= clk_daisy;
 	end generate; -- host mouse
 
 	scopeio_e : entity hdl4fpga.scopeio
@@ -1216,15 +1200,16 @@ begin
                 default_bg       => b"000000"
 	)
 	port map (
-		si_clk      => clk_mouse,
-		si_frm      => frommousedaisy_frm,
-		si_irdy     => frommousedaisy_irdy,
-		si_data     => frommousedaisy_data,
+
+		si_clk      => clk_istream,
+		si_frm      => istream_frm,
+		si_irdy     => istream_irdy,
+		si_data     => istream_data,
 		so_data     => so_null,
 	        --o_rgtr_id   => S_rgtr_id,
 	        --o_rgtr_dv   => S_rgtr_dv,
 	        --o_rgtr_data => S_rgtr_data,
-		input_clk   => clk_adc,
+		input_clk   => clk_input,
 		input_ena   => S_input_ena,
 		input_data  => samples,
 		video_clk   => vga_clk,
