@@ -70,6 +70,7 @@ architecture def of scopeio_textbox is
 	signal trigger_edge   : std_logic;
 	signal trigger_freeze : std_logic;
 
+	signal field : unsigned(0 to 0);
 begin
 
 	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
@@ -85,6 +86,23 @@ begin
 		trigger_level	=> trigger_level,
 		trigger_edge	=> trigger_edge);
 
+	with rgtr_id select
+	field <= 
+		to_unsigned(0, field'length) when rid_hzaxis,
+		to_unsigned(1, field'length) when rid_trigger,
+		(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)) sll 1)+2 when rid_vtaxis,
+		(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)) sll 1)+3 when rid_gain,
+		(others => '-') when others;
+   		
+	with rgtr_id select
+	value <= 
+		resize(signed(bitfield(rgtr_data, hzoffset_id,     hzoffset_bf)), value'length) when rid_hzaxis,
+		resize(signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), value'length) when rid_trigger,
+		resize(signed(trigger_level), value'length) when rid_trigger,
+		(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)) sll 1)+2 when rid_vtaxis,
+		(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)) sll 1)+3 when rid_gain,
+		(others => '-') when others;
+   		
 	value <= resize(signed(trigger_level), value'length) sll 1;
 	frm_p : process (rgtr_clk)
 	begin
