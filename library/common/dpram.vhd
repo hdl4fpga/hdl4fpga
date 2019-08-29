@@ -30,12 +30,15 @@ use hdl4fpga.std.all;
 
 entity dpram is
 	generic (
+		synchronous_rdaddr : boolean := false;
+		synchronous_rddata : boolean := false;
 		bitrom : std_logic_vector := (0 to 0 => '-'));
 	port (
-		rd_addr : in std_logic_vector;
+		rd_clk  : in  std_logic := '-';
+		rd_addr : in  std_logic_vector;
 		rd_data : out std_logic_vector;
 
-		wr_clk  : in std_logic := '-';
+		wr_clk  : in std_logic;
 		wr_ena  : in std_logic := '1';
 		wr_addr : in std_logic_vector;
 		wr_data : in std_logic_vector);
@@ -58,27 +61,54 @@ architecture def of dpram is
 		end loop;
 		return retval;
 	end;
-
-	signal RAM : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
+	signal async_rdaddr : std_logic_vector(rd_addr'range);
+	signal async_rddata : std_logic_vector(rd_data'range);
+	shared variable ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
 
 begin
-	process (rd_addr, RAM)
-		variable addr : std_logic_vector(0 to rd_addr'length-1);
+
+	sync_rdaddr_g : if synchronous_rdaddr generate
+		sync_p : process (rd_clk)
+		begin
+			if rising_edge(rd_clk) then
+				async_rdaddr <= rd_addr;
+			end if;
+		end process;
+	end generate;
+
+	async_rdaddr_g : if not synchronous_rdaddr generate
+		async_rdaddr <= rd_addr;
+	end generate;
+
+	process (async_rdaddr)
+		variable addr : std_logic_vector(0 to async_rdaddr'length-1);
 	begin
-		addr := rd_addr;
+		addr := async_rdaddr;
 		if rd_data'length=wr_data'length then
-			rd_data <= ram(to_integer(unsigned(rd_addr)));
+			async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
 		else
-			rd_data <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
+			async_rddata <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
 		end if;
 	end process;
 		
---	rd_data <= ram(to_integer(unsigned(rd_addr)));
-	process (wr_clk)
+	sync_rddata_g : if synchronous_rddata generate
+		sync_p : process (rd_clk)
+		begin
+			if rising_edge(rd_clk) then
+				rd_data <= async_rddata;
+			end if;
+		end process;
+	end generate;
+
+	async_rddata_g : if not synchronous_rdaddr generate
+		rd_data <= async_rddata;
+	end generate;
+
+	wrdata_p : process (wr_clk)
 	begin
 		if rising_edge(wr_clk) then
 			if wr_ena='1' then
-				ram(to_integer(unsigned(wr_addr))) <= wr_data;
+				ram(to_integer(unsigned(wr_addr))) := wr_data;
 			end if;
 		end if;
 	end process;

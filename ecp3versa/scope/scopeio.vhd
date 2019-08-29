@@ -125,7 +125,7 @@ architecture beh of ecp3versa is
 		signal lock  : std_logic;
 begin
 
---	rst <= not fpga_gsrn;
+	rst <= not fpga_gsrn;
 	video_b : block
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
@@ -267,7 +267,7 @@ begin
 		chaino_data => si_data);
 	
 	si_clk   <= phy1_rxc;
-	phy1_rst <= not rst;
+	phy1_rst <= not '0'; --rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs      => inputs,

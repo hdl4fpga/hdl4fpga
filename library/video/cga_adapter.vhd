@@ -61,20 +61,20 @@ architecture struct of cga_adapter is
 	signal char_dot  : std_logic;
 begin
 
-	cgamem_e : entity hdl4fpga.bram
+	cgamem_e : entity hdl4fpga.dpram
 	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true,
 		bitrom => cga_bitrom)
 	port map (
-		clka  => cga_clk,
-		addra => cga_addr,
-		wea   => cga_we,
-		dia   => cga_data,
-		doa   => dll,
+		wr_clk  => cga_clk,
+		wr_addr => cga_addr,
+		wr_ena  => cga_we,
+		wr_data => cga_data,
 
-		clkb  => video_clk,
-		addrb => video_addr,
-		dib   => dll,
-		dob   => cga_code);
+		rd_clk  => video_clk,
+		rd_addr => video_addr,
+		rd_data => cga_code);
 
 	vsync_e : entity hdl4fpga.align
 	generic map (
