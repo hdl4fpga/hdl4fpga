@@ -1003,10 +1003,10 @@ package body scopeiopkg is
 		constant lang   : i18n_langs;
 		constant layout : display_layout)
 		return std_logic_vector is
-		constant text_cols   : natural := textbox_width(layout)/textfont_width;
-		constant text_rows   : natural := textbox_height(layout)/textfont_height;
-		constant text_size   : natural := text_rows*text_cols;
-		variable retval      : unsigned(0 to ascii'length*text_size-1);
+		constant text_cols : natural := textbox_width(layout)/textfont_width;
+		constant text_rows : natural := textbox_height(layout)/textfont_height;
+		constant text_size : natural := text_rows*text_cols;
+		variable retval    : unsigned(0 to ascii'length*text_size-1);
 
 		constant label_maxsize : natural := 12;
 		variable ascii_buffer  : std_logic_vector(0 to ascii'length*label_maxsize-1);

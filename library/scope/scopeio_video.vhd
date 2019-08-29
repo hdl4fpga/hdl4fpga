@@ -83,7 +83,8 @@ architecture beh of scopeio_video is
 
 	constant storageaddr_latency  : natural := 1;
 	constant storagebram_latency  : natural := 2;
-	constant input_latency        : natural := storageaddr_latency+storagebram_latency;
+	constant vdata_latency        : natural := 1;
+	constant input_latency        : natural := storageaddr_latency+storagebram_latency+vdata_latency;
 	constant mainrgtrin_latency   : natural := 1;
 	constant mainrgtrout_latency  : natural := 1;
 	constant mainrgtrio_latency   : natural := mainrgtrin_latency+mainrgtrout_latency;
@@ -155,7 +156,17 @@ architecture beh of scopeio_video is
 	signal sgmntbox_bgon : std_logic;
 	signal pointer_dot   : std_logic;
 
+	signal vdv   : std_logic;
+	signal vdata : std_logic_vector(video_data'range);
 begin
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			vdv   <= video_dv;
+			vdata <= video_data;
+		end if;
+	end process;
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	port map (
@@ -313,8 +324,8 @@ begin
 		vt_on         => vt_on,
 		grid_on       => grid_on,
 
-		sample_dv     => video_dv,
-		sample_data   => video_data,
+		sample_dv     => vdv,
+		sample_data   => vdata,
 		trigger_level => trigger_level,
 		grid_dot      => grid_dot,
 		hz_dot        => hz_dot,

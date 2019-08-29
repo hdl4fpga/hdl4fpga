@@ -230,7 +230,7 @@ begin
 	end block;
 
 	trace_b : block
-		constant drawvline_latency : natural := 1;
+		constant drawvline_latency : natural := 2;
 		constant traceena_latency  : natural := 2;
 
 		signal dots : std_logic_vector(0 to trace_dots'length-1);
