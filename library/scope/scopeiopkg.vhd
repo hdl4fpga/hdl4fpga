@@ -507,6 +507,11 @@ package scopeiopkg is
 		constant i18n_label : i18n_labelids)
 		return string;
 
+	function text_field (
+		constant field  : unsigned;
+		constant layout : display_layout)
+		return unsigned;
+
 	function text_mask (
 		constant lang   : i18n_langs;
 		constant layout : display_layout)
@@ -972,24 +977,24 @@ package body scopeiopkg is
 	end;
 
 	function text_field (
-		constant field  : std_logic_vector;
+		constant field  : unsigned;
 		constant layout : display_layout)
-		return std_logic_vector is
+		return unsigned is
 		constant text_cols  : natural := textbox_width(layout)/textfont_width;
 		constant text_rows  : natural := textbox_height(layout)/textfont_height;
 		constant text_size  : natural := text_rows*text_cols;
 		variable retval     : unsigned(0 to ascii'length*text_size-1);
 		constant line_size  : natural := text_cols*ascii'length;
-		variable text_addr  : std_logic_vector(0 to unsigned_num_bits(text_size-1)-1);
+		variable text_addr  : unsigned(0 to unsigned_num_bits(text_size-1)-1);
 
 	begin
-		case to_integer(unsigned(field)) is
+		case to_integer(field) is
 		when 0 => 
-			text_addr := std_logic_vector(to_unsigned(12, text_addr'length));
+			text_addr := to_unsigned(12, text_addr'length);
 		when 1 => 
-			text_addr := std_logic_vector(to_unsigned(12+8, text_addr'length));
+			text_addr := to_unsigned(text_cols+12, text_addr'length);
 		when others =>
-			text_addr := std_logic_vector(resize(mul(unsigned(field), 16)+(8+2*text_cols), text_addr'length));
+			text_addr := resize(mul(field-2, 16)+(8+2*text_cols), text_addr'length);
 		end case;
 		return text_addr;
 	end;
@@ -1002,8 +1007,6 @@ package body scopeiopkg is
 		constant text_rows   : natural := textbox_height(layout)/textfont_height;
 		constant text_size   : natural := text_rows*text_cols;
 		variable retval      : unsigned(0 to ascii'length*text_size-1);
-		constant line_size   : natural := text_cols*ascii'length;
-
 
 		constant label_maxsize : natural := 12;
 		variable ascii_buffer  : std_logic_vector(0 to ascii'length*label_maxsize-1);
@@ -1014,12 +1017,20 @@ package body scopeiopkg is
 			3 => lbel_scale);
 
 	begin
-		for i in labelids'range loop
+		for i in 0 to 2-1 loop
 			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(i))), ascii_buffer'length, true);
 			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
-			retval := retval rol line_size;
+			retval := retval rol (text_cols*ascii'length);
 		end loop;
-		retval := retval ror labelids'length*line_size;
+		for i in 0 to (labelids'length-2)/2-1 loop
+			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(2*(i+1)+0))), ascii_buffer'length, true);
+			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
+			retval := retval rol ((text_cols/2)*ascii'length);
+			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(2*(i+1)+1))), ascii_buffer'length, true);
+			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
+			retval := retval rol ((text_cols-text_cols/2)*ascii'length);
+		end loop;
+		retval := retval ror ((2+(labelids'length-2)/2)*(text_cols*ascii'length));
 		return std_logic_vector(retval);
 	end;
 		

@@ -251,7 +251,7 @@ begin
 			chaino_data => mousedaisy_data
 		);
 
-		si_frm  <= mousedaisy_frm and switch(7);
+		si_frm  <= mousedaisy_frm and switch(0);
 		si_irdy <= mousedaisy_irdy;
 		si_data <= mousedaisy_data;
 	end block;

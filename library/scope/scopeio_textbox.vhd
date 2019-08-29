@@ -71,8 +71,10 @@ begin
 	field <= 
 		to_unsigned(0, field'length) when rid_hzaxis,
 		to_unsigned(1, field'length) when rid_trigger,
-		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 1)+2 when rid_vtaxis,
-		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 1)+3 when rid_gain,
+		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 0)+2 when rid_vtaxis,
+		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 0)+3 when rid_gain,
+--		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 1)+2 when rid_vtaxis,
+--		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 1)+3 when rid_gain,
 		(others => '-') when others;
    		
 	with rgtr_id select
@@ -124,7 +126,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				cga_addr <= to_unsigned(10, cga_addr'length);
+				cga_addr <= resize(text_field(field, layout), cga_addr'length);
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			end if;
