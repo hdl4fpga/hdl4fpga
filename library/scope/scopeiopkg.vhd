@@ -387,6 +387,29 @@ package scopeiopkg is
 
 	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
 
+	constant pltid_gridfg    : natural :=  0;
+	constant pltid_gridbg    : natural :=  6;
+	constant pltid_vtfg      : natural :=  1;
+	constant pltid_vtbg      : natural :=  2;
+	constant pltid_hzfg      : natural :=  3;
+	constant pltid_hzbg      : natural :=  4;
+	constant pltid_textfg    : natural :=  9;
+	constant pltid_textbg    : natural :=  5;
+	constant pltid_sgmntbg   : natural :=  7;
+	constant pltid_scopeiobg : natural :=  8;
+
+	constant pltid_order : natural_vector := (
+		0 => pltid_vtfg,
+		1 => pltid_hzfg,
+		2 => pltid_textfg,      
+		3 => pltid_gridfg,
+		4 => pltid_vtbg,
+		5 => pltid_hzbg,
+		6 => pltid_textbg,      
+		7 => pltid_gridbg,
+		8 => pltid_sgmntbg,
+		9 => pltid_scopeiobg);
+
 	function bitfield (
 		constant bf_rgtr   : std_logic_vector;
 		constant bf_id     : natural;
@@ -409,7 +432,7 @@ package scopeiopkg is
 		hzoffset_id => hzoffset_maxsize, 
 		hzscale_id  => hzscale_maxsize);
 
-	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
+	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+pltid_order'length-1);
 	constant palettecolor_maxsize : natural := 24;
 	constant paletteid_id         : natural := 0;
 	constant palettecolor_id      : natural := 1;
@@ -446,29 +469,6 @@ package scopeiopkg is
 	constant pointer_bf : natural_vector := (
 		pointery_id => pointery_maxsize, 
 		pointerx_id => pointerx_maxsize);
-
-	constant pltid_gridfg    : natural :=  0;
-	constant pltid_gridbg    : natural :=  6;
-	constant pltid_vtfg      : natural :=  1;
-	constant pltid_vtbg      : natural :=  2;
-	constant pltid_hzfg      : natural :=  3;
-	constant pltid_hzbg      : natural :=  4;
-	constant pltid_textfg    : natural :=  9;
-	constant pltid_textbg    : natural :=  5;
-	constant pltid_sgmntbg   : natural :=  7;
-	constant pltid_scopeiobg : natural :=  8;
-
-	constant pltid_order : natural_vector := (
-		0 => pltid_vtfg,
-		1 => pltid_hzfg,
-		2 => pltid_textfg,      
-		3 => pltid_gridfg,
-		4 => pltid_vtbg,
-		5 => pltid_hzbg,
-		6 => pltid_textbg,      
-		7 => pltid_gridbg,
-		8 => pltid_sgmntbg,
-		9 => pltid_scopeiobg);
 
 	component scopeio_tds
 		generic (

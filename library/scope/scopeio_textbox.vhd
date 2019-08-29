@@ -48,62 +48,41 @@ architecture def of scopeio_textbox is
 
 	constant cgaadapter_latency : natural := 4;
 
-	constant font_wbits   : natural := unsigned_num_bits(font_width-1);
-	constant font_hbits   : natural := unsigned_num_bits(font_height-1);
-	constant cga_cols     : natural := textbox_width(layout)/font_width;
-	constant cga_rows     : natural := textbox_height(layout)/font_height;
-	constant cga_size     : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant font_wbits : natural := unsigned_num_bits(font_width-1);
+	constant font_hbits : natural := unsigned_num_bits(font_height-1);
+	constant cga_cols   : natural := textbox_width(layout)/font_width;
+	constant cga_rows   : natural := textbox_height(layout)/font_height;
+	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	signal cga_we         : std_logic;
-	signal cga_addr       : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_code       : ascii;
-	signal video_addr     : std_logic_vector(cga_addr'range);
-	signal char_dot       : std_logic;
+	signal cga_we       : std_logic;
+	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_code     : ascii;
+	signal video_addr   : std_logic_vector(cga_addr'range);
+	signal char_dot     : std_logic;
 
-	signal value          : signed(0 to 12-1) := x"fff";
-	signal frac           : signed(value'range);
-	signal scale          : std_logic_vector(0 to 2-1) := "00";
+	signal value        : signed(0 to 12-1);
+	signal frac         : signed(value'range);
+	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
-	signal trigger_dv     : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_maxsize-1 downto 0);
-	signal trigger_level  : std_logic_vector(triggerlevel_maxsize-1 downto 0);
-	signal trigger_edge   : std_logic;
-	signal trigger_freeze : std_logic;
-
-	signal field : unsigned(0 to 0);
+	signal field        : unsigned(0 to 2-1);
 begin
-
-	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-	port map (
-		rgtr_clk        => rgtr_clk,
-		rgtr_dv         => rgtr_dv,
-		rgtr_id         => rgtr_id,
-		rgtr_data       => rgtr_data,
-
-		trigger_dv		=> trigger_dv,
-		trigger_freeze	=> trigger_freeze,
-		trigger_chanid	=> trigger_chanid,
-		trigger_level	=> trigger_level,
-		trigger_edge	=> trigger_edge);
 
 	with rgtr_id select
 	field <= 
 		to_unsigned(0, field'length) when rid_hzaxis,
 		to_unsigned(1, field'length) when rid_trigger,
-		(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)) sll 1)+2 when rid_vtaxis,
-		(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)) sll 1)+3 when rid_gain,
+		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 1)+2 when rid_vtaxis,
+		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 1)+3 when rid_gain,
 		(others => '-') when others;
    		
 	with rgtr_id select
 	value <= 
 		resize(signed(bitfield(rgtr_data, hzoffset_id,     hzoffset_bf)), value'length) when rid_hzaxis,
 		resize(signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), value'length) when rid_trigger,
-		resize(signed(trigger_level), value'length) when rid_trigger,
-		(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)) sll 1)+2 when rid_vtaxis,
-		(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)) sll 1)+3 when rid_gain,
+		resize(signed(bitfield(rgtr_data, vtoffset_id,     vtoffset_bf)), value'length) when rid_vtaxis,
+		resize(signed(bitfield(rgtr_data, gainid_id,           gain_bf)), value'length) when rid_gain,
 		(others => '-') when others;
    		
-	value <= resize(signed(trigger_level), value'length) sll 1;
 	frm_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -114,10 +93,10 @@ begin
 						btof_bcdirdy <= '0';
 					end if;
 				end if;
-			elsif trigger_dv='1' then
+			elsif rgtr_dv='1' then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
-				frac <= scale_1245(value, scale);
+				frac <= scale_1245(value sll 1, scale);
 			end if;
 		end if;
 	end process;
