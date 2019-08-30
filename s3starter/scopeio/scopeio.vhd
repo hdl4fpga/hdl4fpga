@@ -120,7 +120,7 @@ architecture beh of s3starter is
 		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
 		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 
