@@ -52,7 +52,6 @@ entity scopeio_video is
 		rgtr_id          : in  std_logic_vector(8-1 downto 0);
 		rgtr_data        : in  std_logic_vector;
 
-		time_dv          : in  std_logic;
 		time_scale       : out std_logic_vector;
 		time_offset      : out std_logic_vector;
 

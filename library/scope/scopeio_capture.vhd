@@ -168,7 +168,6 @@ begin
 		signal wea   : std_logic;
 		signal addrb : unsigned(addra'range);
 		signal rd_data : std_logic_Vector(video_data'range);
-		signal dll   : std_logic_vector(input_data'range);
 		signal y0    : std_logic_Vector(0 to video_data'length/2-1);
 		signal uplw  : std_logic;
 	begin

@@ -112,7 +112,6 @@ architecture beh of scopeio is
 	signal video_data         : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
 	signal video_vton         : std_logic;
-	signal video_hzon         : std_logic;
 
 	signal time_offset        : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal time_scale         : std_logic_vector(4-1 downto 0);
@@ -164,7 +163,6 @@ begin
 
 			signal input_sample : std_logic_vector(0 to sample_size-1);
 			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
-			signal gain_value   : std_logic_vector(18-1 downto 0);
 		begin
 
 			gain_id <= word2byte(gain_ids, i, gainid_size);
@@ -199,7 +197,6 @@ begin
 		input_clk    => input_clk,
 		input_dv     => ampsample_dv,
 		input_data   => ampsample_data,
-		time_dv      => time_dv,
 		time_scale   => time_scale,
 		time_offset  => time_offset,
 		trigger_chanid => trigger_chanid,
@@ -235,7 +232,6 @@ begin
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
 
-		time_dv        => time_dv,
 		time_scale     => time_scale,
 		time_offset    => time_offset,
                                         
@@ -255,7 +251,7 @@ begin
 		video_hsync    => video_hsync,
 		video_vsync    => video_vsync,
 		video_vton     => video_vton,
-		video_hzon     => video_hzon,
+		video_hzon     => open,
 		video_blank    => video_blank,
 		video_sync     => video_sync);
 

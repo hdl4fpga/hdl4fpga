@@ -55,7 +55,6 @@ architecture struct of cga_adapter is
 	signal font_row : std_logic_vector(font_vcntr'range);
 
 	signal cga_code : std_logic_vector(byte'range);
-	signal dll      : std_logic_vector(cga_code'range);
 
 	signal video_on  : std_logic;
 	signal char_dot  : std_logic;

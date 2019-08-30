@@ -21,7 +21,6 @@ architecture beh of scopeio_sin is
 	signal len : signed(0 to 8);
 	signal rid : std_logic_vector(8-1 downto 0);
 	signal val : std_logic_vector(rgtr_data'length-1 downto 0);
-	signal ld  : std_logic;
 	signal ptr : signed(0 to unsigned_num_bits(8-1));
 
 	signal dv  : std_logic;
