@@ -10,6 +10,7 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_textbox is
 	generic(
 		lang          : i18n_langs;
+		inputs        : natural;
 		layout        : display_layout;
 		latency       : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
@@ -73,8 +74,6 @@ begin
 		to_unsigned(1, field'length) when rid_trigger,
 		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 0)+2 when rid_vtaxis,
 		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 0)+3 when rid_gain,
---		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 1)+2 when rid_vtaxis,
---		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 1)+3 when rid_gain,
 		(others => '-') when others;
    		
 	with rgtr_id select

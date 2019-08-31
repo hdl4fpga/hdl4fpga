@@ -246,6 +246,7 @@ begin
 
 	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 	generic map (
+		inputs        => inputs,
 		lang          => lang,
 		latency       => segmment_latency+input_latency,
 		layout        => layout)

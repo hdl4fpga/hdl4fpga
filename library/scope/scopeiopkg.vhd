@@ -39,24 +39,24 @@ package scopeiopkg is
 
 	subtype i18n_labelids is natural range 0 to 5-1;
 	type i18nlabelid_vector is array (natural range <>) of i18n_labelids;
-	constant lbel_horizontal : i18n_labelids := 0;
-	constant lbel_vertical   : i18n_labelids := 1;
-	constant lbel_level      : i18n_labelids := 2;
-	constant lbel_scale      : i18n_labelids := 3;
-	constant lbel_trigger    : i18n_labelids := 4;
+	constant label_hzdiv    : i18n_labelids := 0;
+	constant label_hzoffset : i18n_labelids := 1;
+	constant label_trigger  : i18n_labelids := 2;
+	constant label_vtdiv    : i18n_labelids := 3;
+	constant label_vtoffset : i18n_labelids := 4;
 
 	constant i18n_text : string := 
-		"Horizontal" & NUL & 
-		"Vertical"   & NUL & 
-		"Level"      & NUL & 
-		"Scale"      & NUL & 
-		"Trigger"      & NUL & 
+		"Hz div"     & NUL & 
+		"Hz offset"  & NUL & 
+		"Trigger"    & NUL & 
+		"Vt div"     & NUL & 
+		"Vt offset"  & NUL & 
 		NUL &
-		"Horizontal" & NUL &
-		"Vertical"   & NUL &
-		"Nivel"      & NUL & 
-		"Escala"     & NUL & 
+		"Escala hz"  & NUL &
+		"Retardo"    & NUL &
 		"Disparo"    & NUL & 
+		"Escala vt"  & NUL & 
+		"Nivel vt"   & NUL & 
 		NUL;
 
 	constant max_inputs    : natural := 64;
@@ -1007,29 +1007,48 @@ package body scopeiopkg is
 		constant text_size : natural := text_rows*text_cols;
 		variable retval    : unsigned(0 to ascii'length*text_size-1);
 
-		constant label_maxsize : natural := 12;
-		variable ascii_buffer  : std_logic_vector(0 to ascii'length*label_maxsize-1);
-		constant labelids : i18nlabelid_vector := (
-			0 => lbel_horizontal,
-			1 => lbel_trigger,
-			2 => lbel_level,
-			3 => lbel_scale);
+		type style is record
+			label_width : natural;
+			value_width : natural;
+		end record;
+
+		type style_vector is array (natural range <>) of style;
+
+		constant horizontal_styleid : natural := 0;
+    	constant trigger_styleid    : natural := 1;
+    	constant level_styleid      : natural := 2;
+    	constant scale_styleid      : natural := 3;
+
+		constant styles : style_vector := (
+			horizontal_styleid => (label_width => 11, value_width => 8),
+			trigger_styleid    => (label_width => 11, value_width => 8),
+			level_styleid      => (label_width => 11, value_width => 8),
+			scale_styleid      => (label_width => 11, value_width => 8));
+
+		type line_vector is array (natural range <>) of string(1 to text_cols);
+		variable text_data : line_vector(1 to 3);
 
 	begin
-		for i in 0 to 2-1 loop
-			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(i))), ascii_buffer'length, true);
-			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
-			retval := retval rol (text_cols*ascii'length);
+		text_data(1) := string_align(
+			-- trigger label
+			string_align(i18n_label(lang, label_trigger),  styles(trigger_styleid).label_width, right_alignment),
+			text_cols, right_alignment);
+		text_data(2) := string_align(
+			-- Horizontal division label
+			string_align(i18n_label(lang, label_hzdiv),    styles(horizontal_styleid).label_width, right_alignment) &
+			-- Horizontal scale label
+			string_align(i18n_label(lang, label_hzoffset), styles(horizontal_styleid).label_width, right_alignment),
+			text_cols, right_alignment);
+		text_data(3) := string_align(
+			-- Level label
+			string_align(i18n_label(lang, label_vtoffset), styles(level_styleid).label_width, right_alignment) &
+			-- Scale label
+			string_align(i18n_label(lang, label_vtdiv), styles(scale_styleid).label_width,    right_alignment), 
+			text_cols, right_alignment);
+		for i in text_data'reverse_range loop
+			retval := retval ror (text_cols*ascii'length);
+			retval(0 to text_cols*ascii'length-1) := unsigned(to_ascii(text_data(i)));
 		end loop;
-		for i in 0 to (labelids'length-2)/2-1 loop
-			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(2*(i+1)+0))), ascii_buffer'length, true);
-			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
-			retval := retval rol ((text_cols/2)*ascii'length);
-			ascii_buffer := fill(to_ascii(i18n_label(lang, labelids(2*(i+1)+1))), ascii_buffer'length, true);
-			retval(0 to ascii_buffer'length-1) := unsigned(ascii_buffer);
-			retval := retval rol ((text_cols-text_cols/2)*ascii'length);
-		end loop;
-		retval := retval ror ((2+(labelids'length-2)/2)*(text_cols*ascii'length));
 		return std_logic_vector(retval);
 	end;
 		

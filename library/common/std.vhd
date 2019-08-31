@@ -333,11 +333,16 @@ package std is
 		constant value : std_logic_vector;
 		constant size  : natural)
 		return std_logic_vector;
+	
+	type string_alignment is (
+		left_alignment, 
+		right_alignment, 
+		center_alignment);
 
-	function fill (
+	function string_align (
 		constant data  : string;
 		constant size  : natural;
-		constant right : boolean := true;
+		constant align : string_alignment := left_alignment;
 		constant value : character := ' ')
 		return string;
 
@@ -1260,21 +1265,36 @@ package body std is
 		return std_logic_vector(retval);
 	end;
 
-	function fill (
+	function string_align (
 		constant data  : string;
 		constant size  : natural;
-		constant right : boolean := true;
+		constant align : string_alignment := left_alignment;
 		constant value : character := ' ')
 		return string is
-		variable retval_right : string(1 to size)     := (others => value);
-		variable retval_left  : string(size downto 1) := (others => value);
+		variable retval   : string(1 to size);
+		constant at_left  : natural := setif(
+			align=right_alignment,   size-data'length, setif(
+			align=center_alignment, (size-data'length)/2, 0));
+		constant at_right  : natural := setif(
+			align=left_alignment,    size-data'length, setif(
+			align=center_alignment, (size-data'length+1)/2, 0));
+
 	begin
-		retval_right(1 to data'length)    := data;
-		retval_left(data'length downto 1) := data;
-		if right then
-			return retval_right;
+		assert data'length <= size
+			report "string shorter than size"
+			severity failure;
+
+		if at_left /= 0 then
+			retval(1 to at_left) := (1 to at_left => value);
 		end if;
-		return retval_left;
+
+		retval(1+at_left to at_left+data'length) := data;
+
+		if at_right /= 0 then
+			retval(size-at_right+1 to size) := (size-at_right+1 to size => value);
+		end if;
+
+		return retval;
 	end;
 
 	function bcd2ascii (
