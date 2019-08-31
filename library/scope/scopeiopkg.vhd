@@ -1008,8 +1008,8 @@ package body scopeiopkg is
 		variable retval    : unsigned(0 to ascii'length*text_size-1);
 
 		type style is record
-			label_width : natural;
-			value_width : natural;
+			width : natural;
+			align : alignment : natural;
 		end record;
 
 		type style_vector is array (natural range <>) of style;
@@ -1018,6 +1018,35 @@ package body scopeiopkg is
     	constant trigger_styleid    : natural := 1;
     	constant level_styleid      : natural := 2;
     	constant scale_styleid      : natural := 3;
+
+		type tag_id is (tag_label, tag_ref);
+		type tag is record 
+			id       : tag_id;
+			content  : natural;
+			style_id : natural;
+		end record;
+
+		type tag_vector is array (natural range <>) of tag;
+
+		constant analogtime_layout : tag_vector := (
+			(id => tag_ref,   style => float, content => trigger_valueid),
+			(id => tag_label, style => label, content => trigger_labelid),
+			(id => tag_ref,   style => float, content => hzoffset_valueid),
+			(id => tag_ref,   style => float, content => hzdiv_valueid),
+			(id => tag_label, style => label, content => hzoffset_labelid),
+			(id => tag_label, style => label, content => hzdiv_labelid),
+			(id => tag_label, style => float, content => vtoffset_labelid),
+			(id => tag_label, style => float, content => vtdiv_labelid),
+			(id => tag_ref,   style => float, content => vtoffset_valueid),
+			(id => tag_ref,   style => float, content => vtdiv_valueid));
+			
+		constant analogtime_style : style_vector := (
+			trigger_valueid  => (width =>  8, align => right_alignment),
+			trigger_labelid  => (width => 11, align => right_alignment),
+			hzoffset_labelid => (width => 11, align => right_alignment),
+			hzdiv_labelid    => (width => 11, align => right_alignment),
+			vtoffset_labelid => (width => 11, align => right_alignment),
+			vtdiv_labelid    => (width => 11, align => right_alignment));
 
 		constant styles : style_vector := (
 			horizontal_styleid => (label_width => 11, value_width => 8),
