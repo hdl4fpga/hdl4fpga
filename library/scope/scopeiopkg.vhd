@@ -73,11 +73,6 @@ package scopeiopkg is
 	constant textfont_width  : natural :=  8;
 	constant textfont_height : natural := 16;
 
-	type style is record 
-		gap    : gap_vector;
-		margin : margin_vector;
-	end record;
-
 	type display_layout is record 
 		display_width    : natural;            -- Display's width
 		display_height   : natural;            -- Display's height
@@ -511,10 +506,23 @@ package scopeiopkg is
 		constant layout : display_layout)
 		return unsigned;
 
-	function text_mask (
-		constant lang   : i18n_langs;
-		constant layout : display_layout)
-		return std_logic_vector;
+--	function text_mask (
+--		constant lang   : i18n_langs;
+--		constant layout : display_layout)
+--		return std_logic_vector;
+
+	type alignment is (
+		left_alignment, 
+		right_alignment, 
+		center_alignment);
+
+	function text_align (
+		constant data  : string;
+		constant size  : natural;
+		constant align : alignment := left_alignment;
+		constant value : character := ' ')
+		return string;
+
 end;
 
 package body scopeiopkg is
@@ -998,87 +1006,142 @@ package body scopeiopkg is
 		return text_addr;
 	end;
 		
-	function text_mask (
-		constant lang   : i18n_langs;
-		constant layout : display_layout)
-		return std_logic_vector is
-		constant text_cols : natural := textbox_width(layout)/textfont_width;
-		constant text_rows : natural := textbox_height(layout)/textfont_height;
-		constant text_size : natural := text_rows*text_cols;
-		variable retval    : unsigned(0 to ascii'length*text_size-1);
+	type style is record
+		width : natural;
+		align : alignment;
+	end record;
 
-		type style is record
-			width : natural;
-			align : alignment : natural;
-		end record;
+	type style_vector is array (natural range <>) of style;
 
-		type style_vector is array (natural range <>) of style;
+	constant label_styleid : natural := 0;
+	constant float_styleid : natural := 1;
 
-		constant horizontal_styleid : natural := 0;
-    	constant trigger_styleid    : natural := 1;
-    	constant level_styleid      : natural := 2;
-    	constant scale_styleid      : natural := 3;
+	constant analogtime_style : style_vector := (
+		label_styleid => (width =>  8, align => right_alignment),
+		float_styleid => (width => 11, align => right_alignment));
 
-		type tag_id is (tag_label, tag_ref);
-		type tag is record 
-			id       : tag_id;
-			content  : natural;
-			style_id : natural;
-		end record;
+	type tag_id is (tid_end, tid_row, tid_label, tid_ref);
+	type tag is record 
+		tagid   : tag_id;
+		styleid : natural;
+		ref     : natural;
+	end record;
 
-		type tag_vector is array (natural range <>) of tag;
+	type tag_vector is array (natural range <>) of tag;
 
-		constant analogtime_layout : tag_vector := (
-			(id => tag_ref,   style => float, content => trigger_valueid),
-			(id => tag_label, style => label, content => trigger_labelid),
-			(id => tag_ref,   style => float, content => hzoffset_valueid),
-			(id => tag_ref,   style => float, content => hzdiv_valueid),
-			(id => tag_label, style => label, content => hzoffset_labelid),
-			(id => tag_label, style => label, content => hzdiv_labelid),
-			(id => tag_label, style => float, content => vtoffset_labelid),
-			(id => tag_label, style => float, content => vtdiv_labelid),
-			(id => tag_ref,   style => float, content => vtoffset_valueid),
-			(id => tag_ref,   style => float, content => vtdiv_valueid));
+	constant trigger_label  : natural := 0;
+	constant hzdiv_label    : natural := 0;
+	constant hzoffset_label : natural := 0;
+	constant vtdiv_label    : natural := 0;
+	constant vtoffset_label : natural := 0;
+
+	constant trigger_ref    : natural := 0;
+	constant hzdiv_ref      : natural := 0;
+	constant hzoffset_ref   : natural := 0;
+	constant vtdiv_ref      : natural := 0;
+	constant vtoffset_ref   : natural := 0;
+
+	constant stid_label     : natural := 0;
+	constant stid_ref       : natural := 0;
+	constant stid_row       : natural := 0;
+
+
+	constant analogtime_layout : tag_vector := (
+		(tid_row, styleid => stid_row, ref => 0),
+			(tid_label, styleid => stid_label, ref => trigger_label),
+			(tid_ref,   styleid => stid_ref,   ref => trigger_ref),
+		(tid_end, styleid => 0, ref => 0),
+		(tid_row, styleid => stid_row, ref => 0),
+			(tid_ref, styleid => stid_ref, ref => hzoffset_ref),
+			(tid_ref, styleid => stid_ref, ref => hzdiv_ref),
+		(tid_end, styleid => 0, ref => 0),
+		(tid_row, styleid => stid_row, ref => 0),
+			(tid_label, styleid => stid_label, ref => hzoffset_label),
+			(tid_label, styleid => stid_label, ref => hzdiv_label),
+		(tid_end, styleid => 0, ref => 0),
+		(tid_row, styleid => stid_row, ref => 0),
+			(tid_label, styleid => stid_label, ref => vtoffset_label),
+			(tid_label, styleid => stid_label, ref => vtdiv_label),
+		(tid_end, styleid => 0, ref => 0));
+
+--	constant analogtime_elements : tag_vector := (
+--		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
+--		(tag_id => tag_label, style_id => label_styleid, ref_id => label_trigger),
+--		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
+--		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
+--		(tag_id => tag_label, style_id => label_styleid, ref_id => label_hzoffset),
+--		(tag_id => tag_label, style_id => label_styleid, ref_id => label_hzdiv),
+--		(tag_id => tag_label, style_id => label_styleid, ref_id => label_vtoffset),
+--		(tag_id => tag_label, style_id => label_styleid, ref_id => label_vtdiv),
+--		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
+--		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0));
 			
-		constant analogtime_style : style_vector := (
-			trigger_valueid  => (width =>  8, align => right_alignment),
-			trigger_labelid  => (width => 11, align => right_alignment),
-			hzoffset_labelid => (width => 11, align => right_alignment),
-			hzdiv_labelid    => (width => 11, align => right_alignment),
-			vtoffset_labelid => (width => 11, align => right_alignment),
-			vtdiv_labelid    => (width => 11, align => right_alignment));
-
-		constant styles : style_vector := (
-			horizontal_styleid => (label_width => 11, value_width => 8),
-			trigger_styleid    => (label_width => 11, value_width => 8),
-			level_styleid      => (label_width => 11, value_width => 8),
-			scale_styleid      => (label_width => 11, value_width => 8));
-
-		type line_vector is array (natural range <>) of string(1 to text_cols);
-		variable text_data : line_vector(1 to 3);
+--	function text_mask (
+--		constant lang   : i18n_langs;
+--		constant layout : display_layout)
+--		return std_logic_vector is
+--		constant text_cols : natural := textbox_width(layout)/textfont_width;
+--		constant text_rows : natural := textbox_height(layout)/textfont_height;
+--		constant text_size : natural := text_rows*text_cols;
+--		variable retval    : unsigned(0 to ascii'length*text_size-1);
+--
+--		type line_vector is array (natural range <>) of string(1 to text_cols);
+--		variable text_data : line_vector(1 to 3);
+--
+--	begin
+--		text_data(1) := text_align(
+--			-- trigger label
+--			text_align(i18n_label(lang, label_trigger),  styles(trigger_styleid).label_width, right_alignment),
+--			text_cols, right_alignment);
+--		text_data(2) := text_align(
+--			-- Horizontal division label
+--			text_align(i18n_label(lang, label_hzdiv),    styles(horizontal_styleid).label_width, right_alignment) &
+--			-- Horizontal scale label
+--			text_align(i18n_label(lang, label_hzoffset), styles(horizontal_styleid).label_width, right_alignment),
+--			text_cols, right_alignment);
+--		text_data(3) := text_align(
+--			-- Level label
+--			text_align(i18n_label(lang, label_vtoffset), styles(level_styleid).label_width, right_alignment) &
+--			-- Scale label
+--			text_align(i18n_label(lang, label_vtdiv), styles(scale_styleid).label_width,    right_alignment), 
+--			text_cols, right_alignment);
+--		for i in text_data'reverse_range loop
+--			retval := retval ror (text_cols*ascii'length);
+--			retval(0 to text_cols*ascii'length-1) := unsigned(to_ascii(text_data(i)));
+--		end loop;
+--		return std_logic_vector(retval);
+--	end;
+		
+	function text_align (
+		constant data  : string;
+		constant size  : natural;
+		constant align : alignment := left_alignment;
+		constant value : character := ' ')
+		return string is
+		variable retval   : string(1 to size);
+		constant at_left  : natural := setif(
+			align=right_alignment,   size-data'length, setif(
+			align=center_alignment, (size-data'length)/2, 0));
+		constant at_right  : natural := setif(
+			align=left_alignment,    size-data'length, setif(
+			align=center_alignment, (size-data'length+1)/2, 0));
 
 	begin
-		text_data(1) := string_align(
-			-- trigger label
-			string_align(i18n_label(lang, label_trigger),  styles(trigger_styleid).label_width, right_alignment),
-			text_cols, right_alignment);
-		text_data(2) := string_align(
-			-- Horizontal division label
-			string_align(i18n_label(lang, label_hzdiv),    styles(horizontal_styleid).label_width, right_alignment) &
-			-- Horizontal scale label
-			string_align(i18n_label(lang, label_hzoffset), styles(horizontal_styleid).label_width, right_alignment),
-			text_cols, right_alignment);
-		text_data(3) := string_align(
-			-- Level label
-			string_align(i18n_label(lang, label_vtoffset), styles(level_styleid).label_width, right_alignment) &
-			-- Scale label
-			string_align(i18n_label(lang, label_vtdiv), styles(scale_styleid).label_width,    right_alignment), 
-			text_cols, right_alignment);
-		for i in text_data'reverse_range loop
-			retval := retval ror (text_cols*ascii'length);
-			retval(0 to text_cols*ascii'length-1) := unsigned(to_ascii(text_data(i)));
-		end loop;
-		return std_logic_vector(retval);
+		assert data'length <= size
+			report "string shorter than size"
+			severity failure;
+
+		if at_left /= 0 then
+			retval(1 to at_left) := (1 to at_left => value);
+		end if;
+
+		retval(1+at_left to at_left+data'length) := data;
+
+		if at_right /= 0 then
+			retval(size-at_right+1 to size) := (size-at_right+1 to size => value);
+		end if;
+
+		return retval;
 	end;
-		
+
 end;

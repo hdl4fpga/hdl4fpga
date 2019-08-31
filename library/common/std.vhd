@@ -334,18 +334,6 @@ package std is
 		constant size  : natural)
 		return std_logic_vector;
 	
-	type string_alignment is (
-		left_alignment, 
-		right_alignment, 
-		center_alignment);
-
-	function string_align (
-		constant data  : string;
-		constant size  : natural;
-		constant align : string_alignment := left_alignment;
-		constant value : character := ' ')
-		return string;
-
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -1263,38 +1251,6 @@ package body std is
 			retval(0 to value'length-1) := unsigned(value);
 		end loop;
 		return std_logic_vector(retval);
-	end;
-
-	function string_align (
-		constant data  : string;
-		constant size  : natural;
-		constant align : string_alignment := left_alignment;
-		constant value : character := ' ')
-		return string is
-		variable retval   : string(1 to size);
-		constant at_left  : natural := setif(
-			align=right_alignment,   size-data'length, setif(
-			align=center_alignment, (size-data'length)/2, 0));
-		constant at_right  : natural := setif(
-			align=left_alignment,    size-data'length, setif(
-			align=center_alignment, (size-data'length+1)/2, 0));
-
-	begin
-		assert data'length <= size
-			report "string shorter than size"
-			severity failure;
-
-		if at_left /= 0 then
-			retval(1 to at_left) := (1 to at_left => value);
-		end if;
-
-		retval(1+at_left to at_left+data'length) := data;
-
-		if at_right /= 0 then
-			retval(size-at_right+1 to size) := (size-at_right+1 to size => value);
-		end if;
-
-		return retval;
 	end;
 
 	function bcd2ascii (
