@@ -1029,22 +1029,21 @@ package body scopeiopkg is
 
 	type tag_vector is array (natural range <>) of tag;
 
-	constant trigger_label  : natural := 0;
 	constant hzdiv_label    : natural := 0;
 	constant hzoffset_label : natural := 0;
+	constant trigger_label  : natural := 0;
 	constant vtdiv_label    : natural := 0;
 	constant vtoffset_label : natural := 0;
 
-	constant trigger_ref    : natural := 0;
 	constant hzdiv_ref      : natural := 0;
 	constant hzoffset_ref   : natural := 0;
 	constant vtdiv_ref      : natural := 0;
+	constant trigger_ref    : natural := 0;
 	constant vtoffset_ref   : natural := 0;
 
 	constant stid_label     : natural := 0;
 	constant stid_ref       : natural := 0;
 	constant stid_row       : natural := 0;
-
 
 	constant analogtime_layout : tag_vector := (
 		(tid_row, styleid => stid_row, ref => 0),
