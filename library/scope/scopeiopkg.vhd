@@ -1068,11 +1068,12 @@ package body scopeiopkg is
 		constant text_layout : tag_vector;
 		constant lang        : i18n_langs)
 		return string is
-		constant row_tag     : tag := text_layout(text_layout'left);
-		constant text_width  : natural := styles(row_tag.styleid).width;
-		variable text_left   : positive;
-		variable text_right  : positive;
-		variable retval      : string(1 to text_width);
+		constant row_tag    : tag     := text_layout(text_layout'left);
+		constant text_width : natural := styles(row_tag.styleid).width;
+		constant text_alignment : alignment := styles(row_tag.styleid).align;
+		variable text_left  : positive;
+		variable text_right : positive;
+		variable retval     : string(1 to text_width);
 	begin
 		text_left := 1;
 		for i in text_layout'left+1 to text_layout'right loop
@@ -1091,8 +1092,8 @@ package body scopeiopkg is
 		end loop;
 		return text_align(
 			retval(1 to text_right),
-			styles(row_tag.styleid).width, 
-			styles(row_tag.styleid).align);
+			text_width, 
+			text_alignment);
 	end;
 
 	function text_mask (
