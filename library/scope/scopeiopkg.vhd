@@ -1104,20 +1104,22 @@ package body scopeiopkg is
 		return std_logic_vector is
 		type line_vector is array (natural range <>) of string(1 to text_width);
 		variable text_data : line_vector(1 to text_height);
+		variable retval : unsigned(0 to unsigned_num_bits(text_width*text_height-1)-1);
 
 	begin
 		for i in text_layout'range loop
 			case text_layout(i).tagid is
 			when tagid_row =>
-				text_data(i) := text_row(text_layout(i to text_layout'right), lang);
+				text_data(1+i-text_layout'left) := text_row(text_layout(i to text_layout'right), lang);
 			when others =>
 			end case;
 		end loop;
---		for i in text_data'reverse_range loop
---			retval := retval ror (text_cols*ascii'length);
---			retval(0 to text_cols*ascii'length-1) := unsigned(to_ascii(text_data(i)));
---		end loop;
---		return std_logic_vector(retval);
+		retval := (others => '0');
+		for i in text_data'range loop
+			retval := retval rol (text_height*ascii'length);
+			retval(0 to text_height*ascii'length-1) := unsigned(to_ascii(text_data(i)));
+		end loop;
+		return std_logic_vector(retval);
 	end;
 		
 	function text_align (
