@@ -506,11 +506,6 @@ package scopeiopkg is
 		constant layout : display_layout)
 		return unsigned;
 
---	function text_mask (
---		constant lang   : i18n_langs;
---		constant layout : display_layout)
---		return std_logic_vector;
-
 	type alignment is (
 		left_alignment, 
 		right_alignment, 
@@ -522,6 +517,57 @@ package scopeiopkg is
 		constant align : alignment := left_alignment;
 		constant value : character := ' ')
 		return string;
+
+	type style is record
+		width : natural;
+		align : alignment;
+	end record;
+	type style_vector is array (natural range <>) of style;
+
+	type tag_id is (tagid_end, tagid_row, tagid_label, tagid_var);
+	type tag is record 
+		tagid   : tag_id;
+		styleid : natural;
+		ref     : natural;
+	end record;
+	type tag_vector is array (natural range <>) of tag;
+
+	constant var_trigger    : natural := 0;
+	constant var_hzdiv      : natural := 0;
+	constant var_hzoffset   : natural := 0;
+	constant var_vtdiv      : natural := 0;
+	constant var_vtoffset   : natural := 0;
+
+	constant analogtime_rowstyle   : natural := 0;
+	constant analogtime_fieldstyle : natural := 1;
+
+	constant analogtime_layout : tag_vector := (
+		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
+			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_trigger),
+		(tagid_end, styleid => 0, ref => 0),
+		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
+			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_hzoffset),
+			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_hzdiv),
+		(tagid_end, styleid => 0, ref => 0),
+		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
+			(tagid_label, styleid => analogtime_fieldstyle, ref => label_hzoffset),
+			(tagid_label, styleid => analogtime_fieldstyle, ref => label_hzdiv),
+		(tagid_end, styleid => 0, ref => 0),
+		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
+			(tagid_label, styleid => analogtime_fieldstyle, ref => label_vtoffset),
+			(tagid_label, styleid => analogtime_fieldstyle, ref => label_vtdiv),
+		(tagid_end, styleid => 0, ref => 0));
+
+	constant styles : style_vector := (
+		analogtime_rowstyle   => (width => 0,  align => right_alignment),
+		analogtime_fieldstyle => (width => 11, align => right_alignment));
+
+	function text_mask (
+		constant text_layout : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural;
+		constant lang        : i18n_langs)
+		return std_logic_vector;
 
 end;
 
@@ -1006,110 +1052,72 @@ package body scopeiopkg is
 		return text_addr;
 	end;
 		
-	type style is record
-		width : natural;
-		align : alignment;
-	end record;
-
-	type style_vector is array (natural range <>) of style;
-
-	constant label_styleid : natural := 0;
-	constant float_styleid : natural := 1;
-
-	constant analogtime_style : style_vector := (
-		label_styleid => (width =>  8, align => right_alignment),
-		float_styleid => (width => 11, align => right_alignment));
-
-	type tag_id is (tid_end, tid_row, tid_label, tid_ref);
-	type tag is record 
-		tagid   : tag_id;
-		styleid : natural;
-		ref     : natural;
-	end record;
-
-	type tag_vector is array (natural range <>) of tag;
-
-	constant hzdiv_label    : natural := 0;
-	constant hzoffset_label : natural := 0;
-	constant trigger_label  : natural := 0;
-	constant vtdiv_label    : natural := 0;
-	constant vtoffset_label : natural := 0;
-
-	constant hzdiv_ref      : natural := 0;
-	constant hzoffset_ref   : natural := 0;
-	constant vtdiv_ref      : natural := 0;
-	constant trigger_ref    : natural := 0;
-	constant vtoffset_ref   : natural := 0;
-
-	constant stid_label     : natural := 0;
-	constant stid_ref       : natural := 0;
-	constant stid_row       : natural := 0;
-
-	constant analogtime_layout : tag_vector := (
-		(tid_row, styleid => stid_row, ref => 0),
-			(tid_label, styleid => stid_label, ref => trigger_label),
-			(tid_ref,   styleid => stid_ref,   ref => trigger_ref),
-		(tid_end, styleid => 0, ref => 0),
-		(tid_row, styleid => stid_row, ref => 0),
-			(tid_ref, styleid => stid_ref, ref => hzoffset_ref),
-			(tid_ref, styleid => stid_ref, ref => hzdiv_ref),
-		(tid_end, styleid => 0, ref => 0),
-		(tid_row, styleid => stid_row, ref => 0),
-			(tid_label, styleid => stid_label, ref => hzoffset_label),
-			(tid_label, styleid => stid_label, ref => hzdiv_label),
-		(tid_end, styleid => 0, ref => 0),
-		(tid_row, styleid => stid_row, ref => 0),
-			(tid_label, styleid => stid_label, ref => vtoffset_label),
-			(tid_label, styleid => stid_label, ref => vtdiv_label),
-		(tid_end, styleid => 0, ref => 0));
-
---	constant analogtime_elements : tag_vector := (
---		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
---		(tag_id => tag_label, style_id => label_styleid, ref_id => label_trigger),
---		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
---		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
---		(tag_id => tag_label, style_id => label_styleid, ref_id => label_hzoffset),
---		(tag_id => tag_label, style_id => label_styleid, ref_id => label_hzdiv),
---		(tag_id => tag_label, style_id => label_styleid, ref_id => label_vtoffset),
---		(tag_id => tag_label, style_id => label_styleid, ref_id => label_vtdiv),
---		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0),
---		(tag_id => tag_var,   style_id => float_styleid, ref_id => 0));
 			
---	function text_mask (
---		constant lang   : i18n_langs;
---		constant layout : display_layout)
---		return std_logic_vector is
---		constant text_cols : natural := textbox_width(layout)/textfont_width;
---		constant text_rows : natural := textbox_height(layout)/textfont_height;
---		constant text_size : natural := text_rows*text_cols;
---		variable retval    : unsigned(0 to ascii'length*text_size-1);
---
---		type line_vector is array (natural range <>) of string(1 to text_cols);
---		variable text_data : line_vector(1 to 3);
---
---	begin
---		text_data(1) := text_align(
---			-- trigger label
---			text_align(i18n_label(lang, label_trigger),  styles(trigger_styleid).label_width, right_alignment),
---			text_cols, right_alignment);
---		text_data(2) := text_align(
---			-- Horizontal division label
---			text_align(i18n_label(lang, label_hzdiv),    styles(horizontal_styleid).label_width, right_alignment) &
---			-- Horizontal scale label
---			text_align(i18n_label(lang, label_hzoffset), styles(horizontal_styleid).label_width, right_alignment),
---			text_cols, right_alignment);
---		text_data(3) := text_align(
---			-- Level label
---			text_align(i18n_label(lang, label_vtoffset), styles(level_styleid).label_width, right_alignment) &
---			-- Scale label
---			text_align(i18n_label(lang, label_vtdiv), styles(scale_styleid).label_width,    right_alignment), 
---			text_cols, right_alignment);
+	function text_label (
+		constant text_tag : tag;
+		constant lang     : i18n_langs)
+		return string is
+	begin
+		return text_align(
+			i18n_label(lang, text_tag.ref), 
+			styles(text_tag.styleid).width, 
+			styles(text_tag.styleid).align);
+	end;
+
+	function text_row (
+		constant text_layout : tag_vector;
+		constant lang        : i18n_langs)
+		return string is
+		constant row_tag     : tag := text_layout(text_layout'left);
+		constant text_width  : natural := styles(row_tag.styleid).width;
+		variable text_left   : positive;
+		variable text_right  : positive;
+		variable retval      : string(1 to text_width);
+	begin
+		text_left := 1;
+		for i in text_layout'left+1 to text_layout'right loop
+			text_right := text_left+styles(text_layout(i).styleid).width-1;
+			case text_layout(i).tagid is
+			when tagid_row =>
+				exit;
+			when tagid_label =>
+				retval(text_left to text_right) := text_label(text_layout(i), lang);
+			when tagid_var =>
+				retval(text_left to text_right) := (1 to styles(text_layout(i).styleid).width => ' ');
+			when tagid_end  =>
+				exit;
+			end case;
+			text_left := text_right+1;
+		end loop;
+		return text_align(
+			retval(1 to text_right),
+			styles(row_tag.styleid).width, 
+			styles(row_tag.styleid).align);
+	end;
+
+	function text_mask (
+		constant text_layout : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural;
+		constant lang        : i18n_langs)
+		return std_logic_vector is
+		type line_vector is array (natural range <>) of string(1 to text_width);
+		variable text_data : line_vector(1 to text_height);
+
+	begin
+		for i in text_layout'range loop
+			case text_layout(i).tagid is
+			when tagid_row =>
+				text_data(i) := text_row(text_layout(i to text_layout'right), lang);
+			when others =>
+			end case;
+		end loop;
 --		for i in text_data'reverse_range loop
 --			retval := retval ror (text_cols*ascii'length);
 --			retval(0 to text_cols*ascii'length-1) := unsigned(to_ascii(text_data(i)));
 --		end loop;
 --		return std_logic_vector(retval);
---	end;
+	end;
 		
 	function text_align (
 		constant data  : string;

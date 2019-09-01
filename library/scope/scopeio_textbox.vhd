@@ -140,7 +140,11 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => text_mask(lang, layout),
+		cga_bitrom  => text_mask(
+			analogtime_layout, 
+			textbox_width(layout)/font_width,
+			textbox_height(layout)/font_height,
+			lang),
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)
