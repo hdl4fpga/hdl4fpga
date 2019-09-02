@@ -518,16 +518,17 @@ package scopeiopkg is
 		constant value : character := ' ')
 		return string;
 
-	type style is record
+	type style_t is record
 		width : natural;
 		align : alignment;
 	end record;
-	type style_vector is array (natural range <>) of style;
+	constant no_style : style_t := (width => 0, align => left_alignment);
+	type style_vector is array (natural range <>) of style_t;
 
 	type tag_id is (tagid_end, tagid_row, tagid_label, tagid_var);
 	type tag is record 
 		tagid   : tag_id;
-		styleid : natural;
+		style   : style_t;
 		ref     : natural;
 	end record;
 	type tag_vector is array (natural range <>) of tag;
@@ -538,29 +539,25 @@ package scopeiopkg is
 	constant var_vtdiv      : natural := 0;
 	constant var_vtoffset   : natural := 0;
 
-	constant analogtime_rowstyle   : natural := 0;
-	constant analogtime_fieldstyle : natural := 1;
+	constant analogtime_rowstyle   : style_t := (width => 0,  align => right_alignment);
+	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment);
 
 	constant analogtime_layout : tag_vector := (
-		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
-			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_trigger),
-		(tagid_end, styleid => 0, ref => 0),
-		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
-			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_hzoffset),
-			(tagid_var,  styleid => analogtime_fieldstyle,  ref => var_hzdiv),
-		(tagid_end, styleid => 0, ref => 0),
-		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
-			(tagid_label, styleid => analogtime_fieldstyle, ref => label_hzoffset),
-			(tagid_label, styleid => analogtime_fieldstyle, ref => label_hzdiv),
-		(tagid_end, styleid => 0, ref => 0),
-		(tagid_row, styleid => analogtime_rowstyle, ref => 0),
-			(tagid_label, styleid => analogtime_fieldstyle, ref => label_vtoffset),
-			(tagid_label, styleid => analogtime_fieldstyle, ref => label_vtdiv),
-		(tagid_end, styleid => 0, ref => 0));
-
-	constant styles : style_vector := (
-		analogtime_rowstyle   => (width => 0,  align => right_alignment),
-		analogtime_fieldstyle => (width => 11, align => right_alignment));
+		(tagid_row, style => analogtime_rowstyle, ref => 0),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_trigger),
+		(tagid_end, style => no_style, ref => 0),
+		(tagid_row, style => analogtime_rowstyle, ref => 0),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzoffset),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzdiv),
+		(tagid_end, style => no_style, ref => 0),
+		(tagid_row, style => analogtime_rowstyle, ref => 0),
+			(tagid_label, style => analogtime_fieldstyle, ref => label_hzoffset),
+			(tagid_label, style => analogtime_fieldstyle, ref => label_hzdiv),
+		(tagid_end, style => no_style, ref => 0),
+		(tagid_row, style => analogtime_rowstyle, ref => 0),
+			(tagid_label, style => analogtime_fieldstyle, ref => label_vtoffset),
+			(tagid_label, style => analogtime_fieldstyle, ref => label_vtdiv),
+		(tagid_end, style => no_style, ref => 0));
 
 	function text_mask (
 		constant text_layout : tag_vector;
@@ -1060,38 +1057,47 @@ package body scopeiopkg is
 	begin
 		return text_align(
 			i18n_label(lang, text_tag.ref), 
-			styles(text_tag.styleid).width, 
-			styles(text_tag.styleid).align);
+			text_tag.style.width, 
+			text_tag.style.align);
 	end;
 
-	function text_row (
+	procedure text_row (
+		variable tag_index   : inout natural;
+		variable text_line   : inout string;
 		constant text_layout : tag_vector;
-		constant lang        : i18n_langs)
-		return string is
-		constant row_tag    : tag     := text_layout(text_layout'left);
-		constant text_width : natural := styles(row_tag.styleid).width;
-		constant text_alignment : alignment := styles(row_tag.styleid).align;
-		variable text_left  : positive;
-		variable text_right : positive;
-		variable retval     : string(1 to text_width);
+		constant lang        : i18n_langs) is
+		constant row_tag     : tag     := text_layout(text_layout'left);
+		constant text_width  : natural := row_tag.style.width;
+		constant text_alignment : alignment := row_tag.style.align;
+		variable text_left   : positive;
+		variable text_right  : positive;
 	begin
 		text_left := 1;
-		for i in text_layout'left+1 to text_layout'right loop
-			text_right := text_left+styles(text_layout(i).styleid).width-1;
-			case text_layout(i).tagid is
-			when tagid_row =>
-				exit;
+		tag_index := tag_index + 1;
+		while tag_index < text_layout'length loop
+			text_right := text_left+text_layout(tag_index).style.width-1;
+			case text_layout(tag_index).tagid is
 			when tagid_label =>
-				retval(text_left to text_right) := text_label(text_layout(i), lang);
-			when tagid_var =>
-				retval(text_left to text_right) := (1 to styles(text_layout(i).styleid).width => ' ');
+				text_line(text_left to text_right) := text_label(text_layout(tag_index), lang);
+				for i in text_left to text_right loop
+					text_line(i) := 'c';
+				end loop;
+			when tagid_row | tagid_var =>
+				for i in text_left to text_right loop
+					text_line(i) := 'a';
+				end loop;
 			when tagid_end  =>
+				for i in text_left to text_right loop
+					text_line(i) := 'd';
+				end loop;
 				exit;
 			end case;
 			text_left := text_right+1;
+			tag_index := tag_index + 1;
 		end loop;
-		return text_align(
-			retval(1 to text_right),
+
+		text_line := text_align(
+			text_line(1 to text_right),
 			text_width, 
 			text_alignment);
 	end;
@@ -1104,21 +1110,30 @@ package body scopeiopkg is
 		return std_logic_vector is
 		type line_vector is array (natural range <>) of string(1 to text_width);
 		variable text_data : line_vector(1 to text_height);
-		variable retval : unsigned(0 to unsigned_num_bits(text_width*text_height-1)-1);
-
+		variable text_line : string(1 to text_width);
+		variable tag_index : natural;
+		variable layout    : tag_vector(text_layout'range) := text_layout;
+		variable retval    : unsigned(0 to ascii'length*text_width*text_height-1);
 	begin
-		for i in text_layout'range loop
-			case text_layout(i).tagid is
+		tag_index := 0;
+		while tag_index < text_layout'length loop
+			case text_layout(tag_index).tagid is
 			when tagid_row =>
-				text_data(1+i-text_layout'left) := text_row(text_layout(i to text_layout'right), lang);
+				if layout(tag_index).style.width = 0 then
+					layout(tag_index).style.width := text_width;
+				end if;
+				text_row(tag_index, text_line, layout(tag_index to text_layout'right), lang);
 			when others =>
+				text_data(tag_index) := (others => 'b');
 			end case;
+			tag_index := tag_index + 1;
 		end loop;
 		retval := (others => '0');
 		for i in text_data'range loop
-			retval := retval rol (text_height*ascii'length);
-			retval(0 to text_height*ascii'length-1) := unsigned(to_ascii(text_data(i)));
+			retval := retval rol (text_width*ascii'length);
+			retval(0 to text_width*ascii'length-1) := unsigned(to_ascii(text_data(i)));
 		end loop;
+--		retval := retval ror (text_data'length*text_width*ascii'length);
 		return std_logic_vector(retval);
 	end;
 		
