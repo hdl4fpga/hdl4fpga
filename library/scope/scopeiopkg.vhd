@@ -559,7 +559,7 @@ package scopeiopkg is
 			(tagid_label, style => analogtime_fieldstyle, ref => label_vtdiv),
 		(tagid_end, style => no_style, ref => 0));
 
-	function text_mask (
+	impure function text_mask (
 		constant text_layout : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural;
@@ -1071,18 +1071,19 @@ package body scopeiopkg is
 		constant text_alignment : alignment := row_tag.style.align;
 		variable text_left   : positive;
 		variable text_right  : positive;
+		variable mesg : line;
 	begin
 		text_left := 1;
 		tag_index := tag_index + 1;
 		while tag_index < text_layout'length loop
 			text_right := text_left+text_layout(tag_index).style.width-1;
 			case text_layout(tag_index).tagid is
-			when tagid_label =>
+			when tagid_label | tagid_var =>
 				text_line(text_left to text_right) := text_label(text_layout(tag_index), lang);
 				for i in text_left to text_right loop
 					text_line(i) := 'c';
 				end loop;
-			when tagid_row | tagid_var =>
+			when tagid_row =>
 				for i in text_left to text_right loop
 					text_line(i) := 'a';
 				end loop;
@@ -1092,6 +1093,9 @@ package body scopeiopkg is
 				end loop;
 				exit;
 			end case;
+				write (mesg, string'("xxxxx : "));
+				write (mesg, tag_id'image(text_layout(tag_index).tagid));
+				writeline (output, mesg);
 			text_left := text_right+1;
 			tag_index := tag_index + 1;
 		end loop;
@@ -1102,7 +1106,7 @@ package body scopeiopkg is
 			text_alignment);
 	end;
 
-	function text_mask (
+	impure function text_mask (
 		constant text_layout : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural;
@@ -1115,6 +1119,7 @@ package body scopeiopkg is
 		variable tag_index : natural;
 		variable layout    : tag_vector(text_layout'range) := text_layout;
 		variable retval    : unsigned(0 to ascii'length*text_width*text_height-1);
+		variable mesg : line;
 	begin
 		tag_index := 0;
 		lineno := 1;
@@ -1124,8 +1129,15 @@ package body scopeiopkg is
 				if layout(tag_index).style.width = 0 then
 					layout(tag_index).style.width := text_width;
 				end if;
-				text_row(tag_index, text_line, layout(tag_index to text_layout'right), lang);
+				text_row(tag_index, text_line, layout, lang);
+				write (mesg, string'("ppppp : "));
+				write (mesg, tag_id'image(text_layout(tag_index).tagid));
+				writeline (output, mesg);
 			when others =>
+				write (mesg, tag_id'image(text_layout(tag_index).tagid));
+				writeline (output, mesg);
+				write (mesg, tag_index);
+				writeline (output, mesg);
 				text_data(lineno) := (others => 'b');
 			end case;
 			lineno := lineno + 1;
@@ -1136,6 +1148,8 @@ package body scopeiopkg is
 			retval := retval rol (text_width*ascii'length);
 			retval(0 to text_width*ascii'length-1) := unsigned(to_ascii(text_data(i)));
 		end loop;
+				write (mesg,  string'("Pase por aca"));
+				writeline (output, mesg);
 --		retval := retval ror (text_data'length*text_width*ascii'length);
 		return std_logic_vector(retval);
 	end;
