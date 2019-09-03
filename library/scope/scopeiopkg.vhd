@@ -1111,11 +1111,13 @@ package body scopeiopkg is
 		type line_vector is array (natural range <>) of string(1 to text_width);
 		variable text_data : line_vector(1 to text_height);
 		variable text_line : string(1 to text_width);
+		variable lineno    : natural;
 		variable tag_index : natural;
 		variable layout    : tag_vector(text_layout'range) := text_layout;
 		variable retval    : unsigned(0 to ascii'length*text_width*text_height-1);
 	begin
 		tag_index := 0;
+		lineno := 1;
 		while tag_index < text_layout'length loop
 			case text_layout(tag_index).tagid is
 			when tagid_row =>
@@ -1124,8 +1126,9 @@ package body scopeiopkg is
 				end if;
 				text_row(tag_index, text_line, layout(tag_index to text_layout'right), lang);
 			when others =>
-				text_data(tag_index) := (others => 'b');
+				text_data(lineno) := (others => 'b');
 			end case;
+			lineno := lineno + 1;
 			tag_index := tag_index + 1;
 		end loop;
 		retval := (others => '0');
