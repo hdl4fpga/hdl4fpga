@@ -630,6 +630,7 @@ begin
 	--trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
 	--trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
 	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
+	clk_input <= vga_clk;
 	end generate;
 
 	G_view_utmi: if C_view_utmi generate
