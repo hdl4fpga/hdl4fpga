@@ -521,8 +521,11 @@ package scopeiopkg is
 	type style_t is record
 		width : natural;
 		align : alignment;
+		-- private
+		addr  : natural;
 	end record;
-	constant no_style : style_t := (width => 0, align => left_alignment);
+
+	constant no_style : style_t := (width => 0, align => left_alignment, addr => 0);
 	type style_vector is array (natural range <>) of style_t;
 
 	type tag_id is (tagid_end, tagid_row, tagid_label, tagid_var);
@@ -539,8 +542,8 @@ package scopeiopkg is
 	constant var_vtdiv      : natural := 0;
 	constant var_vtoffset   : natural := 0;
 
-	constant analogtime_rowstyle   : style_t := (width => 0,  align => right_alignment);
-	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment);
+	constant analogtime_rowstyle   : style_t := (width => 0,  align => right_alignment, addr => 0);
+	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
 
 	constant analogtime_layout : tag_vector := (
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
@@ -560,8 +563,8 @@ package scopeiopkg is
 			(tagid_label, style => analogtime_fieldstyle, ref => label_vtdiv),
 		(tagid_end, style => no_style, ref => 0));
 
-	function text_mask (
-		constant text_layout : tag_vector;
+	function text_content (
+		constant tag_layout  : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural;
 		constant lang        : i18n_langs)
@@ -1098,41 +1101,54 @@ package body scopeiopkg is
 			text_tag.style.align);
 	end;
 
-	procedure text_row (
+	procedure tagrow_addr (
+		variable tag_index   : inout natural;
+		variable tag_layout  : inout tag_vector) is
+		variable text_addr   : positive;
+	begin
+		text_addr := tag_layout(tag_index).style.addr;
+		tag_index := tag_index + 1;
+		while tag_index < tag_layout'length loop
+			tag_layout(tag_index).style.addr := text_addr;
+			text_addr := text_addr  + tag_layout(tag_index).style.width;
+			tag_index := tag_index  + 1;
+		end loop;
+	end;
+
+	procedure tagrow_content (
 		variable tag_index   : inout natural;
 		variable text_line   : inout string;
-		constant text_layout : tag_vector;
+		constant tag_layout  : tag_vector;
 		constant lang        : i18n_langs) is
-		constant row_tag     : tag     := text_layout(text_layout'left);
+		constant row_tag     : tag     := tag_layout(tag_layout'left);
 		constant text_width  : natural := row_tag.style.width;
 		constant text_alignment : alignment := row_tag.style.align;
 		variable text_left   : positive;
 		variable text_right  : positive;
-		variable mesg : line;
 	begin
 		text_left := 1;
 		tag_index := tag_index + 1;
-		while tag_index < text_layout'length loop
-			text_right := text_left+text_layout(tag_index).style.width-1;
-			case text_layout(tag_index).tagid is
+		while tag_index < tag_layout'length loop
+			text_right := text_left+tag_layout(tag_index).style.width-1;
+			case tag_layout(tag_index).tagid is
 			when tagid_label =>
-				text_line(text_left to text_right) := text_label(text_layout(tag_index), lang);
+				text_line(text_left to text_right) := text_label(tag_layout(tag_index), lang);
 			when tagid_var =>
 				for i in text_left to text_right loop
-					text_line(i) := 'a';
+					text_line(i) := '$';
 				end loop;
 			when tagid_row =>
 				for i in text_left to text_right loop
-					text_line(i) := 'a';
+					text_line(i) := '@';
 				end loop;
 			when tagid_end  =>
 				for i in text_left to text_right loop
-					text_line(i) := 'd';
+					text_line(i) := '#';
 				end loop;
 				exit;
 			end case;
-			text_left := text_right+1;
-			tag_index := tag_index + 1;
+			text_left := text_right + 1;
+			tag_index := tag_index  + 1;
 		end loop;
 
 		text_line := text_align(
@@ -1141,34 +1157,32 @@ package body scopeiopkg is
 			text_alignment);
 	end;
 
-	function text_mask (
-		constant text_layout : tag_vector;
+	function text_content (
+		constant tag_layout  : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural;
 		constant lang        : i18n_langs)
 		return std_logic_vector is
 		type line_vector is array (natural range <>) of string(1 to text_width);
-		variable text_data : line_vector(1 to text_height);
-		variable text_line : string(1 to text_width);
-		variable lineno    : natural;
-		variable tag_index : natural;
-		variable layout    : tag_vector(text_layout'range) := text_layout;
-		variable retval    : unsigned(0 to ascii'length*text_width*text_height-1);
-		variable mesg : line;
+		variable text_data   : line_vector(1 to text_height);
+		variable lineno      : natural;
+		variable tag_index   : natural;
+		variable layout      : tag_vector(tag_layout'range) := tag_layout;
+		variable retval      : unsigned(0 to ascii'length*text_width*text_height-1);
 	begin
 		tag_index := 0;
-		lineno := 1;
-		while tag_index < text_layout'length loop
-			case text_layout(tag_index).tagid is
+		lineno    := 1;
+		while tag_index < layout'length loop
+			case layout(tag_index).tagid is
 			when tagid_row =>
 				if layout(tag_index).style.width = 0 then
 					layout(tag_index).style.width := text_width;
 				end if;
-				text_row(tag_index, text_data(lineno), layout, lang);
+				tagrow_content(tag_index, text_data(lineno), layout, lang);
 			when others =>
 				text_data(lineno) := (others => 'b');
 			end case;
-			lineno := lineno + 1;
+			lineno    := lineno    + 1;
 			tag_index := tag_index + 1;
 		end loop;
 		retval := (others => '0');
@@ -1179,4 +1193,31 @@ package body scopeiopkg is
 		return std_logic_vector(retval);
 	end;
 		
+	function text_addr (
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return tag_vector is
+		variable retval      : tag_vector(tag_layout'range);
+		variable tag_addr    : natural;
+		variable tag_index   : natural;
+		variable layout      : tag_vector(tag_layout'range) := tag_layout;
+	begin
+		tag_addr  := 0;
+		tag_index := tag_layout'left;
+		while tag_index < layout'length loop
+			layout(tag_index).style.addr := tag_addr;
+			case layout(tag_index).tagid is
+			when tagid_row =>
+				if layout(tag_index).style.width = 0 then
+					layout(tag_index).style.width := text_width;
+				end if;
+				tagrow_addr(tag_index, layout);
+			when others =>
+			end case;
+			tag_addr  := tag_addr + layout(tag_index).style.width;
+			tag_index := tag_index + 1;
+		end loop;
+	end;
+
 end;
