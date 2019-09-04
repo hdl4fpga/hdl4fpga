@@ -1057,10 +1057,10 @@ package body scopeiopkg is
 		constant value : character := ' ')
 		return string is
 		variable retval   : string(1 to size);
-		constant at_left  : natural := setif(
+		constant at_left  : integer := setif(
 			align=right_alignment,   size-data'length, setif(
 			align=center_alignment, (size-data'length)/2, 0));
-		constant at_right  : natural := setif(
+		constant at_right  : integer := setif(
 			align=left_alignment,    size-data'length, setif(
 			align=center_alignment, (size-data'length+1)/2, 0));
 
@@ -1073,8 +1073,11 @@ package body scopeiopkg is
 			retval(i) := value;
 		end loop;
 
-		for i in data'range loop
-			retval(1+at_left+i-data'left) := data(i);
+		for i in at_left+1 to size-at_right loop
+			exit when i > size;
+			if i > 0 then
+				retval(i) := data(i-at_left+(data'left-1));
+			end if;
 		end loop;
 
 		for i in size-at_right+1 to size loop
