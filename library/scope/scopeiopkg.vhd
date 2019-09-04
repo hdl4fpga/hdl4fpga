@@ -513,7 +513,7 @@ package scopeiopkg is
 
 	function text_align (
 		constant data  : string;
-		constant size  : natural;
+		constant width  : natural;
 		constant align : alignment := left_alignment;
 		constant value : character := ' ')
 		return string;
@@ -570,6 +570,11 @@ package scopeiopkg is
 		constant lang        : i18n_langs)
 		return std_logic_vector;
 
+	function text_addr (
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return tag_vector;
 end;
 
 package body scopeiopkg is
@@ -1053,37 +1058,54 @@ package body scopeiopkg is
 		return text_addr;
 	end;
 		
+	function text_atleft (
+		constant length : natural;
+		constant width  : natural;
+		constant align  : alignment := left_alignment)
+		return integer is
+	begin
+		return setif(
+			align=right_alignment,   width-length, setif(
+			align=center_alignment, (width-length)/2, 0));
+	end;
+
+	function text_atright (
+		constant length : natural;
+		constant width  : natural;
+		constant align  : alignment := left_alignment)
+		return integer is
+	begin
+		return setif(
+			align=left_alignment,    width-length, setif(
+			align=center_alignment, (width-length+1)/2, 0));
+	end;
+
 	function text_align (
 		constant data  : string;
-		constant size  : natural;
+		constant width  : natural;
 		constant align : alignment := left_alignment;
 		constant value : character := ' ')
 		return string is
-		variable retval   : string(1 to size);
-		constant at_left  : integer := setif(
-			align=right_alignment,   size-data'length, setif(
-			align=center_alignment, (size-data'length)/2, 0));
-		constant at_right  : integer := setif(
-			align=left_alignment,    size-data'length, setif(
-			align=center_alignment, (size-data'length+1)/2, 0));
-
+		variable retval   : string(1 to width);
+		constant at_left  : integer := text_atleft(data'length, width, align);
+		constant at_right : integer := text_atright(data'length, width, align);
 	begin
-		assert data'length <= size
-			report "string shorter than size"
+		assert data'length <= width
+			report "string shorter than width"
 			severity failure;
 
 		for i in 1 to at_left loop
 			retval(i) := value;
 		end loop;
 
-		for i in at_left+1 to size-at_right loop
-			exit when i > size;
+		for i in at_left+1 to width-at_right loop
+			exit when i > width;
 			if i > 0 then
 				retval(i) := data(i-at_left+(data'left-1));
 			end if;
 		end loop;
 
-		for i in size-at_right+1 to size loop
+		for i in width-at_right+1 to width loop
 			retval(i) := value;
 		end loop;
 
@@ -1104,14 +1126,37 @@ package body scopeiopkg is
 	procedure tagrow_addr (
 		variable tag_index   : inout natural;
 		variable tag_layout  : inout tag_vector) is
-		variable text_addr   : positive;
+		variable text_length : positive;
+		variable text_addr   : natural;
+		variable text_left   : positive;
+		variable at_left     : natural;
+		variable index       : natural;
 	begin
+		index     := tag_index;
 		text_addr := tag_layout(tag_index).style.addr;
+		text_left := 1;
 		tag_index := tag_index + 1;
 		while tag_index < tag_layout'length loop
+			text_length := text_left+tag_layout(tag_index).style.width-1;
 			tag_layout(tag_index).style.addr := text_addr;
-			text_addr := text_addr  + tag_layout(tag_index).style.width;
-			tag_index := tag_index  + 1;
+			text_addr   := text_addr  + tag_layout(tag_index).style.width;
+			case tag_layout(tag_index).tagid is
+			when tagid_end  =>
+				exit;
+			when others =>
+			end case;
+			text_left := text_length + 1;
+			tag_index := tag_index   + 1;
+		end loop;
+		at_left := text_atleft(text_length, tag_layout(index).style.width, tag_layout(index).style.align);
+		while index < tag_layout'length loop
+			tag_layout(index).style.addr := tag_layout(index).style.addr + at_left;
+			case tag_layout(index).tagid is
+			when tagid_end  =>
+				exit;
+			when others =>
+			end case;
+			index := index + 1;
 		end loop;
 	end;
 
@@ -1131,6 +1176,11 @@ package body scopeiopkg is
 		while tag_index < tag_layout'length loop
 			text_right := text_left+tag_layout(tag_index).style.width-1;
 			case tag_layout(tag_index).tagid is
+			when tagid_end  =>
+				for i in text_left to text_right loop
+					text_line(i) := '#';
+				end loop;
+				exit;
 			when tagid_label =>
 				text_line(text_left to text_right) := text_label(tag_layout(tag_index), lang);
 			when tagid_var =>
@@ -1141,11 +1191,6 @@ package body scopeiopkg is
 				for i in text_left to text_right loop
 					text_line(i) := '@';
 				end loop;
-			when tagid_end  =>
-				for i in text_left to text_right loop
-					text_line(i) := '#';
-				end loop;
-				exit;
 			end case;
 			text_left := text_right + 1;
 			tag_index := tag_index  + 1;
@@ -1170,8 +1215,8 @@ package body scopeiopkg is
 		variable layout      : tag_vector(tag_layout'range) := tag_layout;
 		variable retval      : unsigned(0 to ascii'length*text_width*text_height-1);
 	begin
-		tag_index := 0;
 		lineno    := 1;
+		tag_index := 0;
 		while tag_index < layout'length loop
 			case layout(tag_index).tagid is
 			when tagid_row =>
@@ -1215,9 +1260,10 @@ package body scopeiopkg is
 				tagrow_addr(tag_index, layout);
 			when others =>
 			end case;
-			tag_addr  := tag_addr + layout(tag_index).style.width;
+			tag_addr  := tag_addr  + layout(tag_index).style.width;
 			tag_index := tag_index + 1;
 		end loop;
+		return layout;
 	end;
 
 end;
