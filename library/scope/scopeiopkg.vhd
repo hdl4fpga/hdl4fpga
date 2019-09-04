@@ -1050,7 +1050,40 @@ package body scopeiopkg is
 		return text_addr;
 	end;
 		
-			
+	function text_align (
+		constant data  : string;
+		constant size  : natural;
+		constant align : alignment := left_alignment;
+		constant value : character := ' ')
+		return string is
+		variable retval   : string(1 to size);
+		constant at_left  : natural := setif(
+			align=right_alignment,   size-data'length, setif(
+			align=center_alignment, (size-data'length)/2, 0));
+		constant at_right  : natural := setif(
+			align=left_alignment,    size-data'length, setif(
+			align=center_alignment, (size-data'length+1)/2, 0));
+
+	begin
+		assert data'length <= size
+			report "string shorter than size"
+			severity failure;
+
+		for i in 1 to at_left loop
+			retval(i) := value;
+		end loop;
+
+		for i in data'range loop
+			retval(1+at_left+i-data'left) := data(i);
+		end loop;
+
+		for i in size-at_right+1 to size loop
+			retval(i) := value;
+		end loop;
+
+		return retval;
+	end;
+
 	function text_label (
 		constant text_tag : tag;
 		constant lang     : i18n_langs)
@@ -1095,9 +1128,6 @@ package body scopeiopkg is
 				end loop;
 				exit;
 			end case;
---				write (mesg, string'("xxxxx : "));
---				write (mesg, tag_id'image(text_layout(tag_index).tagid));
---				writeline (output, mesg);
 			text_left := text_right+1;
 			tag_index := tag_index + 1;
 		end loop;
@@ -1132,14 +1162,7 @@ package body scopeiopkg is
 					layout(tag_index).style.width := text_width;
 				end if;
 				text_row(tag_index, text_data(lineno), layout, lang);
---				write (mesg, string'("ppppp : "));
---				write (mesg, tag_id'image(text_layout(tag_index).tagid));
---				writeline (output, mesg);
 			when others =>
---				write (mesg, tag_id'image(text_layout(tag_index).tagid));
---				writeline (output, mesg);
---				write (mesg, tag_index);
---				writeline (output, mesg);
 				text_data(lineno) := (others => 'b');
 			end case;
 			lineno := lineno + 1;
@@ -1147,45 +1170,10 @@ package body scopeiopkg is
 		end loop;
 		retval := (others => '0');
 		for i in text_data'range loop
---			write (mesg,  text_data(i));
---			writeline (output, mesg);
 			retval(0 to text_width*ascii'length-1) := unsigned(to_ascii(text_data(i)));
 			retval := retval rol (text_width*ascii'length);
 		end loop;
---		retval := retval ror (text_data'length*text_width*ascii'length);
 		return std_logic_vector(retval);
 	end;
 		
-	function text_align (
-		constant data  : string;
-		constant size  : natural;
-		constant align : alignment := left_alignment;
-		constant value : character := ' ')
-		return string is
-		variable retval   : string(1 to size);
-		constant at_left  : natural := setif(
-			align=right_alignment,   size-data'length, setif(
-			align=center_alignment, (size-data'length)/2, 0));
-		constant at_right  : natural := setif(
-			align=left_alignment,    size-data'length, setif(
-			align=center_alignment, (size-data'length+1)/2, 0));
-
-	begin
-		assert data'length <= size
-			report "string shorter than size"
-			severity failure;
-
-		if at_left /= 0 then
-			retval(1 to at_left) := (1 to at_left => value);
-		end if;
-
-		retval(1+at_left to at_left+data'length) := data;
-
-		if at_right /= 0 then
-			retval(size-at_right+1 to size) := (size-at_right+1 to size => value);
-		end if;
-
-		return retval;
-	end;
-
 end;
