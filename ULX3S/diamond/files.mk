@@ -101,6 +101,7 @@ VHDL_LIB_FILES = \
   ../../library/usb/usbhost/usbh_setup_pack.vhd \
   ../../library/usb/usbhost/usbh_report_decoder_logitech_mouse.vhd \
   ../../library/usb/usbhost/usbh_sie_vhdl.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_phy_transciver.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \

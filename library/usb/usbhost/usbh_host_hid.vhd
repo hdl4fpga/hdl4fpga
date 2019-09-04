@@ -21,14 +21,20 @@ use hdl4fpga.usbh_setup_pack.all;
 entity usbh_host_hid is
   generic
   (
-    C_usb_speed: std_logic := '1' -- '0':6 MHz low speed '1':48 MHz full speed 
+    C_usb_speed: std_logic := '0' -- '0':6 MHz low speed '1':48 MHz full speed 
   );
   port
   (
     clk: in std_logic;  -- main clock input
-    -- FPGA direct USB connector
-    usb_dif: in std_logic; -- differential or single-ended input
-    usb_dp, usb_dn: inout std_logic; -- single ended bidirectional
+    -- USB UTMI interface
+    utmi_txready_i  : in  std_logic;
+    utmi_data_i     : in  std_logic_vector(7 downto 0);
+    utmi_rxvalid_i  : in  std_logic;
+    utmi_rxactive_i : in  std_logic;
+    utmi_linestate_i: in  std_logic_vector(1 downto 0);
+    utmi_linectrl_o : out std_logic;
+    utmi_data_o     : out std_logic_vector(7 downto 0);
+    utmi_txvalid_o  : out std_logic;
     -- force bus reset and setup (similar to re-plugging USB device)
     bus_reset: in std_logic := '0';
     -- HID debugging
@@ -41,7 +47,6 @@ entity usbh_host_hid is
 end;
 
 architecture Behavioral of usbh_host_hid is
-  signal clk_usb: std_logic; -- 48 or 60 MHz
   signal S_led: std_logic;
   signal S_usb_rst: std_logic;
   signal S_rxd: std_logic;
@@ -49,20 +54,6 @@ architecture Behavioral of usbh_host_hid is
   signal S_txdp, S_txdn, S_txoe: std_logic;
   signal S_oled: std_logic_vector(63 downto 0);
   signal S_dsctyp: std_logic_vector(2 downto 0);
-  signal S_DATABUS16_8: std_logic;
-  signal S_RESET: std_logic;
-  signal S_XCVRSELECT: std_logic_vector(1 downto 0);
-  signal S_OPMODE: std_logic_vector(1 downto 0);
-  signal S_LINESTATE: std_logic_vector(1 downto 0);
-  signal S_LINECTRL: std_logic;
-  signal S_TXVALID: std_logic;
-  signal S_TXREADY: std_logic;
-  signal S_RXVALID: std_logic;
-  signal S_RXACTIVE: std_logic;
-  signal S_RXERROR: std_logic;
-  signal S_DATAIN: std_logic_vector(7 downto 0);
-  signal S_DATAOUT: std_logic_vector(7 downto 0);
-  signal S_BREAK: std_logic;
 
   -- UTMI debug
   signal S_sync_err, S_bit_stuff_err, S_byte_err: std_logic;
@@ -126,67 +117,6 @@ architecture Behavioral of usbh_host_hid is
   signal R_advance_data : std_logic := '0';
 
   begin
-  G_usb_full_speed: if C_usb_speed = '1' generate
-  clk_usb <= clk; -- 48 MHz with "usb_rx_phy_48MHz.vhd" or 60 MHz with "usb_rx_phy_60MHz.vhd"
-  -- transciever soft-core
-  --usb_fpga_pu_dp <= '0'; -- D+ pulldown for USB host mode
-  --usb_fpga_pu_dn <= '0'; -- D- pulldown for USB host mode
-  S_rxd <= usb_dif; -- differential input reads D+
-  --S_rxd <= usb_dp; -- single-ended input reads D+ may work as well
-  S_rxdp <= usb_dp; -- single-ended input reads D+
-  S_rxdn <= usb_dn; -- single-ended input reads D-
-  usb_dp <= S_txdp when S_txoe = '0' else 'Z';
-  usb_dn <= S_txdn when S_txoe = '0' else 'Z';
-  end generate;
-
-  G_usb_low_speed: if C_usb_speed = '0' generate
-  clk_usb <= clk; -- 6 MHz
-  -- transciever soft-core
-  -- for low speed USB, here are swaped D+ and D-
-  --usb_fpga_pu_dp <= '0'; -- D+ pulldown for USB host mode
-  --usb_fpga_pu_dn <= '0'; -- D- pulldown for USB host mode
-  S_rxd <= not usb_dif; -- differential input reads inverted D+ for low speed
-  --S_rxd <= not usb_dp; -- single-ended input reads D+ may work as well
-  S_rxdp <= usb_dn; -- single-ended input reads D- for low speed
-  S_rxdn <= usb_dp; -- single-ended input reads D+ for low speed
-  usb_dp <= S_txdn when S_txoe = '0' else 'Z';
-  usb_dn <= S_txdp when S_txoe = '0' else 'Z';
-  end generate;
-
-  -- USB1.1 PHY soft-core
-  usb11_phy: entity hdl4fpga.usb_phy
-  generic map
-  (
-    usb_rst_det => true
-  )
-  port map
-  (
-    clk => clk_usb, -- full speed: 48 MHz or 60 MHz, low speed: 6 MHz or 7.5 MHz
-    rst => '1', -- 1-don't reset, 0-hold reset
-    phy_tx_mode => '1', -- 1-differential, 0-single-ended
-    usb_rst => S_usb_rst, -- USB host requests reset, sending signal to usb-serial core
-    -- UTMI interface to usb-serial core
-    LineCtrl_i => S_LINECTRL,
-    TxValid_i => S_TXVALID,
-    DataOut_i => S_DATAOUT, -- 8-bit TX
-    TxReady_o => S_TXREADY,
-    RxValid_o => S_RXVALID,
-    DataIn_o => S_DATAIN, -- 8-bit RX
-    RxActive_o => S_RXACTIVE,
-    RxError_o => S_RXERROR,
-    LineState_o => S_LINESTATE, -- 2-bit
-    -- debug interface
-    sync_err_o => S_sync_err,
-    bit_stuff_err_o => S_bit_stuff_err,
-    byte_err_o => S_byte_err,
-    -- transciever interface to hardware
-    rxd => S_rxd, -- differential input from D+
-    rxdp => S_rxdp, -- single-ended input from D+
-    rxdn => S_rxdn, -- single-ended input from D-
-    txdp => S_txdp, -- single-ended output to D+
-    txdn => S_txdn, -- single-ended output to D-
-    txoe => S_txoe  -- 3-state control: 0-output, 1-input
-  );
 
   -- address advance, retry logic, set_address accpetance
   B_address_retry: block
@@ -194,9 +124,9 @@ architecture Behavioral of usbh_host_hid is
     signal R_timeout: std_logic; -- rising edge tracking
   begin
   S_transmission_over <= '1' when rx_done_o = '1' or (timeout_o = '1' and R_timeout = '0') else '0';
-  process(clk_usb)
+  process(clk)
   begin
-    if rising_edge(clk_usb) then
+    if rising_edge(clk) then
       R_timeout <= timeout_o;
       if R_reset_accepted = '1' then
         R_setup_rom_addr       <= (others => '0');
@@ -297,9 +227,9 @@ architecture Behavioral of usbh_host_hid is
   -- if data is added to ROM, then R_setup_rom_addr should be
   -- replaced with another register that tracks actual offset from
   -- setup packet
-  process(clk_usb)
+  process(clk)
   begin
-    if rising_edge(clk_usb) then
+    if rising_edge(clk) then
       case R_state is
         when C_STATE_DETACHED =>
           R_dev_address_requested <= (others => '0');
@@ -336,14 +266,14 @@ architecture Behavioral of usbh_host_hid is
   end block;
 
   S_expected_response <= x"4B" when data_idx_i = '1' else x"C3";
-  process(clk_usb)
+  process(clk)
   begin
-    if rising_edge(clk_usb) then
+    if rising_edge(clk) then
       R_advance_data <= '0'; -- default
       case R_state is
         when C_STATE_DETACHED => -- start from unitialized device
           R_reset_accepted <= '0';
-          if S_LINESTATE = "01" then
+          if utmi_linestate_i = "01" then
             if R_slow(17) = '0' then -- 22 ms
               R_slow <= R_slow + 1;
             else
@@ -445,7 +375,7 @@ architecture Behavioral of usbh_host_hid is
 --              R_packet_counter <= R_packet_counter + 1;
               resp_expected_i <= '1';
               start_i         <= '1';
-              if R_reset_pending = '1' or S_LINESTATE = "00" or R_retry(R_retry'high) = '1' then
+              if R_reset_pending = '1' or utmi_linestate_i = "00" or R_retry(R_retry'high) = '1' then
                 R_reset_accepted <= '1';
                 R_state <= C_STATE_DETACHED;
               end if;
@@ -553,7 +483,7 @@ architecture Behavioral of usbh_host_hid is
   usb_sie_core: entity hdl4fpga.usbh_sie_vhdl
   port map
   (
-    clk_i             => clk_usb, -- low speed: 6 MHz or 7.5 MHz, high speed: 48 MHz or 60 MHz
+    clk_i             => clk, -- low speed: 6 MHz or 7.5 MHz, high speed: 48 MHz or 60 MHz
     rst_i             => rst_i,
     start_i           => start_i,
     in_transfer_i     => in_transfer_i,
@@ -578,13 +508,13 @@ architecture Behavioral of usbh_host_hid is
     rx_count_o        => rx_count_o,
     idle_o            => idle_o,
 
-    utmi_txready_i    => S_TXREADY,
-    utmi_data_i       => S_DATAIN,
-    utmi_rxvalid_i    => S_RXVALID,
-    utmi_rxactive_i   => S_RXACTIVE,
-    utmi_linectrl_o   => S_LINECTRL,
-    utmi_data_o       => S_DATAOUT,
-    utmi_txvalid_o    => S_TXVALID
+    utmi_txready_i    => utmi_txready_i,
+    utmi_data_i       => utmi_data_i,
+    utmi_rxvalid_i    => utmi_rxvalid_i,
+    utmi_rxactive_i   => utmi_rxactive_i,
+    utmi_linectrl_o   => utmi_linectrl_o,
+    utmi_data_o       => utmi_data_o,
+    utmi_txvalid_o    => utmi_txvalid_o
   );
 
   B_report_reader: block
@@ -595,9 +525,9 @@ architecture Behavioral of usbh_host_hid is
     signal R_crc_err: std_logic;
     signal R_rx_done: std_logic;
   begin
-    process(clk_usb)
+    process(clk)
     begin
-      if rising_edge(clk_usb) then
+      if rising_edge(clk) then
         R_rx_count <= rx_count_o; -- to offload routing (apart from this, "rx_count_o" could be used directly)
         if rx_push_o = '1' then
           R_report_buf(conv_integer(R_rx_count)) <= rx_data_o;
@@ -635,5 +565,6 @@ architecture Behavioral of usbh_host_hid is
     --rx_count(7 downto 0) <= R_E1_response;
     --rx_count(R_retry'range) <= R_retry; -- debugging report problems
     rx_done <= rx_done_o;
+    --rx_done <= utmi_linestate_i(0);
   end block;
 end Behavioral;
