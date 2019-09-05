@@ -501,11 +501,6 @@ package scopeiopkg is
 		constant i18n_label : i18n_labelids)
 		return string;
 
-	function text_field (
-		constant field  : unsigned;
-		constant layout : display_layout)
-		return unsigned;
-
 	type alignment is (
 		left_alignment, 
 		right_alignment, 
@@ -536,11 +531,11 @@ package scopeiopkg is
 	end record;
 	type tag_vector is array (natural range <>) of tag;
 
-	constant var_trigger    : natural := 0;
+	constant var_trigger    : natural := 1;
 	constant var_hzdiv      : natural := 0;
 	constant var_hzoffset   : natural := 0;
-	constant var_vtdiv      : natural := 0;
-	constant var_vtoffset   : natural := 0;
+	constant var_vtdiv      : natural := 2;
+	constant var_vtoffset   : natural := 3;
 
 	constant analogtime_rowstyle   : style_t := (width => 0,  align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
@@ -571,10 +566,23 @@ package scopeiopkg is
 		return std_logic_vector;
 
 	function text_addr (
+		constant ref_id      : std_logic_vector;
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return std_logic_vector;
+
+	function text_setaddr (
 		constant tag_layout  : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural)
 		return tag_vector;
+
+	function text_analoginputs (
+		constant inputs      : natural;
+		constant tag_layout  : tag_vector)
+		return tag_vector;
+
 end;
 
 package body scopeiopkg is
@@ -1035,29 +1043,6 @@ package body scopeiopkg is
 		return i18n_text(pos0 to pos1);
 	end;
 
-	function text_field (
-		constant field  : unsigned;
-		constant layout : display_layout)
-		return unsigned is
-		constant text_cols  : natural := textbox_width(layout)/textfont_width;
-		constant text_rows  : natural := textbox_height(layout)/textfont_height;
-		constant text_size  : natural := text_rows*text_cols;
-		variable retval     : unsigned(0 to ascii'length*text_size-1);
-		constant line_size  : natural := text_cols*ascii'length;
-		variable text_addr  : unsigned(0 to unsigned_num_bits(text_size-1)-1);
-
-	begin
-		case to_integer(field) is
-		when 0 => 
-			text_addr := to_unsigned(12, text_addr'length);
-		when 1 => 
-			text_addr := to_unsigned(text_cols+12, text_addr'length);
-		when others =>
-			text_addr := resize(mul(field-2, 16)+(8+2*text_cols), text_addr'length);
-		end case;
-		return text_addr;
-	end;
-		
 	function text_atleft (
 		constant length : natural;
 		constant width  : natural;
@@ -1123,7 +1108,7 @@ package body scopeiopkg is
 			text_tag.style.align);
 	end;
 
-	procedure tagrow_addr (
+	procedure tagrow_setaddr (
 		variable tag_index   : inout natural;
 		variable tag_layout  : inout tag_vector) is
 		variable text_length : positive;
@@ -1238,7 +1223,23 @@ package body scopeiopkg is
 		return std_logic_vector(retval);
 	end;
 		
-	function text_addr (
+	function text_analoginputs (
+		constant inputs      : natural;
+		constant tag_layout  : tag_vector)
+		return tag_vector is
+		variable layout      : tag_vector(0 to tag_layout'length+4*inputs);
+	begin
+		layout(0 to tag_layout'length-1) := tag_layout;
+		for i in 0 to inputs-1 loop
+			layout(tag_layout'length+4*i+0) := (tagid_row, style => analogtime_rowstyle,   ref => 0);
+			layout(tag_layout'length+4*i+1) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtoffset);
+			layout(tag_layout'length+4*i+2) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtdiv);
+			layout(tag_layout'length+4*i+3) := (tagid_end, style => no_style,              ref => 0);
+		end loop;
+		return layout;
+	end;
+
+	function text_setaddr (
 		constant tag_layout  : tag_vector;
 		constant text_width  : natural;
 		constant text_height : natural)
@@ -1257,13 +1258,36 @@ package body scopeiopkg is
 				if layout(tag_index).style.width = 0 then
 					layout(tag_index).style.width := text_width;
 				end if;
-				tagrow_addr(tag_index, layout);
+				tag_addr := tag_addr  + layout(tag_index).style.width;
+				tagrow_setaddr(tag_index, layout);
 			when others =>
 			end case;
-			tag_addr  := tag_addr  + layout(tag_index).style.width;
 			tag_index := tag_index + 1;
 		end loop;
 		return layout;
 	end;
 
+	function text_addr (
+		constant ref_id      : std_logic_vector;
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return std_logic_vector is
+		constant text_size : natural := text_width*text_height;
+		constant addr_size : natural := unsigned_num_bits(text_size-1);
+		variable layout    : tag_vector(tag_layout'range);
+	begin
+		layout := text_setaddr (tag_layout, text_width, text_height);
+		for i in layout'range loop
+			case layout(i).tagid is
+			when tagid_var =>
+				if unsigned(ref_id)=to_unsigned(layout(i).ref, ref_id'length) then
+					return '1' & std_logic_vector(to_unsigned(layout(i).style.addr, addr_size));
+				end if;
+			when others =>
+			end case;
+		end loop;
+		return '0' & (0 to addr_size-1 => '-');
+	end;
+		
 end;

@@ -55,6 +55,7 @@ architecture def of scopeio_textbox is
 	constant cga_rows   : natural := textbox_height(layout)/font_height;
 	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
+	signal we       : std_logic;
 	signal cga_we       : std_logic;
 	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code     : ascii;
@@ -79,8 +80,9 @@ begin
 	with rgtr_id select
 	value <= 
 		resize(signed(bitfield(rgtr_data, hzoffset_id,     hzoffset_bf)), value'length) when rid_hzaxis,
+--		resize(signed(bitfield(rgtr_data, hzscale_id,      hzoffset_bf)), value'length) when rid_hzaxis,
 		resize(signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), value'length) when rid_trigger,
-		resize(signed(bitfield(rgtr_data, vtoffset_id,     vtoffset_bf)), value'length) when rid_vtaxis,
+--		resize(signed(bitfield(rgtr_data, vtoffset_id,     vtoffset_bf)), value'length) when rid_vtaxis,
 		resize(signed(bitfield(rgtr_data, gainid_id,           gain_bf)), value'length) when rid_gain,
 		(others => '-') when others;
    		
@@ -120,12 +122,16 @@ begin
 	btof_bcdunit  <= b"0000";
 	btof_bcdwidth <= b"1000";
 
-	cga_we <= btof_binfrm and btof_bcdtrdy;
+	cga_we <= btof_binfrm and btof_bcdtrdy and we;
 	cga_addr_p : process (rgtr_clk)
+		
+		variable addr : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				cga_addr <= resize(text_field(field, layout), cga_addr'length);
+				addr := text_addr(std_logic_vector(field), text_analoginputs(inputs, analogtime_layout), cga_cols, cga_rows);
+				we <= addr(0);
+				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			end if;
@@ -140,11 +146,7 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => text_content(
-			analogtime_layout, 
-			textbox_width(layout)/font_width,
-			textbox_height(layout)/font_height,
-			lang),
+		cga_bitrom  => text_content(analogtime_layout, cga_cols, cga_rows, lang),
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)

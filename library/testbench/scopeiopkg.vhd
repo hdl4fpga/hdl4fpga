@@ -35,7 +35,7 @@ architecture scopeiopkg of testbench is
 
 		constant width  : natural := 33;
 		constant height : natural := 10;
-		constant layout : tag_vector(analogtime_layout'range) := text_addr(
+		constant layout : tag_vector(analogtime_layout'range) := text_setaddr(
 			analogtime_layout, 
 			width,
 			height);
