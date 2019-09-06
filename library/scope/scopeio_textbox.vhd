@@ -49,11 +49,12 @@ architecture def of scopeio_textbox is
 
 	constant cgaadapter_latency : natural := 4;
 
-	constant font_wbits : natural := unsigned_num_bits(font_width-1);
-	constant font_hbits : natural := unsigned_num_bits(font_height-1);
-	constant cga_cols   : natural := textbox_width(layout)/font_width;
-	constant cga_rows   : natural := textbox_height(layout)/font_height;
-	constant cga_size   : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant analog_addr : tag_vector := text_analoginputs(inputs, analogtime_layout);
+	constant font_wbits  : natural    := unsigned_num_bits(font_width-1);
+	constant font_hbits  : natural    := unsigned_num_bits(font_height-1);
+	constant cga_cols    : natural    := textbox_width(layout)/font_width;
+	constant cga_rows    : natural    := textbox_height(layout)/font_height;
+	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
 	signal we       : std_logic;
 	signal cga_we       : std_logic;
@@ -68,6 +69,22 @@ architecture def of scopeio_textbox is
 
 	signal field        : unsigned(0 to 2-1);
 begin
+
+	process(rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if then
+			elsif rgtr_dv='1' then
+				case rgtr_id =>
+				when rid_gain =>
+				when rid_hzaxis =>
+				when rid_trigger =>
+				when rid_vtaxis =>
+				when others =>
+				end case;
+			end if;
+		end if;
+	end process;
 
 	with rgtr_id select
 	field <= 
@@ -129,7 +146,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				addr := text_addr(std_logic_vector(field), text_analoginputs(inputs, analogtime_layout), cga_cols, cga_rows);
+				addr := text_addr(std_logic_vector(field), analog_addr, cga_cols, cga_rows);
 				we <= addr(0);
 				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then

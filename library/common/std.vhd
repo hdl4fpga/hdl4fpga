@@ -209,8 +209,8 @@ package std is
 
 	function byte2word (
 		constant word : std_logic_vector;
-		constant byte : std_logic_vector;
-		constant mask : std_logic_vector)
+		constant data : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector;
 
 	subtype gray is std_logic_vector;
@@ -927,24 +927,16 @@ package body std is
 
 	function byte2word (
 		constant word : std_logic_vector;
-		constant byte : std_logic_vector;
-		constant mask : std_logic_vector)
+		constant data : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector is
-		variable di : std_logic_vector(0 to byte'length-1);
-		variable do : std_logic_vector(0 to word'length-1);
-		variable mi : std_logic_vector(0 to mask'length-1);
+		variable retval : unsigned(0 to (word'length+data'length-1)/data'length);
 	begin
-		di := byte;
-		do := word;
-		mi := mask;
-		for i in mi'range loop
-			if mi(i)='1' then
-				for j in di'range loop
-					do((i*di'length+j) mod do'length) := di(j);
-				end loop;
-			end if;
-		end loop;
-		return std_logic_vector(do);
+		retval(0 to word'length-1) := unsigned(word);
+		retval := rotate_left(retval, to_integer(unsigned(addr)));
+		retval(0 to data'length-1) := unsigned(data);
+		retval := rotate_right(retval, to_integer(unsigned(addr)));
+		return std_logic_vector(retval);
 	end;
 
 	function inc (

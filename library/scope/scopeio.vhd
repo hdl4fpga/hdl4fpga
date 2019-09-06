@@ -95,7 +95,7 @@ architecture beh of scopeio is
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
+	constant gainid_bits : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
@@ -121,7 +121,7 @@ architecture beh of scopeio is
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal gain_dv            : std_logic;
-	signal gain_ids           : std_logic_vector(0 to inputs*gainid_size-1);
+	signal gain_ids           : std_logic_vector(0 to inputs*gainid_bits-1);
 
 
 begin
@@ -143,7 +143,11 @@ begin
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
-		signal output_ena    : std_logic_vector(0 to inputs-1);
+
+		signal chan_id    : std_logic_vector(0 to chanid_bits-1);
+		signal gain_id    : std_logic_vector(0 to gainid_bits-1);
+
+		signal output_ena : std_logic_vector(0 to inputs-1);
 	begin
 
 		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
@@ -156,16 +160,26 @@ begin
 			rgtr_data => rgtr_data,
 
 			gain_dv   => gain_dv,
-			gain_ids  => gain_ids);
+			chan_id   => chan_id,
+			gain_id   => gain_id);
 		
+		process(si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if gain_dv='1' then
+					gain_ids <= bytetoword(gain_ids, gain_id, chan_id);
+				end if;
+			end if;
+		end process;
+
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
 			signal input_sample : std_logic_vector(0 to sample_size-1);
-			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
+			signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
 		begin
 
-			gain_id <= word2byte(gain_ids, i, gainid_size);
+			gain_id <= word2byte(gain_ids, i, gainid_bits);
 			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			generic map (
