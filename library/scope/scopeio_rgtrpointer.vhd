@@ -15,6 +15,7 @@ entity scopeio_rgtrpointer is
 		rgtr_id    : in  std_logic_vector(8-1 downto 0);
 		rgtr_data  : in  std_logic_vector;
 
+		pointer_ena : out std_logic;
 		pointer_dv : out std_logic;
 		pointer_x  : out std_logic_vector;
 		pointer_y  : out std_logic_vector);
@@ -51,4 +52,5 @@ begin
 		pointer_y  <= y;
 	end generate;
 
+	pointer_ena <= dv;
 end;

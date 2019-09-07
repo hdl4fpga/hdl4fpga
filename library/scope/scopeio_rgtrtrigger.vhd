@@ -15,6 +15,7 @@ entity scopeio_rgtrtrigger is
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
 
+		trigger_ena     : out std_logic;
 		trigger_dv      : out std_logic;
 		trigger_freeze  : out std_logic;
 		trigger_chanid  : buffer std_logic_vector;
@@ -62,4 +63,5 @@ begin
 		trigger_chanid <= chanid;
 	end generate;
 
+	trigger_ena <= dv;
 end;

@@ -15,6 +15,7 @@ entity scopeio_rgtrvtaxis is
 		rgtr_id    : in  std_logic_vector(8-1 downto 0);
 		rgtr_data  : in  std_logic_vector;
 
+		vt_ena     : out std_logic;
 		vt_dv      : out std_logic;
 		vt_chanid  : out std_logic_vector;
 		vt_offset  : out std_logic_vector);
@@ -51,4 +52,6 @@ begin
 		vt_offset <= offset;
 		vt_chanid <= chanid;
 	end generate;
+
+	vt_ena <= dv;
 end;

@@ -15,6 +15,7 @@ entity scopeio_rgtrgain is
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
 
+		gain_ena  : out std_logic;
 		gain_dv   : out std_logic;
 		chan_id   : out std_logic_vector;
 		gain_id   : out std_logic_vector);
@@ -51,4 +52,6 @@ begin
 		chan_id <= chanid;
 		gain_id <= gainid;
 	end generate;
+
+	gain_ena <= dv;
 end;

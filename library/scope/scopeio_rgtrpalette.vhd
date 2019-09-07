@@ -15,6 +15,7 @@ entity scopeio_rgtrpalette is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
+		palette_ena   : out std_logic;
 		palette_dv    : out std_logic;
 		palette_id    : out std_logic_vector;
 		palette_color : out std_logic_vector);
@@ -53,4 +54,5 @@ begin
 		palette_color <= color;
 	end generate;
 
+	palette_ena <= dv;
 end;

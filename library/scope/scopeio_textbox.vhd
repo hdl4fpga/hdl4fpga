@@ -61,7 +61,10 @@ architecture def of scopeio_textbox is
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	signal we       : std_logic;
+	signal we           : std_logic;
+	signal cgabcd_frm   : std_logic_vector(0 to 3-1);
+	signal cgabcd_req   : std_logic_vector(0 to 3-1);
+	signal cgabcd_end   : std_logic;
 	signal cga_we       : std_logic;
 	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code     : ascii;
@@ -69,82 +72,99 @@ architecture def of scopeio_textbox is
 	signal char_dot     : std_logic;
 
 	signal var_id       : std_logic_vector(0 to 2-1);
-	signal var_value    : signed(0 to 12-1);
-	signal frac         : signed(value'range);
+	signal var_value    : std_logic_vector(0 to 12-1);
+	signal frac         : signed(var_value'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
 
 begin
 
 	rgtr_b : block
-		signal trigger_dv     : std_logic;
+
+		signal trigger_ena    : std_logic;
 		signal trigger_freeze : std_logic;
 		signal trigger_edge   : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
-		signal vt_dv          : std_logic;
+		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 
-		signal hz_dv          : std_logic;
+		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 
+		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
+		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
+		signal   varid_vtoffset : std_logic_vector(var_id'range);
+
 	begin
-
-		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-		port map (
-			rgtr_clk        => rgtr_clk,
-			rgtr_dv         => rgtr_dv,
-			rgtr_id         => rgtr_id,
-			rgtr_data       => rgtr_data,
-
-			trigger_dv      => trigger_dv,
-			trigger_freeze  => trigger_freeze,
-			trigger_chanid  => trigger_chanid,
-			trigger_level   => trigger_level,
-			trigger_edge    => trigger_edge);
-
-		vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-		port map (
-			rgtr_clk  => rgtr_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			vt_dv     => vt_dv,
-			vt_chanid => vt_chanid,
-			vt_offset => vt_offset);
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
-			rgtr_clk  => rgtr_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
 
-			hz_ena    => hz_ena,
-			hz_dv     => hz_dv,
-			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_ena         => hz_ena,
+			hz_scale       => hz_scale,
+			hz_slider      => hz_slider);
 
-		process(rgtr_clk)
+		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+
+			trigger_ena    => trigger_ena,
+			trigger_edge   => trigger_edge,
+			trigger_freeze => trigger_freeze,
+			trigger_chanid => trigger_chanid,
+			trigger_level  => trigger_level);
+
+		vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+			vt_ena         => vt_ena,
+			vt_chanid      => vt_chanid,
+			vt_offset      => vt_offset);
+
+		process (rgtr_clk)
+			variable bcd_req : std_logic_vector(cgabcd_req'range);
 		begin
 			if rising_edge(rgtr_clk) then
+				bcd_req := cgabcd_req or (
+					0 => hz_ena,
+					1 => trigger_ena,
+					2 => vt_ena);
+				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 			end if;
 		end process;
 
-		var_id <= primux(
-			varid_hzoffset & varid_hzscale & varid_triggers & varid_vtvalues,
-			hzoffset_dv    & hzscale_dv    & trigger_dvs    & vtvalues_dvs);
+		varid_vtoffset <= std_logic_vector((unsigned(vt_chanid) sll 1)+var_vtoffsetid);
+		cgabcd_arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk     => rgtr_clk,
+			bus_req => cgabcd_req,
+			bus_gnt => cgabcd_frm);
+
+		var_id <= wirebus(
+			varid_hzoffset & varid_triggerlevel & varid_vtoffset,
+			cgabcd_frm);
 			
-		var_value <= signed(primux(
-			hz_offset   & trigger_level & vt_offsets,
-			hzoffset_dv & trigger_dv    & vtoffset_dvs));
+		var_value <= wirebus(
+			hz_slider & trigger_level & vt_offset,
+			cgabcd_frm);
 				 	
 	end block;
 
-
+	cgabcd_end <= btof_binfrm and btof_bcdtrdy and btof_bcdend;
 	frm_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -155,10 +175,10 @@ begin
 						btof_bcdirdy <= '0';
 					end if;
 				end if;
-			elsif rgtr_dv='1' then
+			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
-				frac <= scale_1245(var_value sll 1, scale);
+				frac <= scale_1245(signed(var_value) sll 1, scale);
 			end if;
 		end if;
 	end process;

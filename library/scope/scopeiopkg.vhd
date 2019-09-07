@@ -508,7 +508,7 @@ package scopeiopkg is
 
 	function text_align (
 		constant data  : string;
-		constant width  : natural;
+		constant width : natural;
 		constant align : alignment := left_alignment;
 		constant value : character := ' ')
 		return string;
@@ -531,23 +531,23 @@ package scopeiopkg is
 	end record;
 	type tag_vector is array (natural range <>) of tag;
 
-	constant var_trigger    : natural := 1;
-	constant var_hzdiv      : natural := 0;
-	constant var_hzoffset   : natural := 0;
-	constant var_vtdiv      : natural := 2;
-	constant var_vtoffset   : natural := 3;
+	constant var_triggerid  : natural := 1;
+	constant var_hzdivid    : natural := 0;
+	constant var_hzoffsetid : natural := 0;
+	constant var_vtdivid    : natural := 2;
+	constant var_vtoffsetid : natural := 3;
 
 	constant analogtime_rowstyle   : style_t := (width => 0,  align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
 
 	constant analogtime_layout : tag_vector := (
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_var,   style => analogtime_fieldstyle,  ref => var_trigger),
+			(tagid_var,   style => analogtime_fieldstyle,  ref => var_triggerid),
 			(tagid_label, style => analogtime_fieldstyle,  ref => label_trigger),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzoffset),
-			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzdiv),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzoffsetid),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzdivid),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
 			(tagid_label, style => analogtime_fieldstyle, ref => label_hzoffset),
@@ -1232,8 +1232,8 @@ package body scopeiopkg is
 		layout(0 to tag_layout'length-1) := tag_layout;
 		for i in 0 to inputs-1 loop
 			layout(tag_layout'length+4*i+0) := (tagid_row, style => analogtime_rowstyle,   ref => 0);
-			layout(tag_layout'length+4*i+1) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtoffset);
-			layout(tag_layout'length+4*i+2) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtdiv);
+			layout(tag_layout'length+4*i+1) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtoffsetid);
+			layout(tag_layout'length+4*i+2) := (tagid_var, style => analogtime_fieldstyle, ref => 2*i+var_vtdivid);
 			layout(tag_layout'length+4*i+3) := (tagid_end, style => no_style,              ref => 0);
 		end loop;
 		return layout;
