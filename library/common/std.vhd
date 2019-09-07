@@ -209,8 +209,8 @@ package std is
 
 	function byte2word (
 		constant word : std_logic_vector;
-		constant data : std_logic_vector;
-		constant addr : std_logic_vector)
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
 		return std_logic_vector;
 
 	subtype gray is std_logic_vector;
@@ -927,8 +927,8 @@ package body std is
 
 	function byte2word (
 		constant word : std_logic_vector;
-		constant data : std_logic_vector;
-		constant addr : std_logic_vector)
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
 		return std_logic_vector is
 		variable retval : unsigned(0 to (word'length+data'length-1)/data'length);
 	begin

@@ -8,7 +8,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_rgtrgain is
 	generic (
-		inputs    : in  natural);
+		rgtr      : boolean := true);
 	port (
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
@@ -23,10 +23,32 @@ end;
 
 architecture def of scopeio_rgtrgain is
 
+	signal dv     : std_logic;
+	signal chanid : std_logic_vector(chan_id'range);
+	signal gainid : std_logic_vector(gain_id'range);
+
 begin
 
-	gain_dv <= setif(rgtr_id=rid_gain, rgtr_dv);
-	chan_id <= bitfield(rgtr_data, gainchanid_id, gain_bf);
-	gain_id <= bitfield(rgtr_data, gainid_id,     gain_bf);
+	dv     <= setif(rgtr_id=rid_gain, rgtr_dv);
+	chanid <= bitfield(rgtr_data, gainchanid_id, gain_bf);
+	gainid <= bitfield(rgtr_data, gainid_id,     gain_bf);
 
+	rgtr_e : if rgtr generate
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				gain_dv <= dv;
+				if dv='1' then
+					chan_id <= chanid;
+					gain_id <= gainid;
+				end if;
+			end if;
+		end process;
+	end generate;
+
+	norgtr_e : if not rgtr generate
+		gain_dv <= dv;
+		chan_id <= chanid;
+		gain_id <= gainid;
+	end generate;
 end;

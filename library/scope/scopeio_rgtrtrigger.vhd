@@ -7,6 +7,8 @@ use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_rgtrtrigger is
+	generic (
+		rgtr            : boolean := true);
 	port (
 		rgtr_clk        : in  std_logic;
 		rgtr_dv         : in  std_logic;
@@ -23,24 +25,41 @@ end;
 
 architecture def of scopeio_rgtrtrigger is
 
-	signal trigger_ena : std_logic;
+	signal dv     : std_logic;
+	signal freeze : std_logic;
+	signal edge   : std_logic;
+	signal level  : std_logic_vector(trigger_level'range);
+	signal chanid : std_logic_vector(trigger_chanid'range);
 
 begin
 
-	trigger_ena <= rgtr_dv when rgtr_id=rid_trigger else '0';
-	trigger_p : process(rgtr_clk)
-		variable level : signed(trigger_level'range);
-	begin
-		if rising_edge(rgtr_clk) then
-			level := resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length);
-			if trigger_ena='1' then
-				trigger_freeze <= bitfield(rgtr_data, trigger_ena_id,  trigger_bf)(0);
-				trigger_edge   <= bitfield(rgtr_data, trigger_edge_id, trigger_bf)(0);
-				trigger_level  <= std_logic_vector(level);
-				trigger_chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), trigger_chanid'length));
+	dv     <= setif(rgtr_id=rid_trigger, rgtr_dv);
+	freeze <= bitfield(rgtr_data, trigger_ena_id,  trigger_bf)(0);
+	edge   <= bitfield(rgtr_data, trigger_edge_id, trigger_bf)(0);
+	level  <= std_logic_vector(resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length));
+	chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), chanid'length));
+
+	rgtr_e : if rgtr generate
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				trigger_dv <= dv;
+				if dv='1' then
+					trigger_freeze <= freeze;
+					trigger_edge   <= edge;
+					trigger_level  <= level;
+					trigger_chanid <= chanid;
+				end if;
 			end if;
-			trigger_dv <= trigger_ena;
-		end if;
-	end process;
+		end process;
+	end generate;
+
+	norgtr_e : if not rgtr generate
+		trigger_dv     <= dv;
+		trigger_freeze <= freeze;
+		trigger_edge   <= edge;
+		trigger_level  <= level;
+		trigger_chanid <= chanid;
+	end generate;
 
 end;

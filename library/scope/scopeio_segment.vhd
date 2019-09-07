@@ -68,6 +68,7 @@ architecture def of scopeio_segment is
 
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
 	constant division_size : natural := grid_divisionsize(layout);
@@ -80,7 +81,6 @@ architecture def of scopeio_segment is
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
-	signal vt_offset : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 
 	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
@@ -91,20 +91,26 @@ architecture def of scopeio_segment is
 begin
 
 	scopeio_rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-	generic map (
-		inputs  => inputs)
 	port map (
-		rgtr_clk   => rgtr_clk,
-		rgtr_dv    => rgtr_dv,
-		rgtr_id    => rgtr_id,
-		rgtr_data  => rgtr_data,
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-		vt_dv      => vt_dv,
-		vt_chanid  => vt_chanid,
-		vt_offsets => vt_offsets);
+		vt_dv     => vt_dv,
+		vt_chanid => vt_chanid,
+		vt_offset => vt_offset);
 
-	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
-	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
+	process(rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if vt_dv='1' then
+				vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+			end if;
+		end if;
+	end process;
+
+	vt_scale  <= word2byte(gain_ids,  vt_chanid, vt_scale'length);
 	grid_b : block
 		constant offset_latency : natural := 1;
 

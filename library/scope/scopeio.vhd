@@ -151,8 +151,6 @@ begin
 	begin
 
 		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
-		generic map (
-			inputs  => inputs)
 		port map (
 			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
@@ -167,7 +165,7 @@ begin
 		begin
 			if rising_edge(si_clk) then
 				if gain_dv='1' then
-					gain_ids <= bytetoword(gain_ids, gain_id, chan_id);
+					gain_ids <= byte2word(gain_ids, chan_id, gain_id);
 				end if;
 			end if;
 		end process;

@@ -13,6 +13,7 @@ entity scopeio_textbox is
 		inputs        : natural;
 		layout        : display_layout;
 		latency       : natural;
+		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16;
 		font_width    : natural := 8);
@@ -43,10 +44,14 @@ entity scopeio_textbox is
 		video_vcntr   : in  std_logic_vector;
 		text_on       : in  std_logic := '1';
 		text_dot      : out std_logic);
+
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture def of scopeio_textbox is
 
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
 
 	constant analog_addr : tag_vector := text_analoginputs(inputs, analogtime_layout);
@@ -68,23 +73,78 @@ architecture def of scopeio_textbox is
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
 	signal field        : unsigned(0 to 2-1);
+
 begin
 
-	process(rgtr_clk)
+	rgtr_b : block
+		signal trigger_dv     : std_logic;
+		signal trigger_freeze : std_logic;
+		signal trigger_edge   : std_logic;
+		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+		signal trigger_level  : std_logic_vector(storage_word'range);
+
+		signal vt_dv          : std_logic;
+		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
+
+		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal hz_dv          : std_logic;
+		signal hz_scale       : std_logic_vector(4-1 downto 0);
+
 	begin
-		if rising_edge(rgtr_clk) then
-			if then
-			elsif rgtr_dv='1' then
-				case rgtr_id =>
-				when rid_gain =>
-				when rid_hzaxis =>
-				when rid_trigger =>
-				when rid_vtaxis =>
-				when others =>
-				end case;
-			end if;
-		end if;
-	end process;
+
+		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+		port map (
+			rgtr_clk        => rgtr_clk,
+			rgtr_dv         => rgtr_dv,
+			rgtr_id         => rgtr_id,
+			rgtr_data       => rgtr_data,
+
+			trigger_dv      => trigger_dv,
+			trigger_freeze  => trigger_freeze,
+			trigger_chanid  => trigger_chanid,
+			trigger_level   => trigger_level,
+			trigger_edge    => trigger_edge);
+
+		vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+		port map (
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			vt_dv     => vt_dv,
+			vt_chanid => vt_chanid,
+			vt_offset => vt_offset);
+
+		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+		port map (
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			hz_dv     => hz_dv,
+			hz_scale  => hz_scale,
+			hz_slider => hz_slider);
+
+	end block;
+
+
+--	process(rgtr_clk)
+--	begin
+--		if rising_edge(rgtr_clk) then
+--			if then
+--			elsif rgtr_dv='1' then
+--				case rgtr_id =>
+--				when rid_gain =>
+--				when rid_hzaxis =>
+--				when rid_trigger =>
+--				when rid_vtaxis =>
+--				when others =>
+--				end case;
+--			end if;
+--		end if;
+--	end process;
 
 	with rgtr_id select
 	field <= 
