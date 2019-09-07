@@ -15,6 +15,7 @@ entity scopeio_rgtrhzaxis is
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
 
+		hz_ena    : out std_logic;
 		hz_dv     : out std_logic;
 		hz_scale  : out std_logic_vector;
 		hz_slider : out std_logic_vector);
@@ -51,4 +52,6 @@ begin
 		hz_slider <= slider;
 		hz_scale  <= scale;
 	end generate;
+
+	hz_ena <= dv;
 end;

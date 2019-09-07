@@ -68,11 +68,11 @@ architecture def of scopeio_textbox is
 	signal video_addr   : std_logic_vector(cga_addr'range);
 	signal char_dot     : std_logic;
 
-	signal value        : signed(0 to 12-1);
+	signal var_id       : std_logic_vector(0 to 2-1);
+	signal var_value    : signed(0 to 12-1);
 	signal frac         : signed(value'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
-	signal field        : unsigned(0 to 2-1);
 
 begin
 
@@ -87,8 +87,8 @@ begin
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 
-		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_dv          : std_logic;
+		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 
 	begin
@@ -123,46 +123,28 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
+			hz_ena    => hz_ena,
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
 
+		process(rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+			end if;
+		end process;
+
+		var_id <= primux(
+			varid_hzoffset & varid_hzscale & varid_triggers & varid_vtvalues,
+			hzoffset_dv    & hzscale_dv    & trigger_dvs    & vtvalues_dvs);
+			
+		var_value <= signed(primux(
+			hz_offset   & trigger_level & vt_offsets,
+			hzoffset_dv & trigger_dv    & vtoffset_dvs));
+				 	
 	end block;
 
 
---	process(rgtr_clk)
---	begin
---		if rising_edge(rgtr_clk) then
---			if then
---			elsif rgtr_dv='1' then
---				case rgtr_id =>
---				when rid_gain =>
---				when rid_hzaxis =>
---				when rid_trigger =>
---				when rid_vtaxis =>
---				when others =>
---				end case;
---			end if;
---		end if;
---	end process;
-
-	with rgtr_id select
-	field <= 
-		to_unsigned(0, field'length) when rid_hzaxis,
-		to_unsigned(1, field'length) when rid_trigger,
-		(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), field'length) sll 0)+2 when rid_vtaxis,
-		(resize(unsigned(bitfield(rgtr_data, gainchanid_id,   gain_bf)), field'length) sll 0)+3 when rid_gain,
-		(others => '-') when others;
-   		
-	with rgtr_id select
-	value <= 
-		resize(signed(bitfield(rgtr_data, hzoffset_id,     hzoffset_bf)), value'length) when rid_hzaxis,
---		resize(signed(bitfield(rgtr_data, hzscale_id,      hzoffset_bf)), value'length) when rid_hzaxis,
-		resize(signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), value'length) when rid_trigger,
---		resize(signed(bitfield(rgtr_data, vtoffset_id,     vtoffset_bf)), value'length) when rid_vtaxis,
-		resize(signed(bitfield(rgtr_data, gainid_id,           gain_bf)), value'length) when rid_gain,
-		(others => '-') when others;
-   		
 	frm_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -176,7 +158,7 @@ begin
 			elsif rgtr_dv='1' then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
-				frac <= scale_1245(value sll 1, scale);
+				frac <= scale_1245(var_value sll 1, scale);
 			end if;
 		end if;
 	end process;
@@ -206,7 +188,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='0' then
-				addr := text_addr(std_logic_vector(field), analog_addr, cga_cols, cga_rows);
+				addr := text_addr(var_id, analog_addr, cga_cols, cga_rows);
 				we <= addr(0);
 				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then
