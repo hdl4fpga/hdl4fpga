@@ -60,6 +60,7 @@ package scopeiopkg is
 		NUL;
 
 	constant max_inputs    : natural := 64;
+	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 	constant max_pixelsize : natural := 24;

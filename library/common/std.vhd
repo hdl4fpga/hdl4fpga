@@ -930,13 +930,13 @@ package body std is
 		constant addr : std_logic_vector;
 		constant data : std_logic_vector)
 		return std_logic_vector is
-		variable retval : unsigned(0 to (word'length+data'length-1)/data'length);
+		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length));
 	begin
 		retval(0 to word'length-1) := unsigned(word);
 		retval := rotate_left(retval, to_integer(unsigned(addr)));
 		retval(0 to data'length-1) := unsigned(data);
 		retval := rotate_right(retval, to_integer(unsigned(addr)));
-		return std_logic_vector(retval);
+		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
 	function inc (

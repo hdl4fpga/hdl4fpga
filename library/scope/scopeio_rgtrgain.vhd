@@ -25,7 +25,7 @@ end;
 architecture def of scopeio_rgtrgain is
 
 	signal dv     : std_logic;
-	signal chanid : std_logic_vector(chan_id'range);
+	signal chanid : std_logic_vector(maxinputs_bits-1 downto 0);
 	signal gainid : std_logic_vector(gain_id'range);
 
 begin
@@ -40,8 +40,8 @@ begin
 			if rising_edge(rgtr_clk) then
 				gain_dv <= dv;
 				if dv='1' then
-					chan_id <= chanid;
-					gain_id <= gainid;
+					chan_id <= std_logic_vector(resize(unsigned(chanid), chan_id'length));
+					gain_id <= std_logic_vector(resize(unsigned(gainid), gain_id'length));
 				end if;
 			end if;
 		end process;
@@ -49,8 +49,8 @@ begin
 
 	norgtr_e : if not rgtr generate
 		gain_dv <= dv;
-		chan_id <= chanid;
-		gain_id <= gainid;
+		chan_id <= std_logic_vector(resize(unsigned(chanid), chan_id'length));
+		gain_id <= std_logic_vector(resize(unsigned(gainid), gain_id'length));
 	end generate;
 
 	gain_ena <= dv;

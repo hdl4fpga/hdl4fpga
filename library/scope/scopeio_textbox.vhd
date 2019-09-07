@@ -71,7 +71,7 @@ architecture def of scopeio_textbox is
 	signal video_addr   : std_logic_vector(cga_addr'range);
 	signal char_dot     : std_logic;
 
-	signal var_id       : std_logic_vector(0 to 2-1);
+	signal var_id       : std_logic_vector(0 to chanid_maxsize-1);
 	signal var_value    : std_logic_vector(0 to 12-1);
 	signal frac         : signed(var_value'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
@@ -155,11 +155,15 @@ begin
 			bus_gnt => cgabcd_frm);
 
 		var_id <= wirebus(
-			varid_hzoffset & varid_triggerlevel & varid_vtoffset,
+			std_logic_vector(resize(unsigned(varid_hzoffset),var_id'length)) & 
+			std_logic_vector(resize(unsigned(varid_triggerlevel),var_id'length)) &
+			std_logic_vector(resize(unsigned(varid_vtoffset),var_id'length)),
 			cgabcd_frm);
 			
 		var_value <= wirebus(
-			hz_slider & trigger_level & vt_offset,
+			std_logic_vector(resize(unsigned(hz_slider ),var_value'length)) & 
+			std_logic_vector(resize(unsigned(trigger_level ),var_value'length)) &
+			std_logic_vector(resize(unsigned(vt_offset),var_value'length)),
 			cgabcd_frm);
 				 	
 	end block;
