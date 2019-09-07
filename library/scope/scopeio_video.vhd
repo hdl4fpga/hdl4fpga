@@ -79,7 +79,7 @@ entity scopeio_video is
 end;
 
 architecture beh of scopeio_video is
-
+	
 	constant storageaddr_latency  : natural := 1;
 	constant storagebram_latency  : natural := 2;
 	constant vdata_latency        : natural := 1;
@@ -111,6 +111,7 @@ architecture beh of scopeio_video is
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
 	signal hz_slider     : std_logic_vector(time_offset'range);
 	signal hz_segment    : std_logic_vector(hz_slider'range);
+	constant max_delay : natural := hz_slider'length;
 
 	constant sgmnt_id : natural := 0;
 	constant text_id  : natural := 1;
@@ -247,7 +248,7 @@ begin
 	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 	generic map (
 		inputs        => inputs,
-		max_delay     => hz_slider'length,
+		max_delay     => max_delay, 
 		lang          => lang,
 		latency       => segmment_latency+input_latency,
 		layout        => layout)
