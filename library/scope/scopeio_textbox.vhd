@@ -62,8 +62,8 @@ architecture def of scopeio_textbox is
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
 	signal we           : std_logic;
-	signal cgabcd_frm   : std_logic_vector(0 to 3-1);
-	signal cgabcd_req   : std_logic_vector(0 to 3-1);
+	signal cgabcd_frm   : std_logic_vector(0 to 1-1);
+	signal cgabcd_req   : std_logic_vector(0 to 1-1);
 	signal cgabcd_end   : std_logic;
 	signal cga_we       : std_logic;
 	signal cga_addr     : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -71,7 +71,7 @@ architecture def of scopeio_textbox is
 	signal video_addr   : std_logic_vector(cga_addr'range);
 	signal char_dot     : std_logic;
 
-	signal var_id       : std_logic_vector(0 to chanid_maxsize-1);
+	signal var_id       : std_logic_vector(0 to 2-1);
 	signal var_value    : std_logic_vector(0 to 12-1);
 	signal frac         : signed(var_value'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
@@ -140,14 +140,14 @@ begin
 		begin
 			if rising_edge(rgtr_clk) then
 				bcd_req := cgabcd_req or (
-					0 => hz_ena,
-					1 => trigger_ena,
-					2 => vt_ena);
+					0 => hz_ena); --,
+--					1 => trigger_ena,
+--					2 => vt_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 			end if;
 		end process;
 
-		varid_vtoffset <= std_logic_vector((unsigned(vt_chanid) sll 1)+var_vtoffsetid);
+		varid_vtoffset <= (others => '0'); --std_logic_vector((unsigned(vt_chanid) sll 1)+var_vtoffsetid);
 		cgabcd_arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk     => rgtr_clk,
@@ -155,15 +155,15 @@ begin
 			bus_gnt => cgabcd_frm);
 
 		var_id <= wirebus(
-			std_logic_vector(resize(unsigned(varid_hzoffset),var_id'length)) & 
-			std_logic_vector(resize(unsigned(varid_triggerlevel),var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_vtoffset),var_id'length)),
+			std_logic_vector(resize(unsigned(varid_hzoffset),var_id'length)), -- & 
+--			std_logic_vector(resize(unsigned(varid_triggerlevel),var_id'length)) &
+--			std_logic_vector(resize(unsigned(varid_vtoffset),var_id'length)),
 			cgabcd_frm);
 			
 		var_value <= wirebus(
-			std_logic_vector(resize(unsigned(hz_slider ),var_value'length)) & 
-			std_logic_vector(resize(unsigned(trigger_level ),var_value'length)) &
-			std_logic_vector(resize(unsigned(vt_offset),var_value'length)),
+			std_logic_vector(resize(unsigned(hz_slider ),var_value'length)), -- & 
+--			std_logic_vector(resize(unsigned(trigger_level ),var_value'length)) &
+--			std_logic_vector(resize(unsigned(vt_offset),var_value'length)),
 			cgabcd_frm);
 				 	
 	end block;
