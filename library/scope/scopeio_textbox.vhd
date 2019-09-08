@@ -143,16 +143,23 @@ begin
 					0 => hz_ena); --,
 --					1 => trigger_ena,
 --					2 => vt_ena);
-				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
+--				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
+				if cgabcd_req="0" then
+					cgabcd_req <= (others => hz_ena);
+				end if;
+--				if cgabcd_end='1' then
+--					cgabcd_req <= "0";
+--				end if;
+		cgabcd_frm(0) <= hz_ena; --cgabcd_req;
 			end if;
 		end process;
 
 		varid_vtoffset <= (others => '0'); --std_logic_vector((unsigned(vt_chanid) sll 1)+var_vtoffsetid);
-		cgabcd_arbiter_e : entity hdl4fpga.arbiter
-		port map (
-			clk     => rgtr_clk,
-			bus_req => cgabcd_req,
-			bus_gnt => cgabcd_frm);
+--		cgabcd_arbiter_e : entity hdl4fpga.arbiter
+--		port map (
+--			clk     => rgtr_clk,
+--			bus_req => cgabcd_req,
+--			bus_gnt => cgabcd_frm);
 
 		var_id <= wirebus(
 			std_logic_vector(resize(unsigned(varid_hzoffset),var_id'length)), -- & 

@@ -214,8 +214,8 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_trdy <= stof_trdy;
-	bcd_end  <= stof_end;
+	bcd_trdy <= stof_trdy and frm;
+	bcd_end  <= stof_end and frm;
 	bcd_do   <= stof_do;
 
 end;

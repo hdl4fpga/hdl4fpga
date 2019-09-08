@@ -177,7 +177,7 @@ package std is
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
-		constant def  : std_logic_vector := (0 to 0 => '-'))
+		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector;
 
 	function word2byte (
@@ -612,6 +612,9 @@ package body std is
 		variable aux    : unsigned(0 to arg1'length-1) := (others => '0');
 		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
 	begin
+		assert arg1'length mod arg2'length = 0
+			report "wirebus"
+			severity failure;
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
 		for i in arg2'range loop
@@ -857,12 +860,18 @@ package body std is
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
-		constant def  : std_logic_vector := (0 to 0 => '-'))
+		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
-		variable aux  : unsigned(0 to size*ena'length-1);
+		variable aux  : unsigned(0 to size*ena'length-1) := (others => '-');
 		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
 	begin
+		assert inp'length mod ena'length = 0
+			report "primux mod"
+			severity failure;
+		assert inp'length = aux'length
+			report "primux length"
+			severity failure;
 		aux(0 to inp'length-1) := unsigned(inp);
 		for i in ena'range loop
 			if ena(i)='1' then
@@ -881,6 +890,9 @@ package body std is
 		variable aux  : std_logic_vector(0 to word'length-1);
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
 	begin
+		assert word'length mod byte'length = 0
+			report "word2byte mod"
+			severity failure;
 		aux := word;
 		for i in byte'range loop
 			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
@@ -910,6 +922,9 @@ package body std is
 		constant size  : natural)
 		return std_logic_vector is
 	begin
+		assert word'length mod size = 0
+			report "word2byte mod"
+			severity failure;
 		return word2byte(fill(data => word, size => size*(2**addr'length)), addr);
 	end;
 
@@ -920,6 +935,9 @@ package body std is
 		return std_logic_vector is
 		variable aux : unsigned(0 to size*((word'length+size-1)/size)-1);
 	begin
+		assert word'length mod size = 0
+			report "word2byte mod"
+			severity failure;
 		aux(0 to word'length-1) := unsigned(word);
 		aux := aux rol ((addr*size) mod word'length);
 		return std_logic_vector(aux(0 to size-1));

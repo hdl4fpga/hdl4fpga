@@ -118,6 +118,7 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when init_s =>
+				bcd_end <= '0';
 				point := '0';
 				ptr   := not resize(signed(bcd_unit), ptr'length) + 1;
 				last  := resize(signed(bcd_prec), ptr'length)-resize(signed(bcd_unit), ptr'length);
@@ -224,6 +225,6 @@ begin
 		space  when blank_in,
 		bcd_di when dout_in;
 
-	bcd_trdy <= setif(state=data_s and bcd_irdy='1');
+	bcd_trdy <= setif(state=data_s and bcd_irdy='1') and frm;
 
 end;

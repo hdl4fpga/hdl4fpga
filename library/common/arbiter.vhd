@@ -43,13 +43,14 @@ architecture mix of arbiter is
 	begin
 		retval := (others => '0');
 		for i in arg'range loop
-			retval(i) := arg(i);
-			exit when arg(i)='1';
+			if arg(i)='1' then
+				retval(i) := '1';
+				return retval;
+			end if;
 		end loop;
-		return retval;
+		return (arg'range => '0');
 	end;
 
-	signal reqd : std_logic_vector(bus_req'range) := (others => '0');
 	signal gntd : std_logic_vector(bus_gnt'range) := (others => '0');
 
 begin
@@ -57,13 +58,12 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if gntd=(gntd'range => '0') then
-				reqd <= bus_req;
-			end if;
 			gntd <= bus_gnt;
 		end if;
 	end process;
 
-	bus_gnt <= primask(word2byte((bus_req and reqd) & bus_req, setif(gntd=(gntd'range => '0'))));
+	assert bus_req'length=bus_gnt'length
+		severity failure;
+	bus_gnt <= primask(word2byte((bus_req and gntd) & bus_req, setif(gntd=(gntd'range => '0'))));
 
 end;
