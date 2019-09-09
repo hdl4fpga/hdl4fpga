@@ -111,7 +111,7 @@ architecture beh of scopeio_video is
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
 	signal hz_slider     : std_logic_vector(time_offset'range);
 	signal hz_segment    : std_logic_vector(hz_slider'range);
-	constant max_delay : natural := hz_slider'length;
+	constant max_delay : natural := 2**hz_slider'length;
 
 	constant sgmnt_id : natural := 0;
 	constant text_id  : natural := 1;
