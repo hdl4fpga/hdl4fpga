@@ -62,7 +62,7 @@ architecture def of scopeio_textbox is
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	signal we           : std_logic;
+	signal cga_av           : std_logic;
 	signal cgabcd_req   : std_logic_vector(0 to 3-1);
 	signal cgabcd_frm   : std_logic_vector(cgabcd_req'range);
 	signal cgabcd_end   : std_logic;
@@ -161,13 +161,13 @@ begin
 			end if;
 		end process;
 
-		varid_vtoffset <= std_logic_vector(resize((unsigned(vt_chanid) sll 1)+var_vtoffsetid, varid_vtoffset'length));
 		cga_req <= cgabcd_req & cgastr_req;
 		cga_arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk     => rgtr_clk,
 			bus_req => cga_req,
 			bus_gnt => cga_frm);
+
 		cgabcd_frm <= cga_frm(0 to cgabcd_frm'length-1);
 		cgastr_frm <= cga_frm(cgabcd_frm'length to cgastr_frm'length+cgabcd_frm'length-1);
 		val_type <= 
@@ -175,6 +175,7 @@ begin
 		   '1' when cgastr_frm/=(cgastr_frm'range => '0') else
 		   '-';
 
+		varid_vtoffset <= std_logic_vector(resize((unsigned(vt_chanid) sll 1)+var_vtoffsetid, varid_vtoffset'length));
 		var_id <= wirebus(
 			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
 			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
@@ -218,9 +219,9 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if cgastr_frm/=(cgastr_frm'range => '0') then
-				cgastr_end  <= '1';
-			elsif cga_we='1' then
 				cgastr_end  <= '0';
+			elsif cga_we='1' then
+				cgastr_end  <= '1';
 			end if;
 		end if;
 	end process;
@@ -243,17 +244,23 @@ begin
 	btof_bcdunit  <= b"0000";
 	btof_bcdwidth <= b"1011";
 
-	cga_we <= btof_binfrm and btof_bcdtrdy and we;
+	cga_we <= cga_av and ((btof_binfrm and btof_bcdtrdy) or setif(cgastr_frm/=(cgastr_frm'range => '0')));
 	cga_addr_p : process (rgtr_clk)
+		variable frm  : std_logic;
 		variable addr : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
-			if cga_frm=(cga_frm'range => '0') then
+			if frm='0' then
 				addr := text_addr(var_id, analog_addr, cga_cols, cga_rows);
-				we   <= addr(0);
+				cga_av   <= addr(0);
 				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
+			end if;
+			if cga_frm=(cga_frm'range => '0') then
+				frm := '0';
+			else
+				frm := '1';
 			end if;
 		end if;
 	end process;
