@@ -107,9 +107,12 @@ begin
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 		signal hz_scalevalue  : std_logic_vector(var_binvalue'range);
 
-		constant varid_hzdiv : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
+		constant varid_hzunit   : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
+		constant varid_hzdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
 		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
 		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
+		constant varid_vtunit   : std_logic_vector := std_logic_vector(to_unsigned(var_vtunitid, var_id'length));
+		constant varid_vtdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_vtdivid, var_id'length));
 		signal   varid_vtoffset : std_logic_vector(var_id'range);
 
 	begin
@@ -184,7 +187,7 @@ begin
 		varid_vtoffset <= std_logic_vector(resize((unsigned(vt_chanid) sll 1)+var_vtoffsetid, varid_vtoffset'length));
 		var_id <= wirebus(
 			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
-			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
+			std_logic_vector(resize(unsigned(varid_hzunit),     var_id'length)) & 
 			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)),
