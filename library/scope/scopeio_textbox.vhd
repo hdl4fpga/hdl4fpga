@@ -180,7 +180,7 @@ begin
 			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)),
-			cgabcd_frm & cgastr_frm);
+			cga_frm);
 			
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
@@ -195,7 +195,7 @@ begin
 	end block;
 
 	cgabcd_end <= btof_binfrm and btof_bcdtrdy and btof_bcdend;
-	frm_p : process (rgtr_clk)
+	frmbcd_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
 			if btof_binfrm='1' then
@@ -209,6 +209,18 @@ begin
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
 				frac <= scale_1245(signed(var_binvalue) sll 1, scale);
+			end if;
+		end if;
+	end process;
+
+	frmstr_p : process (rgtr_clk)
+		variable addr : std_logic_vector(0 to cga_addr'length);
+	begin
+		if rising_edge(rgtr_clk) then
+			if cgastr_frm/=(cgastr_frm'range => '0') then
+				cgastr_end  <= '1';
+			elsif cga_we='1' then
+				cgastr_end  <= '0';
 			end if;
 		end if;
 	end process;
@@ -233,17 +245,14 @@ begin
 
 	cga_we <= btof_binfrm and btof_bcdtrdy and we;
 	cga_addr_p : process (rgtr_clk)
-		
 		variable addr : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
-			if btof_binfrm='0' then
+			if cga_frm=(cga_frm'range => '0') then
 				addr := text_addr(var_id, analog_addr, cga_cols, cga_rows);
-				we <= addr(0);
-				cgastr_end  <= '0';
+				we   <= addr(0);
 				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then
-				cgastr_end  <= setif(cgastr_frm/=(cgastr_frm'range => '0'));
 				cga_addr <= cga_addr + 1;
 			end if;
 		end if;
