@@ -16,7 +16,9 @@ entity scopeio_textbox is
 		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16;
-		font_width    : natural := 8);
+		font_width    : natural := 8;
+		hz_unit       : std_logic_vector := std_logic_vector(to_unsigned(25,5));
+		vt_unit       : std_logic_vector := std_logic_vector(to_unsigned(25,5)));
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -63,7 +65,7 @@ architecture def of scopeio_textbox is
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
 	signal cga_av           : std_logic;
-	signal cgabcd_req   : std_logic_vector(0 to 3-1);
+	signal cgabcd_req   : std_logic_vector(0 to 5-1);
 	signal cgabcd_frm   : std_logic_vector(cgabcd_req'range);
 	signal cgabcd_end   : std_logic;
 	signal cgastr_req   : std_logic_vector(0 to 1-1);
@@ -98,12 +100,14 @@ begin
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
+		signal vt_scalevalue  : std_logic_vector(var_binvalue'range);
 
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
+		signal hz_scalevalue  : std_logic_vector(var_binvalue'range);
 
-		constant varid_hzdiv : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
+		constant varid_hzdiv : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
 		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
 		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
 		signal   varid_vtoffset : std_logic_vector(var_id'range);
@@ -151,8 +155,10 @@ begin
 			if rising_edge(rgtr_clk) then
 				bcd_req := cgabcd_req or (
 					0 => hz_ena,
-					1 => trigger_ena,
-					2 => vt_ena);
+					1 => hz_ena,
+					2 => trigger_ena,
+					3 => vt_ena,
+					4 => vt_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 
 				str_req := cgastr_req or (
@@ -178,15 +184,20 @@ begin
 		varid_vtoffset <= std_logic_vector(resize((unsigned(vt_chanid) sll 1)+var_vtoffsetid, varid_vtoffset'length));
 		var_id <= wirebus(
 			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
+			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
 			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)),
 			cga_frm);
 			
+		hz_scalevalue <= std_logic_vector(scale_1245(signed(hz_unit), scale));
+		vt_scalevalue <= std_logic_vector(scale_1245(signed(vt_unit), scale));
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
+			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(trigger_level ), var_binvalue'length)) &
-			std_logic_vector(resize(unsigned(vt_offset),      var_binvalue'length)),
+			std_logic_vector(resize(unsigned(vt_offset),      var_binvalue'length)) &
+			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
 		var_strvalue <= wirebus(

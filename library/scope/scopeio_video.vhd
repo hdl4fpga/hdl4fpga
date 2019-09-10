@@ -251,7 +251,9 @@ begin
 		max_delay     => max_delay, 
 		lang          => lang,
 		latency       => segmment_latency+input_latency,
-		layout        => layout)
+		layout        => layout,
+		hz_unit       => hz_unit,
+		vt_unit       => vt_unit)
 	port map (
 		rgtr_clk      => rgtr_clk,
 		rgtr_dv       => rgtr_dv,

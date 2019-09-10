@@ -497,6 +497,11 @@ package scopeiopkg is
 		constant scale : std_logic_vector)
 		return signed;
 		
+	function scale_1245 (
+		constant val   : unsigned;
+		constant scale : std_logic_vector)
+		return unsigned;
+		
 	function i18n_label (
 		constant i18n_lang  : i18n_langs;
 		constant i18n_label : i18n_labelids)
@@ -532,7 +537,7 @@ package scopeiopkg is
 	end record;
 	type tag_vector is array (natural range <>) of tag;
 
-	constant var_hzdivid    : natural := 0;
+	constant var_hzunitid   : natural := 0;
 	constant var_hzoffsetid : natural := 1;
 	constant var_triggerid  : natural := 2;
 	constant var_vtdivid    : natural := 3;
@@ -548,7 +553,7 @@ package scopeiopkg is
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
 			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzoffsetid),
-			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzdivid),
+			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzunitid),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
 			(tagid_label, style => analogtime_fieldstyle, ref => label_hzoffset),
@@ -995,6 +1000,35 @@ package body scopeiopkg is
 		variable by2  : signed(val'range);
 		variable by4  : signed(val'range);
 		variable rval : signed(val'range);
+	begin
+		by1 := shift_left(val, 0);
+		by2 := shift_left(val, 1);
+		by4 := shift_left(val, 2);
+		sel := scale;
+		case sel(2-1 downto 0) is
+		when "00" =>
+			rval := by1;
+		when "01" =>
+			rval := by2;
+		when "10" =>
+			rval := by4;
+		when "11" =>
+			rval := by4 + by1;
+		when others =>
+			rval := (others => '-');
+		end case;
+		return rval;
+	end;
+		
+	function scale_1245 (
+		constant val   : unsigned;
+		constant scale : std_logic_vector)
+		return unsigned is
+		variable sel  : std_logic_vector(scale'length-1 downto 0);
+		variable by1  : unsigned(val'range);
+		variable by2  : unsigned(val'range);
+		variable by4  : unsigned(val'range);
+		variable rval : unsigned(val'range);
 	begin
 		by1 := shift_left(val, 0);
 		by2 := shift_left(val, 1);
