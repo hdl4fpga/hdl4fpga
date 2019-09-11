@@ -100,19 +100,23 @@ begin
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_scalevalue  : std_logic_vector(var_binvalue'range);
+		signal vt_scale       : std_logic_vector(4-1 downto 0);
+		signal vt_scalevalue  : std_logic_vector(hz_unit'range);
+		signal gain_ena       : std_logic;
+		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
 
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
-		signal hz_scalevalue  : std_logic_vector(var_binvalue'range);
+		signal hz_scalevalue  : std_logic_vector(hz_unit'range);
 
 		constant varid_hzunit   : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
 		constant varid_hzdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
 		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
 		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
 		constant varid_vtunit   : std_logic_vector := std_logic_vector(to_unsigned(var_vtunitid, var_id'length));
-		constant varid_vtdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_vtdivid, var_id'length));
+
+		signal   varid_vtdiv    : std_logic_vector(var_id'range);
 		signal   varid_vtoffset : std_logic_vector(var_id'range);
 
 	begin
@@ -151,6 +155,16 @@ begin
 			vt_chanid      => vt_chanid,
 			vt_offset      => vt_offset);
 
+		vtgain_e : entity hdl4fpga.scopeio_rgtrgain
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+			gain_ena       => gain_ena,
+			chan_id        => gain_chanid,
+			gain_id        => vt_scale);
+
 		process (rgtr_clk)
 			variable bcd_req : std_logic_vector(cgabcd_req'range);
 			variable str_req : std_logic_vector(cgastr_req'range);
@@ -161,7 +175,7 @@ begin
 					1 => hz_ena,
 					2 => trigger_ena,
 					3 => vt_ena,
-					4 => vt_ena);
+					4 => gain_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 
 				str_req := cgastr_req or (
@@ -185,16 +199,18 @@ begin
 		   '-';
 
 		varid_vtoffset <= std_logic_vector(resize((unsigned(vt_chanid) sll 1)+var_vtoffsetid, varid_vtoffset'length));
+		varid_vtdiv    <= std_logic_vector(resize((unsigned(gain_chanid) sll 1)+var_vtdivid,   varid_vtdiv'length));
 		var_id <= wirebus(
 			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
-			std_logic_vector(resize(unsigned(varid_hzunit),     var_id'length)) & 
+			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)) & 
 			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
 			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)),
+			std_logic_vector(resize(unsigned(varid_vtdiv),        var_id'length)) &
+			std_logic_vector(resize(unsigned(varid_hzunit),       var_id'length)),
 			cga_frm);
 			
-		hz_scalevalue <= std_logic_vector(scale_1245(signed(hz_unit), scale));
-		vt_scalevalue <= std_logic_vector(scale_1245(signed(vt_unit), scale));
+		hz_scalevalue <= std_logic_vector(scale_1245(unsigned(hz_unit), hz_scale));
+		vt_scalevalue <= std_logic_vector(scale_1245(unsigned(vt_unit), vt_scale));
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
@@ -256,7 +272,7 @@ begin
 	btof_bcdsign  <= '1';
 	btof_bcdprec  <= b"1110";
 	btof_bcdunit  <= b"0000";
-	btof_bcdwidth <= b"1011";
+	btof_bcdwidth <= b"1000";
 
 	cga_we <= cga_av and ((btof_binfrm and btof_bcdtrdy) or setif(cgastr_frm/=(cgastr_frm'range => '0')));
 	cga_addr_p : process (rgtr_clk)

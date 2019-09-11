@@ -541,14 +541,14 @@ package scopeiopkg is
 	constant var_hzunitid   : natural := 1;
 	constant var_hzoffsetid : natural := 2;
 	constant var_triggerid  : natural := 3;
-	constant var_vtdivid    : natural := 4;
-	constant var_vtunitid   : natural := 5;
+	constant var_vtunitid   : natural := 4;
+	constant var_vtdivid    : natural := 5;
 	constant var_vtoffsetid : natural := 6;
 
 	constant analogtime_rowstyle   : style_t := (width =>  0, align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
-	constant analogtime_unitstyle  : style_t := (width =>  8, align => right_alignment, addr => 0);
-	constant analogtime_divstyle   : style_t := (width =>  3, align => right_alignment, addr => 0);
+	constant analogtime_unitstyle  : style_t := (width =>  3, align => right_alignment, addr => 0);
+	constant analogtime_divstyle   : style_t := (width =>  8, align => right_alignment, addr => 0);
 
 	constant analogtime_layout : tag_vector := (
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
@@ -556,8 +556,8 @@ package scopeiopkg is
 			(tagid_label, style => analogtime_fieldstyle,  ref => label_trigger),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
+			(tagid_var,  style => analogtime_unitstyle,  ref => var_hzunitid),
 			(tagid_var,  style => analogtime_fieldstyle, ref => var_hzoffsetid),
-			(tagid_var,  style => analogtime_unitstyle,  ref => var_hzoffsetid),
 			(tagid_var,  style => analogtime_divstyle,   ref => var_hzdivid),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
