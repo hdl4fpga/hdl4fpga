@@ -42,14 +42,14 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := true; -- ADC onboard analog view
+        constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := true; -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false;  -- NET output
         -- ADC SPI core
-        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
+        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
@@ -67,11 +67,12 @@ architecture beh of ulx3s is
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := false;
+	constant C_oled_hex_view_usb : boolean := true;
+
 	constant C_oled_hex_view_net : boolean := false;
-	constant C_oled_hex_view_istream: boolean := true;
+	constant C_oled_hex_view_istream: boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -343,19 +344,19 @@ begin
             signal ulpi_nxt_i        : std_logic;
             signal ulpi_stp_o        : std_logic;
 
-            signal utmi_txvalid_i    : std_logic := '0';
-            signal utmi_txready_o    : std_logic;
-            signal utmi_rxvalid_o    : std_logic;
-            signal utmi_rxactive_o   : std_logic;
-            signal utmi_rxerror_o    : std_logic;
-            signal utmi_data_in_o    : std_logic_vector(7 downto 0);
-            signal utmi_data_out_i   : std_logic_vector(7 downto 0) := x"00";
-            signal utmi_xcvrselect_i : std_logic_vector(1 downto 0) := "00";
-            signal utmi_termselect_i : std_logic := '0';
-            signal utmi_op_mode_i    : std_logic_vector(1 downto 0) := "01"; -- non-driving
-            signal utmi_dppulldown_i : std_logic := '0';
-            signal utmi_dmpulldown_i : std_logic := '0';
-            signal utmi_linestate_o  : std_logic_vector(1 downto 0);
+            signal utmi_txvalid      : std_logic := '0';
+            signal utmi_txready      : std_logic;
+            signal utmi_rxvalid      : std_logic;
+            signal utmi_rxactive     : std_logic;
+            signal utmi_rxerror      : std_logic;
+            signal utmi_data_miso    : std_logic_vector(7 downto 0);
+            signal utmi_data_mosi    : std_logic_vector(7 downto 0) := x"00";
+            signal utmi_xcvrselect   : std_logic_vector(1 downto 0) := "00";
+            signal utmi_termselect   : std_logic := '0';
+            signal utmi_op_mode      : std_logic_vector(1 downto 0) := "01"; -- non-driving
+            signal utmi_dppulldown   : std_logic := '0';
+            signal utmi_dmpulldown   : std_logic := '0';
+            signal utmi_linestate    : std_logic_vector(1 downto 0);
             
             signal R_utmi_linestate_o: std_logic_vector(1 downto 0);
           begin
@@ -396,24 +397,24 @@ begin
               ulpi_data_in_o     => ulpi_data_in_o,
               ulpi_stp_o         => ulpi_stp_o,
 
-              utmi_txvalid_i     => utmi_txvalid_i,
-              utmi_txready_o     => utmi_txready_o,
-              utmi_rxvalid_o     => utmi_rxvalid_o,
-              utmi_rxactive_o    => utmi_rxactive_o,
-              utmi_rxerror_o     => utmi_rxerror_o,
-              utmi_data_in_o     => utmi_data_in_o,
-              utmi_data_out_i    => utmi_data_out_i,
-              utmi_xcvrselect_i  => utmi_xcvrselect_i,
-              utmi_termselect_i  => utmi_termselect_i,
-              utmi_op_mode_i     => utmi_op_mode_i,
-              utmi_dppulldown_i  => utmi_dppulldown_i,
-              utmi_dmpulldown_i  => utmi_dmpulldown_i,
-              utmi_linestate_o   => utmi_linestate_o
+              utmi_txvalid_i     => utmi_txvalid,
+              utmi_txready_o     => utmi_txready,
+              utmi_rxvalid_o     => utmi_rxvalid,
+              utmi_rxactive_o    => utmi_rxactive,
+              utmi_rxerror_o     => utmi_rxerror,
+              utmi_data_in_o     => utmi_data_miso,
+              utmi_data_out_i    => utmi_data_mosi,
+              utmi_xcvrselect_i  => utmi_xcvrselect,
+              utmi_termselect_i  => utmi_termselect,
+              utmi_op_mode_i     => utmi_op_mode,
+              utmi_dppulldown_i  => utmi_dppulldown,
+              utmi_dmpulldown_i  => utmi_dmpulldown,
+              utmi_linestate_o   => utmi_linestate
             );
             process(ulpi_clk60_i)
             begin
               if rising_edge(ulpi_clk60_i) then
-                R_utmi_linestate_o <= utmi_linestate_o;
+                R_utmi_linestate_o <= utmi_linestate;
               end if;
             end process;
             process(clk_adc)
@@ -610,7 +611,7 @@ begin
 		clk  => clk,
 		addr => input_addr,
 		data => trace_sine);
-	
+
 	G_view_usb: if C_view_usb generate
 	S_input_ena <= '1';
 
@@ -625,7 +626,8 @@ begin
 	--trace_green(C_view_binary_gain+2) <= monitor(1);
 	--trace_green(C_view_binary_gain+1 downto C_view_binary_gain) <= "11"; -- y offset
 
-	trace_violet(C_view_binary_gain+2) <= monitor(0);
+	trace_violet(C_view_binary_gain+2) <= S_usb_rx_done;
+	--trace_violet(C_view_binary_gain+2) <= monitor(0);
 	--trace_violet(C_view_binary_gain+4) <= dbg_sync_err;
 	--trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
 	--trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
@@ -637,6 +639,7 @@ begin
 	S_input_ena <= '1';
 	trace_yellow(C_view_binary_gain+3) <= R_utmi_linestate(0); -- D+
 	trace_cyan(C_view_binary_gain+3) <= R_utmi_linestate(1); -- D-
+	clk_input <= vga_clk;
 	end generate;
 
 	G_view_istream: if C_view_istream generate
@@ -1022,6 +1025,16 @@ begin
 	end generate; -- PS/2 mouse
 
 	G_mouse_usb: if C_mouse_usb generate
+	B_mouse_usb: block
+          signal utmi_txready   : std_logic;
+          signal utmi_data_mosi : std_logic_vector(7 downto 0);
+          signal utmi_rxvalid   : std_logic;
+          signal utmi_rxactive  : std_logic;
+          signal utmi_linectrl  : std_logic;
+          signal utmi_linestate : std_logic_vector(1 downto 0);
+          signal utmi_data_miso : std_logic_vector(7 downto 0);
+          signal utmi_txvalid   : std_logic;
+	begin
 	-- pulldown 15k for USB HOST mode
 	usb_fpga_pu_dp <= '0';
 	usb_fpga_pu_dn <= '0';
@@ -1042,36 +1055,66 @@ begin
           );
         end generate;
 
-	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
+        G_soft_core_phy: if true generate
+	E_soft_core_phy: entity hdl4fpga.usb11_phy_transciever
 	generic map
 	(
-	        C_usb_speed => C_mouse_usb_speed,
-		C_inputs    => inputs,
-		C_tracesfg  => C_tracesfg,
-		vlayout_id  => vlayout_id
+	  C_usb_speed      => C_mouse_usb_speed
 	)
 	port map
 	(
-		clk         => clk_mouse,
-		clk_usb     => clk_usb,
-		usb_reset   => btn(6), -- '1' will force USB bus reset
-		-- USB interface
-		usb_dp      => usb_fpga_bd_dp,
-		usb_dn      => usb_fpga_bd_dn,
-		usb_dif     => usb_fpga_dp,
-		-- debug
-		report_data   => S_hid_report,
-		report_valid  => S_hid_valid,
-		rx_count      => S_usb_rx_count,
-		rx_done       => S_usb_rx_done,
-		-- daisy input
-		chaini_frm  => '0', -- fromistreamdaisy_frm,
-		chaini_irdy => '0', -- fromistreamdaisy_irdy,
-		chaini_data => x"00", -- fromistreamdaisy_data,
-		-- daisy output
-		chaino_frm  => usbmouse_frommousedaisy_frm,
-		chaino_irdy => usbmouse_frommousedaisy_irdy,
-		chaino_data => usbmouse_frommousedaisy_data
+	  clk              => clk_usb,
+          usb_dp           => usb_fpga_bd_dp,
+          usb_dn           => usb_fpga_bd_dn,
+          usb_dif          => usb_fpga_dp,
+          utmi_txready_o   => utmi_txready,
+          utmi_data_o      => utmi_data_miso,
+          utmi_rxvalid_o   => utmi_rxvalid,
+          utmi_rxactive_o  => utmi_rxactive,
+          utmi_linestate_o => utmi_linestate,
+          utmi_linectrl_i  => utmi_linectrl,
+          utmi_data_i      => utmi_data_mosi,
+          utmi_txvalid_i   => utmi_txvalid
+	);
+	R_utmi_linestate <= utmi_linestate;
+--	R_utmi_linestate <= "10";
+	end generate;
+
+	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
+	generic map
+	(
+          C_usb_speed      => C_mouse_usb_speed,
+          C_inputs         => inputs,
+          C_tracesfg       => C_tracesfg,
+          vlayout_id       => vlayout_id
+	)
+	port map
+	(
+          clk              => clk_mouse,
+          clk_usb          => clk_usb,
+          usb_reset        => R_btn_debounced(6), -- '1' will force USB bus reset
+          -- USB UTMI interface
+          utmi_txready_i   => utmi_txready,
+          utmi_data_i      => utmi_data_miso,
+          utmi_rxvalid_i   => utmi_rxvalid,
+          utmi_rxactive_i  => utmi_rxactive,
+          utmi_linestate_i => utmi_linestate,
+          utmi_linectrl_o  => utmi_linectrl,
+          utmi_data_o      => utmi_data_mosi,
+          utmi_txvalid_o   => utmi_txvalid,
+          -- debug
+          report_data      => S_hid_report,
+          report_valid     => S_hid_valid,
+          rx_count         => S_usb_rx_count,
+          rx_done          => S_usb_rx_done,
+          -- daisy input
+          chaini_frm       => '0', -- fromistreamdaisy_frm,
+          chaini_irdy      => '0', -- fromistreamdaisy_irdy,
+          chaini_data      => x"00", -- fromistreamdaisy_data,
+          -- daisy output
+          chaino_frm       => usbmouse_frommousedaisy_frm,
+          chaino_irdy      => usbmouse_frommousedaisy_irdy,
+          chaino_data      => usbmouse_frommousedaisy_data
 	);
 	-- C_mouse_host, if enabled, will control GUI instead of C_mouse_usb
         G_not_mouse_host: if not C_mouse_host generate
@@ -1083,6 +1126,7 @@ begin
         G_yes_mouse_host: if C_mouse_host generate
 --          clk_istream  <= clk_uart;
         end generate; -- attach USB mouse if not host mouse
+        end block; -- USB mouse
 	end generate; -- USB mouse
 
 	G_wired_ethernet_rmii: if C_rmiiethernet generate
@@ -1187,7 +1231,7 @@ begin
 	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
 --	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
-		min_storage      => 8192, -- samples
+		min_storage      => 4096, -- samples
 		trig1shot        => true,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",

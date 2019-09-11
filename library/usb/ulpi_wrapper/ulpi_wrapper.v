@@ -241,10 +241,6 @@ wire [7:0] utmi_tx_data_w = tx_buffer_q[tx_rd_idx_q];
 // Implementation
 //-----------------------------------------------------------------
 
-// Xilinx placement pragmas:
-//synthesis attribute IOB of ulpi_data_q is "TRUE"
-//synthesis attribute IOB of ulpi_stp_q is "TRUE"
-
 reg [7:0]           ulpi_data_q;
 reg                 ulpi_stp_q;
 reg [7:0]           data_q;
@@ -427,7 +423,5 @@ assign utmi_data_in_o       = utmi_data_q;
 assign utmi_rxerror_o       = utmi_rxerror_q;
 assign utmi_rxactive_o      = utmi_rxactive_q;
 assign utmi_rxvalid_o       = utmi_rxvalid_q;
-
-
 
 endmodule
