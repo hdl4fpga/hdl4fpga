@@ -276,21 +276,27 @@ begin
 
 	cga_we <= cga_av and ((btof_binfrm and btof_bcdtrdy) or setif(cgastr_frm/=(cgastr_frm'range => '0')));
 	cga_addr_p : process (rgtr_clk)
-		variable frm  : std_logic;
-		variable addr : std_logic_vector(0 to cga_addr'length);
+		type states is (init_s, write_s);
+		variable state : states;
+		variable addr  : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
-			if frm='0' then
-				addr := text_addr(var_id, analog_addr, cga_cols, cga_rows);
-				cga_av   <= addr(0);
-				cga_addr <= unsigned(addr(1 to cga_addr'length));
-			elsif cga_we='1' then
-				cga_addr <= cga_addr + 1;
-			end if;
 			if cga_frm=(cga_frm'range => '0') then
-				frm := '0';
+				state := init_s;
+				cga_addr <= (others => '-');
+				cga_av   <= '0';
 			else
-				frm := '1';
+				case state is
+				when init_s =>
+					state    := write_s;
+					addr     := text_addr(var_id, analog_addr, cga_cols, cga_rows);
+					cga_av   <= addr(0);
+					cga_addr <= unsigned(addr(1 to cga_addr'length));
+				when write_s =>
+					if cga_we='1' then
+						cga_addr <= cga_addr + 1;
+					end if;
+				end case;
 			end if;
 		end if;
 	end process;
