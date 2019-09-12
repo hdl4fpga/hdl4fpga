@@ -556,8 +556,8 @@ package scopeiopkg is
 			(tagid_label, style => analogtime_fieldstyle,  ref => label_trigger),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_var,  style => analogtime_unitstyle,  ref => var_hzunitid),
 			(tagid_var,  style => analogtime_fieldstyle, ref => var_hzoffsetid),
+			(tagid_var,  style => analogtime_unitstyle,  ref => var_hzunitid),
 			(tagid_var,  style => analogtime_divstyle,   ref => var_hzdivid),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
@@ -582,6 +582,13 @@ package scopeiopkg is
 		constant text_width  : natural;
 		constant text_height : natural)
 		return std_logic_vector;
+
+	function text_style (
+		constant ref_id      : std_logic_vector;
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return style_t;
 
 	function text_setaddr (
 		constant tag_layout  : tag_vector;
@@ -1328,6 +1335,27 @@ package body scopeiopkg is
 			end case;
 		end loop;
 		return '0' & (0 to addr_size-1 => '-');
+	end;
+		
+	function text_style (
+		constant ref_id      : std_logic_vector;
+		constant tag_layout  : tag_vector;
+		constant text_width  : natural;
+		constant text_height : natural)
+		return style_t is
+		variable layout    : tag_vector(tag_layout'range);
+	begin
+		layout := text_setaddr (tag_layout, text_width, text_height);
+		for i in layout'range loop
+			case layout(i).tagid is
+			when tagid_var =>
+				if unsigned(ref_id)=to_unsigned(layout(i).ref, ref_id'length) then
+					return layout(i).style;
+				end if;
+			when others =>
+			end case;
+		end loop;
+		return no_style;
 	end;
 		
 end;

@@ -64,6 +64,7 @@ architecture def of scopeio_textbox is
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
+	signal cgaaddr_init : std_logic;
 	signal cga_av           : std_logic;
 	signal cgabcd_req   : std_logic_vector(0 to 5-1);
 	signal cgabcd_frm   : std_logic_vector(cgabcd_req'range);
@@ -101,14 +102,14 @@ begin
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
-		signal vt_scalevalue  : std_logic_vector(hz_unit'range);
+		signal vt_scalevalue  : std_logic_vector(vt_unit'length+3-1 downto 0);
 		signal gain_ena       : std_logic;
 		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
 
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
-		signal hz_scalevalue  : std_logic_vector(hz_unit'range);
+		signal hz_scalevalue  : std_logic_vector(hz_unit'length+3 downto 0);
 
 		constant varid_hzunit   : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
 		constant varid_hzdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
@@ -209,8 +210,8 @@ begin
 			std_logic_vector(resize(unsigned(varid_hzunit),       var_id'length)),
 			cga_frm);
 			
-		hz_scalevalue <= std_logic_vector(scale_1245(unsigned(hz_unit), hz_scale));
-		vt_scalevalue <= std_logic_vector(scale_1245(unsigned(vt_unit), vt_scale));
+		hz_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(hz_unit), hz_scalevalue'length), hz_scale));
+		vt_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(vt_unit), vt_scalevalue'length), vt_scale));
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
@@ -244,18 +245,6 @@ begin
 		end if;
 	end process;
 
-	frmstr_p : process (rgtr_clk)
-		variable addr : std_logic_vector(0 to cga_addr'length);
-	begin
-		if rising_edge(rgtr_clk) then
-			if cgastr_frm/=(cgastr_frm'range => '0') then
-				cgastr_end  <= '0';
-			elsif cga_we='1' then
-				cgastr_end  <= '1';
-			end if;
-		end if;
-	end process;
-
 	scopeio_float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
 		clk      => rgtr_clk,
@@ -272,39 +261,39 @@ begin
 	btof_bcdsign  <= '1';
 	btof_bcdprec  <= b"1110";
 	btof_bcdunit  <= b"0000";
-	btof_bcdwidth <= b"1000";
+	btof_bcdwidth <= std_logic_vector(to_unsigned(text_style(var_id, analog_addr, cga_cols, cga_rows).width, 4));
 
-	cga_we <= cga_av and ((btof_binfrm and btof_bcdtrdy) or setif(cgastr_frm/=(cgastr_frm'range => '0')));
+	frmstr_p :
+	cgastr_end <= setif(cga_we='1' and cgastr_frm/=(cgastr_frm'range => '0'));
+
 	cga_addr_p : process (rgtr_clk)
-		type states is (init_s, write_s);
-		variable state : states;
-		variable addr  : std_logic_vector(0 to cga_addr'length);
+		variable addr : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
 			if cga_frm=(cga_frm'range => '0') then
-				state := init_s;
+				cgaaddr_init <= '1';
 				cga_addr <= (others => '-');
 				cga_av   <= '0';
-			else
-				case state is
-				when init_s =>
-					state    := write_s;
-					addr     := text_addr(var_id, analog_addr, cga_cols, cga_rows);
-					cga_av   <= addr(0);
-					cga_addr <= unsigned(addr(1 to cga_addr'length));
-				when write_s =>
-					if cga_we='1' then
-						cga_addr <= cga_addr + 1;
-					end if;
-				end case;
+			elsif cgaaddr_init='1' then
+				cgaaddr_init <= '0';
+				addr     := text_addr(var_id, analog_addr, cga_cols, cga_rows);
+				cga_av   <= addr(0);
+				cga_addr <= unsigned(addr(1 to cga_addr'length));
+			elsif cga_we='1' then
+				cga_addr <= cga_addr + 1;
 			end if;
 		end if;
 	end process;
+
+	cga_we <=
+		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
+		cga_av when cgastr_frm/=(cgastr_frm'range => '0') else
+		'0';
+
 	cga_code <= word2byte(
 		word2byte(to_ascii("0123456789 .+-"), btof_bcddo, ascii'length) &
 		var_strvalue,
 		val_type);
-
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl font_hbits, textbox_width(layout)/font_width) +

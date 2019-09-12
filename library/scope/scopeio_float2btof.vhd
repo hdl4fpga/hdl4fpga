@@ -36,10 +36,10 @@ begin
 				std_logic_vector(sel), 
 				bin_di'length);
 			bin_exp <= setif(sel >= frac'length/bin_di'length);
-			bin_neg <= frac(frac'left);
 
 		end if;
 	end process;
 
+	bin_neg  <= frac(frac'left);
 	bin_irdy <= bin_frm;
 end;
