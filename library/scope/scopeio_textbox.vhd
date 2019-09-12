@@ -257,7 +257,7 @@ begin
 		bin_exp  => btof_binexp,
 		bin_di   => btof_bindi);
 
-	btof_bcdalign <= '0';
+	btof_bcdalign <= setif(text_style(var_id, analog_addr, cga_cols, cga_rows).align=left_alignment);
 	btof_bcdsign  <= '1';
 	btof_bcdprec  <= b"1110";
 	btof_bcdunit  <= b"0000";
