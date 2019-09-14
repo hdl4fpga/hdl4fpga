@@ -302,7 +302,7 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => text_content(analogtime_layout, cga_cols, cga_rows, lang),
+		cga_bitrom  => text_content(analog_addr, cga_cols, cga_rows, lang),
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)
