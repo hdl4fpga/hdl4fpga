@@ -47,8 +47,8 @@ entity scopeio_textbox is
 		text_on       : in  std_logic := '1';
 		text_dot      : out std_logic);
 
---	constant inp : natural := inputs+3;
-	constant inp : natural := inputs;
+	constant inp : natural := inputs+3;
+--	constant inp : natural := inputs;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inp-1);
 end;
@@ -112,14 +112,14 @@ begin
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 		signal hz_scalevalue  : std_logic_vector(hz_unit'length+3 downto 0);
 
-		constant varid_hzunit   : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
-		constant varid_hzdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
-		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
-		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
+--		constant varid_hzunit   : std_logic_vector := std_logic_vector(to_unsigned(var_hzunitid, var_id'length));
+--		constant varid_hzdiv    : std_logic_vector := std_logic_vector(to_unsigned(var_hzdivid, var_id'length));
+--		constant varid_hzoffset : std_logic_vector := std_logic_vector(to_unsigned(var_hzoffsetid, var_id'length));
+--		constant varid_triggerlevel : std_logic_vector := std_logic_vector(to_unsigned(var_triggerid, var_id'length));
 
-		signal   varid_vtdiv    : std_logic_vector(var_id'range);
-		signal   varid_vtunit   : std_logic_vector(var_id'range);
-		signal   varid_vtoffset : std_logic_vector(var_id'range);
+--		signal   varid_vtdiv    : std_logic_vector(var_id'range);
+--		signal   varid_vtunit   : std_logic_vector(var_id'range);
+--		signal   varid_vtoffset : std_logic_vector(var_id'range);
 
 	begin
 
@@ -201,18 +201,34 @@ begin
 		   '1' when cgastr_frm/=(cgastr_frm'range => '0') else
 		   '-';
 
-		varid_vtoffset <= std_logic_vector(resize(mul(unsigned(vt_chanid),3)  +var_vtoffsetid,   varid_vtoffset'length));
-		varid_vtdiv    <= std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1, varid_vtdiv'length));
-		varid_vtunit   <= std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, varid_vtunit'length));
-		var_id <= wirebus(
-			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
-			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)) & 
-			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_vtdiv),        var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_hzunit),       var_id'length)) &
-			std_logic_vector(resize(unsigned(varid_vtunit),       var_id'length)),
-			cga_frm);
+		var_id <= std_logic_vector(to_unsigned(primux(
+			(
+				0 => var_hzoffsetid, 
+				1 => var_hzdivid,  
+				2 => var_triggerid, 
+				3 => word2byte((0 => var_vtoffsetid),   vt_chanid), 
+				4 => word2byte((0 => var_vtoffsetid+1), vt_chanid)) &
+--				3 => to_integer(mul(unsigned(vt_chanid),3)+var_vtoffsetid), 
+--				4 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1)) &
+			(
+				0 => var_hzunitid,   
+				1 => word2byte((0 => var_vtoffsetid+2), gain_chanid)),
+--				1 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2)),
+			cga_frm), var_id'length));
+			
+--		varid_vtdiv    <= std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1, varid_vtdiv'length));
+--		varid_vtoffset <= std_logic_vector(resize(mul(unsigned(vt_chanid),3)  +var_vtoffsetid,   varid_vtoffset'length));
+--		varid_vtunit   <= std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, varid_vtunit'length));
+--		var_id <= wirebus(
+--			std_logic_vector(resize(unsigned(varid_hzoffset),     var_id'length)) & 
+--			std_logic_vector(resize(unsigned(varid_hzdiv),        var_id'length)) & 
+--			std_logic_vector(resize(unsigned(varid_triggerlevel), var_id'length)) &
+--			std_logic_vector(resize(unsigned(varid_vtoffset),     var_id'length)) &
+--			std_logic_vector(resize(unsigned(varid_vtdiv),        var_id'length)) &
+--
+--			std_logic_vector(resize(unsigned(varid_hzunit),       var_id'length)) &
+--			std_logic_vector(resize(unsigned(varid_vtunit),       var_id'length)),
+--			cga_frm);
 			
 		hz_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(hz_unit), hz_scalevalue'length), hz_scale));
 		vt_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(vt_unit), vt_scalevalue'length), vt_scale));

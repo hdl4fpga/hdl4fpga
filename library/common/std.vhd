@@ -180,6 +180,12 @@ package std is
 		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector;
 
+	function primux (
+		constant inp  : natural_vector;
+		constant ena  : std_logic_vector;
+		constant def  : natural := 0)
+		return natural;
+
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
@@ -206,6 +212,11 @@ package std is
 		constant addr  : natural;
 		constant size  : natural)
 		return std_logic_vector;
+
+	function word2byte (
+		constant word  : natural_vector;
+		constant addr  : std_logic_vector)
+		return natural;
 
 	function byte2word (
 		constant word : std_logic_vector;
@@ -344,11 +355,6 @@ package std is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 	
-	function slice_select (
-		constant slice_data : std_logic_vector;
-		constant slice_map  : natural_vector;
-		constant slice_id   : natural)
-		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -883,6 +889,26 @@ package body std is
 		return rval;
 	end;
 
+	function primux (
+		constant inp  : natural_vector;
+		constant ena  : std_logic_vector;
+		constant def  : natural := 0)
+		return natural is
+		alias alias_inp : natural_vector(0 to inp'length-1) is inp;
+		alias alias_ena : std_logic_vector(0 to ena'length-1) is ena;
+	begin
+		for i in alias_ena'range loop
+			if i < alias_inp'length then
+				if alias_ena(i)='1' then
+					return alias_inp(i);
+				end if;
+			else
+				exit;
+			end if;
+		end loop;
+		return def;
+	end;
+
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
@@ -941,6 +967,23 @@ package body std is
 		aux(0 to word'length-1) := unsigned(word);
 		aux := aux rol ((addr*size) mod word'length);
 		return std_logic_vector(aux(0 to size-1));
+	end;
+
+	function word2byte (
+		constant word  : natural_vector;
+		constant addr  : std_logic_vector)
+		return natural is
+		alias    arg    : natural_vector(0 to word'length-1) is word;
+		variable retval : natural_vector(0 to 2**addr'length-1);
+	begin
+		retval := (others => 0);
+		if retval'length < arg'length then
+			retval := arg(retval'range);
+		else
+			retval(arg'range) := arg;
+		end if;
+
+		return retval(to_integer(unsigned(addr)));
 	end;
 
 	function byte2word (
@@ -1298,28 +1341,6 @@ package body std is
 			aux_m := aux_m sll 1;
 		end loop;
 		return std_logic_vector(aux_r);
-	end;
-
-	function slice_select (
-		constant slice_data : std_logic_vector;
-		constant slice_map  : natural_vector;
-		constant slice_id   : natural)
-		return std_logic_vector is
-		variable aux : unsigned(0 to slice_data'length-1);
-	begin
-		aux := unsigned(slice_data);
-		for i in slice_map'range loop
-			if i=slice_id then
-				return std_logic_vector(aux(0 to slice_map(i)-1));
-			end if;
-			aux := aux rol slice_map(i);
-		end loop;
-
-		assert false
-			report "slice_id is not in range"
-			severity FAILURE;
-
-		return (1 to 0 => '-');
 	end;
 
 end;
