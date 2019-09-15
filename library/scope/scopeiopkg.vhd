@@ -579,8 +579,8 @@ package scopeiopkg is
 	constant var_hzoffsetid : natural := 2;
 	constant var_triggerid  : natural := 3;
 	constant var_vtunitid   : natural := 4;
-	constant var_vtdivid    : natural := 5;
-	constant var_vtoffsetid : natural := 6;
+--	constant var_vtdivid    : natural := 5;
+	constant var_vtoffsetid : natural := 5;
 
 	constant analogtime_rowstyle   : style_t := (width =>  0, align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
@@ -595,25 +595,27 @@ package scopeiopkg is
 
 	constant analogtime_layout : tag_vector := (
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_var,   style => analogtime_fieldstyle,  ref => var_triggerid),
-			(tagid_label, style => analogtime_fieldstyle,  ref => label_trigger),
+			(tagid_var,   style => analogtime_fieldstyle,    ref => var_triggerid),
+			(tagid_label, style => analogtime_fieldstyle,    ref => label_trigger),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_var,  style => analogtime_fieldstyle,  ref => var_hzoffsetid),
-			(tagid_str,  style => (1, left_alignment, 0), ref => 0),
-			(tagid_var,  style => analogtime_unitstyle,   ref => var_hzunitid),
-			(tagid_str,  style => (1, left_alignment, 0), ref => 2),
-			(tagid_var,  style => analogtime_divstyle,    ref => var_hzdivid),
+			(tagid_var,   style => analogtime_fieldstyle,    ref => var_hzoffsetid),
+			(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
+			(tagid_var,   style => analogtime_unitstyle,     ref => var_hzunitid),
+			(tagid_str,   style => (2, left_alignment, 0),   ref => 2),
+			(tagid_var,   style => analogtime_divstyle,      ref => var_hzdivid),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_label, style => analogtime_fieldstyle, ref => label_hzoffset),
-			(tagid_str,   style => (3, center_alignment, 0), ref => 1),
-			(tagid_label, style => analogtime_divstyle, ref => label_hzdiv),
+			(tagid_label, style => analogtime_fieldstyle,    ref => label_hzoffset),
+			(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
+			(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
+			(tagid_label, style => analogtime_divstyle,      ref => label_hzdiv),
 		(tagid_end, style => no_style, ref => 0),
 		(tagid_row, style => analogtime_rowstyle, ref => 0),
-			(tagid_label, style => analogtime_fieldstyle, ref => label_vtoffset),
-			(tagid_str,   style => (3, center_alignment, 0), ref => 1),
-			(tagid_label, style => analogtime_divstyle, ref => label_vtdiv),
+			(tagid_label, style => analogtime_fieldstyle,    ref => label_vtoffset),
+			(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
+			(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
+			(tagid_label, style => analogtime_divstyle,      ref => label_vtdiv),
 		(tagid_end, style => no_style, ref => 0));
 
 end;
@@ -1265,7 +1267,7 @@ package body scopeiopkg is
 					tag_layout(tag_index).style.align);
 			when tagid_var =>
 				for i in text_left to text_right loop
-					text_line(i) := ' ';
+					text_line(i) := '*';
 				end loop;
 			when tagid_row =>
 				for i in text_left to text_right loop
@@ -1322,16 +1324,17 @@ package body scopeiopkg is
 		constant inputs      : natural;
 		constant tag_layout  : tag_vector)
 		return tag_vector is
-		variable layout      : tag_vector(0 to tag_layout'length+6*inputs-1);
+		variable layout      : tag_vector(0 to tag_layout'length+7*inputs-1);
 	begin
 		layout(0 to tag_layout'length-1) := tag_layout;
 		for i in 0 to inputs-1 loop
-			layout(tag_layout'length+6*i+0) := (tagid_row, style => analogtime_rowstyle,    ref => 0);
-			layout(tag_layout'length+6*i+1) := (tagid_var, style => analogtime_fieldstyle,  ref => 2*i+var_vtoffsetid);
-			layout(tag_layout'length+6*i+2) := (tagid_var, style => (1, left_alignment, 0), ref => 0);
-			layout(tag_layout'length+6*i+3) := (tagid_str, style => (2, left_alignment, 0), ref => 3);
-			layout(tag_layout'length+6*i+4) := (tagid_var, style => analogtime_divstyle,    ref => 2*i+var_vtdivid);
-			layout(tag_layout'length+6*i+5) := (tagid_end, style => no_style,               ref => 0);
+			layout(tag_layout'length+7*i+0) := (tagid_row, style => analogtime_rowstyle,    ref => 0);
+			layout(tag_layout'length+7*i+1) := (tagid_var, style => analogtime_fieldstyle,  ref => 3*i+var_vtoffsetid);
+			layout(tag_layout'length+7*i+2) := (tagid_str, style => (1, left_alignment, 0), ref => 0);
+			layout(tag_layout'length+7*i+3) := (tagid_var, style => (1, left_alignment, 0), ref => 3*i+var_vtoffsetid+2);
+			layout(tag_layout'length+7*i+4) := (tagid_str, style => (2, left_alignment, 0), ref => 3);
+			layout(tag_layout'length+7*i+5) := (tagid_var, style => analogtime_divstyle,    ref => 3*i+var_vtoffsetid+1);
+			layout(tag_layout'length+7*i+6) := (tagid_end, style => no_style,               ref => 0);
 		end loop;
 		return layout;
 	end;
