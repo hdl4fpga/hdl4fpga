@@ -47,8 +47,8 @@ entity scopeio_textbox is
 		text_on       : in  std_logic := '1';
 		text_dot      : out std_logic);
 
-	constant inp : natural := inputs+3;
---	constant inp : natural := inputs;
+--	constant inp : natural := inputs+3;
+	constant inp : natural := inputs;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inp-1);
 end;

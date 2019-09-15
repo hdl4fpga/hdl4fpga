@@ -1387,7 +1387,7 @@ package body scopeiopkg is
 			when others =>
 			end case;
 		end loop;
-		return '1' & (0 to addr_size-1 => '0');
+		return '0' & (0 to addr_size-1 => '0');
 	end;
 		
 	function text_style (
