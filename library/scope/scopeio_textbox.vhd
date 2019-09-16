@@ -70,7 +70,7 @@ architecture def of scopeio_textbox is
 	signal cgabcd_req   : std_logic_vector(0 to 5-1);
 	signal cgabcd_frm   : std_logic_vector(cgabcd_req'range);
 	signal cgabcd_end   : std_logic;
-	signal cgastr_req   : std_logic_vector(0 to 2-1);
+	signal cgastr_req   : std_logic_vector(0 to 5-1);
 	signal cgastr_frm   : std_logic_vector(cgastr_req'range);
 	signal cgastr_end   : std_logic;
 	signal cga_req      : std_logic_vector(0 to cgabcd_req'length+cgastr_req'length-1);
@@ -173,7 +173,10 @@ begin
 
 				str_req := cgastr_req or (
 					0 => hz_ena,
-					1 => gain_ena);
+					1 => trigger_ena,
+					2 => trigger_ena,
+					3 => trigger_ena,
+					4 => gain_ena);
 				cgastr_req <= str_req and not (cgastr_frm and (cgastr_frm'range => cgastr_end));
 			end if;
 		end process;
@@ -195,11 +198,14 @@ begin
 		var_id <= wirebus(
 			std_logic_vector(to_unsigned(var_hzoffsetid,                           var_id'length)) & 
 			std_logic_vector(to_unsigned(var_hzdivid,                              var_id'length)) & 
-			std_logic_vector(to_unsigned(var_triggerid,                            var_id'length)) &
+			std_logic_vector(to_unsigned(var_tgrlevelid,                           var_id'length)) &
 			std_logic_vector(resize(mul(unsigned(vt_chanid),3)  +var_vtoffsetid+0, var_id'length)) &
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1, var_id'length)) &
 
 			std_logic_vector(to_unsigned(var_hzunitid,                             var_id'length)) &
+			std_logic_vector(to_unsigned(var_tgredgeid,                            var_id'length)) &
+			std_logic_vector(to_unsigned(var_tgrfreezeid,                          var_id'length)) &
+			std_logic_vector(to_unsigned(var_tgrunitid,                            var_id'length)) &
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, var_id'length)),
 			cga_frm);
 			
@@ -208,14 +214,17 @@ begin
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
-			std_logic_vector(resize(unsigned(trigger_level ), var_binvalue'length)) &
+			std_logic_vector(resize(unsigned(trigger_level),  var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(vt_offset),      var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
 		var_strvalue <= wirebus(
-			word2byte(to_ascii("munp"), hz_scale, ascii'length) &
-			word2byte(to_ascii("munp"), vt_scale, ascii'length),
+			word2byte(to_ascii("munp"), hz_scale,       ascii'length) &
+			word2byte(x"1819",          trigger_edge)                 &
+			word2byte(to_ascii(" *"),   trigger_freeze)               &
+			word2byte(to_ascii("munp"), vt_scale,       ascii'length) &
+			word2byte(to_ascii("munp"), vt_scale,       ascii'length),
 			cgastr_frm);
 
 	end block;

@@ -574,13 +574,15 @@ package scopeiopkg is
 		constant tag_layout  : tag_vector)
 		return tag_vector;
 
-	constant var_hzdivid    : natural := 0;
-	constant var_hzunitid   : natural := 1;
-	constant var_hzoffsetid : natural := 2;
-	constant var_triggerid  : natural := 3;
-	constant var_vtunitid   : natural := 4;
---	constant var_vtdivid    : natural := 5;
-	constant var_vtoffsetid : natural := 5;
+	constant var_hzdivid      : natural := 0;
+	constant var_hzunitid     : natural := 1;
+	constant var_hzoffsetid   : natural := 2;
+	constant var_tgrlevelid   : natural := 3;
+	constant var_tgrfreezeid  : natural := 4;
+	constant var_tgrunitid    : natural := 5;
+	constant var_tgredgeid    : natural := 6;
+	constant var_vtunitid     : natural := 7;
+	constant var_vtoffsetid   : natural := 8;
 
 	constant analogtime_rowstyle   : style_t := (width =>  0, align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
@@ -595,7 +597,15 @@ package scopeiopkg is
 
 	constant analogtime_layout : tag_vector := (
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_triggerid),
+			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_tgrlevelid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
+			tag'(tagid_var,   style => analogtime_unitstyle,     ref => var_tgrunitid),
+			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 2),
+			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
+			tag'(tagid_var,   style => (1, left_alignment, 0),   ref => var_tgredgeid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
+			tag'(tagid_var,   style => (1, left_alignment, 0),   ref => var_tgrfreezeid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
 			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_trigger),
 		tag'(tagid_end, style => no_style, ref => 0),
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
