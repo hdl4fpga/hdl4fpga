@@ -62,9 +62,11 @@ architecture inference of bram is
 		variable retval : word_vector(0 to size-1);
 	begin
 		aux(0 to bitrom'length-1) := bitrom;
-		for i in retval'range loop
-			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
-		end loop;
+		if bitrom'length > 1 then  -- "if" WORKAROUND suggested by emard @ github.com
+			for i in retval'range loop
+				retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
+			end loop;
+		end if;
 		return retval;
 	end;
 
