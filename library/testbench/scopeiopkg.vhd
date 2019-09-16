@@ -44,12 +44,33 @@ architecture scopeiopkg of testbench is
 			width,
 			height,
 			lang_en);
+			signal clk : std_logic := '0';
+		signal cga_frm     : std_logic_vector(7-1 downto 0) := ('1', others => '0');
+		signal var_id      : std_logic_vector(5-1 downto 0) := (others => '0');
+		signal vt_chanid   : std_logic_vector(4-1 downto 0) := (others => '0');
+		signal gain_chanid : std_logic_vector(6-1 downto 0) := (others => '0');
 begin
 
-	process
-		variable mesg : line;
-	begin
-		wait;
-	end process;
-
+		var_id <= std_logic_vector(to_unsigned(primux(
+			(
+				0 => var_hzoffsetid, 
+				1 => var_hzdivid,  
+				2 => var_triggerid, 
+				3 => word2byte((0 => var_vtoffsetid),   vt_chanid), 
+				4 => word2byte((0 => var_vtoffsetid+1), vt_chanid)) &
+--				3 => to_integer(mul(unsigned(vt_chanid),3)+var_vtoffsetid), 
+--				4 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1)) &
+			(
+				0 => var_hzunitid,   
+				1 => word2byte((0 => var_vtoffsetid+2), gain_chanid)),
+--				1 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2)),
+			cga_frm), var_id'length));
+			
+		clk <= not clk after 5 ns;
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				cga_frm <= std_logic_Vector(unsigned(cga_frm) ror 1);
+			end if;
+		end process;
 end;
