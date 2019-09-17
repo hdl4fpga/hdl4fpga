@@ -44,18 +44,27 @@ architecture def of main is
 		variable temp : real;
 		variable mult : real;
 		variable mesg : line;
+		variable lttr : natural;
 	begin
+		write (mesg, arg);
+		writeline(output, mesg);
+
 		mult := 1.0;
+		lttr := 0;
 		while arg > mult loop
 			mult := mult * 1.0e3;
+			lttr := lttr + 1;
 		end loop;
 		mult := mult / 1.0e3;
+		lttr := lttr - 1;
 		temp := arg  / mult;
 
+		write (mesg, string'("******"));
+		writeline(output, mesg);
+		write (mesg, integer(temp));
+		writeline(output, mesg);
 		prec := -3;
 		for i in 0 to 3-1 loop
-		write (mesg, temp);
-		writeline(output, mesg);
 			if 10.0 < temp then
 				prec := prec + 1;
 			elsif 4.0 < temp  then
@@ -63,6 +72,7 @@ architecture def of main is
 			end if;
 			temp := temp / 10.0;
 		end loop;
+
 		write (mesg, prec);
 		writeline(output, mesg);
 		return rval;
@@ -72,7 +82,7 @@ begin
 	process
 		variable pp : yyy;
 	begin
-		pp := xxx(101.0e12);
+		pp := xxx(2.0e10);
 		wait;
 
 	end process;
