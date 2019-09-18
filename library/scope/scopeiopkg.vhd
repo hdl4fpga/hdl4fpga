@@ -26,6 +26,7 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -466,6 +467,11 @@ package scopeiopkg is
 		pointery_id => pointery_maxsize, 
 		pointerx_id => pointerx_maxsize);
 
+	type sio_float is record
+		frac : natural;
+		exp  : integer;
+	end record;
+
 	component scopeio_tds
 		generic (
 			inputs           : natural;
@@ -491,6 +497,10 @@ package scopeiopkg is
 			video_dv         : out std_logic;
 			video_data       : out std_logic_vector);
 	end component;
+
+	function to_siofloat (
+		constant unit : real)
+		return sio_float;
 
 	function scale_1245 (
 		constant val   : signed;
@@ -1030,6 +1040,34 @@ package body scopeiopkg is
 		return (0 to 0 => '-');
 	end;
 
+	function to_siofloat (
+		constant unit : real)
+		return sio_float is
+		variable frac : real;
+		variable exp  : integer;
+		variable mult : real;
+	begin
+		mult := 1.0;
+		while unit >= mult loop
+			mult := mult * 1.0e1;
+		end loop;
+		mult := mult / 1.0e1;
+		frac := unit / mult;
+
+		mult := 1.0;
+		exp  := 0;
+		for i in 0 to 3-1 loop
+			assert i /= 2
+				report "Invalid unit value"
+				severity failure;
+			frac := frac * 2.0;
+			exp  := exp - 1;
+			exit when floor(frac)=(frac);
+		end loop;
+
+		return sio_float'(frac => natural(frac), exp => exp);
+	end;
+
 	function scale_1245 (
 		constant val   : signed;
 		constant scale : std_logic_vector)
@@ -1083,7 +1121,7 @@ package body scopeiopkg is
 		when "11" =>
 			rval := by4 + by1;
 		when others =>
-			rval := (others => '-');
+			rval := (others => '1');
 		end case;
 		return rval;
 	end;

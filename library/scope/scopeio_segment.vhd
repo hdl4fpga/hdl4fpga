@@ -11,8 +11,8 @@ entity scopeio_segment is
 		input_latency : natural;
 		latency       : natural;
 		layout        : display_layout;
-		hz_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5));
-		vt_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5));
+		hz_unit       : real;
+		vt_unit       : real;
 		inputs        : natural);
 	port (
 		rgtr_clk      : in  std_logic;

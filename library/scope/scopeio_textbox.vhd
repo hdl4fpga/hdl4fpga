@@ -17,8 +17,8 @@ entity scopeio_textbox is
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16;
 		font_width    : natural := 8;
-		hz_unit       : std_logic_vector := std_logic_vector(to_unsigned(25,5));
-		vt_unit       : std_logic_vector := std_logic_vector(to_unsigned(25,5)));
+		hz_unit       : real;
+		vt_unit       : real);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -99,18 +99,20 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
+		constant vt_frac      : unsigned := to_unsigned(to_siofloat(vt_unit).frac, unsigned_num_bits(to_siofloat(vt_unit).frac));
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
-		signal vt_scalevalue  : std_logic_vector(vt_unit'length+3-1 downto 0);
+		signal vt_scalevalue  : std_logic_vector(vt_frac'length+3-1 downto 0);
 		signal gain_ena       : std_logic;
 		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
 
+		constant hz_frac      : unsigned := to_unsigned(to_siofloat(hz_unit).frac, unsigned_num_bits(to_siofloat(hz_unit).frac));
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
-		signal hz_scalevalue  : std_logic_vector(hz_unit'length+3 downto 0);
+		signal hz_scalevalue  : std_logic_vector(hz_frac'length+3 downto 0);
 
 	begin
 
@@ -209,8 +211,8 @@ begin
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, var_id'length)),
 			cga_frm);
 			
-		hz_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(hz_unit), hz_scalevalue'length), hz_scale));
-		vt_scalevalue <= std_logic_vector(scale_1245(resize(unsigned(vt_unit), vt_scalevalue'length), vt_scale));
+		hz_scalevalue <= std_logic_vector(scale_1245(resize(hz_frac, hz_scalevalue'length), hz_scale));
+		vt_scalevalue <= std_logic_vector(scale_1245(resize(vt_frac, vt_scalevalue'length), vt_scale));
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &

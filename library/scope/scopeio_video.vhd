@@ -33,8 +33,8 @@ entity scopeio_video is
 	generic (
 		lang          : i18n_langs := lang_en;
 		vlayout_id    : natural;
-		hz_unit       : std_logic_vector;
-		vt_unit       : std_logic_vector;
+		hz_unit       : real;
+		vt_unit       : real;
 		inputs        : natural;
 		dflt_tracesfg : std_logic_vector;
 		dflt_gridfg   : std_logic_vector;

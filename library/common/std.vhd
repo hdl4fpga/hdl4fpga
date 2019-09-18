@@ -99,6 +99,11 @@ package std is
 		return signed;
 
 	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed;
+
+	function mul (
 		constant op1 : unsigned;
 		constant op2 : natural)
 		return unsigned;
@@ -708,6 +713,27 @@ package body std is
 				rval(0 to muld'length) := rval(0 to muld'length) + muld;
 			end if;
 			mulr := mulr srl 1;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed is
+		variable mulr : natural;
+		variable muld : signed(op1'length-1 downto 0);
+		variable rval : signed(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		while mulr /= 0 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr / 2;
 		end loop;
 		return rval;
 	end;

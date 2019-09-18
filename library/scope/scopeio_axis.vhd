@@ -33,8 +33,8 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_axis is
 	generic (
 		latency       : natural;
-		hz_unit       : std_logic_vector;
-		vt_unit       : std_logic_vector;
+		hz_unit       : real;
+		vt_unit       : real;
 		layout        : display_layout);
 	port (
 		clk           : in  std_logic;
@@ -95,6 +95,7 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
+	constant hz_exp : signed := to_signed(to_siofloat(hz_unit).exp, btof_bindi'length);
 	signal hz_start : signed(binvalue'range);
 	signal hz_stop  : unsigned(binvalue'range);
 	signal hz_step  : signed(binvalue'range);
@@ -104,6 +105,7 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
+	constant vt_exp : signed := to_signed(to_siofloat(vt_unit).exp, btof_bindi'length);
 	signal vt_start : signed(binvalue'range);
 	signal vt_stop  : unsigned(binvalue'range);
 	signal vt_step  : signed(binvalue'range);
@@ -121,6 +123,7 @@ begin
 		signal scale    : std_logic_vector(axis_scale'range);
 		signal init     : std_logic;
 		signal ena      : std_logic;
+		signal exp      : signed(btof_bindi'range);
 		signal start    : signed(binvalue'range);
 		signal stop     : unsigned(binvalue'range);
 		signal step     : signed(binvalue'range);
@@ -154,6 +157,7 @@ begin
 		start <= hz_start when vt_ena='0' else vt_start;
 		stop  <= hz_stop  when vt_ena='0' else vt_stop;
 		step  <= hz_step  when vt_ena='0' else vt_step;
+		exp   <= hz_exp   when vt_ena='0' else vt_exp;
 
 		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
@@ -210,7 +214,7 @@ begin
 				end if;
 
 				btof_bindi <= word2byte(
-					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & x"f"),
+					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & exp),
 					std_logic_vector(sel), 
 					btof_bindi'length);
 				btof_binexp <= setif(sel >= binvalue'length/btof_bindi'length);
@@ -280,17 +284,18 @@ begin
 		begin 
 
 			init_p : process (clk)
+				constant frac : natural := to_siofloat(hz_unit).frac;
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
 						hz_ena   <= not axis_sel;
 						hz_start <= 
-							mul(to_signed(1,1), unsigned(hz_unit)) +
+							mul(to_signed(1,1), frac) +
 							shift_left(
-								resize(mul(signed(axis_base), unsigned(hz_unit)), hz_start'length),
+								resize(mul(signed(axis_base), frac), hz_start'length),
 								axisx_backscale+hztick_bits-hz_taddr'right);
 						hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
-						hz_step  <= signed(resize(unsigned(hz_unit), hz_step'length));
+						hz_step  <= to_signed(frac, hz_step'length);
 						hz_align <= '1';
 						hz_sign  <= '0';
 					end if;
@@ -381,17 +386,18 @@ begin
 		begin 
 
 			init_p : process (clk)
+				constant frac : natural := to_siofloat(vt_unit).frac;
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
 						vt_ena   <=  axis_sel;
 						vt_start <= 
-							mul(to_signed((vt_height/2)/2**vtstep_bits,5), unsigned(vt_unit)) +
+							mul(to_signed((vt_height/2)/2**vtstep_bits,5), frac) +
 							shift_left(
-								resize(mul(-signed(axis_base), unsigned(vt_unit)), vt_start'length),
+								resize(mul(-signed(axis_base), frac), vt_start'length),
 								vt_offset'length-vt_taddr'right);
 						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-						vt_step  <= -signed(resize(unsigned(vt_unit), vt_step'length));
+						vt_step  <= -to_signed(frac, vt_step'length);
 						vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 						vt_sign  <= '1';
 					end if;
