@@ -180,21 +180,21 @@ begin
 			end if;
 		end process;
 
-		start <= hz_start when vt_ena='0' else vt_start;
-		stop  <= hz_stop  when vt_ena='0' else vt_stop;
-		step  <= hz_step  when vt_ena='0' else vt_step;
+		start <= hz_start ; --when vt_ena='0' else vt_start;
+		stop  <= hz_stop  ; --when vt_ena='0' else vt_stop;
+		step  <= hz_step  ; --when vt_ena='0' else vt_step;
 
 		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp,     hz_exp'length);
 		hz_order <= to_signed(hz_float1245(to_integer(unsigned(scale))).order,   hz_order'length);
-		hz_prec  <= to_signed(hz_float1245(to_integer(unsigned(scale))).order-2, hz_prec'length);
+		hz_prec  <= to_signed(hz_float1245(to_integer(unsigned(scale))).order-3, hz_prec'length);
 
 		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp,     vt_exp'length);
 		vt_order <= to_signed(vt_float1245(to_integer(unsigned(scale))).order,   vt_order'length);
 		vt_prec  <= to_signed(vt_float1245(to_integer(unsigned(scale))).order-2, vt_prec'length);
 
-		exp   <= hz_exp   when vt_ena='0' else vt_exp;
-		order <= hz_order  when vt_ena='0' else vt_order;
-		prec  <= hz_prec   when vt_ena='0' else vt_prec ;
+		exp   <= hz_exp; --  when vt_ena='0' else vt_exp;
+		order <= hz_order; --  when vt_ena='0' else vt_order;
+		prec  <= hz_prec; --   when vt_ena='0' else vt_prec ;
 
 		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
@@ -251,7 +251,8 @@ begin
 				end if;
 
 				btof_bindi <= word2byte(
-					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & exp),
+--					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & exp),
+					std_logic_vector(neg(binvalue, binvalue(binvalue'left)) & exp),
 					std_logic_vector(sel), 
 					btof_bindi'length);
 				btof_binexp <= setif(sel >= binvalue'length/btof_bindi'length);
@@ -321,10 +322,12 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac : natural := to_siofloat(hz_unit).frac;
+				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac+3);
+				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
+						frac := to_unsigned(hz_float1245(to_integer(unsigned(axis_scale))).frac, frac'length);
 						hz_ena   <= not axis_sel;
 						hz_start <= 
 							mul(to_signed(1,1), frac) +
@@ -332,7 +335,7 @@ begin
 								resize(mul(signed(axis_base), frac), hz_start'length),
 								axisx_backscale+hztick_bits-hz_taddr'right);
 						hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
-						hz_step  <= to_signed(frac, hz_step'length);
+						hz_step  <= signed(resize(frac, hz_step'length));
 						hz_align <= '1';
 						hz_sign  <= '0';
 					end if;
