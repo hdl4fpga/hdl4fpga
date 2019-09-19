@@ -84,8 +84,10 @@ architecture def of scopeio_textbox is
 
 	signal var_id       : std_logic_vector(0 to 5-1);
 	signal var_binvalue : std_logic_vector(0 to 12-1);
+	signal var_expvalue : std_logic_vector(btof_bindi'range);
 	signal var_strvalue : ascii;
 	signal frac         : signed(var_binvalue'range);
+	signal exp          : signed(btof_bindi'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
 	signal val_type     : std_logic;
@@ -100,6 +102,7 @@ begin
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
 		constant vt_frac      : unsigned := to_unsigned(to_siofloat(vt_unit).frac, unsigned_num_bits(to_siofloat(vt_unit).frac));
+		constant vt_exp       : signed   := to_signed(to_siofloat(vt_unit).exp, btof_bindi'length);
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
@@ -109,6 +112,7 @@ begin
 		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
 
 		constant hz_frac      : unsigned := to_unsigned(to_siofloat(hz_unit).frac, unsigned_num_bits(to_siofloat(hz_unit).frac));
+		constant hz_exp       : signed   := to_signed(to_siofloat(hz_unit).exp, btof_bindi'length);
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
@@ -221,6 +225,14 @@ begin
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
+		var_expvalue <= wirebus(
+			std_logic_vector'(x"b")   & 
+			std_logic_vector(hz_exp)  &
+			std_logic_vector'(x"b")   &
+			std_logic_vector'(x"b")   &
+			std_logic_vector(vt_exp),
+			cgabcd_frm);
+				 	
 		var_strvalue <= wirebus(
 			word2byte(to_ascii("munp"), hz_scale,       ascii'length) &
 			word2byte(x"1819",          trigger_edge)                 &
@@ -245,7 +257,8 @@ begin
 			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
-				frac <= scale_1245(signed(var_binvalue) sll 1, scale);
+				frac <= scale_1245(signed(var_binvalue), scale);
+				exp  <= signed(var_expvalue);
 			end if;
 		end if;
 	end process;
@@ -254,7 +267,7 @@ begin
 	port map (
 		clk      => rgtr_clk,
 		frac     => frac,
-		exp      => x"f",
+		exp      => exp,
 		bin_frm  => btof_binfrm,
 		bin_irdy => btof_binirdy,
 		bin_trdy => btof_bintrdy,
