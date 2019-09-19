@@ -31,25 +31,33 @@ end;
 architecture def of main is
 
 	type sio_float is record
-		frac : natural;
-		exp  : integer;
+		frac  : natural;
+		exp   : integer;
+		order : natural;
 	end record;
 
 	function to_siofloat (
 		constant unit : real)
 		return sio_float is
 		variable frac : real;
-		variable exp  : integer;
-		variable mult : real;
+		variable exp   : integer;
+		variable order : natural;
+		variable mult  : real;
 	begin
-		mult := 1.0;
-		while unit >= mult loop
-			mult := mult * 1.0e1;
-		end loop;
-		mult := mult / 1.0e1;
-		frac := unit / mult;
+		assert unit >= 1.0  
+			report "Invalid unit value"
+			severity failure;
 
-		mult := 1.0;
+		mult  := 1.0;
+		order := 0;
+		while unit >= mult loop
+			mult  := mult * 1.0e1;
+			order := order + 1;
+		end loop;
+		mult  := mult / 1.0e1;
+		order := order - 1;
+		frac  := unit / mult;
+
 		exp  := 0;
 		for i in 0 to 3-1 loop
 			assert i /= 2
@@ -60,7 +68,7 @@ architecture def of main is
 			exit when floor(frac)=(frac);
 		end loop;
 
-		return sio_float'(frac => natural(frac), exp => exp);
+		return sio_float'(frac => natural(frac), exp => exp, order => order);
 	end;
 
 begin
@@ -122,12 +130,14 @@ begin
 		variable p : sio_float;
 		variable mesg : line;
 	begin
-		p := to_siofloat(40.0);
+		p := to_siofloat(25.0*4.0);
 
 		write (mesg, string'("frac : "));
 		write (mesg, p.frac);
 		write (mesg, string'(" : exp : "));
 		write (mesg, p.exp);
+		write (mesg, string'(" : order : "));
+		write (mesg, p.order);
 		writeline(output, mesg);
 		wait;
 	end process;

@@ -95,7 +95,26 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	constant hz_exp : signed := to_signed(to_siofloat(hz_unit).exp, btof_bindi'length);
+	type siofloat_vector is array(natural range <>) of sio_float;
+
+	function get_float1245 (
+		constant unit : real)
+		return siofloat_vector is
+		constant mult : natural_vector (0 to 4-1) := (1, 2, 4, 5);
+		variable rval : siofloat_vector(0 to 4-1);
+	begin
+		for i in 0 to 4-1 loop
+			rval(i) := to_siofloat(unit*real(mult(i)));
+			rval(i).order := rval(i).order mod 3;
+		end loop;
+		return rval;
+	end;
+
+	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
+
+	signal hz_exp   : signed(4-1 downto 0);
+	signal hz_order : signed(4-1 downto 0);
+	signal hz_prec  : signed(4-1 downto 0);
 	signal hz_start : signed(binvalue'range);
 	signal hz_stop  : unsigned(binvalue'range);
 	signal hz_step  : signed(binvalue'range);
@@ -105,7 +124,12 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	constant vt_exp : signed := to_signed(to_siofloat(vt_unit).exp, btof_bindi'length);
+	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
+
+	signal vt_exp   : signed(4-1 downto 0);
+	signal vt_order : signed(4-1 downto 0);
+	signal vt_prec  : signed(4-1 downto 0);
+
 	signal vt_start : signed(binvalue'range);
 	signal vt_stop  : unsigned(binvalue'range);
 	signal vt_step  : signed(binvalue'range);
@@ -124,6 +148,8 @@ begin
 		signal init     : std_logic;
 		signal ena      : std_logic;
 		signal exp      : signed(btof_bindi'range);
+		signal order    : signed(4-1 downto 0);
+		signal prec    : signed(4-1 downto 0);
 		signal start    : signed(binvalue'range);
 		signal stop     : unsigned(binvalue'range);
 		signal step     : signed(binvalue'range);
@@ -157,7 +183,18 @@ begin
 		start <= hz_start when vt_ena='0' else vt_start;
 		stop  <= hz_stop  when vt_ena='0' else vt_stop;
 		step  <= hz_step  when vt_ena='0' else vt_step;
+
+		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp,     hz_exp'length);
+		hz_order <= to_signed(hz_float1245(to_integer(unsigned(scale))).order,   hz_order'length);
+		hz_prec  <= to_signed(hz_float1245(to_integer(unsigned(scale))).order-2, hz_prec'length);
+
+		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp,     vt_exp'length);
+		vt_order <= to_signed(vt_float1245(to_integer(unsigned(scale))).order,   vt_order'length);
+		vt_prec  <= to_signed(vt_float1245(to_integer(unsigned(scale))).order-2, vt_prec'length);
+
 		exp   <= hz_exp   when vt_ena='0' else vt_exp;
+		order <= hz_order  when vt_ena='0' else vt_order;
+		prec  <= hz_prec   when vt_ena='0' else vt_prec ;
 
 		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
@@ -197,8 +234,8 @@ begin
 		end process;
 
 		btof_binneg   <= binvalue(binvalue'left);
-		btof_bcdprec  <= b"1110";
-		btof_bcdunit  <= b"1111";
+		btof_bcdprec  <= std_logic_vector(prec);
+		btof_bcdunit  <= std_logic_vector(order);
 		btof_bcdwidth <= b"1000";
 		btof_bcdalign <= hz_align when vt_ena='0' else vt_align;
 		btof_bcdsign  <= hz_sign  when vt_ena='0' else vt_sign;

@@ -468,8 +468,9 @@ package scopeiopkg is
 		pointerx_id => pointerx_maxsize);
 
 	type sio_float is record
-		frac : natural;
-		exp  : integer;
+		frac  : natural;
+		exp   : integer;
+		order : natural;
 	end record;
 
 	component scopeio_tds
@@ -1044,28 +1045,35 @@ package body scopeiopkg is
 		constant unit : real)
 		return sio_float is
 		variable frac : real;
-		variable exp  : integer;
-		variable mult : real;
+		variable exp   : integer;
+		variable order : natural;
+		variable mult  : real;
 	begin
-		mult := 1.0;
-		while unit >= mult loop
-			mult := mult * 1.0e1;
-		end loop;
-		mult := mult / 1.0e1;
-		frac := unit / mult;
+		assert unit >= 1.0  
+			report "Invalid unit value"
+			severity failure;
 
-		mult := 1.0;
+		mult  := 1.0;
+		order := 0;
+		while unit >= mult loop
+			mult  := mult * 1.0e1;
+			order := order + 1;
+		end loop;
+		mult  := mult / 1.0e1;
+		order := order - 1;
+		frac  := unit / mult;
+
 		exp  := 0;
 		for i in 0 to 3-1 loop
-			assert i /= 2
-				report "Invalid unit value"
-				severity failure;
+--			assert i /= 2
+--				report "Invalid unit value"
+--				severity failure;
 			frac := frac * 2.0;
 			exp  := exp - 1;
 			exit when floor(frac)=(frac);
 		end loop;
 
-		return sio_float'(frac => natural(frac), exp => exp);
+		return sio_float'(frac => natural(frac), exp => exp, order => order);
 	end;
 
 	function scale_1245 (
