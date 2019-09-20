@@ -259,7 +259,7 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit   => 25.0,
+		hz_unit   => 2.5,
 		vt_unit   => 40.0,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,

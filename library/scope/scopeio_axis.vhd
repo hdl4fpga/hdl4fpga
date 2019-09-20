@@ -110,6 +110,22 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
+	function get_precs(
+		constant floats : siofloat_vector)
+		return natural_vector is
+		variable rval : natural_vector(floats'range);
+	begin
+		for i in floats'range loop
+			case floats(i).order mod 3 is
+			when 0 =>
+				rval(i) := 2;
+			when others =>
+				rval(i) := 1;
+			end case;
+		end loop;
+		return rval;
+	end;
+
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 
 	signal hz_exp   : signed(4-1 downto 0);
@@ -143,6 +159,7 @@ begin
 
 	ticks_b : block
 
+		constant hz_precs : natural_vector := get_precs(hz_float1245);
 		signal dv       : std_logic;
 		signal scale    : std_logic_vector(axis_scale'range);
 		signal init     : std_logic;
@@ -186,7 +203,7 @@ begin
 
 		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp,     hz_exp'length);
 		hz_order <= to_signed(hz_float1245(to_integer(unsigned(scale))).order,   hz_order'length);
-		hz_prec  <= to_signed(hz_float1245(to_integer(unsigned(scale))).order-3, hz_prec'length);
+		hz_prec  <= to_signed(-hz_precs(to_integer(unsigned(scale))), hz_prec'length);
 
 		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp,     vt_exp'length);
 		vt_order <= to_signed(vt_float1245(to_integer(unsigned(scale))).order,   vt_order'length);
