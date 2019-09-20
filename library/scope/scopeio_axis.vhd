@@ -119,8 +119,28 @@ architecture def of scopeio_axis is
 			case floats(i).order mod 3 is
 			when 0 =>
 				rval(i) := 2;
-			when others =>
+			when 1 =>
 				rval(i) := 1;
+			when others =>
+				rval(i) := 3;
+			end case;
+		end loop;
+		return rval;
+	end;
+
+	function get_units(
+		constant floats : siofloat_vector)
+		return integer_vector is
+		variable rval : integer_vector(floats'range);
+	begin
+		for i in floats'range loop
+			case floats(i).order mod 3 is
+			when 0 =>
+				rval(i) := 0;
+			when 1 =>
+				rval(i) := 1;
+			when others =>
+				rval(i) := -1;
 			end case;
 		end loop;
 		return rval;
@@ -160,6 +180,9 @@ begin
 	ticks_b : block
 
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
+		constant hz_units : integer_vector := get_units(hz_float1245);
+		constant vt_precs : natural_vector := get_precs(vt_float1245);
+		constant vt_units : integer_vector := get_units(vt_float1245);
 		signal dv       : std_logic;
 		signal scale    : std_logic_vector(axis_scale'range);
 		signal init     : std_logic;
@@ -197,21 +220,21 @@ begin
 			end if;
 		end process;
 
-		start <= hz_start ; --when vt_ena='0' else vt_start;
-		stop  <= hz_stop  ; --when vt_ena='0' else vt_stop;
-		step  <= hz_step  ; --when vt_ena='0' else vt_step;
+		start <= hz_start when vt_ena='0' else vt_start;
+		stop  <= hz_stop  when vt_ena='0' else vt_stop;
+		step  <= hz_step  when vt_ena='0' else vt_step;
 
-		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp,     hz_exp'length);
-		hz_order <= to_signed(hz_float1245(to_integer(unsigned(scale))).order,   hz_order'length);
-		hz_prec  <= to_signed(-hz_precs(to_integer(unsigned(scale))), hz_prec'length);
+		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp, exp'length);
+		hz_order <= to_signed(hz_units(to_integer(unsigned(scale))), order'length);
+		hz_prec  <= to_signed(-hz_precs(to_integer(unsigned(scale))), prec'length);
 
-		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp,     vt_exp'length);
-		vt_order <= to_signed(vt_float1245(to_integer(unsigned(scale))).order,   vt_order'length);
-		vt_prec  <= to_signed(vt_float1245(to_integer(unsigned(scale))).order-2, vt_prec'length);
+		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp, exp'length);
+		vt_order <= to_signed(vt_units(to_integer(unsigned(scale))), order'length);
+		vt_prec  <= to_signed(-vt_precs(to_integer(unsigned(scale))), prec'length);
 
-		exp   <= hz_exp; --  when vt_ena='0' else vt_exp;
-		order <= hz_order; --  when vt_ena='0' else vt_order;
-		prec  <= hz_prec; --   when vt_ena='0' else vt_prec ;
+		exp   <= hz_exp   when vt_ena='0' else vt_exp;
+		order <= hz_order when vt_ena='0' else vt_order;
+		prec  <= hz_prec  when vt_ena='0' else vt_prec;
 
 		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
 		iterator_e : process(clk)
@@ -268,7 +291,6 @@ begin
 				end if;
 
 				btof_bindi <= word2byte(
---					std_logic_vector(scale_1245(neg(binvalue, binvalue(binvalue'left)), scale) & exp),
 					std_logic_vector(neg(binvalue, binvalue(binvalue'left)) & exp),
 					std_logic_vector(sel), 
 					btof_bindi'length);
@@ -339,7 +361,7 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac+3);
+				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
 				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
@@ -443,10 +465,12 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac : natural := to_siofloat(vt_unit).frac;
+				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
+				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
+						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length);
 						vt_ena   <=  axis_sel;
 						vt_start <= 
 							mul(to_signed((vt_height/2)/2**vtstep_bits,5), frac) +
@@ -454,7 +478,7 @@ begin
 								resize(mul(-signed(axis_base), frac), vt_start'length),
 								vt_offset'length-vt_taddr'right);
 						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-						vt_step  <= -to_signed(frac, vt_step'length);
+						vt_step  <= -signed(resize(frac, hz_step'length));
 						vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 						vt_sign  <= '1';
 					end if;

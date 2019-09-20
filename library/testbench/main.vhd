@@ -130,7 +130,7 @@ begin
 		variable p : sio_float;
 		variable mesg : line;
 	begin
-		p := to_siofloat(25.0*4.0);
+		p := to_siofloat(40.0);
 
 		write (mesg, string'("frac : "));
 		write (mesg, p.frac);
