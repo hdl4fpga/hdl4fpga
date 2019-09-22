@@ -503,6 +503,20 @@ package scopeiopkg is
 		constant unit : real)
 		return sio_float;
 
+	type siofloat_vector is array(natural range <>) of sio_float;
+
+	function get_float1245 (
+		constant unit : real)
+		return siofloat_vector;
+
+	function get_precs(
+		constant floats : siofloat_vector)
+		return natural_vector;
+
+	function get_units(
+		constant floats : siofloat_vector)
+		return integer_vector;
+
 	function scale_1245 (
 		constant val   : signed;
 		constant scale : std_logic_vector)
@@ -1074,6 +1088,55 @@ package body scopeiopkg is
 		end loop;
 
 		return sio_float'(frac => natural(frac), exp => exp, order => order);
+	end;
+
+	function get_float1245 (
+		constant unit : real)
+		return siofloat_vector is
+		constant mult : natural_vector (0 to 4-1) := (1, 2, 4, 5);
+		variable rval : siofloat_vector(0 to 4-1);
+	begin
+		for i in 0 to 4-1 loop
+			rval(i) := to_siofloat(unit*real(mult(i)));
+			rval(i).order := rval(i).order mod 3;
+		end loop;
+		return rval;
+	end;
+
+	function get_precs(
+		constant floats : siofloat_vector)
+		return natural_vector is
+		variable rval : natural_vector(floats'range);
+	begin
+		for i in floats'range loop
+			case floats(i).order mod 3 is
+			when 0 =>
+				rval(i) := 2;
+			when 1 =>
+				rval(i) := 1;
+			when others =>
+				rval(i) := 3;
+			end case;
+		end loop;
+		return rval;
+	end;
+
+	function get_units(
+		constant floats : siofloat_vector)
+		return integer_vector is
+		variable rval : integer_vector(floats'range);
+	begin
+		for i in floats'range loop
+			case floats(i).order mod 3 is
+			when 0 =>
+				rval(i) := 0;
+			when 1 =>
+				rval(i) := 1;
+			when others =>
+				rval(i) := -1;
+			end case;
+		end loop;
+		return rval;
 	end;
 
 	function scale_1245 (

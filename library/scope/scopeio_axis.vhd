@@ -95,57 +95,6 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	type siofloat_vector is array(natural range <>) of sio_float;
-
-	function get_float1245 (
-		constant unit : real)
-		return siofloat_vector is
-		constant mult : natural_vector (0 to 4-1) := (1, 2, 4, 5);
-		variable rval : siofloat_vector(0 to 4-1);
-	begin
-		for i in 0 to 4-1 loop
-			rval(i) := to_siofloat(unit*real(mult(i)));
-			rval(i).order := rval(i).order mod 3;
-		end loop;
-		return rval;
-	end;
-
-	function get_precs(
-		constant floats : siofloat_vector)
-		return natural_vector is
-		variable rval : natural_vector(floats'range);
-	begin
-		for i in floats'range loop
-			case floats(i).order mod 3 is
-			when 0 =>
-				rval(i) := 2;
-			when 1 =>
-				rval(i) := 1;
-			when others =>
-				rval(i) := 3;
-			end case;
-		end loop;
-		return rval;
-	end;
-
-	function get_units(
-		constant floats : siofloat_vector)
-		return integer_vector is
-		variable rval : integer_vector(floats'range);
-	begin
-		for i in floats'range loop
-			case floats(i).order mod 3 is
-			when 0 =>
-				rval(i) := 0;
-			when 1 =>
-				rval(i) := 1;
-			when others =>
-				rval(i) := -1;
-			end case;
-		end loop;
-		return rval;
-	end;
-
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 
 	signal hz_exp   : signed(4-1 downto 0);

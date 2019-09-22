@@ -85,6 +85,8 @@ architecture def of scopeio_textbox is
 	signal var_id       : std_logic_vector(0 to 5-1);
 	signal var_binvalue : std_logic_vector(0 to 12-1);
 	signal var_expvalue : std_logic_vector(btof_bindi'range);
+	signal var_precvalue : std_logic_vector(4-1 downto 0);
+	signal var_unitvalue : std_logic_vector(4-1 downto 0);
 	signal var_strvalue : ascii;
 	signal frac         : signed(var_binvalue'range);
 	signal exp          : signed(btof_bindi'range);
@@ -118,6 +120,12 @@ begin
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 		signal hz_scalevalue  : std_logic_vector(hz_frac'length+3 downto 0);
 
+	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
+		constant hz_precs : natural_vector := get_precs(hz_float1245);
+		constant hz_units : integer_vector := get_units(hz_float1245);
+	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
+		constant vt_precs : natural_vector := get_precs(vt_float1245);
+		constant vt_units : integer_vector := get_units(vt_float1245);
 	begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -233,6 +241,22 @@ begin
 			std_logic_vector(vt_exp),
 			cgabcd_frm);
 				 	
+		var_unitvalue <= wirebus(
+			std_logic_vector(to_signed(hz_units(to_integer(unsigned(hz_scale))), var_unitvalue'length)) &
+			std_logic_vector(to_signed(hz_units(to_integer(unsigned(hz_scale))), var_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), var_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), var_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), var_unitvalue'length)),
+			cgabcd_frm);
+
+		var_precvalue <= wirebus(
+			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(hz_scale))), var_precvalue'length)) &
+			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(hz_scale))), var_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), var_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), var_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), var_precvalue'length)),
+			cgabcd_frm);
+
 		var_strvalue <= wirebus(
 			word2byte(to_ascii("munp"), hz_scale,       ascii'length) &
 			word2byte(x"1819",          trigger_edge)                 &
@@ -257,6 +281,11 @@ begin
 			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
 				btof_binfrm  <= '1';
 				btof_bcdirdy <= '1';
+				btof_bcdsign  <= '1';
+				btof_bcdprec  <= var_precvalue;
+				btof_bcdunit  <= var_unitvalue;
+				btof_bcdwidth <= std_logic_vector(to_unsigned(text_style(var_id, analog_addr, cga_cols, cga_rows).width, 4));
+
 				frac <= scale_1245(signed(var_binvalue), scale);
 				exp  <= signed(var_expvalue);
 			end if;
@@ -276,11 +305,6 @@ begin
 		bin_di   => btof_bindi);
 
 	btof_bcdalign <= setif(text_style(var_id, analog_addr, cga_cols, cga_rows).align=left_alignment);
-	btof_bcdsign  <= '1';
-	btof_bcdprec  <= b"1110";
-	btof_bcdunit  <= b"0000";
-	btof_bcdwidth <= std_logic_vector(to_unsigned(text_style(var_id, analog_addr, cga_cols, cga_rows).width, 4));
-
 	frmstr_p :
 	cgastr_end <= setif(cga_we='1' and cgastr_frm/=(cgastr_frm'range => '0'));
 
