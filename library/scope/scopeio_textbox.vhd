@@ -226,18 +226,19 @@ begin
 		hz_scalevalue <= std_logic_vector(scale_1245(resize(hz_frac, hz_scalevalue'length), hz_scale));
 		vt_scalevalue <= std_logic_vector(scale_1245(resize(vt_frac, vt_scalevalue'length), vt_scale));
 		var_binvalue <= wirebus(
-			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
+--			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
+			std_logic_vector(resize(mul(signed(hz_slider), scale_1245(unsigned(hz_frac), hz_scale)), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(trigger_level),  var_binvalue'length)) &
-			std_logic_vector(resize(unsigned(vt_offset),      var_binvalue'length)) &
+			std_logic_vector(resize(mul(signed(vt_offset),  scale_1245(unsigned(vt_frac), vt_scale)),     var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
 		var_expvalue <= wirebus(
-			std_logic_vector'(x"b")   & 
+			std_logic_vector((signed(hz_exp)+signed'(x"b")))   & 
 			std_logic_vector(hz_exp)  &
-			std_logic_vector'(x"b")   &
-			std_logic_vector'(x"b")   &
+			std_logic_vector((signed(vt_exp)+signed'(x"b"))) &
+			std_logic_vector((signed(vt_exp)+signed'(x"b"))) &
 			std_logic_vector(vt_exp),
 			cgabcd_frm);
 				 	

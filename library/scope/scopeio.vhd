@@ -35,7 +35,7 @@ entity scopeio is
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		hz_unit     : real := 25.0;
-		vt_unit     : real := 40.0;
+		vt_unit     : real := 20.0;
 		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
 		trig1shot   : boolean := false;
 

@@ -95,7 +95,7 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
+	constant hz_float1245 : siofloat_vector := get_float1245(real(2**hztick_bits/2**division_bits)*hz_unit);
 
 	signal hz_exp   : signed(4-1 downto 0);
 	signal hz_order : signed(4-1 downto 0);
@@ -109,7 +109,7 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
+	constant vt_float1245 : siofloat_vector := get_float1245(real(2**vttick_bits/2**division_bits)*vt_unit);
 
 	signal vt_exp   : signed(4-1 downto 0);
 	signal vt_order : signed(4-1 downto 0);
