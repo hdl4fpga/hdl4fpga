@@ -28,8 +28,8 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_ps2    : boolean := true; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
@@ -48,6 +48,7 @@ architecture beh of ulx3s is
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false;  -- NET output
+        constant C_view_clk     : boolean := false;  -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
@@ -63,7 +64,7 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
-	constant inputs: natural := 4; -- number of input channels (traces)
+	constant inputs: natural := 2; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
@@ -252,8 +253,15 @@ begin
 --        clk_verilog_25_200: entity work.clk_verilog
 --        port map
 --        (
---          clkin       =>  clk_25MHz,
---          clkout      =>  clk_pll
+--          clkin        =>  clk_25MHz,
+--          phasesel     =>  '1' & R_btn_debounced(2), -- "10" -> clkout2
+--          phasedir     =>  R_btn_debounced(5),
+--          phasestep    =>  R_btn_debounced(3),
+--          phaseloadreg =>  R_btn_debounced(4),
+--          clkout0      =>  clk_pll(0), -- 200 MHz
+--          clkout1      =>  clk_pll(1), --  40 MHz
+--          clkout2      =>  clk_pll(2), --   6 MHz
+--          clkout3      =>  clk_pll(3)  --   6 MHz
 --        );
 --        end generate;
 
@@ -673,6 +681,13 @@ begin
 	  trace_violet(trace_violet'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	  clk_input <= clk_adc;
+	end generate;
+
+	G_view_clk: if C_view_clk generate
+	S_input_ena <= '1';
+	trace_yellow(C_view_binary_gain+3) <= clk_pll(2);
+	trace_cyan(C_view_binary_gain+3) <= clk_pll(3);
+	clk_input <= clk_pixel_shift;
 	end generate;
 
 	G_inputs1: if inputs >= 1 generate
