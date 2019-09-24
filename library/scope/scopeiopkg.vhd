@@ -470,7 +470,8 @@ package scopeiopkg is
 	type sio_float is record
 		frac  : natural;
 		exp   : integer;
-		order : natural;
+		point : natural;
+		multp : natural;
 	end record;
 
 	component scopeio_tds
@@ -1060,7 +1061,8 @@ package body scopeiopkg is
 		return sio_float is
 		variable frac : real;
 		variable exp   : integer;
-		variable order : natural;
+		variable point : natural;
+		variable multp : natural;
 		variable mult  : real;
 	begin
 		assert unit >= 1.0  
@@ -1068,13 +1070,13 @@ package body scopeiopkg is
 			severity failure;
 
 		mult  := 1.0;
-		order := 0;
+		point := 0;
 		while unit >= mult loop
 			mult  := mult * 1.0e1;
-			order := order + 1;
+			point := point + 1;
 		end loop;
 		mult  := mult / 1.0e1;
-		order := order - 1;
+		point := point - 1;
 		frac  := unit / mult;
 
 		exp  := 0;
@@ -1087,7 +1089,7 @@ package body scopeiopkg is
 			exit when floor(frac)=(frac);
 		end loop;
 
-		return sio_float'(frac => natural(frac), exp => exp, order => order);
+		return sio_float'(frac => natural(frac), exp => exp, point => point mod 3, multp => point / 3);
 	end;
 
 	function get_float1245 (
@@ -1098,7 +1100,7 @@ package body scopeiopkg is
 	begin
 		for i in 0 to 4-1 loop
 			rval(i) := to_siofloat(unit*real(mult(i)));
-			rval(i).order := rval(i).order mod 3;
+			rval(i).point := rval(i).point mod 3;
 		end loop;
 		return rval;
 	end;
@@ -1109,7 +1111,7 @@ package body scopeiopkg is
 		variable rval : natural_vector(floats'range);
 	begin
 		for i in floats'range loop
-			case floats(i).order mod 3 is
+			case floats(i).point is
 			when 0 =>
 				rval(i) := 2;
 			when 1 =>
@@ -1127,7 +1129,7 @@ package body scopeiopkg is
 		variable rval : integer_vector(floats'range);
 	begin
 		for i in floats'range loop
-			case floats(i).order mod 3 is
+			case floats(i).point is
 			when 0 =>
 				rval(i) := 0;
 			when 1 =>

@@ -116,18 +116,38 @@ begin
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 
+	function get_multps (
+		constant arg   : siofloat_vector;
+		constant precs : natural_vector)
+		return natural_vector is
+		variable rval : natural_vector(0 to 16-1);
+	begin
+		for i in 0 to 4-1 loop
+			for j in 0 to 4-1 loop
+				rval(4*i+j) := arg(j).multp + precs(j) / 3;
+			end loop;
+		end loop;
+		return rval;
+	end;
+
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
 		constant hz_units : integer_vector := get_units(hz_float1245);
+		constant hz_multps : natural_vector := get_multps(hz_float1245, hz_precs);
+
 		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
-		signal  hz_frac : unsigned(0 to hzfrac_length-1);
-		signal hz_scalevalue  : std_logic_vector(hz_frac'range);
+		signal   hz_frac  : unsigned(0 to hzfrac_length-1);
+		signal   hz_scalevalue  : std_logic_vector(hz_frac'range);
+		signal   hz_multp : std_logic_vector(0 to 3-1);
+
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
 		constant vt_precs : natural_vector := get_precs(vt_float1245);
 		constant vt_units : integer_vector := get_units(vt_float1245);
 		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
-		signal  vt_frac : unsigned(0 to vtfrac_length-1);
-		signal vt_scalevalue  : std_logic_vector(vt_frac'range);
+		signal   vt_frac : unsigned(0 to vtfrac_length-1);
+		signal   vt_scalevalue  : std_logic_vector(vt_frac'range);
+		signal   vt_multp : unsigned(0 to 3-1);
+
 	begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -263,12 +283,13 @@ begin
 			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), var_precvalue'length)),
 			cgabcd_frm);
 
+		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(hz_scale))), hz_multp'length));
 		var_strvalue <= wirebus(
-			word2byte(to_ascii("munp"), hz_scale,       ascii'length) &
+			word2byte(to_ascii("fpnum"), hz_multp,       ascii'length) &
 			word2byte(x"1819",          trigger_edge)                 &
 			word2byte(to_ascii(" *"),   trigger_freeze)               &
-			word2byte(to_ascii("munp"), vt_scale,       ascii'length) &
-			word2byte(to_ascii("munp"), vt_scale,       ascii'length),
+			word2byte(to_ascii("fpnum"), vt_scale,       ascii'length) &
+			word2byte(to_ascii("fpnum"), vt_scale,       ascii'length),
 			cgastr_frm);
 
 	end block;
