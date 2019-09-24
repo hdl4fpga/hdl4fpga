@@ -103,29 +103,31 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
-		constant vt_frac      : unsigned := to_unsigned(to_siofloat(vt_unit).frac, unsigned_num_bits(to_siofloat(vt_unit).frac));
-		constant vt_exp       : signed   := to_signed(to_siofloat(vt_unit).exp, btof_bindi'length);
+		signal vt_exp         : signed(btof_bindi'range);
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
-		signal vt_scalevalue  : std_logic_vector(vt_frac'length+3-1 downto 0);
 		signal gain_ena       : std_logic;
 		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
 
-		constant hz_frac      : unsigned := to_unsigned(to_siofloat(hz_unit).frac, unsigned_num_bits(to_siofloat(hz_unit).frac));
-		constant hz_exp       : signed   := to_signed(to_siofloat(hz_unit).exp, btof_bindi'length);
+		signal hz_exp         : signed(btof_bindi'range);
 		signal hz_ena         : std_logic;
 		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
-		signal hz_scalevalue  : std_logic_vector(hz_frac'length+3 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
 		constant hz_units : integer_vector := get_units(hz_float1245);
+		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
+		signal  hz_frac : unsigned(0 to hzfrac_length-1);
+		signal hz_scalevalue  : std_logic_vector(hz_frac'range);
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
 		constant vt_precs : natural_vector := get_precs(vt_float1245);
 		constant vt_units : integer_vector := get_units(vt_float1245);
+		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
+		signal  vt_frac : unsigned(0 to vtfrac_length-1);
+		signal vt_scalevalue  : std_logic_vector(vt_frac'range);
 	begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -223,19 +225,22 @@ begin
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, var_id'length)),
 			cga_frm);
 			
-		hz_scalevalue <= std_logic_vector(scale_1245(resize(hz_frac, hz_scalevalue'length), hz_scale));
-		vt_scalevalue <= std_logic_vector(scale_1245(resize(vt_frac, vt_scalevalue'length), vt_scale));
+		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale))).frac, hz_frac'length);
+		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale))).frac, vt_frac'length);
+		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(hz_scale))).frac, hz_scalevalue'length));
+		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale))).frac, vt_scalevalue'length));
 		var_binvalue <= wirebus(
---			std_logic_vector(resize(unsigned(hz_slider),      var_binvalue'length)) & 
-			std_logic_vector(resize(mul(signed(hz_slider), scale_1245(unsigned(hz_frac), hz_scale)), var_binvalue'length)) &
+			std_logic_vector(resize(mul(signed(hz_slider), hz_frac), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(trigger_level),  var_binvalue'length)) &
-			std_logic_vector(resize(mul(signed(vt_offset),  scale_1245(unsigned(vt_frac), vt_scale)),     var_binvalue'length)) &
+			std_logic_vector(resize(mul(signed(vt_offset), vt_frac), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
+		hz_exp <= to_signed(hz_float1245(to_integer(unsigned(hz_scale))).exp, hz_exp'length);
+		vt_exp <= to_signed(vt_float1245(to_integer(unsigned(vt_scale))).exp, vt_exp'length);
 		var_expvalue <= wirebus(
-			std_logic_vector((signed(hz_exp)+signed'(x"b")))   & 
+			std_logic_vector(hz_exp+signed'(x"b"))   & 
 			std_logic_vector(hz_exp)  &
 			std_logic_vector((signed(vt_exp)+signed'(x"b"))) &
 			std_logic_vector((signed(vt_exp)+signed'(x"b"))) &

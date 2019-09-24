@@ -95,7 +95,7 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(3*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	constant hz_float1245 : siofloat_vector := get_float1245(real(2**hztick_bits/2**division_bits)*hz_unit);
+	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 
 	signal hz_exp   : signed(4-1 downto 0);
 	signal hz_order : signed(4-1 downto 0);
@@ -109,7 +109,7 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	constant vt_float1245 : siofloat_vector := get_float1245(real(2**vttick_bits/2**division_bits)*vt_unit);
+	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
 
 	signal vt_exp   : signed(4-1 downto 0);
 	signal vt_order : signed(4-1 downto 0);
@@ -310,12 +310,12 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
+				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3+1;
 				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
-						frac := to_unsigned(hz_float1245(to_integer(unsigned(axis_scale))).frac, frac'length);
+						frac := to_unsigned(hz_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (hztick_bits-division_bits);
 						hz_ena   <= not axis_sel;
 						hz_start <= 
 							mul(to_signed(1,1), frac) +
@@ -414,12 +414,12 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
+				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3+1;
 				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
-						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length);
+						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (vttick_bits-division_bits);
 						vt_ena   <=  axis_sel;
 						vt_start <= 
 							mul(to_signed((vt_height/2)/2**vtstep_bits,5), frac) +
@@ -427,7 +427,7 @@ begin
 								resize(mul(-signed(axis_base), frac), vt_start'length),
 								vt_offset'length-vt_taddr'right);
 						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-						vt_step  <= -signed(resize(frac, hz_step'length));
+						vt_step  <= -signed(resize(frac, vt_step'length));
 						vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
 						vt_sign  <= '1';
 					end if;
