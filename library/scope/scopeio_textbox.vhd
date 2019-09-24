@@ -232,7 +232,7 @@ begin
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(mul(signed(hz_slider), hz_frac), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
-			std_logic_vector(resize(unsigned(trigger_level),  var_binvalue'length)) &
+			std_logic_vector(resize(mul(signed(trigger_level), vt_frac),  var_binvalue'length)) &
 			std_logic_vector(resize(mul(signed(vt_offset), vt_frac), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
