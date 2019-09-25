@@ -254,10 +254,10 @@ begin
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, var_id'length)),
 			cga_frm);
 			
-		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale))).frac, hz_frac'length);
-		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale))).frac, vt_frac'length);
-		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(hz_scale))).frac, hz_scalevalue'length));
-		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale))).frac, vt_scalevalue'length));
+		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_frac'length);
+		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_frac'length);
+		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_scalevalue'length));
+		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_scalevalue'length));
 		var_binvalue <= wirebus(
 			std_logic_vector(resize(mul(signed(hz_slider), hz_frac), var_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),  var_binvalue'length)) &
@@ -266,8 +266,8 @@ begin
 			std_logic_vector(resize(unsigned(vt_scalevalue),  var_binvalue'length)),
 			cgabcd_frm);
 				 	
-		hz_exp <= to_signed(hz_float1245(to_integer(unsigned(hz_scale))).exp, hz_exp'length);
-		vt_exp <= to_signed(vt_float1245(to_integer(unsigned(vt_scale))).exp, vt_exp'length);
+		hz_exp <= to_signed(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).exp, hz_exp'length);
+		vt_exp <= to_signed(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp, vt_exp'length);
 		var_expvalue <= wirebus(
 			std_logic_vector(hz_exp+signed'(x"b"))   & 
 			std_logic_vector(hz_exp)  &
