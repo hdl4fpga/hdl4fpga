@@ -1100,7 +1100,6 @@ package body scopeiopkg is
 	begin
 		for i in 0 to 4-1 loop
 			rval(i) := to_siofloat(unit*real(mult(i)));
-			rval(i).point := rval(i).point mod 3;
 		end loop;
 		return rval;
 	end;
@@ -1108,7 +1107,7 @@ package body scopeiopkg is
 	function get_precs(
 		constant floats : siofloat_vector)
 		return natural_vector is
-		variable rval : natural_vector(floats'range);
+		variable rval : natural_vector(0 to 16-1);
 	begin
 		for i in floats'range loop
 			case floats(i).point is
@@ -1120,13 +1119,16 @@ package body scopeiopkg is
 				rval(i) := 3;
 			end case;
 		end loop;
+		for i in 4 to 16-1 loop
+			rval(i) := ((rval(i-4) + 1) mod 3) + 1;
+		end loop;
 		return rval;
 	end;
 
 	function get_units(
 		constant floats : siofloat_vector)
 		return integer_vector is
-		variable rval : integer_vector(floats'range);
+		variable rval : integer_vector(0 to 16-1);
 	begin
 		for i in floats'range loop
 			case floats(i).point is
@@ -1137,6 +1139,9 @@ package body scopeiopkg is
 			when others =>
 				rval(i) := -1;
 			end case;
+		end loop;
+		for i in 4 to 16-1 loop
+			rval(i) := ((rval(i-4) + 2) mod 3) - 1;
 		end loop;
 		return rval;
 	end;

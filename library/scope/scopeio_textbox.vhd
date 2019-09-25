@@ -117,14 +117,21 @@ begin
 		signal hz_scale       : std_logic_vector(4-1 downto 0);
 
 	function get_multps (
-		constant arg   : siofloat_vector;
-		constant precs : natural_vector)
+		constant floats : siofloat_vector)
 		return natural_vector is
-		variable rval : natural_vector(0 to 16-1);
+		constant precs : natural_vector := get_precs(floats);
+		variable point : natural;
+		variable multp : natural;
+		variable rval  : natural_vector(0 to 16-1);
 	begin
-		for i in 0 to 4-1 loop
+		for i in floats'range loop
+			rval(i) := floats(i).multp + (precs(i) / 3);
+		end loop;
+		for i in 1 to 4-1 loop
 			for j in 0 to 4-1 loop
-				rval(4*i+j) := arg(j).multp + precs(j) / 3;
+				rval(4*i+j) := 
+					(3*floats(j).multp+floats(j).point+i)/3 + 
+					precs(4*i+j) / 3;
 			end loop;
 		end loop;
 		return rval;
@@ -133,7 +140,7 @@ begin
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
 		constant hz_units : integer_vector := get_units(hz_float1245);
-		constant hz_multps : natural_vector := get_multps(hz_float1245, hz_precs);
+		constant hz_multps : natural_vector := get_multps(hz_float1245);
 
 		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
 		signal   hz_frac  : unsigned(0 to hzfrac_length-1);
