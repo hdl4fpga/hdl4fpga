@@ -47,10 +47,10 @@ package scopeiopkg is
 	constant label_vtoffset : i18n_labelids := 4;
 
 	constant i18n_text : string := 
-		"Hz div"     & NUL & 
+		"Division"    & NUL & 
 		"Hz offset"  & NUL & 
 		"Trigger"    & NUL & 
-		"Vt div"     & NUL & 
+		"Division"   & NUL & 
 		"Vt offset"  & NUL & 
 		NUL &
 		"Escala hz"  & NUL &
@@ -623,36 +623,35 @@ package scopeiopkg is
 
 	constant analogtime_layout : tag_vector := (
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_tgrlevelid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_var,   style => analogtime_unitstyle,     ref => var_tgrunitid),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 2),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_var,   style => (1, left_alignment, 0),   ref => var_tgredgeid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_var,   style => (1, left_alignment, 0),   ref => var_tgrfreezeid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_trigger),
-		tag'(tagid_end, style => no_style, ref => 0),
-		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_hzoffset),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
-			tag'(tagid_label, style => analogtime_divstyle,      ref => label_hzdiv),
-		tag'(tagid_end, style => no_style, ref => 0),
-		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
 			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_hzoffsetid),
+			tag'(tagid_str,   style => (3, center_alignment, 0), ref => 1),
+			tag'(tagid_var,   style => (6, right_alignment, 0),  ref => var_hzdivid),
 			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
 			tag'(tagid_var,   style => analogtime_unitstyle,     ref => var_hzunitid),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 2),
-			tag'(tagid_var,   style => analogtime_divstyle,      ref => var_hzdivid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 2),
 		tag'(tagid_end, style => no_style, ref => 0),
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_vtoffset),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
-			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
-			tag'(tagid_label, style => analogtime_divstyle,      ref => label_vtdiv),
+--			tag'(tagid_label, style => (8, right_alignment, 0), ref => label_trigger),
+--			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
+			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgrfreezeid),
+			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgredgeid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
+			tag'(tagid_var,   style => (6, right_alignment, 0), ref => var_tgrlevelid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
+			tag'(tagid_var,   style => analogtime_unitstyle,    ref => var_tgrunitid),
+			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 3),
 		tag'(tagid_end, style => no_style, ref => 0));
+--		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
+--			tag'(tagid_label, style => (11, right_alignment,  0), ref => label_hzoffset),
+--			tag'(tagid_str,   style => ( 3, center_alignment, 0), ref => 1),
+--			tag'(tagid_label, style => ( 9, left_alignment,  0),  ref => label_hzdiv),
+--		tag'(tagid_end, style => no_style, ref => 0),
+--		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
+--			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_vtoffset),
+--			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
+--			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
+--			tag'(tagid_label, style => analogtime_divstyle,      ref => label_vtdiv),
+--		tag'(tagid_end, style => no_style, ref => 0));
 
 end;
 
@@ -1450,17 +1449,18 @@ package body scopeiopkg is
 		constant inputs      : natural;
 		constant tag_layout  : tag_vector)
 		return tag_vector is
-		variable layout      : tag_vector(0 to tag_layout'length+7*inputs-1);
+		variable layout      : tag_vector(0 to tag_layout'length+8*inputs-1);
 	begin
 		layout(0 to tag_layout'length-1) := tag_layout;
 		for i in 0 to inputs-1 loop
-			layout(tag_layout'length+7*i+0) := tag'(tagid_row, style => analogtime_rowstyle,    ref => 0);
-			layout(tag_layout'length+7*i+1) := tag'(tagid_var, style => analogtime_fieldstyle,  ref => 3*i+var_vtoffsetid);
-			layout(tag_layout'length+7*i+2) := tag'(tagid_str, style => (1, left_alignment, 0), ref => 0);
-			layout(tag_layout'length+7*i+3) := tag'(tagid_var, style => (1, left_alignment, 0), ref => 3*i+var_vtoffsetid+2);
-			layout(tag_layout'length+7*i+4) := tag'(tagid_str, style => (2, left_alignment, 0), ref => 3);
-			layout(tag_layout'length+7*i+5) := tag'(tagid_var, style => analogtime_divstyle,    ref => 3*i+var_vtoffsetid+1);
-			layout(tag_layout'length+7*i+6) := tag'(tagid_end, style => no_style,               ref => 0);
+			layout(tag_layout'length+8*i+0) := tag'(tagid_row, style => analogtime_rowstyle,     ref => 0);
+				layout(tag_layout'length+8*i+1) := tag'(tagid_var, style => analogtime_fieldstyle,     ref => 3*i+var_vtoffsetid);
+				layout(tag_layout'length+8*i+2) := tag'(tagid_str, style => (3, center_alignment, 0),  ref => 1);
+				layout(tag_layout'length+8*i+3) := tag'(tagid_var, style => (6, right_alignment,   0), ref => 3*i+var_vtoffsetid+1);
+				layout(tag_layout'length+8*i+4) := tag'(tagid_str, style => (1, left_alignment,   0),  ref => 0);
+				layout(tag_layout'length+8*i+5) := tag'(tagid_var, style => (1, right_alignment,   0), ref => 3*i+var_vtoffsetid+2);
+				layout(tag_layout'length+8*i+6) := tag'(tagid_str, style => (1, left_alignment,   0), ref => 3);
+			layout(tag_layout'length+8*i+7) := tag'(tagid_end, style => no_style,               ref => 0);
 		end loop;
 		return layout;
 	end;
