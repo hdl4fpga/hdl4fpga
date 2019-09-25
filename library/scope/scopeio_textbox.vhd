@@ -150,10 +150,12 @@ begin
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
 		constant vt_precs : natural_vector := get_precs(vt_float1245);
 		constant vt_units : integer_vector := get_units(vt_float1245);
+		constant vt_multps : natural_vector := get_multps(vt_float1245);
+
 		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
 		signal   vt_frac : unsigned(0 to vtfrac_length-1);
 		signal   vt_scalevalue  : std_logic_vector(vt_frac'range);
-		signal   vt_multp : unsigned(0 to 3-1);
+		signal   vt_multp : std_logic_vector(0 to 3-1);
 
 	begin
 
@@ -291,12 +293,13 @@ begin
 			cgabcd_frm);
 
 		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(hz_scale))), hz_multp'length));
+		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))), vt_multp'length));
 		var_strvalue <= wirebus(
-			word2byte(to_ascii("fpnum"), hz_multp,       ascii'length) &
-			word2byte(x"1819",          trigger_edge)                 &
-			word2byte(to_ascii(" *"),   trigger_freeze)               &
-			word2byte(to_ascii("fpnum"), vt_scale,       ascii'length) &
-			word2byte(to_ascii("fpnum"), vt_scale,       ascii'length),
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), hz_multp,       ascii'length) &
+			word2byte(x"1819",                                trigger_edge)                 &
+			word2byte(to_ascii(" *"),                         trigger_freeze)               &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length),
 			cgastr_frm);
 
 	end block;
