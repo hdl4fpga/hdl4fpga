@@ -149,7 +149,7 @@ begin
 			CLKI_DIV  => video_params(video_mode).clki_div,
 			FIN=> "100.000000")
 		port map (
-			rst         => rst, 
+			rst         => '0', 
 			rstk        => '0',
 			clki        => clk,
 			wrdel       => '0',
@@ -219,7 +219,7 @@ begin
 	end process;
 
 	uart_sin <= expansionx3(5);
-	led  <= (others => not lock);
+--	led  <= (others => not lock);
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -267,6 +267,7 @@ begin
 		chaino_data => si_data);
 	
 	si_clk   <= phy1_rxc;
+	led  <= not si_data;
 	phy1_rst <= not '0'; --rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (

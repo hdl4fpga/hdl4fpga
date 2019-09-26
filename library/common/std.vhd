@@ -895,7 +895,7 @@ package body std is
 		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
-		variable aux  : unsigned(0 to size*ena'length-1) := (others => '-');
+		variable aux  : unsigned(0 to size*ena'length-1) := (others => '0');
 		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
 	begin
 		assert inp'length mod ena'length = 0

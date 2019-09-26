@@ -46,7 +46,7 @@ architecture beh of scopeio_palette is
 
 	constant scopeio_bgon     : std_logic := '1';
 
-	function palette_ids (
+	impure function palette_ids (
 		constant trigger_chanid : std_logic_vector)
 		return std_logic_vector is
 		constant n       : natural := pltid_order'length+trace_dots'length+1;
@@ -66,7 +66,7 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
-	function shuffle (
+	impure function shuffle (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable temp   : std_logic_vector(0 to arg'length-1) := arg;
