@@ -115,10 +115,10 @@ VHDL_LIB_FILES = \
 
 VERILOG_FILES = \
   $(VERILOG_CLOCK_FILE) \
-  ../common/clk_200_48_24_12_6_v.v \
-  ../common/clk_25_200_40_6_6.v \
   ../../library/usb/usbhost/usbh_sie.v \
   ../../library/usb/usbhost/usbh_crc5.v \
   ../../library/usb/usbhost/usbh_crc16.v \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
+#  ../common/clk_200_48_24_12_6_v.v \
+#  ../common/clk_25_200_40_6_6.v \
