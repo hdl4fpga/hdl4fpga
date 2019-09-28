@@ -2,7 +2,7 @@
 <BaliProject version="3.2" title="project" device="LFE5U-12F-6BG381C" default_implementation="project">
     <Options/>
     <Implementation title="project" dir="project" description="project" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.ulpi_wrapper_vhdl" top="ulx3s"/>
+        <Options def_top="hdl4fpga.scopeio_textbox" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options top_module="ulx3s"/>
         </Source>

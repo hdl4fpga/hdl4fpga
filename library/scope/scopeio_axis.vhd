@@ -209,18 +209,18 @@ begin
 					if btof_bcdtrdy <= '1' then
 						if btof_bcdend='1' then
 							btof_binfrm  <= '0';
-							btof_binirdy <= '0';
 						end if;
 					end if;
 				elsif axis_dv='1' then
 					btof_binfrm  <= '1';
-					btof_binirdy <= '1';
 				elsif init='0' then
 					btof_binfrm  <= '1';
-					btof_binirdy <= '1';
+				else
+					btof_binfrm  <= '0';
 				end if;
 			end if;
 		end process;
+		btof_binirdy <= btof_binfrm;
 
 		btof_binneg   <= binvalue(binvalue'left);
 		btof_bcdprec  <= std_logic_vector(prec);
@@ -253,6 +253,7 @@ begin
 			if rising_edge(clk) then
 				if init='1' then
 					taddr <= (others => '1');
+					taddr <= (others => '0');
 				elsif ena='1' then
 					taddr <= taddr + 1;
 				end if;
