@@ -2,54 +2,54 @@
 <BaliProject version="3.2" title="project" device="LFE5U-12F-6BG381C" default_implementation="project">
     <Options/>
     <Implementation title="project" dir="project" description="project" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.scopeio_capture" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.ulpi_wrapper_vhdl" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ulx3s"/>
+            <Options top_module="ulx3s"/>
         </Source>
         <Source name="../scopeio/scopeio_top.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../scopeio/usbserial_rxd.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/clk_verilog.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/clk_25M_100M_7M5_12M_60M.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/clk_200m_60m_48m_12m_7m5.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/clk_200_48_24_12_6.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/clk_25_200_40_66_6.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/vga.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/oled/oled_hex_decoder.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/oled/oled_init_pack.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/oled/oled_font_pack.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/oled/vga/oled_vga.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/oled/vga/oled_vga_init_pack.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/adc/max1112x_reader.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../common/hdl/adc/max1112x_init_pack.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
+            <Options/>
         </Source>
         <Source name="../../library/common/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -267,6 +267,9 @@
         <Source name="../../library/usb/usbhost/usbh_sie_vhdl.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+        <Source name="../../library/usb/usb11_phy_vhdl/usb_phy_transciver.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="../../library/usb/usb11_phy_vhdl/usb_phy.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -274,6 +277,9 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
@@ -309,10 +315,13 @@
         <Source name="../../library/usb/usbhost/usbh_crc16.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_btof.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+        <Source name="../../library/usb/ulpi_wrapper/ulpi_wrapper.v" type="Verilog" type_short="Verilog">
+            <Options/>
         </Source>
         <Source name="../../library/scope/scopeio_textbox.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/scope/scopeio_btof.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/scope/scopeio_layout.vhd" type="VHDL" type_short="VHDL">
@@ -322,10 +331,10 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/scope/scopeio_float2btof.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="constraints/ulx3s_v20.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

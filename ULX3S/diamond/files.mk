@@ -101,9 +101,11 @@ VHDL_LIB_FILES = \
   ../../library/usb/usbhost/usbh_setup_pack.vhd \
   ../../library/usb/usbhost/usbh_report_decoder_logitech_mouse.vhd \
   ../../library/usb/usbhost/usbh_sie_vhdl.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_phy_transciver.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \
+  ../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \
@@ -113,8 +115,10 @@ VHDL_LIB_FILES = \
 
 VERILOG_FILES = \
   $(VERILOG_CLOCK_FILE) \
-  ../common/clk_200_48_24_12_6_v.v \
   ../../library/usb/usbhost/usbh_sie.v \
   ../../library/usb/usbhost/usbh_crc5.v \
   ../../library/usb/usbhost/usbh_crc16.v \
+  ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
+#  ../common/clk_200_48_24_12_6_v.v \
+#  ../common/clk_25_200_40_6_6.v \

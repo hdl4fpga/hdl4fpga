@@ -77,7 +77,7 @@ architecture def of btof is
 	signal state : states;
 begin
 
-	process (clk, frm)
+	process (clk)
 	begin
 		if frm='0' then
 			state <= init_s;
