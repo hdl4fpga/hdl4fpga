@@ -31,6 +31,7 @@ use ecp3.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture beh of ecp3versa is
 	attribute oddrapps : string;
@@ -271,6 +272,8 @@ begin
 	phy1_rst <= not '0'; --rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		vt_unit     => 10.0*pico,
+		hz_unit     => 10.0*pico,
 		inputs      => inputs,
 		vlayout_id  => layout)
 	port map (

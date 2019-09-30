@@ -125,7 +125,7 @@ architecture def of scopeio_axis is
 	signal vt_tv    : std_logic;
 
 begin
-
+btof_bcdirdy <= '1'; 
 	ticks_b : block
 
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
