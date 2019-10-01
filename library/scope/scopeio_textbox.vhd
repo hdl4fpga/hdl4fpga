@@ -312,12 +312,10 @@ begin
 				if btof_bcdtrdy='1' then
 					if btof_bcdend='1' then
 						btof_binfrm  <= '0';
-						btof_bcdirdy <= '0';
 					end if;
 				end if;
 			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
-				btof_binfrm  <= '1';
-				btof_bcdirdy <= '1';
+				btof_binfrm   <= '1';
 				btof_bcdsign  <= '1';
 				btof_bcdprec  <= var_precvalue;
 				btof_bcdunit  <= var_unitvalue;
@@ -328,6 +326,7 @@ begin
 			end if;
 		end if;
 	end process;
+	btof_bcdirdy <= btof_binfrm;
 
 	scopeio_float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
@@ -370,7 +369,7 @@ begin
 		'0';
 
 	cga_code <= word2byte(
-		word2byte(to_ascii("0123456789 .+-"), btof_bcddo, ascii'length) &
+		word2byte(to_ascii("0123456789 .+-  "), btof_bcddo, ascii'length) &
 		var_strvalue,
 		val_type);
 

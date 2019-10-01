@@ -125,7 +125,6 @@ architecture def of scopeio_axis is
 	signal vt_tv    : std_logic;
 
 begin
-btof_bcdirdy <= '1'; 
 	ticks_b : block
 
 		constant hz_precs : natural_vector := get_precs(hz_float1245);
@@ -221,6 +220,7 @@ btof_bcdirdy <= '1';
 			end if;
 		end process;
 		btof_binirdy <= btof_binfrm;
+		btof_bcdirdy <= btof_binfrm; 
 
 		btof_binneg   <= binvalue(binvalue'left);
 		btof_bcdprec  <= std_logic_vector(prec);
