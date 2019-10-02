@@ -1017,12 +1017,15 @@ package body std is
 		constant addr : std_logic_vector;
 		constant data : std_logic_vector)
 		return std_logic_vector is
-		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length));
+		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
 	begin
 		retval(0 to word'length-1) := unsigned(word);
-		retval := rotate_left(retval, to_integer(unsigned(addr)));
-		retval(0 to data'length-1) := unsigned(data);
-		retval := rotate_right(retval, to_integer(unsigned(addr)));
+		for i in 0 to retval'length/data'length-1 loop
+			if to_unsigned(i,addr'length)=unsigned(addr) then
+				retval(0 to data'length-1) := unsigned(data);
+			end if;
+			retval := rotate_left(retval, data'length);
+		end loop;
 		return std_logic_vector(retval(0 to word'length-1));
 	end;
 

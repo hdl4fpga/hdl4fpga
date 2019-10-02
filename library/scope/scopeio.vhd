@@ -120,6 +120,7 @@ architecture beh of scopeio is
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
+	signal gain_ena           : std_logic;
 	signal gain_dv            : std_logic;
 	signal gain_ids           : std_logic_vector(0 to inputs*gainid_bits-1);
 
@@ -151,12 +152,15 @@ begin
 	begin
 
 		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+		generic map (
+			rgtr      => false)
 		port map (
 			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
+			gain_ena  => gain_ena,
 			gain_dv   => gain_dv,
 			chan_id   => chan_id,
 			gain_id   => gain_id);
@@ -164,7 +168,7 @@ begin
 		process(si_clk)
 		begin
 			if rising_edge(si_clk) then
-				if gain_dv='1' then
+				if gain_ena='1' then
 					gain_ids <= byte2word(gain_ids, chan_id, gain_id);
 				end if;
 			end if;

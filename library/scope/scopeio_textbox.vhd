@@ -103,13 +103,17 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
+		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_exp         : signed(btof_bindi'range);
+		signal vt_dv         : std_logic;
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
-		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
+		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
+		signal vt_chanid      : std_logic_vector(chan_id'range);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
 		signal gain_ena       : std_logic;
-		signal gain_chanid    : std_logic_vector(chanid_maxsize-1 downto 0);
+		signal gain_dv        : std_logic;
+		signal gain_chanid    : std_logic_vector(chan_id'range);
 
 		signal hz_exp         : signed(btof_bindi'range);
 		signal hz_ena         : std_logic;
@@ -183,15 +187,33 @@ begin
 			trigger_chanid => trigger_chanid,
 			trigger_level  => trigger_level);
 
-		vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
-			vt_ena         => vt_ena,
-			vt_chanid      => vt_chanid,
-			vt_offset      => vt_offset);
+		rgtrvtaxis_b : block
+			signal offset : std_logic_vector(vt_offset'range);
+			signal chanid : std_logic_vector(vt_chanid'range);
+		begin
+			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+			generic map (
+				rgtr      => false)
+			port map (
+				rgtr_clk       => rgtr_clk,
+				rgtr_dv        => rgtr_dv,
+				rgtr_id        => rgtr_id,
+				rgtr_data      => rgtr_data,
+				vt_dv         => vt_dv,
+				vt_ena         => vt_ena,
+				vt_chanid      => chanid,
+				vt_offset      => offset);
+
+			vtoffsets_p : process(rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if vt_ena='1' then
+						vt_chanid  <= chanid;
+						vt_offsets <= byte2word(vt_offsets, chanid, offset);
+					end if;
+				end if;
+			end process;
+		end block;
 
 		vtgain_e : entity hdl4fpga.scopeio_rgtrgain
 		port map (
@@ -199,9 +221,22 @@ begin
 			rgtr_dv        => rgtr_dv,
 			rgtr_id        => rgtr_id,
 			rgtr_data      => rgtr_data,
+			gain_dv       => gain_dv,
 			gain_ena       => gain_ena,
 			chan_id        => gain_chanid,
 			gain_id        => vt_scale);
+
+		chainid_p : process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if vt_dv='1' then
+					chan_id <= vt_chanid;
+				elsif gain_dv='1' then
+					chan_id <= gain_chanid;
+				end if;
+			end if;
+		end process;
+		vt_offset <= word2byte(vt_offsets, chan_id, vt_offset'length);
 
 		process (rgtr_clk)
 			variable bcd_req : std_logic_vector(cgabcd_req'range);
@@ -212,7 +247,7 @@ begin
 					0 => hz_ena,
 					1 => hz_ena,
 					2 => trigger_ena,
-					3 => vt_ena,
+					3 => vt_dv or gain_ena,
 					4 => gain_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 
@@ -244,7 +279,7 @@ begin
 			std_logic_vector(to_unsigned(var_hzoffsetid,                           var_id'length)) & 
 			std_logic_vector(to_unsigned(var_hzdivid,                              var_id'length)) & 
 			std_logic_vector(to_unsigned(var_tgrlevelid,                           var_id'length)) &
-			std_logic_vector(resize(mul(unsigned(vt_chanid),3)  +var_vtoffsetid+0, var_id'length)) &
+			std_logic_vector(resize(mul(unsigned(chan_id),3)  +var_vtoffsetid+0, var_id'length)) &
 			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1, var_id'length)) &
 
 			std_logic_vector(to_unsigned(var_hzunitid,                             var_id'length)) &

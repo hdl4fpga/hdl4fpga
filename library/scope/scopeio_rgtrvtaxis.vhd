@@ -24,22 +24,29 @@ end;
 
 architecture def of scopeio_rgtrvtaxis is
 
-	signal dv     : std_logic;
+	signal ena    : std_logic;
 	signal chanid : std_logic_vector(vt_chanid'range);
 	signal offset : std_logic_vector(vt_offset'range);
 
 begin
 
-	dv     <= setif(rgtr_id=rid_vtaxis, rgtr_dv);
+	ena    <= setif(rgtr_id=rid_vtaxis, rgtr_dv);
 	chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), chanid'length));
 	offset <= bitfield(rgtr_data, vtoffset_id, vtoffset_bf);
+
+	dv_p : process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			vt_dv <= ena;
+		end if;
+	end process;
+	vt_ena <= ena;
 
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				vt_dv <= dv;
-				if dv='1' then
+				if ena='1' then
 					vt_offset <= offset;
 					vt_chanid <= chanid;
 				end if;
@@ -48,10 +55,8 @@ begin
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		vt_dv     <= dv;
 		vt_offset <= offset;
 		vt_chanid <= chanid;
 	end generate;
 
-	vt_ena <= dv;
 end;
