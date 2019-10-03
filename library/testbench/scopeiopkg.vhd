@@ -21,51 +21,56 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity adder is
-	port (
-		clk : in  std_logic := '-';
-		ini : in  std_logic := '1';
-		ci  : in  std_logic := '0' ;
-		a   : in  std_logic_vector;
-		b   : in  std_logic_vector;
-		co  : out std_logic;
-		s   : out std_logic_vector);
-end;
+library hdl4fpga;
+use  hdl4fpga.std.all;
+use  hdl4fpga.scopeiopkg.all;
 
-architecture def of adder is
-	signal cy_q : std_logic;
-	signal cy_d : std_logic;
+architecture scopeiopkg of testbench is
+
+		constant width  : natural := 33;
+		constant height : natural := 10;
+		constant layout : tag_vector(analogtime_layout'range) := text_setaddr(
+			analogtime_layout, 
+			width,
+			height);
+		constant rom    : std_logic_vector(0 to width*height*ascii'length-1) := text_content(
+			analogtime_layout, 
+			width,
+			height,
+			lang_en);
+			signal clk : std_logic := '0';
+		signal cga_frm     : std_logic_vector(7-1 downto 0) := ('1', others => '0');
+		signal var_id      : std_logic_vector(5-1 downto 0) := (others => '0');
+		signal vt_chanid   : std_logic_vector(4-1 downto 0) := (others => '0');
+		signal gain_chanid : std_logic_vector(6-1 downto 0) := (others => '0');
 begin
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			cy_q <= cy_d;
-		end if;
-	end process;
-
-	process (ini, ci, a, b, cy_q)
-		variable add : unsigned(0 to s'length+1);
-	begin
-		add(0) := '0';
-		add := add rol 1;
-
-		add(0 to a'length-1) := unsigned(a);
-		add := add rol a'length;
-
-		add(0) := (cy_q and not ini) or (ci and ini);
-		add := add rol 1;
-
-		add  := add + unsigned('0' & b & '1');
-		cy_d <= add(0);
-		add  := add rol 1;
-		s    <= std_logic_vector(add(0 to s'length-1));
-	end process;
-
-	co <= cy_d;
-
+		var_id <= std_logic_vector(to_unsigned(primux(
+			(
+				0 => var_hzoffsetid, 
+				1 => var_hzdivid,  
+				2 => var_triggerid, 
+				3 => word2byte((0 => var_vtoffsetid),   vt_chanid), 
+				4 => word2byte((0 => var_vtoffsetid+1), vt_chanid)) &
+--				3 => to_integer(mul(unsigned(vt_chanid),3)+var_vtoffsetid), 
+--				4 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1)) &
+			(
+				0 => var_hzunitid,   
+				1 => word2byte((0 => var_vtoffsetid+2), gain_chanid)),
+--				1 => to_integer(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2)),
+			cga_frm), var_id'length));
+			
+		clk <= not clk after 5 ns;
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				cga_frm <= std_logic_Vector(unsigned(cga_frm) ror 1);
+			end if;
+		end process;
 end;

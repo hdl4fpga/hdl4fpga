@@ -132,13 +132,13 @@ begin
 	process (downsampling, video_frm, video_clk)
 		variable q : std_logic;
 	begin
+		if rising_edge(video_clk) then
+			q := video_frm;
+		end if;
 		if downsampling='0' then
 			dv1 <= q and video_frm;
 		else
 			dv1 <= video_frm;
-		end if;
-		if rising_edge(video_clk) then
-			q := video_frm;
 		end if;
 	end process;
 
@@ -167,8 +167,7 @@ begin
 		signal addra : signed(video_addr'length-1 downto 1); -- := (others => '0'); -- Debug purpose
 		signal wea   : std_logic;
 		signal addrb : unsigned(addra'range);
-		signal dob   : std_logic_Vector(video_data'range);
-		signal dll   : std_logic_vector(input_data'range);
+		signal rd_data : std_logic_Vector(video_data'range);
 		signal y0    : std_logic_Vector(0 to video_data'length/2-1);
 		signal uplw  : std_logic;
 	begin
@@ -191,18 +190,19 @@ begin
 			resize(unsigned(rd_addr) srl 1, addrb'length) when downsampling='0' else
 			resize(unsigned(rd_addr) srl 0, addrb'length);
 
-		mem_e : entity hdl4fpga.bram(inference)
+		mem_e : entity hdl4fpga.dpram
+		generic map (
+			synchronous_rdaddr => true,
+			synchronous_rddata => true)
 		port map (
-			clka  => input_clk,
-			addra => std_logic_vector(addra),
-			wea   => wea,
-			dia   => input_data,
-			doa   => dll,
+			wr_clk  => input_clk,
+			wr_addr => std_logic_vector(addra),
+			wr_ena  => wea,
+			wr_data => input_data,
 
-			clkb  => video_clk,
-			addrb => std_logic_vector(addrb),
-			dib   => dll,
-			dob   => dob);
+			rd_clk  => video_clk,
+			rd_addr => std_logic_vector(addrb),
+			rd_data => rd_data);
 
 		align_addr0_e : entity hdl4fpga.align
 		generic map (
@@ -217,13 +217,13 @@ begin
 		y0_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				y0 <= word2byte(dob, uplw);
+				y0 <= word2byte(rd_data, uplw);
 			end if;
 		end process;
 
 		video_data <= 
-			word2byte(word2byte(dob, uplw) & y0, dv2) & word2byte(dob, uplw) when downsampling='0' else
-			dob;
+			word2byte(word2byte(rd_data, uplw) & y0, dv2) & word2byte(rd_data, uplw) when downsampling='0' else
+			rd_data;
 
 	end block;
 

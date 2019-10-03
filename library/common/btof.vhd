@@ -11,20 +11,19 @@ entity btof is
 		frm        : in  std_logic;
 		bin_irdy   : in  std_logic := '1';
 		bin_trdy   : out std_logic;
-		bin_sign   : in  std_logic;
 		bin_neg    : in  std_logic;
 		bin_flt    : in  std_logic;
 		bin_di     : in  std_logic_vector;
 
-		bcd_trdy   : in  std_logic := '1';
-		bcd_irdy   : out std_logic;
+		bcd_irdy   : in  std_logic := '1';
+		bcd_trdy   : out std_logic;
 
+		bcd_sign   : in  std_logic;
 		bcd_width  : in  std_logic_vector;
 		bcd_unit   : in  std_logic_vector;
 		bcd_prec   : in  std_logic_vector;
 		bcd_endian : in  std_logic := '0';
 		bcd_align  : in  std_logic := '0';
-		bcd_sign   : in  std_logic := '1';
 
 		bcd_end    : out std_logic;
 		bcd_do     : out std_logic_vector);
@@ -78,7 +77,7 @@ architecture def of btof is
 	signal state : states;
 begin
 
-	process (clk, frm)
+	process (clk)
 	begin
 		if frm='0' then
 			state <= init_s;
@@ -86,7 +85,7 @@ begin
 			case state is
 			when init_s =>
 				state <= btod_s;
-				stof_sign <= bin_sign;
+				stof_sign <= bcd_sign or bin_neg;
 				stof_neg  <= bin_neg;
 			when btod_s =>
 				if bin_irdy = '1' then
@@ -165,21 +164,20 @@ begin
 		mem_di        => dtos_do,
 		mem_do        => vector_do);
 
-	stof_irdy <= bcd_trdy;
+	stof_irdy <= bcd_irdy;
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => bcd_width, 
-		sign      => stof_sign,
-		neg       => stof_neg,
-		unit      => bcd_unit,  
-		prec      => bcd_prec,  
-		align     => bcd_align, 
-		endian    => bcd_endian,
+		bcd_width  => bcd_width, 
+		bcd_sign   => stof_sign,
+		bcd_neg    => stof_neg,
+		bcd_unit   => bcd_unit,  
+		bcd_prec   => bcd_prec,  
+		bcd_align  => bcd_align, 
+		bcd_endian => bcd_endian,
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
-		bcd_prec  => vector_right,
 		bcd_di    => vector_do,
 		bcd_irdy  => stof_irdy,
 		bcd_trdy  => stof_trdy,
@@ -216,8 +214,8 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_end  <= stof_end;
-	bcd_irdy <= stof_trdy;
+	bcd_trdy <= stof_trdy and frm;
+	bcd_end  <= stof_end and frm;
 	bcd_do   <= stof_do;
 
 end;

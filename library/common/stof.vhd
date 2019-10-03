@@ -42,19 +42,18 @@ entity stof is
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
 
-		endian    : in  std_logic := '0';
-		align     : in  std_logic := '0';
-		width     : in  std_logic_vector;
-		unit      : in  std_logic_vector;
-		neg       : in  std_logic := '0';
-		sign      : in  std_logic := '1';
-		prec      : in  std_logic_vector;
+		bcd_endian: in  std_logic := '0';
+		bcd_align : in  std_logic := '0';
+		bcd_width : in  std_logic_vector;
+		bcd_unit  : in  std_logic_vector;
+		bcd_neg   : in  std_logic := '0';
+		bcd_sign  : in  std_logic := '1';
+		bcd_prec  : in  std_logic_vector;
 
 		bcd_irdy  : in  std_logic;
 		bcd_trdy  : out std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
-		bcd_prec  : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
 		bcd_end   : out std_logic;
 
@@ -70,7 +69,7 @@ architecture def of stof is
 	signal sel_mux : inputs;
 
 	constant dot_length  : natural := 1;
-	constant sign_length : natural := 1;
+	constant bcd_sign_length : natural := 1;
 
 	function init_ptr (
 		constant left : signed)
@@ -114,66 +113,67 @@ begin
 		variable last  : signed(ptr'range);
 		variable w     : signed(ptr'range);
 		variable point : std_logic;
-		variable sign1 : std_logic;
+		variable bcd_sign1 : std_logic;
 	begin
 		if rising_edge(clk) then
 			case state is
 			when init_s =>
+				bcd_end <= '0';
 				point := '0';
-				ptr   := not resize(signed(unit), ptr'length) + 1;
-				last  := resize(signed(prec), ptr'length)-resize(signed(unit), ptr'length);
-				w     := signed(unsigned'(resize(unsigned(width), ptr'length)));
-				if resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) >= 0 then
+				ptr   := not resize(signed(bcd_unit), ptr'length) + 1;
+				last  := resize(signed(bcd_prec), ptr'length)-resize(signed(bcd_unit), ptr'length);
+				w     := signed(unsigned'(resize(unsigned(bcd_width), ptr'length)));
+				if resize(signed(bcd_left), ptr'length)+resize(signed(bcd_unit),ptr'length) >= 0 then
 					ptr  := resize(signed(bcd_left), ptr'length);
---	  				elsif signed(bcd_right)+signed(unit) < signed(prec) then
+--	  				elsif signed(bcd_right)+signed(bcd_unit) < signed(bcd_prec) then
 				end if;
-				if signed(prec) < 0 then
+				if signed(bcd_prec) < 0 then
 					w := w - 1;
 				end if;
-				if sign='1' then
+				if bcd_sign='1' then
 					ptr := ptr + 1;
-					if align='0' then
+					if bcd_align='0' then
 						w   := w   - 1;
 					end if;
 				end if;
-				if width/=(width'range => '0') then
-					if align='0' then
+				if bcd_width/=(bcd_width'range => '0') then
+					if bcd_align='0' then
 						ptr  := w+last;
 					else
 						last := ptr - w + 1;
 					end if;
 				end if;
-				if endian='1' then
+				if bcd_endian='1' then
 					aux  := ptr;
 					ptr  := last;
 					last := ptr;
 				end if;
 			when addr_s =>
 
-				sel_mul_l : if endian='0' and point='0' and ptr+signed(unit)=-1 then
+				sel_mul_l : if bcd_endian='0' and point='0' and ptr+signed(bcd_unit)=-1 then
 					sel_mux <= dot_in;
-				elsif endian='1' and point='1' and ptr+signed(unit)=-1 then
+				elsif bcd_endian='1' and point='1' and ptr+signed(bcd_unit)=-1 then
 					sel_mux <= dot_in;
-				elsif ptr+signed(unit) < signed(prec) then
+				elsif ptr+signed(bcd_unit) < signed(bcd_prec) then
 					sel_mux <= blank_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
 				elsif ptr <= signed(bcd_left) then
 					sel_mux <= dout_in;
-				elsif resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) < 0 then
-					if sign='1' and ptr+signed(unit)=1 then
-						if neg='1' then
+				elsif resize(signed(bcd_left), ptr'length)+resize(signed(bcd_unit),ptr'length) < 0 then
+					if bcd_sign='1' and ptr+signed(bcd_unit)=1 then
+						if bcd_neg='1' then
 							sel_mux <= minus_in;
 						else
 							sel_mux <= plus_in;
 						end if;
-					elsif ptr+signed(unit) <= 0 then
+					elsif ptr+signed(bcd_unit) <= 0 then
 						sel_mux <= zero_in;
 					else
 						sel_mux <= blank_in;
 					end if;
-				elsif sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
-					if neg='1' then
+				elsif bcd_sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
+					if bcd_neg='1' then
 						sel_mux <= minus_in;
 					else 
 						sel_mux <= plus_in;
@@ -183,9 +183,9 @@ begin
 				end if;
 
 				if ptr=last then
-					if endian='0' and point='0' and ptr+signed(unit)=-1 then
+					if bcd_endian='0' and point='0' and ptr+signed(bcd_unit)=-1 then
 						bcd_end <= '0';
-					elsif endian='1' and point='1' and ptr+signed(unit)=-1 then
+					elsif bcd_endian='1' and point='1' and ptr+signed(bcd_unit)=-1 then
 						bcd_end <= '0';
 					else
 						bcd_end <= '1';
@@ -196,7 +196,7 @@ begin
 
 			when data_s =>
 				if bcd_irdy='1' then
-					if ptr+signed(unit)=-1 then
+					if ptr+signed(bcd_unit)=-1 then
 						if point='0' then
 							point := '1';
 						else
@@ -204,7 +204,7 @@ begin
 						end if;
 					end if;
 					if point='0' then
-						if endian='0' then
+						if bcd_endian='0' then
 							ptr := ptr - 1;
 						else
 							ptr := ptr + 1;
@@ -225,6 +225,6 @@ begin
 		space  when blank_in,
 		bcd_di when dout_in;
 
-	bcd_trdy <= setif(state=data_s and bcd_irdy='1');
+	bcd_trdy <= setif(state=data_s and bcd_irdy='1') and frm;
 
 end;

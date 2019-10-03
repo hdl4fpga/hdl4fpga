@@ -26,20 +26,27 @@ begin
 		signal y1   : signed(0 to ys'length/2/dots'length-1);
 		signal bias : signed(0 to offsets'length/dots'length-1);
 		signal row  : signed(bias'range);
+		signal dena : std_logic;
 
 	begin
 
-		y0   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 0, y0'length));
-		y1   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 1, y1'length));
-		bias <= signed(word2byte(offsets, i, bias'length));
-		row  <= signed(vline)-vt_height/2+bias;
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				dena <= ena;
+				y0   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 0, y0'length));
+				y1   <= signed(word2byte(word2byte(ys, i, ys'length/dots'length), 1, y1'length));
+				bias <= signed(word2byte(offsets, i, bias'length));
+				row  <= signed(vline)-vt_height/2+bias;
+			end if;
+		end process;
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (
 			sync => true)
 		port map (
 			clk => clk,
-			ena => ena,
+			ena => dena,
 			row => std_logic_vector(row),
 			y1  => std_logic_vector(y0),
 			y2  => std_logic_vector(y1),

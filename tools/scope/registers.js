@@ -41,6 +41,7 @@ const objects = {
 	segmentbg    : { defcolor : '#00ffff', pid : 7 },
 	gridbg       : { defcolor : '#ff0000', pid : 6 },
 	textbg       : { defcolor : '#000000', pid : 5 },
+	textfg       : { defcolor : '#ffffff', pid : 9 },
 	horizontalbg : { defcolor : '#0000ff', pid : 4 },
 	horizontalfg : { defcolor : '#ffffff', pid : 3 },
 	verticalbg   : { defcolor : '#0000ff', pid : 2 },

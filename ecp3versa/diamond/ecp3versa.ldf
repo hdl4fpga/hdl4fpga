@@ -91,7 +91,7 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Timing">
-        <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.scopeio_storage" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -194,9 +194,6 @@
         <Source name="../../library/common/dbdbbl.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/common/ser2pll.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/common/stof.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -207,15 +204,6 @@
             <Options/>
         </Source>
         <Source name="../../library/common/btof.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/scope/scopeio_ticks.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/scope/scopeio_formatu.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/common/pll2ser.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/scope/scopeio_istream.vhd" type="VHDL" type_short="VHDL">
@@ -234,9 +222,6 @@
             <Options/>
         </Source>
         <Source name="../../library/common/bram.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/common/bram_true2p_2clk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
@@ -263,9 +248,6 @@
         <Source name="../../library/scope/scopeio_storage.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_rgtrfile.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/scope/scopeio_rgtrgain.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -282,6 +264,27 @@
             <Options/>
         </Source>
         <Source name="../../library/scope/scopeio_rgtrvtaxis.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_btof.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/arbiter.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_tds.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_layout.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_textbox.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_float2btof.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

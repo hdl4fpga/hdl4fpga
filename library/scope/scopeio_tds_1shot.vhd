@@ -43,7 +43,6 @@ entity scopeio_tds is
 		input_clk        : in  std_logic;
 		input_dv         : in  std_logic;
 		input_data       : in  std_logic_vector;
-		time_dv          : in  std_logic;
 		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
 		trigger_chanid   : buffer std_logic_vector;

@@ -31,6 +31,7 @@ use ecp3.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture beh of ecp3versa is
 	attribute oddrapps : string;
@@ -118,13 +119,14 @@ architecture beh of ecp3versa is
 		mode1080p   => (layout => 0, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
 		mode600px16 => (layout => 6, clkok_div => 2, clkop_div => 32, clkfb_div => 1, clki_div => 4));
 
-	constant video_mode : layout_mode := mode600px16;
+	constant video_mode : layout_mode := mode1080p;
 --	constant layout     : natural := video_params(1).layout;
 	constant layout     : natural := video_params(video_mode).layout;
 
+		signal lock  : std_logic;
 begin
 
---	rst <= not fpga_gsrn;
+	rst <= not fpga_gsrn;
 	video_b : block
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
@@ -132,7 +134,6 @@ begin
 		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
 
 		signal clkfb : std_logic;
-		signal lock  : std_logic;
 	begin
 		pll_i : ehxpllf
         generic map (
@@ -149,7 +150,7 @@ begin
 			CLKI_DIV  => video_params(video_mode).clki_div,
 			FIN=> "100.000000")
 		port map (
-			rst         => rst, 
+			rst         => '0', 
 			rstk        => '0',
 			clki        => clk,
 			wrdel       => '0',
@@ -219,7 +220,7 @@ begin
 	end process;
 
 	uart_sin <= expansionx3(5);
-	led  <= (others => not expansionx3(5));
+--	led  <= (others => not lock);
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -267,9 +268,12 @@ begin
 		chaino_data => si_data);
 	
 	si_clk   <= phy1_rxc;
-	phy1_rst <= not rst;
+	led  <= not si_data;
+	phy1_rst <= not '0'; --rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		vt_unit     => 10.0*pico,
+		hz_unit     => 10.0*pico,
 		inputs      => inputs,
 		vlayout_id  => layout)
 	port map (

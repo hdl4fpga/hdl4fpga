@@ -30,6 +30,7 @@ const i18n = {
 	'horizontalfg' : { en : 'Horizontal FG', es : 'Frente del horizontal' },
 	'segmentbg'    : { en : 'Segment BG',    es : 'Fondo del segmento'    },
 	'textbg'       : { en : 'Text BG',       es : 'Fondo del texto'       },
+	'textfg'       : { en : 'Text FG',       es : 'Frente del texto'      },
 	'verticalbg'   : { en : 'Vertical BG',   es : 'Fondo del vertical'    },
 	'verticalfg'   : { en : 'Vertical FG',   es : 'Frente del vertical'   },
 

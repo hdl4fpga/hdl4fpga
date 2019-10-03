@@ -26,7 +26,7 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 5;
+        constant vlayout_id: integer := 1;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := true; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -1243,8 +1243,6 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        axis_unit        => std_logic_vector(to_unsigned(1,5)),  --  1.0 each 128 samples (for ADC)
---	        axis_unit        => std_logic_vector(to_unsigned(32,6)), -- 32.0 each 128 samples (for USB)
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		trig1shot        => true,

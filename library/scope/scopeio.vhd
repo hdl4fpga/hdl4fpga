@@ -31,9 +31,11 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
+		lang        : i18n_langs := lang_en;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
-		axis_unit   : std_logic_vector := std_logic_vector(to_unsigned(25,5)); -- 25.0 each 128 samples
+		hz_unit     : real := 25.0;
+		vt_unit     : real := 20.0;
 		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
 		trig1shot   : boolean := false;
 
@@ -93,7 +95,7 @@ architecture beh of scopeio is
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
+	constant gainid_bits : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
@@ -108,10 +110,8 @@ architecture beh of scopeio is
 	signal video_frm          : std_logic;
 	signal video_dv           : std_logic;
 	signal video_data         : std_logic_vector(0 to 2*inputs*storage_word'length-1);
-	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
-	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
+
 	signal video_vton         : std_logic;
-	signal video_hzon         : std_logic;
 
 	signal time_offset        : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal time_scale         : std_logic_vector(4-1 downto 0);
@@ -120,8 +120,9 @@ architecture beh of scopeio is
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
+	signal gain_ena           : std_logic;
 	signal gain_dv            : std_logic;
-	signal gain_ids           : std_logic_vector(0 to inputs*gainid_size-1);
+	signal gain_ids           : std_logic_vector(0 to inputs*gainid_bits-1);
 
 
 begin
@@ -143,30 +144,44 @@ begin
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
-		signal output_ena    : std_logic_vector(0 to inputs-1);
+
+		signal chan_id    : std_logic_vector(0 to chanid_bits-1);
+		signal gain_id    : std_logic_vector(0 to gainid_bits-1);
+
+		signal output_ena : std_logic_vector(0 to inputs-1);
 	begin
 
 		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
 		generic map (
-			inputs  => inputs)
+			rgtr      => false)
 		port map (
 			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
+			gain_ena  => gain_ena,
 			gain_dv   => gain_dv,
-			gain_ids  => gain_ids);
+			chan_id   => chan_id,
+			gain_id   => gain_id);
 		
+		process(si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if gain_ena='1' then
+					gain_ids <= byte2word(gain_ids, chan_id, gain_id);
+				end if;
+			end if;
+		end process;
+
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
 			signal input_sample : std_logic_vector(0 to sample_size-1);
-			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
-			signal gain_value   : std_logic_vector(18-1 downto 0);
+			signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
 		begin
 
-			gain_id <= word2byte(gain_ids, i, gainid_size);
+			gain_id <= word2byte(gain_ids, i, gainid_bits);
 			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			generic map (
@@ -198,7 +213,6 @@ begin
 		input_clk    => input_clk,
 		input_dv     => ampsample_dv,
 		input_data   => ampsample_data,
-		time_dv      => time_dv,
 		time_scale   => time_scale,
 		time_offset  => time_offset,
 		trigger_chanid => trigger_chanid,
@@ -213,47 +227,48 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
-		vlayout_id       => vlayout_id,
-		inputs           => inputs,
-		axis_unit        => axis_unit,
-		default_tracesfg => default_tracesfg,
-		default_gridfg   => default_gridfg,
-		default_gridbg   => default_gridbg,
-		default_hzfg     => default_hzfg,
-		default_hzbg     => default_hzbg,
-		default_vtfg     => default_vtfg,
-		default_vtbg     => default_vtbg,
-		default_textbg   => default_textbg,
-		default_sgmntbg  => default_sgmntbg,
-		default_bg       => default_bg)
+		lang           => lang,
+		vlayout_id     => vlayout_id,
+		inputs         => inputs,
+		hz_unit        => hz_unit,
+		vt_unit        => vt_unit,
+		dflt_tracesfg  => default_tracesfg,
+		dflt_gridfg    => default_gridfg,
+		dflt_gridbg    => default_gridbg,
+		dflt_hzfg      => default_hzfg,
+		dflt_hzbg      => default_hzbg,
+		dflt_vtfg      => default_vtfg,
+		dflt_vtbg      => default_vtbg,
+		dflt_textbg    => default_textbg,
+		dflt_sgmntbg   => default_sgmntbg,
+		dflt_bg        => default_bg)
 	port map (
-		rgtr_clk         => si_clk,
-		rgtr_dv          => rgtr_dv,
-		rgtr_id          => rgtr_id,
-		rgtr_data        => rgtr_data,
+		rgtr_clk       => si_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
-		time_dv          => time_dv,
-		time_scale       => time_scale,
-		time_offset      => time_offset,
-                                          
-		gain_dv          => gain_dv,
-		gain_ids         => gain_ids,
+		time_scale     => time_scale,
+		time_offset    => time_offset,
+                                        
+		gain_dv        => gain_dv,
+		gain_ids       => gain_ids,
 
-		trigger_chanid   => trigger_chanid,
-		trigger_level    => trigger_level,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
 
-		video_addr       => video_addr,
-		video_frm        => video_frm,
-		video_data       => video_data,
-		video_dv         => video_dv,
+		video_addr     => video_addr,
+		video_frm      => video_frm,
+		video_data     => video_data,
+		video_dv       => video_dv,
 
-		video_clk        => video_clk,
-		video_pixel      => video_pixel,
-		video_hsync      => video_hsync,
-		video_vsync      => video_vsync,
-		video_vton       => video_vton,
-		video_hzon       => video_hzon,
-		video_blank      => video_blank,
-		video_sync       => video_sync);
+		video_clk      => video_clk,
+		video_pixel    => video_pixel,
+		video_hsync    => video_hsync,
+		video_vsync    => video_vsync,
+		video_vton     => video_vton,
+		video_hzon     => open,
+		video_blank    => video_blank,
+		video_sync     => video_sync);
 
 end;

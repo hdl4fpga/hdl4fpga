@@ -39,6 +39,8 @@ package std is
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
+	subtype ascii is std_logic_vector(8-1 downto 0);
+
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
@@ -78,14 +80,34 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 	
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector;
+
 	function to_bcd (
 		constant arg : string)
 		return std_logic_vector;
 
 	function neg (
-		constant arg : std_logic_vector;
+		constant arg : signed;
 		constant ena : std_logic := '1')
-		return std_logic_vector;
+		return signed;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned;
+
 	--------------------
 	-- Counter functions
 	--------------------
@@ -160,8 +182,14 @@ package std is
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
-		constant def  : std_logic_vector := (0 to 0 => '-'))
+		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector;
+
+	function primux (
+		constant inp  : natural_vector;
+		constant ena  : std_logic_vector;
+		constant def  : natural := 0)
+		return natural;
 
 	function word2byte (
 		constant word : std_logic_vector;
@@ -190,10 +218,15 @@ package std is
 		constant size  : natural)
 		return std_logic_vector;
 
+	function word2byte (
+		constant word  : natural_vector;
+		constant addr  : std_logic_vector)
+		return natural;
+
 	function byte2word (
 		constant word : std_logic_vector;
-		constant byte : std_logic_vector;
-		constant mask : std_logic_vector)
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
 		return std_logic_vector;
 
 	subtype gray is std_logic_vector;
@@ -316,14 +349,7 @@ package std is
 		constant value : std_logic_vector;
 		constant size  : natural)
 		return std_logic_vector;
-
-	function fill (
-		constant data  : string;
-		constant size  : natural;
-		constant right : boolean := true;
-		constant value : character := ' ')
-		return string;
-
+	
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -334,11 +360,6 @@ package std is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 	
-	function slice_select (
-		constant slice_data : std_logic_vector;
-		constant slice_map  : natural_vector;
-		constant slice_id   : natural)
-		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -485,6 +506,18 @@ package body std is
 		return std_logic_vector(retval);
 	end;
 
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector is
+		variable retval : unsigned(ascii'length*arg'length-1 downto 0) := (others => '0');
+	begin
+		for i in arg'range loop
+			retval := retval sll ascii'length;
+			retval(ascii'range) := to_unsigned(character'pos(arg(i)), ascii'length);
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 	function to_bcd(
 		constant arg    : string)
 		return std_logic_vector is
@@ -590,6 +623,9 @@ package body std is
 		variable aux    : unsigned(0 to arg1'length-1) := (others => '0');
 		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
 	begin
+		assert arg1'length mod arg2'length = 0
+			report "wirebus"
+			severity failure;
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
 		for i in arg2'range loop
@@ -650,11 +686,77 @@ package body std is
 	end;
 
 	function neg (
-		constant arg : std_logic_vector;
+		constant arg : signed;
 		constant ena : std_logic := '1')
-		return std_logic_vector is
+		return signed is
 	begin
-		return std_logic_vector(unsigned(arg xor (arg'range => ena)) + unsigned'((0 to 0 => ena)));
+		if ena='1' then
+			return -arg;
+		end if;
+		return arg;
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed is
+		variable muld : signed(op1'length-1 downto 0);
+		variable mulr : unsigned(op2'length-1 downto 0);
+		variable rval : signed(0 to muld'length+mulr'length-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		for i in mulr'range loop
+			rval := shift_right(rval, 1);
+			if mulr(0)='1' then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr srl 1;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed is
+		variable mulr : natural;
+		variable muld : signed(op1'length-1 downto 0);
+		variable rval : signed(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		while mulr /= 0 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr / 2;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned is
+		variable mulr : natural;
+		variable muld : unsigned(op1'length-1 downto 0);
+		variable rval : unsigned(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		while mulr /= 0 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
+			mulr := mulr / 2;
+		end loop;
+		return rval;
 	end;
 
 	--------------------
@@ -790,12 +892,18 @@ package body std is
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
-		constant def  : std_logic_vector := (0 to 0 => '-'))
+		constant def  : std_logic_vector := (0 to 0 => '0'))
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
-		variable aux  : unsigned(0 to size*ena'length-1);
+		variable aux  : unsigned(0 to size*ena'length-1) := (others => '0');
 		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
 	begin
+		assert inp'length mod ena'length = 0
+			report "primux mod"
+			severity failure;
+		assert inp'length = aux'length
+			report "primux length"
+			severity failure;
 		aux(0 to inp'length-1) := unsigned(inp);
 		for i in ena'range loop
 			if ena(i)='1' then
@@ -807,6 +915,26 @@ package body std is
 		return rval;
 	end;
 
+	function primux (
+		constant inp  : natural_vector;
+		constant ena  : std_logic_vector;
+		constant def  : natural := 0)
+		return natural is
+		alias alias_inp : natural_vector(0 to inp'length-1) is inp;
+		alias alias_ena : std_logic_vector(0 to ena'length-1) is ena;
+	begin
+		for i in alias_ena'range loop
+			if i < alias_inp'length then
+				if alias_ena(i)='1' then
+					return alias_inp(i);
+				end if;
+			else
+				exit;
+			end if;
+		end loop;
+		return def;
+	end;
+
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
@@ -814,6 +942,9 @@ package body std is
 		variable aux  : std_logic_vector(0 to word'length-1);
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
 	begin
+		assert word'length mod byte'length = 0
+			report "word2byte mod"
+			severity failure;
 		aux := word;
 		for i in byte'range loop
 			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
@@ -843,6 +974,9 @@ package body std is
 		constant size  : natural)
 		return std_logic_vector is
 	begin
+		assert word'length mod size = 0
+			report "word2byte mod"
+			severity failure;
 		return word2byte(fill(data => word, size => size*(2**addr'length)), addr);
 	end;
 
@@ -853,31 +987,46 @@ package body std is
 		return std_logic_vector is
 		variable aux : unsigned(0 to size*((word'length+size-1)/size)-1);
 	begin
+		assert word'length mod size = 0
+			report "word2byte mod"
+			severity failure;
 		aux(0 to word'length-1) := unsigned(word);
 		aux := aux rol ((addr*size) mod word'length);
 		return std_logic_vector(aux(0 to size-1));
 	end;
 
+	function word2byte (
+		constant word  : natural_vector;
+		constant addr  : std_logic_vector)
+		return natural is
+		alias    arg    : natural_vector(0 to word'length-1) is word;
+		variable retval : natural_vector(0 to 2**addr'length-1);
+	begin
+		retval := (others => 0);
+		if retval'length < arg'length then
+			retval := arg(retval'range);
+		else
+			retval(arg'range) := arg;
+		end if;
+
+		return retval(to_integer(unsigned(addr)));
+	end;
+
 	function byte2word (
 		constant word : std_logic_vector;
-		constant byte : std_logic_vector;
-		constant mask : std_logic_vector)
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
 		return std_logic_vector is
-		variable di : std_logic_vector(0 to byte'length-1);
-		variable do : std_logic_vector(0 to word'length-1);
-		variable mi : std_logic_vector(0 to mask'length-1);
+		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
 	begin
-		di := byte;
-		do := word;
-		mi := mask;
-		for i in mi'range loop
-			if mi(i)='1' then
-				for j in di'range loop
-					do((i*di'length+j) mod do'length) := di(j);
-				end loop;
+		retval(0 to word'length-1) := unsigned(word);
+		for i in 0 to retval'length/data'length-1 loop
+			if to_unsigned(i,addr'length)=unsigned(addr) then
+				retval(0 to data'length-1) := unsigned(data);
 			end if;
+			retval := rotate_left(retval, data'length);
 		end loop;
-		return std_logic_vector(do);
+		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
 	function inc (
@@ -1186,23 +1335,6 @@ package body std is
 		return std_logic_vector(retval);
 	end;
 
-	function fill (
-		constant data  : string;
-		constant size  : natural;
-		constant right : boolean := true;
-		constant value : character := ' ')
-		return string is
-		variable retval_right : string(1 to size)     := (others => value);
-		variable retval_left  : string(size downto 1) := (others => value);
-	begin
-		retval_right(1 to data'length)    := data;
-		retval_left(data'length downto 1) := data;
-		if right then
-			return retval_right;
-		end if;
-		return retval_left;
-	end;
-
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
@@ -1238,28 +1370,6 @@ package body std is
 			aux_m := aux_m sll 1;
 		end loop;
 		return std_logic_vector(aux_r);
-	end;
-
-	function slice_select (
-		constant slice_data : std_logic_vector;
-		constant slice_map  : natural_vector;
-		constant slice_id   : natural)
-		return std_logic_vector is
-		variable aux : unsigned(0 to slice_data'length-1);
-	begin
-		aux := unsigned(slice_data);
-		for i in slice_map'range loop
-			if i=slice_id then
-				return std_logic_vector(aux(0 to slice_map(i)-1));
-			end if;
-			aux := aux rol slice_map(i);
-		end loop;
-
-		assert false
-			report "slice_id is not in range"
-			severity FAILURE;
-
-		return (1 to 0 => '-');
 	end;
 
 end;

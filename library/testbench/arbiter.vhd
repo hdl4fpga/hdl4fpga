@@ -20,50 +20,49 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
+use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity pll2ser is
-    port (
-		clk      : in  std_logic;
-		frm      : in  std_logic := '1';
-		pll_irdy : in  std_logic := '1';
-		pll_trdy : out std_logic;
-		pll_data : in  std_logic_vector;
-		ser_trdy : in  std_logic := '1';
-		ser_irdy : out std_logic;
-		ser_last : out std_logic;
-		ser_data : out std_logic_vector);
-end;
+library hdl4fpga;
+use  hdl4fpga.std.all;
+use  hdl4fpga.scopeiopkg.all;
 
-architecture def of pll2ser is
+architecture arbiter of testbench is
+
+	signal rst : std_logic;
+	signal clk : std_logic := '0';
+	signal req : std_logic_vector(0 to 1);
+	signal bus_req : std_logic_vector(0 to 1);
+	signal bus_gnt : std_logic_vector(0 to 1);
+
+	constant pp : string := i18n_label(en, vertical);
 begin
 
-	process (clk)
-		variable sr   : unsigned(0 to pll_data'length/ser_data'length-1);
-		variable data : unsigned(0 to pll_data'length-1);
-		variable frm1 : std_logic;
+	rst <= '1', '0' after 20 ns;
+	clk <= not clk  after 10 ns;
+
+	process (rst, clk)
+		variable dv : std_logic;
 	begin
-		if rising_edge(clk) then
-			if frm='1' then
-				if frm1='0' then
-					sr   := to_unsigned(1, sr'length);
-					data := unsigned(pll_data);
-				elsif pll_irdy='1' then
-					if ser_trdy='1' then
-						sr   := sr   rol 1;
-						data := data rol ser_data'length;
-					end if;
-				end if;
+		if rst='1' then
+			req <= "00";
+			dv := '1';
+		elsif rising_edge(clk) then
+			if dv='1' then 
+				req <= std_logic_vector(unsigned(req) + 1); 
 			end if;
-			pll_trdy <= sr(0) and ser_trdy;
-			ser_last <= sr(0);
-			ser_data <= std_logic_vector(data(0 to ser_data'length-1));
-			frm1     := frm;
+			dv := not dv;
 		end if;
 	end process;
-	ser_irdy <= pll_irdy;
+				bus_req <= req;
 
+	arbiter_e : entity hdl4fpga.arbiter
+	port map (
+		clk => clk,
+		bus_req => bus_req,
+		bus_gnt => bus_gnt);
 end;
+

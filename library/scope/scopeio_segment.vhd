@@ -11,7 +11,8 @@ entity scopeio_segment is
 		input_latency : natural;
 		latency       : natural;
 		layout        : display_layout;
-		axis_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5));
+		hz_unit       : real;
+		vt_unit       : real;
 		inputs        : natural);
 	port (
 		rgtr_clk      : in  std_logic;
@@ -19,15 +20,21 @@ entity scopeio_segment is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		wu_frm        : out std_logic;
-		wu_irdy       : out std_logic;
-		wu_trdy       : in  std_logic;
-		wu_unit       : out std_logic_vector;
-		wu_neg        : out std_logic;
-		wu_sign       : out std_logic;
-		wu_align      : out std_logic;
-		wu_value      : out std_logic_vector;
-		wu_format     : in  std_logic_vector;
+		btof_binfrm   : buffer std_logic;
+		btof_binirdy  : out std_logic;
+		btof_bintrdy  : in  std_logic;
+		btof_bindi    : out std_logic_vector;
+		btof_binneg   : out std_logic;
+		btof_binexp   : out std_logic;
+		btof_bcdunit  : out std_logic_vector;
+		btof_bcdwidth : out std_logic_vector;
+		btof_bcdprec  : out std_logic_vector;
+		btof_bcdsign  : out std_logic;
+		btof_bcdalign : out std_logic;
+		btof_bcdirdy  : buffer  std_logic;
+		btof_bcdtrdy  : in  std_logic;
+		btof_bcdend   : in  std_logic;
+		btof_bcddo    : in  std_logic_vector;
 
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
@@ -61,6 +68,7 @@ architecture def of scopeio_segment is
 
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
 	constant division_size : natural := grid_divisionsize(layout);
@@ -73,9 +81,8 @@ architecture def of scopeio_segment is
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
-	signal vt_offset : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 
-	signal axis_dv      : std_logic := '0';
+	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
@@ -84,20 +91,26 @@ architecture def of scopeio_segment is
 begin
 
 	scopeio_rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-	generic map (
-		inputs  => inputs)
 	port map (
-		rgtr_clk   => rgtr_clk,
-		rgtr_dv    => rgtr_dv,
-		rgtr_id    => rgtr_id,
-		rgtr_data  => rgtr_data,
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-		vt_dv      => vt_dv,
-		vt_chanid  => vt_chanid,
-		vt_offsets => vt_offsets);
+		vt_dv     => vt_dv,
+		vt_chanid => vt_chanid,
+		vt_offset => vt_offset);
 
-	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
-	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
+	process(rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if vt_dv='1' then
+				vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+			end if;
+		end if;
+	end process;
+
+	vt_scale  <= word2byte(gain_ids,  vt_chanid, vt_scale'length);
 	grid_b : block
 		constant offset_latency : natural := 1;
 
@@ -129,31 +142,14 @@ begin
 	end block;
 
 	axis_b : block
+		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
 		signal v_offset : std_logic_vector(vt_offset'range);
 	begin
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if vt_dv='1' or gain_dv='1' then
-					axis_sel <= '1';
-					axis_dv  <= '1';
-				elsif hz_dv='1' then
-					axis_sel <= '0';
-					axis_dv  <= '1';
-				else
-					axis_dv  <= '0';
-				end if;
-			end if;
-		end process;
+		axis_sel   <= gain_dv or vt_dv;
+		axis_dv    <= gain_dv or vt_dv or hz_dv;
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		bias_p : process (rgtr_clk)
-			constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
-		begin
-			if rising_edge(rgtr_clk) then
-				v_offset <= std_logic_vector(unsigned(vt_offset) - bias);
-			end if;
-		end process;
+		v_offset   <= std_logic_vector(unsigned(vt_offset) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);
@@ -164,38 +160,45 @@ begin
 
 		axis_e : entity hdl4fpga.scopeio_axis
 		generic map (
-			latency     => latency,
-			axis_unit   => axis_unit,
-			layout      => layout)
+			latency       => latency,
+			hz_unit       => hz_unit,
+			vt_unit       => vt_unit,
+			layout        => layout)
 		port map (
-			clk         => rgtr_clk,
+			clk           => rgtr_clk,
 
-			axis_dv     => axis_dv,
-			axis_sel    => axis_sel,
-			axis_base   => axis_base,
-			axis_scale  => axis_scale,
+			axis_dv       => axis_dv,
+			axis_sel      => axis_sel,
+			axis_base     => axis_base,
+			axis_scale    => axis_scale,
 
-			wu_frm      => wu_frm,
-			wu_irdy     => wu_irdy,
-			wu_trdy     => wu_trdy,
-			wu_unit     => wu_unit,
-			wu_neg      => wu_neg,
-			wu_sign     => wu_sign,
-			wu_value    => wu_value,
-			wu_align    => wu_align,
-			wu_format   => wu_format,
+			btof_binfrm   => btof_binfrm,
+			btof_binirdy  => btof_binirdy,
+			btof_bintrdy  => btof_bintrdy,
+			btof_bindi    => btof_bindi,
+			btof_binneg   => btof_binneg,
+			btof_binexp   => btof_binexp,
+			btof_bcdwidth => btof_bcdwidth,
+			btof_bcdprec  => btof_bcdprec,
+			btof_bcdunit  => btof_bcdunit,
+			btof_bcdsign  => btof_bcdsign,
+			btof_bcdalign => btof_bcdalign,
+			btof_bcdirdy  => btof_bcdirdy,
+			btof_bcdtrdy  => btof_bcdtrdy,
+			btof_bcdend   => btof_bcdend,
+			btof_bcddo    => btof_bcddo,
 
-			video_clk   => video_clk,
-			video_hcntr => x,
-			video_vcntr => y,
+			video_clk     => video_clk,
+			video_hcntr   => x,
+			video_vcntr   => y,
 
-			hz_offset   => hz_offset,
-			video_hzon  => hz_on,
-			video_hzdot => hz_dot,
+			hz_offset     => hz_offset,
+			video_hzon    => hz_on,
+			video_hzdot   => hz_dot,
 
-			vt_offset   => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
-			video_vton  => vt_on,
-			video_vtdot => vt_dot);
+			vt_offset     => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
+			video_vton    => vt_on,
+			video_vtdot   => vt_dot);
 	end block;
 
 	trigger_b : block 
@@ -233,7 +236,7 @@ begin
 	end block;
 
 	trace_b : block
-		constant drawvline_latency : natural := 1;
+		constant drawvline_latency : natural := 2;
 		constant traceena_latency  : natural := 2;
 
 		signal dots : std_logic_vector(0 to trace_dots'length-1);

@@ -26,74 +26,34 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-entity scopeio_ticks is
-	port (
-		clk      : in  std_logic;
-		frm      : in  std_logic;
-		irdy     : in  std_logic := '1';
-		trdy     : out std_logic := '0';
-		last     : in  std_logic_vector;
-		base     : in  std_logic_vector;
-		step     : in  std_logic_vector;
-		updn     : in  std_logic := '0';
+architecture scopeio_iterator of testbench is
 
-		wu_frm   : out std_logic;
-		wu_irdy  : out std_logic;
-		wu_trdy  : in  std_logic;
-		wu_value : out std_logic_vector);
-end;
+	signal clk   : std_logic := '0';
 
-architecture def of scopeio_ticks is
+	signal value : signed(3*4-1 downto 0);
+
+	signal init  : std_logic;
+	signal ena   : std_logic := '1';
+	signal start : signed(value'range) := x"000";
+	signal stop  : signed(value'range) := x"010";
+	signal step  : signed(value'range) := x"003";
+	signal ended : std_logic;
+
 begin
 
-	process(clk)
-		variable frm1 : std_logic;
-		variable wfrm : std_logic;
-		variable accm : signed(base'range);
-		variable cntr : unsigned(last'range);
-	begin
-		if rising_edge(clk) then
-			if frm='0' then
-				frm1 := '0';
-				wfrm := '0';
-				trdy <= '0';
-				accm := (others => '-');
-				cntr := (others => '-');
-			elsif frm1='0' then
-				frm1 := '1';
-				wfrm := '1';
-				trdy <= '0';
-				accm := signed(base);
-				cntr := (others => '0');
-			else
-				frm1 := '1';
-				if irdy='1' then
-					if wfrm='0' then 
-						if cntr < unsigned(last) then
-							wfrm := '1';
-							trdy <= '0';
-							if updn='0' then
-								accm := accm + signed(step);
-							else
-								accm := accm - signed(step);
-							end if;
-							cntr := cntr + 1;
-						else
-							wfrm := '0';
-							trdy <= '1';
-						end if;
-					elsif wu_trdy='1' then
-						wfrm := '0';
-						trdy <= '0';
-					end if;
-				end if;
-			end if;
-			wu_frm   <= wfrm;
-			wu_irdy  <= wfrm;
-			wu_value <= std_logic_vector(accm);
-		end if;
-	end process;
-	
+	init <= '1', '0' after 20 ns; --ended;
+	clk  <= not clk after 10 ns;
+
+	iterator_e : entity hdl4fpga.scopeio_iterator
+	port map (
+		clk   => clk,
+		init  => init,
+		ena   => ena,
+		start => start,
+		stop  => stop,
+		step  => step,
+		ended => ended,
+		value => value);
+
 end;

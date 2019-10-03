@@ -108,7 +108,7 @@ architecture scopeio of testbench is
 		mode1080p   => (layout => 0, mul => 3, div => 1),
 		mode600px16 => (layout => 7, mul => 4, div => 5));
 
-	constant video_mode : natural := mode600px16;
+	constant video_mode : natural := mode600p;
 
 	signal rs232_rxd : std_logic;
 	signal vga_hsync : std_logic;

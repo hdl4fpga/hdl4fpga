@@ -30,47 +30,40 @@ use hdl4fpga.std.all;
 
 entity arbiter is
 	port (
-		clk      : in  std_logic;
-		bus_req  : in  std_logic_vector;
-		bus_gnt  : out std_logic_vector;
-		bus_busy : out std_logic;
-		dev_id   : out std_logic_vector);
+		clk     : in std_logic;
+		bus_req : in std_logic_vector;
+		bus_gnt : buffer std_logic_vector);
 end;
 
-architecture pri of arbiter is
-	signal id  : unsigned(dev_id'range);
-	signal req : std_logic_vector(1 to bus_req'length);
-	signal gnt : std_logic_vector(1 to bus_gnt'length);
+architecture mix of arbiter is
+	function primask (
+		constant arg : std_logic_vector )
+		return std_logic_vector is
+		variable retval : std_logic_vector(arg'range);
+	begin
+		retval := (others => '0');
+		for i in arg'range loop
+			if arg(i)='1' then
+				retval(i) := '1';
+				return retval;
+			end if;
+		end loop;
+		return (arg'range => '0');
+	end;
+
+	signal gntd : std_logic_vector(bus_gnt'range) := (others => '0');
+
 begin
 
-	req <= bus_req;
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if id=(id'range => '0')then
-				for i in req'range loop
-					if req(i)/='0' then
-						id     <= to_unsigned(i, id'length);
-						gnt(i) <= req(i);
-						exit;
-					end if;
-				end loop;
-			elsif req(to_integer(id))='0' then
-				id  <= (others => '0');
-				gnt <= (gnt'range => '0');
-				for i in req'range loop
-					if req(i)/='0' then
-						id     <= to_unsigned(i, id'length);
-						gnt(i) <= req(i);
-						exit;
-					end if;
-				end loop;
-			end if;
+			gntd <= bus_gnt;
 		end if;
 	end process;
 
-	bus_gnt  <= gnt and req;
-	bus_busy <= setif(bus_req/=(bus_req'range => '0'));
-	dev_id   <= std_logic_vector(id);
+	assert bus_req'length=bus_gnt'length
+		severity failure;
+	bus_gnt <= primask(word2byte((bus_req and gntd) & bus_req, setif(gntd=(gntd'range => '0'))));
 
 end;

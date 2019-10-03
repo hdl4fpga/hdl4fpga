@@ -24,10 +24,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity bram is
 	generic (
-		data  : std_logic_vector := (0 to 0 => '-'));
+		bitrom : std_logic_vector := (0 to 0 => '-'));
 	port (
 		clka  : in  std_logic;
 		addra : in  std_logic_vector;
@@ -45,80 +49,33 @@ entity bram is
 		
 end;
 
---library hdl4fpga;
---
---architecture bram_true2p_2clk of bram is
---	signal rd_addr   : std_logic_vector(addra'range);
---	signal rd_data   : std_logic_vector(dia'range);
---begin
---
---	process (clkb)
---	begin 
---		if rising_edge(clkb) then
---			rd_addr <= addrb;
---		end if;
---	end process;
---
---	process (clkb)
---	begin 
---		if rising_edge(clkb) then
---			dob <= rd_data;
---		end if;
---	end process;
---
---	mem_e: entity hdl4fpga.bram_true2p_2clk
---	generic map
---	(
---	    pass_thru_a => true,			-- True or False doesn't change LUTs consumption on
---	    pass_thru_b => true,			-- Diamond 3.10.2.115, neither does this
---		data_width => dia'length,
---		addr_width => addra'length
---	)
---	port map
---	(
---		clk_a      => clka,
---		we_a       => wea,
---		addr_a     => addra,
---		data_in_a  => dia,
---
---		clk_b      => clkb,
---		we_b       => '0',
---		addr_b     => rd_addr,
---		data_out_b => rd_data
---	);
---
---
---end;
-
--- Less LUTs consuption on Lattisemi Diamond 3.10.2.115
--- Less tested than bram_true2p_2clk for portability
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-
 architecture inference of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
-	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
-	constant data_size : natural := (data'length+word'length-1)/word'length;
 
-	function mem_init (
-		constant arg : std_logic_vector)
-		return word_vector is
 
-		variable aux : std_logic_vector(0 to max(arg'length,word'length)-1) := (others => '-');
-		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '-'));
-
+	function init_ram (
+		constant bitrom : std_logic_vector;
+		constant size   : natural)
+		return   word_vector is
+		variable aux    : std_logic_vector(0 to size*word'length-1);
+		variable retval : word_vector(0 to size-1);
 	begin
-		aux(0 to arg'length-1) := arg;
-		for i in 0 to data_size-1 loop
-			val(i) := aux(word'length*i to word'length*(i+1)-1);
-		end loop;
-
-		return val;
+		aux(0 to bitrom'length-1) := bitrom;
+		if bitrom'length > 1 then  -- "if" WORKAROUND suggested by emard @ github.com
+			for i in retval'range loop
+				retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
+			end loop;
+		end if;
+		return retval;
 	end;
-	shared variable ram : word_vector(0 to 2**addr_size-1); -- := mem_init(data);
+
+	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
+
+	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
+
 begin
+
 	process (clka)
 		variable addr : std_logic_vector(addra'range);
 	begin

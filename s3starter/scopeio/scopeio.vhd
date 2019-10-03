@@ -103,8 +103,8 @@ architecture beh of s3starter is
 
 	type display_param is record
 		layout : natural;
-		mul    : natural;
-		div    : natural;
+		dcm_mul    : natural;
+		dcm_div    : natural;
 	end record;
 
 	type layout_mode is (
@@ -115,12 +115,12 @@ architecture beh of s3starter is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, mul => 4, div => 5),
-		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode480p    => (layout => 8, mul => 3, div => 5),
-		mode600px16 => (layout => 6, mul => 2, div => 4));
+		mode600p    => (layout => 1, dcm_mul => 4, dcm_div => 5),
+		mode1080p   => (layout => 0, dcm_mul => 3, dcm_div => 1),
+		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
+		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 begin
 
@@ -133,8 +133,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).mul,
-		dfs_div => video_params(video_mode).div)
+		dfs_mul => video_params(video_mode).dcm_mul,
+		dfs_div => video_params(video_mode).dcm_div)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -251,7 +251,7 @@ begin
 			chaino_data => mousedaisy_data
 		);
 
-		si_frm  <= mousedaisy_frm;
+		si_frm  <= mousedaisy_frm and switch(0);
 		si_irdy <= mousedaisy_irdy;
 		si_data <= mousedaisy_data;
 	end block;
@@ -259,7 +259,8 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		axis_unit   => std_logic_vector(to_unsigned(25,5)),
+		hz_unit   => 25.0*pico,
+		vt_unit   => 20.0*micro,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_1_1",

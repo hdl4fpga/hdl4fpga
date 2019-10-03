@@ -76,7 +76,7 @@ begin
 
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	generic map (
-		max => 5)
+		max => 7)
 	port map (
 		clk     => clk,
 		bcd_ena => dtos_ena,
@@ -87,7 +87,7 @@ begin
 		bcd_do  => dtos_do,
 		bcd_cy  => dtos_cy);
 
-	process (frm, clk)
+	process (clk)
 	begin
 		if rising_edge(clk) then
 			case state is
