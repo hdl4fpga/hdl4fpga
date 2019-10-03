@@ -87,6 +87,10 @@ architecture mix of scopeio_tds is
 	signal storage_write          : std_logic;
 	signal storage_addr           : std_logic_vector(video_addr'range);
 	signal trace_visible          : std_logic;
+	
+	signal video_frm_delay    : std_logic_vector(1 downto 0);
+	signal video_frm_first    : std_logic;
+	signal video_frm_regular  : std_logic;
 
 begin
 
@@ -165,7 +169,7 @@ begin
 	scopeio_storage_e : entity hdl4fpga.scopeio_storage
 	generic map (
 		inputs                 => inputs,
-		align_to_grid          => 0 -- (-left,+right) shift triggered edge n pixels
+		align_to_grid          => -1 -- (-left,+right) shift triggered edge n pixels
 	)
 	port map (
 		storage_clk            => input_clk,
@@ -193,5 +197,29 @@ begin
 		captured_visible       => trace_visible,
 		captured_data          => video_data
 	);
-	video_dv <= video_frm and trace_visible; -- to prevent traces drawn over the vtscale
+	-- video_frm should be delayed two cycles if we want it to control video_dv.
+	-- scopeio_video waits two cycles till the very first moment it asks for the
+	-- sample by sending video_frm. This gives BRAM enough cycles to send the
+	-- samples along with a video_dv.
+        -- to get rid of vertical line alias in downsampling=0 mode:
+        -- downsampling=0 is a special case. I use the change in video_frm from 0 to 1
+        -- to know that is the first sample and send the first sample twice. Then, I
+        -- copy the sample into a register. The next sample is combination of the
+        -- saved sample with the next one and I save that in the register.
+        -- simplification of this is to not draw first sample if downsampling=0
+        -- final downside: trace pixels at right side of the grid when viewsed timespan
+        -- exceeds sampled data. It is not too annoying anymore....
+	B_video_frm_delay: block
+	  signal video_frm_shift : std_logic_vector(2 downto 0);
+	begin
+	  process(video_clk)
+	  begin
+	    if rising_edge(video_clk) then
+	      video_frm_shift <= video_frm & video_frm_shift(video_frm_shift'high downto 1);
+	    end if;
+	  end process;
+	  video_frm_first <= video_frm_shift(1) and not video_frm_shift(0);
+	  video_frm_regular <= downsampling or not video_frm_first;
+	  video_dv <= trace_visible and video_frm_shift(1) and video_frm_regular;
+	end block;
 end;
