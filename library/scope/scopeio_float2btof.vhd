@@ -19,25 +19,25 @@ entity scopeio_float2btof is
 end;
 
 architecture def of scopeio_float2btof is
-	signal sel : unsigned(0 to unsigned_num_bits(frac'length/bin_di'length)-1);
 begin
 
 	process (clk)
+		variable sel : unsigned(0 to unsigned_num_bits(frac'length/bin_di'length)-1);
 	begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
-				sel <= (others => '0');
+				sel := (others => '0');
 			elsif bin_trdy='1' then
-				sel <= sel + 1;
+				sel := sel + 1;
 			end if;
+			bin_di <= word2byte(
+				std_logic_vector(neg(frac, frac(frac'left)) & exp),
+				std_logic_vector(sel), 
+				bin_di'length);
+			bin_exp <= setif(sel >= frac'length/bin_di'length);
+			bin_neg <= frac(frac'left);
 		end if;
 	end process;
 
-	bin_di <= word2byte(
-		std_logic_vector(neg(frac, frac(frac'left)) & exp),
-		std_logic_vector(sel), 
-		bin_di'length);
-	bin_exp  <= setif(sel >= frac'length/bin_di'length);
-	bin_neg  <= frac(frac'left);
 	bin_irdy <= bin_frm;
 end;

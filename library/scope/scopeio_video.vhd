@@ -135,13 +135,13 @@ architecture beh of scopeio_video is
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-	signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal x             : std_logic_vector(sgmntboxx_bits-1 downto 0);
+	signal y             : std_logic_vector(sgmntboxy_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
-	signal grid_on         : std_logic;
-	signal hz_on           : std_logic;
-	signal vt_on           : std_logic;
-	signal text_on         : std_logic;
+	signal grid_on       : std_logic;
+	signal hz_on         : std_logic;
+	signal vt_on         : std_logic;
+	signal text_on       : std_logic;
 
 	signal trigger_dot   : std_logic;
 	signal trace_dots    : std_logic_vector(0 to inputs-1);
@@ -370,25 +370,25 @@ begin
 		dflt_sgmntbg  => dflt_sgmntbg, 
 		dflt_bg       => dflt_bg)
 	port map (
-		rgtr_clk         => rgtr_clk,
-		rgtr_dv          => rgtr_dv,
-		rgtr_id          => rgtr_id,
-		rgtr_data        => rgtr_data,
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
-		video_clk        => video_clk,
-		trace_dots       => trace_dots, 
-		trigger_dot      => trigger_dot,
-		trigger_chanid   => trigger_chanid,
-		grid_dot         => grid_dot,
-		grid_bgon        => grid_bgon,
-		hz_dot           => hz_dot,
-		hz_bgon          => hz_bgon,
-		vt_dot           => vt_dot,
-		vt_bgon          => vt_bgon,
-		text_dot         => text_dot,
-		text_bgon        => text_bgon,
-		sgmnt_bgon       => sgmntbox_bgon,
-		video_color      => scope_color);
+		video_clk      => video_clk,
+		trace_dots     => trace_dots, 
+		trigger_dot    => trigger_dot,
+		trigger_chanid => trigger_chanid,
+		grid_dot       => grid_dot,
+		grid_bgon      => grid_bgon,
+		hz_dot         => hz_dot,
+		hz_bgon        => hz_bgon,
+		vt_dot         => vt_dot,
+		vt_bgon        => vt_bgon,
+		text_dot       => text_dot,
+		text_bgon      => text_bgon,
+		sgmnt_bgon     => sgmntbox_bgon,
+		video_color    => scope_color);
 
 	scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
 	generic map (

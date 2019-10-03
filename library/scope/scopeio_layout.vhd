@@ -239,13 +239,14 @@ begin
 
 			rgtrout_p: process (video_clk)
 				constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
+				constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
 				variable vt_mask : unsigned(x'range);
 				variable hz_mask : unsigned(y'range);
 				variable box_on  : std_logic;
 			begin
 				if rising_edge(video_clk) then
 					box_on  := xon and yon;
-					vt_mask := unsigned(x) srl font_bits;
+					vt_mask := unsigned(sgmntbox_x) srl font_bits;
 					if vtaxis_width(layout)=0  then
 						if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
 							vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
@@ -255,16 +256,33 @@ begin
 					else
 						vt_on <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					end if;
-					hz_mask := unsigned(y) srl 3;
+					hz_mask := unsigned(y) srl font_bits;
 					if hzaxis_height(layout)=0  then
-						hz_on <= setif((hz_mask'range => '0')=hz_mask) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+						hz_on <= '0';
+						if true then -- scale at the bottom
+							if unsigned(hz_mask)=to_unsigned(sgmnt_height(layout)/axis_fontsize(layout)-1, hz_mask'length) then
+								hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
+						else -- scale at the top
+							if unsigned(hz_mask)=0 then
+								hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
+						end if;
 					else
 						hz_on <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					end if;
 					grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-					text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-					x       <= sgmntbox_x;
-					y       <= sgmntbox_y;
+					if layout.textbox_within then
+						vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
+						text_on <= '0';
+						if unsigned(vt_mask)=to_unsigned(sgmnt_width(layout)/textbox_width(layout)-1, vt_mask'length) then
+							text_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+						end if;
+					else
+						text_on <= sgmnt_boxon(box_id => text_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+					end if;
+					x <= sgmntbox_x;
+					y <= sgmntbox_y;
 				end if;
 			end process;
 		end block;
