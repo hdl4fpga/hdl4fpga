@@ -275,12 +275,14 @@ begin
 					if layout.textbox_within then
 						vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
 						text_on <= '0';
-						if unsigned(vt_mask)=to_unsigned(sgmnt_width(layout)/textbox_width(layout)-1, vt_mask'length) then
+						if textbox_width(layout)/=0  then
+							if unsigned(vt_mask)=to_unsigned(sgmnt_width(layout)/textbox_width(layout)-1, vt_mask'length) then
+								text_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
 						end if;
 					else
 						text_on <= sgmnt_boxon(box_id => text_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					end if;
-							text_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					x <= sgmntbox_x;
 					y <= sgmntbox_y;
 				end if;

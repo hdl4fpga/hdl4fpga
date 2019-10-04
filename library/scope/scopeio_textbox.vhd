@@ -61,6 +61,7 @@ architecture def of scopeio_textbox is
 	constant analog_addr : tag_vector := text_analoginputs(inp, analogtime_layout);
 	constant font_wbits  : natural    := unsigned_num_bits(font_width-1);
 	constant font_hbits  : natural    := unsigned_num_bits(font_height-1);
+	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
 	constant cga_cols    : natural    := textbox_width(layout)/font_width;
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
@@ -410,7 +411,7 @@ begin
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl font_hbits, textbox_width(layout)/font_width) +
-		(unsigned(video_hcntr) srl font_wbits),
+		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl font_wbits),
 		video_addr'length));
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter

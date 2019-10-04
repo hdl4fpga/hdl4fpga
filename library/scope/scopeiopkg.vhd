@@ -120,7 +120,7 @@ package scopeiopkg is
 			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
-			grid_width      => 15*32+1,
+			grid_width      => 16*32+1,
 			grid_height     =>  8*32+1,
 			axis_fontsize   =>    8,
 			hzaxis_height   =>  0, --  8,
@@ -883,8 +883,10 @@ package body scopeiopkg is
 		retval := retval + layout.vtaxis_width;
 		retval := retval + layout.sgmnt_gap(horizontal);
 		retval := retval + grid_width(layout);
-		retval := retval + layout.sgmnt_gap(horizontal);
-		retval := retval + layout.textbox_width;
+		if not layout.textbox_within then
+			retval := retval + layout.sgmnt_gap(horizontal);
+			retval := retval + layout.textbox_width;
+		end if;
 		retval := retval + layout.sgmnt_margin(right);
 		return retval;
 	end;
@@ -899,7 +901,7 @@ package body scopeiopkg is
 			sides        => (
 				vtaxis_boxid => vtaxis_width(layout), 
 				grid_boxid   => grid_width(layout), 
-				text_boxid   => textbox_width(layout)),
+				text_boxid   => setif(not layout.textbox_within, textbox_width(layout))),
 			margin_start => layout.sgmnt_margin(left),
 			margin_end   => layout.sgmnt_margin(right),
 			gap          => layout.sgmnt_gap(horizontal)));
@@ -928,7 +930,7 @@ package body scopeiopkg is
 		constant x_sides  : natural_vector := (
 			vtaxis_boxid => vtaxis_width(layout),
 			grid_boxid   => grid_width(layout),
-			text_boxid   => textbox_width(layout),
+			text_boxid   => setif(not layout.textbox_within, textbox_width(layout)),
 			hzaxis_boxid => grid_width(layout));
 
 		constant y_sides  : natural_vector := (
