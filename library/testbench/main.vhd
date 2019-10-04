@@ -22,123 +22,28 @@
 --                                                                            --
 
 use std.textio.all;
+
 library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_textio.all;
 use ieee.math_real.all;
 
 entity main is
+	port (
+		tp : buffer std_logic := '1');
 end;
 
 architecture def of main is
 
-	type sio_float is record
-		frac  : natural;
-		exp   : integer;
-		order : natural;
-	end record;
-
-	function to_siofloat (
-		constant unit : real)
-		return sio_float is
-		variable frac : real;
-		variable exp   : integer;
-		variable order : natural;
-		variable mult  : real;
-	begin
-		assert unit >= 1.0  
-			report "Invalid unit value"
-			severity failure;
-
-		mult  := 1.0;
-		order := 0;
-		while unit >= mult loop
-			mult  := mult * 1.0e1;
-			order := order + 1;
-		end loop;
-		mult  := mult / 1.0e1;
-		order := order - 1;
-		frac  := unit / mult;
-
-		exp  := 0;
-		for i in 0 to 3-1 loop
-			assert i /= 2
-				report "Invalid unit value"
-				severity failure;
-			frac := frac * 2.0;
-			exp  := exp - 1;
-			exit when floor(frac)=(frac);
-		end loop;
-
-		return sio_float'(frac => natural(frac), exp => exp, order => order);
-	end;
-
 begin
 	process
-		variable arg  : real;
-		variable unit : real;
-		variable mult : real;
-		variable order : integer;
-		variable prec : integer;
-		variable exp  : integer;
 		variable mesg : line;
 	begin
-		arg := 125.0;
 
-		mult  := 1.0;
-		order := 0;
-		while arg >= mult loop
-			mult  := mult * 1.0e3;
-			order := order + 1;
-		end loop;
-		mult  := mult / 1.0e3;
-		order := order - 1;
-		unit  := arg  / mult;
-
-		mult := 1.0;
-		prec := 2;
-		while unit >= mult loop
-			mult := mult * 1.0e1;
-			prec := prec - 1;
-		end loop;
-		mult := mult / 1.0e1;
-		prec := prec + 1;
-		unit := unit  / mult;
-
-		mult := 1.0;
-		exp  := 0;
-		for i in 0 to 3-1 loop
-			assert i /= 2
-				report "Invalid unit value"
-				severity failure;
-			unit := unit * 2.0;
-			exp  := exp + 1;
-			exit when floor(unit)=(unit);
-		end loop;
-
-		write (mesg, string'("unit : "));
-		write (mesg, unit);
-		write (mesg, string'(" : order : "));
-		write (mesg, order);
-		write (mesg, string'(" : prec : "));
-		write (mesg, prec);
-		write (mesg, string'(" : exp : "));
-		write (mesg, exp);
---		writeline(output, mesg);
-		wait;
-
-	end process;
-	process
-		variable p : sio_float;
-		variable mesg : line;
-	begin
-		p := to_siofloat(40.0);
-
-		write (mesg, string'("frac : "));
-		write (mesg, p.frac);
-		write (mesg, string'(" : exp : "));
-		write (mesg, p.exp);
-		write (mesg, string'(" : order : "));
-		write (mesg, p.order);
+		write (mesg, tp);
 		writeline(output, mesg);
 		wait;
+
 	end process;
+
 end;

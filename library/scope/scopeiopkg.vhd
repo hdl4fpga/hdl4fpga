@@ -92,6 +92,7 @@ package scopeiopkg is
 		vtaxis_width     : natural;            -- Width of the vetical axis 
 		vttick_rotate    : rotate;             -- Vertical label rotating
 		textbox_width    : natural;            -- Width of the text box
+		textbox_within   : boolean;            -- Textbox widthin grid
 		main_margin      : margin_vector;      -- Main Margin
 		main_gap         : gap_vector;         -- Main Padding
 		sgmnt_margin     : margin_vector;      -- Segment Margin
@@ -119,13 +120,14 @@ package scopeiopkg is
 			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
-			grid_width      => 15*32+1,
+			grid_width      => 16*32+1,
 			grid_height     =>  8*32+1,
 			axis_fontsize   =>    8,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  1*8,
+			hzaxis_height   =>  0, --  8,
+			vtaxis_width    =>  0, --1*8,
 			vttick_rotate   => ccw90,
-			textbox_width   => 33*8,
+			textbox_width   => 32*8,
+			textbox_within  => true,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
 			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
@@ -141,7 +143,8 @@ package scopeiopkg is
 			hzaxis_height    =>    0,
 			vtaxis_width     =>    0,
 			vttick_rotate    => ccw90,
-			textbox_width    => 0,
+			textbox_width    => 8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -157,7 +160,8 @@ package scopeiopkg is
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
-			textbox_width    =>  0,
+			textbox_width    => 8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
@@ -173,7 +177,8 @@ package scopeiopkg is
 			hzaxis_height    =>    7,
 			vtaxis_width     =>    7,
 			vttick_rotate    => ccw90,
-			textbox_width    =>    0, -- no textbox
+			textbox_width    => 8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -189,7 +194,8 @@ package scopeiopkg is
 			hzaxis_height    =>    0,
 			vtaxis_width     =>    0,
 			vttick_rotate    => ccw90,
-			textbox_width    =>    0, -- no textbox
+			textbox_width    => 8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -205,7 +211,8 @@ package scopeiopkg is
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
-			textbox_width    =>    0,
+			textbox_width    => 33*8,
+			textbox_within   => false,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
@@ -221,7 +228,8 @@ package scopeiopkg is
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
-			textbox_width    =>    0,
+			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
@@ -237,7 +245,8 @@ package scopeiopkg is
 			hzaxis_height    =>    0,
 			vtaxis_width     =>    0,
 			vttick_rotate    => ccw0,
-			textbox_width    =>    0,
+			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -253,7 +262,8 @@ package scopeiopkg is
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
-			textbox_width    =>    0,
+			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
@@ -270,6 +280,7 @@ package scopeiopkg is
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -286,6 +297,7 @@ package scopeiopkg is
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -302,6 +314,7 @@ package scopeiopkg is
 			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
+			textbox_within   => true,
 			main_margin      => (top => 5, left => 1, others => 0),
 			main_gap         => (others => 1),
 			sgmnt_margin     => (others => 1),
@@ -870,8 +883,10 @@ package body scopeiopkg is
 		retval := retval + layout.vtaxis_width;
 		retval := retval + layout.sgmnt_gap(horizontal);
 		retval := retval + grid_width(layout);
-		retval := retval + layout.sgmnt_gap(horizontal);
-		retval := retval + layout.textbox_width;
+		if not layout.textbox_within then
+			retval := retval + layout.sgmnt_gap(horizontal);
+			retval := retval + layout.textbox_width;
+		end if;
 		retval := retval + layout.sgmnt_margin(right);
 		return retval;
 	end;
@@ -886,7 +901,7 @@ package body scopeiopkg is
 			sides        => (
 				vtaxis_boxid => vtaxis_width(layout), 
 				grid_boxid   => grid_width(layout), 
-				text_boxid   => textbox_width(layout)),
+				text_boxid   => setif(not layout.textbox_within, textbox_width(layout))),
 			margin_start => layout.sgmnt_margin(left),
 			margin_end   => layout.sgmnt_margin(right),
 			gap          => layout.sgmnt_gap(horizontal)));
@@ -915,7 +930,7 @@ package body scopeiopkg is
 		constant x_sides  : natural_vector := (
 			vtaxis_boxid => vtaxis_width(layout),
 			grid_boxid   => grid_width(layout),
-			text_boxid   => textbox_width(layout),
+			text_boxid   => setif(not layout.textbox_within, textbox_width(layout)),
 			hzaxis_boxid => grid_width(layout));
 
 		constant y_sides  : natural_vector := (

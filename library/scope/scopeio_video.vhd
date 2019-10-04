@@ -135,13 +135,13 @@ architecture beh of scopeio_video is
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-	signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal x             : std_logic_vector(sgmntboxx_bits-1 downto 0);
+	signal y             : std_logic_vector(sgmntboxy_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
-	signal grid_on         : std_logic;
-	signal hz_on           : std_logic;
-	signal vt_on           : std_logic;
-	signal text_on         : std_logic;
+	signal grid_on       : std_logic;
+	signal hz_on         : std_logic;
+	signal vt_on         : std_logic;
+	signal text_on       : std_logic;
 
 	signal trigger_dot   : std_logic;
 	signal trace_dots    : std_logic_vector(0 to inputs-1);
@@ -245,42 +245,58 @@ begin
 		vt_on        => vt_on,
 		text_on      => text_on);
 
-	scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
-	generic map (
-		inputs        => inputs,
-		max_delay     => max_delay, 
-		lang          => lang,
-		latency       => segmment_latency+input_latency,
-		layout        => layout,
-		hz_unit       => hz_unit,
-		vt_unit       => vt_unit)
-	port map (
-		rgtr_clk      => rgtr_clk,
-		rgtr_dv       => rgtr_dv,
-		rgtr_id       => rgtr_id,
-		rgtr_data     => rgtr_data,
+	textbox_g : if textbox_width(layout)/=0 generate
+		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
+		generic map (
+			inputs        => inputs,
+			max_delay     => max_delay, 
+			lang          => lang,
+			latency       => segmment_latency+input_latency,
+			layout        => layout,
+			hz_unit       => hz_unit,
+			vt_unit       => vt_unit)
+		port map (
+			rgtr_clk      => rgtr_clk,
+			rgtr_dv       => rgtr_dv,
+			rgtr_id       => rgtr_id,
+			rgtr_data     => rgtr_data,
 
-		btof_binfrm   => btof_binfrm(text_id),
-		btof_binirdy  => btof_binirdy(text_id),
-		btof_bintrdy  => btof_bintrdy(text_id),
-		btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
-		btof_binneg   => btof_binneg(text_id),
-		btof_binexp   => btof_binexp(text_id),
-		btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
-		btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
-		btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
-		btof_bcdsign  => btof_bcdsign(text_id),
-		btof_bcdalign => btof_bcdalign(text_id),
-		btof_bcdirdy  => btof_bcdirdy(text_id),
-		btof_bcdtrdy  => btof_bcdtrdy(text_id),
-		btof_bcdend   => btof_bcdend,
-		btof_bcddo    => btof_bcddo,
+			btof_binfrm   => btof_binfrm(text_id),
+			btof_binirdy  => btof_binirdy(text_id),
+			btof_bintrdy  => btof_bintrdy(text_id),
+			btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
+			btof_binneg   => btof_binneg(text_id),
+			btof_binexp   => btof_binexp(text_id),
+			btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
+			btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
+			btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
+			btof_bcdsign  => btof_bcdsign(text_id),
+			btof_bcdalign => btof_bcdalign(text_id),
+			btof_bcdirdy  => btof_bcdirdy(text_id),
+			btof_bcdtrdy  => btof_bcdtrdy(text_id),
+			btof_bcdend   => btof_bcdend,
+			btof_bcddo    => btof_bcddo,
 
-		video_clk     => video_clk,
-		video_hcntr   => x,
-		video_vcntr   => y,
-		text_on       => text_on,
-		text_dot      => text_dot);
+			video_clk     => video_clk,
+			video_hcntr   => x,
+			video_vcntr   => y,
+			text_on       => text_on,
+			text_dot      => text_dot);
+	end generate;
+
+	notextbox_g : if textbox_width(layout)=0 generate
+		btof_binfrm(text_id)  <= '0';
+		btof_binirdy(text_id) <= '-';
+		btof_bindi(4*text_id to 4*(text_id+1)-1) <= (others => '-');
+		btof_binneg(text_id)  <= '-';
+		btof_binexp(text_id)  <= '-';
+		btof_bcdsign(text_id) <= '-';
+		btof_bcdwidth(4*text_id to 4*(text_id+1)-1) <= (others => '-');
+		btof_bcdprec(4*text_id to 4*(text_id+1)-1)  <= (others => '-');
+		btof_bcdunit(4*text_id to 4*(text_id+1)-1)  <= (others => '-');
+		btof_bcdalign(text_id) <= '-';
+		btof_bcdirdy(text_id)  <= '-';
+	end generate;
 
 	scopeio_segment_e : entity hdl4fpga.scopeio_segment
 	generic map (
@@ -370,25 +386,25 @@ begin
 		dflt_sgmntbg  => dflt_sgmntbg, 
 		dflt_bg       => dflt_bg)
 	port map (
-		rgtr_clk         => rgtr_clk,
-		rgtr_dv          => rgtr_dv,
-		rgtr_id          => rgtr_id,
-		rgtr_data        => rgtr_data,
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
-		video_clk        => video_clk,
-		trace_dots       => trace_dots, 
-		trigger_dot      => trigger_dot,
-		trigger_chanid   => trigger_chanid,
-		grid_dot         => grid_dot,
-		grid_bgon        => grid_bgon,
-		hz_dot           => hz_dot,
-		hz_bgon          => hz_bgon,
-		vt_dot           => vt_dot,
-		vt_bgon          => vt_bgon,
-		text_dot         => text_dot,
-		text_bgon        => text_bgon,
-		sgmnt_bgon       => sgmntbox_bgon,
-		video_color      => scope_color);
+		video_clk      => video_clk,
+		trace_dots     => trace_dots, 
+		trigger_dot    => trigger_dot,
+		trigger_chanid => trigger_chanid,
+		grid_dot       => grid_dot,
+		grid_bgon      => grid_bgon,
+		hz_dot         => hz_dot,
+		hz_bgon        => hz_bgon,
+		vt_dot         => vt_dot,
+		vt_bgon        => vt_bgon,
+		text_dot       => text_dot,
+		text_bgon      => text_bgon,
+		sgmnt_bgon     => sgmntbox_bgon,
+		video_color    => scope_color);
 
 	scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
 	generic map (
