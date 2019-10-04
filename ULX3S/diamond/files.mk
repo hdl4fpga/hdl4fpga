@@ -8,10 +8,8 @@ VHDL_FILES = \
   ../scopeio/scopeio_top.vhd \
   ../scopeio/usbserial_rxd.vhd \
   ../common/clk_verilog.vhd \
-  ../common/clk_25M_100M_7M5_12M_60M.vhd \
-  ../common/clk_200m_60m_48m_12m_7m5.vhd \
-  ../common/clk_200_48_24_12_6.vhd \
   ../common/clk_25_200_40_66_6.vhd \
+  ../common/clk_200_48_24_12_6.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
@@ -33,12 +31,11 @@ VHDL_LIB_FILES = \
   ../../library/common/bcddiv2e.vhd \
   ../../library/common/vector.vhd \
   ../../library/common/dbdbbl.vhd \
-  ../../library/common/ser2pll.vhd \
   ../../library/common/stof.vhd \
   ../../library/common/dtos.vhd \
   ../../library/common/btod.vhd \
   ../../library/common/btof.vhd \
-  ../../library/common/pll2ser.vhd \
+  ../../library/common/arbiter.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_capture.vhd \
@@ -46,6 +43,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_storage.vhd \
   ../../library/scope/scopeio_resize.vhd \
   ../../library/scope/scopeio_video.vhd \
+  ../../library/scope/scopeio_textbox.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
   ../../library/scope/scopeio_usbmouse2daisy.vhd \
@@ -74,8 +72,10 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_tracer.vhd \
   ../../library/scope/scopeio_trigger.vhd \
   ../../library/scope/scopeio_axis.vhd \
-  ../../library/scope/scopeio_ticks.vhd \
-  ../../library/scope/scopeio_formatu.vhd \
+  ../../library/scope/scopeio_btof.vhd \
+  ../../library/scope/scopeio_float2btof.vhd \
+  ../../library/scope/scopeio_layout.vhd \
+  ../../library/scope/scopeio_textbox.vhd \
   ../../library/uart/uart_rx.vhd \
   ../../library/uart/uart_rx_f32c.vhd \
   ../../library/mii/miirx_pre.vhd \
@@ -112,13 +112,15 @@ VHDL_LIB_FILES = \
   ../../library/video/cga_rom.vhd \
   ../../library/video/vga2dvid.vhd \
   ../../library/video/tmds_encoder.vhd \
+  ../../library/video/cga_adapter.vhd \
 
 VERILOG_FILES = \
-  $(VERILOG_CLOCK_FILE) \
   ../../library/usb/usbhost/usbh_sie.v \
   ../../library/usb/usbhost/usbh_crc5.v \
   ../../library/usb/usbhost/usbh_crc16.v \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
+#  $(VERILOG_CLOCK_FILE) \
 #  ../common/clk_200_48_24_12_6_v.v \
-#  ../common/clk_25_200_40_6_6.v \
+#  ../common/clk_25M_100M_7M5_12M_60M.vhd \
+#  ../common/clk_200m_60m_48m_12m_7m5.vhd \
