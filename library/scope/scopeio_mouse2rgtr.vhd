@@ -148,34 +148,28 @@ architecture def of scopeio_mouse2rgtr is
   constant C_list_box1_ongrid: T_list_box1 :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
-     to_unsigned(   grid_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-C_hzaxis_height-layout.sgmnt_margin(top)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 1: C_window_grid top center window (the grid) C_window_grid
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height+1,      C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_x(layout)+layout.sgmnt_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.sgmnt_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+1,                      C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-C_hzaxis_height-layout.sgmnt_margin(top)-1,  C_XY_coordinate_bits), -- Ymax
+
+     -- 2: small area on bottom left corner, above vtscale and left of hzscale
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-C_hzaxis_height-layout.sgmnt_margin(top),    C_XY_coordinate_bits), -- Ymin
      to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
-     -- 2: top right window (text) C_window_textbox
-     --to_unsigned(textbox_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
-     --to_unsigned(textbox_x(layout)+layout.main_margin(left)+textbox_width(layout), C_XY_coordinate_bits), -- Xmax
-     --to_unsigned(textbox_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
-     --to_unsigned(textbox_y(layout)+layout.main_margin(top)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
-
-     -- 2: area on top left corner, above vtscale and left of hzscale
-     to_unsigned(   grid_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width,        C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymax
-
-     -- 3: thin window above the grid (horizontal scale) C_window_hzaxis
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+layout.main_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+layout.main_margin(top)+C_hzaxis_height,        C_XY_coordinate_bits), -- Ymax
+     -- 3: thin area below the grid (horizontal scale) C_window_hzaxis
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left)+C_vtaxis_width+1,      C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+0*layout.sgmnt_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-C_hzaxis_height-layout.sgmnt_margin(top),    C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
