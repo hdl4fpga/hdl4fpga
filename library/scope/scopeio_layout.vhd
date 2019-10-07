@@ -260,7 +260,7 @@ begin
 					if hzaxis_height(layout)=0  then
 						hz_on <= '0';
 						if true then -- scale at the bottom
-							if unsigned(hz_mask)=to_unsigned(sgmnt_height(layout)/axis_fontsize(layout)-1, hz_mask'length) then
+							if unsigned(hz_mask)=to_unsigned(grid_height(layout)/axis_fontsize(layout)-1, hz_mask'length) then
 								hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							end if;
 						else -- scale at the top
@@ -276,7 +276,7 @@ begin
 						vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
 						text_on <= '0';
 						if textbox_width(layout)/=0  then
-							if unsigned(vt_mask)=to_unsigned(sgmnt_width(layout)/textbox_width(layout)-1, vt_mask'length) then
+							if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width(layout)-1, vt_mask'length) then
 								text_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							end if;
 						end if;
