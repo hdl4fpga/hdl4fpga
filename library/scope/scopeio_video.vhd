@@ -137,6 +137,8 @@ architecture beh of scopeio_video is
 
 	signal x             : std_logic_vector(sgmntboxx_bits-1 downto 0);
 	signal y             : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal textbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+	signal textbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
 	signal grid_on       : std_logic;
 	signal hz_on         : std_logic;
@@ -237,13 +239,15 @@ begin
 		hz_segment   => hz_segment,
 		x            => x,
 		y            => y,
+		textbox_x    => textbox_x,
+		textbox_y    => textbox_y,
 		sgmntbox_on  => sgmntbox_on,
 		video_addr   => video_addr,
 		video_frm    => video_frm,
 		grid_on      => grid_on,
 		hz_on        => hz_on,
 		vt_on        => vt_on,
-		text_on      => text_on);
+		textbox_on   => text_on);
 
 	textbox_g : if textbox_width(layout)/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
@@ -278,8 +282,8 @@ begin
 			btof_bcddo    => btof_bcddo,
 
 			video_clk     => video_clk,
-			video_hcntr   => x,
-			video_vcntr   => y,
+			video_hcntr   => textbox_x,
+			video_vcntr   => textbox_y,
 			text_on       => text_on,
 			text_dot      => text_dot);
 	end generate;

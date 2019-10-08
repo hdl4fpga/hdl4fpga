@@ -43,13 +43,15 @@ entity scopeio_layout is
 		hz_segment   : out std_logic_vector;
 		x            : buffer std_logic_vector;
 		y            : buffer std_logic_vector;
+		textbox_x    : out std_logic_vector;
+		textbox_y    : out std_logic_vector;
 		sgmntbox_on  : buffer std_logic;
 		video_addr   : out std_logic_vector;
 		video_frm    : out std_logic;
 		grid_on      : buffer std_logic;
 		hz_on        : out std_logic;
 		vt_on        : out std_logic;
-		text_on      : out std_logic);
+		textbox_on   : out std_logic);
 end;
 
 architecture beh of scopeio_layout is
@@ -246,43 +248,79 @@ begin
 			begin
 				if rising_edge(video_clk) then
 					box_on  := xon and yon;
-					vt_mask := unsigned(sgmntbox_x) srl font_bits;
-					if vtaxis_width(layout)=0  then
-						if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
-							vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+
+					if vtaxis_width(layout)/=0  then
+						if layout.vtaxis_within  then
+							vt_mask := unsigned(sgmntbox_x) srl font_bits;
+							if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
+								vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							else
+								vt_on <= setif(vt_mask < 6) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
 						else
-							vt_on <= setif(vt_mask < 6) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							vt_on <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 						end if;
 					else
-						vt_on <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+						vt_on <= '0';
 					end if;
-					hz_mask := unsigned(y) srl font_bits;
-					if hzaxis_height(layout)=0  then
+
+					if hzaxis_height(layout)/=0  then
+						hz_mask := unsigned(y) srl font_bits;
+						if layout.hzaxis_within then
+							if true then -- scale at the bottom
+								if unsigned(hz_mask)=to_unsigned(grid_height(layout)/axis_fontsize(layout)-1, hz_mask'length) then
+									hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								else
+									hz_on <= '0';
+								end if;
+							else -- scale at the top
+								if unsigned(hz_mask)=0 then
+									hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								else
+									hz_on <= '0';
+								end if;
+							end if;
+						else
+							hz_on <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+						end if;
+					else
 						hz_on <= '0';
-						if true then -- scale at the bottom
-							if unsigned(hz_mask)=to_unsigned(grid_height(layout)/axis_fontsize(layout)-1, hz_mask'length) then
-								hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-							end if;
-						else -- scale at the top
-							if unsigned(hz_mask)=0 then
-								hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-							end if;
-						end if;
-					else
-						hz_on <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 					end if;
+
 					grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-					if layout.textbox_within then
-						vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
-						text_on <= '0';
-						if textbox_width(layout)/=0  then
-							if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width(layout)-1, vt_mask'length) then
-								text_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+
+					if textbox_width(layout)/=0  then
+						if layout.textbox_within then
+							if 2**unsigned_num_bits(textbox_width(layout)-1)/=textbox_width(layout) and (2*(grid_width(layout)/2)) mod textbox_width(layout)=0 then
+								assert false
+									severity FAILURE;
+								vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
+								if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width(layout)-1, vt_mask'length) then
+									textbox_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								else
+									textbox_on <= '0';
+								end if;
+								textbox_x <= sgmntbox_x;
+								textbox_y <= sgmntbox_y;
+							else
+								vt_mask := unsigned(sgmntbox_x) srl font_bits;
+								if vt_mask >= (grid_width(layout)-textbox_width(layout))/2**font_bits then
+									textbox_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								else
+									textbox_on <= '0';
+								end if;
+								textbox_x <= std_logic_vector(unsigned(sgmntbox_x)-textbox_width(layout));
+								textbox_y <= sgmntbox_y;
 							end if;
+						else
+							textbox_x  <= sgmntbox_x;
+							textbox_y  <= sgmntbox_y;
+							textbox_on <= sgmnt_boxon(box_id => text_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 						end if;
 					else
-						text_on <= sgmnt_boxon(box_id => text_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+						textbox_on <= '0';
 					end if;
+
 					x <= sgmntbox_x;
 					y <= sgmntbox_y;
 				end if;
