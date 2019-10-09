@@ -240,7 +240,8 @@ begin
 				box_y     => sgmntbox_y);
 
 			rgtrout_p: process (video_clk)
-				constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
+				constant font_width : natural := axis_fontsize(layout);
+				constant font_bits : natural := unsigned_num_bits(font_width-1);
 				constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
 				variable vt_mask : unsigned(x'range);
 				variable hz_mask : unsigned(y'range);
@@ -291,9 +292,7 @@ begin
 
 					if textbox_width(layout)/=0  then
 						if layout.textbox_within then
-							if 2**unsigned_num_bits(textbox_width(layout)-1)/=textbox_width(layout) and (2*(grid_width(layout)/2)) mod textbox_width(layout)=0 then
-								assert false
-									severity FAILURE;
+							if 2**unsigned_num_bits(textbox_width(layout)-1)=textbox_width(layout) and (2**font_bits*(grid_width(layout)/2**font_bits)) mod textbox_width(layout)=0 then
 								vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
 								if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width(layout)-1, vt_mask'length) then
 									textbox_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;

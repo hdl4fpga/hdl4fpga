@@ -122,7 +122,7 @@ package scopeiopkg is
 			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
-			grid_width      => 12*32+1,
+			grid_width      => 16*32+1,
 			grid_height     =>  6*32+1,
 			axis_fontsize   =>    8,
 			hzaxis_height   =>  8,
