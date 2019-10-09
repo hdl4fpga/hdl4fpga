@@ -28,6 +28,10 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_textio.all;
 use ieee.math_real.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
+
 entity main is
 	port (
 		tp : buffer std_logic := '1');
@@ -38,10 +42,13 @@ architecture def of main is
 begin
 	process
 		variable mesg : line;
+		constant pp  : natural_vector := sgmnt_yedges(displaylayout_table(sd600));
 	begin
 
-		write (mesg, tp);
-		writeline(output, mesg);
+		for i in pp'range loop
+			write (mesg, pp(i));
+			writeline(output, mesg);
+		end loop;
 		wait;
 
 	end process;

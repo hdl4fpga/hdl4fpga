@@ -126,15 +126,15 @@ package scopeiopkg is
 			grid_height     =>  6*32+1,
 			axis_fontsize   =>    8,
 			hzaxis_height   =>  8,
-			hzaxis_within   => false,
+			hzaxis_within   => true,
 			vtaxis_width    =>  1*8,
 			vtaxis_within   => false,
 			vttick_rotate   => ccw90,
 			textbox_width   => 32*8,
-			textbox_within  => false,
+			textbox_within  => true,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (top => 4, bottom => 4, others => 1),
+			sgmnt_margin    => (top => 4, bottom => 4, others => 0),
 			sgmnt_gap       => (horizontal => 3, others => 0)),
 		sd600x16 => (            
 			display_width    =>  96,
@@ -718,28 +718,40 @@ package body scopeiopkg is
 		constant gap          : natural := 0)
 		return natural_vector is
 
+		variable edge   : natural;
+		variable index  : natural;
+		variable edges  : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_end)-1);
 		variable retval : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_start)+pos(margin_end)-1);
-		variable n      : natural;
 
 	begin
 
-		n := 0;
-		retval(n*(pos(gap)+1)) := margin_start;
-		retval(pos(margin_start)+n*(pos(gap)+1)) := retval(n*(pos(gap+1))) + sides(0);
-		for i in 0 to sides'length-2 loop
+		index := 0;
+		edge  := margin_start;
+		for i in sides'range loop
 			if sides(i)/=0 then
-				retval(pos(margin_start)+n*(pos(gap)+1)+1) := retval(pos(margin_start)+n*(pos(gap)+1)) + gap;
-				n := n + 1;
+				if index > 0 then
+					edges(index) := gap + edge;
+					edge  := edges(index);
+					index := index + 1;
+				end if;
+				edges(index) := sides(i) + edge;
+				edge  := edges(index);
+				index := index + 1;
 			end if;
-			retval(pos(margin_start)+n*(pos(gap)+1)) := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(i+1);
 		end loop;
-		if sides(sides'right)/=0 then
-			retval(pos(margin_start)+pos(margin_end)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + margin_end;
+		if margin_end > 0 then
+			edges(index) := margin_end + edge;
+			index := index + 1;
+		end if;
+		if margin_start > 0 then
+			retval(0) := margin_start;
+			retval(1 to index) := edges(0 to index-1);
+			index := index + 1;
 		else
-			n := n - 1;
+			retval(0 to index-1) := edges(0 to index-1);
 		end if;
 
-		return retval(0 to n+n*pos(gap)+pos(margin_start)+pos(margin_end));
+		return retval(0 to index-1);
 	end;
 
 	function grid_x (
@@ -894,8 +906,10 @@ package body scopeiopkg is
 	begin
 		retval := retval + layout.sgmnt_margin(top);
 		retval := retval + grid_height(layout);
-		retval := retval + layout.sgmnt_gap(vertical);
-		retval := retval + layout.hzaxis_height;
+		if not layout.hzaxis_within then
+			retval := retval + layout.sgmnt_gap(vertical);
+			retval := retval + layout.hzaxis_height;
+		end if;
 		retval := retval + layout.sgmnt_margin(bottom);
 		return retval;
 	end;

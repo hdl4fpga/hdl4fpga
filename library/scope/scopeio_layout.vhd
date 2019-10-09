@@ -309,7 +309,7 @@ begin
 								else
 									textbox_on <= '0';
 								end if;
-								textbox_x <= std_logic_vector(unsigned(sgmntbox_x)-textbox_width(layout));
+								textbox_x <= std_logic_vector(unsigned(sgmntbox_x)-(grid_width(layout)-textbox_width(layout)));
 								textbox_y <= sgmntbox_y;
 							end if;
 						else

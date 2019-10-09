@@ -59,8 +59,8 @@ architecture def of scopeio_textbox is
 	constant cgaadapter_latency : natural := 4;
 
 	constant analog_addr : tag_vector := text_analoginputs(inp, analogtime_layout);
-	constant font_wbits  : natural    := unsigned_num_bits(font_width-1);
-	constant font_hbits  : natural    := unsigned_num_bits(font_height-1);
+	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
+	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
 	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
 	constant cga_cols    : natural    := textbox_width(layout)/font_width;
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
@@ -410,8 +410,8 @@ begin
 		val_type);
 
 	video_addr <= std_logic_vector(resize(
-		mul(unsigned(video_vcntr) srl font_hbits, textbox_width(layout)/font_width) +
-		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl font_wbits),
+		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
+		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
@@ -428,8 +428,8 @@ begin
 
 		video_clk   => video_clk,
 		video_addr  => video_addr,
-		font_hcntr  => video_hcntr(font_wbits-1 downto 0),
-		font_vcntr  => video_vcntr(font_hbits-1 downto 0),
+		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
+		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
 		video_hon   => text_on,
 		video_dot   => char_dot);
 
