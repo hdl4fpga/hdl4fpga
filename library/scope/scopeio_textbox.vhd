@@ -16,7 +16,6 @@ entity scopeio_textbox is
 		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16;
-		font_width    : natural := 8;
 		hz_unit       : real;
 		vt_unit       : real);
 	port (
@@ -51,6 +50,7 @@ entity scopeio_textbox is
 	constant inp : natural := inputs;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inp-1);
+	constant font_width    : natural := layout.textbox_fontwidth;
 end;
 
 architecture def of scopeio_textbox is
