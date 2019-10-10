@@ -119,7 +119,7 @@ architecture beh of ecp3versa is
 		mode1080p   => (layout => 0, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
 		mode600px16 => (layout => 6, clkok_div => 2, clkop_div => 32, clkfb_div => 1, clki_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 --	constant layout     : natural := video_params(1).layout;
 	constant layout     : natural := video_params(video_mode).layout;
 
