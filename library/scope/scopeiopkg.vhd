@@ -722,7 +722,6 @@ package body scopeiopkg is
 		variable index  : natural;
 		variable edges  : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_end)-1);
 		variable retval : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_start)+pos(margin_end)-1);
-
 	begin
 
 		index := 0;
@@ -730,9 +729,11 @@ package body scopeiopkg is
 		for i in sides'range loop
 			if sides(i)/=0 then
 				if index > 0 then
-					edges(index) := gap + edge;
-					edge  := edges(index);
-					index := index + 1;
+					if gap/=0 then
+						edges(index) := gap + edge;
+						edge  := edges(index);
+						index := index + 1;
+					end if;
 				end if;
 				edges(index) := sides(i) + edge;
 				edge  := edges(index);

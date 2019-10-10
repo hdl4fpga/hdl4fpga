@@ -42,7 +42,7 @@ architecture def of main is
 begin
 	process
 		variable mesg : line;
-		constant pp  : natural_vector := sgmnt_yedges(displaylayout_table(sd600));
+		constant pp  : natural_vector := sgmnt_yedges(displaylayout_table(video_description(0).layout_id));
 	begin
 
 		for i in pp'range loop
