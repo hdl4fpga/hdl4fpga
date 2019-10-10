@@ -88,6 +88,7 @@ package scopeiopkg is
 		grid_width       : natural;            -- Width of the grid in divisions
 		grid_height      : natural;            -- Width of the grid in divisions
 		axis_fontsize    : natural;            -- Axis font size
+		textbox_fontwidth : natural;            -- Textbox fontsize
 		hzaxis_height    : natural;            -- Height of the horizontal axis 
 		hzaxis_within    : boolean;            -- Horizontal axis within grid
 		vtaxis_width     : natural;            -- Width of the vetical axis 
@@ -125,6 +126,7 @@ package scopeiopkg is
 			grid_width      => 16*32+1,
 			grid_height     =>  6*32+1,
 			axis_fontsize   =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height   =>  8,
 			hzaxis_within   => true,
 			vtaxis_width    =>  1*8,
@@ -144,6 +146,7 @@ package scopeiopkg is
 			grid_width       => 12*8,
 			grid_height      =>  8*8,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height   =>  8,
 			hzaxis_within   => true,
 			vtaxis_width    =>  1*8,
@@ -163,6 +166,7 @@ package scopeiopkg is
 			grid_width       => 46*16,
 			grid_height      =>  8*16,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   => false,
 			vtaxis_width     =>  6*8,
@@ -182,6 +186,7 @@ package scopeiopkg is
 			grid_width       => 11*8+1,
 			grid_height      =>  7*8+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    7,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>    7,
@@ -201,6 +206,7 @@ package scopeiopkg is
 			grid_width       => 6*16,
 			grid_height      => 4*16,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  true,
 			vtaxis_width     =>    8,
@@ -220,6 +226,7 @@ package scopeiopkg is
 			grid_width       => 36*16+1,
 			grid_height      =>  9*16+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -239,6 +246,7 @@ package scopeiopkg is
 			grid_width       => 46*16+1,
 			grid_height      =>  9*16+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -258,6 +266,7 @@ package scopeiopkg is
 			grid_width       =>   32*25,
 			grid_height      =>   32*5,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  true,
 			vtaxis_width     =>    8,
@@ -277,6 +286,7 @@ package scopeiopkg is
 			grid_width       => 30*32+1,
 			grid_height      => 18*32+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -296,6 +306,7 @@ package scopeiopkg is
 			grid_width       => 30*32+1,
 			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -315,6 +326,7 @@ package scopeiopkg is
 			grid_width       => 30*32+1,
 			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -334,6 +346,7 @@ package scopeiopkg is
 			grid_width       => 50*32+1,
 			grid_height      =>  8*32+1,
 			axis_fontsize    =>    8,
+			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  false,
 			vtaxis_width     =>  6*8,
@@ -675,8 +688,6 @@ package scopeiopkg is
 			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 2),
 		tag'(tagid_end, style => no_style, ref => 0),
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
---			tag'(tagid_label, style => (8, right_alignment, 0), ref => label_trigger),
---			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
 			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgrfreezeid),
 			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgredgeid),
 			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
@@ -685,17 +696,6 @@ package scopeiopkg is
 			tag'(tagid_var,   style => analogtime_unitstyle,    ref => var_tgrunitid),
 			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 3),
 		tag'(tagid_end, style => no_style, ref => 0));
---		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
---			tag'(tagid_label, style => (11, right_alignment,  0), ref => label_hzoffset),
---			tag'(tagid_str,   style => ( 3, center_alignment, 0), ref => 1),
---			tag'(tagid_label, style => ( 9, left_alignment,  0),  ref => label_hzdiv),
---		tag'(tagid_end, style => no_style, ref => 0),
---		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
---			tag'(tagid_label, style => analogtime_fieldstyle,    ref => label_vtoffset),
---			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 0),
---			tag'(tagid_str,   style => (2, left_alignment, 0),   ref => 1),
---			tag'(tagid_label, style => analogtime_divstyle,      ref => label_vtdiv),
---		tag'(tagid_end, style => no_style, ref => 0));
 
 end;
 
@@ -760,8 +760,10 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + vtaxis_x(layout);
-		retval := retval + vtaxis_width(layout);
-		retval := retval + layout.sgmnt_gap(horizontal);
+		if layout.vtaxis_within=false then
+			retval := retval + vtaxis_width(layout);
+			retval := retval + layout.sgmnt_gap(horizontal);
+		end if;
 		return retval;
 	end;
 
@@ -841,8 +843,20 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + grid_x(layout);
-		retval := retval + grid_width(layout);
-		retval := retval + layout.sgmnt_gap(horizontal);
+		if layout.textbox_within=false then
+			retval := retval + grid_width(layout);
+			retval := retval + layout.sgmnt_gap(horizontal);
+		else
+			if 2**unsigned_num_bits(textbox_width(layout)-1)=textbox_width(layout) then
+				if layout.textbox_fontwidth*(grid_width(layout)/layout.textbox_fontwidth) mod textbox_width(layout)=0 then
+					retval := retval + grid_width(layout)-textbox_width(layout)-grid_width(layout) mod layout.textbox_fontwidth;
+				else
+					retval := retval + grid_width(layout)-textbox_width(layout);
+				end if;
+			else
+				retval := retval + grid_width(layout)-textbox_width(layout);
+			end if;
+		end if;
 		return retval;
 	end;
 
@@ -880,8 +894,12 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + grid_y(layout);
-		retval := retval + grid_height(layout);
-		retval := retval + layout.sgmnt_gap(vertical);
+		if layout.hzaxis_within=false then
+			retval := retval + grid_height(layout);
+			retval := retval + layout.sgmnt_gap(vertical);
+		else
+			retval := retval + grid_height(layout)-hzaxis_height(layout);
+		end if;
 		return retval;
 	end;
 
