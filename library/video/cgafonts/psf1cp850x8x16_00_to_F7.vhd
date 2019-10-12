@@ -3,7 +3,8 @@ use ieee.std_logic_1164.all;
 
 package cgafonts3 is
 
-	constant psf1cp850x8x16_00_to_F7 : std_logic_vector(0 to 16*32*16-1) := (
+                                    
+constant psf1cp850x8x16_00_to_F7 : std_logic_vector(0 to 128*8*16-1) := (
 
 		-- xB"00" --
 		B"00000000" &
