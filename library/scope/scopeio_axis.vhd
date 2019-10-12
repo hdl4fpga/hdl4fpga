@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.cgafonts1.all;
+use hdl4fpga.cgafonts6.all;
 
 entity scopeio_axis is
 	generic (

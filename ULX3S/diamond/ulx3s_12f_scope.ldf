@@ -325,25 +325,25 @@
             <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1bcd4x4.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1cp850x8x8.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1cp850x8x16.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1cp850x8x16_00_to_F7.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1cp850x8x16_80_to_FF.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1digit8x8.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../library/video/cgafonts/psf1mag32x16.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="constraints/ulx3s_v20.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

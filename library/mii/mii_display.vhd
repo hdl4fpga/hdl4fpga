@@ -31,6 +31,7 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.cgafonts2.all;
 use hdl4fpga.videopkg.all;
 
 entity mii_display is
