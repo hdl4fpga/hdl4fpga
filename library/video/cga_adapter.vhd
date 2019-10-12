@@ -28,6 +28,8 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.cgafonts3.all;
+use hdl4fpga.cgafonts4.all;
 
 entity cga_adapter is
 	generic (
