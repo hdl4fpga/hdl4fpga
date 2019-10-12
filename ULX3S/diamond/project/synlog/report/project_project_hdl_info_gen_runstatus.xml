@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- *************************************************************************************
+FILE DESCRIPTION 
+ The file contains the job information from compiler to be displayed as part of the summary report.
+*******************************************************************************************--> 
+
+<job_run_status name="hdl_info_gen"> 
+																<job_status> <data>Running</data> 
+			</job_status>
+<job_info> 
+</job_info> 
+ </job_run_status>
+		 <job_info> 
+			<info name="Notes"> 
+  <data>0</data>
+  </info>			<info name="Warnings"><data>0</data> 
+ </info> 
+ 			<info name="Errors"><data>0</data>
+ </info> 
+			<info name="CPU Time"><data>-</data></info> 
+ 			<info name="Real Time"><data>-</data></info> 
+ 			<info name="Peak Memory"><data>-</data></info> 
+ 			<info name="Date &amp;Time"><data>-</data></info> 
+ 			</job_info> 
+             </job_run_status>

@@ -1,0 +1,652 @@
+#defaultlanguage:vhdl
+#OPTIONS:"|-top|ulx3s|-prodtype|synplify_pro|-dspmac|-fixsmult|-infer_seqShift|-nram|-sdff_counter|-divnmod|-nostructver|-dfltencoding|onehot|-encrypt|-pro|-lite|-ui|-fid2|-ram|-sharing|on|-ll|2000|-autosm|-ignore_undefined_lib|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|work|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|hdl4fpga|-lib|work|-lib|work|-lib|hdl4fpga|-lib|work|-lib|work|-lib|work|-lib|work|-fileorder|C:\\workspace\\hdl4fpga\\ULX3S\\diamond\\project\\syntmp\\hdlorder.tcl"
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\bin64\\c_vhdl.exe":1501917310
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\location.map":1501940608
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\std.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\snps_haps_pkg.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\std1164.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\numeric.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\umr_capim.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\arith.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\unsigned.vhd":1501916624
+#CUR:"C:\\lscc\\diamond\\3.10_x64\\synpbase\\lib\\vhd\\hyperents.vhd":1501916624
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\ulx3s.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\scopeio\\scopeio_top.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\scopeio\\usbserial_rxd.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\clk_verilog.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\clk_25_200_40_66_6.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\clk_200_48_24_12_6.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\vga.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\oled\\oled_hex_decoder.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\oled\\oled_init_pack.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\oled\\oled_font_pack.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\oled\\vga\\oled_vga.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\oled\\vga\\oled_vga_init_pack.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\adc\\max1112x_reader.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\ULX3S\\common\\hdl\\adc\\max1112x_init_pack.vhd":1570899733
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\align.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\std.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\bram.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\dpram.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\bram_true2p_2clk.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\rom.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\bcddiv2e.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\vector.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\dbdbbl.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\stof.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\dtos.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\btod.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\btof.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\common\\arbiter.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeiopkg.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_capture.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_capture1shot.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_storage.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_resize.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_video.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_textbox.vhd":1570900985
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_pointer.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_ps2mouse2daisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_usbmouse2daisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_hostmouse2daisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\ps2mouse\\mousem.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_mouse2rgtr.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtr2daisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_miiudp.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_istream.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_istreamdaisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_sin.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_udpipdaisy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_tds_1shot.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrtrigger.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrgain.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrpointer.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrvtaxis.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrpalette.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_rgtrhzaxis.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_amp.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_downsampler.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_grid.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_palette.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_segment.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_tracer.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_trigger.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_axis.vhd":1570913263
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_btof.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_float2btof.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\scope\\scopeio_layout.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\uart\\uart_rx.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\uart\\uart_rx_f32c.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\miirx_pre.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_1chksum.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_cat.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_cmp.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_crc32.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_ipcfg.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_pll2ser.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_pllcmp.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_ram.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_rom.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\mii_romcmp.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\mii\\miitx_dll.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_serial.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_mii.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_cdc_descriptor_pack.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_transact.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_packet.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_init.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbcdc\\usb_control.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbhost\\usbh_host_hid.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbhost\\usbh_setup_pack.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbhost\\usbh_report_decoder_logitech_mouse.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usbhost\\usbh_sie_vhdl.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usb11_phy_vhdl\\usb_phy_transciver.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usb11_phy_vhdl\\usb_phy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usb11_phy_vhdl\\usb_rx_phy_48MHz.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\usb11_phy_vhdl\\usb_tx_phy.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\usb\\ulpi_wrapper\\ulpi_wrapper_vhdl.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\video.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\videopkg.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts.vhd":1570902242
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cga_rom.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\vga2dvid.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\tmds_encoder.vhd":1570899734
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cga_adapter.vhd":1570913918
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1bcd4x4.vhd":1570897780
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1cp850x8x8.vhd":1570901543
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1cp850x8x16.vhd":1570913842
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1cp850x8x16_00_to_F7.vhd":1570897774
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1cp850x8x16_80_to_FF.vhd":1570897795
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1digit8x8.vhd":1570901566
+#CUR:"C:\\workspace\\hdl4fpga\\library\\video\\cgafonts\\psf1mag32x16.vhd":1570902077
+0 "C:\workspace\hdl4fpga\ULX3S\common\ulx3s.vhd" vhdl
+1 "C:\workspace\hdl4fpga\ULX3S\scopeio\scopeio_top.vhd" vhdl
+2 "C:\workspace\hdl4fpga\ULX3S\scopeio\usbserial_rxd.vhd" vhdl
+3 "C:\workspace\hdl4fpga\ULX3S\common\clk_verilog.vhd" vhdl
+4 "C:\workspace\hdl4fpga\ULX3S\common\clk_25_200_40_66_6.vhd" vhdl
+5 "C:\workspace\hdl4fpga\ULX3S\common\clk_200_48_24_12_6.vhd" vhdl
+6 "C:\workspace\hdl4fpga\ULX3S\common\hdl\vga.vhd" vhdl
+7 "C:\workspace\hdl4fpga\ULX3S\common\hdl\oled\oled_hex_decoder.vhd" vhdl
+8 "C:\workspace\hdl4fpga\ULX3S\common\hdl\oled\oled_init_pack.vhd" vhdl
+9 "C:\workspace\hdl4fpga\ULX3S\common\hdl\oled\oled_font_pack.vhd" vhdl
+10 "C:\workspace\hdl4fpga\ULX3S\common\hdl\oled\vga\oled_vga.vhd" vhdl
+11 "C:\workspace\hdl4fpga\ULX3S\common\hdl\oled\vga\oled_vga_init_pack.vhd" vhdl
+12 "C:\workspace\hdl4fpga\ULX3S\common\hdl\adc\max1112x_reader.vhd" vhdl
+13 "C:\workspace\hdl4fpga\ULX3S\common\hdl\adc\max1112x_init_pack.vhd" vhdl
+14 "C:\workspace\hdl4fpga\library\common\align.vhd" vhdl
+15 "C:\workspace\hdl4fpga\library\common\std.vhd" vhdl
+16 "C:\workspace\hdl4fpga\library\common\bram.vhd" vhdl
+17 "C:\workspace\hdl4fpga\library\common\dpram.vhd" vhdl
+18 "C:\workspace\hdl4fpga\library\common\bram_true2p_2clk.vhd" vhdl
+19 "C:\workspace\hdl4fpga\library\common\rom.vhd" vhdl
+20 "C:\workspace\hdl4fpga\library\common\bcddiv2e.vhd" vhdl
+21 "C:\workspace\hdl4fpga\library\common\vector.vhd" vhdl
+22 "C:\workspace\hdl4fpga\library\common\dbdbbl.vhd" vhdl
+23 "C:\workspace\hdl4fpga\library\common\stof.vhd" vhdl
+24 "C:\workspace\hdl4fpga\library\common\dtos.vhd" vhdl
+25 "C:\workspace\hdl4fpga\library\common\btod.vhd" vhdl
+26 "C:\workspace\hdl4fpga\library\common\btof.vhd" vhdl
+27 "C:\workspace\hdl4fpga\library\common\arbiter.vhd" vhdl
+28 "C:\workspace\hdl4fpga\library\scope\scopeio.vhd" vhdl
+29 "C:\workspace\hdl4fpga\library\scope\scopeiopkg.vhd" vhdl
+30 "C:\workspace\hdl4fpga\library\scope\scopeio_capture.vhd" vhdl
+31 "C:\workspace\hdl4fpga\library\scope\scopeio_capture1shot.vhd" vhdl
+32 "C:\workspace\hdl4fpga\library\scope\scopeio_storage.vhd" vhdl
+33 "C:\workspace\hdl4fpga\library\scope\scopeio_resize.vhd" vhdl
+34 "C:\workspace\hdl4fpga\library\scope\scopeio_video.vhd" vhdl
+35 "C:\workspace\hdl4fpga\library\scope\scopeio_textbox.vhd" vhdl
+36 "C:\workspace\hdl4fpga\library\scope\scopeio_pointer.vhd" vhdl
+37 "C:\workspace\hdl4fpga\library\scope\scopeio_ps2mouse2daisy.vhd" vhdl
+38 "C:\workspace\hdl4fpga\library\scope\scopeio_usbmouse2daisy.vhd" vhdl
+39 "C:\workspace\hdl4fpga\library\scope\scopeio_hostmouse2daisy.vhd" vhdl
+40 "C:\workspace\hdl4fpga\library\ps2mouse\mousem.vhd" vhdl
+41 "C:\workspace\hdl4fpga\library\scope\scopeio_mouse2rgtr.vhd" vhdl
+42 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtr2daisy.vhd" vhdl
+43 "C:\workspace\hdl4fpga\library\scope\scopeio_miiudp.vhd" vhdl
+44 "C:\workspace\hdl4fpga\library\scope\scopeio_istream.vhd" vhdl
+45 "C:\workspace\hdl4fpga\library\scope\scopeio_istreamdaisy.vhd" vhdl
+46 "C:\workspace\hdl4fpga\library\scope\scopeio_sin.vhd" vhdl
+47 "C:\workspace\hdl4fpga\library\scope\scopeio_udpipdaisy.vhd" vhdl
+48 "C:\workspace\hdl4fpga\library\scope\scopeio_tds_1shot.vhd" vhdl
+49 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrtrigger.vhd" vhdl
+50 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrgain.vhd" vhdl
+51 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrpointer.vhd" vhdl
+52 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrvtaxis.vhd" vhdl
+53 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrpalette.vhd" vhdl
+54 "C:\workspace\hdl4fpga\library\scope\scopeio_rgtrhzaxis.vhd" vhdl
+55 "C:\workspace\hdl4fpga\library\scope\scopeio_amp.vhd" vhdl
+56 "C:\workspace\hdl4fpga\library\scope\scopeio_downsampler.vhd" vhdl
+57 "C:\workspace\hdl4fpga\library\scope\scopeio_grid.vhd" vhdl
+58 "C:\workspace\hdl4fpga\library\scope\scopeio_palette.vhd" vhdl
+59 "C:\workspace\hdl4fpga\library\scope\scopeio_segment.vhd" vhdl
+60 "C:\workspace\hdl4fpga\library\scope\scopeio_tracer.vhd" vhdl
+61 "C:\workspace\hdl4fpga\library\scope\scopeio_trigger.vhd" vhdl
+62 "C:\workspace\hdl4fpga\library\scope\scopeio_axis.vhd" vhdl
+63 "C:\workspace\hdl4fpga\library\scope\scopeio_btof.vhd" vhdl
+64 "C:\workspace\hdl4fpga\library\scope\scopeio_float2btof.vhd" vhdl
+65 "C:\workspace\hdl4fpga\library\scope\scopeio_layout.vhd" vhdl
+66 "C:\workspace\hdl4fpga\library\uart\uart_rx.vhd" vhdl
+67 "C:\workspace\hdl4fpga\library\uart\uart_rx_f32c.vhd" vhdl
+68 "C:\workspace\hdl4fpga\library\mii\miirx_pre.vhd" vhdl
+69 "C:\workspace\hdl4fpga\library\mii\mii_1chksum.vhd" vhdl
+70 "C:\workspace\hdl4fpga\library\mii\mii_cat.vhd" vhdl
+71 "C:\workspace\hdl4fpga\library\mii\mii_cmp.vhd" vhdl
+72 "C:\workspace\hdl4fpga\library\mii\mii_crc32.vhd" vhdl
+73 "C:\workspace\hdl4fpga\library\mii\mii_ipcfg.vhd" vhdl
+74 "C:\workspace\hdl4fpga\library\mii\mii_pll2ser.vhd" vhdl
+75 "C:\workspace\hdl4fpga\library\mii\mii_pllcmp.vhd" vhdl
+76 "C:\workspace\hdl4fpga\library\mii\mii_ram.vhd" vhdl
+77 "C:\workspace\hdl4fpga\library\mii\mii_rom.vhd" vhdl
+78 "C:\workspace\hdl4fpga\library\mii\mii_romcmp.vhd" vhdl
+79 "C:\workspace\hdl4fpga\library\mii\miitx_dll.vhd" vhdl
+80 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_serial.vhd" vhdl
+81 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_mii.vhd" vhdl
+82 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_cdc_descriptor_pack.vhd" vhdl
+83 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_transact.vhd" vhdl
+84 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_packet.vhd" vhdl
+85 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_init.vhd" vhdl
+86 "C:\workspace\hdl4fpga\library\usb\usbcdc\usb_control.vhd" vhdl
+87 "C:\workspace\hdl4fpga\library\usb\usbhost\usbh_host_hid.vhd" vhdl
+88 "C:\workspace\hdl4fpga\library\usb\usbhost\usbh_setup_pack.vhd" vhdl
+89 "C:\workspace\hdl4fpga\library\usb\usbhost\usbh_report_decoder_logitech_mouse.vhd" vhdl
+90 "C:\workspace\hdl4fpga\library\usb\usbhost\usbh_sie_vhdl.vhd" vhdl
+91 "C:\workspace\hdl4fpga\library\usb\usb11_phy_vhdl\usb_phy_transciver.vhd" vhdl
+92 "C:\workspace\hdl4fpga\library\usb\usb11_phy_vhdl\usb_phy.vhd" vhdl
+93 "C:\workspace\hdl4fpga\library\usb\usb11_phy_vhdl\usb_rx_phy_48MHz.vhd" vhdl
+94 "C:\workspace\hdl4fpga\library\usb\usb11_phy_vhdl\usb_tx_phy.vhd" vhdl
+95 "C:\workspace\hdl4fpga\library\usb\ulpi_wrapper\ulpi_wrapper_vhdl.vhd" vhdl
+96 "C:\workspace\hdl4fpga\library\video\video.vhd" vhdl
+97 "C:\workspace\hdl4fpga\library\video\videopkg.vhd" vhdl
+98 "C:\workspace\hdl4fpga\library\video\cgafonts.vhd" vhdl
+99 "C:\workspace\hdl4fpga\library\video\cga_rom.vhd" vhdl
+100 "C:\workspace\hdl4fpga\library\video\vga2dvid.vhd" vhdl
+101 "C:\workspace\hdl4fpga\library\video\tmds_encoder.vhd" vhdl
+102 "C:\workspace\hdl4fpga\library\video\cga_adapter.vhd" vhdl
+103 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1bcd4x4.vhd" vhdl
+104 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1cp850x8x8.vhd" vhdl
+105 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1cp850x8x16.vhd" vhdl
+106 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1cp850x8x16_00_to_F7.vhd" vhdl
+107 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1cp850x8x16_80_to_FF.vhd" vhdl
+108 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1digit8x8.vhd" vhdl
+109 "C:\workspace\hdl4fpga\library\video\cgafonts\psf1mag32x16.vhd" vhdl
+
+# Dependency Lists (Uses list)
+0 -1
+1 0 4 12 19 66 67 2 45 81 47 7 37 5 91 38 43 39 28 6 100 10 15 88 
+2 92 80 15 82 
+3 -1
+4 -1
+5 -1
+6 -1
+7 8 9 
+8 -1
+9 -1
+10 11 
+11 -1
+12 13 15 
+13 -1
+14 15 
+15 -1
+16 15 
+17 15 
+18 -1
+19 15 
+20 15 
+21 17 15 
+22 15 
+23 15 
+24 20 15 
+25 22 15 
+26 25 24 23 21 15 
+27 15 
+28 46 50 55 48 34 15 29 
+29 15 97 
+30 17 14 15 29 
+31 15 29 
+32 16 15 29 
+33 15 29 
+34 54 63 96 65 35 59 14 58 36 15 29 
+35 54 49 52 50 27 64 102 14 15 29 98 105 
+36 51 14 15 
+37 40 41 42 15 
+38 87 89 41 42 15 88 
+39 46 41 42 15 
+40 -1
+41 15 29 
+42 15 
+43 73 14 15 
+44 -1
+45 44 
+46 15 
+47 43 15 
+48 49 61 33 56 31 32 15 29 
+49 15 29 
+50 15 29 
+51 15 29 
+52 15 29 
+53 15 29 
+54 15 29 
+55 15 
+56 19 15 
+57 96 14 15 
+58 53 17 15 29 
+59 52 57 62 96 60 14 15 29 
+60 96 15 
+61 14 15 
+62 17 99 14 15 29 98 
+63 27 26 15 
+64 15 
+65 96 14 15 29 
+66 15 
+67 -1
+68 15 
+69 15 
+70 15 
+71 15 
+72 15 
+73 76 79 68 71 74 69 14 75 77 70 78 15 
+74 15 
+75 74 15 
+76 17 15 
+77 15 
+78 77 15 
+79 77 14 72 15 
+80 85 84 83 86 82 
+81 92 80 15 82 
+82 -1
+83 -1
+84 -1
+85 -1
+86 -1
+87 90 15 88 
+88 -1
+89 15 
+90 -1
+91 92 
+92 94 93 
+93 -1
+94 -1
+95 -1
+96 19 97 15 
+97 15 
+98 -1
+99 19 14 15 98 
+100 101 15 
+101 -1
+102 17 99 14 15 98 105 
+103 -1
+104 -1
+105 -1
+106 -1
+107 -1
+108 -1
+109 -1
+
+# Dependency Lists (Users Of)
+0 1 
+1 -1
+2 1 
+3 -1
+4 1 
+5 1 
+6 1 
+7 1 
+8 7 
+9 7 
+10 1 
+11 10 
+12 1 
+13 12 
+14 102 99 79 73 65 62 61 59 57 43 36 35 34 30 
+15 102 100 99 97 96 89 87 81 79 78 77 76 75 74 73 72 71 70 69 68 66 65 64 63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 43 42 41 39 38 37 36 35 34 33 32 31 30 29 28 27 26 25 24 23 22 21 20 19 17 16 14 12 2 1 
+16 32 
+17 102 76 62 58 30 21 
+18 -1
+19 99 96 56 1 
+20 24 
+21 26 
+22 25 
+23 26 
+24 26 
+25 26 
+26 63 
+27 63 35 
+28 1 
+29 65 62 59 58 54 53 52 51 50 49 48 41 35 34 33 32 31 30 28 
+30 -1
+31 48 
+32 48 
+33 48 
+34 28 
+35 34 
+36 34 
+37 1 
+38 1 
+39 1 
+40 37 
+41 39 38 37 
+42 39 38 37 
+43 47 1 
+44 45 
+45 1 
+46 39 28 
+47 1 
+48 28 
+49 48 35 
+50 35 28 
+51 36 
+52 59 35 
+53 58 
+54 35 34 
+55 28 
+56 48 
+57 59 
+58 34 
+59 34 
+60 59 
+61 48 
+62 59 
+63 34 
+64 35 
+65 34 
+66 1 
+67 1 
+68 73 
+69 73 
+70 73 
+71 73 
+72 79 
+73 43 
+74 75 73 
+75 73 
+76 73 
+77 79 78 73 
+78 73 
+79 73 
+80 81 2 
+81 1 
+82 81 80 2 
+83 80 
+84 80 
+85 80 
+86 80 
+87 38 
+88 87 38 1 
+89 38 
+90 87 
+91 1 
+92 91 81 2 
+93 92 
+94 92 
+95 -1
+96 65 60 59 57 34 
+97 96 29 
+98 102 99 62 35 
+99 102 62 
+100 1 
+101 100 
+102 35 
+103 -1
+104 -1
+105 102 35 
+106 -1
+107 -1
+108 -1
+109 -1
+
+# Design Unit to File Association
+module work ulx3s 0
+arch work ulx3s beh 1
+arch work usbserial_rxd behavioral 2
+module work usbserial_rxd 2
+arch work clk_verilog syn 3
+module work clk_verilog 3
+arch work clk_25_200_40_66_6 structure 4
+module work clk_25_200_40_66_6 4
+arch work clk_200_48_24_12_6 structure 5
+module work clk_200_48_24_12_6 5
+arch work vga syn 6
+module work vga 6
+arch work oled_hex_decoder rtl 7
+module work oled_hex_decoder 7
+arch work oled_vga rtl 10
+module work oled_vga 10
+arch work max1112x_reader rtl 12
+module work max1112x_reader 12
+arch hdl4fpga align arch 14
+module hdl4fpga align 14
+arch hdl4fpga bram inference 16
+module hdl4fpga bram 16
+arch hdl4fpga dpram def 17
+module hdl4fpga dpram 17
+arch hdl4fpga bram_true2p_2clk rtl 18
+module hdl4fpga bram_true2p_2clk 18
+arch hdl4fpga rom def 19
+module hdl4fpga rom 19
+arch hdl4fpga bcddiv2e def 20
+module hdl4fpga bcddiv2e 20
+arch hdl4fpga vector def 21
+module hdl4fpga vector 21
+arch hdl4fpga dbdbbl def 22
+module hdl4fpga dbdbbl 22
+arch hdl4fpga stof def 23
+module hdl4fpga stof 23
+arch hdl4fpga dtos def 24
+module hdl4fpga dtos 24
+arch hdl4fpga btod def 25
+module hdl4fpga btod 25
+arch hdl4fpga btof def 26
+module hdl4fpga btof 26
+arch hdl4fpga arbiter mix 27
+module hdl4fpga arbiter 27
+arch hdl4fpga scopeio beh 28
+module hdl4fpga scopeio 28
+arch hdl4fpga scopeio_capture beh 30
+module hdl4fpga scopeio_capture 30
+arch hdl4fpga scopeio_capture1shot beh 31
+module hdl4fpga scopeio_capture1shot 31
+arch hdl4fpga scopeio_storage beh 32
+module hdl4fpga scopeio_storage 32
+arch hdl4fpga scopeio_resize beh 33
+module hdl4fpga scopeio_resize 33
+arch hdl4fpga scopeio_video beh 34
+module hdl4fpga scopeio_video 34
+arch hdl4fpga scopeio_textbox def 35
+module hdl4fpga scopeio_textbox 35
+arch hdl4fpga scopeio_pointer beh 36
+module hdl4fpga scopeio_pointer 36
+arch hdl4fpga scopeio_ps2mouse2daisy def 37
+module hdl4fpga scopeio_ps2mouse2daisy 37
+arch hdl4fpga scopeio_usbmouse2daisy def 38
+module hdl4fpga scopeio_usbmouse2daisy 38
+arch hdl4fpga scopeio_hostmouse2daisy def 39
+module hdl4fpga scopeio_hostmouse2daisy 39
+arch hdl4fpga mousem syn 40
+module hdl4fpga mousem 40
+arch hdl4fpga scopeio_mouse2rgtr def 41
+module hdl4fpga scopeio_mouse2rgtr 41
+arch hdl4fpga scopeio_rgtr2daisy beh 42
+module hdl4fpga scopeio_rgtr2daisy 42
+arch hdl4fpga scopeio_miiudp struct 43
+module hdl4fpga scopeio_miiudp 43
+arch hdl4fpga scopeio_istream struct 44
+module hdl4fpga scopeio_istream 44
+arch hdl4fpga scopeio_istreamdaisy beh 45
+module hdl4fpga scopeio_istreamdaisy 45
+arch hdl4fpga scopeio_sin beh 46
+module hdl4fpga scopeio_sin 46
+arch hdl4fpga scopeio_udpipdaisy beh 47
+module hdl4fpga scopeio_udpipdaisy 47
+arch hdl4fpga scopeio_tds mix 48
+module hdl4fpga scopeio_tds 48
+arch hdl4fpga scopeio_rgtrtrigger def 49
+module hdl4fpga scopeio_rgtrtrigger 49
+arch hdl4fpga scopeio_rgtrgain def 50
+module hdl4fpga scopeio_rgtrgain 50
+arch hdl4fpga scopeio_rgtrpointer def 51
+module hdl4fpga scopeio_rgtrpointer 51
+arch hdl4fpga scopeio_rgtrvtaxis def 52
+module hdl4fpga scopeio_rgtrvtaxis 52
+arch hdl4fpga scopeio_rgtrpalette def 53
+module hdl4fpga scopeio_rgtrpalette 53
+arch hdl4fpga scopeio_rgtrhzaxis def 54
+module hdl4fpga scopeio_rgtrhzaxis 54
+arch hdl4fpga scopeio_amp beh 55
+module hdl4fpga scopeio_amp 55
+arch hdl4fpga scopeio_downsampler beh 56
+module hdl4fpga scopeio_downsampler 56
+arch hdl4fpga scopeio_grid def 57
+module hdl4fpga scopeio_grid 57
+arch hdl4fpga scopeio_palette beh 58
+module hdl4fpga scopeio_palette 58
+arch hdl4fpga scopeio_segment def 59
+module hdl4fpga scopeio_segment 59
+arch hdl4fpga scopeio_tracer def 60
+module hdl4fpga scopeio_tracer 60
+arch hdl4fpga scopeio_trigger beh 61
+module hdl4fpga scopeio_trigger 61
+arch hdl4fpga scopeio_axis def 62
+module hdl4fpga scopeio_axis 62
+arch hdl4fpga scopeio_btof def 63
+module hdl4fpga scopeio_btof 63
+arch hdl4fpga scopeio_float2btof def 64
+module hdl4fpga scopeio_float2btof 64
+arch hdl4fpga scopeio_layout beh 65
+module hdl4fpga scopeio_layout 65
+arch hdl4fpga uart_rx def 66
+module hdl4fpga uart_rx 66
+arch hdl4fpga uart_rx_f32c behavioral 67
+module hdl4fpga uart_rx_f32c 67
+arch hdl4fpga miirx_pre def 68
+module hdl4fpga miirx_pre 68
+arch hdl4fpga mii_1chksum beh 69
+module hdl4fpga mii_1chksum 69
+arch hdl4fpga mii_cat def 70
+module hdl4fpga mii_cat 70
+arch hdl4fpga mii_cmp def 71
+module hdl4fpga mii_cmp 71
+arch hdl4fpga mii_crc32 def 72
+module hdl4fpga mii_crc32 72
+arch hdl4fpga mii_ipcfg struct 73
+module hdl4fpga mii_ipcfg 73
+arch hdl4fpga mii_pll2ser def 74
+module hdl4fpga mii_pll2ser 74
+arch hdl4fpga mii_pllcmp def 75
+module hdl4fpga mii_pllcmp 75
+arch hdl4fpga mii_ram def 76
+module hdl4fpga mii_ram 76
+arch hdl4fpga mii_rom def 77
+module hdl4fpga mii_rom 77
+arch hdl4fpga mii_romcmp def 78
+module hdl4fpga mii_romcmp 78
+arch hdl4fpga miitx_dll mix 79
+module hdl4fpga miitx_dll 79
+arch hdl4fpga usb_serial usb_serial_arch 80
+module hdl4fpga usb_serial 80
+arch hdl4fpga usb_mii behavioral 81
+module hdl4fpga usb_mii 81
+arch hdl4fpga usb_transact usb_transact_arch 83
+module hdl4fpga usb_transact 83
+arch hdl4fpga usb_packet usb_packet_arch 84
+module hdl4fpga usb_packet 84
+arch hdl4fpga usb_init usb_init_arch 85
+module hdl4fpga usb_init 85
+arch hdl4fpga usb_control usb_control_arch 86
+module hdl4fpga usb_control 86
+arch hdl4fpga usbh_host_hid behavioral 87
+module hdl4fpga usbh_host_hid 87
+arch hdl4fpga usbh_report_decoder behavioral 89
+module hdl4fpga usbh_report_decoder 89
+arch hdl4fpga usbh_sie_vhdl syn 90
+module hdl4fpga usbh_sie_vhdl 90
+arch hdl4fpga usb11_phy_transciever behavioral 91
+module hdl4fpga usb11_phy_transciever 91
+arch hdl4fpga usb_phy rtl 92
+module hdl4fpga usb_phy 92
+arch hdl4fpga usb_rx_phy rtl 93
+module hdl4fpga usb_rx_phy 93
+arch hdl4fpga usb_tx_phy rtl 94
+module hdl4fpga usb_tx_phy 94
+arch hdl4fpga ulpi_wrapper_vhdl syn 95
+module hdl4fpga ulpi_wrapper_vhdl 95
+arch hdl4fpga draw_vline def 96
+module hdl4fpga draw_vline 96
+arch hdl4fpga draw_line def 96
+module hdl4fpga draw_line 96
+arch hdl4fpga videobox def 96
+module hdl4fpga videobox 96
+arch hdl4fpga videobox_layout def 96
+module hdl4fpga videobox_layout 96
+arch hdl4fpga video_sync mix 96
+module hdl4fpga video_sync 96
+arch hdl4fpga box_edges def 96
+module hdl4fpga box_edges 96
+arch hdl4fpga cga_rom beh 99
+module hdl4fpga cga_rom 99
+arch hdl4fpga vga2dvid behavioral 100
+module hdl4fpga vga2dvid 100
+arch hdl4fpga tmds_encoder behavioral 101
+module hdl4fpga tmds_encoder 101
+arch hdl4fpga cga_adapter struct 102
+module hdl4fpga cga_adapter 102

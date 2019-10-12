@@ -1,0 +1,45 @@
+
+synpwrap -msg -prj "project_project_synplify.tcl" -log "project_project.srf"
+Copyright (C) 1992-2018 Lattice Semiconductor Corporation. All rights reserved.
+Lattice Diamond Version 3.10.3.144
+    <postMsg mid="2011000" type="Info"    dynamic="0" navigation="0"  />
+Error of dumping file project_project.srf, 'stdout.log' is instead. 
+
+==contents of stdout.log
+Running in Lattice mode
+
+Starting:    C:\lscc\diamond\3.10_x64\synpbase\bin64\mbin\synbatch.exe
+Install:     C:\lscc\diamond\3.10_x64\synpbase
+Hostname:    NOTEBOOK
+Date:        Sat Oct 12 13:59:00 2019
+Version:     M-2017.03L-SP1-1
+
+Arguments:   -product synplify_pro -batch project_project_synplify.tcl
+ProductType: synplify_pro
+
+
+
+
+log file: "C:\workspace\hdl4fpga\ULX3S\diamond\project\project_project.srr"
+Running: hdl_info_gen in foreground
+
+Generating HDL info...
+
+Job: "hdl_info_gen" terminated with error status: 2
+See log file: "C:\workspace\hdl4fpga\ULX3S\diamond\project\syntax.log"
+# Sat Oct 12 13:59:02 2019
+
+Return Code: 2
+Run Time:00h:00m:02s
+Error: At line 175 while processing "project_project_synplify.tcl"
+2
+TCL script complete: "project_project_synplify.tcl"
+TCL script had errors: "project_project_synplify.tcl"
+exit status=9
+exit status=9
+Save changes for project:
+C:\workspace\hdl4fpga\ULX3S\diamond\project\proj_1.prj
+batch mode default:no
+
+
+Synthesis exit by 9.
