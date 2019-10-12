@@ -1,5 +1,0 @@
-#Start recording tcl command: 10/12/2019 13:55:09
-#Project Location: C:/workspace/hdl4fpga/ULX3S/diamond; Project name: project
-prj_project open "C:/workspace/hdl4fpga/ULX3S/diamond/ulx3s_12f_scope.ldf"
-prj_run Synthesis -impl project
-#Stop recording: 10/12/2019 14:05:04

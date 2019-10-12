@@ -1,8 +1,0 @@
-#Start recording tcl command: 10/12/2019 13:37:40
-#Project Location: C:/workspace/hdl4fpga/ULX3S/diamond; Project name: project
-prj_project open "C:/workspace/hdl4fpga/ULX3S/diamond/ulx3s_12f_scope.ldf"
-prj_src add "C:/workspace/hdl4fpga/library/video/cgafonts.vhd"
-prj_src add "C:/workspace/hdl4fpga/library/video/cgafonts/psf1bcd4x4.vhd"
-prj_src add "C:/workspace/hdl4fpga/library/video/videopkg.vhd"
-prj_src add "C:/workspace/hdl4fpga/library/video/cgafonts/psf1cp850x8x8.vhd" "C:/workspace/hdl4fpga/library/video/cgafonts/psf1cp850x8x16.vhd" "C:/workspace/hdl4fpga/library/video/cgafonts/psf1cp850x8x16_00_to_F7.vhd" "C:/workspace/hdl4fpga/library/video/cgafonts/psf1cp850x8x16_80_to_FF.vhd" "C:/workspace/hdl4fpga/library/video/cgafonts/psf1digit8x8.vhd" "C:/workspace/hdl4fpga/library/video/cgafonts/psf1mag32x16.vhd"
-#Stop recording: 10/12/2019 13:54:33
