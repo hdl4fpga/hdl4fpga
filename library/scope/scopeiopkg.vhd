@@ -51,20 +51,6 @@ package scopeiopkg is
 	constant label_vtdiv    : i18n_labelids := 3;
 	constant label_vtoffset : i18n_labelids := 4;
 
-	constant i18n_text : string := 
-		"Division"    & NUL & 
-		"Hz offset"  & NUL & 
-		"Trigger"    & NUL & 
-		"Division"   & NUL & 
-		"Vt offset"  & NUL & 
-		NUL &
-		"Escala hz"  & NUL &
-		"Retardo"    & NUL &
-		"Disparo"    & NUL & 
-		"Escala vt"  & NUL & 
-		"Nivel vt"   & NUL & 
-		NUL;
-
 	constant max_inputs    : natural := 64;
 	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
 	constant axisy_backscale : natural := 0;
@@ -585,11 +571,6 @@ package scopeiopkg is
 		constant scale : std_logic_vector)
 		return unsigned;
 		
-	function i18n_label (
-		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labelids)
-		return string;
-
 	type alignment is (
 		left_alignment, 
 		right_alignment, 
@@ -603,8 +584,10 @@ package scopeiopkg is
 		return string;
 
 	type style_t is record
-		width : natural;
-		align : alignment;
+		width      : natural;
+		align      : alignment;
+		text_color : natural;
+		background_color : natural;
 		-- private
 		addr  : natural;
 	end record;
@@ -670,7 +653,6 @@ package scopeiopkg is
 	constant analogtime_rowstyle   : style_t := (width =>  0, align => right_alignment, addr => 0);
 	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
 	constant analogtime_unitstyle  : style_t := (width =>  1, align => right_alignment, addr => 0);
-	constant analogtime_divstyle   : style_t := (width =>  8, align => right_alignment, addr => 0);
 
 	constant analogtime_string : string :=
 		" " & NUL &   -- space
@@ -678,13 +660,84 @@ package scopeiopkg is
 		"s" & NUL &   -- Time Unit 
 		"V" & NUL;    -- Voltage Unit 
 
+	constant analogtime_row : tag := (
+		tagid => tagid_row,
+		style => (
+			width            => 0,
+			align            => right_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => 0);
+
+	constant analogtime_hzoffset : tag := (
+		tagid => tagid_var,
+		style => (
+			width            => 11,
+			align            => right_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => var_hzoffsetid);
+
+	constant analogtime_hzdiv : tag := (
+		tagid => tagid_var,
+		style => (
+			width            => 6,
+			align            => right_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => var_hzdivid);
+
+	constant analogtime_hzmag : tag := (
+		tagid => tagid_var,
+		style => (
+			width            => 1,
+			align            => right_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => var_hzunitid);
+
+	constant analogtime_sptor : tag := (
+		tagid => tagid_row,
+		style => (
+			width            => 3,
+			align            => center_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => 1);
+
+	constant analogtime_space : tag := (
+		tagid => tagid_row,
+		style => (
+			width            => 1,
+			align            => center_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => 0);
+
+
+	constant analogtime_space : tag := (
+		tagid => tagid_row,
+		style => (
+			width            => 1,
+			align            => center_aligment,
+			text_color       => pltid_textbg,
+			background_color => pltid_textbg,
+			addr  => 0),
+		ref  => 0);
+
 	constant analogtime_layout : tag_vector := (
-		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_hzoffsetid),
-			tag'(tagid_str,   style => (3, center_alignment, 0), ref => 1),
-			tag'(tagid_var,   style => (6, right_alignment, 0),  ref => var_hzdivid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_var,   style => analogtime_unitstyle,     ref => var_hzunitid),
+		analogtime_tagrow,
+			analogtime_hzoffset,
+			analogtime_sptor,
+			analogtime_hzdiv,
+			analogtime_sptor,
+			analogtime_hzmag,
 			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 2),
 		tag'(tagid_end, style => no_style, ref => 0),
 		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
@@ -1284,35 +1337,6 @@ package body scopeiopkg is
 		return rval;
 	end;
 		
-	function i18n_label (
-		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labelids)
-		return string is
-		variable lbel : i18n_labelids;
-		variable pos0 : natural;
-		variable pos1 : natural;
-		variable n    : natural;
-	begin
-		n := 1;
-		lang_l : for lang in i18n_langs loop
-			lbel := 0;
-			while i18n_text(n) /= NUL loop
-				pos0 := n;
-				while i18n_text(n) /= NUL loop
-					n := n + 1;
-				end loop;
-				pos1 := n - 1;
-				n    := n + 1;
-				exit lang_l when lbel = i18n_label and lang = i18n_lang;
-				if i18n_text(n) /= NUL then
-					lbel := lbel + 1;
-				end if;
-			end loop;
-			n := n + 1;
-		end loop;
-		return i18n_text(pos0 to pos1);
-	end;
-
 	function text_atleft (
 		constant length : natural;
 		constant width  : natural;
@@ -1392,17 +1416,6 @@ package body scopeiopkg is
 		return domain(text_left to text_right);
 	end;
 
-	function text_label (
-		constant text_tag : tag;
-		constant lang     : i18n_langs)
-		return string is
-	begin
-		return text_align(
-			i18n_label(lang, text_tag.ref), 
-			text_tag.style.width, 
-			text_tag.style.align);
-	end;
-
 	procedure tagrow_setaddr (
 		variable tag_index   : inout natural;
 		variable tag_layout  : inout tag_vector) is
@@ -1462,7 +1475,6 @@ package body scopeiopkg is
 				end loop;
 				exit;
 			when tagid_label =>
-				text_line(text_left to text_right) := text_label(tag_layout(tag_index), lang);
 			when tagid_str =>
 				for i in text_left to text_right loop
 					text_line(i) := '%';
