@@ -528,7 +528,7 @@ begin
 
 		cgarom_e : entity hdl4fpga.cga_rom
 		generic map (
-			font_bitrom => setif(font_size=8, psf1digit8x8, psf1bcd4x4),
+			font_bitrom => setif(font_size=8, psf1bcd8x8, psf1bcd4x4),
 			font_height => 2**font_bits,
 			font_width  => 2**font_bits)
 		port map (

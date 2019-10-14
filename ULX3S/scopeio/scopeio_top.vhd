@@ -28,15 +28,15 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 1;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2    : boolean := true; -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_ps2    : boolean := true;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
-        constant C_extserial    : boolean := true; -- use Emard's uart receiver (RXD line)
+        constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
-        constant C_usbethernet  : boolean := false;  -- USB-CDC Ethernet (D+/D- lines)
+        constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
         constant C_rmiiethernet : boolean := false; -- RMII (LAN8720) Ethernet GPN9-13
         constant C_istream_bits : natural := 8;     -- default 8, for RMII 2
         -- USB ethernet network ping test
@@ -67,8 +67,8 @@ architecture beh of ulx3s is
 	constant inputs: natural := 2; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
-	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := true;
+	constant C_oled_hex_view_uart: boolean := true;
+	constant C_oled_hex_view_usb : boolean := false;
 
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
@@ -756,14 +756,14 @@ begin
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
           CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  open,    -- clk_60MHz,
-          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOP       =>  clk_usb, -- clk_48MHz,
+          CLKOS       =>  open,    -- clk_24MHz,
           CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_7M5Hz
+          CLKOS3      =>  open     -- clk_6MHz
         );
 
 	usbserial_e : entity work.usbserial_rxd
@@ -797,14 +797,14 @@ begin
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
           CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  open,    -- clk_60MHz,
-          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOP       =>  clk_usb, -- clk_48MHz,
+          CLKOS       =>  open,    -- clk_24MHz,
           CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_7M5Hz
+          CLKOS3      =>  open     -- clk_6MHz
         );
 
 	usbserial_e : entity work.usbserial_rxd
@@ -835,7 +835,7 @@ begin
 	led <= uart_rxd;
 --	led <= mii_rxdata;
 
-	G_not_usb_ethernet_mii: if C_extserial generate
+	G_not_usb_ethernet_mii: if C_extserial or C_usbserial generate
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	port map (
 		stream_clk  => clk_uart,
@@ -869,15 +869,16 @@ begin
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
+        E_clk_usb: entity work.clk_200_48_24_12_6
         port map
         (
           CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  open,    -- clk_60MHz,
-          CLKOS       =>  clk_usb, -- clk_48MHz,
+          CLKOP       =>  clk_usb, -- clk_48MHz,
+          CLKOS       =>  open,    -- clk_24MHz,
           CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_7M5Hz
+          CLKOS3      =>  open     -- clk_6MHz
         );
+
         mii_clk <= clk_uart;
 
 	usbethernet_e : entity hdl4fpga.usb_mii
@@ -1059,15 +1060,15 @@ begin
         end generate;
 
 	G_mouse_usb_full_speed: if C_mouse_usb_speed = '1' generate
-          E_clk_usb: entity work.clk_200M_60M_48M_12M_7M5
-          port map
-          (
-            CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-            CLKOP       =>  open,    -- clk_60MHz,
-            CLKOS       =>  clk_usb, -- clk_48MHz,
-            CLKOS2      =>  open,    -- clk_12MHz,
-            CLKOS3      =>  open     -- clk_7M5Hz
-          );
+        E_clk_usb: entity work.clk_200_48_24_12_6
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  clk_usb, -- clk_48MHz,
+          CLKOS       =>  open,    -- clk_24MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_6MHz
+        );
         end generate;
 
         G_soft_core_phy: if true generate
@@ -1245,7 +1246,8 @@ begin
 	        inputs           => inputs, -- number of input channels
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
-		trig1shot        => true,
+		hz_unit          => 1.0, -- 1s grid div
+		vt_unit          => 1.0, -- 1V grid div
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
                 default_gridbg   => b"000000",
