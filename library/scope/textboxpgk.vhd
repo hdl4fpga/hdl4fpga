@@ -30,11 +30,11 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
+--use hdl4fpga.scopeiopkg.all;
 
 package textboxpkg is
 
-	type style_keys   is (width, alignment, text_color, background_color);
+	type style_keys   is (key_width, key_alignment, key_textcolor, key_backgroundcolor);
 	type style_t      is array (style_keys) of natural;
 	type style_vector is array (natural range <>) of style_t;
 
@@ -48,6 +48,12 @@ package textboxpkg is
 	function background_color (constant value  : natural) return style_vector;
 	function width            (constant value  : natural) return style_vector; 
 
+	function style (
+		constant alignment        : natural := 0;
+		constant background_color : natural := 0;
+		constant text_color       : natural := 0;
+		constant width            : natural := 0)
+		return style_t;
 
 	function styles           (constant values : style_vector) return style_t;
 
@@ -68,6 +74,10 @@ package textboxpkg is
 	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag_vector;
 
+	function page_content (
+		constant style : style_t;
+		constant tags  : tag_vector)
+		return string;
 end;
 
 package body textboxpkg is
@@ -86,8 +96,9 @@ package body textboxpkg is
 			retval(j) := s(i);
 			j := j + 1;
 		end loop;
-		while j < size loop
+		while j <= size loop
 			retval(j) := char;
+			j := j + 1;
 		end loop;
 		return retval;
 	end;
@@ -169,7 +180,8 @@ package body textboxpkg is
 		constant length : natural;
 		constant width  : natural;
 		constant align  : alignment_t := left_alignment)
-		return integer is
+		return integer
+	is
 	begin
 		return setif(
 			align=right_alignment,   width-length, setif(
@@ -221,7 +233,7 @@ package body textboxpkg is
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(alignment) := value;
+		retval(0)(key_alignment) := value;
 		return retval;
 	end;
 
@@ -230,7 +242,7 @@ package body textboxpkg is
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(background_color) := value;
+		retval(0)(key_backgroundcolor) := value;
 		return retval;
 	end;
 
@@ -239,7 +251,7 @@ package body textboxpkg is
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(text_color) := value;
+		retval(0)(key_textcolor) := value;
 		return retval;
 	end;
 
@@ -248,7 +260,23 @@ package body textboxpkg is
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(width) := value;
+		retval(0)(key_width) := value;
+		return retval;
+	end;
+
+	function style (
+		constant alignment        : natural := 0;
+		constant background_color : natural := 0;
+		constant text_color       : natural := 0;
+		constant width            : natural := 0)
+		return style_t
+	is
+		variable retval : style_t;
+	begin
+		retval(key_alignment)       := alignment;
+		retval(key_backgroundcolor) := background_color;
+		retval(key_textcolor)       := text_color;
+		retval(key_width)           := width;
 		return retval;
 	end;
 
@@ -284,98 +312,191 @@ package body textboxpkg is
 	begin
 		div.tid   := tid_div;
 		div.style := style;
-		if div.style(width)=0 then
+		if div.style(key_width)=0 then
 			for i in children'range loop
-				div.style(width) := div.style(width) + children(i).style(width);
+				div.style(key_width) := div.style(key_width) + children(i).style(key_width);
 			end loop;
 		end if;
 		return div & children & endtag;
-	end;
-
-	function textbox_data (
-		constant tags : tag_vector)
-		return string
-	is
-		variable i : natural;
-		variable j : natural;
-		variable retval : string(1 to 1);
-	begin
-		i := tags'left;
-		while i <= tags'right loop
-			j := i;
-			while tags(j).tid/=tid_end loop
-				retval := retval & stralign(
-					str   => tags(j).content, 
-					width => tags(j).style(width),
-					align => tags(j).style(alignment));
-				j := j + 1;
-			end loop;
-			i := j + 1;
-		end loop;
-		return retval;
 	end;
 
 	function text (
 		constant content : string := "";
 		constant style   : style_t;
 		constant id      : string := "")
-		return tag_vector is
+		return tag_vector 
+	is
+		variable mesg : line;
 		variable retval : tag_vector(0 to 0);
 	begin
 		retval(0).tid     := tid_text;
 		retval(0).id      := strfill(id, retval(0).id'length);
-		retval(0).content := strfill(content, setif(style(width)/=0, style(width), retval(0).content'length));
+		retval(0).content := strfill(content, retval(0).content'length);
+		retval(0).style   := style;
+		retval(0).style(key_width) := setif(style(key_width)=0,content'length, style(key_width));
+
+		write(mesg, string'("====> text =====> "));
+		write(mesg, retval(0).style(key_alignment));
+		write(mesg, string'(" : "));
+		write(mesg, retval(0).style(key_width));
+		write(mesg, string'(" : "));
+		write(mesg, character'('"'));
+		write(mesg, retval(0).content(1 to strlen(content)));
+		write(mesg, character'('"'));
+		report mesg.all; mesg := null;
 		return retval;
 	end;
 
-	constant layout : tag_vector := 
-		div (
-			style    => styles(background_color(0) & alignment(right_alignment)),
-			children => 
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "hzoffset") &
-				text(
-					style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-					content => ":") &
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "hzdiv") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => " ") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "hzmag") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => "s")) &
-		div (
-			style    => styles(background_color(0) & alignment(right_alignment)),
-			children => 
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "tgr_freeze") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "tgr_edge") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "tgr_level") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => " ") &
-				text(
-					style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
-					id      => "tgr_div") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => " ") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "tgr_mag") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => "V"));
+	procedure text_content (
+		variable ptr     : inout natural;
+		variable content : inout   string;
+		constant tags    : in    tag_vector)
+	is
+		variable mesg : line;
+	begin
+		content := stralign(
+			str   => tags(ptr).content(1 to strlen(tags(ptr).content)), 
+			width => tags(ptr).style(key_width),
+			align => tags(ptr).style(key_alignment));
+		write(mesg, string'("====> text_content =====> "));
+		write(mesg, tags(ptr).style(key_alignment));
+		write(mesg, string'(" : "));
+		write(mesg, strlen(tags(ptr).content));
+		write(mesg, string'(" : "));
+		write(mesg, tags(ptr).style(key_width));
+		write(mesg, string'(" : "));
+		write(mesg, character'('"'));
+		write(mesg, content);
+		write(mesg, character'('"'));
+		report mesg.all;
+		ptr := ptr + 1;
+	end;
+
+	procedure div_content (
+		variable ptr     : inout natural;
+		variable content : inout   string;
+		constant tags    : in    tag_vector)
+	is
+		variable left   : natural;
+		variable right  : natural;
+		variable mesg : line;
+	begin
+		left := content'left;
+		ptr  := ptr + 1;
+		while tags(ptr).tid/=tid_end loop
+			right := left+tags(ptr).style(key_width)-1;
+			text_content (
+				ptr     => ptr,
+				content => content(left to right),
+				tags    => tags);
+		write(mesg, string'("====> div_content =====> ******************************** "));
+		write(mesg, left);
+		write(mesg, string'(" : "));
+		write(mesg, right);
+		write(mesg, string'(" : "));
+		write(mesg, character'('"'));
+		write(mesg, content(left to right));
+		write(mesg, character'('"'));
+		report mesg.all; mesg := null;
+			left := right + 1;
+		end loop;
+	end;
+
+	procedure body_content (
+		variable content  : inout string;
+		constant style    : in  style_t;
+		constant tags     : in  tag_vector)
+	is
+		variable ptr     : natural;
+		variable left    : natural;
+		variable right   : natural;
+		variable mesg : line;
+	begin
+		ptr  := tags'left;
+		left := 1;
+		while ptr <= tags'right loop
+			right := left + tags(ptr).style(key_width) + left - 1;
+
+			write (mesg, left);
+			write (mesg, string'(" : " ));
+			write (mesg, right);
+			report mesg.all;
+			case tags(ptr).tid is
+			when tid_div =>
+				div_content(
+					ptr     => ptr,
+					content => content(left to right),
+					tags => tags);
+				left := right + 1;
+				ptr := ptr + 1;
+			when others =>
+			end case;
+		end loop;
+	end;
+
+	function page_content (
+		constant style : style_t;
+		constant tags  : tag_vector)
+		return string
+	is
+		variable retval : string(1 to style(key_width));
+	begin
+
+		body_content (
+			content => retval,
+			style   => style,
+			tags    => tags);
+		return retval;
+	end;
+
+--	constant layout : tag_vector := 
+--		div (
+--			style    => styles(background_color(0) & alignment(right_alignment)),
+--			children => 
+--				text(
+--					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+--					id      => "hzoffset") &
+--				text(
+--					style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+--					content => ":") &
+--				text(
+--					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+--					id      => "hzdiv") &
+--				text(
+--					style   => styles(background_color(0) & alignment(center_alignment)),
+--					content => " ") &
+--				text(
+--					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+--					id      => "hzmag") &
+--				text(
+--					style   => styles(background_color(0) & alignment(center_alignment)),
+--					content => "s")) &
+--		div (
+--			style    => styles(background_color(0) & alignment(right_alignment)),
+--			children => 
+--				text(
+--					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+--					id      => "tgr_freeze") &
+--				text(
+--					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+--					id      => "tgr_edge") &
+--				text(
+--					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+--					id      => "tgr_level") &
+--				text(
+--					style   => styles(background_color(0) & alignment(center_alignment)),
+--					content => " ") &
+--				text(
+--					style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
+--					id      => "tgr_div") &
+--				text(
+--					style   => styles(background_color(0) & alignment(center_alignment)),
+--					content => " ") &
+--				text(
+--					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+--					id      => "tgr_mag") &
+--				text(
+--					style   => styles(background_color(0) & alignment(center_alignment)),
+--					content => "V"));
 
 end;

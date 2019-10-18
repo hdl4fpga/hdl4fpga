@@ -21,16 +21,16 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
+use std.textio;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
+use ieee.std_logic_textio;
 use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.textboxpkg.all;
 
 entity main is
 	port (
@@ -39,18 +39,34 @@ end;
 
 architecture def of main is
 
+	constant layout : tag_vector := 
+		div (
+			style    => styles(background_color(0) & alignment(right_alignment)),
+			children => 
+				text(
+					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+					content => "hola",
+					id      => "hzoffset") &
+				text(
+					style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
+					content => "hola",
+					id      => "hzoffset"));
+
+	constant pp : string :=
+		page_content (
+			style(width => 80),
+			layout);
 begin
-	process
-		variable mesg : line;
-		constant pp  : natural_vector := sgmnt_yedges(displaylayout_table(video_description(0).layout_id));
+	process 
+		variable mesg : textio.line;
 	begin
 
-		for i in pp'range loop
-			write (mesg, pp(i));
-			writeline(output, mesg);
-		end loop;
+		textio.write(mesg, character'('"'));
+		textio.write(mesg, pp);
+		textio.write(mesg, character'('"'));
+		textio.writeline(textio.output, mesg);
 		wait;
-
 	end process;
+
 
 end;
