@@ -106,41 +106,41 @@ architecture def of scopeio_mouse2rgtr is
   constant C_screen_x_offset: natural := layout.main_margin(left);
   constant C_screen_y_offset: natural := layout.main_margin(top);
 
-  constant C_left_x:   natural := F_if(layout.vtaxis_within, C_screen_x_offset+vtaxis_x(layout), C_screen_x_offset+vtaxis_x(layout));
-  constant C_upper_y:  natural := F_if(layout.hzaxis_within, C_screen_y_offset+vtaxis_y(layout), C_screen_y_offset+vtaxis_y(layout));
+  constant C_left_x:   natural := C_screen_x_offset+vtaxis_x(layout);
+  constant C_upper_y:  natural := C_screen_y_offset+vtaxis_y(layout);
 
-  constant C_middle_x: natural := F_if(layout.vtaxis_within, C_screen_x_offset+vtaxis_x(layout)+vtaxis_width(layout)-1, C_screen_x_offset+grid_x(layout));
-  constant C_middle_y: natural := F_if(layout.hzaxis_within, C_screen_y_offset+hzaxis_y(layout), C_screen_y_offset+grid_y(layout)+grid_height(layout));
+  constant C_middle_x: natural := C_screen_x_offset+vtaxis_x(layout)+vtaxis_width(layout);
+  constant C_middle_y: natural := C_screen_y_offset+hzaxis_y(layout)-2;
 
-  constant C_right_x:  natural := F_if(layout.vtaxis_within, C_screen_x_offset+grid_x(layout)+grid_width(layout)-1, C_screen_x_offset+grid_x(layout)+grid_width(layout));
-  constant C_lower_y:  natural := F_if(layout.hzaxis_within, C_screen_y_offset+hzaxis_y(layout)+hzaxis_height(layout)-1, C_screen_y_offset+hzaxis_y(layout)+hzaxis_height(layout));
+  constant C_right_x:  natural := C_screen_x_offset+hzaxis_x(layout)+hzaxis_width(layout)-1;
+  constant C_lower_y:  natural := C_screen_y_offset+hzaxis_y(layout)+hzaxis_height(layout)-1;
 
   type T_list_box1 is array (natural range <>) of unsigned(C_XY_coordinate_bits-1 downto 0);
   constant C_list_box1: T_list_box1 :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
      to_unsigned(   C_left_x,    C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   C_middle_x-2,C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   C_middle_x-1,C_XY_coordinate_bits), -- Xmax
      to_unsigned(   C_upper_y,   C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   C_middle_y-2,C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   C_middle_y-1,C_XY_coordinate_bits), -- Ymax
 
      -- 1: C_window_grid top center window (the grid) C_window_grid
-     to_unsigned(   C_middle_x-1,C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   C_middle_x,  C_XY_coordinate_bits), -- Xmin
      to_unsigned(   C_right_x-1, C_XY_coordinate_bits), -- Xmax
      to_unsigned(   C_upper_y,   C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   C_middle_y-2,C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   C_middle_y-1,C_XY_coordinate_bits), -- Ymax
 
      -- 2: tiny color box below vtscale and left of hzscale
      to_unsigned(   C_left_x,    C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   C_middle_x-2,C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   C_middle_y-1,C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   C_lower_y-1, C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   C_middle_x-1,C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   C_middle_y,  C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   C_lower_y,   C_XY_coordinate_bits), -- Ymax
 
      -- 3: thin window below the grid (horizontal scale) C_window_hzaxis
-     to_unsigned(   C_middle_x-1,C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   C_right_x-1, C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   C_middle_y-1,C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   C_lower_y-1, C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   C_middle_x,  C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   C_right_x,   C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   C_middle_y,  C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   C_lower_y,   C_XY_coordinate_bits), -- Ymax
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
