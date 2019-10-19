@@ -26,10 +26,10 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 1;
+        constant vlayout_id: integer := 10;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2    : boolean := true;  -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
+        constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
@@ -42,9 +42,10 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := true; -- ADC onboard analog view
+        constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
+        constant C_view_usbphy  : boolean := true; -- USB PHY debug
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false;  -- NET output
@@ -66,7 +67,7 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
-	constant inputs: natural := 2; -- number of input channels (traces)
+	constant inputs: natural := 6; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := true;
@@ -146,7 +147,7 @@ architecture beh of ulx3s is
         -- subset of colors for enabled inputs
 	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) := C_color_palette(0 to inputs*vga_rgb'length-1);
 
-	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
+	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_white, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -246,7 +247,7 @@ begin
     -- initiate jump to the next multiboot image.
     -- multiboot image can be made with lattice deployment tool "ddt_cmd"
     -- or opensource prjtrellis "ecpmulti".
-    user_programn <= R_btn_debounced(0);
+    --user_programn <= R_btn_debounced(0);
 
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
@@ -645,6 +646,89 @@ begin
 	clk_input <= vga_clk;
 	end generate;
 
+	G_view_usbphy: if C_view_usbphy generate
+	S_input_ena <= '1';
+	B_view_usbphy: block
+	  signal S_up_linestate, S_up_linestate_emard: std_logic_vector(1 downto 0);
+	  signal S_data_orig, S_data_emard: std_logic_vector(7 downto 0);
+	  signal S_rxen, S_rxactive, S_rxvalid: std_logic;
+	  signal S_rxactive_emard, S_rxvalid_emard: std_logic;
+	  signal S_rawdata_emard: std_logic;
+	  signal S_se0, S_ce: std_logic;
+	  signal S_ce_emard: std_logic;
+	begin
+	  S_se0 <= (not usb_fpga_bd_dp) and (not usb_fpga_bd_dn);
+	  E_soft_core_phy: entity hdl4fpga.usb_rx_phy
+--	  generic map
+--	  (
+--	    C_usb_speed      => C_mouse_usb_speed
+--	  )
+	  port map
+	  (
+	    clk              => clk_usb,
+	    rst              => not S_se0, -- 0:reset active
+	    fs_ce_o          => S_ce,
+            rxdp             => usb_fpga_bd_dn, -- swap P/N for USB low speed
+            rxdn             => usb_fpga_bd_dp, -- core is written by default for USB full speed
+            rxd              => not usb_fpga_dp,
+            RxEn_i           => S_rxen,
+            RxActive_o       => S_rxactive,
+            RxValid_o        => S_rxvalid,
+            DataIn_o         => S_data_orig,
+            LineState        => S_up_linestate
+          );
+          S_rxen <= '1';
+
+	  E_soft_core_phy_emard: entity hdl4fpga.usb_rx_phy_emard
+--	  generic map
+--	  (
+--	    C_usb_speed      => C_mouse_usb_speed
+--	  )
+	  port map
+	  (
+	    clk              => clk_usb,
+	    reset            => S_se0, -- 1:reset active
+	    usb_dif          => not usb_fpga_dp,
+	    usb_dp           => usb_fpga_bd_dn, -- swap P/N for USB low speed
+            usb_dn           => usb_fpga_bd_dp, -- core is written by default for USB full speed
+            linestate        => S_up_linestate_emard,
+            rawdata          => S_rawdata_emard,
+            clk_recovered_edge => S_ce_emard,
+            rx_en            => '1',
+            rx_active        => S_rxactive_emard,
+            valid            => S_rxvalid_emard,
+            data             => S_data_emard
+          );
+
+--	  trace_green(C_view_binary_gain+3) <= S_up_linestate(0);
+--	  trace_violet(C_view_binary_gain+3) <= S_up_linestate(1);
+
+--	  trace_white(C_view_binary_gain+3) <= S_up_linestate_emard(0);
+--	  trace_orange(C_view_binary_gain+3) <= S_up_linestate_emard(1);
+
+--	  trace_green(S_data_orig'range) <= S_data_orig;
+--	  trace_violet(C_view_binary_gain+3) <= S_rxvalid;
+--	  trace_white(C_view_binary_gain+3) <= S_rxactive;
+--	  trace_orange(C_view_binary_gain+3) <= S_ce;  
+
+--	  trace_green(C_view_binary_gain+3) <= S_rxactive;
+--	  trace_violet(C_view_binary_gain+3) <= S_rxvalid;
+--	  trace_white(C_view_binary_gain+3) <= S_rxactive_emard;
+--	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;  
+
+	  trace_green(S_data_orig'range) <= S_data_orig;
+	  trace_violet(S_data_emard'range) <= S_data_emard;
+	  trace_white(C_view_binary_gain+3) <= S_rxvalid;
+	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;
+
+	end block;
+
+	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
+	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
+
+	clk_input <= vga_clk;
+	end generate;
+
 	G_view_utmi: if C_view_utmi generate
 	S_input_ena <= '1';
 	trace_yellow(C_view_binary_gain+3) <= R_utmi_linestate(0); -- D+
@@ -705,8 +789,11 @@ begin
 	samples(3*sample_size to (3+1)*sample_size-1) <= trace_violet;
 	end generate;
 	G_inputs5: if inputs >= 5 generate
-	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_orange;
-	samples(4*sample_size to (4+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
+	samples(4*sample_size to (4+1)*sample_size-1) <= trace_white;
+	end generate;
+	G_inputs6: if inputs >= 6 generate
+	samples(5*sample_size to (5+1)*sample_size-1) <= trace_orange;
+	--samples(5*sample_size to (5+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
 	end generate;
 
 	G_uart_miguel: if C_origserial generate
