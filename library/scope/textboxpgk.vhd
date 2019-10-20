@@ -60,6 +60,7 @@ package textboxpkg is
 	constant tid_end  : natural := 0;
 	constant tid_text : natural := 1;
 	constant tid_div  : natural := 2;
+	constant tid_page : natural := 3;
 
 	type tag is record 
 		tid     : natural;
@@ -71,12 +72,12 @@ package textboxpkg is
 	type tag_vector is array (natural range <>) of tag;
 
 	constant domain : string := "hola";
-	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag_vector;
+	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
+	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 
-	function page_content (
-		constant style : style_t;
-		constant tags  : tag_vector)
+	function browse (
+		constant tags : tag_vector)
 		return string;
 end;
 
@@ -309,15 +310,42 @@ package body textboxpkg is
 		constant id       : string := "")
 		return tag_vector is
 		variable div : tag;
+		variable mesg : line;
 	begin
 		div.tid   := tid_div;
 		div.style := style;
+		write (mesg, string'("****** div ======> "));
+		write (mesg, div.style(key_width));
+		report mesg.all;
 		if div.style(key_width)=0 then
 			for i in children'range loop
 				div.style(key_width) := div.style(key_width) + children(i).style(key_width);
 			end loop;
 		end if;
 		return div & children & endtag;
+	end;
+
+	function page (
+		constant children : tag_vector;
+		constant style    : style_t;
+		constant id       : string := "")
+		return tag_vector is
+		variable page : tag;
+		variable tags : tag_vector(children'range);
+		variable mesg : line;
+	begin
+		page.tid   := tid_page;
+		page.style := style;
+		tags := children;
+		write (mesg, string'("****** page ======> "));
+		write (mesg, page.style(key_width));
+		report mesg.all;
+		for i in tags'range loop
+			if tags(i).tid = tid_div then
+				tags(i).style(key_width) := page.style(key_width);
+			end if;
+		end loop;
+		return page & tags & endtag;
 	end;
 
 	function text (
@@ -377,12 +405,14 @@ package body textboxpkg is
 		variable content : inout   string;
 		constant tags    : in    tag_vector)
 	is
+		variable style  : style_t;
 		variable left   : natural;
 		variable right  : natural;
 		variable mesg : line;
 	begin
-		left := content'left;
-		ptr  := ptr + 1;
+		style := tags(ptr).style;
+		left  := content'left;
+		ptr   := ptr + 1;
 		while tags(ptr).tid/=tid_end loop
 			right := left+tags(ptr).style(key_width)-1;
 			text_content (
@@ -397,23 +427,30 @@ package body textboxpkg is
 		write(mesg, character'('"'));
 		write(mesg, content(left to right));
 		write(mesg, character'('"'));
+		write(mesg, style(key_width));
 		report mesg.all; mesg := null;
 			left := right + 1;
 		end loop;
+		content(content'left to content'left+style(key_width)-1) := stralign(
+			str   => content(content'left to right), 
+			width => style(key_width),
+			align => style(key_alignment));
 	end;
 
-	procedure body_content (
+	procedure page_content (
 		variable content  : inout string;
-		constant style    : in  style_t;
 		constant tags     : in  tag_vector)
 	is
-		variable ptr     : natural;
-		variable left    : natural;
-		variable right   : natural;
+		variable ptr   : natural;
+		variable left  : natural;
+		variable right : natural;
 		variable mesg : line;
 	begin
 		ptr  := tags'left;
 		left := 1;
+		if tags(ptr).tid=tid_page then
+			ptr := ptr + 1;
+		end if;
 		while ptr <= tags'right loop
 			right := left + tags(ptr).style(key_width) + left - 1;
 
@@ -428,27 +465,33 @@ package body textboxpkg is
 					content => content(left to right),
 					tags => tags);
 				left := right + 1;
-				ptr := ptr + 1;
 			when others =>
 			end case;
+			ptr  := ptr + 1;
 		end loop;
+		if left <= content'right then
+			content(left) := NUL;
+		end if;
 	end;
 
-	function page_content (
-		constant style : style_t;
-		constant tags  : tag_vector)
-		return string
+	function browse (
+		constant tags : tag_vector)
+		return string 
 	is
-		variable retval : string(1 to style(key_width));
+		variable retval : string(1 to 1024);
+		variable ptr    : natural;
+		variable mesg   : line;
 	begin
-
-		body_content (
+		
+		page_content (
 			content => retval,
-			style   => style,
 			tags    => tags);
-		return retval;
-	end;
+		write (mesg, strlen(retval));
+		report mesg.all;
 
+		return retval;
+		
+	end;
 --	constant layout : tag_vector := 
 --		div (
 --			style    => styles(background_color(0) & alignment(right_alignment)),

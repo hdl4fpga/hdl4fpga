@@ -39,23 +39,33 @@ end;
 
 architecture def of main is
 
-	constant layout : tag_vector := 
-		div (
-			style    => styles(background_color(0) & alignment(right_alignment)),
-			children => 
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					content => "hola",
-					id      => "hzoffset") &
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
-					content => "hola",
-					id      => "hzoffset"));
+	constant layout : tag_vector := page(
+		style    => styles(width(40)),
+		children => 
+			div (
+				style    => styles(background_color(0) & alignment(center_alignment)),
+				children => 
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "hola",
+						id      => "hzoffset") &
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
+						content => "hola",
+						id      => "hzoffset")) &
+			div (
+				style    => styles(background_color(0) & alignment(center_alignment)),
+				children => 
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "hola1",
+						id      => "hzoffset") &
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
+						content => "hola2",
+						id      => "hzoffset")));
 
-	constant pp : string :=
-		page_content (
-			style(width => 80),
-			layout);
+	constant pp : string := browse (layout);
 begin
 	process 
 		variable mesg : textio.line;
