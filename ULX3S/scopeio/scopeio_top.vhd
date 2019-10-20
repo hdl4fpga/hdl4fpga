@@ -42,25 +42,27 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := false; -- ADC onboard analog view
+        constant C_view_adc     : boolean := true; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := true; -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false;  -- NET output
         constant C_view_clk     : boolean := false;  -- PLL clock output
         -- ADC SPI core
-        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
-        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
+        constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
+        constant C_buttons_test: boolean := true; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
 	constant C_adc_bits: integer := 8; -- don't touch 12 for onboard ADC
 	constant C_adc_channels: integer := 4; -- don't touch 4 for onboard ADC
-	-- ADC software simulation
-	constant C_adc_simulator: boolean := false;
         -- External ADC AN108 with PCB https://oshpark.com/profiles/gojimmypi
         constant C_adc_an108: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
+	alias an108_gp: std_logic_vector is gn; -- for different cabling, swap pin rows gp/gn
+	alias an108_gn: std_logic_vector is gp;
+	-- ADC software simulation
+	constant C_adc_simulator: boolean := false;
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
         -- scopeio
@@ -483,9 +485,9 @@ begin
             signal da     : std_logic_vector(7 downto 0);
 	  begin
 --	    ad_clk <= not clk_adc; -- 40 MHz is too fast
-            gn(15) <= ad_clk; -- clk_adc/2 -- 20 MHz OK
+            an108_gn(15) <= ad_clk; -- clk_adc/2 -- 20 MHz OK
 	    da_clk <= not clk_adc;
-            gn(25) <= da_clk; -- clk_adc
+            an108_gn(25) <= da_clk; -- clk_adc
             da <= R_sawtooth; -- (R_sawtooth'high) & not std_logic_vector(R_sawtooth(R_sawtooth'high-1 downto 0));
 --            da <= trace_sine(trace_sine'high) & not std_logic_vector(trace_sine(trace_sine'high-1 downto 0));
 	    process(clk_adc)
@@ -495,24 +497,24 @@ begin
 	        if ad_clk = '0' then -- falling edge
 	        -- ADC pinout wiring (board labels GP/GN swapped, corrected here)
 --                  ad <= (7=>not gp(16),6=>gn(16),5=>gp(17),4=>gn(17),3=>gp(18),2=>gn(18),1=>gp(19),0=>gn(19));
-                  ad(7) <= not gp(16);
-                  ad(6) <=     gn(16);
-                  ad(5) <=     gp(17);
-                  ad(4) <=     gn(17);
-                  ad(3) <=     gp(18);
-                  ad(2) <=     gn(18);
-                  ad(1) <=     gp(19);
-                  ad(0) <=     gn(19);
+                  ad(7) <= not an108_gp(16);
+                  ad(6) <=     an108_gn(16);
+                  ad(5) <=     an108_gp(17);
+                  ad(4) <=     an108_gn(17);
+                  ad(3) <=     an108_gp(18);
+                  ad(2) <=     an108_gn(18);
+                  ad(1) <=     an108_gp(19);
+                  ad(0) <=     an108_gn(19);
                 end if;
                 -- DAC pinout wiring (board labels GP/GN swapped, corrected here)
-                gp(25) <=     da(7);
-                gn(24) <= not da(6);
-                gp(24) <= not da(5);
-                gn(23) <= not da(4);
-                gp(23) <= not da(3);
-                gn(22) <= not da(2);
-                gp(22) <= not da(1);
-                gn(21) <= not da(0);
+                an108_gp(25) <=     da(7);
+                an108_gn(24) <= not da(6);
+                an108_gp(24) <= not da(5);
+                an108_gn(23) <= not da(4);
+                an108_gp(23) <= not da(3);
+                an108_gn(22) <= not da(2);
+                an108_gp(22) <= not da(1);
+                an108_gn(21) <= not da(0);
                 -- Sawtooth signal generator
 	        R_sawtooth <= R_sawtooth + 1;
 	      end if;

@@ -255,7 +255,7 @@ package scopeiopkg is
 			textbox_fontwidth   =>  8,
 			hzaxis_height    =>    8,
 			hzaxis_within   =>  true,
-			vtaxis_width     =>    8,
+			vtaxis_width     =>  6*8,
 			vttick_rotate    => ccw0,
 			vtaxis_within   =>  true,
 			textbox_width    => 33*8,

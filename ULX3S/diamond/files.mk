@@ -109,6 +109,11 @@ VHDL_LIB_FILES = \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \
+  ../../library/video/fonts/cp850x8x16x0to127.vhd \
+  ../../library/video/fonts/cp850x8x16x128to255.vhd \
+  ../../library/video/fonts/cp850x8x8x0to127.vhd \
+  ../../library/video/fonts/cp850x8x8x128to255.vhd \
+  ../../library/video/fonts/bcdfonts.vhd \
   ../../library/video/cga_rom.vhd \
   ../../library/video/vga2dvid.vhd \
   ../../library/video/tmds_encoder.vhd \
