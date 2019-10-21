@@ -104,6 +104,7 @@ VHDL_LIB_FILES = \
   ../../library/usb/usb11_phy_vhdl/usb_phy_transciver.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_rx_phy_emard.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd \
   ../../library/video/video.vhd \
