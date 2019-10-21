@@ -376,57 +376,62 @@ package body textboxpkg is
 	end;
 
 	procedure text_content (
-		variable ptr     : inout natural;
+		variable ctnt_ptr : inout natural;
 		variable content : inout   string;
+		variable tag_ptr : inout natural;
 		constant tags    : in    tag_vector)
 	is
 		variable mesg : line;
 	begin
 		content := stralign(
-			str   => tags(ptr).content(1 to strlen(tags(ptr).content)), 
-			width => tags(ptr).style(key_width),
-			align => tags(ptr).style(key_alignment));
-		write(mesg, string'("====> text_content =====> "));
-		write(mesg, tags(ptr).style(key_alignment));
-		write(mesg, string'(" : "));
-		write(mesg, strlen(tags(ptr).content));
-		write(mesg, string'(" : "));
-		write(mesg, tags(ptr).style(key_width));
+			str   => tags(tag_ptr).content(1 to strlen(tags(tag_ptr).content)), 
+			width => tags(tag_ptr).style(key_width),
+			align => tags(tag_ptr).style(key_alignment));
+
+		write(mesg, string'("====> text_content : alignment "));
+		write(mesg, tags(tag_ptr).style(key_alignment));
+		write(mesg, string'(" : content length : "));
+		write(mesg, strlen(tags(tag_ptr).content));
+		write(mesg, string'(" : width : "));
+		write(mesg, tags(tag_ptr).style(key_width));
 		write(mesg, string'(" : "));
 		write(mesg, character'('"'));
 		write(mesg, content);
 		write(mesg, character'('"'));
+
 		report mesg.all;
-		ptr := ptr + 1;
+		tag_ptr := tag_ptr + 1;
 	end;
 
 	procedure div_content (
-		variable ptr     : inout natural;
-		variable content : inout   string;
-		constant tags    : in    tag_vector)
+		variable ctnt_ptr : inout natural;
+		variable content  : inout string;
+		variable tag_ptr  : inout natural;
+		constant tags     : in    tag_vector)
 	is
 		variable style  : style_t;
 		variable left   : natural;
 		variable right  : natural;
 		variable mesg : line;
 	begin
-		style := tags(ptr).style;
+		style := tags(tag_ptr).style;
 		left  := content'left;
-		ptr   := ptr + 1;
-		while tags(ptr).tid/=tid_end loop
-			right := left+tags(ptr).style(key_width)-1;
+		tag_ptr   := tag_ptr + 1;
+		while tags(tag_ptr).tid/=tid_end loop
+			right := left+tags(tag_ptr).style(key_width)-1;
 			text_content (
-				ptr     => ptr,
+				tag_ptr     => tag_ptr,
 				content => content(left to right),
 				tags    => tags);
-		write(mesg, string'("====> div_content =====> ******************************** "));
+		write(mesg, string'("====> div_content : left : "));
 		write(mesg, left);
-		write(mesg, string'(" : "));
+		write(mesg, string'(" : right : "));
 		write(mesg, right);
-		write(mesg, string'(" : "));
+		write(mesg, string'(" : content : "));
 		write(mesg, character'('"'));
 		write(mesg, content(left to right));
 		write(mesg, character'('"'));
+		write(mesg, string'(" : width : "));
 		write(mesg, style(key_width));
 		report mesg.all; mesg := null;
 			left := right + 1;
@@ -441,33 +446,33 @@ package body textboxpkg is
 		variable content  : inout string;
 		constant tags     : in  tag_vector)
 	is
-		variable ptr   : natural;
-		variable left  : natural;
-		variable right : natural;
+		variable tag_ptr  : natural;
+		variable left     : natural;
+		variable right    : natural;
 		variable mesg : line;
 	begin
-		ptr  := tags'left;
+		tag_ptr  := tags'left;
 		left := 1;
-		if tags(ptr).tid=tid_page then
-			ptr := ptr + 1;
+		if tags(tag_ptr).tid=tid_page then
+			tag_ptr := tag_ptr + 1;
 		end if;
-		while ptr <= tags'right loop
-			right := left + tags(ptr).style(key_width) + left - 1;
+		while tag_ptr <= tags'right loop
+			right := left + tags(tag_ptr).style(key_width) + left - 1;
 
 			write (mesg, left);
 			write (mesg, string'(" : " ));
 			write (mesg, right);
 			report mesg.all;
-			case tags(ptr).tid is
+			case tags(tag_ptr).tid is
 			when tid_div =>
 				div_content(
-					ptr     => ptr,
+					tag_ptr     => tag_ptr,
 					content => content(left to right),
 					tags => tags);
 				left := right + 1;
 			when others =>
 			end case;
-			ptr  := ptr + 1;
+			tag_ptr  := tag_ptr + 1;
 		end loop;
 		if left <= content'right then
 			content(left) := NUL;
@@ -478,8 +483,8 @@ package body textboxpkg is
 		constant tags : tag_vector)
 		return string 
 	is
-		variable retval : string(1 to 1024);
-		variable ptr    : natural;
+		variable retval  : string(1 to 1024);
+		variable tag_ptr : natural;
 		variable mesg   : line;
 	begin
 		

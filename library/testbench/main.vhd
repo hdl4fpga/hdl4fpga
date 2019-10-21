@@ -47,23 +47,23 @@ architecture def of main is
 				children => 
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						content => "hola",
+						content => "hello hzoffset",
 						id      => "hzoffset") &
 					text(
-						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
-						content => "hola",
-						id      => "hzoffset")) &
+						style   => styles(background_color(0) & width(8) & alignment(left_alignment)),
+						content => "hello hzdiv",
+						id      => "hzdiv")) &
 			div (
 				style    => styles(background_color(0) & alignment(center_alignment)),
 				children => 
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						content => "hola1",
-						id      => "hzoffset") &
+						content => "hello vtoffset",
+						id      => "vtoffset") &
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
-						content => "hola2",
-						id      => "hzoffset")));
+						content => "hello vtdiv",
+						id      => "vtdiv")));
 
 	constant pp : string := browse (layout);
 begin

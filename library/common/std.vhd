@@ -169,9 +169,9 @@ package std is
 
 	function setif (
 		constant arg  : boolean;
-		constant argt : natural := 1;
-		constant argf : natural := 0)
-		return natural;
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer;
 
 	function demux (
 		constant sel  : std_logic_vector;
@@ -664,9 +664,9 @@ package body std is
 
 	function setif (
 		constant arg  : boolean;
-		constant argt : natural := 1;
-		constant argf : natural := 0)
-		return natural is
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer is
 	begin
 		if arg then
 			return argt;
