@@ -65,7 +65,7 @@ architecture beh of ulx3s is
 	-- ADC software simulation
 	constant C_adc_simulator: boolean := false;
         -- External USB3300 PHY ULPI
-        constant C_usb3300_phy: boolean := false; -- true: external AD/DA AN108 32MHz AD, 125MHz DA
+        constant C_usb3300_phy: boolean := false; -- true: external USB PHY (currently useable only as linestate sniffer)
         -- scopeio
 	constant inputs: natural := 6; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
@@ -720,6 +720,8 @@ begin
 	  trace_violet(S_data_emard'range) <= S_data_emard;
 	  trace_white(C_view_binary_gain+3) <= S_rxvalid;
 	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;
+--	  trace_white(C_view_binary_gain+3) <= S_rxactive;
+--	  trace_orange(C_view_binary_gain+3) <= S_rxactive_emard;
 
 	end block;
 
