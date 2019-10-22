@@ -63,15 +63,15 @@ package textboxpkg is
 	constant tid_page : natural := 3;
 
 	type tag is record 
-		tid     : natural;
-		style   : style_t;
-		id      : string(1 to 16);
-		content : string(1 to 16);
+		tid      : natural;
+		style    : style_t;
+		id       : string(1 to 16);
+		content  : string(1 to 16);
+		mem_ptr  : natural;
 	end record;
 
 	type tag_vector is array (natural range <>) of tag;
 
-	constant domain : string := "hola";
 	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag_vector;
 	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
@@ -396,6 +396,7 @@ package body textboxpkg is
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
 		end if;
+		tags(tag_ptr).mem_ptr := ctnt_ptr;
 
 		left  := ctnt_ptr;
 		right := left+tags(tag_ptr).style(key_width)-1;
@@ -420,18 +421,21 @@ package body textboxpkg is
 		variable tag_ptr  : inout natural;
 		variable tags     : inout tag_vector)
 	is
-		variable div_cptr : natural;
-		variable style    : style_t;
+		variable style   : style_t;
 	begin
-		style    := tags(tag_ptr).style;
-		div_cptr := ctnt_ptr;
-		tag_ptr  := tag_ptr + 1;
+		tags(tag_ptr).mem_ptr := ctnt_ptr;
+		style   := tags(tag_ptr).style;
+		tag_ptr := tag_ptr + 1;
 		while tags(tag_ptr).tid/=tid_end loop
-			text_content (
-				tag_ptr  => tag_ptr,
-				ctnt_ptr => ctnt_ptr,
-				content  => content,
-				tags     => tags);
+			case tags(tag_ptr).tid is
+			when tid_text =>
+				text_content (
+					tag_ptr  => tag_ptr,
+					ctnt_ptr => ctnt_ptr,
+					content  => content,
+					tags     => tags);
+			when others =>
+			end case;
 
 			report log(
 				tname   => "div",
@@ -440,11 +444,20 @@ package body textboxpkg is
 				width   => style(key_width),
 				content => content(content'left to ctnt_ptr-1)).all;
 
-			tag_ptr  := tag_ptr + 1;
+			tag_ptr := tag_ptr + 1;
+		end loop;
+
+		pad_left := padding_left (
+			length => cnt_ptr-tags(tag_ptr).mem_ptr,
+			width  => tags(tag_ptr).style(key_width),
+			align  => tags(tag_ptr).style(key_alignmnt));
+
+		while tags(tag_ptr).tid/=tid_end loop
+			tags(tag_ptr).mem_ptr := tags(tag_ptr).mem_ptr + pad_left;
 		end loop;
 
 		content(ctnt_ptr to ctnt_ptr+style(key_width)-1) := stralign(
-			str   => content(content'left to ctnt_ptr-1), 
+			str   => content( to ctnt_ptr-1), 
 			width => style(key_width),
 			align => style(key_alignment));
 	end;
