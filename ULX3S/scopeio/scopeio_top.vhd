@@ -718,10 +718,14 @@ begin
 
 	  trace_green(S_data_orig'range) <= S_data_orig;
 	  trace_violet(S_data_emard'range) <= S_data_emard;
-	  trace_white(C_view_binary_gain+3) <= S_rxvalid;
-	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;
---	  trace_white(C_view_binary_gain+3) <= S_rxactive;
---	  trace_orange(C_view_binary_gain+3) <= S_rxactive_emard;
+--	  trace_white(C_view_binary_gain+3) <= S_rxvalid;
+--	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;
+	  trace_white(C_view_binary_gain+3) <= S_rxactive;
+	  trace_orange(C_view_binary_gain+3) <= S_rxactive_emard;
+--        trace_white(C_view_binary_gain+3) <= S_rxvalid;
+--        trace_orange(C_view_binary_gain+3) <= S_rxactive;
+--          trace_white(C_view_binary_gain+3) <= S_rxvalid_emard;
+--          trace_orange(C_view_binary_gain+3) <= S_rxactive_emard;
 
 	end block;
 
