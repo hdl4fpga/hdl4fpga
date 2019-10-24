@@ -40,30 +40,56 @@ end;
 architecture def of main is
 
 	constant layout : tag_vector := page(
-		style    => styles(width(30)),
+		style    => styles(width(30) & alignment(right_alignment)),
 		children => 
 			div (
-				style    => styles(background_color(0) & width(20) & alignment(right_alignment)),
+				style    => styles(background_color(0) & alignment(right_alignment)),
 				children => 
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						content => "hello hzoffset",
-						id      => "hzoffset"))); -- &
---					text(
---						style   => styles(background_color(0) & width(8) & alignment(left_alignment)),
---						content => "hello hzdiv",
---						id      => "hzdiv")) &
---			div (
---				style    => styles(background_color(0) & alignment(center_alignment)),
---				children => 
---					text(
---						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
---						content => "hello vtoffset",
---						id      => "vtoffset") &
---					text(
---						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
---						content => "hello vtdiv",
---						id      => "vtdiv")));
+						id      => "hzoffset") &
+					text(
+						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+						content => ":") &
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						id      => "hzdiv") &
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => " ") &
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						id      => "hzmag") &
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => "s")) &
+			div (
+				style    => styles(background_color(0) & alignment(right_alignment)),
+				children => 
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						id      => "tgr_freeze") &
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						id      => "tgr_edge") &
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						id      => "tgr_level") &
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => " ") &
+					text(
+						style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
+						id      => "tgr_div") &
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => " ") &
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						id      => "tgr_mag") &
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => "V")));
 
 	constant pp : string := browse(layout, 1024);
 begin
@@ -71,11 +97,12 @@ begin
 		variable mesg : textio.line;
 	begin
 
-		textio.write(mesg, strlen(pp));
-		textio.write(mesg, character'('"'));
-		textio.write(mesg, pp(1 to strlen(pp)));
-		textio.write(mesg, character'('"'));
-		textio.writeline(textio.output, mesg);
+		for i in 0 to pp'length/30-1 loop
+			textio.write(mesg, character'('"'));
+			textio.write(mesg, pp(i*30+1 to (i+1)*30));
+			textio.write(mesg, character'('"'));
+			textio.writeline(textio.output, mesg);
+		end loop;
 		wait;
 	end process;
 

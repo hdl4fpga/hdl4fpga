@@ -110,6 +110,29 @@ package body textboxpkg is
 		return retval;
 	end;
 
+	function strcmp (
+		constant str1 : in string;
+		constant str2 : in string)
+		return boolean
+	is
+		alias astr1 : 
+	begin
+		for i in key'range loop
+			if index < domain'length then
+				if key(i)/=domain(index) then
+					return;
+				else
+					index := index + 1;
+				end if;
+			elsif key(i)=NUL then
+				sucess := true;
+				return;
+			else
+				return;
+			end if;
+		end loop;
+	end;
+
 	procedure strcmp (
 		variable sucess : inout boolean;
 		variable index  : inout natural;
@@ -245,6 +268,13 @@ package body textboxpkg is
 		level := 0;
 		write(mesg, string'("offset "));
 		for i in tags'range loop
+			write(mesg, string'(" : "));
+			write(mesg, tags(i).mem_ptr);
+			write(mesg, string'("("));
+			write(mesg, offset);
+			write(mesg, string'(") -> "));
+			tags(i).mem_ptr := tags(i).mem_ptr + offset;
+			write(mesg, tags(i).mem_ptr);
 			case tags(i).tid is 
 			when tid_end =>
 				exit when level=0;
@@ -253,13 +283,6 @@ package body textboxpkg is
 				level := level + 1;
 			when others =>
 			end case;
-			write(mesg, string'(" : "));
-			write(mesg, tags(i).mem_ptr);
-			write(mesg, string'("("));
-			write(mesg, offset);
-			write(mesg, string'(") -> "));
-			tags(i).mem_ptr := tags(i).mem_ptr + offset;
-			write(mesg, tags(i).mem_ptr);
 		end loop;
 		report mesg.all;
 
@@ -350,7 +373,7 @@ package body textboxpkg is
 	is
 		variable mesg : line;
 	begin
-		write(mesg, tname);
+		write(mesg, '[' & tname & ']');
 		write(mesg, string'(" : left  => "));
 		write(mesg, left);
 		write(mesg, string'(" : right => "));
@@ -455,7 +478,7 @@ package body textboxpkg is
 		tags(tptr).mem_ptr := ctnt_ptr;
 		tag_ptr := tag_ptr + 1;
 
-		while tags(tag_ptr).tid/=tid_end loop
+		loop
 			case tags(tag_ptr).tid is
 			when tid_text =>
 				text_content (
@@ -463,27 +486,32 @@ package body textboxpkg is
 					ctnt_ptr => ctnt_ptr,
 					content  => content,
 					tags     => tags);
+			when tid_end =>
+				tags(tag_ptr).mem_ptr := ctnt_ptr;
+				exit;
 			when others =>
 			end case;
 
 			tag_ptr := tag_ptr + 1;
 		end loop;
 
-		if div.style(key_width)=0 then
+		if tags(tptr).style(key_width)=0 then
 			tags(tptr).style(key_width) := ctnt_ptr-cptr;
 		end if;
+
+		content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
+			str   => content(cptr to ctnt_ptr-1), 
+			width => tags(tptr).style(key_width),
+			align => tags(tptr).style(key_alignment));
 
 		offset_memptr(
 			offset => padding_left (
 				length => ctnt_ptr-tags(tptr).mem_ptr,
 				width  => tags(tptr).style(key_width),
 				align  => tags(tptr).style(key_alignment)),
-			tags => tags(tptr to tag_ptr-1));
+			tags => tags(tptr+1 to tag_ptr));
 
-		content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
-			str   => content(cptr to ctnt_ptr-1), 
-			width => tags(tptr).style(key_width),
-			align => tags(tptr).style(key_alignment));
+		ctnt_ptr := tags(tag_ptr).mem_ptr;
 
 		report log(
 			tname   => "div",
@@ -526,10 +554,10 @@ package body textboxpkg is
 
 				offset_memptr(
 					offset => padding_left (
-						length => right-vtags(tag_ptr).mem_ptr,
+						length => vtags(tptr).style(key_width),
 						width  => vtags(vtags'left).style(key_width),
 						align  => vtags(vtags'left).style(key_alignment)),
-					tags => vtags(tptr to tag_ptr));
+					tags => vtags(tptr to tag_ptr-1));
 
 				content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
 					str   => content(left to right-1), 
@@ -538,7 +566,7 @@ package body textboxpkg is
 
 			right := left+vtags(vtags'left).style(key_width);
 			report log(
-				tname   => string'("*************** page"),
+				tname   => string'("page"),
 				left    => left,
 				right   => right,
 				width   => vtags(vtags'left).style(key_width),
@@ -570,6 +598,22 @@ package body textboxpkg is
 		return retval;
 		
 	end;
+
+	function get_memptr (
+		constant tags : tag_vector;
+		constant id   : string;
+		constant size : natural)
+		return std_logic_vector
+	is
+		variable retval : std_logic_vector(0 to size-1);
+	begin
+		for i in tags'range loop
+			if strcmp(tags(i).id,id) then
+				return std_logic_vector(to_unsigned(tags(i).mem_ptr-1, size));
+			end if;
+		end;
+	end;
+
 --	constant layout : tag_vector := 
 --		div (
 --			style    => styles(background_color(0) & alignment(right_alignment)),
