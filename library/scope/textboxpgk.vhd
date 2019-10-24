@@ -375,11 +375,6 @@ package body textboxpkg is
 	begin
 		div.tid   := tid_div;
 		div.style := style;
-		if div.style(key_width)=0 then
-			for i in children'range loop
-				div.style(key_width) := div.style(key_width) + children(i).style(key_width);
-			end loop;
-		end if;
 		return div & children & endtag;
 	end;
 
@@ -459,6 +454,7 @@ package body textboxpkg is
 		tptr    := tag_ptr;
 		tags(tptr).mem_ptr := ctnt_ptr;
 		tag_ptr := tag_ptr + 1;
+
 		while tags(tag_ptr).tid/=tid_end loop
 			case tags(tag_ptr).tid is
 			when tid_text =>
@@ -472,6 +468,10 @@ package body textboxpkg is
 
 			tag_ptr := tag_ptr + 1;
 		end loop;
+
+		if div.style(key_width)=0 then
+			tags(tptr).style(key_width) := ctnt_ptr-cptr;
+		end if;
 
 		offset_memptr(
 			offset => padding_left (
