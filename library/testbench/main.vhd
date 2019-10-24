@@ -40,39 +40,40 @@ end;
 architecture def of main is
 
 	constant layout : tag_vector := page(
-		style    => styles(width(40)),
+		style    => styles(width(30)),
 		children => 
 			div (
-				style    => styles(background_color(0) & alignment(center_alignment)),
+				style    => styles(background_color(0) & width(20) & alignment(right_alignment)),
 				children => 
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
 						content => "hello hzoffset",
-						id      => "hzoffset") &
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(left_alignment)),
-						content => "hello hzdiv",
-						id      => "hzdiv")) &
-			div (
-				style    => styles(background_color(0) & alignment(center_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						content => "hello vtoffset",
-						id      => "vtoffset") &
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
-						content => "hello vtdiv",
-						id      => "vtdiv")));
+						id      => "hzoffset"))); -- &
+--					text(
+--						style   => styles(background_color(0) & width(8) & alignment(left_alignment)),
+--						content => "hello hzdiv",
+--						id      => "hzdiv")) &
+--			div (
+--				style    => styles(background_color(0) & alignment(center_alignment)),
+--				children => 
+--					text(
+--						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+--						content => "hello vtoffset",
+--						id      => "vtoffset") &
+--					text(
+--						style   => styles(background_color(0) & width(8) & alignment(center_alignment)),
+--						content => "hello vtdiv",
+--						id      => "vtdiv")));
 
-	constant pp : string := browse (layout);
+	constant pp : string := browse(layout, 1024);
 begin
 	process 
 		variable mesg : textio.line;
 	begin
 
+		textio.write(mesg, strlen(pp));
 		textio.write(mesg, character'('"'));
-		textio.write(mesg, pp);
+		textio.write(mesg, pp(1 to strlen(pp)));
 		textio.write(mesg, character'('"'));
 		textio.writeline(textio.output, mesg);
 		wait;

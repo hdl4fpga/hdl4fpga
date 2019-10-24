@@ -77,8 +77,14 @@ package textboxpkg is
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 
 	function browse (
-		constant tags : tag_vector)
+		constant tags : tag_vector;
+		constant size : natural)
 		return string;
+
+	function strlen (
+		constant str : string)
+		return natural;
+
 end;
 
 package body textboxpkg is
@@ -229,6 +235,36 @@ package body textboxpkg is
 		return retval;
 	end;
 
+	procedure offset_memptr(
+		constant offset : in    integer;
+		variable tags   : inout tag_vector)
+	is
+		variable level  : natural;
+		variable mesg : line;
+	begin
+		level := 0;
+		write(mesg, string'("offset "));
+		for i in tags'range loop
+			case tags(i).tid is 
+			when tid_end =>
+				exit when level=0;
+				level := level - 1;
+			when tid_div =>
+				level := level + 1;
+			when others =>
+			end case;
+			write(mesg, string'(" : "));
+			write(mesg, tags(i).mem_ptr);
+			write(mesg, string'("("));
+			write(mesg, offset);
+			write(mesg, string'(") -> "));
+			tags(i).mem_ptr := tags(i).mem_ptr + offset;
+			write(mesg, tags(i).mem_ptr);
+		end loop;
+		report mesg.all;
+
+	end;
+
 	function alignment (
 		constant value : natural)
 		return style_vector is
@@ -358,11 +394,6 @@ package body textboxpkg is
 		page.tid   := tid_page;
 		page.style := style;
 		tags := children;
-		for i in tags'range loop
-			if tags(i).tid = tid_div then
-				tags(i).style(key_width) := page.style(key_width);
-			end if;
-		end loop;
 		return page & tags & endtag;
 	end;
 
@@ -421,10 +452,12 @@ package body textboxpkg is
 		variable tag_ptr  : inout natural;
 		variable tags     : inout tag_vector)
 	is
-		variable style   : style_t;
+		variable cptr    : natural;
+		variable tptr    : natural;
 	begin
-		tags(tag_ptr).mem_ptr := ctnt_ptr;
-		style   := tags(tag_ptr).style;
+		cptr    := ctnt_ptr;
+		tptr    := tag_ptr;
+		tags(tptr).mem_ptr := ctnt_ptr;
 		tag_ptr := tag_ptr + 1;
 		while tags(tag_ptr).tid/=tid_end loop
 			case tags(tag_ptr).tid is
@@ -437,82 +470,103 @@ package body textboxpkg is
 			when others =>
 			end case;
 
-			report log(
-				tname   => "div",
-				left    => ctnt_ptr,
-				right   => ctnt_ptr+tags(tag_ptr).style(key_width)-1,
-				width   => style(key_width),
-				content => content(content'left to ctnt_ptr-1)).all;
-
 			tag_ptr := tag_ptr + 1;
 		end loop;
 
-		pad_left := padding_left (
-			length => cnt_ptr-tags(tag_ptr).mem_ptr,
-			width  => tags(tag_ptr).style(key_width),
-			align  => tags(tag_ptr).style(key_alignmnt));
+		offset_memptr(
+			offset => padding_left (
+				length => ctnt_ptr-tags(tptr).mem_ptr,
+				width  => tags(tptr).style(key_width),
+				align  => tags(tptr).style(key_alignment)),
+			tags => tags(tptr to tag_ptr-1));
 
-		while tags(tag_ptr).tid/=tid_end loop
-			tags(tag_ptr).mem_ptr := tags(tag_ptr).mem_ptr + pad_left;
-		end loop;
+		content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
+			str   => content(cptr to ctnt_ptr-1), 
+			width => tags(tptr).style(key_width),
+			align => tags(tptr).style(key_alignment));
 
-		content(ctnt_ptr to ctnt_ptr+style(key_width)-1) := stralign(
-			str   => content( to ctnt_ptr-1), 
-			width => style(key_width),
-			align => style(key_alignment));
+		report log(
+			tname   => "div",
+			left    => cptr,
+			right   => cptr+tags(tptr).style(key_width)-1,
+			width   => tags(tptr).style(key_width),
+			content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
+
 	end;
 
 	procedure page_content (
 		variable content  : inout string;
 		constant tags     : in  tag_vector)
 	is
-		variable tag_ptr  : natural;
-		variable ctnt_ptr : natural;
-		variable vtags    : tag_vector(tags'range);
-		variable left     : natural;
-		variable right    : natural;
+		variable tag_ptr : natural;
+		variable left    : natural;
+		variable right   : natural;
+
+		variable vtags  : tag_vector(tags'range);
+		variable tptr   : natural;
+		variable mesg : line;
 	begin
-		vtags    := tags;
-		tag_ptr  := tags'left;
-		ctnt_ptr := content'left;
+		vtags   := tags;
+		tag_ptr := tags'left;
+		left    := content'left;
 		if vtags(tag_ptr).tid=tid_page then
 			tag_ptr := tag_ptr + 1;
 		end if;
 		while tag_ptr <= vtags'right loop
-			right := left + vtags(tag_ptr).style(key_width) +  1;
+			tptr  := tag_ptr;
+			right := left;
 
 			case vtags(tag_ptr).tid is
 			when tid_div =>
 				div_content (
-					ctnt_ptr => ctnt_ptr,
+					ctnt_ptr => right,
 					content  => content,
 					tag_ptr  => tag_ptr,
 					tags     => vtags);
-				left := right + 1;
+
+				offset_memptr(
+					offset => padding_left (
+						length => right-vtags(tag_ptr).mem_ptr,
+						width  => vtags(vtags'left).style(key_width),
+						align  => vtags(vtags'left).style(key_alignment)),
+					tags => vtags(tptr to tag_ptr));
+
+				content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
+					str   => content(left to right-1), 
+					width => vtags(vtags'left).style(key_width),
+					align => vtags(vtags'left).style(key_alignment));
+
+			right := left+vtags(vtags'left).style(key_width);
+			report log(
+				tname   => string'("*************** page"),
+				left    => left,
+				right   => right,
+				width   => vtags(vtags'left).style(key_width),
+				content => content(left to right-1)).all;
+
 			when others =>
 			end case;
-			tag_ptr  := tag_ptr + 1;
+
+			left    := left+vtags(vtags'left).style(key_width);
+			tag_ptr := tag_ptr + 1;
 		end loop;
-		if left <= content'right then
-			content(left) := NUL;
+		if right <= content'right then
+			content(right) := NUL;
 		end if;
 	end;
 
 	function browse (
-		constant tags : tag_vector)
+		constant tags : tag_vector;
+		constant size : natural)
 		return string 
 	is
-		variable retval  : string(1 to 1024);
+		variable retval  : string(1 to size);
 		variable tag_ptr : natural;
-		variable mesg   : line;
 	begin
 		
 		page_content (
 			content => retval,
 			tags    => tags);
-		write (mesg, strlen(retval));
-		report mesg.all;
-
 		return retval;
 		
 	end;
