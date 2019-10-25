@@ -76,10 +76,31 @@ package textboxpkg is
 	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 
-	function browse (
+	function render_content (
 		constant tags : tag_vector;
 		constant size : natural)
 		return string;
+
+	function render_tags (
+		constant tags : tag_vector;
+		constant size : natural)
+		return tag_vector;
+
+	function tagvalid_byid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return std_logic;
+
+	function memptr_byid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return natural;
+
+	function memptr_byid (
+		constant tags : tag_vector;
+		constant id   : string;
+		constant size : natural)
+		return std_logic_vector;
 
 	function strlen (
 		constant str : string)
@@ -442,7 +463,7 @@ package body textboxpkg is
 		return retval;
 	end;
 
-	procedure text_content (
+	procedure process_text (
 		variable ctnt_ptr : inout natural;
 		variable content  : inout string;
 		variable tag_ptr  : inout natural;
@@ -474,7 +495,7 @@ package body textboxpkg is
 			content => content(content'left to right)).all;
 	end;
 
-	procedure div_content (
+	procedure process_div (
 		variable ctnt_ptr : inout natural;
 		variable content  : inout string;
 		variable tag_ptr  : inout natural;
@@ -491,7 +512,7 @@ package body textboxpkg is
 		loop
 			case tags(tag_ptr).tid is
 			when tid_text =>
-				text_content (
+				process_text (
 					tag_ptr  => tag_ptr,
 					ctnt_ptr => ctnt_ptr,
 					content  => content,
@@ -532,9 +553,9 @@ package body textboxpkg is
 
 	end;
 
-	procedure page_content (
+	procedure process_page (
 		variable content  : inout string;
-		constant tags     : in  tag_vector)
+		variable tags     : inout tag_vector)
 	is
 		variable tag_ptr : natural;
 		variable left    : natural;
@@ -544,48 +565,47 @@ package body textboxpkg is
 		variable tptr   : natural;
 		variable mesg : line;
 	begin
-		vtags   := tags;
 		tag_ptr := tags'left;
 		left    := content'left;
-		if vtags(tag_ptr).tid=tid_page then
+		if tags(tag_ptr).tid=tid_page then
 			tag_ptr := tag_ptr + 1;
 		end if;
-		while tag_ptr <= vtags'right loop
+		while tag_ptr <= tags'right loop
 			tptr  := tag_ptr;
 			right := left;
 
-			case vtags(tag_ptr).tid is
+			case tags(tag_ptr).tid is
 			when tid_div =>
-				div_content (
+				process_div (
 					ctnt_ptr => right,
 					content  => content,
 					tag_ptr  => tag_ptr,
-					tags     => vtags);
+					tags     => tags);
 
 				offset_memptr(
 					offset => padding_left (
-						length => vtags(tptr).style(key_width),
-						width  => vtags(vtags'left).style(key_width),
-						align  => vtags(vtags'left).style(key_alignment)),
-					tags => vtags(tptr to tag_ptr-1));
+						length => tags(tptr).style(key_width),
+						width  => tags(tags'left).style(key_width),
+						align  => tags(tags'left).style(key_alignment)),
+					tags => tags(tptr to tag_ptr-1));
 
-				content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
+				content(left to left+tags(tags'left).style(key_width)-1) := stralign(
 					str   => content(left to right-1), 
-					width => vtags(vtags'left).style(key_width),
-					align => vtags(vtags'left).style(key_alignment));
+					width => tags(tags'left).style(key_width),
+					align => tags(tags'left).style(key_alignment));
 
-			right := left+vtags(vtags'left).style(key_width);
+			right := left+tags(tags'left).style(key_width);
 			report log(
 				tname   => string'("page"),
 				left    => left,
 				right   => right,
-				width   => vtags(vtags'left).style(key_width),
+				width   => tags(tags'left).style(key_width),
 				content => content(left to right-1)).all;
 
 			when others =>
 			end case;
 
-			left    := left+vtags(vtags'left).style(key_width);
+			left    := left+tags(tags'left).style(key_width);
 			tag_ptr := tag_ptr + 1;
 		end loop;
 		if right <= content'right then
@@ -593,85 +613,82 @@ package body textboxpkg is
 		end if;
 	end;
 
-	function browse (
+	function render_content (
 		constant tags : tag_vector;
 		constant size : natural)
 		return string 
 	is
 		variable retval  : string(1 to size);
 		variable tag_ptr : natural;
+		variable vtags   : tag_vector(tags'range);
 	begin
 		
-		page_content (
+		vtags := tags;
+		process_page (
 			content => retval,
-			tags    => tags);
+			tags    => vtags);
 		return retval;
 		
 	end;
 
-	function get_memptr (
+	function render_tags (
+		constant tags : tag_vector;
+		constant size : natural)
+		return tag_vector 
+	is
+		variable retval : string(1 to size);
+		variable vtags  : tag_vector(tags'range);
+	begin
+		
+		vtags := tags;
+		process_page (
+			content => retval,
+			tags    => vtags);
+		return vtags;
+		
+	end;
+
+	function tagvalid_byid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return std_logic
+	is
+	begin
+		for i in tags'range loop
+			if strcmp(tags(i).id,id) then
+				return '1';
+			end if;
+		end loop;
+		return '0';
+	end;
+
+	function memptr_byid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return natural
+	is
+	begin
+		for i in tags'range loop
+			if strcmp(tags(i).id,id) then
+				return tags(i).mem_ptr;
+			end if;
+		end loop;
+		return 0;
+	end;
+
+	function memptr_byid (
 		constant tags : tag_vector;
 		constant id   : string;
 		constant size : natural)
 		return std_logic_vector
 	is
-		variable retval : std_logic_vector(0 to size-1);
+		variable retval : natural;
 	begin
-		for i in tags'range loop
-			if strcmp(tags(i).id,id) then
-				return std_logic_vector(to_unsigned(tags(i).mem_ptr-1, size));
-			end if;
-		end loop;
+		retval := memptr_byid(tags, id);
+		if retval > 0 then
+			return std_logic_vector(to_unsigned(retval-1, size));
+		end if;
+		return (0 to size-1 => '-');
 	end;
-
---	constant layout : tag_vector := 
---		div (
---			style    => styles(background_color(0) & alignment(right_alignment)),
---			children => 
---				text(
---					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
---					id      => "hzoffset") &
---				text(
---					style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
---					content => ":") &
---				text(
---					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
---					id      => "hzdiv") &
---				text(
---					style   => styles(background_color(0) & alignment(center_alignment)),
---					content => " ") &
---				text(
---					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
---					id      => "hzmag") &
---				text(
---					style   => styles(background_color(0) & alignment(center_alignment)),
---					content => "s")) &
---		div (
---			style    => styles(background_color(0) & alignment(right_alignment)),
---			children => 
---				text(
---					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
---					id      => "tgr_freeze") &
---				text(
---					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
---					id      => "tgr_edge") &
---				text(
---					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
---					id      => "tgr_level") &
---				text(
---					style   => styles(background_color(0) & alignment(center_alignment)),
---					content => " ") &
---				text(
---					style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
---					id      => "tgr_div") &
---				text(
---					style   => styles(background_color(0) & alignment(center_alignment)),
---					content => " ") &
---				text(
---					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
---					id      => "tgr_mag") &
---				text(
---					style   => styles(background_color(0) & alignment(center_alignment)),
---					content => "V"));
 
 end;

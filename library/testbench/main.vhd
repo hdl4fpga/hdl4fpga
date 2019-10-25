@@ -91,7 +91,8 @@ architecture def of main is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V")));
 
-	constant pp : string := browse(layout, 1024);
+	constant xx : tag_vector := render_tags(layout, 1024);
+	constant pp : string := render_content(layout, 1024);
 begin
 	process 
 		variable mesg : textio.line;
@@ -103,7 +104,8 @@ begin
 --			textio.write(mesg, character'('"'));
 --			textio.writeline(textio.output, mesg);
 --		end loop;
-		textio.write(mesg, strcmp("hola" & NUL, "hola" & NUL));
+		textio.write(mesg, memptr_byid(xx, "tgr_mag"));
+--		std_logic_textio.write(mesg, tagvalid_byid(xx, "tgr_mag"));
 		textio.writeline(textio.output, mesg);
 		wait;
 	end process;
