@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is

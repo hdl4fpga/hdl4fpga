@@ -70,6 +70,8 @@ package textboxpkg is
 		mem_ptr  : natural;
 	end record;
 
+	function width (constant value  : tag) return natural; 
+
 	type tag_vector is array (natural range <>) of tag;
 
 	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag_vector;
@@ -91,10 +93,10 @@ package textboxpkg is
 		constant id   : string)
 		return std_logic;
 
-	function memptr_byid (
+	function tagbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return natural;
+		return tag;
 
 	function memptr_byid (
 		constant tags : tag_vector;
@@ -353,6 +355,13 @@ package body textboxpkg is
 	begin
 		retval(0)(key_width) := value;
 		return retval;
+	end;
+
+	function width (
+		constant value : tag)
+		return natural is
+	begin
+		return value.style(key_width);
 	end;
 
 	function style (
@@ -662,18 +671,19 @@ package body textboxpkg is
 		return '0';
 	end;
 
-	function memptr_byid (
+	function tagbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return natural
+		return tag
 	is
 	begin
 		for i in tags'range loop
 			if strcmp(tags(i).id,id) then
-				return tags(i).mem_ptr;
+				return tags(i);
 			end if;
 		end loop;
-		return 0;
+		report "Invalid tag"
+		severity FAILURE;
 	end;
 
 	function memptr_byid (
@@ -684,7 +694,7 @@ package body textboxpkg is
 	is
 		variable retval : natural;
 	begin
-		retval := memptr_byid(tags, id);
+		retval := tagbyid(tags, id).mem_ptr;
 		if retval > 0 then
 			return std_logic_vector(to_unsigned(retval-1, size));
 		end if;

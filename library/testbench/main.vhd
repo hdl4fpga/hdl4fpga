@@ -104,7 +104,7 @@ begin
 --			textio.write(mesg, character'('"'));
 --			textio.writeline(textio.output, mesg);
 --		end loop;
-		textio.write(mesg, memptr_byid(xx, "tgr_mag"));
+		textio.write(mesg, width(tagbyid(xx, "tgr_mag")));
 --		std_logic_textio.write(mesg, tagvalid_byid(xx, "tgr_mag"));
 		textio.writeline(textio.output, mesg);
 		wait;
