@@ -294,6 +294,10 @@ package std is
 		return signed;
 
 	procedure swap (
+		variable arg1 : inout character;
+		variable arg2 : inout character);
+
+	procedure swap (
 		variable arg1 : inout std_logic_vector;
 		variable arg2 : inout std_logic_vector);
 
@@ -1161,6 +1165,17 @@ package body std is
 		else
 			return arg2;
 		end if;
+	end;
+
+	procedure swap (
+		variable arg1 : inout character;
+		variable arg2 : inout character)
+	is
+		variable aux : character;
+	begin
+		aux  := arg1;
+		arg1 := arg2;
+		arg2 := aux;
 	end;
 
 	procedure swap (

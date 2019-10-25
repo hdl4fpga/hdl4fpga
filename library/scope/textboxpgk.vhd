@@ -113,6 +113,9 @@ package textboxpkg is
 		constant str2 : in string)
 		return boolean;
 
+	function itoa (
+		constant arg : integer)
+		return string;
 end;
 
 package body textboxpkg is
@@ -239,6 +242,27 @@ package body textboxpkg is
 		return retval;
 	end;
 
+	function itoa (
+		constant arg : integer)
+		return string 
+	is
+		constant asciitab : string := "0123456789";
+		variable value    : natural;
+		variable retval   : string(1 to 256);
+	begin
+		value  := arg;
+		retval := (others => NUL);
+		for i in retval'range loop
+			retval(i) := asciitab((value mod 10)+1);
+			value     := value / 10;
+			exit when value=0;
+		end loop;
+		for i in 1 to strlen(retval)/2 loop
+			swap(retval(i), retval(strlen(retval)+1-i));
+		end loop;
+		return retval(1 to strlen(retval));
+	end;
+
 	function padding_left (
 		constant length : natural;
 		constant width  : natural;
@@ -301,6 +325,8 @@ package body textboxpkg is
 		level := 0;
 		write(mesg, string'("offset "));
 		for i in tags'range loop
+			write(mesg, string'(" : "));
+			write(mesg, tags(i).id(1 to strlen(tags(i).id)));
 			write(mesg, string'(" : "));
 			write(mesg, tags(i).mem_ptr);
 			write(mesg, string'("("));
