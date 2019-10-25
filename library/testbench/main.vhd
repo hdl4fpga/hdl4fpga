@@ -97,12 +97,14 @@ begin
 		variable mesg : textio.line;
 	begin
 
-		for i in 0 to pp'length/30-1 loop
-			textio.write(mesg, character'('"'));
-			textio.write(mesg, pp(i*30+1 to (i+1)*30));
-			textio.write(mesg, character'('"'));
-			textio.writeline(textio.output, mesg);
-		end loop;
+--		for i in 0 to pp'length/30-1 loop
+--			textio.write(mesg, character'('"'));
+--			textio.write(mesg, pp(i*30+1 to (i+1)*30));
+--			textio.write(mesg, character'('"'));
+--			textio.writeline(textio.output, mesg);
+--		end loop;
+		textio.write(mesg, strcmp("hola" & NUL, "hola" & NUL));
+		textio.writeline(textio.output, mesg);
 		wait;
 	end process;
 

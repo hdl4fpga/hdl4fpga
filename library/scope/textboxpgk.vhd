@@ -85,6 +85,11 @@ package textboxpkg is
 		constant str : string)
 		return natural;
 
+	function strcmp (
+		constant str1 : in string;
+		constant str2 : in string)
+		return boolean;
+
 end;
 
 package body textboxpkg is
@@ -115,22 +120,27 @@ package body textboxpkg is
 		constant str2 : in string)
 		return boolean
 	is
-		alias astr1 : 
+		alias astr1 : string(1 to str1'length) is str1;
+		alias astr2 : string(1 to str2'length) is str2;
 	begin
-		for i in key'range loop
-			if index < domain'length then
-				if key(i)/=domain(index) then
-					return;
+		for i in astr1'range loop
+			if astr2'right < i then
+				if astr1(i)=NUL then
+					return true;
 				else
-					index := index + 1;
+					return false;
 				end if;
-			elsif key(i)=NUL then
-				sucess := true;
-				return;
-			else
-				return;
+			elsif astr1(i)/=astr2(i) then
+				return false;
 			end if;
 		end loop;
+		if astr2'length=astr1'length then
+			return true;
+		elsif astr2(astr1'right+1)=NUL then
+			return true;
+		else
+			return false;
+		end if;
 	end;
 
 	procedure strcmp (
@@ -611,7 +621,7 @@ package body textboxpkg is
 			if strcmp(tags(i).id,id) then
 				return std_logic_vector(to_unsigned(tags(i).mem_ptr-1, size));
 			end if;
-		end;
+		end loop;
 	end;
 
 --	constant layout : tag_vector := 
