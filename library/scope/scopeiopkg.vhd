@@ -582,9 +582,84 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
+	constant hz_tags : tag_vector := div (
+		style    => styles(background_color(0) & alignment(right_alignment)),
+		children => 
+			text(
+				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+				id      => "hz.offset") &
+			text(
+				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+				content => ":") &
+			text(
+				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+				id      => "hz.div") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => " ") &
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "hz.mag") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => "s"));
+
+	constant tgr_tags : tag_vector := div (
+		style    => styles(background_color(0) & alignment(right_alignment)),
+		children => 
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "tgr.freeze") &
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "tgr.edge") &
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "tgr.level") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => " ") &
+			text(
+				style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
+				id      => "tgr.div") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => " ") &
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "tgr.mag") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => "V"));
+
+	constant vt0_tags : tag_vector := div (
+		style    => styles(background_color(0) & alignment(right_alignment)),
+		children => 
+			text(
+				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+				id      => "vt(" & itoa(0) & ").offset") &
+			text(
+				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+				content => ":") &
+			text(
+				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+				id      => "vt("& itoa(0) & ").div" ) &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => " ") &
+			text(
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+				id      => "vt("& itoa(0) & ").mag") &
+			text(
+				style   => styles(background_color(0) & alignment(center_alignment)),
+				content => "V"));
+
 	function analogreadings (
-		constant style  : style_t;
-		constant inputs : natural)
+		constant style    : style_t;
+		constant inputs   : natural;
+		constant hz_tags  : tag_vector;
+		constant tgr_tags : tag_vector;
+		constant vt0_tags : tag_vector)
 		return tag_vector;
 
 end;
@@ -1175,84 +1250,16 @@ package body scopeiopkg is
 	end;
 		
 	function analogreadings (
-		constant style  : style_t;
-		constant inputs : natural)
+		constant style    : style_t;
+		constant inputs   : natural;
+		constant hz_tags  : tag_vector;
+		constant tgr_tags : tag_vector;
+		constant vt0_tags : tag_vector)
 		return tag_vector
 	is
-		constant time_trigger : tag_vector :=
-			div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "hz.offset") &
-					text(
-						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-						content => ":") &
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "hz.div") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "hz.mag") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "s")) &
-			div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.freeze") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.edge") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.level") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
-						id      => "tgr.div") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.mag") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "V"));
-
-		constant vertical_tags0 : tag_vector := div (
-			style    => styles(background_color(0) & alignment(right_alignment)),
-			children => 
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "vt(" & itoa(0) & ").offset") &
-				text(
-					style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-					content => ":") &
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "vt("& itoa(0) & ").div" ) &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => " ") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "vt("& itoa(0) & ").mag") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => "V"));
-		variable vertical_tags : tag_vector(0 to inputs*vertical_tags0'length-1);
+		variable vt_tags : tag_vector(0 to inputs*vertical_tags0'length-1);
 	begin
-		vertical_tags(vertical_tags0'range) := vertical_tags0;
+		vertical_tags(vertical_tags0'range) := vt0_tags;
 		for i in 1 to inputs-1 loop
 			vertical_tags(i*vertical_tags0'length to (i+1)*vertical_tags0'length-1) := div (
 				style    => styles(background_color(0) & alignment(right_alignment)),
@@ -1278,7 +1285,7 @@ package body scopeiopkg is
 		end loop;
 		return page(
 			style    => style,
-			children => time_trigger &vertical_tags);
+			children => hz_tags & tgr_tags & vt_tags);
 	end;
 
 end;
