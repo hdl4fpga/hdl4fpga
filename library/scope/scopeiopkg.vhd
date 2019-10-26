@@ -1257,11 +1257,11 @@ package body scopeiopkg is
 		constant vt0_tags : tag_vector)
 		return tag_vector
 	is
-		variable vt_tags : tag_vector(0 to inputs*vertical_tags0'length-1);
+		variable vt_tags : tag_vector(0 to inputs*vt0_tags'length-1);
 	begin
-		vertical_tags(vertical_tags0'range) := vt0_tags;
+		vt_tags(vt0_tags'range) := vt0_tags;
 		for i in 1 to inputs-1 loop
-			vertical_tags(i*vertical_tags0'length to (i+1)*vertical_tags0'length-1) := div (
+			vt_tags(i*vt0_tags'length to (i+1)*vt0_tags'length-1) := div (
 				style    => styles(background_color(0) & alignment(right_alignment)),
 				children => 
 					text(
