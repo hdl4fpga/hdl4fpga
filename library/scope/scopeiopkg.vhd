@@ -609,7 +609,7 @@ package scopeiopkg is
 		children => 
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.freeze") &
+				id      => "tgr.frozen") &
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
 				id      => "tgr.edge") &
