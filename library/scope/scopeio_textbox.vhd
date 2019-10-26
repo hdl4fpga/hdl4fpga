@@ -59,6 +59,7 @@ architecture def of scopeio_textbox is
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
 
+	constant tags : tag_vector := analogreadings(styles(width(40)), inputs);
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
 	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
 	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
@@ -94,6 +95,8 @@ architecture def of scopeio_textbox is
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
 	signal val_type     : std_logic;
+	signal tag_width : natural;
+	signal tag_alignment : std_logic_vector(0 to 0);
 begin
 
 	rgtr_b : block
@@ -276,6 +279,24 @@ begin
 		   '1' when cgastr_frm/=(cgastr_frm'range => '0') else
 		   '-';
 
+		tag_width <= wirebus (
+			tagbyid(tags, "hz.offset").style(key_width)    &
+			tagbyid(tags, "hz.div").style(key_width)       &
+			tagbyid(tags, "tgr.level").style(key_width)    &
+			tagbyid(tags, "vt(0).offset").style(key_width) &
+			tagbyid(tags, "vt(0).div").style(key_width),
+			cga_frm);
+
+		tag_alignment <= wirebus (
+			setif(left_alignment=tagbyid(tags, "hz.offset").style(key_alignment))    &
+			setif(left_alignment=tagbyid(tags, "hz.div").style(key_alignment))       &
+			setif(left_alignment=tagbyid(tags, "tgr.level").style(key_alignment))    &
+			setif(left_alignment=tagbyid(tags, "vt(0).offset").style(key_alignment)) &
+			setif(left_alignment=tagbyid(tags, "vt(0).div").style(key_alignment)),
+			cga_frm);
+
+		btof_bcdalign <= tag_alignment(0);
+
 		var_id <= wirebus(
 			std_logic_vector(to_unsigned(var_hzoffsetid,                           var_id'length)) & 
 			std_logic_vector(to_unsigned(var_hzdivid,                              var_id'length)) & 
@@ -355,7 +376,7 @@ begin
 				btof_bcdsign  <= '1';
 				btof_bcdprec  <= var_precvalue;
 				btof_bcdunit  <= var_unitvalue;
-				btof_bcdwidth <= std_logic_vector(to_unsigned(text_style(var_id, analog_addr, cga_cols, cga_rows).width, 4));
+				btof_bcdwidth <= std_logic_vector(to_unsigned(tag_width, btof_bcdwidth'length));
 
 				frac <= scale_1245(signed(var_binvalue), scale);
 				exp  <= signed(var_expvalue);
@@ -376,7 +397,6 @@ begin
 		bin_exp  => btof_binexp,
 		bin_di   => btof_bindi);
 
-	btof_bcdalign <= setif(text_style(var_id, analog_addr, cga_cols, cga_rows).align=left_alignment);
 	frmstr_p :
 	cgastr_end <= setif(cga_we='1' and cgastr_frm/=(cgastr_frm'range => '0'));
 

@@ -656,10 +656,7 @@ package scopeiopkg is
 
 	function analogreadings (
 		constant style    : style_t;
-		constant inputs   : natural;
-		constant hz_tags  : tag_vector;
-		constant tgr_tags : tag_vector;
-		constant vt0_tags : tag_vector)
+		constant inputs   : natural)
 		return tag_vector;
 
 end;
@@ -1251,10 +1248,7 @@ package body scopeiopkg is
 		
 	function analogreadings (
 		constant style    : style_t;
-		constant inputs   : natural;
-		constant hz_tags  : tag_vector;
-		constant tgr_tags : tag_vector;
-		constant vt0_tags : tag_vector)
+		constant inputs   : natural)
 		return tag_vector
 	is
 		variable vt_tags : tag_vector(0 to inputs*vt0_tags'length-1);
@@ -1283,9 +1277,9 @@ package body scopeiopkg is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V"));
 		end loop;
-		return page(
+		return render_tags(page(
 			style    => style,
-			children => hz_tags & tgr_tags & vt_tags);
+			children => hz_tags & tgr_tags & vt_tags), 1024);
 	end;
 
 end;
