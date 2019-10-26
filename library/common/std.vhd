@@ -155,6 +155,11 @@ package std is
 		constant arg2 : std_logic_vector)
 		return std_logic_vector;
 
+	function wirebus (
+		constant arg1 : natural_vector;
+		constant arg2 : std_logic_vector)
+		return natural;
+
 	function setif (
 		constant arg  : boolean;
 		constant argt : std_logic := '1';
@@ -637,6 +642,20 @@ package body std is
 				retval := retval or std_logic_vector(aux(retval'range));
 			end if;
 			aux := aux sll retval'length;
+		end loop;
+		return retval;
+	end;
+
+	function wirebus (
+		constant arg1 : natural_vector;
+		constant arg2 : std_logic_vector)
+		return natural is
+		variable retval : natural;
+	begin
+		for i in arg2'range loop
+			if arg2(i)='1' then
+				retval := arg1(i);
+			end if;
 		end loop;
 		return retval;
 	end;
