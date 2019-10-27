@@ -30,8 +30,8 @@ architecture beh of ulx3s is
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
-        constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_usb_speed: std_logic := '1'; -- '0':Low Speed, '1':Full Speed
+        constant C_mouse_host   : boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -45,14 +45,15 @@ architecture beh of ulx3s is
         constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
-        constant C_view_usbphy  : boolean := true; -- USB PHY debug
+        constant C_view_utmi1   : boolean := true; -- USB UTMI PHY debugging view
+        constant C_view_usbphy  : boolean := false; -- USB PHY debug
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false;  -- NET output
         constant C_view_clk     : boolean := false;  -- PLL clock output
         -- ADC SPI core
-        constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
-        constant C_buttons_test: boolean := true; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
+        constant C_adc: boolean := false; -- true: onboard ADC (MAX11123-11125)
+        constant C_buttons_test: boolean := false; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -70,13 +71,13 @@ architecture beh of ulx3s is
 	constant inputs: natural := 6; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
-	constant C_oled_hex_view_uart: boolean := true;
-	constant C_oled_hex_view_usb : boolean := false;
+	constant C_oled_hex_view_uart: boolean := false;
+	constant C_oled_hex_view_usb : boolean := true;
 
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -653,6 +654,7 @@ begin
 	  signal S_data_orig, S_data_emard: std_logic_vector(7 downto 0);
 	  signal S_rxen, S_rxactive, S_rxvalid: std_logic;
 	  signal S_rxactive_emard, S_rxvalid_emard: std_logic;
+	  signal S_rxerror_emard, S_rxerror: std_logic;
 	  signal S_rawdata_emard: std_logic;
 	  signal S_se0, S_ce: std_logic;
 	  signal S_ce_emard: std_logic;
@@ -674,6 +676,7 @@ begin
             RxEn_i           => S_rxen,
             RxActive_o       => S_rxactive,
             RxValid_o        => S_rxvalid,
+            RxError_o        => S_rxerror,
             DataIn_o         => S_data_orig,
             LineState        => S_up_linestate
           );
@@ -722,6 +725,8 @@ begin
 --	  trace_orange(C_view_binary_gain+3) <= S_rxvalid_emard;
 	  trace_white(C_view_binary_gain+3) <= S_rxactive;
 	  trace_orange(C_view_binary_gain+3) <= S_rxactive_emard;
+--	  trace_white(C_view_binary_gain+3) <= S_rxerror;
+--	  trace_orange(C_view_binary_gain+3) <= S_rxerror_emard;
 --        trace_white(C_view_binary_gain+3) <= S_rxvalid;
 --        trace_orange(C_view_binary_gain+3) <= S_rxactive;
 --          trace_white(C_view_binary_gain+3) <= S_rxvalid_emard;
@@ -847,6 +852,9 @@ begin
 	end generate;
 
 	G_uart_usbserial: if C_usbserial generate
+	B_uart_usbserial: block
+	  signal phy_rxen, phy_rxvalid: std_logic;
+	begin
 	-- pulldown 15k for USB HOST mode
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
@@ -874,11 +882,29 @@ begin
                 sync_err       => dbg_sync_err,
                 bit_stuff_err  => dbg_bit_stuff_err,
                 byte_err       => dbg_byte_err,
+                phy_rxen       => phy_rxen,
+                phy_rxvalid    => phy_rxvalid,
 		-- output data
 		clk  => clk_uart,  -- UART application clock
 		dv   => uart_rxdv,
 		byte => uart_rxd
 	);
+
+	G_view_utmi1: if C_view_utmi1 generate
+	S_input_ena <= '1';
+	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
+	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
+	trace_green(C_view_binary_gain+3) <= phy_rxvalid;
+	--trace_violet(utmi_data_mosi'range) <= utmi_data_mosi;
+	trace_violet(C_view_binary_gain+3) <= phy_rxen;
+--	trace_white(C_view_binary_gain+3) <= utmi_rxvalid;
+--	trace_orange(C_view_binary_gain+3) <= utmi_txvalid;
+--	trace_orange(C_view_binary_gain+3) <= phy_txoe; -- same as rx_en
+--	trace_orange(C_view_binary_gain+3) <= phy_ce; -- differential dp
+	clk_input <= clk_pixel_shift;
+	end generate; -- view utmi
+
+	end block;
 	end generate;
 
 	G_usbping_test: if C_usbping_test generate
@@ -1145,6 +1171,8 @@ begin
           signal utmi_linestate : std_logic_vector(1 downto 0);
           signal utmi_data_miso : std_logic_vector(7 downto 0);
           signal utmi_txvalid   : std_logic;
+          signal phy_txoe       : std_logic;
+          signal phy_ce         : std_logic;
 	begin
 	-- pulldown 15k for USB HOST mode
 	usb_fpga_pu_dp <= '0';
@@ -1175,9 +1203,12 @@ begin
 	port map
 	(
 	  clk              => clk_usb,
+	  resetn           => R_btn_debounced(0),
           usb_dp           => usb_fpga_bd_dp,
           usb_dn           => usb_fpga_bd_dn,
           usb_dif          => usb_fpga_dp,
+          txoe_o           => phy_txoe,
+          ce_o             => phy_ce,
           utmi_txready_o   => utmi_txready,
           utmi_data_o      => utmi_data_miso,
           utmi_rxvalid_o   => utmi_rxvalid,
@@ -1190,6 +1221,25 @@ begin
 	R_utmi_linestate <= utmi_linestate;
 --	R_utmi_linestate <= "10";
 	end generate;
+
+	G_view_utmi1: if C_view_utmi1 generate
+	S_input_ena <= '1';
+	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
+	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
+	trace_green(utmi_data_miso'range) <= utmi_data_miso;
+	--trace_violet(utmi_data_mosi'range) <= utmi_data_mosi;
+	trace_violet(C_view_binary_gain+3) <= utmi_rxactive;
+	trace_white(C_view_binary_gain+3) <= utmi_rxvalid;
+--	trace_orange(C_view_binary_gain+3) <= utmi_txvalid;
+--	trace_orange(C_view_binary_gain+3) <= phy_txoe; -- same as rx_en
+	trace_orange(C_view_binary_gain+3) <= phy_ce; -- differential dp
+	G_low_utmi1: if C_mouse_usb_speed = '0' generate
+	clk_input <= vga_clk;
+	end generate;
+	G_high_utmi1: if C_mouse_usb_speed = '1' generate
+	clk_input <= clk_pixel_shift;
+	end generate;
+	end generate; -- view utmi
 
 	E_usbmouse2daisy: entity hdl4fpga.scopeio_usbmouse2daisy
 	generic map

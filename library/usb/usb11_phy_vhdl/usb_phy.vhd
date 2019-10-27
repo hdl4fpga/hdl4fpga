@@ -47,17 +47,19 @@ use ieee.std_logic_unsigned.all;
  
 entity usb_phy is
   generic (
-    C_emard_rx  : boolean := false;
+    C_emard_rx  : boolean := true;
     usb_rst_det : boolean := true
   );
   port (
-    clk              : in  std_logic;  -- 60 MHz
+    clk              : in  std_logic;  -- 48 MHz
     rst              : in  std_logic;
     phy_tx_mode      : in  std_logic;  -- HIGH level for differential io mode (else single-ended)
     usb_rst          : out std_logic;
     -- Transciever Interface
     rxd, rxdp, rxdn  : in  std_logic;
     txdp, txdn, txoe : out std_logic;
+    -- clk recovery debug
+    ce_o             : out std_logic; 
     -- RX debug interface
     sync_err_o, bit_stuff_err_o, byte_err_o: out std_logic;
     -- UTMI Interface
@@ -194,7 +196,10 @@ begin
     rx_en      => txoe_out,
     linestate  => LineState
   );
+  RxError_o <= '0';
   end generate;
+  
+  ce_o <= fs_ce;
  
 --======================================================================================--
   -- Generate an USB Reset if we see SE0 for at least 2.5uS                             --
