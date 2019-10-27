@@ -85,10 +85,10 @@ package textboxpkg is
 
 	function render_tags (
 		constant tags : tag_vector;
-		constant size : natural)
+		constant size : natural := 1024)
 		return tag_vector;
 
-	function tagvalid_byid (
+	function validbyid (
 		constant tags : tag_vector;
 		constant id   : string)
 		return std_logic;
@@ -98,11 +98,9 @@ package textboxpkg is
 		constant id   : string)
 		return tag;
 
-	function memptr_byid (
-		constant tags : tag_vector;
-		constant id   : string;
-		constant size : natural)
-		return std_logic_vector;
+	function memaddr (
+		constant tag : tag)
+		return natural;
 
 	function strlen (
 		constant str : string)
@@ -115,6 +113,10 @@ package textboxpkg is
 
 	function itoa (
 		constant arg : integer)
+		return string;
+
+	function btoa (
+		constant arg : std_logic_vector)
 		return string;
 end;
 
@@ -262,6 +264,28 @@ package body textboxpkg is
 		end loop;
 		return retval(1 to strlen(retval));
 	end;
+
+	function btoa (
+		constant arg : std_logic_vector)
+		return string
+	is
+		constant asciitab : string := "0123456789";
+		variable value    : natural;
+		variable retval   : string(1 to 256);
+	begin
+		value  := to_integer(unsigned(arg));
+		retval := (others => NUL);
+		for i in retval'range loop
+			retval(i) := asciitab((value mod 10)+1);
+			value     := value / 10;
+			exit when value=0;
+		end loop;
+		for i in 1 to strlen(retval)/2 loop
+			swap(retval(i), retval(strlen(retval)+1-i));
+		end loop;
+		return retval(1 to strlen(retval));
+	end;
+
 
 	function padding_left (
 		constant length : natural;
@@ -668,7 +692,7 @@ package body textboxpkg is
 
 	function render_tags (
 		constant tags : tag_vector;
-		constant size : natural)
+		constant size : natural := 1024)
 		return tag_vector 
 	is
 		variable retval : string(1 to size);
@@ -683,7 +707,7 @@ package body textboxpkg is
 		
 	end;
 
-	function tagvalid_byid (
+	function validbyid (
 		constant tags : tag_vector;
 		constant id   : string)
 		return std_logic
@@ -708,23 +732,16 @@ package body textboxpkg is
 				return tags(i);
 			end if;
 		end loop;
-		report "Invalid tag"
-		severity FAILURE;
+		report "Invalid tag" severity FAILURE;
+		return tags(0);
 	end;
 
-	function memptr_byid (
-		constant tags : tag_vector;
-		constant id   : string;
-		constant size : natural)
-		return std_logic_vector
+	function memaddr (
+		constant tag  : tag)
+		return natural
 	is
-		variable retval : natural;
 	begin
-		retval := tagbyid(tags, id).mem_ptr;
-		if retval > 0 then
-			return std_logic_vector(to_unsigned(retval-1, size));
-		end if;
-		return (0 to size-1 => '-');
+		return tag.mem_ptr-1;
 	end;
 
 end;

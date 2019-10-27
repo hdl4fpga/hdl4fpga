@@ -1277,9 +1277,9 @@ package body scopeiopkg is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V"));
 		end loop;
-		return render_tags(page(
+		return page(
 			style    => style,
-			children => hz_tags & tgr_tags & vt_tags), 1024);
+			children => hz_tags & tgr_tags & vt_tags);
 	end;
 
 end;

@@ -59,7 +59,7 @@ architecture def of scopeio_textbox is
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
 
-	constant tags : tag_vector := analogreadings(styles(width(40)), inputs);
+	constant tags : tag_vector := render_tags( analogreadings( style => styles(width(40)), inputs => inputs));
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
 	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
 	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
@@ -84,7 +84,6 @@ architecture def of scopeio_textbox is
 	signal video_addr   : std_logic_vector(cga_addr'range);
 	signal char_dot     : std_logic;
 
-	signal var_id       : std_logic_vector(0 to 5-1);
 	signal var_binvalue : std_logic_vector(0 to 12-1);
 	signal var_expvalue : std_logic_vector(btof_bindi'range);
 	signal var_precvalue : std_logic_vector(4-1 downto 0);
@@ -94,8 +93,11 @@ architecture def of scopeio_textbox is
 	signal exp          : signed(btof_bindi'range);
 	signal scale        : std_logic_vector(0 to 2-1) := "00";
 
-	signal val_type     : std_logic;
-	signal tag_width : natural;
+	signal val_type      : std_logic;
+
+	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(40)), inputs), 1024));
+	signal tag_width     : natural;
+	signal tag_memaddr   : natural;
 	signal tag_alignment : std_logic_vector(0 to 0);
 begin
 
@@ -287,11 +289,13 @@ begin
 			tagbyid(tags, "vt(0).div"   ).style(key_width),
 			cgabcd_frm);
 
-			mem_addr(tags, "hz.offset") &
-			mem_addr(tags, "hz.div"   ) &
-			mem_addr(tags, "tgr.level") &
-			mem_addr(tags, "vt(" & to_string(chan_id) & ").offset") &
-			mem_addr(tags, "vt(" & to_string(gain_chanid) & ").div"));
+		tag_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "hz.offset")) &
+			memaddr(tagbyid(tags, "hz.div"   )) &
+			memaddr(tagbyid(tags, "tgr.level")) &
+			memaddr(tagbyid(tags, "vt(" & btoa(chan_id)     & ").offset")) &
+			memaddr(tagbyid(tags, "vt(" & btoa(gain_chanid) & ").div")),
+			cgabcd_frm);
 
 		tag_alignment <= wirebus (
 			setif(left_alignment=tagbyid(tags, "hz.offset"   ).style(key_alignment)) &
@@ -302,20 +306,6 @@ begin
 			cgabcd_frm);
 		btof_bcdalign <= tag_alignment(0);
 
-		var_id <= wirebus(
-			std_logic_vector(to_unsigned(var_hzoffsetid,                           var_id'length)) & 
-			std_logic_vector(to_unsigned(var_hzdivid,                              var_id'length)) & 
-			std_logic_vector(to_unsigned(var_tgrlevelid,                           var_id'length)) &
-			std_logic_vector(resize(mul(unsigned(chan_id),3)  +var_vtoffsetid+0, var_id'length)) &
-			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+1, var_id'length)) &
-
-			std_logic_vector(to_unsigned(var_hzunitid,                             var_id'length)) &
-			std_logic_vector(to_unsigned(var_tgredgeid,                            var_id'length)) &
-			std_logic_vector(to_unsigned(var_tgrfreezeid,                          var_id'length)) &
-			std_logic_vector(to_unsigned(var_tgrunitid,                            var_id'length)) &
-			std_logic_vector(resize(mul(unsigned(gain_chanid),3)+var_vtoffsetid+2, var_id'length)),
-			cga_frm);
-			
 		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_frac'length);
 		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_frac'length);
 		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_scalevalue'length));
@@ -415,7 +405,7 @@ begin
 				cga_av   <= '0';
 			elsif cgaaddr_init='1' then
 				cgaaddr_init <= '0';
-				addr     := text_addr(var_id, analog_addr, cga_cols, cga_rows);
+				addr     := std_logic_vector(to_unsigned(tag_memaddr, addr'length));
 				cga_av   <= addr(0);
 				cga_addr <= unsigned(addr(1 to cga_addr'length));
 			elsif cga_we='1' then
@@ -441,7 +431,7 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => ,
+		cga_bitrom  => cga_bitrom,
 		font_bitrom => font_bitrom,
 		font_height => font_height,
 		font_width  => font_width)
