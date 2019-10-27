@@ -344,20 +344,20 @@ package body textboxpkg is
 		variable tags   : inout tag_vector)
 	is
 		variable level  : natural;
-		variable mesg : line;
+--		variable mesg : line;
 	begin
 		level := 0;
-		write(mesg, string'("offset "));
+--		write(mesg, string'("offset "));
 		for i in tags'range loop
-			write(mesg, string'(" : "));
-			write(mesg, tags(i).id(1 to strlen(tags(i).id)));
-			write(mesg, string'(" : "));
-			write(mesg, tags(i).mem_ptr);
-			write(mesg, string'("("));
-			write(mesg, offset);
-			write(mesg, string'(") -> "));
+--			write(mesg, string'(" : "));
+--			write(mesg, tags(i).id(1 to strlen(tags(i).id)));
+--			write(mesg, string'(" : "));
+--			write(mesg, tags(i).mem_ptr);
+--			write(mesg, string'("("));
+--			write(mesg, offset);
+--			write(mesg, string'(") -> "));
 			tags(i).mem_ptr := tags(i).mem_ptr + offset;
-			write(mesg, tags(i).mem_ptr);
+--			write(mesg, tags(i).mem_ptr);
 			case tags(i).tid is 
 			when tid_end =>
 				exit when level=0;
@@ -509,7 +509,7 @@ package body textboxpkg is
 		constant content : string := "";
 		constant style   : style_t;
 		constant id      : string := "")
-		return tag_vector 
+		return tag 
 	is
 		variable retval : tag_vector(0 to 0);
 		variable mesg : line;
@@ -519,7 +519,7 @@ package body textboxpkg is
 		retval(0).style   := style;
 		retval(0).content := strfill(content, retval(0).content'length);
 
-		return retval;
+		return retval(0);
 	end;
 
 	procedure process_text (
@@ -530,7 +530,6 @@ package body textboxpkg is
 	is
 		variable left  : natural;
 		variable right : natural;
-		variable mesg : line;
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -546,12 +545,12 @@ package body textboxpkg is
 			align => tags(tag_ptr).style(key_alignment));
 		ctnt_ptr := ctnt_ptr + tags(tag_ptr).style(key_width);
 
-		report log(
-			tname   => string'("text"),
-			left    => left,
-			right   => right,
-			width   => tags(tag_ptr).style(key_width),
-			content => content(content'left to right)).all;
+--		report log(
+--			tname   => string'("text"),
+--			left    => left,
+--			right   => right,
+--			width   => tags(tag_ptr).style(key_width),
+--			content => content(content'left to right)).all;
 	end;
 
 	procedure process_div (
@@ -603,12 +602,12 @@ package body textboxpkg is
 
 		ctnt_ptr := tags(tag_ptr).mem_ptr;
 
-		report log(
-			tname   => "div",
-			left    => cptr,
-			right   => cptr+tags(tptr).style(key_width)-1,
-			width   => tags(tptr).style(key_width),
-			content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
+--		report log(
+--			tname   => "div",
+--			left    => cptr,
+--			right   => cptr+tags(tptr).style(key_width)-1,
+--			width   => tags(tptr).style(key_width),
+--			content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
 
 	end;
 
@@ -622,7 +621,6 @@ package body textboxpkg is
 
 		variable vtags  : tag_vector(tags'range);
 		variable tptr   : natural;
-		variable mesg : line;
 	begin
 		tag_ptr := tags'left;
 		left    := content'left;
@@ -654,12 +652,12 @@ package body textboxpkg is
 					align => tags(tags'left).style(key_alignment));
 
 			right := left+tags(tags'left).style(key_width);
-			report log(
-				tname   => string'("page"),
-				left    => left,
-				right   => right,
-				width   => tags(tags'left).style(key_width),
-				content => content(left to right-1)).all;
+--			report log(
+--				tname   => string'("page"),
+--				left    => left,
+--				right   => right,
+--				width   => tags(tags'left).style(key_width),
+--				content => content(left to right-1)).all;
 
 			when others =>
 			end case;

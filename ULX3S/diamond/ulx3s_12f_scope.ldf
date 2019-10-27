@@ -339,6 +339,9 @@
         <Source name="../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+        <Source name="../../library/scope/textboxpgk.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="constraints/ulx3s_v20.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>

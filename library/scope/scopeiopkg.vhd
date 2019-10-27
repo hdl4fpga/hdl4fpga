@@ -584,75 +584,75 @@ package scopeiopkg is
 
 	constant hz_tags : tag_vector := div (
 		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => 
+		children => tag_vector'(
 			text(
 				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "hz.offset") &
+				id      => "hz.offset"),
 			text(
 				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-				content => ":") &
+				content => ":"),
 			text(
 				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "hz.div") &
+				id      => "hz.div"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " ") &
+				content => " "),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "hz.mag") &
+				id      => "hz.mag"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "s"));
+				content => "s")));
 
 	constant tgr_tags : tag_vector := div (
 		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => 
+		children => tag_vector'(
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.frozen") &
+				id      => "tgr.freeze"),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.edge") &
+				id      => "tgr.edge"),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.level") &
+				id      => "tgr.level"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " ") &
+				content => " "),
 			text(
 				style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
-				id      => "tgr.div") &
+				id      => "tgr.div"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " ") &
+				content => " "),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.mag") &
+				id      => "tgr.mag"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "V"));
+				content => "V")));
 
 	constant vt0_tags : tag_vector := div (
 		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => 
+		children => tag_vector'(
 			text(
 				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "vt(" & itoa(0) & ").offset") &
+				id      => "vt(" & itoa(0) & ").offset"),
 			text(
 				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-				content => ":") &
+				content => ":"),
 			text(
 				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "vt("& itoa(0) & ").div" ) &
+				id      => "vt("& itoa(0) & ").div" ),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " ") &
+				content => " "),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "vt("& itoa(0) & ").mag") &
+				id      => "vt("& itoa(0) & ").mag"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "V"));
+				content => "V")));
 
 	function analogreadings (
 		constant style    : style_t;
@@ -1253,29 +1253,29 @@ package body scopeiopkg is
 	is
 		variable vt_tags : tag_vector(0 to inputs*vt0_tags'length-1);
 	begin
-		vt_tags(vt0_tags'range) := vt0_tags;
+		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
 		for i in 1 to inputs-1 loop
 			vt_tags(i*vt0_tags'length to (i+1)*vt0_tags'length-1) := div (
 				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
+				children => tag_vector'(
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "vt(" & itoa(i) & ").offset") &
+						id      => "vt(" & itoa(i) & ").offset"),
 					text(
 						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-						content => ":") &
+						content => ":"),
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "vt("& itoa(i) & ").div" ) &
+						id      => "vt("& itoa(i) & ").div" ),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
+						content => " "),
 					text(
 						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "vt("& itoa(i) & ").mag") &
+						id      => "vt("& itoa(i) & ").mag"),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "V"));
+						content => "V")));
 		end loop;
 		return page(
 			style    => style,
