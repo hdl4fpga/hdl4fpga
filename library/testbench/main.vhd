@@ -31,6 +31,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.textboxpkg.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity main is
 	port (
@@ -39,114 +40,8 @@ end;
 
 architecture def of main is
 
-	constant layout : tag_vector := page(
-		style    => styles(width(30) & alignment(right_alignment)),
-		children => 
-			div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "hz.offset") &
-					text(
-						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-						content => ":") &
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "hz.div") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "hz.mag") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "s")) &
-			div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.freeze") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.edge") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.level") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
-						id      => "tgr.div") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "tgr.mag") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "V")));
-
-	function analogreadings (
-		constant inputs : natural)
-		return tag_vector
-	is
-		constant tags0 : tag_vector := div (
-			style    => styles(background_color(0) & alignment(right_alignment)),
-			children => 
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "vt(" & itoa(0) & ").offset") &
-				text(
-					style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-					content => ":") &
-				text(
-					style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-					id      => "vt("& itoa(0) & ").div" ) &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => " ") &
-				text(
-					style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-					id      => "vt("& itoa(0) & ").mag") &
-				text(
-					style   => styles(background_color(0) & alignment(center_alignment)),
-					content => "V"));
-		variable tags : tag_vector(0 to inputs*tags0'length-1);
-	begin
-		tags(tags0'range) := tags0;
-		for i in 1 to inputs-1 loop
-			tags(i*tags0'length to (i+1)*tags0'length-1) := div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
-				children => 
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "vt(" & itoa(i) & ").offset") &
-					text(
-						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-						content => ":") &
-					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-						id      => "vt("& itoa(i) & ").div" ) &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => " ") &
-					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-						id      => "vt("& itoa(i) & ").mag") &
-					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
-						content => "V"));
-		end loop;
-		return tags;
-	end;
-
-	constant xx : tag_vector := render_tags(layout & analogreadings(20), 1024);
-	constant pp : string := render_content(layout & analogreadings(20), 1024);
+	constant xx : tag_vector := render_tags(analogreadings(20), 1024);
+	constant pp : string := render_content(analogreadings(20), 1024);
 
 begin
 	process 

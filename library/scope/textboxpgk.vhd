@@ -74,7 +74,7 @@ package textboxpkg is
 
 	type tag_vector is array (natural range <>) of tag;
 
-	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag_vector;
+	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag;
 	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 
@@ -367,7 +367,7 @@ package body textboxpkg is
 			when others =>
 			end case;
 		end loop;
-		report mesg.all;
+--		report mesg.all;
 
 	end;
 
