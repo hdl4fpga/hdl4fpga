@@ -28,10 +28,10 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 10;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
-        constant C_mouse_usb_speed: std_logic := '1'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := true; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_ps2    : boolean := true;  -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
+        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -42,19 +42,19 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := false; -- ADC onboard analog view
+        constant C_view_adc     : boolean := true;  -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
-        constant C_view_utmi1   : boolean := true; -- USB UTMI PHY debugging view
+        constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
         constant C_view_usbphy  : boolean := false; -- USB PHY debug
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
-        constant C_view_istream : boolean := false;  -- NET output
-        constant C_view_clk     : boolean := false;  -- PLL clock output
+        constant C_view_istream : boolean := false; -- NET output
+        constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
-        constant C_adc: boolean := false; -- true: onboard ADC (MAX11123-11125)
-        constant C_buttons_test: boolean := false; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
-        constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
+        constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
+        constant C_buttons_test: boolean := true; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
+        constant C_adc_view_low_bits: boolean := true; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
 	constant C_adc_bits: integer := 8; -- don't touch 12 for onboard ADC
@@ -68,16 +68,16 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external USB PHY (currently useable only as linestate sniffer)
         -- scopeio
-	constant inputs: natural := 6; -- number of input channels (traces)
+	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
-	constant C_oled_hex_view_usb : boolean := true;
+	constant C_oled_hex_view_usb : boolean := false;
 
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := true;  -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
         constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -1203,7 +1203,7 @@ begin
 	port map
 	(
 	  clk              => clk_usb,
-	  resetn           => R_btn_debounced(0),
+	  resetn           => '1', -- R_btn_debounced(0), -- press BTN0 to test USB reconnect
           usb_dp           => usb_fpga_bd_dp,
           usb_dn           => usb_fpga_bd_dn,
           usb_dif          => usb_fpga_dp,
@@ -1253,7 +1253,7 @@ begin
 	(
           clk              => clk_mouse,
           clk_usb          => clk_usb,
-          usb_reset        => R_btn_debounced(6), -- '1' will force USB bus reset
+          usb_reset        => '0', -- R_btn_debounced(6), -- '1' will force USB bus reset
           -- USB UTMI interface
           utmi_txready_i   => utmi_txready,
           utmi_data_i      => utmi_data_miso,
