@@ -40,8 +40,8 @@ end;
 
 architecture def of main is
 
-	constant xx : tag_vector := render_tags(analogreadings(20), 1024);
-	constant pp : string := render_content(analogreadings(20), 1024);
+	constant xx : tag_vector := render_tags(analogreadings(styles(width(30)), 2), 1024);
+	constant pp : string := render_content(analogreadings(styles(width(30) & alignment(right_alignment)), 2), 1024);
 
 begin
 	process 
@@ -54,7 +54,7 @@ begin
 			textio.write(mesg, character'('"'));
 			textio.writeline(textio.output, mesg);
 		end loop;
-		std_logic_textio.write(mesg, tagvalid_byid(xx, "vt(20).offset"));
+		std_logic_textio.write(mesg, validbyid(xx, "vt(20).offset"));
 		textio.writeline(textio.output, mesg);
 		wait;
 	end process;

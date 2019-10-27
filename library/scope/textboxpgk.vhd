@@ -624,6 +624,7 @@ package body textboxpkg is
 	begin
 		tag_ptr := tags'left;
 		left    := content'left;
+		right   := left;
 		if tags(tag_ptr).tid=tid_page then
 			tag_ptr := tag_ptr + 1;
 		end if;
