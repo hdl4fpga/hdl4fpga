@@ -280,21 +280,26 @@ begin
 		   '-';
 
 		tag_width <= wirebus (
-			tagbyid(tags, "hz.offset").style(key_width)    &
-			tagbyid(tags, "hz.div").style(key_width)       &
-			tagbyid(tags, "tgr.level").style(key_width)    &
+			tagbyid(tags, "hz.offset"   ).style(key_width) &
+			tagbyid(tags, "hz.div"      ).style(key_width) &
+			tagbyid(tags, "tgr.level"   ).style(key_width) &
 			tagbyid(tags, "vt(0).offset").style(key_width) &
-			tagbyid(tags, "vt(0).div").style(key_width),
-			cga_frm);
+			tagbyid(tags, "vt(0).div"   ).style(key_width),
+			cgabcd_frm);
+
+			mem_addr(tags, "hz.offset") &
+			mem_addr(tags, "hz.div"   ) &
+			mem_addr(tags, "tgr.level") &
+			mem_addr(tags, "vt(" & to_string(chan_id) & ").offset") &
+			mem_addr(tags, "vt(" & to_string(gain_chanid) & ").div"));
 
 		tag_alignment <= wirebus (
-			setif(left_alignment=tagbyid(tags, "hz.offset").style(key_alignment))    &
-			setif(left_alignment=tagbyid(tags, "hz.div").style(key_alignment))       &
-			setif(left_alignment=tagbyid(tags, "tgr.level").style(key_alignment))    &
+			setif(left_alignment=tagbyid(tags, "hz.offset"   ).style(key_alignment)) &
+			setif(left_alignment=tagbyid(tags, "hz.div"      ).style(key_alignment)) &
+			setif(left_alignment=tagbyid(tags, "tgr.level"   ).style(key_alignment)) &
 			setif(left_alignment=tagbyid(tags, "vt(0).offset").style(key_alignment)) &
-			setif(left_alignment=tagbyid(tags, "vt(0).div").style(key_alignment)),
-			cga_frm);
-
+			setif(left_alignment=tagbyid(tags, "vt(0).div"   ).style(key_alignment)),
+			cgabcd_frm);
 		btof_bcdalign <= tag_alignment(0);
 
 		var_id <= wirebus(
