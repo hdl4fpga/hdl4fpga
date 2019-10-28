@@ -98,9 +98,11 @@ architecture def of scopeio_textbox is
 
 	signal val_type      : std_logic;
 
-	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(40)), inputs), 1024));
+	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(40)), inputs), 256));
 	signal tag_width     : natural;
-	signal tag_memaddr   : natural;
+	signal tag_memaddr   : std_logic_vector(cga_addr'range);
+	signal vtdiv_memaddr : std_logic_vector(cga_addr'range);
+	signal vtoffset_memaddr : std_logic_vector(cga_addr'range);
 	signal tag_alignment : std_logic_vector(0 to 0);
 begin
 
@@ -292,12 +294,32 @@ begin
 			tagbyid(tags, "vt(0).div"   ).style(key_width),
 			cgabcd_frm);
 
+		process (chan_id)
+		begin
+			vtoffset_memaddr <= (others => '-');
+			for i in 0 to inputs-1 loop
+				if i=to_integer(unsigned(chan_id)) then
+					vtoffset_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").offset"), vtoffset_memaddr'length);
+				end if;
+			end loop;
+		end process;
+
+		process (gain_chanid)
+		begin
+			vtdiv_memaddr <= (others => '-');
+			for i in 0 to inputs-1 loop
+				if i=to_integer(unsigned(chan_id)) then
+					vtdiv_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").div"), vtdiv_memaddr'length);
+				end if;
+			end loop;
+		end process;
+
 		tag_memaddr <= wirebus (
-			memaddr(tagbyid(tags, "hz.offset")) &
-			memaddr(tagbyid(tags, "hz.div"   )) &
-			memaddr(tagbyid(tags, "tgr.level")) &
-			memaddr(tagbyid(tags, "vt(" & btoa(chan_id)     & ").offset")) &
-			memaddr(tagbyid(tags, "vt(" & btoa(gain_chanid) & ").div")),
+			memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length) &
+			vtoffset_memaddr                                        &
+			vtdiv_memaddr,
 			cgabcd_frm);
 
 		tag_alignment <= wirebus (
@@ -399,7 +421,6 @@ begin
 	cgastr_end <= setif(cga_we='1' and cgastr_frm/=(cgastr_frm'range => '0'));
 
 	cga_addr_p : process (rgtr_clk)
-		variable addr : std_logic_vector(0 to cga_addr'length);
 	begin
 		if rising_edge(rgtr_clk) then
 			if cga_frm=(cga_frm'range => '0') then
@@ -408,9 +429,8 @@ begin
 				cga_av   <= '0';
 			elsif cgaaddr_init='1' then
 				cgaaddr_init <= '0';
-				addr     := std_logic_vector(to_unsigned(tag_memaddr, addr'length));
-				cga_av   <= addr(0);
-				cga_addr <= unsigned(addr(1 to cga_addr'length));
+				cga_av   <= '1';
+				cga_addr <= unsigned(tag_memaddr);
 			elsif cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			end if;

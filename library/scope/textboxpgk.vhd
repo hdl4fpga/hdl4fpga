@@ -244,13 +244,25 @@ package body textboxpkg is
 		return retval;
 	end;
 
+	function strrev (
+		constant arg : string)
+		return string
+	is
+		variable retval : string(1 to arg'length);
+	begin
+		for i in 1 to retval'length/2 loop
+			swap(retval(i), retval(retval'length+1-i));
+		end loop;
+		return retval;
+	end;
+
 	function itoa (
 		constant arg : integer)
 		return string 
 	is
-		constant asciitab : string := "0123456789";
-		variable value    : natural;
+		constant asciitab : string(1 to 10) := "0123456789";
 		variable retval   : string(1 to 256);
+		variable value    : natural;
 	begin
 		value  := arg;
 		retval := (others => NUL);
@@ -259,31 +271,15 @@ package body textboxpkg is
 			value     := value / 10;
 			exit when value=0;
 		end loop;
-		for i in 1 to strlen(retval)/2 loop
-			swap(retval(i), retval(strlen(retval)+1-i));
-		end loop;
-		return retval(1 to strlen(retval));
+		return strrev(retval(1 to strlen(retval)));
 	end;
 
 	function btoa (
 		constant arg : std_logic_vector)
 		return string
 	is
-		constant asciitab : string := "0123456789";
-		variable value    : natural;
-		variable retval   : string(1 to 256);
 	begin
-		value  := to_integer(unsigned(arg));
-		retval := (others => NUL);
-		for i in retval'range loop
-			retval(i) := asciitab((value mod 10)+1);
-			value     := value / 10;
-			exit when value=0;
-		end loop;
-		for i in 1 to strlen(retval)/2 loop
-			swap(retval(i), retval(strlen(retval)+1-i));
-		end loop;
-		return retval(1 to strlen(retval));
+		return itoa(to_integer(unsigned(arg)));
 	end;
 
 
@@ -735,11 +731,12 @@ package body textboxpkg is
 	end;
 
 	function memaddr (
-		constant tag  : tag)
-		return natural
+		constant tag  : tag;
+		constant size : natural)
+		return std_logic_vector
 	is
 	begin
-		return tag.mem_ptr-1;
+		return std_logic_vector(to_unsigned(tag.mem_ptr-1, size));
 	end;
 
 end;
