@@ -619,51 +619,51 @@ package body textboxpkg is
 		variable left    : natural;
 		variable right   : natural;
 
-		variable vtags  : tag_vector(tags'range);
+		constant ctags  : tag_vector(0 to tags'length-1):= tags;
 		variable tptr   : natural;
 	begin
-		tag_ptr := tags'left;
+		tag_ptr := ctags'left;
 		left    := content'left;
-		right   := left;
-		if tags(tag_ptr).tid=tid_page then
+--		right   := left;
+		if ctags(tag_ptr).tid=tid_page then
 			tag_ptr := tag_ptr + 1;
 		end if;
-		while tag_ptr <= tags'right loop
+		while tag_ptr <= ctags'right loop
 			tptr  := tag_ptr;
 			right := left;
 
-			case tags(tag_ptr).tid is
+			case ctags(tag_ptr).tid is
 			when tid_div =>
 				process_div (
 					ctnt_ptr => right,
 					content  => content,
 					tag_ptr  => tag_ptr,
-					tags     => tags);
+					tags     => ctags);
 
 				offset_memptr(
 					offset => padding_left (
-						length => tags(tptr).style(key_width),
-						width  => tags(tags'left).style(key_width),
-						align  => tags(tags'left).style(key_alignment)),
-					tags => tags(tptr to tag_ptr-1));
+						length => ctags(tptr).style(key_width),
+						width  => ctags(ctags'left).style(key_width),
+						align  => ctags(ctags'left).style(key_alignment)),
+					tags => ctags(tptr to tag_ptr-1));
 
-				content(left to left+tags(tags'left).style(key_width)-1) := stralign(
+				content(left to left+ctags(ctags'left).style(key_width)-1) := stralign(
 					str   => content(left to right-1), 
-					width => tags(tags'left).style(key_width),
-					align => tags(tags'left).style(key_alignment));
+					width => ctags(ctags'left).style(key_width),
+					align => ctags(ctags'left).style(key_alignment));
 
-			right := left+tags(tags'left).style(key_width);
+			right := left+ctags(ctags'left).style(key_width);
 --			report log(
 --				tname   => string'("page"),
 --				left    => left,
 --				right   => right,
---				width   => tags(tags'left).style(key_width),
+--				width   => ctags(ctags'left).style(key_width),
 --				content => content(left to right-1)).all;
 
 			when others =>
 			end case;
 
-			left    := left+tags(tags'left).style(key_width);
+			left    := left+ctags(ctags'left).style(key_width);
 			tag_ptr := tag_ptr + 1;
 		end loop;
 		if right <= content'right then
@@ -678,7 +678,7 @@ package body textboxpkg is
 	is
 		variable retval  : string(1 to size);
 		variable tag_ptr : natural;
-		variable vtags   : tag_vector(tags'range);
+		variable vtags   : tag_vector(0 to tags'lenght-1);
 	begin
 		
 		vtags := tags;
