@@ -18,6 +18,7 @@ entity usb11_phy_transciever is
   port
   (
     clk               : in    std_logic;  -- main clock input
+    resetn            : in    std_logic;
     -- USB hardware D+/D- direct to FPGA
     usb_dif           : in    std_logic; -- differential or single-ended input
     usb_dp, usb_dn    : inout std_logic; -- single ended bidirectional
@@ -32,6 +33,7 @@ entity usb11_phy_transciever is
     utmi_data_i       : in    std_logic_vector(7 downto 0);
     utmi_txvalid_i    : in    std_logic;
     -- UTMI debug
+    txoe_o, ce_o: out std_logic;
     utmi_sync_err_o, utmi_bit_stuff_err_o, utmi_byte_err_o: out std_logic
   );
 end;
@@ -75,9 +77,11 @@ architecture Behavioral of usb11_phy_transciever is
   port map
   (
     clk => clk, -- full speed: 48 MHz or 60 MHz, low speed: 6 MHz or 7.5 MHz
-    rst => '1', -- 1-don't reset, 0-hold reset
+    rst => resetn, -- 1-don't reset, 0-hold reset
     phy_tx_mode => '1', -- 1-differential, 0-single-ended
     usb_rst => open, -- USB host requests reset, sending signal to usb-serial core
+    -- clock recovery debug
+    ce_o => ce_o,
     -- UTMI interface to usb-serial core
     LineCtrl_i => utmi_linectrl_i,
     TxValid_i => utmi_txvalid_i,
@@ -100,5 +104,5 @@ architecture Behavioral of usb11_phy_transciever is
     txdn => S_txdn, -- single-ended output to D-
     txoe => S_txoe  -- 3-state control: 0-output, 1-input
   );
-
+  txoe_o <= S_txoe;
 end;
