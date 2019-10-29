@@ -62,7 +62,7 @@ architecture def of scopeio_textbox is
 	constant tags : tag_vector := render_tags(
 		analogreadings(
 			style  => styles(width(40)),
-		   	inputs => inputs));
+		   	inputs => 2));
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
 	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
 	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
@@ -98,7 +98,7 @@ architecture def of scopeio_textbox is
 
 	signal val_type      : std_logic;
 
-	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(40)), inputs), 256));
+	constant cga_bitrom  : std_logic_vector := to_ascii("hola"); --to_ascii(render_content(analogreadings(styles(width(40)), inputs), 256));
 	signal tag_width     : natural;
 	signal tag_memaddr   : std_logic_vector(cga_addr'range);
 	signal vtdiv_memaddr : std_logic_vector(cga_addr'range);
@@ -286,13 +286,13 @@ begin
 		   '1' when cgastr_frm/=(cgastr_frm'range => '0') else
 		   '-';
 
-		tag_width <= wirebus (
-			tagbyid(tags, "hz.offset"   ).style(key_width) &
-			tagbyid(tags, "hz.div"      ).style(key_width) &
-			tagbyid(tags, "tgr.level"   ).style(key_width) &
-			tagbyid(tags, "vt(0).offset").style(key_width) &
-			tagbyid(tags, "vt(0).div"   ).style(key_width),
-			cgabcd_frm);
+--		tag_width <= wirebus (
+--			width(tagbyid(tags, "hz.offset"   )) &
+--			width(tagbyid(tags, "hz.div"      )) &
+--			width(tagbyid(tags, "tgr.level"   )) &
+--			width(tagbyid(tags, "vt(0).offset")) &
+--			width(tagbyid(tags, "vt(0).div"   )),
+--			cgabcd_frm);
 
 		process (chan_id)
 		begin
@@ -314,21 +314,21 @@ begin
 			end loop;
 		end process;
 
-		tag_memaddr <= wirebus (
-			memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length) &
-			memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length) &
-			vtoffset_memaddr                                        &
-			vtdiv_memaddr,
-			cgabcd_frm);
+--		tag_memaddr <= wirebus (
+--			memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length) &
+--			memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length) &
+--			memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length) &
+--			vtoffset_memaddr                                        &
+--			vtdiv_memaddr,
+--			cgabcd_frm);
 
-		tag_alignment <= wirebus (
-			setif(left_alignment=tagbyid(tags, "hz.offset"   ).style(key_alignment)) &
-			setif(left_alignment=tagbyid(tags, "hz.div"      ).style(key_alignment)) &
-			setif(left_alignment=tagbyid(tags, "tgr.level"   ).style(key_alignment)) &
-			setif(left_alignment=tagbyid(tags, "vt(0).offset").style(key_alignment)) &
-			setif(left_alignment=tagbyid(tags, "vt(0).div"   ).style(key_alignment)),
-			cgabcd_frm);
+--		tag_alignment <= wirebus (
+--			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))) &
+--			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))) &
+--			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))) &
+--			setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))) &
+--			setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   ))),
+--			cgabcd_frm);
 		btof_bcdalign <= tag_alignment(0);
 
 		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_frac'length);

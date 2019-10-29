@@ -70,7 +70,8 @@ package textboxpkg is
 		mem_ptr  : natural;
 	end record;
 
-	function width (constant value  : tag) return natural; 
+	function alignment (constant value  : tag) return alignment_t; 
+	function width     (constant value  : tag) return natural; 
 
 	type tag_vector is array (natural range <>) of tag;
 
@@ -99,8 +100,9 @@ package textboxpkg is
 		return tag;
 
 	function memaddr (
-		constant tag : tag)
-		return natural;
+		constant tag : tag;
+		constant size : natural)
+		return std_logic_vector;
 
 	function strlen (
 		constant str : string)
@@ -410,6 +412,13 @@ package body textboxpkg is
 		return value.style(key_width);
 	end;
 
+	function alignment (
+		constant value : tag)
+		return alignment_t is
+	begin
+		return value.style(key_alignment);
+	end;
+
 	function style (
 		constant alignment        : natural := 0;
 		constant background_color : natural := 0;
@@ -492,13 +501,13 @@ package body textboxpkg is
 		constant style    : style_t;
 		constant id       : string := "")
 		return tag_vector is
-		variable page : tag;
-		variable tags : tag_vector(children'range);
+		variable page   : tag;
+		variable retval : tag_vector(0 to children'length+2-1);
 	begin
 		page.tid   := tid_page;
 		page.style := style;
-		tags := children;
-		return page & tags & endtag;
+		retval     := page & children & endtag;
+		return retval;
 	end;
 
 	function text (
@@ -524,8 +533,11 @@ package body textboxpkg is
 		variable tag_ptr  : inout natural;
 		variable tags     : inout tag_vector)
 	is
-		variable left  : natural;
-		variable right : natural;
+		variable left    : natural;
+		variable right   : natural;
+		variable str     : string(1 to tags(0).content'length); -- Thanks Xilinx for
+		variable width   : natural;                             -- messing it up
+		variable align   : natural;                             -- workaround
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -535,10 +547,13 @@ package body textboxpkg is
 		left  := ctnt_ptr;
 		right := left+tags(tag_ptr).style(key_width)-1;
 
+		str   := tags(tag_ptr).content;               -- Thanks Xilinx for
+		width := tags(tag_ptr).style(key_width);      -- messing it up
+		align := tags(tag_ptr).style(key_alignment);  -- workaround
 		content(left to right) := stralign(
-			str   => tags(tag_ptr).content(1 to strlen(tags(tag_ptr).content)), 
-			width => tags(tag_ptr).style(key_width),
-			align => tags(tag_ptr).style(key_alignment));
+			str   => str,
+			width => width,
+			align => align);
 		ctnt_ptr := ctnt_ptr + tags(tag_ptr).style(key_width);
 
 --		report log(
@@ -557,6 +572,8 @@ package body textboxpkg is
 	is
 		variable cptr    : natural;
 		variable tptr    : natural;
+		variable width   : natural;                   -- Xilinx's mess
+		variable align   : natural;                   -- Workaround
 	begin
 		cptr    := ctnt_ptr;
 		tptr    := tag_ptr;
@@ -584,10 +601,12 @@ package body textboxpkg is
 			tags(tptr).style(key_width) := ctnt_ptr-cptr;
 		end if;
 
+		width := tags(tptr).style(key_width);      -- Xilinx's mess
+		align := tags(tptr).style(key_alignment);  -- Workaround
 		content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
 			str   => content(cptr to ctnt_ptr-1), 
-			width => tags(tptr).style(key_width),
-			align => tags(tptr).style(key_alignment));
+			width => width,
+			align => align);
 
 		offset_memptr(
 			offset => padding_left (
@@ -617,6 +636,9 @@ package body textboxpkg is
 
 		variable vtags  : tag_vector(0 to tags'length-1):= tags;
 		variable tptr   : natural;
+		variable length  : natural;                   -- Xilinx's mess
+		variable width   : natural;                   -- 
+		variable align   : natural;                   -- Workaround
 	begin
 		tag_ptr := vtags'left;
 		left    := content'left;
@@ -635,11 +657,14 @@ package body textboxpkg is
 					tag_ptr  => tag_ptr,
 					tags     => vtags);
 
+				length := vtags(tptr).style(key_width);            -- Xilinx's mess
+				width  := vtags(vtags'left).style(key_width);      --
+				align  := vtags(vtags'left).style(key_alignment);  -- Workaround
 				offset_memptr(
 					offset => padding_left (
-						length => vtags(tptr).style(key_width),
-						width  => vtags(vtags'left).style(key_width),
-						align  => vtags(vtags'left).style(key_alignment)),
+						length => length,
+						width  => width,
+						align  => align),
 					tags => vtags(tptr to tag_ptr-1));
 
 				content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
@@ -726,7 +751,9 @@ package body textboxpkg is
 				return tags(i);
 			end if;
 		end loop;
-		report "Invalid tag" severity FAILURE;
+		assert false
+			report "Invalid tag"
+			severity FAILURE;
 		return tags(0);
 	end;
 

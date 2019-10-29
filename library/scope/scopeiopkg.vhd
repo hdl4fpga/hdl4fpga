@@ -582,11 +582,9 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	constant hz_tags : tag_vector := div (
-		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => tag_vector'(
-			text(
-				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+	constant hz_children : tag_vector := (														-- Xilinx's mess
+			text(                                                                               -- 
+				style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
 				id      => "hz.offset"),
 			text(
 				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
@@ -602,13 +600,15 @@ package scopeiopkg is
 				id      => "hz.mag"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "s")));
+				content => "s"));
 
-	constant tgr_tags : tag_vector := div (
-		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => tag_vector'(
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+	constant hz_tags : tag_vector := div (														-- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),                   -- 
+		children => hz_children);                                                               -- Workaround
+
+	constant tgr_children : tag_vector := (														-- Xilinx's mess
+			text(                                                                               -- 
+				style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
 				id      => "tgr.freeze"),
 			text(
 				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
@@ -630,35 +630,40 @@ package scopeiopkg is
 				id      => "tgr.mag"),
 			text(
 				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "V")));
+				content => "V"));
 
-	constant vt0_tags : tag_vector := div (
-		style    => styles(background_color(0) & alignment(right_alignment)),
-		children => tag_vector'(
-			text(
-				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "vt(" & itoa(0) & ").offset"),
-			text(
-				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-				content => ":"),
-			text(
-				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "vt("& itoa(0) & ").div" ),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " "),
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "vt("& itoa(0) & ").mag"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "V")));
+	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => tgr_children);                                                          -- Workaround
+		
+	constant vt0_children : tag_vector := (													-- Xilinx's mess				
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			id      => "vt(" & itoa(0) & ").offset"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			id      => "vt("& itoa(0) & ").div" ),
+		text(
+			style   => styles(background_color(0) & alignment(center_alignment)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+			id      => "vt("& itoa(0) & ").mag"),
+		text(
+			style   => styles(background_color(0) & alignment(center_alignment)),
+			content => "V"));
+
+	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => vt0_children);                                                          -- Workaround
 
 	function analogreadings (
 		constant style    : style_t;
 		constant inputs   : natural)
 		return tag_vector;
-
 end;
 
 package body scopeiopkg is
@@ -1251,7 +1256,8 @@ package body scopeiopkg is
 		constant inputs   : natural)
 		return tag_vector
 	is
-		variable vt_tags : tag_vector(0 to inputs*vt0_tags'length-1);
+		variable vt_tags  : tag_vector(0 to inputs*vt0_tags'length-1);
+		variable children : tag_vector(0 to hz_tags'length+tgr_tags'length+vt0_tags'length-1);
 	begin
 		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
 		for i in 1 to inputs-1 loop
@@ -1277,9 +1283,13 @@ package body scopeiopkg is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V")));
 		end loop;
-		return page(
-			style    => style,
-			children => hz_tags & tgr_tags & vt_tags);
+		children(0 to hz_tags'length-1) := hz_tags; -- & tgr_tags & vt0_tags;
+		children(ht_tags'length to hz_tags'length+tgr_tags'length-1) :=  tgr_tags & vt0_tags;
+		children(0 to hz_tags'length-1) := hz_tags & tgr_tags & vt0_tags;
+		return children;
+--		return page(
+--			style    => style,
+--			children => children);
 	end;
 
 end;
