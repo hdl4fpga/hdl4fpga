@@ -85,8 +85,7 @@ package textboxpkg is
 		return string;
 
 	function render_tags (
-		constant tags : tag_vector;
-		constant size : natural := 1024)
+		constant tags : tag_vector)
 		return tag_vector;
 
 	function validbyid (
@@ -252,6 +251,7 @@ package body textboxpkg is
 	is
 		variable retval : string(1 to arg'length);
 	begin
+		retval := arg;
 		for i in 1 to retval'length/2 loop
 			swap(retval(i), retval(retval'length+1-i));
 		end loop;
@@ -547,13 +547,15 @@ package body textboxpkg is
 		left  := ctnt_ptr;
 		right := left+tags(tag_ptr).style(key_width)-1;
 
-		str   := tags(tag_ptr).content;               -- Thanks Xilinx for
-		width := tags(tag_ptr).style(key_width);      -- messing it up
-		align := tags(tag_ptr).style(key_alignment);  -- workaround
-		content(left to right) := stralign(
-			str   => str,
-			width => width,
-			align => align);
+		if content'length > 1 then
+			str   := tags(tag_ptr).content;               -- Thanks Xilinx for
+			width := tags(tag_ptr).style(key_width);      -- messing it up
+			align := tags(tag_ptr).style(key_alignment);  -- workaround
+			content(left to right) := stralign(
+				str   => str,
+				width => width,
+				align => align);
+		end if;
 		ctnt_ptr := ctnt_ptr + tags(tag_ptr).style(key_width);
 
 --		report log(
@@ -601,12 +603,14 @@ package body textboxpkg is
 			tags(tptr).style(key_width) := ctnt_ptr-cptr;
 		end if;
 
-		width := tags(tptr).style(key_width);      -- Xilinx's mess
-		align := tags(tptr).style(key_alignment);  -- Workaround
-		content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
-			str   => content(cptr to ctnt_ptr-1), 
-			width => width,
-			align => align);
+		if content'length > 1 then
+			width := tags(tptr).style(key_width);      -- Xilinx's mess
+			align := tags(tptr).style(key_alignment);  -- Workaround
+			content(cptr to cptr+tags(tptr).style(key_width)-1) := stralign(
+				str   => content(cptr to ctnt_ptr-1), 
+				width => width,
+				align => align);
+		end if;
 
 		offset_memptr(
 			offset => padding_left (
@@ -667,10 +671,12 @@ package body textboxpkg is
 						align  => align),
 					tags => vtags(tptr to tag_ptr-1));
 
-				content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
-					str   => content(left to right-1), 
-					width => vtags(vtags'left).style(key_width),
-					align => vtags(vtags'left).style(key_alignment));
+				if content'length > 1 then
+					content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
+						str   => content(left to right-1), 
+						width => vtags(vtags'left).style(key_width),
+						align => vtags(vtags'left).style(key_alignment));
+				end if;
 
 			right := left+vtags(vtags'left).style(key_width);
 --			report log(
@@ -710,17 +716,17 @@ package body textboxpkg is
 	end;
 
 	function render_tags (
-		constant tags : tag_vector;
-		constant size : natural := 1024)
+		constant tags : tag_vector)
 		return tag_vector 
 	is
-		variable retval : string(1 to size);
-		variable vtags  : tag_vector(tags'range);
+		variable content : string(1 to 0);
+		variable vtags   : tag_vector(tags'range);
+		 
 	begin
 		
 		vtags := tags;
 		process_page (
-			content => retval,
+			content => content,
 			tags    => vtags);
 		return vtags;
 		
@@ -752,7 +758,7 @@ package body textboxpkg is
 			end if;
 		end loop;
 		assert false
-			report "Invalid tag"
+			report "Invalid tag : " & id
 			severity FAILURE;
 		return tags(0);
 	end;

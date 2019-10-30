@@ -585,6 +585,7 @@ package scopeiopkg is
 	constant hz_children : tag_vector := (														-- Xilinx's mess
 			text(                                                                               -- 
 				style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+				content => "hola",
 				id      => "hz.offset"),
 			text(
 				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
@@ -639,19 +640,19 @@ package scopeiopkg is
 	constant vt0_children : tag_vector := (													-- Xilinx's mess				
 		text(                                                                               -- 
 			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
-			id      => "vt(" & itoa(0) & ").offset"),
+			id      => "vt(0).offset"),
 		text(
 			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
 			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-			id      => "vt("& itoa(0) & ").div" ),
+			id      => "vt(0).div" ),
 		text(
 			style   => styles(background_color(0) & alignment(center_alignment)),
 			content => " "),
 		text(
 			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-			id      => "vt("& itoa(0) & ").mag"),
+			id      => "vt(0).mag"),
 		text(
 			style   => styles(background_color(0) & alignment(center_alignment)),
 			content => "V"));
@@ -1257,7 +1258,7 @@ package body scopeiopkg is
 		return tag_vector
 	is
 		variable vt_tags  : tag_vector(0 to inputs*vt0_tags'length-1);
-		variable children : tag_vector(0 to hz_tags'length+tgr_tags'length+vt0_tags'length-1);
+		variable children : tag_vector(0 to hz_tags'length+tgr_tags'length+inputs*vt0_tags'length-1);
 	begin
 		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
 		for i in 1 to inputs-1 loop
@@ -1283,13 +1284,10 @@ package body scopeiopkg is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V")));
 		end loop;
-		children(0 to hz_tags'length-1) := hz_tags; -- & tgr_tags & vt0_tags;
-		children(ht_tags'length to hz_tags'length+tgr_tags'length-1) :=  tgr_tags & vt0_tags;
-		children(0 to hz_tags'length-1) := hz_tags & tgr_tags & vt0_tags;
-		return children;
---		return page(
---			style    => style,
---			children => children);
+		children := hz_tags & tgr_tags & vt_tags;
+		return page(
+			style    => style,
+			children => children);
 	end;
 
 end;
