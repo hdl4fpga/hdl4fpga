@@ -59,16 +59,15 @@ architecture def of scopeio_textbox is
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
 
-	constant tags : tag_vector := render_tags(
-		analogreadings(
-			style  => styles(width(40)),
-		   	inputs => inputs));
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
 	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
 	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
 	constant cga_cols    : natural    := textbox_width(layout)/font_width;
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+
+	constant tags : tag_vector := render_tags(
+		analogreadings(style => styles(width(cga_cols)), inputs => inputs));
 
 	signal cgaaddr_init : std_logic;
 	signal cga_av           : std_logic;
@@ -98,7 +97,7 @@ architecture def of scopeio_textbox is
 
 	signal val_type      : std_logic;
 
-	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(40)), inputs), 1024));
+	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(analogreadings(styles(width(cga_cols)), inputs), 1024));
 	signal tag_width     : natural;
 	signal tag_memaddr   : std_logic_vector(cga_addr'range);
 	signal vtdiv_memaddr : std_logic_vector(cga_addr'range);
