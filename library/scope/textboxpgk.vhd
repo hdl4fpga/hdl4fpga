@@ -768,6 +768,9 @@ package body textboxpkg is
 			if strcmp(tags(i).id,id) then
 				return tags(i);
 			end if;
+					assert false
+			report "Invalid tag : " & tags(i).id
+			severity warning;
 		end loop;
 		assert false
 			report "Invalid tag : " & id
