@@ -466,7 +466,7 @@ begin
 		font_width  => font_width)
 	port map (
 		cga_clk     => rgtr_clk,
-		cga_we      => '0', --cga_we,
+		cga_we      => cga_we,
 		cga_addr    => std_logic_vector(cga_addr),
 		cga_data    => cga_code,
 

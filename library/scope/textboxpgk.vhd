@@ -539,6 +539,7 @@ package body textboxpkg is
 		variable str     : string(1 to tags(0).content'length); -- Xilinx
 		variable width   : natural;                             -- messes up
 		variable align   : natural;                             -- Workaround
+		variable mesg    : line;
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -567,6 +568,10 @@ package body textboxpkg is
 --				width   => width,
 --				content => content(content'left to right)).all;
 --		end if;
+
+		write (mesg, tags(tag_ptr).mem_ptr);
+		report mesg.all;
+
 	end;
 
 	procedure process_div (
@@ -623,7 +628,6 @@ package body textboxpkg is
 			tags => tags(tptr+1 to tag_ptr));
 
 		ctnt_ptr := tags(tag_ptr).mem_ptr;
-
 --		if content'length > 1 then
 --			report log(
 --				tname   => "div",
@@ -702,6 +706,7 @@ package body textboxpkg is
 		if right <= content'right then
 			content(right) := NUL;
 		end if;
+		tags := vtags;
 	end;
 
 	function render_content (
