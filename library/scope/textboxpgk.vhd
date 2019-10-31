@@ -308,6 +308,32 @@ package body textboxpkg is
 			align=center_alignment, (width-length+1)/2, 0));
 	end;
 
+	function log (
+		constant tname   : string;
+		constant left    : integer;
+		constant right   : integer;
+		constant width   : integer;
+		constant content : string)
+		return line
+	is
+		variable mesg : line;
+	begin
+		write(mesg, '[' & tname & ']');
+		write(mesg, string'(" : left  => "));
+		write(mesg, left);
+		write(mesg, string'(" : right => "));
+		write(mesg, right);
+		write(mesg, string'(" : content => "));
+		write(mesg, character'('"'));
+		if strlen(content)/=0 then
+			write(mesg, content(content'left to content'left+strlen(content)-1));
+		end if;
+		write(mesg, character'('"'));
+		write(mesg, string'(" : width => "));
+		write(mesg, width);
+		return mesg;
+	end;
+
 	function stralign (
 		constant str   : string;
 		constant width : natural;
@@ -315,10 +341,11 @@ package body textboxpkg is
 		return string
 	is
 		constant blank    : character := ' ';
-		constant at_left  : integer := padding_left (str 'length, width, align);
-		constant at_right : integer := padding_right(str 'length, width, align);
+		constant at_left  : integer := padding_left (strlen(str), width, align);
+		constant at_right : integer := padding_right(strlen(str), width, align);
 		variable retval   : string(1 to width);
 	begin
+		
 		for i in 1 to at_left loop
 			retval(i) := blank;
 		end loop;
@@ -458,32 +485,6 @@ package body textboxpkg is
 		return retval;
 	end;
 
-	function log (
-		constant tname   : string;
-		constant left    : natural;
-		constant right   : natural;
-		constant width   : natural;
-		constant content : string)
-		return line
-	is
-		variable mesg : line;
-	begin
-		write(mesg, '[' & tname & ']');
-		write(mesg, string'(" : left  => "));
-		write(mesg, left);
-		write(mesg, string'(" : right => "));
-		write(mesg, right);
-		write(mesg, string'(" : content => "));
-		write(mesg, character'('"'));
-		if strlen(content)/=0 then
-			write(mesg, content(content'left to content'left+strlen(content)-1));
-		end if;
-		write(mesg, character'('"'));
-		write(mesg, string'(" : width => "));
-		write(mesg, width);
-		return mesg;
-	end;
-
 	function div (
 		constant children : tag_vector;
 		constant style    : style_t;
@@ -535,9 +536,9 @@ package body textboxpkg is
 	is
 		variable left    : natural;
 		variable right   : natural;
-		variable str     : string(1 to tags(0).content'length); -- Thanks Xilinx for
-		variable width   : natural;                             -- messing it up
-		variable align   : natural;                             -- workaround
+		variable str     : string(1 to tags(0).content'length); -- Xilinx
+		variable width   : natural;                             -- messes up
+		variable align   : natural;                             -- Workaround
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -548,9 +549,9 @@ package body textboxpkg is
 		right := left+tags(tag_ptr).style(key_width)-1;
 
 		if content'length > 1 then
-			str   := tags(tag_ptr).content;               -- Thanks Xilinx for
-			width := tags(tag_ptr).style(key_width);      -- messing it up
-			align := tags(tag_ptr).style(key_alignment);  -- workaround
+			str   := tags(tag_ptr).content;               -- Xilinx 
+			width := tags(tag_ptr).style(key_width);      -- messes up
+			align := tags(tag_ptr).style(key_alignment);  -- Workaround
 			content(left to right) := stralign(
 				str   => str,
 				width => width,
@@ -558,14 +559,14 @@ package body textboxpkg is
 		end if;
 		ctnt_ptr := ctnt_ptr + tags(tag_ptr).style(key_width);
 
-		if content'length > 1 then
-			report log(
-				tname   => string'("text"),
-				left    => left,
-				right   => right,
-				width   => tags(tag_ptr).style(key_width),
-				content => content(content'left to right)).all;
-		end if;
+--		if content'length > 1 then
+--			report log(
+--				tname   => string'("text"),
+--				left    => left,
+--				right   => right,
+--				width   => width,
+--				content => content(content'left to right)).all;
+--		end if;
 	end;
 
 	procedure process_div (
@@ -576,7 +577,7 @@ package body textboxpkg is
 	is
 		variable cptr    : natural;
 		variable tptr    : natural;
-		variable width   : natural;                   -- Xilinx's mess
+		variable width   : natural;                   -- Xilinx messes
 		variable align   : natural;                   -- Workaround
 	begin
 		cptr    := ctnt_ptr;
@@ -623,14 +624,14 @@ package body textboxpkg is
 
 		ctnt_ptr := tags(tag_ptr).mem_ptr;
 
-		if content'length > 1 then
-			report log(
-				tname   => "div",
-				left    => cptr,
-				right   => cptr+tags(tptr).style(key_width)-1,
-				width   => tags(tptr).style(key_width),
-				content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
-		end if;
+--		if content'length > 1 then
+--			report log(
+--				tname   => "div",
+--				left    => cptr,
+--				right   => cptr+tags(tptr).style(key_width)-1,
+--				width   => tags(tptr).style(key_width),
+--				content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
+--		end if;
 
 	end;
 
@@ -683,14 +684,14 @@ package body textboxpkg is
 				end if;
 
 			right := left+vtags(vtags'left).style(key_width);
-			if content'length > 1 then
-				report log(
-					tname   => string'("page"),
-					left    => left,
-					right   => right,
-					width   => vtags(vtags'left).style(key_width),
-					content => content(left to right-1)).all;
-			end if;
+--			if content'length > 1 then
+--				report log(
+--					tname   => string'("page"),
+--					left    => left,
+--					right   => right,
+--					width   => vtags(vtags'left).style(key_width),
+--					content => content(left to right-1)).all;
+--			end if;
 
 			when others =>
 			end case;

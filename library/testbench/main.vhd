@@ -54,7 +54,6 @@ begin
 			textio.write(mesg, character'('"'));
 			textio.writeline(textio.output, mesg);
 		end loop;
-		std_logic_textio.write(mesg, validbyid(xx, "vt(20).offset"));
 		textio.writeline(textio.output, mesg);
 		wait;
 	end process;
