@@ -558,12 +558,14 @@ package body textboxpkg is
 		end if;
 		ctnt_ptr := ctnt_ptr + tags(tag_ptr).style(key_width);
 
---		report log(
---			tname   => string'("text"),
---			left    => left,
---			right   => right,
---			width   => tags(tag_ptr).style(key_width),
---			content => content(content'left to right)).all;
+		if content'length > 1 then
+			report log(
+				tname   => string'("text"),
+				left    => left,
+				right   => right,
+				width   => tags(tag_ptr).style(key_width),
+				content => content(content'left to right)).all;
+		end if;
 	end;
 
 	procedure process_div (
@@ -621,12 +623,14 @@ package body textboxpkg is
 
 		ctnt_ptr := tags(tag_ptr).mem_ptr;
 
---		report log(
---			tname   => "div",
---			left    => cptr,
---			right   => cptr+tags(tptr).style(key_width)-1,
---			width   => tags(tptr).style(key_width),
---			content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
+		if content'length > 1 then
+			report log(
+				tname   => "div",
+				left    => cptr,
+				right   => cptr+tags(tptr).style(key_width)-1,
+				width   => tags(tptr).style(key_width),
+				content => content(cptr to cptr+tags(tptr).style(key_width)-1)).all;
+		end if;
 
 	end;
 
@@ -679,12 +683,14 @@ package body textboxpkg is
 				end if;
 
 			right := left+vtags(vtags'left).style(key_width);
---			report log(
---				tname   => string'("page"),
---				left    => left,
---				right   => right,
---				width   => vtags(vtags'left).style(key_width),
---				content => content(left to right-1)).all;
+			if content'length > 1 then
+				report log(
+					tname   => string'("page"),
+					left    => left,
+					right   => right,
+					width   => vtags(vtags'left).style(key_width),
+					content => content(left to right-1)).all;
+			end if;
 
 			when others =>
 			end case;

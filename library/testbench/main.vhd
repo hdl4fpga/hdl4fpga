@@ -40,7 +40,7 @@ end;
 
 architecture def of main is
 
-	constant xx : tag_vector := render_tags(analogreadings(styles(width(30)), 2));
+--	constant xx : tag_vector := render_tags(analogreadings(styles(width(30)), 2));
 	constant pp : string := render_content(analogreadings(styles(width(30) & alignment(right_alignment)), 2), 1024);
 
 begin
