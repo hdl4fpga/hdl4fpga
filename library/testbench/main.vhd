@@ -41,16 +41,17 @@ end;
 architecture def of main is
 
 --	constant xx : tag_vector := render_tags(analogreadings(styles(width(30)), 2));
-	constant pp : string := render_content(analogreadings(styles(width(30) & alignment(right_alignment)), 2), 1024);
+	constant w : natural := 32;
+	constant pp : string := render_content(analogreadings(styles(width(w) & alignment(right_alignment)), 2), 1024);
 
 begin
 	process 
 		variable mesg : textio.line;
 	begin
 
-		for i in 0 to pp'length/30-1 loop
+		for i in 0 to pp'length/w-1 loop
 			textio.write(mesg, character'('"'));
-			textio.write(mesg, pp(i*30+1 to (i+1)*30));
+			textio.write(mesg, pp(i*w+1 to (i+1)*w));
 			textio.write(mesg, character'('"'));
 			textio.writeline(textio.output, mesg);
 		end loop;
