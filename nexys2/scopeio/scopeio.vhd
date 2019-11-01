@@ -134,7 +134,7 @@ architecture beh of nexys2 is
 		mode480p    => display_param'(layout => 8, dcm_mul => 3, dcm_div => 5),
 		mode600px16 => display_param'(layout => 6, dcm_mul => 2, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 begin
 
