@@ -49,6 +49,12 @@ begin
 		variable mesg : textio.line;
 	begin
 
+		write(mesg, string'("hz.offset : "));
+		write(mesg, memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length));
+		write(mesg, string'("hz.div : "));
+		write(mesg, memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length)):
+		write(mesg, string'("hz.div : "));
+		write(mesg, memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length)):
 --		for i in 0 to pp'length/w-1 loop
 --			textio.write(mesg, character'('"'));
 --			textio.write(mesg, pp(i*w+1 to (i+1)*w));
