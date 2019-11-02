@@ -21,7 +21,7 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
+use std.textio;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -31,6 +31,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.textboxpkg.all;
 
 package scopeiopkg is
 
@@ -50,20 +51,6 @@ package scopeiopkg is
 	constant label_trigger  : i18n_labelids := 2;
 	constant label_vtdiv    : i18n_labelids := 3;
 	constant label_vtoffset : i18n_labelids := 4;
-
-	constant i18n_text : string := 
-		"Division"    & NUL & 
-		"Hz offset"  & NUL & 
-		"Trigger"    & NUL & 
-		"Division"   & NUL & 
-		"Vt offset"  & NUL & 
-		NUL &
-		"Escala hz"  & NUL &
-		"Retardo"    & NUL &
-		"Disparo"    & NUL & 
-		"Escala vt"  & NUL & 
-		"Nivel vt"   & NUL & 
-		NUL;
 
 	constant max_inputs    : natural := 64;
 	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
@@ -585,78 +572,6 @@ package scopeiopkg is
 		constant scale : std_logic_vector)
 		return unsigned;
 		
-	function i18n_label (
-		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labelids)
-		return string;
-
-	type alignment is (
-		left_alignment, 
-		right_alignment, 
-		center_alignment);
-
-	function text_align (
-		constant data  : string;
-		constant width : natural;
-		constant align : alignment := left_alignment;
-		constant value : character := ' ')
-		return string;
-
-	type style_t is record
-		width : natural;
-		align : alignment;
-		-- private
-		addr  : natural;
-	end record;
-
-	constant no_style : style_t := (width => 0, align => left_alignment, addr => 0);
-	type style_vector is array (natural range <>) of style_t;
-
-	type tag_id is (tagid_end, tagid_row, tagid_label, tagid_var, tagid_str);
-	type tag is record 
-		tagid   : tag_id;
-		style   : style_t;
-		ref     : natural;
-	end record;
-	type tag_vector is array (natural range <>) of tag;
-
-	function text_string(
-		constant ref    : natural;
-		constant domain : string)
-		return string;
-
-	function text_content (
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural;
-		constant lang        : i18n_langs)
-		return std_logic_vector;
-
-	function text_addr (
-		constant ref_id      : std_logic_vector;
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return std_logic_vector;
-
-	function text_style (
-		constant ref_id      : std_logic_vector;
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return style_t;
-
-	function text_setaddr (
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return tag_vector;
-
-	function text_analoginputs (
-		constant inputs      : natural;
-		constant tag_layout  : tag_vector)
-		return tag_vector;
-
 	constant var_hzdivid      : natural := 0;
 	constant var_hzunitid     : natural := 1;
 	constant var_hzoffsetid   : natural := 2;
@@ -667,36 +582,97 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	constant analogtime_rowstyle   : style_t := (width =>  0, align => right_alignment, addr => 0);
-	constant analogtime_fieldstyle : style_t := (width => 11, align => right_alignment, addr => 0);
-	constant analogtime_unitstyle  : style_t := (width =>  1, align => right_alignment, addr => 0);
-	constant analogtime_divstyle   : style_t := (width =>  8, align => right_alignment, addr => 0);
+	constant hz_children : tag_vector := (														-- Xilinx's mess
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			content => "NaN",
+			id      => "hz.offset"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "hz.div"),
+		text(
+			style   => styles(background_color(0)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
+			id      => "hz.mag"),
+		text(
+			style   => styles(background_color(0)),
+			content => "s"));
 
-	constant analogtime_string : string :=
-		" " & NUL &   -- space
-		":" & NUL &   -- Column border
-		"s" & NUL &   -- Time Unit 
-		"V" & NUL;    -- Voltage Unit 
+	constant hz_tags : tag_vector := div (														-- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),                   -- 
+		children => hz_children);                                                               -- Workaround
 
-	constant analogtime_layout : tag_vector := (
-		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_var,   style => analogtime_fieldstyle,    ref => var_hzoffsetid),
-			tag'(tagid_str,   style => (3, center_alignment, 0), ref => 1),
-			tag'(tagid_var,   style => (6, right_alignment, 0),  ref => var_hzdivid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 0),
-			tag'(tagid_var,   style => analogtime_unitstyle,     ref => var_hzunitid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),   ref => 2),
-		tag'(tagid_end, style => no_style, ref => 0),
-		tag'(tagid_row, style => analogtime_rowstyle, ref => 0),
-			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgrfreezeid),
-			tag'(tagid_var,   style => (1, left_alignment, 0),  ref => var_tgredgeid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
-			tag'(tagid_var,   style => (6, right_alignment, 0), ref => var_tgrlevelid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 0),
-			tag'(tagid_var,   style => analogtime_unitstyle,    ref => var_tgrunitid),
-			tag'(tagid_str,   style => (1, left_alignment, 0),  ref => 3),
-		tag'(tagid_end, style => no_style, ref => 0));
+	constant tgr_children : tag_vector := (														-- Xilinx's mess
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
+			id      => "tgr.freeze"),
+		text(
+			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+			id      => "tgr.edge"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "tgr.level"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "tgr.div"),
+		text(
+			style   => styles(background_color(0)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
+			id      => "tgr.mag"),
+		text(
+			style   => styles(background_color(0)),
+			content => "V"));
 
+	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => tgr_children);                                                          -- Workaround
+		
+	constant vt0_children : tag_vector := (													-- Xilinx's mess				
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			content => "NaN",
+			id      => "vt(0).offset"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "vt(0).div" ),
+		text(
+			style   => styles(background_color(0)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
+			id      => "vt(0).mag"),
+		text(
+			style   => styles(background_color(0)),
+			content => "V"));
+
+	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => vt0_children);                                                          -- Workaround
+
+	function analogreadings (
+		constant style    : style_t;
+		constant inputs   : natural)
+		return tag_vector;
 end;
 
 package body scopeiopkg is
@@ -1284,338 +1260,47 @@ package body scopeiopkg is
 		return rval;
 	end;
 		
-	function i18n_label (
-		constant i18n_lang  : i18n_langs;
-		constant i18n_label : i18n_labelids)
-		return string is
-		variable lbel : i18n_labelids;
-		variable pos0 : natural;
-		variable pos1 : natural;
-		variable n    : natural;
+	function analogreadings (
+		constant style    : style_t;
+		constant inputs   : natural)
+		return tag_vector
+	is
+		variable vt_tags  : tag_vector(0 to inputs*vt0_tags'length-1);
+		variable children : tag_vector(0 to hz_tags'length+tgr_tags'length+inputs*vt0_tags'length-1);
 	begin
-		n := 1;
-		lang_l : for lang in i18n_langs loop
-			lbel := 0;
-			while i18n_text(n) /= NUL loop
-				pos0 := n;
-				while i18n_text(n) /= NUL loop
-					n := n + 1;
-				end loop;
-				pos1 := n - 1;
-				n    := n + 1;
-				exit lang_l when lbel = i18n_label and lang = i18n_lang;
-				if i18n_text(n) /= NUL then
-					lbel := lbel + 1;
-				end if;
-			end loop;
-			n := n + 1;
+		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
+		for i in 1 to inputs-1 loop
+			vt_tags(i*vt0_tags'length to (i+1)*vt0_tags'length-1) := div (
+				style    => styles(background_color(0) & alignment(right_alignment)),
+				children => tag_vector'(
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "NaN",
+						id      => "vt(" & itoa(i) & ").offset"),
+					text(
+						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+						content => ":"),
+					text(
+						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "NaN",
+						id      => "vt("& itoa(i) & ").div" ),
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => " "),
+					text(
+						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						content => "*",
+						id      => "vt("& itoa(i) & ").mag"),
+					text(
+						style   => styles(background_color(0) & alignment(center_alignment)),
+						content => "V")));
 		end loop;
-		return i18n_text(pos0 to pos1);
+		children(0 to hz_tags'length-1) := hz_tags; -- & tgr_tags & vt_tags;
+		children(hz_tags'length to hz_tags'length+tgr_tags'length-1) := tgr_tags; -- & vt_tags;
+		children(hz_tags'length+tgr_tags'length to children'right) := vt_tags;
+		return page(
+			style    => style,
+			children => children);
 	end;
 
-	function text_atleft (
-		constant length : natural;
-		constant width  : natural;
-		constant align  : alignment := left_alignment)
-		return integer is
-	begin
-		return setif(
-			align=right_alignment,   width-length, setif(
-			align=center_alignment, (width-length)/2, 0));
-	end;
-
-	function text_atright (
-		constant length : natural;
-		constant width  : natural;
-		constant align  : alignment := left_alignment)
-		return integer is
-	begin
-		return setif(
-			align=left_alignment,    width-length, setif(
-			align=center_alignment, (width-length+1)/2, 0));
-	end;
-
-	function text_align (
-		constant data  : string;
-		constant width  : natural;
-		constant align : alignment := left_alignment;
-		constant value : character := ' ')
-		return string is
-		variable retval   : string(1 to width);
-		constant at_left  : integer := text_atleft(data'length, width, align);
-		constant at_right : integer := text_atright(data'length, width, align);
-	begin
-		assert data'length <= width
-			report "string shorter than width"
-			severity failure;
-
-		for i in 1 to at_left loop
-			retval(i) := value;
-		end loop;
-
-		for i in at_left+1 to width-at_right loop
-			exit when i > width;
-			if i > 0 then
-				retval(i) := data(i-at_left+(data'left-1));
-			end if;
-		end loop;
-
-		for i in width-at_right+1 to width loop
-			retval(i) := value;
-		end loop;
-
-		return retval;
-	end;
-
-	function text_string(
-		constant ref    : natural;
-		constant domain : string)
-		return string is
-		variable k : natural;
-		variable text_left  : positive;
-		variable text_right : positive;
-	begin
-		text_left  := domain'left;
-		k := 0;
-		for i in domain'range loop
-			if domain(i)=NUL then
-				if ref < k then
-					exit;
-				end if;
-				if k /= 0 then
-					text_left := text_right + 2;
-				end if;
-				text_right := i - 1;
-				k := k + 1;
-			end if;
-		end loop;
-		return domain(text_left to text_right);
-	end;
-
-	function text_label (
-		constant text_tag : tag;
-		constant lang     : i18n_langs)
-		return string is
-	begin
-		return text_align(
-			i18n_label(lang, text_tag.ref), 
-			text_tag.style.width, 
-			text_tag.style.align);
-	end;
-
-	procedure tagrow_setaddr (
-		variable tag_index   : inout natural;
-		variable tag_layout  : inout tag_vector) is
-		variable text_length : positive;
-		variable text_addr   : natural;
-		variable text_left   : positive;
-		variable at_left     : natural;
-		variable index       : natural;
-	begin
-		index     := tag_index;
-		text_addr := tag_layout(tag_index).style.addr;
-		text_left := 1;
-		tag_index := tag_index + 1;
-		while tag_index < tag_layout'length loop
-			text_length := text_left+tag_layout(tag_index).style.width-1;
-			tag_layout(tag_index).style.addr := text_addr;
-			text_addr   := text_addr  + tag_layout(tag_index).style.width;
-			case tag_layout(tag_index).tagid is
-			when tagid_end  =>
-				exit;
-			when others =>
-			end case;
-			text_left := text_length + 1;
-			tag_index := tag_index   + 1;
-		end loop;
-		at_left := text_atleft(text_length, tag_layout(index).style.width, tag_layout(index).style.align);
-		while index < tag_layout'length loop
-			tag_layout(index).style.addr := tag_layout(index).style.addr + at_left;
-			case tag_layout(index).tagid is
-			when tagid_end  =>
-				exit;
-			when others =>
-			end case;
-			index := index + 1;
-		end loop;
-	end;
-
-	procedure tagrow_content (
-		variable tag_index   : inout natural;
-		variable text_line   : inout string;
-		constant tag_layout  : tag_vector;
-		constant lang        : i18n_langs) is
-		constant row_tag     : tag     := tag_layout(tag_layout'left);
-		constant text_width  : natural := row_tag.style.width;
-		constant text_alignment : alignment := row_tag.style.align;
-		variable text_left   : positive;
-		variable text_right  : positive;
-	begin
-		text_left := 1;
-		tag_index := tag_index + 1;
-		while tag_index < tag_layout'length loop
-			text_right := text_left+tag_layout(tag_index).style.width-1;
-			case tag_layout(tag_index).tagid is
-			when tagid_end  =>
-				for i in text_left to text_right loop
-					text_line(i) := '#';
-				end loop;
-				exit;
-			when tagid_label =>
-				text_line(text_left to text_right) := text_label(tag_layout(tag_index), lang);
-			when tagid_str =>
-				for i in text_left to text_right loop
-					text_line(i) := '%';
-				end loop;
-				text_line(text_left to text_right) := text_align(
-					text_string(tag_layout(tag_index).ref, analogtime_string),
-					tag_layout(tag_index).style.width, 
-					tag_layout(tag_index).style.align);
-			when tagid_var =>
-				for i in text_left to text_right loop
-					text_line(i) := '*';
-				end loop;
-			when tagid_row =>
-				for i in text_left to text_right loop
-					text_line(i) := '@';
-				end loop;
-			end case;
-			text_left := text_right + 1;
-			tag_index := tag_index  + 1;
-		end loop;
-
-		text_line := text_align(
-			text_line(1 to text_right),
-			text_width, 
-			text_alignment);
-	end;
-
-	function text_content (
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural;
-		constant lang        : i18n_langs)
-		return std_logic_vector is
-		type line_vector is array (natural range <>) of string(1 to text_width);
-		variable text_data   : line_vector(1 to text_height);
-		variable lineno      : natural;
-		variable tag_index   : natural;
-		variable layout      : tag_vector(tag_layout'range) := tag_layout;
-		variable retval      : unsigned(0 to ascii'length*text_width*text_height-1);
-	begin
-		lineno    := 1;
-		tag_index := 0;
-		while tag_index < layout'length loop
-			case layout(tag_index).tagid is
-			when tagid_row =>
-				if layout(tag_index).style.width = 0 then
-					layout(tag_index).style.width := text_width;
-				end if;
-				tagrow_content(tag_index, text_data(lineno), layout, lang);
-			when others =>
-				text_data(lineno) := (others => '&');
-			end case;
-			lineno    := lineno    + 1;
-			tag_index := tag_index + 1;
-		end loop;
-		retval := (others => '0');
-		for i in text_data'range loop
-			retval(0 to text_width*ascii'length-1) := unsigned(to_ascii(text_data(i)));
-			retval := retval rol (text_width*ascii'length);
-		end loop;
-		return std_logic_vector(retval);
-	end;
-		
-	function text_analoginputs (
-		constant inputs      : natural;
-		constant tag_layout  : tag_vector)
-		return tag_vector is
-		variable layout      : tag_vector(0 to tag_layout'length+8*inputs-1);
-	begin
-		layout(0 to tag_layout'length-1) := tag_layout;
-		for i in 0 to inputs-1 loop
-			layout(tag_layout'length+8*i+0) := tag'(tagid_row, style => analogtime_rowstyle,     ref => 0);
-				layout(tag_layout'length+8*i+1) := tag'(tagid_var, style => analogtime_fieldstyle,     ref => 3*i+var_vtoffsetid);
-				layout(tag_layout'length+8*i+2) := tag'(tagid_str, style => (3, center_alignment, 0),  ref => 1);
-				layout(tag_layout'length+8*i+3) := tag'(tagid_var, style => (6, right_alignment,   0), ref => 3*i+var_vtoffsetid+1);
-				layout(tag_layout'length+8*i+4) := tag'(tagid_str, style => (1, left_alignment,   0),  ref => 0);
-				layout(tag_layout'length+8*i+5) := tag'(tagid_var, style => (1, right_alignment,   0), ref => 3*i+var_vtoffsetid+2);
-				layout(tag_layout'length+8*i+6) := tag'(tagid_str, style => (1, left_alignment,   0), ref => 3);
-			layout(tag_layout'length+8*i+7) := tag'(tagid_end, style => no_style,               ref => 0);
-		end loop;
-		return layout;
-	end;
-
-	function text_setaddr (
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return tag_vector is
-		variable retval      : tag_vector(tag_layout'range);
-		variable tag_addr    : natural;
-		variable tag_index   : natural;
-		variable layout      : tag_vector(tag_layout'range) := tag_layout;
-	begin
-		tag_addr  := 0;
-		tag_index := tag_layout'left;
-		while tag_index < layout'length loop
-			layout(tag_index).style.addr := tag_addr;
-			case layout(tag_index).tagid is
-			when tagid_row =>
-				if layout(tag_index).style.width = 0 then
-					layout(tag_index).style.width := text_width;
-				end if;
-				tag_addr := tag_addr  + layout(tag_index).style.width;
-				tagrow_setaddr(tag_index, layout);
-			when others =>
-			end case;
-			tag_index := tag_index + 1;
-		end loop;
-		return layout;
-	end;
-
-	function text_addr (
-		constant ref_id      : std_logic_vector;
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return std_logic_vector is
-		constant text_size : natural := text_width*text_height;
-		constant addr_size : natural := unsigned_num_bits(text_size-1);
-		variable layout    : tag_vector(tag_layout'range);
-	begin
-		layout := text_setaddr (tag_layout, text_width, text_height);
-		for i in layout'range loop
-			case layout(i).tagid is
-			when tagid_var =>
-				if unsigned(ref_id)=to_unsigned(layout(i).ref, ref_id'length) then
-					return '1' & std_logic_vector(to_unsigned(layout(i).style.addr, addr_size));
-				end if;
-			when others =>
-			end case;
-		end loop;
-		return '0' & (0 to addr_size-1 => '0');
-	end;
-		
-	function text_style (
-		constant ref_id      : std_logic_vector;
-		constant tag_layout  : tag_vector;
-		constant text_width  : natural;
-		constant text_height : natural)
-		return style_t is
-		variable layout    : tag_vector(tag_layout'range);
-	begin
-		layout := text_setaddr (tag_layout, text_width, text_height);
-		for i in layout'range loop
-			case layout(i).tagid is
-			when tagid_var =>
-				if unsigned(ref_id)=to_unsigned(layout(i).ref, ref_id'length) then
-					return layout(i).style;
-				end if;
-			when others =>
-			end case;
-		end loop;
-		return no_style;
-	end;
-		
 end;

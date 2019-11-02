@@ -21,15 +21,16 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
+use std.textio;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
+use ieee.std_logic_textio;
 use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity main is
@@ -39,18 +40,30 @@ end;
 
 architecture def of main is
 
+	constant w : natural := 32;
+	constant xx : tag_vector := render_tags(analogreadings(styles(width(w) & alignment(right_alignment)), 2));
+--	constant pp : string     := render_content(analogreadings(styles(width(w) & alignment(right_alignment)), 2), 1024);
+
 begin
-	process
-		variable mesg : line;
-		constant pp  : natural_vector := sgmnt_yedges(displaylayout_table(video_description(0).layout_id));
+	process 
+		variable mesg : textio.line;
 	begin
 
-		for i in pp'range loop
-			write (mesg, pp(i));
-			writeline(output, mesg);
-		end loop;
+		write(mesg, string'("hz.offset : "));
+		write(mesg, memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length));
+		write(mesg, string'("hz.div : "));
+		write(mesg, memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length)):
+		write(mesg, string'("hz.div : "));
+		write(mesg, memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length)):
+--		for i in 0 to pp'length/w-1 loop
+--			textio.write(mesg, character'('"'));
+--			textio.write(mesg, pp(i*w+1 to (i+1)*w));
+--			textio.write(mesg, character'('"'));
+--			textio.writeline(textio.output, mesg);
+--		end loop;
+--		textio.writeline(textio.output, mesg);
 		wait;
-
 	end process;
+
 
 end;

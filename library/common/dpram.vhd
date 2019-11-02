@@ -52,10 +52,16 @@ architecture def of dpram is
 		constant bitrom : std_logic_vector;
 		constant size   : natural)
 		return   word_vector is
+		alias bitrom0   : std_logic_vector(0 to bitrom'length-1) is bitrom;
 		variable aux    : std_logic_vector(0 to size*word'length-1);
 		variable retval : word_vector(0 to size-1);
 	begin
-		aux(0 to bitrom'length-1) := bitrom;
+		if aux'length >= bitrom'length then
+			aux(0 to bitrom'length-1) := bitrom0;
+		else
+			aux := bitrom0(0 to aux'length-1);
+		end if;
+
 		for i in retval'range loop
 			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
 		end loop;

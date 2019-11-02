@@ -155,6 +155,11 @@ package std is
 		constant arg2 : std_logic_vector)
 		return std_logic_vector;
 
+	function wirebus (
+		constant arg1 : natural_vector;
+		constant arg2 : std_logic_vector)
+		return natural;
+
 	function setif (
 		constant arg  : boolean;
 		constant argt : std_logic := '1';
@@ -169,9 +174,9 @@ package std is
 
 	function setif (
 		constant arg  : boolean;
-		constant argt : natural := 1;
-		constant argf : natural := 0)
-		return natural;
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer;
 
 	function demux (
 		constant sel  : std_logic_vector;
@@ -292,6 +297,10 @@ package std is
 		constant arg1 : signed; 
 		constant arg2 : signed)
 		return signed;
+
+	procedure swap (
+		variable arg1 : inout character;
+		variable arg2 : inout character);
 
 	procedure swap (
 		variable arg1 : inout std_logic_vector;
@@ -637,6 +646,20 @@ package body std is
 		return retval;
 	end;
 
+	function wirebus (
+		constant arg1 : natural_vector;
+		constant arg2 : std_logic_vector)
+		return natural is
+		variable retval : natural;
+	begin
+		for i in arg2'range loop
+			if arg2(i)='1' then
+				retval := arg1(i);
+			end if;
+		end loop;
+		return retval;
+	end;
+
 	function setif (
 		constant arg  : boolean;
 		constant argt : std_logic := '1';
@@ -664,9 +687,9 @@ package body std is
 
 	function setif (
 		constant arg  : boolean;
-		constant argt : natural := 1;
-		constant argf : natural := 0)
-		return natural is
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer is
 	begin
 		if arg then
 			return argt;
@@ -1161,6 +1184,17 @@ package body std is
 		else
 			return arg2;
 		end if;
+	end;
+
+	procedure swap (
+		variable arg1 : inout character;
+		variable arg2 : inout character)
+	is
+		variable aux : character;
+	begin
+		aux  := arg1;
+		arg1 := arg2;
+		arg2 := aux;
 	end;
 
 	procedure swap (
