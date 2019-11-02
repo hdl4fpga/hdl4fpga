@@ -377,7 +377,7 @@ package scopeiopkg is
 		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid),
 		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
 		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
-	   10 => (mode_id => pclk38_25m800x600Cat60,    layout_id => lcd800x480ongrid));
+	   10 => (mode_id => pclk40_00m800x600Rat60,    layout_id => lcd800x480ongrid));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
