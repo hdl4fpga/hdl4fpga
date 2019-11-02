@@ -583,55 +583,60 @@ package scopeiopkg is
 	constant var_vtoffsetid   : natural := 8;
 
 	constant hz_children : tag_vector := (														-- Xilinx's mess
-			text(                                                                               -- 
-				style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
-				content => "hola",
-				id      => "hz.offset"),
-			text(
-				style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
-				content => ":"),
-			text(
-				style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
-				id      => "hz.div"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " "),
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "hz.mag"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "s"));
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			content => "NaN",
+			id      => "hz.offset"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "hz.div"),
+		text(
+			style   => styles(background_color(0)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
+			id      => "hz.mag"),
+		text(
+			style   => styles(background_color(0)),
+			content => "s"));
 
 	constant hz_tags : tag_vector := div (														-- Xilinx's mess
 		style    => styles(background_color(0) & alignment(right_alignment)),                   -- 
 		children => hz_children);                                                               -- Workaround
 
 	constant tgr_children : tag_vector := (														-- Xilinx's mess
-			text(                                                                               -- 
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
-				id      => "tgr.freeze"),
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.edge"),
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.level"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " "),
-			text(
-				style   => styles(background_color(0) & width(2) & alignment(right_alignment)),
-				id      => "tgr.div"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => " "),
-			text(
-				style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
-				id      => "tgr.mag"),
-			text(
-				style   => styles(background_color(0) & alignment(center_alignment)),
-				content => "V"));
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
+			id      => "tgr.freeze"),
+		text(
+			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+			id      => "tgr.edge"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "tgr.level"),
+		text(
+			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			content => ":"),
+		text(
+			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
+			id      => "tgr.div"),
+		text(
+			style   => styles(background_color(0)),
+			content => " "),
+		text(
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
+			id      => "tgr.mag"),
+		text(
+			style   => styles(background_color(0)),
+			content => "V"));
 
 	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's mess
 		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
@@ -640,21 +645,24 @@ package scopeiopkg is
 	constant vt0_children : tag_vector := (													-- Xilinx's mess				
 		text(                                                                               -- 
 			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			content => "NaN",
 			id      => "vt(0).offset"),
 		text(
 			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
 			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			content => "NaN",
 			id      => "vt(0).div" ),
 		text(
-			style   => styles(background_color(0) & alignment(center_alignment)),
+			style   => styles(background_color(0)),
 			content => " "),
 		text(
-			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+			style   => styles(background_color(0) & width(1)),
+			content => "*",
 			id      => "vt(0).mag"),
 		text(
-			style   => styles(background_color(0) & alignment(center_alignment)),
+			style   => styles(background_color(0)),
 			content => "V"));
 
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
@@ -1267,18 +1275,21 @@ package body scopeiopkg is
 				children => tag_vector'(
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "NaN",
 						id      => "vt(" & itoa(i) & ").offset"),
 					text(
 						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
 						content => ":"),
 					text(
 						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						content => "NaN",
 						id      => "vt("& itoa(i) & ").div" ),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => " "),
 					text(
 						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						content => "*",
 						id      => "vt("& itoa(i) & ").mag"),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
