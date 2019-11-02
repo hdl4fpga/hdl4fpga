@@ -408,9 +408,23 @@ begin
 			cgachr_frm);
 
 		tag_memaddr <= wirebus (
-			bcd_memaddr &
-			chr_memaddr,
-			(0 => not bcd_type));
+			memaddr(tagbyid(tags, "hz.offset"),  tag_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.div"   ),  tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.level"),  tag_memaddr'length) &
+			vtoffset_memaddr                                         &
+			vtdiv_memaddr                                            &
+
+			memaddr(tagbyid(tags, "hz.mag"),     tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.edge"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.freeze"), tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.mag"),    tag_memaddr'length) &
+			vtmag_memaddr,
+			cga_frm);
+
+--		tag_memaddr <= word2byte (
+--			bcd_memaddr &
+--			chr_memaddr,
+--			not bcd_type);
 
 	end block;
 
