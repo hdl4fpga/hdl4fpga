@@ -45,6 +45,8 @@ architecture beh of ulx3s is
         constant C_view_adc     : boolean := true;  -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
+        constant C_view_usb_decoder: boolean := false;
+        constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
         constant C_view_usbphy  : boolean := false; -- USB PHY debug
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
@@ -646,6 +648,71 @@ begin
 	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
 	clk_input <= vga_clk;
 	end generate;
+
+	G_view_usb_decoder: if C_view_usb_decoder generate
+	B_view_usb_decoder: block
+	  signal S_decoder_data: std_logic_vector(7 downto 0);
+	  signal S_decoder_rxactive, S_decoder_rxvalid: std_logic;
+	  signal S_usb_dif, S_usb_dp, S_usb_dn: std_logic;
+	begin
+
+	usb_fpga_pu_dp <= 'Z';
+	usb_fpga_pu_dn <= 'Z';
+
+	G_decoder_usb_low_speed: if C_decoder_usb_speed = '0' generate
+	  clk_usb <= clk_pll(3); -- 6 MHz
+	  S_usb_dif <= not usb_fpga_dp;
+	  S_usb_dp <= usb_fpga_bd_dn;
+	  S_usb_dn <= usb_fpga_bd_dp;
+        end generate;
+
+	G_decoder_usb_full_speed: if C_decoder_usb_speed = '1' generate
+        E_clk_decoder_fs: entity work.clk_200_48_24_12_6
+        port map
+        (
+          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
+          CLKOP       =>  clk_usb, -- clk_48MHz,
+          CLKOS       =>  open,    -- clk_24MHz,
+          CLKOS2      =>  open,    -- clk_12MHz,
+          CLKOS3      =>  open     -- clk_6MHz
+        );
+	  S_usb_dif <= usb_fpga_dp;
+	  S_usb_dp <= usb_fpga_bd_dp;
+	  S_usb_dn <= usb_fpga_bd_dn;
+        end generate;
+
+        G_core_phy: if true generate
+	  E_soft_core_phy_emard: entity hdl4fpga.usb_rx_phy_emard
+--	  generic map
+--	  (
+--	    C_usb_speed      => C_mouse_usb_speed
+--	  )
+	  port map
+	  (
+	    clk              => clk_usb,
+	    reset            => '0', -- 1:reset active
+	    usb_dif          => S_usb_dif,
+	    usb_dp           => S_usb_dp, -- swap P/N for USB low speed
+            usb_dn           => S_usb_dn, -- core is written by default for USB full speed
+--            linestate        => S_up_linestate_emard,
+--            rawdata          => S_rawdata_emard,
+--            clk_recovered_edge => S_ce_emard,
+            rx_en            => '1',
+            rx_active        => S_decoder_rxactive,
+            valid            => S_decoder_rxvalid,
+            data             => S_decoder_data
+          );
+        end generate;
+
+	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
+	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
+	trace_green(C_view_binary_gain+3) <= S_decoder_rxactive;
+	trace_violet(C_view_binary_gain+2) <= S_decoder_rxvalid;
+	trace_white(S_decoder_data'range) <= S_decoder_data;
+	clk_input <= clk_usb;
+	S_input_ena <= '1';
+	end block; -- view usb decoder
+	end generate; -- view usb decoder
 
 	G_view_usbphy: if C_view_usbphy generate
 	S_input_ena <= '1';
