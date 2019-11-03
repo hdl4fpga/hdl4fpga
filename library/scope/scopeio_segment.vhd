@@ -44,7 +44,6 @@ entity scopeio_segment is
 		gain_dv       : in  std_logic;
 		gain_ids      : in  std_logic_vector;
 
-		trigger_freeze : in  std_logic;
 		trigger_level : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
@@ -93,8 +92,6 @@ architecture def of scopeio_segment is
 begin
 
 	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-	generic map (
-		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
@@ -106,17 +103,8 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
-	process(rgtr_clk)
-	begin
-		if rising_edge(rgtr_clk) then
-			if vt_ena='1' then
-				vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
-				if trigger_freeze='0' then
-					vt_scale <= word2byte(gain_ids, vt_chanid, vt_scale'length);
-				end if;
-			end if;
-		end if;
-	end process;
+	vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+	vt_scale <= word2byte(gain_ids, vt_chanid, vt_scale'length);
 
 	grid_b : block
 		constant offset_latency : natural := 1;

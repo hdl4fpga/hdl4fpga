@@ -385,7 +385,6 @@ begin
 
 		sample_dv     => vdv,
 		sample_data   => vdata,
-		trigger_freeze => trigger_freeze,
 		trigger_level => trigger_level,
 		grid_dot      => grid_dot,
 		hz_dot        => hz_dot,

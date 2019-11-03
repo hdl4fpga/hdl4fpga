@@ -263,17 +263,16 @@ package body textboxpkg is
 		return string 
 	is
 		constant asciitab : string(1 to 10) := "0123456789";
-		variable rval   : string(1 to 256);
+		variable retval   : string(1 to 256) := (others => NUL);
 		variable value    : natural;
 	begin
-		value  := abs(arg);
-		rval := (others => NUL);
-		for i in rval'range loop
-			rval(i) := asciitab((value mod 10)+1);
+		value := abs(arg);
+		for i in retval'range loop
+			retval(i) := asciitab((value mod 10)+1);
 			value     := value / 10;
 			exit when value=0;
 		end loop;
-		return strrev(rval(1 to strlen(rval)));
+		return strrev(retval(1 to strlen(retval)));
 	end;
 
 	function btoa (
