@@ -44,6 +44,7 @@ entity scopeio_segment is
 		gain_dv       : in  std_logic;
 		gain_ids      : in  std_logic_vector;
 
+		trigger_freeze : in  std_logic;
 		trigger_level : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
@@ -66,6 +67,7 @@ end;
 
 architecture def of scopeio_segment is
 
+	signal vt_ena           : std_logic;
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
@@ -90,13 +92,16 @@ architecture def of scopeio_segment is
 
 begin
 
-	scopeio_rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
+		vt_ena    => vt_ena,
 		vt_dv     => vt_dv,
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
@@ -104,13 +109,15 @@ begin
 	process(rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if vt_dv='1' then
+			if vt_ena='1' then
 				vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+				if trigger_freeze='0' then
+					vt_scale <= word2byte(gain_ids, vt_chanid, vt_scale'length);
+				end if;
 			end if;
 		end if;
 	end process;
 
-	vt_scale  <= word2byte(gain_ids,  vt_chanid, vt_scale'length);
 	grid_b : block
 		constant offset_latency : natural := 1;
 
@@ -210,7 +217,9 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
+				if vt_ena='1'  then
+					offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
+				end if;
 			end if;
 		end process;
 

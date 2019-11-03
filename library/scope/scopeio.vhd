@@ -253,9 +253,6 @@ begin
 		gain_dv        => gain_dv,
 		gain_ids       => gain_ids,
 
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-
 		video_addr     => video_addr,
 		video_frm      => video_frm,
 		video_data     => video_data,

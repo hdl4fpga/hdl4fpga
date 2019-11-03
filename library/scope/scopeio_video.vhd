@@ -52,14 +52,11 @@ entity scopeio_video is
 		rgtr_id          : in  std_logic_vector(8-1 downto 0);
 		rgtr_data        : in  std_logic_vector;
 
-		time_scale       : out std_logic_vector;
-		time_offset      : out std_logic_vector;
+		time_scale       : buffer std_logic_vector;
+		time_offset      : buffer std_logic_vector;
 
 		gain_dv          : in  std_logic;
 		gain_ids         : in  std_logic_vector;
-
-		trigger_chanid   : in  std_logic_vector;
-		trigger_level    : in  std_logic_vector;
 
 		video_addr       : out std_logic_vector;
 		video_frm        : out std_logic;
@@ -75,6 +72,10 @@ entity scopeio_video is
 		video_hzon       : buffer std_logic;
 		video_blank      : out std_logic;
 		video_sync       : out std_logic);
+
+	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
+	constant layout      : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 
 end;
 
@@ -94,7 +95,6 @@ architecture beh of scopeio_video is
 	constant palette_latency      : natural := 3;
 	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
 
-	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 
 	signal video_hzsync  : std_logic;
@@ -107,6 +107,13 @@ architecture beh of scopeio_video is
 
 	signal scope_color   : std_logic_vector(video_pixel'length-1 downto 0);
 
+	signal trigger_ena    : std_logic;
+	signal trigger_freeze : std_logic;
+	signal trigger_edge   : std_logic;
+	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_level  : std_logic_vector(storage_word'range);
+
+	signal hz_ena        : std_logic;
 	signal hz_dv         : std_logic;
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
 	signal hz_slider     : std_logic_vector(time_offset'range);
@@ -170,16 +177,44 @@ begin
 		end if;
 	end process;
 
-	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	rgtrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
+
+		trigger_ena    => trigger_ena,
+		trigger_edge   => trigger_edge,
+		trigger_freeze => trigger_freeze,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level);
+
+	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
+		hz_ena    => hz_ena,
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
 		hz_slider => hz_slider);
+
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if hz_ena='1'  then
+				if trigger_freeze='0' then
+					time_scale <= hz_scale;
+				end if;
+				time_offset <= hz_slider;
+			end if;
+		end if;
+	end process;
 
 	scopeio_btof_e : entity hdl4fpga.scopeio_btof
 	port map (
@@ -235,7 +270,7 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton,
 
-		hz_slider    => hz_slider,
+		hz_slider    => time_offset,
 		hz_segment   => hz_segment,
 		x            => x,
 		y            => y,
@@ -333,8 +368,8 @@ begin
 		btof_bcddo    => btof_bcddo,
 
 		hz_dv         => hz_dv,
-		hz_scale      => hz_scale,
-		hz_base       => hz_slider(time_offset'left downto axisx_backscale+hztick_bits),
+		hz_scale      => time_scale,
+		hz_base       => time_offset(time_offset'left downto axisx_backscale+hztick_bits),
 		hz_offset     => hz_segment,
 
 		gain_dv       => gain_dv,
@@ -350,6 +385,7 @@ begin
 
 		sample_dv     => vdv,
 		sample_data   => vdata,
+		trigger_freeze => trigger_freeze,
 		trigger_level => trigger_level,
 		grid_dot      => grid_dot,
 		hz_dot        => hz_dot,
@@ -431,6 +467,4 @@ begin
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);
 
-	time_scale  <= hz_scale;
-	time_offset <= hz_slider;
 end;
