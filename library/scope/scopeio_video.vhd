@@ -56,6 +56,8 @@ entity scopeio_video is
 		time_offset      : buffer std_logic_vector;
 
 		gain_dv          : in  std_logic;
+		gain_ena         : in  std_logic;
+		gain_cid         : in  std_logic_vector;
 		gain_ids         : in  std_logic_vector;
 
 		video_addr       : out std_logic_vector;
@@ -299,6 +301,15 @@ begin
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
 			rgtr_data     => rgtr_data,
+
+			gain_ena      => gain_ena,
+			gain_dv       => gain_dv,
+			gain_cid      => gain_cid,
+			gain_ids      => gain_ids,
+
+			time_ena      => hz_ena,
+			time_scale    => time_scale,
+			time_offset   => time_offset,
 
 			btof_binfrm   => btof_binfrm(text_id),
 			btof_binirdy  => btof_binirdy(text_id),

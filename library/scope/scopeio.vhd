@@ -122,6 +122,7 @@ architecture beh of scopeio is
 
 	signal gain_ena           : std_logic;
 	signal gain_dv            : std_logic;
+	signal gain_cid           : std_logic_vector(0 to chanid_bits-1);
 	signal gain_ids           : std_logic_vector(0 to inputs*gainid_bits-1);
 
 
@@ -169,6 +170,7 @@ begin
 		begin
 			if rising_edge(si_clk) then
 				if gain_ena='1' then
+					gain_cid <= chan_id;
 					if trigger_freeze='0' then
 						gain_ids <= byte2word(gain_ids, chan_id, gain_id);
 					end if;
@@ -254,7 +256,9 @@ begin
 		time_scale     => time_scale,
 		time_offset    => time_offset,
                                         
+		gain_ena       => gain_ena,
 		gain_dv        => gain_dv,
+		gain_cid       => gain_cid,
 		gain_ids       => gain_ids,
 
 		video_addr     => video_addr,

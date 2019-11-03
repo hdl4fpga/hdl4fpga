@@ -104,7 +104,7 @@ begin
 		vt_offset => vt_offset);
 
 	vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
-	vt_scale <= word2byte(gain_ids, vt_chanid, vt_scale'length);
+	vt_scale   <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
 
 	grid_b : block
 		constant offset_latency : natural := 1;
