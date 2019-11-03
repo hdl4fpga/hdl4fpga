@@ -76,6 +76,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_float2btof.vhd \
   ../../library/scope/scopeio_layout.vhd \
   ../../library/scope/scopeio_textbox.vhd \
+  ../../library/scope/textboxpgk.vhd \
   ../../library/uart/uart_rx.vhd \
   ../../library/uart/uart_rx_f32c.vhd \
   ../../library/mii/miirx_pre.vhd \
