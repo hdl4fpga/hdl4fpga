@@ -40,7 +40,8 @@ port
   byte: out std_logic_vector(7 downto 0);
 
   -- debug
-  sync_err, bit_stuff_err, byte_err:  std_logic 
+  phy_rxvalid, phy_rxen,
+  sync_err, bit_stuff_err, byte_err: out  std_logic 
 );
 end;
 
@@ -157,6 +158,9 @@ begin
   S_rxdn <= usb_fpga_bd_dn; -- single-ended input reads D-
   usb_fpga_bd_dp <= S_txdp when S_txoe = '0' else 'Z';
   usb_fpga_bd_dn <= S_txdn when S_txoe = '0' else 'Z';
+  
+  phy_rxen <= S_txoe;
+  phy_rxvalid <= S_rxvalid;
 
   -- USB-SERIAL soft-core loopback test
 --  G_loopback_test: if test generate

@@ -44,6 +44,7 @@ package videopkg is
 	constant pclk38_25m96x64Rat60      : natural := 11; -- pclk  38.25MHz 	Added by emard@github.com for ULX3S kit
 	constant pclk30_00m800x480Rat60    : natural := 12; -- pclk  30.00MHz 	Added by emard@github.com for ULX3S kit
 	constant pclk50_00m1024x600Rat60   : natural := 13; -- pclk  50.00MHz 	Added by emard@github.com for ULX3S kit
+	constant pclk40_00m800x600Rat60    : natural := 14; -- pclk  40.00MHz 	Added by emard@github.com for ULX3S kit
 
 
 	type modeline_vector is array (natural range <>) of natural_vector(0 to 8-1);
@@ -57,6 +58,7 @@ package videopkg is
 		pclk23_75m640x480Cat60    => ( 640,  664,  720,  800,  480,  483,  487,  500),
 		pclk30_00m800x480Rat60    => ( 800,  816,  896,  998,  480,  481,  484,  500),
 		pclk38_25m800x600Cat60    => ( 800,  832,  912, 1024,  600,  603,  607,  624),
+		pclk40_00m800x600Rat60    => ( 800,  832,  912, 1024,  600,  603,  607,  650),
 		pclk50_00m1024x600Rat60   => (1024, 1064, 1168, 1324,  600,  601,  604,  628),
 		pclk63_50m1024x768Cat60   => (1024, 1072, 1176, 1328,  768,  771,  775,  798),
 		pclk90_75m1280x1024Rat60  => (1280, 1328, 1360, 1440, 1024, 1027, 1034, 1054),

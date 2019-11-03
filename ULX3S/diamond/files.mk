@@ -76,6 +76,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_float2btof.vhd \
   ../../library/scope/scopeio_layout.vhd \
   ../../library/scope/scopeio_textbox.vhd \
+  ../../library/scope/textboxpgk.vhd \
   ../../library/uart/uart_rx.vhd \
   ../../library/uart/uart_rx_f32c.vhd \
   ../../library/mii/miirx_pre.vhd \
@@ -104,6 +105,7 @@ VHDL_LIB_FILES = \
   ../../library/usb/usb11_phy_vhdl/usb_phy_transciver.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_phy.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_rx_phy_48MHz.vhd \
+  ../../library/usb/usb11_phy_vhdl/usb_rx_phy_emard.vhd \
   ../../library/usb/usb11_phy_vhdl/usb_tx_phy.vhd \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd \
   ../../library/video/video.vhd \
