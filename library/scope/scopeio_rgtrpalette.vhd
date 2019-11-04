@@ -35,11 +35,17 @@ begin
 	id    <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
 	color <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			palette_dv <= dv;
+		end if;
+	end process;
+
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				palette_dv <= dv;
 				if dv='1' then
 					palette_id    <= id;
 					palette_color <= color;
@@ -49,7 +55,6 @@ begin
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		palette_dv    <= dv;
 		palette_id    <= id;
 		palette_color <= color;
 	end generate;

@@ -775,14 +775,9 @@ package body textboxpkg is
 			if strcmp(tags(i).id,id) then
 				return tags(i);
 			end if;
-			assert false
-			report "Invalid tag : " & itoa(i) & " " & '"' & tags(i).id & '"'
-			severity warning;
 		end loop;
-		assert false
-			report "Invalid tag : " & id & " " & itoa(tags'length)
-			severity FAILURE;
-		return tags(0);
+		report "Invalid tag : " & id & " " & itoa(tags'length)
+		severity FAILURE;
 	end;
 
 	function memaddr (
