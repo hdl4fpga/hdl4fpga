@@ -419,7 +419,7 @@ begin
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
-						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (vttick_bits-division_bits);
+						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (vtstep_bits-division_bits);
 						vt_ena   <= axis_sel;
 						vt_start <= 
 							mul(to_signed((vt_height/2)/2**vtstep_bits,5), frac) +
