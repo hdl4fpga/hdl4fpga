@@ -40,11 +40,17 @@ begin
 	level  <= std_logic_vector(resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length));
 	chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), chanid'length));
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			trigger_dv <= dv;
+		end if;
+	end process;
+
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				trigger_dv <= dv;
 				if dv='1' then
 					trigger_freeze <= freeze;
 					trigger_edge   <= edge;
@@ -56,7 +62,6 @@ begin
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		trigger_dv     <= dv;
 		trigger_freeze <= freeze;
 		trigger_edge   <= edge;
 		trigger_level  <= level;

@@ -33,11 +33,17 @@ begin
 	x  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointerx_id, pointer_bf)), x'length));
 	y  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointery_id, pointer_bf)), y'length));
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			pointer_dv <= dv;
+		end if;
+	end process;
+
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				pointer_dv <= dv;
 				if dv='1' then
 					pointer_x <= x;
 					pointer_y <= y;
@@ -47,7 +53,6 @@ begin
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		pointer_dv <= dv;
 		pointer_x  <= x;
 		pointer_y  <= y;
 	end generate;

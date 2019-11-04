@@ -534,6 +534,7 @@ package scopeiopkg is
 			input_data       : in  std_logic_vector;
 			time_scale       : in  std_logic_vector;
 			time_offset      : in  std_logic_vector;
+			trigger_freeze   : buffer std_logic;
 			trigger_chanid   : buffer std_logic_vector;
 			trigger_level    : buffer std_logic_vector;
 			video_clk        : in  std_logic;

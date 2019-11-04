@@ -25,6 +25,15 @@ entity scopeio_textbox is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
+		gain_ena      : in  std_logic;
+		gain_dv       : in  std_logic;
+		gain_cid      : in  std_logic_vector;
+		gain_ids      : in  std_logic_vector;
+
+		time_ena      : in  std_logic;
+		time_scale    : in  std_logic_vector;
+		time_offset   : in  std_logic_vector;
+
 		btof_binfrm   : buffer std_logic;
 		btof_binirdy  : out std_logic;
 		btof_bintrdy  : in  std_logic;
@@ -133,14 +142,8 @@ begin
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal vt_chanid      : std_logic_vector(chan_id'range);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
-		signal gain_ena       : std_logic;
-		signal gain_dv        : std_logic;
-		signal gain_chanid    : std_logic_vector(chan_id'range);
 
 		signal hz_exp         : signed(btof_bindi'range);
-		signal hz_ena         : std_logic;
-		signal hz_slider      : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal hz_scale       : std_logic_vector(4-1 downto 0);
 
 	function get_multps (
 		constant floats : siofloat_vector)
@@ -185,17 +188,6 @@ begin
 
 	begin
 
-		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
-		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
-
-			hz_ena         => hz_ena,
-			hz_scale       => hz_scale,
-			hz_slider      => hz_slider);
-
 		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 		port map (
 			rgtr_clk       => rgtr_clk,
@@ -237,28 +229,18 @@ begin
 			end process;
 		end block;
 
-		vtgain_e : entity hdl4fpga.scopeio_rgtrgain
-		port map (
-			rgtr_clk  => rgtr_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			gain_dv   => gain_dv,
-			gain_ena  => gain_ena,
-			chan_id   => gain_chanid,
-			gain_id   => vt_scale);
-
 		chainid_p : process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
 				if vt_dv='1' then
 					chan_id <= vt_chanid;
 				elsif gain_dv='1' then
-					chan_id <= gain_chanid;
+					chan_id <= gain_cid;
 				end if;
 			end if;
 		end process;
 		vt_offset <= word2byte(vt_offsets, chan_id, vt_offset'length);
+		vt_scale  <= word2byte(gain_ids,   chan_id, vt_scale'length);
 
 		process (rgtr_clk)
 			variable bcd_req  : std_logic_vector(cgabcd_req'range);
@@ -266,15 +248,15 @@ begin
 		begin
 			if rising_edge(rgtr_clk) then
 				bcd_req := cgabcd_req or (
-					0 => hz_ena,
-					1 => hz_ena,
+					0 => time_ena,
+					1 => time_ena,
 					2 => trigger_ena,
 					3 => vt_dv or gain_ena,
 					4 => gain_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 
 				char_req := cgachr_req or (
-					0 => hz_ena,
+					0 => time_ena,
 					1 => trigger_ena,
 					2 => trigger_ena,
 					3 => trigger_ena,
@@ -311,7 +293,7 @@ begin
 			end loop;
 		end process;
 
-		vtdivmemaddr_p : process (gain_chanid)
+		vtdivmemaddr_p : process (chan_id)
 		begin
 			vtdiv_memaddr <= (others => '-');
 			for i in 0 to inputs-1 loop
@@ -321,7 +303,7 @@ begin
 			end loop;
 		end process;
 
-		vtmagmemaddr_p: process (gain_chanid)
+		vtmagmemaddr_p: process (chan_id)
 		begin
 			vtmag_memaddr <= (others => '-');
 			for i in 0 to inputs-1 loop
@@ -331,17 +313,17 @@ begin
 			end loop;
 		end process;
 
-		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_frac'length);
-		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_frac'length);
+		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
+		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
 
-		hz_exp  <= to_signed(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).exp, hz_exp'length);
+		hz_exp  <= to_signed(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp, hz_exp'length);
 		vt_exp  <= to_signed(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp, vt_exp'length);
 
-		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(hz_scale(2-1 downto 0)))).frac, hz_scalevalue'length));
+		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_scalevalue'length));
 		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_scalevalue'length));
 
 		bcd_binvalue <= wirebus(
-			std_logic_vector(resize(mul(signed(hz_slider), hz_frac),     bcd_binvalue'length)) &
+			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),             bcd_binvalue'length)) &
 			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length)) &
 			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length)) &
@@ -357,19 +339,19 @@ begin
 			cgabcd_frm);
 				 	
 		bcd_unitvalue <= wirebus(
-			std_logic_vector(to_signed(hz_units(to_integer(unsigned(hz_scale))), bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(hz_units(to_integer(unsigned(hz_scale))), bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))), bcd_unitvalue'length)),
+			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))),   bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))),   bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))),   bcd_unitvalue'length)),
 			cgabcd_frm);
 
 		bcd_precvalue <= wirebus(
-			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(hz_scale))), bcd_precvalue'length)) &
-			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(hz_scale))), bcd_precvalue'length)) &
-			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), bcd_precvalue'length)) &
-			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), bcd_precvalue'length)) &
-			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))), bcd_precvalue'length)),
+			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(time_scale))), bcd_precvalue'length)) &
+			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(time_scale))), bcd_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))),   bcd_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))),   bcd_precvalue'length)) &
+			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))),   bcd_precvalue'length)),
 			cgabcd_frm);
 
 		bcd_alignment <= wirebus (
@@ -389,8 +371,8 @@ begin
 			vtdiv_memaddr,
 			cgabcd_frm);
 
-		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(hz_scale))), hz_multp'length));
-		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))), vt_multp'length));
+		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
+		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
 		chr_value <= wirebus(
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), hz_multp,       ascii'length) &
 			word2byte(x"1819",                                trigger_edge)                 &

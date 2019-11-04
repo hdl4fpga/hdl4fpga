@@ -34,11 +34,17 @@ begin
 	slider <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_slider'length));
 	scale  <= bitfield(rgtr_data, hzscale_id,  hzoffset_bf);
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			hz_dv <= dv;
+		end if;
+	end process;
+
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				hz_dv <= dv;
 				if dv='1' then
 					hz_slider <= slider;
 					hz_scale  <= scale;
@@ -48,7 +54,6 @@ begin
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		hz_dv     <= dv;
 		hz_slider <= slider;
 		hz_scale  <= scale;
 	end generate;
