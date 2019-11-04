@@ -235,7 +235,7 @@ begin
 				if vt_dv='1' then
 					chan_id <= vt_chanid;
 				elsif gain_dv='1' then
-					chan_id <= gain_cid;
+					chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
 				end if;
 			end if;
 		end process;
