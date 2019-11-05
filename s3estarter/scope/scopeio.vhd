@@ -90,8 +90,8 @@ architecture beh of s3estarter is
 
 	type display_param is record
 		layout : natural;
-		mul    : natural;
-		div    : natural;
+		dcm_mul    : natural;
+		dcm_div    : natural;
 	end record;
 
 	type layout_mode is (
@@ -102,10 +102,10 @@ architecture beh of s3estarter is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, mul => 4, div => 5),
-		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode480p    => (layout => 8, mul => 3, div => 5),
-		mode600px16 => (layout => 6, mul => 2, div => 4));
+		mode600p    => (layout => 1, dcm_mul => 4, dcm_div => 5),
+		mode1080p   => (layout => 0, dcm_mul => 3, dcm_div => 1),
+		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
+		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
 
 	constant video_mode : layout_mode := mode1080p;
 
@@ -120,8 +120,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).mul,
-		dfs_div => video_params(video_mode).div)
+		dfs_mul => video_params(video_mode).dcm_mul,
+		dfs_div => video_params(video_mode).dcm_div)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -367,7 +367,7 @@ begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
-			clk       => si_clk,
+			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -380,14 +380,14 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		axis_unit   => std_logic_vector(to_unsigned(25,5)),
-		vlayout_id  => video_params(video_mode).layout,
-		hz_factors  => (
+		hz_unit          => 25.0*pico,
+		vt_unit          => 20.0*micro,
+		vlayout_id       => video_params(video_mode).layout,
+		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
 			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
 			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
 			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
-
 		inputs           => inputs,
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",

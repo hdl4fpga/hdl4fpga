@@ -8,6 +8,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
 
@@ -345,7 +346,7 @@ begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
-			clk       => si_clk,
+			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -358,14 +359,15 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		hz_unit          => 25.0*pico,
+		vt_unit          => 20.0*micro,
 		inputs           => inputs,
-		axis_unit        => std_logic_vector(to_unsigned(25,5)),
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
-			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
-			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
-			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
+			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
+			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
+			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
+			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+1), 15 => 2**(0+2)*5**(1+1)),
 
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",

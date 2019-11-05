@@ -34,6 +34,8 @@ entity scopeio is
 		lang        : i18n_langs := lang_en;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
+		vt_step     : real := 0.0;
+		hz_step     : real := 0.0;
 		hz_unit     : real := 25.0;
 		vt_unit     : real := 20.0;
 		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
@@ -144,12 +146,47 @@ begin
 		rgtr_data => rgtr_data);
 
 	amp_b : block
+
+		function init_gains(
+			constant gains : natural_vector;
+			constant unit  : real;
+			constant step  : real)
+			return natural_vector
+		is
+			constant df_gains  : natural_vector := (
+				 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
+				 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
+				 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
+				12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
+
+			variable retval : natural_vector(0 to setif(gains'length >0, gains'length, df_gains'length)-1);
+			constant k      : real := (32.0*step)/unit;
+		begin
+			retval := df_gains;
+			if gains'length > 0 then
+				retval := gains;
+			end if;
+
+			if k > 0.0 then
+				assert k < 1.0
+					report "unit should be decreased"
+					severity FAILURE;
+				for i in retval'range loop
+					retval(i) := natural((real(retval(i))*unit)/(32.0*step));
+				end loop;
+			end if;
+			return retval;
+		end;
+
 		constant sample_size : natural := input_data'length/inputs;
+		constant gains       : natural_vector(vt_gains'range) := init_gains (
+			gains => vt_gains,
+			unit  => vt_unit,
+			step  => vt_step);
 
-		signal chan_id    : std_logic_vector(0 to chanid_bits-1);
-		signal gain_id    : std_logic_vector(0 to gainid_bits-1);
-
-		signal output_ena : std_logic_vector(0 to inputs-1);
+		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
+		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
+		signal output_ena    : std_logic_vector(0 to inputs-1);
 	begin
 
 		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain

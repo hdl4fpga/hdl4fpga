@@ -307,31 +307,31 @@ package body textboxpkg is
 			align=center_alignment, (width-length+1)/2, 0));
 	end;
 
-	function log (
-		constant tname   : string;
-		constant left    : integer;
-		constant right   : integer;
-		constant width   : integer;
-		constant content : string)
-		return line
-	is
-		variable mesg : line;
-	begin
-		write(mesg, '[' & tname & ']');
-		write(mesg, string'(" : left  => "));
-		write(mesg, left);
-		write(mesg, string'(" : right => "));
-		write(mesg, right);
-		write(mesg, string'(" : content => "));
-		write(mesg, character'('"'));
-		if strlen(content)/=0 then
-			write(mesg, content(content'left to content'left+strlen(content)-1));
-		end if;
-		write(mesg, character'('"'));
-		write(mesg, string'(" : width => "));
-		write(mesg, width);
-		return mesg;
-	end;
+--	function log (
+--		constant tname   : string;
+--		constant left    : integer;
+--		constant right   : integer;
+--		constant width   : integer;
+--		constant content : string)
+--		return line
+--	is
+--		variable mesg : line;
+--	begin
+--		write(mesg, '[' & tname & ']');
+--		write(mesg, string'(" : left  => "));
+--		write(mesg, left);
+--		write(mesg, string'(" : right => "));
+--		write(mesg, right);
+--		write(mesg, string'(" : content => "));
+--		write(mesg, character'('"'));
+--		if strlen(content)/=0 then
+--			write(mesg, content(content'left to content'left+strlen(content)-1));
+--		end if;
+--		write(mesg, character'('"'));
+--		write(mesg, string'(" : width => "));
+--		write(mesg, width);
+--		return mesg;
+--	end;
 
 	function stralign (
 		constant str   : string;
