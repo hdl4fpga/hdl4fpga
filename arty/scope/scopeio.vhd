@@ -24,7 +24,6 @@ architecture beh of arty is
 
 	constant inputs : natural := 9;
 	signal samples  : std_logic_vector(0 to 9*sample_size-1);
-	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
@@ -240,16 +239,14 @@ begin
 								case hz_scale is
 								when "0000" =>
 									di <= x"0000";
-									channel_ena <= b"1000_0000_0";
 								when "0001" =>
 									di <= x"1000";
-									channel_ena <= b"1100_0000_0";
 								when "0010" =>
+									di <= x"7000";
+								when "0011" =>
 									di <= x"f000";
-									channel_ena <= b"1111_1000_0";
 								when others =>
 									di <= x"f0f1";
-									channel_ena <= b"1111_1111_1";
 								end case;
 								cfg_state := "10";
 								cfg_req   := '1';
@@ -288,43 +285,17 @@ begin
 		end process;
 	end block;
 
-	led(1) <= btn(0);
-	process (btn(0), eth_txclk_bufg)
+	process (eth_txclk_bufg)
 	begin
-		if btn(0)='1' then
-			ipcfg_req <= '0';
-			led(0)  <= '1';
-		elsif rising_edge(eth_txclk_bufg) then
-			led(0)  <= '0';
-			ipcfg_req <= '1';
+		if rising_edge(eth_txclk_bufg) then
+			if btn(0)='1' then
+				ipcfg_req <= '0';
+			else
+				ipcfg_req <= '1';
+			end if;
 		end if;
 	end process;
-
---	sample <= x"00ff";
-
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	port map (
-		ipcfg_req   => ipcfg_req,
-
-		phy_rxc     => eth_rxclk_bufg,
-		phy_rx_dv   => eth_rx_dv,
-		phy_rx_d    => eth_rxd,
-
-		phy_txc     => eth_txclk_bufg,
-		phy_tx_en   => txdv,
-		phy_tx_d    => txd,
-	
-		chaini_sel  => std_logic'('0'),
-
-		chaini_frm  => std_logic'('0'),
-		chaini_irdy => std_logic'('0'),
-		chaini_data => eth_rxd,
-
-		chaino_frm  => si_frm,
-		chaino_irdy => si_irdy,
-		chaino_data => si_data);
-	
-	si_clk <= eth_rxclk_bufg;
+	led(0) <= not ipcfg_req;
 
 	scopeio_export_b : block
 
@@ -356,6 +327,26 @@ begin
 			hz_slider => hz_slider);
 
 	end block;
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => eth_rxclk_bufg,
+		phy_rx_dv   => eth_rx_dv,
+		phy_rx_d    => eth_rxd,
+
+		phy_txc     => eth_txclk_bufg,
+		phy_tx_en   => txdv,
+		phy_tx_d    => txd,
+	
+		chaini_data => eth_rxd,
+
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
+	si_clk <= eth_rxclk_bufg;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -396,7 +387,7 @@ begin
 
 	process (eth_txclk_bufg)
 	begin
-		if falling_edge(eth_txclk_bufg) then
+		if rising_edge(eth_txclk_bufg) then
 			eth_txd   <= txd;
 			eth_tx_en <= txdv;
 		end if;
