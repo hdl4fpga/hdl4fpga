@@ -79,13 +79,20 @@ begin
 		video_vton   => video_frm);
 
 	process(mii_rxc)
+		variable addr : unsigned(cga_addr'range);
+		variable we   : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			cga_we <= mii_rxdv;
+			cga_addr <= std_logic_vector(addr);
+			cga_we   <= mii_rxdv or we;
 			if mii_rxdv='1' then
-				cga_addr <= std_logic_vector(unsigned(cga_addr)+1);
 				cga_code <= word2byte(to_ascii("0123456789ABCDEF"), mii_rxd, ascii'length);
+				addr     := addr + 1;
+			elsif we='1' then
+				cga_code <= to_ascii(" ");
+				addr     := addr + 1;
 			end if;
+			we := mii_rxdv;
 		end if;
 	end process;
 

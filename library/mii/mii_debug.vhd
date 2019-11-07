@@ -84,7 +84,7 @@ begin
 	begin
 		if rising_edge(video_rxc) then
 			video_rxdv <= mii_rxdv; -- and udpdport_vld(0);
-			video_rxd  <= mii_rxd;
+			video_rxd  <= reverse(mii_rxd);
 		end if;
 	end process;
 
