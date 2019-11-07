@@ -68,7 +68,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 1)
+		mode => 7)
 	port map (
 		video_clk   => video_clk,
 		video_hzsync => video_hs,
@@ -99,14 +99,14 @@ begin
 	process (video_hcntr, video_vcntr)
 	begin
 		video_addr <= std_logic_vector(
-			(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(800/font_width)) +
+			(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(1920/font_width)) +
 			unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
 	end process;
 
 	blankn <= video_hon and video_frm;
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom   => to_ascii("hola"),
+		cga_bitrom   => to_ascii("Ready to capture !"),
 	  	font_bitrom  => psf1cp850x8x16,
 		font_height  => font_height,
 		font_width   => font_width)

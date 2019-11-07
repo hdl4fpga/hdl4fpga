@@ -497,7 +497,7 @@ begin
 		video_addr  => video_addr,
 		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
 		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_hon   => text_on,
+		video_blankn   => text_on,
 		video_dot   => char_dot);
 
 	lat_e : entity hdl4fpga.align

@@ -57,6 +57,7 @@ architecture struct of mii_debug is
 	signal video_rxc  : std_logic;
 	signal video_rxdv : std_logic;
 	signal video_rxd  : std_logic_vector(mii_txd'range);
+	signal myipcfg_vld: std_logic;
 	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
@@ -75,6 +76,7 @@ begin
 		udpdports_val => x"0000",
 		udpdports_vld => udpdport_vld,
 
+		myipcfg_vld =>  myipcfg_vld,
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
 		mii_txd   => txd);
@@ -83,7 +85,7 @@ begin
 	process (video_rxc)
 	begin
 		if rising_edge(video_rxc) then
-			video_rxdv <= mii_rxdv; -- and udpdport_vld(0);
+			video_rxdv <= myipcfg_vld; -- and udpdport_vld(0);
 			video_rxd  <= reverse(mii_rxd);
 		end if;
 	end process;

@@ -70,7 +70,7 @@ architecture beh of nuhs3adsp is
 		mode480p    => (layout => 8, dcm_mul =>  3, dcm_div => 2),
 		mode600px16 => (layout => 6, dcm_mul =>  5, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 begin
 

@@ -59,7 +59,7 @@ architecture mii_debug of nuhs3adsp is
 		mode480p    => (dcm_mul =>  3, dcm_div => 2),
 		mode600px16 => (dcm_mul =>  5, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : layout_mode := mode1080p;
 
 begin
 
@@ -91,12 +91,12 @@ begin
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
 		mii_req   => mii_req,
---		mii_rxc   => mii_rxc,
---		mii_rxd   => mii_rxd,
---		mii_rxdv  => mii_rxdv,
-		mii_rxc   => mii_txc,
-		mii_rxd   => mii_txd,
-		mii_rxdv  => mii_txen,
+		mii_rxc   => mii_rxc,
+		mii_rxd   => mii_rxd,
+		mii_rxdv  => mii_rxdv,
+--		mii_rxc   => mii_txc,
+--		mii_rxd   => mii_txd,
+--		mii_rxdv  => mii_txen,
 		mii_txc   => mii_txc,
 		mii_txd   => mii_txd,
 		mii_txdv  => mii_txen,
