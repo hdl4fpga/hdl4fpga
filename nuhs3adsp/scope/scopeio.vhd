@@ -237,7 +237,7 @@ begin
 			red   <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
 			green <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
 			blue  <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
-			blank <= not vga_blank1;
+			blankn <= not vga_blank1;
 			hsync <= vga_hsync1;
 			vsync <= vga_vsync1;
 			sync  <= not vga_hsync1 and not vga_vsync1;
@@ -286,7 +286,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rst  <= '1';
+	mii_rstn <= '1';
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

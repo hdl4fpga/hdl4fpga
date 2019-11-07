@@ -44,23 +44,22 @@ entity mii_debug is
 
 		video_clk : in  std_logic;
 		video_dot : out std_logic;
+		video_blank : out std_logic;
 		video_hs  : out std_logic;
 		video_vs  : out std_logic);
 	end;
 
 architecture struct of mii_debug is
 
-	signal txc  : std_logic;
 	signal txdv : std_logic;
 	signal txd  : std_logic_vector(mii_txd'range);
 
-	signal d_rxc  : std_logic;
-	signal d_rxdv : std_logic;
-	signal d_rxd  : std_logic_vector(mii_txd'range);
+	signal video_rxc  : std_logic;
+	signal video_rxdv : std_logic;
+	signal video_rxd  : std_logic_vector(mii_txd'range);
 	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
-	txc <= mii_txc;
 	mii_txdv <= txdv;
 	mii_txd  <= txd;
 
@@ -80,32 +79,24 @@ begin
 		mii_txdv  => txdv,
 		mii_txd   => txd);
 
---	d_rxc <= txc;
---	process (d_rxc)
---	begin
---		if rising_edge(d_rxc) then
---			d_rxdv <= txdv;
---			d_rxd  <= txd;
---		end if;
---	end process;
-
-	d_rxc <= mii_rxc;
-	process (d_rxc)
+	video_rxc <= mii_rxc;
+	process (video_rxc)
 	begin
-		if rising_edge(d_rxc) then
-			d_rxdv <= mii_rxdv; -- and udpdport_vld(0);
-			d_rxd  <= mii_rxd;
+		if rising_edge(video_rxc) then
+			video_rxdv <= mii_rxdv; -- and udpdport_vld(0);
+			video_rxd  <= mii_rxd;
 		end if;
 	end process;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
-		mii_rxc   => d_rxc,
-		mii_rxdv  => d_rxdv,
-		mii_rxd   => d_rxd,
+		mii_rxc   => video_rxc,
+		mii_rxdv  => video_rxdv,
+		mii_rxd   => video_rxd,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
+		video_blank => video_blank,
 		video_hs  => video_hs,
 		video_vs  => video_vs);
 
