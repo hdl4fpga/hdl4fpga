@@ -35,13 +35,10 @@ use unisim.vcomponents.all;
 architecture mii_debug of arty is
 	signal sys_clk        : std_logic;
 	signal mii_req        : std_logic;
-	signal eth_txclk_bufg : std_logic;
-	signal eth_rxclk_bufg : std_logic;
-	signal video_dot      : std_logic;
-	signal video_vs       : std_logic;
-	signal video_hs       : std_logic;
-	signal video_clk      : std_logic;
-	signal pp : std_logic;
+	signal vga_dot      : std_logic;
+	signal vga_vs       : std_logic;
+	signal vga_hs       : std_logic;
+	signal vga_clk      : std_logic;
 
 	signal rxc  : std_logic;
 	signal rxd  : std_logic_vector(eth_rxd'range);
@@ -50,119 +47,80 @@ architecture mii_debug of arty is
 	signal txc  : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
 	signal txdv : std_logic;
+
+	type display_param is record
+		dcm_mul    : natural;
+		dcm_div    : natural;
+	end record;
+
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
+
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (dcm_mul =>  2, dcm_div => 1),
+		mode1080p   => (dcm_mul => 15, dcm_div => 2),
+		mode480p    => (dcm_mul =>  3, dcm_div => 2),
+		mode600px16 => (dcm_mul =>  5, dcm_div => 4));
+
+	constant video_mode : layout_mode := mode600p;
+
 begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => gclk100,
+		I => xtal,
 		O => sys_clk);
 
-	process (sys_clk)
-		variable div : unsigned(0 to 1) := (others => '0');
-	begin
-		if rising_edge(sys_clk) then
-			div := div + 1;
-			eth_ref_clk <= div(0);
-		end if;
-	end process;
+	videodcm_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => video_params(video_mode).dcm_mul,
+		dfs_div => video_params(video_mode).dcm_div)
+	port map(
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => vga_clk);
 
-	eth_rx_clk_ibufg : ibufg
-	port map (
-		I => eth_rx_clk,
-		O => eth_rxclk_bufg);
-
-	eth_tx_clk_ibufg : ibufg
-	port map (
-		I => eth_tx_clk,
-		O => eth_txclk_bufg);
-
-	dcm_e : block
-		signal video_clkfb : std_logic;
-	begin
-		video_dcm_i : mmcme2_base
-		generic map (
-			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 12.0,		-- 200 MHz
-			clkout0_divide_f => 8.0,
-			bandwidth        => "LOW")
-		port map (
-			pwrdwn   => '0',
-			rst      => '0',
-			clkin1   => sys_clk,
-			clkfbin  => video_clkfb,
-			clkfbout => video_clkfb,
-			clkout0  => video_clk);
-	end block;
-
-	rxc <= eth_rxclk_bufg;
-	process (rxc)
-	begin
-		if rising_edge(rxc) then
-			rxd  <= eth_rxd;
-			rxdv <= eth_rx_dv;
-		end if;
-	end process;
-
-	txc <= not eth_txclk_bufg;
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
-		btn       => pp,
 		mii_req   => mii_req,
-		mii_rxc   => rxc,
-		mii_rxd   => rxd,
-		mii_rxdv  => rxdv,
---		mii_rxc   => txc,  --rxc,
---		mii_rxd   => txd,  --rxd,
---		mii_rxdv  => txdv, --rxdv,
-		mii_txc   => txc,
-		mii_txd   => txd,
-		mii_txdv  => txdv,
+		mii_rxc   => mii_rxc,
+		mii_rxd   => mii_rxd,
+		mii_rxdv  => mii_rxdv,
+--		mii_rxc   => mii_txc,
+--		mii_rxd   => mii_txd,
+--		mii_rxdv  => mii_txdv,
+		mii_txc   => mii_txc,
+		mii_txd   => mii_txd,
+		mii_txdv  => mii_txdv,
 
-		video_clk => video_clk,
-		video_dot => video_dot,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
-		
+		video_clk => vga_clk, 
+		video_dot => vga_dot,
+		video_hs  => vga_hsync,
+		video_vs  => vga_vsync);
+	
+	clk_videodac <= vga_clk;
+	hsync <= vga_hsync;
+	vsync <= vga_vsync;
+	red   <= (others => vga_dot);
+	green <= (others => vga_dot);
+	blue  <= (others => vga_dot);
+
 	process (txc)
 	begin
 		if rising_edge(txc) then
-			eth_txd   <= txd;
-			eth_tx_en <= txdv;
+			if btn(0)='1' then
+				mii_req <= '0';
+			else
+				mii_req <= '1';
+			end if;
 		end if;
 	end process;
-
-	process (btn(0), txc)
-	begin
-		if btn(0)='1' then
-			mii_req <= '0';
-			led(0)  <= '1';
-		elsif rising_edge(txc) then
-			led(0)  <= '0';
-			mii_req <= '1';
-		end if;
-	end process;
-
-	process (btn(1), txc)
-	begin
-		if btn(1)='1' then
-			pp <= '0';
-			led(1)  <= '1';
-		elsif rising_edge(txc) then
-			led(1)  <= '0';
-			pp <= '1';
-		end if;
-	end process;
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			ja(1)  <= video_dot;
-			ja(2)  <= video_dot;
-			ja(3)  <= video_dot;
-			ja(4)  <= video_hs;
-			ja(10) <= video_vs;
-		end if;
-	end process;
+	led7 <= not mii_req;
 
 	eth_rstn <= '1';
 	eth_mdc  <= '0';

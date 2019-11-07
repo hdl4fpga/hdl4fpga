@@ -45,7 +45,7 @@ entity cga_adapter is
 		video_addr  : in std_logic_vector;
 		font_hcntr  : in std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
 		font_vcntr  : in std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
-		video_hon   : in std_logic;
+		video_hon   : in std_logic := '1';
 
 		video_dot : out std_logic);
 end;

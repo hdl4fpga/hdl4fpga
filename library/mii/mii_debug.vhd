@@ -32,15 +32,15 @@ entity mii_debug is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
---		btn       : in  std_logic:= '0';
---		mii_rxc   : in  std_logic;
---		mii_rxd   : in  std_logic_vector;
---		mii_rxdv  : in  std_logic;
---
---		mii_req   : in  std_logic;
---		mii_txc   : in  std_logic;
---		mii_txd   : out std_logic_vector;
---		mii_txdv  : out std_logic;
+		btn       : in  std_logic:= '0';
+		mii_rxc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
+
+		mii_req   : in  std_logic;
+		mii_txc   : in  std_logic;
+		mii_txd   : out std_logic_vector;
+		mii_txdv  : out std_logic;
 
 		video_clk : in  std_logic;
 		video_dot : out std_logic;
@@ -50,59 +50,59 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
---	signal txc  : std_logic;
---	signal txdv : std_logic;
---	signal txd  : std_logic_vector(mii_txd'range);
---
---	signal d_rxc  : std_logic;
---	signal d_rxdv : std_logic;
---	signal d_rxd  : std_logic_vector(mii_txd'range);
---	signal udpdport_vld : std_logic_vector(0 to 0);
+	signal txc  : std_logic;
+	signal txdv : std_logic;
+	signal txd  : std_logic_vector(mii_txd'range);
+
+	signal d_rxc  : std_logic;
+	signal d_rxdv : std_logic;
+	signal d_rxd  : std_logic_vector(mii_txd'range);
+	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
---	txc <= mii_txc;
---	mii_txdv <= txdv;
---	mii_txd  <= txd;
+	txc <= mii_txc;
+	mii_txdv <= txdv;
+	mii_txd  <= txd;
 
---	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
---	generic map (
---		mac       => x"00_40_00_01_02_03")
---	port map (
---		mii_req   => mii_req,
---
---		mii_rxc   => mii_rxc,
---		mii_rxdv  => mii_rxdv,
---		mii_rxd   => mii_rxd,
---		udpdports_val => x"0000",
---		udpdports_vld => udpdport_vld,
---
---		mii_txc   => mii_txc,
---		mii_txdv  => txdv,
---		mii_txd   => txd);
---
-----	d_rxc <= txc;
-----	process (d_rxc)
-----	begin
-----		if rising_edge(d_rxc) then
-----			d_rxdv <= txdv;
-----			d_rxd  <= txd;
-----		end if;
-----	end process;
---
---	d_rxc <= mii_rxc;
+	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
+	generic map (
+		mac       => x"00_40_00_01_02_03")
+	port map (
+		mii_req   => mii_req,
+
+		mii_rxc   => mii_rxc,
+		mii_rxdv  => mii_rxdv,
+		mii_rxd   => mii_rxd,
+		udpdports_val => x"0000",
+		udpdports_vld => udpdport_vld,
+
+		mii_txc   => mii_txc,
+		mii_txdv  => txdv,
+		mii_txd   => txd);
+
+--	d_rxc <= txc;
 --	process (d_rxc)
 --	begin
 --		if rising_edge(d_rxc) then
---			d_rxdv <= mii_rxdv; -- and udpdport_vld(0);
---			d_rxd  <= mii_rxd;
+--			d_rxdv <= txdv;
+--			d_rxd  <= txd;
 --		end if;
 --	end process;
 
+	d_rxc <= mii_rxc;
+	process (d_rxc)
+	begin
+		if rising_edge(d_rxc) then
+			d_rxdv <= mii_rxdv; -- and udpdport_vld(0);
+			d_rxd  <= mii_rxd;
+		end if;
+	end process;
+
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
---		mii_rxc   => d_rxc,
---		mii_rxdv  => d_rxdv,
---		mii_rxd   => d_rxd,
+		mii_rxc   => d_rxc,
+		mii_rxdv  => d_rxdv,
+		mii_rxd   => d_rxd,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
