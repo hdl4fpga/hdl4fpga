@@ -60,9 +60,20 @@ end;
 
 architecture beh of scopeio_udpipdaisy is
 
-	signal udpso_dv   : std_logic;
-	signal udpso_data : std_logic_vector(phy_rx_d'range);
+	constant ipaddr_size : std_logic_vector := x"03";
+	constant xx : std_logic_vector := rid_ipaddr & ipaddr_size;
 
+	signal udpso_dv   : std_logic;
+	signal udpso_d    : std_logic_vector(phy_rx_d'range);
+
+	signal hdr_trdy   : std_logic;
+	signal hdr_dv     : std_logic;
+	signal hdr_d      : std_logic_vector(phy_tx_d'range);
+
+	signal ipaddr_dv  : std_logic;
+	signal ipaddr_d   : std_logic_vector(phy_tx_d'range);
+
+	signal myipcfg_dv : std_logic;
 
 begin
 
@@ -76,21 +87,53 @@ begin
 		crc_disable      => crc_disable
 	)
 	port map (
-		mii_rxc  => phy_rxc,
-		mii_rxdv => phy_rx_dv,
-		mii_rxd  => phy_rx_d,
+		mii_rxc     => phy_rxc,
+		mii_rxdv    => phy_rx_dv,
+		mii_rxd     => phy_rx_d,
 
-		mii_req  => ipcfg_req,
-		mii_txc  => phy_txc,
-		mii_txdv => phy_tx_en,
-		mii_txd  => phy_tx_d,
+		mii_req     => ipcfg_req,
+		mii_txc     => phy_txc,
+		mii_txdv    => phy_tx_en,
+		mii_txd     => phy_tx_d,
 
-		so_dv    => udpso_dv,
-		so_data  => udpso_data);
+		myipcfg_vld => myipcfg_dv,
+		so_dv       => udpso_dv,
+		so_data     => udpso_d);
+
+	hdr_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(xx,8))
+    port map (
+        mii_txc  => phy_rxc,
+		mii_treq => myipcfg_dv,
+		mii_trdy => hdr_trdy,
+        mii_txdv => hdr_dv,
+        mii_txd  => hdr_d);
+
+	phy_rxd_e : entity hdl4fpga.align
+	generic map (
+		n => phy_rx_d'length,
+		d => (0 to phy_rx_d'length-1 => xx'length/phy_rx_d'length))
+	port map (
+		clk => phy_rxc,
+		di  => phy_rx_d,
+		do  => ipaddr_d);
+
+	phy_rxdv_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => xx'length/phy_rx_d'length))
+	port map (
+		clk   => phy_rxc,
+		di(0) => myipcfg_dv,
+		do(0) => ipaddr_dv);
+
+	word2byte(word2byte(hdr_d  & ipaddr_d,  hdr_trdy) & updso_d,  udpso_dv);
+	
 
 	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else udpso_dv;
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else udpso_dv;
-	chaino_data <= chaini_data when chaini_sel='1' else reverse(udpso_data);
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else word2byte(word2byte(hdr_dv & ipaddr_dv, hdr_trdy) & udpso_dv, udpso_dv); 
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else word2byte(word2byte(hdr_dv & ipaddr_dv, hdr_trdy) & udpso_dv, udpso_dv); 
+	chaino_data <= chaini_data when chaini_sel='1' else reverse(word2byte(word2byte(hdr_d  & ipaddr_d,  hdr_trdy) & updso_d,  udpso_dv));
 
 end;

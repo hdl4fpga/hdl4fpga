@@ -419,6 +419,7 @@ package scopeiopkg is
 		constant layout : display_layout)
 		return std_logic;
 
+	constant rid_ipaddr   : std_logic_vector := x"0f";
 	constant rid_hzaxis   : std_logic_vector := x"10";
 	constant rid_palette  : std_logic_vector := x"11";
 	constant rid_trigger  : std_logic_vector := x"12";
