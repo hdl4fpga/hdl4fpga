@@ -88,7 +88,7 @@ architecture def of scopeio_textbox is
 
 	signal cgaaddr_init  : std_logic;
 	signal cga_av        : std_logic;
-	signal cgabcd_req    : std_logic_vector(0 to 5-1);
+	signal cgabcd_req    : std_logic_vector(0 to 4+5-1);
 	signal cgabcd_frm    : std_logic_vector(cgabcd_req'range);
 	signal cgabcd_end    : std_logic;
 	signal cgachr_req    : std_logic_vector(0 to 5-1);
@@ -188,6 +188,19 @@ begin
 
 	begin
 
+		myip4_e : entity hdl4fpga.scopeio_rgtrmyip4
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+
+			trigger_ena    => trigger_ena,
+			trigger_edge   => trigger_edge,
+			trigger_freeze => trigger_freeze,
+			trigger_chanid => trigger_chanid,
+			trigger_level  => trigger_level);
+
 		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 		port map (
 			rgtr_clk       => rgtr_clk,
@@ -248,11 +261,15 @@ begin
 		begin
 			if rising_edge(rgtr_clk) then
 				bcd_req := cgabcd_req or (
-					0 => time_ena,
-					1 => time_ena,
-					2 => trigger_ena,
-					3 => vt_dv or gain_ena,
-					4 => gain_ena);
+					0 => ip4_ena,
+					1 => ip4_ena,
+					2 => ip4_ena,
+					3 => ip4_ena,
+					4 => time_ena,
+					5 => time_ena,
+					6 => trigger_ena,
+					7 => vt_dv or gain_ena,
+					8 => gain_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
 
 				char_req := cgachr_req or (
@@ -276,6 +293,10 @@ begin
 		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
 
 		bcd_width <= wirebus (
+			width(tagbyid(tags, "ip4.num1"    )) &
+			width(tagbyid(tags, "ip4.num2"    )) &
+			width(tagbyid(tags, "ip4.num3"    )) &
+			width(tagbyid(tags, "ip4.num4"    )) &
 			width(tagbyid(tags, "hz.offset"   )) &
 			width(tagbyid(tags, "hz.div"      )) &
 			width(tagbyid(tags, "tgr.level"   )) &
