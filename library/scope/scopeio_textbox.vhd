@@ -128,6 +128,13 @@ begin
 
 	rgtr_b : block
 
+		signal myip_ena       : std_logic;
+		signal myip_dv        : std_logic;
+		signal myip_num1      : std_logic_vector(8-1 downto 0);
+		signal myip_num2      : std_logic_vector(8-1 downto 0);
+		signal myip_num3      : std_logic_vector(8-1 downto 0);
+		signal myip_num4      : std_logic_vector(8-1 downto 0);
+
 		signal trigger_ena    : std_logic;
 		signal trigger_freeze : std_logic;
 		signal trigger_edge   : std_logic;
@@ -188,18 +195,19 @@ begin
 
 	begin
 
-		myip4_e : entity hdl4fpga.scopeio_rgtrmyip4
+		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
 		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
 
-			trigger_ena    => trigger_ena,
-			trigger_edge   => trigger_edge,
-			trigger_freeze => trigger_freeze,
-			trigger_chanid => trigger_chanid,
-			trigger_level  => trigger_level);
+			ip4_ena   => myip_ena,
+			ip4_dv    => myip_dv,
+			ip4_num1  => myip_num1,
+			ip4_num2  => myip_num2,
+			ip4_num3  => myip_num3,
+			ip4_num4  => myip_num4);
 
 		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 		port map (
@@ -261,10 +269,10 @@ begin
 		begin
 			if rising_edge(rgtr_clk) then
 				bcd_req := cgabcd_req or (
-					0 => ip4_ena,
-					1 => ip4_ena,
-					2 => ip4_ena,
-					3 => ip4_ena,
+					0 => myip_ena,
+					1 => myip_ena,
+					2 => myip_ena,
+					3 => myip_ena,
 					4 => time_ena,
 					5 => time_ena,
 					6 => trigger_ena,
@@ -344,6 +352,10 @@ begin
 		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_scalevalue'length));
 
 		bcd_binvalue <= wirebus(
+			std_logic_vector(resize(shift_left(unsigned(myip_num1), 1),  bcd_binvalue'length)) &
+			std_logic_vector(resize(shift_left(unsigned(myip_num2), 1),  bcd_binvalue'length)) &
+			std_logic_vector(resize(shift_left(unsigned(myip_num3), 1),  bcd_binvalue'length)) &
+			std_logic_vector(resize(shift_left(unsigned(myip_num4), 1),  bcd_binvalue'length)) &
 			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length)) &
 			std_logic_vector(resize(unsigned(hz_scalevalue),             bcd_binvalue'length)) &
 			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length)) &
@@ -352,6 +364,10 @@ begin
 			cgabcd_frm);
 				 	
 		bcd_expvalue <= wirebus(
+			std_logic_vector(signed'(x"f"))        & 
+			std_logic_vector(signed'(x"f"))        & 
+			std_logic_vector(signed'(x"f"))        & 
+			std_logic_vector(signed'(x"f"))        & 
 			std_logic_vector(hz_exp+signed'(x"b")) & 
 			std_logic_vector(hz_exp)               &
 			std_logic_vector(vt_exp+signed'(x"b")) &
@@ -360,6 +376,10 @@ begin
 			cgabcd_frm);
 				 	
 		bcd_unitvalue <= wirebus(
+			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
+			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))),   bcd_unitvalue'length)) &
@@ -368,6 +388,10 @@ begin
 			cgabcd_frm);
 
 		bcd_precvalue <= wirebus(
+			std_logic_vector(to_signed(0,                                           bcd_precvalue'length)) &
+			std_logic_vector(to_signed(0,                                           bcd_precvalue'length)) &
+			std_logic_vector(to_signed(0,                                           bcd_precvalue'length)) &
+			std_logic_vector(to_signed(0,                                           bcd_precvalue'length)) &
 			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(time_scale))), bcd_precvalue'length)) &
 			std_logic_vector(to_signed(-hz_precs(to_integer(unsigned(time_scale))), bcd_precvalue'length)) &
 			std_logic_vector(to_signed(-vt_precs(to_integer(unsigned(vt_scale))),   bcd_precvalue'length)) &
@@ -376,6 +400,10 @@ begin
 			cgabcd_frm);
 
 		bcd_alignment <= wirebus (
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))) &
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))) &
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))) &
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))) &
 			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))) &
 			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))) &
 			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))) &
@@ -385,6 +413,10 @@ begin
 		btof_bcdalign <= bcd_alignment(0);
 
 		bcd_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "hz.num1"),   bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.num2"),   bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.num3"),   bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.num4"),   bcd_memaddr'length) &
 			memaddr(tagbyid(tags, "hz.offset"), bcd_memaddr'length) &
 			memaddr(tagbyid(tags, "hz.div"   ), bcd_memaddr'length) &
 			memaddr(tagbyid(tags, "tgr.level"), bcd_memaddr'length) &
@@ -411,6 +443,10 @@ begin
 			cgachr_frm);
 
 		tag_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "ip4.num1"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num2"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num3"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num4"),   tag_memaddr'length) &
 			memaddr(tagbyid(tags, "hz.offset"),  tag_memaddr'length) &
 			memaddr(tagbyid(tags, "hz.div"   ),  tag_memaddr'length) &
 			memaddr(tagbyid(tags, "tgr.level"),  tag_memaddr'length) &

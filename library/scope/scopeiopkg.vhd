@@ -458,6 +458,17 @@ package scopeiopkg is
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector;
 
+	constant ip4num1_id : natural := 0;
+	constant ip4num2_id : natural := 1;
+	constant ip4num3_id : natural := 2;
+	constant ip4num4_id : natural := 3;
+
+	constant ip4addr_bf : natural_vector := (
+		ip4num1_id => 8,
+		ip4num2_id => 8,
+		ip4num3_id => 8,
+		ip4num4_id => 8);
+
 	constant vtoffset_maxsize : natural := 13;
 	constant vtoffset_id : natural := 0;
 	constant vtchanid_id : natural := 1;

@@ -79,8 +79,8 @@ architecture beh of scopeio_udpipdaisy is
 begin
 
 	assert phy_rx_d'length=chaini_data'length 
-		report "phy_rx_d'lengthi not equal chaini_data'length"
-		severity failure;
+	report "phy_rx_d'length is not equal chaini_data'length"
+	severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	generic map (
@@ -128,7 +128,9 @@ begin
 		clk   => phy_rxc,
 		di(0) => myipcfg_dv,
 		do(0) => ipaddr_dv);
+
 	frm <= word2byte(word2byte(hdr_dv & ipaddr_dv, hdr_trdy) & udpso_dv, udpso_dv);
+
 	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
 	chaino_frm  <= chaini_frm  when chaini_sel='1' else frm(0); 
 	chaino_irdy <= chaini_irdy when chaini_sel='1' else frm(0);
