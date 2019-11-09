@@ -51,8 +51,7 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal txdv : std_logic;
-	signal txd  : std_logic_vector(mii_txd'range);
+	signal nodata : std_logic_vector(mii_txd'range);
 
 	signal video_rxc  : std_logic;
 	signal video_rxdv : std_logic;
@@ -61,35 +60,51 @@ architecture struct of mii_debug is
 	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
-	mii_txdv <= txdv;
-	mii_txd  <= txd;
-
-	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
-	generic map (
-		mac       => x"00_40_00_01_02_03")
-	port map (
-		mii_req   => mii_req,
-
-		mii_rxc   => mii_rxc,
-		mii_rxdv  => mii_rxdv,
-		mii_rxd   => mii_rxd,
-		udpdports_val => x"0000",
-		udpdports_vld => udpdport_vld,
-
-		myipcfg_vld =>  myipcfg_vld,
-		mii_txc   => mii_txc,
-		mii_txdv  => txdv,
-		mii_txd   => txd);
-
+--	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
+--	generic map (
+--		mac       => x"00_40_00_01_02_03")
+--	port map (
+--		mii_req   => mii_req,
+--
+--		mii_rxc   => mii_rxc,
+--		mii_rxdv  => mii_rxdv,
+--		mii_rxd   => mii_rxd,
+--		udpdports_val => x"0000",
+--		udpdports_vld => udpdport_vld,
+--
+--		myipcfg_vld =>  myipcfg_vld,
+--		mii_txc   => mii_txc,
+--		mii_txdv  => mii_txdv,
+--		mii_txd   => mii_txd);
+--
 	video_rxc <= mii_rxc;
-	process (video_rxc)
-	begin
-		if rising_edge(video_rxc) then
-			video_rxdv <= myipcfg_vld; -- and udpdport_vld(0);
-			video_rxd  <= reverse(mii_rxd);
-		end if;
-	end process;
+--	process (video_rxc)
+--	begin
+--		if rising_edge(video_rxc) then
+--			video_rxdv <= myipcfg_vld; -- and udpdport_vld(0);
+--			video_rxd  <= reverse(mii_rxd);
+--		end if;
+--	end process;
 
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => mii_req,
+
+		phy_rxc     => mii_rxc,
+		phy_rx_dv   => mii_rxdv,
+		phy_rx_d    => mii_rxd,
+
+		phy_txc     => mii_txc, 
+		phy_tx_en   => mii_txdv,
+		phy_tx_d    => mii_txd,
+	
+		chaini_sel  => '0',
+
+		chaini_data => nodata,
+
+		chaino_frm  => video_rxdv,
+		chaino_data => video_rxd);
+	
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
 		mii_rxc   => video_rxc,

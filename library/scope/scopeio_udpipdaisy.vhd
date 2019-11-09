@@ -75,6 +75,7 @@ architecture beh of scopeio_udpipdaisy is
 	signal ipaddr_d   : std_logic_vector(phy_tx_d'range);
 
 	signal myipcfg_dv : std_logic;
+	signal mymac_dv : std_logic;
 	signal frm : std_logic_vector(0 to 0);
 begin
 
@@ -98,6 +99,7 @@ begin
 		mii_txd     => phy_tx_d,
 
 		myipcfg_vld => myipcfg_dv,
+		mymac_vld => mymac_dv,
 		so_dv       => udpso_dv,
 		so_data     => udpso_d);
 
@@ -132,8 +134,8 @@ begin
 	frm <= word2byte(word2byte(hdr_dv & ipaddr_dv, hdr_trdy) & udpso_dv, udpso_dv);
 
 	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else frm(0); 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else frm(0);
-	chaino_data <= chaini_data when chaini_sel='1' else reverse(word2byte(word2byte(hdr_d  & ipaddr_d,  hdr_trdy) & udpso_d,  udpso_dv));
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else myipcfg_dv; --frm(0); 
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else myipcfg_dv; --frm(0);
+	chaino_data <= chaini_data when chaini_sel='1' else reverse(phy_rx_d); --reverse(word2byte(word2byte(hdr_d  & ipaddr_d,  hdr_trdy) & udpso_d,  udpso_dv));
 
 end;

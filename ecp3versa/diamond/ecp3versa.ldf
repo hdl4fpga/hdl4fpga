@@ -305,6 +305,9 @@
         <Source name="../../library/scope/textboxpgk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../library/scope/scopeio_rgtrmyip.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>

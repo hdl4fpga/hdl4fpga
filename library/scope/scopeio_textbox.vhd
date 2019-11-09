@@ -376,10 +376,11 @@ begin
 			cgabcd_frm);
 				 	
 		bcd_unitvalue <= wirebus(
-			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
-			std_logic_vector(to_signed(0,                                          bcd_unitvalue'length)) &
+				std_logic_vector(
+				to_signed(0,                                          bcd_unitvalue'length) &
+				to_signed(0,                                          bcd_unitvalue'length) &
+				to_signed(0,                                          bcd_unitvalue'length) &
+				to_signed(0,                                          bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(hz_units(to_integer(unsigned(time_scale))), bcd_unitvalue'length)) &
 			std_logic_vector(to_signed(vt_units(to_integer(unsigned(vt_scale))),   bcd_unitvalue'length)) &

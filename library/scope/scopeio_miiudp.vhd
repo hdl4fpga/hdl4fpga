@@ -38,6 +38,7 @@ entity scopeio_miiudp is
 		mii_rxd  : in  std_logic_vector;
 		mii_rxdv : in  std_logic;
 		myipcfg_vld   : buffer std_logic;
+		mymac_vld   : out std_logic;
 
 		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
@@ -67,6 +68,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
 		myipcfg_vld => myipcfg_vld,
+		mymac_vld => mymac_vld,
 		udpdports_val => std_logic_vector(to_unsigned(57001,16)),
 		udpdports_vld => udpdports_vld,
 		udpddata_vld  => udpddata_vld,
