@@ -59,7 +59,7 @@ architecture mii_debug of nuhs3adsp is
 		mode480p    => (dcm_mul =>  3, dcm_div => 2),
 		mode600px16 => (dcm_mul =>  5, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 	signal txd  : std_logic_vector(mii_txd'range);
 	signal txen : std_logic;

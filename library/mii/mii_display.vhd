@@ -70,7 +70,8 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 7)
+--		mode => 7)
+		mode => 1)
 	port map (
 		video_clk   => video_clk,
 		video_hzsync => video_hs,
