@@ -43,13 +43,13 @@ architecture beh of nuhs3adsp is
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(8-1 downto 0);
+	signal si_data   : std_logic_vector(mii_rxd'range);
 
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_irdy   : std_logic;
-	signal so_data   : std_logic_vector(8-1 downto 0);
+	signal so_data   : std_logic_vector(mii_txd'range);
 
 	type display_param is record
 		layout : natural;
@@ -234,13 +234,13 @@ begin
 		variable vga_blank1 : std_logic;
 	begin
 		if rising_edge(vga_clk) then
-			red   <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
-			green <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
-			blue  <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn <= not vga_blank1;
-			hsync <= vga_hsync1;
-			vsync <= vga_vsync1;
-			sync  <= not vga_hsync1 and not vga_vsync1;
+			red        <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
+			green      <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
+			blue       <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
+			blankn     <= not vga_blank1;
+			hsync      <= vga_hsync1;
+			vsync      <= vga_vsync1;
+			sync       <= not vga_hsync1 and not vga_vsync1;
 			vga_rgb1   := vga_rgb;
             vga_hsync1 := vga_hsync;
             vga_vsync1 := vga_vsync;

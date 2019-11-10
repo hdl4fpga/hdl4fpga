@@ -419,7 +419,7 @@ package scopeiopkg is
 		constant layout : display_layout)
 		return std_logic;
 
-	constant rid_ipaddr   : std_logic_vector := x"0f";
+	constant rid_ipaddr   : std_logic_vector := x"1f";
 	constant rid_hzaxis   : std_logic_vector := x"10";
 	constant rid_palette  : std_logic_vector := x"11";
 	constant rid_trigger  : std_logic_vector := x"12";
@@ -458,10 +458,10 @@ package scopeiopkg is
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector;
 
-	constant ip4num1_id : natural := 0;
-	constant ip4num2_id : natural := 1;
-	constant ip4num3_id : natural := 2;
-	constant ip4num4_id : natural := 3;
+	constant ip4num1_id : natural := 3;
+	constant ip4num2_id : natural := 2;
+	constant ip4num3_id : natural := 1;
+	constant ip4num4_id : natural := 0;
 
 	constant ip4addr_bf : natural_vector := (
 		ip4num1_id => 8,
@@ -598,30 +598,30 @@ package scopeiopkg is
 	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
 		text(                                                                               -- 
 			style   => styles(background_color(0)), -- Workaround
-			content => "IP Address : "),
+			content => "IP: "),
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)), -- Workaround
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)), -- Workaround
 			content => "0",
 			id      => "ip4.num1"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num2"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num3"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num4"));
 

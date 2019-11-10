@@ -188,6 +188,11 @@ package std is
 		constant arg2 : std_logic_vector)
 		return natural;
 
+	function wirebus (
+		constant arg1 : integer_vector;
+		constant arg2 : std_logic_vector)
+		return integer;
+
 	function setif (
 		constant arg  : boolean;
 		constant argt : std_logic := '1';
@@ -820,7 +825,7 @@ package body std is
 		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "wirebus"
+			report "wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
 			severity failure;
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
@@ -838,6 +843,20 @@ package body std is
 		constant arg2 : std_logic_vector)
 		return natural is
 		variable retval : natural;
+	begin
+		for i in arg2'range loop
+			if arg2(i)='1' then
+				retval := arg1(i);
+			end if;
+		end loop;
+		return retval;
+	end;
+
+	function wirebus (
+		constant arg1 : integer_vector;
+		constant arg2 : std_logic_vector)
+		return integer is
+		variable retval : integer;
 	begin
 		for i in arg2'range loop
 			if arg2(i)='1' then
