@@ -61,6 +61,8 @@ architecture mii_debug of nuhs3adsp is
 
 	constant video_mode : layout_mode := mode1080p;
 
+	signal txd  : std_logic_vector(mii_txd'range);
+	signal txen : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -89,6 +91,8 @@ begin
 		dfs_clk => mii_refclk);
 
 	mii_debug_e : entity hdl4fpga.mii_debug
+	generic map (
+		cga_bitrom   => to_ascii("Ready Steady GO!"))
 	port map (
 		mii_req   => mii_req,
 		mii_rxc   => mii_rxc,
@@ -98,8 +102,8 @@ begin
 --		mii_rxd   => mii_txd,
 --		mii_rxdv  => mii_txen,
 		mii_txc   => mii_txc,
-		mii_txd   => mii_txd,
-		mii_txdv  => mii_txen,
+		mii_txd   => txd,
+		mii_txdv  => txen,
 
 		video_clk => vga_clk, 
 		video_dot => vga_dot,
@@ -120,14 +124,21 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if sw1='0' then
-				mii_req <= '1';
-			else
 				mii_req <= '0';
+			else
+				mii_req <= '1';
 			end if;
 		end if;
 	end process;
 	led7 <= mii_req;
 
+	process (mii_txc)
+	begin
+		if falling_edge(mii_txc) then
+			mii_txd  <= txd;
+			mii_txen <= txen;
+		end if;
+	end process;
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (
 		clk => vga_clk,

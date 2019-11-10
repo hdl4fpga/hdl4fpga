@@ -33,6 +33,8 @@ use hdl4fpga.cgafonts.all;
 use hdl4fpga.videopkg.all;
 
 entity mii_display is
+	generic (
+		cga_bitrom : std_logic_vector := (1 to 0 => '-'));
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxdv  : in  std_logic;
@@ -106,7 +108,7 @@ begin
 	blankn <= video_hon and video_frm;
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom   => to_ascii("Ready to capture !"),
+		cga_bitrom   => cga_bitrom,
 	  	font_bitrom  => psf1cp850x8x16,
 		font_height  => font_height,
 		font_width   => font_width)

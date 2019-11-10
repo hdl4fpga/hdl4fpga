@@ -31,7 +31,7 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
 	generic (
-		cga_bitrom   : std_logic_vector := (0 to 0 => '-');
+		cga_bitrom   : std_logic_vector := (1 to 0 => '-');
 		font_bitrom  : std_logic_vector := psf1cp850x8x16;
 		font_height  : natural := 16;
 		font_width   : natural := 8);

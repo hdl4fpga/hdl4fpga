@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity mii_debug is
 	generic (
+		cga_bitrom : std_logic_vector := (1 to 0 => '-');
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		btn       : in  std_logic:= '0';
@@ -106,6 +107,8 @@ begin
 		chaino_data => video_rxd);
 	
 	mii_display_e : entity hdl4fpga.mii_display
+	generic map (
+		cga_bitrom => cga_bitrom)
 	port map (
 		mii_rxc   => video_rxc,
 		mii_rxdv  => video_rxdv,
