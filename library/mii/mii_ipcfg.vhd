@@ -44,6 +44,8 @@ entity mii_ipcfg is
 		mii_txd       : out std_logic_vector;
 		mii_txdv      : out std_logic;
 
+		mymac_vld     : out std_logic;
+		myipcfg_vld   : buffer std_logic;
 		udpdports_val : in  std_logic_vector;
 		udpdports_vld : out std_logic_vector;
 		udpddata_vld  : out std_logic);
@@ -154,7 +156,6 @@ begin
 		signal arpproto_vld  : std_logic;
 		signal udp_vld       : std_logic;
 		signal dhcp_vld      : std_logic;
-		signal myipcfg_vld   : std_logic;
 		signal ipdaddr_vld   : std_logic;
 
 		signal ethsmac_ena   : std_logic;
@@ -447,6 +448,7 @@ begin
 				mii_treq => pre_vld,
 				mii_pktv => ethdmac_vld);
 
+			mymac_vld <= ethdmac_vld;
 			mii_bcst_e : entity hdl4fpga.mii_romcmp
 			generic map (
 				mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))

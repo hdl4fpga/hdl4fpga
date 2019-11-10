@@ -43,13 +43,13 @@ architecture beh of nuhs3adsp is
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(8-1 downto 0);
+	signal si_data   : std_logic_vector(mii_rxd'range);
 
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_irdy   : std_logic;
-	signal so_data   : std_logic_vector(8-1 downto 0);
+	signal so_data   : std_logic_vector(mii_txd'range);
 
 	type display_param is record
 		layout : natural;
@@ -70,7 +70,7 @@ architecture beh of nuhs3adsp is
 		mode480p    => (layout => 8, dcm_mul =>  3, dcm_div => 2),
 		mode600px16 => (layout => 6, dcm_mul =>  5, dcm_div => 4));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 begin
 
@@ -199,8 +199,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
-		vt_unit        => std_logic_vector(to_unsigned(25,5)),
-		hz_unit        => std_logic_vector(to_unsigned(25,5)),
+		hz_unit          => 25.0*pico,
+		vt_unit          => 20.0*micro,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"11111111_11111111_11111111",
 		default_gridfg   => b"11111111_00000000_00000000",
@@ -234,13 +234,13 @@ begin
 		variable vga_blank1 : std_logic;
 	begin
 		if rising_edge(vga_clk) then
-			red   <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
-			green <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
-			blue  <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
-			blank <= not vga_blank1;
-			hsync <= vga_hsync1;
-			vsync <= vga_vsync1;
-			sync  <= not vga_hsync1 and not vga_vsync1;
+			red        <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
+			green      <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
+			blue       <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
+			blankn     <= not vga_blank1;
+			hsync      <= vga_hsync1;
+			vsync      <= vga_vsync1;
+			sync       <= not vga_hsync1 and not vga_vsync1;
 			vga_rgb1   := vga_rgb;
             vga_hsync1 := vga_hsync;
             vga_vsync1 := vga_vsync;
@@ -286,7 +286,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rst  <= '1';
+	mii_rstn <= '1';
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

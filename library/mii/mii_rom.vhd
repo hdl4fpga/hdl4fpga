@@ -49,25 +49,6 @@ architecture def of mii_rom is
 	subtype miibyte is std_logic_vector(mii_txd'range);
 	type miibyte_vector is array (natural range <>) of miibyte;
 
-	function mem_init (
-		constant arg : std_logic_vector)
-		return miibyte_vector is
-
-		variable val : miibyte_vector(0 to 2**addr_size-1) := (others => (miibyte'range => '-'));
-		variable aux : std_logic_vector(2**addr_size*byte'length-1 downto 0) := (others => '-');
-
-	begin
-
-		aux(arg'length-1 downto 0) := arg;
-		for i in 0 to mem_size-1 loop
-			val(i) := aux(val(0)'length-1 downto 0);
-			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
-		end loop;
-
-		return val;
-	end;
-
-	signal mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data); -- Declaring it constant makes Xilinx ISE crash
 	signal cntr : unsigned(0 to addr_size);
 
 begin
@@ -88,6 +69,11 @@ begin
 	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= mem(to_integer((cntr(1 to addr_size))));
 
+	mem_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => reverse(reverse(mem_data), mii_txd'length))
+	port map (
+		addr => std_logic_vector(cntr(1 to addr_size)),
+		data => mii_txd);
 end;

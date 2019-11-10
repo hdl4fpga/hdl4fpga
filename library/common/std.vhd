@@ -44,6 +44,34 @@ package std is
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
+	function strlen (
+		constant str : string)
+		return natural;
+
+	function strcmp (
+		constant str1 : in string;
+		constant str2 : in string)
+		return boolean;
+
+	function strstr(
+		constant key    : string;
+		constant domain : string)
+		return natural;
+
+	function strrev (
+		constant arg : string)
+		return string;
+
+	function strfill (
+		constant s    : string;
+		constant size : natural;
+		constant char : character := NUL)
+		return string;
+
+	function itoa (
+		constant arg : integer)
+		return string;
+
 	function to_stdlogicvector (
 		constant arg : string)
 		return std_logic_vector;
@@ -160,6 +188,11 @@ package std is
 		constant arg2 : std_logic_vector)
 		return natural;
 
+	function wirebus (
+		constant arg1 : integer_vector;
+		constant arg2 : std_logic_vector)
+		return integer;
+
 	function setif (
 		constant arg  : boolean;
 		constant argt : std_logic := '1';
@@ -259,11 +292,7 @@ package std is
 	-----------
 
 	function to_string (
-		constant arg : integer)
-		return string;
-
-	function to_string (
-		constant arg : character)
+		constant arg : std_logic_vector)
 		return string;
 
 	function to_stdlogicvector (
@@ -305,18 +334,6 @@ package std is
 	procedure swap (
 		variable arg1 : inout std_logic_vector;
 		variable arg2 : inout std_logic_vector);
-
-	function selecton (
-		constant condition : boolean;
-		constant value_if_true  : integer;
-		constant value_if_false : integer)
-		return integer;
-
-	function selecton (
-		constant condition : boolean;
-		constant value_if_true  : real;
-		constant value_if_false : real)
-		return real;
 
 	function ispower2(
 		constant value : natural)
@@ -378,6 +395,158 @@ use ieee.std_logic_textio.all;
 
 package body std is
 
+	function strfill (
+		constant s    : string;
+		constant size : natural;
+		constant char : character := NUL)
+		return string
+	is
+		variable retval : string(1 to size);
+		variable j      : natural;
+	begin
+		j := 1;
+		for i in s'range loop
+			retval(j) := s(i);
+			j := j + 1;
+		end loop;
+		while j <= size loop
+			retval(j) := char;
+			j := j + 1;
+		end loop;
+		return retval;
+	end;
+
+	function strcmp (
+		constant str1 : in string;
+		constant str2 : in string)
+		return boolean
+	is
+		alias astr1 : string(1 to str1'length) is str1;
+		alias astr2 : string(1 to str2'length) is str2;
+	begin
+		for i in astr1'range loop
+			if astr2'right < i then
+				if astr1(i)=NUL then
+					return true;
+				else
+					return false;
+				end if;
+			elsif astr1(i)/=astr2(i) then
+				return false;
+			end if;
+		end loop;
+		if astr2'length=astr1'length then
+			return true;
+		elsif astr2(astr1'right+1)=NUL then
+			return true;
+		else
+			return false;
+		end if;
+	end;
+
+	procedure strcmp (
+		variable sucess : inout boolean;
+		variable index  : inout natural;
+		constant key    : in    string;
+		constant domain : in    string)
+	is
+	begin
+		sucess := false;
+		for i in key'range loop
+			if index < domain'length then
+				if key(i)/=domain(index) then
+					return;
+				else
+					index := index + 1;
+				end if;
+			elsif key(i)=NUL then
+				sucess := true;
+				return;
+			else
+				return;
+			end if;
+		end loop;
+		if index < domain'length then
+			if domain(index)=NUL then
+				sucess := true;
+				return;
+			else
+				return;
+			end if;
+		else
+			sucess := true;
+			return;
+		end if;
+	end;
+
+	function strstr(
+		constant key    : string;
+		constant domain : string)
+		return natural is
+		variable sucess : boolean;
+		variable index  : natural;
+		variable ref    : natural;
+	begin
+		ref   := 0;
+		index := domain'left;
+		while index < domain'right loop
+			strcmp(sucess, index, key, domain);
+			if sucess then
+				return ref;
+			end if;
+			while domain(index) /= NUL loop
+				index := index + 1;
+			end loop;
+			index := index + 1;
+		end loop;
+	end;
+
+	function strlen (
+		constant str : string)
+		return natural
+	is
+		variable retval : natural;
+	begin
+		retval := 0;
+		for i in str'range loop
+			if str(i)=NUL then
+				return retval;
+			end if;
+			retval := retval + 1;
+		end loop;
+		return retval;
+	end;
+
+	function strrev (
+		constant arg : string)
+		return string
+	is
+		variable retval : string(1 to arg'length);
+	begin
+		retval := arg;
+		for i in 1 to retval'length/2 loop
+			swap(retval(i), retval(retval'length+1-i));
+		end loop;
+		return retval;
+	end;
+
+	function itoa (
+		constant arg : integer)
+		return string 
+	is
+		constant asciitab : string(1 to 10) := "0123456789";
+		variable retval   : string(1 to 256) := (others => NUL);
+		variable value    : natural;
+	begin
+		value := abs(arg);
+		for i in retval'range loop
+			retval(i) := asciitab((value mod 10)+1);
+			value     := value / 10;
+			exit when value=0;
+		end loop;
+		return strrev(retval(1 to strlen(retval)));
+	end;
+
 	function encoder (
 		constant arg : std_logic_vector)
 		return   std_logic_vector is
@@ -398,15 +567,17 @@ package body std is
 		constant size : natural)
 		return std_logic_vector is
 		constant n        : natural := (data'length+size-1)/size;
-		variable aux      : unsigned(0 to data'length-1);
+		variable aux      : unsigned(0 to n*size-1);
 		variable checksum : unsigned(0 to size);
+		variable retval   : std_logic_vector(0 to size-1);
 	begin
-		aux      := unsigned(data);
+		aux := (others => '0');
+		aux(0 to data'length-1) := unsigned(data);
 		checksum := (others => '0');
 		for i in 0 to n-1 loop
 			checksum := checksum + resize(aux(0 to size-1), checksum'length);
 			if checksum(0)='1' then
-				checksum := checksum + 1;
+				checksum := checksum + to_unsigned(1, checksum'length);
 			end if;
 			checksum(0) := '0';
 			aux := aux sll size;
@@ -431,13 +602,14 @@ package body std is
 		constant udp : std_logic_vector)
 		return std_logic_vector is
 		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
-		variable retval : std_logic_vector(16-1 downto 0);
+		variable retval : std_logic_vector(0 to 16-1);
 	begin
 		aux(src'range) := unsigned(src);
 		aux := aux rol src'length;
 		aux(dst'range) := unsigned(dst);
 		aux := aux rol dst'length;
-		aux(0 to 32-1) := x"0011" & to_unsigned(udp'length/8, 16);
+		aux( 0 to 16-1) := x"0011";
+		aux(16 to 32-1) := to_unsigned(udp'length/8, 16);
 		aux := aux rol 32;
 
 		aux(0 to udp'length-1) := unsigned(udp);
@@ -461,7 +633,8 @@ package body std is
 		aux := aux rol src'length;
 		aux(dst'range) := unsigned(dst);
 		aux := aux rol dst'length;
-		aux(0 to 32-1) := x"0011" & aux1(32 to 32+16-1);
+		aux( 0 to 16-1) := x"0011";
+		aux(16 to 32-1) := aux1(32 to 32+16-1);
 		aux := aux rol 32;
 
 		aux(0 to udp'length-1) := unsigned(udp);
@@ -563,6 +736,25 @@ package body std is
 		return val;
 	end;
 
+	function to_string(
+		constant arg : std_logic_vector)
+		return string
+	is
+		variable aux    : unsigned(0 to arg'length-1);
+		variable retval : string(1 to arg'length);
+	begin
+		aux := unsigned(arg);
+		for i in retval'range loop
+			if aux(0)='1' then
+				retval(i) := '1';
+			else
+				retval(i) := '0';
+			end if;
+			aux := aux sll 1;
+		end loop;
+		return retval;
+	end;
+
 	function to_stdlogicvector (
 		constant arg : character)
 		return std_logic_vector is
@@ -633,7 +825,7 @@ package body std is
 		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "wirebus"
+			report "wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
 			severity failure;
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
@@ -651,6 +843,20 @@ package body std is
 		constant arg2 : std_logic_vector)
 		return natural is
 		variable retval : natural;
+	begin
+		for i in arg2'range loop
+			if arg2(i)='1' then
+				retval := arg1(i);
+			end if;
+		end loop;
+		return retval;
+	end;
+
+	function wirebus (
+		constant arg1 : integer_vector;
+		constant arg2 : std_logic_vector)
+		return integer is
+		variable retval : integer;
 	begin
 		for i in arg2'range loop
 			if arg2(i)='1' then
@@ -1080,24 +1286,6 @@ package body std is
 	-- ASCII --
 	-----------
 
-	function to_string (
-		constant arg : integer)
-		return string is
-		variable msg : line;
-	begin
-		write (msg, arg);
-		return msg.all;
-	end function;
-
-	function to_string (
-		constant arg : character)
-		return string is
-		variable msg : line;
-	begin
-		write (msg, arg);
-		return msg.all;
-	end function;
-		
 	function to_stdlogicvector (
 		constant arg : byte_vector)
 		return std_logic_vector is
@@ -1225,32 +1413,6 @@ package body std is
 			return false;
 		end if;
 		return true;
-	end;
-
-	function selecton (
-		constant condition : boolean;
-		constant value_if_true  : real;
-		constant value_if_false : real)
-		return real is
-	begin
-		if condition then
-			return value_if_true;
-		else
-			return value_if_false;
-		end if;
-	end;
-
-	function selecton (
-		constant condition : boolean;
-		constant value_if_true  : integer;
-		constant value_if_false : integer)
-		return integer is
-	begin
-		if condition then
-			return value_if_true;
-		else
-			return value_if_false;
-		end if;
 	end;
 
 	function signed_num_bits (

@@ -3,49 +3,49 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
-		gclk100   : in std_logic;
+		gclk100     : in std_logic;
 
-		ja  : inout std_logic_vector(1 to 10) := (others => 'Z');
-		jc  : inout std_logic_vector(1 to 10) := (others => 'Z');
-		jd  : inout std_logic_vector(1 to 10) := (others => 'Z');
-		vaux_p : in std_logic_vector(16-1 downto 0) := (others => '-');
-		vaux_n : in std_logic_vector(16-1 downto 0) := (others => '-');
-		v_p : in std_logic_vector(0 to 1-1) := (others => '-'); 
-		v_n : in std_logic_vector(0 to 1-1) := (others => '-'); 
-		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
-		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
-		led : out std_logic_vector(4-1 downto 0);
-		RGBled : out std_logic_vector(4*3-1 downto 0);
+		ja          : inout std_logic_vector(1 to 10) := (others => 'Z');
+		jc          : inout std_logic_vector(1 to 10) := (others => 'Z');
+		jd          : inout std_logic_vector(1 to 10) := (others => 'Z');
+		vaux_p      : in    std_logic_vector(16-1 downto 0) := (others => '-');
+		vaux_n      : in    std_logic_vector(16-1 downto 0) := (others => '-');
+		v_p         : in    std_logic_vector(0 to 1-1) := (others => '-'); 
+		v_n         : in    std_logic_vector(0 to 1-1) := (others => '-'); 
+		btn         : in    std_logic_vector(4-1 downto 0) := (others => '-');
+		sw          : in    std_logic_vector(4-1 downto 0) := (others => '-');
+		led         : out   std_logic_vector(4-1 downto 0);
+		RGBled      : out   std_logic_vector(4*3-1 downto 0);
 
-		eth_rstn  : out std_logic;
-		eth_ref_clk : out std_logic;
-		eth_mdio  : inout std_logic := '-';
-		eth_mdc   : out std_logic;
-		eth_crs   : in std_logic := '-';
-		eth_col   : in std_logic := '-';
-		eth_tx_clk  : in std_logic := '-';
-		eth_tx_en : out std_logic;
-		eth_txd   : out std_logic_vector(0 to 4-1);
-		eth_rx_clk  : in std_logic := '-';
-		eth_rxerr : in std_logic := '-';
-		eth_rx_dv : in std_logic := '-';
-		eth_rxd   : in std_logic_vector(0 to 4-1) := (others => '-');
+		eth_rstn    : out   std_logic;
+		eth_ref_clk : out   std_logic;
+		eth_mdio    : inout std_logic := '-';
+		eth_mdc     : out   std_logic;
+		eth_crs     : in    std_logic := '-';
+		eth_col     : in    std_logic := '-';
+		eth_tx_clk  : in    std_logic := '-';
+		eth_tx_en   : out   std_logic;
+		eth_txd     : out   std_logic_vector(0 to 4-1);
+		eth_rx_clk  : in    std_logic := '-';
+		eth_rxerr   : in    std_logic := '-';
+		eth_rx_dv   : in    std_logic := '-';
+		eth_rxd     : in    std_logic_vector(0 to 4-1) := (others => '-');
 		
-		ddr3_reset : out std_logic := '0';
-		ddr3_clk_p : out std_logic := '0';
-		ddr3_clk_n : out std_logic := '0';
-		ddr3_cke : out std_logic := '0';
-		ddr3_cs  : out std_logic := '1';
-		ddr3_ras : out std_logic := '1';
-		ddr3_cas : out std_logic := '1';
-		ddr3_we  : out std_logic := '1';
-		ddr3_ba  : out std_logic_vector( 3-1 downto 0) := (others => '1');
-		ddr3_a   : out std_logic_vector(14-1 downto 0) := (others => '1');
-		ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-		ddr3_odt : out std_logic := '1');
+		ddr3_reset  : out   std_logic := '0';
+		ddr3_clk_p  : out   std_logic := '0';
+		ddr3_clk_n  : out   std_logic := '0';
+		ddr3_cke    : out   std_logic := '0';
+		ddr3_cs     : out   std_logic := '1';
+		ddr3_ras    : out   std_logic := '1';
+		ddr3_cas    : out   std_logic := '1';
+		ddr3_we     : out   std_logic := '1';
+		ddr3_ba     : out   std_logic_vector( 3-1 downto 0) := (others => '1');
+		ddr3_a      : out   std_logic_vector(14-1 downto 0) := (others => '1');
+		ddr3_dm     : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		ddr3_dqs_p  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		ddr3_dqs_n  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		ddr3_dq     : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+		ddr3_odt    : out   std_logic := '1');
 
 --! Bus signal doesnt work on Vivado !-
 

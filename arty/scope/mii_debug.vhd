@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -41,7 +40,6 @@ architecture mii_debug of arty is
 	signal video_vs       : std_logic;
 	signal video_hs       : std_logic;
 	signal video_clk      : std_logic;
-	signal pp : std_logic;
 
 	signal rxc  : std_logic;
 	signal rxd  : std_logic_vector(eth_rxd'range);
@@ -106,7 +104,6 @@ begin
 	txc <= not eth_txclk_bufg;
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
-		btn       => pp,
 		mii_req   => mii_req,
 		mii_rxc   => rxc,
 		mii_rxd   => rxd,
@@ -131,27 +128,17 @@ begin
 		end if;
 	end process;
 
-	process (btn(0), txc)
+	process (txc)
 	begin
-		if btn(0)='1' then
-			mii_req <= '0';
-			led(0)  <= '1';
-		elsif rising_edge(txc) then
-			led(0)  <= '0';
-			mii_req <= '1';
+		if rising_edge(txc) then
+			if btn(0)='1' then
+				mii_req <= '0';
+			else
+				mii_req <= '1';
+			end if;
 		end if;
 	end process;
-
-	process (btn(1), txc)
-	begin
-		if btn(1)='1' then
-			pp <= '0';
-			led(1)  <= '1';
-		elsif rising_edge(txc) then
-			led(1)  <= '0';
-			pp <= '1';
-		end if;
-	end process;
+	led(0) <= not mii_req;
 
 	process (video_clk)
 	begin

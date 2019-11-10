@@ -34,27 +34,26 @@ library ecp3;
 use ecp3.components.all;
 
 architecture miitx_dhcp of ecp3versa is
---	signal mii_req        : std_logic;
---	signal eth_txclk_bufg : std_logic;
---	signal eth_rxclk_bufg : std_logic;
+	signal mii_req        : std_logic;
+	signal eth_txclk_bufg : std_logic;
+	signal eth_rxclk_bufg : std_logic;
 	signal video_dot      : std_logic;
 	signal video_vs       : std_logic;
 	signal video_hs       : std_logic;
 	signal video_clk      : std_logic;
 
---	attribute oddrapps : string;
---	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
---	signal en : std_logic;
---	signal d  : std_logic_vector(phy1_tx_d'range);
---
---	signal rxc  : std_logic;
---	signal rxdv : std_logic;
---	signal rxd  : std_logic_vector(phy1_tx_d'range);
---
---	signal txc  : std_logic;
---	signal txdv : std_logic;
---	signal txd  : std_logic_vector(phy1_tx_d'range);
---	signal btn  : std_logic;
+	attribute oddrapps : string;
+	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
+	signal en : std_logic;
+	signal d  : std_logic_vector(phy1_tx_d'range);
+
+	signal rxc  : std_logic;
+	signal rxdv : std_logic;
+	signal rxd  : std_logic_vector(phy1_tx_d'range);
+
+	signal txc  : std_logic;
+	signal txdv : std_logic;
+	signal txd  : std_logic_vector(phy1_tx_d'range);
 	signal rst  : std_logic;
 	signal expansionx4_d : std_logic_vector(expansionx4'range);
 begin
@@ -64,8 +63,7 @@ begin
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
 		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "100.000000";
---		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
@@ -78,8 +76,7 @@ begin
 			CLKOS_TRIM_DELAY=> 0, CLKOS_TRIM_POL=> "RISING", 
 			CLKOP_TRIM_DELAY=> 0, CLKOP_TRIM_POL=> "RISING", 
 			PHASE_DELAY_CNTL=> "STATIC", DUTY=>  8, PHASEADJ=> "0.0", 
---			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
-			CLKOK_DIV=>  2, CLKOP_DIV=> 32, CLKFB_DIV=>  1, CLKI_DIV=>  4, 
+			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
 			FIN=> "100.000000")
 		port map (
 			rst         => rst, 
@@ -96,80 +93,66 @@ begin
 			clkok       => open,
 			clkok2      => open,
 			lock        => lock);
-	led<= (others => lock);
+		led<= (others => lock);
 	end block;
 
---	process (clk)
---		variable cntr : unsigned(0 to 2-1);
---	begin
---		if rising_edge(clk) then
---			cntr := cntr + 1;
---			video_clk <= cntr(0);
---		end if;
---	end process;
+	txc <= phy1_125clk;
+	process (fpga_gsrn, txc)
+	begin
+		if rising_edge(txc) then
+			if fpga_gsrn='0' then
+				mii_req <= '1';
+			else
+				mii_req <= '1';
+			end if;
+		end if;
+	end process;
 
---	txc <= phy1_125clk;
---	process (fpga_gsrn, txc)
---		variable pp : std_logic;
---	begin
---		if fpga_gsrn='0' then
---			mii_req <= pp;
---			btn     <= not pp;
---		elsif rising_edge(txc) then
---			mii_req <= '1';
---			btn <= '1';
---		end if;
---		if rising_edge(fpga_gsrn) then
---			pp := '0'; --not pp;
---		end if;
---	end process;
---
---	rxc <= not phy1_rxc;
---	process (rxc)
---	begin
---		if rising_edge(rxc) then
---			rxdv <= phy1_rx_dv;
---			rxd  <= phy1_rx_d;
---		end if;
---	end process;
---
+	rxc <= not phy1_rxc;
+	process (rxc)
+	begin
+		if rising_edge(rxc) then
+			rxdv <= phy1_rx_dv;
+			rxd  <= phy1_rx_d;
+		end if;
+	end process;
+
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
---		btn       => btn,
---		mii_req   => mii_req,
---		mii_rxc   => rxc,
---		mii_rxd   => rxd,
---		mii_rxdv  => rxdv,
-----		mii_rxc   => txc,  --rxc,
-----		mii_rxd   => txd,  --rxd,
-----		mii_rxdv  => txdv, --rxdv,
---		mii_txc   => txc,
---		mii_txd   => txd,
---		mii_txdv  => txdv,
+		mii_req   => mii_req,
+		mii_rxc   => rxc,
+		mii_rxd   => rxd,
+		mii_rxdv  => rxdv,
+--		mii_rxc   => txc,  --rxc,
+--		mii_rxd   => txd,  --rxd,
+--		mii_rxdv  => txdv, --rxdv,
+		mii_txc   => txc,
+		mii_txd   => txd,
+		mii_txdv  => txdv,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
 		video_hs  => video_hs,
 		video_vs  => video_vs);
 	
---	process (txc)
---	begin
---		if rising_edge(txc) then
---			phy1_tx_en <= txdv;
---			phy1_tx_d  <= txd;
---		end if;
---	end process;
---
---	oddr_i : oddrxd1
---	port map (
---		sclk => phy1_125clk,
---		da   => '0',
---		db   => '1',
---		q    => phy1_gtxclk);
---
---	phy1_rst  <= '1';
---	phy1_mdc  <= '0';
---	phy1_mdio <= '0';
+	process (txc)
+	begin
+		if rising_edge(txc) then
+			phy1_tx_en <= txdv;
+			phy1_tx_d  <= txd;
+		end if;
+	end process;
+
+	oddr_i : oddrxd1
+	port map (
+		sclk => phy1_125clk,
+		da   => '0',
+		db   => '1',
+		q    => phy1_gtxclk);
+
+	phy1_rst  <= '1';
+	phy1_mdc  <= '0';
+	phy1_mdio <= '0';
 
 	expansionx4_d(3) <= video_dot;
 	expansionx4_d(4) <= video_dot;

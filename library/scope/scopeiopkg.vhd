@@ -419,6 +419,7 @@ package scopeiopkg is
 		constant layout : display_layout)
 		return std_logic;
 
+	constant rid_ipaddr   : std_logic_vector := x"1f";
 	constant rid_hzaxis   : std_logic_vector := x"10";
 	constant rid_palette  : std_logic_vector := x"11";
 	constant rid_trigger  : std_logic_vector := x"12";
@@ -456,6 +457,17 @@ package scopeiopkg is
 		constant bf_id     : natural;
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector;
+
+	constant ip4num1_id : natural := 3;
+	constant ip4num2_id : natural := 2;
+	constant ip4num3_id : natural := 1;
+	constant ip4num4_id : natural := 0;
+
+	constant ip4addr_bf : natural_vector := (
+		ip4num1_id => 8,
+		ip4num2_id => 8,
+		ip4num3_id => 8,
+		ip4num4_id => 8);
 
 	constant vtoffset_maxsize : natural := 13;
 	constant vtoffset_id : natural := 0;
@@ -583,7 +595,41 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	constant hz_children : tag_vector := (														-- Xilinx's mess
+	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
+		text(                                                                               -- 
+			style   => styles(background_color(0)), -- Workaround
+			content => "IP: "),
+		text(                                                                               -- 
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)), -- Workaround
+			content => "0",
+			id      => "ip4.num1"),
+		text(
+			style   => styles(background_color(0)),
+			content => "."),
+		text(
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
+			content => "0",
+			id      => "ip4.num2"),
+		text(
+			style   => styles(background_color(0)),
+			content => "."),
+		text(
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
+			content => "0",
+			id      => "ip4.num3"),
+		text(
+			style   => styles(background_color(0)),
+			content => "."),
+		text(
+			style   => styles(background_color(0) & width(5) & alignment(right_alignment)),
+			content => "0",
+			id      => "ip4.num4"));
+
+	constant ip4_tags : tag_vector := div (                                                 -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => ip4_children);                                                          -- Workaround
+
+	constant hz_children : tag_vector := (                                                  -- Xilinx's mess
 		text(                                                                               -- 
 			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
 			content => "NaN",
@@ -606,11 +652,11 @@ package scopeiopkg is
 			style   => styles(background_color(0)),
 			content => "s"));
 
-	constant hz_tags : tag_vector := div (														-- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),                   -- 
-		children => hz_children);                                                               -- Workaround
+	constant hz_tags : tag_vector := div (                                                  -- Xilinx's mess
+		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		children => hz_children);                                                           -- Workaround
 
-	constant tgr_children : tag_vector := (														-- Xilinx's mess
+	constant tgr_children : tag_vector := (                                                 -- Xilinx's mess
 		text(                                                                               -- 
 			style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
 			id      => "tgr.freeze"),
@@ -1267,7 +1313,8 @@ package body scopeiopkg is
 		return tag_vector
 	is
 		variable vt_tags  : tag_vector(0 to inputs*vt0_tags'length-1);
-		variable children : tag_vector(0 to hz_tags'length+tgr_tags'length+inputs*vt0_tags'length-1);
+		variable children : tag_vector(0 to ip4_tags'length+hz_tags'length+tgr_tags'length+inputs*vt0_tags'length-1);
+		variable base     : natural;
 	begin
 		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
 		for i in 1 to inputs-1 loop
@@ -1296,9 +1343,19 @@ package body scopeiopkg is
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => "V")));
 		end loop;
-		children(0 to hz_tags'length-1) := hz_tags; -- & tgr_tags & vt_tags;
-		children(hz_tags'length to hz_tags'length+tgr_tags'length-1) := tgr_tags; -- & vt_tags;
-		children(hz_tags'length+tgr_tags'length to children'right) := vt_tags;
+
+		base := 0;
+		children(base to base+ip4_tags'length-1) := ip4_tags;
+
+		base := base + ip4_tags'length;
+		children(base to base+hz_tags'length-1)  := hz_tags;
+
+		base := base + hz_tags'length;
+		children(base to base+tgr_tags'length-1) := tgr_tags;
+
+		base := base + tgr_tags'length;
+		children(base to base+vt_tags'length-1)  := vt_tags;
+
 		return page(
 			style    => style,
 			children => children);

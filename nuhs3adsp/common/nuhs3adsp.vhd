@@ -53,7 +53,7 @@ entity nuhs3adsp is
 		hsync : out std_logic := '0';
 		vsync : out std_logic := '0';
 		clk_videodac : out std_logic := '1';
-		blank : out std_logic := '0';
+		blankn : out std_logic := '0';
 		sync  : out std_logic := '0';
 		psave : out std_logic := '0';
 		red   : out std_logic_vector(8-1 downto 0) := (others => '0');
@@ -84,7 +84,7 @@ entity nuhs3adsp is
 		------------------------------
 		-- MII ethernet Transceiver --
 
-		mii_rst  : out std_logic := 'Z';
+		mii_rstn  : out std_logic := 'Z';
 		mii_refclk : out std_logic := '0';
 		mii_intrp  : in std_logic := 'Z';
 
@@ -92,8 +92,8 @@ entity nuhs3adsp is
 		mii_mdio : inout std_logic := 'Z';
 
 		mii_txc  : in  std_logic := 'Z';
-		mii_txen : out std_logic := 'Z';
-		mii_txd  : out std_logic_vector(0 to 4-1) := (others => 'Z');
+		mii_txen : buffer std_logic := 'Z';
+		mii_txd  : buffer std_logic_vector(0 to 4-1) := (others => 'Z');
 
 		mii_rxc  : in std_logic := 'Z';
 		mii_rxdv : in std_logic := 'Z';
@@ -188,7 +188,7 @@ entity nuhs3adsp is
 	attribute loc of clk_videodac : signal is "M17";
 	attribute loc of hsync : signal is "M22";
 	attribute loc of vsync : signal is "N22";
-	attribute loc of blank : signal is "K20";
+	attribute loc of blankn : signal is "K20";
 	attribute loc of sync  : signal is "J20";
 	attribute loc of psave : signal is "G22";
 	attribute loc of red   : signal is "R22 T18 U18 U19 AA22 V20 W19 Y21";
@@ -196,7 +196,7 @@ entity nuhs3adsp is
 	attribute loc of blue  : signal is "P16 N17 P22 T17 P19  R19 R20 T20";
  
 	attribute iostandard of clk_videodac : signal is "lvttl";
-	attribute iostandard of blank : signal is "lvttl";
+	attribute iostandard of blankn : signal is "lvttl";
 	attribute iostandard of sync  : signal is "lvttl";
 	attribute iostandard of psave : signal is "lvttl";
 	attribute iostandard of red   : signal is "lvttl";
@@ -209,7 +209,7 @@ entity nuhs3adsp is
 	attribute fast of red : signal is "true";
 	attribute fast of blue : signal is "true";
 	attribute fast of green : signal is "true";
-	attribute fast of blank : signal is "true";
+	attribute fast of blankn : signal is "true";
 	attribute fast of hsync : signal is "true";
 	attribute fast of vsync : signal is "true";
 	attribute fast of sync : signal is "true";
@@ -218,7 +218,7 @@ entity nuhs3adsp is
 	attribute drive of clk_videodac : signal is "24";
 	attribute drive of vsync : signal is "24";
 	attribute drive of hsync : signal is "24";
-	attribute drive of blank : signal is "24";
+	attribute drive of blankn : signal is "24";
 	attribute drive of sync  : signal is "24";
 	attribute drive of psave : signal is "24";
 	attribute drive of red   : signal is "24";
@@ -318,7 +318,7 @@ entity nuhs3adsp is
 	attribute loc of mii_crs    : signal is "G19";
 	attribute loc of mii_col    : signal is "U21";
 	attribute loc of mii_intrp  : signal is "K16";
-	attribute loc of mii_rst    : signal is "G18";
+	attribute loc of mii_rstn   : signal is "G18";
 	attribute loc of mii_refclk : signal is "N18";
 
 	attribute iostandard of mii_mdc    : signal is "lvttl";
@@ -333,7 +333,7 @@ entity nuhs3adsp is
 	attribute iostandard of mii_crs    : signal is "lvttl";
 	attribute iostandard of mii_col    : signal is "lvttl";
 	attribute iostandard of mii_intrp  : signal is "lvttl";
-	attribute iostandard of mii_rst    : signal is "lvttl";
+	attribute iostandard of mii_rstn   : signal is "lvttl";
 	attribute iostandard of mii_refclk : signal is "lvttl";
 
 	-------------
