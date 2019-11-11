@@ -113,8 +113,9 @@ architecture def of scopeio_textbox is
 	signal bcd_type      : std_logic;
 	signal bcd_binvalue  : std_logic_vector(frac'range);
 	signal bcd_expvalue  : std_logic_vector(btof_bindi'range);
-	signal bcd_precvalue : integer;
-	signal bcd_unitvalue : integer;
+	signal bcd_sign      : std_logic_vector(0 to 0);     -- Xilnx's ISE workaround data type;
+	signal bcd_precvalue : integer;                      -- Xilnx's ISE workaround data type;
+	signal bcd_unitvalue : integer;                      -- Xilnx's ISE workaround data type;
 	signal bcd_width     : natural;
 	signal bcd_alignment : std_logic_vector(0 to 0);
 	signal bcd_memaddr   : std_logic_vector(cga_addr'range);
@@ -393,6 +394,18 @@ begin
 			-vt_precs(to_integer(unsigned(vt_scale)))),  
 			cgabcd_frm);
 
+		bcd_sign <= wirebus(
+			'0' &
+			'0' &
+			'0' &
+			'0' &
+			'1' &
+			'1' &
+			'1' &
+			'1' &
+			'1',
+			cgabcd_frm);
+
 		bcd_alignment <= wirebus (
 			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))) &
 			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))) &
@@ -473,7 +486,7 @@ begin
 				end if;
 			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
 				btof_binfrm   <= '1';
-				btof_bcdsign  <= '1';
+				btof_bcdsign  <= bcd_sign(0);
 				btof_bcdprec  <= std_logic_vector(to_signed(bcd_precvalue, btof_bcdprec'length));
 				btof_bcdunit  <= std_logic_vector(to_signed(bcd_unitvalue, btof_bcdunit'length));
 				btof_bcdwidth <= std_logic_vector(to_unsigned(bcd_width,   btof_bcdwidth'length));

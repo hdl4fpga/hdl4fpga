@@ -61,31 +61,6 @@ architecture struct of mii_debug is
 	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
---	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
---	generic map (
---		mac       => x"00_40_00_01_02_03")
---	port map (
---		mii_req   => mii_req,
---
---		mii_rxc   => mii_rxc,
---		mii_rxdv  => mii_rxdv,
---		mii_rxd   => mii_rxd,
---		udpdports_val => x"0000",
---		udpdports_vld => udpdport_vld,
---
---		myipcfg_vld =>  myipcfg_vld,
---		mii_txc   => mii_txc,
---		mii_txdv  => mii_txdv,
---		mii_txd   => mii_txd);
---
-	video_rxc <= mii_rxc;
---	process (video_rxc)
---	begin
---		if rising_edge(video_rxc) then
---			video_rxdv <= myipcfg_vld; -- and udpdport_vld(0);
---			video_rxd  <= reverse(mii_rxd);
---		end if;
---	end process;
 
 	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 	port map (
@@ -106,6 +81,7 @@ begin
 		chaino_frm  => video_rxdv,
 		chaino_data => video_rxd);
 	
+	video_rxc <= mii_rxc;
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
 		cga_bitrom => cga_bitrom)
