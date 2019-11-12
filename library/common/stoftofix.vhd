@@ -21,12 +21,9 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -84,7 +81,8 @@ architecture def of stof is
 	end;
 begin
 
-	process (frm, clk)
+	process (clk)
+		variable addr : signed(bcd_left'range);
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -92,139 +90,45 @@ begin
 			else
 				case state is
 				when init_s =>
+					if signed(bcd_left) < 0 then
+						addr := (others => '0');
+						addr := addr + 1;	-- place of the decimal dot added
+					else
+						addr := signed(bcd_left);
+					end if;
+					
 					state <= addr_s;
 				when addr_s =>
+					if addr > signed(bcd_left) then
+						if addr = 0 then
+							mem_do <= dot;
+						else
+							mem_do <= zero;
+						end if;
+					else
+						mem_do <= bcd_di;
+					end if;
+
 					if bcd_irdy='1' then
 						state <= data_s;
 					end if;
 				when data_s =>
 					if bcd_irdy='1' then
+						addr := addr - 1;
+					end if;
+
+					if bcd_irdy='1' then
 						state <= addr_s;
 					end if;
-				end case;	
+				end case;
 			end if;
+			mem_addr <= std_logic_vector(addr);
 		end if;
 	end process;
 
-
-	process (clk)
-		variable ptr   : signed(bcd_left'length downto 0);
-		variable aux   : signed(ptr'range);
-		variable last  : signed(ptr'range);
-		variable w     : signed(ptr'range);
-		variable point : std_logic;
-		variable bcd_sign1 : std_logic;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when init_s =>
-				bcd_end <= '0';
-				point := '0';
-				ptr   := not resize(signed(bcd_unit), ptr'length) + 1;
-				last  := resize(signed(bcd_prec), ptr'length)-resize(signed(bcd_unit), ptr'length);
-				w     := signed(unsigned'(resize(unsigned(bcd_width), ptr'length)));
-				if resize(signed(bcd_left), ptr'length)+resize(signed(bcd_unit),ptr'length) >= 0 then
-					ptr  := resize(signed(bcd_left), ptr'length);
---	  				elsif signed(bcd_right)+signed(bcd_unit) < signed(bcd_prec) then
-				end if;
-				if signed(bcd_prec) < 0 then
-					w := w - 1;
-				end if;
-				if bcd_sign='1' then
-					ptr := ptr + 1;
-					if bcd_align='0' then
-						w   := w   - 1;
-					end if;
-				end if;
-				if bcd_width/=(bcd_width'range => '0') then
-					if bcd_align='0' then
-						ptr  := w+last;
-					else
-						last := ptr - w + 1;
-					end if;
-				end if;
-				if bcd_endian='1' then
-					aux  := ptr;
-					ptr  := last;
-					last := ptr;
-				end if;
-			when addr_s =>
-
-				sel_mul_l : if bcd_endian='0' and point='0' and ptr+signed(bcd_unit)=-1 then
-					sel_mux <= dot_in;
-				elsif bcd_endian='1' and point='1' and ptr+signed(bcd_unit)=-1 then
-					sel_mux <= dot_in;
-				elsif ptr+signed(bcd_unit) < signed(bcd_prec) then
-					sel_mux <= blank_in;
-				elsif ptr < signed(bcd_right) then
-					sel_mux <= zero_in;
-				elsif ptr <= signed(bcd_left) then
-					sel_mux <= dout_in;
-				elsif resize(signed(bcd_left), ptr'length)+resize(signed(bcd_unit),ptr'length) < 0 then
-					if bcd_sign='1' and ptr+signed(bcd_unit)=1 then
-						if bcd_neg='1' then
-							sel_mux <= minus_in;
-						else
-							sel_mux <= plus_in;
-						end if;
-					elsif ptr+signed(bcd_unit) <= 0 then
-						sel_mux <= zero_in;
-					else
-						sel_mux <= blank_in;
-					end if;
-				elsif bcd_sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
-					if bcd_neg='1' then
-						sel_mux <= minus_in;
-					else 
-						sel_mux <= plus_in;
-					end if;
-				else
-					sel_mux <= blank_in;
-				end if;
-
-				if ptr=last then
-					if bcd_endian='0' and point='0' and ptr+signed(bcd_unit)=-1 then
-						bcd_end <= '0';
-					elsif bcd_endian='1' and point='1' and ptr+signed(bcd_unit)=-1 then
-						bcd_end <= '0';
-					else
-						bcd_end <= '1';
-					end if;
-				else
-					bcd_end <= '0';
-				end if;
-
-			when data_s =>
-				if bcd_irdy='1' then
-					if ptr+signed(bcd_unit)=-1 then
-						if point='0' then
-							point := '1';
-						else
-							point := '0';
-						end if;
-					end if;
-					if point='0' then
-						if bcd_endian='0' then
-							ptr := ptr - 1;
-						else
-							ptr := ptr + 1;
-						end if; 
-					end if;
-				end if;
-			end case;
-			mem_addr <= std_logic_vector(ptr(mem_addr'length-1 downto 0));
-		end if;
-	end process;
-
-	with sel_mux select
-	mem_do <= 
-		minus  when minus_in,
-		plus   when plus_in,
-		dot    when dot_in,
-		zero   when zero_in,
-		space  when blank_in,
-		bcd_di when dout_in;
-
-	bcd_trdy <= setif(state=data_s and bcd_irdy='1') and frm;
+	bcd_trdy <= 
+		'0' when state /= data_s else
+		'0' when bcd_irdy ='0'   else
+		frm;
 
 end;
