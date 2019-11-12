@@ -80,8 +80,8 @@ begin
 		video_dcm_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 12.0,		-- 200 MHz
-			clkout0_divide_f => 8.0,
+			clkfbout_mult_f  => 6.0, --12.0,		-- 200 MHz
+			clkout0_divide_f => 15.0, --8.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -132,9 +132,11 @@ begin
 	begin
 		if rising_edge(txc) then
 			if btn(0)='1' then
+				if txdv='0' then
+					mii_req <= '1';
+				end if;
+			elsif txdv='0' then
 				mii_req <= '0';
-			else
-				mii_req <= '1';
 			end if;
 		end if;
 	end process;
