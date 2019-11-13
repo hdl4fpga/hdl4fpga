@@ -80,7 +80,7 @@ begin
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
-		fix_frm  => fix_frm.
+		fix_frm  => fix_frm,
 		fix_trdy => fix_trdy,
 		fix_irdy => fix_irdy,
 		fix_do   => fix_do);
