@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btos of testbench is
+architecture btof of testbench is
 
 	signal rst      : std_logic := '0';
 	signal clk      : std_logic := '0';
@@ -52,7 +52,7 @@ begin
 	float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
 		clk      => clk,
-		frac     => x"1e0",
+		frac     => x"180",
 		exp      => x"f",
 		bin_frm  => frm,
 		bin_irdy => bin_irdy,
@@ -76,7 +76,7 @@ begin
 		bcd_unit  => x"0",
 		bcd_prec  => x"0",
 		bcd_trdy  => bcd_trdy,
-		bcd_irdy  => bcd_irdy,
+		bcd_irdy  => '1',
 		bcd_end   => bcd_end,
 		bcd_do    => bcd_do);
 
