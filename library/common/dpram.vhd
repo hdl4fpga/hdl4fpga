@@ -72,7 +72,7 @@ architecture def of dpram is
 
 	signal async_rdaddr : std_logic_vector(rd_addr'range);
 	signal async_rddata : std_logic_vector(rd_data'range);
-	shared variable ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
+	signal ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
 
 begin
 
@@ -89,7 +89,7 @@ begin
 		async_rdaddr <= rd_addr;
 	end generate;
 
-	process (async_rdaddr)
+	process (async_rdaddr, ram)
 		variable addr : std_logic_vector(0 to async_rdaddr'length-1);
 	begin
 		addr := async_rdaddr;
@@ -117,7 +117,7 @@ begin
 	begin
 		if rising_edge(wr_clk) then
 			if wr_ena='1' then
-				ram(to_integer(unsigned(wr_addr))) := wr_data;
+				ram(to_integer(unsigned(wr_addr))) <= wr_data;
 			end if;
 		end if;
 	end process;
