@@ -1,4 +1,4 @@
 package test is
-	constant std : natural := 0;
+	type std is ('0', '1');
 end;
 
