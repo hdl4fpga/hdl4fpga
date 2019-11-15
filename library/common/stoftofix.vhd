@@ -52,9 +52,9 @@ entity stof is
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
-		bcd_end   : out std_logic;
+		bcd_end   : buffer std_logic;
 
-		mem_addr  : out std_logic_vector;
+		mem_addr  : buffer std_logic_vector;
 		mem_do    : out std_logic_vector);
 end;
 		
@@ -79,6 +79,7 @@ architecture def of stof is
 		end if;
 		return retval;
 	end;
+	signal non_bcd : std_logic_vector(bcd_di'range);
 begin
 
 	process (clk)
@@ -86,6 +87,8 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
+				bcd_end <= '0';
+
 				state <= init_s;
 			else
 				case state is
@@ -96,17 +99,20 @@ begin
 					else
 						addr := signed(bcd_left);
 					end if;
+					bcd_end <= '0';
 					
 					state <= addr_s;
 				when addr_s =>
 					if addr > signed(bcd_left) then
 						if addr = 0 then
-							mem_do <= dot;
+							non_bcd <= dot;
 						else
-							mem_do <= zero;
+							non_bcd <= zero;
 						end if;
-					else
-						mem_do <= bcd_di;
+					end if;
+
+					if addr = signed(bcd_right) then
+						bcd_end <= '1';
 					end if;
 
 					if bcd_irdy='1' then
@@ -114,7 +120,9 @@ begin
 					end if;
 				when data_s =>
 					if bcd_irdy='1' then
-						addr := addr - 1;
+						if bcd_end='0'then
+							addr := addr - 1;
+						end if;
 					end if;
 
 					if bcd_irdy='1' then
@@ -131,4 +139,5 @@ begin
 		'0' when bcd_irdy ='0'   else
 		frm;
 
+	mem_do <= non_bcd when xxx else bcd_di;
 end;

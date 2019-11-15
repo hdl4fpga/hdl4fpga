@@ -34,6 +34,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/vector_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/mem_e/async_rddata
 add wave -noupdate -divider STOF
 add wave -noupdate /testbench/du_e/stof_e/frm
+add wave -noupdate /testbench/du_e/stof_e/bcd_end
+add wave -noupdate /testbench/du_e/stof_e/state
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_unit
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_prec
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_width
@@ -45,7 +47,7 @@ add wave -noupdate /testbench/du_e/stof_e/bcd_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_addr
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {970 ns} 0}
+WaveRestoreCursors {{Cursor 2} {720 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 125
 configure wave -valuecolwidth 125
@@ -61,4 +63,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {141 ns} {1209 ns}
+WaveRestoreZoom {427 ns} {953 ns}
