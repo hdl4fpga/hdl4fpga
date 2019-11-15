@@ -5,6 +5,6 @@ use foo.test.all;
 
 entity due is
 	port (
-		i : in std);
+		inp : in std);
 end;
 
