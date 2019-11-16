@@ -80,6 +80,7 @@ architecture def of stof is
 		return retval;
 	end;
 	signal non_bcd : std_logic_vector(bcd_di'range);
+	signal xxx : std_logic;
 begin
 
 	process (clk)
@@ -109,6 +110,9 @@ begin
 						else
 							non_bcd <= zero;
 						end if;
+						xxx <= '1';
+					else
+						xxx <= '0';
 					end if;
 
 					if addr = signed(bcd_right) then
@@ -139,5 +143,5 @@ begin
 		'0' when bcd_irdy ='0'   else
 		frm;
 
-	mem_do <= non_bcd when xxx else bcd_di;
+	mem_do <= non_bcd when xxx='1' else bcd_di;
 end;
