@@ -96,7 +96,17 @@ begin
 					if fmt_do /= dot then
 						if addr > signed(bcd_left) then
 							if addr > 0 then
-								fmt_do <= space;
+								if addr = 1 then
+									if bcd_neg='1' then
+										fmt_do <= minus;
+									elsif bcd_sign='1'  then
+										fmt_do <= plus;
+									else
+										fmt_do <= space;
+									end if;
+								else
+									fmt_do <= space;
+								end if;
 							else
 								fmt_do <= zero;
 							end if;

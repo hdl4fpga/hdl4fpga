@@ -71,8 +71,8 @@ begin
 		bin_flt  => bin_flt,
 		bin_neg  => '0',
 
-		bcd_sign  => '1',
-		bcd_width => x"0",
+		bcd_sign  => '0',
+		bcd_width => x"8",
 		bcd_unit  => x"0",
 		bcd_prec  => x"0",
 		bcd_trdy  => bcd_trdy,
