@@ -52,7 +52,7 @@ begin
 	float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
 		clk      => clk,
-		frac     => x"180",
+		frac     => x"003",
 		exp      => x"f",
 		bin_frm  => frm,
 		bin_irdy => bin_irdy,

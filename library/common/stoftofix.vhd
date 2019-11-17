@@ -60,27 +60,8 @@ end;
 		
 architecture def of stof is
 	type states is (init_s, data_s, addr_s);
-	signal state : states;
-
-	type inputs is (plus_in, minus_in, zero_in, dot_in, blank_in, dout_in);
-	signal sel_mux : inputs;
-
-	constant dot_length  : natural := 1;
-	constant bcd_sign_length : natural := 1;
-
-	function init_ptr (
-		constant left : signed)
-		return signed is
-		variable retval : signed(left'range);
-	begin
-		retval := (others => '0');
-		if left > 0 then
-			retval := left;
-		end if;
-		return retval;
-	end;
-	signal non_bcd : std_logic_vector(bcd_di'range);
-	signal xxx : std_logic;
+	signal state  : states;
+	signal fmt_do : std_logic_vector(4-1 downto 0);
 begin
 
 	process (clk)
@@ -96,23 +77,17 @@ begin
 				when init_s =>
 					if signed(bcd_left) < 0 then
 						addr := (others => '0');
-						addr := addr + 1;	-- place of the decimal dot added
 					else
 						addr := signed(bcd_left);
 					end if;
+					fmt_do <= "01--";
 					bcd_end <= '0';
 					
 					state <= addr_s;
+
 				when addr_s =>
 					if addr > signed(bcd_left) then
-						if addr = 0 then
-							non_bcd <= dot;
-						else
-							non_bcd <= zero;
-						end if;
-						xxx <= '1';
-					else
-						xxx <= '0';
+						fmt_do <= zero;
 					end if;
 
 					if addr = signed(bcd_right) then
@@ -122,10 +97,20 @@ begin
 					if bcd_irdy='1' then
 						state <= data_s;
 					end if;
+
 				when data_s =>
 					if bcd_irdy='1' then
 						if bcd_end='0'then
-							addr := addr - 1;
+							if addr = 0 then
+								if fmt_do=dot then
+									fmt_do <= "01--";
+									addr   := addr - 1;
+								else
+									fmt_do <= dot;
+								end if;
+							else
+								addr := addr - 1;
+							end if;
 						end if;
 					end if;
 
@@ -143,5 +128,8 @@ begin
 		'0' when bcd_irdy ='0'   else
 		frm;
 
-	mem_do <= non_bcd when xxx='1' else bcd_di;
+	with fmt_do select
+	mem_do <= 
+		bcd_di when "01--",
+		fmt_do when others;
 end;
