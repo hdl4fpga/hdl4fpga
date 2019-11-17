@@ -65,7 +65,7 @@ architecture def of stof is
 begin
 
 	process (clk)
-		variable addr : signed(bcd_left'range);
+		variable addr : signed(0 to mem_addr'length);
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -75,22 +75,37 @@ begin
 			else
 				case state is
 				when init_s =>
-					if signed(bcd_left) < 0 then
-						addr := (others => '0');
+					if bcd_width=(bcd_width'range => '0') then
+						if signed(bcd_left) < 0 then
+							addr := (others => '0');
+						else
+							addr := resize(signed(bcd_left), addr'length);
+						end if;
 					else
-						addr := signed(bcd_left);
+						addr := signed(resize(unsigned(bcd_width), addr'length))+signed(bcd_right);
+						if signed(bcd_right) < 0 then
+							addr := addr - 1;
+						end if;
 					end if;
-					fmt_do <= "01--";
+					fmt_do  <= "01--";
 					bcd_end <= '0';
 					
 					state <= addr_s;
 
 				when addr_s =>
-					if addr > signed(bcd_left) then
-						fmt_do <= zero;
+					if fmt_do /= dot then
+						if addr > signed(bcd_left) then
+							if addr > 0 then
+								fmt_do <= space;
+							else
+								fmt_do <= zero;
+							end if;
+						else
+							fmt_do <= "01--";
+						end if;
 					end if;
 
-					if addr = signed(bcd_right) then
+					if addr = resize(signed(bcd_right), addr'length) then
 						bcd_end <= '1';
 					end if;
 
@@ -119,7 +134,7 @@ begin
 					end if;
 				end case;
 			end if;
-			mem_addr <= std_logic_vector(addr);
+			mem_addr <= std_logic_vector(addr(1 to mem_addr'length));
 		end if;
 	end process;
 

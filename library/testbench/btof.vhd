@@ -52,7 +52,7 @@ begin
 	float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
 		clk      => clk,
-		frac     => x"003",
+		frac     => x"001",
 		exp      => x"f",
 		bin_frm  => frm,
 		bin_irdy => bin_irdy,
@@ -72,7 +72,7 @@ begin
 		bin_neg  => '0',
 
 		bcd_sign  => '1',
-		bcd_width => x"8",
+		bcd_width => x"0",
 		bcd_unit  => x"0",
 		bcd_prec  => x"0",
 		bcd_trdy  => bcd_trdy,
@@ -80,4 +80,18 @@ begin
 		bcd_end   => bcd_end,
 		bcd_do    => bcd_do);
 
+	process (clk)
+		variable num  : unsigned(8*4-1 downto 0) := x"aaaaaaaa";
+		variable stop : std_logic := '0';
+	begin
+		if rising_edge(clk) then
+			if bcd_trdy='1' then
+				if stop='0' then
+					num := num sll 4;
+					num(4-1 downto 0) := unsigned(bcd_do);
+				end if;
+			end if;
+			stop := bcd_end;
+		end if;
+	end process;
 end;
