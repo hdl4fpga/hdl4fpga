@@ -96,22 +96,33 @@ begin
 					if fmt_do /= dot then
 						if addr > signed(bcd_left) then
 							if addr > 0 then
-								if addr = 1 then
+								fmt_do <= space;
+							elsif addr = 0 then
+								case fmt_do is
+								when minus|plus =>
+									fmt_do <= bcd_di;
+								when dot =>
+									fmt_do <= dot;
+								when others =>
 									if bcd_neg='1' then
 										fmt_do <= minus;
 									elsif bcd_sign='1'  then
 										fmt_do <= plus;
 									else
-										fmt_do <= space;
+										fmt_do <= zero;
 									end if;
-								else
-									fmt_do <= space;
-								end if;
+								end case;
 							else
 								fmt_do <= zero;
 							end if;
-						else
-							fmt_do <= "01--";
+						elsif addr=resize(signed(bcd_left), addr'length) then
+							if bcd_neg='1' then
+								fmt_do <= minus;
+							elsif bcd_sign='1' then
+								fmt_do <= plus;
+							else
+								fmt_do <= "01--";
+							end if;
 						end if;
 					end if;
 
@@ -127,12 +138,14 @@ begin
 					if bcd_irdy='1' then
 						if bcd_end='0'then
 							if addr = 0 then
-								if fmt_do=dot then
+								case fmt_do is
+								when minus|plus =>
+								when dot =>
 									fmt_do <= "01--";
 									addr   := addr - 1;
-								else
+								when others =>
 									fmt_do <= dot;
-								end if;
+								end case;
 							else
 								addr := addr - 1;
 							end if;
