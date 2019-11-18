@@ -94,7 +94,7 @@ begin
 
 				when addr_s =>
 					if fmt_do /= dot then
-						if addr > signed(bcd_left) then
+						if addr >= signed(bcd_left) then
 							if addr > 0 then
 								fmt_do <= space;
 							elsif addr = 0 then
