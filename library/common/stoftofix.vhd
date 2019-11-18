@@ -66,6 +66,8 @@ begin
 
 	process (clk)
 		variable addr : signed(0 to mem_addr'length);
+		variable stop : signed(addr'range);
+		variable prec : signed(addr'range);
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -75,58 +77,81 @@ begin
 			else
 				case state is
 				when init_s =>
+					if signed(bcd_prec) <= 0 then
+						prec := resize(signed(bcd_prec), stop'length);
+					end if;
+
 					if bcd_width=(bcd_width'range => '0') then
 						if signed(bcd_left) < 0 then
 							addr := (others => '0');
 						else
 							addr := resize(signed(bcd_left), addr'length);
 						end if;
+						stop := resize(signed(bcd_right), stop'length);
 					else
 						addr := signed(resize(unsigned(bcd_width), addr'length))+signed(bcd_right);
 						if signed(bcd_right) < 0 then
 							addr := addr - 1;
 						end if;
+						stop := resize(signed(bcd_right), stop'length);
 					end if;
+					
 					fmt_do  <= "01--";
 					bcd_end <= '0';
 					
 					state <= addr_s;
 
 				when addr_s =>
-					if fmt_do /= dot then
-						if addr >= signed(bcd_left) then
-							if addr > 0 then
-								fmt_do <= space;
-							elsif addr = 0 then
-								case fmt_do is
-								when minus|plus =>
-									fmt_do <= bcd_di;
-								when dot =>
-									fmt_do <= dot;
-								when others =>
-									if bcd_neg='1' then
-										fmt_do <= minus;
-									elsif bcd_sign='1'  then
-										fmt_do <= plus;
-									else
-										fmt_do <= zero;
-									end if;
-								end case;
-							else
-								fmt_do <= zero;
-							end if;
-						elsif addr=resize(signed(bcd_left), addr'length) then
-							if bcd_neg='1' then
+					if addr < prec then
+						fmt_do <= space;
+					elsif signed(bcd_left) > 0 then
+						if addr=resize(signed(bcd_left), addr'length) then
+							if fmt_do = minus then
+								fmt_do <= bcd_di;
+							elsif fmt_do = plus then
+								fmt_do <= bcd_di;
+							elsif bcd_neg='1' then
 								fmt_do <= minus;
 							elsif bcd_sign='1' then
 								fmt_do <= plus;
 							else
 								fmt_do <= "01--";
 							end if;
+						elsif addr > signed(bcd_left) then
+							fmt_do <= space;
+						elsif addr /= 0 then
+							fmt_do <= "01--";
 						end if;
+					elsif addr >= signed(bcd_left) then
+						if addr = 0 then
+							case fmt_do is
+							when minus|plus =>
+								fmt_do <= bcd_di;
+							when dot =>
+								fmt_do <= dot;
+							when others =>
+								if bcd_neg='1' then
+									fmt_do <= minus;
+								elsif bcd_sign='1'  then
+									fmt_do <= plus;
+								else
+									fmt_do <= zero;
+								end if;
+							end case;
+						elsif addr > 0 then
+							fmt_do <= space;
+						elsif addr=resize(signed(bcd_left), addr'length) then
+							fmt_do <= "01--";
+						else
+							fmt_do <= zero;
+						end if;
+					elsif addr >= signed(bcd_right) then
+						fmt_do <= "01--";
+					else
+						fmt_do <= zero;
 					end if;
 
-					if addr = resize(signed(bcd_right), addr'length) then
+					if addr = stop then
 						bcd_end <= '1';
 					end if;
 
@@ -137,18 +162,23 @@ begin
 				when data_s =>
 					if bcd_irdy='1' then
 						if bcd_end='0'then
-							if addr = 0 then
-								case fmt_do is
-								when minus|plus =>
-								when dot =>
+							case fmt_do is
+							when minus|plus =>
+							when dot =>
+								fmt_do <= "01--";
+								addr   := addr - 1;
+							when others =>
+								if addr= 0 then
+									if prec = 0 then
+										addr   := addr - 1;
+									else
+										fmt_do <= dot;
+									end if;
+								else
 									fmt_do <= "01--";
 									addr   := addr - 1;
-								when others =>
-									fmt_do <= dot;
-								end case;
-							else
-								addr := addr - 1;
-							end if;
+								end if;
+							end case;
 						end if;
 					end if;
 
