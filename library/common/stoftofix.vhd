@@ -65,9 +65,11 @@ architecture def of stof is
 begin
 
 	process (clk)
-		variable addr : signed(0 to mem_addr'length);
-		variable stop : signed(addr'range);
-		variable prec : signed(addr'range);
+		variable addr  : signed(0 to mem_addr'length);
+		variable stop  : signed(addr'range);
+		variable prec  : signed(addr'range);
+		variable left  : signed(addr'range);
+		variable right : signed(addr'range);
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -77,23 +79,46 @@ begin
 			else
 				case state is
 				when init_s =>
+					left  := signed(bcd_unit) + resize(signed(bcd_left),  left'length);
+					right := signed(bcd_unit) + resize(signed(bcd_right), right'length);
+
 					if signed(bcd_prec) <= 0 then
-						prec := resize(signed(bcd_prec), stop'length);
+						prec := resize(signed(bcd_prec),  stop'length);
+					else
+						prec := right;
 					end if;
 
 					if bcd_width=(bcd_width'range => '0') then
-						if signed(bcd_left) < 0 then
+						if left < 0 then
 							addr := (others => '0');
 						else
-							addr := resize(signed(bcd_left), addr'length);
+							addr := left;
 						end if;
-						stop := resize(signed(bcd_right), stop'length);
+						stop := prec;
+					elsif bcd_align='0' then
+						stop := addr - signed(resize(unsigned(bcd_width), stop'length))+1;
+
+						if signed(prec) < 0 then
+							stop := stop + 1;
+						end if;
+
+						if bcd_neg='1' then
+							stop := stop + 1;
+						elsif bcd_sign='1' then
+							stop := stop + 1;
+						end if;
 					else
-						addr := signed(resize(unsigned(bcd_width), addr'length))+signed(bcd_right);
-						if signed(bcd_right) < 0 then
+						addr := signed(resize(unsigned(bcd_width), addr'length)) + prec - 1;
+						if signed(prec) < 0 then
 							addr := addr - 1;
 						end if;
-						stop := resize(signed(bcd_right), stop'length);
+
+						if bcd_neg='1' then
+							addr := addr - 1;
+						elsif bcd_sign='1' then
+							addr := addr - 1;
+						end if;
+						stop := prec;
 					end if;
 					
 					fmt_do  <= "01--";
@@ -102,10 +127,10 @@ begin
 					state <= addr_s;
 
 				when addr_s =>
-					if addr < prec then
+					data_if : if addr < prec then
 						fmt_do <= space;
-					elsif signed(bcd_left) > 0 then
-						if addr=resize(signed(bcd_left), addr'length) then
+					elsif left > 0 then
+						if addr=left then
 							if fmt_do = minus then
 								fmt_do <= bcd_di;
 							elsif fmt_do = plus then
@@ -117,12 +142,18 @@ begin
 							else
 								fmt_do <= "01--";
 							end if;
-						elsif addr > signed(bcd_left) then
+						elsif addr > left then
 							fmt_do <= space;
 						elsif addr /= 0 then
-							fmt_do <= "01--";
+							if addr >= right then
+								fmt_do <= "01--";
+							elsif addr >= prec then
+								fmt_do <= zero;
+							else
+								fmt_do <= space;
+							end if;
 						end if;
-					elsif addr >= signed(bcd_left) then
+					elsif addr >= left then
 						if addr = 0 then
 							case fmt_do is
 							when minus|plus =>
@@ -140,19 +171,36 @@ begin
 							end case;
 						elsif addr > 0 then
 							fmt_do <= space;
-						elsif addr=resize(signed(bcd_left), addr'length) then
+						elsif addr=left then
 							fmt_do <= "01--";
 						else
 							fmt_do <= zero;
 						end if;
-					elsif addr >= signed(bcd_right) then
+					elsif addr >= right then
 						fmt_do <= "01--";
 					else
 						fmt_do <= zero;
 					end if;
 
-					if addr = stop then
-						bcd_end <= '1';
+					finish_if : if addr = stop then
+						if addr >= left then
+							if addr = 0 then
+								case fmt_do is
+								when minus|plus =>
+									bcd_end <= '1';
+								when others =>
+									if bcd_neg='0' then
+										if bcd_sign='0'  then
+											bcd_end <= '1';
+										end if;
+									end if;
+								end case;
+							else
+								bcd_end <= '1';
+							end if;
+						else
+							bcd_end <= '1';
+						end if;
 					end if;
 
 					if bcd_irdy='1' then
@@ -187,7 +235,7 @@ begin
 					end if;
 				end case;
 			end if;
-			mem_addr <= std_logic_vector(addr(1 to mem_addr'length));
+			mem_addr <= std_logic_vector(addr(1 to mem_addr'length)-signed(bcd_unit));
 		end if;
 	end process;
 
