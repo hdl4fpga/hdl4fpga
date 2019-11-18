@@ -40,17 +40,21 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_unit
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_prec
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_width
 add wave -noupdate -radix decimal /testbench/du_e/stof_e/bcd_left
-add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/addr
 add wave -noupdate -radix decimal /testbench/du_e/stof_e/bcd_right
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/left
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/right
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/stop
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/prec
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_di
 add wave -noupdate /testbench/du_e/stof_e/bcd_irdy
 add wave -noupdate /testbench/du_e/stof_e/bcd_trdy
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__67/addr
 add wave -noupdate -radix decimal /testbench/du_e/stof_e/mem_addr
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/fmt_do
-add wave -noupdate -radix hexadecimal /testbench/line__83/num
+add wave -noupdate -radix hexadecimal /testbench/line__84/num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {833 ns} 0}
+WaveRestoreCursors {{Cursor 1} {975 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
@@ -66,4 +70,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {471 ns} {1127 ns}
+WaveRestoreZoom {712 ns} {1226 ns}
