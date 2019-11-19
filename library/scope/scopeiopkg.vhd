@@ -600,28 +600,28 @@ package scopeiopkg is
 			style   => styles(background_color(0)), -- Workaround
 			content => "IP: "),
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)), -- Workaround
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)), -- Workaround
 			content => "0",
 			id      => "ip4.num1"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num2"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num3"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
 			content => "0",
 			id      => "ip4.num4"));
 

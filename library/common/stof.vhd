@@ -95,7 +95,7 @@ begin
 							addr := left;
 						end if;
 						stop := prec;
-					elsif bcd_align='0' then
+					elsif bcd_align='1' then
 						stop := addr - signed(resize(unsigned(bcd_width), stop'length))+1;
 
 						if signed(prec) < 0 then

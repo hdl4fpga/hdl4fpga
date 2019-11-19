@@ -22,7 +22,6 @@ entity btof is
 		bcd_width  : in  std_logic_vector;
 		bcd_unit   : in  std_logic_vector;
 		bcd_prec   : in  std_logic_vector;
-		bcd_endian : in  std_logic := '0';
 		bcd_align  : in  std_logic := '0';
 
 		bcd_end    : out std_logic;
@@ -175,7 +174,6 @@ begin
 		bcd_unit   => bcd_unit,  
 		bcd_prec   => bcd_prec,  
 		bcd_align  => bcd_align, 
-		bcd_endian => bcd_endian,
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
 		bcd_di    => vector_do,
