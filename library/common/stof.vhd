@@ -231,7 +231,9 @@ begin
 					end if;
 
 					if bcd_irdy='1' then
-						state <= addr_s;
+						if bcd_end='0' then
+							state <= addr_s;
+						end if;
 					end if;
 				end case;
 			end if;
@@ -246,6 +248,6 @@ begin
 
 	with fmt_do select
 	mem_do <= 
-		bcd_di when "01--",
+		bcd_di when "0100"|"0101"|"0111"|"0110"|"01--",
 		fmt_do when others;
 end;

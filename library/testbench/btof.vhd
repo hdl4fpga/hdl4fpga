@@ -52,8 +52,8 @@ begin
 	float2btof_e : entity hdl4fpga.scopeio_float2btof
 	port map (
 		clk      => clk,
-		frac     => x"015",
-		exp      => x"e",
+		frac     => x"012",
+		exp      => x"f",
 		bin_frm  => frm,
 		bin_irdy => bin_irdy,
 		bin_trdy => bin_trdy,
@@ -71,10 +71,10 @@ begin
 		bin_flt  => bin_flt,
 		bin_neg  => '0',
 
-		bcd_sign  => '1',
+		bcd_sign  => '0',
 		bcd_width => x"0",
-		bcd_unit  => x"f",
-		bcd_prec  => x"d",
+		bcd_unit  => x"0",
+		bcd_prec  => x"0",
 		bcd_align => '0',
 		bcd_trdy  => bcd_trdy,
 		bcd_irdy  => '1',
