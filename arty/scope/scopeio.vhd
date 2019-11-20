@@ -289,13 +289,13 @@ begin
 	begin
 		if rising_edge(eth_txclk_bufg) then
 			if btn(0)='1' then
-				ipcfg_req <= '0';
-			else
 				ipcfg_req <= '1';
+			elsif txdv='0' then
+				ipcfg_req <= '0';
 			end if;
 		end if;
 	end process;
-	led(0) <= not ipcfg_req;
+	led(0) <= ipcfg_req;
 
 	scopeio_export_b : block
 
@@ -350,8 +350,8 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit          => 25.0*pico,
-		vt_unit          => 20.0*micro,
+		hz_unit          => micro,
+		vt_unit          => micro,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (

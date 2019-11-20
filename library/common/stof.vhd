@@ -96,6 +96,12 @@ begin
 						end if;
 						stop := prec;
 					elsif bcd_align='1' then
+						if left < 0 then
+							addr := (others => '0');
+						else
+							addr := left;
+						end if;
+
 						stop := addr - signed(resize(unsigned(bcd_width), stop'length))+1;
 
 						if signed(prec) < 0 then
@@ -165,6 +171,8 @@ begin
 									fmt_do <= minus;
 								elsif bcd_sign='1'  then
 									fmt_do <= plus;
+								elsif left=0 then
+									fmt_do <= bcd_di;
 								else
 									fmt_do <= zero;
 								end if;
@@ -178,8 +186,10 @@ begin
 						end if;
 					elsif addr >= right then
 						fmt_do <= "01--";
-					else
+					elsif addr >= prec then
 						fmt_do <= zero;
+					else
+						fmt_do <= space;
 					end if;
 
 					finish_if : if addr = stop then

@@ -76,15 +76,26 @@ begin
 
 	btofbin_frm   <= wirebus(bin_frm,   btof_gnt);
 	btofbin_irdy  <= wirebus(bin_irdy,  btof_gnt);
+	btofbcd_irdy  <= wirebus(bcd_irdy,  btof_gnt);
 	btofbin_di    <= wirebus(bin_di,    btof_gnt);
 	btofbin_exp   <= wirebus(bin_exp,   btof_gnt);
-	btofbin_neg   <= wirebus(bin_neg,   btof_gnt);
-	btofbcd_unit  <= wirebus(bcd_unit,  btof_gnt);
-	btofbcd_width <= wirebus(bcd_width, btof_gnt);
-	btofbcd_prec  <= wirebus(bcd_prec , btof_gnt);
-	btofbcd_align <= wirebus(bcd_align, btof_gnt);
-	btofbcd_sign  <= wirebus(bcd_sign,  btof_gnt);
-	btofbcd_irdy  <= wirebus(bcd_irdy,  btof_gnt);
+	process (clk)
+		variable init : std_logic;
+	begin
+		if rising_edge(clk) then
+			if btofbin_frm(0)='1' then
+				if init='1' then
+					btofbcd_sign  <= wirebus(bcd_sign,  btof_gnt);
+					btofbin_neg   <= wirebus(bin_neg,   btof_gnt);
+					btofbcd_width <= wirebus(bcd_width, btof_gnt);
+					btofbcd_unit  <= wirebus(bcd_unit,  btof_gnt);
+					btofbcd_prec  <= wirebus(bcd_prec , btof_gnt);
+					btofbcd_align <= wirebus(bcd_align, btof_gnt);
+				end if;
+			end if;
+			init := not btofbin_frm(0);
+		end if;
+	end process;
 		
 	btof_e : entity hdl4fpga.btof
 	port map (
