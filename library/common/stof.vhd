@@ -83,7 +83,7 @@ begin
 					right := signed(bcd_unit) + resize(signed(bcd_right), right'length);
 
 					if signed(bcd_prec) <= 0 then
-						prec := resize(signed(bcd_prec),  stop'length);
+						prec := resize(signed(bcd_prec),  prec'length);
 					else
 						prec := right;
 					end if;
@@ -158,6 +158,10 @@ begin
 							else
 								fmt_do <= space;
 							end if;
+						elsif addr < right then
+							if fmt_do /= dot then
+								fmt_do <= zero;
+							end if;
 						end if;
 					elsif addr >= left then
 						if addr = 0 then
@@ -172,7 +176,7 @@ begin
 								elsif bcd_sign='1'  then
 									fmt_do <= plus;
 								elsif left=0 then
-									fmt_do <= bcd_di;
+									fmt_do <= "01--";
 								else
 									fmt_do <= zero;
 								end if;
@@ -258,6 +262,6 @@ begin
 
 	with fmt_do select
 	mem_do <= 
-		bcd_di when "0100"|"0101"|"0111"|"0110"|"01--",
+		bcd_di when "0100"|"0101"|"0111"|"0110",
 		fmt_do when others;
 end;

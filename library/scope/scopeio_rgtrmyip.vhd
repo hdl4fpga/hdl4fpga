@@ -26,24 +26,23 @@ end;
 
 architecture def of scopeio_rgtrmyip is
 
-	signal ena : std_logic;
+	signal dv : std_logic;
 
 begin
-	ena <= setif(rgtr_id=rid_ipaddr, rgtr_dv);
+	dv <= setif(rgtr_id=rid_ipaddr, rgtr_dv);
 
 	dv_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			ip4_dv <= ena;
+			ip4_dv <= dv;
 		end if;
 	end process;
-	ip4_ena <= ena;
 
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if ena='1' then
+				if dv='1' then
 					ip4_num1 <= bitfield(rgtr_data, ip4num1_id, ip4addr_bf);
 					ip4_num2 <= bitfield(rgtr_data, ip4num2_id, ip4addr_bf);
 					ip4_num3 <= bitfield(rgtr_data, ip4num3_id, ip4addr_bf);
@@ -60,4 +59,5 @@ begin
 		ip4_num4 <= bitfield(rgtr_data, ip4num4_id, ip4addr_bf);
 	end generate;
 
+	ip4_ena <= dv;
 end;

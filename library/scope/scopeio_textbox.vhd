@@ -112,7 +112,7 @@ architecture def of scopeio_textbox is
 
 	signal bcd_type      : std_logic;
 	signal bcd_binvalue  : std_logic_vector(frac'range);
-	signal bcd_expvalue  : std_logic_vector(btof_bindi'range);
+	signal bcd_expvalue  : integer;
 	signal bcd_sign      : std_logic_vector(0 to 0);     -- Xilnx's ISE workaround data type;
 	signal bcd_precvalue : integer;                      -- Xilnx's ISE workaround data type;
 	signal bcd_unitvalue : integer;                      -- Xilnx's ISE workaround data type;
@@ -125,6 +125,7 @@ architecture def of scopeio_textbox is
 
 	signal tag_memaddr   : std_logic_vector(cga_addr'range);
 
+	signal aux : std_logic_vector(time_offset'length-1 downto 0);
 begin
 
 	rgtr_b : block
@@ -143,7 +144,7 @@ begin
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
 		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_exp         : signed(btof_bindi'range);
+		signal vt_exp         : integer;
 		signal vt_dv          : std_logic;
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
@@ -151,7 +152,7 @@ begin
 		signal vt_chanid      : std_logic_vector(chan_id'range);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
 
-		signal hz_exp         : signed(btof_bindi'range);
+		signal hz_exp         : integer;
 
 	function get_multps (
 		constant floats : siofloat_vector)
@@ -181,7 +182,7 @@ begin
 
 		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
 		signal   hz_frac       : unsigned(0 to hzfrac_length-1);
-		signal   hz_scalevalue : std_logic_vector(hz_frac'range);
+		signal   hz_scalevalue : natural;
 		signal   hz_multp      : std_logic_vector(0 to 3-1);
 
 		constant vt_float1245  : siofloat_vector := get_float1245(vt_unit);
@@ -191,7 +192,7 @@ begin
 
 		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
 		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
-		signal   vt_scalevalue : std_logic_vector(vt_frac'range);
+		signal   vt_scalevalue : natural;
 		signal   vt_multp      : std_logic_vector(0 to 3-1);
 
 	begin
@@ -346,34 +347,31 @@ begin
 		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
 		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
 
-		hz_exp  <= to_signed(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp, hz_exp'length);
-		vt_exp  <= to_signed(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp, vt_exp'length);
+		hz_exp  <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp;
+		vt_exp  <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp;
 
-		hz_scalevalue <= std_logic_vector(to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_scalevalue'length));
-		vt_scalevalue <= std_logic_vector(to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac, vt_scalevalue'length));
+		hz_scalevalue <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac;
+		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
 
 		bcd_binvalue <= wirebus(
-			std_logic_vector(shift_left(resize(unsigned(myip_num1), bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num2), bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num3), bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num4), bcd_binvalue'length), 1))  &
-			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length)) &
-			std_logic_vector(resize(unsigned(hz_scalevalue),             bcd_binvalue'length)) &
-			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length)) &
-			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length)) &
-			std_logic_vector(resize(unsigned(vt_scalevalue),             bcd_binvalue'length)),
+			std_logic_vector(shift_left(resize(unsigned(myip_num1),      bcd_binvalue'length), 1))  &
+			std_logic_vector(shift_left(resize(unsigned(myip_num2),      bcd_binvalue'length), 1))  &
+			std_logic_vector(shift_left(resize(unsigned(myip_num3),      bcd_binvalue'length), 1))  &
+			std_logic_vector(shift_left(resize(unsigned(myip_num4),      bcd_binvalue'length), 1))  &
+			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
+			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
+			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
 			cgabcd_frm);
 				 	
-		bcd_expvalue <= wirebus(
-			std_logic_vector(signed'(x"f"))        & 
-			std_logic_vector(signed'(x"f"))        & 
-			std_logic_vector(signed'(x"f"))        & 
-			std_logic_vector(signed'(x"f"))        & 
-			std_logic_vector(hz_exp+signed'(x"b")) & 
-			std_logic_vector(hz_exp)               &
-			std_logic_vector(vt_exp+signed'(x"b")) &
-			std_logic_vector(vt_exp+signed'(x"b")) &
-			std_logic_vector(vt_exp),
+		bcd_expvalue <= wirebus(integer_vector'(
+			-1, -1, -1, -1,
+			hz_exp-5,
+			hz_exp,
+			vt_exp-5,
+			vt_exp-5,
+			vt_exp),
 			cgabcd_frm);
 				 	
 		bcd_unitvalue <= wirebus(integer_vector'(
@@ -492,7 +490,8 @@ begin
 				btof_bcdwidth <= std_logic_vector(to_unsigned(bcd_width,   btof_bcdwidth'length));
 
 				frac <= scale_1245(signed(bcd_binvalue), scale);
-				exp  <= signed(bcd_expvalue);
+				frac <= signed(bcd_binvalue);
+				exp  <= to_signed(bcd_expvalue, exp'length);
 			end if;
 		end if;
 	end process;

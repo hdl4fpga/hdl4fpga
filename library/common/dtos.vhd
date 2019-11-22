@@ -137,7 +137,7 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			mem_left_ena  <= setif(frm='1' and state=data_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0'));
+			mem_left_ena  <= setif(frm='1' and state=data_s and addr=signed(mem_left) and signed(mem_left) > signed(mem_right) and dtos_do=(dtos_do'range => '0'));
 			mem_left_up   <= '0';
 			mem_right_ena <= setif(frm='1' and state=data_s and addr=signed(mem_right) and dtos_cy='1');
 			mem_right_up  <= '0';
