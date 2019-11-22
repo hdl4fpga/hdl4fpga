@@ -65,11 +65,12 @@ architecture def of stof is
 begin
 
 	process (clk)
-		variable addr  : signed(0 to mem_addr'length);
-		variable stop  : signed(addr'range);
-		variable prec  : signed(addr'range);
-		variable left  : signed(addr'range);
-		variable right : signed(addr'range);
+		variable addr   : signed(0 to mem_addr'length);
+		variable stop   : signed(addr'range);
+		variable prec   : signed(addr'range);
+		variable left   : signed(addr'range);
+		variable right  : signed(addr'range);
+		variable offset : signed(addr'range);
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -79,8 +80,9 @@ begin
 			else
 				case state is
 				when init_s =>
-					left  := signed(bcd_unit) + resize(signed(bcd_left),  left'length);
-					right := signed(bcd_unit) + resize(signed(bcd_right), right'length);
+					offset := resize(signed(bcd_unit), offset'length);
+					left   := offset + resize(signed(bcd_left),  left'length);
+					right  := offset + resize(signed(bcd_right), right'length);
 
 					if signed(bcd_prec) <= 0 then
 						prec := resize(signed(bcd_prec),  prec'length);
@@ -127,12 +129,20 @@ begin
 						stop := prec;
 					end if;
 					
-					fmt_do  <= "01--";
+					fmt_do  <= "0100";
 					bcd_end <= '0';
 					
 					state <= addr_s;
 
 				when addr_s =>
+					if bcd_left=(bcd_left'range => '0') then
+						if bcd_di=(bcd_di'range => '0') then
+							left  := (others => '0');
+							right := (others => '0');
+							offset := (others => '0');
+						end if;
+					end if;
+
 					data_if : if addr < prec then
 						fmt_do <= space;
 					elsif left > 0 then
@@ -146,13 +156,13 @@ begin
 							elsif bcd_sign='1' then
 								fmt_do <= plus;
 							else
-								fmt_do <= "01--";
+								fmt_do <= "0100";
 							end if;
 						elsif addr > left then
 							fmt_do <= space;
 						elsif addr /= 0 then
 							if addr >= right then
-								fmt_do <= "01--";
+								fmt_do <= "0100";
 							elsif addr >= prec then
 								fmt_do <= zero;
 							else
@@ -176,7 +186,7 @@ begin
 								elsif bcd_sign='1'  then
 									fmt_do <= plus;
 								elsif left=0 then
-									fmt_do <= "01--";
+									fmt_do <= "0100";
 								else
 									fmt_do <= zero;
 								end if;
@@ -184,12 +194,12 @@ begin
 						elsif addr > 0 then
 							fmt_do <= space;
 						elsif addr=left then
-							fmt_do <= "01--";
+							fmt_do <= "0100";
 						else
 							fmt_do <= zero;
 						end if;
 					elsif addr >= right then
-						fmt_do <= "01--";
+						fmt_do <= "0100";
 					elsif addr >= prec then
 						fmt_do <= zero;
 					else
@@ -227,7 +237,7 @@ begin
 							case fmt_do is
 							when minus|plus =>
 							when dot =>
-								fmt_do <= "01--";
+								fmt_do <= "0100";
 								addr   := addr - 1;
 							when others =>
 								if addr= 0 then
@@ -237,7 +247,7 @@ begin
 										fmt_do <= dot;
 									end if;
 								else
-									fmt_do <= "01--";
+									fmt_do <= "0100";
 									addr   := addr - 1;
 								end if;
 							end case;
@@ -251,7 +261,7 @@ begin
 					end if;
 				end case;
 			end if;
-			mem_addr <= std_logic_vector(addr(1 to mem_addr'length)-signed(bcd_unit));
+			mem_addr <= std_logic_vector(addr(1 to mem_addr'length)-offset(1 to mem_addr'length));
 		end if;
 	end process;
 
