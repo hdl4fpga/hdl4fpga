@@ -32,6 +32,23 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/mem_ptr
 add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/vector_di
 add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/vector_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/vector_e/mem_e/async_rddata
+add wave -noupdate -divider DTOS
+add wave -noupdate /testbench/du_e/dtos_e/state
+add wave -noupdate /testbench/du_e/dtos_e/frm
+add wave -noupdate /testbench/du_e/dtos_e/bcd_irdy
+add wave -noupdate /testbench/du_e/dtos_e/bcd_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/bcd_di
+add wave -noupdate /testbench/du_e/dtos_e/mem_ena
+add wave -noupdate /testbench/du_e/dtos_e/mem_full
+add wave -noupdate -radix decimal /testbench/du_e/dtos_e/mem_left
+add wave -noupdate /testbench/du_e/dtos_e/mem_left_up
+add wave -noupdate /testbench/du_e/dtos_e/mem_left_ena
+add wave -noupdate -radix decimal /testbench/du_e/dtos_e/mem_right
+add wave -noupdate /testbench/du_e/dtos_e/mem_right_up
+add wave -noupdate /testbench/du_e/dtos_e/mem_right_ena
+add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/mem_addr
+add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/mem_do
+add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/mem_di
 add wave -noupdate -divider STOF
 add wave -noupdate /testbench/du_e/stof_e/frm
 add wave -noupdate /testbench/du_e/stof_e/bcd_end
@@ -70,4 +87,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {712 ns} {1226 ns}
+WaveRestoreZoom {0 ns} {1050 ns}

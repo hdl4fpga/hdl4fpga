@@ -342,6 +342,9 @@
         <Source name="../../library/scope/textboxpgk.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+        <Source name="../../library/scope/scopeio_rgtrmyip.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="constraints/ulx3s_v20.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>

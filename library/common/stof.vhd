@@ -76,6 +76,9 @@ begin
 			if frm='0' then
 				bcd_end <= '0';
 
+				offset := (others => '0');
+				addr := (others => '0');
+
 				state <= init_s;
 			else
 				case state is
