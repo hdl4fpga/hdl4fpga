@@ -64,6 +64,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_rgtrvtaxis.vhd \
   ../../library/scope/scopeio_rgtrpalette.vhd \
   ../../library/scope/scopeio_rgtrhzaxis.vhd \
+  ../../library/scope/scopeio_rgtrmyip.vhd \
   ../../library/scope/scopeio_amp.vhd \
   ../../library/scope/scopeio_downsampler.vhd \
   ../../library/scope/scopeio_grid.vhd \
