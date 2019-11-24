@@ -14,8 +14,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/dbdbbl_e/bin_di
 add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/dbdbbl_e/bcd_di
 add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/dbdbbl_e/bcd_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/btod_e/state
-add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/addr
+add wave -noupdate /testbench/du_e/btod_e/line__57/state
 add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/mem_left
 add wave -noupdate /testbench/du_e/btod_e/btod_zero
 add wave -noupdate /testbench/du_e/btod_e/btod_ini
@@ -56,6 +55,13 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/mem_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/dtos_e/mem_di
 add wave -noupdate -divider STOF
 add wave -noupdate /testbench/du_e/stof_e/line__65/state
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/sign
+add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/line__65/addr
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/stop
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/prec
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/left
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/right
+add wave -noupdate -radix decimal /testbench/du_e/stof_e/line__65/offset
 add wave -noupdate /testbench/du_e/stof_e/frm
 add wave -noupdate /testbench/du_e/stof_e/bcd_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/bcd_unit
@@ -71,8 +77,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/fmt_do
 add wave -noupdate -radix hexadecimal /testbench/line__84/num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {260 ns} 0} {{Cursor 2} {980 ns} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {27 ns} 0} {{Cursor 2} {742 ns} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -87,4 +93,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {736 ns}
+WaveRestoreZoom {0 ns} {1260 ns}
