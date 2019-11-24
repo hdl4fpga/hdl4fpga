@@ -71,7 +71,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/fmt_do
 add wave -noupdate -radix hexadecimal /testbench/line__84/num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {272 ns} 0} {{Cursor 2} {980 ns} 0}
+WaveRestoreCursors {{Cursor 1} {260 ns} 0} {{Cursor 2} {980 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
@@ -87,4 +87,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {1470 ns}
+WaveRestoreZoom {0 ns} {736 ns}
