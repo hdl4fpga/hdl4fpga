@@ -137,9 +137,38 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			mem_left_ena  <= setif(frm='1' and state=data_s and addr=signed(mem_left) and signed(mem_left) > signed(mem_right) and dtos_do=(dtos_do'range => '0'));
+			if frm='0' then
+				mem_left_ena  <= '0';
+				mem_right_ena <= '0';
+			else
+				case state is
+				when data_s =>
+					if dtos_do=(dtos_do'range => '0') then
+						if addr=signed(mem_left) then
+							if signed(mem_left) > signed(mem_right) then
+								mem_left_ena <= '1';
+							elsif signed(mem_left) = signed(mem_right) then
+								mem_left_ena <= dtos_cy;
+							else
+								mem_left_ena <= '0';
+							end if;
+						else
+							mem_left_ena <= '0';
+						end if;
+					else
+						mem_left_ena <= '0';
+					end if;
+
+					if addr=signed(mem_right) then
+						mem_right_ena <= dtos_cy;
+					else
+						mem_right_ena <= '0';
+					end if;
+
+				when others =>
+				end case;
+			end if;
 			mem_left_up   <= '0';
-			mem_right_ena <= setif(frm='1' and state=data_s and addr=signed(mem_right) and dtos_cy='1');
 			mem_right_up  <= '0';
 		end if;
 	end process;
