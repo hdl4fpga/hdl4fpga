@@ -66,6 +66,7 @@ begin
 		type states is (init_s, check0_s, data_s, addr_s);
 		variable state  : states;
 
+		variable sign   : std_logic;
 		variable addr   : signed(0 to mem_addr'length);
 		variable stop   : signed(addr'range);
 		variable prec   : signed(addr'range);
@@ -78,9 +79,11 @@ begin
 			when init_s =>
 				bcd_end  <= '0';
 				bcd_trdy <= '0';
+
 				offset := resize(signed(bcd_unit), offset'length);
 				left   := offset + resize(signed(bcd_left),  left'length);
 				right  := offset + resize(signed(bcd_right), right'length);
+				sign   := bcd_sign;
 
 				if signed(bcd_prec) <= 0 then
 					prec := resize(signed(bcd_prec),  prec'length);
@@ -146,6 +149,14 @@ begin
 						left   := (others => '0');
 						right  := (others => '0');
 						offset := (others => '0');
+						sign   := '0';
+						if bcd_sign='1' then
+							if bcd_align='1' then
+								stop := stop - 1;
+							else
+								addr := addr + 1;
+							end if;
+						end if;
 					end if;
 				end if;
 				mem_addr <= std_logic_vector(addr(1 to mem_addr'length)-offset(1 to mem_addr'length));
@@ -169,7 +180,7 @@ begin
 							fmt_do <= bcd_di;
 						elsif bcd_neg='1' then
 							fmt_do <= minus;
-						elsif bcd_sign='1' then
+						elsif sign='1' then
 							fmt_do <= plus;
 						else
 							fmt_do <= "0100";
@@ -199,7 +210,7 @@ begin
 						when others =>
 							if bcd_neg='1' then
 								fmt_do <= minus;
-							elsif bcd_sign='1'  then
+							elsif sign='1'  then
 								fmt_do <= plus;
 							elsif left=0 then
 								fmt_do <= "0100";
@@ -230,7 +241,7 @@ begin
 								bcd_end <= '1';
 							when others =>
 								if bcd_neg='0' then
-									if bcd_sign='0'  then
+									if sign='0'  then
 										bcd_end <= '1';
 									end if;
 								end if;
