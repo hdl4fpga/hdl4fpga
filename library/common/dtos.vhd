@@ -17,16 +17,16 @@ entity dtos is
 		mem_ena       : out std_logic;
 		mem_full      : in  std_logic;
 
-		mem_left      : in std_logic_vector;
+		mem_left      : in  std_logic_vector;
 		mem_left_up   : out std_logic;
 		mem_left_ena  : out std_logic;
 
-		mem_right     : in std_logic_vector;
+		mem_right     : in  std_logic_vector;
 		mem_right_up  : out std_logic;
 		mem_right_ena : out std_logic;
 
 		mem_addr      : buffer std_logic_vector;
-		mem_do        : in  std_logic_vector;
+		mem_do        : in     std_logic_vector;
 		mem_di        : buffer std_logic_vector);
 end;
 
@@ -63,12 +63,12 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when init_s =>
-				bcd_trdy  <= '0';
-				dtos_ena  <= '0';
-				dtos_ini  <= '1';
-				dtos_zero <= '0';
-				mem_ena   <= '0';
-				mem_addr  <= mem_left;
+				bcd_trdy      <= '0';
+				dtos_ena      <= '0';
+				dtos_ini      <= '1';
+				dtos_zero     <= '0';
+				mem_addr      <= mem_left;
+				mem_ena       <= '0';
 				mem_left_ena  <= '0';
 				mem_right_ena <= '0';
 
@@ -78,9 +78,11 @@ begin
 					state := addr_s;
 				end if;
 			when addr_s =>
-				bcd_trdy <= '0';
-				dtos_ena <= '0';
-				mem_ena  <= '0';
+				bcd_trdy      <= '0';
+				dtos_ena      <= '0';
+				mem_ena       <= '0';
+				mem_left_ena  <= '0';
+				mem_right_ena <= '0';
 
 				if frm='0' then
 					state := init_s;
@@ -146,8 +148,10 @@ begin
 					bcd_trdy <= '0';
 				end if;
 
-				dtos_ena <= '0';
-				mem_ena  <= '0';
+				dtos_ena      <= '0';
+				mem_ena       <= '0';
+				mem_left_ena  <= '0';
+				mem_right_ena <= '0';
 
 				if frm='0' then
 					state := init_s;
