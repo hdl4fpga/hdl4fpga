@@ -87,8 +87,10 @@ begin
 
 				if signed(bcd_prec) <= 0 then
 					prec := resize(signed(bcd_prec),  prec'length);
-				else
+				elsif right <= 0 then
 					prec := right;
+				else
+					prec := (others => '0');
 				end if;
 
 				if bcd_width=(bcd_width'range => '0') then
@@ -204,7 +206,11 @@ begin
 					if addr = 0 then
 						case fmt_do is
 						when minus|plus =>
-							fmt_do <= bcd_di;
+							if addr > left then
+								fmt_do <= zero;
+							else
+								fmt_do <= bcd_di;
+							end if;
 						when dot =>
 							fmt_do <= dot;
 						when others =>

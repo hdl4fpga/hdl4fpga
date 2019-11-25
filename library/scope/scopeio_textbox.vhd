@@ -112,11 +112,11 @@ architecture def of scopeio_textbox is
 
 	signal bcd_type      : std_logic;
 	signal bcd_binvalue  : std_logic_vector(frac'range);
-	signal bcd_expvalue  : integer;
+	signal bcd_expvalue  : integer;                      -- Xilnx's ISE workaround data type;
 	signal bcd_sign      : std_logic_vector(0 to 0);     -- Xilnx's ISE workaround data type;
 	signal bcd_precvalue : integer;                      -- Xilnx's ISE workaround data type;
 	signal bcd_unitvalue : integer;                      -- Xilnx's ISE workaround data type;
-	signal bcd_width     : natural;
+	signal bcd_width     : natural;                      -- Xilnx's ISE workaround data type;
 	signal bcd_alignment : std_logic_vector(0 to 0);
 	signal bcd_memaddr   : std_logic_vector(cga_addr'range);
 

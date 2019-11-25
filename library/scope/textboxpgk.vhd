@@ -599,6 +599,7 @@ package body textboxpkg is
 				return tags(i);
 			end if;
 		end loop;
+		assert false
 		report "Invalid tag : " & id & " " & itoa(tags'length)
 		severity FAILURE;
 	end;

@@ -73,7 +73,7 @@ begin
 
 		bcd_sign  => '1',
 		bcd_width => x"8",
-		bcd_unit  => x"0",
+		bcd_unit  => x"f",
 		bcd_prec  => x"d",
 		bcd_align => '0',
 		bcd_trdy  => bcd_trdy,
