@@ -22,7 +22,6 @@ entity btof is
 		bcd_width  : in  std_logic_vector;
 		bcd_unit   : in  std_logic_vector;
 		bcd_prec   : in  std_logic_vector;
-		bcd_endian : in  std_logic := '0';
 		bcd_align  : in  std_logic := '0';
 
 		bcd_end    : out std_logic;
@@ -68,56 +67,81 @@ architecture def of btof is
 	signal stof_frm       : std_logic;
 	signal stof_irdy      : std_logic;
 	signal stof_trdy      : std_logic;
-	signal stof_neg       : std_logic;
-	signal stof_sign      : std_logic;
 	signal stof_end       : std_logic;
 	signal stof_addr      : std_logic_vector(vector_addr'range);
 	signal stof_do        : std_logic_vector(bcd_do'range);
-	type   states is (init_s, btod_s, dtos_s, stof_s);
-	signal state : states;
 begin
 
-	process (clk)
+	process (clk, frm, bin_flt, bin_irdy, btod_trdy, dtos_trdy, stof_end, stof_trdy)
+		type   states is (btod_s, dtos_s, stof_s);
+		variable state : states;
 	begin
-		if frm='0' then
-			state <= init_s;
-		elsif rising_edge(clk) then
+		FSM : if rising_edge(clk) then
 			case state is
-			when init_s =>
-				state <= btod_s;
-				stof_sign <= bcd_sign or bin_neg;
-				stof_neg  <= bin_neg;
 			when btod_s =>
-				if bin_irdy = '1' then
+				if frm='0' then
+					state := btod_s;
+				elsif bin_irdy = '1' then
 					if bin_flt = '1' then
-						state <= dtos_s;
+						state := dtos_s;
 					end if;
 				end if;
 			when dtos_s =>
-				if dtos_trdy = '1' then
-					state <= stof_s;
+				if frm='0' then
+					state := btod_s;
+				elsif dtos_trdy = '1' then
+					state := stof_s;
 				end if;
 			when stof_s =>
+				if frm='0' then
+					state := btod_s;
+				elsif stof_trdy='1' then
+					if stof_end='1' then
+						state := btod_s;
+					end if;
+				end if;
 			end case;
 		end if;
+
+		COMB : case state is
+		when btod_s =>
+			if frm='1' then
+				if bin_flt='0' then
+					bin_trdy <= btod_trdy;
+					btod_frm <= '1';
+					dtos_frm <= '0';
+				else
+					bin_trdy <= '0';
+					btod_frm <= '0';
+					dtos_frm <= '1';
+				end if;
+			else
+				bin_trdy <= '0';
+				btod_frm <= '0';
+				dtos_frm <= '0';
+			end if;
+			stof_frm <= '0';
+		when dtos_s =>
+			bin_trdy <= '0';
+			btod_frm <= '0';
+			dtos_frm <= frm;
+			stof_frm <= '0';
+		when stof_s =>
+			if stof_trdy='1' then
+				if stof_end='1' then
+					bin_trdy <= '1';
+				else
+					bin_trdy <= '0';
+				end if;
+			else
+				bin_trdy <= '0';
+			end if;
+			btod_frm <= '0';
+			dtos_frm <= '0';
+			stof_frm <= frm;
+		end case;
 	end process;
 
-	btod_frm <= 
-		frm when state=btod_s and bin_flt='0' else
-		'0';
-	dtos_frm <= 
-		frm when state=dtos_s else
-		frm when state=btod_s and bin_flt='1' else
-		'0';
-	stof_frm <= 
-		frm when state=stof_s else
-		'0';
-
-	bin_trdy <= 
-	   btod_trdy when state=btod_s and bin_flt='0' else
-	   stof_trdy when state=stof_s and stof_end='1' else
-	   '0';
-	
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk           => clk,
@@ -169,13 +193,12 @@ begin
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		bcd_width  => bcd_width, 
-		bcd_sign   => stof_sign,
-		bcd_neg    => stof_neg,
-		bcd_unit   => bcd_unit,  
-		bcd_prec   => bcd_prec,  
-		bcd_align  => bcd_align, 
-		bcd_endian => bcd_endian,
+		bcd_width => bcd_width, 
+		bcd_sign  => bcd_sign,
+		bcd_neg   => bin_neg,
+		bcd_unit  => bcd_unit,  
+		bcd_prec  => bcd_prec,  
+		bcd_align => bcd_align, 
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
 		bcd_di    => vector_do,
@@ -186,17 +209,16 @@ begin
 		mem_addr  => stof_addr,
 		mem_do    => stof_do);
 
-	left_up    <= wirebus(btod_left_up   & dtos_left_up,   btod_frm & dtos_frm);
-	left_ena   <= wirebus(btod_left_ena  & dtos_left_ena,  btod_frm & dtos_frm);
+	left_up     <= wirebus(btod_left_up   & dtos_left_up,   btod_frm & dtos_frm);
+	left_ena    <= wirebus(btod_left_ena  & dtos_left_ena,  btod_frm & dtos_frm);
 
-	right_up   <= wirebus(btod_right_up  & dtos_right_up,  btod_frm & dtos_frm);
-	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & dtos_frm);
+	right_up    <= wirebus(btod_right_up  & dtos_right_up,  btod_frm & dtos_frm);
+	right_ena   <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & dtos_frm);
 
 	vector_rst  <= not frm;
 	vector_addr <= wirebus(btod_addr & dtos_addr & stof_addr, btod_frm & dtos_frm & stof_frm);
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);
-
 
 	vector_e : entity hdl4fpga.vector
 	port map (
@@ -214,8 +236,8 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_trdy <= stof_trdy and frm;
-	bcd_end  <= stof_end and frm;
+	bcd_trdy <= frm and stof_trdy;
+	bcd_end  <= frm and stof_end;
 	bcd_do   <= stof_do;
 
 end;

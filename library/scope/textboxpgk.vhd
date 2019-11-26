@@ -103,6 +103,10 @@ package textboxpkg is
 		constant size : natural)
 		return std_logic_vector;
 
+	function memaddr (
+		constant tag : tag;
+		constant size : natural)
+		return natural;
 end;
 
 package body textboxpkg is
@@ -374,7 +378,7 @@ package body textboxpkg is
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
 		end if;
-		tags(tag_ptr).mem_ptr := ctnt_ptr;
+		tags(tag_ptr).mem_ptr := ctnt_ptr - 1;
 
 		left  := ctnt_ptr;
 		right := left+tags(tag_ptr).style(key_width)-1;
@@ -417,7 +421,7 @@ package body textboxpkg is
 	begin
 		cptr    := ctnt_ptr;
 		tptr    := tag_ptr;
-		tags(tptr).mem_ptr := ctnt_ptr;
+		tags(tptr).mem_ptr := ctnt_ptr - 1;
 		tag_ptr := tag_ptr + 1;
 
 		loop
@@ -429,7 +433,7 @@ package body textboxpkg is
 					content  => content,
 					tags     => tags);
 			when tid_end =>
-				tags(tag_ptr).mem_ptr := ctnt_ptr;
+				tags(tag_ptr).mem_ptr := ctnt_ptr - 1;
 				exit;
 			when others =>
 			end case;
@@ -452,12 +456,12 @@ package body textboxpkg is
 
 		offset_memptr(
 			offset => padding_left (
-				length => ctnt_ptr-tags(tptr).mem_ptr,
+			length => ctnt_ptr-tags(tptr).mem_ptr - 1,
 				width  => tags(tptr).style(key_width),
 				align  => tags(tptr).style(key_alignment)),
 			tags => tags(tptr+1 to tag_ptr));
 
-		ctnt_ptr := tags(tag_ptr).mem_ptr;
+		ctnt_ptr := tags(tag_ptr).mem_ptr + 1;
 --		if content'length > 1 then
 --			report log(
 --				tname   => "div",
@@ -599,6 +603,7 @@ package body textboxpkg is
 				return tags(i);
 			end if;
 		end loop;
+		assert false
 		report "Invalid tag : " & id & " " & itoa(tags'length)
 		severity FAILURE;
 	end;
@@ -609,7 +614,16 @@ package body textboxpkg is
 		return std_logic_vector
 	is
 	begin
-		return std_logic_vector(to_unsigned(tag.mem_ptr-1, size));
+		return std_logic_vector(to_unsigned(tag.mem_ptr, size));
+	end;
+
+	function memaddr (
+		constant tag  : tag;
+		constant size : natural)
+		return natural
+	is
+	begin
+		return tag.mem_ptr;
 	end;
 
 end;

@@ -25,6 +25,8 @@ architecture beh of nuhs3adsp is
 	signal adc_clk     : std_logic;
 
 	signal ipcfg_req : std_logic;
+	signal txen      : std_logic;
+
 	signal input_clk : std_logic;
 
 	constant baudrate : natural := 115200;
@@ -121,14 +123,15 @@ begin
 
 	process (sw1, mii_txc)
 	begin
-		if sw1='1' then
-			ipcfg_req <= '0';
-			led7  <= '1';
-		elsif rising_edge(mii_txc) then
-			led7  <= '0';
-			ipcfg_req <= '1';
+		if rising_edge(mii_txc) then
+			if sw1='0' then
+				ipcfg_req <= '1';
+			elsif txen='0'  then
+				ipcfg_req <= '0';
+			end if;
 		end if;
 	end process;
+	led7  <= ipcfg_req;
 
 	process (mii_rxc)
 		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
@@ -182,7 +185,7 @@ begin
 		phy_rx_d    => mii_rxd,
 
 		phy_txc     => mii_txc, 
-		phy_tx_en   => mii_txen,
+		phy_tx_en   => txen,
 		phy_tx_d    => mii_txd,
 	
 		chaini_sel  => '0',
@@ -194,6 +197,7 @@ begin
 		chaino_frm  => si_frm,
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
+	mii_txen <= txen;
 	
 	si_clk <= mii_rxc;
 	scopeio_e : entity hdl4fpga.scopeio

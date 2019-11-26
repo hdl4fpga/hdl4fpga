@@ -598,31 +598,31 @@ package scopeiopkg is
 	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
 		text(                                                                               -- 
 			style   => styles(background_color(0)), -- Workaround
-			content => "IP: "),
+			content => "IP : "),
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)), -- Workaround
-			content => "0",
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)), -- Workaround
+			content => "*",
 			id      => "ip4.num1"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
-			content => "0",
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			content => "*",
 			id      => "ip4.num2"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
-			content => "0",
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			content => "*",
 			id      => "ip4.num3"),
 		text(
 			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(4) & alignment(left_alignment)),
-			content => "0",
+			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			content => "*",
 			id      => "ip4.num4"));
 
 	constant ip4_tags : tag_vector := div (                                                 -- Xilinx's mess

@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture scopeio of testbench is
 
@@ -193,6 +194,8 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		hz_unit          => 10.0*pico,
+		vt_unit          => 10.0*micro,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_1_1",
