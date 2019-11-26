@@ -465,11 +465,6 @@ begin
 			vtmag_memaddr,
 			cga_frm);
 
---		tag_memaddr <= word2byte (
---			bcd_memaddr &
---			chr_memaddr,
---			not bcd_type);
-
 	end block;
 
 	cgabcd_end <= btof_binfrm and btof_bcdtrdy and btof_bcdend;
