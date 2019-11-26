@@ -95,6 +95,10 @@ begin
 			when stof_s =>
 				if frm='0' then
 					state := btod_s;
+				elsif stof_trdy='1' then
+					if stof_end='1' then
+						state := btod_s;
+					end if;
 				end if;
 			end case;
 		end if;

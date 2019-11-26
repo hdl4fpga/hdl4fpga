@@ -74,7 +74,7 @@ begin
 
 				if frm='0' then
 					state := init_s;
-				else
+				elsif bcd_irdy='1' then
 					state := addr_s;
 				end if;
 			when addr_s =>
@@ -121,10 +121,16 @@ begin
 				if frm='0' then
 					state := init_s;
 				elsif bcd_irdy='1' then
-					state := write_s;
+					if bcd_trdy='1' then
+						state := init_s;
+					else
+						state := write_s;
+					end if;
 				end if;
 			when write_s =>
-				if bcd_trdy='0' then
+				if frm='0' then
+					bcd_trdy <= '0';
+				elsif bcd_trdy='0' then
 					if bcd_irdy='1' then
 						if mem_addr=mem_right then
 							if dtos_cy='1' then
@@ -144,8 +150,6 @@ begin
 							mem_addr <= std_logic_vector(signed(mem_addr) - 1);
 						end if;
 					end if;
-				elsif frm='0' then
-					bcd_trdy <= '0';
 				end if;
 
 				dtos_ena      <= '0';
@@ -165,6 +169,8 @@ begin
 							state := addr_s;
 						end if;
 					end if;
+				elsif bcd_irdy='1' then
+					state := init_s;
 				end if;
 			end case;
 		end if;

@@ -305,6 +305,8 @@ begin
 				elsif bcd_irdy='1' then
 					if bcd_end='0' then
 						state := addr_s;
+					else
+						state := init_s;
 					end if;
 				end if;
 			end case;
