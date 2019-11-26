@@ -24,28 +24,29 @@ end;
 
 architecture def of scopeio_rgtrhzaxis is
 
-	signal dv     : std_logic;
+	signal ena    : std_logic;
 	signal slider : std_logic_vector(hz_slider'range);
 	signal scale  : std_logic_vector(hz_scale'range);
 
 begin
 
-	dv     <= setif(rgtr_id=rid_hzaxis, rgtr_dv);
+	ena     <= setif(rgtr_id=rid_hzaxis, rgtr_dv);
 	slider <= std_logic_vector(resize(signed(bitfield(rgtr_data, hzoffset_id, hzoffset_bf)), hz_slider'length));
 	scale  <= bitfield(rgtr_data, hzscale_id,  hzoffset_bf);
 
-	process (rgtr_clk)
+	dv_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			hz_dv <= dv;
+			hz_dv <= ena;
 		end if;
 	end process;
+	hz_ena <= ena;
 
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if dv='1' then
+				if ena='1' then
 					hz_slider <= slider;
 					hz_scale  <= scale;
 				end if;
@@ -58,5 +59,4 @@ begin
 		hz_scale  <= scale;
 	end generate;
 
-	hz_ena <= dv;
 end;

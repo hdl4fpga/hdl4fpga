@@ -303,14 +303,14 @@ begin
 		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
 
 		bcd_width <= wirebus (natural_vector'(
-			width(tagbyid(tags, "ip4.num1"    )) &
-			width(tagbyid(tags, "ip4.num2"    )) &
-			width(tagbyid(tags, "ip4.num3"    )) &
-			width(tagbyid(tags, "ip4.num4"    )) &
-			width(tagbyid(tags, "hz.offset"   )) &
-			width(tagbyid(tags, "hz.div"      )) &
-			width(tagbyid(tags, "tgr.level"   )) &
-			width(tagbyid(tags, "vt(0).offset")) &
+			width(tagbyid(tags, "ip4.num1"    )),
+			width(tagbyid(tags, "ip4.num2"    )),
+			width(tagbyid(tags, "ip4.num3"    )),
+			width(tagbyid(tags, "ip4.num4"    )),
+			width(tagbyid(tags, "hz.offset"   )),
+			width(tagbyid(tags, "hz.div"      )),
+			width(tagbyid(tags, "tgr.level"   )),
+			width(tagbyid(tags, "vt(0).offset")),
 			width(tagbyid(tags, "vt(0).div"   ))),
 			cgabcd_frm);
 
@@ -392,28 +392,28 @@ begin
 			-vt_precs(to_integer(unsigned(vt_scale)))),  
 			cgabcd_frm);
 
-		bcd_sign <= wirebus(
-			'0' &
-			'0' &
-			'0' &
-			'0' &
-			'1' &
-			'1' &
-			'1' &
-			'1' &
+		bcd_sign <= wirebus(std_logic_vector'(
+			'0',
+			'0',
+			'0',
+			'0',
 			'1',
+			'1',
+			'1',
+			'1',
+			'1'),
 			cgabcd_frm);
 
-		bcd_alignment <= wirebus (
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))) &
-			setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))) &
-			setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   ))),
+		bcd_alignment <= wirebus (std_logic_vector'(
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))),
+			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))),
+			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))),
+			setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))),
+			setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   )))),
 			cgabcd_frm);
 		btof_bcdalign <= bcd_alignment(0);
 

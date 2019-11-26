@@ -822,11 +822,12 @@ package body std is
 		constant arg2 : std_logic_vector)
 		return std_logic_vector is
 		variable aux    : unsigned(0 to arg1'length-1) := (others => '0');
-		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
+		variable retval : std_logic_vector(0 to arg1'length/arg2'length-1);
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "std_logic wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
 			severity failure;
+
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
 		for i in arg2'range loop
@@ -842,11 +843,19 @@ package body std is
 		constant arg1 : natural_vector;
 		constant arg2 : std_logic_vector)
 		return natural is
+		variable aux1 : natural_vector(0 to arg1'length-1);
+		variable aux2 : std_logic_vector(0 to arg2'length-1);
 		variable retval : natural;
 	begin
-		for i in arg2'range loop
-			if arg2(i)='1' then
-				retval := arg1(i);
+		assert arg1'length mod arg2'length = 0
+			report "natural wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			severity failure;
+
+		aux1 := arg1;
+		aux2 := arg2;
+		for i in aux2'range loop
+			if aux2(i)='1' then
+				retval := aux1(i);
 			end if;
 		end loop;
 		return retval;
@@ -856,11 +865,20 @@ package body std is
 		constant arg1 : integer_vector;
 		constant arg2 : std_logic_vector)
 		return integer is
+		variable aux1 : integer_vector(0 to arg1'length-1);
+		variable aux2 : std_logic_vector(0 to arg2'length-1);
 		variable retval : integer;
 	begin
-		for i in arg2'range loop
-			if arg2(i)='1' then
-				retval := arg1(i);
+		assert arg1'length mod arg2'length = 0
+			report "integer wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			severity failure;
+
+
+		aux1 := arg1;
+		aux2 := arg2;
+		for i in aux2'range loop
+			if aux2(i)='1' then
+				retval := aux1(i);
 			end if;
 		end loop;
 		return retval;
