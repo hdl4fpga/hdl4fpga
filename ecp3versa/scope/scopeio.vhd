@@ -38,6 +38,7 @@ architecture beh of ecp3versa is
 	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 	
 	signal expansionx4_d : std_logic_vector(expansionx4'range);
+	signal expansionx3_d : std_logic_vector(expansionx3'range);
 
 	constant inputs : natural := 1;
 	signal rst        : std_logic := '0';
@@ -295,19 +296,19 @@ begin
 		video_vsync => vga_vsync,
 		video_blank => open);
 
-	expansionx4_d(3) <= vga_rgb(1);
-	expansionx4_d(4) <= vga_rgb(2);
-	expansionx4_d(5) <= vga_rgb(0);
-	expansionx4_d(6) <= vga_hsync;
-	expansionx4_d(7) <= vga_vsync;
+--	expansionx4_d(3) <= vga_rgb(1);
+	expansionx3_d(4) <= vga_rgb(2);
+	expansionx3_d(5) <= vga_rgb(0);
+	expansionx3_d(6) <= vga_hsync;
+	expansionx3_d(7) <= vga_vsync;
 
-	expansion_g : for i in expansionx4'range generate
+	expansion_g : for i in expansionx3'range generate
 	begin
 		oreg : OFD1S3AX
 		port map (
 			sclk => vga_clk,
-			d    => expansionx4_d(i),
-			q    => expansionx4(i));
+			d    => expansionx3_d(i),
+			q    => expansionx3(i));
 	end generate;
 
 	gtx_clk_i : oddrxd1
