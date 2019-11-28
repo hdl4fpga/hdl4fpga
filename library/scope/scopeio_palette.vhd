@@ -136,6 +136,7 @@ architecture beh of scopeio_palette is
 	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+1+pltid_order'length-1)-1);
 	signal palette_data  : std_logic_vector(0 to video_color'length);
 	signal color_addr    : std_logic_vector(palette_addr'range);
+	signal trigger_opacity : std_logic := '1';
 
 begin
 
@@ -176,7 +177,7 @@ begin
 			pltid_sgmntbg   => sgmnt_bgon   and color_opacity(pltid_sgmntbg),
 			pltid_scopeiobg => scopeio_bgon and color_opacity(pltid_scopeiobg)) & 
 		(trace_dots  and color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1)) & 
-		(trigger_dot and color_opacity(pltid_order'length+trace_dots'length))));
+		(trigger_dot and trigger_opacity)));
 	
 	lookup_b : block
 		signal rd_addr : std_logic_vector(palette_addr'range);
