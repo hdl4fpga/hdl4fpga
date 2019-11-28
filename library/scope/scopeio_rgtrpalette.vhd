@@ -25,28 +25,29 @@ end;
 
 architecture def of scopeio_rgtrpalette is
 
-	signal dv    : std_logic;
+	signal ena   : std_logic;
 	signal id    : std_logic_vector(palette_id'range);
 	signal color : std_logic_vector(palette_color'range);
 
 begin
 
-	dv    <= setif(rgtr_id=rid_palette, rgtr_dv);
+	ena   <= setif(rgtr_id=rid_palette, rgtr_dv);
 	id    <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
 	color <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
 
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			palette_dv <= dv;
+			palette_dv <= ena;
 		end if;
 	end process;
+	palette_ena <= ena;
 
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if dv='1' then
+				if ena='1' then
 					palette_id    <= id;
 					palette_color <= color;
 				end if;
@@ -59,5 +60,4 @@ begin
 		palette_color <= color;
 	end generate;
 
-	palette_ena <= dv;
 end;

@@ -85,12 +85,56 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
+	function init_opacity (
+		constant dflt_tracesfg :  std_logic_vector;
+		constant dflt_gridfg   :  std_logic_vector;
+		constant dflt_gridbg   :  std_logic_vector;
+		constant dflt_hzfg     :  std_logic_vector;
+		constant dflt_hzbg     :  std_logic_vector;
+		constant dflt_vtfg     :  std_logic_vector;
+		constant dflt_vtbg     :  std_logic_vector;
+		constant dflt_textfg   :  std_logic_vector;
+		constant dflt_textbg   :  std_logic_vector;
+		constant dflt_sgmntbg  :  std_logic_vector;
+		constant dflt_bg       :  std_logic_vector)
+		return std_logic_vector is
+		variable retval : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1);
+	begin
+		retval(pltid_gridfg)    := dflt_gridfg(dflt_gridfg'left);
+		retval(pltid_gridbg)    := dflt_gridbg(dflt_gridbg'left);
+		retval(pltid_vtfg)      := dflt_vtfg(dflt_vtfg'left);
+		retval(pltid_vtbg)      := dflt_vtbg(dflt_vtbg'left);
+		retval(pltid_hzfg)      := dflt_hzfg(dflt_hzfg'left);
+		retval(pltid_hzbg)      := dflt_hzbg(dflt_hzbg'left);
+		retval(pltid_textfg)    := dflt_textfg(dflt_textfg'left);
+		retval(pltid_textbg)    := dflt_textbg(dflt_textbg'left);
+		retval(pltid_sgmntbg)   := dflt_sgmntbg(dflt_sgmntbg'left);
+		retval(pltid_scopeiobg) := dflt_bg(dflt_bg'left);
+		for i in 0 to dflt_tracesfg'length/video_color'length-1 loop
+			retval(pltid_order'length+i) := dflt_tracesfg(i*(video_color'length+1));
+		end loop;
+		return retval;
+	end;
+		
+	signal color_opacity : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1) := init_opacity(
+		dflt_tracesfg => dflt_tracesfg,
+		dflt_gridfg   => dflt_gridfg,
+		dflt_gridbg   => dflt_gridbg,
+		dflt_hzfg     => dflt_hzfg,
+		dflt_hzbg     => dflt_hzbg,
+		dflt_vtfg     => dflt_vtfg,
+		dflt_vtbg     => dflt_vtbg,
+		dflt_textfg   => dflt_textfg,
+		dflt_textbg   => dflt_textbg,
+		dflt_sgmntbg  => dflt_sgmntbg,
+		dflt_bg       => dflt_bg);
+
 	signal palette_dv    : std_logic;
 	signal palette_id    : std_logic_vector(0 to unsigned_num_bits(max_inputs+1+pltid_order'length-1)-1);
 	signal palette_color : std_logic_vector(max_pixelsize-1 downto 0);
 
 	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+1+pltid_order'length-1)-1);
-	signal palette_data  : std_logic_vector(video_color'range);
+	signal palette_data  : std_logic_vector(0 to video_color'length);
 	signal color_addr    : std_logic_vector(palette_addr'range);
 
 begin
@@ -106,26 +150,37 @@ begin
 		palette_id    => palette_id,
 		palette_color => palette_color);
 
+	opacity_p : process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if palette_dv='1' then
+				color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_data(0);
+			end if;
+		end if;
+	end process;
+
 	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
 	color_addr <= primux(
 		palette_ids(trigger_chanid),
 		shuffle((
-			pltid_gridfg    => grid_dot,
-			pltid_gridbg    => grid_bgon,
-			pltid_vtfg      => vt_dot,
-			pltid_vtbg      => vt_bgon,
-			pltid_hzfg      => hz_dot,
-			pltid_hzbg      => hz_bgon,
-			pltid_textfg    => text_dot,
-			pltid_textbg    => text_bgon,
-			pltid_sgmntbg   => sgmnt_bgon,
-			pltid_scopeiobg => scopeio_bgon) & trace_dots & trigger_dot));
+			pltid_gridfg    => grid_dot     and color_opacity(pltid_gridfg),
+			pltid_gridbg    => grid_bgon    and color_opacity(pltid_gridbg),
+			pltid_vtfg      => vt_dot       and color_opacity(pltid_vtfg),
+			pltid_vtbg      => vt_bgon      and color_opacity(pltid_vtbg),
+			pltid_hzfg      => hz_dot       and color_opacity(pltid_hzfg),
+			pltid_hzbg      => hz_bgon      and color_opacity(pltid_hzbg),
+			pltid_textfg    => text_dot     and color_opacity(pltid_textfg),
+			pltid_textbg    => text_bgon    and color_opacity(pltid_textbg),
+			pltid_sgmntbg   => sgmnt_bgon   and color_opacity(pltid_sgmntbg),
+			pltid_scopeiobg => scopeio_bgon and color_opacity(pltid_scopeiobg)) & 
+		(trace_dots  and color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1)) & 
+		(trigger_dot and color_opacity(pltid_order'length+trace_dots'length))));
 	
 	lookup_b : block
 		signal rd_addr : std_logic_vector(palette_addr'range);
-		signal rd_data : std_logic_vector(palette_data'range);
+		signal rd_data : std_logic_vector(video_color'range);
 	begin
 
 		mem_e : entity hdl4fpga.dpram
@@ -135,7 +190,7 @@ begin
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,
 			wr_ena  => palette_dv,
-			wr_data => palette_data,
+			wr_data => palette_data(1 to video_color'length),
 
 			rd_addr => rd_addr,
 			rd_data => rd_data);
