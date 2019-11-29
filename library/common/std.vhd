@@ -1195,10 +1195,6 @@ package body std is
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
 		variable retval : std_logic_vector(0 to 0);
 	begin
-		assert word'length mod byte'length = 0
-			report "word2byte mod"
-			severity failure;
-
 		retval := word2byte(word, addr, 1);
 		return retval(0);
 	end;
@@ -1549,6 +1545,9 @@ package body std is
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
+		assert data'length > size
+			report "fill -> size lower than size"
+			severity failure;
 		retval_right(0 to data'length-1)    := data;
 		retval_left(data'length-1 downto 0) := data;
 		if right then

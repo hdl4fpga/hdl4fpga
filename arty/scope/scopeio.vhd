@@ -360,16 +360,16 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+1), 15 => 2**(0+2)*5**(1+1)),
 
-		default_tracesfg => b"1_1_1",
-		default_gridfg   => b"1_0_0",
-		default_gridbg   => b"0_0_0",
-		default_hzfg     => b"1_1_1",
-		default_hzbg     => b"0_0_1",
-		default_vtfg     => b"1_1_1",
-		default_vtbg     => b"0_0_1",
-		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"0_1_1",
-		default_bg       => b"1_1_1")
+		default_tracesfg => b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
+		default_gridfg   => b"1_100",
+		default_gridbg   => b"1_000",
+		default_hzfg     => b"1_111",
+		default_hzbg     => b"1_001",
+		default_vtfg     => b"1_111",
+		default_vtbg     => b"1_001",
+		default_textbg   => b"1_000",
+		default_sgmntbg  => b"1_011",
+		default_bg       => b"1_111")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

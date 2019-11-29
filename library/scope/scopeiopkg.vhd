@@ -52,8 +52,6 @@ package scopeiopkg is
 	constant label_vtdiv    : i18n_labelids := 3;
 	constant label_vtoffset : i18n_labelids := 4;
 
-	constant max_inputs    : natural := 64;
-	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 	constant max_pixelsize : natural := 24;
@@ -427,8 +425,6 @@ package scopeiopkg is
 	constant rid_vtaxis   : std_logic_vector := x"14";
 	constant rid_pointer  : std_logic_vector := x"15";
 
-	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
-
 	constant pltid_gridfg    : natural :=  0;
 	constant pltid_gridbg    : natural :=  6;
 	constant pltid_vtfg      : natural :=  1;
@@ -451,6 +447,10 @@ package scopeiopkg is
 		7 => pltid_gridbg,
 		8 => pltid_sgmntbg,
 		9 => pltid_scopeiobg);
+
+	constant max_inputs    : natural := 64-pltid_order'length;
+	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
+	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
 		constant bf_rgtr   : std_logic_vector;
@@ -487,12 +487,16 @@ package scopeiopkg is
 
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+pltid_order'length-1);
 	constant palettecolor_maxsize : natural := 24;
-	constant paletteid_id         : natural := 0;
-	constant palettecolor_id      : natural := 1;
+	constant palettecolorena_id   : natural := 0;
+	constant paletteopacity_id    : natural := 1;
+	constant paletteid_id         : natural := 2;
+	constant palettecolor_id      : natural := 3;
 
 	constant palette_bf : natural_vector := (
-		paletteid_id    => paletteid_maxsize, 
-		palettecolor_id => palettecolor_maxsize);
+		palettecolorena_id => 1, 
+		paletteopacity_id  => 1, 
+		paletteid_id       => paletteid_maxsize, 
+		palettecolor_id    => palettecolor_maxsize);
 
 	constant trigger_ena_id    : natural := 0;
 	constant trigger_edge_id   : natural := 1;
