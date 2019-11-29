@@ -118,7 +118,8 @@ architecture beh of scopeio_palette is
 		return retval;
 	end;
 		
-	signal color_opacity : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1) := init_opacity (
+	signal trigger_opacity : std_logic := '1';
+	signal color_opacity   : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1) := init_opacity (
 		dflt_tracesfg => dflt_tracesfg,
 		dflt_gridfg   => dflt_gridfg,
 		dflt_gridbg   => dflt_gridbg,
@@ -138,7 +139,6 @@ architecture beh of scopeio_palette is
 	signal palette_addr  : std_logic_vector(0 to unsigned_num_bits(trace_dots'length+1+pltid_order'length-1)-1);
 	signal palette_data  : std_logic_vector(0 to video_color'length);
 	signal color_addr    : std_logic_vector(palette_addr'range);
-	signal trigger_opacity : std_logic := '1';
 
 begin
 
@@ -165,6 +165,7 @@ begin
 	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
+	trigger_opacity <= word2byte(color_opacity, trigger_chanid);
 	color_addr <= primux(
 		palette_ids(trigger_chanid),
 		shuffle((

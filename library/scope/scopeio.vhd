@@ -55,16 +55,16 @@ entity scopeio is
 			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
 
-		default_tracesfg : std_logic_vector := b"1_1_1";
-		default_gridfg   : std_logic_vector := b"1_0_0";
-		default_gridbg   : std_logic_vector := b"0_0_0";
-		default_hzfg     : std_logic_vector := b"1_1_1";
-		default_hzbg     : std_logic_vector := b"0_0_1";
-		default_vtfg     : std_logic_vector := b"1_1_1";
-		default_vtbg     : std_logic_vector := b"0_0_1";
-		default_textbg   : std_logic_vector := b"0_0_0";
-		default_sgmntbg  : std_logic_vector := b"0_1_1";
-		default_bg       : std_logic_vector := b"1_1_1");
+		default_tracesfg : std_logic_vector := b"1_111";
+		default_gridfg   : std_logic_vector := b"1_100";
+		default_gridbg   : std_logic_vector := b"1_000";
+		default_hzfg     : std_logic_vector := b"1_111";
+		default_hzbg     : std_logic_vector := b"1_001";
+		default_vtfg     : std_logic_vector := b"1_111";
+		default_vtbg     : std_logic_vector := b"1_001";
+		default_textbg   : std_logic_vector := b"1_000";
+		default_sgmntbg  : std_logic_vector := b"1_011";
+		default_bg       : std_logic_vector := b"1_111");
 	port (
 		si_clk           : in  std_logic := '-';
 		si_frm           : in  std_logic := '0';

@@ -232,6 +232,11 @@ package std is
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
+		return std_logic;
+
+	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector;
 
 	function word2byte (
@@ -1185,6 +1190,22 @@ package body std is
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
+		return std_logic is
+		variable aux  : std_logic_vector(0 to word'length-1);
+		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
+		variable retval : std_logic_vector(0 to 0);
+	begin
+		assert word'length mod byte'length = 0
+			report "word2byte mod"
+			severity failure;
+
+		retval := word2byte(word, addr, 1);
+		return retval(0);
+	end;
+
+	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector is
 		variable aux  : std_logic_vector(0 to word'length-1);
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
@@ -1212,7 +1233,7 @@ package body std is
 		constant addr : std_logic)
 		return signed is
 	begin
-		return signed(word2byte(std_logic_vector(word), (0 to 0 => addr)));
+		return signed(std_logic_vector'(word2byte(std_logic_vector(word), (0 to 0 => addr))));
 	end;
 
 	function word2byte (
