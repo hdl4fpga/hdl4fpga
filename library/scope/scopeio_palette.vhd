@@ -98,6 +98,7 @@ architecture beh of scopeio_palette is
 		constant dflt_sgmntbg  :  std_logic_vector;
 		constant dflt_bg       :  std_logic_vector)
 		return std_logic_vector is
+		variable tracesfg : std_logic_vector(0 to dflt_tracesfg'length-1);
 		variable retval : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1);
 	begin
 		retval(pltid_gridfg)    := dflt_gridfg(dflt_gridfg'left);
@@ -110,13 +111,14 @@ architecture beh of scopeio_palette is
 		retval(pltid_textbg)    := dflt_textbg(dflt_textbg'left);
 		retval(pltid_sgmntbg)   := dflt_sgmntbg(dflt_sgmntbg'left);
 		retval(pltid_scopeiobg) := dflt_bg(dflt_bg'left);
-		for i in 0 to dflt_tracesfg'length/video_color'length-1 loop
-			retval(pltid_order'length+i) := dflt_tracesfg(i*(video_color'length+1));
+		tracesfg := dflt_tracesfg;
+		for i in 0 to tracesfg'length/(video_color'length+1)-1 loop
+			retval(pltid_order'length+i) := tracesfg(i*(video_color'length+1));
 		end loop;
 		return retval;
 	end;
 		
-	signal color_opacity : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1) := init_opacity(
+	signal color_opacity : std_logic_vector(0 to trace_dots'length+1+pltid_order'length-1) := init_opacity (
 		dflt_tracesfg => dflt_tracesfg,
 		dflt_gridfg   => dflt_gridfg,
 		dflt_gridbg   => dflt_gridbg,
