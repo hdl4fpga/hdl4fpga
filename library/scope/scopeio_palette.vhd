@@ -85,6 +85,32 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
+	function color (
+		constant arg : std_logic_vector)
+		return std_logic_vector
+	is
+		variable retval : std_logic_vector(0 to arg'length-1);
+	begin
+		retval := arg;
+		return retval(1 to retval'right);
+	end ;
+
+	function colors (
+		constant arg : std_logic_vector)
+		return std_logic_vector
+	is
+		variable aux    : std_logic_vector(0 to arg'length-1);
+		variable retval : unsigned(0 to (arg'length/(video_color'length+1))*video_color'length-1);
+	begin
+		aux := arg;
+		for i in 0 to arg'length/(video_color'length+1)-1 loop
+			retval(0 to video_color'length-1) := unsigned(color(aux(0 to video_color'length)));
+			retval := retval sll video_color'length;
+			aux    := std_logic_vector(unsigned(aux) sll (video_color'length+1));
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 	function init_opacity (
 		constant dflt_tracesfg :  std_logic_vector;
 		constant dflt_gridfg   :  std_logic_vector;
@@ -97,7 +123,8 @@ architecture beh of scopeio_palette is
 		constant dflt_textbg   :  std_logic_vector;
 		constant dflt_sgmntbg  :  std_logic_vector;
 		constant dflt_bg       :  std_logic_vector)
-		return std_logic_vector is
+		return std_logic_vector
+	is
 		variable tracesfg      : std_logic_vector(0 to dflt_tracesfg'length-1);
 		variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length-1);
 	begin
