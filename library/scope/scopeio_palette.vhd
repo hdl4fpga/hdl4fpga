@@ -99,14 +99,15 @@ architecture beh of scopeio_palette is
 		constant arg : std_logic_vector)
 		return std_logic_vector
 	is
+		constant n : natural := arg'length/(video_color'length+1);
 		variable aux    : std_logic_vector(0 to arg'length-1);
-		variable retval : unsigned(0 to (arg'length/(video_color'length+1))*video_color'length-1);
+		variable retval : unsigned(0 to n*video_color'length-1);
 	begin
 		aux := arg;
-		for i in 0 to arg'length/(video_color'length+1)-1 loop
+		for i in 0 to n-1 loop
 			retval(0 to video_color'length-1) := unsigned(color(aux(0 to video_color'length)));
-			retval := retval sll video_color'length;
-			aux    := std_logic_vector(unsigned(aux) sll (video_color'length+1));
+			retval := retval rol video_color'length;
+			aux    := std_logic_vector(unsigned(aux) rol (video_color'length+1));
 		end loop;
 		return std_logic_vector(retval);
 	end;
@@ -215,19 +216,21 @@ begin
 	
 	lookup_b : block
 		signal wr_ena  : std_logic;
+		signal wr_data : std_logic_vector(video_color'range);
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(video_color'range);
 	begin
 
+		wr_data <= color(palette_data);
 		wr_ena <= palette_colorena and palette_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
-			bitrom => dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg)
+			bitrom => colors(dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg))
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,
 			wr_ena  => wr_ena,
-			wr_data => palette_data(1 to video_color'length),
+			wr_data => wr_data,
 
 			rd_addr => rd_addr,
 			rd_data => rd_data);

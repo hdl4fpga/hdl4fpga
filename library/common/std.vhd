@@ -1545,8 +1545,8 @@ package body std is
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
-		assert data'length > size
-			report "fill -> size lower than size"
+		assert data'length <= size
+			report "fill : size lower than size -> data length : " & itoa(data'length) & " : " & itoa(size)
 			severity failure;
 		retval_right(0 to data'length-1)    := data;
 		retval_left(data'length-1 downto 0) := data;
