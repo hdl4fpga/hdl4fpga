@@ -39,7 +39,7 @@ begin
 	id        <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
 	color     <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
 	opacity   <= bitfield(rgtr_data, palettecolorena_id, palette_bf);
-	color_ena <= bitfield(rgtr_data, palettecolorena_id, palette_bf);
+	color_ena <= bitfield(rgtr_data, paletteopacity_id, palette_bf);
 
 	process (rgtr_clk)
 	begin

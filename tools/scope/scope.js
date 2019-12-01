@@ -100,8 +100,8 @@ function sendCommand(e) {
 			break;
 		}
 		sendRegister(registers.palette, { 
-			colorena : '1',
-			opacity  : '1',
+			colorena : 1,
+			opacity  : 1,
 			pid      : pid,
 			color    : this.colors.value });
 		console.log(param);
@@ -116,8 +116,8 @@ function sendCommand(e) {
 		console.log(this.colors.value);
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
 		sendRegister(registers.palette, { 
-			colorena : '1',
-			opacity  : '1',
+			colorena : 1,
+			opacity  : 1,
 			pid   : pid,
 			color : this.colors.value });
 		console.log(param);

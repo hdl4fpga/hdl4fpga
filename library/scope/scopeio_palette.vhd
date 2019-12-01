@@ -167,7 +167,7 @@ architecture beh of scopeio_palette is
 	signal palette_opacity  : std_logic;
 
 	signal palette_addr     : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
-	signal palette_data     : std_logic_vector(0 to video_color'length);
+	signal palette_data     : std_logic_vector(video_color'range);
 	signal color_addr       : std_logic_vector(palette_addr'range);
 
 begin
@@ -189,7 +189,7 @@ begin
 	begin
 		if rising_edge(rgtr_clk) then
 			if palette_dv='1' then
-				color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_data(0);
+				color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_opacity;
 			end if;
 		end if;
 	end process;
@@ -216,12 +216,10 @@ begin
 	
 	lookup_b : block
 		signal wr_ena  : std_logic;
-		signal wr_data : std_logic_vector(video_color'range);
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(video_color'range);
 	begin
 
-		wr_data <= color(palette_data);
 		wr_ena <= palette_colorena and palette_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -230,7 +228,7 @@ begin
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,
 			wr_ena  => wr_ena,
-			wr_data => wr_data,
+			wr_data => palette_data,
 
 			rd_addr => rd_addr,
 			rd_data => rd_data);
