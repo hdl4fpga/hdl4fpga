@@ -488,15 +488,17 @@ package scopeiopkg is
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+pltid_order'length-1);
 	constant palettecolor_maxsize : natural := 24;
 	constant palettecolorena_id   : natural := 0;
-	constant paletteopacity_id    : natural := 1;
-	constant paletteid_id         : natural := 2;
-	constant palettecolor_id      : natural := 3;
+	constant paletteopacityena_id : natural := 1;
+	constant paletteopacity_id    : natural := 2;
+	constant paletteid_id         : natural := 3;
+	constant palettecolor_id      : natural := 4;
 
 	constant palette_bf : natural_vector := (
-		palettecolorena_id => 1, 
-		paletteopacity_id  => 1, 
-		paletteid_id       => paletteid_maxsize, 
-		palettecolor_id    => palettecolor_maxsize);
+		paletteopacityena_id => 1, 
+		palettecolorena_id   => 1, 
+		paletteopacity_id    => 1, 
+		paletteid_id         => paletteid_maxsize, 
+		palettecolor_id      => palettecolor_maxsize);
 
 	constant trigger_ena_id    : natural := 0;
 	constant trigger_edge_id   : natural := 1;
