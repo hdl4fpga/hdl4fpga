@@ -21,16 +21,12 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
---use hdl4fpga.scopeiopkg.all;
 
 package textboxpkg is
 
@@ -113,7 +109,7 @@ package body textboxpkg is
 
 	function padding_left (
 		constant length : natural;
-		constant width  : natural;
+		constant width  : natural
 		constant align  : alignment_t := left_alignment)
 		return integer
 	is
@@ -195,7 +191,6 @@ package body textboxpkg is
 		variable tags   : inout tag_vector)
 	is
 		variable level  : natural;
---		variable mesg : line;
 	begin
 		level := 0;
 --		write(mesg, string'("offset "));
@@ -352,7 +347,6 @@ package body textboxpkg is
 		return tag 
 	is
 		variable retval : tag_vector(0 to 0);
-		variable mesg : line;
 	begin
 		retval(0).tid     := tid_text;
 		retval(0).id      := strfill(id, retval(0).id'length);
@@ -373,7 +367,6 @@ package body textboxpkg is
 		variable str     : string(1 to tags(0).content'length); -- Xilinx
 		variable width   : natural;                             -- messes up
 		variable align   : natural;                             -- Workaround
-		variable mesg    : line;
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -626,4 +619,33 @@ package body textboxpkg is
 		return tag.mem_ptr;
 	end;
 
+	function (
+		constant tags : tag_vector)
+		return 
+	is
+		type xxx is record
+			addr    : natural;
+			palette : natural;
+		end record;
+		type xxx_vvector is array(natural range <>) of xxx;
+
+		variable fg_tab  : xxx_vector(
+		variable fg_addr : natural;
+		variable fg  : natural_vector(0 to tags'length-1);
+		variable current_fg : natural;
+	begin
+		current_fg := tags'left;
+		for i in tags'range loop
+			if tags(i).tagid = tid_end then
+				current_fg := fg(current_fg);
+			else
+				if tags(i).fg /= tags(current_fg) then
+					fg_addr := tags(i).mem_ptr;
+				end if;
+				fg(i) := current_fg;
+				current_fg := i;
+			end if;
+
+		end loop;
+	end;
 end;
