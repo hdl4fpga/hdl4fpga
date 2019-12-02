@@ -619,33 +619,38 @@ package body textboxpkg is
 		return tag.mem_ptr;
 	end;
 
+	type attr_node is record
+		addr : natural;
+		attr : natural;
+	end record;
+	type attrnode_vector is array(natural range <>) of attr_node;
+
 	function (
 		constant tags : tag_vector)
 		return 
 	is
-		type xxx is record
-			addr    : natural;
-			palette : natural;
-		end record;
-		type xxx_vvector is array(natural range <>) of xxx;
+		variable tab_length   : natural;
+		variable attr_tab     : attrnode_vector(0 to tags'length-1);
+		variable attr_index   : natural_vector(tags'range);
 
-		variable fg_tab  : xxx_vector(
-		variable fg_addr : natural;
-		variable fg  : natural_vector(0 to tags'length-1);
-		variable current_fg : natural;
+		variable current_attr : natural;
 	begin
-		current_fg := tags'left;
+		current_attr := tags'left;
 		for i in tags'range loop
 			if tags(i).tagid = tid_end then
-				current_fg := fg(current_fg);
-			else
-				if tags(i).fg /= tags(current_fg) then
-					fg_addr := tags(i).mem_ptr;
+				if tags(attr_index(i)).attr /= tags(current_attr).attr then
+					attr_tab(tab_length).addr := tags(i).mem_ptr;
+					tab_length := tab_length + 1;
 				end if;
-				fg(i) := current_fg;
-				current_fg := i;
+				current_attr := attr_index(current_attr);
+			else
+				if tags(i).attr /= tags(current_attr).attr then
+					attr_tab(tab_length).addr := tags(i).mem_ptr;
+					tab_length := tab_length + 1;
+				end if;
+				attr_index(i) := current_attr;
+				current_attr := i;
 			end if;
-
 		end loop;
 	end;
 end;
