@@ -719,7 +719,7 @@ package scopeiopkg is
 			content => "V"));
 
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
+		style    => styles(text_color(1) & background_color(0) & alignment(right_alignment)),               -- 
 		children => vt0_children);                                                          -- Workaround
 
 	function analogreadings (
@@ -1328,21 +1328,21 @@ package body scopeiopkg is
 				style    => styles(background_color(0) & alignment(right_alignment)),
 				children => tag_vector'(
 					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(text_color(i+1) & background_color(0) & width(8) & alignment(right_alignment)),
 						content => "NaN",
 						id      => "vt(" & itoa(i) & ").offset"),
 					text(
 						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
 						content => ":"),
 					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(text_color(i+1) & background_color(0) & width(8) & alignment(right_alignment)),
 						content => "NaN",
 						id      => "vt("& itoa(i) & ").div" ),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => " "),
 					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						style   => styles(text_color(i+1) & background_color(0) & width(1) & alignment(right_alignment)),
 						content => "*",
 						id      => "vt("& itoa(i) & ").mag"),
 					text(

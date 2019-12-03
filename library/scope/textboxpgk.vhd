@@ -66,6 +66,13 @@ package textboxpkg is
 		mem_ptr  : natural;
 	end record;
 
+	type attr_record is record
+		addr : natural;
+		attr : natural;
+	end record;
+
+	type attr_table is array(natural range <>) of attr_record;
+
 	function alignment (constant value  : tag) return alignment_t; 
 	function width     (constant value  : tag) return natural; 
 
@@ -103,13 +110,18 @@ package textboxpkg is
 		constant tag : tag;
 		constant size : natural)
 		return natural;
+
+	function tagattr_tab(
+		constant tags : tag_vector;
+		constant attr : style_keys)
+		return attr_table;
 end;
 
 package body textboxpkg is
 
 	function padding_left (
 		constant length : natural;
-		constant width  : natural
+		constant width  : natural;
 		constant align  : alignment_t := left_alignment)
 		return integer
 	is
@@ -619,38 +631,36 @@ package body textboxpkg is
 		return tag.mem_ptr;
 	end;
 
-	type attr_node is record
-		addr : natural;
-		attr : natural;
-	end record;
-	type attrnode_vector is array(natural range <>) of attr_node;
-
-	function (
-		constant tags : tag_vector)
-		return 
+	function tagattr_tab(
+		constant tags : tag_vector;
+		constant attr : style_keys)
+		return attr_table
 	is
-		variable tab_length   : natural;
-		variable attr_tab     : attrnode_vector(0 to tags'length-1);
-		variable attr_index   : natural_vector(tags'range);
+		variable tab_length : natural;
+		variable attr_tab   : attr_table(0 to tags'length-1);
+		variable attr_index : natural_vector(tags'range);
 
 		variable current_attr : natural;
 	begin
 		current_attr := tags'left;
 		for i in tags'range loop
-			if tags(i).tagid = tid_end then
-				if tags(attr_index(i)).attr /= tags(current_attr).attr then
+			if tags(i).tid = tid_end then
+				if tags(attr_index(i)).style(attr) /= tags(current_attr).style(attr) then
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
+					attr_tab(tab_length).attr := tags(i).style(attr);
 					tab_length := tab_length + 1;
 				end if;
 				current_attr := attr_index(current_attr);
 			else
-				if tags(i).attr /= tags(current_attr).attr then
+				if tags(i).style(attr) /= tags(current_attr).style(attr) then
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
+					attr_tab(tab_length).attr := tags(i).style(attr);
 					tab_length := tab_length + 1;
 				end if;
 				attr_index(i) := current_attr;
 				current_attr := i;
 			end if;
 		end loop;
+		return attr_tab(0 to tab_length-1);
 	end;
 end;
