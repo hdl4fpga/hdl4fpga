@@ -49,6 +49,8 @@ architecture beh of scopeio_palette is
 	constant scopeio_bgon     : std_logic := '1';
 
 	impure function palette_ids (
+		constant text_fg : std_logic_vector;
+		constant text_bg : std_logic_vector;
 		constant trigger_chanid : std_logic_vector)
 		return std_logic_vector is
 		constant n       : natural := pltid_order'length+trace_dots'length+1;
