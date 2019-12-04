@@ -35,7 +35,9 @@ entity scopeio_palette is
 		hz_bgon     : in  std_logic;
 		vt_dot      : in  std_logic;
 		vt_bgon     : in  std_logic;
-		text_dot    : in  std_logic;
+		text_fg     : in  std_logic_vector;
+		text_bg     : in  std_logic_vector;
+		text_fgon   : in  std_logic;
 		text_bgon   : in  std_logic;
 		sgmnt_bgon  : in  std_logic;
 		trace_dots  : in  std_logic_vector;
@@ -207,7 +209,7 @@ begin
 			pltid_vtbg      => vt_bgon      and color_opacity(pltid_vtbg),
 			pltid_hzfg      => hz_dot       and color_opacity(pltid_hzfg),
 			pltid_hzbg      => hz_bgon      and color_opacity(pltid_hzbg),
-			pltid_textfg    => text_dot     and color_opacity(pltid_textfg),
+			pltid_textfg    => text_fgon    and color_opacity(pltid_textfg),
 			pltid_textbg    => text_bgon    and color_opacity(pltid_textbg),
 			pltid_sgmntbg   => sgmnt_bgon   and color_opacity(pltid_sgmntbg),
 			pltid_scopeiobg => scopeio_bgon and color_opacity(pltid_scopeiobg)) & 

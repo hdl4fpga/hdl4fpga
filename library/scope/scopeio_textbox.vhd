@@ -54,7 +54,9 @@ entity scopeio_textbox is
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
 		text_on       : in  std_logic := '1';
-		text_dot      : out std_logic);
+		text_fg       : out std_logic_vector;
+		text_bg       : out std_logic_vector;
+		text_fgon      : out std_logic);
 
 --	constant inp : natural := inputs+3;
 	constant inp : natural := inputs;
@@ -85,6 +87,20 @@ architecture def of scopeio_textbox is
 			style  => styles(width(cga_cols) & alignment(right_alignment)),
 			inputs => inputs),
 		cga_size));
+
+	function addr_attr (
+		constant table : attr_table;
+		constant addr  : std_logic_vector)
+		return natural
+	is
+	begin
+		for i in table'range loop
+			if unsigned(addr) >= table(i).addr then
+				return table(i).attr;
+			end if;
+		end loop;
+		return table(table'left).attr;
+	end;
 
 	signal cgaaddr_init  : std_logic;
 	signal cga_av        : std_logic;
@@ -154,26 +170,26 @@ begin
 
 		signal hz_exp         : integer;
 
-	function get_multps (
-		constant floats : siofloat_vector)
-		return natural_vector is
-		constant precs : natural_vector := get_precs(floats);
-		variable point : natural;
-		variable multp : natural;
-		variable rval  : natural_vector(0 to 16-1);
-	begin
-		for i in floats'range loop
-			rval(i) := floats(i).multp + (precs(i) / 3);
-		end loop;
-		for i in 1 to 4-1 loop
-			for j in 0 to 4-1 loop
-				rval(4*i+j) := 
-					(3*floats(j).multp+floats(j).point+i)/3 + 
-					precs(4*i+j) / 3;
+		function get_multps (
+			constant floats : siofloat_vector)
+			return natural_vector is
+			constant precs : natural_vector := get_precs(floats);
+			variable point : natural;
+			variable multp : natural;
+			variable rval  : natural_vector(0 to 16-1);
+		begin
+			for i in floats'range loop
+				rval(i) := floats(i).multp + (precs(i) / 3);
 			end loop;
-		end loop;
-		return rval;
-	end;
+			for i in 1 to 4-1 loop
+				for j in 0 to 4-1 loop
+					rval(4*i+j) := 
+						(3*floats(j).multp+floats(j).point+i)/3 + 
+						precs(4*i+j) / 3;
+				end loop;
+			end loop;
+			return rval;
+		end;
 
 		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit);
 		constant hz_precs      : natural_vector := get_precs(hz_float1245);
@@ -524,6 +540,9 @@ begin
 		end if;
 	end process;
 
+	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textcolor),       std_logic_vector(cga_addr)), text_fg'length));
+	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_backgroundcolor), std_logic_vector(cga_addr)), text_bg'length));
+
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
 		cga_av when cgachr_frm/=(cgachr_frm'range => '0') else
@@ -541,22 +560,22 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => cga_bitrom,
-		font_bitrom => font_bitrom,
-		font_height => font_height,
-		font_width  => font_width)
+		cga_bitrom   => cga_bitrom,
+		font_bitrom  => font_bitrom,
+		font_height  => font_height,
+		font_width   => font_width)
 	port map (
-		cga_clk     => rgtr_clk,
-		cga_we      => cga_we,
-		cga_addr    => std_logic_vector(cga_addr),
-		cga_data    => cga_code,
+		cga_clk      => rgtr_clk,
+		cga_we       => cga_we,
+		cga_addr     => std_logic_vector(cga_addr),
+		cga_data     => cga_code,
 
-		video_clk   => video_clk,
-		video_addr  => video_addr,
-		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
-		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_blankn   => text_on,
-		video_dot   => char_dot);
+		video_clk    => video_clk,
+		video_addr   => video_addr,
+		font_hcntr   => video_hcntr(fontwidth_bits-1 downto 0),
+		font_vcntr   => video_vcntr(fontheight_bits-1 downto 0),
+		video_blankn => text_on,
+		video_dot    => char_dot);
 
 	lat_e : entity hdl4fpga.align
 	generic map (
@@ -565,5 +584,5 @@ begin
 	port map (
 		clk => video_clk,
 		di(0) => char_dot,
-		do(0) => text_dot);
+		do(0) => text_fgon);
 end;

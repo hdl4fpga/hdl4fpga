@@ -162,8 +162,10 @@ architecture beh of scopeio_video is
 	signal hz_bgon       : std_logic;
 	signal vt_dot        : std_logic;
 	signal vt_bgon       : std_logic;
-	signal text_dot      : std_logic;
+	signal text_fgon     : std_logic;
 	signal text_bgon     : std_logic;
+	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
+	signal text_bg       : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon : std_logic;
 	signal pointer_dot   : std_logic;
 
@@ -330,8 +332,10 @@ begin
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
 			video_vcntr   => textbox_y,
+			text_fg       => text_fg,
+			text_bg       => text_bg,
 			text_on       => text_on,
-			text_dot      => text_dot);
+			text_fgon     => text_fgon);
 	end generate;
 
 	notextbox_g : if textbox_width(layout)=0 generate
@@ -451,7 +455,9 @@ begin
 		hz_bgon        => hz_bgon,
 		vt_dot         => vt_dot,
 		vt_bgon        => vt_bgon,
-		text_dot       => text_dot,
+		text_fg       => text_fg,
+		text_bg       => text_bg,
+		text_fgon       => text_fgon,
 		text_bgon      => text_bgon,
 		sgmnt_bgon     => sgmntbox_bgon,
 		video_color    => scope_color);
