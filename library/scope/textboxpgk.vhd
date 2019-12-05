@@ -218,11 +218,14 @@ package body textboxpkg is
 --			write(mesg, tags(i).mem_ptr);
 			case tags(i).tid is 
 			when tid_end =>
+				report "end " & itoa(tags(i).mem_ptr);
 				exit when level=0;
 				level := level - 1;
 			when tid_div =>
+				report "start " & itoa(tags(i).mem_ptr);
 				level := level + 1;
 			when others =>
+				report "start " & itoa(tags(i).mem_ptr);
 			end case;
 		end loop;
 --		report mesg.all;
@@ -459,6 +462,7 @@ package body textboxpkg is
 				align => align);
 		end if;
 
+		report "div";
 		offset_memptr(
 			offset => padding_left (
 			length => ctnt_ptr-tags(tptr).mem_ptr - 1,
@@ -510,14 +514,15 @@ package body textboxpkg is
 					tags     => vtags);
 
 				length := vtags(tptr).style(key_width);            -- Xilinx's mess
-				width  := vtags(vtags'left).style(key_width);      --
-				align  := vtags(vtags'left).style(key_alignment);  -- Workaround
+				width  := vtags(0).style(key_width);      --
+				align  := vtags(0).style(key_alignment);  -- Workaround
+		report "page";
 				offset_memptr(
 					offset => padding_left (
 						length => length,
 						width  => width,
 						align  => align),
-					tags => vtags(tptr to tag_ptr-1));
+					tags => vtags(tptr to tag_ptr));
 
 				if content'length > 1 then
 					content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
@@ -642,23 +647,27 @@ package body textboxpkg is
 
 		variable current_attr : natural;
 	begin
-		current_attr := tags'left;
+		current_attr  := tags'left;
+		attr_index(0) := tags'left;
+		tab_length    := 1;
 		for i in tags'range loop
 			if tags(i).tid = tid_end then
 				if tags(attr_index(i)).style(attr) /= tags(current_attr).style(attr) then
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
+					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr);
 					attr_tab(tab_length).attr := tags(i).style(attr);
 					tab_length := tab_length + 1;
 				end if;
 				current_attr := attr_index(current_attr);
 			else
 				if tags(i).style(attr) /= tags(current_attr).style(attr) then
+					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr);
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
 					attr_tab(tab_length).attr := tags(i).style(attr);
 					tab_length := tab_length + 1;
 				end if;
 				attr_index(i) := current_attr;
-				current_attr := i;
+				current_attr  := i;
 			end if;
 		end loop;
 		return attr_tab(0 to tab_length-1);

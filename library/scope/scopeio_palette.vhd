@@ -48,10 +48,7 @@ architecture beh of scopeio_palette is
 
 	constant scopeio_bgon     : std_logic := '1';
 
-	impure function palette_ids (
-		constant text_fg : std_logic_vector;
-		constant text_bg : std_logic_vector;
-		constant trigger_chanid : std_logic_vector)
+	impure function palette_ids 
 		return std_logic_vector is
 		constant n       : natural := pltid_order'length+trace_dots'length+1;
 		constant size    : natural := unsigned_num_bits(n-1);
@@ -64,7 +61,14 @@ architecture beh of scopeio_palette is
 		retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
 		retval := retval rol size;
 		for i in pltid_order'range loop
-			retval(0 to size-1) := to_unsigned(pltid_order(i), size);
+			case pltid_order(i) is
+			when pltid_textfg =>
+				retval(0 to size-1) := unsigned(text_fg);
+			when pltid_textbg =>
+				retval(0 to size-1) := unsigned(text_bg);
+			when others =>
+				retval(0 to size-1) := to_unsigned(pltid_order(i), size);
+			end case;
 			retval := retval rol size;
 		end loop;
 		return std_logic_vector(retval);
@@ -203,7 +207,7 @@ begin
 
 	trigger_opacity <= word2byte(color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1), trigger_chanid);
 	color_addr <= primux(
-		palette_ids(trigger_chanid),
+		palette_ids,
 		shuffle((
 			pltid_gridfg    => grid_dot     and color_opacity(pltid_gridfg),
 			pltid_gridbg    => grid_bgon    and color_opacity(pltid_gridbg),

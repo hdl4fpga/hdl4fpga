@@ -43,10 +43,10 @@ begin
 	process 
 		constant tags : tag_vector := render_tags(
 			analogreadings(
-				style  => styles(width(40) & alignment(right_alignment)),
-				inputs => 5));
+				style  => styles(width(33) & alignment(right_alignment)),
+				inputs => 1));
 
-		constant cc : attr_table := tagattr_tab(tags, key_textcolor);
+		constant cc : attr_table := tagattr_tab(tags, key_backgroundcolor);
 		variable mesg : textio.line;
 	begin
 

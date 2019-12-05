@@ -95,7 +95,8 @@ architecture def of scopeio_textbox is
 	is
 	begin
 		for i in table'range loop
-			if unsigned(addr) >= table(i).addr then
+			if unsigned(addr) < table(i).addr then
+				report "*****************  " & itoa(table(i).attr);
 				return table(i).attr;
 			end if;
 		end loop;
@@ -540,8 +541,8 @@ begin
 		end if;
 	end process;
 
-	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textcolor),       std_logic_vector(cga_addr)), text_fg'length));
-	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_backgroundcolor), std_logic_vector(cga_addr)), text_bg'length));
+	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textcolor),       std_logic_vector(unsigned(video_addr) srl fontwidth_bits)), text_fg'length));
+	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_backgroundcolor), std_logic_vector(unsigned(video_addr) srl fontwidth_bits)), text_bg'length));
 
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else

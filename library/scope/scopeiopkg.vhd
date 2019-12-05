@@ -603,31 +603,31 @@ package scopeiopkg is
 
 	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
 		text(                                                                               -- 
-			style   => styles(background_color(0)), -- Workaround
+			style   => styles(background_color(pltid_textbg)),                              -- Workaround
 			content => "IP : "),
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)), -- Workaround
+			style   => styles(background_color(pltid_textbg) & width(3) & alignment(right_alignment)), -- Workaround
 			content => "*",
 			id      => "ip4.num1"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(background_color(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(pltid_textbg) & width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num2"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(background_color(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(pltid_textbg) & width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num3"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(background_color(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(background_color(pltid_textbg) & width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num4"));
 
@@ -637,25 +637,25 @@ package scopeiopkg is
 
 	constant hz_children : tag_vector := (                                                  -- Xilinx's mess
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+			style   => styles(background_color(pltid_textbg) & width(8) & alignment(right_alignment)), -- Workaround
 			content => "NaN",
 			id      => "hz.offset"),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			style   => styles(background_color(pltid_textbg) & width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			style   => styles(background_color(pltid_textbg) & width(8) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "hz.div"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(background_color(pltid_textbg)),
 			content => " "),
 		text(
-			style   => styles(background_color(0) & width(1)),
+			style   => styles(background_color(pltid_textbg) & width(1)),
 			content => "*",
 			id      => "hz.mag"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(background_color(pltid_textbg)),
 			content => "s"));
 
 	constant hz_tags : tag_vector := div (                                                  -- Xilinx's mess
@@ -719,7 +719,7 @@ package scopeiopkg is
 			content => "V"));
 
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
-		style    => styles(text_color(1) & background_color(0) & alignment(right_alignment)),               -- 
+		style    => styles(text_color(pltid_order'length) & background_color(0) & alignment(right_alignment)),               -- 
 		children => vt0_children);                                                          -- Workaround
 
 	function analogreadings (
@@ -1328,21 +1328,21 @@ package body scopeiopkg is
 				style    => styles(background_color(0) & alignment(right_alignment)),
 				children => tag_vector'(
 					text(
-						style   => styles(text_color(i+1) & background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(text_color(i+pltid_order'length) & background_color(0) & width(8) & alignment(right_alignment)),
 						content => "NaN",
 						id      => "vt(" & itoa(i) & ").offset"),
 					text(
 						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
 						content => ":"),
 					text(
-						style   => styles(text_color(i+1) & background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(text_color(i+pltid_order'length) & background_color(0) & width(8) & alignment(right_alignment)),
 						content => "NaN",
 						id      => "vt("& itoa(i) & ").div" ),
 					text(
 						style   => styles(background_color(0) & alignment(center_alignment)),
 						content => " "),
 					text(
-						style   => styles(text_color(i+1) & background_color(0) & width(1) & alignment(right_alignment)),
+						style   => styles(text_color(i+pltid_order'length) & background_color(0) & width(1) & alignment(right_alignment)),
 						content => "*",
 						id      => "vt("& itoa(i) & ").mag"),
 					text(
