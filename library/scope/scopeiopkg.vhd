@@ -617,7 +617,7 @@ package scopeiopkg is
 			content => "*",
 			id      => "ip4.num2"),
 		text(
-			style   => styles(background_color(pltid_textbg)),
+			style   => styles(background_color(0)),
 			content => "."),
 		text(
 			style   => styles(background_color(pltid_textbg) & width(3) & alignment(right_alignment)),

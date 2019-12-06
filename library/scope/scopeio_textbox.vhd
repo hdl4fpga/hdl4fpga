@@ -93,14 +93,16 @@ architecture def of scopeio_textbox is
 		constant addr  : std_logic_vector)
 		return natural
 	is
+		variable retval : natural;
 	begin
+		retval := table(table'left).attr;
 		for i in table'range loop
-			if unsigned(addr) < table(i).addr then
+			if unsigned(addr) >= table(i).addr then
 				report "*****************  " & itoa(table(i).attr);
-				return table(i).attr;
+				retval := table(i).attr;
 			end if;
 		end loop;
-		return table(table'left).attr;
+		return retval;
 	end;
 
 	signal cgaaddr_init  : std_logic;
