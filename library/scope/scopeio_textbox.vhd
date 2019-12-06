@@ -541,8 +541,8 @@ begin
 		end if;
 	end process;
 
-	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textcolor),       std_logic_vector(unsigned(video_addr) srl fontwidth_bits)), text_fg'length));
-	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_backgroundcolor), std_logic_vector(unsigned(video_addr) srl fontwidth_bits)), text_bg'length));
+	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textcolor),       video_addr), text_fg'length));
+	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_backgroundcolor), video_addr), text_bg'length));
 
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
