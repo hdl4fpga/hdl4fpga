@@ -601,61 +601,82 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
-		text(                                                                               -- 
-			style   => styles(bg_palette(pltid_textbg)),                              -- Workaround
+	constant ip4_children : tag_vector := (         -- Xilinx's ISE mess Workaround
+		text(                                       
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "IP : "),
 		text(                                                                               -- 
-			style   => styles(bg_palette(pltid_textbg) & width(3) & alignment(right_alignment)), -- Workaround
+			style   => styles(
+				width(3) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "ip4.num1"),
 		text(
-			style   => styles(bg_palette(pltid_textbg)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment) & 
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "ip4.num2"),
 		text(
-			style   => styles(bg_palette(0)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "ip4.num3"),
 		text(
-			style   => styles(bg_palette(pltid_textbg)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "."),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "ip4.num4"));
 
 	constant ip4_tags : tag_vector := div (                                                 -- Xilinx's mess
-		style    => styles(bg_palette(0) & alignment(right_alignment)),               -- 
+		style    => styles(alignment(right_alignment)),               -- 
 		children => ip4_children);                                                          -- Workaround
 
 	constant hz_children : tag_vector := (                                                  -- Xilinx's mess
-		text(                                                                               -- 
-			style   => styles(bg_palette(pltid_textbg) & width(8) & alignment(right_alignment)), -- Workaround
+		text(                                                                               --  -- Workaround
+			style   => styles(
+				width(8) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "NaN",
 			id      => "hz.offset"),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(3) & alignment(center_alignment)),
+			style   => styles(
+				width(3) & alignment(center_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => ":"),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(8) & alignment(right_alignment)),
+			style   => styles(
+				width(8) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "NaN",
 			id      => "hz.div"),
 		text(
-			style   => styles(bg_palette(pltid_textbg)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => " "),
 		text(
-			style   => styles(bg_palette(pltid_textbg) & width(1)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "hz.mag"),
 		text(
-			style   => styles(bg_palette(pltid_textbg)),
+			style   => styles(
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 			content => "s"));
 
 	constant hz_tags : tag_vector := div (                                                  -- Xilinx's mess

@@ -79,7 +79,9 @@ architecture def of scopeio_textbox is
 
 	constant tags : tag_vector := render_tags(
 		analogreadings(
-			style  => styles(width(cga_cols) & alignment(right_alignment)),
+			style  => styles(
+				width(cga_cols) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 	   		inputs => inputs));
 
 	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(

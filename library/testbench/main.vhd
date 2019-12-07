@@ -43,7 +43,9 @@ begin
 	process 
 		constant tags : tag_vector := render_tags(
 			analogreadings(
-				style  => styles(width(33) & alignment(right_alignment)),
+				style  => styles(
+					width(33) & alignment(right_alignment) &
+					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 				inputs => 1));
 
 --		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
