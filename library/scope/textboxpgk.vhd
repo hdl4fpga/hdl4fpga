@@ -658,6 +658,7 @@ package body textboxpkg is
 	begin
 		current_attr  := tags'left;
 		tab_length    := 1;
+		attr_tab(0).attr := tags(current_attr).style(attr);
 --		report "@@@@@ -> " & itoa(tags(tags'right).mem_ptr);
 		for i in tags'range loop
 			if tags(i).tid = tid_end then
