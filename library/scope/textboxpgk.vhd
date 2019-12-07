@@ -219,14 +219,14 @@ package body textboxpkg is
 --			write(mesg, tags(i).mem_ptr);
 			case tags(i).tid is 
 			when tid_end =>
-				report "end " & itoa(tags(i).mem_ptr);
+--				report "end " & itoa(tags(i).mem_ptr);
 				exit when level=0;
 				level := level - 1;
 			when tid_div =>
-				report "start " & itoa(tags(i).mem_ptr);
+--				report "start " & itoa(tags(i).mem_ptr);
 				level := level + 1;
 			when others =>
-				report "start " & itoa(tags(i).mem_ptr);
+--				report "start " & itoa(tags(i).mem_ptr);
 			end case;
 		end loop;
 --		report mesg.all;
@@ -436,6 +436,7 @@ package body textboxpkg is
 		loop
 			case tags(tag_ptr).tid is
 			when tid_text =>
+				tags(tag_ptr).inherit := tptr;
 				process_text (
 					tag_ptr  => tag_ptr,
 					ctnt_ptr => ctnt_ptr,
@@ -464,7 +465,7 @@ package body textboxpkg is
 				align => align);
 		end if;
 
-		report "div";
+--		report "div";
 		offset_memptr(
 			offset => padding_left (
 			length => ctnt_ptr-tags(tptr).mem_ptr - 1,
@@ -509,6 +510,7 @@ package body textboxpkg is
 
 			case vtags(tag_ptr).tid is
 			when tid_div =>
+				vtags(tag_ptr).inherit := vtags'left;
 				process_div (
 					ctnt_ptr => right,
 					content  => content,
@@ -518,7 +520,7 @@ package body textboxpkg is
 				length := vtags(tptr).style(key_width);            -- Xilinx's mess
 				width  := vtags(0).style(key_width);               --
 				align  := vtags(0).style(key_alignment);           -- Workaround
-		report "page";
+
 				offset_memptr(
 					offset => padding_left (
 						length => length,
@@ -546,8 +548,7 @@ package body textboxpkg is
 			when tid_end =>
 				vtags(tag_ptr).mem_ptr := right - 1;
 				vtags(tag_ptr).inherit := vtags'left;
-				report "@@@@ " & itoa(tag_ptr) &  " @@ " & itoa(vtags'right) &  " @@@ " & itoa(vtags(tag_ptr).mem_ptr);
---				tags(tag_ptr).mem_ptr := 99999; --right - 1;
+--				report "@@@@ " & itoa(tag_ptr) &  " @@ " & itoa(vtags'right) &  " @@@ " & itoa(vtags(tag_ptr).mem_ptr);
 				exit;
 			when others =>
 			end case;
@@ -657,20 +658,20 @@ package body textboxpkg is
 	begin
 		current_attr  := tags'left;
 		tab_length    := 1;
-		report "@@@@@ -> " & itoa(tags(tags'right).mem_ptr);
+--		report "@@@@@ -> " & itoa(tags(tags'right).mem_ptr);
 		for i in tags'range loop
 			if tags(i).tid = tid_end then
-				inherit := tags(i).inherit;
+				inherit := tags(tags(i).inherit).inherit;
 				if tags(inherit).style(attr) /= tags(current_attr).style(attr) then
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
-					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(inherit).style(attr));
+--					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(inherit).style(attr));
 					attr_tab(tab_length).attr := tags(inherit).style(attr);
 					tab_length := tab_length + 1;
 				end if;
-				current_attr := tags(i).inherit;
+				current_attr := tags(tags(i).inherit).inherit; --tags(i).inherit;
 			else
-					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(i).style(attr));
 				if tags(i).style(attr) /= tags(current_attr).style(attr) then
+--					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(i).style(attr));
 					attr_tab(tab_length).addr := tags(i).mem_ptr;
 					attr_tab(tab_length).attr := tags(i).style(attr);
 					tab_length := tab_length + 1;

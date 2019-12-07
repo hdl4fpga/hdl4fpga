@@ -671,7 +671,7 @@ package scopeiopkg is
 		text(
 			style   => styles(
 				width(1) & alignment(right_alignment) &
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+				text_palette(pltid_order'length) & bg_palette(pltid_vtbg)),
 			id      => "tgr.edge"),
 		text(
 			style   => styles(
