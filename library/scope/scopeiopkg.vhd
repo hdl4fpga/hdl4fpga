@@ -692,7 +692,7 @@ package scopeiopkg is
 		text(
 			style   => styles(
 				width(1) & alignment(right_alignment) &
-				text_palette(pltid_order'length) & bg_palette(pltid_vtbg)),
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			id      => "tgr.edge"),
 		text(
 			style   => styles(
@@ -716,11 +716,14 @@ package scopeiopkg is
 				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => " "),
 		text(
-			style   => styles( width(1)),
+			style   => styles(
+				width(1) &
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "tgr.mag"),
 		text(
-			style   => styles(bg_palette(0)),
+			style   => styles(
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "V"));
 
 	constant tgr_tags : tag_vector := div (
