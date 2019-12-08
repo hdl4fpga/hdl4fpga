@@ -48,16 +48,16 @@ begin
 					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 				inputs => 1));
 
---		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
+		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
 		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);
 		variable mesg : textio.line;
 	begin
 
---		report itoa(cc'length);
---		for i in cc'range loop
---			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
---			textio.writeline (textio.output, mesg);
---		end loop;
+		report itoa(cc'length);
+		for i in cc'range loop
+			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
+			textio.writeline (textio.output, mesg);
+		end loop;
 		textio.write (mesg, string'("******* background ********"));
 		textio.writeline (textio.output, mesg);
 		for i in cc1'range loop

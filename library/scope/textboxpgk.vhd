@@ -31,24 +31,24 @@ use hdl4fpga.std.all;
 package textboxpkg is
 
 	type style_keys   is (key_width, key_alignment, key_textpalette, key_bgpalette);
-	type style_t      is array (style_keys) of natural;
+	type style_t      is array (style_keys) of integer;
 	type style_vector is array (natural range <>) of style_t;
 
-	subtype alignment_t is natural;
-	constant left_alignment   : natural := 0;
-	constant right_alignment  : natural := 1;
-	constant center_alignment : natural := 2;
+	subtype alignment_t is integer;
+	constant left_alignment   : integer := 0;
+	constant right_alignment  : integer := 1;
+	constant center_alignment : integer := 2;
 
-	function alignment    (constant value : natural) return style_vector; 
-	function text_palette (constant value : natural) return style_vector; 
-	function bg_palette   (constant value : natural) return style_vector;
-	function width        (constant value : natural) return style_vector; 
+	function alignment    (constant value : integer) return style_vector; 
+	function text_palette (constant value : integer) return style_vector; 
+	function bg_palette   (constant value : integer) return style_vector;
+	function width        (constant value : integer) return style_vector; 
 
 	function style (
-		constant alignment    : natural := 0;
-		constant bg_palette   : natural := 0;
-		constant text_palette : natural := 0;
-		constant width        : natural := 0)
+		constant width        : integer := 0;
+		constant alignment    : integer := 0;
+		constant bg_palette   : integer := -1;
+		constant text_palette : integer := -1)
 		return style_t;
 
 	function styles (constant values : style_vector) return style_t;
@@ -69,13 +69,13 @@ package textboxpkg is
 
 	type attr_record is record
 		addr : natural;
-		attr : natural;
+		attr : integer;
 	end record;
 
 	type attr_table is array(natural range <>) of attr_record;
 
 	function alignment (constant value  : tag) return alignment_t; 
-	function width     (constant value  : tag) return natural; 
+	function width     (constant value  : tag) return integer; 
 
 	type tag_vector is array (natural range <>) of tag;
 
@@ -234,44 +234,56 @@ package body textboxpkg is
 	end;
 
 	function alignment (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_alignment) := value;
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := value;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
 	function bg_palette (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_bgpalette) := value;
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := 0;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := value;
 		return retval;
 	end;
 
 	function text_palette (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := 0;
 		retval(0)(key_textpalette) := value;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
 	function width (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_width) := value;
+		retval(0)(key_width)       := value;
+		retval(0)(key_alignment)   := 0;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
 	function width (
 		constant value : tag)
-		return natural is
+		return integer is
 	begin
 		return value.style(key_width);
 	end;
@@ -284,10 +296,10 @@ package body textboxpkg is
 	end;
 
 	function style (
-		constant alignment        : natural := 0;
-		constant bg_palette : natural := 0;
-		constant text_palette       : natural := 0;
-		constant width            : natural := 0)
+		constant width        : integer := 0;
+		constant alignment    : integer := 0;
+		constant bg_palette   : integer := -1;
+		constant text_palette : integer := -1)
 		return style_t
 	is
 		variable retval : style_t;
@@ -306,9 +318,20 @@ package body textboxpkg is
 	begin
 		for i in values'reverse_range loop
 			for j in style_t'range loop
-				if values(i)(j)/=0 then
-					retval(j) := values(i)(j);
-				end if;
+				case j is
+				when key_textpalette | key_bgpalette =>
+					if values(i)(j) >= 0 then
+						retval(j) := values(i)(j);
+					else
+						retval(j) := -1;
+					end if;
+				when key_width | key_alignment =>
+					if values(i)(j) > 0 then
+						retval(j) := values(i)(j);
+					else
+						retval(j) := 0;
+					end if;
+				end case;
 			end loop;
 		end loop;
 		return retval;
@@ -650,36 +673,60 @@ package body textboxpkg is
 		constant attr : style_keys)
 		return attr_table
 	is
-		variable tab_length : natural;
-		variable attr_tab   : attr_table(0 to tags'length-1);
+		function get_attr (
+			constant tags : tag_vector;
+			constant tag  : natural;
+			constant attr : style_keys)
+			return integer
+		is
+			variable inherit : natural;
+		begin
+			case attr is
+			when key_textpalette | key_bgpalette =>
+				inherit := tag;
+				while inherit /= tags'left loop
+					if tags(inherit).style(attr) >= 0 then
+						return tags(inherit).style(attr);
+					end if;
+					inherit := tags(inherit).inherit;
+				end loop;
+				return tags(inherit).style(attr);
+			when key_width | key_alignment =>
+				return tags(tag).style(attr);
+			end case;
 
+		end;
+
+		variable tab_length   : natural;
 		variable current_attr : natural;
-		variable inherit  : natural;
+		variable inherit      : natural;
+		variable retval       : attr_table(0 to tags'length-1);
+
 	begin
 		current_attr  := tags'left;
 		tab_length    := 1;
-		attr_tab(0).attr := tags(current_attr).style(attr);
+		retval(0).attr := tags(current_attr).style(attr);
 --		report "@@@@@ -> " & itoa(tags(tags'right).mem_ptr);
 		for i in tags'range loop
 			if tags(i).tid = tid_end then
 				inherit := tags(tags(i).inherit).inherit;
-				if tags(inherit).style(attr) /= tags(current_attr).style(attr) then
-					attr_tab(tab_length).addr := tags(i).mem_ptr;
---					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(inherit).style(attr));
-					attr_tab(tab_length).attr := tags(inherit).style(attr);
+				if get_attr(tags, inherit, attr) /= get_attr(tags, current_attr, attr) then
+					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, inherit, attr));
+					retval(tab_length).addr := tags(i).mem_ptr;
+					retval(tab_length).attr := get_attr(tags, inherit, attr);
 					tab_length := tab_length + 1;
 				end if;
 				current_attr := tags(tags(i).inherit).inherit; --tags(i).inherit;
 			else
-				if tags(i).style(attr) /= tags(current_attr).style(attr) then
---					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(tags(i).style(attr));
-					attr_tab(tab_length).addr := tags(i).mem_ptr;
-					attr_tab(tab_length).attr := tags(i).style(attr);
+				if get_attr(tags, i, attr) /= get_attr(tags, current_attr, attr) then
+					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, i, attr));
+					retval(tab_length).addr := tags(i).mem_ptr;
+					retval(tab_length).attr := get_attr(tags, i, attr);
 					tab_length := tab_length + 1;
 				end if;
 				current_attr := i;
 			end if;
 		end loop;
-		return attr_tab(0 to tab_length-1);
+		return retval(0 to tab_length-1);
 	end;
 end;
