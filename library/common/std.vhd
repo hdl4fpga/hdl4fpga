@@ -547,7 +547,12 @@ package body std is
 		for i in retval'range loop
 			retval(i) := asciitab((value mod 10)+1);
 			value     := value / 10;
-			exit when value=0;
+			if value=0 then
+				if arg < 0 then
+					retval(i+1) := '-';
+				end if;
+				exit;
+			end if;
 		end loop;
 		return strrev(retval(1 to strlen(retval)));
 	end;

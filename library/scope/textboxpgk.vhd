@@ -79,9 +79,12 @@ package textboxpkg is
 
 	type tag_vector is array (natural range <>) of tag;
 
-	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag;
-	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
+	constant nostyle : style_t := (
+		key_width => 0, key_alignment => 0, key_textpalette => -1, key_bgpalette => -1);
+
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
+	function text (constant content  : string := ""; constant style : style_t := nostyle; constant id : string := "") return tag;
+	function div  (constant children : tag_vector;   constant style : style_t := nostyle; constant id : string := "") return tag_vector;
 
 	function render_content (
 		constant tags : tag_vector;
@@ -316,19 +319,19 @@ package body textboxpkg is
 		return style_t is
 		variable retval : style_t;
 	begin
-		for i in values'reverse_range loop
+		for i in values'range loop
 			for j in style_t'range loop
 				case j is
 				when key_textpalette | key_bgpalette =>
 					if values(i)(j) >= 0 then
 						retval(j) := values(i)(j);
-					else
+					elsif retval(j) < 0 then	
 						retval(j) := -1;
 					end if;
 				when key_width | key_alignment =>
 					if values(i)(j) > 0 then
 						retval(j) := values(i)(j);
-					else
+					elsif retval(j) < 0 then	
 						retval(j) := 0;
 					end if;
 				end case;
@@ -347,7 +350,7 @@ package body textboxpkg is
 
 	function div (
 		constant children : tag_vector;
-		constant style    : style_t;
+		constant style    : style_t := nostyle;
 		constant id       : string := "")
 		return tag_vector is
 		variable div    : tag;
@@ -381,7 +384,7 @@ package body textboxpkg is
 
 	function text (
 		constant content : string := "";
-		constant style   : style_t;
+		constant style   : style_t := nostyle;
 		constant id      : string := "")
 		return tag 
 	is
@@ -525,6 +528,7 @@ package body textboxpkg is
 		tag_ptr := vtags'left;
 		left    := content'left;
 		if vtags(tag_ptr).tid=tid_page then
+			vtags(tag_ptr).inherit := vtags'left;
 			tag_ptr := tag_ptr + 1;
 		end if;
 		while tag_ptr <= vtags'right loop
@@ -685,11 +689,16 @@ package body textboxpkg is
 			when key_textpalette | key_bgpalette =>
 				inherit := tag;
 				while inherit /= tags'left loop
+--					report "get attr : " & itoa(tag);
 					if tags(inherit).style(attr) >= 0 then
+--						report "return -> " & itoa(inherit) & " : " & itoa(tags(inherit).style(attr));
 						return tags(inherit).style(attr);
+					else
+--						report "----> " & itoa(tags(inherit).style(attr));
 					end if;
 					inherit := tags(inherit).inherit;
 				end loop;
+--				report "return -> " & itoa(inherit) & " : " & itoa(tags(inherit).style(attr));
 				return tags(inherit).style(attr);
 			when key_width | key_alignment =>
 				return tags(tag).style(attr);

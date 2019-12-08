@@ -545,8 +545,15 @@ begin
 		end if;
 	end process;
 
-	text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), video_addr), text_fg'length));
-	text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   video_addr), text_bg'length));
+	process (video_clk)
+		variable addr : std_logic_vector(video_addr'range);
+	begin
+		if rising_edge(video_clk) then
+			text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), text_fg'length));
+			text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), text_bg'length));
+			addr := video_addr;
+		end if;
+	end process;
 
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
