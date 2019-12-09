@@ -88,7 +88,7 @@ function sendCommand(e) {
 		this.colors.value %= colorTab.length;
 
 		console.log(this.colors.value);
-		var pid = param[2];
+		var pid = Number(param[2]);
 		switch(param[1]) {
 		case 'channel' :
 			pid += Object.keys(objects).length;
@@ -109,7 +109,7 @@ function sendCommand(e) {
 		break;
 	case 'color' :
 
-		var pid = objects[param[1]]['pid'];
+		var pid = Number(objects[param[1]]['pid']);
 		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
