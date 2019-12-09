@@ -1342,7 +1342,7 @@ package body scopeiopkg is
 				style    => styles(alignment(right_alignment) & text_palette(i+pltid_order'length) & bg_palette(pltid_textbg)),
 				children => tag_vector'(
 					text(
-						style   => styles(alignment(right_alignment)),
+						style   => styles(alignment(right_alignment) & width(8)),
 						content => "NaN",
 						id      => "vt(" & itoa(i) & ").offset"),
 					text(

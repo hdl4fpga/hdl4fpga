@@ -46,7 +46,7 @@ begin
 				style  => styles(
 					width(33) & alignment(right_alignment) &
 					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
-				inputs => 1));
+				inputs => 3));
 
 		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
 --		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);

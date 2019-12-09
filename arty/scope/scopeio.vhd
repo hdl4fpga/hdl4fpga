@@ -67,6 +67,7 @@ architecture beh of arty is
 
 	constant video_mode : layout_mode := mode1080p;
 
+		signal sample  : std_logic_vector(sample_size-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -138,7 +139,6 @@ begin
 		signal channel : std_logic_vector(0 to 5-1);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
-		signal sample  : std_logic_vector(sample_size-1 downto 0);
 	begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
@@ -248,6 +248,7 @@ begin
 								when others =>
 									di <= x"f0f1";
 								end case;
+									di <= x"0000";
 								cfg_state := "10";
 								cfg_req   := '1';
 							when "10" =>
@@ -352,7 +353,7 @@ begin
 	generic map (
 		hz_unit          => 25.0*micro,
 		vt_unit          => 10.0*micro,
-		inputs           => inputs,
+		inputs           => 1, --inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
@@ -360,7 +361,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+1), 15 => 2**(0+2)*5**(1+1)),
 
-		default_tracesfg => b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
+		default_tracesfg => b"1_111", -- & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
@@ -377,8 +378,8 @@ begin
 		si_data     => si_data,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => samples(0 to sample_size*inputs-1),
+		input_ena   => '1', --input_ena,
+		input_data  => x"2000", --sample, --s(0 to sample_size*inputs-1),
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,

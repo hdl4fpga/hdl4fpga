@@ -534,12 +534,12 @@
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Flow_PerfOptimized_high" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design">
-          <Option Id="NoCombineLuts">1</Option>
           <Option Id="RepFanoutThreshold">400</Option>
+          <Option Id="NoCombineLuts">1</Option>
           <Option Id="KeepEquivalentRegisters">1</Option>
           <Option Id="ShregMinSize">5</Option>
-          <Option Id="ResourceSharing">2</Option>
           <Option Id="FsmExtraction">1</Option>
+          <Option Id="ResourceSharing">2</Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -631,27 +631,27 @@
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_drc_0" Name="impl_1_route_report_drc_0" Spec="report_drc" RunStep="route_design" ReportFile="arty_drc_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_drc_routed.pb"/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_drc_routed.rpx"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_methodology_0" Name="impl_1_route_report_methodology_0" Spec="report_methodology" RunStep="route_design" ReportFile="arty_methodology_drc_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_methodology_drc_routed.pb"/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_methodology_drc_routed.rpx"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_power_0" Name="impl_1_route_report_power_0" Spec="report_power" RunStep="route_design" ReportFile="arty_power_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_power_summary_routed.pb"/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_power_routed.rpx"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_route_status_0" Name="impl_1_route_report_route_status_0" Spec="report_route_status" RunStep="route_design" ReportFile="arty_route_status.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_route_status.pb"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_timing_summary_0" Name="impl_1_route_report_timing_summary_0" Spec="report_timing_summary" RunStep="route_design" ReportFile="arty_timing_summary_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="max_paths" Type="" Value="10"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_timing_summary_routed.pb"/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_timing_summary_routed.rpx"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_incremental_reuse_0" Name="impl_1_route_report_incremental_reuse_0" Spec="report_incremental_reuse" RunStep="route_design" ReportFile="arty_incremental_reuse_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
