@@ -379,7 +379,7 @@ begin
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => '1', --input_ena,
-		input_data  => x"2000", --sample, --s(0 to sample_size*inputs-1),
+		input_data  => sample, --s(0 to sample_size*inputs-1),
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
