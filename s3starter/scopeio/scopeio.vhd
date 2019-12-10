@@ -39,7 +39,7 @@ architecture beh of s3starter is
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
-	constant sample_size : natural := 9;
+	constant sample_size : natural := 16;
 
 	function sintab (
 		constant base : integer;
@@ -261,6 +261,7 @@ begin
 	generic map (
 		hz_unit          => 10.0*pico,
 		vt_unit          => 10.0*micro,
+		vt_step          => 1.0/(2.8**16),
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_111",

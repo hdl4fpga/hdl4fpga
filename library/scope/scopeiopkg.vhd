@@ -40,6 +40,8 @@ package scopeiopkg is
 	constant nano  : real := 1.0e3*pico;
 	constant micro : real := 1.0e3*nano;
 	constant milli : real := 1.0e3*micro;
+	constant unit  : real := 1.0e3*milli;
+
 	subtype i18n_langs is natural range 0 to 2-1;
 	constant lang_EN : i18n_langs := 0;
 	constant lang_ES : i18n_langs := 1;

@@ -168,11 +168,14 @@ begin
 			end if;
 
 			if k > 0.0 then
-				assert k < 1.0
+				assert k > 1.0
 					report "unit should be decreased"
 					severity FAILURE;
 				for i in retval'range loop
 					retval(i) := natural((real(retval(i))*unit)/(32.0*step));
+					assert retval(i) >= 2**17
+					report "Gain overflow"
+					severity failure;
 				end loop;
 			end if;
 			return retval;

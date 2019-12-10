@@ -142,7 +142,7 @@ begin
 		output_shot  => downsample_oshot,
 		output_data  => downsample_data);
 
-	downsample_ishot <= capture_end and '1'; --trigger_shot;
+	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
 		input_clk    => input_clk,
