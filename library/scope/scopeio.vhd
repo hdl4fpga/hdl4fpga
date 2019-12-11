@@ -168,14 +168,12 @@ begin
 			end if;
 
 			if k > 0.0 then
-				assert k > 1.0
-					report "unit should be decreased"
-					severity FAILURE;
+				assert k < 1.0
+				report "unit should be increase"
+				severity FAILURE;
+
 				for i in retval'range loop
-					retval(i) := natural((real(retval(i))*unit)/(32.0*step));
-					assert retval(i) >= 2**17
-					report "Gain overflow"
-					severity failure;
+					retval(i) := natural(real(retval(i))*k);
 				end loop;
 			end if;
 			return retval;
@@ -229,7 +227,7 @@ begin
 			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			generic map (
-				gains => vt_gains)
+				gains => gains)
 			port map (
 				input_clk     => input_clk,
 				input_dv      => input_ena,
@@ -275,8 +273,8 @@ begin
 		lang           => lang,
 		vlayout_id     => vlayout_id,
 		inputs         => inputs,
-		hz_unit        => hz_unit,
-		vt_unit        => vt_unit,
+		hz_unit        => hz_unit/femto,
+		vt_unit        => vt_unit/femto,
 		dflt_tracesfg  => default_tracesfg,
 		dflt_gridfg    => default_gridfg,
 		dflt_gridbg    => default_gridbg,

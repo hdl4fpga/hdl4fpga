@@ -260,8 +260,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 10.0*pico,
-		vt_unit          => 10.0*micro,
-		vt_step          => 1.0/(2.8**16),
+		vt_unit          => 1.0*milli,
+		vt_step          => 1.0e3*milli/(2.0**16),
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_111",
