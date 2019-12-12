@@ -76,7 +76,7 @@ begin
 		O => sys_clk);
 
 	process (sys_clk)
-		variable cntr : unsigned(0 to 22-1);
+		variable cntr : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sys_clk) then
 			cntr := cntr + 1;
@@ -352,8 +352,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 25.0*micro,
-		vt_step          => (1.0*unit) / (2.0**15*femto),
-		vt_unit          => 1.0*milli,
+		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_unit          => 500.0*micro,
 		inputs           => 1, --inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (

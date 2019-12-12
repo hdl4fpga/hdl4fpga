@@ -967,7 +967,7 @@ package body std is
 		for i in mulr'range loop
 			rval := shift_right(rval, 1);
 			if mulr(0)='1' then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr srl 1;
 		end loop;
@@ -985,10 +985,10 @@ package body std is
 		muld := op1;
 		mulr := op2;
 		rval := (others => '0');
-		while mulr /= 0 loop
+		for i in 0 to unsigned_num_bits(op2)-1 loop
 			rval := shift_right(rval, 1);
 			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr / 2;
 		end loop;
@@ -1009,7 +1009,7 @@ package body std is
 		while mulr /= 0 loop
 			rval := shift_right(rval, 1);
 			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr / 2;
 		end loop;

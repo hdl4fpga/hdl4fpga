@@ -381,7 +381,7 @@ begin
 			std_logic_vector(shift_left(resize(unsigned(myip_num4),      bcd_binvalue'length), 1))  &
 			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
-			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(-signed(trigger_level), vt_frac), bcd_binvalue'length))      &
 			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
 			cgabcd_frm);
@@ -453,11 +453,11 @@ begin
 		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
 		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
 		chr_value <= wirebus(
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), hz_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
 			word2byte(x"1819",                                trigger_edge)                 &
 			word2byte(to_ascii(" *"),                         trigger_freeze)               &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length) &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length),
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
 			cgachr_frm);
 
 		chr_memaddr <= wirebus (

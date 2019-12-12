@@ -31,6 +31,7 @@ function mouseWheel (e) {
 }
 
 function onClick(e) {
+	console.log("onclick");
 	sendCommand.call(this, e);
 }
 
@@ -51,22 +52,19 @@ function sendCommand(e) {
 			offset : this.value,
 			chanid : param[1] } );
 		break;
+	case 'positive':
+	case 'negative':
+			this.trigger.slope.value = param[0];
 	case 'level':
-	case 'slope':
 		sendRegister(registers.trigger, { 
-			level  : this.level.value,
-			slope  : this.slope.value,
+			level  : this.trigger.level.value,
+			slope  : (this.trigger.slope.value === "positive") ? 0 : 1,
 			enable : 0,
 			chanid : param[1] });
 		break;
 	case 'vtaxis' :
 		sendRegister(registers.vtaxis, { 
 			offset : this.vtaxis.value,
-			chanid : param[1] });
-		break;
-	case 'trigger' :
-		sendRegister(registers.vtaxis, { 
-			offset : this.trigger.value,
 			chanid : param[1] });
 		break;
 	case 'hscale':
@@ -124,9 +122,11 @@ function sendCommand(e) {
 			color       : this.colors.value });
 		console.log(param);
 		break;
+	default :
+		console.log("Invalid : " + param[0]);
 	}
 
-	console.log(param[0]);
+	console.log("Param [0] : " + param[0]);
 }
 
 var commParam;

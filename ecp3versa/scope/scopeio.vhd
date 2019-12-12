@@ -273,8 +273,9 @@ begin
 	phy1_rst <= not '0'; --rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vt_unit     => 10.0*pico,
-		hz_unit     => 10.0*pico,
+		hz_unit     => 25.0*micro,
+		vt_unit     => 500.0*micro,
+		vt_step     => 1000.0*milli/(2.0**16),
 		inputs      => inputs,
 		vlayout_id  => layout)
 	port map (
