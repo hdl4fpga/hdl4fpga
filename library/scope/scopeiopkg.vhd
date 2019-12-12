@@ -1203,14 +1203,14 @@ package body scopeiopkg is
 		point := point - 1;
 		frac  := unit / mult;
 
-		exp  := 0;
+		exp := 0;
 		for i in 0 to 3-1 loop
+			exit when floor(frac)=(frac);
 			assert i /= 2
 				report "Invalid unit value"
 				severity failure;
 			frac := frac * 2.0;
 			exp  := exp - 1;
-			exit when floor(frac)=(frac);
 		end loop;
 
 		return sio_float'(frac => natural(frac), exp => exp, point => point mod 3, multp => point / 3);

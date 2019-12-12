@@ -63,7 +63,18 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when init_s =>
-				bcd_trdy      <= '0';
+				if frm='0' then
+					bcd_trdy <= '0';
+				elsif bcd_irdy='1' then
+					if bcd_di=(bcd_di'range => '0') then
+						bcd_trdy <= '1';
+					else
+						bcd_trdy <= '0';
+					end if;
+				else
+					bcd_trdy  <= '0';
+				end if;
+
 				dtos_ena      <= '0';
 				dtos_ini      <= '1';
 				dtos_zero     <= '0';
@@ -75,7 +86,11 @@ begin
 				if frm='0' then
 					state := init_s;
 				elsif bcd_irdy='1' then
-					state := addr_s;
+					if bcd_di=(bcd_di'range => '0') then
+						state := init_s;
+					else
+						state := addr_s;
+					end if;
 				end if;
 			when addr_s =>
 				bcd_trdy      <= '0';

@@ -375,10 +375,10 @@ begin
 		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
 
 		bcd_binvalue <= wirebus(
-			std_logic_vector(shift_left(resize(unsigned(myip_num1),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num2),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num3),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num4),      bcd_binvalue'length), 1))  &
+			std_logic_vector(resize(unsigned(myip_num1),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num2),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num3),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
 			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
 			std_logic_vector(resize(mul(-signed(trigger_level), vt_frac), bcd_binvalue'length))      &
@@ -387,7 +387,7 @@ begin
 			cgabcd_frm);
 				 	
 		bcd_expvalue <= wirebus(integer_vector'(
-			-1, -1, -1, -1,
+			0, 0, 0, 0,
 			hz_exp-5,
 			hz_exp,
 			vt_exp-5,
