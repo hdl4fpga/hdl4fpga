@@ -110,17 +110,19 @@ begin
 					bin_trdy <= btod_trdy;
 					btod_frm <= '1';
 					dtos_frm <= '0';
+					stof_frm <= '0';
 				else
 					bin_trdy <= '0';
 					btod_frm <= '0';
 					dtos_frm <= '1';
+					stof_frm <= '0';
 				end if;
 			else
 				bin_trdy <= '0';
 				btod_frm <= '0';
 				dtos_frm <= '0';
+				stof_frm <= '0';
 			end if;
-			stof_frm <= '0';
 		when dtos_s =>
 			bin_trdy <= '0';
 			btod_frm <= '0';
