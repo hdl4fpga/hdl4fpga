@@ -12,6 +12,9 @@ use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
 
+	constant sample_size : natural := 16;
+	constant inputs   : natural := 2;
+
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -20,10 +23,7 @@ architecture beh of arty is
 	signal input_clk  : std_logic;
 	signal input_ena  : std_logic;
 
-	constant sample_size : natural := 16;
-
-	constant inputs : natural := 9;
-	signal samples  : std_logic_vector(0 to 9*sample_size-1);
+	signal samples  : std_logic_vector(0 to inputs*sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
@@ -204,9 +204,7 @@ begin
 					case daddr(channel'range) is
 					when "00011" =>
 						led(1) <= '1';
---						samples <= byte2word(samples, "0000", sample);
-						samples <= (others => '0');
-						samples(0 to sample_size-1) <= sample;
+						samples <= byte2word(samples, "0000", sample);
 					when "10000" =>                         
 						RGBled(2) <= '1';
 --						samples <= byte2word(samples, "0101", sample);
@@ -222,11 +220,11 @@ begin
 --						samples <= byte2word(samples, "1000", sample);
 					when "10111" =>                         
 						RGBled(6) <= '1';
---						samples <= byte2word(samples, "0001", sample);
+--						samples <= byte2word(samples, "0010", sample);
 
 					when "11100" =>                         
 						led(2) <= '1';
---						samples <= byte2word(samples, "0010", sample);
+						samples <= byte2word(samples, "0001", sample);
 					when "11101" =>                         
 						led(3) <= '1';
 --						samples <= byte2word(samples, "0011", sample);
@@ -311,7 +309,6 @@ begin
 				else
 					den <= '1';
 					drp_rdy := '1';
-					cfg_req := '1';
 					reset   := '0';
 				end if;
 				if drdy='1' then
@@ -398,7 +395,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
+		default_tracesfg => (1 to 4*inputs => '1'),
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
@@ -416,7 +413,7 @@ begin
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_ena,
-		input_data  => samples(0 to sample_size*inputs-1),
+		input_data  => samples, --s(0 to sample_size*inputs-1),
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,

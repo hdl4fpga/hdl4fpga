@@ -38,7 +38,8 @@ architecture beh of scopeio_downsampler is
 
 	signal factor    : std_logic_vector(0 to scaler_bits-1);
 	signal data_in   : std_logic_vector(0 to input_data'length-1);
-	signal data_out  : signed(0 to output_data'length-1);
+	signal data_min  : signed(0 to output_data'length/2-1);
+	signal data_max  : signed(0 to output_data'length/2-1);
 	signal start     : std_logic;
 	signal data_shot : std_logic;
 	signal data_vld  : std_logic;
@@ -152,12 +153,10 @@ begin
 				end if;
 			end if;
 		end process;
-		data_out(2*i*sample'length to 2*(i+1)*sample'length-1) <= 
-			maxx & minn when swap='0' else
-			minn & maxx;
-
+		data_max(i*sample'length to (i+1)*sample'length-1) <= maxx when swap='0' else minn;
+		data_min(i*sample'length to (i+1)*sample'length-1) <= minn when swap='0' else maxx;
 	end generate;
 
-	output_data <= std_logic_vector(data_out);
+	output_data <= std_logic_vector(data_max & data_min);
 
 end;
