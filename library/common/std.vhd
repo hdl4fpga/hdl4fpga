@@ -1296,7 +1296,7 @@ package body std is
 			if to_unsigned(i,addr'length)=unsigned(addr) then
 				retval(0 to data'length-1) := unsigned(data);
 			end if;
-			retval := rotate_left(retval, data'length);
+			retval := retval rol data'length;
 		end loop;
 		return std_logic_vector(retval(0 to word'length-1));
 	end;

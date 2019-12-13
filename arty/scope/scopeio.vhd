@@ -68,7 +68,7 @@ architecture beh of arty is
 	constant video_mode : layout_mode := mode1080p;
 
 		signal sample  : std_logic_vector(sample_size-1 downto 0);
-		signal cntr : unsigned(0 to 16-1);
+		signal cntr : unsigned(0 to 22-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -197,28 +197,48 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
+						led(1) <= '0';
+						led(2) <= '0';
+						led(3) <= '0';
+						rgbled <= (others => '0');
 					case daddr(channel'range) is
 					when "00011" =>
-						samples <= byte2word(samples, "0000", sample);
+						led(1) <= '1';
+--						samples <= byte2word(samples, "0000", sample);
+						samples <= (others => '0');
+						samples(0 to sample_size-1) <= sample;
 					when "10000" =>                         
-						samples <= byte2word(samples, "0101", sample);
-					when "10001" =>                         
-						samples <= byte2word(samples, "0110", sample);
-					when "10010" =>                         
-						samples <= byte2word(samples, "0111", sample);
-					when "10011" =>                         
-						samples <= byte2word(samples, "1000", sample);
-					when "11000" =>                         
-						samples <= byte2word(samples, "0001", sample);
-					when "11001" =>                         
-						samples <= byte2word(samples, "0010", sample);
-					when "11010" =>                         
-						samples <= byte2word(samples, "0011", sample);
-					when "11011" =>                         
-						samples <= byte2word(samples, "0100", sample);
+						RGBled(2) <= '1';
+--						samples <= byte2word(samples, "0101", sample);
+
+					when "10100" =>                         
+						RGBled(3) <= '1';
+--						samples <= byte2word(samples, "0110", sample);
+					when "10101" =>                         
+						RGBled(4) <= '1';
+--						samples <= byte2word(samples, "0111", sample);
+					when "10110" =>                         
+						RGBled(5) <= '1';
+--						samples <= byte2word(samples, "1000", sample);
+					when "10111" =>                         
+						RGBled(6) <= '1';
+--						samples <= byte2word(samples, "0001", sample);
+
+					when "11100" =>                         
+						led(2) <= '1';
+--						samples <= byte2word(samples, "0010", sample);
+					when "11101" =>                         
+						led(3) <= '1';
+--						samples <= byte2word(samples, "0011", sample);
+					when "11110" =>                         
+						RGBled(0) <= '1';
+--						samples <= byte2word(samples, "0100", sample);
+					when "11111" =>                         
+						RGBled(1) <= '1';
+--						samples <= byte2word(samples, "1001", sample);
 					when others =>
+						RGBled(9) <= '1';
 					end case;
-					samples <= byte2word(samples, "0000", sample);
 				end if;
 			end if;
 		end process;
@@ -291,6 +311,7 @@ begin
 				else
 					den <= '1';
 					drp_rdy := '1';
+					cfg_req := '1';
 					reset   := '0';
 				end if;
 				if drdy='1' then
@@ -331,16 +352,16 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
---		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
---		port map (
---			rgtr_clk  => si_clk,
---			rgtr_dv   => rgtr_dv,
---			rgtr_id   => rgtr_id,
---			rgtr_data => rgtr_data,
---
---			hz_dv     => hz_dv,
---			hz_scale  => hz_scale,
---			hz_slider => hz_slider);
+		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			hz_dv     => hz_dv,
+			hz_scale  => hz_scale,
+			hz_slider => hz_slider);
 
 	end block;
 
