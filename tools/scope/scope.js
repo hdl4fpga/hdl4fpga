@@ -56,6 +56,7 @@ function sendCommand(e) {
 	case 'negative':
 			this.trigger.slope.value = param[0];
 	case 'level':
+		console.log(param[1]);
 		sendRegister(registers.trigger, { 
 			level  : this.trigger.level.value,
 			slope  : (this.trigger.slope.value === "positive") ? 0 : 1,

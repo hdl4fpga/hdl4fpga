@@ -1205,10 +1205,11 @@ package body scopeiopkg is
 
 		exp := 0;
 		for i in 0 to 3-1 loop
+			assert i /= 3
+			report "Invalid unit value"
+			severity failure;
+
 			exit when floor(frac)=(frac);
-			assert i /= 2
-				report "Invalid unit value"
-				severity failure;
 			frac := frac * 2.0;
 			exp  := exp - 1;
 		end loop;

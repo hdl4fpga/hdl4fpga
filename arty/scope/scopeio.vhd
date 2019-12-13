@@ -13,7 +13,7 @@ use hdl4fpga.scopeiopkg.all;
 architecture beh of arty is
 
 	constant sample_size : natural := 16;
-	constant inputs   : natural := 2;
+	constant inputs   : natural := 9;
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
@@ -94,14 +94,16 @@ begin
 	end process;
 
 	dcm_e : block
-		signal vga_clkfb : std_logic;
-		signal adc_clkfb : std_logic;
-		signal adc_clkin : std_logic;
+		signal vga_clkfb  : std_logic;
+		signal adc_clkfb1 : std_logic;
+		signal adc_clkin1 : std_logic;
+		signal adc_clkfb2 : std_logic;
+		signal adc_clkin2 : std_logic;
 	begin
 		vga_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 12.0,		-- 200 MHz
+			clkfbout_mult_f  => 12.0,
 			clkout0_divide_f =>  8.0,
 			clkout1_divide   => 75,
 			bandwidth        => "LOW")
@@ -112,20 +114,34 @@ begin
 			clkfbin  => vga_clkfb,
 			clkfbout => vga_clkfb,
 			clkout0  => vga_clk,
-			clkout1  => adc_clkin);
+			clkout1  => adc_clkin1);
 
-		adc_i : mmcme2_base
+		adc1_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
-			clkfbout_mult_f  => 13.0*4.0,		-- 200 MHz
+			clkfbout_mult_f  => 13.0*4.0,
+			clkout0_divide_f => 25.0,
+			bandwidth        => "LOW")
+		port map (
+			pwrdwn   => '0',
+			rst      => '0',
+			clkin1   => adc_clkin1,
+			clkfbin  => adc_clkfb1,
+			clkfbout => adc_clkfb1,
+			clkout0  => adc_clkin2);
+
+		adc2_i : mmcme2_base
+		generic map (
+			clkin1_period    => (10.0*75.0/12.0)*25.0/(13.0*4.0),
+			clkfbout_mult_f  => 32.0,
 			clkout0_divide_f => 10.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
-			clkin1   => adc_clkin,
-			clkfbin  => adc_clkfb,
-			clkfbout => adc_clkfb,
+			clkin1   => adc_clkin2,
+			clkfbin  => adc_clkfb2,
+			clkfbout => adc_clkfb2,
 			clkout0  => input_clk);
 	end block;
    
@@ -202,38 +218,36 @@ begin
 						led(3) <= '0';
 						rgbled <= (others => '0');
 					case daddr(channel'range) is
-					when "00011" =>
+					when "00011" => --  0
 						led(1) <= '1';
 						samples <= byte2word(samples, "0000", sample);
-					when "10000" =>                         
+					when "10100" =>	--  4                       
 						RGBled(2) <= '1';
---						samples <= byte2word(samples, "0101", sample);
-
-					when "10100" =>                         
+						samples <= byte2word(samples, "0100", sample);
+					when "10101" =>	--  5
 						RGBled(3) <= '1';
---						samples <= byte2word(samples, "0110", sample);
-					when "10101" =>                         
+						samples <= byte2word(samples, "0101", sample);
+					when "10110" => --  6                        
 						RGBled(4) <= '1';
---						samples <= byte2word(samples, "0111", sample);
-					when "10110" =>                         
+						samples <= byte2word(samples, "0110", sample);
+					when "10111" => --  7
 						RGBled(5) <= '1';
---						samples <= byte2word(samples, "1000", sample);
-					when "10111" =>                         
-						RGBled(6) <= '1';
---						samples <= byte2word(samples, "0010", sample);
+						samples <= byte2word(samples, "0111", sample);
 
-					when "11100" =>                         
+					when "11100" => -- 12
 						led(2) <= '1';
 						samples <= byte2word(samples, "0001", sample);
-					when "11101" =>                         
+					when "11101" => -- 13
 						led(3) <= '1';
---						samples <= byte2word(samples, "0011", sample);
-					when "11110" =>                         
+						samples <= byte2word(samples, "0010", sample);
+					when "11110" => -- 14
 						RGBled(0) <= '1';
---						samples <= byte2word(samples, "0100", sample);
-					when "11111" =>                         
+						samples <= byte2word(samples, "0011", sample);
+					when "11111" => -- 15
 						RGBled(1) <= '1';
---						samples <= byte2word(samples, "1001", sample);
+						samples <= byte2word(samples, "1000", sample);
+					when "10000" =>	--  1                       
+						RGBled(6) <= '1';
 					when others =>
 						RGBled(9) <= '1';
 					end case;
@@ -278,7 +292,7 @@ begin
 								when "0010" =>
 									di <= x"7000";
 								when "0011" =>
-									di <= x"f000";
+									di <= x"7010";
 								when others =>
 									di <= x"f0f1";
 								end case;
@@ -384,7 +398,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit          => 25.0*micro,
+		hz_unit          => 31.25*micro,
 		vt_step          => (1.0e3*milli) / (2.0**16*femto),
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
@@ -413,7 +427,7 @@ begin
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_ena,
-		input_data  => samples, --s(0 to sample_size*inputs-1),
+		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
