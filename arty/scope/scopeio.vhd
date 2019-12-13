@@ -33,7 +33,7 @@ architecture beh of arty is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0);
+	signal hz_scale  : std_logic_vector(4-1 downto 0) := (others => '0');
 	signal hz_dv     : std_logic;
 
 	signal ipcfg_req : std_logic;
@@ -68,6 +68,7 @@ architecture beh of arty is
 	constant video_mode : layout_mode := mode1080p;
 
 		signal sample  : std_logic_vector(sample_size-1 downto 0);
+		signal cntr : unsigned(0 to 16-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -76,10 +77,9 @@ begin
 		O => sys_clk);
 
 	process (sys_clk)
-		variable cntr : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sys_clk) then
-			cntr := cntr + 1;
+			cntr <= cntr + 1;
 			jd(1)  <= cntr(8);
 			jd(2)  <= cntr(7);
 			jd(3)  <= cntr(6);
@@ -135,8 +135,8 @@ begin
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
 		signal den     : std_logic;
-		signal daddr   : std_logic_vector(0 to 7-1);
-		signal channel : std_logic_vector(0 to 5-1);
+		signal daddr   : std_logic_vector(7-1 downto 0);
+		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
 	begin
@@ -194,15 +194,31 @@ begin
 			do        => sample); 
 
 		process(input_clk)
-			constant mp  : std_logic_vector(0 to 9*32-1) := (
-				(1 to 3*9 => '0') & b"1000_0000_0" & (1 to 12*9 => '0') &
-				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
-				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
-
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
-					samples <= byte2word(samples, sample, word2byte(fill(mp, 9*128, value => '0') ,daddr));
+					case daddr(channel'range) is
+					when "00011" =>
+						samples <= byte2word(samples, "0000", sample);
+					when "10000" =>                         
+						samples <= byte2word(samples, "0101", sample);
+					when "10001" =>                         
+						samples <= byte2word(samples, "0110", sample);
+					when "10010" =>                         
+						samples <= byte2word(samples, "0111", sample);
+					when "10011" =>                         
+						samples <= byte2word(samples, "1000", sample);
+					when "11000" =>                         
+						samples <= byte2word(samples, "0001", sample);
+					when "11001" =>                         
+						samples <= byte2word(samples, "0010", sample);
+					when "11010" =>                         
+						samples <= byte2word(samples, "0011", sample);
+					when "11011" =>                         
+						samples <= byte2word(samples, "0100", sample);
+					when others =>
+					end case;
+					samples <= byte2word(samples, "0000", sample);
 				end if;
 			end if;
 		end process;
@@ -217,7 +233,7 @@ begin
 			variable aux : std_logic_vector(scale'range);
 		begin
 			if rising_edge(input_clk) then
-				if reset='0' then 
+				if reset='0' and ipcfg_req='0' then 
 					den <= '0';
 					dwe <= '0';
 					if cfg_req='1' then
@@ -248,7 +264,6 @@ begin
 								when others =>
 									di <= x"f0f1";
 								end case;
-									di <= x"0000";
 								cfg_state := "10";
 								cfg_req   := '1';
 							when "10" =>
@@ -316,16 +331,16 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
-		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
-		port map (
-			rgtr_clk  => si_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-
-			hz_dv     => hz_dv,
-			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+--		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+--		port map (
+--			rgtr_clk  => si_clk,
+--			rgtr_dv   => rgtr_dv,
+--			rgtr_id   => rgtr_id,
+--			rgtr_data => rgtr_data,
+--
+--			hz_dv     => hz_dv,
+--			hz_scale  => hz_scale,
+--			hz_slider => hz_slider);
 
 	end block;
 
@@ -354,7 +369,7 @@ begin
 		hz_unit          => 25.0*micro,
 		vt_step          => (1.0e3*milli) / (2.0**16*femto),
 		vt_unit          => 500.0*micro,
-		inputs           => 1, --inputs,
+		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
@@ -362,7 +377,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111", -- & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
+		default_tracesfg => b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111" & b"1_111",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
@@ -379,8 +394,8 @@ begin
 		si_data     => si_data,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_ena   => '1', --input_ena,
-		input_data  => sample, --s(0 to sample_size*inputs-1),
+		input_ena   => input_ena,
+		input_data  => samples(0 to sample_size*inputs-1),
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,

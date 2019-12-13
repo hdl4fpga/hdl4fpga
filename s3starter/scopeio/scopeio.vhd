@@ -71,7 +71,7 @@ architecture beh of s3starter is
 	signal input_addr : unsigned(12-1 downto 0);
 	signal input_ena  : std_logic := '1';
 	signal input_dv   : std_logic;
-	signal sample     : std_logic_vector(sample_size-1 downto 0);
+	signal sample     : std_logic_vector(0 to sample_size-1);
 	
 	constant baudrate      : natural := 115200;
 
@@ -121,8 +121,17 @@ architecture beh of s3starter is
 		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
 
 	constant video_mode : layout_mode := mode1080p;
+	signal input_clk : std_logic;
 
+	signal cntr : unsigned(0 to 16-1);
 begin
+
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			cntr <= cntr + 1;
+		end if;
+	end process;
 
 	clkin_ibufg : ibufg
 	port map (
@@ -141,6 +150,17 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
+	pp_e : entity hdl4fpga.dfs
+	generic map (
+		dfs_frequency_mode => "low",
+		dcm_per => 20.0,
+		dfs_mul => 11,
+		dfs_div => 7)
+	port map(
+		dcm_rst => button(0),
+		dcm_clk => sys_clk,
+		dfs_clk => input_clk);
+
 	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin
@@ -151,14 +171,15 @@ begin
 		end if;
 	end process;
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		latency => 2,
-		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
-	port map (
-		clk  => sys_clk,
-		addr => std_logic_vector(input_addr),
-		data => sample);
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		latency => 2,
+--		bitrom => to_bitrom(sintab(base => 0, size => 2**input_addr'length), sample_size))
+--	port map (
+--		clk  => sys_clk,
+--		addr => std_logic_vector(input_addr),
+--		data => sample);
+
 	ena_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
@@ -257,12 +278,13 @@ begin
 	end block;
 
 	si_clk  <= sys_clk;
+	sample <= (0 => cntr(8), 1 to 15 => not cntr(8)); --sample, --s(0 to sample_size*inputs-1),
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 10.0*pico,
+		vt_step          => (1.0e3*milli) / (2.0**16*femto),
 		vt_unit          => 500.0*micro,
-		vt_step          => 1.0e3*milli/(2.0**16),
-		inputs           => inputs,
+		inputs           => 1, --inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_111",
 		default_gridfg   => b"1_100",
@@ -280,8 +302,8 @@ begin
 		si_irdy     => si_irdy,
 		si_data     => si_data,
 		so_data     => so_data,
-		input_clk   => sys_clk,
-		input_ena   => input_dv,
+		input_clk   => input_clk,
+		input_ena   => '1', --input_dv,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,

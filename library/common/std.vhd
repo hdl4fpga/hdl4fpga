@@ -1288,6 +1288,9 @@ package body std is
 		return std_logic_vector is
 		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
 	begin
+		assert word'length mod data'length=0
+		report "byte2word"
+		severity failure;
 		retval(0 to word'length-1) := unsigned(word);
 		for i in 0 to retval'length/data'length-1 loop
 			if to_unsigned(i,addr'length)=unsigned(addr) then
