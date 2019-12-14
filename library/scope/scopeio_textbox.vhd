@@ -201,7 +201,7 @@ begin
 		constant hz_units      : integer_vector := get_units(hz_float1245);
 		constant hz_multps     : natural_vector := get_multps(hz_float1245);
 
-		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
+		constant hzfrac_length : natural := max(unsigned_num_bits(hz_float1245(0).frac),5);
 		signal   hz_frac       : unsigned(0 to hzfrac_length-1);
 		signal   hz_scalevalue : natural;
 		signal   hz_multp      : std_logic_vector(0 to 3-1);
@@ -211,7 +211,7 @@ begin
 		constant vt_units      : integer_vector := get_units(vt_float1245);
 		constant vt_multps     : natural_vector := get_multps(vt_float1245);
 
-		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
+		constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
 		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
 		signal   vt_scalevalue : natural;
 		signal   vt_multp      : std_logic_vector(0 to 3-1);
@@ -505,7 +505,6 @@ begin
 				btof_bcdunit  <= std_logic_vector(to_signed(bcd_unitvalue, btof_bcdunit'length));
 				btof_bcdwidth <= std_logic_vector(to_unsigned(bcd_width,   btof_bcdwidth'length));
 
-				frac <= scale_1245(signed(bcd_binvalue), scale);
 				frac <= signed(bcd_binvalue);
 				exp  <= to_signed(bcd_expvalue, exp'length);
 			end if;
