@@ -223,43 +223,40 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
-						led(1) <= '0';
-						led(2) <= '0';
-						led(3) <= '0';
-						rgbled <= (others => '0');
+					RGBled <= (others => '0');
 					case daddr(channel'range) is
 					when "00011" => --  0
-						led(1) <= '1';
+						RGBled(1) <= '1';
 						samples <= byte2word(samples, "0000", sample);
 					when "10100" =>	--  4                       
-						RGBled(2) <= '1';
+						RGBled(4) <= '1';
 						samples <= byte2word(samples, "0100", sample);
 					when "10101" =>	--  5
-						RGBled(3) <= '1';
+						RGBled(5) <= '1';
 						samples <= byte2word(samples, "0101", sample);
 					when "10110" => --  6                        
-						RGBled(4) <= '1';
+						RGBled(6) <= '1';
 						samples <= byte2word(samples, "0110", sample);
 					when "10111" => --  7
-						RGBled(5) <= '1';
+						RGBled(7) <= '1';
 						samples <= byte2word(samples, "0111", sample);
 
 					when "11100" => -- 12
-						led(2) <= '1';
+						RGBled(2) <= '1';
 						samples <= byte2word(samples, "0001", sample);
 					when "11101" => -- 13
-						led(3) <= '1';
+						RGBled(3) <= '1';
 						samples <= byte2word(samples, "0010", sample);
 					when "11110" => -- 14
-						RGBled(0) <= '1';
+						RGBled(2) <= '1';
 						samples <= byte2word(samples, "0011", sample);
 					when "11111" => -- 15
-						RGBled(1) <= '1';
+						RGBled(3) <= '1';
 						samples <= byte2word(samples, "1000", sample);
 					when "10000" =>	--  1                       
-						RGBled(6) <= '1';
+						RGBled(8) <= '1';
 					when others =>
-						RGBled(9) <= '1';
+						RGBled(11) <= '1';
 					end case;
 				end if;
 			end if;
@@ -434,13 +431,23 @@ begin
 		end process;
 
 		process(si_clk)
+			variable req : std_logic;
 		begin
 			if rising_edge(si_clk) then
+
 				if hz_dv='1' then
-					txopacity_treq <= '1';
-				elsif txopacity_trdy='1' then
-					txopacity_treq <= '0';
+					req := '1';
 				end if;
+
+				if txopacity_trdy='1' then
+					req := '0';
+					txopacity_treq <= '0';
+				elsif req='1' then
+					if udpip_frm='0' then
+						txopacity_treq <= '1';
+					end if;
+				end if;
+
 			end if;
 		end process;
 
@@ -457,7 +464,7 @@ begin
 
 	si_frm  <= udpip_frm  when txopacity_treq='0' else txopacity_dv;
 	si_irdy <= udpip_irdy when txopacity_treq='0' else txopacity_dv;
-	si_data <= udpip_data when txopacity_treq='0' else txopacity_d;
+	si_data <= udpip_data when txopacity_treq='0' else reverse(txopacity_d);
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -472,7 +479,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111",
+		default_tracesfg => b"1_111" & b"0_110" & b"0_101" & b"0_100" & b"0_011" & b"0_010" & b"0_001" & b"0_111" & b"0_110",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",

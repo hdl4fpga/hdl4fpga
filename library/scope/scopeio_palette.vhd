@@ -173,6 +173,7 @@ architecture beh of scopeio_palette is
 	signal palette_color    : std_logic_vector(max_pixelsize-1 downto 0);
 	signal palette_colorena : std_logic;
 	signal palette_opacity  : std_logic;
+	signal palette_opacityena  : std_logic;
 
 	signal palette_addr     : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
 	signal palette_data     : std_logic_vector(video_color'range);
@@ -191,13 +192,16 @@ begin
 		palette_id       => palette_id,
 		palette_opacity  => palette_opacity,
 		palette_colorena => palette_colorena,
+		palette_opacityena => palette_opacityena,
 		palette_color    => palette_color);
 
 	opacity_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
 			if palette_dv='1' then
-				color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_opacity;
+				if palette_opacityena='1' then
+					color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_opacity;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -215,7 +219,7 @@ begin
 			pltid_vtbg      => vt_bgon      and color_opacity(pltid_vtbg),
 			pltid_hzfg      => hz_dot       and color_opacity(pltid_hzfg),
 			pltid_hzbg      => hz_bgon      and color_opacity(pltid_hzbg),
-			pltid_textfg    => text_fgon    and color_opacity(pltid_textfg),
+			pltid_textfg    => text_fgon    and color_opacity(to_integer(unsigned(text_fg))),
 			pltid_textbg    => text_bgon    and color_opacity(pltid_textbg),
 			pltid_sgmntbg   => sgmnt_bgon   and color_opacity(pltid_sgmntbg),
 			pltid_scopeiobg => scopeio_bgon and color_opacity(pltid_scopeiobg)) & 
