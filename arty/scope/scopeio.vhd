@@ -226,37 +226,37 @@ begin
 					RGBled <= (others => '0');
 					case daddr(channel'range) is
 					when "00011" => --  0
-						RGBled(1) <= '1';
+						RGBled(0) <= '1';
 						samples <= byte2word(samples, "0000", sample);
 					when "10100" =>	--  4                       
-						RGBled(4) <= '1';
+						RGBled(5) <= '1';
 						samples <= byte2word(samples, "0100", sample);
 					when "10101" =>	--  5
-						RGBled(5) <= '1';
+						RGBled(6) <= '1';
 						samples <= byte2word(samples, "0101", sample);
 					when "10110" => --  6                        
-						RGBled(6) <= '1';
+						RGBled(7) <= '1';
 						samples <= byte2word(samples, "0110", sample);
 					when "10111" => --  7
-						RGBled(7) <= '1';
+						RGBled(8) <= '1';
 						samples <= byte2word(samples, "0111", sample);
 
 					when "11100" => -- 12
-						RGBled(2) <= '1';
+						RGBled(1) <= '1';
 						samples <= byte2word(samples, "0001", sample);
 					when "11101" => -- 13
-						RGBled(3) <= '1';
+						RGBled(2) <= '1';
 						samples <= byte2word(samples, "0010", sample);
 					when "11110" => -- 14
-						RGBled(2) <= '1';
+						RGBled(3) <= '1';
 						samples <= byte2word(samples, "0011", sample);
 					when "11111" => -- 15
-						RGBled(3) <= '1';
+						RGBled(4) <= '1';
 						samples <= byte2word(samples, "1000", sample);
 					when "10000" =>	--  1                       
-						RGBled(8) <= '1';
+						RGBled(9) <= '1';
 					when others =>
-						RGBled(11) <= '1';
+						RGBled(9) <= '1';
 					end case;
 				end if;
 			end if;
