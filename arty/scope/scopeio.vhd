@@ -30,21 +30,31 @@ architecture beh of arty is
 	signal eth_rxclk_bufg : std_logic;
 	signal eth_txclk_bufg : std_logic;
 
-	constant max_delay   : natural := 2**14;
+	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0) := (others => '0');
-	signal hz_dv     : std_logic;
+	signal hz_slider       : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale        : std_logic_vector(4-1 downto 0) := (others => '0');
+	signal hz_dv           : std_logic;
 
-	signal ipcfg_req : std_logic;
-	signal txd  : std_logic_vector(eth_txd'range);
-	signal txdv : std_logic;
+	signal ipcfg_req       : std_logic;
+	signal txd             : std_logic_vector(eth_txd'range);
+	signal txdv            : std_logic;
 
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(eth_rxd'range);
 	signal so_data   : std_logic_vector(eth_txd'range);
+
+	signal udpip_frm    : std_logic;
+	signal udpip_irdy   : std_logic;
+	signal udpip_data   : std_logic_vector(eth_rxd'range);
+
+	signal txopacity_data  : std_logic_vector(0 to inputs*32-1);
+	signal txopacity_trdy  : std_logic;
+	signal txopacity_treq  : std_logic;
+	signal txopacity_dv    : std_logic;
+	signal txopacity_d     : std_logic_vector(si_data'range);
 
 	type display_param is record
 		layout : natural;
@@ -345,6 +355,26 @@ begin
 	end process;
 	led(0) <= ipcfg_req;
 
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => eth_rxclk_bufg,
+		phy_rx_dv   => eth_rx_dv,
+		phy_rx_d    => eth_rxd,
+
+		phy_txc     => eth_txclk_bufg,
+		phy_tx_en   => txdv,
+		phy_tx_d    => txd,
+	
+		chaini_data => eth_rxd,
+
+		chaino_frm  => udpip_frm,
+		chaino_irdy => udpip_irdy,
+		chaino_data => udpip_data);
+	
+	si_clk <= eth_rxclk_bufg;
+
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -356,9 +386,9 @@ begin
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
-			sin_data  => si_data,
+			sin_frm   => udpip_frm,
+			sin_irdy  => udpip_irdy,
+			sin_data  => udpip_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -376,25 +406,58 @@ begin
 
 	end block;
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	port map (
-		ipcfg_req   => ipcfg_req,
+	txopacity_b : block
+	begin
 
-		phy_rxc     => eth_rxclk_bufg,
-		phy_rx_dv   => eth_rx_dv,
-		phy_rx_d    => eth_rxd,
+		process (hz_scale)
+			variable data    : unsigned(0 to inputs*32-1);
+			variable opacity : unsigned(0 to inputs-1);
+		begin
+			case hz_scale is
+			when "0000" =>
+				opacity := b"1_0000_0000";
+			when "0001" =>
+				opacity := b"1_1000_0000";
+			when "0010" =>
+				opacity := b"1_1110_0000";
+			when "0011" =>
+				opacity := b"1_1111_0000";
+			when others =>
+				opacity := b"1_1111_1111";
+			end case;
 
-		phy_txc     => eth_txclk_bufg,
-		phy_tx_en   => txdv,
-		phy_tx_d    => txd,
-	
-		chaini_data => eth_rxd,
+			for i in 0 to inputs-1 loop
+				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
+				data := data rol 32;
+			end loop;
+			txopacity_data <= std_logic_vector(data);
+		end process;
 
-		chaino_frm  => si_frm,
-		chaino_irdy => si_irdy,
-		chaino_data => si_data);
-	
-	si_clk <= eth_rxclk_bufg;
+		process(si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if hz_dv='1' then
+					txopacity_treq <= '1';
+				elsif txopacity_trdy='1' then
+					txopacity_treq <= '0';
+				end if;
+			end if;
+		end process;
+
+		txopacity_e : entity hdl4fpga.mii_pll2ser
+		port map (
+			mii_data => txopacity_data,
+			mii_txc  => si_clk,
+			mii_treq => txopacity_treq,
+			mii_trdy => txopacity_trdy,
+			mii_txdv => txopacity_dv,
+			mii_txd  => txopacity_d);
+
+	end block;
+
+	si_frm  <= udpip_frm  when txopacity_treq='0' else txopacity_dv;
+	si_irdy <= udpip_irdy when txopacity_treq='0' else txopacity_dv;
+	si_data <= udpip_data when txopacity_treq='0' else txopacity_d;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -409,7 +472,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => (1 to 4*inputs => '1'),
+		default_tracesfg => b"1_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111" & b"0_111",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",

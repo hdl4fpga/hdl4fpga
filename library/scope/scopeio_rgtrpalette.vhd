@@ -40,8 +40,8 @@ begin
 	ena         <= setif(rgtr_id=rid_palette, rgtr_dv);
 	id          <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
 	color       <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
-	color_ena   <= bitfield(rgtr_data, palettecolorena_id, palette_bf);
-	opacity     <= bitfield(rgtr_data, paletteopacity_id, palette_bf);
+	color_ena   <= bitfield(rgtr_data, palettecolorena_id,   palette_bf);
+	opacity     <= bitfield(rgtr_data, paletteopacity_id,    palette_bf);
 	opacity_ena <= bitfield(rgtr_data, paletteopacityena_id, palette_bf);
 
 	process (rgtr_clk)
