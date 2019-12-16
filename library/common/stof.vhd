@@ -152,6 +152,13 @@ begin
 						right  := (others => '0');
 						offset := (others => '0');
 						sign   := '0';
+						if signed(bcd_unit) > 0 then
+							if bcd_align='1' then
+								stop := stop - signed(bcd_unit);
+							else
+								addr := addr + signed(bcd_unit);
+							end if;
+						end if;
 						if bcd_sign='1' then
 							if bcd_align='1' then
 								stop := stop - 1;
