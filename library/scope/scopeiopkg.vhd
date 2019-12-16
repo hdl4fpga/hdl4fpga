@@ -1206,7 +1206,7 @@ package body scopeiopkg is
 
 		exp := 0;
 		for i in 0 to 4-1 loop
-			assert i /= 3
+			assert i /= 4
 			report "Invalid unit value"
 			severity failure;
 

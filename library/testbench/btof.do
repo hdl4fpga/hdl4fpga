@@ -9,6 +9,7 @@ add wave -noupdate /testbench/du_e/bin_trdy
 add wave -noupdate /testbench/du_e/bcd_irdy
 add wave -noupdate /testbench/du_e/bcd_trdy
 add wave -noupdate /testbench/bcd_end
+add wave -noupdate -radix hexadecimal /testbench/line__84/num
 add wave -noupdate -divider DBDBBl
 add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/dbdbbl_e/bin_di
 add wave -noupdate -radix hexadecimal /testbench/du_e/btod_e/dbdbbl_e/bcd_di
@@ -77,7 +78,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/mem_do
 add wave -noupdate -radix hexadecimal /testbench/du_e/stof_e/fmt_do
 add wave -noupdate -radix hexadecimal /testbench/line__84/num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {27 ns} 0} {{Cursor 2} {742 ns} 0}
+WaveRestoreCursors {{Cursor 1} {27 ns} 0} {{Cursor 2} {650 ns} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100

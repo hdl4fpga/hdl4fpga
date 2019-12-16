@@ -301,6 +301,8 @@ begin
 								addr   := addr - 1;
 							end if;
 						end case;
+					elsif bcd_irdy='1' then
+						bcd_end <= '0';
 					end if;
 				else
 					bcd_trdy <= '1';
