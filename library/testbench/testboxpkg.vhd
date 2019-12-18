@@ -25,23 +25,53 @@ use std.textio;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity main is
 end;
 
 architecture def of main is
+
+
 begin
+--	process 
+--		constant tags : tag_vector := render_tags(
+--			analogreadings(
+--				style  => styles(
+--					width(33) & alignment(right_alignment) &
+--					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
+--				inputs => 3));
+--
+--		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
+----		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);
+--		variable mesg : textio.line;
+--	begin
+--
+--		report itoa(cc'length);
+--		for i in cc'range loop
+--			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
+--			textio.writeline (textio.output, mesg);
+--		end loop;
+--		textio.write (mesg, string'("******* background ********"));
+----		textio.writeline (textio.output, mesg);
+----		for i in cc1'range loop
+----			textio.write (mesg, "addr : " & itoa(cc1(i).addr) & " attr : " & itoa(cc1(i).attr));
+----			textio.writeline (textio.output, mesg);
+----		end loop;
+--		wait;
+--	end process;
+
 	process
 		variable mesg : textio.line;
 	begin
-		write (mesg, std_logic_vector(mul(signed'(b"1_0011_0100"), unsigned'(b"1010"))));
-		writeline (output, mesg);
+		std_logic_textio.write (mesg, std_logic_vector(mul(signed'(b"1_0011_0100"), unsigned'(b"1010"))));
+		textio.writeline (textio.output, mesg);
 		wait;
 	end process;
 
