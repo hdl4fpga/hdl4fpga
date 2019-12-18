@@ -232,6 +232,11 @@ package std is
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
+		return std_logic;
+
+	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector;
 
 	function word2byte (
@@ -542,7 +547,12 @@ package body std is
 		for i in retval'range loop
 			retval(i) := asciitab((value mod 10)+1);
 			value     := value / 10;
-			exit when value=0;
+			if value=0 then
+				if arg < 0 then
+					retval(i+1) := '-';
+				end if;
+				exit;
+			end if;
 		end loop;
 		return strrev(retval(1 to strlen(retval)));
 	end;
@@ -957,7 +967,7 @@ package body std is
 		for i in mulr'range loop
 			rval := shift_right(rval, 1);
 			if mulr(0)='1' then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr srl 1;
 		end loop;
@@ -975,10 +985,10 @@ package body std is
 		muld := op1;
 		mulr := op2;
 		rval := (others => '0');
-		while mulr /= 0 loop
+		for i in 0 to unsigned_num_bits(op2)-1 loop
 			rval := shift_right(rval, 1);
 			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr / 2;
 		end loop;
@@ -999,7 +1009,7 @@ package body std is
 		while mulr /= 0 loop
 			rval := shift_right(rval, 1);
 			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
 			end if;
 			mulr := mulr / 2;
 		end loop;
@@ -1185,6 +1195,18 @@ package body std is
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
+		return std_logic is
+		variable aux  : std_logic_vector(0 to word'length-1);
+		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
+		variable retval : std_logic_vector(0 to 0);
+	begin
+		retval := word2byte(word, addr, 1);
+		return retval(0);
+	end;
+
+	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector)
 		return std_logic_vector is
 		variable aux  : std_logic_vector(0 to word'length-1);
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
@@ -1212,7 +1234,7 @@ package body std is
 		constant addr : std_logic)
 		return signed is
 	begin
-		return signed(word2byte(std_logic_vector(word), (0 to 0 => addr)));
+		return signed(std_logic_vector'(word2byte(std_logic_vector(word), (0 to 0 => addr))));
 	end;
 
 	function word2byte (
@@ -1266,12 +1288,15 @@ package body std is
 		return std_logic_vector is
 		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
 	begin
+		assert word'length mod data'length=0
+		report "byte2word"
+		severity failure;
 		retval(0 to word'length-1) := unsigned(word);
 		for i in 0 to retval'length/data'length-1 loop
 			if to_unsigned(i,addr'length)=unsigned(addr) then
 				retval(0 to data'length-1) := unsigned(data);
 			end if;
-			retval := rotate_left(retval, data'length);
+			retval := retval rol data'length;
 		end loop;
 		return std_logic_vector(retval(0 to word'length-1));
 	end;
@@ -1528,6 +1553,9 @@ package body std is
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
+		assert data'length <= size
+			report "fill : size lower than size -> data length : " & itoa(data'length) & " : " & itoa(size)
+			severity failure;
 		retval_right(0 to data'length-1)    := data;
 		retval_left(data'length-1 downto 0) := data;
 		if right then

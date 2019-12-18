@@ -25,8 +25,8 @@ use std.textio;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use ieee.std_logic_textio;
-use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -34,36 +34,45 @@ use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity main is
-	port (
-		tp : buffer std_logic := '1');
 end;
 
 architecture def of main is
 
-	constant w : natural := 32;
-	constant xx : tag_vector := render_tags(analogreadings(styles(width(w) & alignment(right_alignment)), 2));
---	constant pp : string     := render_content(analogreadings(styles(width(w) & alignment(right_alignment)), 2), 1024);
 
 begin
-	process 
+--	process 
+--		constant tags : tag_vector := render_tags(
+--			analogreadings(
+--				style  => styles(
+--					width(33) & alignment(right_alignment) &
+--					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
+--				inputs => 3));
+--
+--		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
+----		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);
+--		variable mesg : textio.line;
+--	begin
+--
+--		report itoa(cc'length);
+--		for i in cc'range loop
+--			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
+--			textio.writeline (textio.output, mesg);
+--		end loop;
+--		textio.write (mesg, string'("******* background ********"));
+----		textio.writeline (textio.output, mesg);
+----		for i in cc1'range loop
+----			textio.write (mesg, "addr : " & itoa(cc1(i).addr) & " attr : " & itoa(cc1(i).attr));
+----			textio.writeline (textio.output, mesg);
+----		end loop;
+--		wait;
+--	end process;
+
+	process
 		variable mesg : textio.line;
 	begin
-
-		write(mesg, string'("hz.offset : "));
-		write(mesg, memaddr(tagbyid(tags, "hz.offset"), tag_memaddr'length));
-		write(mesg, string'("hz.div : "));
-		write(mesg, memaddr(tagbyid(tags, "hz.div"   ), tag_memaddr'length)):
-		write(mesg, string'("hz.div : "));
-		write(mesg, memaddr(tagbyid(tags, "tgr.level"), tag_memaddr'length)):
---		for i in 0 to pp'length/w-1 loop
---			textio.write(mesg, character'('"'));
---			textio.write(mesg, pp(i*w+1 to (i+1)*w));
---			textio.write(mesg, character'('"'));
---			textio.writeline(textio.output, mesg);
---		end loop;
---		textio.writeline(textio.output, mesg);
+		std_logic_textio.write (mesg, std_logic_vector(mul(signed'(b"1_0011_0100"), unsigned'(b"1010"))));
+		textio.writeline (textio.output, mesg);
 		wait;
 	end process;
-
 
 end;

@@ -55,16 +55,16 @@ entity scopeio is
 			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
 
-		default_tracesfg : std_logic_vector := b"1_1_1";
-		default_gridfg   : std_logic_vector := b"1_0_0";
-		default_gridbg   : std_logic_vector := b"0_0_0";
-		default_hzfg     : std_logic_vector := b"1_1_1";
-		default_hzbg     : std_logic_vector := b"0_0_1";
-		default_vtfg     : std_logic_vector := b"1_1_1";
-		default_vtbg     : std_logic_vector := b"0_0_1";
-		default_textbg   : std_logic_vector := b"0_0_0";
-		default_sgmntbg  : std_logic_vector := b"0_1_1";
-		default_bg       : std_logic_vector := b"1_1_1");
+		default_tracesfg : std_logic_vector := b"1_111";
+		default_gridfg   : std_logic_vector := b"1_100";
+		default_gridbg   : std_logic_vector := b"1_000";
+		default_hzfg     : std_logic_vector := b"1_111";
+		default_hzbg     : std_logic_vector := b"1_001";
+		default_vtfg     : std_logic_vector := b"1_111";
+		default_vtbg     : std_logic_vector := b"1_001";
+		default_textbg   : std_logic_vector := b"1_000";
+		default_sgmntbg  : std_logic_vector := b"1_011";
+		default_bg       : std_logic_vector := b"1_111");
 	port (
 		si_clk           : in  std_logic := '-';
 		si_frm           : in  std_logic := '0';
@@ -169,10 +169,11 @@ begin
 
 			if k > 0.0 then
 				assert k < 1.0
-					report "unit should be decreased"
-					severity FAILURE;
+				report "unit should be increase"
+				severity FAILURE;
+
 				for i in retval'range loop
-					retval(i) := natural((real(retval(i))*unit)/(32.0*step));
+					retval(i) := natural(real(retval(i))*k);
 				end loop;
 			end if;
 			return retval;
@@ -226,7 +227,7 @@ begin
 			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			generic map (
-				gains => vt_gains)
+				gains => gains)
 			port map (
 				input_clk     => input_clk,
 				input_dv      => input_ena,
@@ -272,8 +273,8 @@ begin
 		lang           => lang,
 		vlayout_id     => vlayout_id,
 		inputs         => inputs,
-		hz_unit        => hz_unit,
-		vt_unit        => vt_unit,
+		hz_unit        => hz_unit/femto,
+		vt_unit        => vt_unit/femto,
 		dflt_tracesfg  => default_tracesfg,
 		dflt_gridfg    => default_gridfg,
 		dflt_gridbg    => default_gridbg,

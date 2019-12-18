@@ -239,7 +239,7 @@ function vtControl (parent, number, color) {
 	trigger.style['display']          = 'inline-block';
 	trigger.style['vertical-align']   = 'top';
 	t.appendChild(trigger);
-	this.wrapper['trigger'] = trigger;
+//	this.wrapper['trigger'] = trigger;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
@@ -251,8 +251,8 @@ function vtControl (parent, number, color) {
 	level['type']      = 'range';
 	level['className'] = 'vertical';
 	level['value']     = 0;
-	level['min']       = -128;
-	level['max']       = 128;
+	level['min']       = -256;
+	level['max']       = 255;
 	c.appendChild(level);
 	this.inputControl['level'] = level;
 	
@@ -275,13 +275,16 @@ function vtControl (parent, number, color) {
 		slope[item].style.display = 'block';
 		slope[item].style.align   = 'left';
 		slope[item].input         = document.createElement("input");
+		slope[item].input.id      = item + ':' + number;
 		slope[item].input.type    = 'radio';
 		slope[item].input.name    = 'slope';
 		slope[item].input.value   = item;
+		slope[item].input.trigger = trigger;
 		slope[item].appendChild(slope[item].input);
 		slope[item].appendChild(document.createTextNode(item));
-		c.appendChild(slope[item]); });
-//	this.inputControl['slope'] = slope;
+		c.appendChild(slope[item]);
+		this.wrapper[item] = slope[item].input;
+	});
 
 	mode = {};
 	['continuos', 'one shot', 'stop'].forEach(item => {
@@ -292,19 +295,20 @@ function vtControl (parent, number, color) {
 		mode[item].input.type    = 'radio';
 		mode[item].input.name    = 'mode';
 		mode[item].input.value   = item;
+		mode[item].input.trigger = trigger;
 		mode[item].appendChild(mode[item].input);
 		mode[item].appendChild(document.createTextNode(item));
 		c.appendChild(mode[item]); });
 //	this.inputControl['mode'] = mode;
 
-	level.level = level;
-	level.slope = slope;
-	slope.level = level;
-	slope.slope = slope;
+	level.trigger = trigger;
+	level.level   = level;
+	level.slope   = slope;
 
-	trigger.trigger =  trigger;
-	trigger.level = level;
-	trigger.slope = slope;
+	trigger.trigger = trigger;
+	trigger.level   = level;
+	trigger.slope   = slope;
+	trigger.mode    = mode;
 
 	slabel = document.createElement("label");
 	slabel.id               = "label:channel:"+number;
@@ -335,10 +339,10 @@ function vtControl (parent, number, color) {
 
 vtControl.prototype.onchange = function (callback) {
 	var wrapper = this.wrapper;
-	Object.keys(wrapper).forEach (function(key) {
-		wrapper[key].onchange = callback;
-	});
-	console.log("pase por aca");
+//	Object.keys(wrapper).forEach (function(key) {
+//		wrapper[key].onchange = callback;
+//	});
+//	console.log("pase por aca");
 }
 
 vtControl.prototype.onclick = function (callback) {

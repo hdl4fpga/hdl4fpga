@@ -12,6 +12,9 @@ use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
 
+	constant sample_size : natural := 16;
+	constant inputs   : natural := 9;
+
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -20,31 +23,38 @@ architecture beh of arty is
 	signal input_clk  : std_logic;
 	signal input_ena  : std_logic;
 
-	constant sample_size : natural := 16;
-
-	constant inputs : natural := 9;
-	signal samples  : std_logic_vector(0 to 9*sample_size-1);
+	signal samples  : std_logic_vector(0 to inputs*sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
 	signal eth_rxclk_bufg : std_logic;
 	signal eth_txclk_bufg : std_logic;
 
-	constant max_delay   : natural := 2**14;
+	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0);
-	signal hz_dv     : std_logic;
+	signal hz_slider       : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale        : std_logic_vector(4-1 downto 0) := (others => '0');
+	signal hz_dv           : std_logic;
 
-	signal ipcfg_req : std_logic;
-	signal txd  : std_logic_vector(eth_txd'range);
-	signal txdv : std_logic;
+	signal ipcfg_req       : std_logic;
+	signal txd             : std_logic_vector(eth_txd'range);
+	signal txdv            : std_logic;
 
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(eth_rxd'range);
 	signal so_data   : std_logic_vector(eth_txd'range);
+
+	signal udpip_frm    : std_logic;
+	signal udpip_irdy   : std_logic;
+	signal udpip_data   : std_logic_vector(eth_rxd'range);
+
+	signal txopacity_data  : std_logic_vector(0 to inputs*32-1);
+	signal txopacity_trdy  : std_logic;
+	signal txopacity_treq  : std_logic;
+	signal txopacity_dv    : std_logic;
+	signal txopacity_d     : std_logic_vector(si_data'range);
 
 	type display_param is record
 		layout : natural;
@@ -67,6 +77,8 @@ architecture beh of arty is
 
 	constant video_mode : layout_mode := mode1080p;
 
+		signal sample  : std_logic_vector(sample_size-1 downto 0);
+		signal cntr : unsigned(0 to 22-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -75,10 +87,9 @@ begin
 		O => sys_clk);
 
 	process (sys_clk)
-		variable cntr : unsigned(0 to 22-1);
 	begin
 		if rising_edge(sys_clk) then
-			cntr := cntr + 1;
+			cntr <= cntr + 1;
 			jd(1)  <= cntr(8);
 			jd(2)  <= cntr(7);
 			jd(3)  <= cntr(6);
@@ -93,14 +104,16 @@ begin
 	end process;
 
 	dcm_e : block
-		signal vga_clkfb : std_logic;
-		signal adc_clkfb : std_logic;
-		signal adc_clkin : std_logic;
+		signal vga_clkfb  : std_logic;
+		signal adc_clkfb1 : std_logic;
+		signal adc_clkin1 : std_logic;
+		signal adc_clkfb2 : std_logic;
+		signal adc_clkin2 : std_logic;
 	begin
 		vga_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 12.0,		-- 200 MHz
+			clkfbout_mult_f  => 12.0,
 			clkout0_divide_f =>  8.0,
 			clkout1_divide   => 75,
 			bandwidth        => "LOW")
@@ -111,20 +124,34 @@ begin
 			clkfbin  => vga_clkfb,
 			clkfbout => vga_clkfb,
 			clkout0  => vga_clk,
-			clkout1  => adc_clkin);
+			clkout1  => adc_clkin1);
 
-		adc_i : mmcme2_base
+		adc1_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
-			clkfbout_mult_f  => 13.0*4.0,		-- 200 MHz
+			clkfbout_mult_f  => 13.0*4.0,
+			clkout0_divide_f => 25.0,
+			bandwidth        => "LOW")
+		port map (
+			pwrdwn   => '0',
+			rst      => '0',
+			clkin1   => adc_clkin1,
+			clkfbin  => adc_clkfb1,
+			clkfbout => adc_clkfb1,
+			clkout0  => adc_clkin2);
+
+		adc2_i : mmcme2_base
+		generic map (
+			clkin1_period    => (10.0*75.0/12.0)*25.0/(13.0*4.0),
+			clkfbout_mult_f  => 32.0,
 			clkout0_divide_f => 10.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
-			clkin1   => adc_clkin,
-			clkfbin  => adc_clkfb,
-			clkfbout => adc_clkfb,
+			clkin1   => adc_clkin2,
+			clkfbin  => adc_clkfb2,
+			clkfbout => adc_clkfb2,
 			clkout0  => input_clk);
 	end block;
    
@@ -134,11 +161,10 @@ begin
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
 		signal den     : std_logic;
-		signal daddr   : std_logic_vector(0 to 7-1);
-		signal channel : std_logic_vector(0 to 5-1);
+		signal daddr   : std_logic_vector(7-1 downto 0);
+		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
-		signal sample  : std_logic_vector(sample_size-1 downto 0);
 	begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
@@ -194,15 +220,44 @@ begin
 			do        => sample); 
 
 		process(input_clk)
-			constant mp  : std_logic_vector(0 to 9*32-1) := (
-				(1 to 3*9 => '0') & b"1000_0000_0" & (1 to 12*9 => '0') &
-				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
-				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
-
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
-					samples <= byte2word(samples, sample, word2byte(fill(mp, 9*128, value => '0') ,daddr));
+					RGBled <= (others => '0');
+					case daddr(channel'range) is
+					when "00011" => --  0
+						RGBled(0) <= '1';
+						samples <= byte2word(samples, "0000", sample);
+					when "10100" =>	--  4                       
+						RGBled(5) <= '1';
+						samples <= byte2word(samples, "0100", sample);
+					when "10101" =>	--  5
+						RGBled(6) <= '1';
+						samples <= byte2word(samples, "0101", sample);
+					when "10110" => --  6                        
+						RGBled(7) <= '1';
+						samples <= byte2word(samples, "0110", sample);
+					when "10111" => --  7
+						RGBled(8) <= '1';
+						samples <= byte2word(samples, "0111", sample);
+
+					when "11100" => -- 12
+						RGBled(1) <= '1';
+						samples <= byte2word(samples, "0001", sample);
+					when "11101" => -- 13
+						RGBled(2) <= '1';
+						samples <= byte2word(samples, "0010", sample);
+					when "11110" => -- 14
+						RGBled(3) <= '1';
+						samples <= byte2word(samples, "0011", sample);
+					when "11111" => -- 15
+						RGBled(4) <= '1';
+						samples <= byte2word(samples, "1000", sample);
+					when "10000" =>	--  1                       
+						RGBled(9) <= '1';
+					when others =>
+						RGBled(9) <= '1';
+					end case;
 				end if;
 			end if;
 		end process;
@@ -217,7 +272,7 @@ begin
 			variable aux : std_logic_vector(scale'range);
 		begin
 			if rising_edge(input_clk) then
-				if reset='0' then 
+				if reset='0' and ipcfg_req='0' then 
 					den <= '0';
 					dwe <= '0';
 					if cfg_req='1' then
@@ -244,7 +299,7 @@ begin
 								when "0010" =>
 									di <= x"7000";
 								when "0011" =>
-									di <= x"f000";
+									di <= x"7010";
 								when others =>
 									di <= x"f0f1";
 								end case;
@@ -297,6 +352,26 @@ begin
 	end process;
 	led(0) <= ipcfg_req;
 
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => eth_rxclk_bufg,
+		phy_rx_dv   => eth_rx_dv,
+		phy_rx_d    => eth_rxd,
+
+		phy_txc     => eth_txclk_bufg,
+		phy_tx_en   => txdv,
+		phy_tx_d    => txd,
+	
+		chaini_data => eth_rxd,
+
+		chaino_frm  => udpip_frm,
+		chaino_irdy => udpip_irdy,
+		chaino_data => udpip_data);
+	
+	si_clk <= eth_rxclk_bufg;
+
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -308,9 +383,9 @@ begin
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
-			sin_data  => si_data,
+			sin_frm   => udpip_frm,
+			sin_irdy  => udpip_irdy,
+			sin_data  => udpip_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -328,48 +403,92 @@ begin
 
 	end block;
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	port map (
-		ipcfg_req   => ipcfg_req,
+	txopacity_b : block
+	begin
 
-		phy_rxc     => eth_rxclk_bufg,
-		phy_rx_dv   => eth_rx_dv,
-		phy_rx_d    => eth_rxd,
+		process (hz_scale)
+			variable data    : unsigned(0 to inputs*32-1);
+			variable opacity : unsigned(0 to inputs-1);
+		begin
+			case hz_scale is
+			when "0000" =>
+				opacity := b"1_0000_0000";
+			when "0001" =>
+				opacity := b"1_1000_0000";
+			when "0010" =>
+				opacity := b"1_1110_0000";
+			when "0011" =>
+				opacity := b"1_1111_0000";
+			when others =>
+				opacity := b"1_1111_1111";
+			end case;
 
-		phy_txc     => eth_txclk_bufg,
-		phy_tx_en   => txdv,
-		phy_tx_d    => txd,
-	
-		chaini_data => eth_rxd,
+			for i in 0 to inputs-1 loop
+				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
+				data := data rol 32;
+			end loop;
+			txopacity_data <= std_logic_vector(data);
+		end process;
 
-		chaino_frm  => si_frm,
-		chaino_irdy => si_irdy,
-		chaino_data => si_data);
-	
-	si_clk <= eth_rxclk_bufg;
+		process(si_clk)
+			variable req : std_logic;
+		begin
+			if rising_edge(si_clk) then
+
+				if hz_dv='1' then
+					req := '1';
+				end if;
+
+				if txopacity_trdy='1' then
+					req := '0';
+					txopacity_treq <= '0';
+				elsif req='1' then
+					if udpip_frm='0' then
+						txopacity_treq <= '1';
+					end if;
+				end if;
+
+			end if;
+		end process;
+
+		txopacity_e : entity hdl4fpga.mii_pll2ser
+		port map (
+			mii_data => txopacity_data,
+			mii_txc  => si_clk,
+			mii_treq => txopacity_treq,
+			mii_trdy => txopacity_trdy,
+			mii_txdv => txopacity_dv,
+			mii_txd  => txopacity_d);
+
+	end block;
+
+	si_frm  <= udpip_frm  when txopacity_treq='0' else txopacity_dv;
+	si_irdy <= udpip_irdy when txopacity_treq='0' else txopacity_dv;
+	si_data <= udpip_data when txopacity_treq='0' else reverse(txopacity_d);
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit          => 25.0*micro,
-		vt_unit          => 10.0*micro,
+		hz_unit          => 31.25*micro,
+		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_unit          => 500.0*micro,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+1), 15 => 2**(0+2)*5**(1+1)),
+			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_1_1",
-		default_gridfg   => b"1_0_0",
-		default_gridbg   => b"0_0_0",
-		default_hzfg     => b"1_1_1",
-		default_hzbg     => b"0_0_1",
-		default_vtfg     => b"1_1_1",
-		default_vtbg     => b"0_0_1",
-		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"0_1_1",
-		default_bg       => b"1_1_1")
+		default_tracesfg => b"1_111" & b"0_110" & b"0_101" & b"0_100" & b"0_011" & b"0_010" & b"0_001" & b"0_111" & b"0_110",
+		default_gridfg   => b"1_100",
+		default_gridbg   => b"1_000",
+		default_hzfg     => b"1_111",
+		default_hzbg     => b"1_001",
+		default_vtfg     => b"1_111",
+		default_vtbg     => b"1_001",
+		default_textbg   => b"1_000",
+		default_sgmntbg  => b"1_011",
+		default_bg       => b"1_111")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
@@ -378,7 +497,7 @@ begin
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_ena,
-		input_data  => samples(0 to sample_size*inputs-1),
+		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,

@@ -40,6 +40,7 @@ package scopeiopkg is
 	constant nano  : real := 1.0e3*pico;
 	constant micro : real := 1.0e3*nano;
 	constant milli : real := 1.0e3*micro;
+
 	subtype i18n_langs is natural range 0 to 2-1;
 	constant lang_EN : i18n_langs := 0;
 	constant lang_ES : i18n_langs := 1;
@@ -52,8 +53,6 @@ package scopeiopkg is
 	constant label_vtdiv    : i18n_labelids := 3;
 	constant label_vtoffset : i18n_labelids := 4;
 
-	constant max_inputs    : natural := 64;
-	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 	constant max_pixelsize : natural := 24;
@@ -427,8 +426,6 @@ package scopeiopkg is
 	constant rid_vtaxis   : std_logic_vector := x"14";
 	constant rid_pointer  : std_logic_vector := x"15";
 
-	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
-
 	constant pltid_gridfg    : natural :=  0;
 	constant pltid_gridbg    : natural :=  6;
 	constant pltid_vtfg      : natural :=  1;
@@ -451,6 +448,10 @@ package scopeiopkg is
 		7 => pltid_gridbg,
 		8 => pltid_sgmntbg,
 		9 => pltid_scopeiobg);
+
+	constant max_inputs    : natural := 64-pltid_order'length;
+	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
+	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
 		constant bf_rgtr   : std_logic_vector;
@@ -487,12 +488,19 @@ package scopeiopkg is
 
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+pltid_order'length-1);
 	constant palettecolor_maxsize : natural := 24;
-	constant paletteid_id         : natural := 0;
-	constant palettecolor_id      : natural := 1;
+
+	constant paletteopacityena_id : natural := 0;
+	constant palettecolorena_id   : natural := 1;
+	constant paletteopacity_id    : natural := 2;
+	constant paletteid_id         : natural := 3;
+	constant palettecolor_id      : natural := 4;
 
 	constant palette_bf : natural_vector := (
-		paletteid_id    => paletteid_maxsize, 
-		palettecolor_id => palettecolor_maxsize);
+		paletteopacityena_id => 1, 
+		palettecolorena_id   => 1, 
+		paletteopacity_id    => 1, 
+		paletteid_id         => paletteid_maxsize, 
+		palettecolor_id      => palettecolor_maxsize);
 
 	constant trigger_ena_id    : natural := 0;
 	constant trigger_edge_id   : natural := 1;
@@ -595,126 +603,140 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	constant ip4_children : tag_vector := (                                                 -- Xilinx's mess
-		text(                                                                               -- 
-			style   => styles(background_color(0)), -- Workaround
+	constant ip4_children : tag_vector := (         -- Xilinx's ISE Workaround
+		text(                                       
 			content => "IP : "),
 		text(                                                                               -- 
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)), -- Workaround
+			style   => styles(
+				width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num1"),
 		text(
-			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num2"),
 		text(
-			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num3"),
 		text(
-			style   => styles(background_color(0)),
 			content => "."),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(right_alignment)),
+			style   => styles(
+				width(3) & alignment(right_alignment)),
 			content => "*",
 			id      => "ip4.num4"));
 
-	constant ip4_tags : tag_vector := div (                                                 -- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
-		children => ip4_children);                                                          -- Workaround
+	constant ip4_tags : tag_vector := div (                                                 -- Xilinx's ISE Workaround
+		style    => styles(alignment(right_alignment)),
+		children => ip4_children);
 
-	constant hz_children : tag_vector := (                                                  -- Xilinx's mess
-		text(                                                                               -- 
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+	constant hz_children : tag_vector := (                                                  -- Xilinx's ISE Workaround
+		text(                                                                               
+			style   => styles(
+				width(8) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "hz.offset"),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			style   => styles(
+				width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			style   => styles(
+				width(8) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "hz.div"),
 		text(
-			style   => styles(background_color(0)),
 			content => " "),
 		text(
-			style   => styles(background_color(0) & width(1)),
 			content => "*",
 			id      => "hz.mag"),
 		text(
-			style   => styles(background_color(0)),
 			content => "s"));
 
-	constant hz_tags : tag_vector := div (                                                  -- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
-		children => hz_children);                                                           -- Workaround
+	constant hz_tags : tag_vector := div (  -- Xilinx's ISE Workaround
+		style    => styles(bg_palette(pltid_textbg) & alignment(right_alignment)),
+		children => hz_children);                                                           
 
-	constant tgr_children : tag_vector := (                                                 -- Xilinx's mess
-		text(                                                                               -- 
-			style   => styles(background_color(0) & width(1) & alignment(right_alignment)), -- Workaround
+	constant tgr_children : tag_vector := ( -- Xilinx's ISE Workaround
+		text( 
+			style   => styles(
+				width(1) & alignment(right_alignment)),
 			id      => "tgr.freeze"),
 		text(
-			style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+			style   => styles(
+				width(1) & alignment(right_alignment)),
 			id      => "tgr.edge"),
 		text(
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			style   => styles(
+				width(8) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.level"),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			style   => styles(
+				width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			style   => styles(
+				width(8) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.div"),
 		text(
-			style   => styles(background_color(0)),
 			content => " "),
 		text(
-			style   => styles(background_color(0) & width(1)),
+			style   => styles(
+				width(1)),
 			content => "*",
 			id      => "tgr.mag"),
 		text(
-			style   => styles(background_color(0)),
 			content => "V"));
 
-	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
-		children => tgr_children);                                                          -- Workaround
+	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's ISE Workaround
+		style    => styles(text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
+		children => tgr_children);
 		
-	constant vt0_children : tag_vector := (													-- Xilinx's mess				
-		text(                                                                               -- 
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)), -- Workaround
+	constant vt0_children : tag_vector := (													-- Xilinx's ISE Workaround
+		text(
+			style   => styles(
+				width(8) & alignment(right_alignment) &
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "NaN",
 			id      => "vt(0).offset"),
 		text(
-			style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+			style   => styles(
+				width(3) & alignment(center_alignment) &
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => ":"),
 		text(
-			style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+			style   => styles(
+				width(8) & alignment(right_alignment) &
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "NaN",
 			id      => "vt(0).div" ),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => " "),
 		text(
-			style   => styles(background_color(0) & width(1)),
+			style   => styles(
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "*",
 			id      => "vt(0).mag"),
 		text(
-			style   => styles(background_color(0)),
+			style   => styles(
+				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
 			content => "V"));
 
-	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's mess
-		style    => styles(background_color(0) & alignment(right_alignment)),               -- 
-		children => vt0_children);                                                          -- Workaround
+	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's ISE Workaround
+		style    => styles(
+			text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
+		children => vt0_children);                                                         
 
 	function analogreadings (
 		constant style    : style_t;
@@ -1182,14 +1204,15 @@ package body scopeiopkg is
 		point := point - 1;
 		frac  := unit / mult;
 
-		exp  := 0;
-		for i in 0 to 3-1 loop
-			assert i /= 2
-				report "Invalid unit value"
-				severity failure;
+		exp := 0;
+		for i in 0 to 4-1 loop
+			assert i /= 4
+			report "Invalid unit value"
+			severity failure;
+
+			exit when floor(frac)=(frac);
 			frac := frac * 2.0;
 			exp  := exp - 1;
-			exit when floor(frac)=(frac);
 		end loop;
 
 		return sio_float'(frac => natural(frac), exp => exp, point => point mod 3, multp => point / 3);
@@ -1319,28 +1342,28 @@ package body scopeiopkg is
 		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
 		for i in 1 to inputs-1 loop
 			vt_tags(i*vt0_tags'length to (i+1)*vt0_tags'length-1) := div (
-				style    => styles(background_color(0) & alignment(right_alignment)),
+				style    => styles(alignment(right_alignment) & text_palette(i+pltid_order'length) & bg_palette(pltid_textbg)),
 				children => tag_vector'(
 					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(alignment(right_alignment) & width(8)),
 						content => "NaN",
 						id      => "vt(" & itoa(i) & ").offset"),
 					text(
-						style   => styles(background_color(0) & width(3) & alignment(center_alignment)),
+						style   => styles(alignment(center_alignment) & width(3)),
 						content => ":"),
 					text(
-						style   => styles(background_color(0) & width(8) & alignment(right_alignment)),
+						style   => styles(alignment(right_alignment) & width(8)),
 						content => "NaN",
 						id      => "vt("& itoa(i) & ").div" ),
 					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
+						style   => styles(alignment(center_alignment)),
 						content => " "),
 					text(
-						style   => styles(background_color(0) & width(1) & alignment(right_alignment)),
+						style   => styles(alignment(right_alignment) & width(1)),
 						content => "*",
 						id      => "vt("& itoa(i) & ").mag"),
 					text(
-						style   => styles(background_color(0) & alignment(center_alignment)),
+						style   => styles(alignment(center_alignment)),
 						content => "V")));
 		end loop;
 

@@ -21,41 +21,37 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
---use hdl4fpga.scopeiopkg.all;
 
 package textboxpkg is
 
-	type style_keys   is (key_width, key_alignment, key_textcolor, key_backgroundcolor);
-	type style_t      is array (style_keys) of natural;
+	type style_keys   is (key_width, key_alignment, key_textpalette, key_bgpalette);
+	type style_t      is array (style_keys) of integer;
 	type style_vector is array (natural range <>) of style_t;
 
-	subtype alignment_t is natural;
-	constant left_alignment   : natural := 0;
-	constant right_alignment  : natural := 1;
-	constant center_alignment : natural := 2;
+	subtype alignment_t is integer;
+	constant left_alignment   : integer := 0;
+	constant right_alignment  : integer := 1;
+	constant center_alignment : integer := 2;
 
-	function alignment        (constant value  : natural) return style_vector; 
-	function text_color       (constant value  : natural) return style_vector; 
-	function background_color (constant value  : natural) return style_vector;
-	function width            (constant value  : natural) return style_vector; 
+	function alignment    (constant value : integer) return style_vector; 
+	function text_palette (constant value : integer) return style_vector; 
+	function bg_palette   (constant value : integer) return style_vector;
+	function width        (constant value : integer) return style_vector; 
 
 	function style (
-		constant alignment        : natural := 0;
-		constant background_color : natural := 0;
-		constant text_color       : natural := 0;
-		constant width            : natural := 0)
+		constant width        : integer := 0;
+		constant alignment    : integer := 0;
+		constant bg_palette   : integer := -1;
+		constant text_palette : integer := -1)
 		return style_t;
 
-	function styles           (constant values : style_vector) return style_t;
+	function styles (constant values : style_vector) return style_t;
 
 	constant tid_end  : natural := 0;
 	constant tid_text : natural := 1;
@@ -68,16 +64,27 @@ package textboxpkg is
 		id       : string(1 to 16);
 		content  : string(1 to 16);
 		mem_ptr  : natural;
+		inherit  : natural;
 	end record;
 
+	type attr_record is record
+		addr : natural;
+		attr : integer;
+	end record;
+
+	type attr_table is array(natural range <>) of attr_record;
+
 	function alignment (constant value  : tag) return alignment_t; 
-	function width     (constant value  : tag) return natural; 
+	function width     (constant value  : tag) return integer; 
 
 	type tag_vector is array (natural range <>) of tag;
 
-	function text (constant content  : string := ""; constant style : style_t; constant id : string := "") return tag;
-	function div  (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
+	constant nostyle : style_t := (
+		key_width => 0, key_alignment => 0, key_textpalette => -1, key_bgpalette => -1);
+
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
+	function text (constant content  : string := ""; constant style : style_t := nostyle; constant id : string := "") return tag;
+	function div  (constant children : tag_vector;   constant style : style_t := nostyle; constant id : string := "") return tag_vector;
 
 	function render_content (
 		constant tags : tag_vector;
@@ -107,6 +114,11 @@ package textboxpkg is
 		constant tag : tag;
 		constant size : natural)
 		return natural;
+
+	function tagattr_tab(
+		constant tags : tag_vector;
+		constant attr : style_keys)
+		return attr_table;
 end;
 
 package body textboxpkg is
@@ -195,7 +207,6 @@ package body textboxpkg is
 		variable tags   : inout tag_vector)
 	is
 		variable level  : natural;
---		variable mesg : line;
 	begin
 		level := 0;
 --		write(mesg, string'("offset "));
@@ -211,11 +222,14 @@ package body textboxpkg is
 --			write(mesg, tags(i).mem_ptr);
 			case tags(i).tid is 
 			when tid_end =>
+--				report "end " & itoa(tags(i).mem_ptr);
 				exit when level=0;
 				level := level - 1;
 			when tid_div =>
+--				report "start " & itoa(tags(i).mem_ptr);
 				level := level + 1;
 			when others =>
+--				report "start " & itoa(tags(i).mem_ptr);
 			end case;
 		end loop;
 --		report mesg.all;
@@ -223,44 +237,56 @@ package body textboxpkg is
 	end;
 
 	function alignment (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_alignment) := value;
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := value;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
-	function background_color (
-		constant value : natural)
+	function bg_palette (
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_backgroundcolor) := value;
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := 0;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := value;
 		return retval;
 	end;
 
-	function text_color (
-		constant value : natural)
+	function text_palette (
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_textcolor) := value;
+		retval(0)(key_width)       := 0;
+		retval(0)(key_alignment)   := 0;
+		retval(0)(key_textpalette) := value;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
 	function width (
-		constant value : natural)
+		constant value : integer)
 		return style_vector is
 		variable retval : style_vector(0 to 0);
 	begin
-		retval(0)(key_width) := value;
+		retval(0)(key_width)       := value;
+		retval(0)(key_alignment)   := 0;
+		retval(0)(key_textpalette) := -1;
+		retval(0)(key_bgpalette)   := -1;
 		return retval;
 	end;
 
 	function width (
 		constant value : tag)
-		return natural is
+		return integer is
 	begin
 		return value.style(key_width);
 	end;
@@ -273,18 +299,18 @@ package body textboxpkg is
 	end;
 
 	function style (
-		constant alignment        : natural := 0;
-		constant background_color : natural := 0;
-		constant text_color       : natural := 0;
-		constant width            : natural := 0)
+		constant width        : integer := 0;
+		constant alignment    : integer := 0;
+		constant bg_palette   : integer := -1;
+		constant text_palette : integer := -1)
 		return style_t
 	is
 		variable retval : style_t;
 	begin
-		retval(key_alignment)       := alignment;
-		retval(key_backgroundcolor) := background_color;
-		retval(key_textcolor)       := text_color;
-		retval(key_width)           := width;
+		retval(key_alignment)   := alignment;
+		retval(key_bgpalette)   := bg_palette;
+		retval(key_textpalette) := text_palette;
+		retval(key_width)       := width;
 		return retval;
 	end;
 
@@ -293,11 +319,22 @@ package body textboxpkg is
 		return style_t is
 		variable retval : style_t;
 	begin
-		for i in values'reverse_range loop
+		for i in values'range loop
 			for j in style_t'range loop
-				if values(i)(j)/=0 then
-					retval(j) := values(i)(j);
-				end if;
+				case j is
+				when key_textpalette | key_bgpalette =>
+					if values(i)(j) >= 0 then
+						retval(j) := values(i)(j);
+					elsif retval(j) < 0 then	
+						retval(j) := -1;
+					end if;
+				when key_width | key_alignment =>
+					if values(i)(j) > 0 then
+						retval(j) := values(i)(j);
+					elsif retval(j) < 0 then	
+						retval(j) := 0;
+					end if;
+				end case;
 			end loop;
 		end loop;
 		return retval;
@@ -313,7 +350,7 @@ package body textboxpkg is
 
 	function div (
 		constant children : tag_vector;
-		constant style    : style_t;
+		constant style    : style_t := nostyle;
 		constant id       : string := "")
 		return tag_vector is
 		variable div    : tag;
@@ -347,12 +384,11 @@ package body textboxpkg is
 
 	function text (
 		constant content : string := "";
-		constant style   : style_t;
+		constant style   : style_t := nostyle;
 		constant id      : string := "")
 		return tag 
 	is
 		variable retval : tag_vector(0 to 0);
-		variable mesg : line;
 	begin
 		retval(0).tid     := tid_text;
 		retval(0).id      := strfill(id, retval(0).id'length);
@@ -373,7 +409,6 @@ package body textboxpkg is
 		variable str     : string(1 to tags(0).content'length); -- Xilinx
 		variable width   : natural;                             -- messes up
 		variable align   : natural;                             -- Workaround
-		variable mesg    : line;
 	begin
 		if tags(tag_ptr).style(key_width)=0 then
 			tags(tag_ptr).style(key_width) := strlen(tags(tag_ptr).content); 
@@ -427,6 +462,7 @@ package body textboxpkg is
 		loop
 			case tags(tag_ptr).tid is
 			when tid_text =>
+				tags(tag_ptr).inherit := tptr;
 				process_text (
 					tag_ptr  => tag_ptr,
 					ctnt_ptr => ctnt_ptr,
@@ -434,6 +470,7 @@ package body textboxpkg is
 					tags     => tags);
 			when tid_end =>
 				tags(tag_ptr).mem_ptr := ctnt_ptr - 1;
+				tags(tag_ptr).inherit := tptr;
 				exit;
 			when others =>
 			end case;
@@ -454,6 +491,7 @@ package body textboxpkg is
 				align => align);
 		end if;
 
+--		report "div";
 		offset_memptr(
 			offset => padding_left (
 			length => ctnt_ptr-tags(tptr).mem_ptr - 1,
@@ -481,8 +519,8 @@ package body textboxpkg is
 		variable left    : natural;
 		variable right   : natural;
 
-		variable vtags  : tag_vector(0 to tags'length-1):= tags;
-		variable tptr   : natural;
+		variable vtags   : tag_vector(0 to tags'length-1):= tags;
+		variable tptr    : natural;
 		variable length  : natural;                   -- Xilinx's mess
 		variable width   : natural;                   -- 
 		variable align   : natural;                   -- Workaround
@@ -490,6 +528,7 @@ package body textboxpkg is
 		tag_ptr := vtags'left;
 		left    := content'left;
 		if vtags(tag_ptr).tid=tid_page then
+			vtags(tag_ptr).inherit := vtags'left;
 			tag_ptr := tag_ptr + 1;
 		end if;
 		while tag_ptr <= vtags'right loop
@@ -498,6 +537,7 @@ package body textboxpkg is
 
 			case vtags(tag_ptr).tid is
 			when tid_div =>
+				vtags(tag_ptr).inherit := vtags'left;
 				process_div (
 					ctnt_ptr => right,
 					content  => content,
@@ -505,14 +545,15 @@ package body textboxpkg is
 					tags     => vtags);
 
 				length := vtags(tptr).style(key_width);            -- Xilinx's mess
-				width  := vtags(vtags'left).style(key_width);      --
-				align  := vtags(vtags'left).style(key_alignment);  -- Workaround
+				width  := vtags(0).style(key_width);               --
+				align  := vtags(0).style(key_alignment);           -- Workaround
+
 				offset_memptr(
 					offset => padding_left (
 						length => length,
 						width  => width,
 						align  => align),
-					tags => vtags(tptr to tag_ptr-1));
+					tags => vtags(tptr to tag_ptr));
 
 				if content'length > 1 then
 					content(left to left+vtags(vtags'left).style(key_width)-1) := stralign(
@@ -531,6 +572,11 @@ package body textboxpkg is
 --					content => content(left to right-1)).all;
 --			end if;
 
+			when tid_end =>
+				vtags(tag_ptr).mem_ptr := right - 1;
+				vtags(tag_ptr).inherit := vtags'left;
+--				report "@@@@ " & itoa(tag_ptr) &  " @@ " & itoa(vtags'right) &  " @@@ " & itoa(vtags(tag_ptr).mem_ptr);
+				exit;
 			when others =>
 			end case;
 
@@ -626,4 +672,70 @@ package body textboxpkg is
 		return tag.mem_ptr;
 	end;
 
+	function tagattr_tab(
+		constant tags : tag_vector;
+		constant attr : style_keys)
+		return attr_table
+	is
+		function get_attr (
+			constant tags : tag_vector;
+			constant tag  : natural;
+			constant attr : style_keys)
+			return integer
+		is
+			variable inherit : natural;
+		begin
+			case attr is
+			when key_textpalette | key_bgpalette =>
+				inherit := tag;
+				while inherit /= tags'left loop
+--					report "get attr : " & itoa(tag);
+					if tags(inherit).style(attr) >= 0 then
+--						report "return -> " & itoa(inherit) & " : " & itoa(tags(inherit).style(attr));
+						return tags(inherit).style(attr);
+					else
+--						report "----> " & itoa(tags(inherit).style(attr));
+					end if;
+					inherit := tags(inherit).inherit;
+				end loop;
+--				report "return -> " & itoa(inherit) & " : " & itoa(tags(inherit).style(attr));
+				return tags(inherit).style(attr);
+			when key_width | key_alignment =>
+				return tags(tag).style(attr);
+			end case;
+
+		end;
+
+		variable tab_length   : natural;
+		variable current_attr : natural;
+		variable inherit      : natural;
+		variable retval       : attr_table(0 to tags'length-1);
+
+	begin
+		current_attr  := tags'left;
+		tab_length    := 1;
+		retval(0).attr := tags(current_attr).style(attr);
+--		report "@@@@@ -> " & itoa(tags(tags'right).mem_ptr);
+		for i in tags'range loop
+			if tags(i).tid = tid_end then
+				inherit := tags(tags(i).inherit).inherit;
+				if get_attr(tags, inherit, attr) /= get_attr(tags, current_attr, attr) then
+					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, inherit, attr));
+					retval(tab_length).addr := tags(i).mem_ptr;
+					retval(tab_length).attr := get_attr(tags, inherit, attr);
+					tab_length := tab_length + 1;
+				end if;
+				current_attr := tags(tags(i).inherit).inherit; --tags(i).inherit;
+			else
+				if get_attr(tags, i, attr) /= get_attr(tags, current_attr, attr) then
+					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, i, attr));
+					retval(tab_length).addr := tags(i).mem_ptr;
+					retval(tab_length).attr := get_attr(tags, i, attr);
+					tab_length := tab_length + 1;
+				end if;
+				current_attr := i;
+			end if;
+		end loop;
+		return retval(0 to tab_length-1);
+	end;
 end;

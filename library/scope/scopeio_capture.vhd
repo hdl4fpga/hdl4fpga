@@ -40,11 +40,11 @@ entity scopeio_capture is
 		input_data   : in  std_logic_vector;
 		time_offset  : in  std_logic_vector;
 
-		video_clk  : in  std_logic;
-		video_addr : in  std_logic_vector;
-		video_frm  : in  std_logic := '1';
-		video_data : out std_logic_vector;
-		video_dv   : out std_logic);
+		video_clk    : in  std_logic;
+		video_addr   : in  std_logic_vector;
+		video_frm    : in  std_logic := '1';
+		video_data   : out std_logic_vector;
+		video_dv     : out std_logic);
 end;
 
 architecture beh of scopeio_capture is

@@ -31,6 +31,7 @@ function mouseWheel (e) {
 }
 
 function onClick(e) {
+	console.log("onclick");
 	sendCommand.call(this, e);
 }
 
@@ -51,22 +52,20 @@ function sendCommand(e) {
 			offset : this.value,
 			chanid : param[1] } );
 		break;
+	case 'positive':
+	case 'negative':
+			this.trigger.slope.value = param[0];
 	case 'level':
-	case 'slope':
+		console.log(param[1]);
 		sendRegister(registers.trigger, { 
-			level  : this.level.value,
-			slope  : this.slope.value,
+			level  : this.trigger.level.value,
+			slope  : (this.trigger.slope.value === "positive") ? 0 : 1,
 			enable : 0,
 			chanid : param[1] });
 		break;
 	case 'vtaxis' :
 		sendRegister(registers.vtaxis, { 
 			offset : this.vtaxis.value,
-			chanid : param[1] });
-		break;
-	case 'trigger' :
-		sendRegister(registers.vtaxis, { 
-			offset : this.trigger.value,
 			chanid : param[1] });
 		break;
 	case 'hscale':
@@ -88,7 +87,7 @@ function sendCommand(e) {
 		this.colors.value %= colorTab.length;
 
 		console.log(this.colors.value);
-		var pid = param[2];
+		var pid = Number(param[2]);
 		switch(param[1]) {
 		case 'channel' :
 			pid += Object.keys(objects).length;
@@ -100,13 +99,16 @@ function sendCommand(e) {
 			break;
 		}
 		sendRegister(registers.palette, { 
-			pid   : pid,
-			color : this.colors.value });
+			opacityena  : 0,
+			colorena    : 1,
+			opacity     : 1,
+			pid         : pid,
+			color       : this.colors.value });
 		console.log(param);
 		break;
 	case 'color' :
 
-		var pid = objects[param[1]]['pid'];
+		var pid = Number(objects[param[1]]['pid']);
 		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
@@ -114,13 +116,18 @@ function sendCommand(e) {
 		console.log(this.colors.value);
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
 		sendRegister(registers.palette, { 
-			pid   : pid,
-			color : this.colors.value });
+			opacityena  : 0,
+			colorena    : 1,
+			opacity     : 1,
+			pid         : pid,
+			color       : this.colors.value });
 		console.log(param);
 		break;
+	default :
+		console.log("Invalid : " + param[0]);
 	}
 
-	console.log(param[0]);
+	console.log("Param [0] : " + param[0]);
 }
 
 var commParam;

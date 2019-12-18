@@ -414,7 +414,7 @@ begin
 		begin 
 
 			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3+1;
+				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
 				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then

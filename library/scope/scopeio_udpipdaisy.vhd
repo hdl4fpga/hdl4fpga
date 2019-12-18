@@ -62,7 +62,7 @@ end;
 architecture beh of scopeio_udpipdaisy is
 
 	constant ipaddr_size : std_logic_vector := x"03";
-	constant xx : std_logic_vector := rid_ipaddr & ipaddr_size;
+	constant id_size : std_logic_vector := rid_ipaddr & ipaddr_size;
 
 	signal udpso_dv   : std_logic;
 	signal udpso_d    : std_logic_vector(phy_rx_d'range);
@@ -105,7 +105,7 @@ begin
 
 	hdr_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(xx,8))
+		mem_data => reverse(id_size,8))
     port map (
         mii_txc  => phy_rxc,
 		mii_treq => myipcfg_dv,
@@ -116,7 +116,7 @@ begin
 	phy_rxd_e : entity hdl4fpga.align
 	generic map (
 		n => phy_rx_d'length,
-		d => (0 to phy_rx_d'length-1 => xx'length/phy_rx_d'length))
+		d => (0 to phy_rx_d'length-1 => id_size'length/phy_rx_d'length))
 	port map (
 		clk => phy_rxc,
 		di  => phy_rx_d,
@@ -125,7 +125,7 @@ begin
 	phy_rxdv_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => xx'length/phy_rx_d'length))
+		d => (0 to 0 => id_size'length/phy_rx_d'length))
 	port map (
 		clk   => phy_rxc,
 		di(0) => myipcfg_dv,

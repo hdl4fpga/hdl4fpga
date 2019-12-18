@@ -348,7 +348,7 @@ begin
 									   
 				video_addr <= std_logic_vector(base + resize(unsigned(x), video_addr'length));
 				video_frm  <= grid_on;
-				hz_segment   <= std_logic_vector(base + resize(unsigned(hz_slider(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
+				hz_segment <= std_logic_vector(base + resize(unsigned(hz_slider(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 													  
 			end if;
 		end process;

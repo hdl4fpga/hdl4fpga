@@ -194,20 +194,21 @@ begin
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit          => 10.0*pico,
-		vt_unit          => 10.0*micro,
+		hz_unit          => 31.25*micro,
+		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_unit          => 500.0*micro,
 		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
-		default_tracesfg => b"1_1_1",
-		default_gridfg   => b"1_0_0",
-		default_gridbg   => b"0_0_0",
-		default_hzfg     => b"1_1_1",
-		default_hzbg     => b"0_0_1",
-		default_vtfg     => b"1_1_1",
-		default_vtbg     => b"0_0_1",
-		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"1_1_1",
-		default_bg       => b"0_0_0")
+		default_tracesfg => b"1_1_1_1",
+		default_gridfg   => b"1_1_0_0",
+		default_gridbg   => b"1_0_0_0",
+		default_hzfg     => b"1_1_1_1",
+		default_hzbg     => b"1_0_0_1",
+		default_vtfg     => b"1_1_1_1",
+		default_vtbg     => b"1_0_0_1",
+		default_textbg   => b"1_0_0_0",
+		default_sgmntbg  => b"1_1_1_1",
+		default_bg       => b"1_0_0_0")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

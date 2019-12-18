@@ -53,7 +53,7 @@ begin
 	port map (
 		clk      => clk,
 		frac     => x"000",
-		exp      => x"f",
+		exp      => x"0",
 		bin_frm  => frm,
 		bin_irdy => bin_irdy,
 		bin_trdy => bin_trdy,
@@ -71,11 +71,11 @@ begin
 		bin_flt  => bin_flt,
 		bin_neg  => '0',
 
-		bcd_sign  => '1',
+		bcd_sign  => '0',
 		bcd_width => x"8",
 		bcd_unit  => x"1",
 		bcd_prec  => x"f",
-		bcd_align => '1',
+		bcd_align => '0',
 		bcd_trdy  => bcd_trdy,
 		bcd_irdy  => '1',
 		bcd_end   => bcd_end,

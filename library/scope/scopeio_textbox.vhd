@@ -54,7 +54,9 @@ entity scopeio_textbox is
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
 		text_on       : in  std_logic := '1';
-		text_dot      : out std_logic);
+		text_fg       : out std_logic_vector;
+		text_bg       : out std_logic_vector;
+		text_fgon      : out std_logic);
 
 --	constant inp : natural := inputs+3;
 	constant inp : natural := inputs;
@@ -77,7 +79,9 @@ architecture def of scopeio_textbox is
 
 	constant tags : tag_vector := render_tags(
 		analogreadings(
-			style  => styles(width(cga_cols) & alignment(right_alignment)),
+			style  => styles(
+				width(cga_cols) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
 	   		inputs => inputs));
 
 	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(
@@ -85,6 +89,23 @@ architecture def of scopeio_textbox is
 			style  => styles(width(cga_cols) & alignment(right_alignment)),
 			inputs => inputs),
 		cga_size));
+
+	function addr_attr (
+		constant table : attr_table;
+		constant addr  : std_logic_vector)
+		return natural
+	is
+		variable retval : natural;
+	begin
+		retval := table(table'left).attr;
+		for i in table'range loop
+			if unsigned(addr) >= table(i).addr then
+				report "*****************  " & itoa(table(i).attr);
+				retval := table(i).attr;
+			end if;
+		end loop;
+		return retval;
+	end;
 
 	signal cgaaddr_init  : std_logic;
 	signal cga_av        : std_logic;
@@ -154,33 +175,33 @@ begin
 
 		signal hz_exp         : integer;
 
-	function get_multps (
-		constant floats : siofloat_vector)
-		return natural_vector is
-		constant precs : natural_vector := get_precs(floats);
-		variable point : natural;
-		variable multp : natural;
-		variable rval  : natural_vector(0 to 16-1);
-	begin
-		for i in floats'range loop
-			rval(i) := floats(i).multp + (precs(i) / 3);
-		end loop;
-		for i in 1 to 4-1 loop
-			for j in 0 to 4-1 loop
-				rval(4*i+j) := 
-					(3*floats(j).multp+floats(j).point+i)/3 + 
-					precs(4*i+j) / 3;
+		function get_multps (
+			constant floats : siofloat_vector)
+			return natural_vector is
+			constant precs : natural_vector := get_precs(floats);
+			variable point : natural;
+			variable multp : natural;
+			variable rval  : natural_vector(0 to 16-1);
+		begin
+			for i in floats'range loop
+				rval(i) := floats(i).multp + (precs(i) / 3);
 			end loop;
-		end loop;
-		return rval;
-	end;
+			for i in 1 to 4-1 loop
+				for j in 0 to 4-1 loop
+					rval(4*i+j) := 
+						(3*floats(j).multp+floats(j).point+i)/3 + 
+						precs(4*i+j) / 3;
+				end loop;
+			end loop;
+			return rval;
+		end;
 
 		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit);
 		constant hz_precs      : natural_vector := get_precs(hz_float1245);
 		constant hz_units      : integer_vector := get_units(hz_float1245);
 		constant hz_multps     : natural_vector := get_multps(hz_float1245);
 
-		constant hzfrac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3;
+		constant hzfrac_length : natural := max(unsigned_num_bits(hz_float1245(0).frac),5);
 		signal   hz_frac       : unsigned(0 to hzfrac_length-1);
 		signal   hz_scalevalue : natural;
 		signal   hz_multp      : std_logic_vector(0 to 3-1);
@@ -190,7 +211,7 @@ begin
 		constant vt_units      : integer_vector := get_units(vt_float1245);
 		constant vt_multps     : natural_vector := get_multps(vt_float1245);
 
-		constant vtfrac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
+		constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
 		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
 		signal   vt_scalevalue : natural;
 		signal   vt_multp      : std_logic_vector(0 to 3-1);
@@ -354,19 +375,19 @@ begin
 		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
 
 		bcd_binvalue <= wirebus(
-			std_logic_vector(shift_left(resize(unsigned(myip_num1),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num2),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num3),      bcd_binvalue'length), 1))  &
-			std_logic_vector(shift_left(resize(unsigned(myip_num4),      bcd_binvalue'length), 1))  &
+			std_logic_vector(resize(unsigned(myip_num1),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num2),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num3),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
 			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
-			std_logic_vector(resize(mul(signed(trigger_level), vt_frac), bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(-signed(trigger_level), vt_frac), bcd_binvalue'length))      &
 			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
 			cgabcd_frm);
 				 	
 		bcd_expvalue <= wirebus(integer_vector'(
-			-1, -1, -1, -1,
+			0, 0, 0, 0,
 			hz_exp-5,
 			hz_exp,
 			vt_exp-5,
@@ -432,11 +453,11 @@ begin
 		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
 		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
 		chr_value <= wirebus(
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), hz_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
 			word2byte(x"1819",                                trigger_edge)                 &
 			word2byte(to_ascii(" *"),                         trigger_freeze)               &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length) &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m"), vt_multp,       ascii'length),
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
 			cgachr_frm);
 
 		chr_memaddr <= wirebus (
@@ -484,7 +505,6 @@ begin
 				btof_bcdunit  <= std_logic_vector(to_signed(bcd_unitvalue, btof_bcdunit'length));
 				btof_bcdwidth <= std_logic_vector(to_unsigned(bcd_width,   btof_bcdwidth'length));
 
-				frac <= scale_1245(signed(bcd_binvalue), scale);
 				frac <= signed(bcd_binvalue);
 				exp  <= to_signed(bcd_expvalue, exp'length);
 			end if;
@@ -524,6 +544,16 @@ begin
 		end if;
 	end process;
 
+	process (video_clk)
+		variable addr : std_logic_vector(video_addr'range);
+	begin
+		if rising_edge(video_clk) then
+			text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), text_fg'length));
+			text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), text_bg'length));
+			addr := video_addr;
+		end if;
+	end process;
+
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
 		cga_av when cgachr_frm/=(cgachr_frm'range => '0') else
@@ -541,22 +571,22 @@ begin
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => cga_bitrom,
-		font_bitrom => font_bitrom,
-		font_height => font_height,
-		font_width  => font_width)
+		cga_bitrom   => cga_bitrom,
+		font_bitrom  => font_bitrom,
+		font_height  => font_height,
+		font_width   => font_width)
 	port map (
-		cga_clk     => rgtr_clk,
-		cga_we      => cga_we,
-		cga_addr    => std_logic_vector(cga_addr),
-		cga_data    => cga_code,
+		cga_clk      => rgtr_clk,
+		cga_we       => cga_we,
+		cga_addr     => std_logic_vector(cga_addr),
+		cga_data     => cga_code,
 
-		video_clk   => video_clk,
-		video_addr  => video_addr,
-		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
-		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_blankn   => text_on,
-		video_dot   => char_dot);
+		video_clk    => video_clk,
+		video_addr   => video_addr,
+		font_hcntr   => video_hcntr(fontwidth_bits-1 downto 0),
+		font_vcntr   => video_vcntr(fontheight_bits-1 downto 0),
+		video_blankn => text_on,
+		video_dot    => char_dot);
 
 	lat_e : entity hdl4fpga.align
 	generic map (
@@ -565,5 +595,5 @@ begin
 	port map (
 		clk => video_clk,
 		di(0) => char_dot,
-		do(0) => text_dot);
+		do(0) => text_fgon);
 end;
