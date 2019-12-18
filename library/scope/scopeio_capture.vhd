@@ -72,7 +72,7 @@ begin
 	video_addr_p : process (input_clk)
 		variable full : std_logic;
 		variable pre  : std_logic;
-		variable cntr : signed(0 to time_offset'length) := (others => '1'); -- Debug purpose
+		variable cntr : signed(time_offset'length to 0) := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
@@ -101,11 +101,11 @@ begin
 						full    := '1';
 						bound   <= to_signed(-video_size, bound'length);
 						running <= '1';
-					elsif cntr(0)='1' then
+					elsif cntr(cntr'left)1' then
 						cntr    := cntr + 1;
 						full    := '1';
 						bound   <= signed(resize(cntr, bound'length));
-						running <= cntr(0);
+						running <= cntr(cntr'left);
 					end if;
 				else
 					-- Delayed trigger
@@ -113,11 +113,11 @@ begin
 						cntr  := resize(-signed(time_offset)-video_size+1, cntr'length);
 						base  <= wr_addr;
 						delay <= signed(time_offset);
-					elsif cntr(0)='1' then
+					elsif cntr(cntr'left)='1' then
 						cntr := cntr + 1;
 					end if;
-					bound   <= signed(resize(cntr, bound'length));
-					running <= cntr(0);
+					bound   <= cntr(bound'range));
+					running <= cntr(cntr'left);
 				end if;
 			end if;
 		end if;
