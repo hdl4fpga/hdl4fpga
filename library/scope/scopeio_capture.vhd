@@ -72,7 +72,7 @@ begin
 	video_addr_p : process (input_clk)
 		variable full : std_logic;
 		variable pre  : std_logic;
-		variable cntr : signed(time_offset'length to 0) := (others => '1'); -- Debug purpose
+		variable cntr : signed(time_offset'length downto 0) := (others => '1'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
@@ -101,7 +101,7 @@ begin
 						full    := '1';
 						bound   <= to_signed(-video_size, bound'length);
 						running <= '1';
-					elsif cntr(cntr'left)1' then
+					elsif cntr(cntr'left)='1' then
 						cntr    := cntr + 1;
 						full    := '1';
 						bound   <= signed(resize(cntr, bound'length));
@@ -116,7 +116,7 @@ begin
 					elsif cntr(cntr'left)='1' then
 						cntr := cntr + 1;
 					end if;
-					bound   <= cntr(bound'range));
+					bound   <= cntr(bound'range);
 					running <= cntr(cntr'left);
 				end if;
 			end if;
@@ -148,7 +148,8 @@ begin
 		d => (0 to 0 => bram_latency))
 	port map (
 		clk   => video_clk,
-		di(0) => video_frm,
+--		di(0) => video_frm,
+		di(0) => valid,
 		do(0) => video_dv);
 
 	dv1_e : entity hdl4fpga.align
