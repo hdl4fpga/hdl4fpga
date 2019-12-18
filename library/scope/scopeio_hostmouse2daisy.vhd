@@ -99,10 +99,10 @@ begin
     rgtr_dv     => mouse_rgtr_dv,
     rgtr_id     => mouse_rgtr_id,
     rgtr_data   => mouse_rgtr_data,
-    -- daisy input FIXME to be able to accept chaini
-    chaini_frm  => '0',
-    chaini_irdy => '0',
-    chaini_data => x"00",
+    -- daisy input
+    chaini_frm  => chaini_frm,
+    chaini_irdy => chaini_irdy,
+    chaini_data => chaini_data,
     -- daisy output
     chaino_frm  => chaino_frm,
     chaino_irdy => chaino_irdy,
