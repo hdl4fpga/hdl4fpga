@@ -170,13 +170,42 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
-					if running='1' then
+					if addra(0)='1' then
+						if time_offset < 0 then
+							addra <= time_offset;
+						else
+							addra <= to_unsigned(1, addra'length);
+						end if;
+					elsif running='1' then
 						addra <= addra + 1;
 					elsif capture_shot='1' then
 						addra <= addra + 1;
-					else
-						addra <= (others => '0');
+					elsif time_offset < 0 then
+						addra <= time_offset;
+					else 
+						addra <= to_unsigned(1, addra'length);
 					end if;
+				end if;
+			end if;
+		end process;
+
+		addrb_p : process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				if addrb(0)='1' then
+					if time_offset < 0 then
+						addrb <= time_offset;
+					else
+						addra <= to_unsigned(1, addra'length);
+					end if;
+				elsif time_offset < 0 then
+					if time_offset + video_addr < 0 then
+						addrb <= video_addr + offset;
+					else 
+						addrb <= video_addr + 1;
+					end if;
+				else 
+					addrb <= video_addr + 1;
 				end if;
 			end if;
 		end process;
