@@ -54,7 +54,6 @@ architecture beh of scopeio_capture is
 	constant video_size : natural := 2**video_addr'length/2;
 	constant delay_size   : natural := 2**time_offset'length;
 
-	signal index   : signed(time_offset'length-1  downto 0);
 	signal bound   : signed(time_offset'length-1  downto 0);
 	signal base    : signed(video_addr'length-1 downto 0);
 	signal rd_addr : signed(video_addr'length-1 downto 0);
@@ -110,7 +109,7 @@ begin
 				else
 					-- Delayed trigger
 					if capture_shot='1' then
-						cntr  := resize(-signed(time_offset)-video_size+1, cntr'length);
+						cntr  := (others => '0');
 						base  <= wr_addr;
 						delay <= signed(time_offset);
 					elsif cntr(cntr'left)='1' then
@@ -122,12 +121,6 @@ begin
 			end if;
 		end if;
 	end process;
-
-	index <= signed(time_offset)+signed(resize(unsigned(video_addr), time_offset'length));
-
-	video_valid_p : valid <=
-		setif(index > -video_size and delay <= index and -video_size < delay-index) when not running='1' else
-		setif(index > -video_size and delay <= index and -video_size < delay-index+bound);
 
 	process (downsampling, video_frm, video_clk)
 		variable q : std_logic;
@@ -148,8 +141,8 @@ begin
 		d => (0 to 0 => bram_latency))
 	port map (
 		clk   => video_clk,
---		di(0) => video_frm,
-		di(0) => valid,
+		di(0) => video_frm,
+--		di(0) => valid,
 		do(0) => video_dv);
 
 	dv1_e : entity hdl4fpga.align
@@ -163,7 +156,7 @@ begin
 
 	capture_end <= not running;
 
-	rd_addr <= base + index(rd_addr'range);
+	rd_addr <= (others => '0');
 	storage_b : block
 		signal addra : signed(video_addr'length-1 downto 1); -- := (others => '0'); -- Debug purpose
 		signal wea   : std_logic;
@@ -173,19 +166,25 @@ begin
 		signal uplw  : std_logic;
 	begin
 
-		wr_addr <= 
-			shift_left(resize(addra, wr_addr'length), 1) when downsampling='0' else
-			shift_left(resize(addra, wr_addr'length), 0);
-
 		addra_p : process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
-					addra <= addra + 1;
+					if running='1' then
+						addra <= addra + 1;
+					elsif capture_shot='1' then
+						addra <= addra + 1;
+					else
+						addra <= (others => '0');
+					end if;
 				end if;
 			end if;
 		end process;
 		wea <= (running or capture_shot) and input_dv;
+
+		wr_addr <= 
+			shift_left(resize(addra, wr_addr'length), 1) when downsampling='0' else
+			shift_left(resize(addra, wr_addr'length), 0);
 
 		addrb <= 
 			resize(unsigned(rd_addr) srl 1, addrb'length) when downsampling='0' else
