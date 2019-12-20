@@ -107,7 +107,6 @@ begin
 			port map (
 				wr_clk  => input_clk,
 				wr_addr => std_logic_vector(addra),
-				wr_ena  => wea,
 				wr_data => input_data,
 
 				rd_clk  => input_clk,
@@ -116,17 +115,20 @@ begin
 		end block;
 
 		process (input_clk)
+			variable delay : unsigned(time_offset);
 		begin
 			if rising_edge(input_clk) then
 				if mem_waddr(mem_waddr'left)='0' then
 					mem_waddr <= mem_waddr + 1;
 				elsif caputre_shot='1' then
-					mem_waddr <= (others => '0');
+					if time_offset>='0' then
+						mem_waddr <= std_logic_vector(-time_offset);
+					end if;
 				end if;
 			end if;
 		end process;
 		running <= not mem_waddr(mem_waddr'left);
-		wea     <= not mem_waddr(mem_waddr'left) and input_dv;
+		mem_we  <= not mem_waddr(mem_waddr'left) and input_dv;
 
 		mem_raddr <= std_logic_vector(
 			resize(unsigned(video_addr) srl 1, addrb'length) when downsampling='0' else
