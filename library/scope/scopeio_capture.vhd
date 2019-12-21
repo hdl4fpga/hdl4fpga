@@ -61,7 +61,7 @@ architecture beh of scopeio_capture is
 	signal dv1        : std_logic;
 
 	signal mem_raddr  : unsigned(video_addr'length-1 downto 1);
-	signal mem_waddr  : std_logic_vector(video_addr'length-1 downto 1);
+	signal mem_waddr  : std_logic_vector(video_addr'length+2-1 downto 1);
 	signal mem_we     : std_logic;
 	signal mem_data   : std_logic_Vector(video_data'range);
 	signal fifo_data  : std_logic_Vector(video_data'range);
@@ -100,7 +100,7 @@ begin
 			wr_data => input_data,
 
 			rd_clk  => input_clk,
-			rd_addr => std_logic_vector(addra),
+			rd_addr => std_logic_vector(addrb),
 			rd_data => fifo_data);
 
 	end block;
@@ -114,15 +114,15 @@ begin
 				end if;
 			elsif capture_shot='1' then
 				if signed(time_offset) >= 0 then
-					mem_waddr <= std_logic_vector(resize(unsigned(-signed(time_offset)),mem_waddr'length));
+					mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-signed(time_offset)), mem_waddr'length));
 				else
-					mem_waddr <= (others => '0');
+					mem_waddr <= std_logic_vector(to_unsigned(2**mem_raddr'length, mem_waddr'length));
 				end if;
 			end if;
 		end if;
 	end process;
-	capture_end <= mem_waddr(mem_waddr'left-1);
-	mem_we      <= not capture_end and input_dv;
+	capture_end <= mem_waddr(mem_waddr'left);
+	mem_we      <= not capture_end and mem_waddr(mem_waddr'left-1) and input_dv;
 
 	mem_raddr <= 
 		resize(unsigned(video_addr) srl 1, mem_raddr'length) when downsampling='0' else
@@ -134,7 +134,7 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => input_clk,
-		wr_addr => mem_waddr,
+		wr_addr => mem_waddr(mem_raddr'range),
 		wr_ena  => mem_we,
 		wr_data => fifo_data,
 
