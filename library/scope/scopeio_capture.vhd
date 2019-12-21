@@ -67,6 +67,7 @@ architecture beh of scopeio_capture is
 	signal wr_ena     : std_logic;
 	signal mem_data   : std_logic_vector(video_data'range);
 	signal fifo_data  : std_logic_vector(video_data'range);
+	signal mem_raddr0 : std_logic;
 	signal uplw       : std_logic;
 
 begin
@@ -89,8 +90,8 @@ begin
 
 		addrb <= 
 			addra when signed(time_offset) >= 0 else
-			addra - shift_left(resize(signed(time_offset), addrb'length), 1) when downsampling='0' else
-			addra - shift_left(resize(signed(time_offset), addrb'length), 0);
+			addra + shift_right(resize(signed(time_offset), addrb'length), 1) when downsampling='0' else
+			addra + shift_right(resize(signed(time_offset), addrb'length), 0);
 
 		fifo_e : entity hdl4fpga.dpram
 		generic map (
@@ -116,7 +117,11 @@ begin
 				end if;
 			elsif capture_shot='1' then
 				if signed(time_offset) >= 0 then
-					mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-signed(time_offset)), mem_waddr'length));
+					if downsampling='0' then
+						mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),1)), mem_waddr'length));
+					else
+						mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),0)), mem_waddr'length));
+					end if;
 				else
 					mem_waddr <= std_logic_vector(to_unsigned(2**mem_raddr'length, mem_waddr'length));
 				end if;
@@ -144,9 +149,23 @@ begin
 		di(0) => mem_wena,
 		do(0) => wr_ena);
 
-	mem_raddr <= 
-		resize(unsigned(video_addr) srl 1, mem_raddr'length) when downsampling='0' else
-		resize(unsigned(video_addr) srl 0, mem_raddr'length);
+	mem_raddr_p : process (video_addr, time_offset, downsampling)
+		variable vaddr : unsigned(video_addr'length-1 downto 0);
+	begin
+		vaddr := unsigned(video_addr);
+		if downsampling='0' then
+			if time_offset(time_offset'right)='1' then
+				vaddr := vaddr + 1;
+			end if;
+			mem_raddr0 <= vaddr(0);
+			mem_raddr  <= vaddr(mem_raddr'range);
+		else
+			mem_raddr0 <= '-';
+			vaddr      := shift_left(vaddr, 1);
+			mem_raddr  <= vaddr(mem_raddr'range);
+		end if;
+
+	end process;
 
 	mem_e : entity hdl4fpga.dpram
 	generic map (
@@ -199,7 +218,8 @@ begin
 		d => (0 => bram_latency))
 	port map (
 		clk => video_clk,
-		di(0) => video_addr(0),
+--		di(0) => video_addr(0),
+		di(0) => mem_raddr0,
 		do(0) => uplw);
 
 	y0_p : process (video_clk)
