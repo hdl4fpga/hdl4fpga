@@ -62,9 +62,11 @@ architecture beh of scopeio_capture is
 
 	signal mem_raddr  : unsigned(video_addr'length-1 downto 1);
 	signal mem_waddr  : std_logic_vector(video_addr'length+2-1 downto 1);
-	signal mem_we     : std_logic;
-	signal mem_data   : std_logic_Vector(video_data'range);
-	signal fifo_data  : std_logic_Vector(video_data'range);
+	signal mem_wena   : std_logic;
+	signal wr_addr    : std_logic_vector(mem_raddr'range);
+	signal wr_ena     : std_logic;
+	signal mem_data   : std_logic_vector(video_data'range);
+	signal fifo_data  : std_logic_vector(video_data'range);
 	signal uplw       : std_logic;
 
 begin
@@ -122,7 +124,25 @@ begin
 		end if;
 	end process;
 	capture_end <= mem_waddr(mem_waddr'left);
-	mem_we      <= not capture_end and mem_waddr(mem_waddr'left-1) and input_dv;
+	mem_wena    <= not capture_end and mem_waddr(mem_waddr'left-1) and input_dv;
+
+	data_e : entity hdl4fpga.align
+	generic map (
+		n => wr_addr'length,
+		d => (0 to wr_addr'length-1 => 2))
+	port map (
+		clk => input_clk,
+		di  => mem_waddr(mem_raddr'range),
+		do  => wr_addr);
+
+	wrena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 1))
+	port map (
+		clk   => input_clk,
+		di(0) => mem_wena,
+		do(0) => wr_ena);
 
 	mem_raddr <= 
 		resize(unsigned(video_addr) srl 1, mem_raddr'length) when downsampling='0' else
@@ -134,8 +154,8 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => input_clk,
-		wr_addr => mem_waddr(mem_raddr'range),
-		wr_ena  => mem_we,
+		wr_addr => wr_addr,
+		wr_ena  => wr_ena,
 		wr_data => fifo_data,
 
 		rd_clk  => video_clk,

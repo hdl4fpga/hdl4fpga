@@ -153,7 +153,7 @@ begin
 						offset := (others => '0');
 						sign   := '0';
 
-						report itoa(to_integer(stop)) & " " & itoa(to_integer(addr));
+--						report itoa(to_integer(stop)) & " " & itoa(to_integer(addr));
 						if bcd_width=(bcd_width'range => '0') then
 							addr := (others => '0');
 						elsif signed(bcd_unit) > 0 then
@@ -161,7 +161,7 @@ begin
 								stop := stop - signed(bcd_unit);
 							end if;
 						end if;
-						report itoa(to_integer(stop)) & " " & itoa(to_integer(addr));
+--						report itoa(to_integer(stop)) & " " & itoa(to_integer(addr));
 
 						if bcd_neg='1' then
 							if bcd_align='1' then
