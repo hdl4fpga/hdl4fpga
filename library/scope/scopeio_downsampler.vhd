@@ -71,21 +71,18 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if input_shot='1' and shot_dis='0' then
+				if input_shot='1' and data_shot='0' then
 					scaler := (others => '1');
 				elsif scaler(0)='1' then
 					scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
 				end if;
-				start <= scaler(0);
-				shot_dis := input_shot;
-				data_vld <= input_dv;
-			else
-				data_vld <= '0';
+				start     <= scaler(0);
+				data_shot <= input_shot;
 			end if;
-			data_in   <= input_data;
-			data_shot <= shot_dis;
+			data_vld <= input_dv;
+			data_in  <= input_data;
 		end if;
 	end process;
 
