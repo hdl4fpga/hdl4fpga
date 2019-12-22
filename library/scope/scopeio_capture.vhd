@@ -54,7 +54,6 @@ architecture beh of scopeio_capture is
 	constant bram_latency : natural := 2;
 
 	constant video_size : natural := 2**video_addr'length/2;
-	constant delay_size   : natural := 2**time_offset'length;
 
 	signal y0         : std_logic_vector(0 to video_data'length/2-1);
 	signal dv2        : std_logic;
@@ -74,8 +73,8 @@ begin
  
 	fifo_b : block
 
-		signal addra   : signed(unsigned_num_bits(max_pretrigger-1)-1 downto 1); -- := (others => '0'); -- Debug purpose
-		signal addrb   : signed(addra'range);
+		signal addra   : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1); -- := (others => '0'); -- Debug purpose
+		signal addrb   : unsigned(addra'range);
 
 	begin
 
@@ -90,8 +89,8 @@ begin
 
 		addrb <= 
 			addra when signed(time_offset) >= 0 else
-			addra + shift_right(resize(signed(time_offset), addrb'length), 1) when downsampling='0' else
-			addra + shift_right(resize(signed(time_offset), addrb'length), 0);
+			addra + resize(unsigned(shift_right(signed(time_offset), 1)), addrb'length) when downsampling='0' else
+			addra + resize(unsigned(shift_right(signed(time_offset), 0)), addrb'length);
 
 		fifo_e : entity hdl4fpga.dpram
 		generic map (
@@ -99,6 +98,7 @@ begin
 			synchronous_rddata => true)
 		port map (
 			wr_clk  => input_clk,
+			wr_ena  => input_dv,
 			wr_addr => std_logic_vector(addra),
 			wr_data => input_data,
 
@@ -143,7 +143,7 @@ begin
 	wrena_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 1))
+		d => (0 to 0 => 2))
 	port map (
 		clk   => input_clk,
 		di(0) => mem_wena,

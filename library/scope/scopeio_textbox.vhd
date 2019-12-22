@@ -123,7 +123,7 @@ architecture def of scopeio_textbox is
 	signal video_addr    : std_logic_vector(cga_addr'range);
 	signal char_dot      : std_logic;
 
-	signal frac          : signed(0 to 12-1);
+	signal frac          : signed(0 to 4*4-1);
 	signal exp           : signed(btof_bindi'range);
 	signal scale         : std_logic_vector(0 to 2-1) := "00";
 
@@ -146,7 +146,6 @@ architecture def of scopeio_textbox is
 
 	signal tag_memaddr   : std_logic_vector(cga_addr'range);
 
-	signal aux : std_logic_vector(time_offset'length-1 downto 0);
 begin
 
 	rgtr_b : block
