@@ -89,7 +89,7 @@ begin
 
 		addrb <= 
 			addra when signed(time_offset) >= 0 else
-			addra + resize(unsigned(shift_right(signed(time_offset), 1)), addrb'length) when downsampling='0' else
+			addra + resize(unsigned(shift_right(signed(time_offset)+1, 1)), addrb'length) when downsampling='0' else
 			addra + resize(unsigned(shift_right(signed(time_offset), 0)), addrb'length);
 
 		fifo_e : entity hdl4fpga.dpram
@@ -154,7 +154,11 @@ begin
 	begin
 		vaddr := unsigned(video_addr);
 		if downsampling='0' then
-			if time_offset(time_offset'right)='1' then
+			if signed(time_offset) >= 0 then
+				if time_offset(time_offset'right)='0' then
+				end if;
+					vaddr := vaddr + 1;
+			elsif time_offset(time_offset'right)='0' then
 				vaddr := vaddr + 1;
 			end if;
 			mem_raddr0 <= vaddr(0);

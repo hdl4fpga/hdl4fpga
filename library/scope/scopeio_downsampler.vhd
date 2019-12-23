@@ -18,6 +18,7 @@ entity scopeio_downsampler is
 		downsampling : buffer std_logic;
 		output_dv    : out std_logic;
 		output_shot  : out std_logic;
+		output_smax  : out std_logic;
 		output_data  : out std_logic_vector);
 end;
 
@@ -86,7 +87,8 @@ begin
 		end if;
 	end process;
 
-	max_ini <= start and (not min_ini or data_shot);
+--	max_ini <= start and (not min_ini or data_shot);
+	max_ini <= start and not min_ini;
 	shot_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -100,7 +102,7 @@ begin
 			end if;
 		end if;
 	end process;
-	output_dv <= data_vld and max_ini;
+	output_dv   <= data_vld and max_ini;
 
 	compress_g : for i in 0 to inputs-1 generate
 		signal sample : signed(0 to input_data'length/inputs-1);
