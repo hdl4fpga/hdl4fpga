@@ -61,7 +61,7 @@ architecture beh of scopeio_capture is
 	signal dv1        : std_logic;
 
 	signal mem_raddr  : unsigned(video_addr'length-1 downto 1);
-	signal mem_waddr  : std_logic_vector(video_addr'length+2-1 downto 1);
+	signal mem_waddr  : unsigned(video_addr'length+2-1 downto 1);
 	signal mem_wena   : std_logic;
 	signal wr_addr    : std_logic_vector(mem_raddr'range);
 	signal wr_ena     : std_logic;
@@ -111,47 +111,38 @@ begin
 	end block;
 
 	process (input_clk)
-		variable waddr : unsigned(mem_waddr'range);
+
 		function init_waddr(
 			constant time_offset  : std_logic_vector;
 			constant downsampling : std_logic;
-			constant size         : natural)
-			return std_logic_vector is
+			constant mem_size     : natural)
+			return unsigned is
+			variable retval : unsigned(mem_size+2-1 downto 0);
 		begin
 			if signed(time_offset) >= 0 then
 				if downsampling='0' then
-					waddr := resize(unsigned(2**size-shift_right(signed(time_offset),1)), waddr'length);
+					retval := b"1" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),1)), retval'length-1);
 				else
-					waddr := resize(unsigned(2**size-shift_right(signed(time_offset),0)), waddr'length);
+					retval := b"1" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),0)), retval'length-1);
 				end if;
 			else
-				waddr := to_unsigned(2**mem_raddr'length, waddr'length);
+				retval := b"1" & to_unsigned(2**mem_raddr'length, retval'length-1);
 			end if;
+			return retval;
 		end;
+
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				waddr := unsigned(mem_waddr) + 1;
-				if waddr(waddr'left)='0' then
-					mem_waddr <= unsigned(waddr);
+				if mem_waddr(mem_waddr'left)='0' then
+					mem_waddr <= mem_waddr + 1;
 				else
-					if signed(time_offset) >= 0 then
-						if downsampling='0' then
-							waddr := resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),1)), waddr'length);
-						else
-							waddr := resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),0)), waddr'length);
-						end if;
-					else
-						waddr := to_unsigned(2**mem_raddr'length, waddr'length);
-					end if;
-					mem_waddr(waddr'range) <= std_logic_vector(waddr);
-					if capture_shot='1' then
-						mem_waddr(mem_waddr'left) <= '0';
-					end if;
+					mem_waddr <= init_waddr(time_offset, downsampling, mem_raddr'length);
 				end if;
 			end if;
 		end if;
 	end process;
+
 	capture_end <= mem_waddr(mem_waddr'left);
 	mem_wena <= 
 	   input_dv and mem_waddr(mem_waddr'left-1) when capture_end='0' else
@@ -164,7 +155,7 @@ begin
 		d => (0 to wr_addr'length-1 => 2))
 	port map (
 		clk => input_clk,
-		di  => mem_waddr(mem_raddr'range),
+		di  => std_logic_vector(mem_waddr(mem_raddr'range)),
 		do  => wr_addr);
 
 	wrena_e : entity hdl4fpga.align
@@ -206,7 +197,7 @@ begin
 	port map (
 		wr_clk  => input_clk,
 --		wr_addr => wr_addr,
-		wr_addr => mem_waddr(mem_raddr'range),
+		wr_addr => std_logic_vector(mem_waddr(mem_raddr'range)),
 --		wr_ena  => wr_ena,
 		wr_ena  => mem_wena,
 --		wr_data => fifo_data,
