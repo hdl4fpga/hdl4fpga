@@ -71,6 +71,7 @@ architecture mix of scopeio_tds is
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal downsample_oshot   : std_logic;
 	signal downsample_ishot   : std_logic;
+	signal downsample_a0      : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
@@ -140,6 +141,7 @@ begin
 		downsampling => downsampling,
 		output_dv    => downsample_dv,
 		output_shot  => downsample_oshot,
+		output_shota0  => downsample_a0,
 		output_data  => downsample_data);
 
 	downsample_ishot <= capture_end and trigger_shot;
@@ -147,6 +149,7 @@ begin
 	port map (
 		input_clk    => input_clk,
 		capture_shot => capture_shot,
+		capture_a0 => downsample_a0,
 		capture_end  => capture_end,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,

@@ -36,6 +36,7 @@ entity scopeio_capture is
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
 		capture_shot : in  std_logic;
+		capture_a0   : in  std_logic;
 		capture_end  : buffer std_logic;
 
 		input_dv     : in  std_logic := '1';
@@ -67,7 +68,8 @@ architecture beh of scopeio_capture is
 	signal mem_data   : std_logic_vector(video_data'range);
 	signal fifo_data  : std_logic_vector(video_data'range);
 	signal mem_raddr0 : std_logic;
-	signal uplw       : std_logic;
+	signal a0         : std_logic;
+	signal hilw       : std_logic;
 
 begin
  
@@ -109,27 +111,52 @@ begin
 	end block;
 
 	process (input_clk)
+		variable waddr : unsigned(mem_waddr'range);
+		function init_waddr(
+			constant time_offset  : std_logic_vector;
+			constant downsampling : std_logic;
+			constant size         : natural)
+			return std_logic_vector is
+		begin
+			if signed(time_offset) >= 0 then
+				if downsampling='0' then
+					waddr := resize(unsigned(2**size-shift_right(signed(time_offset),1)), waddr'length);
+				else
+					waddr := resize(unsigned(2**size-shift_right(signed(time_offset),0)), waddr'length);
+				end if;
+			else
+				waddr := to_unsigned(2**mem_raddr'length, waddr'length);
+			end if;
+		end;
 	begin
 		if rising_edge(input_clk) then
-			if mem_waddr(mem_waddr'left)='0' then
-				if input_dv='1' then
-					mem_waddr <= std_logic_vector(unsigned(mem_waddr) + 1);
-				end if;
-			elsif capture_shot='1' then
-				if signed(time_offset) >= 0 then
-					if downsampling='0' then
-						mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),1)), mem_waddr'length));
-					else
-						mem_waddr <= std_logic_vector(resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),0)), mem_waddr'length));
-					end if;
+			if input_dv='1' then
+				waddr := unsigned(mem_waddr) + 1;
+				if waddr(waddr'left)='0' then
+					mem_waddr <= unsigned(waddr);
 				else
-					mem_waddr <= std_logic_vector(to_unsigned(2**mem_raddr'length, mem_waddr'length));
+					if signed(time_offset) >= 0 then
+						if downsampling='0' then
+							waddr := resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),1)), waddr'length);
+						else
+							waddr := resize(unsigned(2**mem_raddr'length-shift_right(signed(time_offset),0)), waddr'length);
+						end if;
+					else
+						waddr := to_unsigned(2**mem_raddr'length, waddr'length);
+					end if;
+					mem_waddr(waddr'range) <= std_logic_vector(waddr);
+					if capture_shot='1' then
+						mem_waddr(mem_waddr'left) <= '0';
+					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 	capture_end <= mem_waddr(mem_waddr'left);
-	mem_wena    <= not capture_end and mem_waddr(mem_waddr'left-1) and input_dv;
+	mem_wena <= 
+	   input_dv and mem_waddr(mem_waddr'left-1) when capture_end='0' else
+	   input_dv and capture_shot;
+
 
 	data_e : entity hdl4fpga.align
 	generic map (
@@ -149,18 +176,19 @@ begin
 		di(0) => mem_wena,
 		do(0) => wr_ena);
 
-	mem_raddr_p : process (video_addr, time_offset, downsampling)
+	mem_raddr_p : process (video_addr, time_offset, downsampling, capture_a0)
 		variable vaddr : unsigned(video_addr'length-1 downto 0);
 	begin
 		vaddr := unsigned(video_addr);
 		if downsampling='0' then
-			if signed(time_offset) >= 0 then
-				if time_offset(time_offset'right)='0' then
-				end if;
-					vaddr := vaddr + 1;
-			elsif time_offset(time_offset'right)='0' then
-				vaddr := vaddr + 1;
-			end if;
+--			if signed(time_offset) >= 0 then
+--				vaddr := vaddr + 1;
+--			elsif time_offset(time_offset'right)='0' then
+--				vaddr := vaddr + 1;
+--			end if;
+--			if capture_a0='1' then
+--				vaddr := vaddr + 1;
+--			end if;
 			mem_raddr0 <= vaddr(0);
 			mem_raddr  <= vaddr(mem_raddr'range);
 		else
@@ -177,9 +205,12 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => input_clk,
-		wr_addr => wr_addr,
-		wr_ena  => wr_ena,
-		wr_data => fifo_data,
+--		wr_addr => wr_addr,
+		wr_addr => mem_waddr(mem_raddr'range),
+--		wr_ena  => wr_ena,
+		wr_ena  => mem_wena,
+--		wr_data => fifo_data,
+		wr_data => input_data,
 
 		rd_clk  => video_clk,
 		rd_addr => std_logic_vector(mem_raddr),
@@ -224,17 +255,17 @@ begin
 		clk => video_clk,
 --		di(0) => video_addr(0),
 		di(0) => mem_raddr0,
-		do(0) => uplw);
+		do(0) => hilw);
 
 	y0_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			y0 <= word2byte(mem_data, uplw);
+			y0 <= word2byte(mem_data, not hilw);
 		end if;
 	end process;
 
 	video_data <= 
-		word2byte(word2byte(mem_data, uplw) & y0, dv2) & word2byte(mem_data, uplw) when downsampling='0' else
+		word2byte(word2byte(mem_data, hilw) & y0, dv2) & word2byte(mem_data, not hilw) when downsampling='0' else
 		mem_data;
 
 end;
