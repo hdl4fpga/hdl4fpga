@@ -178,9 +178,9 @@ begin
 		if downsampling='0' then
 --			if signed(time_offset) >= 0 then
 --				vaddr := vaddr + 1;
---			elsif time_offset(time_offset'right)='0' then
---				vaddr := vaddr + 1;
---			end if;
+			if time_offset(time_offset'right)='0' then
+				vaddr := vaddr + 1;
+			end if;
 			if a0='1' then
 				vaddr := vaddr + 1;
 			end if;
@@ -200,12 +200,12 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => input_clk,
---		wr_addr => wr_addr,
-		wr_addr => std_logic_vector(mem_waddr(mem_raddr'range)),
---		wr_ena  => wr_ena,
-		wr_ena  => mem_wena,
---		wr_data => fifo_data,
-		wr_data => input_data,
+--		wr_addr => std_logic_vector(mem_waddr(mem_raddr'range)),
+--		wr_ena  => mem_wena,
+--		wr_data => input_data,
+		wr_addr => wr_addr,
+		wr_ena  => wr_ena,
+		wr_data => fifo_data,
 
 		rd_clk  => video_clk,
 		rd_addr => std_logic_vector(mem_raddr),
