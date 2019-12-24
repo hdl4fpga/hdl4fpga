@@ -61,7 +61,7 @@ architecture beh of scopeio_capture is
 	signal dv1        : std_logic;
 
 	signal mem_raddr  : unsigned(video_addr'length-1 downto 1);
-	signal mem_waddr  : unsigned(video_addr'length+2-1 downto 1);
+	signal mem_waddr  : unsigned(video_addr'length+3-1 downto 1);
 	signal mem_wena   : std_logic;
 	signal wr_addr    : std_logic_vector(mem_raddr'range);
 	signal wr_ena     : std_logic;
@@ -117,16 +117,16 @@ begin
 			constant downsampling : std_logic;
 			constant mem_size     : natural)
 			return unsigned is
-			variable retval : unsigned(mem_size+2-1 downto 0);
+			variable retval : unsigned(mem_size+3-1 downto 0);
 		begin
 			if signed(time_offset) >= 0 then
 				if downsampling='0' then
-					retval := b"1" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),1)), retval'length-1);
+					retval := b"11" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),1)), retval'length-2);
 				else
-					retval := b"1" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),0)), retval'length-1);
+					retval := b"11" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),0)), retval'length-2);
 				end if;
 			else
-				retval := b"1" & to_unsigned(2**mem_raddr'length, retval'length-1);
+				retval := b"11" & to_unsigned(2**mem_raddr'length, retval'length-2);
 			end if;
 			return retval;
 		end;
@@ -136,8 +136,12 @@ begin
 			if input_dv='1' then
 				if mem_waddr(mem_waddr'left)='0' then
 					mem_waddr <= mem_waddr + 1;
-				else
+				elsif mem_waddr(mem_waddr'left-1)='0' then
 					mem_waddr <= init_waddr(time_offset, downsampling, mem_raddr'length);
+				elsif capture_shot='1' then
+					mem_waddr <= mem_waddr + 1;
+					mem_waddr(mem_waddr'left) <= '0';
+					a0 <= capture_a0;
 				end if;
 			end if;
 		end if;
@@ -146,7 +150,7 @@ begin
 	capture_end <= mem_waddr(mem_waddr'left);
 	mem_wena <= 
 	   input_dv and mem_waddr(mem_waddr'left-1) when capture_end='0' else
-	   input_dv and capture_shot;
+	   input_dv and mem_waddr(mem_waddr'left-1) and capture_shot;
 
 
 	data_e : entity hdl4fpga.align
@@ -177,9 +181,9 @@ begin
 --			elsif time_offset(time_offset'right)='0' then
 --				vaddr := vaddr + 1;
 --			end if;
---			if capture_a0='1' then
---				vaddr := vaddr + 1;
---			end if;
+			if a0='1' then
+				vaddr := vaddr + 1;
+			end if;
 			mem_raddr0 <= vaddr(0);
 			mem_raddr  <= vaddr(mem_raddr'range);
 		else
