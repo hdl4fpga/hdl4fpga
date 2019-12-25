@@ -40,8 +40,8 @@ architecture beh of scopeio_downsampler is
 	signal factor    : std_logic_vector(0 to scaler_bits-1);
 	signal data_min  : signed(0 to output_data'length/2-1);
 	signal data_max  : signed(0 to output_data'length/2-1);
+	signal start     : std_logic;
 	signal a0        : std_logic;
-	signal scaler    : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
 
 begin
 
@@ -62,29 +62,31 @@ begin
 		end loop;
 	end process;
 
-	scaler_p : process (input_clk)
+	shot_p : process (input_clk)
+		variable scaler : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
 				if scaler(0)='1' then
-					scaler <= unsigned(factor);
+					scaler := unsigned(factor);
 				else
-					scaler <= scaler - 1;
+					scaler := scaler - 1;
 				end if;
-			end if;
-		end if;
-	end process;
 
-	shot_p : process (input_clk)
-		variable shot : std_logic;
-	begin
-		if rising_edge(input_clk) then
-			if input_dv='1' then
-				if a0='1' then
-					output_shot <= shot or input_shot;
-				else 
-					shot := input_shot;
+				if downsampling='0' then
+					if a0='0' then 
+						output_shot <= input_shot;
+					elsif output_shot='0' then
+						output_shot <= input_shot;
+					end if;
+				else
+					if start='1' then
+						output_shot <= input_shot;
+					elsif output_shot='0' then
+						output_shot <= input_shot;
+					end if;
 				end if;
+
 				if input_shot='1' then
 					output_shota0 <= a0;
 				end if;
@@ -97,6 +99,7 @@ begin
 			else
 				output_dv <= '0';
 			end if;
+			start <= scaler(0);
 		end if;
 	end process;
 
@@ -119,7 +122,7 @@ begin
 							minn <= sample;
 						end if;
 					else
-						if scaler(0)='1' then
+						if start='1' then
 							maxx <= hdl4fpga.std.max(min0, sample);
 							minn <= hdl4fpga.std.min(max0, sample);
 							max0 <= sample;
