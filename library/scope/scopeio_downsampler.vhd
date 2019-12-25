@@ -102,7 +102,6 @@ begin
 
 	compress_g : for i in 0 to inputs-1 generate
 		signal sample : signed(0 to input_data'length/inputs-1);
-		signal swap   : std_logic;
 		signal maxx   : signed(sample'range);
 		signal minn   : signed(sample'range);
 		signal max0   : signed(sample'range);
@@ -140,7 +139,6 @@ begin
 								min0 <= sample;
 							end if;
 						end if;
-						swap <= '-';
 					end if;
 				end if;
 			end if;

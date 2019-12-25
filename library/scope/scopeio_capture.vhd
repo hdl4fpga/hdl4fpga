@@ -176,10 +176,12 @@ begin
 	begin
 		vaddr := unsigned(video_addr);
 		if downsampling='0' then
---			if signed(time_offset) >= 0 then
---				vaddr := vaddr + 1;
-			if time_offset(time_offset'right)='0' then
-				vaddr := vaddr + 1;
+			if signed(time_offset) >= 0 then
+				if time_offset(time_offset'right)='1' then
+					vaddr := vaddr + 1;
+				end if;
+			elsif time_offset(time_offset'right)='1' then
+				vaddr := vaddr - 1;
 			end if;
 			if a0='1' then
 				vaddr := vaddr + 1;
