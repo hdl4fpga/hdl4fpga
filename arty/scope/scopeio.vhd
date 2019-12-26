@@ -229,7 +229,7 @@ begin
 						RGBled(0) <= '1';
 						samples <= byte2word(samples, "0000", sample);
 					when "10100" =>	--  4                       
-						RGBled(5) <= '1';
+						RGBled(4) <= '1';
 						samples <= byte2word(samples, "0100", sample);
 					when "10101" =>	--  5
 						RGBled(6) <= '1';
@@ -251,7 +251,7 @@ begin
 						RGBled(3) <= '1';
 						samples <= byte2word(samples, "0011", sample);
 					when "11111" => -- 15
-						RGBled(4) <= '1';
+						RGBled(5) <= '1';
 						samples <= byte2word(samples, "1000", sample);
 					when "10000" =>	--  1                       
 						RGBled(9) <= '1';

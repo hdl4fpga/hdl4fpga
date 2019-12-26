@@ -68,6 +68,7 @@ architecture beh of scopeio_capture is
 	signal mem_data   : std_logic_vector(video_data'range);
 	signal fifo_data  : std_logic_vector(video_data'range);
 	signal mem_raddr0 : std_logic;
+	signal valid      : std_logic;
 	signal a0         : std_logic;
 	signal hilw       : std_logic;
 
@@ -171,7 +172,7 @@ begin
 		di(0) => mem_wena,
 		do(0) => wr_ena);
 
-	mem_raddr_p : process (video_addr, time_offset, downsampling, a0)
+	mem_raddr_p : process (video_frm, video_addr, time_offset, downsampling, a0)
 		variable vaddr : unsigned(video_addr'length-1 downto 0);
 	begin
 		vaddr := unsigned(video_addr);
@@ -186,10 +187,12 @@ begin
 			if a0='1' then
 				vaddr := vaddr + 1;
 			end if;
+			valid      <= video_frm;
 			mem_raddr  <= vaddr(mem_raddr'range);
 			mem_raddr0 <= vaddr(0);
 		else
 			vaddr      := shift_left(vaddr, 1);
+			valid      <= video_frm and not video_addr(video_addr'left);
 			mem_raddr  <= vaddr(mem_raddr'range);
 			mem_raddr0 <= '-';
 		end if;
@@ -229,7 +232,8 @@ begin
 		d => (0 to 0 => bram_latency))
 	port map (
 		clk   => video_clk,
-		di(0) => video_frm,
+--		di(0) => video_frm,
+		di(0) => valid,
 		do(0) => video_dv);
 
 	dv1_e : entity hdl4fpga.align

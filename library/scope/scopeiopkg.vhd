@@ -339,7 +339,7 @@ package scopeiopkg is
 			vttick_rotate    => ccw0,
 			vtaxis_within   =>  false,
 			textbox_width    => 33*8,
-			textbox_within   => true,
+			textbox_within   => false,
 			main_margin      => (top => 5, left => 1, others => 0),
 			main_gap         => (others => 1),
 			sgmnt_margin     => (others => 1),
