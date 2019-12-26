@@ -54,8 +54,6 @@ architecture beh of scopeio_capture is
 
 	constant bram_latency : natural := 2;
 
-	constant video_size : natural := 2**video_addr'length/2;
-
 	signal y0         : std_logic_vector(0 to video_data'length/2-1);
 	signal dv2        : std_logic;
 	signal dv1        : std_logic;
@@ -139,6 +137,7 @@ begin
 					mem_waddr <= mem_waddr + 1;
 				elsif mem_waddr(mem_waddr'left-1)='0' then
 					mem_waddr <= init_waddr(time_offset, downsampling, mem_raddr'length);
+					a0 <= '-';
 				elsif capture_shot='1' then
 					mem_waddr <= mem_waddr + 1;
 					mem_waddr(mem_waddr'left) <= '0';
@@ -150,7 +149,7 @@ begin
 
 	capture_end <= mem_waddr(mem_waddr'left);
 	mem_wena <= 
-	   input_dv and mem_waddr(mem_waddr'left-1) when capture_end='0' else
+	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) when capture_end='0' else
 	   input_dv and mem_waddr(mem_waddr'left-1) and capture_shot;
 
 
