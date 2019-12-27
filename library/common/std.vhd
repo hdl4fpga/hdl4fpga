@@ -136,6 +136,11 @@ package std is
 		constant op2 : natural)
 		return unsigned;
 
+	function "rem" (
+		constant arg1 : signed;
+		constant arg2 : natural)
+		return signed;
+
 	--------------------
 	-- Counter functions
 	--------------------
@@ -1014,6 +1019,19 @@ package body std is
 			mulr := mulr / 2;
 		end loop;
 		return rval;
+	end;
+
+	function "rem" (
+		constant arg1 : signed;
+		constant arg2 : natural)
+		return signed is
+		variable retval : signed(arg1'length-1 downto 0);
+	begin
+		assert arg2 = 2**retval'length
+		report "arg2 is not a power of 2"
+		severity FAILURE;
+
+		return retval(unsigned_num_bits(arg2-1)-1 downto 0);
 	end;
 
 	--------------------
