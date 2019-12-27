@@ -59,7 +59,7 @@ architecture beh of scopeio_capture is
 	signal dv1        : std_logic;
 
 	signal mem_raddr  : unsigned(video_addr'length-1 downto 1);
-	signal mem_waddr  : unsigned(video_addr'length+3-1 downto 1);
+	signal mem_waddr  : unsigned(video_addr'length+3-1 downto 1) := (others => '0');
 	signal mem_wena   : std_logic;
 	signal wr_addr    : std_logic_vector(mem_raddr'range);
 	signal wr_ena     : std_logic;
@@ -74,7 +74,7 @@ begin
  
 	fifo_b : block
 
-		signal addra   : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1); -- := (others => '0'); -- Debug purpose
+		signal addra   : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
 		signal addrb   : unsigned(addra'range);
 
 	begin
