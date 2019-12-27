@@ -75,7 +75,7 @@ begin
 		capture_end  => capture_end,
 
 		input_data   => std_logic_vector(input_data),
-		time_offset  => b"0_0000_0000_0000_0001",
+		time_offset  => b"0_0000_0000_1000_0010",
 
 		video_clk    => video_clk,
 		video_addr   => std_logic_vector(video_addr),

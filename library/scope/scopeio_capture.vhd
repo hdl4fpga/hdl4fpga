@@ -151,7 +151,7 @@ begin
 	capture_end <= mem_waddr(mem_waddr'left);
 	mem_wena <= 
 	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) when capture_end='0' else
-	   input_dv and mem_waddr(mem_waddr'left-1) and capture_shot;
+	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) and capture_shot;
 
 
 	data_e : entity hdl4fpga.align
