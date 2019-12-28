@@ -27,11 +27,11 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		lang        : i18n_langs := lang_en;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		vt_step     : real := 0.0;
@@ -54,7 +54,7 @@ entity scopeio is
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
 			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
-
+		input_names      : tag_vector := (1 to 0 => nulltag);
 		default_tracesfg : std_logic_vector := b"1_111";
 		default_gridfg   : std_logic_vector := b"1_100";
 		default_gridbg   : std_logic_vector := b"1_000";
@@ -270,11 +270,11 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
-		lang           => lang,
 		vlayout_id     => vlayout_id,
 		inputs         => inputs,
 		hz_unit        => hz_unit/femto,
 		vt_unit        => vt_unit/femto,
+		input_names    => input_names,
 		dflt_tracesfg  => default_tracesfg,
 		dflt_gridfg    => default_gridfg,
 		dflt_gridbg    => default_gridbg,

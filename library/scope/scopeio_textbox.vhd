@@ -10,8 +10,8 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
-		lang          : i18n_langs;
 		inputs        : natural;
+		input_names   : tag_vector;
 		layout        : display_layout;
 		latency       : natural;
 		max_delay     : natural;
@@ -82,11 +82,13 @@ architecture def of scopeio_textbox is
 			style  => styles(
 				width(cga_cols) & alignment(right_alignment) &
 				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
+			input_names => input_names,
 	   		inputs => inputs));
 
 	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(
 		analogreadings(
 			style  => styles(width(cga_cols) & alignment(right_alignment)),
+			input_names => input_names,
 			inputs => inputs),
 		cga_size));
 

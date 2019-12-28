@@ -82,9 +82,12 @@ package textboxpkg is
 	constant nostyle : style_t := (
 		key_width => 0, key_alignment => 0, key_textpalette => -1, key_bgpalette => -1);
 
+	constant nulltag : tag := (
+		tid => tid_end, style => nostyle, id => strfill("", 16), content => strfill("", 16) , mem_ptr => 0, inherit => 0);
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function text (constant content  : string := ""; constant style : style_t := nostyle; constant id : string := "") return tag;
 	function div  (constant children : tag_vector;   constant style : style_t := nostyle; constant id : string := "") return tag_vector;
+
 
 	function render_content (
 		constant tags : tag_vector;
@@ -98,7 +101,12 @@ package textboxpkg is
 	function validbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return std_logic;
+		return boolean;
+
+	function tagindexbyid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return integer;
 
 	function tagbyid (
 		constant tags : tag_vector;
@@ -627,15 +635,31 @@ package body textboxpkg is
 	function validbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return std_logic
+		return boolean
 	is
 	begin
 		for i in tags'range loop
 			if strcmp(tags(i).id,id) then
-				return '1';
+				return true;
 			end if;
 		end loop;
-		return '0';
+		return false;
+	end;
+
+	function tagindexbyid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return integer
+	is
+	begin
+		for i in tags'range loop
+			if strcmp(tags(i).id,id) then
+				return i;
+			end if;
+		end loop;
+		assert false
+		report "Invalid tag : " & id & " " & itoa(tags'length)
+		severity FAILURE;
 	end;
 
 	function tagbyid (
@@ -644,14 +668,7 @@ package body textboxpkg is
 		return tag
 	is
 	begin
-		for i in tags'range loop
-			if strcmp(tags(i).id,id) then
-				return tags(i);
-			end if;
-		end loop;
-		assert false
-		report "Invalid tag : " & id & " " & itoa(tags'length)
-		severity FAILURE;
+		return tags(tagindexbyid(tags, id));
 	end;
 
 	function memaddr (
