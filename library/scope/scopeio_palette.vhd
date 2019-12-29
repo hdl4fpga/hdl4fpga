@@ -48,6 +48,26 @@ architecture beh of scopeio_palette is
 
 	constant scopeio_bgon     : std_logic := '1';
 
+	signal palette_dv         : std_logic;
+	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
+	signal palette_color      : std_logic_vector(max_pixelsize-1 downto 0);
+	signal palette_colorena   : std_logic;
+	signal palette_opacity    : std_logic;
+	signal palette_opacityena : std_logic;
+
+	signal palette_addr : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
+	signal palette_data : std_logic_vector(video_color'range);
+	signal color_addr   : std_logic_vector(palette_addr'range);
+
+	signal vt_fg        : std_logic_vector(palette_id'range);
+	signal gain_ena     : std_logic;
+	signal gain_cid     : std_logic_vector(vt_fg'range);
+	signal gain_id      : std_logic_vector(0 to 4-1);
+
+	signal vt_ena       : std_logic;
+	signal vt_cid       : std_logic_vector(vt_fg'range);
+	signal vt_offset    : std_logic_vector(0 to 13-1);
+
 	impure function palette_ids 
 		return std_logic_vector is
 		constant n       : natural := pltid_order'length+trace_dots'length+1;
@@ -66,6 +86,8 @@ architecture beh of scopeio_palette is
 				retval(0 to size-1) := unsigned(text_fg);
 			when pltid_textbg =>
 				retval(0 to size-1) := unsigned(text_bg);
+			when pltid_vtfg =>
+				retval(0 to size-1) := unsigned(vt_fg);
 			when others =>
 				retval(0 to size-1) := to_unsigned(pltid_order(i), size);
 			end case;
@@ -168,19 +190,34 @@ architecture beh of scopeio_palette is
 		dflt_sgmntbg  => dflt_sgmntbg,
 		dflt_bg       => dflt_bg);
 
-	signal palette_dv       : std_logic;
-	signal palette_id       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+max_inputs+1-1)-1);
-	signal palette_color    : std_logic_vector(max_pixelsize-1 downto 0);
-	signal palette_colorena : std_logic;
-	signal palette_opacity  : std_logic;
-	signal palette_opacityena  : std_logic;
-
-	signal palette_addr     : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
-	signal palette_data     : std_logic_vector(video_color'range);
-	signal color_addr       : std_logic_vector(palette_addr'range);
-
 begin
 
+	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	generic map (
+		rgtr      => false)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+
+		vt_ena    => vt_ena,
+		vt_chanid => vt_cid,
+		vt_offset => vt_offset);
+
+	scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+	generic map (
+		rgtr      => false)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+
+		gain_ena  => gain_ena,
+		chan_id   => gain_cid,
+		gain_id   => gain_id);
+		
 	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
 	port map (
 		rgtr_clk         => rgtr_clk,
@@ -194,6 +231,17 @@ begin
 		palette_colorena => palette_colorena,
 		palette_opacityena => palette_opacityena,
 		palette_color    => palette_color);
+
+	vtfg_p : process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if vt_ena='1' then
+				vt_fg <= std_logic_vector(pltid_order'length+unsigned(vt_cid));
+			elsif gain_ena='1' then
+				vt_fg <= std_logic_vector(pltid_order'length+unsigned(gain_cid));
+			end if;
+		end if;
+	end process;
 
 	opacity_p : process (rgtr_clk)
 	begin

@@ -388,6 +388,7 @@ begin
 		hz_base       => time_offset(time_offset'left downto axisx_backscale+hztick_bits),
 		hz_offset     => hz_segment,
 
+		gain_cid      => gain_cid,
 		gain_dv       => gain_dv,
 		gain_ids      => gain_ids,
 

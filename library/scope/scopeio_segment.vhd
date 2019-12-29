@@ -42,6 +42,7 @@ entity scopeio_segment is
 		hz_offset     : in  std_logic_vector;
 
 		gain_dv       : in  std_logic;
+		gain_cid      : in  std_logic_vector;
 		gain_ids      : in  std_logic_vector;
 
 		trigger_level : in  std_logic_vector;
@@ -66,7 +67,7 @@ end;
 
 architecture def of scopeio_segment is
 
-	signal vt_ena           : std_logic;
+	signal vt_ena          : std_logic;
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
@@ -103,7 +104,7 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
-	vt_scale  <= word2byte(gain_ids, vt_chanid, vt_scale'length);
+	vt_scale <= word2byte(gain_ids, gain_cid, vt_scale'length);
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -143,13 +144,24 @@ begin
 
 	axis_b : block
 		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
+		signal g_offset : std_logic_vector(vt_offset'range);
 		signal v_offset : std_logic_vector(vt_offset'range);
+		signal v_sel    : std_logic;
+		signal v_dv     : std_logic;
 	begin
-		axis_sel   <= gain_dv or vt_dv;
-		axis_dv    <= gain_dv or vt_dv or hz_dv;
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+			end if;
+		end process;
+		v_sel <= gain_dv or vt_dv;
+		v_dv  <= gain_dv or vt_dv;
+		axis_sel   <= v_sel;
+		axis_dv    <= v_dv or hz_dv;
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		v_offset   <= std_logic_vector(unsigned(vt_offset) - bias);
+		g_offset <= word2byte(vt_offsets, gain_cid, vt_offset'length);
+		v_offset <= std_logic_vector(unsigned(word2byte(vt_offset & g_offset, gain_dv)) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);
