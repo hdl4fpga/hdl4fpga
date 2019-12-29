@@ -122,8 +122,7 @@ begin
 				if downsampling='0' then
 					retval := b"11" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),1)), retval'length-2);
 				else
---					retval := b"11" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),0)), retval'length-2);
-					retval := b"11" & resize(unsigned((2**mem_size-signed(time_offset)) mod 2**(mem_size+1)), retval'length-2);
+					retval := b"11" & resize(unsigned(2**mem_size-shift_right(signed(time_offset),0)), retval'length-2);
 				end if;
 			else
 				retval := b"11" & to_unsigned(2**mem_raddr'length, retval'length-2);
