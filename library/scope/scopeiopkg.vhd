@@ -649,7 +649,7 @@ package scopeiopkg is
 			content => ":"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "hz.div"),
 		text(
@@ -675,7 +675,7 @@ package scopeiopkg is
 			id      => "tgr.edge"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(7) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.level"),
 		text(
@@ -684,7 +684,7 @@ package scopeiopkg is
 			content => ":"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.div"),
 		text(
@@ -703,18 +703,17 @@ package scopeiopkg is
 		
 	constant vt0_children : tag_vector := (													-- Xilinx's ISE Workaround
 		text(
-			style   => styles(alignment(right_alignment)),
-			content => "",
+			style   => styles(alignment(left_alignment)),
 			id      => "vt(0).text"),
 		text(
-			style   => styles(alignment(right_alignment) & width(8)),
+			style   => styles(alignment(right_alignment) & width(7)),
 			content => "NaN",
 			id      => "vt(0).offset"),
 		text(
 			style   => styles(width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
-			style   => styles(width(8) & alignment(right_alignment)),
+			style   => styles(width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "vt(0).div" ),
 		text(
@@ -739,6 +738,9 @@ package scopeiopkg is
 		constant inputs      : natural;
 		constant input_names : tag_vector)
 		return tag_vector;
+
+	constant notext : tag := text;
+
 end;
 
 package body scopeiopkg is
@@ -1340,14 +1342,19 @@ package body scopeiopkg is
 		variable base     : natural;
 	begin
 		vt_tag := vt0_tags;
-		vt_tags(0 to vt0_tags'length-1) := vt_tag;
-		if validbyid(input_names, "vt(0).text") then
-			vt_tag(tagindexbyid(vt_tag,"vt(0).text")).content := vt_tag(tagindexbyid(input_names,"vt(0).text")).content;
+		if input_names'length > 0 then 
+			if isvalidbyid(input_names, "vt(0).text") then
+				vt_tag(tagindexbyid(vt_tag,"vt(0).text")).content := input_names(tagindexbyid(input_names,"vt(0).text")).content;
+			end if;
 		end if;
+		vt_tags(0 to vt0_tags'length-1) := vt_tag;
 		for i in 1 to inputs-1 loop
 			vt_tag := vt0_tags;
-			if validbyid(input_names, "vt(" & itoa(i) & ").text") then
-				vt_tag(tagindexbyid(vt_tag, "vt(0).text")).content := vt_tag(tagindexbyid(input_names, "vt(" & itoa(i) & ").text")).content;
+			if input_names'length > 0 then 
+				if isvalidbyid(input_names, "vt(" & itoa(i) & ").text") then
+					vt_tag(tagindexbyid(vt_tag, "vt(0).text")).content := input_names(tagindexbyid(input_names, "vt(" & itoa(i) & ").text")).content;
+					vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id := strfill("vt(" & itoa(i) & ").text", 16);
+				end if;
 			end if;
 
 			vt_tag(tagindexbyid(vt_tag,"vt(0)")).style(key_textpalette) := i+pltid_order'length;

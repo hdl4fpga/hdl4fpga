@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.std.all;
 
 library unisim;

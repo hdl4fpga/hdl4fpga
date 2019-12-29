@@ -8,6 +8,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
@@ -472,6 +473,16 @@ begin
 		vt_step          => (1.0e3*milli) / (2.0**16*femto),
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
+		input_names      => (
+			text(id => "vt(0).text", content => "V_P(+) V_N(-)"),
+			text(id => "vt(1).text", content => "A6(+)  A7(-)"),
+			text(id => "vt(2).text", content => "A8(+)  A9(-)"),
+			text(id => "vt(3).text", content => "A10(+) A11(-)"),
+			text(id => "vt(4).text", content => "A0(+)"),
+			text(id => "vt(5).text", content => "A1(+)"),
+			text(id => "vt(6).text", content => "A2(+)"),
+			text(id => "vt(7).text", content => "A3(+)"),
+			text(id => "vt(8).text", content => "A4(+)")),
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),

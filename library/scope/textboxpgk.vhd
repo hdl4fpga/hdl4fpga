@@ -82,8 +82,6 @@ package textboxpkg is
 	constant nostyle : style_t := (
 		key_width => 0, key_alignment => 0, key_textpalette => -1, key_bgpalette => -1);
 
-	constant nulltag : tag := (
-		tid => tid_end, style => nostyle, id => strfill("", 16), content => strfill("", 16) , mem_ptr => 0, inherit => 0);
 	function page (constant children : tag_vector;   constant style : style_t; constant id : string := "") return tag_vector;
 	function text (constant content  : string := ""; constant style : style_t := nostyle; constant id : string := "") return tag;
 	function div  (constant children : tag_vector;   constant style : style_t := nostyle; constant id : string := "") return tag_vector;
@@ -98,7 +96,7 @@ package textboxpkg is
 		constant tags : tag_vector)
 		return tag_vector;
 
-	function validbyid (
+	function isvalidbyid (
 		constant tags : tag_vector;
 		constant id   : string)
 		return boolean;
@@ -632,7 +630,7 @@ package body textboxpkg is
 		
 	end;
 
-	function validbyid (
+	function isvalidbyid (
 		constant tags : tag_vector;
 		constant id   : string)
 		return boolean
