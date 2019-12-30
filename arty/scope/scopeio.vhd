@@ -495,8 +495,9 @@ begin
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
 		default_hzbg     => b"1_001",
-		default_vtfg     => b"1_111",
+		default_vtfg     => b"0_111",
 		default_vtbg     => b"1_001",
+		default_textfg   => b"1_111",
 		default_textbg   => b"1_000",
 		default_sgmntbg  => b"1_011",
 		default_bg       => b"1_111")

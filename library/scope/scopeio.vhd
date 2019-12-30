@@ -62,6 +62,7 @@ entity scopeio is
 		default_hzbg     : std_logic_vector := b"1_001";
 		default_vtfg     : std_logic_vector := b"1_111";
 		default_vtbg     : std_logic_vector := b"1_001";
+		default_textfg   : std_logic_vector := b"1_111";
 		default_textbg   : std_logic_vector := b"1_000";
 		default_sgmntbg  : std_logic_vector := b"1_011";
 		default_bg       : std_logic_vector := b"1_111");
@@ -282,6 +283,7 @@ begin
 		dflt_hzbg      => default_hzbg,
 		dflt_vtfg      => default_vtfg,
 		dflt_vtbg      => default_vtbg,
+		dflt_textfg    => default_textfg,
 		dflt_textbg    => default_textbg,
 		dflt_sgmntbg   => default_sgmntbg,
 		dflt_bg        => default_bg)

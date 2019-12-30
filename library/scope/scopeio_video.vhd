@@ -44,6 +44,7 @@ entity scopeio_video is
 		dflt_hzbg     : std_logic_vector;
 		dflt_vtfg     : std_logic_vector;
 		dflt_vtbg     : std_logic_vector;
+		dflt_textfg   : std_logic_vector;
 		dflt_textbg   : std_logic_vector;
 		dflt_sgmntbg  : std_logic_vector;
 		dflt_bg       : std_logic_vector);
@@ -438,7 +439,7 @@ begin
 		dflt_vtfg     => dflt_vtfg,
 		dflt_vtbg     => dflt_vtbg, 
 		dflt_textbg   => dflt_textbg, 
-		dflt_textfg   => dflt_vtfg, 
+		dflt_textfg   => dflt_textfg, 
 		dflt_sgmntbg  => dflt_sgmntbg, 
 		dflt_bg       => dflt_bg)
 	port map (

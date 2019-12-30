@@ -267,8 +267,8 @@ begin
 		shuffle((
 			pltid_gridfg    => grid_dot     and color_opacity(pltid_gridfg),
 			pltid_gridbg    => grid_bgon    and color_opacity(pltid_gridbg),
---			pltid_vtfg      => vt_dot       and color_opacity(to_integer(unsigned(vt_fg))),
-			pltid_vtfg      => vt_dot       and color_opacity(pltid_vtfg),
+			pltid_vtfg      => vt_dot       and color_opacity(to_integer(unsigned(vt_fg))),
+--			pltid_vtfg      => vt_dot       and color_opacity(pltid_vtfg),
 			pltid_vtbg      => vt_bgon      and color_opacity(pltid_vtbg),
 			pltid_hzfg      => hz_dot       and color_opacity(pltid_hzfg),
 			pltid_hzbg      => hz_bgon      and color_opacity(pltid_hzbg),
