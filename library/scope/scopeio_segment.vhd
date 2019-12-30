@@ -88,6 +88,8 @@ architecture def of scopeio_segment is
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
 
+	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_level      : std_logic_vector(storage_word'range);
 
 begin
 
@@ -103,6 +105,19 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
+	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
+
+		trigger_dv     => trigger_dv,
+		trigger_freeze => trigger_freeze,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+		trigger_edge   => trigger_edge);
+		
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then

@@ -120,8 +120,6 @@ architecture beh of scopeio is
 	signal time_dv              : std_logic;
 
 	signal trigger_freeze     : std_logic;
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal gain_ena           : std_logic;
 	signal gain_dv            : std_logic;
@@ -259,8 +257,6 @@ begin
 		time_scale   => time_scale,
 		time_offset  => time_offset,
 		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
 
 		video_clk    => video_clk,
 		video_addr   => video_addr,  
