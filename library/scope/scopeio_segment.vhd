@@ -91,8 +91,6 @@ architecture def of scopeio_segment is
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
 
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level      : std_logic_vector(storage_word'range);
 
 begin
 
