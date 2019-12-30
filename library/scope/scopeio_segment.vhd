@@ -82,7 +82,6 @@ architecture def of scopeio_segment is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
 
 	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
@@ -104,7 +103,6 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
-	vt_scale <= word2byte(gain_ids, gain_cid, vt_scale'length);
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -144,6 +142,7 @@ begin
 
 	axis_b : block
 		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
+		signal vt_scale : std_logic_vector(gain_ids'length/inputs-1 downto 0);
 		signal g_offset : std_logic_vector(vt_offset'range);
 		signal v_offset : std_logic_vector(vt_offset'range);
 		signal v_sel    : std_logic;
@@ -154,10 +153,11 @@ begin
 			if rising_edge(rgtr_clk) then
 			end if;
 		end process;
-		v_sel <= gain_dv or vt_dv;
-		v_dv  <= gain_dv or vt_dv;
+		v_sel      <= gain_dv or vt_dv;
+		v_dv       <= gain_dv or vt_dv;
 		axis_sel   <= v_sel;
 		axis_dv    <= v_dv or hz_dv;
+		vt_scale   <= word2byte(gain_ids, gain_cid, vt_scale'length);
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
 		g_offset <= word2byte(vt_offsets, gain_cid, vt_offset'length);
@@ -222,9 +222,7 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if vt_ena='1'  then
-					offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
-				end if;
+				offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
 			end if;
 		end process;
 
