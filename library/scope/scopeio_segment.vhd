@@ -45,7 +45,8 @@ entity scopeio_segment is
 		gain_cid      : in  std_logic_vector;
 		gain_ids      : in  std_logic_vector;
 
-		trigger_level : in  std_logic_vector;
+		trigger_chanid : in std_logic_vector;
+		trigger_level  : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -63,6 +64,8 @@ entity scopeio_segment is
 		grid_dot      : out std_logic;
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
+
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture def of scopeio_segment is
@@ -105,19 +108,6 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
-	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-	port map (
-		rgtr_clk       => rgtr_clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
-
-		trigger_dv     => trigger_dv,
-		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
-		
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -237,7 +227,7 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
+				offset <= vt_height/2-unsigned(word2byte(vt_offsets, trigger_chanid, offset'length));
 			end if;
 		end process;
 
