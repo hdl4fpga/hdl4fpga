@@ -210,7 +210,7 @@
     <Source name="../../library/scope/scopeio_textbox.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/scope/textboxpgk.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/scope/textboxpkg.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
