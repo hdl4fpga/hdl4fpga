@@ -116,7 +116,7 @@ begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
 					if downsampling='0' then
-						if a0='1' then
+						if a0='0' then
 							maxx <= sample;
 						else
 							minn <= sample;

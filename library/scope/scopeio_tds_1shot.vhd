@@ -45,8 +45,6 @@ entity scopeio_tds is
 		input_data       : in  std_logic_vector;
 		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
-		trigger_chanid   : buffer std_logic_vector;
-		trigger_level    : buffer std_logic_vector;
 		trigger_freeze   : buffer std_logic;
 		video_clk        : in  std_logic;
 		video_vton       : in  std_logic;
@@ -80,6 +78,8 @@ architecture mix of scopeio_tds is
 
 	signal trigger_dv         : std_logic;
 	signal trigger_edge       : std_logic;
+	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal storage_reset_addr     : std_logic;
 	signal storage_increment_addr : std_logic;

@@ -122,8 +122,8 @@ package scopeiopkg is
 			textbox_within  => true,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (top => 4, bottom => 4, others => 0),
-			sgmnt_gap       => (horizontal => 3, others => 0)),
+			sgmnt_margin    => (top => 1, bottom => 1, others => 0),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
 			display_width    =>  96,
 			display_height   =>  64,
@@ -354,7 +354,8 @@ package scopeiopkg is
 
 	constant video_description : modelayout_vector := (
 		0 => (mode_id => pclk148_50m1920x1080Rat60, layout_id => hd1080),
-		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
+--		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
+		1 => (mode_id => pclk40_00m800x600Rat60,    layout_id => sd600),
 		2 => (mode_id => pclk75_00m1920x1080Rat30,  layout_id => hd1080),
 		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720),
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
@@ -729,7 +730,7 @@ package scopeiopkg is
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's ISE Workaround
 		id       => "vt(0)",
 		style    => styles(
-			text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
+			text_palette(pltid_textfg) & bg_palette(pltid_textbg) & alignment(right_alignment)),
 		children => vt0_children);                                                         
 
 	function analogreadings (
@@ -1375,7 +1376,7 @@ package body scopeiopkg is
 
 		base := base + hz_tags'length;
 		children(base to base+tgr_tags'length-1) := tgr_tags;
-		children(tagindexbyid(children, "tgr")).style(key_textpalette) := inputs+pltid_order'length;
+--		children(tagindexbyid(children, "tgr")).style(key_textpalette) := inputs+pltid_order'length;
 
 		base := base + tgr_tags'length;
 		children(base to base+vt_tags'length-1)  := vt_tags;

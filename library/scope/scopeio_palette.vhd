@@ -48,7 +48,7 @@ architecture beh of scopeio_palette is
 
 	constant scopeio_bgon     : std_logic := '1';
 
-	function init_opacity (
+	impure function init_opacity (
 		constant dflt_tracesfg :  std_logic_vector;
 		constant dflt_gridfg   :  std_logic_vector;
 		constant dflt_gridbg   :  std_logic_vector;
@@ -182,7 +182,7 @@ architecture beh of scopeio_palette is
 		return retval(1 to retval'right);
 	end ;
 
-	function colors (
+	impure function colors (
 		constant arg : std_logic_vector)
 		return std_logic_vector
 	is

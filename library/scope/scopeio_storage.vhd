@@ -118,15 +118,18 @@ begin
 		end if; -- rising_edge
 	end process;
 
-	G_split_double_samples:
-	for i in 0 to inputs-1 generate
-	  rd_data_0(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
-	  <= pr_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1)
-	   & rd_data_ds((2*i+0)*sample_bits to (2*i+1)*sample_bits-1);
-	  rd_data_1(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
-	  <= rd_data_ds((2*i+0)*sample_bits to (2*i+1)*sample_bits-1)
-	   & rd_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1);
-	end generate;
+--    Emard's original
+--	G_split_double_samples:
+--	for i in 0 to inputs-1 generate
+--	  rd_data_0(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
+--	  <= pr_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1)
+--	   & rd_data_ds((2*i+0)*sample_bits to (2*i+1)*sample_bits-1);
+--	  rd_data_1(i*(2*sample_bits) to (i+1)*(2*sample_bits)-1)
+--	  <= rd_data_ds((2*i+0)*sample_bits to (2*i+1)*sample_bits-1)
+--	   & rd_data_ds((2*i+1)*sample_bits to (2*i+2)*sample_bits-1);
+--	end generate;
+	rd_data_0 <= pr_data_ds(pr_data_ds'length/2 to pr_data_ds'length-1) & rd_data_ds(0 to rd_data_ds'length/2-1);
+	rd_data_1 <= pr_data_ds(0 to pr_data_ds'length/2-1) & rd_data_ds(rd_data_ds'length/2 to rd_data_ds'length-1);
 
 	captured_data <= rd_data_ds when downsampling = '1'
 	            else rd_data_0  when rd_addr(rd_addr'high) = '0'
