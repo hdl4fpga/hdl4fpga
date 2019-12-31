@@ -696,6 +696,7 @@ package scopeiopkg is
 			content => "V"));
 
 	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's ISE Workaround
+		id       => "tgr",
 		style    => styles(text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
 		children => tgr_children);
 		
@@ -1374,6 +1375,7 @@ package body scopeiopkg is
 
 		base := base + hz_tags'length;
 		children(base to base+tgr_tags'length-1) := tgr_tags;
+		children(tagindexbyid(children, "tgr")).style(key_textpalette) := inputs+pltid_order'length;
 
 		base := base + tgr_tags'length;
 		children(base to base+vt_tags'length-1)  := vt_tags;

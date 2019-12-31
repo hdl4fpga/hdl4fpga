@@ -131,7 +131,12 @@ architecture beh of scopeio_palette is
 		for i in pltid_order'range loop
 			case pltid_order(i) is
 			when pltid_textfg =>
-				retval(0 to size-1) := unsigned(text_fg);
+				if unsigned(text_fg)=to_unsigned(trace_dots'length+pltid_order'length, size) then
+					retval(0 to size-1) := resize(pltid_order'length+unsigned(trigger_chanid), size);
+					retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
+				else
+					retval(0 to size-1) := unsigned(text_fg);
+				end if;
 			when pltid_textbg =>
 				retval(0 to size-1) := unsigned(text_bg);
 			when pltid_vtfg =>
