@@ -86,6 +86,7 @@ package textboxpkg is
 	function text (constant content  : string := ""; constant style : style_t := nostyle; constant id : string := "") return tag;
 	function div  (constant children : tag_vector;   constant style : style_t := nostyle; constant id : string := "") return tag_vector;
 
+
 	function render_content (
 		constant tags : tag_vector;
 		constant size : natural)
@@ -95,10 +96,15 @@ package textboxpkg is
 		constant tags : tag_vector)
 		return tag_vector;
 
-	function validbyid (
+	function isvalidbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return std_logic;
+		return boolean;
+
+	function tagindexbyid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return integer;
 
 	function tagbyid (
 		constant tags : tag_vector;
@@ -624,18 +630,34 @@ package body textboxpkg is
 		
 	end;
 
-	function validbyid (
+	function isvalidbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return std_logic
+		return boolean
 	is
 	begin
 		for i in tags'range loop
 			if strcmp(tags(i).id,id) then
-				return '1';
+				return true;
 			end if;
 		end loop;
-		return '0';
+		return false;
+	end;
+
+	function tagindexbyid (
+		constant tags : tag_vector;
+		constant id   : string)
+		return integer
+	is
+	begin
+		for i in tags'range loop
+			if strcmp(tags(i).id,id) then
+				return i;
+			end if;
+		end loop;
+		assert false
+		report "Invalid tag : " & id & " " & itoa(tags'length)
+		severity FAILURE;
 	end;
 
 	function tagbyid (
@@ -644,14 +666,7 @@ package body textboxpkg is
 		return tag
 	is
 	begin
-		for i in tags'range loop
-			if strcmp(tags(i).id,id) then
-				return tags(i);
-			end if;
-		end loop;
-		assert false
-		report "Invalid tag : " & id & " " & itoa(tags'length)
-		severity FAILURE;
+		return tags(tagindexbyid(tags, id));
 	end;
 
 	function memaddr (

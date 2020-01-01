@@ -122,8 +122,8 @@ package scopeiopkg is
 			textbox_within  => true,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (top => 4, bottom => 4, others => 0),
-			sgmnt_gap       => (horizontal => 3, others => 0)),
+			sgmnt_margin    => (top => 1, bottom => 1, others => 0),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
 			display_width    =>  96,
 			display_height   =>  64,
@@ -339,7 +339,7 @@ package scopeiopkg is
 			vttick_rotate    => ccw0,
 			vtaxis_within   =>  false,
 			textbox_width    => 33*8,
-			textbox_within   => true,
+			textbox_within   => false,
 			main_margin      => (top => 5, left => 1, others => 0),
 			main_gap         => (others => 1),
 			sgmnt_margin     => (others => 1),
@@ -354,7 +354,8 @@ package scopeiopkg is
 
 	constant video_description : modelayout_vector := (
 		0 => (mode_id => pclk148_50m1920x1080Rat60, layout_id => hd1080),
-		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
+--		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
+		1 => (mode_id => pclk40_00m800x600Rat60,    layout_id => sd600),
 		2 => (mode_id => pclk75_00m1920x1080Rat30,  layout_id => hd1080),
 		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720),
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
@@ -555,8 +556,6 @@ package scopeiopkg is
 			time_scale       : in  std_logic_vector;
 			time_offset      : in  std_logic_vector;
 			trigger_freeze   : buffer std_logic;
-			trigger_chanid   : buffer std_logic_vector;
-			trigger_level    : buffer std_logic_vector;
 			video_clk        : in  std_logic;
 			video_vton       : in  std_logic;
 			video_frm        : in  std_logic;
@@ -649,7 +648,7 @@ package scopeiopkg is
 			content => ":"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "hz.div"),
 		text(
@@ -675,7 +674,7 @@ package scopeiopkg is
 			id      => "tgr.edge"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(7) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.level"),
 		text(
@@ -684,7 +683,7 @@ package scopeiopkg is
 			content => ":"),
 		text(
 			style   => styles(
-				width(8) & alignment(right_alignment)),
+				width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "tgr.div"),
 		text(
@@ -698,50 +697,50 @@ package scopeiopkg is
 			content => "V"));
 
 	constant tgr_tags : tag_vector := div (                                                 -- Xilinx's ISE Workaround
+		id       => "tgr",
 		style    => styles(text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
 		children => tgr_children);
 		
 	constant vt0_children : tag_vector := (													-- Xilinx's ISE Workaround
 		text(
-			style   => styles(
-				width(8) & alignment(right_alignment) &
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(alignment(left_alignment)),
+			id      => "vt(0).text"),
+		text(
+			style   => styles(alignment(right_alignment) & width(7)),
 			content => "NaN",
 			id      => "vt(0).offset"),
 		text(
-			style   => styles(
-				width(3) & alignment(center_alignment) &
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(width(3) & alignment(center_alignment)),
 			content => ":"),
 		text(
-			style   => styles(
-				width(8) & alignment(right_alignment) &
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(width(6) & alignment(right_alignment)),
 			content => "NaN",
 			id      => "vt(0).div" ),
 		text(
-			style   => styles(
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(alignment(center_alignment)),
 			content => " "),
 		text(
-			style   => styles(
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(alignment(right_alignment)),
 			content => "*",
 			id      => "vt(0).mag"),
 		text(
-			style   => styles(
-				text_palette(pltid_order'length) & bg_palette(pltid_textbg)),
+			style   => styles(alignment(center_alignment)),
 			content => "V"));
 
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's ISE Workaround
+		id       => "vt(0)",
 		style    => styles(
 			text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
 		children => vt0_children);                                                         
 
 	function analogreadings (
-		constant style    : style_t;
-		constant inputs   : natural)
+		constant style       : style_t;
+		constant inputs      : natural;
+		constant input_names : tag_vector)
 		return tag_vector;
+
+	constant notext : tag := text;
+
 end;
 
 package body scopeiopkg is
@@ -1205,12 +1204,13 @@ package body scopeiopkg is
 		frac  := unit / mult;
 
 		exp := 0;
-		for i in 0 to 4-1 loop
+		for i in 0 to 3-1 loop
+			exit when floor(frac)=(frac);
+
 			assert i /= 4
 			report "Invalid unit value"
 			severity failure;
 
-			exit when floor(frac)=(frac);
 			frac := frac * 2.0;
 			exp  := exp - 1;
 		end loop;
@@ -1332,39 +1332,40 @@ package body scopeiopkg is
 		
 	function analogreadings (
 		constant style    : style_t;
-		constant inputs   : natural)
+		constant inputs   : natural;
+		constant input_names : tag_vector)
 		return tag_vector
 	is
+		variable vt_tag   : tag_vector(vt0_tags'range);
 		variable vt_tags  : tag_vector(0 to inputs*vt0_tags'length-1);
 		variable children : tag_vector(0 to ip4_tags'length+hz_tags'length+tgr_tags'length+inputs*vt0_tags'length-1);
 		variable base     : natural;
 	begin
-		vt_tags(0 to vt0_tags'length-1) := vt0_tags;
+		vt_tag := vt0_tags;
+		if input_names'length > 0 then 
+			if isvalidbyid(input_names, "vt(0).text") then
+				vt_tag(tagindexbyid(vt_tag,"vt(0).text")).content := input_names(tagindexbyid(input_names,"vt(0).text")).content;
+			end if;
+		end if;
+		vt_tags(0 to vt0_tags'length-1) := vt_tag;
 		for i in 1 to inputs-1 loop
-			vt_tags(i*vt0_tags'length to (i+1)*vt0_tags'length-1) := div (
-				style    => styles(alignment(right_alignment) & text_palette(i+pltid_order'length) & bg_palette(pltid_textbg)),
-				children => tag_vector'(
-					text(
-						style   => styles(alignment(right_alignment) & width(8)),
-						content => "NaN",
-						id      => "vt(" & itoa(i) & ").offset"),
-					text(
-						style   => styles(alignment(center_alignment) & width(3)),
-						content => ":"),
-					text(
-						style   => styles(alignment(right_alignment) & width(8)),
-						content => "NaN",
-						id      => "vt("& itoa(i) & ").div" ),
-					text(
-						style   => styles(alignment(center_alignment)),
-						content => " "),
-					text(
-						style   => styles(alignment(right_alignment) & width(1)),
-						content => "*",
-						id      => "vt("& itoa(i) & ").mag"),
-					text(
-						style   => styles(alignment(center_alignment)),
-						content => "V")));
+			vt_tag := vt0_tags;
+			if input_names'length > 0 then 
+				if isvalidbyid(input_names, "vt(" & itoa(i) & ").text") then
+					vt_tag(tagindexbyid(vt_tag, "vt(0).text")).content := input_names(tagindexbyid(input_names, "vt(" & itoa(i) & ").text")).content;
+					vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id := strfill("vt(" & itoa(i) & ").text", 16);
+				end if;
+			end if;
+
+			vt_tag(tagindexbyid(vt_tag,"vt(0)")).style(key_textpalette) := i+pltid_order'length;
+
+			vt_tag(tagindexbyid(vt_tag,"vt(0)")).id        := strfill("vt(" & itoa(i) & ")", 16);
+			vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id   := strfill("vt(" & itoa(i) & ").text", 16);
+			vt_tag(tagindexbyid(vt_tag,"vt(0).offset")).id := strfill("vt(" & itoa(i) & ").offset", 16);
+			vt_tag(tagindexbyid(vt_tag,"vt(0).div")).id    := strfill("vt(" & itoa(i) & ").div", 16);
+			vt_tag(tagindexbyid(vt_tag,"vt(0).mag")).id    := strfill("vt(" & itoa(i) & ").mag", 16);
+
+			vt_tags(i*vt_tag'length to (i+1)*vt_tag'length-1) := vt_tag;
 		end loop;
 
 		base := 0;
@@ -1375,6 +1376,8 @@ package body scopeiopkg is
 
 		base := base + hz_tags'length;
 		children(base to base+tgr_tags'length-1) := tgr_tags;
+--		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_textbg; --inputs+pltid_order'length;
+		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_order'length+2;
 
 		base := base + tgr_tags'length;
 		children(base to base+vt_tags'length-1)  := vt_tags;

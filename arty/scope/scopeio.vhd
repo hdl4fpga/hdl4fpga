@@ -8,9 +8,12 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
+
+	constant vt_step : real := (1.0e3*milli) / (2.0**16*femto); -- Volts
 
 	constant sample_size : natural := 16;
 	constant inputs   : natural := 9;
@@ -77,8 +80,9 @@ architecture beh of arty is
 
 	constant video_mode : layout_mode := mode1080p;
 
-		signal sample  : std_logic_vector(sample_size-1 downto 0);
-		signal cntr : unsigned(0 to 22-1);
+	signal sample  : std_logic_vector(sample_size-1 downto 0);
+	signal cntr : unsigned(0 to 22-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -229,7 +233,7 @@ begin
 						RGBled(0) <= '1';
 						samples <= byte2word(samples, "0000", sample);
 					when "10100" =>	--  4                       
-						RGBled(5) <= '1';
+						RGBled(4) <= '1';
 						samples <= byte2word(samples, "0100", sample);
 					when "10101" =>	--  5
 						RGBled(6) <= '1';
@@ -251,7 +255,7 @@ begin
 						RGBled(3) <= '1';
 						samples <= byte2word(samples, "0011", sample);
 					when "11111" => -- 15
-						RGBled(4) <= '1';
+						RGBled(5) <= '1';
 						samples <= byte2word(samples, "1000", sample);
 					when "10000" =>	--  1                       
 						RGBled(9) <= '1';
@@ -469,9 +473,19 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 31.25*micro,
-		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_step          => vt_step,
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
+		input_names      => (
+			text(id => "vt(0).text", content => "V_P(+) V_N(-)"),
+			text(id => "vt(1).text", content => "A6(+)  A7(-)"),
+			text(id => "vt(2).text", content => "A8(+)  A9(-)"),
+			text(id => "vt(3).text", content => "A10(+) A11(-)"),
+			text(id => "vt(4).text", content => "A0(+)"),
+			text(id => "vt(5).text", content => "A1(+)"),
+			text(id => "vt(6).text", content => "A2(+)"),
+			text(id => "vt(7).text", content => "A3(+)"),
+			text(id => "vt(8).text", content => "A4(+)")),
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
@@ -484,8 +498,9 @@ begin
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
 		default_hzbg     => b"1_001",
-		default_vtfg     => b"1_111",
+		default_vtfg     => b"0_111",
 		default_vtbg     => b"1_001",
+		default_textfg   => b"1_111",
 		default_textbg   => b"1_000",
 		default_sgmntbg  => b"1_011",
 		default_bg       => b"1_111")

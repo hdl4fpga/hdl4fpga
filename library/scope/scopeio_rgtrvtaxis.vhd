@@ -32,7 +32,7 @@ begin
 
 	ena    <= setif(rgtr_id=rid_vtaxis, rgtr_dv);
 	chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, vtchanid_id, vtoffset_bf)), chanid'length));
-	offset <= bitfield(rgtr_data, vtoffset_id, vtoffset_bf);
+	offset <= std_logic_vector(resize(  signed(bitfield(rgtr_data, vtoffset_id, vtoffset_bf)), offset'length));
 
 	dv_p : process (rgtr_clk)
 	begin

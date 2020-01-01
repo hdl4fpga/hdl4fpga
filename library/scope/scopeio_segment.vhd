@@ -42,9 +42,11 @@ entity scopeio_segment is
 		hz_offset     : in  std_logic_vector;
 
 		gain_dv       : in  std_logic;
+		gain_cid      : in  std_logic_vector;
 		gain_ids      : in  std_logic_vector;
 
-		trigger_level : in  std_logic_vector;
+		trigger_chanid : in std_logic_vector;
+		trigger_level  : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -62,11 +64,13 @@ entity scopeio_segment is
 		grid_dot      : out std_logic;
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
+
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture def of scopeio_segment is
 
-	signal vt_ena           : std_logic;
+	signal vt_ena          : std_logic;
 	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
@@ -81,7 +85,6 @@ architecture def of scopeio_segment is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
 
 	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
@@ -103,7 +106,6 @@ begin
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
-	vt_scale  <= word2byte(gain_ids, vt_chanid, vt_scale'length);
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -143,13 +145,26 @@ begin
 
 	axis_b : block
 		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
+		signal vt_scale : std_logic_vector(gain_ids'length/inputs-1 downto 0);
+		signal g_offset : std_logic_vector(vt_offset'range);
 		signal v_offset : std_logic_vector(vt_offset'range);
+		signal v_sel    : std_logic;
+		signal v_dv     : std_logic;
 	begin
-		axis_sel   <= gain_dv or vt_dv;
-		axis_dv    <= gain_dv or vt_dv or hz_dv;
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+			end if;
+		end process;
+		v_sel      <= gain_dv or vt_dv;
+		v_dv       <= gain_dv or vt_dv;
+		axis_sel   <= v_sel;
+		axis_dv    <= v_dv or hz_dv;
+		vt_scale   <= word2byte(gain_ids, gain_cid, vt_scale'length);
 		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		v_offset   <= std_logic_vector(unsigned(vt_offset) - bias);
+		g_offset <= word2byte(vt_offsets, gain_cid, vt_offset'length);
+		v_offset <= std_logic_vector(unsigned(word2byte(vt_offset & g_offset, gain_dv)) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);
@@ -210,9 +225,7 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if vt_ena='1'  then
-					offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
-				end if;
+				offset <= vt_height/2-unsigned(word2byte(vt_offsets, trigger_chanid, offset'length));
 			end if;
 		end process;
 

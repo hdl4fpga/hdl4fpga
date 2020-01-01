@@ -92,7 +92,7 @@ architecture def of scopeio_axis is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
-	signal binvalue : signed(3*4-1 downto 0);
+	signal binvalue : signed(4*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
@@ -111,6 +111,7 @@ architecture def of scopeio_axis is
 
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
 
+	signal v_offset : std_logic_vector(vt_offset'range);
 	signal vt_exp   : signed(4-1 downto 0);
 	signal vt_order : signed(4-1 downto 0);
 	signal vt_prec  : signed(4-1 downto 0);
@@ -152,6 +153,7 @@ begin
 			if rising_edge(clk) then
 				dv <= axis_dv;
 				if axis_dv='1' then
+					v_offset <= vt_offset;
 					scale <= axis_scale;
 				end if;
 			end if;
@@ -434,7 +436,7 @@ begin
 				end if;
 			end process;
 
-			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
+			y <= resize(unsigned(video_vcntr), y'length) + unsigned(v_offset);
 			vtvaddr_p : process (video_clk)
 			begin
 				if rising_edge(video_clk) then

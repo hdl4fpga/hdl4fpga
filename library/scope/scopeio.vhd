@@ -27,11 +27,11 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		lang        : i18n_langs := lang_en;
 		vlayout_id  : natural;
 		max_delay   : natural := 2**14;
 		vt_step     : real := 0.0;
@@ -54,7 +54,7 @@ entity scopeio is
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
 			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
-
+		input_names      : tag_vector := (1 to 0 => notext);
 		default_tracesfg : std_logic_vector := b"1_111";
 		default_gridfg   : std_logic_vector := b"1_100";
 		default_gridbg   : std_logic_vector := b"1_000";
@@ -62,6 +62,7 @@ entity scopeio is
 		default_hzbg     : std_logic_vector := b"1_001";
 		default_vtfg     : std_logic_vector := b"1_111";
 		default_vtbg     : std_logic_vector := b"1_001";
+		default_textfg   : std_logic_vector := b"1_111";
 		default_textbg   : std_logic_vector := b"1_000";
 		default_sgmntbg  : std_logic_vector := b"1_011";
 		default_bg       : std_logic_vector := b"1_111");
@@ -119,8 +120,6 @@ architecture beh of scopeio is
 	signal time_dv              : std_logic;
 
 	signal trigger_freeze     : std_logic;
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level      : std_logic_vector(storage_word'range);
 
 	signal gain_ena           : std_logic;
 	signal gain_dv            : std_logic;
@@ -258,8 +257,6 @@ begin
 		time_scale   => time_scale,
 		time_offset  => time_offset,
 		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
 
 		video_clk    => video_clk,
 		video_addr   => video_addr,  
@@ -270,11 +267,11 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
-		lang           => lang,
 		vlayout_id     => vlayout_id,
 		inputs         => inputs,
 		hz_unit        => hz_unit/femto,
 		vt_unit        => vt_unit/femto,
+		input_names    => input_names,
 		dflt_tracesfg  => default_tracesfg,
 		dflt_gridfg    => default_gridfg,
 		dflt_gridbg    => default_gridbg,
@@ -282,6 +279,7 @@ begin
 		dflt_hzbg      => default_hzbg,
 		dflt_vtfg      => default_vtfg,
 		dflt_vtbg      => default_vtbg,
+		dflt_textfg    => default_textfg,
 		dflt_textbg    => default_textbg,
 		dflt_sgmntbg   => default_sgmntbg,
 		dflt_bg        => default_bg)

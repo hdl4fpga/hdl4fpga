@@ -27,15 +27,16 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		lang          : i18n_langs := lang_en;
 		vlayout_id    : natural;
 		hz_unit       : real;
 		vt_unit       : real;
 		inputs        : natural;
+		input_names   : tag_vector;
 		dflt_tracesfg : std_logic_vector;
 		dflt_gridfg   : std_logic_vector;
 		dflt_gridbg   : std_logic_vector;
@@ -43,6 +44,7 @@ entity scopeio_video is
 		dflt_hzbg     : std_logic_vector;
 		dflt_vtfg     : std_logic_vector;
 		dflt_vtbg     : std_logic_vector;
+		dflt_textfg   : std_logic_vector;
 		dflt_textbg   : std_logic_vector;
 		dflt_sgmntbg  : std_logic_vector;
 		dflt_bg       : std_logic_vector);
@@ -292,8 +294,8 @@ begin
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
 			inputs        => inputs,
+			input_names    => input_names,
 			max_delay     => max_delay, 
-			lang          => lang,
 			latency       => segmment_latency+input_latency,
 			layout        => layout,
 			hz_unit       => hz_unit,
@@ -387,6 +389,7 @@ begin
 		hz_base       => time_offset(time_offset'left downto axisx_backscale+hztick_bits),
 		hz_offset     => hz_segment,
 
+		gain_cid      => gain_cid,
 		gain_dv       => gain_dv,
 		gain_ids      => gain_ids,
 
@@ -400,6 +403,7 @@ begin
 
 		sample_dv     => vdv,
 		sample_data   => vdata,
+		trigger_chanid => trigger_chanid,
 		trigger_level => trigger_level,
 		grid_dot      => grid_dot,
 		hz_dot        => hz_dot,
@@ -436,7 +440,7 @@ begin
 		dflt_vtfg     => dflt_vtfg,
 		dflt_vtbg     => dflt_vtbg, 
 		dflt_textbg   => dflt_textbg, 
-		dflt_textfg   => dflt_vtfg, 
+		dflt_textfg   => dflt_textfg, 
 		dflt_sgmntbg  => dflt_sgmntbg, 
 		dflt_bg       => dflt_bg)
 	port map (

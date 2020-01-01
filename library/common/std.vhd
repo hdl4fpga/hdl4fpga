@@ -136,6 +136,11 @@ package std is
 		constant op2 : natural)
 		return unsigned;
 
+	function "rem" (
+		constant arg1 : signed;
+		constant arg2 : natural)
+		return signed;
+
 	--------------------
 	-- Counter functions
 	--------------------
@@ -429,8 +434,11 @@ package body std is
 		alias astr1 : string(1 to str1'length) is str1;
 		alias astr2 : string(1 to str2'length) is str2;
 	begin
+		report astr2 & " " & astr1;
+		report itoa(astr2'length) & " " & itoa(astr1'length);
 		for i in astr1'range loop
 			if astr2'right < i then
+		report itoa(i);
 				if astr1(i)=NUL then
 					return true;
 				else
@@ -440,6 +448,7 @@ package body std is
 				return false;
 			end if;
 		end loop;
+		report itoa(astr2'length) & " " & itoa(astr1'length);
 		if astr2'length=astr1'length then
 			return true;
 		elsif astr2(astr1'right+1)=NUL then
@@ -1014,6 +1023,19 @@ package body std is
 			mulr := mulr / 2;
 		end loop;
 		return rval;
+	end;
+
+	function "rem" (
+		constant arg1 : signed;
+		constant arg2 : natural)
+		return signed is
+		variable retval : signed(arg1'length-1 downto 0);
+	begin
+		assert arg2 = 2**retval'length
+		report "arg2 is not a power of 2"
+		severity FAILURE;
+
+		return retval(unsigned_num_bits(arg2-1)-1 downto 0);
 	end;
 
 	--------------------
