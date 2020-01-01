@@ -27,7 +27,7 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 10;
+        constant vlayout_id: integer := 1;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -71,7 +71,7 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external USB PHY (currently useable only as linestate sniffer)
         -- scopeio
-	constant inputs: natural := 3; -- number of input channels (traces)
+	constant inputs: natural := 4; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
@@ -1462,7 +1462,7 @@ begin
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		vt_step          => vt_step,
-		hz_unit          => 1.0, -- 1s grid div
+		hz_unit          => 32.0*micro, -- 1s grid div
 		vt_unit          => 50.0*milli,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"1_110000",
@@ -1472,6 +1472,7 @@ begin
                 default_vtfg     => C_tracesfg(0 to vga_rgb'length) and b"0_111111",
                 default_vtbg     => b"1_000000",
                 default_textbg   => b"1_000000",
+                default_textfg   => b"1_111111",
                 default_sgmntbg  => b"1_110000",
                 default_bg       => b"1_000000"
 	)
