@@ -399,7 +399,7 @@ begin
     -- It is used to set frame color to the same (or visually similar)
     -- color of selected trace (input channel).
     -- it is good only if it matches with the colors given to the traces.
-    constant C_color_bits: integer := C_tracesfg'length / C_inputs;
+    constant C_color_bits: integer := C_tracesfg'length / C_inputs -1;
     type T_trace_color is array (0 to C_inputs-1) of unsigned(C_color_bits-1 downto 0);
     function F_convert_tracesfg_to_trace_color
     (
@@ -411,7 +411,7 @@ begin
       variable V_trace_color: T_trace_color;
     begin
       for i in 0 to C_inputs-1 loop
-        V_trace_color(i) := unsigned(C_tracesfg(C_color_bits*i to C_color_bits*(i+1)-1));
+        V_trace_color(i) := unsigned(C_tracesfg(C_color_bits*i+1 to C_color_bits*(i+1)-1));
       end loop;
       return V_trace_color;
     end; -- function
