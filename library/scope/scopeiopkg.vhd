@@ -730,7 +730,7 @@ package scopeiopkg is
 	constant vt0_tags : tag_vector := div(                                                  -- Xilinx's ISE Workaround
 		id       => "vt(0)",
 		style    => styles(
-			text_palette(pltid_textfg) & bg_palette(pltid_textbg) & alignment(right_alignment)),
+			text_palette(pltid_order'length) & bg_palette(pltid_textbg) & alignment(right_alignment)),
 		children => vt0_children);                                                         
 
 	function analogreadings (
@@ -1376,7 +1376,8 @@ package body scopeiopkg is
 
 		base := base + hz_tags'length;
 		children(base to base+tgr_tags'length-1) := tgr_tags;
---		children(tagindexbyid(children, "tgr")).style(key_textpalette) := inputs+pltid_order'length;
+--		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_textbg; --inputs+pltid_order'length;
+		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_order'length+2;
 
 		base := base + tgr_tags'length;
 		children(base to base+vt_tags'length-1)  := vt_tags;

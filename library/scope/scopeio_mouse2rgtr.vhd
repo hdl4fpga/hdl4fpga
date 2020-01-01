@@ -738,6 +738,13 @@ begin
             R_rgtr_data(F_bitfield(palette_bf,paletteid_id)(1)
                  downto F_bitfield(palette_bf,paletteid_id)(0)) <=
               std_logic_vector(R_B(palette_bf(paletteid_id)-1 downto 0)); -- element to colorize
+			 -- Opacity Added by Miguel Angel
+            R_rgtr_data(F_bitfield(palette_bf,paletteopacityena_id)(1)
+                 downto F_bitfield(palette_bf,paletteopacityena_id)(0)) <= "0";
+            R_rgtr_data(F_bitfield(palette_bf,palettecolorena_id)(1)
+                 downto F_bitfield(palette_bf,palettecolorena_id)(0)) <= "1";
+            R_rgtr_data(F_bitfield(palette_bf,paletteopacity_id)(1)
+                 downto F_bitfield(palette_bf,paletteopacity_id)(0)) <= "-";
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register

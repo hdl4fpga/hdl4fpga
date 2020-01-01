@@ -63,7 +63,7 @@ architecture beh of scopeio_palette is
 		return std_logic_vector
 	is
 		variable tracesfg      : std_logic_vector(0 to dflt_tracesfg'length-1);
-		variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length-1);
+		variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length) := (others => '1');
 	begin
 		retval(pltid_gridfg)    := dflt_gridfg(dflt_gridfg'left);
 		retval(pltid_gridbg)    := dflt_gridbg(dflt_gridbg'left);
@@ -83,7 +83,7 @@ architecture beh of scopeio_palette is
 	end;
 		
 	signal trigger_opacity : std_logic := '1';
-	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length-1) := init_opacity (
+	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length) := init_opacity (
 		dflt_tracesfg => dflt_tracesfg,
 		dflt_gridfg   => dflt_gridfg,
 		dflt_gridbg   => dflt_gridbg,
@@ -132,7 +132,6 @@ architecture beh of scopeio_palette is
 			case pltid_order(i) is
 			when pltid_textfg =>
 				if unsigned(text_fg)=to_unsigned(trace_dots'length+pltid_order'length, size) then
-					retval(0 to size-1) := resize(pltid_order'length+unsigned(trigger_chanid), size);
 					retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
 				else
 					retval(0 to size-1) := unsigned(text_fg);
@@ -260,6 +259,7 @@ begin
 					color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_opacity;
 				end if;
 			end if;
+--			color_opacity(color_opacity'right) <= color_opacity(to_integer(unsigned(trigger_chanid)+pltid_order'length));
 		end if;
 	end process;
 

@@ -13,6 +13,8 @@ use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
 
+	constant vt_step : real := (1.0e3*milli) / (2.0**16*femto); -- Volts
+
 	constant sample_size : natural := 16;
 	constant inputs   : natural := 9;
 
@@ -78,8 +80,9 @@ architecture beh of arty is
 
 	constant video_mode : layout_mode := mode1080p;
 
-		signal sample  : std_logic_vector(sample_size-1 downto 0);
-		signal cntr : unsigned(0 to 22-1);
+	signal sample  : std_logic_vector(sample_size-1 downto 0);
+	signal cntr : unsigned(0 to 22-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -470,7 +473,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 31.25*micro,
-		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_step          => vt_step,
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
 		input_names      => (
