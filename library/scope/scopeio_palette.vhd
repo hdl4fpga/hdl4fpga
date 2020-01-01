@@ -42,6 +42,9 @@ entity scopeio_palette is
 		sgmnt_bgon  : in  std_logic;
 		trace_dots  : in  std_logic_vector;
 		video_color : out std_logic_vector);
+
+		constant palette_size   : natural := pltid_order'length+trace_dots'length+1;
+		constant paletteid_size : natural := unsigned_num_bits(palette_size-1);
 end;
 
 architecture beh of scopeio_palette is
@@ -63,7 +66,7 @@ architecture beh of scopeio_palette is
 		return std_logic_vector
 	is
 		variable tracesfg      : std_logic_vector(0 to dflt_tracesfg'length-1);
-		variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length) := (others => '1');
+		variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length);
 	begin
 		retval(pltid_gridfg)    := dflt_gridfg(dflt_gridfg'left);
 		retval(pltid_gridbg)    := dflt_gridbg(dflt_gridbg'left);
@@ -118,36 +121,37 @@ architecture beh of scopeio_palette is
 
 	impure function palette_ids 
 		return std_logic_vector is
-		constant n       : natural := pltid_order'length+trace_dots'length+1;
-		constant size    : natural := unsigned_num_bits(n-1);
-		variable retval : unsigned(0 to n*size-1);
+		variable retval : unsigned(0 to palette_size*paletteid_size-1);
 	begin
 		for i in 0 to trace_dots'length-1 loop
-			retval(0 to size-1) := to_unsigned(pltid_order'length+i, size);
-			retval := retval rol size;
+			retval(0 to paletteid_size-1) := to_unsigned(pltid_order'length+i, paletteid_size);
+			retval := retval rol paletteid_size;
 		end loop;
-		retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
-		retval := retval rol size;
+		retval(0 to paletteid_size-1) := resize(unsigned(trigger_chanid), paletteid_size)+pltid_order'length;
+		retval := retval rol paletteid_size;
 		for i in pltid_order'range loop
 			case pltid_order(i) is
 			when pltid_textfg =>
-				if unsigned(text_fg)=to_unsigned(trace_dots'length+pltid_order'length, size) then
-					retval(0 to size-1) := resize(unsigned(trigger_chanid), size)+pltid_order'length;
+				assert true
+				report "No anda " & itoa(paletteid_size) & " " & itoa(palette_size) & " " & itoa(trigger_chanid'length) & " " &itoa(text_fg'length)
+				severity failure;
+				if unsigned(text_fg)=to_unsigned(trace_dots'length+pltid_order'length, paletteid_size) then
+					retval(0 to paletteid_size-1) := resize(unsigned(trigger_chanid), paletteid_size)+pltid_order'length;
 				else
-					retval(0 to size-1) := unsigned(text_fg);
+					retval(0 to paletteid_size-1) := unsigned(text_fg);
 				end if;
 			when pltid_textbg =>
-				retval(0 to size-1) := unsigned(text_bg);
+				retval(0 to paletteid_size-1) := unsigned(text_bg);
 			when pltid_vtfg =>
 				if color_opacity(pltid_vtfg)='0' then
-					retval(0 to size-1) := unsigned(vt_fg);
+					retval(0 to paletteid_size-1) := unsigned(vt_fg);
 				else
-					retval(0 to size-1) := to_unsigned(pltid_order(i), size);
+					retval(0 to paletteid_size-1) := to_unsigned(pltid_order(i), paletteid_size);
 				end if;
 			when others =>
-				retval(0 to size-1) := to_unsigned(pltid_order(i), size);
+				retval(0 to paletteid_size-1) := to_unsigned(pltid_order(i), paletteid_size);
 			end case;
-			retval := retval rol size;
+			retval := retval rol paletteid_size;
 		end loop;
 		return std_logic_vector(retval);
 	end;
@@ -259,7 +263,7 @@ begin
 					color_opacity(to_integer(resize(unsigned(palette_id), palette_addr'length))) <= palette_opacity;
 				end if;
 			end if;
---			color_opacity(color_opacity'right) <= color_opacity(to_integer(unsigned(trigger_chanid)+pltid_order'length));
+			color_opacity(color_opacity'right) <= color_opacity(to_integer(resize(unsigned(trigger_chanid), paletteid_size)+pltid_order'length));
 		end if;
 	end process;
 

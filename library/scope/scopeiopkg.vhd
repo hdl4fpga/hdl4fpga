@@ -1376,8 +1376,7 @@ package body scopeiopkg is
 
 		base := base + hz_tags'length;
 		children(base to base+tgr_tags'length-1) := tgr_tags;
---		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_textbg; --inputs+pltid_order'length;
-		children(tagindexbyid(children, "tgr")).style(key_textpalette) := pltid_order'length+2;
+		children(tagindexbyid(children, "tgr")).style(key_textpalette) := inputs+pltid_order'length;
 
 		base := base + tgr_tags'length;
 		children(base to base+vt_tags'length-1)  := vt_tags;

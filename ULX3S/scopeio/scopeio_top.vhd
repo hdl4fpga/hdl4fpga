@@ -27,7 +27,7 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 1;
+        constant vlayout_id: integer := 10;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -71,7 +71,7 @@ architecture beh of ulx3s is
         -- External USB3300 PHY ULPI
         constant C_usb3300_phy: boolean := false; -- true: external USB PHY (currently useable only as linestate sniffer)
         -- scopeio
-	constant inputs: natural := 2; -- number of input channels (traces)
+	constant inputs: natural := 3; -- number of input channels (traces)
 	-- OLED HEX - what to display (enable max 1)
 	constant C_oled_hex_view_adc : boolean := false;
 	constant C_oled_hex_view_uart: boolean := false;
@@ -143,7 +143,7 @@ architecture beh of ulx3s is
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
 	-- color palette, not easy to have so many distinct colors
-	constant C_color_palette: std_logic_vector(0 to 76) :=
+	constant C_color_palette: std_logic_vector(0 to 11*(vga_rgb'length+1)-1) :=
           b"1_111100_1_001111_1_001100_1_110111_1_111111_1_110100_1_111010_1_111000_1_001011_1_000111_1_011011";
         --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
         --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9 trace10
@@ -858,12 +858,10 @@ begin
 	end generate;
 
 	G_inputs1: if inputs >= 1 generate
---	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
-	samples(0*sample_size to (0+1)*sample_size-1) <= trace_sine; -- by default triggered
+	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
 	end generate;
 	G_inputs2: if inputs >= 2 generate
---	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
-	samples(1*sample_size to (1+1)*sample_size-1) <= not trace_sine;
+	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
 	end generate;
 	G_inputs3: if inputs >= 3 generate
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
