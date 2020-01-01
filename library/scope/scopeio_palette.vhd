@@ -132,9 +132,6 @@ architecture beh of scopeio_palette is
 		for i in pltid_order'range loop
 			case pltid_order(i) is
 			when pltid_textfg =>
-				assert true
-				report "No anda " & itoa(paletteid_size) & " " & itoa(palette_size) & " " & itoa(trigger_chanid'length) & " " &itoa(text_fg'length)
-				severity failure;
 				if unsigned(text_fg)=to_unsigned(trace_dots'length+pltid_order'length, paletteid_size) then
 					retval(0 to paletteid_size-1) := resize(unsigned(trigger_chanid), paletteid_size)+pltid_order'length;
 				else
@@ -189,7 +186,7 @@ architecture beh of scopeio_palette is
 		constant arg : std_logic_vector)
 		return std_logic_vector
 	is
-		constant n : natural := arg'length/(video_color'length+1);
+		constant n      : natural := arg'length/(video_color'length+1);
 		variable aux    : std_logic_vector(0 to arg'length-1);
 		variable retval : unsigned(0 to n*video_color'length-1);
 	begin
@@ -199,6 +196,9 @@ architecture beh of scopeio_palette is
 			retval := retval rol video_color'length;
 			aux    := std_logic_vector(unsigned(aux) rol (video_color'length+1));
 		end loop;
+--		assert false
+--		report "-----> " & itoa(n) & " " & itoa(arg'length) & " " & itoa(dflt_tracesfg'length)
+--		severity failure;
 		return std_logic_vector(retval);
 	end;
 

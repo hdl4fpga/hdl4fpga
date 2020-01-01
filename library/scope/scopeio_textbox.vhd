@@ -99,7 +99,7 @@ architecture def of scopeio_textbox is
 	is
 		variable retval : natural;
 	begin
-		retval := table(table'left).attr;
+		retval := 0; --table(table'left).attr;
 		for i in table'range loop
 			if unsigned(addr) >= table(i).addr then
 				report "*****************  " & itoa(table(i).attr);
@@ -148,6 +148,8 @@ architecture def of scopeio_textbox is
 
 	signal tag_memaddr   : std_logic_vector(cga_addr'range);
 
+	signal textfg       : std_logic_vector(text_fg'range);
+	signal textbg       : std_logic_vector(text_bg'range);
 begin
 
 	rgtr_b : block
@@ -549,8 +551,8 @@ begin
 		variable addr : std_logic_vector(video_addr'range);
 	begin
 		if rising_edge(video_clk) then
-			text_fg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), text_fg'length));
-			text_bg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), text_bg'length));
+			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
+			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
 			addr := video_addr;
 		end if;
 	end process;
@@ -597,4 +599,22 @@ begin
 		clk => video_clk,
 		di(0) => char_dot,
 		do(0) => text_fgon);
+
+	latfg_e : entity hdl4fpga.align
+	generic map (
+		n =>  text_fg'length,
+		d => (0 to text_fg'length-1 => latency-cgaadapter_latency+2))
+	port map (
+		clk => video_clk,
+		di => textfg,
+		do => text_fg);
+
+	latbg_e : entity hdl4fpga.align
+	generic map (
+		n => text_bg'length,
+		d => (0 to text_bg'length-1 => latency-cgaadapter_latency+2))
+	port map (
+		clk => video_clk,
+		di => textbg,
+		do => text_bg);
 end;

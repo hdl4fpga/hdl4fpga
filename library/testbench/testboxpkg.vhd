@@ -38,41 +38,68 @@ end;
 
 architecture def of main is
 
-
-begin
---	process 
---		constant tags : tag_vector := render_tags(
---			analogreadings(
---				style  => styles(
---					width(33) & alignment(right_alignment) &
---					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
---				inputs => 3));
---
---		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
-----		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);
---		variable mesg : textio.line;
---	begin
---
---		report itoa(cc'length);
---		for i in cc'range loop
---			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
---			textio.writeline (textio.output, mesg);
---		end loop;
---		textio.write (mesg, string'("******* background ********"));
-----		textio.writeline (textio.output, mesg);
-----		for i in cc1'range loop
-----			textio.write (mesg, "addr : " & itoa(cc1(i).addr) & " attr : " & itoa(cc1(i).attr));
-----			textio.writeline (textio.output, mesg);
-----		end loop;
---		wait;
---	end process;
-
-	process
+	impure function addr_attr (
+		constant table : attr_table;
+		constant addr  : natural)
+		return natural
+	is
+		variable retval : natural;
 		variable mesg : textio.line;
 	begin
-		std_logic_textio.write (mesg, std_logic_vector(mul(signed'(b"1_0011_0100"), unsigned'(b"1010"))));
-		textio.writeline (textio.output, mesg);
+		retval := 0; --table(table'left).attr;
+		for i in table'range loop
+			if addr >= table(i).addr then
+				retval := table(i).attr;
+			end if;
+		end loop;
+				textio.write (mesg, string'("addr : "));
+				textio.write (mesg, addr);
+				textio.write (mesg, string'(" : "));
+				textio.write (mesg, retval);
+				textio.writeline(textio.output, mesg);
+		return retval;
+	end;
+
+
+begin
+	process 
+		constant tags : tag_vector := render_tags(
+			analogreadings(
+				style  => styles(
+					width(33) & alignment(right_alignment) &
+					text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
+				input_names => (1 to 0 => notext),
+				inputs => 3));
+
+		constant cc : attr_table := tagattr_tab(tags, key_textpalette);
+--		constant cc1 : attr_table := tagattr_tab(tags, key_bgpalette);
+		variable mesg : textio.line;
+		variable attr : integer;
+	begin
+
+--		report itoa(cc'length);
+		for i in cc'range loop
+			textio.write (mesg, "addr : " & itoa(cc(i).addr) & " attr : " & itoa(cc(i).attr));
+			textio.writeline (textio.output, mesg);
+		end loop;
+		for i in 0 to 33*7-1 loop
+			attr := addr_attr(tagattr_tab(tags, key_textpalette), i);
+		end loop;
+		textio.write (mesg, string'("******* background ********"));
+--		textio.writeline (textio.output, mesg);
+--		for i in cc1'range loop
+--			textio.write (mesg, "addr : " & itoa(cc1(i).addr) & " attr : " & itoa(cc1(i).attr));
+--			textio.writeline (textio.output, mesg);
+--		end loop;
 		wait;
 	end process;
+
+--	process
+--		variable mesg : textio.line;
+--	begin
+--		std_logic_textio.write (mesg, std_logic_vector(mul(signed'(b"1_0011_0100"), unsigned'(b"1010"))));
+--		textio.writeline (textio.output, mesg);
+--		wait;
+--	end process;
 
 end;
