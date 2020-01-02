@@ -684,7 +684,7 @@ package scopeiopkg is
 		text(
 			style   => styles(
 				width(6) & alignment(right_alignment)),
-			content => "NaN",
+			content => "",
 			id      => "tgr.div"),
 		text(
 			content => " "),
