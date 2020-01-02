@@ -473,7 +473,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		hz_unit          => 31.25*micro,
-		vt_step          => vt_step,
+		vt_steps         => (0 to 3 => vt_step, 4 to inputs-1 => 3.32 * vt_step),
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
 		input_names      => (
