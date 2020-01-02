@@ -147,6 +147,7 @@ begin
 	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
+		rgtr_clk     => rgtr_clk,
 		input_clk    => input_clk,
 		capture_shot => capture_shot,
 		capture_a0   => downsample_a0,
@@ -159,6 +160,7 @@ begin
 		downsampling => downsampling,
 		video_clk    => video_clk,
 		video_frm    => video_frm,
+		video_vton   => video_vton,
 		video_addr   => video_addr,
 		video_dv     => video_dv,
 		video_data   => video_data);
