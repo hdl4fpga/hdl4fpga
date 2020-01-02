@@ -1461,8 +1461,8 @@ begin
 	        inputs           => inputs, -- number of input channels
 		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
-		vt_step          => vt_step,
-		hz_unit          => 32.0*micro, -- 1s grid div
+		vt_steps         => (0 to inputs-1 => vt_step),
+		hz_unit          => 32.0*micro, -- 1 us per pixel
 		vt_unit          => 50.0*milli,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"1_110000",

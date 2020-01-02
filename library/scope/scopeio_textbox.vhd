@@ -166,6 +166,7 @@ begin
 		signal trigger_edge   : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
+		signal tgr_exp        : integer;
 
 		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_exp         : integer;
@@ -175,6 +176,7 @@ begin
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal vt_chanid      : std_logic_vector(chan_id'range);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
+		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
 		signal hz_exp         : integer;
 
@@ -216,8 +218,10 @@ begin
 
 		constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
 		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
+		signal   tgr_frac      : unsigned(0 to vtfrac_length-1);
 		signal   vt_scalevalue : natural;
 		signal   vt_multp      : std_logic_vector(0 to 3-1);
+		signal   tgr_multp     : std_logic_vector(0 to 3-1);
 
 	begin
 
@@ -286,8 +290,9 @@ begin
 				end if;
 			end if;
 		end process;
-		vt_offset <= word2byte(vt_offsets, chan_id, vt_offset'length);
-		vt_scale  <= word2byte(gain_ids,   chan_id, vt_scale'length);
+		vt_offset <= word2byte(vt_offsets, chan_id,        vt_offset'length);
+		vt_scale  <= word2byte(gain_ids,   chan_id,        vt_scale'length);
+		tgr_scale <= word2byte(gain_ids,   trigger_chanid, tgr_scale'length);
 
 		process (rgtr_clk)
 			variable bcd_req  : std_logic_vector(cgabcd_req'range);
@@ -301,7 +306,7 @@ begin
 					3 => myip_ena,
 					4 => time_ena,
 					5 => time_ena,
-					6 => trigger_ena,
+					6 => trigger_ena or vt_dv or gain_ena,
 					7 => vt_dv or gain_ena,
 					8 => gain_ena);
 				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
@@ -310,7 +315,7 @@ begin
 					0 => time_ena,
 					1 => trigger_ena,
 					2 => trigger_ena,
-					3 => trigger_ena,
+					3 => trigger_ena or vt_dv or gain_ena,
 					4 => gain_ena);
 				cgachr_req <= char_req and not (cgachr_frm and (cgachr_frm'range => cgachr_end));
 			end if;
@@ -368,11 +373,13 @@ begin
 			end loop;
 		end process;
 
-		hz_frac <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
-		vt_frac <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
+		hz_frac  <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
+		vt_frac  <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
+		tgr_frac <= to_unsigned(vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).frac,  tgr_frac'length);
 
 		hz_exp  <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp;
 		vt_exp  <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp;
+		tgr_exp <= vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).exp;
 
 		hz_scalevalue <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac;
 		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
@@ -384,7 +391,7 @@ begin
 			std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
 			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
-			std_logic_vector(resize(mul(-signed(trigger_level), vt_frac), bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(-signed(trigger_level), tgr_frac), bcd_binvalue'length))      &
 			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
 			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
 			cgabcd_frm);
@@ -393,7 +400,7 @@ begin
 			0, 0, 0, 0,
 			hz_exp-5,
 			hz_exp,
-			vt_exp-5,
+			tgr_exp-5,
 			vt_exp-5,
 			vt_exp),
 			cgabcd_frm);
@@ -402,7 +409,7 @@ begin
 			0, 0, 0, 0,
 			hz_units(to_integer(unsigned(time_scale))),
 			hz_units(to_integer(unsigned(time_scale))),
-			vt_units(to_integer(unsigned(vt_scale))), 
+			vt_units(to_integer(unsigned(tgr_scale))), 
 			vt_units(to_integer(unsigned(vt_scale))),
 			vt_units(to_integer(unsigned(vt_scale)))),
 			cgabcd_frm);
@@ -411,7 +418,7 @@ begin
 			0, 0, 0, 0,
 			-hz_precs(to_integer(unsigned(time_scale))),
 			-hz_precs(to_integer(unsigned(time_scale))),
-			-vt_precs(to_integer(unsigned(vt_scale))),  
+			-vt_precs(to_integer(unsigned(tgr_scale))),  
 			-vt_precs(to_integer(unsigned(vt_scale))),  
 			-vt_precs(to_integer(unsigned(vt_scale)))),  
 			cgabcd_frm);
@@ -453,13 +460,15 @@ begin
 			vtdiv_memaddr,
 			cgabcd_frm);
 
-		hz_multp <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
-		vt_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
+		hz_multp  <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
+		vt_multp  <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
+		tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
+
 		chr_value <= wirebus(
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
 			word2byte(x"1819",                                trigger_edge)                 &
 			word2byte(to_ascii(" *"),                         trigger_freeze)               &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length) &
+			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length) &
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
 			cgachr_frm);
 
