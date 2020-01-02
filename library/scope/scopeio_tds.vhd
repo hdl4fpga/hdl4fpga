@@ -53,7 +53,7 @@ entity scopeio_tds is
 		video_dv         : out std_logic;
 		video_data       : out std_logic_vector);
 
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
 
 end;
 
@@ -132,24 +132,25 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id    => time_scale,
---		factor_id    => b"0000",  --Debug purpose
-		input_clk    => input_clk,
-		input_dv     => resizedsample_dv,
-		input_shot   => downsample_ishot,
-		input_data   => resizedsample_data,
-		downsampling => downsampling,
-		output_dv    => downsample_dv,
-		output_shot  => downsample_oshot,
-		output_shota0  => downsample_a0,
-		output_data  => downsample_data);
+		factor_id     => time_scale,
+--		factor_id     => b"0000",  --Debug purpose
+		input_clk     => input_clk,
+		input_dv      => resizedsample_dv,
+		input_shot    => downsample_ishot,
+		input_data    => resizedsample_data,
+		downsampling  => downsampling,
+		output_dv     => downsample_dv,
+		output_shot   => downsample_oshot,
+		output_shota0 => downsample_a0,
+		output_data   => downsample_data);
 
 	downsample_ishot <= capture_end and trigger_shot;
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
+		rgtr_clk     => rgtr_clk,
 		input_clk    => input_clk,
 		capture_shot => capture_shot,
-		capture_a0 => downsample_a0,
+		capture_a0   => downsample_a0,
 		capture_end  => capture_end,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,
@@ -157,10 +158,11 @@ begin
 --		input_delay  => b"00_0000_0000_0000",  --Debug purpose
 
 		downsampling => downsampling,
-		video_clk  => video_clk,
-		video_frm  => video_frm,
-		video_addr => video_addr,
-		video_dv   => video_dv,
-		video_data => video_data);
+		video_clk    => video_clk,
+		video_frm    => video_frm,
+		video_vton   => video_vton,
+		video_addr   => video_addr,
+		video_dv     => video_dv,
+		video_data   => video_data);
 
 end;
