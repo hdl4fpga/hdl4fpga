@@ -43,6 +43,7 @@ entity scopeio_capture is
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
 		time_offset  : in  std_logic_vector;
+		trigger_freeze : in std_logic;
 
 		video_clk    : in  std_logic;
 		video_addr   : in  std_logic_vector;
@@ -81,7 +82,9 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if signed(time_offset) > -fifo_size then
+			if trigger_freeze='1' then
+				video_offset <= (signed(time_offset)-delay) rem 2**video_offset'length;
+			elsif signed(time_offset) > -fifo_size then
 				if capture_end='1' then
 					delay <= signed(time_offset);
 					video_offset <= (others => '0');

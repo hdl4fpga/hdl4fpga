@@ -154,6 +154,7 @@ begin
 		capture_end  => capture_end,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,
+		trigger_freeze => trigger_freeze,
 		time_offset  => time_offset,
 --		input_delay  => b"00_0000_0000_0000",  --Debug purpose
 
