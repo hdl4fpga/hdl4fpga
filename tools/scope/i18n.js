@@ -24,10 +24,13 @@
 const i18n = {
 
 	'background'   : { en : 'Background',    es : 'Color de Fondo'        },
+	'continuos'    : { en : 'Continuos',     es : 'Continuo'              },
 	'gridbg'       : { en : 'Grid BG',       es : 'Fondo de la Grilla'    },
 	'gridfg'       : { en : 'Grid FG',       es : 'Frente de la Grilla'   },
 	'horizontalbg' : { en : 'Horizontal BG', es : 'Fondo del horizontal'  },
 	'horizontalfg' : { en : 'Horizontal FG', es : 'Frente del horizontal' },
+	'negative'     : { en : 'Negative',      es : 'Negativa'              },
+	'positive'     : { en : 'Positive',      es : 'Positiva'              },
 	'segmentbg'    : { en : 'Segment BG',    es : 'Fondo del segmento'    },
 	'textbg'       : { en : 'Text BG',       es : 'Fondo del texto'       },
 	'textfg'       : { en : 'Text FG',       es : 'Frente del texto'      },
@@ -38,9 +41,11 @@ const i18n = {
 	'inputs'     : { en : 'Inputs ',    es : 'Entradas'   },
 
 	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
-	'mode'       : { en : 'Mode',       es : 'Mode'       },
+	'mode'       : { en : 'Mode',       es : 'Modo'       },
 	'level'      : { en : 'Level',      es : 'Nivel'      },
 	'offset'     : { en : 'Offset',     es : 'Posicion'   },
+	'on'         : { en : 'On',         es : 'Activo'     },
+	'one shot'   : { en : 'One shot',   es : 'Un disparo' },
 	'scale'      : { en : 'Scale',      es : 'Escala'     },
 	'slope'      : { en : 'Slope',      es : 'Pendiente'  },
 	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },
