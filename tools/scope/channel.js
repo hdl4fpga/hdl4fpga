@@ -292,18 +292,21 @@ function vtControl (parent, number, color) {
 		mode[item].style.display = 'block';
 		mode[item].style.align   = 'left';
 		mode[item].input         = document.createElement("input");
+		mode[item].input.id      = item + ':' + number;
 		mode[item].input.type    = 'radio';
 		mode[item].input.name    = 'mode';
 		mode[item].input.value   = item;
 		mode[item].input.trigger = trigger;
 		mode[item].appendChild(mode[item].input);
 		mode[item].appendChild(document.createTextNode(item));
-		c.appendChild(mode[item]); });
-//	this.inputControl['mode'] = mode;
+		c.appendChild(mode[item]);
+		this.wrapper[item] = mode[item].input;
+	});
 
 	level.trigger = trigger;
 	level.level   = level;
 	level.slope   = slope;
+	level.mode   = mode;
 
 	trigger.trigger = trigger;
 	trigger.level   = level;
