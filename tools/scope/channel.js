@@ -233,6 +233,7 @@ function vtControl (parent, number, color) {
 	trigger.id = 'trigger:'+number,
 	trigger.style['background-color'] = '#080808';
 	trigger.style['padding']          = '2pt';
+	trigger.style['padding-right']    = '4pt';
 	trigger.style['margin']           = '0pt';
 	trigger.style['display']          = 'inline-block';
 	trigger.style['border']           = 'solid #888888 1pt';
@@ -269,6 +270,15 @@ function vtControl (parent, number, color) {
 	c.style['text-align']     = 'left';
 	trigger.appendChild(c);
 
+	d = document.createElement("div");
+	d.style['display']        = 'inline-block';
+	d.style['width']   = '100%';
+	d.style['border-width']   = '1px';
+	d.style['border-style']   = 'solid';
+	d.style['border-color']   = 'white';
+	d.style['vertical-align'] = 'top';
+	d.style['text-align']     = 'left';
+
 	slope = {};
 	['positive', 'negative'].forEach(item => {
 		slope[item] = document.createElement("label");
@@ -282,9 +292,28 @@ function vtControl (parent, number, color) {
 		slope[item].input.trigger = trigger;
 		slope[item].appendChild(slope[item].input);
 		slope[item].appendChild(document.createTextNode(item));
-		c.appendChild(slope[item]);
+		d.appendChild(slope[item]);
 		this.wrapper[item] = slope[item].input;
 	});
+
+	c.appendChild(d);
+	slabel = document.createElement("label");
+	slabel.id               = "label:channel:"+number;
+	slabel.style['display'] = 'block';
+	slabel.style['margin-top'] = '4px';
+	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
+	this.inputControl['slabel'] = slabel;
+	c.appendChild(slabel);
+
+	d = document.createElement("div");
+	d.style['width']   = '100%';
+	d.style['border-width']   = '1px';
+	d.style['border-style']   = 'solid';
+	d.style['border-color']   = 'white';
+	d.style['display']        = 'block';
+	d.style['margin-top'] = '4px';
+	d.style['vertical-align'] = 'top';
+	d.style['text-align']     = 'left';
 
 	mode = {};
 	['continuos', 'one shot', 'stop'].forEach(item => {
@@ -299,9 +328,18 @@ function vtControl (parent, number, color) {
 		mode[item].input.trigger = trigger;
 		mode[item].appendChild(mode[item].input);
 		mode[item].appendChild(document.createTextNode(item));
-		c.appendChild(mode[item]);
+		d.appendChild(mode[item]);
 		this.wrapper[item] = mode[item].input;
 	});
+
+	c.appendChild(d);
+	slabel = document.createElement("label");
+	slabel.id               = "label:channel:"+number;
+	slabel.style['display'] = 'block';
+	slabel.style['margin-top'] = '4px';
+	slabel.appendChild(document.createTextNode(i18n.mode[lang]));
+	this.inputControl['slabel'] = slabel;
+	c.appendChild(slabel);
 
 	level.trigger = trigger;
 	level.level   = level;
@@ -312,13 +350,6 @@ function vtControl (parent, number, color) {
 	trigger.level   = level;
 	trigger.slope   = slope;
 	trigger.mode    = mode;
-
-	slabel = document.createElement("label");
-	slabel.id               = "label:channel:"+number;
-	slabel.style['display'] = 'block';
-	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
-	this.inputControl['slabel'] = slabel;
-	c.appendChild(slabel);
 
 	tlabel = document.createElement("label");
 	tlabel.id               = "label:channel:"+number;

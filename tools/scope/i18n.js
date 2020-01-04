@@ -38,6 +38,7 @@ const i18n = {
 	'inputs'     : { en : 'Inputs ',    es : 'Entradas'   },
 
 	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
+	'mode'       : { en : 'Mode',       es : 'Mode'       },
 	'level'      : { en : 'Level',      es : 'Nivel'      },
 	'offset'     : { en : 'Offset',     es : 'Posicion'   },
 	'scale'      : { en : 'Scale',      es : 'Escala'     },
