@@ -124,7 +124,7 @@ begin
 
 	triggers_modes_b : block
 	begin
-		capture_shot <= capture_end and downsample_oshot; -- and not video_vton;
+		capture_shot <= capture_end and downsample_oshot and not trigger_freeze; -- and not video_vton;
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -154,7 +154,6 @@ begin
 		capture_end  => capture_end,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,
-		trigger_freeze => trigger_freeze,
 		time_offset  => time_offset,
 --		input_delay  => b"00_0000_0000_0000",  --Debug purpose
 
