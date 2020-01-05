@@ -117,7 +117,6 @@ hzControl.prototype.onchange = function (callback) {
 	Object.keys(wrapper).forEach (function(key) {
 		wrapper[key].onchange = callback;
 	});
-	console.log("pase por aca");
 }
 
 hzControl.prototype.onclick = function (callback) {
@@ -330,7 +329,7 @@ function vtControl (parent, number, color) {
 	d.appendChild(slabel);
 
 	mode = {};
-	['on', 'one shot', 'continuos'].forEach(item => {
+	['normal', 'one shot', 'freeze'].forEach(item => {
 		mode[item] = document.createElement("label");
 		mode[item].style.display = 'block';
 		mode[item].style.align   = 'left';
@@ -383,7 +382,6 @@ vtControl.prototype.onchange = function (callback) {
 //	Object.keys(wrapper).forEach (function(key) {
 //		wrapper[key].onchange = callback;
 //	});
-//	console.log("pase por aca");
 }
 
 vtControl.prototype.onclick = function (callback) {

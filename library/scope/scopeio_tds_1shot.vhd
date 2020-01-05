@@ -77,7 +77,7 @@ architecture mix of scopeio_tds is
 	signal capture_end        : std_logic;
 
 	signal trigger_dv         : std_logic;
-	signal trigger_edge       : std_logic;
+	signal trigger_slope      : std_logic;
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
@@ -105,7 +105,7 @@ begin
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
+		trigger_slope  => trigger_slope);
 		
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
@@ -116,7 +116,7 @@ begin
 		input_data     => input_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
+		trigger_slope  => trigger_slope,
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);

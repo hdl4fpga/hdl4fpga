@@ -20,7 +20,7 @@ entity scopeio_rgtrtrigger is
 		trigger_freeze  : out std_logic;
 		trigger_chanid  : buffer std_logic_vector;
 		trigger_level   : buffer std_logic_vector;
-		trigger_edge    : out std_logic);
+		trigger_slope   : out std_logic);
 
 end;
 
@@ -28,15 +28,15 @@ architecture def of scopeio_rgtrtrigger is
 
 	signal dv     : std_logic;
 	signal freeze : std_logic_vector(0 to 0);
-	signal edge   : std_logic_vector(0 to 0);
+	signal slope  : std_logic_vector(0 to 0);
 	signal level  : std_logic_vector(trigger_level'range);
 	signal chanid : std_logic_vector(trigger_chanid'range);
 
 begin
 
 	dv     <= setif(rgtr_id=rid_trigger, rgtr_dv);
-	freeze <= bitfield(rgtr_data, trigger_ena_id,  trigger_bf);
-	edge   <= bitfield(rgtr_data, trigger_edge_id, trigger_bf);
+	freeze <= bitfield(rgtr_data, trigger_freeze_id,  trigger_bf);
+	slope  <= bitfield(rgtr_data, trigger_slope_id, trigger_bf);
 	level  <= std_logic_vector(resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length));
 	chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), chanid'length));
 
@@ -53,7 +53,7 @@ begin
 			if rising_edge(rgtr_clk) then
 				if dv='1' then
 					trigger_freeze <= freeze(0);
-					trigger_edge   <= edge(0);
+					trigger_slope  <= slope(0);
 					trigger_level  <= level;
 					trigger_chanid <= chanid;
 				end if;
@@ -63,7 +63,7 @@ begin
 
 	norgtr_e : if not rgtr generate
 		trigger_freeze <= freeze(0);
-		trigger_edge   <= edge(0);
+		trigger_slope  <= slope(0);
 		trigger_level  <= level;
 		trigger_chanid <= chanid;
 	end generate;

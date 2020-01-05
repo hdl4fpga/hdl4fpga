@@ -503,17 +503,19 @@ package scopeiopkg is
 		paletteid_id         => paletteid_maxsize, 
 		palettecolor_id      => palettecolor_maxsize);
 
-	constant trigger_free_id   : natural := 0;
-	constant trigger_edge_id   : natural := 1;
-	constant trigger_level_id  : natural := 2;
-	constant trigger_chanid_id : natural := 3;
+	constant trigger_freeze_id  : natural := 0;
+	constant trigger_slope_id   : natural := 1;
+	constant trigger_oneshot_id : natural := 2;
+	constant trigger_level_id   : natural := 3;
+	constant trigger_chanid_id  : natural := 4;
 
 	constant triggerlevel_maxsize : natural := 9;
 	constant trigger_bf : natural_vector := (
-		trigger_free_id    => 1,
-		trigger_edge_id   => 1,
-		trigger_level_id  => triggerlevel_maxsize,
-		trigger_chanid_id => chanid_maxsize);
+		trigger_freeze_id  => 1,
+		trigger_slope_id   => 1,
+		trigger_oneshot_id => 1,
+		trigger_level_id   => triggerlevel_maxsize,
+		trigger_chanid_id  => chanid_maxsize);
 
 	constant gainid_maxsize : natural := 4;
 

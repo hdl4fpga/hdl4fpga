@@ -13,7 +13,7 @@ entity scopeio_trigger is
 		input_dv         : in  std_logic;
 		input_data       : in  std_logic_vector;
 		trigger_chanid   : in  std_logic_vector;
-		trigger_edge     : in  std_logic;
+		trigger_slope    : in  std_logic;
 		trigger_level    : in  std_logic_vector;
 		trigger_shot     : out std_logic;
 		output_dv        : out std_logic;
@@ -36,7 +36,7 @@ begin
 				shot   := (lt and ge and not edge) or (not lt and not ge and edge);
 				lt     := not ge;
 				ge     := setif(sample >= signed(trigger_level));
-				edge   := not trigger_edge;
+				edge   := not trigger_slope;
 				sample := signed(word2byte(input_data, trigger_chanid, sample'length));
 			end if;
 			trigger_shot <= shot;

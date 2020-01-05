@@ -163,7 +163,7 @@ begin
 
 		signal trigger_ena    : std_logic;
 		signal trigger_freeze : std_logic;
-		signal trigger_edge   : std_logic;
+		signal trigger_slope  : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 		signal tgr_exp        : integer;
@@ -247,7 +247,7 @@ begin
 			rgtr_data      => rgtr_data,
 
 			trigger_ena    => trigger_ena,
-			trigger_edge   => trigger_edge,
+			trigger_slope  => trigger_slope,
 			trigger_freeze => trigger_freeze,
 			trigger_chanid => trigger_chanid,
 			trigger_level  => trigger_level);
@@ -466,7 +466,7 @@ begin
 
 		chr_value <= wirebus(
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
-			word2byte(x"1819",                                trigger_edge)                 &
+			word2byte(x"1819",                                trigger_slope)                 &
 			word2byte(to_ascii(" *"),                         trigger_freeze)               &
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length) &
 			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),

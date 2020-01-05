@@ -113,7 +113,7 @@ architecture beh of scopeio_video is
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
-	signal trigger_edge   : std_logic;
+	signal trigger_slope  : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
@@ -191,7 +191,7 @@ begin
 		rgtr_data      => rgtr_data,
 
 		trigger_ena    => trigger_ena,
-		trigger_edge   => trigger_edge,
+		trigger_slope  => trigger_slope,
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level);

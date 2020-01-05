@@ -24,7 +24,7 @@
 const i18n = {
 
 	'background'   : { en : 'Background',    es : 'Color de Fondo'        },
-	'continuos'    : { en : 'Continuos',     es : 'Continuo'              },
+	'freeze'       : { en : 'Freeze',        es : 'Congelar'              },
 	'gridbg'       : { en : 'Grid BG',       es : 'Fondo de la Grilla'    },
 	'gridfg'       : { en : 'Grid FG',       es : 'Frente de la Grilla'   },
 	'horizontalbg' : { en : 'Horizontal BG', es : 'Fondo del horizontal'  },
@@ -42,9 +42,9 @@ const i18n = {
 
 	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
 	'mode'       : { en : 'Mode',       es : 'Modo'       },
+	'normal'     : { en : 'Normal',     es : 'Normal'     },
 	'level'      : { en : 'Level',      es : 'Nivel'      },
 	'offset'     : { en : 'Offset',     es : 'Posicion'   },
-	'on'         : { en : 'On',         es : 'Activo'     },
 	'one shot'   : { en : 'One shot',   es : 'Un disparo' },
 	'scale'      : { en : 'Scale',      es : 'Escala'     },
 	'slope'      : { en : 'Slope',      es : 'Pendiente'  },

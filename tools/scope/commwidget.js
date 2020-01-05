@@ -29,7 +29,6 @@ commWidget.prototype.uartOnChange = function (e) {
 }
 
 commWidget.prototype.hostOnInput = function (e) {
-//	console.log("pase");
 //	console.log(this.value);
 	setHost(this.value);
 }
