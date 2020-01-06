@@ -139,21 +139,46 @@ begin
 			end if;
 		end process;
 
+--		process (input_clk)
+--		begin
+--			if rising_edge(input_clk) then
+--				if downsample_dv='1' then
+--					if vtoff='1' then
+--						if downsample_oshot='1' then
+--							noshot <= '0';
+--						end if;
+--					elsif edge='0' then
+--						if downsample_oshot='1' then
+--							noshot <= '0';
+--						end if;
+--					else
+--						noshot <= not downsample_oshot and capture_end;
+--					end if;
+--
+--					if vton='0' then
+--						vtoff <= '0';
+--					elsif vton='1' then
+--						vtoff <= '1';
+--					end if;
+--					edge <= vtoff;
+--				end if;
+--			end if;
+--		end process;
+
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if downsample_dv='1' then
+				if triggersample_dv='1' then
 					if vtoff='1' then
-						if downsample_oshot='1' then
+						if trigger_shot='1' then
 							noshot <= '0';
 						end if;
 					elsif edge='0' then
-						if downsample_oshot='1' then
+						if trigger_shot='1' then
 							noshot <= '0';
 						end if;
---					elsif noshot='0' then
-					else
-						noshot <= not downsample_oshot and capture_end;
+					elsif noshot='0' then
+						noshot <= not trigger_shot and capture_end;
 					end if;
 
 					if vton='0' then
