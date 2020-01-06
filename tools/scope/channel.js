@@ -275,7 +275,7 @@ function vtControl (parent, number, color) {
 	d.style['padding']        = '2pt';
 	d.style['border-width']   = '1px';
 	d.style['border-style']   = 'solid';
-	d.style['border-color']   = 'white';
+	d.style['border-color']   = 'gray';
 	d.style['vertical-align'] = 'top';
 	d.style['text-align']     = 'left';
 
@@ -314,7 +314,7 @@ function vtControl (parent, number, color) {
 	d.style['padding']        = '2pt';
 	d.style['border-width']   = '1px';
 	d.style['border-style']   = 'solid';
-	d.style['border-color']   = 'white';
+	d.style['border-color']   = 'gray';
 	d.style['display']        = 'block';
 	d.style['margin-top']     = '4px';
 	d.style['vertical-align'] = 'top';
