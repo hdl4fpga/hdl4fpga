@@ -195,8 +195,28 @@ begin
 			end if;
 		end process;
 
-		process (capture_end, trigger_mode, downsample_oshot, noshot)
+		process (input_clk, capture_end, trigger_mode, downsample_oshot, noshot)
+			variable shot : std_logic;
 		begin
+			sm : if rising_edge(input_clk) then
+				case trigger_mode is
+				when "11" =>
+					if trigger_dv='1' then
+						shot := '1';
+					elsif shot='1' then
+						if downsample_oshot='1' then
+							if downsample_dv='1' then
+								if capture_end='1' then
+									shot := '0';
+								end if;
+							end if;
+						end if;
+					end if;
+				when others =>
+					shot := '0';
+				end case;
+			end if;
+
 			case trigger_mode is
 			when "00" => -- Normal + Free
 				if downsample_oshot='1' then
@@ -215,6 +235,13 @@ begin
 			when "10" => -- Freeze
 				capture_shot <= '0';
 			when "11" => -- One shot
+				if shot='0' then
+					capture_shot <= '0';
+				elsif downsample_oshot='1' then
+					capture_shot <= capture_end;
+				end if;
+			when others =>
+				capture_shot <= '-';
 			end case;
 				
 		end process;
