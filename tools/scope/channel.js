@@ -39,7 +39,7 @@ function hzControl (parent) {
 
 	time = document.createElement("div");
 	time.id                      = 'time';
-	time.style['padding']        = '1pt';
+	time.style['padding']        = '2pt';
 	time.style['display']        = 'inline-block';
 	time.style['vertical-align'] = 'top';
 	t.appendChild(time);
@@ -117,7 +117,6 @@ hzControl.prototype.onchange = function (callback) {
 	Object.keys(wrapper).forEach (function(key) {
 		wrapper[key].onchange = callback;
 	});
-	console.log("pase por aca");
 }
 
 hzControl.prototype.onclick = function (callback) {
@@ -162,7 +161,7 @@ function vtControl (parent, number, color) {
 	vtaxis = document.createElement("div");
 	vtaxis.id = 'vtaxis:'+number,
 	vtaxis.style['background-color'] = '#080808';
-	vtaxis.style['padding']          = '2pt';
+	vtaxis.style['padding']          = '4pt';
 	vtaxis.style['margin']           = '0pt';
 	vtaxis.style['display']          = 'inline-block';
 	vtaxis.style['border']           = 'solid #888888 1pt';
@@ -232,7 +231,7 @@ function vtControl (parent, number, color) {
 	trigger = document.createElement("div");
 	trigger.id = 'trigger:'+number,
 	trigger.style['background-color'] = '#080808';
-	trigger.style['padding']          = '2pt';
+	trigger.style['padding']          = '4pt';
 	trigger.style['margin']           = '0pt';
 	trigger.style['display']          = 'inline-block';
 	trigger.style['border']           = 'solid #888888 1pt';
@@ -266,14 +265,35 @@ function vtControl (parent, number, color) {
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
+	c.style['padding']  = '4pt';
 	c.style['text-align']     = 'left';
 	trigger.appendChild(c);
+
+	d = document.createElement("div");
+	d.style['display']        = 'inline-block';
+	d.style['width']          = '100%';
+	d.style['padding']        = '2pt';
+	d.style['border-width']   = '1px';
+	d.style['border-style']   = 'solid';
+	d.style['border-color']   = 'gray';
+	d.style['vertical-align'] = 'top';
+	d.style['text-align']     = 'left';
+
+	slabel = document.createElement("label");
+	slabel.id                  = "label:channel:"+number;
+	slabel.style['display']    = 'block';
+	slabel.style['margin-top'] = '4px';
+	slabel.style['text-align'] = 'center';
+	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
+	this.inputControl['slabel'] = slabel;
+	d.appendChild(slabel);
 
 	slope = {};
 	['positive', 'negative'].forEach(item => {
 		slope[item] = document.createElement("label");
 		slope[item].style.display = 'block';
 		slope[item].style.align   = 'left';
+		slope[item].style['margin-top'] = '4px';
 		slope[item].input         = document.createElement("input");
 		slope[item].input.id      = item + ':' + number;
 		slope[item].input.type    = 'radio';
@@ -281,45 +301,65 @@ function vtControl (parent, number, color) {
 		slope[item].input.value   = item;
 		slope[item].input.trigger = trigger;
 		slope[item].appendChild(slope[item].input);
-		slope[item].appendChild(document.createTextNode(item));
-		c.appendChild(slope[item]);
+		slope[item].appendChild(document.createTextNode(i18n[item][lang]));
+		d.appendChild(slope[item]);
 		this.wrapper[item] = slope[item].input;
 	});
 
+	c.appendChild(d);
+
+	d = document.createElement("div");
+	d.style['width']          = '100%';
+	d.style['width']          = '100%';
+	d.style['padding']        = '2pt';
+	d.style['border-width']   = '1px';
+	d.style['border-style']   = 'solid';
+	d.style['border-color']   = 'gray';
+	d.style['display']        = 'block';
+	d.style['margin-top']     = '4px';
+	d.style['vertical-align'] = 'top';
+	d.style['text-align']     = 'left';
+
+	slabel = document.createElement("label");
+	slabel.id               = "label:channel:"+number;
+	slabel.style['display'] = 'block';
+	slabel.style['text-align'] = 'center';
+	slabel.appendChild(document.createTextNode(i18n.mode[lang]));
+	this.inputControl['slabel'] = slabel;
+	d.appendChild(slabel);
+
 	mode = {};
-	['continuos', 'one shot', 'stop'].forEach(item => {
+	['normal+free', 'normal', 'one shot', 'freeze'].forEach(item => {
 		mode[item] = document.createElement("label");
 		mode[item].style.display = 'block';
 		mode[item].style.align   = 'left';
+		mode[item].style['margin-top'] = '4px';
 		mode[item].input         = document.createElement("input");
+		mode[item].input.id      = item + ':' + number;
 		mode[item].input.type    = 'radio';
 		mode[item].input.name    = 'mode';
 		mode[item].input.value   = item;
 		mode[item].input.trigger = trigger;
 		mode[item].appendChild(mode[item].input);
-		mode[item].appendChild(document.createTextNode(item));
-		c.appendChild(mode[item]); });
-//	this.inputControl['mode'] = mode;
+		mode[item].appendChild(document.createTextNode(i18n[item][lang]));
+		d.appendChild(mode[item]);
+		this.wrapper[item] = mode[item].input;
+	});
 
+	c.appendChild(d);
 	level.trigger = trigger;
 	level.level   = level;
 	level.slope   = slope;
+	level.mode    = mode;
 
 	trigger.trigger = trigger;
 	trigger.level   = level;
 	trigger.slope   = slope;
 	trigger.mode    = mode;
 
-	slabel = document.createElement("label");
-	slabel.id               = "label:channel:"+number;
-	slabel.style['display'] = 'block';
-	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
-	this.inputControl['slabel'] = slabel;
-	c.appendChild(slabel);
-
 	tlabel = document.createElement("label");
-	tlabel.id               = "label:channel:"+number;
-	tlabel.style['display']='block';
+	tlabel.id                   = "label:channel:"+number;
+	tlabel.style['display']     = 'block';
 	tlabel.appendChild(document.createTextNode(i18n.trigger[lang]));
 	this.inputControl['tlabel'] = tlabel;
 
@@ -342,7 +382,6 @@ vtControl.prototype.onchange = function (callback) {
 //	Object.keys(wrapper).forEach (function(key) {
 //		wrapper[key].onchange = callback;
 //	});
-//	console.log("pase por aca");
 }
 
 vtControl.prototype.onclick = function (callback) {

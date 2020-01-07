@@ -52,16 +52,35 @@ function sendCommand(e) {
 			offset : this.value,
 			chanid : param[1] } );
 		break;
+	case 'normal+free' :
+	case 'normal' :
+	case 'one shot' :
+	case 'freeze' :
+		this.trigger.mode.value = param[0];
+		sendRegister(registers.trigger, { 
+			level   : this.trigger.level.value,
+			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
+			chanid  : param[1] });
+		break;
 	case 'positive':
 	case 'negative':
-			this.trigger.slope.value = param[0];
-	case 'level':
-		console.log(param[1]);
+		this.trigger.slope.value = param[0];
 		sendRegister(registers.trigger, { 
-			level  : this.trigger.level.value,
-			slope  : (this.trigger.slope.value === "positive") ? 0 : 1,
-			enable : 0,
-			chanid : param[1] });
+			level   : this.trigger.level.value,
+			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
+			chanid  : param[1] });
+		break;
+	case 'level':
+		sendRegister(registers.trigger, { 
+			level   : this.trigger.level.value,
+			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
+			chanid  : param[1] });
 		break;
 	case 'vtaxis' :
 		sendRegister(registers.vtaxis, { 
@@ -70,7 +89,6 @@ function sendCommand(e) {
 		break;
 	case 'hscale':
 	case 'hoffset':
-		console.log(this.hoffset.value);
 		sendRegister(registers.hzaxis, { 
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });
@@ -86,7 +104,6 @@ function sendCommand(e) {
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
 
-		console.log(this.colors.value);
 		var pid = Number(param[2]);
 		switch(param[1]) {
 		case 'channel' :
@@ -113,7 +130,6 @@ function sendCommand(e) {
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
 
-		console.log(this.colors.value);
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
 		sendRegister(registers.palette, { 
 			opacityena  : 0,
@@ -121,7 +137,6 @@ function sendCommand(e) {
 			opacity     : 1,
 			pid         : pid,
 			color       : this.colors.value });
-		console.log(param);
 		break;
 	default :
 		console.log("Invalid : " + param[0]);

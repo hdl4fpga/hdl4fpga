@@ -113,7 +113,7 @@ architecture beh of scopeio_video is
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
-	signal trigger_edge   : std_logic;
+	signal trigger_slope  : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
@@ -169,6 +169,7 @@ architecture beh of scopeio_video is
 	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
 	signal text_bg       : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon : std_logic;
+	signal sgmntbox_ena  : std_logic_vector(0 to layout.num_of_segments-1);
 	signal pointer_dot   : std_logic;
 
 	signal vdv   : std_logic;
@@ -191,7 +192,7 @@ begin
 		rgtr_data      => rgtr_data,
 
 		trigger_ena    => trigger_ena,
-		trigger_edge   => trigger_edge,
+		trigger_slope  => trigger_slope,
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level);
@@ -283,6 +284,7 @@ begin
 		textbox_x    => textbox_x,
 		textbox_y    => textbox_y,
 		sgmntbox_on  => sgmntbox_on,
+		sgmntbox_ena => sgmntbox_ena,
 		video_addr   => video_addr,
 		video_frm    => video_frm,
 		grid_on      => grid_on,
@@ -334,6 +336,7 @@ begin
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
 			video_vcntr   => textbox_y,
+			sgmntbox_ena  => sgmntbox_ena,
 			text_fg       => text_fg,
 			text_bg       => text_bg,
 			text_on       => text_on,

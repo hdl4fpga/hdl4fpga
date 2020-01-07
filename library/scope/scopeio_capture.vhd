@@ -81,11 +81,13 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if signed(time_offset) > -fifo_size then
-				if capture_end='1' then
-					delay <= signed(time_offset);
-					video_offset <= (others => '0');
-				end if;
+			if capture_end='0' then
+				video_offset <= (signed(time_offset)-delay) rem 2**video_offset'length;
+			elsif capture_shot='0' then
+				video_offset <= (signed(time_offset)-delay) rem 2**video_offset'length;
+			elsif signed(time_offset) > -fifo_size then
+				delay <= signed(time_offset);
+				video_offset <= (others => '0');
 			else
 				delay <= to_signed(-(fifo_size-1), delay'length);
 				video_offset <= ((fifo_size-1)+signed(time_offset)) rem 2**video_offset'length;

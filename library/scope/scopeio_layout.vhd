@@ -46,6 +46,7 @@ entity scopeio_layout is
 		textbox_x    : out std_logic_vector;
 		textbox_y    : out std_logic_vector;
 		sgmntbox_on  : buffer std_logic;
+		sgmntbox_ena : out std_logic_vector;
 		video_addr   : out std_logic_vector;
 		video_frm    : out std_logic;
 		grid_on      : buffer std_logic;
@@ -345,6 +346,7 @@ begin
 						base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_divisionsize(layout))*i, base'length);
 					end if;
 				end loop;
+				sgmntbox_ena <= sgmntbox_sel;
 									   
 				video_addr <= std_logic_vector(base + resize(unsigned(x), video_addr'length));
 				video_frm  <= grid_on;

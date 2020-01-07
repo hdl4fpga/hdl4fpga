@@ -65,7 +65,6 @@ architecture mix of scopeio_tds is
 	signal triggersample_data : std_logic_vector(input_data'range);
 	signal trigger_shot       : std_logic;
 
-	signal resizedsample_dv   : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal downsample_oshot   : std_logic;
 	signal downsample_ishot   : std_logic;
@@ -78,7 +77,9 @@ architecture mix of scopeio_tds is
 	signal capture_end        : std_logic;
 
 	signal trigger_dv         : std_logic;
-	signal trigger_edge       : std_logic;
+	signal trigger_mode       : std_logic_vector(0 to 2-1);
+	signal trigger_slope      : std_logic;
+	signal trigger_oneshot    : std_logic;
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level      : std_logic_vector(storage_word'range);
 
@@ -86,17 +87,21 @@ begin
 
 	scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 	port map (
-		rgtr_clk       => rgtr_clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
+		rgtr_clk        => rgtr_clk,
+		rgtr_dv         => rgtr_dv,
+		rgtr_id         => rgtr_id,
+		rgtr_data       => rgtr_data,
 
-		trigger_dv     => trigger_dv,
-		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
+		trigger_dv      => trigger_dv,
+		trigger_freeze  => trigger_freeze,
+		trigger_chanid  => trigger_chanid,
+		trigger_level   => trigger_level,
+		trigger_oneshot => trigger_oneshot,
+		trigger_slope   => trigger_slope);
 		
+	trigger_mode(0) <= trigger_freeze;
+	trigger_mode(1) <= trigger_oneshot;
+
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)
@@ -106,15 +111,14 @@ begin
 		input_data     => input_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
+		trigger_slope  => trigger_slope,
 --		trigger_chanid => "0",             -- Debug purpose
 --		trigger_level  => b"11_1110",      -- Debug purpose
---		trigger_edge   => '1',             -- Debug purpose
+--		trigger_slope  => '1',             -- Debug purpose
 		trigger_shot   => trigger_shot,
 		output_dv      => triggersample_dv,
 		output_data    => triggersample_data);
 
-	resizedsample_dv <= triggersample_dv;
 	scopeio_resize_e : entity hdl4fpga.scopeio_resize
 	generic map (
 		inputs => inputs)
@@ -123,8 +127,136 @@ begin
 		output_data => resizedsample_data);
 
 	triggers_modes_b : block
+		signal noshot : std_logic;
+		signal vton   : std_logic;
+		signal vtoff  : std_logic;
+		signal edge   : std_logic;
 	begin
-		capture_shot <= capture_end and downsample_oshot; -- and not video_vton;
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				if video_vton='1' then
+					vton <= '1';
+				elsif vtoff='1' then
+					vton <= '0';
+				end if;
+			end if;
+		end process;
+
+--		process (input_clk)
+--		begin
+--			if rising_edge(input_clk) then
+--				if downsample_dv='1' then
+--					if vtoff='1' then
+--						if downsample_oshot='1' then
+--							noshot <= '0';
+--						end if;
+--					elsif edge='0' then
+--						if downsample_oshot='1' then
+--							noshot <= '0';
+--						end if;
+--					else
+--						noshot <= not downsample_oshot and capture_end;
+--					end if;
+--
+--					if vton='0' then
+--						vtoff <= '0';
+--					elsif vton='1' then
+--						vtoff <= '1';
+--					end if;
+--					edge <= vtoff;
+--				end if;
+--			end if;
+--		end process;
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if triggersample_dv='1' then
+					if vtoff='1' then
+						if trigger_shot='1' then
+							noshot <= '0';
+						end if;
+					elsif edge='0' then
+						if trigger_shot='1' then
+							noshot <= '0';
+						end if;
+					elsif noshot='0' then
+						noshot <= not trigger_shot and capture_end;
+					end if;
+
+					if vton='0' then
+						vtoff <= '0';
+					elsif vton='1' then
+						vtoff <= '1';
+					end if;
+					edge <= vtoff;
+				end if;
+			end if;
+		end process;
+
+		process (input_clk, capture_end, trigger_mode, downsample_oshot, noshot)
+			variable req  : std_logic;
+			variable rdy  : std_logic;
+			variable shot : std_logic;
+		begin
+			sm : if rising_edge(input_clk) then
+				case trigger_mode is
+				when "11" =>
+					if trigger_dv='1' then
+						req  := '1';
+						rdy  := '0';
+						shot := '0';
+					elsif rdy='1' then
+						if capture_end='0' then
+							req  := '0';
+							rdy  := '0';
+							shot :='0';
+						end if;
+					elsif req='1' then
+						if capture_end='1' then
+							if downsample_oshot='1' then
+								rdy  := '1';
+								shot := '1';
+							end if;
+						end if;
+					end if;
+				when others =>
+					req := '0';
+				end case;
+			end if;
+
+			case trigger_mode is
+			when "00" => -- Normal + Free
+				if downsample_oshot='1' then
+					capture_shot <= capture_end;
+				elsif noshot='1' then
+					capture_shot <= capture_end;
+				else
+					capture_shot <= '0';
+				end if;
+			when "01" => -- Normal
+				if downsample_oshot='1' then
+					capture_shot <= capture_end;
+				else
+					capture_shot <= '0';
+				end if;
+			when "10" => -- Freeze
+				capture_shot <= '0';
+			when "11" => -- One shot
+				if shot='0' then
+					capture_shot <= '0';
+				elsif downsample_oshot='1' then
+					capture_shot <= capture_end;
+				else
+					capture_shot <= '0';
+				end if;
+			when others =>
+				capture_shot <= '-';
+			end case;
+				
+		end process;
+
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -135,7 +267,7 @@ begin
 		factor_id     => time_scale,
 --		factor_id     => b"0000",  --Debug purpose
 		input_clk     => input_clk,
-		input_dv      => resizedsample_dv,
+		input_dv      => triggersample_dv,
 		input_shot    => downsample_ishot,
 		input_data    => resizedsample_data,
 		downsampling  => downsampling,

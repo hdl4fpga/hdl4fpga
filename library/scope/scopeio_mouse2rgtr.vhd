@@ -682,9 +682,9 @@ begin
             R_rgtr_data(F_bitfield(trigger_bf,trigger_level_id)(1)
                  downto F_bitfield(trigger_bf,trigger_level_id)(0)) <=
               std_logic_vector(S_APB(trigger_bf(trigger_level_id)-1 downto 0));
-            R_rgtr_data(F_bitfield(trigger_bf,trigger_edge_id)(0)) <=
+            R_rgtr_data(F_bitfield(trigger_bf,trigger_slope_id)(0)) <=
               S_APB(S_APB'high);
-            R_rgtr_data(F_bitfield(trigger_bf,trigger_ena_id)(0)) <=
+            R_rgtr_data(F_bitfield(trigger_bf,trigger_freeze_id)(0)) <=
               S_APB(S_APB'high-2);
             R_trigger_level(to_integer(R_trace_selected)) <= S_APB(C_trigger_level'range);
             R_trigger_edge(to_integer(R_trace_selected)) <= S_APB(S_APB'high);
