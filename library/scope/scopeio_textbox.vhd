@@ -53,10 +53,11 @@ entity scopeio_textbox is
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
+		sgmntbox_ena  : in  std_logic_vector;
 		text_on       : in  std_logic := '1';
 		text_fg       : out std_logic_vector;
 		text_bg       : out std_logic_vector;
-		text_fgon      : out std_logic);
+		text_fgon     : out std_logic);
 
 --	constant inp : natural := inputs+3;
 	constant inp : natural := inputs;
@@ -120,6 +121,7 @@ architecture def of scopeio_textbox is
 	signal cga_req       : std_logic_vector(0 to cgabcd_req'length+cgachr_req'length-1);
 	signal cga_frm       : std_logic_vector(cga_req'range);
 	signal cga_we        : std_logic;
+	signal cga_on        : std_logic;
 	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code      : ascii;
 	signal video_addr    : std_logic_vector(cga_addr'range);
@@ -581,6 +583,7 @@ begin
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
 
+	cga_on <= text_on and sgmntbox_ena(0);
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
 		cga_bitrom   => cga_bitrom,
@@ -597,7 +600,7 @@ begin
 		video_addr   => video_addr,
 		font_hcntr   => video_hcntr(fontwidth_bits-1 downto 0),
 		font_vcntr   => video_vcntr(fontheight_bits-1 downto 0),
-		video_blankn => text_on,
+		video_blankn => cga_on,
 		video_dot    => char_dot);
 
 	lat_e : entity hdl4fpga.align
