@@ -38,19 +38,20 @@ const i18n = {
 	'verticalfg'   : { en : 'Vertical FG',   es : 'Frente del vertical'   },
 
 
-	'inputs'     : { en : 'Inputs ',    es : 'Entradas'   },
+	'inputs'      : { en : 'Inputs ',     es : 'Entradas'     },
 
-	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
-	'mode'       : { en : 'Mode',       es : 'Modo'       },
-	'normal'     : { en : 'Normal',     es : 'Normal'     },
-	'level'      : { en : 'Level',      es : 'Nivel'      },
-	'offset'     : { en : 'Offset',     es : 'Posicion'   },
-	'one shot'   : { en : 'One shot',   es : 'Un disparo' },
-	'scale'      : { en : 'Scale',      es : 'Escala'     },
-	'slope'      : { en : 'Slope',      es : 'Pendiente'  },
-	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },
-	'vertical'   : { en : 'Vertical',   es : 'Vertical'   },
-	'vtaxis'     : { en : 'Scale',      es : 'Escala'     } };
+	'horizontal'  : { en : 'Horizontal',  es : 'Horizontal'   },
+	'mode'        : { en : 'Mode',        es : 'Modo'         },
+	'normal'      : { en : 'Normal',      es : 'Normal'       },
+	'normal+free' : { en : 'Normal+Free', es : 'Normal+Libre' },
+	'level'       : { en : 'Level',       es : 'Nivel'        },
+	'offset'      : { en : 'Offset',      es : 'Posicion'     },
+	'one shot'    : { en : 'One shot',    es : 'Un disparo'   },
+	'scale'       : { en : 'Scale',       es : 'Escala'       },
+	'slope'       : { en : 'Slope',       es : 'Pendiente'    },
+	'trigger'     : { en : 'Trigger',     es : 'Disparo'      },
+	'vertical'    : { en : 'Vertical',    es : 'Vertical'     },
+	'vtaxis'      : { en : 'Scale',       es : 'Escala'       } };
 
 var lang = 'en';
 

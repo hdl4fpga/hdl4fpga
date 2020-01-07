@@ -329,7 +329,7 @@ function vtControl (parent, number, color) {
 	d.appendChild(slabel);
 
 	mode = {};
-	['normal', 'one shot', 'freeze'].forEach(item => {
+	['normal+free', 'normal', 'one shot', 'freeze'].forEach(item => {
 		mode[item] = document.createElement("label");
 		mode[item].style.display = 'block';
 		mode[item].style.align   = 'left';

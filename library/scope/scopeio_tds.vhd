@@ -77,6 +77,7 @@ architecture mix of scopeio_tds is
 	signal capture_end        : std_logic;
 
 	signal trigger_dv         : std_logic;
+	signal trigger_mode       : std_logic_vector(0 to 2-1);
 	signal trigger_slope      : std_logic;
 	signal trigger_oneshot    : std_logic;
 	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
@@ -98,6 +99,9 @@ begin
 		trigger_oneshot => trigger_oneshot,
 		trigger_slope   => trigger_slope);
 		
+	trigger_mode(0) <= trigger_freeze;
+	trigger_mode(1) <= trigger_oneshot;
+
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)
@@ -191,10 +195,34 @@ begin
 			end if;
 		end process;
 
-		capture_shot <= 
-		   capture_end and not trigger_freeze when downsample_oshot='1' else
-		   capture_end and not trigger_freeze and not vtoff and edge when noshot='1' else
-		   '0';
+		process (capture_end, trigger_mode, downsample_oshot, noshot)
+		begin
+			case trigger_mode is
+			when "00" => -- Normal + Free
+				if downsample_oshot='1' then
+					capture_shot <= capture_end;
+				elsif noshot='1' then
+					capture_shot <= capture_end;
+				else
+					capture_shot <= '0';
+				end if;
+			when "01" => -- Normal
+				if downsample_oshot='1' then
+					capture_shot <= capture_end;
+				else
+					capture_shot <= '0';
+				end if;
+			when "10" => -- Freeze
+				capture_shot <= '0';
+			when "11" => -- One shot
+			end case;
+				
+		end process;
+
+--		capture_shot <= 
+--		   capture_end and not trigger_freeze when downsample_oshot='1' else
+--		   capture_end and not trigger_freeze and not vtoff and edge when noshot='1' else
+--		   '0';
 
 	end block;
 

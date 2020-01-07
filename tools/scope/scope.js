@@ -52,6 +52,7 @@ function sendCommand(e) {
 			offset : this.value,
 			chanid : param[1] } );
 		break;
+	case 'normal+free' :
 	case 'normal' :
 	case 'one shot' :
 	case 'freeze' :
@@ -59,8 +60,8 @@ function sendCommand(e) {
 		sendRegister(registers.trigger, { 
 			level   : this.trigger.level.value,
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
-			freeze  : (this.trigger.mode.value  === "freeze" || this.trigger.mode.value  === "one shot") ? 1 : 0,
-			oneshot : (this.trigger.mode.value  === "one shot")  ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
 			chanid  : param[1] });
 		break;
 	case 'positive':
@@ -69,16 +70,16 @@ function sendCommand(e) {
 		sendRegister(registers.trigger, { 
 			level   : this.trigger.level.value,
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
-			freeze  : (this.trigger.mode.value  === "freeze" || this.trigger.mode.value  === "one shot") ? 1 : 0,
-			oneshot : (this.trigger.mode.value  === "one shot")  ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
 			chanid  : param[1] });
 		break;
 	case 'level':
 		sendRegister(registers.trigger, { 
 			level   : this.trigger.level.value,
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
-			freeze  : (this.trigger.mode.value  === "freeze" || this.trigger.mode.value  === "one shot") ? 1 : 0,
-			oneshot : (this.trigger.mode.value  === "one shot")  ? 1 : 0,
+			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
+			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
 			chanid  : param[1] });
 		break;
 	case 'vtaxis' :
