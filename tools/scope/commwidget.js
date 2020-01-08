@@ -39,46 +39,48 @@ function commWidget(commOption) {
 
 	switch (commOption) {
 	case 'UART': // UART
-		let baudRates  = [ 9600, 38400, 115200 ];
+		if (typeof SerialPort !== 'undefined') {
+			let baudRates  = [ 9600, 38400, 115200 ];
 
-		delete this.host;
+			delete this.host;
 
-		let u = document.createElement("select");
-		u.onchange = this.uartOnChange;
-		u.id = "uart";
-		this.main.appendChild(u);
+			let u = document.createElement("select");
+			u.onchange = this.uartOnChange;
+			u.id = "uart";
+			this.main.appendChild(u);
 
-		let b = document.createElement("select");
-		b.onchange = this.uartOnChange;
-		b.id = "baudRate";
-		this.main.appendChild(b);
+			let b = document.createElement("select");
+			b.onchange = this.uartOnChange;
+			b.id = "baudRate";
+			this.main.appendChild(b);
 
-		for (i=0; i < baudRates.length; i++) {
-			let o;
-			o = document.createElement("option");
-			o.text = baudRates[i];
-			b.add(o, i);
-		}
-		b.value = 115200;
-
-		u.uart     = u;
-		u.baudrate = b;
-		b.uart     = u;
-		b.baudrate = b;
-		listUART().then(function (ports) {
-			let o;
-
-			for (i=0; i < ports.length; i++) {
+			for (i=0; i < baudRates.length; i++) {
+				let o;
 				o = document.createElement("option");
-				o.text = ports[i].comName;
-				u.add(o, i);
+				o.text = baudRates[i];
+				b.add(o, i);
 			}
+			b.value = 115200;
 
-			createUART(
-				u.options[u.selectedIndex].text, 
-				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
-		});
-		break;
+			u.uart     = u;
+			u.baudrate = b;
+			b.uart     = u;
+			b.baudrate = b;
+			listUART().then(function (ports) {
+				let o;
+
+				for (i=0; i < ports.length; i++) {
+					o = document.createElement("option");
+					o.text = ports[i].comName;
+					u.add(o, i);
+				}
+
+				createUART(
+					u.options[u.selectedIndex].text, 
+					{ baudRate : parseInt(b.options[b.selectedIndex].text) });
+			});
+			break;
+		}
 	case 'TCPIP': // TCPIP
 
 		delete this.uart;
@@ -98,6 +100,7 @@ function commWidget(commOption) {
 
 		break; 
 	}
+	return commOption;
 }
 
 commWidget.prototype.uartOnChange =  function (e) {

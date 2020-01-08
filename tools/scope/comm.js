@@ -24,9 +24,19 @@
 // Asynchronous communication
 //
 
-const SerialPort = require('serialport')
-const Readline   = require('@serialport/parser-readline'); 
-const parser     = new Readline();
+var SerialPort;
+var Readline;
+var parser;
+
+
+try {
+	SerialPort = require('serialport')
+	Readline   = require('@serialport/parser-readline'); 
+	parser     = new Readline();
+}
+catch(e) {
+	console.log("SerialPort was not loaded");
+}
 
 const baudRates  = [ 9600, 38400, 115200 ];
 
@@ -92,7 +102,10 @@ function createUART (uartName, options) {
 		uart.close();
 	console.log(uartName);
 	console.log(options);
-	uart = new SerialPort(uartName, options);
+	if (typeof SerialPort !== 'undefined') {
+		uart = new SerialPort(uartName, options);
+	}
+	return uart;
 }
 
 function listUART () {
