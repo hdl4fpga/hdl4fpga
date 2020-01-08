@@ -407,17 +407,9 @@ package body std is
 		return string
 	is
 		variable retval : string(1 to size);
-		variable j      : natural;
 	begin
-		j := 1;
-		for i in s'range loop
-			retval(j) := s(i);
-			j := j + 1;
-		end loop;
-		while j <= size loop
-			retval(j) := char;
-			j := j + 1;
-		end loop;
+		retval := (others => char);
+		retval(1 to s'length) := s;
 		return retval;
 	end;
 
@@ -429,27 +421,17 @@ package body std is
 		alias astr1 : string(1 to str1'length) is str1;
 		alias astr2 : string(1 to str2'length) is str2;
 	begin
-		report astr2 & " " & astr1;
-		report itoa(astr2'length) & " " & itoa(astr1'length);
-		for i in astr1'range loop
-			if astr2'right < i then
-		report itoa(i);
-				if astr1(i)=NUL then
-					return true;
-				else
+--		report astr2 & " " & astr1;
+--		report itoa(astr2'length) & " " & itoa(astr1'length);
+		if strlen(str1)/=strlen(str2) then
+			return false;
+		else
+		 	for i in 1 to strlen(str1) loop
+				if astr1(i)/=astr2(i) then
 					return false;
 				end if;
-			elsif astr1(i)/=astr2(i) then
-				return false;
-			end if;
-		end loop;
-		report itoa(astr2'length) & " " & itoa(astr1'length);
-		if astr2'length=astr1'length then
+			end loop;
 			return true;
-		elsif astr2(astr1'right+1)=NUL then
-			return true;
-		else
-			return false;
 		end if;
 	end;
 

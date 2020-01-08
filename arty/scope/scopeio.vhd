@@ -13,7 +13,7 @@ use hdl4fpga.scopeiopkg.all;
 
 architecture beh of arty is
 
-	constant vt_step : real := (1.0e3*milli) / (2.0**16*femto); -- Volts
+	constant vt_step : real := 1.0e3*milli/2.0**16; -- Volts
 
 	constant sample_size : natural := 16;
 	constant inputs   : natural := 9;

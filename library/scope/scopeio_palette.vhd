@@ -50,6 +50,7 @@ end;
 architecture beh of scopeio_palette is
 
 	constant scopeio_bgon     : std_logic := '1';
+	constant pixel_size : natural := video_color'length;
 
 	impure function init_opacity (
 		constant dflt_tracesfg :  std_logic_vector;
@@ -79,8 +80,8 @@ architecture beh of scopeio_palette is
 		retval(pltid_sgmntbg)   := dflt_sgmntbg(dflt_sgmntbg'left);
 		retval(pltid_scopeiobg) := dflt_bg(dflt_bg'left);
 		tracesfg := dflt_tracesfg;
-		for i in 0 to tracesfg'length/(video_color'length+1)-1 loop
-			retval(pltid_order'length+i) := tracesfg(i*(video_color'length+1));
+		for i in 0 to tracesfg'length/(pixel_size+1)-1 loop
+			retval(pltid_order'length+i) := tracesfg(i*(pixel_size+1));
 		end loop;
 		return retval;
 	end;
@@ -186,15 +187,15 @@ architecture beh of scopeio_palette is
 		constant arg : std_logic_vector)
 		return std_logic_vector
 	is
-		constant n      : natural := arg'length/(video_color'length+1);
+		constant n      : natural := arg'length/(pixel_size+1);
 		variable aux    : std_logic_vector(0 to arg'length-1);
-		variable retval : unsigned(0 to n*video_color'length-1);
+		variable retval : unsigned(0 to n*pixel_size-1);
 	begin
 		aux := arg;
 		for i in 0 to n-1 loop
-			retval(0 to video_color'length-1) := unsigned(color(aux(0 to video_color'length)));
-			retval := retval rol video_color'length;
-			aux    := std_logic_vector(unsigned(aux) rol (video_color'length+1));
+			retval(0 to pixel_size-1) := unsigned(color(aux(0 to pixel_size)));
+			retval := retval rol pixel_size;
+			aux    := std_logic_vector(unsigned(aux) rol (pixel_size+1));
 		end loop;
 --		assert false
 --		report "-----> " & itoa(n) & " " & itoa(arg'length) & " " & itoa(dflt_tracesfg'length)
@@ -202,6 +203,7 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
+		signal wr_ena  : std_logic;
 begin
 
 	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
@@ -288,15 +290,16 @@ begin
 		(trigger_dot and trigger_opacity)));
 	
 	lookup_b : block
-		signal wr_ena  : std_logic;
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(video_color'range);
+		constant bitrom : std_logic_vector := colors(dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg);
 	begin
 
 		wr_ena <= palette_colorena and palette_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
-			bitrom => colors(dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg))
+			bitrom => bitrom)
+--			bitrom => colors(dflt_gridfg & dflt_vtfg & dflt_vtbg & dflt_hzfg & dflt_hzbg & dflt_textbg & dflt_gridbg & dflt_sgmntbg & dflt_bg & dflt_textfg & dflt_tracesfg))
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,

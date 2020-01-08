@@ -8,6 +8,8 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture beh of nuhs3adsp is
 
@@ -203,19 +205,24 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
-		hz_unit          => 25.0*pico,
-		vt_unit          => 20.0*micro,
+--		input_names      => (
+--			hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1"),
+--			hdl4fpga.textboxpkg.text(id => "vt(1).text", content => "channel 2")),
+		hz_unit          => 250.0*nano,
+		vt_unit          => 2.0*milli,
+		vt_steps         => (0 to inputs-1 => 1000.0*milli/2.0**14),
 		vlayout_id       => video_params(video_mode).layout,
-		default_tracesfg => b"11111111_11111111_11111111",
-		default_gridfg   => b"11111111_00000000_00000000",
-		default_gridbg   => b"00000000_00000000_00000000",
-		default_hzfg     => b"11111111_11111111_11111111",
-		default_hzbg     => b"00000000_00000000_11111111",
-		default_vtfg     => b"11111111_11111111_11111111",
-		default_vtbg     => b"00000000_00000000_11111111",
-		default_textbg   => b"00000000_00000000_00000000",
-		default_sgmntbg  => b"00000000_11111111_11111111",
-		default_bg       => b"11111111_11111111_11111111")
+		default_tracesfg => b"0_11111111_11111111_00000000" & b"0_00000000_11111111_11111111",
+		default_gridfg   => b"0_11111111_00000000_00000000",
+		default_gridbg   => b"0_00000000_00000000_00000000",
+		default_hzfg     => b"0_11111111_11111111_11111111",
+		default_hzbg     => b"0_00000000_00000000_11111111",
+		default_vtfg     => b"0_11111111_11111111_11111111",
+		default_vtbg     => b"0_00000000_00000000_11111111",
+		default_textfg   => b"1_00000000_00000000_00000000",
+		default_textbg   => b"1_00000000_00000000_00000000",
+		default_sgmntbg  => b"0_00000000_11111111_11111111",
+		default_bg       => b"0_11111111_11111111_11111111")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
