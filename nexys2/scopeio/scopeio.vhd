@@ -28,6 +28,8 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.textboxpkg.all;
+use hdl4fpga.scopeiopkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -280,20 +282,23 @@ begin
 	si_clk <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vt_unit   => 10.0,
-		hz_unit   => 25.0*1000.0,
+		hz_unit          => 250.0*nano,
+		vt_unit          => 2.0*milli,
+		vt_steps         => (0 to inputs-1 => 1000.0*milli/2.0**14),
 		inputs           => inputs,
+--		input_names      => (0 => hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1")),
 		vlayout_id       => video_params(video_mode).layout,
-		default_tracesfg => b"111_111_11",
-		default_gridfg   => b"111_000_00",
-		default_gridbg   => b"000_000_00",
-		default_hzfg     => b"111_111_11",
-		default_hzbg     => b"000_000_11",
-		default_vtfg     => b"111_111_11",
-		default_vtbg     => b"000_000_11",
-		default_textbg   => b"000_000_00",
-		default_sgmntbg  => b"000_111_11",
-		default_bg       => b"000_000_00")
+		default_tracesfg => b"1_111_111_11",
+		default_gridfg   => b"1_111_000_00",
+		default_gridbg   => b"1_000_000_00",
+		default_hzfg     => b"1_111_111_11",
+		default_hzbg     => b"1_000_000_11",
+		default_vtfg     => b"1_111_111_11",
+		default_vtbg     => b"1_000_000_11",
+		default_textfg   => b"0_000_000_00",
+		default_textbg   => b"1_000_000_00",
+		default_sgmntbg  => b"1_000_111_11",
+		default_bg       => b"1_000_000_00")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

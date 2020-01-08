@@ -59,10 +59,8 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
---	constant inp : natural := inputs+3;
-	constant inp : natural := inputs;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant chanid_bits   : natural := unsigned_num_bits(inp-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant font_width    : natural := layout.textbox_fontwidth;
 end;
 

@@ -380,25 +380,31 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		hz_unit          => 25.0*pico,
-		vt_unit          => 20.0*micro,
+		inputs           => inputs,
+--		input_names      => (
+--			hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1"),
+--			hdl4fpga.textboxpkg.text(id => "vt(1).text", content => "channel 2")),
+		hz_unit          => 25.0*micro,
+		vt_steps         => (0 to inputs-1 => 2.5e3*milli / 2.0**14),
+		vt_unit          => 5.0*milli,
 		vlayout_id       => video_params(video_mode).layout,
 		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),   1 => 2**(0+0)*5**(0+0),  2 => 2**(1+0)*5**(0+0),  3 => 2**(-1+1)*5**(1+0),
-			 4 => 2**(-1+1)*5**(0+1),  5 => 2**(0+1)*5**(0+1),  6 => 2**(1+1)*5**(0+1),  7 => 2**(-1+1)*5**(1+1),
-			 8 => 2**(-1+2)*5**(0+2),  9 => 2**(0+2)*5**(0+2), 10 => 2**(1+2)*5**(0+2), 11 => 2**(-1+2)*5**(1+2),
-			12 => 2**(-1+3)*5**(0+3), 13 => 2**(0+3)*5**(0+3), 14 => 2**(1+3)*5**(0+3), 15 => 2**(-1+3)*5**(1+3)),
-		inputs           => inputs,
-		default_tracesfg => b"1_1_1",
-		default_gridfg   => b"1_0_0",
-		default_gridbg   => b"0_0_0",
-		default_hzfg     => b"1_1_1",
-		default_hzbg     => b"0_0_1",
-		default_vtfg     => b"1_1_1",
-		default_vtbg     => b"0_0_1",
-		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"0_1_1",
-		default_bg       => b"1_1_1")
+			 0 => 2**(0+0)*5**(0+0),       1 => 2**(0+0)*5**(0+0),       2 => 2**((-1)+2+0)*5**(0+0),  3 => 2**((-1)+0+0)*5**(0+1),
+			 4 => 2**((-1)+0+1)*5**(1+0),  5 => 2**((-1)+1+1)*5**(1+0),  6 => 2**((-1)+2+1)*5**(0+1),  7 => 2**((-1)+0+1)*5**(1+1),
+			 8 => 2**((-1)+0+2)*5**(2+0),  9 => 2**((-1)+1+2)*5**(2+0), 10 => 2**((-1)+2+2)*5**(0+2), 11 => 2**((-1)+0+2)*5**(1+2),
+			12 => 2**((-1)+0+3)*5**(3+0), 13 => 2**((-1)+1+3)*5**(3+0), 14 => 2**((-1)+2+3)*5**(0+3), 15 => 2**((-1)+0+3)*5**(1+3)),
+
+		default_tracesfg => b"1_110" & b"1_011",
+		default_gridfg   => b"1_100",
+		default_gridbg   => b"1_000",
+		default_hzfg     => b"1_111",
+		default_hzbg     => b"1_001",
+		default_vtfg     => b"1_111",
+		default_vtbg     => b"1_001",
+		default_textfg   => b"0_000",
+		default_textbg   => b"1_000",
+		default_sgmntbg  => b"1_011",
+		default_bg       => b"1_111")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

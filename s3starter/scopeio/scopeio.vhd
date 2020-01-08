@@ -125,6 +125,7 @@ architecture beh of s3starter is
 	signal input_clk : std_logic;
 
 	signal cntr : unsigned(0 to 16-1);
+
 begin
 
 	process (sys_clk)
@@ -282,10 +283,11 @@ begin
 	sample <= (0 => cntr(8), 1 to 15 => not cntr(8)); --sample, --s(0 to sample_size*inputs-1),
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		inputs           => inputs,
+--		input_names      => (0 => hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1")),
 		hz_unit          => 10.0*pico,
-		vt_step          => (1.0e3*milli) / (2.0**16*femto),
+		vt_steps         => (0 to inputs-1 => 1.0e3*milli / 2.0**16),
 		vt_unit          => 500.0*micro,
-		inputs           => 1, --inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_111",
 		default_gridfg   => b"1_100",
@@ -295,6 +297,7 @@ begin
 		default_vtfg     => b"1_111",
 		default_vtbg     => b"1_001",
 		default_textbg   => b"1_000",
+		default_textbg   => b"0_000",
 		default_sgmntbg  => b"1_111",
 		default_bg       => b"1_000")
 	port map (
