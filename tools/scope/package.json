@@ -9,7 +9,8 @@
     "start": "nw"
   },
   "dependencies": {
-    "nw": "^0.25.0-sdk",
-    "serialport": "^8.0.5"
-  }
+    "nw": "^0.43.3",
+    "serialport": "^8.0.6"
+  },
+  "devDependencies": {}
 }

@@ -1,3 +1,5 @@
 #!/bin/sh
-npm install nw@0.25.0 --nwjs_build_type=sdk
-npm install serialport@7.1.5
+npm install nw --nwjs_build_type=sdk
+npm install serialport
+cd node_modules/\@serialport/bindings/
+nw-gyp rebuild --target=$(npm view nw version) --arch=x64
