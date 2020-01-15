@@ -174,7 +174,7 @@ function onChangeInputs () {
 }
 
 function onchangeComm () {
-	if (ws === 'undefined')  {
+	if (typeof ws === 'undefined')  {
 		if (typeof SerialPort ==='undefined')
 			document.getElementById("UART").remove();
 	}

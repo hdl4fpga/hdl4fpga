@@ -23,34 +23,35 @@
 
 var ws = io();
 
-function rpcScopeIO(eventName, arg) {
-	console.log(eventName);
+function rpcScopeIO(eventName, arg)
+{
+	var promise = new Promise((resolve, reject) => { ws.once(eventName, function(data) { resolve(data) }); });
 	ws.emit(eventName, arg);
-
-	let retval;
-
-	ws.once(eventName, function(data) { retval = data } );
-
-	return retval;
+	return promise;
 }
 
-function createUART(uartName, options) {
-	return rpcScopeIO("createUART", [ uartName, options ]);
+function createUART(uartName, options)
+{
+	return rpcScopeIO("createUART", { uartName : uartName, options : options });
 }
 
-function send(data) {
-	return rpcScopeIO("send", [ data ] );
+function send(data)
+{
+	return rpcScopeIO("send", { data : data } );
 }
 
-function listUART () {
-	return rpcScopeIO( "listUART", [ ] );
+function listUART ()
+{
+	return rpcScopeIO( "listUART", { } );
 }
 
-function setHost(name) {
-	return rpcScopeIO("setHost", [ name ] );
+function setHost(name)
+{
+	return rpcScopeIO("setHost", { name : name } );
 }
 
-function setCommOption(option) {
-	return rpcScopeIO( "setCommOption", [ option ] );
+function setCommOption(option)
+{
+	return rpcScopeIO( "setCommOption", { option : option } );
 }
 

@@ -21,16 +21,31 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
+var SerialPort;
+var Readline;
+var parser;
+
+try {
+	SerialPort = require('serialport')
+	Readline   = require('@serialport/parser-readline'); 
+	parser     = new Readline();
+}
+catch(e) {
+	console.log("SerialPort was not loaded");
+}
+
 var http    = require('http').createServer(handler);
 var fs      = require('fs');
 var io      = require('socket.io')(http)
+var commjs  = require('../scope/comm.js');
 
+commjs.listUART();
 http.listen(8080);
 
 function handler (req, res) { //create server
 	function fsCallback(err, data) { 
 		if (err) {
-			console.log("Error");
+			console.log("*****" + err);
 			  res.writeHead(404, {'Content-Type': 'text/html'});
 			  return res.end("404 Not Found");
 		}
@@ -54,10 +69,20 @@ function handler (req, res) { //create server
 }
 
 io.sockets.on('connection', function (socket) {
-  socket.on('createUART', function(data) { 
-	  console.log("HOLA");
-  });
-  socket.on('send', function(data) { 
-	  console.log("HOLA II");
-  });
+	socket.on('listUART', function(data) { 
+		console.log(commjs);
+		commjs.listUART().then((ports) => {
+			socket.emit('listUART', ports);
+			console.log(ports);
+		});
+	});
+
+	socket.on('createUART', function(data) { 
+		commjs.createUART(data.uartName, data.options);
+	});
+
+	socket.on('send', function(data) { 
+		commjs.send(data.data);
+	});
+
 });

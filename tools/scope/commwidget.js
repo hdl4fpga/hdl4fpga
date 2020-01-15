@@ -39,48 +39,51 @@ function commWidget(commOption) {
 
 	switch (commOption) {
 	case 'UART': // UART
-		if (typeof SerialPort !== 'undefined') {
-			let baudRates  = [ 9600, 38400, 115200 ];
+		if (typeof io === 'undefined')
+			if (typeof SerialPort === 'undefined')
+				break;
 
-			delete this.host;
+		let baudRates  = [ 9600, 38400, 115200 ];
 
-			let u = document.createElement("select");
-			u.onchange = this.uartOnChange;
-			u.id = "uart";
-			this.main.appendChild(u);
+		delete this.host;
 
-			let b = document.createElement("select");
-			b.onchange = this.uartOnChange;
-			b.id = "baudRate";
-			this.main.appendChild(b);
+		let u = document.createElement("select");
+		u.onchange = this.uartOnChange;
+		u.id = "uart";
+		this.main.appendChild(u);
 
-			for (i=0; i < baudRates.length; i++) {
-				let o;
-				o = document.createElement("option");
-				o.text = baudRates[i];
-				b.add(o, i);
-			}
-			b.value = 115200;
+		let b = document.createElement("select");
+		b.onchange = this.uartOnChange;
+		b.id = "baudRate";
+		this.main.appendChild(b);
 
-			u.uart     = u;
-			u.baudrate = b;
-			b.uart     = u;
-			b.baudrate = b;
-			listUART().then(function (ports) {
-				let o;
-
-				for (i=0; i < ports.length; i++) {
-					o = document.createElement("option");
-					o.text = ports[i].comName;
-					u.add(o, i);
-				}
-
-				createUART(
-					u.options[u.selectedIndex].text, 
-					{ baudRate : parseInt(b.options[b.selectedIndex].text) });
-			});
-			break;
+		for (i=0; i < baudRates.length; i++) {
+			let o;
+			o = document.createElement("option");
+			o.text = baudRates[i];
+			b.add(o, i);
 		}
+		b.value = 115200;
+
+		u.uart     = u;
+		u.baudrate = b;
+		b.uart     = u;
+		b.baudrate = b;
+		listUART().then(function (ports) {
+			let o;
+
+			console.log(ports);
+			for (i=0; i < ports.length; i++) {
+				o = document.createElement("option");
+				o.text = ports[i].path;
+				u.add(o, i);
+			}
+
+			return createUART(
+				u.options[u.selectedIndex].text, 
+				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
+		});
+		break;
 	case 'TCPIP': // TCPIP
 
 		delete this.uart;

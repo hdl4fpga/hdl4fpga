@@ -98,8 +98,13 @@ function send(data) {
 }
 
 function createUART (uartName, options) {
-	if (typeof uart !== 'undefined')
-		uart.close();
+	if (typeof uart !== 'undefined') {
+		try {
+			uart.close();
+		}
+		catch(e) {
+		}
+	}
 	console.log(uartName);
 	console.log(options);
 	if (typeof SerialPort !== 'undefined') {
@@ -109,6 +114,7 @@ function createUART (uartName, options) {
 }
 
 function listUART () {
+	console.log("Pase");
 	return SerialPort.list();
 }
 
@@ -127,3 +133,11 @@ function setCommOption(option) {
 function getCommOption(option) {
 	return commOption;
 }
+
+exports.listUART      = listUART;
+exports.createUART    = createUART;
+exports.send          = send;
+exports.getHost       = getHost;
+exports.setHost       = setHost;
+exports.setCommOption = setCommOption;
+
