@@ -174,8 +174,10 @@ function onChangeInputs () {
 }
 
 function onchangeComm () {
-	if (typeof SerialPort ==='undefined')
-		document.getElementById("UART").remove();
+	if (ws === 'undefined')  {
+		if (typeof SerialPort ==='undefined')
+			document.getElementById("UART").remove();
+	}
 
 	var commOption = (this.options[this.selectedIndex].text);
 	console.log(commOption);

@@ -21,43 +21,36 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-var http    = require('http').createServer(handler);
-var fs      = require('fs');
-var io      = require('socket.io')(http)
+var ws = io();
 
-http.listen(8080);
+function rpcScopeIO(eventName, arg) {
+	console.log(eventName);
+	ws.emit(eventName, arg);
 
-function handler (req, res) { //create server
-	function fsCallback(err, data) { 
-		if (err) {
-			console.log("Error");
-			  res.writeHead(404, {'Content-Type': 'text/html'});
-			  return res.end("404 Not Found");
-		}
-		res.writeHead(200, {'Content-Type': 'text/html'});
-		res.write(data);
-		return res.end();
-	}
+	let retval;
 
-	switch(req.url) {
-	case '/' :
-		fs.readFile(__dirname + '/../scope/main.html', fsCallback);
-		break;
-	case '/comm.js' :
-		console.log(req.url);
-		fs.readFile(__dirname + '/comm.js', fsCallback);
-		break;
-	default :
-		fs.readFile(__dirname + '/../scope' + req.url, fsCallback);
-		break;
-	}
+	ws.once(eventName, function(data) { retval = data } );
+
+	return retval;
 }
 
-io.sockets.on('connection', function (socket) {
-  socket.on('createUART', function(data) { 
-	  console.log("HOLA");
-  });
-  socket.on('send', function(data) { 
-	  console.log("HOLA II");
-  });
-});
+function createUART(uartName, options) {
+	return rpcScopeIO("createUART", [ uartName, options ]);
+}
+
+function send(data) {
+	return rpcScopeIO("send", [ data ] );
+}
+
+function listUART () {
+	return rpcScopeIO( "listUART", [ ] );
+}
+
+function setHost(name) {
+	return rpcScopeIO("setHost", [ name ] );
+}
+
+function setCommOption(option) {
+	return rpcScopeIO( "setCommOption", [ option ] );
+}
+
