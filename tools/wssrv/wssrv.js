@@ -24,7 +24,7 @@
 var http    = require('http').createServer(handler);
 var fs      = require('fs');
 var io      = require('socket.io')(http)
-var commjs  = require('../scope/comm.js');
+var commjs  = require('comm.js');
 
 http.listen(8080);
 
@@ -44,7 +44,7 @@ function handler (req, res) { //create server
 		fs.readFile(__dirname + '/../scope/main.html', fsCallback);
 		break;
 	case '/comm.js' :
-		fs.readFile(__dirname + '/comm.js', fsCallback);
+		fs.readFile(__dirname + '/wscomm.js', fsCallback);
 		break;
 	default :
 		fs.readFile(__dirname + '/../scope' + req.url, fsCallback);
