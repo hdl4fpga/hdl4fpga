@@ -25,8 +25,6 @@
 //
 
 var SerialPort = require('serialport');
-var Readline   = require('@serialport/parser-readline'); 
-var parser     = new Readline();
 
 const baudRates  = [ 9600, 38400, 115200 ];
 
