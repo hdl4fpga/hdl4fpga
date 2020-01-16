@@ -24,32 +24,50 @@
 // Asynchronous communication
 //
 
-var SerialPort = require('serialport');
+const SerialPort = require('serialport');
+const Readline = SerialPort.parsers.Readline;
 
 const baudRates  = [ 9600, 38400, 115200 ];
 
-let uart;
-let hostName;
-let commOption;
+var uart;
+var hostName;
+var commOption;
 
-function streamout (buffer) {
+function toHex(buffer)
+{
+	let len = (typeof buffer.length === 'undefined') ? buffer.byteLength : buffer.length;
+	let str = "";
+	str = str + ' ' + Number(buffer[0]).toString('16');
 
-	function logwrite (buffer) {
-		const buf = Buffer.alloc(1,buffer);
-		console.log(buf.toString('hex'));
-		uart.write(buf);
+	for (var i=1; i < len; i++)
+		str = str + ' ' + Number(buffer[i]).toString('16');
+	return str;
+}
+
+function streamout (data) {
+
+	let str = '';
+	function write (data) {
+		uart.write(data);
+		str = str + toHex(data);
 	}
 
-	const esc = Buffer.alloc(1,0x5c);	// ASCII code for "\"
-	const eos = Buffer.alloc(1,0x00);	// ASCII code for NUL
+	let uint8 = new Uint8Array(1);
+	let esc   = new Uint8Array(1);
+	let eos   = new Uint8Array(1);
 
-	for (i = 0; i < buffer.length; i++) {
-		if (buffer[i] == esc[0] || buffer[i] == eos[0]) {
-			logwrite(esc);
+	esc[0] = 0x5c;
+	eos[0] = 0x00;
+
+	for (var i = 0; i < data.length; i++) {
+		uint8[0] = data[i];
+		if (uint8[0] == esc[0] || uint8[0] == eos[0]) {
+			write(esc);
 		}
-		logwrite(buffer[i]);
+		write(uint8);
 	}
-	logwrite(eos);
+	write(eos);
+	return str;
 }
 
 // TCP/IP communication
@@ -60,51 +78,50 @@ var udpsckt = dgram.createSocket('udp4');
 
 function send(data) {
 
-	console.log(commOption);
 	switch (commOption) {
 	case 'UART':
-		var buffer = Buffer.from(data);
-		streamout(buffer);
+		console.log(commOption + streamout(data));
 		break;
 	case 'TCPIP':
 		const ipport = 57001;
-		console.log(getHost());
-		var buffer = Buffer.alloc(data.length+2);
+		var buffer   = new Uint8Array(data.length+2);
+	
 		for (i=0; i < data.length; i++)
 			buffer[i] = data[i];
-
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
-			if (err) throw err;
-			console.log('UDP message has been sent');
+			if (err)
+				throw err;
+			else 
+				console.log('UDP :' + toHex(buffer));
 		});
 		break;
 	}
 }
 
 function createUART (uartName, options) {
-	if (typeof uart !== 'undefined') {
-		try {
+	if (typeof uart !== 'undefined')
+		if (uart.err === false) {
+			console.log("closed : " + uart.path);
 			uart.close();
 		}
-		catch(e) {
+
+	let uartError;
+	uart = new SerialPort(uartName, options, function(err) {
+		uart.err = false;
+		if (err) {
+			uart.err = true;
 		}
-	}
-	console.log(uartName);
-	console.log(options);
-	if (typeof SerialPort !== 'undefined') {
-		uart = new SerialPort(uartName, options);
-	}
+	});
 	return uart;
 }
 
 function listUART () {
-	console.log("Pase");
 	return SerialPort.list();
 }
 
-function getHost(name) {
+function getHost() {
 	return hostName;
 }
 
@@ -120,10 +137,14 @@ function getCommOption(option) {
 	return commOption;
 }
 
+try {
 exports.listUART      = listUART;
 exports.createUART    = createUART;
-exports.send          = send;
+exports.setCommOption = setCommOption;
 exports.getHost       = getHost;
 exports.setHost       = setHost;
-exports.setCommOption = setCommOption;
+exports.send          = send;
+}
+catch(e) {
+}
 

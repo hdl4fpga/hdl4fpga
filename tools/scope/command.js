@@ -36,17 +36,16 @@ function reverse (value, size) {
 
 function alignValues (reg, data) {
 	const byteSize = 8;
-	var buffer   = new ArrayBuffer(reg.size+2);
-	var dataView = new Uint8Array(buffer);
+	var buffer = [];
 
 	Object.keys(reg).forEach (function(key) {
 
 		switch(key) {
 		case 'rid':
-			dataView[0] = reg.rid;
+			buffer[0] = reg.rid;
 			break;
 		case 'size':
-			dataView[1] = reg.size-1;
+			buffer[1] = reg.size-1;
 			break;
 		default:
 			var i;
@@ -57,27 +56,26 @@ function alignValues (reg, data) {
 			data[key] = reverse(data[key], reg[key]);
 			if (shtcnt > 0) {
 				for(i = 0; i < reg.size-1; i++) {
-					dataView[i+2] <<=  shtcnt;
-					dataView[i+2]  |= (dataView[i+2+1] >> (byteSize - shtcnt)) & mask;
+					buffer[i+2] <<=  shtcnt;
+					buffer[i+2]  |= (buffer[i+2+1] >> (byteSize - shtcnt)) & mask;
 				}
-				dataView[i+2] <<= shtcnt;
-				dataView[i+2]  |= reverse(data[key], shtcnt);
+				buffer[i+2] <<= shtcnt;
+				buffer[i+2]  |= reverse(data[key], shtcnt);
 				data[key]   >>= shtcnt;
 			}
 
 			if (offset) for(i = offset; i < reg.size; i++) 
-				dataView[i+2-offset] = dataView[i+2];
+				buffer[i+2-offset] = buffer[i+2];
 
 			for(i = reg.size-offset; i < reg.size; i++) {
-				dataView[i+2] = reverse(data[key], byteSize);
+				buffer[i+2] = reverse(data[key], byteSize);
 				data[key] >>= byteSize;
 			}
 		};
 	});
-	return dataView;
+	return buffer;
 }
 
 function sendRegister(reg, values) {
-	var buffer = alignValues(reg, values);
-	send(buffer);
+	send(alignValues(reg, values));
 }

@@ -31,7 +31,6 @@ http.listen(8080);
 function handler (req, res) { //create server
 	function fsCallback(err, data) { 
 		if (err) {
-			console.log("*****" + err);
 			  res.writeHead(404, {'Content-Type': 'text/html'});
 			  return res.end("404 Not Found");
 		}
@@ -45,7 +44,6 @@ function handler (req, res) { //create server
 		fs.readFile(__dirname + '/../scope/main.html', fsCallback);
 		break;
 	case '/comm.js' :
-		console.log(req.url);
 		fs.readFile(__dirname + '/comm.js', fsCallback);
 		break;
 	default :
@@ -55,20 +53,30 @@ function handler (req, res) { //create server
 }
 
 io.sockets.on('connection', function (socket) {
-	socket.on('listUART', function(data) { 
-		console.log(commjs);
+	socket.on('listUART', function(args) { 
 		commjs.listUART().then((ports) => {
 			socket.emit('listUART', ports);
-			console.log(ports);
 		});
 	});
 
-	socket.on('createUART', function(data) { 
-		commjs.createUART(data.uartName, data.options);
+	socket.on('createUART', function(args) { 
+		commjs.createUART(args.uartName, args.options);
 	});
 
-	socket.on('send', function(data) { 
-		commjs.send(data.data);
+	socket.on('setCommOption', function(args) { 
+		commjs.setCommOption(args.option);
+	});
+
+	socket.on('send', function(args) { 
+		commjs.send(args.data);
+	});
+
+	socket.on('setHost', function(args) { 
+		commjs.setHost(args.uartName, args.name);
+	});
+
+	socket.on('getHost', function(args) { 
+		commjs.getHost();
 	});
 
 });

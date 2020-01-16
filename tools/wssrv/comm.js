@@ -50,6 +50,11 @@ function setHost(name)
 	return rpcScopeIO("setHost", { name : name } );
 }
 
+function getHost()
+{
+	return rpcScopeIO("getHost", { } );
+}
+
 function setCommOption(option)
 {
 	return rpcScopeIO( "setCommOption", { option : option } );
