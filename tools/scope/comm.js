@@ -24,26 +24,14 @@
 // Asynchronous communication
 //
 
-var SerialPort;
-var Readline;
-var parser;
-
-
-try {
-	SerialPort = require('serialport')
-	Readline   = require('@serialport/parser-readline'); 
-	parser     = new Readline();
-}
-catch(e) {
-	console.log("SerialPort was not loaded");
-}
+var SerialPort = require('serialport');
+var Readline   = require('@serialport/parser-readline'); 
+var parser     = new Readline();
 
 const baudRates  = [ 9600, 38400, 115200 ];
 
 let uart;
 let hostName;
-
-
 let commOption;
 
 function streamout (buffer) {
