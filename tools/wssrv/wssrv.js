@@ -26,7 +26,6 @@ var fs      = require('fs');
 var io      = require('socket.io')(http)
 var commjs  = require('../scope/comm.js');
 
-commjs.listUART();
 http.listen(8080);
 
 function handler (req, res) { //create server
@@ -54,22 +53,22 @@ function handler (req, res) { //create server
 		break;
 	}
 }
-//
-//io.sockets.on('connection', function (socket) {
-//	socket.on('listUART', function(data) { 
-//		console.log(commjs);
-//		commjs.listUART().then((ports) => {
-//			socket.emit('listUART', ports);
-//			console.log(ports);
-//		});
-//	});
-//
-//	socket.on('createUART', function(data) { 
-//		commjs.createUART(data.uartName, data.options);
-//	});
-//
-//	socket.on('send', function(data) { 
-//		commjs.send(data.data);
-//	});
-//
-//});
+
+io.sockets.on('connection', function (socket) {
+	socket.on('listUART', function(data) { 
+		console.log(commjs);
+		commjs.listUART().then((ports) => {
+			socket.emit('listUART', ports);
+			console.log(ports);
+		});
+	});
+
+	socket.on('createUART', function(data) { 
+		commjs.createUART(data.uartName, data.options);
+	});
+
+	socket.on('send', function(data) { 
+		commjs.send(data.data);
+	});
+
+});
