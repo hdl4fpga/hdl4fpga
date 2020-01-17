@@ -1,5 +1,12 @@
-npm install nw --nwjs_build_type=sdk
-npm install serialport
-cd node_modules\@serialport\bindings\
-set PATH=%PATH%;f:\python27;
-nw-gyp rebuild --target=0.43.3 --arch=x64
+call npm install nw --nwjs_build_type=sdk
+call npm -g install nw-gyp
+call npm install serialport
+call npm view nw version > nwjs.ver
+setlocal enableDelayedExpansion
+set /P "_nwjsver=" < nwjs.ver
+pushd node_modules\@serialport\bindings\
+call nw-gyp rebuild --target=%_nwjsver% --arch=x64
+popd
+del nwjs.ver
+mklink /D html  ..\html
+mklink /D srcjs ..\srcjs 
