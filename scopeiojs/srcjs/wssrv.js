@@ -24,7 +24,7 @@
 var http    = require('http').createServer(handler);
 var fs      = require('fs');
 var io      = require('socket.io')(http)
-var commjs  = require('comm.js');
+var commjs  = require('./comm.js');
 
 http.listen(8080);
 
@@ -41,13 +41,16 @@ function handler (req, res) { //create server
 
 	switch(req.url) {
 	case '/' :
-		fs.readFile(__dirname + '/../scope/main.html', fsCallback);
+		fs.readFile(__dirname + '/../html/scopeio.html', fsCallback);
+		break;
+	case '/scopeio.css' :
+		fs.readFile(__dirname + '/../html/scopeio.css', fsCallback);
 		break;
 	case '/comm.js' :
-		fs.readFile(__dirname + '/wscomm.js', fsCallback);
+		fs.readFile(__dirname + '../srcjs/wscomm.js', fsCallback);
 		break;
 	default :
-		fs.readFile(__dirname + '/../scope' + req.url, fsCallback);
+		fs.readFile(__dirname + '/../srcjs' + req.url, fsCallback);
 		break;
 	}
 }
