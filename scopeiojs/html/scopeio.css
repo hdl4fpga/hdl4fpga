@@ -8,6 +8,7 @@ input[type=button] {
 	text-decoration : none;
 }
 
+/*
 input.vertical {
 	display            : inline-block;
 	width              : 50;
@@ -16,8 +17,8 @@ input.vertical {
 	writing-mode       : bt-lr;
 	-webkit-appearance : slider-vertical;
 }
+*/
 
-/*
 input.vertical {
 	width            : 200;
 	height           : 50;
@@ -25,4 +26,8 @@ input.vertical {
 	transform-origin : 100px 100px;
 	transform        : rotate(-90deg);
 }
-*/
+
+div.vertical {
+	width   : 50;
+	height  : 210;
+}
