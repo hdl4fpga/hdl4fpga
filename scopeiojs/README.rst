@@ -1,7 +1,7 @@
-ScopeIOJS
+ScopeIOjs
 =========
 
-ScopeIOJS is a javascript control application of ScopeIO. Two interface are
+ScopeIOjs is a javascript control application of ScopeIO. Two interface are
 availalale at the moment : 
 
 - `serialport <https://github.com/serialport/node-serialport>`_
