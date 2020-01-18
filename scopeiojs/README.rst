@@ -19,5 +19,5 @@ nodesrv
 -------
 
 `nodesrv <./nodesrv>`_ is server application for standard browsers to control ScopeIO.
-Most of the popular browsers work. Here there are instruction to install and run it.
+Most of the popular browsers work. Here there are instructions to install and run it.
 `<./nodesrv>`_
