@@ -10,7 +10,7 @@ availalale at the moment :
 nwjs
 ----
 
-`<./nwjs>`_ is the ScopeIOJS application for `nwjs <https://nwjs.io>`_ to run.
+`nwjs <./nwjs>`_ is the ScopeIOJS application for `nw.js <https://nwjs.io>`_ to run.
 if `serialport <https://github.com/serialport/node-serialport>`_
 is needed, it must be recompiled in order to make it work. Further instruction
 to compile it on Linux or Windows on `<./nwjs>`_
@@ -18,6 +18,6 @@ to compile it on Linux or Windows on `<./nwjs>`_
 nodesrv
 -------
 
-`<./nodesrv>`_ is server application for standard browsers to control ScopeIO.
+`nodesrv <./nodesrv>`_ is server application for standard browsers to control ScopeIO.
 Most of the popular browsers work. Here there are instruction to install and run it.
 `<./nodesrv>`_
