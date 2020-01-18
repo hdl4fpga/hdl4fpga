@@ -10,7 +10,7 @@ availalale at the moment :
 NWJS
 ----
 
-NWJS is the ScopeIOJS application for `nwjs <https://nwjs.io>` to run.
+NWJS is the ScopeIOJS application for `nwjs <https://nwjs.io>`_ to run.
 if `serialport <https://github.com/serialport/node-serialport>`_
 is needed, it must be recompiled in order to make it work. Further instruction
 to compile it on Linux or Windows on `<./nwjs>`_
