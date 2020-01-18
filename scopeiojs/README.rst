@@ -3,17 +3,17 @@ ScopeIOJS
 
 ScopeIOJS is a javascript control application of ScopeIO. Two interface are
 availalale at the moment : 
-- `serialport <https://github.com/serialport/node-serialport`.
+- `serialport <https://github.com/serialport/node-serialport>`.
 - UDP.
 
 NWJS
 ----
 
-NWJS is the ScopeIOJS application for `nwjs <https://nwjs.io` to run.
-if `serialport <https://github.com/serialport/node-serialport`
+NWJS is the ScopeIOJS application for `nwjs <https://nwjs.io>` to run.
+if `serialport <https://github.com/serialport/node-serialport>`
 is needed, it must be recompiled in order to make it work. Further instruction
 to compile it on Linux or Windows on 
-https://github.com/hdl4fpga/hdl4fpga/tree/master/scopeiojs/nwjs 
+./scopeiojs/nwjs 
 
 NODESRV
 -------
