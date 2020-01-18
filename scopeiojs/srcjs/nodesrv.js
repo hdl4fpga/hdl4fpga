@@ -75,7 +75,7 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('setHost', function(args) { 
-		commjs.setHost(args.uartName, args.name);
+		commjs.setHost(args.name);
 	});
 
 	socket.on('getHost', function(args) { 

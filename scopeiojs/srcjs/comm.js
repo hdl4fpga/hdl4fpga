@@ -92,7 +92,7 @@ function send(data) {
 		buffer[i++] = 0xff;
 		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
 			if (err)
-				throw err;
+				console.log(err);
 			else 
 				console.log('UDP :' + toHex(buffer));
 		});
