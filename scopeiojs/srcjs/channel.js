@@ -51,6 +51,8 @@ function hzControl (parent) {
 	p.style['vertical-align'] = 'top';
 	time.appendChild(p);
 
+	w = document.createElement("div");
+	w.className = "vertical";
 	hscale           = document.createElement("input");
 	hscale.id        = "hscale";
 	hscale.type      = "range"
@@ -58,7 +60,8 @@ function hzControl (parent) {
 	hscale.value     = 0;
 	hscale.min       = 0;
 	hscale.max       = 15;
-	p.appendChild(hscale);
+	w.appendChild(hscale);
+	p.appendChild(w);
 	this.inputControl['hscale'] = hscale;
 
 	slabel = document.createElement("label");
@@ -74,6 +77,8 @@ function hzControl (parent) {
 	p.style['vertical-align'] = 'top';
 	time.appendChild(p);
 
+	w = document.createElement("div");
+	w.className = "vertical";
 	hoffset           = document.createElement("input");
 	hoffset.id        = "hoffset";
 	hoffset.type      = "range"
@@ -82,7 +87,8 @@ function hzControl (parent) {
 	hoffset.min       = -(1 << 13);
 	hoffset.max       = (1 << 13)-1;
 	this.inputControl['hoffset'] = hoffset;
-	p.appendChild(hoffset);
+	w.appendChild(hoffset);
+	p.appendChild(w);
 
 	hscale.hoffset  = hoffset;
 	hscale.hscale   = hscale;
@@ -175,6 +181,8 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	vtaxis.appendChild(c);
 
+	w = document.createElement("div");
+	w.className = "vertical";
 	gain = document.createElement("input");
 	gain['id']        = 'gain:'+number;
 	gain['type']      = 'range';
@@ -182,7 +190,8 @@ function vtControl (parent, number, color) {
 	gain['value']     = 0;
 	gain['min']       = 0;
 	gain['max']       = 15;
-	c.appendChild(gain);
+	w.appendChild(gain);
+	c.appendChild(w);
 	this.inputControl['gain'] = gain;
 	
 	vglabel = document.createElement("label");
@@ -197,6 +206,8 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	vtaxis.appendChild(c);
 
+	w = document.createElement("div");
+	w.className = "vertical";
 	offset = document.createElement("input");
 	offset['id']        =  'offset:'+number;
 	offset['type']      = 'range';
@@ -204,7 +215,8 @@ function vtControl (parent, number, color) {
 	offset['value']     = 0;
 	offset['min']       = -128;
 	offset['max']       =  128;
-	c.appendChild(offset);
+	w.appendChild(offset);
+	c.appendChild(w);
 	this.inputControl['offset'] = offset;
 
 	volabel = document.createElement("label");
@@ -238,13 +250,14 @@ function vtControl (parent, number, color) {
 	trigger.style['display']          = 'inline-block';
 	trigger.style['vertical-align']   = 'top';
 	t.appendChild(trigger);
-//	this.wrapper['trigger'] = trigger;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
 	trigger.appendChild(c);
 
+	w = document.createElement("div");
+	w.className = "vertical";
 	level = document.createElement("input");
 	level['id']        = 'level:'+number;
 	level['type']      = 'range';
@@ -252,7 +265,8 @@ function vtControl (parent, number, color) {
 	level['value']     = 0;
 	level['min']       = -256;
 	level['max']       = 255;
-	c.appendChild(level);
+	w.appendChild(level);
+	c.appendChild(w);
 	this.inputControl['level'] = level;
 	
 	llabel = document.createElement("label");
