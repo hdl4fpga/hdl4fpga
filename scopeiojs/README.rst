@@ -12,8 +12,7 @@ nwjs
 
 `nwjs <./nwjs>`_ is the ScopeIOJS application for `nw.js <https://nwjs.io>`_ to run.
 if `serialport <https://github.com/serialport/node-serialport>`_
-is needed, it must be recompiled in order to make it work. Further instruction
-to compile it on Linux or Windows on `<./nwjs>`_
+is needed, it must be recompiled in order to make it work. Further instructions are on `<./nwjs>`_
 
 nodesrv
 -------
