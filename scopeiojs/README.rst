@@ -1,8 +1,8 @@
 ScopeIOjs
 =========
 
-ScopeIOjs is a javascript control application of ScopeIO. Two interface are
-availalale at the moment : 
+ScopeIOjs is a javascript control application of ScopeIO. 
+The following are the hardware interface available:
 
 - `serialport <https://github.com/serialport/node-serialport>`_
 - UDP
