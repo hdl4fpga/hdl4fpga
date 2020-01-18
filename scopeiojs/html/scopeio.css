@@ -9,11 +9,20 @@ input[type=button] {
 }
 
 input.vertical {
-	width : 50;
-	display : inline-block;
-	height  : 200;
-	background-color : gray;
-	-webkit-appearance: slider-vertical;
-	writing-mode: bt-lr;
+	display            : inline-block;
+	width              : 50;
+	height             : 200;
+	background-color   : gray;
+	writing-mode       : bt-lr;
+	-webkit-appearance : slider-vertical;
 }
 
+/*
+input.vertical {
+	width            : 200;
+	height           : 50;
+	background-color : gray;
+	transform-origin : 100px 100px;
+	transform        : rotate(-90deg);
+}
+*/

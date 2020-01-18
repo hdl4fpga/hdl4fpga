@@ -46,11 +46,11 @@ function handler (req, res) { //create server
 	case '/scopeio.css' :
 		fs.readFile(__dirname + '/../html/scopeio.css', fsCallback);
 		break;
-	case '/comm.js' :
-		fs.readFile(__dirname + '../srcjs/wscomm.js', fsCallback);
+	case '/srcjs/comm.js' :
+		fs.readFile(__dirname + '/../srcjs/wscomm.js', fsCallback);
 		break;
 	default :
-		fs.readFile(__dirname + '/../srcjs' + req.url, fsCallback);
+		fs.readFile(__dirname + '/../' + req.url, fsCallback);
 		break;
 	}
 }

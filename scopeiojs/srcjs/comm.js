@@ -111,6 +111,7 @@ function createUART (uartName, options) {
 	uart = new SerialPort(uartName, options, function(err) {
 		uart.err = false;
 		if (err) {
+			console.log(err);
 			uart.err = true;
 		}
 	});
