@@ -152,17 +152,8 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => vga_lck);
 
-	pp_e : entity hdl4fpga.dfs
-	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 20.0,
-		dfs_mul => 11,
-		dfs_div => 7)
-	port map(
-		dcm_rst => button(0),
-		dcm_clk => sys_clk,
-		dfs_clk => input_clk);
-
+	input_clk <= sys_clk;
+	
 	input_ena <= '1'; --uart_ena;
 	process (sys_clk)
 	begin

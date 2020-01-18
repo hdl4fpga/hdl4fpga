@@ -1,0 +1,14 @@
+{
+	"name": "ScopeIO",
+	"main": "html/scopeio.html",
+	"window": {
+		"width": 500,
+		"height": 520
+	},
+	"scripts": {
+		"start": "nw"
+	},
+	"dependencies": {
+	},
+	"devDependencies": {}
+}

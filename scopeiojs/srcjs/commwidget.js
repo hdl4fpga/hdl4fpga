@@ -39,6 +39,10 @@ function commWidget(commOption) {
 
 	switch (commOption) {
 	case 'UART': // UART
+		if (typeof io === 'undefined')
+			if (typeof SerialPort === 'undefined')
+				break;
+
 		let baudRates  = [ 9600, 38400, 115200 ];
 
 		delete this.host;
@@ -68,13 +72,14 @@ function commWidget(commOption) {
 		listUART().then(function (ports) {
 			let o;
 
+			console.log(ports);
 			for (i=0; i < ports.length; i++) {
 				o = document.createElement("option");
-				o.text = ports[i].comName;
+				o.text = ports[i].path;
 				u.add(o, i);
 			}
 
-			createUART(
+			return createUART(
 				u.options[u.selectedIndex].text, 
 				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
 		});
@@ -98,6 +103,7 @@ function commWidget(commOption) {
 
 		break; 
 	}
+	return commOption;
 }
 
 commWidget.prototype.uartOnChange =  function (e) {

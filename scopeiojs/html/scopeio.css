@@ -1,0 +1,28 @@
+body {
+	background-color : white; }
+
+input[type=button] {
+	width   : 100%;
+	display : inline-block;
+	border  : 1px solid lightgray;
+	text-decoration : none;
+}
+
+input.vertical {
+	display            : inline-block;
+	width              : 50;
+	height             : 200;
+	background-color   : gray;
+	writing-mode       : bt-lr;
+	-webkit-appearance : slider-vertical;
+}
+
+/*
+input.vertical {
+	width            : 200;
+	height           : 50;
+	background-color : gray;
+	transform-origin : 100px 100px;
+	transform        : rotate(-90deg);
+}
+*/
