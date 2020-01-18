@@ -7,17 +7,17 @@ availalale at the moment :
 - `serialport <https://github.com/serialport/node-serialport>`_
 - UDP.
 
-NWJS
+nwjs
 ----
 
-NWJS is the ScopeIOJS application for `nwjs <https://nwjs.io>`_ to run.
+`<./nwjs>`_ is the ScopeIOJS application for `nwjs <https://nwjs.io>`_ to run.
 if `serialport <https://github.com/serialport/node-serialport>`_
 is needed, it must be recompiled in order to make it work. Further instruction
 to compile it on Linux or Windows on `<./nwjs>`_
 
-NODESRV
+nodesrv
 -------
 
-NODESRV is server application for standard browsers to control ScopeIO.
+`<./nodesrv>`_ is server application for standard browsers to control ScopeIO.
 Most of the popular browsers work. Here there are instruction to install and run it.
-https://github.com/hdl4fpga/hdl4fpga/tree/master/scopeiojs/nodesrv
+`<./nodesrv>`_
