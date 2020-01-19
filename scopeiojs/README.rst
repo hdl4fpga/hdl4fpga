@@ -17,6 +17,6 @@ is needed, it must be recompiled in order to make it work. Further instructions 
 nodesrv
 -------
 
-`nodesrv <./nodesrv>`_ is server application for standard browsers to control ScopeIO.
+`nodesrv <./nodesrv>`_ is the a minimal server application for browsers to control ScopeIO.
 Most of the popular browsers work. Here there are instructions to install and run it.
 `<./nodesrv>`_
