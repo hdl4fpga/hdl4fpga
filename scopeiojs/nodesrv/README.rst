@@ -46,5 +46,5 @@ Running nodesrv
 Opening the GUI on the prefered browser
 ---------------------------------------
 
-- Doble click on `<./index.html>`_. Moving the controls on the browser make `<../nodesrv>`_ show logs. A signal that the communication between the browser and the server is working.
+- Click on `<./index.html>`_. Moving the controls on the browser make `<../nodesrv>`_ show logs. A signal that the communication between the browser and the server is working.
 
