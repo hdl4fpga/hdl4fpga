@@ -25,3 +25,5 @@ Opening the GUI on the prefered browser
 --------------------------------------
 
 - Doble click on `<./index.html>`_. Moving the controls make `<../nodesrv>`_ show log.
+
+.. image:: https://github.com/hdl4fpga/hdl4fpga.github.io/blob/master/images/hdl4fpga/readme/nodesrv/browser.png
