@@ -18,7 +18,7 @@ Admistrator privilege is required to run Windows **mklink** command.
 Running nodesrv
 ---------------
 
-- Doble click on `<./nodesrv.bat>`_. A command line windows will open in which a log with command will be shown.
+- Doble click on `<./nodesrv.bat>`_. A command line windows will open in which a log will be shown.
 
 Opening the GUI on the prefered browser
 --------------------------------------
