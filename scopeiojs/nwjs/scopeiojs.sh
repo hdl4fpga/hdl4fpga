@@ -21,4 +21,4 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 # more details at http://www.gnu.org/licenses/.                             
 
-node nodesrv.js
+npm start
