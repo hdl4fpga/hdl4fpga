@@ -10,7 +10,7 @@ Installing steps
 
 - Download and install `node.js <http://nodejs.org>`_. 
 - Open a CLI such as PowerSell or Command as **Admistrator**.
-- on the `<../nodesrv>`_ directory run `<./install.bat>`_ as it's shown on the image. 
+- On the `<../nodesrv>`_ directory run `<./install.bat>`_ as it's shown on the image. 
 
 .. image:: https://github.com/hdl4fpga/hdl4fpga.github.io/blob/master/images/hdl4fpga/readme/nodesrv/command.png
 
