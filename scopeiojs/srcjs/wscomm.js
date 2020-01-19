@@ -37,6 +37,7 @@ function createUART(uartName, options)
 
 function send(data)
 {
+//	setHost(hostName);
 	return rpcScopeIO("send", { data : data } );
 }
 
