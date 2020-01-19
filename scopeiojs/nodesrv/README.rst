@@ -1,6 +1,9 @@
 nodesrv
 =======
 
+On Windows
+----------
+
 Installing steps
 ----------------
 
