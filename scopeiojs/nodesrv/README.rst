@@ -1,11 +1,12 @@
+*******
 nodesrv
-=======
+*******
 
 On Windows
-----------
+##########
 
 Installing steps
-----------------
+****************
 
 - Download and install `node.js <http://nodejs.org>`_. 
 - Open a CLI such as PowerSell or Command and on the `<../nodesrv>`_ directory.
