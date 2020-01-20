@@ -43,9 +43,8 @@ architecture uart_tx of s3starter is
 
 	signal uart_txdv  : std_logic;
 	signal uart_txd   : std_logic_vector(8-1 downto 0);
-	signal uart_ena   : std_logic;
 
-begin
+	signal display    : std_logic_vector(0 to 16-1);begin
 
 	clkin_ibufg : ibufg
 	port map (
@@ -72,7 +71,7 @@ begin
 		baudrate => baudrate,
 		clk_rate => 16*baudrate)
 	port map (
-		uart_sin  => rs232_rxd;
+		uart_sin  => rs232_rxd,
 		uart_rxc  => sys_clk,
 		uart_ena  => uart_ena,
 		uart_rxdv => uart_rxdv,
@@ -93,11 +92,11 @@ begin
 		uart_txd  => uart_txd);
 
 	led(1) <= uart_rxdv;
-	process(uart_rxc, button(0))
+	process(sys_clk, button(0))
 	begin
 		if button(0)='1' then
 			led(0) <= '0';
-		elsif rising_edge(uart_rxc) then
+		elsif rising_edge(sys_clk) then
 			if uart_rxdv='1' then
 				led(0) <= '1';
 				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
@@ -109,7 +108,7 @@ begin
 	generic map (
 		refresh => 2*8)
 	port map (
-		clk  => uart_rxc,
+		clk  => sys_clk,
 		data => display,
 		segment_a  => s3s_segment_a,
 		segment_b  => s3s_segment_b,
