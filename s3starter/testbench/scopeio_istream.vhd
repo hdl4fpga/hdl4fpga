@@ -31,20 +31,28 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture uart_tx of s3starter is
+architecture beh of s3starter is
+
+	constant inputs : natural := 1;
 
 	signal sys_clk    : std_logic;
+	signal vga_clk    : std_logic;
 
-	constant baudrate : natural := 115200;
+	constant baudrate      : natural := 115200;
 
+	signal uart_sin   : std_logic;
+	signal uart_rxc   : std_logic;
+	signal uart_ena   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
-	signal uart_ena   : std_logic;
 
-	signal uart_txdv  : std_logic;
-	signal uart_txd   : std_logic_vector(8-1 downto 0);
+	signal istreamdaisy_frm  : std_logic;
+	signal istreamdaisy_irdy : std_logic;
+	signal istreamdaisy_data : std_logic_vector(8-1 downto 0);
 
-	signal display    : std_logic_vector(0 to 16-1);begin
+	signal display : std_logic_vector(0 to 16-1);
+
+begin
 
 	clkin_ibufg : ibufg
 	port map (
@@ -66,37 +74,56 @@ architecture uart_tx of s3starter is
 		end if;
 	end process;
 
+	uart_sin <= rs232_rxd;
+	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
 		clk_rate => 16*baudrate)
 	port map (
-		uart_sin  => rs232_rxd,
-		uart_rxc  => sys_clk,
+		uart_sin  => uart_sin,
+		uart_rxc  => uart_rxc,
 		uart_ena  => uart_ena,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
-	uart_txdv <= uart_rxdv;
-	uart_txd  <= uart_rxd;
-
-	uarttx_e : entity hdl4fpga.uart_tx
+	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	generic map (
-		baudrate => baudrate,
-		clk_rate => 16*baudrate)
+		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
 	port map (
-		uart_sout => rs232_txd,
-		uart_ena  => uart_ena,
-		uart_txc  => sys_clk,
-		uart_txdv => uart_txdv,
-		uart_txd  => uart_txd);
+		stream_clk  => uart_rxc,
+		stream_ena  => uart_ena,
+		stream_dv   => uart_rxdv,
+		stream_data => uart_rxd,
 
-	process(sys_clk)
+		chaini_data => uart_rxd,
+
+		chaino_frm  => istreamdaisy_frm,  
+		chaino_irdy => istreamdaisy_irdy,
+		chaino_data => istreamdaisy_data);
+
+	process(uart_rxc, button(0))
+		variable row : unsigned(display'length-1 downto 0);
+		variable pulse : unsigned(led'range) := (others => '0');
 	begin
-		if rising_edge(sys_clk) then
-			if uart_rxdv='1' then
-				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
+		if rising_edge(uart_rxc) then
+--			if istreamdaisy_irdy='1' then
+--				row := row sll 8;
+--				row(8-1 downto 0) := unsigned(istreamdaisy_data);
+--				display <= std_logic_vector(row);
+--			end if;
+			if istreamdaisy_irdy='1' then
+				pulse := pulse sll 1;
+				pulse(0) := '1';
+				row := row sll 8;
+				row(8-1 downto 0) := unsigned(uart_rxd);
+				display <= std_logic_vector(row);
 			end if;
+			if button(0)='1' then
+				pulse := (others => '0');
+			end if;
+				led <= std_logic_vector(pulse);
 		end if;
 	end process;
 
@@ -116,14 +143,15 @@ architecture uart_tx of s3starter is
 		segment_dp => s3s_segment_dp,
 		display_turnon => s3s_anodes);
 
-	expansion_a2 <= (others => 'Z');
-	ps2_clk      <= 'Z';
-	ps2_data     <= 'Z';
-	led          <= (others => 'Z');
-	vga_red      <= 'Z';
-	vga_green    <= 'Z';
-	vga_blue     <= 'Z';
-	vga_hsync    <= 'Z';
-	vga_vsync    <= 'Z';
+	vga_red   <= 'Z';
+	vga_green <= 'Z';
+	vga_blue  <= 'Z';
+	vga_hsync <= 'Z';
+	vga_vsync <= 'Z';
 
+	led <= (others => 'Z');
+	expansion_a2 <= (others => 'Z');
+	rs232_txd <= 'Z';
+	ps2_clk <= 'Z';
+	ps2_data <= 'Z';
 end;

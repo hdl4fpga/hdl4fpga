@@ -58,7 +58,9 @@ begin
 					frm <= '1';
 				end if;
 
-				if rxd=esc then
+				if esci='1' then
+					esci <= '0';
+				elsif rxd=esc then
 					esci <= '1';
 				else
 					esci <= '0';
@@ -75,8 +77,8 @@ begin
 
 	so_irdy <= 
 		rxdv when esci='1' else
-		'0'  when rxd=esc else
-		'0'  when rxd=eos  else
+		'0'  when rxd=esc and rxdv='1' else
+		'0'  when rxd=eos and rxdv='1' else
 		rxdv;
 
 	so_data <= rxd;

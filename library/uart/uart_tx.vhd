@@ -112,7 +112,8 @@ begin
 					dcntr := dcntr_init;
 					if full_count='1' then
 						uart_state <= data_s;
-						uart_sout  <= uart_txd(0);
+						uart_sout  <= data(0);
+						data := data ror 1;
 					end if;
 				when data_s =>
 					if full_count='1' then

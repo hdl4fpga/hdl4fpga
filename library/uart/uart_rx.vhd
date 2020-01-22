@@ -139,14 +139,16 @@ begin
 					uart_rxdv <= '0';
 					dcntr     := (others => '-');
 					if full_count='1' then
-						uart_state <= idle_s;
+						if sample_rxd='0' then
+							uart_state <= start_s;
+						else
+							uart_state <= idle_s;
+						end if;
 					end if;
 				end case;
-			else
-				uart_rxdv <= '0';
+				uart_rxd <= std_logic_vector(data);
 			end if;
 
-			uart_rxd <= std_logic_vector(data);
 		end if;
 	end process;
 end;

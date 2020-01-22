@@ -46,28 +46,41 @@ function toHex(buffer)
 
 function streamout (data) {
 
-	let str = '';
-	function write (data) {
-		uart.write(data);
-		str = str + toHex(data);
-	}
+	const esc = 0x5c;
+	const eod = 0x00;
 
-	let uint8 = new Uint8Array(1);
-	let esc   = new Uint8Array(1);
-	let eos   = new Uint8Array(1);
-
-	esc[0] = 0x5c;
-	eos[0] = 0x00;
-
-	for (var i = 0; i < data.length; i++) {
-		uint8[0] = data[i];
-		if (uint8[0] == esc[0] || uint8[0] == eos[0]) {
-			write(esc);
+	function bufferSize (data) {
+		var size = 0;
+		for (var i = 0; i < data.length; i++) {
+			switch (data[i]) {
+			case esc:
+			case eod:
+				size++;
+			default:
+				size++;
+			}
 		}
-		write(uint8);
+		size++;	// end of data;
+		return size;
 	}
-	write(eos);
-	return str;
+
+	var buffer = new Uint8Array(bufferSize(data));
+	var str = '';
+
+	var j = 0;
+	for (var i = 0; i < data.length; i++) {
+		switch (data[i]) {
+		case esc:
+		case eod:
+			buffer[j++] = esc;
+
+		default:
+			buffer[j++] = data[i];
+		}
+	}
+	buffer[j++] = eod;
+	uart.write(buffer);
+	return toHex(buffer);
 }
 
 // TCP/IP communication

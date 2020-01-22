@@ -170,6 +170,7 @@ begin
 --	port map (
 --		stream_clk  => uart_rxc,
 --		stream_dv   => uart_rxdv,
+--		stream_ena  => uart_ena,
 --		stream_data => uart_rxd,
 --
 --		chaini_data => uart_rxd,

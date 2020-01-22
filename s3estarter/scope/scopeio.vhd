@@ -314,6 +314,7 @@ begin
 --		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
 --	port map (
 --		stream_clk  => uart_rxc,
+--		stream_ena  => uart_ena,
 --		stream_dv   => uart_rxdv,
 --		stream_data => uart_rxd,
 --

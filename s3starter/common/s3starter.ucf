@@ -42,5 +42,7 @@ NET "vga_green"        IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
 NET "vga_blue"         IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
 NET "vga_hsync"        IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
 NET "vga_vsync"        IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
+NET "ps2_clk"          IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
+NET "ps2_data"         IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
 NET "rs232_rxd"        IOSTANDARD = LVCMOS33;
 NET "rs232_txd"        IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;
