@@ -306,18 +306,22 @@ begin
 		video_vsync => vga_vsync,
 		video_blank => vga_blank);
 
-	led(7 downto 2) <= (others => 'Z');
-
-	led(1) <= uart_rxdv;
 	process(uart_rxc, button(0))
+		variable row : unsigned(display'length-1 downto 0);
+		variable pulse : unsigned(led'range) := (others => '0');
 	begin
-		if button(0)='1' then
-			led(0) <= '0';
-		elsif rising_edge(uart_rxc) then
-			if uart_rxdv='1' then
-				led(0) <= '1';
-				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
+		if rising_edge(uart_rxc) then
+			if button(0)='1' then
+				pulse := (others => '0');
+				row   := (others => '0');
+			elsif istreamdaisy_irdy='1' then
+				pulse    := pulse sll 1;
+				pulse(0) := '1';
+				row := row sll 8;
+				row(8-1 downto 0) := unsigned(istreamdaisy_data);
 			end if;
+			display <= std_logic_vector(row);
+			led    <= std_logic_vector(pulse);
 		end if;
 	end process;
 

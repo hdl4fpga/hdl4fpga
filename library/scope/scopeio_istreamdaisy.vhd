@@ -36,6 +36,7 @@ entity scopeio_istreamdaisy is
 
 		stream_clk  : in  std_logic;
 		stream_dv   : in  std_logic := '1';
+		stream_ena  : in  std_logic := '1';
 		stream_data : in  std_logic_vector;
 
 		chaini_clk  : in  std_logic := '-';
@@ -51,6 +52,7 @@ entity scopeio_istreamdaisy is
 end;
 
 architecture beh of scopeio_istreamdaisy is
+	signal rxdv      : std_logic;
 	signal strm_frm  : std_logic;
 	signal strm_irdy : std_logic;
 	signal strm_data : std_logic_vector(stream_data'range);
@@ -61,22 +63,20 @@ begin
 		report "chaino_data'lengthi not equal stream_data'length"
 		severity failure;
 
+	rxdv <= stream_dv and stream_ena;
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (
 		esc => istream_esc,
 		eos => istream_eos)
 	port map (
 		clk     => stream_clk,
-		rxdv    => stream_dv,
+		rxdv    => rxdv,
 		rxd     => stream_data,
 
-		so_frm  => strm_frm,
-		so_irdy => strm_irdy,
-		so_data => strm_data);
+		so_frm  => chaino_frm,
+		so_irdy => chaino_irdy,
+		so_data => chaino_data);
 
-	chaino_clk  <= chaini_clk  when chaini_sel='1' else stream_clk;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else strm_frm; 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else strm_irdy;
-	chaino_data <= chaini_data when chaini_sel='1' else strm_data;
+	chaino_clk  <= stream_clk;
 
 end;
