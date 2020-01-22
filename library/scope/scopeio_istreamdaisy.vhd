@@ -52,11 +52,11 @@ entity scopeio_istreamdaisy is
 end;
 
 architecture beh of scopeio_istreamdaisy is
-	signal rxdv      : std_logic;
 	signal strm_frm  : std_logic;
 	signal strm_irdy : std_logic;
 	signal strm_data : std_logic_vector(stream_data'range);
 
+	signal rxdv : std_logic;
 begin
 
 	assert chaino_data'length=chaini_data'length 
@@ -73,10 +73,13 @@ begin
 		rxdv    => rxdv,
 		rxd     => stream_data,
 
-		so_frm  => chaino_frm,
-		so_irdy => chaino_irdy,
-		so_data => chaino_data);
+		so_frm  => strm_frm,
+		so_irdy => strm_irdy,
+		so_data => strm_data);
 
-	chaino_clk  <= stream_clk;
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else stream_clk;
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else strm_frm; 
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else strm_irdy;
+	chaino_data <= chaini_data when chaini_sel='1' else strm_data;
 
 end;

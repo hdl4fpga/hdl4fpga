@@ -124,14 +124,15 @@ architecture beh of s3starter is
 	constant video_mode : layout_mode := mode1080p;
 	signal input_clk : std_logic;
 
-	signal cntr : unsigned(0 to 16-1);
 
 begin
 
 	process (sys_clk)
+		variable cntr : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sys_clk) then
-			cntr <= cntr + 1;
+			cntr := cntr + 1;
+			sample <= (0 => cntr(8), 1 to 15 => not cntr(8)); --sample, --s(0 to sample_size*inputs-1),
 		end if;
 	end process;
 
@@ -210,12 +211,14 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
+	si_clk  <= uart_rxc;
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	generic map (
 		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
 	port map (
 		stream_clk  => uart_rxc,
+		stream_ena  => uart_ena,
 		stream_dv   => uart_rxdv,
 		stream_data => uart_rxd,
 
@@ -225,53 +228,10 @@ begin
 		chaino_irdy => istreamdaisy_irdy,
 		chaino_data => istreamdaisy_data);
 
-	-- From EMARD's ULX3S code
-	ps2mouse_b : block
-		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) := b"111"; --  RGB
+	si_frm  <= istreamdaisy_frm;
+	si_irdy <= istreamdaisy_irdy;
+	si_data <= istreamdaisy_data;
 
-		signal rst          : std_logic;
-		signal clk_mouse    : std_logic;
-		signal clkmouse_ena : std_logic;
-	begin
-
-		rst <= not vga_lck;
-		clk_mouse <= sys_clk;
-		process (sys_clk)
-		begin
-			if rising_edge(sys_clk) then
-				clkmouse_ena <= not clkmouse_ena;
-			end if;
-		end process;
-	
-		ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
-		generic map(
-			C_inputs    => inputs,
-			C_tracesfg  => C_tracesfg_gui,
-			vlayout_id  => video_params(video_mode).layout
-		)
-		port map (
-			clk         => clk_mouse,
-			clk_ena     => clkmouse_ena,
-			ps2m_reset  => rst,
-			ps2m_clk    => ps2_clk,
-			ps2m_dat    => ps2_data,
-			-- daisy input
-			chaini_frm  => istreamdaisy_frm,
-			chaini_irdy => istreamdaisy_irdy,
-			chaini_data => istreamdaisy_data,
-			-- daisy output
-			chaino_frm  => mousedaisy_frm,
-			chaino_irdy => mousedaisy_irdy,
-			chaino_data => mousedaisy_data
-		);
-
-		si_frm  <= mousedaisy_frm and switch(0);
-		si_irdy <= mousedaisy_irdy;
-		si_data <= mousedaisy_data;
-	end block;
-
-	si_clk  <= sys_clk;
-	sample <= (0 => cntr(8), 1 to 15 => not cntr(8)); --sample, --s(0 to sample_size*inputs-1),
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
@@ -307,7 +267,7 @@ begin
 		video_blank => vga_blank);
 
 	process(uart_rxc, button(0))
-		variable row : unsigned(display'length-1 downto 0);
+		variable row   : unsigned(display'length-1 downto 0);
 		variable pulse : unsigned(led'range) := (others => '0');
 	begin
 		if rising_edge(uart_rxc) then
@@ -329,7 +289,7 @@ begin
 	generic map (
 		refresh => 2*8)
 	port map (
-		clk  => uart_rxc,
+		clk  => uart_ena,
 		data => display,
 		segment_a  => s3s_segment_a,
 		segment_b  => s3s_segment_b,
