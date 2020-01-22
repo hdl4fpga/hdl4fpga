@@ -228,9 +228,54 @@ begin
 		chaino_irdy => istreamdaisy_irdy,
 		chaino_data => istreamdaisy_data);
 
-	si_frm  <= istreamdaisy_frm;
-	si_irdy <= istreamdaisy_irdy;
-	si_data <= istreamdaisy_data;
+--	si_frm  <= istreamdaisy_frm;
+--	si_irdy <= istreamdaisy_irdy;
+--	si_data <= istreamdaisy_data;
+
+	-- From EMARD's ULX3S code
+	ps2mouse_b : block
+		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) := b"111"; --  RGB
+
+		signal rst          : std_logic;
+		signal clk_mouse    : std_logic;
+		signal clkmouse_ena : std_logic;
+	begin
+
+		rst <= not vga_lck;
+		clk_mouse <= sys_clk;
+		process (sys_clk)
+		begin
+			if rising_edge(sys_clk) then
+				clkmouse_ena <= not clkmouse_ena;
+			end if;
+		end process;
+	
+		ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
+		generic map(
+			C_inputs    => inputs,
+			C_tracesfg  => C_tracesfg_gui,
+			vlayout_id  => video_params(video_mode).layout
+		)
+		port map (
+			clk         => clk_mouse,
+			clk_ena     => clkmouse_ena,
+			ps2m_reset  => rst,
+			ps2m_clk    => ps2_clk,
+			ps2m_dat    => ps2_data,
+			-- daisy input
+			chaini_frm  => istreamdaisy_frm,
+			chaini_irdy => istreamdaisy_irdy,
+			chaini_data => istreamdaisy_data,
+			-- daisy output
+			chaino_frm  => mousedaisy_frm,
+			chaino_irdy => mousedaisy_irdy,
+			chaino_data => mousedaisy_data
+		);
+
+		si_frm  <= mousedaisy_frm;
+		si_irdy <= mousedaisy_irdy;
+		si_data <= mousedaisy_data;
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -301,12 +346,13 @@ begin
 		segment_dp => s3s_segment_dp,
 		display_turnon => s3s_anodes);
 
-	vga_red   <= vga_rgb(2);
-	vga_green <= vga_rgb(1);
-	vga_blue  <= vga_rgb(0);
+	vga_red      <= vga_rgb(2);
+	vga_green    <= vga_rgb(1);
+	vga_blue     <= vga_rgb(0);
 
 	expansion_a2 <= (others => 'Z');
-	rs232_txd <= 'Z';
-	ps2_clk <= 'Z';
-	ps2_data <= 'Z';
+	rs232_txd    <= 'Z';
+	ps2_clk      <= 'Z';
+	ps2_data     <= 'Z';
+
 end;
