@@ -19,11 +19,11 @@
 @REM FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 @REM more details at http://www.gnu.org/licenses/.                             
 
-CALL NPM INSTALL BUFFERUTIL
-CALL NPM INSTALL UTF-8-VALIDATE
-CALL NPM INSTALL SOCKET.IO
-CALL NPM INSTALL SERIALPORT
-DEL /F /Q NODESRV.JS
-DEL /F /Q COMM.JS
-MKLINK /H NODESRV.JS ..\SRCJS\NODESRV.JS 
-MKLINK /H COMM.JS    ..\SRCJS\COMM.JS 
+CALL npm install bufferutil
+CALL npm install utf-8-validate
+CALL npm install socket.io
+CALL npm install serialport
+DEL /F /Q nodesrv.js 2> NUL
+DEL /F /Q comm.js 2> NUL
+MKLINK /H nodesrv.js ..\srcjs\nodesrv.js 
+MKLINK /H comm.js    ..\srcjs\comm.js 
