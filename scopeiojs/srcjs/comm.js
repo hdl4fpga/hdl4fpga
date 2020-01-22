@@ -64,10 +64,12 @@ function streamout (data) {
 		return size;
 	}
 
-	var buffer = new Uint8Array(bufferSize(data));
+	var buffer = new Uint8Array(bufferSize(data)+2);
 	var str = '';
 
 	var j = 0;
+	buffer[j++] = eod;
+	buffer[j++] = eod;
 	for (var i = 0; i < data.length; i++) {
 		switch (data[i]) {
 		case esc:
