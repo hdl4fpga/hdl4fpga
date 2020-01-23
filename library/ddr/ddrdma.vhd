@@ -33,7 +33,8 @@ entity ddrdma is
 		ddrdma_frm  : in  std_logic;
 		ddrdma_irdy : in  std_logic;
 		ddrdma_trdy : out std_logic;
-		ddrdma_addr : in  std_logic_vector;
+		ddrdma_iaddr : in  std_logic_vector;
+		ddrdma_ilen  : in  std_logic_vector;
 
 		ddr_clk     : in  std_logic;
 		ddr_frm     : out std_logic;
@@ -47,58 +48,75 @@ entity ddrdma is
 		ddr_col     : out std_logic_vector);
 end;
 
-
 architecture def of ddrdma is
-
-	signal bnk_cntr : unsigned(0 to ddr_bnk'length);
-	signal row_cntr : unsigned(0 to ddr_row'length);
-	signal col_cntr : unsigned(0 to ddr_col'length);
-
 begin
 
 	process (ddr_clk)
 		type states is (init_s, running_s);
-		signal state : states;
+		variable state : states;
+
+		variable bnk_addr : unsigned(0 to ddr_bnk'length);
+		variable row_addr : unsigned(0 to ddr_row'length);
+		variable col_addr : unsigned(0 to ddr_col'length);
+
+		variable bnk_cntr : unsigned(0 to ddr_bnk'length);
+		variable row_cntr : unsigned(0 to ddr_row'length);
+		variable col_cntr : unsigned(0 to ddr_col'length);
+
 	begin
 		if rising_edge(ddr_clk) then
 			case state is
 			when init_s =>
-				if ddr_frm='1' then
-					col_cntr <= resize((unsigned(ddrdma_addr) srl              0) mod 2**ddr_col'length, col_cntr'length);
-					row_cntr <= resize((unsigned(ddrdma_addr) srl ddr_col'length) mod 2**ddr_row'length, row_cntr'length);
-					bnk_cntr <= resize((unsigned(ddrdma_addr) srl ddr_row'length) mod 2**ddr_bnk'length, bnk_cntr'length);
+				if ddrdma_frm='1' then
+					col_addr := resize((unsigned(ddrdma_addr) srl              0) mod 2**ddr_col'length, col_addr'length);
+					row_addr := resize((unsigned(ddrdma_addr) srl ddr_col'length) mod 2**ddr_row'length, row_addr'length);
+					bnk_addr := resize((unsigned(ddrdma_addr) srl ddr_row'length) mod 2**ddr_bnk'length, bnk_addr'length);
+
+					col_cntr := resize((unsigned(ddrdma_len)  srl              0) mod 2**ddr_col'length, col_addr'length);
+					row_cntr := resize((unsigned(ddrdma_len)  srl ddr_col'length) mod 2**ddr_row'length, row_addr'length);
+					bnk_cntr := resize((unsigned(ddrdma_len)  srl ddr_row'length) mod 2**ddr_bnk'length, bnk_addr'length);
 				end if;
 
-				if ddr_frm='1' then
-					state <= running_s;
+				if ddrdma_frm='1' then
+					state := running_s;
 				else
-					state <= init_s;
+					state := init_s;
 				end if;
+
 			when running_s =>
-				if ddr_frm='1' then
+				if ddrdma_frm='1' then
 					if ddr_trdy='1' then
-						col_cntr <= col_cntr + 1;
+						col_addr := col_addr + 1;
+						if col_addr(0)='1' then
+							row_addr := row_addr + 1;
+						end if;
+						if row_addr(0)='1' then
+							bnk_addr := bnk_addr + 1;
+						end if;
+
+						col_cntr := col_cntr - 1;
 						if col_cntr(0)='1' then
-							row_cntr <= row_cntr + 1;
+							row_cntr := row_cntr - 1;
 						end if;
 						if row_cntr(0)='1' then
-							bnk_cntr <= bnk_cntr + 1;
+							bnk_cntr := bnk_cntr - 1;
 						end if;
 					end if;
 
 				end if;
 
-				if ddr_frm='1' then
-					state <= running_s;
+				if ddrdma_frm='1' then
+					state := running_s;
 				else
-					state <= init_s;
+					state := init_s;
 				end if;
 			end case;
+
+			ddr_col <= std_logic_vector(col_addr mod 2**ddr_col'length);
+			ddr_row <= std_logic_vector(row_addr mod 2**ddr_row'length);
+			ddr_bnk <= std_logic_vector(bnk_addr mod 2**ddr_bnk'length);
+
 		end if;
 	end process;
-
-	ddr_col <= std_logic_vector(col_cntr mod 2**ddr_col'length);
-	ddr_row <= std_logic_vector(row_cntr mod 2**ddr_row'length);
-	ddr_bnk <= std_logic_vector(bnk_cntr mod 2**ddr_bnk'length);
 
 end;
