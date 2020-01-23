@@ -118,12 +118,12 @@ begin
 			ddr_row <= std_logic_vector(resize(row_addr mod 2**ddr_row'length, ddr_row'length));
 			ddr_col <= std_logic_vector(resize(col_addr mod 2**ddr_col'length, ddr_col'length));
 
-			dmaddr_taddr <= std_logic_vector(
+			ddrdma_taddr <= std_logic_vector(
 				resize(unsigned(bnk_addr) mod 2**ddr_bnk'length, ddr_bnk'length) &
 				resize(unsigned(row_addr) mod 2**ddr_row'length, ddr_row'length) &
 				resize(unsigned(col_addr) mod 2**ddr_col'length, ddr_col'length));
 
-			dmaddr_tlen <= std_logic_vector(
+			ddrdma_tlen <= std_logic_vector(
 				resize(unsigned(bnk_cntr) mod 2**ddr_bnk'length, ddr_bnk'length) &
 				resize(unsigned(row_cntr) mod 2**ddr_row'length, ddr_row'length) &
 				resize(unsigned(col_cntr) mod 2**ddr_col'length, ddr_col'length));
