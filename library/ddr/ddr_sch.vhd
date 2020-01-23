@@ -27,9 +27,9 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_db.all;
+use hdl4fpga.ddr_db.all;
 
-entity xdr_sch is
+entity ddr_sch is
 	generic (
 		PROFILE           : natural;
 		DELAY_SIZE        : natural := 64;
@@ -65,26 +65,26 @@ entity xdr_sch is
 		sys_rea           : in  std_logic;
 		sys_wri           : in  std_logic;
 
-		xdr_rwn           : out std_logic_vector(0 to DATA_GEAR-1);
-		xdr_st            : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_rwn           : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_st            : out std_logic_vector(0 to DATA_GEAR-1);
 
-		xdr_dqsz          : out std_logic_vector(0 to DATA_GEAR-1);
-		xdr_dqs           : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_dqsz          : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_dqs           : out std_logic_vector(0 to DATA_GEAR-1);
 
-		xdr_dqz           : out std_logic_vector(0 to DATA_GEAR-1);
-		xdr_wwn           : out std_logic_vector(0 to DATA_GEAR-1);
-		xdr_odt           : out std_logic_vector(0 to CMMD_GEAR-1));
+		ddr_dqz           : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_wwn           : out std_logic_vector(0 to DATA_GEAR-1);
+		ddr_odt           : out std_logic_vector(0 to CMMD_GEAR-1));
 
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_param.all;
+use hdl4fpga.ddr_param.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 
-architecture def of xdr_sch is
+architecture def of ddr_sch is
 	constant PH90 : natural := 1 mod sys_clks'length;
 
 	signal wphi   : std_logic;
@@ -105,7 +105,7 @@ begin
 	rphi <= sys_rea;
 	wphi <= sys_wri;
 
-	xdr_rph_e : entity hdl4fpga.xdr_ph
+	ddr_rph_e : entity hdl4fpga.ddr_ph
 	generic map (
 		CLK_EDGES   => CLK_EDGES,
 		CLK_PHASES  => CLK_PHASES,
@@ -130,7 +130,7 @@ begin
 		end loop;
 	end process;
 
-	xdr_wph_e : entity hdl4fpga.xdr_ph
+	ddr_wph_e : entity hdl4fpga.ddr_ph
 	generic map (
 		CLK_EDGES   => CLK_EDGES,
 		CLK_PHASES  => CLK_PHASES,
@@ -158,7 +158,7 @@ begin
 	stpho <= rpho0 when PROFILE=VIRTEX7 else rpho90;
 --	stpho <= rpho90;
 
-	xdr_st <= xdr_task (
+	ddr_st <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CL_COD,
@@ -169,7 +169,7 @@ begin
 		lat_val    => sys_cl,
 		lat_sch    => stpho);
 
-	xdr_rwn <= xdr_task (
+	ddr_rwn <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CL_COD,
@@ -180,7 +180,7 @@ begin
 		lat_val    => sys_cl,
 		lat_sch    => rpho0);
 
-	xdr_dqsz <= xdr_task (
+	ddr_dqsz <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CWL_COD,
@@ -191,7 +191,7 @@ begin
 		lat_val    => sys_cwl,
 		lat_sch    => wpho0);
 
-	xdr_dqs <= xdr_task (
+	ddr_dqs <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CWL_COD,
@@ -202,7 +202,7 @@ begin
 		lat_val    => sys_cwl,
 		lat_sch    => wpho0);
 
-	xdr_dqz <= xdr_task (
+	ddr_dqz <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CWL_COD,
@@ -213,7 +213,7 @@ begin
 		lat_val    => sys_cwl,
 		lat_sch    => wpho90);
 
-	xdr_wwn <= xdr_task (
+	ddr_wwn <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => DATA_GEAR,
 		lat_cod    => CWL_COD,
@@ -224,7 +224,7 @@ begin
 		lat_val    => sys_cwl,
 		lat_sch    => wpho90);
 
-	xdr_odt <= xdr_task (
+	ddr_odt <= ddr_task (
 		clk_phases => CLK_EDGES,
 		gear       => CMMD_GEAR,
 		lat_cod    => "000",

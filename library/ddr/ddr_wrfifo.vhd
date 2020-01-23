@@ -28,7 +28,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
-entity xdr_wrfifo is
+entity ddr_wrfifo is
 	generic (
 		DATA_PHASES : natural;
 		DATA_GEAR   : natural;
@@ -41,10 +41,10 @@ entity xdr_wrfifo is
 		sys_dmi : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 		sys_dqi : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
-		xdr_clks : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
-		xdr_enas : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
-		xdr_dmo  : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqo  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
+		ddr_clks : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
+		ddr_enas : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
+		ddr_dmo  : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqo  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
 
 end;
 
@@ -53,7 +53,7 @@ use hdl4fpga.std.all;
 
 use std.textio.all;
 
-architecture struct of xdr_wrfifo is
+architecture struct of ddr_wrfifo is
 
 	subtype byte is std_logic_vector(BYTE_SIZE downto 0);
 	type byte_vector is array (natural range <>) of byte;
@@ -62,8 +62,8 @@ architecture struct of xdr_wrfifo is
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
 		return std_logic_vector is
-		variable dat1 : unsigned(xdr_dqo'length-1 downto 0);
-		variable dat2 : unsigned(xdr_dmo'length-1 downto 0);
+		variable dat1 : unsigned(ddr_dqo'length-1 downto 0);
+		variable dat2 : unsigned(ddr_dmo'length-1 downto 0);
 		variable val  : unsigned(0 to arg1'length+arg2'length-1);
 	begin
 		dat1 := unsigned(arg1);
@@ -81,7 +81,7 @@ architecture struct of xdr_wrfifo is
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : unsigned(0 to xdr_dmo'length-1);
+		variable val : unsigned(0 to ddr_dmo'length-1);
 	begin
 		dat := unsigned(arg);
 		for i in val'range loop
@@ -96,10 +96,10 @@ architecture struct of xdr_wrfifo is
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : unsigned(0 to xdr_dqo'length-1);
+		variable val : unsigned(0 to ddr_dqo'length-1);
 	begin
 		dat := unsigned(arg);
-		for i in xdr_dmo'range loop
+		for i in ddr_dmo'range loop
 			val := val srl BYTE_SIZE;
 			val(0 to BYTE_SIZE-1) := dat(BYTE_SIZE-1 downto 0);
 			dat := dat srl byte'length;
@@ -144,7 +144,7 @@ architecture struct of xdr_wrfifo is
 		arg : word_vector)
 		return byte_vector is
 		variable aux : byte_vector(word'length/byte'length-1 downto 0);
-		variable val : byte_vector(xdr_dmo'range);
+		variable val : byte_vector(ddr_dmo'range);
 	begin
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
@@ -156,15 +156,15 @@ architecture struct of xdr_wrfifo is
 	end;
 
 	signal di : byte_vector(sys_dmi'range);
-	signal do : byte_vector(xdr_dmo'range);
+	signal do : byte_vector(ddr_dmo'range);
 	signal dqo : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
 
 begin
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in 0 to WORD_SIZE/BYTE_SIZE-1 generate
-		signal ser_clk : std_logic_vector(xdr_clks'range);
-		signal ser_ena : std_logic_vector(xdr_enas'range);
+	ddr_fifo_g : for i in 0 to WORD_SIZE/BYTE_SIZE-1 generate
+		signal ser_clk : std_logic_vector(ddr_clks'range);
+		signal ser_ena : std_logic_vector(ddr_enas'range);
 
 		signal dqi : shuffleword;
 		signal fifo_di : word;
@@ -185,8 +185,8 @@ begin
 
 	begin
 		dqi <= shuffle(di, i);
-		ser_clk <= std_logic_vector(unsigned(xdr_clks) sll (i*DATA_PHASES));
-		ser_ena <= std_logic_vector(unsigned(xdr_enas) sll (i*DATA_PHASES));
+		ser_clk <= std_logic_vector(unsigned(ddr_clks) sll (i*DATA_PHASES));
+		ser_ena <= std_logic_vector(unsigned(ddr_enas) sll (i*DATA_PHASES));
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo
@@ -206,6 +206,6 @@ begin
 
 	end generate;
 	do <= unshuffle(dqo);
-	xdr_dqo <= extract_dq(to_stdlogicvector(do));
-	xdr_dmo <= extract_dm(to_stdlogicvector(do));
+	ddr_dqo <= extract_dq(to_stdlogicvector(do));
+	ddr_dmo <= extract_dm(to_stdlogicvector(do));
 end;

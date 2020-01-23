@@ -27,9 +27,9 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_param.all;
+use hdl4fpga.ddr_param.all;
 
-entity xdr_timer is
+entity ddr_timer is
 	generic ( 
 		timers : natural_vector);
 	port (
@@ -39,7 +39,7 @@ entity xdr_timer is
 		sys_rdy : out std_logic);
 end;
 
-architecture def of xdr_timer is
+architecture def of ddr_timer is
 
 --	constant stages : natural := unsigned_num_bits(max(timers))/4;
 	constant stages : natural := unsigned_num_bits(max(timers))/4;
