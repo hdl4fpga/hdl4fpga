@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ddr_param.all;
 
-entity xdr is
+entity ddr is
 	generic (
 		FPGA        : natural;
 		MARK        : natural := M6T;
@@ -105,7 +105,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of xdr is
+architecture mix of ddr is
 	constant STDR         : natural := ddr_stdr(mark);
 
 	constant STRX_LAT     : natural          := ddr_latency(FPGA, STRXL);
