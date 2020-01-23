@@ -28,9 +28,9 @@ use ieee.std_logic_textio.all;
 
 use std.textio.all;
 library hdl4fpga;
-use hdl4fpga.xdr_param.all;
+use hdl4fpga.ddr_param.all;
 
-architecture xdr_sch of testbench is
+architecture ddr_sch of testbench is
 	constant std : natural := 2;
 	constant data_phases : natural := 1; --2;
 	constant data_edges  : natural := 1; --2;
@@ -61,10 +61,10 @@ begin
 		end loop;
 	end process;
 
-		STRL_TAB  => xdr_lattab(std, STRT,  tDDR =>1 ns, tCP => 0.25 ns),
-		STRX_LAT  => 8, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
-	du : entity hdl4fpga.xdr_sch
+		STRL_TAB  => ddr_lattab(std, STRT,  tDDR =>1 ns, tCP => 0.25 ns),
+		STRX_LAT  => 8, --ddr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		WID_LAT   => ddr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+	du : entity hdl4fpga.ddr_sch
 	generic map (
 		sclk_phases => sclk_phases,
 		sclk_edges => sclk_edges,
@@ -74,20 +74,20 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size,
 
-		CL_COD    => xdr_latcod(std, xdr_selcwl(std)),
-		CWL_COD   => xdr_latcod(std, xdr_selcwl(std)),
+		CL_COD    => ddr_latcod(std, ddr_selcwl(std)),
+		CWL_COD   => ddr_latcod(std, ddr_selcwl(std)),
 
-		RWNL_tab  => xdr_lattab(std, RWNT,  tDDR =>1 ns, tCP => 0.25 ns),
-		DQSZL_TAB => xdr_lattab(std, DQSZT, tDDR =>1 ns, tCP => 0.25 ns),
-		DQSOL_TAB => xdr_lattab(std, DQST,  tDDR =>1 ns, tCP => 0.25 ns),
-		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
-		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
+		RWNL_tab  => ddr_lattab(std, RWNT,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSZL_TAB => ddr_lattab(std, DQSZT, tDDR =>1 ns, tCP => 0.25 ns),
+		DQSOL_TAB => ddr_lattab(std, DQST,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQZL_TAB  => ddr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
+		WWNL_TAB  => ddr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
-		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		RWNX_LAT  => ddr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSZX_LAT => ddr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
+		DQSX_LAT  => ddr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQZX_LAT  => ddr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		WWNX_LAT  => ddr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
