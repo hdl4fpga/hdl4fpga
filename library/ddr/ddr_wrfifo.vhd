@@ -35,11 +35,11 @@ entity ddr_wrfifo is
 		WORD_SIZE   : natural;
 		BYTE_SIZE   : natural);
 	port (
-		sys_clk : in  std_logic;
-		sys_req : in  std_logic;
-		sys_ena : in  std_logic;
-		sys_dmi : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dqi : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		ctlr_clk : in  std_logic;
+		ctlr_req : in  std_logic;
+		ctlr_ena : in  std_logic;
+		ctlr_dmi : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ctlr_dqi : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
 		ddr_clks : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
 		ddr_enas : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
@@ -155,13 +155,13 @@ architecture struct of ddr_wrfifo is
 		return val;
 	end;
 
-	signal di : byte_vector(sys_dmi'range);
+	signal di : byte_vector(ctlr_dmi'range);
 	signal do : byte_vector(ddr_dmo'range);
 	signal dqo : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
 
 begin
 
-	di <= to_bytevector(merge(sys_dqi, sys_dmi));
+	di <= to_bytevector(merge(ctlr_dqi, ctlr_dmi));
 	ddr_fifo_g : for i in 0 to WORD_SIZE/BYTE_SIZE-1 generate
 		signal ser_clk : std_logic_vector(ddr_clks'range);
 		signal ser_ena : std_logic_vector(ddr_enas'range);
@@ -196,9 +196,9 @@ begin
 			WORD_SIZE => word'length,
 			BYTE_SIZE => byte'length)
 		port map (
-			pll_clk => sys_clk,
-			pll_req => sys_req,
-			pll_ena => sys_ena,
+			pll_clk => ctlr_clk,
+			pll_req => ctlr_req,
+			pll_ena => ctlr_ena,
 			ser_clk => ser_clk(0 to DATA_PHASES-1),
 			ser_ena => ser_ena(0 to DATA_PHASES-1),
 			di  => fifo_di,

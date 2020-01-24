@@ -29,19 +29,19 @@ entity ddr_pgm is
 	generic (
 		CMMD_GEAR : natural := 1);
 	port (
-		ddr_pgm_rst : in  std_logic := '0';
-		ddr_pgm_clk : in  std_logic := '0';
-		ddr_pgm_ref : in  std_logic := '0';
-		ddr_pgm_cal : in  std_logic := '0';
-		ddr_pgm_rrdy : out  std_logic := '0';
-		sys_pgm_ref : out std_logic := '0';
-		ddr_pgm_start : in  std_logic := '1';
-		ddr_pgm_rdy : out std_logic;
-		ddr_pgm_req : in  std_logic := '1';
-		ddr_pgm_rw  : in  std_logic := '1';
-		ddr_pgm_cas : out std_logic := '0';
-		ddr_pgm_seq : out std_logic := '0';
-		ddr_pgm_cmd : out std_logic_vector(0 to 2));
+		ctlr_clk      : in  std_logic := '0';
+		ctlr_rst      : in  std_logic := '0';
+		ctlr_refreq   : out std_logic := '0';
+		ddr_pgm_ref   : in  std_logic := '0';
+		ddr_pgm_cal   : in  std_logic := '0';
+		ddr_pgm_rrdy  : out std_logic := '0';
+		ddr_pgm_irdy  : in  std_logic := '1';
+		ddr_pgm_trdy  : out std_logic;
+		ddr_mpu_trdy  : in  std_logic := '1';
+		ddr_pgm_rw    : in  std_logic := '1';
+		ddr_pgm_cas   : out std_logic := '0';
+		ddr_pgm_seq   : out std_logic := '0';
+		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
 
 end;
 
@@ -58,8 +58,8 @@ architecture registered of ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-                        --> ddr_pgm_rdy <---------------------+
-                        --> sys_pgm_ref <--------------------+|
+                        --> ddr_pgm_trdy <---------------------+
+                        --> ctlr_refreq <--------------------+|
                         --                                   ||
                         --                                   VV
 	constant ddr_act  : std_logic_vector(6 downto 0)    := B"0000_011";
@@ -225,17 +225,17 @@ begin
 
 	ddr_input(2) <= ddr_pgm_ref;
 	ddr_input(1) <= ddr_pgm_rw;
-	ddr_input(0) <= ddr_pgm_start;
+	ddr_input(0) <= ddr_pgm_irdy;
 
-	process (ddr_pgm_clk)
+	process (ctlr_clk)
 		variable pc : std_logic_vector(ddr_pgm_pc'range);
 		variable t  : signed(0 to unsigned_num_bits(CMMD_GEAR)-1);
 	begin
-		if rising_edge(ddr_pgm_clk) then
+		if rising_edge(ctlr_clk) then
 			ddr_pgm_seq <= t(0);
-			if ddr_pgm_rst='0' then
+			if ctlr_rst='0' then
 				if cal='1' then
-					if ddr_pgm_req='1' then
+					if ddr_mpu_trdy='1' then
 						if t(0)='0' then
 							ddr_pgm_cmd <= pgm_cmd;
 						else
@@ -246,7 +246,7 @@ begin
 					ddr_pgm_cmd  <= pgm_cmd;
 				end if;
 
-				if ddr_pgm_req='1' then
+				if ddr_mpu_trdy='1' then
 					if ddr_pgm_cal='0' then
 							cal <= '0';
 					else
@@ -254,10 +254,10 @@ begin
 					end if;
 				end if;
 
-				ddr_pgm_rdy  <= pgm_rdy;
-				sys_pgm_ref  <= sys_ref;
+				ddr_pgm_trdy  <= pgm_rdy;
+				ctlr_refreq  <= sys_ref;
 				ddr_pgm_rrdy <= pgm_rrdy;
-				if ddr_pgm_req='1' then
+				if ddr_mpu_trdy='1' then
 					if cal='1' then
 						if t(0)='0' then
 							t := t - 1;
@@ -280,8 +280,8 @@ begin
 				ddr_pgm_pc <= ddrs_pre; 
 				pc := ddrs_pre;
 				ddr_pgm_cmd <= "111";
-				ddr_pgm_rdy <= '1';
-				sys_pgm_ref <= '0';
+				ddr_pgm_trdy <= '1';
+				ctlr_refreq <= '0';
 				ddr_pgm_rrdy <= '0';
 				t   := to_signed(CMMD_GEAR-1, t'length);
 				cal <= '0';
@@ -289,7 +289,7 @@ begin
 		end if;
 	end process;
 
-	ddr_pgm_cas  <= ppp and ddr_pgm_req;
+	ddr_pgm_cas  <= ppp and ddr_mpu_trdy;
 	process (ddr_input, ddr_pgm_pc)
 	begin
 		pgm_rdy <= '-'; 
@@ -392,13 +392,13 @@ end;
 --
 --	ddr_input(2) <= ddr_pgm_ref;
 --	ddr_input(1) <= ddr_pgm_rw;
---	ddr_input(0) <= ddr_pgm_start;
+--	ddr_input(0) <= ddr_pgm_irdy;
 --
---	process (ddr_pgm_clk)
+--	process (ctlr_clk)
 --	begin
---		if rising_edge(ddr_pgm_clk) then
---			if ddr_pgm_rst='0' then
---				if ddr_pgm_req='1' then
+--		if rising_edge(ctlr_clk) then
+--			if ctlrddr_pgm_rst='0' then
+--				if ddr_mpu_trdy='1' then
 --					ddr_pgm_pc <= pc;
 --				end if;
 --			else
@@ -407,10 +407,10 @@ end;
 --		end if;
 --	end process;
 --
---	ddr_pgm_cas  <= pgm_cas and ddr_pgm_req;
+--	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
 --	ddr_pgm_cmd  <= pgm_cmd;
---	ddr_pgm_rdy  <= pgm_rdy;
---	sys_pgm_ref  <= sys_ref;
+--	ddr_pgm_trdy  <= pgm_rdy;
+--	ctlr_refreq  <= sys_ref;
 --	ddr_pgm_rrdy <= pgm_rrdy;
 --
 --	process (ddr_pgm_pc, ddr_input)

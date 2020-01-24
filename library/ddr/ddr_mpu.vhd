@@ -51,7 +51,7 @@ entity ddr_mpu is
 		ddr_mpu_rst : in std_logic;
 		ddr_mpu_clk : in std_logic;
 		ddr_mpu_cmd : in std_logic_vector(0 to 2) := (others => '1');
-		ddr_mpu_rdy : out std_logic;
+		ddr_mpu_trdy : out std_logic;
 		ddr_mpu_act : out std_logic;
 		ddr_mpu_cas : out std_logic;
 		ddr_mpu_ras : out std_logic;
@@ -363,7 +363,7 @@ begin
 		end if;
 	end process;
 
-	ddr_mpu_rdy <= lat_timer(0) and ddr_rdy_ena;
+	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
 	ddr_mpu_rea <= ddr_rea;
 	ddr_mpu_wri <= ddr_wri;
 
