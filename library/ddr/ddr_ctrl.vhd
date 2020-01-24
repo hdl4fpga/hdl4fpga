@@ -69,7 +69,7 @@ entity ddr_ctlr is
 		ctlr_a       : in  std_logic_vector(ADDR_SIZE-1 downto 0);
 		ctlr_di_irdy : in  std_logic;
 		ctlr_di_trdy : out std_logic;
-		ctlr_do_rdy  : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ctlr_do_irdy : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
 		ctlr_act     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0) := (others => '0');
@@ -373,7 +373,7 @@ begin
 		acntr_delay => RDFIFO_DELAY)
 	port map (
 		sys_clk     => ctlr_clks(0),
-		sys_rdy     => ctlr_do_rdy,
+		sys_rdy     => ctlr_do_irdy,
 		sys_rea     => ddr_mpu_rea,
 		sys_do      => ctlr_do,
 		ddr_win_dq  => ddr_win_dq,

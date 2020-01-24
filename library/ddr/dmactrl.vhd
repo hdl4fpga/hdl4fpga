@@ -56,7 +56,7 @@ entity dmactrl is
 		ctlr_di_irdy  : out std_logic;
 		ctlr_di_trdy  : in  std_logic;
 		ctlr_di       : in  std_logic_vector;
-		ctlr_do_rdy   : out std_logic_vector;
+		ctlr_do_irdy  : in  std_logic_vector;
 		ctlr_do       : in  std_logic_vector;
 		ctlr_dm       : out std_logic_vector;
 
