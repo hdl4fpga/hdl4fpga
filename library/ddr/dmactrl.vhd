@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity dmactrl is
 	generic (
-		size     : natural);
+		size          : natural);
 	port (
 
 		dmactlr_rst   : in  std_logic;
