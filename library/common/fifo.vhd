@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		fifo     : natural);
+		size     : natural);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -48,8 +48,8 @@ end;
 architecture def of fifo is
 
 	signal wr_ena    : std_logic;
-	signal wr_addr   : gray(0 to unsigned_num_bits(fifo_size-1)-1);
-	signal rd_addr   : gray(0 to unsigned_num_bits(fifo_size-1)-1);
+	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1);
+	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1);
 	signal dst_irdy1 : std_logic;
 	signal dly_irdy  : std_logic;
 
