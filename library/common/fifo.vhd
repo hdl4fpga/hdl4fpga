@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		fifo_size : natural);
+		fifo     : natural);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
