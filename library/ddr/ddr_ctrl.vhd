@@ -55,7 +55,7 @@ entity ddr_ctlr is
 
 		ctlr_rst     : in std_logic;
 		ctlr_clks    : in std_logic_vector(0 to SCLK_PHASES/SCLK_EDGES-1);
-		ctlr_ini     : out std_logic;
+		ctlr_inirdy  : out std_logic;
 
 		ctlr_wlrdy   : in  std_logic := '-';
 		ctlr_wlreq   : out std_logic;
@@ -238,7 +238,7 @@ begin
 	phy_a       <= ctlr_a        when ddr_mpu_sel='1' else ddr_init_a;
 	phy_b       <= ctlr_b        when ddr_mpu_sel='1' else ddr_init_b;
 	phy_odt     <= ddr_init_odt when ddr_mpu_sel='0' else ddr_sch_odt(0) when stdr=3 else '1';
-	ctlr_ini     <= init_rdy;
+	ctlr_inirdy <= init_rdy;
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
