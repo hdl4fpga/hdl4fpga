@@ -31,52 +31,49 @@ use hdl4fpga.std.all;
 entity ddrdma is
 	port (
 		ddrdma_frm   : in  std_logic;
+		ddrdma_clk   : in  std_logic;
 		ddrdma_irdy  : in  std_logic;
 		ddrdma_trdy  : out std_logic;
 		ddrdma_iaddr : in  std_logic_vector;
 		ddrdma_ilen  : in  std_logic_vector;
 		ddrdma_taddr : out std_logic_vector;
 		ddrdma_tlen  : out std_logic_vector;
+		ddrdma_bnk   : out std_logic_vector;
+		ddrdma_row   : out std_logic_vector;
+		ddrdma_col   : out std_logic_vector;
 
-		ddr_clk      : in  std_logic;
-		ddr_frm      : out std_logic;
-		ddr_irdy     : out std_logic;
-		ddr_trdy     : in  std_logic;
-		ddr_refreq   : in  std_logic;
-		ddr_act      : in  std_logic;
-		ddr_cas      : in  std_logic;
-		ddr_bnk      : out std_logic_vector;
-		ddr_row      : out std_logic_vector;
-		ddr_col      : out std_logic_vector);
+		ctlr_irdy    : out std_logic;
+		ctlr_trdy    : in  std_logic;
+		ctlr_refreq  : in  std_logic);
 end;
 
 architecture def of ddrdma is
 begin
 
-	process (ddr_clk)
+	process (ddrdma_clk)
 		type states is (init_s, running_s);
 		variable state : states;
 
-		variable bnk_addr : unsigned(0 to ddr_bnk'length);
-		variable row_addr : unsigned(0 to ddr_row'length);
-		variable col_addr : unsigned(0 to ddr_col'length);
+		variable bnk_addr : unsigned(0 to ddrdma_bnk'length);
+		variable row_addr : unsigned(0 to ddrdma_row'length);
+		variable col_addr : unsigned(0 to ddrdma_col'length);
 
-		variable bnk_cntr : unsigned(0 to ddr_bnk'length);
-		variable row_cntr : unsigned(0 to ddr_row'length);
-		variable col_cntr : unsigned(0 to ddr_col'length);
+		variable bnk_cntr : unsigned(0 to ddrdma_bnk'length);
+		variable row_cntr : unsigned(0 to ddrdma_row'length);
+		variable col_cntr : unsigned(0 to ddrdma_col'length);
 
 	begin
-		if rising_edge(ddr_clk) then
+		if rising_edge(ddrdma_clk) then
 			case state is
 			when init_s =>
 				if ddrdma_frm='1' then
-					col_addr := resize((unsigned(ddrdma_iaddr) srl              0) mod 2**ddr_col'length, col_addr'length);
-					row_addr := resize((unsigned(ddrdma_iaddr) srl ddr_col'length) mod 2**ddr_row'length, row_addr'length);
-					bnk_addr := resize((unsigned(ddrdma_iaddr) srl ddr_row'length) mod 2**ddr_bnk'length, bnk_addr'length);
+					col_addr := resize((unsigned(ddrdma_iaddr) srl                 0) mod 2**ddrdma_col'length, col_addr'length);
+					row_addr := resize((unsigned(ddrdma_iaddr) srl ddrdma_col'length) mod 2**ddrdma_row'length, row_addr'length);
+					bnk_addr := resize((unsigned(ddrdma_iaddr) srl ddrdma_row'length) mod 2**ddrdma_bnk'length, bnk_addr'length);
 
-					col_cntr := resize((unsigned(ddrdma_ilen)  srl              0) mod 2**ddr_col'length, col_addr'length);
-					row_cntr := resize((unsigned(ddrdma_ilen)  srl ddr_col'length) mod 2**ddr_row'length, row_addr'length);
-					bnk_cntr := resize((unsigned(ddrdma_ilen)  srl ddr_row'length) mod 2**ddr_bnk'length, bnk_addr'length);
+					col_cntr := resize((unsigned(ddrdma_ilen)  srl                 0) mod 2**ddrdma_col'length, col_addr'length);
+					row_cntr := resize((unsigned(ddrdma_ilen)  srl ddrdma_col'length) mod 2**ddrdma_row'length, row_addr'length);
+					bnk_cntr := resize((unsigned(ddrdma_ilen)  srl ddrdma_row'length) mod 2**ddrdma_bnk'length, bnk_addr'length);
 				end if;
 
 				if ddrdma_frm='1' then
@@ -87,7 +84,7 @@ begin
 
 			when running_s =>
 				if ddrdma_frm='1' then
-					if ddr_trdy='1' then
+					if ctlr_trdy='1' then
 						col_addr := col_addr + 1;
 						if col_addr(0)='1' then
 							row_addr := row_addr + 1;
@@ -114,19 +111,19 @@ begin
 				end if;
 			end case;
 
-			ddr_bnk <= std_logic_vector(resize(bnk_addr mod 2**ddr_bnk'length, ddr_bnk'length));
-			ddr_row <= std_logic_vector(resize(row_addr mod 2**ddr_row'length, ddr_row'length));
-			ddr_col <= std_logic_vector(resize(col_addr mod 2**ddr_col'length, ddr_col'length));
+			ddrdma_bnk <= std_logic_vector(resize(bnk_addr mod 2**ddrdma_bnk'length, ddrdma_bnk'length));
+			ddrdma_row <= std_logic_vector(resize(row_addr mod 2**ddrdma_row'length, ddrdma_row'length));
+			ddrdma_col <= std_logic_vector(resize(col_addr mod 2**ddrdma_col'length, ddrdma_col'length));
 
 			ddrdma_taddr <= std_logic_vector(
-				resize(unsigned(bnk_addr) mod 2**ddr_bnk'length, ddr_bnk'length) &
-				resize(unsigned(row_addr) mod 2**ddr_row'length, ddr_row'length) &
-				resize(unsigned(col_addr) mod 2**ddr_col'length, ddr_col'length));
+				resize(unsigned(bnk_addr) mod 2**ddrdma_bnk'length, ddrdma_bnk'length) &
+				resize(unsigned(row_addr) mod 2**ddrdma_row'length, ddrdma_row'length) &
+				resize(unsigned(col_addr) mod 2**ddrdma_col'length, ddrdma_col'length));
 
 			ddrdma_tlen <= std_logic_vector(
-				resize(unsigned(bnk_cntr) mod 2**ddr_bnk'length, ddr_bnk'length) &
-				resize(unsigned(row_cntr) mod 2**ddr_row'length, ddr_row'length) &
-				resize(unsigned(col_cntr) mod 2**ddr_col'length, ddr_col'length));
+				resize(unsigned(bnk_cntr) mod 2**ddrdma_bnk'length, ddrdma_bnk'length) &
+				resize(unsigned(row_cntr) mod 2**ddrdma_row'length, ddrdma_row'length) &
+				resize(unsigned(col_cntr) mod 2**ddrdma_col'length, ddrdma_col'length));
 		end if;
 	end process;
 

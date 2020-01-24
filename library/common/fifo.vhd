@@ -33,13 +33,13 @@ entity fifo is
 		fifo_size : natural);
 	port (
 		src_clk  : in  std_logic;
-		src_frm  : in  std_logic;
+		src_frm  : in  std_logic := '1';
 		src_irdy : in  std_logic;
 		src_trdy : buffer std_logic;
 		src_data : in  std_logic_vector;
 
 		dst_clk  : in  std_logic;
-		dst_frm  : buffer std_logic;
+		dst_frm  : buffer std_logic := '1';
 		dst_irdy : buffer std_logic;
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);

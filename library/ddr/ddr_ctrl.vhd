@@ -62,8 +62,8 @@ entity ddr_ctlr is
 		ctlr_rlcal   : in  std_logic := '0';
 		ctlr_rlseq   : out std_logic;
 
-		ctlr_cmd_irdy : in  std_logic;
-		ctlr_cmd_trdy : out std_logic;
+		ctlr_irdy    : in  std_logic;
+		ctlr_trdy    : out std_logic;
 		ctlr_rw      : in  std_logic;
 		ctlr_b       : in  std_logic_vector(BANK_SIZE-1 downto 0);
 		ctlr_a       : in  std_logic_vector(ADDR_SIZE-1 downto 0);
@@ -235,8 +235,8 @@ begin
 	phy_ras     <= ddr_mpu_ras  when ddr_mpu_sel='1' else ddr_init_ras;
 	phy_cas     <= ddr_mpu_cas  when ddr_mpu_sel='1' else ddr_init_cas;
 	phy_we      <= ddr_mpu_we   when ddr_mpu_sel='1' else ddr_init_we;
-	phy_a       <= ctlr_a        when ddr_mpu_sel='1' else ddr_init_a;
-	phy_b       <= ctlr_b        when ddr_mpu_sel='1' else ddr_init_b;
+	phy_a       <= ctlr_a       when ddr_mpu_sel='1' else ddr_init_a;
+	phy_b       <= ctlr_b       when ddr_mpu_sel='1' else ddr_init_b;
 	phy_odt     <= ddr_init_odt when ddr_mpu_sel='0' else ddr_sch_odt(0) when stdr=3 else '1';
 	ctlr_inirdy <= init_rdy;
 
@@ -247,8 +247,8 @@ begin
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
 		ctlr_refreq   => ctlr_refreq,
-		ddr_pgm_irdy  => ctlr_cmd_irdy,
-		ddr_pgm_trdy  => ctlr_cmd_trdy,
+		ddr_pgm_irdy  => ctlr_irdy,
+		ddr_pgm_trdy  => ctlr_trdy,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 		ddr_pgm_ref   => ddr_mpu_ref,
