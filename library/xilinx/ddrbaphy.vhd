@@ -31,18 +31,18 @@ entity ddrbaphy is
 		BANK_SIZE  : natural := 2;
 		ADDR_SIZE  : natural := 13);
 	port (
-		sys_clks  : in  std_logic_vector(0 to 2-1);
+		phy_clks  : in  std_logic_vector(0 to 2-1);
 
-		phy_rst  : in  std_logic;
-		sys_rst  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
-		sys_cs   : in  std_logic_vector(gear-1 downto 0);
-		sys_cke  : in  std_logic_vector(gear-1 downto 0);
-		sys_b    : in  std_logic_vector(gear*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector(gear*addr_size-1 downto 0);
-		sys_ras  : in  std_logic_vector(gear-1 downto 0);
-		sys_cas  : in  std_logic_vector(gear-1 downto 0);
-		sys_we   : in  std_logic_vector(gear-1 downto 0);
-		sys_odt  : in  std_logic_vector(gear-1 downto 0);
+		phy_rst1 : in  std_logic;
+		phy_rst  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		phy_cs   : in  std_logic_vector(gear-1 downto 0);
+		phy_cke  : in  std_logic_vector(gear-1 downto 0);
+		phy_b    : in  std_logic_vector(gear*bank_size-1 downto 0);
+		phy_a    : in  std_logic_vector(gear*addr_size-1 downto 0);
+		phy_ras  : in  std_logic_vector(gear-1 downto 0);
+		phy_cas  : in  std_logic_vector(gear-1 downto 0);
+		phy_we   : in  std_logic_vector(gear-1 downto 0);
+		phy_odt  : in  std_logic_vector(gear-1 downto 0);
 
 		ddr_rst  : out std_logic;
 		ddr_cs   : out std_logic;
@@ -67,9 +67,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_rst,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_rst,
 		q(0) => ddr_rst);
 
 	cke_i : entity hdl4fpga.omdr
@@ -78,9 +78,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_cke,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_cke,
 		q(0) => ddr_cke);
 
 	cs_i : entity hdl4fpga.omdr
@@ -89,9 +89,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_cs,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_cs,
 		q(0) => ddr_cs);
 
 	ras_i : entity hdl4fpga.omdr
@@ -100,9 +100,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_ras,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_ras,
 		q(0) => ddr_ras);
 
 	cas_i : entity hdl4fpga.omdr
@@ -111,9 +111,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_cas,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_cas,
 		q(0) => ddr_cas);
 
 	we_i : entity hdl4fpga.omdr
@@ -122,9 +122,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_we,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_we,
 		q(0) => ddr_we);
 
 	odt_i : entity hdl4fpga.omdr
@@ -133,9 +133,9 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_odt,
+		rst  => phy_rst1,
+		clk  => phy_clks,
+		d    => phy_odt,
 		q(0) => ddr_odt);
 
 	ba_i : entity hdl4fpga.omdr
@@ -144,9 +144,9 @@ begin
 		size => ddr_b'length,
 		gear => gear)
 	port map (
-		rst => phy_rst,
-		clk => sys_clks,
-		d   => sys_b,
+		rst => phy_rst1,
+		clk => phy_clks,
+		d   => phy_b,
 		q   => ddr_b);
 
 	a_i : entity hdl4fpga.omdr
@@ -155,9 +155,9 @@ begin
 		size => ddr_a'length,
 		gear => gear)
 	port map (
-		rst => phy_rst,
-		clk => sys_clks,
-		d   => sys_a,
+		rst => phy_rst1,
+		clk => phy_clks,
+		d   => phy_a,
 		q   => ddr_a);
 
 end;

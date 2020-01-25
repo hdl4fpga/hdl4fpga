@@ -30,22 +30,22 @@ use unisim.vcomponents.all;
 
 entity ddrdqphy is
 	generic (
-		registered_dout : boolean;
+		rgstrd_dout: boolean;
 		loopback   : boolean;
 		gear       : natural;
 		byte_size  : natural);
 	port (
-		sys_clks   : in  std_logic_vector(0 to 2-1);
-		sys_calreq : in std_logic := '0';
-		sys_dmt    : in  std_logic_vector(0 to gear-1) := (others => '-');
-		sys_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
-		sys_sti    : in  std_logic_vector(0 to gear-1) := (others => '-');
-		sys_sto    : out std_logic_vector(0 to gear-1);
-		sys_dqi    : in  std_logic_vector(gear*byte_size-1 downto 0);
-		sys_dqt    : in  std_logic_vector(gear-1 downto 0);
-		sys_dqo    : out std_logic_vector(gear*byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(0 to gear-1);
-		sys_dqst   : in  std_logic_vector(0 to gear-1);
+		phy_clks   : in  std_logic_vector(0 to 2-1);
+		phy_calreq : in std_logic := '0';
+		phy_dmt    : in  std_logic_vector(0 to gear-1) := (others => '-');
+		phy_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		phy_sti    : in  std_logic_vector(0 to gear-1) := (others => '-');
+		phy_sto    : out std_logic_vector(0 to gear-1);
+		phy_dqi    : in  std_logic_vector(gear*byte_size-1 downto 0);
+		phy_dqt    : in  std_logic_vector(gear-1 downto 0);
+		phy_dqo    : out std_logic_vector(gear*byte_size-1 downto 0);
+		phy_dqsi   : in  std_logic_vector(0 to gear-1);
+		phy_dqst   : in  std_logic_vector(0 to gear-1);
 
 		ddr_dmt    : out std_logic;
 		ddr_dmo    : out std_logic;
@@ -69,7 +69,7 @@ begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		phase_g : for j in  gear-1 downto 0 generate
-			sys_dqo(j*byte_size+i) <= ddr_dqi(i);
+			phy_dqo(j*byte_size+i) <= ddr_dqi(i);
 		end generate;
 	end generate;
 
@@ -78,40 +78,40 @@ begin
 		signal rdqo : std_logic_vector(0 to gear-1);
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
-		clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
+		clks <= (0 => phy_clks(clk90), 1 => not phy_clks(clk90));
 
 		registered_g : for j in clks'range generate
 			process (clks(j))
 			begin
 				if rising_edge(clks(j)) then
-					rdqo(j) <= sys_dqi(j*byte_size+i);
+					rdqo(j) <= phy_dqi(j*byte_size+i);
 				end if;
 			end process;
-			dqo(j) <= rdqo(j) when registered_dout else sys_dqi(j*byte_size+i);
+			dqo(j) <= rdqo(j) when rgstrd_dout else phy_dqi(j*byte_size+i);
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk90),
-			d => sys_dqt(0),
+			clk => phy_clks(clk90),
+			d => phy_dqt(0),
 			q => ddr_dqt(i));
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk90),
+			clk => phy_clks(clk90),
 			dr  => dqo(0),
 			df  => dqo(1),
 			q   => ddr_dqo(i));
 	end generate;
 
 	dmo_g : block
-		signal dmt  : std_logic_vector(sys_dmt'range);
-		signal dmi  : std_logic_vector(sys_dmi'range);
-		signal rdmi : std_logic_vector(sys_dmi'range);
+		signal dmt  : std_logic_vector(phy_dmt'range);
+		signal dmi  : std_logic_vector(phy_dmi'range);
+		signal rdmi : std_logic_vector(phy_dmi'range);
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
 
-		clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
+		clks <= (0 => phy_clks(clk90), 1 => not phy_clks(clk90));
 		registered_g : for i in clks'range generate
 			signal d, t, s : std_logic;
 		begin
@@ -121,28 +121,28 @@ begin
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
-					t <= sys_dmt(i);
-					d <= sys_dmi(i);
-					s <= sys_sti(i);
+					t <= phy_dmt(i);
+					d <= phy_dmi(i);
+					s <= phy_sti(i);
 				end if;
 			end process;
 
 			dmi(i) <=
-				rdmi(i)    when registered_dout else 
-				sys_sti(i) when sys_dmt(i)='1' and not loopback else
-				sys_dmi(i);
+				rdmi(i)    when rgstrd_dout else 
+				phy_sti(i) when phy_dmt(i)='1' and not loopback else
+				phy_dmi(i);
 
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk90),
+			clk => phy_clks(clk90),
 			d => dmt(0),
 			q => ddr_dmt);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk90),
+			clk => phy_clks(clk90),
 			dr  => dmi(0),
 			df  => dmi(1),
 			q   => ddr_dmo);
@@ -150,9 +150,9 @@ begin
 
 	sto_i : entity hdl4fpga.ddro
 	port map (
-		clk => sys_clks(clk90),
-		dr  => sys_sti(0),
-		df  => sys_sti(1),
+		clk => phy_clks(clk90),
+		dr  => phy_sti(0),
+		df  => phy_sti(1),
 		q   => ddr_sto);
 
 	dqso_b : block 
@@ -162,18 +162,18 @@ begin
 		signal dqso_f : std_logic;
 	begin
 
-		clk_n <= not sys_clks(clk0);
+		clk_n <= not phy_clks(clk0);
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk0),
-			d => sys_dqst(1),
+			clk => phy_clks(clk0),
+			d => phy_dqst(1),
 			q => ddr_dqst);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk0),
+			clk => phy_clks(clk0),
 			dr  => '0',
-			df  => sys_dqsi(0),
+			df  => phy_dqsi(0),
 			q   => ddr_dqso);
 
 	end block;

@@ -33,47 +33,78 @@ architecture ddrdma of testbench is
 	signal clk : std_logic := '1';
 	signal rst : std_logic := '0';
 
-	constant FPGA        : natural;
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz --
+	-- Multiply by --   8     --   3     --  10     --
+	-- Divide by   --   3     --   1     --   3     --
+	--------------------------------------------------
+
+	constant sys_per     : real    := 20.0;
+	constant ddr_mul     : natural := 8;
+	constant ddr_div     : natural := 3;
+
+	constant FPGA        : natural := SPARTAN3;
 	constant MARK        : natural := M6T;
-	constant TCP         : natural := 6000;
+	constant TCP         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
 
-	constant CMMD_GEAR   : natural :=  1;
-	constant BANK_SIZE   : natural :=  2;
+	constant SCLK_PHASES : natural := 4;
+	constant SCLK_EDGES  : natural := 2;
+	constant CMMD_GEAR   : natural := 1;
+	constant DATA_PHASES : natural := 2;
+	constant DATA_EDGES  : natural := 2;
+	constant BANK_SIZE   : natural := 2;
 	constant ADDR_SIZE   : natural := 13;
-	constant SCLK_PHASES : natural :=  2;
-	constant SCLK_EDGES  : natural :=  2;
-	constant DATA_PHASES : natural :=  2;
-	constant DATA_EDGES  : natural :=  2;
-	constant DATA_GEAR   : natural :=  2;
+	constant DATA_GEAR   : natural := 2;
 	constant WORD_SIZE   : natural := 16;
-	constant BYTE_SIZE   : natural :=  8;
+	constant BYTE_SIZE   : natural := 8;
 
-	signal dmactlr_rst  : std_logic;
-	signal dmactlr_clk  : std_logic;
-	signal dmactlr_we   : std_logic;
-	signal dmactlr_irdy : std_logic;
-	signal dmactlr_trdy : std_logic;
+	signal dmactlr_rst   : std_logic;
+	signal dmactlr_clk   : std_logic;
+	signal dmactlr_we    : std_logic;
+	signal dmactlr_irdy  : std_logic;
+	signal dmactlr_trdy  : std_logic;
 
-	signal ctlr_irdy    : std_logic;
-	signal ctlr_trdy    : std_logic;
-	signal ctlr_rw      : std_logic;
-	signal ctlr_act     : std_logic;
-	signal ctlr_cas     : std_logic;
-	signal ctlr_inirdy  : std_logic;
-	signal ctlr_refreq  : std_logic;
-	signal ctlr_b       : std_logic_vector(BANK_SIZE-1 downto 0);
-	signal ctlr_a       : std_logic_vector(ADDR_SIZE-1 downto 0);
-	signal ctlr_di      : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ctlr_do      : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ctlr_dm      : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ctlr_do_irdy : std_logic;
-	signal ctlr_di_irdy : std_logic;
-	signal ctlr_di_trdy : std_logic;
+	signal ctlr_irdy     : std_logic;
+	signal ctlr_trdy     : std_logic;
+	signal ctlr_rw       : std_logic;
+	signal ctlr_act      : std_logic;
+	signal ctlr_cas      : std_logic;
+	signal ctlr_inirdy   : std_logic;
+	signal ctlr_refreq   : std_logic;
+	signal ctlr_b        : std_logic_vector(BANK_SIZE-1 downto 0);
+	signal ctlr_a        : std_logic_vector(ADDR_SIZE-1 downto 0);
+	signal ctlr_di       : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ctlr_do       : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ctlr_dm       : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ctlr_do_irdy  : std_logic;
+	signal ctlr_di_irdy  : std_logic;
+	signal ctlr_di_trdy  : std_logic;
 
-	signal dst_clk      : std_logic;
-	signal dst_irdy     : std_logic;
-	signal dst_trdy     : std_logic;
-	signal dst_do       : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal phy_cke  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_cs   : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_ras  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_cas  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_we   : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_odt  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal phy_b    : std_logic_vector(CMMD_GEAR*sd_ba'length-1 downto 0);
+	signal phy_a    : std_logic_vector(CMMD_GEAR*sd_a'length-1 downto 0);
+	signal phy_dqsi : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dqst : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dqso : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dmi  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dmt  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dmo  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dqi  : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal phy_dqt  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_dqo  : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal phy_sto  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal phy_sti  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+
+	signal dst_clk       : std_logic;
+	signal dst_irdy      : std_logic;
+	signal dst_trdy      : std_logic;
+	signal dst_do        : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+
 begin
 
 	rst <= '1', '0' after 20 ns;
@@ -124,9 +155,9 @@ begin
 
 	du2 : entity hdl4fpga.ddr_ctlr
 	generic map (
-		FPGA        => SPARTAN3;
-		MARK        => M6T,
-		TCP         => 6000,
+		FPGA        => FPGA,
+		MARK        => MARK,
+		TCP         => TCP,
 
 		CMMD_GEAR   => CMMD_GEAR,
 		BANK_SIZE   => BANK_SIZE,
@@ -170,26 +201,78 @@ begin
 		ctlr_refreq  => ctlr_refreq,
 
 		phy_rst      => ,
-		phy_cke      => ,
-		phy_cs       => ,
-		phy_ras      => ,
-		phy_cas      => ,
-		phy_we       => ,
-		phy_b        => ,
-		phy_a        => ,
-		phy_odt      => ,
-		phy_dmi      => ,
-		phy_dmt      => ,
-		phy_dmo      => ,
+		phy_cke      => ddrphy_cke,
+		phy_cs       => ddrphy_cs,
+		phy_ras      => ddrphy_ras,
+		phy_cas      => ddrphy_cas,
+		phy_we       => ddrphy_we,
+		phy_b        => ddrphy_b,
+		phy_a        => ddrphy_a,
+		phy_odt      => ddrphy_odt,
+		phy_dmi      => ddrphy_dmi,
+		phy_dmt      => ddrphy_dmt,
+		phy_dmo      => ddrphy_dmo,
+                               
+		phy_dqi      => ddrphy_dqi,
+		phy_dqt      => ddrphy_dqt,
+		phy_dqo      => ddrphy_dqo,
+		phy_sti      => ddrphy_sti,
+		phy_sto      => ddrphy_sto,
+                                
+		phy_dqsi     => ddrphy_dqsi,
+		phy_dqso     => ddrphy_dqso,
+		phy_dqst     => ddrphy_dqst);
 
-		phy_dqi      => ,
-		phy_dqt      => ,
-		phy_dqo      => ,
-		phy_sti      => ,
-		phy_sto      => ,
+	ddrphy_e : entity hdl4fpga.ddrphy
+	generic map (
+		gate_delay => 2,
+		loopback => false,
+		registered_dout => false,
+		BANK_SIZE => sd_ba'length,
+		ADDR_SIZE => sd_a'length,
+		cmmd_gear => CMMD_GEAR,
+		data_gear => DATA_GEAR,
+		WORD_SIZE => word_size,
+		BYTE_SIZE => byte_size)
+	port map (
+		sys_clks => ddrs_clks,
+		phy_rst  => ddrs_rst,
 
-		phy_dqsi     => ,
-		phy_dqso     => ,
-		phy_dqst     => );
+		sys_cke  => ddrphy_cke,
+		sys_cs   => ddrphy_cs,
+		sys_ras  => ddrphy_ras,
+		sys_cas  => ddrphy_cas,
+		sys_we   => ddrphy_we,
+		sys_b    => ddrphy_b,
+		sys_a    => ddrphy_a,
+		sys_dqsi => ddrphy_dqsi,
+		sys_dqst => ddrphy_dqst,
+		sys_dqso => ddrphy_dqso,
+		sys_dmi  => ddrphy_dmo,
+		sys_dmt  => ddrphy_dmt,
+		sys_dmo  => ddrphy_dmi,
+		sys_dqi  => ddrphy_dqi,
+		sys_dqt  => ddrphy_dqt,
+		sys_dqo  => ddrphy_dqo,
+		sys_odt  => ddrphy_odt,
+		sys_sti  => ddrphy_sti,
+		sys_sto  => ddrphy_sto,
+
+		ddr_clk  => ddr_clk,
+		ddr_cke  => sd_cke,
+		ddr_cs   => sd_cs,
+		ddr_ras  => sd_ras,
+		ddr_cas  => sd_cas,
+		ddr_we   => sd_we,
+		ddr_b    => sd_ba,
+		ddr_a    => sd_a,
+
+		ddr_dm   => sd_dm,
+		ddr_dqt  => ddr_dqt,
+		ddr_dqi  => sd_dq,
+		ddr_dqo  => ddr_dqo,
+		ddr_dqst => ddr_dqst,
+		ddr_dqsi => sd_dqs,
+		ddr_dqso => ddr_dqso);
 
 end;
