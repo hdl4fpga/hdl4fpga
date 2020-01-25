@@ -42,8 +42,8 @@ entity ddrphy is
 		byte_size   : natural   := 8;
 		clkinv      : std_logic := '0');
 	port (
-		phy_clks : in std_logic_vector(0 to 2-1);
-		phy_rst1  : in std_logic;
+		ddrphy_clks : in std_logic_vector(0 to 2-1);
+		ddrphy_rst  : in std_logic;
 
 		
 		phy_rst  : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
@@ -265,7 +265,7 @@ begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
-			clk => phy_clks(0),
+			clk => ddrphy_clks(0),
 			dr => '0' xor clkinv,
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
@@ -277,9 +277,9 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		phy_clks => phy_clks,
+		ddrphy_clks => ddrphy_clks,
           
-		phy_rst1 => phy_rst1,
+		ddrphy_rst => ddrphy_rst,
 		phy_rst => phy_rst,
 		phy_cs  => phy_cs,
 		phy_cke => phy_cke,
@@ -319,7 +319,7 @@ begin
 			gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			phy_clks => phy_clks,
+			ddrphy_clks => ddrphy_clks,
 
 			phy_sti => ssti(i),
 			phy_dmt => sdmt(i),
