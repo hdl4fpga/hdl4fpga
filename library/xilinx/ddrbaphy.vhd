@@ -31,9 +31,9 @@ entity ddrbaphy is
 		BANK_SIZE  : natural := 2;
 		ADDR_SIZE  : natural := 13);
 	port (
-		ddrphy_clks  : in  std_logic_vector(0 to 2-1);
+		sys_clks : in  std_logic_vector(0 to 2-1);
 
-		ddrphy_rst : in  std_logic;
+		sys_rst  : in  std_logic;
 		phy_rst  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		phy_cs   : in  std_logic_vector(gear-1 downto 0);
 		phy_cke  : in  std_logic_vector(gear-1 downto 0);
@@ -67,8 +67,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_rst,
 		q(0) => ddr_rst);
 
@@ -78,8 +78,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_cke,
 		q(0) => ddr_cke);
 
@@ -89,8 +89,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_cs,
 		q(0) => ddr_cs);
 
@@ -100,8 +100,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_ras,
 		q(0) => ddr_ras);
 
@@ -111,8 +111,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_cas,
 		q(0) => ddr_cas);
 
@@ -122,8 +122,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_we,
 		q(0) => ddr_we);
 
@@ -133,8 +133,8 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => ddrphy_rst,
-		clk  => ddrphy_clks,
+		rst  => sys_rst,
+		clk  => sys_clks,
 		d    => phy_odt,
 		q(0) => ddr_odt);
 
@@ -144,8 +144,8 @@ begin
 		size => ddr_b'length,
 		gear => gear)
 	port map (
-		rst => ddrphy_rst,
-		clk => ddrphy_clks,
+		rst => sys_rst,
+		clk => sys_clks,
 		d   => phy_b,
 		q   => ddr_b);
 
@@ -155,8 +155,8 @@ begin
 		size => ddr_a'length,
 		gear => gear)
 	port map (
-		rst => ddrphy_rst,
-		clk => ddrphy_clks,
+		rst => sys_rst,
+		clk => sys_clks,
 		d   => phy_a,
 		q   => ddr_a);
 
