@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xdr_ph is
+entity ddr_ph is
 	generic (
 		clk_phases : natural := 1;
 		clk_edges  : natural := 1;
@@ -42,7 +42,7 @@ use hdl4fpga.std.all;
 
 use std.textio.all;
 
-architecture slr of xdr_ph is
+architecture slr of ddr_ph is
 	signal clks : std_logic_vector(0 to clk_phases-1) := (others => '-');
 	signal phi  : std_logic_vector(clks'range) := (others => '-');
 	signal phi0 : std_logic_vector(clks'range) := (others => '-');
@@ -90,7 +90,7 @@ begin
 		phi0 (delay_phase) <= sys_di;
 
 		g : for i in 1 to clk_phases-1 generate
-			constant left : natural := selecton (
+			constant left : natural := setif (
 				clk_phases*((delay_phase+i)/clk_phases) > delay_phase,
 				(delay_phase+i-1)/clk_phases,
 				(delay_phase+i-1)/clk_phases+1);

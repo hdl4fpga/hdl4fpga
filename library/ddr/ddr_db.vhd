@@ -31,7 +31,7 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-package xdr_db is
+package ddr_db is
 
 	constant ANY         : natural := 0;
 
@@ -325,37 +325,37 @@ package xdr_db is
 		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  7*2, code => "010"),
 		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  8*2, code => "011"));
 
-	function xdr_stdr (
+	function ddr_stdr (
 		mark : natural) 
 		return natural;
 
-	function xdr_query_size (
+	function ddr_query_size (
 		constant stdr : natural;
 		constant rgtr  : natural)
 		return natural;
 
-	function xdr_cnfglat (
+	function ddr_cnfglat (
 		constant stdr : natural;
 		constant rgtr : natural;
 		constant lat  : natural)
 		return std_logic_vector;
 
-	function xdr_timing (
+	function ddr_timing (
 		constant mark  : natural;
 		constant param : natural) 
 		return natural;
 
-	function xdr_latency (
+	function ddr_latency (
 		constant fpga  : natural;
 		constant param : natural)
 		return integer;
 
-	function xdr_lattab (
+	function ddr_lattab (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return natural_vector;
 
-	function xdr_schtab (
+	function ddr_schtab (
 		constant stdr  : natural;
 		constant fpga  : natural;
 		constant tabid : natural)
@@ -372,24 +372,24 @@ package xdr_db is
 		constant param  : natural)
 		return natural;
 
-	function xdr_latcod (
+	function ddr_latcod (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return std_logic_vector;
 
-	function xdr_selcwl (
+	function ddr_selcwl (
 		constant stdr : natural)
 		return natural;
 
-	function xdr_cntlrcnfg (
+	function ddr_cntlrcnfg (
 		constant fpga  : natural;
 		constant param : natural)
 		return boolean;
 end package;
 
-package body xdr_db is
+package body ddr_db is
 
-	function xdr_stdr (
+	function ddr_stdr (
 		mark : natural) 
 		return natural is
 	begin
@@ -401,7 +401,7 @@ package body xdr_db is
 		return 0;
 	end;
 
-	function xdr_query_size (
+	function ddr_query_size (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return natural is
@@ -417,11 +417,11 @@ package body xdr_db is
 		return val;
 	end;
 
-	function xdr_query_data (
+	function ddr_query_data (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return cnfglat_tab is
-		constant query_size : natural := xdr_query_size(stdr, rgtr);
+		constant query_size : natural := ddr_query_size(stdr, rgtr);
 		variable query_data : cnfglat_tab (0 to query_size-1);
 		variable query_row  : natural := 0;
 	begin
@@ -436,7 +436,7 @@ package body xdr_db is
 		return query_data;
 	end;
 
-	function xdr_cnfglat (
+	function ddr_cnfglat (
 		constant stdr : natural;
 		constant rgtr : natural;
 		constant lat  : natural)
@@ -455,7 +455,7 @@ package body xdr_db is
 		return "XXX";
 	end;
 
-	function xdr_timing (
+	function ddr_timing (
 		constant mark  : natural;
 		constant param : natural) 
 		return natural is
@@ -471,7 +471,7 @@ package body xdr_db is
 		return 0;
 	end;
 
-	function xdr_latency (
+	function ddr_latency (
 		constant fpga  : natural;
 		constant param : natural)
 		return integer is
@@ -504,15 +504,15 @@ package body xdr_db is
 		constant param  : natural)
 		return natural is
 	begin
-		return to_xdrlatency(period, xdr_timing(mark, param));
+		return to_xdrlatency(period, ddr_timing(mark, param));
 	end;
 
-	function xdr_lattab (
+	function ddr_lattab (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return natural_vector is
-		constant query_size : natural := xdr_query_size(stdr, rgtr);
-		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
+		constant query_size : natural := ddr_query_size(stdr, rgtr);
+		constant query_data : cnfglat_tab(0 to query_size-1) := ddr_query_data(stdr, rgtr);
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
@@ -521,17 +521,17 @@ package body xdr_db is
 		return lattab;
 	end;
 
-	function xdr_schtab (
+	function ddr_schtab (
 		constant stdr  : natural;
 		constant fpga  : natural;
 		constant tabid : natural)
 		return natural_vector is
 
-		constant cwlsel : natural := xdr_selcwl(stdr);
-		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
-		constant cwltab : natural_vector := xdr_lattab(stdr, cwlsel);
+		constant cwlsel : natural := ddr_selcwl(stdr);
+		constant cltab  : natural_vector := ddr_lattab(stdr, CL);
+		constant cwltab : natural_vector := ddr_lattab(stdr, cwlsel);
 
-		variable lat : integer := xdr_latency(fpga, tabid);
+		variable lat : integer := ddr_latency(fpga, tabid);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 
@@ -571,12 +571,12 @@ package body xdr_db is
 		return (0 to 0 => 0);
 	end;
 
-	function xdr_latcod (
+	function ddr_latcod (
 		constant stdr : natural;
 		constant rgtr : natural)
 		return std_logic_vector is
-		constant query_size : natural := xdr_query_size(stdr, rgtr);
-		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
+		constant query_size : natural := ddr_query_size(stdr, rgtr);
+		constant query_data : cnfglat_tab(0 to query_size-1) := ddr_query_data(stdr, rgtr);
 		variable latcode : unsigned(0 to code_size*query_size-1);
 	begin
 		for i in query_data'reverse_range loop
@@ -586,7 +586,7 @@ package body xdr_db is
 		return std_logic_vector(latcode);
 	end;
 
-	function xdr_selcwl (
+	function ddr_selcwl (
 		constant stdr : natural)
 		return natural is
 	begin
@@ -596,7 +596,7 @@ package body xdr_db is
 		return CWL;
 	end;
 
-	function xdr_cntlrcnfg (
+	function ddr_cntlrcnfg (
 		constant fpga : natural;
 		constant param : natural)
 		return boolean is

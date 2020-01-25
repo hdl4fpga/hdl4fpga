@@ -27,9 +27,9 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_db.all;
+use hdl4fpga.ddr_db.all;
 
-package xdr_param is
+package ddr_param is
 
 	subtype ddrmr_id is std_logic_vector(3-1 downto 0);
 	constant ddr_mrx : ddrmr_id := (others => '1');
@@ -117,7 +117,7 @@ package xdr_param is
 		return s_out;
 
 	impure function choose_pgm (
-		constant xdr_stdr : natural)
+		constant ddr_stdr : natural)
 		return s_table;
 
 
@@ -151,7 +151,7 @@ package xdr_param is
 		constant gear : natural := 2)
 		return natural_vector;
 
-	function xdr_rotval (
+	function ddr_rotval (
 		constant LINE_SIZE : natural;
 		constant WORD_SIZE : natural;
 		constant lat_val : std_logic_vector;
@@ -159,7 +159,7 @@ package xdr_param is
 		constant lat_tab : natural_vector)
 		return std_logic_vector;
 
-	function xdr_task (
+	function ddr_task (
 		constant clk_phases : natural;
 		constant gear : natural;
 		constant lat_val : std_logic_vector;
@@ -171,34 +171,34 @@ package xdr_param is
 		return std_logic_vector;
 
 	impure function ddr1_mrfile (
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector)
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector)
 		return std_logic_vector;
 
 	impure function ddr_mrfile(
-		constant xdr_stdr : natural;
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_srt  : std_logic_vector;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_wr   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector;
-		constant xdr_mr_rtt  : std_logic_vector;
-		constant xdr_mr_al   : std_logic_vector;
-		constant xdr_mr_ocd  : std_logic_vector;
-		constant xdr_mr_tdqs : std_logic_vector;
-		constant xdr_mr_rdqs : std_logic_vector;
-		constant xdr_mr_qoff : std_logic_vector;
-		constant xdr_mr_drtt : std_logic_vector;
-		constant xdr_mr_mprrf : std_logic_vector;
-		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_asr  : std_logic_vector;
-		constant xdr_mr_pd   : std_logic_vector;
-		constant xdr_mr_cwl  : std_logic_vector)
+		constant ddr_stdr : natural;
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_srt  : std_logic_vector;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wr   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector;
+		constant ddr_mr_rtt  : std_logic_vector;
+		constant ddr_mr_al   : std_logic_vector;
+		constant ddr_mr_ocd  : std_logic_vector;
+		constant ddr_mr_tdqs : std_logic_vector;
+		constant ddr_mr_rdqs : std_logic_vector;
+		constant ddr_mr_qoff : std_logic_vector;
+		constant ddr_mr_drtt : std_logic_vector;
+		constant ddr_mr_mprrf : std_logic_vector;
+		constant ddr_mr_mpr  : std_logic_vector;
+		constant ddr_mr_asr  : std_logic_vector;
+		constant ddr_mr_pd   : std_logic_vector;
+		constant ddr_mr_cwl  : std_logic_vector)
 		return std_logic_vector;
 
 	-------------------------
@@ -227,11 +227,11 @@ package xdr_param is
 		addr : natural_vector(13 downto 0);
 	end record;
 
-	constant xdr_a_max : natural := 16;
+	constant ddr_a_max : natural := 16;
 
 	type mr_row is record
 		mr   : ddrmr_addr;
-		data : std_logic_vector(xdr_a_max-1 downto 0);
+		data : std_logic_vector(ddr_a_max-1 downto 0);
 	end record;
 
 	type mr_vector is array (natural range <>) of mr_row;
@@ -337,9 +337,9 @@ end package;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-package body xdr_param is
+package body ddr_param is
 
-	function xdr_rotval (
+	function ddr_rotval (
 		constant LINE_SIZE : natural;
 		constant WORD_SIZE : natural;
 		constant lat_val : std_logic_vector;
@@ -404,7 +404,7 @@ package body xdr_param is
 		return std_logic_vector(val);
 	end;
 
-	function xdr_task (
+	function ddr_task (
 		constant clk_phases : natural;
 		constant gear : natural;
 		constant lat_val : std_logic_vector;
@@ -591,10 +591,10 @@ package body xdr_param is
 	end;
 
 	impure function choose_pgm (
-		constant xdr_stdr : natural)
+		constant ddr_stdr : natural)
 		return s_table is
 	begin
-		case xdr_stdr is
+		case ddr_stdr is
 		when DDR1 =>
 			return ddr1_pgm;
 		when DDR2 =>
@@ -611,7 +611,7 @@ package body xdr_param is
 		constant mark : natural;
 		constant gear : natural := 2)
 		return natural_vector  is
-		constant stdr : natural := xdr_stdr(mark);
+		constant stdr : natural := ddr_stdr(mark);
 
 		constant ddr1_timer : natural_vector := (
 				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
@@ -625,22 +625,22 @@ package body xdr_param is
 		constant ddr2_timer : natural_vector := (
 				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
-				TMR2_MRD => xdr_latency(stdr, MRD),
+				TMR2_MRD => ddr_latency(stdr, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
 				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR2_DLL => 200, --xdr_latency(stdr, MRD),
+				TMR2_DLL => 200, --ddr_latency(stdr, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 
 		constant ddr3_timer : natural_vector := (
 				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-				TMR3_WLC => xdr_latency(stdr, MODu),
+				TMR3_WLC => ddr_latency(stdr, MODu),
 				TMR3_WLDQSEN => 25,
 				TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
-				TMR3_MOD => xdr_latency(stdr, MODu),
-				TMR3_DLL => xdr_latency(stdr, cDLL),
-				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
+				TMR3_MOD => ddr_latency(stdr, MODu),
+				TMR3_DLL => ddr_latency(stdr, cDLL),
+				TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
 	begin
 		case stdr is 
@@ -681,14 +681,14 @@ package body xdr_param is
 		constant src  : std_logic_vector)
 		return std_logic_vector is
 	begin
-		return mr_field(mask, src, xdr_a_max);
+		return mr_field(mask, src, ddr_a_max);
 	end;
 
 	impure function ddrmr_data (
 		constant mr_file : mr_vector;
 		constant mr_addr : ddrmr_addr)
 		return std_logic_vector is
-		variable val : std_logic_vector(0 to xdr_a_max-1);
+		variable val : std_logic_vector(0 to ddr_a_max-1);
 	begin
 		val := (others => '1');
 		for i in mr_file'range loop
@@ -700,233 +700,233 @@ package body xdr_param is
 	end;
 
 	impure function ddr1_mrfile (
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector)
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
 	begin
 
 
-		case xdr_mr_addr is
+		case ddr_mr_addr is
 		when ddr1mr_setemr =>
 			return
-				mr_field(mask => ddr1_edll, src => "0", size => xdr_a_max) or
-				mr_field(mask => ddr1_ods,  src => "0", size => xdr_a_max);
+				mr_field(mask => ddr1_edll, src => "0", size => ddr_a_max) or
+				mr_field(mask => ddr1_ods,  src => "0", size => ddr_a_max);
 		when ddr1mr_preall =>
-			return mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
+			return mr_field(mask => ddr1_preall, src => "1", size => ddr_a_max);
 		when ddr1mr_rstdll =>
 			return 
-				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "1",       size => xdr_a_max);
+				mr_field(mask => ddr1_bl,   src => ddr_mr_bl, size => ddr_a_max) or
+				mr_field(mask => ddr1_bt,   src => ddr_mr_bt, size => ddr_a_max) or
+				mr_field(mask => ddr1_cl,   src => ddr_mr_cl, size => ddr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "1",       size => ddr_a_max);
 		when ddr1mr_setmr =>
-			return mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "0", size => xdr_a_max);
+			return mr_field(mask => ddr1_bl,   src => ddr_mr_bl, size => ddr_a_max) or
+				mr_field(mask => ddr1_bt,   src => ddr_mr_bt, size => ddr_a_max) or
+				mr_field(mask => ddr1_cl,   src => ddr_mr_cl, size => ddr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "0", size => ddr_a_max);
 		when others =>
-			return (0 to xdr_a_max-1 => '1');
+			return (0 to ddr_a_max-1 => '1');
 		end case;
 	end;
 
 	impure function ddr2_mrfile (
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_srt  : std_logic_vector;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_wr   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector;
-		constant xdr_mr_rtt  : std_logic_vector;
-		constant xdr_mr_al   : std_logic_vector;
-		constant xdr_mr_ocd  : std_logic_vector;
-		constant xdr_mr_tdqs : std_logic_vector;
-		constant xdr_mr_rdqs : std_logic_vector)
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_srt  : std_logic_vector;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wr   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector;
+		constant ddr_mr_rtt  : std_logic_vector;
+		constant ddr_mr_al   : std_logic_vector;
+		constant ddr_mr_ocd  : std_logic_vector;
+		constant ddr_mr_tdqs : std_logic_vector;
+		constant ddr_mr_rdqs : std_logic_vector)
 		return std_logic_vector is
 	begin
-		case xdr_mr_addr is
+		case ddr_mr_addr is
 		when ddr2mr_setemr2 =>
-			return mr_field(mask => ddr2_srt, src => xdr_mr_srt);
+			return mr_field(mask => ddr2_srt, src => ddr_mr_srt);
 		when ddr2mr_setemr3 =>
-			return (0 to xdr_a_max-1 => '0');
+			return (0 to ddr_a_max-1 => '0');
 		when ddr2mr_rstdll =>
 			return mr_field(mask => ddr2_rdll, src => "1");
 		when ddr2mr_enadll =>
 			return mr_field(mask => ddr2_edll, src => "0");
 		when ddr2mr_setmr =>
 			return
-				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
-				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
-				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
-				mr_field(mask => ddr2_wr,   src => xdr_mr_wr) or
+				mr_field(mask => ddr2_bl,   src => ddr_mr_bl) or
+				mr_field(mask => ddr2_bt,   src => ddr_mr_bt) or
+				mr_field(mask => ddr2_cl,   src => ddr_mr_cl) or
+				mr_field(mask => ddr2_wr,   src => ddr_mr_wr) or
 				mr_field(mask => ddr2_rdll, src => "0");
 		when ddr2mr_seteOCD =>
 			return
 				mr_field(mask => ddr2_edll, src => "0") or
-				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
-				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
-				mr_field(mask => ddr2_al,   src => xdr_mr_al)   or
-				mr_field(mask => ddr2_ocd,  src => xdr_mr_ocd)  or
-				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
-				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
+				mr_field(mask => ddr2_ods,  src => ddr_mr_ods)  or
+				mr_field(mask => ddr2_rtt,  src => ddr_mr_rtt)  or
+				mr_field(mask => ddr2_al,   src => ddr_mr_al)   or
+				mr_field(mask => ddr2_ocd,  src => ddr_mr_ocd)  or
+				mr_field(mask => ddr2_ddqs, src => ddr_mr_tdqs) or
+				mr_field(mask => ddr2_rdqs, src => ddr_mr_rdqs) or
 				mr_field(mask => ddr2_out,  src => "0");
 		when ddr2mr_setdOCD =>
 			return
 				mr_field(mask => ddr2_edll, src => "0") or
-				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
-				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
-				mr_field(mask => ddr2_al,   src => xdr_mr_al)   or
+				mr_field(mask => ddr2_ods,  src => ddr_mr_ods)  or
+				mr_field(mask => ddr2_rtt,  src => ddr_mr_rtt)  or
+				mr_field(mask => ddr2_al,   src => ddr_mr_al)   or
 				mr_field(mask => ddr2_ocd,  src => "000")  or
-				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
-				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
+				mr_field(mask => ddr2_ddqs, src => ddr_mr_tdqs) or
+				mr_field(mask => ddr2_rdqs, src => ddr_mr_rdqs) or
 				mr_field(mask => ddr2_out,  src => "0");
 		when ddr2mr_preall =>
 			return
 				mr_field(mask => ddr2_preall, src => "1");
 		when others =>
-			return (0 to xdr_a_max-1 => '1');
+			return (0 to ddr_a_max-1 => '1');
 		end case;
 	end;
 
 	impure function ddr3_mrfile (
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_srt  : std_logic_vector;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_wr   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector;
-		constant xdr_mr_rtt  : std_logic_vector;
-		constant xdr_mr_al   : std_logic_vector;
-		constant xdr_mr_tdqs : std_logic_vector;
-		constant xdr_mr_qoff : std_logic_vector;
-		constant xdr_mr_drtt : std_logic_vector;
-		constant xdr_mr_mprrf : std_logic_vector;
-		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_asr  : std_logic_vector;
-		constant xdr_mr_pd   : std_logic_vector;
-		constant xdr_mr_cwl  : std_logic_vector)
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_srt  : std_logic_vector;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wr   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector;
+		constant ddr_mr_rtt  : std_logic_vector;
+		constant ddr_mr_al   : std_logic_vector;
+		constant ddr_mr_tdqs : std_logic_vector;
+		constant ddr_mr_qoff : std_logic_vector;
+		constant ddr_mr_drtt : std_logic_vector;
+		constant ddr_mr_mprrf : std_logic_vector;
+		constant ddr_mr_mpr  : std_logic_vector;
+		constant ddr_mr_asr  : std_logic_vector;
+		constant ddr_mr_pd   : std_logic_vector;
+		constant ddr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
 	begin
-		case xdr_mr_addr is
+		case ddr_mr_addr is
 		when ddr3mr_setmr0 =>
 			 return
-				mr_field(mask => ddr3_bl, src => xdr_mr_bl) or
-				mr_field(mask => ddr3_bt, src => xdr_mr_bt) or
-				mr_field(mask => ddr3_cl, src => xdr_mr_cl) or
-				mr_field(mask => ddr3_pd, src => xdr_mr_pd) or
+				mr_field(mask => ddr3_bl, src => ddr_mr_bl) or
+				mr_field(mask => ddr3_bt, src => ddr_mr_bt) or
+				mr_field(mask => ddr3_cl, src => ddr_mr_cl) or
+				mr_field(mask => ddr3_pd, src => ddr_mr_pd) or
 				mr_field(mask => ddr3_rdll, src => "1") or
-				mr_field(mask => ddr3_wr, src => xdr_mr_wr);
+				mr_field(mask => ddr3_wr, src => ddr_mr_wr);
 		when ddr3mr_enawl =>
 			 return
-				mr_field(mask => ddr3_al,   src => xdr_mr_al) or
+				mr_field(mask => ddr3_al,   src => ddr_mr_al) or
 				mr_field(mask => ddr3_edll, src => "0") or
-				mr_field(mask => ddr3_ods,  src => xdr_mr_ods) or
+				mr_field(mask => ddr3_ods,  src => ddr_mr_ods) or
 				mr_field(mask => ddr3_qoff, src => "0") or
-				mr_field(mask => ddr3_rtt,  src => xdr_mr_rtt) or
-				mr_field(mask => ddr3_tdqs, src => xdr_mr_tdqs) or
+				mr_field(mask => ddr3_rtt,  src => ddr_mr_rtt) or
+				mr_field(mask => ddr3_tdqs, src => ddr_mr_tdqs) or
 				mr_field(mask => ddr3_wl,   src => "1");
 
 		when ddr3mr_setmr1 =>
 			 return
-				mr_field(mask => ddr3_al,   src => xdr_mr_al) or
+				mr_field(mask => ddr3_al,   src => ddr_mr_al) or
 				mr_field(mask => ddr3_edll, src => "0") or
-				mr_field(mask => ddr3_ods,  src => xdr_mr_ods) or
+				mr_field(mask => ddr3_ods,  src => ddr_mr_ods) or
 				mr_field(mask => ddr3_qoff, src => "0") or
-				mr_field(mask => ddr3_rtt,  src => xdr_mr_rtt) or
-				mr_field(mask => ddr3_tdqs, src => xdr_mr_tdqs) or
+				mr_field(mask => ddr3_rtt,  src => ddr_mr_rtt) or
+				mr_field(mask => ddr3_tdqs, src => ddr_mr_tdqs) or
 				mr_field(mask => ddr3_wl,   src => "0");
 
 		when ddr3mr_setmr2 =>
 			 return
-				mr_field(mask => ddr3_asr,  src => xdr_mr_asr) or
-				mr_field(mask => ddr3_cwl,  src => xdr_mr_cwl) or
-				mr_field(mask => ddr3_drtt, src => xdr_mr_drtt) or
-				mr_field(mask => ddr3_srt,  src => xdr_mr_srt);
+				mr_field(mask => ddr3_asr,  src => ddr_mr_asr) or
+				mr_field(mask => ddr3_cwl,  src => ddr_mr_cwl) or
+				mr_field(mask => ddr3_drtt, src => ddr_mr_drtt) or
+				mr_field(mask => ddr3_srt,  src => ddr_mr_srt);
 
 		when ddr3mr_setmr3 =>
 			 return
-				mr_field(mask => ddr3_mprrf, src => xdr_mr_mprrf) or
-				mr_field(mask => ddr3_mpr,   src => xdr_mr_mpr);
+				mr_field(mask => ddr3_mprrf, src => ddr_mr_mprrf) or
+				mr_field(mask => ddr3_mpr,   src => ddr_mr_mpr);
 
 		when ddr3mr_zqc =>
 			 return
 				mr_field(mask => ddr3_zqc,   src => "1");
 		when others =>
-			return (0 to xdr_a_max-1 => '1');
+			return (0 to ddr_a_max-1 => '1');
 		end case;
 	end;
 
 	impure function ddr_mrfile(
-		constant xdr_stdr : natural;
+		constant ddr_stdr : natural;
 
-		constant xdr_mr_addr : ddrmr_addr;
-		constant xdr_mr_srt  : std_logic_vector;
-		constant xdr_mr_bl   : std_logic_vector;
-		constant xdr_mr_bt   : std_logic_vector;
-		constant xdr_mr_cl   : std_logic_vector;
-		constant xdr_mr_wr   : std_logic_vector;
-		constant xdr_mr_ods  : std_logic_vector;
-		constant xdr_mr_rtt  : std_logic_vector;
-		constant xdr_mr_al   : std_logic_vector;
-		constant xdr_mr_ocd  : std_logic_vector;
-		constant xdr_mr_tdqs : std_logic_vector;
-		constant xdr_mr_rdqs : std_logic_vector;
-		constant xdr_mr_qoff : std_logic_vector;
-		constant xdr_mr_drtt : std_logic_vector;
-		constant xdr_mr_mprrf : std_logic_vector;
-		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_asr  : std_logic_vector;
-		constant xdr_mr_pd   : std_logic_vector;
-		constant xdr_mr_cwl  : std_logic_vector)
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_srt  : std_logic_vector;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wr   : std_logic_vector;
+		constant ddr_mr_ods  : std_logic_vector;
+		constant ddr_mr_rtt  : std_logic_vector;
+		constant ddr_mr_al   : std_logic_vector;
+		constant ddr_mr_ocd  : std_logic_vector;
+		constant ddr_mr_tdqs : std_logic_vector;
+		constant ddr_mr_rdqs : std_logic_vector;
+		constant ddr_mr_qoff : std_logic_vector;
+		constant ddr_mr_drtt : std_logic_vector;
+		constant ddr_mr_mprrf : std_logic_vector;
+		constant ddr_mr_mpr  : std_logic_vector;
+		constant ddr_mr_asr  : std_logic_vector;
+		constant ddr_mr_pd   : std_logic_vector;
+		constant ddr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
 	begin
-		case xdr_stdr is
+		case ddr_stdr is
 		when DDR1 =>
 			return ddr1_mrfile(
-				xdr_mr_addr => xdr_mr_addr,
-				xdr_mr_bl   => xdr_mr_bl,
-				xdr_mr_bt   => xdr_mr_bt,
-				xdr_mr_cl   => xdr_mr_cl,
-				xdr_mr_ods  => xdr_mr_ods);
+				ddr_mr_addr => ddr_mr_addr,
+				ddr_mr_bl   => ddr_mr_bl,
+				ddr_mr_bt   => ddr_mr_bt,
+				ddr_mr_cl   => ddr_mr_cl,
+				ddr_mr_ods  => ddr_mr_ods);
 
 		when DDR2 =>
 			return ddr2_mrfile(
-				xdr_mr_addr => xdr_mr_addr,
-				xdr_mr_srt  => xdr_mr_srt,
-				xdr_mr_bl   => xdr_mr_bl,
-				xdr_mr_bt   => xdr_mr_bt,
-				xdr_mr_cl   => xdr_mr_cl,
-				xdr_mr_wr   => xdr_mr_wr,
-				xdr_mr_ods  => xdr_mr_ods,
-				xdr_mr_rtt  => xdr_mr_rtt,
-				xdr_mr_al   => xdr_mr_al,
-				xdr_mr_ocd  => xdr_mr_ocd,
-				xdr_mr_tdqs => xdr_mr_tdqs,
-				xdr_mr_rdqs => xdr_mr_rdqs);
+				ddr_mr_addr => ddr_mr_addr,
+				ddr_mr_srt  => ddr_mr_srt,
+				ddr_mr_bl   => ddr_mr_bl,
+				ddr_mr_bt   => ddr_mr_bt,
+				ddr_mr_cl   => ddr_mr_cl,
+				ddr_mr_wr   => ddr_mr_wr,
+				ddr_mr_ods  => ddr_mr_ods,
+				ddr_mr_rtt  => ddr_mr_rtt,
+				ddr_mr_al   => ddr_mr_al,
+				ddr_mr_ocd  => ddr_mr_ocd,
+				ddr_mr_tdqs => ddr_mr_tdqs,
+				ddr_mr_rdqs => ddr_mr_rdqs);
 
 		when others =>
 			return ddr3_mrfile(
-				xdr_mr_addr  => xdr_mr_addr,
-				xdr_mr_srt   => xdr_mr_srt,
-				xdr_mr_bl    => xdr_mr_bl,
-				xdr_mr_bt    => xdr_mr_bt,
-				xdr_mr_cl    => xdr_mr_cl,
-				xdr_mr_wr    => xdr_mr_wr,
-				xdr_mr_ods   => xdr_mr_ods,
-				xdr_mr_rtt   => xdr_mr_rtt,
-				xdr_mr_al    => xdr_mr_al,
-				xdr_mr_qoff  => xdr_mr_qoff,
-				xdr_mr_tdqs  => xdr_mr_tdqs,
-				xdr_mr_drtt  => xdr_mr_drtt,
-				xdr_mr_mprrf => xdr_mr_mprrf,
-				xdr_mr_mpr   => xdr_mr_mpr,
-				xdr_mr_asr   => xdr_mr_asr,
-				xdr_mr_pd    => xdr_mr_pd,
-				xdr_mr_cwl   => xdr_mr_cwl);
+				ddr_mr_addr  => ddr_mr_addr,
+				ddr_mr_srt   => ddr_mr_srt,
+				ddr_mr_bl    => ddr_mr_bl,
+				ddr_mr_bt    => ddr_mr_bt,
+				ddr_mr_cl    => ddr_mr_cl,
+				ddr_mr_wr    => ddr_mr_wr,
+				ddr_mr_ods   => ddr_mr_ods,
+				ddr_mr_rtt   => ddr_mr_rtt,
+				ddr_mr_al    => ddr_mr_al,
+				ddr_mr_qoff  => ddr_mr_qoff,
+				ddr_mr_tdqs  => ddr_mr_tdqs,
+				ddr_mr_drtt  => ddr_mr_drtt,
+				ddr_mr_mprrf => ddr_mr_mprrf,
+				ddr_mr_mpr   => ddr_mr_mpr,
+				ddr_mr_asr   => ddr_mr_asr,
+				ddr_mr_pd    => ddr_mr_pd,
+				ddr_mr_cwl   => ddr_mr_cwl);
 		end case;
 	end;
 

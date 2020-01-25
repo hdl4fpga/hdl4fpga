@@ -27,81 +27,83 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_param.all;
 
-entity xdr_timer is
-	generic ( 
-		timers : natural_vector);
+entity fifo is
+	generic (
+		size     : natural);
 	port (
-		sys_clk : in  std_logic;
-		tmr_sel : in  std_logic_vector;
-		sys_req : in  std_logic;
-		sys_rdy : out std_logic);
+		src_clk  : in  std_logic;
+		src_frm  : in  std_logic := '1';
+		src_irdy : in  std_logic;
+		src_trdy : buffer std_logic;
+		src_data : in  std_logic_vector;
+
+		dst_clk  : in  std_logic;
+		dst_frm  : buffer std_logic := '1';
+		dst_irdy : buffer std_logic;
+		dst_trdy : in  std_logic;
+		dst_data : out std_logic_vector);
 end;
 
-architecture def of xdr_timer is
+architecture def of fifo is
 
---	constant stages : natural := unsigned_num_bits(max(timers))/4;
-	constant stages : natural := unsigned_num_bits(max(timers))/4;
-	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
-	subtype tword is std_logic_vector(timer_size-1 downto 0);
-	type tword_vector is array (natural range <>) of tword;
-	
-	impure function stage_size
-		return natural_vector is
-		variable val : natural_vector(stages downto 0);
-		variable quo : natural := timer_size mod stages;
-	begin
-		val(0) := 0;
-		for i in 1 to stages loop
-			val(i) := timer_size/stages + val(i-1);
-			if i*quo >= stages then
-				val(i) := val(i) + 1;
-				quo := quo - 1;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	impure function to_twordvector 
-		return tword_vector is
-		variable val : tword_vector(timers'range);
-		variable csize : natural;
-	begin
-		val := (others => (others => '-'));
-		for i in timers'range loop
-			for j in stages-1 downto 0 loop
-				csize := stage_size(j+1)-stage_size(j);
-				val(i) := std_logic_vector(unsigned(val(i)) sll csize);
-				val(i)(csize-1 downto 0) := std_logic_vector(to_unsigned(((2**csize-1)+((timers(i)-stages)/2**(stage_size(j)-j)) mod 2**(csize-1)) mod 2**csize, csize));
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	constant timer_values : tword_vector := to_twordvector;
-	constant xx : natural_vector(stages-1 downto 0) := stage_size(stages downto 1);
-
-	signal data : tword;
+	signal wr_ena    : std_logic;
+	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1);
+	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1);
+	signal dst_irdy1 : std_logic;
+	signal dly_irdy  : std_logic;
 
 begin
 
-	process (sys_clk)
+	wr_ena <= src_frm and src_irdy and src_trdy;
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => src_clk,
+		wr_ena  => wr_ena,
+		wr_addr => wr_addr,
+		wr_data => src_data, 
+
+		rd_clk  => dst_clk,
+		rd_addr => rd_addr,
+		rd_data => dst_data);
+
+	process(src_clk)
 	begin
-		if rising_edge(sys_clk) then
---			if sys_req='1' then
-				data <= timer_values(to_integer(unsigned(tmr_sel)));
---			end if;
+		if rising_edge(src_clk) then
+			if src_frm='1' then
+				if src_trdy='1' then
+					wr_addr <= inc(wr_addr);
+				end if;
+			end if;
+		end if;
+	end process;
+	src_trdy <= setif(wr_addr/=rd_addr);
+
+	dst_irdy1 <= setif(wr_addr=inc(rd_addr));
+	process(dst_clk)
+	begin
+		if rising_edge(dst_clk) then
+			if dst_frm='1' then
+				if dst_irdy1='1' then
+					if dst_trdy='1' then
+						rd_addr <= inc(rd_addr);
+					end if;
+				end if;
+			end if;
 		end if;
 	end process;
 
-	timer_e : entity hdl4fpga.timer
+	dstirdy_e : entity hdl4fpga.align
 	generic map (
-		stage_size => xx)
+		n => 2,
+		d => (0 to 0 => 2))
 	port map (
-		data => data,
-		clk => sys_clk,
-		req => sys_req,
-		rdy => sys_rdy);
-
+		clk   => dst_clk,
+		ena   => dst_trdy,
+		di(0) => dst_irdy1,
+		do(0) => dly_irdy);
+	dst_irdy <= dly_irdy and dst_trdy;
 end;

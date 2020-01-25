@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xdr_rdfifo is
+entity ddr_rdfifo is
 	generic (
 		data_delay  : natural := 1;
 		DATA_PHASES : natural := 1;
@@ -39,21 +39,21 @@ entity xdr_rdfifo is
 		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
-		xdr_win_dq  : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_win_dqs : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqsi    : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqi     : in std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
+		ddr_win_dq  : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_win_dqs : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqsi    : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqi     : in std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
 
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture struct of xdr_rdfifo is
+architecture struct of ddr_rdfifo is
 	subtype byte is std_logic_vector(BYTE_SIZE-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype word is std_logic_vector(DATA_GEAR*WORD_SIZE/xdr_dqsi'length-1 downto 0);
+	subtype word is std_logic_vector(DATA_GEAR*WORD_SIZE/ddr_dqsi'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function to_stdlogicvector (
@@ -84,8 +84,8 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	signal do : word_vector(xdr_dqsi'length-1 downto 0);
-	signal di : word_vector(xdr_dqsi'length-1 downto 0);
+	signal do : word_vector(ddr_dqsi'length-1 downto 0);
+	signal di : word_vector(ddr_dqsi'length-1 downto 0);
 
 	signal sys_do_win : std_logic;
 begin
@@ -99,7 +99,7 @@ begin
 		end if;
 	end process;
 
-	di  <= to_wordvector(xdr_dqi);
+	di  <= to_wordvector(ddr_dqi);
 	bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
 		DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
 			signal pll_req : std_logic;
@@ -109,7 +109,7 @@ begin
 				variable q : std_logic_vector(0 to data_delay);
 			begin 
 				if rising_edge(sys_clk) then
-					q := q(1 to q'right) & xdr_win_dq(i*DATA_PHASES+j);
+					q := q(1 to q'right) & ddr_win_dq(i*DATA_PHASES+j);
 					pll_req <= q(0);
 				end if;
 			end process;
@@ -128,8 +128,8 @@ begin
 				pll_req => pll_req,
 
 				ser_ar(0)  => sys_do_win,
-				ser_ena(0) => xdr_win_dqs(i*DATA_PHASES+j),
-				ser_clk(0) => xdr_dqsi(i*DATA_PHASES+j),
+				ser_ena(0) => ddr_win_dqs(i*DATA_PHASES+j),
+				ser_clk(0) => ddr_dqsi(i*DATA_PHASES+j),
 
 				di  => di(i*DATA_PHASES+j),
 				do  => do(j*WORD_SIZE/BYTE_SIZE+i));
