@@ -27,29 +27,28 @@ use ieee.numeric_std.all;
 
 entity lfsr_gen is
 	generic (
-		g : std_logic_vector);
+		g    : std_logic_vector);
 	port (
-		clk : in  std_logic;
-		rst : in  std_logic;
-		req : in  std_logic;
-		so  : out std_logic_vector);
+		clk  : in  std_logic;
+		ena  : in  std_logic;
+		init : in  std_logic_vector(g'range) := (g'range => '1');
+		load : in  std_logic;
+		data : out std_logic_vector(g'range));
 end;
 
 architecture beh of lfsr_gen is
-
 begin
 	process(clk)
 		variable s  : unsigned(g'range);
 		variable q  : std_logic;
 		variable s1 : std_logic;
 		variable s2 : std_logic;
-		variable aux : unsigned(8 downto 1);
 	begin
 
 		if rising_edge(clk) then
-			if rst='1' then
-				s  := (others => '1');
-			elsif req='1' then
+			if load='1' then
+				s  := unsigned(init);
+			elsif ena='1' then
 				s2 := '0';
 				for i in g'range loop
 					s1   := s(i);
@@ -57,7 +56,7 @@ begin
 					s2   := s1;
 				end loop;
 			end if;
-			so <= std_logic_vector(s);
+			data <= std_logic_vector(s);
 		end if;
 	end process;
 end;
