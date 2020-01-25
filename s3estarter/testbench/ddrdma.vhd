@@ -40,6 +40,12 @@ architecture ddrdma of s3Estarter is
 	constant ddr_mul     : natural := 8;
 	constant ddr_div     : natural := 3;
 
+	constant g           : std_logic_vector(32 downto 1) := (
+		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
+	constant g_data      : std_logic_vector(g'range);
+	constant g_ena       : std_logic;
+	constant g_load      : std_logic;
+
 	constant FPGA        : natural := SPARTAN3;
 	constant MARK        : natural := M6T;
 	constant TCP         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
@@ -130,14 +136,14 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= dfsdcm_lckd;
 
-	testpattern_e : entity hdl4fpga.lfsr_gen
+	testpattern_e : entity hdl4fpga.lfsr
 	generic map (
-		g => g)
+		g    => g)
 	port map (
-		clk => sys_clk,
-		rst => input_rst,
-		req => input_req,
-		so  => input_data);
+		clk  => sys_clk,
+		load => g_load,
+		ena  => g_ena,
+		data => g_data);
 
 	dmactlr_rst <= sys_rst;
 	dmactlr_clk <= sys_clk;
