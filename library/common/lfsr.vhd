@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity lfsr_gen is
+entity lfsr is
 	generic (
 		g    : std_logic_vector);
 	port (
@@ -36,7 +36,7 @@ entity lfsr_gen is
 		data : out std_logic_vector(g'range));
 end;
 
-architecture beh of lfsr_gen is
+architecture beh of lfsr is
 begin
 	process(clk)
 		variable s  : unsigned(g'range);

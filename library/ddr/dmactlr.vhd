@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity dmactrl is
+entity dmactlr is
 	generic (
 		size          : natural);
 	port (
@@ -68,7 +68,7 @@ entity dmactrl is
 end;
 
 
-architecture def of dmactrl is
+architecture def of dmactlr is
 	signal dmactlr_frm : std_logic;
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
