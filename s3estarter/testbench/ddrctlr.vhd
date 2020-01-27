@@ -32,7 +32,7 @@ use hdl4fpga.ddr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture ddrctrl of s3Estarter is
+architecture ddrctlr of s3Estarter is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -44,7 +44,7 @@ architecture ddrctrl of s3Estarter is
 	--------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 8;
+	constant ddr_mul     : natural := 10; --(10) 166, (9) 150, (3) 133
 	constant ddr_div     : natural := 3;
 
 	constant g           : std_logic_vector(32 downto 1) := (
@@ -62,10 +62,10 @@ architecture ddrctrl of s3Estarter is
 	constant cmmd_gear   : natural := 1;
 	constant data_phases : natural := 2;
 	constant data_edges  : natural := 2;
-	constant bank_size   : natural := 2;
-	constant addr_size   : natural := 13;
+	constant bank_size   : natural := sd_ba'length;
+	constant addr_size   : natural := sd_a'length;
 	constant data_gear   : natural := 2;
-	constant word_size   : natural := 16;
+	constant word_size   : natural := sd_dq'length;
 	constant byte_size   : natural := 8;
 
 	signal ddrsys_lckd   : std_logic;
@@ -153,7 +153,7 @@ begin
 		dfsdcm_clk0  => ddrsys_clks(clk0),
 		dfsdcm_clk90 => ddrsys_clks(clk90),
 		dfsdcm_lckd  => ddrsys_lckd);
-	ddrsys_rst <= ddrsys_lckd;
+	ddrsys_rst <= not ddrsys_lckd;
 
 	testpattern_e : entity hdl4fpga.lfsr
 	generic map (
@@ -227,14 +227,14 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "011",
-		ctlr_cl      => "010",	-- 133 Mhz
---		ctlr_cl      => "110",	-- 150 Mhz
+--		ctlr_cl      => "010",	-- 133 Mhz
+		ctlr_cl      => "110",	-- 150 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
 		ctlr_rtt     => "--",
 
-		ctlr_rst     => dmactlr_rst,
+		ctlr_rst     => ddrsys_rst,
 		ctlr_clks    => ddrsys_clks,
 		ctlr_inirdy  => ctlr_inirdy,
 

@@ -72,7 +72,7 @@ architecture def of dmactlr is
 	signal dmactlr_frm : std_logic;
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col  : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col  : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 begin
 
 	dma_e : entity hdl4fpga.ddrdma

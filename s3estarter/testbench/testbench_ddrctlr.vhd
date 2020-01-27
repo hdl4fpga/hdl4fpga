@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ddrdma of testbench is
+architecture ddrctlr of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
@@ -305,7 +305,7 @@ end;
 library micron;
 
 configuration s3estarter_structure_md of testbench is
-	for ddrdma 
+	for ddrctlr 
 		for all : s3estarter
 			use entity work.s3estarter(structure);
 		end for;
@@ -330,10 +330,10 @@ end;
 
 library micron;
 
-configuration s3estarter_scope_md of testbench is
-	for ddrdma
+configuration s3estarter_ddrctlr_md of testbench is
+	for ddrctlr
 		for all : s3estarter 
-			use entity work.s3estarter(ddrdma);
+			use entity work.s3estarter(ddrctlr);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model
