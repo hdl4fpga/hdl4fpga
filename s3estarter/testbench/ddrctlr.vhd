@@ -32,7 +32,7 @@ use hdl4fpga.ddr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture ddrdma of s3Estarter is
+architecture ddrctrl of s3Estarter is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -53,20 +53,20 @@ architecture ddrdma of s3Estarter is
 	signal g_load      : std_logic;
 	signal g_data      : std_logic_vector(g'range);
 
-	constant FPGA        : natural := SPARTAN3;
-	constant MARK        : natural := M6T;
-	constant TCP         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
+	constant fpga        : natural := spartan3;
+	constant mark        : natural := m6t;
+	constant tcp         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
 
-	constant SCLK_PHASES : natural := 4;
-	constant SCLK_EDGES  : natural := 2;
-	constant CMMD_GEAR   : natural := 1;
-	constant DATA_PHASES : natural := 2;
-	constant DATA_EDGES  : natural := 2;
-	constant BANK_SIZE   : natural := 2;
-	constant ADDR_SIZE   : natural := 13;
-	constant DATA_GEAR   : natural := 2;
-	constant WORD_SIZE   : natural := 16;
-	constant BYTE_SIZE   : natural := 8;
+	constant sclk_phases : natural := 4;
+	constant sclk_edges  : natural := 2;
+	constant cmmd_gear   : natural := 1;
+	constant data_phases : natural := 2;
+	constant data_edges  : natural := 2;
+	constant bank_size   : natural := 2;
+	constant addr_size   : natural := 13;
+	constant data_gear   : natural := 2;
+	constant word_size   : natural := 16;
+	constant byte_size   : natural := 8;
 
 	signal ddrsys_lckd   : std_logic;
 	signal ddrsys_rst    : std_logic;
@@ -93,35 +93,35 @@ architecture ddrdma of s3Estarter is
 	signal ctlr_cas      : std_logic;
 	signal ctlr_inirdy   : std_logic;
 	signal ctlr_refreq   : std_logic;
-	signal ctlr_b        : std_logic_vector(BANK_SIZE-1 downto 0);
-	signal ctlr_a        : std_logic_vector(ADDR_SIZE-1 downto 0);
-	signal ctlr_di       : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ctlr_do       : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ctlr_dm       : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ctlr_do_irdy  : std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ctlr_b        : std_logic_vector(bank_size-1 downto 0);
+	signal ctlr_a        : std_logic_vector(addr_size-1 downto 0);
+	signal ctlr_di       : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_do       : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_dm       : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlr_do_irdy  : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_irdy  : std_logic;
 	signal ctlr_di_trdy  : std_logic;
 
 	signal ddrphy_rst    : std_logic;
-	signal ddrphy_cke    : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cs     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_ras    : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cas    : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_we     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_odt    : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_b      : std_logic_vector(CMMD_GEAR*sd_ba'length-1 downto 0);
-	signal ddrphy_a      : std_logic_vector(CMMD_GEAR*sd_a'length-1 downto 0);
-	signal ddrphy_dqsi   : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dqst   : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dqso   : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dmi    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dmt    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dmo    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dqi    : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ddrphy_dqt    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_dqo    : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ddrphy_sto    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-	signal ddrphy_sti    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_cke    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cs     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_ras    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cas    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_we     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_odt    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_b      : std_logic_vector(cmmd_gear*sd_ba'length-1 downto 0);
+	signal ddrphy_a      : std_logic_vector(cmmd_gear*sd_a'length-1 downto 0);
+	signal ddrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ddrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ddrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal ddr_clk     : std_logic_vector(0 downto 0);
 	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -215,16 +215,16 @@ begin
 		MARK         => MARK,
 		TCP          => TCP,
 
-		CMMD_GEAR    => CMMD_GEAR,
-		BANK_SIZE    => BANK_SIZE,
-		ADDR_SIZE    => ADDR_SIZE,
-		SCLK_PHASES  => SCLK_PHASES,
-		SCLK_EDGES   => SCLK_EDGES,
-		DATA_PHASES  => DATA_PHASES,
-		DATA_EDGES   => DATA_EDGES,
-		DATA_GEAR    => DATA_GEAR,
-		WORD_SIZE    => WORD_SIZE,
-		BYTE_SIZE    => BYTE_SIZE)
+		cmmd_gear    => cmmd_gear,
+		bank_size    => bank_size,
+		addr_size    => addr_size,
+		sclk_phases  => sclk_phases,
+		sclk_edges   => sclk_edges,
+		data_phases  => data_phases,
+		data_edges   => data_edges,
+		data_gear    => data_gear,
+		word_size    => word_size,
+		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "011",
 		ctlr_cl      => "010",	-- 133 Mhz
