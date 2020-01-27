@@ -98,7 +98,7 @@ begin
 
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
-		n => 2,
+		n => 1,
 		d => (0 to 0 => 2))
 	port map (
 		clk   => dst_clk,
