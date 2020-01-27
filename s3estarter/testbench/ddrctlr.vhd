@@ -49,9 +49,9 @@ architecture ddrctlr of s3Estarter is
 
 	constant g           : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena       : std_logic;
-	signal g_load      : std_logic;
-	signal g_data      : std_logic_vector(g'range);
+	signal g_ena         : std_logic;
+	signal g_load        : std_logic;
+	signal g_data        : std_logic_vector(g'range);
 
 	constant fpga        : natural := spartan3;
 	constant mark        : natural := m6t;
@@ -86,9 +86,9 @@ architecture ddrctlr of s3Estarter is
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 1);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 1);
 
-	signal ctlr_irdy     : std_logic;
+	signal ctlr_irdy     : std_logic := '0';
 	signal ctlr_trdy     : std_logic;
-	signal ctlr_rw       : std_logic;
+	signal ctlr_rw       : std_logic := '0';
 	signal ctlr_act      : std_logic;
 	signal ctlr_cas      : std_logic;
 	signal ctlr_inirdy   : std_logic;
@@ -123,11 +123,11 @@ architecture ddrctlr of s3Estarter is
 	signal ddrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-	signal ddr_clk     : std_logic_vector(0 downto 0);
-	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt     : std_logic_vector(sd_dq'range);
-	signal ddr_dqo     : std_logic_vector(sd_dq'range);
+	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt       : std_logic_vector(sd_dq'range);
+	signal ddr_dqo       : std_logic_vector(sd_dq'range);
 
 	signal dst_clk       : std_logic;
 	signal dst_irdy      : std_logic;
@@ -190,9 +190,9 @@ begin
 		ctlr_inirdy   => ctlr_inirdy,
 		ctlr_refreq   => ctlr_refreq,
 
-		ctlr_irdy     => ctlr_irdy,
+--		ctlr_irdy     => ctlr_irdy,
 		ctlr_trdy     => ctlr_trdy,
-		ctlr_rw       => ctlr_rw,
+--		ctlr_rw       => ctlr_rw,
 		ctlr_act      => ctlr_act,
 		ctlr_cas      => ctlr_cas,
 		ctlr_b        => ctlr_b,
@@ -228,7 +228,8 @@ begin
 	port map (
 		ctlr_bl      => "011",
 --		ctlr_cl      => "010",	-- 133 Mhz
-		ctlr_cl      => "110",	-- 150 Mhz
+--		ctlr_cl      => "110",	-- 166 Mhz
+		ctlr_cl      => "011",	-- 150 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",

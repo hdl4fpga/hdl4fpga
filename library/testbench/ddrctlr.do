@@ -3,6 +3,14 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/s3estarter_e/xtal
 add wave -noupdate /testbench/s3estarter_e/ddrdcm_e/dfsdcm_clk0
 add wave -noupdate /testbench/s3estarter_e/dmactlr_rst
+add wave -noupdate -divider DDRCTLR
+add wave -noupdate /testbench/s3estarter_e/ctlr_inirdy
+add wave -noupdate /testbench/s3estarter_e/ctlr_refreq
+add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_irdy
+add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_trdy
+add wave -noupdate /testbench/s3estarter_e/ctlr_rw
+add wave -noupdate /testbench/s3estarter_e/ctlr_act
+add wave -noupdate /testbench/s3estarter_e/ctlr_cas
 add wave -noupdate -divider {Micron DDR}
 add wave -noupdate /testbench/ddr_model_g/Clk
 add wave -noupdate /testbench/ddr_model_g/Clk_n
@@ -13,7 +21,7 @@ add wave -noupdate /testbench/ddr_model_g/Cas_n
 add wave -noupdate /testbench/ddr_model_g/We_n
 add wave -noupdate -radix hexadecimal /testbench/ddr_model_g/Addr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {200551318 ps} 0}
+WaveRestoreCursors {{Cursor 1} {47157721 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 212
 configure wave -valuecolwidth 163
@@ -29,4 +37,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {200544689 ps} {201669907 ps}
+WaveRestoreZoom {0 ps} {215250 ns}
