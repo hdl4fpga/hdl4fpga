@@ -156,6 +156,8 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
+	g_load <= ctlr_di_trdy;
+	g_ena  <= ctlr_di_trdy;
 	testpattern_e : entity hdl4fpga.lfsr
 	generic map (
 		g    => g)
@@ -260,7 +262,8 @@ begin
 		ctlr_di_trdy => ctlr_di_trdy,
 		ctlr_act     => ctlr_act,
 		ctlr_cas     => ctlr_cas,
-		ctlr_di      => ctlr_di,
+--		ctlr_di      => ctlr_di,
+		ctlr_di      => g_data,
 		ctlr_dm      => ctlr_dm,
 		ctlr_do_irdy => ctlr_do_irdy,
 		ctlr_do      => ctlr_do,
