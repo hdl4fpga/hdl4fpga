@@ -85,7 +85,7 @@ begin
 			when running_s =>
 				if ddrdma_frm='1' then
 					if ctlr_trdy='1' then
-						col_addr := col_addr + 1;
+						col_addr := col_addr + 2;
 						if col_addr(0)='1' then
 							row_addr := row_addr + 1;
 						end if;
@@ -93,7 +93,7 @@ begin
 							bnk_addr := bnk_addr + 1;
 						end if;
 
-						col_cntr := col_cntr - 1;
+						col_cntr := col_cntr - 2;
 						if col_cntr(0)='1' then
 							row_cntr := row_cntr - 1;
 						end if;

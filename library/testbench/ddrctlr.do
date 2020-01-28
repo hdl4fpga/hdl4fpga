@@ -2,25 +2,6 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/s3estarter_e/xtal
 add wave -noupdate -expand /testbench/s3estarter_e/ddrsys_clks
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_rst
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_frm
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_irdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_trdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_iaddr
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_ilen
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_taddr
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_tlen
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_inirdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_refreq
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_rw
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_act
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_cas
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate /testbench/s3estarter_e/ddrphy_rst
 add wave -noupdate /testbench/s3estarter_e/ddrphy_cke
 add wave -noupdate /testbench/s3estarter_e/ddrphy_cs
@@ -42,7 +23,38 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/ddrphy_dqo
 add wave -noupdate /testbench/s3estarter_e/ddrphy_sto
 add wave -noupdate /testbench/s3estarter_e/ddrphy_sti
 add wave -noupdate -divider DDRCTLR
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_rst
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_frm
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_irdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_trdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_iaddr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_ilen
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_taddr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_tlen
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_inirdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_refreq
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_rw
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_act
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_cas
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -divider DDRDRMA
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_frm
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ctlr_trdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/state
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/bnk_addr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/row_addr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/col_addr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/bnk_cntr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/row_cntr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/line__56/col_cntr
+add wave -noupdate -divider DDRCTLR
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_di_irdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_di_trdy
 add wave -noupdate -divider {Micron DDR}
 add wave -noupdate /testbench/ddr_model_g/Clk
 add wave -noupdate /testbench/ddr_model_g/Clk_n
@@ -59,7 +71,7 @@ add wave -noupdate /testbench/s3estarter_e/ddr_dqso
 add wave -noupdate /testbench/ddr_model_g/Dq
 add wave -noupdate -expand /testbench/ddr_model_g/Dqs
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203981855 ps} 0}
+WaveRestoreCursors {{Cursor 1} {203974000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 304
 configure wave -valuecolwidth 163
@@ -75,4 +87,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {203914774 ps} {204245979 ps}
+WaveRestoreZoom {203808396 ps} {204139604 ps}
