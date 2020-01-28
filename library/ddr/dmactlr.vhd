@@ -34,6 +34,7 @@ entity dmactlr is
 	port (
 
 		dmactlr_rst   : in  std_logic;
+		dmactlr_frm   : in  std_logic;
 		dmactlr_clk   : in  std_logic;
 		dmactlr_irdy  : in  std_logic;
 		dmactlr_trdy  : out std_logic;
@@ -48,7 +49,7 @@ entity dmactlr is
 
 		ctlr_irdy     : out std_logic;
 		ctlr_trdy     : in  std_logic;
-		ctlr_rw       : out std_logic;
+		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_cas      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
@@ -67,9 +68,7 @@ entity dmactlr is
 
 end;
 
-
 architecture def of dmactlr is
-	signal dmactlr_frm : std_logic;
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
 	signal ddrdma_col  : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
@@ -93,7 +92,7 @@ begin
 		ctlr_trdy    => ctlr_trdy,
 		ctlr_refreq  => ctlr_refreq);
 
-	ctlr_a <= ddrdma_col when ctlr_cas='1' else ddrdma_row;
+	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col), ctlr_a'length)) when ctlr_cas='1' else ddrdma_row;
 	ctlr_b <= ddrdma_bnk;
 
 	mem_e : entity hdl4fpga.fifo

@@ -48,12 +48,12 @@ entity ddrdma is
 end;
 
 architecture def of ddrdma is
+	type states is (init_s, running_s);
+	signal state : states;
+
 begin
 
 	process (ddrdma_clk)
-		type states is (init_s, running_s);
-		variable state : states;
-
 		variable bnk_addr : unsigned(0 to ddrdma_bnk'length);
 		variable row_addr : unsigned(0 to ddrdma_row'length);
 		variable col_addr : unsigned(0 to ddrdma_col'length);
@@ -77,9 +77,9 @@ begin
 				end if;
 
 				if ddrdma_frm='1' then
-					state := running_s;
+					state <= running_s;
 				else
-					state := init_s;
+					state <= init_s;
 				end if;
 
 			when running_s =>
@@ -105,9 +105,9 @@ begin
 				end if;
 
 				if ddrdma_frm='1' then
-					state := running_s;
+					state <= running_s;
 				else
-					state := init_s;
+					state <= init_s;
 				end if;
 			end case;
 
@@ -126,5 +126,7 @@ begin
 				resize(unsigned(col_cntr) mod 2**ddrdma_col'length, ddrdma_col'length));
 		end if;
 	end process;
+
+	ctlr_irdy <= ddrdma_frm when state=running_s else '0';
 
 end;

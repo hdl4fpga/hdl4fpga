@@ -44,7 +44,7 @@ architecture ddrctlr of s3Estarter is
 	--------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 10; --(10) 166, (9) 150, (3) 133
+	constant ddr_mul     : natural := 8; --(10) 166, (9) 150, (8) 133
 	constant ddr_div     : natural := 3;
 
 	constant g           : std_logic_vector(32 downto 1) := (
@@ -76,19 +76,20 @@ architecture ddrctlr of s3Estarter is
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
 	signal dmactlr_rst   : std_logic;
+	signal dmactlr_frm   : std_logic;
 	signal dmactlr_clk   : std_logic;
 	signal dmactlr_we    : std_logic;
 	signal dmactlr_irdy  : std_logic;
 	signal dmactlr_trdy  : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 1);
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1);
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 1) := (others => '0');
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1) := (others => '1');
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 1);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 1);
 
-	signal ctlr_irdy     : std_logic := '0';
+	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
-	signal ctlr_rw       : std_logic := '0';
+	signal ctlr_rw       : std_logic;
 	signal ctlr_act      : std_logic;
 	signal ctlr_cas      : std_logic;
 	signal ctlr_inirdy   : std_logic;
@@ -164,7 +165,7 @@ begin
 		ena  => g_ena,
 		data => g_data);
 
-	dmactlr_rst <= sys_rst;
+	dmactlr_rst <= ddrsys_rst;
 	dmactlr_clk <= sys_clk;
 	dmactlr_we  <= '0';
 
@@ -173,11 +174,22 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
+	process (dmactlr_clk)
+	begin
+		if rising_edge(dmactlr_clk) then
+			if ctlr_inirdy='1' then
+				dmactlr_frm  <= '1';
+				dmactlr_irdy <= '1';
+			end if;
+		end if;
+	end process;
+
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
 		size => 256)
 	port map (
 		dmactlr_rst   => dmactlr_rst,
+		dmactlr_frm   => dmactlr_frm,
 		dmactlr_clk   => dmactlr_clk,
 		dmactlr_irdy  => dmactlr_irdy,
 		dmactlr_trdy  => dmactlr_trdy,
@@ -190,9 +202,9 @@ begin
 		ctlr_inirdy   => ctlr_inirdy,
 		ctlr_refreq   => ctlr_refreq,
 
---		ctlr_irdy     => ctlr_irdy,
+		ctlr_irdy     => ctlr_irdy,
 		ctlr_trdy     => ctlr_trdy,
---		ctlr_rw       => ctlr_rw,
+		ctlr_rw       => ctlr_rw,
 		ctlr_act      => ctlr_act,
 		ctlr_cas      => ctlr_cas,
 		ctlr_b        => ctlr_b,
@@ -299,9 +311,9 @@ begin
 		phy_we      => ddrphy_we,
 		phy_b       => ddrphy_b,
 		phy_a       => ddrphy_a,
-		phy_dqsi    => ddrphy_dqsi,
+		phy_dqsi    => ddrphy_dqso,
 		phy_dqst    => ddrphy_dqst,
-		phy_dqso    => ddrphy_dqso,
+		phy_dqso    => ddrphy_dqsi,
 		phy_dmi     => ddrphy_dmo,
 		phy_dmt     => ddrphy_dmt,
 		phy_dmo     => ddrphy_dmi,
