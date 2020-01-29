@@ -32,7 +32,7 @@ use hdl4fpga.ddr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture ddrctlr of s3Estarter is
+architecture dmactlr of s3Estarter is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -98,7 +98,7 @@ architecture ddrctlr of s3Estarter is
 	signal ctlr_a        : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di       : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do       : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_dm       : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlr_dm       : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_irdy  : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_irdy  : std_logic := '1';
 	signal ctlr_di_trdy  : std_logic;
@@ -162,7 +162,7 @@ begin
 	generic map (
 		g    => g)
 	port map (
-		clk  => sys_clk,
+		clk  => ddrsys_clks(clk0), --sys_clk,
 		load => g_load,
 		ena  => g_ena,
 		data => g_data);
@@ -258,13 +258,14 @@ begin
 		ctlr_rw      => ctlr_rw,
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
-		ctlr_di_irdy => ctlr_di_irdy,
+--		ctlr_di_irdy => ctlr_inirdy, --'1', --ctlr_di_irdy,
+		ctlr_di_irdy => ctlr_di_trdy, --'1', --ctlr_di_irdy,
 		ctlr_di_trdy => ctlr_di_trdy,
 		ctlr_act     => ctlr_act,
 		ctlr_cas     => ctlr_cas,
 --		ctlr_di      => ctlr_di,
 		ctlr_di      => g_data,
-		ctlr_dm      => ctlr_dm,
+		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_irdy => ctlr_do_irdy,
 		ctlr_do      => ctlr_do,
 		ctlr_refreq  => ctlr_refreq,
@@ -320,9 +321,9 @@ begin
 		phy_dmi     => ddrphy_dmo,
 		phy_dmt     => ddrphy_dmt,
 		phy_dmo     => ddrphy_dmi,
-		phy_dqi     => ddrphy_dqi,
+		phy_dqi     => ddrphy_dqo,
 		phy_dqt     => ddrphy_dqt,
-		phy_dqo     => ddrphy_dqo,
+		phy_dqo     => ddrphy_dqi,
 		phy_odt     => ddrphy_odt,
 		phy_sti     => ddrphy_sti,
 		phy_sto     => ddrphy_sto,
