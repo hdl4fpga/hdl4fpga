@@ -31,10 +31,10 @@ use hdl4fpga.std.all;
 entity ddr_mpu is
 	generic (
 		gear : natural;
-		lRCD : natural;
-		lRFC : natural;
-		lWR  : natural;
-		lRP  : natural;
+		lrcd : natural;
+		lrfc : natural;
+		lwr  : natural;
+		lrp  : natural;
 
 		bl_cod : std_logic_vector;
 		bl_tab : natural_vector;
@@ -71,10 +71,10 @@ architecture arch of ddr_mpu is
 	constant we  : natural := 2;
 
 	function timer_size (
-		constant lRCD : natural;
-		constant lRFC : natural;
-		constant lWR  : natural;
-		constant lRP  : natural;
+		constant lrcd : natural;
+		constant lrfc : natural;
+		constant lwr  : natural;
+		constant lrp  : natural;
 		constant bl_tab : natural_vector;
 		constant cl_tab : natural_vector;
 		constant cwl_tab : natural_vector)
@@ -82,8 +82,8 @@ architecture arch of ddr_mpu is
 		variable val : natural;
 		variable aux : natural;
 	begin
-		aux := max(lRCD,lRFC);
-		aux := max(aux, lRP);
+		aux := max(lrcd,lrfc);
+		aux := max(aux, lrp);
 		for i in bl_tab'range loop
 			aux := max(aux, bl_tab(i));
 		end loop;
@@ -91,7 +91,7 @@ architecture arch of ddr_mpu is
 			aux := max(aux, cl_tab(i));
 		end loop;
 		for i in cwl_tab'range loop
-			aux := max(aux, cwl_tab(i)+lWR);
+			aux := max(aux, cwl_tab(i)+lwr);
 		end loop;
 		val := 1;
 		aux := aux-2;
@@ -103,7 +103,7 @@ architecture arch of ddr_mpu is
 	end;
 
 		
-	constant lat_size : natural := timer_size(lRCD, lRFC, lWR, lRP, bl_tab, cl_tab, cwl_tab);
+	constant lat_size : natural := timer_size(lrcd, lrfc, lwr, lrp, bl_tab, cl_tab, cwl_tab);
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
 	signal ddr_rea : std_logic;
@@ -117,15 +117,15 @@ architecture arch of ddr_mpu is
 	constant ddr_aut   : std_logic_vector(0 to 2) := "001";
 	constant ddr_dcare : std_logic_vector(0 to 2) := "000";
 
-	constant xdrs_act      : std_logic_vector(0 to 2) := "011";
-	constant xdrs_read_bl  : std_logic_vector(0 to 2) := "101";
-	constant xdrs_read_cl  : std_logic_vector(0 to 2) := "001";
-	constant xdrs_write_bl : std_logic_vector(0 to 2) := "100";
-	constant xdrs_write_cl : std_logic_vector(0 to 2) := "000";
-	constant xdrs_pre      : std_logic_vector(0 to 2) := "010";
+	constant ddrs_act      : std_logic_vector(0 to 2) := "011";
+	constant ddrs_read_bl  : std_logic_vector(0 to 2) := "101";
+	constant ddrs_read_cl  : std_logic_vector(0 to 2) := "001";
+	constant ddrs_write_bl : std_logic_vector(0 to 2) := "100";
+	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
+	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
 	signal ddr_state : std_logic_vector(0 to 2);
 
-	type lat_id is (ID_IDLE, ID_RCD, ID_RFC, ID_RP, ID_BL, ID_CL, ID_CWL);
+	type lat_id is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
 	type ddr_state_word is record
 		ddr_state : std_logic_vector(0 to 2);
 		ddr_state_n : std_logic_vector(0 to 2);
@@ -147,76 +147,76 @@ architecture arch of ddr_mpu is
 	constant ddr_state_tab : ddr_state_vector(0 to 13-1) := (
 
 		-------------
-		-- DDR_PRE --
+		-- ddr_pre --
 		-------------
 
-		(ddr_state => XDRS_PRE, ddr_state_n => XDRS_PRE,
-		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => ID_IDLE,
+		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
+		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => id_idle,
 		 ddr_rea => '0', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
-		(ddr_state => XDRS_PRE, ddr_state_n => XDRS_PRE,
-		 ddr_cmi => ddr_pre, ddr_cmo => ddr_pre, ddr_lat => ID_RP,
+		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
+		 ddr_cmi => ddr_pre, ddr_cmo => ddr_pre, ddr_lat => id_rp,
 		 ddr_rea => '0', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
-		(ddr_state => XDRS_PRE, ddr_state_n => XDRS_ACT,
-		 ddr_cmi => ddr_act, ddr_cmo => ddr_act, ddr_lat => ID_RCD,
+		(ddr_state => ddrs_pre, ddr_state_n => ddrs_act,
+		 ddr_cmi => ddr_act, ddr_cmo => ddr_act, ddr_lat => id_rcd,
 		 ddr_rea => '0', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
-		(ddr_state => XDRS_PRE, ddr_state_n => XDRS_PRE,
-		 ddr_cmi => ddr_aut, ddr_cmo => ddr_aut, ddr_lat => ID_RFC,
+		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
+		 ddr_cmi => ddr_aut, ddr_cmo => ddr_aut, ddr_lat => id_rfc,
 		 ddr_rea => '0', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		-------------
-		-- DDR_ACT --
+		-- ddr_act --
 		-------------
 
-		(ddr_state => XDRS_ACT, ddr_state_n => XDRS_READ_BL,
-		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => ID_BL,
+		(ddr_state => ddrs_act, ddr_state_n => ddrs_read_bl,
+		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => id_bl,
 		 ddr_rea => '1', ddr_wri => '0', ddr_cen => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
-		(ddr_state => XDRS_ACT, ddr_state_n => XDRS_WRITE_BL,
-		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => ID_BL,
+		(ddr_state => ddrs_act, ddr_state_n => ddrs_write_bl,
+		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => id_bl,
 		 ddr_rea => '0', ddr_wri => '1', ddr_cen => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 
 		--------------
-		-- DDR_READ --
+		-- ddr_read --
 		--------------
 
-		(ddr_state => XDRS_READ_BL, ddr_state_n => XDRS_READ_BL,
-		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => ID_BL,
+		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
+		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => id_bl,
 		 ddr_rea => '1', ddr_wri => '0', ddr_cen => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
-		(ddr_state => XDRS_READ_BL, ddr_state_n => XDRS_READ_BL,
-		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => ID_IDLE,
+		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
+		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => id_idle,
 		 ddr_rea => '1', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
-		(ddr_state => XDRS_READ_BL, ddr_state_n => XDRS_READ_CL,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => ID_CL,
+		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_cl,
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => id_cl,
 		 ddr_rea => '1', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
-		(ddr_state => XDRS_READ_CL, ddr_state_n => XDRS_PRE,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => ID_RP,
+		(ddr_state => ddrs_read_cl, ddr_state_n => ddrs_pre,
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => id_rp,
 		 ddr_rea => '1', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 
 		---------------
-		-- DDR_WRITE --
+		-- ddr_write --
 		---------------
 
-		(ddr_state => XDRS_WRITE_BL, ddr_state_n => XDRS_WRITE_BL,
-		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => ID_BL,
+		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_bl,
+		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => id_bl,
 		 ddr_rea => '0', ddr_wri => '1', ddr_cen => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
-		(ddr_state => XDRS_WRITE_BL, ddr_state_n => XDRS_WRITE_CL,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => ID_CWL,
+		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_cl,
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => id_cwl,
 		 ddr_rea => '0', ddr_wri => '1', ddr_cen => '0',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
-		(ddr_state => XDRS_WRITE_CL, ddr_state_n => XDRS_PRE,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => ID_RP,
+		(ddr_state => ddrs_write_cl, ddr_state_n => ddrs_pre,
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => id_rp,
 		 ddr_rea => '0', ddr_wri => '0', ddr_cen => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'));
 
@@ -286,7 +286,7 @@ begin
 		if rising_edge(ddr_mpu_clk) then
 			if ddr_mpu_rst='0' then
 				assert ddr_state/=(ddr_state'range => '-')
-					report "ERROR -------------------->>>>"
+					report "error -------------------->>>>"
 					severity failure;
 				ddr_mpu_act <= ddr_act;
 				if lat_timer(0)='1' then
@@ -319,19 +319,19 @@ begin
 								ddr_rdy_ena <= ddr_state_tab(i).ddr_rdy;
 
 								case ddr_state_tab(i).ddr_lat is
-								when ID_BL =>
+								when id_bl =>
 									lat_timer <= select_lat(ddr_mpu_bl, bl_cod, bl_tab);
-								when ID_CL =>
+								when id_cl =>
 									lat_timer <= select_lat(ddr_mpu_cl, cl_cod, cl_tab);
-								when ID_CWL =>
-									lat_timer <= select_lat(ddr_mpu_cwl, cwl_cod, cwl_tab+gear*lWR);
-								when ID_RCD =>
-									lat_timer <= to_signed(lRCD-2, lat_timer'length);
-								when ID_RFC =>
-									lat_timer <= to_signed(lRFC-2, lat_timer'length);
-								when ID_RP =>
-									lat_timer <= to_signed(lRP-2, lat_timer'length);
-								when ID_IDLE =>
+								when id_cwl =>
+									lat_timer <= select_lat(ddr_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
+								when id_rcd =>
+									lat_timer <= to_signed(lrcd-2, lat_timer'length);
+								when id_rfc =>
+									lat_timer <= to_signed(lrfc-2, lat_timer'length);
+								when id_rp =>
+									lat_timer <= to_signed(lrp-2, lat_timer'length);
+								when id_idle =>
 									lat_timer <= (others => '1');
 								end case;
 								exit;

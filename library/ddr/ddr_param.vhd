@@ -614,34 +614,34 @@ package body ddr_param is
 		constant stdr : natural := ddr_stdr(mark);
 
 		constant ddr1_timer : natural_vector := (
-				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
-				TMR1_CKE => to_xdrlatency(tCP, mark, tXPR),
-				TMR1_MRD => to_xdrlatency(tCP, mark, tMRD),
-				TMR1_RPA => to_xdrlatency(tCP, mark, tRP),
-				TMR1_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR1_DLL => 200, --to_xdrlatency(tCP, mark, tMRD),
-				TMR1_REF => to_xdrlatency(tCP, mark, tREFI));
+				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+				TMR1_CKE => to_ddrlatency(tCP, mark, tXPR),
+				TMR1_MRD => to_ddrlatency(tCP, mark, tMRD),
+				TMR1_RPA => to_ddrlatency(tCP, mark, tRP),
+				TMR1_RFC => to_ddrlatency(tCP, mark, tRFC),
+				TMR1_DLL => 200, --to_ddrlatency(tCP, mark, tMRD),
+				TMR1_REF => to_ddrlatency(tCP, mark, tREFI));
 
 		constant ddr2_timer : natural_vector := (
-				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
-				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
+				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+				TMR2_CKE => to_ddrlatency(tCP, mark, tXPR),
 				TMR2_MRD => ddr_latency(stdr, MRD),
-				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
-				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
+				TMR2_RPA => to_ddrlatency(tCP, mark, tRPA),
+				TMR2_RFC => to_ddrlatency(tCP, mark, tRFC),
 				TMR2_DLL => 200, --ddr_latency(stdr, MRD),
-				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
+				TMR2_REF => to_ddrlatency(tCP, mark, tREFI));
 
 		constant ddr3_timer : natural_vector := (
-				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
-				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+				TMR3_RRDY => to_ddrlatency(tCP, mark, tPstRST),
 				TMR3_WLC => ddr_latency(stdr, MODu),
 				TMR3_WLDQSEN => 25,
-				TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
-				TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
+				TMR3_CKE => to_ddrlatency(tCP, mark, tXPR),
+				TMR3_MRD => to_ddrlatency(tCP, mark, tMRD),
 				TMR3_MOD => ddr_latency(stdr, MODu),
 				TMR3_DLL => ddr_latency(stdr, cDLL),
 				TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
-				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
+				TMR3_REF => to_ddrlatency(tCP, mark, tREFI));
 	begin
 		case stdr is 
 		when DDR1 =>
