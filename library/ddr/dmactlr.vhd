@@ -57,7 +57,7 @@ entity dmactlr is
 		ctlr_di_irdy  : out std_logic := '1';
 		ctlr_di_trdy  : in  std_logic;
 		ctlr_di       : in  std_logic_vector;
-		ctlr_do_irdy  : in  std_logic_vector;
+		ctlr_do_trdy  : in  std_logic_vector;
 		ctlr_do       : in  std_logic_vector;
 		ctlr_dm       : out std_logic_vector;
 
@@ -77,7 +77,7 @@ begin
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
 		ddrdma_clk   => dmactlr_clk,
-		ddrdma_frm   => '1', --dmactlr_frm,
+		ddrdma_frm   => dmactlr_frm,
 		ddrdma_irdy  => dmactlr_irdy,
 		ddrdma_trdy  => dmactlr_trdy,
 		ddrdma_iaddr => dmactlr_iaddr,
@@ -92,7 +92,7 @@ begin
 		ctlr_trdy    => ctlr_di_trdy,
 		ctlr_refreq  => ctlr_refreq);
 
-	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col), ctlr_a'length)) when ctlr_cas='1' else ddrdma_row;
+	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col), ctlr_a'length)) when ctlr_act='0' else ddrdma_row;
 	ctlr_b <= ddrdma_bnk;
 
 	mem_e : entity hdl4fpga.fifo
