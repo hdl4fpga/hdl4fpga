@@ -53,7 +53,7 @@ architecture def of ddrdma is
 
 begin
 
-	process (ddrdma_clk)
+	addr_p : process (ddrdma_clk)
 		variable bnk_addr : unsigned(0 to ddrdma_bnk'length);
 		variable row_addr : unsigned(0 to ddrdma_row'length);
 		variable col_addr : unsigned(0 to ddrdma_col'length);
@@ -127,6 +127,6 @@ begin
 		end if;
 	end process;
 
-	ctlr_irdy <= ddrdma_frm when state=running_s else '0';
+	ctlr_irdy <= ddrdma_frm and not bnk_cntr(0) when state=running_s else '0';
 
 end;
