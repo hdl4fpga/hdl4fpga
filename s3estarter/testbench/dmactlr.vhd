@@ -83,7 +83,7 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_trdy  : std_logic;
 
 	signal dmactlr_iaddr : std_logic_vector(26-1 downto 1) := (others => '0');
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1) := (others => '1');
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1) := b"0" & x"000000";
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 1);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 1);
 
@@ -242,7 +242,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size)
 	port map (
-		ctlr_bl      => "011",
+		ctlr_bl      => "001",
 --		ctlr_cl      => "010",	-- 133 Mhz
 --		ctlr_cl      => "110",	-- 166 Mhz
 		ctlr_cl      => "011",	-- 150 Mhz

@@ -50,6 +50,7 @@ end;
 architecture def of ddrdma is
 	type states is (init_s, running_s);
 	signal state : states;
+	signal eoc   : std_logic;
 
 begin
 
@@ -87,17 +88,22 @@ begin
 					if ctlr_trdy='1' then
 						col_addr := col_addr + 2;
 						if col_addr(0)='1' then
+							col_addr(0) := '0';
 							row_addr := row_addr + 1;
 						end if;
+
 						if row_addr(0)='1' then
+							row_addr(0) := '0';
 							bnk_addr := bnk_addr + 1;
 						end if;
 
 						col_cntr := col_cntr - 2;
 						if col_cntr(0)='1' then
+							col_cntr(0) := '0';
 							row_cntr := row_cntr - 1;
 						end if;
 						if row_cntr(0)='1' then
+							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
 					end if;
@@ -124,9 +130,10 @@ begin
 				resize(unsigned(bnk_cntr) mod 2**ddrdma_bnk'length, ddrdma_bnk'length) &
 				resize(unsigned(row_cntr) mod 2**ddrdma_row'length, ddrdma_row'length) &
 				resize(unsigned(col_cntr) mod 2**ddrdma_col'length, ddrdma_col'length));
+			eoc <= bnk_cntr(0);
 		end if;
 	end process;
 
-	ctlr_irdy <= ddrdma_frm and not bnk_cntr(0) when state=running_s else '0';
+	ctlr_irdy <= ddrdma_frm and not eoc when state=running_s else '0';
 
 end;
