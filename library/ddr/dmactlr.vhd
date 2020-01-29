@@ -47,15 +47,14 @@ entity dmactlr is
 		ctlr_inirdy   : in std_logic;
 		ctlr_refreq   : in std_logic;
 
-		ctlr_irdy     : out std_logic;
+		ctlr_irdy     : buffer std_logic;
 		ctlr_trdy     : in  std_logic;
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_cas      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
-		ctlr_di_irdy  : out std_logic := '1';
-		ctlr_di_trdy  : in  std_logic;
+		ctlr_di_req   : in  std_logic;
 		ctlr_di       : in  std_logic_vector;
 		ctlr_do_trdy  : in  std_logic_vector;
 		ctlr_do       : in  std_logic_vector;
@@ -69,9 +68,17 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
-	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col  : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal ddrdma_eoc : std_logic;
+	signal ddrdma_bnk : std_logic_vector(ctlr_b'range);
+	signal ddrdma_row : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal bnk        : std_logic_vector(ctlr_b'range);
+	signal row        : std_logic_vector(ctlr_a'range);
+	signal col        : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+
+	signal ena        : std_logic;
+	signal enai       : std_logic;
+	signal enao       : std_logic;
 begin
 
 	dma_e : entity hdl4fpga.ddrdma
@@ -84,13 +91,54 @@ begin
 		ddrdma_ilen  => dmactlr_ilen,
 		ddrdma_taddr => dmactlr_taddr,
 		ddrdma_tlen  => dmactlr_tlen,
-		ddrdma_bnk   => ddrdma_bnk,
-		ddrdma_row   => ddrdma_row,
-		ddrdma_col   => ddrdma_col,
+		ddrdma_bnk   => bnk,
+		ddrdma_row   => row,
+		ddrdma_col   => col,
 
 		ctlr_irdy    => ctlr_irdy,
-		ctlr_trdy    => ctlr_di_trdy,
+		ctlr_trdy    => ena,
 		ctlr_refreq  => ctlr_refreq);
+
+	ena <= enao or ctlr_di_req;
+	enai <= not ctlr_irdy;
+	ena_e : entity hdl4fpga.align 
+	generic map (
+		n => 1,
+		d => (0 to 0 => 3))
+	port map (
+		clk => dmactlr_clk,
+		di(0) => enai,
+		do(0) => enao);
+
+	bnklag_e : entity hdl4fpga.align
+	generic map (
+		n => bnk'length,
+		d => (0 to bnk'length-1 => 2))
+	port map (
+		clk => dmactlr_clk,
+		ena => ena,
+		di  => bnk,
+		do  => ddrdma_bnk);
+
+	rowlag_e : entity hdl4fpga.align
+	generic map (
+		n => row'length,
+		d => (0 to row'length-1 => 2))
+	port map (
+		clk => dmactlr_clk,
+		ena => ena,
+		di  => row,
+		do  => ddrdma_row);
+
+	collag_e : entity hdl4fpga.align
+	generic map (
+		n => col'length,
+		d => (0 to col'length-1 => 3))
+	port map (
+		clk => dmactlr_clk,
+		ena => ena,
+		di  => col,
+		do  => ddrdma_col);
 
 	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col), ctlr_a'length)) when ctlr_act='0' else ddrdma_row;
 	ctlr_b <= ddrdma_bnk;
@@ -100,8 +148,7 @@ begin
 		size => size)
 	port map (
 		src_clk  => dmactlr_clk,
-		src_irdy => ctlr_di_trdy, 
-		src_trdy => ctlr_di_irdy, 
+		src_irdy => ctlr_di_req, 
 		src_data => ctlr_do,
 
 		dst_clk  => dst_clk,
