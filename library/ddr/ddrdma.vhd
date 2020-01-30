@@ -151,6 +151,6 @@ begin
 		end if;
 	end process;
 
-	ctlr_irdy <= ddrdma_frm and (not ddrdma_eoc or not ddrdma_ceoc) when state=running_s else '0';
+	ctlr_irdy <= ddrdma_frm and (not ddrdma_eoc and not ddrdma_ceoc) when state=running_s else '0';
 
 end;
