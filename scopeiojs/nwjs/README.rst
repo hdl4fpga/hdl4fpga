@@ -13,6 +13,8 @@ Installing steps
 - Open a CLI such as PowerSell or Command as **Admistrator**.
 - Run `<./install.bat>`_ on the `<../nwjs>`_ directory as it's shown on the image.
 
+.. image:: https://github.com/hdl4fpga/hdl4fpga.github.io/blob/master/images/hdl4fpga/readme/nodesrv/command.png
+
 Admistrator privilege is required to run Windows **mklink** command.
 
 Running ScopeIOjs
