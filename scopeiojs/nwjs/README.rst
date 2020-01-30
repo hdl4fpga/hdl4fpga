@@ -11,9 +11,8 @@ Installing steps
 - Download and install Microsoft Visual Studio to compile `serialport <https://github.com/serialport/node-serialport>`_
 - Download and install `node.js <http://nodejs.org>`_. 
 - Open a CLI such as PowerSell or Command as **Admistrator**.
-- Run `<./install.bat>`_ on the `<../nwjs>`_ directory as it's shown on the image.
+- Run `<./install.bat>`_ on the `<../nwjs>`_ directory.
 
-.. image:: https://github.com/hdl4fpga/hdl4fpga.github.io/blob/master/images/hdl4fpga/readme/nodesrv/command.png
 
 Admistrator privilege is required to run Windows **mklink** command.
 
