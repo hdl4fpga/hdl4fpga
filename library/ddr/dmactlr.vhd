@@ -68,17 +68,20 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	signal ddrdma_eoc : std_logic;
-	signal ddrdma_bnk : std_logic_vector(ctlr_b'range);
-	signal ddrdma_row : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal bnk        : std_logic_vector(ctlr_b'range);
-	signal row        : std_logic_vector(ctlr_a'range);
-	signal col        : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
+	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col  : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal bnk         : std_logic_vector(ctlr_b'range);
+	signal row         : std_logic_vector(ctlr_a'range);
+	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal ddrdma_beoc : std_logic;
+	signal ddrdma_reoc : std_logic;
+	signal ddrdma_ceoc : std_logic;
+	signal ddrdma_eoc  : std_logic;
 
-	signal ena        : std_logic;
-	signal enai       : std_logic;
-	signal enao       : std_logic;
+	signal ena_lag     : std_logic;
+	signal enai        : std_logic;
+	signal enao        : std_logic;
 begin
 
 	dma_e : entity hdl4fpga.ddrdma
@@ -94,13 +97,16 @@ begin
 		ddrdma_bnk   => bnk,
 		ddrdma_row   => row,
 		ddrdma_col   => col,
+		ddrdma_beoc  => ddrdma_beoc,
+		ddrdma_reoc  => ddrdma_reoc,
+		ddrdma_ceoc  => ddrdma_ceoc,
 
 		ctlr_irdy    => ctlr_irdy,
-		ctlr_trdy    => ena,
+		ctlr_trdy    => ena_lag,
 		ctlr_refreq  => ctlr_refreq);
 
-	ena <= enao or ctlr_di_req;
-	enai <= not ctlr_irdy;
+	ena_lag <= enao or ctlr_di_req;
+	enai   <= not ctlr_irdy;
 	ena_e : entity hdl4fpga.align 
 	generic map (
 		n => 1,
@@ -116,7 +122,7 @@ begin
 		d => (0 to bnk'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena,
+		ena => ena_lag,
 		di  => bnk,
 		do  => ddrdma_bnk);
 
@@ -126,7 +132,7 @@ begin
 		d => (0 to row'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena,
+		ena => ena_lag,
 		di  => row,
 		do  => ddrdma_row);
 
@@ -136,7 +142,7 @@ begin
 		d => (0 to col'length-1 => 3))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena,
+		ena => ena_lag,
 		di  => col,
 		do  => ddrdma_col);
 
