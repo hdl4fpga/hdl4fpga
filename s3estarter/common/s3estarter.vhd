@@ -114,9 +114,9 @@ entity s3estarter is
 		-------------
 		-- DDR RAM --
 
+		sd_ba         : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => '0');
 		sd_a          : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => '0');
 		sd_dq         : inout std_logic_vector(16-1 downto 0);
-		sd_ba         : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => '0');
 		sd_ras        : out std_logic := '1';
 		sd_cas        : out std_logic := '1';
 		sd_we         : out std_logic := '0';

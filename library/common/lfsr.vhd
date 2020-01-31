@@ -25,47 +25,38 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity lfsr_gen is
+entity lfsr is
 	generic (
-		g : std_logic_vector);
+		g    : std_logic_vector);
 	port (
-		clk : in  std_logic;
-		rst : in  std_logic;
-		req : in  std_logic;
-		so  : out std_logic_vector);
+		clk  : in  std_logic;
+		ena  : in  std_logic;
+		init : in  std_logic_vector(g'range) := (g'range => '1');
+		load : in  std_logic;
+		data : out std_logic_vector(g'range));
 end;
 
-architecture beh of lfsr_gen is
-
+architecture beh of lfsr is
 begin
 	process(clk)
 		variable s  : unsigned(g'range);
 		variable q  : std_logic;
 		variable s1 : std_logic;
 		variable s2 : std_logic;
-		variable aux : unsigned(8 downto 1);
 	begin
 
 		if rising_edge(clk) then
-			if rst='1' then
-				s  := (others => '1');
---				s  := to_unsigned(1,s'length);
---				s  := x"100f0e0d0c0b0a090807060504030201";
---				s  := x"0807060504030201";
-			elsif req='1' then
+			if load='1' then
+				s  := unsigned(init);
+			elsif ena='1' then
 				s2 := '0';
 				for i in g'range loop
 					s1   := s(i);
 					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
 				end loop;
---				for i in 0 to s'length/8-1 loop
---					s(aux'range) := s(aux'range) + 1;
---					s := s ror aux'length;
---				end loop;
---				s := (1 to s'length-16 => '0') & (s(16 downto 1) + 1);
 			end if;
-			so <= std_logic_vector(s);
+			data <= std_logic_vector(s);
 		end if;
 	end process;
 end;

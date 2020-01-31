@@ -41,6 +41,10 @@ entity ddrdma is
 		ddrdma_bnk   : out std_logic_vector;
 		ddrdma_row   : out std_logic_vector;
 		ddrdma_col   : out std_logic_vector;
+		ddrdma_beoc  : buffer std_logic;
+		ddrdma_reoc  : buffer std_logic;
+		ddrdma_ceoc  : buffer std_logic;
+		ddrdma_eoc   : buffer std_logic;
 
 		ctlr_irdy    : out std_logic;
 		ctlr_trdy    : in  std_logic;
@@ -48,12 +52,12 @@ entity ddrdma is
 end;
 
 architecture def of ddrdma is
+	type states is (init_s, running_s);
+	signal state : states;
+
 begin
 
-	process (ddrdma_clk)
-		type states is (init_s, running_s);
-		variable state : states;
-
+	addr_p : process (ddrdma_clk)
 		variable bnk_addr : unsigned(0 to ddrdma_bnk'length);
 		variable row_addr : unsigned(0 to ddrdma_row'length);
 		variable col_addr : unsigned(0 to ddrdma_col'length);
@@ -76,38 +80,57 @@ begin
 					bnk_cntr := resize((unsigned(ddrdma_ilen)  srl ddrdma_row'length) mod 2**ddrdma_bnk'length, bnk_addr'length);
 				end if;
 
+				ddrdma_beoc <= '0';
+				ddrdma_reoc <= '0';
+				ddrdma_ceoc <= '0';
+
 				if ddrdma_frm='1' then
-					state := running_s;
+					state <= running_s;
 				else
-					state := init_s;
+					state <= init_s;
 				end if;
 
 			when running_s =>
 				if ddrdma_frm='1' then
 					if ctlr_trdy='1' then
-						col_addr := col_addr + 1;
-						if col_addr(0)='1' then
-							row_addr := row_addr + 1;
-						end if;
-						if row_addr(0)='1' then
-							bnk_addr := bnk_addr + 1;
+						if ddrdma_ceoc='0' then
+							col_addr := col_addr + 2;
 						end if;
 
-						col_cntr := col_cntr - 1;
+						col_cntr := col_cntr - 2;
 						if col_cntr(0)='1' then
+							col_cntr(0) := '0';
 							row_cntr := row_cntr - 1;
 						end if;
 						if row_cntr(0)='1' then
+							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
+					else
+						if ddrdma_ceoc='1' then
+							col_addr(0) := '0';
+							row_addr := row_addr + 1;
+						end if;
+
 					end if;
 
+					if ddrdma_reoc='1' then
+						bnk_addr := bnk_addr + 1;
+					end if;
+
+					ddrdma_ceoc <= col_addr(0);
+					ddrdma_reoc <= row_addr(0);
+					ddrdma_beoc <= bnk_addr(0);
+				else
+					ddrdma_ceoc <= '0';
+					ddrdma_reoc <= '0';
+					ddrdma_beoc <= '0';
 				end if;
 
 				if ddrdma_frm='1' then
-					state := running_s;
+					state <= running_s;
 				else
-					state := init_s;
+					state <= init_s;
 				end if;
 			end case;
 
@@ -124,7 +147,10 @@ begin
 				resize(unsigned(bnk_cntr) mod 2**ddrdma_bnk'length, ddrdma_bnk'length) &
 				resize(unsigned(row_cntr) mod 2**ddrdma_row'length, ddrdma_row'length) &
 				resize(unsigned(col_cntr) mod 2**ddrdma_col'length, ddrdma_col'length));
+			ddrdma_eoc <= bnk_cntr(0);
 		end if;
 	end process;
+
+	ctlr_irdy <= ddrdma_frm and (not ddrdma_eoc and not ddrdma_ceoc) when state=running_s else '0';
 
 end;

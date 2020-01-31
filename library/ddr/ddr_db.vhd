@@ -361,12 +361,12 @@ package ddr_db is
 		constant tabid : natural)
 		return natural_vector;
 
-	function to_xdrlatency (
+	function to_ddrlatency (
 		period : natural;
 		timing : natural)
 		return natural;
 
-	function to_xdrlatency (
+	function to_ddrlatency (
 		constant period : natural;
 		constant mark   : natural;
 		constant param  : natural)
@@ -486,7 +486,7 @@ package body ddr_db is
 		return 0;
 	end;
 
-	function to_xdrlatency (
+	function to_ddrlatency (
 		period : natural;
 		timing : natural)
 		return natural is
@@ -498,13 +498,13 @@ package body ddr_db is
 		end if;
 	end;
 
-	function to_xdrlatency (
+	function to_ddrlatency (
 		constant period : natural;
 		constant mark   : natural;
 		constant param  : natural)
 		return natural is
 	begin
-		return to_xdrlatency(period, ddr_timing(mark, param));
+		return to_ddrlatency(period, ddr_timing(mark, param));
 	end;
 
 	function ddr_lattab (

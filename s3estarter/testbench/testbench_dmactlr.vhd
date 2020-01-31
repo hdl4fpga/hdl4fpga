@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scope of testbench is
+architecture dmactlr of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
@@ -59,7 +59,7 @@ architecture scope of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : nibble;
+	signal mii_rxd  : std_logic_vector(4-1 downto 0);
 	signal mii_rxc  : std_logic := '0';
 	signal mii_txen : std_logic;
 	signal mii_strt : std_logic;
@@ -245,14 +245,14 @@ begin
 		end if;
 	end process;
 
-	eth_e: entity hdl4fpga.miitx_mem
+	eth_e: entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff")
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
-		mii_txen => mii_rxdv,
+		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
 	mii_rxc <= not mii_rxc after 10 ns;
@@ -262,6 +262,8 @@ begin
 		xtal => clk,
 		btn_west  => rst,
 
+		spi_miso => '-',
+		amp_dout => '-',
 		e_tx_clk => mii_refclk,
 		e_rx_clk => mii_rxc,
 		e_rx_dv => mii_rxdv,
@@ -303,9 +305,9 @@ end;
 library micron;
 
 configuration s3estarter_structure_md of testbench is
-	for scope 
-		for all :  s3estarter
-			use entity hdl4fpga.s3estarter(structure);
+	for dmactlr 
+		for all : s3estarter
+			use entity work.s3estarter(structure);
 		end for;
 		for all: ddr_model
 			use entity micron.ddr_model
@@ -328,10 +330,10 @@ end;
 
 library micron;
 
-configuration s3estarter_scope_md of testbench is
-	for scope 
+configuration s3estarter_dmactlr_md of testbench is
+	for dmactlr
 		for all : s3estarter 
-			use entity hdl4fpga.s3estarter(scope);
+			use entity work.s3estarter(dmactlr);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

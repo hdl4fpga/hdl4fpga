@@ -206,7 +206,8 @@
     parameter DQS_BITS         =       1; // Set this parameter to control how many DQS bits are used
     parameter DM_BITS          =       1; // Set this parameter to control how many DM bits are used
     parameter COL_BITS         =      10; // Set this parameter to control how many Column bits are used
-`else `define x16
+`else 
+	`define x16
     parameter ADDR_BITS        =      13; // Set this parameter to control how many Address bits are used
     parameter DQ_BITS          =      16; // Set this parameter to control how many Data bits are used
     parameter DQS_BITS         =       2; // Set this parameter to control how many DQS bits are used

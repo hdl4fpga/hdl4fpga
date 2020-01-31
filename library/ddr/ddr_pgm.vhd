@@ -58,10 +58,10 @@ architecture registered of ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-                        --> ddr_pgm_trdy <---------------------+
-                        --> ctlr_refreq <--------------------+|
-                        --                                   ||
-                        --                                   VV
+                        --> ddr_pgm_trdy  <---------------------+
+                        --> ctlr_refreq   <--------------------+|
+                        --                                     ||
+                        --                                     VV
 	constant ddr_act  : std_logic_vector(6 downto 0)    := B"0000_011";
 	constant ddr_actq : std_logic_vector(ddr_act'range) := B"0010_011";
 	constant ddr_acty : std_logic_vector(ddr_act'range) := B"0100_011";
@@ -254,7 +254,7 @@ begin
 					end if;
 				end if;
 
-				ddr_pgm_trdy  <= pgm_rdy;
+				ddr_pgm_trdy <= pgm_rdy;
 				ctlr_refreq  <= sys_ref;
 				ddr_pgm_rrdy <= pgm_rrdy;
 				if ddr_mpu_trdy='1' then
