@@ -31,7 +31,7 @@ entity align is
 	generic (
 		n : natural := 1;
 		d : natural_vector;
-		i : std_logic_vector := (0 to 0 => '-'));
+		i : std_logic_vector := (1 to 0 => '-'));
 	port (
 		clk : in  std_logic;
 		rst : in  std_logic := '0';

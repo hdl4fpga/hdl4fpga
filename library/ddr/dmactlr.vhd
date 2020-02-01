@@ -47,7 +47,7 @@ entity dmactlr is
 		ctlr_inirdy   : in std_logic;
 		ctlr_refreq   : in std_logic;
 
-		ctlr_irdy     : buffer std_logic;
+		ctlr_irdy     : out std_logic;
 		ctlr_trdy     : in  std_logic;
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
@@ -79,9 +79,10 @@ architecture def of dmactlr is
 	signal ddrdma_ceoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
-	signal ena_lag     : std_logic;
-	signal enai        : std_logic;
-	signal enao        : std_logic;
+	signal ctlrdma_trdy     : std_logic;
+	signal preload_rst      : std_logic;
+	signal preload_di       : std_logic;
+	signal preload_do       : std_logic;
 begin
 
 	dma_e : entity hdl4fpga.ddrdma
@@ -101,20 +102,43 @@ begin
 		ddrdma_reoc  => ddrdma_reoc,
 		ddrdma_ceoc  => ddrdma_ceoc,
 
-		ctlr_irdy    => ctlr_irdy,
-		ctlr_trdy    => ena_lag,
+		ctlr_irdy    => ctlrdma_irdy,
+		ctlr_trdy    => ctlrdma_trdy,
 		ctlr_refreq  => ctlr_refreq);
 
-	ena_lag <= enao or ctlr_di_req;
-	enai   <= not ctlr_irdy;
-	ena_e : entity hdl4fpga.align 
+
+	preload_di  <= not dmactlr_irdy;
+	preload_rst <= not dmactlr_frm;
+	preload_e : entity hdl4fpga.align 
 	generic map (
 		n => 1,
-		d => (0 to 0 => 3))
+		d => (0 to 0 => 3),
+		i => (0 to 0 => '1'))
 	port map (
-		clk => dmactlr_clk,
-		di(0) => enai,
-		do(0) => enao);
+		clk   => dmactlr_clk,
+		rst   => preload_rst,
+		di(0) => preload_di,
+		do(0) => preload_do);
+
+	process (ctlr_trdy, ctlrdma_irdy, dmactlr_clk)
+		variable irdy : std_logic := '0';
+	begin
+		if rising_edge(dmactlr_clk) then
+			if ddrdma_beoc='1' then
+				irdy := '0';
+			elsif ddrdma_beoc='1' then
+				irdy := '0';
+			elsif ddrdma_beoc='1' then
+				irdy := '0';
+			else
+				irdy := '1';
+			end if;
+		end if;
+		ctlr_irdy <= irdy and ctlrdma_irdy;
+		
+	end process;
+
+	ctlrdma_trdy <= preload_do or ctlr_di_req;
 
 	bnklag_e : entity hdl4fpga.align
 	generic map (
@@ -122,7 +146,7 @@ begin
 		d => (0 to bnk'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena_lag,
+		ena => ctlrdma_trdy,
 		di  => bnk,
 		do  => ddrdma_bnk);
 
@@ -132,7 +156,7 @@ begin
 		d => (0 to row'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena_lag,
+		ena => ctlrdma_trdy,
 		di  => row,
 		do  => ddrdma_row);
 
@@ -142,7 +166,7 @@ begin
 		d => (0 to col'length-1 => 3))
 	port map (
 		clk => dmactlr_clk,
-		ena => ena_lag,
+		ena => ctlrdma_trdy,
 		di  => col,
 		do  => ddrdma_col);
 
