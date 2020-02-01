@@ -79,6 +79,7 @@ architecture def of dmactlr is
 	signal ddrdma_ceoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
+	signal ctlrdma_irdy     : std_logic;
 	signal ctlrdma_trdy     : std_logic;
 	signal preload_rst      : std_logic;
 	signal preload_di       : std_logic;
@@ -121,7 +122,7 @@ begin
 		do(0) => preload_do);
 
 	process (ctlr_trdy, ctlrdma_irdy, dmactlr_clk)
-		variable irdy : std_logic := '0';
+		variable irdy : std_logic := '1';
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ddrdma_beoc='1' then
@@ -131,7 +132,6 @@ begin
 			elsif ddrdma_beoc='1' then
 				irdy := '0';
 			else
-				irdy := '1';
 			end if;
 		end if;
 		ctlr_irdy <= irdy and ctlrdma_irdy;
@@ -163,7 +163,7 @@ begin
 	collag_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => 3))
+		d => (0 to col'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_trdy,

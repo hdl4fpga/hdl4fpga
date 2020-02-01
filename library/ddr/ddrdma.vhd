@@ -106,16 +106,15 @@ begin
 							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
-					else
 						if ddrdma_ceoc='1' then
 							col_addr(0) := '0';
 							row_addr := row_addr + 1;
 						end if;
 
-					end if;
 
-					if ddrdma_reoc='1' then
-						bnk_addr := bnk_addr + 1;
+						if ddrdma_reoc='1' then
+							bnk_addr := bnk_addr + 1;
+						end if;
 					end if;
 
 					ddrdma_ceoc <= col_addr(0);
