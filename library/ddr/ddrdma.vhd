@@ -46,8 +46,8 @@ entity ddrdma is
 		ddrdma_ceoc  : buffer std_logic;
 		ddrdma_eoc   : buffer std_logic;
 
-		ctlr_irdy    : out std_logic;
-		ctlr_trdy    : in  std_logic;
+		ctlr_req    : buffer std_logic;
+		ctlr_ena    : in  std_logic;
 		ctlr_refreq  : in  std_logic);
 end;
 
@@ -92,10 +92,7 @@ begin
 
 			when running_s =>
 				if ddrdma_frm='1' then
-					if ctlr_trdy='1' then
-						if ddrdma_ceoc='0' then
-							col_addr := col_addr + 2;
-						end if;
+					if ctlr_ena='1' then
 
 						col_cntr := col_cntr - 2;
 						if col_cntr(0)='1' then
@@ -106,6 +103,8 @@ begin
 							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
+
+						col_addr := col_addr + 2;
 						if ddrdma_ceoc='1' then
 							col_addr(0) := '0';
 							row_addr := row_addr + 1;
@@ -150,6 +149,6 @@ begin
 		end if;
 	end process;
 
-	ctlr_irdy <= ddrdma_frm and (not ddrdma_eoc and not ddrdma_ceoc) when state=running_s else '0';
+	ctlr_req <= ddrdma_frm and (not ddrdma_eoc and not ddrdma_ceoc) when state=running_s else '0';
 
 end;

@@ -79,11 +79,11 @@ architecture def of dmactlr is
 	signal ddrdma_ceoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
-	signal ctlrdma_irdy     : std_logic;
-	signal ctlrdma_trdy     : std_logic;
-	signal preload_rst      : std_logic;
-	signal preload_di       : std_logic;
-	signal preload_do       : std_logic;
+	signal ctlrdma_req : std_logic;
+	signal ctlrdma_ena : std_logic;
+	signal preload_rst : std_logic;
+	signal preload_di  : std_logic;
+	signal preload_do  : std_logic;
 begin
 
 	dma_e : entity hdl4fpga.ddrdma
@@ -102,9 +102,10 @@ begin
 		ddrdma_beoc  => ddrdma_beoc,
 		ddrdma_reoc  => ddrdma_reoc,
 		ddrdma_ceoc  => ddrdma_ceoc,
+		ddrdma_eoc   => ddrdma_eoc,
 
-		ctlr_irdy    => ctlrdma_irdy,
-		ctlr_trdy    => ctlrdma_trdy,
+		ctlr_req     => ctlrdma_req,
+		ctlr_ena     => ctlrdma_ena,
 		ctlr_refreq  => ctlr_refreq);
 
 
@@ -121,24 +122,25 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (ctlr_trdy, ctlrdma_irdy, dmactlr_clk)
+	process (ctlr_trdy, ctlrdma_req, dmactlr_clk)
 		variable irdy : std_logic := '1';
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ddrdma_beoc='1' then
 				irdy := '0';
-			elsif ddrdma_beoc='1' then
+			elsif ddrdma_reoc='1' then
 				irdy := '0';
-			elsif ddrdma_beoc='1' then
+			elsif ddrdma_ceoc='1' then
 				irdy := '0';
-			else
+			elsif ddrdma_ceoc='1' then
+				irdy := '0';
 			end if;
 		end if;
-		ctlr_irdy <= irdy and ctlrdma_irdy;
+		ctlr_irdy <= irdy and ctlrdma_req;
 		
 	end process;
 
-	ctlrdma_trdy <= preload_do or ctlr_di_req;
+	ctlrdma_ena <= preload_do or ctlr_di_req;
 
 	bnklag_e : entity hdl4fpga.align
 	generic map (
@@ -146,7 +148,7 @@ begin
 		d => (0 to bnk'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_trdy,
+		ena => ctlrdma_ena,
 		di  => bnk,
 		do  => ddrdma_bnk);
 
@@ -156,7 +158,7 @@ begin
 		d => (0 to row'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_trdy,
+		ena => ctlrdma_ena,
 		di  => row,
 		do  => ddrdma_row);
 
@@ -166,7 +168,7 @@ begin
 		d => (0 to col'length-1 => 2))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_trdy,
+		ena => ctlrdma_ena,
 		di  => col,
 		do  => ddrdma_col);
 

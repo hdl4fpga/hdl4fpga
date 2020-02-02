@@ -116,6 +116,8 @@ architecture arch of ddr_mpu is
 	constant ddr_pre   : std_logic_vector(0 to 2) := "010";
 	constant ddr_aut   : std_logic_vector(0 to 2) := "001";
 	constant ddr_dcare : std_logic_vector(0 to 2) := "000";
+	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
+	signal cmd_name : cmd_names;
 
 	constant ddrs_act      : std_logic_vector(0 to 2) := "011";
 	constant ddrs_read_bl  : std_logic_vector(0 to 2) := "101";
@@ -123,6 +125,9 @@ architecture arch of ddr_mpu is
 	constant ddrs_write_bl : std_logic_vector(0 to 2) := "100";
 	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
 	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
+	type state_names is (s_act, s_readbl, s_readcl, s_writebl, s_writecl, s_pre, s_none);
+	signal state_name : state_names;
+
 	signal ddr_state : std_logic_vector(0 to 2);
 
 	type lat_id is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
@@ -360,8 +365,29 @@ begin
 				ddr_rdy_ena <= '1';
 				lat_timer <= (others => '1');
 			end if;
+
 		end if;
 	end process;
+
+	debug : with ddr_state select
+	state_name <=
+		s_act	  when ddrs_act,
+		s_readbl  when ddrs_read_bl,
+		s_readcl  when ddrs_read_cl,
+		s_writebl when ddrs_write_bl,
+		s_writecl when ddrs_write_cl,
+		s_pre     when ddrs_pre,
+		s_none    when others;
+
+	cmd_debug : with ddr_mpu_cmd select
+	cmd_name <=
+		c_nop     when ddr_nop,
+		c_act	  when ddr_act,
+		c_read    when ddr_read,
+		c_write   when ddr_write,
+		c_pre     when ddr_pre,
+		c_aut     when ddr_aut,
+		c_dcare   when others;
 
 	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
 	ddr_mpu_rea <= ddr_rea;
