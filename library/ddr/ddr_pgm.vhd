@@ -122,10 +122,10 @@ architecture registered of ddr_pgm is
 --     pact    | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
 --     rea     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     wri     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     pre     | pre  | paut | pre  | paut | pact | paut | pact | paut |
+--     pre     | pre  | aut  | pre  | aut  | pact | aut  | pact | aut  |
 --     idl     | idl  | paut | idl  | paut | pact | paut | pact | paut |
---     paut    | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
---     aut     | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
+--     paut    | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
+--     aut     | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
 --             +------+------+------+------+------+------+------+------+
 
 --                           --                 --
