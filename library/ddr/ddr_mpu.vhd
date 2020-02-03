@@ -126,7 +126,7 @@ architecture arch of ddr_mpu is
 	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
 	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
 	type state_names is (s_act, s_readbl, s_readcl, s_writebl, s_writecl, s_pre, s_none);
-	signal state_name : state_names;
+	signal mpu_state : state_names;
 
 	signal ddr_state : std_logic_vector(0 to 2);
 
@@ -370,7 +370,7 @@ begin
 	end process;
 
 	debug : with ddr_state select
-	state_name <=
+	mpu_state <=
 		s_act	  when ddrs_act,
 		s_readbl  when ddrs_read_bl,
 		s_readcl  when ddrs_read_cl,

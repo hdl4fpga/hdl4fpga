@@ -74,9 +74,7 @@ architecture def of dmactlr is
 	signal bnk         : std_logic_vector(ctlr_b'range);
 	signal row         : std_logic_vector(ctlr_a'range);
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal ddrdma_beoc : std_logic;
-	signal ddrdma_reoc : std_logic;
-	signal ddrdma_ceoc : std_logic;
+	signal ddrdma_aeoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
 	signal ctlrdma_req : std_logic;
@@ -99,9 +97,7 @@ begin
 		ddrdma_bnk   => bnk,
 		ddrdma_row   => row,
 		ddrdma_col   => col,
-		ddrdma_beoc  => ddrdma_beoc,
-		ddrdma_reoc  => ddrdma_reoc,
-		ddrdma_ceoc  => ddrdma_ceoc,
+		ddrdma_aeoc  => ddrdma_aeoc,
 		ddrdma_eoc   => ddrdma_eoc,
 
 		ctlr_req     => ctlrdma_req,
@@ -114,7 +110,7 @@ begin
 	preload_e : entity hdl4fpga.align 
 	generic map (
 		n => 1,
-		d => (0 to 0 => 3),
+		d => (0 to 0 => 2),
 		i => (0 to 0 => '1'))
 	port map (
 		clk   => dmactlr_clk,
@@ -123,17 +119,15 @@ begin
 		do(0) => preload_do);
 
 	process (ctlr_trdy, ctlrdma_req, dmactlr_clk)
-		variable irdy : std_logic := '1';
+		variable irdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			if ddrdma_beoc='1' then
-				irdy := '0';
-			elsif ddrdma_reoc='1' then
-				irdy := '0';
-			elsif ddrdma_ceoc='1' then
-				irdy := '0';
-			elsif ddrdma_ceoc='1' then
-				irdy := '0';
+			if ddrdma_aeoc='1' then
+				irdy := ctlr_trdy;
+			elsif ddrdma_eoc='1' then
+				irdy := ctlr_trdy;
+			else
+				irdy := '1';
 			end if;
 		end if;
 		ctlr_irdy <= irdy and ctlrdma_req;
@@ -145,7 +139,7 @@ begin
 	bnklag_e : entity hdl4fpga.align
 	generic map (
 		n => bnk'length,
-		d => (0 to bnk'length-1 => 2))
+		d => (0 to bnk'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_ena,
@@ -155,7 +149,7 @@ begin
 	rowlag_e : entity hdl4fpga.align
 	generic map (
 		n => row'length,
-		d => (0 to row'length-1 => 2))
+		d => (0 to row'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_ena,
@@ -165,7 +159,7 @@ begin
 	collag_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => 2))
+		d => (0 to col'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_ena,
