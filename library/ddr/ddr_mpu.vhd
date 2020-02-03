@@ -53,8 +53,8 @@ entity ddr_mpu is
 		ddr_mpu_cmd : in std_logic_vector(0 to 2) := (others => '1');
 		ddr_mpu_trdy : out std_logic;
 		ddr_mpu_act : out std_logic;
-		ddr_mpu_cas : out std_logic;
 		ddr_mpu_ras : out std_logic;
+		ddr_mpu_cas : out std_logic;
 		ddr_mpu_we  : out std_logic;
 		ddr_mpu_cen : out std_logic;
 
@@ -132,18 +132,18 @@ architecture arch of ddr_mpu is
 
 	type lat_id is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
 	type ddr_state_word is record
-		ddr_state : std_logic_vector(0 to 2);
+		ddr_state   : std_logic_vector(0 to 2);
 		ddr_state_n : std_logic_vector(0 to 2);
-		ddr_cmi : std_logic_vector(0 to 2);
-		ddr_cmo : std_logic_vector(0 to 2);
-		ddr_lat : lat_id;
-		ddr_cen : std_logic;
-		ddr_rea : std_logic;
-		ddr_wri : std_logic;
-		ddr_act : std_logic;
-		ddr_rph : std_logic;
-		ddr_wph : std_logic;
-		ddr_rdy : std_logic;
+		ddr_cmi     : std_logic_vector(0 to 2);
+		ddr_cmo     : std_logic_vector(0 to 2);
+		ddr_lat     : lat_id;
+		ddr_cen     : std_logic;
+		ddr_rea     : std_logic;
+		ddr_wri     : std_logic;
+		ddr_act     : std_logic;
+		ddr_rph     : std_logic;
+		ddr_wph     : std_logic;
+		ddr_rdy     : std_logic;
 	end record;
 
 	signal ddr_rdy_ena : std_logic;

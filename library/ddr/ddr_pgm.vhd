@@ -58,10 +58,14 @@ architecture registered of ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-                        --> ddr_pgm_trdy  <---------------------+
-                        --> ctlr_refreq   <--------------------+|
-                        --                                     ||
-                        --                                     VV
+	                    --> ddr_pgm_trdy  <---------------------+
+	                    --> ctlr_refreq   <--------------------+|
+	                    --> pgm_rrdy      <-------------------+||
+	                    --> pgm_cas       <------------------+|||
+	                    --                                   ||||
+	                    --                                   ||||
+	                    --                                   ||||
+	                    --                                   VVVV
 	constant ddr_act  : std_logic_vector(6 downto 0)    := B"0000" & "011";
 	constant ddr_acty : std_logic_vector(ddr_act'range) := B"0100" & "011";
 	constant ddr_rea  : std_logic_vector(ddr_act'range) := B"1000" & "101";
@@ -89,7 +93,6 @@ architecture registered of ddr_pgm is
 
 	type state_names is (s_act, s_rea, s_wri, s_pre, s_aut, s_pact, s_paut, s_idl, s_dnt, s_none);
 	signal mpu_name : state_names;
-	signal mpu_pc : state_names;
 
 	type trans_row is record
 		state   : std_logic_vector(0 to 2);
@@ -111,46 +114,42 @@ architecture registered of ddr_pgm is
 	signal sys_ref  : std_logic;
 
 
--- pgm_ref   ------+
--- pgm_rw    -----+|
--- pgm_irdy  ----+||
---               |||
---               vvv
---               000    001    010    011    100    101    110    111
---             +------+------+------+------+------+------+------+------+
---     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     pact    | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     rea     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     wri     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     pre     | pre  | aut  | pre  | aut  | pact | aut  | pact | aut  |
---     idl     | idl  | paut | idl  | paut | pact | paut | pact | paut |
---     paut    | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
---     aut     | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
---             +------+------+------+------+------+------+------+------+
+--           +------ pgm_ref  
+--           |+----- pgm_rw   
+--           ||+---- pgm_irdy 
+--           |||
+--           vvv
+--           000    001    010    011    100    101    110    111
+--         +------+------+------+------+------+------+------+------+
+--     act | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     rea | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
+--     wri | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
+--     pre | pre  | aut  | pre  | aut  | pact | aut  | act  | aut  |
+--     idl | idl  | aut  | idl  | aut  | act  | aut  | act  | aut  |
+--     aut | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
+--         +------+------+------+------+------+------+------+------+
 
---                           --                 --
---                           -- OUTPUT COMMANDS --
---                           --                 --
+--                       --                 --
+--                       -- OUTPUT COMMANDS --
+--                       --                 --
 
 --
---               000    001    010    011    100    101    110    111
---             +------+------+------+------+------+------+------+------+
---     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     pact    | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     rea     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     wri     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     idl     | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     paut    | nopy | auty | nopy | auty | acty | auty | acty | auty |
---     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
---             +------+------+------+------+------+------+------+------+
+--           000    001    010    011    100    101    110    111
+--         +------+------+------+------+------+------+------+------+
+--     act | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     rea | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
+--     wri | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
+--     pre | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     idl | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     aut | nopy | auty | nopy | auty | acty | auty | acty | auty |
+--         +------+------+------+------+------+------+------+------+
 
---	ddr_pgm_ref  -----+
---	ddr_pgm_rw   ----+|
---	ddr_pgm_irdy ---+||
+--	                +----- ddr_pgm_ref  
+--	                |+---- ddr_pgm_rw   
+--	                ||+--- ddr_pgm_irdy 
 --                  |||
 --                  vvv
-	constant pgm_tab : trans_tab(0 to 64-1) := (
+	constant pgm_tab : trans_tab := (
 		(ddrs_act, "000", ddrs_wri, ddr_wri),	---------
 		(ddrs_act, "001", ddrs_wri, ddr_wriq),	-- ACT --
 		(ddrs_act, "010", ddrs_rea, ddr_rea),	---------
@@ -159,15 +158,6 @@ architecture registered of ddr_pgm is
 		(ddrs_act, "101", ddrs_wri, ddr_wriq),
 		(ddrs_act, "110", ddrs_rea, ddr_rea),
 		(ddrs_act, "111", ddrs_rea, ddr_reaq),
-		
-		(ddrs_pact, "000", ddrs_wri, ddr_wri),	---------
-		(ddrs_pact, "001", ddrs_wri, ddr_wriq),	-- PACT --
-		(ddrs_pact, "010", ddrs_rea, ddr_rea),	---------
-		(ddrs_pact, "011", ddrs_rea, ddr_reaq),
-		(ddrs_pact, "100", ddrs_wri, ddr_wri),
-		(ddrs_pact, "101", ddrs_wri, ddr_wriq),
-		(ddrs_pact, "110", ddrs_rea, ddr_rea),
-		(ddrs_pact, "111", ddrs_rea, ddr_reaq),
 		
 		(ddrs_rea, "000", ddrs_pre, ddr_pre),	---------
 		(ddrs_rea, "001", ddrs_pre, ddr_preq),	-- REA --
@@ -205,15 +195,6 @@ architecture registered of ddr_pgm is
 		(ddrs_idl, "110", ddrs_pact, ddr_act),
 		(ddrs_idl, "111", ddrs_paut, ddr_autq),
 
-		(ddrs_paut, "000", ddrs_idl, ddr_nopy),	---------
-		(ddrs_paut, "001", ddrs_idl, ddr_auty),	-- PAUT --
-		(ddrs_paut, "010", ddrs_idl, ddr_nopy),	---------
-		(ddrs_paut, "011", ddrs_idl, ddr_auty),
-		(ddrs_paut, "100", ddrs_act, ddr_acty),
-		(ddrs_paut, "101", ddrs_aut, ddr_auty),
-		(ddrs_paut, "110", ddrs_act, ddr_acty),
-		(ddrs_paut, "111", ddrs_aut, ddr_auty),
-
 		(ddrs_aut, "000", ddrs_idl, ddr_nopy),	---------
 		(ddrs_aut, "001", ddrs_idl, ddr_auty),	-- AUT --
 		(ddrs_aut, "010", ddrs_idl, ddr_nopy),	---------
@@ -223,7 +204,6 @@ architecture registered of ddr_pgm is
 		(ddrs_aut, "110", ddrs_act, ddr_acty),
 		(ddrs_aut, "111", ddrs_aut, ddr_auty));
 
-	signal ppp : std_logic;
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
 
@@ -237,8 +217,7 @@ begin
 	ddr_input(0) <= ddr_pgm_irdy;
 
 	process (ctlr_clk)
-		variable pc : std_logic_vector(ddr_pgm_pc'range);
-		variable t  : signed(0 to unsigned_num_bits(CMMD_GEAR)-1);
+		variable t : signed(0 to unsigned_num_bits(CMMD_GEAR-1)-1);
 	begin
 		if rising_edge(ctlr_clk) then
 			ddr_pgm_seq <= t(0);
@@ -260,37 +239,31 @@ begin
 					ddr_pgm_cmd <= pgm_cmd;
 				end if;
 
-				if ddr_mpu_trdy='1' then
-					ddr_pgm_pc <= pc; 
-				end if;
-
 				ddr_pgm_trdy <= pgm_rdy;
 				ctlr_refreq  <= sys_ref;
 				ddr_pgm_rrdy <= pgm_rrdy;
-				for i in pgm_tab'range loop
-					if ddr_pgm_pc=pgm_tab(i).state then
-						if ddr_input=pgm_tab(i).input then
-							pc := pgm_tab(i).state_n; 
+				if ddr_mpu_trdy='1' then
+					for i in pgm_tab'range loop
+						if ddr_pgm_pc=pgm_tab(i).state then
+							if ddr_input=pgm_tab(i).input then
+								ddr_pgm_pc <= pgm_tab(i).state_n; 
+							end if;
 						end if;
-					end if;
-				end loop;
-				ppp <= pgm_cas;
+					end loop;
+				end if;
 			else
-				ppp <= '0';
-				ddr_pgm_pc <= ddrs_pre; 
-				pc := ddrs_pre;
-				ddr_pgm_cmd <= "111";
+				ddr_pgm_pc   <= ddrs_pre; 
+				ddr_pgm_cmd  <= "111";
 				ddr_pgm_trdy <= '1';
-				ctlr_refreq <= '0';
+				ctlr_refreq  <= '0';
 				ddr_pgm_rrdy <= '0';
-				t   := to_signed(CMMD_GEAR-1, t'length);
-				cal <= '0';
+				calibrating  <= '0';
+				t := to_signed(CMMD_GEAR-1, t'length);
 			end if;
-			debug_pc <= pc;
 		end if;
 	end process;
 
-	ddr_pgm_cas  <= ppp and ddr_mpu_trdy;
+	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
 	process (ddr_input, ddr_pgm_pc)
 	begin
 		pgm_rdy  <= '-'; 
@@ -310,19 +283,6 @@ begin
 			end if;
 		end loop;
 	end process;
-
-	debug1 : with debug_pc select
-	mpu_pc <=
-		s_act  when ddrs_act,
-		s_rea  when ddrs_rea,
-		s_wri  when ddrs_wri,
-		s_pre  when ddrs_pre,
-		s_aut  when ddrs_aut,
-		s_dnt  when ddrs_dnt,
-		s_pact when ddrs_pact,
-		s_paut when ddrs_paut,
-		s_idl  when ddrs_idl,
-		s_none when others;
 
 	debug : with ddr_pgm_pc select
 	mpu_name <=
