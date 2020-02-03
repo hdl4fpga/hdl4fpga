@@ -88,6 +88,17 @@ begin
 
 			when running_s =>
 				if ddrdma_frm='1' then
+
+					if row_addr(0)='1' then
+						row_addr(0) := '0';
+						bnk_addr := bnk_addr + 1;
+					end if;
+
+					if col_addr(0)='1' then
+						col_addr(0) := '0';
+						row_addr := row_addr + 1;
+					end if;
+
 					if ctlr_ena='1' then
 
 						col_cntr := col_cntr - 2;
@@ -95,24 +106,17 @@ begin
 							col_cntr(0) := '0';
 							row_cntr := row_cntr - 1;
 						end if;
+
 						if row_cntr(0)='1' then
 							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
 
 						col_addr := col_addr + 2;
-						if ddrdma_ceoc='1' then
-							col_addr(0) := '0';
-							row_addr := row_addr + 1;
-						end if;
 
-
-						if ddrdma_reoc='1' then
-							bnk_addr := bnk_addr + 1;
-						end if;
+						ddrdma_aeoc <= col_addr(0) or row_addr(0) or bnk_addr(0);
 					end if;
 
-					ddrdma_aeoc <= col_addr(0) or row_addr(0) or bnk_addr(0);
 				else
 					ddrdma_aeoc <= '0';
 				end if;
