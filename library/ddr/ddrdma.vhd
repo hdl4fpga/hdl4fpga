@@ -41,13 +41,11 @@ entity ddrdma is
 		ddrdma_bnk   : out std_logic_vector;
 		ddrdma_row   : out std_logic_vector;
 		ddrdma_col   : out std_logic_vector;
-		ddrdma_beoc  : buffer std_logic;
-		ddrdma_reoc  : buffer std_logic;
-		ddrdma_ceoc  : buffer std_logic;
+		ddrdma_aeoc  : buffer std_logic;
 		ddrdma_eoc   : buffer std_logic;
 
-		ctlr_irdy    : out std_logic;
-		ctlr_trdy    : in  std_logic;
+		ctlr_req    : buffer std_logic;
+		ctlr_ena    : in  std_logic;
 		ctlr_refreq  : in  std_logic);
 end;
 
@@ -80,9 +78,7 @@ begin
 					bnk_cntr := resize((unsigned(ddrdma_ilen)  srl ddrdma_row'length) mod 2**ddrdma_bnk'length, bnk_addr'length);
 				end if;
 
-				ddrdma_beoc <= '0';
-				ddrdma_reoc <= '0';
-				ddrdma_ceoc <= '0';
+				ddrdma_aeoc <= '0';
 
 				if ddrdma_frm='1' then
 					state <= running_s;
@@ -92,39 +88,37 @@ begin
 
 			when running_s =>
 				if ddrdma_frm='1' then
-					if ctlr_trdy='1' then
-						if ddrdma_ceoc='0' then
-							col_addr := col_addr + 2;
-						end if;
+
+					if row_addr(0)='1' then
+						row_addr(0) := '0';
+						bnk_addr := bnk_addr + 1;
+					end if;
+
+					if col_addr(0)='1' then
+						col_addr(0) := '0';
+						row_addr := row_addr + 1;
+					end if;
+
+					if ctlr_ena='1' then
 
 						col_cntr := col_cntr - 2;
 						if col_cntr(0)='1' then
 							col_cntr(0) := '0';
 							row_cntr := row_cntr - 1;
 						end if;
+
 						if row_cntr(0)='1' then
 							row_cntr(0) := '0';
 							bnk_cntr := bnk_cntr - 1;
 						end if;
-					else
-						if ddrdma_ceoc='1' then
-							col_addr(0) := '0';
-							row_addr := row_addr + 1;
-						end if;
 
+						col_addr := col_addr + 2;
+
+						ddrdma_aeoc <= col_addr(0) or row_addr(0) or bnk_addr(0);
 					end if;
 
-					if ddrdma_reoc='1' then
-						bnk_addr := bnk_addr + 1;
-					end if;
-
-					ddrdma_ceoc <= col_addr(0);
-					ddrdma_reoc <= row_addr(0);
-					ddrdma_beoc <= bnk_addr(0);
 				else
-					ddrdma_ceoc <= '0';
-					ddrdma_reoc <= '0';
-					ddrdma_beoc <= '0';
+					ddrdma_aeoc <= '0';
 				end if;
 
 				if ddrdma_frm='1' then
@@ -151,6 +145,6 @@ begin
 		end if;
 	end process;
 
-	ctlr_irdy <= ddrdma_frm and (not ddrdma_eoc and not ddrdma_ceoc) when state=running_s else '0';
+	ctlr_req <= ddrdma_frm when state=running_s else '0';
 
 end;
