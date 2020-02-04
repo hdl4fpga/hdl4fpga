@@ -112,9 +112,11 @@ begin
 							bnk_cntr := bnk_cntr - 1;
 						end if;
 
+
 						col_addr := col_addr + 2;
 
 						ddrdma_geoc <= col_addr(0) or row_addr(0) or bnk_addr(0) or bnk_cntr(0);
+						bnk_cntr(0) := '0';
 					end if;
 
 				else

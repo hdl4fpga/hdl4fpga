@@ -118,7 +118,18 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	ctlr_irdy <= not ddrdma_geoc and not ddrdma_eoc and ctlrdma_req;
+	process (ctlrdma_req, ddrdma_geoc, dmactlr_clk)
+		variable trdy : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			if ddrdma_geoc='1' then
+				trdy := not ctlr_di_req;
+			else
+				trdy := '0';
+			end if;
+		end if;
+		ctlr_irdy <= (not ddrdma_geoc or trdy) and ctlrdma_req;
+	end process;
 
 	ctlrdma_ena <= preload_do or ctlr_di_req;
 
