@@ -41,7 +41,7 @@ entity ddrdma is
 		ddrdma_bnk   : out std_logic_vector;
 		ddrdma_row   : out std_logic_vector;
 		ddrdma_col   : out std_logic_vector;
-		ddrdma_aeoc  : buffer std_logic;
+		ddrdma_geoc  : buffer std_logic;
 		ddrdma_eoc   : buffer std_logic;
 
 		ctlr_req    : buffer std_logic;
@@ -78,7 +78,7 @@ begin
 					bnk_cntr := resize((unsigned(ddrdma_ilen)  srl ddrdma_row'length) mod 2**ddrdma_bnk'length, bnk_addr'length);
 				end if;
 
-				ddrdma_aeoc <= '0';
+				ddrdma_geoc <= '0';
 
 				if ddrdma_frm='1' then
 					state <= running_s;
@@ -114,11 +114,11 @@ begin
 
 						col_addr := col_addr + 2;
 
-						ddrdma_aeoc <= col_addr(0) or row_addr(0) or bnk_addr(0);
+						ddrdma_geoc <= col_addr(0) or row_addr(0) or bnk_addr(0) or bnk_cntr(0);
 					end if;
 
 				else
-					ddrdma_aeoc <= '0';
+					ddrdma_geoc <= '0';
 				end if;
 
 				if ddrdma_frm='1' then

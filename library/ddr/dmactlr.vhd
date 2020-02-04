@@ -74,7 +74,7 @@ architecture def of dmactlr is
 	signal bnk         : std_logic_vector(ctlr_b'range);
 	signal row         : std_logic_vector(ctlr_a'range);
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal ddrdma_aeoc : std_logic;
+	signal ddrdma_geoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
 	signal ctlrdma_req : std_logic;
@@ -97,7 +97,7 @@ begin
 		ddrdma_bnk   => bnk,
 		ddrdma_row   => row,
 		ddrdma_col   => col,
-		ddrdma_aeoc  => ddrdma_aeoc,
+		ddrdma_geoc  => ddrdma_geoc,
 		ddrdma_eoc   => ddrdma_eoc,
 
 		ctlr_req     => ctlrdma_req,
@@ -118,21 +118,7 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (ctlr_trdy, ctlrdma_req, dmactlr_clk)
-		variable irdy : std_logic;
-	begin
-		if rising_edge(dmactlr_clk) then
-			if ddrdma_aeoc='1' then
-				irdy := ctlr_trdy;
-			elsif ddrdma_eoc='1' then
-				irdy := ctlr_trdy;
-			else
-				irdy := '1';
-			end if;
-		end if;
-		ctlr_irdy <= irdy and ctlrdma_req;
-		
-	end process;
+	ctlr_irdy <= not ddrdma_geoc and not ddrdma_eoc and ctlrdma_req;
 
 	ctlrdma_ena <= preload_do or ctlr_di_req;
 
