@@ -51,7 +51,7 @@ entity dmactlr is
 		ctlr_trdy     : in  std_logic;
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
-		ctlr_cas      : in  std_logic;
+		ctlr_pre      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_di_req   : in  std_logic;
