@@ -32,8 +32,6 @@ entity dmactlr is
 	generic (
 		size          : natural);
 	port (
-
-		dmactlr_rst   : in  std_logic;
 		dmactlr_frm   : in  std_logic;
 		dmactlr_clk   : in  std_logic;
 		dmactlr_irdy  : in  std_logic;
@@ -74,36 +72,36 @@ architecture def of dmactlr is
 	signal bnk         : std_logic_vector(ctlr_b'range);
 	signal row         : std_logic_vector(ctlr_a'range);
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal ddrdma_geoc : std_logic;
 	signal ddrdma_eoc  : std_logic;
 
-	signal ctlrdma_req : std_logic;
-	signal ctlrdma_ena : std_logic;
+	signal load : std_logic;
+	signal ctlrdma_irdy : std_logic;
 	signal preload_rst : std_logic;
 	signal preload_di  : std_logic;
 	signal preload_do  : std_logic;
 begin
 
+	process (dmactlr_clk)
+	begin
+		if rising_edge(dmactlr_clk) then
+			load <= not dmactlr_frm;
+		end if;
+	end process;
+
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
-		ddrdma_clk   => dmactlr_clk,
-		ddrdma_frm   => dmactlr_frm,
-		ddrdma_irdy  => dmactlr_irdy,
-		ddrdma_trdy  => dmactlr_trdy,
-		ddrdma_iaddr => dmactlr_iaddr,
-		ddrdma_ilen  => dmactlr_ilen,
-		ddrdma_taddr => dmactlr_taddr,
-		ddrdma_tlen  => dmactlr_tlen,
-		ddrdma_bnk   => bnk,
-		ddrdma_row   => row,
-		ddrdma_col   => col,
-		ddrdma_geoc  => ddrdma_geoc,
-		ddrdma_eoc   => ddrdma_eoc,
-
-		ctlr_req     => ctlrdma_req,
-		ctlr_ena     => ctlrdma_ena,
-		ctlr_refreq  => ctlr_refreq);
-
+		clk     => dmactlr_clk,
+		load    => load,
+		ena     => ctlrdma_irdy,
+		iaddr   => dmactlr_iaddr,
+		ilen    => dmactlr_ilen,
+		taddr   => dmactlr_taddr,
+		tlen    => dmactlr_tlen,
+		len_eoc => dmactlr_trdy,
+		bnk     => bnk,
+		row     => row,
+		col     => col,
+		col_eoc => ddrdma_eoc);
 
 	preload_di  <= not dmactlr_irdy;
 	preload_rst <= not dmactlr_frm;
@@ -118,20 +116,9 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (ctlr_pre, ddrdma_geoc, ctlrdma_req, dmactlr_clk)
-		variable trdy : std_logic;
-	begin
-		if rising_edge(dmactlr_clk) then
-			if ddrdma_geoc='1' then
-				trdy := not ctlr_di_req;
-			else
-				trdy := '0';
-			end if;
-		end if;
-		ctlr_irdy <= not ddrdma_geoc and not ctlr_pre and ctlrdma_req;
-	end process;
+	ctlr_irdy <= not ddrdma_eoc and not ctlr_pre;
 
-	ctlrdma_ena <= preload_do or ctlr_di_req;
+	ctlrdma_irdy <= preload_do or ctlr_di_req;
 
 	bnklag_e : entity hdl4fpga.align
 	generic map (
@@ -139,7 +126,7 @@ begin
 		d => (0 to bnk'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_ena,
+		ena => ctlrdma_irdy,
 		di  => bnk,
 		do  => ddrdma_bnk);
 
@@ -149,7 +136,7 @@ begin
 		d => (0 to row'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_ena,
+		ena => ctlrdma_irdy,
 		di  => row,
 		do  => ddrdma_row);
 
@@ -159,7 +146,7 @@ begin
 		d => (0 to col'length-1 => 1))
 	port map (
 		clk => dmactlr_clk,
-		ena => ctlrdma_ena,
+		ena => ctlrdma_irdy,
 		di  => col,
 		do  => ddrdma_col);
 

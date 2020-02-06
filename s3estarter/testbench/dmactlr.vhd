@@ -75,7 +75,6 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_rst   : std_logic;
 	signal dmactlr_frm   : std_logic;
 	signal dmactlr_clk   : std_logic;
 	signal dmactlr_we    : std_logic;
@@ -167,7 +166,6 @@ begin
 		ena  => g_ena,
 		data => g_data);
 
-	dmactlr_rst <= ddrsys_rst;
 	dmactlr_clk <= ddrsys_clks(clk0);
 	dmactlr_we  <= '0';
 
@@ -180,20 +178,18 @@ begin
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_inirdy='1' then
-				dmactlr_frm  <= '1';
-				dmactlr_irdy <= '1';
+				dmactlr_frm  <= '1' and not dmactlr_trdy;
 			else
 				dmactlr_frm  <= '0';
-				dmactlr_irdy <= '0';
 			end if;
 		end if;
 	end process;
+	dmactlr_irdy <= not dmactlr_trdy;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
 		size => 256)
 	port map (
-		dmactlr_rst   => dmactlr_rst,
 		dmactlr_frm   => dmactlr_frm,
 		dmactlr_clk   => dmactlr_clk,
 		dmactlr_irdy  => dmactlr_irdy,
