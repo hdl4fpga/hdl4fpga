@@ -92,14 +92,12 @@ add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ddr_
 add wave -noupdate -group wrfifo -radix hexadecimal /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ddr_dqo
 add wave -noupdate -divider DDRDRMA
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_frm
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_beoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_reoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_ceoc
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ddrdma_geoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ddrdma_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ctlr_req
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ctlr_ena
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/state
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(0) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(1) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(2) -radix hexadecimal}} -expand -subitemconfig {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(0) {-radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(1) {-radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr(2) {-radix hexadecimal}} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_cntr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/row_cntr
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(0) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(1) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(2) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(3) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(4) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(5) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(6) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(7) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(8) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(9) -radix hexadecimal} {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(10) -radix hexadecimal}} -subitemconfig {/testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(0) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(1) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(2) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(3) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(4) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(5) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(6) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(7) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(8) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(9) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr(10) {-height 29 -radix hexadecimal}} /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/col_cntr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/addr_p/bnk_addr
@@ -126,13 +124,13 @@ add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/preload_do
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_rw
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_pre
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_act
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_cas
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203975266 ps} 0}
+WaveRestoreCursors {{Cursor 1} {203979240 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168

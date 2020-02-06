@@ -334,6 +334,8 @@ begin
 								exit;
 							end if;
 						end if;
+						ddr_mpu_pre <= setif(ddr_mpu_cmd=ddr_pre);
+						ddr_mpu_act <= setif(ddr_mpu_cmd=ddr_act);
 					end loop;
 				else
 					ddr_mpu_cen <= '0';
@@ -351,6 +353,8 @@ begin
 				ddr_mpu_rea  <= ddr_state_tab(0).ddr_rea;
 				ddr_mpu_rwin <= ddr_state_tab(0).ddr_rph;
 				ddr_mpu_wwin <= ddr_state_tab(0).ddr_wph;
+				ddr_mpu_act  <= '0';
+				ddr_mpu_pre  <= '0';
 				ddr_rdy_ena  <= '1';
 				lat_timer    <= (others => '1');
 			end if;
@@ -358,8 +362,6 @@ begin
 		end if;
 	end process;
 
-	ddr_mpu_pre  <= setif(ddr_state=ddrs_pre);
-	ddr_mpu_act  <= setif(ddr_state=ddrs_act);
 	ddr_mpu_wri  <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_write_bl);
 	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
 
