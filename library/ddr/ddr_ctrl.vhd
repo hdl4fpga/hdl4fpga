@@ -71,6 +71,7 @@ entity ddr_ctlr is
 		ctlr_di_req  : out std_logic;
 		ctlr_do_dv   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlr_act     : out std_logic;
+		ctlr_pre     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
@@ -284,6 +285,7 @@ begin
 		ddr_mpu_cmd  => ddr_pgm_cmd,
 		ddr_mpu_trdy => ddr_mpu_trdy,
 		ddr_mpu_act  => ctlr_act,
+		ddr_mpu_pre  => ctlr_pre,
 		ddr_mpu_cas  => ddr_mpu_cas,
 		ddr_mpu_ras  => ddr_mpu_ras,
 		ddr_mpu_we   => ddr_mpu_we,
@@ -340,7 +342,6 @@ begin
 
 	process (
 		ddr_wr_dm,
-		ddr_mpu_wri,
 		ddr_sch_st,
 		ddr_sch_dqz,
 		ddr_sch_dqs,
@@ -355,7 +356,7 @@ begin
 				phy_dqso(i*data_gear+j) <= ddr_sch_dqs(j);
 				phy_dqst(i*data_gear+j) <= not ddr_sch_dqsz(j);
 				phy_sto(i*data_gear+j)  <= reverse(ddr_sch_st)(j);
-				phy_dmo(i*data_gear+j) <= ddr_wr_dm(i*data_gear+j);
+				phy_dmo(i*data_gear+j)  <= ddr_wr_dm(i*data_gear+j);
 			end loop;
 			for j in 0 to data_phases-1 loop
 				ddr_wenas(i*data_phases+j) <= ddr_sch_wwn(j);
