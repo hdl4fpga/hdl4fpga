@@ -66,15 +66,15 @@ architecture def of ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-	                    --> ddr_pgm_trdy  <---------------------+
-	                    --> ctlr_refreq   <--------------------+|
-	                    --> pgm_refy      <-------------------+||
-	                    --> pgm_cas       <------------------+|||
-	                    --                                   ||||
-	                    --                                   ||||
-	                    --                                   ||||
-	                    --                                   VVVV
-	constant ddro_act  : std_logic_vector(6 downto 0)    := B"0000" & "011";
+	                      --> ddr_pgm_trdy  <---------------------+
+	                      --> ctlr_refreq   <--------------------+|
+	                      --> pgm_refy      <-------------------+||
+	                      --> pgm_cas       <------------------+|||
+	                      --                                   ||||
+	                      --                                   ||||
+	                      --                                   ||||
+	                      --                                   VVVV
+	constant ddro_act  : std_logic_vector(6 downto 0)     := B"0000" & "011";
 	constant ddro_acty : std_logic_vector(ddro_act'range) := B"0100" & "011";
 	constant ddro_rea  : std_logic_vector(ddro_act'range) := B"1000" & "101";
 	constant ddro_reaq : std_logic_vector(ddro_act'range) := B"1010" & "101";
@@ -128,7 +128,6 @@ architecture def of ddr_pgm is
 --     rea | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     wri | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     pre | pre  | aut  | pre  | aut  | act  | aut  | act  | aut  |
---     idl | idl  | aut  | idl  | aut  | act  | aut  | act  | aut  |
 --     aut | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
 --         +------+------+------+------+------+------+------+------+
 
@@ -143,7 +142,6 @@ architecture def of ddr_pgm is
 --     rea | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
 --     wri | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
 --     pre | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     idl | nop  | autq | nop  | autq | act  | autq | act  | autq |
 --     aut | nopy | auty | nopy | auty | acty | auty | acty | auty |
 --         +------+------+------+------+------+------+------+------+
 

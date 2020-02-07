@@ -52,7 +52,7 @@ architecture def of ddrdma is
 	signal row_cntr : std_logic_vector(row'range);
 	signal col_cntr : std_logic_vector(col'range);
 
-	signal cntr_eoc : std_logic;
+	signal ena_cntr : std_logic;
 begin
 
 	addr_e : entity hdl4fpga.dmacntr
@@ -74,25 +74,13 @@ begin
 		clk     => clk,
 		load    => load,
 		updn    => '1',
-		ena     => ena,
+		ena     => ena_cntr,
 		addr    => ilen,
 		bnk     => bnk_cntr,
 		row     => row_cntr,
 		col     => col_cntr,
-		bnk_eoc => cntr_eoc);
+		bnk_eoc => len_eoc);
 
-	process (clk, cntr_eoc)
-		variable eoc : std_logic;
-	begin
-		if rising_edge(clk) then
-			if load='1' then
-				eoc := '0';
-			elsif eoc='0' then
-				eoc := cntr_eoc;
-			end if;
-		end if;
-		len_eoc <= eoc or cntr_eoc;
-	end process;
-	tlen <= bnk_cntr & row_cntr & col_cntr;
+	ena_cntr <= not len_eoc and ena;
 
 end;

@@ -44,11 +44,13 @@ entity dmactlr is
 		ctlr_inirdy   : in std_logic;
 		ctlr_refreq   : in std_logic;
 
-		ctlr_irdy     : out std_logic;
+		ctlr_irdy     : buffer std_logic;
 		ctlr_trdy     : in  std_logic;
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_pre      : in  std_logic;
+		ctlr_cyl      : in  std_logic;
+		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_di_req   : in  std_logic;
@@ -73,9 +75,10 @@ architecture def of dmactlr is
 	signal bnk         : std_logic_vector(ctlr_b'range);
 	signal row         : std_logic_vector(ctlr_a'range);
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal ddrdma_eoc  : std_logic;
+	signal col_eoc  : std_logic;
 
 	signal load : std_logic;
+	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
 	signal preload_rst : std_logic;
 	signal preload_di  : std_logic;
@@ -98,11 +101,11 @@ begin
 		ilen    => dmactlr_ilen,
 		taddr   => dmactlr_taddr,
 		tlen    => dmactlr_tlen,
-		len_eoc => dmactlr_rdy,
+		len_eoc => len_eoc,
 		bnk     => bnk,
 		row     => row,
 		col     => col,
-		col_eoc => ddrdma_eoc);
+		col_eoc => col_eoc);
 
 	preload_di  <= not dmactlr_req;
 	preload_rst <= not dmactlr_req;
@@ -117,7 +120,25 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	ctlr_irdy <= not ddrdma_eoc and not dmactlr_rdy and not ctlr_pre;
+	process (dmactlr_clk, len_eoc, col_eoc, dmactlr_rdy, ctlr_pre)
+		variable ceoc : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			if len_eoc='0' then
+				if col_eoc='1' then
+					ceoc := '1';
+				else
+					ceoc := '0';
+				end if;
+			elsif ceoc='1' then
+				if ctlr_irdy='1' then
+					ceoc := '0';
+				end if;
+			end if;
+		end if;
+		dmactlr_rdy <= len_eoc and not ceoc;
+		ctlr_irdy   <= not (col_eoc or ceoc) and not (len_eoc and not ceoc) and not ctlr_pre;
+	end process;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 

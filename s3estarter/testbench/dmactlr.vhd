@@ -80,8 +80,8 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_req   : std_logic;
 	signal dmactlr_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000002";
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"ff";
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000001";
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
 
@@ -90,6 +90,8 @@ architecture dmactlr of s3Estarter is
 	signal ctlr_rw       : std_logic;
 	signal ctlr_act      : std_logic;
 	signal ctlr_pre      : std_logic;
+	signal ctlr_idl      : std_logic;
+	signal ctlr_cyl      : std_logic;
 	signal ctlr_inirdy   : std_logic;
 	signal ctlr_refreq   : std_logic;
 	signal ctlr_b        : std_logic_vector(bank_size-1 downto 0);
@@ -209,6 +211,8 @@ begin
 		ctlr_rw       => ctlr_rw,
 		ctlr_act      => ctlr_act,
 		ctlr_pre      => ctlr_pre,
+		ctlr_cyl      => ctlr_cyl,
+		ctlr_idl      => ctlr_idl,
 		ctlr_b        => ctlr_b,
 		ctlr_a        => ctlr_a,
 		ctlr_di_req   => ctlr_di_req,
