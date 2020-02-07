@@ -75,16 +75,15 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_frm   : std_logic;
 	signal dmactlr_clk   : std_logic;
 	signal dmactlr_we    : std_logic;
-	signal dmactlr_irdy  : std_logic;
-	signal dmactlr_trdy  : std_logic;
+	signal dmactlr_req   : std_logic;
+	signal dmactlr_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 1) := b"00" & b"0" & x"000" & b"1" & x"fe" & b"0";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1) := b"0" & x"000002";
-	signal dmactlr_taddr : std_logic_vector(26-1 downto 1);
-	signal dmactlr_tlen  : std_logic_vector(26-1 downto 1);
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000002";
+	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
+	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
 
 	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
@@ -174,26 +173,28 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	process (dmactlr_clk)
+	process (dmactlr_clk, dmactlr_rdy, ctlr_inirdy)
+		variable rdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_inirdy='1' then
-				dmactlr_frm  <= '1' and not dmactlr_trdy;
+				if dmactlr_rdy='1' then
+					rdy := '1';
+				end if;
 			else
-				dmactlr_frm  <= '0';
+				rdy := '0';
 			end if;
 		end if;
 	end process;
-	dmactlr_irdy <= not dmactlr_trdy;
+	dmactlr_req <= ctlr_inirdy; -- and not dmactlr_rdy and not rdy;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
 		size => 256)
 	port map (
-		dmactlr_frm   => dmactlr_frm,
 		dmactlr_clk   => dmactlr_clk,
-		dmactlr_irdy  => dmactlr_irdy,
-		dmactlr_trdy  => dmactlr_trdy,
+		dmactlr_req   => dmactlr_req,
+		dmactlr_rdy   => dmactlr_rdy,
 		dmactlr_we    => dmactlr_we,
 		dmactlr_iaddr => dmactlr_iaddr,
 		dmactlr_ilen  => dmactlr_ilen,

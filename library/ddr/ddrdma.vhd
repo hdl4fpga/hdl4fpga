@@ -43,7 +43,7 @@ entity ddrdma is
 		bnk_eoc : out std_logic;
 		row_eoc : out std_logic;
 		col_eoc : out std_logic;
-		len_eoc : out std_logic);
+		len_eoc : buffer std_logic);
 
 end;
 
@@ -81,10 +81,17 @@ begin
 		col     => col_cntr,
 		bnk_eoc => cntr_eoc);
 
-	process (clk)
+	process (clk, cntr_eoc)
+		variable eoc : std_logic;
 	begin
 		if rising_edge(clk) then
+			if load='1' then
+				eoc := '0';
+			elsif eoc='0' then
+				eoc := cntr_eoc;
+			end if;
 		end if;
+		len_eoc <= eoc or cntr_eoc;
 	end process;
 	tlen <= bnk_cntr & row_cntr & col_cntr;
 
