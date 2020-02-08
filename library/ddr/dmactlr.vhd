@@ -120,25 +120,40 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (dmactlr_clk, len_eoc, col_eoc, dmactlr_rdy, ctlr_pre)
-		variable ceoc : std_logic;
+	pp_b : block
+		signal ceoc  : std_logic;
+		signal leoc  : std_logic;
 	begin
-		if rising_edge(dmactlr_clk) then
-			if len_eoc='0' then
-				if col_eoc='1' then
-					ceoc := '1';
+		process (dmactlr_clk)
+		begin
+			if rising_edge(dmactlr_clk) then
+				if ceoc='1' then
+					if ctlr_cyl='1' then
+						ceoc <= '0';
+					elsif ctlr_idl='1' then
+						ceoc <= '0';
+					end if;
+					leoc <= ctlr_act;
 				else
-					ceoc := '0';
-				end if;
-			elsif ceoc='1' then
-				if ctlr_irdy='1' then
-					ceoc := '0';
+					if len_eoc='0' then
+						if col_eoc='1' then
+							ceoc <= '1';
+							leoc <= '0';
+						else
+							ceoc <= '0';
+							leoc <= '1';
+						end if;
+					else
+						ceoc <= '0';
+						leoc <= '1';
+					end if;
 				end if;
 			end if;
-		end if;
+		end process;
+
 		dmactlr_rdy <= len_eoc and not ceoc;
-		ctlr_irdy   <= not (col_eoc or ceoc) and not (len_eoc and not ceoc) and not ctlr_pre;
-	end process;
+		ctlr_irdy   <= (not col_eoc and not ceoc) and not len_eoc ;
+	end block;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 
