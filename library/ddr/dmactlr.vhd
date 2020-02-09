@@ -128,11 +128,7 @@ begin
 		begin
 			if rising_edge(dmactlr_clk) then
 				if ceoc='1' then
-					if ctlr_cyl='1' then
-						ceoc <= '0';
-					elsif ctlr_idl='1' then
-						ceoc <= '0';
-					end if;
+					ceoc <= not ctlr_pre;
 					leoc <= ctlr_act;
 				else
 					if len_eoc='0' then
@@ -152,7 +148,7 @@ begin
 		end process;
 
 		dmactlr_rdy <= len_eoc and not ceoc;
-		ctlr_irdy   <= (not col_eoc and not ceoc) and not len_eoc ;
+		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc and not leoc);
 	end block;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
