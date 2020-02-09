@@ -128,16 +128,20 @@ begin
 		begin
 			if rising_edge(dmactlr_clk) then
 				if ceoc='1' then
-					ceoc <= not ctlr_pre;
-					leoc <= ctlr_act;
+					if ctlr_pre='1' then
+						ceoc <= '0';
+					end if;
+					if ctlr_act='1' then
+						leoc <= '1';
+					end if;
 				else
 					if len_eoc='0' then
 						if col_eoc='1' then
 							ceoc <= '1';
-							leoc <= '0';
+							leoc <= '1';
 						else
 							ceoc <= '0';
-							leoc <= '1';
+							leoc <= '0';
 						end if;
 					else
 						ceoc <= '0';
@@ -147,7 +151,7 @@ begin
 			end if;
 		end process;
 
-		dmactlr_rdy <= len_eoc and not ceoc;
+		dmactlr_rdy <= len_eoc and leoc;
 		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc and not leoc);
 	end block;
 
