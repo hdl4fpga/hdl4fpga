@@ -60,8 +60,13 @@ begin
 				row_cntr  := resize((unsigned(addr) srl col'length), row_cntr'length);
 				col_cntr  := resize((unsigned(addr) srl          0), col_cntr'length);
 
-				bnk_cntr1 <= bnk_cntr + 1;
-				row_cntr1 <= row_cntr + 1;
+				if updn='0' then
+					row_cntr1 <= row_cntr + 1;
+					bnk_cntr1 <= bnk_cntr + 1;
+				else
+					row_cntr1 <= row_cntr - 1;
+					bnk_cntr1 <= bnk_cntr - 1;
+				end if;
 
 				bnk <= std_logic_vector(resize(bnk_cntr, bnk'length));
 				row <= std_logic_vector(resize(row_cntr, row'length));

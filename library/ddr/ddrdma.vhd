@@ -52,14 +52,16 @@ architecture def of ddrdma is
 	signal row_cntr : std_logic_vector(row'range);
 	signal col_cntr : std_logic_vector(col'range);
 
+	signal ena_addr : std_logic;
 	signal ena_cntr : std_logic;
 begin
 
+	ena_addr <= not len_eoc and ena;
 	addr_e : entity hdl4fpga.dmacntr
 	port map (
 		clk     => clk,
 		load    => load,
-		ena     => ena,
+		ena     => ena_addr,
 		addr    => iaddr,
 		bnk     => bnk,
 		row     => row,
@@ -69,6 +71,7 @@ begin
 		col_eoc => col_eoc);
 	taddr <= bnk & row & col;
 
+	ena_cntr <= not len_eoc and ena;
 	cntr_e : entity hdl4fpga.dmacntr
 	port map (
 		clk     => clk,
@@ -81,6 +84,6 @@ begin
 		col     => col_cntr,
 		bnk_eoc => len_eoc);
 
-	ena_cntr <= not len_eoc and ena;
+	tlen <= bnk_cntr & row_cntr & col_cntr;
 
 end;

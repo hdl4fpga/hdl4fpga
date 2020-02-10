@@ -67,7 +67,7 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	constant lat : natural := 1;
+	constant lat : natural := 2;
 
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
@@ -120,39 +120,66 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	pp_b : block
+	b : block
 		signal ceoc  : std_logic;
 		signal leoc  : std_logic;
 	begin
 		process (dmactlr_clk)
+			type states is (s_run, s_ceoc, s_leoc);
+			variable state : states;
 		begin
 			if rising_edge(dmactlr_clk) then
-				if ceoc='1' then
-					if ctlr_pre='1' then
-						ceoc <= '0';
-					end if;
-					if ctlr_act='1' then
-						leoc <= '1';
-					end if;
-				else
+				case state is
+				when s_run =>
 					if len_eoc='0' then
 						if col_eoc='1' then
 							ceoc <= '1';
-							leoc <= '1';
+							leoc <= '0';
 						else
 							ceoc <= '0';
-							leoc <= '0';
+							leoc <= '1';
 						end if;
 					else
 						ceoc <= '0';
 						leoc <= '1';
 					end if;
-				end if;
+
+					if len_eoc='0' then
+						if col_eoc='1' then
+							state := s_ceoc;
+						end if;
+					end if;
+
+				when s_ceoc =>
+					if ctlr_pre='1' then
+						ceoc <= '0';
+					else
+						ceoc <= '1';
+					end if;
+					leoc <= '0';
+
+					if ctlr_pre='1' then
+						state := s_leoc;
+					end if;
+				when s_leoc =>
+					ceoc <= '0';
+
+					if ctlr_act='1' then
+						leoc <= '1';
+					else
+						leoc <= '0';
+					end if;
+
+					if ctlr_act='1' then
+						state := s_run;
+					end if;
+
+				end case;
 			end if;
 		end process;
 
 		dmactlr_rdy <= len_eoc and leoc;
-		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc and not leoc);
+		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 	end block;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
