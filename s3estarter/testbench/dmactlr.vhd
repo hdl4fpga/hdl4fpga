@@ -37,11 +37,11 @@ architecture dmactlr of s3Estarter is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz --
-	-- Multiply by --   8     --   3     --  10     --
-	-- Divide by   --   3     --   1     --   3     --
-	--------------------------------------------------
+	-------------------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --   8     --   3     --  10     --   4     --
+	-- Divide by   --   3     --   1     --   3     --   1     --
+	-------------------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
 	constant ddr_mul     : natural := 8; --(10) 166, (9) 150, (8) 133
@@ -244,9 +244,9 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "001",
---		ctlr_cl      => "010",	-- 133 Mhz
---		ctlr_cl      => "110",	-- 166 Mhz
-		ctlr_cl      => "011",	-- 150 Mhz
+		ctlr_cl      => "010",	-- 2   133 Mhz
+--		ctlr_cl      => "110",	-- 2.5 166 Mhz
+--		ctlr_cl      => "011",	-- 3   200 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
