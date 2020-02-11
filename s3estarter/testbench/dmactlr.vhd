@@ -55,7 +55,7 @@ architecture dmactlr of s3Estarter is
 
 	constant fpga        : natural := spartan3;
 	constant mark        : natural := m6t;
-	constant tcp         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
+	constant tcp         : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
 	constant sclk_phases : natural := 4;
 	constant sclk_edges  : natural := 2;
