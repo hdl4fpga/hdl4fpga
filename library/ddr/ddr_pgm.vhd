@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		registered : boolean := false;
 		CMMD_GEAR : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
@@ -107,8 +106,7 @@ architecture def of ddr_pgm is
 
 	type trans_tab is array (natural range <>) of trans_row;
 
-	signal ddrinput_d  : std_logic_vector(0 to 2);
-	signal ddrinput_q  : std_logic_vector(ddrinput_d'range);
+	signal ddr_input  : std_logic_vector(0 to 2);
 
 	signal ddr_pgm_pc : std_logic_vector(ddrs_act'range);
 
@@ -198,17 +196,17 @@ architecture def of ddr_pgm is
 		(ddrs_aut, "110", ddrs_act, ddro_acty),
 		(ddrs_aut, "111", ddrs_aut, ddro_auty));
 
-	attribute fsm_encoding : string;
-	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
 
 	signal calibrating : std_logic;
 
 	signal debug_pc : std_logic_vector(ddr_pgm_pc'range);
 begin
 
-	ddrinput_d(2) <= ddr_pgm_ref;
-	ddrinput_d(1) <= ddr_pgm_rw;
-	ddrinput_d(0) <= ddr_pgm_irdy;
+	ddr_input(2) <= ddr_pgm_ref;
+	ddr_input(1) <= ddr_pgm_rw;
+	ddr_input(0) <= ddr_pgm_irdy;
 
 	process (ctlr_clk)
 	begin
@@ -216,10 +214,10 @@ begin
 			if ctlr_rst='1' then
 				ddr_pgm_pc <= ddrs_pre;
 			elsif ddr_mpu_trdy='1' then
-				ddr_pgm_pc <= (others => '-');
+--				ddr_pgm_pc <= (others => '-');			Hungs ISE
 				for i in pgm_tab'range loop
 					if ddr_pgm_pc=pgm_tab(i).state then
-						if ddrinput_q=pgm_tab(i).input then
+						if ddr_input=pgm_tab(i).input then
 							ddr_pgm_pc <= pgm_tab(i).state_n; 
 						end if;
 					end if;
@@ -229,7 +227,7 @@ begin
 	end process;
 
 	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
-	process (ddrinput_q, ddr_pgm_pc)
+	process (ddr_input, ddr_pgm_pc)
 	begin
 		pgm_rdy  <= '-'; 
 		pgm_refy <= '-'; 
@@ -238,10 +236,7 @@ begin
 		pgm_cmd  <= (others => '-');
 		for i in pgm_tab'range loop
 			if ddr_pgm_pc=pgm_tab(i).state then
-				if ddrinput_d=pgm_tab(i).input then
-					pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
-				end if;
-				if ddrinput_q=pgm_tab(i).input then
+				if ddr_input=pgm_tab(i).input then
 					pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
 					pgm_rdy  <= pgm_tab(i).cmd_n(rdy);
 					pgm_cas  <= pgm_tab(i).cmd_n(cacc);
@@ -251,22 +246,7 @@ begin
 			end if;
 		end loop;
 	end process;
-
-	registered_g : if registered generate
-		process(ctlr_clk)
-		begin
-			if rising_edge(ctlr_clk) then
-				ddrinput_q  <= ddrinput_d;
-				ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
-			end if;
-		end process;
-	end generate;
-
-	notregistered_g : if not registered generate
-		ddrinput_q  <= ddrinput_d;
-		ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
-	end generate;
-
+	ddr_pgm_cmd  <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
 	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');

@@ -186,8 +186,8 @@ begin
 
 	bnklat_e : entity hdl4fpga.align
 	generic map (
-		n => bnk'length,
-		d => (0 to bnk'length-1 => lat))
+		n => ctlr_b'length,
+		d => (0 to ctlr_b'length-1 => lat))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
@@ -196,8 +196,8 @@ begin
 
 	rowlat_e : entity hdl4fpga.align
 	generic map (
-		n => row'length,
-		d => (0 to row'length-1 => lat))
+		n => ctlr_a'length,
+		d => (0 to ctlr_a'length-1 => lat))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,

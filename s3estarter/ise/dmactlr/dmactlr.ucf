@@ -37,18 +37,13 @@ NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
 # Ignore crossclock time #
 # ###################### #
 
-NET ddrs_clks[0] TNM_NET = FFS  FFS_ddrsclk0;
-NET ddrs_clks[0] TNM_NET = RAMS RAMS_ddrsclk0;
-NET ddrs_clks[1] TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
-NET input_clk    TNM_NET = FFS  FFS_adcclkab;
-NET input_clk    TNM_NET = RAMS RAMS_adcclkab;
+NET ddrsys_clks[0] TNM_NET = FFS  FFS_ddrsclk0;
+NET ddrsys_clks[0] TNM_NET = RAMS RAMS_ddrsclk0;
+NET ddrsys_clks[1] TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 
 TIMESPEC TS_ram2oddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
-TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 
 # ############## #
 # DDR constrains #
@@ -72,39 +67,39 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 
 # DDR 150 Mhz rate clock #
 
-#NET "sd_dqs[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 6.667 ns HIGH 50%;
-#NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dqs[1]" TNM_NET = dqs1;
-#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
-#NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[0] RISING;
-#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
-#
-#OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[0] RISING;
-#OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[1] RISING;
-
-# DDR 133 Mhz rate clock #
-
 NET "sd_dqs[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 7.5 ns HIGH 50%;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.667 ns HIGH 50%;
 NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "sd_dqs[1]" TNM_NET = dqs1;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
 NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
-NET "sd_dm*" OFFSET = IN 2.0 ns VALID 3.75 ns BEFORE sd_dqs[0] RISING;
-NET "sd_dm*" OFFSET = IN 2.0 ns VALID 3.75 ns BEFORE sd_dqs[1] RISING;
+NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[0] RISING;
+NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
 
+OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[1] RISING;
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/chain_g[1].lut" LOC = SLICE_X3Y29;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/chain_g[1].lut" LOC = SLICE_X3Y72;
+# DDR 133 Mhz rate clock #
 
-OFFSET = IN -0.625 ns VALID 2.5 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.625 ns VALID 2.5 ns BEFORE sd_dqs[1] RISING;
+#NET "sd_dqs[0]" TNM_NET = dqs0;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 7.5 ns HIGH 50%;
+#NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
+#
+#NET "sd_dqs[1]" TNM_NET = dqs1;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
+#NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
+#
+#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 3.75 ns BEFORE sd_dqs[0] RISING;
+#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 3.75 ns BEFORE sd_dqs[1] RISING;
+#
+#
+#INST "ddrphy_e/byte_g[0].dqs_delayed_e/chain_g[1].lut" LOC = SLICE_X3Y29;
+#INST "ddrphy_e/byte_g[1].dqs_delayed_e/chain_g[1].lut" LOC = SLICE_X3Y72;
+#
+#OFFSET = IN -0.625 ns VALID 2.5 ns BEFORE sd_dqs[0] RISING;
+#OFFSET = IN -0.625 ns VALID 2.5 ns BEFORE sd_dqs[1] RISING;
 
 # ####################### #
 # Read-FIFO DQS Delay Tap #

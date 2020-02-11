@@ -289,8 +289,8 @@ begin
 		phy_dqi      => ddrphy_dqi,
 		phy_dqt      => ddrphy_dqt,
 		phy_dqo      => ddrphy_dqo,
-		phy_sti      => ddrphy_sti,
-		phy_sto      => ddrphy_sto,
+		phy_sti      => ddrphy_sto,
+		phy_sto      => ddrphy_sti,
                                 
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
@@ -370,8 +370,17 @@ begin
 		o  => sd_ck_p,
 		ob => sd_ck_n);
 
-	-- LEDs DAC --
-	--------------
+	-- VGA --
+	---------
+
+	vga_red   <= 'Z';
+	vga_green <= 'Z';
+	vga_blue  <= 'Z';
+	vga_vsync <= 'Z';
+	vga_hsync <= 'Z';
+
+	-- LEDs --
+	----------
 		
 	led0 <= sys_rst;
 	led1 <= '0';
@@ -391,9 +400,9 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	e_mdc       <= '0';
+	e_mdc       <= 'Z';
 	e_mdio      <= 'Z';
-	e_txd_4     <= '0';
+	e_txd_4     <= 'Z';
 
 	e_txd  	    <= (others => 'Z');
 	e_txen      <= 'Z';
@@ -401,10 +410,10 @@ begin
 	-- misc --
 	----------
 
-	amp_shdn    <= '0';
-	dac_clr     <= '1';
-	sf_ce0      <= '1';
-	fpga_init_b <= '0';
-	spi_ss_b    <= '0';
+	amp_shdn    <= 'Z';
+	dac_clr     <= 'Z';
+	sf_ce0      <= 'Z';
+	fpga_init_b <= 'Z';
+	spi_ss_b    <= 'Z';
 
 end;
