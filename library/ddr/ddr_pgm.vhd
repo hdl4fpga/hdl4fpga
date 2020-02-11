@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
+		registered : boolean := true;
 		CMMD_GEAR : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
@@ -202,6 +203,9 @@ architecture def of ddr_pgm is
 	signal calibrating : std_logic;
 
 	signal debug_pc : std_logic_vector(ddr_pgm_pc'range);
+
+	signal pgm_pc : std_logic_vector(ddr_pgm_pc'range);
+	signal pc     : std_logic_vector(ddr_pgm_pc'range);
 begin
 
 	ddr_input(2) <= ddr_pgm_ref;
@@ -213,12 +217,19 @@ begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
 				ddr_pgm_pc <= ddrs_pre;
-			elsif ddr_mpu_trdy='1' then
+			else
 --				ddr_pgm_pc <= (others => '-');			Hungs ISE
 				for i in pgm_tab'range loop
-					if ddr_pgm_pc=pgm_tab(i).state then
+					if pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
-							ddr_pgm_pc <= pgm_tab(i).state_n; 
+							if ddr_mpu_trdy='1' then
+								if registered then
+									ddr_pgm_pc <= pgm_pc; 
+								else
+									ddr_pgm_pc <= pgm_tab(i).state_n; 
+								end if;
+							end if;
+							pgm_pc <= pgm_tab(i).state_n; 
 						end if;
 					end if;
 				end loop;
@@ -227,15 +238,17 @@ begin
 	end process;
 
 	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
-	process (ddr_input, ddr_pgm_pc)
+	pc <= setif(ddr_mpu_trdy='1', ddr_pgm_pc, pgm_pc);
+	process (ddr_input, pc)
+		variable pc : std_logic_vector(ddr_pgm_pc'range);
 	begin
-		pgm_rdy  <= '-'; 
-		pgm_refy <= '-'; 
-		pgm_refq <= '-';
-		pgm_cas  <= '-';
 		pgm_cmd  <= (others => '-');
+		pgm_rdy  <= '-'; 
+		pgm_cas  <= '-';
+		pgm_refq <= '-';
+		pgm_refy <= '-'; 
 		for i in pgm_tab'range loop
-			if ddr_pgm_pc=pgm_tab(i).state then
+			if pc=pgm_tab(i).state then
 				if ddr_input=pgm_tab(i).input then
 					pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
 					pgm_rdy  <= pgm_tab(i).cmd_n(rdy);
@@ -246,7 +259,18 @@ begin
 			end if;
 		end loop;
 	end process;
-	ddr_pgm_cmd  <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+
+	process (pgm_cmd, ctlr_rst, ctlr_clk)
+	begin
+		if registered then
+			if rising_edge(ctlr_clk) then
+				ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+			end if;
+		else
+			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+		end if;
+	end process;
+
 	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
