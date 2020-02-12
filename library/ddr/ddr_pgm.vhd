@@ -81,19 +81,12 @@ entity ddr_pgm is
 	constant ddro_nop  : std_logic_vector(ddro_act'range) := B"0001" & "111";
 	constant ddro_nopy : std_logic_vector(ddro_act'range) := B"0101" & "111";
 
-	constant ddrs_act  : std_logic_vector(0 to 2) := "011";
-	constant ddrs_rea  : std_logic_vector(0 to 2) := "101";
-	constant ddrs_wri  : std_logic_vector(0 to 2) := "100";
-	constant ddrs_pre  : std_logic_vector(0 to 2) := "010";
-	constant ddrs_aut  : std_logic_vector(0 to 2) := "001";
-
-	type state_names is (s_act, s_rea, s_wri, s_pre, s_aut, s_pact, s_paut, s_idl, s_dnt, s_none);
-	signal pgm_state : state_names;
+	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre, ddrs_aut);
 
 	type trans_row is record
-		state   : std_logic_vector(0 to 2);
+		state   : ddrs_states;
 		input   : std_logic_vector(0 to 2);
-		state_n : std_logic_vector(0 to 2);
+		state_n : ddrs_states;
 		cmd_n   : std_logic_vector(ddro_act'range);
 	end record;
 
@@ -190,9 +183,9 @@ architecture registered of ddr_pgm is
 
 	signal ddr_input  : std_logic_vector(0 to 2);
 
-	signal ddr_pgm_pc : std_logic_vector(ddrs_act'range);
-	signal pgm_pc     : std_logic_vector(ddrs_act'range);
-	signal pc         : std_logic_vector(ddrs_act'range);
+	signal ddr_pgm_pc : ddrs_states;
+	signal pgm_pc     : ddrs_states;
+	signal pc         : ddrs_states;
 
 	signal pgm_cmd  : std_logic_vector(ddr_pgm_cmd'range);
 	signal pgm_rdy  : std_logic;
@@ -203,33 +196,30 @@ architecture registered of ddr_pgm is
 
 	signal calibrating : std_logic;
 
-	signal debug_pc : std_logic_vector(ddr_pgm_pc'range);
-
 begin
 
 	ddr_input(2) <= ddr_pgm_ref;
 	ddr_input(1) <= ddr_pgm_rw;
 	ddr_input(0) <= ddr_pgm_irdy;
 
-	pc <= setif(ddr_mpu_trdy='1', ddr_pgm_pc, pgm_pc);
+	pc <= ddr_pgm_pc when ddr_mpu_trdy='1' else pgm_pc;
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
-				ddr_pgm_pc <= ddrs_pre;
+				pgm_pc <= ddrs_pre;
 			else
 				for i in pgm_tab'range loop
 					if pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
 							if ddr_mpu_trdy='1' then
-								ddr_pgm_pc <= pgm_tab(i).state_n;
-							else
 								pgm_pc <= pgm_tab(i).state_n; 
 							end if;
 						end if;
 					end if;
 				end loop;
 			end if;
+			ddr_pgm_pc <= pgm_pc;
 		end if;
 	end process;
 
@@ -279,15 +269,6 @@ begin
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
 
-	debug : with ddr_pgm_pc select
-	pgm_state <=
-		s_act  when ddrs_act,
-		s_rea  when ddrs_rea,
-		s_wri  when ddrs_wri,
-		s_pre  when ddrs_pre,
-		s_aut  when ddrs_aut,
-		s_none when others;
-
 end;
 
 
@@ -301,7 +282,7 @@ end;
 --
 --	signal ddr_input  : std_logic_vector(0 to 2);
 --
---	signal ddr_pgm_pc : std_logic_vector(ddrs_act'range);
+--	signal ddr_pgm_pc : ddrs_states;
 --
 --	signal pgm_cmd  : std_logic_vector(ddr_pgm_cmd'range);
 --	signal pgm_rdy  : std_logic;
@@ -311,8 +292,6 @@ end;
 --
 --
 --	signal calibrating : std_logic;
---
---	signal debug_pc : std_logic_vector(ddr_pgm_pc'range);
 --
 --begin
 --
@@ -365,15 +344,6 @@ end;
 --	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 --	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 --	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
---
---	debug : with ddr_pgm_pc select
---	pgm_state <=
---		s_act  when ddrs_act,
---		s_rea  when ddrs_rea,
---		s_wri  when ddrs_wri,
---		s_pre  when ddrs_pre,
---		s_aut  when ddrs_aut,
---		s_none when others;
 --
 --end;
 
