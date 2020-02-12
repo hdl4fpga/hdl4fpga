@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		registered : boolean := true;
+		registered : boolean := false;
 		CMMD_GEAR : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
@@ -202,24 +202,24 @@ begin
 	ddr_input(1) <= ddr_pgm_rw;
 	ddr_input(0) <= ddr_pgm_irdy;
 
-	pc <= ddr_pgm_pc when ddr_mpu_trdy='1' else pgm_pc;
+	pc <= pgm_pc when registered and ddr_mpu_trdy='1' else ddr_pgm_pc;
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
-				pgm_pc <= ddrs_pre;
+				ddr_pgm_pc <= ddrs_pre;
 			else
 				for i in pgm_tab'range loop
 					if pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
 							if ddr_mpu_trdy='1' then
-								pgm_pc <= pgm_tab(i).state_n; 
+								ddr_pgm_pc <= pgm_tab(i).state_n; 
 							end if;
 						end if;
 					end if;
 				end loop;
 			end if;
-			ddr_pgm_pc <= pgm_pc;
+			pgm_pc <= ddr_pgm_pc;
 		end if;
 	end process;
 
@@ -233,7 +233,7 @@ begin
 		pgm_refy <= '-'; 
 		for i in pgm_tab'range loop
 			if pc=pgm_tab(i).state then
-				if ddr_mpu_trdy='1' then
+				if registered and ddr_mpu_trdy='1' then
 					for j in pgm_tab'range loop
 						if pgm_tab(i).state_n=pgm_tab(j).state then
 							if ddr_input=pgm_tab(j).input then
@@ -258,10 +258,14 @@ begin
 		end loop;
 	end process;
 
-	process (ctlr_clk)
+	process (ctlr_rst, pgm_cmd, ctlr_clk)
 	begin
-		if rising_edge(ctlr_clk) then
-	ddr_pgm_cmd  <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+		if registered then
+			if rising_edge(ctlr_clk) then
+				ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+			end if;
+		else
+			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
 		end if;
 	end process;
 
