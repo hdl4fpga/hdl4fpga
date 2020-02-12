@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		registered : boolean := false;
+		registered : boolean := true;
 		CMMD_GEAR : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
