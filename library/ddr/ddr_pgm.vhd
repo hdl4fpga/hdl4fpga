@@ -178,9 +178,6 @@ use hdl4fpga.std.all;
 
 architecture registered of ddr_pgm is
 
---	attribute fsm_encoding : string;
---	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
-
 	signal ddr_input  : std_logic_vector(0 to 2);
 
 	signal ddr_pgm_pc : ddrs_states;
@@ -195,6 +192,9 @@ architecture registered of ddr_pgm is
 
 
 	signal calibrating : std_logic;
+
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
 
 begin
 
