@@ -56,6 +56,7 @@ add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/phy_dmo
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/ddrctlr_e/phy_dqi
 add wave -noupdate -radix binary -childformat {{/testbench/s3estarter_e/ddrctlr_e/phy_dqt(3) -radix binary} {/testbench/s3estarter_e/ddrctlr_e/phy_dqt(2) -radix binary} {/testbench/s3estarter_e/ddrctlr_e/phy_dqt(1) -radix binary} {/testbench/s3estarter_e/ddrctlr_e/phy_dqt(0) -radix binary}} -subitemconfig {/testbench/s3estarter_e/ddrctlr_e/phy_dqt(3) {-height 29 -radix binary} /testbench/s3estarter_e/ddrctlr_e/phy_dqt(2) {-height 29 -radix binary} /testbench/s3estarter_e/ddrctlr_e/phy_dqt(1) {-height 29 -radix binary} /testbench/s3estarter_e/ddrctlr_e/phy_dqt(0) {-height 29 -radix binary}} /testbench/s3estarter_e/ddrctlr_e/phy_dqt
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/ddrctlr_e/phy_dqo(31) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(30) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(29) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(28) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(27) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(26) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(25) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(24) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(23) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(22) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(21) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(20) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(19) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(18) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(17) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(16) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(15) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(14) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(13) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(12) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(11) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(10) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(9) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(8) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(7) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(6) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(5) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(4) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(3) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(2) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(1) -radix hexadecimal} {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(0) -radix hexadecimal}} -subitemconfig {/testbench/s3estarter_e/ddrctlr_e/phy_dqo(31) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(30) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(29) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(28) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(27) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(26) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(25) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(24) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(23) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(22) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(21) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(20) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(19) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(18) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(17) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(16) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(15) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(14) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(13) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(12) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(11) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(10) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(9) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(8) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(7) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(6) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(5) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(4) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(3) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(2) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(1) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/ddrctlr_e/phy_dqo(0) {-height 29 -radix hexadecimal}} /testbench/s3estarter_e/ddrctlr_e/phy_dqo
+add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_clks(0)
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/cmd_name
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/mpu_state
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_idl
@@ -76,13 +77,13 @@ add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pgm_pc
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pc
+add wave -noupdate -expand -group ddr_pgm -color Gold /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_irdy
+add wave -noupdate -expand -group ddr_pgm -color Gold /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_trdy
 add wave -noupdate -expand -group ddr_pgm -color Red /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_mpu_trdy
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ctlr_refreq
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_ref
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cal
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_rrdy
-add wave -noupdate -expand -group ddr_pgm -color Cyan /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_irdy
-add wave -noupdate -expand -group ddr_pgm -color cyan /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_trdy
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_rw
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cas
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_seq
@@ -110,6 +111,8 @@ add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/bnk_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/row_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/col_eoc
 add wave -noupdate -divider DMACTLR
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/len_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_iaddr
@@ -136,7 +139,7 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202782000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202760280 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168
@@ -152,4 +155,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202676605 ps} {202890489 ps}
+WaveRestoreZoom {202709603 ps} {202836337 ps}

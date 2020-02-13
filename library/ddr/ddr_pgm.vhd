@@ -99,11 +99,11 @@ entity ddr_pgm is
 --           vvv
 --           000    001    010    011    100    101    110    111
 --         +------+------+------+------+------+------+------+------+
---     act | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     act | wri  | wri  | rea  | rea  | wri  | wri  | rea  | rea  |
 --     rea | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     wri | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     pre | pre  | aut  | pre  | aut  | act  | aut  | act  | aut  |
---     aut | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
+--     aut | pre  | pre  | pre  | pre  | act  | aut  | act  | aut  |
 --         +------+------+------+------+------+------+------+------+
 
 --                       --                 --
