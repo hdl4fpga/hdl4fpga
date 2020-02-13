@@ -27,8 +27,8 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		registered : boolean := true;
-		CMMD_GEAR : natural := 1);
+		no_latency : boolean := false;
+		CMMD_GEAR  : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
 		ctlr_rst      : in  std_logic := '0';
@@ -181,8 +181,6 @@ architecture registered of ddr_pgm is
 	signal ddr_input  : std_logic_vector(0 to 2);
 
 	signal ddr_pgm_pc : ddrs_states;
-	signal pgm_pc     : ddrs_states;
-	signal pc         : ddrs_states;
 
 	signal pgm_cmd  : std_logic_vector(ddr_pgm_cmd'range);
 	signal pgm_rdy  : std_logic;
@@ -202,7 +200,6 @@ begin
 	ddr_input(1) <= ddr_pgm_rw;
 	ddr_input(0) <= ddr_pgm_irdy;
 
-	pc <= pgm_pc when registered and ddr_mpu_trdy='1' else ddr_pgm_pc;
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
@@ -210,7 +207,7 @@ begin
 				ddr_pgm_pc <= ddrs_pre;
 			else
 				for i in pgm_tab'range loop
-					if pc=pgm_tab(i).state then
+					if ddr_pgm_pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
 							if ddr_mpu_trdy='1' then
 								ddr_pgm_pc <= pgm_tab(i).state_n; 
@@ -219,12 +216,11 @@ begin
 					end if;
 				end loop;
 			end if;
-			pgm_pc <= ddr_pgm_pc;
 		end if;
 	end process;
 
 	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
-	process (ddr_input, pc)
+	process (ddr_input, ddr_pgm_pc)
 	begin
 		pgm_cmd  <= (others => '-');
 		pgm_rdy  <= '-'; 
@@ -232,27 +228,13 @@ begin
 		pgm_refq <= '-';
 		pgm_refy <= '-'; 
 		for i in pgm_tab'range loop
-			if pc=pgm_tab(i).state then
-				if registered and ddr_mpu_trdy='1' then
-					for j in pgm_tab'range loop
-						if pgm_tab(i).state_n=pgm_tab(j).state then
-							if ddr_input=pgm_tab(j).input then
-								pgm_cmd  <= pgm_tab(j).cmd_n(ras downto we);
-								pgm_rdy  <= pgm_tab(j).cmd_n(rdy);
-								pgm_cas  <= pgm_tab(j).cmd_n(cacc);
-								pgm_refq <= pgm_tab(j).cmd_n(refq);
-								pgm_refy <= pgm_tab(j).cmd_n(refy);
-							end if;
-						end if;
-					end loop;
-				else
-					if ddr_input=pgm_tab(i).input then
-						pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
-						pgm_rdy  <= pgm_tab(i).cmd_n(rdy);
-						pgm_cas  <= pgm_tab(i).cmd_n(cacc);
-						pgm_refq <= pgm_tab(i).cmd_n(refq);
-						pgm_refy <= pgm_tab(i).cmd_n(refy);
-					end if;
+			if ddr_pgm_pc=pgm_tab(i).state then
+				if ddr_input=pgm_tab(i).input then
+					pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
+					pgm_rdy  <= pgm_tab(i).cmd_n(rdy);
+					pgm_cas  <= pgm_tab(i).cmd_n(cacc);
+					pgm_refq <= pgm_tab(i).cmd_n(refq);
+					pgm_refy <= pgm_tab(i).cmd_n(refy);
 				end if;
 			end if;
 		end loop;
@@ -260,15 +242,16 @@ begin
 
 	process (ctlr_rst, pgm_cmd, ctlr_clk)
 	begin
-		if registered then
+		if not no_latency then
 			if rising_edge(ctlr_clk) then
-				ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+				if ddr_mpu_trdy='1' then
+					ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+				end if;
 			end if;
 		else
 			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
 		end if;
 	end process;
-
 	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');

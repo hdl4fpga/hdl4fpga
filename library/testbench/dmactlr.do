@@ -75,11 +75,11 @@ add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/dd
 add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_wwin
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ctlr_clk
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
-add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pgm_pc
-add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pc
+add wave -noupdate -expand -group ddr_pgm -color Red /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_mpu_trdy
+add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pgm_cmd
+add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cmd
 add wave -noupdate -expand -group ddr_pgm -color Gold /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_irdy
 add wave -noupdate -expand -group ddr_pgm -color Gold /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_trdy
-add wave -noupdate -expand -group ddr_pgm -color Red /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_mpu_trdy
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ctlr_refreq
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_ref
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cal
@@ -87,8 +87,6 @@ add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_rw
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cas
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_seq
-add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/pgm_cmd
-add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_cmd
 add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ctlr_clk
 add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ctlr_req
 add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ctlr_ena
@@ -139,7 +137,7 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202760280 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202759174 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168
@@ -155,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202709603 ps} {202836337 ps}
+WaveRestoreZoom {202696206 ps} {202789795 ps}
