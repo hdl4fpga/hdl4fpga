@@ -27,7 +27,8 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		CMMD_GEAR : natural := 1);
+		no_latency : boolean := false;
+		CMMD_GEAR  : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
 		ctlr_rst      : in  std_logic := '0';
@@ -42,13 +43,6 @@ entity ddr_pgm is
 		ddr_pgm_cas   : out std_logic := '0';
 		ddr_pgm_seq   : out std_logic := '0';
 		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
-
-end;
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-
-architecture def of ddr_pgm is
 
 	constant ddr_nop   : std_logic_vector(0 to 2) := "111";
 	constant ddr_act   : std_logic_vector(0 to 2) := "011";
@@ -66,15 +60,15 @@ architecture def of ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-	                    --> ddr_pgm_trdy  <---------------------+
-	                    --> ctlr_refreq   <--------------------+|
-	                    --> pgm_refy      <-------------------+||
-	                    --> pgm_cas       <------------------+|||
-	                    --                                   ||||
-	                    --                                   ||||
-	                    --                                   ||||
-	                    --                                   VVVV
-	constant ddro_act  : std_logic_vector(6 downto 0)    := B"0000" & "011";
+	                      --> ddr_pgm_trdy  <---------------------+
+	                      --> ctlr_refreq   <--------------------+|
+	                      --> pgm_refy      <-------------------+||
+	                      --> pgm_cas       <------------------+|||
+	                      --                                   ||||
+	                      --                                   ||||
+	                      --                                   ||||
+	                      --                                   VVVV
+	constant ddro_act  : std_logic_vector(6 downto 0)     := B"0000" & "011";
 	constant ddro_acty : std_logic_vector(ddro_act'range) := B"0100" & "011";
 	constant ddro_rea  : std_logic_vector(ddro_act'range) := B"1000" & "101";
 	constant ddro_reaq : std_logic_vector(ddro_act'range) := B"1010" & "101";
@@ -87,35 +81,16 @@ architecture def of ddr_pgm is
 	constant ddro_nop  : std_logic_vector(ddro_act'range) := B"0001" & "111";
 	constant ddro_nopy : std_logic_vector(ddro_act'range) := B"0101" & "111";
 
-	constant ddrs_act  : std_logic_vector(0 to 2) := "011";
-	constant ddrs_rea  : std_logic_vector(0 to 2) := "101";
-	constant ddrs_wri  : std_logic_vector(0 to 2) := "100";
-	constant ddrs_pre  : std_logic_vector(0 to 2) := "010";
-	constant ddrs_aut  : std_logic_vector(0 to 2) := "001";
-	constant ddrs_dnt  : std_logic_vector(0 to 2) := (others => '-');
-
-	type state_names is (s_act, s_rea, s_wri, s_pre, s_aut, s_pact, s_paut, s_idl, s_dnt, s_none);
-	signal pgm_state : state_names;
+	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre, ddrs_aut);
 
 	type trans_row is record
-		state   : std_logic_vector(0 to 2);
+		state   : ddrs_states;
 		input   : std_logic_vector(0 to 2);
-		state_n : std_logic_vector(0 to 2);
+		state_n : ddrs_states;
 		cmd_n   : std_logic_vector(ddro_act'range);
 	end record;
 
 	type trans_tab is array (natural range <>) of trans_row;
-
-	signal ddr_input  : std_logic_vector(0 to 2);
-
-	signal ddr_pgm_pc : std_logic_vector(ddrs_act'range);
-
-	signal pgm_cmd  : std_logic_vector(ddr_pgm_cmd'range);
-	signal pgm_rdy  : std_logic;
-	signal pgm_refq : std_logic;
-	signal pgm_refy : std_logic;
-	signal pgm_cas  : std_logic;
-
 
 --           +------ pgm_irdy 
 --           |+----- pgm_rw   
@@ -124,12 +99,11 @@ architecture def of ddr_pgm is
 --           vvv
 --           000    001    010    011    100    101    110    111
 --         +------+------+------+------+------+------+------+------+
---     act | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     act | wri  | wri  | rea  | rea  | wri  | wri  | rea  | rea  |
 --     rea | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     wri | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     pre | pre  | aut  | pre  | aut  | act  | aut  | act  | aut  |
---     idl | idl  | aut  | idl  | aut  | act  | aut  | act  | aut  |
---     aut | idl  | idl  | idl  | idl  | act  | aut  | act  | aut  |
+--     aut | pre  | pre  | pre  | pre  | act  | aut  | act  | aut  |
 --         +------+------+------+------+------+------+------+------+
 
 --                       --                 --
@@ -143,7 +117,6 @@ architecture def of ddr_pgm is
 --     rea | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
 --     wri | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
 --     pre | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     idl | nop  | autq | nop  | autq | act  | autq | act  | autq |
 --     aut | nopy | auty | nopy | auty | acty | auty | acty | auty |
 --         +------+------+------+------+------+------+------+------+
 
@@ -198,12 +171,29 @@ architecture def of ddr_pgm is
 		(ddrs_aut, "110", ddrs_act, ddro_acty),
 		(ddrs_aut, "111", ddrs_aut, ddro_auty));
 
-	attribute fsm_encoding : string;
-	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
+end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+architecture registered of ddr_pgm is
+
+	signal ddr_input  : std_logic_vector(0 to 2);
+
+	signal ddr_pgm_pc : ddrs_states;
+
+	signal pgm_cmd  : std_logic_vector(ddr_pgm_cmd'range);
+	signal pgm_rdy  : std_logic;
+	signal pgm_refq : std_logic;
+	signal pgm_refy : std_logic;
+	signal pgm_cas  : std_logic;
+
 
 	signal calibrating : std_logic;
 
-	signal debug_pc : std_logic_vector(ddr_pgm_pc'range);
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
+
 begin
 
 	ddr_input(2) <= ddr_pgm_ref;
@@ -215,12 +205,13 @@ begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
 				ddr_pgm_pc <= ddrs_pre;
-			elsif ddr_mpu_trdy='1' then
-				ddr_pgm_pc <= (others => '-');
+			else
 				for i in pgm_tab'range loop
 					if ddr_pgm_pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
-							ddr_pgm_pc <= pgm_tab(i).state_n; 
+							if ddr_mpu_trdy='1' then
+								ddr_pgm_pc <= pgm_tab(i).state_n; 
+							end if;
 						end if;
 					end if;
 				end loop;
@@ -231,11 +222,11 @@ begin
 	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
 	process (ddr_input, ddr_pgm_pc)
 	begin
-		pgm_rdy  <= '-'; 
-		pgm_refy <= '-'; 
-		pgm_refq <= '-';
-		pgm_cas  <= '-';
 		pgm_cmd  <= (others => '-');
+		pgm_rdy  <= '-'; 
+		pgm_cas  <= '-';
+		pgm_refq <= '-';
+		pgm_refy <= '-'; 
 		for i in pgm_tab'range loop
 			if ddr_pgm_pc=pgm_tab(i).state then
 				if ddr_input=pgm_tab(i).input then
@@ -248,20 +239,21 @@ begin
 			end if;
 		end loop;
 	end process;
-	ddr_pgm_cmd  <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+
+	process (ctlr_rst, pgm_cmd, ctlr_clk)
+	begin
+		if not no_latency then
+			if rising_edge(ctlr_clk) then
+				if ddr_mpu_trdy='1' then
+					ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+				end if;
+			end if;
+		else
+			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+		end if;
+	end process;
 	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
 
-	debug : with ddr_pgm_pc select
-	pgm_state <=
-		s_act  when ddrs_act,
-		s_rea  when ddrs_rea,
-		s_wri  when ddrs_wri,
-		s_pre  when ddrs_pre,
-		s_aut  when ddrs_aut,
-		s_dnt  when ddrs_dnt,
-		s_none when others;
-
 end;
-

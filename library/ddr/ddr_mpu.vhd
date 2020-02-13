@@ -55,7 +55,9 @@ entity ddr_mpu is
 		ddr_mpu_act : out std_logic;
 		ddr_mpu_ras : out std_logic;
 		ddr_mpu_cas : out std_logic;
-		ddr_mpu_pre : out std_logic;
+		ddr_mpu_pre : buffer std_logic;
+		ddr_mpu_cyl : out std_logic;
+		ddr_mpu_idl : out std_logic;
 		ddr_mpu_we  : out std_logic;
 		ddr_mpu_cen : out std_logic;
 
@@ -117,21 +119,23 @@ architecture arch of ddr_mpu is
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
 
-	constant ddrs_act      : std_logic_vector(0 to 2) := "011";
-	constant ddrs_read_bl  : std_logic_vector(0 to 2) := "101";
-	constant ddrs_read_cl  : std_logic_vector(0 to 2) := "001";
-	constant ddrs_write_bl : std_logic_vector(0 to 2) := "100";
-	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
-	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
+	type ddrs_states is (ddrs_act, ddrs_read_bl, ddrs_read_cl, ddrs_write_bl, ddrs_write_cl, ddrs_pre);
+
+--	constant ddrs_act      : std_logic_vector(0 to 2) := "011";
+--	constant ddrs_read_bl  : std_logic_vector(0 to 2) := "101";
+--	constant ddrs_read_cl  : std_logic_vector(0 to 2) := "001";
+--	constant ddrs_write_bl : std_logic_vector(0 to 2) := "100";
+--	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
+--	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
 	type state_names is (s_act, s_readbl, s_readcl, s_writebl, s_writecl, s_pre, s_none);
 	signal mpu_state : state_names;
 
-	signal ddr_state : std_logic_vector(0 to 2);
+	signal ddr_state : ddrs_states;
 
 	type lat_id is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
 	type ddr_state_word is record
-		ddr_state   : std_logic_vector(0 to 2);
-		ddr_state_n : std_logic_vector(0 to 2);
+		ddr_state   : ddrs_states;
+		ddr_state_n : ddrs_states;
 		ddr_cmi     : std_logic_vector(0 to 2);
 		ddr_cmo     : std_logic_vector(0 to 2);
 		ddr_lat     : lat_id;
@@ -221,8 +225,8 @@ architecture arch of ddr_mpu is
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'));
 
-		attribute fsm_encoding : string;
-		attribute fsm_encoding of ddr_state : signal is "compact";
+--		attribute fsm_encoding : string;
+--		attribute fsm_encoding of ddr_state : signal is "compact";
 
 	function "+" (
 		constant tab : natural_vector;
@@ -282,16 +286,18 @@ architecture arch of ddr_mpu is
 begin
 
 	ddr_mpu_p: process (ddr_mpu_clk)
+		variable state_set : boolean;
 	begin
 		if rising_edge(ddr_mpu_clk) then
 			if ddr_mpu_rst='0' then
 
-				assert ddr_state/=(ddr_state'range => '-')
+				assert state_set
 					report "error -------------------->>>>"
 					severity failure;
 
+
 				if lat_timer(0)='1' then
-					ddr_state    <= (others => '-');
+					state_set    := false;
 					lat_timer    <= (others => '-');
 					ddr_mpu_ras  <= '-';
 					ddr_mpu_cas  <= '-';
@@ -305,6 +311,7 @@ begin
 						if ddr_state=ddr_state_tab(i).ddr_state then 
 							if ddr_state_tab(i).ddr_cmi=ddr_mpu_cmd or
 							   ddr_state_tab(i).ddr_cmi="000" then
+								state_set    := true;
 								ddr_state    <= ddr_state_tab(i).ddr_state_n;
 								ddr_mpu_cen  <= ddr_state_tab(i).ddr_cen;
 								ddr_mpu_ras  <= ddr_state_tab(i).ddr_cmo(ras);
@@ -334,9 +341,9 @@ begin
 								exit;
 							end if;
 						end if;
-						ddr_mpu_pre <= setif(ddr_mpu_cmd=ddr_pre);
-						ddr_mpu_act <= setif(ddr_mpu_cmd=ddr_act);
 					end loop;
+					ddr_mpu_pre <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_read_cl);
+					ddr_mpu_idl <= ddr_mpu_pre;
 				else
 					ddr_mpu_cen <= '0';
 					ddr_mpu_ras <= ddr_nop(ras);
@@ -345,6 +352,7 @@ begin
 					lat_timer   <= lat_timer - 1;
 				end if;
 			else
+				state_set    := true;
 				ddr_state    <= ddr_state_tab(0).ddr_state_n;
 				ddr_mpu_cen  <= '0';
 				ddr_mpu_ras  <= ddr_state_tab(0).ddr_cmo(ras);
@@ -353,8 +361,8 @@ begin
 				ddr_mpu_rea  <= ddr_state_tab(0).ddr_rea;
 				ddr_mpu_rwin <= ddr_state_tab(0).ddr_rph;
 				ddr_mpu_wwin <= ddr_state_tab(0).ddr_wph;
-				ddr_mpu_act  <= '0';
 				ddr_mpu_pre  <= '0';
+				ddr_mpu_idl  <= '1';
 				ddr_rdy_ena  <= '1';
 				lat_timer    <= (others => '1');
 			end if;
@@ -362,8 +370,10 @@ begin
 		end if;
 	end process;
 
+	ddr_mpu_act  <= setif(ddr_state=ddrs_act);
 	ddr_mpu_wri  <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_write_bl);
 	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
+	ddr_mpu_cyl  <= lat_timer(0) and ddr_mpu_pre;
 
 	debug : with ddr_state select
 	mpu_state <=

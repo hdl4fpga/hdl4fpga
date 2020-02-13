@@ -37,14 +37,14 @@ architecture dmactlr of s3Estarter is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz --
-	-- Multiply by --   8     --   3     --  10     --
-	-- Divide by   --   3     --   1     --   3     --
-	--------------------------------------------------
+	-------------------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --   8     --   3     --  10     --   4     --
+	-- Divide by   --   3     --   1     --   3     --   1     --
+	-------------------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 8; --(10) 166, (9) 150, (8) 133
+	constant ddr_mul     : natural := 10; --(10) 166, (9) 150, (8) 133
 	constant ddr_div     : natural := 3;
 
 	constant g           : std_logic_vector(32 downto 1) := (
@@ -55,7 +55,7 @@ architecture dmactlr of s3Estarter is
 
 	constant fpga        : natural := spartan3;
 	constant mark        : natural := m6t;
-	constant tcp         : natural := (natural(sys_per)*ddr_div*1 ns)/(ddr_mul*1 ps);
+	constant tcp         : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
 	constant sclk_phases : natural := 4;
 	constant sclk_edges  : natural := 2;
@@ -75,23 +75,23 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_rst   : std_logic;
-	signal dmactlr_frm   : std_logic;
 	signal dmactlr_clk   : std_logic;
 	signal dmactlr_we    : std_logic;
-	signal dmactlr_irdy  : std_logic;
-	signal dmactlr_trdy  : std_logic;
+	signal dmactlr_req   : std_logic;
+	signal dmactlr_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 1) := b"00" & b"0" & x"000" & b"1" & x"fe" & b"0";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 1) := b"0" & x"000002";
-	signal dmactlr_taddr : std_logic_vector(26-1 downto 1);
-	signal dmactlr_tlen  : std_logic_vector(26-1 downto 1);
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000002";
+	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
+	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
 
 	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
 	signal ctlr_rw       : std_logic;
 	signal ctlr_act      : std_logic;
 	signal ctlr_pre      : std_logic;
+	signal ctlr_idl      : std_logic;
+	signal ctlr_cyl      : std_logic;
 	signal ctlr_inirdy   : std_logic;
 	signal ctlr_refreq   : std_logic;
 	signal ctlr_b        : std_logic_vector(bank_size-1 downto 0);
@@ -167,7 +167,6 @@ begin
 		ena  => g_ena,
 		data => g_data);
 
-	dmactlr_rst <= ddrsys_rst;
 	dmactlr_clk <= ddrsys_clks(clk0);
 	dmactlr_we  <= '0';
 
@@ -176,28 +175,28 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	process (dmactlr_clk)
+	process (dmactlr_clk, dmactlr_rdy, ctlr_inirdy)
+		variable rdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_inirdy='1' then
-				dmactlr_frm  <= '1';
-				dmactlr_irdy <= '1';
+				if dmactlr_rdy='1' then
+					rdy := '1';
+				end if;
 			else
-				dmactlr_frm  <= '0';
-				dmactlr_irdy <= '0';
+				rdy := '0';
 			end if;
 		end if;
 	end process;
+	dmactlr_req <= ctlr_inirdy; -- and not dmactlr_rdy and not rdy;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
 		size => 256)
 	port map (
-		dmactlr_rst   => dmactlr_rst,
-		dmactlr_frm   => dmactlr_frm,
 		dmactlr_clk   => dmactlr_clk,
-		dmactlr_irdy  => dmactlr_irdy,
-		dmactlr_trdy  => dmactlr_trdy,
+		dmactlr_req   => dmactlr_req,
+		dmactlr_rdy   => dmactlr_rdy,
 		dmactlr_we    => dmactlr_we,
 		dmactlr_iaddr => dmactlr_iaddr,
 		dmactlr_ilen  => dmactlr_ilen,
@@ -212,6 +211,8 @@ begin
 		ctlr_rw       => ctlr_rw,
 		ctlr_act      => ctlr_act,
 		ctlr_pre      => ctlr_pre,
+		ctlr_cyl      => ctlr_cyl,
+		ctlr_idl      => ctlr_idl,
 		ctlr_b        => ctlr_b,
 		ctlr_a        => ctlr_a,
 		ctlr_di_req   => ctlr_di_req,
@@ -243,9 +244,9 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "001",
---		ctlr_cl      => "010",	-- 133 Mhz
---		ctlr_cl      => "110",	-- 166 Mhz
-		ctlr_cl      => "011",	-- 150 Mhz
+		ctlr_cl      => "010",	-- 2   133 Mhz
+--		ctlr_cl      => "110",	-- 2.5 166 Mhz
+--		ctlr_cl      => "011",	-- 3   200 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
@@ -264,6 +265,7 @@ begin
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
+		ctlr_cyl      => ctlr_cyl,
 --		ctlr_di      => ctlr_di,
 		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
@@ -287,8 +289,8 @@ begin
 		phy_dqi      => ddrphy_dqi,
 		phy_dqt      => ddrphy_dqt,
 		phy_dqo      => ddrphy_dqo,
-		phy_sti      => ddrphy_sti,
-		phy_sto      => ddrphy_sto,
+		phy_sti      => ddrphy_sto,
+		phy_sto      => ddrphy_sti,
                                 
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
@@ -368,8 +370,17 @@ begin
 		o  => sd_ck_p,
 		ob => sd_ck_n);
 
-	-- LEDs DAC --
-	--------------
+	-- VGA --
+	---------
+
+	vga_red   <= 'Z';
+	vga_green <= 'Z';
+	vga_blue  <= 'Z';
+	vga_vsync <= 'Z';
+	vga_hsync <= 'Z';
+
+	-- LEDs --
+	----------
 		
 	led0 <= sys_rst;
 	led1 <= '0';
@@ -389,9 +400,9 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	e_mdc       <= '0';
+	e_mdc       <= 'Z';
 	e_mdio      <= 'Z';
-	e_txd_4     <= '0';
+	e_txd_4     <= 'Z';
 
 	e_txd  	    <= (others => 'Z');
 	e_txen      <= 'Z';
@@ -399,10 +410,10 @@ begin
 	-- misc --
 	----------
 
-	amp_shdn    <= '0';
-	dac_clr     <= '1';
-	sf_ce0      <= '1';
-	fpga_init_b <= '0';
-	spi_ss_b    <= '0';
+	amp_shdn    <= 'Z';
+	dac_clr     <= 'Z';
+	sf_ce0      <= 'Z';
+	fpga_init_b <= 'Z';
+	spi_ss_b    <= 'Z';
 
 end;
