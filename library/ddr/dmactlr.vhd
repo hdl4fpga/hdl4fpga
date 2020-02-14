@@ -121,8 +121,8 @@ begin
 		do(0) => preload_do);
 
 	b : block
-		signal ceoc  : std_logic;
-		signal leoc  : std_logic;
+		signal ceoc  : std_logic:= '0';
+		signal leoc  : std_logic:= '0';
 	begin
 		process (dmactlr_clk)
 			type states is (s_run, s_ceoc, s_leoc);
@@ -130,54 +130,11 @@ begin
 			variable irdy : std_logic;
 		begin
 			if rising_edge(dmactlr_clk) then
-				case state is
-				when s_run =>
-					if len_eoc='0' then
-						if col_eoc='1' then
-							ceoc <= '1';
-							leoc <= '0';
-						else
-							ceoc <= '0';
-							leoc <= '1';
-						end if;
-					else
-						ceoc <= '0';
-						leoc <= '1';
-					end if;
+				if leoc='0' then
+					leoc <= len_eoc;
+				end if;
 
-					if len_eoc='0' then
-						if col_eoc='1' then
-							state := s_ceoc;
-						end if;
-					end if;
-
-				when s_ceoc =>
-					if ctlr_pre='1' then
-						ceoc <= '0';
-					else
-						ceoc <= '1';
-					end if;
-					leoc <= '0';
-
-					if ctlr_pre='1' then
-						state := s_leoc;
-					end if;
-				when s_leoc =>
-					ceoc <= '0';
-
-					if ctlr_act='1' then
-						leoc <= '1';
-					else
-						leoc <= '0';
-					end if;
-
-					if ctlr_act='1' then
-						state := s_run;
-					end if;
-
-				end case;
-				ctlr_irdy <= irdy;
-				irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
+				ctlr_irdy <= (not col_eoc and not ceoc) and (not len_eoc and not leoc);
 			end if;
 		end process;
 
