@@ -127,6 +127,7 @@ begin
 		process (dmactlr_clk)
 			type states is (s_run, s_ceoc, s_leoc);
 			variable state : states;
+			variable irdy : std_logic;
 		begin
 			if rising_edge(dmactlr_clk) then
 				case state is
@@ -175,11 +176,12 @@ begin
 					end if;
 
 				end case;
+				ctlr_irdy <= irdy;
+				irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 			end if;
 		end process;
 
 		dmactlr_rdy <= len_eoc and leoc;
-		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 	end block;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
