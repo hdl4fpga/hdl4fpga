@@ -112,13 +112,15 @@ add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/row_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/col_eoc
 add wave -noupdate -divider DMACTLR
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ceoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/leoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/leoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/len_eoc
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_idl
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/line__124/irdy
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dmactlr_iaddr
@@ -143,7 +145,7 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202773000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202766135 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168
@@ -159,4 +161,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202702380 ps} {202889096 ps}
+WaveRestoreZoom {202483426 ps} {203020574 ps}
