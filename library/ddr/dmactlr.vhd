@@ -49,7 +49,6 @@ entity dmactlr is
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_pre      : in  std_logic;
-		ctlr_cyl      : in  std_logic;
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
@@ -125,16 +124,29 @@ begin
 		signal leoc  : std_logic:= '0';
 	begin
 		process (dmactlr_clk)
-			type states is (s_run, s_ceoc, s_leoc);
-			variable state : states;
 			variable irdy : std_logic;
 		begin
 			if rising_edge(dmactlr_clk) then
-				if leoc='0' then
-					leoc <= len_eoc;
+				if len_eoc='0' then
+					if col_eoc='1' then
+						ceoc <= '1';
+						leoc <= '0';
+					else
+						ceoc <= '0';
+						leoc <= '1';
+					end if;
+				elsif ceoc='1' then
+					if ctlr_idl='1' then
+						ceoc <= '0';
+						leoc <= '0';
+					end if;
+				elsif ctlr_idl='0' then
+					ceoc <= '0';
+					leoc <= '1';
 				end if;
 
-				ctlr_irdy <= (not col_eoc and not ceoc) and (not len_eoc and not leoc);
+				ctlr_irdy <= irdy;
+				irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 			end if;
 		end process;
 

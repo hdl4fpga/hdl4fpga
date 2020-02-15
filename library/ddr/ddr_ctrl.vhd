@@ -257,6 +257,7 @@ begin
 		ddr_pgm_ref   => ddr_mpu_ref,
 		ddr_pgm_rrdy  => ddr_refi_rdy,
 		ddr_pgm_cal   => ctlr_rlcal,
+		ddr_pgm_idl   => ctlr_idl,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_seq   => ctlr_rlseq,
 		ddr_pgm_rw    => ctlr_rw);
@@ -289,7 +290,6 @@ begin
 		ddr_mpu_act  => ctlr_act,
 		ddr_mpu_pre  => ctlr_pre,
 		ddr_mpu_cyl  => ctlr_cyl,
-		ddr_mpu_idl  => ctlr_idl,
 		ddr_mpu_cas  => ddr_mpu_cas,
 		ddr_mpu_ras  => ddr_mpu_ras,
 		ddr_mpu_we   => ddr_mpu_we,
