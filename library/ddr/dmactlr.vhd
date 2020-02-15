@@ -76,6 +76,8 @@ architecture def of dmactlr is
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 	signal col_eoc  : std_logic;
 
+	signal ceoc  : std_logic;
+	signal leoc  : std_logic;
 	signal load : std_logic;
 	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -119,39 +121,34 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	b : block
-		signal ceoc  : std_logic:= '0';
-		signal leoc  : std_logic:= '0';
+	process (dmactlr_clk)
+		variable irdy : std_logic;
 	begin
-		process (dmactlr_clk)
-			variable irdy : std_logic;
-		begin
-			if rising_edge(dmactlr_clk) then
-				if len_eoc='0' then
-					if col_eoc='1' then
-						ceoc <= '1';
-						leoc <= '0';
-					else
-						ceoc <= '0';
-						leoc <= '1';
-					end if;
-				elsif ceoc='1' then
-					if ctlr_idl='1' then
-						ceoc <= '0';
-						leoc <= '0';
-					end if;
-				elsif ctlr_idl='0' then
+		if rising_edge(dmactlr_clk) then
+			if len_eoc='0' then
+				if col_eoc='1' then
+					ceoc <= '1';
+					leoc <= '0';
+				else
 					ceoc <= '0';
 					leoc <= '1';
 				end if;
-
-				ctlr_irdy <= irdy;
-				irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
+			elsif ceoc='1' then
+				if ctlr_idl='1' then
+					ceoc <= '0';
+					leoc <= '0';
+				end if;
+			elsif ctlr_idl='0' then
+				ceoc <= '0';
+				leoc <= '1';
 			end if;
-		end process;
 
-		dmactlr_rdy <= len_eoc and leoc;
-	end block;
+			ctlr_irdy <= irdy;
+			irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
+		end if;
+	end process;
+
+	dmactlr_rdy  <= len_eoc and leoc;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 
