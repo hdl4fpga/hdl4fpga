@@ -49,7 +49,6 @@ entity dmactlr is
 		ctlr_rw       : out std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_pre      : in  std_logic;
-		ctlr_cyl      : in  std_logic;
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
@@ -77,6 +76,8 @@ architecture def of dmactlr is
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 	signal col_eoc  : std_logic;
 
+	signal ceoc  : std_logic;
+	signal leoc  : std_logic;
 	signal load : std_logic;
 	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -120,67 +121,34 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	b : block
-		signal ceoc  : std_logic;
-		signal leoc  : std_logic;
+	process (dmactlr_clk)
+		variable irdy : std_logic;
 	begin
-		process (dmactlr_clk)
-			type states is (s_run, s_ceoc, s_leoc);
-			variable state : states;
-		begin
-			if rising_edge(dmactlr_clk) then
-				case state is
-				when s_run =>
-					if len_eoc='0' then
-						if col_eoc='1' then
-							ceoc <= '1';
-							leoc <= '0';
-						else
-							ceoc <= '0';
-							leoc <= '1';
-						end if;
-					else
-						ceoc <= '0';
-						leoc <= '1';
-					end if;
-
-					if len_eoc='0' then
-						if col_eoc='1' then
-							state := s_ceoc;
-						end if;
-					end if;
-
-				when s_ceoc =>
-					if ctlr_pre='1' then
-						ceoc <= '0';
-					else
-						ceoc <= '1';
-					end if;
+		if rising_edge(dmactlr_clk) then
+			if len_eoc='0' then
+				if col_eoc='1' then
+					ceoc <= '1';
 					leoc <= '0';
-
-					if ctlr_pre='1' then
-						state := s_leoc;
-					end if;
-				when s_leoc =>
+				else
 					ceoc <= '0';
-
-					if ctlr_act='1' then
-						leoc <= '1';
-					else
-						leoc <= '0';
-					end if;
-
-					if ctlr_act='1' then
-						state := s_run;
-					end if;
-
-				end case;
+					leoc <= '1';
+				end if;
+			elsif ceoc='1' then
+				if ctlr_idl='1' then
+					ceoc <= '0';
+					leoc <= '0';
+				end if;
+			elsif ctlr_idl='0' then
+				ceoc <= '0';
+				leoc <= '1';
 			end if;
-		end process;
 
-		dmactlr_rdy <= len_eoc and leoc;
-		ctlr_irdy   <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
-	end block;
+			ctlr_irdy <= irdy;
+			irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
+		end if;
+	end process;
+
+	dmactlr_rdy  <= len_eoc and leoc;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 

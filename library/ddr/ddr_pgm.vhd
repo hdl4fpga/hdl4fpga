@@ -40,6 +40,7 @@ entity ddr_pgm is
 		ddr_pgm_trdy  : out std_logic;
 		ddr_mpu_trdy  : in  std_logic := '1';
 		ddr_pgm_rw    : in  std_logic := '1';
+		ddr_pgm_idl   : out std_logic := '1';
 		ddr_pgm_cas   : out std_logic := '0';
 		ddr_pgm_seq   : out std_logic := '0';
 		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
@@ -245,10 +246,12 @@ begin
 		if not no_latency then
 			if rising_edge(ctlr_clk) then
 				if ddr_mpu_trdy='1' then
+					ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=ddr_nop), '1'); 
 					ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
 				end if;
 			end if;
 		else
+			ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=ddr_nop), '1'); 
 			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
 		end if;
 	end process;
