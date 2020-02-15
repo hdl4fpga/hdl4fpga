@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	generic (
+		no_latency    : boolean := false;
 		size          : natural);
 	port (
 		dmactlr_clk   : in  std_logic;
@@ -66,7 +67,7 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	constant lat : natural := 2;
+	constant lat : natural := setif(no_latency, 1, 2);
 
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
@@ -138,16 +139,16 @@ begin
 					ceoc <= '0';
 					leoc <= '0';
 				end if;
-			elsif ctlr_idl='0' then
+			elsif col_eoc='1' then
+			elsif ctlr_idl='0' then 
 				ceoc <= '0';
 				leoc <= '1';
 			end if;
 
-			ctlr_irdy <= irdy;
-			irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 		end if;
 	end process;
 
+	ctlr_irdy <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
 	dmactlr_rdy  <= len_eoc and leoc;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;

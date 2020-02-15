@@ -35,6 +35,7 @@ entity ddr_ctlr is
 		fpga        : natural;
 		mark        : natural := m6t;
 		tcp         : natural := 6000;
+		no_latency  : boolean := false;
 
 		cmmd_gear   : natural :=  1;
 		bank_size   : natural :=  2;
@@ -245,6 +246,7 @@ begin
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
+		no_latency => no_latency,
 		cmmd_gear => cmmd_gear)
 	port map (
 		ctlr_clk      => ctlr_clks(0),

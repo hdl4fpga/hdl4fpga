@@ -80,8 +80,8 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_req   : std_logic;
 	signal dmactlr_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000000";
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fd";
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"000002";
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
 
@@ -134,6 +134,7 @@ architecture dmactlr of s3Estarter is
 	signal dst_trdy      : std_logic;
 	signal dst_do        : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
+	constant no_latency : boolean := false;
 begin
 
 	sys_rst <= btn_west;
@@ -191,6 +192,7 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
+		no_latency   => no_latency,
 		size => 256)
 	port map (
 		dmactlr_clk   => dmactlr_clk,
@@ -230,6 +232,7 @@ begin
 		mark         => mark,
 		tcp          => tcp,
 
+		no_latency   => no_latency,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,

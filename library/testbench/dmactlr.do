@@ -59,9 +59,7 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/ddr
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_clks(0)
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/cmd_name
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/mpu_state
-add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_idl
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cyl
-add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/lat_timer(0)
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_wri
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_rea
 add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cmd
@@ -113,12 +111,13 @@ add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/bnk_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/row_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/col_eoc
 add wave -noupdate -divider DMACTLR
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ceoc
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/leoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/len_eoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/b/ceoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/b/leoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_idl
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/line__124/irdy
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
@@ -144,7 +143,7 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202729511 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202773000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168
@@ -160,4 +159,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202712158 ps} {202931206 ps}
+WaveRestoreZoom {202702380 ps} {202889096 ps}
