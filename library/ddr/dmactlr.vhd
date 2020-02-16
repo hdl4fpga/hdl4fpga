@@ -122,30 +122,47 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (dmactlr_clk)
+	process (col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+		type states is (a, b, c, d);
+		variable state : states;
 		variable irdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			if len_eoc='0' then
-				if col_eoc='1' then
-					ceoc <= '1';
-					leoc <= '0';
+			case state is
+			when a =>
+				if len_eoc='1' then
+					state := d;
+				elsif col_eoc='1' then
+					state := b;
 				else
-					ceoc <= '0';
-					leoc <= '1';
+					state := a;
 				end if;
-			elsif ceoc='1' then
-				if ctlr_idl='1' then
-					ceoc <= '0';
-					leoc <= '0';
-				end if;
-			elsif col_eoc='1' then
-			elsif ctlr_idl='0' then 
-				ceoc <= '0';
-				leoc <= '1';
-			end if;
-
+			when b =>
+				if len_eoc='1' then
+					state := d;
+				elsif col_eoc='1'
+			when c =>
+			when d => 
+			end case;
 		end if;
+
+		case state is
+		when a =>
+			if len_eoc='1' then
+				ctlr_irdy <= '0';
+			elsif col_eoc='1' then
+				ctlr_irdy <= '0';
+			else
+				ctlr_irdy <= '1';
+			end if;
+		when b =>
+			if col_eoc='1' then 
+				ctlr_irdy <= '0';
+			if ctlr_idl='1' then 
+				ctlr_irdy <= '1';
+
+
+		end case;
 	end process;
 
 	ctlr_irdy <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
