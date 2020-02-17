@@ -245,9 +245,12 @@ begin
 	begin
 		if not no_latency then
 			if rising_edge(ctlr_clk) then
-				if ddr_mpu_trdy='1' then
-					ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=ddr_nop), '1'); 
-					ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+				if ctlr_rst='1' then
+					ddr_pgm_idl <= '1';
+					ddr_pgm_cmd <=  ddr_nop; 
+				elsif ddr_mpu_trdy='1' then
+					ddr_pgm_idl <= setif(pgm_cmd=ddr_nop); 
+					ddr_pgm_cmd <= pgm_cmd; 
 				end if;
 			end if;
 		else

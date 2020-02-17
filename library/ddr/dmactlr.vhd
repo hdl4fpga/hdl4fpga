@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	generic (
+		no_latency    : boolean := false;
 		size          : natural);
 	port (
 		dmactlr_clk   : in  std_logic;
@@ -66,7 +67,7 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	constant lat : natural := 2;
+	constant lat : natural := setif(no_latency, 1, 2);
 
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
@@ -76,8 +77,6 @@ architecture def of dmactlr is
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 	signal col_eoc  : std_logic;
 
-	signal ceoc  : std_logic;
-	signal leoc  : std_logic;
 	signal load : std_logic;
 	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -121,34 +120,67 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (dmactlr_clk)
+	process (col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+		type states is (a, b, c, d);
+		variable state : states;
 		variable irdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			if len_eoc='0' then
-				if col_eoc='1' then
-					ceoc <= '1';
-					leoc <= '0';
+			case state is
+			when a =>
+				if len_eoc='1' then
+					state := d;
+				elsif col_eoc='1' then
+					state := b;
 				else
-					ceoc <= '0';
-					leoc <= '1';
+					state := a;
 				end if;
-			elsif ceoc='1' then
+			when b =>
 				if ctlr_idl='1' then
-					ceoc <= '0';
-					leoc <= '0';
+					state := c;
 				end if;
-			elsif ctlr_idl='0' then
-				ceoc <= '0';
-				leoc <= '1';
-			end if;
-
-			ctlr_irdy <= irdy;
-			irdy := (not col_eoc and not ceoc) and (not len_eoc or not leoc);
+			when c =>
+				if ctlr_idl='0' then
+					state := a;
+				end if;
+			when d => 
+				if len_eoc='0' then
+					state := a;
+				end if;
+			end case;
 		end if;
+
+		case state is
+		when a =>
+			if len_eoc='1' then
+				ctlr_irdy <= '0' and dmactlr_req;
+			elsif col_eoc='1' then
+				ctlr_irdy <= '0' and dmactlr_req;
+			else
+				ctlr_irdy <= '1' and dmactlr_req;
+			end if;
+			dmactlr_rdy <= '0';
+		when b =>
+			if ctlr_idl='0' then 
+				ctlr_irdy <= '0' and dmactlr_req;
+			else
+				ctlr_irdy <= '1' and dmactlr_req;
+			end if;
+			dmactlr_rdy <= '0';
+		when c =>
+			ctlr_irdy <= '1' and dmactlr_req;
+			dmactlr_rdy <= '0';
+		when d =>
+			if len_eoc='0' then
+				ctlr_irdy <= '1' and dmactlr_req;
+			else
+				ctlr_irdy <= '0' and dmactlr_req;
+			end if;
+			dmactlr_rdy <= '1';
+
+		end case;
 	end process;
 
-	dmactlr_rdy  <= len_eoc and leoc;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 
