@@ -30,7 +30,8 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		size     : natural);
+		size : natural;
+		synchronous_rddata : boolean := false);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -39,7 +40,6 @@ entity fifo is
 		src_data : in  std_logic_vector;
 
 		dst_clk  : in  std_logic;
-		dst_frm  : buffer std_logic := '1';
 		dst_irdy : buffer std_logic;
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);
@@ -47,9 +47,10 @@ end;
 
 architecture def of fifo is
 
+	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
-	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1);
-	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1);
+	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1) := (others => '0');
+	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 	signal dly_irdy  : std_logic;
 
@@ -58,8 +59,8 @@ begin
 	wr_ena <= src_frm and src_irdy and src_trdy;
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => true)
+		synchronous_rdaddr => false,
+		synchronous_rddata => synchronous_rddata)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
@@ -73,20 +74,24 @@ begin
 	process(src_clk)
 	begin
 		if rising_edge(src_clk) then
-			if src_frm='1' then
-				if src_trdy='1' then
-					wr_addr <= inc(wr_addr);
+			if src_frm='0' then
+				wr_addr <= inc(RD_addr);
+			else
+				if src_irdy='1' then
+					if src_trdy='1' then
+						wr_addr <= inc(wr_addr);
+					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(wr_addr/=rd_addr);
+	src_trdy <= setif(inc(wr_addr)/=rd_addr);
 
-	dst_irdy1 <= setif(wr_addr=inc(rd_addr));
+	dst_irdy1 <= setif(wr_addr/=inc(rd_addr)) or (src_irdy and src_trdy);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			if dst_frm='1' then
+			if src_frm='1' then
 				if dst_irdy1='1' then
 					if dst_trdy='1' then
 						rd_addr <= inc(rd_addr);
@@ -96,14 +101,16 @@ begin
 		end if;
 	end process;
 
+	dst_ena <= dst_irdy1 and dst_trdy;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 2))
+		d => (0 to 0 => 1+setif(synchronous_rddata,1,0)),
+		i => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,
-		ena   => dst_trdy,
+		ena   => dst_ena,
 		di(0) => dst_irdy1,
 		do(0) => dly_irdy);
-	dst_irdy <= dly_irdy and dst_trdy;
+	dst_irdy <= dly_irdy and dst_ena;
 end;
