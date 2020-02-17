@@ -77,8 +77,6 @@ architecture def of dmactlr is
 	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 	signal col_eoc  : std_logic;
 
-	signal ceoc  : std_logic;
-	signal leoc  : std_logic;
 	signal load : std_logic;
 	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -138,35 +136,51 @@ begin
 					state := a;
 				end if;
 			when b =>
-				if len_eoc='1' then
-					state := d;
-				elsif col_eoc='1'
+				if ctlr_idl='1' then
+					state := c;
+				end if;
 			when c =>
+				if ctlr_idl='0' then
+					state := a;
+				end if;
 			when d => 
+				if len_eoc='0' then
+					state := a;
+				end if;
 			end case;
 		end if;
 
 		case state is
 		when a =>
 			if len_eoc='1' then
-				ctlr_irdy <= '0';
+				ctlr_irdy <= '0' and dmactlr_req;
 			elsif col_eoc='1' then
-				ctlr_irdy <= '0';
+				ctlr_irdy <= '0' and dmactlr_req;
 			else
-				ctlr_irdy <= '1';
+				ctlr_irdy <= '1' and dmactlr_req;
 			end if;
+			dmactlr_rdy <= '0';
 		when b =>
-			if col_eoc='1' then 
-				ctlr_irdy <= '0';
-			if ctlr_idl='1' then 
-				ctlr_irdy <= '1';
-
+			if ctlr_idl='0' then 
+				ctlr_irdy <= '0' and dmactlr_req;
+			else
+				ctlr_irdy <= '1' and dmactlr_req;
+			end if;
+			dmactlr_rdy <= '0';
+		when c =>
+			ctlr_irdy <= '1' and dmactlr_req;
+			dmactlr_rdy <= '0';
+		when d =>
+			if len_eoc='0' then
+				ctlr_irdy <= '1' and dmactlr_req;
+			else
+				ctlr_irdy <= '0' and dmactlr_req;
+			end if;
+			dmactlr_rdy <= '1';
 
 		end case;
 	end process;
 
-	ctlr_irdy <= (not col_eoc and not ceoc) and (not len_eoc or not leoc);
-	dmactlr_rdy  <= len_eoc and leoc;
 
 	ctlrdma_irdy <= preload_do or ctlr_di_req;
 

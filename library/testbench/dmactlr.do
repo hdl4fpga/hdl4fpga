@@ -62,17 +62,17 @@ add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/mpu_state
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cyl
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_wri
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_rea
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cmd
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_trdy
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_act
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_ras
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cas
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_we
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cen
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_rea
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_rwin
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_wri
-add wave -noupdate -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_wwin
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cmd
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_trdy
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_act
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_ras
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cas
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_we
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cen
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_rea
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_rwin
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_wri
+add wave -noupdate -expand -group ddr_mpu /testbench/s3estarter_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_wwin
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ctlr_clk
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_idl
 add wave -noupdate -expand -group ddr_pgm /testbench/s3estarter_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
@@ -111,15 +111,14 @@ add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/bnk_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/row_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/col_eoc
 add wave -noupdate -divider DMACTLR
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ceoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/leoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/len_eoc
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/size
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_idl
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/line__123/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
@@ -145,7 +144,7 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202766135 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202752000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 168
@@ -161,4 +160,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202483426 ps} {203020574 ps}
+WaveRestoreZoom {202720939 ps} {202807269 ps}
