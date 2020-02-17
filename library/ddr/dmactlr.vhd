@@ -120,7 +120,7 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+	process (dmactlr_req, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
 		type states is (a, b, c, d);
 		variable state : states;
 		variable irdy : std_logic;
