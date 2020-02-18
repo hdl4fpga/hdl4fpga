@@ -52,7 +52,6 @@ architecture def of fifo is
 	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1) := (others => '0');
 	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
-	signal dly_irdy  : std_logic;
 
 begin
 
@@ -101,7 +100,7 @@ begin
 		end if;
 	end process;
 
-	dst_ena <= dst_irdy1 and dst_trdy;
+	dst_ena <= dst_trdy;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
@@ -109,8 +108,7 @@ begin
 		i => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,
-		ena   => dst_ena,
+		ena   => dst_trdy,
 		di(0) => dst_irdy1,
-		do(0) => dly_irdy);
-	dst_irdy <= dly_irdy and dst_ena;
+		do(0) => dst_irdy);
 end;
