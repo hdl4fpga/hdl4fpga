@@ -118,7 +118,7 @@ begin
 		src_irdy <= not load;
 		src_data <= len_eoc & tlen & col_eoc & bnk & row & col;
 
-		dst_trdy <= not ctlr_idl;
+		dst_trdy <= ctlr_di_req  ; --not ctlr_idl;
 		lat_e : entity hdl4fpga.fifo
 		generic map (
 			size => 4,
