@@ -122,17 +122,48 @@ begin
 		di(0) => preload_di,
 		do(0) => preload_do);
 
-	process (dmactlr_clk)
-		variable ceoc1 : std_logic;
-		variable leoc1 : std_logic;
-	begin
-		if rising_edge(dmactlr_clk) then
-			col_eoc <= ceoc1;
-			len_eoc <= leoc1;
-			ceoc1 := ceoc and not ctlr_idl;
-			leoc1 := leoc and not ctlr_idl;
-		end if;
-	end process;
+	ctlrdma_irdy <= preload_do or ctlr_di_req;
+
+	bnklat_e : entity hdl4fpga.align
+	generic map (
+		n => ctlr_b'length,
+		d => (0 to ctlr_b'length-1 => lat))
+	port map (
+		clk => dmactlr_clk,
+		ena => ctlrdma_irdy,
+		di  => bnk,
+		do  => ddrdma_bnk);
+
+	rowlat_e : entity hdl4fpga.align
+	generic map (
+		n => ctlr_a'length,
+		d => (0 to ctlr_a'length-1 => lat))
+	port map (
+		clk => dmactlr_clk,
+		ena => ctlrdma_irdy,
+		di  => row,
+		do  => ddrdma_row);
+
+	collat_e : entity hdl4fpga.align
+	generic map (
+		n => col'length,
+		d => (0 to col'length-1 => lat))
+	port map (
+		clk => dmactlr_clk,
+		ena => ctlrdma_irdy,
+		di  => col,
+		do  => ddrdma_col);
+
+	eoclat_e : entity hdl4fpga.align
+	generic map (
+		n => 2,
+		d => (0 to col'length-1 => lat))
+	port map (
+		clk   => dmactlr_clk,
+		di(1) => leoc,
+		di(0) => ceoc,
+		do(0) => col_eoc,
+		do(1) => len_eoc);
 
 	process (dmactlr_req, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
 		type states is (a, b, c, d);
@@ -195,38 +226,6 @@ begin
 		end case;
 	end process;
 
-
-	ctlrdma_irdy <= preload_do or ctlr_di_req;
-
-	bnklat_e : entity hdl4fpga.align
-	generic map (
-		n => ctlr_b'length,
-		d => (0 to ctlr_b'length-1 => lat))
-	port map (
-		clk => dmactlr_clk,
-		ena => ctlrdma_irdy,
-		di  => bnk,
-		do  => ddrdma_bnk);
-
-	rowlat_e : entity hdl4fpga.align
-	generic map (
-		n => ctlr_a'length,
-		d => (0 to ctlr_a'length-1 => lat))
-	port map (
-		clk => dmactlr_clk,
-		ena => ctlrdma_irdy,
-		di  => row,
-		do  => ddrdma_row);
-
-	collat_e : entity hdl4fpga.align
-	generic map (
-		n => col'length,
-		d => (0 to col'length-1 => lat))
-	port map (
-		clk => dmactlr_clk,
-		ena => ctlrdma_irdy,
-		di  => col,
-		do  => ddrdma_col);
 
 	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)) when ctlr_act='0' else ddrdma_row;
 	ctlr_b <= ddrdma_bnk;
