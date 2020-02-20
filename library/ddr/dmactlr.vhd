@@ -67,7 +67,7 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	constant lat : natural := setif(no_latency, 1, 2);
+	constant lat : natural := 1; --setif(no_latency, 1, 2);
 
 	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
@@ -108,7 +108,7 @@ begin
 		col_eoc => ceoc);
 
 	process (dmactlr_clk)
-		variable q : unsigned(0 to lat-1);
+		variable q : unsigned(0 to lat);
 	begin
 		if rising_edge(dmactlr_clk) then
 			if dmactlr_req='0' then
@@ -116,7 +116,7 @@ begin
 			elsif ctlr_idl='0' then
 				q := q sll 1;
 			end if;
-			pre_load <= not ctlr_idl and q(0);
+			pre_load <= not ctlr_idl; -- and q(0);
 		end if;
 	end process;
 
@@ -132,7 +132,7 @@ begin
 		di  => bnk,
 		do  => ddrdma_bnk);
 
-	ddrdma_row <= row,
+	ddrdma_row <= row;
 
 	collat_e : entity hdl4fpga.align
 	generic map (
