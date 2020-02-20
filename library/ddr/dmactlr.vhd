@@ -109,6 +109,12 @@ begin
 		col     => col,
 		col_eoc => ceoc);
 
+	process (dmactlr_clk)
+	begin
+		if rising_edge(dmactlr_clk) then
+		end if;
+	end process;
+
 	preload_di  <= not dmactlr_req;
 	preload_rst <= not dmactlr_req;
 	preload_e : entity hdl4fpga.align 
@@ -137,7 +143,7 @@ begin
 	rowlat_e : entity hdl4fpga.align
 	generic map (
 		n => ctlr_a'length,
-		d => (0 to ctlr_a'length-1 => lat))
+		d => (0 to ctlr_a'length-1 => 0))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
