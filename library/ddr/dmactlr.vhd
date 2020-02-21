@@ -108,7 +108,7 @@ begin
 		col_eoc => ceoc);
 
 	process (dmactlr_clk)
-		variable q : unsigned(0 to lat);
+		variable q : unsigned(0 to lat+2);
 	begin
 		if rising_edge(dmactlr_clk) then
 			if dmactlr_req='0' then
@@ -116,7 +116,7 @@ begin
 			elsif ctlr_idl='0' then
 				q := q sll 1;
 			end if;
-			pre_load <= not ctlr_idl; -- and q(0);
+			pre_load <= not ctlr_idl and q(0);
 		end if;
 	end process;
 
@@ -125,7 +125,7 @@ begin
 	bnklat_e : entity hdl4fpga.align
 	generic map (
 		n => ctlr_b'length,
-		d => (0 to ctlr_b'length-1 => lat))
+		d => (0 to ctlr_b'length-1 => 0))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
@@ -137,7 +137,7 @@ begin
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => lat))
+		d => (0 to col'length-1 => lat+2))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
