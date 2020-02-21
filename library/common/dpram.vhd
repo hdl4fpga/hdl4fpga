@@ -100,18 +100,16 @@ begin
 		end if;
 	end process;
 		
-	sync_rddata_g : if synchronous_rddata generate
-		sync_p : process (rd_clk)
-		begin
+	rddata_p : process (async_rddata, rd_clk)
+	begin
+		if synchronous_rddata then
 			if rising_edge(rd_clk) then
 				rd_data <= async_rddata;
 			end if;
-		end process;
-	end generate;
-
-	async_rddata_g : if not synchronous_rdaddr generate
-		rd_data <= async_rddata;
-	end generate;
+		else
+			rd_data <= async_rddata;
+		end if;
+	end process;
 
 	wrdata_p : process (wr_clk)
 	begin
