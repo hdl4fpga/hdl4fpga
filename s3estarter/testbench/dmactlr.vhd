@@ -75,7 +75,7 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_clk   : std_logic;
+	alias dmactlr_clk : std_logic is ddrsys_clks(clk0);
 	signal dmactlr_we    : std_logic;
 	signal dmactlr_req   : std_logic;
 	signal dmactlr_rdy   : std_logic;
@@ -167,7 +167,6 @@ begin
 		ena  => g_ena,
 		data => g_data);
 
-	dmactlr_clk <= ddrsys_clks(clk0);
 	dmactlr_we  <= '0';
 
 	dst_clk     <= sys_clk;
