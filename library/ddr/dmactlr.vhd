@@ -67,22 +67,28 @@ entity dmactlr is
 end;
 
 architecture def of dmactlr is
-	constant lat : natural := 1; --setif(no_latency, 1, 2);
+	constant lat : natural := setif(no_latency, 1, 2);
 
-	signal ddrdma_bnk  : std_logic_vector(ctlr_b'range);
-	signal ddrdma_row  : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col  : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal bnk         : std_logic_vector(ctlr_b'range);
-	signal row         : std_logic_vector(ctlr_a'range);
-	signal leoc        : std_logic;
-	signal ceoc        : std_logic;
-	signal col         : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
-	signal col_eoc  : std_logic;
-
-	signal load : std_logic;
-	signal len_eoc : std_logic;
 	signal ctlrdma_irdy : std_logic;
-	signal pre_load  : std_logic;
+
+	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
+	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col   : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal bnk          : std_logic_vector(ctlr_b'range);
+	signal row          : std_logic_vector(ctlr_a'range);
+	signal col          : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+
+	signal leoc         : std_logic;
+	signal ceoc         : std_logic;
+	signal col_eoc      : std_logic;
+	signal len_eoc      : std_logic;
+	signal tlen         : std_logic_vector(dmactlr_tlen'range);
+	signal taddr        : std_logic_vector(dmactlr_taddr'range);
+
+	signal ena : std_logic;
+	signal load         : std_logic;
+	signal reload       : std_logic;
+	signal preload     : std_logic;
 begin
 
 	process (dmactlr_clk)
@@ -99,8 +105,8 @@ begin
 		ena     => ctlrdma_irdy,
 		iaddr   => dmactlr_iaddr,
 		ilen    => dmactlr_ilen,
-		taddr   => dmactlr_taddr,
-		tlen    => dmactlr_tlen,
+		taddr   => taddr,
+		tlen    => tlen,
 		len_eoc => leoc,
 		bnk     => bnk,
 		row     => row,
@@ -108,7 +114,7 @@ begin
 		col_eoc => ceoc);
 
 	process (dmactlr_clk)
-		variable q : unsigned(0 to lat+2);
+		variable q : unsigned(0 to lat+1);
 	begin
 		if rising_edge(dmactlr_clk) then
 			if dmactlr_req='0' then
@@ -116,11 +122,31 @@ begin
 			elsif ctlr_idl='0' then
 				q := q sll 1;
 			end if;
-			pre_load <= not ctlr_idl and q(0);
+			preload <= not ctlr_idl and q(0);
 		end if;
 	end process;
 
-	ctlrdma_irdy <= pre_load or ctlr_di_req;
+	ctlrdma_irdy <= preload or ctlr_di_req;
+
+	tlenlat_e : entity hdl4fpga.align
+	generic map (
+		n => dmactlr_tlen'length,
+		d => (0 to dmactlr_tlen'length-1 => lat+1))
+	port map (
+		clk => dmactlr_clk,
+		ena => ctlrdma_irdy,
+		di  => tlen,
+		do  => dmactlr_tlen);
+
+	taddrlat_e : entity hdl4fpga.align
+	generic map (
+		n => dmactlr_taddr'length,
+		d => (0 to dmactlr_taddr'length-1 => lat+1))
+	port map (
+		clk => dmactlr_clk,
+		ena => ctlrdma_irdy,
+		di  => taddr,
+		do  => dmactlr_taddr);
 
 	bnklat_e : entity hdl4fpga.align
 	generic map (
@@ -137,25 +163,47 @@ begin
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => lat+2))
+		d => (0 to col'length-1 => lat+1))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
 		di  => col,
 		do  => ddrdma_col);
 
-	eoclat_e : entity hdl4fpga.align
+	leoclat_p : process (dmactlr_clk)
+		variable q : unsigned(0 to lat-2);
+	begin
+		if rising_edge(dmactlr_clk) then
+			if reload='1' then
+				q := (others => '0');
+				len_eoc <= q(0);
+			else
+				q(0) := leoc;
+				q := q rol 1;
+				len_eoc <= q(0);
+			end if;
+		end if;
+	end process;
+	
+--	leoclat_e : entity hdl4fpga.align
+--	generic map (
+--		n => 1,
+--		d => (0 to 0 => lat-1))
+--	port map (
+--		clk   => dmactlr_clk,
+--		di(0) => leoc,
+--		do(0) => len_eoc);
+
+	ceoclat_e : entity hdl4fpga.align
 	generic map (
-		n => 2,
-		d => (0 to col'length-1 => lat))
+		n => 1,
+		d => (0 to 0 => lat-1))
 	port map (
 		clk   => dmactlr_clk,
-		di(1) => leoc,
 		di(0) => ceoc,
-		do(0) => col_eoc,
-		do(1) => len_eoc);
+		do(0) => col_eoc);
 
-	process (dmactlr_req, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+	process (dmactlr_req, ctlr_refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
 		type states is (a, b, c, d);
 		variable state : states;
 		variable irdy : std_logic;
@@ -163,22 +211,28 @@ begin
 		if rising_edge(dmactlr_clk) then
 			case state is
 			when a =>
+				reload <= '0';
 				if len_eoc='1' then
 					state := d;
+				elsif ctlr_refreq='1' then
+					state := b;
 				elsif col_eoc='1' then
 					state := b;
 				else
 					state := a;
 				end if;
 			when b =>
+				reload <= '1';
 				if ctlr_idl='1' then
 					state := c;
 				end if;
 			when c =>
+				reload <= '1';
 				if ctlr_idl='0' then
 					state := a;
 				end if;
 			when d => 
+				reload <= '0';
 				if len_eoc='0' then
 					state := a;
 				end if;
@@ -188,31 +242,30 @@ begin
 		case state is
 		when a =>
 			if len_eoc='1' then
-				ctlr_irdy <= '0' and dmactlr_req;
+				ctlr_irdy <= '0';
 			elsif col_eoc='1' then
-				ctlr_irdy <= '0' and dmactlr_req;
+				ctlr_irdy <= '0';
 			else
-				ctlr_irdy <= '1' and dmactlr_req;
+				ctlr_irdy <= dmactlr_req;
 			end if;
 			dmactlr_rdy <= '0';
 		when b =>
 			if ctlr_idl='0' then 
-				ctlr_irdy <= '0' and dmactlr_req;
+				ctlr_irdy <= '0';
 			else
-				ctlr_irdy <= '1' and dmactlr_req;
+				ctlr_irdy <= dmactlr_req;
 			end if;
 			dmactlr_rdy <= '0';
 		when c =>
-			ctlr_irdy <= '1' and dmactlr_req;
+			ctlr_irdy <= dmactlr_req;
 			dmactlr_rdy <= '0';
 		when d =>
 			if len_eoc='0' then
-				ctlr_irdy <= '1' and dmactlr_req;
+				ctlr_irdy <= dmactlr_req;
 			else
-				ctlr_irdy <= '0' and dmactlr_req;
+				ctlr_irdy <= '0';
 			end if;
 			dmactlr_rdy <= '1';
-
 		end case;
 	end process;
 
