@@ -170,29 +170,33 @@ begin
 		di  => col,
 		do  => ddrdma_col);
 
-	leoclat_p : process (dmactlr_clk)
-		variable q : unsigned(0 to lat-2);
-	begin
-		if rising_edge(dmactlr_clk) then
-			if reload='1' then
-				q := (others => '0');
-				len_eoc <= q(0);
-			else
-				q(0) := leoc;
-				q := q rol 1;
-				len_eoc <= q(0);
-			end if;
-		end if;
-	end process;
+--	leoclat_p : process (dmactlr_clk)
+--		variable q : unsigned(0 to lat-2);
+--		variable p : std_logic;
+--	begin
+--		if rising_edge(dmactlr_clk) then
+----			p := reload;
+----			if p='1' then
+----				len_eoc <= '0';
+----				q := (others => '0');
+----			else
+--				q(0) := leoc;
+--				q := q rol 1;
+--				len_eoc <= q(0);
+--				if ceoc='1' then
+--				end if;
+----			end if;
+--		end if;
+--	end process;
 	
---	leoclat_e : entity hdl4fpga.align
---	generic map (
---		n => 1,
---		d => (0 to 0 => lat-1))
---	port map (
---		clk   => dmactlr_clk,
---		di(0) => leoc,
---		do(0) => len_eoc);
+	leoclat_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => lat-1))
+	port map (
+		clk   => dmactlr_clk,
+		di(0) => leoc,
+		do(0) => len_eoc);
 
 	ceoclat_e : entity hdl4fpga.align
 	generic map (
