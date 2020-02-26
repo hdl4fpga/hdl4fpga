@@ -56,9 +56,9 @@ begin
 	begin
 		if rising_edge(clk) then
 			if load='1' then
-				bnk_cntr  := resize((unsigned(addr) srl row'length), bnk_cntr'length);
-				row_cntr  := resize((unsigned(addr) srl col'length), row_cntr'length);
-				col_cntr  := resize((unsigned(addr) srl          0), col_cntr'length);
+				bnk_cntr  := '0' &resize((unsigned(addr) srl row'length), bnk'length);
+				row_cntr  := '0' &resize((unsigned(addr) srl col'length), row'length);
+				col_cntr  := '0' &resize((unsigned(addr) srl          0), col'length);
 
 				if updn='0' then
 					row_cntr1 <= row_cntr + 1;
@@ -95,7 +95,7 @@ begin
 				else
 					row <= std_logic_vector(resize(row_cntr1, row'length));
 					row_cntr := row_cntr1;
-					row_eoc  <= bnk_cntr(0);
+					row_eoc  <= row_cntr(0);
 					if row_cntr(0)='0' then
 						bnk <= std_logic_vector(resize(bnk_cntr, bnk'length));
 						bnk_eoc <= bnk_cntr(0);
