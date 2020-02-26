@@ -49,7 +49,7 @@ begin
 		if rising_edge(clk) then
 			-- if R_strm_frm is 1 the request will be dropped
 			-- to prevent overwriting currently active serializing
-			if (rgtr_dv = '1' or pointer_dv = '1') and R_strm_frm = '0' and chaini_frm = '0' then
+			if (rgtr_dv = '1' or pointer_dv = '1') and R_strm_frm = '0' and (chaini_frm = '0' or chaini_irdy = '0') then
 				R_shift <= x"15" & x"02" & "00" & pointer_y & pointer_x
 				         & rgtr_id & x"03" & rgtr_data;
 				if rgtr_dv = '1' and rgtr_id /= x"00" then
