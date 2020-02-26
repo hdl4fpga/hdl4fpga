@@ -82,6 +82,8 @@ architecture def of dmactlr is
 	signal ceoc         : std_logic;
 	signal col_eoc      : std_logic;
 	signal len_eoc      : std_logic;
+	signal ilen         : std_logic_vector(dmactlr_ilen'range);
+	signal iaddr        : std_logic_vector(dmactlr_iaddr'range);
 	signal tlen         : std_logic_vector(dmactlr_tlen'range);
 	signal taddr        : std_logic_vector(dmactlr_taddr'range);
 
@@ -91,20 +93,49 @@ architecture def of dmactlr is
 	signal preload     : std_logic;
 begin
 
-	process (dmactlr_clk)
+	process (dmactlr_clk, ceoc, leoc)
+		variable l : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			load <= not dmactlr_req;
+			if ceoc='1' then
+				l := '1';
+			elsif l='1' then
+				if ctlr_idl='1' then
+					l := '0';
+				end if;
+			else
+				l := '0';
+			end if;
+		end if;
+		if ceoc='1' then
+			reload <= ceoc and not leoc;
+		else
+			reload <= l;
 		end if;
 	end process;
-
+	
+	process (dmactlr_clk, reload)
+		variable l : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			l := not dmactlr_req;
+		end if;
+		if reload='1' then
+			load <= '1';
+		else
+			load <= l;
+		end if;
+	end process;
+	
+	ilen  <= word2byte(dmactlr_ilen  & tlen,  reload);
+	iaddr <= word2byte(dmactlr_iaddr & taddr, reload);
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
 		clk     => dmactlr_clk,
 		load    => load,
 		ena     => ctlrdma_irdy,
-		iaddr   => dmactlr_iaddr,
-		ilen    => dmactlr_ilen,
+		iaddr   => iaddr,
+		ilen    => ilen,
 		taddr   => taddr,
 		tlen    => tlen,
 		len_eoc => leoc,
@@ -118,6 +149,8 @@ begin
 	begin
 		if rising_edge(dmactlr_clk) then
 			if dmactlr_req='0' then
+				q := (others => '1');
+			elsif reload='1' then
 				q := (others => '1');
 			elsif ctlr_idl='0' then
 				q := q sll 1;
@@ -215,7 +248,6 @@ begin
 		if rising_edge(dmactlr_clk) then
 			case state is
 			when a =>
-				reload <= '0';
 				if len_eoc='1' then
 					state := d;
 				elsif ctlr_refreq='1' then
@@ -226,17 +258,14 @@ begin
 					state := a;
 				end if;
 			when b =>
-				reload <= '1';
 				if ctlr_idl='1' then
 					state := c;
 				end if;
 			when c =>
-				reload <= '1';
 				if ctlr_idl='0' then
 					state := a;
 				end if;
 			when d => 
-				reload <= '0';
 				if len_eoc='0' then
 					state := a;
 				end if;

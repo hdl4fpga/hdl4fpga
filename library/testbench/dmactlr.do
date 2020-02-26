@@ -93,9 +93,6 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/tlen
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/taddr
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/leoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ceoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
-add wave -noupdate -color Yellow /testbench/s3estarter_e/dmactlr_e/len_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlr_idl
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_irdy
 add wave -noupdate -color Cyan /testbench/s3estarter_e/dmactlr_e/ctlr_trdy
@@ -110,12 +107,18 @@ add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ddr_
 add wave -noupdate -group wrfifo /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ddr_dmo
 add wave -noupdate -group wrfifo -radix hexadecimal /testbench/s3estarter_e/ddrctlr_e/wrfifo_i/ddr_dqo
 add wave -noupdate -divider DDRDRMA
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ceoc
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/col_eoc
+add wave -noupdate -color magenta /testbench/s3estarter_e/dmactlr_e/reload
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/load
+add wave -noupdate -color Magenta /testbench/s3estarter_e/dmactlr_e/len_eoc
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/preload
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/taddr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/tlen
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/bnk
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/row
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/col
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/col_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ena_cntr
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/len_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/load
@@ -130,13 +133,12 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cn
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/row_cntr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/bnk_cntr
 add wave -noupdate -divider DMACTLR
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/reload
+add wave -noupdate -color magenta /testbench/s3estarter_e/dmactlr_e/reload
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/bnk
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/row
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/col
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_clk
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_req
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmactlr_we
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/ctlrdma_irdy
@@ -158,8 +160,8 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/ctlr_a
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202752000 ps} 1} {{Cursor 2} {202765242 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {202728117 ps} 1} {{Cursor 2} {202752073 ps} 1} {{Cursor 3} {202758046 ps} 1} {{Cursor 4} {202764068 ps} 1} {{Cursor 5} {202845000 ps} 0}
+quietly wave cursor active 5
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 215
 configure wave -justifyvalue left
@@ -174,4 +176,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202717357 ps} {202786643 ps}
+WaveRestoreZoom {202906767 ps} {203004907 ps}
