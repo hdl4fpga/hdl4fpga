@@ -80,8 +80,8 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_req   : std_logic;
 	signal dmactlr_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"0000_03";
+	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"ff";
+	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"0000_00";
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
 

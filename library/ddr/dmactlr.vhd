@@ -87,25 +87,28 @@ architecture def of dmactlr is
 	signal tlen         : std_logic_vector(dmactlr_tlen'range);
 	signal taddr        : std_logic_vector(dmactlr_taddr'range);
 
-	signal ena : std_logic;
 	signal load         : std_logic;
 	signal reload       : std_logic;
-	signal preload     : std_logic;
+	signal preload      : std_logic;
+
+	signal refreq       : std_logic;
 begin
 
-	process (dmactlr_clk, ceoc, leoc)
+	process (dmactlr_clk, ceoc, ctlr_refreq, leoc)
 		variable q : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_idl='0' then
 				if ceoc='1' then
 					q := '1';
+				elsif ctlr_refreq='1' then
+					q := '1';
 				end if;
 			else
 				q := '0';
 			end if;
 		end if;
-		reload <= setif(ceoc='1', not leoc, q);
+		reload <= setif(ceoc='1' or ctlr_refreq='1', not leoc, q);
 	end process;
 	
 	process (dmactlr_clk, reload)
@@ -193,44 +196,20 @@ begin
 		di  => col,
 		do  => ddrdma_col);
 
---	leoclat_p : process (dmactlr_clk)
---		variable q : unsigned(0 to lat-2);
---		variable p : std_logic;
---	begin
---		if rising_edge(dmactlr_clk) then
-----			p := reload;
-----			if p='1' then
-----				len_eoc <= '0';
-----				q := (others => '0');
-----			else
---				q(0) := leoc;
---				q := q rol 1;
---				len_eoc <= q(0);
---				if ceoc='1' then
---				end if;
-----			end if;
---		end if;
---	end process;
-	
-	leoclat_e : entity hdl4fpga.align
+	eoclat_e : entity hdl4fpga.align
 	generic map (
-		n => 1,
-		d => (0 to 0 => lat-1))
-	port map (
-		clk   => dmactlr_clk,
-		di(0) => leoc,
-		do(0) => len_eoc);
-
-	ceoclat_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => lat-1))
+		n => 3,
+		d => (0 to 3-1 => lat-1))
 	port map (
 		clk   => dmactlr_clk,
 		di(0) => ceoc,
-		do(0) => col_eoc);
+		di(1) => leoc,
+		di(2) => ctlr_refreq,
+		do(0) => col_eoc,
+		do(1) => len_eoc,
+		do(2) => refreq);
 
-	process (dmactlr_req, ctlr_refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+	process (dmactlr_req, refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
 		type states is (a, b, c, d);
 		variable state : states;
 		variable irdy : std_logic;
@@ -240,7 +219,7 @@ begin
 			when a =>
 				if len_eoc='1' then
 					state := d;
-				elsif ctlr_refreq='1' then
+				elsif refreq='1' then
 					state := b;
 				elsif col_eoc='1' then
 					state := b;
