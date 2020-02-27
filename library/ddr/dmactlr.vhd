@@ -94,37 +94,27 @@ architecture def of dmactlr is
 begin
 
 	process (dmactlr_clk, ceoc, leoc)
-		variable l : std_logic;
+		variable q : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			if ceoc='1' then
-				l := '1';
-			elsif l='1' then
-				if ctlr_idl='1' then
-					l := '0';
+			if ctlr_idl='0' then
+				if ceoc='1' then
+					q := '1';
 				end if;
 			else
-				l := '0';
+				q := '0';
 			end if;
 		end if;
-		if ceoc='1' then
-			reload <= ceoc and not leoc;
-		else
-			reload <= l;
-		end if;
+		reload <= setif(ceoc='1', not leoc, q);
 	end process;
 	
 	process (dmactlr_clk, reload)
-		variable l : std_logic;
+		variable q : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			l := not dmactlr_req;
+			q := not dmactlr_req;
 		end if;
-		if reload='1' then
-			load <= '1';
-		else
-			load <= l;
-		end if;
+		load <= setif(reload='1', '1', q);
 	end process;
 	
 	ilen  <= word2byte(dmactlr_ilen  & tlen,  reload);
