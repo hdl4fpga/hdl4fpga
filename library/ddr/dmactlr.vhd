@@ -91,26 +91,36 @@ architecture def of dmactlr is
 	signal reload       : std_logic;
 	signal preload      : std_logic;
 
+	signal ref_req      : std_logic;
 	signal refreq       : std_logic;
 begin
 
-	process (dmactlr_clk, ceoc, ctlr_refreq, leoc)
+	process (dmactlr_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			ref_req <= setif(ctlr_refreq='1' and q='0');
+			q := ctlr_refreq;
+		end if;
+	end process;
+
+	process (dmactlr_clk, ceoc, ref_req, leoc)
 		variable q : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_idl='0' then
 				if ceoc='1' then
 					q := '1';
-				elsif ctlr_refreq='1' then
+				elsif ref_req='1' then
 					q := '1';
 				end if;
 			else
 				q := '0';
 			end if;
 		end if;
-		reload <= setif(ceoc='1' or ctlr_refreq='1', not leoc, q);
+		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
-	
+
 	process (dmactlr_clk, reload)
 		variable q : std_logic;
 	begin
@@ -204,7 +214,7 @@ begin
 		clk   => dmactlr_clk,
 		di(0) => ceoc,
 		di(1) => leoc,
-		di(2) => ctlr_refreq,
+		di(2) => ref_req,
 		do(0) => col_eoc,
 		do(1) => len_eoc,
 		do(2) => refreq);
