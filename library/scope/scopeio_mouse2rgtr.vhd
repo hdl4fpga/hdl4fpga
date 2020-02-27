@@ -770,9 +770,9 @@ begin
   -- simple example for mouse pointer
   rgtr_dv <= R_mouse_update;
   rgtr_id <= x"15"; -- mouse pointer
-  rgtr_data(31 downto 22) <= (others => '0');
-  rgtr_data(21 downto 11) <= std_logic_vector(R_mouse_y);
-  rgtr_data(10 downto 0)  <= std_logic_vector(R_mouse_x);
+  rgtr_data(31 downto R_mouse_y'length+12) <= (others => '0');
+  rgtr_data(R_mouse_y'length+12-1 downto 12) <= std_logic_vector(R_mouse_y);
+  rgtr_data(R_mouse_x'range) <= std_logic_vector(R_mouse_x);
   end generate;
 
   G_debug_trigger: if C_simple_debug_mode = 2 generate
