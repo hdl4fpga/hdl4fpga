@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity dmacntr is
+entity cntrcs is
 	generic (
 		slices  : natural_vector);
 	port (
@@ -41,7 +41,7 @@ entity dmacntr is
 		eoc  : out std_logic_vector);
 end;
 
-architecture def of dmacntr is
+architecture def of cntrcs is
 
 begin
 
