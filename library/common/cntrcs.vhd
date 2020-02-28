@@ -28,70 +28,64 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity cscntr is
+entity dmacntr is
 	generic (
-		n    : natural_vector)
+		slices  : natural_vector);
 	port (
 		clk  : in  std_logic;
-		load : in  std_logic;
+		load : in  std_logic := '0';
 		ena  : in  std_logic := '1';
+		updn : in  std_logic := '0';
 		d    : in  std_logic_vector;
 		q    : out std_logic_vector;
 		eoc  : out std_logic_vector);
 end;
 
-architecture def of cscntr is
-
-	signal   cy : std_logic_vector(0 to n'length);
+architecture def of dmacntr is
 
 begin
 
-	for i in 1 to n'length generate
-		signal cntr  : unsigned(0 to n(i));
-		signal cntr1 : unsigned(0 to n(i));
+	cntr_p : process (clk)
+
+		variable auxd  : unsigned(0 to d'length-1);
+		variable auxd  : unsigned(0 to q'length-1);
+		variable cntr  : unsigned(0 to q'length+slices'length-1);
+		variable cntr1 : unsigned(0 to q'length+slices'length-1);
+
 	begin
-
-		cntr_p : process (clk)
-			variable auxd : unsigned(0 to d'length-1);
-			variable auxq : unsigned(0 to q'length-1);
-		begin
-			if rising_edge(clk) then
-				auxq := unsigned(q);
+		if rising_edge(clk) then
+			for i in slices'range loop
+				auxd  := auxd  ror (slices(i)+0);
+				auxq  := auxq  ror (slices(i)+0);
+				cntr  := cntr  ror (slices(i)+1);
+				cntr1 := cntr1 ror (slices(i)+1);
 				if load='1' then
+					cntr(0 to slices(i)) := '0' & unsigned(auxd(0 to slices(i)-1));
+					auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 
-					auxd := unsinged(d);
-					for 0 to j-1 loop
-						auxd := auxd srl n(j);
-					end loop;
-
-					cntr <= '0' & resize(auxd, n(i));
 					if updn='0' then
-						cntr1 <= ('0' & resize(auxd, n(i))) + 1;
+						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) + 1;
 					else
-						cntr1 <= ('0' & resize(auxd, n(i))) - 1;
+						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) - 1;
 					end if;
-					cy(i) <= '0';
+					eoc(i) <= '0';
+
 				elsif ena='1' then
 					if updn='0' then
-						cntr1 <= cntr + 1;
+						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) + 1;
 					else
-						cntr1 <= cntr - 1;
+						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) - 1;
 					end if;
 
-					if cy(i)='1' then
-						cntr    <= cntr1;
-						cntr(0) <= '0';
+					if cy='1' then
+						cntr(0 to slices(i)) <= '0' & cntr1(1 to slices(i));
+						eoc(i) <= cntr1(0);
+						cy := cntr1(0);
 					end if;
 				end if;
-			end if;
-		end process;
-		cy(i+1) <= cntr1(0) when cy(i)='1' else cntr(0);
-		process (cy(i), cntr1, cntr)
-		begin
-		end process;
-
-		<= cntr1 when cy(i)='1' else cntr;
-
-	end generate;
+			end loop;
+			q <= std_logic_vector(auxq);
+		end if;
+	end process;
 
 end;
