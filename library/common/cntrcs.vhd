@@ -48,9 +48,10 @@ begin
 	cntr_p : process (clk)
 
 		variable auxd  : unsigned(0 to d'length-1);
-		variable auxd  : unsigned(0 to q'length-1);
+		variable auxq  : unsigned(0 to q'length-1);
 		variable cntr  : unsigned(0 to q'length+slices'length-1);
 		variable cntr1 : unsigned(0 to q'length+slices'length-1);
+		variable cy    : std_logic;
 
 	begin
 		if rising_edge(clk) then
@@ -64,23 +65,23 @@ begin
 					auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 
 					if updn='0' then
-						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) + 1;
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
 					else
-						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) - 1;
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
 					eoc(i) <= '0';
 
 				elsif ena='1' then
 					if updn='0' then
-						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) + 1;
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
 					else
-						cntr1(0 to slices(i)) <= cntr(0 to slices(i)) - 1;
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
 
 					if cy='1' then
-						cntr(0 to slices(i)) <= '0' & cntr1(1 to slices(i));
+						cntr(0 to slices(i)) := '0' & cntr1(1 to slices(i));
 						eoc(i) <= cntr1(0);
-						cy := cntr1(0);
+						cy     := cntr1(0);
 					end if;
 				end if;
 			end loop;
