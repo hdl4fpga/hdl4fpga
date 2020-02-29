@@ -50,11 +50,14 @@ end;
 architecture def of ddrdma is
 
 	constant slices : natural_vector := (
-		0 => (col'length+0)/2,
-		1 => (col'length+1)/2,
-		2 => (row'length+0)/2,
-		3 => (row'length+1)/2,
-		4 => bnk'length);
+		0 => col'length,
+		1 => row'length,
+		2 => bnk'length);
+--		0 => (col'length+0)/2,
+--		1 => (col'length+1)/2,
+--		2 => (row'length+0)/2,
+--		3 => (row'length+1)/2,
+--		4 => bnk'length);
 
 	signal ena_addr : std_logic;
 	signal addr_q   : std_logic_vector(bnk'length+row'length+col'length-1 downto 0);
@@ -76,6 +79,9 @@ begin
 		d    => iaddr,
 		q    => addr_q,
 		eoc  => addr_eoc);
+	col_eoc <= addr_eoc(0);
+	row_eoc <= addr_eoc(1);
+	bnk_eoc <= addr_eoc(2);
 
 	col   <= addr_q(col'length-1 downto 0);
 	row   <= addr_q(row'length+col'length-1 downto col'length);

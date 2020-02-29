@@ -44,6 +44,8 @@ end;
 
 architecture def of cntrcs is
 
+	alias co : std_logic_vector(eoc'length-1 downto 0) is eoc;
+
 begin
 
 	cntr_p : process (clk)
@@ -74,7 +76,7 @@ begin
 					else
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
-					eoc(i) <= '0';
+					co(i) <= '0';
 
 				elsif ena='1' then
 					if updn='0' then
@@ -87,16 +89,16 @@ begin
 						if i=0 then
 							auxc := cntr1;
 						end if;
-
-						cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
-						eoc(i) <= cntr1(0);
-						cy     := cntr1(0);
+						cntr(0 to slices(i)) := auxc(0 to slices(i));
 					end if;
+
+					co(i)   <= cntr(0);
+					cntr(0) := '0';
+					cy      := cy and auxc(0);
 				end if;
 				auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 			end loop;
 			q <= std_logic_vector(auxq);
 		end if;
 	end process;
-
 end;
