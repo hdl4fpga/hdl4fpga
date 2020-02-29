@@ -26,16 +26,18 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture cntrcs of testbench is
 
-	constant slices : natural_vector := (0 => 4, 1 => 4);
+	constant slices : natural_vector := (0 => 2, 1 => 2);
 
+	signal eoc  : std_logic_vector(slices'range);
 	signal clk  : std_logic := '0';
-	signal load : std_logic := '0';
+	signal load : std_logic := '1';
 
-	signal q    : std_logic_vector(0 to 8-1);
-	signal d    : std_logic_vector(0 to 8-1);
+	signal q    : std_logic_vector(0 to 4-1);
+	signal d    : std_logic_vector(0 to 4-1) := (others => '0');
 
 begin
 
@@ -45,15 +47,15 @@ begin
 	begin
 		if rising_edge(clk) then
 			if load='1'  then
-				loadd <= '0';
+				load <= '0';
 			end if;
 		end if;
 	end process;
 
 	du : entity hdl4fpga.cntrcs
-	generic (
-		slices => slices);
-	port (
+	generic map (
+		slices => slices)
+	port map (
 		clk    => clk,
 		load   => load,
 		d      => d,
