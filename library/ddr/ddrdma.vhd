@@ -48,42 +48,52 @@ entity ddrdma is
 end;
 
 architecture def of ddrdma is
-	signal bnk_cntr : std_logic_vector(bnk'range);
-	signal row_cntr : std_logic_vector(row'range);
-	signal col_cntr : std_logic_vector(col'range);
+
+	constant slices : natural_vector := (
+		0 => (col'length+0)/2,
+		1 => (col'length+1)/2,
+		2 => (row'length+0)/2,
+		3 => (row'length+1)/2,
+		4 => bnk'length);
 
 	signal ena_addr : std_logic;
+	signal addr_q   : std_logic_vector(bnk'length+row'length+col'length-1 downto 0);
+	signal addr_eoc : std_logic_vector(slices'length-1 downto 0);
+
 	signal ena_cntr : std_logic;
+	signal cntr_eoc : std_logic_vector(slices'length-1 downto 0);
 begin
 
 	ena_addr <= not len_eoc and ena;
-	addr_e : entity hdl4fpga.dmacntr
+	addr_e : entity hdl4fpga.cntrcs
+	generic map (
+		slices => slices)
 	port map (
-		clk     => clk,
-		load    => load,
-		ena     => ena_addr,
-		addr    => iaddr,
-		bnk     => bnk,
-		row     => row,
-		col     => col,
-		bnk_eoc => bnk_eoc,
-		row_eoc => row_eoc,
-		col_eoc => col_eoc);
-	taddr <= bnk & row & col;
+		clk  => clk,
+		load => load,
+		ena  => ena_addr,
+		updn => '0',
+		d    => iaddr,
+		q    => addr_q,
+		eoc  => addr_eoc);
+
+	col   <= addr_q(col'length-1 downto 0);
+	row   <= addr_q(row'length+col'length-1 downto col'length);
+	bnk   <= addr_q(bnk'length+row'length+col'length-1 downto row'length+col'length);
+	taddr <= addr_q;
 
 	ena_cntr <= not len_eoc and ena;
-	cntr_e : entity hdl4fpga.dmacntr
+	cntr_e : entity hdl4fpga.cntrcs
+	generic map (
+		slices => slices)
 	port map (
 		clk     => clk,
 		load    => load,
 		updn    => '1',
 		ena     => ena_cntr,
-		addr    => ilen,
-		bnk     => bnk_cntr,
-		row     => row_cntr,
-		col     => col_cntr,
-		bnk_eoc => len_eoc);
-
-	tlen <= bnk_cntr & row_cntr & col_cntr;
+		d       => ilen,
+		q       => tlen,
+		eoc     => cntr_eoc);
+	len_eoc <= cntr_eoc(cntr_eoc'right);
 
 end;
