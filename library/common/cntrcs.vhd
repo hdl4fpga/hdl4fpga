@@ -61,41 +61,45 @@ begin
 		if rising_edge(clk) then
 			auxd := unsigned(d);
 
-			cy   := ci;
+			cy := '1';
 			for i in slices'range loop
 				auxd  := auxd  ror (slices(i)+0);
 				auxq  := auxq  ror (slices(i)+0);
 				cntr  := cntr  ror (slices(i)+1);
 				cntr1 := cntr1 ror (slices(i)+1);
 				auxc  := cntr1;
+
 				if load='1' then
-					cntr(0 to slices(i)) := '0' & unsigned(auxd(0 to slices(i)-1));
-
-					if updn='0' then
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
-					else
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
-					end if;
-					co(i) <= '0';
-
-				elsif ena='1' then
-					if updn='0' then
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
-					else
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
-					end if;
-
-					if cy='1' then
-						if i=0 then
-							auxc := cntr1;
+					cntr(0 to slices(i)) := '0' & auxd(0 to slices(i)-1);
+				elsif i=0 then
+					if ena='1' then
+						if updn='0' then
+							cntr(0 to slices(i)) := cntr(0 to slices(i)) + 1;
+						else
+							cntr(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 						end if;
-						cntr(0 to slices(i)) := auxc(0 to slices(i));
+					end if;
+				end if;
+
+				if i/=0 then
+					if updn='0' then
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
+					else
+						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
 
-					co(i)   <= cntr(0);
-					cntr(0) := '0';
-					cy      := cy and auxc(0);
+					if ena='1' then
+						if cy='1' then
+							cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
+						else
+							co(i) <= auxc(0);
+						end if;
+						cy := cy and auxc(0);
+					else
+						cy := '0';
+					end if;
 				end if;
+
 				auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 			end loop;
 			q <= std_logic_vector(auxq);
