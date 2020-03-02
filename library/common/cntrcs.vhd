@@ -36,7 +36,6 @@ entity cntrcs is
 		load : in  std_logic := '0';
 		ena  : in  std_logic := '1';
 		updn : in  std_logic := '0';
-		ci   : in  std_logic := '1';
 		d    : in  std_logic_vector;
 		q    : out std_logic_vector;
 		eoc  : out std_logic_vector);
@@ -58,9 +57,9 @@ begin
 	begin
 		if rising_edge(clk) then
 			auxd := unsigned(d);
+			cy   := '1';
 
-			cy   := ci;
-			for i in slices'range loop
+			for i in 0 to slices'length-1 loop
 				auxd  := auxd  ror (slices(i)+0);
 				auxq  := auxq  ror (slices(i)+0);
 				cntr  := cntr  ror (slices(i)+1);
@@ -76,22 +75,24 @@ begin
 					end if;
 					eoc(i) <= '0';
 
-				elsif ena='1' then
+				else 
 					if updn='0' then
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
 					else
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
 
-					if cy='1' then
-						if i=0 then
+					if i=0 then
+						if ena='1' then
 							auxc := cntr1;
 						end if;
-
-						cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
-						eoc(i) <= auxc(0);
-						cy     := auxc(0);
 					end if;
+
+					if cy='1' then
+						cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
+					end if;
+					cy     := cy and auxc(0);
+					eoc(i) <= cy;
 				end if;
 				auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 			end loop;
