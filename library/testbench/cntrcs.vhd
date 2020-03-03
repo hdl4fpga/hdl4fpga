@@ -30,14 +30,14 @@ use hdl4fpga.std.all;
 
 architecture cntrcs of testbench is
 
-	constant slices : natural_vector := (0 => 2, 1 => 2);
+	constant slices : natural_vector := (0 => 1, 1 => 2);
 
 	signal eoc  : std_logic_vector(slices'range);
 	signal clk  : std_logic := '0';
 	signal load : std_logic := '1';
 
-	signal q    : std_logic_vector(0 to 4-1);
-	signal d    : std_logic_vector(0 to 4-1) := (others => '0');
+	signal q    : std_logic_vector(0 to 3-1);
+	signal d    : std_logic_vector(0 to 3-1) := (others => '0');
 
 begin
 

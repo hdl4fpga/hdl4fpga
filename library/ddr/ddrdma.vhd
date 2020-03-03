@@ -67,6 +67,9 @@ architecture def of ddrdma is
 	signal cntr_eoc : std_logic_vector(slices'length-1 downto 0);
 begin
 
+	assert iaddr'length=addr_q'length
+	report "no anda"
+	severity failure;
 	ena_addr <= not len_eoc and ena;
 	addr_e : entity hdl4fpga.cntrcs
 	generic map (

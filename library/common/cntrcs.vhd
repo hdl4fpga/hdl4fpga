@@ -57,9 +57,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			auxd := unsigned(d);
-			cy   := '1';
-
-			for i in 0 to slices'length-1 loop
+			for i in slices'range loop
 				auxd  := auxd  ror (slices(i)+0);
 				auxq  := auxq  ror (slices(i)+0);
 				cntr  := cntr  ror (slices(i)+1);
@@ -73,27 +71,28 @@ begin
 					else
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
+
 					eoc(i) <= '0';
 
-				else 
+				elsif ena='1' then
 					if updn='0' then
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
 					else
 						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
 					end if;
 
-					if i=0 then
-						if ena='1' then
-							auxc := cntr1;
-						end if;
+					if i=slices'left then
+						auxc := cntr1;
+						cy   := '1';
 					end if;
 
 					if cy='1' then
 						cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
+						cy     := auxc(0);
 					end if;
-					cy     := cy and auxc(0);
-					eoc(i) <= cy;
+					eoc(i) <= setif(cy='1', auxc(0), cntr(0));
 				end if;
+
 				auxq(0 to slices(i)-1) := cntr(1 to slices(i));
 			end loop;
 			q <= std_logic_vector(auxq);
