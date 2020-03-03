@@ -53,8 +53,8 @@ architecture def of ddrdma is
 --		0 => col'length,
 --		1 => row'length,
 --		2 => bnk'length);
-		0 => (col'length+0)/2,
-		1 => (col'length+1)/2,
+		0 => 1,
+		1 => col'length-1,
 		2 => (row'length+0)/2,
 		3 => (row'length+1)/2,
 		4 => bnk'length);
@@ -85,6 +85,9 @@ begin
 	col_eoc <= addr_eoc(1);
 	row_eoc <= addr_eoc(3);
 	bnk_eoc <= addr_eoc(4);
+--	col_eoc <= addr_eoc(0);
+--	row_eoc <= addr_eoc(1);
+--	bnk_eoc <= addr_eoc(2);
 
 	col   <= addr_q(col'length-1 downto 0);
 	row   <= addr_q(row'length+col'length-1 downto col'length);

@@ -43,59 +43,77 @@ end;
 
 architecture def of cntrcs is
 
+	alias aliasd : std_logic_vector(d'length-1 downto 0) is d;
+	alias aliasq : std_logic_vector(q'length-1 downto 0) is q;
+
+	signal cntr1 : unsigned(q'length+slices'length-1 downto 0);
+
 begin
 
 	cntr_p : process (clk)
 
-		variable auxd  : unsigned(0 to d'length-1);
-		variable auxq  : unsigned(0 to q'length-1);
-		variable cntr  : unsigned(0 to q'length+slices'length-1);
-		variable cntr1 : unsigned(0 to q'length+slices'length-1);
-		variable auxc  : unsigned(0 to q'length+slices'length-1);
+		variable cntr  : unsigned(q'length+slices'length-1 downto 0);
 		variable cy    : std_logic;
+
+		variable left   : natural;
+		variable right  : natural;
+		variable left1  : natural;
+		variable right1 : natural;
 
 	begin
 		if rising_edge(clk) then
-			auxd := unsigned(d);
+			cy    := '1';
+			right  := 0;
+			right1 := 0;
 			for i in slices'range loop
-				auxd  := auxd  ror (slices(i)+0);
-				auxq  := auxq  ror (slices(i)+0);
-				cntr  := cntr  ror (slices(i)+1);
-				cntr1 := cntr1 ror (slices(i)+1);
-				auxc  := cntr1;
-				if load='1' then
-					cntr(0 to slices(i)) := '0' & unsigned(auxd(0 to slices(i)-1));
+				left  := right  + slices(i)-1;
+				left1 := right1 + slices(i);
 
-					if updn='0' then
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
-					else
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
+				if load='1' then
+					cntr(left1 downto right1) := '0' & unsigned(aliasd(left downto right));
+
+					if i/=slices'left then 
+						if updn='0' then
+							cntr1(left1 downto right1) <= cntr(left1 downto right1) + 1;
+						else
+							cntr1(left1 downto right1) <= cntr(left1 downto right1) - 1;
+						end if;
 					end if;
 
 					eoc(i) <= '0';
 
 				elsif ena='1' then
-					if updn='0' then
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) + 1;
+					if i=slices'left then 
+						if updn='0' then
+							cntr(left1 downto right1)  := cntr(left1 downto right1) + 1;
+						else
+							cntr(left1 downto right1)  := cntr(left1 downto right1) - 1;
+						end if;
 					else
-						cntr1(0 to slices(i)) := cntr(0 to slices(i)) - 1;
+						if updn='0' then
+							cntr1(left1 downto right1) <= cntr(left1 downto right1) + 1;
+						else
+							cntr1(left1 downto right1) <= cntr(left1 downto right1) - 1;
+						end if;
 					end if;
 
 					if i=slices'left then
-						auxc := cntr1;
-						cy   := '1';
+						cy := cntr(left1);
+					else
+						if cy='1' then
+							cntr(left1 downto right1) := cntr1(left1 downto right1);
+							cy := cntr(left1);
+						end if;
 					end if;
+					eoc(i) <= cy;
 
-					if cy='1' then
-						cntr(0 to slices(i)) := '0' & auxc(1 to slices(i));
-						cy     := auxc(0);
-					end if;
-					eoc(i) <= setif(cy='1', auxc(0), cntr(0));
+					cntr(left1) := '0';
 				end if;
 
-				auxq(0 to slices(i)-1) := cntr(1 to slices(i));
+				aliasq(left downto right) <= std_logic_vector(cntr(left1-1 downto right1));
+				right  := left+1;
+				right1 := left1+1;
 			end loop;
-			q <= std_logic_vector(auxq);
 		end if;
 	end process;
 

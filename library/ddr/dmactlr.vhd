@@ -1,3 +1,4 @@
+
 --                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
@@ -106,6 +107,8 @@ begin
 
 	process (dmactlr_clk, ceoc, ref_req, leoc)
 		variable q : std_logic;
+		variable s : std_logic;
+		variable l : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ctlr_idl='0' then
@@ -117,21 +120,15 @@ begin
 			else
 				q := '0';
 			end if;
+			s := setif(ceoc='1' or ref_req='1', not leoc, q);
+			reload <= s;
+			ilen   <= word2byte(dmactlr_ilen  & tlen,  s);
+			iaddr  <= word2byte(dmactlr_iaddr & taddr, s);
+			load   <= setif(reload='1', '1', l);
+			l      := not dmactlr_req;
 		end if;
-		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
 
-	process (dmactlr_clk, reload)
-		variable q : std_logic;
-	begin
-		if rising_edge(dmactlr_clk) then
-			q := not dmactlr_req;
-		end if;
-		load <= setif(reload='1', '1', q);
-	end process;
-	
-	ilen  <= word2byte(dmactlr_ilen  & tlen,  reload);
-	iaddr <= word2byte(dmactlr_iaddr & taddr, reload);
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
 		clk     => dmactlr_clk,
@@ -249,6 +246,8 @@ begin
 					state := a;
 				end if;
 			end case;
+	ctlr_a <= setif(ctlr_act='0',std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), ddrdma_row);
+	ctlr_b <= ddrdma_bnk;
 		end if;
 
 		case state is
@@ -282,8 +281,6 @@ begin
 	end process;
 
 
-	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)) when ctlr_act='0' else ddrdma_row;
-	ctlr_b <= ddrdma_bnk;
 
 	mem_e : entity hdl4fpga.fifo
 	generic map (
