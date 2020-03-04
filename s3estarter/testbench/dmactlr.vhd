@@ -44,8 +44,8 @@ architecture dmactlr of s3Estarter is
 	-------------------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
-	constant ddr_div     : natural := 1;
+	constant ddr_mul     : natural := 10; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+	constant ddr_div     : natural := 3;
 
 	constant g           : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
