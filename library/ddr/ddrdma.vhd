@@ -106,6 +106,6 @@ begin
 		d       => ilen,
 		q       => tlen,
 		eoc     => cntr_eoc);
-	len_eoc <= cntr_eoc(cntr_eoc'right);
+	len_eoc <= cntr_eoc(4);
 
 end;
