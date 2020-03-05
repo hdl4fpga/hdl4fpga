@@ -123,15 +123,6 @@ add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/ena_cntr
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/len_eoc
 add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/load
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/col_eoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/row_eoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/bnk_eoc
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/col_cntr(0)
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/bnk_cntr(0)
-add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/row_cntr(0)
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/col_cntr
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/row_cntr
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dma_e/cntr_e/cntr_p/bnk_cntr
 add wave -noupdate -divider DMACTLR
 add wave -noupdate -color magenta /testbench/s3estarter_e/dmactlr_e/reload
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/bnk

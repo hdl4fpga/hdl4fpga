@@ -1,3 +1,4 @@
+
 --                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
@@ -87,48 +88,45 @@ architecture def of dmactlr is
 	signal tlen         : std_logic_vector(dmactlr_tlen'range);
 	signal taddr        : std_logic_vector(dmactlr_taddr'range);
 
-	signal ena : std_logic;
 	signal load         : std_logic;
 	signal reload       : std_logic;
-	signal preload     : std_logic;
+	signal preload      : std_logic;
+
+	signal ref_req      : std_logic;
+	signal refreq       : std_logic;
 begin
 
-	process (dmactlr_clk, ceoc, leoc)
-		variable l : std_logic;
+	process (dmactlr_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
-			if ceoc='1' then
-				l := '1';
-			elsif l='1' then
-				if ctlr_idl='1' then
-					l := '0';
+			ref_req <= setif(ctlr_refreq='1' and q='0');
+			q := ctlr_refreq;
+		end if;
+	end process;
+
+	process (dmactlr_clk, ceoc, ref_req, leoc)
+		variable q : std_logic;
+		variable s : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			if ctlr_idl='0' then
+				if ceoc='1' then
+					q := '1';
+				elsif ref_req='1' then
+					q := '1';
 				end if;
 			else
-				l := '0';
+				q := '0';
 			end if;
+			s := setif(ceoc='1' or ref_req='1', not leoc, q);
+			load   <= setif(s='1', '1', not dmactlr_req);
+			ilen   <= word2byte(dmactlr_ilen  & tlen,  s);
+			iaddr  <= word2byte(dmactlr_iaddr & taddr, s);
 		end if;
-		if ceoc='1' then
-			reload <= ceoc and not leoc;
-		else
-			reload <= l;
-		end if;
+		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
-	
-	process (dmactlr_clk, reload)
-		variable l : std_logic;
-	begin
-		if rising_edge(dmactlr_clk) then
-			l := not dmactlr_req;
-		end if;
-		if reload='1' then
-			load <= '1';
-		else
-			load <= l;
-		end if;
-	end process;
-	
-	ilen  <= word2byte(dmactlr_ilen  & tlen,  reload);
-	iaddr <= word2byte(dmactlr_iaddr & taddr, reload);
+
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
 		clk     => dmactlr_clk,
@@ -196,61 +194,50 @@ begin
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => lat+1))
+		d => (0 to col'length-1 => lat))
 	port map (
 		clk => dmactlr_clk,
 		ena => ctlrdma_irdy,
 		di  => col,
 		do  => ddrdma_col);
 
---	leoclat_p : process (dmactlr_clk)
---		variable q : unsigned(0 to lat-2);
---		variable p : std_logic;
---	begin
---		if rising_edge(dmactlr_clk) then
-----			p := reload;
-----			if p='1' then
-----				len_eoc <= '0';
-----				q := (others => '0');
-----			else
---				q(0) := leoc;
---				q := q rol 1;
---				len_eoc <= q(0);
---				if ceoc='1' then
---				end if;
-----			end if;
---		end if;
---	end process;
-	
-	leoclat_e : entity hdl4fpga.align
+	eoclat_e : entity hdl4fpga.align
 	generic map (
-		n => 1,
-		d => (0 to 0 => lat-1))
-	port map (
-		clk   => dmactlr_clk,
-		di(0) => leoc,
-		do(0) => len_eoc);
-
-	ceoclat_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => lat-1))
+		n => 3,
+		d => (0 to 3-1 => lat-1))
 	port map (
 		clk   => dmactlr_clk,
 		di(0) => ceoc,
-		do(0) => col_eoc);
+		di(1) => leoc,
+		di(2) => ref_req,
+		do(0) => col_eoc,
+		do(1) => len_eoc,
+		do(2) => refreq);
 
-	process (dmactlr_req, ctlr_refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+	process (dmactlr_clk)
+		variable s : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s);
+			ctlr_b <= ddrdma_bnk;
+			if ctlr_idl='1' then
+				s := '0';
+			elsif s='0' then
+				s := not ctlr_act;
+			end if;
+		end if;
+	end process;
+
+	process (dmactlr_req, refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
 		type states is (a, b, c, d);
 		variable state : states;
-		variable irdy : std_logic;
 	begin
 		if rising_edge(dmactlr_clk) then
 			case state is
 			when a =>
 				if len_eoc='1' then
 					state := d;
-				elsif ctlr_refreq='1' then
+				elsif refreq='1' then
 					state := b;
 				elsif col_eoc='1' then
 					state := b;
@@ -303,8 +290,6 @@ begin
 	end process;
 
 
-	ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)) when ctlr_act='0' else ddrdma_row;
-	ctlr_b <= ddrdma_bnk;
 
 	mem_e : entity hdl4fpga.fifo
 	generic map (
