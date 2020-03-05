@@ -23,8 +23,6 @@ end;
 
 architecture def of scopeio_rgtr is
 
-	signal ena     : std_logic;
-
 begin
 
 	ena <= setif(rgtr_id=rid, rgtr_dv);
@@ -35,9 +33,8 @@ begin
 			dv <= ena;
 		end if;
 	end process;
-	gain_ena <= ena;
 
-	process (rgtr_clk. rgtr_data)
+	process (rgtr_clk, rgtr_data)
 	begin
 		if rising_edge(rgtr_clk) then
 			if ena='1' then
