@@ -47,7 +47,7 @@ architecture Behavioral of usb_rx_phy_emard is
     C_PA_bits-5 => '0', -- 1/32
     others      => '1'
   );
-  constant C_PA_compensate: unsigned(C_PA_bits-2 downto 0) := C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0);
+  constant C_PA_compensate: unsigned(C_PA_bits-2 downto 0) := C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0);
   constant C_PA_init: unsigned(C_PA_bits-2 downto 0) := C_PA_phase + C_PA_compensate;
   constant C_valid_init: std_logic_vector(data'range) := (data'high => '1', others => '0'); -- adjusted (1 bit early) to split stream at byte boundary
   constant C_idlecnt_init: std_logic_vector(6 downto 0) := (6 => '1', others => '0'); -- 6 data bits + 1 stuff bit
