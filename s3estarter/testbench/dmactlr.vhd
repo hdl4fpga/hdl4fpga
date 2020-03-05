@@ -193,8 +193,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv    => addr_dv,
-			value => addr_val);
+			dv   => dmaaddr_dv,
+			data => dmactlr_iaddr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
@@ -205,8 +205,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv     => addr_dv,
-			value  => addr_val);
+			dv     => dmalen_dv,
+			data   => dmactlr_ilen);
 
 	end block;
 
