@@ -28,6 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.scopeiopkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -84,6 +85,8 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"0000_03";
 	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
 	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
+	signal dmactlr_iaddrdv : std_logic;
+	signal dmactlr_ilendv : std_logic;
 
 	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
@@ -173,7 +176,28 @@ begin
 		signal rgtr_data : std_logic_vector(32-1 downto 0);
 
 	begin
+		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		port map (
+			ipcfg_req   => '0',
 
+			phy_rxc     => e_rx_clk,
+			phy_rx_dv   => e_rx_dv,
+			phy_rx_d    => e_rxd,
+
+			phy_txc     => e_tx_clk,
+			phy_tx_en   => e_txen,
+			phy_tx_d    => e_txd,
+		
+			chaini_sel  => '0',
+
+			chaini_frm  => toudpdaisy_frm,
+			chaini_irdy => toudpdaisy_irdy,
+			chaini_data => toudpdaisy_data,
+
+			chaino_frm  => si_frm,
+			chaino_irdy => si_irdy,
+			chaino_data => si_data);
+	
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
@@ -193,7 +217,7 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => dmaaddr_dv,
+			dv   => dmactlr_iaddrdv,
 			data => dmactlr_iaddr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -205,7 +229,7 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv     => dmalen_dv,
+			dv     => dmactlr_ilendv,
 			data   => dmactlr_ilen);
 
 	end block;
