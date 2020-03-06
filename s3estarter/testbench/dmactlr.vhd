@@ -482,12 +482,17 @@ begin
 	e_mdio      <= 'Z';
 	e_txd_4     <= 'Z';
 
-	e_txd  	    <= (others => 'Z');
-	e_txen      <= 'Z';
+--	e_txd  	    <= (others => 'Z');
+--	e_txen      <= 'Z';
 
 	-- misc --
 	----------
 
+	ad_conv     <= 'Z';
+	spi_sck     <= 'Z';
+	dac_cs      <= 'Z';
+	amp_cs      <= 'Z';
+	spi_mosi    <= 'Z';
 	amp_shdn    <= 'Z';
 	dac_clr     <= 'Z';
 	sf_ce0      <= 'Z';
