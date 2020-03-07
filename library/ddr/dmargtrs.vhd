@@ -32,11 +32,11 @@ use hdl4fpga.std.all;
 entity dmargtr is
 	port (
 		clk    : in  std_logic;
-		rid    : in  std_logic_vector;
+		rrid   : in  std_logic_vector;
 		raddr  : out std_logic_vector;
 		rlen   : out std_logic_vector;
 
-		wid    : in  std_logic_vector;
+		wrid   : in  std_logic_vector;
 		we     : in  std_logic;
 		waddr  : in  std_logic_vector;
 		wlen   : in  std_logic_vector);
@@ -45,6 +45,20 @@ end;
 
 architecture def of dmargtr is
 begin
+
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => clk,
+		wr_ena  => we,
+		wr_addr => wrid 
+		wr_data => input_data,
+
+		rd_clk  => clk,
+		rd_addr => std_logic_vector(addrb),
+		rd_data => fifo_data);
 
 	process (dmactlr_clk)
 		variable q : std_logic;
