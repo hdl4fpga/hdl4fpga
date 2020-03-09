@@ -153,6 +153,12 @@ begin
                 else -- after preamble is found, circular-shift "R_valid" register
                   if R_idlecnt(0) = '0' then -- skips stuffed bit
                     R_valid <= R_valid(0) & R_valid(R_valid'high downto 1);
+                  else -- stuffed bit S_bit=0 should be here
+                    if S_bit = '1' then -- if stuffed bit is missing
+                      R_valid <= (others => '0'); -- drop frame
+                      R_frame <= '0';
+                      R_rxactive <= '0';
+                    end if;
                   end if; -- skip stuffed bit
                 end if;
             else -- R_frame = '0'
