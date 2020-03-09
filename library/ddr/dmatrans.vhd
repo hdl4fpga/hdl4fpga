@@ -29,36 +29,72 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity dmargtr is
+entity dmatrans is
+	generic (
+		no_latency    : boolean := false;
+		size          : natural);
 	port (
-		clk    : in  std_logic;
-		rrid   : in  std_logic_vector;
-		raddr  : out std_logic_vector;
-		rlen   : out std_logic_vector;
+		dmactlr_clk   : in  std_logic;
+		dmactlr_req   : in  std_logic;
+		dmactlr_rdy   : buffer std_logic;
+		dmactlr_we    : in  std_logic;
+		dmactlr_iaddr : in  std_logic_vector;
+		dmactlr_ilen  : in  std_logic_vector;
+		dmactlr_taddr : out std_logic_vector;
+		dmactlr_tlen  : out std_logic_vector;
 
-		wrid   : in  std_logic_vector;
-		we     : in  std_logic;
-		waddr  : in  std_logic_vector;
-		wlen   : in  std_logic_vector);
+		ctlr_inirdy   : in std_logic;
+		ctlr_refreq   : in std_logic;
+
+		ctlr_irdy     : buffer std_logic;
+		ctlr_trdy     : in  std_logic;
+		ctlr_rw       : out std_logic := '0';
+		ctlr_act      : in  std_logic;
+		ctlr_pre      : in  std_logic;
+		ctlr_idl      : in  std_logic;
+		ctlr_b        : out std_logic_vector;
+		ctlr_a        : out std_logic_vector;
+		ctlr_di_req   : in  std_logic;
+		ctlr_di       : in  std_logic_vector;
+		ctlr_do_trdy  : in  std_logic_vector;
+		ctlr_do       : in  std_logic_vector;
+		ctlr_dm       : out std_logic_vector;
+
+		dst_clk       : in  std_logic;
+		dst_irdy      : out std_logic;
+		dst_trdy      : in  std_logic;
+		dst_do        : out std_logic_vector);
 
 end;
 
-architecture def of dmargtr is
+architecture def of dmatrans is
+	constant lat : natural := setif(no_latency, 1, 2);
+
+	signal ctlrdma_irdy : std_logic;
+
+	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
+	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col   : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal bnk          : std_logic_vector(ctlr_b'range);
+	signal row          : std_logic_vector(ctlr_a'range);
+	signal col          : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+
+	signal leoc         : std_logic;
+	signal ceoc         : std_logic;
+	signal col_eoc      : std_logic;
+	signal len_eoc      : std_logic;
+	signal ilen         : std_logic_vector(dmactlr_ilen'range);
+	signal iaddr        : std_logic_vector(dmactlr_iaddr'range);
+	signal tlen         : std_logic_vector(dmactlr_tlen'range);
+	signal taddr        : std_logic_vector(dmactlr_taddr'range);
+
+	signal load         : std_logic;
+	signal reload       : std_logic;
+	signal preload      : std_logic;
+
+	signal ref_req      : std_logic;
+	signal refreq       : std_logic;
 begin
-
-	mem_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => true)
-	port map (
-		wr_clk  => clk,
-		wr_ena  => we,
-		wr_addr => wrid 
-		wr_data => input_data,
-
-		rd_clk  => clk,
-		rd_addr => std_logic_vector(addrb),
-		rd_data => fifo_data);
 
 	process (dmactlr_clk)
 		variable q : std_logic;
