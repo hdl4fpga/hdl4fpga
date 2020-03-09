@@ -200,10 +200,13 @@ architecture Behavioral of usbh_host_hid is
                     end if;
                   else
                     if rx_done_o = '1' then
-                      R_retry <= (others => '0');
                       R_stored_response <= response_o;
-                      if response_o = x"4B" then -- SIE quirk: set address resturns 4B = PID_DATA1 instead of D2
+                      -- SIE quirk: set address returns 4B = PID_DATA1 instead of D2 = ACK
+                      if response_o = x"4B" then
+                        R_retry <= (others => '0');
                         R_dev_address_confirmed <= R_dev_address_requested;
+                      else -- set address failed
+                        R_retry <= R_retry + 1;
                       end if;
                     end if;
                   end if;
