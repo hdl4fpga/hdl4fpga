@@ -243,10 +243,16 @@ begin
 	end process;
 	dmactlr_req <= ctlr_inirdy; -- and not dmactlr_rdy and not rdy;
 
-	process (dmactlr_clk)
+	arbiter_p : process (dmactlr_clk)
 	begin
 		if rising_edge(dmactlr_clk) then
-			dmadev_req <= not dmadev_gnt and dev_req;
+			dmadev_req <= (dmadev_rdy and dmadev_req) or (not dmadev_rdy and dev_req);
+
+			if dev_rdy='1'then
+				dmadev_rdy <= dmadev_rdy or dmadev_gnt;
+			else
+				dmadev_rdy <= dmadev_req;
+			end if;
 		end if;
 	end process;
 
