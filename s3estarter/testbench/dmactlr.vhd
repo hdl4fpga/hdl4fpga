@@ -246,12 +246,12 @@ begin
 	arbiter_p : process (dmactlr_clk)
 	begin
 		if rising_edge(dmactlr_clk) then
-			dmadev_req <= (dmadev_rdy and dmadev_req) or (not dmadev_rdy and dev_req);
+			dmadev_req <= (not dmadev_req and not dmadev_rdy and dev_req) or (not dmadev_rdy and dev_req);
 
 			if dev_rdy='1'then
-				dmadev_rdy <= dmadev_rdy or dmadev_gnt;
+				dmadev_rdy <= (dmadev_req and dev_req) or dmadev_gnt;
 			else
-				dmadev_rdy <= dmadev_req;
+				dmadev_rdy <= (dmadev_req and dev_req);
 			end if;
 		end if;
 	end process;
