@@ -21,7 +21,7 @@ use hdl4fpga.usbh_setup_pack.all;
 entity usbh_host_hid is
   generic
   (
-    C_usb_speed: std_logic := '0' -- '0':6 MHz low speed '1':48 MHz full speed 
+    C_usb_speed: std_logic := '0' -- '0':6 MHz low speed '1':48 MHz full speed
   );
   port
   (
@@ -115,6 +115,11 @@ architecture Behavioral of usbh_host_hid is
   signal S_expected_response: std_logic_vector(7 downto 0);
   
   signal R_advance_data : std_logic := '0';
+
+  constant C_sof_pid: std_logic_vector(7 downto 0) := x"A5"; -- FIXME SOF doesn't work
+  signal R_sof_counter: std_logic_vector(10 downto 0);
+  signal S_sof_dev: std_logic_vector(6 downto 0);
+  signal S_sof_ep: std_logic_vector(3 downto 0);
 
   begin
 
@@ -268,6 +273,10 @@ architecture Behavioral of usbh_host_hid is
   end process;
   end block;
 
+  -- NOTE: not sure is this bit order correct
+  S_sof_dev <= R_sof_counter(10 downto 4); -- 7 bits
+  S_sof_ep  <= R_sof_counter( 3 downto 0); -- 4 bits
+
   S_expected_response <= x"4B" when data_idx_i = '1' else x"C3";
   process(clk)
   begin
@@ -289,6 +298,7 @@ architecture Behavioral of usbh_host_hid is
               ctrlin          <= '0';
               start_i         <= '1';
               R_packet_counter <= (others => '0');
+              R_sof_counter   <= (others => '0');
               R_state <= C_STATE_SETUP;
             end if;
           else
@@ -307,7 +317,15 @@ architecture Behavioral of usbh_host_hid is
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
                 in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
-                token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                if C_keepalive_type = '1' then
+                  token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                else
+                  token_pid_i <= C_sof_pid;
+                  token_dev_i <= S_sof_dev;
+                  token_ep_i  <= S_sof_ep;
+                  data_len_i  <= (others => '0');
+                  R_sof_counter <= R_sof_counter + 1;
+                end if;
                 resp_expected_i <= '0';
                 start_i         <= '1';
               else
@@ -357,7 +375,15 @@ architecture Behavioral of usbh_host_hid is
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
                 in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
-                token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                if C_keepalive_type = '1' then
+                  token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                else
+                  token_pid_i <= C_sof_pid;
+                  token_dev_i <= S_sof_dev;
+                  token_ep_i  <= S_sof_ep;
+                  data_len_i  <= (others => '0');
+                  R_sof_counter <= R_sof_counter + 1;
+                end if;
                 resp_expected_i <= '0';
                 start_i         <= '1';
               else
@@ -398,7 +424,15 @@ architecture Behavioral of usbh_host_hid is
                 -- keepalive signal
                 sof_transfer_i  <= '1';   -- transfer SOF or linectrl
                 in_transfer_i   <= C_keepalive_type;   -- 0:SOF, 1:linectrl
-                token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                if C_keepalive_type = '1' then
+                  token_pid_i(1 downto 0) <= "00"; -- linectrl: keepalive
+                else
+                  token_pid_i <= C_sof_pid;
+                  token_dev_i <= S_sof_dev;
+                  token_ep_i  <= S_sof_ep;
+                  data_len_i  <= (others => '0');
+                  R_sof_counter <= R_sof_counter + 1;
+                end if;
                 resp_expected_i <= '0';
                 start_i         <= '1';
               else
