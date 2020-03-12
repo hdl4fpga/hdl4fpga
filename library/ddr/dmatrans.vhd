@@ -34,14 +34,14 @@ entity dmatrans is
 		no_latency    : boolean := false;
 		size          : natural);
 	port (
-		dmactlr_clk   : in  std_logic;
-		dmactlr_req   : in  std_logic;
-		dmactlr_rdy   : buffer std_logic;
-		dmactlr_we    : in  std_logic;
-		dmactlr_iaddr : in  std_logic_vector;
-		dmactlr_ilen  : in  std_logic_vector;
-		dmactlr_taddr : out std_logic_vector;
-		dmactlr_tlen  : out std_logic_vector;
+		dmatrans_clk   : in  std_logic;
+		dmatrans_req   : in  std_logic;
+		dmatrans_rdy   : buffer std_logic;
+		dmatrans_we    : in  std_logic;
+		dmatrans_iaddr : in  std_logic_vector;
+		dmatrans_ilen  : in  std_logic_vector;
+		dmatrans_taddr : out std_logic_vector;
+		dmatrans_tlen  : out std_logic_vector;
 
 		ctlr_inirdy   : in std_logic;
 		ctlr_refreq   : in std_logic;
@@ -74,19 +74,19 @@ architecture def of dmatrans is
 
 	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col   : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal ddrdma_col   : std_logic_vector(dmatrans_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 	signal bnk          : std_logic_vector(ctlr_b'range);
 	signal row          : std_logic_vector(ctlr_a'range);
-	signal col          : std_logic_vector(dmactlr_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal col          : std_logic_vector(dmatrans_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
 
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
 	signal col_eoc      : std_logic;
 	signal len_eoc      : std_logic;
-	signal ilen         : std_logic_vector(dmactlr_ilen'range);
-	signal iaddr        : std_logic_vector(dmactlr_iaddr'range);
-	signal tlen         : std_logic_vector(dmactlr_tlen'range);
-	signal taddr        : std_logic_vector(dmactlr_taddr'range);
+	signal ilen         : std_logic_vector(dmatrans_ilen'range);
+	signal iaddr        : std_logic_vector(dmatrans_iaddr'range);
+	signal tlen         : std_logic_vector(dmatrans_tlen'range);
+	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
 	signal load         : std_logic;
 	signal reload       : std_logic;
@@ -96,20 +96,20 @@ architecture def of dmatrans is
 	signal refreq       : std_logic;
 begin
 
-	process (dmactlr_clk)
+	process (dmatrans_clk)
 		variable q : std_logic;
 	begin
-		if rising_edge(dmactlr_clk) then
+		if rising_edge(dmatrans_clk) then
 			ref_req <= setif(ctlr_refreq='1' and q='0');
 			q := ctlr_refreq;
 		end if;
 	end process;
 
-	process (dmactlr_clk, ceoc, ref_req, leoc)
+	process (dmatrans_clk, ceoc, ref_req, leoc)
 		variable q : std_logic;
 		variable s : std_logic;
 	begin
-		if rising_edge(dmactlr_clk) then
+		if rising_edge(dmatrans_clk) then
 			if ctlr_idl='0' then
 				if ceoc='1' then
 					q := '1';
@@ -120,16 +120,16 @@ begin
 				q := '0';
 			end if;
 			s := setif(ceoc='1' or ref_req='1', not leoc, q);
-			load   <= setif(s='1', '1', not dmactlr_req);
-			ilen   <= word2byte(dmactlr_ilen  & tlen,  s);
-			iaddr  <= word2byte(dmactlr_iaddr & taddr, s);
+			load   <= setif(s='1', '1', not dmatrans_req);
+			ilen   <= word2byte(dmatrans_ilen  & tlen,  s);
+			iaddr  <= word2byte(dmatrans_iaddr & taddr, s);
 		end if;
 		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
 
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
-		clk     => dmactlr_clk,
+		clk     => dmatrans_clk,
 		load    => load,
 		ena     => ctlrdma_irdy,
 		iaddr   => iaddr,
@@ -142,11 +142,11 @@ begin
 		col     => col,
 		col_eoc => ceoc);
 
-	process (dmactlr_clk)
+	process (dmatrans_clk)
 		variable q : unsigned(0 to lat+1);
 	begin
-		if rising_edge(dmactlr_clk) then
-			if dmactlr_req='0' then
+		if rising_edge(dmatrans_clk) then
+			if dmatrans_req='0' then
 				q := (others => '1');
 			elsif reload='1' then
 				q := (others => '1');
@@ -161,30 +161,30 @@ begin
 
 	tlenlat_e : entity hdl4fpga.align
 	generic map (
-		n => dmactlr_tlen'length,
-		d => (0 to dmactlr_tlen'length-1 => lat+1))
+		n => dmatrans_tlen'length,
+		d => (0 to dmatrans_tlen'length-1 => lat+1))
 	port map (
-		clk => dmactlr_clk,
+		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
 		di  => tlen,
-		do  => dmactlr_tlen);
+		do  => dmatrans_tlen);
 
 	taddrlat_e : entity hdl4fpga.align
 	generic map (
-		n => dmactlr_taddr'length,
-		d => (0 to dmactlr_taddr'length-1 => lat+1))
+		n => dmatrans_taddr'length,
+		d => (0 to dmatrans_taddr'length-1 => lat+1))
 	port map (
-		clk => dmactlr_clk,
+		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
 		di  => taddr,
-		do  => dmactlr_taddr);
+		do  => dmatrans_taddr);
 
 	bnklat_e : entity hdl4fpga.align
 	generic map (
 		n => ctlr_b'length,
 		d => (0 to ctlr_b'length-1 => 0))
 	port map (
-		clk => dmactlr_clk,
+		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
 		di  => bnk,
 		do  => ddrdma_bnk);
@@ -196,7 +196,7 @@ begin
 		n => col'length,
 		d => (0 to col'length-1 => lat))
 	port map (
-		clk => dmactlr_clk,
+		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
 		di  => col,
 		do  => ddrdma_col);
@@ -206,7 +206,7 @@ begin
 		n => 3,
 		d => (0 to 3-1 => lat-1))
 	port map (
-		clk   => dmactlr_clk,
+		clk   => dmatrans_clk,
 		di(0) => ceoc,
 		di(1) => leoc,
 		di(2) => ref_req,
@@ -214,10 +214,10 @@ begin
 		do(1) => len_eoc,
 		do(2) => refreq);
 
-	process (dmactlr_clk)
+	process (dmatrans_clk)
 		variable s : std_logic;
 	begin
-		if rising_edge(dmactlr_clk) then
+		if rising_edge(dmatrans_clk) then
 			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s);
 			ctlr_b <= ddrdma_bnk;
 			if ctlr_idl='1' then
@@ -228,11 +228,11 @@ begin
 		end if;
 	end process;
 
-	process (dmactlr_req, refreq, col_eoc, len_eoc, ctlr_idl, dmactlr_clk)
+	process (dmatrans_req, refreq, col_eoc, len_eoc, ctlr_idl, dmatrans_clk)
 		type states is (a, b, c, d);
 		variable state : states;
 	begin
-		if rising_edge(dmactlr_clk) then
+		if rising_edge(dmatrans_clk) then
 			case state is
 			when a =>
 				if len_eoc='1' then
@@ -266,26 +266,26 @@ begin
 			elsif col_eoc='1' then
 				ctlr_irdy <= '0';
 			else
-				ctlr_irdy <= dmactlr_req;
+				ctlr_irdy <= dmatrans_req;
 			end if;
-			dmactlr_rdy <= '0';
+			dmatrans_rdy <= '0';
 		when b =>
 			if ctlr_idl='0' then 
 				ctlr_irdy <= '0';
 			else
-				ctlr_irdy <= dmactlr_req;
+				ctlr_irdy <= dmatrans_req;
 			end if;
-			dmactlr_rdy <= '0';
+			dmatrans_rdy <= '0';
 		when c =>
-			ctlr_irdy <= dmactlr_req;
-			dmactlr_rdy <= '0';
+			ctlr_irdy <= dmatrans_req;
+			dmatrans_rdy <= '0';
 		when d =>
 			if len_eoc='0' then
-				ctlr_irdy <= dmactlr_req;
+				ctlr_irdy <= dmatrans_req;
 			else
 				ctlr_irdy <= '0';
 			end if;
-			dmactlr_rdy <= '1';
+			dmatrans_rdy <= '1';
 		end case;
 	end process;
 
@@ -295,7 +295,7 @@ begin
 	generic map (
 		size => size)
 	port map (
-		src_clk  => dmactlr_clk,
+		src_clk  => dmatrans_clk,
 		src_irdy => ctlr_di_req, 
 		src_data => ctlr_do,
 
