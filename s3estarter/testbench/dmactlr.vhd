@@ -151,7 +151,6 @@ architecture dmactlr of s3Estarter is
 	signal dmadev_req : std_logic_vector(dev_req'range);
 	signal dmadev_rdy : std_logic_vector(dev_req'range);
 	signal trans_rid   : std_logic_vector(0 to unsigned_num_bits(dmadev_gnt'length-1)-1);
-	signal dmactlr_dv   : std_logic;
 	signal dmactlr_rid  : std_logic_vector(trans_rid'range);
 	signal dmactlr_addr : std_logic_vector(dmatrans_iaddr'range);
 	signal dmactlr_len  : std_logic_vector(dmatrans_ilen'range);
@@ -217,8 +216,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv     => dmatrans_ilendv,
-			data   => dmatrans_ilen);
+			dv        => dmatrans_ilendv,
+			data      => dmatrans_ilen);
 
 	end block;
 
@@ -240,49 +239,57 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	process (dmatrans_clk, dmatrans_rdy, ctlr_inirdy)
-		variable rdy : std_logic;
-	begin
-		if rising_edge(dmatrans_clk) then
-			if ctlr_inirdy='1' then
-				if dmatrans_rdy='1' then
-					rdy := '1';
-				end if;
-			else
-				rdy := '0';
-			end if;
-		end if;
-	end process;
-	dmatrans_req <= ctlr_inirdy; -- and not dmactlr_rdy and not rdy;
-
-	arbiter_p : process (dmatrans_clk)
-	begin
-		if rising_edge(dmactlr_clk) then
-			dmadev_req <= (not dmadev_req and not dmadev_rdy and dev_req) or (dmadev_req and not (dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy)));
-			dmadev_rdy <= (dmadev_req and dev_req) or (dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy));
-		end if;
-	end process;
-
 	dmaarbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk     => dmactlr_clk,
 		bus_req => dmadev_req,
 		bus_gnt => dmadev_gnt);
 
-	trans_rid <= encoder(dmadev_gnt);
-		
-	dmargtr_e : entity hdl4fpga.dmargtr
-	port map (
-		ctlr_clk  => dmactlr_clk,
-		ctlr_dv   => dmactlr_dv,
-		ctlr_rid  => dmactlr_rid,
-		ctlr_addr => dmactlr_addr,
-		ctlr_len  => dmactlr_len,
+	arbiter_p : process (dmatrans_clk)
+	begin
+		if rising_edge(dmactlr_clk) then
+			dmadev_req <= 
+				(dmadev_gnt'range => ctlr_inirdy) and
+				(not dmadev_req or not dmadev_rdy) and (
+					(not dmadev_req and not dmadev_rdy and dev_req) or 
+					(dmadev_req and not (dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy))));
+			dmadev_rdy <= 
+				(dmadev_gnt'range => ctlr_inirdy) and (
+					(dmadev_req and dmadev_rdy) or 
+					(dmadev_req and dev_req)    or 
+					(dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy)));
+			dmatrans_req <= setif(dmadev_gnt /= (dmadev_gnt'range => '0'));
+			trans_rid    <= encoder(dmadev_gnt);
+		end if;
+	end process;
 
-		trans_clk  => dmatrans_clk,
-		trans_rid  => trans_rid,
-		trans_addr => dmatrans_iaddr,
-		trabs_len  => dmatrans_ilen);
+	dmaaddr_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => dmactlr_clk,
+		wr_ena  => dmactlr_iaddrdv,
+		wr_addr => dmactlr_rid,
+		wr_data => dmactlr_addr,
+
+		rd_clk  => dmatrans_clk,
+		rd_addr => trans_rid,
+		rd_data => dmatrans_iaddr);
+
+	dmalen_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => dmactlr_clk,
+		wr_addr => dmactlr_rid,
+		wr_ena  => dmactlr_ilendv,
+		wr_data => dmactlr_len,
+
+		rd_clk  => dmatrans_clk,
+		rd_addr => trans_rid,
+		rd_data => dmatrans_ilen);
 
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
@@ -298,27 +305,27 @@ begin
 		dmatrans_taddr => dmatrans_taddr,
 		dmatrans_tlen  => dmatrans_tlen,
 
-		ctlr_inirdy   => ctlr_inirdy,
-		ctlr_refreq   => ctlr_refreq,
+		ctlr_inirdy    => ctlr_inirdy,
+		ctlr_refreq    => ctlr_refreq,
 
-		ctlr_irdy     => ctlr_irdy,
-		ctlr_trdy     => ctlr_trdy,
-		ctlr_rw       => ctlr_rw,
-		ctlr_act      => ctlr_act,
-		ctlr_pre      => ctlr_pre,
-		ctlr_idl      => ctlr_idl,
-		ctlr_b        => ctlr_b,
-		ctlr_a        => ctlr_a,
-		ctlr_di_req   => ctlr_di_req,
-		ctlr_di       => ctlr_di,
-		ctlr_dm       => ctlr_dm,
-		ctlr_do_trdy  => ctlr_do_dv,
-		ctlr_do       => ctlr_do,
+		ctlr_irdy      => ctlr_irdy,
+		ctlr_trdy      => ctlr_trdy,
+		ctlr_rw        => ctlr_rw,
+		ctlr_act       => ctlr_act,
+		ctlr_pre       => ctlr_pre,
+		ctlr_idl       => ctlr_idl,
+		ctlr_b         => ctlr_b,
+		ctlr_a         => ctlr_a,
+		ctlr_di_req    => ctlr_di_req,
+		ctlr_di        => ctlr_di,
+		ctlr_dm        => ctlr_dm,
+		ctlr_do_trdy   => ctlr_do_dv,
+		ctlr_do        => ctlr_do,
 
-		dst_clk       => dst_clk,
-		dst_irdy      => dst_irdy,
-		dst_trdy      => dst_trdy,
-		dst_do        => dst_do);
+		dst_clk        => dst_clk,
+		dst_irdy       => dst_irdy,
+		dst_trdy       => dst_trdy,
+		dst_do         => dst_do);
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
