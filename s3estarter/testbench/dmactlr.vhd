@@ -76,17 +76,24 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	alias dmactlr_clk : std_logic is ddrsys_clks(clk0);
+	alias dmactlr_clk     : std_logic is ddrsys_clks(clk0);
 	signal dmatrans_we    : std_logic;
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
 
-	signal dmatrans_iaddr   : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmactlr_len    : std_logic_vector(26-1 downto 2) := x"0000_03";
+	signal dmactlr_addr   : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmactlr_addrdv : std_logic;
+	signal dmactlr_lendv  : std_logic;
+
+
+	signal dmatrans_iaddr   : std_logic_vector(dmactlr_addr'range);
 	signal dmatrans_iaddrdv : std_logic;
-	signal dmatrans_ilen    : std_logic_vector(26-1 downto 2) := x"0000_03";
+	signal dmatrans_ilen    : std_logic_vector(dmactlr_len'range);
 	signal dmatrans_ilendv  : std_logic;
-	signal dmatrans_taddr   : std_logic_vector(26-1 downto 2);
-	signal dmatrans_tlen    : std_logic_vector(26-1 downto 2);
+
+	signal dmatrans_taddr   : std_logic_vector(dmactlr_addr'range);
+	signal dmatrans_tlen    : std_logic_vector(dmactlr_len'range);
 
 	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
@@ -137,7 +144,7 @@ architecture dmactlr of s3Estarter is
 	signal dst_trdy      : std_logic;
 	signal dst_do        : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
-	signal si_clk    : std_logic;
+	alias  si_clk   : std_logic is e_rx_clk;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(e_rxd'range);
@@ -145,15 +152,14 @@ architecture dmactlr of s3Estarter is
 	signal toudpdaisy_frm  : std_logic;
 	signal toudpdaisy_irdy : std_logic;
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
-	signal dev_req    : std_logic_vector(0 to 2-1);
-	signal dmatrans_clk  : std_logic;
-	signal dmadev_gnt : std_logic_vector(dev_req'range);
-	signal dmadev_req : std_logic_vector(dev_req'range);
-	signal dmadev_rdy : std_logic_vector(dev_req'range);
-	signal trans_rid   : std_logic_vector(0 to unsigned_num_bits(dmadev_gnt'length-1)-1);
-	signal dmactlr_rid  : std_logic_vector(trans_rid'range);
-	signal dmactlr_addr : std_logic_vector(dmatrans_iaddr'range);
-	signal dmactlr_len  : std_logic_vector(dmatrans_ilen'range);
+
+	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
+	signal dmadev_gnt    : std_logic_vector(dev_req'range);
+	signal dmadev_req    : std_logic_vector(dev_req'range);
+	signal dmadev_rdy    : std_logic_vector(dev_req'range);
+	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dmadev_gnt'length-1)-1);
+	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
+
 	constant no_latency : boolean := false;
 begin
 
@@ -176,7 +182,6 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
-	si_clk <= e_rx_clk;
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -185,6 +190,28 @@ begin
 
 	begin
 
+		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		port map (
+			ipcfg_req   => '0',
+
+			phy_rxc     => e_rx_clk,
+			phy_rx_dv   => e_rx_dv,
+			phy_rx_d    => e_rxd,
+
+			phy_txc     => e_tx_clk,
+			phy_tx_en   => e_txen,
+			phy_tx_d    => e_txd,
+		
+			chaini_sel  => '0',
+
+			chaini_frm  => toudpdaisy_frm,
+			chaini_irdy => toudpdaisy_irdy,
+			chaini_data => toudpdaisy_data,
+
+			chaino_frm  => si_frm,
+			chaino_irdy => si_irdy,
+			chaino_data => si_data);
+	
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
@@ -204,8 +231,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => dmatrans_iaddrdv,
-			data => dmatrans_iaddr);
+			dv   => dmactlr_addrdv,
+			data => dmactlr_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
@@ -216,8 +243,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv        => dmatrans_ilendv,
-			data      => dmatrans_ilen);
+			dv        => dmactlr_lendv,
+			data      => dmactlr_len);
 
 	end block;
 
@@ -245,7 +272,7 @@ begin
 		bus_req => dmadev_req,
 		bus_gnt => dmadev_gnt);
 
-	arbiter_p : process (dmatrans_clk)
+	bookbus_p : process (dmactlr_clk)
 	begin
 		if rising_edge(dmactlr_clk) then
 			dmadev_req <= 
@@ -269,11 +296,11 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => dmactlr_clk,
-		wr_ena  => dmactlr_iaddrdv,
+		wr_ena  => dmactlr_addrdv,
 		wr_addr => dmactlr_rid,
 		wr_data => dmactlr_addr,
 
-		rd_clk  => dmatrans_clk,
+		rd_clk  => dmactlr_clk,
 		rd_addr => trans_rid,
 		rd_data => dmatrans_iaddr);
 
@@ -284,10 +311,10 @@ begin
 	port map (
 		wr_clk  => dmactlr_clk,
 		wr_addr => dmactlr_rid,
-		wr_ena  => dmactlr_ilendv,
+		wr_ena  => dmactlr_lendv,
 		wr_data => dmactlr_len,
 
-		rd_clk  => dmatrans_clk,
+		rd_clk  => dmactlr_clk,
 		rd_addr => trans_rid,
 		rd_data => dmatrans_ilen);
 
