@@ -80,6 +80,11 @@ architecture Behavioral of usbh_host_hid is
   signal R_reset_pending: std_logic;
   signal R_reset_accepted : std_logic;
 
+  constant C_sof_pid: std_logic_vector(7 downto 0) := x"A5";
+  signal R_sof_counter: std_logic_vector(10 downto 0);
+  signal S_sof_dev: std_logic_vector(6 downto 0);
+  signal S_sof_ep: std_logic_vector(3 downto 0);
+
   -- sie wires
   signal  rst_i             :  std_logic;
   signal  start_i           :  std_logic := '0';
@@ -115,11 +120,6 @@ architecture Behavioral of usbh_host_hid is
   signal S_expected_response: std_logic_vector(7 downto 0);
   
   signal R_advance_data : std_logic := '0';
-
-  constant C_sof_pid: std_logic_vector(7 downto 0) := x"A5"; -- FIXME SOF doesn't work
-  signal R_sof_counter: std_logic_vector(10 downto 0);
-  signal S_sof_dev: std_logic_vector(6 downto 0);
-  signal S_sof_ep: std_logic_vector(3 downto 0);
 
   begin
 
@@ -334,9 +334,9 @@ architecture Behavioral of usbh_host_hid is
             else -- time passed, send next setup packet or read status or read response
               R_slow <= (others => '0');
               sof_transfer_i  <= '0';
+              token_dev_i     <= R_dev_address_confirmed;
               token_ep_i      <= x"0";
               resp_expected_i <= '1';
-              token_dev_i <= R_dev_address_confirmed;
               if R_setup_rom_addr = C_setup_rom_len then
                 data_len_i <= x"0000";
                 start_i <= '0';
@@ -399,6 +399,9 @@ architecture Behavioral of usbh_host_hid is
               sof_transfer_i  <= '0';
               in_transfer_i   <= '1';
               token_pid_i     <= x"69";
+              if C_keepalive_type = '0' then
+                token_dev_i     <= R_dev_address_confirmed;
+              end if;
               token_ep_i      <= std_logic_vector(to_unsigned(C_report_endpoint,token_ep_i'length));
               data_idx_i      <= '0';
 --              R_packet_counter <= R_packet_counter + 1;
@@ -446,6 +449,9 @@ architecture Behavioral of usbh_host_hid is
                 token_pid_i     <= x"69"; -- 69=IN
               else
                 token_pid_i     <= x"E1"; -- E1=OUT
+              end if;
+              if C_keepalive_type = '0' then
+                token_dev_i     <= R_dev_address_confirmed;
               end if;
               token_ep_i      <= x"0";
               resp_expected_i <= '1';
