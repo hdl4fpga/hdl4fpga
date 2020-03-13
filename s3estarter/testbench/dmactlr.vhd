@@ -272,18 +272,18 @@ begin
 		bus_req => dmadev_req,
 		bus_gnt => dmadev_gnt);
 
-	bookbus_p : process (dmactlr_clk)
+	busbooking_p : process (dmactlr_clk)
 	begin
 		if rising_edge(dmactlr_clk) then
 			dmadev_req <= 
-				(dmadev_gnt'range => ctlr_inirdy) and
+				(dmadev_gnt'range => not ddrsys_rst) and
 				(not dmadev_req or not dmadev_rdy) and (
 					(not dmadev_req and not dmadev_rdy and dev_req) or 
 					(dmadev_req and not (dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy))));
 			dmadev_rdy <= 
-				(dmadev_gnt'range => ctlr_inirdy) and (
+				(dmadev_gnt'range => not ddrsys_rst) and (
 					(dmadev_req and dmadev_rdy) or 
-					(dmadev_req and dev_req)    or 
+					(dmadev_req and dev_req and dmadev_rdy)    or 
 					(dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy)));
 			dmatrans_req <= setif(dmadev_gnt /= (dmadev_gnt'range => '0'));
 			trans_rid    <= encoder(dmadev_gnt);
