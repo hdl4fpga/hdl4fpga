@@ -88,9 +88,7 @@ architecture dmactlr of s3Estarter is
 
 
 	signal dmatrans_iaddr   : std_logic_vector(dmactlr_addr'range);
-	signal dmatrans_iaddrdv : std_logic;
 	signal dmatrans_ilen    : std_logic_vector(dmactlr_len'range);
-	signal dmatrans_ilendv  : std_logic;
 
 	signal dmatrans_taddr   : std_logic_vector(dmactlr_addr'range);
 	signal dmatrans_tlen    : std_logic_vector(dmactlr_len'range);
@@ -285,7 +283,7 @@ begin
 					(dmadev_req and dmadev_rdy) or 
 					(dmadev_req and dev_req and dmadev_rdy)    or 
 					(dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy)));
-			dmatrans_req <= setif(dmadev_gnt /= (dmadev_gnt'range => '0'));
+			dmatrans_req <= setif(dmadev_gnt /= (dmadev_gnt'range => '0')) and ctlr_inirdy;
 			trans_rid    <= encoder(dmadev_gnt);
 		end if;
 	end process;
