@@ -152,10 +152,11 @@ architecture dmactlr of s3Estarter is
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
 
 	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
-	signal dmadev_gnt    : std_logic_vector(dev_req'range);
-	signal dmadev_req    : std_logic_vector(dev_req'range);
+	signal dma_gnt    : std_logic_vector(dev_req'range);
+	signal dma_book    : std_logic_vector(dev_req'range);
+	signal dma_req    : std_logic_vector(dev_req'range);
 	signal dmadev_rdy    : std_logic_vector(dev_req'range);
-	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dmadev_gnt'length-1)-1);
+	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dma_gnt'length-1)-1);
 	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
 
 	constant no_latency : boolean := false;
@@ -267,24 +268,26 @@ begin
 	dmaarbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk     => dmactlr_clk,
-		bus_req => dmadev_req,
-		bus_gnt => dmadev_gnt);
+		bus_req => dma_req,
+		bus_gnt => dma_gnt);
 
 	busbooking_p : process (dmactlr_clk)
+		variable dma_served : std_logic_vector(dma_book'range);
 	begin
 		if rising_edge(dmactlr_clk) then
-			dmadev_req <= 
-				(dmadev_gnt'range => not ddrsys_rst) and
-				(not dmadev_req or not dmadev_rdy) and (
-					(not dmadev_req and not dmadev_rdy and dev_req) or 
-					(dmadev_req and not (dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy))));
-			dmadev_rdy <= 
-				(dmadev_gnt'range => not ddrsys_rst) and (
-					(dmadev_req and dmadev_rdy) or 
-					(dmadev_req and dev_req and dmadev_rdy)    or 
-					(dmadev_gnt and (dmadev_gnt'range => dmatrans_rdy)));
-			dmatrans_req <= setif(dmadev_gnt /= (dmadev_gnt'range => '0')) and ctlr_inirdy;
-			trans_rid    <= encoder(dmadev_gnt);
+			dma_book <= 
+				(dma_gnt'range => not ddrsys_rst) and
+				(not dma_book or not dmadev_rdy) and (
+					(not dma_book and not dmadev_rdy and dev_req) or 
+					(dma_book and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
+			dma_served := 
+				(dma_gnt'range => not ddrsys_rst) and (
+					(dma_book and dmadev_rdy) or 
+					(dma_book and dev_req and dmadev_rdy)    or 
+					(dma_gnt and (dma_gnt'range => dmatrans_rdy)));
+			dma_req <= not dma_served and dma_book;
+			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
+			trans_rid    <= encoder(dma_gnt);
 		end if;
 	end process;
 
