@@ -155,7 +155,6 @@ architecture dmactlr of s3Estarter is
 	signal dma_gnt    : std_logic_vector(dev_req'range);
 	signal dma_book    : std_logic_vector(dev_req'range);
 	signal dma_req    : std_logic_vector(dev_req'range);
-	signal dmadev_rdy    : std_logic_vector(dev_req'range);
 	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dma_gnt'length-1)-1);
 	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
 
@@ -277,13 +276,13 @@ begin
 		if rising_edge(dmactlr_clk) then
 			dma_book <= 
 				(dma_gnt'range => not ddrsys_rst) and
-				(not dma_book or not dmadev_rdy) and (
-					(not dma_book and not dmadev_rdy and dev_req) or 
+				(not dma_book or not dma_served) and (
+					(not dma_book and not dma_served and dev_req) or 
 					(dma_book and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
 			dma_served := 
 				(dma_gnt'range => not ddrsys_rst) and (
-					(dma_book and dmadev_rdy) or 
-					(dma_book and dev_req and dmadev_rdy)    or 
+					(dma_book and dma_served) or 
+					(dma_book and dev_req and dma_served)    or 
 					(dma_gnt and (dma_gnt'range => dmatrans_rdy)));
 			dma_req <= not dma_served and dma_book;
 			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;

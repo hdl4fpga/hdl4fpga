@@ -18,12 +18,12 @@ add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_addrdv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_addr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_lendv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_len
-add wave -noupdate /testbench/s3estarter_e/dmadev_req(0)
-add wave -noupdate /testbench/s3estarter_e/dmadev_rdy(0)
-add wave -noupdate /testbench/s3estarter_e/dmadev_gnt
-add wave -noupdate /testbench/s3estarter_e/dmadev_req
-add wave -noupdate /testbench/s3estarter_e/dmadev_rdy
 add wave -noupdate /testbench/s3estarter_e/dmatrans_rdy
+add wave -noupdate /testbench/s3estarter_e/dev_req(0)
+add wave -noupdate /testbench/s3estarter_e/dma_gnt(0)
+add wave -noupdate /testbench/s3estarter_e/dma_book(0)
+add wave -noupdate /testbench/s3estarter_e/busbooking_p/dma_served(0)
+add wave -noupdate /testbench/s3estarter_e/dma_req(0)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/s3estarter_e/ddrsys_clks
 add wave -noupdate /testbench/s3estarter_e/ddrphy_rst
@@ -78,7 +78,7 @@ add wave -noupdate /testbench/s3estarter_e/dmatrans_e/ctlr_irdy
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmatrans_e/ctlr_b
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmatrans_e/ctlr_a
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {202446677 ps} 0}
+WaveRestoreCursors {{Cursor 1} {202456709 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 215
@@ -94,4 +94,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202338866 ps} {202555468 ps}
+WaveRestoreZoom {202393554 ps} {202513682 ps}
