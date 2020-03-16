@@ -28,6 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.scopeiopkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -44,8 +45,8 @@ architecture dmactlr of s3Estarter is
 	-------------------------------------------------------------
 
 	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 10; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
-	constant ddr_div     : natural := 3;
+	constant ddr_mul     : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+	constant ddr_div     : natural := 1;
 
 	constant g           : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
@@ -75,15 +76,22 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
-	alias dmactlr_clk : std_logic is ddrsys_clks(clk0);
-	signal dmactlr_we    : std_logic;
-	signal dmactlr_req   : std_logic;
-	signal dmactlr_rdy   : std_logic;
+	alias dmactlr_clk     : std_logic is ddrsys_clks(clk0);
+	signal dmatrans_we    : std_logic;
+	signal dmatrans_req   : std_logic;
+	signal dmatrans_rdy   : std_logic;
 
-	signal dmactlr_iaddr : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"ff";
-	signal dmactlr_ilen  : std_logic_vector(26-1 downto 2) := x"0000_00";
-	signal dmactlr_taddr : std_logic_vector(26-1 downto 2);
-	signal dmactlr_tlen  : std_logic_vector(26-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(26-1 downto 2) := x"0000_03";
+	signal dmactlr_addr   : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmactlr_addrdv : std_logic;
+	signal dmactlr_lendv  : std_logic;
+
+
+	signal dmatrans_iaddr   : std_logic_vector(dmactlr_addr'range);
+	signal dmatrans_ilen    : std_logic_vector(dmactlr_len'range);
+
+	signal dmatrans_taddr   : std_logic_vector(dmactlr_addr'range);
+	signal dmatrans_tlen    : std_logic_vector(dmactlr_len'range);
 
 	signal ctlr_irdy     : std_logic;
 	signal ctlr_trdy     : std_logic;
@@ -134,6 +142,22 @@ architecture dmactlr of s3Estarter is
 	signal dst_trdy      : std_logic;
 	signal dst_do        : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
+	alias  si_clk   : std_logic is e_rx_clk;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(e_rxd'range);
+
+	signal toudpdaisy_frm  : std_logic;
+	signal toudpdaisy_irdy : std_logic;
+	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
+
+	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
+	signal dma_gnt    : std_logic_vector(dev_req'range);
+	signal dma_book    : std_logic_vector(dev_req'range);
+	signal dma_req    : std_logic_vector(dev_req'range);
+	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dma_gnt'length-1)-1);
+	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
+
 	constant no_latency : boolean := false;
 begin
 
@@ -156,6 +180,72 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
+	scopeio_export_b : block
+
+		signal rgtr_id   : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv   : std_logic;
+		signal rgtr_data : std_logic_vector(32-1 downto 0);
+
+	begin
+
+		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		port map (
+			ipcfg_req   => '0',
+
+			phy_rxc     => e_rx_clk,
+			phy_rx_dv   => e_rx_dv,
+			phy_rx_d    => e_rxd,
+
+			phy_txc     => e_tx_clk,
+			phy_tx_en   => e_txen,
+			phy_tx_d    => e_txd,
+		
+			chaini_sel  => '0',
+
+			chaini_frm  => toudpdaisy_frm,
+			chaini_irdy => toudpdaisy_irdy,
+			chaini_data => toudpdaisy_data,
+
+			chaino_frm  => si_frm,
+			chaino_irdy => si_irdy,
+			chaino_data => si_data);
+	
+		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		port map (
+			sin_clk   => si_clk,
+			sin_frm   => si_frm,
+			sin_irdy  => si_irdy,
+			sin_data  => si_data,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data);
+
+		dmaaddr_e : entity hdl4fpga.scopeio_rgtr
+		generic map (
+			rid  => rid_dmaaddr)
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			dv   => dmactlr_addrdv,
+			data => dmactlr_addr);
+
+		dmalen_e : entity hdl4fpga.scopeio_rgtr
+		generic map (
+			rid  => rid_dmalen)
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			dv        => dmactlr_lendv,
+			data      => dmactlr_len);
+
+	end block;
+
 	g_load <= not ctlr_inirdy;
 	g_ena  <= ctlr_di_req;
 	testpattern_e : entity hdl4fpga.lfsr
@@ -167,63 +257,102 @@ begin
 		ena  => g_ena,
 		data => g_data);
 
-	dmactlr_we  <= '0';
+	dmatrans_we  <= '0';
 
 	dst_clk     <= sys_clk;
 	dst_irdy    <= '1';
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	process (dmactlr_clk, dmactlr_rdy, ctlr_inirdy)
-		variable rdy : std_logic;
+	dmaarbiter_e : entity hdl4fpga.arbiter
+	port map (
+		clk     => dmactlr_clk,
+		bus_req => dma_req,
+		bus_gnt => dma_gnt);
+
+	busbooking_p : process (dmactlr_clk)
+		variable dma_served : std_logic_vector(dma_book'range);
 	begin
 		if rising_edge(dmactlr_clk) then
-			if ctlr_inirdy='1' then
-				if dmactlr_rdy='1' then
-					rdy := '1';
-				end if;
-			else
-				rdy := '0';
-			end if;
+			dma_book <= 
+				(dma_gnt'range => not ddrsys_rst) and (
+					(not dma_book and dma_served) or 
+					dev_req or
+					(dma_book and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
+			dma_served := 
+				(dma_gnt'range => not ddrsys_rst) and (
+					(not dma_book and dma_served) or 
+					(dma_book   and dev_req and (dma_gnt and (dma_gnt'range => dmatrans_rdy))) or
+					(dma_served and dev_req));
+			dma_req <= not dma_served and dma_book;
+			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
+			trans_rid    <= encoder(dma_gnt);
 		end if;
 	end process;
-	dmactlr_req <= ctlr_inirdy; -- and not dmactlr_rdy and not rdy;
 
-	dmactlr_e : entity hdl4fpga.dmactlr
+	dmaaddr_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => dmactlr_clk,
+		wr_ena  => dmactlr_addrdv,
+		wr_addr => dmactlr_rid,
+		wr_data => dmactlr_addr,
+
+		rd_clk  => dmactlr_clk,
+		rd_addr => trans_rid,
+		rd_data => dmatrans_iaddr);
+
+	dmalen_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => dmactlr_clk,
+		wr_addr => dmactlr_rid,
+		wr_ena  => dmactlr_lendv,
+		wr_data => dmactlr_len,
+
+		rd_clk  => dmactlr_clk,
+		rd_addr => trans_rid,
+		rd_data => dmatrans_ilen);
+
+	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
 		no_latency   => no_latency,
 		size => 256)
 	port map (
-		dmactlr_clk   => dmactlr_clk,
-		dmactlr_req   => dmactlr_req,
-		dmactlr_rdy   => dmactlr_rdy,
-		dmactlr_we    => dmactlr_we,
-		dmactlr_iaddr => dmactlr_iaddr,
-		dmactlr_ilen  => dmactlr_ilen,
-		dmactlr_taddr => dmactlr_taddr,
-		dmactlr_tlen  => dmactlr_tlen,
+		dmatrans_clk   => dmactlr_clk,
+		dmatrans_req   => dmatrans_req,
+		dmatrans_rdy   => dmatrans_rdy,
+		dmatrans_we    => dmatrans_we,
+		dmatrans_iaddr => dmatrans_iaddr,
+		dmatrans_ilen  => dmatrans_ilen,
+		dmatrans_taddr => dmatrans_taddr,
+		dmatrans_tlen  => dmatrans_tlen,
 
-		ctlr_inirdy   => ctlr_inirdy,
-		ctlr_refreq   => ctlr_refreq,
+		ctlr_inirdy    => ctlr_inirdy,
+		ctlr_refreq    => ctlr_refreq,
 
-		ctlr_irdy     => ctlr_irdy,
-		ctlr_trdy     => ctlr_trdy,
-		ctlr_rw       => ctlr_rw,
-		ctlr_act      => ctlr_act,
-		ctlr_pre      => ctlr_pre,
-		ctlr_idl      => ctlr_idl,
-		ctlr_b        => ctlr_b,
-		ctlr_a        => ctlr_a,
-		ctlr_di_req   => ctlr_di_req,
-		ctlr_di       => ctlr_di,
-		ctlr_dm       => ctlr_dm,
-		ctlr_do_trdy  => ctlr_do_dv,
-		ctlr_do       => ctlr_do,
+		ctlr_irdy      => ctlr_irdy,
+		ctlr_trdy      => ctlr_trdy,
+		ctlr_rw        => ctlr_rw,
+		ctlr_act       => ctlr_act,
+		ctlr_pre       => ctlr_pre,
+		ctlr_idl       => ctlr_idl,
+		ctlr_b         => ctlr_b,
+		ctlr_a         => ctlr_a,
+		ctlr_di_req    => ctlr_di_req,
+		ctlr_di        => ctlr_di,
+		ctlr_dm        => ctlr_dm,
+		ctlr_do_trdy   => ctlr_do_dv,
+		ctlr_do        => ctlr_do,
 
-		dst_clk       => dst_clk,
-		dst_irdy      => dst_irdy,
-		dst_trdy      => dst_trdy,
-		dst_do        => dst_do);
+		dst_clk        => dst_clk,
+		dst_irdy       => dst_irdy,
+		dst_trdy       => dst_trdy,
+		dst_do         => dst_do);
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
@@ -244,9 +373,9 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "001",
-		ctlr_cl      => "010",	-- 2   133 Mhz
+--		ctlr_cl      => "010",	-- 2   133 Mhz
 --		ctlr_cl      => "110",	-- 2.5 166 Mhz
---		ctlr_cl      => "011",	-- 3   200 Mhz
+		ctlr_cl      => "011",	-- 3   200 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",

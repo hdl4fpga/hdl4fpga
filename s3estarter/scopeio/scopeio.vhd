@@ -74,7 +74,7 @@ architecture beh of s3estarter is
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(8-1 downto 0);
+	signal si_data   : std_logic_vector(e_rxd'range);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
