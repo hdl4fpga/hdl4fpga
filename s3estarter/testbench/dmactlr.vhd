@@ -153,7 +153,7 @@ architecture dmactlr of s3Estarter is
 
 	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
 	signal dma_gnt    : std_logic_vector(dev_req'range);
-	signal dma_book    : std_logic_vector(dev_req'range);
+	signal dma_booked    : std_logic_vector(dev_req'range);
 	signal dma_req    : std_logic_vector(dev_req'range);
 	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dma_gnt'length-1)-1);
 	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
@@ -264,32 +264,67 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	process (dmactlr_clk)
-		variable dv : std_logic;
+	dmacfg_b : block
+		port (
+			cfgdma_clk : in  std_logic;
+			cfg_clk    : in  std_logic_vector;
+			cfg_req    : in  std_logic_vector;
+			cfg_rdy    : out std_logic_vector;
+			cfg_gnt    : out std_logic_vector);
+
+		signal request : std_logic_vector(cfg_clk'range);
+		signal booked  : std_logic_vector(dev_'range);
+		signal served  : std_logic_vector(booked'range);
+
+		signal arbiter_req : std_logic_vector(cfg_clk'range);
+		signal arbiter_gnt : std_logic_vector(cfg_clk'range);
+
 	begin
-		if rising_edge(dmactlr_clk) then
-			if dmatrans_req='1' then
-				if dma_gnt(video) then
-					if dv='0' then
-						video_dv <= '1';
-					else
-						video_dv <= '0';
+
+		dev_g : for cfg_clk'range generate
+			process (cfg_clk(i))
+				variable dv : std_logic;
+			begin
+				if rising_edge(cfg_clk(i)) then
+					if served(i)='1' then
+						if cfg_req(i)='0' then
+							request(i) <= '0';
+						end if;
+					elsif cfg_req(i) then
+						request(i) <= '1';
 					end if;
-					dv := '1';
-				else
-					video_dv <= '0';
-					dv := '0';
 				end if;
-			else
-				video_dv <= '0';
-				dv := '0';
+			end process;
+		end generate;
+
+		book_p : process (cfgdma_clk)
+			variable serving : std_logic_vector(served'range);
+		begin
+			if rising_edge(cfgdma_clk) then
+				if ddrsys_rst then
+					booked  <= (others => '0')';
+					serving := (others => '0')';
+				else
+					booked  <= request or (booked and not served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
+					serving := (request and served) or (request and booked and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
+				end if;
+				served <= serving;
+
+				arbiter_req  <= not aux and booked;
+				dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
+				trans_rid    <= encoder(dma_gnt);
 			end if;
-			if video_dv='1' then
-				video_addr   <= video_addr + 4096;
-				video_length <= 4096;
-			end if;
-		end if;
-	end process;
+		end process;
+
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk     => cfgdma_clk,
+			bus_req => arbiter_req,
+			bus_gnt => arbiter_gnt);
+
+		cfg_rdy <= served;
+
+	end block;
 
 	dmaarbiter_e : entity hdl4fpga.arbiter
 	port map (
@@ -298,17 +333,17 @@ begin
 		bus_gnt => dma_gnt);
 
 	busbooking_p : process (dmactlr_clk)
-		variable dma_served : std_logic_vector(dma_book'range);
+		variable dma_served : std_logic_vector(dma_booked'range);
 	begin
 		if rising_edge(dmactlr_clk) then
 			if ddrsys_rst then
-				dma_book   <= (others => '0')';
+				dma_booked <= (others => '0')';
 				dma_served := (others => '0')';
 			else
-				dma_book   <= dev_req or (dma_book and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
-				dma_served := (dev_req and dma_served) or (dev_req and dma_book and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
+				dma_booked <= dev_req or (dma_booked and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
+				dma_served := (dev_req and dma_served) or (dev_req and dma_booked and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
 			end if;
-			dma_req      <= not dma_served and dma_book;
+			dma_req      <= not dma_served and dma_booked;
 			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
 			trans_rid    <= encoder(dma_gnt);
 		end if;
