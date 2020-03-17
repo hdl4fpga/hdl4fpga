@@ -264,6 +264,33 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
+	process (dmactlr_clk)
+		variable dv : std_logic;
+	begin
+		if rising_edge(dmactlr_clk) then
+			if dmatrans_req='1' then
+				if dma_gnt(video) then
+					if dv='0' then
+						video_dv <= '1';
+					else
+						video_dv <= '0';
+					end if;
+					dv := '1';
+				else
+					video_dv <= '0';
+					dv := '0';
+				end if;
+			else
+				video_dv <= '0';
+				dv := '0';
+			end if;
+			if video_dv='1' then
+				video_addr   <= video_addr + 4096;
+				video_length <= 4096;
+			end if;
+		end if;
+	end process;
+
 	dmaarbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk     => dmactlr_clk,
@@ -274,17 +301,14 @@ begin
 		variable dma_served : std_logic_vector(dma_book'range);
 	begin
 		if rising_edge(dmactlr_clk) then
-			dma_book <= 
-				(dma_gnt'range => not ddrsys_rst) and (
-					(not dma_book and dma_served) or 
-					dev_req or
-					(dma_book and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
-			dma_served := 
-				(dma_gnt'range => not ddrsys_rst) and (
-					(not dma_book and dma_served) or 
-					(dma_book   and dev_req and (dma_gnt and (dma_gnt'range => dmatrans_rdy))) or
-					(dma_served and dev_req));
-			dma_req <= not dma_served and dma_book;
+			if ddrsys_rst then
+				dma_book   <= (others => '0')';
+				dma_served := (others => '0')';
+			else
+				dma_book   <= dev_req or (dma_book and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
+				dma_served := (dev_req and dma_served) or (dev_req and dma_book and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
+			end if;
+			dma_req      <= not dma_served and dma_book;
 			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
 			trans_rid    <= encoder(dma_gnt);
 		end if;
