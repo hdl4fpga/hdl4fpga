@@ -264,7 +264,7 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	dmacfg_b : block
+	_b : block
 		port (
 			cfgdma_clk : in  std_logic;
 			cfg_clk    : in  std_logic_vector;
@@ -311,8 +311,6 @@ begin
 				served <= serving;
 
 				arbiter_req  <= not aux and booked;
-				dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
-				trans_rid    <= encoder(dma_gnt);
 			end if;
 		end process;
 
@@ -322,6 +320,7 @@ begin
 			bus_req => arbiter_req,
 			bus_gnt => arbiter_gnt);
 
+			trans_rid    <= encoder(dma_gnt);
 		cfg_rdy <= served;
 
 	end block;
