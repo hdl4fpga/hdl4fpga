@@ -264,96 +264,36 @@ begin
 	dst_trdy    <= '1';
 	dst_do      <= (others => '-');
 
-	_b : block
-		port (
-			cfgdma_clk : in  std_logic;
-			cfg_clk    : in  std_logic_vector;
-			cfg_req    : in  std_logic_vector;
-			cfg_rdy    : out std_logic_vector;
-			cfg_gnt    : out std_logic_vector);
-
-		signal request : std_logic_vector(cfg_clk'range);
-		signal booked  : std_logic_vector(dev_'range);
-		signal served  : std_logic_vector(booked'range);
-
-		signal arbiter_req : std_logic_vector(cfg_clk'range);
-		signal arbiter_gnt : std_logic_vector(cfg_clk'range);
-
-	begin
-
-		dev_g : for cfg_clk'range generate
-			process (cfg_clk(i))
-				variable dv : std_logic;
-			begin
-				if rising_edge(cfg_clk(i)) then
-					if served(i)='1' then
-						if cfg_req(i)='0' then
-							request(i) <= '0';
-						end if;
-					elsif cfg_req(i) then
-						request(i) <= '1';
-					end if;
-				end if;
-			end process;
-		end generate;
-
-		book_p : process (cfgdma_clk)
-			variable serving : std_logic_vector(served'range);
-		begin
-			if rising_edge(cfgdma_clk) then
-				if ddrsys_rst then
-					booked  <= (others => '0')';
-					serving := (others => '0')';
-				else
-					booked  <= request or (booked and not served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
-					serving := (request and served) or (request and booked and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
-				end if;
-				served <= serving;
-
-				arbiter_req  <= not aux and booked;
-			end if;
-		end process;
-
-		arbiter_e : entity hdl4fpga.arbiter
-		port map (
-			clk     => cfgdma_clk,
-			bus_req => arbiter_req,
-			bus_gnt => arbiter_gnt);
-
-			trans_rid    <= encoder(dma_gnt);
-		cfg_rdy <= served;
-
-	end block;
-
-	dmaarbiter_e : entity hdl4fpga.arbiter
+	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
-		clk     => dmactlr_clk,
-		bus_req => dma_req,
-		bus_gnt => dma_gnt);
+		gnt_clk => sys_clk,
+		gnt_rst => ,
+		gnt_rdy => ,
 
-	busbooking_p : process (dmactlr_clk)
-		variable dma_served : std_logic_vector(dma_booked'range);
+		dev_clk => (0 => video_clk),
+		dev_req => (0 => video_req),
+		dev_gnt => dma_rid,
+		dev_rdy => dev_rdy);
+
+	process ()
 	begin
-		if rising_edge(dmactlr_clk) then
-			if ddrsys_rst then
-				dma_booked <= (others => '0')';
-				dma_served := (others => '0')';
-			else
-				dma_booked <= dev_req or (dma_booked and not dma_served and not (dma_gnt and (dma_gnt'range => dmatrans_rdy))));
-				dma_served := (dev_req and dma_served) or (dev_req and dma_booked and (dma_gnt and (dma_gnt'range => dmatrans_rdy)));
-			end if;
-			dma_req      <= not dma_served and dma_booked;
-			dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
-			trans_rid    <= encoder(dma_gnt);
+		if rising_edge() then
+			dmartgr_dv <=
+			word2byte (, dev_gnt);
+			dmargtr_id <= encoder(dma_rid);
+		   	
 		end if;
 	end process;
+
+	dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
+	dma_req      <= not dma_served and dma_booked;
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => dmactlr_clk,
+		wr_clk  => si_clk,
 		wr_ena  => dmactlr_addrdv,
 		wr_addr => dmactlr_rid,
 		wr_data => dmactlr_addr,
