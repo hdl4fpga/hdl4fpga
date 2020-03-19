@@ -76,16 +76,14 @@ architecture dmactlr of s3Estarter is
 	constant clk90       : natural := 1;
 	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
 
+	signal iodma_len    : std_logic_vector(26-1 downto 2) := x"0000_03";
+	signal iodma_addr   : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal iodma_dv     : std_logic;
+
 	alias dmactlr_clk     : std_logic is ddrsys_clks(clk0);
 	signal dmatrans_we    : std_logic;
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
-
-	signal dmactlr_len    : std_logic_vector(26-1 downto 2) := x"0000_03";
-	signal dmactlr_addr   : std_logic_vector(26-1 downto 2) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal dmactlr_addrdv : std_logic;
-	signal dmactlr_lendv  : std_logic;
-
 
 	signal dmatrans_iaddr   : std_logic_vector(dmactlr_addr'range);
 	signal dmatrans_ilen    : std_logic_vector(dmactlr_len'range);
@@ -151,6 +149,8 @@ architecture dmactlr of s3Estarter is
 	signal toudpdaisy_irdy : std_logic;
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
 
+	constant dma_io    : natural := 0;
+	constant dma_video : natural := 1;
 	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
 	signal dma_gnt    : std_logic_vector(dev_req'range);
 	signal dma_booked    : std_logic_vector(dev_req'range);
@@ -229,8 +229,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => dmactlr_addrdv,
-			data => dmactlr_addr);
+			dv   => iodma_rdv,
+			data => iodma_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
@@ -241,8 +241,7 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv        => dmactlr_lendv,
-			data      => dmactlr_len);
+			data      => iodma_len);
 
 	end block;
 
@@ -251,8 +250,8 @@ begin
 		gnt_clk => si_clk,
 		gnt_rdy => dmargtr_dv,
 
-		dev_clk => (0 => video_clk),
-		dev_req => dmargtr_req,
+		dev_clk => (dma_io => si_clk,   dma_video => video_clk),
+		dev_req => (dma_io => iodma_dv, dma_video => ),
 		dev_gnt => dmargtr_gnt,
 		dev_rdy => dmartgr_wttn);
 
@@ -260,8 +259,8 @@ begin
 		variable dv : std_logic;
 	begin
 		if rising_edge(dmargtr_clk) then
-			dmargtr_addr <= word2byte (video_addr, dmargtr_gnt);
-			dmargtr_len  <= word2byte (video_len,  dmargtr_gnt);
+			dmargtr_addr <= word2byte (iodma_addr & video_addr, dmargtr_gnt);
+			dmargtr_len  <= word2byte (iodma_len  & video_len,  dmargtr_gnt);
 			dmargtr_id   <= encoder(dmargtr_gnt);
 			dmartgr_dv   <= setif(dmargtr_gnt/=(dmargtr_gnt'range => '0') and not dv;
 			dv := setif(dmargtr_gnt/=(dmargtr_gnt'range => '0');
