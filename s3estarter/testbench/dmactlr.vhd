@@ -246,27 +246,9 @@ begin
 
 	end block;
 
-	g_load <= not ctlr_inirdy;
-	g_ena  <= ctlr_di_req;
-	testpattern_e : entity hdl4fpga.lfsr
-	generic map (
-		g    => g)
-	port map (
-		clk  => ddrsys_clks(clk0), --sys_clk,
-		load => g_load,
-		ena  => g_ena,
-		data => g_data);
-
-	dmatrans_we  <= '0';
-
-	dst_clk     <= sys_clk;
-	dst_irdy    <= '1';
-	dst_trdy    <= '1';
-	dst_do      <= (others => '-');
-
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
-		gnt_clk => sys_clk,
+		gnt_clk => si_clk,
 		gnt_rst => ,
 		gnt_rdy => ,
 
@@ -275,13 +257,14 @@ begin
 		dev_gnt => dma_rid,
 		dev_rdy => dev_rdy);
 
-	process ()
+	process (si_clk)
+		variable dv : std_logic;
 	begin
-		if rising_edge() then
-			dmartgr_dv <=
-			word2byte (, dev_gnt);
-			dmargtr_id <= encoder(dma_rid);
-		   	
+		if rising_edge(si_clk) then
+			dmactlr_addr   <= word2byte (video_addr, dev_gnt);
+			dmargtr_id     <= encoder(dma_rid);
+			dmartgr_addrdv <= setif(dev_gnt/=(dev_gnt'range => '0') and not dv;
+			dv := setif(dev_gnt/=(dev_gnt'range => '0') and not dv;
 		end if;
 	end process;
 
@@ -351,6 +334,24 @@ begin
 		dst_irdy       => dst_irdy,
 		dst_trdy       => dst_trdy,
 		dst_do         => dst_do);
+
+	g_load <= not ctlr_inirdy;
+	g_ena  <= ctlr_di_req;
+	testpattern_e : entity hdl4fpga.lfsr
+	generic map (
+		g    => g)
+	port map (
+		clk  => ddrsys_clks(clk0), --sys_clk,
+		load => g_load,
+		ena  => g_ena,
+		data => g_data);
+
+	dmatrans_we  <= '0';
+
+	dst_clk     <= sys_clk;
+	dst_irdy    <= '1';
+	dst_trdy    <= '1';
+	dst_do      <= (others => '-');
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
