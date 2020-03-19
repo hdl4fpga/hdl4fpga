@@ -249,13 +249,12 @@ begin
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		gnt_clk => si_clk,
-		gnt_rst => ,
-		gnt_rdy => ,
+		gnt_rdy => dmargtr_dv,
 
 		dev_clk => (0 => video_clk),
-		dev_req => (0 => video_req),
+		dev_req => dmargtr_req,
 		dev_gnt => dmargtr_gnt,
-		dev_rdy => dmartgr_dv;
+		dev_rdy => dmartgr_wttn);
 
 	process (dmargtr_clk)
 		variable dv : std_logic;
@@ -268,9 +267,6 @@ begin
 			dv := setif(dmargtr_gnt/=(dmargtr_gnt'range => '0');
 		end if;
 	end process;
-
-	dmatrans_req <= setif(dma_gnt /= (dma_gnt'range => '0')) and ctlr_inirdy;
-	dma_req      <= not dma_served and dma_booked;
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
@@ -299,6 +295,27 @@ begin
 		rd_clk  => dmactlr_clk,
 		rd_addr => dmatrans_rid,
 		rd_data => dmatrans_ilen);
+
+	dmatransgnt_e : entity hdl4fpga.grant
+	port map (
+		dev_clk => (0 => video_clk),
+		dev_req => dmatrans_req,
+		dev_gnt => dmatrans_gnt,
+		dev_rdy => dmatrans_rdy,
+
+		gnt_clk => dmactlr_clk,
+		gnt_rdy => dmatrans_rdy);
+
+	process (dmactlr_clk)
+	begin
+		if rising_edge(dmactlr_clk) then
+			if ctlr_inirdy='0' then
+				dmatrans_req <= '0';
+			else
+				dmatrans_req <= setif(dmatrans_gnt /= (dmatrans_gnt'range => '0'));
+			end if;
+		end if;
+	end process;
 
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
