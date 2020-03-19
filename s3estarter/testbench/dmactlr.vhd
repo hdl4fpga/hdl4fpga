@@ -254,17 +254,18 @@ begin
 
 		dev_clk => (0 => video_clk),
 		dev_req => (0 => video_req),
-		dev_gnt => dma_rid,
-		dev_rdy => dev_rdy);
+		dev_gnt => dmargtr_gnt,
+		dev_rdy => dmartgr_dv;
 
-	process (si_clk)
+	process (dmargtr_clk)
 		variable dv : std_logic;
 	begin
-		if rising_edge(si_clk) then
-			dmactlr_addr   <= word2byte (video_addr, dev_gnt);
-			dmargtr_id     <= encoder(dma_rid);
-			dmartgr_addrdv <= setif(dev_gnt/=(dev_gnt'range => '0') and not dv;
-			dv := setif(dev_gnt/=(dev_gnt'range => '0') and not dv;
+		if rising_edge(dmargtr_clk) then
+			dmargtr_addr <= word2byte (video_addr, dmargtr_gnt);
+			dmargtr_len  <= word2byte (video_len,  dmargtr_gnt);
+			dmargtr_id   <= encoder(dmargtr_gnt);
+			dmartgr_dv   <= setif(dmargtr_gnt/=(dmargtr_gnt'range => '0') and not dv;
+			dv := setif(dmargtr_gnt/=(dmargtr_gnt'range => '0');
 		end if;
 	end process;
 
@@ -276,13 +277,13 @@ begin
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => si_clk,
-		wr_ena  => dmactlr_addrdv,
-		wr_addr => dmactlr_rid,
-		wr_data => dmactlr_addr,
+		wr_clk  => dmargtr_clk,
+		wr_ena  => dmargtr_dv,
+		wr_addr => dmargtr_id,
+		wr_data => dmargtr_addr,
 
 		rd_clk  => dmactlr_clk,
-		rd_addr => trans_rid,
+		rd_addr => dmatrans_rid,
 		rd_data => dmatrans_iaddr);
 
 	dmalen_rgtr_e : entity hdl4fpga.dpram
@@ -290,13 +291,13 @@ begin
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => dmactlr_clk,
-		wr_addr => dmactlr_rid,
-		wr_ena  => dmactlr_lendv,
-		wr_data => dmactlr_len,
+		wr_clk  => dmargtr_clk,
+		wr_addr => dmargtr_id,
+		wr_ena  => dmargtr_dv,
+		wr_data => dmargtr_len,
 
 		rd_clk  => dmactlr_clk,
-		rd_addr => trans_rid,
+		rd_addr => dmatrans_rid,
 		rd_data => dmatrans_ilen);
 
 	dmatrans_e : entity hdl4fpga.dmatrans
