@@ -245,13 +245,35 @@ begin
 
 	end block;
 
+	process (video_clk)
+		variable ena0 : std_logic;
+		variable ena1 : std_logic;
+	begin
+		if rising_edge(video_clk) then
+			if ena0='1' and ena1='0' then
+				video_len  <= 4096;
+				video_addr <= video_addr + video_len;
+				if video_addr >= (1920*1080+4096-1/4096 then
+					video_addr <= (others => '0');
+				end if;
+			end if;
+
+			ena1 := ena0;
+			if dmatrans_gnt(dma_video)='1' then
+				if dmatrans_rdy='0' then
+					ena0 := '1';
+				end if;
+			end if;
+		end if;
+	end process;
+
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		gnt_clk => si_clk,
 		gnt_rdy => dmargtr_dv,
 
 		dev_clk => (dma_io => si_clk,   dma_video => video_clk),
-		dev_req => (dma_io => iodma_dv, dma_video => ),
+		dev_req => (dma_io => iodma_dv, dma_video => video_req),
 		dev_gnt => dmargtr_gnt,
 		dev_rdy => dmartgr_wttn);
 
