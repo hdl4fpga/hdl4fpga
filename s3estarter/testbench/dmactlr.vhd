@@ -303,15 +303,15 @@ begin
 		if rising_edge(video_clk) then
 			if ena0='1' and ena1='0' then
 				if level < 2048 then
-					video_len  <= 2048;
-					video_addr <= video_addr + video_len;
 					level <= level + 2048;
 				elsif video_hzsync='1' then
 					level <= level - width;
 				end;
 
-				if video_addr >= (1920*1080+4096-1/4096 then
+				if video_vton='0' then
 					video_addr <= (others => '0');
+				else
+					video_addr <= video_addr + 2048;
 				end if;
 			end if;
 
