@@ -159,6 +159,28 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
 
 	constant no_latency : boolean := false;
+
+	type display_param is record
+		layout  : natural;
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode600px16,
+		mode480p);
+
+	type displayparam_vector is array (layout_mode) of display_param;
+	constant video_params : displayparam_vector := (
+		mode600p    => (layout => 1, dcm_mul => 4, dcm_div => 5),
+		mode1080p   => (layout => 0, dcm_mul => 3, dcm_div => 1),
+		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
+		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
+
+	constant video_mode : layout_mode := mode1080p;
+
 begin
 
 	sys_rst <= btn_west;
@@ -166,6 +188,17 @@ begin
 	port map (
 		I => xtal ,
 		O => sys_clk);
+
+	videodcm_e : entity hdl4fpga.dfs
+	generic map (
+		dfs_frequency_mode => "low",
+		dcm_per => 20.0,
+		dfs_mul => video_params(video_mode).dcm_mul,
+		dfs_div => video_params(video_mode).dcm_div)
+	port map(
+		dcm_rst => sys_rst,
+		dcm_clk => sys_clk,
+		dfs_clk => video_clk);
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -245,14 +278,38 @@ begin
 
 	end block;
 
+	video_e : entity hdl4fpga.video_sync
+	generic map (
+		mode => video_description(vlayout_id).mode_id)
+	port map (
+		video_clk    => video_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_hzcntr => video_hzcntr,
+		video_vtcntr => video_vtcntr,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton);
+
+	video_addr <= std_logic_vector(resize(
+		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
+		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
+		video_addr'length));
+
 	process (video_clk)
 		variable ena0 : std_logic;
 		variable ena1 : std_logic;
+		variable level : unsigned;
 	begin
 		if rising_edge(video_clk) then
 			if ena0='1' and ena1='0' then
-				video_len  <= 4096;
-				video_addr <= video_addr + video_len;
+				if level < 2048 then
+					video_len  <= 2048;
+					video_addr <= video_addr + video_len;
+					level <= level + 2048;
+				elsif video_hzsync='1' then
+					level <= level - width;
+				end;
+
 				if video_addr >= (1920*1080+4096-1/4096 then
 					video_addr <= (others => '0');
 				end if;
