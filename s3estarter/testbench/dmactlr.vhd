@@ -296,22 +296,26 @@ begin
 		video_addr'length));
 
 	process (video_clk)
-		variable ena0 : std_logic;
-		variable ena1 : std_logic;
+		variable ena0  : std_logic;
+		variable ena1  : std_logic;
 		variable level : unsigned;
+		variable bram_rdaddr : unsigned;
+		variable bram_wraddr : unsigned;
 	begin
 		if rising_edge(video_clk) then
 			if ena0='1' and ena1='0' then
-				if level < 2048 then
-					level <= level + 2048;
+				if level < 3*1024 then
+					dmavideo_req <= '1';
 				elsif video_hzsync='1' then
 					level <= level - width;
-				end;
+				elsif dmavideo_rdy='1' then
+					level <= level + 1024;
+				end if;
 
 				if video_vton='0' then
 					video_addr <= (others => '0');
 				else
-					video_addr <= video_addr + 2048;
+					video_addr <= video_addr + 1024;
 				end if;
 			end if;
 
