@@ -299,8 +299,6 @@ begin
 		variable ena0  : std_logic;
 		variable ena1  : std_logic;
 		variable level : unsigned;
-		variable bram_rdaddr : unsigned;
-		variable bram_wraddr : unsigned;
 	begin
 		if rising_edge(video_clk) then
 			if ena0='1' and ena1='0' then
@@ -313,8 +311,14 @@ begin
 				end if;
 
 				if video_vton='0' then
+					vram_addri <= (others => '0');
+				elsif video_hz_on='1' then
+					vram_addri <= vram_addri + 1;
+				end if;
+
+				if video_vton='0' then
 					video_addr <= (others => '0');
-				else
+				elsif dmavideo_rdy='1' then
 					video_addr <= video_addr + 1024;
 				end if;
 			end if;
@@ -327,6 +331,21 @@ begin
 			end if;
 		end if;
 	end process;
+
+	vram_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => ddrsys_clks(0),
+		wr_ena  => vram_dv,
+		wr_addr => vram_addri,
+		wr_data => vram_di, 
+
+		rd_clk  => video_clk,
+		rd_addr => vram_addro,
+		rd_data => vram_do);
+
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
