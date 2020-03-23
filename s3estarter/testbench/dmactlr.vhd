@@ -298,22 +298,36 @@ begin
 		if rising_edge(video_clk) then
 			if dmavideo_rdy='1' then
 				if dmavideo_req='1' then
-					if video_vton='0' then
-						level <= 4096;
-					else
-						level <= level + (4096/4);
-					end if;
 					dmavideo_req <= '0';
+					if video_vton='0' then
+						level := 4096;
+					else
+						level := level + (4096/4);
+					end if;
+				elsif hzon_edge='1' then
+					if video_hzsync='0' then
+						level := level - 1920;
+						hzon_edge := '0';
+					end if;
+				else
+					hzon_edge := video_hzsync;
 				end if;
 			else
 				if video_frm='1' then
 					dmavideo_req <= '1';
 				elsif level < (3*4096/4) then
 					dmavideo_req <= '1';
-				elsif video_hzsync='0' then
-					if hzon_edge='1' then
-						level <= level - 1920;
+				end if;
+
+				if hzon_edge='1' then
+					if video_hzsync='0' then
+						level := level - 1920;
+						hzon_edge := '0';
 					end if;
+				else
+					hzon_edge := video_hzsync;
+				end if;
+			end if;
 
 			if video_vton='0' then
 				if vton_edge='1' then
