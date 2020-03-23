@@ -341,8 +341,10 @@ begin
 				video_len  <= to_unsigned(4096, video_len'length);
 				video_addr <= (others => '0');
 			elsif dmavideo_rdy='1' then
-				video_len  <= to_unsigned(4096/4, video_len'length);
-				video_addr <= std_logic_vector(unsigned(video_addr) + (4096/4));
+				if dmavideo_req='1' then
+					video_len  <= to_unsigned(4096/4, video_len'length);
+					video_addr <= std_logic_vector(unsigned(video_addr) + (4096/4));
+				end if;
 			end if;
 
 			if dmatrans_gnt(dma_video)='1' then
