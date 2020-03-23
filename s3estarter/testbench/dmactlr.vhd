@@ -290,62 +290,62 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton);
 
-	video_addr <= std_logic_vector(resize(
-		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
-		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
-		video_addr'length));
-
 	process (video_clk)
-		variable ena0  : std_logic;
-		variable ena1  : std_logic;
 		variable level : unsigned;
+		variable hzon_edge : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if ena0='1' and ena1='0' then
-				if level < 3*1024 then
-					dmavideo_req <= '1';
-				elsif video_hzsync='1' then
+			if level < 3*1024 then
+				dmavideo_req <= '1';
+			elsif video_hzsync='0' then
+				if hzon_edge='1' then
 					level <= level - width;
-				elsif dmavideo_rdy='1' then
+				end if;
+			elsif dmavideo_rdy='1' then
+				if dmavideo_req='1' then
 					level <= level + 1024;
-				end if;
-
-				if video_vton='0' then
-					vram_addri <= (others => '0');
-				elsif video_hz_on='1' then
-					vram_addri <= vram_addri + 1;
-				end if;
-
-				if video_vton='0' then
-					video_addr <= (others => '0');
-				elsif dmavideo_rdy='1' then
-					video_addr <= video_addr + 1024;
+					dmavideo_req <= '0';
 				end if;
 			end if;
 
-			ena1 := ena0;
+			if video_vton='0' then
+				if vton_edge='1' then
+					src_frm <= '0';
+					video_len  <= 4096;
+					video_addr <= (others => '0');
+				else
+					src_frm <= '1';
+				end if;
+			elsif dmavideo_rdy='1' then
+				video_len  <= 1024;
+				video_addr <= video_addr + 1024;
+			end if;
+
 			if dmatrans_gnt(dma_video)='1' then
 				if dmatrans_rdy='0' then
-					ena0 := '1';
 				end if;
 			end if;
+
+			hzon_edge := video_hzon;
+			vton_edge := video_vton;
 		end if;
 	end process;
 
-	vram_e : entity hdl4fpga.dpram
+	vram_e : entity hdl4fpga.fifo
 	generic map (
-		synchronous_rdaddr => true,
+		size           => 4096,
+		overflow_check => false,
+		gray_code      => false,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => ddrsys_clks(0),
-		wr_ena  => vram_dv,
-		wr_addr => vram_addri,
-		wr_data => vram_di, 
+		src_clk  => ddrsys_clks(0),
+		src_frm  => src_frm,
+		src_irdy => ctlr_do_dv,
+		src_data => ctlr_do,
 
-		rd_clk  => video_clk,
-		rd_addr => vram_addro,
-		rd_data => vram_do);
-
+		dst_clk  => video_clk,
+		dst_trdy => video_hzon,
+		dst_data => video_do);
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
