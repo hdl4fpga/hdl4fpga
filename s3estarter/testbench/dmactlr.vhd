@@ -357,22 +357,6 @@ begin
 		end if;
 	end process;
 
-	vram_e : entity hdl4fpga.fifo
-	generic map (
-		size           => 4096,
-		overflow_check => false,
-		gray_code      => false,
-		synchronous_rddata => true)
-	port map (
-		src_clk  => ddrsys_clks(0),
-		src_irdy => ctlr_do_dv,
-		src_data => ctlr_do,
-
-		dst_clk  => video_clk,
-		dst_frm  => video_frm,
-		dst_trdy => video_hzon,
-		dst_data => video_do);
-
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		gnt_clk => si_clk,
@@ -568,6 +552,22 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
+
+	vram_e : entity hdl4fpga.fifo
+	generic map (
+		size           => 4096,
+		overflow_check => false,
+		gray_code      => false,
+		synchronous_rddata => true)
+	port map (
+		src_clk  => ddrsys_clks(0),
+		src_irdy => ctlr_do_dv,
+		src_data => ctlr_do,
+
+		dst_clk  => video_clk,
+		dst_frm  => video_frm,
+		dst_trdy => video_hzon,
+		dst_data => video_do);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
