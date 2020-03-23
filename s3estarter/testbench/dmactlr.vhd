@@ -291,34 +291,44 @@ begin
 		video_vton   => video_vton);
 
 	process (video_clk)
-		variable level : unsigned;
+		variable level     : unsigned(0 to unsigned_num_bits(4096)-1);
+		variable vton_edge : std_logic;
 		variable hzon_edge : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if level < 3*1024 then
-				dmavideo_req <= '1';
-			elsif video_hzsync='0' then
-				if hzon_edge='1' then
-					level <= level - width;
-				end if;
-			elsif dmavideo_rdy='1' then
+			if dmavideo_rdy='1' then
 				if dmavideo_req='1' then
-					level <= level + 1024;
+					if video_vton='0' then
+						level <= 4096;
+					else
+						level <= level + (4096/4);
+					end if;
 					dmavideo_req <= '0';
+				end if;
+			else
+				if video_frm='1' then
+					dmavideo_req <= '1';
+				elsif level < (3*4096/4) then
+					dmavideo_req <= '1';
+				elsif video_hzsync='0' then
+					if hzon_edge='1' then
+						level <= level - 1920;
+					end if;
+
+			if video_vton='0' then
+				if vton_edge='1' then
+					video_frm <= '0';
+				else
+					video_frm <= '1';
 				end if;
 			end if;
 
 			if video_vton='0' then
-				if vton_edge='1' then
-					src_frm <= '0';
-					video_len  <= 4096;
-					video_addr <= (others => '0');
-				else
-					src_frm <= '1';
-				end if;
+				video_len  <= to_unsigned(4096, video_len'length);
+				video_addr <= (others => '0');
 			elsif dmavideo_rdy='1' then
-				video_len  <= 1024;
-				video_addr <= video_addr + 1024;
+				video_len  <= to_unsigned(4096/4, video_len'length);
+				video_addr <= std_logic_vector(unsigned(video_addr) + (4096/4));
 			end if;
 
 			if dmatrans_gnt(dma_video)='1' then
@@ -339,11 +349,11 @@ begin
 		synchronous_rddata => true)
 	port map (
 		src_clk  => ddrsys_clks(0),
-		src_frm  => src_frm,
 		src_irdy => ctlr_do_dv,
 		src_data => ctlr_do,
 
 		dst_clk  => video_clk,
+		dst_frm  => video_frm,
 		dst_trdy => video_hzon,
 		dst_data => video_do);
 
