@@ -42,6 +42,7 @@ entity fifo is
 		src_data : in  std_logic_vector;
 
 		dst_clk  : in  std_logic;
+		dst_frm  : in  std_logic := '1';
 		dst_irdy : buffer std_logic;
 		dst_trdy : in  std_logic := '1';
 		dst_data : out std_logic_vector);
@@ -75,7 +76,9 @@ begin
 	process(src_clk)
 	begin
 		if rising_edge(src_clk) then
-			if src_frm='1' then
+			if src_frm='0' then
+				wr_addr <= rd_addr;
+			else
 				if src_irdy='1' then
 					if src_trdy='1' or not overflow_check then
 						if gray_code then
@@ -94,7 +97,7 @@ begin
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			if src_frm='0' then
+			if dst_frm='0' then
 				rd_addr <= wr_addr;
 			else
 				if dst_irdy1='1' then
