@@ -30,16 +30,37 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	port (
-		dev_clks : in  std_logic_vector;
-		dev_reqs : in  std_logic_vector;
-		dev_addr : in  std_logic_vector;
-		dev_len  : in  std_logic_vector;
+		dev_clks     : in  std_logic_vector;
+		dev_reqs     : in  std_logic_vector;
+		dev_addr     : in  std_logic_vector;
+		dev_len      : in  std_logic_vector;
 
-		dma_clk  : in  std_logic;
-		dmacfg_req : in  std_logic_vector;
-		dmacfg_rdy : in  std_logic_vector;
+		dma_clk      : in  std_logic;
+		dmacfg_req   : in  std_logic_vector;
+		dmacfg_rdy   : in  std_logic_vector;
+		devtrans_req : in  std_logic_vector;
+		devtrans_rdy : in  std_logic_vector;
 
-		ddr_clk  : in  std_logic;
+		ctlr_clk     : in  std_logic;
+
+		ctlr_inirdy  : in  std_logic;
+		ctlr_refreq  : in  std_logic;
+
+		ctlr_irdy    : out  std_logic;
+		ctlr_trdy    : in  std_logic;
+		ctlr_rw      : out std_logic;
+		ctlr_b       : out std_logic_vector;
+		ctlr_a       : out std_logic_vector;
+		ctlr_di_dv   : out std_logic;
+		ctlr_di_req  : in  std_logic;
+		ctlr_do_dv   : in  std_logic_vector;
+		ctlr_act     : in  std_logic;
+		ctlr_pre     : in  std_logic;
+		ctlr_idl     : in  std_logic;
+		ctlr_dm      : out std_logic_vector := (others => '0');
+		ctlr_di      : out std_logic_vector;
+		ctlr_do      : in  std_logic_vector);
+
 end;
 
 architecture def of dmactlr is
@@ -49,10 +70,17 @@ architecture def of dmactlr is
 	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_clks'length-1);
 	signal dmargtr_len    : std_logic_vector(0 to  dev_len'length/dev_clks'length-1);
 
+	signal dmacfg_req     : std_logic_vector(dev_clks'range);
+	signal dmacfg_rdy     : std_logic_vector(dev_clks'range);
+
 	signal dmatrans_rid   : std_logic_vector(dmargtr_rid'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
+	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
+	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
+	signal dmatrans_req   : std_logic;
+	signal dmatrans_rdy   : std_logic;
 begin
 
 	dmargtrgnt_e : entity hdl4fpga.grant
@@ -62,18 +90,18 @@ begin
 
 		dev_clk => dev_clks,
 		dev_req => dmacfg_req,
-		dev_gnt => dmargtr_gnt,
+		dev_gnt => dmacfg_gnt,
 		dev_rdy => dmacfg_rdy);
 
 	process (dma_clk)
 		variable dv : std_logic;
 	begin
 		if rising_edge(dma_clk) then
-			dmartgr_dv   <= setif(dmargtr_gnt/=(dmargtr_gnt'range => '0') and not dv;
-			dmargtr_id   <= encoder(dmargtr_gnt);
-			dmargtr_addr <= word2byte (dma_addr, dmargtr_gnt);
-			dmargtr_len  <= word2byte (dma_len,  dmargtr_gnt);
-			dv := setif(dmargtr_gnt/=(dmargtr_gnt'range => '0');
+			dmartgr_dv   <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0') and not dv;
+			dmargtr_id   <= encoder(dmacfg_gnt);
+			dmargtr_addr <= word2byte (dma_addr, dmacfg_gnt);
+			dmargtr_len  <= word2byte (dma_len,  dmacfg_gnt);
+			dv := setif(dmacfg_gnt/=(dmacfg_gnt'range => '0');
 		end if;
 	end process;
 
@@ -87,7 +115,7 @@ begin
 		wr_addr => dmargtr_id,
 		wr_data => dmargtr_addr,
 
-		rd_clk  => ddr_clk,
+		rd_clk  => ctlr_clk,
 		rd_addr => dmatrans_rid,
 		rd_data => dmatrans_iaddr);
 
@@ -101,23 +129,23 @@ begin
 		wr_ena  => dmargtr_dv,
 		wr_data => dmargtr_len,
 
-		rd_clk  => ddr_clk,
+		rd_clk  => ctlr_clk,
 		rd_addr => dmatrans_rid,
 		rd_data => dmatrans_ilen);
 
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
 		dev_clk => dev_clks,
-		dev_req => dmatrans_req,
+		dev_req => devtrans_req,
 		dev_gnt => dmatrans_gnt,
-		dev_rdy => dmatrans_rdy,
+		dev_rdy => devtrans_rdy,
 
-		gnt_clk => ddr_clk,
+		gnt_clk => ctlr_clk,
 		gnt_rdy => dmatrans_rdy);
 
-	process (ddr_clk)
+	process (ctlr_clk)
 	begin
-		if rising_edge(ddr_clk) then
+		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='0' then
 				dmatrans_req <= '0';
 			else
@@ -131,7 +159,7 @@ begin
 		no_latency   => no_latency,
 		size => 256)
 	port map (
-		dmatrans_clk   => ddr_clk,
+		dmatrans_clk   => ctlr_clk,
 		dmatrans_req   => dmatrans_req,
 		dmatrans_rdy   => dmatrans_rdy,
 		dmatrans_we    => dmatrans_we,
@@ -155,11 +183,6 @@ begin
 		ctlr_di        => ctlr_di,
 		ctlr_dm        => ctlr_dm,
 		ctlr_do_trdy   => ctlr_do_dv,
-		ctlr_do        => ctlr_do,
-
-		dst_clk        => dst_clk,
-		dst_irdy       => dst_irdy,
-		dst_trdy       => dst_trdy,
-		dst_do         => dst_do);
+		ctlr_do        => ctlr_do);
 
 end;
