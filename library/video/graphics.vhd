@@ -32,7 +32,7 @@ entity graphics is
 	generic (
 		video_mode   : natural);
 	port (
-		ddr_clk      : in  std_logic;
+		ctlr_clk      : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
 		dma_req      : buffer std_logic;
