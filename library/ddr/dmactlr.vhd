@@ -30,16 +30,15 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	port (
-		dev_clks     : in  std_logic_vector;
-		dev_reqs     : in  std_logic_vector;
-		dev_addr     : in  std_logic_vector;
-		dev_len      : in  std_logic_vector;
 
 		dma_clk      : in  std_logic;
 		dmacfg_req   : in  std_logic_vector;
 		dmacfg_rdy   : in  std_logic_vector;
-		devtrans_req : in  std_logic_vector;
-		devtrans_rdy : in  std_logic_vector;
+		dev_reqs     : in  std_logic_vector;
+		dev_len      : in  std_logic_vector;
+		dev_addr     : in  std_logic_vector;
+		dev_reqs : in  std_logic_vector;
+		dev_rdys : in  std_logic_vector;
 
 		ctlr_clk     : in  std_logic;
 
@@ -66,12 +65,12 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
-	signal dmargtr_rid    : std_logic_vector(0 to unsigned_num_bits(dev_clks'length-1)-1);
-	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_clks'length-1);
-	signal dmargtr_len    : std_logic_vector(0 to  dev_len'length/dev_clks'length-1);
+	signal dmargtr_rid    : std_logic_vector(0 to unsigned_num_bits(dev_reqs'length-1)-1);
+	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_reqs'length-1);
+	signal dmargtr_len    : std_logic_vector(0 to  dev_len'length/dev_reqs'length-1);
 
-	signal dmacfg_req     : std_logic_vector(dev_clks'range);
-	signal dmacfg_rdy     : std_logic_vector(dev_clks'range);
+	signal dmacfg_req     : std_logic_vector(dev_reqs'range);
+	signal dmacfg_rdy     : std_logic_vector(dev_reqs'range);
 
 	signal dmatrans_rid   : std_logic_vector(dmargtr_rid'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
@@ -79,6 +78,7 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
+	signal dmatrans_gnt   : std_logic_vector(dev_reqs'range);
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
 begin
@@ -88,7 +88,6 @@ begin
 		gnt_clk => dma_clk,
 		gnt_rdy => dmargtr_dv,
 
-		dev_clk => dev_clks,
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
 		dev_rdy => dmacfg_rdy);
@@ -135,10 +134,9 @@ begin
 
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
-		dev_clk => dev_clks,
-		dev_req => devtrans_req,
-		dev_gnt => dmatrans_gnt,
-		dev_rdy => devtrans_rdy,
+		dev_req => dev_reqs,
+		dev_gnt => devtrans_gnt,
+		dev_rdy => dev_rdys,
 
 		gnt_clk => ctlr_clk,
 		gnt_rdy => dmatrans_rdy);
@@ -149,7 +147,7 @@ begin
 			if ctlr_inirdy='0' then
 				dmatrans_req <= '0';
 			else
-				dmatrans_req <= setif(dmatrans_gnt /= (dmatrans_gnt'range => '0'));
+				dmatrans_req <= setif(devtrans_gnt /= (devtrans_gnt'range => '0'));
 			end if;
 		end if;
 	end process;

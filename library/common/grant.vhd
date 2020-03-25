@@ -32,7 +32,6 @@ entity grant is
 		gnt_rst : in  std_logic := '0';
 		gnt_rdy : in  std_logic;
 
-		dev_clk : in  std_logic_vector;
 		dev_req : in  std_logic_vector;
 		dev_gnt : buffer std_logic_vector;
 		dev_rdy : out std_logic_vector);
@@ -42,29 +41,12 @@ end;
 
 architecture def of grant is
 
-	signal request : std_logic_vector(dev_clk'range);
 	signal booked  : std_logic_vector(dev_clk'range);
 	signal served  : std_logic_vector(booked'range);
 
 	signal arbiter_req : std_logic_vector(dev_clk'range);
 
 begin
-
-	dev_g : for i in dev_clk'range generate
-		process (dev_clk(i))
-			variable dv : std_logic;
-		begin
-			if rising_edge(dev_clk(i)) then
-				if served(i)='1' then
-					if dev_req(i)='0' then
-						request(i) <= '0';
-					end if;
-				elsif dev_req(i)='1' then
-					request(i) <= '1';
-				end if;
-			end if;
-		end process;
-	end generate;
 
 	book_p : process (gnt_clk)
 		variable serving : std_logic_vector(served'range);
@@ -74,8 +56,8 @@ begin
 				booked  <= (others => '0');
 				serving := (others => '0');
 			else
-				booked  <= request or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
-				serving := (request and served) or (request and booked and (dev_gnt and (dev_gnt'range => gnt_rdy)));
+				booked  <= dev_req or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
+				serving := (dev_req and served) or (dev_req and booked and (dev_gnt and (dev_gnt'range => gnt_rdy)));
 			end if;
 			served <= serving;
 
