@@ -83,7 +83,6 @@ architecture dmactlr of s3Estarter is
 	signal iodma_addr   : std_logic_vector(dmactlr_len'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
 	signal iodma_dv     : std_logic;
 
-	alias dmactlr_clk     : std_logic is ddrsys_clks(clk0);
 	signal dmatrans_we    : std_logic;
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
@@ -138,11 +137,6 @@ architecture dmactlr of s3Estarter is
 	signal ddr_dqt       : std_logic_vector(sd_dq'range);
 	signal ddr_dqo       : std_logic_vector(sd_dq'range);
 
-	signal dst_clk       : std_logic;
-	signal dst_irdy      : std_logic;
-	signal dst_trdy      : std_logic;
-	signal dst_do        : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-
 	alias  si_clk   : std_logic is e_rx_clk;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
@@ -152,22 +146,13 @@ architecture dmactlr of s3Estarter is
 	signal toudpdaisy_irdy : std_logic;
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
 
-	constant dma_io    : natural := 0;
-	constant dma_video : natural := 1;
-
-	signal dev_req       : std_logic_vector(0 to 2-1) := "10";
-	signal dma_gnt       : std_logic_vector(dev_req'range);
-	signal dma_booked    : std_logic_vector(dev_req'range);
-	signal dma_req       : std_logic_vector(dev_req'range);
-	signal trans_rid     : std_logic_vector(0 to unsigned_num_bits(dma_gnt'length-1)-1);
-	signal dmactlr_rid   : std_logic_vector(trans_rid'range) := (others => '0');
-
 	signal video_clk     : std_logic;
 	signal video_hzsync  : std_logic;
     signal video_vtsync  : std_logic;
     signal video_hzon    : std_logic;
     signal video_vton    : std_logic;
     signal video_pixel   : std_logic_vector(0 to 3-1);
+
 	signal dmavideo_req  : std_logic;
 	signal dmavideo_rdy  : std_logic;
 	signal dmavideo_len  : std_logic_vector(dmactlr_len'range);
@@ -322,11 +307,6 @@ begin
 		data => g_data);
 
 	dmatrans_we  <= '0';
-
-	dst_clk     <= sys_clk;
-	dst_irdy    <= '1';
-	dst_trdy    <= '1';
-	dst_do      <= (others => '-');
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
