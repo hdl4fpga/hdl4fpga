@@ -33,14 +33,12 @@ entity graphics is
 		video_mode   : natural);
 	port (
 		ddr_clk      : in  std_logic;
-		ddr_dv       : in  std_logic;
-		ddr_data     : in  std_logic_vector;
+		ctlr_di_dv   : in  std_logic;
+		ctlr_di      : in  std_logic_vector;
 		dma_req      : buffer std_logic;
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
-		ctlr_di_dv   : in  std_logic;
-		ctlr_di      : in  std_logic_vector;
 		video_clk    : in  std_logic;
 		video_hzsync : buffer std_logic;
 		video_vtsync : buffer std_logic;
@@ -139,7 +137,7 @@ begin
 		gray_code      => false,
 		synchronous_rddata => true)
 	port map (
-		src_clk  => ddr_clk,
+		src_clk  => ctlr_clk,
 		src_irdy => ctlr_di_dv,
 		src_data => ctlr_di,
 

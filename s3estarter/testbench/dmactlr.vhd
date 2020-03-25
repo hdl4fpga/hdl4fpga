@@ -278,191 +278,25 @@ begin
 
 	end block;
 
-	video_e : entity hdl4fpga.video_sync
-	generic map (
-		mode => video_description(vlayout_id).mode_id)
-	port map (
-		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
-		video_hzcntr => video_hzcntr,
-		video_vtcntr => video_vtcntr,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton);
-
-	process (video_clk)
-		variable level     : unsigned(0 to unsigned_num_bits(4096)-1);
-		variable vton_edge : std_logic;
-		variable hzon_edge : std_logic;
-	begin
-		if rising_edge(video_clk) then
-			if dmavideo_rdy='1' then
-				if dmavideo_req='1' then
-					dmavideo_req <= '0';
-					if video_vton='0' then
-						level := 4096;
-					else
-						level := level + (4096/4);
-					end if;
-				elsif hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920;
-						hzon_edge := '0';
-					end if;
-				else
-					hzon_edge := video_hzsync;
-				end if;
-			else
-				if video_frm='1' then
-					dmavideo_req <= '1';
-				elsif level < (3*4096/4) then
-					dmavideo_req <= '1';
-				end if;
-
-				if hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920;
-						hzon_edge := '0';
-					end if;
-				else
-					hzon_edge := video_hzsync;
-				end if;
-			end if;
-
-			if video_vton='0' then
-				if vton_edge='1' then
-					video_frm <= '0';
-				else
-					video_frm <= '1';
-				end if;
-			end if;
-
-			if video_vton='0' then
-				video_len  <= to_unsigned(4096, video_len'length);
-				video_addr <= (others => '0');
-			elsif dmavideo_rdy='1' then
-				if dmavideo_req='1' then
-					video_len  <= to_unsigned(4096/4, video_len'length);
-					video_addr <= std_logic_vector(unsigned(video_addr) + (4096/4));
-				end if;
-			end if;
-
-			if dmatrans_gnt(dma_video)='1' then
-				if dmatrans_rdy='0' then
-				end if;
-			end if;
-
-			hzon_edge := video_hzon;
-			vton_edge := video_vton;
-		end if;
-	end process;
-
-	dmargtrgnt_e : entity hdl4fpga.grant
-	port map (
-		gnt_clk => si_clk,
-		gnt_rdy => dmargtr_dv,
-
-		dev_clk => (dma_io => si_clk,   dma_video => video_clk),
-		dev_req => (dma_io => iodma_dv, dma_video => video_req),
-		dev_gnt => dmargtr_gnt,
-		dev_rdy => dmartgr_wttn);
-
-	process (dmargtr_clk)
-		variable dv : std_logic;
-	begin
-		if rising_edge(dmargtr_clk) then
-			dmargtr_addr <= word2byte (iodma_addr & video_addr, dmargtr_gnt);
-			dmargtr_len  <= word2byte (iodma_len  & video_len,  dmargtr_gnt);
-			dmargtr_id   <= encoder(dmargtr_gnt);
-			dmartgr_dv   <= setif(dmargtr_gnt/=(dmargtr_gnt'range => '0') and not dv;
-			dv := setif(dmargtr_gnt/=(dmargtr_gnt'range => '0');
-		end if;
-	end process;
-
-	dmaaddr_rgtr_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => true)
-	port map (
-		wr_clk  => dmargtr_clk,
-		wr_ena  => dmargtr_dv,
-		wr_addr => dmargtr_id,
-		wr_data => dmargtr_addr,
-
-		rd_clk  => dmactlr_clk,
-		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_iaddr);
-
-	dmalen_rgtr_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => true)
-	port map (
-		wr_clk  => dmargtr_clk,
-		wr_addr => dmargtr_id,
-		wr_ena  => dmargtr_dv,
-		wr_data => dmargtr_len,
-
-		rd_clk  => dmactlr_clk,
-		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_ilen);
-
-	dmatransgnt_e : entity hdl4fpga.grant
-	port map (
-		dev_clk => (0 => video_clk),
-		dev_req => dmatrans_req,
-		dev_gnt => dmatrans_gnt,
-		dev_rdy => dmatrans_rdy,
-
-		gnt_clk => dmactlr_clk,
-		gnt_rdy => dmatrans_rdy);
-
-	process (dmactlr_clk)
-	begin
-		if rising_edge(dmactlr_clk) then
-			if ctlr_inirdy='0' then
-				dmatrans_req <= '0';
-			else
-				dmatrans_req <= setif(dmatrans_gnt /= (dmatrans_gnt'range => '0'));
-			end if;
-		end if;
-	end process;
-
-	dmatrans_e : entity hdl4fpga.dmatrans
-	generic map (
-		no_latency   => no_latency,
-		size => 256)
-	port map (
-		dmatrans_clk   => dmactlr_clk,
-		dmatrans_req   => dmatrans_req,
-		dmatrans_rdy   => dmatrans_rdy,
-		dmatrans_we    => dmatrans_we,
-		dmatrans_iaddr => dmatrans_iaddr,
-		dmatrans_ilen  => dmatrans_ilen,
-		dmatrans_taddr => dmatrans_taddr,
-		dmatrans_tlen  => dmatrans_tlen,
-
-		ctlr_inirdy    => ctlr_inirdy,
-		ctlr_refreq    => ctlr_refreq,
-
-		ctlr_irdy      => ctlr_irdy,
-		ctlr_trdy      => ctlr_trdy,
-		ctlr_rw        => ctlr_rw,
-		ctlr_act       => ctlr_act,
-		ctlr_pre       => ctlr_pre,
-		ctlr_idl       => ctlr_idl,
-		ctlr_b         => ctlr_b,
-		ctlr_a         => ctlr_a,
-		ctlr_di_req    => ctlr_di_req,
-		ctlr_di        => ctlr_di,
-		ctlr_dm        => ctlr_dm,
-		ctlr_do_trdy   => ctlr_do_dv,
-		ctlr_do        => ctlr_do,
-
-		dst_clk        => dst_clk,
-		dst_irdy       => dst_irdy,
-		dst_trdy       => dst_trdy,
-		dst_do         => dst_do);
+	graphics_e : entity hdl4fpga.graphics
+	generic (
+		video_mode   : natural);
+	port (
+		ddr_clk      => ddrsys_clks(clk0)
+		ddr_dv       =>
+		ddr_data     => ,
+		dma_req      => ,
+		dma_rdy      => ,
+		dma_len      => ,
+		dma_addr     => ,
+		ctlr_di_dv   => ,
+		ctlr_di      => ,
+		video_clk    => ,
+		video_hzsync => ,
+		video_vtsync => ,
+		video_hzon   => ,
+		video_vton   => ,
+		video_pixel  => );
 
 	g_load <= not ctlr_inirdy;
 	g_ena  <= ctlr_di_req;
