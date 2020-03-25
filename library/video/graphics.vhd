@@ -38,23 +38,25 @@ entity graphics is
 		dma_req      : buffer std_logic;
 		dma_rdy      : in  std_logic;
 		video_clk    : in  std_logic;
-		video_hzsync : out std_logic;
-		video_vtsync : out std_logic;
-		video_hzon   : out std_logic;
-		video_vton   : out std_logic;
+		video_hzsync : buffer std_logic;
+		video_vtsync : buffer std_logic;
+		video_hzon   : buffer std_logic;
+		video_vton   : buffer std_logic;
 		video_pixel  : out std_logic_vector);
 end;
 
 architecture def of graphics is
 
-	signal video_hzcntr : std_logic_vector;
-	signal video_vtcntr : std_logic_vector;
+	signal video_frm : std_logic;
+
+	signal video_hzcntr : std_logic_vector(12-1 downto 0);
+	signal video_vtcntr : std_logic_vector(12-1 downto 0);
 
 begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => mode)
+		mode => video_mode)
 	port map (
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
@@ -74,7 +76,7 @@ begin
 				if dma_req='1' then
 					dma_req <= '0';
 					if video_vton='0' then
-						level := 4096;
+						level := to_unsigned(4096, level'length);
 					else
 						level := level + (4096/4);
 					end if;
