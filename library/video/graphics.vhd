@@ -37,6 +37,10 @@ entity graphics is
 		ddr_data     : in  std_logic_vector;
 		dma_req      : buffer std_logic;
 		dma_rdy      : in  std_logic;
+		dma_len      : out std_logic_vector;
+		dma_addr     : buffer std_logic_vector;
+		ctlr_di_dv   : in  std_logic;
+		ctlr_di      : in  std_logic_vector;
 		video_clk    : in  std_logic;
 		video_hzsync : buffer std_logic;
 		video_vtsync : buffer std_logic;
@@ -114,17 +118,12 @@ begin
 			end if;
 
 			if video_vton='0' then
-				video_len  <= to_unsigned(4096, video_len'length);
-				video_addr <= (others => '0');
+				dma_len  <= std_logic_vector(to_unsigned(4096, dma_len'length));
+				dma_addr <= (dma_addr'range => '0');
 			elsif dma_rdy='1' then
 				if dma_req='1' then
-					video_len  <= to_unsigned(4096/4, video_len'length);
-					video_addr <= std_logic_vector(unsigned(video_addr) + (4096/4));
-				end if;
-			end if;
-
-			if dmatrans_gnt(dma_video)='1' then
-				if dmatrans_rdy='0' then
+					dma_len  <= std_logic_vector(to_unsigned(4096/4, dma_len'length));
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + (4096/4));
 				end if;
 			end if;
 
@@ -141,12 +140,12 @@ begin
 		synchronous_rddata => true)
 	port map (
 		src_clk  => ddr_clk,
-		src_irdy => ctlr_do_dv,
-		src_data => ctlr_do,
+		src_irdy => ctlr_di_dv,
+		src_data => ctlr_di,
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,
 		dst_trdy => video_hzon,
-		dst_data => video_do);
+		dst_data => video_pixel);
 
 end;

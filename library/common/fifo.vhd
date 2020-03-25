@@ -84,7 +84,7 @@ begin
 						if gray_code then
 							wr_addr <= std_logic_vector(inc(gray(wr_addr)));
 						else
-							wr_addr <= std_logic_vector(unsigned(wr_addr)+1));
+							wr_addr <= std_logic_vector(unsigned(wr_addr)+1);
 						end if;
 					end if;
 				end if;
@@ -105,7 +105,7 @@ begin
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
 						else
-							rd_addr <= std_logic_vector(unsigned(rd_addr)+1));
+							rd_addr <= std_logic_vector(unsigned(rd_addr)+1);
 						end if;
 					end if;
 				end if;
