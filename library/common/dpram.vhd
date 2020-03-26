@@ -192,7 +192,6 @@ architecture def of dpram1 is
 
 begin
 
-	rd_data <= to_stdlogicvector(rdata);
 	wdata <= to_bytevector(wr_data);
 	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
 	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
@@ -214,4 +213,6 @@ begin
 			wr_addr => waddr, 
 			wr_data => wdata(((i*wr_data'length) mod word'length) mod byte'length));
 	end generate;
+
+	rd_data <= to_stdlogicvector(rdata);
 end;

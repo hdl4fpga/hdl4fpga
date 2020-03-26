@@ -49,17 +49,21 @@ entity fifo is
 end;
 
 architecture def of fifo is
+	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
+
 
 	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
-	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size-1)-1) := (others => '0');
-	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size-1)-1);
+	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1);
 	signal dst_irdy1 : std_logic;
 
+	subtype ptr_range is natural range 0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
-	mem_e : entity hdl4fpga.dpram
+	mem_e : entity hdl4fpga.dpram1
 	generic map (
 		synchronous_rdaddr => false,
 		synchronous_rddata => synchronous_rddata)
@@ -77,7 +81,7 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				wr_addr <= rd_addr;
+				wr_addr <= rd_addr(ptr_range);
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not overflow_check then
