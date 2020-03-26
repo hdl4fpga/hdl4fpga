@@ -151,7 +151,7 @@ architecture dmactlr of s3Estarter is
     signal video_vtsync  : std_logic;
     signal video_hzon    : std_logic;
     signal video_vton    : std_logic;
-    signal video_pixel   : std_logic_vector(0 to 3-1);
+    signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	signal dmavideo_req  : std_logic;
 	signal dmavideo_rdy  : std_logic;

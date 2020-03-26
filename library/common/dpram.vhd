@@ -76,6 +76,15 @@ architecture def of dpram is
 
 begin
 
+	assert wr_addr'length=rd_addr'length
+	report "Difference address size"
+	severity failure;
+
+
+	assert wr_data'length=rd_data'length
+	report "Difference data size"
+	severity failure;
+
 	sync_rdaddr_g : if synchronous_rdaddr generate
 		sync_p : process (rd_clk)
 		begin
@@ -93,11 +102,7 @@ begin
 		variable addr : std_logic_vector(0 to async_rdaddr'length-1);
 	begin
 		addr := async_rdaddr;
-		if rd_data'length=wr_data'length then
-			async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
-		else
-			async_rddata <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
-		end if;
+		async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
 	end process;
 		
 	rddata_p : process (async_rddata, rd_clk)
@@ -119,4 +124,94 @@ begin
 			end if;
 		end if;
 	end process;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+entity dpram1 is
+	generic (
+		synchronous_rdaddr : boolean := false;
+		synchronous_rddata : boolean := false;
+		bitrom : std_logic_vector := (1 to 0 => '-'));
+	port (
+		rd_clk  : in  std_logic := '-';
+		rd_addr : in  std_logic_vector;
+		rd_data : out std_logic_vector;
+
+		wr_clk  : in std_logic;
+		wr_ena  : in std_logic := '1';
+		wr_addr : in std_logic_vector;
+		wr_data : in std_logic_vector);
+end;
+
+architecture def of dpram1 is
+	subtype word is std_logic_vector(0 to hdl4fpga.std.max(wr_data'length,rd_data'length)-1);
+	type word_vector is array (natural range <>) of word;
+
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(wr_data'length,rd_data'length)-1);
+	type byte_vector is array (natural range <>) of byte;
+
+	function to_bytevector(
+		constant data : std_logic_vector)
+		return byte_vector is
+		constant aux    : std_logic_vector(0 to data'length-1) := data;
+		variable retval : byte_vector(0 to (data'length+byte'length-1)/byte'length-1);
+	begin
+
+		for i in 0 to data'length/byte'length-1 loop
+			retval(i) := aux(i*byte'length to (i+1)*byte'length-1);
+		end loop;
+		return retval;
+
+	end;
+
+	function to_stdlogicvector(
+		constant data : byte_vector)
+		return std_logic_vector is
+		constant aux    : byte_vector(0 to (data'length+byte'length-1)/byte'length-1) := data;
+		variable retval : std_logic_vector(0 to data'length-1);
+	begin
+
+		for i in 0 to data'length/byte'length-1 loop
+			retval(i*byte'length to (i+1)*byte'length-1) := aux(i);
+		end loop;
+		return retval;
+
+	end;
+
+
+	signal rdata : byte_vector(0 to rd_data'length/byte'length-1);
+	signal wdata : byte_vector(0 to wr_data'length/byte'length-1);
+	signal raddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
+	signal waddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
+
+begin
+
+	rd_data <= to_stdlogicvector(rdata);
+	wdata <= to_bytevector(wr_data);
+	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
+	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
+
+
+	ram_e : for i in 0 to word'length/byte'length-1 generate
+	begin
+		byteram_e : entity hdl4fpga.dpram
+		generic map (
+			synchronous_rdaddr => synchronous_rdaddr,
+			synchronous_rddata => synchronous_rddata)
+		port map (
+			rd_clk  => rd_clk,
+			rd_addr => raddr,
+			rd_data => rdata(((i*rd_data'length) mod word'length) mod byte'length),
+
+			wr_clk  => wr_clk, 
+			wr_ena  => wr_ena,
+			wr_addr => waddr, 
+			wr_data => wdata(((i*wr_data'length) mod word'length) mod byte'length));
+	end generate;
 end;
