@@ -54,16 +54,7 @@ entity dmatrans is
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
-		ctlr_di_req   : in  std_logic;
-		ctlr_di       : in  std_logic_vector;
-		ctlr_do_trdy  : in  std_logic_vector;
-		ctlr_do       : in  std_logic_vector;
-		ctlr_dm       : out std_logic_vector;
-
-		dst_clk       : in  std_logic;
-		dst_irdy      : out std_logic;
-		dst_trdy      : in  std_logic;
-		dst_do        : out std_logic_vector);
+		ctlr_di_req   : in  std_logic);
 
 end;
 
@@ -289,18 +280,4 @@ begin
 		end case;
 	end process;
 
-
-
-	mem_e : entity hdl4fpga.fifo
-	generic map (
-		size => size)
-	port map (
-		src_clk  => dmatrans_clk,
-		src_irdy => ctlr_di_req, 
-		src_data => ctlr_do,
-
-		dst_clk  => dst_clk,
-		dst_irdy => dst_irdy, 
-		dst_trdy => dst_trdy, 
-		dst_data => dst_do);
 end;
