@@ -192,6 +192,10 @@ architecture def of dpram1 is
 
 begin
 
+	assert 2**rd_addr'length*rd_data'length=2**wr_addr'length*wr_data'length
+	report "Read port size doesn't match Write port size"
+	severity failure;
+
 	wdata <= to_bytevector(wr_data);
 	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
 	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
