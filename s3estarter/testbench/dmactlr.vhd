@@ -44,98 +44,98 @@ architecture dmactlr of s3Estarter is
 	-- Divide by   --   3     --   1     --   3     --   1     --
 	-------------------------------------------------------------
 
-	constant sys_per     : real    := 20.0;
-	constant ddr_mul     : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
-	constant ddr_div     : natural := 1;
+	constant sys_per      : real    := 20.0;
+	constant ddr_mul      : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+	constant ddr_div      : natural := 1;
 
-	constant g           : std_logic_vector(32 downto 1) := (
+	constant g            : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena         : std_logic;
-	signal g_load        : std_logic;
-	signal g_data        : std_logic_vector(g'range);
+	signal g_ena          : std_logic;
+	signal g_load         : std_logic;
+	signal g_data         : std_logic_vector(g'range);
 
-	constant fpga        : natural := spartan3;
-	constant mark        : natural := m6t;
-	constant tcp         : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
+	constant fpga         : natural := spartan3;
+	constant mark         : natural := m6t;
+	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
-	constant sclk_phases : natural := 4;
-	constant sclk_edges  : natural := 2;
-	constant cmmd_gear   : natural := 1;
-	constant data_phases : natural := 2;
-	constant data_edges  : natural := 2;
-	constant bank_size   : natural := sd_ba'length;
-	constant addr_size   : natural := sd_a'length;
-	constant data_gear   : natural := 2;
-	constant word_size   : natural := sd_dq'length;
-	constant byte_size   : natural := 8;
+	constant sclk_phases  : natural := 4;
+	constant sclk_edges   : natural := 2;
+	constant cmmd_gear    : natural := 1;
+	constant data_phases  : natural := 2;
+	constant data_edges   : natural := 2;
+	constant bank_size    : natural := sd_ba'length;
+	constant addr_size    : natural := sd_a'length;
+	constant data_gear    : natural := 2;
+	constant word_size    : natural := sd_dq'length;
+	constant byte_size    : natural := 8;
 
-	signal ddrsys_lckd   : std_logic;
-	signal ddrsys_rst    : std_logic;
+	signal ddrsys_lckd    : std_logic;
+	signal ddrsys_rst     : std_logic;
 
-	constant clk0        : natural := 0;
-	constant clk90       : natural := 1;
-	signal ddrsys_clks   : std_logic_vector(0 to 2-1);
+	constant clk0         : natural := 0;
+	constant clk90        : natural := 1;
+	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_len   : std_logic_vector(26-1 downto 2);
-	signal dmactlr_addr  : std_logic_vector(26-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(26-1 downto 2);
+	signal dmactlr_addr   : std_logic_vector(26-1 downto 2);
 
-	signal iodma_len    : std_logic_vector(dmactlr_addr'range) := x"0000_03";
-	signal iodma_addr   : std_logic_vector(dmactlr_len'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal iodma_dv     : std_logic;
+	signal iodma_len      : std_logic_vector(dmactlr_addr'range) := x"0000_03";
+	signal iodma_addr     : std_logic_vector(dmactlr_len'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal iodma_dv       : std_logic;
 
 	signal dmatrans_we    : std_logic;
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
 
-	signal dmatrans_iaddr   : std_logic_vector(dmactlr_addr'range);
-	signal dmatrans_ilen    : std_logic_vector(dmactlr_len'range);
+	signal dmatrans_iaddr : std_logic_vector(dmactlr_addr'range);
+	signal dmatrans_ilen  : std_logic_vector(dmactlr_len'range);
 
-	signal dmatrans_taddr   : std_logic_vector(dmactlr_addr'range);
-	signal dmatrans_tlen    : std_logic_vector(dmactlr_len'range);
+	signal dmatrans_taddr : std_logic_vector(dmactlr_addr'range);
+	signal dmatrans_tlen  : std_logic_vector(dmactlr_len'range);
 
-	signal ctlr_irdy     : std_logic;
-	signal ctlr_trdy     : std_logic;
-	signal ctlr_rw       : std_logic;
-	signal ctlr_act      : std_logic;
-	signal ctlr_pre      : std_logic;
-	signal ctlr_idl      : std_logic;
-	signal ctlr_inirdy   : std_logic;
-	signal ctlr_refreq   : std_logic;
-	signal ctlr_b        : std_logic_vector(bank_size-1 downto 0);
-	signal ctlr_a        : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di       : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_do       : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_dm       : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-	signal ctlr_do_dv    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlr_di_dv    : std_logic := '1';
-	signal ctlr_di_req   : std_logic;
+	signal ctlr_irdy      : std_logic;
+	signal ctlr_trdy      : std_logic;
+	signal ctlr_rw        : std_logic;
+	signal ctlr_act       : std_logic;
+	signal ctlr_pre       : std_logic;
+	signal ctlr_idl       : std_logic;
+	signal ctlr_inirdy    : std_logic;
+	signal ctlr_refreq    : std_logic;
+	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
+	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
+	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
+	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlr_di_dv     : std_logic := '1';
+	signal ctlr_di_req    : std_logic;
 
-	signal ddrphy_rst    : std_logic;
-	signal ddrphy_cke    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cs     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_ras    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cas    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_we     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_odt    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b      : std_logic_vector(cmmd_gear*sd_ba'length-1 downto 0);
-	signal ddrphy_a      : std_logic_vector(cmmd_gear*sd_a'length-1 downto 0);
-	signal ddrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_rst     : std_logic;
+	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(cmmd_gear*sd_ba'length-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(cmmd_gear*sd_a'length-1 downto 0);
+	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ddrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-	signal ddr_clk       : std_logic_vector(0 downto 0);
-	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt       : std_logic_vector(sd_dq'range);
-	signal ddr_dqo       : std_logic_vector(sd_dq'range);
+	signal ddr_clk        : std_logic_vector(0 downto 0);
+	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt        : std_logic_vector(sd_dq'range);
+	signal ddr_dqo        : std_logic_vector(sd_dq'range);
 
 	alias  si_clk   : std_logic is e_rx_clk;
 	signal si_frm    : std_logic;
@@ -160,23 +160,21 @@ architecture dmactlr of s3Estarter is
 
 	constant no_latency : boolean := false;
 	type display_param is record
-		layout  : natural;
+		mode    : natural;
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
 
 	type layout_mode is (
+		mode480p,
 		mode600p, 
-		mode1080p,
-		mode600px16,
-		mode480p);
+		mode1080p);
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, dcm_mul => 4, dcm_div => 5),
-		mode1080p   => (layout => 0, dcm_mul => 3, dcm_div => 1),
-		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
-		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
+		mode480p    => (mode => 0, dcm_mul => 3, dcm_div => 5),
+		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
+		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
 
 	constant video_mode : layout_mode := mode1080p;
 
@@ -279,7 +277,7 @@ begin
 
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
-		video_mode => 11)
+		video_mode => video_params(video_mode).mode)
 	port map (
 		dma_req      => dmavideo_req,
 		dma_rdy      => dmavideo_rdy,
@@ -456,11 +454,11 @@ begin
 	-- VGA --
 	---------
 
-	vga_red   <= 'Z';
-	vga_green <= 'Z';
-	vga_blue  <= 'Z';
-	vga_vsync <= 'Z';
-	vga_hsync <= 'Z';
+	vga_red   <= video_pixel(0);
+	vga_green <= video_pixel(1);
+	vga_blue  <= video_pixel(2);
+	vga_hsync <= video_hzsync;
+	vga_vsync <= video_vtsync;
 
 	-- LEDs --
 	----------
