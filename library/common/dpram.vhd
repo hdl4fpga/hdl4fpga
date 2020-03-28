@@ -184,7 +184,6 @@ architecture def of dpram1 is
 
 	end;
 
-
 	signal rdata : byte_vector(0 to word'length/byte'length-1);
 	signal wdata : byte_vector(0 to word'length/byte'length-1);
 	signal wena  : std_logic_vector(0 to word'length/byte'length-1);
@@ -197,16 +196,27 @@ begin
 	report "Read port size doesn't match Write port size"
 	severity failure;
 
-	wdata <= to_bytevector(wr_data);
 	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
 	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
+	wdata <= to_bytevector(wr_data);
+
+	process (wr_addr, wr_data)
+	begin
+		if wr_data'length=word'length then
+			wdata <= to_bytevector(wr_data);
+			wena  <= (others => '1');
+		else
+			wdata <= (others => wr_data);
+			wena  <= decode(std_logic_vector(resize(unsigned(wr_addr), wr_addr'length-waddr'length)));
+		end if;
+	end process;
 
 	ram_e : for i in 0 to word'length/byte'length-1 generate
 	begin
 		byteram_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => synchronous_rdaddr,
-			synchronous_rddata => synchronous_rddata)
+			synchronous_rddata => false)
 		port map (
 			rd_clk  => rd_clk,
 			rd_addr => raddr,
@@ -218,12 +228,22 @@ begin
 			wr_data => wdata(i));
 	end generate;
 
-	process (rd_addr, rdata)
+	process (rd_clk, rd_addr, rdata)
 	begin
-		if rd_data'length=word'length then
-			rd_data <= to_stdlogicvector(rdata);
+		if synchronous_rddata then
+			if rising_edge(rd_clk) then
+				if rd_data'length=word'length then
+					rd_data <= to_stdlogicvector(rdata);
+				else
+					rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
+				end if;
+			end if;
 		else
-			rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
+			if rd_data'length=word'length then
+				rd_data <= to_stdlogicvector(rdata);
+			else
+				rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
+			end if;
 		end if;
 	end process;
 
