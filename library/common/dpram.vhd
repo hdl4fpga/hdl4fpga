@@ -159,10 +159,11 @@ architecture def of dpram1 is
 	function to_bytevector(
 		constant data : std_logic_vector)
 		return byte_vector is
-		constant aux    : std_logic_vector(0 to data'length-1) := data;
+		variable aux    : std_logic_vector(0 to ((data'length+byte'length-1)/byte'length)*byte'length-1);
 		variable retval : byte_vector(0 to (data'length+byte'length-1)/byte'length-1);
 	begin
 
+		aux(0 to data'length-1) := data;
 		for i in 0 to data'length/byte'length-1 loop
 			retval(i) := aux(i*byte'length to (i+1)*byte'length-1);
 		end loop;
@@ -173,8 +174,8 @@ architecture def of dpram1 is
 	function to_stdlogicvector(
 		constant data : byte_vector)
 		return std_logic_vector is
-		constant aux    : byte_vector(0 to (data'length+byte'length-1)/byte'length-1) := data;
-		variable retval : std_logic_vector(0 to data'length-1);
+		constant aux    : byte_vector(0 to data'length-1) := data;
+		variable retval : std_logic_vector(0 to byte'length*data'length-1);
 	begin
 
 		for i in 0 to data'length/byte'length-1 loop
@@ -184,67 +185,40 @@ architecture def of dpram1 is
 
 	end;
 
-	signal rdata : byte_vector(0 to word'length/byte'length-1);
-	signal wdata : byte_vector(0 to word'length/byte'length-1);
-	signal wena  : std_logic_vector(0 to word'length/byte'length-1);
-	signal raddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
-	signal waddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
+	constant addr_size : natural := hdl4fpga.std.max(addra'length,addrb'length);
+
+	shared variable ram : byte_vector(0 to 2**addr_size-1);
 
 begin
 
-	assert 2**rd_addr'length*rd_data'length=2**wr_addr'length*wr_data'length
-	report "Read port size doesn't match Write port size"
-	severity failure;
-
-	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
-	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
-	wdata <= to_bytevector(wr_data);
-
-	process (wr_addr, wr_data)
-	begin
-		if wr_data'length=word'length then
-			wdata <= to_bytevector(wr_data);
-			wena  <= (others => '1');
-		else
-			wdata <= (others => wr_data);
-			wena  <= decode(std_logic_vector(resize(unsigned(wr_addr), wr_addr'length-waddr'length)));
-		end if;
-	end process;
-
-	ram_e : for i in 0 to word'length/byte'length-1 generate
-	begin
-		byteram_e : entity hdl4fpga.dpram
-		generic map (
-			synchronous_rdaddr => synchronous_rdaddr,
-			synchronous_rddata => false)
-		port map (
-			rd_clk  => rd_clk,
-			rd_addr => raddr,
-			rd_data => rdata(i),
-
-			wr_clk  => wr_clk, 
-			wr_ena  => wena(i),
-			wr_addr => waddr, 
-			wr_data => wdata(i));
-	end generate;
-
-	process (rd_clk, rd_addr, rdata)
-	begin
-		if synchronous_rddata then
-			if rising_edge(rd_clk) then
-				if rd_data'length=word'length then
-					rd_data <= to_stdlogicvector(rdata);
-				else
-					rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
+		process (wr_clk)
+			variable addr : std_logic_vector(0 to addr_size);
+			variable data : unsigned(0 to wr_data'length-1);
+		begin
+			if rising_edge(clka) then
+				data := unsigned(wr_data);
+				for i in 0 to wr_data'length/byte'length-1 loop 
+					if wr_ena='1' then
+						ram(to_integer(unsigned(wr_addr))) := std_logic_vector(data(byte'range));
+					end if;
+					data := data rol byte'length;
 				end if;
 			end if;
-		else
-			if rd_data'length=word'length then
-				rd_data <= to_stdlogicvector(rdata);
-			else
-				rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
-			end if;
-		end if;
-	end process;
+		end process;
 
+		process (clkb)
+			variable addr : std_logic_vector(addrb'range);
+		begin
+			if rising_edge(clkb) then
+				if enab='1' then
+					dob <= ram(to_integer(unsigned(addr)));
+					if web='1' then
+						ram(to_integer(unsigned(addrb))) := dib;
+					end if;
+					addr := addrb;
+				end if;
+			end if;
+		end process;
+	end generate;
+end;
 end;
