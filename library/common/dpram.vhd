@@ -185,8 +185,9 @@ architecture def of dpram1 is
 	end;
 
 
-	signal rdata : byte_vector(0 to rd_data'length/byte'length-1);
-	signal wdata : byte_vector(0 to wr_data'length/byte'length-1);
+	signal rdata : byte_vector(0 to word'length/byte'length-1);
+	signal wdata : byte_vector(0 to word'length/byte'length-1);
+	signal wena  : std_logic_vector(0 to word'length/byte'length-1);
 	signal raddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
 	signal waddr : std_logic_vector(0 to hdl4fpga.std.min(wr_addr'length, rd_addr'length)-1);
 
@@ -200,7 +201,6 @@ begin
 	raddr <= std_logic_vector(resize(unsigned(rd_addr) srl (rd_addr'length-raddr'length), raddr'length));
 	waddr <= std_logic_vector(resize(unsigned(wr_addr) srl (wr_addr'length-waddr'length), waddr'length));
 
-
 	ram_e : for i in 0 to word'length/byte'length-1 generate
 	begin
 		byteram_e : entity hdl4fpga.dpram
@@ -210,13 +210,21 @@ begin
 		port map (
 			rd_clk  => rd_clk,
 			rd_addr => raddr,
-			rd_data => rdata(((i*rd_data'length) mod word'length) mod byte'length),
+			rd_data => rdata(i),
 
 			wr_clk  => wr_clk, 
-			wr_ena  => wr_ena,
+			wr_ena  => wena(i),
 			wr_addr => waddr, 
-			wr_data => wdata(((i*wr_data'length) mod word'length) mod byte'length));
+			wr_data => wdata(i));
 	end generate;
 
-	rd_data <= to_stdlogicvector(rdata);
+	process (rd_addr, rdata)
+	begin
+		if rd_data'length=word'length then
+			rd_data <= to_stdlogicvector(rdata);
+		else
+			rd_data <= word2byte(to_stdlogicvector(rdata), std_logic_vector(resize(unsigned(rd_addr), rd_addr'length-raddr'length)));
+		end if;
+	end process;
+
 end;
