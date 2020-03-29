@@ -191,34 +191,33 @@ architecture def of dpram1 is
 
 begin
 
-		process (wr_clk)
-			variable addr : std_logic_vector(0 to addr_size);
-			variable data : unsigned(0 to wr_data'length-1);
-		begin
-			if rising_edge(clka) then
-				data := unsigned(wr_data);
-				for i in 0 to wr_data'length/byte'length-1 loop 
-					if wr_ena='1' then
-						ram(to_integer(unsigned(wr_addr))) := std_logic_vector(data(byte'range));
-					end if;
-					data := data rol byte'length;
+	process (wr_clk)
+		variable addr : std_logic_vector(0 to addr_size);
+		variable data : unsigned(0 to wr_data'length-1);
+	begin
+		if rising_edge(clka) then
+			data := unsigned(wr_data);
+			for i in 0 to wr_data'length/byte'length-1 loop 
+				if wr_ena='1' then
+					ram(to_integer(unsigned(wr_addr))) := std_logic_vector(data(byte'range));
 				end if;
+				data := data rol byte'length;
 			end if;
-		end process;
+		end if;
+	end process;
 
-		process (clkb)
-			variable addr : std_logic_vector(addrb'range);
-		begin
-			if rising_edge(clkb) then
-				if enab='1' then
-					dob <= ram(to_integer(unsigned(addr)));
-					if web='1' then
-						ram(to_integer(unsigned(addrb))) := dib;
-					end if;
-					addr := addrb;
-				end if;
+	process (rd_clk)
+		variable addr : std_logic_vector(0 to addr_size);
+		variable data : unsigned(0 to rd_data'length-1);
+	begin
+		if rising_edge(clkb) then
+			addr := (others => '0');
+			addr(0 to rd_addr'length) := rd_addr;
+			for i in 0 to rd_data'length/byte'length-1 loop 
+				data(byte'range) <= ram(to_integer(unsigned(addr)));
+				data := data rol byte'length;
 			end if;
-		end process;
-	end generate;
-end;
+			rd_data <= std_logic_vector(data);
+		end if;
+	end process;
 end;
