@@ -64,9 +64,9 @@ begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
 	mem_e : entity hdl4fpga.dpram1
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => synchronous_rddata)
+--	generic map (
+--		synchronous_rdaddr => false,
+--		synchronous_rddata => synchronous_rddata)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
