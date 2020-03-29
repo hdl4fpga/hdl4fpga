@@ -187,7 +187,7 @@ architecture def of dpram1 is
 
 	constant addr_size : natural := hdl4fpga.std.max(addra'length,addrb'length);
 
-	shared variable ram : byte_vector(0 to 2**addr_size-1);
+	shared variable ram : word_vector(0 to 2**addr_size-1);
 
 begin
 
@@ -199,7 +199,7 @@ begin
 			data := unsigned(wr_data);
 			for i in 0 to wr_data'length/byte'length-1 loop 
 				if wr_ena='1' then
-					ram(to_integer(unsigned(wr_addr))) := std_logic_vector(data(byte'range));
+					ram(to_integer(unsigned(wr_addr)))(*) := std_logic_vector(data(byte'range));
 				end if;
 				data := data rol byte'length;
 			end if;
@@ -214,7 +214,10 @@ begin
 			addr := (others => '0');
 			addr(0 to rd_addr'length) := rd_addr;
 			for i in 0 to rd_data'length/byte'length-1 loop 
-				data(byte'range) <= ram(to_integer(unsigned(addr)));
+				if rd_data'length=word'length the
+				else
+					data(byte'range) <= ram(to_integer(unsigned(addr)));
+				end if;
 				data := data rol byte'length;
 			end if;
 			rd_data <= std_logic_vector(data);
