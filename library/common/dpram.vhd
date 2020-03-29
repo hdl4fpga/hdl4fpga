@@ -134,10 +134,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity dpram1 is
-	generic (
-		synchronous_rdaddr : boolean := false;
-		synchronous_rddata : boolean := false;
-		bitrom : std_logic_vector := (1 to 0 => '-'));
 	port (
 		rd_clk  : in  std_logic := '-';
 		rd_addr : in  std_logic_vector;
@@ -150,77 +146,54 @@ entity dpram1 is
 end;
 
 architecture def of dpram1 is
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(wr_data'length,rd_data'length)-1);
 	subtype word is std_logic_vector(0 to hdl4fpga.std.max(wr_data'length,rd_data'length)-1);
 	type word_vector is array (natural range <>) of word;
 
-	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(wr_data'length,rd_data'length)-1);
-	type byte_vector is array (natural range <>) of byte;
-
-	function to_bytevector(
-		constant data : std_logic_vector)
-		return byte_vector is
-		variable aux    : std_logic_vector(0 to ((data'length+byte'length-1)/byte'length)*byte'length-1);
-		variable retval : byte_vector(0 to (data'length+byte'length-1)/byte'length-1);
-	begin
-
-		aux(0 to data'length-1) := data;
-		for i in 0 to data'length/byte'length-1 loop
-			retval(i) := aux(i*byte'length to (i+1)*byte'length-1);
-		end loop;
-		return retval;
-
-	end;
-
-	function to_stdlogicvector(
-		constant data : byte_vector)
-		return std_logic_vector is
-		constant aux    : byte_vector(0 to data'length-1) := data;
-		variable retval : std_logic_vector(0 to byte'length*data'length-1);
-	begin
-
-		for i in 0 to data'length/byte'length-1 loop
-			retval(i*byte'length to (i+1)*byte'length-1) := aux(i);
-		end loop;
-		return retval;
-
-	end;
-
-	constant addr_size : natural := hdl4fpga.std.max(addra'length,addrb'length);
+	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
 
 	shared variable ram : word_vector(0 to 2**addr_size-1);
 
 begin
 
 	process (wr_clk)
-		variable addr : std_logic_vector(0 to addr_size);
-		variable data : unsigned(0 to wr_data'length-1);
+		alias wdata : std_logic_vector(0 to wr_data'length-1) is wr_data;
+		alias waddr : std_logic_vector(0 to wr_addr'length-1) is wr_addr;
+		variable addr : std_logic_vector(0 to addr_size-1);
 	begin
 		if rising_edge(clka) then
-			data := unsigned(wr_data);
-			for i in 0 to wr_data'length/byte'length-1 loop 
-				if wr_ena='1' then
-					ram(to_integer(unsigned(wr_addr)))(*) := std_logic_vector(data(byte'range));
-				end if;
-				data := data rol byte'length;
+			addr := unsigned(wr_addr(addr'range));
+			if wdata'length=word'length then
+				ram(to_integer(addr)) := wdata;
+			else
+				for i in 0 to wr_data'length/byte'length-1 loop 
+					if i=to_integer(unsigned(waddr(addr_size to waddr'length-1)));
+						if wr_ena='1' then
+							ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1) := wdata(i*byte'length to (i+1)*byte'length-1);
+						end if;
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;
 
 	process (rd_clk)
-		variable addr : std_logic_vector(0 to addr_size);
-		variable data : unsigned(0 to rd_data'length-1);
+		alias rdata : std_logic_vector(0 to rd_data'length-1) is rd_data;
+		alias raddr : std_logic_vector(0 to rd_addr'length-1) is rd_addr;
+		variable addr : unsigned(0 to addr_size-1);
 	begin
-		if rising_edge(clkb) then
-			addr := (others => '0');
-			addr(0 to rd_addr'length) := rd_addr;
-			for i in 0 to rd_data'length/byte'length-1 loop 
-				if rd_data'length=word'length the
-				else
-					data(byte'range) <= ram(to_integer(unsigned(addr)));
-				end if;
-				data := data rol byte'length;
+		if rising_edge(rd_clk) then
+			addr := unsigned(rd_addr(addr'range));
+			if rdata'length=word'length then
+				rdata := ram(to_integer(addr));
+			else
+				for i in 0 to rd_data'length/byte'length-1 loop 
+					if i=to_integer(unsigned(raddr(addr_size to raddr'length-1)));
+						rdata(i*byte'length to (i+1)*byte'length-1) := ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1);
+						exit;
+					end if;
+				end loop;
 			end if;
-			rd_data <= std_logic_vector(data);
 		end if;
 	end process;
 end;
