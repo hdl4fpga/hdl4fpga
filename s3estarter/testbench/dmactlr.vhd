@@ -79,19 +79,13 @@ architecture dmactlr of s3Estarter is
 	signal dmactlr_len    : std_logic_vector(26-1 downto 2);
 	signal dmactlr_addr   : std_logic_vector(26-1 downto 2);
 
-	signal iodma_len      : std_logic_vector(dmactlr_addr'range) := x"0000_03";
-	signal iodma_addr     : std_logic_vector(dmactlr_len'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
-	signal iodma_dv       : std_logic;
-
-	signal dmatrans_we    : std_logic;
-	signal dmatrans_req   : std_logic;
-	signal dmatrans_rdy   : std_logic;
-
-	signal dmatrans_iaddr : std_logic_vector(dmactlr_addr'range);
-	signal dmatrans_ilen  : std_logic_vector(dmactlr_len'range);
-
-	signal dmatrans_taddr : std_logic_vector(dmactlr_addr'range);
-	signal dmatrans_tlen  : std_logic_vector(dmactlr_len'range);
+	signal dmacfgio_req   : std_logic;
+	signal dmacfgio_rdy   : std_logic;
+	signal dmaio_req      : std_logic;
+	signal dmaio_rdy      : std_logic;
+	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_03";
+	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmaio_dv       : std_logic;
 
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -153,10 +147,21 @@ architecture dmactlr of s3Estarter is
     signal video_vton    : std_logic;
     signal video_pixel   : std_logic_vector(0 to 8-1);
 
+	signal dmacfgvideo_req  : std_logic;
+	signal dmacfgvideo_rdy  : std_logic;
 	signal dmavideo_req  : std_logic;
 	signal dmavideo_rdy  : std_logic;
 	signal dmavideo_len  : std_logic_vector(dmactlr_len'range);
 	signal dmavideo_addr : std_logic_vector(dmactlr_addr'range);
+
+	signal dmacfg_req  : std_logic_vector(0 to 2-1);
+	signal dmacfg_rdy  : std_logic_vector(0 to 2-1); 
+	signal dev_len     : std_logic_vector(0 to 2*dmactlr_len'length-1);
+	signal dev_addr    : std_logic_vector(0 to 2*dmactlr_addr'length-1);
+	signal dev_we      : std_logic_vector(0 to 2-1);
+
+	signal dev_reqs : std_logic_vector(0 to 2-1);
+	signal dev_rdys : std_logic_vector(0 to 2-1); 
 
 	constant no_latency : boolean := false;
 	type display_param is record
@@ -177,6 +182,8 @@ architecture dmactlr of s3Estarter is
 		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
 
 	constant video_mode : layout_mode := mode1080p;
+
+	alias dma_clk : std_logic is sys_clk;
 
 begin
 
@@ -259,8 +266,8 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => iodma_dv,
-			data => iodma_addr);
+			dv   => dmaio_dv,
+			data => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
@@ -271,15 +278,37 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			data      => iodma_len);
+			data      => dmaio_len);
+
+		dmacfgio_p : process (si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if dmacfgio_req='0' then
+					dmacfgio_req <= dmaio_dv;
+				elsif dmacfgio_rdy='1' then
+					dmacfgio_req <= '0';
+				end if;
+			end if;
+		end process;
 
 	end block;
+
+	g_load <= not ctlr_inirdy;
+	g_ena  <= ctlr_di_req;
+	testpattern_e : entity hdl4fpga.lfsr
+	generic map (
+		g    => g)
+	port map (
+		clk  => ddrsys_clks(clk0), --sys_clk,
+		load => g_load,
+		ena  => g_ena,
+		data => g_data);
 
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
 	port map (
-		dma_req      => dmavideo_req,
+		dma_req      => dmacfgvideo_req,
 		dma_rdy      => dmavideo_rdy,
 		dma_len      => dmavideo_len,
 		dma_addr     => dmavideo_addr,
@@ -293,18 +322,62 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	g_load <= not ctlr_inirdy;
-	g_ena  <= ctlr_di_req;
-	testpattern_e : entity hdl4fpga.lfsr
-	generic map (
-		g    => g)
-	port map (
-		clk  => ddrsys_clks(clk0), --sys_clk,
-		load => g_load,
-		ena  => g_ena,
-		data => g_data);
+	videodmacfg_p : process (dma_clk)
+	begin
+		if rising_edge(dma_clk) then
+			if dmacfgvideo_req='0' then
+				dmacfgvideo_req <= dmavideo_req;
+				dmavideo_req    <= '0';
+			elsif dmacfgvideo_rdy='1' then
+				dmacfgvideo_req <= '1';
+				dmavideo_req    <= '1';
+			elsif dmavideo_rdy='1' then
+				dmacfgvideo_req <= '0';
+				dmavideo_req    <= '0';
+			end if;
+		end if;
+	end process;
 
-	dmatrans_we  <= '0';
+	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
+
+	dev_len  <= dmavideo_len  & dmaio_len;
+	dev_addr <= dmavideo_addr & dmaio_addr;
+	dev_we   <= "1"           & "0";
+	dev_reqs <= (0 => dmavideo_req, 1 => dmaio_req);
+	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdys;
+
+	dmactlr_e : entity hdl4fpga.dmactlr
+	generic map (
+		no_latency => no_latency)
+	port map (
+		dma_clk     => dma_clk,
+		dmacfg_req  => dmacfg_req,
+		dmacfg_rdy  => dmacfg_rdy,
+		dev_len     => dev_len,
+		dev_addr    => dev_addr,
+		dev_we      => dev_we,
+
+		dev_reqs    => dev_reqs,
+		dev_rdys    => dev_rdys,
+
+		ctlr_clk    => ddrsys_clks(clk0),
+
+		ctlr_inirdy => ctlr_inirdy,
+		ctlr_refreq => ctlr_refreq,
+                                  
+		ctlr_irdy   => ctlr_irdy,
+		ctlr_trdy   => ctlr_trdy,
+		ctlr_rw     => ctlr_rw,
+		ctlr_b      => ctlr_b,
+		ctlr_a      => ctlr_a,
+		ctlr_di_dv  => ctlr_di_dv,
+		ctlr_di_req => ctlr_di_req,
+		ctlr_do_dv  => ctlr_do_dv,
+		ctlr_act    => ctlr_act,
+		ctlr_pre    => ctlr_pre,
+		ctlr_idl    => ctlr_idl);
+
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
