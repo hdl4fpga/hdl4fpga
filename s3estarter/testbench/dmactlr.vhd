@@ -325,15 +325,10 @@ begin
 	videodmacfg_p : process (dma_clk)
 	begin
 		if rising_edge(dma_clk) then
-			if dmacfgvideo_req='0' then
-				dmacfgvideo_req <= dmavideo_req;
-				dmavideo_req    <= '0';
-			elsif dmacfgvideo_rdy='1' then
-				dmacfgvideo_req <= '1';
-				dmavideo_req    <= '1';
+			if dmacfgvideo_rdy='1' then
+				dmavideo_req <= '1';
 			elsif dmavideo_rdy='1' then
-				dmacfgvideo_req <= '0';
-				dmavideo_req    <= '0';
+				dmavideo_req <= '0';
 			end if;
 		end if;
 	end process;
