@@ -49,20 +49,24 @@ entity fifo is
 end;
 
 architecture def of fifo is
+	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
+
 
 	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
-	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size-1)-1) := (others => '0');
-	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size-1)-1);
+	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1);
 	signal dst_irdy1 : std_logic;
 
+	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
-	mem_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => synchronous_rddata)
+	mem_e : entity hdl4fpga.dpram1
+--	generic map (
+--		synchronous_rdaddr => false,
+--		synchronous_rddata => synchronous_rddata)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
@@ -77,7 +81,8 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				wr_addr <= rd_addr;
+				wr_addr <= (others => '0');
+				wr_addr(word_addr'range) <= std_logic_vector(resize(unsigned(rd_addr(word_addr'range)), rd_addr'length));
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not overflow_check then
@@ -91,14 +96,15 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(inc(wr_addr)/=rd_addr);
+	src_trdy <= setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range));
 
-	dst_irdy1 <= setif(wr_addr/=rd_addr);
+	dst_irdy1 <= setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range));
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
-				rd_addr <= wr_addr;
+				rd_addr <= (others => '0');
+				rd_addr(word_addr'range) <= std_logic_vector(resize(unsigned(wr_addr(word_addr'range)), rd_addr'length));
 			else
 				if dst_irdy1='1' then
 					if dst_trdy='1' or not overflow_check then

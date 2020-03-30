@@ -76,6 +76,15 @@ architecture def of dpram is
 
 begin
 
+	assert wr_addr'length=rd_addr'length
+	report "Difference address size"
+	severity failure;
+
+
+	assert wr_data'length=rd_data'length
+	report "Difference data size"
+	severity failure;
+
 	sync_rdaddr_g : if synchronous_rdaddr generate
 		sync_p : process (rd_clk)
 		begin
@@ -93,11 +102,7 @@ begin
 		variable addr : std_logic_vector(0 to async_rdaddr'length-1);
 	begin
 		addr := async_rdaddr;
-		if rd_data'length=wr_data'length then
-			async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
-		else
-			async_rddata <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
-		end if;
+		async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
 	end process;
 		
 	rddata_p : process (async_rddata, rd_clk)
@@ -116,6 +121,78 @@ begin
 		if rising_edge(wr_clk) then
 			if wr_ena='1' then
 				ram(to_integer(unsigned(wr_addr))) <= wr_data;
+			end if;
+		end if;
+	end process;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+entity dpram1 is
+	port (
+		rd_clk  : in  std_logic := '-';
+		rd_addr : in  std_logic_vector;
+		rd_data : out std_logic_vector;
+
+		wr_clk  : in std_logic;
+		wr_ena  : in std_logic := '1';
+		wr_addr : in std_logic_vector;
+		wr_data : in std_logic_vector);
+end;
+
+architecture def of dpram1 is
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(wr_data'length,rd_data'length)-1);
+	subtype word is std_logic_vector(0 to hdl4fpga.std.max(wr_data'length,rd_data'length)-1);
+	type word_vector is array (natural range <>) of word;
+
+	constant addr_size : natural := hdl4fpga.std.min(rd_addr'length,wr_addr'length);
+
+	shared variable ram : word_vector(0 to 2**addr_size-1);
+
+begin
+
+	process (wr_clk)
+		alias wdata : std_logic_vector(0 to wr_data'length-1) is wr_data;
+		alias waddr : std_logic_vector(0 to wr_addr'length-1) is wr_addr;
+		variable addr : unsigned(0 to addr_size-1);
+	begin
+		if rising_edge(wr_clk) then
+			addr := unsigned(wr_addr(addr'range));
+			if wdata'length=word'length then
+				ram(to_integer(addr)) := wdata;
+			else
+				for i in 0 to wr_data'length/byte'length-1 loop 
+					if i=to_integer(unsigned(waddr(addr_size to waddr'length-1))) then
+						if wr_ena='1' then
+							ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1) := wdata(i*byte'length to (i+1)*byte'length-1);
+						end if;
+					end if;
+				end loop;
+			end if;
+		end if;
+	end process;
+
+	process (rd_clk)
+		alias rdata : std_logic_vector(0 to rd_data'length-1) is rd_data;
+		alias raddr : std_logic_vector(0 to rd_addr'length-1) is rd_addr;
+		variable addr : unsigned(0 to addr_size-1);
+	begin
+		if rising_edge(rd_clk) then
+			addr := unsigned(rd_addr(addr'range));
+			if rdata'length=word'length then
+				rdata <= ram(to_integer(addr));
+			else
+				for i in 0 to rd_data'length/byte'length-1 loop 
+					if i=to_integer(unsigned(raddr(addr_size to raddr'length-1))) then
+						rdata(i*byte'length to (i+1)*byte'length-1) <= ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1);
+						exit;
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;

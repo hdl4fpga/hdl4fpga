@@ -146,7 +146,7 @@ begin
 
 		rd_clk  => ctlr_clk,
 		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_ilen);
+		rd_data => dmatrans_we);
 
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
