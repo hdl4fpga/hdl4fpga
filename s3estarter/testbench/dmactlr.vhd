@@ -266,7 +266,6 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => dmaio_dv,
 			data => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -278,12 +277,13 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
+			dv        => dmaio_dv,
 			data      => dmaio_len);
 
 		dmacfgio_p : process (si_clk)
 		begin
 			if rising_edge(si_clk) then
-				if dmacfgio_req='0' then
+				if dmacfgio_req/='1' then
 					dmacfgio_req <= dmaio_dv;
 				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
@@ -325,7 +325,7 @@ begin
 	videodmacfg_p : process (dma_clk)
 	begin
 		if rising_edge(dma_clk) then
-			if dmacfgvideo_rdy='1' then
+			if dmacfgvideo_rdy/='0' then
 				dmavideo_req <= '1';
 			elsif dmavideo_rdy='1' then
 				dmavideo_req <= '0';
