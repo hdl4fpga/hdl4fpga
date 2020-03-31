@@ -339,6 +339,7 @@ begin
 	dev_len  <= dmavideo_len  & dmaio_len;
 	dev_addr <= dmavideo_addr & dmaio_addr;
 	dev_we   <= "1"           & "0";
+	dmaio_req <= '0';
 	dev_reqs <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdys;
 
