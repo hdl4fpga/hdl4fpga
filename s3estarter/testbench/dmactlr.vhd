@@ -103,7 +103,7 @@ architecture dmactlr of s3Estarter is
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic := '1';
 	signal ctlr_di_req    : std_logic;
-	signal ctlr_do_req    : std_logic;
+	signal ctlr_dio_req   : std_logic;
 
 	signal ddrphy_rst     : std_logic;
 	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -368,8 +368,7 @@ begin
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
-		ctlr_di_req => ctlr_di_req,
-		ctlr_do_req => ctlr_do_req,
+		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
@@ -420,9 +419,9 @@ begin
 		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
-		ctlr_do_req  => ctlr_do_req,
 		ctlr_do      => ctlr_do,
 		ctlr_refreq  => ctlr_refreq,
+		ctlr_dio_req => ctlr_dio_req,
 
 		phy_rst      => ddrphy_rst,
 		phy_cke      => ddrphy_cke(0),

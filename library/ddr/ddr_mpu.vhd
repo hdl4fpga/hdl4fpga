@@ -64,7 +64,8 @@ entity ddr_mpu is
 		ddr_mpu_rea  : out std_logic;
 		ddr_mpu_rwin : out std_logic;
 		ddr_mpu_wri  : out std_logic;
-		ddr_mpu_wwin : out std_logic);
+		ddr_mpu_wwin : out std_logic;
+		ddr_mpu_rwwin : out std_logic);
 
 end;
 
@@ -297,16 +298,17 @@ begin
 
 
 				if lat_timer(0)='1' then
-					state_set    := false;
-					lat_timer    <= (others => '-');
-					ddr_mpu_ras  <= '-';
-					ddr_mpu_cas  <= '-';
-					ddr_mpu_we   <= '-';
-					ddr_mpu_rea  <= '-';
-					ddr_mpu_rwin <= '-';
-					ddr_mpu_wwin <= '-';
-					ddr_rdy_ena  <= '-';
-					ddr_mpu_cen  <= '-';
+					state_set     := false;
+					lat_timer     <= (others => '-');
+					ddr_mpu_ras   <= '-';
+					ddr_mpu_cas   <= '-';
+					ddr_mpu_we    <= '-';
+					ddr_mpu_rea   <= '-';
+					ddr_mpu_rwin  <= '-';
+					ddr_mpu_wwin  <= '-';
+					ddr_mpu_rwwin <= '-';
+					ddr_rdy_ena   <= '-';
+					ddr_mpu_cen   <= '-';
 					for i in ddr_state_tab'range loop
 						if ddr_state=ddr_state_tab(i).ddr_state then 
 							if ddr_state_tab(i).ddr_cmi=ddr_mpu_cmd or
@@ -320,6 +322,7 @@ begin
 								ddr_mpu_rea  <= ddr_state_tab(i).ddr_rea;
 								ddr_mpu_rwin <= ddr_state_tab(i).ddr_rph;
 								ddr_mpu_wwin <= ddr_state_tab(i).ddr_wph;
+								ddr_mpu_rwwin <= ddr_state_tab(i).ddr_wph or ddr_state_tab(i).ddr_rph;
 								ddr_rdy_ena  <= ddr_state_tab(i).ddr_rdy;
 
 								case ddr_state_tab(i).ddr_lat is
@@ -352,19 +355,20 @@ begin
 					lat_timer   <= lat_timer - 1;
 				end if;
 			else
-				state_set    := true;
-				ddr_state    <= ddr_state_tab(0).ddr_state_n;
-				ddr_mpu_cen  <= '0';
-				ddr_mpu_ras  <= ddr_state_tab(0).ddr_cmo(ras);
-				ddr_mpu_cas  <= ddr_state_tab(0).ddr_cmo(cas);
-				ddr_mpu_we   <= ddr_state_tab(0).ddr_cmo(we);
-				ddr_mpu_rea  <= ddr_state_tab(0).ddr_rea;
-				ddr_mpu_rwin <= ddr_state_tab(0).ddr_rph;
-				ddr_mpu_wwin <= ddr_state_tab(0).ddr_wph;
-				ddr_mpu_pre  <= '0';
-				ddr_mpu_idl  <= '1';
-				ddr_rdy_ena  <= '1';
-				lat_timer    <= (others => '1');
+				state_set     := true;
+				ddr_state     <= ddr_state_tab(0).ddr_state_n;
+				ddr_mpu_cen   <= '0';
+				ddr_mpu_ras   <= ddr_state_tab(0).ddr_cmo(ras);
+				ddr_mpu_cas   <= ddr_state_tab(0).ddr_cmo(cas);
+				ddr_mpu_we    <= ddr_state_tab(0).ddr_cmo(we);
+				ddr_mpu_rea   <= ddr_state_tab(0).ddr_rea;
+				ddr_mpu_rwin  <= ddr_state_tab(0).ddr_rph;
+				ddr_mpu_wwin  <= ddr_state_tab(0).ddr_wph;
+				ddr_mpu_rwwin <= ddr_state_tab(0).ddr_wph or ddr_state_tab(0).ddr_rph;
+				ddr_mpu_pre   <= '0';
+				ddr_mpu_idl   <= '1';
+				ddr_rdy_ena   <= '1';
+				lat_timer     <= (others => '1');
 			end if;
 
 		end if;

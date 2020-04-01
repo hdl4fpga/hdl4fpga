@@ -54,8 +54,7 @@ entity dmatrans is
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
-		ctlr_do_req   : in  std_logic;
-		ctlr_di_req   : in  std_logic);
+		ctlr_dio_req   : in  std_logic);
 
 end;
 
@@ -150,7 +149,7 @@ begin
 		end if;
 	end process;
 
-	ctlrdma_irdy <= preload or ctlr_di_req or ctlr_do_req;
+	ctlrdma_irdy <= preload or ctlr_dio_req;
 
 	tlenlat_e : entity hdl4fpga.align
 	generic map (
