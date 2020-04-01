@@ -71,6 +71,7 @@ entity ddr_ctlr is
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di_req  : out std_logic;
 		ctlr_do_dv   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlr_do_req  : out std_logic;
 		ctlr_act     : out std_logic;
 		ctlr_pre     : out std_logic;
 		ctlr_idl     : out std_logic;
@@ -301,6 +302,7 @@ begin
 		ddr_mpu_wwin => ddr_mpu_wwin);
 
 	ctlr_di_req <= ddr_mpu_wwin;
+	ctlr_do_req <= ddr_mpu_rwin;
 
 	ddr_sch_e : entity hdl4fpga.ddr_sch
 	generic map (
