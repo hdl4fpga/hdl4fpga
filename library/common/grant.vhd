@@ -61,7 +61,7 @@ begin
 			end if;
 			served <= serving;
 
-			arbiter_req  <= not serving and booked;
+			arbiter_req  <= not served and booked;
 		end if;
 	end process;
 

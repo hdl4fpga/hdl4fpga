@@ -291,8 +291,8 @@ begin
 				end if;
 			end if;
 		end process;
+		dmaio_req <= '0';
 
-	dmaio_req <= '0';
 --	videodmacfg_p : process (dma_clk)
 --	begin
 --		if rising_edge(dma_clk) then

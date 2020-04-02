@@ -119,12 +119,12 @@ begin
 			end if;
 
 			if video_vton='0' then
-				dma_len  <= std_logic_vector(to_unsigned(maxdma_len, dma_len'length));
+				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
 			elsif dma_rdy='1' then
 				if dma_req='1' then
-					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4, dma_len'length));
-					dma_addr <= std_logic_vector(unsigned(dma_addr) + (maxdma_len/4));
+					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + (maxdma_len));
 				end if;
 			end if;
 
