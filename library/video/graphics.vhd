@@ -124,7 +124,7 @@ begin
 			elsif dma_rdy='1' then
 				if dma_req='1' then
 					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
-					dma_addr <= std_logic_vector(unsigned(dma_addr) + (maxdma_len));
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='1', maxdma_len, maxdma_len/4));
 				end if;
 			end if;
 
