@@ -330,6 +330,7 @@ begin
 									lat_timer <= select_lat(ddr_mpu_bl, bl_cod, bl_tab);
 								when id_cl =>
 									lat_timer <= select_lat(ddr_mpu_cl, cl_cod, cl_tab);
+--									lat_timer <= select_lat(ddr_mpu_cl, cl_cod, cl_tab)+1;
 								when id_cwl =>
 									lat_timer <= select_lat(ddr_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
 								when id_rcd =>

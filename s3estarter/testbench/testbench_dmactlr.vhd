@@ -267,7 +267,7 @@ begin
 				x"0044dea9"         &    -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
-				x"1602001234"       &
+				x"16020001ff"       &
 				x"1702000000") &
 			x"00000000"
 		,8)
