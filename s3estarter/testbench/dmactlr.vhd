@@ -103,6 +103,7 @@ architecture dmactlr of s3Estarter is
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic := '1';
 	signal ctlr_di_req    : std_logic;
+	signal ctlr_dio_req   : std_logic;
 
 	signal ddrphy_rst     : std_logic;
 	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -266,7 +267,6 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
-			dv   => dmaio_dv,
 			data => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -278,12 +278,13 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 
+			dv        => dmaio_dv,
 			data      => dmaio_len);
 
 		dmacfgio_p : process (si_clk)
 		begin
 			if rising_edge(si_clk) then
-				if dmacfgio_req='0' then
+				if dmacfgio_req/='1' then
 					dmacfgio_req <= dmaio_dv;
 				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
@@ -291,6 +292,22 @@ begin
 			end if;
 		end process;
 
+	dmaio_req <= '0';
+--	videodmacfg_p : process (dma_clk)
+--	begin
+--		if rising_edge(dma_clk) then
+--			if dmacfgio_req/='1' then
+--				dmacfgio_req <= dmaio_dv;
+--				dmaio_req <= '0';
+--			elsif dmacfgio_rdy/='0' then
+--				dmacfgio_req <= '0';
+--				dmaio_req    <= '1';
+--			elsif dmaio_rdy='1' then
+--				dmacfgio_req <= '0';
+--				dmaio_req <= '0';
+--			end if;
+--		end if;
+--	end process;
 	end block;
 
 	g_load <= not ctlr_inirdy;
@@ -325,7 +342,7 @@ begin
 	videodmacfg_p : process (dma_clk)
 	begin
 		if rising_edge(dma_clk) then
-			if dmacfgvideo_rdy='1' then
+			if dmacfgvideo_rdy/='0' then
 				dmavideo_req <= '1';
 			elsif dmavideo_rdy='1' then
 				dmavideo_req <= '0';
@@ -334,12 +351,14 @@ begin
 	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_len  <= dmavideo_len  & dmaio_len;
 	dev_addr <= dmavideo_addr & dmaio_addr;
 	dev_we   <= "1"           & "0";
 	dev_reqs <= (0 => dmavideo_req, 1 => dmaio_req);
+--	dev_reqs <= (0 => '0', 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdys;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
@@ -366,9 +385,7 @@ begin
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
-		ctlr_di_dv  => ctlr_di_dv,
-		ctlr_di_req => ctlr_di_req,
-		ctlr_do_dv  => ctlr_do_dv,
+		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
@@ -414,13 +431,14 @@ begin
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
-		ctlr_idl      => ctlr_idl,
+		ctlr_idl     => ctlr_idl,
 --		ctlr_di      => ctlr_di,
 		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
 		ctlr_do      => ctlr_do,
 		ctlr_refreq  => ctlr_refreq,
+		ctlr_dio_req => ctlr_dio_req,
 
 		phy_rst      => ddrphy_rst,
 		phy_cke      => ddrphy_cke(0),

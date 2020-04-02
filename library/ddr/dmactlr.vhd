@@ -53,9 +53,7 @@ entity dmactlr is
 		ctlr_rw      : out std_logic;
 		ctlr_b       : out std_logic_vector;
 		ctlr_a       : out std_logic_vector;
-		ctlr_di_dv   : out std_logic;
-		ctlr_di_req  : in  std_logic;
-		ctlr_do_dv   : in  std_logic_vector;
+		ctlr_dio_req : in  std_logic;
 		ctlr_act     : in  std_logic;
 		ctlr_pre     : in  std_logic;
 		ctlr_idl     : in  std_logic);
@@ -75,7 +73,8 @@ architecture def of dmactlr is
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
-	signal dmatrans_we    : std_logic_vector(0 to 0);
+	signal dmatrans_we    : std_logic;
+	signal trans_we       : std_logic_vector(0 to 0);
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
@@ -146,7 +145,7 @@ begin
 
 		rd_clk  => ctlr_clk,
 		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_we);
+		rd_data => trans_we);
 
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
@@ -165,9 +164,11 @@ begin
 			else
 				dmatrans_req <= setif(dmatrans_gnt /= (dmatrans_gnt'range => '0'));
 			end if;
+			dmatrans_rid <= encoder(dmatrans_gnt);
 		end if;
 	end process;
 
+	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
 		no_latency   => no_latency,
@@ -176,7 +177,7 @@ begin
 		dmatrans_clk   => ctlr_clk,
 		dmatrans_req   => dmatrans_req,
 		dmatrans_rdy   => dmatrans_rdy,
-		dmatrans_we    => dmatrans_we(0),
+		dmatrans_we    => dmatrans_we,
 		dmatrans_iaddr => dmatrans_iaddr,
 		dmatrans_ilen  => dmatrans_ilen,
 		dmatrans_taddr => dmatrans_taddr,
@@ -193,6 +194,6 @@ begin
 		ctlr_idl       => ctlr_idl,
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a,
-		ctlr_di_req    => ctlr_di_req);
+		ctlr_dio_req   => ctlr_dio_req);
 
 end;

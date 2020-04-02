@@ -54,7 +54,7 @@ entity dmatrans is
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
-		ctlr_di_req   : in  std_logic);
+		ctlr_dio_req   : in  std_logic);
 
 end;
 
@@ -87,6 +87,7 @@ architecture def of dmatrans is
 	signal refreq       : std_logic;
 begin
 
+	ctlr_rw <= dmatrans_we;
 	process (dmatrans_clk)
 		variable q : std_logic;
 	begin
@@ -148,7 +149,7 @@ begin
 		end if;
 	end process;
 
-	ctlrdma_irdy <= preload or ctlr_di_req;
+	ctlrdma_irdy <= preload or ctlr_dio_req;
 
 	tlenlat_e : entity hdl4fpga.align
 	generic map (

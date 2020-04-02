@@ -71,6 +71,8 @@ entity ddr_ctlr is
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di_req  : out std_logic;
 		ctlr_do_dv   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlr_do_req  : out std_logic;
+		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
 		ctlr_pre     : out std_logic;
 		ctlr_idl     : out std_logic;
@@ -169,6 +171,7 @@ architecture mix of ddr_ctlr is
 	signal ddr_mpu_rea    : std_logic;
 	signal ddr_mpu_rwin   : std_logic;
 	signal ddr_mpu_wwin   : std_logic;
+	signal ddr_mpu_rwwin  : std_logic;
 
 	signal ddr_sch_odt    : std_logic_vector(0 to cmmd_gear-1);
 	signal ddr_sch_dqsz   : std_logic_vector(0 to data_gear-1);
@@ -281,26 +284,29 @@ begin
 		cl_tab      => cl_tab,
 		cwl_tab     => cwl_tab)
 	port map (
-		ddr_mpu_bl   => ctlr_bl,
-		ddr_mpu_cl   => ctlr_cl,
-		ddr_mpu_cwl  => ddr_cwl,
+		ddr_mpu_bl    => ctlr_bl,
+		ddr_mpu_cl    => ctlr_cl,
+		ddr_mpu_cwl   => ddr_cwl,
 
-		ddr_mpu_rst  => ddr_mpu_rst,
-		ddr_mpu_clk  => ctlr_clks(0),
-		ddr_mpu_cmd  => ddr_pgm_cmd,
-		ddr_mpu_trdy => ddr_mpu_trdy,
-		ddr_mpu_act  => ctlr_act,
-		ddr_mpu_pre  => ctlr_pre,
-		ddr_mpu_cyl  => ctlr_cyl,
-		ddr_mpu_cas  => ddr_mpu_cas,
-		ddr_mpu_ras  => ddr_mpu_ras,
-		ddr_mpu_we   => ddr_mpu_we,
-		ddr_mpu_rea  => ddr_mpu_rea,
-		ddr_mpu_wri  => ddr_mpu_wri,
-		ddr_mpu_rwin => ddr_mpu_rwin,
-		ddr_mpu_wwin => ddr_mpu_wwin);
+		ddr_mpu_rst   => ddr_mpu_rst,
+		ddr_mpu_clk   => ctlr_clks(0),
+		ddr_mpu_cmd   => ddr_pgm_cmd,
+		ddr_mpu_trdy  => ddr_mpu_trdy,
+		ddr_mpu_act   => ctlr_act,
+		ddr_mpu_pre   => ctlr_pre,
+		ddr_mpu_cyl   => ctlr_cyl,
+		ddr_mpu_cas   => ddr_mpu_cas,
+		ddr_mpu_ras   => ddr_mpu_ras,
+		ddr_mpu_we    => ddr_mpu_we,
+		ddr_mpu_rea   => ddr_mpu_rea,
+		ddr_mpu_wri   => ddr_mpu_wri,
+		ddr_mpu_rwin  => ddr_mpu_rwin,
+		ddr_mpu_wwin  => ddr_mpu_wwin,
+		ddr_mpu_rwwin => ddr_mpu_rwwin);
 
-	ctlr_di_req <= ddr_mpu_wwin;
+	ctlr_di_req  <= ddr_mpu_wwin;
+	ctlr_do_req  <= ddr_mpu_rwin;
+	ctlr_dio_req <= ddr_mpu_rwwin;
 
 	ddr_sch_e : entity hdl4fpga.ddr_sch
 	generic map (

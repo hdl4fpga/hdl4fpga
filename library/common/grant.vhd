@@ -41,8 +41,8 @@ end;
 
 architecture def of grant is
 
-	signal booked  : std_logic_vector(dev_req'range);
-	signal served  : std_logic_vector(booked'range);
+	signal booked  : std_logic_vector(dev_req'range) := (others => '0');
+	signal served  : std_logic_vector(booked'range) := (others => '0');
 
 	signal arbiter_req : std_logic_vector(dev_req'range);
 
