@@ -86,12 +86,14 @@ begin
 						level := level + (maxdma_len/4);
 					end if;
 				elsif hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920;
+					if video_hzon='0' then
+						if video_vton='1' then
+							level := level - 1920/4;
+						end if;
 						hzon_edge := '0';
 					end if;
 				else
-					hzon_edge := video_hzsync;
+					hzon_edge := video_hzon;
 				end if;
 			else
 				if video_frm='1' then
@@ -101,30 +103,32 @@ begin
 				end if;
 
 				if hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920;
+					if video_hzon='0' then
+						if video_vton='1' then
+							level := level - 1920/4;
+						end if;
 						hzon_edge := '0';
 					end if;
 				else
-					hzon_edge := video_hzsync;
+					hzon_edge := video_hzon;
 				end if;
 			end if;
 
 			if video_vton='0' then
 				if vton_edge='1' then
-					video_frm <= '0';
-				else
 					video_frm <= '1';
+				else
+					video_frm <= '0';
 				end if;
 			end if;
 
 			if video_vton='0' then
-				dma_len  <= std_logic_vector(to_unsigned(maxdma_len, dma_len'length));
+				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
 			elsif dma_rdy='1' then
 				if dma_req='1' then
-					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4, dma_len'length));
-					dma_addr <= std_logic_vector(unsigned(dma_addr) + (maxdma_len/4));
+					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='1', maxdma_len, maxdma_len/4));
 				end if;
 			end if;
 

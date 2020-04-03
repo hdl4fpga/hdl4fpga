@@ -82,7 +82,7 @@ begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
 				wr_addr <= (others => '0');
-				wr_addr(word_addr'range) <= std_logic_vector(resize(unsigned(rd_addr(word_addr'range)), rd_addr'length));
+				wr_addr(word_addr'range) <= rd_addr(word_addr'range);
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not overflow_check then
@@ -104,7 +104,7 @@ begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				rd_addr <= (others => '0');
-				rd_addr(word_addr'range) <= std_logic_vector(resize(unsigned(wr_addr(word_addr'range)), rd_addr'length));
+				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
 				if dst_irdy1='1' then
 					if dst_trdy='1' or not overflow_check then

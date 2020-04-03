@@ -97,7 +97,7 @@ begin
 		end if;
 	end process;
 
-	process (dmatrans_clk, ceoc, ref_req, leoc)
+	load_p : process (dmatrans_clk, ceoc, ref_req, leoc)
 		variable q : std_logic;
 		variable s : std_logic;
 	begin
@@ -111,10 +111,10 @@ begin
 			else
 				q := '0';
 			end if;
-			s := setif(ceoc='1' or ref_req='1', not leoc, q);
-			load   <= setif(s='1', '1', not dmatrans_req);
-			ilen   <= word2byte(dmatrans_ilen  & tlen,  s);
-			iaddr  <= word2byte(dmatrans_iaddr & taddr, s);
+			s     := setif(ceoc='1' or ref_req='1', not leoc, q);
+			load  <= setif(s='1', '1', not dmatrans_req);
+			ilen  <= word2byte(dmatrans_ilen  & tlen,  s);
+			iaddr <= word2byte(dmatrans_iaddr & taddr, s);
 		end if;
 		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
@@ -206,7 +206,7 @@ begin
 		do(1) => len_eoc,
 		do(2) => refreq);
 
-	process (dmatrans_clk)
+	ctlrba_p : process (dmatrans_clk)
 		variable s : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then

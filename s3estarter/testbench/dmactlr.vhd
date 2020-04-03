@@ -182,7 +182,7 @@ architecture dmactlr of s3Estarter is
 		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
 		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode480p;
 
 	alias dma_clk : std_logic is sys_clk;
 
@@ -291,8 +291,8 @@ begin
 				end if;
 			end if;
 		end process;
+		dmaio_req <= '0';
 
-	dmaio_req <= '0';
 --	videodmacfg_p : process (dma_clk)
 --	begin
 --		if rising_edge(dma_clk) then
