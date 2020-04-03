@@ -132,37 +132,37 @@ architecture dmactlr of s3Estarter is
 	signal ddr_dqt        : std_logic_vector(sd_dq'range);
 	signal ddr_dqo        : std_logic_vector(sd_dq'range);
 
-	alias  si_clk   : std_logic is e_rx_clk;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(e_rxd'range);
+	alias  si_clk         : std_logic is e_rx_clk;
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_data        : std_logic_vector(e_rxd'range);
 
 	signal toudpdaisy_frm  : std_logic;
 	signal toudpdaisy_irdy : std_logic;
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
 
-	signal video_clk     : std_logic;
-	signal video_hzsync  : std_logic;
-    signal video_vtsync  : std_logic;
-    signal video_hzon    : std_logic;
-    signal video_vton    : std_logic;
-    signal video_pixel   : std_logic_vector(0 to 8-1);
+	signal video_clk      : std_logic;
+	signal video_hzsync   : std_logic;
+    signal video_vtsync   : std_logic;
+    signal video_hzon     : std_logic;
+    signal video_vton     : std_logic;
+    signal video_pixel    : std_logic_vector(0 to 8-1);
 
-	signal dmacfgvideo_req  : std_logic;
-	signal dmacfgvideo_rdy  : std_logic;
-	signal dmavideo_req  : std_logic;
-	signal dmavideo_rdy  : std_logic;
-	signal dmavideo_len  : std_logic_vector(dmactlr_len'range);
-	signal dmavideo_addr : std_logic_vector(dmactlr_addr'range);
+	signal dmacfgvideo_req : std_logic;
+	signal dmacfgvideo_rdy : std_logic;
+	signal dmavideo_req   : std_logic;
+	signal dmavideo_rdy   : std_logic;
+	signal dmavideo_len   : std_logic_vector(dmactlr_len'range);
+	signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
 
-	signal dmacfg_req  : std_logic_vector(0 to 2-1);
-	signal dmacfg_rdy  : std_logic_vector(0 to 2-1); 
-	signal dev_len     : std_logic_vector(0 to 2*dmactlr_len'length-1);
-	signal dev_addr    : std_logic_vector(0 to 2*dmactlr_addr'length-1);
-	signal dev_we      : std_logic_vector(0 to 2-1);
+	signal dmacfg_req     : std_logic_vector(0 to 2-1);
+	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
+	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
+	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
+	signal dev_we         : std_logic_vector(0 to 2-1);
 
-	signal dev_reqs : std_logic_vector(0 to 2-1);
-	signal dev_rdys : std_logic_vector(0 to 2-1); 
+	signal dev_req : std_logic_vector(0 to 2-1);
+	signal dev_rdy : std_logic_vector(0 to 2-1); 
 
 	constant no_latency : boolean := false;
 	type display_param is record
@@ -220,9 +220,13 @@ begin
 
 	scopeio_export_b : block
 
-		signal rgtr_id   : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(32-1 downto 0);
+		signal rgtr_id     : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv     : std_logic;
+		signal rgtr_data   : std_logic_vector(32-1 downto 0);
+
+		signal data_frm    : std_logic;
+		signal data_ena    : std_logic;
+		signal dmadata_frm : std_logic;
 
 	begin
 
@@ -254,6 +258,8 @@ begin
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
 			sin_data  => si_data,
+			data_frm  => data_frm,
+			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -266,8 +272,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-
-			data => dmaio_addr);
+			data      => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
@@ -277,9 +282,23 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-
 			dv        => dmaio_dv,
 			data      => dmaio_len);
+
+		dmadata_frm <= data_frm and setif(rgtr_id=rid_dmadata);
+		dmadata_e : entity hdl4fpga.fifo
+		generic map (
+			size           => 1024,
+			gray_code      => false,
+			overflow_check => false)
+		port map (
+			src_clk  => si_clk,
+			src_frm  => dmadata_frm,
+			src_irdy => data_ena,
+			src_data => rgtr_data(8-1 downto 0),
+
+			dst_clk  => ddrsys_clks(clk0),
+			dst_data => ctlr_di);
 
 		dmacfgio_p : process (si_clk)
 		begin
@@ -293,21 +312,22 @@ begin
 		end process;
 		dmaio_req <= '0';
 
---	videodmacfg_p : process (dma_clk)
---	begin
---		if rising_edge(dma_clk) then
---			if dmacfgio_req/='1' then
---				dmacfgio_req <= dmaio_dv;
---				dmaio_req <= '0';
---			elsif dmacfgio_rdy/='0' then
---				dmacfgio_req <= '0';
---				dmaio_req    <= '1';
---			elsif dmaio_rdy='1' then
---				dmacfgio_req <= '0';
---				dmaio_req <= '0';
+--		dmacfgio_p : process (dma_clk)
+--		begin
+--			if rising_edge(dma_clk) then
+--				if dmacfgio_req/='1' then
+--					dmacfgio_req <= dmaio_dv;
+--					dmaio_req <= '0';
+--				elsif dmacfgio_rdy/='0' then
+--					dmacfgio_req <= '0';
+--					dmaio_req    <= '1';
+--				elsif dmaio_rdy='1' then
+--					dmacfgio_req <= '0';
+--					dmaio_req <= '0';
+--				end if;
 --			end if;
---		end if;
---	end process;
+--		end process;
+
 	end block;
 
 	g_load <= not ctlr_inirdy;
@@ -357,9 +377,9 @@ begin
 	dev_len  <= dmavideo_len  & dmaio_len;
 	dev_addr <= dmavideo_addr & dmaio_addr;
 	dev_we   <= "1"           & "0";
-	dev_reqs <= (0 => dmavideo_req, 1 => dmaio_req);
---	dev_reqs <= (0 => '0', 1 => dmaio_req);
-	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdys;
+--	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+	dev_req <= (0 => '0', 1 => dmaio_req);
+	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
@@ -372,8 +392,8 @@ begin
 		dev_addr    => dev_addr,
 		dev_we      => dev_we,
 
-		dev_reqs    => dev_reqs,
-		dev_rdys    => dev_rdys,
+		dev_req     => dev_req,
+		dev_rdy     => dev_rdy,
 
 		ctlr_clk    => ddrsys_clks(clk0),
 
@@ -389,7 +409,6 @@ begin
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
-
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (

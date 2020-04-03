@@ -428,6 +428,7 @@ package scopeiopkg is
 	constant rid_pointer  : std_logic_vector := x"15";
 	constant rid_dmaaddr  : std_logic_vector := x"16";
 	constant rid_dmalen   : std_logic_vector := x"17";
+	constant rid_dmadata  : std_logic_vector := x"18";
 
 	constant pltid_gridfg    : natural :=  0;
 	constant pltid_gridbg    : natural :=  6;
