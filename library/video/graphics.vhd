@@ -87,7 +87,7 @@ begin
 					end if;
 				elsif hzon_edge='1' then
 					if video_hzsync='0' then
-						level := level - 1920;
+						level := level - 1920/4;
 						hzon_edge := '0';
 					end if;
 				else
@@ -102,7 +102,7 @@ begin
 
 				if hzon_edge='1' then
 					if video_hzsync='0' then
-						level := level - 1920;
+						level := level - 1920/4;
 						hzon_edge := '0';
 					end if;
 				else
@@ -112,9 +112,9 @@ begin
 
 			if video_vton='0' then
 				if vton_edge='1' then
-					video_frm <= '0';
-				else
 					video_frm <= '1';
+				else
+					video_frm <= '0';
 				end if;
 			end if;
 

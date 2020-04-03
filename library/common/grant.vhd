@@ -50,18 +50,20 @@ begin
 
 	book_p : process (gnt_clk)
 		variable serving : std_logic_vector(served'range);
+		variable booking : std_logic_vector(served'range);
 	begin
 		if rising_edge(gnt_clk) then
 			if gnt_rst='1'  then
-				booked  <= (others => '0');
+				booking := (others => '0');
 				serving := (others => '0');
 			else
-				booked  <= dev_req or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
+				booking := dev_req or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
 				serving := (dev_req and served) or (dev_req and booked and (dev_gnt and (dev_gnt'range => gnt_rdy)));
 			end if;
+			booked <= booking;
 			served <= serving;
 
-			arbiter_req  <= not served and booked;
+			arbiter_req  <= not serving and booking;
 		end if;
 	end process;
 
