@@ -86,12 +86,14 @@ begin
 						level := level + (maxdma_len/4);
 					end if;
 				elsif hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920/4;
+					if video_hzon='0' then
+						if video_vton='1' then
+							level := level - 1920/4;
+						end if;
 						hzon_edge := '0';
 					end if;
 				else
-					hzon_edge := video_hzsync;
+					hzon_edge := video_hzon;
 				end if;
 			else
 				if video_frm='1' then
@@ -101,12 +103,14 @@ begin
 				end if;
 
 				if hzon_edge='1' then
-					if video_hzsync='0' then
-						level := level - 1920/4;
+					if video_hzon='0' then
+						if video_vton='1' then
+							level := level - 1920/4;
+						end if;
 						hzon_edge := '0';
 					end if;
 				else
-					hzon_edge := video_hzsync;
+					hzon_edge := video_hzon;
 				end if;
 			end if;
 

@@ -4,18 +4,18 @@ add wave -noupdate /testbench/s3estarter_e/xtal
 add wave -noupdate /testbench/s3estarter_e/e_rx_clk
 add wave -noupdate /testbench/s3estarter_e/e_rx_dv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/e_rxd
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk_n
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Cke
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Cs_n
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Ras_n
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Cas_n
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/We_n
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Ba
-add wave -noupdate -expand -group Micron -radix hexadecimal -childformat {{{/testbench/ddr_model_g/Addr[12]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[11]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[10]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[9]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[8]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[7]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[6]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[5]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[4]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[3]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[2]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[1]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[0]} -radix hexadecimal}} -subitemconfig {{/testbench/ddr_model_g/Addr[12]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[11]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[10]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[9]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[8]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[7]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[6]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[5]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[4]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[3]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[2]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[1]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[0]} {-height 29 -radix hexadecimal}} /testbench/ddr_model_g/Addr
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Dm
-add wave -noupdate -expand -group Micron -radix hexadecimal /testbench/ddr_model_g/Dq
-add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Dqs
+add wave -noupdate -group Micron /testbench/ddr_model_g/Clk
+add wave -noupdate -group Micron /testbench/ddr_model_g/Clk_n
+add wave -noupdate -group Micron /testbench/ddr_model_g/Cke
+add wave -noupdate -group Micron /testbench/ddr_model_g/Cs_n
+add wave -noupdate -group Micron /testbench/ddr_model_g/Ras_n
+add wave -noupdate -group Micron /testbench/ddr_model_g/Cas_n
+add wave -noupdate -group Micron /testbench/ddr_model_g/We_n
+add wave -noupdate -group Micron /testbench/ddr_model_g/Ba
+add wave -noupdate -group Micron -radix hexadecimal -childformat {{{/testbench/ddr_model_g/Addr[12]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[11]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[10]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[9]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[8]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[7]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[6]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[5]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[4]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[3]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[2]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[1]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[0]} -radix hexadecimal}} -subitemconfig {{/testbench/ddr_model_g/Addr[12]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[11]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[10]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[9]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[8]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[7]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[6]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[5]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[4]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[3]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[2]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[1]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[0]} {-height 29 -radix hexadecimal}} /testbench/ddr_model_g/Addr
+add wave -noupdate -group Micron /testbench/ddr_model_g/Dm
+add wave -noupdate -group Micron -radix hexadecimal /testbench/ddr_model_g/Dq
+add wave -noupdate -group Micron /testbench/ddr_model_g/Dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/rgtr_dv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/rgtr_data
@@ -33,21 +33,23 @@ add wave -noupdate /testbench/s3estarter_e/dmavideo_req
 add wave -noupdate /testbench/s3estarter_e/dmavideo_rdy
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmavideo_len
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmavideo_addr
+add wave -noupdate -divider graphics
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_len
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di_dv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_req
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_rdy
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_addr
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_clk
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_hzsync
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_hzon
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_vtsync
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_vton
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/graphics_e/video_pixel(0) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(1) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(2) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(3) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(4) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(5) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(6) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(7) -radix hexadecimal}} -subitemconfig {/testbench/s3estarter_e/graphics_e/video_pixel(0) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(1) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(2) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(3) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(4) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(5) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(6) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(7) {-height 29 -radix hexadecimal}} /testbench/s3estarter_e/graphics_e/video_pixel
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_req
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_rdy
+add wave -noupdate /testbench/s3estarter_e/graphics_e/video_vton
+add wave -noupdate /testbench/s3estarter_e/graphics_e/line__74/vton_edge
 add wave -noupdate /testbench/s3estarter_e/graphics_e/video_frm
-add wave -noupdate -radix unsigned /testbench/s3estarter_e/graphics_e/video_hzcntr
-add wave -noupdate -radix unsigned /testbench/s3estarter_e/graphics_e/video_vtcntr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_hzon
+add wave -noupdate /testbench/s3estarter_e/graphics_e/line__74/hzon_edge
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/line__74/level
 add wave -noupdate -divider DDRCTLR
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_irdy
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_rw
@@ -93,8 +95,8 @@ add wave -noupdate /testbench/s3estarter_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/ddr_dqo
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {207647086 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {13353381268 ps} 0} {{Cursor 2} {19998598000 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 119
 configure wave -justifyvalue left
@@ -109,4 +111,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {206366550 ps} {208583507 ps}
+WaveRestoreZoom {0 ps} {21 ms}
