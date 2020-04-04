@@ -224,9 +224,8 @@ begin
 		signal rgtr_dv     : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
-		signal data_frm    : std_logic;
 		signal data_ena    : std_logic;
-		signal dmadata_frm : std_logic;
+		signal dmadata_ena : std_logic;
 
 	begin
 
@@ -258,7 +257,6 @@ begin
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
 			sin_data  => si_data,
-			data_frm  => data_frm,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
@@ -285,7 +283,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_frm <= data_frm and setif(rgtr_id=rid_dmadata);
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata);
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			size           => 1024,
@@ -293,8 +291,7 @@ begin
 			overflow_check => false)
 		port map (
 			src_clk  => si_clk,
-			src_frm  => dmadata_frm,
-			src_irdy => data_ena,
+			src_irdy => dmadata_ena,
 			src_data => rgtr_data(8-1 downto 0),
 
 			dst_clk  => ddrsys_clks(clk0),

@@ -56,7 +56,7 @@ architecture def of fifo is
 	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
 	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
-	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1);
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);

@@ -157,19 +157,18 @@ architecture def of dpram1 is
 begin
 
 	process (wr_clk)
-		alias wdata : std_logic_vector(0 to wr_data'length-1) is wr_data;
 		alias waddr : std_logic_vector(0 to wr_addr'length-1) is wr_addr;
 		variable addr : unsigned(0 to addr_size-1);
 	begin
 		if rising_edge(wr_clk) then
 			addr := unsigned(wr_addr(addr'range));
-			if wdata'length=word'length then
-				ram(to_integer(addr)) := wdata;
+			if wr_data'length=word'length then
+				ram(to_integer(addr)) := wr_data;
 			else
-				for i in 0 to wr_data'length/byte'length-1 loop 
+				for i in 0 to word'length/wr_data'length-1 loop 
 					if i=to_integer(unsigned(waddr(addr_size to waddr'length-1))) then
 						if wr_ena='1' then
-							ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1) := wdata(i*byte'length to (i+1)*byte'length-1);
+							ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1) := wr_data;
 						end if;
 					end if;
 				end loop;
@@ -178,18 +177,17 @@ begin
 	end process;
 
 	process (rd_clk)
-		alias rdata : std_logic_vector(0 to rd_data'length-1) is rd_data;
 		alias raddr : std_logic_vector(0 to rd_addr'length-1) is rd_addr;
 		variable addr : unsigned(0 to addr_size-1);
 	begin
 		if rising_edge(rd_clk) then
 			addr := unsigned(rd_addr(addr'range));
-			if rdata'length=word'length then
-				rdata <= ram(to_integer(addr));
+			if rd_data'length=word'length then
+				rd_data <= ram(to_integer(addr));
 			else
-				for i in 0 to rd_data'length/byte'length-1 loop 
+				for i in 0 to word'length/rd_data'length-1 loop 
 					if i=to_integer(unsigned(raddr(addr_size to raddr'length-1))) then
-						rdata(i*byte'length to (i+1)*byte'length-1) <= ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1);
+						rd_data <= ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1);
 						exit;
 					end if;
 				end loop;
