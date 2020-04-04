@@ -300,33 +300,33 @@ begin
 			dst_clk  => ddrsys_clks(clk0),
 			dst_data => ctlr_di);
 
-		dmacfgio_p : process (si_clk)
-		begin
-			if rising_edge(si_clk) then
-				if dmacfgio_req/='1' then
-					dmacfgio_req <= dmaio_dv;
-				elsif dmacfgio_rdy='1' then
-					dmacfgio_req <= '0';
-				end if;
-			end if;
-		end process;
-		dmaio_req <= '0';
-
---		dmacfgio_p : process (dma_clk)
+--		dmacfgio_p : process (si_clk)
 --		begin
---			if rising_edge(dma_clk) then
+--			if rising_edge(si_clk) then
 --				if dmacfgio_req/='1' then
 --					dmacfgio_req <= dmaio_dv;
---					dmaio_req <= '0';
---				elsif dmacfgio_rdy/='0' then
+--				elsif dmacfgio_rdy='1' then
 --					dmacfgio_req <= '0';
---					dmaio_req    <= '1';
---				elsif dmaio_rdy='1' then
---					dmacfgio_req <= '0';
---					dmaio_req <= '0';
 --				end if;
 --			end if;
 --		end process;
+--		dmaio_req <= '0';
+
+		dmacfgio_p : process (dma_clk)
+		begin
+			if rising_edge(dma_clk) then
+				if dmacfgio_req/='1' then
+					dmacfgio_req <= dmaio_dv;
+					dmaio_req <= '0';
+				elsif dmacfgio_rdy/='0' then
+					dmacfgio_req <= '0';
+					dmaio_req    <= '1';
+				elsif dmaio_rdy='1' then
+					dmacfgio_req <= '0';
+					dmaio_req <= '0';
+				end if;
+			end if;
+		end process;
 
 	end block;
 
@@ -336,7 +336,7 @@ begin
 	generic map (
 		g    => g)
 	port map (
-		clk  => ddrsys_clks(clk0), --sys_clk,
+		clk  => ddrsys_clks(clk0),
 		load => g_load,
 		ena  => g_ena,
 		data => g_data);
@@ -371,15 +371,16 @@ begin
 	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
-	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
-
-	dev_len  <= dmavideo_len  & dmaio_len;
-	dev_addr <= dmavideo_addr & dmaio_addr;
-	dev_we   <= "1"           & "0";
---	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
-	dev_req <= (0 => '0', 1 => dmaio_req);
+	dev_len    <= dmavideo_len  & dmaio_len;
+	dev_addr   <= dmavideo_addr & dmaio_addr;
+	dev_we     <= "1"           & "0";
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
+
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
+	dev_req <= (0 => '0', 1 => dmaio_req);
+
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
+--	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
