@@ -295,6 +295,7 @@ begin
 			src_data => rgtr_data(8-1 downto 0),
 
 			dst_clk  => ddrsys_clks(clk0),
+			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
 --		dmacfgio_p : process (si_clk)
@@ -327,17 +328,6 @@ begin
 
 	end block;
 
-	g_load <= not ctlr_inirdy;
-	g_ena  <= ctlr_di_req;
-	testpattern_e : entity hdl4fpga.lfsr
-	generic map (
-		g    => g)
-	port map (
-		clk  => ddrsys_clks(clk0),
-		load => g_load,
-		ena  => g_ena,
-		data => g_data);
-
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -368,16 +358,17 @@ begin
 	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
+
+	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_we     <= "1"           & "0";
-	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 
-	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
-	dev_req <= (0 => '0', 1 => dmaio_req);
 
 --	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
---	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+--	dev_req <= (0 => '0', 1 => dmaio_req);
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
@@ -449,8 +440,8 @@ begin
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
 		ctlr_idl     => ctlr_idl,
---		ctlr_di      => ctlr_di,
-		ctlr_di      => g_data,
+		ctlr_di      => ctlr_di,
+--		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
 		ctlr_do      => ctlr_do,

@@ -43,7 +43,7 @@ entity fifo is
 
 		dst_clk  : in  std_logic;
 		dst_frm  : in  std_logic := '1';
-		dst_irdy : buffer std_logic;
+		dst_irdy : buffer std_logic := '1';
 		dst_trdy : in  std_logic := '1';
 		dst_data : out std_logic_vector);
 end;
@@ -106,8 +106,8 @@ begin
 				rd_addr <= (others => '0');
 				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
-				if dst_irdy1='1' then
-					if dst_trdy='1' or not overflow_check then
+				if dst_trdy='1' then
+					if dst_irdy1='1' or not overflow_check then
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
 						else

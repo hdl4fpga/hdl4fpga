@@ -4,14 +4,6 @@ add wave -noupdate /testbench/s3estarter_e/xtal
 add wave -noupdate /testbench/s3estarter_e/e_rx_clk
 add wave -noupdate /testbench/s3estarter_e/e_rx_dv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/e_rxd
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_frm
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_ena
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_len
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_id
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_idv
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_dv
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_data
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/frm
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk_n
 add wave -noupdate -group Micron /testbench/ddr_model_g/Cke
@@ -25,9 +17,6 @@ add wave -noupdate -group Micron /testbench/ddr_model_g/Dm
 add wave -noupdate -group Micron -radix hexadecimal /testbench/ddr_model_g/Dq
 add wave -noupdate -group Micron /testbench/ddr_model_g/Dqs
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/rgtr_dv
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/rgtr_data
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/rgtr_id
 add wave -noupdate /testbench/s3estarter_e/dmacfgio_req
 add wave -noupdate /testbench/s3estarter_e/dmacfgio_rdy
 add wave -noupdate /testbench/s3estarter_e/dmaio_req
@@ -42,22 +31,48 @@ add wave -noupdate /testbench/s3estarter_e/dmavideo_rdy
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmavideo_len
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmavideo_addr
 add wave -noupdate -divider graphics
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_len
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di_dv
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_addr
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_clk
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_vtsync
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_vton
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/graphics_e/video_pixel(0) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(1) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(2) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(3) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(4) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(5) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(6) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(7) -radix hexadecimal}} -subitemconfig {/testbench/s3estarter_e/graphics_e/video_pixel(0) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(1) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(2) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(3) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(4) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(5) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(6) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(7) {-height 29 -radix hexadecimal}} /testbench/s3estarter_e/graphics_e/video_pixel
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_req
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_rdy
-add wave -noupdate /testbench/s3estarter_e/graphics_e/video_vton
-add wave -noupdate /testbench/s3estarter_e/graphics_e/line__74/vton_edge
-add wave -noupdate /testbench/s3estarter_e/graphics_e/video_frm
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_len
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/dma_addr
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di_dv
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/ctlr_di
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_clk
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_hzon
-add wave -noupdate /testbench/s3estarter_e/graphics_e/line__74/hzon_edge
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/line__74/level
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/graphics_e/video_vton
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/graphics_e/video_pixel(0) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(1) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(2) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(3) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(4) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(5) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(6) -radix hexadecimal} {/testbench/s3estarter_e/graphics_e/video_pixel(7) -radix hexadecimal}} -subitemconfig {/testbench/s3estarter_e/graphics_e/video_pixel(0) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(1) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(2) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(3) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(4) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(5) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(6) {-height 29 -radix hexadecimal} /testbench/s3estarter_e/graphics_e/video_pixel(7) {-height 29 -radix hexadecimal}} /testbench/s3estarter_e/graphics_e/video_pixel
+add wave -noupdate /testbench/s3estarter_e/graphics_e/video_frm
+add wave -noupdate /testbench/s3estarter_e/graphics_e/video_vton
+add wave -noupdate /testbench/s3estarter_e/graphics_e/vton_edge
+add wave -noupdate /testbench/s3estarter_e/graphics_e/hzon_edge
+add wave -noupdate /testbench/s3estarter_e/graphics_e/level
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/dmadata_e/dst_clk
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/dmadata_e/dst_frm
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/dmadata_e/dst_irdy
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/dmadata_e/dst_trdy
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/dmadata_e/dst_data
+add wave -noupdate -divider dmactlr
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dma_clk
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmacfg_req
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmacfg_rdy
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dev_len
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/dmactlr_e/dev_addr
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dev_we
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dev_req
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dev_rdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatrans_req
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatrans_rdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/gnt_clk
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/gnt_rst
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/gnt_rdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/dev_req
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/dev_gnt
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/dev_rdy
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/booked
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/served
+add wave -noupdate /testbench/s3estarter_e/dmactlr_e/dmatransgnt_e/arbiter_req
 add wave -noupdate -divider DDRCTLR
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_irdy
 add wave -noupdate /testbench/s3estarter_e/ddrctlr_e/ctlr_rw
@@ -101,9 +116,8 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/s3estarter_e/ddr
 add wave -noupdate /testbench/s3estarter_e/ddrphy_sto
 add wave -noupdate /testbench/s3estarter_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/ddr_dqo
-add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20987854 ps} 0} {{Cursor 2} {19998598000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {21136153 ps} 0} {{Cursor 2} {11704158111 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 119
@@ -119,4 +133,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {19579272 ps} {22127407 ps}
+WaveRestoreZoom {20720664 ps} {21551642 ps}

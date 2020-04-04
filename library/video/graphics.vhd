@@ -27,19 +27,20 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
 
 entity graphics is
 	generic (
 		video_mode   : natural);
 	port (
-		ctlr_clk      : in  std_logic;
+		ctlr_clk     : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
-		dma_req      : buffer std_logic;
+		video_clk    : in  std_logic;
+		dma_req      : buffer std_logic := '0';
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
-		video_clk    : in  std_logic;
 		video_hzsync : buffer std_logic;
 		video_vtsync : buffer std_logic;
 		video_hzon   : buffer std_logic;
@@ -54,8 +55,12 @@ architecture def of graphics is
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	signal video_frm : std_logic;
 
-	signal video_hzcntr : std_logic_vector(12-1 downto 0);
-	signal video_vtcntr : std_logic_vector(12-1 downto 0);
+	signal video_hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
+	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
+
+	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len)-1);
+	signal vton_edge : std_logic;
+	signal hzon_edge : std_logic;
 
 begin
 
@@ -72,55 +77,8 @@ begin
 		video_vton   => video_vton);
 
 	process (video_clk)
-		variable level     : unsigned(0 to unsigned_num_bits(maxdma_len)-1);
-		variable vton_edge : std_logic;
-		variable hzon_edge : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if dma_rdy='1' then
-				if dma_req='1' then
-					dma_req <= '0';
-					if video_vton='0' then
-						level := to_unsigned(maxdma_len, level'length);
-					else
-						level := level + (maxdma_len/4);
-					end if;
-				elsif hzon_edge='1' then
-					if video_hzon='0' then
-						if video_vton='1' then
-							level := level - 1920/4;
-						end if;
-						hzon_edge := '0';
-					end if;
-				else
-					hzon_edge := video_hzon;
-				end if;
-			else
-				if video_frm='1' then
-					dma_req <= '1';
-				elsif level < (3*maxdma_len/4) then
-					dma_req <= '1';
-				end if;
-
-				if hzon_edge='1' then
-					if video_hzon='0' then
-						if video_vton='1' then
-							level := level - 1920/4;
-						end if;
-						hzon_edge := '0';
-					end if;
-				else
-					hzon_edge := video_hzon;
-				end if;
-			end if;
-
-			if video_vton='0' then
-				if vton_edge='1' then
-					video_frm <= '1';
-				else
-					video_frm <= '0';
-				end if;
-			end if;
 
 			if video_vton='0' then
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
@@ -132,8 +90,53 @@ begin
 				end if;
 			end if;
 
-			hzon_edge := video_hzon;
-			vton_edge := video_vton;
+			if dma_rdy='1' then
+				if dma_req='1' then
+					dma_req <= '0';
+					if video_vton='0' then
+						level <= to_unsigned(maxdma_len, level'length);
+					else
+						level <= level + (maxdma_len/4);
+					end if;
+				elsif hzon_edge='1' then
+					if video_hzon='0' then
+						if video_vton='1' then
+							level <= level - modeline_data(video_mode)(0)/4;
+						end if;
+						hzon_edge <= '0';
+					end if;
+				else
+					hzon_edge <= video_hzon;
+				end if;
+			else
+				if video_frm='1' then
+					dma_req <= '1';
+				elsif level < (3*maxdma_len/4) then
+					dma_req <= '1';
+				end if;
+
+				if hzon_edge='1' then
+					if video_hzon='0' then
+						if video_vton='1' then
+							level <= level - modeline_data(video_mode)(0)/4;
+						end if;
+						hzon_edge <= '0';
+					end if;
+				else
+					hzon_edge <= video_hzon;
+				end if;
+			end if;
+
+			if video_vton='0' then
+				if vton_edge='1' then
+					video_frm <= '1';
+				else
+					video_frm <= '0';
+				end if;
+			else
+				vton_edge <= video_vton;
+			end if;
+
 		end if;
 	end process;
 
