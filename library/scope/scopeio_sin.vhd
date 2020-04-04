@@ -12,22 +12,33 @@ entity scopeio_sin is
 		sin_frm   : in  std_logic;
 		sin_data  : in  std_logic_vector;
 		
+		data_frm  : out std_logic;
+		data_ena  : out std_logic;
+		data_len  : out std_logic_vector(8-1 downto 0);
+
+		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector;
 		rgtr_dv   : out std_logic;
 		rgtr_data : out std_logic_vector);
 end;
 
 architecture beh of scopeio_sin is
-	signal len : signed(0 to 8);
-	signal rid : std_logic_vector(8-1 downto 0);
-	signal val : std_logic_vector(rgtr_data'length-1 downto 0);
-	signal ptr : signed(0 to unsigned_num_bits(8-1));
+	subtype byte is std_logic_vector(8-1 downto 0);
 
-	signal dv  : std_logic;
-	signal ena : std_logic;
+	signal len : signed(0 to byte'length);
+	signal rid : std_logic_vector(byte'length-1 downto 0);
+	signal val : std_logic_vector(rgtr_data'length-1 downto 0);
+	signal ptr : signed(0 to unsigned_num_bits(byte'length-1));
+	signal datasize_ena : std_logic_vector(unsigned_num_bits(rgtr_data'length/byte'length)-1 downto 0);
+
+	signal frm  : std_logic;
+	signal ridv : std_logic;
+	signal dv   : std_logic;
+	signal ena  : std_logic;
 
 	type reg_states is (regS_id, regS_size, regS_data);
-	signal stt : reg_states;
+	signal size : unsigned(byte'range);
+	signal stt  : reg_states;
 begin
 
 	cp_p : process (sin_clk)
@@ -36,15 +47,15 @@ begin
 	begin
 		if rising_edge(sin_clk) then
 			aux := unsigned(val);
-			aux := aux ror 8;
+			aux := aux ror byte'length;
 			if sin_irdy='1' then
 				if ptr(0)='1' then
-					aux := aux rol 2*8;
+					aux := aux rol 2*byte'length;
 				end if;
 				aux := aux ror sin_data'length;
 				aux(0 to sin_data'length-1) := unsigned(sin_data);
 			end if;
-			aux := aux rol 8;
+			aux := aux rol byte'length;
 			val <= std_logic_vector(aux);
 			dv  <= sin_frm;
 			ena <= sin_irdy;
@@ -55,10 +66,10 @@ begin
 	begin
 		if rising_edge(sin_clk) then
 			if dv='0' then
-				ptr <= to_signed(8-1 - sin_data'length, ptr'length);
+				ptr <= to_signed(byte'length-1 - sin_data'length, ptr'length);
 			elsif ena='1' then
 				if ptr(0)='1' then
-					ptr <= to_signed(8-1 - sin_data'length, ptr'length);
+					ptr <= to_signed(byte'length-1 - sin_data'length, ptr'length);
 				else
 					ptr <= ptr - sin_data'length;
 				end if;
@@ -70,24 +81,40 @@ begin
 	begin
 		if rising_edge(sin_clk) then
 			if dv='0' then
-				stt <= regS_id;
+				frm  <= '0';
+				ridv <= '0';
+				len  <= (others => '0');
+				size <= (others => '0');
+				stt  <= regS_id;
 			elsif ena='1' then
 				if ptr(0)='1' then
 					case stt is
 					when regS_id =>
-						rid <= val(rid'range);
-						len <= (others => '0');
-						stt <= regS_size;
+						frm  <= '0';
+						rid  <= val(rid'range);
+						ridv <= '1';
+						len  <= (others => '0');
+						size <= (others => '0');
+						stt  <= regS_size;
 					when regS_size =>
-						len <= signed(resize(unsigned(val(len'length-2 downto 0)), len'length))-1;
-						stt <= regS_data;
+						frm  <= '1';
+						ridv <= '1';
+						len  <= signed(resize(unsigned(val(len'length-2 downto 0)), len'length))-1;
+						size <= (others => '0');
+						stt  <= regS_data;
 					when regS_data =>
 						if len(0)='1' then
-							len <= (others => '0');
-							stt <= regS_id;
+							frm  <= '0';
+							ridv <= '0';
+							len  <= (others => '0');
+							size <= (others => '0');
+							stt  <= regS_id;
 						else
-							len <= len - 1;
-							stt <= regS_data;
+							frm  <= '1';
+							ridv <= '1';
+							len  <= len - 1;
+							size <= size + 1;
+							stt  <= regS_data;
 						end if;
 					end case;
 				end if;
@@ -95,72 +122,13 @@ begin
 		end if;
 	end process;
  
+	data_frm  <= frm;
+	data_ena  <= (ena and dv and ptr(0) and setif(stt=regS_data));
+	data_len  <= std_logic_vector(size);
+
+	rgtr_idv  <= ridv;
 	rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 	rgtr_dv   <= ena and dv and len(0) and ptr(0);
 	rgtr_data <= val;
-
---	mem_b : block
---		signal rd_addr : std_logic_vector(mem_addr'range);
---		signal rd_data : std_logic_vector(mem_data'range);
---		signal wr_addr : std_logic_vector(mem_addr'range);
---		signal wr_data : std_logic_vector(mem_data'range);
---		signal wr_ena  : std_logic;
---	begin
---
---		wr_ena <= data_ena and len(0) and ptr(0);
---		process (sin_clk)
---			variable aux : unsigned(wr_addr'range);
---		begin
---			if rising_edge(sin_clk) then
---				if wr_ena='0' then
---					aux := (others => '0');
---				else
---					if ena='1' then
---						aux := aux + 1;
---					end if;
---					data_len <= std_logic_vector(aux);
---				end if;
---				wr_addr <= std_logic_vector(aux);
---			end if;
---		end process;
---		wr_data <= val(mem_data'length-1 downto 0);
---
---		ready_e : entity hdl4fpga.align
---		generic map (
---			n => 1,
---			d => (0 => 2))
---		port map (
---			clk   => mem_clk,
---			di(0) => mem_req,
---			do(0) => mem_rdy);
---
---		rd_addr_e : entity hdl4fpga.align
---		generic map (
---			n => mem_addr'length,
---			d => (mem_addr'range => 1))
---		port map (
---			clk => mem_clk,
---			di  => mem_addr,
---			do  => rd_addr);
---
---		mem_e : entity hdl4fpga.dpram 
---		port map (
---			wr_clk  => sin_clk,
---			wr_ena  => wr_ena,
---			wr_addr => wr_addr,
---			wr_data => wr_data,
---			rd_addr => rd_addr,
---			rd_data => rd_data);
---
---		rd_data_e : entity hdl4fpga.align
---		generic map (
---			n => mem_data'length,
---			d => (mem_data'range => 1))
---		port map (
---			clk => mem_clk,
---			di  => rd_data,
---			do  => mem_data);
---
---	end block;
 
 end;

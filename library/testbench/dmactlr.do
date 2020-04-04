@@ -4,6 +4,14 @@ add wave -noupdate /testbench/s3estarter_e/xtal
 add wave -noupdate /testbench/s3estarter_e/e_rx_clk
 add wave -noupdate /testbench/s3estarter_e/e_rx_dv
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/e_rxd
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_frm
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_ena
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/data_len
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_id
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_idv
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_dv
+add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/rgtr_data
+add wave -noupdate /testbench/s3estarter_e/scopeio_export_b/scopeio_sin_e/frm
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk_n
 add wave -noupdate -group Micron /testbench/ddr_model_g/Cke
@@ -95,8 +103,8 @@ add wave -noupdate /testbench/s3estarter_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/ddr_dqo
 add wave -noupdate -radix hexadecimal /testbench/s3estarter_e/g_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {13353381268 ps} 0} {{Cursor 2} {19998598000 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {20987854 ps} 0} {{Cursor 2} {19998598000 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 119
 configure wave -justifyvalue left
@@ -111,4 +119,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {21 ms}
+WaveRestoreZoom {19579272 ps} {22127407 ps}

@@ -40,8 +40,8 @@ entity dmactlr is
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
 
-		dev_reqs     : in  std_logic_vector;
-		dev_rdys     : out std_logic_vector;
+		dev_req      : in  std_logic_vector;
+		dev_rdy      : out std_logic_vector;
 
 		ctlr_clk     : in  std_logic;
 
@@ -63,12 +63,12 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
-	signal dmargtr_id     : std_logic_vector(0 to unsigned_num_bits(dev_reqs'length-1)-1);
-	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_reqs'length-1);
-	signal dmargtr_len    : std_logic_vector(0 to dev_len'length/dev_reqs'length-1);
+	signal dmargtr_id     : std_logic_vector(0 to unsigned_num_bits(dev_req'length-1)-1);
+	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_req'length-1);
+	signal dmargtr_len    : std_logic_vector(0 to dev_len'length/dev_req'length-1);
 	signal dmargtr_we     : std_logic_vector(0 to 0);
 
-	signal dmacfg_gnt     : std_logic_vector(dev_reqs'range);
+	signal dmacfg_gnt     : std_logic_vector(dev_req'range);
 
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
@@ -78,7 +78,7 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
-	signal dmatrans_gnt   : std_logic_vector(dev_reqs'range);
+	signal dmatrans_gnt   : std_logic_vector(dev_req'range);
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
 begin
@@ -149,9 +149,9 @@ begin
 
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
-		dev_req => dev_reqs,
+		dev_req => dev_req,
 		dev_gnt => dmatrans_gnt,
-		dev_rdy => dev_rdys,
+		dev_rdy => dev_rdy,
 
 		gnt_clk => ctlr_clk,
 		gnt_rdy => dmatrans_rdy);
