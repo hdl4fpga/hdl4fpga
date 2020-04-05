@@ -148,65 +148,106 @@ end;
 architecture def of dpram1 is
 	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(wr_data'length,rd_data'length)-1);
 	subtype word is std_logic_vector(0 to hdl4fpga.std.max(wr_data'length,rd_data'length)-1);
-	type word_vector is array (natural range <>) of word;
-
-	constant addr_size : natural := hdl4fpga.std.min(rd_addr'length,wr_addr'length);
-
-	shared variable ram : word_vector(0 to 2**addr_size-1);
-
-	signal wena : std_logic_vector(0 to word'length/byte'length-1);
-	alias waddr : std_logic_vector(0 to wr_addr'length-1) is wr_addr;
-	alias raddr : std_logic_vector(0 to rd_addr'length-1) is rd_addr;
 begin
 
-	process (wr_ena, waddr)
-	begin
-		wena <= (others => '-');
-		if wr_data'length=word'length then
-				wena <= (others => wr_ena);
-		else
-			for i in wena'range loop
-				if i=to_integer(unsigned(waddr(addr_size to waddr'length-1))) then
-					wena(i) <= wr_ena;
-				else
-					wena(i) <= '0';
-				end if;
-			end loop;
-		end if;
-	end process;
+	g1 : if wr_addr'length <= rd_addr'length generate
+		type word_vector is array (natural range <>) of word;
 
-	process (wr_clk)
-		variable addr : unsigned(0 to addr_size-1);
+		constant addr_size : natural := hdl4fpga.std.min(rd_addr'length,wr_addr'length);
+
+		shared variable ram : word_vector(0 to 2**addr_size-1);
+
+		signal wena  : std_logic_vector(0 to word'length/byte'length-1);
+		signal rdata : word;
+		alias waddr  : std_logic_vector(0 to wr_addr'length-1) is wr_addr;
+		alias raddr  : std_logic_vector(0 to rd_addr'length-1) is rd_addr;
 	begin
-		if rising_edge(wr_clk) then
-			addr := unsigned(waddr(addr'range));
+
+		process (wr_ena, waddr)
+		begin
+			wena <= (others => '-');
 			if wr_data'length=word'length then
-				ram(to_integer(addr)) := wr_data;
+					wena <= (others => wr_ena);
 			else
-				for i in 0 to word'length/wr_data'length-1 loop 
-					if wena(i)='1' then
-						ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1) := wr_data;
+				for i in wena'range loop
+					if i=to_integer(unsigned(waddr(addr_size to waddr'length-1))) then
+						wena(i) <= wr_ena;
+					else
+						wena(i) <= '0';
 					end if;
 				end loop;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	process (rd_clk)
-		variable addr : unsigned(0 to addr_size-1);
-	begin
-		if rising_edge(rd_clk) then
-			addr := unsigned(raddr(addr'range));
+		process (wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				if wr_data'length=word'length then
+					ram(to_integer(unsigned(waddr(0 to addr_size-1)))) := wr_data;
+				else
+					for i in 0 to word'length/wr_data'length-1 loop 
+						if wena(i)='1' then
+							ram(to_integer(unsigned(waddr(0 to addr_size-1))))(i*byte'length to (i+1)*byte'length-1) := wr_data;
+						end if;
+					end loop;
+				end if;
+			end if;
+		end process;
+
+		process (rd_clk)
+		begin
+			if rising_edge(rd_clk) then
+				rdata <= ram(to_integer(unsigned(raddr(0 to addr_size-1))));
+			end if;
+		end process;
+
+		process (raddr, rdata)
+		begin
 			if rd_data'length=word'length then
-				rd_data <= ram(to_integer(addr));
+				rd_data <= rdata;
 			else
-				for i in 0 to word'length/rd_data'length-1 loop 
-					if i=to_integer(unsigned(raddr(addr_size to raddr'length-1))) then
-						rd_data <= ram(to_integer(addr))(i*byte'length to (i+1)*byte'length-1);
-						exit;
+				rd_data <= word2byte(rdata, raddr(addr_size to raddr'length-1));
+			end if;
+		end process;
+	end generate;
+
+	g2 : if wr_addr'length > rd_addr'length generate
+		type byte_vector is array (natural range <>) of byte;
+
+		constant addr_size : natural := hdl4fpga.std.max(rd_addr'length,wr_addr'length);
+
+		shared variable ram : byte_vector(0 to 2**addr_size-1);
+
+	begin
+
+		process (wr_clk)
+			alias wdata : std_logic_vector(0 to wr_data'length-1) is wr_data;
+		begin
+			if rising_edge(wr_clk) then
+				if wr_ena='1' then
+					for i in 0 to wdata'length/byte'length-1 loop 
+						if wdata'length=byte'length then
+  						ram(to_integer(unsigned(wr_addr))) := wdata;
+						else
+							ram(to_integer(unsigned(wr_addr)&to_unsigned(i, addr_size-wr_addr'length))) := wdata(i*byte'length to (i+1)*byte'length-1);
+						end if;
+					end loop;
+				end if;
+			end if;
+		end process;
+
+		process (rd_clk)
+			alias rdata : std_logic_vector(0 to rd_data'length-1) is rd_data;
+		begin
+			if rising_edge(rd_clk) then
+				for i in 0 to rdata'length/byte'length-1 loop 
+					if rd_data'length=byte'length then
+						rdata <= ram(to_integer(unsigned(rd_addr)));
+					else
+						rdata(i*byte'length to (i+1)*byte'length-1) <= ram(to_integer(unsigned(rd_addr)&to_unsigned(i, addr_size-rd_addr'length)))(i*byte'length to (i+1)*byte'length-1);
 					end if;
 				end loop;
 			end if;
-		end if;
-	end process;
+		end process;
+	end generate;
 end;

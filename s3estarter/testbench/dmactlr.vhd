@@ -285,12 +285,8 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		process (si_clk)
-		begin
-			if rising_edge(si_clk) then
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
-			end if;
-		end process;
+
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			size           => 256,
