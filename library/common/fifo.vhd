@@ -63,7 +63,7 @@ architecture def of fifo is
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
-	mem_e : entity hdl4fpga.dpram1
+	mem_e : entity hdl4fpga.dpram1(def)
 --	generic map (
 --		synchronous_rdaddr => false,
 --		synchronous_rddata => synchronous_rddata)

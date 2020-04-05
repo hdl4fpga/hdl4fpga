@@ -46,6 +46,7 @@ NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 
 TIMESPEC TS_video2ddr   = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_ddr2video   = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
+TIMESPEC TS_ddr2video1  = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
 TIMESPEC TS_ram2oddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 
