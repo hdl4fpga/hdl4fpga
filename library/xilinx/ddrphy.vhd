@@ -32,7 +32,7 @@ entity ddrphy is
 	generic (
 		loopback    : boolean;
 		iddron      : boolean   := false;
-		rgstrd_dout : boolean   := true;
+		rgtr_dout : boolean   := true;
 		gate_delay  : natural   := 1;
 		CMMD_GEAR   : natural   := 1;
 		data_gear   : natural   := 2;
@@ -313,7 +313,7 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			rgstrd_dout => rgstrd_dout,
+			rgtr_dout => rgtr_dout,
 			loopback => loopback,
 			gear => data_gear,
 			byte_size => byte_size)

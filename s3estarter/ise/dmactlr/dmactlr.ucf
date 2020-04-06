@@ -46,6 +46,7 @@ NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 
 TIMESPEC TS_video2ddr   = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_ddr2video   = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
+TIMESPEC TS_ddr2video1  = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
 TIMESPEC TS_ram2oddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 
@@ -66,24 +67,8 @@ NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 NET "sd_dm*" OFFSET = IN 1.5 ns VALID 3.75 ns BEFORE sd_dqs[0] RISING;
 NET "sd_dm*" OFFSET = IN 1.5 ns VALID 3.75 ns BEFORE sd_dqs[1] RISING;
 
-OFFSET = IN -0.450 ns VALID 1.6 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.450 ns VALID 1.6 ns BEFORE sd_dqs[1] RISING;
-
-# DDR 150 Mhz rate clock #
-#
-#NET "sd_dqs[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 6.667 ns HIGH 50%;
-#NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dqs[1]" TNM_NET = dqs1;
-#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
-#NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[0] RISING;
-#NET "sd_dm*" OFFSET = IN 2.0 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
-#
-#OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[0] RISING;
-#OFFSET = IN -0.50 ns VALID 2.33 ns BEFORE sd_dqs[1] RISING;
+OFFSET = IN -0.250 ns VALID 2.2 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.250 ns VALID 2.2 ns BEFORE sd_dqs[1] RISING;
 
 # DDR 133 Mhz rate clock #
 

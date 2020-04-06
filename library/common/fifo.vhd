@@ -43,7 +43,7 @@ entity fifo is
 
 		dst_clk  : in  std_logic;
 		dst_frm  : in  std_logic := '1';
-		dst_irdy : buffer std_logic;
+		dst_irdy : buffer std_logic := '1';
 		dst_trdy : in  std_logic := '1';
 		dst_data : out std_logic_vector);
 end;
@@ -56,14 +56,14 @@ architecture def of fifo is
 	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
 	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
-	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1);
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
-	mem_e : entity hdl4fpga.dpram1
+	mem_e : entity hdl4fpga.dpram1(def)
 --	generic map (
 --		synchronous_rdaddr => false,
 --		synchronous_rddata => synchronous_rddata)
@@ -106,8 +106,8 @@ begin
 				rd_addr <= (others => '0');
 				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
-				if dst_irdy1='1' then
-					if dst_trdy='1' or not overflow_check then
+				if dst_trdy='1' then
+					if dst_irdy1='1' or not overflow_check then
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
 						else
