@@ -62,6 +62,9 @@ architecture def of graphics is
 	signal vton_edge : std_logic;
 	signal hzon_edge : std_logic;
 
+	signal src_irdy : std_logic;
+	signal src_data : std_logic_vector(ctlr_di'range);
+
 begin
 
 	video_e : entity hdl4fpga.video_sync
@@ -140,6 +143,14 @@ begin
 		end if;
 	end process;
 
+	process (ctlr_clk)
+	begin
+		if rising_edge(ctlr_clk) then
+			src_irdy <= ctlr_di_dv;
+			src_data <= ctlr_di;
+		end if;
+	end process;
+
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		size           => fifo_size,
@@ -148,8 +159,8 @@ begin
 		synchronous_rddata => true)
 	port map (
 		src_clk  => ctlr_clk,
-		src_irdy => ctlr_di_dv,
-		src_data => ctlr_di,
+		src_irdy => src_irdy,
+		src_data => src_data,
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,

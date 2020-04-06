@@ -38,14 +38,14 @@ architecture dmactlr of nuhs3adsp is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	-------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --   8     --   3     --  10     --   4     --
-	-- Divide by   --   3     --   1     --   3     --   1     --
-	-------------------------------------------------------------
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --  20     --  25     --  10     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
 
 	constant sys_per      : real    := 20.0;
-	constant ddr_mul      : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 1;
 
 	constant g            : std_logic_vector(32 downto 1) := (
@@ -454,7 +454,6 @@ begin
 		ctlr_pre     => ctlr_pre,
 		ctlr_idl     => ctlr_idl,
 		ctlr_di      => ctlr_di,
---		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
 		ctlr_do      => ctlr_do,
