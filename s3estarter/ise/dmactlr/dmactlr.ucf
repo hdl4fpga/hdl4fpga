@@ -54,7 +54,9 @@ TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 # DDR constrains #
 # ############## #
 
+# ###################### #
 # DDR 200 Mhz rate clock #
+# ###################### #
 
 NET "sd_dqs[0]" TNM_NET = dqs0;
 TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
@@ -64,8 +66,11 @@ NET "sd_dqs[1]" TNM_NET = dqs1;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
 NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
-NET "sd_dm*" OFFSET = IN 1.25 ns VALID 3.75 ns BEFORE sd_dqs[0] RISING;
-NET "sd_dm*" OFFSET = IN 1.25 ns VALID 3.75 ns BEFORE sd_dqs[1] RISING;
+NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[0] RISING;
+NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[1] RISING;
+
+#OFFSET = IN -0.250 ns VALID 2.2 ns BEFORE sd_dqs[0] RISING;
+#OFFSET = IN -0.250 ns VALID 2.2 ns BEFORE sd_dqs[1] RISING;
 
 OFFSET = IN -0.400 ns VALID 2.000 ns BEFORE sd_dqs[0] RISING;
 OFFSET = IN -0.400 ns VALID 2.000 ns BEFORE sd_dqs[1] RISING;
