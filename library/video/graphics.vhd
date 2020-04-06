@@ -121,7 +121,7 @@ begin
 				if hzon_edge='1' then
 					if video_hzon='0' then
 						if video_vton='1' then
-							level <= level - modeline_data(video_mode)(0)/4;
+							level <= level - modeline_data(video_mode)(0)/byteperword;
 						end if;
 						hzon_edge <= '0';
 					end if;
