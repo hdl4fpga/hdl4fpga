@@ -26,11 +26,9 @@ TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%; # DDR 166 Mhz rate clock
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "ddr_dqs[1]" TNM_NET = dqs1;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "mii_txc" TNM_NET = mii_txc;
@@ -44,14 +42,17 @@ TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
 # NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
 
 # ###################### #
-# DDR 166 Mhz rate clock #
+# DDR 200 Mhz rate clock #
 # ###################### #
 
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
-OFFSET = IN -0.500 ns VALID 2 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN -0.500 ns VALID 2 ns BEFORE ddr_dqs[1] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 3.75 ns BEFORE ddr_dqs[0] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 3.75 ns BEFORE ddr_dqs[1] RISING;
+
+OFFSET = IN -0.400 ns VALID 1.70 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN -0.400 ns VALID 1.70 ns BEFORE ddr_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
@@ -72,14 +73,14 @@ NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 # NET adc_clkout TNM_NET     = FFS  FFS_adcclkab;
 # NET adc_clkout TNM_NET     = RAMS RAMS_adcclkab;
 
-TIMESPEC TS_ddr2sysclk = FROM FFS_ddrsclk0  TO FFS_sysclk   TIG;
-TIMESPEC TS_sysclk2ddr = FROM FFS_sysclk    TO FFS_ddrsclk0  TIG;
-TIMESPEC TS_sysclk2ddr1 = FROM RAMS_sysclk    TO FFS_ddrsclk0  TIG;
-TIMESPEC TS_video2ddr  = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_ddr2video  = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
-TIMESPEC TS_ddr2video1 = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
-TIMESPEC TS_ram2oddr   = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
-TIMESPEC TS_ff2ram     = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
+TIMESPEC TS_ddr2sysclk  = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
+TIMESPEC TS_sysclk2ddr  = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_sysclk2ddr1 = FROM RAMS_sysclk   TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_video2ddr   = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_ddr2video   = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
+TIMESPEC TS_ddr2video1  = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
+TIMESPEC TS_ram2oddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 # TIMESPEC TS_adc2ddr    = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
 # TIMESPEC TS_adc2ddr1   = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
 # TIMESPEC TS_ddr2adc    = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;

@@ -45,8 +45,8 @@ architecture dmactlr of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 20.0;
-	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1;
+	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 3;
 
 	constant g            : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
