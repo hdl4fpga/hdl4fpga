@@ -478,7 +478,7 @@ begin
 	generic map (
 		gate_delay  => 2,
 		loopback    => false,
-		rgstrd_dout => false,
+		rgtr_dout   => false,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		cmmd_gear   => cmmd_gear,

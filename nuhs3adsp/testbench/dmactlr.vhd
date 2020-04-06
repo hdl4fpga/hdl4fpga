@@ -205,6 +205,16 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
+	mii_dfs_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => 5,
+		dfs_div => 4)
+	port map (
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => mii_refclk);
+
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
@@ -477,8 +487,8 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		gate_delay  => 2,
-		loopback    => false,
-		rgstrd_dout => false,
+		loopback    => true,
+		rgtr_dout => false,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		cmmd_gear   => cmmd_gear,
@@ -551,11 +561,35 @@ begin
 	-- VGA --
 	---------
 
-	red   <= video_pixel(0  to 8-1);
-	green <= video_pixel(8  to 16-1);
-	blue  <= video_pixel(16 to 24-1);
-	hsync <= video_hzsync;
-	vsync <= video_vtsync;
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+			green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+			blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+			blankn <= video_hzon and video_vton;
+			hsync  <= video_hzsync;
+			vsync  <= video_vtsync;
+			sync   <= not video_hzsync and not video_vtsync;
+		end if;
+	end process;
+	psave <= '1';
+
+	adcclkab_e : entity hdl4fpga.ddro
+	port map (
+		clk => '0', --adc_clk,
+		dr  => '1',
+		df  => '0',
+		q   => adc_clkab);
+--		adc_clkab <= '0';
+
+	clk_videodac_e : entity hdl4fpga.ddro
+	port map (
+		clk => video_clk,
+		dr => '0',
+		df => '1',
+		q => clk_videodac);
+
 
 	hd_t_data <= 'Z';
 
@@ -569,6 +603,7 @@ begin
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
+	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
