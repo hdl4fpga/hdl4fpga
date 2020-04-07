@@ -21,8 +21,28 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
+const yargs = require('yargs');
 var commjs  = require('./comm.js');
+const argv = yargs
+    .command('lyr', 'Tells whether an year is leap year or not', {
+        year: {
+            description: 'the year to check for',
+            alias: 'y',
+            type: 'number',
+        }
+    })
+    .option('time', {
+        alias: 't',
+        description: 'Tell the present Time',
+        type: 'boolean',
+    })
+    .help()
+    .alias('help', 'h')
+    .argv;
 
+if (argv.time) {
+    console.log('The current time is: ', new Date().toLocaleTimeString());
+}
 commjs.setCommOption(option);
 
 switch (getCommOption()) {
