@@ -21,36 +21,13 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-const cmdline = require('commander');
-const commjs  = require('./comm.js');
+const SerialPort = require('serialport');
 
-cmdline
-	.option('-l, --link <type>',  'ip       | serial', 'ip')
-	.option('-n, --name <name>',  'hostname | ip address | serial port')
-	.option('-r, --rid  <id>',    'number')
-	.option('-d, --data <value>', 'data');
-cmdline.parse(process.argv);
-
-
-switch(cmdline.link) {
-case 'serial':
-	commjs.setCommOption('UART');
-	break;
-case 'ip':
-default:
-	commjs.setCommOption('TCPIP');
-	break;
-}
-
-console.log(commjs.getCommOption());
-// 
-// switch (getCommOption()) {
-// case 'serial':
-// 	commjs.createUART(uartName, uartOptions);
-// 	break;
-// case 'tcpip':
-// 	commjs.setHost(hostName);
-// 	break;
-// }
-// 
-// commjs.send(data);
+SerialPort.list().then(function(value) {
+	for (i = 0; i < value.length; i++) {
+		for (j = 0; j < Object.keys(value[i]).length; j++) {
+			var keys = Object.keys(value[i]);
+			console.log(keys[j] + " -> " + value[i][keys[j]] );
+		}
+	}
+});

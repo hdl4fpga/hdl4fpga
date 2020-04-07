@@ -149,7 +149,7 @@ function setCommOption(option) {
 	commOption = option;
 }
 
-function getCommOption(option) {
+function getCommOption() {
 	return commOption;
 }
 
@@ -157,6 +157,7 @@ try {
 exports.listUART      = listUART;
 exports.createUART    = createUART;
 exports.setCommOption = setCommOption;
+exports.getCommOption = getCommOption;
 exports.getHost       = getHost;
 exports.setHost       = setHost;
 exports.send          = send;
