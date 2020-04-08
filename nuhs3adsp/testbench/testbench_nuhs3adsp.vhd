@@ -62,9 +62,7 @@ architecture scope of testbench is
 	signal mii_rxd  : nibble;
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
-	signal mii_strt : std_logic;
 
-	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
 	component nuhs3adsp is
@@ -177,70 +175,21 @@ architecture scope of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
-	component ddr2_model is
-		port (
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_rdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			rdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
-
-	component ddr3_model is
-		port (
-			rst_n : in std_logic;
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(2 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			tdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
-
 	constant delay : time := 1 ns;
 begin
 
-	clk <= not clk after 25 ns;
+	mii_rxc <= mii_refclk after 5 ps;
+
+	clk <= not clk after 10 ns;
 	process (clk)
 		variable vrst : unsigned(1 to 16) := (others => '1');
 	begin
 		if rising_edge(clk) then
 			vrst := vrst sll 1;
-			rst <= not vrst(1) after 5 ns;
+			rst <= vrst(1) after 5 ns;
 		end if;
 	end process;
 
-	mii_strt <= '0', '1' after 8 us;
-	process (mii_refclk, mii_strt)
-		variable edge : std_logic;
-		variable cnt  : natural := 0;
-	begin
-		if mii_strt='0' then
-			mii_treq <= '0';
-			edge := '0';
-		elsif rising_edge(mii_refclk) then
-			if mii_trdy='1' then
-				if edge='0' then
-					mii_treq <= '0';
 				end if;
 			elsif cnt < 2 then
 				mii_treq <= '1';
@@ -252,17 +201,45 @@ begin
 		end if;
 	end process;
 
-	eth_e: entity hdl4fpga.miitx_mem
+	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff")
+		mem_data => reverse(
+			x"5555_5555_5555_55d5"  &
+			x"00_40_00_01_02_03"    &
+			x"00_00_00_00_00_00"    &
+			x"0800"                 &
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"00000000"             &    -- IP Source IP address
+			x"00000000"             &    -- IP Destiantion IP Address
+			x"0000" &
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         &    -- UDP Source port, Destination port
+				x"000f"             & -- UDP Length,
+				x"0000"             & -- UPD checksum
+				x"16020001ff"       &
+				x"1702000001"       &
+				x"18" & x"07"       &
+				x"12345678"         &
+				x"9abcdef0")        &
+			x"00000000"
+		,8)
+	)
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
-		mii_txen => mii_rxdv,
+		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_rxc <= mii_refclk after 5 ps;
+	mii_rxc <= not mii_rxc after 50 ns;
+	mii_refclk <= mii_rxc;
 	nuhs3adsp_e : nuhs3adsp
 	port map (
 		xtal => clk,

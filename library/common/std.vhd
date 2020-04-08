@@ -136,45 +136,6 @@ package std is
 		constant op2 : natural)
 		return unsigned;
 
-	--------------------
-	-- Counter functions
-	--------------------
-
-	function inc (
-		load : std_logic := '1';
-		cntr : unsigned;
-		data : unsigned;
-		ena  : std_logic := '1')
-		return unsigned;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : std_logic_vector)
-		return std_logic_vector;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : std_logic_vector)
-		return unsigned;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : integer)
-		return std_logic_vector;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : integer)
-		return unsigned;
-
 	-- Logic Functions
 	------------------
 
@@ -211,9 +172,9 @@ package std is
 		constant argf : integer := 0)
 		return integer;
 
-	function demux (
-		constant sel  : std_logic_vector;
-		constant inp  : std_logic := '1';
+	function decode (
+		constant inp  : std_logic_vector;
+		constant ena  : std_logic := '1';
 		constant size : natural   := 0)
 		return std_logic_vector;
 
@@ -1002,134 +963,19 @@ package body std is
 		return rval;
 	end;
 
-	--------------------
-	-- Counter functions
-	--------------------
-
-	function count (
-		load : std_logic;
-		cntr : unsigned;
-		data : unsigned;
-		ena  : std_logic := '1';
-		down : std_logic := '1')
-		return unsigned is
-	begin
-		if ena='1' then
-			if load='1' then
-				return resize(data,cntr'length);
-			else
-				if down='1' then
-					return cntr-1;
-				else
-					return cntr+1;
-				end if;
-			end if;
-		else
-			return cntr;
-		end if;
-	end;
-
-	function inc (
-		load : std_logic := '1';
-		cntr : unsigned;
-		data : unsigned;
-		ena  : std_logic := '1')
-		return unsigned is
-	begin
-		return count(load,cntr,data,ena,std_logic'('1'));
-	end;
-
-	function inc (
-		load : std_logic := '1';
-		cntr : std_logic_vector;
-		data : integer;
-		ena  : std_logic := '1')
-		return std_logic_vector is
-		variable aux : unsigned(cntr'range);
-	begin
-		aux := unsigned(to_signed(data, cntr'length));
-		return std_logic_vector(count(load,unsigned(cntr),aux,ena,std_logic'('1')));
-	end;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : std_logic_vector)
-		return std_logic_vector is
-	begin
-		if ena='1' then
-			if load='1' then
-				return std_logic_vector(resize(unsigned(data), cntr'length));
-			else
-				return std_logic_vector(unsigned(cntr)-1);
-			end if;
-		end if;
-		return cntr;
-	end;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : std_logic_vector)
-		return unsigned is
-	begin
-		return unsigned'(dec(cntr, ena, load, data));
-	end;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : integer)
-		return std_logic_vector is
-	begin
-		if ena='1' then
-			if load='1' then
-				if data < 0 then
-					return std_logic_vector(to_signed(data,cntr'length));
-				else
-					return std_logic_vector(ieee.numeric_std.to_unsigned(data,cntr'length));
-				end if;
-			else
-				return std_logic_vector(unsigned(cntr)-1);
-			end if;
-		end if;
-		return cntr;
-	end;
-
-	function dec (
-		cntr : std_logic_vector;
-		ena  : std_logic := '1';
-		load : std_logic := '1';
-		data : integer)
-		return unsigned is
-	begin
-		return unsigned(std_logic_vector'(dec(cntr, ena, load, data)));
-	end;
-
-	procedure dec (
-		signal cntr : inout unsigned;
-		constant val : in unsigned) is
-	begin
-		if cntr(0)/='1' then
-			cntr <= cntr - 1;
-		else
-			cntr <= val;
-		end if;
-	end procedure;
-
-	function demux (
-		constant sel  : std_logic_vector;
-		constant inp  : std_logic := '1';
+	function decode (
+		constant inp  : std_logic_vector;
+		constant ena  : std_logic := '1';
 		constant size : natural   := 0)
 		return std_logic_vector is
-		variable retval : std_logic_vector(0 to 2**sel'length-1);
+		variable retval : std_logic_vector(0 to 2**inp'length-1) := (others => '0');
 	begin
-		retval := (others => '0');
-		retval(to_integer(unsigned(sel))) := inp;
-		return retval(0 to size-1);
+		retval(to_integer(unsigned(inp))) := ena;
+		if size=0 then
+			return retval;
+		else
+			return retval(0 to size-1);
+		end if;
 	end;
 
 	function primux (

@@ -30,7 +30,7 @@ use unisim.vcomponents.all;
 
 entity ddrdqphy is
 	generic (
-		rgstrd_dout : boolean;
+		rgtr_dout : boolean;
 		loopback    : boolean;
 		gear        : natural;
 		byte_size   : natural);
@@ -87,7 +87,7 @@ begin
 					rdqo(j) <= phy_dqi(j*byte_size+i);
 				end if;
 			end process;
-			dqo(j) <= rdqo(j) when rgstrd_dout else phy_dqi(j*byte_size+i);
+			dqo(j) <= rdqo(j) when rgtr_dout else phy_dqi(j*byte_size+i);
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
@@ -128,7 +128,7 @@ begin
 			end process;
 
 			dmi(i) <=
-				rdmi(i)    when rgstrd_dout else 
+				rdmi(i)    when rgtr_dout else 
 				phy_sti(i) when phy_dmt(i)='1' and not loopback else
 				phy_dmi(i);
 

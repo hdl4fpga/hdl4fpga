@@ -247,7 +247,34 @@ begin
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff")
+		mem_data => reverse(
+			x"5555_5555_5555_55d5"  &
+			x"00_40_00_01_02_03"    &
+			x"00_00_00_00_00_00"    &
+			x"0800"                 &
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"00000000"             &    -- IP Source IP address
+			x"00000000"             &    -- IP Destiantion IP Address
+			x"0000" &
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         &    -- UDP Source port, Destination port
+				x"000f"             & -- UDP Length,
+				x"0000"             & -- UPD checksum
+				x"16020001ff"       &
+				x"1702000001"       &
+				x"18" & x"07"       &
+				x"12345678"         &
+				x"9abcdef0")        &
+			x"00000000"
+		,8)
+	)
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
@@ -255,7 +282,7 @@ begin
 		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_rxc <= not mii_rxc after 10 ns;
+	mii_rxc <= not mii_rxc after 50 ns;
 	mii_refclk <= mii_rxc;
 	s3estarter_e : s3estarter
 	port map (

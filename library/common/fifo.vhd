@@ -31,35 +31,42 @@ use hdl4fpga.std.all;
 entity fifo is
 	generic (
 		size : natural;
+		overflow_check : boolean := true;
+		gray_code      : boolean := true;
 		synchronous_rddata : boolean := false);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
-		src_irdy : in  std_logic;
+		src_irdy : in  std_logic := '1';
 		src_trdy : buffer std_logic;
 		src_data : in  std_logic_vector;
 
 		dst_clk  : in  std_logic;
-		dst_irdy : buffer std_logic;
-		dst_trdy : in  std_logic;
+		dst_frm  : in  std_logic := '1';
+		dst_irdy : buffer std_logic := '1';
+		dst_trdy : in  std_logic := '1';
 		dst_data : out std_logic_vector);
 end;
 
 architecture def of fifo is
+	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
+	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
+
 
 	signal dst_ena   : std_logic;
 	signal wr_ena    : std_logic;
-	signal wr_addr   : gray(0 to unsigned_num_bits(size-1)-1) := (others => '0');
-	signal rd_addr   : gray(0 to unsigned_num_bits(size-1)-1);
+	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
+	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
-	mem_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => synchronous_rddata)
+	mem_e : entity hdl4fpga.dpram1(def)
+--	generic map (
+--		synchronous_rdaddr => false,
+--		synchronous_rddata => synchronous_rddata)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
@@ -73,27 +80,39 @@ begin
 	process(src_clk)
 	begin
 		if rising_edge(src_clk) then
-			if src_frm='1' then
+			if src_frm='0' then
+				wr_addr <= (others => '0');
+				wr_addr(word_addr'range) <= rd_addr(word_addr'range);
+			else
 				if src_irdy='1' then
-					if src_trdy='1' then
-						wr_addr <= inc(wr_addr);
+					if src_trdy='1' or not overflow_check then
+						if gray_code then
+							wr_addr <= std_logic_vector(inc(gray(wr_addr)));
+						else
+							wr_addr <= std_logic_vector(unsigned(wr_addr)+1);
+						end if;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(inc(wr_addr)/=rd_addr);
+	src_trdy <= setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range));
 
-	dst_irdy1 <= setif(wr_addr/=rd_addr);
+	dst_irdy1 <= setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range));
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			if src_frm='0' then
-				rd_addr <= wr_addr;
+			if dst_frm='0' then
+				rd_addr <= (others => '0');
+				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
-				if dst_irdy1='1' then
-					if dst_trdy='1' then
-						rd_addr <= inc(rd_addr);
+				if dst_trdy='1' then
+					if dst_irdy1='1' or not overflow_check then
+						if gray_code then
+							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
+						else
+							rd_addr <= std_logic_vector(unsigned(rd_addr)+1);
+						end if;
 					end if;
 				end if;
 			end if;

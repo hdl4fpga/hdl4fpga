@@ -1,0 +1,105 @@
+#                                                                            #
+# Author(s):                                                                 #
+#   Miguel Angel Sagreras                                                    #
+#                                                                            #
+# Copyright (C) 2015                                                         #
+#    Miguel Angel Sagreras                                                   #
+#                                                                            #
+# This source file may be used and distributed without restriction provided  #
+# that this copyright statement is not removed from the file and that any    #
+# derivative work contains  the original copyright notice and the associated #
+# disclaimer.                                                                #
+#                                                                            #
+# This source file is free software; you can redistribute it and/or modify   #
+# it under the terms of the GNU General Public License as published by the   #
+# Free Software Foundation, either version 3 of the License, or (at your     #
+# option) any later version.                                                 #
+#                                                                            #
+# This source is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
+# more details at http://www.gnu.org/licenses/.                              #
+#                                                                            #
+
+NET "xtal" TNM_NET = xtal;
+TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
+NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+
+NET "ddr_dqs[0]" TNM_NET = dqs0;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%; # DDR 166 Mhz rate clock
+NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
+
+NET "ddr_dqs[1]" TNM_NET = dqs1;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
+
+NET "mii_txc" TNM_NET = mii_txc;
+TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
+
+NET "mii_rxc" TNM_NET = mii_rxc;
+TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
+
+# NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
+# NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
+# NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
+
+# ###################### #
+# DDR 166 Mhz rate clock #
+# ###################### #
+
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING;
+
+OFFSET = IN -0.500 ns VALID 2 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN -0.500 ns VALID 2 ns BEFORE ddr_dqs[1] RISING;
+
+# ###################### #
+# Ignore crossclock time #
+# ###################### #
+
+NET sys_clk        TNM_NET = FFS  FFS_sysclk;
+NET sys_clk        TNM_NET = RAMS RAMS_sysclk;
+NET video_clk      TNM_NET = FFS  FFS_videoclk;
+NET video_clk      TNM_NET = RAMS RAMS_videoclk;
+NET ddrsys_clks[0] TNM_NET = FFS  FFS_ddrsclk0;
+NET ddrsys_clks[0] TNM_NET = RAMS RAMS_ddrsclk0;
+NET ddrsys_clks[1] TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
+# NET ddr_dqs[0] TNM_NET     = FFS  FFS_ddrsclk0;
+# NET ddr_dqs[0] TNM_NET     = RAMS RAMS_ddrsclk0;
+# NET ddr_dqs[1] TNM_NET     = FFS  FFS_ddrsclk90;
+# NET ddr_dqs[1] TNM_NET     = RAMS RAMS_ddrsclk90;
+# NET adc_clkout TNM_NET     = FFS  FFS_adcclkab;
+# NET adc_clkout TNM_NET     = RAMS RAMS_adcclkab;
+
+TIMESPEC TS_ddr2sysclk = FROM FFS_ddrsclk0  TO FFS_sysclk   TIG;
+TIMESPEC TS_sysclk2ddr = FROM FFS_sysclk    TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_sysclk2ddr1 = FROM RAMS_sysclk    TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_video2ddr  = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_ddr2video  = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
+TIMESPEC TS_ddr2video1 = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
+TIMESPEC TS_ram2oddr   = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_ff2ram     = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
+# TIMESPEC TS_adc2ddr    = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
+# TIMESPEC TS_adc2ddr1   = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
+# TIMESPEC TS_ddr2adc    = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
+
+# ######################## #
+# Read-FIFO DQS Delay Taps #
+# ######################## #
+
+# Data Byte 0 #
+# ########### #
+
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y60;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y60;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
+
+# Data Byte 1 #
+# ########### #
+
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y82;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y82;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;

@@ -33,19 +33,19 @@ use hdl4fpga.scopeiopkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture dmactlr of s3Estarter is
+architecture dmactlr of nuhs3adsp is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	-------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --   8     --   3     --  10     --   4     --
-	-- Divide by   --   3     --   1     --   3     --   1     --
-	-------------------------------------------------------------
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --  20     --  25     --  10     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
 
 	constant sys_per      : real    := 20.0;
-	constant ddr_mul      : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 1;
 
 	constant g            : std_logic_vector(32 downto 1) := (
@@ -63,10 +63,10 @@ architecture dmactlr of s3Estarter is
 	constant cmmd_gear    : natural := 1;
 	constant data_phases  : natural := 2;
 	constant data_edges   : natural := 2;
-	constant bank_size    : natural := sd_ba'length;
-	constant addr_size    : natural := sd_a'length;
+	constant bank_size    : natural := ddr_ba'length;
+	constant addr_size    : natural := ddr_a'length;
 	constant data_gear    : natural := 2;
-	constant word_size    : natural := sd_dq'length;
+	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := 8;
 
 	signal ddrsys_lckd    : std_logic;
@@ -112,8 +112,8 @@ architecture dmactlr of s3Estarter is
 	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(cmmd_gear*sd_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(cmmd_gear*sd_a'length-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
 	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -129,24 +129,24 @@ architecture dmactlr of s3Estarter is
 	signal ddr_clk        : std_logic_vector(0 downto 0);
 	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt        : std_logic_vector(sd_dq'range);
-	signal ddr_dqo        : std_logic_vector(sd_dq'range);
+	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
 
-	alias  si_clk         : std_logic is e_rx_clk;
+	alias  si_clk         : std_logic is mii_rxc;
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
-	signal si_data        : std_logic_vector(e_rxd'range);
+	signal si_data        : std_logic_vector(mii_rxd'range);
 
 	signal toudpdaisy_frm  : std_logic;
 	signal toudpdaisy_irdy : std_logic;
-	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
+	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
 
 	signal video_clk      : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
     signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 8-1);
+    signal video_pixel    : std_logic_vector(0 to 32-1);
 
 	signal dmacfgvideo_req : std_logic;
 	signal dmacfgvideo_rdy : std_logic;
@@ -188,7 +188,7 @@ architecture dmactlr of s3Estarter is
 
 begin
 
-	sys_rst <= btn_west;
+	sys_rst <= not sw1;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
@@ -204,6 +204,16 @@ begin
 		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
+
+	mii_dfs_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => 5,
+		dfs_div => 4)
+	port map (
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => mii_refclk);
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -234,13 +244,13 @@ begin
 		port map (
 			ipcfg_req   => '0',
 
-			phy_rxc     => e_rx_clk,
-			phy_rx_dv   => e_rx_dv,
-			phy_rx_d    => e_rxd,
+			phy_rxc     => mii_rxc,
+			phy_rx_dv   => mii_rxdv,
+			phy_rx_d    => mii_rxd,
 
-			phy_txc     => e_tx_clk,
-			phy_tx_en   => e_txen,
-			phy_tx_d    => e_txd,
+			phy_txc     => mii_txc,
+			phy_tx_en   => mii_txen,
+			phy_tx_d    => mii_txd,
 		
 			chaini_sel  => '0',
 
@@ -444,7 +454,6 @@ begin
 		ctlr_pre     => ctlr_pre,
 		ctlr_idl     => ctlr_idl,
 		ctlr_di      => ctlr_di,
---		ctlr_di      => g_data,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
 		ctlr_do      => ctlr_do,
@@ -477,10 +486,10 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		gate_delay  => 2,
-		loopback    => false,
-		rgtr_dout   => false,
-		bank_size   => sd_ba'length,
-		addr_size   => sd_a'length,
+		loopback    => true,
+		rgtr_dout => false,
+		bank_size   => ddr_ba'length,
+		addr_size   => ddr_a'length,
 		cmmd_gear   => cmmd_gear,
 		data_gear   => data_gear,
 		word_size   => word_size,
@@ -510,32 +519,32 @@ begin
 		phy_sto     => ddrphy_sto,
 
 		ddr_clk     => ddr_clk,
-		ddr_cke     => sd_cke,
-		ddr_cs      => sd_cs,
-		ddr_ras     => sd_ras,
-		ddr_cas     => sd_cas,
-		ddr_we      => sd_we,
-		ddr_b       => sd_ba,
-		ddr_a       => sd_a,
+		ddr_cke     => ddr_cke,
+		ddr_cs      => ddr_cs,
+		ddr_ras     => ddr_ras,
+		ddr_cas     => ddr_cas,
+		ddr_we      => ddr_we,
+		ddr_b       => ddr_ba,
+		ddr_a       => ddr_a,
 
-		ddr_dm      => sd_dm,
+		ddr_dm      => ddr_dm,
 		ddr_dqt     => ddr_dqt,
-		ddr_dqi     => sd_dq,
+		ddr_dqi     => ddr_dq,
 		ddr_dqo     => ddr_dqo,
 		ddr_dqst    => ddr_dqst,
-		ddr_dqsi    => sd_dqs,
+		ddr_dqsi    => ddr_dqs,
 		ddr_dqso    => ddr_dqso);
 
-	ddr_dqs_g : for i in sd_dqs'range generate
-		sd_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
+	ddr_dqs_g : for i in ddr_dqs'range generate
+		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
 	process (ddr_dqt, ddr_dqo)
 	begin
-		for i in sd_dq'range loop
-			sd_dq(i) <= 'Z';
+		for i in ddr_dq'range loop
+			ddr_dq(i) <= 'Z';
 			if ddr_dqt(i)='0' then
-				sd_dq(i) <= ddr_dqo(i);
+				ddr_dq(i) <= ddr_dqo(i);
 			end if;
 		end loop;
 	end process;
@@ -545,59 +554,77 @@ begin
 		iostandard => "DIFF_SSTL2_I")
 	port map (
 		i  => ddr_clk(0),
-		o  => sd_ck_p,
-		ob => sd_ck_n);
+		o  => ddr_ckp,
+		ob => ddr_ckn);
 
 	-- VGA --
 	---------
 
-	vga_red   <= video_pixel(0);
-	vga_green <= video_pixel(1);
-	vga_blue  <= video_pixel(2);
-	vga_hsync <= video_hzsync;
-	vga_vsync <= video_vtsync;
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+			green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+			blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+			blankn <= video_hzon and video_vton;
+			hsync  <= video_hzsync;
+			vsync  <= video_vtsync;
+			sync   <= not video_hzsync and not video_vtsync;
+		end if;
+	end process;
+	psave <= '1';
 
-	-- LEDs --
-	----------
+	adcclkab_e : entity hdl4fpga.ddro
+	port map (
+		clk => '0', --adc_clk,
+		dr  => '1',
+		df  => '0',
+		q   => adc_clkab);
+--		adc_clkab <= '0';
+
+	clk_videodac_e : entity hdl4fpga.ddro
+	port map (
+		clk => video_clk,
+		dr => '0',
+		df => '1',
+		q => clk_videodac);
+
+
+	hd_t_data <= 'Z';
+
+	-- LEDs DAC --
+	--------------
 		
-	led0 <= sys_rst;
-	led1 <= '0';
-	led2 <= '0';
-	led3 <= '0';
-	led4 <= '0';
-	led5 <= '0';
-	led6 <= '0';
-	led7 <= '0';
+	led18 <= '0';
+	led16 <= '0';
+	led15 <= '0';
+	led13 <= '0';
+	led11 <= '0';
+	led9  <= '0';
+	led8  <= '0';
+	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
 
-	rs232_dte_txd <= 'Z';
-	rs232_dce_txd <= 'Z';
+	rs232_rts <= '0';
+	rs232_td  <= '0';
+	rs232_dtr <= '0';
 
 	-- Ethernet Transceiver --
 	--------------------------
 
-	e_mdc       <= 'Z';
-	e_mdio      <= 'Z';
-	e_txd_4     <= 'Z';
+	mii_rstn <= '1';
+	mii_mdc  <= '0';
+	mii_mdio <= 'Z';
 
-	e_txd  	    <= (others => 'Z');
-	e_txen      <= 'Z';
+	-- LCD --
+	---------
 
-	-- misc --
-	----------
-
-	ad_conv     <= 'Z';
-	spi_sck     <= 'Z';
-	dac_cs      <= 'Z';
-	amp_cs      <= 'Z';
-	spi_mosi    <= 'Z';
-
-	amp_shdn    <= 'Z';
-	dac_clr     <= 'Z';
-	sf_ce0      <= 'Z';
-	fpga_init_b <= 'Z';
-	spi_ss_b    <= 'Z';
+	lcd_e    <= 'Z';
+	lcd_rs   <= 'Z';
+	lcd_rw   <= 'Z';
+	lcd_data <= (others => 'Z');
+	lcd_backlight <= 'Z';
 
 end;
