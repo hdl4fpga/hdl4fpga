@@ -27,19 +27,19 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-        constant vlayout_id: integer := 1;
+        constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true; -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
-        constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
+        constant C_extserial    : boolean := false;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
         constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
-        constant C_rmiiethernet : boolean := false; -- RMII (LAN8720) Ethernet GPN9-13
-        constant C_istream_bits : natural := 8;     -- default 8, for RMII 2
+        constant C_rmiiethernet : boolean := true; -- RMII (LAN8720) Ethernet GPN9-13
+        constant C_istream_bits : natural := 2;     -- default 8, for RMII 2
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
@@ -1368,19 +1368,19 @@ begin
 	-- /usr/sbin/tcpdump -i enx00aabbccddee -e -XX -n
 	B_wired_ethernet_rmii: block
 	signal mii_clk: std_logic;
-	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
-	-- RMII pins as labeled on the board and connected to ULX3S with flat cable
-	alias rmii_tx1   : std_logic is gp(9);
-	alias rmii_tx_en : std_logic is gp(10);
-	alias rmii_rx0   : std_logic is gp(11);
-	alias rmii_nint  : std_logic is gp(12);
-	alias rmii_mdio  : std_logic is gp(13);
-	alias rmii_tx0   : std_logic is gn(10);
-	alias rmii_rx1   : std_logic is gn(11);
-	alias rmii_crs   : std_logic is gn(12);
-	alias rmii_mdc   : std_logic is gn(13);
+	-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
+	alias rmii_tx1   : std_logic is gn(9);
+	alias rmii_tx_en : std_logic is gn(10);
+	alias rmii_rx0   : std_logic is gn(11);
+	alias rmii_nint  : std_logic is gn(12);
+	alias rmii_mdio  : std_logic is gn(13);
+	alias rmii_tx0   : std_logic is gp(10);
+	alias rmii_rx1   : std_logic is gp(11);
+	alias rmii_crs   : std_logic is gp(12);
+	alias rmii_mdc   : std_logic is gp(13);
 	signal mii_rxdata,  mii_txdata  : std_logic_vector(0 to 1);
 	signal mii_rxvalid, mii_txvalid : std_logic;
+	signal dummy_udpdaisy_data : std_logic_vector(so_null'range);
 	begin
 
         mii_clk       <= rmii_nint; -- nINT pin is CLOCK
@@ -1393,31 +1393,33 @@ begin
         rmii_mdc      <= 'Z';
         rmii_mdio     <= 'Z';
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_miiudp
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 	generic map(
 	        preamble_disable => false,
 	        crc_disable => false
 	)
 	port map (
-		mii_req   => R_btn_debounced(1),
+		ipcfg_req   => R_btn_debounced(1),
 
-		mii_rxc     => mii_clk,
-		mii_rxdv    => mii_rxvalid,
-		mii_rxd     => mii_rxdata,
+		phy_rxc     => mii_clk,
+		phy_rx_dv   => mii_rxvalid,
+		phy_rx_d    => mii_rxdata,
 
-		mii_txc     => mii_clk, 
-		mii_txdv    => mii_txvalid,
-		mii_txd     => mii_txdata,
+		phy_txc     => mii_clk,
+		phy_tx_en   => mii_txvalid,
+		phy_tx_d    => mii_txdata,
+--		monitor     => monitor, btn => R_btn_debounced(2),
+		chaini_sel  => '0',
 
-		so_clk      => open,
-		so_dv       => net_fromistreamdaisy_irdy,
-		so_data     => net_fromistreamdaisy_data
+		chaini_frm  => '0',
+		chaini_irdy => open,
+		chaini_data => dummy_udpdaisy_data,
+
+		chaino_frm  => fromistreamdaisy_frm,
+		chaino_irdy => fromistreamdaisy_irdy,
+		chaino_data => fromistreamdaisy_data
         );
-        net_fromistreamdaisy_frm <= net_fromistreamdaisy_irdy;
         clk_daisy                <= mii_clk;
-        fromistreamdaisy_frm     <=         net_fromistreamdaisy_frm;
-        fromistreamdaisy_irdy    <=         net_fromistreamdaisy_irdy;
-        fromistreamdaisy_data    <= reverse(net_fromistreamdaisy_data);
         end block;
 	end generate;
 
