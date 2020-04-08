@@ -27,7 +27,8 @@ SerialPort.list().then(function(value) {
 	for (i = 0; i < value.length; i++) {
 		for (j = 0; j < Object.keys(value[i]).length; j++) {
 			var keys = Object.keys(value[i]);
-			console.log(keys[j] + " -> " + value[i][keys[j]] );
+			if (typeof value[i][keys[j]] !== 'undefined')
+				console.log(keys[j] + " -> " + value[i][keys[j]] );
 		}
 	}
 });

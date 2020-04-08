@@ -21,18 +21,52 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-const cmdline = require('commander');
+const program = require('commander');
+const sscanf  = require('scanf').sscanf;
 const commjs  = require('./comm.js');
 
-cmdline
-	.option('-l, --link <type>',  'ip       | serial', 'ip')
-	.option('-n, --name <name>',  'hostname | ip address | serial port')
-	.option('-r, --rid  <id>',    'number')
-	.option('-d, --data <value>', 'data');
-cmdline.parse(process.argv);
+program
+	.option('-l, --link <type>', 'ip       | serial', 'ip')
+	.requiredOption('-n, --name <name>',  'hostname | ip address | serial port')
+	.option('-r, --rid   <id>', 'number')
+	.requiredOption('-t, --type <value>', 'Data type', 'hex')
+	.requiredOption('-d, --data <value>', 'Data to be sent is required')
+	.parse(process.argv);
 
+switch(program.type) {
+case 'hex' :
+	var data   = program.data.trim().toUpperCase().replace(/\s/g, '');
+	if (typeof program.rid === 'undefined')
+		var base = 1;
+	 else
+		var base = 2;
+	var buffer = new Uint8Array(data.length/2+base);
 
-switch(cmdline.link) {
+	buffer[base-1] = (data.length-(data.length % 2))/2+base-3;
+	for (i = 0; i < data.length-(data.length % 2); i += 2) {
+		buffer[i/2+base] = 0;
+		for (j = 0; j < 2; j++) {
+			buffer[i/2+base] *= 16;
+			if ('0'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= '9'.charCodeAt(0)) 
+				buffer[i/2+base] += data.charCodeAt(i+j) - '0'.charCodeAt(0);
+			else if ('A'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= 'F'.charCodeAt(0)) 
+				buffer[i/2+base] += data.charCodeAt(i+j) - 'A'.charCodeAt(0);
+			else {
+				throw ("wrong");
+			}
+		}
+	}
+	if (typeof program.rid === 'undefined') {
+		program.rid = buffer[1];
+		buffer[1] = buffer[0];
+	}
+	buffer[0] = parseInt(program.rid);
+	break;
+case 'string':
+}
+console.log(data);
+
+switch(program.link) {
 case 'serial':
 	commjs.setCommOption('UART');
 	break;
@@ -42,15 +76,13 @@ default:
 	break;
 }
 
-console.log(commjs.getCommOption());
-// 
-// switch (getCommOption()) {
-// case 'serial':
-// 	commjs.createUART(uartName, uartOptions);
-// 	break;
-// case 'tcpip':
-// 	commjs.setHost(hostName);
-// 	break;
-// }
-// 
-// commjs.send(data);
+switch (commjs.getCommOption()) {
+case 'UART':
+	commjs.createUART(program.name, "115200");
+	break;
+case 'TCPIP':
+	commjs.setHost(hostName);
+	break;
+}
+
+commjs.send(buffer);

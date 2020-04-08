@@ -37,10 +37,12 @@ function toHex(buffer)
 {
 	let len = (typeof buffer.length === 'undefined') ? buffer.byteLength : buffer.length;
 	let str = "";
-	str = str + ' ' + Number(buffer[0]).toString('16');
 
-	for (var i=1; i < len; i++)
-		str = str + ' ' + Number(buffer[i]).toString('16');
+	for (var i=0; i < len; i++) 
+		if (buffer[i] < 16) 
+			str = str + ' ' + '0' + Number(buffer[i]).toString('16');
+		else
+			str = str + ' ' + Number(buffer[i]).toString('16');
 	return str;
 }
 

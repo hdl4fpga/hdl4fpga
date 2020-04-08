@@ -23,7 +23,7 @@ CALL npm install bufferutil
 CALL npm install utf-8-validate
 CALL npm install socket.io
 CALL npm install serialport
-CALL npm install yargs
+CALL npm install commander
 DEL /F /Q nodesrv.js 2> NUL
 DEL /F /Q comm.js 2> NUL
 MKLINK /H nodesrv.js ..\srcjs\nodesrv.js 
