@@ -50,7 +50,7 @@ case 'hex' :
 			if ('0'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= '9'.charCodeAt(0)) 
 				buffer[i/2+base] += data.charCodeAt(i+j) - '0'.charCodeAt(0);
 			else if ('A'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= 'F'.charCodeAt(0)) 
-				buffer[i/2+base] += data.charCodeAt(i+j) - 'A'.charCodeAt(0);
+				buffer[i/2+base] += (data.charCodeAt(i+j) - 'A'.charCodeAt(0))+10;
 			else {
 				throw ("wrong");
 			}
