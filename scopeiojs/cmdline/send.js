@@ -36,7 +36,7 @@ case 'serial':
 	break;
 case 'ip':
 	commjs.setCommOption('TCPIP');
-	commjs.setHost(hostName);
+	commjs.setHost(program.name);
 	break;
 default:
 	program.help();
@@ -52,17 +52,22 @@ process.stdin.on('data', function(chunk) {
 
 	let i      = 0;
 	let length = 0;
+	console.log(data);
 	while ((length+1) < data.length) {
-		let step = (data[i+1] + 3);
-		if ((length+step) < data.length) {
+		let step = (data.charCodeAt(i+1) + 3);
+		console.log("step", step);
+		if ((length+step) <= data.length) {
 			if (length+step < 1024) {
 				length += step;
 			} else break;
 		} else break;
 	}
-	commjs.send(data.slice(0, length));
-	data = data.slice(length);
-	console.log(data);
+	if (length > 0) {
+		commjs.send(data.slice(0, length));
+		data = data.slice(length);
+		if (data.length > 0) 
+			console.log("length data left %s", data);
+	}
 });
 
 process.stdin.on('end', function() {

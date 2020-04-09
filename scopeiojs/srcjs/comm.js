@@ -79,7 +79,7 @@ function streamout (data) {
 			buffer[j++] = esc;
 
 		default:
-			buffer[j++] = data[i];
+			buffer[j++] = data.charCodeAt(i);
 		}
 	}
 	buffer[j++] = eod;
@@ -104,7 +104,7 @@ function send(data) {
 		var buffer   = new Uint8Array(data.length+2);
 	
 		for (i=0; i < data.length; i++)
-			buffer[i] = data[i];
+			buffer[i] = data.charCodeAt(i);
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
