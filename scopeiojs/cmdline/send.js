@@ -22,67 +22,49 @@
 //                                                                            //
 
 const program = require('commander');
-const sscanf  = require('scanf').sscanf;
 const commjs  = require('./comm.js');
 
 program
-	.option('-l, --link <type>', 'ip       | serial', 'ip')
-	.requiredOption('-n, --name <name>',  'hostname | ip address | serial port')
-	.option('-r, --rid   <id>', 'number')
-	.requiredOption('-t, --type <value>', 'Data type', 'hex')
-	.requiredOption('-d, --data <value>', 'Data to be sent is required')
+	.requiredOption('-l, --link <type>', 'udp      | serial')
+	.requiredOption('-n, --name <name>', 'hostname | ip address | serial port')
 	.parse(process.argv);
-
-switch(program.type) {
-case 'hex' :
-	var data   = program.data.trim().toUpperCase().replace(/\s/g, '');
-	if (typeof program.rid === 'undefined')
-		var base = 1;
-	 else
-		var base = 2;
-	var buffer = new Uint8Array(data.length/2+base);
-
-	buffer[base-1] = (data.length-(data.length % 2))/2+base-3;
-	for (i = 0; i < data.length-(data.length % 2); i += 2) {
-		buffer[i/2+base] = 0;
-		for (j = 0; j < 2; j++) {
-			buffer[i/2+base] *= 16;
-			if ('0'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= '9'.charCodeAt(0)) 
-				buffer[i/2+base] += data.charCodeAt(i+j) - '0'.charCodeAt(0);
-			else if ('A'.charCodeAt(0) <= data.charCodeAt(i+j) && data.charCodeAt(i+j) <= 'F'.charCodeAt(0)) 
-				buffer[i/2+base] += (data.charCodeAt(i+j) - 'A'.charCodeAt(0))+10;
-			else {
-				throw ("wrong");
-			}
-		}
-	}
-	if (typeof program.rid === 'undefined') {
-		program.rid = buffer[1];
-		buffer[1] = buffer[0];
-	}
-	buffer[0] = parseInt(program.rid);
-	break;
-case 'string':
-}
-console.log(data);
 
 switch(program.link) {
 case 'serial':
 	commjs.setCommOption('UART');
-	break;
-case 'ip':
-default:
-	commjs.setCommOption('TCPIP');
-	break;
-}
-
-switch (commjs.getCommOption()) {
-case 'UART':
 	commjs.createUART(program.name, "115200");
 	break;
-case 'TCPIP':
+case 'ip':
+	commjs.setCommOption('TCPIP');
 	commjs.setHost(hostName);
+	break;
+default:
+	program.help();
 	break;
 }
 
-commjs.send(buffer);
+process.stdin.resume();
+process.stdin.setEncoding('utf8');
+
+var data = "";
+process.stdin.on('data', function(chunk) {
+	data += chunk;
+
+	let i      = 0;
+	let length = 0;
+	while ((length+1) < data.length) {
+		let step = (data[i+1] + 3);
+		if ((length+step) < data.length) {
+			if (length+step < 1024) {
+				length += step;
+			} else break;
+		} else break;
+	}
+	commjs.send(data.slice(0, length));
+	data = data.slice(length);
+	console.log(data);
+});
+
+process.stdin.on('end', function() {
+});
+
