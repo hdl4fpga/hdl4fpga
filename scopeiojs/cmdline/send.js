@@ -72,6 +72,3 @@ process.stdin.on('data', function(chunk) {
 		console.log("length %d, data left %s", data.length, data);
 });
 
-process.stdin.on('end', function() {
-});
-

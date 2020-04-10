@@ -33,6 +33,12 @@ NET "e_rx_clk" TNM_NET = e_rx_clk;
 TIMESPEC TS_e_tx_clk = PERIOD "e_rx_clk" 20 ns HIGH 50%;
 NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
 
+NET "sd_dqs[0]" TNM_NET = dqs0;
+NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
+
+NET "sd_dqs[1]" TNM_NET = dqs1;
+NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
+
 # ###################### #
 # Ignore crossclock time #
 # ###################### #
@@ -67,37 +73,27 @@ TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 # DDR 200 Mhz rate clock #
 # ###################### #
 
-NET "sd_dqs[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
-NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-
-NET "sd_dqs[1]" TNM_NET = dqs1;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
-NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-
-NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[0] RISING;
-NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[1] RISING;
-
-OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE sd_dqs[1] RISING;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
+#
+#NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[0] RISING;
+#NET "sd_dm*" OFFSET = IN 1.50 ns VALID 4.75 ns BEFORE sd_dqs[1] RISING;
+#
+#OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE sd_dqs[0] RISING;
+#OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE sd_dqs[1] RISING;
 
 # ###################### #
 # DDR 166 Mhz rate clock #
 # ###################### #
 
-#NET "sd_dqs[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns HIGH 50%;
-#NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dqs[1]" TNM_NET = dqs1;
-#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
-#NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-#
-#NET "sd_dm*" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE sd_dqs[0] RISING;
-#NET "sd_dm*" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE sd_dqs[1] RISING;
-#
-#OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE sd_dqs[0] RISING;
-#OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE sd_dqs[1] RISING;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns HIGH 50%;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
+
+NET "sd_dm*" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE sd_dqs[0] RISING;
+NET "sd_dm*" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE sd_dqs[1] RISING;
+
+OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE sd_dqs[1] RISING;
 
 # ####################### #
 # Read-FIFO DQS Delay Tap #

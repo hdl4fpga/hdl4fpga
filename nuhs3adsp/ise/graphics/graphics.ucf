@@ -39,22 +39,35 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
 
- NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
- NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
- NET "ddrphy_dqsi*"  MAXSKEW  = 1.000 ns;
+# NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
+# NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
+# NET "ddrphy_dqsi*"  MAXSKEW  = 1.000 ns;
 
 # ###################### #
 # DDR 200 Mhz rate clock #
 # ###################### #
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+#
+#NET "ddr_st_lp_dqs" OFFSET = IN 1.65 ns VALID 4.2 ns BEFORE ddr_dqs[0] RISING;
+#NET "ddr_st_lp_dqs" OFFSET = IN 1.65 ns VALID 4.2 ns BEFORE ddr_dqs[1] RISING;
+#
+#OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE ddr_dqs[0] RISING;
+#OFFSET = IN -0.400 ns VALID 2.100 ns BEFORE ddr_dqs[1] RISING;
 
-NET "ddr_st_lp_dqs" OFFSET = IN 1.65 ns VALID 4.2 ns BEFORE ddr_dqs[0] RISING;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.65 ns VALID 4.2 ns BEFORE ddr_dqs[1] RISING;
+# ###################### #
+# DDR 166 Mhz rate clock #
+# ###################### #
 
-OFFSET = IN -0.400 ns VALID 1.70 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN -0.400 ns VALID 1.70 ns BEFORE ddr_dqs[1] RISING;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns HIGH 50%;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
+
+NET "ddr_st_lp_dqs" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE ddr_dqs[0] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.950 ns VALID 5.55 ns BEFORE ddr_dqs[1] RISING;
+
+OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN -0.450 ns VALID 2.55 ns BEFORE ddr_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #

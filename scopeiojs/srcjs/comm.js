@@ -112,7 +112,24 @@ function send(data) {
 				console.log(err);
 			else 
 				console.log('UDP :' + toHex(buffer));
+			udpsckt.close();
 		});
+		break;
+	}
+}
+
+function close() {
+	switch (commOption) {
+	case 'UART':
+		if (typeof uart !== 'undefined')
+			if (uart.err === false) {
+				console.log("closed : " + uart.path);
+				uart.close();
+			}
+
+		break;
+	case 'TCPIP':
+		udpsckt.close();
 		break;
 	}
 }
@@ -163,6 +180,7 @@ exports.getCommOption = getCommOption;
 exports.getHost       = getHost;
 exports.setHost       = setHost;
 exports.send          = send;
+exports.close         = close;
 }
 catch(e) {
 }

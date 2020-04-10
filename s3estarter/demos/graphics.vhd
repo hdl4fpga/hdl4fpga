@@ -45,8 +45,8 @@ architecture graphics of s3Estarter is
 	-- Multiply by --   8     --  10     --   4     --
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
-	constant ddr_mul      : natural := 4;
-	constant ddr_div      : natural := 1;
+	constant ddr_mul      : natural := 10;
+	constant ddr_div      : natural := 3;
 
 	constant g            : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
@@ -178,7 +178,7 @@ architecture graphics of s3Estarter is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 3, dcm_div => 5),
+		mode480p    => (mode => 0, dcm_mul => 2, dcm_div => 4),
 		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
 		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
 

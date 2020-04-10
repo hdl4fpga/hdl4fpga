@@ -178,11 +178,11 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 3, dcm_div => 5),
-		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
-		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
+		mode480p    => (mode => 0, dcm_mul => 5,  dcm_div => 4),
+		mode600p    => (mode => 1, dcm_mul => 10, dcm_div => 5),
+		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 	alias dma_clk : std_logic is sys_clk;
 
@@ -242,7 +242,7 @@ begin
 
 		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 		port map (
-			ipcfg_req   => '0',
+			ipcfg_req   => sys_rst,
 
 			phy_rxc     => mii_rxc,
 			phy_rx_dv   => mii_rxdv,
@@ -518,6 +518,10 @@ begin
 		phy_sti     => ddrphy_sti,
 		phy_sto     => ddrphy_sto,
 
+		ddr_sto(0) => ddr_st_dqs,
+		ddr_sto(1) => open,
+		ddr_sti(0) => ddr_st_lp_dqs,
+		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_clk     => ddr_clk,
 		ddr_cke     => ddr_cke,
 		ddr_cs      => ddr_cs,
