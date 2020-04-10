@@ -33,7 +33,7 @@ use hdl4fpga.scopeiopkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture dmactlr of nuhs3adsp is
+architecture graphics of nuhs3adsp is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;

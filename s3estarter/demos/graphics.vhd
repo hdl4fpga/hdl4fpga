@@ -33,19 +33,19 @@ use hdl4fpga.scopeiopkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture dmactlr of s3Estarter is
+architecture graphics of s3Estarter is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	-------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 150 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --   8     --   3     --  10     --   4     --
-	-- Divide by   --   3     --   1     --   3     --   1     --
-	-------------------------------------------------------------
-
 	constant sys_per      : real    := 20.0;
-	constant ddr_mul      : natural := 4; --(4/1) 200 (10/3) 166, (3/1) 150, (8/3) 133
+
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --   8     --  10     --   4     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
+	constant ddr_mul      : natural := 4;
 	constant ddr_div      : natural := 1;
 
 	constant g            : std_logic_vector(32 downto 1) := (
@@ -182,7 +182,7 @@ architecture dmactlr of s3Estarter is
 		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
 		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode600p;
 
 	alias dma_clk : std_logic is sys_clk;
 
