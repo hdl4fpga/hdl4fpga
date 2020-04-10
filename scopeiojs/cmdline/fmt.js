@@ -46,6 +46,6 @@ function hex(data) {
 
 var hexbuf = hex(program.data);
 process.stdout.write(
-	String.fromCharCode(parseInt(program.rid)) +
+	String.fromCharCode(parseInt("0x" + program.rid)) +
 	String.fromCharCode(parseInt(hexbuf.length-1)) +
 	hexbuf);
