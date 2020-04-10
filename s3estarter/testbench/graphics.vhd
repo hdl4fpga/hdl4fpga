@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scope of testbench is
+architecture s3estarter_graphics of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
@@ -59,104 +59,98 @@ architecture scope of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : nibble;
-	signal mii_rxc  : std_logic;
+	signal mii_rxd  : std_logic_vector(4-1 downto 0);
+	signal mii_rxc  : std_logic := '0';
 	signal mii_txen : std_logic;
+	signal mii_strt : std_logic;
 
+	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
-	component nuhs3adsp is
+	component s3estarter is
 		port (
-			xtal : in std_logic;
-			sw1 : in std_logic;
+			xtal       : in std_logic := '0';
+			sw0        : in std_logic := '1';
+			btn_west   : in std_logic := '1';
 
-			hd_t_data  : inout std_logic := '1';
-			hd_t_clock : in std_logic := '0';
+			--------------
+			-- switches --
 
-			dip : in std_logic_vector(0 to 7) := (others => 'Z');
-			led18 : out std_logic := 'Z';
-			led16 : out std_logic := 'Z';
-			led15 : out std_logic := 'Z';
-			led13 : out std_logic := 'Z';
-			led11 : out std_logic := 'Z';
-			led9  : out std_logic := 'Z';
-			led8  : out std_logic := 'Z';
-			led7  : out std_logic := 'Z';
-
-			---------------
-			-- Video DAC --
-			
-			hsync : out std_logic := '0';
-			vsync : out std_logic := '0';
-			clk_videodac : out std_logic := 'Z';
-			blank : out std_logic := 'Z';
-			sync  : out std_logic := 'Z';
-			psave : out std_logic := 'Z';
-			red   : out std_logic_vector(8-1 downto 0) := (others => 'Z');
-			green : out std_logic_vector(8-1 downto 0) := (others => 'Z');
-			blue  : out std_logic_vector(8-1 downto 0) := (others => 'Z');
-
-			---------
-			-- ADC --
-
-			adc_clkab : out std_logic := 'Z';
-			adc_clkout : in std_logic := 'Z';
-			adc_da : in std_logic_vector(14-1 downto 0) := (others => 'Z');
-			adc_db : in std_logic_vector(14-1 downto 0) := (others => 'Z');
-
-			-----------------------
-			-- RS232 Transceiver --
-
-			rs232_dcd : in std_logic := 'Z';
-			rs232_dsr : in std_logic := 'Z';
-			rs232_rd  : in std_logic := 'Z';
-			rs232_rts : out std_logic := 'Z';
-			rs232_td  : out std_logic := 'Z';
-			rs232_cts : in std_logic := 'Z';
-			rs232_dtr : out std_logic := 'Z';
-			rs232_ri  : in std_logic := 'Z';
+			led0 : out std_logic := '0';
+			led1 : out std_logic := '0';
+			led2 : out std_logic := '0';
+			led3 : out std_logic := '0';
+			led4 : out std_logic := '0';
+			led5 : out std_logic := '0';
+			led6 : out std_logic := '0';
+			led7 : out std_logic := '0';
 
 			------------------------------
 			-- MII ethernet Transceiver --
 
-			mii_rst  : out std_logic := 'Z';
-			mii_refclk : out std_logic := 'Z';
-			mii_intrp  : in std_logic := 'Z';
+			e_txd  	 : out std_logic_vector(0 to 3) := (others => 'Z');
+			e_txen   : out std_logic := 'Z';
+			e_txd_4  : out std_logic;
 
-			mii_mdc  : out std_logic := 'Z';
-			mii_mdio : inout std_logic := 'Z';
+			e_tx_clk : in  std_logic := 'Z';
 
-			mii_txc  : in  std_logic := 'Z';
-			mii_txen : out std_logic := 'Z';
-			mii_txd  : out std_logic_vector(4-1 downto 0) := (others => 'Z');
+			e_rxd    : in std_logic_vector(0 to 4-1) := (others => 'Z');
+			e_rx_dv  : in std_logic := 'Z';
+			e_rx_er  : in std_logic := 'Z';
+			e_rx_clk : in std_logic := 'Z';
 
-			mii_rxc  : in std_logic := 'Z';
-			mii_rxdv : in std_logic := 'Z';
-			mii_rxer : in std_logic := 'Z';
-			mii_rxd  : in std_logic_vector(4-1 downto 0) := (others => 'Z');
+			e_crs    : in std_logic := 'Z';
+			e_col    : in std_logic := 'Z';
 
-			mii_crs  : in std_logic := 'Z';
-			mii_col  : in std_logic := 'Z';
+			e_mdc    : out std_logic := 'Z';
+			e_mdio   : inout std_logic := 'Z';
+
+			---------
+			-- VGA --
+		
+			vga_red   : out std_logic;
+			vga_green : out std_logic;
+			vga_blue  : out std_logic;
+			vga_hsync : out std_logic;
+			vga_vsync : out std_logic;
+
+			---------
+			-- SPI --
+
+			spi_sck  : out std_logic;
+			spi_miso : in  std_logic;
+			spi_mosi : out std_logic;
+
+			---------
+			-- AMP --
+
+			amp_cs   : out std_logic := '0';
+			amp_shdn : out std_logic := '0';
+			amp_dout : in  std_logic;
+
+			---------
+			-- ADC --
+
+			ad_conv  : out std_logic;
+
 
 			-------------
 			-- DDR RAM --
 
-			ddr_ckp : out std_logic := 'Z';
-			ddr_ckn : out std_logic := 'Z';
-			ddr_lp_ckp : in std_logic := 'Z';
-			ddr_lp_ckn : in std_logic := 'Z';
-			ddr_st_lp_dqs : in std_logic := 'Z';
-			ddr_st_dqs : out std_logic := 'Z';
-			ddr_cke : out std_logic := 'Z';
-			ddr_cs  : out std_logic := 'Z';
-			ddr_ras : out std_logic := 'Z';
-			ddr_cas : out std_logic := 'Z';
-			ddr_we  : out std_logic := 'Z';
-			ddr_ba  : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => 'Z');
-			ddr_a   : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => 'Z');
-			ddr_dm  : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dqs : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
+			sd_a          : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => '0');
+			sd_dq         : inout std_logic_vector(16-1 downto 0);
+			sd_ba         : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => '0');
+			sd_ras        : out std_logic := '1';
+			sd_cas        : out std_logic := '1';
+			sd_we         : out std_logic := '0';
+			sd_dm         : inout std_logic_vector(2-1 downto 0);
+			sd_dqs        : inout std_logic_vector(2-1 downto 0);
+			sd_cs         : out std_logic := '1';
+			sd_cke        : out std_logic := '1';
+			sd_ck_n       : out std_logic := '0';
+			sd_ck_p       : out std_logic := '1';
+			sd_ck_fb      : in std_logic := '0');
+
 	end component;
 
 	component ddr_model is
@@ -175,10 +169,47 @@ architecture scope of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
+	component ddr2_model is
+		port (
+			ck    : in std_logic;
+			ck_n  : in std_logic;
+			cke   : in std_logic;
+			cs_n  : in std_logic;
+			ras_n : in std_logic;
+			cas_n : in std_logic;
+			we_n  : in std_logic;
+			ba    : in std_logic_vector(1 downto 0);
+			addr  : in std_logic_vector(addr_bits - 1 downto 0);
+			dm_rdqs : in std_logic_vector(data_bytes - 1 downto 0);
+			dq    : inout std_logic_vector(data_bits - 1 downto 0);
+			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
+			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			rdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			odt   : in std_logic);
+	end component;
+
+	component ddr3_model is
+		port (
+			rst_n : in std_logic;
+			ck    : in std_logic;
+			ck_n  : in std_logic;
+			cke   : in std_logic;
+			cs_n  : in std_logic;
+			ras_n : in std_logic;
+			cas_n : in std_logic;
+			we_n  : in std_logic;
+			ba    : in std_logic_vector(2 downto 0);
+			addr  : in std_logic_vector(addr_bits - 1 downto 0);
+			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
+			dq    : inout std_logic_vector(data_bits - 1 downto 0);
+			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
+			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			tdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			odt   : in std_logic);
+	end component;
+
 	constant delay : time := 1 ns;
 begin
-
-	mii_rxc <= mii_refclk after 5 ps;
 
 	clk <= not clk after 10 ns;
 	process (clk)
@@ -190,6 +221,19 @@ begin
 		end if;
 	end process;
 
+	mii_strt <= '0', '1' after 8 us;
+
+	process (mii_refclk, mii_strt)
+		variable edge : std_logic;
+		variable cnt  : natural := 0;
+	begin
+		if mii_strt='0' then
+			mii_treq <= '0';
+			edge := '0';
+		elsif rising_edge(mii_refclk) then
+			if mii_trdy='1' then
+				if edge='0' then
+					mii_treq <= '0';
 				end if;
 			elsif cnt < 2 then
 				mii_treq <= '1';
@@ -240,49 +284,33 @@ begin
 
 	mii_rxc <= not mii_rxc after 50 ns;
 	mii_refclk <= mii_rxc;
-	du_e : nuhs3adsp
+	du_e : s3estarter
 	port map (
 		xtal => clk,
-		sw1  => rst,
-		led7 => led7,
-		dip => b"0000_0001",
+		btn_west  => rst,
 
-		---------
-		-- ADC --
-
-		adc_da => (others => '0'),
-		adc_db => (others => '0'),
-
-		adc_clkab  => x,
-		adc_clkout => x,
-
-		hd_t_clock => rst,
-
-		mii_refclk => mii_refclk,
-		mii_txc => mii_refclk,
-		mii_rxc => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd => mii_rxd,
-		mii_txen => mii_txen,
+		spi_miso => '-',
+		amp_dout => '-',
+		e_tx_clk => mii_refclk,
+		e_rx_clk => mii_rxc,
+		e_rx_dv => mii_rxdv,
+		e_rxd => mii_rxd,
+		e_txen => mii_txen,
 		-------------
 		-- DDR RAM --
 
-		ddr_ckp => clk_p,
-		ddr_ckn => clk_n,
-		ddr_lp_ckp => clk_p,
-		ddr_lp_ckn => clk_n,
-		ddr_st_lp_dqs => ddr_lp_dqs,
-		ddr_st_dqs => ddr_lp_dqs,
-		ddr_cke => cke,
-		ddr_cs  => cs_n,
-		ddr_ras => ras_n,
-		ddr_cas => cas_n,
-		ddr_we  => we_n,
-		ddr_ba  => ba,
-		ddr_a   => addr,
-		ddr_dm  => dm,
-		ddr_dqs => dqs,
-		ddr_dq  => dq);
+		sd_ck_p => clk_p,
+		sd_ck_n => clk_n,
+		sd_cke => cke,
+		sd_cs  => cs_n,
+		sd_ras => ras_n,
+		sd_cas => cas_n,
+		sd_we  => we_n,
+		sd_ba  => ba,
+		sd_a   => addr,
+		sd_dm  => dm,
+		sd_dqs => dqs,
+		sd_dq  => dq);
 
 	ddr_model_g: ddr_model
 	port map (
@@ -303,10 +331,10 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_structure_md of testbench is
-	for scope 
-		for all : nuhs3adsp 
-			use entity hdl4fpga.nuhs3adsp(structure);
+configuration s3estarter_structure_md of testbench is
+	for s3estarter_graphics
+		for all : s3estarter
+			use entity work.s3estarter(structure);
 		end for;
 		for all: ddr_model
 			use entity micron.ddr_model
@@ -329,10 +357,10 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_scope_md of testbench is
-	for scope 
-		for all : nuhs3adsp 
-			use entity hdl4fpga.nuhs3adsp(scope);
+configuration s3estarter_graphics_md of testbench is
+	for s3estarter_graphics
+		for all : s3estarter 
+			use entity work.s3estarter(graphics);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

@@ -125,6 +125,7 @@ architecture graphics of nuhs3adsp is
 	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddr_st_dqs_open : std_logic;
 
 	signal ddr_clk        : std_logic_vector(0 downto 0);
 	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -179,7 +180,7 @@ architecture graphics of nuhs3adsp is
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
 		mode480p    => (mode => 0, dcm_mul => 5,  dcm_div => 4),
-		mode600p    => (mode => 1, dcm_mul => 10, dcm_div => 5),
+		mode600p    => (mode => 1, dcm_mul => 15, dcm_div => 2),
 		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : layout_mode := mode600p;
@@ -188,7 +189,7 @@ architecture graphics of nuhs3adsp is
 
 begin
 
-	sys_rst <= not sw1;
+	sys_rst <= hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
@@ -238,11 +239,13 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
+		signal ipcfg_req : std_logic;
 	begin
 
+		ipcfg_req <= not sw1;
 		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 		port map (
-			ipcfg_req   => sys_rst,
+			ipcfg_req   => ipcfg_req,
 
 			phy_rxc     => mii_rxc,
 			phy_rx_dv   => mii_rxdv,
@@ -519,7 +522,7 @@ begin
 		phy_sto     => ddrphy_sto,
 
 		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => open,
+		ddr_sto(1) => ddr_st_dqs_open,
 		ddr_sti(0) => ddr_st_lp_dqs,
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_clk     => ddr_clk,
