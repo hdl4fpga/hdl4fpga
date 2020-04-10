@@ -50,24 +50,26 @@ var data = "";
 process.stdin.on('data', function(chunk) {
 	data += chunk;
 
-	let i      = 0;
 	let length = 0;
-	console.log(data);
 	while ((length+1) < data.length) {
-		let step = (data.charCodeAt(i+1) + 3);
+		let step = (data.charCodeAt(length+1) + 3);
 		console.log("step", step);
 		if ((length+step) <= data.length) {
-			if (length+step < 1024) {
+			if (length+step <= (1024+8)) {
 				length += step;
-			} else break;
+			} else if (length > 0) {
+				commjs.send(data.slice(0, length));
+				data = data.slice(length);
+				length = 0;
+			}
 		} else break;
 	}
 	if (length > 0) {
 		commjs.send(data.slice(0, length));
 		data = data.slice(length);
-		if (data.length > 0) 
-			console.log("length data left %s", data);
 	}
+	if (data.length > 0) 
+		console.log("length %d, data left %s", data.length, data);
 });
 
 process.stdin.on('end', function() {
