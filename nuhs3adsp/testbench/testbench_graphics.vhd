@@ -240,7 +240,7 @@ begin
 
 	mii_rxc <= not mii_rxc after 50 ns;
 	mii_refclk <= mii_rxc;
-	nuhs3adsp_e : nuhs3adsp
+	du_e : nuhs3adsp
 	port map (
 		xtal => clk,
 		sw1  => rst,
