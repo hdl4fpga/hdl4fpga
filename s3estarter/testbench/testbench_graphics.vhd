@@ -284,7 +284,7 @@ begin
 
 	mii_rxc <= not mii_rxc after 50 ns;
 	mii_refclk <= mii_rxc;
-	s3estarter_e : s3estarter
+	du_e : s3estarter
 	port map (
 		xtal => clk,
 		btn_west  => rst,
