@@ -62,7 +62,6 @@ architecture s3estarter_graphics of testbench is
 	signal mii_rxd  : std_logic_vector(4-1 downto 0);
 	signal mii_rxc  : std_logic := '0';
 	signal mii_txen : std_logic;
-	signal mii_strt : std_logic;
 
 	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
@@ -221,29 +220,7 @@ begin
 		end if;
 	end process;
 
-	mii_strt <= '0', '1' after 8 us;
-
-	process (mii_refclk, mii_strt)
-		variable edge : std_logic;
-		variable cnt  : natural := 0;
-	begin
-		if mii_strt='0' then
-			mii_treq <= '0';
-			edge := '0';
-		elsif rising_edge(mii_refclk) then
-			if mii_trdy='1' then
-				if edge='0' then
-					mii_treq <= '0';
-				end if;
-			elsif cnt < 2 then
-				mii_treq <= '1';
-				if mii_treq='0' then
-					cnt := cnt + 1;
-				end if;
-			end if;
-			edge := mii_txen;
-		end if;
-	end process;
+	mii_treq <= '0', '1' after 8 us;
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (

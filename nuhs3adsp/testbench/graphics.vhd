@@ -40,6 +40,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal rst   : std_logic;
 	signal clk   : std_logic := '0';
 	signal led7  : std_logic;
+	signal sw1  : std_logic;
 
 	signal dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal dqs   : std_logic_vector (1 downto 0) := "00";
@@ -71,7 +72,7 @@ architecture nuhs3adsp_graphics of testbench is
 			sw1 : in std_logic;
 
 			hd_t_data  : inout std_logic := '1';
-			hd_t_clock : in std_logic := '0';
+			hd_t_clock : in std_logic;
 
 			dip : in std_logic_vector(0 to 7) := (others => 'Z');
 			led18 : out std_logic := 'Z';
@@ -183,6 +184,8 @@ begin
 
 	clk <= not clk after 10 ns;
 
+	mii_treq <= '0', '1' after 8 us;
+
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(
@@ -220,12 +223,11 @@ begin
 		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_rxc <= not mii_rxc after 50 ns;
-	mii_refclk <= mii_rxc;
+	rst <= '1', '0' after 100 ns;
 	du_e : nuhs3adsp
 	port map (
 		xtal => clk,
-		sw1  => rst,
+		sw1  => sw1,
 		led7 => led7,
 		dip => b"0000_0001",
 

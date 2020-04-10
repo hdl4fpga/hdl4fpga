@@ -180,7 +180,7 @@ architecture graphics of nuhs3adsp is
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
 		mode480p    => (mode => 0, dcm_mul => 5,  dcm_div => 4),
-		mode600p    => (mode => 1, dcm_mul => 15, dcm_div => 2),
+		mode600p    => (mode => 1, dcm_mul =>  4, dcm_div => 2),
 		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : layout_mode := mode600p;
@@ -189,7 +189,7 @@ architecture graphics of nuhs3adsp is
 
 begin
 
-	sys_rst <= hd_t_clock;
+	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
