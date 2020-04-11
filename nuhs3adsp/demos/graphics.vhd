@@ -179,7 +179,7 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 31,  dcm_div => 1),
+		mode480p    => (mode => 0, dcm_mul => 31,  dcm_div => 1z),
 		mode600p    => (mode => 1, dcm_mul =>  4, dcm_div => 2),
 		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
 
