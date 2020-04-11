@@ -243,8 +243,8 @@ begin
 		hd_t_clock => rst,
 
 		mii_refclk => mii_refclk,
-		mii_txc => mii_refclk,
-		mii_rxc => mii_rxc,
+		mii_txc => '-', --mii_refclk,
+		mii_rxc => mii_refclk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,
 		mii_txen => mii_txen,

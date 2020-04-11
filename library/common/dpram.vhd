@@ -183,7 +183,9 @@ begin
 		begin
 			if rising_edge(wr_clk) then
 				if wr_data'length=word'length then
-					ram(to_integer(unsigned(waddr(0 to addr_size-1)))) := wr_data;
+					if wena(0)='1' then
+						ram(to_integer(unsigned(waddr(0 to addr_size-1)))) := wr_data;
+					end if;
 				else
 					for i in 0 to word'length/wr_data'length-1 loop 
 						if wena(i)='1' then
