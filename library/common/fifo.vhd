@@ -33,7 +33,7 @@ entity fifo is
 		size : natural;
 		overflow_check : boolean := true;
 		gray_code      : boolean := true;
-		synchronous_rddata : boolean := false);
+		synchronous_rddata : boolean := true);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';

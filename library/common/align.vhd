@@ -45,7 +45,8 @@ architecture arch of align is
 	constant ini : std_logic_vector(0 to i'length-1) := i;
 begin
 	delay: for j in 0 to n-1 generate
-		signal q : std_logic_vector(0 to dly(j)) := (others => '-');
+--		signal q : std_logic_vector(0 to dly(j)) := (others => setif(j < ini'length, ini(j), '-'));
+		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
 	begin
 		q(q'right) <= di(j);
 		process (clk)

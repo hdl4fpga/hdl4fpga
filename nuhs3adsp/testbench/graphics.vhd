@@ -182,7 +182,7 @@ begin
 
 	mii_rxc <= mii_refclk after 5 ps;
 
-	clk <= not clk after 10 ns;
+	clk <= not clk after 25 ns;
 
 	mii_treq <= '0', '1' after 8 us;
 
@@ -208,11 +208,13 @@ begin
 				x"0044dea9"         &    -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
-				x"16020001ff"       &
-				x"1702000001"       &
-				x"18" & x"07"       &
+				x"1602000000"       &
+				x"170200003f"       &
+				x"18" & x"ff"       &
 				x"12345678"         &
-				x"9abcdef0")        &
+				x"9abcdef0"         &
+                x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+			)        &
 			x"00000000"
 		,8)
 	)
@@ -223,7 +225,7 @@ begin
 		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	rst <= '1', '0' after 100 ns;
+	rst <= '0', '1' after 300 ns;
 	du_e : nuhs3adsp
 	port map (
 		xtal => clk,

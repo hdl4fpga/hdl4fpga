@@ -44,7 +44,7 @@ architecture graphics of nuhs3adsp is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 20.0;
+	constant sys_per      : real    := 50.0;
 	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
@@ -101,7 +101,7 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlr_di_dv     : std_logic := '1';
+	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
@@ -179,11 +179,11 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 5,  dcm_div => 4),
+		mode480p    => (mode => 0, dcm_mul => 31,  dcm_div => 1),
 		mode600p    => (mode => 1, dcm_mul =>  4, dcm_div => 2),
 		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : layout_mode := mode480p;
 
 	alias dma_clk : std_logic is sys_clk;
 
@@ -311,6 +311,7 @@ begin
 			src_data => rgtr_data,
 
 			dst_clk  => ddrsys_clks(clk0),
+			dst_irdy => ctlr_di_dv,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
@@ -451,7 +452,7 @@ begin
 		ctlr_rw      => ctlr_rw,
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
-		ctlr_di_dv   => ctlr_di_req, --'1', --ctlr_di_irdy,
+		ctlr_di_dv   => ctlr_di_dv, --'1', --ctlr_di_irdy,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
