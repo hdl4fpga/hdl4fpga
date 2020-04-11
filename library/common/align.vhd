@@ -42,11 +42,11 @@ end;
 
 architecture arch of align is
 	constant dly : natural_vector(0 to d'length-1) := d;
-	constant ini : std_logic_vector(0 to i'length-1) := i;
+	constant ini : std_logic_vector(0 to i'length) := i & '-';
 begin
 	delay: for j in 0 to n-1 generate
---		signal q : std_logic_vector(0 to dly(j)) := (others => setif(j < ini'length, ini(j), '-'));
-		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
+		signal q : std_logic_vector(0 to dly(j)) := (others => ini(setif(j < i'length, j, i'length)));
+--		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
 	begin
 		q(q'right) <= di(j);
 		process (clk)
@@ -54,7 +54,7 @@ begin
 			if rising_edge(clk) then
 				if dly(j) > 0 then
 					if rst='1' then
-						if j < ini'length then
+						if j < ini'length-1 then
 							q(0 to q'right-1) <= (others => ini(j));
 						end if;
 					elsif ena='1' then
