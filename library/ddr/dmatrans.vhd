@@ -85,6 +85,7 @@ architecture def of dmatrans is
 
 	signal ref_req      : std_logic;
 	signal refreq       : std_logic;
+		signal s1 : std_logic;
 begin
 
 	ctlr_rw <= dmatrans_we;
@@ -207,15 +208,14 @@ begin
 		do(2) => refreq);
 
 	ctlrba_p : process (dmatrans_clk)
-		variable s : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s);
+			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s1);
 			ctlr_b <= ddrdma_bnk;
-			if ctlr_idl='1' then
-				s := '0';
-			elsif s='0' then
-				s := not ctlr_act;
+			if ctlr_pre='1' then
+				s1 <= '0';
+			elsif s1='0' then
+				s1 <= not ctlr_act;
 			end if;
 		end if;
 	end process;

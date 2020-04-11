@@ -32,8 +32,7 @@ entity fifo is
 	generic (
 		size : natural;
 		overflow_check : boolean := true;
-		gray_code      : boolean := true;
-		synchronous_rddata : boolean := true);
+		gray_code      : boolean := true);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -49,6 +48,8 @@ entity fifo is
 end;
 
 architecture def of fifo is
+	constant synchronous_rddata : boolean := true;
+
 	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
 	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
 
@@ -85,7 +86,7 @@ begin
 				wr_addr(word_addr'range) <= rd_addr(word_addr'range);
 			else
 				if src_irdy='1' then
-					if src_trdy='1' or not overflow_check then
+					if src_trdy='1' then
 						if gray_code then
 							wr_addr <= std_logic_vector(inc(gray(wr_addr)));
 						else
@@ -96,9 +97,9 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range));
+	src_trdy <= (setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range)) or setif(not overflow_check));
 
-	dst_irdy1 <= setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range));
+	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not overflow_check));
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
@@ -107,7 +108,7 @@ begin
 				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
 				if dst_trdy='1' then
-					if dst_irdy1='1' or not overflow_check then
+					if dst_irdy1='1' then
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
 						else

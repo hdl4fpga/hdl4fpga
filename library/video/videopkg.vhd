@@ -45,6 +45,7 @@ package videopkg is
 	constant pclk30_00m800x480Rat60    : natural := 12; -- pclk  30.00MHz 	Added by emard@github.com for ULX3S kit
 	constant pclk50_00m1024x600Rat60   : natural := 13; -- pclk  50.00MHz 	Added by emard@github.com for ULX3S kit
 	constant pclk40_00m800x600Rat60    : natural := 14; -- pclk  40.00MHz 	Added by emard@github.com for ULX3S kit
+	constant pclk_debug                : natural := 15; -- For debugging porpouses
 
 
 	type modeline_vector is array (natural range <>) of natural_vector(0 to 8-1);
@@ -68,7 +69,8 @@ package videopkg is
 		pclk148_50m1920x1080Rat60 => (1920, 2012, 2068, 2200, 1080, 1082, 1088, 1125),
 		pclk173_00m1920x1080Rat60 => (1920, 2048, 2248, 2576, 1080, 1083, 1088, 1120),
 		pclk75_00m1920x1080Rat30  => (1920, 2008, 2052, 2185, 1080, 1084, 1089, 1135), -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit
-		pclk75_00m1280x768Rat60   => (1280, 1344, 1536, 1728,  768,  771,  776,  796)  -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit;
+		pclk75_00m1280x768Rat60   => (1280, 1344, 1536, 1728,  768,  771,  776,  796), -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit;
+		pclk_debug                => (128,   144, 152,   168,   72,   76,   77,   78)  -- pclk
 	);
 
 	function to_edges (

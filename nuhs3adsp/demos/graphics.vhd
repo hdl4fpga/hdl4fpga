@@ -173,17 +173,19 @@ architecture graphics of nuhs3adsp is
 	end record;
 
 	type layout_mode is (
+		modedebug,
 		mode480p,
 		mode600p, 
 		mode1080p);
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 31,  dcm_div => 1),
-		mode600p    => (mode => 1, dcm_mul =>  4, dcm_div => 2),
-		mode1080p   => (mode => 7, dcm_mul => 15, dcm_div => 2));
+		modedebug   => (mode => 15, dcm_mul => 15, dcm_div => 2),
+		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
+		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
+		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode480p;
+	constant video_mode : layout_mode := mode600p;
 
 	alias dma_clk : std_logic is sys_clk;
 
