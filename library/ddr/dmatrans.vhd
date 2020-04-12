@@ -214,6 +214,8 @@ begin
 			ctlr_b <= ddrdma_bnk;
 			if ctlr_pre='1' then
 				s1 <= '0';
+			elsif ctlr_idl='1' then
+				s1 <= '0';
 			elsif s1='0' then
 				s1 <= not ctlr_act;
 			end if;
