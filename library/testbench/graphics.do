@@ -11,6 +11,15 @@ add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_pre
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_idl
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/ctlr_a
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_refreq
+add wave -noupdate /testbench/du_e/ddr_st_lp_dqs
+add wave -noupdate /testbench/du_e/ddr_st_dqs
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_clk
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_addr
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_data
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_clk
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_ena
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_addr
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_data
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk_n
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Cke
@@ -22,8 +31,6 @@ add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Ba
 add wave -noupdate -expand -group Micron -radix hexadecimal -childformat {{{/testbench/ddr_model_g/Addr[12]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[11]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[10]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[9]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[8]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[7]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[6]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[5]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[4]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[3]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[2]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[1]} -radix hexadecimal} {{/testbench/ddr_model_g/Addr[0]} -radix hexadecimal}} -subitemconfig {{/testbench/ddr_model_g/Addr[12]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[11]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[10]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[9]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[8]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[7]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[6]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[5]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[4]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[3]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[2]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[1]} {-height 29 -radix hexadecimal} {/testbench/ddr_model_g/Addr[0]} {-height 29 -radix hexadecimal}} /testbench/ddr_model_g/Addr
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Dm
 add wave -noupdate -expand -group Micron -radix hexadecimal /testbench/ddr_model_g/Dq
-add wave -noupdate -expand -group Micron /testbench/du_e/ddr_st_lp_dqs
-add wave -noupdate -expand -group Micron /testbench/du_e/ddr_st_dqs
 add wave -noupdate -expand -group Micron -expand /testbench/ddr_model_g/Dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_clk
@@ -151,4 +158,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {209058678 ps} {209698522 ps}
+WaveRestoreZoom {737975149 ps} {738614993 ps}
