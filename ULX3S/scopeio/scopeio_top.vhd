@@ -178,7 +178,7 @@ architecture beh of ulx3s is
 
 	signal istream_frm  : std_logic;
 	signal istream_irdy : std_logic;
-	signal istream_data : std_logic_vector(so_null'range);
+	signal istream_data : std_logic_vector(so_null'range); -- for RMII std_logic_vector(7 downto 0) and FIXME at end of scopeio_hostmouse2daisy.vhd
 
 	signal usbmouse_frommousedaisy_frm  : std_logic;
 	signal usbmouse_frommousedaisy_irdy : std_logic;

@@ -103,6 +103,9 @@ begin
     chaini_frm  => chaini_frm,
     chaini_irdy => chaini_irdy,
     chaini_data => chaini_data,
+    --chaini_frm  => '0', -- FIXME for RMII 2-bit this makes hostmouse work
+    --chaini_irdy => '0', -- but IP address won't be shown then.
+    --chaini_data => x"00",
     -- daisy output
     chaino_frm  => chaino_frm,
     chaino_irdy => chaino_irdy,
