@@ -47,9 +47,9 @@ begin
 		severity failure;
 	S_normal_packet <= x"15" & x"02" & "00" & pointer_y & pointer_x
 		      & rgtr_id & x"03" & rgtr_data;
-	G_bytes_reversal:
+	G_bytes:
 	for i in 0 to S_reverse_packet'length/8-1 generate
-	  G_bits_reversal:
+	  G_bit_slices_in_byte_reversal:
 	  for j in 0 to 8/chaino_data'length-1 generate
 	    S_reverse_packet(i*8+(j+1)*chaino_data'length-1 downto i*8+j*chaino_data'length) <=
 	      S_normal_packet(i*8+(8/chaino_data'length-j)*chaino_data'length-1 downto i*8+(8/chaino_data'length-1-j)*chaino_data'length);
@@ -58,25 +58,27 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			-- if R_strm_frm is 1 the request will be dropped
-			-- to prevent overwriting currently active serializing
 			if R_counter = 0 then
 				R_strm_frm <= '0';
-				if (rgtr_dv = '1' or pointer_dv = '1') then
-					--if R_strm_frm = '0' and (chaini_frm = '0' or chaini_irdy = '0') then
-					if R_strm_frm = '0' then
+				if R_strm_frm = '0' then
+					if rgtr_dv = '1' or pointer_dv = '1' then
 						R_shift <= S_reverse_packet;
 						if rgtr_dv = '1' and rgtr_id /= x"00" then
 							R_counter <= to_unsigned(C_pointer_and_rgtr_cycles - 1, R_counter'length);
 						else
 							R_counter <= to_unsigned(C_pointer_only_cycles - 1, R_counter'length);
 						end if;
-						R_strm_frm <= '1';
 					end if;
 				end if;
 			else
-				R_counter <= R_counter - 1;
-				R_shift <= R_shift(R_shift'high - R_pad0'length downto 0) & R_pad0;
+				if R_strm_frm = '0' then
+					if chaini_frm = '0' and chaini_irdy = '0' then
+						R_strm_frm <= '1';
+					end if;
+				else
+					R_counter <= R_counter - 1;
+					R_shift <= R_shift(R_shift'high - R_pad0'length downto 0) & R_pad0;
+				end if;
 			end if;
 		end if;
 	end process;
