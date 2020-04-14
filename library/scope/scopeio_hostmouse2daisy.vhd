@@ -55,7 +55,7 @@ begin
     sin_clk   => clk,
     sin_frm   => chaini_frm,
     sin_irdy  => chaini_irdy,
-    sin_data  => chaini_data,
+    sin_data  => reverse(chaini_data),
     rgtr_dv   => S_rgtr_dv,
     rgtr_id   => S_rgtr_id,
     rgtr_data => S_rgtr_data
@@ -92,20 +92,20 @@ begin
   port map
   (
     clk         => clk,
-    -- pointer_dv  => pointer_dv,
-    pointer_dv  => '0', -- sent together with mouse_rgtr_dv
+    pointer_dv  => pointer_dv,
+    -- pointer_dv  => '0', -- sent together with mouse_rgtr_dv
     pointer_x   => pointer_x,
     pointer_y   => pointer_y,
-    rgtr_dv     => mouse_rgtr_dv,
+    rgtr_dv     => '0', -- mouse_rgtr_dv,
     rgtr_id     => mouse_rgtr_id,
     rgtr_data   => mouse_rgtr_data,
     -- daisy input
-    chaini_frm  => chaini_frm,
-    chaini_irdy => chaini_irdy,
-    chaini_data => chaini_data,
-    --chaini_frm  => '0', -- FIXME for RMII 2-bit this makes hostmouse work
-    --chaini_irdy => '0', -- but IP address won't be shown then.
-    --chaini_data => x"00",
+    --chaini_frm  => chaini_frm,
+    --chaini_irdy => chaini_irdy,
+    --chaini_data => chaini_data,
+    chaini_frm  => '0', -- FIXME for RMII 2-bit this makes hostmouse work
+    chaini_irdy => '0', -- but IP address won't be shown then.
+    chaini_data => "00",
     -- daisy output
     chaino_frm  => chaino_frm,
     chaino_irdy => chaino_irdy,
