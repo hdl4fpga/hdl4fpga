@@ -49,24 +49,11 @@ begin
 		      & rgtr_id & x"03" & rgtr_data;
 	G_bytes_reversal:
 	for i in 0 to S_reverse_packet'length/8-1 generate
-		S_reverse_packet(i*8+7 downto i*8) <= -- reverse(S_normal_packet(i*2+1 downto i*2));
-		  --  reverse(S_normal_packet(i*8+7 downto i*8));
-		    S_normal_packet(i*8+1)
-		  & S_normal_packet(i*8+0)
-		  & S_normal_packet(i*8+3)
-		  & S_normal_packet(i*8+2)
-		  & S_normal_packet(i*8+5)
-		  & S_normal_packet(i*8+4)
-		  & S_normal_packet(i*8+7)
-		  & S_normal_packet(i*8+6);
-		  --  S_normal_packet(i*8+6)
-		  --& S_normal_packet(i*8+7)
-		  --& S_normal_packet(i*8+4)
-		  --& S_normal_packet(i*8+5)
-		  --& S_normal_packet(i*8+2)
-		  --& S_normal_packet(i*8+3)
-		  --& S_normal_packet(i*8+0)
-		  --& S_normal_packet(i*8+1);
+	  G_bits_reversal:
+	  for j in 0 to 8/chaino_data'length-1 generate
+	    S_reverse_packet(i*8+(j+1)*chaino_data'length-1 downto i*8+j*chaino_data'length) <=
+	      S_normal_packet(i*8+(8/chaino_data'length-j)*chaino_data'length-1 downto i*8+(8/chaino_data'length-1-j)*chaino_data'length);
+	  end generate;
 	end generate;
 	process(clk)
 	begin
@@ -76,7 +63,8 @@ begin
 			if R_counter = 0 then
 				R_strm_frm <= '0';
 				if (rgtr_dv = '1' or pointer_dv = '1') then
-					if R_strm_frm = '0' and (chaini_frm = '0' and chaini_irdy = '0') then
+					--if R_strm_frm = '0' and (chaini_frm = '0' or chaini_irdy = '0') then
+					if R_strm_frm = '0' then
 						R_shift <= S_reverse_packet;
 						if rgtr_dv = '1' and rgtr_id /= x"00" then
 							R_counter <= to_unsigned(C_pointer_and_rgtr_cycles - 1, R_counter'length);
