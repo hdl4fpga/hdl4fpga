@@ -97,8 +97,10 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
+	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal graphics_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
@@ -176,6 +178,7 @@ architecture graphics of nuhs3adsp is
 		modedebug,
 		mode480p,
 		mode600p, 
+		mode768p, 
 		mode1080p);
 
 	type displayparam_vector is array (layout_mode) of display_param;
@@ -183,6 +186,7 @@ architecture graphics of nuhs3adsp is
 		modedebug   => (mode => 15, dcm_mul => 1, dcm_div => 1),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
+		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : layout_mode := mode600p;
@@ -347,6 +351,12 @@ begin
 
 	end block;
 
+--	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
+	graphics_di <= ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" ;
+--	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
+--	graphics_di <= ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000"
+				  -- ;
+--	graphics_di <= ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5);
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -357,7 +367,7 @@ begin
 		dma_addr     => dmavideo_addr,
 		ctlr_clk     => ddrsys_clks(clk0),
 		ctlr_di_dv   => ctlr_do_dv(0),
-		ctlr_di      => ctlr_do,
+		ctlr_di      => graphics_di,
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
@@ -379,7 +389,7 @@ begin
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
-	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+	dev_req <= (0 => dmavideo_req, 1 => '0'); --dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
@@ -406,13 +416,14 @@ begin
 		ctlr_clk    => ddrsys_clks(clk0),
 
 		ctlr_inirdy => ctlr_inirdy,
-		ctlr_refreq => ctlr_refreq,
+		ctlr_refreq => '0', --ctlr_refreq,
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
+		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,

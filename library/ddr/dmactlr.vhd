@@ -53,6 +53,7 @@ entity dmactlr is
 		ctlr_rw      : out std_logic;
 		ctlr_b       : out std_logic_vector;
 		ctlr_a       : out std_logic_vector;
+		ctlr_r       : out std_logic_vector;
 		ctlr_dio_req : in  std_logic;
 		ctlr_act     : in  std_logic;
 		ctlr_pre     : in  std_logic;
@@ -194,6 +195,7 @@ begin
 		ctlr_idl       => ctlr_idl,
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a,
+		ctlr_r         => ctlr_r,
 		ctlr_dio_req   => ctlr_dio_req);
 
 end;

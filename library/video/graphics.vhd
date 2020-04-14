@@ -50,15 +50,16 @@ end;
 
 architecture def of graphics is
 
-	constant fifo_size   : natural := 4096;
+	constant fifo_size   : natural := 4*2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
+
 	signal video_frm : std_logic;
 
 	signal video_hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
 	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
 
-	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len)-1);
+	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
 	signal vton_edge : std_logic;
 	signal hzon_edge : std_logic;
 
@@ -69,6 +70,7 @@ architecture def of graphics is
 	signal dmafrm_req  : std_logic;
 	signal dmaline_req : std_logic;
 	signal hz_eol      : std_logic;
+	signal mydma_rdy   : std_logic;
 begin
 
 	video_e : entity hdl4fpga.video_sync
@@ -82,6 +84,16 @@ begin
 		video_vtcntr => video_vtcntr,
 		video_hzon   => video_hzon,
 		video_vton   => video_vton);
+
+
+	process (video_clk)
+		variable rdy : std_logic;
+	begin
+		if rising_edge(video_clk) then
+			rdy       := dma_rdy;
+			mydma_rdy <= rdy;
+		end if;
+	end  process;
 
 	process (video_clk)
 	begin
@@ -97,18 +109,20 @@ begin
 					dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, maxdma_len/4));
 				end if;
 				if hz_eol='1' then
-					level  <= level - modeline_data(video_mode)(0)/4;
+					level  <= level - modeline_data(video_mode)(0);
 					hz_eol <= '0';
 				end if;
-			elsif dma_rdy='1' then
+			elsif mydma_rdy='1' then
 				dma_req <= '0';
 				if dmafrm_req='1' then
+					dmafrm_req <= '0';
 					level <= to_unsigned(maxdma_len, level'length);
 				elsif dmaline_req='1' then
+					dmaline_req <= '0';
 					level <= level + (maxdma_len/4);
 				end if;
 			elsif hz_eol='1' then
-				level  <= level - modeline_data(video_mode)(0)/4;
+				level  <= level - modeline_data(video_mode)(0);
 				hz_eol <= '0';
 			end if;
 
@@ -121,7 +135,13 @@ begin
 			end if;
 			hzon_edge <= video_hzon;
 
-			if dma_rdy='0' then
+			if dmafrm_req='1' and dma_req='0' then
+				video_frm <= '0';
+			else
+				video_frm <= '1';
+			end if;
+
+			if dma_req='0' and mydma_rdy='0' then
 				if video_vton='0' then
 					if vton_edge='1' then
 						dmafrm_req <= '1';

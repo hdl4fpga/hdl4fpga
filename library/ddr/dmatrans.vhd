@@ -53,6 +53,7 @@ entity dmatrans is
 		ctlr_pre      : in  std_logic;
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
+		ctlr_r        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req   : in  std_logic);
 
@@ -211,6 +212,7 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s1);
+			ctlr_r <= ddrdma_row;
 			ctlr_b <= ddrdma_bnk;
 			if ctlr_pre='1' then
 				s1 <= '0';
