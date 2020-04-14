@@ -38,7 +38,7 @@ architecture beh of ulx3s is
         constant C_extserial    : boolean := false;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
         constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
-        constant C_rmiiethernet : boolean := true; -- RMII (LAN8720) Ethernet GPN9-13
+        constant C_rmiiethernet : boolean := true;  -- RMII (LAN8720) Ethernet GPN9-13
         constant C_istream_bits : natural := 2;     -- default 8, for RMII 2
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
@@ -1419,7 +1419,7 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
         );
-        clk_daisy                <= mii_clk;
+        clk_daisy <= mii_clk;
         end block;
 	end generate;
 
@@ -1439,6 +1439,7 @@ begin
 	E_hostmouse2daisy: entity hdl4fpga.scopeio_hostmouse2daisy
 	generic map
 	(
+	        C_reverse_chaini_data => C_rmiiethernet,
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
