@@ -1439,7 +1439,6 @@ begin
 	E_hostmouse2daisy: entity hdl4fpga.scopeio_hostmouse2daisy
 	generic map
 	(
-	        C_reverse_chaini_data => C_rmiiethernet,
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
