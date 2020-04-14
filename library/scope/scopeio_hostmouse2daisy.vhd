@@ -12,6 +12,7 @@ entity scopeio_hostmouse2daisy is
 generic
 (
   -- to render things correctly, GUI system needs to know:
+  C_reverse_chaini_data : boolean := false;
   C_inputs       : integer; -- number of inputs
   C_tracesfg     : std_logic_vector; -- colors of traces
   vlayout_id     : integer := 0 -- screen geometry
@@ -31,6 +32,8 @@ port
 end;
 
 architecture def of scopeio_hostmouse2daisy is
+  signal sin_data        : std_logic_vector(chaini_data'range);
+
   signal pointer_dv      : std_logic;
   signal pointer_x       : std_logic_vector(11-1 downto 0) := "000" & x"64";
   signal pointer_y       : std_logic_vector(11-1 downto 0) := "000" & x"64";
@@ -50,12 +53,20 @@ architecture def of scopeio_hostmouse2daisy is
 
   signal S_mouse_update: std_logic;
 begin
+  G_yes_reverse: if C_reverse_chaini_data generate
+    sin_data <= reverse(chaini_data);
+  end generate;
+
+  G_not_reverse: if not C_reverse_chaini_data generate
+    sin_data <= chaini_data;
+  end generate;
+
   E_scopeio_hostmouse_sin_e: entity hdl4fpga.scopeio_sin
   port map (
     sin_clk   => clk,
     sin_frm   => chaini_frm,
     sin_irdy  => chaini_irdy,
-    sin_data  => reverse(chaini_data),
+    sin_data  => sin_data,
     rgtr_dv   => S_rgtr_dv,
     rgtr_id   => S_rgtr_id,
     rgtr_data => S_rgtr_data
