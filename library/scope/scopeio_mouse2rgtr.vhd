@@ -381,8 +381,8 @@ begin
     signal S_vertical_scale_offset_snapped: signed(C_vertical_scale_offset'range);
     signal R_snap_to_vertical_grid: std_logic_vector(C_inputs-1 downto 0);
     constant C_snap_to_grid_bits: integer := unsigned_num_bits(layout.division_size)-1;
-    signal R_after_trace_select: unsigned(6 downto 0);
-    signal R_after_trigger_level: unsigned(4 downto 0);
+    signal R_after_trace_select: unsigned(9 downto 0);
+    signal R_after_trigger_level: unsigned(7 downto 0);
     signal C_vertical_scale_gain: signed(gainid_maxsize-1 downto 0) := (others => '0');
     type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
     signal R_vertical_scale_gain: T_vertical_scale_gain;
@@ -578,15 +578,15 @@ begin
                   R_action_id <= C_action_pointer_update;
               end case;
             else -- R_mouse_update = '0'
-              if R_after_trace_select(R_after_trace_select'high) = '0' then -- counts up to 64
+              if R_after_trace_select(R_after_trace_select'high) = '0' then -- counts up to 128
                 -- rgtr2daisy must serialize commands - schedule them slowly
                 case to_integer(R_after_trace_select(R_after_trace_select'high-1 downto 0)) is
-                  when 16 =>
+                  when 127 =>
                     -- redraw new channel vertical scale (no value change)
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
                     R_B(C_vertical_scale_offset'range) <= (others => '0'); -- no change just redraw
                     R_action_id <= C_action_vertical_scale_offset_change;
-                  when 32 =>
+                  when 255 =>
                     -- trigger on new channel (no value change)
                     R_A(R_A'high)   <= R_trigger_edge(to_integer(R_trace_selected));
                     R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
@@ -595,7 +595,7 @@ begin
                     R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
                     R_B <= (others => '0'); -- no change
                     R_action_id <= C_action_trigger_level_change;
-                  when 48 =>
+                  when 383 =>
                     -- set lower left corner box color as trace selected
                     R_A(C_color_bits-1 downto 0) <=
                       signed(C_trace_color(to_integer(R_trace_selected))); -- color value
@@ -608,7 +608,7 @@ begin
                 R_after_trace_select <= R_after_trace_select + 1;
               elsif R_after_trigger_level(R_after_trigger_level'high) = '0' then -- counts up to 16
                 case to_integer(R_after_trigger_level(R_after_trigger_level'high-1 downto 0)) is
-                  when 15 =>
+                  when 127 =>
                     -- set hzscale bgcolor blue when trigger freeze
                     R_A(C_color_bits-1 downto 0) <= (0 => R_trigger_freeze, others => '0'); -- color value
                     R_B(palette_bf(paletteid_id)-1 downto 0) <=
