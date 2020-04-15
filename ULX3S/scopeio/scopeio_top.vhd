@@ -29,17 +29,17 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
         constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
-        constant C_mouse_ps2    : boolean := false;  -- PS/2 or USB+PS/2 mouse
+        constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := true; -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
-        constant C_extserial    : boolean := false;  -- use Emard's uart receiver (RXD line)
+        constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
         constant C_usbserial    : boolean := false; -- USB-CDC Serial (D+/D- lines)
         constant C_usbethernet  : boolean := false; -- USB-CDC Ethernet (D+/D- lines)
-        constant C_rmiiethernet : boolean := true;  -- RMII (LAN8720) Ethernet GPN9-13
-        constant C_istream_bits : natural := 2;     -- default 8, for RMII 2
+        constant C_rmiiethernet : boolean := false; -- RMII (LAN8720) Ethernet GPN9-13
+        constant C_istream_bits : natural := 8;     -- default 8, for RMII 2
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
@@ -178,7 +178,7 @@ architecture beh of ulx3s is
 
 	signal istream_frm  : std_logic;
 	signal istream_irdy : std_logic;
-	signal istream_data : std_logic_vector(so_null'range); -- for RMII std_logic_vector(7 downto 0) and FIXME at end of scopeio_hostmouse2daisy.vhd
+	signal istream_data : std_logic_vector(so_null'range);
 
 	signal usbmouse_frommousedaisy_frm  : std_logic;
 	signal usbmouse_frommousedaisy_irdy : std_logic;
