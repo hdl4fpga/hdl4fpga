@@ -72,7 +72,9 @@ begin
 				end if;
 			else
 				if R_strm_frm = '0' then
-					if chaini_frm = '0' and chaini_irdy = '0' then
+					if chaini_frm = '0'
+					or chaini_irdy = '0' -- helps with usbserial hostmouse, otherwise better without it
+					then
 						R_strm_frm <= '1';
 					end if;
 				else
