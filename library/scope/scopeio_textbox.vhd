@@ -326,8 +326,8 @@ begin
 		cga_arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk     => rgtr_clk,
-			bus_req => cga_req,
-			bus_gnt => cga_frm);
+			rsrc_req => cga_req,
+			rsrc_gnt => cga_frm);
 		cgabcd_frm  <= cga_frm(0 to cgabcd_frm'length-1);
 		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
 

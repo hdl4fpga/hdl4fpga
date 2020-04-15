@@ -31,8 +31,8 @@ use hdl4fpga.std.all;
 entity arbiter is
 	port (
 		clk     : in std_logic;
-		bus_req : in std_logic_vector;
-		bus_gnt : buffer std_logic_vector);
+		rsrc_req : in std_logic_vector;
+		rsrc_gnt : buffer std_logic_vector);
 end;
 
 architecture mix of arbiter is
@@ -51,19 +51,19 @@ architecture mix of arbiter is
 		return (arg'range => '0');
 	end;
 
-	signal gntd : std_logic_vector(bus_gnt'range) := (others => '0');
+	signal gntd : std_logic_vector(rsrc_gnt'range) := (others => '0');
 
 begin
 
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			gntd <= bus_gnt;
+			gntd <= rsrc_gnt;
 		end if;
 	end process;
 
-	assert bus_req'length=bus_gnt'length
+	assert rsrc_req'length=rsrc_gnt'length
 		severity failure;
-	bus_gnt <= primask(word2byte((bus_req and gntd) & bus_req, setif(gntd=(gntd'range => '0'))));
+	rsrc_gnt <= primask(word2byte((rsrc_req and gntd) & rsrc_req, setif(gntd=(gntd'range => '0'))));
 
 end;

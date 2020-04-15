@@ -108,32 +108,10 @@ begin
 					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
 					dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, maxdma_len/4));
 				end if;
-				if hz_eol='1' then
-					level  <= level - modeline_data(video_mode)(0);
-					hz_eol <= '0';
-				end if;
 			elsif mydma_rdy='1' then
-				dma_req <= '0';
-				if dmafrm_req='1' then
-					dmafrm_req <= '0';
-					level <= to_unsigned(maxdma_len, level'length);
-				elsif dmaline_req='1' then
-					dmaline_req <= '0';
-					level <= level + (maxdma_len/4);
-				end if;
-			elsif hz_eol='1' then
-				level  <= level - modeline_data(video_mode)(0);
-				hz_eol <= '0';
+				dma_req  <= '0';
 			end if;
 
-			if hzon_edge='1' then
-				if video_hzon='0' then
-					if video_vton='1' then
-						hz_eol <= '1';
-					end if;
-				end if;
-			end if;
-			hzon_edge <= video_hzon;
 
 			if dmafrm_req='1' and dma_req='0' then
 				video_frm <= '0';
@@ -141,7 +119,11 @@ begin
 				video_frm <= '1';
 			end if;
 
-			if dma_req='0' and mydma_rdy='0' then
+			if dma_req='1' then
+				if hzon_edge='1' and video_hzon='0' and video_vton='1' then
+					hz_eol <= '1';
+				end if;
+			elsif mydma_rdy='0' then
 				if video_vton='0' then
 					if vton_edge='1' then
 						dmafrm_req <= '1';
@@ -150,7 +132,28 @@ begin
 					dmaline_req <= '1';
 				end if;
 				vton_edge <= video_vton;
+
+				if hz_eol='1' then
+					level  <= level - modeline_data(video_mode)(0);
+					hz_eol <= '0';
+				elsif hzon_edge='1' and video_hzon='0' and video_vton='1' then
+					hz_eol <= '1';
+				end if;
+
+			else
+				if dmafrm_req='1' then
+					dmafrm_req <= '0';
+					level <= to_unsigned(maxdma_len, level'length);
+				elsif dmaline_req='1' then
+					dmaline_req <= '0';
+					level <= level + (maxdma_len/4);
+				end if;
+
+				if hzon_edge='1' and video_hzon='0' and video_vton='1' then
+					hz_eol <= '1';
+				end if;
 			end if;
+			hzon_edge <= video_hzon;
 
 		end if;
 	end process;

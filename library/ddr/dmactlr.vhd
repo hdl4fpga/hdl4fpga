@@ -86,8 +86,8 @@ begin
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
-		gnt_clk => dma_clk,
-		gnt_rdy => dmargtr_dv,
+		rsrc_clk => dma_clk,
+		rsrc_rdy => dmargtr_dv,
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
@@ -154,8 +154,8 @@ begin
 		dev_gnt => dmatrans_gnt,
 		dev_rdy => dev_rdy,
 
-		gnt_clk => ctlr_clk,
-		gnt_rdy => dmatrans_rdy);
+		rsrc_clk => ctlr_clk,
+		rsrc_rdy => dmatrans_rdy);
 
 	process (ctlr_clk)
 	begin

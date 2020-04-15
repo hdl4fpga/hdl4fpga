@@ -25,54 +25,40 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity grant is
 	port (
-		gnt_clk : in  std_logic;
-		gnt_rst : in  std_logic := '0';
-		gnt_rdy : in  std_logic;
+		rsrc_clk : in  std_logic;
+		rsrc_rdy : in  std_logic;
+		rsrc_req : out std_logic;
 
-		dev_req : in  std_logic_vector;
-		dev_gnt : buffer std_logic_vector;
-		dev_rdy : out std_logic_vector);
+		dev_req  : in  std_logic_vector;
+		dev_gnt  : buffer std_logic_vector;
+		dev_rdy  : out std_logic_vector);
 
 
 end;
 
 architecture def of grant is
-
-	signal booked  : std_logic_vector(dev_req'range) := (others => '0');
-	signal served  : std_logic_vector(booked'range) := (others => '0');
-
-	signal arbiter_req : std_logic_vector(dev_req'range);
-
+	signal gnt : std_logic_vector(dev_gnt'range);
+	signal req : std_logic_vector(dev_req'range);
 begin
 
-	book_p : process (gnt_clk)
-		variable serving : std_logic_vector(served'range);
-		variable booking : std_logic_vector(served'range);
+	process (rsrc_clk)
 	begin
-		if rising_edge(gnt_clk) then
-			if gnt_rst='1'  then
-				booking := (others => '0');
-				serving := (others => '0');
-			else
-				booking := dev_req or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
-				serving := (dev_req and served) or (dev_req and booked and (dev_gnt and (dev_gnt'range => gnt_rdy)));
-			end if;
-			booked <= booking;
-			served <= serving;
-
-			arbiter_req  <= not serving and booking;
+		if rising_edge(rsrc_clk) then
+			gnt <= dev_gnt;
 		end if;
 	end process;
 
+	req <= dev_req or (gnt and (dev_rdy'range => not rsrc_rdy));
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk     => gnt_clk,
-		bus_req => arbiter_req,
-		bus_gnt => dev_gnt);
+		clk      => rsrc_clk,
+		rsrc_req => req,
+		rsrc_gnt => dev_gnt);
 
-	dev_rdy <= served;
-
+	dev_rdy  <= dev_gnt and (dev_rdy'range => rsrc_rdy);
+	rsrc_req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
 end;
