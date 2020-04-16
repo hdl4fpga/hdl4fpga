@@ -158,7 +158,7 @@ begin
 		rd_data => trans_we);
 
 	
---	process (ctlr_clk, dev_req, dmatrans_rdy, devtrans_rdy)
+--	cancel_p : process (ctlr_clk, dev_req, dmatrans_rdy, devtrans_rdy)
 --		variable cancel : std_logic;
 --		variable gnt    : std_logic_vector(devtrans_gnt'range);
 --	begin
@@ -189,6 +189,7 @@ begin
 		rsrc_clk => ctlr_clk,
 		rsrc_rdy => dmatrans_rdy);
 
+	dmatrans_rid <= encoder(devtrans_gnt);
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
@@ -197,7 +198,6 @@ begin
 			else
 				dmatrans_req <= setif(devtrans_gnt /= (devtrans_gnt'range => '0'));
 			end if;
-			dmatrans_rid <= encoder(devtrans_gnt);
 		end if;
 	end process;
 

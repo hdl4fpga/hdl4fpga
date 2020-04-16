@@ -183,13 +183,13 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 15, dcm_mul => 8, dcm_div => 1),
+		modedebug   => (mode => 15, dcm_mul => 8, dcm_div => 2),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := modedebug;
+	constant video_mode : layout_mode := mode768p;
 
 	alias dma_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -337,19 +337,16 @@ begin
 		dmacfgio_p : process (dma_clk)
 		begin
 			if rising_edge(dma_clk) then
-				if dmacfgio_req/='1' then
-					dmacfgio_req <= dmaio_dv;
-					dmaio_req <= '0';
-				elsif dmacfgio_rdy/='0' then
+				if dmaio_dv='1' then
+					dmacfgio_req <= '1';
+				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
-					dmaio_req    <= '1';
+					dmaio_req <= '1';
 				elsif dmaio_rdy='1' then
-					dmacfgio_req <= '0';
 					dmaio_req <= '0';
 				end if;
 			end if;
 		end process;
-
 	end block;
 
 --	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";

@@ -50,9 +50,10 @@ end;
 
 architecture def of graphics is
 
-	constant fifo_size   : natural := 4*2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
+	constant fifo_size   : natural := 2*2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
+	constant water_mark  : natural := maxdma_len/2;
 
 	signal video_frm : std_logic;
 
@@ -60,6 +61,7 @@ architecture def of graphics is
 	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
 
 	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
+	signal vton_dly : std_logic;
 	signal vton_edge : std_logic;
 	signal hzon_edge : std_logic;
 
@@ -84,44 +86,40 @@ begin
 
 
 	process (video_clk)
-		variable rdy : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			rdy       := dma_rdy;
-			mydma_rdy <= rdy;
+			mydma_rdy <= dma_rdy;
 		end if;
 	end  process;
 
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if video_vton='0' then
+			if vton_dly='0' then
 				if vton_edge='1' then
 					dma_req <= '1';
 				end if;
-				level    <= to_unsigned(3*maxdma_len/4, level'length);
-				dma_len  <= std_logic_vector(to_unsigned(3*maxdma_len/4-1, dma_len'length));
+				level    <= to_unsigned(maxdma_len, level'length);
+				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
-			elsif hzon_edge='0' and video_hzon='1' then
-				if mydma_rdy='1' then
-					dma_req <= '0';
-				end if;
+			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
 				level <= level - modeline_data(video_mode)(0);
-			elsif level < (3*maxdma_len/4) then
+			elsif level <= water_mark then
 				dma_req  <= '1';
-				level    <= level + (maxdma_len/4);
-				dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
-				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, maxdma_len/4));
+				level    <= level + water_mark;
+				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
+				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
 
 			hzon_edge <= video_hzon;
-			vton_edge <= video_vton;
+			vton_edge <= vton_dly;
+			vton_dly  <= video_vton;
 		end if;
 	end process;
 
-	video_frm <= setif(video_vton='0' and vton_edge='1');
+	video_frm <= not setif(vton_dly='0' and vton_edge='1');
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
