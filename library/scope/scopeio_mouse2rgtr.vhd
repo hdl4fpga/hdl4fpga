@@ -578,7 +578,7 @@ begin
                   R_action_id <= C_action_pointer_update;
               end case;
             else -- R_mouse_update = '0'
-              if R_after_trace_select(R_after_trace_select'high) = '0' then -- counts up to 128
+              if R_after_trace_select(R_after_trace_select'high) = '0' then -- counts up to 512
                 -- rgtr2daisy must serialize commands - schedule them slowly
                 case to_integer(R_after_trace_select(R_after_trace_select'high-1 downto 0)) is
                   when 127 =>
@@ -606,7 +606,7 @@ begin
                     R_action_id <= C_action_nop;
                 end case;
                 R_after_trace_select <= R_after_trace_select + 1;
-              elsif R_after_trigger_level(R_after_trigger_level'high) = '0' then -- counts up to 16
+              elsif R_after_trigger_level(R_after_trigger_level'high) = '0' then -- counts up to 256
                 case to_integer(R_after_trigger_level(R_after_trigger_level'high-1 downto 0)) is
                   when 127 =>
                     -- set hzscale bgcolor blue when trigger freeze
