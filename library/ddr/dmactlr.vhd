@@ -64,6 +64,7 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
+	signal dmargtr_rdy    : std_logic;
 	signal dmargtr_id     : std_logic_vector(0 to unsigned_num_bits(dev_req'length-1)-1);
 	signal dmargtr_addr   : std_logic_vector(0 to dev_addr'length/dev_req'length-1);
 	signal dmargtr_len    : std_logic_vector(0 to dev_len'length/dev_req'length-1);
@@ -79,7 +80,9 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
-	signal dmatrans_gnt   : std_logic_vector(dev_req'range);
+	signal devtrans_gnt   : std_logic_vector(dev_req'range);
+	signal devtrans_req   : std_logic_vector(dev_req'range);
+	signal devtrans_rdy   : std_logic_vector(dev_req'range);
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
 begin
@@ -87,7 +90,7 @@ begin
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		rsrc_clk => dma_clk,
-		rsrc_rdy => dmargtr_dv,
+		rsrc_rdy => dmargtr_rdy,
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
@@ -97,6 +100,12 @@ begin
 		variable dv : std_logic;
 	begin
 		if rising_edge(dma_clk) then
+			if dv='1' then
+				dmargtr_rdy <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
+			elsif dmargtr_rdy='1' then
+				dmargtr_rdy <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
+			end if;
+
 			dmargtr_dv   <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0')) and not dv;
 			dmargtr_id   <= encoder(dmacfg_gnt);
 			dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
@@ -148,10 +157,33 @@ begin
 		rd_addr => dmatrans_rid,
 		rd_data => trans_we);
 
+	
+--	process (ctlr_clk, dev_req, dmatrans_rdy, devtrans_rdy)
+--		variable cancel : std_logic;
+--		variable gnt    : std_logic_vector(devtrans_gnt'range);
+--	begin
+--		if rising_edge(ctlr_clk) then
+--			if cancel='0' then
+--				if dmatrans_rdy='0' then
+--					cancel := setif((gnt and not dev_req)/=(dev_req'range => '0'));
+--				end if;
+--			else
+--				if ctlr_trdy='1' then
+--					cancel := '0';
+--				end if;
+--			end if;
+--			if cancel='0' then
+--				gnt := devtrans_gnt;
+--			end if;
+--		end if;
+--		dev_rdy      <= setif(cancel='0', devtrans_rdy, gnt and (dev_rdy'range => dmatrans_rdy));
+--		devtrans_req <= dev_req and (dev_req'range => cancel);
+--	end process;
+
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
 		dev_req => dev_req,
-		dev_gnt => dmatrans_gnt,
+		dev_gnt => devtrans_gnt,
 		dev_rdy => dev_rdy,
 
 		rsrc_clk => ctlr_clk,
@@ -163,9 +195,9 @@ begin
 			if ctlr_inirdy='0' then
 				dmatrans_req <= '0';
 			else
-				dmatrans_req <= setif(dmatrans_gnt /= (dmatrans_gnt'range => '0'));
+				dmatrans_req <= setif(devtrans_gnt /= (devtrans_gnt'range => '0'));
 			end if;
-			dmatrans_rid <= encoder(dmatrans_gnt);
+			dmatrans_rid <= encoder(devtrans_gnt);
 		end if;
 	end process;
 

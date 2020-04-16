@@ -183,15 +183,16 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 15, dcm_mul => 1, dcm_div => 1),
+		modedebug   => (mode => 15, dcm_mul => 8, dcm_div => 1),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode768p;
+	constant video_mode : layout_mode := modedebug;
 
 	alias dma_clk : std_logic is sys_clk;
+	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 begin
 
@@ -376,14 +377,10 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	videodmacfg_p : process (dma_clk)
+	videodmacfg_p : process (ctlr_clk)
 	begin
-		if rising_edge(dma_clk) then
-			if dmacfgvideo_rdy='1' then
-				dmavideo_req <= '1';
-			elsif dmavideo_rdy='1' then
-				dmavideo_req <= '0';
-			end if;
+		if rising_edge(ctlr_clk) then
+			dmavideo_req <= dmacfgvideo_rdy;
 		end if;
 	end process;
 

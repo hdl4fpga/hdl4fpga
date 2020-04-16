@@ -42,7 +42,6 @@ end;
 
 architecture def of grant is
 	signal gnt : std_logic_vector(dev_gnt'range);
-	signal req : std_logic_vector(dev_req'range);
 begin
 
 	process (rsrc_clk)
@@ -52,11 +51,10 @@ begin
 		end if;
 	end process;
 
-	req <= dev_req or (gnt and (dev_rdy'range => not rsrc_rdy));
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk      => rsrc_clk,
-		rsrc_req => req,
+		rsrc_req => dev_req,
 		rsrc_gnt => dev_gnt);
 
 	dev_rdy  <= dev_gnt and (dev_rdy'range => rsrc_rdy);
