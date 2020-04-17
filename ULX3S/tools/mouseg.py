@@ -81,13 +81,13 @@ while(True):
     if event.key == pygame.K_2:
       send_grid_color(12) # green
     if event.key == pygame.K_3:
-      send_grid_color(39) # blue
+      send_grid_color(6) # blue
     if event.key == pygame.K_4:
       send_grid_color(61) # yellow
     if event.key == pygame.K_5:
-      send_grid_color(5)
+      send_grid_color(51) # violet
     if event.key == pygame.K_6:
-      send_grid_color(6)
+      send_grid_color(39) # violet2 
     if event.key == pygame.K_7:
       send_grid_color(7)
     if event.key == pygame.K_8:
