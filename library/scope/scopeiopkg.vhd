@@ -94,7 +94,8 @@ package scopeiopkg is
 	constant vesa1280x1024    : natural := 3;
 	constant sd600x16         : natural := 4;
 	constant sd600x16fs       : natural := 5;
-	constant lcd480x272       : natural := 12;
+	constant lcd480x272seg1   : natural := 12;
+	constant lcd480x272seg2   : natural := 13;
 	constant oled96x64        : natural := 6;
 	constant oled96x64ongrid  : natural := 11;
 	constant lcd800x480       : natural := 7;
@@ -146,26 +147,46 @@ package scopeiopkg is
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		sd600x16fs => (
-			display_width    =>  800,
-			display_height   =>  600,
-			num_of_segments  =>    4,
-			division_size    =>   16,
+			display_width    =>   800,
+			display_height   =>   600,
+			num_of_segments  =>     4,
+			division_size    =>    16,
 			grid_width       => 46*16,
-			grid_height      =>  8*16,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   => false,
-			vtaxis_width     =>  6*8,
-			vtaxis_within   => false,
-			vttick_rotate    => ccw0,
-			textbox_width    => 32*8,
-			textbox_within   => true,
+			grid_height      =>  8*16+1,
+			axis_fontsize    =>     8,
+			textbox_fontwidth=>     8,
+			hzaxis_height    =>     8,
+			hzaxis_within    => false,
+			vtaxis_width     =>   6*8,
+			vtaxis_within    => false,
+			vttick_rotate    =>  ccw0,
+			textbox_width    =>  32*8,
+			textbox_within   =>  true,
 			main_margin      => (others => 0),
 			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
-		lcd480x272 => (
+		lcd480x272seg1 => (
+			display_width    =>   480,
+			display_height   =>   272,
+			num_of_segments  =>     1,
+			division_size    =>    16,
+			grid_width       => 27*16,
+			grid_height      => 16*16+1,
+			axis_fontsize    =>     8,
+			textbox_fontwidth=>     8,
+			hzaxis_height    =>     8,
+			hzaxis_within    => false,
+			vtaxis_width     =>   6*8,
+			vtaxis_within    => false,
+			vttick_rotate    =>  ccw0,
+			textbox_width    =>  32*8,
+			textbox_within   =>  true,
+			main_margin      => (others => 0),
+			main_gap         => (others => 0),
+			sgmnt_margin     => (others => 0),
+			sgmnt_gap        => (others => 0)),
+		lcd480x272seg2 => (
 			display_width    =>   480,
 			display_height   =>   272,
 			num_of_segments  =>     2,
@@ -382,7 +403,8 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
 		6 => (mode_id => pclk23_75m640x480Cat60,    layout_id => vesa640x480),
-	       11 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272),
+	       11 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg1),
+	       12 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg2),
 		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid),
 		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
 		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
