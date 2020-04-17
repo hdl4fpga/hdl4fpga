@@ -47,7 +47,7 @@ def print_packet(x):
 pygame.init()
 (width, height) = (320, 200)
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption(u'Press PAUSE to quit')
+pygame.display.set_caption(u'Press ESC or PAUSE to quit')
 pygame.display.flip()
 pygame.event.set_grab(True)
 pygame.mouse.set_visible(False)
@@ -60,8 +60,8 @@ y=0
 while(True):
   event = pygame.event.wait()
   if event.type == pygame.KEYDOWN:
-    if event.key == pygame.K_PAUSE:
-      print("PAUSE")
+    if event.key == pygame.K_ESCAPE or event.key == pygame.K_PAUSE:
+      print("QUIT")
       break
     text = str(event.unicode)
     screen.blit(font.render(text, True, (255, 255, 255)), (0, 0))
