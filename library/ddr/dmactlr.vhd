@@ -85,6 +85,9 @@ architecture def of dmactlr is
 	signal devtrans_rdy   : std_logic_vector(dev_req'range);
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
+
+	signal rsrc_req : std_logic;
+
 begin
 
 	dmargtrgnt_e : entity hdl4fpga.grant
@@ -187,19 +190,11 @@ begin
 		dev_rdy => dev_rdy,
 
 		rsrc_clk => ctlr_clk,
+		rsrc_req => rsrc_req,
 		rsrc_rdy => dmatrans_rdy);
 
 	dmatrans_rid <= encoder(devtrans_gnt);
-	process (ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			if ctlr_inirdy='0' then
-				dmatrans_req <= '0';
-			else
-				dmatrans_req <= setif(devtrans_gnt /= (devtrans_gnt'range => '0'));
-			end if;
-		end if;
-	end process;
+	dmatrans_req <= '0' when ctlr_inirdy='0' else rsrc_req;
 
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans

@@ -36,18 +36,26 @@ entity grant is
 		dev_req  : in  std_logic_vector;
 		dev_gnt  : buffer std_logic_vector;
 		dev_rdy  : out std_logic_vector);
-
-
 end;
 
 architecture def of grant is
-	signal gnt : std_logic_vector(dev_gnt'range);
+	signal req      : std_logic;
+	signal req      : std_logic;
+	signal req_edge : std_logic;
 begin
 
+	req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
+	rsrc_req <= req and not setif(rsrc_rdy='1' and req_edge='0' and req='1');
 	process (rsrc_clk)
 	begin
 		if rising_edge(rsrc_clk) then
-			gnt <= dev_gnt;
+			if rsrc_rdy='1' then
+				if req='0' then
+					req_edge <= req;
+				end if;
+			else
+				req_edge <= '0';
+			end if;
 		end if;
 	end process;
 
@@ -58,5 +66,4 @@ begin
 		rsrc_gnt => dev_gnt);
 
 	dev_rdy  <= dev_gnt and (dev_rdy'range => rsrc_rdy);
-	rsrc_req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
 end;

@@ -281,7 +281,7 @@ begin
 			else
 				ctlr_irdy <= '0';
 			end if;
-			dmatrans_rdy <= ctlr_trdy;
+			dmatrans_rdy <= '1';
 		end case;
 	end process;
 

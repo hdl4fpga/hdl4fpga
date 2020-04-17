@@ -41,24 +41,7 @@ add wave -noupdate /testbench/du_e/dmacfgvideo_req
 add wave -noupdate /testbench/du_e/dmacfgvideo_rdy
 add wave -noupdate /testbench/du_e/dmavideo_req
 add wave -noupdate /testbench/du_e/dmavideo_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_taddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_tlen
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_len
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_addr
 add wave -noupdate -divider graphics
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_req
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_len
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_addr
-add wave -noupdate -expand /testbench/du_e/dmactlr_e/devtrans_gnt
-add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_irdy
-add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_trdy
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load_p/q
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load_p/s
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/len_eoc
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/leoc
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/line__227/state
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_di_dv
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_di
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_clk
@@ -84,6 +67,39 @@ add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/dmadata_e/dst_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/dmadata_e/rd_addr
 add wave -noupdate -divider dmactlr
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_req
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_rdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_len
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_addr
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/devtrans_gnt
+add wave -noupdate /testbench/du_e/dmactlr_e/devtrans_gnt(0)
+add wave -noupdate /testbench/du_e/dmactlr_e/devtrans_gnt(1)
+add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_irdy
+add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_trdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_rdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_clk
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_rdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_req
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/dmatransgnt_e/dev_rdy
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/dmatransgnt_e/dev_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/dev_gnt
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/req_edge
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load_p/q
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load_p/s
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/len_eoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/leoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/line__227/state
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_taddr
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_tlen
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_iaddr
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_ilen
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_len
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_addr
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/ilen
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/iaddr
 add wave -noupdate /testbench/du_e/dmactlr_e/dma_clk
 add wave -noupdate -expand /testbench/du_e/dmactlr_e/dmacfg_req
 add wave -noupdate -expand /testbench/du_e/dmactlr_e/dmacfg_rdy
@@ -142,7 +158,7 @@ add wave -noupdate /testbench/du_e/ddrphy_sto
 add wave -noupdate /testbench/du_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203582119 ps} 0}
+WaveRestoreCursors {{Cursor 1} {203549530 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 119
@@ -158,4 +174,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {202683188 ps} {204356626 ps}
+WaveRestoreZoom {203144640 ps} {203981360 ps}
