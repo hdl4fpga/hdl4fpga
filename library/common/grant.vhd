@@ -42,7 +42,7 @@ architecture def of grant is
 	signal req  : std_logic;
 	signal edge : std_logic;
 	signal run  : std_logic;
-	signal 
+	signal gnt  : std_logic_vector(dev_gnt'range);
 begin
 
 	req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
@@ -50,11 +50,14 @@ begin
 	begin
 		if rising_edge(rsrc_clk) then
 			if rsrc_rdy='1' then
-				if req='0' then
+				if (dev_gnt and dev_req)=(dev_req'range => '0') then
 					edge <= '1';
 				end if;
 			else
 				edge <= '0';
+			end if;
+			if run='0' then
+				gnt <= dev_gnt;
 			end if;
 		end if;
 	end process;
@@ -64,7 +67,7 @@ begin
 		'1' when edge='1'     else
 		'0';
 
-	rsrc_req <= req and not setif(rsrc_rdy='1' and edge='0' and req='1');
+	rsrc_req <= setif((setif(run='0', dev_gnt, gnt) and dev_req) /= (dev_gnt'range => '0'));
 
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
@@ -72,5 +75,5 @@ begin
 		rsrc_req => dev_req,
 		rsrc_gnt => dev_gnt);
 
-	dev_rdy  <= dev_gnt and (dev_rdy'range => rsrc_rdy) and (dev_rdy'range => not setif(rsrc_rdy='1' and edge='0' and req='1'));
+	dev_rdy  <= setif(run='0', dev_gnt, gnt) and (dev_gnt'range => '0');
 end;
