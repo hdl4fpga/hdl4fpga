@@ -27,6 +27,8 @@ architecture beh of ulx3s is
 	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
 	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
+	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
+	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
         constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
@@ -79,9 +81,11 @@ architecture beh of ulx3s is
 
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
-	-- OLED HEX or VGA (enable max 1)
-        constant C_oled_hex: boolean := false;  -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+	-- DVI/LVDS/OLED VGA (enable only 1)
+        constant C_dvi_vga:  boolean := true;
+        constant C_lvds_vga: boolean := false;
+        constant C_oled_vga: boolean := false;
+        constant C_oled_hex: boolean := false;
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -156,7 +160,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz
+	constant uart_clk_hz : natural := 40000000; -- Hz (25e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -258,8 +262,8 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
---        G_verilog_clk: if false generate
---        clk_verilog_25_200: entity work.clk_verilog
+--        G_verilog_clk: if true generate
+--        clk_verilog_25_175: entity work.clk_verilog
 --        port map
 --        (
 --          clkin        =>  clk_25MHz,
@@ -267,14 +271,14 @@ begin
 --          phasedir     =>  R_btn_debounced(5),
 --          phasestep    =>  R_btn_debounced(3),
 --          phaseloadreg =>  R_btn_debounced(4),
---          clkout0      =>  clk_pll(0), -- 200 MHz
---          clkout1      =>  clk_pll(1), --  40 MHz
---          clkout2      =>  clk_pll(2), --   6 MHz
+--          clkout0      =>  clk_pll(0), -- 175 MHz
+--          clkout1      =>  clk_pll(1), --  25 MHz
+--          clkout2      =>  clk_pll(2), --  65 MHz
 --          clkout3      =>  clk_pll(3)  --   6 MHz
 --        );
 --        end generate;
 
-	G_vhdl_clk: if true generate
+	G_vhdl_clk: if C_dvi_vga or C_oled_vga generate
         clk_vhdl_25_200: entity work.clk_25_200_40_66_6
         port map
         (
@@ -282,6 +286,18 @@ begin
           clkop       =>  clk_pll(0), -- 200 MHz
           clkos       =>  clk_pll(1), --  40 MHz
           clkos2      =>  clk_pll(2), --  66.667 MHz
+          clkos3      =>  clk_pll(3)  --   6 MHz
+        );
+        end generate;
+
+	G_vhdl_clk: if C_lvds_vga generate
+        clk_vhdl_25_175: entity work.clk_25_175_25_64_6
+        port map
+        (
+          clki        =>  clk_25MHz,
+          clkop       =>  clk_pll(0), -- 175 MHz
+          clkos       =>  clk_pll(1), --  25 MHz
+          clkos2      =>  clk_pll(2), --  63.63 MHz
           clkos3      =>  clk_pll(3)  --   6 MHz
         );
         end generate;
@@ -1565,36 +1581,6 @@ begin
       vga_blank => vga_blank_test
     );    
 
-    G_dvi_vga: if not C_oled_vga generate
-    vga2dvid: entity hdl4fpga.vga2dvid
-    generic map
-    (
-        C_shift_clock_synchronizer => '0',
-        C_ddr => '1',
-        C_depth => 2
-    )
-    port map
-    (
-        clk_pixel => vga_clk,
-        clk_shift => clk_pixel_shift,
-        in_red => vga_rgb(0 to 1),
-        in_green => vga_rgb(2 to 3),
-        in_blue => vga_rgb(4 to 5),
-        in_hsync => vga_hsync,
-        in_vsync => vga_vsync,
-        in_blank => vga_blank,
-        out_clock => dvid_crgb(7 downto 6),
-        out_red => dvid_crgb(5 downto 4),
-        out_green => dvid_crgb(3 downto 2),
-        out_blue => dvid_crgb(1 downto 0)
-    );
-
-    G_ddr_diff: for i in 0 to 3 generate
-      gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
-      gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
-    end generate;
-    end generate; -- dvi vga (not oled vga)
-
     G_oled_vga: if C_oled_vga generate
     B_oled_vga: block
       signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
@@ -1624,13 +1610,62 @@ begin
         spi_mosi => oled_mosi
       );
     end block;
-
-    -- only needed for compile to pass with the same constraints
-    -- otherwise this module has no function with oled_vga
-    G_x_ddr_diff: for i in 0 to 3 generate
-      x_gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
-      x_gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
     end generate;
-    end generate; -- yes oled_vga
+
+    G_dvi_vga: if C_dvi_vga generate
+    vga2dvid: entity hdl4fpga.vga2dvid
+    generic map
+    (
+        C_shift_clock_synchronizer => '0',
+        C_ddr => '1',
+        C_depth => 2
+    )
+    port map
+    (
+        clk_pixel => vga_clk,
+        clk_shift => clk_pixel_shift,
+        in_red => vga_rgb(0 to 1),
+        in_green => vga_rgb(2 to 3),
+        in_blue => vga_rgb(4 to 5),
+        in_hsync => vga_hsync,
+        in_vsync => vga_vsync,
+        in_blank => vga_blank,
+        out_clock => dvid_crgb(7 downto 6),
+        out_red => dvid_crgb(5 downto 4),
+        out_green => dvid_crgb(3 downto 2),
+        out_blue => dvid_crgb(1 downto 0)
+    );
+    end generate; -- dvi vga (not oled vga)
+    G_ddr_diff: for i in 0 to 3 generate
+      gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
+      gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
+    end generate;
+
+    G_lvds_vga: if C_lvds_vga generate
+    begin
+    E_vga2lvds: entity hdl4fpga.vga2lvds
+    port map
+    (
+      clk => clk_pixel_shift,
+
+      red(7 downto 6)   => vga_rgb(0 to 1),
+      green(7 downto 6) => vga_rgb(2 to 3),
+      blue(7 downto 6)  => vga_rgb(4 to 5),
+
+      blank => vga_blank,
+      hsync => vga_hsync,
+      vsync => vga_vsync,
+
+      -- single-ended output ready for differential buffers
+      lvds(3) => dvid_crgb(6),
+      lvds(2) => dvid_crgb(4),
+      lvds(1) => dvid_crgb(2),
+      lvds(0) => dvid_crgb(0)
+    );
+    gn(8) <= '1';
+    end generate; -- lvds_vga
+    G_x_lvds_diff: for i in 0 to 3 generate
+      x_lvds_diff: OLVDS port map(A => dvid_crgb(2*i), Z => gp(i+3), ZN => gn(i+3));
+    end generate;
 
 end;

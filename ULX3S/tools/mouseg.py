@@ -44,16 +44,22 @@ def print_packet(x):
     print("%02X" % (c), end='');
   print("")
 
-def packet_grid_color(pid,c):
-  return struct.pack(">BBI", 0x11, 3, ((c & 63) << 9) | (pid << 3) | 0x7)
+def packet_color(c,pid,opacity):
+  return struct.pack(">BBI", 0x11, 3, ((c & 63) << 9) | (pid << 3) | opacity)
 
 def send_grid_color(c):
-  packet = packet_grid_color(0,c)
+  packet = packet_color(c,0,7)
   if udp_port:
     scopeio_udp.sendto(packet, (udp_host, udp_port))
   else:
     scopeio.write(escape(packet))
 
+def send_text_enable(e):
+  packet = packet_color(0,9,(e<<2)|1)
+  if udp_port:
+    scopeio_udp.sendto(packet, (udp_host, udp_port))
+  else:
+    scopeio.write(escape(packet))
 
 pygame.init()
 (width, height) = (320, 200)
@@ -81,13 +87,13 @@ while(True):
     if event.key == pygame.K_2:
       send_grid_color(12) # green
     if event.key == pygame.K_3:
-      send_grid_color(39) # blue
+      send_grid_color(6) # blue
     if event.key == pygame.K_4:
       send_grid_color(61) # yellow
     if event.key == pygame.K_5:
-      send_grid_color(5)
+      send_grid_color(51) # violet
     if event.key == pygame.K_6:
-      send_grid_color(6)
+      send_grid_color(39) # violet2 
     if event.key == pygame.K_7:
       send_grid_color(7)
     if event.key == pygame.K_8:
@@ -106,6 +112,10 @@ while(True):
       send_grid_color(14)
     if event.key == pygame.K_f:
       send_grid_color(15)
+    if event.key == pygame.K_PAGEUP:
+      send_text_enable(1)
+    if event.key == pygame.K_PAGEDOWN:
+      send_text_enable(0)
     text = str(event.unicode)
     screen.blit(font.render(text, True, (255, 255, 255)), (0, 0))
     pygame.display.flip()

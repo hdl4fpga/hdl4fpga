@@ -1,6 +1,7 @@
 # ******* project, board and chip name *******
 PROJECT ?= project
 BOARD ?= board
+FPGA_PREFIX ?=
 FPGA_SIZE ?= 12
 FPGA_CHIP ?= lfe5u-$(FPGA_SIZE)f
 FPGA_PACKAGE ?= CABGA381
@@ -24,6 +25,18 @@ VHDL_FILES ?=
 # https://github.com/SymbiFlow/prjtrellis
 #TRELLIS ?= /mt/scratch/tmp/openfpga/prjtrellis
 
+# open source synthesis tools
+TRELLISDB ?= $(TRELLIS)/database
+LIBTRELLIS ?= $(TRELLIS)/libtrellis
+ECPPLL ?= LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(TRELLIS)/libtrellis/ecppll
+ECPPACK ?= LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(TRELLIS)/libtrellis/ecppack --db $(TRELLISDB)
+BIT2SVF ?= $(TRELLIS)/tools/bit_to_svf.py
+#BASECFG ?= $(TRELLIS)/misc/basecfgs/empty_$(FPGA_CHIP_EQUIVALENT).config
+# yosys options, sometimes those can be used: -noccu2 -nomux -nodram
+YOSYS_OPTIONS ?=
+# nextpnr options
+NEXTPNR_OPTIONS ?=
+
 ifeq ($(FPGA_CHIP), lfe5u-12f)
   CHIP_ID=0x21111043
 endif
@@ -38,26 +51,15 @@ ifeq ($(FPGA_CHIP), lfe5u-85f)
 endif
 
 ifeq ($(FPGA_SIZE), 12)
-  FPGA_K=25
+  FPGA_K=$(FPGA_PREFIX)25
   IDCODE_CHIPID=--idcode $(CHIP_ID)
 else
-  FPGA_K=$(FPGA_SIZE)
+  FPGA_K=$(FPGA_PREFIX)$(FPGA_SIZE)
   IDCODE_CHIPID=
 endif
 
 FPGA_CHIP_EQUIVALENT ?= lfe5u-$(FPGA_K)f
 
-# open source synthesis tools
-ECPPLL ?= $(TRELLIS)/libtrellis/ecppll
-ECPPACK ?= $(TRELLIS)/libtrellis/ecppack
-TRELLISDB ?= $(TRELLIS)/database
-LIBTRELLIS ?= $(TRELLIS)/libtrellis
-BIT2SVF ?= $(TRELLIS)/tools/bit_to_svf.py
-#BASECFG ?= $(TRELLIS)/misc/basecfgs/empty_$(FPGA_CHIP_EQUIVALENT).config
-# yosys options, sometimes those can be used: -noccu2 -nomux -nodram
-YOSYS_OPTIONS ?= 
-# nextpnr options
-NEXTPNR_OPTIONS ?=
 
 # clock generator
 CLK0_NAME ?= clk0
@@ -118,31 +120,27 @@ VHDL_TO_VERILOG_FILES = $(VHDL_FILES:.vhd=.v)
 
 $(PROJECT).json: $(VERILOG_FILES) $(VHDL_TO_VERILOG_FILES)
 	$(YOSYS) \
+	-p "read -vlog2k $(VERILOG_FILES) $(VHDL_TO_VERILOG_FILES)" \
 	-p "hierarchy -top ${TOP_MODULE}" \
-	-p "synth_ecp5 ${YOSYS_OPTIONS} -json ${PROJECT}.json" \
-	$(VERILOG_FILES) $(VHDL_TO_VERILOG_FILES)
+	-p "synth_ecp5 ${YOSYS_OPTIONS} -json ${PROJECT}.json"
 
 $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).config: $(PROJECT).json $(BASECFG)
 	$(NEXTPNR-ECP5) $(NEXTPNR_OPTIONS) --$(FPGA_K)k --package $(FPGA_PACKAGE) --json $(PROJECT).json --lpf $(CONSTRAINTS) --textcfg $@
 
 $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).config
-	LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPACK) $(IDCODE_CHIPID) --db $(TRELLISDB) --input $< --bit $@
+	$(ECPPACK) $(IDCODE_CHIPID) --compress --input $< --bit $@
 
 $(CLK0_FILE_NAME):
-	LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPLL) $(CLK0_OPTIONS) --file $@
-	sed -e "s/module pll(/module $(CLK0_NAME)(/g" -i $@
+	$(ECPPLL) $(CLK0_OPTIONS) --file $@
 
 $(CLK1_FILE_NAME):
-	LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPLL) $(CLK1_OPTIONS) --file $@
-	sed -e "s/module pll(/module $(CLK1_NAME)(/g" -i $@
+	$(ECPPLL) $(CLK1_OPTIONS) --file $@
 
 $(CLK2_FILE_NAME):
-	LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPLL) $(CLK2_OPTIONS) --file $@
-	sed -e "s/module pll(/module $(CLK2_NAME)(/g" -i $@
+	$(ECPPLL) $(CLK2_OPTIONS) --file $@
 
 $(CLK3_FILE_NAME):
-	LANG=C LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPLL) $(CLK3_OPTIONS) --file $@
-	sed -e "s/module pll(/module $(CLK3_NAME)(/g" -i $@
+	$(ECPPLL) $(CLK3_OPTIONS) --file $@
 
 # generate XCF programming file for DDTCMD
 $(BOARD)_$(FPGA_SIZE)f.xcf: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit $(SCRIPTS)/$(BOARD)_sram.xcf $(SCRIPTS)/xcf.xsl $(DTD_FILE)
@@ -165,8 +163,7 @@ $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).vme: $(BOARD)_$(FPGA_SIZE)f.xcf $(BOARD)_$(FPG
 #	$(BIT2SVF) $< $@
 
 $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).svf: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).config
-#	LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPACK) $(IDCODE_CHIPID) --db $(TRELLISDB) $< --freq 62.0 --svf-rowsize 8000 --svf $@
-	LD_LIBRARY_PATH=$(LIBTRELLIS) $(ECPPACK) $(IDCODE_CHIPID) --db $(TRELLISDB) $< --freq 62.0 --svf-rowsize 800000 --svf $@
+	$(ECPPACK) $(IDCODE_CHIPID) $< --freq 62.0 --svf-rowsize 800000 --svf $@
 
 # program SRAM  with ujrprog (temporary)
 program: $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).bit
