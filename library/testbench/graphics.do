@@ -26,6 +26,14 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/wr
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_hzon
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_vton
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/wr_data
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/rsrc_clk
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/rsrc_rdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/rsrc_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/dev_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/dev_gnt
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/dev_rdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/req_edge
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_clk
 add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_irdy
@@ -158,7 +166,7 @@ add wave -noupdate /testbench/du_e/ddrphy_sto
 add wave -noupdate /testbench/du_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203549530 ps} 0}
+WaveRestoreCursors {{Cursor 1} {81727439 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 276
 configure wave -valuecolwidth 119
@@ -174,4 +182,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {203144640 ps} {203981360 ps}
+WaveRestoreZoom {0 ps} {214200 ns}
