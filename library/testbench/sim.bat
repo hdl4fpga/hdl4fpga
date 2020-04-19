@@ -1,1 +1,1 @@
-vsim -voptargs=+acc work.s3estarter_dmactlr_md
+vsim -voptargs=+acc work.nuhs3adsp_graphics_md
