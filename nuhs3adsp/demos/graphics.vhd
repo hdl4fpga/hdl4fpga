@@ -189,7 +189,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode768p;
+	constant video_mode : layout_mode := mode600p;
 
 	alias dma_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -349,13 +349,13 @@ begin
 		end process;
 	end block;
 
---	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
+	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
 --	graphics_di <= ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" ;
 --	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
 --	graphics_di <= ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000"
 				  -- ;
 --	graphics_di <= ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5);
-	graphics_di <= ctlr_do;
+--	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -398,9 +398,9 @@ begin
 	generic map (
 		no_latency => no_latency)
 	port map (
-		dma_clk     => dma_clk,
-		dmacfg_req  => dmacfg_req,
-		dmacfg_rdy  => dmacfg_rdy,
+		devcfg_clk  => dma_clk,
+		devcfg_req  => dmacfg_req,
+		devcfg_rdy  => dmacfg_rdy,
 		dev_len     => dev_len,
 		dev_addr    => dev_addr,
 		dev_we      => dev_we,

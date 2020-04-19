@@ -33,9 +33,9 @@ entity dmactlr is
 		no_latency : boolean);
 	port (
 
-		dma_clk      : in  std_logic;
-		dmacfg_req   : in  std_logic_vector;
-		dmacfg_rdy   : out std_logic_vector;
+		devcfg_clk   : in  std_logic;
+		devcfg_req   : in  std_logic_vector;
+		devcfg_rdy   : out std_logic_vector;
 		dev_len      : in  std_logic_vector;
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
@@ -70,7 +70,8 @@ architecture def of dmactlr is
 	signal dmargtr_len    : std_logic_vector(0 to dev_len'length/dev_req'length-1);
 	signal dmargtr_we     : std_logic_vector(0 to 0);
 
-	signal dmacfg_gnt     : std_logic_vector(dev_req'range);
+	signal dmacfg_req    : std_logic_vector(devcfg_req'range);
+	signal dmacfg_gnt     : std_logic_vector(devcfg_req'range);
 
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
@@ -90,19 +91,27 @@ architecture def of dmactlr is
 
 begin
 
+	process (devcfg_clk)
+		variable dv : std_logic;
+	begin
+		if rising_edge(devcfg_clk) then
+			dmacfg_req <= devcfg_req;
+		end if;
+	end process;
+
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
-		rsrc_clk => dma_clk,
+		rsrc_clk => devcfg_clk,
 		rsrc_rdy => dmargtr_rdy,
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
-		dev_rdy => dmacfg_rdy);
+		dev_rdy => devcfg_rdy);
 
-	process (dma_clk)
+	process (devcfg_clk)
 		variable dv : std_logic;
 	begin
-		if rising_edge(dma_clk) then
+		if rising_edge(devcfg_clk) then
 			if dv='1' then
 				dmargtr_rdy <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
 			elsif dmargtr_rdy='1' then
@@ -123,7 +132,7 @@ begin
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => dma_clk,
+		wr_clk  => devcfg_clk,
 		wr_ena  => dmargtr_dv,
 		wr_addr => dmargtr_id,
 		wr_data => dmargtr_addr,
@@ -137,7 +146,7 @@ begin
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => dma_clk,
+		wr_clk  => devcfg_clk,
 		wr_addr => dmargtr_id,
 		wr_ena  => dmargtr_dv,
 		wr_data => dmargtr_len,
@@ -151,7 +160,7 @@ begin
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => dma_clk,
+		wr_clk  => devcfg_clk,
 		wr_addr => dmargtr_id,
 		wr_ena  => dmargtr_dv,
 		wr_data => dmargtr_we,
@@ -160,32 +169,9 @@ begin
 		rd_addr => dmatrans_rid,
 		rd_data => trans_we);
 
-	
---	cancel_p : process (ctlr_clk, dev_req, dmatrans_rdy, devtrans_rdy)
---		variable cancel : std_logic;
---		variable gnt    : std_logic_vector(devtrans_gnt'range);
---	begin
---		if rising_edge(ctlr_clk) then
---			if cancel='0' then
---				if dmatrans_rdy='0' then
---					cancel := setif((gnt and not dev_req)/=(dev_req'range => '0'));
---				end if;
---			else
---				if ctlr_trdy='1' then
---					cancel := '0';
---				end if;
---			end if;
---			if cancel='0' then
---				gnt := devtrans_gnt;
---			end if;
---		end if;
---		dev_rdy      <= setif(cancel='0', devtrans_rdy, gnt and (dev_rdy'range => dmatrans_rdy));
---		devtrans_req <= dev_req and (dev_req'range => cancel);
---	end process;
-
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
-		dev_req => dev_req,
+		dev_req => devtrans_req,
 		dev_gnt => devtrans_gnt,
 		dev_rdy => dev_rdy,
 
@@ -194,7 +180,13 @@ begin
 		rsrc_rdy => dmatrans_rdy);
 
 	dmatrans_rid <= encoder(devtrans_gnt);
-	dmatrans_req <= '0' when ctlr_inirdy='0' else rsrc_req;
+	process (ctlr_clk)
+	begin
+		if rising_edge(ctlr_clk) then
+			devtrans_req <= dev_req;
+			dmatrans_req <= setif(ctlr_inirdy='1', rsrc_req);
+		end if;
+	end process;
 
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
