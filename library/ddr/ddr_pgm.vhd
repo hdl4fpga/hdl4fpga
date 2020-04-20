@@ -77,7 +77,7 @@ entity ddr_pgm is
 	constant ddro_wriq : std_logic_vector(ddro_act'range) := B"1010" & "100";
 	constant ddro_pre  : std_logic_vector(ddro_act'range) := B"0000" & "010";
 	constant ddro_preq : std_logic_vector(ddro_act'range) := B"0010" & "010";
-	constant ddro_autq : std_logic_vector(ddro_act'range) := B"0010" & "001";
+	constant ddro_autq : std_logic_vector(ddro_act'range) := B"0110" & "001";
 	constant ddro_auty : std_logic_vector(ddro_act'range) := B"0111" & "001";
 	constant ddro_nop  : std_logic_vector(ddro_act'range) := B"0001" & "111";
 	constant ddro_nopy : std_logic_vector(ddro_act'range) := B"0101" & "111";
