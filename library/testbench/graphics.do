@@ -10,21 +10,24 @@ add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/s1
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_pre
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_idl
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/ctlr_a
-add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_refreq
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_ref
 add wave -noupdate /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate /testbench/du_e/ddr_st_dqs
 add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_clk
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_addr
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/rd_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/rd_data
 add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_clk
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_ena
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_addr
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_hzon
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_vton
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/wr_data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_refreq
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/rd_addr
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/diff
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_mpu_e/lat_timer(0)
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_mpu_e/ddr_mpu_cmd
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_mpu_e/cmd_name
+add wave -noupdate /testbench/du_e/dmactlr_e/ctlr_refreq
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Clk_n
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Cke
@@ -37,6 +40,8 @@ add wave -noupdate -expand -group Micron -radix hexadecimal -childformat {{{/tes
 add wave -noupdate -expand -group Micron /testbench/ddr_model_g/Dm
 add wave -noupdate -expand -group Micron -radix hexadecimal /testbench/ddr_model_g/Dq
 add wave -noupdate -expand -group Micron -expand /testbench/ddr_model_g/Dqs
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_ena
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/vram_e/mem_e/wr_addr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_clk
 add wave -noupdate /testbench/du_e/scopeio_export_b/dmadata_e/dst_irdy
@@ -50,8 +55,12 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/dmaio_addr(
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmaio_len
 add wave -noupdate /testbench/du_e/dmacfgvideo_req
 add wave -noupdate /testbench/du_e/dmacfgvideo_rdy
-add wave -noupdate /testbench/du_e/dmavideo_req
+add wave -noupdate -color Magenta /testbench/du_e/dmavideo_req
 add wave -noupdate /testbench/du_e/dmavideo_rdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/video_clk
+add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_clk
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/devcfg_req
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/devcfg_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_len
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmavideo_addr
 add wave -noupdate -divider graphics
@@ -139,10 +148,10 @@ add wave -noupdate /testbench/du_e/ddrphy_sto
 add wave -noupdate /testbench/du_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1998604134 ps} 0} {{Cursor 2} {513519474 ps} 0}
+WaveRestoreCursors {{Cursor 1} {615946000 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 140
-configure wave -valuecolwidth 119
+configure wave -namecolwidth 387
+configure wave -valuecolwidth 167
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -155,4 +164,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1998426560 ps} {1998783264 ps}
+WaveRestoreZoom {613416074 ps} {618475926 ps}
