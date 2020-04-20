@@ -1646,21 +1646,22 @@ begin
     E_vga2lvds: entity hdl4fpga.vga2lvds
     port map
     (
-      clk => clk_pixel_shift,
+      clk_pixel => vga_clk,
+      clk_shift => clk_pixel_shift,
 
-      red(7 downto 6)   => vga_rgb(0 to 1),
-      green(7 downto 6) => vga_rgb(2 to 3),
-      blue(7 downto 6)  => vga_rgb(4 to 5),
+      in_red(7 downto 6)   => vga_rgb(0 to 1),
+      in_green(7 downto 6) => vga_rgb(2 to 3),
+      in_blue(7 downto 6)  => vga_rgb(4 to 5),
 
-      blank => vga_blank,
-      hsync => vga_hsync,
-      vsync => vga_vsync,
+      in_blank => vga_blank,
+      in_hsync => vga_hsync,
+      in_vsync => vga_vsync,
 
       -- single-ended output ready for differential buffers
-      lvds(3) => dvid_crgb(6),
-      lvds(2) => dvid_crgb(4),
-      lvds(1) => dvid_crgb(2),
-      lvds(0) => dvid_crgb(0)
+      out_lvds(3) => dvid_crgb(6),
+      out_lvds(2) => dvid_crgb(4),
+      out_lvds(1) => dvid_crgb(2),
+      out_lvds(0) => dvid_crgb(0)
     );
     gn(8) <= '1';
     end generate; -- lvds_vga
