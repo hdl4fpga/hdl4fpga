@@ -189,9 +189,9 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := modedebug;
+	constant video_mode : layout_mode := mode768p;
 
-	alias dma_clk : std_logic is sys_clk;
+	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 begin
@@ -334,9 +334,9 @@ begin
 --		end process;
 --		dmaio_req <= '0';
 
-		dmacfgio_p : process (dma_clk)
+		dmacfgio_p : process (dmacfg_clk)
 		begin
-			if rising_edge(dma_clk) then
+			if rising_edge(dmacfg_clk) then
 				if dmaio_dv='1' then
 					dmacfgio_req <= '1';
 				elsif dmacfgio_rdy='1' then
@@ -374,12 +374,23 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	videodmacfg_p : process (ctlr_clk)
+	b : block
+		signal xxx : std_logic;
 	begin
-		if rising_edge(ctlr_clk) then
-			dmavideo_req <= dmacfgvideo_rdy;
-		end if;
-	end process;
+		videodmacfg_p : process (ctlr_clk)
+		begin
+			if rising_edge(ctlr_clk) then
+				dmavideo_req <= xxx;
+			end if;
+		end process;
+
+		process (dmacfg_clk)
+		begin
+			if rising_edge(dmacfg_clk) then
+				xxx <= dmacfgvideo_rdy;
+			end if;
+		end process;
+	end block;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
@@ -398,7 +409,7 @@ begin
 	generic map (
 		no_latency => no_latency)
 	port map (
-		devcfg_clk  => dma_clk,
+		devcfg_clk  => dmacfg_clk,
 		devcfg_req  => dmacfg_req,
 		devcfg_rdy  => dmacfg_rdy,
 		dev_len     => dev_len,
