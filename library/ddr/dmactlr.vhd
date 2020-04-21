@@ -70,7 +70,8 @@ architecture def of dmactlr is
 	signal dmargtr_len    : std_logic_vector(0 to dev_len'length/dev_req'length-1);
 	signal dmargtr_we     : std_logic_vector(0 to 0);
 
-	signal dmacfg_req    : std_logic_vector(devcfg_req'range);
+	signal dmacfg_req     : std_logic_vector(devcfg_req'range);
+	signal dmacfg_rdy     : std_logic_vector(devcfg_req'range);
 	signal dmacfg_gnt     : std_logic_vector(devcfg_req'range);
 
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
@@ -96,6 +97,7 @@ begin
 	begin
 		if rising_edge(devcfg_clk) then
 			dmacfg_req <= devcfg_req;
+			devcfg_rdy <= dmacfg_rdy;
 		end if;
 	end process;
 
@@ -106,7 +108,7 @@ begin
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
-		dev_rdy => devcfg_rdy);
+		dev_rdy => dmacfg_rdy);
 
 	process (devcfg_clk)
 		variable dv : std_logic;
@@ -173,7 +175,7 @@ begin
 	port map (
 		dev_req => devtrans_req,
 		dev_gnt => devtrans_gnt,
-		dev_rdy => dev_rdy,
+		dev_rdy => devtrans_rdy,
 
 		rsrc_clk => ctlr_clk,
 		rsrc_req => rsrc_req,
@@ -184,6 +186,7 @@ begin
 	begin
 		if rising_edge(ctlr_clk) then
 			devtrans_req <= dev_req;
+			dev_rdy <= devtrans_rdy;
 			dmatrans_req <= setif(ctlr_inirdy='1', rsrc_req);
 		end if;
 	end process;
