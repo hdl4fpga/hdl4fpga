@@ -259,6 +259,7 @@ begin
 		ddr_pgm_trdy  => ctlr_trdy,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
+--		ddr_pgm_ref   => '0',
 		ddr_pgm_ref   => ddr_mpu_ref,
 		ddr_pgm_rrdy  => ddr_refi_rdy,
 		ddr_pgm_cal   => ctlr_rlcal,

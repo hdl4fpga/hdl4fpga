@@ -109,6 +109,7 @@ begin
 				level    <= level + water_mark;
 				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
 				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
+--				dma_addr <= (dma_addr'range => '0');
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
@@ -116,10 +117,10 @@ begin
 			hzon_edge <= video_hzon;
 			vton_edge <= vton_dly;
 			vton_dly  <= video_vton;
+			video_frm <= not setif(video_vton='0' and vton_dly='1');
 		end if;
 	end process;
 
-	video_frm <= not setif(vton_dly='0' and vton_edge='1');
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then

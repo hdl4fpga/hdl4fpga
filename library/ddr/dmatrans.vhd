@@ -90,13 +90,13 @@ architecture def of dmatrans is
 begin
 
 	ctlr_rw <= dmatrans_we;
-	process (dmatrans_clk)
+	process (dmatrans_clk, ctlr_refreq, ctlr_dio_req)
 		variable q : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			ref_req <= setif(ctlr_refreq='1' and q='0');
-			q := ctlr_refreq;
+			q := ctlr_refreq and ctlr_dio_req;
 		end if;
+		ref_req <= setif((ctlr_refreq and ctlr_dio_req)='1' and q='0');
 	end process;
 
 	load_p : process (dmatrans_clk, ceoc, ref_req, leoc)
@@ -151,7 +151,7 @@ begin
 		end if;
 	end process;
 
-	ctlrdma_irdy <= preload or ctlr_dio_req;
+	ctlrdma_irdy <= preload or (ctlr_dio_req and ctlr_refreq and ctlr_dio_req);
 
 	tlenlat_e : entity hdl4fpga.align
 	generic map (
