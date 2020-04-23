@@ -49,6 +49,8 @@ entity dmatrans is
 		ctlr_irdy     : buffer std_logic;
 		ctlr_trdy     : in  std_logic;
 		ctlr_rw       : out std_logic := '0';
+		ctlr_ras      : in  std_logic := '0';
+		ctlr_cas      : in  std_logic := '0';
 		ctlr_act      : in  std_logic;
 		ctlr_pre      : in  std_logic;
 		ctlr_idl      : in  std_logic;
@@ -80,9 +82,9 @@ architecture def of dmatrans is
 	signal tlen         : std_logic_vector(dmatrans_tlen'range);
 	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
+	signal preload      : std_logic;
 	signal load         : std_logic;
 	signal reload       : std_logic;
-	signal preload      : std_logic;
 
 	signal ref_req      : std_logic;
 	signal refreq       : std_logic;
@@ -121,42 +123,31 @@ begin
 		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
 
-	dma_e : entity hdl4fpga.ddrdma
-	port map (
-		clk     => dmatrans_clk,
-		load    => load,
-		ena     => ctlrdma_irdy,
-		iaddr   => iaddr,
-		ilen    => ilen,
-		taddr   => taddr,
-		tlen    => tlen,
-		len_eoc => leoc,
-		bnk     => bnk,
-		row     => row,
-		col     => col,
-		col_eoc => ceoc);
-
-	process (dmatrans_clk)
-		variable q : unsigned(0 to lat+1);
+	preload_b : block
+		signal preload_ini  : std_logic;
+		signal preload_ena  : std_logic;
 	begin
-		if rising_edge(dmatrans_clk) then
-			if dmatrans_req='0' then
-				q := (others => '1');
-			elsif reload='1' then
-				q := (others => '1');
-			elsif ctlr_idl='0' then
-				q := q sll 1;
-			end if;
-			preload <= not ctlr_idl and q(0);
-		end if;
-	end process;
+		preload_ini <= not dmatrans_req or reload;
+		preload_ena <= not ctlr_idl;
+		preload_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 1-1 => lat),
+			i => (0 to 1-1 => '1'))
+		port map (
+			clk   => dmatrans_clk,
+			ini   => preload_ini,
+			ena   => preload_ena,
+			di(0) => '0',
+			do(0) => preload);
+	end block;
 
-	ctlrdma_irdy <= preload or (ctlr_dio_req and ctlr_refreq and ctlr_dio_req);
+	ctlrdma_irdy <= preload or ctlr_dio_req;
 
 	tlenlat_e : entity hdl4fpga.align
 	generic map (
 		n => dmatrans_tlen'length,
-		d => (0 to dmatrans_tlen'length-1 => lat+1))
+		d => (0 to dmatrans_tlen'length-1 => lat))
 	port map (
 		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
@@ -166,7 +157,7 @@ begin
 	taddrlat_e : entity hdl4fpga.align
 	generic map (
 		n => dmatrans_taddr'length,
-		d => (0 to dmatrans_taddr'length-1 => lat+1))
+		d => (0 to dmatrans_taddr'length-1 => lat))
 	port map (
 		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
@@ -198,7 +189,7 @@ begin
 	eoclat_e : entity hdl4fpga.align
 	generic map (
 		n => 3,
-		d => (0 to 3-1 => lat-1))
+		d => (0 to 3-1 => lat))
 	port map (
 		clk   => dmatrans_clk,
 		di(0) => ceoc,
@@ -211,15 +202,12 @@ begin
 	ctlrba_p : process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
-			ctlr_a <= word2byte(ddrdma_row & std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length)), s1);
 			ctlr_r <= ddrdma_row;
 			ctlr_b <= ddrdma_bnk;
-			if ctlr_pre='1' then
-				s1 <= '0';
-			elsif ctlr_idl='1' then
-				s1 <= '0';
-			elsif s1='0' then
-				s1 <= not ctlr_act;
+			if ctlr_cas='0' then
+				ctlr_a <= ddrdma_row;
+			else
+				ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length));
 			end if;
 		end if;
 	end process;
@@ -284,5 +272,20 @@ begin
 			dmatrans_rdy <= '1';
 		end case;
 	end process;
+
+	dma_e : entity hdl4fpga.ddrdma
+	port map (
+		clk     => dmatrans_clk,
+		load    => load,
+		ena     => ctlrdma_irdy,
+		iaddr   => iaddr,
+		ilen    => ilen,
+		taddr   => taddr,
+		tlen    => tlen,
+		len_eoc => leoc,
+		bnk     => bnk,
+		row     => row,
+		col     => col,
+		col_eoc => ceoc);
 
 end;

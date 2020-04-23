@@ -167,6 +167,9 @@ architecture graphics of nuhs3adsp is
 	signal dev_req : std_logic_vector(0 to 2-1);
 	signal dev_rdy : std_logic_vector(0 to 2-1); 
 
+	signal ctlr_ras : std_logic;
+	signal ctlr_cas : std_logic;
+
 	constant no_latency : boolean := false;
 	type display_param is record
 		mode    : natural;
@@ -307,20 +310,20 @@ begin
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
 
---		dmadata_e : entity hdl4fpga.fifo
---		generic map (
---			size           => 256,
---			gray_code      => false,
---			overflow_check => false)
---		port map (
---			src_clk  => si_clk,
---			src_irdy => dmadata_ena,
---			src_data => rgtr_data,
---
---			dst_clk  => ddrsys_clks(clk0),
---			dst_irdy => ctlr_di_dv,
---			dst_trdy => ctlr_di_req,
---			dst_data => ctlr_di);
+		dmadata_e : entity hdl4fpga.fifo
+		generic map (
+			size           => 256,
+			gray_code      => false,
+			overflow_check => false)
+		port map (
+			src_clk  => si_clk,
+			src_irdy => dmadata_ena,
+			src_data => rgtr_data,
+
+			dst_clk  => ddrsys_clks(clk0),
+			dst_irdy => ctlr_di_dv,
+			dst_trdy => ctlr_di_req,
+			dst_data => ctlr_di);
 
 --		dmacfgio_p : process (si_clk)
 --		begin
@@ -378,7 +381,8 @@ begin
 
 	dmavideo_req <= dmacfgvideo_rdy;
 
-	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -408,11 +412,13 @@ begin
 		ctlr_clk    => ddrsys_clks(clk0),
 
 		ctlr_inirdy => ctlr_inirdy,
-		ctlr_refreq => ctlr_refreq,
---		ctlr_refreq => '0',
+--		ctlr_refreq => ctlr_refreq,
+		ctlr_refreq => '0',
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
+		ctlr_ras    => ctlr_ras,
+		ctlr_cas    => ctlr_cas,
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
@@ -458,6 +464,8 @@ begin
 		ctlr_rw      => ctlr_rw,
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
+		ctlr_ras     => ctlr_ras,
+		ctlr_cas    => ctlr_cas,
 		ctlr_di_dv   => ctlr_di_dv, --'1', --ctlr_di_irdy,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,

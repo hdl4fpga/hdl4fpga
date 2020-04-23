@@ -51,6 +51,8 @@ entity dmactlr is
 		ctlr_irdy    : out  std_logic;
 		ctlr_trdy    : in  std_logic;
 		ctlr_rw      : out std_logic;
+		ctlr_ras     : in  std_logic;
+		ctlr_cas     : in  std_logic;
 		ctlr_b       : out std_logic_vector;
 		ctlr_a       : out std_logic_vector;
 		ctlr_r       : out std_logic_vector;
@@ -212,6 +214,8 @@ begin
 		ctlr_irdy      => ctlr_irdy,
 		ctlr_trdy      => ctlr_trdy,
 		ctlr_rw        => ctlr_rw,
+		ctlr_ras       => ctlr_ras,
+		ctlr_cas       => ctlr_cas,
 		ctlr_act       => ctlr_act,
 		ctlr_pre       => ctlr_pre,
 		ctlr_idl       => ctlr_idl,
