@@ -101,24 +101,36 @@ begin
 		ref_req <= setif((ctlr_refreq and ctlr_dio_req)='1' and q='0');
 	end process;
 
-	load_p : process (dmatrans_clk, ceoc, ref_req, leoc)
-		variable q : std_logic;
-		variable s : std_logic;
+	process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
-			if ctlr_idl='0' then
-				if ceoc='1' then
-					q := '1';
-				elsif ref_req='1' then
-					q := '1';
+			if leoc='1' then
+				reload    <= '0';
+				ctlr_irdy <= '0';
+			elsif ceoc='1' then
+				reload    <= '1';
+				ctlr_irdy <= '0';
+			elsif ctrl_cas='0' then
+				reload    <= '0';
+				if leoc <= '1' then
+					ctlr_irdy <= '1';
+				else
+					ctlr_irdy <= '0';
 				end if;
-			else
-				q := '0';
 			end if;
-			s     := setif(ceoc='1' or ref_req='1', not leoc, q);
-			load  <= setif(s='1', '1', not dmatrans_req);
-			ilen  <= word2byte(dmatrans_ilen  & tlen,  s);
-			iaddr <= word2byte(dmatrans_iaddr & taddr, s);
+		end if;
+	end process;
+
+	load_p : process (dmatrans_clk)
+	begin
+		if rising_edge(dmatrans_clk) then
+			if ceoc='1' then
+				ilen  <= tlen;
+				iaddr <= taddr;
+			elsif reload='0' then
+				ilen  <= dmatrans_ilen;
+				iaddr <= dmatrans_iaddr;
+			end if;
 		end if;
 		reload <= setif(ceoc='1' or ref_req='1', not leoc, q);
 	end process;
@@ -210,67 +222,6 @@ begin
 				ctlr_a <= std_logic_vector(resize(unsigned(ddrdma_col & '0'), ctlr_a'length));
 			end if;
 		end if;
-	end process;
-
-	process (dmatrans_req, refreq, col_eoc, len_eoc, ctlr_idl, dmatrans_clk)
-		type states is (a, b, c, d);
-		variable state : states;
-	begin
-		if rising_edge(dmatrans_clk) then
-			case state is
-			when a =>
-				if len_eoc='1' then
-					state := d;
-				elsif refreq='1' then
-					state := b;
-				elsif col_eoc='1' then
-					state := b;
-				else
-					state := a;
-				end if;
-			when b =>
-				if ctlr_idl='1' then
-					state := c;
-				end if;
-			when c =>
-				if ctlr_idl='0' then
-					state := a;
-				end if;
-			when d => 
-				if len_eoc='0' then
-					state := a;
-				end if;
-			end case;
-		end if;
-
-		case state is
-		when a =>
-			if len_eoc='1' then
-				ctlr_irdy <= '0';
-			elsif col_eoc='1' then
-				ctlr_irdy <= '0';
-			else
-				ctlr_irdy <= dmatrans_req;
-			end if;
-			dmatrans_rdy <= '0';
-		when b =>
-			if ctlr_idl='0' then 
-				ctlr_irdy <= '0';
-			else
-				ctlr_irdy <= dmatrans_req;
-			end if;
-			dmatrans_rdy <= '0';
-		when c =>
-			ctlr_irdy <= dmatrans_req;
-			dmatrans_rdy <= '0';
-		when d =>
-			if len_eoc='0' then
-				ctlr_irdy <= dmatrans_req;
-			else
-				ctlr_irdy <= '0';
-			end if;
-			dmatrans_rdy <= '1';
-		end case;
 	end process;
 
 	dma_e : entity hdl4fpga.ddrdma
