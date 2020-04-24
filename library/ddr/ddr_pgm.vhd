@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		no_latency : boolean := true;
 		CMMD_GEAR  : natural := 1);
 	port (
 		ctlr_clk      : in  std_logic := '0';
@@ -46,6 +45,7 @@ entity ddr_pgm is
 		ddr_pgm_seq   : out std_logic := '0';
 		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
 
+	constant latency   : boolean := true;
 	constant ddr_nop   : std_logic_vector(0 to 2) := "111";
 	constant ddr_act   : std_logic_vector(0 to 2) := "011";
 	constant ddr_read  : std_logic_vector(0 to 2) := "101";
@@ -233,6 +233,7 @@ begin
 		pgm_cmd  <= (others => '-');
 		pgm_rdy  <= '-'; 
 		pgm_ras  <= '-';
+		pgm_cas  <= '-';
 		pgm_refq <= '-';
 		pgm_refy <= '-'; 
 		for i in pgm_tab'range loop
@@ -251,7 +252,7 @@ begin
 
 	process (ctlr_rst, pgm_cmd, ctlr_clk)
 	begin
-		if not no_latency then
+		if latency then
 			if rising_edge(ctlr_clk) then
 				if ctlr_rst='1' then
 					ddr_pgm_idl <= '1';

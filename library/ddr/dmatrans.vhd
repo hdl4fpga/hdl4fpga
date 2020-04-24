@@ -87,8 +87,8 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			q := ctlr_refreq and ctlr_dio_req;
 			ref_req <= setif((ctlr_refreq and ctlr_dio_req)='1' and q='0');
+			q := ctlr_refreq and ctlr_dio_req;
 		end if;
 	end process;
 
@@ -96,35 +96,40 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if dmatrans_req='0' then
+				load         <= '1';
 				reload       <= '0';
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
 			elsif reload='1' then
 				if ctlr_trdy='1' then 
+					load      <= '0';
 					reload    <= '0';
 					ctlr_irdy <= '1';
 				else
+					load      <= '1';
 					reload    <= '1';
 					ctlr_irdy <= '0';
 				end if;
 				dmatrans_rdy <= '0';
 			elsif leoc='1' then
-				ctlr_irdy <= '0';
+				load      <= '0';
 				reload    <= '0';
+				ctlr_irdy <= '0';
 				if ctlr_trdy='1' then
 					dmatrans_rdy <= '1';
-				else
-					dmatrans_rdy <= '0';
 				end if;
 			elsif ceoc='1' then
+				load         <= '1';
 				reload       <= '1';
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
 			elsif ref_req='1' then
+				load         <= '1';
 				reload       <= '1';
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
 			else
+				load         <= '0';
 				reload       <= '0';
 				ctlr_irdy    <= '1';
 				dmatrans_rdy <= '0';
@@ -148,11 +153,10 @@ begin
 		end if;
 	end process;
 
-	load <= not dmatrans_req or reload;
 	dmardy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 1-1 => 1),
+		d => (0 to 1-1 => 0),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,
@@ -183,7 +187,7 @@ begin
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => latency-1))
+		d => (0 to col'length-1 => latency))
 	port map (
 		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
