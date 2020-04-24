@@ -100,7 +100,7 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal graphics_di        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal graphics_di    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
@@ -170,7 +170,6 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_ras : std_logic;
 	signal ctlr_cas : std_logic;
 
-	constant no_latency : boolean := false;
 	type display_param is record
 		mode    : natural;
 		dcm_mul : natural;
@@ -381,8 +380,8 @@ begin
 
 	dmavideo_req <= dmacfgvideo_rdy;
 
---	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
+	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -396,8 +395,6 @@ begin
 --	dev_req <= (0 => '0', 1 => dmaio_req);
 
 	dmactlr_e : entity hdl4fpga.dmactlr
-	generic map (
-		no_latency => no_latency)
 	port map (
 		devcfg_clk  => dmacfg_clk,
 		devcfg_req  => dmacfg_req,
@@ -412,8 +409,8 @@ begin
 		ctlr_clk    => ddrsys_clks(clk0),
 
 		ctlr_inirdy => ctlr_inirdy,
---		ctlr_refreq => ctlr_refreq,
-		ctlr_refreq => '0',
+		ctlr_refreq => ctlr_refreq,
+--		ctlr_refreq => '0',
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
@@ -434,7 +431,6 @@ begin
 		mark         => mark,
 		tcp          => tcp,
 
-		no_latency   => no_latency,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,

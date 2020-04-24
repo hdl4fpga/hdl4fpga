@@ -6,7 +6,6 @@ add wave -noupdate /testbench/du_e/mii_rxdv
 add wave -noupdate -radix hexadecimal /testbench/du_e/mii_txd
 add wave -noupdate /testbench/du_e/ddrsys_clks
 add wave -noupdate /testbench/du_e/dmactlr_e/ctlr_act
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/s1
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_pre
 add wave -noupdate /testbench/du_e/ddrctlr_e/ddr_pgm_e/ddr_pgm_ref
 add wave -noupdate /testbench/du_e/ddr_st_lp_dqs
@@ -26,25 +25,33 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ddrctlr_e/ctlr_di
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_di_dv
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_di_req
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_do_dv(0)
-add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_clk
 add wave -noupdate -color {Cornflower Blue} -itemcolor {Cornflower Blue} /testbench/du_e/dmactlr_e/dmatrans_e/ctlrdma_irdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_irdy
+add wave -noupdate /testbench/du_e/graphics_e/vram_e/mem_e/wr_clk
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_ras
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_act
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_cas
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_idl
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_dio_req
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/ddrdma_col
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ceoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/leoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/len_eoc
+add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_irdy
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/reload
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/preload
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/reload
+add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/taddr
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/col_eoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/preload_b/preload_ini
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/preload_b/preload_ena
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_dio_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/ctlr_a
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/taddr
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/tlen
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/ddrdma_col
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/leoc
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/len_eoc
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/dmatrans_taddr
@@ -123,9 +130,10 @@ add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/reload
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/preload
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/tlen
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmatrans_e/taddr
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ref_req
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/refreq
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/s1
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/leoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/ceoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/col_eoc
+add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/len_eoc
 add wave -noupdate -divider DDRCTLR
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_irdy
 add wave -noupdate /testbench/du_e/ddrctlr_e/ctlr_rw
@@ -169,7 +177,7 @@ add wave -noupdate /testbench/du_e/ddrphy_sto
 add wave -noupdate /testbench/du_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203118964 ps} 1} {{Cursor 2} {176072869 ps} 0} {{Cursor 3} {203132194 ps} 0}
+WaveRestoreCursors {{Cursor 1} {203118964 ps} 1} {{Cursor 2} {203131010 ps} 1} {{Cursor 3} {203137000 ps} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 387
 configure wave -valuecolwidth 167
@@ -185,4 +193,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {203038602 ps} {203233634 ps}
+WaveRestoreZoom {203004503 ps} {203291141 ps}

@@ -208,8 +208,8 @@ begin
 				x"0044dea9"         &    -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
-				x"1602000008"       &
-				x"1702000000"       &
+				x"16020001fe"       &
+				x"1702000002"       &
 				x"18" & x"ff"       &
 				x"12345678"         &
 				x"9abcdef0"         &

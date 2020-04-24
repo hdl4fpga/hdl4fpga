@@ -29,8 +29,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity dmactlr is
-	generic (
-		no_latency : boolean);
 	port (
 
 		devcfg_clk   : in  std_logic;
@@ -196,7 +194,6 @@ begin
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
-		no_latency   => no_latency,
 		size => 256)
 	port map (
 		dmatrans_clk   => ctlr_clk,
