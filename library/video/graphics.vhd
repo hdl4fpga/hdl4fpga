@@ -50,21 +50,26 @@ end;
 
 architecture def of graphics is
 
-	constant fifo_size   : natural := 4096;
+	constant fifo_size   : natural := 2*2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
+	constant water_mark  : natural := maxdma_len/2;
+
 	signal video_frm : std_logic;
 
 	signal video_hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
 	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
 
-	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len)-1);
+	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
+	signal vton_dly : std_logic;
 	signal vton_edge : std_logic;
 	signal hzon_edge : std_logic;
 
 	signal src_irdy : std_logic;
 	signal src_data : std_logic_vector(ctlr_di'range);
 
+	signal video_on    : std_logic;
+	signal mydma_rdy   : std_logic;
 begin
 
 	video_e : entity hdl4fpga.video_sync
@@ -79,67 +84,39 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton);
 
+
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
+			mydma_rdy <= dma_rdy;
+		end if;
+	end  process;
 
-			if video_vton='0' then
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if vton_dly='0' then
+				if vton_edge='1' then
+					dma_req <= '1';
+				end if;
+				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
-			elsif dma_rdy='1' then
-				if dma_req='1' then
-					dma_len  <= std_logic_vector(to_unsigned(maxdma_len/4-1, dma_len'length));
-					dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='1', maxdma_len, maxdma_len/4));
-				end if;
+			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
+				level <= level - modeline_data(video_mode)(0);
+			elsif level <= water_mark then
+				dma_req  <= '1';
+				level    <= level + water_mark;
+				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
+				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
+			elsif mydma_rdy='1' then
+				dma_req <= '0';
 			end if;
 
-			if dma_rdy='1' then
-				if dma_req='1' then
-					dma_req <= '0';
-					if video_vton='0' then
-						level <= to_unsigned(maxdma_len, level'length);
-					else
-						level <= level + (maxdma_len/4);
-					end if;
-				elsif hzon_edge='1' then
-					if video_hzon='0' then
-						if video_vton='1' then
-							level <= level - modeline_data(video_mode)(0)/4;
-						end if;
-						hzon_edge <= '0';
-					end if;
-				else
-					hzon_edge <= video_hzon;
-				end if;
-			else
-				if video_frm='1' then
-					dma_req <= '1';
-				elsif level < (3*maxdma_len/4) then
-					dma_req <= '1';
-				end if;
-
-				if hzon_edge='1' then
-					if video_hzon='0' then
-						if video_vton='1' then
-							level <= level - modeline_data(video_mode)(0)/4;
-						end if;
-						hzon_edge <= '0';
-					end if;
-				else
-					hzon_edge <= video_hzon;
-				end if;
-			end if;
-
-			if video_vton='0' then
-				if vton_edge='1' then
-					video_frm <= '1';
-				else
-					video_frm <= '0';
-				end if;
-			else
-				vton_edge <= video_vton;
-			end if;
-
+			hzon_edge <= video_hzon;
+			vton_edge <= vton_dly;
+			vton_dly  <= video_vton;
+			video_frm <= not setif(video_vton='0' and vton_dly='1');
 		end if;
 	end process;
 
@@ -151,20 +128,54 @@ begin
 		end if;
 	end process;
 
-	vram_e : entity hdl4fpga.fifo
-	generic map (
-		size           => fifo_size,
-		overflow_check => false,
-		gray_code      => false,
-		synchronous_rddata => true)
-	port map (
-		src_clk  => ctlr_clk,
-		src_irdy => src_irdy,
-		src_data => src_data,
+	video_output_b : block
+		constant inbuffer_size  : natural := 4;
+		constant outbuffer_size : natural := 4;
 
-		dst_clk  => video_clk,
-		dst_frm  => video_frm,
-		dst_trdy => video_hzon,
-		dst_data => video_pixel);
+		signal v_on    : std_logic;
+		signal v_frm   : std_logic;
+
+		signal v_pixel : std_logic_vector(video_pixel'range);
+
+	begin
+
+		video_on <= video_hzon and video_vton;
+
+		inbuffer_e : entity hdl4fpga.align
+		generic map (
+			n => 2,
+			d => (0 to 2-1 => inbuffer_size))
+		port map (
+			clk => video_clk,
+			di(0) => video_frm,
+			di(1) => video_on,
+			do(0) => v_frm,
+			do(1) => v_on);
+
+		vram_e : entity hdl4fpga.fifo
+		generic map (
+			size           => fifo_size,
+			overflow_check => false,
+			gray_code      => false)
+		port map (
+			src_clk  => ctlr_clk,
+			src_irdy => src_irdy,
+			src_data => src_data,
+
+			dst_clk  => video_clk,
+			dst_frm  => v_frm,
+			dst_trdy => v_on,
+			dst_data => v_pixel);
+
+		outbuffer_e : entity hdl4fpga.align
+		generic map (
+			n => video_pixel'length,
+			d => (0 to video_pixel'length-1 => outbuffer_size))
+		port map (
+			clk => video_clk,
+			di  => v_pixel,
+			do  => video_pixel);
+
+	end block;
 
 end;

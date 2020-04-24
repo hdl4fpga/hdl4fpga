@@ -33,7 +33,7 @@ use hdl4fpga.scopeiopkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture dmactlr of nuhs3adsp is
+architecture graphics of nuhs3adsp is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -44,9 +44,9 @@ architecture dmactlr of nuhs3adsp is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 20.0;
-	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1;
+	constant sys_per      : real    := 50.0;
+	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 3;
 
 	constant g            : std_logic_vector(32 downto 1) := (
 		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
@@ -81,7 +81,7 @@ architecture dmactlr of nuhs3adsp is
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
-	signal dmaio_req      : std_logic;
+	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_03";
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
@@ -97,11 +97,13 @@ architecture dmactlr of nuhs3adsp is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
+	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal graphics_di    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlr_di_dv     : std_logic := '1';
+	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
@@ -125,6 +127,7 @@ architecture dmactlr of nuhs3adsp is
 	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddr_st_dqs_open : std_logic;
 
 	signal ddr_clk        : std_logic_vector(0 downto 0);
 	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -164,7 +167,9 @@ architecture dmactlr of nuhs3adsp is
 	signal dev_req : std_logic_vector(0 to 2-1);
 	signal dev_rdy : std_logic_vector(0 to 2-1); 
 
-	constant no_latency : boolean := false;
+	signal ctlr_ras : std_logic;
+	signal ctlr_cas : std_logic;
+
 	type display_param is record
 		mode    : natural;
 		dcm_mul : natural;
@@ -172,23 +177,28 @@ architecture dmactlr of nuhs3adsp is
 	end record;
 
 	type layout_mode is (
+		modedebug,
 		mode480p,
 		mode600p, 
+		mode768p, 
 		mode1080p);
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p    => (mode => 0, dcm_mul => 3, dcm_div => 5),
-		mode600p    => (mode => 1, dcm_mul => 4, dcm_div => 5),
-		mode1080p   => (mode => 7, dcm_mul => 3, dcm_div => 1));
+		modedebug   => (mode => 15, dcm_mul => 4, dcm_div => 2),
+		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
+		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
+		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
+		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : layout_mode := mode800p;
 
-	alias dma_clk : std_logic is sys_clk;
+	alias dmacfg_clk : std_logic is sys_clk;
+	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 begin
 
-	sys_rst <= not sw1;
+	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
@@ -238,11 +248,13 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
+		signal ipcfg_req : std_logic;
 	begin
 
+		ipcfg_req <= not sw1;
 		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 		port map (
-			ipcfg_req   => '0',
+			ipcfg_req   => ipcfg_req,
 
 			phy_rxc     => mii_rxc,
 			phy_rx_dv   => mii_rxdv,
@@ -308,39 +320,34 @@ begin
 			src_data => rgtr_data,
 
 			dst_clk  => ddrsys_clks(clk0),
+			dst_irdy => ctlr_di_dv,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
---		dmacfgio_p : process (si_clk)
---		begin
---			if rising_edge(si_clk) then
---				if dmacfgio_req/='1' then
---					dmacfgio_req <= dmaio_dv;
---				elsif dmacfgio_rdy='1' then
---					dmacfgio_req <= '0';
---				end if;
---			end if;
---		end process;
---		dmaio_req <= '0';
-
-		dmacfgio_p : process (dma_clk)
+		dmacfgio_p : process (dmacfg_clk)
+			variable io_rdy : std_logic;
 		begin
-			if rising_edge(dma_clk) then
-				if dmacfgio_req/='1' then
-					dmacfgio_req <= dmaio_dv;
-					dmaio_req <= '0';
-				elsif dmacfgio_rdy/='0' then
+			if rising_edge(dmacfg_clk) then
+				if dmaio_dv='1' then
+					dmacfgio_req <= '1';
+				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
-					dmaio_req    <= '1';
-				elsif dmaio_rdy='1' then
-					dmacfgio_req <= '0';
+					dmaio_req <= '1';
+				elsif io_rdy='1' then
 					dmaio_req <= '0';
 				end if;
+				io_rdy := dmaio_rdy;
 			end if;
 		end process;
-
 	end block;
 
+--	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
+--	graphics_di <= ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" ;
+--	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
+--	graphics_di <= ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000"
+				  -- ;
+--	graphics_di <= ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5);
+	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -351,7 +358,7 @@ begin
 		dma_addr     => dmavideo_addr,
 		ctlr_clk     => ddrsys_clks(clk0),
 		ctlr_di_dv   => ctlr_do_dv(0),
-		ctlr_di      => ctlr_do,
+		ctlr_di      => graphics_di,
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
@@ -359,18 +366,10 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	videodmacfg_p : process (dma_clk)
-	begin
-		if rising_edge(dma_clk) then
-			if dmacfgvideo_rdy/='0' then
-				dmavideo_req <= '1';
-			elsif dmavideo_rdy='1' then
-				dmavideo_req <= '0';
-			end if;
-		end if;
-	end process;
+	dmavideo_req <= dmacfgvideo_rdy;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -379,17 +378,11 @@ begin
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_we     <= "1"           & "0";
 
-
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
---	dev_req <= (0 => '0', 1 => dmaio_req);
-
 	dmactlr_e : entity hdl4fpga.dmactlr
-	generic map (
-		no_latency => no_latency)
 	port map (
-		dma_clk     => dma_clk,
-		dmacfg_req  => dmacfg_req,
-		dmacfg_rdy  => dmacfg_rdy,
+		devcfg_clk  => dmacfg_clk,
+		devcfg_req  => dmacfg_req,
+		devcfg_rdy  => dmacfg_rdy,
 		dev_len     => dev_len,
 		dev_addr    => dev_addr,
 		dev_we      => dev_we,
@@ -404,9 +397,12 @@ begin
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
+		ctlr_ras    => ctlr_ras,
+		ctlr_cas    => ctlr_cas,
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
+		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
@@ -418,7 +414,6 @@ begin
 		mark         => mark,
 		tcp          => tcp,
 
-		no_latency   => no_latency,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -448,7 +443,9 @@ begin
 		ctlr_rw      => ctlr_rw,
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
-		ctlr_di_dv   => ctlr_di_req, --'1', --ctlr_di_irdy,
+		ctlr_ras     => ctlr_ras,
+		ctlr_cas    => ctlr_cas,
+		ctlr_di_dv   => ctlr_di_dv, --'1', --ctlr_di_irdy,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
@@ -518,6 +515,10 @@ begin
 		phy_sti     => ddrphy_sti,
 		phy_sto     => ddrphy_sto,
 
+		ddr_sto(0) => ddr_st_dqs,
+		ddr_sto(1) => ddr_st_dqs_open,
+		ddr_sti(0) => ddr_st_lp_dqs,
+		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_clk     => ddr_clk,
 		ddr_cke     => ddr_cke,
 		ddr_cs      => ddr_cs,

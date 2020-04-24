@@ -32,8 +32,7 @@ entity fifo is
 	generic (
 		size : natural;
 		overflow_check : boolean := true;
-		gray_code      : boolean := true;
-		synchronous_rddata : boolean := false);
+		gray_code      : boolean := true);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -49,6 +48,8 @@ entity fifo is
 end;
 
 architecture def of fifo is
+	constant synchronous_rddata : boolean := true;
+
 	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
 	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
 
@@ -60,9 +61,16 @@ architecture def of fifo is
 	signal dst_irdy1 : std_logic;
 
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
+	signal data : std_logic_vector(0 to src_data'length-1);
+
+--	signal diff : natural;
 begin
 
+--	diff <= to_integer(2**wr_addr'length+unsigned(wr_addr)-unsigned(rd_addr)) mod 2**wr_addr'length;
 	wr_ena <= src_frm and src_irdy and src_trdy;
+--	data <= (1 to 8 => wr_addr(wr_addr'right-4)) & (1 to 8 => wr_addr(wr_addr'right-5)) & (1 to 8 => wr_addr(wr_addr'right-3)) & (1 to 8 => wr_addr(wr_addr'right));
+--	data <= std_logic_vector(resize(unsigned(wr_addr), data'length));
+--	data <= src_data;
 	mem_e : entity hdl4fpga.dpram1(def)
 --	generic map (
 --		synchronous_rdaddr => false,
@@ -72,6 +80,7 @@ begin
 		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
 		wr_data => src_data, 
+--		wr_data => data, 
 
 		rd_clk  => dst_clk,
 		rd_addr => rd_addr,
@@ -85,7 +94,7 @@ begin
 				wr_addr(word_addr'range) <= rd_addr(word_addr'range);
 			else
 				if src_irdy='1' then
-					if src_trdy='1' or not overflow_check then
+					if src_trdy='1' then
 						if gray_code then
 							wr_addr <= std_logic_vector(inc(gray(wr_addr)));
 						else
@@ -96,9 +105,9 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range));
+	src_trdy <= (setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range)) or setif(not overflow_check));
 
-	dst_irdy1 <= setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range));
+	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not overflow_check));
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
@@ -107,7 +116,7 @@ begin
 				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
 				if dst_trdy='1' then
-					if dst_irdy1='1' or not overflow_check then
+					if dst_irdy1='1' then
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
 						else

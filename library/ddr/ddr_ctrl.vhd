@@ -35,7 +35,6 @@ entity ddr_ctlr is
 		fpga        : natural;
 		mark        : natural := m6t;
 		tcp         : natural := 6000;
-		no_latency  : boolean := false;
 
 		cmmd_gear   : natural :=  1;
 		bank_size   : natural :=  2;
@@ -65,6 +64,7 @@ entity ddr_ctlr is
 
 		ctlr_irdy    : in  std_logic;
 		ctlr_trdy    : out std_logic;
+		ctlr_mpu_ena : out std_logic;
 		ctlr_rw      : in  std_logic;
 		ctlr_b       : in  std_logic_vector(bank_size-1 downto 0);
 		ctlr_a       : in  std_logic_vector(addr_size-1 downto 0);
@@ -77,6 +77,7 @@ entity ddr_ctlr is
 		ctlr_pre     : out std_logic;
 		ctlr_idl     : out std_logic;
 		ctlr_cyl     : out std_logic;
+		ctlr_ras     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
@@ -249,7 +250,6 @@ begin
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
-		no_latency => no_latency,
 		cmmd_gear => cmmd_gear)
 	port map (
 		ctlr_clk      => ctlr_clks(0),
@@ -257,8 +257,10 @@ begin
 		ctlr_refreq   => ctlr_refreq,
 		ddr_pgm_irdy  => ctlr_irdy,
 		ddr_pgm_trdy  => ctlr_trdy,
+		ddr_pgm_ras   => ctlr_ras,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
+--		ddr_pgm_ref   => '0',
 		ddr_pgm_ref   => ddr_mpu_ref,
 		ddr_pgm_rrdy  => ddr_refi_rdy,
 		ddr_pgm_cal   => ctlr_rlcal,
@@ -307,6 +309,7 @@ begin
 	ctlr_di_req  <= ddr_mpu_wwin;
 	ctlr_do_req  <= ddr_mpu_rwin;
 	ctlr_dio_req <= ddr_mpu_rwwin;
+	ctlr_mpu_ena <= ddr_mpu_trdy;
 
 	ddr_sch_e : entity hdl4fpga.ddr_sch
 	generic map (

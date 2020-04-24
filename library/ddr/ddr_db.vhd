@@ -144,6 +144,7 @@ package ddr_db is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000),
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
+--		timing_record'(mark => M6T,  param => tREFI, value => 700000),
 
 		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
@@ -172,7 +173,8 @@ package ddr_db is
 		latency_record'(fpga => spartan3,    param => DQSL,       value =>   1),
 		latency_record'(fpga => spartan3,    param => DQZL,       value =>   0),
 		latency_record'(fpga => spartan3,    param => WWNL,       value =>   0),
-		latency_record'(fpga => spartan3,    param => STRXL,      value =>   2),
+--		latency_record'(fpga => spartan3,    param => STRXL,      value =>   2),
+		latency_record'(fpga => spartan3,    param => STRXL,      value =>   0),
 		latency_record'(fpga => spartan3,    param => RWNXL,      value => 2*0),
 		latency_record'(fpga => spartan3,    param => DQSZXL,     value =>  1),
 		latency_record'(fpga => spartan3,    param => DQSXL,      value =>   0),

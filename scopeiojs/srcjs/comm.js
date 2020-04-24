@@ -37,10 +37,12 @@ function toHex(buffer)
 {
 	let len = (typeof buffer.length === 'undefined') ? buffer.byteLength : buffer.length;
 	let str = "";
-	str = str + ' ' + Number(buffer[0]).toString('16');
 
-	for (var i=1; i < len; i++)
-		str = str + ' ' + Number(buffer[i]).toString('16');
+	for (var i=0; i < len; i++) 
+		if (buffer[i] < 16) 
+			str = str + ' ' + '0' + Number(buffer[i]).toString('16');
+		else
+			str = str + ' ' + Number(buffer[i]).toString('16');
 	return str;
 }
 
@@ -77,7 +79,7 @@ function streamout (data) {
 			buffer[j++] = esc;
 
 		default:
-			buffer[j++] = data[i];
+			buffer[j++] = data.charCodeAt(i);
 		}
 	}
 	buffer[j++] = eod;
@@ -102,7 +104,7 @@ function send(data) {
 		var buffer   = new Uint8Array(data.length+2);
 	
 		for (i=0; i < data.length; i++)
-			buffer[i] = data[i];
+			buffer[i] = data.charCodeAt(i);
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
@@ -110,7 +112,24 @@ function send(data) {
 				console.log(err);
 			else 
 				console.log('UDP :' + toHex(buffer));
+			udpsckt.close();
 		});
+		break;
+	}
+}
+
+function close() {
+	switch (commOption) {
+	case 'UART':
+		if (typeof uart !== 'undefined')
+			if (uart.err === false) {
+				console.log("closed : " + uart.path);
+				uart.close();
+			}
+
+		break;
+	case 'TCPIP':
+		udpsckt.close();
 		break;
 	}
 }
@@ -149,7 +168,7 @@ function setCommOption(option) {
 	commOption = option;
 }
 
-function getCommOption(option) {
+function getCommOption() {
 	return commOption;
 }
 
@@ -157,9 +176,11 @@ try {
 exports.listUART      = listUART;
 exports.createUART    = createUART;
 exports.setCommOption = setCommOption;
+exports.getCommOption = getCommOption;
 exports.getHost       = getHost;
 exports.setHost       = setHost;
 exports.send          = send;
+exports.close         = close;
 }
 catch(e) {
 }

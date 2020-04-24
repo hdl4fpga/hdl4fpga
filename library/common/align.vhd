@@ -34,7 +34,7 @@ entity align is
 		i : std_logic_vector := (1 to 0 => '-'));
 	port (
 		clk : in  std_logic;
-		rst : in  std_logic := '0';
+		ini : in  std_logic := '0';
 		ena : in  std_logic := '1';
 		di  : in  std_logic_vector(0 to n-1);
 		do  : out std_logic_vector(0 to n-1));
@@ -42,19 +42,20 @@ end;
 
 architecture arch of align is
 	constant dly : natural_vector(0 to d'length-1) := d;
-	constant ini : std_logic_vector(0 to i'length-1) := i;
+	constant val : std_logic_vector(0 to i'length) := i & '-';
 begin
 	delay: for j in 0 to n-1 generate
-		signal q : std_logic_vector(0 to dly(j)) := (others => '-');
+		signal q : std_logic_vector(0 to dly(j)) := (others => val(setif(j < i'length, j, i'length)));
+--		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
 	begin
 		q(q'right) <= di(j);
 		process (clk)
 		begin
 			if rising_edge(clk) then
 				if dly(j) > 0 then
-					if rst='1' then
-						if j < ini'length then
-							q(0 to q'right-1) <= (others => ini(j));
+					if ini='1' then
+						if j < val'length-1 then
+							q(0 to q'right-1) <= (others => val(j));
 						end if;
 					elsif ena='1' then
 						q(0 to q'right-1) <= q(1 to q'right);

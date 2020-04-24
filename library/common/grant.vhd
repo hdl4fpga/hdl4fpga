@@ -25,54 +25,55 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity grant is
 	port (
-		gnt_clk : in  std_logic;
-		gnt_rst : in  std_logic := '0';
-		gnt_rdy : in  std_logic;
+		rsrc_clk : in  std_logic;
+		rsrc_rdy : in  std_logic;
+		rsrc_req : out std_logic;
 
-		dev_req : in  std_logic_vector;
-		dev_gnt : buffer std_logic_vector;
-		dev_rdy : out std_logic_vector);
-
-
+		dev_req  : in  std_logic_vector;
+		dev_gnt  : buffer std_logic_vector;
+		dev_rdy  : out std_logic_vector);
 end;
 
 architecture def of grant is
-
-	signal booked  : std_logic_vector(dev_req'range) := (others => '0');
-	signal served  : std_logic_vector(booked'range) := (others => '0');
-
-	signal arbiter_req : std_logic_vector(dev_req'range);
-
+	signal req  : std_logic;
+	signal edge : std_logic;
+	signal run  : std_logic;
+	signal gnt  : std_logic_vector(dev_gnt'range);
 begin
 
-	book_p : process (gnt_clk)
-		variable serving : std_logic_vector(served'range);
-		variable booking : std_logic_vector(served'range);
+	req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
+	process (rsrc_clk)
 	begin
-		if rising_edge(gnt_clk) then
-			if gnt_rst='1'  then
-				booking := (others => '0');
-				serving := (others => '0');
+		if rising_edge(rsrc_clk) then
+			if rsrc_rdy='1' then
+				if (dev_gnt and dev_req)=(dev_req'range => '0') then
+					edge <= '1';
+				end if;
 			else
-				booking := dev_req or (booked and not served and not (dev_gnt and (dev_gnt'range => gnt_rdy)));
-				serving := (dev_req and served) or (dev_req and booked and (dev_gnt and (dev_gnt'range => gnt_rdy)));
+				edge <= '0';
 			end if;
-			booked <= booking;
-			served <= serving;
-
-			arbiter_req  <= not serving and booking;
+			if run='0' then
+				gnt <= dev_gnt;
+			end if;
 		end if;
 	end process;
+	run <= 
+		'0' when rsrc_rdy='0' else 
+		'1' when req='0'      else
+		'1' when edge='1'     else
+		'0';
+
+	rsrc_req <= setif((setif(run='0', dev_gnt, gnt) and dev_req) /= (dev_req'range => '0'));
 
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk     => gnt_clk,
-		bus_req => arbiter_req,
-		bus_gnt => dev_gnt);
+		clk      => rsrc_clk,
+		rsrc_req => dev_req,
+		rsrc_gnt => dev_gnt);
 
-	dev_rdy <= served;
-
+	dev_rdy  <= setif(run='0', dev_gnt, gnt) and (dev_req'range => rsrc_rdy);
 end;
