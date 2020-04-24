@@ -47,7 +47,7 @@ architecture Behavioral of usb_rx_phy_emard is
     C_PA_bits-5 => '0', -- 1/32
     others      => '1'
   );
-  constant C_PA_compensate: unsigned(C_PA_bits-2 downto 0) := C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0);
+  constant C_PA_compensate: unsigned(C_PA_bits-2 downto 0) := C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0)+C_PA_inc(C_PA_bits-2 downto 0);
   constant C_PA_init: unsigned(C_PA_bits-2 downto 0) := C_PA_phase + C_PA_compensate;
   constant C_valid_init: std_logic_vector(data'range) := (data'high => '1', others => '0'); -- adjusted (1 bit early) to split stream at byte boundary
   constant C_idlecnt_init: std_logic_vector(6 downto 0) := (6 => '1', others => '0'); -- 6 data bits + 1 stuff bit
@@ -153,6 +153,12 @@ begin
                 else -- after preamble is found, circular-shift "R_valid" register
                   if R_idlecnt(0) = '0' then -- skips stuffed bit
                     R_valid <= R_valid(0) & R_valid(R_valid'high downto 1);
+                  else -- stuffed bit S_bit=0 should be here
+                    if S_bit = '1' then -- if stuffed bit is missing
+                      R_valid <= (others => '0'); -- drop frame
+                      R_frame <= '0';
+                      R_rxactive <= '0';
+                    end if;
                   end if; -- skip stuffed bit
                 end if;
             else -- R_frame = '0'
