@@ -191,7 +191,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : layout_mode := mode800p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -324,18 +324,6 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
---		dmacfgio_p : process (si_clk)
---		begin
---			if rising_edge(si_clk) then
---				if dmacfgio_req/='1' then
---					dmacfgio_req <= dmaio_dv;
---				elsif dmacfgio_rdy='1' then
---					dmacfgio_req <= '0';
---				end if;
---			end if;
---		end process;
---		dmaio_req <= '0';
-
 		dmacfgio_p : process (dmacfg_clk)
 			variable io_rdy : std_logic;
 		begin
@@ -390,10 +378,6 @@ begin
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_we     <= "1"           & "0";
 
-
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
---	dev_req <= (0 => '0', 1 => dmaio_req);
-
 	dmactlr_e : entity hdl4fpga.dmactlr
 	port map (
 		devcfg_clk  => dmacfg_clk,
@@ -410,7 +394,6 @@ begin
 
 		ctlr_inirdy => ctlr_inirdy,
 		ctlr_refreq => ctlr_refreq,
---		ctlr_refreq => '0',
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,

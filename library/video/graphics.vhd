@@ -109,7 +109,6 @@ begin
 				level    <= level + water_mark;
 				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
 				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
---				dma_addr <= (dma_addr'range => '0');
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
@@ -129,20 +128,54 @@ begin
 		end if;
 	end process;
 
-	video_on <= video_hzon and video_vton;
-	vram_e : entity hdl4fpga.fifo
-	generic map (
-		size           => fifo_size,
-		overflow_check => false,
-		gray_code      => false)
-	port map (
-		src_clk  => ctlr_clk,
-		src_irdy => src_irdy,
-		src_data => src_data,
+	video_output_b : block
+		constant inbuffer_size  : natural := 4;
+		constant outbuffer_size : natural := 4;
 
-		dst_clk  => video_clk,
-		dst_frm  => video_frm,
-		dst_trdy => video_on,
-		dst_data => video_pixel);
+		signal v_on    : std_logic;
+		signal v_frm   : std_logic;
+
+		signal v_pixel : std_logic_vector(video_pixel'range);
+
+	begin
+
+		video_on <= video_hzon and video_vton;
+
+		inbuffer_e : entity hdl4fpga.align
+		generic map (
+			n => 2,
+			d => (0 to 2-1 => inbuffer_size))
+		port map (
+			clk => video_clk,
+			di(0) => video_frm,
+			di(1) => video_on,
+			do(0) => v_frm,
+			do(1) => v_on);
+
+		vram_e : entity hdl4fpga.fifo
+		generic map (
+			size           => fifo_size,
+			overflow_check => false,
+			gray_code      => false)
+		port map (
+			src_clk  => ctlr_clk,
+			src_irdy => src_irdy,
+			src_data => src_data,
+
+			dst_clk  => video_clk,
+			dst_frm  => v_frm,
+			dst_trdy => v_on,
+			dst_data => v_pixel);
+
+		outbuffer_e : entity hdl4fpga.align
+		generic map (
+			n => video_pixel'length,
+			d => (0 to video_pixel'length-1 => outbuffer_size))
+		port map (
+			clk => video_clk,
+			di  => v_pixel,
+			do  => video_pixel);
+
+	end block;
 
 end;
