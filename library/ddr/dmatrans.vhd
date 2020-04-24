@@ -140,15 +140,17 @@ begin
 	load_p : process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
-			if ceoc='1' then
-				ilen  <= tlen;
-				iaddr <= taddr;
-			elsif ref_req='1' then
-				ilen  <= tlen;
-				iaddr <= taddr;
-			elsif reload='0' then
-				ilen  <= dmatrans_ilen;
-				iaddr <= dmatrans_iaddr;
+			if reload='0' then
+				if ceoc='1' then
+					ilen  <= tlen;
+					iaddr <= taddr;
+				elsif ref_req='1' then
+					ilen  <= tlen;
+					iaddr <= taddr;
+				else
+					ilen  <= dmatrans_ilen;
+					iaddr <= dmatrans_iaddr;
+				end if;
 			end if;
 		end if;
 	end process;
