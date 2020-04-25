@@ -129,8 +129,8 @@ begin
 	end process;
 
 	video_output_b : block
-		constant inbuffer_size  : natural := 4;
-		constant outbuffer_size : natural := 4;
+		constant inbuffer_size  : natural := 0;
+		constant outbuffer_size : natural := 0;
 
 		signal v_on    : std_logic;
 		signal v_frm   : std_logic;
