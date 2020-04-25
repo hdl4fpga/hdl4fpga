@@ -132,7 +132,7 @@ begin
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,
-		synchronous_rddata => true)
+		synchronous_rddata => false)
 	port map (
 		wr_clk  => devcfg_clk,
 		wr_ena  => dmargtr_dv,
@@ -146,7 +146,7 @@ begin
 	dmalen_rgtr_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,
-		synchronous_rddata => true)
+		synchronous_rddata => false)
 	port map (
 		wr_clk  => devcfg_clk,
 		wr_addr => dmargtr_id,
@@ -160,7 +160,7 @@ begin
 	dmawe_rgtr_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,
-		synchronous_rddata => true)
+		synchronous_rddata => false)
 	port map (
 		wr_clk  => devcfg_clk,
 		wr_addr => dmargtr_id,
@@ -186,7 +186,7 @@ begin
 	begin
 		if rising_edge(ctlr_clk) then
 			devtrans_req <= dev_req;
-			dev_rdy <= devtrans_rdy;
+			dev_rdy      <= devtrans_rdy;
 			dmatrans_req <= setif(ctlr_inirdy='1', rsrc_req);
 		end if;
 	end process;

@@ -185,7 +185,7 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 15, dcm_mul => 4, dcm_div => 2),
+		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
@@ -324,10 +324,10 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
-		dmacfgio_p : process (dmacfg_clk)
+		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
 		begin
-			if rising_edge(dmacfg_clk) then
+			if rising_edge(si_clk) then
 				if dmaio_dv='1' then
 					dmacfgio_req <= '1';
 				elsif dmacfgio_rdy='1' then
@@ -341,12 +341,6 @@ begin
 		end process;
 	end block;
 
---	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
---	graphics_di <= ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" ;
---	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
---	graphics_di <= ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000"
-				  -- ;
---	graphics_di <= ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5);
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
@@ -369,7 +363,6 @@ begin
 	dmavideo_req <= dmacfgvideo_rdy;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);

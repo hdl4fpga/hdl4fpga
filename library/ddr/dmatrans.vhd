@@ -77,6 +77,7 @@ architecture def of dmatrans is
 	signal tlen         : std_logic_vector(dmatrans_tlen'range);
 	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
+	signal init         : std_logic;
 	signal reload       : std_logic;
 	signal load         : std_logic;
 
@@ -95,7 +96,7 @@ begin
 	process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
-			if dmatrans_req='0' then
+			if init='1' then
 				load         <= '1';
 				reload       <= '0';
 				ctlr_irdy    <= '0';
@@ -134,6 +135,7 @@ begin
 				ctlr_irdy    <= '1';
 				dmatrans_rdy <= '0';
 			end if;
+			init <= not dmatrans_req;
 		end if;
 	end process;
 
