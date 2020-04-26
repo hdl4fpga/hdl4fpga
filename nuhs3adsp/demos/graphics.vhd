@@ -83,7 +83,7 @@ architecture graphics of nuhs3adsp is
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
-	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_03";
+	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_3f";
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
 	signal dmaio_dv       : std_logic;
 
@@ -311,7 +311,7 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => 256,
+			size           => 64,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
