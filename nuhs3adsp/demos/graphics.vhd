@@ -326,9 +326,10 @@ begin
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
+			variable edge : std_logic;
 		begin
 			if rising_edge(si_clk) then
-				if dmaio_dv='1' then
+				if dmaio_dv='1' and edge='0' then
 					dmacfgio_req <= '1';
 				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
@@ -337,6 +338,7 @@ begin
 					dmaio_req <= '0';
 				end if;
 				io_rdy := dmaio_rdy;
+				edge := dmaio_dv;
 			end if;
 		end process;
 	end block;
