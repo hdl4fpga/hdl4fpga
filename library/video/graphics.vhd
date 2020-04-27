@@ -68,6 +68,8 @@ architecture def of graphics is
 	signal src_irdy : std_logic;
 	signal src_data : std_logic_vector(ctlr_di'range);
 
+	signal dma_step : unsigned(dma_addr'range);
+
 	signal video_on    : std_logic;
 	signal mydma_rdy   : std_logic;
 begin
@@ -102,13 +104,15 @@ begin
 				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
+				dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
 			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
 				level <= level - modeline_data(video_mode)(0);
 			elsif level <= water_mark then
 				dma_req  <= '1';
 				level    <= level + water_mark;
 				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
-				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
+				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
+				dma_step <= resize(to_unsigned(water_mark, level'length), dma_step'length);
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
