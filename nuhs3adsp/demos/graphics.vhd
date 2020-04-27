@@ -58,6 +58,7 @@ architecture graphics of nuhs3adsp is
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
+	signal mii_clk : std_logic;
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
 	constant cmmd_gear    : natural := 1;
@@ -191,7 +192,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := modedebug;
+	constant video_mode : layout_mode := mode600p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -309,20 +310,22 @@ begin
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
 
-		dmadata_e : entity hdl4fpga.fifo
-		generic map (
-			size           => 64,
-			gray_code      => false,
-			overflow_check => false)
-		port map (
-			src_clk  => si_clk,
-			src_irdy => dmadata_ena,
-			src_data => rgtr_data,
-
-			dst_clk  => ddrsys_clks(clk0),
-			dst_irdy => ctlr_di_dv,
-			dst_trdy => ctlr_di_req,
-			dst_data => ctlr_di);
+--		dmadata_e : entity hdl4fpga.fifo
+--		generic map (
+--			size           => 64,
+--			gray_code      => false,
+--			overflow_check => false)
+--		port map (
+--			src_clk  => si_clk,
+--			src_irdy => dmadata_ena,
+--			src_data => rgtr_data,
+--
+--			dst_clk  => ddrsys_clks(clk0),
+--			dst_irdy => ctlr_di_dv,
+--			dst_trdy => ctlr_di_req,
+--			dst_data => ctlr_di);
+			ctlr_di_req <= ctlr_di_dv;
+		ctlr_di <= (others => '1');
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
@@ -584,17 +587,48 @@ begin
 		dr => '0',
 		df => '1',
 		q => clk_videodac);
-
-
+		
 	hd_t_data <= 'Z';
 
-	-- LEDs DAC --
-	--------------
+	process (si_clk)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(si_clk) then
+			i := dmaio_dv;
+			i := dmaio_rdy;
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			led18 <= t;
+			led16 <= not t;
+		end if;
+	end process;
+
+	process (ddrsys_clks(clk0))
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(ddrsys_clks(clk0)) then
+			i := dmavideo_rdy;
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			led13 <= t;
+			led15 <= not t;
+		end if;
+	end process;
+	-- LEDs --
+	----------
 		
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
+--	led18 <= '0';
+--	led16 <= '0';
+--	led15 <= '0';
+--	led13 <= '0';
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
