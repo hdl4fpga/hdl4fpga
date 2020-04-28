@@ -150,7 +150,7 @@ begin
 			n => 2,
 			d => (0 to 2-1 => inbuffer_size))
 		port map (
-			clk => video_clk,
+			clk   => video_clk,
 			di(0) => video_frm,
 			di(1) => video_on,
 			do(0) => v_frm,

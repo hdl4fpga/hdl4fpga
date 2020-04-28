@@ -243,6 +243,7 @@ begin
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
+		signal rgtr_idv    : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
 		signal data_ena    : std_logic;
@@ -284,6 +285,7 @@ begin
 			data_len  => data_len,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
+			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
@@ -324,7 +326,8 @@ begin
 --			dst_irdy => ctlr_di_dv,
 --			dst_trdy => ctlr_di_req,
 --			dst_data => ctlr_di);
-			ctlr_di_req <= ctlr_di_dv;
+
+		ctlr_di_dv <= ctlr_di_req;
 		ctlr_di <= (others => '1');
 
 		dmacfgio_p : process (si_clk)
@@ -346,6 +349,7 @@ begin
 		end process;
 	end block;
 
+--	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
@@ -372,8 +376,10 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
-	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_addr   <= dmavideo_addr & dmaio_addr;
+	dev_len    <= dmavideo_len  & x"0000ff"; -- dmaio_len;
+	dev_addr   <= dmavideo_addr & x"000100"; -- dmaio_addr;
+--	dev_len    <= x"00031f" & x"000000"; -- dmaio_len;
+--	dev_addr   <= x"000000" & x"0000ff"; -- dmaio_addr;
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
@@ -442,8 +448,8 @@ begin
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
 		ctlr_ras     => ctlr_ras,
-		ctlr_cas    => ctlr_cas,
-		ctlr_di_dv   => ctlr_di_dv, --'1', --ctlr_di_irdy,
+		ctlr_cas     => ctlr_cas,
+		ctlr_di_dv   => ctlr_di_dv,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
@@ -596,12 +602,13 @@ begin
 		variable i : std_logic;
 	begin
 		if rising_edge(si_clk) then
-			i := dmaio_dv;
-			i := dmaio_rdy;
 			if i='1' and e='0' then
 				t := not t;
 			end if;
 			e := i;
+			i := dmaio_dv;
+			i := dmaio_rdy;
+
 			led18 <= t;
 			led16 <= not t;
 		end if;
