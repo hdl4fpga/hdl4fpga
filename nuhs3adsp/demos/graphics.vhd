@@ -328,7 +328,7 @@ begin
 --			dst_data => ctlr_di);
 
 		ctlr_di_dv <= ctlr_di_req;
-		ctlr_di <= (others => '1');
+		ctlr_di <= x"0000ff00"; --(others => '1');
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
@@ -336,10 +336,10 @@ begin
 		begin
 			if rising_edge(si_clk) then
 				if dmaio_dv='1' and edge='0' then
-					dmacfgio_req <= '1';
+					dmacfgio_req <= ctlr_inirdy;
 				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
-					dmaio_req <= '1';
+					dmaio_req <= ctlr_inirdy;
 				elsif io_rdy='1' then
 					dmaio_req <= '0';
 				end if;
@@ -376,7 +376,7 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
-	dev_len    <= dmavideo_len  & x"0000ff"; -- dmaio_len;
+	dev_len    <= dmavideo_len  & x"00003f"; -- dmaio_len;
 	dev_addr   <= dmavideo_addr & x"000100"; -- dmaio_addr;
 --	dev_len    <= x"00031f" & x"000000"; -- dmaio_len;
 --	dev_addr   <= x"000000" & x"0000ff"; -- dmaio_addr;
