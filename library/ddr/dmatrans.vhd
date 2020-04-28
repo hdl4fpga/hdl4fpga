@@ -220,13 +220,13 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if ctlrdma_irdy='1' then
-				saved_col := resize(unsigned(ddrdma_col & '0'), ctlr_a'length);
+				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length);
 			end if;
 
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				ctlr_a <= std_logic_vector(saved_col);
+				ctlr_a <= std_logic_vector(shift_left(saved_col,1));
 			end if;
 		end if;
 	end process;

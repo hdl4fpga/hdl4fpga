@@ -312,23 +312,23 @@ begin
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
 
---		dmadata_e : entity hdl4fpga.fifo
---		generic map (
---			size           => 64,
---			gray_code      => false,
---			overflow_check => false)
---		port map (
---			src_clk  => si_clk,
---			src_irdy => dmadata_ena,
---			src_data => rgtr_data,
---
---			dst_clk  => ddrsys_clks(clk0),
---			dst_irdy => ctlr_di_dv,
---			dst_trdy => ctlr_di_req,
---			dst_data => ctlr_di);
+		dmadata_e : entity hdl4fpga.fifo
+		generic map (
+			size           => 64,
+			gray_code      => false,
+			overflow_check => false)
+		port map (
+			src_clk  => si_clk,
+			src_irdy => dmadata_ena,
+			src_data => rgtr_data,
 
-		ctlr_di_dv <= ctlr_di_req;
-		ctlr_di <= x"0000ff00"; --(others => '1');
+			dst_clk  => ddrsys_clks(clk0),
+			dst_irdy => ctlr_di_dv,
+			dst_trdy => ctlr_di_req,
+			dst_data => ctlr_di);
+
+--		ctlr_di_dv <= ctlr_di_req;
+--		ctlr_di <= x"00ffff00"; --(others => '1');
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
@@ -349,7 +349,6 @@ begin
 		end process;
 	end block;
 
---	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
@@ -376,10 +375,8 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
-	dev_len    <= dmavideo_len  & x"00003f"; -- dmaio_len;
-	dev_addr   <= dmavideo_addr & x"000100"; -- dmaio_addr;
---	dev_len    <= x"00031f" & x"000000"; -- dmaio_len;
---	dev_addr   <= x"000000" & x"0000ff"; -- dmaio_addr;
+	dev_len    <= dmavideo_len  & dmaio_len;
+	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
