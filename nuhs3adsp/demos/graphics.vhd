@@ -78,15 +78,15 @@ architecture graphics of nuhs3adsp is
 	constant clk90        : natural := 1;
 	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_len    : std_logic_vector(26-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(26-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(24-1 downto 2);
+	signal dmactlr_addr   : std_logic_vector(24-1 downto 2);
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
-	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_3f";
-	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
+	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
 	signal dmaio_dv       : std_logic;
 
 	signal ctlr_irdy      : std_logic;
@@ -193,7 +193,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : layout_mode := mode1080p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
