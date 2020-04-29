@@ -31,8 +31,10 @@ use hdl4fpga.std.all;
 
 entity dmatrans is
 	generic (
-		latency       : natural := 2;
-		size          : natural);
+		bank_size     : natural;
+		addr_size     : natural;
+		coln_size     : natural;
+		latency       : natural := 2);
 	port (
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
@@ -227,6 +229,7 @@ begin
 				ctlr_a <= ddrdma_row;
 			else
 				ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+--				ctlr_a <= std_logic_vector(saved_col);
 			end if;
 		end if;
 	end process;

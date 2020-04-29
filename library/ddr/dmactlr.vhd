@@ -29,6 +29,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity dmactlr is
+	generic (
+		bank_size     : natural;
+		addr_size     : natural;
+		coln_size     : natural);
 	port (
 
 		devcfg_clk   : in  std_logic;
@@ -194,7 +198,9 @@ begin
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
-		size => 256)
+		bank_size     => bank_size,
+		addr_size     => addr_size,
+		coln_size     => coln_size)
 	port map (
 		dmatrans_clk   => ctlr_clk,
 		dmatrans_req   => dmatrans_req,

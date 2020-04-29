@@ -66,6 +66,7 @@ architecture graphics of nuhs3adsp is
 	constant data_edges   : natural := 2;
 	constant bank_size    : natural := ddr_ba'length;
 	constant addr_size    : natural := ddr_a'length;
+	constant coln_size    : natural := 10;
 	constant data_gear    : natural := 2;
 	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := 8;
@@ -332,19 +333,21 @@ begin
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
-			variable edge : std_logic;
+			variable edge   : std_logic;
+			variable dv     : std_logic;
 		begin
 			if rising_edge(si_clk) then
-				if dmaio_dv='1' and edge='0' then
-					dmacfgio_req <= ctlr_inirdy;
+				if dv='1' and edge='0' then
+					dmacfgio_req <= '1'; --ctlr_inirdy;
 				elsif dmacfgio_rdy='1' then
 					dmacfgio_req <= '0';
-					dmaio_req <= ctlr_inirdy;
+					dmaio_req <= '1'; --ctlr_inirdy;
 				elsif io_rdy='1' then
 					dmaio_req <= '0';
 				end if;
 				io_rdy := dmaio_rdy;
-				edge := dmaio_dv;
+				edge   := dv;
+				dv     := dmaio_dv;
 			end if;
 		end process;
 	end block;
@@ -380,6 +383,10 @@ begin
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
+	generic map (
+		bank_size   => ddr_ba'length,
+		addr_size   => ddr_a'length,
+		coln_size   => coln_size)
 	port map (
 		devcfg_clk  => dmacfg_clk,
 		devcfg_req  => dmacfg_req,
