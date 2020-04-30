@@ -1,3 +1,4 @@
+
 //                                                                            //
 // Author(s):                                                                 //
 //   Miguel Angel Sagreras                                                    //
@@ -21,33 +22,65 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-const fs = require('fs');
+const fs      = require('fs');
+const commjs  = require('./comm.js');
+const program = require('commander');
 
-var data = fs.readFileSync('image.rgb');
+program
+	.requiredOption('-l, --link <type>', 'udp      | serial')
+	.requiredOption('-n, --name <name>', 'hostname | ip address | serial port')
+	.parse(process.argv);
 
-for (i=0; 
-process.stdin.on('data', function(chunk) {
-	data += chunk;
+switch(program.link) {
+case 'serial':
+	commjs.setCommOption('UART');
+	commjs.createUART(program.name, "115200");
+	break;
+case 'ip':
+	commjs.setCommOption('TCPIP');
+	commjs.setHost(program.name);
+	break;
+default:
+	program.help();
+	break;
+}
 
-	let length = 0;
-	while ((length+1) < data.length) {
-		let step = (data.charCodeAt(length+1) + 3);
-		console.log("step", step);
-		if ((length+step) <= data.length) {
-			if (length+step <= (1024+8)) {
-				length += step;
-			} else if (length > 0) {
-				commjs.send(data.slice(0, length));
-				data = data.slice(length);
-				length = 0;
-			}
-		} else break;
+var fb = fs.readFileSync('image.rgb');
+
+var memaddr = new Uint8Array(2+3);
+var memlen  = new Uint8Array(2+3);
+var memdata = new Uint8Array(2+256)
+
+var comp;
+for (var i = 0; fb.byteLength-i >= (3*256/4); i += 3*256/4) {
+
+	var addr = (4*i/3) >> 2;
+
+	memaddr[0] = 0x16;
+	memaddr[1] = 0x02;
+	memaddr[2] = (addr >> 16) & 0xff;
+	memaddr[3] = (addr >>  8) & 0xff;
+	memaddr[4] = (addr >>  0) & 0xff;
+
+	memlen[0]  = 0x17;
+	memlen[1]  = 0x02;
+	memlen[2]  = 0x00;
+	memlen[3]  = 0x00;
+	memlen[4]  = 0x3f;
+
+	memdata[0] = 0x18;
+	memdata[1] = 0xff;
+
+	for (var j = 0 ; j < 256/4; j++) {
+		memdata[4*j+0] = fb[3*j+0];
+		memdata[4*j+1] = fb[3*j+1];
+		memdata[4*j+2] = fb[3*j+2];
+		memdata[4*j+3] = 0x00;
 	}
-	if (length > 0) {
-		commjs.send(data.slice(0, length));
-		data = data.slice(length);
-	}
-	if (data.length > 0) 
-		console.log("length %d, data left %s", data.length, data);
-});
 
+	commjs.send(memdata);
+	commjs.send(memaddr);
+	return 0;
+//	commjs.send(memlen);
+
+}
