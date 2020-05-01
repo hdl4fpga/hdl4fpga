@@ -97,7 +97,6 @@ architecture def of dmactlr is
 begin
 
 	process (devcfg_clk)
-		variable dv : std_logic;
 	begin
 		if rising_edge(devcfg_clk) then
 			dmacfg_req <= devcfg_req;
@@ -185,13 +184,15 @@ begin
 		rsrc_req => rsrc_req,
 		rsrc_rdy => dmatrans_rdy);
 
-	dmatrans_rid <= encoder(devtrans_gnt);
 	process (ctlr_clk)
+		variable req : std_logic;
 	begin
 		if rising_edge(ctlr_clk) then
 			devtrans_req <= dev_req;
 			dev_rdy      <= devtrans_rdy;
-			dmatrans_req <= setif(ctlr_inirdy='1', rsrc_req);
+			dmatrans_rid <= encoder(devtrans_gnt);
+			dmatrans_req <= req;
+			req := setif(ctlr_inirdy='1', rsrc_req);
 		end if;
 	end process;
 

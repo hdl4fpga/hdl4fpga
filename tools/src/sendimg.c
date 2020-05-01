@@ -106,34 +106,34 @@ int main (int argc, char *argv[])
 
 		fread(data, sizeof(char), sizeof(data), stdin);
 		for (int i=0; i < sizeof(data)/3; i++) {
-			memdata[4*i+0+2] = 0xff; //data[3*i+0];
-			memdata[4*i+1+2] = 0xff; //data[3*i+1];
-			memdata[4*i+2+2] = 0xff; //data[3*i+2];
+			memdata[4*i+0+2] = data[3*i+0];
+			memdata[4*i+1+2] = data[3*i+1];
+			memdata[4*i+2+2] = data[3*i+2];
 			memdata[4*i+3+2] = 0xff;
+			memdata[4*i+0+2] = (i < 32) ? 0 : ((n % 2) == 1) ? 0 : 255;
+			memdata[4*i+1+2] = (i < 32) ? 255 : 0;
+			memdata[4*i+2+2] = (i < 32) ? ((n % 2) == 1) ? 255 : 0 : 0;
+			memdata[4*i+3+2] = (i < 32) ? 0 : 255;
 		}
 
-		if (sendto(s, memaddr, sizeof(memaddr), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
+		if (sendto(s, memdata, sizeof(memdata), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			exit (1);
 		} else {
-			nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
-			if (sendto(s, memdata, sizeof(memdata), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
+			if (sendto(s, memaddr, sizeof(memaddr), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 				perror ("sendto()");
 				exit (1);
 			} else {
-				nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
 				if (sendto(s, memlen, sizeof(memlen), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 					perror ("sendto()");
 					exit (1);
 				}
 			}
 		}
-		nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
+		nanosleep((const struct timespec[]){{0, 1000000L}}, NULL);
 		addr += 0x40;
-		return 0;
-		if (++n > 0)
-			break;
 
+		n++;
 	}
 
 	return 0;
