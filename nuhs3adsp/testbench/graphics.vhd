@@ -67,6 +67,8 @@ architecture nuhs3adsp_graphics of testbench is
 	signal ddr_lp_dqs : std_logic;
 
 	component nuhs3adsp is
+		generic (
+			mode : natural := 0);
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;
@@ -208,12 +210,10 @@ begin
 				x"0044dea9"         &    -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
-				x"16020001ff"       &
-				x"1702000002"       &
+				x"16020abcfd"       &
 				x"18" & x"ff"       &
-				x"12345678"         &
-				x"9abcdef0"         &
-                x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+				x"1234567890abcdF000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000aabbccdd" &
+				x"170200003f"
 			)        &
 			x"00000000"
 		,8)

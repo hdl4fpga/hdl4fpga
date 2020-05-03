@@ -55,7 +55,13 @@ architecture def of graphics is
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	constant water_mark  : natural := maxdma_len/2;
 
+	signal v_hzsync  : std_logic;
+	signal v_vtsync  : std_logic;
+	signal v_hzon    : std_logic;
+	signal v_vton    : std_logic;
+	signal v_on      : std_logic;
 	signal video_frm : std_logic;
+	signal video_on  : std_logic;
 
 	signal video_hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
 	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
@@ -68,7 +74,8 @@ architecture def of graphics is
 	signal src_irdy : std_logic;
 	signal src_data : std_logic_vector(ctlr_di'range);
 
-	signal video_on    : std_logic;
+	signal dma_step : unsigned(dma_addr'range);
+
 	signal mydma_rdy   : std_logic;
 begin
 
@@ -77,12 +84,12 @@ begin
 		mode => video_mode)
 	port map (
 		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
+		video_hzsync => v_hzsync,
+		video_vtsync => v_vtsync,
 		video_hzcntr => video_hzcntr,
 		video_vtcntr => video_vtcntr,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton);
+		video_hzon   => v_hzon,
+		video_vton   => v_vton);
 
 
 	process (video_clk)
@@ -102,21 +109,23 @@ begin
 				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= (dma_addr'range => '0');
-			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
+				dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
+			elsif v_vton='1' and hzon_edge='0' and v_hzon='1' then
 				level <= level - modeline_data(video_mode)(0);
 			elsif level <= water_mark then
 				dma_req  <= '1';
 				level    <= level + water_mark;
 				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
-				dma_addr <= std_logic_vector(unsigned(dma_addr) + setif(video_vton='0', maxdma_len, water_mark));
+				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
+				dma_step <= resize(to_unsigned(water_mark, level'length), dma_step'length);
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
 
-			hzon_edge <= video_hzon;
+			hzon_edge <= v_hzon;
 			vton_edge <= vton_dly;
-			vton_dly  <= video_vton;
-			video_frm <= not setif(video_vton='0' and vton_dly='1');
+			vton_dly  <= v_vton;
+			video_frm <= not setif(v_vton='0' and vton_dly='1');
 		end if;
 	end process;
 
@@ -139,18 +148,18 @@ begin
 
 	begin
 
-		video_on <= video_hzon and video_vton;
+		v_on <= v_hzon and v_vton;
 
 		inbuffer_e : entity hdl4fpga.align
 		generic map (
 			n => 2,
 			d => (0 to 2-1 => inbuffer_size))
 		port map (
-			clk => video_clk,
+			clk   => video_clk,
 			di(0) => video_frm,
-			di(1) => video_on,
+			di(1) => v_on,
 			do(0) => v_frm,
-			do(1) => v_on);
+			do(1) => video_on);
 
 		vram_e : entity hdl4fpga.fifo
 		generic map (
@@ -164,7 +173,7 @@ begin
 
 			dst_clk  => video_clk,
 			dst_frm  => v_frm,
-			dst_trdy => v_on,
+			dst_trdy => video_on,
 			dst_data => v_pixel);
 
 		outbuffer_e : entity hdl4fpga.align
@@ -176,6 +185,20 @@ begin
 			di  => v_pixel,
 			do  => video_pixel);
 
+		sync_e : entity hdl4fpga.align
+		generic map (
+			n => 4,
+			d => (0 to 5-1 => inbuffer_size+outbuffer_size+1))
+		port map (
+			clk => video_clk,
+			di(0) => v_hzon,
+			di(1) => v_vton,
+			di(2) => v_hzsync,
+			di(3) => v_vtsync,
+			do(0) => video_hzon,
+			do(1) => video_vton,
+			do(2) => video_hzsync,
+			do(3) => video_vtsync);
 	end block;
 
 end;

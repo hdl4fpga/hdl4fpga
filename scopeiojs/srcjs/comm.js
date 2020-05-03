@@ -94,6 +94,7 @@ const dgram = require('dgram');
 var udpsckt = dgram.createSocket('udp4');
 
 function send(data) {
+	var i;
 
 	switch (commOption) {
 	case 'UART':
@@ -103,16 +104,23 @@ function send(data) {
 		const ipport = 57001;
 		var buffer   = new Uint8Array(data.length+2);
 	
-		for (i=0; i < data.length; i++)
-			buffer[i] = data.charCodeAt(i);
+		if (data instanceof Uint8Array) {
+			for (i=0; i < data.length; i++)
+				buffer[i] = data[i];
+		} else {
+			for (i=0; i < data.length; i++)
+				buffer[i] = data.charCodeAt(i);
+		}
+
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
 			if (err)
-				console.log(err);
-			else 
+				throw(err);
+			else {
+//				udpsckt.close();
 				console.log('UDP :' + toHex(buffer));
-			udpsckt.close();
+			}
 		});
 		break;
 	}

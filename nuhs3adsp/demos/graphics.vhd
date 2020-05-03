@@ -58,6 +58,7 @@ architecture graphics of nuhs3adsp is
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
+	signal mii_clk : std_logic;
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
 	constant cmmd_gear    : natural := 1;
@@ -65,6 +66,7 @@ architecture graphics of nuhs3adsp is
 	constant data_edges   : natural := 2;
 	constant bank_size    : natural := ddr_ba'length;
 	constant addr_size    : natural := ddr_a'length;
+	constant coln_size    : natural := 10;
 	constant data_gear    : natural := 2;
 	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := 8;
@@ -76,15 +78,15 @@ architecture graphics of nuhs3adsp is
 	constant clk90        : natural := 1;
 	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_len    : std_logic_vector(26-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(26-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(24-1 downto 2);
+	signal dmactlr_addr   : std_logic_vector(24-1 downto 2);
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
-	signal dmaio_len      : std_logic_vector(dmactlr_len'range)  := x"0000_03";
-	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range) := b"00" & b"0" & x"000" & b"1" & x"fe";
+	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
+	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
 	signal dmaio_dv       : std_logic;
 
 	signal ctlr_irdy      : std_logic;
@@ -176,22 +178,21 @@ architecture graphics of nuhs3adsp is
 		dcm_div : natural;
 	end record;
 
-	type layout_mode is (
-		modedebug,
-		mode480p,
-		mode600p, 
-		mode768p, 
-		mode1080p);
+	constant modedebug : natural := 0;
+	constant mode480p  : natural := 1;
+	constant mode600p  : natural := 2;
+	constant mode768p  : natural := 3;
+	constant mode1080p : natural := 4;
 
-	type displayparam_vector is array (layout_mode) of display_param;
+	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 15, dcm_mul => 4, dcm_div => 2),
+		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : natural := mode;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -242,6 +243,7 @@ begin
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
+		signal rgtr_idv    : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
 		signal data_ena    : std_logic;
@@ -283,6 +285,7 @@ begin
 			data_len  => data_len,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
+			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
@@ -311,7 +314,7 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => 256,
+			size           => 64,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
@@ -324,30 +327,35 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
-		dmacfgio_p : process (dmacfg_clk)
-			variable io_rdy : std_logic;
+--		ctlr_di_dv <= ctlr_di_req;
+--		ctlr_di <= x"00ffff00"; --(others => '1');
+
+		xxx : block
+			signal io_rdy : std_logic;
+			signal edge   : std_logic;
 		begin
-			if rising_edge(dmacfg_clk) then
-				if dmaio_dv='1' then
-					dmacfgio_req <= '1';
-				elsif dmacfgio_rdy='1' then
-					dmacfgio_req <= '0';
-					dmaio_req <= '1';
-				elsif io_rdy='1' then
-					dmaio_req <= '0';
+
+		dmacfgio_p : process (si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if ctlr_inirdy='1' then
+					if dmacfgio_req/='1' then
+						if dmaio_dv='1' and edge='0' then
+							dmacfgio_req <= '1'; --ctlr_inirdy;
+						end if;
+					elsif io_rdy='1' then
+						dmacfgio_req <= '0';
+					end if;
 				end if;
-				io_rdy := dmaio_rdy;
+				io_rdy <= dmaio_rdy;
+				edge   <= dmaio_dv;
 			end if;
 		end process;
+		end block;
 	end block;
 
---	graphics_di <= ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000" & ctlr_r(4-1 downto 0) & "0000";
---	graphics_di <= ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" & ctlr_r(4-1 downto 1) & "00000" ;
---	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
---	graphics_di <= ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000" & ctlr_r(2-1 downto 0) & "000000"
-				  -- ;
---	graphics_di <= ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5) & ctlr_r(13-1 downto 5);
 	graphics_di <= ctlr_do;
+--	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -366,10 +374,15 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	dmavideo_req <= dmacfgvideo_rdy;
+	process(ddrsys_clks(clk0))
+	begin
+		if rising_edge(ddrsys_clks(clk0)) then
+			dmavideo_req <= dmacfgvideo_rdy;
+			dmaio_req    <= dmacfgio_rdy;
+		end if;
+	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -379,6 +392,10 @@ begin
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
+	generic map (
+		bank_size   => ddr_ba'length,
+		addr_size   => ddr_a'length,
+		coln_size   => coln_size)
 	port map (
 		devcfg_clk  => dmacfg_clk,
 		devcfg_req  => dmacfg_req,
@@ -393,7 +410,7 @@ begin
 		ctlr_clk    => ddrsys_clks(clk0),
 
 		ctlr_inirdy => ctlr_inirdy,
-		ctlr_refreq => ctlr_refreq,
+		ctlr_refreq => '0', --ctlr_refreq,
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
@@ -407,6 +424,7 @@ begin
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
+
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
@@ -444,8 +462,8 @@ begin
 		ctlr_b       => ctlr_b,
 		ctlr_a       => ctlr_a,
 		ctlr_ras     => ctlr_ras,
-		ctlr_cas    => ctlr_cas,
-		ctlr_di_dv   => ctlr_di_dv, --'1', --ctlr_di_irdy,
+		ctlr_cas     => ctlr_cas,
+		ctlr_di_dv   => ctlr_di_dv,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_pre     => ctlr_pre,
@@ -589,17 +607,49 @@ begin
 		dr => '0',
 		df => '1',
 		q => clk_videodac);
-
-
+		
 	hd_t_data <= 'Z';
 
-	-- LEDs DAC --
-	--------------
+	process (si_clk)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(si_clk) then
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			i := dmaio_dv;
+			i := dmaio_rdy;
+
+			led18 <= t;
+			led16 <= not t;
+		end if;
+	end process;
+
+	process (ddrsys_clks(clk0))
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(ddrsys_clks(clk0)) then
+			i := dmavideo_rdy;
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			led13 <= t;
+			led15 <= not t;
+		end if;
+	end process;
+	-- LEDs --
+	----------
 		
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
+--	led18 <= '0';
+--	led16 <= '0';
+--	led15 <= '0';
+--	led13 <= '0';
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';

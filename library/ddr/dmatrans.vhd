@@ -31,8 +31,10 @@ use hdl4fpga.std.all;
 
 entity dmatrans is
 	generic (
-		latency       : natural := 2;
-		size          : natural);
+		bank_size     : natural;
+		addr_size     : natural;
+		coln_size     : natural;
+		latency       : natural := 2);
 	port (
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
@@ -55,7 +57,6 @@ entity dmatrans is
 		ctlr_pre      : in  std_logic;
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
-		ctlr_r        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req  : in  std_logic);
 
@@ -77,6 +78,7 @@ architecture def of dmatrans is
 	signal tlen         : std_logic_vector(dmatrans_tlen'range);
 	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
+	signal init         : std_logic;
 	signal reload       : std_logic;
 	signal load         : std_logic;
 
@@ -95,7 +97,7 @@ begin
 	process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
-			if dmatrans_req='0' then
+			if init='1' then
 				load         <= '1';
 				reload       <= '0';
 				ctlr_irdy    <= '0';
@@ -134,6 +136,7 @@ begin
 				ctlr_irdy    <= '1';
 				dmatrans_rdy <= '0';
 			end if;
+			init <= not dmatrans_req;
 		end if;
 	end process;
 
@@ -218,16 +221,16 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if ctlrdma_irdy='1' then
-				saved_col := resize(unsigned(ddrdma_col & '0'), ctlr_a'length);
+				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length);
 			end if;
 
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				ctlr_a <= std_logic_vector(saved_col);
+				ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+--				ctlr_a <= std_logic_vector(saved_col);
 			end if;
 		end if;
 	end process;
-	ctlr_r <= ddrdma_row;
 
 end;
