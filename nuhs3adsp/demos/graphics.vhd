@@ -178,14 +178,13 @@ architecture graphics of nuhs3adsp is
 		dcm_div : natural;
 	end record;
 
-	type layout_mode is (
-		modedebug,
-		mode480p,
-		mode600p, 
-		mode768p, 
-		mode1080p);
+	constant modedebug : natural := 0;
+	constant mode480p  : natural := 1;
+	constant mode600p  : natural := 2;
+	constant mode768p  : natural := 3;
+	constant mode1080p : natural := 4;
 
-	type displayparam_vector is array (layout_mode) of display_param;
+	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
 		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
@@ -193,7 +192,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : layout_mode := mode600p;
+	constant video_mode : natural := mode;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -353,6 +352,7 @@ begin
 	end block;
 
 	graphics_di <= ctlr_do;
+--	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -371,7 +371,12 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	dmavideo_req <= dmacfgvideo_rdy;
+	process(ddrsys_clks(clk0))
+	begin
+		if rising_edge(ddrsys_clks(clk0)) then
+			dmavideo_req <= dmacfgvideo_rdy;
+		end if;
+	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
@@ -401,7 +406,7 @@ begin
 		ctlr_clk    => ddrsys_clks(clk0),
 
 		ctlr_inirdy => ctlr_inirdy,
-		ctlr_refreq => ctlr_refreq,
+		ctlr_refreq => '0', --ctlr_refreq,
                                   
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
@@ -415,6 +420,7 @@ begin
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
+
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (

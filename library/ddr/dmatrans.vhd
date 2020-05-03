@@ -57,7 +57,6 @@ entity dmatrans is
 		ctlr_pre      : in  std_logic;
 		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
-		ctlr_r        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req  : in  std_logic);
 
@@ -233,6 +232,5 @@ begin
 			end if;
 		end if;
 	end process;
-	ctlr_r <= ddrdma_row;
 
 end;

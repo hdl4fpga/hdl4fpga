@@ -110,10 +110,10 @@ int main (int argc, char *argv[])
 			memdata[4*i+1+2] = data[3*i+1];
 			memdata[4*i+2+2] = data[3*i+2];
 			memdata[4*i+3+2] = 0xff;
-			memdata[4*i+0+2] = (i < 32) ? 0 : ((n % 2) == 1) ? 0 : 255;
-			memdata[4*i+1+2] = (i < 32) ? 255 : 0;
-			memdata[4*i+2+2] = (i < 32) ? ((n % 2) == 1) ? 255 : 0 : 0;
-			memdata[4*i+3+2] = (i < 32) ? 0 : 255;
+//			memdata[4*i+0+2] = (i < 32) ? 0 : ((n % 2) == 1) ? 0 : 255;
+//			memdata[4*i+1+2] = (i < 32) ? 255 : 0;
+//			memdata[4*i+2+2] = (i < 32) ? ((n % 2) == 1) ? 255 : 0 : 0;
+//			memdata[4*i+3+2] = (i < 32) ? 0 : 255;
 		}
 
 		if (sendto(s, memdata, sizeof(memdata), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {

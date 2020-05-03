@@ -25,6 +25,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity nuhs3adsp is
+	generic (
+		mode : natural := 3);
 	port (
 		xtal : in std_logic := '0';
 
