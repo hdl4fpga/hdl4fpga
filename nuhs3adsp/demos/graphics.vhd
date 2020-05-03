@@ -330,25 +330,28 @@ begin
 --		ctlr_di_dv <= ctlr_di_req;
 --		ctlr_di <= x"00ffff00"; --(others => '1');
 
+		xxx : block
+			signal io_rdy : std_logic;
+			signal edge   : std_logic;
+		begin
+
 		dmacfgio_p : process (si_clk)
-			variable io_rdy : std_logic;
-			variable edge   : std_logic;
-			variable dv     : std_logic;
 		begin
 			if rising_edge(si_clk) then
-				if dv='1' and edge='0' then
-					dmacfgio_req <= '1'; --ctlr_inirdy;
-				elsif dmacfgio_rdy='1' then
-					dmacfgio_req <= '0';
-					dmaio_req <= '1'; --ctlr_inirdy;
-				elsif io_rdy='1' then
-					dmaio_req <= '0';
+				if ctlr_inirdy='1' then
+					if dmacfgio_req/='1' then
+						if dmaio_dv='1' and edge='0' then
+							dmacfgio_req <= '1'; --ctlr_inirdy;
+						end if;
+					elsif io_rdy='1' then
+						dmacfgio_req <= '0';
+					end if;
 				end if;
-				io_rdy := dmaio_rdy;
-				edge   := dv;
-				dv     := dmaio_dv;
+				io_rdy <= dmaio_rdy;
+				edge   <= dmaio_dv;
 			end if;
 		end process;
+		end block;
 	end block;
 
 	graphics_di <= ctlr_do;
@@ -375,6 +378,7 @@ begin
 	begin
 		if rising_edge(ddrsys_clks(clk0)) then
 			dmavideo_req <= dmacfgvideo_rdy;
+			dmaio_req    <= dmacfgio_rdy;
 		end if;
 	end process;
 
