@@ -30,10 +30,10 @@ use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.scopeiopkg.all;
 
-library unisim;
-use unisim.vcomponents.all;
+library ecp5u;
+use ecp5u.components.all;
 
-architecture graphics of nuhs3adsp is
+architecture graphics of ulx3s is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -48,27 +48,20 @@ architecture graphics of nuhs3adsp is
 	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
-	constant g            : std_logic_vector(32 downto 1) := (
-		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena          : std_logic;
-	signal g_load         : std_logic;
-	signal g_data         : std_logic_vector(g'range);
-
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
-	signal mii_clk : std_logic;
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
 	constant cmmd_gear    : natural := 1;
 	constant data_phases  : natural := 2;
 	constant data_edges   : natural := 2;
-	constant bank_size    : natural := ddr_ba'length;
-	constant addr_size    : natural := ddr_a'length;
+	constant bank_size    : natural := sdram_ba'length;
+	constant addr_size    : natural := sdram_a'length;
 	constant coln_size    : natural := 10;
 	constant data_gear    : natural := 2;
-	constant word_size    : natural := ddr_dq'length;
+	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
 	signal ddrsys_lckd    : std_logic;
@@ -116,8 +109,8 @@ architecture graphics of nuhs3adsp is
 	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(cmmd_gear*sdram_ba'length-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(cmmd_gear*sdram_a'length-1 downto 0);
 	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -129,22 +122,13 @@ architecture graphics of nuhs3adsp is
 	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_st_dqs_open : std_logic;
+	signal sdram_st_dqs_open : std_logic;
 
-	signal ddr_clk        : std_logic_vector(0 downto 0);
-	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
-
-	signal si_clk         : std_logic;
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_data        : std_logic_vector(mii_rxd'range);
-
-	signal toudpdaisy_frm  : std_logic;
-	signal toudpdaisy_irdy : std_logic;
-	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
+	signal sdram_clk      : std_logic_vector(0 downto 0);
+	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt      : std_logic_vector(sdram_d'range);
+	signal sdram_do       : std_logic_vector(sdram_d'range);
 
 	signal video_clk      : std_logic;
 	signal video_hzsync   : std_logic;
@@ -199,10 +183,10 @@ architecture graphics of nuhs3adsp is
 
 begin
 
-	sys_rst <= not hd_t_clock;
+	sys_rst <= '0';
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal ,
+		I => clk_25mhz,
 		O => sys_clk);
 
 	videodcm_e : entity hdl4fpga.dfs
@@ -216,17 +200,6 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_clk);
-	si_clk <= not mii_rxc;
-
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
@@ -235,12 +208,22 @@ begin
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ctlr_clk,
+		dfsdcm_clk0  => ddrsys_clks(clk0),
 		dfsdcm_clk90 => ddrsys_clks(clk90),
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
 	scopeio_export_b : block
+
+		alias  uart_rxc    : std_logic_vector is sys_clk;
+		signal uart_ena    : std_logic;
+		signal uart_rxdv   : std_logic;
+		signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
+		alias  si_clk      : std_logic_vector is sys_clk;
+		signal si_frm      : std_logic;
+		signal si_irdy     : std_logic;
+		signal si_data     : std_logic_vector(mii_rxd'range);
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
@@ -251,32 +234,50 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal ipcfg_req : std_logic;
 	begin
 
-		ipcfg_req <= not sw1;
-		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		process (uart_rxc)
+			constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
+			variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
+		begin
+			if rising_edge(uart_rxc) then
+				if cntr = max_count-1 then
+					uart_ena <= '1';
+					cntr := (others => '0');
+				else
+					uart_ena <= '0';
+					cntr := cntr + 1;
+				end if;
+			end if;
+		end process;
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => 16*baudrate)
 		port map (
-			ipcfg_req   => ipcfg_req,
+			uart_rxc  => uart_rxc,
+			uart_sin  => ftdi_txd,
+			uart_ena  => uart_ena,
+			uart_rxdv => uart_rxdv,
+			uart_rxd  => uart_rxd);
 
-			phy_rxc     => mii_rxc,
-			phy_rx_dv   => mii_rxdv,
-			phy_rx_d    => mii_rxd,
+		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+		generic map (
+			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+		port map (
+			stream_clk  => uart_rxc,
+			stream_ena  => uart_ena,
+			stream_dv   => uart_rxdv,
+			stream_data => uart_rxd,
 
-			phy_txc     => mii_txc,
-			phy_tx_en   => mii_txen,
-			phy_tx_d    => mii_txd,
-		
-			chaini_sel  => '0',
+			chaini_data => uart_rxd,
 
-			chaini_frm  => toudpdaisy_frm,
-			chaini_irdy => toudpdaisy_irdy,
-			chaini_data => toudpdaisy_data,
-
-			chaino_frm  => si_frm,
+			chaino_frm  => si_frm,  
 			chaino_irdy => si_irdy,
 			chaino_data => si_data);
-	
+
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
@@ -347,6 +348,7 @@ begin
 				io_rdy := dmaio_rdy;
 			end if;
 		end process;
+
 	end block;
 
 	graphics_di <= ctlr_do;
@@ -388,8 +390,8 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
+		bank_size   => sdram_ba'length,
+		addr_size   => sdram_a'length,
 		coln_size   => coln_size)
 	port map (
 		devcfg_clk  => dmacfg_clk,
@@ -419,7 +421,6 @@ begin
 		ctlr_act    => ctlr_act,
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
-
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
@@ -497,9 +498,9 @@ begin
 	generic map (
 		gate_delay  => 2,
 		loopback    => true,
-		rgtr_dout => false,
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
+		rgtr_dout   => false,
+		bank_size   => sdram_ba'length,
+		addr_size   => sdram_a'length,
 		cmmd_gear   => cmmd_gear,
 		data_gear   => data_gear,
 		word_size   => word_size,
@@ -528,48 +529,48 @@ begin
 		phy_sti     => ddrphy_sti,
 		phy_sto     => ddrphy_sto,
 
-		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => ddr_st_dqs_open,
-		ddr_sti(0) => ddr_st_lp_dqs,
-		ddr_sti(1) => ddr_st_lp_dqs,
-		ddr_clk     => ddr_clk,
-		ddr_cke     => ddr_cke,
-		ddr_cs      => ddr_cs,
-		ddr_ras     => ddr_ras,
-		ddr_cas     => ddr_cas,
-		ddr_we      => ddr_we,
-		ddr_b       => ddr_ba,
-		ddr_a       => ddr_a,
+		ddr_sto(0)  => sdram_st_dqs,
+		ddr_sto(1)  => sdram_st_dqs_open,
+		ddr_sti(0)  => sdram_st_lp_dqs,
+		ddr_sti(1)  => sdram_st_lp_dqs,
+		ddr_clk     => sdram_clk,
+		ddr_cke     => sdram_cke,
+		ddr_cs      => sdram_csn,
+		ddr_ras     => sdram_rasn,
+		ddr_cas     => sdram_casn,
+		ddr_we      => sdram_wen,
+		ddr_b       => sdram_ba,
+		ddr_a       => sdram_a,
 
-		ddr_dm      => ddr_dm,
-		ddr_dqt     => ddr_dqt,
-		ddr_dqi     => ddr_dq,
-		ddr_dqo     => ddr_dqo,
-		ddr_dqst    => ddr_dqst,
-		ddr_dqsi    => ddr_dqs,
-		ddr_dqso    => ddr_dqso);
+		ddr_dm      => sdram_dqm,
+		ddr_dqt     => sdram_dqt,
+		ddr_dqi     => sdram_d,
+		ddr_dqo     => sdram_do,
+		ddr_dqst    => sdram_dst,
+		ddr_dqsi    => sdram_ds,
+		ddr_dqso    => sdram_dso);
 
-	ddr_dqs_g : for i in ddr_dqs'range generate
-		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
+	sdram_dqs_g : for i in sdram_ds'range generate
+		sdram_ds(i) <= sdram_dso(i);
 	end generate;
 
-	process (ddr_dqt, ddr_dqo)
+	process (sdram_dqt, sdram_do)
 	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= 'Z';
-			if ddr_dqt(i)='0' then
-				ddr_dq(i) <= ddr_dqo(i);
+		for i in sdram_d'range loop
+			sdram_d(i) <= 'Z';
+			if sdram_dqt(i)='0' then
+				sdram_d(i) <= sdram_do(i);
 			end if;
 		end loop;
 	end process;
 
-	ddr_clk_i : obufds
+	sdram_clk_i : obufds
 	generic map (
 		iostandard => "DIFF_SSTL2_I")
 	port map (
-		i  => ddr_clk(0),
-		o  => ddr_ckp,
-		ob => ddr_ckn);
+		i  => sdram_clk(0),
+		o  => sdram_ckp,
+		ob => sdram_ckn);
 
 	-- VGA --
 	---------
@@ -588,30 +589,12 @@ begin
 	end process;
 	psave <= '1';
 
---	adcclkab_e : entity hdl4fpga.ddro
---	port map (
---		clk => '0', --adc_clk,
---		dr  => '1',
---		df  => '0',
---		q   => adc_clkab);
-	adc_clkab <= 'Z';
-
-	clk_videodac_e : entity hdl4fpga.ddro
+	sdram_clk : entity hdl4fpga.ddro
 	port map (
-		clk => video_clk,
+		clk => ctlr_clk,
 		dr => '0',
 		df => '1',
-		q => clk_videodac);
-
---	clk_mii_e : entity hdl4fpga.ddro
---	port map (
---		clk => mii_clk,
---		dr => '0',
---		df => '1',
---		q => mii_refclk);
-	mii_refclk <= mii_clk;	
-
-	hd_t_data <= 'Z';
+		q => sdram_clk);
 
 	process (si_clk)
 		variable t : std_logic;
@@ -646,40 +629,5 @@ begin
 			led15 <= not t;
 		end if;
 	end process;
-
-	-- LEDs --
-	----------
-		
---	led18 <= '0';
---	led16 <= '0';
---	led15 <= '0';
---	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
-	led8  <= '0';
-	led7  <= '0';
-
-	-- RS232 Transceiver --
-	-----------------------
-
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
-	-- Ethernet Transceiver --
-	--------------------------
-
-	mii_rstn <= '1';
-	mii_mdc  <= '0';
-	mii_mdio <= 'Z';
-
-	-- LCD --
-	---------
-
-	lcd_e    <= 'Z';
-	lcd_rs   <= 'Z';
-	lcd_rw   <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
 
 end;
