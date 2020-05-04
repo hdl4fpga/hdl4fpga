@@ -130,7 +130,7 @@ int main (int argc, char *argv[])
 				}
 			}
 		}
-		nanosleep((const struct timespec[]){{0, 1000000L}}, NULL);
+		nanosleep((const struct timespec[]){{0, 100000000L}}, NULL);
 		addr += 0x40;
 
 		n++;

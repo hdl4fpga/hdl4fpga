@@ -38,6 +38,7 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
+OFFSET = IN 0 ns VALID 20 ns BEFORE mii_rxc RISING;
 
 # NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
 # NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;

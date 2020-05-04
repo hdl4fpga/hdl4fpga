@@ -137,7 +137,7 @@ architecture graphics of nuhs3adsp is
 	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
 
-	alias  si_clk         : std_logic is mii_rxc;
+	signal si_clk         : std_logic;
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_data        : std_logic_vector(mii_rxd'range);
@@ -224,7 +224,8 @@ begin
 	port map (
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
-		dfs_clk => mii_refclk);
+		dfs_clk => mii_clk);
+	si_clk <= not mii_rxc;
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -331,7 +332,7 @@ begin
 --		ctlr_di <= x"00ffff00"; --(others => '1');
 
 		dmacfgio_p : process (si_clk)
-			signal io_rdy : std_logic;
+			variable io_rdy : std_logic;
 		begin
 			if rising_edge(si_clk) then
 				if ctlr_inirdy='0' then
@@ -587,13 +588,13 @@ begin
 	end process;
 	psave <= '1';
 
-	adcclkab_e : entity hdl4fpga.ddro
-	port map (
-		clk => '0', --adc_clk,
-		dr  => '1',
-		df  => '0',
-		q   => adc_clkab);
---		adc_clkab <= '0';
+--	adcclkab_e : entity hdl4fpga.ddro
+--	port map (
+--		clk => '0', --adc_clk,
+--		dr  => '1',
+--		df  => '0',
+--		q   => adc_clkab);
+	adc_clkab <= 'Z';
 
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (
@@ -601,7 +602,15 @@ begin
 		dr => '0',
 		df => '1',
 		q => clk_videodac);
-		
+
+--	clk_mii_e : entity hdl4fpga.ddro
+--	port map (
+--		clk => mii_clk,
+--		dr => '0',
+--		df => '1',
+--		q => mii_refclk);
+	mii_refclk <= mii_clk;	
+
 	hd_t_data <= 'Z';
 
 	process (si_clk)
@@ -637,6 +646,7 @@ begin
 			led15 <= not t;
 		end if;
 	end process;
+
 	-- LEDs --
 	----------
 		
