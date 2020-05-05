@@ -124,7 +124,6 @@ architecture graphics of ulx3s is
 	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
-	signal sdram_clk      : std_logic_vector(0 downto 0);
 	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqt      : std_logic_vector(sdram_d'range);
@@ -157,60 +156,100 @@ architecture graphics of ulx3s is
 	signal ctlr_cas : std_logic;
 
 	type display_param is record
-		mode    : natural;
-		dcm_mul : natural;
-		dcm_div : natural;
+		mode      : natural;
+		clkok_div : natural;
+		clkop_div : natural;
+		clkfb_div : natural;
+		clki_div  : natural;
 	end record;
 
 	constant modedebug : natural := 0;
-	constant mode480p  : natural := 1;
-	constant mode600p  : natural := 2;
-	constant mode768p  : natural := 3;
-	constant mode1080p : natural := 4;
+	constant mode600p  : natural := 1;
+	constant mode1080p : natural := 2;
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
-		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
-		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
-		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
-		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
+		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		mode600p  => (mode => 1, clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode1080p => (mode => 7, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
-	constant video_mode : natural := mode;
+	constant video_mode : natural := modedebug;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
+	constant baudrate      : natural := 115200;
+
 begin
 
 	sys_rst <= '0';
-	clkin_ibufg : ibufg
-	port map (
-		I => clk_25mhz,
-		O => sys_clk);
+	sys_clk <= clk_25mhz;
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).dcm_mul,
-		dfs_div => video_params(video_mode).dcm_div)
-	port map(
-		dcm_rst => sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk);
+	video_b : block
 
-	ddrdcm_e : entity hdl4fpga.dfsdcm
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
-	port map (
-		dfsdcm_rst   => sys_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ddrsys_clks(clk0),
-		dfsdcm_clk90 => ddrsys_clks(clk90),
-		dfsdcm_lckd  => ddrsys_lckd);
+		attribute FREQUENCY_PIN_CLKI  : string; 
+		attribute FREQUENCY_PIN_CLKOP : string; 
+		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
+
+	begin
+		PLL_I : EHXPLLL
+        generic map (
+			PLLRST_ENA       => "DISABLED",
+			PLL_LOCK_MODE    =>  0, 
+			INTFB_WAKE       => "DISABLED", 
+			FEEDBK_PATH      => "CLKOP",
+			STDBY_ENABLE     => "DISABLED", DPHASE_SOURCE  => "DISABLED", 
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE =>  99,
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE =>   8,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  =>  14, 
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  =>   2,
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
+			OUTDIVIDER_MUXD  => "DIVD",
+			OUTDIVIDER_MUXC  => "DIVC",
+			OUTDIVIDER_MUXB  => "DIVB",
+			OUTDIVIDER_MUXA  => "DIVA",
+
+			CLKOS3_DIV       =>  100, 
+			CLKOS_DIV        => video_params(video_mode).clkok_div,
+			CLKOP_DIV        => video_params(video_mode).clkop_div,
+			CLKFB_DIV        => video_params(video_mode).clkfb_div,
+			CLKI_DIV         => video_params(video_mode).clki_div)
+        port map (
+			rst       => '0', 
+			clki      => clk_25mhz,
+			CLKFB     => video_clk, 
+            PHASESEL0 => '0', PHASESEL1 => '0', 
+			PHASEDIR  => '0', 
+            PHASESTEP => '0', PHASELOADREG => '0', 
+            STDBY     => '0', PLLWAKESYNC  => '0',
+            ENCLKOP   => '0', 
+			ENCLKOS   => '0',
+			ENCLKOS2  => '0', 
+            ENCLKOS3  => '0', 
+			CLKOP     => video_clk, 
+			CLKOS     => open, --CLKOS_t, 
+            CLKOS2    => open, --CLKOS2_t, 
+			CLKOS3    => open, --CLKOS3_t, 
+			LOCK      => open, --LOCK, 
+            INTLOCK   => open, 
+			REFCLK    => open, --REFCLK, 
+			CLKINTFB  => open);
+
+	end block;
+
+--	ddrdcm_e : entity hdl4fpga.dfsdcm
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => ddr_mul,
+--		dfs_div => ddr_div)
+--	port map (
+--		dfsdcm_rst   => sys_rst,
+--		dfsdcm_clkin => sys_clk,
+--		dfsdcm_clk0  => ddrsys_clks(clk0),
+--		dfsdcm_clk90 => ddrsys_clks(clk90),
+--		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
 	scopeio_export_b : block
@@ -223,7 +262,7 @@ begin
 		alias  si_clk      : std_logic_vector is sys_clk;
 		signal si_frm      : std_logic;
 		signal si_irdy     : std_logic;
-		signal si_data     : std_logic_vector(mii_rxd'range);
+		signal si_data     : std_logic_vector(uart_rxd'range);
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
@@ -496,8 +535,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		gate_delay  => 2,
-		loopback    => true,
+		loopback    => false,
 		rgtr_dout   => false,
 		bank_size   => sdram_ba'length,
 		addr_size   => sdram_a'length,
@@ -564,13 +602,13 @@ begin
 		end loop;
 	end process;
 
-	sdram_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
+	sdram_clk : oddrxd1
 	port map (
-		i  => sdram_clk(0),
-		o  => sdram_ckp,
-		ob => sdram_ckn);
+		sclk => ctlr_clk,
+		da   => '0',
+		db   => '1',
+		q    => sdram_clk);
+
 
 	-- VGA --
 	---------
@@ -588,13 +626,6 @@ begin
 		end if;
 	end process;
 	psave <= '1';
-
-	sdram_clk : entity hdl4fpga.ddro
-	port map (
-		clk => ctlr_clk,
-		dr => '0',
-		df => '1',
-		q => sdram_clk);
 
 	process (si_clk)
 		variable t : std_logic;
