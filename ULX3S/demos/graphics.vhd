@@ -45,22 +45,22 @@ architecture graphics of ulx3s is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant sys_per      : real    := 40.0;
+	constant ddr_mul      : natural := 16; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
 	constant fpga         : natural := spartan3;
-	constant mark         : natural := m6t;
+	constant mark         : natural := M7E;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
-	constant sclk_phases  : natural := 2;
+	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
+	constant data_phases  : natural := 1;
+	constant data_edges   : natural := 1;
+	constant data_gear    : natural := 1;
 	constant bank_size    : natural := sdram_ba'length;
 	constant addr_size    : natural := sdram_a'length;
 	constant coln_size    : natural := 10;
-	constant data_gear    : natural := 1;
 	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
@@ -69,7 +69,7 @@ architecture graphics of ulx3s is
 
 	constant clk0         : natural := 0;
 	constant clk90        : natural := 1;
-	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
+	signal ddrsys_clks    : std_logic_vector(0 to 2-1) := (others => '0');
 
 	signal dmactlr_len    : std_logic_vector(24-1 downto 2);
 	signal dmactlr_addr   : std_logic_vector(24-1 downto 2);
@@ -111,17 +111,17 @@ architecture graphics of ulx3s is
 	signal ddrphy_odt     : std_logic;
 	signal ddrphy_b       : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ddrphy_a       : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqsi    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_dmi     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dmt     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dmo     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqi     : std_logic_vector(word_size-1 downto 0);
 	signal ddrphy_dqt     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqo     : std_logic_vector(word_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_sti     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
 	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -136,7 +136,7 @@ architecture graphics of ulx3s is
     signal video_blank    : std_logic;
     signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
+    signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
 	signal dmacfgvideo_req : std_logic;
@@ -173,8 +173,8 @@ architecture graphics of ulx3s is
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
 		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
-		mode600p  => (mode => 1, clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
-		mode1080p => (mode => 7, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
+		mode600p  => (mode => 1,  clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode1080p => (mode => 7,  clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
 	constant video_mode : natural := modedebug;
 
@@ -188,6 +188,7 @@ begin
 	sys_rst <= '0';
 	sys_clk <= clk_25mhz;
 
+	ddrsys_clks(0) <=not ddrsys_clks(0) after 3.75 ns;
 	video_b : block
 
 		attribute FREQUENCY_PIN_CLKI  : string; 
@@ -253,7 +254,7 @@ begin
 --		dfsdcm_clk0  => ddrsys_clks(clk0),
 --		dfsdcm_clk90 => ddrsys_clks(clk90),
 --		dfsdcm_lckd  => ddrsys_lckd);
-	ddrsys_rst <= not ddrsys_lckd;
+	ddrsys_rst <= '1', '0' after 20 ns ; --not ddrsys_lckd;
 
 	scopeio_export_b : block
 
@@ -353,7 +354,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(1-1 downto 0)=(1-1 downto 0 => '1'));
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
@@ -363,7 +364,7 @@ begin
 		port map (
 			src_clk  => si_clk,
 			src_irdy => dmadata_ena,
-			src_data => rgtr_data,
+			src_data => rgtr_data(16-1 downto 0),
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,
@@ -481,16 +482,14 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "001",
---		ctlr_cl      => "010",	-- 2   133 Mhz
---		ctlr_cl      => "110",	-- 2.5 166 Mhz
-		ctlr_cl      => "011",	-- 3   200 Mhz
+		ctlr_cl      => "010",	-- 2   133 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
 		ctlr_rtt     => "--",
 
 		ctlr_rst     => ddrsys_rst,
-		ctlr_clks    => ddrsys_clks,
+		ctlr_clks    => ddrsys_clks(0 to 0),
 		ctlr_inirdy  => ctlr_inirdy,
 
 		ctlr_irdy    => ctlr_irdy,
@@ -534,7 +533,7 @@ begin
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
 
-	ddrphy_e : entity hdl4fpga.sdrphy
+	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
 		loopback    => false,
 		rgtr_dout   => false,
@@ -588,13 +587,13 @@ begin
     generic map (
         C_shift_clock_synchronizer => '0',
         C_ddr   => '1',
-        C_depth => 2)
+        C_depth => 5)
     port map (
         clk_pixel => video_clk,
         clk_shift => video_shift_clk,
         in_red    => video_pixel(0   to  0+5-1),
-        in_green  => video_pixel(0+5 to  5+6-1),
-        in_blue   => video_pixel(5+6 to 11+5-1),
+        in_green  => video_pixel(0+5 to  5+5-1),
+        in_blue   => video_pixel(5+5 to 10+5-1),
         in_hsync  => video_hzsync,
         in_vsync  => video_vtsync,
         in_blank  => video_blank,

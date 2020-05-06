@@ -126,8 +126,10 @@ architecture mix of ddr_ctlr is
 	constant lrfc         : natural          := to_ddrlatency(tcp, mark, trfc);
 	constant lwr          : natural          := to_ddrlatency(tcp, tlwr);
 	constant lrp          : natural          := to_ddrlatency(tcp, mark, trp);
-	constant wwnx_lat     : natural          := ddr_latency(stdr, wwnxl);
-	constant wid_lat      : natural          := ddr_latency(stdr, widl);
+	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
+	constant wid_lat      : natural          := ddr_latency(fpga, widl);
+--	constant wwnx_lat     : natural          := ddr_latency(stdr, wwnxl);
+--	constant wid_lat      : natural          := ddr_latency(stdr, widl);
 	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
 	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
 	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, ddr_selcwl(stdr));

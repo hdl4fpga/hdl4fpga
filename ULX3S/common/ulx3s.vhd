@@ -32,14 +32,14 @@ entity ulx3s is
 		clk_25mhz      : in    std_logic;
 
 		ftdi_rxd       : out   std_logic;
-		ftdi_txd       : in    std_logic;
-		ftdi_nrts      : inout std_logic;
-		ftdi_ndtr      : inout std_logic;
-		ftdi_txden     : inout std_logic;
+		ftdi_txd       : in    std_logic := 'U';
+		ftdi_nrts      : inout std_logic := 'U';
+		ftdi_ndtr      : inout std_logic := 'U';
+		ftdi_txden     : inout std_logic := 'U';
 
 		led            : out   std_logic_vector(8-1 downto 0);
-		btn            : in    std_logic_vector(7-1 downto 0);
-		sw             : in    std_logic_vector(4-1 downto 0);
+		btn            : in    std_logic_vector(7-1 downto 0) := (others => 'U');
+		sw             : in    std_logic_vector(4-1 downto 0) := (others => 'U');
 
 
 		oled_clk       : out   std_logic;
@@ -55,15 +55,15 @@ entity ulx3s is
 		--flash_holdn    : out   std_logic;
 		--flash_wpn      : out   std_logic;
 
-		sd_clk         : in    std_logic;
+		sd_clk         : in    std_logic := '-';
 		sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
-		sd_d           : inout std_logic_vector(4-1 downto 0); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
-		sd_wp          : in    std_logic;
-		sd_cdn         : in    std_logic; -- card detect not connected
+		sd_d           : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
+		sd_wp          : in    std_logic := '-';
+		sd_cdn         : in    std_logic := '-'; -- card detect not connected
 
 		adc_csn        : out   std_logic;
 		adc_mosi       : out   std_logic;
-		adc_miso       : in    std_logic;
+		adc_miso       : in    std_logic := '-';
 		adc_sclk       : out   std_logic;
 
 		audio_l        : out   std_logic_vector(4-1 downto 0);
@@ -72,20 +72,20 @@ entity ulx3s is
 
 		wifi_en        : out   std_logic := '1'; -- '0' disables ESP32
 		wifi_rxd       : out   std_logic;
-		wifi_txd       : in    std_logic;
+		wifi_txd       : in    std_logic := '-';
 		wifi_gpio0     : out   std_logic := '1'; -- '0' requests ESP32 to upload "passthru" bitstream
-		wifi_gpio5     : inout std_logic;
-		wifi_gpio16    : inout std_logic;
-		wifi_gpio17    : inout std_logic;
+		wifi_gpio5     : inout std_logic := '-';
+		wifi_gpio16    : inout std_logic := '-';
+		wifi_gpio17    : inout std_logic := '-';
 
 		ant_433mhz     : out   std_logic;
 
-		usb_fpga_dp    : inout std_logic;  
-		usb_fpga_dn    : inout std_logic;
-		usb_fpga_bd_dp : inout std_logic;
-		usb_fpga_bd_dn : inout std_logic;
-		usb_fpga_pu_dp : inout std_logic;
-		usb_fpga_pu_dn : inout std_logic;
+		usb_fpga_dp    : inout std_logic := 'U';  
+		usb_fpga_dn    : inout std_logic := 'U';
+		usb_fpga_bd_dp : inout std_logic := 'U';
+		usb_fpga_bd_dn : inout std_logic := 'U';
+		usb_fpga_pu_dp : inout std_logic := 'U';
+		usb_fpga_pu_dn : inout std_logic := 'U';
 					   
 		sdram_clk      : out   std_logic;  
 		sdram_cke      : out   std_logic;
@@ -95,19 +95,19 @@ entity ulx3s is
 		sdram_casn     : out   std_logic;
 		sdram_a        : out   std_logic_vector(13-1 downto 0);
 		sdram_ba       : out   std_logic_vector(2-1 downto 0);
-		sdram_dqm      : inout std_logic_vector(2-1 downto 0);
-		sdram_d        : inout std_logic_vector(16-1 downto 0);
+		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'U');
+		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
 
 		gpdi_dp        : out   std_logic_vector(4-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(4-1 downto 0);
 		--gpdi_ethp      : out   std_logic;  
 		--gpdi_ethn      : out   std_logic;
-		gpdi_cec       : inout std_logic;
-		gpdi_sda       : inout std_logic;
-		gpdi_scl       : inout std_logic;
+		gpdi_cec       : inout std_logic := '-';
+		gpdi_sda       : inout std_logic := '-';
+		gpdi_scl       : inout std_logic := '-';
 
-		gp             : inout std_logic_vector(28-1 downto 0);
-		gn             : inout std_logic_vector(28-1 downto 0);
+		gp             : inout std_logic_vector(28-1 downto 0) := (others => 'U');
+		gn             : inout std_logic_vector(28-1 downto 0) := (others => 'U');
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown       : out   std_logic := '0' -- '1' power off the board, 10uA sleep

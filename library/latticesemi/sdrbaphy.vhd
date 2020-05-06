@@ -91,13 +91,13 @@ begin
 	cas_i : fd1s3ax
 	port map (
 		ck => sys_clk,
-		d  => phy_ras,
+		d  => phy_cas,
 		q  => sdr_cas);
 
 	we_i : fd1s3ax
 	port map (
 		ck => sys_clk,
-		d  => phy_ras,
+		d  => phy_we,
 		q  => sdr_we);
 
 	cs_i : fd1s3ax

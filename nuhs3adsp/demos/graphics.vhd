@@ -48,12 +48,6 @@ architecture graphics of nuhs3adsp is
 	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
-	constant g            : std_logic_vector(32 downto 1) := (
-		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena          : std_logic;
-	signal g_load         : std_logic;
-	signal g_data         : std_logic_vector(g'range);
-
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
