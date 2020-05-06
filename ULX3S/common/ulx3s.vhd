@@ -95,7 +95,7 @@ entity ulx3s is
 		sdram_casn     : out   std_logic;
 		sdram_a        : out   std_logic_vector(13-1 downto 0);
 		sdram_ba       : out   std_logic_vector(2-1 downto 0);
-		sdram_dqm      : out   std_logic_vector(2-1 downto 0);
+		sdram_dqm      : inout std_logic_vector(2-1 downto 0);
 		sdram_d        : inout std_logic_vector(16-1 downto 0);
 
 		gpdi_dp        : out   std_logic_vector(4-1 downto 0);

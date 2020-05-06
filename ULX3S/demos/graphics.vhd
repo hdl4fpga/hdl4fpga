@@ -30,14 +30,15 @@ use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.scopeiopkg.all;
 
-library unisim;
-use unisim.vcomponents.all;
+library ecp5u;
+use ecp5u.components.all;
 
-architecture graphics of nuhs3adsp is
+architecture graphics of ulx3s is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
+	alias  si_clk      : std_logic is sys_clk;
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
 	-- Multiply by --  20     --  25     --  10     --
@@ -48,27 +49,19 @@ architecture graphics of nuhs3adsp is
 	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
-	constant g            : std_logic_vector(32 downto 1) := (
-		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena          : std_logic;
-	signal g_load         : std_logic;
-	signal g_data         : std_logic_vector(g'range);
-
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
-	signal mii_clk : std_logic;
-	constant sclk_phases  : natural := 4;
-	constant sclk_edges   : natural := 2;
-	constant cmmd_gear    : natural := 1;
+	constant sclk_phases  : natural := 2;
+	constant sclk_edges   : natural := 1;
 	constant data_phases  : natural := 2;
 	constant data_edges   : natural := 2;
-	constant bank_size    : natural := ddr_ba'length;
-	constant addr_size    : natural := ddr_a'length;
+	constant bank_size    : natural := sdram_ba'length;
+	constant addr_size    : natural := sdram_a'length;
 	constant coln_size    : natural := 10;
-	constant data_gear    : natural := 2;
-	constant word_size    : natural := ddr_dq'length;
+	constant data_gear    : natural := 1;
+	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
 	signal ddrsys_lckd    : std_logic;
@@ -100,58 +93,51 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal graphics_di    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
+	signal ctlr_di        : std_logic_vector(word_size-1 downto 0);
+	signal ctlr_do        : std_logic_vector(word_size-1 downto 0);
+	signal graphics_di    : std_logic_vector(word_size-1 downto 0);
+	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
 	signal ddrphy_rst     : std_logic;
-	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_st_dqs_open : std_logic;
+	signal ddrphy_cke     : std_logic;
+	signal ddrphy_cs      : std_logic;
+	signal ddrphy_ras     : std_logic;
+	signal ddrphy_cas     : std_logic;
+	signal ddrphy_we      : std_logic;
+	signal ddrphy_odt     : std_logic;
+	signal ddrphy_b       : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ddrphy_dqsi    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dmi     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dmt     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dmo     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqi     : std_logic_vector(word_size-1 downto 0);
+	signal ddrphy_dqt     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqo     : std_logic_vector(word_size-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_sti     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_st_dqs_open : std_logic;
 
-	signal ddr_clk        : std_logic_vector(0 downto 0);
-	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
-
-	signal si_clk         : std_logic;
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_data        : std_logic_vector(mii_rxd'range);
-
-	signal toudpdaisy_frm  : std_logic;
-	signal toudpdaisy_irdy : std_logic;
-	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
+	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt      : std_logic_vector(sdram_d'range);
+	signal sdram_do       : std_logic_vector(sdram_d'range);
 
 	signal video_clk      : std_logic;
+	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
+    signal video_blank    : std_logic;
     signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
 	signal dmacfgvideo_req : std_logic;
 	signal dmacfgvideo_rdy : std_logic;
@@ -173,74 +159,112 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_cas : std_logic;
 
 	type display_param is record
-		mode    : natural;
-		dcm_mul : natural;
-		dcm_div : natural;
+		mode      : natural;
+		clkok_div : natural;
+		clkop_div : natural;
+		clkfb_div : natural;
+		clki_div  : natural;
 	end record;
 
 	constant modedebug : natural := 0;
-	constant mode480p  : natural := 1;
-	constant mode600p  : natural := 2;
-	constant mode768p  : natural := 3;
-	constant mode1080p : natural := 4;
+	constant mode600p  : natural := 1;
+	constant mode1080p : natural := 2;
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
-		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
-		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
-		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
-		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
+		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		mode600p  => (mode => 1, clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode1080p => (mode => 7, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
-	constant video_mode : natural := mode;
+	constant video_mode : natural := modedebug;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
+	constant baudrate      : natural := 115200;
+
 begin
 
-	sys_rst <= not hd_t_clock;
-	clkin_ibufg : ibufg
-	port map (
-		I => xtal ,
-		O => sys_clk);
+	sys_rst <= '0';
+	sys_clk <= clk_25mhz;
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).dcm_mul,
-		dfs_div => video_params(video_mode).dcm_div)
-	port map(
-		dcm_rst => sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk);
+	video_b : block
 
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_clk);
-	si_clk <= not mii_rxc;
+		attribute FREQUENCY_PIN_CLKI  : string; 
+		attribute FREQUENCY_PIN_CLKOP : string; 
+		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
 
-	ddrdcm_e : entity hdl4fpga.dfsdcm
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
-	port map (
-		dfsdcm_rst   => sys_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ctlr_clk,
-		dfsdcm_clk90 => ddrsys_clks(clk90),
-		dfsdcm_lckd  => ddrsys_lckd);
+	begin
+		PLL_I : EHXPLLL
+        generic map (
+			PLLRST_ENA       => "DISABLED",
+			PLL_LOCK_MODE    =>  0, 
+			INTFB_WAKE       => "DISABLED", 
+			FEEDBK_PATH      => "CLKOP",
+			STDBY_ENABLE     => "DISABLED", DPHASE_SOURCE  => "DISABLED", 
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE =>  99,
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE =>   8,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  =>  14, 
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  =>   2,
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
+			OUTDIVIDER_MUXD  => "DIVD",
+			OUTDIVIDER_MUXC  => "DIVC",
+			OUTDIVIDER_MUXB  => "DIVB",
+			OUTDIVIDER_MUXA  => "DIVA",
+
+			CLKOS3_DIV       =>  100, 
+			CLKOS_DIV        => video_params(video_mode).clkok_div,
+			CLKOP_DIV        => video_params(video_mode).clkop_div,
+			CLKFB_DIV        => video_params(video_mode).clkfb_div,
+			CLKI_DIV         => video_params(video_mode).clki_div)
+        port map (
+			rst       => '0', 
+			clki      => clk_25mhz,
+			CLKFB     => video_clk, 
+            PHASESEL0 => '0', PHASESEL1 => '0', 
+			PHASEDIR  => '0', 
+            PHASESTEP => '0', PHASELOADREG => '0', 
+            STDBY     => '0', PLLWAKESYNC  => '0',
+            ENCLKOP   => '0', 
+			ENCLKOS   => '0',
+			ENCLKOS2  => '0', 
+            ENCLKOS3  => '0', 
+			CLKOP     => video_clk, 
+			CLKOS     => video_shift_clk, 
+            CLKOS2    => open, --CLKOS2_t, 
+			CLKOS3    => open, --CLKOS3_t, 
+			LOCK      => open, --LOCK, 
+            INTLOCK   => open, 
+			REFCLK    => open, --REFCLK, 
+			CLKINTFB  => open);
+
+	end block;
+
+--	ddrdcm_e : entity hdl4fpga.dfsdcm
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => ddr_mul,
+--		dfs_div => ddr_div)
+--	port map (
+--		dfsdcm_rst   => sys_rst,
+--		dfsdcm_clkin => sys_clk,
+--		dfsdcm_clk0  => ddrsys_clks(clk0),
+--		dfsdcm_clk90 => ddrsys_clks(clk90),
+--		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
 	scopeio_export_b : block
+
+		alias  uart_rxc    : std_logic is sys_clk;
+		signal uart_ena    : std_logic;
+		signal uart_rxdv   : std_logic;
+		signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
+		signal si_frm      : std_logic;
+		signal si_irdy     : std_logic;
+		signal si_data     : std_logic_vector(uart_rxd'range);
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
@@ -251,32 +275,50 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal ipcfg_req : std_logic;
 	begin
 
-		ipcfg_req <= not sw1;
-		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		process (uart_rxc)
+			constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
+			variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
+		begin
+			if rising_edge(uart_rxc) then
+				if cntr = max_count-1 then
+					uart_ena <= '1';
+					cntr := (others => '0');
+				else
+					uart_ena <= '0';
+					cntr := cntr + 1;
+				end if;
+			end if;
+		end process;
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => 16*baudrate)
 		port map (
-			ipcfg_req   => ipcfg_req,
+			uart_rxc  => uart_rxc,
+			uart_sin  => ftdi_txd,
+			uart_ena  => uart_ena,
+			uart_rxdv => uart_rxdv,
+			uart_rxd  => uart_rxd);
 
-			phy_rxc     => mii_rxc,
-			phy_rx_dv   => mii_rxdv,
-			phy_rx_d    => mii_rxd,
+		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+		generic map (
+			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+		port map (
+			stream_clk  => uart_rxc,
+			stream_ena  => uart_ena,
+			stream_dv   => uart_rxdv,
+			stream_data => uart_rxd,
 
-			phy_txc     => mii_txc,
-			phy_tx_en   => mii_txen,
-			phy_tx_d    => mii_txd,
-		
-			chaini_sel  => '0',
+			chaini_data => uart_rxd,
 
-			chaini_frm  => toudpdaisy_frm,
-			chaini_irdy => toudpdaisy_irdy,
-			chaini_data => toudpdaisy_data,
-
-			chaino_frm  => si_frm,
+			chaino_frm  => si_frm,  
 			chaino_irdy => si_irdy,
 			chaino_data => si_data);
-	
+
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
@@ -347,6 +389,7 @@ begin
 				io_rdy := dmaio_rdy;
 			end if;
 		end process;
+
 	end block;
 
 	graphics_di <= ctlr_do;
@@ -388,8 +431,8 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
+		bank_size   => sdram_ba'length,
+		addr_size   => sdram_a'length,
 		coln_size   => coln_size)
 	port map (
 		devcfg_clk  => dmacfg_clk,
@@ -420,14 +463,13 @@ begin
 		ctlr_pre    => ctlr_pre,
 		ctlr_idl    => ctlr_idl);
 
-
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
 		fpga         => fpga,
 		mark         => mark,
 		tcp          => tcp,
 
-		cmmd_gear    => cmmd_gear,
+		cmmd_gear    => 1,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		sclk_phases  => sclk_phases,
@@ -471,14 +513,13 @@ begin
 		ctlr_dio_req => ctlr_dio_req,
 
 		phy_rst      => ddrphy_rst,
-		phy_cke      => ddrphy_cke(0),
-		phy_cs       => ddrphy_cs(0),
-		phy_ras      => ddrphy_ras(0),
-		phy_cas      => ddrphy_cas(0),
-		phy_we       => ddrphy_we(0),
+		phy_cke      => ddrphy_cke,
+		phy_cs       => ddrphy_cs,
+		phy_ras      => ddrphy_ras,
+		phy_cas      => ddrphy_cas,
+		phy_we       => ddrphy_we,
 		phy_b        => ddrphy_b,
 		phy_a        => ddrphy_a,
-		phy_odt      => ddrphy_odt(0),
 		phy_dmi      => ddrphy_dmi,
 		phy_dmt      => ddrphy_dmt,
 		phy_dmo      => ddrphy_dmo,
@@ -493,22 +534,18 @@ begin
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
 
-	ddrphy_e : entity hdl4fpga.ddrphy
+	ddrphy_e : entity hdl4fpga.sdrphy
 	generic map (
-		gate_delay  => 2,
-		loopback    => true,
-		rgtr_dout => false,
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
-		cmmd_gear   => cmmd_gear,
-		data_gear   => data_gear,
+		loopback    => false,
+		rgtr_dout   => false,
+		bank_size   => sdram_ba'length,
+		addr_size   => sdram_a'length,
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
 		sys_clks    => ddrsys_clks,
 		sys_rst     => ddrsys_rst,
 
-		phy_cke     => ddrphy_cke,
 		phy_cs      => ddrphy_cs,
 		phy_ras     => ddrphy_ras,
 		phy_cas     => ddrphy_cas,
@@ -524,94 +561,93 @@ begin
 		phy_dqi     => ddrphy_dqo,
 		phy_dqt     => ddrphy_dqt,
 		phy_dqo     => ddrphy_dqi,
-		phy_odt     => ddrphy_odt,
-		phy_sti     => ddrphy_sti,
-		phy_sto     => ddrphy_sto,
+		phy_sti     => ddrphy_sti(0),
+		phy_sto     => ddrphy_sto(0),
 
-		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => ddr_st_dqs_open,
-		ddr_sti(0) => ddr_st_lp_dqs,
-		ddr_sti(1) => ddr_st_lp_dqs,
-		ddr_clk     => ddr_clk,
-		ddr_cke     => ddr_cke,
-		ddr_cs      => ddr_cs,
-		ddr_ras     => ddr_ras,
-		ddr_cas     => ddr_cas,
-		ddr_we      => ddr_we,
-		ddr_b       => ddr_ba,
-		ddr_a       => ddr_a,
+--		ddr_sto(0)  => sdram_st_dqs,
+--		ddr_sto(1)  => sdram_st_dqs_open,
+--		ddr_sti(0)  => sdram_st_lp_dqs,
+--		ddr_sti(1)  => sdram_st_lp_dqs,
+		sdr_clk     => sdram_clk,
+		sdr_cke     => sdram_cke,
+		sdr_cs      => sdram_csn,
+		sdr_ras     => sdram_rasn,
+		sdr_cas     => sdram_casn,
+		sdr_we      => sdram_wen,
+		sdr_b       => sdram_ba,
+		sdr_a       => sdram_a,
 
-		ddr_dm      => ddr_dm,
-		ddr_dqt     => ddr_dqt,
-		ddr_dqi     => ddr_dq,
-		ddr_dqo     => ddr_dqo,
-		ddr_dqst    => ddr_dqst,
-		ddr_dqsi    => ddr_dqs,
-		ddr_dqso    => ddr_dqso);
-
-	ddr_dqs_g : for i in ddr_dqs'range generate
-		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
-	end generate;
-
-	process (ddr_dqt, ddr_dqo)
-	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= 'Z';
-			if ddr_dqt(i)='0' then
-				ddr_dq(i) <= ddr_dqo(i);
-			end if;
-		end loop;
-	end process;
-
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => ddr_clk(0),
-		o  => ddr_ckp,
-		ob => ddr_ckn);
+		sdr_dm      => sdram_dqm,
+		sdr_dq      => sdram_d);
 
 	-- VGA --
 	---------
 
-	process (video_clk)
+	video_blank <= not video_hzon or not video_vton;
+    vga2dvid_e : entity hdl4fpga.vga2dvid
+    generic map (
+        C_shift_clock_synchronizer => '0',
+        C_ddr   => '1',
+        C_depth => 2)
+    port map (
+        clk_pixel => video_clk,
+        clk_shift => video_shift_clk,
+        in_red    => video_pixel(0   to  0+5-1),
+        in_green  => video_pixel(0+5 to  5+6-1),
+        in_blue   => video_pixel(5+6 to 11+5-1),
+        in_hsync  => video_hzsync,
+        in_vsync  => video_vtsync,
+        in_blank  => video_blank,
+        out_clock => dvid_crgb(7 downto 6),
+        out_red   => dvid_crgb(5 downto 4),
+        out_green => dvid_crgb(3 downto 2),
+        out_blue  => dvid_crgb(1 downto 0)
+    );
+
+	ddr_g : for i in gpdi_dp'range generate
+		signal q : std_logic;
 	begin
-		if rising_edge(video_clk) then
-			red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-			green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-			blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn <= video_hzon and video_vton;
-			hsync  <= video_hzsync;
-			vsync  <= video_vtsync;
-			sync   <= not video_hzsync and not video_vtsync;
-		end if;
-	end process;
-	psave <= '1';
+		oddr_i : oddrx1f
+		port map(
+			sclk => video_shift_clk,
+			rst  => '0',
+			d0   => dvid_crgb(2*i),
+			d1   => dvid_crgb(2*i+1),
+			q    => q);
+		olvds_i : olvds 
+		port map(
+			a  => q,
+			z  => gpdi_dp(i),
+			zn => gpdi_dn(i));
+    end generate;
 
---	adcclkab_e : entity hdl4fpga.ddro
---	port map (
---		clk => '0', --adc_clk,
---		dr  => '1',
---		df  => '0',
---		q   => adc_clkab);
-	adc_clkab <= 'Z';
+--    vga2lvds_e : entity hdl4fpga.vga2lvds
+--    port map (
+--      clk_pixel   => vga_clk,
+--      clk_shift   => clk_pixel_shift,
+--
+--      in_red(8-1   downto 8-5) => video_pixel(0   to  0+5-1),
+--      in_green(8-1 downto 8-6) => video_pixel(0+5 to  5+6-1),
+--      in_blue(8-1  downto 8-5) => video_pixel(5+6 to 11+5-1),
+--
+--      in_blank    => video_blank,
+--      in_hsync    => video_hsync,
+--      in_vsync    => video_vsync,
+--
+--      out_lvds(3) => dvid_crgb(6),
+--      out_lvds(2) => dvid_crgb(4),
+--      out_lvds(1) => dvid_crgb(2),
+--      out_lvds(0) => dvid_crgb(0));
+--
+--    gn(8) <= '1';
+--    lvds_g : for i in 0 to 3 generate
+--		lvds_i : olvds
+--		port map(
+--			a  => dvid_crgb(2*i), 
+--			Z  => gp(i+3), 
+--			ZN => gn(i+3));
+--    end generate;
 
-	clk_videodac_e : entity hdl4fpga.ddro
-	port map (
-		clk => video_clk,
-		dr => '0',
-		df => '1',
-		q => clk_videodac);
-
---	clk_mii_e : entity hdl4fpga.ddro
---	port map (
---		clk => mii_clk,
---		dr => '0',
---		df => '1',
---		q => mii_refclk);
-	mii_refclk <= mii_clk;	
-
-	hd_t_data <= 'Z';
 
 	process (si_clk)
 		variable t : std_logic;
@@ -626,8 +662,8 @@ begin
 			i := dmaio_dv;
 			i := dmaio_rdy;
 
-			led18 <= t;
-			led16 <= not t;
+			led(0) <= t;
+			led(1) <= not t;
 		end if;
 	end process;
 
@@ -642,44 +678,9 @@ begin
 				t := not t;
 			end if;
 			e := i;
-			led13 <= t;
-			led15 <= not t;
+			led(2) <= t;
+			led(3) <= not t;
 		end if;
 	end process;
-
-	-- LEDs --
-	----------
-		
---	led18 <= '0';
---	led16 <= '0';
---	led15 <= '0';
---	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
-	led8  <= '0';
-	led7  <= '0';
-
-	-- RS232 Transceiver --
-	-----------------------
-
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
-	-- Ethernet Transceiver --
-	--------------------------
-
-	mii_rstn <= '1';
-	mii_mdc  <= '0';
-	mii_mdio <= 'Z';
-
-	-- LCD --
-	---------
-
-	lcd_e    <= 'Z';
-	lcd_rs   <= 'Z';
-	lcd_rw   <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
 
 end;
