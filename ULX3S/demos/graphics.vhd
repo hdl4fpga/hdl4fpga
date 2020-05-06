@@ -38,7 +38,7 @@ architecture graphics of ulx3s is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	alias  si_clk      : std_logic_vector is sys_clk;
+	alias  si_clk      : std_logic is sys_clk;
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
 	-- Multiply by --  20     --  25     --  10     --
@@ -257,7 +257,7 @@ begin
 
 	scopeio_export_b : block
 
-		alias  uart_rxc    : std_logic_vector is sys_clk;
+		alias  uart_rxc    : std_logic is sys_clk;
 		signal uart_ena    : std_logic;
 		signal uart_rxdv   : std_logic;
 		signal uart_rxd    : std_logic_vector(8-1 downto 0);
