@@ -481,7 +481,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size)
 	port map (
-		ctlr_bl      => "001",
+		ctlr_bl      => "000",
 		ctlr_cl      => "010",	-- 2   133 Mhz
 
 		ctlr_cwl     => "000",
