@@ -30,6 +30,10 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	generic (
+		fpga          : natural;
+		mark          : natural;
+		tcp           : natural;
+
 		bank_size     : natural;
 		addr_size     : natural;
 		coln_size     : natural);
@@ -201,6 +205,9 @@ begin
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
+		fpga          => fpga,
+		mark          => mark,
+		tcp           => tcp,
 		bank_size     => bank_size,
 		addr_size     => addr_size,
 		coln_size     => coln_size)

@@ -382,6 +382,10 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
+		fpga         => fpga,
+		mark         => mark,
+		tcp          => tcp,
+
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		coln_size   => coln_size)

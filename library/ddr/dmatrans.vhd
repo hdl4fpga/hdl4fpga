@@ -28,13 +28,18 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_db.all;
+use hdl4fpga.ddr_param.all;
 
 entity dmatrans is
 	generic (
+		fpga          : natural;
+		mark          : natural := m6t;
+		tcp           : natural := 6000;
+ 
 		bank_size     : natural;
 		addr_size     : natural;
-		coln_size     : natural;
-		latency       : natural := 2);
+		coln_size     : natural);
 	port (
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
@@ -63,6 +68,9 @@ entity dmatrans is
 end;
 
 architecture def of dmatrans is
+
+	constant lrcd       : natural := to_ddrlatency(tcp, mark, trcd);
+	constant latency    : natural := lrcd-1;
 
 	signal ctlrdma_irdy : std_logic;
 
