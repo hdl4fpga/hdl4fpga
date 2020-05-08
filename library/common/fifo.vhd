@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity fifo is
 	generic (
 		size : natural;
+		synchronous_rddata : boolean := true;
 		overflow_check : boolean := true;
 		gray_code      : boolean := true);
 	port (
@@ -48,7 +49,6 @@ entity fifo is
 end;
 
 architecture def of fifo is
-	constant synchronous_rddata : boolean := true;
 
 	subtype word is std_logic_vector(0 to hdl4fpga.std.max(src_data'length,dst_data'length)-1);
 	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
