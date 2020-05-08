@@ -263,9 +263,9 @@ package ddr_db is
 
 		-- CL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  2*2, code => "010"),
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  1*5, code => "110"),
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  2*3, code => "011"),
+		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  1, code => "001"),
+		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  2, code => "010"),
+		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  3, code => "011"),
 
 		-- BL register --
 

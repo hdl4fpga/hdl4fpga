@@ -44,6 +44,7 @@ entity sdrphy is
 		sys_rst : in std_logic;
 
 		phy_cs    : in  std_logic;
+		phy_cke   : in  std_logic;
 		phy_b     : in  std_logic_vector(bank_size-1 downto 0);
 		phy_a     : in  std_logic_vector(addr_size-1 downto 0);
 		phy_ras   : in  std_logic;
@@ -99,6 +100,7 @@ begin
 		sys_clk => sys_clks(0),
           
 		phy_cs  => phy_cs,
+		phy_cke => phy_cke,
 		phy_b   => phy_b,
 		phy_a   => phy_a,
 		phy_ras => phy_ras,
@@ -143,7 +145,7 @@ begin
 	process (dqo, dqt)
 	begin
 		for i in dqo'range loop
-			if dqt(i)='1' then
+			if dqt(i)='0' then
 				sdr_dq(i) <= 'Z';
 			else
 				sdr_dq(i) <= dqo(i);

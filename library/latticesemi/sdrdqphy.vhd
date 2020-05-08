@@ -54,7 +54,13 @@ architecture ecp of sdrdqphy is
 begin
 	iddr_g : for i in 0 to byte_size-1 generate
 	begin
-		ffd_i : fd1s3ax
+		ffdt_i : fd1s3ax
+		port map (
+			ck => sys_clk,
+			d  => phy_dqt,
+			q  => sdr_dqt(i));
+
+		ffdi_i : fd1s3ax
 		port map (
 			ck => sys_clk,
 			d  => sdr_dqi(i),

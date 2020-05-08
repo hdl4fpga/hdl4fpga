@@ -32,6 +32,7 @@ entity sdrbaphy is
 		sys_clk : in  std_logic;
 
 		phy_cs  : in  std_logic;
+		phy_cke : in  std_logic;
 		phy_b   : in  std_logic_vector(bank_size-1 downto 0);
 		phy_a   : in  std_logic_vector(addr_size-1 downto 0);
 		phy_ras : in  std_logic;
@@ -105,5 +106,11 @@ begin
 		ck => sys_clk,
 		d  => phy_cs,
 		q  => sdr_cs);
+
+	cke_i : fd1s3ax
+	port map (
+		ck => sys_clk,
+		d  => phy_cke,
+		q  => sdr_cke);
 
 end;

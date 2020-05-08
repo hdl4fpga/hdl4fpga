@@ -50,7 +50,8 @@ architecture graphics of ulx3s is
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := M7E;
-	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
+--	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
+	constant tcp          : natural :=  6000; --7500; -- 1 ns /1ps
 
 	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
@@ -171,7 +172,7 @@ architecture graphics of ulx3s is
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug => (mode => 1, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
 		mode600p  => (mode => 1,  clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
 		mode1080p => (mode => 7,  clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
@@ -191,7 +192,7 @@ begin
 	sys_rst <= '0';
 --	sys_clk <= clk_25mhz;
 
-	ddrsys_clks(0) <=not ddrsys_clks(0) after 3.75 ns;
+	ddrsys_clks(0) <=not ddrsys_clks(0) after tcp * 1ps /2;
 	video_b : block
 
 		attribute FREQUENCY_PIN_CLKI  : string; 
@@ -427,8 +428,8 @@ begin
 		end if;
 	end process;
 
---	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
+	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -493,7 +494,7 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "000",
-		ctlr_cl      => "011",	-- 2   133 Mhz
+		ctlr_cl      => "010",	-- 3   133 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
@@ -543,7 +544,13 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
-
+ddrphy_dqsi <= (others => ddrsys_clks(0));
+process (ctlr_clk)
+begin
+	if rising_edge(ctlr_clk) then
+	ddrphy_sto <= ddrphy_sti;
+	end if;
+end process;
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
 		loopback    => false,
@@ -557,6 +564,7 @@ begin
 		sys_rst     => ddrsys_rst,
 
 		phy_cs      => ddrphy_cs,
+		phy_cke     => ddrphy_cke,
 		phy_ras     => ddrphy_ras,
 		phy_cas     => ddrphy_cas,
 		phy_we      => ddrphy_we,
@@ -572,7 +580,7 @@ begin
 		phy_dqt     => ddrphy_dqt,
 		phy_dqo     => ddrphy_dqi,
 		phy_sti     => ddrphy_sti(0),
-		phy_sto     => ddrphy_sto(0),
+		phy_sto     => open,
 
 --		ddr_sto(0)  => sdram_st_dqs,
 --		ddr_sto(1)  => sdram_st_dqs_open,
