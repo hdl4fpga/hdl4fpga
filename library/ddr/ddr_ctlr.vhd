@@ -200,6 +200,7 @@ architecture mix of ddr_ctlr is
 	signal ddr_mpu_sel    : std_logic;
 	signal init_rdy       : std_logic;
 
+	signal fifo_bypass : std_logic;
 begin
 
 	ddr_cwl      <= ctlr_cl when stdr=2 else ctlr_cwl;
@@ -424,6 +425,7 @@ begin
 		end loop;
 	end process;
 
+	fifo_bypass <= setif(select_lat(ctlr_cwl, cwl_cod, cwl_tab)=0);
 	wrfifo_i : entity hdl4fpga.ddr_wrfifo
 	generic map (
 		data_phases => data_phases,
@@ -431,6 +433,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
+		fifo_bypass => fifo_bypass,
 		ctlr_clk    => ctlr_clks(0),
 		ctlr_dqi    => rot_di,
 		ctlr_ena    => ctlr_di_dv,

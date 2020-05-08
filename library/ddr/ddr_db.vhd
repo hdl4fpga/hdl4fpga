@@ -269,14 +269,14 @@ package ddr_db is
 
 		-- BL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  1*0, code => "000"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  2*1, code => "001"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  2*2, code => "010"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  2*4, code => "011"),
+		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  0, code => "000"),
+		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  1, code => "001"),
+		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  2, code => "010"),
+		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  4, code => "011"),
 
 		-- CWL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => CWL, lat =>  2*1, code => "000"),
+		cnfglat_record'(stdr => DDR0, rgtr => CWL, lat =>  0, code => "000"),
 
 		-- DDR1 standard --
 		-------------------

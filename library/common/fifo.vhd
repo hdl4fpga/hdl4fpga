@@ -103,7 +103,10 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= (setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range)) or setif(not overflow_check));
+	src_trdy <= 
+		'1' when not overflow_check else
+		setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range)) when gray_code else
+		setif(unsigned(wr_addr(word_addr'range))+1/=unsigned(rd_addr(word_addr'range)));
 
 	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not overflow_check));
 	process(dst_clk)

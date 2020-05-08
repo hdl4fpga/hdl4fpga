@@ -348,6 +348,12 @@ package ddr_param is
 
 	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 
+	function select_lat (
+		constant value : std_logic_vector;
+		constant codes : std_logic_vector;
+		constant table : natural_vector)
+		return natural;
+
 end package;
 
 library hdl4fpga;
@@ -418,6 +424,28 @@ package body ddr_param is
 		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
 		val := val sll algn;
 		return std_logic_vector(val);
+	end;
+
+	function select_lat (
+		constant value : std_logic_vector;
+		constant codes : std_logic_vector;
+		constant table : natural_vector)
+		return natural is
+
+		variable ids : unsigned(0 to codes'length-1);
+	begin
+		ids := unsigned(codes);
+		for i in table'range loop
+			if ids(0 to value'length-1)=unsigned(value) then
+				return table(i);
+			end if;
+			ids := ids rol value'length;
+		end loop;
+
+		assert false
+			report "function : select_lat"
+			severity failure;
+		return 0;
 	end;
 
 	function ddr_task (
