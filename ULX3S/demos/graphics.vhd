@@ -38,7 +38,6 @@ architecture graphics of ulx3s is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	alias  si_clk      : std_logic is sys_clk;
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
 	-- Multiply by --  20     --  25     --  10     --
@@ -71,8 +70,8 @@ architecture graphics of ulx3s is
 	constant clk90        : natural := 1;
 	signal ddrsys_clks    : std_logic_vector(0 to 2-1) := (others => '0');
 
-	signal dmactlr_len    : std_logic_vector(24-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(24-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(24-1 downto 0);
+	signal dmactlr_addr   : std_logic_vector(24-1 downto 0);
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
@@ -172,21 +171,25 @@ architecture graphics of ulx3s is
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		modedebug => (mode => 1, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
 		mode600p  => (mode => 1,  clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
 		mode1080p => (mode => 7,  clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
 	constant video_mode : natural := modedebug;
 
-	alias dmacfg_clk : std_logic is sys_clk;
+	signal uart_rxc    : std_logic := '0';
+	alias dmacfg_clk : std_logic is uart_rxc;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
-	constant baudrate      : natural := 115200;
+--	constant baudrate      : natural := 115200;
+	constant baudrate : natural := 100000000;
+
+	alias si_clk : std_logic is uart_rxc;
 
 begin
 
 	sys_rst <= '0';
-	sys_clk <= clk_25mhz;
+--	sys_clk <= clk_25mhz;
 
 	ddrsys_clks(0) <=not ddrsys_clks(0) after 3.75 ns;
 	video_b : block
@@ -258,7 +261,7 @@ begin
 
 	scopeio_export_b : block
 
-		alias  uart_rxc    : std_logic is sys_clk;
+--		alias  uart_rxc    : std_logic is sys_clk;
 		signal uart_ena    : std_logic;
 		signal uart_rxdv   : std_logic;
 		signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -278,12 +281,14 @@ begin
 
 	begin
 
+		uart_rxc <= not uart_rxc after (1 sec / baudrate / (2*16));
 		process (uart_rxc)
 			constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
 			variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 		begin
 			if rising_edge(uart_rxc) then
-				if cntr = max_count-1 then
+--				if cntr = max_count-1 then
+				if true then --cntr = max_count-1 then
 					uart_ena <= '1';
 					cntr := (others => '0');
 				else
@@ -358,7 +363,7 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => 64,
+			size           => 256/(ctlr_di'length/8),
 			gray_code      => false,
 			overflow_check => false)
 		port map (
@@ -379,7 +384,7 @@ begin
 		begin
 			if rising_edge(si_clk) then
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= '0';
+					dmacfgio_req <= dmaio_dv;
 				elsif dmacfgio_req='0' then
 					if dmaio_dv='1' then
 						dmacfgio_req <= '1';
@@ -421,7 +426,8 @@ begin
 		end if;
 	end process;
 
-	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -486,7 +492,7 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "000",
-		ctlr_cl      => "010",	-- 2   133 Mhz
+		ctlr_cl      => "011",	-- 2   133 Mhz
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",

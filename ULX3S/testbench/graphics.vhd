@@ -147,18 +147,20 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 10000000;
+	constant baudrate : natural := 100000000;
 	constant uart_data  : std_logic_vector := 
+		x"0000" & 
+		x"16025c005c005c00" &
 		x"18ff" &
-		x"1234567890abcdF000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000aabbccdd" &
-		x"16020abcfd" &
-		x"170200003f";
+		x"1234567890abcdFfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaabbccdd" &
+		x"17025c005c007f" &
+		x"0000";
 
-	signal uart_clk : std_logic;
+	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
 begin
 
-	rst <= '0', '1' after 300 ns;
+	rst <= '1', '0' after 100 us;
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -170,15 +172,17 @@ begin
 				data(10-1 downto 0) := unsigned(uart_data(i*8 to (i+1)*8-1)) & b"01";
 				data := data ror 10;
 			end loop;
+			uart_sin <= '1';
 		elsif rising_edge(uart_clk) then
-			data := data ror 1;
+			data := data srl 1;
+			uart_sin <= data(0);
 		end if;
-		uart_sin <= data(0);
 	end process;
 
 	du_e : ulx3s
 	port map (
 		clk_25mhz  => xtal,
+		ftdi_txd   => uart_sin,
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,

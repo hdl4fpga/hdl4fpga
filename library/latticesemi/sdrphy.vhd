@@ -91,7 +91,7 @@ architecture ecp of sdrphy is
 
 begin
 
-	sdrphy_i : entity hdl4fpga.sdrbaphy
+	sdrbaphy_i : entity hdl4fpga.sdrbaphy
 	generic map (
 		bank_size => bank_size,
 		addr_size => addr_size)
@@ -116,8 +116,8 @@ begin
 		sdr_b   => sdr_b,
 		sdr_a   => sdr_a);
 
-	byte_g : for i in word_size/byte_size-1 to 0 generate
-		sdrphy_i : entity hdl4fpga.sdrdqphy
+	byte_g : for i in 0 to word_size/byte_size-1 generate
+		sdrdqphy_i : entity hdl4fpga.sdrdqphy
 		generic map (
 			byte_size => byte_size)
 		port map (
@@ -126,17 +126,17 @@ begin
 			phy_dmi => phy_dmi(i),
 			phy_dmt => phy_dmt(i),
 			phy_dmo => phy_dmo(i),
-			phy_dqi => phy_dqi((i+1)*byte_size-1 downto 0),
+			phy_dqi => phy_dqi((i+1)*byte_size-1 downto i*byte_size),
 			phy_dqt => phy_dqt(i),
-			phy_dqo => phy_dqo((i+1)*byte_size-1 downto 0),
+			phy_dqo => phy_dqo((i+1)*byte_size-1 downto i*byte_size),
 
 			sdr_dmi => sdr_dm(i),
 			sdr_dmt => dmt(i),
 			sdr_dmo => dmo(i),
 
-			sdr_dqi => sdr_dq((i+1)*byte_size-1 downto 0),
-			sdr_dqt => dqt((i+1)*byte_size-1 downto 0),
-			sdr_dqo => dqo((i+1)*byte_size-1 downto 0));
+			sdr_dqi => sdr_dq((i+1)*byte_size-1 downto  i*byte_size),
+			sdr_dqt => dqt((i+1)*byte_size-1 downto  i*byte_size),
+			sdr_dqo => dqo((i+1)*byte_size-1 downto  i*byte_size));
 
 	end generate;
 
@@ -154,7 +154,7 @@ begin
 	process (dmo, dmt)
 	begin
 		for i in dmo'range loop
-			if dmt(i)='1' then
+			if dmt(i)='0' then
 				sdr_dm(i) <= 'Z';
 			else
 				sdr_dm(i) <= dmo(i);

@@ -477,6 +477,11 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
         
         // Precharge Block
         if (Prech_enable == 1'b1) begin
+			if (Addr[10] === 1'b1) begin 
+				$display ("%m : at time %t PRE  : all ", $time);
+			end else begin
+				$display ("%m : at time %t PRE  : Bank = %d", $time, Ba);
+			end
             // Load Mode Register to Precharge
             if ($time - MRD_chk < tMRD) begin
                 $display ("%m : at time %t ERROR: tMRD violaiton during Precharge", $time);
@@ -938,11 +943,11 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 WR_chkm [Bank] = $time;
 
                 if (Debug) begin
-                    $display("%m : at time %t WRITE: Bank = %d Row = %d, Col = %d, Data = %d", $time, Bank, Row, Col, Dq_dqm);
+                    $display("%m : at time %t WRITE: Bank = %h Row = %h, Col = %h, Data = %h", $time, Bank, Row, Col, Dq_dqm);
                 end
             end else begin
                 if (Debug) begin
-                    $display("%m : at time %t WRITE: Bank = %d Row = %d, Col = %d, Data = Hi-Z due to DQM", $time, Bank, Row, Col);
+                    $display("%m : at time %t WRITE: Bank = %h Row = %h, Col = %h, Data = Hi-Z due to DQM", $time, Bank, Row, Col);
                 end
             end
 

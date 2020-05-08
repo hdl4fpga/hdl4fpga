@@ -70,7 +70,7 @@ end;
 architecture def of dmatrans is
 
 	constant lrcd       : natural := to_ddrlatency(tcp, mark, trcd);
-	constant latency    : natural := lrcd-1;
+	constant latency    : natural := 2;
 
 	signal ctlrdma_irdy : std_logic;
 
@@ -89,6 +89,7 @@ architecture def of dmatrans is
 	signal init         : std_logic;
 	signal reload       : std_logic;
 	signal load         : std_logic;
+ 	signal act          : std_logic;
 
 	signal ref_req      : std_logic;
 begin
@@ -166,15 +167,18 @@ begin
 		end if;
 	end process;
 
+	act <= ctlr_cas or ctlr_ras;
 	dmardy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 1-1 => 0),
+--		d => (0 to 1-1 => 0),
+		d => (0 to 1-1 => lrcd-latency),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,
 		ini   => load,
-		di(0) => ctlr_cas,
+--		di(0) => ctlr_cas,
+		di(0) => act, --ctlr_cas,
 		do(0) => ctlrdma_irdy);
 
 	tlenlat_e : entity hdl4fpga.align
@@ -235,7 +239,11 @@ begin
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+				if ddr_stdr(mark)=DDR0 then
+					ctlr_a <= std_logic_vector(saved_col);
+				else
+					ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+				end if;
 --				ctlr_a <= std_logic_vector(saved_col);
 			end if;
 		end if;
