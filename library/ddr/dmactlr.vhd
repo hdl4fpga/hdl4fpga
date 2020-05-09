@@ -236,7 +236,7 @@ begin
 		ctlr_a         => ctlr_a,
 		ctlr_dio_req   => ctlr_dio_req);
 
-	r(8-1 downto 8-8) <= not dmatrans_taddr(8-1 downto 0);
+	r <= dmatrans_taddr(r'length-1 downto 0);
 	inbuffer_e : entity hdl4fpga.align
 	generic map (
 		n => ctlr_r'length,

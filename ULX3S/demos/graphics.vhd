@@ -168,23 +168,22 @@ architecture graphics of ulx3s is
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
-		modedebug => (mode => 16, clkos_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
+		modedebug => (mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
 		mode600p  => (mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
 		mode900p  => (mode => 7,  clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1));
 
 	constant video_mode : natural := mode600p;
 
 	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
-	alias uart_rxc   : std_logic is ctlr_clk;
+	alias uart_rxc   : std_logic is clk_25mhz;
 	alias si_clk     : std_logic is uart_rxc;
 	alias dmacfg_clk : std_logic is uart_rxc;
 
-
-
 	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
 
-	constant baudrate  : natural := 8*1_152_000;
-	constant uart_xtal : natural := natural(10.0**12/real(ddr_tcp));
+	constant baudrate  : natural := 1_152_000;
+--	constant uart_xtal : natural := natural(10.0**12/real(ddr_tcp));
+	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 
 begin
 
@@ -255,7 +254,6 @@ begin
 		ddrsys_rst <= not lock;
 
 	end block;
-
 
 	scopeio_export_b : block
 
@@ -354,9 +352,6 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
---		ctlr_di_dv <= ctlr_di_req;
---		ctlr_di <= x"00ffff00"; --(others => '1');
-
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
 		begin
@@ -376,8 +371,9 @@ begin
 
 	end block;
 
-	graphics_di <= ctlr_do;
---	graphics_di <= ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0) & ctlr_r(8-1 downto 0);
+--	graphics_di <= ctlr_do;
+--	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length) sll (graphics_di'length-ctlr_r'length));
+	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length));
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)
@@ -405,7 +401,6 @@ begin
 	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
---	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
@@ -520,13 +515,15 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
-ddrphy_dqsi <= (others => ddrsys_clks(0));
-process (ctlr_clk)
-begin
-	if rising_edge(ctlr_clk) then
-	ddrphy_sto <= ddrphy_sti;
-	end if;
-end process;
+		ddrphy_dqsi <= (others => ctlr_clk);
+
+	process (ctlr_clk)
+	begin
+		if rising_edge(ctlr_clk) then
+			ddrphy_sto <= ddrphy_sti;
+		end if;
+	end process;
+
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
 		loopback    => false,
@@ -558,10 +555,6 @@ end process;
 		phy_sti     => ddrphy_sti(0),
 		phy_sto     => open,
 
---		ddr_sto(0)  => sdram_st_dqs,
---		ddr_sto(1)  => sdram_st_dqs_open,
---		ddr_sti(0)  => sdram_st_lp_dqs,
---		ddr_sti(1)  => sdram_st_lp_dqs,
 		sdr_clk     => sdram_clk,
 		sdr_cke     => sdram_cke,
 		sdr_cs      => sdram_csn,
@@ -595,8 +588,7 @@ end process;
         out_clock => dvid_crgb(7 downto 6),
         out_red   => dvid_crgb(5 downto 4),
         out_green => dvid_crgb(3 downto 2),
-        out_blue  => dvid_crgb(1 downto 0)
-    );
+        out_blue  => dvid_crgb(1 downto 0));
 
 	ddr_g : for i in gpdi_dp'range generate
 		signal q : std_logic;
