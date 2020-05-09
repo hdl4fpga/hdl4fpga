@@ -43,7 +43,7 @@ entity fifo is
 
 		dst_clk  : in  std_logic;
 		dst_frm  : in  std_logic := '1';
-		dst_irdy : buffer std_logic := '1';
+		dst_irdy : buffer std_logic;
 		dst_trdy : in  std_logic := '1';
 		dst_data : out std_logic_vector);
 end;

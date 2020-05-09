@@ -147,7 +147,7 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 100000000;
+	constant baudrate : natural := 8*1_152_000;
 	constant uart_data  : std_logic_vector := 
 		x"0000" & 
 		x"16025c005c005c00" &
@@ -160,7 +160,7 @@ architecture ulx3s_graphics of testbench is
 	signal uart_sin : std_logic;
 begin
 
-	rst <= '1', '0' after 100 us;
+	rst <= '1', '0' after 1 us;
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
