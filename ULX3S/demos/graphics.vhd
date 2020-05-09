@@ -173,10 +173,10 @@ architecture graphics of ulx3s is
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_params : displayparam_vector := (
 		modedebug => (mode => 16, clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2),
-		mode600p  => (mode => 1,  clkok_div => 2, clkop_div => 16, clkfb_div => 2, clki_div => 5),
+		mode600p  => (mode => 1,  clkok_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
 		mode1080p => (mode => 7,  clkok_div => 2, clkop_div =>  4, clkfb_div => 3, clki_div => 2));
 
-	constant video_mode : natural := modedebug;
+	constant video_mode : natural := mode600p;
 
 	signal uart_rxc    : std_logic := '0';
 	alias dmacfg_clk : std_logic is uart_rxc;
@@ -192,13 +192,13 @@ begin
 	sys_rst <= '0';
 --	sys_clk <= clk_25mhz;
 
-	ddrsys_clks(0) <=not ddrsys_clks(0) after tcp * 1ps /2;
 	video_b : block
 
-		attribute FREQUENCY_PIN_CLKI  : string; 
-		attribute FREQUENCY_PIN_CLKOP : string; 
-		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
+		signal clkfb : std_logic;
+--		attribute FREQUENCY_PIN_CLKI  : string; 
+--		attribute FREQUENCY_PIN_CLKOP : string; 
+--		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
+--		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "25.000000";
 
 	begin
 		PLL_I : EHXPLLL
@@ -208,10 +208,10 @@ begin
 			INTFB_WAKE       => "DISABLED", 
 			FEEDBK_PATH      => "CLKOP",
 			STDBY_ENABLE     => "DISABLED", DPHASE_SOURCE  => "DISABLED", 
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE =>  99,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE =>   8,
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  =>  14, 
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  =>   2,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -219,7 +219,8 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       =>  100, 
+			CLKOS3_DIV       =>  3, 
+			CLKOS2_DIV       =>  10, 
 			CLKOS_DIV        => video_params(video_mode).clkok_div,
 			CLKOP_DIV        => video_params(video_mode).clkop_div,
 			CLKFB_DIV        => video_params(video_mode).clkfb_div,
@@ -227,7 +228,7 @@ begin
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
-			CLKFB     => video_clk, 
+			CLKFB     => clkfb, 
             PHASESEL0 => '0', PHASESEL1 => '0', 
 			PHASEDIR  => '0', 
             PHASESTEP => '0', PHASELOADREG => '0', 
@@ -236,10 +237,10 @@ begin
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0', 
             ENCLKOS3  => '0', 
-			CLKOP     => video_clk, 
-			CLKOS     => video_shift_clk, 
-            CLKOS2    => open, --CLKOS2_t, 
-			CLKOS3    => open, --CLKOS3_t, 
+			CLKOP     => clkfb,
+			CLKOS     => video_shift_clk,
+            CLKOS2    => video_clk,
+			CLKOS3    => ctlr_clk,
 			LOCK      => open, --LOCK, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
