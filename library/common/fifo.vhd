@@ -115,7 +115,7 @@ begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				rd_addr <= (others => '0');
---				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
+				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
 				if dst_trdy='1' then
 					if dst_irdy1='1' then
