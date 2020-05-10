@@ -167,18 +167,17 @@ begin
 		end if;
 	end process;
 
-	act <= ctlr_cas or ctlr_ras;
+	act <= ctlr_cas; -- or ctlr_ras;
 	dmardy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
 --		d => (0 to 1-1 => 0),
-		d => (0 to 1-1 => lrcd-latency),
+		d => (0 to 1-1 => 0), --latency),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,
 		ini   => load,
---		di(0) => ctlr_cas,
-		di(0) => act, --ctlr_cas,
+		di(0) => act,
 		do(0) => ctlrdma_irdy);
 
 	tlenlat_e : entity hdl4fpga.align
