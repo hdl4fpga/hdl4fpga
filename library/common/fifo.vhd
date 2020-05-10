@@ -67,7 +67,8 @@ begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
 --	data <= (1 to 8 => wr_addr(wr_addr'right-4)) & (1 to 8 => wr_addr(wr_addr'right-5)) & (1 to 8 => wr_addr(wr_addr'right-3)) & (1 to 8 => wr_addr(wr_addr'right));
---	data <= std_logic_vector(resize(unsigned(wr_addr), data'length));
+	data <= std_logic_vector(resize(unsigned(wr_addr(1 to wr_addr'length-1)), data'length));
+--	dst_data <= std_logic_vector(resize(unsigned(rd_addr), data'length));
 --	data <= src_data;
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
@@ -77,8 +78,8 @@ begin
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
-		wr_data => src_data, 
---		wr_data => data, 
+--		wr_data => src_data, 
+		wr_data => data, 
 
 		rd_clk  => dst_clk,
 		rd_addr => rd_addr,
@@ -114,7 +115,7 @@ begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				rd_addr <= (others => '0');
-				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
+--				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
 				if dst_trdy='1' then
 					if dst_irdy1='1' then
