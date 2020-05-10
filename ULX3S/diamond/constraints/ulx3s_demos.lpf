@@ -1,10 +1,12 @@
 BLOCK RESETPATHS;
 BLOCK ASYNCPATHS;
+BLOCK INTERCLOCKDOMAIN PATHS;
+
 ## ULX3S v2.x.x and v3.0.x
-BLOCK PATH FROM CLKNET "ddrphy_dqsi[0]" TO CLKNET "video_clk" ;
-BLOCK PATH FROM CLKNET "ddrphy_dqsi[1]" TO CLKNET "video_clk" ;
-BLOCK PATH FROM CLKNET "clk_25mhz_c" TO CLKNET "ddrphy_dqsi[0]" ;
-BLOCK PATH FROM CLKNET "clk_25mhz_c" TO CLKNET "ddrphy_dqsi[1]" ;
+# BLOCK PATH FROM CLKNET "ddrphy_dqsi[0]" TO CLKNET "video_clk" ;
+# BLOCK PATH FROM CLKNET "ddrphy_dqsi[1]" TO CLKNET "video_clk" ;
+# BLOCK PATH FROM CLKNET "clk_25mhz_c" TO CLKNET "ddrphy_dqsi[0]" ;
+# BLOCK PATH FROM CLKNET "clk_25mhz_c" TO CLKNET "ddrphy_dqsi[1]" ;
 
 # The clock "usb" and "gpdi" sheet
 LOCATE COMP "clk_25mhz" SITE "G2";
