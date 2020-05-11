@@ -179,9 +179,12 @@ architecture graphics of ulx3s is
 
 	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
 
-	constant baudrate  : natural := 1_152_000;
+	constant baudrate  : natural := 115200;
 --	constant uart_xtal : natural := natural(10.0**12/real(ddr_tcp));
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	signal uart_rxdv   : std_logic;
+	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
 
 begin
 
@@ -255,9 +258,6 @@ begin
 
 	scopeio_export_b : block
 
-		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(8-1 downto 0);
-
 		signal si_frm      : std_logic;
 		signal si_irdy     : std_logic;
 		signal si_data     : std_logic_vector(uart_rxd'range);
@@ -269,6 +269,7 @@ begin
 
 		signal data_ena    : std_logic;
 		signal data_len    : std_logic_vector(8-1 downto 0);
+		signal rxd         : std_logic_vector(uart_rxd'range);
 		signal dmadata_ena : std_logic;
 
 	begin
@@ -281,7 +282,8 @@ begin
 			uart_rxc  => uart_rxc,
 			uart_sin  => ftdi_txd,
 			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
+			uart_rxd  => rxd);
+		uart_rxd <= rxd; --reverse(rxd);
 
 		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 		generic map (
@@ -629,38 +631,51 @@ begin
 --    end generate;
 
 
-	process (si_clk)
+	process (uart_rxc)
 		variable t : std_logic;
 		variable e : std_logic;
 		variable i : std_logic;
 	begin
-		if rising_edge(si_clk) then
-			if i='1' and e='0' then
-				t := not t;
+		if rising_edge(uart_rxc) then
+			if uart_rxdv='1' then
+				led <= uart_rxd;
 			end if;
-			e := i;
-			i := dmaio_dv;
-			i := dmaio_rdy;
-
-			led(0) <= t;
-			led(1) <= not t;
 		end if;
 	end process;
 
-	process (ctlr_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			i := dmavideo_rdy;
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			led(2) <= t;
-			led(3) <= not t;
-		end if;
-	end process;
+--	process (si_clk)
+--		variable t : std_logic;
+--		variable e : std_logic;
+--		variable i : std_logic;
+--	begin
+--		if rising_edge(si_clk) then
+--			if i='1' and e='0' then
+--				t := not t;
+--			end if;
+--			e := i;
+--			i := uart_rxdv;
+--			i := dmaio_dv;
+--			i := dmaio_rdy;
+--
+--			led(0) <= t;
+--			led(1) <= not t;
+--		end if;
+--	end process;
+
+--	process (ctlr_clk)
+--		variable t : std_logic;
+--		variable e : std_logic;
+--		variable i : std_logic;
+--	begin
+--		if rising_edge(ctlr_clk) then
+--			i := dmavideo_rdy;
+--			if i='1' and e='0' then
+--				t := not t;
+--			end if;
+--			e := i;
+--			led(2) <= 'Z'; --t;
+--			led(3) <= 'Z'; --not t;
+--		end if;
+--	end process;
 
 end;
