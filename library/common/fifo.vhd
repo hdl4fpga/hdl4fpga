@@ -78,8 +78,8 @@ begin
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
---		wr_data => src_data, 
-		wr_data => data, 
+		wr_data => src_data, 
+--		wr_data => data, 
 
 		rd_clk  => dst_clk,
 		rd_addr => rd_addr,

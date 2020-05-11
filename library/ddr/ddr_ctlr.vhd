@@ -161,6 +161,7 @@ architecture mix of ddr_ctlr is
 	signal ddr_init_b     : std_logic_vector(bank_size-1 downto 0);
 
 	signal ddr_pgm_cmd    : std_logic_vector(0 to 2);
+	signal ddr_pgm_ras    : std_logic;
 
 	signal ddr_mpu_rst    : std_logic;
 	signal ddr_mpu_trdy   : std_logic;
@@ -258,7 +259,7 @@ begin
 		ctlr_refreq   => ctlr_refreq,
 		ddr_pgm_irdy  => ctlr_irdy,
 		ddr_pgm_trdy  => ctlr_trdy,
-		ddr_pgm_ras   => ctlr_ras,
+		ddr_pgm_ras   => ddr_pgm_ras,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 --		ddr_pgm_ref   => '0',
@@ -269,6 +270,8 @@ begin
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_seq   => ctlr_rlseq,
 		ddr_pgm_rw    => ctlr_rw);
+
+	ctlr_ras <=ddr_pgm_ras and ddr_mpu_trdy;
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;

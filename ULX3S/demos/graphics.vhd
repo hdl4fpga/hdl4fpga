@@ -369,9 +369,9 @@ begin
 
 	end block;
 
---	graphics_di <= ctlr_do;
+	graphics_di <= ctlr_do;
 --	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length) sll (graphics_di'length-ctlr_r'length));
-	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length));
+--	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length));
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)

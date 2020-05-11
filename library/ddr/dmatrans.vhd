@@ -165,7 +165,7 @@ begin
 		end if;
 	end process;
 
-	act <= ctlr_cas; -- or ctlr_ras;
+	act <= ctlr_ras or ctlr_act or ctlr_dio_req;
 	dmardy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
