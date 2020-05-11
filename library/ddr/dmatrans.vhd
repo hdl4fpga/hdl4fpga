@@ -59,8 +59,6 @@ entity dmatrans is
 		ctlr_ras      : in  std_logic := '0';
 		ctlr_cas      : in  std_logic := '0';
 		ctlr_act      : in  std_logic;
-		ctlr_pre      : in  std_logic;
-		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req  : in  std_logic);
@@ -172,7 +170,7 @@ begin
 	generic map (
 		n => 1,
 --		d => (0 to 1-1 => 0),
-		d => (0 to 1-1 => 0), --latency),
+		d => (0 to 1-1 => lrcd-latency),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,

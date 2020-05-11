@@ -82,8 +82,6 @@ architecture graphics of ulx3s is
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
-	signal ctlr_pre       : std_logic;
-	signal ctlr_idl       : std_logic;
 	signal ctlr_inirdy    : std_logic;
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
@@ -443,9 +441,7 @@ begin
 		ctlr_a      => ctlr_a,
 		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
-		ctlr_act    => ctlr_act,
-		ctlr_pre    => ctlr_pre,
-		ctlr_idl    => ctlr_idl);
+		ctlr_act    => ctlr_act);
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
@@ -485,8 +481,6 @@ begin
 		ctlr_di_dv   => ctlr_di_dv,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
-		ctlr_pre     => ctlr_pre,
-		ctlr_idl     => ctlr_idl,
 		ctlr_di      => ctlr_di,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,

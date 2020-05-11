@@ -74,9 +74,7 @@ entity ddr_ctlr is
 		ctlr_do_req  : out std_logic;
 		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
-		ctlr_pre     : out std_logic;
 		ctlr_idl     : out std_logic;
-		ctlr_cyl     : out std_logic;
 		ctlr_ras     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
@@ -298,8 +296,6 @@ begin
 		ddr_mpu_cmd   => ddr_pgm_cmd,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_mpu_act   => ctlr_act,
-		ddr_mpu_pre   => ctlr_pre,
-		ddr_mpu_cyl   => ctlr_cyl,
 		ddr_mpu_cas   => ddr_mpu_cas,
 		ddr_mpu_ras   => ddr_mpu_ras,
 		ddr_mpu_we    => ddr_mpu_we,

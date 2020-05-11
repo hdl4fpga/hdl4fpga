@@ -55,9 +55,6 @@ entity ddr_mpu is
 		ddr_mpu_act : out std_logic;
 		ddr_mpu_ras : out std_logic;
 		ddr_mpu_cas : out std_logic;
-		ddr_mpu_pre : buffer std_logic;
-		ddr_mpu_cyl : out std_logic;
-		ddr_mpu_idl : out std_logic;
 		ddr_mpu_we  : out std_logic;
 		ddr_mpu_cen : out std_logic;
 
@@ -346,8 +343,6 @@ begin
 							end if;
 						end if;
 					end loop;
-					ddr_mpu_pre <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_read_cl);
-					ddr_mpu_idl <= ddr_mpu_pre;
 				else
 					ddr_mpu_cen <= '0';
 					ddr_mpu_ras <= ddr_nop(ras);
@@ -366,8 +361,6 @@ begin
 				ddr_mpu_rwin  <= ddr_state_tab(0).ddr_rph;
 				ddr_mpu_wwin  <= ddr_state_tab(0).ddr_wph;
 				ddr_mpu_rwwin <= ddr_state_tab(0).ddr_wph or ddr_state_tab(0).ddr_rph;
-				ddr_mpu_pre   <= '0';
-				ddr_mpu_idl   <= '1';
 				ddr_rdy_ena   <= '1';
 				lat_timer     <= (others => '1');
 			end if;
@@ -378,7 +371,6 @@ begin
 	ddr_mpu_act  <= setif(ddr_state=ddrs_act);
 	ddr_mpu_wri  <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_write_bl);
 	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
-	ddr_mpu_cyl  <= lat_timer(0) and ddr_mpu_pre;
 
 	debug : with ddr_state select
 	mpu_state <=
