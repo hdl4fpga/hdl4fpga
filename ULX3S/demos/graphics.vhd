@@ -184,7 +184,6 @@ architecture graphics of ulx3s is
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
-
 begin
 
 	sys_rst <= '0';

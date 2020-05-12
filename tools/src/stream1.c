@@ -22,7 +22,6 @@ int main (int argc, char *argv[])
 	char unsigned rid;
 
 	fwrite("\000", sizeof(char), 2, stdout);
-//	fwrite("\000", sizeof(char), 2, stdout);
 	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
 		if (fread(&len, sizeof(char), 1,   stdin) > 0) {
 			stream(rid);
@@ -34,9 +33,6 @@ int main (int argc, char *argv[])
 					exit(-1);
 			}
 			fwrite("\000", sizeof(char), 2, stdout);
-//			fwrite("\000", sizeof(char), 2, stdout);
-//			fwrite("\000", sizeof(char), 2, stdout);
-//			fwrite("\000", sizeof(char), 2, stdout);
 		} else
 			exit(-1);
 	}
