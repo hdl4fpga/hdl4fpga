@@ -1,16 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 int main (int argc, char *argv[])
 {
-	int    addr;
-		char data[3*256/2];
+	char data[3*256/2];
 
-	addr = 0;
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
-	while(fread(data, sizeof(char), sizeof(data), stdin) > 0) {
+	for(int addr = 0; fread(data, sizeof(char), sizeof(data), stdin) > 0; addr += 0x80) {
 		char buffer[(2+256)+(2+3)+(2+3)];
 
 		char *memaddr;
@@ -31,9 +28,9 @@ int main (int argc, char *argv[])
 		memlen = memaddr + 5;
 		memlen[0] = 0x17;
 		memlen[1] = 0x02;
-		memlen[2] = 0x0f;
-		memlen[3] = 0xff;
-		memlen[4] = 0xff;
+		memlen[2] = 0x00;
+		memlen[3] = 0x00;
+		memlen[4] = 0x7f;
 
 		for (int i=0; i < sizeof(data)/3; i++) {
 			unsigned pixel;
@@ -51,9 +48,6 @@ int main (int argc, char *argv[])
 			memdata[2*i+1+2] = ((pixel >> 0) & 0xff);
 		}
 		fwrite(buffer, sizeof(char), sizeof(buffer), stdout);
-
-		addr += 0x40;
-		return 0;
 
 	}
 
