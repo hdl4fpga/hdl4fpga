@@ -44,7 +44,7 @@ architecture graphics of ulx3s is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 40.0;
+	constant sys_per      : real    := 1000.0 / 25.0;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := M7E;
@@ -180,7 +180,6 @@ architecture graphics of ulx3s is
 	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
 
 	constant baudrate  : natural := 115200;
---	constant uart_xtal : natural := natural(10.0**12/real(ddr_tcp));
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -269,7 +268,6 @@ begin
 
 		signal data_ena    : std_logic;
 		signal data_len    : std_logic_vector(8-1 downto 0);
-		signal rxd         : std_logic_vector(uart_rxd'range);
 		signal dmadata_ena : std_logic;
 
 	begin
@@ -282,8 +280,17 @@ begin
 			uart_rxc  => uart_rxc,
 			uart_sin  => ftdi_txd,
 			uart_rxdv => uart_rxdv,
-			uart_rxd  => rxd);
-		uart_rxd <= rxd; --reverse(rxd);
+			uart_rxd  => uart_rxd);
+
+--	uartrx_e : entity hdl4fpga.uart_rx_f32c
+--	generic map (
+--		C_baudrate => baudrate,
+--		C_clk_freq_hz => uart_xtal)
+--	port map (
+--		clk  => uart_rxc,
+--		rxd  => ftdi_txd,
+--		dv   => uart_rxdv,
+--		byte => uart_rxd);
 
 		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 		generic map (
@@ -372,8 +379,6 @@ begin
 	end block;
 
 	graphics_di <= ctlr_do;
---	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length) sll (graphics_di'length-ctlr_r'length));
---	graphics_di <= std_logic_vector(resize(unsigned(ctlr_r), graphics_di'length));
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
 		video_mode => video_params(video_mode).mode)

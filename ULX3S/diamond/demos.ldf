@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="project" device="LFE5U-12F-6BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="demos" device="LFE5U-12F-6BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -212,7 +212,7 @@
         <Source name="../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/uart/uart_rx_f32c.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../../library/uart/uart_rx_f32c.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">

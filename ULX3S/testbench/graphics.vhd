@@ -149,11 +149,50 @@ architecture ulx3s_graphics of testbench is
 
 	constant baudrate : natural := 1_152_000;
 	constant uart_data  : std_logic_vector := 
-		x"0000" & 
-		x"16025c005c005c00" &
-		x"18ff" &
-		x"1234567890abcdFfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaabbccdd" &
-		x"17025c005c007f" &
+		x"0000"                             &
+		"18ff"                              &
+		x"425042504250425242924a924a924292" &       &
+		x"429242524254429442964a966be07420" &
+		x"5b1a5b1a531a531a639e6ba06be06be2" &
+		x"73e274247424742474247c2484aa8cea" &
+		x"84a67c647c647c667c667c24742273e2" &
+		x"7c668cea956e9db0a5b2a5b2a5b2a5b2" &
+		x"a5b09d709d709d709d709db09db09db0" &
+		x"a5b2a5b2a5b2a5b2a5b2a5b2a5f4a5f4" &
+		x"a5f4a5f4adf4adf4adf4adf4adf4adf4" &
+		x"ae34adf4adf4adf4adf4ae34ae34ae34" &
+		x"ae34ae34ae34ae34ae34ae34ae34ae34" &
+		x"ae34ae34ae34ae36b634ae34b634b636" &
+		x"ae34ae34b636b634b636b636b636b636" &
+		x"b634b634b636b636ae34b636b636b636" &
+		x"b634b634b634b634b634b636b636b636" &
+		x"b634b636b636b636b636b636b636b636" &
+		x"0000"                             &
+		x"16025c005c005c00"                 & 
+		x"0000"                             &
+		x"17025c005c007f"                   & 
+		x"0000"                             & 
+		x"18ff"                             & 
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b636b636b636b636b636" &
+		x"b636b636b636b676b676b636b636b636" &
+		x"b676b676b676b676b676b636b636b636" &
+		x"b636b676b676b676b676b676b676b676" &
+		x"b636b676b676b676b676b676b676b636" &
+		x"b676b676b676b676b676b676b676b676" &
+		x"b676b676b676b676b676b676b676be76" &
+		x"b676b676b676b676b676b676b676be76" &
+		x"0000"                             & 
+		x"16025c005c0080"                   & 
+		x"0000"                             &
+		x"17025c005c007f"                   &
 		x"0000";
 
 	signal uart_clk : std_logic := '0';

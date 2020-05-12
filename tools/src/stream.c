@@ -2,6 +2,16 @@
 #include <stdio.h>
 #include <math.h>
 
+void stream (char c)
+{
+	if (c == 0) 
+		fwrite("\\", sizeof(char), 1, stdout);
+	else if(c == '\\')
+		fwrite("\\", sizeof(char), 1, stdout);
+
+	fwrite(&c, sizeof(char), 1, stdout);
+}
+
 int main (int argc, char *argv[])
 {
 	char c;
@@ -10,9 +20,7 @@ int main (int argc, char *argv[])
 	setbuf(stdout, NULL);
 	fwrite("\000", sizeof(char), 2, stdout);
 	while(fread(&c, sizeof(char), 1, stdin) > 0) {
-		if (c==0) 
-			fwrite("\\", sizeof(char), 1, stdout);
-		fwrite(&c, sizeof(char), 1, stdout);
+		stream(c);
 	}
 	fwrite("\000", sizeof(char), 2, stdout);
 

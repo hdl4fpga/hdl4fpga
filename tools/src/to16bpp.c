@@ -35,14 +35,16 @@ int main (int argc, char *argv[])
 		for (int i=0; i < sizeof(data)/3; i++) {
 			unsigned pixel;
 
-			pixel    = 0;
+			pixel   = 0;
 			pixel <<= 5;
-			pixel   |= ((data[3*i+0] >> 5) & 0x1f);
+			pixel   |= ((data[3*i+0] >> 3) & 0x1f);
+//			pixel   |= 0x1f;
 			pixel <<= 5;
-			pixel   |= ((data[3*i+1] >> 5) & 0x1f);
+			pixel   |= ((data[3*i+1] >> 3) & 0x1f);
+//			pixel   |= 0x1f;
 			pixel <<= 5;
-			pixel   |= ((data[3*i+2] >> 5) & 0x1f);
-			pixel = -1;
+			pixel   |= ((data[3*i+2] >> 3) & 0x1f);
+			pixel <<= 1;
 
 			memdata[2*i+0+2] = ((pixel >> 8) & 0xff);
 			memdata[2*i+1+2] = ((pixel >> 0) & 0xff);

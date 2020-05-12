@@ -52,7 +52,7 @@ process.stdin.on('data', function(chunk) {
 
 	let length = 0;
 	while ((length+1) < data.length) {
-		let step = (data.charCodeAt(length+1) + 3);
+		let step = ((data.charCodeAt(length+1) % 256) + 3);
 		console.log("step", step);
 		if ((length+step) <= data.length) {
 			if (length+step <= (1024+8)) {
