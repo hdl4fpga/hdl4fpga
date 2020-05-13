@@ -179,7 +179,7 @@ architecture graphics of ulx3s is
 
 	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
 
-	constant baudrate  : natural := 115200;
+	constant baudrate  : natural := 1152000;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);

@@ -147,11 +147,11 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 1_152_000;
+	constant baudrate : natural := 1152000;
 	constant uart_data  : std_logic_vector := 
 		x"0000"                             &
-		"18ff"                              &
-		x"425042504250425242924a924a924292" &       &
+		x"18ff"                             &
+		x"abcd42504250425242924a924a924292" &
 		x"429242524254429442964a966be07420" &
 		x"5b1a5b1a531a531a639e6ba06be06be2" &
 		x"73e274247424742474247c2484aa8cea" &
@@ -166,14 +166,14 @@ architecture ulx3s_graphics of testbench is
 		x"ae34ae34b636b634b636b636b636b636" &
 		x"b634b634b636b636ae34b636b636b636" &
 		x"b634b634b634b634b634b636b636b636" &
-		x"b634b636b636b636b636b636b636b636" &
+		x"b634b636b636b636b636b636b6364321" &
 		x"0000"                             &
-		x"16025c005c005c00"                 & 
+		x"16025c005c005c00"                 &
 		x"0000"                             &
-		x"17025c005c007f"                   & 
-		x"0000"                             & 
-		x"18ff"                             & 
-		x"b636b636b636b636b636b636b636b636" &
+		x"17025c005c007f"                   &
+		x"0000"                             &
+		x"18ff"                             &
+		x"1234b636b636b636b636b636b636b636" &
 		x"b636b636b636b636b636b636b636b636" &
 		x"b636b636b636b636b636b636b636b636" &
 		x"b636b636b636b636b636b636b636b636" &
@@ -188,9 +188,9 @@ architecture ulx3s_graphics of testbench is
 		x"b636b676b676b676b676b676b676b636" &
 		x"b676b676b676b676b676b676b676b676" &
 		x"b676b676b676b676b676b676b676be76" &
-		x"b676b676b676b676b676b676b676be76" &
-		x"0000"                             & 
-		x"16025c005c0080"                   & 
+		x"b676b676b676b676b676b676b6765a7c" &
+		x"0000"                             &
+		x"16025c005c0080"                   &
 		x"0000"                             &
 		x"17025c005c007f"                   &
 		x"0000";
@@ -211,10 +211,11 @@ begin
 				data(10-1 downto 0) := unsigned(uart_data(i*8 to (i+1)*8-1)) & b"01";
 				data := data ror 10;
 			end loop;
+			data := not data;
 			uart_sin <= '1';
 		elsif rising_edge(uart_clk) then
 			data := data srl 1;
-			uart_sin <= data(0);
+			uart_sin <= not data(0);
 		end if;
 	end process;
 
