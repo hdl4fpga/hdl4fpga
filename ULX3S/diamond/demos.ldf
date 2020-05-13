@@ -212,7 +212,7 @@
         <Source name="../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/uart/uart_rx_f32c.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/uart/uart_rx_f32c.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
