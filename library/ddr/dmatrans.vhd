@@ -28,13 +28,18 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_db.all;
+use hdl4fpga.ddr_param.all;
 
 entity dmatrans is
 	generic (
+		fpga          : natural;
+		mark          : natural := m6t;
+		tcp           : natural := 6000;
+ 
 		bank_size     : natural;
 		addr_size     : natural;
-		coln_size     : natural;
-		latency       : natural := 2);
+		coln_size     : natural);
 	port (
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
@@ -54,8 +59,6 @@ entity dmatrans is
 		ctlr_ras      : in  std_logic := '0';
 		ctlr_cas      : in  std_logic := '0';
 		ctlr_act      : in  std_logic;
-		ctlr_pre      : in  std_logic;
-		ctlr_idl      : in  std_logic;
 		ctlr_b        : out std_logic_vector;
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req  : in  std_logic);
@@ -63,6 +66,9 @@ entity dmatrans is
 end;
 
 architecture def of dmatrans is
+
+	constant lrcd       : natural := to_ddrlatency(tcp, mark, trcd);
+	constant latency    : natural := 2;
 
 	signal ctlrdma_irdy : std_logic;
 
@@ -81,6 +87,7 @@ architecture def of dmatrans is
 	signal init         : std_logic;
 	signal reload       : std_logic;
 	signal load         : std_logic;
+ 	signal act          : std_logic;
 
 	signal ref_req      : std_logic;
 begin
@@ -158,15 +165,17 @@ begin
 		end if;
 	end process;
 
+	act <= ctlr_ras or ctlr_act or ctlr_dio_req;
 	dmardy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 1-1 => 0),
+--		d => (0 to 1-1 => 0),
+		d => (0 to 1-1 => lrcd-latency),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,
 		ini   => load,
-		di(0) => ctlr_cas,
+		di(0) => act,
 		do(0) => ctlrdma_irdy);
 
 	tlenlat_e : entity hdl4fpga.align
@@ -227,7 +236,11 @@ begin
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+				if ddr_stdr(mark)=DDR0 then
+					ctlr_a <= std_logic_vector(saved_col);
+				else
+					ctlr_a <= std_logic_vector(shift_left(saved_col,1));
+				end if;
 --				ctlr_a <= std_logic_vector(saved_col);
 			end if;
 		end if;

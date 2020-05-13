@@ -41,6 +41,7 @@ entity ddr_init is
 		ddr_init_cl   : std_logic_vector;
 		ddr_init_ods  : std_logic_vector;
 
+		ddr_init_wb   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		ddr_init_al   : in  std_logic_vector(2-1 downto 0) := (others => '0');
 		ddr_init_asr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		ddr_init_cwl  : in  std_logic_vector(3-1 downto 0) := (others => '0');
@@ -112,6 +113,7 @@ begin
 		ddr_mr_srt  => ddr_init_srt,
 		ddr_mr_bl   => ddr_init_bl,
 		ddr_mr_bt   => ddr_init_bt,
+		ddr_mr_wb   => ddr_init_wb,
 		ddr_mr_cl   => ddr_init_cl,
 		ddr_mr_wr   => ddr_init_wr,
 		ddr_mr_ods  => ddr_init_ods,

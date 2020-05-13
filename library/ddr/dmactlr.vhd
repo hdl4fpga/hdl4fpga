@@ -30,6 +30,10 @@ use hdl4fpga.std.all;
 
 entity dmactlr is
 	generic (
+		fpga          : natural;
+		mark          : natural;
+		tcp           : natural;
+
 		bank_size     : natural;
 		addr_size     : natural;
 		coln_size     : natural);
@@ -59,9 +63,7 @@ entity dmactlr is
 		ctlr_a       : out std_logic_vector;
 		ctlr_r       : out std_logic_vector;
 		ctlr_dio_req : in  std_logic;
-		ctlr_act     : in  std_logic;
-		ctlr_pre     : in  std_logic;
-		ctlr_idl     : in  std_logic);
+		ctlr_act     : in  std_logic);
 
 end;
 
@@ -201,6 +203,9 @@ begin
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
+		fpga          => fpga,
+		mark          => mark,
+		tcp           => tcp,
 		bank_size     => bank_size,
 		addr_size     => addr_size,
 		coln_size     => coln_size)
@@ -223,13 +228,11 @@ begin
 		ctlr_ras       => ctlr_ras,
 		ctlr_cas       => ctlr_cas,
 		ctlr_act       => ctlr_act,
-		ctlr_pre       => ctlr_pre,
-		ctlr_idl       => ctlr_idl,
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a,
 		ctlr_dio_req   => ctlr_dio_req);
 
-	r(8-1 downto 8-8) <= not dmatrans_taddr(8-1 downto 0);
+	r <= dmatrans_taddr(r'length-1 downto 0);
 	inbuffer_e : entity hdl4fpga.align
 	generic map (
 		n => ctlr_r'length,

@@ -42,6 +42,8 @@ package ddr_param is
 
 	constant ddrmr_mrx     : ddrmr_addr := (others => '1');
 
+	constant ddr0mr_setmr   : ddrmr_addr := "100";
+
 	constant ddr1mr_setemr  : ddrmr_addr := "000";
 	constant ddr1mr_rstdll  : ddrmr_addr := "010";
 	constant ddr1mr_preall  : ddrmr_addr := "011";
@@ -170,6 +172,14 @@ package ddr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
 
+	impure function ddr0_mrfile (
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wb   : std_logic_vector)
+		return std_logic_vector;
+
 	impure function ddr1_mrfile (
 		constant ddr_mr_addr : ddrmr_addr;
 		constant ddr_mr_bl   : std_logic_vector;
@@ -185,6 +195,7 @@ package ddr_param is
 		constant ddr_mr_bl   : std_logic_vector;
 		constant ddr_mr_bt   : std_logic_vector;
 		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wb   : std_logic_vector;
 		constant ddr_mr_wr   : std_logic_vector;
 		constant ddr_mr_ods  : std_logic_vector;
 		constant ddr_mr_rtt  : std_logic_vector;
@@ -235,6 +246,11 @@ package ddr_param is
 	end record;
 
 	type mr_vector is array (natural range <>) of mr_row;
+
+	-- DDR0 Mode Register --
+	------------------------
+
+	constant ddr0_wb   : fd_vector(0 to 0) := (0 => (off =>  9, sz => 1));
 
 	-- DDR1 Mode Register --
 	------------------------
@@ -332,6 +348,12 @@ package ddr_param is
 
 	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 
+	function select_lat (
+		constant value : std_logic_vector;
+		constant codes : std_logic_vector;
+		constant table : natural_vector)
+		return natural;
+
 end package;
 
 library hdl4fpga;
@@ -402,6 +424,28 @@ package body ddr_param is
 		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
 		val := val sll algn;
 		return std_logic_vector(val);
+	end;
+
+	function select_lat (
+		constant value : std_logic_vector;
+		constant codes : std_logic_vector;
+		constant table : natural_vector)
+		return natural is
+
+		variable ids : unsigned(0 to codes'length-1);
+	begin
+		ids := unsigned(codes);
+		for i in table'range loop
+			if ids(0 to value'length-1)=unsigned(value) then
+				return table(i);
+			end if;
+			ids := ids rol value'length;
+		end loop;
+
+		assert false
+			report "function : select_lat"
+			severity failure;
+		return 0;
 	end;
 
 	function ddr_task (
@@ -483,6 +527,15 @@ package body ddr_param is
 	constant sc1_ref2 : s_code := "0100";
 	constant sc1_lm3  : s_code := "1100";
 	constant sc1_wai  : s_code := "1101";
+
+	constant ddr0_pgm : s_table := (
+		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)), 
+		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)), 
+		(sc1_pre1, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
+		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
+		(sc1_ref2, sc1_lm1,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),  
+		(sc1_lm1,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),
+		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)));
 
 	constant ddr1_pgm : s_table := (
 		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)), 
@@ -595,6 +648,8 @@ package body ddr_param is
 		return s_table is
 	begin
 		case ddr_stdr is
+		when DDR0 =>
+			return ddr0_pgm;
 		when DDR1 =>
 			return ddr1_pgm;
 		when DDR2 =>
@@ -644,7 +699,7 @@ package body ddr_param is
 				TMR3_REF => to_ddrlatency(tCP, mark, tREFI));
 	begin
 		case stdr is 
-		when DDR1 =>
+		when DDR0|DDR1 =>
 			return ddr1_timer;
 		when DDR2 =>
 			return ddr2_timer;
@@ -697,6 +752,29 @@ package body ddr_param is
 			end if;
 		end loop;
 		return val;
+	end;
+
+	impure function ddr0_mrfile (
+		constant ddr_mr_addr : ddrmr_addr;
+		constant ddr_mr_bl   : std_logic_vector;
+		constant ddr_mr_bt   : std_logic_vector;
+		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wb   : std_logic_vector)
+		return std_logic_vector is
+	begin
+
+		case ddr_mr_addr is
+		when ddr1mr_preall =>
+			return mr_field(mask => ddr1_preall, src => "1", size => ddr_a_max);
+		when ddr0mr_setmr =>
+			return
+				mr_field(mask => ddr1_bl, src => ddr_mr_bl, size => ddr_a_max) or
+				mr_field(mask => ddr1_bt, src => ddr_mr_bt, size => ddr_a_max) or
+				mr_field(mask => ddr1_cl, src => ddr_mr_cl, size => ddr_a_max) or
+				mr_field(mask => ddr0_wb, src => ddr_mr_wb, size => ddr_a_max);
+		when others =>
+			return (0 to ddr_a_max-1 => '1');
+		end case;
 	end;
 
 	impure function ddr1_mrfile (
@@ -868,6 +946,7 @@ package body ddr_param is
 		constant ddr_mr_bl   : std_logic_vector;
 		constant ddr_mr_bt   : std_logic_vector;
 		constant ddr_mr_cl   : std_logic_vector;
+		constant ddr_mr_wb   : std_logic_vector;
 		constant ddr_mr_wr   : std_logic_vector;
 		constant ddr_mr_ods  : std_logic_vector;
 		constant ddr_mr_rtt  : std_logic_vector;
@@ -885,6 +964,14 @@ package body ddr_param is
 		return std_logic_vector is
 	begin
 		case ddr_stdr is
+		when DDR0 =>
+			return ddr0_mrfile(
+				ddr_mr_addr => ddr_mr_addr,
+				ddr_mr_bl   => ddr_mr_bl,
+				ddr_mr_bt   => ddr_mr_bt,
+				ddr_mr_cl   => ddr_mr_cl,
+				ddr_mr_wb   => ddr_mr_wb);
+
 		when DDR1 =>
 			return ddr1_mrfile(
 				ddr_mr_addr => ddr_mr_addr,

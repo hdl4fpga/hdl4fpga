@@ -477,6 +477,11 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
         
         // Precharge Block
         if (Prech_enable == 1'b1) begin
+			if (Addr[10] === 1'b1) begin 
+				$display ("%m : at time %t PRE  : all ", $time);
+			end else begin
+				$display ("%m : at time %t PRE  : Bank = %d", $time, Ba);
+			end
             // Load Mode Register to Precharge
             if ($time - MRD_chk < tMRD) begin
                 $display ("%m : at time %t ERROR: tMRD violaiton during Precharge", $time);
@@ -938,11 +943,11 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 WR_chkm [Bank] = $time;
 
                 if (Debug) begin
-                    $display("%m : at time %t WRITE: Bank = %d Row = %d, Col = %d, Data = %d", $time, Bank, Row, Col, Dq_dqm);
+                    $display("%m : at time %t WRITE: Bank = %h Row = %h, Col = %h, Data = %h", $time, Bank, Row, Col, Dq_dqm);
                 end
             end else begin
                 if (Debug) begin
-                    $display("%m : at time %t WRITE: Bank = %d Row = %d, Col = %d, Data = Hi-Z due to DQM", $time, Bank, Row, Col);
+                    $display("%m : at time %t WRITE: Bank = %h Row = %h, Col = %h, Data = Hi-Z due to DQM", $time, Bank, Row, Col);
                 end
             end
 
@@ -970,7 +975,7 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
             if (Dqm_reg0 !== 2'b11) begin
                 Dq_reg = #tAC Dq_dqm;
                 if (Debug) begin
-                    $display("%m : at time %t READ : Bank = %d Row = %d, Col = %d, Data = %d", $time, Bank, Row, Col, Dq_reg);
+                    $display("%m : at time %t READ : Bank = %h Row = %h, Col = %h, Data = %h", $time, Bank, Row, Col, Dq_reg);
                 end
             end else begin
                 Dq_reg = #tHZ {data_bits{1'bz}};
@@ -1047,7 +1052,8 @@ module mt48lc32m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
             tAS  =  1.5,                                        // Addr, Ba Setup Time
             tCH  =  2.5,                                        // Clock High-Level Width
             tCL  =  2.5,                                        // Clock Low-Level Width
-            tCK  =  7.0,                                        // Clock Cycle Time
+            tCK  =  6.0,                                        // Clock Cycle Time
+//            tCK  =  7.0,                                        // Clock Cycle Time
             tDH  =  0.8,                                        // Data-in Hold Time
             tDS  =  1.5,                                        // Data-in Setup Time
             tCKH =  0.8,                                        // CKE Hold  Time

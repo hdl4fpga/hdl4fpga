@@ -139,9 +139,7 @@ begin
 					uart_rxdv <= '0';
 					dcntr     := (others => '-');
 					if full_count='1' then
-						if sample_rxd='0' then
-							uart_state <= start_s;
-						else
+						if sample_rxd='1' then
 							uart_state <= idle_s;
 						end if;
 					end if;

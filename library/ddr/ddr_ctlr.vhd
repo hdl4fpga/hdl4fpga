@@ -74,9 +74,7 @@ entity ddr_ctlr is
 		ctlr_do_req  : out std_logic;
 		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
-		ctlr_pre     : out std_logic;
 		ctlr_idl     : out std_logic;
-		ctlr_cyl     : out std_logic;
 		ctlr_ras     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
@@ -126,8 +124,10 @@ architecture mix of ddr_ctlr is
 	constant lrfc         : natural          := to_ddrlatency(tcp, mark, trfc);
 	constant lwr          : natural          := to_ddrlatency(tcp, tlwr);
 	constant lrp          : natural          := to_ddrlatency(tcp, mark, trp);
-	constant wwnx_lat     : natural          := ddr_latency(stdr, wwnxl);
-	constant wid_lat      : natural          := ddr_latency(stdr, widl);
+	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
+	constant wid_lat      : natural          := ddr_latency(fpga, widl);
+--	constant wwnx_lat     : natural          := ddr_latency(stdr, wwnxl);
+--	constant wid_lat      : natural          := ddr_latency(stdr, widl);
 	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
 	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
 	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, ddr_selcwl(stdr));
@@ -161,6 +161,7 @@ architecture mix of ddr_ctlr is
 	signal ddr_init_b     : std_logic_vector(bank_size-1 downto 0);
 
 	signal ddr_pgm_cmd    : std_logic_vector(0 to 2);
+	signal ddr_pgm_ras    : std_logic;
 
 	signal ddr_mpu_rst    : std_logic;
 	signal ddr_mpu_trdy   : std_logic;
@@ -198,6 +199,7 @@ architecture mix of ddr_ctlr is
 	signal ddr_mpu_sel    : std_logic;
 	signal init_rdy       : std_logic;
 
+	signal fifo_bypass : std_logic;
 begin
 
 	ddr_cwl      <= ctlr_cl when stdr=2 else ctlr_cwl;
@@ -257,7 +259,7 @@ begin
 		ctlr_refreq   => ctlr_refreq,
 		ddr_pgm_irdy  => ctlr_irdy,
 		ddr_pgm_trdy  => ctlr_trdy,
-		ddr_pgm_ras   => ctlr_ras,
+		ddr_pgm_ras   => ddr_pgm_ras,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 --		ddr_pgm_ref   => '0',
@@ -268,6 +270,8 @@ begin
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_seq   => ctlr_rlseq,
 		ddr_pgm_rw    => ctlr_rw);
+
+	ctlr_ras <=ddr_pgm_ras and ddr_mpu_trdy;
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
@@ -295,8 +299,6 @@ begin
 		ddr_mpu_cmd   => ddr_pgm_cmd,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_mpu_act   => ctlr_act,
-		ddr_mpu_pre   => ctlr_pre,
-		ddr_mpu_cyl   => ctlr_cyl,
 		ddr_mpu_cas   => ddr_mpu_cas,
 		ddr_mpu_ras   => ddr_mpu_ras,
 		ddr_mpu_we    => ddr_mpu_we,
@@ -422,6 +424,7 @@ begin
 		end loop;
 	end process;
 
+	fifo_bypass <= setif(select_lat(ctlr_cwl, cwl_cod, cwl_tab)=0);
 	wrfifo_i : entity hdl4fpga.ddr_wrfifo
 	generic map (
 		data_phases => data_phases,
@@ -429,6 +432,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
+		fifo_bypass => fifo_bypass,
 		ctlr_clk    => ctlr_clks(0),
 		ctlr_dqi    => rot_di,
 		ctlr_ena    => ctlr_di_dv,

@@ -48,12 +48,6 @@ architecture graphics of nuhs3adsp is
 	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
 	constant ddr_div      : natural := 3;
 
-	constant g            : std_logic_vector(32 downto 1) := (
-		32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
-	signal g_ena          : std_logic;
-	signal g_load         : std_logic;
-	signal g_data         : std_logic_vector(g'range);
-
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
 	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
@@ -93,8 +87,6 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
-	signal ctlr_pre       : std_logic;
-	signal ctlr_idl       : std_logic;
 	signal ctlr_inirdy    : std_logic;
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
@@ -388,6 +380,10 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
+		fpga         => fpga,
+		mark         => mark,
+		tcp          => tcp,
+
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		coln_size   => coln_size)
@@ -416,9 +412,7 @@ begin
 		ctlr_a      => ctlr_a,
 		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
-		ctlr_act    => ctlr_act,
-		ctlr_pre    => ctlr_pre,
-		ctlr_idl    => ctlr_idl);
+		ctlr_act    => ctlr_act);
 
 
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
@@ -461,8 +455,6 @@ begin
 		ctlr_di_dv   => ctlr_di_dv,
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
-		ctlr_pre     => ctlr_pre,
-		ctlr_idl     => ctlr_idl,
 		ctlr_di      => ctlr_di,
 		ctlr_dm      => (ctlr_dm'range => '0'),
 		ctlr_do_dv   => ctlr_do_dv,
