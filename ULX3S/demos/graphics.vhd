@@ -179,7 +179,7 @@ architecture graphics of ulx3s is
 
 	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
 
-	constant baudrate  : natural := 1152000;
+	constant baudrate  : natural := 115200;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -281,16 +281,6 @@ begin
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd);
 
---	uartrx_e : entity hdl4fpga.uart_rx_f32c
---	generic map (
---		C_baudrate => baudrate,
---		C_clk_freq_hz => uart_xtal)
---	port map (
---		clk  => uart_rxc,
---		rxd  => ftdi_txd,
---		dv   => uart_rxdv,
---		byte => uart_rxd);
-
 		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 		generic map (
 			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
@@ -329,6 +319,7 @@ begin
 			rgtr_data => rgtr_data,
 			data      => dmaio_addr);
 
+		led <= dmaio_addr(16-1 downto 8);
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
 			rid  => rid_dmalen)
@@ -344,6 +335,7 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
+			test => false,
 			size               => 256/(ctlr_di'length/8),
 			gray_code          => false,
 			synchronous_rddata => false,
@@ -642,7 +634,7 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_rxdv='1' then
-				led <= uart_rxd;
+--				led <= uart_rxd;
 			end if;
 		end if;
 	end process;

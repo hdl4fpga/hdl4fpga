@@ -32,16 +32,15 @@ int main (int argc, char *argv[])
 		memlen[3] = 0x00;
 		memlen[4] = 0x7f;
 
-		for (int i=0; i < sizeof(data)/3; i++) {
+		for (unsigned i=0; i < sizeof(data)/3; i++) {
 			unsigned pixel;
 
 			pixel   = 0;
-			pixel <<= 5;
 			pixel   |= ((data[3*i+0] >> 3) & 0x1f);
-//			pixel   |= 0x1f;
+//			pixel   |= (((i >> 0) << 0) & 0x1f);
 			pixel <<= 5;
 			pixel   |= ((data[3*i+1] >> 3) & 0x1f);
-//			pixel   |= 0x1f;
+//			pixel   |= (((i >> 5) << 3) & 0x1f);
 			pixel <<= 5;
 			pixel   |= ((data[3*i+2] >> 3) & 0x1f);
 			pixel <<= 1;

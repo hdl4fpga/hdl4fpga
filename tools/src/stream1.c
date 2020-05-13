@@ -22,17 +22,24 @@ int main (int argc, char *argv[])
 	char unsigned rid;
 
 	fwrite("\000", sizeof(char), 2, stdout);
+	const int n = 20;
 	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
 		if (fread(&len, sizeof(char), 1,   stdin) > 0) {
-			stream(rid);
-			stream(len);
-			for (int i = 0; i <= len; i++) {
-				if (fread(&c, sizeof(char), 1, stdin) > 0)
-					stream(c);
-				else
+			int cond = 1; // ((i/3)==n || (i/3)==(n-1));
+//			int cond = (i==(3*20+1));
+			if (cond) 
+				stream(rid);
+			if (cond) 
+				stream(len);
+			for (int j = 0; j <= len; j++) {
+				if (fread(&c, sizeof(char), 1, stdin) > 0) {
+					if (cond) 
+						stream(c);
+				} else
 					exit(-1);
 			}
-			fwrite("\000", sizeof(char), 2, stdout);
+			if (cond) 
+				fwrite("\000", sizeof(char), 2, stdout);
 		} else
 			exit(-1);
 	}

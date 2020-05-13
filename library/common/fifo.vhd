@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity fifo is
 	generic (
 		size : natural;
+		test : boolean := false;
 		synchronous_rddata : boolean := true;
 		overflow_check : boolean := true;
 		gray_code      : boolean := true);
@@ -63,11 +64,16 @@ architecture def of fifo is
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 	signal data : std_logic_vector(0 to src_data'length-1);
 
+	signal xxx : unsigned(data'range);
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
 --	data <= (1 to 8 => wr_addr(wr_addr'right-4)) & (1 to 8 => wr_addr(wr_addr'right-5)) & (1 to 8 => wr_addr(wr_addr'right-3)) & (1 to 8 => wr_addr(wr_addr'right));
-	data <= std_logic_vector(resize(unsigned(wr_addr(1 to wr_addr'length-1)), data'length));
+	data <= std_logic_vector(
+--			(resize(unsigned(wr_addr(0 to wr_addr'length-1)), data'length) sll 11) or
+--			(resize(unsigned(wr_addr(0 to 1)), data'length)                 sll 9))
+			xxx)
+			when test else src_data;
 --	dst_data <= std_logic_vector(resize(unsigned(rd_addr), data'length));
 --	data <= src_data;
 	mem_e : entity hdl4fpga.dpram(def)
@@ -78,8 +84,8 @@ begin
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
-		wr_data => src_data, 
---		wr_data => data, 
+--		wr_data => src_data, 
+		wr_data => data, 
 
 		rd_clk  => dst_clk,
 		rd_addr => rd_addr,
@@ -98,6 +104,7 @@ begin
 							wr_addr <= std_logic_vector(inc(gray(wr_addr)));
 						else
 							wr_addr <= std_logic_vector(unsigned(wr_addr)+1);
+							xxx <= xxx + 1;
 						end if;
 					end if;
 				end if;
