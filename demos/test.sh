@@ -3,7 +3,7 @@ XFR=`which "${XFR:-cat}"`
 TTY="${TTY:-/dev/ttyUSB0}"
 IMAGE="${IMAGE:-./dataset/image.png}"
 SIZE="${SIZE:-800x600}"
-BASE="${BASE:-./}"
+PROG="${PROG:-./}"
 
 if [ ! -f "${IMAGE}" ] ; then
 	echo Image file "${IMAGE}" not found ;
@@ -25,15 +25,15 @@ if [ ! -f "${XFR}" ] ; then
 	exit -1
 fi
 
-echo Converting "${IMAGE}" to "${SIZE}" RGB8
-convert -resize "${SIZE}" -size "${SIZE}" "${IMAGE}" ./dataset/image.rgb
+echo Making command to process RGB8 image
 make
+
 echo Setting serial port "${TTY}"
 stty -F  "${TTY}" sane
 stty -F  "${TTY}" 115200 cs8 -cstopb -parenb raw -onlcr
 sleep 1
 echo Blanking screen 
-$XFR < ./dataset/blank.strm > "${TTY}"
+$XFR < ./data/blank.strm > "${TTY}"
 sleep 1
-echo Sending to "${TTY}"
-$XFR < ./dataset/image.strm > "${TTY}"
+echo Converting "${IMAGE}" to "${SIZE}" and sending to "${TTY}"
+convert -resize "${SIZE}" -size "${SIZE}" "${IMAGE}" rgb:- |./bin/rgb8to16bpp|./bin/stream|$XFR > "${TTY}"
