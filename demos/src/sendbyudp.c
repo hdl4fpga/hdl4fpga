@@ -78,58 +78,7 @@ int main (int argc, char *argv[])
 	addr = 0;
 	setbuf(stdin, NULL);
 	while(!feof(stdin)) {
-		char data[3*256/4];
-		char memaddr[5+2];
-		char memlen[5+2];
-		char memdata[256+2+2];
-
-		memaddr[0] = 0x16;
-		memaddr[1] = 0x02;
-		memaddr[2] = (addr >> 16) & 0xff;
-		memaddr[3] = (addr >>  8) & 0xff;
-		memaddr[4] = (addr >>  0) & 0xff;
-		memaddr[5] = 0xff;
-		memaddr[6] = 0xff;
-
-		memlen[0] = 0x17;
-		memlen[1] = 0x02;
-		memlen[2] = 0x00;
-		memlen[3] = 0x00;
-		memlen[4] = 0x3f;
-		memlen[5] = 0xff;
-		memlen[6] = 0xff;
-
-		memdata[0] = 0x18;
-		memdata[1] = 0xff;
-		memdata[258] = 0xff;
-		memdata[259] = 0xff;
-
 		fread(data, sizeof(char), sizeof(data), stdin);
-		for (int i=0; i < sizeof(data)/3; i++) {
-			memdata[4*i+0+2] = data[3*i+0];
-			memdata[4*i+1+2] = data[3*i+1];
-			memdata[4*i+2+2] = data[3*i+2];
-			memdata[4*i+3+2] = 0xff;
-//			memdata[4*i+0+2] = (i < 32) ? 0 : ((n % 2) == 1) ? 0 : 255;
-//			memdata[4*i+1+2] = (i < 32) ? 255 : 0;
-//			memdata[4*i+2+2] = (i < 32) ? ((n % 2) == 1) ? 255 : 0 : 255;
-//			memdata[4*i+3+2] = (i < 32) ? 0 : 255;
-		}
-
-		if (sendto(s, memdata, sizeof(memdata), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
-			perror ("sendto()");
-			exit (1);
-		} else {
-			if (sendto(s, memaddr, sizeof(memaddr), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
-				perror ("sendto()");
-				exit (1);
-			} else {
-				if (sendto(s, memlen, sizeof(memlen), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
-					perror ("sendto()");
-					exit (1);
-				}
-			}
-		}
 		nanosleep((const struct timespec[]){{0, 100000000L}}, NULL);
 		addr += 0x40;
 

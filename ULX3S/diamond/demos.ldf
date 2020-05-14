@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-6BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="demos" device="LFE5U-12F-6BG381C" default_implementation="graphic">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
-    <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
+    <Implementation title="graphic" dir="graphic" description="graphic" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.draw_vline" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
@@ -350,10 +350,10 @@
         <Source name="../../library/usb/ulpi_wrapper/ulpi_wrapper.v" type="Verilog" type_short="Verilog" excluded="TRUE">
             <Options/>
         </Source>
-        <Source name="../demos/graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../demos/graphic.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-        <Source name="../../library/video/graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/video/graphic.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">
