@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 void stream (char c)
 {
@@ -18,11 +17,26 @@ int main (int argc, char *argv[])
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
+
+	char unsigned len;
+	char unsigned rid;
+
 	fwrite("\000", sizeof(char), 2, stdout);
-	while(fread(&c, sizeof(char), 1, stdin) > 0) {
-		stream(c);
+	const int n = 20;
+	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
+		if (fread(&len, sizeof(char), 1,   stdin) > 0) {
+			stream(rid);
+			stream(len);
+			for (int j = 0; j <= len; j++) {
+				if (fread(&c, sizeof(char), 1, stdin) > 0) {
+					stream(c);
+				} else
+					exit(-1);
+			}
+			fwrite("\000", sizeof(char), 2, stdout);
+		} else
+			exit(-1);
 	}
-	fwrite("\000", sizeof(char), 2, stdout);
 
 	return 0;
 }
