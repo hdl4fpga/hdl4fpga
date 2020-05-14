@@ -5,7 +5,7 @@ Graphic
 What it does ?
 ~~~~~~~~~~~~~~
 
-Load and image on SDRAM throught serial port and display it by ULX3S' HDMI.
+Loads and image on SDRAM throught the serial port and displays it using the HDMI.
 
 ULX3S
 -----
