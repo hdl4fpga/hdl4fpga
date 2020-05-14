@@ -15,8 +15,8 @@ int main (int argc, char *argv[])
 
 			pixel   = 0;
 			pixel   |= ((rgb8[3*i+0] >> 3) & 0x1f);
-			pixel <<= 5;
-			pixel   |= ((rgb8[3*i+1] >> 3) & 0x1f);
+			pixel <<= 6;
+			pixel   |= ((rgb8[3*i+1] >> 2) & 0x3f);
 			pixel <<= 5;
 			pixel   |= ((rgb8[3*i+2] >> 3) & 0x1f);
 

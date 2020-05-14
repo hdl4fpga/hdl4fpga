@@ -570,8 +570,8 @@ begin
     port map (
         clk_pixel => video_clk,
         clk_shift => video_shift_clk,
-        in_red    => video_pixel(1   to  1+5-1),
-        in_green  => video_pixel(1+5 to  6+5-1),
+        in_red    => video_pixel(0   to  0+5-1),
+        in_green  => video_pixel(0+5 to  5+5-1),
         in_blue   => video_pixel(6+5 to 11+5-1),
         in_hsync  => video_hzsync,
         in_vsync  => video_vtsync,
