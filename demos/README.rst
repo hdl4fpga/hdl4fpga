@@ -24,7 +24,7 @@ Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic
 
 Open a console on demos directory and run
 
-IMAGE="*your_image_path*/*your_image.your_format*" PROG="ujprog *your_bit_path*/demos_graphic-12F.bit" ./demos.sh
+IMAGE="*your_image_path*/*your_image.your_format*" PROG="ujprog *your_bit_path*/demos_graphic-12F.bit" TTY="*your_serial_device*"./demos.sh
 
 I'm curious : Where is the project file ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
