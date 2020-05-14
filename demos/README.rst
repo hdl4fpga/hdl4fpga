@@ -27,6 +27,8 @@ IMAGE="*your_image_path*/*your_image.your_format*" PROG="ujprog *your_bit_path*/
 I'm curious : Where is the project file ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _demos : ../ULX3S/diamond/demos.ldf
+.. _demos: ../ULX3S/diamond/demos.ldf
+
+demos_
 
 Enjoy it!
