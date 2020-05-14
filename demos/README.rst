@@ -16,7 +16,9 @@ What do I need to run it ?
 On UN*X
 ~~~~~~~
 
-Install Imagemagick https://imagemagick.org to convert *your_image.your_format*
+.. _Imagemagick: https://imagemagick.org
+
+Install Imagemagick_ to convert *your_image.your_format*
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F.bit
 
