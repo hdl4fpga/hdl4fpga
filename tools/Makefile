@@ -7,7 +7,7 @@ bin/rgb8to16bpp : src/rgb8to16bpp.c
 	cc -O2 src/rgb8to16bpp.c -o bin/rgb8to16bpp
 
 dataset/image.strm : bin/rgb8to16bpp bin/stream dataset/image.rgb
-	./bin/rgb8to16bpp < ./dataset/image.rgb > ./dataset/image.strm
+	./bin/rgb8to16bpp < ./dataset/image.rgb|./bin/stream > ./dataset/image.strm
 
 clean :
 	rm  bin/rgb8to16bpp

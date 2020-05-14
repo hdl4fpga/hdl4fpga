@@ -319,7 +319,6 @@ begin
 			rgtr_data => rgtr_data,
 			data      => dmaio_addr);
 
-		led <= dmaio_addr(16-1 downto 8);
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
 		generic map (
 			rid  => rid_dmalen)
@@ -571,9 +570,9 @@ begin
     port map (
         clk_pixel => video_clk,
         clk_shift => video_shift_clk,
-        in_red    => video_pixel(0   to  0+5-1),
-        in_green  => video_pixel(0+5 to  5+5-1),
-        in_blue   => video_pixel(5+5 to 10+5-1),
+        in_red    => video_pixel(1   to  1+5-1),
+        in_green  => video_pixel(1+5 to  6+5-1),
+        in_blue   => video_pixel(6+5 to 11+5-1),
         in_hsync  => video_hzsync,
         in_vsync  => video_vtsync,
         in_blank  => video_blank,
@@ -634,7 +633,7 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_rxdv='1' then
---				led <= uart_rxd;
+				led <= uart_rxd;
 			end if;
 		end if;
 	end process;

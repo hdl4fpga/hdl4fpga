@@ -13,8 +13,6 @@ void stream (char c)
 
 int main (int argc, char *argv[])
 {
-	char c;
-
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 
@@ -22,9 +20,10 @@ int main (int argc, char *argv[])
 	char unsigned rid;
 
 	fwrite("\000", sizeof(char), 2, stdout);
-	const int n = 20;
 	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
-		if (fread(&len, sizeof(char), 1,   stdin) > 0) {
+		char c;
+
+		if (fread(&len, sizeof(char), 1, stdin) > 0) {
 			stream(rid);
 			stream(len);
 			for (int j = 0; j <= len; j++) {
