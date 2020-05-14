@@ -1,9 +1,3 @@
-On UN*X
--------
-
-ULX3S
------
-
 Graphic
 -------
 
@@ -13,8 +7,14 @@ What it does ?
 
 Load and image on SDRAM throught serial port and display it by ULX3S' HDMI.
 
+ULX3S
+-----
+
 What do I need to run it ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On UN*X
+~~~~~~~
 
 Install Imagemagick https://imagemagick.org to convert *your_image.your_format*
 
