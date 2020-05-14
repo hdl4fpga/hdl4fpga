@@ -29,6 +29,6 @@ I'm curious : Where is the project file ?
 
 .. _demos: ../ULX3S/diamond/demos.ldf
 
-demos_
+Here you can find the demos_ project file.
 
 Enjoy it!
