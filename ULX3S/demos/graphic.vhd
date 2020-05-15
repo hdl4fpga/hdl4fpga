@@ -148,32 +148,35 @@ architecture graphics of ulx3s is
 	signal ctlr_ras : std_logic;
 	signal ctlr_cas : std_logic;
 
-	type display_param is record
+	type pll_params is record
 		video_mode : natural;
 		clkos_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
 		clki_div   : natural;
+		clkos3_div : natural;
 	end record;
 
-	constant modedebug : natural := 0;
-	constant mode600p  : natural := 1;
-	constant mode900p  : natural := 2;
+	constant modedebug      : natural := 0;
+	constant mode600p133MHz : natural := 1;
+	constant mode600p200MHz : natural := 2;
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant pll_params : displayparam_vector := (
-		modedebug => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode600p  => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode900p  => (video_mode => 7,  clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1));
+	type pllparam_vector is array (natural range <>) of pll_params;
+	constant pll_modes : pllparam_vector := (
+		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3),
+		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3),
+		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2));
 
-	constant pll_mode : natural := mode600p;
+	constant pll_mode : natural := mode600p133MHz;
 
 	alias ctlr_clk   : std_logic is ddrsys_clks(0);
 	alias uart_rxc   : std_logic is clk_25mhz;
 	alias si_clk     : std_logic is uart_rxc;
 	alias dmacfg_clk : std_logic is uart_rxc;
 
-	constant ddr_tcp   : natural := (1000*natural(sys_per)*pll_params(pll_mode).clki_div*3)/(pll_params(pll_mode).clkfb_div*pll_params(pll_mode).clkop_div);
+	constant ddr_tcp   : natural := 
+		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
+		(pll_modes(pll_mode).clkfb_div*pll_modes(pll_mode).clkop_div);
 
 	constant baudrate  : natural := 115200;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
@@ -193,11 +196,11 @@ begin
 		attribute FREQUENCY_PIN_CLKOS : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
-		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOS of PLL_I : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKI  of PLL_I  : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
 		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is "40.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
+		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.333333";
 
 	begin
 		PLL_I : EHXPLLL
@@ -219,12 +222,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       =>  3, 
+			CLKOS3_DIV       => pll_modes(pll_mode).clkos3_div, 
 			CLKOS2_DIV       =>  10, 
-			CLKOS_DIV        => pll_params(pll_mode).clkos_div,
-			CLKOP_DIV        => pll_params(pll_mode).clkop_div,
-			CLKFB_DIV        => pll_params(pll_mode).clkfb_div,
-			CLKI_DIV         => pll_params(pll_mode).clki_div)
+			CLKOS_DIV        => pll_modes(pll_mode).clkos_div,
+			CLKOP_DIV        => pll_modes(pll_mode).clkop_div,
+			CLKFB_DIV        => pll_modes(pll_mode).clkfb_div,
+			CLKI_DIV         => pll_modes(pll_mode).clki_div)
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -367,7 +370,7 @@ begin
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
-		video_mode => pll_params(pll_mode).video_mode)
+		video_mode => pll_modes(pll_mode).video_mode)
 	port map (
 		dma_req      => dmacfgvideo_req,
 		dma_rdy      => dmavideo_rdy,
