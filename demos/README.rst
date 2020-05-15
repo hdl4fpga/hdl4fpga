@@ -18,7 +18,7 @@ On UN*X
 
 .. _Imagemagick: https://imagemagick.org
 
-Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8
+Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to format your image to that format. Imagemagick_ will do it for you.
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F.bit
 
