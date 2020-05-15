@@ -87,7 +87,7 @@ entity ulx3s is
 		usb_fpga_pu_dp : inout std_logic := 'U';
 		usb_fpga_pu_dn : inout std_logic := 'U';
 					   
-		sdram_clk      : out   std_logic;  
+		sdram_clk      : inout std_logic;  
 		sdram_cke      : out   std_logic;
 		sdram_csn      : out   std_logic;
 		sdram_wen      : out   std_logic;

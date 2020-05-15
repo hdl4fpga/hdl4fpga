@@ -74,6 +74,7 @@ architecture graphics of ulx3s is
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
 	signal dmaio_dv       : std_logic;
 
+	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
@@ -164,11 +165,12 @@ architecture graphics of ulx3s is
 
 	type pllparam_vector is array (natural range <>) of pll_params;
 	constant pll_modes : pllparam_vector := (
-		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
+		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "011"),
 		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
 	constant pll_mode : natural := mode600p200MHz;
+--	constant pll_mode : natural := modedebug;
 
 	alias ctlr_clk   : std_logic is ddrsys_clks(0);
 	alias uart_rxc   : std_logic is clk_25mhz;
@@ -181,6 +183,7 @@ architecture graphics of ulx3s is
 
 	constant baudrate  : natural := 115200;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
@@ -197,11 +200,11 @@ begin
 		attribute FREQUENCY_PIN_CLKOS : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
-		attribute FREQUENCY_PIN_CLKI  of PLL_I  : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKI  of PLL_I  : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is "40.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.333333";
+		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is  "40.000000";
+		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
 
 	begin
 		PLL_I : EHXPLLL
@@ -506,14 +509,15 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
-		ddrphy_dqsi <= (others => ctlr_clk);
 
-	process (ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			ddrphy_sto <= ddrphy_sti;
-		end if;
-	end process;
+	sto : entity hdl4fpga.align
+	generic map (
+		n => ddrphy_sto'length,
+		d => (0 to ddrphy_sto'length-1 => 1))
+	port map (
+		clk => ctlr_clk,
+		di  => ddrphy_sti,
+		do  => ddrphy_sto);
 
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (

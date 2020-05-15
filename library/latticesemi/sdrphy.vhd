@@ -65,7 +65,7 @@ entity sdrphy is
 		sdr_rst : out std_logic;
 		sdr_cs  : out std_logic := '0';
 		sdr_cke : out std_logic := '1';
-		sdr_clk : out std_logic;
+		sdr_clk : inout std_logic;
 		sdr_odt : out std_logic;
 		sdr_ras : out std_logic;
 		sdr_cas : out std_logic;
@@ -90,6 +90,8 @@ architecture ecp of sdrphy is
 	signal dqt : std_logic_vector(sdr_dq'range);
 	signal dqo : std_logic_vector(sdr_dq'range);
 
+	signal clko : std_logic;
+	signal dqs : std_logic;
 begin
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
@@ -108,7 +110,7 @@ begin
 		phy_we  => phy_we,
         
 		sdr_rst => sdr_rst,
-		sdr_clk => sdr_clk,
+		sdr_clk => clko,
 		sdr_cke => sdr_cke,
 		sdr_odt => sdr_odt,
 		sdr_cs  => sdr_cs,
@@ -132,6 +134,7 @@ begin
 			phy_dqt => phy_dqt(i),
 			phy_dqo => phy_dqo((i+1)*byte_size-1 downto i*byte_size),
 
+			sdr_dqs => dqs,
 			sdr_dmi => sdr_dm(i),
 			sdr_dmt => dmt(i),
 			sdr_dmo => dmo(i),
@@ -164,5 +167,8 @@ begin
 		end loop;
 	end process;
 
-	phy_dqso <= (others => sys_clk);
+
+	sdr_clk <= clko; -- when dmt(0)='0' else 'Z';
+	dqs <= not sys_clk;
+	phy_dqso <= (others => dqs);
 end;

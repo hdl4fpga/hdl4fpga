@@ -2,7 +2,8 @@
 XFR=`which "${XFR:-cat}"`
 TTY="${TTY:-/dev/ttyUSB0}"
 SIZE="${SIZE:-800x600}"
-PROG="${PROG:-./}"
+SPEED="${SPEED:-115200}"
+PROG="${PROG}"
 
 if [ "${IMAGE}" = "" ] ; then
 	echo Image filename empty
@@ -35,7 +36,7 @@ fi
 
 echo Setting serial port "${TTY}"
 stty -F  "${TTY}" sane
-stty -F  "${TTY}" 115200 cs8 -cstopb -parenb raw -onlcr
+stty -F  "${TTY}" "${SPEED}" cs8 -cstopb -parenb raw -onlcr
 sleep 1
 
 echo Blanking screen 
