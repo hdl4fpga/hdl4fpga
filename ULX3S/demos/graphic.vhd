@@ -155,6 +155,7 @@ architecture graphics of ulx3s is
 		clkfb_div  : natural;
 		clki_div   : natural;
 		clkos3_div : natural;
+		cas        : std_logic_vector(0 to 3-1);
 	end record;
 
 	constant modedebug      : natural := 0;
@@ -163,11 +164,11 @@ architecture graphics of ulx3s is
 
 	type pllparam_vector is array (natural range <>) of pll_params;
 	constant pll_modes : pllparam_vector := (
-		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3),
-		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3),
-		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2));
+		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
+		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
+		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant pll_mode : natural := mode600p133MHz;
+	constant pll_mode : natural := mode600p200MHz;
 
 	alias ctlr_clk   : std_logic is ddrsys_clks(0);
 	alias uart_rxc   : std_logic is clk_25mhz;
@@ -457,7 +458,7 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "000",
-		ctlr_cl      => "010",	-- 3   133 Mhz
+		ctlr_cl      => pll_modes(pll_mode).cas,
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
