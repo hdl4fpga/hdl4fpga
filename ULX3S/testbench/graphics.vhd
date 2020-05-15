@@ -107,7 +107,7 @@ architecture ulx3s_graphics of testbench is
 			usb_fpga_pu_dp : inout std_logic := '-';
 			usb_fpga_pu_dn : inout std_logic := '-';
 						   
-			sdram_clk      : out   std_logic;  
+			sdram_clk      : inout std_logic;  
 			sdram_cke      : out   std_logic;
 			sdram_csn      : out   std_logic;
 			sdram_wen      : out   std_logic;
@@ -147,9 +147,9 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 1152000;
+	constant baudrate : natural := 11_520_000;
 	constant uart_data  : std_logic_vector := 
-x"000018ffffffffffffffffffffffffff" &
+x"000018ff1234ffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
@@ -165,8 +165,8 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
-x"ffffffff000016025c00098000001702" &
-x"5c005c007f000018ffffffffffffffff" &
+x"ffff678900001602_5c00_0180_00_00_1702" &
+x"5c005c007f000018ffabcdffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
@@ -181,9 +181,9 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffff000016025c000a" &
-x"5c00000017025c005c007f0000";
+x"ffffffffffffffffffffffffffff50ee" &
+x"ffffffffffffffffff00001602_5c00_5c00" &
+x"5c00_000017025c005c007f0000";
 	
 --		x"0000"                             &
 --		x"18ff"                             &

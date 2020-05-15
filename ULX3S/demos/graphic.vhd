@@ -60,12 +60,8 @@ architecture graphics of ulx3s is
 	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
-	signal ddrsys_lckd    : std_logic;
 	signal ddrsys_rst     : std_logic;
-
-	constant clk0         : natural := 0;
-	constant clk90        : natural := 1;
-	signal ddrsys_clks    : std_logic_vector(0 to 2-1) := (others => '0');
+	signal ddrsys_clks    : std_logic_vector(0 to 0);
 
 	signal dmactlr_len    : std_logic_vector(24-1 downto 0);
 	signal dmactlr_addr   : std_logic_vector(24-1 downto 0);
@@ -78,6 +74,7 @@ architecture graphics of ulx3s is
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
 	signal dmaio_dv       : std_logic;
 
+	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
@@ -152,35 +149,41 @@ architecture graphics of ulx3s is
 	signal ctlr_ras : std_logic;
 	signal ctlr_cas : std_logic;
 
-	type display_param is record
-		mode      : natural;
-		clkos_div : natural;
-		clkop_div : natural;
-		clkfb_div : natural;
-		clki_div  : natural;
+	type pll_params is record
+		video_mode : natural;
+		clkos_div  : natural;
+		clkop_div  : natural;
+		clkfb_div  : natural;
+		clki_div   : natural;
+		clkos3_div : natural;
+		cas        : std_logic_vector(0 to 3-1);
 	end record;
 
-	constant modedebug : natural := 0;
-	constant mode600p  : natural := 1;
-	constant mode900p  : natural := 2;
+	constant modedebug      : natural := 0;
+	constant mode600p133MHz : natural := 1;
+	constant mode600p200MHz : natural := 2;
 
-	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector := (
-		modedebug => (mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode600p  => (mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode900p  => (mode => 7,  clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1));
+	type pllparam_vector is array (natural range <>) of pll_params;
+	constant pll_modes : pllparam_vector := (
+		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "011"),
+		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
+		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant video_mode : natural := mode600p;
+	constant pll_mode : natural := mode600p200MHz;
+--	constant pll_mode : natural := modedebug;
 
-	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
+	alias ctlr_clk   : std_logic is ddrsys_clks(0);
 	alias uart_rxc   : std_logic is clk_25mhz;
 	alias si_clk     : std_logic is uart_rxc;
 	alias dmacfg_clk : std_logic is uart_rxc;
 
-	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
+	constant ddr_tcp   : natural := 
+		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
+		(pll_modes(pll_mode).clkfb_div*pll_modes(pll_mode).clkop_div);
 
 	constant baudrate  : natural := 115200;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
@@ -197,11 +200,11 @@ begin
 		attribute FREQUENCY_PIN_CLKOS : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
-		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOS of PLL_I : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is "40.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
+		attribute FREQUENCY_PIN_CLKI  of PLL_I  : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is  "40.000000";
+		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
 
 	begin
 		PLL_I : EHXPLLL
@@ -223,12 +226,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       =>  3, 
+			CLKOS3_DIV       => pll_modes(pll_mode).clkos3_div, 
 			CLKOS2_DIV       =>  10, 
-			CLKOS_DIV        => video_params(video_mode).clkos_div,
-			CLKOP_DIV        => video_params(video_mode).clkop_div,
-			CLKFB_DIV        => video_params(video_mode).clkfb_div,
-			CLKI_DIV         => video_params(video_mode).clki_div)
+			CLKOS_DIV        => pll_modes(pll_mode).clkos_div,
+			CLKOP_DIV        => pll_modes(pll_mode).clkop_div,
+			CLKFB_DIV        => pll_modes(pll_mode).clkfb_div,
+			CLKI_DIV         => pll_modes(pll_mode).clki_div)
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -371,7 +374,7 @@ begin
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
-		video_mode => video_params(video_mode).mode)
+		video_mode => pll_modes(pll_mode).video_mode)
 	port map (
 		dma_req      => dmacfgvideo_req,
 		dma_rdy      => dmavideo_rdy,
@@ -458,14 +461,14 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "000",
-		ctlr_cl      => "010",	-- 3   133 Mhz
+		ctlr_cl      => pll_modes(pll_mode).cas,
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
 		ctlr_rtt     => "--",
 
 		ctlr_rst     => ddrsys_rst,
-		ctlr_clks    => ddrsys_clks(0 to 0),
+		ctlr_clks    => ddrsys_clks,
 		ctlr_inirdy  => ctlr_inirdy,
 
 		ctlr_irdy    => ctlr_irdy,
@@ -506,14 +509,15 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
-		ddrphy_dqsi <= (others => ctlr_clk);
 
-	process (ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			ddrphy_sto <= ddrphy_sti;
-		end if;
-	end process;
+	sto : entity hdl4fpga.align
+	generic map (
+		n => ddrphy_sto'length,
+		d => (0 to ddrphy_sto'length-1 => 1))
+	port map (
+		clk => ctlr_clk,
+		di  => ddrphy_sti,
+		do  => ddrphy_sto);
 
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
@@ -524,7 +528,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clks    => ddrsys_clks,
+		sys_clk     => ddrsys_clks(0),
 		sys_rst     => ddrsys_rst,
 
 		phy_cs      => ddrphy_cs,
