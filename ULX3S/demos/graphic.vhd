@@ -60,12 +60,8 @@ architecture graphics of ulx3s is
 	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
-	signal ddrsys_lckd    : std_logic;
 	signal ddrsys_rst     : std_logic;
-
-	constant clk0         : natural := 0;
-	constant clk90        : natural := 1;
-	signal ddrsys_clks    : std_logic_vector(0 to 2-1) := (others => '0');
+	signal ddrsys_clks    : std_logic_vector(0 to 0);
 
 	signal dmactlr_len    : std_logic_vector(24-1 downto 0);
 	signal dmactlr_addr   : std_logic_vector(24-1 downto 0);
@@ -153,11 +149,11 @@ architecture graphics of ulx3s is
 	signal ctlr_cas : std_logic;
 
 	type display_param is record
-		mode      : natural;
-		clkos_div : natural;
-		clkop_div : natural;
-		clkfb_div : natural;
-		clki_div  : natural;
+		video_mode : natural;
+		clkos_div  : natural;
+		clkop_div  : natural;
+		clkfb_div  : natural;
+		clki_div   : natural;
 	end record;
 
 	constant modedebug : natural := 0;
@@ -165,19 +161,19 @@ architecture graphics of ulx3s is
 	constant mode900p  : natural := 2;
 
 	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector := (
-		modedebug => (mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode600p  => (mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
-		mode900p  => (mode => 7,  clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1));
+	constant pll_params : displayparam_vector := (
+		modedebug => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
+		mode600p  => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1),
+		mode900p  => (video_mode => 7,  clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1));
 
-	constant video_mode : natural := mode600p;
+	constant pll_mode : natural := mode600p;
 
-	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
+	alias ctlr_clk   : std_logic is ddrsys_clks(0);
 	alias uart_rxc   : std_logic is clk_25mhz;
 	alias si_clk     : std_logic is uart_rxc;
 	alias dmacfg_clk : std_logic is uart_rxc;
 
-	constant ddr_tcp   : natural := (1000*natural(sys_per)*video_params(video_mode).clki_div*3)/(video_params(video_mode).clkfb_div*video_params(video_mode).clkop_div);
+	constant ddr_tcp   : natural := (1000*natural(sys_per)*pll_params(pll_mode).clki_div*3)/(pll_params(pll_mode).clkfb_div*pll_params(pll_mode).clkop_div);
 
 	constant baudrate  : natural := 115200;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
@@ -225,10 +221,10 @@ begin
 
 			CLKOS3_DIV       =>  3, 
 			CLKOS2_DIV       =>  10, 
-			CLKOS_DIV        => video_params(video_mode).clkos_div,
-			CLKOP_DIV        => video_params(video_mode).clkop_div,
-			CLKFB_DIV        => video_params(video_mode).clkfb_div,
-			CLKI_DIV         => video_params(video_mode).clki_div)
+			CLKOS_DIV        => pll_params(pll_mode).clkos_div,
+			CLKOP_DIV        => pll_params(pll_mode).clkop_div,
+			CLKFB_DIV        => pll_params(pll_mode).clkfb_div,
+			CLKI_DIV         => pll_params(pll_mode).clki_div)
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -371,7 +367,7 @@ begin
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
-		video_mode => video_params(video_mode).mode)
+		video_mode => pll_params(pll_mode).video_mode)
 	port map (
 		dma_req      => dmacfgvideo_req,
 		dma_rdy      => dmavideo_rdy,
@@ -465,7 +461,7 @@ begin
 		ctlr_rtt     => "--",
 
 		ctlr_rst     => ddrsys_rst,
-		ctlr_clks    => ddrsys_clks(0 to 0),
+		ctlr_clks    => ddrsys_clks,
 		ctlr_inirdy  => ctlr_inirdy,
 
 		ctlr_irdy    => ctlr_irdy,
@@ -524,7 +520,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clks    => ddrsys_clks,
+		sys_clk     => ddrsys_clks(0),
 		sys_rst     => ddrsys_rst,
 
 		phy_cs      => ddrphy_cs,

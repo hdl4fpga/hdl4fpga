@@ -40,7 +40,7 @@ entity sdrphy is
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
-		sys_clks : in  std_logic_vector(0 to 2-1);
+		sys_clk : in  std_logic;
 		sys_rst : in std_logic;
 
 		phy_cs    : in  std_logic;
@@ -97,7 +97,7 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clk => sys_clks(0),
+		sys_clk => sys_clk,
           
 		phy_cs  => phy_cs,
 		phy_cke => phy_cke,
@@ -123,7 +123,7 @@ begin
 		generic map (
 			byte_size => byte_size)
 		port map (
-			sys_clk => sys_clks(0),
+			sys_clk => sys_clk,
 
 			phy_dmi => phy_dmi(i),
 			phy_dmt => phy_dmt(i),
@@ -164,5 +164,5 @@ begin
 		end loop;
 	end process;
 
-	phy_dqso <= (others => sys_clks(0));
+	phy_dqso <= (others => sys_clk);
 end;
