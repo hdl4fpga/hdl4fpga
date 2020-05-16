@@ -141,7 +141,7 @@ package ddr_db is
 
 	constant timing_db : timing_tab := (
 		timing_record'(mark => M7E,  param => tPreRST, value => 100*1_000_000),
-		timing_record'(mark => M7E,  param => tWR,   value => 14000),
+		timing_record'(mark => M7E,  param => tWR,   value => 2*14000),
 		timing_record'(mark => M7E,  param => tRP,   value => 15000),
 		timing_record'(mark => M7E,  param => tRCD,  value => 15000),
 		timing_record'(mark => M7E,  param => tRFC,  value => 66000),

@@ -147,7 +147,7 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 11_520_000;
+	constant baudrate : natural := 115200_00;
 	constant uart_data  : std_logic_vector := 
 x"000018ff1234ffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &

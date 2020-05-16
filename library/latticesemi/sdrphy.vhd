@@ -33,8 +33,9 @@ use hdl4fpga.std.all;
 
 entity sdrphy is
 	generic (
+		f200MHz   : boolean := false;
 		loopback  : boolean := false;
-		rgtr_dout : boolean   := true;
+		rgtr_dout : boolean := true;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		word_size : natural := 16;
@@ -50,8 +51,6 @@ entity sdrphy is
 		phy_ras   : in  std_logic;
 		phy_cas   : in  std_logic;
 		phy_we    : in  std_logic;
-		phy_sti   : in  std_logic;
-		phy_sto   : out std_logic;
 		phy_dmt   : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		phy_dmi   : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		phy_dmo   : out std_logic_vector(word_size/byte_size-1 downto 0);
@@ -61,6 +60,8 @@ entity sdrphy is
 		phy_dqso  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		phy_dqst  : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		phy_dqsi  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		phy_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		sdr_rst : out std_logic;
 		sdr_cs  : out std_logic := '0';
@@ -90,8 +91,7 @@ architecture ecp of sdrphy is
 	signal dqt : std_logic_vector(sdr_dq'range);
 	signal dqo : std_logic_vector(sdr_dq'range);
 
-	signal clko : std_logic;
-	signal dqs : std_logic;
+	signal dsi : std_logic;
 begin
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
@@ -110,7 +110,7 @@ begin
 		phy_we  => phy_we,
         
 		sdr_rst => sdr_rst,
-		sdr_clk => clko,
+		sdr_clk => sdr_clk,
 		sdr_cke => sdr_cke,
 		sdr_odt => sdr_odt,
 		sdr_cs  => sdr_cs,
@@ -134,7 +134,7 @@ begin
 			phy_dqt => phy_dqt(i),
 			phy_dqo => phy_dqo((i+1)*byte_size-1 downto i*byte_size),
 
-			sdr_dqs => dqs,
+			sdr_ds  => dsi,
 			sdr_dmi => sdr_dm(i),
 			sdr_dmt => dmt(i),
 			sdr_dmo => dmo(i),
@@ -168,7 +168,15 @@ begin
 	end process;
 
 
-	sdr_clk <= clko; -- when dmt(0)='0' else 'Z';
-	dqs <= not sys_clk;
-	phy_dqso <= (others => dqs);
+	sto : entity hdl4fpga.align
+	generic map (
+		n => phy_sto'length,
+		d => (0 to phy_sto'length-1 => setif(f200Mhz, 1,0)))
+	port map (
+		clk => sys_clk,
+		di  => phy_sti,
+		do  => phy_sto);
+	
+	dsi <= not sys_clk when f200MHz else sys_clk;
+	phy_dqso <= (others => dsi);
 end;
