@@ -276,7 +276,7 @@ begin
 		signal data_ena    : std_logic;
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
-
+		signal dst_irdy    : std_logic;
 	begin
 
 		uartrx_e : entity hdl4fpga.uart_rx
@@ -353,9 +353,10 @@ begin
 			src_data => rgtr_data(16-1 downto 0),
 
 			dst_clk  => ctlr_clk,
-			dst_irdy => ctlr_di_dv,
+			dst_irdy => dst_irdy,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
+		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
 
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
