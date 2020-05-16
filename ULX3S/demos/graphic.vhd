@@ -124,7 +124,6 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
     signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
@@ -165,27 +164,32 @@ architecture graphics of ulx3s is
 
 	type pllparam_vector is array (natural range <>) of pll_params;
 	constant pll_modes : pllparam_vector := (
-		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "011"),
+		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
 	constant pll_mode : natural := mode600p200MHz;
+--	constant pll_mode : natural := mode600p133MHz;
 --	constant pll_mode : natural := modedebug;
-
-	alias ctlr_clk   : std_logic is ddrsys_clks(0);
-	alias uart_rxc   : std_logic is clk_25mhz;
-	alias si_clk     : std_logic is uart_rxc;
-	alias dmacfg_clk : std_logic is uart_rxc;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
 		(pll_modes(pll_mode).clkfb_div*pll_modes(pll_mode).clkop_div);
+	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	constant baudrate  : natural := 115200;
+	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	constant baudrate  : natural := 115200;
+
+--	alias uart_rxc     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+--	constant baudrate  : natural := 115200_00;
+
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
+	alias si_clk       : std_logic is uart_rxc;
+	alias dmacfg_clk   : std_logic is uart_rxc;
 
 begin
 
@@ -205,6 +209,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
 		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is  "40.000000";
 		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
+--		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
 
 	begin
 		PLL_I : EHXPLLL
@@ -503,24 +508,16 @@ begin
 		phy_dqi      => ddrphy_dqi,
 		phy_dqt      => ddrphy_dqt,
 		phy_dqo      => ddrphy_dqo,
-		phy_sti      => ddrphy_sto,
-		phy_sto      => ddrphy_sti,
+		phy_sti      => ddrphy_sti,
+		phy_sto      => ddrphy_sto,
                                 
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
 
-	sto : entity hdl4fpga.align
-	generic map (
-		n => ddrphy_sto'length,
-		d => (0 to ddrphy_sto'length-1 => 1))
-	port map (
-		clk => ctlr_clk,
-		di  => ddrphy_sti,
-		do  => ddrphy_sto);
-
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
+		f200Mhz     => pll_mode=mode600p200MHz,
 		loopback    => false,
 		rgtr_dout   => false,
 		bank_size   => sdram_ba'length,
@@ -547,8 +544,8 @@ begin
 		phy_dqi     => ddrphy_dqo,
 		phy_dqt     => ddrphy_dqt,
 		phy_dqo     => ddrphy_dqi,
-		phy_sti     => ddrphy_sti(0),
-		phy_sto     => open,
+		phy_sti     => ddrphy_sto,
+		phy_sto     => ddrphy_sti,
 
 		sdr_clk     => sdram_clk,
 		sdr_cke     => sdram_cke,
@@ -565,42 +562,52 @@ begin
 	-- VGA --
 	---------
 
-	video_blank <= not video_hzon or not video_vton;
-    vga2dvid_e : entity hdl4fpga.vga2dvid
-    generic map (
-        C_shift_clock_synchronizer => '0',
-        C_ddr   => '1',
-        C_depth => 5)
-    port map (
-        clk_pixel => video_clk,
-        clk_shift => video_shift_clk,
-        in_red    => video_pixel(0   to  0+5-1),
-        in_green  => video_pixel(0+5 to  5+5-1),
-        in_blue   => video_pixel(6+5 to 11+5-1),
-        in_hsync  => video_hzsync,
-        in_vsync  => video_vtsync,
-        in_blank  => video_blank,
-        out_clock => dvid_crgb(7 downto 6),
-        out_red   => dvid_crgb(5 downto 4),
-        out_green => dvid_crgb(3 downto 2),
-        out_blue  => dvid_crgb(1 downto 0));
-
-	ddr_g : for i in gpdi_dp'range generate
-		signal q : std_logic;
+	dvi_b : block
+		signal dvid_blank : std_logic;
 	begin
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => q);
-		olvds_i : olvds 
-		port map(
-			a  => q,
-			z  => gpdi_dp(i),
-			zn => gpdi_dn(i));
-    end generate;
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				dvid_blank <= not video_hzon or not video_vton;
+			end if;
+		end process;
+
+		vga2dvid_e : entity hdl4fpga.vga2dvid
+		generic map (
+			C_shift_clock_synchronizer => '0',
+			C_ddr   => '1',
+			C_depth => 5)
+		port map (
+			clk_pixel => video_clk,
+			clk_shift => video_shift_clk,
+			in_red    => video_pixel(0   to  0+5-1),
+			in_green  => video_pixel(0+5 to  5+5-1),
+			in_blue   => video_pixel(6+5 to 11+5-1),
+			in_hsync  => video_hzsync,
+			in_vsync  => video_vtsync,
+			in_blank  => dvid_blank,
+			out_clock => dvid_crgb(7 downto 6),
+			out_red   => dvid_crgb(5 downto 4),
+			out_green => dvid_crgb(3 downto 2),
+			out_blue  => dvid_crgb(1 downto 0));
+
+		ddr_g : for i in gpdi_dp'range generate
+			signal q : std_logic;
+		begin
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => dvid_crgb(2*i),
+				d1   => dvid_crgb(2*i+1),
+				q    => q);
+			olvds_i : olvds 
+			port map(
+				a  => q,
+				z  => gpdi_dp(i),
+				zn => gpdi_dn(i));
+		end generate;
+	end block;
 
 --    vga2lvds_e : entity hdl4fpga.vga2lvds
 --    port map (

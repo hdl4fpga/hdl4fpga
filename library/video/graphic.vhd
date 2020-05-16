@@ -67,16 +67,17 @@ architecture def of graphics is
 	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
 
 	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
-	signal vton_dly : std_logic;
+	signal vton_dly  : std_logic;
 	signal vton_edge : std_logic;
 	signal hzon_edge : std_logic;
 
-	signal src_irdy : std_logic;
-	signal src_data : std_logic_vector(ctlr_di'range);
+	signal src_irdy  : std_logic;
+	signal src_data  : std_logic_vector(ctlr_di'range);
 
-	signal dma_step : unsigned(dma_addr'range);
+	signal dma_step  : unsigned(dma_addr'range);
 
-	signal mydma_rdy   : std_logic;
+	signal mydma_rdy : std_logic;
+
 begin
 
 	video_e : entity hdl4fpga.video_sync
@@ -90,7 +91,6 @@ begin
 		video_vtcntr => video_vtcntr,
 		video_hzon   => v_hzon,
 		video_vton   => v_vton);
-
 
 	process (video_clk)
 	begin
@@ -144,6 +144,7 @@ begin
 		signal v_on    : std_logic;
 		signal v_frm   : std_logic;
 
+		signal v_trdy  : std_logic;
 		signal v_pixel : std_logic_vector(video_pixel'range);
 
 	begin
@@ -179,7 +180,7 @@ begin
 		outbuffer_e : entity hdl4fpga.align
 		generic map (
 			n => video_pixel'length,
-			d => (0 to video_pixel'length-1 => outbuffer_size))
+			d => (0 to video_pixel'length-1 => outbuffer_size-1))
 		port map (
 			clk => video_clk,
 			di  => v_pixel,

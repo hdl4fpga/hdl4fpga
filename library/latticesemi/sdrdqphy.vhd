@@ -37,7 +37,7 @@ entity sdrdqphy is
 		phy_dqt  : in  std_logic;
 		phy_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 
-		sdr_dqs  : in  std_logic;
+		sdr_ds   : in  std_logic;
 		sdr_dmi  : in  std_logic := '-';
 		sdr_dmt  : out std_logic;
 		sdr_dmo  : out std_logic;
@@ -57,13 +57,13 @@ begin
 	begin
 		ffdt_i : fd1s3ax
 		port map (
-			ck => sdr_dqs,
+			ck => sys_clk,
 			d  => phy_dqt,
 			q  => sdr_dqt(i));
 
 		ffdi_i : fd1s3ax
 		port map (
-			ck => sdr_dqs,
+			ck => sdr_ds,
 			d  => sdr_dqi(i),
 			q  => phy_dqo(i));
 	end generate;
