@@ -50,10 +50,11 @@ end;
 
 architecture def of graphics is
 
-	constant fifo_size   : natural := 2*2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
+	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
+	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
-	constant water_mark  : natural := maxdma_len/2;
+	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
 
 	signal v_hzsync  : std_logic;
 	signal v_vtsync  : std_logic;
@@ -114,10 +115,10 @@ begin
 				level <= level - modeline_data(video_mode)(0);
 			elsif level <= water_mark then
 				dma_req  <= '1';
-				level    <= level + water_mark;
-				dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
+				level    <= level + line_size;
+				dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
 				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
-				dma_step <= resize(to_unsigned(water_mark, level'length), dma_step'length);
+				dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
 			elsif mydma_rdy='1' then
 				dma_req <= '0';
 			end if;
