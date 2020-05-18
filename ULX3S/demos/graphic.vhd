@@ -169,8 +169,8 @@ architecture graphics of ulx3s is
 		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
 --	constant pll_mode : natural := mode600p200MHz;
-	constant pll_mode : natural := mode600p133MHz;
---	constant pll_mode : natural := modedebug;
+--	constant pll_mode : natural := mode600p133MHz;
+	constant pll_mode : natural := modedebug;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
@@ -191,6 +191,7 @@ architecture graphics of ulx3s is
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
+	signal pp : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -388,7 +389,7 @@ begin
 		dma_addr     => dmavideo_addr,
 		ctlr_clk     => ctlr_clk,
 		ctlr_di_dv   => ctlr_do_dv(0),
-		ctlr_di      => graphics_di,
+		ctlr_di      => ctlr_do,
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
@@ -515,6 +516,23 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
+
+	process (ctlr_clk)
+		variable xx : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			if ctlr_inirdy='0' then
+				xx := '0';
+			elsif xx='0' then
+				xx := pp;
+			end if;
+			led(0)  <= xx;
+		end if;
+	end process;
+
+		pp <= ctlr_di_dv and ctlr_do_dv(0);
+		assert pp/='1' 
+		severity FAILURE;
 
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
@@ -645,7 +663,7 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_rxdv='1' then
-				led <= uart_rxd;
+--				led <= uart_rxd;
 			end if;
 		end if;
 	end process;

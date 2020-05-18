@@ -149,16 +149,17 @@ architecture ulx3s_graphics of testbench is
 
 	constant baudrate : natural := 115200_00;
 	constant uart_data  : std_logic_vector := 
-x"000018ff1234ffffffffffffffffffff" &
+x"000018ff"& 
+x"1234ffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffaabb" &
+x"ccddffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
@@ -235,7 +236,7 @@ x"5c00_000017025c005c007f0000";
 	signal uart_sin : std_logic;
 begin
 
-	rst <= '1', '0' after 1 us;
+	rst <= '1', '0' after (1 us+82.5 us);
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -251,6 +252,7 @@ begin
 			uart_sin <= '1';
 		elsif rising_edge(uart_clk) then
 			data := data srl 1;
+--			data := data ror 1;
 			uart_sin <= not data(0);
 		end if;
 	end process;
