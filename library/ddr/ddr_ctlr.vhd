@@ -424,23 +424,32 @@ begin
 		end loop;
 	end process;
 
-	fifo_bypass <= setif(select_lat(ctlr_cwl, cwl_cod, cwl_tab)=0);
-	wrfifo_i : entity hdl4fpga.ddr_wrfifo
-	generic map (
-		data_phases => data_phases,
-		data_gear   => data_gear,
-		word_size   => word_size,
-		byte_size   => byte_size)
-	port map (
-		fifo_bypass => fifo_bypass,
-		ctlr_clk    => ctlr_clks(0),
-		ctlr_dqi    => rot_di,
-		ctlr_ena    => ctlr_di_dv,
-		ctlr_req    => ddr_mpu_wri,
-		ctlr_dmi    => ctlr_dm,
-		ddr_clks    => ddr_wclks,
-		ddr_dmo     => ddr_wr_dm,
-		ddr_enas    => ddr_wenas, 
-		ddr_dqo     => phy_dqo);
+	wrfifo_b : block
+		signal bypass : std_logic;
+		signal dqo    : std_logic_vector(phy_dqo'range);
+		signal dmo    : std_logic_vector(ddr_wr_dm'range);
+	begin
+		bypass <= setif(stdr=DDR0 or select_lat(ctlr_cwl, cwl_cod, cwl_tab)=0);
+
+		wrfifo_i : entity hdl4fpga.ddr_wrfifo
+		generic map (
+			data_phases => data_phases,
+			data_gear   => data_gear,
+			word_size   => word_size,
+			byte_size   => byte_size)
+		port map (
+			ctlr_clk    => ctlr_clks(0),
+			ctlr_dqi    => rot_di,
+			ctlr_ena    => ctlr_di_dv,
+			ctlr_req    => ddr_mpu_wri,
+			ctlr_dmi    => ctlr_dm,
+			ddr_clks    => ddr_wclks,
+			ddr_dmo     => dmo,
+			ddr_enas    => ddr_wenas, 
+			ddr_dqo     => dqo);
+
+		phy_dqo   <= rot_di  when bypass='1' else dqo;
+		ddr_wr_dm <= ctlr_dm when bypass='1' else dmo;
+	end block;
 
 end;

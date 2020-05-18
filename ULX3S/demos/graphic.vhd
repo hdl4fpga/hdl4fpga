@@ -169,21 +169,21 @@ architecture graphics of ulx3s is
 		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
 --	constant pll_mode : natural := mode600p200MHz;
---	constant pll_mode : natural := mode600p133MHz;
-	constant pll_mode : natural := modedebug;
+	constant pll_mode : natural := mode600p133MHz;
+--	constant pll_mode : natural := modedebug;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
 		(pll_modes(pll_mode).clkfb_div*pll_modes(pll_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
---	alias uart_rxc     : std_logic is clk_25mhz;
---	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
---	constant baudrate  : natural := 115200;
+	alias uart_rxc     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	constant baudrate  : natural := 115200;
 
-	alias uart_rxc     : std_logic is ctlr_clk;
-	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
-	constant baudrate  : natural := 115200_00;
+--	alias uart_rxc     : std_logic is ctlr_clk;
+--	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+--	constant baudrate  : natural := 115200_00;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -209,8 +209,8 @@ begin
 		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
 		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is  "40.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
+--		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
 
 	begin
 		PLL_I : EHXPLLL

@@ -149,7 +149,34 @@ architecture ulx3s_graphics of testbench is
 
 	constant baudrate : natural := 115200_00;
 	constant uart_data  : std_logic_vector := 
-x"000018ff"& 
+x"0000" & 
+x"1602" &
+x"5c000180" &
+x"0000" &
+x"1702" &
+x"5c005c007f" &
+x"0000" & 
+x"18ff" & 
+x"abcdffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffffffffffff" &
+x"ffffffffffffffffffffffff50eeffff" &
+x"00001602_5c00_5c00" &
+x"5c00_000017025c005c007f0000" &
+x"0000" &
+x"18ff"& 
 x"1234ffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
@@ -157,17 +184,7 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffaabb" &
-x"ccddffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffff678900001602_5c00_0180_00_00_1702" &
-x"5c005c007f000018ffabcdffffffffff" &
+x"ccddffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
@@ -175,17 +192,10 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffff50ee" &
-x"ffffffffffffffffff00001602_5c00_5c00" &
-x"5c00_000017025c005c007f0000";
-	
+x"ffffffffffffffffffffffffffff6789" &
+x"0000";
+
+
 --		x"0000"                             &
 --		x"18ff"                             &
 --		x"abcd42504250425242924a924a924292" &
