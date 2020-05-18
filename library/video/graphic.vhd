@@ -50,8 +50,10 @@ end;
 
 architecture def of graphics is
 
+--	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
+--	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
 	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
-	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
+	constant fifo_size   : natural := 2*line_size;
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
@@ -190,7 +192,7 @@ begin
 		sync_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 to 5-1 => inbuffer_size+outbuffer_size+1))
+			d => (0 to 5-1 => inbuffer_size+outbuffer_size))
 		port map (
 			clk => video_clk,
 			di(0) => v_hzon,

@@ -171,7 +171,7 @@ begin
 	sto : entity hdl4fpga.align
 	generic map (
 		n => phy_sto'length,
-		d => (0 to phy_sto'length-1 => 2)) --setif(f200Mhz, 1,0)))
+		d => (0 to phy_sto'length-1 => setif(f200Mhz, 3,2)))
 	port map (
 		clk => sys_clk,
 		di  => phy_sti,
