@@ -147,8 +147,8 @@ package ddr_db is
 		timing_record'(mark => M7E,  param => tRCD,  value => 15000),
 		timing_record'(mark => M7E,  param => tRFC,  value => 66000),
 		timing_record'(mark => M7E,  param => tMRD,  value => 15000),
---		timing_record'(mark => M7E,  param => tREFI, value => 8000000),
-		timing_record'(mark => M7E,  param => tREFI, value => 800000),
+		timing_record'(mark => M7E,  param => tREFI, value => 8000000),
+--		timing_record'(mark => M7E,  param => tREFI, value => 800000),
 
 		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
