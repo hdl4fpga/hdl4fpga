@@ -191,6 +191,7 @@ architecture graphics of ulx3s is
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
+	signal pp : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -357,7 +358,7 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
-
+		ctlr_dm <= (others => '0'); --not ctlr_di_dv);
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
 		begin
@@ -388,7 +389,7 @@ begin
 		dma_addr     => dmavideo_addr,
 		ctlr_clk     => ctlr_clk,
 		ctlr_di_dv   => ctlr_do_dv(0),
-		ctlr_di      => graphics_di,
+		ctlr_di      => ctlr_do,
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
@@ -488,7 +489,7 @@ begin
 		ctlr_di_req  => ctlr_di_req,
 		ctlr_act     => ctlr_act,
 		ctlr_di      => ctlr_di,
-		ctlr_dm      => (ctlr_dm'range => '0'),
+		ctlr_dm      => ctlr_dm,
 		ctlr_do_dv   => ctlr_do_dv,
 		ctlr_do      => ctlr_do,
 		ctlr_refreq  => ctlr_refreq,
@@ -515,6 +516,23 @@ begin
 		phy_dqsi     => ddrphy_dqsi,
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
+
+	process (ctlr_clk)
+		variable xx : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			if ctlr_inirdy='0' then
+				xx := '0';
+			elsif xx='0' then
+				xx := pp;
+			end if;
+			led(0)  <= xx;
+		end if;
+	end process;
+
+		pp <= ctlr_di_dv and ctlr_do_dv(0);
+		assert pp/='1' 
+		severity FAILURE;
 
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
@@ -569,9 +587,9 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				dvid_blank <= not video_hzon or not video_vton;
 			end if;
 		end process;
+				dvid_blank <= not video_hzon or not video_vton;
 
 		vga2dvid_e : entity hdl4fpga.vga2dvid
 		generic map (
@@ -645,7 +663,7 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_rxdv='1' then
-				led <= uart_rxd;
+--				led <= uart_rxd;
 			end if;
 		end if;
 	end process;

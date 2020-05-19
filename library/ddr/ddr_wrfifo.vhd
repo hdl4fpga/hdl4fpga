@@ -35,8 +35,6 @@ entity ddr_wrfifo is
 		WORD_SIZE   : natural;
 		BYTE_SIZE   : natural);
 	port (
-		fifo_bypass : in std_logic;
-
 		ctlr_clk : in  std_logic;
 		ctlr_req : in  std_logic;
 		ctlr_ena : in  std_logic;
@@ -160,7 +158,6 @@ architecture struct of ddr_wrfifo is
 	signal di : byte_vector(ctlr_dmi'range);
 	signal do : byte_vector(ddr_dmo'range);
 	signal dqo : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
-	signal fifo_di : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
 
 begin
 
@@ -185,12 +182,13 @@ begin
 			return val;
 		end;
 
+		signal fifo_di : word;
 	begin
 		dqi <= shuffle(di, i);
 		ser_clk <= std_logic_vector(unsigned(ddr_clks) sll (i*DATA_PHASES));
 		ser_ena <= std_logic_vector(unsigned(ddr_enas) sll (i*DATA_PHASES));
 
-		fifo_di(i) <= to_stdlogicvector(dqi);
+		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo
 		generic map (
 			pll2ser => true,
@@ -203,12 +201,12 @@ begin
 			pll_ena => ctlr_ena,
 			ser_clk => ser_clk(0 to DATA_PHASES-1),
 			ser_ena => ser_ena(0 to DATA_PHASES-1),
-			di  => fifo_di(i),
+			di  => fifo_di,
 			do  => dqo(i));
 
 	end generate;
 
-	do <= unshuffle(dqo) when fifo_bypass='0' else unshuffle(fifo_di);
+	do <= unshuffle(dqo);
 	ddr_dqo <= extract_dq(to_stdlogicvector(do));
 	ddr_dmo <= extract_dm(to_stdlogicvector(do));
 end;

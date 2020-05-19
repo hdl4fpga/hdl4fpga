@@ -126,7 +126,7 @@ begin
 	data_ena  <= (ena and dv and ptr(0) and setif(stt=regS_data));
 	data_len  <= std_logic_vector(size);
 
-	rgtr_idv  <= ridv;
+	rgtr_idv  <= ridv and sin_irdy;
 	rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 	rgtr_dv   <= ena and dv and len(0) and ptr(0);
 	rgtr_data <= val;
