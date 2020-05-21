@@ -157,23 +157,23 @@ x"1702" &
 x"5c005c007f" &
 x"0000" & 
 x"18ff" & 
-x"abcd1234ffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffffffffffff" &
-x"ffffffffffffffffffffffff50eeffff" &
-x"00001602_5c00_5c00" &
+x"123456789abcdef123456789abcdef12" &
+x"23456789abcdef123456789abcdef123" &
+x"3456789abcdef123456789abcdef1234" &
+x"456789abcdef123456789abcdef12345" &
+x"56789abcdef123456789abcdef123456" &
+x"6789abcdef123456789abcdef1234567" &
+x"789abcdef123456789abcdef12345678" &
+x"89abcdef123456789abcdef123456789" &
+x"9abcdef123456789abcdef123456789a" &
+x"abcdef123456789abcdef123456789ab" &
+x"bcdef123456789abcdef123456789abc" &
+x"cdef123456789abcdef123456789abcd" &
+x"def123456789abcdef123456789abcde" &
+x"ef123456789abcdef123456789abcdef" &
+x"f123456789abcdef123456789abcdef1" &
+x"123456789abcdef123456789abcdef12" &
+x"00001602_5c00_5c00" & 
 x"5c00_000017025c005c007f0000" &
 x"0000" &
 x"18ff"& 
@@ -195,52 +195,6 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffff6789" &
 x"0000";
 
-
---		x"0000"                             &
---		x"18ff"                             &
---		x"abcd42504250425242924a924a924292" &
---		x"429242524254429442964a966be07420" &
---		x"5b1a5b1a531a531a639e6ba06be06be2" &
---		x"73e274247424742474247c2484aa8cea" &
---		x"84a67c647c647c667c667c24742273e2" &
---		x"7c668cea956e9db0a5b2a5b2a5b2a5b2" &
---		x"a5b09d709d709d709d709db09db09db0" &
---		x"a5b2a5b2a5b2a5b2a5b2a5b2a5f4a5f4" &
---		x"a5f4a5f4adf4adf4adf4adf4adf4adf4" &
---		x"ae34adf4adf4adf4adf4ae34ae34ae34" &
---		x"ae34ae34ae34ae34ae34ae34ae34ae34" &
---		x"ae34ae34ae34ae36b634ae34b634b636" &
---		x"ae34ae34b636b634b636b636b636b636" &
---		x"b634b634b636b636ae34b636b636b636" &
---		x"b634b634b634b634b634b636b636b636" &
---		x"b634b636b636b636b636b636b6364321" &
---		x"0000"                             &
---		x"16025c005c005c00"                 &
---		x"0000"                             &
---		x"17025c005c007f"                   &
---		x"0000"                             &
---		x"18ff"                             &
---		x"1234b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b636b636b636b636b636" &
---		x"b636b636b636b676b676b636b636b636" &
---		x"b676b676b676b676b676b636b636b636" &
---		x"b636b676b676b676b676b676b676b676" &
---		x"b636b676b676b676b676b676b676b636" &
---		x"b676b676b676b676b676b676b676b676" &
---		x"b676b676b676b676b676b676b676be76" &
---		x"b676b676b676b676b676b676b6765a7c" &
---		x"0000"                             &
---		x"16025c005c0080"                   &
---		x"0000"                             &
---		x"17025c005c007f"                   &
---		x"0000";
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;

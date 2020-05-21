@@ -193,6 +193,7 @@ architecture graphics of ulx3s is
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
+	signal ctlr_dqs    : std_logic;
 
 	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
@@ -314,7 +315,7 @@ begin
 			OUTDIVIDER_MUXA  => "DIVA",
 
 			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div, 
-			CLKOS2_DIV       =>  10, 
+			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
 			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
 			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
 			CLKFB_DIV        => sdram_tab(sdram_mode).clkfb_div,
@@ -333,7 +334,7 @@ begin
             ENCLKOS3  => '0', 
 			CLKOP     => clkfb,
 			CLKOS3    => ctlr_clk,
-			LOCK      => lock, 
+			LOCK      => ctlr_dqs, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
 			CLKINTFB  => open);
