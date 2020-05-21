@@ -33,7 +33,6 @@ use hdl4fpga.std.all;
 
 entity sdrphy is
 	generic (
-		f200MHz   : boolean := false;
 		loopback  : boolean := false;
 		rgtr_dout : boolean := true;
 		bank_size : natural := 2;
@@ -57,10 +56,10 @@ entity sdrphy is
 		phy_dqt   : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		phy_dqo   : out std_logic_vector(word_size-1 downto 0);
 		phy_dqi   : in  std_logic_vector(word_size-1 downto 0);
-		phy_dqso  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		phy_dqst  : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		phy_dqsi  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		phy_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_dso   : out std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_dst   : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_dsi   : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		phy_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		phy_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		sdr_rst : out std_logic;
@@ -91,7 +90,6 @@ architecture ecp of sdrphy is
 	signal dqt : std_logic_vector(sdr_dq'range);
 	signal dqo : std_logic_vector(sdr_dq'range);
 
-	signal dsi : std_logic;
 begin
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
@@ -134,7 +132,7 @@ begin
 			phy_dqt => phy_dqt(i),
 			phy_dqo => phy_dqo((i+1)*byte_size-1 downto i*byte_size),
 
-			sdr_ds  => dsi,
+			sdr_ds  => phy_dsi(i),
 			sdr_dmi => sdr_dm(i),
 			sdr_dmt => dmt(i),
 			sdr_dmo => dmo(i),
@@ -167,16 +165,14 @@ begin
 		end loop;
 	end process;
 
-
 	sto : entity hdl4fpga.align
 	generic map (
-		n => phy_sto'length,
-		d => (0 to phy_sto'length-1 => setif(f200Mhz, 3,2)))
+		n => phy_sti'length,
+		d => (0 to phy_sti'length-1 => 2))
 	port map (
 		clk => sys_clk,
 		di  => phy_sti,
 		do  => phy_sto);
-	
-	dsi <= not sys_clk when f200MHz else sys_clk;
-	phy_dqso <= (others => dsi);
+
+	phy_dso <= phy_dsi;
 end;

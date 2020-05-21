@@ -150,12 +150,6 @@ architecture ulx3s_graphics of testbench is
 	constant baudrate : natural := 115200_00;
 	constant uart_data  : std_logic_vector := 
 x"0000" & 
-x"1602" &
-x"5c000180" &
-x"0000" &
-x"1702" &
-x"5c005c007f" &
-x"0000" & 
 x"18ff" & 
 x"123456789abcdef123456789abcdef12" &
 x"23456789abcdef123456789abcdef123" &
@@ -173,8 +167,10 @@ x"def123456789abcdef123456789abcde" &
 x"ef123456789abcdef123456789abcdef" &
 x"f123456789abcdef123456789abcdef1" &
 x"123456789abcdef123456789abcdef12" &
-x"00001602_5c00_5c00" & 
-x"5c00_000017025c005c007f0000" &
+x"0000" & 
+x"1602_5c00_0180" &
+x"0000" &
+x"1702_5c00_5c00_7f" &
 x"0000" &
 x"18ff"& 
 x"1234ffffffffffffffffffffffffffff" &
@@ -193,6 +189,10 @@ x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffffffff" &
 x"ffffffffffffffffffffffffffff6789" &
+x"0000" &
+x"1602_5c00_5c00_5c00" & 
+x"0000" & 
+x"1702_5c00_5c00_7f" &
 x"0000";
 
 
