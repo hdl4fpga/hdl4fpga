@@ -55,7 +55,8 @@ library ecp5u;
 use ecp5u.components.all;
 
 architecture ecp of sdrbaphy is
-	
+	attribute oddrapps : string;
+	attribute oddrapps of ck_i, cs_i, cke_i, ras_i, cas_i, we_i : label is "SCLK_ALIGNED";
 begin
 
 	ck_i : oddrx1f
@@ -94,51 +95,61 @@ begin
 --	end block;
 
 	b_g : for i in 0 to bank_size-1 generate
+		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	begin
-		ffd_i : fd1s3ax
+		oddr_i : oddrx1f
 		port map (
-			ck => sys_clk,
-			d  => phy_b(i),
-			q  => sdr_b(i));
+			sclk => sys_clk,
+			d0   => phy_b(i),
+			d1   => phy_b(i),
+			q    => sdr_b(i));
+
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
+		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	begin
-		ffd_i : fd1s3ax
+		oddr_i : oddrx1f
 		port map (
-			ck => sys_clk,
-			d  => phy_a(i),
-			q  => sdr_a(i));
+			sclk => sys_clk,
+			d0   => phy_a(i),
+			d1   => phy_a(i),
+			q    => sdr_a(i));
 	end generate;
 
-	ras_i : fd1s3ax
+	ras_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_ras,
-		q  => sdr_ras);
+		sclk => sys_clk,
+		d0   => phy_ras,
+		d1   => phy_ras,
+		q    => sdr_ras);
 
-	cas_i : fd1s3ax
+	cas_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_cas,
-		q  => sdr_cas);
+		sclk => sys_clk,
+		d0   => phy_cas,
+		d1   => phy_cas,
+		q    => sdr_cas);
 
-	we_i : fd1s3ax
+	we_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_we,
-		q  => sdr_we);
+		sclk => sys_clk,
+		d0   => phy_we,
+		d1   => phy_we,
+		q    => sdr_we);
 
-	cs_i : fd1s3ax
+	cs_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_cs,
-		q  => sdr_cs);
+		sclk => sys_clk,
+		d0   => phy_cs,
+		d1   => phy_cs,
+		q    => sdr_cs);
 
-	cke_i : fd1s3ax
+	cke_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_cke,
-		q  => sdr_cke);
+		sclk => sys_clk,
+		d0   => phy_cke,
+		d1   => phy_cke,
+		q    => sdr_cke);
 
 end;

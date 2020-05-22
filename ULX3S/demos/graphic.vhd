@@ -194,15 +194,15 @@ architecture graphics of ulx3s is
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 	signal ctlr_dqs    : std_logic;
 
---	alias uart_rxc     : std_logic is clk_25mhz;
---	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
---	constant baudrate  : natural := 115200;
---	constant video_mode : natural := mode600p;
+	alias uart_rxc     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	constant baudrate  : natural := 115200;
+	constant video_mode : natural := mode600p;
 
-	alias uart_rxc     : std_logic is ctlr_clk;
-	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
-	constant baudrate  : natural := 115200_00;
-	constant video_mode : natural := modedebug;
+--	alias uart_rxc     : std_logic is ctlr_clk;
+--	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+--	constant baudrate  : natural := 115200_00;
+--	constant video_mode : natural := modedebug;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -345,7 +345,7 @@ begin
 
 		ddrsys_rst <= not lock;
 
-		ctlrphy_dso <= (others => not ctlr_dqs) when sdram_mode=sdram200MHz else (others => not ctlr_dqs);
+		ctlrphy_dso <= (others => not ctlr_dqs) when sdram_mode=sdram200MHz else (others => ctlr_clk);
 
 	end block;
 

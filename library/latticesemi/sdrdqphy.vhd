@@ -51,16 +51,12 @@ library ecp5u;
 use ecp5u.components.all;
 
 architecture ecp of sdrdqphy is
+	attribute oddrapps : string;
+	attribute oddrapps of dmo_i : label is "SCLK_ALIGNED";
 
 begin
 	iddr_g : for i in 0 to byte_size-1 generate
 	begin
-		ffdt_i : fd1s3ax
-		port map (
-			ck => sys_clk,
-			d  => phy_dqt,
-			q  => sdr_dqt(i));
-
 		ffdi_i : fd1s3ax
 		port map (
 			ck => sdr_ds,
@@ -75,18 +71,28 @@ begin
 		q  => phy_dmo);
 
 	dqo_g : for i in 0 to byte_size-1 generate
+		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	begin
-		ffd_i : fd1s3ax
+		ffdt_i : fd1s3ax
 		port map (
 			ck => sys_clk,
-			d  => phy_dqi(i),
-			q  => sdr_dqo(i));
+			d  => phy_dqt,
+			q  => sdr_dqt(i));
+
+		oddr_i : oddrx1f
+		port map (
+			sclk => sys_clk,
+			d0   => phy_dqi(i),
+			d1   => phy_dqi(i),
+			q    => sdr_dqo(i));
+
 	end generate;
 
-	dmo_g : fd1s3ax
+	dmo_i : oddrx1f
 	port map (
-		ck => sys_clk,
-		d  => phy_dmi,
-		q  => sdr_dmo);
+		sclk => sys_clk,
+		d0   => phy_dmi,
+		d1   => phy_dmi,
+		q    => sdr_dmo);
 
 end;
