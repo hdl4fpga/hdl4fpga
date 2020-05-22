@@ -185,23 +185,23 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
---	alias uart_rxc     : std_logic is clk_25mhz;
---	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
---	constant baudrate  : natural := 115200;
---	constant video_mode : natural := mode600p;
+	alias uart_rxc     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	constant baudrate  : natural := 115200;
+	constant video_mode : natural := mode600p;
 
-	alias uart_rxc     : std_logic is ctlr_clk;
-	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
-	constant baudrate  : natural := 115200_00;
-	constant video_mode : natural := modedebug;
+--	alias uart_rxc     : std_logic is ctlr_clk;
+--	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+--	constant baudrate  : natural := 115200_00;
+--	constant video_mode : natural := modedebug;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
