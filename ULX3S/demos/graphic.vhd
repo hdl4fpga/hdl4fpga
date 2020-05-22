@@ -93,26 +93,27 @@ architecture graphics of ulx3s is
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
-	signal ddrphy_rst     : std_logic;
-	signal ddrphy_cke     : std_logic;
-	signal ddrphy_cs      : std_logic;
-	signal ddrphy_ras     : std_logic;
-	signal ddrphy_cas     : std_logic;
-	signal ddrphy_we      : std_logic;
-	signal ddrphy_odt     : std_logic;
-	signal ddrphy_b       : std_logic_vector(sdram_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(word_size-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(word_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst    : std_logic;
+	signal ctlrphy_cke    : std_logic;
+	signal ctlrphy_cs     : std_logic;
+	signal ctlrphy_ras    : std_logic;
+	signal ctlrphy_cas    : std_logic;
+	signal ctlrphy_we     : std_logic;
+	signal ctlrphy_odt    : std_logic;
+	signal ctlrphy_b      : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dsi    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(word_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(word_size-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal sdrphy_sti     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
 	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -148,8 +149,25 @@ architecture graphics of ulx3s is
 	signal ctlr_ras : std_logic;
 	signal ctlr_cas : std_logic;
 
-	type pll_params is record
+	constant modedebug : natural := 0;
+	constant mode600p  : natural := 1;
+
+	type video_params is record
+		clkos_div  : natural;
+		clkop_div  : natural;
+		clkfb_div  : natural;
+		clki_div   : natural;
+		clkos3_div : natural;
 		video_mode : natural;
+	end record;
+
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, video_mode => 16),
+		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, video_mode => 1));
+
+
+	type sdram_params is record
 		clkos_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
@@ -158,32 +176,32 @@ architecture graphics of ulx3s is
 		cas        : std_logic_vector(0 to 3-1);
 	end record;
 
-	constant modedebug      : natural := 0;
-	constant mode600p133MHz : natural := 1;
-	constant mode600p200MHz : natural := 2;
+	type sdram_vector is array (natural range <>) of sdram_params;
+	constant sdram133MHz : natural := 0;
+	constant sdram200MHz : natural := 1;
 
-	type pllparam_vector is array (natural range <>) of pll_params;
-	constant pll_modes : pllparam_vector := (
-		modedebug      => (video_mode => 16, clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
-		mode600p133MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
-		mode600p200MHz => (video_mode => 1,  clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
+	type sdramparams_vector is array (natural range <>) of sdram_params;
+	constant sdram_tab : sdramparams_vector := (
+		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
+		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant pll_mode : natural := mode600p200MHz;
---	constant pll_mode : natural := mode600p133MHz;
---	constant pll_mode : natural := modedebug;
+--	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
-		(1000*natural(sys_per)*pll_modes(pll_mode).clki_div*pll_modes(pll_mode).clkos3_div)/
-		(pll_modes(pll_mode).clkfb_div*pll_modes(pll_mode).clkop_div);
+		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
+		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
 	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 	constant baudrate  : natural := 115200;
+	constant video_mode : natural := mode600p;
 
 --	alias uart_rxc     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 --	constant baudrate  : natural := 115200_00;
+--	constant video_mode : natural := modedebug;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -191,29 +209,27 @@ architecture graphics of ulx3s is
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
-	signal pp : std_logic;
 begin
 
 	sys_rst <= '0';
-	pll_b : block
+	videopll_b : block
 
 		signal clkfb : std_logic;
-		signal lock  : std_logic;
 
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
 		attribute FREQUENCY_PIN_CLKOS : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
-		attribute FREQUENCY_PIN_CLKI  of PLL_I  : label is  "25.000000";
-		attribute FREQUENCY_PIN_CLKOP of PLL_I  : label is  "25.000000";
-		attribute FREQUENCY_PIN_CLKOS of PLL_I  : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of PLL_I : label is  "40.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS3 of PLL_I : label is "133.333333";
+
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
+
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is  "40.000000";
 
 	begin
-		PLL_I : EHXPLLL
+		pll_i : EHXPLLL
         generic map (
 			PLLRST_ENA       => "DISABLED",
 			INTFB_WAKE       => "DISABLED", 
@@ -221,10 +237,10 @@ begin
 			DPHASE_SOURCE    => "DISABLED", 
 			PLL_LOCK_MODE    =>  0, 
 			FEEDBK_PATH      => "CLKOP",
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 15,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -232,12 +248,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       => pll_modes(pll_mode).clkos3_div, 
+			CLKOS3_DIV       => video_tab(video_mode).clkos3_div, 
 			CLKOS2_DIV       =>  10, 
-			CLKOS_DIV        => pll_modes(pll_mode).clkos_div,
-			CLKOP_DIV        => pll_modes(pll_mode).clkop_div,
-			CLKFB_DIV        => pll_modes(pll_mode).clkfb_div,
-			CLKI_DIV         => pll_modes(pll_mode).clki_div)
+			CLKOS_DIV        => video_tab(video_mode).clkos_div,
+			CLKOP_DIV        => video_tab(video_mode).clkop_div,
+			CLKFB_DIV        => video_tab(video_mode).clkfb_div,
+			CLKI_DIV         => video_tab(video_mode).clki_div)
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -253,13 +269,82 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
             CLKOS2    => video_clk,
-			CLKOS3    => ctlr_clk,
+			LOCK      => open, 
+            INTLOCK   => open, 
+			REFCLK    => open, --REFCLK, 
+			CLKINTFB  => open);
+
+	end block;
+
+	ctlrpll_b : block
+
+		signal clkfb : std_logic;
+		signal lock  : std_logic;
+		signal dqs   : std_logic;
+
+		attribute FREQUENCY_PIN_CLKI  : string; 
+		attribute FREQUENCY_PIN_CLKOP : string; 
+		attribute FREQUENCY_PIN_CLKOS : string; 
+		attribute FREQUENCY_PIN_CLKOS2 : string; 
+		attribute FREQUENCY_PIN_CLKOS3 : string; 
+
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
+
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "200.000000";
+--		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
+
+		signal clkos : std_logic;
+	begin
+		pll_i : EHXPLLL
+        generic map (
+			PLLRST_ENA       => "DISABLED",
+			INTFB_WAKE       => "DISABLED", 
+			STDBY_ENABLE     => "DISABLED",
+			DPHASE_SOURCE    => "DISABLED", 
+			PLL_LOCK_MODE    =>  0, 
+			FEEDBK_PATH      => "CLKOP",
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 15,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 4, CLKOS3_CPHASE => 0,
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
+			OUTDIVIDER_MUXD  => "DIVD",
+			OUTDIVIDER_MUXC  => "DIVC",
+			OUTDIVIDER_MUXB  => "DIVB",
+			OUTDIVIDER_MUXA  => "DIVA",
+
+			CLKI_DIV         => sdram_tab(sdram_mode).clki_div,
+			CLKFB_DIV        => sdram_tab(sdram_mode).clkfb_div,
+			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
+			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
+			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
+			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div) 
+        port map (
+			rst       => '0', 
+			clki      => clk_25mhz,
+			CLKFB     => clkfb, 
+            PHASESEL0 => '0', PHASESEL1 => '0', 
+			PHASEDIR  => '0', 
+            PHASESTEP => '0', PHASELOADREG => '0', 
+            STDBY     => '0', PLLWAKESYNC  => '0',
+            ENCLKOP   => '0', 
+			ENCLKOS   => '0',
+			ENCLKOS2  => '0', 
+            ENCLKOS3  => '0', 
+			CLKOP     => clkfb,
+			CLKOS     => clkos,
+			CLKOS2    => ctlr_clk,
+			CLKOS3    => dqs, 
 			LOCK      => lock, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
 			CLKINTFB  => open);
 
 		ddrsys_rst <= not lock;
+
+		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
 
 	end block;
 
@@ -381,7 +466,7 @@ begin
 	graphics_di <= ctlr_do;
 	graphics_e : entity hdl4fpga.graphics
 	generic map (
-		video_mode => pll_modes(pll_mode).video_mode)
+		video_mode => video_tab(video_mode).video_mode)
 	port map (
 		dma_req      => dmacfgvideo_req,
 		dma_rdy      => dmavideo_rdy,
@@ -468,7 +553,7 @@ begin
 		byte_size    => byte_size)
 	port map (
 		ctlr_bl      => "000",
-		ctlr_cl      => pll_modes(pll_mode).cas,
+		ctlr_cl      => sdram_tab(sdram_mode).cas,
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
@@ -495,48 +580,39 @@ begin
 		ctlr_refreq  => ctlr_refreq,
 		ctlr_dio_req => ctlr_dio_req,
 
-		phy_rst      => ddrphy_rst,
-		phy_cke      => ddrphy_cke,
-		phy_cs       => ddrphy_cs,
-		phy_ras      => ddrphy_ras,
-		phy_cas      => ddrphy_cas,
-		phy_we       => ddrphy_we,
-		phy_b        => ddrphy_b,
-		phy_a        => ddrphy_a,
-		phy_dmi      => ddrphy_dmi,
-		phy_dmt      => ddrphy_dmt,
-		phy_dmo      => ddrphy_dmo,
+		phy_rst      => ctlrphy_rst,
+		phy_cke      => ctlrphy_cke,
+		phy_cs       => ctlrphy_cs,
+		phy_ras      => ctlrphy_ras,
+		phy_cas      => ctlrphy_cas,
+		phy_we       => ctlrphy_we,
+		phy_b        => ctlrphy_b,
+		phy_a        => ctlrphy_a,
+		phy_dmi      => ctlrphy_dmi,
+		phy_dmt      => ctlrphy_dmt,
+		phy_dmo      => ctlrphy_dmo,
                                
-		phy_dqi      => ddrphy_dqi,
-		phy_dqt      => ddrphy_dqt,
-		phy_dqo      => ddrphy_dqo,
-		phy_sti      => ddrphy_sti,
-		phy_sto      => ddrphy_sto,
+		phy_dqi      => ctlrphy_dqi,
+		phy_dqt      => ctlrphy_dqt,
+		phy_dqo      => ctlrphy_dqo,
+		phy_sti      => ctlrphy_sti,
+		phy_sto      => ctlrphy_sto,
                                 
-		phy_dqsi     => ddrphy_dqsi,
-		phy_dqso     => ddrphy_dqso,
-		phy_dqst     => ddrphy_dqst);
+		phy_dqsi     => ctlrphy_dsi,
+		phy_dqso     => open,
+		phy_dqst     => ctlrphy_dst);
 
-	process (ctlr_clk)
-		variable xx : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			if ctlr_inirdy='0' then
-				xx := '0';
-			elsif xx='0' then
-				xx := pp;
-			end if;
-			led(0)  <= xx;
-		end if;
-	end process;
-
-		pp <= ctlr_di_dv and ctlr_do_dv(0);
-		assert pp/='1' 
-		severity FAILURE;
-
+	sdram_sti : entity hdl4fpga.align
+	generic map (
+		n => sdrphy_sti'length,
+		d => (0 to sdrphy_sti'length-1 => setif(sdram_mode=sdram200MHz, 1, 0)))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+	
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
-		f200Mhz     => pll_mode=mode600p200MHz,
 		loopback    => false,
 		rgtr_dout   => false,
 		bank_size   => sdram_ba'length,
@@ -544,27 +620,27 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clk     => ddrsys_clks(0),
+		sys_clk     => ctlr_clk,
 		sys_rst     => ddrsys_rst,
 
-		phy_cs      => ddrphy_cs,
-		phy_cke     => ddrphy_cke,
-		phy_ras     => ddrphy_ras,
-		phy_cas     => ddrphy_cas,
-		phy_we      => ddrphy_we,
-		phy_b       => ddrphy_b,
-		phy_a       => ddrphy_a,
-		phy_dqsi    => ddrphy_dqso,
-		phy_dqst    => ddrphy_dqst,
-		phy_dqso    => ddrphy_dqsi,
-		phy_dmi     => ddrphy_dmo,
-		phy_dmt     => ddrphy_dmt,
-		phy_dmo     => ddrphy_dmi,
-		phy_dqi     => ddrphy_dqo,
-		phy_dqt     => ddrphy_dqt,
-		phy_dqo     => ddrphy_dqi,
-		phy_sti     => ddrphy_sto,
-		phy_sto     => ddrphy_sti,
+		phy_cs      => ctlrphy_cs,
+		phy_cke     => ctlrphy_cke,
+		phy_ras     => ctlrphy_ras,
+		phy_cas     => ctlrphy_cas,
+		phy_we      => ctlrphy_we,
+		phy_b       => ctlrphy_b,
+		phy_a       => ctlrphy_a,
+		phy_dsi     => ctlrphy_dso,
+		phy_dst     => ctlrphy_dst,
+		phy_dso     => ctlrphy_dsi,
+		phy_dmi     => ctlrphy_dmo,
+		phy_dmt     => ctlrphy_dmt,
+		phy_dmo     => ctlrphy_dmi,
+		phy_dqi     => ctlrphy_dqo,
+		phy_dqt     => ctlrphy_dqt,
+		phy_dqo     => ctlrphy_dqi,
+		phy_sti     => sdrphy_sti,
+		phy_sto     => ctlrphy_sti,
 
 		sdr_clk     => sdram_clk,
 		sdr_cke     => sdram_cke,

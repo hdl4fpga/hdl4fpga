@@ -65,34 +65,6 @@ begin
 		d1 => '1',
 		q  => sdr_clk);
 
---	clk_b : block 
---		signal dqstclk : std_logic;
---		attribute oddrapps : string;
---		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
---	begin
---
---		oddrtdqsa_i : oddrtdqsa
---		port map (
---			sclk    => sys_clk,
---			db      => '0',
---			ta      => '0',
---			dqstclk => dqstclk,
---			dqsw    => dqsw,
---			q       => ddr_dqst);
---
---		oddrx2dqsa_i : oddrx2dqsa
---		port map (
---			sclk    => sys_clk,
---			db0     => '1',
---			db1     => '1',
---			dqsw    => dqsw,
---			dqclk0  => dqclk0,
---			dqclk1  => dqclk1,
---			dqstclk => dqstclk,
---			q       => sdr_clk);
---
---	end block;
-
 	b_g : for i in 0 to bank_size-1 generate
 	begin
 		ffd_i : fd1s3ax
