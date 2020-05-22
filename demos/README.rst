@@ -22,11 +22,22 @@ On UN*X
 
 Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to change your image to that format. Imagemagick_ will be called by demo.sh_ script and will do it for you.
 
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F.bit
+133 MHz bit
+~~~~~~~~~~~
+
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F133MHz.bit
 
 Open a console on demos directory and run
 
-**IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F.bit" TTY="your_serial_device" ./demos.sh**
+**IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F133MHz.bit" TTY="your_serial_device" ./demos.sh**
+
+200 MHz bit
+~~~~~~~~~~~
+
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz.bit to try 200 MHz
+
+**IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz.bit" TTY="your_serial_device" ./demos.sh**
+
 
 All the **bold text** on the same line
 
