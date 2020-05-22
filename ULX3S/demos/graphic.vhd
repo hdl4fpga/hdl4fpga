@@ -192,17 +192,16 @@ architecture graphics of ulx3s is
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
-	signal ctlr_dqs    : std_logic;
 
-	alias uart_rxc     : std_logic is clk_25mhz;
-	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
-	constant baudrate  : natural := 115200;
-	constant video_mode : natural := mode600p;
+--	alias uart_rxc     : std_logic is clk_25mhz;
+--	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	constant baudrate  : natural := 115200;
+--	constant video_mode : natural := mode600p;
 
---	alias uart_rxc     : std_logic is ctlr_clk;
---	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
---	constant baudrate  : natural := 115200_00;
---	constant video_mode : natural := modedebug;
+	alias uart_rxc     : std_logic is ctlr_clk;
+	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+	constant baudrate  : natural := 115200_00;
+	constant video_mode : natural := modedebug;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -210,7 +209,6 @@ architecture graphics of ulx3s is
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
-	signal pp : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -282,6 +280,7 @@ begin
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
+		signal dqs   : std_logic;
 
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
@@ -316,12 +315,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div, 
-			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
-			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
-			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
+			CLKI_DIV         => sdram_tab(sdram_mode).clki_div,
 			CLKFB_DIV        => sdram_tab(sdram_mode).clkfb_div,
-			CLKI_DIV         => sdram_tab(sdram_mode).clki_div)
+			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
+			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
+			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
+			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div) 
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -337,7 +336,7 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => clkos,
 			CLKOS2    => ctlr_clk,
-			CLKOS3    => ctlr_dqs, 
+			CLKOS3    => dqs, 
 			LOCK      => lock, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
@@ -345,7 +344,7 @@ begin
 
 		ddrsys_rst <= not lock;
 
-		ctlrphy_dso <= (others => not ctlr_dqs) when sdram_mode=sdram200MHz else (others => ctlr_clk);
+		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
 
 	end block;
 
@@ -603,29 +602,12 @@ begin
 		phy_dqso     => open,
 		phy_dqst     => ctlrphy_dst);
 
-	process (ctlr_clk)
-		variable xx : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			if ctlr_inirdy='0' then
-				xx := '0';
-			elsif xx='0' then
-				xx := pp;
-			end if;
-			led(0)  <= xx;
-		end if;
-	end process;
-
-		pp <= ctlr_di_dv and ctlr_do_dv(0);
-		assert pp/='1' 
-		severity FAILURE;
-
 	sdram_sti : entity hdl4fpga.align
 	generic map (
 		n => sdrphy_sti'length,
 		d => (0 to sdrphy_sti'length-1 => setif(sdram_mode=sdram200MHz, 1, 0)))
 	port map (
-		clk => sys_clk,
+		clk => ctlr_clk,
 		di  => ctlrphy_sto,
 		do  => sdrphy_sti);
 	
@@ -638,7 +620,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clk     => ddrsys_clks(0),
+		sys_clk     => ctlr_clk,
 		sys_rst     => ddrsys_rst,
 
 		phy_cs      => ctlrphy_cs,

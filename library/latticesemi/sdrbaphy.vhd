@@ -55,8 +55,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 architecture ecp of sdrbaphy is
-	attribute oddrapps : string;
-	attribute oddrapps of ck_i, cs_i, cke_i, ras_i, cas_i, we_i : label is "SCLK_ALIGNED";
+	
 begin
 
 	ck_i : oddrx1f
@@ -66,90 +65,52 @@ begin
 		d1 => '1',
 		q  => sdr_clk);
 
---	clk_b : block 
---		signal dqstclk : std_logic;
---		attribute oddrapps : string;
---		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
---	begin
---
---		oddrtdqsa_i : oddrtdqsa
---		port map (
---			sclk    => sys_clk,
---			db      => '0',
---			ta      => '0',
---			dqstclk => dqstclk,
---			dqsw    => dqsw,
---			q       => ddr_dqst);
---
---		oddrx2dqsa_i : oddrx2dqsa
---		port map (
---			sclk    => sys_clk,
---			db0     => '1',
---			db1     => '1',
---			dqsw    => dqsw,
---			dqclk0  => dqclk0,
---			dqclk1  => dqclk1,
---			dqstclk => dqstclk,
---			q       => sdr_clk);
---
---	end block;
-
 	b_g : for i in 0 to bank_size-1 generate
-		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	begin
-		oddr_i : oddrx1f
+		ffd_i : fd1s3ax
 		port map (
-			sclk => sys_clk,
-			d0   => phy_b(i),
-			d1   => phy_b(i),
-			q    => sdr_b(i));
-
+			ck => sys_clk,
+			d  => phy_b(i),
+			q  => sdr_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
-		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	begin
-		oddr_i : oddrx1f
+		ffd_i : fd1s3ax
 		port map (
-			sclk => sys_clk,
-			d0   => phy_a(i),
-			d1   => phy_a(i),
-			q    => sdr_a(i));
+			ck => sys_clk,
+			d  => phy_a(i),
+			q  => sdr_a(i));
 	end generate;
 
-	ras_i : oddrx1f
+	ras_i : fd1s3ax
 	port map (
-		sclk => sys_clk,
-		d0   => phy_ras,
-		d1   => phy_ras,
-		q    => sdr_ras);
+		ck => sys_clk,
+		d  => phy_ras,
+		q  => sdr_ras);
 
-	cas_i : oddrx1f
+	cas_i : fd1s3ax
 	port map (
-		sclk => sys_clk,
-		d0   => phy_cas,
-		d1   => phy_cas,
-		q    => sdr_cas);
+		ck => sys_clk,
+		d  => phy_cas,
+		q  => sdr_cas);
 
-	we_i : oddrx1f
+	we_i : fd1s3ax
 	port map (
-		sclk => sys_clk,
-		d0   => phy_we,
-		d1   => phy_we,
-		q    => sdr_we);
+		ck => sys_clk,
+		d  => phy_we,
+		q  => sdr_we);
 
-	cs_i : oddrx1f
+	cs_i : fd1s3ax
 	port map (
-		sclk => sys_clk,
-		d0   => phy_cs,
-		d1   => phy_cs,
-		q    => sdr_cs);
+		ck => sys_clk,
+		d  => phy_cs,
+		q  => sdr_cs);
 
-	cke_i : oddrx1f
+	cke_i : fd1s3ax
 	port map (
-		sclk => sys_clk,
-		d0   => phy_cke,
-		d1   => phy_cke,
-		q    => sdr_cke);
+		ck => sys_clk,
+		d  => phy_cke,
+		q  => sdr_cke);
 
 end;
