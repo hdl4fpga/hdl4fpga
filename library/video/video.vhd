@@ -102,8 +102,8 @@ entity video_sync is
 	port (
 		video_clk     : in std_logic;
 		extern_syncon : in std_logic := '0';
-		extern_vton   : in std_logic := '-';
-		extern_hzon   : in std_logic := '-';
+		extern_vtsync : in std_logic := '-';
+		extern_hzsync : in std_logic := '-';
 		video_hzsync  : out std_logic;
 		video_vtsync  : out std_logic;
 		video_hzcntr  : out std_logic_vector;
@@ -125,10 +125,28 @@ architecture mix of video_sync is
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
+	signal extern_vton : in std_logic;
+	signal extern_hzon : in std_logic;
 begin
 
-	hz_ini  <= hz_edge and setif(hz_div="11") when extern_syncon='0' else not extern_hzon;
-	hz_next <= hz_edge;
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if extern_hzsync='1' then
+				if hz_edge='0' then
+					if blankn='0' then
+						extern_vtini <= '1';
+					end if;
+				end if;
+				blankn <= '0';
+			elsif blankn='0' then
+				blankn <= extern_blankn;
+			end if;
+		end if;
+	end process;
+
+	hz_ini  <= hz_edge and setif(hz_div="11") when extern_syncon='0' else extern_blankn;
+	hz_next <= hz_edge when extern_syncon='0' else '0';
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
 		edges =>  to_edges(modeline_data(mode)(0 to 4-1)))
@@ -140,7 +158,7 @@ begin
 		video_edge => hz_edge,
 		video_div  => hz_div);
 	video_hzsync <= setif(hz_div="10");
-	video_hzon   <= setif(hz_div="00") when extern_syncon='0' else not extern_hzon;
+	video_hzon   <= setif(hz_div="00") when extern_syncon='0' else not extern_blankn;
 	video_hzcntr <= hz_cntr;
 
 	process(video_clk)
@@ -154,7 +172,13 @@ begin
 		end if;
 	end process;
 
-	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_syncon='0' else not extern_vton;
+	process (video_clk)
+	begin 
+		if rising_edge(video_clk) then
+		end if;
+	end process;
+
+	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_syncon='0' else extern_vtini;
 
 	vt_next <= hz_ini and vt_edge;
 	vtedges_e : entity hdl4fpga.box_edges
@@ -180,9 +204,30 @@ begin
 	end process;
 
 	video_vtsync <= setif(vt_div="10");
-	video_vton   <= setif(vt_div="00") when extern_syncon='0' else extern_vton;
+	video_vton   <= setif(vt_div="00");
 	video_vtcntr <= vt_cntr;
 
+end;
+
+entity video_externsync is
+	port (
+		video_clk     : in std_logic;
+		video_hzon    : out std_logic;
+		video_vton    : out std_logic);
+end;
+
+architecture beh od video_externsync is
+	signal vton : std_logic;
+begin
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if extern_vtsync='1' then
+				vton <= '1';
+			end if;
+		end if;
+	end process;
+	video_vton <= vton 
 end;
 
 library ieee;
