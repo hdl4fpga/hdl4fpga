@@ -100,13 +100,16 @@ entity video_sync is
 	generic (
 		mode : natural := 1);
 	port (
-		video_clk    : in std_logic;
-		video_hzsync : out std_logic;
-		video_vtsync : out std_logic;
-		video_hzcntr : out std_logic_vector;
-		video_vtcntr : out std_logic_vector;
-		video_hzon   : out std_logic;
-		video_vton   : out std_logic);
+		video_clk     : in std_logic;
+		extern_syncon : in std_logic := '0';
+		extern_vton   : in std_logic := '-';
+		extern_hzon   : in std_logic := '-';
+		video_hzsync  : out std_logic;
+		video_vtsync  : out std_logic;
+		video_hzcntr  : out std_logic_vector;
+		video_vtcntr  : out std_logic_vector;
+		video_hzon    : out std_logic;
+		video_vton    : out std_logic);
 end;
 
 architecture mix of video_sync is
@@ -124,7 +127,7 @@ architecture mix of video_sync is
 
 begin
 
-	hz_ini  <= hz_edge and setif(hz_div="11");
+	hz_ini  <= hz_edge and setif(hz_div="11") when extern_syncon='0' else not extern_hzon;
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
@@ -137,7 +140,7 @@ begin
 		video_edge => hz_edge,
 		video_div  => hz_div);
 	video_hzsync <= setif(hz_div="10");
-	video_hzon   <= setif(hz_div="00");
+	video_hzon   <= setif(hz_div="00") when extern_syncon='0' else not extern_hzon;
 	video_hzcntr <= hz_cntr;
 
 	process(video_clk)
@@ -151,7 +154,8 @@ begin
 		end if;
 	end process;
 
-	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11");
+	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_syncon='0' else not extern_vton;
+
 	vt_next <= hz_ini and vt_edge;
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
@@ -176,7 +180,7 @@ begin
 	end process;
 
 	video_vtsync <= setif(vt_div="10");
-	video_vton   <= setif(vt_div="00");
+	video_vton   <= setif(vt_div="00") when extern_syncon='0' else extern_vton;
 	video_vtcntr <= vt_cntr;
 
 end;

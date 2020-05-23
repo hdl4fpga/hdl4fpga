@@ -81,6 +81,9 @@ entity scopeio is
 		input_ena        : in  std_logic := '1';
 		input_data       : in  std_logic_vector;
 		video_clk        : in  std_logic;
+		video_extrsyncon : in  std_logic := '0';
+		video_extrhzon   : in  std_logic := '-';
+		video_extrvton   : in  std_logic := '-';
 		video_pixel      : out std_logic_vector;
 		video_hsync      : out std_logic;
 		video_vsync      : out std_logic;
@@ -307,6 +310,9 @@ begin
 
 		video_clk      => video_clk,
 		video_pixel    => video_pixel,
+		video_extrsyncon => video_extrsyncon,
+		video_extrhzon   => video_extrhzon,
+		video_extrvton   => video_extrvton,
 		video_hsync    => video_hsync,
 		video_vsync    => video_vsync,
 		video_vton     => video_vton,
