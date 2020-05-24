@@ -165,9 +165,9 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			if extern_vtini='0' then
-				if vt_div/="00" then
+				if extern_vtsync='1' then
 					extern_vtini <= '1';
-				elsif extern_vtsync='1' then
+				elsif vt_div/="00" then
 					extern_vtini <= '1';
 				end if;
 			elsif extern_blankn='1' then
