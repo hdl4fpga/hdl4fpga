@@ -167,6 +167,8 @@ begin
 			if extern_vtini='0' then
 				if vt_div/="00" then
 					extern_vtini <= '1';
+				elsif extern_vtsync='1' then
+					extern_vtini <= '1';
 				end if;
 			elsif extern_blankn='1' then
 				extern_vtini <= '0';
@@ -217,6 +219,8 @@ begin
 				if extern_blankn='1' then
 					sel_externblankn <= '1';
 				end if;
+			elsif extern_vtsync='1' then
+				sel_externblankn <= '1';
 			elsif extern_blankn='1' then
 				sel_externblankn <= '0';
 			end if;
