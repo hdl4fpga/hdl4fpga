@@ -126,37 +126,11 @@ architecture mix of video_sync is
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
-	signal extern_vtini : in std_logic;
-	signal extern_hzini : in std_logic;
+	signal extern_vtini : std_logic;
+	signal blankn_edge  : std_logic;
 begin
 
-	process(extern_blankn, video_clk)
-		variable blankn  : std_logic;
-		variable hz_edge : std_logic;
-		variable vtini   : std_logic;
-	begin
-		if rising_edge(video_clk) then
-			if extern_blankn='1'  then
-				vtini := '0';
-			else
-				if extern_hzsync='1' then
-					if hz_edge='0' then
-						if blankn='0' then
-							vtini := '1';
-						end if;
-					end if;
-					blankn <= '0';
-				elsif blankn='1' then
-					blankn := extern_blankn;
-				end if;
-			end if;
-			hz_edge := extern_hzsync;
-		end if;
-		extern_vtini <= vt_ini and not extern_blankn;
-	end process;
-	extern_hzini <= not extern_blankn;
-
-	hz_ini  <= hz_edge and setif(hz_div="11") when extern_video='0' else extern_hzini;
+	hz_ini  <= hz_edge and setif(hz_div="11");
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
@@ -175,7 +149,9 @@ begin
 	process(video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if hz_ini='1' then
+			if extern_video='0' and hz_ini='1' then
+				hz_cntr <= (others => '0');
+			elsif extern_video='1' and extern_blankn='0' then
 				hz_cntr <= (others => '0');
 			else
 				hz_cntr <= std_logic_vector(unsigned(hz_cntr) + 1);
@@ -183,15 +159,26 @@ begin
 		end if;
 	end process;
 
-	process (video_clk)
-	begin 
+	process(extern_blankn, video_clk)
+		variable vtini : std_logic;
+	begin
 		if rising_edge(video_clk) then
+			if vtini='0' then
+				if vt_div/="00" then
+					vtini := '1';
+				end if;
+			elsif extern_blankn='1' then
+				vtini := '0';
+			end if;
+			blankn_edge <= extern_blankn;
 		end if;
+		extern_vtini <= vtini and not extern_blankn;
 	end process;
 
 	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_video='0' else extern_vtini;
 
-	vt_next <= hz_ini and vt_edge;
+	vt_next <= hz_ini and vt_edge when extern_video='0' else not extern_blankn and blankn_edge and vt_edge;
+
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
 		edges =>  to_edges(modeline_data(mode)(4 to 8-1)))
@@ -206,10 +193,18 @@ begin
 	process(video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if vt_ini='1' then
-				vt_cntr <= (others => '0');
-			elsif hz_ini='1' then
-				vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+			if extern_video='0' then
+				if vt_ini='1' then
+					vt_cntr <= (others => '0');
+				elsif hz_ini='1' then
+					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+				end if;
+			else
+				if extern_vtini='1' then
+					vt_cntr <= (others => '0');
+				elsif extern_blankn='0' and blankn_edge='1' then
+					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+				end if;
 			end if;
 		end if;
 	end process;

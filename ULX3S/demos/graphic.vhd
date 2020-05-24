@@ -29,6 +29,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.videopkg.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -193,15 +194,15 @@ architecture graphics of ulx3s is
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	alias uart_rxc     : std_logic is clk_25mhz;
-	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
-	constant baudrate  : natural := 115200;
-	constant video_mode : natural := mode600p;
+--	alias uart_rxc     : std_logic is clk_25mhz;
+--	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	constant baudrate  : natural := 115200;
+--	constant video_mode : natural := mode600p;
 
---	alias uart_rxc     : std_logic is ctlr_clk;
---	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
---	constant baudrate  : natural := 115200_00;
---	constant video_mode : natural := modedebug;
+	alias uart_rxc     : std_logic is ctlr_clk;
+	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
+	constant baudrate  : natural := 115200_00;
+	constant video_mode : natural := modedebug;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -481,6 +482,29 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
+
+	du_b : block
+		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
+		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
+		signal blankn : std_logic;
+		signal hzon   : std_logic;
+		signal vton   : std_logic;
+	begin
+		blankn <= video_hzon and video_vton;
+		externalvideo_e : entity hdl4fpga.video_sync
+		generic map (
+			mode => video_mode)
+		port map (
+			video_clk     => video_clk,
+			extern_video  => '1',
+			extern_hzsync => video_hzsync,
+			extern_vtsync => video_vtsync,
+			extern_blankn => blankn,
+			video_hzcntr  => hzcntr,
+			video_vtcntr  => vtcntr,
+			video_hzon    => hzon,
+			video_vton    => vton);
+	end block;
 
 	process(ctlr_clk)
 	begin

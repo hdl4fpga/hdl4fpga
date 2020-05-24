@@ -252,9 +252,9 @@ begin
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,
-		extern_videohzsync => extern_videohzsync,
-		extern_videovtsync => extern_videovtsync,
-		extern_videoblankn => extern_videoblankn,
+		extern_hzsync => extern_videohzsync,
+		extern_vtsync => extern_videovtsync,
+		extern_blankn => extern_videoblankn,
 		video_hzsync  => video_hzsync,
 		video_vtsync  => video_vtsync,
 		video_hzcntr  => video_hzcntr,

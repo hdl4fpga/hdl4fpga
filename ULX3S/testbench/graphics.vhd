@@ -237,18 +237,18 @@ begin
 		sdram_dqm  => sdram_dqm,
 		sdram_d    => sdram_dq);
 
-	sdr_model_g: mt48lc32m16a2
-	port map (
-		clk   => sdram_clk,
-		cke   => sdram_cke,
-		cs_n  => sdram_cs_n,
-		ras_n => sdram_ras_n,
-		cas_n => sdram_cas_n,
-		we_n  => sdram_we_n,
-		ba    => sdram_ba,
-		addr  => sdram_addr,
-		dqm   => sdram_dqm,
-		dq    => sdram_dq);
+--	sdr_model_g: mt48lc32m16a2
+--	port map (
+--		clk   => sdram_clk,
+--		cke   => sdram_cke,
+--		cs_n  => sdram_cs_n,
+--		ras_n => sdram_ras_n,
+--		cas_n => sdram_cas_n,
+--		we_n  => sdram_we_n,
+--		ba    => sdram_ba,
+--		addr  => sdram_addr,
+--		dqm   => sdram_dqm,
+--		dq    => sdram_dq);
 end;
 
 library micron;
