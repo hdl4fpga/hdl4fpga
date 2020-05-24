@@ -127,7 +127,9 @@ architecture mix of video_sync is
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
 	signal extern_vtini : std_logic;
+	signal sel_externblankn : std_logic;
 	signal blankn_edge  : std_logic;
+	signal edge : std_logic;
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
@@ -142,7 +144,7 @@ begin
 		video_pos  => hz_cntr,
 		video_edge => hz_edge,
 		video_div  => hz_div);
-	video_hzsync <= setif(hz_div="10");
+	video_hzsync <= setif(hz_div="10") when extern_video='0' else extern_hzsync;
 	video_hzon   <= setif(hz_div="00");
 	video_hzcntr <= hz_cntr;
 
@@ -159,22 +161,21 @@ begin
 		end if;
 	end process;
 
-	process(extern_blankn, video_clk)
-		variable vtini : std_logic;
+	process(video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if vtini='0' then
+			if extern_vtini='0' then
 				if vt_div/="00" then
-					vtini := '1';
+					extern_vtini <= '1';
 				end if;
 			elsif extern_blankn='1' then
-				vtini := '0';
+				extern_vtini <= '0';
 			end if;
 			blankn_edge <= extern_blankn;
 		end if;
-		extern_vtini <= vtini and not extern_blankn;
 	end process;
 
+	edge <= not extern_blankn and blankn_edge;
 	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_video='0' else extern_vtini;
 
 	vt_next <= hz_ini and vt_edge when extern_video='0' else not extern_blankn and blankn_edge and vt_edge;
@@ -209,8 +210,25 @@ begin
 		end if;
 	end process;
 
-	video_vtsync <= setif(vt_div="10");
-	video_vton   <= setif(vt_div="00");
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if vt_edge='1' then
+				if extern_blankn='1' then
+					sel_externblankn <= '1';
+				end if;
+			elsif extern_blankn='1' then
+				sel_externblankn <= '0';
+			end if;
+			blankn_edge <= extern_blankn;
+		end if;
+	end process;
+
+	video_vtsync <= setif(vt_div="10") when extern_video='0' else extern_vtsync;
+	video_vton   <= 
+		setif(vt_div="00") when extern_video='0' else
+		setif(vt_div="00") when sel_externblankn='0' else
+		extern_blankn;
 	video_vtcntr <= vt_cntr;
 
 end;

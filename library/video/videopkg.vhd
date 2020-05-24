@@ -72,7 +72,7 @@ package videopkg is
 		pclk173_00m1920x1080Rat60 => (1920, 2048, 2248, 2576, 1080, 1083, 1088, 1120),
 		pclk75_00m1920x1080Rat30  => (1920, 2008, 2052, 2185, 1080, 1084, 1089, 1135), -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit
 		pclk75_00m1280x768Rat60   => (1280, 1344, 1536, 1728,  768,  771,  776,  796), -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit;
-		pclk_debug                => (10,   16,  19,  21,   22,   26,   27,   30)  -- pclk
+		pclk_debug                => (10,   16,  19,      21,   22,   26,   27,   30)  -- pclk
 	);
 
 	function to_edges (

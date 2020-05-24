@@ -493,7 +493,7 @@ begin
 		blankn <= video_hzon and video_vton;
 		externalvideo_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => video_mode)
+			mode => video_tab(video_mode).video_mode)
 		port map (
 			video_clk     => video_clk,
 			extern_video  => '1',
