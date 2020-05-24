@@ -69,6 +69,10 @@ entity scopeio_video is
 
 		video_clk        : in  std_logic;
 		video_pixel      : out std_logic_vector;
+		extern_video     : in  std_logic := '0';
+		extern_videohzsync : in std_logic := '-';
+		extern_videovtsync : in std_logic := '-';
+		extern_videoblankn : in std_logic := '-';
 		video_hsync      : out std_logic;
 		video_vsync      : out std_logic;
 
@@ -246,13 +250,17 @@ begin
 	generic map (
 		mode => video_description(vlayout_id).mode_id)
 	port map (
-		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
-		video_hzcntr => video_hzcntr,
-		video_vtcntr => video_vtcntr,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton);
+		video_clk     => video_clk,
+		extern_video  => extern_video,
+		extern_hzsync => extern_videohzsync,
+		extern_vtsync => extern_videovtsync,
+		extern_blankn => extern_videoblankn,
+		video_hzsync  => video_hzsync,
+		video_vtsync  => video_vtsync,
+		video_hzcntr  => video_hzcntr,
+		video_vtcntr  => video_vtcntr,
+		video_hzon    => video_hzon,
+		video_vton    => video_vton);
 
 	video_vld <= video_hzon and video_vton;
 

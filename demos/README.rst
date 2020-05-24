@@ -34,7 +34,7 @@ Open a console on demos directory and run
 200 MHz bit
 ~~~~~~~~~~~
 
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz.bit to try 200 MHz
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz.bit
 
 **IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz.bit" TTY="your_serial_device" ./demos.sh**
 

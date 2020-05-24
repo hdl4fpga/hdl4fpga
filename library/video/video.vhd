@@ -100,13 +100,17 @@ entity video_sync is
 	generic (
 		mode : natural := 1);
 	port (
-		video_clk    : in std_logic;
-		video_hzsync : out std_logic;
-		video_vtsync : out std_logic;
-		video_hzcntr : out std_logic_vector;
-		video_vtcntr : out std_logic_vector;
-		video_hzon   : out std_logic;
-		video_vton   : out std_logic);
+		video_clk     : in std_logic;
+		extern_video  : in  std_logic := '0';
+		extern_hzsync : in std_logic := '-';
+		extern_vtsync : in std_logic := '-';
+		extern_blankn : in std_logic := '-';
+		video_hzsync  : out std_logic;
+		video_vtsync  : out std_logic;
+		video_hzcntr  : out std_logic_vector;
+		video_vtcntr  : out std_logic_vector;
+		video_hzon    : out std_logic;
+		video_vton    : out std_logic);
 end;
 
 architecture mix of video_sync is
@@ -122,6 +126,10 @@ architecture mix of video_sync is
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
+	signal extern_vtini : std_logic;
+	signal sel_externblankn : std_logic;
+	signal blankn_edge  : std_logic;
+	signal edge : std_logic;
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
@@ -136,14 +144,16 @@ begin
 		video_pos  => hz_cntr,
 		video_edge => hz_edge,
 		video_div  => hz_div);
-	video_hzsync <= setif(hz_div="10");
+	video_hzsync <= setif(hz_div="10") when extern_video='0' else extern_hzsync;
 	video_hzon   <= setif(hz_div="00");
 	video_hzcntr <= hz_cntr;
 
 	process(video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if hz_ini='1' then
+			if extern_video='0' and hz_ini='1' then
+				hz_cntr <= (others => '0');
+			elsif extern_video='1' and extern_blankn='0' then
 				hz_cntr <= (others => '0');
 			else
 				hz_cntr <= std_logic_vector(unsigned(hz_cntr) + 1);
@@ -151,8 +161,25 @@ begin
 		end if;
 	end process;
 
-	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11");
-	vt_next <= hz_ini and vt_edge;
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if extern_vtini='0' then
+				if vt_div/="00" then
+					extern_vtini <= '1';
+				end if;
+			elsif extern_blankn='1' then
+				extern_vtini <= '0';
+			end if;
+			blankn_edge <= extern_blankn;
+		end if;
+	end process;
+
+	edge <= not extern_blankn and blankn_edge;
+	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_video='0' else extern_vtini;
+
+	vt_next <= hz_ini and vt_edge when extern_video='0' else not extern_blankn and blankn_edge and vt_edge;
+
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
 		edges =>  to_edges(modeline_data(mode)(4 to 8-1)))
@@ -167,16 +194,41 @@ begin
 	process(video_clk)
 	begin
 		if rising_edge(video_clk) then
-			if vt_ini='1' then
-				vt_cntr <= (others => '0');
-			elsif hz_ini='1' then
-				vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+			if extern_video='0' then
+				if vt_ini='1' then
+					vt_cntr <= (others => '0');
+				elsif hz_ini='1' then
+					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+				end if;
+			else
+				if extern_vtini='1' then
+					vt_cntr <= (others => '0');
+				elsif extern_blankn='0' and blankn_edge='1' then
+					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+				end if;
 			end if;
 		end if;
 	end process;
 
-	video_vtsync <= setif(vt_div="10");
-	video_vton   <= setif(vt_div="00");
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if vt_edge='1' then
+				if extern_blankn='1' then
+					sel_externblankn <= '1';
+				end if;
+			elsif extern_blankn='1' then
+				sel_externblankn <= '0';
+			end if;
+			blankn_edge <= extern_blankn;
+		end if;
+	end process;
+
+	video_vtsync <= setif(vt_div="10") when extern_video='0' else extern_vtsync;
+	video_vton   <= 
+		setif(vt_div="00") when extern_video='0' else
+		setif(vt_div="00") when sel_externblankn='0' else
+		extern_blankn;
 	video_vtcntr <= vt_cntr;
 
 end;
