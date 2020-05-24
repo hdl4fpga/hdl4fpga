@@ -126,10 +126,7 @@ architecture mix of video_sync is
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
-	signal extern_vtini : std_logic;
-	signal sel_externblankn : std_logic;
-	signal blankn_edge  : std_logic;
-	signal edge : std_logic;
+	signal extern_vton : std_logic;
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
@@ -161,26 +158,9 @@ begin
 		end if;
 	end process;
 
-	process(video_clk)
-	begin
-		if rising_edge(video_clk) then
-			if extern_vtini='0' then
-				if extern_vtsync='1' then
-					extern_vtini <= '1';
-				elsif vt_div/="00" then
-					extern_vtini <= '1';
-				end if;
-			elsif extern_blankn='1' then
-				extern_vtini <= '0';
-			end if;
-			blankn_edge <= extern_blankn;
-		end if;
-	end process;
+	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_video='0' else '1';
 
-	edge <= not extern_blankn and blankn_edge;
-	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11") when extern_video='0' else extern_vtini;
-
-	vt_next <= hz_ini and vt_edge when extern_video='0' else not extern_blankn and blankn_edge and vt_edge;
+	vt_next <= hz_ini and vt_edge when extern_video='0' else '0';
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
@@ -194,6 +174,7 @@ begin
 		video_div  => vt_div);
 
 	process(video_clk)
+		variable blankn_edge  : std_logic;
 	begin
 		if rising_edge(video_clk) then
 			if extern_video='0' then
@@ -203,36 +184,35 @@ begin
 					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
 				end if;
 			else
-				if extern_vtini='1' then
+				if extern_vtsync='1' then
 					vt_cntr <= (others => '0');
 				elsif extern_blankn='0' and blankn_edge='1' then
 					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
 				end if;
 			end if;
+			blankn_edge := extern_blankn;
 		end if;
 	end process;
 
-	process(video_clk)
+	process(extern_blankn, video_clk)
+		variable sel_blankn : std_logic;
 	begin
 		if rising_edge(video_clk) then
 			if vt_edge='1' then
 				if extern_blankn='1' then
-					sel_externblankn <= '1';
+					sel_blankn := '1';
 				end if;
 			elsif extern_vtsync='1' then
-				sel_externblankn <= '1';
+				sel_blankn := '1';
 			elsif extern_blankn='1' then
-				sel_externblankn <= '0';
+				sel_blankn := '0';
 			end if;
-			blankn_edge <= extern_blankn;
 		end if;
+		extern_vton <= setif(sel_blankn='0', '1', extern_blankn);
 	end process;
 
 	video_vtsync <= setif(vt_div="10") when extern_video='0' else extern_vtsync;
-	video_vton   <= 
-		setif(vt_div="00") when extern_video='0' else
-		setif(vt_div="00") when sel_externblankn='0' else
-		extern_blankn;
+	video_vton   <= setif(vt_div="00") when extern_video='0' else extern_vton;
 	video_vtcntr <= vt_cntr;
 
 end;
