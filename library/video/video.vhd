@@ -145,7 +145,7 @@ begin
 		video_edge => hz_edge,
 		video_div  => hz_div);
 	video_hzsync <= setif(hz_div="10") when extern_video='0' else extern_hzsync;
-	video_hzon   <= setif(hz_div="00");
+	video_hzon   <= setif(hz_div="00") when extern_video='0' else extern_blankn;
 	video_hzcntr <= hz_cntr;
 
 	process(video_clk)

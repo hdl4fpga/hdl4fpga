@@ -37,6 +37,10 @@ entity graphics is
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
 		video_clk    : in  std_logic;
+		extern_video  : in  std_logic := '0';
+		extern_hzsync : in std_logic := '-';
+		extern_vtsync : in std_logic := '-';
+		extern_blankn : in std_logic := '-';
 		dma_req      : buffer std_logic := '0';
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
@@ -88,6 +92,10 @@ begin
 		mode => video_mode)
 	port map (
 		video_clk    => video_clk,
+		extern_video  => extern_video,
+		extern_hzsync => extern_hzsync,
+		extern_vtsync => extern_vtsync,
+		extern_blankn => extern_blankn,
 		video_hzsync => v_hzsync,
 		video_vtsync => v_vtsync,
 		video_hzcntr => video_hzcntr,
