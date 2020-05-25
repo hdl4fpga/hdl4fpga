@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
 //				pixel = 0x07e0;
 //				break;
 //			};
-//
+
 			rgb565[2*i+0] = ((pixel >> 8) & 0xff);
 			rgb565[2*i+1] = ((pixel >> 0) & 0xff);
 			addr ++;

@@ -87,7 +87,6 @@ architecture graphics of ulx3s is
 	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(word_size-1 downto 0);
-	signal graphics_di    : std_logic_vector(word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
@@ -126,8 +125,8 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
-    signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
+    signal video_hzon     : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
@@ -159,13 +158,13 @@ architecture graphics of ulx3s is
 		clkfb_div  : natural;
 		clki_div   : natural;
 		clkos3_div : natural;
-		video_mode : natural;
+		mode : natural;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, video_mode => 16),
-		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, video_mode => 1));
+		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => 16),
+		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => 1));
 
 
 	type sdram_params is record
@@ -197,6 +196,7 @@ architecture graphics of ulx3s is
 	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 	constant baudrate  : natural := 115200;
+--	constant baudrate  : natural := 1_000_000;
 	constant video_mode : natural := mode600p;
 
 --	alias uart_rxc     : std_logic is ctlr_clk;
@@ -298,7 +298,7 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
 --		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
 
 		signal clkos : std_logic;
@@ -449,8 +449,10 @@ begin
 			dst_irdy => dst_irdy,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
+
 		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
-		ctlr_dm <= (others => '0'); --not ctlr_di_dv);
+		ctlr_dm <= (others => '0');
+
 		dmacfgio_p : process (si_clk)
 			variable io_rdy : std_logic;
 		begin
@@ -470,46 +472,83 @@ begin
 
 	end block;
 
-	graphics_di <= ctlr_do;
-	graphics_e : entity hdl4fpga.graphics
-	generic map (
-		video_mode => video_tab(video_mode).video_mode)
-	port map (
-		dma_req      => dmacfgvideo_req,
-		dma_rdy      => dmavideo_rdy,
-		dma_len      => dmavideo_len,
-		dma_addr     => dmavideo_addr,
-		ctlr_clk     => ctlr_clk,
-		ctlr_di_dv   => ctlr_do_dv(0),
-		ctlr_di      => ctlr_do,
-		video_clk    => video_clk,
-		extern_video  => '0',
-		extern_hzsync => hzsync,
-		extern_vtsync => vtsync,
-		extern_blankn => blankn,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton,
-		video_pixel  => video_pixel);
+	adapter_b : block
+		constant mode : natural := video_tab(video_mode).mode;
+		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
+		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
+		signal hzsync : std_logic;
+		signal vtsync : std_logic;
+		signal hzon   : std_logic;
+		signal vton   : std_logic;
 
---	du_b : block
---		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
---		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
---	begin
---		blankn <= hzon and vton;
---		externalvideo_e : entity hdl4fpga.video_sync
---		generic map (
---			mode => video_tab(video_mode).video_mode)
---		port map (
---			video_clk     => video_clk,
---			video_hzcntr  => hzcntr,
---			video_vtcntr  => vtcntr,
---			video_hzsync  => hzsync,
---			video_vtsync  => vtsync,
---			video_hzon    => hzon,
---			video_vton    => vton);
---	end block;
+		signal graphic_di : std_logic_vector(ctlr_do'range);
+		signal graphic_dv : std_logic;
+		signal pixel  : std_logic_vector(video_pixel'range);
+	begin
+		sync_e : entity hdl4fpga.video_sync
+		generic map (
+			mode => mode)
+		port map (
+			video_clk     => video_clk,
+			video_hzcntr  => hzcntr,
+			video_vtcntr  => vtcntr,
+			video_hzsync  => hzsync,
+			video_vtsync  => vtsync,
+			video_hzon    => hzon,
+			video_vton    => vton);
+
+		tographic_e : entity hdl4fpga.align
+		generic map (
+			n => ctlr_do'length+1,
+			d => (0 to ctlr_do'length => 4))
+		port map (
+			clk => ctlr_clk,
+			di(0 to ctlr_do'length-1) => ctlr_do,
+			di(ctlr_do'length) => ctlr_do_dv(0),
+			do(0 to ctlr_do'length-1) => graphic_di,
+			do(ctlr_do'length) => graphic_dv);
+
+		graphic_e : entity hdl4fpga.graphic
+		generic map (
+			video_width => modeline_data(video_tab(video_mode).mode)(0))
+		port map (
+			dma_req      => dmacfgvideo_req,
+			dma_rdy      => dmavideo_rdy,
+			dma_len      => dmavideo_len,
+			dma_addr     => dmavideo_addr,
+			ctlr_clk     => ctlr_clk,
+			ctlr_di_dv   => graphic_dv,
+			ctlr_di      => graphic_di,
+			video_clk    => video_clk,
+			video_hzon   => hzon,
+			video_vton   => vton,
+			video_pixel  => pixel);
+
+		topixel_e : entity hdl4fpga.align
+		generic map (
+			n => pixel'length,
+			d => (0 to pixel'length-1 => 4))
+		port map (
+			clk => video_clk,
+			di  => pixel,
+			do  => video_pixel);
+
+		tosync_e : entity hdl4fpga.align
+		generic map (
+			n => 4,
+			d => (0 to 4-1 => 4))
+		port map (
+			clk => video_clk,
+			di(0) => hzon,
+			di(1) => vton,
+			di(2) => hzsync,
+			di(3) => vtsync,
+			do(0) => video_hzon,
+			do(1) => video_vton,
+			do(2) => video_hzsync,
+			do(3) => video_vtsync);
+
+	end block;
 
 	process(ctlr_clk)
 	begin
