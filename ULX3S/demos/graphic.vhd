@@ -204,11 +204,11 @@ architecture graphics of ulx3s is
 --	constant baudrate  : natural := 115200_00;
 --	constant video_mode : natural := modedebug;
 
-		signal blankn : std_logic;
-		signal hzsync : std_logic;
-		signal vtsync : std_logic;
-		signal hzon   : std_logic;
-		signal vton   : std_logic;
+--		signal blankn : std_logic;
+--		signal hzsync : std_logic;
+--		signal vtsync : std_logic;
+--		signal hzon   : std_logic;
+--		signal vton   : std_logic;
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
@@ -483,7 +483,7 @@ begin
 		ctlr_di_dv   => ctlr_do_dv(0),
 		ctlr_di      => ctlr_do,
 		video_clk    => video_clk,
-		extern_video  => '1',
+		extern_video  => '0',
 		extern_hzsync => hzsync,
 		extern_vtsync => vtsync,
 		extern_blankn => blankn,
@@ -493,23 +493,23 @@ begin
 		video_vton   => video_vton,
 		video_pixel  => video_pixel);
 
-	du_b : block
-		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
-		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
-	begin
-		blankn <= hzon and vton;
-		externalvideo_e : entity hdl4fpga.video_sync
-		generic map (
-			mode => video_tab(video_mode).video_mode)
-		port map (
-			video_clk     => video_clk,
-			video_hzcntr  => hzcntr,
-			video_vtcntr  => vtcntr,
-			video_hzsync  => hzsync,
-			video_vtsync  => vtsync,
-			video_hzon    => hzon,
-			video_vton    => vton);
-	end block;
+--	du_b : block
+--		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
+--		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
+--	begin
+--		blankn <= hzon and vton;
+--		externalvideo_e : entity hdl4fpga.video_sync
+--		generic map (
+--			mode => video_tab(video_mode).video_mode)
+--		port map (
+--			video_clk     => video_clk,
+--			video_hzcntr  => hzcntr,
+--			video_vtcntr  => vtcntr,
+--			video_hzsync  => hzsync,
+--			video_vtsync  => vtsync,
+--			video_hzon    => hzon,
+--			video_vton    => vton);
+--	end block;
 
 	process(ctlr_clk)
 	begin
