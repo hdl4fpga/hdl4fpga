@@ -46,7 +46,6 @@ architecture arch of align is
 begin
 	delay: for j in 0 to n-1 generate
 		signal q : std_logic_vector(0 to dly(j)) := (others => val(setif(j < i'length, j, i'length)));
---		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
 	begin
 		q(q'right) <= di(j);
 		process (clk)
