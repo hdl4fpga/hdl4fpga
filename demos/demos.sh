@@ -44,4 +44,4 @@ $XFR < ./src/blank.strm > "${TTY}"
 sleep 1
 
 echo Converting "${IMAGE}" to "${SIZE}" and sending to "${TTY}"
-convert -resize "${SIZE}" -size "${SIZE}" "${IMAGE}" rgb:- |./bin/rgb8torgb565|./bin/fmt16bits|./bin/stream|$XFR > "${TTY}"
+convert -resize "${SIZE}" -size "${SIZE}" "${IMAGE}" rgb:- |./bin/rgb8topixel rgb565|./bin/format 16|./bin/stream|$XFR > "${TTY}"

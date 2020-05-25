@@ -46,8 +46,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 3;
+	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 1; --3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -394,7 +394,7 @@ begin
 		topixel_e : entity hdl4fpga.align
 		generic map (
 			n => pixel'length,
-			d => (0 to pixel'length-1 => 4))
+			d => (0 to pixel'length-1 => 4-1))
 		port map (
 			clk => video_clk,
 			di  => pixel,

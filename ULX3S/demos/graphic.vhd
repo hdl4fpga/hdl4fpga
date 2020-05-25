@@ -435,7 +435,6 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			test => false,
 			size               => 256/(ctlr_di'length/8),
 			gray_code          => false,
 			synchronous_rddata => false,
@@ -527,7 +526,7 @@ begin
 		topixel_e : entity hdl4fpga.align
 		generic map (
 			n => pixel'length,
-			d => (0 to pixel'length-1 => 4))
+			d => (0 to pixel'length-1 => 3-1))
 		port map (
 			clk => video_clk,
 			di  => pixel,

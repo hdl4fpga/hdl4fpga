@@ -1,17 +1,17 @@
 .PHONY: bin
-all : bin/rgb8torgb565 bin/fmt16bits bin/stream
+all :bin/rgb8topixel bin/format bin/stream
 
 bin/stream : src/stream.c
 	mkdir -p bin
 	cc -O2 src/stream.c -o bin/stream
 
-bin/rgb8torgb565 : src/rgb8torgb565.c
+bin/rgb8topixel : src/rgb8topixel.c
 	mkdir -p bin
-	cc -O2 src/rgb8torgb565.c -o bin/rgb8torgb565
+	cc -O2 src/rgb8topixel.c -o bin/rgb8topixel
 
-bin/fmt16bits : src/fmt16bits.c
+bin/format : src/format.c
 	mkdir -p bin
-	cc -O2 src/fmt16bits.c -o bin/fmt16bits
+	cc -O2 src/format.c -o bin/format
 
 clean :
 	rm  -rf ./bin

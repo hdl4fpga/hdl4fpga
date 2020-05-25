@@ -114,7 +114,7 @@ begin
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		size           => fifo_size,
-		synchronous_rddata => false, 
+		synchronous_rddata => true, 
 		overflow_check => false,
 		gray_code      => false)
 	port map (

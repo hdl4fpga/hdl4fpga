@@ -40,7 +40,7 @@ int main (int argc, char *argv[])
 		exit(-1);
 #endif
 	n = 0;
-	while ((c = getopt (argc, argv, "h::")) != -1) {
+	while ((c = getopt (argc, argv, "h:")) != -1) {
 		switch (c) {
 		case 'h':
 			if (optarg)
