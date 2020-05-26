@@ -16,7 +16,7 @@ int torgb565 (char *pixels, const char *rgb8, int n)
 	unsigned i;
 
 	m = 0;
-	for (i=0; i < n/3; m +=2, i++) {
+	for (i=0; i < n/3; i++) {
 		unsigned pixel;
 
 		pixel   = 0;
@@ -61,7 +61,8 @@ int torgb32 (char *pixels, const char *rgb8, int n)
 	unsigned m;
 	unsigned i;
 
-	for (m=0, i=0; i < n/3; m +=2, i++) {
+	m = 0;
+	for (i=0; i < n/3; i++) {
 		unsigned pixel;
 
 		pixel   = 0;
@@ -72,12 +73,14 @@ int torgb32 (char *pixels, const char *rgb8, int n)
 		pixel   |= ((rgb8[3*i+2]) & 0xff);
 		pixel <<= 8;
 
-		for (unsigned j = 0; j < 3; j++) {
+		for (unsigned j = 0; j < 4; j++) {
 			pixels[4*i+3-j] = (pixel & 0xff);
+//			pixels[4*i+3-j] = 0xff;
 			pixel >>= 8;
 			m++;
 		}
 	}
+	return m;
 }
 
 int main (int argc, char *argv[])
@@ -89,7 +92,7 @@ int main (int argc, char *argv[])
 		switch (c) {
 		case 'f':
 			if (optarg) {
-				if (strcmp("rgb8", optarg) == 0) {
+				if (strcmp("rgb32", optarg) == 0) {
 					topixels = torgb32;
 				} else if (strcmp("rgb565", optarg) == 0) {
 					topixels = torgb565;

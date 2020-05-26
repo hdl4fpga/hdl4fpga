@@ -47,7 +47,7 @@ int main (int argc, char *argv[])
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
-	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), SIZE, stdin)) > 0; addr += n) {
+	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), SIZE, stdin)) > 0; addr += (n/word_size)) {
 
 		memaddr[2] = (addr >> 16) & 0xff;
 		memaddr[3] = (addr >>  8) & 0xff;

@@ -1,7 +1,7 @@
 #!/bin/sh
 XFR=`which "${XFR:-cat}"`
 TTY="${TTY:-/dev/ttyUSB0}"
-SIZE="${SIZE:-800x600}"
+WIDTH="${WIDTH:-800x600}"
 SPEED="${SPEED:-115200}"
 PROG="${PROG}"
 
@@ -43,5 +43,5 @@ echo Blanking screen
 $XFR < ./src/blank.strm > "${TTY}"
 sleep 1
 
-echo Converting "${IMAGE}" to "${SIZE}" and sending to "${TTY}"
-convert -resize "${SIZE}" -size "${SIZE}" "${IMAGE}" rgb:- |./bin/rgb8topixel rgb565|./bin/format 16|./bin/stream|$XFR > "${TTY}"
+echo Converting "${IMAGE}" to "${WIDTH}" and sending to "${TTY}"
+convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel rgb565|./bin/format 16|./bin/stream|$XFR > "${TTY}"

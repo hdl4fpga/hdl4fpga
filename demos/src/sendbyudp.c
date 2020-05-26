@@ -75,10 +75,11 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-	while (fread(&rid, sizeof(char), 1, stdin) > 0) {
+	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
 			buffer[0] = rid;
 			buffer[1] = len;
+			len++;
 
 			if (fread(buffer+2, sizeof(char), len, stdin) > 0) {
 				buffer[2+len+0] = 0xff;
@@ -90,7 +91,7 @@ int main (int argc, char *argv[])
 			} else {
 				exit(-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 100000000L } }, NULL);
+			nanosleep((const struct timespec[]){ {0, 10000000L } }, NULL);
 		} else {
 			exit(-1);
 		}
