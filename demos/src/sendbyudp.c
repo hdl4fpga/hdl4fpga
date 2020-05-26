@@ -25,21 +25,22 @@ int main (int argc, char *argv[])
 #ifdef WINDOWS
 	WSADATA wsaData;
 #endif
-	int    addr;
 	char   c;
 	char   hostname[256] = "";
 	struct hostent *host = NULL;
 	struct sockaddr_in sa_trgt;
 
 	int s;
-	int n;
 	socklen_t sl_trgt = sizeof(sa_trgt);
+
+	char unsigned len;
+	char unsigned rid;
+	char unsigned buffer[2+256];
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-	n = 0;
 	while ((c = getopt (argc, argv, "h:")) != -1) {
 		switch (c) {
 		case 'h':
@@ -74,15 +75,25 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-	n = 0;
-	addr = 0;
-	setbuf(stdin, NULL);
-	while(!feof(stdin)) {
-		fread(data, sizeof(char), sizeof(data), stdin);
-		nanosleep((const struct timespec[]){{0, 100000000L}}, NULL);
-		addr += 0x40;
+	while (fread(&rid, sizeof(char), 1, stdin) > 0) {
+		if (fread(&len, sizeof(char), 1, stdin) > 0) {
+			buffer[0] = rid;
+			buffer[1] = len;
 
-		n++;
+			if (fread(buffer+2, sizeof(char), len, stdin) > 0) {
+				buffer[2+len+0] = 0xff;
+				buffer[2+len+1] = 0xff;
+				if (sendto(s, buffer, 2+len+2, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+					perror ("sendto()");
+					exit (-11);
+				}
+			} else {
+				exit(-1);
+			}
+			nanosleep((const struct timespec[]){ {0, 100000000L } }, NULL);
+		} else {
+			exit(-1);
+		}
 	}
 
 	return 0;

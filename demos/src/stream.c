@@ -20,13 +20,13 @@ int main (int argc, char *argv[])
 	char unsigned rid;
 
 	fwrite("\000", sizeof(char), 2, stdout);
-	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
+	while (fread(&rid, sizeof(char), 1, stdin) > 0) {
 		char c;
 
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
 			stream(rid);
 			stream(len);
-			for (int j = 0; j <= len; j++) {
+			for (int i = 0; i <= len; i++) {
 				if (fread(&c, sizeof(char), 1, stdin) > 0) {
 					stream(c);
 				} else
