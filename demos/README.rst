@@ -31,6 +31,10 @@ Open a console on demos directory and run
 
 **IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F133MHz.bit" TTY="your_serial_device" ./demos.sh**
 
+Open a console on demos directory and run
+
+Remeber that all the **bold text** should be on the same line
+
 200 MHz bit
 ~~~~~~~~~~~
 
@@ -38,8 +42,9 @@ Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic
 
 **IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz.bit" TTY="your_serial_device" ./demos.sh**
 
+Open a console on demos directory and run
 
-All the **bold text** on the same line
+Remeber that all the **bold text** should be on the same line
 
 I'm curious : Where is the project file ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
