@@ -3,38 +3,71 @@
 #include <string.h>
 #include <unistd.h>
 
-#define SIZE (128)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-static unsigned char buffer[(2+SIZE)+(2+3)+(2+3)];
-static unsigned char *const memdata = buffer;;
-static unsigned char *const memaddr = memdata + (2+SIZE);
-static unsigned char *const memlen  = memaddr + 5;
-static unsigned word_size = 0;
+#define MAXSIZE (256)
+
+static unsigned char buffer[(2+MAXSIZE)+(2+3)+(2+3)];
+static unsigned char *const memdata = buffer;
+static unsigned char *memaddr;
+static unsigned char *memlen;
+static unsigned wsize = 0;
+static unsigned bsize = 0;
+
 static unsigned n = 0;
 static char c;
 
+void help ()
+{
+	fprintf (stderr, "usage :  format -b buffer_size -s word_size\n");
+}
+
 int main (int argc, char *argv[])
 {
-	while ((c = getopt (argc, argv, "s:")) != -1) {
+	while ((c = getopt (argc, argv, "b:w:")) != -1) {
 		switch (c) {
-		case 's':
+		case 'w':
 			if (optarg){
-				sscanf (optarg, "%d", &word_size);
+				sscanf (optarg, "%d", &wsize);
 			}
-			word_size /= 8;
+			wsize /= 8;
+			break;
+		case 'b':
+			if (optarg){
+				sscanf (optarg, "%d", &bsize);
+				if (bsize > 256) {
+					fprintf (stderr, "Maximun buffer_size is 256\n");
+					help();
+					exit(-1);
+				}
+			}
 			break;
 		case '?':
 		default:
-			fprintf (stderr, "usage :  format -s word_size\n");
+			help();
 			exit(-1);
 			break;
 		}
 	}
 
-	if (!word_size) {
-		fprintf (stderr, "usage :  format -s word_size\n");
+	if (!wsize) {
+		help();
 		exit(-1);
-	}
+	} else
+		fprintf (stderr, "word size is %d\n", wsize);
+
+	if (!bsize) {
+		help();
+		exit(-1);
+	} else
+		fprintf (stderr, "buffer size is %d\n", bsize);
+
+	memaddr = memdata + (2+bsize);
+	memlen  = memaddr + 5;
+
 	memdata[0] = 0x18;
 
 	memaddr[0] = 0x16;
@@ -47,16 +80,16 @@ int main (int argc, char *argv[])
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
-	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), SIZE, stdin)) > 0; addr += (n/word_size)) {
+	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), bsize, stdin)) > 0; addr += (n/wsize)) {
 
 		memaddr[2] = (addr >> 16) & 0xff;
 		memaddr[3] = (addr >>  8) & 0xff;
 		memaddr[4] = (addr >>  0) & 0xff;
 
 		memdata[1] = n-1;
-		memlen[4]  = n/word_size-1;
+		memlen[4]  = n/wsize-1;
 
-		fwrite(buffer, sizeof(char), sizeof(buffer), stdout);
+		fwrite(buffer, sizeof(char), sizeof(buffer)-MAXSIZE+n, stdout);
 
 	}
 

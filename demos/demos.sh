@@ -6,6 +6,7 @@ SPEED="${SPEED:-115200}"
 PROG="${PROG}"
 PIXEL="${PIXEL:-rgb565}"
 WSIZE="${WSIZE:-16}"
+BSIZE="${BSIZE:-128}"
 
 if [ "${IMAGE}" = "" ] ; then
 	echo Image filename empty
@@ -28,7 +29,7 @@ fi
 
 convert_image ()
 {
-	convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -s "${WSIZE}"
+	convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"
 }
 
 if [ "$HOST" == "" ] ; then
@@ -61,8 +62,8 @@ else
 	./bin/sendbyudp -h ${HOST} < ./src/blank.pkt
 	sleep 1
 
-#	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
-#	convert_image|./bin/sendbyudp -h "${HOST}"
+	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
+	convert_image|./bin/sendbyudp -h "${HOST}"
 
 fi
 

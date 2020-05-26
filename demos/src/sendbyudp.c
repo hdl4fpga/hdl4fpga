@@ -37,6 +37,7 @@ int main (int argc, char *argv[])
 	unsigned char rid;
 	unsigned char buffer[1024];
 	unsigned char *bufptr;
+	unsigned int addr;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
@@ -81,23 +82,32 @@ int main (int argc, char *argv[])
 		*bufptr++ = rid;
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
 			*bufptr++ = len;
-				fprintf(stderr,"%d\n", len);
 
 			if (fread(bufptr, sizeof(char), len+1, stdin) > 0) {
 				bufptr += (len+1);
-				if (rid == 0x17) {
+				switch (rid) {
+				case 0x17:
 					*bufptr++ = 0xff;
 					*bufptr++ = 0xff;
 					if (sendto(s, buffer, bufptr-buffer, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-						perror ("sendto()");
+						perror ("sendto() error");
 						exit (-1);
 					}
 					bufptr = buffer;
+					break;
+				case 0x16:
+					addr = 0;
+					for(int j = 0; j <= len; j++) {
+						addr <<= 8;
+						addr |=  (bufptr-len-1)[j];
+					}
+					fprintf(stderr, "Memory address : 0x%08x\n", addr);
+					break;
 				}
 			} else {
 				exit(-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 10000000L } }, NULL);
+			nanosleep((const struct timespec[]){ {0, 2000000L } }, NULL);
 		} else {
 			exit(-1);
 		}
