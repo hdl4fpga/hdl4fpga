@@ -33,9 +33,10 @@ int main (int argc, char *argv[])
 	int s;
 	socklen_t sl_trgt = sizeof(sa_trgt);
 
-	char unsigned len;
-	char unsigned rid;
-	char unsigned buffer[2+256];
+	unsigned char len;
+	unsigned char rid;
+	unsigned char buffer[1024];
+	unsigned char *bufptr;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
@@ -57,8 +58,8 @@ int main (int argc, char *argv[])
 
 	if (!strlen(hostname)) {
 		strcpy (hostname, "kit");
+		fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
 	}
-	fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
 
 	if (!(host=gethostbyname(hostname))) {
 		fprintf (stderr, "hostname '%s' not found\n", hostname);
@@ -75,18 +76,23 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
+	bufptr = buffer;
 	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
+		*bufptr++ = rid;
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
-			buffer[0] = rid;
-			buffer[1] = len;
-			len++;
+			*bufptr++ = len;
+				fprintf(stderr,"%d\n", len);
 
-			if (fread(buffer+2, sizeof(char), len, stdin) > 0) {
-				buffer[2+len+0] = 0xff;
-				buffer[2+len+1] = 0xff;
-				if (sendto(s, buffer, 2+len+2, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-					perror ("sendto()");
-					exit (-11);
+			if (fread(bufptr, sizeof(char), len+1, stdin) > 0) {
+				bufptr += (len+1);
+				if (rid == 0x17) {
+					*bufptr++ = 0xff;
+					*bufptr++ = 0xff;
+					if (sendto(s, buffer, bufptr-buffer, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+						perror ("sendto()");
+						exit (-1);
+					}
+					bufptr = buffer;
 				}
 			} else {
 				exit(-1);

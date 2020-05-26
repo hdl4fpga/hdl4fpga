@@ -17,5 +17,11 @@ bin/sendbyudp : src/sendbyudp.c
 	mkdir -p bin
 	cc -O2 src/sendbyudp.c -o bin/sendbyudp
 
+unstream : bin/unstream
+
+bin/unstream : src/unstream.c
+	mkdir -p bin
+	cc -O2 src/unstream.c -o bin/unstream
+
 clean :
 	rm  -rf ./bin
