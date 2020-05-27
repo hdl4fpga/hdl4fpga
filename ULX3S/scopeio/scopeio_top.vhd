@@ -1557,7 +1557,7 @@ begin
 		input_clk   => clk_input,
 		input_ena   => '1', --S_input_ena,
 		input_data  => samples,
-		extern_video       => '0', -- C_external_sync,
+		extern_video       => C_external_sync,
 		extern_videohzsync => not vga_hsync_ext,
 		extern_videovtsync => not vga_vsync_ext,
 		extern_videoblankn => vga_de_ext,
