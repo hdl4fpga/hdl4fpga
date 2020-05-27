@@ -29,7 +29,8 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
+        constant vlayout_id: integer := 11;
+        constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -58,7 +59,7 @@ architecture beh of ulx3s is
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
-        constant C_buttons_test: boolean := true; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
+        constant C_buttons_test: boolean := false; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := true; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -82,8 +83,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_dvi_vga:  boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -108,6 +109,13 @@ architecture beh of ulx3s is
 	signal vga_vsync  : std_logic;
 	signal vga_blank  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 6-1);
+
+        signal vga_hsync_ext, vga_vsync_ext, vga_de_ext, vga_blank_ext: std_logic;
+        signal vga_r_ext, vga_g_ext, vga_b_ext: std_logic_vector(5 downto 0);
+        signal vga_r_mix, vga_g_mix, vga_b_mix: std_logic_vector(5 downto 0);
+        signal vga_rgb_ext: std_logic_vector(vga_rgb'range);
+        signal vga_rgb_mix: std_logic_vector(vga_rgb'range);
+        constant vga_rgb_transparent: std_logic_vector(vga_rgb'range) := (others => '0');
 
 	signal vga_hsync_test : std_logic;
 	signal vga_vsync_test : std_logic;
@@ -262,43 +270,54 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
---        G_verilog_clk: if true generate
---        clk_verilog_25_175: entity work.clk_verilog
---        port map
---        (
---          clkin        =>  clk_25MHz,
---          phasesel     =>  '1' & R_btn_debounced(2), -- "10" -> clkout2
---          phasedir     =>  R_btn_debounced(5),
---          phasestep    =>  R_btn_debounced(3),
---          phaseloadreg =>  R_btn_debounced(4),
---          clkout0      =>  clk_pll(0), -- 175 MHz
---          clkout1      =>  clk_pll(1), --  25 MHz
---          clkout2      =>  clk_pll(2), --  65 MHz
---          clkout3      =>  clk_pll(3)  --   6 MHz
---        );
---        end generate;
-
-	G_vhdl_clk: if C_dvi_vga or C_oled_vga generate
-        clk_vhdl_25_200: entity work.clk_25_200_40_66_6
+	G_dvi_clk: if C_dvi_vga or C_oled_vga generate
+        clk_vhdl_25_200: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural(200.0e6),
+	  out1_Hz => natural( 40.0e6),
+	  out2_Hz => natural( 66.6e6),
+	  out3_Hz => natural(  6.0e6)
+	)
         port map
         (
-          clki        =>  clk_25MHz,
-          clkop       =>  clk_pll(0), -- 200 MHz
-          clkos       =>  clk_pll(1), --  40 MHz
-          clkos2      =>  clk_pll(2), --  66.667 MHz
-          clkos3      =>  clk_pll(3)  --   6 MHz
+          clk_i    =>  clk_25MHz,
+          clk_o    =>  clk_pll
         );
         end generate;
 
-	G_vhdl_clk: if C_lvds_vga generate
-        clk_vhdl_25_175: entity work.clk_25_175_25_64_6
+	G_lvds_internal_sync_clk: if C_lvds_vga and C_external_sync='0' generate
+	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural( 70.0e6),
+	  out1_Hz => natural( 10.0e6),
+	  out2_Hz => natural( 63.6e6),
+	  out3_Hz => natural(  6.0e6)
+	)
         port map
         (
-          clki        =>  clk_25MHz,
-          clkop       =>  clk_pll(0), -- 175 MHz
-          clkos       =>  clk_pll(1), --  25 MHz
-          clkos2      =>  clk_pll(2), --  63.63 MHz
-          clkos3      =>  clk_pll(3)  --   6 MHz
+          clk_i   =>  clk_25MHz,
+          clk_o   =>  clk_pll
+        );
+        end generate;
+
+	G_lvds_external_sync_clk: if C_lvds_vga and C_external_sync='1' generate
+	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 10.0e6),
+	  out0_Hz => natural( 70.0e6),
+	  out1_Hz => natural( 10.0e6),
+	  out2_Hz => natural( 70.6e6), out2_deg => 100,
+	  out3_Hz => natural(  6.0e6)
+	)
+        port map
+        (
+          clk_i   =>  gp_i(12),
+          clk_o   =>  clk_pll
         );
         end generate;
 
@@ -686,15 +705,17 @@ begin
         end generate;
 
 	G_decoder_usb_full_speed: if C_decoder_usb_speed = '1' generate
-        E_clk_decoder_fs: entity work.clk_200_48_24_12_6
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  clk_usb, -- clk_48MHz,
-          CLKOS       =>  open,    -- clk_24MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_6MHz
-        );
+          E_clk_decoder_fs: entity hdl4fpga.ecp5pll
+          generic map
+          (
+              in_Hz  => natural(200.0e6),
+            out0_Hz  => natural( 48.0e6)
+          )
+          port map
+          (
+            clk_i    => clk_pixel_shift,
+            clk_o(0) => clk_usb
+          );
 	  S_usb_dif <= usb_fpga_dp;
 	  S_usb_dp <= usb_fpga_bd_dp;
 	  S_usb_dn <= usb_fpga_bd_dn;
@@ -941,23 +962,25 @@ begin
 	B_uart_usbserial: block
 	  signal phy_rxen, phy_rxvalid: std_logic;
 	begin
-	-- pulldown 15k for USB HOST mode
-	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
-	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+	  -- pulldown 15k for USB HOST mode
+          usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+          usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  clk_usb, -- clk_48MHz,
-          CLKOS       =>  open,    -- clk_24MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_6MHz
-        );
+          E_clk_usb: entity hdl4fpga.ecp5pll
+          generic map
+          (
+              in_Hz  => natural(25.0e6), -- 200MHz if available is better than 25MHz here
+            out0_Hz  => natural(48.0e6)  -- then 48MHz exactly can be generatoed
+          )
+          port map
+          (
+            clk_i    => clk_25MHz,
+            clk_o(0) => clk_usb
+          );
 
-	usbserial_e : entity work.usbserial_rxd
-	port map
-	(
+          usbserial_e : entity work.usbserial_rxd
+          port map
+          (
 		clk_usb => clk_usb, -- 48 MHz USB core clock
 		-- USB interface
 		usb_fpga_dp    => usb_fpga_dp,
@@ -974,20 +997,20 @@ begin
 		clk  => clk_uart,  -- UART application clock
 		dv   => uart_rxdv,
 		byte => uart_rxd
-	);
+	  );
 
-	G_view_utmi1: if C_view_utmi1 generate
-	S_input_ena <= '1';
-	trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
-	trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
-	trace_green(C_view_binary_gain+3) <= phy_rxvalid;
+          G_view_utmi1: if C_view_utmi1 generate
+          S_input_ena <= '1';
+          trace_yellow(C_view_binary_gain+3) <= usb_fpga_bd_dp;
+          trace_cyan(C_view_binary_gain+3) <= usb_fpga_bd_dn;
+          trace_green(C_view_binary_gain+3) <= phy_rxvalid;
 	--trace_violet(utmi_data_mosi'range) <= utmi_data_mosi;
-	trace_violet(C_view_binary_gain+3) <= phy_rxen;
+          trace_violet(C_view_binary_gain+3) <= phy_rxen;
 --	trace_white(C_view_binary_gain+3) <= utmi_rxvalid;
 --	trace_orange(C_view_binary_gain+3) <= utmi_txvalid;
 --	trace_orange(C_view_binary_gain+3) <= phy_txoe; -- same as rx_en
 --	trace_orange(C_view_binary_gain+3) <= phy_ce; -- differential dp
-	clk_input <= clk_pixel_shift;
+          clk_input <= clk_pixel_shift;
 	end generate; -- view utmi
 
 	end block;
@@ -1004,15 +1027,17 @@ begin
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  clk_usb, -- clk_48MHz,
-          CLKOS       =>  open,    -- clk_24MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_6MHz
-        );
+          E_clk_usb: entity hdl4fpga.ecp5pll
+          generic map
+          (
+              in_Hz  => natural(200.0e6),
+            out0_Hz  => natural( 48.0e6)
+          )
+          port map
+          (
+            clk_i    => clk_pixel_shift,
+            clk_o(0) => clk_usb
+          );
 
 	usbserial_e : entity work.usbserial_rxd
 	generic map
@@ -1076,15 +1101,17 @@ begin
 	usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 	usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  clk_usb, -- clk_48MHz,
-          CLKOS       =>  open,    -- clk_24MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_6MHz
-        );
+          E_clk_usb: entity hdl4fpga.ecp5pll
+          generic map
+          (
+              in_Hz  => natural(200.0e6),
+            out0_Hz  => natural( 48.0e6)
+          )
+          port map
+          (
+            clk_i    => clk_pixel_shift,
+            clk_o(0) => clk_usb
+          );
 
         mii_clk <= clk_uart;
 
@@ -1269,15 +1296,17 @@ begin
         end generate;
 
 	G_mouse_usb_full_speed: if C_mouse_usb_speed = '1' generate
-        E_clk_usb: entity work.clk_200_48_24_12_6
-        port map
-        (
-          CLKI        =>  clk_pixel_shift, -- clk_200MHz,
-          CLKOP       =>  clk_usb, -- clk_48MHz,
-          CLKOS       =>  open,    -- clk_24MHz,
-          CLKOS2      =>  open,    -- clk_12MHz,
-          CLKOS3      =>  open     -- clk_6MHz
-        );
+          E_clk_usb: entity hdl4fpga.ecp5pll
+          generic map
+          (
+              in_Hz  => natural(200.0e6),
+            out0_Hz  => natural( 48.0e6)
+          )
+          port map
+          (
+            clk_i    => clk_pixel_shift,
+            clk_o(0) => clk_usb
+          );
         end generate;
 
         G_soft_core_phy: if true generate
@@ -1474,6 +1503,27 @@ begin
 	clk_istream <= clk_daisy;
 	end generate; -- host mouse
 
+	g_not_external_sync: if C_external_sync='1' generate
+	  lvds2vga_inst: entity work.lvds2vga
+          port map
+          (
+            clk_pixel => vga_clk, clk_shift => clk_pixel_shift,
+            lvds_i => gp_i(12 downto 9), -- cbgr
+            r_o => vga_r_ext, g_o => vga_g_ext, b_o => vga_b_ext,
+            hsync_o => vga_hsync_ext, vsync_o => vga_vsync_ext, de_o => vga_de_ext
+          );
+	end generate;
+
+	g_not_external_sync: if C_external_sync='0' generate
+          --vga_r_ext(5 downto 4) <= vga_rgb(0 to 1);
+          --vga_g_ext(5 downto 4) <= vga_rgb(2 to 3);
+          --vga_b_ext(5 downto 4) <= vga_rgb(4 to 5);
+          vga_hsync_ext <= vga_hsync;
+          vga_vsync_ext <= vga_vsync;
+          vga_blank_ext <= vga_blank;
+          vga_de_ext    <= not vga_blank;
+	end generate;
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
@@ -1507,6 +1557,10 @@ begin
 		input_clk   => clk_input,
 		input_ena   => '1', --S_input_ena,
 		input_data  => samples,
+		extern_video       => C_external_sync,
+		extern_videohzsync => not vga_hsync_ext,
+		extern_videovtsync => not vga_vsync_ext,
+		extern_videoblankn => vga_de_ext,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
@@ -1613,6 +1667,13 @@ begin
     end generate;
 
     G_dvi_vga: if C_dvi_vga generate
+    G_yes_mix_external_video: if C_external_sync='1' generate
+    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
+    vga_rgb_mix <= vga_rgb or vga_rgb_ext; -- testing
+    end generate;
+    G_not_mix_external_video: if C_external_sync='0' generate
+    vga_rgb_mix <= vga_rgb;
+    end generate;
     vga2dvid: entity hdl4fpga.vga2dvid
     generic map
     (
@@ -1624,12 +1685,12 @@ begin
     (
         clk_pixel => vga_clk,
         clk_shift => clk_pixel_shift,
-        in_red => vga_rgb(0 to 1),
-        in_green => vga_rgb(2 to 3),
-        in_blue => vga_rgb(4 to 5),
-        in_hsync => vga_hsync,
-        in_vsync => vga_vsync,
-        in_blank => vga_blank,
+        in_red => vga_rgb_mix(0 to 1),
+        in_green => vga_rgb_mix(2 to 3),
+        in_blue => vga_rgb_mix(4 to 5),
+        in_hsync => vga_hsync_ext,
+        in_vsync => vga_vsync_ext,
+        in_blank => vga_blank_ext,
         out_clock => dvid_crgb(7 downto 6),
         out_red => dvid_crgb(5 downto 4),
         out_green => dvid_crgb(3 downto 2),
@@ -1642,26 +1703,36 @@ begin
     end generate;
 
     G_lvds_vga: if C_lvds_vga generate
-    begin
+    G_yes_mix_external_video: if C_external_sync='1' generate
+    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
+    vga_r_mix <= (vga_rgb(0 to 1) & x"0") or vga_r_ext; -- testing
+    vga_g_mix <= (vga_rgb(2 to 3) & x"0") or vga_g_ext; -- testing
+    vga_b_mix <= (vga_rgb(4 to 5) & x"0") or vga_b_ext; -- testing
+    end generate;
+    G_not_mix_external_video: if C_external_sync='0' generate
+    vga_r_mix <= (vga_rgb(0 to 1) & x"0");
+    vga_g_mix <= (vga_rgb(2 to 3) & x"0");
+    vga_b_mix <= (vga_rgb(4 to 5) & x"0");
+    end generate;
     E_vga2lvds: entity hdl4fpga.vga2lvds
     port map
     (
       clk_pixel => vga_clk,
       clk_shift => clk_pixel_shift,
 
-      in_red(7 downto 6)   => vga_rgb(0 to 1),
-      in_green(7 downto 6) => vga_rgb(2 to 3),
-      in_blue(7 downto 6)  => vga_rgb(4 to 5),
+      r_i => vga_r_mix,
+      g_i => vga_g_mix,
+      b_i => vga_b_mix,
 
-      in_blank => vga_blank,
-      in_hsync => vga_hsync,
-      in_vsync => vga_vsync,
+      de_i    => vga_de_ext,
+      hsync_i => vga_hsync_ext,
+      vsync_i => vga_vsync_ext,
 
       -- single-ended output ready for differential buffers
-      out_lvds(3) => dvid_crgb(6),
-      out_lvds(2) => dvid_crgb(4),
-      out_lvds(1) => dvid_crgb(2),
-      out_lvds(0) => dvid_crgb(0)
+      lvds_o(3) => dvid_crgb(6),
+      lvds_o(2) => dvid_crgb(4),
+      lvds_o(1) => dvid_crgb(2),
+      lvds_o(0) => dvid_crgb(0)
     );
     gn(8) <= '1';
     end generate; -- lvds_vga

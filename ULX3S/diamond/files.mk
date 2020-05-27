@@ -1,4 +1,4 @@
-CONSTRAINTS = ./constraints/ulx3s_v20.lpf
+CONSTRAINTS = ./constraints/ulx3s_v20_lvds.lpf
 
 TOP_MODULE = ulx3s
 TOP_MODULE_FILE = ../common/ulx3s.vhd
@@ -7,10 +7,6 @@ VHDL_FILES = \
   $(TOP_MODULE_FILE) \
   ../scopeio/scopeio_top.vhd \
   ../scopeio/usbserial_rxd.vhd \
-  ../common/clk_verilog.vhd \
-  ../common/clk_25_200_40_66_6.vhd \
-  ../common/clk_25_175_25_64_6.vhd \
-  ../common/clk_200_48_24_12_6.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
@@ -23,6 +19,7 @@ VHDL_FILES = \
 
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
+  ../../library/latticesemi/ecp5/ecp5pll.vhd \
   ../../library/common/align.vhd \
   ../../library/common/std.vhd \
   ../../library/common/bram.vhd \
@@ -122,6 +119,7 @@ VHDL_LIB_FILES = \
   ../../library/video/vga2dvid.vhd \
   ../../library/video/tmds_encoder.vhd \
   ../../library/video/vga2lvds.vhd \
+  ../../library/video/lvds2vga.vhd \
   ../../library/video/cga_adapter.vhd \
 
 VERILOG_FILES = \
