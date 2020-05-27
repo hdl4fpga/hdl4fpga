@@ -29,7 +29,7 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 11;
+        constant vlayout_id: integer := 5;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -82,8 +82,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := false;
-        constant C_lvds_vga: boolean := true;
+        constant C_dvi_vga:  boolean := true;
+        constant C_lvds_vga: boolean := false;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -262,43 +262,37 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
---        G_verilog_clk: if true generate
---        clk_verilog_25_175: entity work.clk_verilog
---        port map
---        (
---          clkin        =>  clk_25MHz,
---          phasesel     =>  '1' & R_btn_debounced(2), -- "10" -> clkout2
---          phasedir     =>  R_btn_debounced(5),
---          phasestep    =>  R_btn_debounced(3),
---          phaseloadreg =>  R_btn_debounced(4),
---          clkout0      =>  clk_pll(0), -- 175 MHz
---          clkout1      =>  clk_pll(1), --  25 MHz
---          clkout2      =>  clk_pll(2), --  65 MHz
---          clkout3      =>  clk_pll(3)  --   6 MHz
---        );
---        end generate;
-
-	G_vhdl_clk: if C_dvi_vga or C_oled_vga generate
-        clk_vhdl_25_200: entity work.clk_25_200_40_66_6
+	G_dvi_clk: if C_dvi_vga or C_oled_vga generate
+        clk_vhdl_25_200: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz  => natural( 25.0e6),
+	  out0_Hz  => natural(200.0e6),
+	  out1_Hz  => natural( 40.0e6),
+	  out2_Hz  => natural( 66.6e6),
+	  out3_Hz  => natural(  6.0e6)
+	)
         port map
         (
-          clki        =>  clk_25MHz,
-          clkop       =>  clk_pll(0), -- 200 MHz
-          clkos       =>  clk_pll(1), --  40 MHz
-          clkos2      =>  clk_pll(2), --  66.667 MHz
-          clkos3      =>  clk_pll(3)  --   6 MHz
+          clk_i    =>  clk_25MHz,
+          clk_o    =>  clk_pll
         );
         end generate;
 
-	G_vhdl_clk: if C_lvds_vga generate
-        clk_vhdl_25_175: entity work.clk_25_175_25_64_6
+	G_lvds_clk: if C_lvds_vga generate
+	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz  => natural( 25.0e6),
+	  out0_Hz  => natural(175.0e6),
+	  out1_Hz  => natural( 25.0e6),
+	  out2_Hz  => natural( 63.6e6),
+	  out3_Hz  => natural(  6.0e6)
+	)
         port map
         (
-          clki        =>  clk_25MHz,
-          clkop       =>  clk_pll(0), -- 175 MHz
-          clkos       =>  clk_pll(1), --  25 MHz
-          clkos2      =>  clk_pll(2), --  63.63 MHz
-          clkos3      =>  clk_pll(3)  --   6 MHz
+          clk_i    =>  clk_25MHz,
+          clk_o    =>  clk_pll
         );
         end generate;
 
