@@ -135,10 +135,6 @@ architecture graphics of nuhs3adsp is
 	signal si_irdy        : std_logic;
 	signal si_data        : std_logic_vector(mii_rxd'range);
 
-	signal toudpdaisy_frm  : std_logic;
-	signal toudpdaisy_irdy : std_logic;
-	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
-
 	signal video_clk      : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
@@ -190,6 +186,9 @@ architecture graphics of nuhs3adsp is
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
+	constant uart_xtal : natural := natural(5.0/10.0**9/real(sys_per*4.0));
+	constant baudrate  : natural := 115200;
+
 begin
 
 	sys_rst <= not hd_t_clock;
@@ -201,7 +200,7 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dfs_frequency_mode => "low",
-		dcm_per => 20.0,
+		dcm_per => 50.0,
 		dfs_mul => video_tab(video_mode).dcm_mul,
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
@@ -235,6 +234,9 @@ begin
 
 	scopeio_export_b : block
 
+		signal uart_rxdv   : std_logic;
+		signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
 		signal rgtr_idv    : std_logic;
@@ -243,6 +245,15 @@ begin
 		signal data_ena    : std_logic;
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
+
+		signal udpip_frm  : std_logic;
+		signal udpip_irdy : std_logic;
+		signal udpip_data : std_logic_vector(mii_rxd'range);
+		signal udpip_ddat : std_logic_vector(mii_rxd'range);
+
+		signal stream_frm  : std_logic;
+		signal stream_irdy : std_logic;
+		signal stream_data : std_logic_vector(uart_rxd'range);
 
 		signal ipcfg_req : std_logic;
 	begin
@@ -262,9 +273,46 @@ begin
 		
 			chaini_sel  => '0',
 
-			chaini_frm  => toudpdaisy_frm,
-			chaini_irdy => toudpdaisy_irdy,
-			chaini_data => toudpdaisy_data,
+			chaini_data => udpip_ddat,
+
+			chaino_frm  => udpip_frm,
+			chaino_irdy => udpip_irdy,
+			chaino_data => udpip_data);
+	
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_rxc  => mii_rxc,
+			uart_sin  => rs232_rd,
+			uart_rxdv => uart_rxdv,
+			uart_rxd  => uart_rxd);
+
+		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+		generic map (
+			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+		port map (
+			stream_clk  => mii_rxc,
+			stream_dv   => uart_rxdv,
+			stream_data => uart_rxd,
+
+			chaini_sel  => '0',
+			chaini_frm  => udpip_frm,
+			chaini_irdy => udpip_irdy,
+			chaini_data => udpip_data,
+
+			chaino_frm  => stream_frm,  
+			chaino_irdy => stream_irdy,
+			chaino_data => stream_data);
+
+		ser_e : entity hdl4fpga.scopeio_dayser
+		port map (
+			chaini_clk  => mii_rxc,
+			chaini_frm  => stream_frm,
+			chaini_irdy => stream_irdy,
+			chaini_data => stream_data,
 
 			chaino_frm  => si_frm,
 			chaino_irdy => si_irdy,
