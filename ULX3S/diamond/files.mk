@@ -1,4 +1,4 @@
-CONSTRAINTS = ./constraints/ulx3s_v20.lpf
+CONSTRAINTS = ./constraints/ulx3s_v20_lvds.lpf
 
 TOP_MODULE = ulx3s
 TOP_MODULE_FILE = ../common/ulx3s.vhd
@@ -119,6 +119,7 @@ VHDL_LIB_FILES = \
   ../../library/video/vga2dvid.vhd \
   ../../library/video/tmds_encoder.vhd \
   ../../library/video/vga2lvds.vhd \
+  ../../library/video/lvds2vga.vhd \
   ../../library/video/cga_adapter.vhd \
 
 VERILOG_FILES = \
