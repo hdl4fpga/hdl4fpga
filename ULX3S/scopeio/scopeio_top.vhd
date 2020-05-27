@@ -29,7 +29,7 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
+        constant vlayout_id: integer := 11;
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -82,8 +82,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_dvi_vga:  boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -1649,19 +1649,19 @@ begin
       clk_pixel => vga_clk,
       clk_shift => clk_pixel_shift,
 
-      in_red(7 downto 6)   => vga_rgb(0 to 1),
-      in_green(7 downto 6) => vga_rgb(2 to 3),
-      in_blue(7 downto 6)  => vga_rgb(4 to 5),
+      r_i(5 downto 4) => vga_rgb(0 to 1),
+      g_i(5 downto 4) => vga_rgb(2 to 3),
+      b_i(5 downto 4) => vga_rgb(4 to 5),
 
-      in_blank => vga_blank,
-      in_hsync => vga_hsync,
-      in_vsync => vga_vsync,
+      de_i    => not vga_blank,
+      hsync_i => vga_hsync,
+      vsync_i => vga_vsync,
 
       -- single-ended output ready for differential buffers
-      out_lvds(3) => dvid_crgb(6),
-      out_lvds(2) => dvid_crgb(4),
-      out_lvds(1) => dvid_crgb(2),
-      out_lvds(0) => dvid_crgb(0)
+      lvds_o(3) => dvid_crgb(6),
+      lvds_o(2) => dvid_crgb(4),
+      lvds_o(1) => dvid_crgb(2),
+      lvds_o(0) => dvid_crgb(0)
     );
     gn(8) <= '1';
     end generate; -- lvds_vga

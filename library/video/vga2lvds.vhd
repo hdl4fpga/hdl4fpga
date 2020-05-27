@@ -12,9 +12,9 @@ entity vga2lvds is
 port
 (
   clk_pixel, clk_shift : in std_logic;
-  in_red, in_green, in_blue : in std_logic_vector(7 downto 0);
-  in_hsync, in_vsync, in_blank : in std_logic;
-  out_lvds : out std_logic_vector(3 downto 0)
+  r_i, g_i, b_i : in std_logic_vector(5 downto 0);
+  hsync_i, vsync_i, de_i : in std_logic;
+  lvds_o : out std_logic_vector(3 downto 0)
 );
 end;
 
@@ -42,15 +42,15 @@ begin
 --  process(clk_pixel)
 --  begin
 --    if rising_edge(clk_pixel) then
-      ch2_data <= in_blue(4) & in_blue(5) & in_blue(6) & in_blue(7) & in_hsync & in_vsync & not in_blank;
-      ch1_data <= in_green(3) & in_green(4) & in_green(5) & in_green(6) & in_green(7) & in_blue(2) & in_blue(3);
-      ch0_data <= in_red(2) & in_red(3) & in_red(4) & in_red(5) & in_red(6) & in_red(7) & in_green(2);
+      ch2_data <= b_i(2) & b_i(3) & b_i(4) & b_i(5) & hsync_i & vsync_i & de_i;
+      ch1_data <= g_i(1) & g_i(2) & g_i(3) & g_i(4) & g_i(5) & b_i(0) & b_i(1);
+      ch0_data <= r_i(0) & r_i(1) & r_i(2) & r_i(3) & r_i(4) & r_i(5) & g_i(0);
 --    end if;
 --  end process;
 
-  out_lvds(3) <= clk_data(conv_integer(bit_counter));
-  out_lvds(2) <= ch2_data(conv_integer(bit_counter));
-  out_lvds(1) <= ch1_data(conv_integer(bit_counter));
-  out_lvds(0) <= ch0_data(conv_integer(bit_counter));
+  lvds_o(3) <= clk_data(conv_integer(bit_counter));
+  lvds_o(2) <= ch2_data(conv_integer(bit_counter));
+  lvds_o(1) <= ch1_data(conv_integer(bit_counter));
+  lvds_o(0) <= ch0_data(conv_integer(bit_counter));
 
 end Behavioral;
