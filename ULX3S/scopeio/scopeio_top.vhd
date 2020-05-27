@@ -1503,15 +1503,21 @@ begin
 	clk_istream <= clk_daisy;
 	end generate; -- host mouse
 
-	g_not_external_sync: if C_external_sync='1' generate
+	g_external_sync: if C_external_sync='1' generate
+	  b_external_sync: block
+	    signal vga_vsyncn_ext, vga_hsyncn_ext: std_logic;
+	  begin
 	  lvds2vga_inst: entity work.lvds2vga
           port map
           (
             clk_pixel => vga_clk, clk_shift => clk_pixel_shift,
             lvds_i => gp_i(12 downto 9), -- cbgr
             r_o => vga_r_ext, g_o => vga_g_ext, b_o => vga_b_ext,
-            hsync_o => vga_hsync_ext, vsync_o => vga_vsync_ext, de_o => vga_de_ext
+            hsync_o => vga_hsyncn_ext, vsync_o => vga_vsyncn_ext, de_o => vga_de_ext
           );
+          vga_vsync_ext <= not vga_vsyncn_ext;
+          vga_hsync_ext <= not vga_hsyncn_ext;
+          end block;
 	end generate;
 
 	g_not_external_sync: if C_external_sync='0' generate
@@ -1558,8 +1564,8 @@ begin
 		input_ena   => '1', --S_input_ena,
 		input_data  => samples,
 		extern_video       => C_external_sync,
-		extern_videohzsync => not vga_hsync_ext,
-		extern_videovtsync => not vga_vsync_ext,
+		extern_videohzsync => vga_hsync_ext,
+		extern_videovtsync => vga_vsync_ext,
 		extern_videoblankn => vga_de_ext,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
