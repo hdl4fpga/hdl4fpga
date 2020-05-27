@@ -1669,19 +1669,26 @@ begin
     end generate;
 
     G_lvds_vga: if C_lvds_vga generate
+    G_yes_mix_external_video: if C_external_sync='1' generate
+    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
+    vga_rgb_mix <= vga_rgb or vga_rgb_ext; -- testing
+    end generate;
+    G_not_mix_external_video: if C_external_sync='0' generate
+    vga_rgb_mix <= vga_rgb;
+    end generate;
     E_vga2lvds: entity hdl4fpga.vga2lvds
     port map
     (
       clk_pixel => vga_clk,
       clk_shift => clk_pixel_shift,
 
-      r_i(5 downto 4) => vga_rgb(0 to 1),
-      g_i(5 downto 4) => vga_rgb(2 to 3),
-      b_i(5 downto 4) => vga_rgb(4 to 5),
+      r_i(5 downto 4) => vga_rgb_mix(0 to 1),
+      g_i(5 downto 4) => vga_rgb_mix(2 to 3),
+      b_i(5 downto 4) => vga_rgb_mix(4 to 5),
 
-      de_i    => not vga_blank,
-      hsync_i => vga_hsync,
-      vsync_i => vga_vsync,
+      de_i    => not vga_blank_ext,
+      hsync_i => vga_hsync_ext,
+      vsync_i => vga_vsync_ext,
 
       -- single-ended output ready for differential buffers
       lvds_o(3) => dvid_crgb(6),
