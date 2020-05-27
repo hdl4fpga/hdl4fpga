@@ -112,10 +112,10 @@ architecture beh of ulx3s is
 
         signal vga_hsync_ext, vga_vsync_ext, vga_de_ext, vga_blank_ext: std_logic;
         signal vga_r_ext, vga_g_ext, vga_b_ext: std_logic_vector(5 downto 0);
-        signal vga_r_mix, vga_g_mix, vga_b_mix: std_logic_vector(5 downto 0);
+        signal vga_r_mix, vga_g_mix, vga_b_mix: std_logic_vector(vga_r_ext'range);
         signal vga_rgb_ext: std_logic_vector(vga_rgb'range);
         signal vga_rgb_mix: std_logic_vector(vga_rgb'range);
-        constant vga_rgb_transparent: std_logic_vector(vga_rgb'range) := (others => '0');
+        constant vga_r_transparent, vga_g_transparent, vga_b_transparent: std_logic_vector(vga_r_ext'range) := (others => '0');
 
 	signal vga_hsync_test : std_logic;
 	signal vga_vsync_test : std_logic;
@@ -168,7 +168,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz (25e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := 10000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -1710,10 +1710,17 @@ begin
 
     G_lvds_vga: if C_lvds_vga generate
     G_yes_mix_external_video: if C_external_sync='1' generate
-    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
-    vga_r_mix <= (vga_rgb(0 to 1) & x"0") or vga_r_ext; -- testing
-    vga_g_mix <= (vga_rgb(2 to 3) & x"0") or vga_g_ext; -- testing
-    vga_b_mix <= (vga_rgb(4 to 5) & x"0") or vga_b_ext; -- testing
+    B_lvds_vga: block
+      signal S_transparent: boolean;
+    begin
+      S_transparent <= vga_r_ext=vga_r_transparent and vga_g_ext=vga_g_transparent and vga_b_ext=vga_b_transparent;
+      vga_r_mix <= vga_rgb(0 to 1) & x"0" when S_transparent else vga_r_ext;
+      vga_g_mix <= vga_rgb(2 to 3) & x"0" when S_transparent else vga_g_ext;
+      vga_b_mix <= vga_rgb(4 to 5) & x"0" when S_transparent else vga_b_ext;
+      --vga_r_mix <= (vga_rgb(0 to 1) & x"0") or vga_r_ext; -- testing
+      --vga_g_mix <= (vga_rgb(2 to 3) & x"0") or vga_g_ext; -- testing
+      --vga_b_mix <= (vga_rgb(4 to 5) & x"0") or vga_b_ext; -- testing
+    end block;
     end generate;
     G_not_mix_external_video: if C_external_sync='0' generate
     vga_r_mix <= (vga_rgb(0 to 1) & x"0");
