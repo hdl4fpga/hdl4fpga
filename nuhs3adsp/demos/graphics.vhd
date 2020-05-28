@@ -242,10 +242,9 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal dayser_frm  : std_logic;
-		signal dayser_irdy : std_logic;
-		signal dayser_data : std_logic_vector(mii_rxd'range);
-		signal dayser_ddat : std_logic_vector(mii_rxd'range);
+		signal ser_frm  : std_logic;
+		signal ser_irdy : std_logic;
+		signal ser_data : std_logic_vector(mii_rxd'reverse_range);
 
 		signal stream_frm  : std_logic;
 		signal stream_irdy : std_logic;
@@ -284,16 +283,15 @@ begin
 			chaino_irdy => stream_irdy,
 			chaino_data => stream_data);
 
-		ser_e : entity hdl4fpga.scopeio_dayser
+		ser_e : entity hdl4fpga.desser
 		port map (
-			chaini_clk  => mii_rxc,
-			chaini_frm  => stream_frm,
-			chaini_irdy => stream_irdy,
-			chaini_data => stream_data,
+			desser_clk => mii_rxc,
+			desser_frm => stream_frm,
+			des_irdy   => stream_irdy,
+			des_data   => stream_data,
 
-			chaino_frm  => dayser_frm,
-			chaino_irdy => dayser_irdy,
-			chaino_data => dayser_data);
+			ser_irdy   => ser_irdy,
+			ser_data   => ser_data);
 
 		ipcfg_req <= not sw1;
 		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
@@ -309,9 +307,9 @@ begin
 			phy_tx_d    => mii_txd,
 		
 			chaini_sel  => '1',
-			chaini_frm  => dayser_frm,
-			chaini_irdy => dayser_irdy,
-			chaini_data => dayser_data,
+			chaini_frm  => stream_frm,
+			chaini_irdy => ser_irdy,
+			chaini_data => ser_data,
 
 			chaino_frm  => si_frm,
 			chaino_irdy => si_irdy,
