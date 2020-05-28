@@ -38,7 +38,7 @@ begin
 			end if;
 		end if;
 		chaino_irdy <= (chaini_frm and chaini_irdy) or setif(cntr/=0);
-		chaino_data <= word2byte(chaini_data, std_logic_vector(cntr), chaino_data'length);
+		chaino_data <= word2byte(chaini_data, std_logic_vector(not cntr), chaino_data'length);
 	end process;
 
 	chaino_frm <= chaini_frm;

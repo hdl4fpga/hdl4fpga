@@ -130,11 +130,6 @@ architecture graphics of nuhs3adsp is
 	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
 
 	signal mii_clk        : std_logic;
-	signal si_clk         : std_logic;
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_data        : std_logic_vector(mii_rxd'range);
-
 	signal video_clk      : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
@@ -186,8 +181,10 @@ architecture graphics of nuhs3adsp is
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
-	constant uart_xtal : natural := natural(5.0/10.0**9/real(sys_per*4.0));
-	constant baudrate  : natural := 115200;
+	constant baudrate  : natural := 1000000;
+	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
+	alias si_clk : std_logic is mii_rxc;
+--	constant baudrate  : natural := 115200;
 
 begin
 
@@ -217,7 +214,6 @@ begin
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => mii_clk);
-	si_clk <= not mii_rxc;
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -246,39 +242,23 @@ begin
 		signal data_len    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal udpip_frm  : std_logic;
-		signal udpip_irdy : std_logic;
-		signal udpip_data : std_logic_vector(mii_rxd'range);
-		signal udpip_ddat : std_logic_vector(mii_rxd'range);
+		signal dayser_frm  : std_logic;
+		signal dayser_irdy : std_logic;
+		signal dayser_data : std_logic_vector(mii_rxd'range);
+		signal dayser_ddat : std_logic_vector(mii_rxd'range);
 
 		signal stream_frm  : std_logic;
 		signal stream_irdy : std_logic;
 		signal stream_data : std_logic_vector(uart_rxd'range);
+		signal stream_ddat : std_logic_vector(uart_rxd'range);
+
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_data        : std_logic_vector(mii_rxd'range);
 
 		signal ipcfg_req : std_logic;
 	begin
 
-		ipcfg_req <= not sw1;
-		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-		port map (
-			ipcfg_req   => ipcfg_req,
-
-			phy_rxc     => mii_rxc,
-			phy_rx_dv   => mii_rxdv,
-			phy_rx_d    => mii_rxd,
-
-			phy_txc     => mii_txc,
-			phy_tx_en   => mii_txen,
-			phy_tx_d    => mii_txd,
-		
-			chaini_sel  => '0',
-
-			chaini_data => udpip_ddat,
-
-			chaino_frm  => udpip_frm,
-			chaino_irdy => udpip_irdy,
-			chaino_data => udpip_data);
-	
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
 			baudrate => baudrate,
@@ -298,10 +278,7 @@ begin
 			stream_dv   => uart_rxdv,
 			stream_data => uart_rxd,
 
-			chaini_sel  => '0',
-			chaini_frm  => udpip_frm,
-			chaini_irdy => udpip_irdy,
-			chaini_data => udpip_data,
+			chaini_data => stream_ddat,
 
 			chaino_frm  => stream_frm,  
 			chaino_irdy => stream_irdy,
@@ -313,6 +290,28 @@ begin
 			chaini_frm  => stream_frm,
 			chaini_irdy => stream_irdy,
 			chaini_data => stream_data,
+
+			chaino_frm  => dayser_frm,
+			chaino_irdy => dayser_irdy,
+			chaino_data => dayser_data);
+
+		ipcfg_req <= not sw1;
+		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		port map (
+			ipcfg_req   => ipcfg_req,
+
+			phy_rxc     => mii_rxc,
+			phy_rx_dv   => mii_rxdv,
+			phy_rx_d    => mii_rxd,
+
+			phy_txc     => mii_txc,
+			phy_tx_en   => mii_txen,
+			phy_tx_d    => mii_txd,
+		
+			chaini_sel  => '1',
+			chaini_frm  => dayser_frm,
+			chaini_irdy => dayser_irdy,
+			chaini_data => dayser_data,
 
 			chaino_frm  => si_frm,
 			chaino_irdy => si_irdy,
