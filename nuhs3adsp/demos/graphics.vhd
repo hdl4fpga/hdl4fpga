@@ -283,7 +283,7 @@ begin
 			chaino_irdy => stream_irdy,
 			chaino_data => stream_data);
 
-		ser_e : entity hdl4fpga.desser
+		desser_e : entity hdl4fpga.desser
 		port map (
 			desser_clk => mii_rxc,
 			desser_frm => stream_frm,
