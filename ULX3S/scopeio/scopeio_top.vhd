@@ -29,8 +29,8 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 11;
-        constant C_external_sync : std_logic := '1';
+        constant vlayout_id: integer := 5;
+        constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -46,9 +46,9 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := true;  -- ADC onboard analog view
+        constant C_view_adc     : boolean := false;  -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := true; -- USB or PS/2 digital view
         constant C_view_usb_decoder: boolean := false;
         constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
@@ -83,8 +83,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := false;
-        constant C_lvds_vga: boolean := true;
+        constant C_dvi_vga:  boolean := true;
+        constant C_lvds_vga: boolean := false;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -168,7 +168,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 10000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := 40000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';

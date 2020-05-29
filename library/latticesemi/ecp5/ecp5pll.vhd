@@ -1,7 +1,7 @@
 -- (c)EMARD
 -- License=BSD
 
--- parametric ECP5 PLL generator
+-- parametric ECP5 PLL generator in VHDL
 -- to see actual frequencies and phase shifts
 -- trellis log/stdout : search for "MHz", "Derived", "frequency"
 -- diamond log/*.mrp  : search for "MHz", "Frequency", "Phase", "Desired"
@@ -128,6 +128,7 @@ architecture mix of ecp5pll is
       variable phase_count_x8: natural;
       variable phase_shift: natural;
     begin
+      params.fvco := 0;
       sfreq(1)  := request.out1_hz;
       sphase(1) := request.out1_deg;
       sfreq(2)  := request.out2_hz;
@@ -148,21 +149,21 @@ architecture mix of ecp5pll is
       for input_div in input_div_min to input_div_max loop
         fpfd := in_hz / input_div;
         for feedback_div in 1 to 80 loop
-          output_div_min := VCO_MIN/feedback_div/fpfd;
+          fout := fpfd * feedback_div;
+          output_div_min := VCO_MIN/fout;
           if output_div_min < 1 then
             output_div_min := 1;
           end if;
-          output_div_max := VCO_MAX/feedback_div/fpfd;
+          output_div_max := VCO_MAX/fout;
           if output_div_max > 128 then
             output_div_max := 128;
           end if;
           for output_div in output_div_min to output_div_max loop
-            fvco := fpfd * feedback_div * output_div;
-            fout := fvco / output_div;
+            fvco := fout * output_div;
             if abs(fout-out0_hz) < error -- prefer least error
             or (fout=out0_hz and abs(fvco-VCO_OPTIMAL) < abs(params.fvco-VCO_OPTIMAL)) -- or if 0 error prefer closest to optimal VCO frequency
             then
-              error  := abs(fout-out0_hz);
+              error                 := abs(fout-out0_hz);
               phase_compensation    := (output_div+1)/2*8-8+output_div/2*8; -- output_div/2*8 = 180 deg shift
               phase_count_x8        := phase_compensation + 8*output_div*out0_deg/360;
               if phase_count_x8 > 1023 then
@@ -277,11 +278,8 @@ architecture mix of ecp5pll is
 
   -- internal signal declarations
   signal CLKOP_t  : std_logic;
-  signal CLKOS_t  : std_logic;
-  signal CLKOS2_t : std_logic;
-  signal CLKOS3_t : std_logic;
   signal REFCLK   : std_logic;
-  signal phasesel_hw : std_logic_vector(1 downto 0);
+  signal PHASESEL_HW : std_logic_vector(1 downto 0);
 
   attribute FREQUENCY_PIN_CLKI   : string;
   attribute FREQUENCY_PIN_CLKOP  : string;
@@ -304,7 +302,7 @@ architecture mix of ecp5pll is
   attribute NGD_DRC_MASK of mix : architecture is 1;
 begin
   G_dynamic: if dynamic_en /= 0 generate
-  phasesel_hw <= phasesel-1;
+  PHASESEL_HW <= phasesel-1;
   end generate;
   PLL_inst: EHXPLLL
   generic map
@@ -340,8 +338,8 @@ begin
     CLKOS3_FPHASE   =>  params.secondary(3).fphase,
 
     INTFB_WAKE      => "DISABLED",
-    PLLRST_ENA      =>  enabled_str(reset_en),
     STDBY_ENABLE    =>  enabled_str(standby_en),
+    PLLRST_ENA      =>  enabled_str(reset_en),
     DPHASE_SOURCE   =>  enabled_str(dynamic_en),
     PLL_LOCK_MODE   =>  0
   )
@@ -349,23 +347,20 @@ begin
   (
     CLKI => clk_i, CLKFB => CLKOP_t,
     RST => reset, STDBY => standby, PLLWAKESYNC => '0',
-    PHASESEL1    => phasesel_hw(1),
-    PHASESEL0    => phasesel_hw(0),
+    PHASESEL1    => PHASESEL_HW(1),
+    PHASESEL0    => PHASESEL_HW(0),
     PHASEDIR     => phasedir,
     PHASESTEP    => phasestep,
     PHASELOADREG => phaseloadreg,
     ENCLKOP =>'0', ENCLKOS => '0', ENCLKOS2 => '0', ENCLKOS3 => '0',
     CLKOP  => CLKOP_t,
-    CLKOS  => CLKOS_t,
-    CLKOS2 => CLKOS2_t,
-    CLKOS3 => CLKOS3_t,
+    CLKOS  => clk_o(1),
+    CLKOS2 => clk_o(2),
+    CLKOS3 => clk_o(3),
     INTLOCK => open, REFCLK => REFCLK, CLKINTFB => open,
     LOCK => locked
   );
   
-  clk_o(0) <= clkop_t;
-  clk_o(1) <= clkos_t;
-  clk_o(2) <= clkos2_t;
-  clk_o(3) <= clkos3_t;
+  clk_o(0) <= CLKOP_t;
 
 end mix;
