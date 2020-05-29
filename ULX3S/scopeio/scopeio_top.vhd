@@ -46,9 +46,9 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := false;  -- ADC onboard analog view
+        constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := true; -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
         constant C_view_usb_decoder: boolean := false;
         constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
@@ -56,6 +56,7 @@ architecture beh of ulx3s is
         constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false; -- NET output
+        constant C_view_sync    : boolean := true;  -- external sync (LVDS receiver)
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
@@ -684,6 +685,16 @@ begin
 	--trace_violet(C_view_binary_gain+3) <= dbg_bit_stuff_err;
 	--trace_violet(C_view_binary_gain+2) <= dbg_byte_err;
 	--trace_violet(C_view_binary_gain+1 downto C_view_binary_gain) <= "10"; -- y offset
+	clk_input <= vga_clk;
+	end generate;
+
+	G_view_sync: if C_view_sync generate
+	S_input_ena <= '1';
+
+	trace_yellow(C_view_binary_gain+4) <= vga_hsync_ext;
+	trace_cyan(C_view_binary_gain+4)   <= vga_vsync_ext;
+	trace_green(C_view_binary_gain+4)  <= vga_de_ext;
+	--trace_violet(C_view_binary_gain+4) <= '0';
 	clk_input <= vga_clk;
 	end generate;
 
