@@ -29,8 +29,8 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
-        constant C_external_sync : std_logic := '0';
+        constant vlayout_id: integer := 11;
+        constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
@@ -84,8 +84,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_dvi_vga:  boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -104,6 +104,7 @@ architecture beh of ulx3s is
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
+	signal clk_pixel_shift_ext: std_logic; -- 5x vga clk, phase shifted
 
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -169,7 +170,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := 10000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -303,6 +304,8 @@ begin
           clk_i   =>  clk_25MHz,
           clk_o   =>  clk_pll
         );
+        clk_pixel_shift_ext <= clk_pll(0);
+        clk_pixel_shift <= clk_pll(0);
         end generate;
 
 	G_lvds_external_sync_clk: if C_lvds_vga and C_external_sync='1' generate
@@ -312,7 +315,7 @@ begin
 	    in_Hz => natural( 10.0e6),
 	  out0_Hz => natural( 70.0e6),
 	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 70.6e6), out2_deg => 100,
+	  out2_Hz => natural( 70.0e6), out2_deg => 45,
 	  out3_Hz => natural(  6.0e6)
 	)
         port map
@@ -320,10 +323,11 @@ begin
           clk_i   =>  gp_i(12),
           clk_o   =>  clk_pll
         );
+        clk_pixel_shift     <= clk_pll(0);
+        clk_pixel_shift_ext <= clk_pll(2);
         end generate;
 
         -- 800x600
-        clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
         clk <= clk_pll(1); -- 25 MHz pulse sinewave function
@@ -1521,7 +1525,7 @@ begin
 	  lvds2vga_inst: entity work.lvds2vga
           port map
           (
-            clk_pixel => vga_clk, clk_shift => clk_pixel_shift,
+            clk_pixel => vga_clk, clk_shift => clk_pixel_shift_ext,
             lvds_i => gp_i(12 downto 9), -- cbgr
             r_o => vga_r_ext, g_o => vga_g_ext, b_o => vga_b_ext,
             hsync_o => vga_hsyncn_ext, vsync_o => vga_vsyncn_ext, de_o => vga_de_ext
