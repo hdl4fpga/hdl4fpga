@@ -294,8 +294,11 @@ begin
 				elsif des4_trdy='1' then
 					frm := '0';
 				end if;
+				if frm/='1' and frm/='0' then
+					frm := '0';
+				end if;
 			end if;
-			desser4_frm <= stream_frm or frm;
+			desser4_frm <= setif(frm='0', stream_frm and stream_irdy, frm or stream_frm);
 		end process;
 
 		desser4_e : entity hdl4fpga.desser(mux)
