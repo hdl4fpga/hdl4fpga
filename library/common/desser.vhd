@@ -17,6 +17,40 @@ entity desser is
 		ser_data : out std_logic_vector);
 end;
 
+architecture mux of desser is
+
+	signal cntr : unsigned(0 to unsigned_num_bits(des_data'length/ser_data'length-1)-1);
+
+begin
+
+	process (desser_clk)
+	begin
+		if rising_edge(desser_clk) then
+			if des_data'length=ser_data'length then
+				cntr <= (others => '0');
+			elsif desser_frm='0' then
+				cntr <= (others => '0');
+			elsif cntr=0 then
+				if des_irdy='1' then
+					cntr <= cntr + 1;
+				end if;
+			elsif 2**cntr'length=des_data'length/ser_data'length then
+				cntr <= cntr + 1;
+			elsif cntr=des_data'length/ser_data'length-1 then
+				cntr <= (others => '0');
+			end if;
+		end if;
+	end process;
+
+	ser_data <= 
+		word2byte(reverse(reverse(des_data), ser_data'length), std_logic_vector(cntr), ser_data'length) when des_data'ascending else
+		word2byte(des_data, std_logic_vector(cntr), ser_data'length);
+
+	ser_irdy <= des_irdy or setif(cntr/=0);
+	des_trdy <= setif(cntr=des_data'length/ser_data'length-1);
+
+end;
+
 architecture rgtr of desser is
 
 	signal start : std_logic;
@@ -53,7 +87,7 @@ begin
 					if start='1' then
 						des := unsigned(des_data);
 					end if;
-					if des'left <= des'right then
+					if des'ascending then
 						des := des sll ser_data'length;
 					else
 						des := des srl ser_data'length;
@@ -66,36 +100,5 @@ begin
 
 	ser_irdy <= des_irdy or setif(start='0');
 	des_trdy <= setif(start='0');
-
-end;
-
-architecture mux of desser is
-
-	signal cntr : unsigned(0 to unsigned_num_bits(des_data'length/ser_data'length-1)-1);
-
-begin
-
-	process (desser_clk)
-	begin
-		if rising_edge(desser_clk) then
-			if des_data'length=ser_data'length then
-				cntr <= (others => '0');
-			elsif desser_frm='0' then
-				cntr <= (others => '0');
-			elsif cntr=0 then
-				if des_irdy='1' then
-					cntr <= cntr + 1;
-				end if;
-			elsif 2**cntr'length=des_data'length/ser_data'length then
-				cntr <= cntr + 1;
-			elsif cntr=des_data'length/ser_data'length-1 then
-				cntr <= (others => '0');
-			end if;
-		end if;
-	end process;
-
-	ser_data <= word2byte(des_data, std_logic_vector(cntr), ser_data'length);
-	ser_irdy <= des_irdy or setif(cntr/=0);
-	des_trdy <= setif(cntr=des_data'length/ser_data'length-1);
 
 end;

@@ -24,7 +24,7 @@ end;
 architecture beh of scopeio_sin is
 	subtype byte is std_logic_vector(8-1 downto 0);
 
-	signal ser_data  : std_logic_vector(sin_data'length-1 downto 0);
+	signal ser_data  : std_logic_vector(sin_data'range);
 	signal des8_irdy : std_logic;
 	signal des8_data : byte;
 
@@ -34,16 +34,37 @@ architecture beh of scopeio_sin is
 
 begin
 
-	ser_data <= sin_data;
-	serdes_e : entity hdl4fpga.serdes
-	port map (
-		serdes_clk => sin_clk,
-		serdes_frm => sin_frm,
-		ser_irdy   => sin_irdy,
-		ser_data   => ser_data,
+	to_g : if sin_data'ascending generate
+		signal des_data : std_logic_vector(0 to byte'length-1);
+	begin
+		ser_data <= sin_data;
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => sin_clk,
+			serdes_frm => sin_frm,
+			ser_irdy   => sin_irdy,
+			ser_data   => sin_data,
 
-		des_irdy   => des8_irdy,
-		des_data   => des8_data);
+			des_irdy   => des8_irdy,
+			des_data   => des_data);
+		des8_data <= des_data;
+	end generate;
+
+	downto_g : if not sin_data'ascending generate
+		signal des_data : std_logic_vector(byte'length-1 downto 0);
+	begin
+		ser_data <= sin_data;
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => sin_clk,
+			serdes_frm => sin_frm,
+			ser_irdy   => sin_irdy,
+			ser_data   => sin_data,
+
+			des_irdy   => des8_irdy,
+			des_data   => des_data);
+		des8_data <= des_data;
+	end generate;
 
 	process (sin_clk)
 		variable rid   : byte;

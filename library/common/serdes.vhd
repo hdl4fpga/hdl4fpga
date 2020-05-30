@@ -46,7 +46,7 @@ begin
 			if serdes_frm='1' then
 				if ser_irdy='1' then
 					des(ser_data'range) := unsigned(ser_data);
-					if des_data'left <= des_data'right then
+					if des_data'ascending then
 						des := des srl ser_data'length;
 					else
 						des := des sll ser_data'length;

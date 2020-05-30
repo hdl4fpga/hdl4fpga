@@ -181,9 +181,10 @@ architecture graphics of nuhs3adsp is
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
-	constant baudrate  : natural := 1000000;
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias si_clk : std_logic is mii_rxc;
+
+	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
 
 begin
@@ -241,10 +242,11 @@ begin
 		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal desser4_frm : std_logic;
+		signal desser8_frm : std_logic;
+		signal des8_trdy   : std_logic;
+		signal des8_data   : std_logic_vector(uart_rxd'range);
 		signal ser4_irdy   : std_logic;
-		signal des4_trdy   : std_logic;
-		signal ser4_data   : std_logic_vector(mii_rxd'reverse_range);
+		signal ser4_data   : std_logic_vector(mii_rxd'length-1 downto 0);
 
 		signal stream_frm  : std_logic;
 		signal stream_irdy : std_logic;
@@ -283,31 +285,34 @@ begin
 			chaino_irdy => stream_irdy,
 			chaino_data => stream_data);
 
-		process(stream_frm, stream_irdy, mii_rxc)
-			variable frm : std_logic := '0';
+		process(stream_frm, stream_irdy, des8_trdy, mii_rxc)
+			variable frm  : std_logic;
+			variable edge : std_logic;
 		begin
 			if rising_edge(mii_rxc) then
 				if frm='0' then
 					if stream_irdy='1' then
 						frm := stream_frm;
 					end if;
-				elsif des4_trdy='1' then
-					frm := '0';
+				elsif des8_trdy='0' then
+					if edge='1' then
+						frm := stream_frm;
+					end if;
 				end if;
-				if frm/='1' and frm/='0' then
-					frm := '0';
-				end if;
+				edge := des8_trdy;
 			end if;
-			desser4_frm <= setif(frm='0', stream_frm and stream_irdy, frm or stream_frm);
+			desser8_frm <= setif(frm='0', stream_frm and stream_irdy, stream_frm or des8_trdy);
 		end process;
+
+		des8_data <= reverse(reverse(stream_data), ser4_data'length);
 
 		desser4_e : entity hdl4fpga.desser(mux)
 		port map (
 			desser_clk => mii_rxc,
-			desser_frm => desser4_frm,
+			desser_frm => desser8_frm,
 			des_irdy   => stream_irdy,
-			des_trdy   => des4_trdy,
-			des_data   => stream_data,
+			des_trdy   => des8_trdy,
+			des_data   => des8_data,
 
 			ser_irdy   => ser4_irdy,
 			ser_data   => ser4_data);
@@ -325,7 +330,7 @@ begin
 			phy_tx_en   => mii_txen,
 			phy_tx_d    => mii_txd,
 		
-			chaini_sel  => '1',
+			chaini_sel  => '0',
 			chaini_frm  => stream_frm,
 			chaini_irdy => ser4_irdy,
 			chaini_data => ser4_data,
@@ -434,25 +439,25 @@ begin
 		port map (
 			clk => ctlr_clk,
 			di(0 to ctlr_do'length-1) => ctlr_do,
-			di(ctlr_do'length) => ctlr_do_dv(0),
+			di(ctlr_do'length)        => ctlr_do_dv(0),
 			do(0 to ctlr_do'length-1) => graphic_di,
-			do(ctlr_do'length) => graphic_dv);
+			do(ctlr_do'length)        => graphic_dv);
 
 		graphic_e : entity hdl4fpga.graphic
 		generic map (
 			video_width => modeline_data(video_tab(video_mode).mode)(0))
 		port map (
-			dma_req      => dmacfgvideo_req,
-			dma_rdy      => dmavideo_rdy,
-			dma_len      => dmavideo_len,
-			dma_addr     => dmavideo_addr,
-			ctlr_clk     => ctlr_clk,
-			ctlr_di_dv   => graphic_dv,
-			ctlr_di      => graphic_di,
-			video_clk    => video_clk,
-			video_hzon   => hzon,
-			video_vton   => vton,
-			video_pixel  => pixel);
+			dma_req     => dmacfgvideo_req,
+			dma_rdy     => dmavideo_rdy,
+			dma_len     => dmavideo_len,
+			dma_addr    => dmavideo_addr,
+			ctlr_clk    => ctlr_clk,
+			ctlr_di_dv  => graphic_dv,
+			ctlr_di     => graphic_di,
+			video_clk   => video_clk,
+			video_hzon  => hzon,
+			video_vton  => vton,
+			video_pixel => pixel);
 
 		topixel_e : entity hdl4fpga.align
 		generic map (
