@@ -14,7 +14,7 @@ entity scopeio_sin is
 		
 		data_frm  : out std_logic;
 		data_ena  : out std_logic;
-		data_len  : out std_logic_vector(8-1 downto 0);
+		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_id   : out std_logic_vector;
 		rgtr_dv   : out std_logic;
@@ -24,59 +24,54 @@ end;
 architecture beh of scopeio_sin is
 	subtype byte is std_logic_vector(8-1 downto 0);
 
+	signal ser_data  : std_logic_vector(sin_data'length-1 downto 0);
 	signal des8_irdy : std_logic;
 	signal des8_data : byte;
-	signal ser8_irdy : std_logic;
-	signal des_irdy  : std_logic;
-	signal des_data  : std_logic_vector;
 
-	signal len : unsigned(0 to byte'length);
-	signal rid : std_logic_vector(byte'length-1 downto 0);
-	signal val : std_logic_vector(rgtr_data'length-1 downto 0);
-
-	signal size : unsigned(byte'range);
 	type states is (s_id, s_size, s_data);
-	signal state  : reg_states;
+	signal state : states;
+	signal ptr   : unsigned(byte'range);
+
 begin
 
+	ser_data <= sin_data;
 	serdes_e : entity hdl4fpga.serdes
 	port map (
 		serdes_clk => sin_clk,
 		serdes_frm => sin_frm,
 		ser_irdy   => sin_irdy,
-		ser_data   => sin_data,
+		ser_data   => ser_data,
 
 		des_irdy   => des8_irdy,
 		des_data   => des8_data);
 
-	serdes8_e : entity hdl4fpga.serdes
-	port map (
-		serdes_clk => sin_clk,
-		serdes_frm => sin_frm,
-		ser_irdy   => ser8_irdy,
-		ser_data   => des8_data,
-
-		des_data   => rgtr_data);
-
-	ser8_irdy <= des8_irdy and setif(state=s_data);
 	process (sin_clk)
+		variable rid   : byte;
+		variable len   : unsigned(0 to byte'length);
+		variable data  : unsigned(rgtr_data'length-1 downto 0);
 	begin
 		if rising_edge(sin_clk) then
 			if sin_frm='0' then
-				rid   <= (others => '-');
-				len   <= (others => '-');
+				ptr   <= (others => '0');
+				rid   := (others => '-');
+				len   := (others => '0');
 				state <= s_id;
 			elsif des8_irdy='1' then
 				case state is
 				when s_id =>
-					rid   <= des8_data;
-					len   <= (others => '-');
+					ptr   <= (others => '0');
+					rid   := des8_data;
+					len   := (others => '0');
 					state <= s_size;
 				when s_size =>
-					len    <= resize(unsigned(des8_data), len'length));
-					state  <= s_data;
+					ptr   <= (others => '0');
+					len   := resize(unsigned(des8_data), len'length);
+					state <= s_data;
 				when s_data =>
-					len  <= len - 1;
+					ptr  <= ptr + 1;
+					len  := len - 1;
+					data := data sll des8_data'length;
+					data(des8_data'range) := unsigned(des8_data);
 					if len(0)='1' then
 						state <= s_id;
 					else
@@ -84,14 +79,14 @@ begin
 					end if;
 				end case;
 			end if;
+			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
+			rgtr_dv   <= len(0) and des8_irdy;
+			rgtr_data <= std_logic_vector(data);
+
+			data_ena  <= des8_irdy;
+			data_ptr  <= std_logic_vector(ptr);
+			data_frm  <= setif(state=s_data);
 		end if;
 	end process;
- 
-	data_frm  <= sin_frm;
-	data_ena  <= des_irdy;
-	data_len  <= std_logic_vector(size);
-
-	rgtr_id   <= rid(rgtr_id'length-1 downto 0);
-	rgtr_dv   <= len(0);
 
 end;

@@ -235,25 +235,25 @@ begin
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
-		signal rgtr_idv    : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
 		signal data_ena    : std_logic;
-		signal data_len    : std_logic_vector(8-1 downto 0);
+		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 
-		signal ser_frm  : std_logic;
-		signal ser_irdy : std_logic;
-		signal ser_data : std_logic_vector(mii_rxd'reverse_range);
+		signal desser4_frm : std_logic;
+		signal ser4_irdy   : std_logic;
+		signal des4_trdy   : std_logic;
+		signal ser4_data   : std_logic_vector(mii_rxd'reverse_range);
 
 		signal stream_frm  : std_logic;
 		signal stream_irdy : std_logic;
 		signal stream_data : std_logic_vector(uart_rxd'range);
 		signal stream_ddat : std_logic_vector(uart_rxd'range);
 
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_data        : std_logic_vector(mii_rxd'range);
+		signal si_frm      : std_logic;
+		signal si_irdy     : std_logic;
+		signal si_data     : std_logic_vector(mii_rxd'range);
 
 		signal ipcfg_req : std_logic;
 	begin
@@ -283,15 +283,31 @@ begin
 			chaino_irdy => stream_irdy,
 			chaino_data => stream_data);
 
-		desser_e : entity hdl4fpga.desser
+		process(stream_frm, stream_irdy, mii_rxc)
+			variable frm : std_logic := '0';
+		begin
+			if rising_edge(mii_rxc) then
+				if frm='0' then
+					if stream_irdy='1' then
+						frm := stream_frm;
+					end if;
+				elsif des4_trdy='1' then
+					frm := '0';
+				end if;
+			end if;
+			desser4_frm <= stream_frm or frm;
+		end process;
+
+		desser4_e : entity hdl4fpga.desser(mux)
 		port map (
 			desser_clk => mii_rxc,
-			desser_frm => stream_frm,
+			desser_frm => desser4_frm,
 			des_irdy   => stream_irdy,
+			des_trdy   => des4_trdy,
 			des_data   => stream_data,
 
-			ser_irdy   => ser_irdy,
-			ser_data   => ser_data);
+			ser_irdy   => ser4_irdy,
+			ser_data   => ser4_data);
 
 		ipcfg_req <= not sw1;
 		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
@@ -308,8 +324,8 @@ begin
 		
 			chaini_sel  => '1',
 			chaini_frm  => stream_frm,
-			chaini_irdy => ser_irdy,
-			chaini_data => ser_data,
+			chaini_irdy => ser4_irdy,
+			chaini_data => ser4_data,
 
 			chaino_frm  => si_frm,
 			chaino_irdy => si_irdy,
@@ -321,10 +337,9 @@ begin
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
 			sin_data  => si_data,
-			data_len  => data_len,
+			data_ptr  => data_ptr,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
-			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
@@ -349,7 +364,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(2-1 downto 0)=(2-1 downto 0 => '1'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '1'));
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (

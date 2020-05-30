@@ -363,11 +363,10 @@ begin
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
-		signal rgtr_idv    : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
 		signal data_ena    : std_logic;
-		signal data_len    : std_logic_vector(8-1 downto 0);
+		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 		signal dst_irdy    : std_logic;
 	begin
@@ -403,10 +402,9 @@ begin
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
 			sin_data  => si_data,
-			data_len  => data_len,
+			data_ptr  => data_ptr,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
-			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
@@ -431,7 +429,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_len(1-1 downto 0)=(1-1 downto 0 => '1'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '1'));
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (

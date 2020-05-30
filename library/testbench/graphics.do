@@ -12,10 +12,17 @@ add wave -noupdate /testbench/du_e/scopeio_export_b/stream_irdy
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/scopeio_export_b/stream_data(7) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(6) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(5) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(4) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(3) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(2) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(1) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/stream_data(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/scopeio_export_b/stream_data(7) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/stream_data(0) {-height 29 -radix hexadecimal}} /testbench/du_e/scopeio_export_b/stream_data
 add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_frm
 add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(0) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(1) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(2) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data(3) {-height 29 -radix hexadecimal}} /testbench/du_e/scopeio_export_b/scopeio_sin_e/sin_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/desser_e/ser_data
+add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/serdes_frm
+add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/line__23/cntr
+add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/ser_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/ser_data
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(7) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(6) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(5) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(4) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(3) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(2) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(1) -radix hexadecimal} {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(7) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data(0) {-height 29 -radix hexadecimal}} /testbench/du_e/scopeio_export_b/scopeio_sin_e/des8_data
+add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/des_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/serdes_e/des_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/rgtr_id
-add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/rgtr_idv
-add wave -noupdate /testbench/du_e/scopeio_export_b/scopeio_sin_e/rgtr_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/len
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_export_b/scopeio_sin_e/rgtr_data
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk
 add wave -noupdate -group Micron /testbench/ddr_model_g/Clk_n
@@ -143,7 +150,7 @@ add wave -noupdate /testbench/du_e/ddrphy_sto
 add wave -noupdate /testbench/du_e/ddrphy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29167434100 fs} 0} {{Cursor 2} {387154000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {29155000000 fs} 0} {{Cursor 2} {387154000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 281
 configure wave -valuecolwidth 167
@@ -159,4 +166,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {126 us}
+WaveRestoreZoom {0 fs} {123900001280 fs}

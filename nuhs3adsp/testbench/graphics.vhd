@@ -181,7 +181,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 	constant baudrate : natural := 1000000;
 	constant uart_data  : std_logic_vector := 
-		x"0000" & 
+		x"000000" & 
 		x"1602_5c00_0180" &
 		x"0000" & 
 		x"18ff" & 
@@ -340,20 +340,20 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
-	ddr_model_g: ddr_model
-	port map (
-		Clk   => clk_p,
-		Clk_n => clk_n,
-		Cke   => cke,
-		Cs_n  => cs_n,
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba,
-		Addr  => addr,
-		Dm    => dm,
-		Dq    => dq,
-		Dqs   => dqs);
+--	ddr_model_g: ddr_model
+--	port map (
+--		Clk   => clk_p,
+--		Clk_n => clk_n,
+--		Cke   => cke,
+--		Cs_n  => cs_n,
+--		Ras_n => ras_n,
+--		Cas_n => cas_n,
+--		We_n  => we_n,
+--		Ba    => ba,
+--		Addr  => addr,
+--		Dm    => dm,
+--		Dq    => dq,
+--		Dqs   => dqs);
 
 end;
 
