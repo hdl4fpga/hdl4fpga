@@ -315,7 +315,7 @@ begin
 	    in_Hz => natural( 10.0e6),
 	  out0_Hz => natural( 70.0e6),
 	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 70.0e6), out2_deg => 90,
+	  out2_Hz => natural( 70.0e6), out2_deg => 90, -- 30-150
 	  out3_Hz => natural(  6.0e6)
 	)
         port map
