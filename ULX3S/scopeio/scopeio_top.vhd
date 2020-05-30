@@ -33,9 +33,9 @@ architecture beh of ulx3s is
         constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -53,7 +53,7 @@ architecture beh of ulx3s is
         constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
         constant C_view_usbphy  : boolean := false; -- USB PHY debug
-        constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
+        constant C_view_binary_gain: integer := 2;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false; -- NET output
         constant C_view_sync    : boolean := true;  -- external sync (LVDS receiver)
@@ -315,7 +315,7 @@ begin
 	    in_Hz => natural( 10.0e6),
 	  out0_Hz => natural( 70.0e6),
 	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 70.0e6), out2_deg => 45,
+	  out2_Hz => natural( 70.0e6), out2_deg => 90,
 	  out3_Hz => natural(  6.0e6)
 	)
         port map
