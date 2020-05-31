@@ -46,8 +46,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1; --3;
+	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -265,7 +265,7 @@ begin
 			baudrate => baudrate,
 			clk_rate => uart_xtal)
 		port map (
-			uart_rxc  => mii_rxc,
+			uart_rxc  => si_clk,
 			uart_sin  => rs232_rd,
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd);
@@ -275,7 +275,7 @@ begin
 			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
 		port map (
-			stream_clk  => mii_rxc,
+			stream_clk  => si_clk,
 			stream_dv   => uart_rxdv,
 			stream_data => uart_rxd,
 
@@ -285,11 +285,11 @@ begin
 			chaino_irdy => stream_irdy,
 			chaino_data => stream_data);
 
-		process(stream_frm, stream_irdy, des8_trdy, mii_rxc)
+		process(stream_frm, stream_irdy, des8_trdy, si_clk)
 			variable frm  : std_logic;
 			variable edge : std_logic;
 		begin
-			if rising_edge(mii_rxc) then
+			if rising_edge(si_clk) then
 				if frm='0' then
 					if stream_irdy='1' then
 						frm := stream_frm;
@@ -308,7 +308,7 @@ begin
 
 		desser4_e : entity hdl4fpga.desser(mux)
 		port map (
-			desser_clk => mii_rxc,
+			desser_clk => si_clk,
 			desser_frm => desser8_frm,
 			des_irdy   => stream_irdy,
 			des_trdy   => des8_trdy,
