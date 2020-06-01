@@ -87,13 +87,6 @@ int main (int argc, char *argv[])
 				bufptr += (len+1);
 				switch (rid) {
 				case 0x17:
-					*bufptr++ = 0xff;
-					*bufptr++ = 0xff;
-					if (sendto(s, buffer, bufptr-buffer, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-						perror ("sendto() error");
-						exit (-1);
-					}
-					bufptr = buffer;
 					break;
 				case 0x16:
 					addr = 0;
@@ -101,7 +94,14 @@ int main (int argc, char *argv[])
 						addr <<= 8;
 						addr |=  (bufptr-len-1)[j];
 					}
+					*bufptr++ = 0xff;
+					*bufptr++ = 0xff;
+					if (sendto(s, buffer, bufptr-buffer, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+						perror ("sendto() error");
+						exit (-1);
+					}
 					fprintf(stderr, "Memory address : 0x%08x\n", addr);
+					bufptr = buffer;
 					break;
 				}
 			} else {

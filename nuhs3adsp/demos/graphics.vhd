@@ -176,7 +176,7 @@ architecture graphics of nuhs3adsp is
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
 		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
 
-	constant video_mode : natural := mode;
+	constant video_mode : natural := mode768p; --mode;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -359,6 +359,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
+			dv        => dmaio_dv,
 			data      => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -369,7 +370,6 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-			dv        => dmaio_dv,
 			data      => dmaio_len);
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '1'));

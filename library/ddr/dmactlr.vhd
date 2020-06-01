@@ -99,13 +99,23 @@ architecture def of dmactlr is
 	signal r   : std_logic_vector(ctlr_r'length-1 downto 0) := (others => '1');
 begin
 
-	process (devcfg_clk)
-	begin
-		if rising_edge(devcfg_clk) then
-			dmacfg_req <= devcfg_req;
-			devcfg_rdy <= dmacfg_rdy;
-		end if;
-	end process;
+	devreq_sync_e : entity hdl4fpga.align
+	generic map (
+		n => devcfg_req'length,
+		d => (0 to devcfg_req'length-1 => 2))
+	port map (
+		clk => devcfg_clk,
+		di  => devcfg_req,
+		do  => dmacfg_req);
+
+	dmardy_sync_e : entity hdl4fpga.align
+	generic map (
+		n => devcfg_req'length,
+		d => (0 to devcfg_req'length-1 => 1))
+	port map (
+		clk => devcfg_clk,
+		di  => dmacfg_rdy,
+		do  => devcfg_rdy);
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (

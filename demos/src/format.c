@@ -65,31 +65,32 @@ int main (int argc, char *argv[])
 	} else
 		fprintf (stderr, "buffer size is %d\n", bsize);
 
-	memaddr = memdata + (2+bsize);
-	memlen  = memaddr + 5;
 
 	memdata[0] = 0x18;
 
-	memaddr[0] = 0x16;
-	memaddr[1] = 0x02;
-
+	memlen  = memdata + (2+bsize);
 	memlen[0]  = 0x17;
 	memlen[1]  = 0x02;
 	memlen[2]  = 0x00;
 	memlen[3]  = 0x00;
 
+	memaddr = memlen + 5;
+	memaddr[0] = 0x16;
+	memaddr[1] = 0x02;
+
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), bsize, stdin)) > 0; addr += (n/wsize)) {
+
+		memdata[1] = n-1;
 
 		memaddr[2] = (addr >> 16) & 0xff;
 		memaddr[3] = (addr >>  8) & 0xff;
 		memaddr[4] = (addr >>  0) & 0xff;
 
-		memdata[1] = n-1;
 		memlen[4]  = n/wsize-1;
 
-		fwrite(buffer, sizeof(char), sizeof(buffer)-MAXSIZE+n, stdout);
+		fwrite(buffer, sizeof(char), sizeof(buffer)-(MAXSIZE-n), stdout);
 
 	}
 
