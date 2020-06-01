@@ -36,13 +36,14 @@ entity graphic is
 		ctlr_clk     : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
+--		mem_addr     : in  std_logic_vector := (0 to 0 => '0');
 		dma_req      : buffer std_logic := '0';
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
 		video_clk    : in  std_logic;
-		video_hzon   : in std_logic;
-		video_vton   : in std_logic;
+		video_hzon   : in  std_logic;
+		video_vton   : in  std_logic;
 		video_pixel  : out std_logic_vector);
 end;
 
@@ -97,7 +98,7 @@ begin
 				dma_req  <= '1';
 				level    <= level + line_size;
 				dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
-				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
+				dma_addr <= std_logic_vector(resize(resize(unsigned(dma_addr) + dma_step, 21), dma_addr'length));
 				dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
 			elsif mydma_rdy='1' then
 				dma_req <= '0';

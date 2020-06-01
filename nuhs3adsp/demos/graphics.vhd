@@ -166,17 +166,19 @@ architecture graphics of nuhs3adsp is
 	constant mode480p  : natural := 1;
 	constant mode600p  : natural := 2;
 	constant mode768p  : natural := 3;
-	constant mode1080p : natural := 4;
+	constant mode900p  : natural := 4;
+	constant mode1080p : natural := 5;
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_tab : displayparam_vector := (
-		modedebug   => (mode => 16, dcm_mul => 4, dcm_div => 2),
+		modedebug   => (mode => pclk_debug, dcm_mul => 4, dcm_div => 2),
 		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
 		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
 		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
-		mode1080p   => (mode =>  7, dcm_mul => 15, dcm_div => 2));
+		mode900p    => (mode => pclk100m1600x900Rat60, dcm_mul =>  5, dcm_div => 1),
+		mode1080p   => (mode =>  6, dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : natural := mode768p; --mode;
+	constant video_mode : natural := mode1080p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -241,6 +243,8 @@ begin
 		signal data_ena    : std_logic;
 		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
+		signal fifo_rst    : std_logic;
+		signal src_frm     : std_logic;
 
 		signal desser8_frm : std_logic;
 		signal des8_trdy   : std_logic;
@@ -258,6 +262,7 @@ begin
 		signal si_data     : std_logic_vector(mii_rxd'range);
 
 		signal ipcfg_req : std_logic;
+
 	begin
 
 		uartrx_e : entity hdl4fpga.uart_rx
@@ -329,6 +334,7 @@ begin
 			phy_txc     => mii_txc,
 			phy_tx_en   => mii_txen,
 			phy_tx_d    => mii_txd,
+			ipcfg_vld   => led7,
 		
 			chaini_sel  => '0',
 			chaini_frm  => stream_frm,
@@ -370,10 +376,12 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
+			dv        => fifo_rst,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '1'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 
+		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			size           => 64,
@@ -381,6 +389,7 @@ begin
 			overflow_check => false)
 		port map (
 			src_clk  => si_clk,
+			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data,
 
@@ -772,7 +781,7 @@ begin
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
-	led7  <= '0';
+--	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------

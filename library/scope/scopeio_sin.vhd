@@ -30,7 +30,6 @@ architecture beh of scopeio_sin is
 
 	type states is (s_id, s_size, s_data);
 	signal state : states;
-	signal ptr   : unsigned(byte'range);
 
 begin
 
@@ -70,26 +69,27 @@ begin
 		variable rid   : byte;
 		variable len   : unsigned(0 to byte'length);
 		variable data  : unsigned(rgtr_data'length-1 downto 0);
+		variable ptr   : unsigned(byte'range);
 	begin
 		if rising_edge(sin_clk) then
 			if sin_frm='0' then
-				ptr   <= (others => '0');
+				ptr   := (others => '0');
 				rid   := (others => '-');
 				len   := (others => '0');
 				state <= s_id;
 			elsif des8_irdy='1' then
 				case state is
 				when s_id =>
-					ptr   <= (others => '0');
+					ptr   := (others => '0');
 					rid   := des8_data;
 					len   := (others => '0');
 					state <= s_size;
 				when s_size =>
-					ptr   <= (others => '0');
+					ptr   := (others => '0');
 					len   := resize(unsigned(des8_data), len'length);
 					state <= s_data;
 				when s_data =>
-					ptr  <= ptr + 1;
+					ptr  := ptr + 1;
 					len  := len - 1;
 					data := data sll des8_data'length;
 					data(des8_data'range) := unsigned(des8_data);
@@ -104,7 +104,7 @@ begin
 			rgtr_dv   <= len(0) and des8_irdy;
 			rgtr_data <= std_logic_vector(data);
 
-			data_ena  <= des8_irdy;
+			data_ena  <= des8_irdy and setif(state=s_data);
 			data_ptr  <= std_logic_vector(ptr);
 			data_frm  <= setif(state=s_data);
 		end if;

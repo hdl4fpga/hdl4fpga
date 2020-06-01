@@ -11,7 +11,8 @@
 #define MAXSIZE (256)
 
 static unsigned char buffer[(2+MAXSIZE)+(2+3)+(2+3)];
-static unsigned char *const memdata = buffer;
+static unsigned char *bufptr;
+static unsigned char *memdata;
 static unsigned char *memaddr;
 static unsigned char *memlen;
 static unsigned wsize = 0;
@@ -66,29 +67,38 @@ int main (int argc, char *argv[])
 		fprintf (stderr, "buffer size is %d\n", bsize);
 
 
-	memdata[0] = 0x18;
-
-	memlen  = memdata + (2+bsize);
-	memlen[0]  = 0x17;
-	memlen[1]  = 0x02;
-	memlen[2]  = 0x00;
-	memlen[3]  = 0x00;
-
-	memaddr = memlen + 5;
-	memaddr[0] = 0x16;
-	memaddr[1] = 0x02;
-
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
-	for(unsigned addr = 0; (n = fread(buffer+2, sizeof(char), bsize, stdin)) > 0; addr += (n/wsize)) {
+	for(unsigned addr = 0; ; addr += (n/wsize)) {
 
+		bufptr = buffer;
+
+		memlen    = bufptr;
+		memlen[0] = 0x17;
+		memlen[1] = 0x02;
+
+		bufptr += (2 + bufptr[1] + 1);
+
+		memdata    = bufptr;
+		memdata[0] = 0x18;
+
+		if (!(n = fread(memdata+2, sizeof(char), bsize, stdin)) > 0)
+			break;
 		memdata[1] = n-1;
 
-		memaddr[2] = (addr >> 16) & 0xff;
-		memaddr[3] = (addr >>  8) & 0xff;
-		memaddr[4] = (addr >>  0) & 0xff;
+		bufptr += (2 + bufptr[1] + 1);
 
-		memlen[4]  = n/wsize-1;
+		memaddr    = bufptr;
+		memaddr[0] = 0x16;
+		memaddr[1] = 0x02;
+
+		memlen[2]  = 0xff & ((n/wsize-1) >> 16);
+		memlen[3]  = 0xff & ((n/wsize-1) >>  8);
+		memlen[4]  = 0xff & ((n/wsize-1) >>  0);
+
+		memaddr[2] = 0xff & (addr >> 16);
+		memaddr[3] = 0xff & (addr >>  8);
+		memaddr[4] = 0xff & (addr >>  0);
 
 		fwrite(buffer, sizeof(char), sizeof(buffer)-(MAXSIZE-n), stdout);
 

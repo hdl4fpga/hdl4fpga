@@ -38,6 +38,7 @@ int main (int argc, char *argv[])
 	unsigned char buffer[1024];
 	unsigned char *bufptr;
 	unsigned int addr;
+	unsigned int tlen;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
@@ -86,7 +87,16 @@ int main (int argc, char *argv[])
 			if (fread(bufptr, sizeof(char), len+1, stdin) > 0) {
 				bufptr += (len+1);
 				switch (rid) {
+				case 0x18:
+					fprintf(stderr, "Buffer length : 0x%08x | ", len);
+					break;
 				case 0x17:
+					tlen = 0;
+					for(int j = 0; j <= len; j++) {
+						tlen <<= 8;
+						tlen |=  (bufptr-len-1)[j];
+					}
+					fprintf(stderr, "Transfer length : 0x%08x | ", tlen);
 					break;
 				case 0x16:
 					addr = 0;
@@ -107,7 +117,7 @@ int main (int argc, char *argv[])
 			} else {
 				exit(-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 500000L } }, NULL);
+			nanosleep((const struct timespec[]){ {0, 1000000L } }, NULL);
 		} else {
 			exit(-1);
 		}

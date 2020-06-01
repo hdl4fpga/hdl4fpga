@@ -280,7 +280,7 @@ begin
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
 				x"000000"
-				& x"1602000180"
+				& x"170200007f"
 				& x"18ff"
 				& x"123456789abcdef123456789abcdef12"
 				& x"23456789abcdef123456789abcdef123"
@@ -298,26 +298,28 @@ begin
 				& x"ef123456789abcdef123456789abcdef"
 				& x"f123456789abcdef123456789abcdef1"
 				& x"123456789abcdef123456789abcdef12"
-				& x"170200007f"
-				& x"18ff"
-				& x"1234ffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffaabb"
-				& x"ccddffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffff6789"
-				& x"1602000000"
-				& x"170200007f"
+				& x"1602000180"
+				& x"ffff"
+--				& x"170200007f"
+--				& x"18ff"
+--				& x"1234ffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffaabb"
+--				& x"ccddffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffffffff"
+--				& x"ffffffffffffffffffffffffffff6789"
+--				& x"1602000000"
+--				& x"ffff"
 			)   &
 			x"00000000"
 		,8)
@@ -375,20 +377,20 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
---	ddr_model_g: ddr_model
---	port map (
---		Clk   => clk_p,
---		Clk_n => clk_n,
---		Cke   => cke,
---		Cs_n  => cs_n,
---		Ras_n => ras_n,
---		Cas_n => cas_n,
---		We_n  => we_n,
---		Ba    => ba,
---		Addr  => addr,
---		Dm    => dm,
---		Dq    => dq,
---		Dqs   => dqs);
+	ddr_model_g: ddr_model
+	port map (
+		Clk   => clk_p,
+		Clk_n => clk_n,
+		Cke   => cke,
+		Cs_n  => cs_n,
+		Ras_n => ras_n,
+		Cas_n => cas_n,
+		We_n  => we_n,
+		Ba    => ba,
+		Addr  => addr,
+		Dm    => dm,
+		Dq    => dq,
+		Dqs   => dqs);
 
 end;
 
