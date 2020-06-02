@@ -36,7 +36,7 @@ entity graphic is
 		ctlr_clk     : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
---		mem_addr     : in  std_logic_vector := (0 to 0 => '0');
+		base_addr    : in  std_logic_vector;
 		dma_req      : buffer std_logic := '0';
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
@@ -90,7 +90,7 @@ begin
 				end if;
 				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
-				dma_addr <= (dma_addr'range => '0');
+				dma_addr <= base_addr; --(dma_addr'range => '0');
 				dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
 			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
 				level <= level - video_width;

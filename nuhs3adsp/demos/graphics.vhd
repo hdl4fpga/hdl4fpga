@@ -178,7 +178,7 @@ architecture graphics of nuhs3adsp is
 		mode900p    => (mode => pclk100m1600x900Rat60, dcm_mul =>  5, dcm_div => 1),
 		mode1080p   => (mode =>  6, dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : natural := mode1080p;
+	constant video_mode : natural := setif(debug, modedebug, mode1080p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -444,7 +444,7 @@ begin
 		tographic_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length+1,
-			d => (0 to ctlr_do'length => 4))
+			d => (0 to ctlr_do'length => 1))
 		port map (
 			clk => ctlr_clk,
 			di(0 to ctlr_do'length-1) => ctlr_do,
@@ -456,13 +456,15 @@ begin
 		generic map (
 			video_width => modeline_data(video_tab(video_mode).mode)(0))
 		port map (
+			ctlr_clk    => ctlr_clk,
+			ctlr_di_dv  => graphic_dv,
+			ctlr_di     => graphic_di,
+--			base_addr   => std_logic_vector(resize(unsigned'(x"0f_fff0"), dmavideo_addr'length)),
+			base_addr   => std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length)),
 			dma_req     => dmacfgvideo_req,
 			dma_rdy     => dmavideo_rdy,
 			dma_len     => dmavideo_len,
 			dma_addr    => dmavideo_addr,
-			ctlr_clk    => ctlr_clk,
-			ctlr_di_dv  => graphic_dv,
-			ctlr_di     => graphic_di,
 			video_clk   => video_clk,
 			video_hzon  => hzon,
 			video_vton  => vton,

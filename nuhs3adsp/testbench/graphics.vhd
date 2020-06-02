@@ -68,7 +68,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 	component nuhs3adsp is
 		generic (
-			mode : natural := 0);
+			debug : boolean := true);
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;

@@ -117,7 +117,7 @@ int main (int argc, char *argv[])
 			} else {
 				exit(-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 1000000L } }, NULL);
+			nanosleep((const struct timespec[]){ {0, 100000L } }, NULL);
 		} else {
 			exit(-1);
 		}

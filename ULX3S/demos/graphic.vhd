@@ -509,13 +509,14 @@ begin
 		generic map (
 			video_width => modeline_data(video_tab(video_mode).mode)(0))
 		port map (
+			ctlr_clk     => ctlr_clk,
+			ctlr_di_dv   => graphic_dv,
+			ctlr_di      => graphic_di,
+			base_addr   => std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length)),
 			dma_req      => dmacfgvideo_req,
 			dma_rdy      => dmavideo_rdy,
 			dma_len      => dmavideo_len,
 			dma_addr     => dmavideo_addr,
-			ctlr_clk     => ctlr_clk,
-			ctlr_di_dv   => graphic_dv,
-			ctlr_di      => graphic_di,
 			video_clk    => video_clk,
 			video_hzon   => hzon,
 			video_vton   => vton,
