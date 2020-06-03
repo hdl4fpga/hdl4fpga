@@ -73,8 +73,8 @@ architecture graphics of nuhs3adsp is
 	constant clk90        : natural := 1;
 	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_len    : std_logic_vector(24-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(24-1 downto 2);
+	signal dmactlr_len    : std_logic_vector(25-1 downto 2);
+	signal dmactlr_addr   : std_logic_vector(25-1 downto 2);
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
@@ -178,7 +178,7 @@ architecture graphics of nuhs3adsp is
 		mode900p    => (mode => pclk100m1600x900Rat60, dcm_mul =>  5, dcm_div => 1),
 		mode1080p   => (mode =>  6, dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : natural := setif(debug, modedebug, mode1080p);
+	constant video_mode : natural := setif(debug, mode600p, mode1080p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -459,8 +459,8 @@ begin
 			ctlr_clk    => ctlr_clk,
 			ctlr_di_dv  => graphic_dv,
 			ctlr_di     => graphic_di,
---			base_addr   => std_logic_vector(resize(unsigned'(x"0f_fff0"), dmavideo_addr'length)),
-			base_addr   => std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length)),
+			base_addr   => setif(debug, std_logic_vector(resize(unsigned'(x"0f_ff00"), dmavideo_addr'length)),
+			std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length))),
 			dma_req     => dmacfgvideo_req,
 			dma_rdy     => dmavideo_rdy,
 			dma_len     => dmavideo_len,
