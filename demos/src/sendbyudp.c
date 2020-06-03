@@ -37,20 +37,21 @@ int main (int argc, char *argv[])
 	unsigned char rid;
 	unsigned char buffer[1500];
 	unsigned char *bufptr;
-	unsigned int addr;
 	unsigned int tlen;
 	unsigned int bsize;
+	unsigned int addr;
 	unsigned int base;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
+	base = 0;
 	while ((c = getopt (argc, argv, "bh:")) != -1) {
 		switch (c) {
 		case 'h':
 			if (optarg)
-				sscanf (optarg, "%s", hostname);
+				sscanf (optarg, "%64s", hostname);
 			break;
 		case 'b':
 			if (optarg)
@@ -120,7 +121,12 @@ int main (int argc, char *argv[])
 						addr <<= 8;
 						addr |=  (bufptr-len-1)[j];
 					}
+					addr += base;
 					fprintf(stderr, "Memory address : 0x%08x | ", addr);
+					for(int j = len; j >=0; j--) {
+						(bufptr-len-1)[j] = (addr & 0xff);
+						addr >>= 8;
+					}
 					break;
 				}
 			} else {
