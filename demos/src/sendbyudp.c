@@ -40,16 +40,21 @@ int main (int argc, char *argv[])
 	unsigned int addr;
 	unsigned int tlen;
 	unsigned int bsize;
+	unsigned int base;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-	while ((c = getopt (argc, argv, "h:")) != -1) {
+	while ((c = getopt (argc, argv, "bh:")) != -1) {
 		switch (c) {
 		case 'h':
 			if (optarg)
 				sscanf (optarg, "%s", hostname);
+			break;
+		case 'b':
+			if (optarg)
+				sscanf (optarg, "%d", &base);
 			break;
 		case '?':
 			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
