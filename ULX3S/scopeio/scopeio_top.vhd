@@ -33,9 +33,9 @@ architecture beh of ulx3s is
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -46,16 +46,17 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_adc     : boolean := false;  -- ADC onboard analog view
+        constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
-        constant C_view_usb     : boolean := true; -- USB or PS/2 digital view
+        constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
         constant C_view_usb_decoder: boolean := false;
         constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
         constant C_view_usbphy  : boolean := false; -- USB PHY debug
-        constant C_view_binary_gain: integer := 1;  -- 2**n -- for SPI/USB digital view
+        constant C_view_binary_gain: integer := 2;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false; -- NET output
+        constant C_view_sync    : boolean := true;  -- external sync (LVDS receiver)
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
@@ -103,6 +104,7 @@ architecture beh of ulx3s is
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
+	signal clk_pixel_shift_ext: std_logic; -- 5x vga clk, phase shifted
 
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -168,7 +170,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := 10000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -277,14 +279,16 @@ begin
 	    in_Hz => natural( 25.0e6),
 	  out0_Hz => natural(200.0e6),
 	  out1_Hz => natural( 40.0e6),
-	  out2_Hz => natural( 66.6e6),
-	  out3_Hz => natural(  6.0e6)
+	  out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
 	)
         port map
         (
           clk_i    =>  clk_25MHz,
           clk_o    =>  clk_pll
         );
+        clk_pixel_shift     <= clk_pll(0);
+        clk_pixel_shift_ext <= clk_pll(0);
         end generate;
 
 	G_lvds_internal_sync_clk: if C_lvds_vga and C_external_sync='0' generate
@@ -294,14 +298,16 @@ begin
 	    in_Hz => natural( 25.0e6),
 	  out0_Hz => natural( 70.0e6),
 	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 63.6e6),
-	  out3_Hz => natural(  6.0e6)
+	  out2_Hz => natural( 63.0e6),
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 50000
 	)
         port map
         (
           clk_i   =>  clk_25MHz,
           clk_o   =>  clk_pll
         );
+        clk_pixel_shift_ext <= clk_pll(0);
+        clk_pixel_shift <= clk_pll(0);
         end generate;
 
 	G_lvds_external_sync_clk: if C_lvds_vga and C_external_sync='1' generate
@@ -311,18 +317,19 @@ begin
 	    in_Hz => natural( 10.0e6),
 	  out0_Hz => natural( 70.0e6),
 	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 70.6e6), out2_deg => 100,
-	  out3_Hz => natural(  6.0e6)
+	  out2_Hz => natural( 70.0e6), out2_deg => 90, -- 30-150
+	  out3_Hz => natural(  6.0e6), out2_tol_Hz => 100000
 	)
         port map
         (
           clk_i   =>  gp_i(12),
           clk_o   =>  clk_pll
         );
+        clk_pixel_shift     <= clk_pll(0);
+        clk_pixel_shift_ext <= clk_pll(2);
         end generate;
 
         -- 800x600
-        clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
         clk <= clk_pll(1); -- 25 MHz pulse sinewave function
@@ -687,6 +694,16 @@ begin
 	clk_input <= vga_clk;
 	end generate;
 
+	G_view_sync: if C_view_sync generate
+	S_input_ena <= '1';
+
+	trace_yellow(C_view_binary_gain+4) <= vga_hsync_ext;
+	trace_cyan(C_view_binary_gain+4)   <= vga_vsync_ext;
+	trace_green(C_view_binary_gain+4)  <= vga_de_ext;
+	--trace_violet(C_view_binary_gain+4) <= '0';
+	clk_input <= vga_clk;
+	end generate;
+
 	G_view_usb_decoder: if C_view_usb_decoder generate
 	B_view_usb_decoder: block
 	  signal S_decoder_data: std_logic_vector(7 downto 0);
@@ -970,7 +987,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6), -- 200MHz if available is better than 25MHz here
-            out0_Hz  => natural(48.0e6)  -- then 48MHz exactly can be generatoed
+            out0_Hz  => natural(48.0e6), out0_tol_Hz => 50000  -- then 48MHz exactly can be generatoed
           )
           port map
           (
@@ -1510,7 +1527,7 @@ begin
 	  lvds2vga_inst: entity work.lvds2vga
           port map
           (
-            clk_pixel => vga_clk, clk_shift => clk_pixel_shift,
+            clk_pixel => vga_clk, clk_shift => clk_pixel_shift_ext,
             lvds_i => gp_i(12 downto 9), -- cbgr
             r_o => vga_r_ext, g_o => vga_g_ext, b_o => vga_b_ext,
             hsync_o => vga_hsyncn_ext, vsync_o => vga_vsyncn_ext, de_o => vga_de_ext
