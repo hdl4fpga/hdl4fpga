@@ -29,8 +29,8 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
-        constant C_external_sync : std_logic := '0';
+        constant vlayout_id: integer := 11;
+        constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
@@ -84,8 +84,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_dvi_vga:  boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -314,11 +314,11 @@ begin
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 10.0e6),
-	  out0_Hz => natural( 70.0e6),
-	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 70.0e6), out2_deg => 90, -- 30-150
-	  out3_Hz => natural(  6.0e6), out2_tol_Hz => 100000
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural(175.0e6),
+	  out1_Hz => natural( 25.0e6),
+	  out2_Hz => natural(175.0e6), out2_deg => 90, -- 30-150
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
 	)
         port map
         (
