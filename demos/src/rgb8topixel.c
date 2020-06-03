@@ -101,13 +101,13 @@ int main (int argc, char *argv[])
 			break;
 		case '?':
 		default:
-			fprintf (stderr, "usage :  rgb8tofmt -f [rgb8|rgb565]\n");
+			fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
 			exit(-1);
 		}
 	}
 
 	if (!topixels) {
-		fprintf (stderr, "usage :  rgb8tofmt -f [rgb8|rgb565]\n");
+		fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
 		exit(-1);
 	}
 

@@ -46,8 +46,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 3;
+	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 1; --3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -365,7 +365,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-			dv        => dmaio_dv,
+			dv        => fifo_rst,
 			data      => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -376,7 +376,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-			dv        => fifo_rst,
+			dv        => dmaio_dv,
 			data      => dmaio_len);
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
@@ -384,7 +384,7 @@ begin
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => 64,
+			size           => 8*1024/ctlr_di'length,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
