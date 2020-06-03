@@ -16,12 +16,16 @@ entity ecp5pll is
     in_hz        : natural := 25000000;
     out0_hz      : natural := 25000000;
     out0_deg     : natural :=        0; -- keep 0
+    out0_tol_hz  : natural :=        0; -- Hz tolerance
     out1_hz      : natural := 25000000;
     out1_deg     : natural :=        0;
+    out1_tol_hz  : natural :=        0;
     out2_hz      : natural := 25000000;
     out2_deg     : natural :=        0;
+    out2_tol_hz  : natural :=        0;
     out3_hz      : natural := 25000000;
     out3_deg     : natural :=        0;
+    out3_tol_hz  : natural :=        0;
     reset_en     : natural :=        0;
     standby_en   : natural :=        0;
     dynamic_en   : natural :=        0
@@ -113,10 +117,10 @@ architecture mix of ecp5pll is
       constant VCO_MAX: natural := 800000000;
       constant VCO_OPTIMAL: natural := (VCO_MIN+VCO_MAX)/2;
       variable params: T_params;
-      variable input_div, feedback_div, output_div: natural;
-      variable input_div_min,  input_div_max  : natural;
-      variable output_div_min, output_div_max : natural;
-      variable fpfd: natural;
+
+      variable input_div, input_div_min, input_div_max : natural;
+      variable feedback_div, feedback_div_min, feedback_div_max : natural;
+      variable output_div, output_div_min, output_div_max : natural;
       variable fout: natural;
       variable fvco: natural := 0;
       variable error: natural := 999999999;
@@ -147,17 +151,31 @@ architecture mix of ecp5pll is
         input_div_max := 128;
       end if;
       for input_div in input_div_min to input_div_max loop
-        fpfd := in_hz / input_div;
-        for feedback_div in 1 to 80 loop
-          fout := fpfd * feedback_div;
-          output_div_min := VCO_MIN/fout;
+        if out0_hz / 1000000 * input_div < 2000 then
+          feedback_div := out0_hz * input_div / in_hz;
+        else
+          feedback_div := out0_hz / in_hz * input_div;
+        end if;
+        if feedback_div < 2 then
+          feedback_div_min := 1;
+        else
+          feedback_div_min := feedback_div-1;
+        end if;
+        if feedback_div > 79 then
+          feedback_div_max := 80;
+        else
+          feedback_div_max := feedback_div+1;
+        end if;
+        for feedback_div in feedback_div_min to feedback_div_max loop
+          output_div_min := (VCO_MIN/feedback_div) / (in_hz/input_div);
           if output_div_min < 1 then
             output_div_min := 1;
           end if;
-          output_div_max := VCO_MAX/fout;
+          output_div_max := (VCO_MAX/feedback_div) / (in_hz/input_div);
           if output_div_max > 128 then
             output_div_max := 128;
           end if;
+          fout := in_hz * feedback_div / input_div;
           for output_div in output_div_min to output_div_max loop
             fvco := fout * output_div;
             if abs(fout-out0_hz) < error -- prefer least error
@@ -174,7 +192,7 @@ architecture mix of ecp5pll is
               params.output_div     := output_div;
               params.fin_string     := Hz2MHz_str(in_hz);
               params.fout_string    := Hz2MHz_str(fout);
-              params.fout           := fout;
+              params.fout           := in_hz * feedback_div / input_div;
               params.fvco           := fvco;
               params.primary_cphase := phase_count_x8 / 8;
               params.primary_fphase := phase_count_x8 mod 8;
@@ -301,6 +319,31 @@ architecture mix of ecp5pll is
   attribute NGD_DRC_MASK : integer;
   attribute NGD_DRC_MASK of mix : architecture is 1;
 begin
+  assert false
+    report "clk_o(0) " & Hz2MHz_str(params.result.out0_hz) & " MHz " & Hz2MHz_str(params.result.out0_deg*1000000) & " deg"
+    severity note;
+  assert false
+    report "clk_o(1) " & Hz2MHz_str(params.result.out1_hz) & " MHz " & Hz2MHz_str(params.result.out1_deg*1000000) & " deg"
+    severity note;
+  assert false
+    report "clk_o(2) " & Hz2MHz_str(params.result.out2_hz) & " MHz " & Hz2MHz_str(params.result.out2_deg*1000000) & " deg"
+    severity note;
+  assert false
+    report "clk_o(3) " & Hz2MHz_str(params.result.out3_hz) & " MHz " & Hz2MHz_str(params.result.out3_deg*1000000) & " deg"
+    severity note;
+  assert abs(out0_hz - params.result.out0_hz) <= out0_tol_hz
+    report "clk_o(0) " & Hz2MHz_str(params.result.out0_hz) & " MHz exceeds " & Hz2MHz_str(out0_hz) & "+-" & Hz2MHz_str(out0_tol_hz) & " MHz out0_tol_hz"
+    severity failure;
+  assert abs(out1_hz - params.result.out1_hz) <= out1_tol_hz
+    report "clk_o(1) " & Hz2MHz_str(params.result.out1_hz) & " MHz exceeds " & Hz2MHz_str(out1_hz) & "+-" & Hz2MHz_str(out1_tol_hz) & " MHz out1_tol_hz"
+    severity failure;
+  assert abs(out2_hz - params.result.out2_hz) <= out2_tol_hz
+    report "clk_o(2) " & Hz2MHz_str(params.result.out2_hz) & " MHz exceeds " & Hz2MHz_str(out2_hz) & "+-" & Hz2MHz_str(out2_tol_hz) & " MHz out2_tol_hz"
+    severity failure;
+  assert abs(out3_hz - params.result.out3_hz) <= out3_tol_hz
+    report "clk_o(3) " & Hz2MHz_str(params.result.out3_hz) & " MHz exceeds " & Hz2MHz_str(out3_hz) & "+-" & Hz2MHz_str(out3_tol_hz) & " MHz out3_tol_hz"
+    severity failure;
+
   G_dynamic: if dynamic_en /= 0 generate
   PHASESEL_HW <= phasesel-1;
   end generate;
