@@ -31,7 +31,7 @@ architecture beh of ulx3s is
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
 	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
         constant vlayout_id: integer := 13;
-        constant C_external_sync : std_logic := '0';
+        constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
@@ -86,7 +86,7 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -103,6 +103,7 @@ architecture beh of ulx3s is
 
 	signal rst        : std_logic := '0';
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
+	signal clk_pll1   : std_logic_vector(3 downto 0); -- output from pll
 	signal clk_pll2   : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
@@ -121,6 +122,7 @@ architecture beh of ulx3s is
         signal vga_rgb_ext: std_logic_vector(vga_rgb'range);
         signal vga_rgb_mix: std_logic_vector(vga_rgb'range);
         constant vga_r_transparent, vga_g_transparent, vga_b_transparent: std_logic_vector(vga_r_ext'range) := (others => '0');
+        signal S_transparent: boolean;
 
 	signal vga_hsync_test : std_logic;
 	signal vga_vsync_test : std_logic;
@@ -293,10 +295,10 @@ begin
         port map
         (
           clk_i    =>  clk_25MHz,
-          clk_o    =>  clk_pll
+          clk_o    =>  clk_pll1
         );
-        clk_pixel_shift     <= clk_pll(0);
-        clk_pixel_shift_ext <= clk_pll(0);
+        clk_pixel_shift     <= clk_pll1(0);
+        clk_pixel_shift_ext <= clk_pll1(0);
         end generate;
 
 	G_lvds_internal_sync_clk: if C_lvds_vga and C_external_sync='0' generate
@@ -304,18 +306,18 @@ begin
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural( 70.0e6),
-	  out1_Hz => natural( 10.0e6),
-	  out2_Hz => natural( 63.0e6),
+	  out0_Hz => natural(175.0e6),
+	  out1_Hz => natural( 25.0e6),
+	  out2_Hz => natural( 65.6e6), out2_tol_Hz => 50000,
 	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 50000
 	)
         port map
         (
           clk_i   =>  clk_25MHz,
-          clk_o   =>  clk_pll
+          clk_o   =>  clk_pll2
         );
-        clk_pixel_shift_ext <= clk_pll(0);
-        clk_pixel_shift_lvds <= clk_pll(0);
+        clk_pixel_shift_ext <= clk_pll2(0);
+        clk_pixel_shift_lvds <= clk_pll2(0);
         end generate;
 
 	G_lvds_external_sync_clk: if C_lvds_vga and (not C_dvi_vga) and C_external_sync='1' generate
@@ -338,6 +340,20 @@ begin
         end generate;
 
 	G_lvds_dvi_external_sync_clk: if C_lvds_vga and C_dvi_vga and C_external_sync='1' generate
+	clk_dvi_25_125: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural(125.0e6),
+	  out1_Hz => natural( 25.0e6),
+	  out2_Hz => natural( 62.5e6), out2_tol_Hz => 1000000,
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  100000
+	)
+        port map
+        (
+          clk_i   =>  gp_i(12),
+          clk_o   =>  clk_pll1
+        );
 	clk_lvds_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
@@ -350,24 +366,14 @@ begin
         port map
         (
           clk_i   =>  gp_i(12),
-          clk_o   =>  clk_pll
-        );
-	clk_dvi_25_125: entity hdl4fpga.ecp5pll
-	generic map
-	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(125.0e6)
-	)
-        port map
-        (
-          clk_i   =>  gp_i(12),
           clk_o   =>  clk_pll2
         );
-        clk_pixel_shift      <= clk_pll2(0);
-        clk_pixel_shift_lvds <= clk_pll(0);
-        clk_pixel_shift_ext  <= clk_pll(2);
+        clk_pixel_shift      <= clk_pll1(0);
+        clk_pixel_shift_lvds <= clk_pll2(0);
+        clk_pixel_shift_ext  <= clk_pll2(2);
         end generate;
 
+        clk_pll <= clk_pll2;
         -- 800x600
         vga_clk <= clk_pll(1); -- 40 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
@@ -1573,6 +1579,7 @@ begin
           );
           vga_vsync_ext <= not vga_vsyncn_ext;
           vga_hsync_ext <= not vga_hsyncn_ext;
+          vga_blank_ext <= not vga_de_ext;
           end block;
 	end generate;
 
@@ -1728,46 +1735,8 @@ begin
     end block;
     end generate;
 
-    G_dvi_vga: if C_dvi_vga generate
-    G_yes_mix_external_video: if C_external_sync='1' generate
-    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
-    vga_rgb_mix <= vga_rgb or vga_rgb_ext; -- testing
-    end generate;
-    G_not_mix_external_video: if C_external_sync='0' generate
-    vga_rgb_mix <= vga_rgb;
-    end generate;
-    vga2dvid: entity hdl4fpga.vga2dvid
-    generic map
-    (
-        C_shift_clock_synchronizer => '0',
-        C_ddr => '1',
-        C_depth => 2
-    )
-    port map
-    (
-        clk_pixel => vga_clk,
-        clk_shift => clk_pixel_shift,
-        in_red => vga_rgb_mix(0 to 1),
-        in_green => vga_rgb_mix(2 to 3),
-        in_blue => vga_rgb_mix(4 to 5),
-        in_hsync => vga_hsync_ext,
-        in_vsync => vga_vsync_ext,
-        in_blank => vga_blank_ext,
-        out_clock => dvid_crgb(7 downto 6),
-        out_red => dvid_crgb(5 downto 4),
-        out_green => dvid_crgb(3 downto 2),
-        out_blue => dvid_crgb(1 downto 0)
-    );
-    end generate; -- dvi vga (not oled vga)
-    G_ddr_diff: for i in 0 to 3 generate
-      gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
-      gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
-    end generate;
-
-    G_lvds_vga: if C_lvds_vga generate
     G_yes_mix_external_video: if C_external_sync='1' generate
     B_lvds_vga: block
-      signal S_transparent: boolean;
     begin
       S_transparent <= vga_r_ext=vga_r_transparent and vga_g_ext=vga_g_transparent and vga_b_ext=vga_b_transparent;
       vga_r_mix <= vga_rgb(0 to 1) & x"0" when S_transparent else vga_r_ext;
@@ -1783,19 +1752,57 @@ begin
     vga_g_mix <= (vga_rgb(2 to 3) & x"0");
     vga_b_mix <= (vga_rgb(4 to 5) & x"0");
     end generate;
+
+    G_dvi_vga: if C_dvi_vga generate
+    G_yes_mix_external_video: if C_external_sync='1' generate
+    --vga_rgb_mix <= vga_rgb when vga_rgb_ext=vga_rgb_transparent else vga_rgb_ext; -- production
+    vga_rgb_mix <= vga_rgb or vga_rgb_ext; -- testing
+    end generate;
+    G_not_mix_external_video: if C_external_sync='0' generate
+    vga_rgb_mix <= vga_rgb;
+    end generate;
+    vga2dvid: entity hdl4fpga.vga2dvid
+    generic map
+    (
+        C_shift_clock_synchronizer => '0',
+        C_ddr => '1',
+        C_depth => 6
+    )
+    port map
+    (
+        clk_pixel => vga_clk,
+        clk_shift => clk_pixel_shift,
+        in_red    => vga_r_mix,
+        in_green  => vga_g_mix,
+        in_blue   => vga_b_mix,
+        in_hsync  => vga_hsync_ext,
+        in_vsync  => vga_vsync_ext,
+        in_blank  => vga_blank_ext,
+        out_clock => dvid_crgb(7 downto 6),
+        out_red   => dvid_crgb(5 downto 4),
+        out_green => dvid_crgb(3 downto 2),
+        out_blue  => dvid_crgb(1 downto 0)
+    );
+    end generate; -- dvi vga (not oled vga)
+    G_ddr_diff: for i in 0 to 3 generate
+      gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
+      gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
+    end generate;
+
+    G_lvds_vga: if C_lvds_vga generate
     E_vga2lvds: entity hdl4fpga.vga2lvds
     port map
     (
       clk_pixel => vga_clk,
       clk_shift => clk_pixel_shift_lvds,
 
-      r_i => vga_r_mix,
-      g_i => vga_g_mix,
-      b_i => vga_b_mix,
+      r_i       => vga_r_mix,
+      g_i       => vga_g_mix,
+      b_i       => vga_b_mix,
 
-      de_i    => vga_de_ext,
-      hsync_i => vga_hsync_ext,
-      vsync_i => vga_vsync_ext,
+      hsync_i   => vga_hsync_ext,
+      vsync_i   => vga_vsync_ext,
+      de_i      => vga_de_ext,
 
       -- single-ended output ready for differential buffers
       lvds_o(3) => lvds_crgb(6),
