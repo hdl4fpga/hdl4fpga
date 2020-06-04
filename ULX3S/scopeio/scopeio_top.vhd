@@ -29,8 +29,9 @@ architecture beh of ulx3s is
 	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 11;
-        constant C_external_sync : std_logic := '1';
+	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
+        constant vlayout_id: integer := 13;
+        constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
@@ -84,8 +85,8 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := false;
-        constant C_lvds_vga: boolean := true;
+        constant C_dvi_vga:  boolean := true;
+        constant C_lvds_vga: boolean := false;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -102,8 +103,10 @@ architecture beh of ulx3s is
 
 	signal rst        : std_logic := '0';
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
+	signal clk_pll2   : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
+	signal clk_pixel_shift_lvds : std_logic; -- 7x vga clk, in phase
 	signal clk_pixel_shift_ext: std_logic; -- 5x vga clk, phase shifted
 
 	signal vga_clk    : std_logic;
@@ -124,6 +127,7 @@ architecture beh of ulx3s is
 	signal vga_blank_test : std_logic;
 	signal vga_rgb_test   : std_logic_vector(0 to 6-1);
         signal dvid_crgb      : std_logic_vector(7 downto 0);
+        signal lvds_crgb      : std_logic_vector(7 downto 0);
         signal ddr_d          : std_logic_vector(3 downto 0);
 	constant sample_size  : natural := 8;
 
@@ -272,15 +276,19 @@ begin
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 
-	G_dvi_clk: if C_dvi_vga or C_oled_vga generate
+	G_dvi_clk: if (C_dvi_vga or C_oled_vga) and C_external_sync='0' generate
         clk_vhdl_25_200: entity hdl4fpga.ecp5pll
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(200.0e6),
-	  out1_Hz => natural( 40.0e6),
-	  out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
+	  --out0_Hz => natural(200.0e6),
+	  --out1_Hz => natural( 40.0e6),
+	  --out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
+	  --out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
+	  out0_Hz => natural(125.0e6),
+	  out1_Hz => natural( 25.0e6),
+	  out2_Hz => natural( 62.5e6),
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  10000
 	)
         port map
         (
@@ -307,17 +315,17 @@ begin
           clk_o   =>  clk_pll
         );
         clk_pixel_shift_ext <= clk_pll(0);
-        clk_pixel_shift <= clk_pll(0);
+        clk_pixel_shift_lvds <= clk_pll(0);
         end generate;
 
-	G_lvds_external_sync_clk: if C_lvds_vga and C_external_sync='1' generate
+	G_lvds_external_sync_clk: if C_lvds_vga and (not C_dvi_vga) and C_external_sync='1' generate
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
 	  out0_Hz => natural(175.0e6),
 	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 90, -- 30-150
+	  out2_Hz => natural(175.0e6), out2_deg => 77, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
 	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
 	)
         port map
@@ -325,8 +333,39 @@ begin
           clk_i   =>  gp_i(12),
           clk_o   =>  clk_pll
         );
-        clk_pixel_shift     <= clk_pll(0);
+        clk_pixel_shift_lvds <= clk_pll(0);
         clk_pixel_shift_ext <= clk_pll(2);
+        end generate;
+
+	G_lvds_dvi_external_sync_clk: if C_lvds_vga and C_dvi_vga and C_external_sync='1' generate
+	clk_lvds_25_175: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural(175.0e6),
+	  out1_Hz => natural( 25.0e6),
+	  out2_Hz => natural(175.0e6), out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
+	)
+        port map
+        (
+          clk_i   =>  gp_i(12),
+          clk_o   =>  clk_pll
+        );
+	clk_dvi_25_125: entity hdl4fpga.ecp5pll
+	generic map
+	(
+	    in_Hz => natural( 25.0e6),
+	  out0_Hz => natural(125.0e6)
+	)
+        port map
+        (
+          clk_i   =>  gp_i(12),
+          clk_o   =>  clk_pll2
+        );
+        clk_pixel_shift      <= clk_pll2(0);
+        clk_pixel_shift_lvds <= clk_pll(0);
+        clk_pixel_shift_ext  <= clk_pll(2);
         end generate;
 
         -- 800x600
@@ -1748,7 +1787,7 @@ begin
     port map
     (
       clk_pixel => vga_clk,
-      clk_shift => clk_pixel_shift,
+      clk_shift => clk_pixel_shift_lvds,
 
       r_i => vga_r_mix,
       g_i => vga_g_mix,
@@ -1759,15 +1798,15 @@ begin
       vsync_i => vga_vsync_ext,
 
       -- single-ended output ready for differential buffers
-      lvds_o(3) => dvid_crgb(6),
-      lvds_o(2) => dvid_crgb(4),
-      lvds_o(1) => dvid_crgb(2),
-      lvds_o(0) => dvid_crgb(0)
+      lvds_o(3) => lvds_crgb(6),
+      lvds_o(2) => lvds_crgb(4),
+      lvds_o(1) => lvds_crgb(2),
+      lvds_o(0) => lvds_crgb(0)
     );
     gn(8) <= '1';
     end generate; -- lvds_vga
     G_x_lvds_diff: for i in 0 to 3 generate
-      x_lvds_diff: OLVDS port map(A => dvid_crgb(2*i), Z => gp(i+3), ZN => gn(i+3));
+      x_lvds_diff: OLVDS port map(A => lvds_crgb(2*i), Z => gp(i+3), ZN => gn(i+3));
     end generate;
 
 end;
