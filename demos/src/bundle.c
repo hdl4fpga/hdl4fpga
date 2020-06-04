@@ -2,93 +2,39 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 
-#ifdef WINDOWS
-#include <ws2tcpip.h>
-#include <wininet.h>
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <netdb.h>
-#endif
-
-#include <math.h>
-
-#define PORT	57001
-#define QUEUE   4
 int main (int argc, char *argv[])
 {
-#ifdef WINDOWS
-	WSADATA wsaData;
-#endif
 	char   c;
-	char   hostname[256] = "";
-	struct hostent *host = NULL;
-	struct sockaddr_in sa_trgt;
+	unsigned char  len;
+	unsigned char  rid;
+	unsigned char  buffer[1500];
+	unsigned char  *bufptr;
+	unsigned int   tlen;
+	unsigned int   bsize;
+	unsigned int   addr;
+	unsigned int   baddr;
+	unsigned short pktsz;
 
-	int s;
-	socklen_t sl_trgt = sizeof(sa_trgt);
-
-	unsigned char len;
-	unsigned char rid;
-	unsigned char buffer[1500];
-	unsigned char *bufptr;
-	unsigned int tlen;
-	unsigned int bsize;
-	unsigned int addr;
-	unsigned int baddr;
-
-#ifdef WINDOWS
-	if (WSAStartup(MAKEWORD(2,2), &wsaData))
-		exit(-1);
-#endif
 	baddr = 0;
-	while ((c = getopt (argc, argv, "b:h:")) != -1) {
+	while ((c = getopt (argc, argv, "b:")) != -1) {
 		switch (c) {
-		case 'h':
-			if (optarg)
-				sscanf (optarg, "%64s", hostname);
-			break;
 		case 'b':
 			if (optarg)
 				sscanf (optarg, "%x", &baddr);
 			break;
 		case '?':
-			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
+			fprintf (stderr, "usage : bundle -b base_address\n");
 			exit(1);
 		default:
 			exit(1);
 		}
 	}
 
-	if (!strlen(hostname)) {
-		strcpy (hostname, "kit");
-		fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
-	}
-
-	if (!(host=gethostbyname(hostname))) {
-		fprintf (stderr, "Hostname '%s' not found\n", hostname);
-		exit(1);
-	}
-
 	fprintf (stderr, "Memory base address 0x%08x\n", baddr);
 
-	memset (&sa_trgt, 0, sizeof (sa_trgt));
-	sa_trgt.sin_family = AF_INET;
-	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
-
-	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("Can't open socket");
-		exit (1);
-	}
-
-	bufptr = buffer;
 	bsize  = 0;
+	bufptr = buffer;
 	for(int i = 0; fread(&rid, sizeof(char), 1, stdin) > 0; i++) {
 		*bufptr++ = rid;
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
@@ -100,23 +46,25 @@ int main (int argc, char *argv[])
 				case 0x18:
 					bsize += (len + 1);
 					break;
+
 				case 0x17:
-					fprintf(stderr, "Buffer length : 0x%08x | ", bsize);
 					tlen = 0;
 					for(int j = 0; j <= len; j++) {
 						tlen <<= 8;
 						tlen |=  (bufptr-len-1)[j];
 					}
+					fprintf(stderr, "Buffer length   : 0x%08x | ", bsize);
 					fprintf(stderr, "Transfer length : 0x%08x\n", tlen);
-					*bufptr++ = 0xff;
-					*bufptr++ = 0xff;
-					if (sendto(s, buffer, bufptr-buffer, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-						perror ("sendto() error");
-						exit (-1);
-					}
+
+					pktsz = bufptr-buffer;
+					fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
+					fwrite (buffer, sizeof(unsigned char), bufptr-buffer, stdout);
+
 					bsize  = 0;
 					bufptr = buffer;
+
 					break;
+
 				case 0x16:
 					addr = 0;
 					for(int j = 0; j <= len; j++) {
@@ -124,6 +72,7 @@ int main (int argc, char *argv[])
 						addr |=  (bufptr-len-1)[j];
 					}
 					addr += baddr;
+
 					fprintf(stderr, "Memory address : 0x%08x | ", addr);
 					for(int j = len; j >=0; j--) {
 						(bufptr-len-1)[j] = (addr & 0xff);
@@ -134,7 +83,6 @@ int main (int argc, char *argv[])
 			} else {
 				exit(-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 100000L } }, NULL);
 		} else {
 			exit(-1);
 		}

@@ -74,14 +74,20 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
+	int n;
 	unsigned short size;
-	if ((n = fread(&size, sizeof(unsigned short), 1, stdin)) > 0) {
+	while ((n = fread(&size, sizeof(unsigned short), 1, stdin)) > 0) {
 		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
-		buffer[size++] = 0xff;
-		buffer[size++] = 0xff;
-		if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-			perror ("sendto() error");
-			exit (-1);
+			buffer[size++] = 0xff;
+			buffer[size++] = 0xff;
+			if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+				perror ("sending packet");
+				exit (-1);
+			}
+			nanosleep((const struct timespec[]){ {0, 100000L } }, NULL);
+		} else {
+			perror ("reading packet");
+			exit(-1);
 		}
 	}
 
