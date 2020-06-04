@@ -159,13 +159,13 @@ architecture graphics of ulx3s is
 		clkfb_div  : natural;
 		clki_div   : natural;
 		clkos3_div : natural;
-		mode : natural;
+		mode       : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => 16),
-		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => 1));
+		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk_debug),
+		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk40_00m800x600at60));
 
 
 	type sdram_params is record
@@ -481,7 +481,7 @@ begin
 	end block;
 
 	adapter_b : block
-		constant mode : natural := video_tab(video_mode).mode;
+		constant mode : videotiming_ids := video_tab(video_mode).mode;
 		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
 		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
@@ -495,7 +495,7 @@ begin
 	begin
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => mode)
+			timing_id => mode)
 		port map (
 			video_clk     => video_clk,
 			video_hzcntr  => hzcntr,

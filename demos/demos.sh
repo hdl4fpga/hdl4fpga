@@ -51,7 +51,7 @@ if [ "$HOST" == "" ] ; then
 	sleep 1
 
 	echo Blanking screen 
-	./bin/stream < ./src/blank.pkt|$XFR > "${TTY}"
+	cat src/blank.hex|xxd -r -ps|./bin/stream|$XFR > "${TTY}"
 	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
@@ -59,9 +59,9 @@ if [ "$HOST" == "" ] ; then
 
 else
 
-	echo Blanking screen 
-	cat src/blank.pkt|xxd -r -ps|./bin/bundle|./bin/sendbyudp -h ${HOST}
-	sleep 1
+#	echo Blanking screen 
+#	cat src/blank.hex|xxd -r -ps|./bin/bundle|./bin/sendbyudp -h ${HOST}
+#	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
 	convert_image|./bin/bundle -b "${BADDR}"|./bin/sendbyudp -h "${HOST}"

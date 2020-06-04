@@ -53,8 +53,8 @@ int main (int argc, char *argv[])
 						tlen <<= 8;
 						tlen |=  (bufptr-len-1)[j];
 					}
-					fprintf(stderr, "Buffer length   : 0x%08x | ", bsize);
-					fprintf(stderr, "Transfer length : 0x%08x\n", tlen);
+					fprintf(stderr, "buffer : 0x%08x, ", bsize);
+					fprintf(stderr, "transfer : 0x%08x\n", tlen);
 
 					pktsz = bufptr-buffer;
 					fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
@@ -73,7 +73,7 @@ int main (int argc, char *argv[])
 					}
 					addr += baddr;
 
-					fprintf(stderr, "Memory address : 0x%08x | ", addr);
+					fprintf(stderr, "address : 0x%08x, ", addr);
 					for(int j = len; j >=0; j--) {
 						(bufptr-len-1)[j] = (addr & 0xff);
 						addr >>= 8;

@@ -98,7 +98,7 @@ begin
 				dma_req  <= '1';
 				level    <= level + line_size;
 				dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
-				dma_addr <= std_logic_vector(resize(resize(unsigned(dma_addr) + dma_step, 21), dma_addr'length));
+				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
 				dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
 			elsif mydma_rdy='1' then
 				dma_req <= '0';

@@ -82,22 +82,31 @@ int main (int argc, char *argv[])
 
 	int n;
 	unsigned short size;
+	size = sizeof(buffer)-2;
 	for(;;) {
-		if (!pktmd && !(fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-			return 0;
+		if (!pktmd) {
+			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
+				fprintf (stderr, "packet size %d\n", size);
+			else
+				return 0;
+		}
+
 			
 		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
 			buffer[size++] = 0xff;
 			buffer[size++] = 0xff;
+			fprintf (stderr, "packet length %d\n", n);
 			if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 				perror ("sending packet");
 				exit (-1);
 			}
-			nanosleep((const struct timespec[]){ {0, 100000L } }, NULL);
-		} else {
+			nanosleep((const struct timespec[]){ {0, 500000L } }, NULL);
+		} else if (n < 0) {
 			perror ("reading packet");
 			exit(-1);
 		}
+		else
+			break;
 	}
 
 	return 0;

@@ -46,8 +46,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1; --3;
+	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -158,7 +158,7 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_cas : std_logic;
 
 	type display_param is record
-		mode    : natural;
+		mode    : videotiming_ids;
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
@@ -166,20 +166,18 @@ architecture graphics of nuhs3adsp is
 	constant modedebug : natural := 0;
 	constant mode480p  : natural := 1;
 	constant mode600p  : natural := 2;
-	constant mode768p  : natural := 3;
-	constant mode900p  : natural := 4;
-	constant mode1080p : natural := 5;
+	constant mode900p  : natural := 3;
+	constant mode1080p : natural := 4;
 
 	type displayparam_vector is array (natural range <>) of display_param;
 	constant video_tab : displayparam_vector := (
 		modedebug   => (mode => pclk_debug, dcm_mul => 4, dcm_div => 2),
-		mode480p    => (mode =>  0, dcm_mul =>  5, dcm_div => 4),
-		mode600p    => (mode =>  1, dcm_mul =>  2, dcm_div => 1),
-		mode768p    => (mode =>  2, dcm_mul =>  3, dcm_div => 1),
-		mode900p    => (mode => pclk100m1600x900Rat60, dcm_mul =>  5, dcm_div => 1),
-		mode1080p   => (mode =>  6, dcm_mul => 7, dcm_div => 1));
+		mode480p    => (mode => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
+		mode600p    => (mode => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
+		mode900p    => (mode => pclk100_00m1600x900at60,  dcm_mul => 5, dcm_div => 1),
+		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : natural := setif(debug, mode600p, mode1080p);
+	constant video_mode : natural := setif(debug, modedebug, mode1080p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -428,7 +426,7 @@ begin
 	end block;
 
 	adapter_b : block
-		constant mode : natural := video_tab(video_mode).mode;
+		constant mode : videotiming_ids := video_tab(video_mode).mode;
 		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
 		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
@@ -442,7 +440,7 @@ begin
 	begin
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => mode)
+			timing_id => mode)
 		port map (
 			video_clk     => video_clk,
 			video_hzcntr  => hzcntr,
