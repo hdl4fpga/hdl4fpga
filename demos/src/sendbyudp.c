@@ -40,14 +40,14 @@ int main (int argc, char *argv[])
 	unsigned int tlen;
 	unsigned int bsize;
 	unsigned int addr;
-	unsigned int base;
+	unsigned int baddr;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-	base = 0;
-	while ((c = getopt (argc, argv, "bh:")) != -1) {
+	baddr = 0;
+	while ((c = getopt (argc, argv, "b:h:")) != -1) {
 		switch (c) {
 		case 'h':
 			if (optarg)
@@ -55,7 +55,7 @@ int main (int argc, char *argv[])
 			break;
 		case 'b':
 			if (optarg)
-				sscanf (optarg, "%d", &base);
+				sscanf (optarg, "%x", &baddr);
 			break;
 		case '?':
 			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
@@ -71,9 +71,11 @@ int main (int argc, char *argv[])
 	}
 
 	if (!(host=gethostbyname(hostname))) {
-		fprintf (stderr, "hostname '%s' not found\n", hostname);
+		fprintf (stderr, "Hostname '%s' not found\n", hostname);
 		exit(1);
 	}
+
+	fprintf (stderr, "Memory base address 0x%08x\n", baddr);
 
 	memset (&sa_trgt, 0, sizeof (sa_trgt));
 	sa_trgt.sin_family = AF_INET;
@@ -121,7 +123,7 @@ int main (int argc, char *argv[])
 						addr <<= 8;
 						addr |=  (bufptr-len-1)[j];
 					}
-					addr += base;
+					addr += baddr;
 					fprintf(stderr, "Memory address : 0x%08x | ", addr);
 					for(int j = len; j >=0; j--) {
 						(bufptr-len-1)[j] = (addr & 0xff);

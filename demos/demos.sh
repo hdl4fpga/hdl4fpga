@@ -7,6 +7,7 @@ PROG="${PROG}"
 PIXEL="${PIXEL:-rgb565}"
 WSIZE="${WSIZE:-16}"
 BSIZE="${BSIZE:-128}"
+BADDR="${BADDR:-0x0}"
 
 if [ "${IMAGE}" = "" ] ; then
 	echo Image filename empty
@@ -58,12 +59,12 @@ if [ "$HOST" == "" ] ; then
 
 else
 
-	echo Blanking screen 
-	./bin/sendbyudp -h ${HOST} < ./src/blank.pkt
-	sleep 1
+#	echo Blanking screen 
+#	./bin/sendbyudp -h ${HOST} < ./src/blank.pkt
+#	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
-	convert_image|./bin/sendbyudp -h "${HOST}"
+	convert_image|./bin/sendbyudp -b "${BADDR}" -h "${HOST}"
 
 fi
 

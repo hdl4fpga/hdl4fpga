@@ -128,6 +128,7 @@ architecture graphics of ulx3s is
     signal video_vton     : std_logic;
     signal video_hzon     : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
+    signal base_addr      : std_logic_vector(dmactlr_addr'range);
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
 	signal dmacfgvideo_req : std_logic;
@@ -447,6 +448,16 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
+		base_addr_e : entity hdl4fpga.scopeio_rgtr
+		generic map (
+			rid  => x"19")
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => base_addr);
+
 		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
 		ctlr_dm <= (others => '0');
 
@@ -512,7 +523,7 @@ begin
 			ctlr_clk     => ctlr_clk,
 			ctlr_di_dv   => graphic_dv,
 			ctlr_di      => graphic_di,
-			base_addr   => std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length)),
+			base_addr    => base_addr,
 			dma_req      => dmacfgvideo_req,
 			dma_rdy      => dmavideo_rdy,
 			dma_len      => dmavideo_len,

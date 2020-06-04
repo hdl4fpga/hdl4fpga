@@ -136,6 +136,7 @@ architecture graphics of nuhs3adsp is
     signal video_hzon     : std_logic;
     signal video_vton     : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
+    signal base_addr      : std_logic_vector(dmactlr_addr'range);
 
 	signal dmacfgvideo_req : std_logic;
 	signal dmacfgvideo_rdy : std_logic;
@@ -379,6 +380,16 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
+		base_addr_e : entity hdl4fpga.scopeio_rgtr
+		generic map (
+			rid  => x"19")
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => base_addr);
+
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 
 		src_frm <= not fifo_rst;
@@ -459,8 +470,7 @@ begin
 			ctlr_clk    => ctlr_clk,
 			ctlr_di_dv  => graphic_dv,
 			ctlr_di     => graphic_di,
-			base_addr   => setif(debug, std_logic_vector(resize(unsigned'(x"0f_ff00"), dmavideo_addr'length)),
-			std_logic_vector(resize(unsigned'(x"00_0000"), dmavideo_addr'length))),
+			base_addr   => base_addr,
 			dma_req     => dmacfgvideo_req,
 			dma_rdy     => dmavideo_rdy,
 			dma_len     => dmavideo_len,
