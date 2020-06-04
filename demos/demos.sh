@@ -64,7 +64,7 @@ else
 #	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
-	convert_image|./bin/sendbyudp -b "${BADDR}" -h "${HOST}"
+	convert_image|./bin/bundle -b "${BADDR}"|./bin/sendbyudp -h "${HOST}"
 
 fi
 
