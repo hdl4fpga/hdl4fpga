@@ -59,9 +59,9 @@ if [ "$HOST" == "" ] ; then
 
 else
 
-#	echo Blanking screen 
-#	./bin/sendbyudp -h ${HOST} < ./src/blank.pkt
-#	sleep 1
+	echo Blanking screen 
+	cat src/blank.pkt|xxd -r -ps|./bin/bundle|./bin/sendbyudp -h ${HOST}
+	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
 	convert_image|./bin/bundle -b "${BADDR}"|./bin/sendbyudp -h "${HOST}"

@@ -35,13 +35,19 @@ int main (int argc, char *argv[])
 
 	unsigned char buffer[2048];
 	unsigned char *bufptr;
+	char pktmd;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-	while ((c = getopt (argc, argv, "h:")) != -1) {
+
+	pktmd = 0;
+	while ((c = getopt (argc, argv, "ph:")) != -1) {
 		switch (c) {
+		case 'p':
+			pktmd = 1;
+			break;
 		case 'h':
 			if (optarg)
 				sscanf (optarg, "%64s", hostname);
@@ -76,7 +82,10 @@ int main (int argc, char *argv[])
 
 	int n;
 	unsigned short size;
-	while ((n = fread(&size, sizeof(unsigned short), 1, stdin)) > 0) {
+	for(;;) {
+		if (!pktmd && !(fread(&size, sizeof(unsigned short), 1, stdin) > 0))
+			return 0;
+			
 		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
 			buffer[size++] = 0xff;
 			buffer[size++] = 0xff;
