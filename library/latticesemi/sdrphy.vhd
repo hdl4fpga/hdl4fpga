@@ -33,8 +33,7 @@ use hdl4fpga.std.all;
 
 entity sdrphy is
 	generic (
-		loopback  : boolean := false;
-		rgtr_dout : boolean := true;
+		latency   : boolean := false;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		word_size : natural := 16;
@@ -90,7 +89,71 @@ architecture ecp of sdrphy is
 	signal dqt : std_logic_vector(sdr_dq'range);
 	signal dqo : std_logic_vector(sdr_dq'range);
 
+	signal phy1_cs  : std_logic;
+	signal phy1_cke : std_logic;
+	signal phy1_b   : std_logic_vector(phy_b'range);
+	signal phy1_a   : std_logic_vector(phy_a'range);
+	signal phy1_ras : std_logic;
+	signal phy1_cas : std_logic;
+	signal phy1_we  : std_logic;
+	signal phy1_dmt : std_logic_vector(phy_dmt'range);
+	signal phy1_dmi : std_logic_vector(phy_dmi'range);
+	signal phy1_dqt : std_logic_vector(phy_dqt'range);
+	signal phy1_dqi : std_logic_vector(phy_dqi'range);
+	signal phy1_dst : std_logic_vector(phy_dst'range);
+	signal phy1_sti : std_logic_vector(phy_sti'range);
+
 begin
+
+	latency_b : block
+		signal cs  : std_logic;
+		signal cke : std_logic;
+		signal b   : std_logic_vector(phy_b'range);
+		signal a   : std_logic_vector(phy_a'range);
+		signal ras : std_logic;
+		signal cas : std_logic;
+		signal we  : std_logic;
+		signal dmt : std_logic_vector(phy_dmt'range);
+		signal dmi : std_logic_vector(phy_dmi'range);
+		signal dqt : std_logic_vector(phy_dqt'range);
+		signal dqi : std_logic_vector(phy_dqi'range);
+		signal dst : std_logic_vector(phy_dst'range);
+		signal sti : std_logic_vector(phy_sti'range);
+
+	begin
+		process (sys_clk)
+		begin
+			if rising_edge(sys_clk) then
+				cs  <= phy_cs;
+				cke <= phy_cke;
+				b   <= phy_b;
+				a   <= phy_a;
+				ras <= phy_ras;
+				cas <= phy_cas;
+				we  <= phy_we;
+				dmt <= phy_dmt;
+				dmi <= phy_dmi;
+				dqt <= phy_dqt;
+				dqi <= phy_dqi;
+				dst <= phy_dst;
+				sti <= phy_sti;
+			end if;
+		end process;
+
+		phy1_cs  <= cs  when latency else phy_cs; 
+		phy1_cke <= cke when latency else phy_cke;
+		phy1_b   <= b   when latency else phy_b;  
+		phy1_a   <= a   when latency else phy_a;  
+		phy1_ras <= ras when latency else phy_ras;
+		phy1_cas <= cas when latency else phy_cas;
+		phy1_we  <= we  when latency else phy_we; 
+		phy1_dmt <= dmt when latency else phy_dmt;
+		phy1_dmi <= dmi when latency else phy_dmi;
+		phy1_dqt <= dqt when latency else phy_dqt;
+		phy1_dqi <= dqi when latency else phy_dqi;
+		phy1_dst <= dst when latency else phy_dst;
+		phy1_sti <= sti when latency else phy_sti;
+	end block;
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
 	generic map (
@@ -99,13 +162,13 @@ begin
 	port map (
 		sys_clk => sys_clk,
           
-		phy_cs  => phy_cs,
-		phy_cke => phy_cke,
-		phy_b   => phy_b,
-		phy_a   => phy_a,
-		phy_ras => phy_ras,
-		phy_cas => phy_cas,
-		phy_we  => phy_we,
+		phy_cs  => phy1_cs,
+		phy_cke => phy1_cke,
+		phy_b   => phy1_b,
+		phy_a   => phy1_a,
+		phy_ras => phy1_ras,
+		phy_cas => phy1_cas,
+		phy_we  => phy1_we,
         
 		sdr_rst => sdr_rst,
 		sdr_clk => sdr_clk,
@@ -125,11 +188,11 @@ begin
 		port map (
 			sys_clk => sys_clk,
 
-			phy_dmi => phy_dmi(i),
-			phy_dmt => phy_dmt(i),
+			phy_dmi => phy1_dmi(i),
+			phy_dmt => phy1_dmt(i),
 			phy_dmo => phy_dmo(i),
-			phy_dqi => phy_dqi((i+1)*byte_size-1 downto i*byte_size),
-			phy_dqt => phy_dqt(i),
+			phy_dqi => phy1_dqi((i+1)*byte_size-1 downto i*byte_size),
+			phy_dqt => phy1_dqt(i),
 			phy_dqo => phy_dqo((i+1)*byte_size-1 downto i*byte_size),
 
 			sdr_ds  => phy_dsi(i),
@@ -171,7 +234,7 @@ begin
 		d => (0 to phy_sti'length-1 => 2))
 	port map (
 		clk => sys_clk,
-		di  => phy_sti,
+		di  => phy1_sti,
 		do  => phy_sto);
 
 	phy_dso <= phy_dsi;

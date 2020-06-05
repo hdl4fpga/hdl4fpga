@@ -205,12 +205,6 @@ architecture graphics of ulx3s is
 --	constant baudrate  : natural := 115200_00;
 --	constant video_mode : natural := modedebug;
 
---		signal blankn : std_logic;
---		signal hzsync : std_logic;
---		signal vtsync : std_logic;
---		signal hzon   : std_logic;
---		signal vton   : std_logic;
-
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
@@ -367,6 +361,8 @@ begin
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
 
 		signal data_ena    : std_logic;
+		signal fifo_rst    : std_logic;
+		signal src_frm     : std_logic;
 		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 		signal dst_irdy    : std_logic;
@@ -430,16 +426,17 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '1'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 
+		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size               => 256/(ctlr_di'length/8),
-			gray_code          => false,
-			synchronous_rddata => false,
-			overflow_check     => false)
+			size           => (8*2048)/ctlr_di'length,
+			gray_code      => false,
+			overflow_check => false)
 		port map (
 			src_clk  => si_clk,
+			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data(16-1 downto 0),
 
@@ -482,6 +479,7 @@ begin
 
 	adapter_b : block
 		constant mode : videotiming_ids := video_tab(video_mode).mode;
+		constant sync_lat : natural := 4;
 		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
 		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
@@ -508,7 +506,7 @@ begin
 		tographic_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length+1,
-			d => (0 to ctlr_do'length => 4))
+			d => (0 to ctlr_do'length => 1))
 		port map (
 			clk => ctlr_clk,
 			di(0 to ctlr_do'length-1) => ctlr_do,
@@ -536,7 +534,7 @@ begin
 		topixel_e : entity hdl4fpga.align
 		generic map (
 			n => pixel'length,
-			d => (0 to pixel'length-1 => 3-1))
+			d => (0 to pixel'length-1 => sync_lat-1))
 		port map (
 			clk => video_clk,
 			di  => pixel,
@@ -545,7 +543,7 @@ begin
 		tosync_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 to 4-1 => 4))
+			d => (0 to 4-1 => sync_lat))
 		port map (
 			clk => video_clk,
 			di(0) => hzon,
@@ -690,8 +688,7 @@ begin
 	
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
-		loopback    => false,
-		rgtr_dout   => false,
+		latency     => sdram_mode=sdram200MHz,
 		bank_size   => sdram_ba'length,
 		addr_size   => sdram_a'length,
 		word_size   => word_size,
@@ -780,80 +777,5 @@ begin
 				zn => gpdi_dn(i));
 		end generate;
 	end block;
-
---    vga2lvds_e : entity hdl4fpga.vga2lvds
---    port map (
---      clk_pixel   => vga_clk,
---      clk_shift   => clk_pixel_shift,
---
---      in_red(8-1   downto 8-5) => video_pixel(0   to  0+5-1),
---      in_green(8-1 downto 8-6) => video_pixel(0+5 to  5+6-1),
---      in_blue(8-1  downto 8-5) => video_pixel(5+6 to 11+5-1),
---
---      in_blank    => video_blank,
---      in_hsync    => video_hsync,
---      in_vsync    => video_vsync,
---
---      out_lvds(3) => dvid_crgb(6),
---      out_lvds(2) => dvid_crgb(4),
---      out_lvds(1) => dvid_crgb(2),
---      out_lvds(0) => dvid_crgb(0));
---
---    gn(8) <= '1';
---    lvds_g : for i in 0 to 3 generate
---		lvds_i : olvds
---		port map(
---			a  => dvid_crgb(2*i), 
---			Z  => gp(i+3), 
---			ZN => gn(i+3));
---    end generate;
-
-
-	process (uart_rxc)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(uart_rxc) then
-			if uart_rxdv='1' then
---				led <= uart_rxd;
-			end if;
-		end if;
-	end process;
-
---	process (si_clk)
---		variable t : std_logic;
---		variable e : std_logic;
---		variable i : std_logic;
---	begin
---		if rising_edge(si_clk) then
---			if i='1' and e='0' then
---				t := not t;
---			end if;
---			e := i;
---			i := uart_rxdv;
---			i := dmaio_dv;
---			i := dmaio_rdy;
---
---			led(0) <= t;
---			led(1) <= not t;
---		end if;
---	end process;
-
---	process (ctlr_clk)
---		variable t : std_logic;
---		variable e : std_logic;
---		variable i : std_logic;
---	begin
---		if rising_edge(ctlr_clk) then
---			i := dmavideo_rdy;
---			if i='1' and e='0' then
---				t := not t;
---			end if;
---			e := i;
---			led(2) <= 'Z'; --t;
---			led(3) <= 'Z'; --not t;
---		end if;
---	end process;
 
 end;
