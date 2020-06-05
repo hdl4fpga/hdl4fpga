@@ -405,6 +405,7 @@ package scopeiopkg is
 		6 => (mode_id => pclk23_75m640x480Cat60,    layout_id => vesa640x480),
 	       11 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg1),
 	       12 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg2),
+	       13 => (mode_id => pclk23_75m640x480Cat60,    layout_id => lcd480x272seg1),
 		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid),
 		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
 		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
