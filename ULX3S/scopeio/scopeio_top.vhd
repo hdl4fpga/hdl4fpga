@@ -327,7 +327,7 @@ begin
 	    in_Hz => natural( 25.0e6),
 	  out0_Hz => natural(175.0e6),
 	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 77, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out2_Hz => natural(175.0e6), out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
 	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
 	)
         port map
@@ -360,7 +360,7 @@ begin
 	    in_Hz => natural( 25.0e6),
 	  out0_Hz => natural(175.0e6),
 	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out2_Hz => natural(175.0e6), out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
 	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
 	)
         port map
