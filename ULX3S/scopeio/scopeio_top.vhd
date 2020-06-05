@@ -30,8 +30,8 @@ architecture beh of ulx3s is
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
 	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 13;
-        constant C_external_sync : std_logic := '1';
+        constant vlayout_id: integer := 5;
+        constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
@@ -86,7 +86,7 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := true;
+        constant C_lvds_vga: boolean := false;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -176,7 +176,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 10000000; -- Hz (10e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := 40000000; -- Hz (25e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -283,14 +283,14 @@ begin
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  --out0_Hz => natural(200.0e6),
-	  --out1_Hz => natural( 40.0e6),
-	  --out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
-	  --out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
-	  out0_Hz => natural(125.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural( 62.5e6),
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  10000
+	  out0_Hz => natural(200.0e6),
+	  out1_Hz => natural( 40.0e6),
+	  out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
+	  --out0_Hz => natural(125.0e6),
+	  --out1_Hz => natural( 25.0e6),
+	  --out2_Hz => natural( 62.5e6),
+	  --out3_Hz => natural(  6.0e6), out3_tol_Hz =>  10000
 	)
         port map
         (
