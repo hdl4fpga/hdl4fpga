@@ -299,6 +299,7 @@ begin
         );
         clk_pixel_shift     <= clk_pll1(0);
         clk_pixel_shift_ext <= clk_pll1(0);
+        clk_pll <= clk_pll1;
         end generate;
 
 	G_lvds_internal_sync_clk: if C_lvds_vga and C_external_sync='0' generate
@@ -318,6 +319,7 @@ begin
         );
         clk_pixel_shift_ext <= clk_pll2(0);
         clk_pixel_shift_lvds <= clk_pll2(0);
+        clk_pll <= clk_pll2;
         end generate;
 
 	G_lvds_external_sync_clk: if C_lvds_vga and (not C_dvi_vga) and C_external_sync='1' generate
@@ -371,6 +373,7 @@ begin
         clk_pixel_shift      <= clk_pll1(0);
         clk_pixel_shift_lvds <= clk_pll2(0);
         clk_pixel_shift_ext  <= clk_pll2(2);
+        clk_pll <= clk_pll2;
         end generate;
 
         clk_pll <= clk_pll2;
