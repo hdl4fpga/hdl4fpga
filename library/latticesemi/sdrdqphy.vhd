@@ -52,7 +52,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 architecture ecp of sdrdqphy is
-
+	signal dmo : std_logic;
 begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal q : std_logic;
@@ -76,6 +76,7 @@ begin
 		ck => sys_clk,
 		d  => sdr_dmi,
 		q  => phy_dmo);
+	phy_dmo <= dmo when read_latency else sdr_dmi;
 
 	dqo_g : for i in 0 to byte_size-1 generate
 	begin
