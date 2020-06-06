@@ -61,11 +61,12 @@ begin
 			d  => phy_dqt,
 			q  => sdr_dqt(i));
 
-		ffdi_i : fd1s3ax
-		port map (
-			ck => sdr_ds,
-			d  => sdr_dqi(i),
-			q  => phy_dqo(i));
+--		ffdi_i : fd1s3ax
+--		port map (
+--			ck => sdr_ds,
+--			d  => sdr_dqi(i),
+--			q  => phy_dqo(i));
+		phy_dqo(i) <= sdr_dqi(i);
 	end generate;
 
 	dmi_g : fd1s3ax
