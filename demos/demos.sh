@@ -55,7 +55,7 @@ if [ "$HOST" == "" ] ; then
 	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
-	convert_image|./bin/stream|$XFR > "${TTY}"
+	convert_image|./bin/stream|tee pp|$XFR > "${TTY}"
 
 else
 

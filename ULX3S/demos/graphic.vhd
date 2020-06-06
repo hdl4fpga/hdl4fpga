@@ -413,6 +413,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
+			dv        => fifo_rst,
 			data      => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.scopeio_rgtr
@@ -426,12 +427,22 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
+		base_addr_e : entity hdl4fpga.scopeio_rgtr
+		generic map (
+			rid  => x"19")
+		port map (
+			rgtr_clk  => si_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => base_addr);
+
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => (8*2048)/ctlr_di'length,
+			size           => 128, --(8*2048)/ctlr_di'length,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
@@ -444,16 +455,6 @@ begin
 			dst_irdy => dst_irdy,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
-
-		base_addr_e : entity hdl4fpga.scopeio_rgtr
-		generic map (
-			rid  => x"19")
-		port map (
-			rgtr_clk  => si_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			data      => base_addr);
 
 		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
 		ctlr_dm <= (others => '0');
@@ -728,18 +729,25 @@ begin
 		sdr_dm      => sdram_dqm,
 		sdr_dq      => sdram_d);
 
+	process (uart_rxc)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(uart_rxc) then
+			if uart_rxdv='1' then
+				led <= uart_rxd;
+			end if;
+		end if;
+	end process;
+
 	-- VGA --
 	---------
 
 	dvi_b : block
 		signal dvid_blank : std_logic;
 	begin
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-			end if;
-		end process;
-				dvid_blank <= not video_hzon or not video_vton;
+		dvid_blank <= not video_hzon or not video_vton;
 
 		vga2dvid_e : entity hdl4fpga.vga2dvid
 		generic map (

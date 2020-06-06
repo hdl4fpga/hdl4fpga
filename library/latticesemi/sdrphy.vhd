@@ -152,7 +152,7 @@ begin
 		phy1_dqt <= dqt when latency else phy_dqt;
 		phy1_dqi <= dqi when latency else phy_dqi;
 		phy1_dst <= dst when latency else phy_dst;
-		phy1_sti <= sti when latency else phy_sti;
+		phy1_sti <= sti when false else phy_sti;
 	end block;
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
