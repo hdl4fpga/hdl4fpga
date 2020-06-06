@@ -25,7 +25,7 @@ int main (int argc, char *argv[])
 #ifdef WINDOWS
 	WSADATA wsaData;
 #endif
-	char   c;
+	int   c;
 	char   hostname[256] = "";
 	struct hostent *host = NULL;
 	struct sockaddr_in sa_trgt;
@@ -42,7 +42,8 @@ int main (int argc, char *argv[])
 		exit(-1);
 #endif
 
-	pktmd = 0;
+	pktmd  = 0;
+	opterr = 0;
 	while ((c = getopt (argc, argv, "ph:")) != -1) {
 		switch (c) {
 		case 'p':
@@ -84,7 +85,7 @@ int main (int argc, char *argv[])
 	unsigned short size;
 	size = sizeof(buffer)-2;
 	for(;;) {
-		if (!pktmd) {
+		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
 				fprintf (stderr, "packet size %d\n", size);
 			else

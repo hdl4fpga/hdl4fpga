@@ -184,6 +184,7 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		sdrdqphy_i : entity hdl4fpga.sdrdqphy
 		generic map (
+			read_latency => not latency,
 			byte_size => byte_size)
 		port map (
 			sys_clk => sys_clk,

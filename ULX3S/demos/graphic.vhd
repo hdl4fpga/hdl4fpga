@@ -186,8 +186,8 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
-	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -196,15 +196,15 @@ architecture graphics of ulx3s is
 
 	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
-	constant baudrate  : natural := 115200;
---	constant baudrate  : natural := 1_000_000;
+--	constant baudrate  : natural := 115200;
+	constant baudrate  : natural := 1_000_000;
 	constant video_mode : natural := mode600p;
 
 --	alias uart_rxc     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 --	constant baudrate  : natural := 115200_00;
 --	constant video_mode : natural := modedebug;
-
+--
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
@@ -293,8 +293,8 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
+--		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
 
 		signal clkos : std_logic;
 	begin
@@ -442,6 +442,7 @@ begin
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
+			synchronous_rddata => false,
 			size           => 128, --(8*2048)/ctlr_di'length,
 			gray_code      => false,
 			overflow_check => false)
@@ -522,7 +523,7 @@ begin
 			ctlr_clk     => ctlr_clk,
 			ctlr_di_dv   => graphic_dv,
 			ctlr_di      => graphic_di,
-			base_addr    => base_addr,
+			base_addr    => (base_addr'range => '0'),
 			dma_req      => dmacfgvideo_req,
 			dma_rdy      => dmavideo_rdy,
 			dma_len      => dmavideo_len,

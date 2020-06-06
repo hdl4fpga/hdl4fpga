@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity sdrdqphy is
 	generic (
+		read_latency : boolean;
 		byte_size : natural);
 	port (
 		sys_clk  : in  std_logic;
@@ -54,6 +55,7 @@ architecture ecp of sdrdqphy is
 
 begin
 	iddr_g : for i in 0 to byte_size-1 generate
+		signal q : std_logic;
 	begin
 		ffdt_i : fd1s3ax
 		port map (
@@ -61,12 +63,12 @@ begin
 			d  => phy_dqt,
 			q  => sdr_dqt(i));
 
---		ffdi_i : fd1s3ax
---		port map (
---			ck => sdr_ds,
---			d  => sdr_dqi(i),
---			q  => phy_dqo(i));
-		phy_dqo(i) <= sdr_dqi(i);
+		ffdi_i : fd1s3ax
+		port map (
+			ck => sdr_ds,
+			d  => sdr_dqi(i),
+			q  => q);
+		phy_dqo(i) <= q when read_latency else sdr_dqi(i);
 	end generate;
 
 	dmi_g : fd1s3ax

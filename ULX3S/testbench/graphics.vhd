@@ -150,6 +150,8 @@ architecture ulx3s_graphics of testbench is
 	constant baudrate : natural := 115200_00;
 	constant uart_data  : std_logic_vector := 
 		x"0000" & 
+		x"1602_5c00_5c00_5c00" &
+		x"0000" &
 		x"18ff" & 
 		x"123456789abcdef123456789abcdef12" &
 		x"23456789abcdef123456789abcdef123" &
@@ -168,32 +170,30 @@ architecture ulx3s_graphics of testbench is
 		x"f123456789abcdef123456789abcdef1" &
 		x"123456789abcdef123456789abcdef12" &
 		x"0000" & 
-		x"1602_5c00_0180" &
-		x"0000" &
 		x"1702_5c00_5c00_7f" &
-		x"0000" &
-		x"18ff"& 
-		x"1234ffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffaabb" &
-		x"ccddffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffff6789" &
-		x"0000" &
-		x"1602_5c00_5c00_5c00" & 
-		x"0000" & 
-		x"1702_5c00_5c00_7f" &
-		x"0000";
+		x"0000"; -- &
+--		x"18ff"& 
+--		x"1234ffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffaabb" &
+--		x"ccddffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffffffff" &
+--		x"ffffffffffffffffffffffffffff6789" &
+--		x"0000" &
+--		x"1602_5c00_5c00_5c00" & 
+--		x"0000" & 
+--		x"1702_5c00_5c00_7f" &
+--		x"0000";
 
 
 	signal uart_clk : std_logic := '0';
@@ -237,18 +237,18 @@ begin
 		sdram_dqm  => sdram_dqm,
 		sdram_d    => sdram_dq);
 
---	sdr_model_g: mt48lc32m16a2
---	port map (
---		clk   => sdram_clk,
---		cke   => sdram_cke,
---		cs_n  => sdram_cs_n,
---		ras_n => sdram_ras_n,
---		cas_n => sdram_cas_n,
---		we_n  => sdram_we_n,
---		ba    => sdram_ba,
---		addr  => sdram_addr,
---		dqm   => sdram_dqm,
---		dq    => sdram_dq);
+	sdr_model_g: mt48lc32m16a2
+	port map (
+		clk   => sdram_clk,
+		cke   => sdram_cke,
+		cs_n  => sdram_cs_n,
+		ras_n => sdram_ras_n,
+		cas_n => sdram_cas_n,
+		we_n  => sdram_we_n,
+		ba    => sdram_ba,
+		addr  => sdram_addr,
+		dqm   => sdram_dqm,
+		dq    => sdram_dq);
 end;
 
 library micron;

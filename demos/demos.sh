@@ -55,7 +55,7 @@ if [ "$HOST" == "" ] ; then
 	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
-	convert_image|./bin/stream|tee pp|$XFR > "${TTY}"
+	convert_image|./bin/bundle -b "${BADDR}"|./bin/stream|$XFR > "${TTY}"
 
 else
 
@@ -64,7 +64,7 @@ else
 #	sleep 1
 
 	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
-	convert_image|./bin/bundle -b "${BADDR}"|./bin/sendbyudp -h "${HOST}"
+	convert_image|./bin/bundle -p -b "${BADDR}"|./bin/sendbyudp -p -h "${HOST}"
 
 fi
 

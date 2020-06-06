@@ -15,10 +15,16 @@ int main (int argc, char *argv[])
 	unsigned int   addr;
 	unsigned int   baddr;
 	unsigned short pktsz;
+	char pktmd;
 
-	baddr = 0;
-	while ((c = getopt (argc, argv, "b:")) != -1) {
+	baddr  = 0;
+	opterr = 0;
+	pktmd  = 0;
+	while ((c = getopt (argc, argv, "pb:")) != -1) {
 		switch (c) {
+		case 'p':
+			pktmd = 1;
+			break;
 		case 'b':
 			if (optarg)
 				sscanf (optarg, "%x", &baddr);
@@ -57,8 +63,12 @@ int main (int argc, char *argv[])
 					fprintf(stderr, "transfer : 0x%08x\n", tlen);
 
 					pktsz = bufptr-buffer;
-					fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
-					fwrite (buffer, sizeof(unsigned char), bufptr-buffer, stdout);
+					if (pktmd) {
+					fprintf(stderr, "Pas4\n", tlen);
+						fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
+				exit(-1);
+					}
+					fwrite (buffer, sizeof(unsigned char), pktsz, stdout);
 
 					bsize  = 0;
 					bufptr = buffer;
