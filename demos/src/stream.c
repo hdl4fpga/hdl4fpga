@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <time.h>
 
 void stream (char c)
 {
@@ -13,6 +15,25 @@ void stream (char c)
 
 int main (int argc, char *argv[])
 {
+	int c;
+	int pktmd;
+
+	pktmd  = 0;
+	opterr = 0;
+
+	while ((c = getopt (argc, argv, "p")) != -1) {
+		switch (c) {
+		case 'p':
+			pktmd = 1;
+			break;
+		case '?':
+			fprintf (stderr, "usage : stream -p\n");
+			exit(1);
+		default:
+			exit(1);
+		}
+	}
+
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 
@@ -33,6 +54,7 @@ int main (int argc, char *argv[])
 					exit(-1);
 			}
 			fwrite("\000", sizeof(char), 2, stdout);
+			nanosleep((const struct timespec[]){ {0, 5000000L } }, NULL);
 		} else
 			exit(-1);
 	}

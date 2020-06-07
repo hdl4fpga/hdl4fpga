@@ -20,6 +20,8 @@
 
 #define PORT	57001
 #define QUEUE   4
+#define MAXSIZE 1500
+
 int main (int argc, char *argv[])
 {
 #ifdef WINDOWS
@@ -54,7 +56,7 @@ int main (int argc, char *argv[])
 				sscanf (optarg, "%64s", hostname);
 			break;
 		case '?':
-			fprintf (stderr, "usage : sendbyudp -h hostname\n");
+			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
 			exit(1);
 		default:
 			exit(1);
@@ -94,6 +96,11 @@ int main (int argc, char *argv[])
 
 			
 		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+			if (size > MAXSIZE) {
+				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
+				exit(-1);
+			}
+
 			buffer[size++] = 0xff;
 			buffer[size++] = 0xff;
 			fprintf (stderr, "packet length %d\n", n);

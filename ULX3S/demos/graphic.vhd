@@ -186,8 +186,8 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -211,6 +211,9 @@ architecture graphics of ulx3s is
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
+	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
+	constant read_latency  : boolean := not (sdram_mode=sdram200MHz);
+	constant write_latency : boolean := not (sdram_mode=sdram200MHz);
 begin
 
 	sys_rst <= '0';
@@ -293,8 +296,8 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
---		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
+--		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
 
 		signal clkos : std_logic;
 	begin
@@ -442,13 +445,14 @@ begin
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			synchronous_rddata => false,
-			size           => (8*256)/ctlr_di'length,
+			size           => (8*2048)/ctlr_di'length,
+--			size           => (8*256)/ctlr_di'length,
+			synchronous_rddata => not write_latency,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
 			src_clk  => si_clk,
-			src_frm  => '1', --src_frm,
+			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data(16-1 downto 0),
 
@@ -690,7 +694,9 @@ begin
 	
 	sdrphy_e : entity hdl4fpga.sdrphy
 	generic map (
-		latency     => sdram_mode=sdram200MHz,
+		cmmd_latency  => sdram_mode=sdram200MHz,
+		read_latency  => not (sdram_mode=sdram200MHz),
+		write_latency => write_latency, 
 		bank_size   => sdram_ba'length,
 		addr_size   => sdram_a'length,
 		word_size   => word_size,

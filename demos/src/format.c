@@ -8,10 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUFNUM  4
-#define MAXSIZE 256
+#define BRAM_SIZE 2048
+#define BUF_SIZE  256
+#define BUF_NUM   (2048/BUF_SIZE)
 
-static unsigned char buffer[BUFNUM*(2+MAXSIZE)+(2+3)+(2+3)];
+static unsigned char buffer[BUF_NUM*(2+BUF_SIZE)+(2+3)+(2+3)];
 static unsigned char *bufptr;
 static unsigned char *memdata;
 static unsigned char *memaddr;
@@ -41,8 +42,8 @@ int main (int argc, char *argv[])
 		case 'b':
 			if (optarg){
 				sscanf (optarg, "%d", &bsize);
-				if (bsize > BUFNUM*MAXSIZE) {
-					fprintf (stderr, "Maximun buffer_size is %d\n", BUFNUM*MAXSIZE);
+				if (bsize > (BUF_NUM*BUF_SIZE)) {
+					fprintf (stderr, "Maximun buffer_size is %d\n", BUF_NUM*BUF_SIZE);
 					help();
 					exit(-1);
 				}
@@ -92,7 +93,7 @@ int main (int argc, char *argv[])
 			memdata    = bufptr;
 			memdata[0] = 0x18;
 
-			if (!(n = fread(memdata+2, sizeof(char), ((bsize-i) < MAXSIZE) ? (bsize-i) : MAXSIZE, stdin)) > 0) {
+			if (!(n = fread(memdata+2, sizeof(char), ((bsize-i) < (BUF_SIZE)) ? (bsize-i) : (BUF_SIZE), stdin)) > 0) {
 				if (n < 0 ) {
 					perror ("Reading stdin\n");
 					exit(-1);

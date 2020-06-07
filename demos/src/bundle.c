@@ -8,7 +8,7 @@ int main (int argc, char *argv[])
 	char   c;
 	unsigned char  len;
 	unsigned char  rid;
-	unsigned char  buffer[1500];
+	unsigned char  buffer[4096];
 	unsigned char  *bufptr;
 	unsigned int   tlen;
 	unsigned int   bsize;
@@ -46,6 +46,10 @@ int main (int argc, char *argv[])
 		if (fread(&len, sizeof(char), 1, stdin) > 0) {
 			*bufptr++ = len;
 
+			if (buffer+sizeof(buffer) < bufptr+len+1) {
+				fprintf (stderr, "buffer size required %ld, buffer size %ld\n", sizeof(buffer), bufptr-buffer+len+1);
+				exit(-1);
+			}
 			if (fread(bufptr, sizeof(char), len+1, stdin) > 0) {
 				bufptr += (len+1);
 				switch (rid) {
@@ -63,11 +67,8 @@ int main (int argc, char *argv[])
 					fprintf(stderr, "transfer : 0x%08x\n", tlen);
 
 					pktsz = bufptr-buffer;
-					if (pktmd) {
-					fprintf(stderr, "Pas4\n", tlen);
+					if (pktmd)
 						fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
-				exit(-1);
-					}
 					fwrite (buffer, sizeof(unsigned char), pktsz, stdout);
 
 					bsize  = 0;

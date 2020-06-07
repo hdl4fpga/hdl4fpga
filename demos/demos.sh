@@ -8,6 +8,7 @@ PIXEL="${PIXEL:-rgb565}"
 WSIZE="${WSIZE:-16}"
 BSIZE="${BSIZE:-128}"
 BADDR="${BADDR:-0x0}"
+BLANK="${BLANK:-YES}"
 
 if [ "${IMAGE}" = "" ] ; then
 	echo Image filename empty
@@ -28,11 +29,6 @@ if [ "${PROG}" != "" ] ; then
 	sleep 1;
 fi
 
-convert_image ()
-{
-	convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"
-}
-
 if [ "$HOST" == "" ] ; then
 
 	if [ ! -c "${TTY}" ] ; then
@@ -47,25 +43,31 @@ if [ "$HOST" == "" ] ; then
 
 	echo Setting serial port "${TTY}"
 	stty -F  "${TTY}" sane
-	stty -F  "${TTY}" "${SPEED}" cs8 -cstopb -parenb raw -onlcr
+	stty -F  "${TTY}" "${SPEED}" cs8 raw -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost
+
 	sleep 1
-
-	echo Blanking screen 
-	cat src/blank.hex|xxd -r -ps|./bin/stream|$XFR > "${TTY}"
-	sleep 1
-
-	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
-	convert_image|./bin/bundle -b "${BADDR}"|./bin/stream|$XFR > "${TTY}"
-
-else
-
-#	echo Blanking screen 
-#	cat src/blank.hex|xxd -r -ps|./bin/bundle|./bin/sendbyudp -h ${HOST}
-#	sleep 1
-
-	echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${HOST}"
-	convert_image|./bin/bundle -p -b "${BADDR}"|./bin/sendbyudp -p -h "${HOST}"
-
 fi
 
+send_data()
+{
+	if [ "$HOST" == "" ] ; then
+		./bin/bundle -b "${BADDR}"|./bin/stream|$XFR > "${TTY}"
 
+	else
+		./bin/bundle -b "${BADDR}" -p|./bin/sendbyudp -p -h "${HOST}"
+	fi
+}
+
+convert_image ()
+{
+	convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"
+}
+
+if [ "${BLANK}" == "YES" ] ; then
+	echo Blanking screen 
+	cat src/blank.hex|xxd -r -ps|send_data
+	sleep 1
+fi
+
+echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
+convert_image|send_data

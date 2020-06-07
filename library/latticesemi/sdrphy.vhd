@@ -33,7 +33,9 @@ use hdl4fpga.std.all;
 
 entity sdrphy is
 	generic (
-		latency   : boolean := false;
+		cmmd_latency  : boolean := false;
+		read_latency  : boolean := false;
+		write_latency : boolean := false;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		word_size : natural := 16;
@@ -140,19 +142,19 @@ begin
 			end if;
 		end process;
 
-		phy1_cs  <= cs  when latency else phy_cs; 
-		phy1_cke <= cke when latency else phy_cke;
-		phy1_b   <= b   when latency else phy_b;  
-		phy1_a   <= a   when latency else phy_a;  
-		phy1_ras <= ras when latency else phy_ras;
-		phy1_cas <= cas when latency else phy_cas;
-		phy1_we  <= we  when latency else phy_we; 
-		phy1_dmt <= dmt when latency else phy_dmt;
-		phy1_dmi <= dmi when latency else phy_dmi;
-		phy1_dqt <= dqt when latency else phy_dqt;
-		phy1_dqi <= dqi when latency else phy_dqi;
-		phy1_dst <= dst when latency else phy_dst;
-		phy1_sti <= sti when false else phy_sti;
+		phy1_cs  <= cs  when cmmd_latency else phy_cs; 
+		phy1_cke <= cke when cmmd_latency else phy_cke;
+		phy1_b   <= b   when cmmd_latency else phy_b;  
+		phy1_a   <= a   when cmmd_latency else phy_a;  
+		phy1_ras <= ras when cmmd_latency else phy_ras;
+		phy1_cas <= cas when cmmd_latency else phy_cas;
+		phy1_we  <= we  when cmmd_latency else phy_we; 
+		phy1_dmt <= dmt when cmmd_latency else phy_dmt;
+		phy1_dmi <= dmi when cmmd_latency else phy_dmi;
+		phy1_dqt <= dqt when cmmd_latency else phy_dqt;
+		phy1_dqi <= dqi when cmmd_latency else phy_dqi;
+		phy1_dst <= dst when cmmd_latency else phy_dst;
+		phy1_sti <= sti when cmmd_latency and read_latency else phy_sti;
 	end block;
 
 	sdrbaphy_i : entity hdl4fpga.sdrbaphy
@@ -184,8 +186,9 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		sdrdqphy_i : entity hdl4fpga.sdrdqphy
 		generic map (
-			read_latency => not latency,
-			byte_size => byte_size)
+			read_latency  => read_latency,
+			write_latency => write_latency,
+			byte_size     => byte_size)
 		port map (
 			sys_clk => sys_clk,
 
