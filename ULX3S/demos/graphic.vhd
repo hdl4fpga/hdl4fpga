@@ -443,12 +443,12 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			synchronous_rddata => false,
-			size           => 128, --(8*2048)/ctlr_di'length,
+			size           => (8*256)/ctlr_di'length,
 			gray_code      => false,
 			overflow_check => false)
 		port map (
 			src_clk  => si_clk,
-			src_frm  => src_frm,
+			src_frm  => '1', --src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data(16-1 downto 0),
 
