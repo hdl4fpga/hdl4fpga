@@ -204,7 +204,7 @@ architecture graphics of ulx3s is
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 --	constant baudrate  : natural := 115200_00;
 --	constant video_mode : natural := modedebug;
---
+
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
@@ -297,7 +297,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "133.333333";
+--		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
 
 		signal clkos : std_logic;
 	begin
@@ -446,7 +446,6 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			size           => (8*2048)/ctlr_di'length,
---			size           => (8*256)/ctlr_di'length,
 			synchronous_rddata => not write_latency,
 			gray_code      => false,
 			overflow_check => false)
