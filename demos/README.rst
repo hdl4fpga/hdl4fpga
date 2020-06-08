@@ -21,8 +21,8 @@ On UN*X
 
 Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to change your image to that format. Imagemagick_ will be called by upload-image.sh_ script and will do it for you.
 
-200 MHz SDR RAM 3000000 bps UART
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+200 MHz SDR DRAM, 3000000 bps UART
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
 
@@ -40,6 +40,15 @@ What it does ?
 
 Loads multiple images on SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port.
 
+ULX3S
+-----
+
+What do I need to run it ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On UN*X
+~~~~~~~
+
 .. _motion.sh: ./motion.sh
 
 .. _Imagemagick: https://imagemagick.org
@@ -48,8 +57,8 @@ Loads multiple images on SDRAM at consecutive addresses and then animates them b
 
 ffmpeg_ is required to convert *your_motion.your_format* not image frames and Imagemagick_ is required to the images frames to 800x600 RGB8.
 
-200 MHz SDR RAM 3000000 bps UART
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+200 MHz SDR DRAM, 3000000 bps UART
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
 
