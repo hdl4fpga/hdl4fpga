@@ -539,7 +539,7 @@ begin
 			ctlr_clk     => ctlr_clk,
 			ctlr_di_dv   => graphic_dv,
 			ctlr_di      => graphic_di,
-			base_addr    => (base_addr'range => '0'),
+			base_addr    => base_addr,
 			dma_req      => dmacfgvideo_req,
 			dma_rdy      => dmavideo_rdy,
 			dma_len      => dmavideo_len,

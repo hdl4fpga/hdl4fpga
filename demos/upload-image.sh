@@ -2,11 +2,11 @@
 XFR=`which "${XFR:-cat}"`
 TTY="${TTY:-/dev/ttyUSB0}"
 WIDTH="${WIDTH:-800}"
-SPEED="${SPEED:-115200}"
+SPEED="${SPEED:-3000000}"
 PROG="${PROG}"
 PIXEL="${PIXEL:-rgb565}"
 WSIZE="${WSIZE:-16}"
-BSIZE="${BSIZE:-128}"
+BSIZE="${BSIZE:-256}"
 BADDR="${BADDR:-0x0}"
 BLANK="${BLANK:-YES}"
 
@@ -41,7 +41,7 @@ if [ "$HOST" == "" ] ; then
 		exit -1
 	fi
 
-	echo Setting serial port "${TTY}" 1>&2
+	echo Setting serial speed ${SPEED} to port "${TTY}" 1>&2
 	stty -F  "${TTY}" sane 1>&2
 	stty -F  "${TTY}" "${SPEED}" cs8 raw -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost 1>&2
 
