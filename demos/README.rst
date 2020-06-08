@@ -56,7 +56,7 @@ On UN*X
 
 .. _ffmpeg: https://ffmpeg.org/
 
-ffmpeg_ is required to convert *your_motion.your_format* to image frames and Imagemagick_ is required the images frames to 800x600 RGB8.
+ffmpeg_ is required to convert *your_motion.your_format* to image frames and Imagemagick_ is required to convert the images frames to 800x600 RGB8.
 
 200 MHz SDR DRAM, 3000000 bps UART
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
