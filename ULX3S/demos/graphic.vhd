@@ -166,6 +166,7 @@ architecture graphics of ulx3s is
 	constant video_tab : videoparams_vector := (
 		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk_debug),
 		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk40_00m800x600at60));
+	constant video_mode : natural := mode600p;
 
 
 	type sdram_params is record
@@ -194,11 +195,22 @@ architecture graphics of ulx3s is
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	alias uart_rxc     : std_logic is clk_25mhz;
-	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	alias uart_rxc     : std_logic is clk_25mhz;
+--	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
 --	constant baudrate  : natural := 115200;
-	constant baudrate  : natural := 1_000_000;
-	constant video_mode : natural := mode600p;
+--	constant baudrate  : natural := 1000000;
+
+--	alias uart_rxc     : std_logic is video_clk;
+--	constant uart_xtal : natural := natural(
+--		real(video_tab(video_mode).clkfb_div*video_tab(video_mode).clkop_div)*1.0e9/
+--		real(video_tab(video_mode).clki_div)/10.0/sys_per);
+--	constant baudrate  : natural := 2_000_000;
+
+	alias uart_rxc     : std_logic is ctlr_clk;
+	constant uart_xtal : natural := natural(
+		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
+		real(sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/sys_per);
+	constant baudrate  : natural := 3000000;
 
 --	alias uart_rxc     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
@@ -214,6 +226,7 @@ architecture graphics of ulx3s is
 	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
 	constant read_latency  : boolean := not (sdram_mode=sdram200MHz);
 	constant write_latency : boolean := not (sdram_mode=sdram200MHz);
+
 begin
 
 	sys_rst <= '0';

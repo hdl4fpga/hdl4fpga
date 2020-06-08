@@ -16,34 +16,34 @@ if [ "${IMAGE}" = "" ] ; then
 fi
 
 if [ ! -f "${IMAGE}" ] ; then
-	echo Image file "${IMAGE}" not found ;
+	echo Image file "${IMAGE}" not found 1>&2
 	exit -1
 fi
 
-echo make
-make all
+echo make 1>&2
+make all 1>&2
 
 if [ "${PROG}" != "" ] ; then
-	echo "${PROG}"
-	$PROG
+	echo "${PROG}" 1>&2
+	$PROG 1>&2
 	sleep 1;
 fi
 
 if [ "$HOST" == "" ] ; then
 
 	if [ ! -c "${TTY}" ] ; then
-		echo Serial port "${TTY}" not found
+		echo Serial port "${TTY}" not found 1>&2
 		exit -1
 	fi
 
 	if [ ! -f "${XFR}" ] ; then
-		echo Binary transfer "${XFR}" no found
+		echo Binary transfer "${XFR}" no found 1>&2
 		exit -1
 	fi
 
-	echo Setting serial port "${TTY}"
-	stty -F  "${TTY}" sane
-	stty -F  "${TTY}" "${SPEED}" cs8 raw -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost
+	echo Setting serial port "${TTY}" 1>&2
+	stty -F  "${TTY}" sane 1>&2
+	stty -F  "${TTY}" "${SPEED}" cs8 raw -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost 1>&2
 
 	sleep 1
 fi
@@ -64,10 +64,10 @@ convert_image ()
 }
 
 if [ "${BLANK}" == "YES" ] ; then
-	echo Blanking screen 
+	echo Blanking screen  1>&2
 	cat src/blank.hex|xxd -r -ps|send_data
 	sleep 1
 fi
 
-echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}"
-convert_image|send_data
+echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}" 1>&2
+time convert_image|send_data
