@@ -67,7 +67,7 @@ Open a console on demos directory and run:
 
 **MOTION="your_motion_path/your_motion.your_format" LOAD=YES FPS=30 PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./motion.sh**
 
-To run it again without loading, don't set the **LOAD** variable. To select another **FPS** to animate the images, set the **FPS** variable to the desire value for example. 
+To run it again without loading, don't set the **LOAD** variable. To select another **FPS** to animate the images, set the **FPS** variable to the desire value.
 
 **MOTION="your_motion_path/your_motion.your_format" FPS=60 PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./motion.sh**
 
