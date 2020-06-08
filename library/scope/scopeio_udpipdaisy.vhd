@@ -45,6 +45,7 @@ entity scopeio_udpipdaisy is
 		phy_tx_en   : out std_logic;
 		phy_tx_d    : out std_logic_vector;
 	
+		ipcfg_vld   : buffer std_logic;
 		chaini_sel  : in  std_logic := '0';
 
 		chaini_clk  : in  std_logic := '0';
@@ -130,6 +131,19 @@ begin
 		clk   => phy_rxc,
 		di(0) => myipcfg_dv,
 		do(0) => ipaddr_dv);
+
+	process (phy_rxc)
+		variable edge : std_logic;
+	begin
+		if rising_edge(phy_rxc) then
+			if ipcfg_req='1' and edge='0' then
+				ipcfg_vld <= '0';
+			elsif ipcfg_vld='0' then
+				ipcfg_vld <= myipcfg_dv;
+			end if;
+			edge := ipcfg_req;
+		end if;
+	end process;
 
 	frm <= word2byte(word2byte(hdr_dv & ipaddr_dv, ipaddr_dv) & udpso_dv, udpso_dv);
 

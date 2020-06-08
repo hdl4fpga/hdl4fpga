@@ -88,22 +88,22 @@ package scopeiopkg is
 		sgmnt_gap        : gap_vector;         -- Segment Padding
 	end record;
 
-	constant sd600            : natural := 0;
-	constant hd720            : natural := 1;
-	constant hd1080           : natural := 2;
-	constant vesa1280x1024    : natural := 3;
-	constant sd600x16         : natural := 4;
-	constant sd600x16fs       : natural := 5;
-	constant lcd480x272seg1   : natural := 12;
-	constant lcd480x272seg2   : natural := 13;
-	constant oled96x64        : natural := 6;
-	constant oled96x64ongrid  : natural := 11;
-	constant lcd800x480       : natural := 7;
-	constant lcd800x480ongrid : natural := 10;
-	constant lcd1024x600      : natural := 8;
-	constant vesa640x480      : natural := 9;
+	type displaylayout_ids is (
+		sd600,
+		hd720,
+		hd1080,
+		sd600x16,
+		sd600x16fs,
+		lcd480x272seg1,
+		lcd480x272seg2,
+		oled96x64,
+		oled96x64ongrid,
+		lcd800x480,
+		lcd800x480ongrid,
+		lcd1024x600,
+		vesa640x480);
 
-	type displaylayout_vector is array (natural range <>) of display_layout;
+	type displaylayout_vector is array (displaylayout_ids) of display_layout;
 
 	constant displaylayout_table : displaylayout_vector := (
 		sd600 => (            
@@ -346,26 +346,6 @@ package scopeiopkg is
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
-		vesa1280x1024 => (
-			display_width    => 1280,
-			display_height   =>  720,
-			num_of_segments  =>    4,
-			division_size    =>   32,
-			grid_width       => 30*32+1,
-			grid_height      =>  8*32+1,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   =>  false,
-			vtaxis_width     =>  6*8,
-			vtaxis_within   =>  false,
-			vttick_rotate    => ccw0,
-			textbox_width    => 33*8,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
 		hd1080 => (
 			display_width    => 1920,
 			display_height   => 1080,
@@ -386,30 +366,6 @@ package scopeiopkg is
 			main_gap         => (others => 1),
 			sgmnt_margin     => (others => 1),
 			sgmnt_gap        => (horizontal => 1, others => 0)));
-
-	type mode_layout is record
-		mode_id   : natural;
-		layout_id : natural;
-	end record;
-
-	type modelayout_vector is array(natural range <>) of mode_layout;
-
-	constant video_description : modelayout_vector := (
-		0 => (mode_id => pclk148_50m1920x1080Rat60, layout_id => hd1080),
---		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
-		1 => (mode_id => pclk40_00m800x600Rat60,    layout_id => sd600),
-		2 => (mode_id => pclk75_00m1920x1080Rat30,  layout_id => hd1080),
-		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720),
-		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
-		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
-		6 => (mode_id => pclk23_75m640x480Cat60,    layout_id => vesa640x480),
-	       11 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg1),
-	       12 => (mode_id => pclk25_00m480x272Rat135,   layout_id => lcd480x272seg2),
-	       13 => (mode_id => pclk23_75m640x480Cat60,    layout_id => lcd480x272seg1),
-		7 => (mode_id => pclk38_25m96x64Rat60,      layout_id => oled96x64ongrid),
-		8 => (mode_id => pclk30_00m800x480Rat60,    layout_id => lcd800x480),
-		9 => (mode_id => pclk50_00m1024x600Rat60,   layout_id => lcd1024x600),
-	   10 => (mode_id => pclk40_00m800x600Rat60,    layout_id => lcd800x480ongrid));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;

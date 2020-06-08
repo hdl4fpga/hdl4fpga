@@ -29,49 +29,36 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
-entity graphics is
+entity graphic is
 	generic (
-		video_mode   : natural);
+		video_width  : natural);
 	port (
 		ctlr_clk     : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
-		video_clk    : in  std_logic;
-		extern_video  : in  std_logic := '0';
-		extern_hzsync : in std_logic := '-';
-		extern_vtsync : in std_logic := '-';
-		extern_blankn : in std_logic := '-';
+		base_addr    : in  std_logic_vector;
 		dma_req      : buffer std_logic := '0';
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
-		video_hzsync : buffer std_logic;
-		video_vtsync : buffer std_logic;
-		video_hzon   : buffer std_logic;
-		video_vton   : buffer std_logic;
+		video_clk    : in  std_logic;
+		video_hzon   : in  std_logic;
+		video_vton   : in  std_logic;
 		video_pixel  : out std_logic_vector);
 end;
 
-architecture def of graphics is
+architecture def of graphic is
 
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
-	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
+	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
 	constant fifo_size   : natural := 2*line_size;
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
 
-	signal v_hzsync  : std_logic;
-	signal v_vtsync  : std_logic;
-	signal v_hzon    : std_logic;
-	signal v_vton    : std_logic;
-	signal v_on      : std_logic;
 	signal video_frm : std_logic;
 	signal video_on  : std_logic;
-
-	signal video_hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(3)-1)-1 downto 0);
-	signal video_vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(video_mode)(7)-1)-1 downto 0);
 
 	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
 	signal vton_dly  : std_logic;
@@ -86,22 +73,6 @@ architecture def of graphics is
 	signal mydma_rdy : std_logic;
 
 begin
-
-	video_e : entity hdl4fpga.video_sync
-	generic map (
-		mode => video_mode)
-	port map (
-		video_clk    => video_clk,
-		extern_video  => extern_video,
-		extern_hzsync => extern_hzsync,
-		extern_vtsync => extern_vtsync,
-		extern_blankn => extern_blankn,
-		video_hzsync => v_hzsync,
-		video_vtsync => v_vtsync,
-		video_hzcntr => video_hzcntr,
-		video_vtcntr => video_vtcntr,
-		video_hzon   => v_hzon,
-		video_vton   => v_vton);
 
 	process (video_clk)
 	begin
@@ -119,10 +90,10 @@ begin
 				end if;
 				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
-				dma_addr <= (dma_addr'range => '0');
+				dma_addr <= base_addr; --(dma_addr'range => '0');
 				dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
-			elsif v_vton='1' and hzon_edge='0' and v_hzon='1' then
-				level <= level - modeline_data(video_mode)(0);
+			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
+				level <= level - video_width;
 			elsif level <= water_mark then
 				dma_req  <= '1';
 				level    <= level + line_size;
@@ -133,84 +104,28 @@ begin
 				dma_req <= '0';
 			end if;
 
-			hzon_edge <= v_hzon;
+			hzon_edge <= video_hzon;
 			vton_edge <= vton_dly;
-			vton_dly  <= v_vton;
-			video_frm <= not setif(v_vton='0' and vton_dly='1');
+			vton_dly  <= video_vton;
+			video_frm <= not setif(video_vton='0' and vton_dly='1');
 		end if;
 	end process;
 
-	process (ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			src_irdy <= ctlr_di_dv;
-			src_data <= ctlr_di;
-		end if;
-	end process;
+	video_on <= video_hzon and video_vton;
+	vram_e : entity hdl4fpga.fifo
+	generic map (
+		size           => fifo_size,
+		synchronous_rddata => true, 
+		overflow_check => false,
+		gray_code      => false)
+	port map (
+		src_clk  => ctlr_clk,
+		src_irdy => ctlr_di_dv,
+		src_data => ctlr_di,
 
-	video_output_b : block
-		constant inbuffer_size  : natural := 4;
-		constant outbuffer_size : natural := 4;
-
-		signal v_on    : std_logic;
-		signal v_frm   : std_logic;
-
-		signal v_trdy  : std_logic;
-		signal v_pixel : std_logic_vector(video_pixel'range);
-
-	begin
-
-		v_on <= v_hzon and v_vton;
-
-		inbuffer_e : entity hdl4fpga.align
-		generic map (
-			n => 2,
-			d => (0 to 2-1 => inbuffer_size))
-		port map (
-			clk   => video_clk,
-			di(0) => video_frm,
-			di(1) => v_on,
-			do(0) => v_frm,
-			do(1) => video_on);
-
-		vram_e : entity hdl4fpga.fifo
-		generic map (
-			size           => fifo_size,
-			overflow_check => false,
-			gray_code      => false)
-		port map (
-			src_clk  => ctlr_clk,
-			src_irdy => src_irdy,
-			src_data => src_data,
-
-			dst_clk  => video_clk,
-			dst_frm  => v_frm,
-			dst_trdy => video_on,
-			dst_data => v_pixel);
-
-		outbuffer_e : entity hdl4fpga.align
-		generic map (
-			n => video_pixel'length,
-			d => (0 to video_pixel'length-1 => outbuffer_size-1))
-		port map (
-			clk => video_clk,
-			di  => v_pixel,
-			do  => video_pixel);
-
-		sync_e : entity hdl4fpga.align
-		generic map (
-			n => 4,
-			d => (0 to 5-1 => inbuffer_size+outbuffer_size))
-		port map (
-			clk => video_clk,
-			di(0) => v_hzon,
-			di(1) => v_vton,
-			di(2) => v_hzsync,
-			di(3) => v_vtsync,
-			do(0) => video_hzon,
-			do(1) => video_vton,
-			do(2) => video_hzsync,
-			do(3) => video_vtsync);
-	end block;
+		dst_clk  => video_clk,
+		dst_frm  => video_frm,
+		dst_trdy => video_on,
+		dst_data => video_pixel);
 
 end;

@@ -224,7 +224,15 @@ begin
 		col_eoc => ceoc);
 
 	ctlr_rw <= dmatrans_we;
-	ctlr_b <= ddrdma_bnk;
+	ctlrb_p : process (dmatrans_clk)
+	begin
+		if rising_edge(dmatrans_clk) then
+			if ctlr_ras='1' then
+				ctlr_b <= ddrdma_bnk;
+			end if;
+		end if;
+	end process;
+
 	ctlra_p : process (dmatrans_clk)
 		variable saved_col : unsigned(ctlr_a'range);
 	begin
@@ -236,12 +244,11 @@ begin
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				if ddr_stdr(mark)=DDR0 then
+				if ddr_stdr(mark)=SDRAM then
 					ctlr_a <= std_logic_vector(saved_col);
 				else
 					ctlr_a <= std_logic_vector(shift_left(saved_col,1));
 				end if;
---				ctlr_a <= std_logic_vector(saved_col);
 			end if;
 		end if;
 	end process;
