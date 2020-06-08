@@ -6,8 +6,8 @@ What it does ?
 
 Loads an image on the SDRAM throught the serial port and displays it using the HDMI.
 
-ULX3S
-~~~~~
+On ULX3S
+~~~~~~~~
 
 What do I need to run it ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,8 +41,8 @@ What it does ?
 
 Loads multiple images on the SDR SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port
 
-ULX3S
-~~~~~
+On ULX3S
+~~~~~~~~
 
 What do I need to run it ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
