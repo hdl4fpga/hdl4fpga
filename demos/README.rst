@@ -4,7 +4,7 @@ upload-image.sh
 What it does ?
 ~~~~~~~~~~~~~~
 
-Loads and image on SDRAM throught the serial port and displays it using the HDMI.
+Loads an image on the SDRAM throught the serial port and displays it using the HDMI.
 
 ULX3S
 -----
@@ -34,6 +34,11 @@ Remember that all the **bold text** should be on the same line
 
 motion.sh
 ---------
+
+What it does ?
+~~~~~~~~~~~~~~
+
+Loads multiple images on SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port.
 
 .. _motion.sh: ./motion.sh
 
