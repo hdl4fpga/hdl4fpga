@@ -30,8 +30,8 @@ architecture beh of ulx3s is
 	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
 	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
 	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
-        constant C_external_sync : std_logic := '0';
+        constant vlayout_id: integer := 13;
+        constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
         constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
@@ -47,6 +47,7 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
+        constant C_view_rom     : boolean := true;  -- ROM (constant waveform)
         constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
@@ -57,7 +58,7 @@ architecture beh of ulx3s is
         constant C_view_binary_gain: integer := 2;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false; -- NET output
-        constant C_view_sync    : boolean := true;  -- external sync (LVDS receiver)
+        constant C_view_sync    : boolean := false; -- external sync (LVDS receiver)
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
@@ -86,7 +87,7 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := false;
+        constant C_lvds_vga: boolean := true;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -139,6 +140,59 @@ architecture beh of ulx3s is
 
 	signal clk_adc : std_logic := '0';
 
+	-- period=28, amplitude=-3..+3
+	function batman(constant input_x: real)
+        return real is
+	  variable x,z: real;
+        begin
+          -- top part
+          x := abs(input_x);
+          x := (abs(x+14.0) mod 28.0)-14.0;
+          x := abs(x);
+          if x < 0.5 then
+            return 2.25;
+          end if;
+          if x < 0.75 then
+            return 3.0*x+0.75;
+          end if;
+          if x < 1.0 then
+            return 9.0-8.0*x;
+          end if;
+          if x < 3.0 then
+            return 1.5-0.5*x-6.0*sqrt(10.0)/14.0*(sqrt(3.0-x*x+2.0*x)-2.0);
+          end if;
+          if x < 7.0 then
+            return 3.0*sqrt(1.0-x*x/(7.0*7.0));
+          end if;
+          -- bottom part, renormalized x
+          x := (abs(x+7.0) mod 14.0)-7.0;
+          x := abs(x);
+          if x < 4.0 then
+            z := abs(x-2.0)-1.0;
+            return 0.5*x-(3.0*sqrt(33.0)-7.0)/112.0*x*x+sqrt(1.0-z*z)-3.0;
+          end if;
+          if x < 7.0 then
+            return -3.0*sqrt(1.0-x*x/(7.0*7.0));
+          end if;
+          return 0.0;
+        end;
+        
+        function batmantab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : natural)
+        return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(n*(x1+1)-1 downto n*x0);
+		constant freq : real := 4.0; -- number of batmans in the ROM
+	begin
+		for i in x0 to x1 loop
+                        y := 32.0*batman(28.0*real(i)*freq/real(x1-x0+1));
+                        aux((i+1)*n-1 downto i*n) := std_logic_vector(to_signed(integer(trunc(y)),n));
+		end loop;
+		return aux;
+	end;
+
 	function sinctab (
 		constant x0 : integer;
 		constant x1 : integer;
@@ -171,7 +225,7 @@ architecture beh of ulx3s is
         -- subset of colors for enabled inputs
 	constant C_tracesfg: std_logic_vector(0 to inputs*(vga_rgb'length+1)-1) := C_color_palette(0 to inputs*(vga_rgb'length+1)-1);
 
-	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_white, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
+	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_white, trace_blue, trace_lila, trace_sine, trace_batman1, trace_batman2: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -713,11 +767,39 @@ begin
 	-- internal sine waveform generator
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+		bitrom => sinctab(-1024+256, 1023+256, sample_size)
+        )
 	port map (
 		clk  => clk,
 		addr => input_addr,
 		data => trace_sine);
+
+	samples_batman1_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => batmantab(-1024, 1023, sample_size)
+        )
+	port map (
+		clk  => clk,
+		addr => input_addr,
+		data => trace_batman1);
+
+	samples_batman2_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => batmantab(-1024+256, 1023+256, sample_size) -- phase shifted
+        )
+	port map (
+		clk  => clk,
+		addr => input_addr,
+		data => trace_batman2);
+
+	G_view_usb: if C_view_rom generate
+	S_input_ena  <= '1';
+	clk_input    <= vga_clk;
+	trace_yellow <= trace_batman1;
+	trace_cyan   <= trace_batman2;
+	trace_green  <= trace_sine;
+	trace_violet <= (others => '0');
+	end generate;
 
 	G_view_usb: if C_view_usb generate
 	S_input_ena <= '1';
@@ -960,10 +1042,20 @@ begin
 	end generate;
 
 	G_inputs1: if inputs >= 1 generate
+	--G_inputs1_rom: if C_view_rom generate
+	--samples(0*sample_size to (0+1)*sample_size-1) <= trace_batman1;
+	--end generate;
+	--G_inputs1_rom: if not C_view_rom generate
 	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
+	--end generate;
 	end generate;
 	G_inputs2: if inputs >= 2 generate
+	--G_inputs2_rom: if C_view_rom generate
+	--samples(1*sample_size to (1+1)*sample_size-1) <= trace_batman2;
+	--end generate;
+	--G_inputs2_rom: if not C_view_rom generate
 	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
+	--end generate;
 	end generate;
 	G_inputs3: if inputs >= 3 generate
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
