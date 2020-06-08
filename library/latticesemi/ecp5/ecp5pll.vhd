@@ -123,7 +123,7 @@ architecture mix of ecp5pll is
       variable output_div, output_div_min, output_div_max : natural;
       variable fout: natural;
       variable fvco: natural := 0;
-      variable error: natural := 999999999;
+      variable error, error_prev: natural := 999999999;
       variable result: T_clocks;
       variable sfreq, sphase: A_srequest;
       variable div: natural;
@@ -178,10 +178,16 @@ architecture mix of ecp5pll is
           fout := in_hz * feedback_div / input_div;
           for output_div in output_div_min to output_div_max loop
             fvco := fout * output_div;
-            if abs(fout-out0_hz) < error -- prefer least error
-            or (fout=out0_hz and abs(fvco-VCO_OPTIMAL) < abs(params.fvco-VCO_OPTIMAL)) -- or if 0 error prefer closest to optimal VCO frequency
+            error := abs(fout-out0_hz);
+            for channel in 1 to 3 loop
+              div  := fvco/sfreq(channel);
+              freq := fvco/div;
+              error := error + abs(freq-sfreq(channel));
+            end loop;
+            if error < error_prev -- prefer least error
+            or (error=error_prev and abs(fvco-VCO_OPTIMAL) < abs(params.fvco-VCO_OPTIMAL)) -- or if 0 error prefer closest to optimal VCO frequency
             then
-              error                 := abs(fout-out0_hz);
+              error_prev            := error;
               phase_compensation    := (output_div+1)/2*8-8+output_div/2*8; -- output_div/2*8 = 180 deg shift
               phase_count_x8        := phase_compensation + 8*output_div*out0_deg/360;
               if phase_count_x8 > 1023 then
