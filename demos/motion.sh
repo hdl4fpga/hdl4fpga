@@ -7,19 +7,24 @@ HEIGHT=600
 FSIZE=`expr 2 \* ${WIDTH} \* ${HEIGHT}`
 FRAMES=`expr \( ${MSIZE} - ${FSIZE} - 1 \) \/ ${FSIZE}`
 PROG="ujprog ../ULX3S/diamond/graphic/demos_graphic.bit"
+FPS="${FPS:-30}"
+LOAD="${LOAD:-NO}"
+PER=`echo "1 / ${FPS}" | bc -l`
 
 if [ "${MOTION}" == "" ] ; then
 	echo "MOTION variable unset" >&2
 	exit -1;
 fi
 
-if [ ! -t `which ffmpeg`] ; then
+if [ -t `which ffmpeg` ] ; then
 	echo "ffmpeg required" >&2
 	exit -1;
 fi
 
-mkdir -p frames
-ffmpeg -i "${MOTION}" -f image2 frames/image-%07d.jpg
+if [ "${LOAD}" == "YES" ] ; then
+	mkdir -p frames
+	ffmpeg -i "${MOTION}" -f image2 frames/image-%07d.jpg
+fi
 
 N=0
 for file in frames/image-*.jpg ; do
@@ -32,11 +37,17 @@ ADDR=0
 FRAMES=0
 for file in frames/image-*.jpg ; do
 	if [ `expr ${N} % ${M}` -eq 0 ] ; then
-		convert ${file} -gravity center -crop 1280x960+0+0 -resize ${WIDTH}x${HEIGHT} output.jpg
+		if [ "${LOAD}" == "YES" ] ; then
+			convert ${file} -gravity center -crop 1280x960+0+0 -resize ${WIDTH}x${HEIGHT} output.jpg
+		fi
+
 		if [ "$N" -ne 0 ] ; then
 			unset PROG
 		fi
-		TTY="${TTY}" SPEED="${SPEED}" BSIZE="2048" BADDR="0x${BADDR}" PROG="${PROG}" BLANK="NO" IMAGE=output.jpg sh upload-image.sh
+
+		if [ "${LOAD}" == "YES" ] ; then
+			TTY="${TTY}" SPEED="${SPEED}" BSIZE="2048" BADDR="0x${BADDR}" PROG="${PROG}" BLANK="NO" IMAGE=output.jpg sh upload-image.sh
+		fi
 
 		ADDR=`expr ${ADDR} + ${FSIZE} \/ 2`
 		BADDR=`printf %06x ${ADDR}`
@@ -58,6 +69,6 @@ while true ; do
 		echo "1902${BADDR}"|xxd -r -ps|./bin/stream|cat > "${TTY}"
 		ADDR=`expr ${ADDR} + ${FSIZE} \/ 2`
 		N=`expr $N + 1`
-		sleep 0.075
+		sleep "${PER}"
 	done
 done

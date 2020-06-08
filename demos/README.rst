@@ -26,9 +26,10 @@ Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. Th
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
 
+Open a console on demos directory and run
+
 **IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./upload-image.sh**
 
-Open a console on demos directory and run
 
 Remember that all the **bold text** should be on the same line
 
@@ -38,7 +39,7 @@ motion.sh
 What it does ?
 ~~~~~~~~~~~~~~
 
-Loads multiple images on SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port.
+Loads multiple images on the SDR SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port
 
 ULX3S
 ~~~~~
@@ -62,9 +63,13 @@ ffmpeg_ is required to convert *your_motion.your_format* to image frames and Ima
 
 Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
 
-**MOTION="your_motion_path/your_motion.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./motion.sh**
+Open a console on demos directory and run:
 
-Open a console on demos directory and run
+**MOTION="your_motion_path/your_motion.your_format" LOAD=YES FPS=30 PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./motion.sh**
+
+To run it again without loading, don't set the **LOAD** variable. To select another **FPS** to animate the images, set the **FPS** variable to the desire value for example. 
+
+**MOTION="your_motion_path/your_motion.your_format" FPS=60 PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./motion.sh**
 
 Remember that all the **bold text** should be on the same line
 
