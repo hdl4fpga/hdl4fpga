@@ -1,8 +1,8 @@
 upload-image.sh
 ---------------
 
-What it does ?
-~~~~~~~~~~~~~~
+What does it do ?
+~~~~~~~~~~~~~~~~~
 
 Loads an image on the SDRAM throught the serial port and displays it using the HDMI.
 
@@ -36,8 +36,8 @@ Remember that all the **bold text** should be on the same line
 motion.sh
 ---------
 
-What it does ?
-~~~~~~~~~~~~~~
+What does it do ?
+~~~~~~~~~~~~~~~~~
 
 Loads multiple images on the SDR SDRAM at consecutive addresses and then animates them by changing the video base address. Images are loaded throught the serial port
 
