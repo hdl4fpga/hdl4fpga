@@ -17,14 +17,16 @@ use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
         constant timing_id: videotiming_ids := pclk25_00m640x480at60;
-        --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
         constant layout: display_layout := displaylayout_table(lcd480x272seg1);
-        constant C_external_sync : std_logic := '1';
+        --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
+        --constant layout: display_layout := displaylayout_table(sd600x16fs);
+        constant pixel_hz: natural := modeline_data(timing_id)(8);
+        constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -75,7 +77,7 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := true;
-        constant C_lvds_vga: boolean := true;
+        constant C_lvds_vga: boolean := false;
         constant C_oled_vga: boolean := false;
         constant C_oled_hex: boolean := false;
 
@@ -218,7 +220,7 @@ architecture beh of ulx3s is
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz (25e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := pixel_hz; -- Hz (25e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -325,10 +327,10 @@ begin
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(200.0e6),
-	  out1_Hz => natural( 40.0e6),
-	  out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
+	  out0_Hz => pixel_hz*5,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural( 60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>   50000
 	  --out0_Hz => natural(125.0e6),
 	  --out1_Hz => natural( 25.0e6),
 	  --out2_Hz => natural( 62.5e6),
@@ -348,11 +350,11 @@ begin
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural( 65.6e6), out2_tol_Hz => 50000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 50000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 50000
 	)
         port map
         (
@@ -368,11 +370,11 @@ begin
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => pixel_hz*7, out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
         (
@@ -387,11 +389,11 @@ begin
 	clk_dvi_25_125: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(125.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural( 62.5e6), out2_tol_Hz => 1000000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*5,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz =>  100000
 	)
         port map
         (
@@ -401,11 +403,11 @@ begin
 	clk_lvds_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => pixel_hz*7, out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
         (
@@ -843,12 +845,12 @@ begin
           E_clk_decoder_fs: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 	  S_usb_dif <= usb_fpga_dp;
@@ -1175,12 +1177,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 
@@ -1249,12 +1251,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 
@@ -1444,12 +1446,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
         end generate;
