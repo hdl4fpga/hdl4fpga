@@ -54,7 +54,7 @@ package videopkg is
 --# 1280x1024 @ 30.00 Hz (GTF) hsync: 31.26 kHz; pclk: 50.52 MHz
 --Modeline "1280x1024_30.00" 50.52 1280 1320 1448 1616 1024 1025 1028 1042 -HSync +Vsync
 
-	constant modeline_data : modeline_vector := (
+	constant modeline_tab : modeline_vector := (
 		pclk_fallback            => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
 		pclk_debug               => (  10,   16,   19,   21,   22,   26,   27,   30,   25000000),
 		pclk25_00m640x400at60    => ( 640,  672,  736,  832,  400,  401,  404,  445,   25000000),
@@ -75,6 +75,13 @@ package videopkg is
 	function to_edges (
 		constant data : natural_vector)
 		return natural_vector;
+
+	function auto_modeline (
+		constant width  : natural;
+		constant height : natural;
+		constant fps    : real;
+		constant pclk   : real)
+		return natural_vector;
 end;
 
 package body videopkg is
@@ -90,4 +97,13 @@ package body videopkg is
 		return retval;
 	end;
 
+	function auto_modeline (
+		constant width  : natural;
+		constant height : natural;
+		constant fps    : real;
+		constant pclk   : real)
+		return natural_vector is
+	begin
+		return F_modeline(x => width, y => height, hz => natural(fps));
+	end;
 end;
