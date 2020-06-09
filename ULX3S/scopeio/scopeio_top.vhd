@@ -13,14 +13,19 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.modeline_calculator.all;
 use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
-        constant timing_id: videotiming_ids := pclk25_00m640x480at60;
-        constant layout: display_layout := displaylayout_table(lcd480x272seg1);
+        constant width    : natural := 800;
+        constant height   : natural := 480;
+        constant fps      : natural := 60;
+        constant pixel_hz : natural := F_modeline(width,height,fps)(8);
+        --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
-        --constant layout: display_layout := displaylayout_table(sd600x16fs);
-        constant pixel_hz: natural := modeline_data(timing_id)(8);
+        --constant layout: display_layout := displaylayout_table(lcd480x272seg1);
+        constant layout: display_layout := displaylayout_table(sd600x16fs);
+        --constant pixel_hz: natural := modeline_data(timing_id)(8);
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
@@ -1680,7 +1685,11 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-	        timing_id        => timing_id,
+	        width            => width,
+	        height           => height,
+	        fps              => real(fps), -- Hz
+	        pclk             => real(pixel_hz)*1.0e-6, -- MHz ?
+	        --timing_id        => timing_id,
 		layout           => layout,
 	        inputs           => inputs, -- number of input channels
 		min_storage      => 4096, -- samples
