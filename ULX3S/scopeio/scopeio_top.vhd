@@ -327,7 +327,7 @@ begin
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  out0_Hz => pixel_hz*5,
+	  out0_Hz => pixel_hz*5, out0_tol_Hz => 1,
 	  out1_Hz => pixel_hz,
 	  out2_Hz => natural( 60.0e6), out2_tol_Hz => 7000000,
 	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>   50000
@@ -351,7 +351,7 @@ begin
 	generic map
 	(
 	    in_Hz => natural(25.0e6),
-	  out0_Hz => pixel_hz*7,
+	  out0_Hz => pixel_hz*7, out0_tol_Hz => 1,
 	  out1_Hz => pixel_hz,
 	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
 	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 50000
@@ -371,9 +371,9 @@ begin
 	generic map
 	(
 	    in_Hz => natural(25.0e6),
-	  out0_Hz => pixel_hz*7,
+	  out0_Hz => pixel_hz*7, out0_tol_Hz => 1,
 	  out1_Hz => pixel_hz,
-	  out2_Hz => pixel_hz*7, out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out2_Hz => pixel_hz*7, out2_tol_Hz => 1, out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
 	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
@@ -390,7 +390,7 @@ begin
 	generic map
 	(
 	    in_Hz => natural(25.0e6),
-	  out0_Hz => pixel_hz*5,
+	  out0_Hz => pixel_hz*5, out0_tol_Hz => 1,
 	  out1_Hz => pixel_hz,
 	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
 	  out3_Hz => natural( 6.0e6), out3_tol_Hz =>  100000
@@ -404,9 +404,9 @@ begin
 	generic map
 	(
 	    in_Hz => natural(25.0e6),
-	  out0_Hz => pixel_hz*7,
+	  out0_Hz => pixel_hz*7, out0_tol_Hz => 1,
 	  out1_Hz => pixel_hz,
-	  out2_Hz => pixel_hz*7, out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out2_Hz => pixel_hz*7, out2_tol_Hz => 1, out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
 	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
