@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_hostmouse2daisy is
 generic
@@ -15,7 +16,7 @@ generic
   C_reverse_chaini_data : boolean := false;
   C_inputs       : integer; -- number of inputs
   C_tracesfg     : std_logic_vector; -- colors of traces
-  vlayout_id     : integer := 0 -- screen geometry
+  layout         : display_layout -- screen geometry
 );
 port
 (
@@ -79,7 +80,7 @@ begin
   (
     C_inputs   => C_inputs,
     C_tracesfg => C_tracesfg,
-    vlayout_id => vlayout_id
+    layout     => layout
   )
   port map
   (

@@ -34,6 +34,7 @@ VHDL_LIB_FILES = \
   ../../library/common/btod.vhd \
   ../../library/common/btof.vhd \
   ../../library/common/arbiter.vhd \
+  ../../library/common/serdes.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_capture.vhd \

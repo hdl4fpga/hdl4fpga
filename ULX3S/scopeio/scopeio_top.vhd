@@ -12,25 +12,13 @@ use ecp5u.components.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.videopkg.all;
 use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
-	-- vlayout_id
-	-- 0: 1920x1080 @ 60Hz 148MHz 16-pix grid 8-pix font 2 segments
-	-- 1:  800x600  @ 60Hz  40MHz
-	-- 2: 1920x1080 @ 30Hz  75MHz NOTE: HARD OVERCLOCK
-	-- 3: 1280x768  @ 60Hz  75MHz NOTE: HARD OVERCLOCK
-	-- 4: 1280x1024 @ 60Hz 108MHz  8-pix grid 4-pix font 1 segment
-	-- 5:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 6:  640x480  @ 60Hz  25MHz
-	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
-	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
-	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
-	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 13;
+        constant timing_id: videotiming_ids := pclk25_00m640x480at60;
+        --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
+        constant layout: display_layout := displaylayout_table(lcd480x272seg1);
         constant C_external_sync : std_logic := '1';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
@@ -1411,7 +1399,7 @@ begin
 	generic map(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
-		vlayout_id  => vlayout_id
+		layout      => layout
 	)
 	port map (
 		clk         => clk_mouse,
@@ -1519,7 +1507,7 @@ begin
           C_usb_speed      => C_mouse_usb_speed,
           C_inputs         => inputs,
           C_tracesfg       => C_tracesfg,
-          vlayout_id       => vlayout_id
+          layout           => layout
 	)
 	port map
 	(
@@ -1643,7 +1631,7 @@ begin
 	(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
-		vlayout_id  => vlayout_id
+		layout      => layout
 	)
 	port map
 	(
@@ -1690,8 +1678,9 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+	        timing_id        => timing_id,
+		layout           => layout,
 	        inputs           => inputs, -- number of input channels
-		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		vt_steps         => (0 to inputs-1 => vt_step),
 		hz_unit          => 32.0*micro, -- 1 us per pixel
