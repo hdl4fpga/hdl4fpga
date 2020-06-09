@@ -218,10 +218,11 @@ begin
 				return retval;
 			end;
 
+			constant vt_step : real := vt_steps(i);
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
-				step  => vt_steps(i));
+				step  => vt_step);
 
 			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
