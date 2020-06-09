@@ -34,6 +34,7 @@ VHDL_LIB_FILES = \
   ../../library/common/btod.vhd \
   ../../library/common/btof.vhd \
   ../../library/common/arbiter.vhd \
+  ../../library/common/serdes.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_capture.vhd \
@@ -109,6 +110,7 @@ VHDL_LIB_FILES = \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper_vhdl.vhd \
   ../../library/video/video.vhd \
   ../../library/video/videopkg.vhd \
+  ../../library/video/modeline_calculator.vhd \
   ../../library/video/cgafonts.vhd \
   ../../library/video/fonts/cp850x8x16x0to127.vhd \
   ../../library/video/fonts/cp850x8x16x128to255.vhd \

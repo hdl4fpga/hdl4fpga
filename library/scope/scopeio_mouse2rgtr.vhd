@@ -21,7 +21,7 @@ generic
   -- to render things correctly, GUI system needs to know:
   C_inputs       : integer range 1 to 63; -- number of input channels (traces)
   C_tracesfg     : std_logic_vector; -- colors of traces
-  vlayout_id     : integer := 0 -- video geometry
+  layout         : display_layout
 );
 port
 (
@@ -45,7 +45,7 @@ end;
 
 architecture def of scopeio_mouse2rgtr is
   -- screen geometry functions, imported from scopeiopkg
-  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+  --constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
   constant C_XY_coordinate_bits: integer := unsigned_num_bits(
     max(integer(layout.display_width), integer(layout.display_height)) - 1);
