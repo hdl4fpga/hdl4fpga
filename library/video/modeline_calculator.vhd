@@ -43,7 +43,7 @@ package body modeline_calculator is
     75000000,
     80000000,  -- overclock 400MHz
     100000000, -- overclock 500MHz
-    108000000, -- overclock 540MHz
+    108333333, -- overclock 540MHz
     120000000  -- overclock 600MHz
   );
 
