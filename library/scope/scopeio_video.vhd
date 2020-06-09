@@ -33,23 +33,27 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		timing_id     : videotiming_ids;
-		layout        : display_layout;
-		hz_unit       : real;
-		vt_unit       : real;
-		inputs        : natural;
-		input_names   : tag_vector;
-		dflt_tracesfg : std_logic_vector;
-		dflt_gridfg   : std_logic_vector;
-		dflt_gridbg   : std_logic_vector;
-		dflt_hzfg     : std_logic_vector;
-		dflt_hzbg     : std_logic_vector;
-		dflt_vtfg     : std_logic_vector;
-		dflt_vtbg     : std_logic_vector;
-		dflt_textfg   : std_logic_vector;
-		dflt_textbg   : std_logic_vector;
-		dflt_sgmntbg  : std_logic_vector;
-		dflt_bg       : std_logic_vector);
+		timing_id        : videotiming_ids;
+		width            : natural := 0;
+		height           : natural := 0;
+		fps              : real    := 0.0;
+		pclk             : real    := 0.0;
+		layout           : display_layout;
+		hz_unit          : real;
+		vt_unit          : real;
+		inputs           : natural;
+		input_names      : tag_vector;
+		dflt_tracesfg    : std_logic_vector;
+		dflt_gridfg      : std_logic_vector;
+		dflt_gridbg      : std_logic_vector;
+		dflt_hzfg        : std_logic_vector;
+		dflt_hzbg        : std_logic_vector;
+		dflt_vtfg        : std_logic_vector;
+		dflt_vtbg        : std_logic_vector;
+		dflt_textfg      : std_logic_vector;
+		dflt_textbg      : std_logic_vector;
+		dflt_sgmntbg     : std_logic_vector;
+		dflt_bg          : std_logic_vector);
 	port (
 		rgtr_clk         : in  std_logic;
 		rgtr_dv          : in  std_logic;
@@ -249,6 +253,10 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
+		width     => width,
+		height    => height,
+		fps       => fps,
+		pclk      => pclk,
 		timing_id => timing_id)
 	port map (
 		video_clk     => video_clk,
@@ -305,7 +313,7 @@ begin
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
 			inputs        => inputs,
-			input_names    => input_names,
+			input_names   => input_names,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
 			layout        => layout,

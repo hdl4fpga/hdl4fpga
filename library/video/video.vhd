@@ -98,6 +98,10 @@ use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
+		width     : natural := 0;
+		height    : natural := 0;
+		fps       : real    := 0.0;
+		pclk      : real    := 0.0;
 		timing_id : videotiming_ids);
 	port (
 		video_clk     : in std_logic;
