@@ -31,7 +31,7 @@ entity align is
 	generic (
 		n : natural := 1;
 		d : natural_vector;
-		i : std_logic_vector := (1 to 0 => '-'));
+		i : std_logic_vector := (0 to 0 => '-'));
 	port (
 		clk : in  std_logic;
 		ini : in  std_logic := '0';
@@ -45,8 +45,7 @@ architecture arch of align is
 	constant val : std_logic_vector(0 to i'length) := i & '-';
 begin
 	delay: for j in 0 to n-1 generate
---		signal q : std_logic_vector(0 to dly(j)) := (others => val(setif(j < i'length, j, i'length)));
-		signal q : std_logic_vector(0 to dly(j)) := (others => '0');
+		signal q : std_logic_vector(0 to dly(j)) := (others => val(setif(j < i'length, j, i'length)));
 	begin
 		q(q'right) <= di(j);
 		process (clk)

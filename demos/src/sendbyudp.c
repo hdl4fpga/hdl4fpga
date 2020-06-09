@@ -20,34 +20,43 @@
 
 #define PORT	57001
 #define QUEUE   4
+#define MAXSIZE 1500
+
 int main (int argc, char *argv[])
 {
 #ifdef WINDOWS
 	WSADATA wsaData;
 #endif
-	int    addr;
-	char   c;
+	int   c;
 	char   hostname[256] = "";
 	struct hostent *host = NULL;
 	struct sockaddr_in sa_trgt;
 
 	int s;
-	int n;
 	socklen_t sl_trgt = sizeof(sa_trgt);
+
+	unsigned char buffer[2048];
+	unsigned char *bufptr;
+	char pktmd;
 
 #ifdef WINDOWS
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-	n = 0;
-	while ((c = getopt (argc, argv, "h::")) != -1) {
+
+	pktmd  = 0;
+	opterr = 0;
+	while ((c = getopt (argc, argv, "ph:")) != -1) {
 		switch (c) {
+		case 'p':
+			pktmd = 1;
+			break;
 		case 'h':
 			if (optarg)
-				sscanf (optarg, "%s", hostname);
+				sscanf (optarg, "%64s", hostname);
 			break;
 		case '?':
-			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
+			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
 			exit(1);
 		default:
 			exit(1);
@@ -56,11 +65,11 @@ int main (int argc, char *argv[])
 
 	if (!strlen(hostname)) {
 		strcpy (hostname, "kit");
+		fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
 	}
-	fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
 
 	if (!(host=gethostbyname(hostname))) {
-		fprintf (stderr, "hostname '%s' not found\n", hostname);
+		fprintf (stderr, "Hostname '%s' not found\n", hostname);
 		exit(1);
 	}
 
@@ -74,15 +83,38 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-	n = 0;
-	addr = 0;
-	setbuf(stdin, NULL);
-	while(!feof(stdin)) {
-		fread(data, sizeof(char), sizeof(data), stdin);
-		nanosleep((const struct timespec[]){{0, 100000000L}}, NULL);
-		addr += 0x40;
+	int n;
+	unsigned short size;
+	size = sizeof(buffer)-2;
+	for(;;) {
+		if (pktmd) {
+			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
+				fprintf (stderr, "packet size %d\n", size);
+			else
+				return 0;
+		}
 
-		n++;
+			
+		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+			if (size > MAXSIZE) {
+				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
+				exit(-1);
+			}
+
+			buffer[size++] = 0xff;
+			buffer[size++] = 0xff;
+			fprintf (stderr, "packet length %d\n", n);
+			if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+				perror ("sending packet");
+				exit (-1);
+			}
+			nanosleep((const struct timespec[]){ {0, 500000L } }, NULL);
+		} else if (n < 0) {
+			perror ("reading packet");
+			exit(-1);
+		}
+		else
+			break;
 	}
 
 	return 0;

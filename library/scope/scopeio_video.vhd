@@ -27,12 +27,14 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		vlayout_id    : natural;
+		timing_id     : videotiming_ids;
+		layout        : display_layout;
 		hz_unit       : real;
 		vt_unit       : real;
 		inputs        : natural;
@@ -82,7 +84,6 @@ entity scopeio_video is
 		video_sync       : out std_logic);
 
 	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
-	constant layout      : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 
 end;
@@ -248,7 +249,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => video_description(vlayout_id).mode_id)
+		timing_id => timing_id)
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,
@@ -277,7 +278,7 @@ begin
 
 	scopeio_layout_e : entity hdl4fpga.scopeio_layout
 	generic map (
-		vlayout_id   => vlayout_id)
+		layout => layout)
 	port map (
 		video_clk    => video_clk,
 		video_hzcntr => video_hzcntr,

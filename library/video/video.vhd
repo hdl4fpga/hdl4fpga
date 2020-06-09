@@ -98,7 +98,7 @@ use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
-		mode : natural := 1);
+		timing_id : videotiming_ids);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in  std_logic := '0';
@@ -133,7 +133,7 @@ begin
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(mode)(0 to 4-1)))
+		edges =>  to_edges(modeline_data(timing_id)(0 to 4-1)))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => hz_ini,
@@ -164,7 +164,7 @@ begin
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(mode)(4 to 8-1)))
+		edges =>  to_edges(modeline_data(timing_id)(4 to 8-1)))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => vt_ini,

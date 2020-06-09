@@ -41,10 +41,10 @@ package ddr_db is
 	constant VIRTEX7     : natural := 4;
 
 
-	constant DDR0 : natural := 0;
-	constant DDR1 : natural := 1;
-	constant DDR2 : natural := 2;
-	constant DDR3 : natural := 3;
+	constant SDRAM : natural := 0;
+	constant DDR1  : natural := 1;
+	constant DDR2  : natural := 2;
+	constant DDR3  : natural := 3;
 
 	constant M6T  : natural := 1;
 	constant M15E : natural := 2;
@@ -109,7 +109,7 @@ package ddr_db is
 	type tmark_tab is array (natural range <>) of tmark_record;
 
 	constant tmark_db : tmark_tab := (
-		tmark_record'(mark => M7E,  stdr => DDR0),
+		tmark_record'(mark => M7E,  stdr => SDRAM),
 		tmark_record'(mark => M6T,  stdr => DDR1),
 		tmark_record'(mark => M3,   stdr => DDR2),
 		tmark_record'(mark => M15E, stdr => DDR3),
@@ -260,25 +260,25 @@ package ddr_db is
 		
 	constant cnfglat_db : cnfglat_tab := (
 
-		-- DDR0 standard --
-		-------------------
+		-- SDRAM standard --
+		--------------------
 
 		-- CL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  1, code => "001"),
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  2, code => "010"),
-		cnfglat_record'(stdr => DDR0, rgtr => CL,  lat =>  3, code => "011"),
+		cnfglat_record'(stdr => SDRAM, rgtr => CL,  lat =>  1, code => "001"),
+		cnfglat_record'(stdr => SDRAM, rgtr => CL,  lat =>  2, code => "010"),
+		cnfglat_record'(stdr => SDRAM, rgtr => CL,  lat =>  3, code => "011"),
 
 		-- BL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  0, code => "000"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  1, code => "001"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  2, code => "010"),
-		cnfglat_record'(stdr => DDR0, rgtr => BL,  lat =>  4, code => "011"),
+		cnfglat_record'(stdr => SDRAM, rgtr => BL,  lat =>  0, code => "000"),
+		cnfglat_record'(stdr => SDRAM, rgtr => BL,  lat =>  1, code => "001"),
+		cnfglat_record'(stdr => SDRAM, rgtr => BL,  lat =>  2, code => "010"),
+		cnfglat_record'(stdr => SDRAM, rgtr => BL,  lat =>  4, code => "011"),
 
 		-- CWL register --
 
-		cnfglat_record'(stdr => DDR0, rgtr => CWL, lat =>  0, code => "000"),
+		cnfglat_record'(stdr => SDRAM, rgtr => CWL, lat =>  0, code => "000"),
 
 		-- DDR1 standard --
 		-------------------
@@ -574,7 +574,7 @@ package body ddr_db is
 		case tabid is
 		when WWNL =>
 			case stdr is
-			when DDR0|DDR1|DDR3 =>
+			when SDRAM|DDR1|DDR3 =>
 				for i in cwltab'range loop
 					cwlval(i) := cwltab(i) + lat;
 				end loop;

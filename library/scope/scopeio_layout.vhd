@@ -31,7 +31,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_layout is
 	generic (
-		vlayout_id  : natural);
+		layout       : display_layout);
 	port (
 		video_clk    : in  std_logic;
 		video_vtcntr : in  std_logic_vector;
@@ -61,8 +61,6 @@ architecture beh of scopeio_layout is
 	constant sgmntrgtrin_latency  : natural := 1;
 	constant sgmntrgtrout_latency : natural := 1;
 	constant sgmntrgtrio_latency  : natural := sgmntrgtrout_latency+sgmntrgtrin_latency;
-
-	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
 

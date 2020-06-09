@@ -27,7 +27,9 @@ use ieee.numeric_std.all;
 
 entity sdrdqphy is
 	generic (
-		byte_size : natural);
+		read_latency  : boolean;
+		write_latency : boolean;
+		byte_size     : natural);
 	port (
 		sys_clk  : in  std_logic;
 		phy_dmt  : in  std_logic;
@@ -51,42 +53,51 @@ library ecp5u;
 use ecp5u.components.all;
 
 architecture ecp of sdrdqphy is
-
+	signal dmo : std_logic;
+	signal dmi : std_logic;
 begin
 	iddr_g : for i in 0 to byte_size-1 generate
+		signal q : std_logic;
 	begin
-		ffdt_i : fd1s3ax
-		port map (
-			ck => sys_clk,
-			d  => phy_dqt,
-			q  => sdr_dqt(i));
-
 		ffdi_i : fd1s3ax
 		port map (
 			ck => sdr_ds,
 			d  => sdr_dqi(i),
-			q  => phy_dqo(i));
+			q  => q);
+		phy_dqo(i) <= q when read_latency else sdr_dqi(i);
 	end generate;
 
 	dmi_g : fd1s3ax
 	port map (
 		ck => sys_clk,
 		d  => sdr_dmi,
-		q  => phy_dmo);
+		q  => dmi);
+	phy_dmo <= dmi when read_latency else sdr_dmi;
 
 	dqo_g : for i in 0 to byte_size-1 generate
+		signal q : std_logic;
+		signal t : std_logic;
 	begin
+		ffdt_i : fd1s3ax
+		port map (
+			ck => sys_clk,
+			d  => phy_dqt,
+			q  => t);
+		sdr_dqt(i) <= t when write_latency else phy_dqt;
+
 		ffd_i : fd1s3ax
 		port map (
 			ck => sys_clk,
 			d  => phy_dqi(i),
-			q  => sdr_dqo(i));
+			q  => q);
+		sdr_dqo(i) <= q when write_latency else phy_dqi(i);
 	end generate;
 
 	dmo_g : fd1s3ax
 	port map (
 		ck => sys_clk,
 		d  => phy_dmi,
-		q  => sdr_dmo);
+		q  => dmo);
+	sdr_dmo <= dmo when write_latency else phy_dmi;
 
 end;
