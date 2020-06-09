@@ -33,14 +33,18 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		timing_id : videotiming_ids;
-		layout : display_layout;
-		max_delay   : natural := 2**14;
-		vt_steps    : real_vector := (1 to 0 => 0.0);
-		hz_step     : real := 0.0;
-		hz_unit     : real := 25.0;
-		vt_unit     : real := 20.0;
-		min_storage : natural := 256; -- samples, storage size will be equal or larger than this
+		width       : natural         := 0;
+		height      : natural         := 0;
+		fps         : real            := 0.0;
+		pclk        : real            := 0.0;
+		timing_id   : videotiming_ids := pclk_debug;
+		layout      : display_layout;
+		max_delay   : natural         := 2**14;
+		vt_steps    : real_vector     := (1 to 0 => 0.0);
+		hz_step     : real            := 0.0;
+		hz_unit     : real            := 25.0;
+		vt_unit     : real            := 20.0;
+		min_storage : natural         := 256; -- samples, storage size will be equal or larger than this
 
 		inputs      : natural;
 
@@ -274,6 +278,10 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
+		width          => width,
+		height         => height,
+		fps            => fps,
+		pclk           => pclk,
 		timing_id      => timing_id,
 		layout         => layout,
 		inputs         => inputs,
