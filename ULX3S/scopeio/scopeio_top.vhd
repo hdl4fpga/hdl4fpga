@@ -12,31 +12,21 @@ use ecp5u.components.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.videopkg.all;
 use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
-	-- vlayout_id
-	-- 0: 1920x1080 @ 60Hz 148MHz 16-pix grid 8-pix font 2 segments
-	-- 1:  800x600  @ 60Hz  40MHz
-	-- 2: 1920x1080 @ 30Hz  75MHz NOTE: HARD OVERCLOCK
-	-- 3: 1280x768  @ 60Hz  75MHz NOTE: HARD OVERCLOCK
-	-- 4: 1280x1024 @ 60Hz 108MHz  8-pix grid 4-pix font 1 segment
-	-- 5:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 6:  640x480  @ 60Hz  25MHz
-	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
-	-- 8:  800x480  @ 60Hz  30MHz 16-pix grid 8-pix font 3 segments
-	-- 9: 1024x600  @ 60Hz  50MHz 16-pix grid 8-pix font 4 segments
-	--10:  800x480  @ 60Hz  40MHz 16-pix grid 8-pix font 3 segments
-	--11:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 1 segment
-	--12:  480x272  @ 135Hz 25MHz 16-pix grid 8-pix font 2 segments
-	--13:  480x272  @ 640x480 60Hz 25MHz 16-pix grid 8-pix font 2 segments
-        constant vlayout_id: integer := 5;
+        constant timing_id: videotiming_ids := pclk25_00m640x480at60;
+        constant layout: display_layout := displaylayout_table(lcd480x272seg1);
+        --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
+        --constant layout: display_layout := displaylayout_table(sd600x16fs);
+        constant pixel_hz: natural := modeline_data(timing_id)(8);
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -47,6 +37,7 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
+        constant C_view_rom     : boolean := true;  -- ROM (constant waveform)
         constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
@@ -57,7 +48,7 @@ architecture beh of ulx3s is
         constant C_view_binary_gain: integer := 2;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
         constant C_view_istream : boolean := false; -- NET output
-        constant C_view_sync    : boolean := true;  -- external sync (LVDS receiver)
+        constant C_view_sync    : boolean := false; -- external sync (LVDS receiver)
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
@@ -139,6 +130,59 @@ architecture beh of ulx3s is
 
 	signal clk_adc : std_logic := '0';
 
+	-- period=28, amplitude=-3..+3
+	function batman(constant input_x: real)
+        return real is
+	  variable x,z: real;
+        begin
+          -- top part
+          x := abs(input_x);
+          x := (abs(x+14.0) mod 28.0)-14.0;
+          x := abs(x);
+          if x < 0.5 then
+            return 2.25;
+          end if;
+          if x < 0.75 then
+            return 3.0*x+0.75;
+          end if;
+          if x < 1.0 then
+            return 9.0-8.0*x;
+          end if;
+          if x < 3.0 then
+            return 1.5-0.5*x-6.0*sqrt(10.0)/14.0*(sqrt(3.0-x*x+2.0*x)-2.0);
+          end if;
+          if x < 7.0 then
+            return 3.0*sqrt(1.0-x*x/(7.0*7.0));
+          end if;
+          -- bottom part, renormalized x
+          x := (abs(x+7.0) mod 14.0)-7.0;
+          x := abs(x);
+          if x < 4.0 then
+            z := abs(x-2.0)-1.0;
+            return 0.5*x-(3.0*sqrt(33.0)-7.0)/112.0*x*x+sqrt(1.0-z*z)-3.0;
+          end if;
+          if x < 7.0 then
+            return -3.0*sqrt(1.0-x*x/(7.0*7.0));
+          end if;
+          return 0.0;
+        end;
+        
+        function batmantab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : natural)
+        return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(n*(x1+1)-1 downto n*x0);
+		constant freq : real := 4.0; -- number of batmans in the ROM
+	begin
+		for i in x0 to x1 loop
+                        y := 32.0*batman(28.0*real(i)*freq/real(x1-x0+1));
+                        aux((i+1)*n-1 downto i*n) := std_logic_vector(to_signed(integer(trunc(y)),n));
+		end loop;
+		return aux;
+	end;
+
 	function sinctab (
 		constant x0 : integer;
 		constant x1 : integer;
@@ -171,12 +215,12 @@ architecture beh of ulx3s is
         -- subset of colors for enabled inputs
 	constant C_tracesfg: std_logic_vector(0 to inputs*(vga_rgb'length+1)-1) := C_color_palette(0 to inputs*(vga_rgb'length+1)-1);
 
-	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_white, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
+	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_white, trace_blue, trace_lila, trace_sine, trace_batman1, trace_batman2: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 40000000; -- Hz (25e6 for LVDS, 40e6 for DVI)
+	constant uart_clk_hz : natural := pixel_hz; -- Hz (25e6 for LVDS, 40e6 for DVI)
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -283,10 +327,10 @@ begin
 	generic map
 	(
 	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(200.0e6),
-	  out1_Hz => natural( 40.0e6),
-	  out2_Hz => natural( 66.6e6), out2_tol_Hz => 100000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  50000
+	  out0_Hz => pixel_hz*5,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural( 60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>   50000
 	  --out0_Hz => natural(125.0e6),
 	  --out1_Hz => natural( 25.0e6),
 	  --out2_Hz => natural( 62.5e6),
@@ -306,11 +350,11 @@ begin
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural( 65.6e6), out2_tol_Hz => 50000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 50000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 50000
 	)
         port map
         (
@@ -326,11 +370,11 @@ begin
 	clk_vhdl_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => pixel_hz*7, out2_deg => 70, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
         (
@@ -345,11 +389,11 @@ begin
 	clk_dvi_25_125: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(125.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural( 62.5e6), out2_tol_Hz => 1000000,
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz =>  100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*5,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => natural(60.0e6), out2_tol_Hz => 7000000,
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz =>  100000
 	)
         port map
         (
@@ -359,11 +403,11 @@ begin
 	clk_lvds_25_175: entity hdl4fpga.ecp5pll
 	generic map
 	(
-	    in_Hz => natural( 25.0e6),
-	  out0_Hz => natural(175.0e6),
-	  out1_Hz => natural( 25.0e6),
-	  out2_Hz => natural(175.0e6), out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
-	  out3_Hz => natural(  6.0e6), out3_tol_Hz => 100000
+	    in_Hz => natural(25.0e6),
+	  out0_Hz => pixel_hz*7,
+	  out1_Hz => pixel_hz,
+	  out2_Hz => pixel_hz*7, out2_deg => 80, -- 55problems 70ok, 90flickers, 100 problems,  -- 30-150
+	  out3_Hz => natural( 6.0e6), out3_tol_Hz => 100000
 	)
         port map
         (
@@ -713,11 +757,39 @@ begin
 	-- internal sine waveform generator
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+		bitrom => sinctab(-1024+256, 1023+256, sample_size)
+        )
 	port map (
 		clk  => clk,
 		addr => input_addr,
 		data => trace_sine);
+
+	samples_batman1_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => batmantab(-1024, 1023, sample_size)
+        )
+	port map (
+		clk  => clk,
+		addr => input_addr,
+		data => trace_batman1);
+
+	samples_batman2_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => batmantab(-1024+256, 1023+256, sample_size) -- phase shifted
+        )
+	port map (
+		clk  => clk,
+		addr => input_addr,
+		data => trace_batman2);
+
+	G_view_usb: if C_view_rom generate
+	S_input_ena  <= '1';
+	clk_input    <= vga_clk;
+	trace_yellow <= trace_batman1;
+	trace_cyan   <= trace_batman2;
+	trace_green  <= trace_sine;
+	trace_violet <= (others => '0');
+	end generate;
 
 	G_view_usb: if C_view_usb generate
 	S_input_ena <= '1';
@@ -773,12 +845,12 @@ begin
           E_clk_decoder_fs: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 	  S_usb_dif <= usb_fpga_dp;
@@ -960,10 +1032,20 @@ begin
 	end generate;
 
 	G_inputs1: if inputs >= 1 generate
+	--G_inputs1_rom: if C_view_rom generate
+	--samples(0*sample_size to (0+1)*sample_size-1) <= trace_batman1;
+	--end generate;
+	--G_inputs1_rom: if not C_view_rom generate
 	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
+	--end generate;
 	end generate;
 	G_inputs2: if inputs >= 2 generate
+	--G_inputs2_rom: if C_view_rom generate
+	--samples(1*sample_size to (1+1)*sample_size-1) <= trace_batman2;
+	--end generate;
+	--G_inputs2_rom: if not C_view_rom generate
 	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
+	--end generate;
 	end generate;
 	G_inputs3: if inputs >= 3 generate
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
@@ -1095,12 +1177,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 
@@ -1169,12 +1251,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
 
@@ -1319,7 +1401,7 @@ begin
 	generic map(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
-		vlayout_id  => vlayout_id
+		layout      => layout
 	)
 	port map (
 		clk         => clk_mouse,
@@ -1364,12 +1446,12 @@ begin
           E_clk_usb: entity hdl4fpga.ecp5pll
           generic map
           (
-              in_Hz  => natural(200.0e6),
-            out0_Hz  => natural( 48.0e6)
+              in_Hz  => natural(25.0e6),
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
           )
           port map
           (
-            clk_i    => clk_pixel_shift,
+            clk_i    => clk_25MHz,
             clk_o(0) => clk_usb
           );
         end generate;
@@ -1427,7 +1509,7 @@ begin
           C_usb_speed      => C_mouse_usb_speed,
           C_inputs         => inputs,
           C_tracesfg       => C_tracesfg,
-          vlayout_id       => vlayout_id
+          layout           => layout
 	)
 	port map
 	(
@@ -1551,7 +1633,7 @@ begin
 	(
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
-		vlayout_id  => vlayout_id
+		layout      => layout
 	)
 	port map
 	(
@@ -1598,8 +1680,9 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+	        timing_id        => timing_id,
+		layout           => layout,
 	        inputs           => inputs, -- number of input channels
-		vlayout_id       => vlayout_id,
 		min_storage      => 4096, -- samples
 		vt_steps         => (0 to inputs-1 => vt_step),
 		hz_unit          => 32.0*micro, -- 1 us per pixel
