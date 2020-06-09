@@ -253,8 +253,8 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		width     => width,
-		height    => height,
+		width     => setif(width=0,  main_width(layout),   width),
+		height    => setif(height=0, main_height(layout), height),
 		fps       => fps,
 		pclk      => pclk,
 		timing_id => timing_id)
