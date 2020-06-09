@@ -131,13 +131,39 @@ architecture mix of video_sync is
 	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
 	signal extern_vton : std_logic;
+
+	function select_modeline (
+		constant timing_id : videotiming_ids;
+		constant width     : natural;
+		constant height    : natural;
+		constant fps       : real;
+		constant pclk      : real)
+		return natural_vector is
+	begin
+		if timing_id /= pclk_fallback then
+			return modeline_tab(timing_id);
+		else
+			return auto_modeline (
+				width  => width,
+				height => height,
+				fps    => fps,
+				pclk   => pclk);
+		end if;
+	end;
+		
+	constant modeline_data : natural_vector := select_modeline (
+		timing_id => timing_id,
+		width     => width,
+		height    => height,
+		fps       => fps,
+		pclk      => pclk);
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(timing_id)(0 to 4-1)))
+		edges =>  to_edges(modeline_data(0 to 4-1)))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => hz_ini,
@@ -168,7 +194,7 @@ begin
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(timing_id)(4 to 8-1)))
+		edges =>  to_edges(modeline_data(4 to 8-1)))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => vt_ini,
