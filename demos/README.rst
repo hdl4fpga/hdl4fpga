@@ -21,10 +21,7 @@ On UN*X
 
 Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to change your image to that format. Imagemagick_ will be called by upload-image.sh_ script and will do it for you.
 
-200 MHz SDR DRAM, 3000000 bps UART
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
 
 Open a console on demos directory and run
 
@@ -58,10 +55,7 @@ On UN*X
 
 ffmpeg_ is required to convert *your_motion.your_format* to image frames and Imagemagick_ is required to convert the images frames to 800x600 RGB8.
 
-200 MHz SDR DRAM, 3000000 bps UART
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
 
 Open a console on demos directory and run:
 
