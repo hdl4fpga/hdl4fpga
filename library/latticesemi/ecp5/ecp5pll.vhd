@@ -17,13 +17,13 @@ entity ecp5pll is
     out0_hz      : natural := 25000000;
     out0_deg     : natural :=        0; -- keep 0
     out0_tol_hz  : natural :=        0; -- Hz tolerance
-    out1_hz      : natural := 25000000;
+    out1_hz      : natural :=        0; -- 0 to disable
     out1_deg     : natural :=        0;
     out1_tol_hz  : natural :=        0;
-    out2_hz      : natural := 25000000;
+    out2_hz      : natural :=        0;
     out2_deg     : natural :=        0;
     out2_tol_hz  : natural :=        0;
-    out3_hz      : natural := 25000000;
+    out3_hz      : natural :=        0;
     out3_deg     : natural :=        0;
     out3_tol_hz  : natural :=        0;
     reset_en     : natural :=        0;
@@ -180,9 +180,11 @@ architecture mix of ecp5pll is
             fvco := fout * output_div;
             error := abs(fout-out0_hz);
             for channel in 1 to 3 loop
-              div  := fvco/sfreq(channel);
-              freq := fvco/div;
-              error := error + abs(freq-sfreq(channel));
+              if sfreq(channel) > 0 then
+                div   := fvco/sfreq(channel);
+                freq  := fvco/div;
+                error := error + abs(freq-sfreq(channel));
+              end if;
             end loop;
             if error < error_prev -- prefer least error
             or (error=error_prev and abs(fvco-VCO_OPTIMAL) < abs(params.fvco-VCO_OPTIMAL)) -- or if 0 error prefer closest to optimal VCO frequency
@@ -208,20 +210,24 @@ architecture mix of ecp5pll is
       end loop;
       -- generate secondary outputs
       for channel in 1 to 3 loop
-        div  := params.fvco/sfreq(channel);
-        freq := params.fvco/div;
-        phase_compensation := div*8-8;
-        phase_count_x8 := phase_compensation + 8*div*sphase(channel)/360;
-        if phase_count_x8 > 1023 then
-          phase_count_x8 := phase_count_x8 mod (div*8); -- wraparound 360 deg
+        if sfreq(channel) > 0 then
+          div  := params.fvco/sfreq(channel);
+          freq := params.fvco/div;
+          phase_compensation := div*8-8;
+          phase_count_x8 := phase_compensation + 8*div*sphase(channel)/360;
+          if phase_count_x8 > 1023 then
+            phase_count_x8 := phase_count_x8 mod (div*8); -- wraparound 360 deg
+          end if;
+          phase_shift := 8*div*sphase(channel)/360 * 360 / (8*div); -- reported phase shift
+          params.secondary(channel).div         := div;
+          params.secondary(channel).freq_string := Hz2MHz_str(freq);
+          params.secondary(channel).freq        := freq;
+          params.secondary(channel).phase       := phase_shift;
+          params.secondary(channel).cphase      := phase_count_x8 / 8;
+          params.secondary(channel).fphase      := phase_count_x8 mod 8;
+        else
+          params.secondary(channel).div         := 1;
         end if;
-        phase_shift := 8*div*sphase(channel)/360 * 360 / (8*div); -- reported phase shift
-        params.secondary(channel).div         := div;
-        params.secondary(channel).freq_string := Hz2MHz_str(freq);
-        params.secondary(channel).freq        := freq;
-        params.secondary(channel).phase       := phase_shift;
-        params.secondary(channel).cphase      := phase_count_x8 / 8;
-        params.secondary(channel).fphase      := phase_count_x8 mod 8;
       end loop;
       params.result.in_hz    := request.in_hz;
       params.result.out0_hz  := natural(params.fout);
@@ -361,27 +367,27 @@ begin
     FEEDBK_PATH     => "CLKOP",
 
     OUTDIVIDER_MUXA => "DIVA",
-    CLKOP_ENABLE    => "ENABLED",
+    CLKOP_ENABLE    =>  enabled_str(out0_hz),
     CLKOP_DIV       =>  params.output_div,
     CLKOP_CPHASE    =>  params.primary_cphase,
     CLKOP_FPHASE    =>  params.primary_fphase,
 --  CLKOP_TRIM_DELAY=>  0, CLKOP_TRIM_POL=> "FALLING", 
 
     OUTDIVIDER_MUXB => "DIVB",
-    CLKOS_ENABLE    => "ENABLED",
+    CLKOS_ENABLE    =>  enabled_str(out1_hz),
     CLKOS_DIV       =>  params.secondary(1).div,
     CLKOS_CPHASE    =>  params.secondary(1).cphase,
     CLKOS_FPHASE    =>  params.secondary(1).fphase,
 --  CLKOS_TRIM_DELAY=>  0, CLKOS_TRIM_POL=> "FALLING", 
 
     OUTDIVIDER_MUXC => "DIVC",
-    CLKOS2_ENABLE   => "ENABLED",
+    CLKOS2_ENABLE   =>  enabled_str(out2_hz),
     CLKOS2_DIV      =>  params.secondary(2).div,
     CLKOS2_CPHASE   =>  params.secondary(2).cphase,
     CLKOS2_FPHASE   =>  params.secondary(2).fphase,
 
     OUTDIVIDER_MUXD => "DIVD",
-    CLKOS3_ENABLE   => "ENABLED",
+    CLKOS3_ENABLE   =>  enabled_str(out3_hz),
     CLKOS3_DIV      =>  params.secondary(3).div,
     CLKOS3_CPHASE   =>  params.secondary(3).cphase,
     CLKOS3_FPHASE   =>  params.secondary(3).fphase,
