@@ -18,7 +18,7 @@ use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 architecture beh of ulx3s is
         constant width    : natural := 800;
-        constant height   : natural := 480;
+        constant height   : natural := 600;
         constant fps      : natural := 60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
@@ -1688,7 +1688,7 @@ begin
 	        width            => width,
 	        height           => height,
 	        fps              => real(fps), -- Hz
-	        pclk             => real(pixel_hz)*1.0e-6, -- MHz ?
+	        --pclk             => 0.0, -- Hz, 0 to auto-select from fps
 	        --timing_id        => timing_id,
 		layout           => layout,
 	        inputs           => inputs, -- number of input channels
