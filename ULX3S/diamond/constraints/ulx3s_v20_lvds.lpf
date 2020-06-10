@@ -462,7 +462,7 @@ IOBUF PORT  "gp_i[9]"  IO_TYPE=LVDS;
 IOBUF PORT  "gp_i[10]" IO_TYPE=LVDS;
 IOBUF PORT  "gp_i[11]" IO_TYPE=LVDS;
 IOBUF PORT  "gp_i[12]" IO_TYPE=LVDS;
-FREQUENCY PORT "gp_i[12]" 10 MHZ;
+FREQUENCY PORT "gp_i[12]" 25 MHZ;
 
 ## PROGRAMN (reload bitstream from FLASH, exit from bootloader)
 # PCB v2.0.5 and higher

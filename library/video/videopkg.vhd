@@ -103,6 +103,6 @@ package body videopkg is
 		constant pclk   : real)
 		return natural_vector is
 	begin
-		return F_modeline(x => width, y => height, hz => natural(fps));
+		return F_modeline(x => width, y => height, hz => natural(fps), pixel_hz => natural(pclk));
 	end;
 end;

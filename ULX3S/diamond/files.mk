@@ -130,8 +130,3 @@ VERILOG_FILES = \
   ../../library/usb/usbhost/usbh_crc16.v \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
-#  $(VERILOG_CLOCK_FILE) \
-#  ../common/clk_verilog_v.v \
-#  ../common/clk_200_48_24_12_6_v.v \
-#  ../common/clk_25M_100M_7M5_12M_60M.vhd \
-#  ../common/clk_200m_60m_48m_12m_7m5.vhd \
