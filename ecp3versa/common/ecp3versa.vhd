@@ -25,9 +25,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ecp3versa is
+	generic (
+		debug : boolean := false);
 	port (
 		clk  : in std_logic := 'Z';
---		pclk : in std_logic := 'Z';
 		
 		led : out std_logic_vector(7 downto 0) := (others => 'Z');
 		seg : out std_logic_vector(0 to 14) := (others => 'Z');
