@@ -223,7 +223,7 @@ begin
 				return retval;
 			end;
 
-			constant vt_step : real := vt_steps(i);
+			constant vt_step : real := vt_steps(i); -- diamond 3.7 workaround to avoid step => vt_steps(i)
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
