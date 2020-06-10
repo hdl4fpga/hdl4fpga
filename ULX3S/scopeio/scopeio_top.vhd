@@ -1696,7 +1696,7 @@ begin
 	        inputs           => inputs, -- number of input channels
 		min_storage      => 4096, -- samples
 		vt_steps         => (0 to inputs-1 => vt_step),
-		hz_unit          => 32.0*micro, -- 1 us per pixel
+		hz_unit          => real(layout.division_size)/real(pixel_hz)*1.0e3*milli, -- s/div timebase for clk_input=pixel_hz, FIXME for other freqs
 		vt_unit          => 50.0*milli,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"1_110000",
