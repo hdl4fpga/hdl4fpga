@@ -71,69 +71,68 @@ package body modeline_calculator is
   -- then it will find first highest pixel_f from C_possible_freqs
   function F_video_timing(x,y,f,pixel_f_wanted: natural)
     return T_video_timing is
-      variable video_timing : T_video_timing;
-      variable xminblank   : natural := x/64; -- initial estimate
-      variable yminblank   : natural := y/64; -- for minimal blank space
-      variable min_pixel_f : natural := f*(x+xminblank)*(y+yminblank);
-      variable pixel_f     : natural := F_find_next_f(min_pixel_f,pixel_f_wanted);
-      variable yframe      : natural := y+yminblank;
-      variable xframe      : natural := pixel_f/(f*yframe);
-      variable xblank      : natural := xframe-x;
-      variable yblank      : natural := yframe-y;
-    begin
-      video_timing.x                 := x;
-      video_timing.hsync_front_porch := xblank/3;
-      video_timing.hsync_pulse_width := xblank/3;
-      video_timing.hsync_back_porch  := xblank-video_timing.hsync_pulse_width-video_timing.hsync_front_porch+xadjustf;
-      video_timing.y                 := y;
-      video_timing.vsync_front_porch := yblank/3;
-      video_timing.vsync_pulse_width := yblank/3;
-      video_timing.vsync_back_porch  := yblank-video_timing.vsync_pulse_width-video_timing.vsync_front_porch+yadjustf;
-      video_timing.f_pixel           := pixel_f;
+      constant xminblank   : natural := x/64; -- initial estimate
+      constant yminblank   : natural := y/64; -- for minimal blank space
+      constant min_pixel_f : natural := f*(x+xminblank)*(y+yminblank);
+      constant pixel_f     : natural := F_find_next_f(min_pixel_f,pixel_f_wanted);
+      constant yframe      : natural := y+yminblank;
+      constant xframe      : natural := pixel_f/(f*yframe);
+      constant xblank      : natural := xframe-x;
+      constant yblank      : natural := yframe-y;
 
-      return video_timing;
+	  constant hsync_front_porch : natural := xblank/3;
+	  constant hsync_pulse_width : natural := xblank/3;
+	  constant hsync_back_porch  : natural := xblank-hsync_front_porch-hsync_pulse_width;
+
+	  constant vsync_front_porch : natural := yblank/3;
+	  constant vsync_pulse_width : natural := yblank/3;
+	  constant vsync_back_porch  : natural := yblank-vsync_front_porch-vsync_pulse_width;
+
+    begin
+      return T_video_timing'(
+		  x                 => x,
+		  hsync_front_porch => hsync_front_porch,
+		  hsync_pulse_width => hsync_pulse_width,
+		  hsync_back_porch  => hsync_back_porch+xadjustf,
+		  y                 => y,
+		  vsync_front_porch => vsync_front_porch,
+		  vsync_pulse_width => vsync_pulse_width,
+		  vsync_back_porch  => vsync_back_porch+yadjustf,
+		  f_pixel           => pixel_f);
     end F_video_timing;
     
   function F_modeline (
     constant x,y,hz: natural)
   return natural_vector is
-    variable video_timing : T_video_timing := F_video_timing(x,y,hz,0);
-    variable retval : natural_vector(0 to 9-1);
+    constant video_timing : T_video_timing := F_video_timing(x,y,hz,0);
   begin
-    retval :=
-    (
-      video_timing.x,
-      video_timing.x+video_timing.hsync_front_porch,
-      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
-      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,
-      video_timing.y,
-      video_timing.y+video_timing.vsync_front_porch,
-      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width,
-      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width+video_timing.vsync_back_porch,
-      video_timing.f_pixel
-    );
-    return retval;
+    return natural_vector'(
+      0 => video_timing.x,
+      1 => video_timing.x+video_timing.hsync_front_porch,
+      2 => video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
+      3 => video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,
+      4 => video_timing.y,
+      5 => video_timing.y+video_timing.vsync_front_porch,
+      6 => video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width,
+      7 => video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width+video_timing.vsync_back_porch,
+      8 => video_timing.f_pixel);
   end;
 
   function F_modeline (
     constant x,y,hz,pixel_hz: natural)
   return natural_vector is
-    variable video_timing : T_video_timing := F_video_timing(x,y,hz,pixel_hz);
-    variable retval : natural_vector(0 to 9-1);
+    constant video_timing : T_video_timing := F_video_timing(x,y,hz,pixel_hz);
   begin
-    retval :=
-    (
-      video_timing.x,
-      video_timing.x+video_timing.hsync_front_porch,
-      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
-      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,
-      video_timing.y,
-      video_timing.y+video_timing.vsync_front_porch,
-      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width,
-      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width+video_timing.vsync_back_porch,
-      video_timing.f_pixel
-    );
-    return retval;
+    return natural_vector'(
+      0 => video_timing.x,
+      1 => video_timing.x+video_timing.hsync_front_porch,
+      2 => video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
+      3 => video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,
+      4 => video_timing.y,
+      5 => video_timing.y+video_timing.vsync_front_porch,
+      6 => video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width,
+      7 => video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width+video_timing.vsync_back_porch,
+      8 => video_timing.f_pixel);
   end;
 
 end;

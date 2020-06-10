@@ -498,8 +498,8 @@ begin
 	adapter_b : block
 		constant mode : videotiming_ids := video_tab(video_mode).mode;
 		constant sync_lat : natural := 4;
-		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
-		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
+		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(3)-1)-1 downto 0);
+		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
 		signal vtsync : std_logic;
 		signal hzon   : std_logic;
@@ -534,7 +534,7 @@ begin
 
 		graphic_e : entity hdl4fpga.graphic
 		generic map (
-			video_width => modeline_data(video_tab(video_mode).mode)(0))
+			video_width => modeline_tab(video_tab(video_mode).mode)(0))
 		port map (
 			ctlr_clk     => ctlr_clk,
 			ctlr_di_dv   => graphic_dv,

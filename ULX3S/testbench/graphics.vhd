@@ -126,8 +126,9 @@ architecture ulx3s_graphics of testbench is
 			gpdi_sda       : inout std_logic := '-';
 			gpdi_scl       : inout std_logic := '-';
 
-			gp             : inout std_logic_vector(28-1 downto 0) := (others => '-');
-			gn             : inout std_logic_vector(28-1 downto 0) := (others => '-');
+			gp             : inout std_logic_vector(9-1 downto 0) := (others => '-');
+			gn             : inout std_logic_vector(9-1 downto 0) := (others => '-');
+			gp_i           : in    std_logic_vector(12 downto 9) := (others => '-');
 
 			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
