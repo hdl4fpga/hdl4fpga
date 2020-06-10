@@ -52,38 +52,35 @@ package body modeline_calculator is
     140000000  -- overclock 700MHz
   );
 
-  function F_find_next_f(f: natural)
+  function F_find_next_f(f_minimal, f_wanted: natural)
     return natural is
-      variable f0: natural := 0;
     begin
-      for fx in C_possible_freqs'range loop
-        if C_possible_freqs(fx)>f then
-          f0 := C_possible_freqs(fx);
-          exit;
-        end if;
-      end loop;
-      return f0;
+      if f_wanted < f_minimal then
+        for fx in C_possible_freqs'range loop
+          if C_possible_freqs(fx)>f_minimal then
+            return C_possible_freqs(fx);
+          end if;
+        end loop;
+        -- TODO if we are here then error
+      end if;
+      return f_wanted;
     end F_find_next_f;
 
   -- by default, call this function with pixel_f_wanted=0
   -- if pixel_f_wanted is less than minimal required for f,
-  -- then it will find first highest pixel_f
-  -- from a list of possible freqs
+  -- then it will find first highest pixel_f from C_possible_freqs
   function F_video_timing(x,y,f,pixel_f_wanted: natural)
     return T_video_timing is
       variable video_timing : T_video_timing;
       variable xminblank   : natural := x/64; -- initial estimate
       variable yminblank   : natural := y/64; -- for minimal blank space
       variable min_pixel_f : natural := f*(x+xminblank)*(y+yminblank);
-      variable pixel_f     : natural := pixel_f_wanted;
+      variable pixel_f     : natural := F_find_next_f(min_pixel_f,pixel_f_wanted);
       variable yframe      : natural := y+yminblank;
       variable xframe      : natural := pixel_f/(f*yframe);
       variable xblank      : natural := xframe-x;
       variable yblank      : natural := yframe-y;
     begin
-      if pixel_f < min_pixel_f then
-        pixel_f := F_find_next_f(min_pixel_f);
-      end if;
       video_timing.x                 := x;
       video_timing.hsync_front_porch := xblank/3;
       video_timing.hsync_pulse_width := xblank/3;
