@@ -150,7 +150,7 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../s3starter.ipf" xil_pn:type="FILE_USERDOC"/>
-    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF">
+    <file xil_pn:name="scopeio.ucf" xil_pn:type="FILE_UCF">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="../../common/s3starter.vhd" xil_pn:type="FILE_VHDL">

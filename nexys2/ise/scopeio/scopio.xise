@@ -193,7 +193,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF">
+    <file xil_pn:name="scopeio.ucf" xil_pn:type="FILE_UCF">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_ps2mouse2daisy.vhd" xil_pn:type="FILE_VHDL">
@@ -653,7 +653,7 @@
   </properties>
 
   <bindings>
-    <binding xil_pn:location="/nexys2" xil_pn:name="../../scopeio/scopeio.ucf"/>
+    <binding xil_pn:location="/nexys2" xil_pn:name="scopeio.ucf"/>
   </bindings>
 
   <libraries>
