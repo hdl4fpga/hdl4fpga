@@ -25,6 +25,8 @@ architecture beh of ulx3s is
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
         --constant layout: display_layout := displaylayout_table(lcd480x272seg1);
         constant layout: display_layout := displaylayout_table(sd600x16fs);
+        --constant layout: display_layout := displaylayout_table(lcd1280x1024seg4);
+        --constant layout: display_layout := displaylayout_table(hd720);
         --constant pixel_hz: natural := modeline_data(timing_id)(8);
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
