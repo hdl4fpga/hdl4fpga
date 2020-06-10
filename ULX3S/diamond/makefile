@@ -1,1 +1,0 @@
-makefile-800x600.diamond

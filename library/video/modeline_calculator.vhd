@@ -12,6 +12,9 @@ package modeline_calculator is
 	function F_modeline (
 		constant x,y,hz : natural)
 		return natural_vector;
+	function F_modeline (
+		constant x,y,hz,pixel_hz : natural)
+		return natural_vector;
 end;
 
 package body modeline_calculator is
@@ -37,36 +40,42 @@ package body modeline_calculator is
     27000000,
     40000000,
     50000000,
-    54000000,
+    54166666,
     60000000,
     65000000,
     75000000,
     80000000,  -- overclock 400MHz
     100000000, -- overclock 500MHz
-    108333333, -- overclock 540MHz
-    120000000  -- overclock 600MHz
+    108333333, -- overclock 541MHz
+    120000000, -- overclock 600MHz
+    135000000, -- overclock 675MHz
+    140000000  -- overclock 700MHz
   );
 
-  function F_find_next_f(f: natural)
+  function F_find_next_f(f_minimal, f_wanted: natural)
     return natural is
-      variable f0: natural := 0;
     begin
-      for fx in C_possible_freqs'range loop
-        if C_possible_freqs(fx)>f then
-          f0 := C_possible_freqs(fx);
-          exit;
-        end if;
-      end loop;
-      return f0;
+      if f_wanted < f_minimal then
+        for fx in C_possible_freqs'range loop
+          if C_possible_freqs(fx)>f_minimal then
+            return C_possible_freqs(fx);
+          end if;
+        end loop;
+        -- TODO if we are here then error
+      end if;
+      return f_wanted;
     end F_find_next_f;
-  
-  function F_video_timing(x,y,f: integer)
+
+  -- by default, call this function with pixel_f_wanted=0
+  -- if pixel_f_wanted is less than minimal required for f,
+  -- then it will find first highest pixel_f from C_possible_freqs
+  function F_video_timing(x,y,f,pixel_f_wanted: natural)
     return T_video_timing is
       variable video_timing : T_video_timing;
       variable xminblank   : natural := x/64; -- initial estimate
       variable yminblank   : natural := y/64; -- for minimal blank space
       variable min_pixel_f : natural := f*(x+xminblank)*(y+yminblank);
-      variable pixel_f     : natural := F_find_next_f(min_pixel_f);
+      variable pixel_f     : natural := F_find_next_f(min_pixel_f,pixel_f_wanted);
       variable yframe      : natural := y+yminblank;
       variable xframe      : natural := pixel_f/(f*yframe);
       variable xblank      : natural := xframe-x;
@@ -86,14 +95,35 @@ package body modeline_calculator is
     end F_video_timing;
     
   function F_modeline (
-    constant x,y,hz : natural)
+    constant x,y,hz: natural)
   return natural_vector is
-    variable video_timing : T_video_timing := F_video_timing(x,y,hz);
+    variable video_timing : T_video_timing := F_video_timing(x,y,hz,0);
     variable retval : natural_vector(0 to 9-1);
   begin
-    retval := 
+    retval :=
     (
-      video_timing.x,  
+      video_timing.x,
+      video_timing.x+video_timing.hsync_front_porch,
+      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
+      video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,
+      video_timing.y,
+      video_timing.y+video_timing.vsync_front_porch,
+      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width,
+      video_timing.y+video_timing.vsync_front_porch+video_timing.vsync_pulse_width+video_timing.vsync_back_porch,
+      video_timing.f_pixel
+    );
+    return retval;
+  end;
+
+  function F_modeline (
+    constant x,y,hz,pixel_hz: natural)
+  return natural_vector is
+    variable video_timing : T_video_timing := F_video_timing(x,y,hz,pixel_hz);
+    variable retval : natural_vector(0 to 9-1);
+  begin
+    retval :=
+    (
+      video_timing.x,
       video_timing.x+video_timing.hsync_front_porch,
       video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width,
       video_timing.x+video_timing.hsync_front_porch+video_timing.hsync_pulse_width+video_timing.hsync_back_porch,

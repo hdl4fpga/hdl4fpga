@@ -22,25 +22,6 @@ OPENOCD_INTERFACE=$(SCRIPTS)/ft231x.ocd
 #OPENOCD_INTERFACE=$(SCRIPTS)/ft2232.ocd
 
 # ******* design files *******
-CLK0_NAME = clk_verilog_v
-CLK0_FILE_NAME = ../common/$(CLK0_NAME).v
-CLK0_OPTIONS_OLD = \
-  --input=25 \
-  --output=250 \
-  --s1=125 \
-  --p1=0 \
-  --s2=25 \
-  --p2=0
-# for new ecppll: to override above, rename CLK0_OPTIONS_NEW -> CLK0_OPTIONS
-CLK0_OPTIONS = \
-  --module=$(CLK0_NAME) \
-  --clkin=25 \
-  --clkout0=375 \
-  --clkout1=75 \
-  --clkout2=62.5 \
-  --clkout3=25
-
-VERILOG_CLOCK_FILE = ../common/clk_25_375_75_62_25.v
 
 include files.mk
 
