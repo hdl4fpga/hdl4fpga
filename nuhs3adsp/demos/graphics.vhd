@@ -46,8 +46,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 3;
+	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 1; --3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -427,8 +427,8 @@ begin
 
 	adapter_b : block
 		constant mode : videotiming_ids := video_tab(video_mode).mode;
-		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(3)-1)-1 downto 0);
-		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_data(mode)(7)-1)-1 downto 0);
+		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(3)-1)-1 downto 0);
+		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
 		signal vtsync : std_logic;
 		signal hzon   : std_logic;
@@ -463,7 +463,7 @@ begin
 
 		graphic_e : entity hdl4fpga.graphic
 		generic map (
-			video_width => modeline_data(video_tab(video_mode).mode)(0))
+			video_width => modeline_tab(video_tab(video_mode).mode)(0))
 		port map (
 			ctlr_clk    => ctlr_clk,
 			ctlr_di_dv  => graphic_dv,

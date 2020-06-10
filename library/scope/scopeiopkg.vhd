@@ -89,6 +89,7 @@ package scopeiopkg is
 	end record;
 
 	type displaylayout_ids is (
+		sd480,
 		sd600,
 		hd720,
 		hd1080,
@@ -106,7 +107,37 @@ package scopeiopkg is
 
 	type displaylayout_vector is array (displaylayout_ids) of display_layout;
 
-	constant displaylayout_table : displaylayout_vector := (
+	constant displaylayout_tab : displaylayout_vector := (
+		sd480 => (            
+			display_width     =>  640,
+			display_height    =>  480,
+			num_of_segments   =>    1,
+			division_size     =>   32,
+			grid_width        => 16*32+1,
+			grid_height       =>  6*32+1,
+			axis_fontsize     =>    8,
+			textbox_fontwidth =>    8,
+			hzaxis_height     =>    8,
+			hzaxis_within     => true,
+			vtaxis_width      =>  1*8,
+			vtaxis_within     => false,
+			vttick_rotate     => ccw90,
+			textbox_width     => 32*8,
+			textbox_within    => false,
+			main_margin       => (
+				left   => 3, 
+				top    => 23,
+				others => 0),
+			main_gap          => (
+				vertical => 16, 
+				others => 0),
+			sgmnt_margin      => (
+				top    => 1, 
+				bottom => 1, 
+				others => 0),
+			sgmnt_gap         => (
+				horizontal => 1, 
+				others     => 0)),
 		sd600 => (            
 			display_width   =>  800,
 			display_height  =>  600,

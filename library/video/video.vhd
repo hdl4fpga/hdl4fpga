@@ -98,11 +98,12 @@ use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
+		timing_id : videotiming_ids;
+		modeline  : natural_vector(0 to 9-1) := (others => 0);
 		width     : natural := 0;
 		height    : natural := 0;
 		fps       : real    := 0.0;
-		pclk      : real    := 0.0;
-		timing_id : videotiming_ids);
+		pclk      : real    := 0.0);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in  std_logic := '0';
@@ -134,6 +135,7 @@ architecture mix of video_sync is
 
 	function select_modeline (
 		constant timing_id : videotiming_ids;
+		constant modeline  : natural_vector;
 		constant width     : natural;
 		constant height    : natural;
 		constant fps       : real;
@@ -143,16 +145,22 @@ architecture mix of video_sync is
 		if timing_id /= pclk_fallback then
 			return modeline_tab(timing_id);
 		else
-			return auto_modeline (
-				width  => width,
-				height => height,
-				fps    => fps,
-				pclk   => pclk);
+			for i in modeline'range loop
+				if modeline(i)=0 then 
+					return auto_modeline (
+						width  => width,
+						height => height,
+						fps    => fps,
+						pclk   => pclk);
+				end if;
+			end loop;
+			return modeline;
 		end if;
 	end;
 		
 	constant modeline_data : natural_vector := select_modeline (
 		timing_id => timing_id,
+		modeline  => modeline,
 		width     => width,
 		height    => height,
 		fps       => fps,
