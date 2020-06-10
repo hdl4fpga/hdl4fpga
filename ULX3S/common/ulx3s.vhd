@@ -28,6 +28,8 @@ library ecp5u;
 use ecp5u.components.all;
 
 entity ulx3s is
+	generic (
+		debug : boolean := false);
 	port (
 		clk_25mhz      : in    std_logic;
 
