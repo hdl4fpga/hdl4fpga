@@ -146,7 +146,7 @@ architecture ddr of ecp3versa is
 begin
 
 	sys_rst <= '0';
-	dcms_e : entity hdl4fpga.dcms
+	dcms_e : entity hdl4fpga.ddrpll
 	generic map (
 		ddr_clki  => ddr_clki,
 		ddr_clkfb => ddr_clkfb,
