@@ -181,7 +181,10 @@ architecture mix of ecp5pll is
             error := abs(fout-out0_hz);
             for channel in 1 to 3 loop
               if sfreq(channel) > 0 then
-                div   := fvco/sfreq(channel);
+                div := 1;
+                if fvco >= sfreq(channel) then
+                  div := fvco/sfreq(channel);
+                end if;
                 freq  := fvco/div;
                 error := error + abs(freq-sfreq(channel));
               end if;
@@ -211,7 +214,10 @@ architecture mix of ecp5pll is
       -- generate secondary outputs
       for channel in 1 to 3 loop
         if sfreq(channel) > 0 then
-          div  := params.fvco/sfreq(channel);
+          div := 1;
+          if params.fvco >= sfreq(channel) then
+            div := params.fvco/sfreq(channel);
+          end if;
           freq := params.fvco/div;
           phase_compensation := div*8-8;
           phase_count_x8 := phase_compensation + 8*div*sphase(channel)/360;
