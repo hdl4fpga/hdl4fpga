@@ -36,10 +36,10 @@ entity ddr_init is
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (
-		ddr_init_bl   : std_logic_vector;
-		ddr_init_bt   : std_logic_vector;
-		ddr_init_cl   : std_logic_vector;
-		ddr_init_ods  : std_logic_vector;
+		ddr_init_bl   : in  std_logic_vector;
+		ddr_init_bt   : in  std_logic_vector;
+		ddr_init_cl   : in  std_logic_vector;
+		ddr_init_ods  : in  std_logic_vector;
 
 		ddr_init_wb   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		ddr_init_al   : in  std_logic_vector(2-1 downto 0) := (others => '0');
@@ -87,7 +87,7 @@ architecture def of ddr_init is
 	signal init_rdy : std_logic;
 	constant pgm : s_table := choose_pgm(ddr_stdr);
 
-	signal ddr_init_pc : s_code;
+	signal ddr_init_pc   : s_code;
 	signal ddr_timer_id  : std_logic_vector(unsigned_num_bits(timers'length-1)-1 downto 0);
 	signal ddr_timer_rdy : std_logic;
 	signal ddr_timer_req : std_logic;
@@ -136,15 +136,15 @@ begin
 		if rising_edge(ddr_init_clk) then
 			if ddr_init_req='0' then
 				row := (
-					state => (others => '-'), 
+					state   => (others => '-'), 
 					state_n => (others => '-'),
-					mask  => (others => '-'),
-					input => (others => '-'),
-					output => (others => '-'),
-					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
-					bnk => (others => '-'),
-					mr  => (others => '-'),
-					tid => to_unsigned(TMR_RST, TMR_SIZE));
+					mask    => (others => '-'),
+					input   => (others => '-'),
+					output  => (others => '-'),
+					cmd     => (cs => '-', ras => '-', cas => '-', we => '-'), 
+					bnk     => (others => '-'),
+					mr      => (others => '-'),
+					tid     => to_unsigned(TMR_RST, TMR_SIZE));
 				for i in pgm'range loop
 					if pgm(i).state=ddr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
@@ -153,39 +153,39 @@ begin
 					end if;
 				end loop;
 				if ddr_timer_rdy='1' then
-					ddr_init_pc  <= row.state_n;
-					ddr_init_rst <= to_sout(row.output).rst;
-					init_rdy <= to_sout(row.output).rdy;
-					ddr_init_cke <= to_sout(row.output).cke;
-					ddr_init_wlreq <= to_sout(row.output).wlq;
-					ddr_init_cs  <= row.cmd.cs;
-					ddr_init_ras <= row.cmd.ras;
-					ddr_init_cas <= row.cmd.cas;
-					ddr_init_we  <= row.cmd.we;
-					ddr_init_odt <= to_sout(row.output).odt;
+					ddr_init_pc   <= row.state_n;
+					ddr_init_rst  <= to_sout(row.output).rst;
+					init_rdy      <= to_sout(row.output).rdy;
+					ddr_init_cke  <= to_sout(row.output).cke;
+					ddr_init_wlreq<= to_sout(row.output).wlq;
+					ddr_init_cs   <= row.cmd.cs;
+					ddr_init_ras  <= row.cmd.ras;
+					ddr_init_cas  <= row.cmd.cas;
+					ddr_init_we   <= row.cmd.we;
+					ddr_init_odt  <= to_sout(row.output).odt;
 				else
-					ddr_init_cs  <= ddr_nop.cs;
-					ddr_init_ras <= ddr_nop.ras;
-					ddr_init_cas <= ddr_nop.cas;
-					ddr_init_we  <= ddr_nop.we;
-					ddr_timer_id <= std_logic_vector(resize(row.tid, ddr_timer_id'length));
+					ddr_init_cs   <= ddr_nop.cs;
+					ddr_init_ras  <= ddr_nop.ras;
+					ddr_init_cas  <= ddr_nop.cas;
+					ddr_init_we   <= ddr_nop.we;
+					ddr_timer_id  <= std_logic_vector(resize(row.tid, ddr_timer_id'length));
 				end if;
 				ddr_init_b  <= std_logic_vector(unsigned(resize(unsigned(row.bnk), ddr_init_b'length)));
 				ddr_mr_addr <= row.mr;
 			else
-				ddr_init_pc  <= sc_rst;
-				ddr_timer_id <= std_logic_vector(to_unsigned(TMR_RST, ddr_timer_id'length));
-				ddr_init_rst <= '0';
-				ddr_init_cke <= '0';
-				init_rdy <= '0';
-				ddr_init_cs  <= '0';
-				ddr_init_ras <= '1';
-				ddr_init_cas <= '1';
-				ddr_init_we  <= '1';
-				ddr_init_odt <= '0';
+				ddr_init_pc    <= sc_rst;
+				ddr_timer_id   <= std_logic_vector(to_unsigned(TMR_RST, ddr_timer_id'length));
+				ddr_init_rst   <= '0';
+				ddr_init_cke   <= '0';
+				init_rdy       <= '0';
+				ddr_init_cs    <= '0';
+				ddr_init_ras   <= '1';
+				ddr_init_cas   <= '1';
+				ddr_init_we    <= '1';
+				ddr_init_odt   <= '0';
 				ddr_init_wlreq <= '0';
-				ddr_mr_addr  <= (ddr_mr_addr'range => '1');
-				ddr_init_b   <= std_logic_vector(unsigned(resize(unsigned(ddr_mrx), ddr_init_b'length)));
+				ddr_mr_addr    <= (ddr_mr_addr'range => '1');
+				ddr_init_b     <= std_logic_vector(unsigned(resize(unsigned(ddr_mrx), ddr_init_b'length)));
 			end if;
 		end if;
 	end process;
@@ -214,9 +214,9 @@ begin
 	end process;
 
 	ddr_timer_req <=
-	'1' when ddr_init_req='1' else
-	'1' when ddr_timer_rdy='1' else
-	'0';
+		'1' when ddr_init_req='1' else
+		'1' when ddr_timer_rdy='1' else
+		'0';
 
 	timer_e : entity hdl4fpga.ddr_timer
 	generic map (

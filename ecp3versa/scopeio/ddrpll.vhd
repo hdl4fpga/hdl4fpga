@@ -41,7 +41,7 @@ entity ddrpll is
 
 		ddr_sclk2x  : out std_logic;
 		ddr_eclk    : buffer std_logic;
-		ddr_sclk    : out std_logic;
+		ddr_sclk    : buffer std_logic;
 		ddr_pha     : buffer std_logic_vector(4-1 downto 0);
 
 		ddr_rst     : out std_logic;
@@ -54,7 +54,7 @@ use ecp3.components.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ecp3 of dcms is
+architecture ecp3 of ddrpll is
 
 	attribute frequency_pin_clki  : string; 
 	attribute frequency_pin_clkop : string; 
@@ -72,6 +72,7 @@ architecture ecp3 of dcms is
 	signal adjdll_rst : std_logic;
 	signal adjdll_rdy : std_logic;
 
+	signal pll_rst   : std_logic;
 	signal ddr_lock   : std_logic;
 
 begin
@@ -115,8 +116,8 @@ begin
 		rst              => pll_rst, 
 		rstk             => '0',
 		clki             => sys_clk,
-		drpai3 => pha(3),  drpai2 => pha(2), drpai1 => pha(1), drpai0 => pha(0), 
-		dfpai3 => dfpa(3), dfpai2 => pha(2), dfpai1 => pha(1), dfpai0 => pha(0), 
+		drpai3 => ddr_pha(3),  drpai2 => ddr_pha(2), drpai1 => ddr_pha(1), drpai0 => ddr_pha(0), 
+		dfpai3 => dfpa3,       dfpai2 => ddr_pha(2), dfpai1 => ddr_pha(1), dfpai0 => ddr_pha(0), 
 		fda3             => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
 		wrdel            => '0',
 		clkintfb         => clkfb,
@@ -125,9 +126,9 @@ begin
 		clkos            => ddr_eclk,
 		clkok            => ddr_sclk,
 		clkok2           => open,
-		lock             => pll_lock);
+		lock             => lock);
 
-	adjdll_rst <= not pll_lock;
+	adjdll_rst <= not lock;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
 		rst  => adjdll_rst,
@@ -136,10 +137,10 @@ begin
 		eclk => ddr_eclk,
 		pha  => ddr_pha);
 
-	process(ddr_sclk, pll_lock)
+	process(ddr_sclk, lock)
 		variable q : std_logic_vector(0 to 6-1) := (others => '0');
 	begin
-		if lock_='0' then
+		if lock='0' then
 			q := (others => '0');
 		elsif rising_edge(ddr_sclk) then
 			if adjdll_rdy='1' then
@@ -151,7 +152,7 @@ begin
 		ddr_lock <= q(0);
 	end process;
 
-	process (ddr_clk, sys_rst)
+	process (ddr_sclk, sys_rst)
 		variable sync1 : std_logic;
 		variable sync2 : std_logic;
 	begin
@@ -159,7 +160,7 @@ begin
 			ddr_rst <= '1';
 			sync1   := '1';
 			sync2   := '1';
-		elsif rising_edge(ddr_clk) then
+		elsif rising_edge(ddr_sclk) then
 			ddr_rst <= sync2;
 			sync2   := sync1;
 			sync1   := not ddr_lock;

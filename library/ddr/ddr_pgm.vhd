@@ -63,15 +63,15 @@ entity ddr_pgm is
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-	                      --> ddr_pgm_trdy   <---------------------+
-	                      --> ctlr_refreq    <--------------------+|
-	                      --> pgm_refy       <-------------------+||
-	                      --> pgm_ras        <------------------+|||
-	                      --> pgm_ras        <-----------------+||||
-	                      --                                   |||||
-	                      --                                   |||||
-	                      --                                   |||||
-	                      --                                   VVVVV
+	                      --> ddr_pgm_trdy    <---------------------+
+	                      --> ctlr_refreq     <--------------------+|
+	                      --> pgm_refy        <-------------------+||
+	                      --> pgm_ras         <------------------+|||
+	                      --> pgm_ras         <-----------------+||||
+	                      --                                    |||||
+	                      --                                    |||||
+	                      --                                    |||||
+	                      --                                    VVVVV
 	constant ddro_act   : std_logic_vector(7 downto 0)     := B"01000" & "011";
 	constant ddro_acty  : std_logic_vector(ddro_act'range) := B"01100" & "011";
 	constant ddro_area  : std_logic_vector(ddro_act'range) := B"10000" & "101";
@@ -209,18 +209,38 @@ begin
 	ddr_input(1) <= ddr_pgm_rw;
 	ddr_input(0) <= ddr_pgm_irdy;
 
+	calibrate_p : process (ctlr_clk, ddr_mpu_trdy, ddr_pgm_cal)
+		variable t : signed(0 to unsigned_num_bits(CMMD_GEAR-1));
+	begin
+		if rising_edge(ctlr_clk) then
+			if ctlr_rst='1' then
+				t := to_signed(CMMD_GEAR-1, t'length);
+			elsif ddr_pgm_cal='0' then
+				t := to_signed(CMMD_GEAR-1, t'length);
+			elsif ddr_mpu_trdy='1' then
+				if ddr_pgm_cal='1' then
+					if t(0)='0' then
+						t := t - 1;
+					else
+						t := to_signed(CMMD_GEAR-1, t'length);
+					end if;
+				end if;
+			end if;
+		end if;
+		ddr_pgm_seq <= t(0);
+		calibrating <= ddr_pgm_cal and ddr_mpu_trdy and setif(CMMD_GEAR > 1, t(0));
+	end process;
+
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
 				ddr_pgm_pc <= ddrs_pre;
-			else
+			elsif ddr_mpu_trdy='1' then
 				for i in pgm_tab'range loop
 					if ddr_pgm_pc=pgm_tab(i).state then
 						if ddr_input=pgm_tab(i).input then
-							if ddr_mpu_trdy='1' then
-								ddr_pgm_pc <= pgm_tab(i).state_n; 
-							end if;
+							ddr_pgm_pc <= pgm_tab(i).state_n; 
 						end if;
 					end if;
 				end loop;
@@ -261,14 +281,14 @@ begin
 					ddr_pgm_cas <= '0';
 				elsif ddr_mpu_trdy='1' then
 					ddr_pgm_idl <= setif(pgm_cmd=ddr_nop); 
-					ddr_pgm_cmd <= pgm_cmd; 
+					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, ddr_nop); 
 					ddr_pgm_ras <= pgm_ras;
 					ddr_pgm_cas <= pgm_cas;
 				end if;
 			end if;
 		else
 			ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=ddr_nop), '1'); 
-			ddr_pgm_cmd <= setif(ctlr_rst='0', pgm_cmd,  ddr_nop); 
+			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, ddr_nop),  ddr_nop); 
 			ddr_pgm_ras <= setif(ctlr_rst='0', pgm_ras,  '0'); 
 			ddr_pgm_cas <= setif(ctlr_rst='0', pgm_cas,  '0'); 
 		end if;
@@ -276,7 +296,5 @@ begin
 	ddr_pgm_trdy <= setif(ctlr_rst='0', pgm_rdy,  '1');
 	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
 	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
---	ddr_pgm_ras  <= pgm_ras and ddr_mpu_trdy;
---	ddr_pgm_cas  <= pgm_cas and ddr_mpu_trdy;
 
 end;
