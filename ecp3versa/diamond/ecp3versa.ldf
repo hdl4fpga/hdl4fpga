@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="ddr" dir="ddr" description="ddr" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.ddrdqphy" lib="hdl4fpga" top="work.ecp3versa"/>
+        <Options def_top="ecp3versa" lib="hdl4fpga" top="work.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="work.ecp3versa"/>
         </Source>
