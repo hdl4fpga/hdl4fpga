@@ -26,22 +26,22 @@ use ieee.std_logic_1164.all;
 
 entity ddrbaphy is
 	generic (
-		cmnd_phases : natural := 2;
+		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
 		sys_sclk   : in  std_logic;
 		sys_sclk2x : in  std_logic;
 
-		sys_rst : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cs  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cke : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_b   : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
-		sys_a   : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
-		sys_ras : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cas : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_we  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_odt : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_rst : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cs  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cke : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_ras : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cas : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_we  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_odt : in  std_logic_vector(cmmd_gear-1 downto 0);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic;
@@ -66,7 +66,7 @@ architecture ecp3 of ddrbaphy is
 	signal dqclk0 : std_logic;
 	signal dqclk1 : std_logic;
 
-	signal dqst : std_logic_vector(cmnd_phases-1 downto 0);
+	signal dqst : std_logic_vector(cmmd_gear-1 downto 0);
 	
 	signal dqsdll_lock : std_logic;
 	signal prmbdet : std_logic;

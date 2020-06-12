@@ -30,8 +30,7 @@ entity ddrpll is
 		ddr_clki    : natural := 1;
 		ddr_clkfb   : natural := 4;
 		ddr_clkop   : natural := 2;
-		ddr_clkok   : natural := 2;
-		sys_per     : real := 10.0);
+		ddr_clkok   : natural := 2);
 	port (
 		sys_rst     : in  std_logic;
 		sys_clk     : in  std_logic;

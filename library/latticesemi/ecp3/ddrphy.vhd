@@ -1,23 +1,23 @@
 --                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
+-- author(s):                                                                 --
+--   miguel angel sagreras                                                    --
 --                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
+-- copyright (c) 2015                                                         --
+--    miguel angel sagreras                                                   --
 --                                                                            --
--- This source file may be used and distributed without restriction provided  --
+-- this source file may be used and distributed without restriction provided  --
 -- that this copyright statement is not removed from the file and that any    --
 -- derivative work contains  the original copyright notice and the associated --
 -- disclaimer.                                                                --
 --                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
+-- this source file is free software; you can redistribute it and/or modify   --
+-- it under the terms of the gnu general public license as published by the   --
+-- free software foundation, either version 3 of the license, or (at your     --
 -- option) any later version.                                                 --
 --                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
+-- this source is distributed in the hope that it will be useful, but without --
+-- any warranty; without even the implied warranty of merchantability or      --
+-- fitness for a particular purpose. see the gnu general public license for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
@@ -33,10 +33,10 @@ use hdl4fpga.std.all;
 
 entity ddrphy is
 	generic (
-		cmnd_phases : natural := 2;
+		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		DATA_GEAR : natural := 32;
+		data_gear : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural := 8;
 		tcp : natural);
@@ -46,28 +46,28 @@ entity ddrphy is
 		sys_eclk : in  std_logic;
 		phy_rst : in std_logic;
 
-		sys_rst   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
-		sys_cs    : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
-		sys_sti   : in  std_logic_vector(DATA_GEAR*word_size/byte_size-1 downto 0);
-		sys_sto   : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_b     : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
-		sys_a     : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
-		sys_cke   : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_ras   : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cas   : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_we    : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_odt   : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_dmt   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dmi   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dmo   : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dqt   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dqo   : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-		sys_dqi   : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-		sys_dqso  : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dqst  : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		sys_dqsi  : in  std_logic_vector(DATA_GEAR*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		sys_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_b     : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a     : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_cke   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_ras   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cas   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_we    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_odt   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_dmt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqst  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_pll   : out std_logic_vector(8-1 downto 0);
 
 		ddr_rst : out std_logic;
@@ -93,10 +93,10 @@ architecture ecp3 of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(byte_size*DATA_GEAR*WORD_SIZE/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(byte_size*data_gear*word_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(DATA_GEAR*WORD_SIZE/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(data_gear*word_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 
@@ -192,8 +192,8 @@ architecture ecp3 of ddrphy is
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in DATA_GEAR*WORD_SIZE/word_size-1 downto 0 loop
-				val(i*DATA_GEAR*WORD_SIZE/word_size+j) := dat(j*word_size/byte_size+i);
+			for j in data_gear*word_size/word_size-1 downto 0 loop
+				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
@@ -248,7 +248,7 @@ begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
-		cmnd_phases => cmnd_phases,
+		cmmd_gear => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -397,7 +397,7 @@ begin
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			tcp => tcp,
-			DATA_GEAR => DATA_GEAR,
+			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
@@ -406,7 +406,7 @@ begin
 			sys_eclk => sys_eclk,
 			sys_eclkw => yyy,
 			sys_dqsdel => dqsdllb_dqsdel,
-			sys_rw => sys_sti(i*DATA_GEAR+0),
+			sys_rw => sys_sti(i*data_gear+0),
 			sys_wlreq => wlreq,
 			sys_wlrdy => wlrdy(i),
 			sys_wlpha => wlpha(i),
@@ -439,8 +439,8 @@ begin
 
 	sto_i : entity hdl4fpga.align
 	generic map (
-		n => 2*DATA_GEAR,
-		d => (0 to 2*DATA_GEAR-1 => 3))
+		n => 2*data_gear,
+		d => (0 to 2*data_gear-1 => 3))
 	port map (
 		clk => sys_sclk,
 		di  => sys_sti,
@@ -450,7 +450,7 @@ begin
 	begin
 		for i in ddqsi'range loop
 			if ddqst(i)='1' then
-				ddr_dqs(i) <= 'Z';
+				ddr_dqs(i) <= 'z';
 			else
 				ddr_dqs(i) <= ddqsi(i);
 			end if;
@@ -465,7 +465,7 @@ begin
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
 			if dqt(i)='1' then
-				ddr_dq(i) <= 'Z';
+				ddr_dq(i) <= 'z';
 			else
 				ddr_dq(i) <= dqo(i);
 			end if;
@@ -476,7 +476,7 @@ begin
 	begin
 		for i in ddmo'range loop
 			if ddmt(i)='1' then
-				ddr_dm(i) <= 'Z';
+				ddr_dm(i) <= 'z';
 			else
 				ddr_dm(i) <= ddmo(i);
 			end if;

@@ -219,16 +219,20 @@ begin
 				t := to_signed(CMMD_GEAR-1, t'length);
 			elsif ddr_mpu_trdy='1' then
 				if ddr_pgm_cal='1' then
-					if t(0)='0' then
-						t := t - 1;
+					if CMMD_GEAR > 1 then
+						if t(0)='0' then
+							t := t - 1;
+						else
+							t := to_signed(CMMD_GEAR-1, t'length);
+						end if;
 					else
-						t := to_signed(CMMD_GEAR-1, t'length);
+						t := not t;
 					end if;
 				end if;
 			end if;
 		end if;
 		ddr_pgm_seq <= t(0);
-		calibrating <= ddr_pgm_cal and ddr_mpu_trdy and setif(CMMD_GEAR > 1, t(0));
+		calibrating <= ddr_pgm_cal and ddr_mpu_trdy and t(0);
 	end process;
 
 	process (ctlr_clk)

@@ -40,7 +40,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture lttsm of dbram is
+architecture lscc of dbram is
 	type dw_vector is array (natural range <>) of std_logic_vector(4-1 downto 0);
 
 	function to_dwvector (
