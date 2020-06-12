@@ -450,7 +450,7 @@ begin
 	begin
 		for i in ddqsi'range loop
 			if ddqst(i)='1' then
-				ddr_dqs(i) <= 'z';
+				ddr_dqs(i) <= 'Z';
 			else
 				ddr_dqs(i) <= ddqsi(i);
 			end if;
@@ -465,7 +465,7 @@ begin
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
 			if dqt(i)='1' then
-				ddr_dq(i) <= 'z';
+				ddr_dq(i) <= 'Z';
 			else
 				ddr_dq(i) <= dqo(i);
 			end if;
@@ -476,7 +476,7 @@ begin
 	begin
 		for i in ddmo'range loop
 			if ddmt(i)='1' then
-				ddr_dm(i) <= 'z';
+				ddr_dm(i) <= 'Z';
 			else
 				ddr_dm(i) <= ddmo(i);
 			end if;

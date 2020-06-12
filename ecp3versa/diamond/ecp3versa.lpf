@@ -21,6 +21,10 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
+BLOCK RESETPATHS;
+BLOCK ASYNCPATHS;
+BLOCK INTERCLOCKDOMAIN PATHS;
+
 COMMERCIAL ;
 
 BANK 0 VCCIO 1.5 V;

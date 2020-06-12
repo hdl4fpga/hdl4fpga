@@ -86,8 +86,8 @@ architecture ddr of ecp3versa is
 
 	signal ddrsys_rst    : std_logic;
 
-	signal dmactlr_len   : std_logic_vector(23-1 downto 0);
-	signal dmactlr_addr  : std_logic_vector(23-1 downto 0);
+	signal dmactlr_len   : std_logic_vector(25-1 downto 0);
+	signal dmactlr_addr  : std_logic_vector(25-1 downto 0);
 
 	signal dmacfgio_req  : std_logic;
 	signal dmacfgio_rdy  : std_logic;
@@ -127,12 +127,12 @@ architecture ddr of ecp3versa is
 	signal ctlrphy_dqsi  : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_pll    : std_logic_vector(8-1 downto 0);
@@ -176,6 +176,9 @@ architecture ddr of ecp3versa is
 	alias si_clk       : std_logic is phy1_rxc;
 	alias dmacfg_clk   : std_logic is phy1_rxc;
 
+	attribute oddrapps : string;
+	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
+	
 begin
 
 	sys_rst <= '0';
@@ -205,7 +208,7 @@ begin
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
-		signal rgtr_data   : std_logic_vector(32-1 downto 0);
+		signal rgtr_data   : std_logic_vector(64-1 downto 0);
 
 		signal data_ena    : std_logic;
 		signal fifo_rst    : std_logic;
@@ -256,7 +259,7 @@ begin
 			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
+			rgtr_data => rgtr_data(32-1 downto 0),
 			dv        => fifo_rst,
 			data      => dmaio_addr);
 
@@ -267,7 +270,7 @@ begin
 			rgtr_clk  => si_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
+			rgtr_data => rgtr_data(32-1 downto 0),
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
@@ -284,7 +287,7 @@ begin
 			src_clk  => si_clk,
 			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
-			src_data => rgtr_data(16-1 downto 0),
+			src_data => rgtr_data,
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => dst_irdy,
