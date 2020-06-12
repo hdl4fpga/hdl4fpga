@@ -15,6 +15,7 @@ VHDL_LIB_FILES = \
 ../../library/common/dpram.vhd \
 ../../library/common/rom.vhd \
 ../../library/common/arbiter.vhd \
+../../library/common/serdes.vhd \
 ../../library/scope/scopeiopkg.vhd \
 ../../library/scope/scopeio_istream.vhd \
 ../../library/scope/scopeio_istreamdaisy.vhd \
@@ -23,6 +24,7 @@ VHDL_LIB_FILES = \
 ../../library/uart/uart_rx.vhd \
 ../../library/video/video.vhd \
 ../../library/video/videopkg.vhd \
+../../library/video/modeline_calculator.vhd \
 ../../library/video/vga2dvid.vhd \
 ../../library/video/tmds_encoder.vhd \
 ../../library/video/graphic.vhd \
