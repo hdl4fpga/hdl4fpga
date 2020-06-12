@@ -4,9 +4,9 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="ddr" dir="ddr" description="ddr" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.scopeio_udpipdaisy"/>
+        <Options def_top="hdl4fpga.ddrdqphy" lib="hdl4fpga" top="work.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options lib="work" top_module="work.ecp3versa"/>
         </Source>
         <Source name="../../library/common/std.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -53,9 +53,6 @@
         <Source name="../../library/mii/mii_1chksum.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/mii/mii_pllcmp.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -63,13 +60,121 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/scope/scopeio_udpipdaisy.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga" top_module="hdl4fpga.scopeio_udpipdaisy"/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/scope/textboxpkg.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../demos/ddr.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../scopeio/ddrpll.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/serdes.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_sin.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_rgtr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/textboxpkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_ctlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_param.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_rdfifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_sch.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddr_wrfifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/ddrdma.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/dmactlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/ddr/dmatrans.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/grant.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/barrel.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/cntrcs.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/timer.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/adjdll.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/adjdqs.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/clkstart.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ddrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ddrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ddrphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ff.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/arbiter.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

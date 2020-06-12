@@ -29,7 +29,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.videopkg.all;
 
 library ecp3;
 use ecp3.components.all;
