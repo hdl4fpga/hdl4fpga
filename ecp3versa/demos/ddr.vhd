@@ -65,12 +65,15 @@ architecture ddr of ecp3versa is
 		ddr500MHz => (ddr_clki => 1, ddr_clkfb => 5, ddr_clkop => 2, ddr_clkok => 2));
 
 	constant ddrclk    : ddrMHz := ddr500MHz;
-	constant ddr_tcp   : natural := 
+	constant ctlr_tcp   : natural := 
 		(1000*natural(sys_per)*ddrpll_tab(ddrclk).ddr_clki*ddrpll_tab(ddrclk).ddr_clkok)/
-		(ddrpll_tab(ddrclk).ddr_clkfb*ddrpll_tab(ddrclk).ddr_clkop);
+		(ddrpll_tab(ddrclk).ddr_clkfb);
+	constant ddrphy_tcp   : natural := 
+		(1000*natural(sys_per)*ddrpll_tab(ddrclk).ddr_clki)/
+		(ddrpll_tab(ddrclk).ddr_clkfb);
 
-	constant fpga         : natural := spartan3;
-	constant mark         : natural := M7E;
+	constant fpga         : natural := LatticeECP3;
+	constant mark         : natural := M15E;
 
 	constant bank_size   : natural := 3;
 	constant addr_size   : natural := 13;
@@ -83,8 +86,6 @@ architecture ddr of ecp3versa is
 	constant data_gear   : natural := 4;
 	constant data_phases : natural := data_gear;
 	constant data_edges  : natural := 1;
-
-	signal ddrsys_rst    : std_logic;
 
 	signal dmactlr_len   : std_logic_vector(25-1 downto 0);
 	signal dmactlr_addr  : std_logic_vector(25-1 downto 0);
@@ -274,7 +275,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
+		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(3-1 downto 0)=(3-1 downto 0 => '0'));
 
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
@@ -337,7 +338,7 @@ begin
 	generic map (
 		fpga         => fpga,
 		mark         => mark,
-		tcp          => ddr_tcp,
+		tcp          => ctlr_tcp,
 
 		bank_size   => ddr3_b'length,
 		addr_size   => ddr3_a'length,
@@ -373,7 +374,7 @@ begin
 	generic map (
 		fpga         => fpga,
 		mark         => mark,
-		tcp          => ddr_tcp,
+		tcp          => ctlr_tcp,
 
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
@@ -393,7 +394,7 @@ begin
 		ctlr_wr      => "101",
 		ctlr_rtt     => "001",
 
-		ctlr_rst     => ctlr_rst,
+		ctlr_rst     => ddr_rst,
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_inirdy  => ctlr_inirdy,
 
@@ -446,7 +447,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ecp3_ddrphy
 	generic map (
-		tCP       => ddr_tcp,
+		tCP       => ddrphy_tcp,
 		cmmd_gear => cmmd_gear,
 		bank_size => ddr3_b'length,
 		addr_size => ddr3_a'length,

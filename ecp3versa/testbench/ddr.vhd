@@ -145,7 +145,7 @@ architecture ecp3versa_ddr of testbench is
 	signal mii_rxc  : std_logic;
 
 	constant sin_data  : std_logic_vector := 
-		  x"170200007f"
+		  x"1602000180"
 		& x"18ff"
 		& x"123456789abcdef123456789abcdef12"
 		& x"23456789abcdef123456789abcdef123"
@@ -163,7 +163,7 @@ architecture ecp3versa_ddr of testbench is
 		& x"ef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1"
 		& x"123456789abcdef123456789abcdef12"
-		& x"1602000180"
+		& x"170200007f"
 		& x"ffff"
 --		& x"170200007f"
 --		& x"18ff"
@@ -189,13 +189,15 @@ architecture ecp3versa_ddr of testbench is
 
 begin
 
-	rst    <= '1', '0' after (1 us+82.5 us);
+	rst    <= '1', '0' after (1 us+ 0.5 ns);
 	rstn  <= not rst;
 
-	xtal   <= not xtal after 20 ns;
+	xtal   <= not xtal after 5 ns;
 
 	phy1_125clk <= not phy1_125clk after 4 ns;
 	mii_rxc     <= phy1_125clk;
+
+	mii_treq <= '0', '1' after 8 us;
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
