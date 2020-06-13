@@ -182,6 +182,12 @@ HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ff__xilinx = $(LIB_HDL4FPGA)/ff/xilinx.dat
 HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
+HDL4FPGA__ecp3_ddrphy__lscc = $(LIB_HDL4FPGA)/ecp3_ddrphy/lscc.dat
+HDL4FPGA__ecp3_ddrphy = $(LIB_HDL4FPGA)/ecp3_ddrphy/_primary.dat
+HDL4FPGA__ecp3_ddrdqphy__lscc = $(LIB_HDL4FPGA)/ecp3_ddrdqphy/lscc.dat
+HDL4FPGA__ecp3_ddrdqphy = $(LIB_HDL4FPGA)/ecp3_ddrdqphy/_primary.dat
+HDL4FPGA__ecp3_ddrbaphy__lscc = $(LIB_HDL4FPGA)/ecp3_ddrbaphy/lscc.dat
+HDL4FPGA__ecp3_ddrbaphy = $(LIB_HDL4FPGA)/ecp3_ddrbaphy/_primary.dat
 HDL4FPGA__dtos__def = $(LIB_HDL4FPGA)/dtos/def.dat
 HDL4FPGA__dtos = $(LIB_HDL4FPGA)/dtos/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
@@ -443,6 +449,12 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ff__xilinx) \
     $(HDL4FPGA__ff) \
+    $(HDL4FPGA__ecp3_ddrphy__lscc) \
+    $(HDL4FPGA__ecp3_ddrphy) \
+    $(HDL4FPGA__ecp3_ddrdqphy__lscc) \
+    $(HDL4FPGA__ecp3_ddrdqphy) \
+    $(HDL4FPGA__ecp3_ddrbaphy__lscc) \
+    $(HDL4FPGA__ecp3_ddrbaphy) \
     $(HDL4FPGA__dtos__def) \
     $(HDL4FPGA__dtos) \
     $(HDL4FPGA__draw_vline__def) \
@@ -973,6 +985,40 @@ $(HDL4FPGA__dtos__def) : ../common/dtos.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dtos.vhd
+
+$(HDL4FPGA__ecp3_ddrbaphy) \
+$(HDL4FPGA__ecp3_ddrbaphy__lscc) : ../latticesemi/ecp3/ecp3_ddrbaphy.vhd \
+		$(ECP3__components) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ecp3_ddrbaphy.vhd
+
+$(HDL4FPGA__ecp3_ddrdqphy) \
+$(HDL4FPGA__ecp3_ddrdqphy__lscc) : ../latticesemi/ecp3/ecp3_ddrdqphy.vhd \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__adjdqs) \
+		$(ECP3__components) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ecp3_ddrdqphy.vhd
+
+$(HDL4FPGA__ecp3_ddrphy) \
+$(HDL4FPGA__ecp3_ddrphy__lscc) : ../latticesemi/ecp3/ecp3_ddrphy.vhd \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__ecp3_ddrdqphy) \
+		$(HDL4FPGA__ff) \
+		$(HDL4FPGA__aff) \
+		$(HDL4FPGA__clk_start) \
+		$(HDL4FPGA__ecp3_ddrbaphy) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(ECP3__components) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ecp3_ddrphy.vhd
 
 $(HDL4FPGA__fifo) \
 $(HDL4FPGA__fifo__def) : ../common/fifo.vhd \

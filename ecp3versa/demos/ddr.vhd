@@ -444,7 +444,7 @@ begin
 	ddrphy_we  <= (others => ctlrphy_we);
 	ddrphy_odt <= (others => ctlrphy_odt);
 
-	ddrphy_e : entity hdl4fpga.ddrphy
+	ddrphy_e : entity hdl4fpga.ecp3_ddrphy
 	generic map (
 		tCP       => ddr_tcp,
 		cmmd_gear => cmmd_gear,

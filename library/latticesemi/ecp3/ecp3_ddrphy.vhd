@@ -31,7 +31,7 @@ use ecp3.components.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrphy is
+entity ecp3_ddrphy is
 	generic (
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
@@ -86,10 +86,7 @@ entity ddrphy is
 		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
-library hdl4fpga;
-use hdl4fpga.std.all;
-
-architecture ecp3 of ddrphy is
+architecture lscc of ecp3_ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -246,7 +243,7 @@ architecture ecp3 of ddrphy is
 
 begin
 
-	ddr3phy_i : entity hdl4fpga.ddrbaphy
+	ddr3phy_i : entity hdl4fpga.ecp3_ddrbaphy
 	generic map (
 		cmmd_gear => cmmd_gear,
 		bank_size => bank_size,
@@ -394,7 +391,7 @@ begin
 	wlreq <= sys_wlreq;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
-		ddr3phy_i : entity hdl4fpga.ddrdqphy
+		ddr3phy_i : entity hdl4fpga.ecp3_ddrdqphy
 		generic map (
 			tcp => tcp,
 			data_gear => data_gear,

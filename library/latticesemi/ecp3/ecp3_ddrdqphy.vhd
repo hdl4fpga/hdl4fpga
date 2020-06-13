@@ -25,7 +25,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ddrdqphy is
+library ecp3;
+use ecp3.components.all;
+
+entity ecp3_ddrdqphy is
 	generic (
 		tcp : natural;
 		DATA_GEAR : natural;
@@ -63,12 +66,9 @@ entity ddrdqphy is
 
 end;
 
-library ecp3;
-use ecp3.components.all;
-
 library hdl4fpga;
 
-architecture ecp3 of ddrdqphy is
+architecture lscc of ecp3_ddrdqphy is
 
 	signal idqs_eclk  : std_logic;
 	signal dqsw  : std_logic;

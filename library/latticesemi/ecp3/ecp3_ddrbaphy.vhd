@@ -24,7 +24,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddrbaphy is
+library ecp3;
+use ecp3.components.all;
+
+entity ecp3_ddrbaphy is
 	generic (
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
@@ -55,10 +58,7 @@ entity ddrbaphy is
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
-library ecp3;
-use ecp3.components.all;
-
-architecture ecp3 of ddrbaphy is
+architecture lscc of ecp3_ddrbaphy is
 
 	signal dqsi_delay : std_logic;
 	signal idqs_eclk  : std_logic;
