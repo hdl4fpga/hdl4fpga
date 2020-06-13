@@ -27,19 +27,14 @@ use hdl4fpga.std.all;
 architecture ecp3versa_ddr of testbench is
 
 	signal rst    : std_logic;
-	signal rst_n : std_logic;
-
+	signal rstn   : std_logic;
 	signal xtal   : std_logic := '0';
-	signal xtal_n : std_logic := '0';
-	signal xtal_p : std_logic := '0';
 
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 13;
 	constant cols_bits  : natural := 10;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
-	constant timer_dll  : natural := 9;
-	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
 	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
@@ -146,64 +141,58 @@ architecture ecp3versa_ddr of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal mii_rxd  : std_logic_vector(0 to 8-1);
 	signal mii_rxc  : std_logic;
 
-	constant uart_data  : std_logic_vector := 
-		x"0000" & 
-		x"1602_5c00_5c00_5c00" &
-		x"0000" &
-		x"18ff" & 
-		x"123456789abcdef123456789abcdef12" &
-		x"23456789abcdef123456789abcdef123" &
-		x"3456789abcdef123456789abcdef1234" &
-		x"456789abcdef123456789abcdef12345" &
-		x"56789abcdef123456789abcdef123456" &
-		x"6789abcdef123456789abcdef1234567" &
-		x"789abcdef123456789abcdef12345678" &
-		x"89abcdef123456789abcdef123456789" &
-		x"9abcdef123456789abcdef123456789a" &
-		x"abcdef123456789abcdef123456789ab" &
-		x"bcdef123456789abcdef123456789abc" &
-		x"cdef123456789abcdef123456789abcd" &
-		x"def123456789abcdef123456789abcde" &
-		x"ef123456789abcdef123456789abcdef" &
-		x"f123456789abcdef123456789abcdef1" &
-		x"123456789abcdef123456789abcdef12" &
-		x"0000" & 
-		x"1702_5c00_5c00_7f" &
-		x"0000"; -- &
---		x"18ff"& 
---		x"1234ffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffaabb" &
---		x"ccddffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffff6789" &
---		x"0000" &
---		x"1602_5c00_5c00_5c00" & 
---		x"0000" & 
---		x"1702_5c00_5c00_7f" &
---		x"0000";
+	constant sin_data  : std_logic_vector := 
+		  x"170200007f"
+		& x"18ff"
+		& x"123456789abcdef123456789abcdef12"
+		& x"23456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234"
+		& x"456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef123456"
+		& x"6789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef12345678"
+		& x"89abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789a"
+		& x"abcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abc"
+		& x"cdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcde"
+		& x"ef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1"
+		& x"123456789abcdef123456789abcdef12"
+		& x"1602000180"
+		& x"ffff"
+--		& x"170200007f"
+--		& x"18ff"
+--		& x"1234ffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffaabb"
+--		& x"ccddffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffffffff"
+--		& x"ffffffffffffffffffffffffffff6789"
+--		& x"1602000000"
+--		& x"ffff"
+		;
 
 begin
 
 	rst    <= '1', '0' after (1 us+82.5 us);
-	rst_n  <= not rst;
+	rstn  <= not rst;
 
 	xtal   <= not xtal after 20 ns;
-	xtal_p <= not xtal after 6.6 ns;
-	xtal_n <=     xtal after 6.6 ns;
 
 	phy1_125clk <= not phy1_125clk after 4 ns;
 	mii_rxc     <= phy1_125clk;
@@ -230,51 +219,10 @@ begin
 				x"0044dea9"         &    -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
-				x"000000"
-				& x"170200007f"
-				& x"18ff"
-				& x"123456789abcdef123456789abcdef12"
-				& x"23456789abcdef123456789abcdef123"
-				& x"3456789abcdef123456789abcdef1234"
-				& x"456789abcdef123456789abcdef12345"
-				& x"56789abcdef123456789abcdef123456"
-				& x"6789abcdef123456789abcdef1234567"
-				& x"789abcdef123456789abcdef12345678"
-				& x"89abcdef123456789abcdef123456789"
-				& x"9abcdef123456789abcdef123456789a"
-				& x"abcdef123456789abcdef123456789ab"
-				& x"bcdef123456789abcdef123456789abc"
-				& x"cdef123456789abcdef123456789abcd"
-				& x"def123456789abcdef123456789abcde"
-				& x"ef123456789abcdef123456789abcdef"
-				& x"f123456789abcdef123456789abcdef1"
-				& x"123456789abcdef123456789abcdef12"
-				& x"1602000180"
-				& x"ffff"
---				& x"170200007f"
---				& x"18ff"
---				& x"1234ffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffaabb"
---				& x"ccddffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffff6789"
---				& x"1602000000"
---				& x"ffff"
-			)   &
+				x"000000"           &
+				sin_data)           &
 			x"00000000"
-		,8)
-	)
+		,8))
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
@@ -284,8 +232,8 @@ begin
 
 	du_e : ecp3versa
 	port map (
-		clk    => xtal,
-		fpga_gsrn => rst_n,
+		clk       => xtal,
+		fpga_gsrn => rstn,
 
 		phy1_125clk => phy1_125clk,
 		phy1_rxc   => mii_rxc,
@@ -320,36 +268,36 @@ begin
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
 
-	dqs_n <= not dqs_p;
+	dqs_n     <= not dqs_p;
 	ddr_clk_p <=     ddr_clk;
 	ddr_clk_n <= not ddr_clk;
 
 	mt_u : ddr3_model
 	port map (
-		rst_n => rst_n,
-		Ck    => ddr_clk_p,
-		Ck_n  => ddr_clk_n,
-		Cke   => cke,
-		Cs_n  => cs_n,
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba,
-		Addr  => addr,
-		Dm_tdqs  => dm,
-		Dq    => dq,
-		Dqs   => dqs_p,
-		Dqs_n => dqs_n,
-		tdqs_n => tdqs_n,
-		Odt   => odt);
+		rst_n   => rst_n,
+		Ck      => ddr_clk_p,
+		Ck_n    => ddr_clk_n,
+		Cke     => cke,
+		Cs_n    => cs_n,
+		Ras_n   => ras_n,
+		Cas_n   => cas_n,
+		We_n    => we_n,
+		Ba      => ba,
+		Addr    => addr,
+		Dm_tdqs => dm,
+		Dq      => dq,
+		Dqs     => dqs_p,
+		Dqs_n   => dqs_n,
+		tdqs_n  => tdqs_n,
+		Odt     => odt);
 end;
 
 library micron;
 
 configuration ecp3versa_structure_md of testbench is
-	for scope 
+	for ecp3versa_ddr 
 		for all: ecp3versa 
-			use entity hdl4fpga.ecp3versa(structure);
+			use entity work.ecp3versa(structure);
 		end for;
 
 		for all : ddr3_model 
@@ -378,9 +326,9 @@ end;
 library micron;
 
 configuration ecp3versa_scope_md of testbench is
-	for scope 
+	for ecp3versa_ddr 
 		for all: ecp3versa
-			use entity hdl4fpga.ecp3versa(scope);
+			use entity work.ecp3versa(ddr);
 		end for;
 
 		for all: ddr3_model 
