@@ -197,11 +197,7 @@ architecture registered of ddr_pgm is
 	signal pgm_ras  : std_logic;
 	signal pgm_cas  : std_logic;
 
-
 	signal calibrating : std_logic;
-
---	attribute fsm_encoding : string;
---	attribute fsm_encoding of ddr_pgm_pc : signal is "compact";
 
 begin
 
