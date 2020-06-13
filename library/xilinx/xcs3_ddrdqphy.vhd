@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity ddrdqphy is
+entity xcs3_ddrdqphy is
 	generic (
 		rgtr_dout : boolean;
 		loopback    : boolean;
@@ -64,7 +64,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture virtex of ddrdqphy is
+architecture xlnx of xcs3_ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate

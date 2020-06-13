@@ -325,7 +325,7 @@ end;
 
 library micron;
 
-configuration ecp3versa_scope_md of testbench is
+configuration ecp3versa_ddr_md of testbench is
 	for ecp3versa_ddr 
 		for all: ecp3versa
 			use entity work.ecp3versa(ddr);

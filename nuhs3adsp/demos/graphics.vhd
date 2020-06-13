@@ -627,7 +627,7 @@ begin
 		phy_dqso     => ddrphy_dqso,
 		phy_dqst     => ddrphy_dqst);
 
-	ddrphy_e : entity hdl4fpga.ddrphy
+	ddrphy_e : entity hdl4fpga.xcs3_ddrphy
 	generic map (
 		gate_delay  => 2,
 		loopback    => true,

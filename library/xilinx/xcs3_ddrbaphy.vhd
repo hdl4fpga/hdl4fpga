@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddrbaphy is
+entity xcs3_ddrbaphy is
 	generic (
 		DATA_EDGE  : string  := "OPPOSITE_EDGE";
 		GEAR       : natural := 2;
@@ -57,7 +57,7 @@ end;
 
 library hdl4fpga;
 
-architecture virtex of ddrbaphy is
+architecture xlnx of xcs3_ddrbaphy is
 
 begin
 

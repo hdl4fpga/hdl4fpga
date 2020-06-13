@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrphy is
+entity xcs3_ddrphy is
 	generic (
 		loopback    : boolean;
 		iddron      : boolean   := false;
@@ -97,7 +97,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture virtex of ddrphy is
+architecture xnlx of xcs3_ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -270,7 +270,7 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	ddrbaphy_i : entity hdl4fpga.ddrbaphy
+	ddrbaphy_i : entity hdl4fpga.xcs3_ddrbaphy
 	generic map (
 		GEAR      => CMMD_GEAR,
 		bank_size => bank_size,
@@ -311,7 +311,7 @@ begin
 		signal dqso : std_logic_vector(0 to 1);
 	begin
 
-		ddrdqphy_i : entity hdl4fpga.ddrdqphy
+		ddrdqphy_i : entity hdl4fpga.xcs3_ddrdqphy
 		generic map (
 			rgtr_dout => rgtr_dout,
 			loopback => loopback,
