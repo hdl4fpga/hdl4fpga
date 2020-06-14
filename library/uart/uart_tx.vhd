@@ -20,6 +20,7 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -38,8 +39,7 @@ entity uart_tx is
 		uart_trdy : out std_logic;
 		uart_txdv : in  std_logic;
 		uart_txd  : in  std_logic_vector(8-1 downto 0));
-end uart_tx;
- 
+end;
  
 architecture def of uart_tx is
  

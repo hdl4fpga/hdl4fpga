@@ -11,8 +11,8 @@ LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
-ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
+ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
 IEEE__std_logic_unsigned = $(LIB_IEEE)/std_logic_unsigned/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
@@ -40,8 +40,6 @@ HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
 HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
 HDL4FPGA__uart_tx__def = $(LIB_HDL4FPGA)/uart_tx/def.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
-HDL4FPGA__uart_rx_f32c__behavioral = $(LIB_HDL4FPGA)/uart_rx_f32c/behavioral.dat
-HDL4FPGA__uart_rx_f32c = $(LIB_HDL4FPGA)/uart_rx_f32c/_primary.dat
 HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
@@ -241,9 +239,8 @@ HDL4FPGA__ddr_ctlr__mix = $(LIB_HDL4FPGA)/ddr_ctlr/mix.dat
 HDL4FPGA__ddr_ctlr = $(LIB_HDL4FPGA)/ddr_ctlr/_primary.dat
 HDL4FPGA__ddr3iob__ecp3 = $(LIB_HDL4FPGA)/ddr3iob/ecp3.dat
 HDL4FPGA__ddr3iob = $(LIB_HDL4FPGA)/ddr3iob/_primary.dat
-HDL4FPGA__dbram__lttsm = $(LIB_HDL4FPGA)/dbram/lttsm.dat
-HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
 HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
+HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
 HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
 HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
 HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
@@ -307,8 +304,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__vector) \
     $(HDL4FPGA__uart_tx__def) \
     $(HDL4FPGA__uart_tx) \
-    $(HDL4FPGA__uart_rx_f32c__behavioral) \
-    $(HDL4FPGA__uart_rx_f32c) \
     $(HDL4FPGA__uart_rx__def) \
     $(HDL4FPGA__uart_rx) \
     $(HDL4FPGA__tmds_encoder__behavioral) \
@@ -508,9 +503,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ddr_ctlr) \
     $(HDL4FPGA__ddr3iob__ecp3) \
     $(HDL4FPGA__ddr3iob) \
-    $(HDL4FPGA__dbram__lttsm) \
-    $(HDL4FPGA__dbram__lscc) \
     $(HDL4FPGA__dbram__xilinx) \
+    $(HDL4FPGA__dbram__lscc) \
     $(HDL4FPGA__dbram) \
     $(HDL4FPGA__dbdbbl__def) \
     $(HDL4FPGA__dbdbbl) \
@@ -725,28 +719,20 @@ $(HDL4FPGA__dbdbbl__def) : ../common/dbdbbl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../common/dbdbbl.vhd
 
 $(HDL4FPGA__dbram) \
+$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(ECP3__components)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
+
 $(HDL4FPGA__dbram__xilinx) : ../xilinx/dbram.vhd \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__dbram) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dbram.vhd
-
-$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__dbram) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
-
-$(HDL4FPGA__dbram__lttsm) : ../latticesemi/ecp3/dbram.vhd \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__dbram) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
 
 $(HDL4FPGA__ddr3iob) \
 $(HDL4FPGA__ddr3iob__ecp3) : ../latticesemi/ecp3/ddr3iob.vhd \
@@ -1818,16 +1804,6 @@ $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../uart/uart_rx.vhd
-
-$(HDL4FPGA__uart_rx_f32c) \
-$(HDL4FPGA__uart_rx_f32c__behavioral) : ../uart/uart_rx_f32c.vhd \
-		$(IEEE__math_real) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_arith) \
-		$(IEEE__std_logic_unsigned) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../uart/uart_rx_f32c.vhd
 
 $(HDL4FPGA__uart_tx) \
 $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \

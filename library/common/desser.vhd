@@ -46,8 +46,8 @@ begin
 		word2byte(reverse(reverse(des_data), ser_data'length), std_logic_vector(cntr), ser_data'length) when des_data'ascending else
 		word2byte(des_data, std_logic_vector(cntr), ser_data'length);
 
-	ser_irdy <= des_irdy or setif(cntr/=0);
-	des_trdy <= setif(cntr=des_data'length/ser_data'length-1);
+	ser_irdy <= des_irdy or setif(cntr/=0 and des_data'length/=ser_data'length);
+	des_trdy <= setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length);
 
 end;
 
