@@ -158,15 +158,6 @@
         <Source name="../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/latticesemi/ecp3/ddrbaphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/latticesemi/ecp3/ddrdqphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/latticesemi/ecp3/ddrphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/latticesemi/ecp3/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -174,6 +165,15 @@
             <Options/>
         </Source>
         <Source name="../../library/common/fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ecp3_ddrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ecp3_ddrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ecp3_ddrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

@@ -197,7 +197,7 @@ begin
 	phy1_125clk <= not phy1_125clk after 4 ns;
 	mii_rxc     <= phy1_125clk;
 
-	mii_treq <= '0', '1' after 8 us;
+	mii_treq <= '0', '1' after 704 us;
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (

@@ -243,7 +243,7 @@ architecture lscc of ecp3_ddrphy is
 
 begin
 
-	ddr3phy_i : entity hdl4fpga.ecp3_ddrbaphy
+	ddr3baphy_i : entity hdl4fpga.ecp3_ddrbaphy
 	generic map (
 		cmmd_gear => cmmd_gear,
 		bank_size => bank_size,

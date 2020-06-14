@@ -280,7 +280,7 @@ begin
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => (8*2048)/ctlr_di'length,
+			size           => (8*4096)/ctlr_di'length,
 			synchronous_rddata => true,
 			gray_code      => false,
 			overflow_check => false)
@@ -321,14 +321,17 @@ begin
 	begin
 		if rising_edge(ctlr_clk) then
 			dmavideo_req <= dmacfgvideo_rdy;
+			dmavideo_req <= '0';
 			dmaio_req    <= dmacfgio_rdy;
 		end if;
 	end process;
 
-	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+--	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
 
-	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+--	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+	dev_req <= (0 => '0', 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
@@ -387,16 +390,19 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size)
 	port map (
+		ctlr_rst     => ddr_rst,
+		ctlr_clks(0) => ctlr_clk,
+
 		ctlr_bl      => "000",
 		ctlr_cl      => "100",
 
-		ctlr_cwl     => "000",
+		ctlr_cwl     => "001",
 		ctlr_wr      => "101",
 		ctlr_rtt     => "001",
 
-		ctlr_rst     => ddr_rst,
-		ctlr_clks(0) => ctlr_clk,
 		ctlr_inirdy  => ctlr_inirdy,
+		ctlr_wlreq  => ctlrphy_wlreq,
+		ctlr_wlrdy  => ctlrphy_wlrdy,
 
 		ctlr_irdy    => ctlr_irdy,
 		ctlr_trdy    => ctlr_trdy,
@@ -470,18 +476,18 @@ begin
 		sys_we    => ddrphy_we,
 		sys_b     => ddrphy_b,
 		sys_a     => ddrphy_a,
-		sys_dqsi  => ctlrphy_dqsi,
+		sys_dqsi  => ctlrphy_dqso,
 		sys_dqst  => ctlrphy_dqst,
-		sys_dqso  => ctlrphy_dqso,
+		sys_dqso  => ctlrphy_dqsi,
 		sys_dmi   => ctlrphy_dmo,
 		sys_dmt   => ctlrphy_dmt,
 		sys_dmo   => ctlrphy_dmi,
-		sys_dqi   => ctlrphy_dqi,
+		sys_dqi   => ctlrphy_dqo,
 		sys_dqt   => ctlrphy_dqt,
-		sys_dqo   => ctlrphy_dqo,
+		sys_dqo   => ctlrphy_dqi,
 		sys_odt   => ddrphy_odt,
-		sys_sti   => ctlrphy_sti,
-		sys_sto   => ctlrphy_sto,
+		sys_sti   => ctlrphy_sto,
+		sys_sto   => ctlrphy_sti,
 		sys_pll   => ddrphy_pll ,
 
 		ddr_rst   => ddr3_rst,
