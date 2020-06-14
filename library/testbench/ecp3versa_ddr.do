@@ -15,7 +15,7 @@ add wave -noupdate -expand -group micron -radix binary /testbench/mt_u/ba
 add wave -noupdate -expand -group micron -radix hexadecimal /testbench/mt_u/addr
 add wave -noupdate -expand -group micron -radix hexadecimal /testbench/mt_u/dq
 add wave -noupdate -expand -group micron /testbench/mt_u/dqs
-add wave -noupdate -expand -group micron /testbench/mt_u/dqs_n
+add wave -noupdate -expand -group micron -expand /testbench/mt_u/dqs_n
 add wave -noupdate -expand -group micron /testbench/mt_u/tdqs_n
 add wave -noupdate -expand -group micron /testbench/mt_u/odt
 add wave -noupdate -divider {New Divider}
@@ -33,6 +33,8 @@ add wave -noupdate /testbench/du_e/ctlr_inirdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/g_ddrphy_b
 add wave -noupdate -radix hexadecimal /testbench/du_e/g_ddrphy_a
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/dmacfg_req
+add wave -noupdate /testbench/du_e/dmacfg_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmaio_len
 add wave -noupdate -radix hexadecimal /testbench/du_e/dmaio_addr
 add wave -noupdate /testbench/du_e/dmaio_dv
@@ -85,8 +87,8 @@ add wave -noupdate -expand /testbench/du_e/dmacfg_rdy
 add wave -noupdate -expand /testbench/du_e/dev_req
 add wave -noupdate -expand /testbench/du_e/dev_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 5} {701832297700 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 5} {706720008450 fs} 0} {{Cursor 2} {706724017690 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 239
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -101,4 +103,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {696429250 ps} {705616750 ps}
+WaveRestoreZoom {706712320150 fs} {706735679850 fs}
