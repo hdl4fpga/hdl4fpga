@@ -1878,11 +1878,11 @@ begin
         color          => S_vga_lcd_pixel,
         spi_resn       => oled_resn,
         spi_clk        => oled_clk,
-        --spi_csn        => oled_csn,
+        spi_csn        => oled_csn, -- for 1.54" ST7789
         spi_dc         => oled_dc,
         spi_mosi       => oled_mosi
       );
-      oled_csn <= '1';
+      --oled_csn <= '1'; -- for 1.3" ST7789
     end block;
     end generate;
 
