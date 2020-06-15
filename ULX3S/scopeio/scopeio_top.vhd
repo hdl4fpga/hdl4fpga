@@ -22,7 +22,7 @@ use work.ssd1331_init_pack.all;
 architecture beh of ulx3s is
         constant width    : natural :=  96;
         constant height   : natural :=  64;
-        constant fps      : natural := 100;
+        constant fps      : natural :=  60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
@@ -1830,13 +1830,14 @@ begin
         c_x_size       => 96,
         c_y_size       => 64,
         c_init_seq     => c_ssd1331_init_seq,
-        c_nop          => x"00"
+        c_nop          => x"BC"
       )
       port map
       (
         reset          => not R_btn_debounced(0),
         clk            => vga_clk, -- 25 MHz
         clk_pixel_ena  => '1',
+        clk_spi_ena    => clk_ena_oled,
         vsync          => vga_vsync,
         blank          => vga_blank,
         color          => S_vga_oled_pixel,
