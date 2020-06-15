@@ -221,11 +221,16 @@ architecture ulx3s_ddr of testbench is
 	constant uart_data  : std_logic_vector := escapeddata_stream(data);
 
 	signal uart_clk  : std_logic := '0';
+	signal uart_xtal : time := 1 sec / baudrate / 16;
 	signal uart_sin  : std_logic;
 	signal uart_sout : std_logic;
+	signal uart_rxc  : std_logic := '0';
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+	signal rxc_data  : unsigned(256*8-1 downto 0);
 begin
 
-	rst <= '1', '0' after (1 us+ 203 us);
+	rst <= '1', '0' after (1 ns);
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -263,15 +268,28 @@ begin
 		sdram_dqm  => sdram_dqm,
 		sdram_d    => sdram_dq);
 
+	uart_rxc <= not uart_rxc after uart_xtal / 2;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
-		clk_rate => uart_xtal)
+		clk_rate => (1 sec / uart_xtal))
 	port map (
 		uart_rxc  => uart_rxc,
-		uart_sin  => ftdi_txd,
+		uart_sin  => uart_sout,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
+
+	process (uart_rxc)
+		variable data : unsigned(rxc_data'range);
+	begin
+		if rising_edge(uart_rxc) then
+			if uart_rxdv='1' then
+				data := rxc_data;
+				data(uart_rxd'range) := unsigned(uart_rxd);
+				rxc_data <= data;
+			end if;
+		end if;
+	end process;
 
 	sdr_model_g: mt48lc32m16a2
 	port map (
