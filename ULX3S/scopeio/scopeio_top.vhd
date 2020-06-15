@@ -19,9 +19,9 @@ use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 use work.st7789_init_pack.all;
 
 architecture beh of ulx3s is
-        constant width    : natural := 240;
-        constant height   : natural := 240;
-        constant fps      : natural := 60;
+        constant width    : natural := 640;
+        constant height   : natural := 480;
+        constant fps      : natural :=  60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
@@ -35,9 +35,9 @@ architecture beh of ulx3s is
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -87,9 +87,9 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := false;
+        constant C_dvi_vga:  boolean := true;
         constant C_lvds_vga: boolean := false;
-        constant C_lcd_vga:  boolean := true; -- st7789
+        constant C_lcd_vga:  boolean := false; -- st7789
         constant C_oled_vga: boolean := false; -- ssd1331
         constant C_oled_hex: boolean := false;
 
