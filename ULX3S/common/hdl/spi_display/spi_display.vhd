@@ -1,5 +1,7 @@
 -- VGA to SPI LCD display
--- supports ST7789 and similar displays
+-- supports ST7789, SSD1331 and similar displays
+
+-- SPI output clock is (clk and clk_spi_ena)/2
 
 -- AUTHOR=EMARD
 -- LICENSE=BSD
@@ -31,6 +33,7 @@ port
   reset          : in std_logic; -- clk synchronous
   clk            : in std_logic; -- 1-150 MHz clock
   clk_pixel_ena  : in std_logic := '1'; -- input pixel clock ena, same clk ena from VGA generator module
+  clk_spi_ena    : in std_logic := '1'; -- output SPI clock ena
   vsync, blank   : in std_logic;
   color          : in unsigned(C_color_bits-1 downto 0);
   x              : out unsigned(c_x_bits-1 downto 0);
@@ -93,7 +96,7 @@ begin
 
   process(clk)
   begin
-    if rising_edge(clk) then
+    if rising_edge(clk) and clk_spi_ena = '1' then
       if reset = '1' then
         delay_cnt <= C_delay_cnt_init;
         delay_set <= '0';
