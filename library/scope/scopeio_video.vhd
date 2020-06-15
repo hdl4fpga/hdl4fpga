@@ -106,7 +106,7 @@ architecture beh of scopeio_video is
 	constant sgmntrgtrout_latency : natural := 1;
 	constant sgmntrgtrio_latency  : natural := sgmntrgtrout_latency+sgmntrgtrin_latency;
 	constant segmment_latency     : natural := 5;
-	constant palette_latency      : natural := 3;
+	constant palette_latency      : natural := 2;
 	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
