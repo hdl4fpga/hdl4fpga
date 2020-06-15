@@ -17,16 +17,17 @@ use hdl4fpga.modeline_calculator.all;
 use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 use work.st7789_init_pack.all;
+use work.ssd1331_init_pack.all;
 
 architecture beh of ulx3s is
-        constant width    : natural := 240;
-        constant height   : natural := 240;
-        constant fps      : natural := 60;
+        constant width    : natural :=  96;
+        constant height   : natural :=  64;
+        constant fps      : natural :=  60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
-        --constant layout: display_layout := displaylayout_tab(oled96x64);
-        constant layout: display_layout := displaylayout_tab(lcd240x240);
+        constant layout: display_layout := displaylayout_tab(oled96x64);
+        --constant layout: display_layout := displaylayout_tab(lcd240x240);
         --constant layout: display_layout := displaylayout_tab(lcd480x272seg1);
         --constant layout: display_layout := displaylayout_tab(sd600x16fs);
         --constant layout: display_layout := displaylayout_tab(lcd1280x1024seg4);
@@ -35,9 +36,9 @@ architecture beh of ulx3s is
         constant C_external_sync : std_logic := '0';
         -- GUI pointing device type (enable max 1)
         constant C_mouse_ps2    : boolean := false; -- PS/2 or USB+PS/2 mouse
-        constant C_mouse_usb    : boolean := true; -- USB  or USB+PS/2 mouse
+        constant C_mouse_usb    : boolean := false; -- USB  or USB+PS/2 mouse
         constant C_mouse_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
-        constant C_mouse_host   : boolean := false;  -- serial port for host mouse instead of standard RGTR control
+        constant C_mouse_host   : boolean := true;  -- serial port for host mouse instead of standard RGTR control
         -- serial port type (enable max 1)
 	constant C_origserial   : boolean := false; -- use Miguel's uart receiver (RXD line)
         constant C_extserial    : boolean := true;  -- use Emard's uart receiver (RXD line)
@@ -89,8 +90,8 @@ architecture beh of ulx3s is
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := false;
         constant C_lvds_vga: boolean := false;
-        constant C_lcd_vga:  boolean := true; -- st7789
-        constant C_oled_vga: boolean := false; -- ssd1331
+        constant C_lcd_vga:  boolean := false; -- st7789
+        constant C_oled_vga: boolean := true; -- ssd1331
         constant C_oled_hex: boolean := false;
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -1808,31 +1809,39 @@ begin
 
     G_oled_vga: if C_oled_vga generate
     B_oled_vga: block
-      signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
+      signal S_vga_oled_pixel: std_logic_vector(15 downto 0) := (others => '0');
     begin
-      S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
-      S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
-      S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);
+      S_vga_oled_pixel(15 downto 14) <= vga_rgb(0 to 1);
+      S_vga_oled_pixel(10 downto  9) <= vga_rgb(2 to 3);
+      S_vga_oled_pixel( 4 downto  3) <= vga_rgb(4 to 5);
 
-      oled_vga_inst: entity oled_vga
+      oled_vga_inst: entity work.spi_display
       generic map
       (
-        C_bits => S_vga_oled_pixel'length
+        c_clk_mhz      => pixel_hz/1000000,
+        c_reset_us     => 1,
+        c_color_bits   => 16,
+        c_clk_phase    => '0',
+        c_clk_polarity => '1',
+        c_x_size       => 96,
+        c_y_size       => 64,
+        c_init_seq     => c_ssd1331_init_seq,
+        c_nop          => x"BC"
       )
       port map
       (
-        clk => clk_oled,
-        clken => clk_ena_oled,
-        clk_pixel_ena => '1',
-        hsync => vga_hsync,
-        vsync => vga_vsync,
-        blank => vga_blank,
-        pixel => S_vga_oled_pixel,
-        spi_resn => oled_resn,
-        spi_clk => oled_clk,
-        spi_csn => oled_csn,
-        spi_dc => oled_dc,
-        spi_mosi => oled_mosi
+        reset          => not R_btn_debounced(0),
+        clk            => vga_clk, -- 25 MHz
+        clk_pixel_ena  => '1',
+        clk_spi_ena    => clk_ena_oled, -- clk/ena = 12.5 MHz, clk_spi = clk/ena/2 = 6.25 MHz
+        vsync          => vga_vsync,
+        blank          => vga_blank,
+        color          => S_vga_oled_pixel,
+        spi_resn       => oled_resn,
+        spi_clk        => oled_clk,
+        spi_csn        => oled_csn,
+        spi_dc         => oled_dc,
+        spi_mosi       => oled_mosi
       );
     end block;
     end generate;
@@ -1841,7 +1850,7 @@ begin
     B_lcd_vga: block
       signal R_clk_pixel: std_logic_vector(1 downto 0); -- edge detection
       signal S_clk_pixel_edge: std_logic;
-      signal S_vga_lcd_pixel: unsigned(15 downto 0) := (others => '0');
+      signal S_vga_lcd_pixel: std_logic_vector(15 downto 0) := (others => '0');
     begin
       process(clk_pixel_shift)
       begin
@@ -1878,11 +1887,11 @@ begin
         color          => S_vga_lcd_pixel,
         spi_resn       => oled_resn,
         spi_clk        => oled_clk,
-        spi_csn        => oled_csn, -- for 1.54" ST7789
+        --spi_csn        => oled_csn, -- for 1.54" ST7789
         spi_dc         => oled_dc,
         spi_mosi       => oled_mosi
       );
-      --oled_csn <= '1'; -- for 1.3" ST7789
+      oled_csn <= '1'; -- for 1.3" ST7789
     end block;
     end generate;
 

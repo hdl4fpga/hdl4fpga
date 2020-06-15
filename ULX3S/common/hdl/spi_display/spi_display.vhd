@@ -1,5 +1,7 @@
 -- VGA to SPI LCD display
--- supports ST7789 and similar displays
+-- supports ST7789, SSD1331 and similar displays
+
+-- SPI output clock is (clk and clk_spi_ena)/2
 
 -- AUTHOR=EMARD
 -- LICENSE=BSD
@@ -24,15 +26,16 @@ generic
   c_x_bits       : natural   := 8;      -- integer(ceil(log2(real(c_x_size)))) -- 240->8
   c_y_bits       : natural   := 8;      -- integer(ceil(log2(real(c_y_size)))) -- 240->8
   c_init_seq     : T_spi_display_init_seq;
-  c_nop          : unsigned(7 downto 0) := x"00"   -- NOP command from datasheet
+  c_nop          : std_logic_vector(7 downto 0) := x"00"   -- NOP command from datasheet
 );
 port
 (
   reset          : in std_logic; -- clk synchronous
   clk            : in std_logic; -- 1-150 MHz clock
   clk_pixel_ena  : in std_logic := '1'; -- input pixel clock ena, same clk ena from VGA generator module
+  clk_spi_ena    : in std_logic := '1'; -- output SPI clock ena
   vsync, blank   : in std_logic;
-  color          : in unsigned(C_color_bits-1 downto 0);
+  color          : in std_logic_vector(C_color_bits-1 downto 0);
   x              : out unsigned(c_x_bits-1 downto 0);
   y              : out unsigned(c_y_bits-1 downto 0);
   next_pixel     : out std_logic; -- '1' when x/y changes
@@ -44,7 +47,7 @@ architecture rtl of spi_display is
   constant c_init_index_bits: natural := integer(ceil(log2(real(c_init_seq'length))));
   constant c_init_size: unsigned(c_init_index_bits+3 downto 4) := to_unsigned(c_init_seq'length,c_init_index_bits);
   signal index: unsigned(c_init_index_bits+3 downto 0);
-  signal data: unsigned(7 downto 0) := c_nop;
+  signal data: std_logic_vector(7 downto 0) := c_nop;
   signal dc: std_logic := '1';
   signal byte_toggle: std_logic; -- alternates data byte for 16-bit mode
   signal init: std_logic := '1';
@@ -53,10 +56,10 @@ architecture rtl of spi_display is
   signal delay_cnt: unsigned(C_delay_cnt_init'range) := C_delay_cnt_init;
   signal arg: unsigned(5 downto 0);
   signal delay_set: std_logic := '0';
-  signal last_cmd: unsigned(7 downto 0);
+  signal last_cmd: std_logic_vector(7 downto 0);
   signal resn: std_logic := '0';
   signal clken: std_logic := '0';
-  signal next_byte: unsigned(7 downto 0);
+  signal next_byte: std_logic_vector(7 downto 0);
 
   signal R_x_in      : unsigned(c_x_bits-1 downto 0);
   signal S_x_in_next : unsigned(c_x_bits-1 downto 0);
@@ -65,8 +68,8 @@ architecture rtl of spi_display is
   signal S_y_in_next : unsigned(c_y_bits-1 downto 0);
   signal S_y_in_inc  : unsigned(c_y_bits-1 downto 0);
 
-  signal S_color: unsigned(C_color_bits-1 downto 0);
-  type T_scanline is array (0 to c_x_size-1) of unsigned(C_color_bits-1 downto 0); -- buffer for one scan line
+  signal S_color: std_logic_vector(C_color_bits-1 downto 0);
+  type T_scanline is array (0 to c_x_size-1) of std_logic_vector(C_color_bits-1 downto 0); -- buffer for one scan line
   signal R_scanline: T_scanline;
 begin
   -- track signal's pixel coordinates and buffer one line
@@ -89,11 +92,11 @@ begin
   S_color <= R_scanline(to_integer(x));
 
   -- The next byte in the initialisation sequence
-  next_byte <= unsigned(c_init_seq(to_integer(index(c_init_index_bits+3 downto 4))));
+  next_byte <= c_init_seq(to_integer(index(c_init_index_bits+3 downto 4)));
 
   process(clk)
   begin
-    if rising_edge(clk) then
+    if rising_edge(clk) and clk_spi_ena = '1' then
       if reset = '1' then
         delay_cnt <= C_delay_cnt_init;
         delay_set <= '0';
@@ -121,9 +124,9 @@ begin
               clken <= '0';
               last_cmd <= next_byte;
             elsif arg = 1 then -- numArgs and delay_set
-              num_args <= next_byte(4 downto 0);
+              num_args <= unsigned(next_byte(4 downto 0));
               delay_set <= next_byte(7);
-              if next_byte = 0 then
+              if next_byte = x"00" then
                 arg <= (others => '0'); -- No args or delay
               end if;
               data <= last_cmd;
@@ -136,7 +139,7 @@ begin
                 arg <= (others => '0');
               end if;
             elsif delay_set = '1' then -- delay
-              delay_cnt <= to_unsigned(c_clk_mhz,delay_cnt'length) sll to_integer(next_byte(4 downto 0)); -- shift left 2^n us delay
+              delay_cnt <= to_unsigned(c_clk_mhz,delay_cnt'length) sll to_integer(unsigned(next_byte(4 downto 0))); -- shift left 2^n us delay
               data <= c_nop;
               clken <= '0';
               delay_set <= '0';

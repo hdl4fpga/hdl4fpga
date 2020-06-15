@@ -54,25 +54,34 @@ package body modeline_calculator is
 
   function F_find_next_f(f_minimal, f_wanted: natural)
     return natural is
-    begin
-      if f_wanted < f_minimal then
-        for fx in C_possible_freqs'range loop
-          if C_possible_freqs(fx)>f_minimal then
-            return C_possible_freqs(fx);
-          end if;
-        end loop;
-        -- TODO if we are here then error
-      end if;
-      return f_wanted;
-    end F_find_next_f;
+  begin
+    if f_wanted < f_minimal then
+      for fx in C_possible_freqs'range loop
+        if C_possible_freqs(fx)>f_minimal then
+          return C_possible_freqs(fx);
+        end if;
+      end loop;
+      -- TODO if we are here then error
+    end if;
+    return f_wanted;
+  end F_find_next_f;
+
+  function F_max(x,y: integer)
+    return integer is
+  begin
+    if x > y then
+      return x;
+    end if;
+    return y;
+  end F_max;
 
   -- by default, call this function with pixel_f_wanted=0
   -- if pixel_f_wanted is less than minimal required for f,
   -- then it will find first highest pixel_f from C_possible_freqs
   function F_video_timing(x,y,f,pixel_f_wanted: natural)
     return T_video_timing is
-      constant xminblank   : natural := x/64; -- initial estimate
-      constant yminblank   : natural := y/64; -- for minimal blank space
+      constant xminblank   : natural := F_max(x/64,3); -- initial estimate
+      constant yminblank   : natural := F_max(y/64,3); -- for minimal blank space
       constant min_pixel_f : natural := f*(x+xminblank)*(y+yminblank);
       constant pixel_f     : natural := F_find_next_f(min_pixel_f,pixel_f_wanted);
       constant yframe      : natural := y+yminblank;
