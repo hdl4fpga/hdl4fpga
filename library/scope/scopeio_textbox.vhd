@@ -67,6 +67,7 @@ end;
 architecture def of scopeio_textbox is
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	constant division_bits : natural := unsigned_num_bits(grid_divisionsize(layout)-1);
 	constant cgaadapter_latency : natural := 4;
 
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
@@ -398,10 +399,10 @@ begin
 				 	
 		bcd_expvalue <= wirebus(integer_vector'(
 			0, 0, 0, 0,
-			hz_exp-5,
+			hz_exp-division_bits,
 			hz_exp,
-			tgr_exp-5,
-			vt_exp-5,
+			tgr_exp-division_bits,
+			vt_exp-division_bits,
 			vt_exp),
 			cgabcd_frm);
 				 	
