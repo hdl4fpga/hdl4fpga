@@ -17,16 +17,17 @@ use hdl4fpga.modeline_calculator.all;
 use hdl4fpga.usbh_setup_pack.all; -- for HID report length
 
 use work.st7789_init_pack.all;
+use work.ssd1331_init_pack.all;
 
 architecture beh of ulx3s is
-        constant width    : natural := 640;
-        constant height   : natural := 480;
-        constant fps      : natural :=  60;
+        constant width    : natural :=  96;
+        constant height   : natural :=  64;
+        constant fps      : natural := 100;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
-        --constant layout: display_layout := displaylayout_tab(oled96x64);
-        constant layout: display_layout := displaylayout_tab(lcd240x240);
+        constant layout: display_layout := displaylayout_tab(oled96x64);
+        --constant layout: display_layout := displaylayout_tab(lcd240x240);
         --constant layout: display_layout := displaylayout_tab(lcd480x272seg1);
         --constant layout: display_layout := displaylayout_tab(sd600x16fs);
         --constant layout: display_layout := displaylayout_tab(lcd1280x1024seg4);
@@ -87,10 +88,10 @@ architecture beh of ulx3s is
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
 	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := true;
+        constant C_dvi_vga:  boolean := false;
         constant C_lvds_vga: boolean := false;
         constant C_lcd_vga:  boolean := false; -- st7789
-        constant C_oled_vga: boolean := false; -- ssd1331
+        constant C_oled_vga: boolean := true; -- ssd1331
         constant C_oled_hex: boolean := false;
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -1808,32 +1809,64 @@ begin
 
     G_oled_vga: if C_oled_vga generate
     B_oled_vga: block
-      signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
+      --signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
+      signal S_vga_oled_pixel: unsigned(15 downto 0) := (others => '0');
     begin
-      S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
-      S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
-      S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);
+      --S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
+      --S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
+      --S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);
+      S_vga_oled_pixel(15 downto 14) <= vga_rgb(0 to 1);
+      S_vga_oled_pixel(10 downto  9) <= vga_rgb(2 to 3);
+      S_vga_oled_pixel( 4 downto  3) <= vga_rgb(4 to 5);
 
-      oled_vga_inst: entity oled_vga
+      oled_vga_inst: entity work.spi_display
       generic map
       (
-        C_bits => S_vga_oled_pixel'length
+        c_clk_mhz      => pixel_hz/1000000,
+        c_reset_us     => 1,
+        c_color_bits   => 16,
+        c_clk_phase    => '0',
+        c_clk_polarity => '1',
+        c_x_size       => 96,
+        c_y_size       => 64,
+        c_init_seq     => c_ssd1331_init_seq,
+        c_nop          => x"00"
       )
       port map
       (
-        clk => clk_oled,
-        clken => clk_ena_oled,
-        clk_pixel_ena => '1',
-        hsync => vga_hsync,
-        vsync => vga_vsync,
-        blank => vga_blank,
-        pixel => S_vga_oled_pixel,
-        spi_resn => oled_resn,
-        spi_clk => oled_clk,
-        spi_csn => oled_csn,
-        spi_dc => oled_dc,
-        spi_mosi => oled_mosi
+        reset          => not R_btn_debounced(0),
+        clk            => vga_clk, -- 25 MHz
+        clk_pixel_ena  => '1',
+        vsync          => vga_vsync,
+        blank          => vga_blank,
+        color          => S_vga_oled_pixel,
+        spi_resn       => oled_resn,
+        spi_clk        => oled_clk,
+        spi_csn        => oled_csn, -- for 1.54" ST7789
+        spi_dc         => oled_dc,
+        spi_mosi       => oled_mosi
       );
+
+--      oled_vga_inst: entity oled_vga
+--      generic map
+--      (
+--        C_bits => S_vga_oled_pixel'length
+--      )
+--      port map
+--      (
+--        clk => clk_oled,
+--        clken => clk_ena_oled,
+--        clk_pixel_ena => '1',
+--        hsync => vga_hsync,
+--        vsync => vga_vsync,
+--        blank => vga_blank,
+--        pixel => S_vga_oled_pixel,
+--        spi_resn => oled_resn,
+--        spi_clk => oled_clk,
+--        spi_csn => oled_csn,
+--        spi_dc => oled_dc,
+--        spi_mosi => oled_mosi
+--      );
     end block;
     end generate;
 

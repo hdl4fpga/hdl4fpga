@@ -16,6 +16,7 @@ VHDL_FILES = \
   ../common/hdl/spi_display/spi_display.vhd \
   ../common/hdl/spi_display/spi_display_init_pack.vhd \
   ../common/hdl/spi_display/st7789_init_pack.vhd \
+  ../common/hdl/spi_display/ssd1331_init_pack.vhd \
   ../common/hdl/adc/max1112x_reader.vhd \
   ../common/hdl/adc/max1112x_init_pack.vhd \
 
