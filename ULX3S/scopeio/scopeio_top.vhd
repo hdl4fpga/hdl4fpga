@@ -20,14 +20,14 @@ use work.st7789_init_pack.all;
 use work.ssd1331_init_pack.all;
 
 architecture beh of ulx3s is
-        constant width    : natural := 240;
-        constant height   : natural := 240;
+        constant width    : natural :=  96;
+        constant height   : natural :=  64;
         constant fps      : natural :=  60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
-        --constant layout: display_layout := displaylayout_tab(oled96x64);
-        constant layout: display_layout := displaylayout_tab(lcd240x240);
+        constant layout: display_layout := displaylayout_tab(oled96x64);
+        --constant layout: display_layout := displaylayout_tab(lcd240x240);
         --constant layout: display_layout := displaylayout_tab(lcd480x272seg1);
         --constant layout: display_layout := displaylayout_tab(sd600x16fs);
         --constant layout: display_layout := displaylayout_tab(lcd1280x1024seg4);
@@ -90,8 +90,8 @@ architecture beh of ulx3s is
 	-- DVI/LVDS/OLED VGA (enable only 1)
         constant C_dvi_vga:  boolean := false;
         constant C_lvds_vga: boolean := false;
-        constant C_lcd_vga:  boolean := true; -- st7789
-        constant C_oled_vga: boolean := false; -- ssd1331
+        constant C_lcd_vga:  boolean := false; -- st7789
+        constant C_oled_vga: boolean := true; -- ssd1331
         constant C_oled_hex: boolean := false;
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
