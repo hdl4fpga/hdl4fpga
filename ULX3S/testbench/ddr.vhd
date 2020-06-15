@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ulx3s_graphics of testbench is
+architecture ulx3s_ddr of testbench is
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -148,11 +148,54 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 115200_00;
-	constant uart_data  : std_logic_vector := 
-		x"0000" & 
-		x"1602_5c00_5c00_5c00" &
-		x"0000" &
+	function escapeddata_length (
+		constant data   : std_logic_vector)
+		return natural is
+		alias    aux    : std_logic_vector(0 to data'length-1) is data;
+		variable cexpr  : std_logic_vector(0 to 8-1);
+		variable length : natural;
+	begin
+		length := 0;
+		for i in 0 to aux'length/8-1 loop
+			cexpr := aux(i*8 to (i+1)*8-1);
+			case cexpr is
+			when x"5c" | x"00" =>
+				length := length + 1;
+			when others =>
+			end case;
+			length := length + 1;
+		end loop;
+		return length*8;
+	end;
+
+	function escapeddata_stream (
+		constant data   : std_logic_vector)
+		return std_logic_vector is
+		alias    aux    : std_logic_vector(0 to data'length-1) is data;
+		variable cexpr  : std_logic_vector(0 to 8-1);
+		variable ptr    : natural;
+		variable retval : std_logic_vector(0 to escapeddata_length(data)+2*8-1);
+	begin
+		retval(0 to 8-1) := x"00";
+		ptr := 1;
+		for i in 0 to aux'length/8-1 loop
+			cexpr := aux(i*8 to (i+1)*8-1);
+			case cexpr is
+			when x"5c" | x"00" =>
+				retval(ptr*8 to (ptr+1)*8-1) := x"5c";
+				ptr := ptr + 1;
+			when others =>
+			end case;
+			retval(ptr*8 to (ptr+1)*8-1) := aux(i*8 to (i+1)*8-1);
+			ptr := ptr + 1;
+		end loop;
+		retval(ptr*8 to (ptr+1)*8-1) := x"00";
+		return retval;
+	end;
+
+	constant baudrate : natural := 3_000_000;
+	constant data : std_logic_vector := 
+		x"1602000000" &
 		x"18ff" & 
 		x"123456789abcdef123456789abcdef12" &
 		x"23456789abcdef123456789abcdef123" &
@@ -170,32 +213,9 @@ architecture ulx3s_graphics of testbench is
 		x"ef123456789abcdef123456789abcdef" &
 		x"f123456789abcdef123456789abcdef1" &
 		x"123456789abcdef123456789abcdef12" &
-		x"0000" & 
-		x"1702_5c00_5c00_7f" &
-		x"0000"; -- &
---		x"18ff"& 
---		x"1234ffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffaabb" &
---		x"ccddffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffff6789" &
---		x"0000" &
---		x"1602_5c00_5c00_5c00" & 
---		x"0000" & 
---		x"1702_5c00_5c00_7f" &
---		x"0000";
+		x"170200007f";
 
+	constant uart_data  : std_logic_vector := escapeddata_stream(data);
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
@@ -254,8 +274,8 @@ end;
 
 library micron;
 
-configuration ulx3s_structure_md of testbench is
-	for ulx3s_graphics
+configuration ulx3s_ddr_structure_md of testbench is
+	for ulx3s_ddr
 		for all : ulx3s
 			use entity work.ulx3s(structure);
 		end for;
@@ -278,10 +298,10 @@ end;
 
 library micron;
 
-configuration ulx3s_graphics_md of testbench is
-	for ulx3s_graphics
+configuration ulx3s_ddr_md of testbench is
+	for ulx3s_ddr
 		for all : ulx3s
-			use entity work.ulx3s(graphics);
+			use entity work.ulx3s(ddr);
 		end for;
 			for all : mt48lc32m16a2
 			use entity micron.mt48lc32m16a2

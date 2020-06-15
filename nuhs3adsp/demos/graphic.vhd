@@ -34,7 +34,7 @@ use hdl4fpga.videopkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture graphics of nuhs3adsp is
+architecture graphic of nuhs3adsp is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;

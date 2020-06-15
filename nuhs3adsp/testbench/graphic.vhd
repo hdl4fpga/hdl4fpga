@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture nuhs3adsp_graphics of testbench is
+architecture nuhs3adsp_graphic of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
@@ -396,8 +396,8 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_structure_md of testbench is
-	for nuhs3adsp_graphics
+configuration nuhs3adsp_graphic_structure_md of testbench is
+	for nuhs3adsp_graphic
 		for all : nuhs3adsp
 			use entity work.nuhs3adsp(structure);
 		end for;
@@ -422,10 +422,10 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_graphics_md of testbench is
-	for nuhs3adsp_graphics
+configuration nuhs3adsp_graphic_md of testbench is
+	for nuhs3adsp_graphic
 		for all : nuhs3adsp
-			use entity work.nuhs3adsp(graphics);
+			use entity work.nuhs3adsp(graphic);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model
