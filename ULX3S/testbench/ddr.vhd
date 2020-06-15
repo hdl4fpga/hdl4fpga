@@ -195,8 +195,9 @@ architecture ulx3s_ddr of testbench is
 
 	constant baudrate : natural := 3_000_000;
 	constant data : std_logic_vector := 
-		x"1602000000" &
-		x"18ff" & 
+		x"16020"                            &
+		x"00000"                            &
+		x"18ff"                             & 
 		x"123456789abcdef123456789abcdef12" &
 		x"23456789abcdef123456789abcdef123" &
 		x"3456789abcdef123456789abcdef1234" &
@@ -213,15 +214,18 @@ architecture ulx3s_ddr of testbench is
 		x"ef123456789abcdef123456789abcdef" &
 		x"f123456789abcdef123456789abcdef1" &
 		x"123456789abcdef123456789abcdef12" &
+		x"170200007f"                       &
+		x"2002000000"                       &
 		x"170200007f";
 
 	constant uart_data  : std_logic_vector := escapeddata_stream(data);
 
-	signal uart_clk : std_logic := '0';
-	signal uart_sin : std_logic;
+	signal uart_clk  : std_logic := '0';
+	signal uart_sin  : std_logic;
+	signal uart_sout : std_logic;
 begin
 
-	rst <= '1', '0' after (1 us+82.5 us);
+	rst <= '1', '0' after (1 us+ 203 us);
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -246,6 +250,7 @@ begin
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => uart_sin,
+		ftdi_rxd   => uart_sout,
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
@@ -257,6 +262,16 @@ begin
 		sdram_a    => sdram_addr,
 		sdram_dqm  => sdram_dqm,
 		sdram_d    => sdram_dq);
+
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => uart_xtal)
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => ftdi_txd,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
 
 	sdr_model_g: mt48lc32m16a2
 	port map (

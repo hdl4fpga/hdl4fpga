@@ -33,3 +33,5 @@ export npm_config_node_gyp
 
 cd node_modules/\@serialport/bindings
 nw-gyp rebuild --target=`npm view nw version` --arch=x64
+ln -s ../html
+ln -s ../srcjs
