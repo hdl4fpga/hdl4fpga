@@ -13,6 +13,9 @@ VHDL_FILES = \
   ../common/hdl/oled/oled_font_pack.vhd \
   ../common/hdl/oled/vga/oled_vga.vhd \
   ../common/hdl/oled/vga/oled_vga_init_pack.vhd \
+  ../common/hdl/spi_display/spi_display.vhd \
+  ../common/hdl/spi_display/spi_display_init_pack.vhd \
+  ../common/hdl/spi_display/st7789_init_pack.vhd \
   ../common/hdl/adc/max1112x_reader.vhd \
   ../common/hdl/adc/max1112x_init_pack.vhd \
 
