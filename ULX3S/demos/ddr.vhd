@@ -457,7 +457,7 @@ begin
 					end if;
 				elsif io_rdy='1' then
 					dmaocfg_req <= '0';
-					fifoo_frm    <= fifoo_trdy;
+					fifoo_frm   <= fifoo_irdy;
 				end if;
 				io_rdy := dmao_rdy;
 			end if;

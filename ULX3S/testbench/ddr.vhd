@@ -215,8 +215,8 @@ architecture ulx3s_ddr of testbench is
 		x"f123456789abcdef123456789abcdef1" &
 		x"123456789abcdef123456789abcdef12" &
 		x"170200007f"                       &
-		x"2002000000"                       &
-		x"170200007f";
+		x"1902000000"                       &
+		x"200200007f";
 
 	constant uart_data  : std_logic_vector := escapeddata_stream(data);
 
@@ -291,18 +291,18 @@ begin
 		end if;
 	end process;
 
-	sdr_model_g: mt48lc32m16a2
-	port map (
-		clk   => sdram_clk,
-		cke   => sdram_cke,
-		cs_n  => sdram_cs_n,
-		ras_n => sdram_ras_n,
-		cas_n => sdram_cas_n,
-		we_n  => sdram_we_n,
-		ba    => sdram_ba,
-		addr  => sdram_addr,
-		dqm   => sdram_dqm,
-		dq    => sdram_dq);
+--	sdr_model_g: mt48lc32m16a2
+--	port map (
+--		clk   => sdram_clk,
+--		cke   => sdram_cke,
+--		cs_n  => sdram_cs_n,
+--		ras_n => sdram_ras_n,
+--		cas_n => sdram_cas_n,
+--		we_n  => sdram_we_n,
+--		ba    => sdram_ba,
+--		addr  => sdram_addr,
+--		dqm   => sdram_dqm,
+--		dq    => sdram_dq);
 end;
 
 library micron;
