@@ -21,6 +21,13 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 # more details at http://www.gnu.org/licenses/.                             
 
+ln -fs ../html
+ln -fs ../srcjs
+if [ ! -f "`which sudo 2> /dev/null`" ] ; then
+	echo "sudo command is required to install nw-gyp globally and compile serialport"
+	exit -1
+fi
+
 sudo npm -g install nw-gyp
 npm install nw --nwjs_build_type=sdk
 npm install serialport
@@ -33,5 +40,4 @@ export npm_config_node_gyp
 
 cd node_modules/\@serialport/bindings
 nw-gyp rebuild --target=`npm view nw version` --arch=x64
-ln -s ../html
-ln -s ../srcjs
+cd -
