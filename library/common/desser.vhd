@@ -13,8 +13,9 @@ entity desser is
 		des_trdy   : out std_logic;
 		des_data   : in  std_logic_vector;
 
-		ser_irdy : out std_logic;
-		ser_data : out std_logic_vector);
+		ser_irdy   : out std_logic;
+		ser_trdy   : in  std_logic := '1';
+		ser_data   : out std_logic_vector);
 end;
 
 architecture mux of desser is
@@ -30,12 +31,14 @@ begin
 				cntr <= (others => '0');
 			elsif desser_frm='0' then
 				cntr <= (others => '0');
-			elsif cntr=0 then
-				if des_irdy='1' then
+			elsif ser_trdy='1' then
+				if cntr=0 then
+					if des_irdy='1' then
+						cntr <= cntr + 1;
+					end if;
+				elsif 2**cntr'length=des_data'length/ser_data'length then
 					cntr <= cntr + 1;
 				end if;
-			elsif 2**cntr'length=des_data'length/ser_data'length then
-				cntr <= cntr + 1;
 			elsif cntr=des_data'length/ser_data'length-1 then
 				cntr <= (others => '0');
 			end if;
@@ -46,8 +49,8 @@ begin
 		word2byte(reverse(reverse(des_data), ser_data'length), std_logic_vector(cntr), ser_data'length) when des_data'ascending else
 		word2byte(des_data, std_logic_vector(cntr), ser_data'length);
 
-	ser_irdy <= des_irdy or setif(cntr/=0 and des_data'length/=ser_data'length);
-	des_trdy <= setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length);
+	ser_irdy <= desser_frm and (des_irdy or setif(cntr/=0 and des_data'length/=ser_data'length));
+	des_trdy <= desser_frm and (setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length) and ser_trdy);
 
 end;
 
@@ -65,12 +68,14 @@ begin
 				cntr := (others => '0');
 			elsif desser_frm='0' then
 				cntr := (others => '0');
-			elsif cntr=0 then
-				if des_irdy='1' then
+			elsif ser_trdy='1' then
+				if cntr=0 then
+					if des_irdy='1' then
+						cntr := cntr + 1;
+					end if;
+				elsif 2**cntr'length=des_data'length/ser_data'length then
 					cntr := cntr + 1;
 				end if;
-			elsif 2**cntr'length=des_data'length/ser_data'length then
-				cntr := cntr + 1;
 			elsif cntr=des_data'length/ser_data'length-1 then
 				cntr := (others => '0');
 			end if;
@@ -98,7 +103,7 @@ begin
 		ser_data <= setif(start='1', des_data(ser_data'range), std_logic_vector(des(ser_data'range)));
 	end process;
 
-	ser_irdy <= des_irdy or setif(start='0');
-	des_trdy <= setif(start='0');
+	ser_irdy <= desser_frm and (des_irdy or setif(start='0'));
+	des_trdy <= desser_frm and (setif(start='0'));
 
 end;

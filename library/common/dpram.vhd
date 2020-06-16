@@ -36,6 +36,7 @@ entity dpram is
 	port (
 		rd_clk  : in  std_logic := '-';
 		rd_addr : in  std_logic_vector;
+		rd_ena  : in  std_logic := '1';
 		rd_data : out std_logic_vector;
 
 		wr_clk  : in std_logic;
@@ -109,7 +110,9 @@ begin
 	begin
 		if synchronous_rddata then
 			if rising_edge(rd_clk) then
-				rd_data <= async_rddata;
+				if rd_ena='1' then
+					rd_data <= async_rddata;
+				end if;
 			end if;
 		else
 			rd_data <= async_rddata;

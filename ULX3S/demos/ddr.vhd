@@ -155,8 +155,8 @@ architecture ddr of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
-	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -258,7 +258,8 @@ begin
 
 		ddrsys_rst <= not lock;
 
-		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
+--		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
+		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => not ctlr_clk);
 
 	end block;
 
@@ -431,7 +432,7 @@ begin
 			size           => (8*2048)/ctlr_di'length,
 			synchronous_rddata => true,
 			gray_code      => false,
-			overflow_check => false)
+			overflow_check => true)
 		port map (
 			src_clk  => ctlr_clk,
 			src_irdy => ctlr_do_dv(0),
@@ -472,6 +473,7 @@ begin
 			des_data   => fifoo_data,
 
 			ser_irdy   => uart_txdv,
+			ser_trdy   => uart_trdy,
 			ser_data   => uart_txd);
 
 		uarttx_e : entity hdl4fpga.uart_tx
