@@ -20,16 +20,16 @@ use work.st7789_init_pack.all;
 use work.ssd1331_init_pack.all;
 
 architecture beh of ulx3s is
-        constant width    : natural :=  96;
-        constant height   : natural :=  64;
+        constant width    : natural := 800;
+        constant height   : natural := 600;
         constant fps      : natural :=  60;
         constant pixel_hz : natural := F_modeline(width,height,fps)(8);
         --constant timing_id: videotiming_ids := pclk25_00m640x480at60;
         --constant timing_id: videotiming_ids := pclk40_00m800x600at60;
-        constant layout: display_layout := displaylayout_tab(oled96x64);
+        --constant layout: display_layout := displaylayout_tab(oled96x64);
         --constant layout: display_layout := displaylayout_tab(lcd240x240);
         --constant layout: display_layout := displaylayout_tab(lcd480x272seg1);
-        --constant layout: display_layout := displaylayout_tab(sd600x16fs);
+        constant layout: display_layout := displaylayout_tab(sd600x16fs);
         --constant layout: display_layout := displaylayout_tab(lcd1280x1024seg4);
         --constant layout: display_layout := displaylayout_tab(hd720);
         --constant pixel_hz: natural := modeline_data(timing_id)(8);
@@ -87,11 +87,11 @@ architecture beh of ulx3s is
 
 	constant C_oled_hex_view_net : boolean := false;
 	constant C_oled_hex_view_istream: boolean := false;
-	-- DVI/LVDS/OLED VGA (enable only 1)
-        constant C_dvi_vga:  boolean := false;
-        constant C_lvds_vga: boolean := false;
-        constant C_lcd_vga:  boolean := false; -- st7789
-        constant C_oled_vga: boolean := true; -- ssd1331
+	-- DVI/LVDS/OLED VGA (enable only 1), for C_external_sync=1 dvi and lvds can be both enabled
+        constant C_dvi_vga:  boolean := true;
+        constant C_lvds_vga: boolean := false; -- gp,gn(8 downto 0) in ../common/ulx3s.vhd
+        constant C_lcd_vga:  boolean := false; -- st7789 240x240
+        constant C_oled_vga: boolean := false; -- ssd1331 96x64
         constant C_oled_hex: boolean := false;
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -859,7 +859,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6),
-            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 1500000
           )
           port map
           (
@@ -1130,7 +1130,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6), -- 200MHz if available is better than 25MHz here
-            out0_Hz  => natural(48.0e6), out0_tol_Hz => 50000  -- then 48MHz exactly can be generatoed
+            out0_Hz  => natural(48.0e6), out0_tol_Hz => 1500000  -- then 48MHz exactly can be generatoed
           )
           port map
           (
@@ -1191,7 +1191,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6),
-            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 1500000
           )
           port map
           (
@@ -1265,7 +1265,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6),
-            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 1500000
           )
           port map
           (
@@ -1460,7 +1460,7 @@ begin
           generic map
           (
               in_Hz  => natural(25.0e6),
-            out0_Hz  => natural(48.0e6), out0_tol_hz => 50000
+            out0_Hz  => natural(48.0e6), out0_tol_hz => 1500000
           )
           port map
           (
@@ -1586,6 +1586,8 @@ begin
 	signal mii_rxdata,  mii_txdata  : std_logic_vector(0 to 1);
 	signal mii_rxvalid, mii_txvalid : std_logic;
 	signal dummy_udpdaisy_data : std_logic_vector(so_null'range);
+	signal rmii_chaino_data: std_logic_vector(fromistreamdaisy_data'range);
+	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
 	begin
 
         mii_clk       <= rmii_nint; -- nINT pin is CLOCK
@@ -1622,8 +1624,9 @@ begin
 
 		chaino_frm  => fromistreamdaisy_frm,
 		chaino_irdy => fromistreamdaisy_irdy,
-		chaino_data => fromistreamdaisy_data
+		chaino_data => rmii_chaino_data
         );
+        fromistreamdaisy_data <= reverse(rmii_chaino_data);
         clk_daisy <= mii_clk;
         end block;
 	end generate;

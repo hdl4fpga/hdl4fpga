@@ -106,8 +106,10 @@ entity ulx3s is
 		gpdi_sda       : inout std_logic := '-';
 		gpdi_scl       : inout std_logic := '-';
 
-		gp             : inout std_logic_vector(8 downto 0);
-		gn             : inout std_logic_vector(8 downto 0);
+		gp             : inout std_logic_vector(27 downto 0); -- default
+		gn             : inout std_logic_vector(27 downto 0); -- default
+		--gp             : inout std_logic_vector(8 downto 0); -- LVDS
+		--gn             : inout std_logic_vector(8 downto 0); -- LVDS
 		
 		gp_i           : in    std_logic_vector(12 downto 9);
 

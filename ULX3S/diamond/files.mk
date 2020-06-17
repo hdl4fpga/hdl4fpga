@@ -1,4 +1,4 @@
-CONSTRAINTS = ./constraints/ulx3s_v20_lvds.lpf
+CONSTRAINTS = ./constraints/ulx3s_v20.lpf
 
 TOP_MODULE = ulx3s
 TOP_MODULE_FILE = ../common/ulx3s.vhd
@@ -55,11 +55,10 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
+  ../../library/scope/scopeio_udpipdaisy.vhd \
   ../../library/scope/scopeio_istream.vhd \
   ../../library/scope/scopeio_istreamdaisy.vhd \
   ../../library/scope/scopeio_sin.vhd \
-  ../../library/scope/scopeio_udpipdaisy.vhd \
-  ../../library/scope/scopeio_miiudp.vhd \
   ../../library/scope/scopeio_tds_1shot.vhd \
   ../../library/scope/scopeio_rgtrtrigger.vhd \
   ../../library/scope/scopeio_rgtrgain.vhd \
@@ -128,6 +127,7 @@ VHDL_LIB_FILES = \
   ../../library/video/lvds2vga.vhd \
   ../../library/video/cga_adapter.vhd \
 
+#
 VERILOG_FILES = \
   ../../library/usb/usbhost/usbh_sie.v \
   ../../library/usb/usbhost/usbh_crc5.v \

@@ -24,6 +24,7 @@ OPENOCD_INTERFACE=$(SCRIPTS)/ft231x.ocd
 # ******* design files *******
 
 include files.mk
+#include files-lvds.mk
 
 SCRIPTS = ./scripts
 include $(SCRIPTS)/trellis_path.mk
