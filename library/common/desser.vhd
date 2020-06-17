@@ -51,6 +51,7 @@ begin
 
 	ser_irdy <= desser_frm and (des_irdy or setif(cntr/=0 and des_data'length/=ser_data'length));
 	des_trdy <= desser_frm and (setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length) and ser_trdy);
+--	des_trdy <= desser_frm and (setif(cntr=0 or des_data'length=ser_data'length) and ser_trdy);
 
 end;
 

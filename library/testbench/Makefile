@@ -203,7 +203,6 @@ HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
 HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
 HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
-HDL4FPGA__desser__rgtr = $(LIB_HDL4FPGA)/desser/rgtr.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__ddrwl__beh = $(LIB_HDL4FPGA)/ddrwl/beh.dat
 HDL4FPGA__ddrwl = $(LIB_HDL4FPGA)/ddrwl/_primary.dat
@@ -239,8 +238,8 @@ HDL4FPGA__ddr_ctlr__mix = $(LIB_HDL4FPGA)/ddr_ctlr/mix.dat
 HDL4FPGA__ddr_ctlr = $(LIB_HDL4FPGA)/ddr_ctlr/_primary.dat
 HDL4FPGA__ddr3iob__ecp3 = $(LIB_HDL4FPGA)/ddr3iob/ecp3.dat
 HDL4FPGA__ddr3iob = $(LIB_HDL4FPGA)/ddr3iob/_primary.dat
-HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
 HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
+HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
 HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
 HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
 HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
@@ -467,7 +466,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__dfs__xilinx) \
     $(HDL4FPGA__dfs) \
     $(HDL4FPGA__desser__mux) \
-    $(HDL4FPGA__desser__rgtr) \
     $(HDL4FPGA__desser) \
     $(HDL4FPGA__ddrwl__beh) \
     $(HDL4FPGA__ddrwl) \
@@ -503,8 +501,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ddr_ctlr) \
     $(HDL4FPGA__ddr3iob__ecp3) \
     $(HDL4FPGA__ddr3iob) \
-    $(HDL4FPGA__dbram__xilinx) \
     $(HDL4FPGA__dbram__lscc) \
+    $(HDL4FPGA__dbram__xilinx) \
     $(HDL4FPGA__dbram) \
     $(HDL4FPGA__dbdbbl__def) \
     $(HDL4FPGA__dbdbbl) \
@@ -719,20 +717,20 @@ $(HDL4FPGA__dbdbbl__def) : ../common/dbdbbl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../common/dbdbbl.vhd
 
 $(HDL4FPGA__dbram) \
-$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
-
 $(HDL4FPGA__dbram__xilinx) : ../xilinx/dbram.vhd \
 		$(IEEE__numeric_std) \
-		$(HDL4FPGA__dbram) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dbram.vhd
+
+$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__dbram) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(ECP3__components)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
 
 $(HDL4FPGA__ddr3iob) \
 $(HDL4FPGA__ddr3iob__ecp3) : ../latticesemi/ecp3/ddr3iob.vhd \
@@ -898,7 +896,6 @@ $(HDL4FPGA__ddrwl__beh) : ../latticesemi/ecp3/ddrwl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ddrwl.vhd
 
 $(HDL4FPGA__desser) \
-$(HDL4FPGA__desser__rgtr) \
 $(HDL4FPGA__desser__mux) : ../common/desser.vhd \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \

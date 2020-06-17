@@ -10,9 +10,11 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.videopkg.all;
 
 architecture beh of nuhs3adsp is
 
+	constant sys_per  : real := 50.0;
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -56,25 +58,26 @@ architecture beh of nuhs3adsp is
 	signal so_data   : std_logic_vector(mii_txd'range);
 
 	type display_param is record
-		layout : natural;
-		dcm_mul    : natural;
-		dcm_div    : natural;
+		timing_id : videotiming_ids;
+		layout    : display_layout;
+		dcm_mul   : natural;
+		dcm_div   : natural;
 	end record;
 
-	type layout_mode is (
+	type display_modes is (
+		mode480p,
 		mode600p, 
-		mode1080p,
 		mode600px16,
-		mode480p);
+		mode1080p);
 
-	type displayparam_vector is array (layout_mode) of display_param;
-	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, dcm_mul =>  2, dcm_div => 1),
-		mode1080p   => (layout => 0, dcm_mul => 15, dcm_div => 2),
-		mode480p    => (layout => 8, dcm_mul =>  3, dcm_div => 2),
-		mode600px16 => (layout => 6, dcm_mul =>  5, dcm_div => 4));
+	type displayparam_vector is array (display_modes) of display_param;
+	constant display_tab : displayparam_vector := (
+		mode480p    => (timing_id => pclk25_00m640x480at60,    layout => displaylayout_tab(sd480),  dcm_mul => 5, dcm_div => 4),
+		mode600p    => (timing_id => pclk40_00m800x600at60,    layout => displaylayout_tab(sd600),  dcm_mul => 2, dcm_div => 1),
+		mode600px16 => (timing_id => pclk40_00m800x600at60,    layout => displaylayout_tab(sd600),  dcm_mul => 2, dcm_div => 1),
+		mode1080p   => (timing_id => pclk140_00m1920x1080at60, layout => displaylayout_tab(hd1080), dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : layout_mode := mode1080p;
+	constant video_mode : display_modes := mode1080p;
 
 begin
 
@@ -85,7 +88,7 @@ begin
 
 	adc_e : entity hdl4fpga.dfs
 	generic map (
-		dcm_per => 50.0,
+		dcm_per => sys_per,
 		dfs_mul => 32,
 		dfs_div => 5)
 	port map(
@@ -96,9 +99,9 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
-		dcm_per => 50.0,
-		dfs_mul => video_params(video_mode).dcm_mul,
-		dfs_div => video_params(video_mode).dcm_div)
+		dcm_per => sys_per,
+		dfs_mul => display_tab(video_mode).dcm_mul,
+		dfs_div => display_tab(video_mode).dcm_div)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -106,7 +109,7 @@ begin
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (
-		dcm_per => 50.0,
+		dcm_per => sys_per,
 		dfs_mul => 5,
 		dfs_div => 4)
 	port map (
@@ -133,7 +136,7 @@ begin
 			end if;
 		end if;
 	end process;
-	led7  <= ipcfg_req;
+	led18  <= ipcfg_req;
 
 	process (mii_rxc)
 		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
@@ -190,6 +193,7 @@ begin
 		phy_txc     => mii_txc, 
 		phy_tx_en   => txen,
 		phy_tx_d    => mii_txd,
+		ipcfg_vld   => led7,
 	
 		chaini_sel  => '0',
 
@@ -205,6 +209,8 @@ begin
 	si_clk <= mii_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		timing_id        => display_tab(video_mode).timing_id,
+		layout           => display_tab(video_mode).layout,
 		inputs           => inputs,
 --		input_names      => (
 --			hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1"),
@@ -212,18 +218,17 @@ begin
 		hz_unit          => 250.0*nano,
 		vt_unit          => 2.0*milli,
 		vt_steps         => (0 to inputs-1 => 1000.0*milli/2.0**14),
-		vlayout_id       => video_params(video_mode).layout,
-		default_tracesfg => b"0_11111111_11111111_00000000" & b"0_00000000_11111111_11111111",
-		default_gridfg   => b"0_11111111_00000000_00000000",
-		default_gridbg   => b"0_00000000_00000000_00000000",
-		default_hzfg     => b"0_11111111_11111111_11111111",
-		default_hzbg     => b"0_00000000_00000000_11111111",
-		default_vtfg     => b"0_11111111_11111111_11111111",
-		default_vtbg     => b"0_00000000_00000000_11111111",
-		default_textfg   => b"1_00000000_00000000_00000000",
+		default_tracesfg => b"1_11111111_11111111_00000000" & b"1_00000000_11111111_11111111",
+		default_gridfg   => b"1_11111111_00000000_00000000",
+		default_gridbg   => b"1_00000000_00000000_00000000",
+		default_hzfg     => b"1_11111111_11111111_11111111",
+		default_hzbg     => b"1_00000000_00000000_11111111",
+		default_vtfg     => b"1_11111111_11111111_11111111",
+		default_vtbg     => b"1_00000000_00000000_11111111",
+		default_textfg   => b"1_11111111_11111111_11111111",
 		default_textbg   => b"1_00000000_00000000_00000000",
-		default_sgmntbg  => b"0_00000000_11111111_11111111",
-		default_bg       => b"0_11111111_11111111_11111111")
+		default_sgmntbg  => b"1_00000000_11111111_11111111",
+		default_bg       => b"1_11111111_11111111_11111111")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
@@ -280,7 +285,7 @@ begin
 	-- LEDs DAC --
 	--------------
 		
-	led18 <= '0';
+--	led18 <= '0';
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';
