@@ -259,7 +259,7 @@ begin
 		ddrsys_rst <= not lock;
 
 --		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
-		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => not ctlr_clk);
+		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => setif(debug, not ctlr_clk, ctlr_clk));
 
 	end block;
 

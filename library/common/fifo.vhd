@@ -62,7 +62,7 @@ architecture def of fifo is
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 	signal data : std_logic_vector(0 to src_data'length-1);
 
-	signal dst_rst : std_logic;
+	signal dst_ini : std_logic;
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
@@ -124,7 +124,7 @@ begin
 		end if;
 	end process;
 
-	dst_rst <= not dst_frm;
+	dst_ini <= not dst_frm;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
@@ -132,8 +132,7 @@ begin
 		i => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,
-		rst   => dst_rst,
-		ena   => dst_trdy,
+		ini   => dst_ini,
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
 end;

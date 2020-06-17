@@ -48,6 +48,8 @@ architecture ulx3s_ddr of testbench is
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
 
 	component ulx3s is
+		generic (
+			debug : boolean := false);
 		port (
 			clk_25mhz      : in    std_logic;
 
@@ -227,7 +229,7 @@ architecture ulx3s_ddr of testbench is
 	signal uart_rxc  : std_logic := '0';
 	signal uart_rxdv : std_logic;
 	signal uart_rxd  : std_logic_vector(8-1 downto 0);
-	signal rxc_data  : unsigned(256*8-1 downto 0);
+	signal rxd       : std_logic_vector(uart_rxd'range);
 begin
 
 	rst <= '1', '0' after (1 ns);
@@ -252,6 +254,8 @@ begin
 	end process;
 
 	du_e : ulx3s
+	generic map (
+		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => uart_sin,
@@ -280,14 +284,10 @@ begin
 		uart_rxd  => uart_rxd);
 
 	process (uart_rxc)
-		variable data : unsigned(rxc_data'range);
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_rxdv='1' then
-				data := rxc_data;
-				data(uart_rxd'range) := unsigned(uart_rxd);
-				data := data rol uart_rxd'length;
-				rxc_data <= data;
+				rxd <= uart_rxd;
 			end if;
 		end if;
 	end process;
