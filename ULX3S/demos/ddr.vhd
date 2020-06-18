@@ -106,6 +106,7 @@ architecture ddr of ulx3s is
 	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
+	signal ctlr_di_rdy    : std_logic;
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
@@ -142,7 +143,7 @@ architecture ddr of ulx3s is
 		clkop_div  : natural;
 		clkfb_div  : natural;
 		clki_div   : natural;
-		clkos3_div : natural;
+		clkos2_div : natural;
 		cas        : std_logic_vector(0 to 3-1);
 	end record;
 
@@ -152,16 +153,18 @@ architecture ddr of ulx3s is
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
-		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
-		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
+		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 3, cas => "010"),
+		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
-		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
+		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos2_div)/
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
+
+	signal uart_clk    : std_logic;
 
 --	alias uart_rxc     : std_logic is clk_25mhz;
 --	alias uart_txc     : std_logic is clk_25mhz;
@@ -169,23 +172,20 @@ architecture ddr of ulx3s is
 --	constant baudrate  : natural := 115200;
 --	constant baudrate  : natural := 1000000;
 
-	alias uart_rxc     : std_logic is ctlr_clk;
-	alias uart_txc     : std_logic is ctlr_clk;
+	alias uart_rxc     : std_logic is uart_clk;
+	alias uart_txc     : std_logic is uart_clk;
+
 	constant uart_xtal : natural := natural(
 		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
-		real(sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/sys_per);
+		real(sdram_tab(sdram_mode).clki_div*4)/sys_per);
 	constant baudrate  : natural := 3000000;
-
---	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
---	constant baudrate  : natural := 115200_00;
---	constant video_mode : natural := modedebug;
 
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
-	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
-	constant read_latency  : boolean := not (sdram_mode=sdram200MHz);
-	constant write_latency : boolean := not (sdram_mode=sdram200MHz);
+	constant cmmd_latency  : boolean := setif(debug, true,  sdram_mode=sdram200MHz);
+	constant read_latency  : boolean := setif(debug, false, not (sdram_mode=sdram200MHz));
+	constant write_latency : boolean := setif(debug, false, not (sdram_mode=sdram200MHz));
 
 begin
 
@@ -206,7 +206,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is "100.000000";
 
 		signal clkos : std_logic;
 	begin
@@ -233,8 +233,8 @@ begin
 			CLKFB_DIV        => sdram_tab(sdram_mode).clkfb_div,
 			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
 			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
-			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
-			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div) 
+			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos2_div, 
+			CLKOS3_DIV       => 4) 
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -250,7 +250,7 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => clkos,
 			CLKOS2    => ctlr_clk,
-			CLKOS3    => dqs, 
+			CLKOS3    => uart_clk, 
 			LOCK      => lock, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
@@ -281,7 +281,6 @@ begin
 		signal rgtr_data    : std_logic_vector(32-1 downto 0);
 
 		signal dmaia_dv     : std_logic;
-		signal fifoi_frm    : std_logic;
 		signal data_ena     : std_logic;
 
 		signal data_ptr     : std_logic_vector(8-1 downto 0);
@@ -368,23 +367,42 @@ begin
 
 		dmaidata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 
-		fifoi_frm <= not dmaia_dv;
-		dmaidata_e : entity hdl4fpga.fifo
-		generic map (
-			size           => (8*2048)/ctlr_di'length,
-			synchronous_rddata => not write_latency,
-			gray_code      => false,
-			overflow_check => false)
-		port map (
-			src_clk  => si_clk,
-			src_frm  => fifoi_frm,
-			src_irdy => dmaidata_ena,
-			src_data => rgtr_data(16-1 downto 0),
 
-			dst_clk  => ctlr_clk,
-			dst_irdy => dst_irdy,
-			dst_trdy => ctlr_di_req,
-			dst_data => ctlr_di);
+		dmaidata_b : block
+
+			signal src_frm  : std_logic;
+			signal dst_data : std_logic_vector(ctlr_di'range);
+			signal dst_trdy : std_logic;
+
+		begin
+
+			src_frm <= not dmaia_dv;
+			dmaidata_e : entity hdl4fpga.fifo
+			generic map (
+				size      => 2048/(ctlr_di'length/8),
+				synchronous_rddata => false,
+				gray_code => false)
+			port map (
+				src_clk  => si_clk,
+				src_frm  => src_frm,
+				src_irdy => dmaidata_ena,
+				src_data => rgtr_data(16-1 downto 0),
+
+				dst_clk  => ctlr_clk,
+				dst_irdy => dst_irdy,
+				dst_trdy => ctlr_di_req,
+				dst_data => dst_data);
+
+			dmaidata_rgtr_e : entity hdl4fpga.align
+			generic map (
+				n => ctlr_di'length,
+				d => (0 to ctlr_di'length-1 => setif(not write_latency,1,0)))
+			port map (
+				clk => ctlr_clk,
+				di  => dst_data,
+				do  => ctlr_di);
+
+		end block;
 
 		dmaicfg_p : process (si_clk)
 			variable io_rdy : std_logic;
@@ -403,7 +421,7 @@ begin
 			end if;
 		end process;
 
-		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
+		ctlr_di_dv <= ctlr_di_req; 
 		ctlr_dm <= (others => '0');
 
 		dmaoaddr_e : entity hdl4fpga.scopeio_rgtr
@@ -429,10 +447,10 @@ begin
 
 		dmaodata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => (8*2048)/ctlr_di'length,
+			size      => 2048/(ctlr_do'length*8),
 			synchronous_rddata => true,
-			gray_code      => false,
-			overflow_check => true)
+			gray_code => false,
+			check_dov => true)
 		port map (
 			src_clk  => ctlr_clk,
 			src_irdy => ctlr_do_dv(0),

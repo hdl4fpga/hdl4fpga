@@ -83,7 +83,7 @@ begin
 			ck => sys_clk,
 			d  => phy_dqt,
 			q  => t);
-		sdr_dqt(i) <= t when write_latency else phy_dqt;
+		sdr_dqt(i) <= t; -- when write_latency else phy_dqt;
 
 		ffd_i : fd1s3ax
 		port map (

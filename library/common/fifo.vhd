@@ -32,8 +32,9 @@ entity fifo is
 	generic (
 		size : natural;
 		synchronous_rddata : boolean := true;
-		overflow_check : boolean := false;
-		gray_code      : boolean := true);
+		check_sov : boolean := false;
+		check_dov : boolean := false;
+		gray_code : boolean := true);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -101,11 +102,11 @@ begin
 		end if;
 	end process;
 	src_trdy <=
-		'1' when not overflow_check else
+		'1' when not check_sov else
 		setif(inc(wr_addr(word_addr'range))/=rd_addr(word_addr'range)) when gray_code else
 		setif(unsigned(wr_addr(word_addr'range))+1/=unsigned(rd_addr(word_addr'range)));
 
-	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not overflow_check));
+	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not check_dov));
 	feed_ena  <= not dst_irdy or dst_trdy;
 	process(dst_clk)
 	begin

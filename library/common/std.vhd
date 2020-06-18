@@ -156,6 +156,12 @@ package std is
 
 	function setif (
 		constant arg  : boolean;
+		constant argt : boolean := true;
+		constant argf : boolean := false)
+		return boolean;
+
+	function setif (
+		constant arg  : boolean;
 		constant argt : std_logic := '1';
 		constant argf : std_logic := '0')
 		return std_logic;
@@ -163,7 +169,7 @@ package std is
 	function setif (
 		constant arg   : boolean;
 		constant argt  : std_logic_vector;
-		constant argf : std_logic_vector)
+		constant argf  : std_logic_vector)
 		return std_logic_vector;
 
 	function setif (
@@ -843,10 +849,21 @@ package body std is
 
 	function setif (
 		constant arg  : boolean;
+		constant argt : boolean := true;
+		constant argf : boolean := false)
+		return boolean is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
 		constant argt : std_logic := '1';
 		constant argf : std_logic := '0')
 		return std_logic is
-		variable val : std_logic;
 	begin
 		if arg then
 			return argt;

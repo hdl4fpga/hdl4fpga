@@ -116,7 +116,8 @@ begin
 	generic map (
 		size           => fifo_size,
 		synchronous_rddata => true, 
-		overflow_check => false,
+		check_sov  => false,
+		check_dov  => false,
 		gray_code      => false)
 	port map (
 		src_clk  => ctlr_clk,

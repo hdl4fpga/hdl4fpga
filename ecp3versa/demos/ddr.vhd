@@ -280,10 +280,9 @@ begin
 		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => (8*4096)/ctlr_di'length,
+			size      => (8*4096)/ctlr_di'length,
 			synchronous_rddata => true,
-			gray_code      => false,
-			overflow_check => false)
+			gray_code => false)
 		port map (
 			src_clk  => si_clk,
 			src_frm  => src_frm,
