@@ -34,8 +34,8 @@ package videopkg is
 
 		pclk_fallback,            -- Fallback timing
 		pclk_debug,               -- For debugging porpouses
-		pclk25_00m640x400at60,    -- pclk 148.50MHz
-		pclk25_00m640x480at60,    -- pclk  23.75MHz
+		pclk25_00m640x400at60,    -- pclk  25 MHz
+		pclk25_00m640x480at60,    -- pclk  25 MHz
 		pclk40_00m800x600at60,    -- pclk  40.00MHz
 		pclk100_00m1600x900at60,  -- pclk 100.00MHz
 		pclk140_00m1920x1080at60, -- pclk 138.50MHz
