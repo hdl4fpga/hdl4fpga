@@ -49,7 +49,7 @@ architecture beh of ulx3s is
         -- USB ethernet network ping test
         constant C_usbping_test : boolean := false; -- USB-CDC core ping in ethernet mode (D+/D- lines)
         -- internally connected "probes" (enable max 1)
-        constant C_view_rom     : boolean := true;  -- ROM (constant waveform)
+        constant C_view_rom     : boolean := false;  -- ROM (constant waveform)
         constant C_view_adc     : boolean := false; -- ADC onboard analog view
         constant C_view_spi     : boolean := false; -- SPI digital view
         constant C_view_usb     : boolean := false; -- USB or PS/2 digital view
@@ -57,14 +57,14 @@ architecture beh of ulx3s is
         constant C_decoder_usb_speed: std_logic := '0'; -- '0':Low Speed, '1':Full Speed
         constant C_view_utmi1   : boolean := false; -- USB UTMI PHY debugging view
         constant C_view_usbphy  : boolean := false; -- USB PHY debug
-        constant C_view_binary_gain: integer := 2;  -- 2**n -- for SPI/USB digital view
+        constant C_view_binary_gain: integer := 3;  -- 2**n -- for SPI/USB digital view
         constant C_view_utmi    : boolean := false; -- USB3300 PHY linestate digital view
-        constant C_view_istream : boolean := false; -- NET output
+        constant C_view_istream : boolean := true; -- NET output
         constant C_view_sync    : boolean := false; -- external sync (LVDS receiver)
         constant C_view_clk     : boolean := false; -- PLL clock output
         -- ADC SPI core
         constant C_adc: boolean := true; -- true: onboard ADC (MAX11123-11125)
-        constant C_buttons_test: boolean := false; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
+        constant C_buttons_test: boolean := true; -- false: normal use and for external AD/DA, true: pressing buttons will test ADC channels
         constant C_adc_view_low_bits: boolean := true; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -260,10 +260,6 @@ architecture beh of ulx3s is
 	signal usbmouse_frommousedaisy_frm  : std_logic;
 	signal usbmouse_frommousedaisy_irdy : std_logic;
 	signal usbmouse_frommousedaisy_data : std_logic_vector(8-1 downto 0);
-
-	signal net_fromistreamdaisy_frm  : std_logic;
-	signal net_fromistreamdaisy_irdy : std_logic;
-	signal net_fromistreamdaisy_data : std_logic_vector(1 downto 0);
 
 	-- PS/2 mouse
 	signal clk_mouse       : std_logic := '0';
@@ -1006,8 +1002,9 @@ begin
 
 	G_view_istream: if C_view_istream generate
 	S_input_ena <= '1';
-	trace_yellow(C_view_binary_gain+3) <= net_fromistreamdaisy_irdy;
-	trace_cyan(C_view_binary_gain+net_fromistreamdaisy_data'high downto C_view_binary_gain) <= net_fromistreamdaisy_data;
+	trace_yellow(C_view_binary_gain+3) <= fromistreamdaisy_frm;
+	trace_cyan(0*C_view_binary_gain+fromistreamdaisy_data'high downto 0*C_view_binary_gain) <= fromistreamdaisy_data;
+	trace_green(C_view_binary_gain+3) <= fromistreamdaisy_irdy;
 	clk_input <= clk_istream;
 	end generate;
 
@@ -1587,6 +1584,7 @@ begin
 	signal mii_rxvalid, mii_txvalid : std_logic;
 	signal dummy_udpdaisy_data : std_logic_vector(so_null'range);
 	signal rmii_chaino_data: std_logic_vector(fromistreamdaisy_data'range);
+	signal rmii_chaino_frm: std_logic;
 	signal mii_txdata_reverse, mii_rxdata_reverse : std_logic_vector(0 to 7);
 	begin
 
@@ -1619,14 +1617,15 @@ begin
 		chaini_sel  => '0',
 
 		chaini_frm  => '0',
-		chaini_irdy => open,
+		chaini_irdy => '0',
 		chaini_data => dummy_udpdaisy_data,
 
 		chaino_frm  => fromistreamdaisy_frm,
 		chaino_irdy => fromistreamdaisy_irdy,
-		chaino_data => rmii_chaino_data
+		chaino_data => fromistreamdaisy_data
         );
-        fromistreamdaisy_data <= reverse(rmii_chaino_data);
+        --fromistreamdaisy_data <= reverse(rmii_chaino_data);
+        --fromistreamdaisy_frm <= fromistreamdaisy_irdy;
         clk_daisy <= mii_clk;
         end block;
 	end generate;
@@ -1647,6 +1646,7 @@ begin
 	E_hostmouse2daisy: entity hdl4fpga.scopeio_hostmouse2daisy
 	generic map
 	(
+	        --C_reverse_chaini_data => true,
 		C_inputs    => inputs,
 		C_tracesfg  => C_tracesfg,
 		layout      => layout
