@@ -62,7 +62,8 @@ architecture def of fifo is
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
 	signal data : std_logic_vector(0 to src_data'length-1);
 
-	signal dst_ini : std_logic;
+	signal dst_ini  : std_logic;
+	signal feed_ena : std_logic;
 begin
 
 	wr_ena <= src_frm and src_irdy and src_trdy;
@@ -77,7 +78,7 @@ begin
 		wr_data => src_data, 
 
 		rd_clk  => dst_clk,
-		rd_ena  => dst_trdy,
+		rd_ena  => feed_ena,
 		rd_addr => rd_addr,
 		rd_data => dst_data);
 
@@ -105,13 +106,14 @@ begin
 		setif(unsigned(wr_addr(word_addr'range))+1/=unsigned(rd_addr(word_addr'range)));
 
 	dst_irdy1 <= (setif(wr_addr(word_addr'range)/=rd_addr(word_addr'range)) or setif(not overflow_check));
+	feed_ena  <= not dst_irdy or dst_trdy;
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
 			else
-				if dst_trdy='1' then
+				if feed_ena='1' then
 					if dst_irdy1='1' then
 						if gray_code then
 							rd_addr <= std_logic_vector(inc(gray(rd_addr)));
@@ -133,6 +135,7 @@ begin
 	port map (
 		clk   => dst_clk,
 		ini   => dst_ini,
+		ena   => feed_ena,
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
 end;

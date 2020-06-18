@@ -178,7 +178,19 @@ architecture graphic of nuhs3adsp is
 		mode900p    => (mode => pclk100_00m1600x900at60,  dcm_mul => 5, dcm_div => 1),
 		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
 
-	constant video_mode : video_modes := mode1080p; --setif(debug, modedebug, mode1080p);
+	function setif (
+		constant expr  : boolean; 
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
+
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
