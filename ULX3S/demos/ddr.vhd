@@ -106,7 +106,6 @@ architecture ddr of ulx3s is
 	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
-	signal ctlr_di_rdy    : std_logic;
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
@@ -157,7 +156,7 @@ architecture ddr of ulx3s is
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, cas => "011"));
 
 --	constant sdram_mode : natural := sdram133MHz;
-	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := setif(debug=false, sdram200MHz, sdram133MHz);
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos2_div)/
