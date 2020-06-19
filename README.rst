@@ -18,9 +18,3 @@ Its goals were :
 - Video interface to display data.
 - Block RAM requirement only.
 - Multiple communication system to dump and upload data 
-
-TODO
-~~~~
-
-| [x] Add DDR core to capture high speed data.
-| |x] Add data output stream.
