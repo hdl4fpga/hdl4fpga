@@ -4,15 +4,15 @@ ScopeIO
 What is it ?
 ------------
 
-It is tool that can be embedded to measure what is happening inside of the FPGA
-when simulation tools can't help to guess what is wrong.
+It is tool to be embedded that can help to understand what is happening inside
+of the FPGA when simulation tools can't help to guess what is wrong.
 
 How it was born
 ---------------
 
 I found myself in a situation in which I had to debug a high-performance open
 source portable DDR Core. I needed to capture a lot of data to know what was
-happening.
+happening and displayed it
 
 Its goals are:
 
