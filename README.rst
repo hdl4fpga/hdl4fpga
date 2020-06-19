@@ -11,7 +11,7 @@ I found myself in a situation in which I had to debug a high-performance open
 source portable DDR Core. I needed to capture a lot of data to know what was
 happening and displayed it
 
-Its goals are:
+Its goals were :
 
 - Small footprint to be embedded it.
 - Portability.
