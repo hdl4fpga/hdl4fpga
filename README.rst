@@ -1,8 +1,8 @@
 The code that is on the reposiroty is not working now. You can find the latest stable release following the next link https://github.com/hdl4fpga/hdl4fpga/releases/tag/arty
 
 
-`scopeio : an Embedded Measurement System <https://hdl4fpga.github.io/hdl4fpga/>`_
-==================================================================================
+scopeio : an Embedded Measurement System
+========================================
 
 What is it ?
 ------------
