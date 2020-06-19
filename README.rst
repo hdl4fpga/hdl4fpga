@@ -4,7 +4,7 @@ ScopeIO
 What is it ?
 ------------
 
-It is tool to be embedded that can help to understand what is happening inside
+It's tool to be embedded that can help to understand what is happening inside
 of the FPGA when simulation tools can't help to guess what is wrong.
 
 How it was born
