@@ -5,7 +5,7 @@ What is it ?
 ------------
 
 It's tool to be embedded on a device that helps to understand what is happening inside
-when simulation tools are not enough to guess what is wrong.
+when simulation tools are not enough to guess what is wrong with the design.
 
 How it was born
 ---------------
