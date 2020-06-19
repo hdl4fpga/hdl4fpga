@@ -13,7 +13,7 @@ happening and displayed it
 
 Its goals were :
 
-- Small footprint to be embedded it.
+- Small footprint to be embedded.
 - Portability.
 - Video interface to display data.
 - Block RAM requirement only.
