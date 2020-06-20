@@ -60,36 +60,5 @@ int main (int argc, char *argv[])
 			exit(-1);
 	}
 
-//	for(;;) {
-//		if (pktmd) {
-//			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-//				fprintf (stderr, "packet size %d\n", size);
-//			else
-//				return 0;
-//		}
-//
-//			
-//		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
-//			if (size > MAXSIZE) {
-//				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
-//				exit(-1);
-//			}
-//
-//			buffer[size++] = 0x00;
-//			buffer[size++] = 0x00;
-//			if (fwrite(buffer, sizeof(char), size, stdout) < 0) {
-//				perror ("sending packet");
-//				exit (-1);
-//			}
-//			fprintf (stderr, "packet length %d\n", n);
-//			nanosleep((const struct timespec[]){ {0, 500000L } }, NULL);
-//		} else if (n < 0) {
-//			perror ("reading packet");
-//			exit(-1);
-//		}
-//		else
-//			break;
-//	}
-
 	return 0;
 }

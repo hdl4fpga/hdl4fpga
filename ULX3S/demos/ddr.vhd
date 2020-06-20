@@ -177,7 +177,8 @@ architecture ddr of ulx3s is
 	constant uart_xtal : natural := natural(
 		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
 		real(sdram_tab(sdram_mode).clki_div*4)/sys_per);
-	constant baudrate  : natural := 3000000;
+	constant baudrate  : natural := 115200;
+--	constant baudrate  : natural := 3000000;
 
 	alias si_clk       : std_logic is uart_rxc;
 	alias dmacfg_clk   : std_logic is uart_rxc;
@@ -303,17 +304,17 @@ begin
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd);
 
-		process (uart_rxc)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(uart_rxc) then
-				if uart_rxdv='1' then
-					led <= uart_rxd;
-				end if;
-			end if;
-		end process;
+--		process (uart_rxc)
+--			variable t : std_logic;
+--			variable e : std_logic;
+--			variable i : std_logic;
+--		begin
+--			if rising_edge(uart_rxc) then
+--				if uart_rxdv='1' then
+--					led <= uart_rxd;
+--				end if;
+--			end if;
+--		end process;
 
 		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 		generic map (
@@ -443,6 +444,18 @@ begin
 			rgtr_data => rgtr_data,
 			dv        => dmao_dv,
 			data      => dmao_len);
+
+		process (si_clk)
+			variable t : std_logic;
+			variable e : std_logic;
+			variable i : std_logic;
+		begin
+			if rising_edge(si_clk) then
+				if dmao_dv='1' then
+					led <= dmao_len(8-1 downto 0);
+				end if;
+			end if;
+		end process;
 
 		dmaodata_e : entity hdl4fpga.fifo
 		generic map (
