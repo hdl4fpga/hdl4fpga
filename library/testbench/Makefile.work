@@ -15,13 +15,15 @@ LIB_WORK = work
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
 HDL4FPGA__ddrpll = $(LIB_HDL4FPGA)/ddrpll/_primary.dat
 HDL4FPGA__ecp3_ddrphy = $(LIB_HDL4FPGA)/ecp3_ddrphy/_primary.dat
-UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
-HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
+MICRON__ddr3 = $(LIB_MICRON)/ddr3/_primary.dat
 HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
-HDL4FPGA__scopeio_udpipdaisy = $(LIB_HDL4FPGA)/scopeio_udpipdaisy/_primary.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
 HDL4FPGA__graphic = $(LIB_HDL4FPGA)/graphic/_primary.dat
 HDL4FPGA__xcs3_ddrphy = $(LIB_HDL4FPGA)/xcs3_ddrphy/_primary.dat
+UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
+HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
+HDL4FPGA__scopeio_udpipdaisy = $(LIB_HDL4FPGA)/scopeio_udpipdaisy/_primary.dat
+HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 HDL4FPGA__mii_rom = $(LIB_HDL4FPGA)/mii_rom/_primary.dat
@@ -31,18 +33,18 @@ IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
 HDL4FPGA__textboxpkg = $(LIB_HDL4FPGA)/textboxpkg/_primary.dat
-HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__scopeio_istreamdaisy = $(LIB_HDL4FPGA)/scopeio_istreamdaisy/_primary.dat
 HDL4FPGA__scopeio_sin = $(LIB_HDL4FPGA)/scopeio_sin/_primary.dat
 HDL4FPGA__scopeio_rgtr = $(LIB_HDL4FPGA)/scopeio_rgtr/_primary.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
+HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 HDL4FPGA__dmactlr = $(LIB_HDL4FPGA)/dmactlr/_primary.dat
 HDL4FPGA__ddr_ctlr = $(LIB_HDL4FPGA)/ddr_ctlr/_primary.dat
 HDL4FPGA__ddr_param = $(LIB_HDL4FPGA)/ddr_param/_primary.dat
-HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
+HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
@@ -58,15 +60,22 @@ WORK__ulx3s_ddr_structure_md = $(LIB_WORK)/ulx3s_ddr_structure_md/_primary.dat
 WORK__ulx3s_ddr_md = $(LIB_WORK)/ulx3s_ddr_md/_primary.dat
 WORK__ulx3s__ddr = $(LIB_WORK)/ulx3s/ddr.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ecp3versa_ddr = $(LIB_WORK)/testbench/ecp3versa_ddr.dat
 WORK__testbench__ulx3s_graphic = $(LIB_WORK)/testbench/ulx3s_graphic.dat
-WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
 WORK__testbench__ulx3s_ddr = $(LIB_WORK)/testbench/ulx3s_ddr.dat
+WORK__testbench__ecp3versa_ddr = $(LIB_WORK)/testbench/ecp3versa_ddr.dat
+WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
+WORK__testbench__nuhs3adsp_ddr = $(LIB_WORK)/testbench/nuhs3adsp_ddr.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp_graphic_md = $(LIB_WORK)/nuhs3adsp_graphic_md/_primary.dat
+WORK__nuhs3adsp_ddr_structure_md = $(LIB_WORK)/nuhs3adsp_ddr_structure_md/_primary.dat
+WORK__nuhs3adsp_ddr_md = $(LIB_WORK)/nuhs3adsp_ddr_md/_primary.dat
+WORK__nuhs3adsp__beh = $(LIB_WORK)/nuhs3adsp/beh.dat
 WORK__nuhs3adsp__graphic = $(LIB_WORK)/nuhs3adsp/graphic.dat
+WORK__nuhs3adsp__ddr = $(LIB_WORK)/nuhs3adsp/ddr.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
+WORK__ecp3versa_structure_md = $(LIB_WORK)/ecp3versa_structure_md/_primary.dat
+WORK__ecp3versa_ddr_md = $(LIB_WORK)/ecp3versa_ddr_md/_primary.dat
 WORK__ecp3versa__ddr = $(LIB_WORK)/ecp3versa/ddr.dat
 WORK__ecp3versa = $(LIB_WORK)/ecp3versa/_primary.dat
 VCOM = vcom
@@ -80,15 +89,22 @@ whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_ddr_md) \
     $(WORK__ulx3s__ddr) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ecp3versa_ddr) \
     $(WORK__testbench__ulx3s_graphic) \
-    $(WORK__testbench__nuhs3adsp_graphic) \
     $(WORK__testbench__ulx3s_ddr) \
+    $(WORK__testbench__ecp3versa_ddr) \
+    $(WORK__testbench__nuhs3adsp_graphic) \
+    $(WORK__testbench__nuhs3adsp_ddr) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp_graphic_md) \
+    $(WORK__nuhs3adsp_ddr_structure_md) \
+    $(WORK__nuhs3adsp_ddr_md) \
+    $(WORK__nuhs3adsp__beh) \
     $(WORK__nuhs3adsp__graphic) \
+    $(WORK__nuhs3adsp__ddr) \
     $(WORK__nuhs3adsp) \
+    $(WORK__ecp3versa_structure_md) \
+    $(WORK__ecp3versa_ddr_md) \
     $(WORK__ecp3versa__ddr) \
     $(WORK__ecp3versa)
 
@@ -127,6 +143,36 @@ $(WORK__nuhs3adsp) : ../../nuhs3adsp/common/nuhs3adsp.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002  ../../nuhs3adsp/common/nuhs3adsp.vhd
 
+$(WORK__nuhs3adsp__ddr) : ../../nuhs3adsp/demos/ddr.vhd \
+		$(HDL4FPGA__xcs3_ddrphy) \
+		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__ddr_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(HDL4FPGA__uart_tx) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__scopeio_rgtr) \
+		$(HDL4FPGA__scopeio_sin) \
+		$(HDL4FPGA__scopeio_udpipdaisy) \
+		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__scopeio_istreamdaisy) \
+		$(HDL4FPGA__uart_rx) \
+		$(HDL4FPGA__dfsdcm) \
+		$(HDL4FPGA__dfs) \
+		$(WORK__nuhs3adsp) \
+		$(UNISIM__vcomponents) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__ddr_db) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../nuhs3adsp/demos/ddr.vhd
+
 $(WORK__nuhs3adsp__graphic) : ../../nuhs3adsp/demos/graphic.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__xcs3_ddrphy) \
@@ -158,13 +204,48 @@ $(WORK__nuhs3adsp__graphic) : ../../nuhs3adsp/demos/graphic.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../nuhs3adsp/demos/graphic.vhd
+	$(VCOM) -2002 ../../nuhs3adsp/demos/graphic.vhd
+
+$(WORK__nuhs3adsp__beh) : ../../nuhs3adsp/scopeio/scopeio.vhd \
+		$(HDL4FPGA__ddro) \
+		$(HDL4FPGA__scopeio) \
+		$(HDL4FPGA__scopeio_udpipdaisy) \
+		$(HDL4FPGA__uart_rx) \
+		$(HDL4FPGA__dfs) \
+		$(WORK__nuhs3adsp) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__textboxpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(UNISIM__vcomponents) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../nuhs3adsp/scopeio/scopeio.vhd
 
 $(WORK__testbench) : testbench.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__nuhs3adsp_ddr_md) \
+$(WORK__nuhs3adsp_ddr_structure_md) \
+$(WORK__testbench__nuhs3adsp_ddr) : ../../nuhs3adsp/testbench/ddr.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr_model) \
+		$(WORK__nuhs3adsp) \
+		$(HDL4FPGA__mii_rom) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002  ../../nuhs3adsp/testbench/ddr.vhd
 
 $(WORK__nuhs3adsp_graphic_md) \
 $(WORK__nuhs3adsp_graphic_structure_md) \
@@ -179,9 +260,14 @@ $(WORK__testbench__nuhs3adsp_graphic) : ../../nuhs3adsp/testbench/graphic.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002  ../../nuhs3adsp/testbench/graphic.vhd
+	$(VCOM) -2002 ../../nuhs3adsp/testbench/graphic.vhd
 
+$(WORK__ecp3versa_ddr_md) \
+$(WORK__ecp3versa_structure_md) \
 $(WORK__testbench__ecp3versa_ddr) : ../../ecp3versa/testbench/ddr.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr3) \
+		$(WORK__ecp3versa) \
 		$(HDL4FPGA__mii_rom) \
 		$(WORK__testbench) \
 		$(IEEE__std_logic_textio) \
@@ -200,12 +286,12 @@ $(WORK__ulx3s) : ../../ULX3S/common/ulx3s.vhd \
 
 $(WORK__ulx3s__ddr) : ../../ULX3S/demos/ddr.vhd \
 		$(HDL4FPGA__sdrphy) \
-		$(HDL4FPGA__align) \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(HDL4FPGA__uart_tx) \
 		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__scopeio_rgtr) \
 		$(HDL4FPGA__scopeio_sin) \
@@ -225,11 +311,12 @@ $(WORK__ulx3s__ddr) : ../../ULX3S/demos/ddr.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../ULX3S/demos/ddr.vhd
+	$(VCOM) -2002 ../../ULX3S/demos/ddr.vhd
 
 $(WORK__testbench__ulx3s_ddr) \
 $(WORK__ulx3s_ddr_md) \
 $(WORK__ulx3s_ddr_structure_md) : ../../ULX3S/testbench/ddr.vhd \
+		$(HDL4FPGA__uart_rx) \
 		$(VERILOG__vl_types) \
 		$(MICRON__mt48lc32m16a2) \
 		$(IEEE__std_logic_arith) \
@@ -257,5 +344,5 @@ $(WORK__ulx3s_graphic_structure_md) : ../../ULX3S/testbench/graphic.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002  ../../ULX3S/testbench/graphic.vhd
+	$(VCOM) -2002 ../../ULX3S/testbench/graphic.vhd
 
