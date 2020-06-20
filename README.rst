@@ -1,8 +1,8 @@
 ScopeIO  
 =======
 
-It's tool to be embedded on a device that helps to understand what is happening inside
-when simulation tools are not enough to guess what is wrong with the design.
+It's tool to be embedded along with a design that helps to understand what is happening inside
+when simulation tools are not enough to guess what is wrong with it.
 
 How it was born
 ---------------
