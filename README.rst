@@ -14,8 +14,8 @@ happening and displayed it
 Goals 
 -----
 
-- Small footprint to be embedded.
-- Portability.
-- Video interface to display data.
-- Block RAM requirement only.
+- Small footprint to be embedded
+- Portability
+- Video interface to display data
+- Block RAM requirement only
 - Multiple communication system to dump and upload data 
