@@ -197,8 +197,7 @@ architecture ulx3s_ddr of testbench is
 
 	constant baudrate : natural := 3_000_000;
 	constant data : std_logic_vector := 
-		x"16020"                            &
-		x"00000"                            &
+		x"1602000000"                       &
 		x"18ff"                             & 
 		x"123456789abcdef123456789abcdef12" &
 		x"23456789abcdef123456789abcdef123" &

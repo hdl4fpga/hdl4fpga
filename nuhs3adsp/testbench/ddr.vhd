@@ -132,12 +132,12 @@ architecture nuhs3adsp_ddr of testbench is
 
 			mii_txc  : in  std_logic := 'Z';
 			mii_txen : out std_logic := 'Z';
-			mii_txd  : out std_logic_vector(4-1 downto 0) := (others => 'Z');
+			mii_txd  : out std_logic_vector(0 to 4-1) := (others => 'Z');
 
 			mii_rxc  : in std_logic := 'Z';
 			mii_rxdv : in std_logic := 'Z';
 			mii_rxer : in std_logic := 'Z';
-			mii_rxd  : in std_logic_vector(4-1 downto 0) := (others => 'Z');
+			mii_rxd  : in std_logic_vector(0 to 4-1) := (others => 'Z');
 
 			mii_crs  : in std_logic := 'Z';
 			mii_col  : in std_logic := 'Z';
