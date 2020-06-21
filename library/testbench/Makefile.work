@@ -62,8 +62,8 @@ WORK__ulx3s__ddr = $(LIB_WORK)/ulx3s/ddr.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx3s_graphic = $(LIB_WORK)/testbench/ulx3s_graphic.dat
 WORK__testbench__ecp3versa_ddr = $(LIB_WORK)/testbench/ecp3versa_ddr.dat
-WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
 WORK__testbench__ulx3s_ddr = $(LIB_WORK)/testbench/ulx3s_ddr.dat
+WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
 WORK__testbench__nuhs3adsp_ddr = $(LIB_WORK)/testbench/nuhs3adsp_ddr.dat
 WORK__testbench__nuhs3adsp_dhcp = $(LIB_WORK)/testbench/nuhs3adsp_dhcp.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
@@ -92,8 +92,8 @@ whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx3s_graphic) \
     $(WORK__testbench__ecp3versa_ddr) \
-    $(WORK__testbench__nuhs3adsp_graphic) \
     $(WORK__testbench__ulx3s_ddr) \
+    $(WORK__testbench__nuhs3adsp_graphic) \
     $(WORK__testbench__nuhs3adsp_ddr) \
     $(WORK__testbench__nuhs3adsp_dhcp) \
     $(WORK__testbench) \
@@ -173,7 +173,7 @@ $(WORK__nuhs3adsp__ddr) : ../../nuhs3adsp/demos/ddr.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../nuhs3adsp/demos/ddr.vhd
+	$(VCOM) -2002  ../../nuhs3adsp/demos/ddr.vhd
 
 $(WORK__nuhs3adsp__graphic) : ../../nuhs3adsp/demos/graphic.vhd \
 		$(HDL4FPGA__ddro) \
