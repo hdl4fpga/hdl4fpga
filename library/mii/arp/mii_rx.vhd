@@ -21,6 +21,8 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -28,73 +30,38 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_ram is
-	generic (
-		size     : natural);
-    port (
-		mii_rxc  : in  std_logic;
-        mii_rxdv : in  std_logic;
-        mii_rxd  : in  std_logic_vector;
-		mii_treq : in  std_logic;
-		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
-        mii_txc  : in  std_logic;
-		mii_txen : in  std_logic := '1';
-        mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+entity arp_miirx is
+	port (
+		mii_rxc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
+		ptype_vld : in  std_logic
+	);
+
 end;
 
-architecture def of mii_ram is
-	constant addr_size : natural := unsigned_num_bits((size+mii_txd'length-1)/mii_txd'length-1);
+architecture struct of arp_miirx is
 
-	signal raddr : unsigned(addr_size-1 downto 0);
-	signal waddr : unsigned(raddr'range);
-	signal wcntr : unsigned(waddr'range);
-	signal rdy   : std_logic;
+	constant arp_field : natural_vector := (
+		hlen  => 1*8,
+		plen  => 1*8,
+		oper  => 2*8,
+		sha   => 6*8,
+		spa   => 4*8,
+		tha   => 6*8,
+		tpa   => 4*8);
 
 begin
 
-	process (mii_rxc, mii_rxdv)
-	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='1' then
-				waddr <= wcntr;
-				wcntr <= wcntr + 1;
-			else
-				wcntr <= (others => '0');
-			end if;
-		end if;
-
-	end process;
-
-	ram_e : entity hdl4fpga.dpram
+	mii_tpacmp : entity hdl4fpga.mii_cmp
 	port map (
-		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(wcntr),
-		wr_data => mii_rxd,
-		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr),
-		rd_data => mii_txd);
-
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				raddr <= (others => '0');
-				rdy   <= '0';
-			elsif raddr < waddr then
-				if mii_txen='1' then
-					raddr <= raddr + 1;
-				end if;
-				rdy   <= '0';
-			else
-				rdy   <= '1';
-			end if;
-		end if;
-	end process;
-
-	mii_teoc <= rdy;
-	mii_trdy <= mii_treq and rdy;
-	mii_txdv <= mii_treq and not rdy and mii_txen;
+		mii_req  => arpproto_vld,
+		mii_rxc  => mii_rxc,
+		mii_ena  => tpa_ena,
+		mii_rdy  => ipsaddr_rrdy,
+		mii_rxd1 => mii_rxd,
+		mii_rxd2 => ipsaddr_rtxd,
+		mii_equ  => cmp_equ);
 
 end;
+
