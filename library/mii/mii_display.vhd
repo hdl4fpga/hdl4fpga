@@ -34,6 +34,7 @@ use hdl4fpga.videopkg.all;
 
 entity mii_display is
 	generic (
+		timing_id  : videotiming_ids;
 		cga_bitrom : std_logic_vector := (1 to 0 => '-'));
 	port (
 		mii_rxc   : in  std_logic;
@@ -42,7 +43,7 @@ entity mii_display is
 
 		video_clk : in  std_logic;
 		video_dot : out std_logic;
-		video_blank : out std_logic;
+		video_on  : buffer std_logic;
 		video_hs  : out std_logic;
 		video_vs  : out std_logic);
 	end;
@@ -54,32 +55,29 @@ architecture struct of mii_display is
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 
-	signal video_frm   : std_logic;
-	signal video_hon   : std_logic;
-	signal video_vld   : std_logic;
-	signal video_vcntr : std_logic_vector(11-1 downto 0);
-	signal video_hcntr : std_logic_vector(11-1 downto 0);
+	signal video_von         : std_logic;
+	signal video_hon         : std_logic;
+	signal video_vcntr       : std_logic_vector(11-1 downto 0);
+	signal video_hcntr       : std_logic_vector(11-1 downto 0);
 
-	signal blankn   : std_logic;
+	signal cga_addr          : std_logic_vector(14-1 downto 0);
+	signal video_addr        : std_logic_vector(14-1 downto 0);
+	signal cga_code          : ascii;
+	signal cga_we            : std_logic;
 
-	signal cga_addr : std_logic_vector(14-1 downto 0);
-	signal video_addr : std_logic_vector(14-1 downto 0);
-	signal cga_code : ascii;
-	signal cga_we   : std_logic;
 begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
---		mode => 7)
-		mode => 1)
+		timing_id => timing_id)
 	port map (
-		video_clk   => video_clk,
+		video_clk    => video_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
 		video_hzcntr => video_hcntr,
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
-		video_vton   => video_frm);
+		video_vton   => video_von);
 
 	process(mii_rxc)
 		variable addr : unsigned(cga_addr'range);
@@ -102,29 +100,28 @@ begin
 	process (video_hcntr, video_vcntr)
 	begin
 		video_addr <= std_logic_vector(
-			(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(1920/font_width)) +
+			(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
 			unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
 	end process;
 
-	blankn <= video_hon and video_frm;
+	video_on <= video_hon and video_von;
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom   => cga_bitrom,
-	  	font_bitrom  => psf1cp850x8x16,
-		font_height  => font_height,
-		font_width   => font_width)
+		cga_bitrom  => cga_bitrom,
+	  	font_bitrom => psf1cp850x8x16,
+		font_height => font_height,
+		font_width  => font_width)
 	port map (
-		cga_clk      => mii_rxc,
-		cga_we       => cga_we,
-		cga_addr     => cga_addr,
-		cga_data     => cga_code,
+		cga_clk     => mii_rxc,
+		cga_we      => cga_we,
+		cga_addr    => cga_addr,
+		cga_data    => cga_code,
 
-		video_clk    => video_clk,
-		video_addr   => video_addr,
-		font_hcntr   => video_hcntr(fontwidth_bits-1 downto 0),
-		font_vcntr   => video_vcntr(fontheight_bits-1 downto 0),
-		video_blankn => blankn,
-		video_dot    => video_dot);
-	video_blank <= not blankn;
+		video_clk   => video_clk,
+		video_addr  => video_addr,
+		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
+		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
+		video_on    => video_on,
+		video_dot   => video_dot);
 
 end;

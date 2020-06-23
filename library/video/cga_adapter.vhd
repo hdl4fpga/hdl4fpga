@@ -36,18 +36,18 @@ entity cga_adapter is
 		font_height  : natural := 16;
 		font_width   : natural := 8);
 	port (
-		cga_clk      : in  std_logic;
-		cga_we       : in  std_logic := '1';
-		cga_addr     : in  std_logic_vector;
-		cga_data     : in  std_logic_vector;
+		cga_clk    : in  std_logic;
+		cga_we     : in  std_logic := '1';
+		cga_addr   : in  std_logic_vector;
+		cga_data   : in  std_logic_vector;
 
-		video_clk    : in std_logic;
-		video_addr   : in std_logic_vector;
-		font_hcntr   : in std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-		font_vcntr   : in std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
-		video_blankn : in std_logic := '1';
+		video_clk  : in std_logic;
+		video_addr : in std_logic_vector;
+		font_hcntr : in std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+		font_vcntr : in std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
+		video_on   : in std_logic := '1';
 
-		video_dot    : out std_logic);
+		video_dot  : out std_logic);
 end;
 
 architecture struct of cga_adapter is
@@ -56,8 +56,8 @@ architecture struct of cga_adapter is
 
 	signal cga_code : std_logic_vector(byte'range);
 
-	signal video_on  : std_logic;
-	signal char_dot  : std_logic;
+	signal char_on  : std_logic;
+	signal char_dot : std_logic;
 begin
 
 	cgamem_e : entity hdl4fpga.dpram
@@ -111,9 +111,9 @@ begin
 		d     => (1 to 1 => 4))
 	port map (
 		clk   => video_clk,
-		di(0) => video_blankn,
-		do(0) => video_on);
+		di(0) => video_on,
+		do(0) => char_on);
 
-	video_dot <= char_dot and video_on;
+	video_dot <= char_dot and char_on;
 
 end;
