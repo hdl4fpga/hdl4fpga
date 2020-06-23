@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="ddr" dir="ddr" description="ddr" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.graphic" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.graphics" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -41,7 +41,7 @@
         <Source name="../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/video/graphic.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/video/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">
@@ -150,7 +150,7 @@
             <Options/>
         </Source>
     </Implementation>
-    <Implementation title="graphic" dir="graphic" description="graphic" synthesis="synplify" default_strategy="Strategy1">
+    <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.desser" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
@@ -497,10 +497,10 @@
         <Source name="../../library/usb/ulpi_wrapper/ulpi_wrapper.v" type="Verilog" type_short="Verilog" excluded="TRUE">
             <Options/>
         </Source>
-        <Source name="../demos/graphic.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../demos/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-        <Source name="../../library/video/graphic.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/video/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">

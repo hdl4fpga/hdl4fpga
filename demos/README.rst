@@ -1,5 +1,5 @@
-graphic.sh
----------------
+graphics.sh
+-----------
 
 What does it do ?
 ~~~~~~~~~~~~~~~~~
@@ -15,17 +15,17 @@ What do I need to run it ?
 On UN*X
 ~~~~~~~
 
-.. _graphic.sh: ./graphic.sh
+.. _graphics.sh: ./graphics.sh
 
 .. _Imagemagick: https://imagemagick.org
 
-Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to change your image to that format. Imagemagick_ will be called by graphic.sh_ script and will do it for you.
+Imagemagick_ is required to convert *your_image.your_format* to 800x600 RGB8. There is no need to change your image to that format. Imagemagick_ will be called by graphics.sh_ script and will do it for you.
 
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphics/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
 
 Open a console on demos directory and run
 
-**IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./graphic.sh**
+**IMAGE="your_image_path/your_image.your_format" PROG="ujprog your_bit_path/demos_graphic-12F200MHz-3000000bps.bit" TTY="your_serial_device" ./graphics.sh**
 
 
 Remember that all the **bold text** should be on the same line
@@ -55,7 +55,7 @@ On UN*X
 
 ffmpeg_ is required to convert *your_motion.your_format* to image frames and Imagemagick_ is required to convert the images frames to 800x600 RGB8.
 
-Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphic/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
+Download https://github.com/hdl4fpga/hdl4fpga.github.io/raw/master/demos/graphics/ULX3S/bits/demos_graphic-12F200MHz-3000000bps.bit bitstream.
 
 Open a console on demos directory and run:
 

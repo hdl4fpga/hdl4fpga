@@ -505,8 +505,8 @@ begin
 		signal hzon   : std_logic;
 		signal vton   : std_logic;
 
-		signal graphic_di : std_logic_vector(ctlr_do'range);
-		signal graphic_dv : std_logic;
+		signal graphics_di : std_logic_vector(ctlr_do'range);
+		signal graphics_dv : std_logic;
 		signal pixel  : std_logic_vector(video_pixel'range);
 	begin
 		sync_e : entity hdl4fpga.video_sync
@@ -521,7 +521,7 @@ begin
 			video_hzon    => hzon,
 			video_vton    => vton);
 
-		tographic_e : entity hdl4fpga.align
+		tographics_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length+1,
 			d => (0 to ctlr_do'length => 1))
@@ -529,16 +529,16 @@ begin
 			clk => ctlr_clk,
 			di(0 to ctlr_do'length-1) => ctlr_do,
 			di(ctlr_do'length) => ctlr_do_dv(0),
-			do(0 to ctlr_do'length-1) => graphic_di,
-			do(ctlr_do'length) => graphic_dv);
+			do(0 to ctlr_do'length-1) => graphics_di,
+			do(ctlr_do'length) => graphics_dv);
 
-		graphic_e : entity hdl4fpga.graphic
+		graphics_e : entity hdl4fpga.graphics
 		generic map (
 			video_width => modeline_tab(video_tab(video_mode).mode)(0))
 		port map (
 			ctlr_clk     => ctlr_clk,
-			ctlr_di_dv   => graphic_dv,
-			ctlr_di      => graphic_di,
+			ctlr_di_dv   => graphics_dv,
+			ctlr_di      => graphics_di,
 			base_addr    => base_addr,
 			dma_req      => dmacfgvideo_req,
 			dma_rdy      => dmavideo_rdy,

@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
-entity graphic is
+entity graphics is
 	generic (
 		video_width  : natural);
 	port (
@@ -47,7 +47,7 @@ entity graphic is
 		video_pixel  : out std_logic_vector);
 end;
 
-architecture def of graphic is
+architecture def of graphics is
 
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
