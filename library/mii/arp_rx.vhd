@@ -30,19 +30,20 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity arp_miirx is
+entity arp_rx is
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
-		ptype_vld : in  std_logic
-	);
+		ptype_vld : in  std_logic);
 
 end;
 
-architecture struct of arp_miirx is
+architecture struct of arp_rx is
 
-	constant arp_field : natural_vector := (
+	constant arp_pfx : natural_vector := (
+		htype => 2*8,
+		ptype => 2*8,
 		hlen  => 1*8,
 		plen  => 1*8,
 		oper  => 2*8,
@@ -53,7 +54,7 @@ architecture struct of arp_miirx is
 
 begin
 
-	mii_tpacmp : entity hdl4fpga.mii_cmp
+	tpacmp : entity hdl4fpga.mii_cmp
 	port map (
 		mii_req  => arpproto_vld,
 		mii_rxc  => mii_rxc,
