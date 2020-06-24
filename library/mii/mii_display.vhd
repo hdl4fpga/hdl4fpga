@@ -97,12 +97,9 @@ begin
 		end if;
 	end process;
 
-	process (video_hcntr, video_vcntr)
-	begin
-		video_addr <= std_logic_vector(
-			(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
-			unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
-	end process;
+	video_addr <= std_logic_vector(
+		(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
+		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
 
 	video_on <= video_hon and video_von;
 	cga_adapter_e : entity hdl4fpga.cga_adapter
