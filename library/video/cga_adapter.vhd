@@ -51,13 +51,15 @@ entity cga_adapter is
 end;
 
 architecture struct of cga_adapter is
-	signal font_col : std_logic_vector(font_hcntr'range);
-	signal font_row : std_logic_vector(font_vcntr'range);
+	signal font_col  : std_logic_vector(font_hcntr'range);
+	signal font_row  : std_logic_vector(font_vcntr'range);
 
-	signal cga_code : std_logic_vector(byte'range);
+	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
+	signal cga_codes : std_logic_vector(cga_data'range);
+	alias  char_addr : std_logic_vector(video_addr'length-1 downto 0) is video_addr;
 
-	signal char_on  : std_logic;
-	signal char_dot : std_logic;
+	signal char_on   : std_logic;
+	signal char_dot  : std_logic;
 begin
 
 	cgamem_e : entity hdl4fpga.dpram
@@ -67,13 +69,22 @@ begin
 		bitrom => cga_bitrom)
 	port map (
 		wr_clk  => cga_clk,
-		wr_addr => cga_addr,
 		wr_ena  => cga_we,
+		wr_addr => cga_addr,
 		wr_data => cga_data,
 
 		rd_clk  => video_clk,
-		rd_addr => video_addr,
-		rd_data => cga_code);
+		rd_addr => char_addr(char_addr'left downto char_addr'length-cga_addr'length),
+		rd_data => cga_codes);
+
+	process (cga_codes, char_addr)
+	begin
+		if cga_codes'length=cga_code'length then
+			cga_code <= cga_codes;
+		else
+			cga_code <= word2byte(cga_codes, char_addr(char_addr'length-cga_addr'length-1 downto 0));
+		end if;
+	end process;
 
 	vsync_e : entity hdl4fpga.align
 	generic map (

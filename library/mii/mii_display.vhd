@@ -35,6 +35,8 @@ use hdl4fpga.videopkg.all;
 entity mii_display is
 	generic (
 		timing_id  : videotiming_ids;
+		code_spce  : std_logic_vector;
+		code_0tof  : std_logic_vector;
 		cga_bitrom : std_logic_vector := (1 to 0 => '-'));
 	port (
 		mii_rxc   : in  std_logic;
@@ -50,8 +52,10 @@ entity mii_display is
 
 architecture struct of mii_display is
 
+	constant font_bitrom     : std_logic_vector := psf1cp850x8x16;
 	constant font_width      : natural := 8;
 	constant font_height     : natural := 16;
+	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 
@@ -62,7 +66,8 @@ architecture struct of mii_display is
 
 	signal cga_addr          : std_logic_vector(14-1 downto 0);
 	signal video_addr        : std_logic_vector(14-1 downto 0);
-	signal cga_code          : ascii;
+	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/4-1 downto 0);
+	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
 
 begin
@@ -79,21 +84,37 @@ begin
 		video_hzon   => video_hon,
 		video_vton   => video_von);
 
+	serdes_e : entity hdl4fpga.serdes
+	port map (
+		serdes_clk => mii_rxc,
+		serdes_frm => mii_rxdv,
+		ser_irdy   => '1',
+		ser_data   => mii_rxd,
+
+		des_irdy   => des_rdy,
+		des_data   => des_data);
+
 	process(mii_rxc)
+		variable code : unsigned(cga_codes'length-1 downto 0);
 		variable addr : unsigned(cga_addr'range);
 		variable we   : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			cga_addr <= std_logic_vector(addr);
 			cga_we   <= mii_rxdv or we;
-			if mii_rxdv='1' then
-				cga_code <= word2byte(to_ascii("0123456789ABCDEF"), mii_rxd, ascii'length);
-				addr     := addr + 1;
-			elsif we='1' then
-				cga_code <= to_ascii(" ");
-				addr     := addr + 1;
-			end if;
-			we := mii_rxdv;
+			for i in 0 to des_data'length/4-1 loop
+				if mii_rxdv='1' then
+					if des_irdy='1' then
+						code(font_code'range) := word2byte(code_tab, , font_code'length);
+					end if;
+				elsif we='1' then
+					code(font_code'range) := code_spce;
+				end if;
+				code := code rol font_code'length;
+			end loop;
+			addr := addr + 1;
+			we   := mii_rxdv;
+			cga_codes <= std_logic_vector(code);
 		end if;
 	end process;
 
