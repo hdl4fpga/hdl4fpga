@@ -27,73 +27,59 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
+use hdl4fpga.cgafonts.all;
 
 entity mii_debug is
 	generic (
-		cga_bitrom : std_logic_vector := (1 to 0 => '-');
-		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		font_bitrom : std_logic_vector := psf1cp850x8x16;
+		font_width  : natural := 8;
+		font_height : natural := 16;
+
+		timing_id   : videotiming_ids;
+		code_spce   : std_logic_vector := to_ascii("b");
+		code_digits : std_logic_vector := to_ascii("0123456789abcdef");
+		cga_bitrom  : std_logic_vector := (1 to 0 => '-');
+		mac         : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		btn       : in  std_logic:= '0';
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
+		mii_rxc     : in  std_logic;
+		mii_rxd     : in  std_logic_vector;
+		mii_rxdv    : in  std_logic;
 
-		mii_req   : in  std_logic;
-		mii_txc   : in  std_logic;
-		mii_txd   : out std_logic_vector;
-		mii_txdv  : out std_logic;
-
-		video_clk : in  std_logic;
-		video_dot : out std_logic;
-		video_blank : out std_logic;
-		video_hs  : out std_logic;
-		video_vs  : out std_logic);
+		video_clk   : in  std_logic;
+		video_dot   : out std_logic;
+		video_on    : out std_logic;
+		video_hs    : out std_logic;
+		video_vs    : out std_logic);
 	end;
 
 architecture struct of mii_debug is
 
-	signal nodata : std_logic_vector(mii_txd'range);
-
-	signal video_rxc  : std_logic;
-	signal video_rxdv : std_logic;
-	signal video_rxd  : std_logic_vector(mii_txd'range);
-	signal myipcfg_vld: std_logic;
-	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
+--	mii_du : entity hdl4fpga.eth_rx
+--	port map (
+--		mii_rxc  => mii_rxc,
+--		mii_rxdv => mii_rxdv,
+--		mii_rxd  => mii_rxd,
+--
+--	);
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	port map (
-		ipcfg_req   => mii_req,
-
-		phy_rxc     => mii_rxc,
-		phy_rx_dv   => mii_rxdv,
-		phy_rx_d    => mii_rxd,
-
-		phy_txc     => mii_txc, 
-		phy_tx_en   => mii_txdv,
-		phy_tx_d    => mii_txd,
-	
-		chaini_sel  => '0',
-
-		chaini_data => nodata,
-
-		chaino_frm  => video_rxdv,
-		chaino_data => video_rxd);
-	
-	video_rxc <= mii_rxc;
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
-		cga_bitrom => cga_bitrom)
+		timing_id   => timing_id,
+		code_spce   => code_spce, 
+		code_digits => code_digits, 
+		cga_bitrom  => cga_bitrom)
 	port map (
-		mii_rxc   => video_rxc,
-		mii_rxdv  => video_rxdv,
-		mii_rxd   => video_rxd,
+		mii_rxc     => mii_rxc,
+		mii_rxdv    => mii_rxdv,
+		mii_rxd     => mii_rxd,
 
-		video_clk => video_clk,
-		video_dot => video_dot,
-		video_blank => video_blank,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
+		video_clk   => video_clk,
+		video_dot   => video_dot,
+		video_on    => video_on ,
+		video_hs    => video_hs,
+		video_vs    => video_vs);
 
 end;

@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
@@ -56,12 +57,13 @@ architecture struct of cga_adapter is
 
 	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
 	signal cga_codes : std_logic_vector(cga_data'range);
-	alias  char_addr : std_logic_vector(video_addr'length-1 downto 0) is video_addr;
+	signal char_addr : std_logic_vector(video_addr'length-1 downto 0);
 
 	signal char_on   : std_logic;
 	signal char_dot  : std_logic;
 begin
 
+	char_addr <= video_addr;
 	cgamem_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,

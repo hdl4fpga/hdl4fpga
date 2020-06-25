@@ -34,28 +34,31 @@ use hdl4fpga.videopkg.all;
 
 entity mii_display is
 	generic (
-		timing_id  : videotiming_ids;
-		code_spce  : std_logic_vector;
-		code_0tof  : std_logic_vector;
-		cga_bitrom : std_logic_vector := (1 to 0 => '-'));
-	port (
-		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
+		font_bitrom : std_logic_vector := psf1cp850x8x16;
+		font_width  : natural := 8;
+		font_height : natural := 16;
 
-		video_clk : in  std_logic;
-		video_dot : out std_logic;
-		video_on  : buffer std_logic;
-		video_hs  : out std_logic;
-		video_vs  : out std_logic);
+		timing_id   : videotiming_ids;
+		code_spce   : std_logic_vector;
+		code_digits : std_logic_vector;
+		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
+	port (
+		mii_rxc     : in  std_logic;
+		mii_rxdv    : in  std_logic;
+		mii_rxd     : in  std_logic_vector;
+
+		video_clk   : in  std_logic;
+		video_dot   : out std_logic;
+		video_on    : buffer std_logic;
+		video_hs    : out std_logic;
+		video_vs    : out std_logic);
 	end;
 
 architecture struct of mii_display is
 
-	constant font_bitrom     : std_logic_vector := psf1cp850x8x16;
-	constant font_width      : natural := 8;
-	constant font_height     : natural := 16;
 	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
+	subtype digit     is std_logic_vector(4-1 downto 0);
+
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 
@@ -63,18 +66,21 @@ architecture struct of mii_display is
 	signal video_hon         : std_logic;
 	signal video_vcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hcntr       : std_logic_vector(11-1 downto 0);
-
-	signal cga_addr          : std_logic_vector(14-1 downto 0);
 	signal video_addr        : std_logic_vector(14-1 downto 0);
-	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/4-1 downto 0);
+
+	signal des_data          : std_logic_vector(2*digit'length-1 downto 0);
+	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
 	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
+	signal cga_addr          : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_codes'length/cga_code'length-1));
+
+	signal des_irdy          : std_logic;
 
 begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		timing_id => timing_id)
+		timing_id   => timing_id)
 	port map (
 		video_clk    => video_clk,
 		video_hzsync => video_hs,
@@ -83,6 +89,7 @@ begin
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
 		video_vton   => video_von);
+	video_on <= video_hon and video_von;
 
 	serdes_e : entity hdl4fpga.serdes
 	port map (
@@ -91,26 +98,29 @@ begin
 		ser_irdy   => '1',
 		ser_data   => mii_rxd,
 
-		des_irdy   => des_rdy,
+		des_irdy   => des_irdy,
 		des_data   => des_data);
 
 	process(mii_rxc)
-		variable code : unsigned(cga_codes'length-1 downto 0);
-		variable addr : unsigned(cga_addr'range);
-		variable we   : std_logic;
+		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
+		variable addr  : unsigned(cga_addr'range);
+		variable we    : std_logic;
+		variable data  : unsigned(des_data'range);
 	begin
 		if rising_edge(mii_rxc) then
 			cga_addr <= std_logic_vector(addr);
 			cga_we   <= mii_rxdv or we;
-			for i in 0 to des_data'length/4-1 loop
+			data     := unsigned(des_data);
+			for i in 0 to des_data'length/digit'length-1 loop
 				if mii_rxdv='1' then
 					if des_irdy='1' then
-						code(font_code'range) := word2byte(code_tab, , font_code'length);
+						code := std_logic_vector(unsigned(code) rol font_code'length);
+						code(font_code'range) := word2byte(code_digits, std_logic_vector(data(digit'range)), font_code'length);
 					end if;
 				elsif we='1' then
 					code(font_code'range) := code_spce;
 				end if;
-				code := code rol font_code'length;
+				data := data rol digit'length;
 			end loop;
 			addr := addr + 1;
 			we   := mii_rxdv;
@@ -122,7 +132,6 @@ begin
 		(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
 		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
 
-	video_on <= video_hon and video_von;
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
 		cga_bitrom  => cga_bitrom,
@@ -133,7 +142,7 @@ begin
 		cga_clk     => mii_rxc,
 		cga_we      => cga_we,
 		cga_addr    => cga_addr,
-		cga_data    => cga_code,
+		cga_data    => cga_codes,
 
 		video_clk   => video_clk,
 		video_addr  => video_addr,
