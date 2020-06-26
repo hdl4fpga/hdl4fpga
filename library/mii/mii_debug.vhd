@@ -37,7 +37,7 @@ entity mii_debug is
 		font_height : natural := 16;
 
 		timing_id   : videotiming_ids;
-		code_spce   : std_logic_vector := to_ascii("b");
+		code_spce   : std_logic_vector := to_ascii(" ");
 		code_digits : std_logic_vector := to_ascii("0123456789abcdef");
 		cga_bitrom  : std_logic_vector := (1 to 0 => '-');
 		mac         : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");

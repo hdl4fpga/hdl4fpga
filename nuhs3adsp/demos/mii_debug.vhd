@@ -96,7 +96,7 @@ begin
 	port map (
 		mii_rxc   => mii_rxc,
 		mii_rxd   => mii_rxd,
-		mii_rxdv  => '0', --mii_rxdv,
+		mii_rxdv  => mii_rxdv,
 
 		video_clk => vga_clk, 
 		video_dot => vga_dot,

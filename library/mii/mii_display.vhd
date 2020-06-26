@@ -57,7 +57,7 @@ entity mii_display is
 architecture struct of mii_display is
 
 	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
-	subtype digit     is std_logic_vector(4-1 downto 0);
+	subtype digit     is std_logic_vector(0 to 4-1);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
@@ -68,7 +68,7 @@ architecture struct of mii_display is
 	signal video_hcntr       : std_logic_vector(11-1 downto 0);
 	signal video_addr        : std_logic_vector(14-1 downto 0);
 
-	signal des_data          : std_logic_vector(2*digit'length-1 downto 0);
+	signal des_data          : std_logic_vector(0 to 2*digit'length-1);
 	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
 	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
@@ -112,17 +112,23 @@ begin
 			cga_we   <= mii_rxdv or we;
 			data     := unsigned(des_data);
 			for i in 0 to des_data'length/digit'length-1 loop
+				code := std_logic_vector(unsigned(code) rol font_code'length);
 				if mii_rxdv='1' then
 					if des_irdy='1' then
-						code := std_logic_vector(unsigned(code) rol font_code'length);
-						code(font_code'range) := word2byte(code_digits, std_logic_vector(data(digit'range)), font_code'length);
+						code(font_code'range) := word2byte(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
 					end if;
 				elsif we='1' then
 					code(font_code'range) := code_spce;
 				end if;
 				data := data rol digit'length;
 			end loop;
-			addr := addr + 1;
+			if mii_rxdv='1' then
+				if des_irdy='1' then
+					addr := addr + 1;
+				end if;
+			elsif we='1' then
+				addr := addr + 1;
+			end if;
 			we   := mii_rxdv;
 			cga_codes <= std_logic_vector(code);
 		end if;
