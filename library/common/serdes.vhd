@@ -41,20 +41,29 @@ begin
 
 	process (stop, ser_data, serdes_clk)
 		variable des : unsigned(des_data'range);
+		alias    des_r : unsigned(des_data'reverse_range) is des;
 	begin
 		if rising_edge(serdes_clk) then
 			if serdes_frm='1' then
 				if ser_irdy='1' then
-					des(ser_data'range) := unsigned(ser_data);
-					if des_data'ascending then
-						des := des srl ser_data'length;
+					if des'ascending /= ser_data'ascending then
+						des(ser_data'reverse_range) := unsigned(ser_data);
 					else
-						des := des sll ser_data'length;
+						des(ser_data'range) := unsigned(ser_data);
+					end if;
+					if ser_data'ascending then
+						des := des rol ser_data'length;
+					else
+						des := des ror ser_data'length;
 					end if;
 				end if;
 			end if;
 		end if;
-		des(ser_data'range) := unsigned(ser_data);
+		if des'ascending /= ser_data'ascending then
+			des_r(ser_data'range) := unsigned(ser_data);
+		else
+			des_r(ser_data'reverse_range) := unsigned(ser_data);
+		end if;
 		des_data <= std_logic_vector(des);
 	end process;
 

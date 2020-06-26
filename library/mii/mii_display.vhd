@@ -112,7 +112,6 @@ begin
 			cga_we   <= mii_rxdv or we;
 			data     := unsigned(des_data);
 			for i in 0 to des_data'length/digit'length-1 loop
-				code := std_logic_vector(unsigned(code) rol font_code'length);
 				if mii_rxdv='1' then
 					if des_irdy='1' then
 						code(font_code'range) := word2byte(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
@@ -120,6 +119,7 @@ begin
 				elsif we='1' then
 					code(font_code'range) := code_spce;
 				end if;
+				code := std_logic_vector(unsigned(code) rol font_code'length);
 				data := data rol digit'length;
 			end loop;
 			if mii_rxdv='1' then
