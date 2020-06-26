@@ -55,8 +55,9 @@ architecture struct of cga_adapter is
 	signal font_col  : std_logic_vector(font_hcntr'range);
 	signal font_row  : std_logic_vector(font_vcntr'range);
 
-	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
 	signal cga_codes : std_logic_vector(cga_data'range);
+	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
+	signal mux_code  : std_logic_vector(cga_code'range);
 	signal char_addr : std_logic_vector(video_addr'length-1 downto 0);
 
 	signal char_on   : std_logic;
@@ -79,14 +80,21 @@ begin
 		rd_addr => char_addr(char_addr'left downto char_addr'length-cga_addr'length),
 		rd_data => cga_codes);
 
-	process (cga_codes, char_addr)
+	muxcode_g : if char_addr'length > cga_addr'length generate
+		signal sel : std_logic_vector(char_addr'length-cga_addr'length-1 downto 0);
 	begin
-		if cga_codes'length=cga_code'length then
-			cga_code <= cga_codes;
-		else
-			cga_code <= word2byte(cga_codes, char_addr(char_addr'length-cga_addr'length-1 downto 0));
-		end if;
-	end process;
+		lat_e : entity hdl4fpga.align
+		generic map (
+			n => char_addr'length-cga_addr'length,
+			d => (0 to char_addr'length-cga_addr'length => 2))
+		port map (
+			clk => video_clk,
+			di  => char_addr(char_addr'length-cga_addr'length-1 downto 0),
+			do  => sel);
+
+		mux_code <= word2byte(cga_codes, sel);
+	end generate;
+	cga_code <= mux_code when char_addr'length > cga_addr'length else cga_codes; 
 
 	vsync_e : entity hdl4fpga.align
 	generic map (
