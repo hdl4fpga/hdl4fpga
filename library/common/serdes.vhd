@@ -40,7 +40,7 @@ begin
 	end process;
 
 	process (stop, ser_data, serdes_clk)
-		variable des : unsigned(des_data'range);
+		variable des   : unsigned(des_data'range);
 		alias    des_r : unsigned(des_data'reverse_range) is des;
 	begin
 		if rising_edge(serdes_clk) then

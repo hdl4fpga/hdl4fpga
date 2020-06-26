@@ -55,15 +55,18 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
+	signal eth_bcst : std_logic;
+	signal eth_macd : std_logic;
+
 begin
 
---	mii_du : entity hdl4fpga.eth_rx
---	port map (
---		mii_rxc  => mii_rxc,
---		mii_rxdv => mii_rxdv,
---		mii_rxd  => mii_rxd,
---
---	);
+	mii_du : entity hdl4fpga.eth_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_macd => eth_macd,
+		eth_bcst => eth_bcst);
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
@@ -73,7 +76,7 @@ begin
 		cga_bitrom  => cga_bitrom)
 	port map (
 		mii_rxc     => mii_rxc,
-		mii_rxdv    => mii_rxdv,
+		mii_rxdv    => eth_macd, --eth_bcst,
 		mii_rxd     => mii_rxd,
 
 		video_clk   => video_clk,
