@@ -29,6 +29,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.miipkg.all;
 
 entity eth_rx is
 	generic (
@@ -37,67 +38,15 @@ entity eth_rx is
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
-		mii_pre   : buffer std_logic;
-		eth_bcst  : buffer std_logic;
-		eth_macd  : buffer std_logic);
-
+		eth_pre   : buffer std_logic;
+		eth_bcst  : out std_logic;
+		eth_macd  : out std_logic;
+		eth_type  : out std_logic);
 end;
 
 architecture def of eth_rx is
 
-	function to_miisize(
-		constant size : natural) 
-		return natural is
-	begin
-		return (size+mii_rxd'length-1)/mii_rxd'length;
-	end;
-
-	function wor (
-		constant arg : std_logic_vector)
-		return std_logic is
-	begin
-		for i in arg'range loop
-			if arg(i)='1' then
-				return '1';
-			end if;
-		end loop;
-		return '0';
-	end;
-
-	constant ipproto   : std_logic_vector := x"0800";
-	constant arpproto  : std_logic_vector := x"0806";
-
-	constant miiptr_size : natural := unsigned_num_bits(to_miisize(64*8));
-	signal mii_ptr       : unsigned(0 to miiptr_size-1); -- := (others => '0');
-
-	constant macd  : natural := 0;
-	constant macs  : natural := 1;
-	constant ethty : natural := 2;
-	constant eth_pfx : natural_vector := (
-		macd  => 6*8,
-		macs  => 6*8,
-		ethty => 2*8);
-
-	function mii_decode (
-		constant ptr   : std_logic_vector;
-		constant frame : natural_vector)
-		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low  : natural;
-		variable high : natural;
-	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i);
-			if low <= i and i < high then
-				retval(i) := '1';
-				exit;
-			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
+	signal mii_ptr : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
 
 begin
 
@@ -106,12 +55,12 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
 		mii_rxdv => mii_rxdv,
-		mii_rdy  => mii_pre);
+		mii_rdy  => eth_pre);
 
 	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_pre='0' then
+			if eth_pre='0' then
 				mii_ptr <= (others => '0');
 			elsif mii_ptr(0)='0' then
 				mii_ptr <= mii_ptr + 1;
@@ -125,7 +74,7 @@ begin
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
-		mii_treq => mii_pre,
+		mii_treq => eth_pre,
 		mii_pktv => eth_macd);
 
 	mii_bcst_e : entity hdl4fpga.mii_romcmp
@@ -134,9 +83,19 @@ begin
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
-		mii_treq => mii_pre,
+		mii_treq => eth_pre,
 		mii_pktv => eth_bcst);
 
+	eth_type <= mii_decode(mii_ptr, eth_frame, mii_rxd'length)(hdl4fpga.miipkg.eth_type);
+
+	file_e : entity hdl4fpga.mii_file
+
+	arprx_e : entity hdl4fpga.arp_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+	
 
 end;
 

@@ -139,6 +139,10 @@ package std is
 	-- Logic Functions
 	------------------
 
+	function wor (
+		constant arg : std_logic_vector)
+		return std_logic;
+
 	function wirebus (
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
@@ -779,6 +783,18 @@ package body std is
 	--------------------
 	-- Logical functions
 	--------------------
+
+	function wor (
+		constant arg : std_logic_vector)
+		return std_logic is
+	begin
+		for i in arg'range loop
+			if arg(i)='1' then
+				return '1';
+			end if;
+		end loop;
+		return '0';
+	end;
 
 	function wirebus (
 		constant arg1 : std_logic_vector;

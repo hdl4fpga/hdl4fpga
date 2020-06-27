@@ -29,40 +29,55 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.miipkg.all;
 
 entity arp_rx is
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
-		ptype_vld : in  std_logic);
+		mii_rxc  : in  std_logic;
+		mii_rxdv : in  std_logic;
+		mii_rxd  : in  std_logic_vector;
+		mii_ptr  : in  std_logic_vector;
+		eth_bcst : in  std_logic;
+		eth_type : in  std_logic;
+		ipsa_req : out std_logic;
+		ipsa_rdy : in  std_logic;
+		ipsa_ena : out std_logic;
+		ipsa_rxd : in  std_logic_vector;
+		arp_req  : out std_logic);
 
 end;
 
-architecture struct of arp_rx is
+architecture def of arp_rx is
 
-	constant arp_pfx : natural_vector := (
-		htype => 2*8,
-		ptype => 2*8,
-		hlen  => 1*8,
-		plen  => 1*8,
-		oper  => 2*8,
-		sha   => 6*8,
-		spa   => 4*8,
-		tha   => 6*8,
-		tpa   => 4*8);
+	signal arp_tpa   : std_logic;
+	signal arp_proto : std_logic;
+	signal tpa_req   : std_logic;
 
 begin
 
+	arp_tpa <= mii_decode(unsigned(mii_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.miipkg.arp_tpa);
+
+	arpproto_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(arpproto,8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => mii_rxdv,
+		mii_ena  => eth_type,
+		mii_pktv => arp_proto);
+
+	tpa_req  <= arp_proto and eth_bcst;
 	tpacmp : entity hdl4fpga.mii_cmp
 	port map (
-		mii_req  => arpproto_vld,
+		mii_req  => tpa_req,
 		mii_rxc  => mii_rxc,
-		mii_ena  => tpa_ena,
-		mii_rdy  => ipsaddr_rrdy,
+		mii_ena  => arp_tpa,
 		mii_rxd1 => mii_rxd,
-		mii_rxd2 => ipsaddr_rtxd,
-		mii_equ  => cmp_equ);
+		mii_rdy  => ipsa_rdy,
+		mii_rxd2 => ipsa_rxd,
+		mii_equ  => arp_req);
 
+	ipsa_req <= arp_proto and eth_bcst;
 end;
 

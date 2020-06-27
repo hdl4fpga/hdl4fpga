@@ -32,41 +32,21 @@ entity mii_file is
 		ip4_size : natural;
 		mac_size : natural);
 	port (
-		mii_rxc       : in  std_logic;
-		mii_rxd       : in  std_logic_vector;
-		mii_rxdv      : in  std_logic;
+		mii_rxc    : in  std_logic;
+		mii_rxd    : in  std_logic_vector;
+		mii_rxdv   : in  std_logic;
 
-		mii_txc       : in  std_logic;
-		mii_txd       : out std_logic_vector;
-		mii_txen      : out std_logic;
-
-		ipsaddr_vld   : in  std_logic;
-		ipsaddr_txen  : out std_logic;
-		ipsaddr_txd   : out std_logic_vector;
-		ipsaddr_txdv  : in  std_logic;
-		ipsaddr_treq  : in  std_logic;
-		ipsaddr_trdy  : out std_logic;
-		ipsaddr_teoc  : out std_logic;
-
-		macdaddr_vld  : in  std_logic;
-		macdaddr_txen : out std_logic;
-		macdaddr_txd  : out std_logic_vector;
-		macdaddr_txdv : in  std_logic;
-		macdaddr_treq : in  std_logic;
-		macdaddr_trdy : out std_logic;
-		macdaddr_teoc : out std_logic;
-
-		ipdaddr_vld   : in  std_logic;
-		ipdaddr_txen  : out std_logic;
-		ipdaddr_txd   : out std_logic_vector;
-		ipdaddr_txdv  : in  std_logic;
-		ipdaddr_treq  : in  std_logic;
-		ipdaddr_trdy  : out std_logic;
-		ipdaddr_teoc  : out std_logic);
+		ipsa_rxdv  : in  std_logic;
+		ipsa_txen  : out std_logic;
+		ipsa_txd   : out std_logic_vector;
+		ipsa_txdv  : in  std_logic;
+		ipsa_treq  : in  std_logic;
+		ipsa_trdy  : out std_logic;
+		ipsa_teoc  : out std_logic);
 
 end;
 
-architecture struct of mii_file is
+architecture def of mii_file is
 
 begin
 
@@ -75,44 +55,15 @@ begin
 		size => ip4_size)
 	port map(
 		mii_rxc  => mii_rxc,
+		mii_rxdv => ipsa_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_rxdv => ipsaddr_vld,
 		mii_txc  => mii_txc,
-		mii_txdv => ipsaddr_txen,
-		mii_txd  => ipsaddr_txd,
-		mii_txen => ipsaddr_txdv,
-		mii_treq => ipsaddr_treq,
-		mii_teoc => ipsaddr_teoc,
-		mii_trdy => ipsaddr_trdy);
-
-	ethdmac_e : entity hdl4fpga.mii_ram
-	generic map (
-		size => mac_size)
-	port map(
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_rxdv => macdaddr_vld,
-		mii_txc  => mii_txc,
-		mii_txdv => macdaddr_txen,
-		mii_txd  => macdaddr_txd,
-		mii_txen => macdaddr_txdv,
-		mii_treq => macdaddr_treq,
-		mii_teoc => macdaddr_teoc,
-		mii_trdy => macdaddr_trdy);
-
-	ipdaddr_e : entity hdl4fpga.mii_ram
-	generic map (
-		size => ip4_size)
-	port map(
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_rxdv => ipdaddr_vld,
-		mii_txc  => mii_txc,
-		mii_txdv => ipdaddr_txen,
-		mii_txd  => ipdaddr_txd,
-		mii_treq => ipdaddr_treq,
-		mii_teoc => ipdaddr_teoc,
-		mii_trdy => ipdaddr_trdy);
+		mii_txdv => ipsa_txen,
+		mii_txd  => ipsa_txd,
+		mii_txen => ipsa_txdv,
+		mii_treq => ipsa_treq,
+		mii_teoc => ipsa_teoc,
+		mii_trdy => ipsa_trdy);
 
 end;
 
