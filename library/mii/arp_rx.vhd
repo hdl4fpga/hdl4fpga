@@ -36,7 +36,7 @@ entity arp_rx is
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
-		mii_ptr  : in  std_logic_vector;
+		eth_ptr  : in  std_logic_vector;
 		eth_bcst : in  std_logic;
 		eth_type : in  std_logic;
 		ipsa_req : out std_logic;
@@ -50,12 +50,12 @@ end;
 architecture def of arp_rx is
 
 	signal arp_tpa   : std_logic;
-	signal arp_proto : std_logic;
+	signal llc_arp : std_logic;
 	signal tpa_req   : std_logic;
 
 begin
 
-	arp_tpa <= mii_decode(unsigned(mii_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.miipkg.arp_tpa);
+	arp_tpa <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.miipkg.arp_tpa);
 
 	arpproto_e : entity hdl4fpga.mii_romcmp
 	generic map (
@@ -65,9 +65,9 @@ begin
 		mii_rxd  => mii_rxd,
 		mii_treq => mii_rxdv,
 		mii_ena  => eth_type,
-		mii_pktv => arp_proto);
+		mii_pktv => llc_arp);
 
-	tpa_req  <= arp_proto and eth_bcst;
+	tpa_req  <= llc_arp and eth_bcst;
 	tpacmp : entity hdl4fpga.mii_cmp
 	port map (
 		mii_req  => tpa_req,
@@ -78,6 +78,7 @@ begin
 		mii_rxd2 => ipsa_rxd,
 		mii_equ  => arp_req);
 
-	ipsa_req <= arp_proto and eth_bcst;
+	ipsa_req <= llc_arp and eth_bcst;
+
 end;
 

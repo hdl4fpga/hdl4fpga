@@ -21,78 +21,81 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ipoepkg.all;
 
-package miipkg is
-
-	constant ipproto  : std_logic_vector := x"0800";
-	constant arpproto : std_logic_vector := x"0806";
-
-	constant eth_macd : natural := 0;
-	constant eth_macs : natural := 1;
-	constant eth_type : natural := 2;
-
-	constant eth_frame : natural_vector := (
-		eth_macd => 6*8,
-		eth_macs => 6*8,
-		eth_type => 2*8);
-
-	constant arp_htype : natural := 0;
-	constant arp_ptype : natural := 1;
-	constant arp_hlen  : natural := 2;
-	constant arp_plen  : natural := 3;
-	constant arp_oper  : natural := 4;
-	constant arp_sha   : natural := 5;
-	constant arp_spa   : natural := 6;
-	constant arp_tha   : natural := 7;
-	constant arp_tpa   : natural := 8;
-
-	constant arp_frame : natural_vector := (
-		arp_htype => 2*8,
-		arp_ptype => 2*8,
-		arp_hlen  => 1*8,
-		arp_plen  => 1*8,
-		arp_oper  => 2*8,
-		arp_sha   => 6*8,
-		arp_spa   => 4*8,
-		arp_tha   => 6*8,
-		arp_tpa   => 4*8);
-
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector;
-
+entity eth_rx is
+	generic (
+		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+	port (
+		mii_rxc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
+		eth_pre   : buffer std_logic;
+		eth_bcst  : out std_logic;
+		eth_macd  : out std_logic;
+		eth_type  : out std_logic);
 end;
 
-package body miipkg is
+architecture def of eth_rx is
 
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low    : natural;
-		variable high   : natural;
+	signal eth_ptr : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
+
+begin
+
+	mii_pre_e : entity hdl4fpga.miirx_pre 
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_rxdv => mii_rxdv,
+		mii_rdy  => eth_pre);
+
+	process (mii_rxc)
 	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i)/size;
-			if low <= ptr and ptr < high then
-				retval(i) := '1';
-				exit;
+		if rising_edge(mii_rxc) then
+			if eth_pre='0' then
+				eth_ptr <= (others => '0');
+			elsif eth_ptr(0)='0' then
+				eth_ptr <= eth_ptr + 1;
 			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
+		end if;
+	end process;
+
+	mymac_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(mac,8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => eth_pre,
+		mii_pktv => eth_macd);
+
+	mii_bcst_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => eth_pre,
+		mii_pktv => eth_bcst);
+
+	eth_type <= mii_decode(eth_ptr, eth_frame, mii_rxd'length)(hdl4fpga.miipkg.eth_type);
+
+	file_e : entity hdl4fpga.mii_file
+
+	arprx_e : entity hdl4fpga.arp_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+	
 
 end;
+

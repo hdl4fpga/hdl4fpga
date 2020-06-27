@@ -28,76 +28,71 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_ram is
-	generic (
-		data     : std_logic_vector := (1 to 0 => '-');
-		size     : natural);
-    port (
-		mii_rxc  : in  std_logic;
-        mii_rxdv : in  std_logic;
-        mii_rxd  : in  std_logic_vector;
-		mii_treq : in  std_logic;
-		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
-        mii_txc  : in  std_logic;
-		mii_txen : in  std_logic := '1';
-        mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+package ipoepkg is
+
+	constant eth_macd : natural := 0;
+	constant eth_macs : natural := 1;
+	constant eth_type : natural := 2;
+
+	constant eth_frame : natural_vector := (
+		eth_macd => 6*8,
+		eth_macs => 6*8,
+		eth_type => 2*8);
+
+	constant llc_ipp : std_logic_vector := x"0800";
+	constant llc_arp : std_logic_vector := x"0806";
+
+	constant arp_htype : natural := 0;
+	constant arp_ptype : natural := 1;
+	constant arp_hlen  : natural := 2;
+	constant arp_plen  : natural := 3;
+	constant arp_oper  : natural := 4;
+	constant arp_sha   : natural := 5;
+	constant arp_spa   : natural := 6;
+	constant arp_tha   : natural := 7;
+	constant arp_tpa   : natural := 8;
+
+	constant arp_frame : natural_vector := (
+		arp_htype => 2*8,
+		arp_ptype => 2*8,
+		arp_hlen  => 1*8,
+		arp_plen  => 1*8,
+		arp_oper  => 2*8,
+		arp_sha   => 6*8,
+		arp_spa   => 4*8,
+		arp_tha   => 6*8,
+		arp_tpa   => 4*8);
+
+	function mii_decode (
+		constant ptr   : unsigned;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic_vector;
+
 end;
 
-architecture def of mii_ram is
-	constant addr_size : natural := unsigned_num_bits((size+mii_txd'length-1)/mii_txd'length-1);
+package body ipoepkg is
 
-	signal raddr : unsigned(addr_size-1 downto 0);
-	signal waddr : unsigned(raddr'range);
-	signal wcntr : unsigned(waddr'range);
-	signal rdy   : std_logic;
-
-begin
-
-	process (mii_rxc, mii_rxdv)
+	function mii_decode (
+		constant ptr   : unsigned;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic_vector is
+		variable retval : std_logic_vector(frame'range);
+		variable low    : natural;
+		variable high   : natural;
 	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='1' then
-				waddr <= wcntr;
-				wcntr <= wcntr + 1;
-			else
-				wcntr <= (others => '0');
+		retval := (others => '0');
+		low    := 0;
+		for i in frame'range loop
+			high := low + frame(i)/size;
+			if low <= ptr and ptr < high then
+				retval(i) := '1';
+				exit;
 			end if;
-		end if;
-
-	end process;
-
-	ram_e : entity hdl4fpga.dpram
-	generic map (
-		bitrom => data)
-	port map (
-		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(wcntr),
-		wr_data => mii_rxd,
-		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr),
-		rd_data => mii_txd);
-
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				raddr <= (others => '0');
-				rdy   <= '0';
-			elsif raddr < waddr then
-				if mii_txen='1' then
-					raddr <= raddr + 1;
-				end if;
-				rdy   <= '0';
-			else
-				rdy   <= '1';
-			end if;
-		end if;
-	end process;
-
-	mii_teoc <= rdy;
-	mii_trdy <= mii_treq and rdy;
-	mii_txdv <= mii_treq and not rdy and mii_txen;
+			low := high;
+		end loop;
+		return retval;
+	end;
 
 end;
