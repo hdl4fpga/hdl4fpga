@@ -11,4 +11,4 @@ Goals
 - Portability
 - Video interface to display data
 - Block RAM requirement only
-- Multiple communication system to dump and upload data 
+- Data transfer to and from the system
