@@ -9,6 +9,6 @@ Goals
 
 - Small footprint to be embedded
 - Portability
-- Video interface to display data
+- Video interface to display captured data
 - Block RAM requirement only
 - Data transfer to and from the system
