@@ -26,44 +26,55 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
-entity mii_file is
+entity mii_ramcmp is
 	generic (
-		ip4_size : natural;
-		mac_size : natural);
-	port (
-		mii_rxc    : in  std_logic;
-		mii_rxd    : in  std_logic_vector;
-		mii_rxdv   : in  std_logic;
-
-		ipsa_rxdv  : in  std_logic;
-		ipsa_txen  : out std_logic;
-		ipsa_txd   : out std_logic_vector;
-		ipsa_txdv  : in  std_logic;
-		ipsa_treq  : in  std_logic;
-		ipsa_trdy  : out std_logic;
-		ipsa_teoc  : out std_logic);
-
+		mem_size : natural;
+		mem_data : std_logic_vector);
+    port (
+        mii_rxc  : in  std_logic;
+		mii_rxdv : in  std_logic := '0';
+        mii_rxd  : in  std_logic_vector;
+		mii_ena  : in  std_logic := '1';
+		mii_treq : in  std_logic;
+		mii_equ  : out std_logic);
 end;
 
-architecture def of mii_file is
-
+architecture def of mii_ramcmp is
+	signal mii_trdy : std_logic;
+	signal mii_txd  : std_logic_vector(mii_rxd'range);
 begin
 
-	ipsaddr_e : entity hdl4fpga.mii_ram
+	mii_data_e : entity hdl4fpga.mii_ram
 	generic map (
-		size => ip4_size)
-	port map(
+		mem_size => mem_size,
+		mem_data => mem_data)
+	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => ipsa_rxdv,
-		mii_rxd  => mii_rxd,
-		mii_txc  => mii_txc,
-		mii_txdv => ipsa_txen,
-		mii_txd  => ipsa_txd,
-		mii_txen => ipsa_txdv,
-		mii_treq => ipsa_treq,
-		mii_teoc => ipsa_teoc,
-		mii_trdy => ipsa_trdy);
+        mii_rxdv => mii_rxdv,
+        mii_rxd  => mii_rxd,
+
+		mii_txc  => mii_rxc,
+		mii_tena => mii_ena,
+		mii_treq => mii_treq,
+		mii_trdy => mii_trdy,
+		mii_txen => open,
+		mii_txd  => mii_txd);
+
+	process (mii_rxc, mii_trdy)
+		variable cy : std_logic;
+	begin
+		if rising_edge(mii_rxc) then
+			if mii_treq='0' then
+				cy  := '1';
+			elsif mii_trdy='0' then
+				if mii_ena='1' then
+					cy := cy and setif(mii_txd=mii_rxd);
+				end if;
+			end if;
+		end if;
+		mii_equ <= mii_trdy and cy;
+	end process;
 
 end;
-

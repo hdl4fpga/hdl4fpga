@@ -30,23 +30,24 @@ use hdl4fpga.std.all;
 
 entity mii_ram is
 	generic (
-		data     : std_logic_vector := (1 to 0 => '-');
-		size     : natural);
+		mem_data : std_logic_vector := (1 to 0 => '-');
+		mem_size : natural);
     port (
 		mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;
         mii_rxd  : in  std_logic_vector;
+
+        mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
+		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
 		mii_teoc : out std_logic;
-        mii_txc  : in  std_logic;
-		mii_txen : in  std_logic := '1';
-        mii_txdv : out std_logic;
+        mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
 architecture def of mii_ram is
-	constant addr_size : natural := unsigned_num_bits((size+mii_txd'length-1)/mii_txd'length-1);
+	constant addr_size : natural := unsigned_num_bits((mem_size+mii_txd'length-1)/mii_txd'length-1);
 
 	signal raddr : unsigned(addr_size-1 downto 0);
 	signal waddr : unsigned(raddr'range);
@@ -70,7 +71,7 @@ begin
 
 	ram_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => data)
+		bitrom => mem_data)
 	port map (
 		wr_clk  => mii_rxc,
 		wr_addr => std_logic_vector(wcntr),
@@ -86,7 +87,7 @@ begin
 				raddr <= (others => '0');
 				rdy   <= '0';
 			elsif raddr < waddr then
-				if mii_txen='1' then
+				if mii_tena='1' then
 					raddr <= raddr + 1;
 				end if;
 				rdy   <= '0';
@@ -98,6 +99,6 @@ begin
 
 	mii_teoc <= rdy;
 	mii_trdy <= mii_treq and rdy;
-	mii_txdv <= mii_treq and not rdy and mii_txen;
+	mii_txen <= mii_treq and not rdy and mii_tena;
 
 end;

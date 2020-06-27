@@ -21,79 +21,51 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
-use hdl4fpga.ipoepkg.all;
 
-entity eth_rx is
+entity ipoe_rf is
 	generic (
-		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		ip4_size : natural;
+		mac_size : natural);
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
-		eth_pre   : buffer std_logic;
-		eth_bcst  : out std_logic;
-		eth_macd  : out std_logic;
-		eth_type  : out std_logic);
+		mii_rxc    : in  std_logic;
+		ipsa_rxdv  : out std_logic;
+		mii_rxd    : in  std_logic_vector;
+
+		mii_txc    : in  std_logic;
+		ipsa_treq  : in  std_logic;
+		ipsa_ena   : in  std_logic;
+		ipsa_teoc  : out std_logic;
+		ipsa_trdy  : out std_logic;
+		ipsa_txen  : out std_logic;
+		ipsa_txd   : out std_logic_vector);
+
 end;
 
-architecture def of eth_rx is
-
-	signal eth_ptr : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
+architecture def of mii_file is
 
 begin
 
-	mii_pre_e : entity hdl4fpga.miirx_pre 
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_rxdv => mii_rxdv,
-		mii_rdy  => eth_pre);
-
-	process (mii_rxc)
-	begin
-		if rising_edge(mii_rxc) then
-			if eth_pre='0' then
-				eth_ptr <= (others => '0');
-			elsif eth_ptr(0)='0' then
-				eth_ptr <= eth_ptr + 1;
-			end if;
-		end if;
-	end process;
-
-	mymac_e : entity hdl4fpga.mii_romcmp
+	ipsa_e : entity hdl4fpga.mii_ram
 	generic map (
-		mem_data => reverse(mac,8))
-	port map (
+		size => ip4_size)
+	port map(
 		mii_rxc  => mii_rxc,
+		mii_rxdv => ipsa_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
-		mii_pktv => eth_macd);
 
-	mii_bcst_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
-		mii_pktv => eth_bcst);
+		mii_txc  => mii_txc,
+		mii_treq => ipsa_treq,
+		mii_tena => ipsa_ena,
+		mii_teoc => ipsa_teoc,
+		mii_trdy => ipsa_trdy,
 
-	eth_type <= mii_decode(eth_ptr, eth_frame, mii_rxd'length)(hdl4fpga.miipkg.eth_type);
-
-	arprx_e : entity hdl4fpga.arp_rx
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-	
+		mii_txd  => ipsa_txd,
+		mii_txen => ipsa_txen);
 
 end;
 
