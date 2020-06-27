@@ -39,7 +39,7 @@ package ipoepkg is
 		eth_macs => 6*8,
 		eth_type => 2*8);
 
-	constant llc_ipp : std_logic_vector := x"0800";
+	constant llc_ip  : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
 
 	constant arp_htype : natural := 0;
