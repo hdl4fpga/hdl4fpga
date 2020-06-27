@@ -11,4 +11,4 @@ Goals
 - Portability
 - Video interface to display captured data
 - Block RAM requirement only
-- Data transfer to and from the system
+- Data transfer **to** and **from** the system
