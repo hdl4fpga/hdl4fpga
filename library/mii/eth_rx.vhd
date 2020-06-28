@@ -39,14 +39,16 @@ entity eth_rx is
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 		eth_pre   : buffer std_logic;
-		eth_bcst  : out std_logic;
+		eth_bcst  : buffer std_logic;
 		eth_macd  : out std_logic;
-		eth_type  : out std_logic);
+		ethtype_ena : buffer std_logic;
+		arp_req   : out std_logic);
 end;
 
 architecture def of eth_rx is
 
-	signal mii_ptr : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
+	signal eth_ptr   : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
+	signal eth_field : std_logic_vector(eth_frame'range);
 
 begin
 
@@ -61,9 +63,9 @@ begin
 	begin
 		if rising_edge(mii_rxc) then
 			if eth_pre='0' then
-				mii_ptr <= (others => '0');
-			elsif mii_ptr(0)='0' then
-				mii_ptr <= mii_ptr + 1;
+				eth_ptr <= (others => '0');
+			elsif eth_ptr(0)='0' then
+				eth_ptr <= eth_ptr + 1;
 			end if;
 		end if;
 	end process;
@@ -75,7 +77,7 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
 		mii_treq => eth_pre,
-		mii_pktv => eth_macd);
+		mii_equ  => eth_macd);
 
 	mii_bcst_e : entity hdl4fpga.mii_romcmp
 	generic map (
@@ -84,18 +86,21 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
 		mii_treq => eth_pre,
-		mii_pktv => eth_bcst);
+		mii_equ  => eth_bcst);
 
-	eth_type <= mii_decode(mii_ptr, eth_frame, mii_rxd'length)(hdl4fpga.miipkg.eth_type);
-
-	file_e : entity hdl4fpga.mii_file
+	eth_field <= mii_decode(eth_ptr, eth_frame, mii_rxd'length);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-	
+		eth_ptr  => std_logic_vector(eth_ptr),
+		eth_bcst => eth_bcst,
+		eth_type => eth_field(eth_type),
+		arp_req  => arp_req);
+
+	ethtype_ena <= eth_field(eth_type);
 
 end;
 

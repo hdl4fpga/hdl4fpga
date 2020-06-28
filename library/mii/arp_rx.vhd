@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.miipkg.all;
+use hdl4fpga.ipoepkg.all;
 
 entity arp_rx is
 	port (
@@ -45,28 +45,30 @@ end;
 
 architecture def of arp_rx is
 
-	signal arp_tpa   : std_logic;
-	signal llc_arp : std_logic;
-	signal tpa_req   : std_logic;
+	signal arp_tpa : std_logic;
+	signal llc_equ : std_logic;
+	signal tpa_req : std_logic;
+	signal tpa_equ : std_logic;
 
 begin
 
-	arp_tpa <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.miipkg.arp_tpa);
+	arp_tpa <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.ipoepkg.arp_tpa);
 
 	llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
-		mem_data => reverse(arptype,8))
+		mem_data => reverse(llc_arp,8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
 		mii_treq => mii_rxdv,
 		mii_ena  => eth_type,
-		mii_equ  => llc_arp);
+		mii_equ  => llc_equ);
 
-	tpa_req <= llc_arp and eth_bcst;
+	tpa_req <= llc_equ and eth_bcst;
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
-		mem_data => reverse(arptype,8))
+		mem_size => arp_frame(hdl4fpga.ipoepkg.arp_tpa),
+		mem_data => reverse(x"c0a8000e",8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => '0',
@@ -75,7 +77,7 @@ begin
 		mii_ena  => arp_tpa,
 		mii_equ  => tpa_equ);
 
-	arp_req <= tap_equ;
+	arp_req <= llc_equ;
 
 end;
 

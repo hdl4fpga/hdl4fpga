@@ -103,13 +103,13 @@ begin
 
 	process(mii_rxc)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
-		variable addr  : unsigned(cga_addr'range);
+		variable addr  : unsigned(cga_addr'range) := (others => '0');
 		variable we    : std_logic;
 		variable data  : unsigned(des_data'range);
 	begin
 		if rising_edge(mii_rxc) then
 			cga_addr <= std_logic_vector(addr);
-			cga_we   <= mii_rxdv or we;
+			cga_we   <= (mii_rxdv and des_irdy) or (not mii_rxdv and we);
 			data     := unsigned(des_data);
 			for i in 0 to des_data'length/digit'length-1 loop
 				if mii_rxdv='1' then
@@ -129,7 +129,7 @@ begin
 			elsif we='1' then
 				addr := addr + 1;
 			end if;
-			we   := mii_rxdv;
+			we   := (mii_rxdv and des_irdy);
 			cga_codes <= std_logic_vector(code);
 		end if;
 	end process;
