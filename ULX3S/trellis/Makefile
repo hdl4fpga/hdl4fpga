@@ -4,9 +4,7 @@ all: $(PROJ).bit
 
 FPGA_SIZE=85
 
-include ../diamond/files.mk
-
-$(PROJ).json: $(VHDL_FILES) $(VHDL_LIB_FILES) synth.ys Makefile
+$(PROJ).json: synth.ys Makefile
 	yosys -q synth.ys
 
 $(PROJ).config: $(PROJ).json
