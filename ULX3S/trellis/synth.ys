@@ -2,7 +2,7 @@ ghdl --ieee=synopsys -fexplicit -frelaxed-rules --std=08 \
 	--work=hdl4fpga \
   ../../library/latticesemi/ecp5/ecp5pll.vhd \
   ../../library/common/align.vhd \
-  ../../library/common/std.vhd \
+  ../../library/common/hdl4fpgapkg.vhd \
   ../../library/common/bram.vhd \
   ../../library/common/dpram.vhd \
   ../../library/common/bram_true2p_2clk.vhd \
