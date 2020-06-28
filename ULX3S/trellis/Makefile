@@ -2,7 +2,7 @@ PROJ=scopeio
 
 all: $(PROJ).bit
 
-FPGA_SIZE=85
+FPGA_SIZE=12
 
 $(PROJ).json: synth.ys Makefile
 	yosys -q synth.ys
