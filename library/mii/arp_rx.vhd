@@ -68,7 +68,7 @@ begin
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
 		mem_size => arp_frame(arp_tpa),
-		mem_data => reverse(x"c0_a8_00_0e",8))
+		mem_data => reverse(x"c0_a8_00_3e",8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => '0',

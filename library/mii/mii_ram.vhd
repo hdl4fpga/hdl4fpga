@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity mii_ram is
 	generic (
-		mem_data : std_logic_vector := (1 to 0 => '-');
+		mem_data : std_logic_vector := (0 to 0 => '-');
 		mem_size : natural);
     port (
 		mii_rxc  : in  std_logic;
@@ -48,11 +48,18 @@ end;
 
 architecture def of mii_ram is
 
-	signal raddr : unsigned(0 to unsigned_num_bits((mem_size+mii_txd'length-1)/mii_txd'length-1));
-	signal waddr : unsigned(raddr'range);
-	signal rdy   : std_logic;
+	signal raddr  : unsigned(0 to unsigned_num_bits((setif(mem_size=0, mem_data'length, mem_size)+mii_txd'length-1)/mii_txd'length-1));
+	signal waddr  : unsigned(raddr'range);
+	signal rdy    : std_logic;
 
 begin
+
+	assert mem_data'length <= 1 or mem_data'length mod mii_txd'length = 0
+	report 
+		"mem_data'length(" & integer'image(mem_data'length) & 
+		")is not a multiple of mii_txd'length(" & 
+		integer'image(mii_txd'length) & ")"
+	severity failure;
 
 	process (mii_rxc, mii_rxdv)
 		variable cntr : unsigned(waddr'range);
@@ -62,13 +69,12 @@ begin
 				cntr  := cntr + 1;
 				waddr <= cntr;
 			else
-				if mem_data'length > 0 then
-					assert mem_data'length mod mii_txd'length = 0
-					report "mem_data is not a multiple of mii_txd"
-					severity failure;
-
+				if mem_data'length > 1 then
 					waddr <= to_unsigned(mem_data'length/mii_txd'length, waddr'length);
+				else
+					waddr <= (others => '1');
 				end if;
+
 				cntr := (others => '0');
 			end if;
 		end if;

@@ -219,7 +219,8 @@ architecture nuhs3adsp_miidebug of testbench is
             x"00_00_00_00_00_00"    & -- arp_sha  
             x"00_00_00_00"          & -- arp_spa  
             x"00_00_00_00_00_00"    & -- arp_tha  
-            x"00_00_00_00";           -- arp_tpa  
+            x"c0_a8_00_0e"          & -- arp_tpa  
+            x"00_00_00_00";           -- crc
 
 
 
