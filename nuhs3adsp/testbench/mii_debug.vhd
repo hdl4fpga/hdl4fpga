@@ -167,19 +167,8 @@ architecture nuhs3adsp_miidebug of testbench is
 			ddr_dqs : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
 			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
 	end component;
-begin
 
-	mii_rxc <= mii_refclk after 5 ps;
-
-	clk <= not clk after 25 ns;
-
-	mii_treq <= '0', '1' after 8 us;
-
-	sw1 <= '1', '0' after 1 us;
-
-	eth_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
+	constant udppkt : std_logic_vector :=
 			x"5555_5555_5555_55d5"  &
 			x"00_40_00_01_02_03"    &
 			x"00_00_00_00_00_00"    &
@@ -215,9 +204,42 @@ begin
 				x"53010200"
 
 			)   &
-			x"00000000"
-		,8)
-	)
+			x"00000000";
+		
+		constant arppkt : std_logic_vector :=
+			x"5555_5555_5555_55d5"  &
+			x"ff_ff_ff_ff_ff_ff"    &
+			x"00_00_00_00_00_00"    &
+			x"0806"                 &
+			x"0000"                 & -- arp_htype
+			x"0000"                 & -- arp_ptype
+            x"00"                   & -- arp_hlen 
+            x"00"                   & -- arp_plen 
+            x"0000"                 & -- arp_oper 
+            x"00_00_00_00_00_00"    & -- arp_sha  
+            x"00_00_00_00"          & -- arp_spa  
+            x"00_00_00_00_00_00"    & -- arp_tha  
+            x"00_00_00_00";           -- arp_tpa  
+
+
+
+
+
+
+
+begin
+
+	mii_rxc <= mii_refclk after 5 ps;
+
+	clk <= not clk after 25 ns;
+
+	mii_treq <= '0', '1' after 8 us;
+
+	sw1 <= '1', '0' after 1 us;
+
+	eth_e: entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(arppkt,8))
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,

@@ -47,23 +47,29 @@ entity mii_ram is
 end;
 
 architecture def of mii_ram is
-	constant addr_size : natural := unsigned_num_bits((mem_size+mii_txd'length-1)/mii_txd'length-1);
 
-	signal raddr : unsigned(addr_size-1 downto 0);
+	signal raddr : unsigned(0 to unsigned_num_bits((mem_size+mii_txd'length-1)/mii_txd'length-1));
 	signal waddr : unsigned(raddr'range);
-	signal wcntr : unsigned(waddr'range);
 	signal rdy   : std_logic;
 
 begin
 
 	process (mii_rxc, mii_rxdv)
+		variable cntr : unsigned(waddr'range);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='1' then
-				waddr <= wcntr;
-				wcntr <= wcntr + 1;
+				cntr  := cntr + 1;
+				waddr <= cntr;
 			else
-				wcntr <= (others => '0');
+				if mem_data'length > 0 then
+					assert mem_data'length mod mii_txd'length = 0
+					report "mem_data is not a multiple of mii_txd"
+					severity failure;
+
+					waddr <= to_unsigned(mem_data'length/mii_txd'length, waddr'length);
+				end if;
+				cntr := (others => '0');
 			end if;
 		end if;
 
@@ -74,10 +80,10 @@ begin
 		bitrom => mem_data)
 	port map (
 		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(wcntr),
+		wr_addr => std_logic_vector(waddr(1 to waddr'length-1)),
 		wr_data => mii_rxd,
 		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr),
+		rd_addr => std_logic_vector(raddr(1 to raddr'length-1)),
 		rd_data => mii_txd);
 
 	process (mii_txc)
