@@ -45,14 +45,13 @@ end;
 
 architecture def of arp_rx is
 
-	signal arp_tpa : std_logic;
+	signal arp_field : std_logic_vector(0 to eth_frame'length+arp_frame'length-1);
 	signal llc_equ : std_logic;
 	signal tpa_req : std_logic;
 	signal tpa_equ : std_logic;
 
 begin
 
-	arp_tpa <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length)(eth_frame'length + hdl4fpga.ipoepkg.arp_tpa);
 
 	llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
@@ -65,19 +64,20 @@ begin
 		mii_equ  => llc_equ);
 
 	tpa_req <= llc_equ and eth_bcst;
+	arp_field <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length);
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
-		mem_size => arp_frame(hdl4fpga.ipoepkg.arp_tpa),
-		mem_data => reverse(x"c0a8000e",8))
+		mem_size => arp_frame(arp_tpa),
+		mem_data => reverse(x"c0_a8_00_0e",8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => '0',
 		mii_rxd  => mii_rxd,
 		mii_treq => tpa_req,
-		mii_ena  => arp_tpa,
+		mii_ena  => arp_field(eth_frame'length + arp_tpa),
 		mii_equ  => tpa_equ);
 
-	arp_req <= llc_equ;
+	arp_req <= tpa_equ;
 
 end;
 

@@ -69,7 +69,7 @@ begin
 		mii_rxd  => mii_rxd,
 		eth_macd => eth_macd,
 		eth_bcst => eth_bcst,
-		eth_type => eth_type,
+		ethtype_ena => eth_type,
 		arp_req  => arp_req);
 
 	mii_display_e : entity hdl4fpga.mii_display
@@ -80,7 +80,7 @@ begin
 		cga_bitrom  => cga_bitrom)
 	port map (
 		mii_rxc     => mii_rxc,
-		mii_rxdv    => eth_type, --eth_macd, --eth_bcst,
+		mii_rxdv    => arp_req, --eth_type, --eth_macd, --eth_bcst,
 		mii_rxd     => mii_rxd,
 
 		video_clk   => video_clk,

@@ -129,7 +129,7 @@ begin
 			elsif we='1' then
 				addr := addr + 1;
 			end if;
-			we   := (mii_rxdv and des_irdy);
+			we := mii_rxdv;
 			cga_codes <= std_logic_vector(code);
 		end if;
 	end process;

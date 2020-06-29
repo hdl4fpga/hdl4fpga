@@ -49,6 +49,7 @@ architecture def of eth_rx is
 
 	signal eth_ptr   : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
 	signal eth_field : std_logic_vector(eth_frame'range);
+	signal eth_treq  : std_logic;
 
 begin
 
@@ -70,13 +71,15 @@ begin
 		end if;
 	end process;
 
+	eth_treq <= eth_pre and not eth_ptr(0);
+
 	mymac_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(mac,8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
+		mii_treq => eth_treq,
 		mii_equ  => eth_macd);
 
 	mii_bcst_e : entity hdl4fpga.mii_romcmp
@@ -85,15 +88,15 @@ begin
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
+		mii_treq => eth_treq,
 		mii_equ  => eth_bcst);
 
-	eth_field <= mii_decode(eth_ptr, eth_frame, mii_rxd'length);
+	eth_field <= mii_decode(eth_ptr, eth_frame, mii_rxd'length) and (eth_field'range => eth_pre);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
+		mii_rxdv => eth_treq,
 		mii_rxd  => mii_rxd,
 		eth_ptr  => std_logic_vector(eth_ptr),
 		eth_bcst => eth_bcst,
