@@ -52,7 +52,6 @@ begin
 		mii_tena => mii_ena,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
-		mii_txdv => open,
 		mii_txd  => mii_txd);
 
 	process (mii_rxc, mii_trdy)

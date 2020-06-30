@@ -37,7 +37,7 @@ entity mii_rom is
 		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
 		mii_teoc : out std_logic;
-        mii_txdv : out std_logic;
+        mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -68,7 +68,7 @@ begin
 
 	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
-	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
+	mii_txen <= mii_treq and not cntr(0) and mii_tena;
 
 	mem_e : entity hdl4fpga.rom
 	generic map (

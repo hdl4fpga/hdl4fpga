@@ -63,6 +63,14 @@ package ipoepkg is
 		arp_tha   => 6*8,
 		arp_tpa   => 4*8);
 
+	constant arp_pfx : std_logic_vector :=
+		x"0001" & -- htype 
+		x"0800" & -- ptype 
+		x"06"   & -- hlen  
+		x"04"   & -- plen  
+		x"0002";  -- oper  
+	   
+
 	function mii_decode (
 		constant ptr   : unsigned;
 		constant frame : natural_vector;
