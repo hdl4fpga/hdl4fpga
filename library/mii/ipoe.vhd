@@ -32,20 +32,29 @@ use hdl4fpga.std.all;
 
 entity ipoe is
 	generic (
-		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc       : in  std_logic;
-		mii_rxd       : in  std_logic_vector;
-		mii_rxdv      : in  std_logic;
+		mii_rxc  : in  std_logic;
+		mii_rxd  : in  std_logic_vector;
+		mii_rxdv : in  std_logic;
 
-		mii_req       : in  std_logic;
-		mii_txc       : in  std_logic;
-		mii_txd       : out std_logic_vector;
-		mii_txdv      : out std_logic;
+		mii_txc  : in  std_logic;
+		mii_txd  : out std_logic_vector;
+		mii_txdv : out std_logic;
 
 end;
 
-architecture def of ipoe is
+architecture def of ipoe is	
+
+	signal eth_pre  : std_logic;
+	signal eth_bcst : std_logic;
+	signal eth_macd : std_logic;
+	signal arp_req  : std_logic;
+	signal mii_txdv : std_logic;
+	signal mii_txd  : std_logic;
+	signal mii_tena : std_logic;
+	signal mii_treq : std_logic;
+	signal mii_trdy : std_logic;
 
 begin
 
@@ -55,13 +64,13 @@ begin
 	port map(
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
-		mii_rxdv => myipcfg_vld,
+		mii_rxdv => ipda_rxdv,
+
 		mii_txc  => mii_txc,
 		mii_txdv => ipsa_txdv,
 		mii_txd  => ipsa_txd,
 		mii_tena => ipsa_tena,
 		mii_treq => ipsa_treq,
-		mii_teoc => ipsa_teoc,
 		mii_trdy => ipsa_trdy);
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -69,9 +78,6 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		eth_macd => eth_macd,
-		eth_bcst => eth_bcst,
-		ethtype_ena => eth_type,
 		arp_req  => arp_req);
 
 end;

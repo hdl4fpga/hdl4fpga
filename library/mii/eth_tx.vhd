@@ -32,11 +32,11 @@ use hdl4fpga.std.all;
 
 entity eth_tx is
 	generic (
-		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		mac      : in  std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_txc       : in  std_logic;
-		mii_txd       : out std_logic_vector;
-		mii_txdv      : out std_logic;
+		mii_txc  : in  std_logic;
+		mii_txd  : out std_logic_vector;
+		mii_txdv : out std_logic;
 
 end;
 
@@ -79,21 +79,20 @@ begin
 		di => rxd,
 		do => txd);
 
-		dll_rxdv_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
-		port map (
-			clk   => mii_txc,
-			di(0) => rxdv,
-			do(0) => txdv);
+	dll_rxdv_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
+	port map (
+		clk   => mii_txc,
+		di(0) => rxdv,
+		do(0) => txdv);
 
-		dll_txd <= wirebus (
-			dmac_txd & smac_txd & type_txd & txd,
-			dmac_ena & smac_ena & type_ena & txdv);
-		dll_txdv <=
-			dmac_ena or smac_ena or type_ena or txdv;
-
+	dll_txd <= wirebus (
+		dmac_txd & smac_txd & type_txd & txd,
+		dmac_ena & smac_ena & type_ena & txdv);
+	dll_txdv <=
+		dmac_ena or smac_ena or type_ena or txdv;
 
 end;
 
