@@ -44,43 +44,42 @@ entity arp_tx is
 		ipsa_trdy : in  std_logic;
 		ipsa_txen : in  std_logic;
 		ipsa_txd  : in  std_logic;
-		udpddata_vld  : out std_logic);
+
+		arp_treq  : in  std_logic;
+		arp_trdy  : out std_logic;
+		arp_txd   : out std_logic;
+		arp_txen  : out std_logic_vector);
+
 end;
 
-architecture struct of arp_tx is
+architecture def of arp_tx is
 
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(arp_prefix & mac, 8))
+		mem_data => reverse(arprply_pfx & mac, 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pfx_req,
-		mii_trdy => pfx_rdy,
+		mii_treq => pfx_treq,
+		mii_trdy => pfx_trdy,
 		mii_txen => pfx_txen,
-		mii_txd  => pfx_rxd);
+		mii_txd  => pfx_txd);
 
 	tha_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse( x"ff_ff_ff_ff_ff_ff", 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => tha_req,
+		mii_treq => pfx_trdy,
 		mii_trdy => tha_rdy,
 		mii_txen => tha_txen,
-		mii_txd  => tha_rxd);
+		mii_txd  => tha_txd);
 
-	mii_arpcat_e : entity hdl4fpga.mii_cat
-	port map (
-		mii_req  => rply_req,
-		mii_rdy  => rply_rdy,
-		mii_trdy => miicat_trdy,
-		mii_rxdv => miicat_rxdv,
-		mii_rxd  => miicat_rxd,
-		mii_treq => miicat_treq,
-		mii_txdv => txdv,
-		mii_txd  => txd);
+	ipsa_treq <= tha_rdy;
+
+	arp_txd  <= primux (pfx_txd & tha_txd & ipsa_txd, not pfx_trdy & not tha_trdy & not ipsa_trdy);
+	arp_txen <= pfx_txd or tha_txen or ipsa_txd;
 
 end;
 

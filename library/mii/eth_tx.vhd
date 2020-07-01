@@ -21,6 +21,8 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -28,78 +30,70 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-package ipoepkg is
-
-	constant eth_macd : natural := 0;
-	constant eth_macs : natural := 1;
-	constant eth_type : natural := 2;
-
-	constant eth_frame : natural_vector := (
-		eth_macd => 6*8,
-		eth_macs => 6*8,
-		eth_type => 2*8);
-
-	constant llc_ip  : std_logic_vector := x"0800";
-	constant llc_arp : std_logic_vector := x"0806";
-
-	constant arp_htype : natural := 0;
-	constant arp_ptype : natural := 1;
-	constant arp_hlen  : natural := 2;
-	constant arp_plen  : natural := 3;
-	constant arp_oper  : natural := 4;
-	constant arp_sha   : natural := 5;
-	constant arp_spa   : natural := 6;
-	constant arp_tha   : natural := 7;
-	constant arp_tpa   : natural := 8;
-
-	constant arp_frame : natural_vector := (
-		arp_htype => 2*8,
-		arp_ptype => 2*8,
-		arp_hlen  => 1*8,
-		arp_plen  => 1*8,
-		arp_oper  => 2*8,
-		arp_sha   => 6*8,
-		arp_spa   => 4*8,
-		arp_tha   => 6*8,
-		arp_tpa   => 4*8);
-
-	constant arprply_pfx : std_logic_vector :=
-		x"0001" & -- htype 
-		x"0800" & -- ptype 
-		x"06"   & -- hlen  
-		x"04"   & -- plen  
-		x"0002";  -- oper  
-	   
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector;
+entity eth_tx is
+	generic (
+		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+	port (
+		mii_txc       : in  std_logic;
+		mii_txd       : out std_logic_vector;
+		mii_txdv      : out std_logic;
 
 end;
 
-package body ipoepkg is
+architecture def of eth_tx is
+begin
 
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low    : natural;
-		variable high   : natural;
-	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i)/size;
-			if low <= ptr and ptr < high then
-				retval(i) := '1';
-				exit;
-			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
+	hwda_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(mac, 8))
+	port map (
+		mii_txc  => mii_txc,
+		mii_treq => hwda_treq,
+		mii_tena => hwda_ena,
+		mii_txd  => hwda_txd);
+
+	hwsa_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(mac, 8))
+	port map (
+		mii_txc  => mii_txc,
+		mii_treq => mymac_treq,
+		mii_tena => smac_ena,
+		mii_txd  => mymac_txd);
+
+	dll_e : entity hdl4fpga.eth_dll
+	port map (
+		mii_txc  => mii_txc,
+		mii_rxdv => dll_txdv,
+		mii_rxd  => dll_txd,
+		mii_txdv => txdv1,
+		mii_txd  => mii_txd);
+	mii_txdv <= txdv1;
+
+	dll_rxd_e : entity hdl4fpga.align
+	generic map (
+		n => mii_txd'length,
+		d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
+	port map (
+		clk => mii_txc,
+		di => rxd,
+		do => txd);
+
+		dll_rxdv_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
+		port map (
+			clk   => mii_txc,
+			di(0) => rxdv,
+			do(0) => txdv);
+
+		dll_txd <= wirebus (
+			dmac_txd & smac_txd & type_txd & txd,
+			dmac_ena & smac_ena & type_ena & txdv);
+		dll_txdv <=
+			dmac_ena or smac_ena or type_ena or txdv;
+
 
 end;
+

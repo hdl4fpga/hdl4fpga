@@ -1020,12 +1020,15 @@ package body std is
 		variable aux  : unsigned(0 to size*ena'length-1) := (others => '0');
 		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
 	begin
+
 		assert inp'length mod ena'length = 0
 			report "primux mod"
 			severity failure;
+
 		assert inp'length = aux'length
 			report "primux length"
 			severity failure;
+
 		aux(0 to inp'length-1) := unsigned(inp);
 		for i in ena'range loop
 			if ena(i)='1' then

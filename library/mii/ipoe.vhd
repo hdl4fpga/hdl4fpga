@@ -21,6 +21,8 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -28,78 +30,49 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-package ipoepkg is
+entity ipoe is
+	generic (
+		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+	port (
+		mii_rxc       : in  std_logic;
+		mii_rxd       : in  std_logic_vector;
+		mii_rxdv      : in  std_logic;
 
-	constant eth_macd : natural := 0;
-	constant eth_macs : natural := 1;
-	constant eth_type : natural := 2;
-
-	constant eth_frame : natural_vector := (
-		eth_macd => 6*8,
-		eth_macs => 6*8,
-		eth_type => 2*8);
-
-	constant llc_ip  : std_logic_vector := x"0800";
-	constant llc_arp : std_logic_vector := x"0806";
-
-	constant arp_htype : natural := 0;
-	constant arp_ptype : natural := 1;
-	constant arp_hlen  : natural := 2;
-	constant arp_plen  : natural := 3;
-	constant arp_oper  : natural := 4;
-	constant arp_sha   : natural := 5;
-	constant arp_spa   : natural := 6;
-	constant arp_tha   : natural := 7;
-	constant arp_tpa   : natural := 8;
-
-	constant arp_frame : natural_vector := (
-		arp_htype => 2*8,
-		arp_ptype => 2*8,
-		arp_hlen  => 1*8,
-		arp_plen  => 1*8,
-		arp_oper  => 2*8,
-		arp_sha   => 6*8,
-		arp_spa   => 4*8,
-		arp_tha   => 6*8,
-		arp_tpa   => 4*8);
-
-	constant arprply_pfx : std_logic_vector :=
-		x"0001" & -- htype 
-		x"0800" & -- ptype 
-		x"06"   & -- hlen  
-		x"04"   & -- plen  
-		x"0002";  -- oper  
-	   
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector;
+		mii_req       : in  std_logic;
+		mii_txc       : in  std_logic;
+		mii_txd       : out std_logic_vector;
+		mii_txdv      : out std_logic;
 
 end;
 
-package body ipoepkg is
+architecture def of ipoe is
 
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low    : natural;
-		variable high   : natural;
-	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i)/size;
-			if low <= ptr and ptr < high then
-				retval(i) := '1';
-				exit;
-			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
+begin
+
+	ipsa_e : entity hdl4fpga.mii_ram
+	generic map (
+		size => ip4a_size)
+	port map(
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_rxdv => myipcfg_vld,
+		mii_txc  => mii_txc,
+		mii_txdv => ipsa_txdv,
+		mii_txd  => ipsa_txd,
+		mii_tena => ipsa_tena,
+		mii_treq => ipsa_treq,
+		mii_teoc => ipsa_teoc,
+		mii_trdy => ipsa_trdy);
+
+	ethrx_e : entity hdl4fpga.eth_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_macd => eth_macd,
+		eth_bcst => eth_bcst,
+		ethtype_ena => eth_type,
+		arp_req  => arp_req);
 
 end;
+
