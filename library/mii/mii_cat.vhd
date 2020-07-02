@@ -30,12 +30,11 @@ use hdl4fpga.std.all;
 
 entity mii_cat is
     port (
-		mii_req  : in  std_logic;
-		mii_rdy  : out std_logic;
+		mii_treq : in  std_logic;
+		mii_trdy : out std_logic;
+        mii_txd  : in  std_logic_vector;
+        mii_txdv : in  std_logic_vector;
 		mii_trdy : in  std_logic_vector;
-        mii_rxd  : in  std_logic_vector;
-        mii_rxdv : in  std_logic_vector;
-		mii_treq : out std_logic_vector;
         mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;

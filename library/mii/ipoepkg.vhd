@@ -30,13 +30,13 @@ use hdl4fpga.std.all;
 
 package ipoepkg is
 
-	constant eth_macd : natural := 0;
-	constant eth_macs : natural := 1;
+	constant eth_hwda : natural := 0;
+	constant eth_hwsa : natural := 1;
 	constant eth_type : natural := 2;
 
 	constant eth_frame : natural_vector := (
-		eth_macd => 6*8,
-		eth_macs => 6*8,
+		eth_hwda => 6*8,
+		eth_hwsa => 6*8,
 		eth_type => 2*8);
 
 	constant llc_ip  : std_logic_vector := x"0800";

@@ -79,7 +79,8 @@ begin
 	ipsa_treq <= tha_rdy;
 
 	arp_txd  <= primux (pfx_txd & tha_txd & ipsa_txd, not pfx_trdy & not tha_trdy & not ipsa_trdy);
-	arp_txen <= pfx_txd or tha_txen or ipsa_txd;
+	arp_txen <= pfx_txen or tha_txen or ipsa_txen;
+	arp_trdy <= ipsa_trdy;
 
 end;
 
