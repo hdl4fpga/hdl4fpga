@@ -108,9 +108,6 @@ begin
 		video_hs  => vga_hsync,
 		video_vs  => vga_vsync);
 
-	mii_txd <= (others => 'Z');
-	mii_txen <= 'Z';
-	
 	video_lat_e: entity hdl4fpga.align 
 	generic map (
 		n => 3,
