@@ -53,6 +53,7 @@ architecture def of eth_tx is
 	signal hwsa_txen : std_logic;
 	signal hwsa_txd  : std_logic_vector(eth_txd'range);
 
+	constant lat_length : natural := (eth_frame(eth_hwda)+eth_frame(eth_hwsa))/eth_txd'length;
 	signal lat_txen  : std_logic;
 	signal lat_txd   : std_logic_vector(eth_txd'range);
 
@@ -63,11 +64,12 @@ begin
 
 	hwda_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(hwsa, 8))
+		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pl_txen,
 		mii_trdy => hwda_trdy,
+		mii_txen => hwda_txen,
 		mii_txd  => hwda_txd);
 
 	hwsa_e : entity hdl4fpga.mii_rom
@@ -77,12 +79,13 @@ begin
 		mii_txc  => mii_txc,
 		mii_treq => hwda_trdy,
 		mii_trdy => hwsa_trdy,
+		mii_txen => hwsa_txen,
 		mii_txd  => hwsa_txd);
 
 	lattxd_e : entity hdl4fpga.align
 	generic map (
 		n => eth_txd'length,
-		d => (0 to eth_txd'length-1 => (eth_frame(eth_hwda)+eth_frame(eth_hwsa/eth_txd'length))))
+		d => (0 to eth_txd'length-1 => lat_length))
 	port map (
 		clk => mii_txc,
 		di  => pl_txd, 
@@ -91,13 +94,14 @@ begin
 	lattxdv_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to eth_txd'length-1 => (eth_frame(eth_hwda)+eth_frame(eth_hwsa/eth_txd'length))))
+		d => (0 to eth_txd'length-1 => lat_length),
+		i => (0 to mii_txd'length-1 => '0'))
 	port map (
 		clk   => mii_txc,
 		di(0) => pl_txen,
 		do(0) => lat_txen);
 
-	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, not hwsa_trdy & not hwsa_trdy & lat_txen);
+	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
 	dll_txen <= hwda_txen or hwsa_txen or lat_txen;
 
 	dll_e : entity hdl4fpga.eth_dll
