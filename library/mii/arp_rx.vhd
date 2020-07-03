@@ -39,7 +39,6 @@ entity arp_rx is
 		mii_rxd  : in  std_logic_vector;
 		eth_ptr  : in  std_logic_vector;
 		eth_bcst : in  std_logic;
-		eth_type : in  std_logic;
 		arp_req  : out std_logic);
 
 end;
@@ -61,7 +60,6 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,
 		mii_treq => mii_rxdv,
-		mii_ena  => eth_type,
 		mii_equ  => llc_equ);
 
 	tpa_req <= llc_equ and eth_bcst;

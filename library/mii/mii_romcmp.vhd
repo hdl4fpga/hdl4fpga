@@ -36,12 +36,12 @@ entity mii_romcmp is
         mii_rxd  : in  std_logic_vector;
 		mii_ena  : in  std_logic := '1';
 		mii_treq : in  std_logic;
+		mii_trdy : buffer std_logic;
 		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_romcmp is
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
-	signal mii_trdy : std_logic;
 begin
 
 	mii_data_e : entity hdl4fpga.mii_rom

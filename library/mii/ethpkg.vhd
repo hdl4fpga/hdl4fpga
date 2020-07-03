@@ -45,6 +45,13 @@ package ethpkg is
 		constant size  : natural)
 		return std_logic_vector;
 
+	function eth_decode (
+		constant ptr   : unsigned;
+		constant field : natural;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic;
+
 end;
 
 package body ethpkg is
@@ -68,6 +75,21 @@ package body ethpkg is
 			end if;
 			low := high;
 		end loop;
+		return retval;
+	end;
+
+	function eth_decode (
+		constant ptr   : unsigned;
+		constant field : natural;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic is
+		variable retval : std_logic;
+	begin
+		retval := '0';
+		if frame(field)/size <= ptr then
+			retval := '1';
+		end if;
 		return retval;
 	end;
 

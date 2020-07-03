@@ -58,10 +58,12 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
+	signal eth_ptr   : std_logic_vector(0 to (64*8)/mii_rxd'length);
 	signal eth_bcst  : std_logic;
 	signal eth_hwda  : std_logic;
 	signal eth_type  : std_logic;
 	signal arp_req   : std_logic;
+	signal pl_rxdv   : std_logic;
 
 	signal arp_txen  : std_logic;
 	signal arp_txd   : std_logic_vector(mii_txd'range);
@@ -78,11 +80,19 @@ begin
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
 		mii_rxc  => mii_rxc,
-		eth_rxdv => mii_rxdv,
-		eth_rxd  => mii_rxd,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_ptr  => eth_ptr,
 		eth_hwda => eth_hwda,
+		eth_bcst => eth_bcst);
+
+	arprx_e : entity hdl4fpga.arp_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => pl_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_ptr  => eth_ptr,
 		eth_bcst => eth_bcst,
-		ethtype_ena => eth_type,
 		arp_req  => arp_req);
 
 	ethtx_e : entity hdl4fpga.eth_tx
