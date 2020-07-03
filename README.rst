@@ -7,8 +7,8 @@ enough to discover what is wrong.
 Goals 
 -----
 
-- Video interface to display data
-- Small footprint
-- Portability
-- Block RAM requirement only
-- Data transfer **to** and **from** the system
+- **Video interface** to plot signals
+- **Small footprint**
+- **Portability**
+- **Block RAM requirement only
+- **Data transfer** to and from the system
