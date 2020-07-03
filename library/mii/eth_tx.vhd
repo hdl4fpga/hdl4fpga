@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ipoepkg.all;
+use hdl4fpga.ethpkg.all;
 
 entity eth_tx is
 	generic (

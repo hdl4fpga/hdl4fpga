@@ -27,17 +27,9 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
-
-	constant eth_hwda : natural := 0;
-	constant eth_hwsa : natural := 1;
-	constant eth_type : natural := 2;
-
-	constant eth_frame : natural_vector := (
-		eth_hwda => 6*8,
-		eth_hwsa => 6*8,
-		eth_type => 2*8);
 
 	constant llc_ip  : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
@@ -70,36 +62,4 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector;
-
-end;
-
-package body ipoepkg is
-
-	function mii_decode (
-		constant ptr   : unsigned;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low    : natural;
-		variable high   : natural;
-	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i)/size;
-			if low <= ptr and ptr < high then
-				retval(i) := '1';
-				exit;
-			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
-
 end;
