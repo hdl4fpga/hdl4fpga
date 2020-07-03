@@ -62,6 +62,7 @@ architecture nuhs3adsp_miidebug of testbench is
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
+	signal mii_txc  : std_logic;
 	signal mii_txen : std_logic;
 
 	signal ddr_lp_dqs : std_logic;
@@ -231,6 +232,7 @@ architecture nuhs3adsp_miidebug of testbench is
 begin
 
 	mii_rxc <= mii_refclk after 5 ps;
+	mii_txc <= not mii_refclk after 5 ps;
 
 	clk <= not clk after 25 ns;
 
@@ -269,8 +271,8 @@ begin
 
 		rs232_rd => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_txc => '-', --mii_refclk,
-		mii_rxc => mii_refclk,
+		mii_rxc => mii_rxc,
+		mii_txc => mii_txc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,
 		mii_txen => mii_txen,

@@ -62,6 +62,8 @@ architecture mii_debug of nuhs3adsp is
 
 	constant video_mode : video_modes := mode600p;
 
+	signal mii_treq : std_logic;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -89,6 +91,7 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
+	mii_treq <= not sw1;
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
 --		cga_bitrom => to_ascii("Ready Steady GO!"),
@@ -99,6 +102,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 
 		mii_txc   => mii_txc,
+		mii_treq  => mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
 

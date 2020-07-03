@@ -46,6 +46,7 @@ entity mii_debug is
 		mii_rxdv    : in  std_logic;
 
 		mii_txc     : in  std_logic;
+		mii_treq    : in  std_logic;
 		mii_txd     : out std_logic_vector;
 		mii_txen    : out std_logic;
 
@@ -125,7 +126,7 @@ begin
 		ipsa_txen => ipsa_txen,
 		ipsa_txd  => ipsa_txd,
 
-		arp_treq  => arp_req,
+		arp_treq  => mii_treq,
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
 
