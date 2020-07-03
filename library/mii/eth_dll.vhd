@@ -46,6 +46,7 @@ architecture mix of eth_dll is
 	signal pre_txd    : std_logic_vector(dll_txd'range);
 	signal pre_txen   : std_logic;
 
+	constant lat_length : natural := mii_pre'length/mii_txd'length;
 	signal lat_txd    : std_logic_vector(dll_txd'range);
 	signal lat_txen   : std_logic;
 
@@ -67,7 +68,7 @@ begin
 	lattxd_e : entity hdl4fpga.align
 	generic map (
 		n  => mii_txd'length,
-		d  => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
+		d  => (0 to mii_txd'length-1 => lat_length))
 	port map (
 		clk => mii_txc,
 		di  => dll_txd,
@@ -76,7 +77,7 @@ begin
 	lattxdv_e : entity hdl4fpga.align
 	generic map (
 		n  => 1,
-		d  => (1 to 1 => mii_pre'length/mii_txd'length))
+		d  => (0 to mii_txd'length-1 => lat_length))
 	port map (
 		clk   => mii_txc,
 		di(0) => dll_txen,
