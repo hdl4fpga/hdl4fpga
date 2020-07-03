@@ -245,7 +245,7 @@ begin
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
-		mii_txdv => mii_rxdv,
+		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
 	rst <= '0', '1' after 300 ns;

@@ -39,12 +39,15 @@ entity mii_debug is
 		timing_id   : videotiming_ids;
 		code_spce   : std_logic_vector := to_ascii(" ");
 		code_digits : std_logic_vector := to_ascii("0123456789abcdef");
-		cga_bitrom  : std_logic_vector := (1 to 0 => '-');
-		mac         : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
 	port (
 		mii_rxc     : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
 		mii_rxdv    : in  std_logic;
+
+		mii_txc     : in  std_logic;
+		mii_txd     : out std_logic_vector;
+		mii_txen    : out std_logic;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
@@ -55,22 +58,65 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal eth_bcst : std_logic;
-	signal eth_macd : std_logic;
-	signal eth_type : std_logic;
-	signal arp_req  : std_logic;
+	signal eth_bcst  : std_logic;
+	signal eth_hwda  : std_logic;
+	signal eth_type  : std_logic;
+	signal arp_req   : std_logic;
+
+	signal arp_txen  : std_logic;
+	signal arp_txd   : std_logic_vector(mii_txd'range);
+
+	signal pl_txen   : std_logic;
+	signal pl_txd    : std_logic_vector(mii_txd'range);
+
+	signal ipsa_treq : std_logic;
+	signal ipsa_txen : std_logic;
+	signal ipsa_txd  : std_logic_vector(arp_txd'range);
 
 begin
 
-	mii_du : entity hdl4fpga.eth_rx
+	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-		eth_macd => eth_macd,
+		eth_rxdv => mii_rxdv,
+		eth_rxd  => mii_rxd,
+		eth_hwda => eth_hwda,
 		eth_bcst => eth_bcst,
 		ethtype_ena => eth_type,
 		arp_req  => arp_req);
+
+	ethtx_e : entity hdl4fpga.eth_tx
+	port map (
+		mii_txc  => mii_txc,
+		pl_txen  => arp_txen,
+		pl_txd   => arp_txd,
+		eth_txen => mii_txen,
+		eth_txd  => mii_txd);
+
+	ipsa_e : entity hdl4fpga.mii_ram
+	generic map (
+		mem_data => reverse(x"c0_a8_00_0e",8))
+	port map (
+		mii_rxc  => mii_rxc,
+        mii_rxdv => '0',
+        mii_rxd  => mii_rxd,
+
+        mii_txc  => mii_txc,
+		mii_treq => ipsa_treq,
+        mii_txen => ipsa_txen,
+        mii_txd  => ipsa_txd);
+		
+	arptx_e : entity hdl4fpga.arp_tx
+	port map (
+		mii_txc   => mii_txc,
+
+		ipsa_treq => ipsa_treq,
+		ipsa_txen => ipsa_txen,
+		ipsa_txd  => ipsa_txd,
+
+		arp_treq  => arp_req,
+		arp_txen  => arp_txen,
+		arp_txd   => arp_txd);
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
@@ -80,7 +126,7 @@ begin
 		cga_bitrom  => cga_bitrom)
 	port map (
 		mii_rxc     => mii_rxc,
-		mii_rxdv    => arp_req, --eth_type, --eth_macd, --eth_bcst,
+		mii_rxdv    => arp_req, --eth_type, --eth_hwda, --eth_bcst,
 		mii_rxd     => mii_rxd,
 
 		video_clk   => video_clk,

@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miirx_pre is
+entity mii_rxpre is
     port (
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
@@ -36,7 +36,7 @@ entity miirx_pre is
 		mii_rdy  : out std_logic);
 end;
 
-architecture def of miirx_pre is
+architecture def of mii_rxpre is
 
 	signal rdy : std_logic;
 

@@ -29,35 +29,35 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ipoepkg.all;
+use hdl4fpga.ethpkg.all;
 
 entity eth_rx is
 	generic (
-		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		hwda      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
+		eth_rxd   : in  std_logic_vector;
+		eth_rxdv  : in  std_logic;
 		eth_pre   : buffer std_logic;
 		eth_bcst  : buffer std_logic;
-		eth_macd  : out std_logic;
+		eth_hwda  : out std_logic;
 		ethtype_ena : buffer std_logic;
 		arp_req   : out std_logic);
 end;
 
 architecture def of eth_rx is
 
-	signal eth_ptr   : unsigned(0 to unsigned_num_bits(64*8/mii_rxd'length-1));
+	signal eth_ptr   : unsigned(0 to unsigned_num_bits(64*8/eth_rxd'length-1));
 	signal eth_field : std_logic_vector(eth_frame'range);
 	signal eth_treq  : std_logic;
 
 begin
 
-	mii_pre_e : entity hdl4fpga.miirx_pre 
+	mii_pre_e : entity hdl4fpga.mii_rxpre 
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_rxdv => mii_rxdv,
+		mii_rxd  => eth_rxd,
+		mii_rxdv => eth_rxdv,
 		mii_rdy  => eth_pre);
 
 	process (mii_rxc)
@@ -73,31 +73,31 @@ begin
 
 	eth_treq <= eth_pre and not eth_ptr(0);
 
-	mymac_e : entity hdl4fpga.mii_romcmp
+	hwda_e : entity hdl4fpga.mii_romcmp
 	generic map (
-		mem_data => reverse(mac,8))
+		mem_data => reverse(hwda,8))
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
+		mii_rxd  => eth_rxd,
 		mii_treq => eth_treq,
-		mii_equ  => eth_macd);
+		mii_equ  => eth_hwda);
 
 	mii_bcst_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
+		mii_rxd  => eth_rxd,
 		mii_treq => eth_treq,
 		mii_equ  => eth_bcst);
 
-	eth_field <= mii_decode(eth_ptr, eth_frame, mii_rxd'length) and (eth_field'range => eth_pre);
+	eth_field <= eth_decode(eth_ptr, eth_frame, eth_rxd'length) and (eth_field'range => eth_pre);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => eth_treq,
-		mii_rxd  => mii_rxd,
+		mii_rxd  => eth_rxd,
 		eth_ptr  => std_logic_vector(eth_ptr),
 		eth_bcst => eth_bcst,
 		eth_type => eth_field(eth_type),

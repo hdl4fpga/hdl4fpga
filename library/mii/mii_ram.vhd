@@ -31,7 +31,7 @@ use hdl4fpga.std.all;
 entity mii_ram is
 	generic (
 		mem_data : std_logic_vector := (0 to 0 => '-');
-		mem_size : natural);
+		mem_size : natural := 0);
     port (
 		mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;

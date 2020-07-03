@@ -33,35 +33,40 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	generic (
-		mac       : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		hwsa      : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_txc   : in  std_logic;
-		mii_req   : in  std_logic;
-		mii_txd   : out std_logic_vector;
-		mii_txen  : out std_logic;
 
 		ipsa_treq : out std_logic;
-		ipsa_trdy : in  std_logic;
+		ipsa_trdy : in  std_logic := '-';
 		ipsa_txen : in  std_logic;
-		ipsa_txd  : in  std_logic;
+		ipsa_txd  : in  std_logic_vector;
 
 		arp_treq  : in  std_logic;
 		arp_trdy  : out std_logic;
-		arp_txd   : out std_logic;
-		arp_txen  : out std_logic_vector);
+		arp_txen  : out std_logic;
+		arp_txd   : out std_logic_vector);
 
 end;
 
 architecture def of arp_tx is
 
+	signal pfx_trdy : std_logic;
+	signal pfx_txen : std_logic;
+	signal pfx_txd  : std_logic_vector(arp_txd'range);
+
+	signal tha_trdy : std_logic;
+	signal tha_txen : std_logic;
+	signal tha_txd  : std_logic_vector(arp_txd'range);
+
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(arprply_pfx & mac, 8))
+		mem_data => reverse(arprply_pfx & hwsa, 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pfx_treq,
+		mii_treq => arp_treq,
 		mii_trdy => pfx_trdy,
 		mii_txen => pfx_txen,
 		mii_txd  => pfx_txd);
@@ -72,13 +77,13 @@ begin
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pfx_trdy,
-		mii_trdy => tha_rdy,
+		mii_trdy => tha_trdy,
 		mii_txen => tha_txen,
 		mii_txd  => tha_txd);
 
-	ipsa_treq <= tha_rdy;
+	ipsa_treq <= tha_trdy;
 
-	arp_txd  <= primux (pfx_txd & tha_txd & ipsa_txd, not pfx_trdy & not tha_trdy & not ipsa_trdy);
+	arp_txd  <= primux (pfx_txd & tha_txd & ipsa_txd, pfx_txen & tha_txen & ipsa_txen);
 	arp_txen <= pfx_txen or tha_txen or ipsa_txen;
 	arp_trdy <= ipsa_trdy;
 

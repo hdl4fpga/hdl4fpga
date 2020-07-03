@@ -29,6 +29,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_rx is
@@ -64,11 +65,11 @@ begin
 		mii_equ  => llc_equ);
 
 	tpa_req <= llc_equ and eth_bcst;
-	arp_field <= mii_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length);
+	arp_field <= eth_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length);
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
 		mem_size => arp_frame(arp_tpa),
-		mem_data => reverse(x"c0_a8_00_3e",8))
+		mem_data => reverse(x"c0_a8_00_0e",8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => '0',

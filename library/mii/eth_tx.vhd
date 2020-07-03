@@ -33,13 +33,13 @@ use hdl4fpga.ethpkg.all;
 
 entity eth_tx is
 	generic (
-		hwsa       : in  std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		hwsa     : in  std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_txc    : in  std_logic;
-		proto_txen : in  std_logic;
-		proto_txd  : in  std_logic_vector;
-		eth_txen   : out std_logic;
-		eth_txd    : out std_logic_vector);
+		mii_txc  : in  std_logic;
+		pl_txen  : in  std_logic;
+		pl_txd   : in  std_logic_vector;
+		eth_txen : out std_logic;
+		eth_txd  : out std_logic_vector);
 
 end;
 
@@ -66,7 +66,7 @@ begin
 		mem_data => reverse(hwsa, 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => proto_txen,
+		mii_treq => pl_txen,
 		mii_trdy => hwda_trdy,
 		mii_txd  => hwda_txd);
 
@@ -85,7 +85,7 @@ begin
 		d => (0 to eth_txd'length-1 => (eth_frame(eth_hwda)+eth_frame(eth_hwsa/eth_txd'length))))
 	port map (
 		clk => mii_txc,
-		di  => proto_txd, 
+		di  => pl_txd, 
 		do  => lat_txd);
 
 	lattxdv_e : entity hdl4fpga.align
@@ -94,7 +94,7 @@ begin
 		d => (0 to eth_txd'length-1 => (eth_frame(eth_hwda)+eth_frame(eth_hwsa/eth_txd'length))))
 	port map (
 		clk   => mii_txc,
-		di(0) => proto_txen,
+		di(0) => pl_txen,
 		do(0) => lat_txen);
 
 	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, not hwsa_trdy & not hwsa_trdy & lat_txen);
