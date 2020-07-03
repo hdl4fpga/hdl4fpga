@@ -85,11 +85,19 @@ package body ethpkg is
 		constant size  : natural)
 		return std_logic is
 		variable retval : std_logic;
+		variable sumup  : natural;
 	begin
 		retval := '0';
-		if frame(field)/size <= ptr then
-			retval := '1';
-		end if;
+		sumup  := 0;
+		for i in frame'range loop
+			if i=field then
+				if sumup <= ptr then
+					retval := '1';
+				end if;
+				exit;
+			end if;
+			sumup := sumup + frame(i)/size;
+		end loop;
 		return retval;
 	end;
 

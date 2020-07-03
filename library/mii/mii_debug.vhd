@@ -84,7 +84,8 @@ begin
 		mii_rxd  => mii_rxd,
 		eth_ptr  => eth_ptr,
 		eth_hwda => eth_hwda,
-		eth_bcst => eth_bcst);
+		eth_bcst => eth_bcst,
+		pl_rxdv  => pl_rxdv);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
