@@ -10,5 +10,5 @@ Goals
 - **Video interface** to plot signals
 - **Small footprint**
 - **Portability**
-- **Block RAM requirement only
+- **Block RAM requirement only**
 - **Data transfer** to and from the system
