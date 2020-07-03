@@ -98,6 +98,10 @@ begin
 		mii_rxd   => mii_rxd,
 		mii_rxdv  => mii_rxdv,
 
+		mii_txc   => mii_txc,
+		mii_txd   => mii_txd,
+		mii_txen  => mii_txen,
+
 		video_clk => vga_clk, 
 		video_dot => vga_dot,
 		video_on  => vga_on,
