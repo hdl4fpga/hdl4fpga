@@ -58,7 +58,7 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal eth_ptr   : std_logic_vector(0 to (64*8)/mii_rxd'length);
+	signal eth_ptr   : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal eth_bcst  : std_logic;
 	signal eth_hwda  : std_logic;
 	signal eth_type  : std_logic;
