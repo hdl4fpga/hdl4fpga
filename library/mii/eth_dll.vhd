@@ -43,7 +43,6 @@ architecture mix of eth_dll is
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 
-	signal pre_trdy   : std_logic;
 	signal pre_txd    : std_logic_vector(dll_txd'range);
 	signal pre_txen   : std_logic;
 
@@ -62,7 +61,6 @@ begin
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => dll_txen,
-		mii_trdy => pre_trdy,
 		mii_txdv => pre_txen,
 		mii_txd  => pre_txd);
 
