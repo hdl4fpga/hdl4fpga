@@ -47,8 +47,8 @@ entity mii_debug is
 
 		mii_txc     : in  std_logic;
 		mii_treq    : in  std_logic;
-		mii_txd     : out std_logic_vector;
-		mii_txen    : out std_logic;
+		mii_txd     : buffer std_logic_vector;
+		mii_txen    : buffer std_logic;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
@@ -137,9 +137,13 @@ begin
 		code_digits => code_digits, 
 		cga_bitrom  => cga_bitrom)
 	port map (
-		mii_rxc     => mii_rxc,
-		mii_rxdv    => arp_req, --eth_type, --eth_hwda, --eth_bcst,
-		mii_rxd     => mii_rxd,
+--		mii_rxc     => mii_rxc,
+--		mii_rxdv    => arp_req,
+--		mii_rxd     => mii_rxd,
+
+		mii_rxc     => mii_txc,
+		mii_rxdv    => mii_txen,
+		mii_rxd     => mii_txd,
 
 		video_clk   => video_clk,
 		video_dot   => video_dot,

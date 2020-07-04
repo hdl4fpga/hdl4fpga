@@ -95,11 +95,21 @@ begin
 	generic map (
 		n => 1,
 		d => (0 to eth_txd'length-1 => lat_length),
-		i => (0 to mii_txd'length-1 => '0'))
+		i => (0 to eth_txd'length-1 => '0'))
 	port map (
 		clk   => mii_txc,
 		di(0) => pl_txen,
 		do(0) => lat_txen);
+
+	padding_p : process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if pl_txen='0' then
+			if cntr(0)='1' then
+				cntr := (others => '0');
+			elsif pl_txena
+		end if;
+	end process;
 
 	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
 	dll_txen <= hwda_txen or hwsa_txen or lat_txen;

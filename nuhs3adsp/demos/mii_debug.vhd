@@ -94,7 +94,7 @@ begin
 	mii_treq <= not sw1;
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
---		cga_bitrom => to_ascii("Ready Steady GO!"),
+		cga_bitrom => to_ascii("Ready Steady GO!"),
 		timing_id  => video_tab(video_mode).timing_id)
 	port map (
 		mii_rxc   => mii_rxc,
