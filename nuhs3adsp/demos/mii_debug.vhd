@@ -91,7 +91,13 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
-	mii_treq <= not sw1;
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			mii_treq <= not sw1;
+		end if;
+	end process;
+
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
 		cga_bitrom => to_ascii("Ready Steady GO!"),
