@@ -70,7 +70,7 @@ begin
 				waddr <= cntr;
 			else
 				if mem_data'length > 1 then
-					waddr <= to_unsigned(mem_data'length/mii_txd'length, waddr'length);
+					waddr <= to_unsigned(mem_data'length/mii_txd'length-1, waddr'length);
 				else
 					waddr <= (others => '1');
 				end if;

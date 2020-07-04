@@ -55,15 +55,19 @@ architecture def of arp_tx is
 	signal pfx_txen : std_logic;
 	signal pfx_txd  : std_logic_vector(arp_txd'range);
 
+	signal tha_treq : std_logic;
 	signal tha_trdy : std_logic;
 	signal tha_txen : std_logic;
 	signal tha_txd  : std_logic_vector(arp_txd'range);
+
+	signal tpa_txen : std_logic;
+	signal tpa_txd  : std_logic_vector(arp_txd'range);
 
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(arprply_pfx & hwsa, 8))
+		mem_data => reverse(llc_arp & arprply_pfx & hwsa, 8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => arp_treq,
@@ -71,21 +75,44 @@ begin
 		mii_txen => pfx_txen,
 		mii_txd  => pfx_txd);
 
+
+	process(mii_txc, pfx_trdy, ipsa_trdy, tha_trdy)
+		variable tpa : std_logic;
+	begin
+		if rising_edge(mii_txc) then
+			if pfx_trdy='0' then
+				tpa := '0';
+			elsif ipsa_trdy='1' then
+				tpa := '1';
+			end if;
+		end if;
+		tha_treq  <= setif(tpa='0', ipsa_trdy, pfx_trdy);
+		ipsa_treq <= setif(tpa='0', pfx_trdy,  tha_trdy);
+	end process;
+
 	tha_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse( x"ff_ff_ff_ff_ff_ff", 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pfx_trdy,
+		mii_treq => tha_treq,
 		mii_trdy => tha_trdy,
 		mii_txen => tha_txen,
 		mii_txd  => tha_txd);
 
-	ipsa_treq <= tha_trdy;
+	tpa_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse( x"ff_ff_ff_ff", 8))
+	port map (
+		mii_txc  => mii_txc,
+		mii_treq => tha_treq,
+		mii_trdy => arp_trdy,
+		mii_txen => tpa_txen,
+		mii_txd  => tpa_txd);
 
-	arp_txd  <= primux (pfx_txd & tha_txd & ipsa_txd, pfx_txen & tha_txen & ipsa_txen);
-	arp_txen <= pfx_txen or tha_txen or ipsa_txen;
-	arp_trdy <= ipsa_trdy;
+
+	arp_txd  <= primux (pfx_txd & ipsa_txd & tha_txd & ipsa_txd, pfx_txen & ipsa_txen & tha_txen & ipsa_txen);
+	arp_txen <= pfx_txen or ipsa_txen or tha_txen or ipsa_txen;
 
 end;
 
