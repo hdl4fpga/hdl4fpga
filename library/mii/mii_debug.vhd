@@ -73,6 +73,7 @@ architecture struct of mii_debug is
 	signal pl_txd    : std_logic_vector(mii_txd'range);
 
 	signal ipsa_treq : std_logic;
+	signal ipsa_trdy : std_logic;
 	signal ipsa_txen : std_logic;
 	signal ipsa_txd  : std_logic_vector(arp_txd'range);
 
@@ -115,6 +116,7 @@ begin
 
         mii_txc  => mii_txc,
 		mii_treq => ipsa_treq,
+		mii_trdy => ipsa_trdy,
         mii_txen => ipsa_txen,
         mii_txd  => ipsa_txd);
 		
@@ -123,6 +125,7 @@ begin
 		mii_txc   => mii_txc,
 
 		ipsa_treq => ipsa_treq,
+		ipsa_trdy => ipsa_trdy,
 		ipsa_txen => ipsa_txen,
 		ipsa_txd  => ipsa_txd,
 

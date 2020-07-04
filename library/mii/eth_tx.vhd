@@ -57,17 +57,53 @@ architecture def of eth_tx is
 	signal lat_txen  : std_logic;
 	signal lat_txd   : std_logic_vector(eth_txd'range);
 
+	signal padd_txen  : std_logic;
+	signal padd_txd   : std_logic_vector(eth_txd'range);
+
 	signal dll_txen  : std_logic;
 	signal dll_txd   : std_logic_vector(eth_txd'range);
 
 begin
+
+	padding_p : process (mii_txc, pl_txen)
+		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1));
+	begin
+		if rising_edge(mii_txc) then
+			if cntr(0)='0' then
+				cntr := cntr + 1;
+			elsif pl_txen='1' then
+				cntr := to_unsigned((2*6+4)*8/eth_txd'length+1, cntr'length); 
+			end if;
+		end if;
+		padd_txen <= not cntr(0) or pl_txen;
+	end process;
+	padd_txd  <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
+
+	lattxd_e : entity hdl4fpga.align
+	generic map (
+		n => eth_txd'length,
+		d => (0 to eth_txd'length-1 => lat_length))
+	port map (
+		clk => mii_txc,
+		di  => padd_txd, 
+		do  => lat_txd);
+
+	lattxdv_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to eth_txd'length-1 => lat_length),
+		i => (0 to eth_txd'length-1 => '0'))
+	port map (
+		clk   => mii_txc,
+		di(0) => padd_txen,
+		do(0) => lat_txen);
 
 	hwda_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pl_txen,
+		mii_treq => padd_txen,
 		mii_trdy => hwda_trdy,
 		mii_txen => hwda_txen,
 		mii_txd  => hwda_txd);
@@ -81,35 +117,6 @@ begin
 		mii_trdy => hwsa_trdy,
 		mii_txen => hwsa_txen,
 		mii_txd  => hwsa_txd);
-
-	lattxd_e : entity hdl4fpga.align
-	generic map (
-		n => eth_txd'length,
-		d => (0 to eth_txd'length-1 => lat_length))
-	port map (
-		clk => mii_txc,
-		di  => pl_txd, 
-		do  => lat_txd);
-
-	lattxdv_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to eth_txd'length-1 => lat_length),
-		i => (0 to eth_txd'length-1 => '0'))
-	port map (
-		clk   => mii_txc,
-		di(0) => pl_txen,
-		do(0) => lat_txen);
-
-	padding_p : process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if pl_txen='0' then
-			if cntr(0)='1' then
-				cntr := (others => '0');
-			elsif pl_txena
-		end if;
-	end process;
 
 	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
 	dll_txen <= hwda_txen or hwsa_txen or lat_txen;
