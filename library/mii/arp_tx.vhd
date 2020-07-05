@@ -100,17 +100,6 @@ begin
 		mii_txen => tha_txen,
 		mii_txd  => tha_txd);
 
-	tpa_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse( x"ff_ff_ff_ff", 8))
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => tha_treq,
-		mii_trdy => arp_trdy,
-		mii_txen => tpa_txen,
-		mii_txd  => tpa_txd);
-
-
 	arp_txd  <= primux (pfx_txd & ipsa_txd & tha_txd & ipsa_txd, pfx_txen & ipsa_txen & tha_txen & ipsa_txen);
 	arp_txen <= pfx_txen or ipsa_txen or tha_txen or ipsa_txen;
 
