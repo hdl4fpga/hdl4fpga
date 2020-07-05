@@ -118,7 +118,7 @@ begin
 		mii_txen => hwsa_txen,
 		mii_txd  => hwsa_txd);
 
-	dll_txd  <= primux (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
+	dll_txd  <= wirebus (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
 	dll_txen <= hwda_txen or hwsa_txen or lat_txen;
 
 	dll_e : entity hdl4fpga.eth_dll

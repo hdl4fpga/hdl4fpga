@@ -66,6 +66,8 @@ architecture struct of mii_debug is
 	signal arp_req   : std_logic;
 	signal pl_rxdv   : std_logic;
 
+	signal arp_treq  : std_logic;
+	signal arp_trdy  : std_logic;
 	signal arp_txen  : std_logic;
 	signal arp_txd   : std_logic_vector(mii_txd'range);
 
@@ -76,6 +78,10 @@ architecture struct of mii_debug is
 	signal ipsa_trdy : std_logic;
 	signal ipsa_txen : std_logic;
 	signal ipsa_txd  : std_logic_vector(arp_txd'range);
+
+	signal display_txc  : std_logic;
+	signal display_txen : std_logic;
+	signal display_txd  : std_logic_vector(mii_txd'range);
 
 begin
 
@@ -120,6 +126,17 @@ begin
         mii_txen => ipsa_txen,
         mii_txd  => ipsa_txd);
 		
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if arp_req='1' then
+				arp_treq <= '1';
+			elsif arp_trdy='1' then
+				arp_treq <= '0';
+			end if;
+		end if;
+	end process;
+
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_txc   => mii_txc,
@@ -129,9 +146,14 @@ begin
 		ipsa_txen => ipsa_txen,
 		ipsa_txd  => ipsa_txd,
 
-		arp_treq  => mii_treq,
+		arp_treq  => arp_treq,
+		arp_trdy  => arp_trdy,
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
+
+	display_txc  <= mii_txc when mii_txen='1' else mii_rxc;
+	display_txd  <= wirebus (mii_txd & mii_rxd, mii_txen & mii_rxdv);
+	display_txen <= mii_txen or arp_req;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
@@ -140,13 +162,9 @@ begin
 		code_digits => code_digits, 
 		cga_bitrom  => cga_bitrom)
 	port map (
---		mii_rxc     => mii_rxc,
---		mii_rxdv    => arp_req,
---		mii_rxd     => mii_rxd,
-
-		mii_rxc     => mii_txc,
-		mii_rxdv    => mii_txen,
-		mii_rxd     => mii_txd,
+		mii_rxc     => display_txc,
+		mii_rxdv    => display_txen,
+		mii_rxd     => display_txd,
 
 		video_clk   => video_clk,
 		video_dot   => video_dot,

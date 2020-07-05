@@ -60,6 +60,7 @@ architecture def of arp_tx is
 	signal tha_txen : std_logic;
 	signal tha_txd  : std_logic_vector(arp_txd'range);
 
+
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
@@ -85,6 +86,7 @@ begin
 		end if;
 		tha_treq  <= setif(tpa='0', ipsa_trdy, pfx_trdy);
 		ipsa_treq <= setif(tpa='0', pfx_trdy,  tha_trdy);
+		arp_trdy  <= setif(tpa='1', ipsa_trdy);
 	end process;
 
 	tha_e : entity hdl4fpga.mii_rom
@@ -97,7 +99,8 @@ begin
 		mii_txen => tha_txen,
 		mii_txd  => tha_txd);
 
-	arp_txd  <= primux (pfx_txd & ipsa_txd & tha_txd & ipsa_txd, pfx_txen & ipsa_txen & tha_txen & ipsa_txen);
+
+	arp_txd  <= wirebus (pfx_txd & ipsa_txd & tha_txd & ipsa_txd, pfx_txen & ipsa_txen & tha_txen & ipsa_txen);
 	arp_txen <= pfx_txen or ipsa_txen or tha_txen or ipsa_txen;
 
 end;

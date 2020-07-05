@@ -84,7 +84,7 @@ begin
 		di(0) => dll_txen,
 		do(0) => lat_txen);
 
-	crc32_e : entity hdl4fpga.mii_crc32
+	crc32_e : entity hdl4fpga.eth_crc32
 	port map (
 		mii_txc  => mii_txc,
 		mii_rxd  => lat_txd,
@@ -92,7 +92,7 @@ begin
 		mii_txdv => crc32_txen,
 		mii_txd  => crc32_txd);
 
-	mii_txd  <= primux (pre_txd & lat_txd & crc32_txd, pre_txen & lat_txen & crc32_txen);
+	mii_txd  <= wirebus (pre_txd & lat_txd & crc32_txd, pre_txen & lat_txen & crc32_txen);
 	mii_txen <= pre_txen or lat_txen or crc32_txen;
 
 end;
