@@ -60,9 +60,6 @@ architecture def of arp_tx is
 	signal tha_txen : std_logic;
 	signal tha_txd  : std_logic_vector(arp_txd'range);
 
-	signal tpa_txen : std_logic;
-	signal tpa_txd  : std_logic_vector(arp_txd'range);
-
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
