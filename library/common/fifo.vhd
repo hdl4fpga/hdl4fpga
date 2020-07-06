@@ -30,23 +30,23 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		size : natural;
-		synchronous_rddata : boolean := true;
+		mem_size  : natural;
+		out_rgtr  : boolean := true;
 		check_sov : boolean := false;
 		check_dov : boolean := false;
 		gray_code : boolean := true);
 	port (
-		src_clk  : in  std_logic;
-		src_frm  : in  std_logic := '1';
-		src_irdy : in  std_logic := '1';
-		src_trdy : buffer std_logic;
-		src_data : in  std_logic_vector;
+		src_clk   : in  std_logic;
+		src_frm   : in  std_logic := '1';
+		src_irdy  : in  std_logic := '1';
+		src_trdy  : buffer std_logic;
+		src_data  : in  std_logic_vector;
 
-		dst_clk  : in  std_logic;
-		dst_frm  : in  std_logic := '1';
-		dst_irdy : buffer std_logic;
-		dst_trdy : in  std_logic := '1';
-		dst_data : out std_logic_vector);
+		dst_clk   : in  std_logic;
+		dst_frm   : in  std_logic := '1';
+		dst_irdy  : buffer std_logic;
+		dst_trdy  : in  std_logic := '1';
+		dst_data  : out std_logic_vector);
 end;
 
 architecture def of fifo is
@@ -56,8 +56,8 @@ architecture def of fifo is
 
 
 	signal wr_ena    : std_logic;
-	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/src_data'length-1)-1) := (others => '0');
-	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(size*byte'length/dst_data'length-1)-1) := (others => '0');
+	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(mem_size*byte'length/src_data'length-1)-1) := (others => '0');
+	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(mem_size*byte'length/dst_data'length-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
 	subtype word_addr is std_logic_vector(0 to hdl4fpga.std.min(rd_addr'length,wr_addr'length)-1);
@@ -71,7 +71,7 @@ begin
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
 		synchronous_rdaddr => false,
-		synchronous_rddata => synchronous_rddata)
+		synchronous_rddata => out_rgtr)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
@@ -131,7 +131,7 @@ begin
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => setif(synchronous_rddata,1,0)),
+		d => (0 to 0 => setif(out_rgtr,1,0)),
 		i => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,

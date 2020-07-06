@@ -114,11 +114,11 @@ begin
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
-		size           => fifo_size,
-		synchronous_rddata => true, 
-		check_sov  => false,
-		check_dov  => false,
-		gray_code      => false)
+		mem_size  => fifo_size,
+		out_rgtr  => true, 
+		check_sov => false,
+		check_dov => false,
+		gray_code => false)
 	port map (
 		src_clk  => ctlr_clk,
 		src_irdy => ctlr_di_dv,

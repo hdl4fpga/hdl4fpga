@@ -41,6 +41,7 @@ entity mii_debug is
 		code_digits : std_logic_vector := to_ascii("0123456789abcdef");
 		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
 	port (
+		mii_clk     : in  std_logic;
 		mii_rxc     : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
 		mii_rxdv    : in  std_logic;
@@ -151,9 +152,26 @@ begin
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
 
-	display_txc  <= mii_txc when mii_txen='1' else mii_rxc;
+	display_txc  <= mii_clk; --mii_txc when mii_txen='1' else mii_rxc;
 	display_txd  <= wirebus (mii_txd & mii_rxd, mii_txen & mii_rxdv);
 	display_txen <= mii_txen or arp_req;
+
+	vram_e : entity hdl4fpga.fifo
+	generic map (
+		size      => 2,
+		synchronous_rddata => false, 
+		check_sov => false,
+		check_dov => false,
+		gray_code => false)
+	port map (
+		src_clk  => ctlr_clk,
+		src_irdy => ctlr_di_dv,
+		src_data => ctlr_di,
+
+		dst_clk  => video_clk,
+		dst_frm  => video_frm,
+		dst_trdy => video_on,
+		dst_data => video_pixel);
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (

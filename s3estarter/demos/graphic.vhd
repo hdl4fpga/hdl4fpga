@@ -289,9 +289,10 @@ begin
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			size           => 256,
-			gray_code      => false,
-			overflow_check => false)
+			mem_size  => 256,
+			check_sov => false,
+			check_dov => false,
+			gray_code => false)
 		port map (
 			src_clk  => si_clk,
 			src_irdy => dmadata_ena,

@@ -62,6 +62,7 @@ architecture mii_debug of nuhs3adsp is
 
 	constant video_mode : video_modes := mode600p;
 
+	signal mii_clk  : std_logic;
 	signal mii_treq : std_logic;
 
 begin
@@ -89,7 +90,8 @@ begin
 	port map (
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
-		dfs_clk => mii_refclk);
+		dfs_clk => mii_clk);
+	mii_refclk <= not mii_clk;
 
 	process (mii_txc)
 	begin
@@ -103,6 +105,7 @@ begin
 		cga_bitrom => to_ascii("Ready Steady GO!"),
 		timing_id  => video_tab(video_mode).timing_id)
 	port map (
+		mii_clk => mii_clk,
 		mii_rxc   => mii_rxc,
 		mii_rxd   => mii_rxd,
 		mii_rxdv  => mii_rxdv,
