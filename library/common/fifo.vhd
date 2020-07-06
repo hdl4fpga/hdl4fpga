@@ -30,11 +30,13 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		mem_size  : natural;
-		out_rgtr  : boolean := true;
-		check_sov : boolean := false;
-		check_dov : boolean := false;
-		gray_code : boolean := true);
+		mem_size   : natural;
+		mem_data   : std_logic_vector := (0 to 0 => '-');
+		mem_offset : natural := 0;
+		out_rgtr   : boolean := true;
+		check_sov  : boolean := false;
+		check_dov  : boolean := false;
+		gray_code  : boolean := true);
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
@@ -55,8 +57,9 @@ architecture def of fifo is
 	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
 
 
+	constant wraddr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
 	signal wr_ena    : std_logic;
-	signal wr_addr   : std_logic_vector(0 to unsigned_num_bits(mem_size*byte'length/src_data'length-1)-1) := (others => '0');
+	signal wr_addr   : std_logic_vector(0 to wraddr_length-1) := std_logic_vector(to_unsigned(mem_offset, wraddr_length));
 	signal rd_addr   : std_logic_vector(0 to unsigned_num_bits(mem_size*byte'length/dst_data'length-1)-1) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
@@ -71,7 +74,8 @@ begin
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
 		synchronous_rdaddr => false,
-		synchronous_rddata => out_rgtr)
+		synchronous_rddata => out_rgtr,
+		bitrom => mem_data)
 	port map (
 		wr_clk  => src_clk,
 		wr_ena  => wr_ena,
@@ -87,7 +91,7 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				wr_addr(word_addr'range) <= rd_addr(word_addr'range);
+				wr_addr(word_addr'range) <= std_logic_vector(unsigned(rd_addr(word_addr'range)) + mem_offset);
 			else
 				if src_irdy='1' then
 					if src_trdy='1' then
@@ -112,7 +116,7 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
-				rd_addr(word_addr'range) <= wr_addr(word_addr'range);
+				rd_addr(word_addr'range) <= std_logic_vector(unsigned(wr_addr(word_addr'range)) - mem_offset);
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' then

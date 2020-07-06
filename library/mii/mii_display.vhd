@@ -43,9 +43,9 @@ entity mii_display is
 		code_digits : std_logic_vector;
 		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
 	port (
-		mii_rxc     : in  std_logic;
-		mii_rxdv    : in  std_logic;
-		mii_rxd     : in  std_logic_vector;
+		mii_txc     : in  std_logic;
+		mii_txen    : in  std_logic;
+		mii_txd     : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
@@ -93,26 +93,26 @@ begin
 
 	serdes_e : entity hdl4fpga.serdes
 	port map (
-		serdes_clk => mii_rxc,
-		serdes_frm => mii_rxdv,
+		serdes_clk => mii_txc,
+		serdes_frm => mii_txen,
 		ser_irdy   => '1',
-		ser_data   => mii_rxd,
+		ser_data   => mii_txd,
 
 		des_irdy   => des_irdy,
 		des_data   => des_data);
 
-	process(mii_rxc)
+	process(mii_txc)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
 		variable addr  : unsigned(cga_addr'range) := (others => '0');
 		variable we    : std_logic;
 		variable data  : unsigned(des_data'range);
 	begin
-		if rising_edge(mii_rxc) then
+		if rising_edge(mii_txc) then
 			cga_addr <= std_logic_vector(addr);
-			cga_we   <= (mii_rxdv and des_irdy) or (not mii_rxdv and we);
+			cga_we   <= (mii_txen and des_irdy) or (not mii_txen and we);
 			data     := unsigned(des_data);
 			for i in 0 to des_data'length/digit'length-1 loop
-				if mii_rxdv='1' then
+				if mii_txen='1' then
 					if des_irdy='1' then
 						code(font_code'range) := word2byte(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
 					end if;
@@ -122,14 +122,14 @@ begin
 				code := std_logic_vector(unsigned(code) rol font_code'length);
 				data := data rol digit'length;
 			end loop;
-			if mii_rxdv='1' then
+			if mii_txen='1' then
 				if des_irdy='1' then
 					addr := addr + 1;
 				end if;
 			elsif we='1' then
 				addr := addr + 1;
 			end if;
-			we := mii_rxdv;
+			we := mii_txen;
 			cga_codes <= std_logic_vector(code);
 		end if;
 	end process;
@@ -145,7 +145,7 @@ begin
 		font_height => font_height,
 		font_width  => font_width)
 	port map (
-		cga_clk     => mii_rxc,
+		cga_clk     => mii_txc,
 		cga_we      => cga_we,
 		cga_addr    => cga_addr,
 		cga_data    => cga_codes,

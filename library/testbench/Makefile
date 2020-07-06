@@ -44,6 +44,8 @@ HDL4FPGA__mii_display = $(LIB_HDL4FPGA)/mii_display/_primary.dat
 HDL4FPGA__mii_debug__struct = $(LIB_HDL4FPGA)/mii_debug/struct.dat
 HDL4FPGA__mii_debug = $(LIB_HDL4FPGA)/mii_debug/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
+HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
+HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
 HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
 HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
@@ -122,6 +124,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_debug__struct) \
     $(HDL4FPGA__mii_debug) \
     $(HDL4FPGA__ipoepkg) \
+    $(HDL4FPGA__fifo__def) \
+    $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ethpkg__body) \
     $(HDL4FPGA__ethpkg) \
     $(HDL4FPGA__eth_tx__def) \
@@ -362,6 +366,17 @@ $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ethpkg.vhd
 
+$(HDL4FPGA__fifo) \
+$(HDL4FPGA__fifo__def) : ../common/fifo.vhd \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__dpram) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../common/fifo.vhd
+
 $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -374,6 +389,7 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 $(HDL4FPGA__mii_debug) \
 $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
+		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__mii_ram) \
 		$(HDL4FPGA__eth_tx) \

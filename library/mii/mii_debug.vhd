@@ -80,7 +80,6 @@ architecture struct of mii_debug is
 	signal ipsa_txen : std_logic;
 	signal ipsa_txd  : std_logic_vector(arp_txd'range);
 
-	signal display_txc  : std_logic;
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
 
@@ -127,17 +126,6 @@ begin
         mii_txen => ipsa_txen,
         mii_txd  => ipsa_txd);
 		
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if arp_req='1' then
-				arp_treq <= '1';
-			elsif arp_trdy='1' then
-				arp_treq <= '0';
-			end if;
-		end if;
-	end process;
-
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_txc   => mii_txc,
@@ -152,26 +140,44 @@ begin
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
 
-	display_txc  <= mii_clk; --mii_txc when mii_txen='1' else mii_rxc;
-	display_txd  <= wirebus (mii_txd & mii_rxd, mii_txen & mii_rxdv);
-	display_txen <= mii_txen or arp_req;
+	txc_sync_b : block
+		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
+		signal txc_rxd : std_logic_vector(0 to mii_txd'length);
+	begin
+		rxc_rxd <= mii_rxd & arp_req;
 
-	vram_e : entity hdl4fpga.fifo
-	generic map (
-		size      => 2,
-		synchronous_rddata => false, 
-		check_sov => false,
-		check_dov => false,
-		gray_code => false)
-	port map (
-		src_clk  => ctlr_clk,
-		src_irdy => ctlr_di_dv,
-		src_data => ctlr_di,
+		sync_e : entity hdl4fpga.fifo
+		generic map (
+			mem_size  => 2,
+			out_rgtr  => false, 
+			check_sov => false,
+			check_dov => false,
+			gray_code => false)
+		port map (
+			src_clk  => mii_rxc,
+			src_data => rxc_rxd,
+			dst_clk  => mii_txc,
+			dst_data => txc_rxd);
 
-		dst_clk  => video_clk,
-		dst_frm  => video_frm,
-		dst_trdy => video_on,
-		dst_data => video_pixel);
+		process (mii_txc)
+			variable treq : std_logic;
+		begin
+			if rising_edge(mii_txc) then
+				if arp_trdy='1' then
+					arp_treq <= '0';
+				elsif txc_rxd(mii_rxd'length)='0' then
+					if treq='1' then
+						arp_treq <= '1';
+					end if;
+				end if;
+				treq := txc_rxd(mii_rxd'length);
+			end if;
+		end process;
+
+		display_txd  <= wirebus (mii_txd & txc_rxd(mii_rxd'range), mii_txen & txc_rxd(mii_rxd'length));
+		display_txen <= mii_txen or txc_rxd(mii_rxd'length);
+
+	end block;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
@@ -180,9 +186,9 @@ begin
 		code_digits => code_digits, 
 		cga_bitrom  => cga_bitrom)
 	port map (
-		mii_rxc     => display_txc,
-		mii_rxdv    => display_txen,
-		mii_rxd     => display_txd,
+		mii_txc     => mii_txc,
+		mii_txen    => display_txen,
+		mii_txd     => display_txd,
 
 		video_clk   => video_clk,
 		video_dot   => video_dot,

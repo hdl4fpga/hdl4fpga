@@ -32,7 +32,7 @@ entity dpram is
 	generic (
 		synchronous_rdaddr : boolean := false;
 		synchronous_rddata : boolean := false;
-		bitrom : std_logic_vector := (1 to 0 => '-'));
+		bitrom : std_logic_vector := (0 to 0 => '-'));
 	port (
 		rd_clk  : in  std_logic := '-';
 		rd_addr : in  std_logic_vector;
