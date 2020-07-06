@@ -62,4 +62,36 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
+	constant ip_verihl  : natural :=  0;
+	constant ip_tos     : natural :=  1;
+	constant ip_len     : natural :=  2;
+	constant ip_ident   : natural :=  3;
+	constant ip_flgsfrg : natural :=  4;
+	constant ip_ttl     : natural :=  5;
+	constant ip_proto   : natural :=  6;
+	constant ip_chksum  : natural :=  7;
+	constant ip_saddr   : natural :=  8;
+	constant ip_daddr   : natural :=  9;
+
+	constant iphdr_frame : natural_vector := (
+		ip_verihl  => 1,
+		ip_tos     => 1,
+		ip_len     => 2,
+		ip_ident   => 2,
+		ip_flgsfrg => 2,
+		ip_ttl     => 1,
+		ip_proto   => 1,
+		ip_chksum  => 2,
+		ip_saddr   => 4,
+		ip_daddr   => 4);
+		
+	constant ip4_shdr : std_logic_vector := (
+		x"4500" &    -- Version, TOS
+		x"0000" &    -- Total Length
+		x"0000" &    -- Identification
+		x"0000" &    -- Fragmentation
+		x"0511" &    -- TTL, protocol
+		x"0000" &    -- Header Checksum
+		); 
+
 end;
