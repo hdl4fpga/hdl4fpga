@@ -61,12 +61,14 @@ architecture struct of mii_display is
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
+	constant display_width   : natural := modeline_tab(timing_id)(0)/font_width;
+	constant display_height  : natural := modeline_tab(timing_id)(4)/font_height;
 
 	signal video_von         : std_logic;
 	signal video_hon         : std_logic;
 	signal video_vcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hcntr       : std_logic_vector(11-1 downto 0);
-	signal video_addr        : std_logic_vector(14-1 downto 0);
+	signal video_addr        : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
 
 	signal des_data          : std_logic_vector(0 to 2*digit'length-1);
 	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
