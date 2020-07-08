@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity mii_1chksum is
 	generic (
-		n : natural);
+		size     : natural);
 	port (
 		mii_txc  : in  std_logic;
 		mii_rena : in  std_logic := '1';
@@ -45,21 +45,19 @@ begin
 
 	process (mii_rxc)
 		variable cy  : std_logic;
-		variable sum : unsigned(0 to mii_rxdv'lentgh+1);
+		variable add : unsigned(0 to mii_rxdv'lentgh+1);
+		variable acc : unsigned(0 to mii_rxdv'lentgh+1);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				acc <= std_logic_vector(sum(1 to rxd'length);
-				cy  <= sum(0);
+				acc := (others => '0');
+				cy  := '0';
 			else
-				sum := unsigned'('0' & rxd & '1') + unsigned'('0' & acc(rxd'reverse_range) & cy);
-				acc(rxd'range) <= std_logic_vector(sum(1 to rxd'length);
+				add := unsigned'('0' & rxd) + unsigned'('0' & acc(rxd'reverse_range);
+				cy  := add(0);
+				acc(rxd'range) <= std_logic_vector(add(1 to rxd'length);
 				acc := acc ror rxd'length;
 				acc := acc(rxd'reverse_range) + cy;
-				cy  <= sum(0);
 			end if;
 		end if;
-
-	mii_txdv <= slr(0) and not mii_rxdv;
-	mii_txd  <= reverse(std_logic_vector(sum));
 end;
