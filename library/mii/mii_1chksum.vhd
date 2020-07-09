@@ -33,15 +33,30 @@ entity mii_1chksum is
 		size     : natural);
 	port (
 		mii_txc  : in  std_logic;
-		mii_rena : in  std_logic := '1';
-		mii_rxdv : in  std_logic;
+		cksm_txd  : in  std_logic_vector;
+		cksm_txdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
+		mii_txc  : in  std_logic;
 		mii_txdv : out  std_logic;
 		mii_txd  : out std_logic_vector);
 end;
 
 architecture beh of mii_1chksum is
 begin
+
+	mii_data_e : entity hdl4fpga.mii_ram
+	generic map (
+		mem_size => mem_size)
+	port map (
+		mii_rxc  => mii_rxc,
+        mii_rxdv => mii_rxdv,
+        mii_rxd  => mii_rxd,
+
+		mii_txc  => mii_txc,
+		mii_treq => mii_treq,
+		mii_trdy => mii_trdy,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd);
 
 	process (mii_rxc)
 		variable cy  : std_logic;
