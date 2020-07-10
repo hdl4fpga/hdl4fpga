@@ -48,69 +48,11 @@ end;
 
 architecture def of mii_ram is
 
-	signal raddr  : unsigned(0 to unsigned_num_bits((setif(mem_size=0, mem_data'length, mem_size)+mii_txd'length-1)/mii_txd'length-1));
-	signal waddr  : unsigned(raddr'range);
-	signal rdy    : std_logic;
-
 begin
-
-	assert mem_data'length <= 1 or mem_data'length mod mii_txd'length = 0
-	report 
-		"mem_data'length(" & integer'image(mem_data'length) & 
-		")is not a multiple of mii_txd'length(" & 
-		integer'image(mii_txd'length) & ")"
-	severity failure;
-
-	process (mii_rxc, mii_rxdv)
-		variable cntr : unsigned(waddr'range);
-	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='1' then
-				cntr  := cntr + 1;
-				waddr <= cntr;
-			else
-				if mem_data'length > 1 then
-					waddr <= to_unsigned(mem_data'length/mii_txd'length-1, waddr'length);
-				else
-					waddr <= (others => '1');
-				end if;
-
-				cntr := (others => '0');
-			end if;
-		end if;
-
-	end process;
-
-	ram_e : entity hdl4fpga.dpram
-	generic map (
-		bitrom => mem_data)
+	fifo_e : entity hdl4fpga.fifo 
 	port map (
-		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(waddr(1 to waddr'length-1)),
-		wr_data => mii_rxd,
-		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr(1 to raddr'length-1)),
-		rd_data => mii_txd);
+		src_clk => mii_txc,
+		sr
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				raddr <= (others => '0');
-				rdy   <= '0';
-			elsif raddr < waddr then
-				if mii_tena='1' then
-					raddr <= raddr + 1;
-				end if;
-				rdy   <= '0';
-			else
-				rdy   <= '1';
-			end if;
-		end if;
-	end process;
-
-	mii_teoc <= rdy;
-	mii_trdy <= mii_treq and rdy;
-	mii_txen <= mii_treq and not rdy and mii_tena;
 
 end;
