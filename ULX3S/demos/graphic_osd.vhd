@@ -235,7 +235,8 @@ architecture graphics of ulx3s is
 	signal spi_ram_di, spi_ram_do: std_logic_vector(7 downto 0);
 	signal spi_irq: std_logic;
 	signal i_csn, i_sclk, i_mosi, o_miso : std_logic;
-	signal i_cs: std_logic; -- for scopeio_sin
+	signal i_cs, i_irdy: std_logic; -- for scopeio_sin
+	signal R_sclk: std_logic_vector(1 downto 0); -- rising edge detection
 	signal i_mosiv: std_logic_vector(0 to 0); -- for scopeio_sin
 begin
 
@@ -425,6 +426,15 @@ begin
 		data_out => spi_ram_do
 	);
 
+	-- rising edge detection
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			R_sclk <= i_sclk & R_sclk(1);
+		end if;
+	end process;
+	i_irdy <= R_sclk(1) and not R_sclk(0);
+
 	scopeio_export_b : block
 
 		signal si_frm      : std_logic;
@@ -470,9 +480,9 @@ begin
 
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
-			sin_clk   => '0', -- i_sclk,
+			sin_clk   => video_clk,
 			sin_frm   => i_cs,
-			sin_irdy  => '1',
+			sin_irdy  => i_irdy,
 			sin_data  => i_mosiv,
 			data_ptr  => data_ptr,
 			data_ena  => data_ena,
