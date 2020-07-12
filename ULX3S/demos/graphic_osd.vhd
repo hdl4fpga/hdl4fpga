@@ -234,7 +234,7 @@ architecture graphics of ulx3s is
 	signal spi_ram_addr: std_logic_vector(31 downto 0);
 	signal spi_ram_di, spi_ram_do: std_logic_vector(7 downto 0);
 	signal spi_irq: std_logic;
-	signal i_csn : std_logic;
+	signal i_csn, i_sclk, i_mosi, o_miso : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -385,13 +385,20 @@ begin
 	end process;
 
 	-- ===============================================================
-	-- SPI Slave for RAM and CPU control
+	-- SPI Slave for RAM and control
 	-- ===============================================================
+	wifi_en    <= '1';
+	wifi_rxd   <= ftdi_txd;
+	ftdi_rxd   <= wifi_txd;
+	wifi_gpio0 <= not spi_irq;
 	sd_d(0) <= 'Z';
 	sd_d(1) <= 'Z'; -- 4-bit part of SD card bus used as OSD SPI
 	sd_d(2) <= 'Z';
 	sd_d(3) <= 'Z';
 	i_csn   <= not wifi_gpio5;
+	i_sclk  <= wifi_gpio16;
+	i_mosi  <= sd_d(1); -- wifi_gpio4
+	sd_d(2) <= o_miso;  -- wifi_gpio12
 	spi_ram_btn_vhd_e : entity hdl4fpga.spi_ram_btn_vhd
 	generic map
 	(
@@ -402,9 +409,9 @@ begin
 	(
 		clk      => video_clk,
 		csn      => i_csn,
-		sclk     => wifi_gpio16,
-		mosi     => sd_d(1), -- wifi_gpio4
-		miso     => sd_d(2), -- wifi_gpio12
+		sclk     => i_sclk,
+		mosi     => i_mosi,
+		miso     => o_miso,
 		btn      => R_btn_joy,
 		irq      => spi_irq,
 		wr       => spi_ram_wr,
@@ -413,7 +420,6 @@ begin
 		data_in  => spi_ram_di,
 		data_out => spi_ram_do
 	);
-	wifi_gpio0 <= not spi_irq;
 
 	scopeio_export_b : block
 
@@ -818,9 +824,6 @@ begin
 		signal o_hsync, o_vsync, o_blank: std_logic;
 	begin
 		dvid_blank <= not video_hzon or not video_vton;
-		wifi_en    <= '1';
-		wifi_rxd   <= ftdi_txd;
-		ftdi_rxd   <= wifi_txd;
 		spi_osd_vhd_inst: entity hdl4fpga.spi_osd_vhd
 		generic map
 		(
@@ -830,7 +833,7 @@ begin
 			--c_start_y      => c_start_y,
 			--c_chars_x      => c_chars_x,
 			--c_chars_y      => c_chars_y,
-			c_init_on      => 1,
+			c_init_on      => 0,
     			--c_inverse      => c_inverse,
 			c_transparency => 1
     			--c_bgcolor      => c_bgcolor,
@@ -844,7 +847,7 @@ begin
 			i_g => video_pixel(0+5 to  5+5-1) & "000",
 			i_b => video_pixel(6+5 to 11+5-1) & "000",
 			i_hsync => video_hzsync, i_vsync => video_vtsync, i_blank => dvid_blank,
-			i_csn => i_csn, i_sclk => wifi_gpio16, i_mosi => sd_d(1), o_miso => open,
+			i_csn => i_csn, i_sclk => i_sclk, i_mosi => i_mosi, o_miso => open,
 			o_r => o_r, o_g => o_g, o_b => o_b,
 			o_hsync => o_hsync, o_vsync => o_vsync, o_blank => o_blank
 		);
