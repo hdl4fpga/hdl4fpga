@@ -6,7 +6,7 @@ use ieee.std_logic_arith.all;
 entity spi_osd_vhd is
   generic
   (
-    c_addr_enable  : std_logic_vector(7 downto 0) := x"FF"; -- high addr byte of enable byte
+    c_addr_enable  : std_logic_vector(7 downto 0) := x"FE"; -- high addr byte of enable byte
     c_addr_display : std_logic_vector(7 downto 0) := x"FD"; -- high addr byte of display data, +0x10000 for inverted
     c_start_x      : natural := 64; -- x1  pixel window h-position
     c_start_y      : natural := 48; -- x1  pixel window v-position
