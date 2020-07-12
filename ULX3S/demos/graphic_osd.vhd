@@ -228,6 +228,13 @@ architecture graphics of ulx3s is
 	constant read_latency  : boolean := not (sdram_mode=sdram200MHz);
 	constant write_latency : boolean := not (sdram_mode=sdram200MHz);
 
+	signal R_btn_joy : std_logic_vector(6 downto 0);
+	signal ram_do: std_logic_vector(15 downto 0);
+	signal spi_ram_wr, spi_ram_rd: std_logic;
+	signal spi_ram_addr: std_logic_vector(31 downto 0);
+	signal spi_ram_di, spi_ram_do: std_logic_vector(7 downto 0);
+	signal spi_irq: std_logic;
+	signal i_csn : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -366,6 +373,47 @@ begin
 		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
 
 	end block;
+
+	-- ====================================================
+	-- Joystick for OSD control and games
+	-- ===============================================================
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			R_btn_joy <= btn;
+		end if;
+	end process;
+
+	-- ===============================================================
+	-- SPI Slave for RAM and CPU control
+	-- ===============================================================
+	sd_d(0) <= 'Z';
+	sd_d(1) <= 'Z'; -- 4-bit part of SD card bus used as OSD SPI
+	sd_d(2) <= 'Z';
+	sd_d(3) <= 'Z';
+	i_csn   <= not wifi_gpio5;
+	spi_ram_btn_vhd_e : entity hdl4fpga.spi_ram_btn_vhd
+	generic map
+	(
+		c_sclk_capable_pin => 0,
+		c_addr_bits => 32
+	)
+	port map
+	(
+		clk      => video_clk,
+		csn      => i_csn,
+		sclk     => wifi_gpio16,
+		mosi     => sd_d(1), -- wifi_gpio4
+		miso     => sd_d(2), -- wifi_gpio12
+		btn      => R_btn_joy,
+		irq      => spi_irq,
+		wr       => spi_ram_wr,
+		rd       => spi_ram_rd,
+		addr     => spi_ram_addr,
+		data_in  => spi_ram_di,
+		data_out => spi_ram_do
+	);
+	wifi_gpio0 <= not spi_irq;
 
 	scopeio_export_b : block
 
@@ -768,12 +816,8 @@ begin
 		signal dvid_blank : std_logic;
 		signal o_r, o_g, o_b: std_logic_vector(7 downto 0);
 		signal o_hsync, o_vsync, o_blank: std_logic;
-		signal i_csn : std_logic;
 	begin
 		dvid_blank <= not video_hzon or not video_vton;
-		i_csn      <= not wifi_gpio5;
-		sd_d(1)    <= 'Z'; -- 4-bit part of SD card bus used as OSD SPI
-		sd_d(2)    <= 'Z';
 		wifi_en    <= '1';
 		wifi_rxd   <= ftdi_txd;
 		ftdi_rxd   <= wifi_txd;
