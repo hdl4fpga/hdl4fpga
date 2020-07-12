@@ -235,6 +235,8 @@ architecture graphics of ulx3s is
 	signal spi_ram_di, spi_ram_do: std_logic_vector(7 downto 0);
 	signal spi_irq: std_logic;
 	signal i_csn, i_sclk, i_mosi, o_miso : std_logic;
+	signal i_cs: std_logic; -- for scopeio_sin
+	signal i_mosiv: std_logic_vector(0 to 0); -- for scopeio_sin
 begin
 
 	sys_rst <= '0';
@@ -395,9 +397,11 @@ begin
 	sd_d(1) <= 'Z'; -- 4-bit part of SD card bus used as OSD SPI
 	sd_d(2) <= 'Z';
 	sd_d(3) <= 'Z';
-	i_csn   <= not wifi_gpio5;
+	i_cs    <= wifi_gpio5;
+	i_csn   <= not i_cs;
 	i_sclk  <= wifi_gpio16;
 	i_mosi  <= sd_d(1); -- wifi_gpio4
+	i_mosiv(0) <= i_mosi; -- vector of 1 element for scopeio_sin
 	sd_d(2) <= o_miso;  -- wifi_gpio12
 	spi_ram_btn_vhd_e : entity hdl4fpga.spi_ram_btn_vhd
 	generic map
@@ -466,10 +470,10 @@ begin
 
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
-			sin_clk   => si_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
-			sin_data  => si_data,
+			sin_clk   => '0', -- i_sclk,
+			sin_frm   => i_cs,
+			sin_irdy  => '1',
+			sin_data  => i_mosiv,
 			data_ptr  => data_ptr,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
