@@ -5,13 +5,14 @@
 # LICENSE=BSD
 
 from struct import unpack
-#from time import sleep_ms
+from time import sleep_ms
 
 class ld_h4f:
   def __init__(self,spi,cs):
     self.spi=spi
     self.cs=cs
     self.cs.off()
+    spi.init(baudrate=6000000)
     # reverse nibble table
     self.rn=bytearray(16)
     for i in range(16):
@@ -75,7 +76,8 @@ class ld_h4f:
   def cls(self):
     self.rgtr_write(0x16,bytearray([0,0,0])) # address
     a = bytearray(256) # initial all 0
-    for i in range(4):
+    for i in range(8):
       self.rgtr_write(0x18,a)
     self.rgtr_write(0x17,bytearray([0xFF,0xFF,0xFF])) # end
+    sleep_ms(200)
     
