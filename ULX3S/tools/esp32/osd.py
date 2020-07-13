@@ -188,8 +188,6 @@ class osd:
         s.load_stream(open(filename,"rb"))
         del s
         gc.collect()
-        self.enable[0]=0
-        self.osd_enable(0)
       if filename.startswith("/sd/ti99_4a/") and filename.endswith(".bin"):
         import ld_ti99_4a
         s=ld_ti99_4a.ld_ti99_4a(self.spi,self.cs)
@@ -255,6 +253,14 @@ class osd:
         s.loadcmd(filename)
         del s
         gc.collect()
+      if filename.endswith(".h4f"):
+        import ld_h4f
+        s=ld_h4f.ld_h4f(self.spi,self.cs)
+        s.load_hdl4fpga_image(open(filename,"rb"))
+        del s
+        gc.collect()
+        self.enable[0]=0
+        self.osd_enable(0)
 
   @micropython.viper
   def osd_enable(self, en:int):
