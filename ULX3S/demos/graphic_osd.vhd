@@ -380,9 +380,9 @@ begin
 	-- ====================================================
 	-- Joystick for OSD control and games
 	-- ===============================================================
-	process(video_clk)
+	process(si_clk)
 	begin
-		if rising_edge(video_clk) then
+		if rising_edge(si_clk) then
 			R_btn_joy <= btn;
 		end if;
 	end process;
@@ -412,7 +412,7 @@ begin
 	)
 	port map
 	(
-		clk      => video_clk,
+		clk      => si_clk,
 		csn      => i_csn,
 		sclk     => i_sclk,
 		mosi     => i_mosi,
@@ -427,9 +427,9 @@ begin
 	);
 
 	-- rising edge detection
-	process(video_clk)
+	process(si_clk)
 	begin
-		if rising_edge(video_clk) then
+		if rising_edge(si_clk) then
 			R_sclk <= i_sclk & R_sclk(1);
 		end if;
 	end process;
@@ -480,7 +480,7 @@ begin
 
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
-			sin_clk   => video_clk,
+			sin_clk   => si_clk,
 			sin_frm   => i_cs,
 			sin_irdy  => i_irdy,
 			sin_data  => i_mosiv,
