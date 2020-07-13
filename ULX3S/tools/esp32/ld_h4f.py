@@ -28,18 +28,18 @@ class ld_h4f:
     self.cls()
     #return
     pkt_blocksize = bytearray([
-      self.reverse_byte((blocksize-1)>>16),
-      self.reverse_byte((blocksize-1)>>8),
-      self.reverse_byte( blocksize-1)])
+      self.reverse_byte((blocksize//2-1)>>16),
+      self.reverse_byte((blocksize//2-1)>>8),
+      self.reverse_byte( blocksize//2-1)])
     block = bytearray(blocksize)
     bytes_loaded = 0
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
         self.rgtr_write(0x16,bytearray([
-          self.reverse_byte(bytes_loaded>>16),
-          self.reverse_byte(bytes_loaded>>8),
-          self.reverse_byte(bytes_loaded)]))
+          self.reverse_byte((bytes_loaded//2)>>16),
+          self.reverse_byte((bytes_loaded//2)>>8),
+          self.reverse_byte( bytes_loaded//2)]))
         # block
         self.rgtr_write(0x18,block)
         # length
