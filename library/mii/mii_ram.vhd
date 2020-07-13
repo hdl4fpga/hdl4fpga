@@ -49,10 +49,24 @@ end;
 architecture def of mii_ram is
 
 begin
+
 	fifo_e : entity hdl4fpga.fifo 
+	generic map (
+		out_rgtr  => false,
+		check_dov => true)
 	port map (
-		src_clk => mii_txc,
-		sr
+		src_clk  => mii_rxc,
+		src_frm  => mii_rxdv,
+		src_irdy => mii_rxdv,
+		src_data => mii_rxd,
+
+		dst_clk  => mii_txc,
+		dst_frm  => mii_
+		dst_irdy => dst_irdy,
+		dst_trdy => open,
+		dst_data => mi_txd,
+
+	mii_trdy <= dst_irdy;
 
 
 end;
