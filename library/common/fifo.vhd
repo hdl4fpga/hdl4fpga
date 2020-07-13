@@ -41,6 +41,7 @@ entity fifo is
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
+		src_mode  : in  std_logic := '0';
 		src_irdy  : in  std_logic := '1';
 		src_trdy  : buffer std_logic;
 		src_data  : in  std_logic_vector;
@@ -92,7 +93,11 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				wr_cntr <= rd_cntr + dst_offset;
+				if dst_mode='0' then
+					wr_cntr <= rd_cntr;
+				else	
+					wr_cntr <= to_unsigned(dst_offset, wr_cntr'length);
+				end if;
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
@@ -114,7 +119,11 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
-				rd_cntr(addr_range'range) <= std_logic_vector(unsigned(wr_cntr(addr_range'range)) + src_offset);
+				if dst_mode='0' then
+					rd_cntr <= wr_cntr;
+				else	
+					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
+				end if;
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
