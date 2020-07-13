@@ -36,20 +36,14 @@ class ld_h4f:
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
-        self.cs.on()
         self.rgtr_write(0x16,bytearray([
           self.reverse_byte(bytes_loaded>>16),
           self.reverse_byte(bytes_loaded>>8),
           self.reverse_byte(bytes_loaded)]))
-        self.cs.off()
         # block
-        self.cs.on
         self.rgtr_write(0x18,block)
-        self.cs.off()
         # length
-        self.cs.on()
         self.rgtr_write(0x17,pkt_blocksize)
-        self.cs.off()
         bytes_loaded += blocksize
       else:
         break
@@ -72,20 +66,16 @@ class ld_h4f:
 
   # x is bytearray, length 1-256
   def rgtr_write(self,cmd,x):
+    self.cs.on()
     self.spi.write(bytearray([self.reverse_byte(cmd),self.reverse_byte(len(x)-1)]))
     #print("%02X -> %02X" % (cmd, self.reverse_byte(cmd)))
     self.spi.write(x)
+    self.cs.off()
 
   def cls(self):
-    self.cs.on()
     self.rgtr_write(0x16,bytearray([0,0,0])) # address
-    self.cs.off()
     a = bytearray(256) # initial all 0
     for i in range(4):
-      self.cs.on()
       self.rgtr_write(0x18,a)
-      self.cs.off()
-    self.cs.on()
     self.rgtr_write(0x17,bytearray([0xFF,0xFF,0xFF])) # end
-    self.cs.off()
     
