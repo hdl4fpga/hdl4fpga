@@ -96,7 +96,7 @@ begin
 				if dst_mode='0' then
 					wr_cntr <= rd_cntr;
 				else	
-					wr_cntr <= to_unsigned(dst_offset, wr_cntr'length);
+					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
 			else
 				if src_irdy='1' then
