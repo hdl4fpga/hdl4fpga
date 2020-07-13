@@ -25,13 +25,13 @@ class ld_h4f:
       self.rn[i]=r
 
   # read from file -> write to SPI RAM
-  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=256):
+  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=2048):
     self.cls()
     #return
     pkt_blocksize = bytearray([
-      self.reverse_byte((blocksize//2-1)>>16),
-      self.reverse_byte((blocksize//2-1)>>8),
-      self.reverse_byte( blocksize//2-1)])
+      self.reverse_byte((8*blocksize//2-1)>>16),
+      self.reverse_byte((8*blocksize//2-1)>>8),
+      self.reverse_byte( 8*blocksize//2-1)])
     block = bytearray(blocksize)
     bytes_loaded = 0
     while bytes_loaded < maxlen:
@@ -42,7 +42,8 @@ class ld_h4f:
           self.reverse_byte((bytes_loaded//2)>>8),
           self.reverse_byte( bytes_loaded//2)]))
         # block
-        self.rgtr_write(0x18,block)
+        for i in range(8):
+          self.rgtr_write(0x18,block[i*256:(i+1)*256])
         # length
         self.rgtr_write(0x17,pkt_blocksize)
         bytes_loaded += blocksize
