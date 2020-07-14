@@ -832,8 +832,8 @@ begin
 		(
 			clk_pixel => video_clk, clk_pixel_ena => '1',
 			i_r => video_pixel(0   to  0+5-1) & "000",
-			i_g => video_pixel(0+5 to  5+5-1) & "000",
-			i_b => video_pixel(6+5 to 11+5-1) & "000",
+			i_g => video_pixel(0+5 to  5+6-1) & "00",
+			i_b => video_pixel(5+6 to 11+5-1) & "000",
 			i_hsync => video_hzsync, i_vsync => video_vtsync, i_blank => dvid_blank,
 			i_csn => i_csn, i_sclk => i_sclk, i_mosi => i_mosi, o_miso => open,
 			o_r => o_r, o_g => o_g, o_b => o_b,
@@ -844,13 +844,13 @@ begin
 		generic map (
 			C_shift_clock_synchronizer => '0',
 			C_ddr   => '1',
-			C_depth => 5)
+			C_depth => 6)
 		port map (
 			clk_pixel => video_clk,
 			clk_shift => video_shift_clk,
-			in_red    => o_r(7 downto 3),
-			in_green  => o_g(7 downto 3),
-			in_blue   => o_b(7 downto 3),
+			in_red    => o_r(7 downto 2),
+			in_green  => o_g(7 downto 2),
+			in_blue   => o_b(7 downto 2),
 			in_hsync  => o_hsync,
 			in_vsync  => o_vsync,
 			in_blank  => o_blank,
