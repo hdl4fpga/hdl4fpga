@@ -12,7 +12,7 @@ class ld_h4f:
     self.spi=spi
     self.cs=cs
     self.cs.off()
-    spi.init(baudrate=8000000) # NOTE screen flicker while uploading
+    spi.init(baudrate=8000000)
     # reverse nibble table
     self.rn=bytearray(16)
     for i in range(16):
@@ -35,6 +35,7 @@ class ld_h4f:
       self.reverse_byte( N*blocksize//2-1)])
     block = bytearray(blocksize)
     bytes_loaded = 0
+    self.cs.on()
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
@@ -50,6 +51,7 @@ class ld_h4f:
         bytes_loaded += blocksize
       else:
         break
+    self.cs.off()
 
   # read from SPI RAM -> write to file
   def save_stream(self, filedata, addr=0, length=1024, blocksize=1024):
@@ -69,11 +71,10 @@ class ld_h4f:
 
   # x is bytearray, length 1-256
   def rgtr_write(self,cmd,x):
-    self.cs.on()
+    #self.cs.on()
     self.spi.write(bytearray([self.reverse_byte(cmd),self.reverse_byte(len(x)-1)]))
-    #print("%02X -> %02X" % (cmd, self.reverse_byte(cmd)))
     self.spi.write(x)
-    self.cs.off()
+    #self.cs.off()
 
   #def cls(self):
   #  self.rgtr_write(0x16,bytearray([0,0,0])) # address
