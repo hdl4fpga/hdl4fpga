@@ -452,32 +452,6 @@ begin
 		signal dmadata_ena : std_logic;
 		signal dst_irdy    : std_logic;
 	begin
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_rxc,
-			uart_sin  => '1', -- ftdi_txd,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
-
-		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
-		generic map (
-			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
-		port map (
-			stream_clk  => uart_rxc,
-			stream_dv   => uart_rxdv,
-			stream_data => uart_rxd,
-
-			chaini_data => uart_rxd,
-
-			chaino_frm  => si_frm,  
-			chaino_irdy => si_irdy,
-			chaino_data => si_data);
-
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
