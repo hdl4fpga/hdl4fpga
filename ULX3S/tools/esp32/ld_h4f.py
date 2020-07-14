@@ -12,7 +12,7 @@ class ld_h4f:
     self.spi=spi
     self.cs=cs
     self.cs.off()
-    spi.init(baudrate=6000000)
+    spi.init(baudrate=8000000) # NOTE screen flicker while uploading
     # reverse nibble table
     self.rn=bytearray(16)
     for i in range(16):
@@ -25,13 +25,14 @@ class ld_h4f:
       self.rn[i]=r
 
   # read from file -> write to SPI RAM
-  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=2048):
-    self.cls()
-    #return
+  # blocksize max 2048 in steps of 256
+  # max 1280 without significant flicker
+  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=1024):
+    N=blocksize//256
     pkt_blocksize = bytearray([
-      self.reverse_byte((8*blocksize//2-1)>>16),
-      self.reverse_byte((8*blocksize//2-1)>>8),
-      self.reverse_byte( 8*blocksize//2-1)])
+      self.reverse_byte((N*blocksize//2-1)>>16),
+      self.reverse_byte((N*blocksize//2-1)>>8),
+      self.reverse_byte( N*blocksize//2-1)])
     block = bytearray(blocksize)
     bytes_loaded = 0
     while bytes_loaded < maxlen:
@@ -41,10 +42,10 @@ class ld_h4f:
           self.reverse_byte((bytes_loaded//2)>>16),
           self.reverse_byte((bytes_loaded//2)>>8),
           self.reverse_byte( bytes_loaded//2)]))
-        # block
-        for i in range(8):
+        # fill buffer
+        for i in range(N):
           self.rgtr_write(0x18,block[i*256:(i+1)*256])
-        # length
+        # DMA transfer
         self.rgtr_write(0x17,pkt_blocksize)
         bytes_loaded += blocksize
       else:
@@ -74,11 +75,11 @@ class ld_h4f:
     self.spi.write(x)
     self.cs.off()
 
-  def cls(self):
-    self.rgtr_write(0x16,bytearray([0,0,0])) # address
-    a = bytearray(256) # initial all 0
-    for i in range(8):
-      self.rgtr_write(0x18,a)
-    self.rgtr_write(0x17,bytearray([0xFF,0xFF,0xFF])) # end
-    sleep_ms(200)
+  #def cls(self):
+  #  self.rgtr_write(0x16,bytearray([0,0,0])) # address
+  #  a = bytearray(256) # initial all 0
+  #  for i in range(8):
+  #    self.rgtr_write(0x18,a)
+  #  self.rgtr_write(0x17,bytearray([0xFF,0xFF,0xFF])) # end
+  #  sleep_ms(200)
     
