@@ -1,5 +1,5 @@
 # ******* project, board and chip name *******
-PROJECT = scope
+PROJECT = graphics
 BOARD = ulx3s
 # 12 25 45 85
 FPGA_SIZE = 12
@@ -22,9 +22,8 @@ OPENOCD_INTERFACE=$(SCRIPTS)/ft231x.ocd
 #OPENOCD_INTERFACE=$(SCRIPTS)/ft2232.ocd
 
 # ******* design files *******
-
-include files.mk
-#include files-lvds.mk
+include files-demos-osd.mk
+#include files.mk
 
 SCRIPTS = ./scripts
 include $(SCRIPTS)/trellis_path.mk

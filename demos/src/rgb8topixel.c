@@ -5,10 +5,31 @@
 
 #define SIZE (256)
 
-static char pixels[SIZE];
+static unsigned char pixels[SIZE];
 static char rgb8[3*SIZE];
 static int (*topixels)(char *, const char *, int) = 0;
 static char c;
+static int reverse_byte = 0;
+static unsigned char reverse_tab[256];
+
+void init_reverse(void)
+{
+  unsigned int i;
+  unsigned char j, v, r;
+
+  for(i = 0; i < 256; i++)
+  {
+      v=i;
+      r=0;
+      for(j = 0; j < 8; j++)
+      {
+        r<<=1;
+        r|=v&1;
+        v>>=1;
+      }
+      reverse_tab[i]=r;
+  }
+}
 
 int torgb565 (char *pixels, const char *rgb8, int n)
 {
@@ -86,9 +107,9 @@ int torgb32 (char *pixels, const char *rgb8, int n)
 int main (int argc, char *argv[])
 {
 
-	int n, m;
+	int i, n, m;
 
-	while ((c = getopt (argc, argv, "f:")) != -1) {
+	while ((c = getopt (argc, argv, "f:r")) != -1) {
 		switch (c) {
 		case 'f':
 			if (optarg) {
@@ -99,15 +120,22 @@ int main (int argc, char *argv[])
 				}
 			}
 			break;
+		case 'r':
+			init_reverse();
+			reverse_byte = 1;
+			break;
 		case '?':
 		default:
-			fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
+			//init_reverse();
+			//for(int i = 0; i < 256; i++)
+			//  printf("%02X -> %02X\n", i, reverse_tab[i]);
+			fprintf (stderr, "usage :  rgb8tofmt -r -f [rgb32|rgb565]\n");
 			exit(-1);
 		}
 	}
 
 	if (!topixels) {
-		fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
+		fprintf (stderr, "usage :  rgb8tofmt -r -f [rgb32|rgb565]\n");
 		exit(-1);
 	}
 
@@ -115,6 +143,9 @@ int main (int argc, char *argv[])
 	setbuf(stdout, NULL);
 	while((n = fread(rgb8, sizeof(char), sizeof(rgb8), stdin)) > 0) {
 		m = topixels(pixels, rgb8, n);
+		if(reverse_byte)
+			for(i = 0; i < m; i++)
+				pixels[i] = reverse_tab[pixels[i]];
 		fwrite(pixels, sizeof(char), m, stdout);
 	}
 
