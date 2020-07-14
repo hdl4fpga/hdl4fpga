@@ -29,20 +29,14 @@ class ld_h4f:
   # max 1280 without significant flicker
   def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=1024):
     N=blocksize//256
-    pkt_blocksize = bytearray([
-      self.reverse_byte((N*blocksize//2-1)>>16),
-      self.reverse_byte((N*blocksize//2-1)>>8),
-      self.reverse_byte( N*blocksize//2-1)])
+    pkt_blocksize = self.i24(N*blocksize//2-1)
     block = bytearray(blocksize)
     bytes_loaded = 0
     self.cs.on()
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
-        self.rgtr_write(0x16,bytearray([
-          self.reverse_byte((bytes_loaded//2)>>16),
-          self.reverse_byte((bytes_loaded//2)>>8),
-          self.reverse_byte( bytes_loaded//2)]))
+        self.rgtr_write(0x16,self.i24(bytes_loaded//2))
         # fill buffer
         for i in range(N):
           self.rgtr_write(0x18,block[i*256:(i+1)*256])
@@ -68,6 +62,13 @@ class ld_h4f:
 
   def reverse_byte(self,x):
     return ((self.rn[x&0xF])<<4) | self.rn[(x&0xF0)>>4]
+  
+  # convert integer to 24-bit RGTR parameter
+  def i24(self,i:int):
+    return bytearray([
+      self.reverse_byte(i>>16),
+      self.reverse_byte(i>>8),
+      self.reverse_byte(i)])
 
   # x is bytearray, length 1-256
   def rgtr_write(self,cmd,x):
