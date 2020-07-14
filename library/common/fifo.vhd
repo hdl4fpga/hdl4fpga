@@ -40,13 +40,14 @@ entity fifo is
 		gray_code  : boolean := true);
 	port (
 		src_clk   : in  std_logic;
-		src_frm   : in  std_logic := '1';
 		src_mode  : in  std_logic := '0';
+		src_frm   : in  std_logic := '1';
 		src_irdy  : in  std_logic := '1';
 		src_trdy  : buffer std_logic;
 		src_data  : in  std_logic_vector;
 
 		dst_clk   : in  std_logic;
+		dst_mode  : in  std_logic := '0';
 		dst_frm   : in  std_logic := '1';
 		dst_irdy  : buffer std_logic;
 		dst_trdy  : in  std_logic := '1';
@@ -59,7 +60,7 @@ architecture def of fifo is
 
 
 	constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
-	subtype addr_range is 1 to addr_length;
+	subtype addr_range is natural range 1 to addr_length;
 
 	signal wr_ena    : std_logic;
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
@@ -72,7 +73,7 @@ architecture def of fifo is
 	signal feed_ena : std_logic;
 begin
 
-	wr_ena <= src_frm and src_irdy and (src_trdy or not check_sov);
+	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
 		synchronous_rdaddr => false,
@@ -111,10 +112,10 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(wr_cntr(addr_range)/=rd_cntr(addr_range) or wr_cntr(0)=rd_cntr(0);
+	src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 
-	dst_irdy1 <= setif(wr_cntr(addr_range'range)/=rd_cntr(addr_range'range);
-	feed_ena  <= dst_trdy or not (dst_irdy or not check_dov);
+	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
+	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
@@ -128,9 +129,9 @@ begin
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
 						if gray_code then
-							rd_cntr <= std_logic_vector(inc(gray(rd_cntr)));
+							rd_cntr <= unsigned(inc(gray(rd_cntr)));
 						else
-							rd_cntr <= std_logic_vector(unsigned(rd_cntr)+1);
+							rd_cntr <= rd_cntr+1;
 						end if;
 					end if;
 				end if;
