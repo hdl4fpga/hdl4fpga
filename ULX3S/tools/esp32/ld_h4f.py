@@ -12,7 +12,7 @@ class ld_h4f:
     self.spi=spi
     self.cs=cs
     self.cs.off()
-    spi.init(baudrate=6000000)
+    spi.init(baudrate=8000000)
     # reverse nibble table
     self.rn=bytearray(16)
     for i in range(16):
@@ -25,30 +25,28 @@ class ld_h4f:
       self.rn[i]=r
 
   # read from file -> write to SPI RAM
-  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=2048):
-    self.cls()
-    #return
-    pkt_blocksize = bytearray([
-      self.reverse_byte((8*blocksize//2-1)>>16),
-      self.reverse_byte((8*blocksize//2-1)>>8),
-      self.reverse_byte( 8*blocksize//2-1)])
+  # blocksize max 2048 in steps of 256
+  # max 1280 without significant flicker
+  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=1024):
+    N=blocksize//256
+    pkt_blocksize = self.i24(N*blocksize//2-1)
     block = bytearray(blocksize)
     bytes_loaded = 0
+    self.cs.on()
+    self.rgtr(0x19,self.i24(0)) # video base
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
-        self.rgtr_write(0x16,bytearray([
-          self.reverse_byte((bytes_loaded//2)>>16),
-          self.reverse_byte((bytes_loaded//2)>>8),
-          self.reverse_byte( bytes_loaded//2)]))
-        # block
-        for i in range(8):
-          self.rgtr_write(0x18,block[i*256:(i+1)*256])
-        # length
-        self.rgtr_write(0x17,pkt_blocksize)
+        self.rgtr(0x16,self.i24(bytes_loaded//2))
+        # fill buffer
+        for i in range(N):
+          self.rgtr(0x18,block[i*256:(i+1)*256])
+        # DMA transfer
+        self.rgtr(0x17,pkt_blocksize)
         bytes_loaded += blocksize
       else:
         break
+    self.cs.off()
 
   # read from SPI RAM -> write to file
   def save_stream(self, filedata, addr=0, length=1024, blocksize=1024):
@@ -65,20 +63,26 @@ class ld_h4f:
 
   def reverse_byte(self,x):
     return ((self.rn[x&0xF])<<4) | self.rn[(x&0xF0)>>4]
+  
+  # convert integer to 24-bit RGTR parameter
+  def i24(self,i:int):
+    return bytearray([
+      self.reverse_byte(i>>16),
+      self.reverse_byte(i>>8),
+      self.reverse_byte(i)])
 
   # x is bytearray, length 1-256
-  def rgtr_write(self,cmd,x):
-    self.cs.on()
+  def rgtr(self,cmd,x):
+    #self.cs.on()
     self.spi.write(bytearray([self.reverse_byte(cmd),self.reverse_byte(len(x)-1)]))
-    #print("%02X -> %02X" % (cmd, self.reverse_byte(cmd)))
     self.spi.write(x)
-    self.cs.off()
+    #self.cs.off()
 
-  def cls(self):
-    self.rgtr_write(0x16,bytearray([0,0,0])) # address
-    a = bytearray(256) # initial all 0
-    for i in range(8):
-      self.rgtr_write(0x18,a)
-    self.rgtr_write(0x17,bytearray([0xFF,0xFF,0xFF])) # end
-    sleep_ms(200)
+  #def cls(self):
+  #  self.rgtr(0x16,bytearray([0,0,0])) # address
+  #  a = bytearray(256) # initial all 0
+  #  for i in range(8):
+  #    self.rgtr(0x18,a)
+  #  self.rgtr(0x17,bytearray([0xFF,0xFF,0xFF])) # end
+  #  sleep_ms(200)
     

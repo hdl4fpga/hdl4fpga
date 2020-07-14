@@ -452,32 +452,6 @@ begin
 		signal dmadata_ena : std_logic;
 		signal dst_irdy    : std_logic;
 	begin
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_rxc,
-			uart_sin  => '1', -- ftdi_txd,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
-
-		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
-		generic map (
-			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
-		port map (
-			stream_clk  => uart_rxc,
-			stream_dv   => uart_rxdv,
-			stream_data => uart_rxd,
-
-			chaini_data => uart_rxd,
-
-			chaino_frm  => si_frm,  
-			chaino_irdy => si_irdy,
-			chaino_data => si_data);
-
 		scopeio_sin_e : entity hdl4fpga.scopeio_sin
 		port map (
 			sin_clk   => si_clk,
@@ -858,8 +832,8 @@ begin
 		(
 			clk_pixel => video_clk, clk_pixel_ena => '1',
 			i_r => video_pixel(0   to  0+5-1) & "000",
-			i_g => video_pixel(0+5 to  5+5-1) & "000",
-			i_b => video_pixel(6+5 to 11+5-1) & "000",
+			i_g => video_pixel(0+5 to  5+6-1) & "00",
+			i_b => video_pixel(5+6 to 11+5-1) & "000",
 			i_hsync => video_hzsync, i_vsync => video_vtsync, i_blank => dvid_blank,
 			i_csn => i_csn, i_sclk => i_sclk, i_mosi => i_mosi, o_miso => open,
 			o_r => o_r, o_g => o_g, o_b => o_b,
@@ -870,13 +844,13 @@ begin
 		generic map (
 			C_shift_clock_synchronizer => '0',
 			C_ddr   => '1',
-			C_depth => 5)
+			C_depth => 6)
 		port map (
 			clk_pixel => video_clk,
 			clk_shift => video_shift_clk,
-			in_red    => o_r(7 downto 3),
-			in_green  => o_g(7 downto 3),
-			in_blue   => o_b(7 downto 3),
+			in_red    => o_r(7 downto 2),
+			in_green  => o_g(7 downto 2),
+			in_blue   => o_b(7 downto 2),
 			in_hsync  => o_hsync,
 			in_vsync  => o_vsync,
 			in_blank  => o_blank,
