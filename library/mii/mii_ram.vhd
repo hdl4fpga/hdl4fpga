@@ -54,21 +54,17 @@ architecture def of mii_ram is
 
 begin
 
-	assert mem_data'length <= 1 or mem_data'length mod mii_txd'legth /= 0
-	report "mem_data'length modulus is not 0"
-	severity FAILURE;
-
 	assert mem_length > 0
-	report "mem_size should be greater than 0"
+	report "mem_length should be greater than 0"
 	severity FAILURE;
 
 	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				wr_addr <= to_unsigned(2**addr_length-mem_length, wr_addr'length);
+				wr_addr <= to_unsigned(mem_length-1, wr_addr'length);
 			else
-				wr_addr <= wr_addr + 1;
+				wr_addr <= wr_addr - 1;
 			end if;
 		end if;
 	end process;
@@ -90,10 +86,10 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
-				rd_addr <= to_unsigned(2**addr_length-mem_length, rd_addr'length);
+				rd_addr <= to_unsigned(mem_length-1, rd_addr'length);
 			elsif mii_txen='1' then
 				if rd_addr(0)='0' then
-					rd_addr <= rd_addr + 1;
+					rd_addr <= rd_addr - 1;
 				end if;
 			end if;
 		end if;
