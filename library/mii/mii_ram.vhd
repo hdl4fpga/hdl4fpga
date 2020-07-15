@@ -39,34 +39,66 @@ entity mii_ram is
 
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
 architecture def of mii_ram is
+	constant mem_length  : natural := setif(mem_size=0, mem_data'length, mem_size)/mii_rxd'length;
+	constant addr_length : natural := unsigned_num_bits(mem_length-1);
+	subtype addr_range is natural 1 downto addr_length;
+
+	signal wr_addr : unsigned(addr_range);
+	signal rd_addr : unsigned(addr_range);
 
 begin
 
-	fifo_e : entity hdl4fpga.fifo 
-	generic map (
-		out_rgtr  => false,
-		check_dov => true)
+	assert mem_data'length <= 1 or mem_data'length mod mii_txd'legth /= 0
+	report "mem_data'length modulus is not 0"
+	severity FAILURE;
+
+	assert mem_length > 0
+	report "mem_size should be greater than 0"
+	severity FAILURE;
+
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if mii_rxdv='0' then
+				wr_addr <= to_unsigned(2**addr_length-mem_length, wr_addr'length);
+			else
+				wr_addr <= wr_addr + 1;
+			end if;
+		end if;
+	end process;
+
+	mem_e : entity hdl4fpga.dpram 
+	generic (
+		bitrom => mem_data)
 	port map (
-		src_clk  => mii_rxc,
-		src_frm  => mii_rxdv,
-		src_irdy => mii_rxdv,
-		src_data => mii_rxd,
+		wr_clk  => mii_rxc,
+		wr_ena  => mii_rxdv,
+		wr_addr => std_logic_vector(wr_addr(addr_range)),
+		wr_data => mii_rxd,
 
-		dst_clk  => mii_txc,
-		dst_frm  => mii_
-		dst_irdy => dst_irdy,
-		dst_trdy => open,
-		dst_data => mi_txd,
+		rd_clk  => mii_txc,
+		rd_addr => std_logic_vector(rd_addr(addr_range)),
+		rd_data => mii_txd);
 
-	mii_trdy <= dst_irdy;
+	process(mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if mii_treq='0' then
+				rd_addr <= to_unsigned(2**addr_length-mem_length, rd_addr'length);
+			elsif mii_txen='1' then
+				if rd_addr(0)='0' then
+					rd_addr <= rd_addr + 1;
+				end if;
+			end if;
+		end if;
+	end process;
 
+	mii_trdy <= mii_treq and rd_addr(0);
 
 end;
