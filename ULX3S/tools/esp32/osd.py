@@ -18,6 +18,7 @@ from struct import unpack
 import os
 import gc
 import ecp5
+import ld_h4f
 
 class osd:
   def __init__(self):
@@ -45,6 +46,7 @@ class osd:
     self.irq_handler_ref = self.irq_handler # allocation happens here
     self.spi_request = Pin(0, Pin.IN, Pin.PULL_UP)
     self.spi_request.irq(trigger=Pin.IRQ_FALLING, handler=self.irq_handler_ref)
+    self.h4f=ld_h4f.ld_h4f(self.spi,self.cs)
 
   def init_spi(self):
     self.spi=SPI(self.spi_channel, baudrate=self.spi_freq, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=Pin(self.gpio_sck), mosi=Pin(self.gpio_mosi), miso=Pin(self.gpio_miso))
@@ -92,10 +94,19 @@ class osd:
             self.start_autorepeat(1)
           if btn==1:
             self.timer.deinit() # stop autorepeat
-          if btn==33: # btn6 cursor left
+          if btn==33: # btn5 cursor left
             self.updir()
           if btn==65: # btn6 cursor right
             self.select_entry()
+        else:
+          if btn==33: # btn5 cursor left
+            self.cs.on()
+            self.h4f.rgtr(0x19,self.h4f.i24(0))
+            self.cs.off()
+          if btn==65: # btn6 cursor right
+            self.cs.on()
+            self.h4f.rgtr(0x19,self.h4f.i24(0x10000))
+            self.cs.off()
 
   def start_autorepeat(self, i:int):
     self.autorepeat_direction=i
@@ -254,10 +265,7 @@ class osd:
         del s
         gc.collect()
       if filename.endswith(".h4f"):
-        import ld_h4f
-        s=ld_h4f.ld_h4f(self.spi,self.cs)
-        s.load_hdl4fpga_image(open(filename,"rb"))
-        del s
+        self.h4f.load_hdl4fpga_image(open(filename,"rb"))
         gc.collect()
         self.enable[0]=0
         self.osd_enable(0)
@@ -353,9 +361,11 @@ class osd:
       stat = os.stat(self.fullpath(fname))
       if stat[0] & 0o170000 == 0o040000:
         self.direntries.append([fname,1,0]) # directory
-      else:
+    for fname in ls:
+      stat = os.stat(self.fullpath(fname))
+      if stat[0] & 0o170000 != 0o040000:
         self.direntries.append([fname,0,stat[6]]) # file
-      gc.collect()
+    gc.collect()
 
   # NOTE: this can be used for debugging
   #def osd(self, a):
