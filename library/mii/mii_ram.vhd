@@ -71,7 +71,7 @@ begin
 
 	mem_e : entity hdl4fpga.dpram 
 	generic (
-		bitrom => mem_data)
+		bitrom => reverse(reverse(mem_data, mii_txd'length)))
 	port map (
 		wr_clk  => mii_rxc,
 		wr_ena  => mii_rxdv,

@@ -23,7 +23,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -36,17 +35,21 @@ entity mii_ramcmp is
         mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic := '0';
         mii_rxd  : in  std_logic_vector;
-		mii_ena  : in  std_logic := '1';
+
 		mii_treq : in  std_logic;
+		mii_trdy : in  std_logic;
 		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_ramcmp is
+
 	signal mii_trdy : std_logic;
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
+	signal cy       : std_logic;
+
 begin
 
-	mii_data_e : entity hdl4fpga.mii_ram
+	miiram_e : entity hdl4fpga.mii_ram
 	generic map (
 		mem_size => mem_size,
 		mem_data => mem_data)
@@ -56,25 +59,21 @@ begin
         mii_rxd  => mii_rxd,
 
 		mii_txc  => mii_rxc,
-		mii_tena => mii_ena,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
 		mii_txen => open,
 		mii_txd  => mii_txd);
 
-	process (mii_rxc, mii_trdy)
-		variable cy : std_logic;
+	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_treq='0' then
-				cy  := '1';
+				cy <= '1';
 			elsif mii_trdy='0' then
-				if mii_ena='1' then
-					cy := cy and setif(mii_txd=mii_rxd);
-				end if;
+				cy <= cy and setif(mii_txd=mii_rxd);
 			end if;
 		end if;
-		mii_equ <= mii_trdy and cy;
 	end process;
+	mii_equ <= mii_treq and mii_trdy and cy;
 
 end;
