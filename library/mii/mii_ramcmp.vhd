@@ -37,13 +37,12 @@ entity mii_ramcmp is
         mii_rxd  : in  std_logic_vector;
 
 		mii_treq : in  std_logic;
-		mii_trdy : in  std_logic;
+		mii_trdy : buffer std_logic;
 		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_ramcmp is
 
-	signal mii_trdy : std_logic;
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
 	signal cy       : std_logic;
 

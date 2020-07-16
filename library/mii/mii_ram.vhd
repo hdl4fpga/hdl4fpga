@@ -47,7 +47,7 @@ end;
 architecture def of mii_ram is
 	constant mem_length  : natural := setif(mem_size=0, mem_data'length, mem_size)/mii_rxd'length;
 	constant addr_length : natural := unsigned_num_bits(mem_length-1);
-	subtype addr_range is natural 1 downto addr_length;
+	subtype addr_range is natural range 1 downto addr_length;
 
 	signal wr_addr : unsigned(addr_range);
 	signal rd_addr : unsigned(addr_range);
@@ -70,7 +70,7 @@ begin
 	end process;
 
 	mem_e : entity hdl4fpga.dpram 
-	generic (
+	generic map (
 		bitrom => reverse(reverse(mem_data, mii_txd'length)))
 	port map (
 		wr_clk  => mii_rxc,
@@ -87,14 +87,13 @@ begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
 				rd_addr <= to_unsigned(mem_length-1, rd_addr'length);
-			elsif mii_txen='1' then
-				if rd_addr(0)='0' then
-					rd_addr <= rd_addr - 1;
-				end if;
+			elsif rd_addr(0)='0' then
+				rd_addr <= rd_addr - 1;
 			end if;
 		end if;
 	end process;
 
+	mii_txen <= mii_treq and not rd_addr(0);
 	mii_trdy <= mii_treq and rd_addr(0);
 
 end;
