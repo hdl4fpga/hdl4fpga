@@ -91,7 +91,7 @@ package ipoepkg is
 		x"0000" &    -- Identification
 		x"0000" &    -- Fragmentation
 		x"0511" &    -- TTL, protocol
-		x"0000" &    -- Header Checksum
+		x"0000"    -- Header Checksum
 		); 
 
 end;

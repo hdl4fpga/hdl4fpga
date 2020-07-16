@@ -39,6 +39,7 @@ entity mii_ram is
 
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
+		mii_tena : in  std_logic;
 		mii_trdy : out std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
@@ -88,7 +89,9 @@ begin
 			if mii_treq='0' then
 				rd_addr <= to_unsigned(mem_length-1, rd_addr'length);
 			elsif rd_addr(0)='0' then
-				rd_addr <= rd_addr - 1;
+				if mii_tena='1' then
+					rd_addr <= rd_addr - 1;
+				end if;
 			end if;
 		end if;
 	end process;

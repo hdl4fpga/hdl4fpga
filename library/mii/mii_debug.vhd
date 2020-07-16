@@ -149,7 +149,6 @@ begin
 		sync_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size   => 2,
-			mem_offset => 1,
 			out_rgtr   => false, 
 			check_sov  => false,
 			check_dov  => false,

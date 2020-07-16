@@ -73,7 +73,7 @@ begin
 		mii_rxdv => '0',
 		mii_rxd  => mii_rxd,
 		mii_treq => tpa_req,
-		mii_ena  => arp_field(eth_frame'length + arp_tpa),
+		mii_tena => arp_field(eth_frame'length + arp_tpa),
 		mii_equ  => tpa_equ);
 
 	arp_req <= tpa_equ;

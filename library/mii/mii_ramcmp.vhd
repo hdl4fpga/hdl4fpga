@@ -37,6 +37,7 @@ entity mii_ramcmp is
         mii_rxd  : in  std_logic_vector;
 
 		mii_treq : in  std_logic;
+		mii_tena : in  std_logic := '1';
 		mii_trdy : buffer std_logic;
 		mii_equ  : out std_logic);
 end;
@@ -59,6 +60,7 @@ begin
 
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
+		mii_tena => mii_tena,
 		mii_trdy => mii_trdy,
 		mii_txen => open,
 		mii_txd  => mii_txd);
@@ -69,7 +71,9 @@ begin
 			if mii_treq='0' then
 				cy <= '1';
 			elsif mii_trdy='0' then
-				cy <= cy and setif(mii_txd=mii_rxd);
+				if mii_tena='1' then
+					cy <= cy and setif(mii_txd=mii_rxd);
+				end if;
 			end if;
 		end if;
 	end process;
