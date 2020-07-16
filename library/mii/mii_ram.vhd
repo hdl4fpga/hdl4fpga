@@ -39,7 +39,7 @@ entity mii_ram is
 
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
-		mii_tena : in  std_logic;
+		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
@@ -48,10 +48,10 @@ end;
 architecture def of mii_ram is
 	constant mem_length  : natural := setif(mem_size=0, mem_data'length, mem_size)/mii_rxd'length;
 	constant addr_length : natural := unsigned_num_bits(mem_length-1);
-	subtype addr_range is natural range 1 downto addr_length;
+	subtype addr_range is natural range 1 to addr_length;
 
-	signal wr_addr : unsigned(addr_range);
-	signal rd_addr : unsigned(addr_range);
+	signal wr_addr : unsigned(0 to addr_length);
+	signal rd_addr : unsigned(0 to addr_length);
 
 begin
 
