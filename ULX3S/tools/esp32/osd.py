@@ -22,6 +22,7 @@ import ld_h4f
 
 class osd:
   def __init__(self):
+    alloc_emergency_exception_buf(100)
     self.screen_x = const(64)
     self.screen_y = const(20)
     self.cwd = "/"
@@ -39,14 +40,14 @@ class osd:
     self.init_pinout_sd()
     #self.spi=SPI(self.spi_channel, baudrate=self.spi_freq, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=Pin(self.gpio_sck), mosi=Pin(self.gpio_mosi), miso=Pin(self.gpio_miso))
     self.init_spi()
-    alloc_emergency_exception_buf(100)
+    self.init_slides()
     self.enable = bytearray(1)
+    self.h4f=ld_h4f.ld_h4f(self.spi,self.cs)
     self.timer = Timer(3)
     self.irq_handler(0)
     self.irq_handler_ref = self.irq_handler # allocation happens here
     self.spi_request = Pin(0, Pin.IN, Pin.PULL_UP)
     self.spi_request.irq(trigger=Pin.IRQ_FALLING, handler=self.irq_handler_ref)
-    self.h4f=ld_h4f.ld_h4f(self.spi,self.cs)
 
   def init_spi(self):
     self.spi=SPI(self.spi_channel, baudrate=self.spi_freq, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=Pin(self.gpio_sck), mosi=Pin(self.gpio_mosi), miso=Pin(self.gpio_miso))
@@ -99,14 +100,16 @@ class osd:
           if btn==65: # btn6 cursor right
             self.select_entry()
         else:
+          p8slide = ptr8(addressof(self.slide))
           if btn==33: # btn5 cursor left
-            self.cs.on()
-            self.h4f.rgtr(0x19,self.h4f.i24(0))
-            self.cs.off()
+            if p8slide[0]>0:
+              p8slide[0]-=1
           if btn==65: # btn6 cursor right
-            self.cs.on()
-            self.h4f.rgtr(0x19,self.h4f.i24(0x10000))
-            self.cs.off()
+            if p8slide[0]<int(self.nfiles)-1:
+              p8slide[0]+=1
+          self.cs.on()
+          self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*p8slide[0]))
+          self.cs.off()
 
   def start_autorepeat(self, i:int):
     self.autorepeat_direction=i
@@ -265,7 +268,7 @@ class osd:
         del s
         gc.collect()
       if filename.endswith(".h4f"):
-        self.h4f.load_hdl4fpga_image(open(filename,"rb"))
+        self.h4f.load_hdl4fpga_image(open(filename,"rb"),self.slide[0]%self.ncached*self.slide_pixels)
         gc.collect()
         self.enable[0]=0
         self.osd_enable(0)
@@ -361,10 +364,12 @@ class osd:
       stat = os.stat(self.fullpath(fname))
       if stat[0] & 0o170000 == 0o040000:
         self.direntries.append([fname,1,0]) # directory
+    self.file0=len(self.direntries)
     for fname in ls:
       stat = os.stat(self.fullpath(fname))
       if stat[0] & 0o170000 != 0o040000:
         self.direntries.append([fname,0,stat[6]]) # file
+    self.nfiles=len(self.direntries)-self.file0
     gc.collect()
 
   # NOTE: this can be used for debugging
@@ -381,6 +386,24 @@ class osd:
   #    self.spi.write(bytearray([0,0xFD,0,0,0])) # write content
   #    self.spi.write(bytearray(a)) # write content
   #    self.cs.off()
+  
+  # *** SLIDESHOW ***
+  # self.direntries, self.file0
+  def init_slides(self):
+    self.xres=800
+    self.yres=600
+    self.bpp=16
+    membytes=32*1024*1024
+    self.priority_forward=2
+    self.priority_backward=1
+    self.slide_pixels=self.xres*self.yres
+    self.ncached=membytes//(self.slide_pixels*self.bpp//8)
+    #print(self.ncached)
+    self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
+    self.nforward=self.ncached-self.nbackward;
+    #print(nforward, nbackward, nbackward+nforward)
+    self.slide=bytearray(2) # current,previous
+    
 
   def ctrl(self,i):
     self.cs.on()

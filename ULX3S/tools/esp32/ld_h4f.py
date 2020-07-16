@@ -33,11 +33,11 @@ class ld_h4f:
     block = bytearray(blocksize)
     bytes_loaded = 0
     self.cs.on()
-    self.rgtr(0x19,self.i24(0)) # video base
+    #self.rgtr(0x19,self.i24(addr)) # video base
     while bytes_loaded < maxlen:
       if filedata.readinto(block):
         # address
-        self.rgtr(0x16,self.i24(bytes_loaded//2))
+        self.rgtr(0x16,self.i24(addr+bytes_loaded//2))
         # fill buffer
         for i in range(N):
           self.rgtr(0x18,block[i*256:(i+1)*256])
@@ -46,19 +46,6 @@ class ld_h4f:
         bytes_loaded += blocksize
       else:
         break
-    self.cs.off()
-
-  # read from SPI RAM -> write to file
-  def save_stream(self, filedata, addr=0, length=1024, blocksize=1024):
-    bytes_saved = 0
-    block = bytearray(blocksize)
-    # Request save
-    self.cs.on()
-    self.spi.write(bytearray([1,(addr >> 24) & 0xFF, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF, 0]))
-    while bytes_saved < length:
-      self.spi.readinto(block)
-      filedata.write(block)
-      bytes_saved += len(block)
     self.cs.off()
 
   def reverse_byte(self,x):
