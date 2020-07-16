@@ -30,15 +30,17 @@ use hdl4fpga.std.all;
 
 entity mii_1chksum is
 	generic (
-		size     : natural);
+		mem_size     : natural);
 	port (
-		mii_txc  : in  std_logic;
-		cksm_txd  : in  std_logic_vector;
-		cksm_txdv : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_txc  : in  std_logic;
-		mii_txdv : out  std_logic;
-		mii_txd  : out std_logic_vector);
+		mii_txc   : in  std_logic;
+		cksm_txd  : out std_logic_vector;
+		cksm_txen : out std_logic;
+		cksm_treq : in  std_logic;
+		cksm_trdy : out std_logic;
+
+		mii_rxc   : in  std_logic;
+		mii_rxdv  : in  std_logic;
+		mii_rxd   : in  std_logic_vector);
 end;
 
 architecture beh of mii_1chksum is
@@ -53,26 +55,27 @@ begin
         mii_rxd  => mii_rxd,
 
 		mii_txc  => mii_txc,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd);
+		mii_treq => cksm_treq,
+		mii_trdy => cksm_trdy,
+		mii_txen => cksm_txen,
+		mii_txd  => cksm_txd);
 
 	process (mii_rxc)
-		variable cy  : std_logic;
-		variable add : unsigned(0 to mii_rxdv'lentgh+1);
-		variable acc : unsigned(0 to mii_rxdv'lentgh+1);
+		variable cy  : unsigned(0 to 0);
+		variable add : unsigned(0 to mii_rxd'length);
+		variable acc : unsigned(0 to mii_rxd'length);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
 				acc := (others => '0');
-				cy  := '0';
+				cy  := (others => '0');
 			else
-				add := unsigned'('0' & rxd) + unsigned'('0' & acc(rxd'reverse_range);
-				cy  := add(0);
-				acc(rxd'range) <= std_logic_vector(add(1 to rxd'length);
-				acc := acc ror rxd'length;
-				acc := acc(rxd'reverse_range) + cy;
+				add := unsigned'('0' & unsigned(mii_rxd)) + unsigned'('0' & acc(mii_rxd'reverse_range));
+				cy  := add(0 to 0);
+				acc(mii_rxd'range) := add(1 to mii_rxd'length);
+				acc := acc ror mii_rxd'length;
+				acc := acc(mii_rxd'reverse_range) + cy;
 			end if;
 		end if;
+	end process;
 end;
