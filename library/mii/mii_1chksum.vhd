@@ -30,17 +30,19 @@ use hdl4fpga.std.all;
 
 entity mii_1chksum is
 	generic (
-		mem_size     : natural);
+		chksum_size : natural;
+		chksum_init : natural := 0);
 	port (
 		mii_txc   : in  std_logic;
-		cksm_txd  : out std_logic_vector;
-		cksm_txen : out std_logic;
-		cksm_treq : in  std_logic;
-		cksm_trdy : out std_logic;
 
 		mii_rxc   : in  std_logic;
 		mii_rxdv  : in  std_logic;
 		mii_rxd   : in  std_logic_vector);
+
+		cksm_txd  : out std_logic_vector;
+		cksm_txen : out std_logic;
+		cksm_treq : in  std_logic;
+		cksm_trdy : out std_logic);
 end;
 
 architecture beh of mii_1chksum is
@@ -48,7 +50,7 @@ begin
 
 	mii_data_e : entity hdl4fpga.mii_ram
 	generic map (
-		mem_size => mem_size)
+		mem_size => chksum_size)
 	port map (
 		mii_rxc  => mii_rxc,
         mii_rxdv => mii_rxdv,
@@ -67,7 +69,7 @@ begin
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				acc := (others => '0');
+				acc := to_unsigned(chksum_init, chksum_size);
 				cy  := (others => '0');
 			else
 				add := unsigned'('0' & unsigned(mii_rxd)) + unsigned'('0' & acc(mii_rxd'reverse_range));

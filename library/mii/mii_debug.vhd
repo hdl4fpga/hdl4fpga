@@ -141,8 +141,8 @@ begin
 		arp_txd   => arp_txd);
 
 	txc_sync_b : block
-		signal rxc_rxd  : std_logic_vector(0 to mii_txd'length);
-		signal txc_rxd  : std_logic_vector(0 to mii_txd'length);
+		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
+		signal txc_rxd : std_logic_vector(0 to mii_txd'length);
 	begin
 		rxc_rxd <= mii_rxd & mii_rxdv;
 
