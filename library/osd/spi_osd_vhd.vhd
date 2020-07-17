@@ -11,7 +11,7 @@ entity spi_osd_vhd is
     c_start_x      : natural := 64; -- x1  pixel window h-position
     c_start_y      : natural := 48; -- x1  pixel window v-position
     c_chars_x      : natural := 64; -- x8  pixel window h-size
-    c_chars_y      : natural := 24; -- x16 pixel window v-size
+    c_chars_y      : natural := 20; -- x16 pixel window v-size
     c_init_on      : natural :=  1; -- 0:default OFF, 1:default ON
     c_inverse      : natural :=  1; -- 0:no inverse, 1:inverse chars support
     c_transparency : natural :=  0; -- 0:opaque, 1:see-thru OSD menu
