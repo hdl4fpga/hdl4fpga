@@ -15,6 +15,7 @@ from machine import SPI, Pin, SDCard, Timer
 from micropython import const, alloc_emergency_exception_buf
 from uctypes import addressof
 from struct import unpack
+from collections import namedtuple
 import os
 import gc
 import ecp5
@@ -100,7 +101,7 @@ class osd:
           if btn==65: # btn6 cursor right
             self.select_entry()
         else:
-          p8slide = ptr8(addressof(self.slide))
+          p8slide = ptr8(addressof(self.slide_shown))
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
               p8slide[0]-=1
@@ -123,6 +124,54 @@ class osd:
       self.timer.init(mode=Timer.PERIODIC, period=30, callback=self.autorepeat)
     self.move_dir_cursor(self.autorepeat_direction)
     self.irq_handler(0) # catch stale IRQ
+
+  def start_bgreader(self):
+    self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
+  
+  def bgreader(self,timer):
+    #if self.finished:
+    #  self.timer.deinit()
+    #  return
+    # if we are not finished, we get here
+    reading_slide = self.reading_slide % self.ncached
+    if self.file_open==0:
+      filename=self.fullpath(self.direntries[self.file0+self.reading_slide])
+      self.bg_file=open(filename,"rb")
+      self.bg_file.seek(self.cache_status[reading_slide].pos)
+      self.file_open=1
+      print("%d RD %s\n" % (self.reading_slide,filename))
+    # file is open now
+    if self.slide_shown[0] != self.prev_slide_shown and self.prev_slide_shown == self.reading_slide:
+      self.cache_status[reading_slide]=self.bg_file.tell()
+      self.bg_file.close()
+      self.file_open=0
+      self.reading_slide=self.slide_shown[0]
+      self.prev_slide_shown=self.slide_shown[0]
+      return
+    self.prev_slide_shown=self.slide_shown[0]
+    # check are all Y lines of image loaded
+    bytpp=self.bpp//8 # in file
+    if self.cache_status[reading_slide].y_rd < self.cache_status[reading_slide].y:
+      # load state, read one line, save state and exit
+      read_remaining = bytpp*self.cache_status[reading_slide].x_rd
+      seek_skip=0
+      # clamp read remaining and seek at the end
+      if read_remaining > bytpp*self.cache_status[reading_slide].x:
+        seek_skip=bg_file.tell() + read_remaining
+        read_remaining=bytpp*self.cache_status[reading_slide].x
+      line_bytes=read_remaining
+      self.bg_file.readinto(self.PPM_line_buf)
+      if seek_skip:
+        self.bg_file.seek(seek_skip)
+      # write PPM_line_buf to screen
+      self.cache_status[reading_slide].y_rd+=1 # next line next time 
+    else: # all y-lines done, close file
+      self.bg_file.close()
+      self.file_open=0
+      # TODO priority reading decide which slide is next
+      # finish if no more slides to read
+      self.finished=1
+      self.timer.deinit()
 
   def select_entry(self):
     if self.direntries[self.fb_cursor][1]: # is it directory
@@ -268,7 +317,7 @@ class osd:
         del s
         gc.collect()
       if filename.endswith(".h4f"):
-        self.h4f.load_hdl4fpga_image(open(filename,"rb"),self.slide[0]%self.ncached*self.slide_pixels)
+        self.h4f.load_hdl4fpga_image(open(filename,"rb"),self.slide_shown[0]%self.ncached*self.slide_pixels)
         gc.collect()
         self.enable[0]=0
         self.osd_enable(0)
@@ -402,8 +451,19 @@ class osd:
     self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncached-self.nbackward;
     #print(nforward, nbackward, nbackward+nforward)
-    self.slide=bytearray(2) # current,previous
-    
+    self.cache_status=[]
+    cache_stat=namedtuple("cache_stat",("n","x","y","x_rd","y_rd","pos"))
+    # i: slide number
+    for i in range(self.ncached):
+      self.cache_status.append(cache_stat(i,self.xres,self.yres,self.xres,0,0))
+      #self.cache_status.append=[i,self.xres,self.yres,self.xres,0,0]
+    self.finished=0
+    self.file_open=0
+    # slide numbers index of direntries, starting from file0
+    self.prev_slide_shown=0
+    self.reading_slide=0
+    self.slide_shown=bytearray(1)
+    self.PPM_line_buf=bytearray((self.bpp//8)*self.xres)
 
   def ctrl(self,i):
     self.cs.on()
