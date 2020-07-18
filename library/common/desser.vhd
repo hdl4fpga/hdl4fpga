@@ -26,6 +26,10 @@ architecture mux of desser is
 
 begin
 
+	assert des_data'length=2**mux_length*ser_data'length
+	report "des_data'length is not a multiple of power of 2 of ser_data'length"
+	severity FAILURE;
+
 	process (desser_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
@@ -35,10 +39,13 @@ begin
 			elsif des_frm='0' then
 				cntr := (0 => '1', mux_range => '0');
 			elsif ser_trdy='1' then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				elsif des_irdy='1' then
-					cntr := '0' & (cntr(mux_range) + 1);
+				if ser_data'length /= des_data'length then
+					if cntr(0)='0' then
+						cntr := cntr + 1;
+					elsif des_irdy='1' then
+						cntr := '0' & (cntr(mux_range) + 1);
+					end if;
+				else
 				end if;
 			end if;
 		end if;
