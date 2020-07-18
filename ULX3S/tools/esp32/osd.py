@@ -101,6 +101,8 @@ class osd:
           if btn==65: # btn6 cursor right
             self.select_entry()
         else:
+          if btn==9: # btn3 cursor up
+            self.start_bgreader()
           p8slide = ptr8(addressof(self.slide_shown))
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
@@ -126,6 +128,8 @@ class osd:
     self.irq_handler(0) # catch stale IRQ
 
   def start_bgreader(self):
+    self.finished=0
+    self.caches_y_rd[self.reading_slide % self.ncached]=0
     self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
 
   def bgreader(self,timer):
@@ -135,14 +139,14 @@ class osd:
     # if we are not finished, we get here
     reading_slide = self.reading_slide % self.ncached
     if self.file_open==0:
-      filename=self.fullpath(self.direntries[self.file0+self.reading_slide])
+      filename=self.fullpath(self.direntries[self.file0+self.reading_slide][0])
       self.bg_file=open(filename,"rb")
-      self.bg_file.seek(self.cache_status[reading_slide].pos)
+      self.bg_file.seek(self.caches_pos[reading_slide])
       self.file_open=1
       print("%d RD %s\n" % (self.reading_slide,filename))
     # file is open now
     if self.slide_shown[0] != self.prev_slide_shown and self.prev_slide_shown == self.reading_slide:
-      self.cache_status[reading_slide]=self.bg_file.tell()
+      self.caches_pos[reading_slide]=self.bg_file.tell()
       self.bg_file.close()
       self.file_open=0
       self.reading_slide=self.slide_shown[0]
@@ -151,33 +155,35 @@ class osd:
     self.prev_slide_shown=self.slide_shown[0]
     # check are all Y lines of image loaded
     bytpp=self.bpp//8 # in file
-    if self.cache_status[reading_slide].y_rd < self.cache_status[reading_slide].y:
+    if self.caches_y_rd[reading_slide] < self.caches_y[reading_slide]:
       # load state, read one line, save state and exit
-      line_pixels=self.cache_status[reading_slide].x_rd
-      line_bytes=bytpp*line_pixels
+      line_pixels=self.caches_x_rd[reading_slide]
+      read_remaining=bytpp*line_pixels
       seek_skip=0
-      # clamp read remaining and seek at the end
-      if read_remaining > bytpp*self.cache_status[reading_slide].x:
+      # clamp read remaining and calculate seek at the end
+      if read_remaining > bytpp*self.caches_x[reading_slide]:
         seek_skip=bg_file.tell() + read_remaining
-        read_remaining=bytpp*self.cache_status[reading_slide].x
-      line_bytes=read_remaining
+        read_remaining=bytpp*self.caches_x[reading_slide]
       self.bg_file.readinto(self.PPM_line_buf)
       if seek_skip:
         self.bg_file.seek(seek_skip)
       # TODO write PPM_line_buf to screen
-      addr=self.xres*(reading_slide*self.yres+self.cache_status[reading_slide].y_rd)
+      addr=self.xres*(reading_slide*self.yres+self.caches_y_rd[reading_slide])
       # DMA transfer <= 2048 bytes each
       # DMA transfer must be divided in N buffer uploads
       # buffer upload <= 256 bytes each
-      self.h4f.rgtr(0x16,self.h4f.i24(addr))
       nbuf=8
-      bstep=200
+      astep=200
       abuf=0
+      self.cs.on()
+      self.h4f.rgtr(0x16,self.h4f.i24(addr))
       for j in range(nbuf):
         self.h4f.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
-        abuf+=bstep
-      self.h4f.rgtr(0x17,self.h4f.i24(nbuf*bstep//bytpp-1))
-      self.cache_status[reading_slide].y_rd+=1 # next line next time 
+        abuf+=astep
+      self.h4f.rgtr(0x17,self.h4f.i24(nbuf*astep//bytpp-1))
+      self.cs.off()
+      self.caches_y_rd[reading_slide]+=1
+      # next line next time 
     else: # all y-lines done, close file
       self.bg_file.close()
       self.file_open=0
@@ -185,6 +191,7 @@ class osd:
       # finish if no more slides to read
       self.finished=1
       self.timer.deinit()
+      print("finished\n")
 
   def select_entry(self):
     if self.direntries[self.fb_cursor][1]: # is it directory
@@ -464,12 +471,24 @@ class osd:
     self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncached-self.nbackward;
     #print(nforward, nbackward, nbackward+nforward)
-    self.cache_status=[]
-    cache_stat=namedtuple("cache_stat",("n","x","y","x_rd","y_rd","pos"))
+    #self.cache_status=[]
+    #cache_stat=namedtuple("cache_stat",("n","x","y","x_rd","y_rd","pos"))
+    # cache status
+    self.caches_i=[] # index of file in direntries 0..n
+    self.caches_x=[] # screen
+    self.caches_y=[] # screen
+    self.caches_x_rd=[] # file X
+    self.caches_y_rd=[] # file Y (starts from 0)
+    self.caches_pos=[] # file seek
     # i: slide number
     for i in range(self.ncached):
-      self.cache_status.append(cache_stat(i,self.xres,self.yres,self.xres,0,0))
-      #self.cache_status.append=[i,self.xres,self.yres,self.xres,0,0]
+      #self.cache_status.append(cache_stat(i,self.xres,self.yres,self.xres,0,0))
+      self.caches_i.append(i)
+      self.caches_x.append(self.xres)
+      self.caches_y.append(self.yres)
+      self.caches_x_rd.append(self.xres)
+      self.caches_y_rd.append(0)
+      self.caches_pos.append(0)
     self.finished=0
     self.file_open=0
     # slide numbers index of direntries, starting from file0
