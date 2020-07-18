@@ -127,7 +127,7 @@ class osd:
 
   def start_bgreader(self):
     self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
-  
+
   def bgreader(self,timer):
     #if self.finished:
     #  self.timer.deinit()
@@ -153,7 +153,8 @@ class osd:
     bytpp=self.bpp//8 # in file
     if self.cache_status[reading_slide].y_rd < self.cache_status[reading_slide].y:
       # load state, read one line, save state and exit
-      read_remaining = bytpp*self.cache_status[reading_slide].x_rd
+      line_pixels=self.cache_status[reading_slide].x_rd
+      line_bytes=bytpp*line_pixels
       seek_skip=0
       # clamp read remaining and seek at the end
       if read_remaining > bytpp*self.cache_status[reading_slide].x:
@@ -163,7 +164,19 @@ class osd:
       self.bg_file.readinto(self.PPM_line_buf)
       if seek_skip:
         self.bg_file.seek(seek_skip)
-      # write PPM_line_buf to screen
+      # TODO write PPM_line_buf to screen
+      addr=self.xres*(reading_slide*self.yres+self.cache_status[reading_slide].y_rd)
+      # DMA transfer <= 2048 bytes each
+      # DMA transfer must be divided in N buffer uploads
+      # buffer upload <= 256 bytes each
+      self.h4f.rgtr(0x16,self.h4f.i24(addr))
+      nbuf=8
+      bstep=200
+      abuf=0
+      for j in range(nbuf):
+        self.h4f.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
+        abuf+=bstep
+      self.h4f.rgtr(0x17,self.h4f.i24(nbuf*bstep//bytpp-1))
       self.cache_status[reading_slide].y_rd+=1 # next line next time 
     else: # all y-lines done, close file
       self.bg_file.close()
