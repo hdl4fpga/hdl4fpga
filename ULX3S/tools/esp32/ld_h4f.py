@@ -26,8 +26,7 @@ class ld_h4f:
 
   # read from file -> write to SPI RAM
   # blocksize max 2048 in steps of 256
-  # max 1280 without significant flicker
-  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=2048):
+  def load_hdl4fpga_image(self, filedata, addr=0, maxlen=0x10000000, blocksize=1536):
     N=blocksize//256
     pkt_blocksize = self.i24(blocksize//2-1)
     block = bytearray(blocksize)
