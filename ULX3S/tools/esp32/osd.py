@@ -167,7 +167,7 @@ class osd:
       self.bg_file.readinto(self.PPM_line_buf)
       if seek_skip:
         self.bg_file.seek(seek_skip)
-      # TODO write PPM_line_buf to screen
+      # write PPM_line_buf to screen
       addr=self.xres*(reading_slide*self.yres+self.caches_y_rd[reading_slide])
       # DMA transfer <= 2048 bytes each
       # DMA transfer must be divided in N buffer uploads
@@ -187,7 +187,7 @@ class osd:
     else: # all y-lines done, close file
       self.bg_file.close()
       self.file_open=0
-      # TODO priority reading decide which slide is next
+      # TODO priority reading: decide which slide is next
       # finish if no more slides to read
       self.finished=1
       self.timer.deinit()
