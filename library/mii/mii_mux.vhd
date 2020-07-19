@@ -39,21 +39,21 @@ entity mii_mux is
 end;
 
 architecture def of mii_mux is
-	constant mux_length : natural := unsigned_num_bits(mux_data'length/ser_data'length-1);
+	constant mux_length : natural := unsigned_num_bits(mux_data'length/mii_txd'length-1);
 	subtype mux_range is natural range 1 to mux_length;
 
-	signal mux_sel : std_logic_vector(1 to mux_length;
+	signal mux_sel : std_logic_vector(mux_range);
 
 begin
 
-	assert mux_data'length/ser_data'length=2**mux_length
+	assert mux_data'length=mii_txd'length or mux_data'length/mii_txd'length=2**mux_length
 	report "Length of mux_data is not a multiple of power of 2 of length of mii_txd"
 	severity FAILURE;
 
-	process (mii_treq, mii_clk)
+	process (mii_treq, mii_txc)
 		variable cntr : unsigned(0 to mux_length);
 	begin
-		if rising_edge(desser_clk) then
+		if rising_edge(mii_txc) then
 			if mii_txd'length=mux_data'length then
 				cntr := (others => '0');
 			elsif mii_treq='0' then
@@ -64,7 +64,7 @@ begin
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
 		mii_trdy <= mii_treq and cntr(0);
-		mii_texn <= mii_treq and not cntr(0);
+		mii_txen <= mii_treq and not cntr(0);
 	end process;
 
 	mii_txd <= 
