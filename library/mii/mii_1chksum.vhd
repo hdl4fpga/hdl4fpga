@@ -38,10 +38,10 @@ entity mii_1chksum is
 		mii_rxd   : in  std_logic_vector);
 
 		mii_txc   : in  std_logic;
-		cksm_txd  : out std_logic_vector;
-		cksm_txen : out std_logic;
 		cksm_treq : in  std_logic;
-		cksm_trdy : out std_logic);
+		cksm_trdy : out std_logic;
+		cksm_txen : out std_logic;
+		cksm_txd  : out std_logic_vector);
 end;
 
 architecture beh of mii_1chksum is
@@ -68,5 +68,15 @@ begin
 			chksum <= acc;
 		end if;
 	end process;
+
+	mux_e : entity hdl4fpga.mii_mux
+    port map (
+		mux_data => chksum,
+        mii_txc  => mii_txc,
+		mii_treq => cksm_treq,
+		mii_trdy => cksm_trdy,
+        mii_txen => cksm_txen,
+        mii_txd  => cksm_txd);
+end;
 
 end;

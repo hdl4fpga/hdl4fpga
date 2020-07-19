@@ -33,40 +33,43 @@ entity mii_mux is
 		mux_data : in  std_logic_vector;
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
-        mii_txdv : out std_logic;
+        mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
 architecture def of mii_mux is
-	constant data_size : natural := (mux_data'length+mii_txd'length-1)/mii_txd'length;
-	constant cntr_size : natural := unsigned_num_bits(mux_data'length/mii_txd'length-1);
+	constant mux_length : natural := unsigned_num_bits(mux_data'length/ser_data'length-1);
+	subtype mux_range is natural range 1 to mux_length;
 
-	signal cntr : unsigned(0 to cntr_size);
-	signal data : std_logic_vector(0 to ((mux_data'length+8-1)/8)*8-1);
+	signal mux_sel : std_logic_vector(1 to mux_length;
 
 begin
 
-	process (desser_clk)
+	assert mux_data'length/ser_data'length=2**mux_length
+	report "Length of mux_data is not a multiple of power of 2 of length of mii_txd"
+	severity FAILURE;
+
+	process (mii_treq, mii_clk)
+		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(desser_clk) then
-			if mux_data'length=mii_txd'length then
-				cntr <= to_unsigned(data_size-1, cntr'length);
-			elsif desser_frm='0' then
-				cntr <= (others => '0');
-			elsif des_irdy='1' then
-				if cntr=0 then
-					if ser_trdy='1' then
-						cntr <= cntr + 1;
-					end if;
-				elsif 2**cntr'length=mux_data'length/mii_txd'length then
-					cntr <= cntr + 1;
-				elsif cntr=mux_data'length/mii_txd'length-1 then
-					cntr <= (others => '0');
-				end if;
+			if mii_txd'length=mux_data'length then
+				cntr := (others => '0');
+			elsif mii_treq='0' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				cntr := cntr + 1;
 			end if;
+			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
+		mii_trdy <= mii_treq and cntr(0);
+		mii_texn <= mii_treq and not cntr(0);
 	end process;
+
+	mii_txd <= 
+		mux_data when mii_txd'length=mux_data'length else
+		word2byte(mux_data, mux_sel) when mux_data'ascending else 
+		reverse(word2byte(mux_data, not mux_sel));
 
 end;

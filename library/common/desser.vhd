@@ -39,8 +39,6 @@ begin
 		if rising_edge(desser_clk) then
 			if ser_data'length=des_data'length then
 				cntr := (others => '1');
-			elsif des_data'length=ser_data'length then
-				cntr := (others => '1');
 			elsif des_frm='0' then
 				cntr := (others => '1');
 			elsif ser_trdy='1' then
