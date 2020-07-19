@@ -34,8 +34,8 @@ entity mii_1chksum is
 		chksum_init : natural := 0);
 	port (
 		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector);
+		cksm_rxdv : in  std_logic;
+		cksm_rxd  : in  std_logic_vector;
 
 		mii_txc   : in  std_logic;
 		cksm_treq : in  std_logic;
@@ -50,20 +50,20 @@ begin
 
 	process (mii_rxc)
 		variable cy  : unsigned(0 to 0);
-		variable add : unsigned(0 to mii_rxd'length);
+		variable add : unsigned(0 to cksm_rxd'length);
 		variable acc : unsigned(chksum'range);
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_rxdv='0' then
+			if cksm_rxdv='0' then
 				acc := to_unsigned(chksum_init, chksum_size);
 				cy  := (others => '0');
 			else
 				acc := chksum;
-				add := unsigned'('0' & unsigned(mii_rxd)) + unsigned'('0' & acc(mii_rxd'reverse_range));
+				add := unsigned'('0' & unsigned(cksm_rxd)) + unsigned'('0' & acc(cksm_rxd'reverse_range));
 				cy  := add(0 to 0);
-				acc(mii_rxd'range) := add(1 to mii_rxd'length);
-				acc := acc ror mii_rxd'length;
-				acc := acc(mii_rxd'reverse_range) + cy;
+				acc(cksm_rxd'range) := add(1 to cksm_rxd'length);
+				acc := acc ror cksm_rxd'length;
+				acc := acc(cksm_rxd'reverse_range) + cy;
 			end if;
 			chksum <= acc;
 		end if;
@@ -71,12 +71,11 @@ begin
 
 	mux_e : entity hdl4fpga.mii_mux
     port map (
-		mux_data => chksum,
+		mux_data => std_logic_vector(chksum),
         mii_txc  => mii_txc,
 		mii_treq => cksm_treq,
 		mii_trdy => cksm_trdy,
         mii_txen => cksm_txen,
         mii_txd  => cksm_txd);
-end;
 
 end;

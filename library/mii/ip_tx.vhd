@@ -39,10 +39,7 @@ entity ip_tx is
 		pl_txdv   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
 
-		iplen_treq : out std_logic ;
-		iplen_trdy : in  std_logic := '-';
-		iplen_txen : in  std_logic;
-		iplen_txd  : in  std_logic_vector;
+		ip_length : in  std_logic_vector;
 
 		ipsa_treq : out std_logic ;
 		ipsa_trdy : in  std_logic := '-';
@@ -60,21 +57,34 @@ end;
 
 architecture def of ip_tx is
 begin
-	<= wirebus (iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txd);
+	lengthmux_e : entity hdl4fpga.mii_mux
+    port map (
+		mux_data => ip_length,
+        mii_txc  => mii_txc,
+		mii_treq => iplen_treq,
+		mii_trdy => iplen_trdy,
+        mii_txen => iplen_txen,
+        mii_txd  => iplen_txd);
+	ipsa_treq <= iplen_trdy;
+	ipda_treq <= ipsa_trdy;
+
+	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
+	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
+
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_init =>,
 		chksum_size => 16)
 	port map (
+		mii_rxc   => mii_txc,
+		cksm_rxdv => cksm_rxd,
+		cksm_rxd  => cksm_rxdv,
+
 		mii_txc   => mii_txc,
-		cksm_txd  =>
-		cksm_txen =>
 		cksm_treq =>
 		cksm_trdy =>
-
-		mii_rxc   =>
-		mii_rxdv  =>
-		mii_rxd   =>);
+		cksm_txen =>
+		cksm_txd  =>);
 
 end;
 
