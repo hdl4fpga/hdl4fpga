@@ -143,7 +143,7 @@ class osd:
       self.bg_file=open(filename,"rb")
       self.bg_file.seek(self.caches_pos[reading_slide])
       self.file_open=1
-      print("%d RD %s\n" % (self.reading_slide,filename))
+      print("%d RD %s" % (self.reading_slide,filename))
     # file is open now
     if self.slide_shown[0] != self.prev_slide_shown and self.prev_slide_shown == self.reading_slide:
       self.caches_pos[reading_slide]=self.bg_file.tell()
@@ -191,7 +191,7 @@ class osd:
       # finish if no more slides to read
       self.finished=1
       self.timer.deinit()
-      print("finished\n")
+      print("finished")
 
   def select_entry(self):
     if self.direntries[self.fb_cursor][1]: # is it directory
