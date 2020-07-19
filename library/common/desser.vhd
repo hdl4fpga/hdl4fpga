@@ -24,6 +24,9 @@ architecture mux of desser is
 	constant mux_length : natural := unsigned_num_bits(des_data'length/ser_data'length-1);
 	subtype mux_range is natural range 1 to mux_length;
 
+	signal mux_sel : std_logic_vector(1 to mux_length;
+	signal mux_ena : std_logic;
+
 begin
 
 	assert des_data'length=2**mux_length*ser_data'length
@@ -34,29 +37,30 @@ begin
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(desser_clk) then
-			if des_data'length=ser_data'length then
-				cntr := (0 => '1', mux_range => '0');
+			if ser_data'length=des_data'length then
+				cntr := (others => '1');
+			elsif des_data'length=ser_data'length then
+				cntr := (others => '1');
 			elsif des_frm='0' then
-				cntr := (0 => '1', mux_range => '0');
+				cntr := (others => '1');
 			elsif ser_trdy='1' then
-				if ser_data'length /= des_data'length then
-					if cntr(0)='0' then
-						cntr := cntr + 1;
-					elsif des_irdy='1' then
-						cntr := '0' & (cntr(mux_range) + 1);
-					end if;
-				else
+				if cntr(0)='0' then
+					cntr := cntr - 1;
+				elsif des_irdy='1' then
+					cntr := to_unsigned(des_data'length/ser_data'length-2);
 				end if;
 			end if;
+			mux_sel <= cntr(mux_range);
+			mux_ena <= not cntr(0);
 		end if;
 	end process;
 
 	ser_data <= 
-		word2byte(reverse(reverse(des_data), ser_data'length), std_logic_vector(cntr), ser_data'length) when des_data'ascending else
-		word2byte(des_data, std_logic_vector(cntr), ser_data'length);
+		word2byte(reverse(reverse(des_data), ser_data'length), std_logic_vector(mux_sel), ser_data'length) when des_data'ascending else
+		word2byte(des_data, std_logic_vector(mux_sel), ser_data'length);
 
-	ser_irdy <= des_frm and (des_irdy or setif(cntr/=0 and des_data'length/=ser_data'length));
-	des_trdy <= des_frm and (setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length) and ser_trdy);
+	ser_irdy <= des_frm and (des_irdy or mux_ena);
+	des_trdy <= des_frm and ( ser_trdy);
 
 end;
 
