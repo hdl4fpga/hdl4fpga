@@ -72,12 +72,12 @@ class osd:
   def irq_handler(self, pin):
     p8result = ptr8(addressof(self.spi_result))
     self.cs.on()
-    self.spi.write_readinto(self.spi_read_irq, self.spi_result)
+    self.spi.write_readinto(self.spi_read_irq,self.spi_result)
     self.cs.off()
     btn_irq = p8result[6]
     if btn_irq&0x80: # btn event IRQ flag
       self.cs.on()
-      self.spi.write_readinto(self.spi_read_btn, self.spi_result)
+      self.spi.write_readinto(self.spi_read_btn,self.spi_result)
       self.cs.off()
       btn = p8result[6]
       p8enable = ptr8(addressof(self.enable))
@@ -107,11 +107,17 @@ class osd:
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
               p8slide[0]-=1
+              ic=(p8slide[0]+int(self.ncached)-int(self.nbackward)-1)%int(self.ncached)
+              self.caches_y_rd[ic]=0
+              self.caches_pos[ic]=0
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nfiles)-1:
               p8slide[0]+=1
+              ic=(p8slide[0]+int(self.nforward)-1)%int(self.ncached)
+              self.caches_y_rd[ic]=0
+              self.caches_pos[ic]=0
           self.cs.on()
-          self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*p8slide[0]))
+          self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncached))))
           self.cs.off()
 
   def start_autorepeat(self, i:int):
@@ -128,16 +134,20 @@ class osd:
     self.irq_handler(0) # catch stale IRQ
 
   def start_bgreader(self):
-    self.finished=0
-    self.caches_y_rd[self.reading_slide % self.ncached]=0
-    self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
+    if self.finished:
+      self.finished=0
+      self.reading_slide=self.slide_shown[0]
+      #for i in range(self.ncached):
+      #  self.caches_y_rd[i]=0
+      #  self.caches_pos[i]=0
+      self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
 
   def bgreader(self,timer):
-    #if self.finished:
-    #  self.timer.deinit()
-    #  return
+    if self.finished>0 or self.reading_slide<0:
+      self.timer.deinit()
+      return
     # if we are not finished, we get here
-    reading_slide = self.reading_slide % self.ncached
+    reading_slide=self.reading_slide%self.ncached
     if self.file_open==0:
       filename=self.fullpath(self.direntries[self.file0+self.reading_slide][0])
       self.bg_file=open(filename,"rb")
@@ -145,7 +155,16 @@ class osd:
       self.file_open=1
       print("%d RD %s" % (self.reading_slide,filename))
     # file is open now
+    must_close=0
+    # close if file was being viewed and baing loaded,
+    # then view changed to another file
     if self.slide_shown[0] != self.prev_slide_shown and self.prev_slide_shown == self.reading_slide:
+      must_close=1
+    # TODO close if file was being loaded but among those files
+    # discarded from cache after view has changed
+    # ... begin discard cache ...
+    # ... end discarding cache ...
+    if must_close:
       self.caches_pos[reading_slide]=self.bg_file.tell()
       self.bg_file.close()
       self.file_open=0
@@ -189,9 +208,46 @@ class osd:
       self.file_open=0
       # TODO priority reading: decide which slide is next
       # finish if no more slides to read
-      self.finished=1
-      self.timer.deinit()
-      print("finished")
+      next_forward_slide=-1
+      i=self.slide_shown[0]
+      n=i+self.nforward
+      if n>self.nfiles:
+        n=self.nfiles
+      while i<n:
+        ic=i%self.ncached
+        if self.caches_y_rd[ic]<self.caches_y[ic]:
+          next_forward_slide=i
+          break
+        i+=1
+      next_backward_slide=-1
+      i=self.slide_shown[0]-1
+      n=i-self.nbackward
+      if n<0:
+        n=0
+      while i>=n:
+        ic=i%self.ncached
+        if self.caches_y_rd[ic]<self.caches_y[ic]:
+          next_backward_slide=i
+          break
+        i-=1
+      next_reading_slide=-1
+      if next_forward_slide>=0 and next_backward_slide>=0:
+        if (next_forward_slide-self.slide_shown[0])*self.priority_backward < \
+          (self.slide_shown[0]-next_backward_slide)*self.priority_forward:
+          next_reading_slide=next_forward_slide
+        else:
+          next_reading_slide=next_backward_slide
+      else:
+        if next_forward_slide>=0:
+          next_reading_slide=next_forward_slide
+        else:
+          if next_backward_slide>=0:
+            next_reading_slide=next_backward_slide
+      self.reading_slide=next_reading_slide
+      if self.reading_slide<0:
+        self.finished=1
+        self.timer.deinit()
+        print("finished")
 
   def select_entry(self):
     if self.direntries[self.fb_cursor][1]: # is it directory
@@ -467,14 +523,16 @@ class osd:
     self.priority_backward=1
     self.slide_pixels=self.xres*self.yres
     self.ncached=membytes//(self.slide_pixels*self.bpp//8)
+    # DEBUG: force only 4 ncached (3 forward, 1 backward)
+    #self.ncached=4
     #print(self.ncached)
     self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncached-self.nbackward;
-    #print(nforward, nbackward, nbackward+nforward)
+    #print(self.nforward, self.nbackward, self.nbackward+self.nforward)
     #self.cache_status=[]
     #cache_stat=namedtuple("cache_stat",("n","x","y","x_rd","y_rd","pos"))
     # cache status
-    self.caches_i=[] # index of file in direntries 0..n
+    #self.caches_i=[] # index of file in direntries 0..n
     self.caches_x=[] # screen
     self.caches_y=[] # screen
     self.caches_x_rd=[] # file X
@@ -483,13 +541,13 @@ class osd:
     # i: slide number
     for i in range(self.ncached):
       #self.cache_status.append(cache_stat(i,self.xres,self.yres,self.xres,0,0))
-      self.caches_i.append(i)
+      #self.caches_i.append(i)
       self.caches_x.append(self.xres)
       self.caches_y.append(self.yres)
       self.caches_x_rd.append(self.xres)
       self.caches_y_rd.append(0)
       self.caches_pos.append(0)
-    self.finished=0
+    self.finished=1
     self.file_open=0
     # slide numbers index of direntries, starting from file0
     self.prev_slide_shown=0
