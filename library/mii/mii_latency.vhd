@@ -33,7 +33,7 @@ entity mii_latency is
 		latency : natural);
     port (
         mii_txc  : in  std_logic;
-        lat_txdv : in  std_logic;
+        lat_txdv : in  std_logic := '-';
         lat_txd  : in  std_logic_vector;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);

@@ -39,7 +39,10 @@ entity ip_tx is
 		pl_txdv   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
 
-		ip_length : in  std_logic_vector;
+		iplen_treq : out std_logic ;
+		iplen_trdy : in  std_logic := '-';
+		iplen_txen : in  std_logic;
+		iplen_txd  : in  std_logic_vector;
 
 		ipsa_treq : out std_logic ;
 		ipsa_trdy : in  std_logic := '-';
@@ -73,28 +76,31 @@ begin
 		end if;
 	end process;
 
-	lengthmux_e : entity hdl4fpga.mii_mux
-    port map (
-		mux_data => ip_length,
-        mii_txc  => mii_txc,
-		mii_treq => iplen_treq,
-		mii_trdy => iplen_trdy,
-        mii_txen => iplen_txen,
-        mii_txd  => iplen_txd);
-
-	ipsa_treq <= iplen_trdy;
-	ipda_treq <= ipsa_trdy;
 
 	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
 	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
-
+	
 	ip4_ena <= frame_decode(ip4_ptr, ip4hdr_frame, mii_rxd'length);
+	ip4frg1_ena <= setif(ip4_ena(ip4_verihl to ip4_tos)/=(ip4_verihl to ip4_tos => '0'));
+	ip4_ena(ip4_len);
 
-	frame_dec
 
 	lenlat_e : entity hdl4fpga.mii_latency
 	generic map (
-		latency => iphdr_frame(ip_verihl)ip_tos     
+		latency => iphdr_frame(ip_verihl)+iphdr_frame(ip_tos))
+	port map (
+		mii_txc => mii_txc,
+		lat_txd => cksm_rxd,
+		mii_txd => lenlat_txd);
+	
+	ipalat_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => iphdr_frame(ip_verihl)+iphdr_frame(ip_tos))
+	port map (
+		mii_txc => mii_txc,
+		lat_txd => lenlat_txd,
+		mii_txd => ipalat_txd);
+	
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_init =>,
