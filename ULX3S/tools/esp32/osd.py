@@ -107,15 +107,11 @@ class osd:
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
               p8slide[0]-=1
-              #ic=(p8slide[0]+int(self.ncached)-int(self.nbackward)-1)%int(self.ncached)
-              #self.caches_y_rd[ic]=0
-              #self.caches_pos[ic]=0
+              self.start_bgreader()
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nfiles)-1:
               p8slide[0]+=1
-              #ic=(p8slide[0]+int(self.nforward)-1)%int(self.ncached)
-              #self.caches_y_rd[ic]=0
-              #self.caches_pos[ic]=0
+              self.start_bgreader()
           self.cs.on()
           self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncached))))
           self.cs.off()
@@ -137,10 +133,7 @@ class osd:
     if self.finished:
       self.finished=0
       self.reading_slide=self.slide_shown[0]
-      #for i in range(self.ncached):
-      #  self.caches_y_rd[i]=0
-      #  self.caches_pos[i]=0
-      self.timer.init(mode=Timer.PERIODIC, period=20, callback=self.bgreader)
+      self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
 
   def bgreader(self,timer):
     if self.finished>0 or self.reading_slide<0:
@@ -538,7 +531,7 @@ class osd:
     self.slide_pixels=self.xres*self.yres
     self.ncached=membytes//(self.slide_pixels*self.bpp//8)
     # DEBUG: force only 4 ncached (3 forward, 1 backward)
-    self.ncached=6
+    #self.ncached=6
     #print(self.ncached)
     self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncached-self.nbackward;
