@@ -56,8 +56,8 @@ entity ulx3s is
 		--flash_wpn      : out   std_logic;
 
 		sd_clk         : in    std_logic := '-';
-		sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
-		sd_d           : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
+		sd_cmd         : inout std_logic; -- sd_cmd=MOSI (out)
+		sd_d           : inout std_logic_vector(4-1 downto 0); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
 		sd_wp          : in    std_logic := '-';
 		sd_cdn         : in    std_logic := '-'; -- card detect not connected
 
