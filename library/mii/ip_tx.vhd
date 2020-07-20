@@ -56,7 +56,23 @@ entity ip_tx is
 end;
 
 architecture def of ip_tx is
+
+	signal ip4_ptr : unsigned;
+	signal ip4_ena : std_logic_vector(ip4hdr_frame'range);
+
 begin
+
+	process (mii_txc)
+	begin
+		if rising_edge((mii_txc) then
+			if pl_txen='0' then
+				ip4_ptr <= (others => '0');
+			elsif ip4_ptr(0)='0' then
+				ip4_ptr <= ip4_ptr + 1;
+			end if;
+		end if;
+	end process;
+
 	lengthmux_e : entity hdl4fpga.mii_mux
     port map (
 		mux_data => ip_length,
@@ -65,12 +81,20 @@ begin
 		mii_trdy => iplen_trdy,
         mii_txen => iplen_txen,
         mii_txd  => iplen_txd);
+
 	ipsa_treq <= iplen_trdy;
 	ipda_treq <= ipsa_trdy;
 
 	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
 	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
 
+	ip4_ena <= frame_decode(ip4_ptr, ip4hdr_frame, mii_rxd'length);
+
+	frame_dec
+
+	lenlat_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => iphdr_frame(ip_verihl)ip_tos     
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_init =>,

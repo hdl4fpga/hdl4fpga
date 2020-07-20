@@ -39,13 +39,13 @@ package ethpkg is
 		eth_hwsa => 6*8,
 		eth_type => 2*8);
 
-	function eth_decode (
+	function frame_decode (
 		constant ptr   : unsigned;
 		constant frame : natural_vector;
 		constant size  : natural)
 		return std_logic_vector;
 
-	function eth_decode (
+	function frame_decode (
 		constant ptr   : unsigned;
 		constant field : natural;
 		constant frame : natural_vector;
@@ -56,7 +56,7 @@ end;
 
 package body ethpkg is
 
-	function eth_decode (
+	function frame_decode (
 		constant ptr   : unsigned;
 		constant frame : natural_vector;
 		constant size  : natural)
@@ -78,7 +78,7 @@ package body ethpkg is
 		return retval;
 	end;
 
-	function eth_decode (
+	function frame_decode (
 		constant ptr   : unsigned;
 		constant field : natural;
 		constant frame : natural_vector;

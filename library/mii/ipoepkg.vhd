@@ -31,6 +31,8 @@ use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 
+	constant octect  : natural := 8;
+
 	constant llc_ip  : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
 
@@ -45,15 +47,15 @@ package ipoepkg is
 	constant arp_tpa   : natural := 8;
 
 	constant arp_frame : natural_vector := (
-		arp_htype => 2*8,
-		arp_ptype => 2*8,
-		arp_hlen  => 1*8,
-		arp_plen  => 1*8,
-		arp_oper  => 2*8,
-		arp_sha   => 6*8,
-		arp_spa   => 4*8,
-		arp_tha   => 6*8,
-		arp_tpa   => 4*8);
+		arp_htype => 2*octect,
+		arp_ptype => 2*octect,
+		arp_hlen  => 1*octect,
+		arp_plen  => 1*octect,
+		arp_oper  => 2*octect,
+		arp_sha   => 6*octect,
+		arp_spa   => 4*octect,
+		arp_tha   => 6*octect,
+		arp_tpa   => 4*octect);
 
 	constant arprply_pfx : std_logic_vector :=
 		x"0001" & -- htype 
@@ -62,36 +64,34 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
-	constant ip_verihl  : natural :=  0;
-	constant ip_tos     : natural :=  1;
-	constant ip_len     : natural :=  2;
-	constant ip_ident   : natural :=  3;
-	constant ip_flgsfrg : natural :=  4;
-	constant ip_ttl     : natural :=  5;
-	constant ip_proto   : natural :=  6;
-	constant ip_chksum  : natural :=  7;
-	constant ip_saddr   : natural :=  8;
-	constant ip_daddr   : natural :=  9;
+	constant ip4_verihl  : natural :=  0;
+	constant ip4_tos     : natural :=  1;
+	constant ip4_len     : natural :=  2;
+	constant ip4_ident   : natural :=  3;
+	constant ip4_flgsfrg : natural :=  4;
+	constant ip4_ttl     : natural :=  5;
+	constant ip4_proto   : natural :=  6;
+	constant ip4_chksum  : natural :=  7;
+	constant ip4_saddr   : natural :=  8;
+	constant ip4_daddr   : natural :=  9;
 
-	constant iphdr_frame : natural_vector := (
-		ip_verihl  => 1,
-		ip_tos     => 1,
-		ip_len     => 2,
-		ip_ident   => 2,
-		ip_flgsfrg => 2,
-		ip_ttl     => 1,
-		ip_proto   => 1,
-		ip_chksum  => 2,
-		ip_saddr   => 4,
-		ip_daddr   => 4);
+	constant ip4hdr_frame : natural_vector := (
+		ip_verihl  => 1*octect,
+		ip_tos     => 1*octect,
+		ip_len     => 2*octect,
+		ip_ident   => 2*octect,
+		ip_flgsfrg => 2*octect,
+		ip_ttl     => 1*octect,
+		ip_proto   => 1*octect,
+		ip_chksum  => 2*octect,
+		ip_saddr   => 4*octect,
+		ip_daddr   => 4*octect);
 		
 	constant ip4_shdr : std_logic_vector := (
 		x"4500" &    -- Version, TOS
-		x"0000" &    -- Total Length
 		x"0000" &    -- Identification
 		x"0000" &    -- Fragmentation
 		x"0511" &    -- TTL, protocol
-		x"0000"    -- Header Checksum
 		); 
 
 end;

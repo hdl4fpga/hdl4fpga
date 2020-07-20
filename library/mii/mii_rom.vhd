@@ -36,7 +36,6 @@ entity mii_rom is
 		mii_treq : in  std_logic;
 		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
@@ -44,19 +43,17 @@ end;
 architecture def of mii_rom is
 
 	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
+	constant addr_length : natural := unsigned_num_bits(mem_size-1);
+	subtype addr_range is natural range 1 to addr_length;
 
-	subtype miibyte is std_logic_vector(mii_txd'range);
-	type miibyte_vector is array (natural range <>) of miibyte;
-
-	signal cntr : unsigned(0 to addr_size);
+	signal cntr : unsigned(0 to addr_length);
 
 begin
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq/='1' then
+			if mii_treq='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
 				if mii_tena='1' then
@@ -66,7 +63,6 @@ begin
 		end if;
 	end process;
 
-	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txen <= mii_treq and not cntr(0) and mii_tena;
 
@@ -74,6 +70,6 @@ begin
 	generic map (
 		bitrom => reverse(reverse(mem_data), mii_txd'length))
 	port map (
-		addr => std_logic_vector(cntr(1 to addr_size)),
+		addr => std_logic_vector(cntr(addr_range)),
 		data => mii_txd);
 end;
