@@ -155,6 +155,7 @@ class osd:
       self.file_open=1
       print("%d RD %s" % (self.reading_slide,filename))
     # file is open now
+    restore_pos=1
     must_close=0
     # if viewed slide has changed:
     if self.slide_shown[0] != self.prev_slide_shown:
@@ -171,13 +172,14 @@ class osd:
       for i in range(n):
         if dc==reading_slide:
           must_close=1
-          print("discard current loading")
+          restore_pos=0
         self.caches_pos[dc]=0
         self.caches_y_rd[dc]=0
         dc=(dc+1)%self.ncached
       # ... end discarding cache ...
     if must_close:
-      self.caches_pos[reading_slide]=self.bg_file.tell()
+      if restore_pos:
+        self.caches_pos[reading_slide]=self.bg_file.tell()
       self.bg_file.close()
       self.file_open=0
       self.reading_slide=self.slide_shown[0]
@@ -536,7 +538,7 @@ class osd:
     self.slide_pixels=self.xres*self.yres
     self.ncached=membytes//(self.slide_pixels*self.bpp//8)
     # DEBUG: force only 4 ncached (3 forward, 1 backward)
-    #self.ncached=6
+    self.ncached=6
     #print(self.ncached)
     self.nbackward=self.ncached*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncached-self.nbackward;
