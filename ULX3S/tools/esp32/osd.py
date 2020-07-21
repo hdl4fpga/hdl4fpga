@@ -1,6 +1,11 @@
 # micropython ESP32
 # OSD SPI loader
 
+# press 4 arrows, OSD will appear
+# navigate to SD directory with only *.h4f files
+# select one file and press right arrow
+# press left/right to switch slides
+
 # AUTHOR=EMARD
 # LICENSE=BSD
 
@@ -215,7 +220,11 @@ class osd:
       # finish if no more slides to read
       next_forward_slide=-1
       i=self.slide_shown[0]
-      n=i+self.nforward
+      over_end=self.slide_shown[0]-self.nbackward
+      if over_end<0:
+        n=i+self.nforward
+      else:
+        n=i+self.nforward+over_end
       if n>self.nfiles:
         n=self.nfiles
       while i<n:
@@ -226,7 +235,11 @@ class osd:
         i+=1
       next_backward_slide=-1
       i=self.slide_shown[0]-1
-      n=i-self.nbackward
+      over_end=self.slide_shown[0]+self.nforward-self.nfiles
+      if over_end<0:
+        n=i-self.nbackward
+      else:
+        n=i-self.nbackward-over_end
       if n<0:
         n=0
       while i>=n:
@@ -589,7 +602,7 @@ def peek(addr,length=1):
 def poke(addr,data):
   run.poke(addr,data)
 
-bitstream="/sd/hdl4fpga/bitstreams/ulx3s_12f_graphic_spi.bit"
+bitstream="/sd/hdl4fpga/bitstreams/ulx3s_85f_graphics_spi.bit"
 try:
   os.mount(SDCard(slot=3),"/sd")
   ecp5.prog(bitstream)
