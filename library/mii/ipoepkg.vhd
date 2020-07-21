@@ -76,16 +76,16 @@ package ipoepkg is
 	constant ip4_daddr   : natural :=  9;
 
 	constant ip4hdr_frame : natural_vector := (
-		ip_verihl  => 1*octect,
-		ip_tos     => 1*octect,
-		ip_len     => 2*octect,
-		ip_ident   => 2*octect,
-		ip_flgsfrg => 2*octect,
-		ip_ttl     => 1*octect,
-		ip_proto   => 1*octect,
-		ip_chksum  => 2*octect,
-		ip_saddr   => 4*octect,
-		ip_daddr   => 4*octect);
+		ip4_verihl  => 1*octect,
+		ip4_tos     => 1*octect,
+		ip4_len     => 2*octect,
+		ip4_ident   => 2*octect,
+		ip4_flgsfrg => 2*octect,
+		ip4_ttl     => 1*octect,
+		ip4_proto   => 1*octect,
+		ip4_chksum  => 2*octect,
+		ip4_saddr   => 4*octect,
+		ip4_daddr   => 4*octect);
 		
 	constant ip4_shdr : std_logic_vector := (
 		x"4500" &    -- Version, TOS
