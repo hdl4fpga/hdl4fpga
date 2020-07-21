@@ -75,31 +75,14 @@ begin
 		end if;
 	end process;
 
-
 	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
 	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
 	
 	ip4len_ena <= frame_decode(ip4_ptr, ip4_len, ip4hdr_frame, mii_rxd'length);
 
-	iplenlat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => iphdr_frame(ip_verihl)+iphdr_frame(ip_tos))
-	port map (
-		mii_txc => mii_txc,
-		lat_txd => cksm_rxd,
-		mii_txd => lenlat_txd);
-	
-	ipalat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => iphdr_frame(ip_verihl)+iphdr_frame(ip_tos))
-	port map (
-		mii_txc => mii_txc,
-		lat_txd => lenlat_txd,
-		mii_txd => ipalat_txd);
-	
 	ip4shr_tena <= frame_decode(
 		ip4_ptr,
-	   	natural_vector'(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto),
+	   	(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto),
 	   	ip4hdr_frame, 
 		mii_rxd'length);
 
@@ -113,6 +96,31 @@ begin
 		mii_txdv => ip4shdr_txdv,
 		mii_txd  => ip4shdr_txd);
 
+	iplenlat_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => 
+			iphdr_frame(ip_verihl)+
+			iphdr_frame(ip_tos))
+	port map (
+		mii_txc => mii_txc,
+		lat_txd => cksm_rxd,
+		mii_txd => lenlat_txd);
+	
+	ip4a_ena <= frame_decode( ip4_ptr, (ip4_sa, ip4_da), ip4hdr_frame, mii_rxd'length);
+
+	ipalat_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => 
+			iphdr_frame(ip4_ident)+
+			iphdr_frame(ip4_flgsfrg)+
+			iphdr_frame(ip4_ttl)+
+			iphdr_frame(ip4_proto)+
+			iphdr_frame(ip4_chksum))
+	port map (
+		mii_txc => mii_txc,
+		lat_txd => lenlat_txd,
+		mii_txd => ipalat_txd);
+	
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_init =>,
@@ -128,6 +136,6 @@ begin
 		cksm_txen => cksm_txdv,
 		cksm_txd  => cksm_txd);
 
-	ip4_txd <= wirebus (ip4shdr_txd & lenlat_txd & chksm_txd, ip4shdr_txdv & lenlat_txdv & cksm_txdv)
+	ip4_txd <= wirebus (ip4shdr_txd & lenlat_txd & ipalat_txd & chksm_txd, ip4shdr_txdv & lenlat_txdv & ip4a_txen & cksm_txdv)
 end;
 

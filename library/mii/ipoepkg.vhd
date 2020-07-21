@@ -72,8 +72,8 @@ package ipoepkg is
 	constant ip4_ttl     : natural :=  5;
 	constant ip4_proto   : natural :=  6;
 	constant ip4_chksum  : natural :=  7;
-	constant ip4_saddr   : natural :=  8;
-	constant ip4_daddr   : natural :=  9;
+	constant ip4_sa      : natural :=  8;
+	constant ip4_da      : natural :=  9;
 
 	constant ip4hdr_frame : natural_vector := (
 		ip4_verihl  => 1*octect,
@@ -84,8 +84,8 @@ package ipoepkg is
 		ip4_ttl     => 1*octect,
 		ip4_proto   => 1*octect,
 		ip4_chksum  => 2*octect,
-		ip4_saddr   => 4*octect,
-		ip4_daddr   => 4*octect);
+		ip4_sa      => 4*octect,
+		ip4_da      => 4*octect);
 		
 	constant ip4_shdr : std_logic_vector := (
 		x"4500" &    -- Version, TOS
