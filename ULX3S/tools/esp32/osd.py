@@ -160,11 +160,13 @@ class osd:
         must_close=1
       # discard those cached that will be replaced with new files
       if self.slide_shown[0] < self.prev_slide_shown:
-        dc=(self.slide_shown[0]+self.ncached-self.nbackward-1)%self.ncached
+        dc=(self.slide_shown[0]+self.ncached-self.nbackward)%self.ncached
         n=self.prev_slide_shown-self.slide_shown[0]
       else:
-        dc=(self.prev_slide_shown+self.nforward-1)%self.ncached
+        dc=(self.prev_slide_shown+self.nforward)%self.ncached
         n=self.slide_shown[0]-self.prev_slide_shown
+      # TODO: improve discarding condition,
+      # discarding this is not always neccessary
       for i in range(n):
         if dc==reading_slide:
           must_close=1
@@ -218,13 +220,18 @@ class osd:
       self.file_open=0
       # TODO priority reading: decide which slide is next
       # finish if no more slides to read
+      before_first=self.nbackward-self.slide_shown[0]
+      if before_first<0:
+        before_first=0
+      after_last=self.slide_shown[0]+self.nforward-self.nfiles
+      if after_last<0:
+        after_last=0
+      print("before_first=%d after_last=%d" % (before_first,after_last))
       next_forward_slide=-1
       i=self.slide_shown[0]
-      over_end=self.slide_shown[0]-self.nbackward
-      if over_end<0:
-        n=i+self.nforward
-      else:
-        n=i+self.nforward+over_end
+      n=i+self.nforward+before_first-after_last
+      if n<0:
+        n=0
       if n>self.nfiles:
         n=self.nfiles
       while i<n:
@@ -235,13 +242,11 @@ class osd:
         i+=1
       next_backward_slide=-1
       i=self.slide_shown[0]-1
-      over_end=self.slide_shown[0]+self.nforward-self.nfiles
-      if over_end<0:
-        n=i-self.nbackward
-      else:
-        n=i-self.nbackward-over_end
+      n=i-self.nbackward-after_last+before_first
       if n<0:
         n=0
+      if n>self.nfiles:
+        n=self.nfiles
       while i>=n:
         ic=i%self.ncached
         if self.caches_y_rd[ic]<self.caches_y[ic]:
