@@ -1,0 +1,10 @@
+cache optimization:
+remember parts of the image to speed up refill,
+and for refill to be more efficient (not to reload whole pic if not needed)
+
+part_top_img: index
+part_top_y:   from 0 to y-1 valid content
+
+part_bot_img: index
+part_bot_y:   from y to bottom valid content
+
