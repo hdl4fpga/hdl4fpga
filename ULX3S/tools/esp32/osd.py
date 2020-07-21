@@ -101,8 +101,6 @@ class osd:
           if btn==65: # btn6 cursor right
             self.select_entry()
         else:
-          if btn==9: # btn3 cursor up
-            self.start_bgreader()
           p8slide = ptr8(addressof(self.slide_shown))
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
