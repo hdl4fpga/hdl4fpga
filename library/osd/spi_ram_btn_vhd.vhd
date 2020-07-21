@@ -18,7 +18,7 @@ entity spi_ram_btn_vhd is
   (
     clk             : in    std_logic;
     csn, sclk, mosi : in    std_logic;
-    miso            : inout std_logic;
+    miso            : out   std_logic;
     btn             : in    std_logic_vector(6 downto 0);
     irq             : out   std_logic;
     rd, wr          : out   std_logic;
@@ -42,7 +42,7 @@ architecture syn of spi_ram_btn_vhd is
   (
     clk             : in    std_logic;
     csn, sclk, mosi : in    std_logic;
-    miso            : inout std_logic;
+    miso            : out   std_logic;
     btn             : in    std_logic_vector(6 downto 0);
     irq             : out   std_logic;
     rd, wr          : out   std_logic;
