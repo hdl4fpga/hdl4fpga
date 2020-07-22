@@ -32,7 +32,8 @@ use hdl4fpga.std.all;
 
 entity ipoe is
 	generic (
-		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		ip4a_size : natural := 32;
+		ip4a_data : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc  : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
@@ -40,7 +41,7 @@ entity ipoe is
 
 		mii_txc  : in  std_logic;
 		mii_txd  : out std_logic_vector;
-		mii_txdv : out std_logic;
+		mii_txdv : out std_logic);
 
 end;
 
@@ -50,8 +51,6 @@ architecture def of ipoe is
 	signal eth_bcst : std_logic;
 	signal eth_macd : std_logic;
 	signal arp_req  : std_logic;
-	signal mii_txdv : std_logic;
-	signal mii_txd  : std_logic;
 	signal mii_tena : std_logic;
 	signal mii_treq : std_logic;
 	signal mii_trdy : std_logic;

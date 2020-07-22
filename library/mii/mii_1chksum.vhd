@@ -31,13 +31,12 @@ use hdl4fpga.std.all;
 entity mii_1chksum is
 	generic (
 		chksum_size : natural;
-		chksum_init : natural := 0);
+		chksum_init : std_logic_vector);
 	port (
-		mii_rxc   : in  std_logic;
-		cksm_rxdv : in  std_logic;
-		cksm_rxd  : in  std_logic_vector;
-
 		mii_txc   : in  std_logic;
+		mii_txen  : in  std_logic;
+		mii_txd   : in  std_logic_vector;
+
 		cksm_treq : in  std_logic;
 		cksm_trdy : out std_logic;
 		cksm_txen : out std_logic;
@@ -48,22 +47,22 @@ architecture beh of mii_1chksum is
 	signal chksum : unsigned(0 to chksum_size-1);
 begin
 
-	process (mii_rxc)
+	process (mii_txc)
 		variable cy  : unsigned(0 to 0);
-		variable add : unsigned(0 to cksm_rxd'length);
+		variable add : unsigned(0 to mii_txd'length);
 		variable acc : unsigned(chksum'range);
 	begin
-		if rising_edge(mii_rxc) then
-			if cksm_rxdv='0' then
-				acc := to_unsigned(chksum_init, chksum_size);
+		if rising_edge(mii_txc) then
+			if mii_txen='0' then
+				acc := unsigned(chksum_init);
 				cy  := (others => '0');
 			else
 				acc := chksum;
-				add := unsigned'('0' & unsigned(cksm_rxd)) + unsigned'('0' & acc(cksm_rxd'reverse_range));
+				add := unsigned'('0' & unsigned(mii_txd)) + unsigned'('0' & acc(mii_txd'reverse_range));
 				cy  := add(0 to 0);
-				acc(cksm_rxd'range) := add(1 to cksm_rxd'length);
-				acc := acc ror cksm_rxd'length;
-				acc := acc(cksm_rxd'reverse_range) + cy;
+				acc(mii_txd'range) := add(1 to mii_txd'length);
+				acc := acc ror mii_txd'length;
+				acc := acc(mii_txd'reverse_range) + cy;
 			end if;
 			chksum <= acc;
 		end if;

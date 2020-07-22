@@ -94,6 +94,10 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 
+	function summation (
+		constant elements : natural_vector)
+		return natural;
+
 	function push_left (
 		constant queue   : std_logic_vector;
 		constant element : std_logic_vector)
@@ -641,6 +645,18 @@ package body std is
 			aux:= std_logic_vector(unsigned(aux) rol size);
 		end loop;
 		return aux;
+	end;
+
+	function summation (
+		constant elements : natural_vector)
+		return natural is
+		variable retval : natural;
+	begin
+		retval := 0;
+		for i in elements'range loop
+			retval := retval + elements(i);
+		end loop;
+		return retval;
 	end;
 
 	function push_left (

@@ -63,7 +63,7 @@ begin
 		mii_equ  => llc_equ);
 
 	tpa_req <= llc_equ and eth_bcst;
-	arp_field <= eth_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length);
+	arp_field <= frame_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length);
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
 		mem_size => arp_frame(arp_tpa),
