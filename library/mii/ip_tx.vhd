@@ -75,9 +75,6 @@ begin
 		end if;
 	end process;
 
-	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
-	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
-	
 	ip4len_ena <= frame_decode(ip4_ptr, ip4_len, ip4hdr_frame, mii_rxd'length);
 
 	ip4shr_tena <= frame_decode(
@@ -121,6 +118,12 @@ begin
 		lat_txd => lenlat_txd,
 		mii_txd => ipalat_txd);
 	
+	ip4len_treq <= pl_txen;
+	ip4sa_treq  <= ip4len_trdy;
+	ip4da_treq  <= ip4sa_treq;
+
+	cksm_rxd  <= wirebus(iplen_txd & ipsa_txd & ipda_txd, iplen_txen & ipsa_txen & ipda_txen);
+	cksm_rxdv <= iplen_txen & ipsa_txen & ipda_txen;
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_init =>,
