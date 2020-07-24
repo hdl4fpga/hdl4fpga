@@ -186,7 +186,7 @@ begin
 	ip4sa_treq  <= ip4len_trdy;
 	ip4da_treq  <= ip4sa_trdy;
 
-	cksm_txd  <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd & pllat_txd, ip4len_txen & ip4sa_txen & ip4da_txen & pllat_txen);
+	cksm_txd  <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
 	cksm_txen <= ip4len_txen or ip4sa_txen or ip4da_txen;
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
