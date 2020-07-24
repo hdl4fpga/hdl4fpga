@@ -54,12 +54,13 @@ entity ip_tx is
 		ip4da_txen : in  std_logic;
 		ip4da_txd  : in  std_logic_vector;
 
-		ip4_txen : out std_logic;
+		ip4_txen : buffer std_logic;
 		ip4_txd  : out std_logic_vector);
 end;
 
 architecture def of ip_tx is
 
+	signal pl_treq      : std_logic;
 	signal ip4_ptr      : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)-1));
 	signal ip4shdr_trdy : std_logic;
 	signal ip4shdr_treq : std_logic;
@@ -72,12 +73,27 @@ architecture def of ip_tx is
 	signal cksmd_treq   : std_logic;
 	signal cksmd_txd    : std_logic_vector(ip4_txd'range);
 	signal cksmd_txen   : std_logic;
+	signal pllat_txd    : std_logic_vector(ip4_txd'range);
+	signal pllat_txen   : std_logic;
 	signal lenlat_txd   : std_logic_vector(ip4_txd'range);
 	signal lenlat_txen  : std_logic;
 	signal ip4alat_txd  : std_logic_vector(ip4_txd'range);
 	signal ip4alat_txen : std_logic;
 
 begin
+
+	process (pl_txen, mii_txc)
+		variable q : std_logic;
+	begin
+		if rising_edge(mii_txc) then
+			if pl_txen='1' then
+				q := '1';
+			elsif ip4_txen='1' then
+				q := '0';
+			end if;
+		end if;
+		pl_treq <= pl_txen or q or ip4_txen;
+	end process;
 
 	process (mii_txc)
 	begin
@@ -90,8 +106,6 @@ begin
 		end if;
 	end process;
 
-	lenlat_txen <= frame_decode(ip4_ptr, ip4_len, ip4hdr_frame, ip4_txd'length);
-
 	ip4shdr_tena <= frame_decode(
 		ip4_ptr,
 	   	(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto),
@@ -103,42 +117,76 @@ begin
 		mem_data => ip4_shdr)
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pl_txen,
+		mii_treq => pl_treq,
 		mii_tena => ip4shdr_tena,
 		mii_trdy => ip4shdr_trdy,
 		mii_txen => ip4shdr_txen,
 		mii_txd  => ip4shdr_txd);
 
-	iplenlat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => 
-			ip4hdr_frame(ip4_verihl)+
-			ip4hdr_frame(ip4_tos))
-	port map (
-		mii_txc => mii_txc,
-		lat_txd => cksm_txd,
-		mii_txd => lenlat_txd);
-	
-	ip4alat_txen <= frame_decode( ip4_ptr, (ip4_sa, ip4_da), ip4hdr_frame, ip4_txd'length);
+	lat_b : block
+		signal 
+	begin
+		pllat_e : entity hdl4fpga.mii_latency
+		generic map (
+			latency => 
+				sumation(ip4hdr_frame)
+				-ip4hdr_frame(ip4_ip4len)
+				-ip4hdr_frame(ip4_ip4sa)
+				-ip4hdr_frame(ip4_ip4da))
+		port map (
+			mii_txc  => mii_txc,
+			lat_txen => pl_txen
+			lat_txd  => pl_txd,
+			mii_txen => pllat_txen,
+			mii_txd  => pllat_txd);
+		
+		iplenlat_e : entity hdl4fpga.mii_latency
+		generic map (
+			latency => 
+				ip4hdr_frame(ip4_verihl)+
+				ip4hdr_frame(ip4_tos))
+		port map (
+			mii_txc  => mii_txc,
+			lat_txen => pl_txen,
+			lat_txd  => cksm_txd,
+			mii_txen => lenlat_txen,
+			mii_txd  => lenlat_txd);
 
-	ipalat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => 
-			ip4hdr_frame(ip4_ident)+
-			ip4hdr_frame(ip4_flgsfrg)+
-			ip4hdr_frame(ip4_ttl)+
-			ip4hdr_frame(ip4_proto)+
-			ip4hdr_frame(ip4_chksum))
-	port map (
-		mii_txc => mii_txc,
-		lat_txd => lenlat_txd,
-		mii_txd => ip4alat_txd);
+		ipalat_e : entity hdl4fpga.mii_latency
+		generic map (
+			latency => 
+				ip4hdr_frame(ip4_ident)+
+				ip4hdr_frame(ip4_flgsfrg)+
+				ip4hdr_frame(ip4_ttl)+
+				ip4hdr_frame(ip4_proto)+
+				ip4hdr_frame(ip4_chksum))
+		port map (
+			mii_txc  => mii_txc,
+			lat_txd  => lenlat_txd,
+			mii_txen => ip4alat_txen,
+			mii_txd  => ip4alat_txd);
+		
+		pllat_e : entity hdl4fpga.mii_latency
+		generic map (
+			latency => 
+				sumation(ip4hdr_frame)
+				-ip4hdr_frame(ip4_ip4len)
+				-ip4hdr_frame(ip4_ip4sa)
+				-ip4hdr_frame(ip4_ip4da))
+		port map (
+			mii_txc  => mii_txc,
+			lat_txen => pl_txen
+			lat_txd  => pl_txd,
+			mii_txen => pllat_txen,
+			mii_txd  => pllat_txd);
+		
+	end block;
 	
 	ip4len_treq <= pl_txen;
 	ip4sa_treq  <= ip4len_trdy;
 	ip4da_treq  <= ip4sa_trdy;
 
-	cksm_txd  <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
+	cksm_txd  <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd & pllat_txd, ip4len_txen & ip4sa_txen & ip4da_txen & pllat_txen);
 	cksm_txen <= ip4len_txen or ip4sa_txen or ip4da_txen;
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
@@ -154,7 +202,7 @@ begin
 		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
-	ip4_txd  <= wirebus(ip4shdr_txd & lenlat_txd & ip4alat_txd & cksmd_txd, ip4shdr_txen & lenlat_txen & ip4alat_txen & cksmd_txen);
-	ip4_txen <= ip4shdr_txen or lenlat_txen or ip4alat_txen or cksmd_txen;
+	ip4_txd  <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & ip4alat_txd, ip4shdr_txen & lenlat_txen & ip4alat_txen & cksmd_txen);
+	ip4_txen <= ip4shdr_txen or lenlat_txen or cksmd_txen or ip4alat_txen;
 end;
 
