@@ -67,18 +67,31 @@ architecture struct of mii_debug is
 	signal arp_req   : std_logic;
 	signal pl_rxdv   : std_logic;
 
-	signal arp_treq  : std_logic;
+	signal arp_treq  : std_logic :='0';
 	signal arp_trdy  : std_logic;
 	signal arp_txen  : std_logic;
 	signal arp_txd   : std_logic_vector(mii_txd'range);
 
+	signal ip4_txen  : std_logic;
+	signal ip4_txd   : std_logic_vector(mii_txd'range);
+
 	signal pl_txen   : std_logic;
 	signal pl_txd    : std_logic_vector(mii_txd'range);
 
-	signal ipsa_treq : std_logic;
-	signal ipsa_trdy : std_logic;
-	signal ipsa_txen : std_logic;
-	signal ipsa_txd  : std_logic_vector(arp_txd'range);
+	signal ip4len_treq : std_logic;
+	signal ip4len_trdy : std_logic;
+	signal ip4len_txen : std_logic;
+	signal ip4len_txd  : std_logic_vector(arp_txd'range);
+
+	signal ip4da_treq : std_logic;
+	signal ip4da_trdy : std_logic;
+	signal ip4da_txen : std_logic;
+	signal ip4da_txd  : std_logic_vector(arp_txd'range);
+
+	signal ip4sa_treq : wor std_logic;
+	signal ip4sa_trdy : std_logic;
+	signal ip4sa_txen : std_logic;
+	signal ip4sa_txd  : std_logic_vector(arp_txd'range);
 
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
@@ -112,33 +125,71 @@ begin
 		eth_txen => mii_txen,
 		eth_txd  => mii_txd);
 
-	ipsa_e : entity hdl4fpga.mii_ram
-	generic map (
-		mem_data => reverse(x"c0_a8_00_0e",8))
+	iplen_e : entity hdl4fpga.mii_mux
 	port map (
-		mii_rxc  => mii_rxc,
-        mii_rxdv => '0',
-        mii_rxd  => mii_rxd,
-
+		mux_data => reverse(x"0000",8),
         mii_txc  => mii_txc,
-		mii_treq => ipsa_treq,
-		mii_trdy => ipsa_trdy,
-        mii_txen => ipsa_txen,
-        mii_txd  => ipsa_txd);
+		mii_treq => ip4len_treq,
+		mii_trdy => ip4len_trdy,
+        mii_txen => ip4len_txen,
+        mii_txd  => ip4len_txd);
+		
+	ipsa_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => reverse(x"c0_a8_00_0e",8),
+        mii_txc  => mii_txc,
+		mii_treq => ip4sa_treq,
+		mii_trdy => ip4sa_trdy,
+        mii_txen => ip4sa_txen,
+        mii_txd  => ip4sa_txd);
+		
+	ipda_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => reverse(x"c0_a8_00_0e",8),
+        mii_txc  => mii_txc,
+		mii_treq => ip4da_treq,
+		mii_trdy => ip4da_trdy,
+        mii_txen => ip4da_txen,
+        mii_txd  => ip4da_txd);
 		
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_txc   => mii_txc,
 
-		ipsa_treq => ipsa_treq,
-		ipsa_trdy => ipsa_trdy,
-		ipsa_txen => ipsa_txen,
-		ipsa_txd  => ipsa_txd,
+		ipsa_treq => ip4sa_treq,
+		ipsa_trdy => ip4sa_trdy,
+		ipsa_txen => ip4sa_txen,
+		ipsa_txd  => ip4sa_txd,
 
 		arp_treq  => arp_treq,
 		arp_trdy  => arp_trdy,
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
+
+	iptx_e : entity hdl4fpga.ip_tx
+	port map (
+		mii_txc   => mii_txc,
+
+		pl_txen   => pl_txen,
+		pl_txd    => pl_txd,
+
+		ip4len_treq => ip4len_treq,
+		ip4len_trdy => ip4len_trdy,
+		ip4len_txen => ip4len_txen,
+		ip4len_txd  => ip4len_txd,
+                                 
+		ip4sa_treq  => ip4sa_treq,
+		ip4sa_trdy  => ip4sa_trdy,
+		ip4sa_txen  => ip4sa_txen,
+		ip4sa_txd   => ip4sa_txd,
+                                 
+		ip4da_treq  => ip4da_treq,
+		ip4da_trdy  => ip4da_trdy,
+		ip4da_txen  => ip4da_txen,
+		ip4da_txd   => ip4da_txd,
+
+		ip4_txen    => ip4_txen,
+		ip4_txd     => ip4_txd);
 
 	txc_sync_b : block
 		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
@@ -165,9 +216,11 @@ begin
 			if rising_edge(mii_txc) then
 				if arp_trdy='1' then
 					arp_treq <= '0';
+					pl_txen  <= '0';
 				elsif txc_rxd(mii_rxd'length)='0' then
 					if treq='1' then
-						arp_treq <= '1';
+						pl_txen  <= '1';
+--						arp_treq <= '1';
 					end if;
 				end if;
 				treq := txc_rxd(mii_rxd'length);
