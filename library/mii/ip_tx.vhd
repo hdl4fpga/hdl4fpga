@@ -79,6 +79,8 @@ architecture def of ip_tx is
 	signal lenlat_txen  : std_logic;
 	signal ip4alat_txd  : std_logic_vector(ip4_txd'range);
 	signal ip4alat_txen : std_logic;
+	signal lat_txd      : std_logic_vector(ip4_txd'range);
+	signal lat_txen     : std_logic;
 
 begin
 
@@ -124,22 +126,24 @@ begin
 		mii_txd  => ip4shdr_txd);
 
 	lat_b : block
-		signal 
 	begin
+		
 		pllat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
-				sumation(ip4hdr_frame)
-				-ip4hdr_frame(ip4_ip4len)
-				-ip4hdr_frame(ip4_ip4sa)
-				-ip4hdr_frame(ip4_ip4da))
+				summation(ip4hdr_frame)
+				-ip4hdr_frame(ip4_len)
+				-ip4hdr_frame(ip4_sa)
+				-ip4hdr_frame(ip4_da))
 		port map (
 			mii_txc  => mii_txc,
-			lat_txen => pl_txen
+			lat_txen => pl_txen,
 			lat_txd  => pl_txd,
 			mii_txen => pllat_txen,
 			mii_txd  => pllat_txd);
 		
+		lat_txd  <= wirebus(cksm_txd & pllat_txd, cksm_txen & pllat_txen);
+		lat_txen <= cksm_txen or pllat_txen;
 		iplenlat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
@@ -147,8 +151,8 @@ begin
 				ip4hdr_frame(ip4_tos))
 		port map (
 			mii_txc  => mii_txc,
-			lat_txen => pl_txen,
-			lat_txd  => cksm_txd,
+			lat_txen => lat_txen,
+			lat_txd  => lat_txd,
 			mii_txen => lenlat_txen,
 			mii_txd  => lenlat_txd);
 
@@ -162,23 +166,10 @@ begin
 				ip4hdr_frame(ip4_chksum))
 		port map (
 			mii_txc  => mii_txc,
+			lat_txen => lenlat_txen,
 			lat_txd  => lenlat_txd,
 			mii_txen => ip4alat_txen,
 			mii_txd  => ip4alat_txd);
-		
-		pllat_e : entity hdl4fpga.mii_latency
-		generic map (
-			latency => 
-				sumation(ip4hdr_frame)
-				-ip4hdr_frame(ip4_ip4len)
-				-ip4hdr_frame(ip4_ip4sa)
-				-ip4hdr_frame(ip4_ip4da))
-		port map (
-			mii_txc  => mii_txc,
-			lat_txen => pl_txen
-			lat_txd  => pl_txd,
-			mii_txen => pllat_txen,
-			mii_txd  => pllat_txd);
 		
 	end block;
 	
