@@ -77,6 +77,7 @@ architecture struct of mii_debug is
 
 	signal pl_txen   : std_logic;
 	signal pl_txd    : std_logic_vector(mii_txd'range);
+	signal mii_trdy  : std_logic;
 
 	signal ip4len_treq : std_logic;
 	signal ip4len_trdy : std_logic;
@@ -116,14 +117,6 @@ begin
 		eth_ptr  => eth_ptr,
 		eth_bcst => eth_bcst,
 		arp_req  => arp_req);
-
-	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_txc  => mii_txc,
-		pl_txen  => arp_txen,
-		pl_txd   => arp_txd,
-		eth_txen => mii_txen,
-		eth_txd  => mii_txd);
 
 	iplen_e : entity hdl4fpga.mii_mux
 	port map (
@@ -166,6 +159,16 @@ begin
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
 
+	ip4pl_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => x"12345678")
+	port map (
+		mii_txc  => mii_txc,
+		mii_treq => mii_treq,
+		mii_trdy => mii_trdy,
+		mii_txen => pl_txen,
+		mii_txd  => pl_txd);
+
 	iptx_e : entity hdl4fpga.ip_tx
 	port map (
 		mii_txc   => mii_txc,
@@ -190,6 +193,14 @@ begin
 
 		ip4_txen    => ip4_txen,
 		ip4_txd     => ip4_txd);
+
+	ethtx_e : entity hdl4fpga.eth_tx
+	port map (
+		mii_txc  => mii_txc,
+		pl_txen  => arp_txen,
+		pl_txd   => arp_txd,
+		eth_txen => mii_txen,
+		eth_txd  => mii_txd);
 
 	txc_sync_b : block
 		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
@@ -216,11 +227,10 @@ begin
 			if rising_edge(mii_txc) then
 				if arp_trdy='1' then
 					arp_treq <= '0';
-					pl_txen  <= '0';
 				elsif txc_rxd(mii_rxd'length)='0' then
 					if treq='1' then
-						pl_txen  <= '1';
---						arp_treq <= '1';
+						arp_treq <= '1';
+						arp_treq <= '0';
 					end if;
 				end if;
 				treq := txc_rxd(mii_rxd'length);
@@ -231,20 +241,6 @@ begin
 		display_txen <= mii_txen or txc_rxd(mii_rxd'length);
 
 	end block;
-
-		process (mii_txc)
-			variable treq : std_logic;
-		begin
-			if rising_edge(mii_txc) then
-				if arp_trdy='1' then
-					pl_txen  <= '0';
-				elsif txc_rxd(mii_rxd'length)='0' then
-					if treq='1' then
-						pl_txen  <= '1';
-					end if;
-				end if;
-			end if;
-		end process;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
