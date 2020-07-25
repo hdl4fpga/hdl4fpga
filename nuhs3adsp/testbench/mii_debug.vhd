@@ -137,8 +137,8 @@ architecture nuhs3adsp_miidebug of testbench is
 			mii_mdio : inout std_logic := 'Z';
 
 			mii_txc  : in  std_logic := 'Z';
-			mii_txen : out std_logic := 'Z';
-			mii_txd  : out std_logic_vector(0 to 4-1) := (others => 'Z');
+			mii_txen : buffer std_logic := 'Z';
+			mii_txd  : buffer std_logic_vector(0 to 4-1) := (others => 'Z');
 
 			mii_rxc  : in std_logic := 'Z';
 			mii_rxdv : in std_logic := 'Z';
