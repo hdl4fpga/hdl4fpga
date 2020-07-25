@@ -232,6 +232,20 @@ begin
 
 	end block;
 
+		process (mii_txc)
+			variable treq : std_logic;
+		begin
+			if rising_edge(mii_txc) then
+				if arp_trdy='1' then
+					pl_txen  <= '0';
+				elsif txc_rxd(mii_rxd'length)='0' then
+					if treq='1' then
+						pl_txen  <= '1';
+					end if;
+				end if;
+			end if;
+		end process;
+
 	mii_display_e : entity hdl4fpga.mii_display
 	generic map (
 		timing_id   => timing_id,
