@@ -136,9 +136,9 @@ begin
 		end if;
 	end process;
 
-	video_addr <= std_logic_vector(
+	video_addr <= std_logic_vector(resize(
 		(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
-		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)));
+		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)), video_addr'length));
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
