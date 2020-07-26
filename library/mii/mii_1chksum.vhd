@@ -58,11 +58,11 @@ begin
 				cy  := (others => '0');
 			else
 				acc := chksum;
-				add := unsigned'('0' & unsigned(mii_txd)) + unsigned'('0' & acc(mii_txd'reverse_range));
+				add := unsigned'('0' & unsigned(mii_txd)) + unsigned'('0' & acc(mii_txd'range));
 				cy  := add(0 to 0);
 				acc(mii_txd'range) := add(1 to mii_txd'length);
 				acc := acc ror mii_txd'length;
-				acc := acc(mii_txd'reverse_range) + cy;
+				acc(mii_txd'range) := acc(mii_txd'range) + cy;
 			end if;
 			chksum <= acc;
 		end if;
