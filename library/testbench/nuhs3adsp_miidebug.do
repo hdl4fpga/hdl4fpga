@@ -34,6 +34,9 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/pl_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_treq
+add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_trdy
+add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4sa_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4sa_trdy
@@ -44,10 +47,14 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4shdr_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/lenlat_txen
+add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/iptx_e/lenlat_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4alat_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2966229 ps} 0} {{Cursor 2} {3766304 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {1408996 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -62,4 +69,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1040744 ps} {6491864 ps}
+WaveRestoreZoom {727604 ps} {2090388 ps}

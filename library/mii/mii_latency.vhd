@@ -53,7 +53,8 @@ begin
 	txd_e : entity hdl4fpga.align
 	generic map (
 		n => mii_txd'length,
-		d => (0 to mii_txd'length-1 => latency/mii_txd'length))
+		d => (0 to mii_txd'length-1 => latency/mii_txd'length),
+		i => (0 to mii_txd'length-1 => '0'))
 	port map (
 		clk => mii_txc,
 		di => lat_txd,
@@ -62,7 +63,8 @@ begin
 	txdv_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => latency/mii_txd'length))
+		d => (0 to 0 => latency/mii_txd'length),
+		i => (0 to 0 => '0'))
 	port map (
 		clk   => mii_txc,
 		di(0) => lat_txen,

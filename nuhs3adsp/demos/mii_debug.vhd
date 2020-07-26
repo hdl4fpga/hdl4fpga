@@ -63,7 +63,7 @@ architecture mii_debug of nuhs3adsp is
 	constant video_mode : video_modes := mode600p;
 
 	signal mii_clk  : std_logic;
-	signal mii_treq : std_logic;
+	signal mii_treq : std_logic := '0';
 
 begin
 

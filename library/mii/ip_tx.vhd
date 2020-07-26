@@ -85,7 +85,7 @@ architecture def of ip_tx is
 begin
 
 	process (pl_txen, mii_txc)
-		variable q : std_logic;
+		variable q : std_logic := '0';
 	begin
 		if rising_edge(mii_txc) then
 			if pl_txen='1' then
@@ -94,13 +94,13 @@ begin
 				q := '0';
 			end if;
 		end if;
-		pl_treq <= pl_txen or q or ip4_txen;
+		pl_treq <= not setif((pl_txen or q or ip4_txen) /= '1');
 	end process;
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if pl_txen='0' then
+			if pl_treq='0' then
 				ip4_ptr <= (others => '0');
 			elsif ip4_ptr(0)='0' then
 				ip4_ptr <= ip4_ptr + 1;
@@ -116,7 +116,7 @@ begin
 
 	miiip4shdr_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => ip4_shdr)
+		mem_data => reverse(ip4_shdr,8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pl_treq,
@@ -173,7 +173,7 @@ begin
 		
 	end block;
 	
-	ip4len_treq <= pl_txen;
+	ip4len_treq <= pl_treq;
 	ip4sa_treq  <= ip4len_trdy;
 	ip4da_treq  <= ip4sa_trdy;
 
@@ -193,7 +193,7 @@ begin
 		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
-	ip4_txd  <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & ip4alat_txd, ip4shdr_txen & lenlat_txen & ip4alat_txen & cksmd_txen);
+	ip4_txd  <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & ip4alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & ip4alat_txen);
 	ip4_txen <= ip4shdr_txen or lenlat_txen or cksmd_txen or ip4alat_txen;
 end;
 
