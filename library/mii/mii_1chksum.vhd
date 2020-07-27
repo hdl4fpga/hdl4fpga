@@ -38,6 +38,7 @@ entity mii_1chksum is
 		mii_txd   : in  std_logic_vector;
 
 		cksm_treq : in  std_logic;
+		cksm_tena : in  std_logic := '1';
 		cksm_trdy : out std_logic;
 		cksm_txen : out std_logic;
 		cksm_txd  : out std_logic_vector);
@@ -74,6 +75,7 @@ begin
         mii_txc  => mii_txc,
 		mii_treq => cksm_treq,
 		mii_trdy => cksm_trdy,
+        mii_tena => cksm_tena,
         mii_txen => cksm_txen,
         mii_txd  => cksm_txd);
 

@@ -33,6 +33,7 @@ entity mii_mux is
 		mux_data : in  std_logic_vector;
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
+		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
@@ -50,7 +51,7 @@ begin
 	report "Length of mux_data is not a multiple of power of 2 of length of mii_txd"
 	severity FAILURE;
 
-	process (mii_treq, mii_txc)
+	process (mii_treq, mii_tena, mii_txc)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(mii_txc) then
@@ -59,12 +60,14 @@ begin
 			elsif mii_treq='0' then
 				cntr := (others => '0');
 			elsif cntr(0)='0' then
-				cntr := cntr + 1;
+				if mii_tena='1' then
+					cntr := cntr + 1;
+				end if;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
 		mii_trdy <= mii_treq and cntr(0);
-		mii_txen <= mii_treq and not cntr(0);
+		mii_txen <= mii_treq and mii_tena and not cntr(0);
 	end process;
 
 	mii_txd <= 
