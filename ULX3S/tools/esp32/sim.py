@@ -106,14 +106,15 @@ class demo:
     print("")
     cvi=self.vi%self.ncache
     for i in range(self.ncache):
-      mark="      "
+      #     1234567
+      mark="       "
       if i==dci:
-        mark="%2s^^^" % (i)
+        mark=" %2s^^^ " % (i)
       if i==cvi:
-        mark="%2d===" % (self.vi)
+        mark=" %2d=== " % (self.vi)
       if i==rdi:
-        mark=mark[0:4]+"*"
-      print(" %5s" % (mark),end="")
+        mark="*"+mark[1:]
+      print(mark,end="")
     print("")
 
 run=demo()
