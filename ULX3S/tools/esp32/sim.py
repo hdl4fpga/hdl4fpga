@@ -37,7 +37,7 @@ class demo:
   def next_to_discard(self):
     return (self.vi+self.nforward-1)%self.ncache
 
-  # consider priority
+  # choose next, ordered by priority
   def next_to_read(self):
     before_first=self.nbackward-self.vi
     if before_first<0:
@@ -89,6 +89,7 @@ class demo:
           next_reading_slide=next_backward_slide
     return next_reading_slide
 
+  # which image to replace after a move
   def replace(self,mv):
     dc_replace=-1
     if mv>0:
@@ -101,12 +102,14 @@ class demo:
         dc_replace+=self.ncache
     return dc_replace
 
+  # move with discarding images in cache
   def move(self,mv):
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.vi+=mv
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
 
+  # background read, call it periodically
   def bgreader(self):
     if self.rdi<0:
       return
@@ -114,6 +117,7 @@ class demo:
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
       self.cache_ti[rdi]=self.cache_li[rdi]
       self.cache_ty[rdi]=0
+      # if bottom part is already in cache, reduce tyend
       if self.cache_bi[rdi]==self.cache_ti[rdi]:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
@@ -128,6 +132,7 @@ class demo:
       self.cache_by[rdi]=0
       self.rdi=self.next_to_read()
 
+  # visualize current cache content
   def view(self):
     dci=self.next_to_discard()
     rdi=self.rdi%self.ncache
@@ -142,7 +147,6 @@ class demo:
     print("")
     cvi=self.vi%self.ncache
     for i in range(self.ncache):
-      #     1234567
       mark="       "
       if i==dci:
         mark=" %2s^^^ " % (i)
@@ -172,10 +176,6 @@ while(True):
     if event.key == pygame.K_ESCAPE or event.key == pygame.K_PAUSE or event.key == pygame.K_q:
       print("QUIT")
       break
-    if event.key == pygame.K_0:
-      print(0) # black
-    if event.key == pygame.K_1:
-      print(1) # red
     if event.key == pygame.K_SPACE: # time passes
       run.bgreader()
       run.view()
@@ -187,6 +187,6 @@ while(True):
       if run.vi<run.nslides-1:
         run.move(1)
         run.view()
-  if event.type == pygame.USEREVENT: # NOTE TIMER
+  if event.type == pygame.USEREVENT: # TIMER
     run.bgreader()
     run.view()
