@@ -6,7 +6,6 @@ import pygame
 
 class demo:
   def __init__(self):
-    print("a")
     self.nslides=10 # number images to be displayed
     self.ncache=5 # number of images that can fit in cache
     self.xres=80 # screen hor resolution
@@ -53,6 +52,7 @@ pygame.display.flip()
 #pygame.event.set_grab(True)
 pygame.mouse.set_visible(False)
 font = pygame.font.SysFont('DSEG14 Classic', height)
+pygame.time.set_timer(pygame.USEREVENT,1000)
 
 while(True):
   event = pygame.event.wait()
@@ -74,3 +74,5 @@ while(True):
       if run.vi<run.nslides:
         run.vi+=1
         run.view()
+  if event.type == pygame.USEREVENT: # NOTE TIMER
+    run.view()
