@@ -47,16 +47,16 @@ package ethpkg is
 
 	function frame_decode (
 		constant ptr   : unsigned;
-		constant field : natural;
 		constant frame : natural_vector;
-		constant size  : natural)
+		constant size  : natural;
+		constant field : natural)
 		return std_logic;
 
 	function frame_decode (
 		constant ptr    : unsigned;
-		constant fields : natural_vector;
 		constant frame  : natural_vector;
-		constant size   : natural)
+		constant size   : natural;
+		constant fields : natural_vector)
 		return std_logic;
 
 end;
@@ -87,9 +87,9 @@ package body ethpkg is
 
 	function frame_decode (
 		constant ptr   : unsigned;
-		constant field : natural;
 		constant frame : natural_vector;
-		constant size  : natural)
+		constant size  : natural;
+		constant field : natural)
 		return std_logic is
 		variable retval : std_logic;
 		variable sumup  : natural;
@@ -110,16 +110,16 @@ package body ethpkg is
 
 	function frame_decode (
 		constant ptr    : unsigned;
-		constant fields : natural_vector;
 		constant frame  : natural_vector;
-		constant size   : natural)
+		constant size   : natural;
+		constant fields : natural_vector)
 		return std_logic is
 		variable retval : std_logic;
 		variable sumup  : natural;
 	begin
 		retval := '0';
 		for i in fields'range loop
-			retval := retval or frame_decode(ptr, fields(i), frame, size);
+			retval := retval or frame_decode(ptr, frame, size, fields(i));
 		end loop;
 		return retval;
 	end;

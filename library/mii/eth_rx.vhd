@@ -66,7 +66,7 @@ begin
 		end if;
 	end process;
 
-	pl_rxdv <= frame_decode(unsigned(eth_ptr), eth_type, eth_frame, mii_rxd'length) and mii_rxdv;
+	pl_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type) and mii_rxdv;
 
 	hwda_e : entity hdl4fpga.mii_romcmp
 	generic map (

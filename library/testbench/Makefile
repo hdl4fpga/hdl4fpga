@@ -39,11 +39,19 @@ HDL4FPGA__mii_ramcmp__def = $(LIB_HDL4FPGA)/mii_ramcmp/def.dat
 HDL4FPGA__mii_ramcmp = $(LIB_HDL4FPGA)/mii_ramcmp/_primary.dat
 HDL4FPGA__mii_ram__def = $(LIB_HDL4FPGA)/mii_ram/def.dat
 HDL4FPGA__mii_ram = $(LIB_HDL4FPGA)/mii_ram/_primary.dat
+HDL4FPGA__mii_mux__def = $(LIB_HDL4FPGA)/mii_mux/def.dat
+HDL4FPGA__mii_mux = $(LIB_HDL4FPGA)/mii_mux/_primary.dat
+HDL4FPGA__mii_latency__def = $(LIB_HDL4FPGA)/mii_latency/def.dat
+HDL4FPGA__mii_latency = $(LIB_HDL4FPGA)/mii_latency/_primary.dat
 HDL4FPGA__mii_display__struct = $(LIB_HDL4FPGA)/mii_display/struct.dat
 HDL4FPGA__mii_display = $(LIB_HDL4FPGA)/mii_display/_primary.dat
 HDL4FPGA__mii_debug__struct = $(LIB_HDL4FPGA)/mii_debug/struct.dat
 HDL4FPGA__mii_debug = $(LIB_HDL4FPGA)/mii_debug/_primary.dat
+HDL4FPGA__mii_1chksum__beh = $(LIB_HDL4FPGA)/mii_1chksum/beh.dat
+HDL4FPGA__mii_1chksum = $(LIB_HDL4FPGA)/mii_1chksum/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
+HDL4FPGA__ip_tx__def = $(LIB_HDL4FPGA)/ip_tx/def.dat
+HDL4FPGA__ip_tx = $(LIB_HDL4FPGA)/ip_tx/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
@@ -68,7 +76,6 @@ HDL4FPGA__ddrto__spartan3 = $(LIB_HDL4FPGA)/ddrto/spartan3.dat
 HDL4FPGA__ddrto = $(LIB_HDL4FPGA)/ddrto/_primary.dat
 HDL4FPGA__ddro__spartan3 = $(LIB_HDL4FPGA)/ddro/spartan3.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
-HDL4FPGA__dcms = $(LIB_HDL4FPGA)/dcms/_primary.dat
 HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
 HDL4FPGA__cp850x8x8x0to127 = $(LIB_HDL4FPGA)/cp850x8x8x0to127/_primary.dat
 HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
@@ -119,11 +126,19 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_ramcmp) \
     $(HDL4FPGA__mii_ram__def) \
     $(HDL4FPGA__mii_ram) \
+    $(HDL4FPGA__mii_mux__def) \
+    $(HDL4FPGA__mii_mux) \
+    $(HDL4FPGA__mii_latency__def) \
+    $(HDL4FPGA__mii_latency) \
     $(HDL4FPGA__mii_display__struct) \
     $(HDL4FPGA__mii_display) \
     $(HDL4FPGA__mii_debug__struct) \
     $(HDL4FPGA__mii_debug) \
+    $(HDL4FPGA__mii_1chksum__beh) \
+    $(HDL4FPGA__mii_1chksum) \
     $(HDL4FPGA__ipoepkg) \
+    $(HDL4FPGA__ip_tx__def) \
+    $(HDL4FPGA__ip_tx) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ethpkg__body) \
@@ -148,7 +163,6 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__ddrto) \
     $(HDL4FPGA__ddro__spartan3) \
     $(HDL4FPGA__ddro) \
-    $(HDL4FPGA__dcms) \
     $(HDL4FPGA__cp850x8x8x128to255) \
     $(HDL4FPGA__cp850x8x8x0to127) \
     $(HDL4FPGA__cp850x8x16x128to255) \
@@ -276,15 +290,6 @@ $(HDL4FPGA__cp850x8x8x128to255) : ../video/fonts/cp850x8x8x128to255.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x8x128to255.vhd
 
-$(HDL4FPGA__dcms) : ../../nuhs3adsp/scopeio/dcms.vhd \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(UNISIM__vcomponents) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../../nuhs3adsp/scopeio/dcms.vhd
-
 $(HDL4FPGA__ddro) \
 $(HDL4FPGA__ddro__spartan3) \
 $(HDL4FPGA__ddrto) \
@@ -377,6 +382,20 @@ $(HDL4FPGA__fifo__def) : ../common/fifo.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/fifo.vhd
 
+$(HDL4FPGA__ip_tx) \
+$(HDL4FPGA__ip_tx__def) : /home/msagre/work/hdl4fpga.work/library/mii/ip_tx.vhd \
+		$(HDL4FPGA__mii_1chksum) \
+		$(HDL4FPGA__mii_latency) \
+		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga /home/msagre/work/hdl4fpga.work/library/mii/ip_tx.vhd
+
 $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -386,13 +405,25 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ipoepkg.vhd
 
+$(HDL4FPGA__mii_1chksum) \
+$(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
+		$(HDL4FPGA__mii_mux) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_1chksum.vhd
+
 $(HDL4FPGA__mii_debug) \
 $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
 		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__arp_tx) \
-		$(HDL4FPGA__mii_ram) \
 		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__ip_tx) \
+		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__arp_tx) \
+		$(HDL4FPGA__mii_mux) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__arp_rx) \
 		$(HDL4FPGA__ethpkg) \
@@ -432,6 +463,25 @@ $(HDL4FPGA__mii_display__struct) : ../mii/mii_display.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_display.vhd
 
+$(HDL4FPGA__mii_latency) \
+$(HDL4FPGA__mii_latency__def) : /home/msagre/work/hdl4fpga.work/library/mii/mii_latency.vhd \
+		$(HDL4FPGA__align) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga /home/msagre/work/hdl4fpga.work/library/mii/mii_latency.vhd
+
+$(HDL4FPGA__mii_mux) \
+$(HDL4FPGA__mii_mux__def) : /home/msagre/work/hdl4fpga.work/library/mii/mii_mux.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga /home/msagre/work/hdl4fpga.work/library/mii/mii_mux.vhd
+
 $(HDL4FPGA__mii_ram) \
 $(HDL4FPGA__mii_ram__def) : ../mii/mii_ram.vhd \
 		$(HDL4FPGA__dpram) \
@@ -446,8 +496,8 @@ $(HDL4FPGA__mii_ramcmp) \
 $(HDL4FPGA__mii_ramcmp__def) : ../mii/mii_ramcmp.vhd \
 		$(HDL4FPGA__mii_ram) \
 		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_ramcmp.vhd
