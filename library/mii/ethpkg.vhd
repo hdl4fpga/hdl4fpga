@@ -49,7 +49,8 @@ package ethpkg is
 		constant ptr   : unsigned;
 		constant frame : natural_vector;
 		constant size  : natural;
-		constant field : natural)
+		constant field : natural;
+		constant ge    : boolean := false)
 		return std_logic;
 
 	function frame_decode (
@@ -89,7 +90,8 @@ package body ethpkg is
 		constant ptr   : unsigned;
 		constant frame : natural_vector;
 		constant size  : natural;
-		constant field : natural)
+		constant field : natural;
+		constant ge    : boolean := false)
 		return std_logic is
 		variable retval : std_logic;
 		variable sumup  : natural;
@@ -98,7 +100,7 @@ package body ethpkg is
 		sumup  := 0;
 		for i in frame'range loop
 			if i=field then
-				if sumup <= ptr and ptr < sumup+frame(i)/size then
+				if sumup <= ptr and (ptr < sumup+frame(i)/size or ge) then
 					retval := '1';
 				end if;
 				exit;

@@ -34,28 +34,28 @@ use hdl4fpga.ipoepkg.all;
 
 entity ip_tx is
 	port (
-		mii_txc   : in  std_logic;
+		mii_txc     : in  std_logic;
 
-		pl_txen   : in  std_logic;
-		pl_txd    : in  std_logic_vector;
+		pl_txen     : in  std_logic;
+		pl_txd      : in  std_logic_vector;
 
 		ip4len_treq : out std_logic ;
 		ip4len_trdy : in  std_logic := '-';
 		ip4len_txen : in  std_logic;
 		ip4len_txd  : in  std_logic_vector;
 
-		ip4sa_treq : out std_logic ;
-		ip4sa_trdy : in  std_logic := '-';
-		ip4sa_txen : in  std_logic;
-		ip4sa_txd  : in  std_logic_vector;
+		ip4sa_treq  : out std_logic ;
+		ip4sa_trdy  : in  std_logic := '-';
+		ip4sa_txen  : in  std_logic;
+		ip4sa_txd   : in  std_logic_vector;
 
-		ip4da_treq : out std_logic;
-		ip4da_trdy : in  std_logic := '-';
-		ip4da_txen : in  std_logic;
-		ip4da_txd  : in  std_logic_vector;
+		ip4da_treq  : out std_logic;
+		ip4da_trdy  : in  std_logic := '-';
+		ip4da_txen  : in  std_logic;
+		ip4da_txd   : in  std_logic_vector;
 
-		ip4_txen : buffer std_logic;
-		ip4_txd  : out std_logic_vector);
+		ip4_txen    : buffer std_logic;
+		ip4_txd     : out std_logic_vector);
 end;
 
 architecture def of ip_tx is
@@ -113,11 +113,11 @@ begin
 		ip4_ptr,
 	   	ip4hdr_frame, 
 		ip4_txd'length,
-	   	(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto));
+	   	(ip4_llc, ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto));
 
 	miiip4shdr_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(ip4_shdr,8))
+		mem_data => reverse(llc_ip4 & ip4_shdr,8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pl_treq,
@@ -134,10 +134,10 @@ begin
 		pllat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
-				summation(ip4hdr_frame)
-				-ip4hdr_frame(ip4_len)
-				-ip4hdr_frame(ip4_sa)
-				-ip4hdr_frame(ip4_da))
+				summation(ip4hdr_frame)-
+				ip4hdr_frame(ip4_len)-
+				ip4hdr_frame(ip4_sa)-
+				ip4hdr_frame(ip4_da))
 		port map (
 			mii_txc  => mii_txc,
 			lat_txen => pl_txen,
@@ -149,6 +149,7 @@ begin
 		iplenlat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
+				ip4hdr_frame(ip4_llc)+
 				ip4hdr_frame(ip4_verihl)+
 				ip4hdr_frame(ip4_tos))
 		port map (
@@ -161,6 +162,7 @@ begin
 		ipalat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
+				ip4hdr_frame(ip4_llc)+
 				ip4hdr_frame(ip4_ident)+
 				ip4hdr_frame(ip4_flgsfrg)+
 				ip4hdr_frame(ip4_ttl)+

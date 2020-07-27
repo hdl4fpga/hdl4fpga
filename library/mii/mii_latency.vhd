@@ -40,8 +40,8 @@ entity mii_latency is
 end;
 
 architecture def of mii_latency is
-	constant xxx : natural := mii_txd'length;
 begin
+
 	assert mii_txd'length = lat_txd'length
 	report "Length of mii_txd must be equal to the length of lat_txd"
 	severity FAILURE;

@@ -120,7 +120,7 @@ begin
 
 	iplen_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => reverse(x"0000",8),
+		mux_data => reverse(x"ffff",8),
         mii_txc  => mii_txc,
 		mii_treq => ip4len_treq,
 		mii_trdy => ip4len_trdy,

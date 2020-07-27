@@ -33,7 +33,7 @@ package ipoepkg is
 
 	constant octect  : natural := 8;
 
-	constant llc_ip  : std_logic_vector := x"0800";
+	constant llc_ip4 : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
 
 	constant arp_htype : natural := 0;
@@ -64,18 +64,20 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
-	constant ip4_verihl  : natural :=  0;
-	constant ip4_tos     : natural :=  1;
-	constant ip4_len     : natural :=  2;
-	constant ip4_ident   : natural :=  3;
-	constant ip4_flgsfrg : natural :=  4;
-	constant ip4_ttl     : natural :=  5;
-	constant ip4_proto   : natural :=  6;
-	constant ip4_chksum  : natural :=  7;
-	constant ip4_sa      : natural :=  8;
-	constant ip4_da      : natural :=  9;
+	constant ip4_llc     : natural :=  0;
+	constant ip4_verihl  : natural :=  1;
+	constant ip4_tos     : natural :=  2;
+	constant ip4_len     : natural :=  3;
+	constant ip4_ident   : natural :=  4;
+	constant ip4_flgsfrg : natural :=  5;
+	constant ip4_ttl     : natural :=  6;
+	constant ip4_proto   : natural :=  7;
+	constant ip4_chksum  : natural :=  8;
+	constant ip4_sa      : natural :=  9;
+	constant ip4_da      : natural :=  10;
 
 	constant ip4hdr_frame : natural_vector := (
+		ip4_llc     => llc_ip4'length,
 		ip4_verihl  => 1*octect,
 		ip4_tos     => 1*octect,
 		ip4_len     => 2*octect,
