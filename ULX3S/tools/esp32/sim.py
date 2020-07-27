@@ -35,9 +35,66 @@ class demo:
   def next_to_discard(self):
     return (self.vi+self.nforward-1)%self.ncache
 
+
+  # consider priority
+  def next_to_read(self):
+      # TODO priority reading: decide which slide is next
+      # finish if no more slides to read
+      before_first=self.nbackward-self.vi
+      if before_first<0:
+        before_first=0
+      after_last=self.vi+self.nforward-self.nslides
+      if after_last<0:
+        after_last=0
+      print("before_first=%d after_last=%d" % (before_first,after_last))
+      return
+      next_forward_slide=-1
+      i=self.vi
+      n=i+self.nforward+before_first-after_last
+      if n<0:
+        n=0
+      if n>self.nslides:
+        n=self.nslides
+      while i<n:
+        ic=i%self.ncache
+        if self.caches_y_rd[ic]<self.caches_y[ic]:
+          next_forward_slide=i
+          break
+        i+=1
+      next_backward_slide=-1
+      i=self.vi-1
+      n=i-self.nbackward-after_last+before_first
+      if n<0:
+        n=0
+      if n>self.nslides:
+        n=self.nslides
+      while i>=n:
+        ic=i%self.ncache
+        if self.caches_y_rd[ic]<self.caches_y[ic]:
+          next_backward_slide=i
+          break
+        i-=1
+      next_reading_slide=-1
+      if next_forward_slide>=0 and next_backward_slide>=0:
+        if (next_forward_slide-self.vi)*self.priority_backward < \
+          (self.vi-next_backward_slide)*self.priority_forward:
+          next_reading_slide=next_forward_slide
+        else:
+          next_reading_slide=next_backward_slide
+      else:
+        if next_forward_slide>=0:
+          next_reading_slide=next_forward_slide
+        else:
+          if next_backward_slide>=0:
+            next_reading_slide=next_backward_slide
+      self.reading_slide=next_reading_slide
+      return self.reading_slide
+
+
   def view(self):
     dci=self.next_to_discard()
     rdi=self.rdi%self.ncache
+    self.next_to_read()
     for i in range(self.ncache):
       print("[%2dT%-2d]" % (self.cache_ti[i],self.cache_ty[i]),end="")
     print("")
