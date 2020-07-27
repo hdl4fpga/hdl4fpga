@@ -102,6 +102,8 @@ class demo:
       if dc_replace<0:
         dc_replace+=self.ncache
     self.cache_li[dci]=dc_replace
+
+  def bgreader(self):
     self.rdi=self.next_to_read()
 
   def view(self):
@@ -152,6 +154,7 @@ while(True):
     if event.key == pygame.K_1:
       print(1) # red
     if event.key == pygame.K_SPACE: # time passes
+      run.bgreader()
       run.view()
     if event.key == pygame.K_LEFT:
       if run.vi>0:
