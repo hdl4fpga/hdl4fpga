@@ -18,13 +18,13 @@ class demo:
     print(self.nforward, self.nbackward, self.nbackward+self.nforward)
     self.rdi=0 # currently reading image
     self.vi=0 # currently viewed image
-    self.cache_li=[] # loading image
+    self.cache_li=[] # image to be loaded
     self.cache_ti=[] # top image
     self.cache_ty=[] # top good lines 0..(y-1)
     self.cache_bi=[] # bot image
     self.cache_by=[] # bot good lines y..yres
     for i in range(self.ncache):
-      self.cache_li.append(-1)
+      self.cache_li.append(i)
       self.cache_ti.append(-1)
       self.cache_ty.append(0)
       self.cache_bi.append(-1)
