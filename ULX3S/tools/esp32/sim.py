@@ -6,7 +6,7 @@ import pygame
 
 class demo:
   def __init__(self):
-    self.nslides=13 # number images to be displayed
+    self.nslides=11 # number images to be displayed
     self.ncache=7 # number of images that can fit in cache
     self.xres=8 # screen hor resolution
     self.yres=6 # screen ver resolution
@@ -37,8 +37,6 @@ class demo:
 
   # consider priority
   def next_to_read(self):
-    # TODO priority reading: decide which slide is next
-    # finish if no more slides to read
     before_first=self.nbackward-self.vi
     if before_first<0:
       before_first=0
@@ -46,7 +44,6 @@ class demo:
     if after_last<0:
       after_last=0
     #print("before_first=%d after_last=%d" % (before_first,after_last))
-    #return -1
     next_forward_slide=-1
     i=self.vi
     n=i+self.nforward+before_first-after_last
@@ -56,7 +53,8 @@ class demo:
       n=self.nslides
     while i<n:
       ic=i%self.ncache
-      if self.cache_ti[ic]!=self.cache_li[ic]:
+      if self.cache_ti[ic]!=self.cache_li[ic] \
+      or self.cache_ty[ic]<self.yres:
         next_forward_slide=i
         break
       i+=1
@@ -69,7 +67,8 @@ class demo:
       n=self.nslides
     while i>=n:
       ic=i%self.ncache
-      if self.cache_ti[ic]!=self.cache_li[ic]:
+      if self.cache_ti[ic]!=self.cache_li[ic] \
+      or self.cache_ty[ic]<self.yres:
         next_backward_slide=i
         break
       i-=1
@@ -154,7 +153,7 @@ pygame.display.flip()
 #pygame.event.set_grab(True)
 pygame.mouse.set_visible(False)
 font = pygame.font.SysFont('DSEG14 Classic', height)
-#pygame.time.set_timer(pygame.USEREVENT,1000)
+pygame.time.set_timer(pygame.USEREVENT,500)
 
 while(True):
   event = pygame.event.wait()
@@ -178,4 +177,5 @@ while(True):
         run.move(1)
         run.view()
   if event.type == pygame.USEREVENT: # NOTE TIMER
+    run.bgreader()
     run.view()
