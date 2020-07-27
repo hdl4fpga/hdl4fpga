@@ -114,8 +114,12 @@ class demo:
       self.cache_ty[rdi]=0
     if self.cache_ty[rdi]<self.yres:
       self.cache_ty[rdi]+=1
+      if self.cache_ty[rdi]>self.cache_by[rdi]:
+        self.cache_by[rdi]=self.cache_ty[rdi]
     else:
       self.rdi=self.next_to_read()
+      self.cache_bi[rdi]=self.cache_li[rdi]
+      self.cache_by[rdi]=0
 
   def view(self):
     dci=self.next_to_discard()
