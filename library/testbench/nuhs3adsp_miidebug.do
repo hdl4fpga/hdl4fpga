@@ -2,8 +2,11 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/mii_debug_e/mii_txc
 add wave -noupdate /testbench/du_e/mii_debug_e/mii_treq
-add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/mii_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/mii_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/ipsa_treq
+add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/ipsa_trdy
+add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/ipsa_txen
+add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/arptx_e/ipsa_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txen
@@ -47,6 +50,8 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4alat_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/cksm_txen
+add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/iptx_e/cksm_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/pl_treq
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(0) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(1) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(2) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(3) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(4) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(5) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(6) -radix hexadecimal}} -subitemconfig {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(0) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(1) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(2) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(3) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(4) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(5) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(6) {-height 29 -radix hexadecimal}} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4shdr_txen
@@ -57,7 +62,7 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/cksmd_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txen
 add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/iptx_e/ip4_txd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2604617000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {1515005000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
@@ -73,4 +78,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {4200 ns}
+WaveRestoreZoom {4975207280 fs} {7361553680 fs}

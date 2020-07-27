@@ -66,7 +66,7 @@ architecture def of eth_tx is
 begin
 
 	padding_p : process (mii_txc, pl_txen)
-		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1));
+		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1)) := (others => '1');
 	begin
 		if rising_edge(mii_txc) then
 			if cntr(0)='0' then

@@ -89,10 +89,13 @@ architecture struct of mii_debug is
 	signal ip4da_txen : std_logic;
 	signal ip4da_txd  : std_logic_vector(arp_txd'range);
 
-	signal ip4sa_treq : wor std_logic;
+	signal ip4sa_treq : std_logic;
 	signal ip4sa_trdy : std_logic;
 	signal ip4sa_txen : std_logic;
 	signal ip4sa_txd  : std_logic_vector(arp_txd'range);
+
+	signal iptxip4sa_treq  : std_logic;
+	signal arptxip4sa_treq : std_logic;
 
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
@@ -120,13 +123,14 @@ begin
 
 	iplen_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => reverse(x"ffff",8),
+		mux_data => reverse(x"a55a",8),
         mii_txc  => mii_txc,
 		mii_treq => ip4len_treq,
 		mii_trdy => ip4len_trdy,
         mii_txen => ip4len_txen,
         mii_txd  => ip4len_txd);
 		
+	ip4sa_treq <= iptxip4sa_treq or arptxip4sa_treq;
 	ipsa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => reverse(x"c0_a8_00_0e",8),
@@ -138,7 +142,8 @@ begin
 		
 	ipda_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => reverse(x"c0_a8_00_0e",8),
+		--mux_data => reverse(x"c0_a8_00_0e",8),
+		mux_data => reverse(x"ff_ff_ff_ff",8),
         mii_txc  => mii_txc,
 		mii_treq => ip4da_treq,
 		mii_trdy => ip4da_trdy,
@@ -149,7 +154,7 @@ begin
 	port map (
 		mii_txc   => mii_txc,
 
-		ipsa_treq => ip4sa_treq,
+		ipsa_treq => arptxip4sa_treq,
 		ipsa_trdy => ip4sa_trdy,
 		ipsa_txen => ip4sa_txen,
 		ipsa_txd  => ip4sa_txd,
@@ -161,7 +166,7 @@ begin
 
 	ip4pl_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => x"12345678")
+		mem_data => reverse(x"12345678",8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
@@ -181,7 +186,7 @@ begin
 		ip4len_txen => ip4len_txen,
 		ip4len_txd  => ip4len_txd,
                                  
-		ip4sa_treq  => ip4sa_treq,
+		ip4sa_treq  => iptxip4sa_treq,
 		ip4sa_trdy  => ip4sa_trdy,
 		ip4sa_txen  => ip4sa_txen,
 		ip4sa_txd   => ip4sa_txd,
@@ -197,8 +202,8 @@ begin
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc  => mii_txc,
-		pl_txen  => arp_txen,
-		pl_txd   => arp_txd,
+		pl_txen  => ip4_txen, --arp_txen,
+		pl_txd   => ip4_txd, --arp_txd,
 		eth_txen => mii_txen,
 		eth_txd  => mii_txd);
 

@@ -135,6 +135,7 @@ begin
 		generic map (
 			latency => 
 				summation(ip4hdr_frame)-
+				ip4hdr_frame(ip4_llc)-
 				ip4hdr_frame(ip4_len)-
 				ip4hdr_frame(ip4_sa)-
 				ip4hdr_frame(ip4_da))
@@ -162,7 +163,6 @@ begin
 		ipalat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
-				ip4hdr_frame(ip4_llc)+
 				ip4hdr_frame(ip4_ident)+
 				ip4hdr_frame(ip4_flgsfrg)+
 				ip4hdr_frame(ip4_ttl)+
