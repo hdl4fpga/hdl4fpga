@@ -88,11 +88,8 @@ class demo:
           next_reading_slide=next_backward_slide
     return next_reading_slide
 
-
-  def move(self,mv):
-    self.vi+=mv
-    dci=self.next_to_discard()
-    dc_replace=-2
+  def replace(self,mv):
+    dc_replace=-1
     if mv>0:
       dc_replace=self.vi+self.nforward-1
       if dc_replace>=self.nslides:
@@ -101,7 +98,12 @@ class demo:
       dc_replace=(self.vi-self.nbackward-1)
       if dc_replace<0:
         dc_replace+=self.ncache
-    self.cache_li[dci]=dc_replace
+    return dc_replace
+
+  def move(self,mv):
+    self.cache_li[self.next_to_discard()]=self.replace(mv)
+    self.vi+=mv
+    self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
 
   def bgreader(self):
