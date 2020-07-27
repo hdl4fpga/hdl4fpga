@@ -6,8 +6,8 @@ import pygame
 
 class demo:
   def __init__(self):
-    self.nslides=11 # number images to be displayed
-    self.ncache=7 # number of images that can fit in cache
+    self.nslides=30 # number images to be displayed
+    self.ncache=10 # number of images that can fit in cache
     self.xres=8 # screen hor resolution
     self.yres=6 # screen ver resolution
 
@@ -122,7 +122,7 @@ class demo:
       self.cache_ty[rdi]+=1
       if self.cache_ty[rdi]>self.cache_by[rdi]:
         self.cache_by[rdi]=self.cache_ty[rdi]
-    else:
+    if self.cache_ty[rdi]>=self.cache_tyend[rdi]:
       self.cache_ty[rdi]=self.yres
       self.cache_bi[rdi]=self.cache_li[rdi]
       self.cache_by[rdi]=0
