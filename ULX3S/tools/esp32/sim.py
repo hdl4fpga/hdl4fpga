@@ -21,12 +21,14 @@ class demo:
     self.cache_li=[] # image to be loaded
     self.cache_ti=[] # top image
     self.cache_ty=[] # top good lines 0..(y-1)
+    self.cache_tyend=[] # top y load max
     self.cache_bi=[] # bot image
     self.cache_by=[] # bot good lines y..yres
     for i in range(self.ncache):
       self.cache_li.append(i)
       self.cache_ti.append(-1)
       self.cache_ty.append(0)
+      self.cache_tyend.append(self.yres)
       self.cache_bi.append(-1)
       self.cache_by.append(0)
     self.view()
@@ -112,14 +114,19 @@ class demo:
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
       self.cache_ti[rdi]=self.cache_li[rdi]
       self.cache_ty[rdi]=0
-    if self.cache_ty[rdi]<self.yres:
+      if self.cache_bi[rdi]==self.cache_ti[rdi]:
+        self.cache_tyend[rdi]=self.cache_by[rdi]
+      else:
+        self.cache_tyend[rdi]=self.yres
+    if self.cache_ty[rdi]<self.cache_tyend[rdi]:
       self.cache_ty[rdi]+=1
       if self.cache_ty[rdi]>self.cache_by[rdi]:
         self.cache_by[rdi]=self.cache_ty[rdi]
     else:
-      self.rdi=self.next_to_read()
+      self.cache_ty[rdi]=self.yres
       self.cache_bi[rdi]=self.cache_li[rdi]
       self.cache_by[rdi]=0
+      self.rdi=self.next_to_read()
 
   def view(self):
     dci=self.next_to_discard()
@@ -143,7 +150,7 @@ class demo:
         mark=" %2d=== " % (self.vi)
       if self.rdi>=0:
         if i==rdi:
-          mark="*"+mark[1:]
+          mark=mark[0:3]+"*"+mark[4:]
       print(mark,end="")
     print("")
 
