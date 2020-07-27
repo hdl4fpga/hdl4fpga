@@ -35,7 +35,6 @@ class demo:
   def next_to_discard(self):
     return (self.vi+self.nforward-1)%self.ncache
 
-
   # consider priority
   def next_to_read(self):
     # TODO priority reading: decide which slide is next
@@ -57,7 +56,7 @@ class demo:
       n=self.nslides
     while i<n:
       ic=i%self.ncache
-      if self.caches_y_rd[ic]<self.caches_y[ic]:
+      if self.cache_ti[ic]!=self.cache_li[ic]:
         next_forward_slide=i
         break
       i+=1
@@ -70,7 +69,7 @@ class demo:
       n=self.nslides
     while i>=n:
       ic=i%self.ncache
-      if self.caches_y_rd[ic]<self.caches_y[ic]:
+      if self.cache_ti[ic]!=self.cache_li[ic]:
         next_backward_slide=i
         break
       i-=1
@@ -103,6 +102,7 @@ class demo:
       if dc_replace<0:
         dc_replace+=self.ncache
     self.cache_li[dci]=dc_replace
+    self.rdi=self.next_to_read()
 
   def view(self):
     dci=self.next_to_discard()
