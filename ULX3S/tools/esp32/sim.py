@@ -102,9 +102,19 @@ class demo:
       if dc_replace<0:
         dc_replace+=self.ncache
     self.cache_li[dci]=dc_replace
+    self.rdi=self.next_to_read()
 
   def bgreader(self):
-    self.rdi=self.next_to_read()
+    if self.rdi<0:
+      return
+    rdi=self.rdi%self.ncache
+    if self.cache_ti[rdi]!=self.rdi:
+      self.cache_ti[rdi]=self.rdi
+      self.cache_ty[rdi]=0
+    if self.cache_ty[rdi]<self.yres:
+      self.cache_ty[rdi]+=1
+    else:
+      self.rdi=self.next_to_read()
 
   def view(self):
     dci=self.next_to_discard()
@@ -126,8 +136,9 @@ class demo:
         mark=" %2s^^^ " % (i)
       if i==cvi:
         mark=" %2d=== " % (self.vi)
-      if i==rdi:
-        mark="*"+mark[1:]
+      if self.rdi>=0:
+        if i==rdi:
+          mark="*"+mark[1:]
       print(mark,end="")
     print("")
 
