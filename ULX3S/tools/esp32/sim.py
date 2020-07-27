@@ -46,8 +46,8 @@ class demo:
       after_last=self.vi+self.nforward-self.nslides
       if after_last<0:
         after_last=0
-      print("before_first=%d after_last=%d" % (before_first,after_last))
-      return
+      #print("before_first=%d after_last=%d" % (before_first,after_last))
+      #return -1
       next_forward_slide=-1
       i=self.vi
       n=i+self.nforward+before_first-after_last
@@ -87,14 +87,26 @@ class demo:
         else:
           if next_backward_slide>=0:
             next_reading_slide=next_backward_slide
-      self.reading_slide=next_reading_slide
-      return self.reading_slide
+      return next_reading_slide
 
+
+  def move(self,mv):
+    self.vi+=mv
+    dci=self.next_to_discard()
+    dc_replace=-2
+    if mv>0:
+      dc_replace=self.vi+self.nforward-1
+      if dc_replace>=self.nslides:
+        dc_replace-=self.ncache
+    if mv<0:
+      dc_replace=(self.vi-self.nbackward-1)
+      if dc_replace<0:
+        dc_replace+=self.ncache
+    self.cache_li[dci]=dc_replace
 
   def view(self):
     dci=self.next_to_discard()
     rdi=self.rdi%self.ncache
-    self.next_to_read()
     for i in range(self.ncache):
       print("[%2dT%-2d]" % (self.cache_ti[i],self.cache_ty[i]),end="")
     print("")
@@ -143,11 +155,11 @@ while(True):
       run.view()
     if event.key == pygame.K_LEFT:
       if run.vi>0:
-        run.vi-=1
+        run.move(-1)
         run.view()
     if event.key == pygame.K_RIGHT:
       if run.vi<run.nslides-1:
-        run.vi+=1
+        run.move(1)
         run.view()
   if event.type == pygame.USEREVENT: # NOTE TIMER
     run.view()
