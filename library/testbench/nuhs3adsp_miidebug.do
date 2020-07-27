@@ -47,13 +47,17 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4da_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4shdr_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/lenlat_txen
-add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/iptx_e/lenlat_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4alat_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4alat_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/cksmd_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/line__87/q
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/pl_treq
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(0) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(1) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(2) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(3) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(4) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(5) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(6) -radix hexadecimal}} -subitemconfig {/testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(0) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(1) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(2) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(3) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(4) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(5) {-height 15 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr(6) {-height 15 -radix hexadecimal}} /testbench/du_e/mii_debug_e/iptx_e/ip4_ptr
+add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4shdr_txen
+add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/iptx_e/lenlat_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1408996 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1854333 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
@@ -69,4 +73,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {727604 ps} {2090388 ps}
+WaveRestoreZoom {1005 ns} {3105 ns}

@@ -61,7 +61,7 @@ end;
 architecture def of ip_tx is
 
 	signal pl_treq      : std_logic;
-	signal ip4_ptr      : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)-1));
+	signal ip4_ptr      : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
 	signal ip4shdr_trdy : std_logic;
 	signal ip4shdr_treq : std_logic;
 	signal ip4shdr_tena : std_logic;

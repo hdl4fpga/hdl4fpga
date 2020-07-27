@@ -98,7 +98,7 @@ package body ethpkg is
 		sumup  := 0;
 		for i in frame'range loop
 			if i=field then
-				if sumup <= ptr then
+				if sumup <= ptr and ptr < sumup+frame(i)/size then
 					retval := '1';
 				end if;
 				exit;
