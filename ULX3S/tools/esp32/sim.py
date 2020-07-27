@@ -7,7 +7,7 @@ import pygame
 class demo:
   def __init__(self):
     self.nslides=10 # number images to be displayed
-    self.ncache=4 # number of images that can fit in cache
+    self.ncache=5 # number of images that can fit in cache
     self.xres=8 # screen hor resolution
     self.yres=6 # screen ver resolution
 
@@ -16,7 +16,7 @@ class demo:
     self.nbackward=self.ncache*self.priority_backward//(self.priority_forward+self.priority_backward)
     self.nforward=self.ncache-self.nbackward;
     print(self.nforward, self.nbackward, self.nbackward+self.nforward)
-
+    self.rdi=0 # currently reading image
     self.vi=0 # currently viewed image
     self.cache_li=[] # loading image
     self.cache_ti=[] # top image
@@ -37,6 +37,7 @@ class demo:
 
   def view(self):
     dci=self.next_to_discard()
+    rdi=self.rdi%self.ncache
     for i in range(self.ncache):
       print("[%2dT%-2d]" % (self.cache_ti[i],self.cache_ty[i]),end="")
     print("")
@@ -44,7 +45,7 @@ class demo:
       print("[%2d   ]" % (self.cache_li[i]),end="")
     print("")
     for i in range(self.ncache):
-      print("[%2dT%-2d]" % (self.cache_bi[i],self.cache_by[i]),end="")
+      print("[%2dB%-2d]" % (self.cache_bi[i],self.cache_by[i]),end="")
     print("")
     cvi=self.vi%self.ncache
     for i in range(self.ncache):
@@ -53,6 +54,8 @@ class demo:
         mark="%2s^^^" % (i)
       if i==cvi:
         mark="%2d===" % (self.vi)
+      if i==rdi:
+        mark=mark[0:4]+"*"
       print(" %5s" % (mark),end="")
     print("")
 
