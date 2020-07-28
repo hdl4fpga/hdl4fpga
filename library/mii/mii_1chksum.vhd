@@ -30,13 +30,13 @@ use hdl4fpga.std.all;
 
 entity mii_1chksum is
 	generic (
-		chksum_size : natural;
-		chksum_init : std_logic_vector);
+		chksum_size : natural);
 	port (
 		mii_txc   : in  std_logic;
 		mii_txen  : in  std_logic;
 		mii_txd   : in  std_logic_vector;
 
+		cksm_init : in  std_logic_vector;
 		cksm_treq : in  std_logic;
 		cksm_tena : in  std_logic := '1';
 		cksm_trdy : out std_logic;
@@ -45,33 +45,36 @@ entity mii_1chksum is
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : unsigned(0 to chksum_size-1);
+	signal chksum : std_logic_vector(chksum_size-1 downto 0);
 begin
 
 	process (mii_txc)
-		variable cy  : unsigned(0 to 0);
-		variable add : unsigned(0 to mii_txd'length);
+		variable cy  : unsigned(mii_txd'length downto mii_txd'length);
+		variable add : unsigned(mii_txd'length downto 0);
 		variable acc : unsigned(chksum'range);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txen='0' then
-				acc := unsigned(chksum_init);
+				acc := unsigned(reverse(reverse(cksm_init,8)));
 				cy  := (others => '0');
 			else
-				acc := chksum;
-				add := unsigned'('0' & unsigned(mii_txd)) + unsigned'('0' & acc(mii_txd'range));
-				cy  := add(0 to 0);
-				acc(mii_txd'range) := add(1 to mii_txd'length);
+				add := resize(acc(mii_txd'reverse_range), add'length) + unsigned(reverse(mii_txd));
+				acc(mii_txd'reverse_range) := add(mii_txd'reverse_range);
 				acc := acc ror mii_txd'length;
-				acc(mii_txd'range) := acc(mii_txd'range) + cy;
+				for i in 0 to chksum_size/mii_txd'length-1 loop
+					cy  := add(cy'range);
+					add := resize(acc(mii_txd'reverse_range), add'length) + cy;
+					acc(mii_txd'reverse_range) := add(mii_txd'reverse_range);
+					acc := acc ror mii_txd'length;
+				end loop;
+				chksum <= not reverse(reverse(std_logic_vector(acc),8));
 			end if;
-			chksum <= acc;
 		end if;
 	end process;
 
 	mux_e : entity hdl4fpga.mii_mux
     port map (
-		mux_data => std_logic_vector(chksum),
+		mux_data => chksum,
         mii_txc  => mii_txc,
 		mii_treq => cksm_treq,
 		mii_trdy => cksm_trdy,

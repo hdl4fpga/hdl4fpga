@@ -128,7 +128,7 @@ begin
 
 	iplen_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => reverse(x"a55a",8),
+		mux_data => reverse(x"0028",8),
         mii_txc  => mii_txc,
 		mii_treq => ip4len_treq,
 		mii_trdy => ip4len_trdy,
@@ -180,7 +180,7 @@ begin
 		
 	ip4pl_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(x"12345678",8))
+		mem_data => reverse(x"00000000",8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
@@ -200,10 +200,10 @@ begin
 		ip4len_txen => ip4len_txen,
 		ip4len_txd  => ip4len_txd,
                                  
-		ip4proto_treq => ip4proto_treq,
-		ip4proto_trdy => ip4proto_trdy,
-		ip4proto_txen => ip4proto_txen,
-		ip4proto_txd  => ip4proto_txd,
+--		ip4proto_treq => ip4proto_treq,
+--		ip4proto_trdy => ip4proto_trdy,
+--		ip4proto_txen => ip4proto_txen,
+--		ip4proto_txd  => ip4proto_txd,
 
 		ip4sa_treq  => iptxip4sa_treq,
 		ip4sa_trdy  => ip4sa_trdy,
@@ -230,7 +230,7 @@ begin
 		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
 		signal txc_rxd : std_logic_vector(0 to mii_txd'length);
 	begin
-		rxc_rxd <= mii_rxd & mii_rxdv;
+		rxc_rxd <= mii_rxd & '0'; --mii_rxdv;
 
 		sync_e : entity hdl4fpga.fifo
 		generic map (

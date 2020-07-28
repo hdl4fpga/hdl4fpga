@@ -17,12 +17,12 @@
   <files>
     <file xil_pn:name="../../demos/mii_debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="1"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="39"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="40"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="38"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="39"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_display.vhd" xil_pn:type="FILE_VHDL">
@@ -62,7 +62,7 @@
     </file>
     <file xil_pn:name="../../../library/xilinx/dfs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="11"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="37"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="38"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_1chksum.vhd" xil_pn:type="FILE_VHDL">
@@ -221,6 +221,11 @@
     <file xil_pn:name="../../../library/mii/mii_mux.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="98"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="16"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../library/xilinx/spartan3/ddro.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="104"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="37"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
