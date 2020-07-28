@@ -115,28 +115,39 @@ class demo:
 
   def next_file(self):
     print("next_file")
-    self.bg_file=self.rdi # TODO open file
+    self.bg_file=self.rdi
+    # TODO open file
+    # TODO seek to first position
+
+  def read_scanline(self):
+    return
 
   # background read, call it periodically
   def bgreader(self):
     if self.rdi<0:
       return
-    if self.bg_file==None:
-      self.next_file()
     rdi=self.rdi%self.ncache
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
+      # cache contains different image than the one to be loaded
+      # y begin from top
       self.cache_ti[rdi]=self.cache_li[rdi]
       self.cache_ty[rdi]=0
+      # y end depends on cache content
       # if bottom part is already in cache, reduce tyend
       if self.cache_bi[rdi]==self.cache_ti[rdi]:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
+    if self.bg_file==None:
+      self.next_file()
     if self.cache_ty[rdi]<self.cache_tyend[rdi]:
+      # file read
+      self.read_scanline()
       self.cache_ty[rdi]+=1
       if self.cache_ty[rdi]>self.cache_by[rdi]:
         self.cache_by[rdi]=self.cache_ty[rdi]
     if self.cache_ty[rdi]>=self.cache_tyend[rdi]:
+      # slide complete, close file, find next
       self.cache_ty[rdi]=self.yres
       self.cache_bi[rdi]=self.cache_li[rdi]
       self.cache_by[rdi]=0
