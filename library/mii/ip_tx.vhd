@@ -93,7 +93,7 @@ architecture def of ip_tx is
 begin
 
 	process (pl_txen, mii_txc)
-		variable q : std_logic := '0';
+		variable q : std_logic;
 	begin
 		if rising_edge(mii_txc) then
 			if pl_txen='1' then
@@ -102,7 +102,7 @@ begin
 				q := '0';
 			end if;
 		end if;
-		pl_treq <= not setif((pl_txen or q or ip4_txen) /= '1');
+		pl_treq <= pl_txen or q or ip4_txen;
 	end process;
 
 	process (mii_txc)
