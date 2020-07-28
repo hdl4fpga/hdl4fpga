@@ -31,6 +31,7 @@ class demo:
       self.cache_tyend.append(self.yres)
       self.cache_bi.append(-1)
       self.cache_by.append(0)
+    self.bg_file=None
     self.view()
 
   # image to be discarded at changed view
@@ -104,15 +105,24 @@ class demo:
 
   # move with discarding images in cache
   def move(self,mv):
+    vi=self.vi+mv
+    if vi<0 or vi>self.nslides or mv==0:
+      return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.vi+=mv
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
 
+  def next_file(self):
+    print("next_file")
+    self.bg_file=self.rdi # TODO open file
+
   # background read, call it periodically
   def bgreader(self):
     if self.rdi<0:
       return
+    if self.bg_file==None:
+      self.next_file()
     rdi=self.rdi%self.ncache
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
       self.cache_ti[rdi]=self.cache_li[rdi]
@@ -130,6 +140,7 @@ class demo:
       self.cache_ty[rdi]=self.yres
       self.cache_bi[rdi]=self.cache_li[rdi]
       self.cache_by[rdi]=0
+      self.bg_file=None
       self.rdi=self.next_to_read()
 
   # visualize current cache content
@@ -180,13 +191,11 @@ while(True):
       run.bgreader()
       run.view()
     if event.key == pygame.K_LEFT:
-      if run.vi>0:
-        run.move(-1)
-        run.view()
+      run.move(-1)
+      run.view()
     if event.key == pygame.K_RIGHT:
-      if run.vi<run.nslides-1:
-        run.move(1)
-        run.view()
+      run.move(1)
+      run.view()
   if event.type == pygame.USEREVENT: # TIMER
     run.bgreader()
     run.view()
