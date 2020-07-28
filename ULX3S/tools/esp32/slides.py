@@ -344,11 +344,8 @@ class osd:
     self.finished=1
 
   def start_bgreader(self):
-    #print("start bgreader",self.slide_shown[0])
-    #return
     if self.finished:
       self.finished=0
-      self.vi=self.slide_shown[0]
       self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
 
   # image to be discarded at changed view
@@ -470,13 +467,6 @@ class osd:
       self.finished=1
       self.timer.deinit()
       return
-    if self.prev_rdi!=self.rdi or self.bg_file==None:
-      # file changed, close and reopen
-      if self.bg_file: # maybe not needed, python will auto-close?
-        self.bg_file.close()
-        self.bg_file=None
-      self.next_file()
-      self.prev_rdi=self.rdi
     rdi=self.rdi%self.ncache
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
       # cache contains different image than the one to be loaded
@@ -489,6 +479,14 @@ class osd:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
+    # after cache_ty[] has been updated, call next file
+    if self.prev_rdi!=self.rdi or self.bg_file==None:
+      # file changed, close and reopen
+      if self.bg_file: # maybe not needed, python will auto-close?
+        self.bg_file.close()
+        self.bg_file=None
+      self.next_file()
+      self.prev_rdi=self.rdi
     if self.cache_ty[rdi]<self.cache_tyend[rdi]:
       # file read
       self.read_scanline()
