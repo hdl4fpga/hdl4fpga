@@ -6,8 +6,8 @@ import pygame
 
 class demo:
   def __init__(self):
-    self.nslides=30 # number images to be displayed
-    self.ncache=10 # number of images that can fit in cache
+    self.nslides=41 # number images to be displayed
+    self.ncache=34 # number of images that can fit in cache
     self.xres=8 # screen hor resolution
     self.yres=6 # screen ver resolution
 
@@ -106,10 +106,10 @@ class demo:
   # move with discarding images in cache
   def move(self,mv):
     vi=self.vi+mv
-    if vi<0 or vi>self.nslides or mv==0:
+    if vi<0 or vi>=self.nslides or mv==0:
       return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
-    self.vi+=mv
+    self.vi=vi
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
 
