@@ -110,11 +110,11 @@ class osd:
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
               p8slide[0]-=1
-              self.move(-1)
+              self.change_slide(-1)
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nslides)-1:
               p8slide[0]+=1
-              self.move(1)
+              self.change_slide(1)
           if btn==3: # btn1 F1
             self.view()
           self.cs.on()
@@ -420,8 +420,9 @@ class osd:
         dc_replace+=self.ncache
     return dc_replace
 
-  # move with discarding images in cache
-  def move(self,mv):
+  # change currently viewed slide
+  # discard images in cache
+  def change_slide(self,mv):
     vi=self.vi+mv
     if vi<0 or vi>self.nslides or mv==0:
       return
@@ -429,20 +430,8 @@ class osd:
     self.vi+=mv
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
-    print("move to",self.vi,"rdi",self.rdi)
     if self.rdi>=0:
       self.start_bgreader()
-
-  # file should be already closed when calling this
-  def next_file(self):
-    #print("next_file")
-    filename=self.fullpath(self.direntries[self.file0+self.rdi][0])
-    self.bg_file=open(filename,"rb")
-    # Y->seek to first position to read from
-    bytpp=self.bpp//8 # in file
-    rdi=self.rdi%self.ncache
-    self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
-    print("%d RD %s" % (self.rdi,filename))
 
   def read_scanline(self):
     bytpp=self.bpp//8 # on screen
@@ -463,6 +452,17 @@ class osd:
       abuf+=astep
     self.h4f.rgtr(0x17,self.h4f.i24(nbuf*astep//bytpp-1))
     self.cs.off()
+
+  # file should be already closed when calling this
+  def next_file(self):
+    #print("next_file")
+    filename=self.fullpath(self.direntries[self.file0+self.rdi][0])
+    self.bg_file=open(filename,"rb")
+    # Y->seek to first position to read from
+    bytpp=self.bpp//8 # in file
+    rdi=self.rdi%self.ncache
+    self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
+    print("%d RD %s" % (self.rdi,filename))
 
   # background read, call it periodically
   def bgreader(self,timer):
