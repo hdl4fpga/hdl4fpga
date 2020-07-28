@@ -316,7 +316,7 @@ class osd:
     membytes=32*1024*1024
     self.slide_pixels=self.xres*self.yres
     self.ncache=membytes//(self.slide_pixels*self.bpp//8)
-    self.ncache=7 # NOTE DEBUG
+    #self.ncache=7 # NOTE DEBUG
     self.priority_forward=2
     self.priority_backward=1
     self.nbackward=self.ncache*self.priority_backward//(self.priority_forward+self.priority_backward)
