@@ -349,7 +349,7 @@ class osd:
       self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
 
   # image to be discarded at changed view
-  def next_to_discard(self):
+  def next_to_discard(self)->int:
     return (self.vi+self.nforward-1)%self.ncache
 
   # choose next, ordered by priority
@@ -480,14 +480,17 @@ class osd:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
+    # update self.rdi in case cache_ti[rdi] changed, update self.rdi
+    self.rdi=self.cache_ti[rdi]
+    rdi=self.rdi%self.ncache
     # after cache_ty[] has been updated, call next file
-    if self.prev_rdi!=self.cache_ti[rdi] or self.bg_file==None:
+    if self.prev_rdi!=self.rdi or self.bg_file==None:
       # file changed, close and reopen
       if self.bg_file: # maybe not needed, python will auto-close?
         self.bg_file.close()
         self.bg_file=None
       self.next_file()
-      self.prev_rdi=self.cache_ti[rdi]
+      self.prev_rdi=self.rdi
     if self.cache_ty[rdi]<self.cache_tyend[rdi]:
       # file read
       self.read_scanline()
