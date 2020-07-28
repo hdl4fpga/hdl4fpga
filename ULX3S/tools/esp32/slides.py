@@ -110,11 +110,15 @@ class osd:
           if btn==33: # btn5 cursor left
             if p8slide[0]>0:
               p8slide[0]-=1
-              self.start_bgreader()
+              self.move(-1)
+              self.view()
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nslides)-1:
               p8slide[0]+=1
-              self.start_bgreader()
+              self.move(1)
+              self.view()
+          if btn==3: # btn1 F1
+            self.view()
           self.cs.on()
           self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncache))))
           self.cs.off()
@@ -547,7 +551,7 @@ class osd:
     membytes=32*1024*1024
     self.slide_pixels=self.xres*self.yres
     self.ncache=membytes//(self.slide_pixels*self.bpp//8)
-
+    self.ncache=7 # NOTE DEBUG
     self.priority_forward=2
     self.priority_backward=1
     self.nbackward=self.ncache*self.priority_backward//(self.priority_forward+self.priority_backward)
@@ -572,6 +576,153 @@ class osd:
     self.slide_shown=bytearray(1)
     self.PPM_line_buf=bytearray((self.bpp//8)*self.xres)
     self.finished=0
+
+  # image to be discarded at changed view
+  def next_to_discard(self):
+    return (self.vi+self.nforward-1)%self.ncache
+
+  # choose next, ordered by priority
+  def next_to_read(self):
+    before_first=self.nbackward-self.vi
+    if before_first<0:
+      before_first=0
+    after_last=self.vi+self.nforward-self.nslides
+    if after_last<0:
+      after_last=0
+    #print("before_first=%d after_last=%d" % (before_first,after_last))
+    next_forward_slide=-1
+    i=self.vi
+    n=i+self.nforward+before_first-after_last
+    if n<0:
+      n=0
+    if n>self.nslides:
+      n=self.nslides
+    while i<n:
+      ic=i%self.ncache
+      if self.cache_ti[ic]!=self.cache_li[ic] \
+      or self.cache_ty[ic]<self.yres:
+        next_forward_slide=i
+        break
+      i+=1
+    next_backward_slide=-1
+    i=self.vi-1
+    n=i-self.nbackward-after_last+before_first
+    if n<0:
+      n=0
+    if n>self.nslides:
+      n=self.nslides
+    while i>=n:
+      ic=i%self.ncache
+      if self.cache_ti[ic]!=self.cache_li[ic] \
+      or self.cache_ty[ic]<self.yres:
+        next_backward_slide=i
+        break
+      i-=1
+    next_reading_slide=-1
+    if next_forward_slide>=0 and next_backward_slide>=0:
+      if (next_forward_slide-self.vi)*self.priority_backward < \
+        (self.vi-next_backward_slide)*self.priority_forward:
+        next_reading_slide=next_forward_slide
+      else:
+        next_reading_slide=next_backward_slide
+    else:
+      if next_forward_slide>=0:
+        next_reading_slide=next_forward_slide
+      else:
+        if next_backward_slide>=0:
+          next_reading_slide=next_backward_slide
+    return next_reading_slide
+
+  # which image to replace after a move
+  def replace(self,mv):
+    dc_replace=-1
+    if mv>0:
+      dc_replace=self.vi+self.nforward-1
+      if dc_replace>=self.nslides:
+        dc_replace-=self.ncache
+    if mv<0:
+      dc_replace=(self.vi-self.nbackward-1)
+      if dc_replace<0:
+        dc_replace+=self.ncache
+    return dc_replace
+
+  # move with discarding images in cache
+  def move(self,mv):
+    vi=self.vi+mv
+    if vi<0 or vi>self.nslides or mv==0:
+      return
+    self.cache_li[self.next_to_discard()]=self.replace(mv)
+    self.vi+=mv
+    self.cache_li[self.next_to_discard()]=self.replace(mv)
+    self.rdi=self.next_to_read()
+
+  def next_file(self):
+    print("next_file")
+    self.bg_file=self.rdi
+    # TODO open file
+    # TODO seek to first position
+
+  def read_scanline(self):
+    return
+
+  # background read, call it periodically
+  def bgreader(self):
+    if self.rdi<0:
+      return
+    rdi=self.rdi%self.ncache
+    if self.cache_ti[rdi]!=self.cache_li[rdi]:
+      # cache contains different image than the one to be loaded
+      # y begin from top
+      self.cache_ti[rdi]=self.cache_li[rdi]
+      self.cache_ty[rdi]=0
+      # y end depends on cache content
+      # if bottom part is already in cache, reduce tyend
+      if self.cache_bi[rdi]==self.cache_ti[rdi]:
+        self.cache_tyend[rdi]=self.cache_by[rdi]
+      else:
+        self.cache_tyend[rdi]=self.yres
+    if self.bg_file==None:
+      self.next_file()
+    if self.cache_ty[rdi]<self.cache_tyend[rdi]:
+      # file read
+      self.read_scanline()
+      self.cache_ty[rdi]+=1
+      if self.cache_ty[rdi]>self.cache_by[rdi]:
+        self.cache_by[rdi]=self.cache_ty[rdi]
+    if self.cache_ty[rdi]>=self.cache_tyend[rdi]:
+      # slide complete, close file, find next
+      self.cache_ty[rdi]=self.yres
+      self.cache_bi[rdi]=self.cache_li[rdi]
+      self.cache_by[rdi]=0
+      self.bg_file=None
+      self.rdi=self.next_to_read()
+
+  # visualize current cache content
+  def view(self):
+    dci=self.next_to_discard()
+    rdi=self.rdi%self.ncache
+    for i in range(self.ncache):
+      print("[%2dT%-2d]" % (self.cache_ti[i],self.cache_ty[i]//10),end="")
+    print("")
+    for i in range(self.ncache):
+      print("[%2d   ]" % (self.cache_li[i]),end="")
+    print("")
+    for i in range(self.ncache):
+      print("[%2dB%-2d]" % (self.cache_bi[i],self.cache_by[i]//10),end="")
+    print("")
+    cvi=self.vi%self.ncache
+    for i in range(self.ncache):
+      mark="       "
+      if i==dci:
+        mark=" %2s^^^ " % (i)
+      if i==cvi:
+        mark=" %2d=== " % (self.vi)
+      if self.rdi>=0:
+        if i==rdi:
+          mark=mark[0:3]+"*"+mark[4:]
+      print(mark,end="")
+    print("")
+
 
   def ctrl(self,i):
     self.cs.on()
