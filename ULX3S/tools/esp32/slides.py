@@ -455,10 +455,11 @@ class osd:
     #print("next_file")
     filename=self.fullpath(self.direntries[self.file0+self.rdi][0])
     self.bg_file=open(filename,"rb")
-    # Y->seek to first position to read from
-    bytpp=self.bpp//8 # in file
     rdi=self.rdi%self.ncache
-    self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
+    if self.cache_ty[rdi]>0:
+      # Y->seek to first position to read from
+      bytpp=self.bpp//8 # in file
+      self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
     print("%d RD %s" % (self.rdi,filename))
 
   # background read, call it periodically
@@ -480,13 +481,13 @@ class osd:
       else:
         self.cache_tyend[rdi]=self.yres
     # after cache_ty[] has been updated, call next file
-    if self.prev_rdi!=self.rdi or self.bg_file==None:
+    if self.prev_rdi!=self.cache_ti[rdi] or self.bg_file==None:
       # file changed, close and reopen
       if self.bg_file: # maybe not needed, python will auto-close?
         self.bg_file.close()
         self.bg_file=None
       self.next_file()
-      self.prev_rdi=self.rdi
+      self.prev_rdi=self.cache_ti[rdi]
     if self.cache_ty[rdi]<self.cache_tyend[rdi]:
       # file read
       self.read_scanline()
