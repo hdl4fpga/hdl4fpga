@@ -93,7 +93,7 @@ package ipoepkg is
 		x"4500" &    -- Version, TOS
 		x"0000" &    -- Length
 		x"0000" &    -- Identification, Fragmentation
-		x"0511"      -- TTL, protocol
+		x"05"        -- TTL, protocol
 		); 
 
 end;

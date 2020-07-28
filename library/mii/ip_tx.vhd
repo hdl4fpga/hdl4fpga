@@ -54,34 +54,41 @@ entity ip_tx is
 		ip4da_txen  : in  std_logic;
 		ip4da_txd   : in  std_logic_vector;
 
+		ip4proto_treq : out std_logic;
+		ip4proto_trdy : in  std_logic := '-';
+		ip4proto_txen : in  std_logic;
+		ip4proto_txd  : in  std_logic_vector;
+
 		ip4_txen    : buffer std_logic;
 		ip4_txd     : out std_logic_vector);
 end;
 
 architecture def of ip_tx is
 
-	signal pl_treq      : std_logic;
-	signal ip4_ptr      : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
-	signal ip4shdr_trdy : std_logic;
-	signal ip4shdr_treq : std_logic;
-	signal ip4shdr_tena : std_logic;
-	signal ip4shdr_txen : std_logic;
-	signal ip4shdr_txd  : std_logic_vector(ip4_txd'range);
-	signal cksm_txd     : std_logic_vector(ip4_txd'range);
-	signal cksm_txen    : std_logic;
-	signal cksmd_trdy   : std_logic;
-	signal cksmd_tena   : std_logic;
-	signal cksmd_treq   : std_logic;
-	signal cksmd_txd    : std_logic_vector(ip4_txd'range);
-	signal cksmd_txen   : std_logic;
-	signal pllat_txd    : std_logic_vector(ip4_txd'range);
-	signal pllat_txen   : std_logic;
-	signal lenlat_txd   : std_logic_vector(ip4_txd'range);
-	signal lenlat_txen  : std_logic;
-	signal ip4alat_txd  : std_logic_vector(ip4_txd'range);
-	signal ip4alat_txen : std_logic;
-	signal lat_txd      : std_logic_vector(ip4_txd'range);
-	signal lat_txen     : std_logic;
+	signal pl_treq       : std_logic;
+	signal ip4_ptr       : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
+	signal shdr_trdy     : std_logic;
+	signal shdr_treq     : std_logic;
+	signal shdr_tena     : std_logic;
+	signal shdr_txen     : std_logic;
+	signal shdr_txd      : std_logic_vector(ip4_txd'range);
+	signal cksm_txd      : std_logic_vector(ip4_txd'range);
+	signal cksm_txen     : std_logic;
+	signal cksmd_trdy    : std_logic;
+	signal cksmd_tena    : std_logic;
+	signal cksmd_treq    : std_logic;
+	signal cksmd_txd     : std_logic_vector(ip4_txd'range);
+	signal cksmd_txen    : std_logic;
+	signal pllat_txd     : std_logic_vector(ip4_txd'range);
+	signal pllat_txen    : std_logic;
+	signal lenlat_txd    : std_logic_vector(ip4_txd'range);
+	signal lenlat_txen   : std_logic;
+	signal protolat_txd  : std_logic_vector(ip4_txd'range);
+	signal protolat_txen : std_logic;
+	signal alat_txd      : std_logic_vector(ip4_txd'range);
+	signal alat_txen     : std_logic;
+	signal lat_txd       : std_logic_vector(ip4_txd'range);
+	signal lat_txen      : std_logic;
 
 begin
 
@@ -109,22 +116,22 @@ begin
 		end if;
 	end process;
 
-	ip4shdr_tena <= frame_decode(
+	shdr_tena <= frame_decode(
 		ip4_ptr,
 	   	ip4hdr_frame, 
 		ip4_txd'length,
-	   	(ip4_llc, ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto));
+	   	(ip4_llc, ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl));
 
-	miiip4shdr_e : entity hdl4fpga.mii_rom
+	ip4shdr_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(llc_ip4 & ip4_shdr,8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pl_treq,
-		mii_tena => ip4shdr_tena,
-		mii_trdy => ip4shdr_trdy,
-		mii_txen => ip4shdr_txen,
-		mii_txd  => ip4shdr_txd);
+		mii_tena => shdr_tena,
+		mii_trdy => shdr_trdy,
+		mii_txen => shdr_txen,
+		mii_txd  => shdr_txd);
 
 	lat_b : block
 		signal pllat1_txen : std_logic;
@@ -166,19 +173,19 @@ begin
 				ip4hdr_frame(ip4_ident)+
 				ip4hdr_frame(ip4_flgsfrg)+
 				ip4hdr_frame(ip4_ttl)+
-				ip4hdr_frame(ip4_proto)+
 				ip4hdr_frame(ip4_chksum))
 		port map (
 			mii_txc  => mii_txc,
 			lat_txen => pllat2_txen,
 			lat_txd  => lenlat_txd,
 			mii_txen => pllat_txen,
-			mii_txd  => ip4alat_txd);
+			mii_txd  => alat_txd);
 		
 	end block;
 	
 	ip4len_treq <= pl_treq;
-	ip4sa_treq  <= ip4len_trdy;
+	ip4proto_treq <= ip4len_trdy;
+	ip4sa_treq  <= ip4proto_trdy;
 	ip4da_treq  <= ip4sa_trdy;
 
 	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
@@ -199,11 +206,12 @@ begin
 		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
-	lenlat_txen  <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);
-	ip4alat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da));
+	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);
+	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto);
+	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da));
 
-	ip4_txd  <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & ip4alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (ip4alat_txen or pllat_txen));
-	ip4_txen <= ip4shdr_txen or lenlat_txen or cksmd_txen or ip4alat_txen or pllat_txen;
+	ip4_txd  <= wirebus(shdr_txd & lenlat_txd & protolat_txd & cksmd_txd & alat_txd, shdr_txen & lenlat_txen & protolat_txen & cksmd_txen & (alat_txen or pllat_txen));
+	ip4_txen <= shdr_txen or lenlat_txen or protolat_txen or cksmd_txen or alat_txen or pllat_txen;
 
 end;
 
