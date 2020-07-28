@@ -115,8 +115,6 @@ class osd:
             if p8slide[0]<int(self.nslides)-1:
               p8slide[0]+=1
               self.change_slide(1)
-          if btn==3: # btn1 F1
-            self.view()
           self.cs.on()
           self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncache))))
           self.cs.off()
@@ -315,7 +313,7 @@ class osd:
     membytes=32*1024*1024
     self.slide_pixels=self.xres*self.yres
     self.ncache=membytes//(self.slide_pixels*self.bpp//8)
-    #self.ncache=7 # NOTE DEBUG
+    #self.ncache=7 # NOTE debug
     self.priority_forward=2
     self.priority_backward=1
     self.nbackward=self.ncache*self.priority_backward//(self.priority_forward+self.priority_backward)
@@ -510,33 +508,6 @@ class osd:
     self.timer.init(mode=Timer.ONE_SHOT,period=0,callback=self.bgreader)
 
 
-  # visualize current cache content
-  def view(self):
-    dci=self.next_to_discard()
-    rdi=self.rdi%self.ncache
-    for i in range(self.ncache):
-      print("[%2dT%-2d]" % (self.cache_ti[i],self.cache_ty[i]//10),end="")
-    print("")
-    for i in range(self.ncache):
-      print("[%2d   ]" % (self.cache_li[i]),end="")
-    print("")
-    for i in range(self.ncache):
-      print("[%2dB%-2d]" % (self.cache_bi[i],self.cache_by[i]//10),end="")
-    print("")
-    cvi=self.vi%self.ncache
-    for i in range(self.ncache):
-      mark="       "
-      if i==dci:
-        mark=" %2s^^^ " % (i)
-      if i==cvi:
-        mark=" %2d=== " % (self.vi)
-      if self.rdi>=0:
-        if i==rdi:
-          mark=mark[0:3]+"*"+mark[4:]
-      print(mark,end="")
-    print("")
-
-
   def ctrl(self,i):
     self.cs.on()
     self.spi.write(bytearray([0, 0xFF, 0xFF, 0xFF, 0xFF, i]))
@@ -567,7 +538,6 @@ def poke(addr,data):
   run.poke(addr,data)
 
 bitstream="/sd/hdl4fpga/bitstreams/ulx3s_12f_graphics_spi.bit"
-#bitstream="none"
 try:
   os.mount(SDCard(slot=3),"/sd")
   ecp5.prog(bitstream)
