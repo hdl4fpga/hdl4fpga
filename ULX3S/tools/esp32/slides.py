@@ -421,7 +421,7 @@ class osd:
   # discard images in cache
   def change_slide(self,mv):
     vi=self.vi+mv
-    if vi<0 or vi>self.nslides or mv==0:
+    if vi<0 or vi>=self.nslides or mv==0:
       return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.vi+=mv
