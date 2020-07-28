@@ -99,6 +99,7 @@ begin
 			mii_treq <= not sw1;
 		end if;
 	end process;
+	led7 <= mii_treq;
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
@@ -158,7 +159,7 @@ begin
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
-	led7  <= '0';
+--	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
