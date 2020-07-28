@@ -202,8 +202,7 @@ class osd:
         self.spi_request.irq(trigger=Pin.IRQ_FALLING, handler=self.irq_handler_ref)
         self.irq_handler(0) # handle stuck IRQ
       if filename.endswith(".h4f"):
-        self.h4f.load_hdl4fpga_image(open(filename,"rb"),self.slide_shown[0]%self.ncache*self.slide_pixels)
-        gc.collect()
+        self.start_bgreader()
         self.enable[0]=0
         self.osd_enable(0)
 
@@ -480,10 +479,11 @@ class osd:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
-    # update self.rdi in case cache_ti[rdi] changed, update self.rdi
-    self.rdi=self.cache_ti[rdi]
-    rdi=self.rdi%self.ncache
-    # after cache_ty[] has been updated, call next file
+      # update self.rdi in case cache_ti[rdi] changed, update self.rdi
+      self.rdi=self.cache_ti[rdi]
+      rdi=self.rdi%self.ncache
+    # after self.rdi and cache_ty has been updated
+    # call next file
     if self.prev_rdi!=self.rdi or self.bg_file==None:
       # file changed, close and reopen
       if self.bg_file: # maybe not needed, python will auto-close?
