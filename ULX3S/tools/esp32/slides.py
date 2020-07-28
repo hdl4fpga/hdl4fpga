@@ -424,7 +424,7 @@ class osd:
     if vi<0 or vi>=self.nslides or mv==0:
       return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
-    self.vi+=mv
+    self.vi=vi
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
     if self.rdi>=0:
