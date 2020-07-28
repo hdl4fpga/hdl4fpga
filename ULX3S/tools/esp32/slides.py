@@ -345,7 +345,7 @@ class osd:
   def start_bgreader(self):
     if self.finished:
       self.finished=0
-      self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
+      self.timer.init(mode=Timer.ONE_SHOT,period=1,callback=self.bgreader)
 
   # image to be discarded at changed view
   def next_to_discard(self)->int:
@@ -506,7 +506,9 @@ class osd:
       self.rdi=self.next_to_read()
       if self.rdi<0:
         self.finished=1
-        self.timer.deinit()
+        return
+    self.timer.init(mode=Timer.ONE_SHOT,period=0,callback=self.bgreader)
+
 
   # visualize current cache content
   def view(self):
