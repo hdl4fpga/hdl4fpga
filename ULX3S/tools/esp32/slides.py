@@ -111,12 +111,10 @@ class osd:
             if p8slide[0]>0:
               p8slide[0]-=1
               self.move(-1)
-              #self.view()
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nslides)-1:
               p8slide[0]+=1
               self.move(1)
-              #self.view()
           if btn==3: # btn1 F1
             self.view()
           self.cs.on()
@@ -135,140 +133,6 @@ class osd:
       self.timer.init(mode=Timer.PERIODIC, period=30, callback=self.autorepeat)
     self.move_dir_cursor(self.autorepeat_direction)
     self.irq_handler(0) # catch stale IRQ
-
-  def bgreader_old(self,timer):
-    if self.finished>0 or self.reading_slide<0:
-      self.timer.deinit()
-      return
-    # if we are not finished, we get here
-    reading_slide=self.reading_slide%self.ncache
-    if self.file_open==0:
-      filename=self.fullpath(self.direntries[self.file0+self.reading_slide][0])
-      self.bg_file=open(filename,"rb")
-      self.bg_file.seek(self.caches_pos[reading_slide])
-      self.file_open=1
-      print("%d RD %s" % (self.reading_slide,filename))
-    # file is open now
-    restore_pos=1
-    must_close=0
-    # if viewed slide has changed:
-    if self.slide_shown[0] != self.prev_slide_shown:
-      # close file if it was being viewed and baing loaded
-      if self.prev_slide_shown == self.reading_slide:
-        must_close=1
-      # discard those cached that will be replaced with new files
-      if self.slide_shown[0] < self.prev_slide_shown:
-        dc=(self.slide_shown[0]+self.ncache-self.nbackward)%self.ncache
-        n=self.prev_slide_shown-self.slide_shown[0]
-      else:
-        dc=(self.prev_slide_shown+self.nforward)%self.ncache
-        n=self.slide_shown[0]-self.prev_slide_shown
-      # TODO: improve discarding condition,
-      # discarding this is not always neccessary
-      for i in range(n):
-        if dc==reading_slide:
-          must_close=1
-          restore_pos=0
-        self.caches_pos[dc]=0
-        self.caches_y_rd[dc]=0
-        dc=(dc+1)%self.ncache
-      # ... end discarding cache ...
-    if must_close:
-      if restore_pos:
-        self.caches_pos[reading_slide]=self.bg_file.tell()
-      self.bg_file.close()
-      self.file_open=0
-      self.reading_slide=self.slide_shown[0]
-      self.prev_slide_shown=self.slide_shown[0]
-      return
-    self.prev_slide_shown=self.slide_shown[0]
-    # check are all Y lines of image loaded
-    bytpp=self.bpp//8 # in file
-    if self.caches_y_rd[reading_slide] < self.caches_y[reading_slide]:
-      # load state, read one line, save state and exit
-      line_pixels=self.caches_x_rd[reading_slide]
-      read_remaining=bytpp*line_pixels
-      seek_skip=0
-      # clamp read remaining and calculate seek at the end
-      if read_remaining > bytpp*self.caches_x[reading_slide]:
-        seek_skip=bg_file.tell() + read_remaining
-        read_remaining=bytpp*self.caches_x[reading_slide]
-      self.bg_file.readinto(self.PPM_line_buf)
-      if seek_skip:
-        self.bg_file.seek(seek_skip)
-      # write PPM_line_buf to screen
-      addr=self.xres*(reading_slide*self.yres+self.caches_y_rd[reading_slide])
-      # DMA transfer <= 2048 bytes each
-      # DMA transfer must be divided in N buffer uploads
-      # buffer upload <= 256 bytes each
-      nbuf=8
-      astep=200
-      abuf=0
-      self.cs.on()
-      self.h4f.rgtr(0x16,self.h4f.i24(addr))
-      for j in range(nbuf):
-        self.h4f.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
-        abuf+=astep
-      self.h4f.rgtr(0x17,self.h4f.i24(nbuf*astep//bytpp-1))
-      self.cs.off()
-      self.caches_y_rd[reading_slide]+=1
-      # next line next time 
-    else: # all y-lines done, close file
-      self.bg_file.close()
-      self.file_open=0
-      # TODO priority reading: decide which slide is next
-      # finish if no more slides to read
-      before_first=self.nbackward-self.slide_shown[0]
-      if before_first<0:
-        before_first=0
-      after_last=self.slide_shown[0]+self.nforward-self.nslides
-      if after_last<0:
-        after_last=0
-      print("before_first=%d after_last=%d" % (before_first,after_last))
-      next_forward_slide=-1
-      i=self.slide_shown[0]
-      n=i+self.nforward+before_first-after_last
-      if n<0:
-        n=0
-      if n>self.nslides:
-        n=self.nslides
-      while i<n:
-        ic=i%self.ncache
-        if self.caches_y_rd[ic]<self.caches_y[ic]:
-          next_forward_slide=i
-          break
-        i+=1
-      next_backward_slide=-1
-      i=self.slide_shown[0]-1
-      n=i-self.nbackward-after_last+before_first
-      if n<0:
-        n=0
-      if n>self.nslides:
-        n=self.nslides
-      while i>=n:
-        ic=i%self.ncache
-        if self.caches_y_rd[ic]<self.caches_y[ic]:
-          next_backward_slide=i
-          break
-        i-=1
-      next_reading_slide=-1
-      if next_forward_slide>=0 and next_backward_slide>=0:
-        if (next_forward_slide-self.slide_shown[0])*self.priority_backward < \
-          (self.slide_shown[0]-next_backward_slide)*self.priority_forward:
-          next_reading_slide=next_forward_slide
-        else:
-          next_reading_slide=next_backward_slide
-      else:
-        if next_forward_slide>=0:
-          next_reading_slide=next_forward_slide
-        else:
-          if next_backward_slide>=0:
-            next_reading_slide=next_backward_slide
-      self.reading_slide=next_reading_slide
-      if self.reading_slide<0:
-        self.finished=1
-        self.timer.deinit()
-        print("finished")
 
   def select_entry(self):
     if self.direntries[self.fb_cursor][1]: # is it directory
