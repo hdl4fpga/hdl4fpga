@@ -111,12 +111,12 @@ class osd:
             if p8slide[0]>0:
               p8slide[0]-=1
               self.move(-1)
-              self.view()
+              #self.view()
           if btn==65: # btn6 cursor right
             if p8slide[0]<int(self.nslides)-1:
               p8slide[0]+=1
               self.move(1)
-              self.view()
+              #self.view()
           if btn==3: # btn1 F1
             self.view()
           self.cs.on()
@@ -144,7 +144,7 @@ class osd:
       self.reading_slide=self.slide_shown[0]
       self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
 
-  def bgreader(self,timer):
+  def bgreader_old(self,timer):
     if self.finished>0 or self.reading_slide<0:
       self.timer.deinit()
       return
@@ -345,82 +345,6 @@ class osd:
         self.init_spi() # because of ecp5.prog() spi.deinit()
         self.spi_request.irq(trigger=Pin.IRQ_FALLING, handler=self.irq_handler_ref)
         self.irq_handler(0) # handle stuck IRQ
-      if filename.endswith(".nes") \
-      or filename.endswith(".snes") \
-      or filename.endswith(".smc") \
-      or filename.endswith(".sfc"):
-        import ld_nes
-        s=ld_nes.ld_nes(self.spi,self.cs)
-        s.ctrl(1)
-        s.ctrl(0)
-        s.load_stream(open(filename,"rb"))
-        del s
-        gc.collect()
-      if filename.startswith("/sd/ti99_4a/") and filename.endswith(".bin"):
-        import ld_ti99_4a
-        s=ld_ti99_4a.ld_ti99_4a(self.spi,self.cs)
-        s.load_rom_auto(open(filename,"rb"),filename)
-        del s
-        gc.collect()
-        self.enable[0]=0
-        self.osd_enable(0)
-      if (filename.startswith("/sd/msx") and filename.endswith(".rom")) \
-      or filename.endswith(".mx1"):
-        import ld_msx
-        s=ld_msx.ld_msx(self.spi,self.cs)
-        s.load_msx_rom(open(filename,"rb"))
-        del s
-        gc.collect()
-        self.enable[0]=0
-        self.osd_enable(0)
-      if filename.endswith(".z80"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_zxspectrum
-        s=ld_zxspectrum.ld_zxspectrum(self.spi,self.cs)
-        s.loadz80(filename)
-        del s
-        gc.collect()
-      if filename.endswith(".ora") or filename.endswith(".orao"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_orao
-        s=ld_orao.ld_orao(self.spi,self.cs)
-        s.loadorao(filename)
-        del s
-        gc.collect()
-      if filename.endswith(".vsf"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_vic20
-        s=ld_vic20.ld_vic20(self.spi,self.cs)
-        s.loadvsf(filename)
-        del s
-        gc.collect()
-      if filename.endswith(".prg"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_vic20
-        s=ld_vic20.ld_vic20(self.spi,self.cs)
-        s.loadprg(filename)
-        del s
-        gc.collect()
-      if filename.endswith(".cas"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_trs80
-        s=ld_trs80.ld_trs80(self.spi,self.cs)
-        s.loadcas(filename)
-        del s
-        gc.collect()
-      if filename.endswith(".cmd"):
-        self.enable[0]=0
-        self.osd_enable(0)
-        import ld_trs80
-        s=ld_trs80.ld_trs80(self.spi,self.cs)
-        s.loadcmd(filename)
-        del s
-        gc.collect()
       if filename.endswith(".h4f"):
         self.h4f.load_hdl4fpga_image(open(filename,"rb"),self.slide_shown[0]%self.ncache*self.slide_pixels)
         gc.collect()
@@ -527,21 +451,6 @@ class osd:
     self.nslides=self.nfiles
     gc.collect()
 
-  # NOTE: this can be used for debugging
-  #def osd(self, a):
-  #  if len(a) > 0:
-  #    enable = 1
-  #  else:
-  #    enable = 0
-  #  self.cs.on()
-  #  self.spi.write(bytearray([0,0xFE,0,0,0,enable])) # enable OSD
-  #  self.cs.off()
-  #  if enable:
-  #    self.cs.on()
-  #    self.spi.write(bytearray([0,0xFD,0,0,0])) # write content
-  #    self.spi.write(bytearray(a)) # write content
-  #    self.cs.off()
-  
   # *** SLIDESHOW ***
   # self.direntries, self.file0
   def init_slides(self):
@@ -656,14 +565,36 @@ class osd:
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
 
+  # file should be already closed when calling this
   def next_file(self):
-    print("next_file")
-    self.bg_file=self.rdi
-    # TODO open file
-    # TODO seek to first position
+    #print("next_file")
+    filename=self.fullpath(self.direntries[self.file0+self.rdi][0])
+    self.bg_file=open(filename,"rb")
+    # Y->seek to first position to read from
+    bytpp=self.bpp//8 # in file
+    rdi=self.rdi%self.ncache
+    self.bg_file.seek(bytpp*self.xres*self.cache_li[rdi])
+    print("%d RD %s" % (self.rdi,filename))
 
   def read_scanline(self):
-    return
+    bytpp=self.bpp//8 # on screen
+    rdi=self.rdi%self.ncache
+    self.bg_file.readinto(self.PPM_line_buf)
+    # write PPM_line_buf to screen
+    addr=self.xres*(rdi*self.yres+self.cache_ty[rdi])
+    # DMA transfer <= 2048 bytes each
+    # DMA transfer must be divided in N buffer uploads
+    # buffer upload <= 256 bytes each
+    nbuf=8
+    astep=200
+    abuf=0
+    self.cs.on()
+    self.h4f.rgtr(0x16,self.h4f.i24(addr))
+    for j in range(nbuf):
+      self.h4f.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
+      abuf+=astep
+    self.h4f.rgtr(0x17,self.h4f.i24(nbuf*astep//bytpp-1))
+    self.cs.off()
 
   # background read, call it periodically
   def bgreader(self):
@@ -754,6 +685,7 @@ def poke(addr,data):
   run.poke(addr,data)
 
 bitstream="/sd/hdl4fpga/bitstreams/ulx3s_12f_graphics_spi.bit"
+#bitstream="none"
 try:
   os.mount(SDCard(slot=3),"/sd")
   ecp5.prog(bitstream)
