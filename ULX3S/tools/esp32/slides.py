@@ -459,6 +459,7 @@ class osd:
     self.nforward=self.ncache-self.nbackward;
     #print(self.nforward, self.nbackward, self.nbackward+self.nforward)
     self.rdi=0 # currently reading image
+    self.prev_rdi=-1
     self.vi=0 # currently viewed image
     self.cache_li=[] # image to be loaded
     self.cache_ti=[] # top image
@@ -564,6 +565,7 @@ class osd:
     self.vi+=mv
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
+    self.start_bgreader()
 
   # file should be already closed when calling this
   def next_file(self):
@@ -573,7 +575,7 @@ class osd:
     # Y->seek to first position to read from
     bytpp=self.bpp//8 # in file
     rdi=self.rdi%self.ncache
-    self.bg_file.seek(bytpp*self.xres*self.cache_li[rdi])
+    self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
     print("%d RD %s" % (self.rdi,filename))
 
   def read_scanline(self):
@@ -597,7 +599,7 @@ class osd:
     self.cs.off()
 
   # background read, call it periodically
-  def bgreader(self):
+  def bgreader(self,timer):
     if self.rdi<0:
       self.finished=1
       self.timer.deinit()
@@ -614,8 +616,13 @@ class osd:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
-    if self.bg_file==None:
+    if self.prev_rdi!=self.rdi or self.bg_file==None:
+      # file changed, close and reopen
+      if self.bg_file: # maybe not needed, python will auto-close?
+        self.bg_file.close()
+        self.bg_file=None
       self.next_file()
+      self.prev_rdi=self.rdi
     if self.cache_ty[rdi]<self.cache_tyend[rdi]:
       # file read
       self.read_scanline()
