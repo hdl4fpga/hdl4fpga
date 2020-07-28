@@ -136,14 +136,6 @@ class osd:
     self.move_dir_cursor(self.autorepeat_direction)
     self.irq_handler(0) # catch stale IRQ
 
-  def start_bgreader(self):
-    print("start bgreader",self.slide_shown[0])
-    return
-    if self.finished:
-      self.finished=0
-      self.reading_slide=self.slide_shown[0]
-      self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
-
   def bgreader_old(self,timer):
     if self.finished>0 or self.reading_slide<0:
       self.timer.deinit()
@@ -484,7 +476,15 @@ class osd:
     self.bg_file=None
     self.slide_shown=bytearray(1)
     self.PPM_line_buf=bytearray((self.bpp//8)*self.xres)
-    self.finished=0
+    self.finished=1
+
+  def start_bgreader(self):
+    #print("start bgreader",self.slide_shown[0])
+    #return
+    if self.finished:
+      self.finished=0
+      self.rdi=self.slide_shown[0]
+      self.timer.init(mode=Timer.PERIODIC, period=15, callback=self.bgreader)
 
   # image to be discarded at changed view
   def next_to_discard(self):
@@ -599,6 +599,8 @@ class osd:
   # background read, call it periodically
   def bgreader(self):
     if self.rdi<0:
+      self.finished=1
+      self.timer.deinit()
       return
     rdi=self.rdi%self.ncache
     if self.cache_ti[rdi]!=self.cache_li[rdi]:
@@ -627,6 +629,9 @@ class osd:
       self.cache_by[rdi]=0
       self.bg_file=None
       self.rdi=self.next_to_read()
+      if self.rdi<0:
+        self.finished=1
+        self.timer.deinit()
 
   # visualize current cache content
   def view(self):
