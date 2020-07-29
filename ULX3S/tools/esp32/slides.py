@@ -229,10 +229,6 @@ class osd:
         self.init_spi() # because of ecp5.prog() spi.deinit()
         self.spi_request.irq(trigger=Pin.IRQ_FALLING, handler=self.irq_handler_ref)
         self.irq_handler(0) # handle stuck IRQ
-      if filename.endswith(".h4f"):
-        self.start_bgreader()
-        self.enable[0]=0
-        self.osd_enable(0)
       if filename.endswith(".ppm"):
         self.files2slides()
         self.start_bgreader()
@@ -394,13 +390,14 @@ class osd:
         xres=int(xystr[0])
         yres=int(xystr[1])
         line=f.readline(1000)
-        if int(line)!=255: # 255 levels supported only
-          continue
-        self.slide_fi.append(self.file0+i)
-        self.slide_xres.append(xres)
-        self.slide_yres.append(yres)
-        self.slide_pos.append(f.tell())
-        self.nslides+=1
+        if int(line)==255: # 255 levels supported only
+          self.slide_fi.append(self.file0+i)
+          self.slide_xres.append(xres)
+          self.slide_yres.append(yres)
+          self.slide_pos.append(f.tell())
+          self.nslides+=1
+          if self.nslides>=256:
+            return
 
   # choose next, ordered by priority
   def next_to_read(self):
@@ -474,11 +471,11 @@ class osd:
   # change currently viewed slide
   # discard images in cache
   def change_slide(self,mv):
-    vi=self.vi+mv
-    if vi<0 or vi>=self.nslides or mv==0:
-      return
+    #vi=self.vi+mv
+    #if vi<0 or vi>=self.nslides or mv==0:
+    #  return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
-    self.vi=vi
+    self.vi=self.slide_shown[0]
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
     if self.rdi>=0:
