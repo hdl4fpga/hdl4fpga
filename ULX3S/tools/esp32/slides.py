@@ -402,15 +402,6 @@ class osd:
         self.slide_pos.append(f.tell())
         self.nslides+=1
 
-  def start_bgreader(self):
-    if self.finished:
-      self.finished=0
-      self.timer.init(mode=Timer.ONE_SHOT,period=1,callback=self.bgreader)
-
-  # image to be discarded at changed view
-  def next_to_discard(self)->int:
-    return (self.vi+self.nforward-1)%self.ncache
-
   # choose next, ordered by priority
   def next_to_read(self):
     before_first=self.nbackward-self.vi
@@ -463,7 +454,11 @@ class osd:
           next_reading_slide=next_backward_slide
     return next_reading_slide
 
-  # which image to replace after a move
+  # image to be discarded at changed view
+  def next_to_discard(self)->int:
+    return (self.vi+self.nforward-1)%self.ncache
+
+  # which image to replace after changing slide
   def replace(self,mv):
     dc_replace=-1
     if mv>0:
@@ -597,6 +592,10 @@ class osd:
         return
     self.timer.init(mode=Timer.ONE_SHOT,period=0,callback=self.bgreader)
 
+  def start_bgreader(self):
+    if self.finished:
+      self.finished=0
+      self.timer.init(mode=Timer.ONE_SHOT,period=1,callback=self.bgreader)
 
   def ctrl(self,i):
     self.cs.on()
