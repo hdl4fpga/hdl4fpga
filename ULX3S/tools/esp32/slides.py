@@ -572,7 +572,7 @@ class osd:
         self.cache_tyend[rdi]=self.cache_by[rdi]
       else:
         self.cache_tyend[rdi]=self.yres
-      # update self.rdi in case cache_ti[rdi] changed, update self.rdi
+      # update self.rdi after cache_ti[rdi] has changed
       self.rdi=self.cache_ti[rdi]
       rdi=self.rdi%self.ncache
     # after self.rdi and cache_ty has been updated
