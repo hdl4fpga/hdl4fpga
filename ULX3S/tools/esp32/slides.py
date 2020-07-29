@@ -377,6 +377,8 @@ class osd:
     self.bg_file=None
     self.slide_shown=bytearray(1)
     self.PPM_line_buf=bytearray(3*self.xres)
+    self.rb=bytearray(256) # reverse bits
+    self.init_reverse_bits()
     self.finished=1
 
   def files2slides(self):
@@ -492,18 +494,31 @@ class osd:
     if self.rdi>=0:
       self.start_bgreader()
 
+  @micropython.viper
+  def init_reverse_bits(self):
+    p8rb=ptr8(addressof(self.rb))
+    for i in range(256):
+      v=i
+      r=0
+      for j in range(8):
+        r<<=1
+        r|=v&1
+        v>>=1
+      p8rb[i]=r
+
   # convert PPM line RGB888 to RGB565 bytes reversed
   @micropython.viper
   def ppm2pixel(self):
-    p8 = ptr8(addressof(self.PPM_line_buf))
+    p8=ptr8(addressof(self.PPM_line_buf))
+    p8rb=ptr8(addressof(self.rb))
     xi=0
     yi=0
     for i in range(int(self.xres)):
       r=p8[xi]
       g=p8[xi+1]
       b=p8[xi+2]
-      p8[yi]=r
-      p8[yi+1]=g
+      p8[yi]=p8rb[r]
+      p8[yi+1]=p8rb[g]
       xi+=3
       yi+=2
 
