@@ -1098,6 +1098,11 @@ package body std is
 		assert word'length mod byte'length = 0
 			report "word2byte mod"
 			severity failure;
+
+		assert word'length mod 2**addr'length = 0
+			report "word2byte mod"
+			severity failure;
+
 		aux := word;
 		for i in byte'range loop
 			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);

@@ -30,6 +30,8 @@ use hdl4fpga.std.all;
 
 package ethpkg is
 
+	type mode_t is (eq, ge, gt);
+
 	constant eth_hwda : natural := 0;
 	constant eth_hwsa : natural := 1;
 	constant eth_type : natural := 2;
@@ -50,7 +52,7 @@ package ethpkg is
 		constant frame : natural_vector;
 		constant size  : natural;
 		constant field : natural;
-		constant ge    : boolean := false)
+		constant mode  : mode_t := eq)
 		return std_logic;
 
 	function frame_decode (
@@ -91,7 +93,7 @@ package body ethpkg is
 		constant frame : natural_vector;
 		constant size  : natural;
 		constant field : natural;
-		constant ge    : boolean := false)
+		constant mode  : mode_t := eq)
 		return std_logic is
 		variable retval : std_logic;
 		variable sumup  : natural;
@@ -100,9 +102,20 @@ package body ethpkg is
 		sumup  := 0;
 		for i in frame'range loop
 			if i=field then
-				if sumup <= ptr and (ptr < sumup+frame(i)/size or ge) then
-					retval := '1';
-				end if;
+				case mode is
+				when eq =>
+					if sumup <= ptr and ptr < sumup+frame(i)/size then
+						retval := '1';
+					end if;
+				when ge =>
+					if sumup <= ptr then
+						retval := '1';
+					end if;
+				when gt =>
+					if sumup+frame(i)/size <= ptr then
+						retval := '1';
+					end if;
+				end case;
 				exit;
 			end if;
 			sumup := sumup + frame(i)/size;

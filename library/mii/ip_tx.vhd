@@ -66,7 +66,7 @@ end;
 architecture def of ip_tx is
 
 	signal pl_treq       : std_logic;
-	signal ip4_ptr       : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
+	signal ip4_ptr       : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1)) := (others => '1');
 	signal shdr_trdy     : std_logic;
 	signal shdr_treq     : std_logic;
 	signal shdr_tena     : std_logic;
@@ -92,19 +92,6 @@ architecture def of ip_tx is
 
 begin
 
-	process (pl_txen, mii_txc)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			if pl_txen='1' then
-				q := '1';
-			elsif ip4_txen='1' then
-				q := '0';
-			end if;
-		end if;
-		pl_treq <= pl_txen or q or ip4_txen;
-	end process;
-
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
@@ -115,6 +102,9 @@ begin
 			end if;
 		end if;
 	end process;
+	pl_treq <= ip4_txen or frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, 
+		   (ip4_llc, ip4_verihl, ip4_tos, ip4_len, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto, ip4_chksum, ip4_sa, ip4_da));
+
 
 	shdr_tena <= frame_decode(
 		ip4_ptr,
@@ -192,7 +182,7 @@ begin
 	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
 	cksm_txen  <= ip4len_txen or ip4sa_txen or ip4da_txen;
 	cksmd_treq <= pl_treq;
-	cksmd_tena <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
+	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
@@ -202,9 +192,8 @@ begin
 		mii_txd   => cksm_txd,
 
 		cksm_init => oneschecksum(ip4_shdr, 16),
-		cksm_treq => cksmd_tena,
+		cksm_treq => cksmd_txen,
 		cksm_trdy => cksmd_trdy,
-		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
 	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);

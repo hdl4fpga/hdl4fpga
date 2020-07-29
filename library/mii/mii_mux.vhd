@@ -52,7 +52,7 @@ begin
 	severity FAILURE;
 
 	process (mii_treq, mii_tena, mii_txc)
-		variable cntr : unsigned(0 to mux_length);
+		variable cntr : unsigned(0 to mux_length) := (others => '1');
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txd'length=mux_data'length then

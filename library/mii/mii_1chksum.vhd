@@ -45,13 +45,13 @@ entity mii_1chksum is
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : std_logic_vector(chksum_size-1 downto 0);
+	signal chksum : std_logic_vector(0 to chksum_size-1);
 begin
 
 	process (mii_txc)
 		variable cy  : unsigned(mii_txd'length downto mii_txd'length);
 		variable add : unsigned(mii_txd'length downto 0);
-		variable acc : unsigned(chksum'range);
+		variable acc : unsigned(chksum'reverse_range);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txen='0' then
@@ -67,7 +67,9 @@ begin
 					acc(mii_txd'reverse_range) := add(mii_txd'reverse_range);
 					acc := acc ror mii_txd'length;
 				end loop;
+  			chksum <= std_logic_vector(acc);
 				chksum <= not reverse(reverse(std_logic_vector(acc),8));
+				chksum <= reverse(std_logic_vector(acc),8);
 			end if;
 		end if;
 	end process;
