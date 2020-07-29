@@ -380,6 +380,7 @@ class osd:
     self.finished=1
 
   def files2slides(self):
+    self.slide_fi=[] # file index in direntries
     self.slide_xres=[]
     self.slide_yres=[]
     self.slide_pos=[]
@@ -398,6 +399,7 @@ class osd:
         if int(line)!=255: # 255 levels supported only
           continue
         print(filename,xres,yres)
+        self.slide_fi.append(self.file0+i)
         self.slide_xres.append(xres)
         self.slide_yres.append(yres)
         self.slide_pos.append(f.tell())
