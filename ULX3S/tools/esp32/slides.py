@@ -1,13 +1,48 @@
 # micropython ESP32
-# OSD SPI loader
+# Slide show presenter with OSD
+
+# AUTHOR=EMARD
+# LICENSE=BSD
+
+# #!/bin/sh
+# WIDTH=800
+# for file in *.jpg
+# do
+#   newfile=$(echo $file | sed -e "s/\.jpg$/\.ppm/g")
+#   convert -resize "${WIDTH}" -size "${WIDTH}" "${file}" "${newfile}"
+# done
+
+# convert slide.jpg -scale 800x600 010picture.ppm
+# Copy all slides to SD card (esp32ecp5 and ftp).
+# Recommended naming is this:
+
+# /sd/slides/000first.ppm
+# /sd/slides/050second.ppm
+# ...
+# /sd/slides/999last.ppm
+
+
+# All slides from "/sd/slides" directory will be loaded from
+# SD card to RAM and shown sorted in alphabetical order.
+# Press BTN RIGHT/LEFT to display next/previous slide.
+# 34 slides are cached in 32 MB RAM for 16bpp display.
+# Loading all 34 slides to cache takes about 4 minutes.
+# If there are more slides on SD than in the RAM,
+# slides will be cached in advance with 2:1 priority.
+# During the presentation, cache allows to switch
+# slides back and forth with immediately response
+# to press of the BTN.
+# 22 forward slides and 11 backward slides are loaded in
+# the following order:
+# currently viewed slide loads first.
+# then forward/backward slides, from nearest to farthest.
+# If slides are advanced too fast, it will be visible how
+# currently viewed slide loads from top to bottom.
 
 # press 4 arrows, OSD will appear
 # navigate to SD directory with only *.h4f files
 # select one file and press right arrow
 # press left/right to switch slides
-
-# AUTHOR=EMARD
-# LICENSE=BSD
 
 # this code is SPI master to FPGA SPI slave
 # FPGA sends pulse to GPIO after BTN state is changed.
@@ -203,6 +238,10 @@ class osd:
         self.start_bgreader()
         self.enable[0]=0
         self.osd_enable(0)
+      if filename.endswith(".ppm"):
+        self.files2slides()
+        self.enable[0]=0
+        self.osd_enable(0)
 
   @micropython.viper
   def osd_enable(self, en:int):
@@ -339,6 +378,29 @@ class osd:
     self.slide_shown=bytearray(1)
     self.PPM_line_buf=bytearray((self.bpp//8)*self.xres)
     self.finished=1
+
+  def files2slides(self):
+    self.slide_xres=[]
+    self.slide_yres=[]
+    self.slide_pos=[]
+    for i in range(self.nfiles):
+      filename=self.fullpath(self.direntries[self.file0+i][0])
+      f=open(filename,"rb")
+      line=f.readline(1000)
+      if line[0:2]==b"P6": # PPM header
+        line=b"#"
+        while line[0]==35: # skip commented lines
+          line=f.readline(1000)
+        xystr=line.split(b" ")
+        xres=int(xystr[0])
+        yres=int(xystr[1])
+        line=f.readline(1000)
+        if int(line)!=255: # 255 levels supported only
+          continue
+        print(filename,xres,yres)
+        self.slide_xres.append(xres)
+        self.slide_yres.append(yres)
+        self.slide_pos.append(f.tell())
 
   def start_bgreader(self):
     if self.finished:
