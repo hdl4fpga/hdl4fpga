@@ -53,7 +53,6 @@ from collections import namedtuple
 import os
 import gc
 import ecp5
-import ld_h4f
 
 class osd:
   def __init__(self):
@@ -76,7 +75,6 @@ class osd:
     #self.spi=SPI(self.spi_channel, baudrate=self.spi_freq, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=Pin(self.gpio_sck), mosi=Pin(self.gpio_mosi), miso=Pin(self.gpio_miso))
     self.init_spi()
     self.enable = bytearray(1)
-    self.h4f=ld_h4f.ld_h4f(self.spi,self.cs)
     self.timer = Timer(3)
     self.init_slides()
     self.files2slides()
@@ -147,7 +145,7 @@ class osd:
               p8slide[0]+=1
               self.change_slide(1)
           self.cs.on()
-          self.h4f.rgtr(0x19,self.h4f.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncache))))
+          self.rgtr(0x19,self.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncache))))
           self.cs.off()
 
   def start_autorepeat(self, i:int):
@@ -535,11 +533,11 @@ class osd:
     astep=200
     abuf=0
     self.cs.on()
-    self.h4f.rgtr(0x16,self.h4f.i24(addr))
+    self.rgtr(0x16,self.i24(addr))
     for j in range(nbuf):
-      self.h4f.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
+      self.rgtr(0x18,self.PPM_line_buf[abuf:abuf+astep])
       abuf+=astep
-    self.h4f.rgtr(0x17,self.h4f.i24(nbuf*astep//bytpp-1))
+    self.rgtr(0x17,self.i24(nbuf*astep//bytpp-1))
     self.cs.off()
 
   # file should be already closed when calling this
@@ -604,6 +602,18 @@ class osd:
     if self.finished:
       self.finished=0
       self.timer.init(mode=Timer.ONE_SHOT,period=1,callback=self.bgreader)
+
+  # convert integer to 24-bit RGTR parameter
+  def i24(self,i:int):
+    return bytearray([
+      self.rb[(i>>16)&0xFF],
+      self.rb[(i>>8)&0xFF],
+      self.rb[i&0xFF]])
+
+  # x is bytearray, length 1-256
+  def rgtr(self,cmd,x):
+    self.spi.write(bytearray([self.rb[cmd],self.rb[len(x)-1]]))
+    self.spi.write(x)
 
   def ctrl(self,i):
     self.cs.on()
