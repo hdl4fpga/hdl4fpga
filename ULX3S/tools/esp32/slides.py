@@ -399,7 +399,15 @@ class osd:
           self.slide_pos.append(f.tell())
           self.nslides+=1
           if self.nslides>=256:
-            return
+            break
+    # discard cache
+    for i in range(self.ncache):
+      self.cache_li.append(i%self.nslides)
+      self.cache_ti.append(-1)
+      self.cache_ty.append(0)
+      self.cache_tyend.append(self.yres)
+      self.cache_bi.append(-1)
+      self.cache_by.append(0)
 
   # choose next, ordered by priority
   def next_to_read(self):
@@ -516,6 +524,8 @@ class osd:
     bytpp=self.bpp//8 # on screen
     rdi=self.rdi%self.ncache
     self.bg_file.readinto(self.PPM_line_buf)
+    if self.slide_xres[self.rdi]!=self.xres:
+      self.bg_file.seek(self.slide_pos[self.rdi]+3*self.slide_xres[self.rdi]*(self.cache_ty[rdi]+1))
     self.ppm2pixel()
     # write PPM_line_buf to screen
     addr=self.xres*(rdi*self.yres+self.cache_ty[rdi])
