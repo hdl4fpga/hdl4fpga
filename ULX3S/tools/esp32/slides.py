@@ -5,11 +5,10 @@
 # LICENSE=BSD
 
 # #!/bin/sh
-# WIDTH=800
 # for file in *.jpg
 # do
-#   newfile=$(echo $file | sed -e "s/\.jpg$/\.ppm/g")
-#   convert -resize "${WIDTH}" -size "${WIDTH}" "${file}" "${newfile}"
+#   newfile=$(basename $file .jpg).ppm
+#   convert -scale 800x600 "${file}" "${newfile}"
 # done
 
 # convert slide.jpg -scale 800x600 010picture.ppm
