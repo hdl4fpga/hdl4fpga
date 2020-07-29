@@ -399,12 +399,16 @@ class osd:
             break
     # discard cache
     for i in range(self.ncache):
-      self.cache_li.append(i%self.nslides)
-      self.cache_ti.append(-1)
-      self.cache_ty.append(0)
-      self.cache_tyend.append(self.yres)
-      self.cache_bi.append(-1)
-      self.cache_by.append(0)
+      ci=i%self.nslides
+      self.cache_li[ci]=i%self.nslides
+      self.cache_ti[ci]=-1
+      self.cache_ty[ci]=0
+      self.cache_tyend[ci]=self.yres
+      self.cache_bi[ci]=-1
+      self.cache_by[ci]=0
+    self.finished=1
+    self.bg_file=None
+    self.prev_rdi=-1
 
   # choose next, ordered by priority
   def next_to_read(self):
