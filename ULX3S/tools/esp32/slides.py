@@ -518,7 +518,7 @@ class osd:
       g=p8[xi+1]
       b=p8[xi+2]
       p8[yi]=p8rb[(r&0xF8)|((g&0xE0)>>5)]
-      p8[yi+1]=p8rb[((g&7)<<5)|((b&0xF8)>>3)]
+      p8[yi+1]=p8rb[((g&0x1C)<<3)|((b&0xF8)>>3)]
       xi+=3
       yi+=2
 
