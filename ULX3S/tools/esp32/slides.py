@@ -240,6 +240,7 @@ class osd:
         self.osd_enable(0)
       if filename.endswith(".ppm"):
         self.files2slides()
+        self.start_bgreader()
         self.enable[0]=0
         self.osd_enable(0)
 
@@ -340,7 +341,6 @@ class osd:
       if stat[0] & 0o170000 != 0o040000:
         self.direntries.append([fname,0,stat[6]]) # file
     self.nfiles=len(self.direntries)-self.file0
-    self.nslides=self.nfiles
     gc.collect()
 
   # *** SLIDESHOW ***
@@ -376,10 +376,11 @@ class osd:
       self.cache_by.append(0)
     self.bg_file=None
     self.slide_shown=bytearray(1)
-    self.PPM_line_buf=bytearray((self.bpp//8)*self.xres)
+    self.PPM_line_buf=bytearray(3*self.xres)
     self.finished=1
 
   def files2slides(self):
+    self.nslides=0
     self.slide_fi=[] # file index in direntries
     self.slide_xres=[]
     self.slide_yres=[]
@@ -398,11 +399,11 @@ class osd:
         line=f.readline(1000)
         if int(line)!=255: # 255 levels supported only
           continue
-        print(filename,xres,yres)
         self.slide_fi.append(self.file0+i)
         self.slide_xres.append(xres)
         self.slide_yres.append(yres)
         self.slide_pos.append(f.tell())
+        self.nslides+=1
 
   def start_bgreader(self):
     if self.finished:
@@ -491,10 +492,26 @@ class osd:
     if self.rdi>=0:
       self.start_bgreader()
 
+  # convert PPM line RGB888 to RGB565 bytes reversed
+  @micropython.viper
+  def ppm2pixel(self):
+    p8 = ptr8(addressof(self.PPM_line_buf))
+    xi=0
+    yi=0
+    for i in range(int(self.xres)):
+      r=p8[xi]
+      g=p8[xi+1]
+      b=p8[xi+2]
+      p8[yi]=r
+      p8[yi+1]=g
+      xi+=3
+      yi+=2
+
   def read_scanline(self):
     bytpp=self.bpp//8 # on screen
     rdi=self.rdi%self.ncache
     self.bg_file.readinto(self.PPM_line_buf)
+    self.ppm2pixel()
     # write PPM_line_buf to screen
     addr=self.xres*(rdi*self.yres+self.cache_ty[rdi])
     # DMA transfer <= 2048 bytes each
@@ -514,13 +531,11 @@ class osd:
   # file should be already closed when calling this
   def next_file(self):
     #print("next_file")
-    filename=self.fullpath(self.direntries[self.file0+self.rdi][0])
+    filename=self.fullpath(self.direntries[self.slide_fi[self.rdi]][0])
     self.bg_file=open(filename,"rb")
     rdi=self.rdi%self.ncache
-    if self.cache_ty[rdi]>0:
-      # Y->seek to first position to read from
-      bytpp=self.bpp//8 # in file
-      self.bg_file.seek(bytpp*self.xres*self.cache_ty[rdi])
+    # Y->seek to first position to read from
+    self.bg_file.seek(self.slide_pos[self.rdi]+3*self.slide_xres[self.rdi]*self.cache_ty[rdi])
     print("%d RD %s" % (self.rdi,filename))
 
   # background read, call it periodically
