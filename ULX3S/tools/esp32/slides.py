@@ -61,7 +61,7 @@ class osd:
     alloc_emergency_exception_buf(100)
     self.screen_x = const(64)
     self.screen_y = const(20)
-    self.cwd = "/"
+    self.cwd = "/sd/slides"
     self.init_fb()
     self.exp_names = " KMGTE"
     self.mark = bytearray([32,16,42]) # space, right triangle, asterisk
@@ -76,10 +76,12 @@ class osd:
     self.init_pinout_sd()
     #self.spi=SPI(self.spi_channel, baudrate=self.spi_freq, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=Pin(self.gpio_sck), mosi=Pin(self.gpio_mosi), miso=Pin(self.gpio_miso))
     self.init_spi()
-    self.init_slides()
     self.enable = bytearray(1)
     self.h4f=ld_h4f.ld_h4f(self.spi,self.cs)
     self.timer = Timer(3)
+    self.init_slides()
+    self.files2slides()
+    self.start_bgreader()
     self.irq_handler(0)
     self.irq_handler_ref = self.irq_handler # allocation happens here
     self.spi_request = Pin(0, Pin.IN, Pin.PULL_UP)
