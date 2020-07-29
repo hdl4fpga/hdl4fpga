@@ -21,12 +21,13 @@
 # ...
 # /sd/slides/999last.ppm
 
-
+# press all 4 UP DOWN LEFT RIGHT BTNs, navigate to "/sd/slides"
+# directory and press RIGHT at any "*.ppm" file.
 # All slides from "/sd/slides" directory will be loaded from
 # SD card to RAM and shown sorted in alphabetical order.
 # Press BTN RIGHT/LEFT to display next/previous slide.
 # 34 slides are cached in 32 MB RAM for 16bpp display.
-# Loading all 34 slides to cache takes about 4 minutes.
+# Loading all 34 slides to cache takes about 5 minutes.
 # If there are more slides on SD than in the RAM,
 # slides will be cached in advance with 2:1 priority.
 # During the presentation, cache allows to switch
@@ -39,17 +40,11 @@
 # If slides are advanced too fast, it will be visible how
 # currently viewed slide loads from top to bottom.
 
-# press 4 arrows, OSD will appear
-# navigate to SD directory with only *.h4f files
-# select one file and press right arrow
-# press left/right to switch slides
-
 # this code is SPI master to FPGA SPI slave
 # FPGA sends pulse to GPIO after BTN state is changed.
 # on GPIO pin interrupt from FPGA:
 # btn_state = SPI_read
 # SPI_write(buffer)
-# FPGA SPI slave will accept image and start it
 
 from machine import SPI, Pin, SDCard, Timer
 from micropython import const, alloc_emergency_exception_buf
@@ -506,14 +501,15 @@ class osd:
         v>>=1
       p8rb[i]=r
 
-  # convert PPM line RGB888 to RGB565 bytes reversed
+  # convert PPM line RGB888 to RGB565, bits reversed
   @micropython.viper
   def ppm2pixel(self):
     p8=ptr8(addressof(self.PPM_line_buf))
     p8rb=ptr8(addressof(self.rb))
     xi=0
     yi=0
-    for i in range(int(self.xres)):
+    yn=2*int(self.xres)
+    while yi<yn:
       r=p8[xi]
       g=p8[xi+1]
       b=p8[xi+2]
