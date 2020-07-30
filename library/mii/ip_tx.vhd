@@ -92,6 +92,9 @@ architecture def of ip_tx is
 
 begin
 
+	pl_treq <= pllat_txen or frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, 
+		   (ip4_llc, ip4_verihl, ip4_tos, ip4_len, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto, ip4_chksum, ip4_sa, ip4_da));
+
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
@@ -102,9 +105,6 @@ begin
 			end if;
 		end if;
 	end process;
-	pl_treq <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, 
-		   (ip4_llc, ip4_verihl, ip4_tos, ip4_len, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto, ip4_chksum, ip4_sa, ip4_da));
-
 
 	shdr_tena <= frame_decode(
 		ip4_ptr,

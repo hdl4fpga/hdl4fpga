@@ -193,7 +193,7 @@ begin
 		mem_data => reverse(x"00000000",8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => ip4_treq,
+		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
 		mii_txen => pl_txen,
 		mii_txd  => pl_txd);
