@@ -59,7 +59,7 @@ class osd:
     alloc_emergency_exception_buf(100)
     self.screen_x = const(64)
     self.screen_y = const(20)
-    self.cwd = "/sd/slides"
+    self.cwd = "/sd/slides" # shown on startup
     self.init_fb()
     self.exp_names = " KMGTE"
     self.mark = bytearray([32,16,42]) # space, right triangle, asterisk
@@ -135,18 +135,18 @@ class osd:
           if btn==65: # btn6 cursor right
             self.select_entry()
         else:
-          p8slide = ptr8(addressof(self.slide_shown))
           if btn==33: # btn5 cursor left
-            if p8slide[0]>0:
-              p8slide[0]-=1
-              self.change_slide(-1)
+            self.change_slide(-1)
           if btn==65: # btn6 cursor right
-            if p8slide[0]<int(self.nslides)-1:
-              p8slide[0]+=1
-              self.change_slide(1)
-          self.cs.on()
-          self.rgtr(0x19,self.i24(int(self.slide_pixels)*(p8slide[0]%int(self.ncache))))
-          self.cs.off()
+            self.change_slide(1)
+          self.show_slide()
+
+  @micropython.viper
+  def show_slide(self):
+    addr=int(self.xres)*int(self.yres)*(int(self.vi)%int(self.ncache))
+    self.cs.on()
+    self.rgtr(0x19,self.i24(addr))
+    self.cs.off()
 
   def start_autorepeat(self, i:int):
     self.autorepeat_direction=i
@@ -365,13 +365,18 @@ class osd:
       self.cache_bi.append(-1)
       self.cache_by.append(0)
     self.bg_file=None
-    self.slide_shown=bytearray(1)
     self.PPM_line_buf=bytearray(3*self.xres)
     self.rb=bytearray(256) # reverse bits
     self.init_reverse_bits()
     self.finished=1
 
   def files2slides(self):
+    self.finished=1
+    self.bg_file=None
+    self.rdi=0
+    self.prev_rdi=-1
+    self.vi=0
+    self.show_slide()
     self.nslides=0
     self.slide_fi=[] # file index in direntries
     self.slide_xres=[]
@@ -395,20 +400,20 @@ class osd:
           self.slide_yres.append(yres)
           self.slide_pos.append(f.tell())
           self.nslides+=1
-          if self.nslides>=256:
-            break
+          #if self.nslides>=256:
+          #  break
     # discard cache
     for i in range(self.ncache):
       ci=i%self.nslides
-      self.cache_li[ci]=i%self.nslides
+      if i<self.nslides:
+        self.cache_li[ci]=i
+      else:
+        self.cache_li[ci]=-1
       self.cache_ti[ci]=-1
       self.cache_ty[ci]=0
       self.cache_tyend[ci]=self.yres
       self.cache_bi[ci]=-1
       self.cache_by[ci]=0
-    self.finished=1
-    self.bg_file=None
-    self.prev_rdi=-1
 
   # choose next, ordered by priority
   def next_to_read(self):
@@ -482,11 +487,11 @@ class osd:
   # change currently viewed slide
   # discard images in cache
   def change_slide(self,mv):
-    #vi=self.vi+mv
-    #if vi<0 or vi>=self.nslides or mv==0:
-    #  return
+    vi=self.vi+mv
+    if vi<0 or vi>=self.nslides or mv==0:
+      return
     self.cache_li[self.next_to_discard()]=self.replace(mv)
-    self.vi=self.slide_shown[0]
+    self.vi=vi
     self.cache_li[self.next_to_discard()]=self.replace(mv)
     self.rdi=self.next_to_read()
     if self.rdi>=0:
