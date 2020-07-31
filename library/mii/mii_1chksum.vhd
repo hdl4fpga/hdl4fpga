@@ -33,7 +33,6 @@ entity mii_1chksum is
 		chksum_size : natural);
 	port (
 		mii_txc   : in  std_logic;
-		mii_tena  : in  std_logic := '1';
 		mii_txen  : in  std_logic;
 		mii_txd   : in  std_logic_vector;
 

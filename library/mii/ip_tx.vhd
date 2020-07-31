@@ -74,7 +74,7 @@ architecture def of ip_tx is
 	signal shdr_txd      : std_logic_vector(ip4_txd'range);
 	signal cksm_txd      : std_logic_vector(ip4_txd'range);
 	signal cksm_txen     : std_logic;
-	signal cksmd_trdy    : std_logic;
+	signal cksm_tena     : std_logic;
 	signal cksmd_tena    : std_logic;
 	signal cksmd_treq    : std_logic;
 	signal cksmd_txd     : std_logic_vector(ip4_txd'range);
@@ -193,6 +193,7 @@ begin
 
 	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
 	cksm_txen  <= ip4len_txen or ip4sa_txen or ip4da_txen;
+	cksm_tena  <= cksm_txen or cksmd_txen;
 	cksmd_treq <= pl_treq;
 	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
@@ -200,12 +201,12 @@ begin
 		chksum_size => 16)
 	port map (
 		mii_txc   => mii_txc,
+		mii_tena  => cksm_tena,
 		mii_txen  => cksm_txen,
 		mii_txd   => cksm_txd,
 
 		cksm_init => oneschecksum(ip4_shdr, 16),
-		cksm_treq => cksmd_txen,
-		cksm_trdy => cksmd_trdy,
+--		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
 	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);
