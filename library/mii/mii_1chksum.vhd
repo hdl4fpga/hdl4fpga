@@ -33,68 +33,67 @@ entity mii_1chksum is
 		chksum_size : natural);
 	port (
 		mii_txc   : in  std_logic;
+		mii_tena  : in  std_logic := '1';
 		mii_txen  : in  std_logic;
 		mii_txd   : in  std_logic_vector;
 
 		cksm_init : in  std_logic_vector;
-		cksm_treq : in  std_logic;
-		cksm_tena : in  std_logic := '1';
-		cksm_trdy : out std_logic;
 		cksm_txen : out std_logic;
 		cksm_txd  : out std_logic_vector);
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : std_logic_vector(chksum_size-1 downto 0);
-
-	function sum (
-		constant arg1 : unsigned;
-		constant arg2 : unsigned)
-		return unsigned is
-		alias op1 : unsigned(arg1'length-1 downto 0) is arg1;
-		alias op2 : unsigned(arg2'length-1 downto 0) is arg2;
-
-		variable acc : unsigned(op1'range);
-		variable add : unsigned(op2'length downto 0);
-
-	begin
-
-		acc := op1;
-		add := resize(acc(op2'length-1 downto 0), add'length) + resize(op2, add'length);
-		acc(op2'range) := add(op2'range);
-		for i in 0 to op1'length/op2'length-1 loop
-			acc := acc ror op2'length;
-			add := add srl op2'length;
-			add := resize(acc(op2'length-1 downto 0), add'length) + add;
-			acc(op2'range) := add(op2'range);
-		end loop;
-		return acc;
-	end;
-
+	signal cksm : unsigned(chksum_size-1 downto 0);
+	signal slr  : unsigned(0 to chksum_size/mii_txd'length-1);
+	signal ci   : std_logic;
+	signal op1  : unsigned(mii_txd'range);
+	signal op2  : unsigned(mii_txd'range);
+	signal sum  : unsigned(mii_txd'range);
+	signal co   : std_logic;
+	signal txd  : unsigned(mii_txd'range);
 begin
 
+	op1 <= cksm(mii_txd'reverse_range);
+	op2 <= unsigned(reverse(mii_txd)) when mii_txen='1' else (op2'range => '0');
+
+	adder_p: process(op1, op2, ci)
+		variable arg1 : unsigned(0 to mii_txd'length+1);
+		variable arg2 : unsigned(0 to mii_txd'length+1);
+		variable val  : unsigned(0 to mii_txd'length+1);
+	begin
+		arg1 := "0" & unsigned(op1) & ci;
+		arg2 := "0" & unsigned(op2) & "1";
+		val  := arg1 + arg2;
+		sum  <= val(1 to mii_txd'length);
+		co   <= val(0);
+	end process;
+
 	process (mii_txc)
-		variable acc : unsigned(chksum_size-1 downto 0);
+		variable aux1 : unsigned(cksm'range);
+		variable aux2 : unsigned(slr'range);
+		variable init : unsigned(cksm'range);
 	begin
 		if rising_edge(mii_txc) then
-			if mii_txen='0' then
-				acc := unsigned(reverse(reverse(cksm_init,8)));
-			else
-				acc := sum(acc, unsigned(reverse(mii_txd)));
-				acc := acc ror mii_txd'length;
-				chksum <= not std_logic_vector(acc);
+			aux1 := cksm;
+			aux2 := slr;
+			if mii_tena='1' then
+				aux1(mii_txd'reverse_range) := sum;
+				aux1 := aux1 rol mii_txd'length;
+				aux2 := aux2 sll 1;
+				ci   <= co;
+				if mii_txen='1' then
+					aux2(aux2'right) := '1';
+				elsif aux2(0)='0' then
+					ci   <= '0';
+					aux1 := (others => '0');
+				end if;
+				txd <= sum;
 			end if;
+			cksm <= aux1;
+			slr  <= aux2;
 		end if;
 	end process;
 
-	mux_e : entity hdl4fpga.mii_mux
-    port map (
-		mux_data => chksum,
-        mii_txc  => mii_txc,
-		mii_treq => cksm_treq,
-		mii_trdy => cksm_trdy,
-        mii_tena => cksm_tena,
-        mii_txen => cksm_txen,
-        mii_txd  => cksm_txd);
-
+	cksm_txen <= slr(0) and not mii_txen;
+	cksm_txd  <= reverse(std_logic_vector(sum));
 end;
