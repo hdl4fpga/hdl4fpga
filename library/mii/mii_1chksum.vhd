@@ -45,31 +45,44 @@ entity mii_1chksum is
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : std_logic_vector(0 to chksum_size-1);
+	signal chksum : std_logic_vector(chksum_size-1 downto 0);
+
+	function sum (
+		constant arg1 : unsigned;
+		constant arg2 : unsigned)
+		return unsigned is
+		alias op1 : unsigned(arg1'length-1 downto 0) is arg1;
+		alias op2 : unsigned(arg2'length-1 downto 0) is arg2;
+
+		variable acc : unsigned(op1'range);
+		variable add : unsigned(op2'length downto 0);
+
+	begin
+
+		acc := op1;
+		add := resize(acc(op2'length-1 downto 0), add'length) + resize(op2, add'length);
+		acc(op2'range) := add(op2'range);
+		for i in 0 to op1'length/op2'length-1 loop
+			acc := acc ror op2'length;
+			add := add srl op2'length;
+			add := resize(acc(op2'length-1 downto 0), add'length) + add;
+			acc(op2'range) := add(op2'range);
+		end loop;
+		return acc;
+	end;
+
 begin
 
 	process (mii_txc)
-		variable cy  : unsigned(mii_txd'length downto mii_txd'length);
-		variable add : unsigned(mii_txd'length downto 0);
-		variable acc : unsigned(chksum'reverse_range);
+		variable acc : unsigned(chksum_size-1 downto 0);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txen='0' then
 				acc := unsigned(reverse(reverse(cksm_init,8)));
-				cy  := (others => '0');
 			else
-				add := resize(acc(mii_txd'reverse_range), add'length) + unsigned(reverse(mii_txd));
-				acc(mii_txd'reverse_range) := add(mii_txd'reverse_range);
+				acc := sum(acc, unsigned(reverse(mii_txd)));
 				acc := acc ror mii_txd'length;
-				for i in 0 to chksum_size/mii_txd'length-1 loop
-					cy  := add(cy'range);
-					add := resize(acc(mii_txd'reverse_range), add'length) + cy;
-					acc(mii_txd'reverse_range) := add(mii_txd'reverse_range);
-					acc := acc ror mii_txd'length;
-				end loop;
-  			chksum <= std_logic_vector(acc);
-				chksum <= not reverse(reverse(std_logic_vector(acc),8));
-				chksum <= reverse(std_logic_vector(acc),8);
+				chksum <= not std_logic_vector(acc);
 			end if;
 		end if;
 	end process;

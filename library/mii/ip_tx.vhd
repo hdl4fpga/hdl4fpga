@@ -92,8 +92,20 @@ architecture def of ip_tx is
 
 begin
 
-	pl_treq <= pllat_txen or frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, 
-		   (ip4_llc, ip4_verihl, ip4_tos, ip4_len, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto, ip4_chksum, ip4_sa, ip4_da));
+	process (pl_txen, pllat_txen, mii_txc)
+		variable treq : std_logic := '0';
+	begin
+		if rising_edge(mii_txc) then
+			if pl_txen='1' then
+				treq := '1';
+			elsif treq='1' then
+				if pllat_txen='1' then
+					treq := '0';
+				end if;
+			end if;
+		end if;
+		pl_treq <= pl_txen or treq or pllat_txen;
+	end process;
 
 	process (mii_txc)
 	begin
