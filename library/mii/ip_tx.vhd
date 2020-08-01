@@ -65,7 +65,6 @@ end;
 
 architecture def of ip_tx is
 
-	signal pl_treq       : std_logic;
 	signal ip4_ptr       : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
 	signal shdr_trdy     : std_logic;
 	signal shdr_treq     : std_logic;
@@ -104,13 +103,13 @@ begin
 				end if;
 			end if;
 		end if;
-		pl_treq <= pl_txen or treq or pllat_txen;
+		ip4_txen <= pl_txen or treq or pllat_txen;
 	end process;
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if pl_treq='0' then
+			if ip4_txen='0' then
 				ip4_ptr <= (others => '0');
 			elsif ip4_ptr(0)='0' then
 				ip4_ptr <= ip4_ptr + 1;
@@ -129,7 +128,7 @@ begin
 		mem_data => reverse(llc_ip4 & ip4_shdr,8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => pl_treq,
+		mii_treq => ip4_txen,
 		mii_tena => shdr_tena,
 		mii_trdy => shdr_trdy,
 		mii_txen => shdr_txen,
@@ -186,7 +185,7 @@ begin
 		
 	end block;
 	
-	ip4len_treq   <= pl_treq;
+	ip4len_treq   <= ip4_txen;
 --	ip4proto_treq <= ip4len_trdy;
 	ip4sa_treq    <= ip4len_trdy; -- ip4proto_trdy;
 	ip4da_treq    <= ip4sa_trdy;
@@ -199,7 +198,7 @@ begin
 		ip4_txd'length,
 	   	( ip4_ttl, ip4_proto));
 
-	cksmd_treq <= pl_treq;
+	cksmd_treq <= ip4_txen;
 	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
@@ -211,15 +210,13 @@ begin
 		mii_txd   => cksm_txd,
 
 		cksm_init => oneschecksum(ip4_shdr, 16),
---		cksm_txen => cksmd_txen,
 		cksm_txd  => cksmd_txd);
 
 	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);
 	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto);
 	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da));
 
-	ip4_txd  <= wirebus(shdr_txd & lenlat_txd & cksmd_txd & alat_txd, shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or pllat_txen));
-	ip4_txen <= shdr_txen or lenlat_txen or cksmd_txen or alat_txen or pllat_txen;
+	ip4_txd <= wirebus(shdr_txd & lenlat_txd & cksmd_txd & alat_txd, shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or pllat_txen));
 
 end;
 

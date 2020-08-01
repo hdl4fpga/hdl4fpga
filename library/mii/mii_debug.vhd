@@ -94,13 +94,16 @@ architecture struct of mii_debug is
 	signal ip4da_txen : std_logic;
 	signal ip4da_txd  : std_logic_vector(arp_txd'range);
 
+	signal udp4_txen : std_logic;
+	signal udp4_txd  : std_logic_vector(arp_txd'range);
+
 	signal ip4sa_treq : std_logic;
 	signal ip4sa_trdy : std_logic;
 	signal ip4sa_txen : std_logic;
 	signal ip4sa_txd  : std_logic_vector(arp_txd'range);
 
-	signal iptxip4sa_treq  : std_logic;
-	signal arptxip4sa_treq : std_logic;
+	signal ip4saiptx_treq  : std_logic;
+	signal ip4saarptx_treq : std_logic;
 
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
@@ -136,7 +139,7 @@ begin
         mii_txen => ip4len_txen,
         mii_txd  => ip4len_txd);
 		
-	ip4sa_treq <= iptxip4sa_treq or arptxip4sa_treq;
+	ip4sa_treq <= ip4saiptx_treq or ip4saarptx_treq;
 	ipsa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => reverse(x"c0_a8_00_0e",8),
@@ -160,7 +163,7 @@ begin
 	port map (
 		mii_txc   => mii_txc,
 
-		ipsa_treq => arptxip4sa_treq,
+		ipsa_treq => ip4saarptx_treq,
 		ipsa_trdy => ip4sa_trdy,
 		ipsa_txen => ip4sa_txen,
 		ipsa_txd  => ip4sa_txd,
@@ -188,7 +191,7 @@ begin
 		end if;
 	end process;
 
-	ip4pl_e : entity hdl4fpga.mii_rom
+	udp4pl_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(x"00000000_0008_0000",8))
 	port map (
@@ -198,12 +201,25 @@ begin
 		mii_txen => pl_txen,
 		mii_txd  => pl_txd);
 
+	udp4tx_e : entity hdl4fpga.udp4_tx
+	port map (
+		mii_txc   => mii_txc,
+
+		pl_len    => x"0000",
+		pl_txen   => pl_txen,
+		pl_txd    => pl_txd,
+
+		udp4_sp   => x"0004",
+		udp4_dp   => x"0008",
+		udp4_txen => udp4_txen,
+		udp4_txd  => udp4_txd);
+
 	iptx_e : entity hdl4fpga.ip_tx
 	port map (
 		mii_txc   => mii_txc,
 
-		pl_txen   => pl_txen,
-		pl_txd    => pl_txd,
+		pl_txen   => udp4_txen,
+		pl_txd    => udp4_txd,
 
 		ip4len_treq => ip4len_treq,
 		ip4len_trdy => ip4len_trdy,
@@ -215,7 +231,7 @@ begin
 --		ip4proto_txen => ip4proto_txen,
 --		ip4proto_txd  => ip4proto_txd,
 
-		ip4sa_treq  => iptxip4sa_treq,
+		ip4sa_treq  => ip4saiptx_treq,
 		ip4sa_trdy  => ip4sa_trdy,
 		ip4sa_txen  => ip4sa_txen,
 		ip4sa_txd   => ip4sa_txd,

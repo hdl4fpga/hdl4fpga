@@ -31,7 +31,7 @@ use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 
-	constant octect  : natural := 8;
+	constant octect_size  : natural := 8;
 
 	constant llc_ip4 : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
@@ -47,15 +47,15 @@ package ipoepkg is
 	constant arp_tpa   : natural := 8;
 
 	constant arp_frame : natural_vector := (
-		arp_htype => 2*octect,
-		arp_ptype => 2*octect,
-		arp_hlen  => 1*octect,
-		arp_plen  => 1*octect,
-		arp_oper  => 2*octect,
-		arp_sha   => 6*octect,
-		arp_spa   => 4*octect,
-		arp_tha   => 6*octect,
-		arp_tpa   => 4*octect);
+		arp_htype => 2*octect_size,
+		arp_ptype => 2*octect_size,
+		arp_hlen  => 1*octect_size,
+		arp_plen  => 1*octect_size,
+		arp_oper  => 2*octect_size,
+		arp_sha   => 6*octect_size,
+		arp_spa   => 4*octect_size,
+		arp_tha   => 6*octect_size,
+		arp_tpa   => 4*octect_size);
 
 	constant arprply_pfx : std_logic_vector :=
 		x"0001" & -- htype 
@@ -78,16 +78,16 @@ package ipoepkg is
 
 	constant ip4hdr_frame : natural_vector := (
 		ip4_llc     => llc_ip4'length,
-		ip4_verihl  => 1*octect,
-		ip4_tos     => 1*octect,
-		ip4_len     => 2*octect,
-		ip4_ident   => 2*octect,
-		ip4_flgsfrg => 2*octect,
-		ip4_ttl     => 1*octect,
-		ip4_proto   => 1*octect,
-		ip4_chksum  => 2*octect,
-		ip4_sa      => 4*octect,
-		ip4_da      => 4*octect);
+		ip4_verihl  => 1*octect_size,
+		ip4_tos     => 1*octect_size,
+		ip4_len     => 2*octect_size,
+		ip4_ident   => 2*octect_size,
+		ip4_flgsfrg => 2*octect_size,
+		ip4_ttl     => 1*octect_size,
+		ip4_proto   => 1*octect_size,
+		ip4_chksum  => 2*octect_size,
+		ip4_sa      => 4*octect_size,
+		ip4_da      => 4*octect_size);
 		
 	constant ip4_shdr : std_logic_vector := (
 		x"4500" &    -- Version, TOS
@@ -96,4 +96,15 @@ package ipoepkg is
 		x"0511"        -- TTL, protocol
 		); 
 
+	constant udp4_sp   : natural :=  0;
+	constant udp4_dp   : natural :=  1;
+	constant udp4_len  : natural :=  2;
+	constant udp4_cksm : natural :=  3;
+
+	constant udp4hdr_frame : natural_vector := (
+		udp4_sp   => 2*octect_size,
+		udp4_dp   => 2*octect_size,
+		udp4_len  => 2*octect_size,
+		udp4_cksm => 2*octect_size);
+		
 end;
