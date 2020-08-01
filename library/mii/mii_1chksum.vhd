@@ -33,6 +33,7 @@ entity mii_1chksum is
 		chksum_size : natural);
 	port (
 		mii_txc   : in  std_logic;
+		mii_tena  : in  std_logic;
 		mii_txen  : in  std_logic;
 		mii_txd   : in  std_logic_vector;
 
@@ -49,7 +50,6 @@ architecture beh of mii_1chksum is
 	signal op2  : unsigned(mii_txd'range);
 	signal sum  : unsigned(mii_txd'range);
 	signal co   : std_logic;
-	signal txd  : unsigned(mii_txd'range);
 begin
 
 	op1 <= cksm(mii_txd'reverse_range);
@@ -85,8 +85,8 @@ begin
 				elsif aux2(0)='0' then
 					ci   <= '0';
 					aux1 := (others => '0');
+					aux1 := unsigned(reverse(reverse(cksm_init,4),8)) rol mii_txd'length;
 				end if;
-				txd <= sum;
 			end if;
 			cksm <= aux1;
 			slr  <= aux2;
@@ -94,5 +94,5 @@ begin
 	end process;
 
 	cksm_txen <= slr(0) and not mii_txen;
-	cksm_txd  <= reverse(std_logic_vector(sum));
+	cksm_txd  <= not reverse(std_logic_vector(sum));
 end;

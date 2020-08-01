@@ -193,7 +193,12 @@ begin
 
 	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
 	cksm_txen  <= ip4len_txen or ip4sa_txen or ip4da_txen;
-	cksm_tena  <= cksm_txen or cksmd_txen;
+	cksm_tena  <= not frame_decode(
+		ip4_ptr,
+	   	ip4hdr_frame, 
+		ip4_txd'length,
+	   	( ip4_ttl, ip4_proto));
+
 	cksmd_treq <= pl_treq;
 	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
