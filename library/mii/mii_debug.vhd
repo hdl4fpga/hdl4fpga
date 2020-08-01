@@ -193,7 +193,7 @@ begin
 
 	udp4pl_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(x"00000000_0008_0000",8))
+		mem_data => reverse(x"12345678",8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
@@ -205,7 +205,7 @@ begin
 	port map (
 		mii_txc   => mii_txc,
 
-		pl_len    => x"0000",
+		pl_len    => x"0004",
 		pl_txen   => pl_txen,
 		pl_txd    => pl_txd,
 

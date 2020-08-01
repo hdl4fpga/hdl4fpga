@@ -51,8 +51,11 @@ architecture def of udp4_tx is
 	signal udp4_ptr  : unsigned(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp4_txd'length-1));
 	signal udp4_hdr  : std_logic_vector(0 to summation(udp4hdr_frame)-1);
 	signal udp4_len  : std_logic_vector(0 to 16-1);
-	signal udp4_cksm : std_logic_vector(16-1 downto 0);
+	signal udp4_cksm : std_logic_vector(16-1 downto 0) := (others => '0');
 
+	signal pllat_txen  : std_logic;
+	signal pllat_txd   : std_logic_vector(udp4_txd'range);
+	signal udp4hdr_txd : std_logic_vector(udp4_txd'range);
 begin
 
 	process (pl_txen, pllat_txen, mii_txc)
@@ -90,8 +93,6 @@ begin
 		mux_data => udp4_hdr,
 		mii_txc  => mii_txc,
 		mii_treq => udp4_txen,
-		mii_trdy => udp4hdr_trdy,
-		mii_txen => udp4hdr_txen,
 		mii_txd  => udp4hdr_txd);
 
 	ipalat_e : entity hdl4fpga.mii_latency
@@ -105,7 +106,7 @@ begin
 		mii_txd  => pllat_txd);
 		
 
-	udp4_txd  <= wirebus(udp4hdr_txd & pl_txd, not pllat_txen & pllat_txen);
+	udp4_txd  <= wirebus(udp4hdr_txd & pllat_txd, not pllat_txen & pllat_txen);
 
 end;
 
