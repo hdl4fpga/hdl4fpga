@@ -84,11 +84,6 @@ architecture struct of mii_debug is
 	signal ip4len_txen : std_logic;
 	signal ip4len_txd  : std_logic_vector(arp_txd'range);
 
-	signal ip4proto_treq : std_logic;
-	signal ip4proto_trdy : std_logic;
-	signal ip4proto_txen : std_logic;
-	signal ip4proto_txd  : std_logic_vector(arp_txd'range);
-
 	signal ip4da_treq : std_logic;
 	signal ip4da_trdy : std_logic;
 	signal ip4da_txen : std_logic;
@@ -165,15 +160,6 @@ begin
 		arp_txen  => arp_txen,
 		arp_txd   => arp_txd);
 
-	ipproto_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => reverse(x"11",8),
-        mii_txc  => mii_txc,
-		mii_treq => ip4proto_treq,
-		mii_trdy => ip4proto_trdy,
-        mii_txen => ip4proto_txen,
-        mii_txd  => ip4proto_txd);
-		
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
@@ -183,9 +169,7 @@ begin
 		end if;
 	end process;
 
-	udp4pl_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(x"12345678",8))
+	dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
@@ -214,11 +198,6 @@ begin
 		pl_len    => udp4_len,
 		pl_txen   => udp4_txen,
 		pl_txd    => udp4_txd,
-
---		ip4proto_treq => ip4proto_treq,
---		ip4proto_trdy => ip4proto_trdy,
---		ip4proto_txen => ip4proto_txen,
---		ip4proto_txd  => ip4proto_txd,
 
 		ip4sa_treq  => ip4saiptx_treq,
 		ip4sa_trdy  => ip4sa_trdy,

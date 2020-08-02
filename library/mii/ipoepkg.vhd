@@ -107,4 +107,36 @@ package ipoepkg is
 		udp4_len  => 2*octect_size,
 		udp4_cksm => 2*octect_size);
 		
+	constant dhcp4_op     : natural :=  0;
+	constant dhcp4_htype  : natural :=  1;
+	constant dhcp4_hlen   : natural :=  2;
+	constant dhcp4_hops   : natural :=  3;
+	constant dhcp4_xid    : natural :=  4;
+	constant dhcp4_secs   : natural :=  5;
+	constant dhcp4_flags  : natural :=  6;
+	constant dhcp4_ciaddr : natural :=  7;
+	constant dhcp4_yiaddr : natural :=  8;
+	constant dhcp4_siaddr : natural :=  9;
+	constant dhcp4_giaddr : natural := 10;
+	constant dhcp4_chaddr : natural := 11;
+	constant dhcp4_shname : natural := 12;
+	constant dhcp4_fbname : natural := 13;
+	constant dhcp4_cookie : natural := 14;
+                                       
+	constant dhcp4hdr_frame : natural_vector := (
+		dhcp4_op     =>   1*octect_size,
+		dhcp4_htype  =>   1*octect_size,
+		dhcp4_hlen   =>   1*octect_size,
+		dhcp4_hops   =>   1*octect_size,
+		dhcp4_xid    =>   4*octect_size,
+		dhcp4_secs   =>   2*octect_size,
+		dhcp4_flags  =>   2*octect_size,
+		dhcp4_ciaddr =>   4*octect_size,
+		dhcp4_yiaddr =>   4*octect_size,
+		dhcp4_siaddr =>   4*octect_size,
+		dhcp4_giaddr =>   4*octect_size,
+		dhcp4_chaddr =>  16*octect_size,
+		dhcp4_shname =>  64*octect_size,
+		dhcp4_fbname => 128*octect_size,
+		dhcp4_cookie =>   4*octect_size);
 end;
