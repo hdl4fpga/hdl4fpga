@@ -36,13 +36,9 @@ entity ip_tx is
 	port (
 		mii_txc     : in  std_logic;
 
+		pl_len      : in  std_logic_vector(16-1 downto 0);
 		pl_txen     : in  std_logic;
 		pl_txd      : in  std_logic_vector;
-
-		ip4len_treq : out std_logic ;
-		ip4len_trdy : in  std_logic := '-';
-		ip4len_txen : in  std_logic;
-		ip4len_txd  : in  std_logic_vector;
 
 		ip4sa_treq  : out std_logic ;
 		ip4sa_trdy  : in  std_logic := '-';
@@ -89,6 +85,12 @@ architecture def of ip_tx is
 	signal lat_txd       : std_logic_vector(ip4_txd'range);
 	signal lat_txen      : std_logic;
 
+	signal ip4len_treq : std_logic;
+	signal ip4len_trdy : std_logic;
+	signal ip4len_txen : std_logic;
+	signal ip4len_txd  : std_logic_vector(ip4_txd'range);
+	signal pkt_len     : std_logic_vector(0 to 16-1);
+
 begin
 
 	process (pl_txen, pllat_txen, mii_txc)
@@ -133,6 +135,16 @@ begin
 		mii_trdy => shdr_trdy,
 		mii_txen => shdr_txen,
 		mii_txd  => shdr_txd);
+
+	pkt_len <= reverse(std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame)-ip4hdr_frame(ip4_llc))/octect_size),8);
+	iplen_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => pkt_len,
+        mii_txc  => mii_txc,
+		mii_treq => ip4len_treq,
+		mii_trdy => ip4len_trdy,
+        mii_txen => ip4len_txen,
+        mii_txd  => ip4len_txd);
 
 	lat_b : block
 		signal pllat1_txen : std_logic;

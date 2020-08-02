@@ -21,6 +21,8 @@ HDL4FPGA__videobox__def = $(LIB_HDL4FPGA)/videobox/def.dat
 HDL4FPGA__videobox = $(LIB_HDL4FPGA)/videobox/_primary.dat
 HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
+HDL4FPGA__udp4_tx__def = $(LIB_HDL4FPGA)/udp4_tx/def.dat
+HDL4FPGA__udp4_tx = $(LIB_HDL4FPGA)/udp4_tx/_primary.dat
 HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
@@ -108,6 +110,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videobox) \
     $(HDL4FPGA__video_sync__mix) \
     $(HDL4FPGA__video_sync) \
+    $(HDL4FPGA__udp4_tx__def) \
+    $(HDL4FPGA__udp4_tx) \
     $(HDL4FPGA__std__body) \
     $(HDL4FPGA__std) \
     $(HDL4FPGA__serdes__def) \
@@ -386,6 +390,7 @@ $(HDL4FPGA__ip_tx) \
 $(HDL4FPGA__ip_tx__def) : /home/msagre/work/hdl4fpga.work/library/mii/ip_tx.vhd \
 		$(HDL4FPGA__mii_1chksum) \
 		$(HDL4FPGA__mii_latency) \
+		$(HDL4FPGA__mii_mux) \
 		$(HDL4FPGA__mii_rom) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -407,7 +412,6 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__mii_1chksum) \
 $(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
-		$(HDL4FPGA__mii_mux) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -565,6 +569,19 @@ $(HDL4FPGA__std__body) : ../common/std.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../common/std.vhd
+
+$(HDL4FPGA__udp4_tx) \
+$(HDL4FPGA__udp4_tx__def) : ../mii/udp_tx.vhd \
+		$(HDL4FPGA__mii_latency) \
+		$(HDL4FPGA__mii_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/udp_tx.vhd
 
 $(HDL4FPGA__box_edges) \
 $(HDL4FPGA__box_edges__def) \

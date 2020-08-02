@@ -36,12 +36,13 @@ entity udp4_tx is
 	port (
 		mii_txc   : in  std_logic;
 
-		pl_len    : in  std_logic_vector(0 to 16-1);
+		pl_len    : in  std_logic_vector(16-1 downto 0);
 		pl_txen   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
 
 		udp4_sp   : in  std_logic_vector(0 to 16-1);
 		udp4_dp   : in  std_logic_vector(0 to 16-1);
+		udp4_len  : buffer std_logic_vector(16-1 downto 0);
 		udp4_txen : buffer std_logic;
 		udp4_txd  : out std_logic_vector);
 end;
@@ -50,12 +51,12 @@ architecture def of udp4_tx is
 
 	signal udp4_ptr  : unsigned(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp4_txd'length-1));
 	signal udp4_hdr  : std_logic_vector(0 to summation(udp4hdr_frame)-1);
-	signal udp4_len  : std_logic_vector(0 to 16-1);
 	signal udp4_cksm : std_logic_vector(16-1 downto 0) := (others => '0');
 
 	signal pllat_txen  : std_logic;
 	signal pllat_txd   : std_logic_vector(udp4_txd'range);
 	signal udp4hdr_txd : std_logic_vector(udp4_txd'range);
+
 begin
 
 	process (pl_txen, pllat_txen, mii_txc)
@@ -86,7 +87,7 @@ begin
 	end process;
 
 	udp4_len <= std_logic_vector(unsigned(pl_len) + (summation(udp4hdr_frame)/octect_size));
-	udp4_hdr <= udp4_sp & udp4_dp & udp4_len & udp4_cksm;
+	udp4_hdr <= reverse(udp4_sp,8) & reverse(udp4_dp,8) & reverse(udp4_len,8) & udp4_cksm;
 
 	udp4hdr_e : entity hdl4fpga.mii_mux
 	port map (
