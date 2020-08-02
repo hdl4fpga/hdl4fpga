@@ -40,6 +40,7 @@ entity udp4_tx is
 		pl_txen   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
 
+		udp4_cksm : in  std_logic_vector(0 to 16-1) := x"0000";
 		udp4_sp   : in  std_logic_vector(0 to 16-1);
 		udp4_dp   : in  std_logic_vector(0 to 16-1);
 		udp4_len  : buffer std_logic_vector(16-1 downto 0);
@@ -51,7 +52,6 @@ architecture def of udp4_tx is
 
 	signal udp4_ptr  : unsigned(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp4_txd'length-1));
 	signal udp4_hdr  : std_logic_vector(0 to summation(udp4hdr_frame)-1);
-	signal udp4_cksm : std_logic_vector(16-1 downto 0) := (others => '0');
 
 	signal pllat_txen  : std_logic;
 	signal pllat_txd   : std_logic_vector(udp4_txd'range);
