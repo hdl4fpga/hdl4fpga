@@ -89,9 +89,13 @@ architecture struct of mii_debug is
 	signal ip4da_txen : std_logic;
 	signal ip4da_txd  : std_logic_vector(arp_txd'range);
 
-	signal udp4_len  : std_logic_vector(16-1 downto 0);
-	signal udp4_txen : std_logic;
-	signal udp4_txd  : std_logic_vector(arp_txd'range);
+	signal udp4pl_len : std_logic_vector(16-1 downto 0);
+	signal udp4_sp    : std_logic_vector(16-1 downto 0);
+	signal udp4_dp    : std_logic_vector(16-1 downto 0);
+	signal udp4_len   : std_logic_vector(16-1 downto 0);
+	signal udp4_cksm  : std_logic_vector(16-1 downto 0);
+	signal udp4_txen  : std_logic;
+	signal udp4_txd   : std_logic_vector(arp_txd'range);
 
 	signal ip4sa_treq : std_logic;
 	signal ip4sa_trdy : std_logic;
@@ -100,6 +104,9 @@ architecture struct of mii_debug is
 
 	signal ip4saiptx_treq  : std_logic;
 	signal ip4saarptx_treq : std_logic;
+
+	signal dscb_cksm : std_logic_vector(16-1 downto 0);
+	signal dscb_len  : std_logic_vector(16-1 downto 0);
 
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
@@ -170,23 +177,32 @@ begin
 	end process;
 
 	dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
+	generic map (
+		dhcp_ip4 => x"c0_a8_00_0e")
 	port map (
-		mii_txc  => mii_txc,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txen => pl_txen,
-		mii_txd  => pl_txd);
+		mii_txc   => mii_txc,
+		dscb_treq => mii_treq,
+		dscb_trdy => mii_trdy,
+		dscb_cksm => dscb_cksm,
+		dscb_len  => dscb_len,
+		dscb_txen => pl_txen,
+		dscb_txd  => pl_txd);
 
+	udp4_sp    <= x"0044";
+	udp4_dp    <= x"0043";
+	udp4pl_len <= dscb_len;
+	udp4_cksm  <= dscb_cksm;
 	udp4tx_e : entity hdl4fpga.udp4_tx
 	port map (
 		mii_txc   => mii_txc,
 
-		pl_len    => x"0004",
+		pl_len    => udp4pl_len,
 		pl_txen   => pl_txen,
 		pl_txd    => pl_txd,
 
-		udp4_sp   => x"0004",
-		udp4_dp   => x"0008",
+		udp4_sp   => udp4_sp,
+		udp4_dp   => udp4_dp,
+		udp4_cksm => udp4_cksm,
 		udp4_len  => udp4_len,
 		udp4_txen => udp4_txen,
 		udp4_txd  => udp4_txd);

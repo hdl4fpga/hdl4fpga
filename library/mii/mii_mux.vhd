@@ -48,7 +48,7 @@ architecture def of mii_mux is
 begin
 
 	assert mux_data'length=mii_txd'length or mux_data'length/mii_txd'length=2**mux_length
-	report "Length of mux_data is not a multiple of power of 2 of length of mii_txd"
+	report "Length of mux_data(" & natural'image(mux_data'length) & ") is not a multiple of power of 2 of length of mii_txd(" & natural'image(mii_txd'length) & ")"
 	severity FAILURE;
 
 	process (mii_treq, mii_tena, mii_txc)

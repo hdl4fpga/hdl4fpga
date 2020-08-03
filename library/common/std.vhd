@@ -548,7 +548,7 @@ package body std is
 		for i in 0 to n-1 loop
 			checksum := checksum + resize(aux(0 to size-1), checksum'length);
 			if checksum(0)='1' then
-				checksum := checksum + 1;
+				checksum := checksum + to_unsigned(1, checksum'length); -- Xilinx's bug
 			end if;
 			checksum(0) := '0';
 			aux := aux sll size;

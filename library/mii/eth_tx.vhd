@@ -38,7 +38,7 @@ entity eth_tx is
 		mii_txc  : in  std_logic;
 		pl_txen  : in  std_logic;
 		pl_txd   : in  std_logic_vector;
-		eth_txen : out std_logic;
+		eth_txen : buffer std_logic;
 		eth_txd  : out std_logic_vector);
 
 end;
@@ -63,17 +63,29 @@ architecture def of eth_tx is
 	signal dll_txen  : std_logic;
 	signal dll_txd   : std_logic_vector(eth_txd'range);
 
+		signal txen : std_logic;
 begin
 
 	padding_p : process (mii_txc, pl_txen)
 		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1)) := (others => '1');
 	begin
 		if rising_edge(mii_txc) then
+			if pl_txen='1' then
+				txen <= '1';
+			elsif cntr(0)='1' then
+				if pl_txen='0' then
+					txen <= '0';
+				end if;
+			end if;
+
 			if cntr(0)='0' then
 				cntr := cntr + 1;
 			elsif pl_txen='1' then
-				cntr := to_unsigned((2*6+4)*8/eth_txd'length+1, cntr'length); 
+				if txen='0' then
+					cntr := to_unsigned((2*6+4)*8/eth_txd'length+1, cntr'length); 
+				end if;
 			end if;
+
 		end if;
 		padd_txen <= not cntr(0) or pl_txen;
 	end process;

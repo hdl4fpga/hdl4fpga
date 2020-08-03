@@ -72,6 +72,8 @@ HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
 HDL4FPGA__draw_line = $(LIB_HDL4FPGA)/draw_line/_primary.dat
 HDL4FPGA__dpram__def = $(LIB_HDL4FPGA)/dpram/def.dat
 HDL4FPGA__dpram = $(LIB_HDL4FPGA)/dpram/_primary.dat
+HDL4FPGA__dhcp_dscb__def = $(LIB_HDL4FPGA)/dhcp_dscb/def.dat
+HDL4FPGA__dhcp_dscb = $(LIB_HDL4FPGA)/dhcp_dscb/_primary.dat
 HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
 HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__ddrto__spartan3 = $(LIB_HDL4FPGA)/ddrto/spartan3.dat
@@ -161,6 +163,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__draw_line) \
     $(HDL4FPGA__dpram__def) \
     $(HDL4FPGA__dpram) \
+    $(HDL4FPGA__dhcp_dscb__def) \
+    $(HDL4FPGA__dhcp_dscb) \
     $(HDL4FPGA__dfs__xilinx) \
     $(HDL4FPGA__dfs) \
     $(HDL4FPGA__ddrto__spartan3) \
@@ -311,6 +315,18 @@ $(HDL4FPGA__dfs__xilinx) : ../xilinx/dfs.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs.vhd
 
+$(HDL4FPGA__dhcp_dscb) \
+$(HDL4FPGA__dhcp_dscb__def) : ../mii/dhcp_dscb.vhd \
+		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_dscb.vhd
+
 $(HDL4FPGA__dpram) \
 $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_textio) \
@@ -425,7 +441,8 @@ $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__ip_tx) \
-		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__udp4_tx) \
+		$(HDL4FPGA__dhcp_dscb) \
 		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__mii_mux) \
 		$(HDL4FPGA__ipoepkg) \
