@@ -27,6 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
+use hdl4fpga.ipoepkg.all;
 
 entity dhcp_dscb is
 	generic (
@@ -40,27 +42,20 @@ entity dhcp_dscb is
 		dscb_cksm : out std_logic_vector(0 to 16-1);
 		dscb_len  : out std_logic_vector(16-1 downto 0);
 		dscb_treq : in  std_logic;
-		dscb_trdy : in  std_logic;
+		dscb_trdy : out std_logic;
 		dscb_txen : out std_logic;
 		dscb_txd  : out std_logic_vector);
 end;
 
 architecture def of dhcp_dscb is
 
-	signal shdr1_trdy  : std_logic;
-	signal shdr1_txen  : std_logic;
-	signal shdr1_txd   : std_logic_vector(dscb_txd'range);
-
-	signal names_trdy  : std_logic;
-	signal names_txen  : std_logic;
-	signal names_txd   : std_logic_vector(dscb_txd'range);
-
-	signal vendor_txen : std_logic;
-	signal vendor_txd  : std_logic_vector(dscb_txd'range);
-
-begin
-		
 	constant payload_size : natural := 244+6;
+
+	constant vendor_data : std_logic_vector := reverse(
+		x"63825363"     &    -- MAGIC COOKIE
+		x"350101"       &    -- DHCPDISCOVER
+		x"320400000000" &    -- IP REQUEST
+		x"FF",8);            -- END
 
 	constant shdr1 : std_logic_vector := reverse(
 		udp_checksummed (
@@ -82,16 +77,23 @@ begin
 			x"00000000" &    -- CHADDR
 			x"00000000"),8); -- CHADDR
 
-	constant vendor_data : std_logic_vector := reverse(
-		x"63825363"     &    -- MAGIC COOKIE
-		x"350101"       &    -- DHCPDISCOVER
-		x"320400000000" &    -- IP REQUEST
-		x"FF",8);            -- END
+	signal shdr1_trdy  : std_logic;
+	signal shdr1_txen  : std_logic;
+	signal shdr1_txd   : std_logic_vector(dscb_txd'range);
+
+	signal names_trdy  : std_logic;
+	signal names_txen  : std_logic;
+	signal names_txd   : std_logic_vector(dscb_txd'range);
+
+	signal vendor_txen : std_logic;
+	signal vendor_txd  : std_logic_vector(dscb_txd'range);
+
+begin
 
 	dscb_sp   <= dhcp_sp;
 	dscb_dp   <= dhcp_dp;
 	dscb_len  <= std_logic_vector(to_unsigned(payload_size, dscb_len'length));
-	dscb_cksm <= shdr1(summation(udp4hdr_frame(0 to udp4_cksm-1) to summation(udp4hdr_frame(0 to udp4_cksm-1)-1);
+	dscb_cksm <= shdr1(summation(udp4hdr_frame(0 to udp4_cksm-1)) to summation(udp4hdr_frame(0 to udp4_cksm))-1);
 
 	shdr1_e : entity hdl4fpga.mii_rom
 	generic map (
@@ -100,12 +102,12 @@ begin
 		mii_txc  => mii_txc,
 		mii_treq => dscb_treq,
 		mii_trdy => shdr1_trdy,
-		mii_txdv => shdr1_txen,
+		mii_txen => shdr1_txen,
 		mii_txd  => shdr1_txd);
 
 	sbname_e  : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => (summation(dhcp4hdr_frame(dhcp4_shname to dhcp4_fbname) => '0')))
+		mux_data => (0 to summation(dhcp4hdr_frame(dhcp4_shname to dhcp4_fbname))-1 => '0'),
 		mii_txc  => mii_txc,
 		mii_treq => shdr1_trdy,
 		mii_trdy => names_trdy,
@@ -122,7 +124,7 @@ begin
 		mii_txen => vendor_txen,
 		mii_txd  => vendor_txd);
 
-	dscb_txd  <= wirebus(shrd1_txd & names_txd & vendor_txd, shdr1_txen & names_txen & vendor_txen);
+	dscb_txd  <= wirebus(shdr1_txd & names_txd & vendor_txd, shdr1_txen & names_txen & vendor_txen);
 	dscb_txen <= shdr1_txen or names_txen or vendor_txen;
 end;
 
