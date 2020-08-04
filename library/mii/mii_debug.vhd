@@ -60,6 +60,11 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
+	constant myip4   : std_logic_vector := x"c0_a8_00_0e";
+
+	signal eth_req   : std_logic_vector(0 to 2-1);
+	signal eth_gnt   : std_logic_vector(0 to 2-1);
+
 	signal eth_ptr   : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal eth_bcst  : std_logic;
 	signal eth_hwda  : std_logic;
@@ -136,7 +141,7 @@ begin
 	ip4sa_treq <= ip4saiptx_treq or ip4saarptx_treq;
 	ipsa_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => reverse(x"c0_a8_00_0e",8),
+		mux_data => reverse(myip4,8),
         mii_txc  => mii_txc,
 		mii_treq => ip4sa_treq,
 		mii_trdy => ip4sa_trdy,
@@ -145,7 +150,7 @@ begin
 		
 	ipda_e : entity hdl4fpga.mii_mux
 	port map (
-		--mux_data => reverse(x"c0_a8_00_0e",8),
+		--mux_data => reverse(myip4,8),
 		mux_data => reverse(x"ff_ff_ff_ff",8),
         mii_txc  => mii_txc,
 		mii_treq => ip4da_treq,
@@ -178,7 +183,7 @@ begin
 
 	dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
 	generic map (
-		dhcp_ip4 => x"c0_a8_00_0e")
+		dhcp_ip4  => myip4)
 	port map (
 		mii_txc   => mii_txc,
 		dscb_treq => mii_treq,
@@ -209,24 +214,38 @@ begin
 
 	iptx_e : entity hdl4fpga.ip_tx
 	port map (
-		mii_txc   => mii_txc,
+		mii_txc    => mii_txc,
 
-		pl_len    => udp4_len,
-		pl_txen   => udp4_txen,
-		pl_txd    => udp4_txd,
+		pl_len     => udp4_len,
+		pl_txen    => udp4_txen,
+		pl_txd     => udp4_txd,
 
-		ip4sa_treq  => ip4saiptx_treq,
-		ip4sa_trdy  => ip4sa_trdy,
-		ip4sa_txen  => ip4sa_txen,
-		ip4sa_txd   => ip4sa_txd,
-                                 
-		ip4da_treq  => ip4da_treq,
-		ip4da_trdy  => ip4da_trdy,
-		ip4da_txen  => ip4da_txen,
-		ip4da_txd   => ip4da_txd,
+		ip4sa_treq => ip4saiptx_treq,
+		ip4sa_trdy => ip4sa_trdy,
+		ip4sa_txen => ip4sa_txen,
+		ip4sa_txd  => ip4sa_txd,
+                                
+		ip4da_treq => ip4da_treq,
+		ip4da_trdy => ip4da_trdy,
+		ip4da_txen => ip4da_txen,
+		ip4da_txd  => ip4da_txd,
 
-		ip4_txen    => ip4_txen,
-		ip4_txd     => ip4_txd);
+		ip4_txen   => ip4_txen,
+		ip4_txd    => ip4_txd);
+
+	mii_gnt_b : block
+	begin
+		mii_treq <= mii_gnt;
+
+		miignt_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_txc,
+			req => mii_req,
+			gnt => mii_gnt);
+
+		eth_txd  <= wirebus(arp_txd & ip4_txen, eth_gnt);
+		eth_txen <= setif(eth_gnt/=(eth_gnt'range => '0');
+	end block;
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
