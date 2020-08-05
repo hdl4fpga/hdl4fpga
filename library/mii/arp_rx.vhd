@@ -39,7 +39,7 @@ entity arp_rx is
 		mii_rxd  : in  std_logic_vector;
 		eth_ptr  : in  std_logic_vector;
 		eth_bcst : in  std_logic;
-		arp_req  : out std_logic);
+		arp_rcvd  : out std_logic);
 
 end;
 
@@ -76,7 +76,7 @@ begin
 		mii_tena => arp_field(eth_frame'length + arp_tpa),
 		mii_equ  => tpa_equ);
 
-	arp_req <= tpa_equ;
+	arp_rcvd <= tpa_equ;
 
 end;
 

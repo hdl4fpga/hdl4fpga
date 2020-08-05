@@ -97,6 +97,8 @@ HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
 HDL4FPGA__arp_tx = $(LIB_HDL4FPGA)/arp_tx/_primary.dat
 HDL4FPGA__arp_rx__def = $(LIB_HDL4FPGA)/arp_rx/def.dat
 HDL4FPGA__arp_rx = $(LIB_HDL4FPGA)/arp_rx/_primary.dat
+HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
+HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 VCOM = vcom
@@ -188,6 +190,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__arp_tx) \
     $(HDL4FPGA__arp_rx__def) \
     $(HDL4FPGA__arp_rx) \
+    $(HDL4FPGA__arbiter__mix) \
+    $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__align__arch) \
     $(HDL4FPGA__align)
 
@@ -199,6 +203,15 @@ $(HDL4FPGA__align__arch) : ../common/align.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/align.vhd
+
+$(HDL4FPGA__arbiter) \
+$(HDL4FPGA__arbiter__mix) : ../common/arbiter.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../common/arbiter.vhd
 
 $(HDL4FPGA__arp_rx) \
 $(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \

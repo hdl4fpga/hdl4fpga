@@ -32,7 +32,7 @@ entity arbiter is
 	port (
 		clk : in  std_logic;
 		req : in  std_logic_vector;
-		gnt : out std_logic_vector);
+		gnt : buffer std_logic_vector);
 end;
 
 architecture mix of arbiter is
