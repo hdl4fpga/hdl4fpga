@@ -1,11 +1,14 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/mii_debug_e/mii_txc
-add wave -noupdate /testbench/du_e/mii_debug_e/mii_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/mii_txen
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/mii_txd(0) -radix hexadecimal} {/testbench/du_e/mii_txd(1) -radix hexadecimal} {/testbench/du_e/mii_txd(2) -radix hexadecimal} {/testbench/du_e/mii_txd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/mii_txd(0) {-height 15 -radix hexadecimal} /testbench/du_e/mii_txd(1) {-height 15 -radix hexadecimal} /testbench/du_e/mii_txd(2) {-height 15 -radix hexadecimal} /testbench/du_e/mii_txd(3) {-height 15 -radix hexadecimal}} /testbench/du_e/mii_txd
-add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/udp4pl_e/mii_txen
-add wave -noupdate -radix hexadecimal /testbench/du_e/mii_debug_e/udp4pl_e/mii_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/mii_treq
+add wave -noupdate -expand /testbench/du_e/mii_debug_e/mii_gnt
+add wave -noupdate /testbench/du_e/mii_debug_e/mii_treq
+add wave -noupdate /testbench/du_e/mii_debug_e/mii_trdy
+add wave -noupdate /testbench/du_e/mii_debug_e/mii_req
+add wave -noupdate /testbench/du_e/mii_debug_e/mii_rdy
 add wave -noupdate -radix unsigned /testbench/du_e/mii_debug_e/udp4tx_e/udp4_txen
 add wave -noupdate -radix unsigned -childformat {{/testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(0) -radix unsigned} {/testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(1) -radix unsigned} {/testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(2) -radix unsigned} {/testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(3) -radix unsigned}} -subitemconfig {/testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(0) {-height 15 -radix unsigned} /testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(1) {-height 15 -radix unsigned} /testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(2) {-height 15 -radix unsigned} /testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd(3) {-height 15 -radix unsigned}} /testbench/du_e/mii_debug_e/udp4tx_e/udp4_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/ipsa_treq
@@ -43,9 +46,6 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/pl_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_trdy
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_treq
-add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_trdy
-add wave -noupdate /testbench/du_e/mii_debug_e/iplen_e/mii_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4len_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4sa_treq
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4sa_trdy
@@ -73,7 +73,7 @@ add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/mii_txc
 add wave -noupdate /testbench/du_e/mii_debug_e/iptx_e/ip4_txen
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/mii_debug_e/iptx_e/ip4_txd(0) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_txd(1) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_txd(2) -radix hexadecimal} {/testbench/du_e/mii_debug_e/iptx_e/ip4_txd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/mii_debug_e/iptx_e/ip4_txd(0) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_txd(1) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_txd(2) {-height 29 -radix hexadecimal} /testbench/du_e/mii_debug_e/iptx_e/ip4_txd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/mii_debug_e/iptx_e/ip4_txd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1357955 ps} 0} {{Cursor 2} {1819742 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1357955 ps} 0} {{Cursor 2} {25460306 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 100
@@ -89,4 +89,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1187935 ps} {2237935 ps}
+WaveRestoreZoom {25124074 ps} {25780324 ps}

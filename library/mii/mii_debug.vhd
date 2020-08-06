@@ -253,7 +253,7 @@ begin
 			gnt => mii_gnt);
 
 		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
-		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0'));
+		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
 	ethtx_e : entity hdl4fpga.eth_tx
