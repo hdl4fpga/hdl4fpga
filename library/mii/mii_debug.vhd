@@ -46,6 +46,7 @@ entity mii_debug is
 		mii_rxd     : in  std_logic_vector;
 		mii_rxdv    : in  std_logic;
 
+		pkt_req    : in  std_logic;
 		mii_txc     : in  std_logic;
 		mii_txd     : buffer std_logic_vector;
 		mii_txen    : buffer std_logic;
@@ -70,9 +71,9 @@ architecture struct of mii_debug is
 
 	alias arp_req   : std_logic is mii_req(0);
 	alias arp_rdy   : std_logic is mii_rdy(0);
-
-	signal eth_req   : std_logic_vector(0 to 2-1);
-	signal eth_gnt   : std_logic_vector(0 to 2-1);
+	alias dscb_req  : std_logic is mii_req(1);
+	alias dscb_rdy  : std_logic is mii_rdy(1);
+	alias dscb_treq : std_logic is mii_treq(1);
 
 	signal eth_ptr   : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal eth_bcst  : std_logic;
@@ -125,6 +126,9 @@ architecture struct of mii_debug is
 	signal dscb_trdy  : std_logic;
 	signal dscb_cksm  : std_logic_vector(16-1 downto 0);
 	signal dscb_len   : std_logic_vector(16-1 downto 0);
+
+	signal txc_rxd : std_logic_vector(0 to mii_txd'length+1);
+	signal rxc_txd : std_logic_vector(0 to mii_txd'length+1);
 
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
@@ -189,7 +193,7 @@ begin
 		dhcp_ip4  => myip4)
 	port map (
 		mii_txc   => mii_txc,
-		dscb_treq => mii_treq(1),
+		dscb_treq => dscb_treq,
 		dscb_trdy => dscb_trdy,
 		dscb_cksm => dscb_cksm,
 		dscb_len  => dscb_len,
@@ -239,6 +243,7 @@ begin
 	mii_gnt_b : block
 	begin
 		mii_treq <= mii_gnt;
+		mii_rdy  <= mii_gnt and not (mii_gnt'range => mii_txen);
 		mii_trdy <= mii_gnt and not (mii_gnt'range => mii_txen);
 
 		miignt_e : entity hdl4fpga.arbiter
@@ -247,8 +252,8 @@ begin
 			req => mii_req,
 			gnt => mii_gnt);
 
-		eth_txd  <= wirebus(arp_txd & ip4_txen, eth_gnt);
-		eth_txen <= setif(eth_gnt/=(eth_gnt'range => '0'));
+		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
+		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0'));
 	end block;
 
 	ethtx_e : entity hdl4fpga.eth_tx
@@ -260,12 +265,17 @@ begin
 		eth_txd  => mii_txd);
 
 	txc_sync_b : block
-		signal rxc_rxd : std_logic_vector(0 to mii_txd'length);
-		signal txc_rxd : std_logic_vector(0 to mii_txd'length);
-	begin
-		rxc_rxd <= mii_rxd & '0'; --mii_rxdv;
 
-		sync_e : entity hdl4fpga.fifo
+		signal rxc_rxd : std_logic_vector(0 to mii_txd'length+1);
+		signal txc_txd : std_logic_vector(0 to mii_txd'length+1);
+
+		alias  txc_rxdv    : std_logic is txc_rxd(mii_rxd'length);
+		alias  txc_arprcvd : std_logic is txc_rxd(mii_rxd'length+1);
+
+	begin
+		rxc_rxd <= mii_rxd & mii_rxdv & arp_rcvd;
+
+		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size   => 2,
 			out_rgtr   => false, 
@@ -279,22 +289,45 @@ begin
 			dst_data => txc_rxd);
 
 		process (mii_txc)
-			variable treq : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if arp_rdy='1' then
 					arp_req	<= '0';
-				elsif txc_rxd(mii_rxd'length)='0' then
-					if treq='1' then
+				elsif txc_rxdv='0' then
+					if txc_arprcvd='1' then
 						arp_req <= '1';
 					end if;
 				end if;
-				treq := txc_rxd(mii_rxd'length);
 			end if;
 		end process;
 
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if dscb_rdy='1' then
+					dscb_req <= '0';
+				elsif pkt_req='1' then
+					dscb_req <= '1';
+				end if;
+			end if;
+		end process;
+
+		txc_txd <= mii_txd & mii_txen & '0';
+		txc2rxc_e : entity hdl4fpga.fifo
+		generic map (
+			mem_size   => 2,
+			out_rgtr   => false, 
+			check_sov  => false,
+			check_dov  => false,
+			gray_code  => false)
+		port map (
+			src_clk  => mii_txc,
+			src_data => txc_txd,
+			dst_clk  => mii_rxc,
+			dst_data => rxc_txd);
+
 		display_txd  <= wirebus (mii_txd & txc_rxd(mii_rxd'range), mii_txen & txc_rxd(mii_rxd'length));
-		display_txen <= mii_txen or txc_rxd(mii_rxd'length);
+		display_txen <= mii_txen or '0'; --txc_rxd(mii_rxd'length);
 
 	end block;
 

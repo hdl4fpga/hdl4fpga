@@ -112,7 +112,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 
 		mii_txc   => mii_txc,
-		mii_treq  => mii_treq,
+		pkt_req  => mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
 
