@@ -91,7 +91,7 @@ architecture struct of mii_debug is
 	signal eth_txd   : std_logic_vector(mii_txd'range);
 
 
-	signal arp_treq  : std_logic :='0';
+	alias  arp_treq  : std_logic is mii_treq(0);
 	signal arp_trdy  : std_logic;
 	signal arp_txen  : std_logic;
 	signal arp_txd   : std_logic_vector(mii_txd'range);
@@ -296,15 +296,17 @@ begin
 			dst_data => txc_rxd);
 
 		process (mii_txc)
+			variable rcvd : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if arp_rdy='1' then
 					arp_req	<= '0';
 				elsif txc_rxdv='0' then
-					if txc_arprcvd='1' then
+					if rcvd='1' then
 						arp_req <= '1';
 					end if;
 				end if;
+				rcvd := txc_arprcvd;
 			end if;
 		end process;
 		tp2 <=arp_req;
