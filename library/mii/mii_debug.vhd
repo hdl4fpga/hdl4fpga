@@ -51,6 +51,11 @@ entity mii_debug is
 		mii_txd     : buffer std_logic_vector;
 		mii_txen    : buffer std_logic;
 
+		tp1 : out std_logic;
+		tp2 : out std_logic;
+		tp3 : out std_logic;
+		tp4 : out std_logic;
+
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
 		video_on    : out std_logic;
@@ -146,6 +151,8 @@ begin
 		pl_rxdv  => pl_rxdv);
 
 	arprx_e : entity hdl4fpga.arp_rx
+	generic map (
+		myip4 => myip4)
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => pl_rxdv,
@@ -300,6 +307,8 @@ begin
 				end if;
 			end if;
 		end process;
+		tp2 <=arp_req;
+		tp1 <=arp_req;
 
 		process (mii_txc)
 		begin

@@ -33,6 +33,8 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_rx is
+	generic (
+		myip4 : std_logic_vector(0 to 32-1));
 	port (
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
@@ -67,10 +69,10 @@ begin
 	tpacmp_e : entity hdl4fpga.mii_ramcmp
 	generic map (
 		mem_size => arp_frame(arp_tpa),
-		mem_data => reverse(x"c0_a8_00_0e",8))
+		mem_data => myip4)
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => '0',
+		mii_rxdv => '0', --mii_rxdv,
 		mii_rxd  => mii_rxd,
 		mii_treq => tpa_req,
 		mii_tena => arp_field(eth_frame'length + arp_tpa),

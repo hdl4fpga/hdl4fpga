@@ -65,6 +65,7 @@ architecture mii_debug of nuhs3adsp is
 	signal mii_clk  : std_logic;
 	signal mii_treq : std_logic := '0';
 
+	signal tp1 : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -101,6 +102,22 @@ begin
 	end process;
 	led7 <= mii_treq;
 
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if sw1='0' then
+				led18 <= '0';
+				led8  <= '0';
+			elsif mii_rxdv='1' then
+				led18 <= '1';
+				if tp1='1' then
+					led8 <= '1';
+				end if;
+			end if;
+		end if;
+	end process;
+	led7 <= mii_treq;
+
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
 		cga_bitrom => to_ascii("Ready Steady GO!"),
@@ -115,6 +132,7 @@ begin
 		pkt_req  => mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
+		tp1 => tp1,
 
 		video_clk => vga_clk, 
 		video_dot => vga_dot,
@@ -134,6 +152,7 @@ begin
 		do(0) => hsync,
 		do(1) => vsync,
 		do(2) => blankn);
+
 	psave <= '1';
 	sync  <= 'Z';
 	red   <= (others => vga_dot);
@@ -152,13 +171,13 @@ begin
 	-- LEDs DAC --
 	--------------
 		
-	led18 <= '0';
+--	led18 <= '0';
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';
 	led11 <= '0';
 	led9  <= '0';
-	led8  <= '0';
+--	led8  <= '0';
 --	led7  <= '0';
 
 	-- RS232 Transceiver --
