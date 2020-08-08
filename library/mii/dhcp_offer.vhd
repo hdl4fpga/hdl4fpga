@@ -27,45 +27,53 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
+use hdl4fpga.ipoepkg.all;
 
-entity mii_pllcmp is
-    port (
-		mii_data : in  std_logic_vector;
-        mii_rxc  : in  std_logic;
-        mii_rxd  : in  std_logic_vector;
-		mii_ena  : in  std_logic := '1';
-		mii_treq : in  std_logic;
-		mii_pktv : out std_logic);
+entity dhcp_offer is
+	generic (
+		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+	port (
+		mii_rxc       : in  std_logic;
+		mii_rxd       : in  std_logic_vector;
+		mii_rxdv      : in  std_logic;
 end;
 
-architecture def of mii_pllcmp is
-	signal mii_txd  : std_logic_vector(mii_rxd'range);
-	signal mii_trdy : std_logic;
+architecture def of dhcp_offer is
+
+	constant dhcp_frame : natural :=  udp_frame+8;
+	constant dhcp_yia   : field   := (dhcp_frame+16, 4);
+	constant dhcp_sia   : field   := (dhcp_frame+20, 4);
+
+	signal dhcp_ena     : std_logic;
+	signal yia_ena      : std_logic;
+	signal sia_ena      : std_logic;
+
+	signal dis_txd   : std_logic_vector(mii_txd'range);
+	signal dis_txdv  : std_logic;
+	signal requ_txd  : std_logic_vector(mii_txd'range);
+	signal requ_txdv : std_logic;
+
+	signal offer_rcv : std_logic;
 begin
+					
+	dhcp_ena <= lookup((0 => udp_sport, 1 => udp_dport), std_logic_vector(mii_ptr));
+	yia_ena  <= lookup((0 => dhcp_yia), std_logic_vector(mii_ptr));
+	sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
 
-	mii_data_e : entity hdl4fpga.mii_pll2ser
+	mii_dhcp_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(x"00430044",8))
 	port map (
-		mii_data => mii_data,
-		mii_txc  => mii_rxc,
-		mii_tena => mii_ena,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txdv => open,
-		mii_txd  => mii_txd);
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => udpproto_vld,
+		mii_ena  => dhcp_ena,
+		mii_pktv => dhcp_vld);
 
-	process (mii_rxc, mii_trdy)
-		variable cy : std_logic;
-	begin
-		if rising_edge(mii_rxc) then
-			if mii_treq='0' then
-				cy  := '1';
-			elsif mii_trdy='0' then
-				if mii_ena='1' then
-					cy := cy and setif(mii_txd=mii_rxd);
-				end if;
-			end if;
-		end if;
-		mii_pktv <= mii_trdy and cy;
-	end process;
+	myipcfg_vld  <= dhcp_vld and yia_ena;
+	ipdaddr_vld  <= dhcp_vld and sia_ena;
+	offer_rcv    <= dhcp_vld;
 
 end;
+
