@@ -161,6 +161,26 @@ begin
 		eth_bcst => eth_bcst,
 		arp_rcvd => arp_rcvd);
 
+	llccmp_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(llc_ip4,8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => mii_rxdv,
+		mii_equ  => llc_equ);
+
+	ip4rx_e : entity hdl4fpga.ip4_rx
+	generic map (
+		myip4 => myip4)
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => pl_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_ptr  => eth_ptr,
+		eth_bcst => eth_bcst,
+		arp_rcvd => arp_rcvd);
+
 	ip4sa_treq <= ip4saiptx_treq or ip4saarptx_treq;
 	ipsa_e : entity hdl4fpga.mii_mux
 	port map (

@@ -30,22 +30,16 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity dhcp_offer is
-	generic (
-		dhcp_ip4 : in std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
-		dhcp_dp  : in std_logic_vector(16-1 downto 0) := x"0044";
-		dhcp_sp  : in std_logic_vector(16-1 downto 0) := x"0043";
-		dhcp_mac : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+entity udp_rx is
 	port (
 		mii_rxc       : in  std_logic;
-		mii_rxd       : in  std_logic_vector;
-		mii_rxdv      : in  std_logic;
 		
-
-	;
+		udp_
+		udp_rxd       : in  std_logic_vector;
+		udp_rxdv      : in  std_logic;
 end;
 
-architecture def of dhcp_offer is
+architecture def of udp_rx is
 
 	constant dhcp_frame : natural :=  udp_frame+8;
 	constant dhcp_yia   : field   := (dhcp_frame+16, 4);
@@ -63,14 +57,13 @@ architecture def of dhcp_offer is
 	signal offer_rcv : std_logic;
 begin
 					
-	process (mii_
 	dhcp_ena <= lookup((0 => udp_sport, 1 => udp_dport), std_logic_vector(mii_ptr));
 	yia_ena  <= lookup((0 => dhcp_yia), std_logic_vector(mii_ptr));
 	sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
 
 	mii_dhcp_e : entity hdl4fpga.mii_romcmp
 	generic map (
-		mem_data => reverse(dhcp_dp & dhcp_sp,8))
+		mem_data => reverse(x"00430044",8))
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxd  => mii_rxd,

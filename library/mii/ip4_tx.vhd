@@ -32,7 +32,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity ip_tx is
+entity ip4_tx is
 	port (
 		mii_txc     : in  std_logic;
 
@@ -59,7 +59,7 @@ entity ip_tx is
 		ip4_txd     : out std_logic_vector);
 end;
 
-architecture def of ip_tx is
+architecture def of ip4_tx is
 
 	signal ip4_ptr       : unsigned(0 to unsigned_num_bits(summation(ip4hdr_frame)/ip4_txd'length-1));
 	signal shdr_trdy     : std_logic;
