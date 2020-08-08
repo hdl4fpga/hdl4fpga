@@ -140,26 +140,43 @@ architecture struct of mii_debug is
 
 begin
 
-	ethrx_e : entity hdl4fpga.eth_rx
+	hwda_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(hwda,8))
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		eth_ptr  => eth_ptr,
-		eth_hwda => eth_hwda,
-		eth_bcst => eth_bcst,
-		pl_rxdv  => pl_rxdv);
+		mii_treq => eth_pre,
+		mii_equ  => eth_hwda);
+
+	mii_bcst_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_treq => eth_pre,
+		mii_equ  => eth_bcst);
+
+	ethrx_e : entity hdl4fpga.eth_rx
+	port map (
+		mii_rxc   => mii_rxc,
+		mii_rxdv  => mii_rxdv,
+		mii_rxd   => mii_rxd,
+		eth_ptr   => eth_ptr,
+		hwda_rxdv => eth_hwda);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	generic map (
 		myip4 => myip4)
 	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => pl_rxdv,
-		mii_rxd  => mii_rxd,
-		eth_ptr  => eth_ptr,
-		eth_bcst => eth_bcst,
-		arp_rcvd => arp_rcvd);
+		mii_rxc   => mii_rxc,
+		mii_rxdv  => pl_rxdv,
+		mii_rxd   => mii_rxd,
+		eth_ptr   => eth_ptr,
+		hwda_rxdv => arphwda_rxdv,
+		hwsa_rxdv => arphwsa_rxdv,
+		llc_rxdv  => arphwllc_rxdv);
 
 	llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (

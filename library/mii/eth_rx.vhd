@@ -32,17 +32,16 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 
 entity eth_rx is
-	generic (
-		hwda     : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc  : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_rxdv : in  std_logic;
-		eth_ptr  : buffer std_logic_vector;
-		eth_pre  : buffer std_logic;
-		eth_bcst : buffer std_logic;
-		eth_hwda : out std_logic;
-		pl_rxdv  : out std_logic);
+		mii_rxc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
+
+		eth_ptr   : buffer std_logic_vector;
+		eth_pre   : buffer std_logic
+		hwda_rxdv : out std_logic;
+		hwsa_rxdv : out std_logic);
+		llc_rxdv  : out std_logic);
 end;
 
 architecture def of eth_rx is
@@ -66,25 +65,9 @@ begin
 		end if;
 	end process;
 
-	pl_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type, ge) and mii_rxdv;
-
-	hwda_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(hwda,8))
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
-		mii_equ  => eth_hwda);
-
-	mii_bcst_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_treq => eth_pre,
-		mii_equ  => eth_bcst);
+	hwda_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwda) and mii_rxdv;
+	hwsa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwsa) and mii_rxdv;
+	llc_rxdv  <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type) and mii_rxdv;
 
 end;
 
