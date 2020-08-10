@@ -32,10 +32,8 @@ entity mii_rom is
 	generic (
 		mem_data : std_logic_vector);
     port (
-        mii_txc  : in  std_logic;
-		mii_frm  : in  std_logic;
-		mii_ena  : in  std_logic := '1';
-        mii_txen : out std_logic;
+        mii_rxc  : in  std_logic;
+        mii_rxdv : in  std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -52,17 +50,15 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_frm='0' then
+			if mii_txen='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
-				if mii_ena='1' then
-					cntr <= cntr - 1;
-				end if;
+				cntr <= cntr - 1;
+			else
+				cntr <= to_unsigned(mem_size-1, cntr'length);
 			end if;
 		end if;
 	end process;
-
-	mii_txen <= mii_frm and not cntr(0) and mii_ena;
 
 	mem_e : entity hdl4fpga.rom
 	generic map (

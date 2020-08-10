@@ -80,7 +80,7 @@ architecture struct of mii_debug is
 	alias dscb_rdy  : std_logic is mii_rdy(1);
 	alias dscb_treq : std_logic is mii_treq(1);
 
-	signal eth_ptr   : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal eth_bcst  : std_logic;
 	signal eth_hwda  : std_logic;
 	signal eth_type  : std_logic;
@@ -138,6 +138,9 @@ architecture struct of mii_debug is
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
 
+	signal arp_llc : std_logic;
+	signal ip4_llc : std_logic;
+
 begin
 
 	hwda_e : entity hdl4fpga.mii_romcmp
@@ -163,29 +166,50 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		eth_ptr   => eth_ptr,
-		hwda_rxdv => eth_hwda);
+		eth_ptr   => frm_ptr,
+		hwda_rxdv => eth_hwda;
+		llc_rxdv  => eth_llc);
 
-	arprx_e : entity hdl4fpga.arp_rx
-	generic map (
-		myip4 => myip4)
-	port map (
-		mii_rxc   => mii_rxc,
-		mii_rxdv  => pl_rxdv,
-		mii_rxd   => mii_rxd,
-		eth_ptr   => eth_ptr,
-		hwda_rxdv => arphwda_rxdv,
-		hwsa_rxdv => arphwsa_rxdv,
-		llc_rxdv  => arphwllc_rxdv);
-
-	llccmp_e : entity hdl4fpga.mii_romcmp
+	ip4llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(llc_ip4,8))
 	port map (
 		mii_rxc  => mii_rxc,
+		mii_rxdv => eth_llc;
 		mii_rxd  => mii_rxd,
-		mii_treq => mii_rxdv,
-		mii_equ  => llc_equ);
+		mii_equ  => ip4_llc);
+
+	arpllccmp_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(llc_arp,8))
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => eth_llc;
+		mii_rxd  => mii_rxd,
+		mii_equ  => arp_llc);
+
+	xx_b : block
+	begin
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				if llc_rxdv='1' then
+					type_ip4 <= ip4_llc;
+					type_arp <= arp_llc;
+				end if;
+			end if;
+		end process;
+
+	end block;
+
+	arprx_e : entity hdl4fpga.arp_rx
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+		eth_ptr  => frm_ptr,
+		tpa_rxdv => arp_hwda);
 
 	ip4rx_e : entity hdl4fpga.ip4_rx
 	generic map (
@@ -194,7 +218,7 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxdv => pl_rxdv,
 		mii_rxd  => mii_rxd,
-		eth_ptr  => eth_ptr,
+		eth_ptr  => frm_ptr,
 		eth_bcst => eth_bcst,
 		arp_rcvd => arp_rcvd);
 

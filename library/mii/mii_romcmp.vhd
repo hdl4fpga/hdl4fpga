@@ -33,40 +33,35 @@ entity mii_romcmp is
 		mem_data : std_logic_vector);
     port (
         mii_rxc  : in  std_logic;
+        mii_rxdv : in  std_logic_vector;
         mii_rxd  : in  std_logic_vector;
-		mii_ena  : in  std_logic := '1';
-		mii_treq : in  std_logic;
-		mii_trdy : buffer std_logic;
 		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_romcmp is
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
+	signal cy : std_logic;
 begin
 
 	mii_data_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => mem_data)
 	port map (
-		mii_txc  => mii_rxc,
-		mii_tena => mii_ena,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
 		mii_txd  => mii_txd);
 
-	process (mii_rxc, mii_trdy)
-		variable cy : std_logic;
+	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_treq='0' then
-				cy  := '1';
-			elsif mii_trdy='0' then
-				if mii_ena='1' then
-					cy := cy and setif(mii_txd=mii_rxd);
-				end if;
+			if mii_rxdv='1' then
+				cy <= cy and setif(mii_txd=mii_rxd);
+			else
+				cy <= '1';
 			end if;
 		end if;
-		mii_equ <= mii_trdy and cy;
 	end process;
+
+	mii_equ <= cy and setif(mii_txd=mii_rxd);
 
 end;

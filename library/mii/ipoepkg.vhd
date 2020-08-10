@@ -36,15 +36,15 @@ package ipoepkg is
 	constant llc_ip4 : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
 
-	constant arp_htype : natural := 0;
-	constant arp_ptype : natural := 1;
-	constant arp_hlen  : natural := 2;
-	constant arp_plen  : natural := 3;
-	constant arp_oper  : natural := 4;
-	constant arp_sha   : natural := 5;
-	constant arp_spa   : natural := 6;
-	constant arp_tha   : natural := 7;
-	constant arp_tpa   : natural := 8;
+	constant arp_htype : natural := eth_frame'right+1;
+	constant arp_ptype : natural := eth_frame'right+2;
+	constant arp_hlen  : natural := eth_frame'right+3;
+	constant arp_plen  : natural := eth_frame'right+4;
+	constant arp_oper  : natural := eth_frame'right+5;
+	constant arp_sha   : natural := eth_frame'right+6;
+	constant arp_spa   : natural := eth_frame'right+7;
+	constant arp_tha   : natural := eth_frame'right+8;
+	constant arp_tpa   : natural := eth_frame'right+9;
 
 	constant arp_frame : natural_vector := (
 		arp_htype => 2*octect_size,
@@ -64,20 +64,18 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
-	constant ip4_llc     : natural :=  0;
-	constant ip4_verihl  : natural :=  1;
-	constant ip4_tos     : natural :=  2;
-	constant ip4_len     : natural :=  3;
-	constant ip4_ident   : natural :=  4;
-	constant ip4_flgsfrg : natural :=  5;
-	constant ip4_ttl     : natural :=  6;
-	constant ip4_proto   : natural :=  7;
-	constant ip4_chksum  : natural :=  8;
-	constant ip4_sa      : natural :=  9;
-	constant ip4_da      : natural :=  10;
+	constant ip4_verihl  : natural :=  eth_frame'right+1;
+	constant ip4_tos     : natural :=  eth_frame'right+2;
+	constant ip4_len     : natural :=  eth_frame'right+3;
+	constant ip4_ident   : natural :=  eth_frame'right+4;
+	constant ip4_flgsfrg : natural :=  eth_frame'right+5;
+	constant ip4_ttl     : natural :=  eth_frame'right+6;
+	constant ip4_proto   : natural :=  eth_frame'right+7;
+	constant ip4_chksum  : natural :=  eth_frame'right+8;
+	constant ip4_sa      : natural :=  eth_frame'right+9;
+	constant ip4_da      : natural :=  eth_frame'right+10;
 
 	constant ip4hdr_frame : natural_vector := (
-		ip4_llc     => llc_ip4'length,
 		ip4_verihl  => 1*octect_size,
 		ip4_tos     => 1*octect_size,
 		ip4_len     => 2*octect_size,
@@ -96,10 +94,10 @@ package ipoepkg is
 		x"0511"        -- TTL, protocol
 		); 
 
-	constant udp4_sp   : natural :=  0;
-	constant udp4_dp   : natural :=  1;
-	constant udp4_len  : natural :=  2;
-	constant udp4_cksm : natural :=  3;
+	constant udp4_sp   : natural :=  ip4hdr_frame'right+1;
+	constant udp4_dp   : natural :=  ip4hdr_frame'right+2;
+	constant udp4_len  : natural :=  ip4hdr_frame'right+3;
+	constant udp4_cksm : natural :=  ip4hdr_frame'right+4;
 
 	constant udp4hdr_frame : natural_vector := (
 		udp4_sp   => 2*octect_size,
@@ -107,21 +105,21 @@ package ipoepkg is
 		udp4_len  => 2*octect_size,
 		udp4_cksm => 2*octect_size);
 		
-	constant dhcp4_op     : natural :=  0;
-	constant dhcp4_htype  : natural :=  1;
-	constant dhcp4_hlen   : natural :=  2;
-	constant dhcp4_hops   : natural :=  3;
-	constant dhcp4_xid    : natural :=  4;
-	constant dhcp4_secs   : natural :=  5;
-	constant dhcp4_flags  : natural :=  6;
-	constant dhcp4_ciaddr : natural :=  7;
-	constant dhcp4_yiaddr : natural :=  8;
-	constant dhcp4_siaddr : natural :=  9;
-	constant dhcp4_giaddr : natural := 10;
-	constant dhcp4_chaddr : natural := 11;
-	constant dhcp4_shname : natural := 12;
-	constant dhcp4_fbname : natural := 13;
-	constant dhcp4_cookie : natural := 14;
+	constant dhcp4_op     : natural := udp4hdr_frame'right+ 1;
+	constant dhcp4_htype  : natural := udp4hdr_frame'right+ 2;
+	constant dhcp4_hlen   : natural := udp4hdr_frame'right+ 3;
+	constant dhcp4_hops   : natural := udp4hdr_frame'right+ 4;
+	constant dhcp4_xid    : natural := udp4hdr_frame'right+ 5;
+	constant dhcp4_secs   : natural := udp4hdr_frame'right+ 6;
+	constant dhcp4_flags  : natural := udp4hdr_frame'right+ 7;
+	constant dhcp4_ciaddr : natural := udp4hdr_frame'right+ 8;
+	constant dhcp4_yiaddr : natural := udp4hdr_frame'right+ 9;
+	constant dhcp4_siaddr : natural := udp4hdr_frame'right+10;
+	constant dhcp4_giaddr : natural := udp4hdr_frame'right+11;
+	constant dhcp4_chaddr : natural := udp4hdr_frame'right+12;
+	constant dhcp4_shname : natural := udp4hdr_frame'right+13;
+	constant dhcp4_fbname : natural := udp4hdr_frame'right+14;
+	constant dhcp4_cookie : natural := udp4hdr_frame'right+15;
                                        
 	constant dhcp4hdr_frame : natural_vector := (
 		dhcp4_op     =>   1*octect_size,
