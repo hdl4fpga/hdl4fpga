@@ -33,7 +33,7 @@ entity mii_romcmp is
 		mem_data : std_logic_vector);
     port (
         mii_rxc  : in  std_logic;
-        mii_rxdv : in  std_logic_vector;
+        mii_rxdv : in  std_logic;
         mii_rxd  : in  std_logic_vector;
 		mii_equ  : out std_logic);
 end;

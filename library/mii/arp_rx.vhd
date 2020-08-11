@@ -33,15 +33,13 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_rx is
-	generic (
-		myip4 : std_logic_vector(0 to 32-1));
 	port (
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
 
 		eth_ptr  : in  std_logic_vector;
-		tpa_rxdv : out std_logic;
+		tpa_rxdv : out std_logic);
 
 end;
 
@@ -49,7 +47,7 @@ architecture def of arp_rx is
 
 begin
 
-	tap_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length, arp_tpa);
+	tpa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length, arp_tpa);
 
 end;
 

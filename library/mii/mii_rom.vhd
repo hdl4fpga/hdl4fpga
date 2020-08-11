@@ -47,10 +47,10 @@ architecture def of mii_rom is
 
 begin
 
-	process (mii_txc)
+	process (mii_rxc)
 	begin
-		if rising_edge(mii_txc) then
-			if mii_txen='0' then
+		if rising_edge(mii_rxc) then
+			if mii_rxdv='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
 				cntr <= cntr - 1;

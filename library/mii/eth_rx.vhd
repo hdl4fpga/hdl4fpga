@@ -38,9 +38,9 @@ entity eth_rx is
 		mii_rxdv  : in  std_logic;
 
 		eth_ptr   : buffer std_logic_vector;
-		eth_pre   : buffer std_logic
+		eth_pre   : buffer std_logic;
 		hwda_rxdv : out std_logic;
-		hwsa_rxdv : out std_logic);
+		hwsa_rxdv : out std_logic;
 		type_rxdv : out std_logic);
 end;
 
