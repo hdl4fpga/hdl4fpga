@@ -41,7 +41,7 @@ entity eth_rx is
 		eth_pre   : buffer std_logic
 		hwda_rxdv : out std_logic;
 		hwsa_rxdv : out std_logic);
-		llc_rxdv  : out std_logic);
+		type_rxdv : out std_logic);
 end;
 
 architecture def of eth_rx is
@@ -67,7 +67,7 @@ begin
 
 	hwda_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwda) and mii_rxdv;
 	hwsa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwsa) and mii_rxdv;
-	llc_rxdv  <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type) and mii_rxdv;
+	type_rxdv  <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type) and mii_rxdv;
 
 end;
 
