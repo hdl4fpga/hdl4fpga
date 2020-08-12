@@ -250,13 +250,13 @@ begin
 		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
-	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_txc  => mii_txc,
-		pl_txen  => eth_txen,
-		pl_txd   => eth_txd,
-		eth_txen => mii_txen,
-		eth_txd  => mii_txd);
+--	ethtx_e : entity hdl4fpga.eth_tx
+--	port map (
+--		mii_txc  => mii_txc,
+--		pl_txen  => eth_txen,
+--		pl_txd   => eth_txd,
+--		eth_txen => mii_txen,
+--		eth_txd  => mii_txd);
 
 	txc_sync_b : block
 
@@ -297,7 +297,6 @@ begin
 			end if;
 		end process;
 		tp2 <=arp_req;
-		tp1 <=arp_req;
 
 		process (mii_txc)
 		begin

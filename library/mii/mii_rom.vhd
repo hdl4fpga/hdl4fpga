@@ -34,6 +34,7 @@ entity mii_rom is
     port (
         mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;
+		mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -54,11 +55,11 @@ begin
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
 				cntr <= cntr - 1;
-			else
-				cntr <= to_unsigned(mem_size-1, cntr'length);
 			end if;
 		end if;
 	end process;
+
+	mii_txen <= mii_rxdv and not cntr(0);
 
 	mem_e : entity hdl4fpga.rom
 	generic map (

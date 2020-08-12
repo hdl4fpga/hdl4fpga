@@ -61,7 +61,8 @@ begin
 		mem_data => mii_pre)
 	port map (
 		mii_rxc  => mii_txc,
-		mii_rxdv => pre_txen,
+		mii_rxdv => dll_txen,
+		mii_txen => pre_txen,
 		mii_txd  => pre_txd);
 
 	lattxd_e : entity hdl4fpga.align
