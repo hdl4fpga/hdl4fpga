@@ -22,7 +22,7 @@ module spi_ram_btn
 (
   input  wire clk, // faster than SPI clock
   input  wire csn, sclk, mosi, // SPI lines to be sniffed
-  inout  wire miso, // 3-state line, active when csn=0
+  output wire miso, // 3-state line, active when csn=0
   // BTNs
   input  wire [6:0] btn,
   output wire irq,

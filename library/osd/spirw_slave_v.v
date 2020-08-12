@@ -16,7 +16,7 @@ module spirw_slave_v
 (
   input  wire clk, // faster than SPI clock
   input  wire csn, sclk, mosi, // SPI lines to be sniffed
-  inout  wire miso, // 3-state line, active when csn=0
+  output wire miso, // 3-state line, active when csn=0
   // BRAM interface
   output wire rd, wr,
   output wire [c_addr_bits-1:0] addr,
@@ -133,6 +133,6 @@ module spirw_slave_v
   assign rd   = R_request_read;
   assign wr   = R_request_write;
   assign addr = R_raddr[c_addr_bits-1:0];
-  assign miso = csn ? 1'bz : R_byte[8-1];
+  assign miso = R_byte[8-1];
   assign data_out = R_byte;
 endmodule

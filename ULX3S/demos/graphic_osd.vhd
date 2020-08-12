@@ -396,14 +396,13 @@ begin
 	wifi_gpio0 <= not spi_irq;
 	sd_d(0) <= 'Z';
 	sd_d(1) <= 'Z'; -- 4-bit part of SD card bus used as OSD SPI
-	sd_d(2) <= 'Z';
+	sd_d(2) <= o_miso;  -- wifi_gpio12
 	sd_d(3) <= 'Z';
 	i_cs    <= wifi_gpio5;
 	i_csn   <= not i_cs;
 	i_sclk  <= wifi_gpio16;
 	i_mosi  <= sd_d(1); -- wifi_gpio4
 	i_mosiv(0) <= i_mosi; -- vector of 1 element for scopeio_sin
-	sd_d(2) <= o_miso;  -- wifi_gpio12
 	spi_ram_btn_vhd_e : entity hdl4fpga.spi_ram_btn_vhd
 	generic map
 	(

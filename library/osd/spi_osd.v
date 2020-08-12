@@ -8,7 +8,7 @@ module spi_osd
   parameter        c_start_x      = 64,  // x1  pixel window h-position
   parameter        c_start_y      = 48,  // x1  pixel window v-position
   parameter        c_chars_x      = 64,  // x8  pixel window h-size
-  parameter        c_chars_y      = 24,  // x16 pixel window v-size
+  parameter        c_chars_y      = 20,  // x16 pixel window v-size
   parameter        c_init_on      = 1,   // 0:default OFF 1:default ON
   parameter        c_inverse      = 1,   // 0:no inverse, 1:inverse support
   parameter        c_transparency = 0,   // 1:see-thru OSD menu 0:opaque
