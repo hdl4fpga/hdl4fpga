@@ -21,29 +21,34 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
-	generic (
-		hwsa      : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_txc   : in  std_logic;
+		mii_txen  : in  std_logic;
 
-		ipsa_treq : out std_logic;
-		ipsa_trdy : in  std_logic := '-';
-		ipsa_txen : in  std_logic;
-		ipsa_txd  : in  std_logic_vector;
+		arp_frm   : in  std_logic_vector;
 
-		arp_treq  : in  std_logic;
-		arp_trdy  : out std_logic;
+		sha_txen  : buffer std_logic;
+		sha_txd   : in  std_logic_vector;
+
+		spa_txen  : buffer std_logic;
+		spa_txd   : in  std_logic_vector;
+
+		tha_txen  : buffer std_logic;
+		tha_txd   : in  std_logic_vector;
+
+		tpa_txen  : buffer std_logic;
+		tpa_txd   : in  std_logic_vector;
+
 		arp_txen  : out std_logic;
 		arp_txd   : out std_logic_vector);
 
@@ -51,57 +56,26 @@ end;
 
 architecture def of arp_tx is
 
-	signal pfx_trdy : std_logic;
 	signal pfx_txen : std_logic;
 	signal pfx_txd  : std_logic_vector(arp_txd'range);
-
-	signal tha_treq : std_logic;
-	signal tha_trdy : std_logic;
-	signal tha_txen : std_logic;
-	signal tha_txd  : std_logic_vector(arp_txd'range);
-
 
 begin
 	
 	pfx_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(llc_arp & arprply_pfx & hwsa, 8))
+		mem_data => reverse(llc_arp & arp4rply_pfx, 8))
 	port map (
-		mii_txc  => mii_txc,
-		mii_treq => arp_treq,
-		mii_trdy => pfx_trdy,
+		mii_rxc  => mii_txc,
+		mii_rxdv => mii_txen,
 		mii_txen => pfx_txen,
 		mii_txd  => pfx_txd);
 
+	sha_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_sha);
+	spa_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_spa);
+	tha_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_tha);
+	tpa_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_tpa);
 
-	process(mii_txc, pfx_trdy, ipsa_trdy, tha_trdy)
-		variable tpa : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			if pfx_trdy='0' then
-				tpa := '0';
-			elsif ipsa_trdy='1' then
-				tpa := '1';
-			end if;
-		end if;
-		tha_treq  <= setif(tpa='0', ipsa_trdy, pfx_trdy);
-		ipsa_treq <= setif(tpa='0', pfx_trdy,  tha_trdy);
-		arp_trdy  <= setif(tpa='1', ipsa_trdy);
-	end process;
-
-	tha_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse( x"ff_ff_ff_ff_ff_ff", 8))
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => tha_treq,
-		mii_trdy => tha_trdy,
-		mii_txen => tha_txen,
-		mii_txd  => tha_txd);
-
-
-	arp_txd  <= wirebus (pfx_txd & ipsa_txd & tha_txd & ipsa_txd, pfx_txen & ipsa_txen & tha_txen & ipsa_txen);
-	arp_txen <= pfx_txen or ipsa_txen or tha_txen or ipsa_txen;
+	arp_txd  <= wirebus (pfx_txd & sha_txd & spa_txd & tha_txd & tpa_txd, pfx_txen & sha_txen & spa_txen & tha_txen & tpa_txen);
+	arp_txen <= pfx_txen or sha_txen or spa_txen or tha_txen or tpa_txen;
 
 end;
-

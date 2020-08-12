@@ -47,7 +47,7 @@ architecture def of arp_rx is
 
 begin
 
-	tpa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & arp_frame, mii_rxd'length, arp_tpa);
+	tpa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & arp4_frame, mii_rxd'length, arp_tpa);
 
 end;
 

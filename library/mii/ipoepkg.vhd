@@ -46,7 +46,7 @@ package ipoepkg is
 	constant arp_tha   : natural := eth_frame'right+8;
 	constant arp_tpa   : natural := eth_frame'right+9;
 
-	constant arp_frame : natural_vector := (
+	constant arp4_frame : natural_vector := (
 		arp_htype => 2*octect_size,
 		arp_ptype => 2*octect_size,
 		arp_hlen  => 1*octect_size,
@@ -57,7 +57,7 @@ package ipoepkg is
 		arp_tha   => 6*octect_size,
 		arp_tpa   => 4*octect_size);
 
-	constant arprply_pfx : std_logic_vector :=
+	constant arp4rply_pfx : std_logic_vector :=
 		x"0001" & -- htype 
 		x"0800" & -- ptype 
 		x"06"   & -- hlen  
