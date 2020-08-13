@@ -109,7 +109,11 @@ architecture struct of mii_debug is
 	signal ethbcst_txd  : std_logic_vector(mii_txd'range);
 	signal myip4a_txen  : std_logic := '0';
 	signal myip4a_txd   : std_logic_vector(mii_txd'range);
+	signal ethhwsa_txen : std_logic;
+	signal ethhwda_txen : std_logic;
 	signal arpspa_txen  : std_logic;
+	signal arpsha_txen  : std_logic;
+	signal arptha_txen  : std_logic;
 	signal arptpa_txen  : std_logic;
 
 	signal ip4_txen  : std_logic := '0';
@@ -235,6 +239,7 @@ begin
 			end if;
 		end process;
 
+		ethbcst_txen <= arptha_txen or ethhwda_txen;
 		ethbcst_e : entity hdl4fpga.mii_rom
 		generic map (
 			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
@@ -243,6 +248,7 @@ begin
 			mii_rxdv => ethbcst_txen,
 			mii_txd  => ethbcst_txd);
 
+		mymac_txen <= ethhwsa_txen or mymac_txen;
 		mymac_e : entity hdl4fpga.mii_rom
 		generic map (
 			mem_data => reverse(mymac, 8))
@@ -298,13 +304,13 @@ begin
 		mii_txen  => pkt_req,
 		arp_frm   => txfrm_ptr,
 
-		sha_txen  => mymac_txen,
+		sha_txen  => arpsha_txen,
 		sha_txd   => mymac_txd,
 
 		spa_txen  => arpspa_txen,
 		spa_txd   => myip4a_txd,
 
-		tha_txen  => ethbcst_txen,
+		tha_txen  => arptha_txen,
 		tha_txd   => ethbcst_txd,
 
 		tpa_txen  => arptpa_txen,
@@ -315,11 +321,16 @@ begin
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_txc  => mii_txc,
-		pl_txen  => eth_txen,
-		pl_txd   => eth_txd,
-		eth_txen => mii_txen,
-		eth_txd  => mii_txd);
+		mii_txc   => mii_txc,
+		eth_ptr   => txfrm_ptr,
+		hwsa_txen => ethhwsa_txen,
+		hwsa_txd  => mymac_txd,
+		hwda_txen => ethhwda_txen,
+		hwda_txd  => ethbcst_txd,
+		pl_txen   => eth_txen,
+		pl_txd    => eth_txd,
+		eth_txen  => mii_txen,
+		eth_txd   => mii_txd);
 
 	txc_sync_b : block
 

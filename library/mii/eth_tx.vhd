@@ -32,26 +32,25 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 
 entity eth_tx is
-	generic (
-		hwsa     : in  std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_txc  : in  std_logic;
+		eth_ptr  : in  std_logic_vector;
+
 		pl_txen  : in  std_logic;
 		pl_txd   : in  std_logic_vector;
+
+		hwsa_txen : buffer std_logic;
+		hwsa_txd  : in  std_logic_vector;
+
+		hwda_txen : buffer std_logic;
+		hwda_txd  : in  std_logic_vector;
+
 		eth_txen : buffer std_logic;
 		eth_txd  : out std_logic_vector);
 
 end;
 
 architecture def of eth_tx is
-
-	signal hwda_trdy : std_logic;
-	signal hwda_txen : std_logic;
-	signal hwda_txd  : std_logic_vector(eth_txd'range);
-
-	signal hwsa_trdy : std_logic;
-	signal hwsa_txen : std_logic;
-	signal hwsa_txd  : std_logic_vector(eth_txd'range);
 
 	constant lat_length : natural := (eth_frame(eth_hwda)+eth_frame(eth_hwsa))/eth_txd'length;
 	signal lat_txen  : std_logic;
@@ -65,6 +64,9 @@ architecture def of eth_tx is
 
 		signal txen : std_logic;
 begin
+
+	hwda_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwda) and pl_txen;
+	hwsa_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwsa) and pl_txen;
 
 	padding_p : process (mii_txc, pl_txen)
 		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1)) := (others => '1');
@@ -89,7 +91,7 @@ begin
 		end if;
 		padd_txen <= not cntr(0) or pl_txen;
 	end process;
-	padd_txd  <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
+	padd_txd <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
 
 	lattxd_e : entity hdl4fpga.align
 	generic map (
@@ -109,26 +111,6 @@ begin
 		clk   => mii_txc,
 		di(0) => padd_txen,
 		do(0) => lat_txen);
-
-	hwda_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => padd_txen,
-		mii_trdy => hwda_trdy,
-		mii_txen => hwda_txen,
-		mii_txd  => hwda_txd);
-
-	hwsa_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(hwsa, 8))
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => hwda_trdy,
-		mii_trdy => hwsa_trdy,
-		mii_txen => hwsa_txen,
-		mii_txd  => hwsa_txd);
 
 	dll_txd  <= wirebus (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
 	dll_txen <= hwda_txen or hwsa_txen or lat_txen;
