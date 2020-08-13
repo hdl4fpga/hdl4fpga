@@ -30,6 +30,8 @@ use hdl4fpga.std.all;
 
 package ethpkg is
 
+	constant octect_size  : natural := 8;
+
 	type mode_t is (eq, ge, gt);
 
 	constant eth_hwda : natural := 0;

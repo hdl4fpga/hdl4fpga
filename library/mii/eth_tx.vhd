@@ -39,11 +39,9 @@ entity eth_tx is
 		pl_txen  : in  std_logic;
 		pl_txd   : in  std_logic_vector;
 
-		hwsa_txen : buffer std_logic;
-		hwsa_txd  : in  std_logic_vector;
-
-		hwda_txen : buffer std_logic;
-		hwda_txd  : in  std_logic_vector;
+		hwsa     : in  std_logic_vector;
+		hwda     : in  std_logic_vector;
+		llc      : in  std_logic_vector;
 
 		eth_txen : buffer std_logic;
 		eth_txd  : out std_logic_vector);
@@ -52,7 +50,16 @@ end;
 
 architecture def of eth_tx is
 
-	constant lat_length : natural := (eth_frame(eth_hwda)+eth_frame(eth_hwsa))/eth_txd'length;
+	signal llc_txen : std_logic;
+	signal llc_txd  : std_logic_vector(eth_txd'range);
+
+	signal hwda_txen : std_logic;
+	signal hwda_txd  : std_logic_vector(eth_txd'range);
+
+	signal hwsa_txen : std_logic;
+	signal hwsa_txd  : std_logic_vector(eth_txd'range);
+
+	constant lat_length : natural := summation(eth_frame)/eth_txd'length;
 	signal lat_txen  : std_logic;
 	signal lat_txd   : std_logic_vector(eth_txd'range);
 
@@ -62,14 +69,36 @@ architecture def of eth_tx is
 	signal dll_txen  : std_logic;
 	signal dll_txd   : std_logic_vector(eth_txd'range);
 
-		signal txen : std_logic;
+	signal txen : std_logic;
+
 begin
 
 	hwda_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwda) and pl_txen;
+	hwsa_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => hwsa,
+		mii_txc  => mii_txc,
+		mii_rxdv => hwsa_txen,
+		mii_txd  => hwsa_txd);
+
 	hwsa_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwsa) and pl_txen;
+	hwda_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => hwda,
+		mii_txc  => mii_txc,
+		mii_rxdv => hwda_txen,
+		mii_txd  => hwda_txd);
+
+	llc_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_type) and pl_txen;
+	llc_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => llc,
+		mii_txc  => mii_txc,
+		mii_rxdv => llc_txen,
+		mii_txd  => llc_txd);
 
 	padding_p : process (mii_txc, pl_txen)
-		variable cntr : unsigned(0 to unsigned_num_bits(64*8/eth_txd'length-1)) := (others => '1');
+		variable cntr : unsigned(0 to unsigned_num_bits(64*octect_size/eth_txd'length-1)) := (others => '1');
 	begin
 		if rising_edge(mii_txc) then
 			if pl_txen='1' then
@@ -112,8 +141,8 @@ begin
 		di(0) => padd_txen,
 		do(0) => lat_txen);
 
-	dll_txd  <= wirebus (hwda_txd & hwsa_txd & lat_txd, hwda_txen & hwsa_txen & lat_txen);
-	dll_txen <= hwda_txen or hwsa_txen or lat_txen;
+	dll_txd  <= wirebus (hwda_txd & hwsa_txd & llc_txd & lat_txd, hwda_txen & hwsa_txen & llc_txen & lat_txen);
+	dll_txen <= hwda_txen or hwsa_txen or llc_txen or lat_txen;
 
 	dll_e : entity hdl4fpga.eth_dll
 	port map (

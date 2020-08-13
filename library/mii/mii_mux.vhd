@@ -32,9 +32,7 @@ entity mii_mux is
     port (
 		mux_data : in  std_logic_vector;
         mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
-		mii_trdy : out std_logic;
+        mii_rxdv : in  std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
@@ -44,35 +42,31 @@ architecture def of mii_mux is
 	subtype mux_range is natural range 1 to mux_length;
 
 	signal mux_sel : std_logic_vector(mux_range);
+	signal rdata  : std_logic_vector(mux_data'range);
 
 begin
 
-	assert mux_data'length=mii_txd'length or mux_data'length/mii_txd'length=2**mux_length
-	report "Length of mux_data(" & natural'image(mux_data'length) & ") is not a multiple of power of 2 of length of mii_txd(" & natural'image(mii_txd'length) & ")"
-	severity FAILURE;
-
-	process (mii_treq, mii_tena, mii_txc)
-		variable cntr : unsigned(0 to mux_length) := (others => '1');
+	process (mii_rxdv, mii_txc)
+		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txd'length=mux_data'length then
 				cntr := (others => '0');
-			elsif mii_treq='0' then
+			elsif mii_rxdv='0' then
 				cntr := (others => '0');
 			elsif cntr(0)='0' then
-				if mii_tena='1' then
-					cntr := cntr + 1;
-				end if;
+				cntr := cntr + 1;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
-		mii_trdy <= mii_treq and cntr(0);
-		mii_txen <= mii_treq and mii_tena and not cntr(0);
+		mii_txen <= mii_rxdv and not cntr(0);
 	end process;
 
+	rdata <= reverse(mux_data,8);
+
 	mii_txd <= 
-		mux_data when mii_txd'length=mux_data'length else
-		word2byte(mux_data, mux_sel) when mux_data'ascending else 
-		reverse(word2byte(mux_data, not mux_sel));
+		rdata when mii_txd'length=rdata'length else
+		word2byte(rdata, mux_sel, mii_txd'length) when rdata'ascending else 
+		reverse(word2byte(rdata, not mux_sel, mii_txd'length));
 
 end;

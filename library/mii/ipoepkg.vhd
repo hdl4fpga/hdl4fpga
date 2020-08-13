@@ -31,8 +31,6 @@ use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 
-	constant octect_size  : natural := 8;
-
 	constant llc_ip4 : std_logic_vector := x"0800";
 	constant llc_arp : std_logic_vector := x"0806";
 

@@ -68,7 +68,7 @@ entity mii_debug is
 architecture struct of mii_debug is
 
 	constant mymac   : std_logic_vector := x"00_40_00_01_02_03";
-	constant myip4   : std_logic_vector := x"c0_a8_00_0e";
+	constant myip4a  : std_logic_vector := x"c0_a8_00_0e";
 
 	signal mii_gnt  : std_logic_vector(0 to 2-1);
 	signal mii_treq : std_logic_vector(mii_gnt'range);
@@ -103,18 +103,6 @@ architecture struct of mii_debug is
 
 	signal arp_txen     : std_logic;
 	signal arp_txd      : std_logic_vector(mii_txd'range);
-	signal mymac_txen   : std_logic;
-	signal mymac_txd    : std_logic_vector(mii_txd'range);
-	signal ethbcst_txen : std_logic;
-	signal ethbcst_txd  : std_logic_vector(mii_txd'range);
-	signal myip4a_txen  : std_logic := '0';
-	signal myip4a_txd   : std_logic_vector(mii_txd'range);
-	signal ethhwsa_txen : std_logic;
-	signal ethhwda_txen : std_logic;
-	signal arpspa_txen  : std_logic;
-	signal arpsha_txen  : std_logic;
-	signal arptha_txen  : std_logic;
-	signal arptpa_txen  : std_logic;
 
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
@@ -219,15 +207,6 @@ begin
 			end if;
 		end process;
 
-		myip4_rx_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(myip4, 8))
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxdv => arptpa_rxdv,
-			mii_rxd  => mii_rxd,
-			mii_equ  => arptpa_equ);
-
 		process (mii_rxc)
 		begin
 			if rising_edge(mii_rxc) then
@@ -238,33 +217,6 @@ begin
 				end if;
 			end if;
 		end process;
-
-		ethbcst_txen <= arptha_txen or ethhwda_txen;
-		ethbcst_e : entity hdl4fpga.mii_rom
-		generic map (
-			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => ethbcst_txen,
-			mii_txd  => ethbcst_txd);
-
-		mymac_txen <= ethhwsa_txen or mymac_txen;
-		mymac_e : entity hdl4fpga.mii_rom
-		generic map (
-			mem_data => reverse(mymac, 8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => mymac_txen,
-			mii_txd  => mymac_txd);
-
-		myip4a_txen <= arpspa_txen or arptpa_txen;
-		myip4_e : entity hdl4fpga.mii_rom
-		generic map (
-			mem_data => reverse(myip4, 8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => myip4a_txen,
-			mii_txd  => myip4a_txd);
 
 		process (mii_txc)
 		begin
@@ -278,7 +230,7 @@ begin
 		end process;
 
 
-	tp1 <= arp_tpa;
+		tp1 <= arp_tpa;
 	end block;
 
 
@@ -294,43 +246,35 @@ begin
 			req => mii_req,
 			gnt => mii_gnt);
 
-		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
-		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
+		eth_txd  <= arp_txd; --wirebus(arp_txd & ip4_txd, mii_gnt);
+		eth_txen <= arp_txen; --setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
-		mii_txc   => mii_txc,
-		mii_txen  => pkt_req,
-		arp_frm   => txfrm_ptr,
+		mii_txc  => mii_txc,
+		mii_txen => pkt_req,
+		arp_frm  => txfrm_ptr,
 
-		sha_txen  => arpsha_txen,
-		sha_txd   => mymac_txd,
+		sha      => mymac,
+		spa      => myip4a,
+		tha      => x"ff_ff_ff_ff_ff_ff",
+		tpa      => myip4a,
 
-		spa_txen  => arpspa_txen,
-		spa_txd   => myip4a_txd,
-
-		tha_txen  => arptha_txen,
-		tha_txd   => ethbcst_txd,
-
-		tpa_txen  => arptpa_txen,
-		tpa_txd   => myip4a_txd,
-
-		arp_txen  => arp_txen,
-		arp_txd   => arp_txd);
+		arp_txen => arp_txen,
+		arp_txd  => arp_txd);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_txc   => mii_txc,
-		eth_ptr   => txfrm_ptr,
-		hwsa_txen => ethhwsa_txen,
-		hwsa_txd  => mymac_txd,
-		hwda_txen => ethhwda_txen,
-		hwda_txd  => ethbcst_txd,
-		pl_txen   => eth_txen,
-		pl_txd    => eth_txd,
-		eth_txen  => mii_txen,
-		eth_txd   => mii_txd);
+		mii_txc  => mii_txc,
+		eth_ptr  => txfrm_ptr,
+		hwsa     => x"00_40_00_01_02_03",
+		hwda     => x"ff_ff_ff_ff_ff_ff",
+		llc      => x"0806",
+		pl_txen  => eth_txen,
+		pl_txd   => eth_txd,
+		eth_txen => mii_txen,
+		eth_txd  => mii_txd);
 
 	txc_sync_b : block
 

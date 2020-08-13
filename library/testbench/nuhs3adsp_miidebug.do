@@ -38,13 +38,23 @@ add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tha_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tpa_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tha_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tpa_txd
-add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/pfx_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/pfx_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/myip4a_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txd
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/mii_txc
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/pl_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/pl_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/hwsa_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/hwsa_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/hwda_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/hwda_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/eth_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ethtx_e/eth_txd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {1035005 ps} 0}
+WaveRestoreCursors {{Cursor 2} {1075005 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 146
 configure wave -valuecolwidth 100
@@ -60,4 +70,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {2625 ns}
+WaveRestoreZoom {0 ps} {5250 ns}
