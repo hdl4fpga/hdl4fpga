@@ -53,10 +53,10 @@ entity mii_debug is
 		mii_txd     : buffer std_logic_vector;
 		mii_txen    : buffer std_logic;
 
-		tp1 : out std_logic;
-		tp2 : out std_logic;
-		tp3 : out std_logic;
-		tp4 : out std_logic;
+		tp1 : buffer std_logic;
+		tp2 : buffer std_logic;
+		tp3 : buffer std_logic;
+		tp4 : buffer std_logic;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
@@ -89,6 +89,9 @@ architecture struct of mii_debug is
 	signal ethhwda_rxdv : std_logic;
 	signal ethhwsa_rxdv : std_logic;
 	signal ethtype_rxdv : std_logic;
+	signal myip4a_rxdv : std_logic;
+	signal myip4a_equ  : std_logic;
+	signal myip4a_rcvd  : std_logic;
 
 	signal eth_txen  : std_logic;
 	signal eth_txd   : std_logic_vector(mii_txd'range);
@@ -103,6 +106,7 @@ architecture struct of mii_debug is
 
 	signal arp_txen     : std_logic;
 	signal arp_txd      : std_logic_vector(mii_txd'range);
+	signal arp_rcvd     : std_logic;
 
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
@@ -184,15 +188,15 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_equ  => typearp_equ);
 
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if ethtype_rxdv='1' then
-					type_ip4 <= typeip4_equ;
-					type_arp <= typearp_equ;
-				end if;
-			end if;
-		end process;
+		myip4a_rxdv <= arptpa_rxdv;
+		myip4acmp_e : entity hdl4fpga.mii_romcmp
+		generic map (
+			mem_data => reverse(myip4a,8))
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => myip4a_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_equ  => myip4a_equ);
 
 		process (mii_rxc)
 		begin
@@ -211,9 +215,36 @@ begin
 		begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
-					arp_tpa <= '0';
+					myip4a_rcvd  <= '0';
+				elsif myip4a_rxdv='1' then
+					myip4a_rcvd <= myip4a_equ;
+				end if;
+			end if;
+		end process;
+
+		process (mii_rxc)
+			variable x : std_logic;
+		begin
+			if rising_edge(mii_rxc) then
+				if mii_rxdv='0' then
+					arp_tpa  <= '0';
+					x := '1';
 				elsif arptpa_rxdv='1' then
-					arp_tpa <= arptpa_equ;
+					x := x and arp_rcvd and myip4a_equ and type_arp;
+				else
+					arp_tpa <= x;
+					x := '0';
+				end if;
+			end if;
+		end process;
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				if mii_rxdv='0' then
+					arp_rcvd <= '0';
+				elsif ethhwda_rxdv='1' then
+					arp_rcvd <= ethbcst_equ; --ethmymac_equ;
 				end if;
 			end if;
 		end process;
@@ -223,7 +254,7 @@ begin
 			if rising_edge(mii_txc) then
 				if pkt_req='0' then
 					txfrm_ptr <= (others => '0');
-				else
+				elsif txfrm_ptr(0)='0' then
 					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
 				end if;
 			end if;
@@ -268,9 +299,9 @@ begin
 	port map (
 		mii_txc  => mii_txc,
 		eth_ptr  => txfrm_ptr,
-		hwsa     => x"00_40_00_01_02_03",
+		hwsa     => mymac,
 		hwda     => x"ff_ff_ff_ff_ff_ff",
-		llc      => x"0806",
+		llc      => llc_arp,
 		pl_txen  => eth_txen,
 		pl_txd   => eth_txd,
 		eth_txen => mii_txen,
@@ -285,7 +316,7 @@ begin
 		alias  txc_arprcvd : std_logic is txc_rxd(mii_rxd'length+1);
 
 	begin
-		rxc_rxd <= mii_rxd & mii_rxdv & '0'; --arp_rcvd;
+		rxc_rxd <= mii_rxd & mii_rxdv & tp1;
 
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
@@ -341,8 +372,8 @@ begin
 			dst_clk  => mii_rxc,
 			dst_data => rxc_txd);
 
-		display_txd  <= wirebus (mii_txd & txc_rxd(mii_rxd'range), mii_txen & txc_rxd(mii_rxd'length));
-		display_txen <= mii_txen or '0'; --txc_rxd(mii_rxd'length);
+		display_txd  <= wirebus (mii_txd & txc_rxd(mii_rxd'range), mii_txen & txc_rxd(mii_rxd'length+1));
+		display_txen <= mii_txen or txc_rxd(mii_rxd'length+1);
 
 	end block;
 
