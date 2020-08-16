@@ -35,12 +35,12 @@ entity mii_romcmp is
         mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;
         mii_rxd  : in  std_logic_vector;
+        mii_ena  : in  std_logic;
 		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_romcmp is
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
-	signal cy : std_logic;
 begin
 
 	mii_data_e : entity hdl4fpga.mii_rom
@@ -52,16 +52,19 @@ begin
 		mii_txd  => mii_txd);
 
 	process (mii_rxc)
+		variable cy : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='1' then
-				cy <= cy and setif(mii_txd=mii_rxd);
+				if mii_ena='1' then
+					cy      := cy and setif(mii_txd=mii_rxd);
+					mii_equ <= cy and setif(mii_txd=mii_rxd);
+				end if;
 			else
-				cy <= '1';
+				cy      := '1';
+				mii_equ <= '0';
 			end if;
 		end if;
 	end process;
-
-	mii_equ <= cy and setif(mii_txd=mii_rxd);
 
 end;
