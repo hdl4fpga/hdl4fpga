@@ -86,12 +86,11 @@ architecture struct of mii_debug is
 	signal rxfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal txfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 
-	signal ethhwda_rxdv : std_logic;
-	signal ethhwsa_rxdv : std_logic;
-	signal ethtype_rxdv : std_logic;
-	signal myip4a_rxdv : std_logic;
-	signal myip4a_equ  : std_logic;
-	signal myip4a_rcvd  : std_logic;
+	signal ethhwda_ena : std_logic;
+	signal ethhwsa_ena : std_logic;
+	signal ethtype_ena : std_logic;
+	signal myip4a_ena  : std_logic;
+	signal myip4a_rcvd : std_logic;
 
 	signal eth_txen  : std_logic;
 	signal eth_txd   : std_logic_vector(mii_txd'range);
@@ -125,9 +124,9 @@ begin
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
 		eth_ptr   => rxfrm_ptr,
-		hwda_rxdv => ethhwda_rxdv,
-		hwsa_rxdv => ethhwsa_rxdv,
-		type_rxdv => ethtype_rxdv);
+		hwda_rxdv => ethhwda_ena,
+		hwsa_rxdv => ethhwsa_ena,
+		type_rxdv => ethtype_ena);
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
@@ -139,17 +138,11 @@ begin
 
 	ctlr_b : block
 
-		signal ethmymac_equ : std_logic;
-		signal ethbcst_equ  : std_logic;
+		signal ethmymac_rcvd : std_logic;
+		signal ethbcst_rcvd  : std_logic;
+		signal typeip4_rcvd  : std_logic;
+		signal typearp_rcvd  : std_logic;
 
-		signal typearp_equ  : std_logic;
-		signal typeip4_equ  : std_logic;
-
-		signal type_arp  : std_logic;
-		signal type_ip4  : std_logic;
-
-		signal arptpa_equ : std_logic;
-		signal arp_tpa    : std_logic;
 	begin
 
 		ethmac_e : entity hdl4fpga.mii_romcmp
@@ -157,97 +150,53 @@ begin
 			mem_data => reverse(mymac, 8))
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => ethhwda_rxdv,
+			mii_rxdv => mii_rxdv,
+			mii_ena  => ethhwda_ena,
 			mii_rxd  => mii_rxd,
-			mii_equ  => ethmymac_equ);
+			mii_equ  => ethmymac_rcvd);
 
 		ethbcst_rx_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => ethhwda_rxdv,
+			mii_rxdv => mii_rxdv,
+			mii_ena  => ethhwda_ena,
 			mii_rxd  => mii_rxd,
-			mii_equ  => ethbcst_equ);
+			mii_equ  => ethbcst_rcvd);
 
 		ip4llccmp_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(llc_ip4,8))
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => ethtype_rxdv,
+			mii_rxdv => mii_rxdv,
+			mii_ena  => ethtype_ena ,
 			mii_rxd  => mii_rxd,
-			mii_equ  => typeip4_equ);
+			mii_equ  => typeip4_rcvd);
 
 		arpllccmp_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(llc_arp,8))
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => ethtype_rxdv,
+			mii_rxdv => mii_rxdv,
+			mii_ena  => ethtype_ena ,
 			mii_rxd  => mii_rxd,
-			mii_equ  => typearp_equ);
+			mii_equ  => typearp_rcvd);
 
-		myip4a_rxdv <= arptpa_rxdv;
+		myip4a_ena <= arptpa_rxdv;
 		myip4acmp_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(myip4a,8))
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => myip4a_rxdv,
+			mii_rxdv => mii_rxdv,
+			mii_ena  => myip4a_ena,
 			mii_rxd  => mii_rxd,
-			mii_equ  => myip4a_equ);
+			mii_equ  => myip4a_rcvd);
 
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if mii_rxdv='0' then
-					type_ip4 <= '0';
-					type_arp <= '0';
-				elsif ethtype_rxdv='1' then
-					type_ip4 <= typeip4_equ;
-					type_arp <= typearp_equ;
-				end if;
-			end if;
-		end process;
-
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if mii_rxdv='0' then
-					myip4a_rcvd  <= '0';
-				elsif myip4a_rxdv='1' then
-					myip4a_rcvd <= myip4a_equ;
-				end if;
-			end if;
-		end process;
-
-		process (mii_rxc)
-			variable x : std_logic;
-		begin
-			if rising_edge(mii_rxc) then
-				if mii_rxdv='0' then
-					arp_tpa  <= '0';
-					x := '1';
-				elsif arptpa_rxdv='1' then
-					x := x and arp_rcvd and myip4a_equ and type_arp;
-				else
-					arp_tpa <= x;
-					x := '0';
-				end if;
-			end if;
-		end process;
-
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if mii_rxdv='0' then
-					arp_rcvd <= '0';
-				elsif ethhwda_rxdv='1' then
-					arp_rcvd <= ethbcst_equ; --ethmymac_equ;
-				end if;
-			end if;
-		end process;
+		tp1 <= arp_rcvd and myip4a_rcvd and arp_rcvd;
 
 		process (mii_txc)
 		begin
@@ -260,8 +209,6 @@ begin
 			end if;
 		end process;
 
-
-		tp1 <= arp_tpa;
 	end block;
 
 
