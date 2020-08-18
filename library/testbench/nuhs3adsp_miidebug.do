@@ -21,9 +21,6 @@ add wave -noupdate /testbench/du_e/mii_debug_e/ethrx_e/eth_pre
 add wave -noupdate /testbench/du_e/mii_debug_e/ethrx_e/hwda_rxdv
 add wave -noupdate /testbench/du_e/mii_debug_e/ethrx_e/hwsa_rxdv
 add wave -noupdate /testbench/du_e/mii_debug_e/ethrx_e/type_rxdv
-add wave -noupdate /testbench/du_e/mii_debug_e/ctlr_b/typearp_equ
-add wave -noupdate /testbench/du_e/mii_debug_e/ctlr_b/type_arp
-add wave -noupdate /testbench/du_e/mii_debug_e/ctlr_b/arp_tpa
 add wave -noupdate /testbench/du_e/mii_debug_e/ctlr_b/arpllccmp_e/mii_rxdv
 add wave -noupdate /testbench/du_e/mii_debug_e/tp1
 add wave -noupdate -divider {New Divider}
@@ -40,7 +37,6 @@ add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tha_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/tpa_txd
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/pfx_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/pfx_txd
-add wave -noupdate /testbench/du_e/mii_debug_e/myip4a_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/arptx_e/arp_txd
 add wave -noupdate -divider {New Divider}

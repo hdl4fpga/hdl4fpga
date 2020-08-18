@@ -105,7 +105,6 @@ architecture struct of mii_debug is
 
 	signal arp_txen     : std_logic;
 	signal arp_txd      : std_logic_vector(mii_txd'range);
-	signal arp_rcvd     : std_logic;
 
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
@@ -196,7 +195,7 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_equ  => myip4a_rcvd);
 
-		tp1 <= arp_rcvd and myip4a_rcvd and arp_rcvd;
+		tp1 <= typearp_rcvd and myip4a_rcvd;
 
 		process (mii_txc)
 		begin

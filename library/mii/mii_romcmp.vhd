@@ -48,7 +48,7 @@ begin
 		mem_data => mem_data)
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
+		mii_rxdv => mii_ena,
 		mii_txd  => mii_txd);
 
 	process (mii_rxc)
