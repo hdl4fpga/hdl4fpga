@@ -195,13 +195,27 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_equ  => myip4a_rcvd);
 
-		tp1 <= typearp_rcvd and myip4a_rcvd;
+
+		process (mii_rxc)
+			variable rxdv : std_logic;
+		begin
+			if rising_edge(mii_rxc) then
+				if mii_rxdv='0' then
+					if rxdv='1' then
+						tp1 <= typearp_rcvd and myip4a_rcvd;
+					else
+						tp1 <= '0';
+					end if;
+				end if;
+				rxdv := mii_rxdv;
+			end if;
+		end process;
 
 
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if pkt_req='0' then
+				if arp_treq='0' then
 					txfrm_ptr <= (others => '0');
 				elsif txfrm_ptr(0)='0' then
 					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
@@ -224,14 +238,14 @@ begin
 			req => mii_req,
 			gnt => mii_gnt);
 
-		eth_txd  <= arp_txd; --wirebus(arp_txd & ip4_txd, mii_gnt);
-		eth_txen <= arp_txen; --setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
+		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
+		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_txc  => mii_txc,
-		mii_txen => pkt_req,
+		mii_txen => arp_treq,
 		arp_frm  => txfrm_ptr,
 
 		sha      => mymac,
@@ -284,12 +298,9 @@ begin
 			if rising_edge(mii_txc) then
 				if arp_rdy='1' then
 					arp_req	<= '0';
-				elsif txc_rxdv='0' then
-					if rcvd='1' then
-						arp_req <= '1';
-					end if;
+				elsif txc_arprcvd='1' then
+					arp_req <= '1';
 				end if;
-				rcvd := txc_arprcvd;
 			end if;
 		end process;
 		tp2 <=arp_req;
