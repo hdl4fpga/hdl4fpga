@@ -103,6 +103,7 @@ begin
 	led7 <= mii_treq;
 
 	process (mii_rxc)
+		variable rxdv : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if sw1='0' then
@@ -110,10 +111,12 @@ begin
 				led8  <= '0';
 			elsif mii_rxdv='1' then
 				led18 <= '1';
+			elsif rxdv='1' then
 				if tp1='1' then
 					led8 <= '1';
 				end if;
 			end if;
+			rxdv := mii_rxdv;
 		end if;
 	end process;
 	led7 <= mii_treq;
@@ -129,7 +132,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 
 		mii_txc   => mii_txc,
-		pkt_req  => mii_treq,
+		pkt_req  => '0', --mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
 		tp1 => tp1,

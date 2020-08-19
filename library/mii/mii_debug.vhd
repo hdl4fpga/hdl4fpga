@@ -197,6 +197,7 @@ begin
 
 		tp1 <= typearp_rcvd and myip4a_rcvd;
 
+
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
