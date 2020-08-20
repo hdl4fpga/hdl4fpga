@@ -105,6 +105,7 @@ architecture struct of mii_debug is
 
 	signal arp_txen     : std_logic;
 	signal arp_txd      : std_logic_vector(mii_txd'range);
+	signal arp_rcvd     : std_logic;
 
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
@@ -202,14 +203,15 @@ begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
 					if rxdv='1' then
-						tp1 <= typearp_rcvd and myip4a_rcvd;
+						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
 					else
-						tp1 <= '0';
+						arp_rcvd <= '0';
 					end if;
 				end if;
 				rxdv := mii_rxdv;
 			end if;
 		end process;
+		tp1 <= arp_rcvd;
 
 
 		process (mii_txc)
@@ -277,7 +279,7 @@ begin
 		alias  txc_arprcvd : std_logic is txc_rxd(mii_rxd'length+1);
 
 	begin
-		rxc_rxd <= mii_rxd & mii_rxdv & tp1;
+		rxc_rxd <= mii_rxd & mii_rxdv & arp_rcvd;
 
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
