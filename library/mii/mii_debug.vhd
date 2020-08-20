@@ -331,7 +331,7 @@ begin
 			dst_data => rxc_txd);
 
 		display_txd  <= wirebus (mii_txd & txc_rxd(mii_rxd'range), mii_txen & txc_rxd(mii_rxd'length+1));
-		display_txen <= mii_txen or txc_rxd(mii_rxd'length+1);
+		display_txen <= mii_txen or '0'; --txc_rxd(mii_rxd'length+1);
 
 	end block;
 
