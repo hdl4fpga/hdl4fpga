@@ -126,7 +126,7 @@ begin
 	port map (
 		mux_data => pkt_len,
         mii_txc  => mii_txc,
-		mii_rxdv => ip4_txen,
+		mii_txdv => ip4_txen,
         mii_txen => ip4len_txen,
         mii_txd  => ip4len_txd);
 
@@ -135,7 +135,7 @@ begin
 	port map (
 		mux_data => ip4sa,
 		mii_txc  => mii_txc,
-		mii_rxdv => ip4_txen,
+		mii_txdv => ip4_txen,
 		mii_txen => ip4sa_txen,
 		mii_txd  => ip4sa_txd);
 
@@ -144,7 +144,7 @@ begin
 	port map (
 		mux_data => ip4da,
 		mii_txc  => mii_txc,
-		mii_rxdv => ip4_txen,
+		mii_txdv => ip4_txen,
 		mii_txen => ip4da_txen,
 		mii_txd  => ip4da_txd);
 

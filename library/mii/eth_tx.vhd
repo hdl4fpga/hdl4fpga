@@ -78,7 +78,7 @@ begin
 	port map (
 		mux_data => hwsa,
 		mii_txc  => mii_txc,
-		mii_rxdv => hwsa_txen,
+		mii_txdv => hwsa_txen,
 		mii_txd  => hwsa_txd);
 
 	hwsa_txen <= frame_decode(eth_ptr, eth_frame, eth_txd'length, eth_hwsa) and pl_txen;
@@ -86,7 +86,7 @@ begin
 	port map (
 		mux_data => hwda,
 		mii_txc  => mii_txc,
-		mii_rxdv => hwda_txen,
+		mii_txdv => hwda_txen,
 		mii_txd  => hwda_txd);
 
 	llc_txen <= frame_decode(eth_ptr, eth_frame, eth_txd'length, eth_type) and pl_txen;
@@ -94,7 +94,7 @@ begin
 	port map (
 		mux_data => llc,
 		mii_txc  => mii_txc,
-		mii_rxdv => llc_txen,
+		mii_txdv => llc_txen,
 		mii_txd  => llc_txd);
 
 	padding_p : process (mii_txc, pl_txen)

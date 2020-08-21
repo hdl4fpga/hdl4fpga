@@ -32,7 +32,7 @@ entity mii_mux is
     port (
 		mux_data : in  std_logic_vector;
         mii_txc  : in  std_logic;
-        mii_rxdv : in  std_logic;
+        mii_txdv : in  std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
@@ -46,20 +46,20 @@ architecture def of mii_mux is
 
 begin
 
-	process (mii_rxdv, mii_txc)
+	process (mii_txdv, mii_txc)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txd'length=mux_data'length then
 				cntr := (others => '0');
-			elsif mii_rxdv='0' then
+			elsif mii_txdv='0' then
 				cntr := (others => '0');
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
-		mii_txen <= mii_rxdv and not cntr(0);
+		mii_txen <= mii_txdv and not cntr(0);
 	end process;
 
 	rdata <= reverse(mux_data,8);

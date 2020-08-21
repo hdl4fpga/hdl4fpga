@@ -40,6 +40,7 @@ entity udp4_tx is
 		pl_txen   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
 
+		udp4_ptr  : in  std_logic_vector;
 		udp4_cksm : in  std_logic_vector(0 to 16-1) := x"0000";
 		udp4_sp   : in  std_logic_vector(0 to 16-1);
 		udp4_dp   : in  std_logic_vector(0 to 16-1);
@@ -50,7 +51,6 @@ end;
 
 architecture def of udp4_tx is
 
-	signal udp4_ptr  : unsigned(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp4_txd'length-1));
 	signal udp4_hdr  : std_logic_vector(0 to summation(udp4hdr_frame)-1);
 
 	signal pllat_txen  : std_logic;
@@ -75,17 +75,6 @@ begin
 	end process;
 
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if udp4_txen='0' then
-				udp4_ptr <= (others => '0');
-			elsif udp4_ptr(0)='0' then
-				udp4_ptr <= udp4_ptr + 1;
-			end if;
-		end if;
-	end process;
-
 	udp4_len <= std_logic_vector(unsigned(pl_len) + (summation(udp4hdr_frame)/octect_size));
 	udp4_hdr <= reverse(udp4_sp,8) & reverse(udp4_dp,8) & reverse(udp4_len,8) & udp4_cksm;
 
@@ -93,7 +82,7 @@ begin
 	port map (
 		mux_data => udp4_hdr,
 		mii_txc  => mii_txc,
-		mii_treq => udp4_txen,
+		mii_txdv => udp4_txen,
 		mii_txd  => udp4hdr_txd);
 
 	ipalat_e : entity hdl4fpga.mii_latency

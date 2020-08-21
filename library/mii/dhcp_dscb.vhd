@@ -41,7 +41,6 @@ entity dhcp_dscb is
 		dscb_cksm : buffer std_logic_vector(0 to 16-1);
 		dscb_len  : out std_logic_vector(16-1 downto 0);
 		dscb_treq : in  std_logic;
-		dscb_trdy : out std_logic;
 		dscb_txen : out std_logic;
 		dscb_txd  : out std_logic_vector);
 end;
@@ -76,11 +75,9 @@ architecture def of dhcp_dscb is
 			x"00000000" &    -- CHADDR
 			x"00000000");    -- CHADDR
 
-	signal shdr1_trdy  : std_logic;
 	signal shdr1_txen  : std_logic;
 	signal shdr1_txd   : std_logic_vector(dscb_txd'range);
 
-	signal names_trdy  : std_logic;
 	signal names_txen  : std_logic;
 	signal names_txd   : std_logic_vector(dscb_txd'range);
 
@@ -93,7 +90,7 @@ architecture def of dhcp_dscb is
 begin
 
 	dscb_len  <= std_logic_vector(to_unsigned(payload_size, dscb_len'length));
-	dscb_cksm <= reverse(shdr1(summation(udp4hdr_frame(0 to udp4_cksm-1)) to summation(udp4hdr_frame(0 to udp4_cksm))-1),8);
+--	dscb_cksm <= reverse(shdr1(summation(udp4hdr_frame(0 to udp4_cksm-1)) to summation(udp4hdr_frame(0 to udp4_cksm))-1),8);
 
 --	assert false
 --	report to_string(dscb_cksm)
@@ -104,8 +101,6 @@ begin
 		mem_data => reverse(dhcp_shdr1,8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => dscb_treq,
-		mii_trdy => shdr1_trdy,
 		mii_txen => shdr1_txen,
 		mii_txd  => shdr1_txd);
 
@@ -114,8 +109,6 @@ begin
 		mem_data => dhcp_shdr2)
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => shdr1_trdy,
-		mii_trdy => names_trdy,
 		mii_txen => names_txen,
 		mii_txd  => names_txd);
 
@@ -124,8 +117,6 @@ begin
 		mem_data => reverse(vendor_data,8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => names_trdy,
-		mii_trdy => dscb_trdy,
 		mii_txen => vendor_txen,
 		mii_txd  => vendor_txd);
 

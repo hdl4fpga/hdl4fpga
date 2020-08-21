@@ -80,7 +80,7 @@ begin
 	port map (
 		mux_data => sha,
 		mii_txc  => mii_txc,
-		mii_rxdv => sha_txen,
+		mii_txdv => sha_txen,
 		mii_txd  => sha_txd);
 
 	spa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_spa);
@@ -88,7 +88,7 @@ begin
 	port map (
 		mux_data => spa,
 		mii_txc  => mii_txc,
-		mii_rxdv => spa_txen,
+		mii_txdv => spa_txen,
 		mii_txd  => spa_txd);
 
 	tha_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tha);
@@ -96,7 +96,7 @@ begin
 	port map (
 		mux_data => tha,
 		mii_txc  => mii_txc,
-		mii_rxdv => tha_txen,
+		mii_txdv => tha_txen,
 		mii_txd  => tha_txd);
 
 	tpa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tpa);
@@ -104,7 +104,7 @@ begin
 	port map (
 		mux_data => tpa,
 		mii_txc  => mii_txc,
-		mii_rxdv => tpa_txen,
+		mii_txdv => tpa_txen,
 		mii_txd  => tpa_txd);
 
 
