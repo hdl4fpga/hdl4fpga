@@ -60,9 +60,9 @@ begin
 	generic map (
 		mem_data => mii_pre)
 	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => dll_txen,
-		mii_txen => pre_txen,
+		mii_txc  => mii_txc,
+		mii_txen => dll_txen,
+		mii_txdv => pre_txen,
 		mii_txd  => pre_txd);
 
 	lattxd_e : entity hdl4fpga.align

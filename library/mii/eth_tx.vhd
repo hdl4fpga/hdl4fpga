@@ -73,7 +73,7 @@ architecture def of eth_tx is
 
 begin
 
-	hwda_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwda) and pl_txen;
+	hwda_txen <= frame_decode(eth_ptr, eth_frame, eth_txd'length, eth_hwda) and pl_txen;
 	hwsa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => hwsa,
@@ -81,7 +81,7 @@ begin
 		mii_rxdv => hwsa_txen,
 		mii_txd  => hwsa_txd);
 
-	hwsa_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_hwsa) and pl_txen;
+	hwsa_txen <= frame_decode(eth_ptr, eth_frame, eth_txd'length, eth_hwsa) and pl_txen;
 	hwda_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => hwda,
@@ -89,7 +89,7 @@ begin
 		mii_rxdv => hwda_txen,
 		mii_txd  => hwda_txd);
 
-	llc_txen <= frame_decode(unsigned(eth_ptr), eth_frame, eth_txd'length, eth_type) and pl_txen;
+	llc_txen <= frame_decode(eth_ptr, eth_frame, eth_txd'length, eth_type) and pl_txen;
 	llc_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => llc,

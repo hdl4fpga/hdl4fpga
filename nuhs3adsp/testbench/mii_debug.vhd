@@ -244,9 +244,9 @@ begin
 	generic map (
 		mem_data => reverse(arppkt,8))
 	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_treq,
-		mii_txen => mii_rxdv,
+		mii_txc  => mii_rxc,
+		mii_txen => mii_treq,
+		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
 	rst <= '0', '1' after 300 ns;

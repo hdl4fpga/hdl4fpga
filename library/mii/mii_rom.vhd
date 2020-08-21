@@ -32,9 +32,9 @@ entity mii_rom is
 	generic (
 		mem_data : std_logic_vector);
     port (
-        mii_rxc  : in  std_logic;
-        mii_rxdv : in  std_logic;
-		mii_txen : out std_logic;
+        mii_txc  : in  std_logic;
+        mii_txen : in  std_logic;
+		mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -48,10 +48,10 @@ architecture def of mii_rom is
 
 begin
 
-	process (mii_rxc)
+	process (mii_txc)
 	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='0' then
+		if rising_edge(mii_txc) then
+			if mii_txen='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
 				cntr <= cntr - 1;
@@ -59,7 +59,7 @@ begin
 		end if;
 	end process;
 
-	mii_txen <= mii_rxdv and not cntr(0);
+	mii_txdv <= mii_txen and not cntr(0);
 
 	mem_e : entity hdl4fpga.rom
 	generic map (

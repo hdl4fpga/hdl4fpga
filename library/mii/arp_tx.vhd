@@ -70,12 +70,12 @@ begin
 	generic map (
 		mem_data => reverse(arp4rply_pfx, 8))
 	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => mii_txen,
-		mii_txen => pfx_txen,
+		mii_txc  => mii_txc,
+		mii_txen => mii_txen,
+		mii_txdv => pfx_txen,
 		mii_txd  => pfx_txd);
 
-	sha_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_sha);
+	sha_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_sha);
 	sha_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => sha,
@@ -83,7 +83,7 @@ begin
 		mii_rxdv => sha_txen,
 		mii_txd  => sha_txd);
 
-	spa_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_spa);
+	spa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_spa);
 	spa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => spa,
@@ -91,7 +91,7 @@ begin
 		mii_rxdv => spa_txen,
 		mii_txd  => spa_txd);
 
-	tha_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_tha);
+	tha_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tha);
 	tha_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => tha,
@@ -99,7 +99,7 @@ begin
 		mii_rxdv => tha_txen,
 		mii_txd  => tha_txd);
 
-	tpa_txen <= frame_decode(unsigned(arp_frm), arp4_frame, arp_txd'length, arp_tpa);
+	tpa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tpa);
 	tpa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => tpa,

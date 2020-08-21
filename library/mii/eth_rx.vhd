@@ -65,9 +65,9 @@ begin
 		end if;
 	end process;
 
-	hwda_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwda) and eth_pre;
-	hwsa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_hwsa) and eth_pre;
-	type_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame, mii_rxd'length, eth_type) and eth_pre;
+	hwda_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_hwda) and eth_pre;
+	hwsa_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_hwsa) and eth_pre;
+	type_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_type) and eth_pre;
 
 end;
 

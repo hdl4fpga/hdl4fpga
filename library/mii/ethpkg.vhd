@@ -44,13 +44,13 @@ package ethpkg is
 		eth_type => 2*8);
 
 	function frame_decode (
-		constant ptr   : unsigned;
+		constant ptr   : std_logic_vector;
 		constant frame : natural_vector;
 		constant size  : natural)
 		return std_logic_vector;
 
 	function frame_decode (
-		constant ptr   : unsigned;
+		constant ptr   : std_logic_vector;
 		constant frame : natural_vector;
 		constant size  : natural;
 		constant field : natural;
@@ -58,7 +58,7 @@ package ethpkg is
 		return std_logic;
 
 	function frame_decode (
-		constant ptr    : unsigned;
+		constant ptr    : std_logic_vector;
 		constant frame  : natural_vector;
 		constant size   : natural;
 		constant fields : natural_vector)
@@ -69,7 +69,7 @@ end;
 package body ethpkg is
 
 	function frame_decode (
-		constant ptr   : unsigned;
+		constant ptr   : std_logic_vector;
 		constant frame : natural_vector;
 		constant size  : natural)
 		return std_logic_vector is
@@ -81,7 +81,7 @@ package body ethpkg is
 		low    := 0;
 		for i in frame'range loop
 			high := low + frame(i)/size;
-			if low <= ptr and ptr < high then
+			if low <= unsigned(ptr) and unsigned(ptr) < high then
 				retval(i) := '1';
 				exit;
 			end if;
@@ -91,7 +91,7 @@ package body ethpkg is
 	end;
 
 	function frame_decode (
-		constant ptr   : unsigned;
+		constant ptr   : std_logic_vector;
 		constant frame : natural_vector;
 		constant size  : natural;
 		constant field : natural;
@@ -106,15 +106,15 @@ package body ethpkg is
 			if i=field then
 				case mode is
 				when eq =>
-					if sumup <= ptr and ptr < sumup+frame(i)/size then
+					if sumup <= unsigned(ptr) and unsigned(ptr) < sumup+frame(i)/size then
 						retval := '1';
 					end if;
 				when ge =>
-					if sumup <= ptr then
+					if sumup <= unsigned(ptr) then
 						retval := '1';
 					end if;
 				when gt =>
-					if sumup+frame(i)/size <= ptr then
+					if sumup+frame(i)/size <= unsigned(ptr) then
 						retval := '1';
 					end if;
 				end case;
@@ -126,7 +126,7 @@ package body ethpkg is
 	end;
 
 	function frame_decode (
-		constant ptr    : unsigned;
+		constant ptr    : std_logic_vector;
 		constant frame  : natural_vector;
 		constant size   : natural;
 		constant fields : natural_vector)
