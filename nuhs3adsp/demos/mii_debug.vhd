@@ -128,7 +128,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 
 		mii_txc   => mii_txc,
-		pkt_req  => '0', --mii_treq,
+		pkt_req  => mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
 		tp1 => tp1,

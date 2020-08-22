@@ -244,6 +244,21 @@ begin
 		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
+	ip4_e : entity hdl4fpga.ip4_tx
+	port map (
+		mii_txc  => mii_txc,
+
+		pl_len   => x"0000",
+		pl_txen  => pkt_req, --'0',
+		pl_txd   => x"0",
+
+		ip4sa    => myip4a,
+		ip4da    => x"ff_ff_ff_ff_ff_ff",
+
+		ip4_ptr  => txfrm_ptr,
+		ip4_txen => ip4_txen,
+		ip4_txd  => ip4_txd);
+
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_txc  => mii_txc,

@@ -110,7 +110,7 @@ begin
 		ip4_ptr,
 	   	ip4hdr_frame, 
 		ip4_txd'length,
-	   	(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto));
+	   	(ip4_verihl, ip4_tos, ip4_ident, ip4_flgsfrg, ip4_ttl, ip4_proto)) and pl_txen;
 
 	ip4shdr_e : entity hdl4fpga.mii_rom
 	generic map (
@@ -121,31 +121,28 @@ begin
 		mii_txd  => ip4shdr_txd);
 
 	pkt_len <= reverse(std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size),8);
-	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len);
+	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and pl_txen;
 	ip4len_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => pkt_len,
         mii_txc  => mii_txc,
-		mii_txdv => ip4_txen,
-        mii_txen => ip4len_txen,
+        mii_txdv => ip4len_txen,
         mii_txd  => ip4len_txd);
 
-	ip4sa_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_sa);
+	ip4sa_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_sa) and pl_txen;
 	ip4sa_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => ip4sa,
 		mii_txc  => mii_txc,
-		mii_txdv => ip4_txen,
-		mii_txen => ip4sa_txen,
+		mii_txdv => ip4sa_txen,
 		mii_txd  => ip4sa_txd);
 
-	ip4da_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_da);
+	ip4da_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_da) and pl_txen;
 	ip4da_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => ip4da,
 		mii_txc  => mii_txc,
-		mii_txdv => ip4_txen,
-		mii_txen => ip4da_txen,
+		mii_txdv => ip4da_txen,
 		mii_txd  => ip4da_txd);
 
 	lat_b : block
@@ -203,10 +200,10 @@ begin
 		ip4_ptr,
 	   	ip4hdr_frame, 
 		ip4_txd'length,
-	   	( ip4_ttl, ip4_proto));
+	   	( ip4_ttl, ip4_proto)) and pl_txen;
 
 	cksmd_treq <= ip4_txen;
-	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum);
+	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and pl_txen;
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
@@ -219,9 +216,9 @@ begin
 		cksm_init => oneschecksum(ip4_shdr, 16),
 		cksm_txd  => cksmd_txd);
 
-	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len);
-	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto);
-	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da));
+	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and pl_txen;
+	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto) and pl_txen;
+	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da)) and pl_txen;
 
 	ip4_txd <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or pllat_txen));
 
