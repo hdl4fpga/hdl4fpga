@@ -52,9 +52,6 @@ architecture def of ip4_tx is
 
 	signal cksm_txd     : std_logic_vector(ip4_txd'range);
 	signal cksm_txen    : std_logic;
-	signal cksm_tena    : std_logic;
-	signal cksmd_tena   : std_logic;
-	signal cksmd_treq   : std_logic;
 	signal cksmd_txd    : std_logic_vector(ip4_txd'range);
 	signal cksmd_txen   : std_logic;
 
@@ -195,21 +192,13 @@ begin
 	end block;
 	
 	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
-	cksm_txen  <= ip4len_txen or ip4sa_txen or ip4da_txen;
-	cksm_tena  <= not frame_decode(
-		ip4_ptr,
-	   	ip4hdr_frame, 
-		ip4_txd'length,
-	   	( ip4_ttl, ip4_proto)) and pl_txen;
-
-	cksmd_treq <= ip4_txen;
-	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and pl_txen;
+	cksm_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and pl_txen;
+	cksmd_txen  <=frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and pl_txen; 
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
 	port map (
 		mii_txc   => mii_txc,
-		mii_tena  => cksm_tena,
 		mii_txen  => cksm_txen,
 		mii_txd   => cksm_txd,
 

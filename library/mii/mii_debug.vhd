@@ -217,7 +217,7 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if arp_treq='0' then
+				if arp_treq='0' and pkt_req='0' then
 					txfrm_ptr <= (others => '0');
 				elsif txfrm_ptr(0)='0' then
 					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);

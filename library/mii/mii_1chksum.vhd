@@ -33,7 +33,7 @@ entity mii_1chksum is
 		chksum_size : natural);
 	port (
 		mii_txc   : in  std_logic;
-		mii_tena  : in  std_logic;
+		mii_ena   : in  std_logic := '1';
 		mii_txen  : in  std_logic;
 		mii_txd   : in  std_logic_vector;
 
@@ -75,7 +75,7 @@ begin
 		if rising_edge(mii_txc) then
 			aux1 := cksm;
 			aux2 := slr;
-			if mii_tena='1' then
+			if mii_ena='1' then
 				aux1(mii_txd'reverse_range) := sum;
 				aux1 := aux1 rol mii_txd'length;
 				aux2 := aux2 sll 1;

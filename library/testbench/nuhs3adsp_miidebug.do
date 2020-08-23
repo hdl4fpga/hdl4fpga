@@ -14,14 +14,18 @@ add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4_txd
 add wave -noupdate /testbench/du_e/sw1
 add wave -noupdate /testbench/du_e/mii_debug_e/pkt_req
-add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/line__94/txen
-add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4shdr_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4sa_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4da_txen
-add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4len_txen
 add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/pkt_len
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/cksm_txd
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4len_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4da_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4sa_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/ip4shdr_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/lenlat_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/cksmd_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/alat_txen
+add wave -noupdate /testbench/du_e/mii_debug_e/ip4_e/pllat_txen
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {734875 ps} 0}
+WaveRestoreCursors {{Cursor 2} {2114204 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 146
 configure wave -valuecolwidth 100
