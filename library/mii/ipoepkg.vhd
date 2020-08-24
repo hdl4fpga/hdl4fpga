@@ -88,8 +88,9 @@ package ipoepkg is
 	constant ip4_shdr : std_logic_vector := (
 		x"4500" &    -- Version, TOS
 		x"0000" &    -- Length
-		x"0000" &    -- Identification, Fragmentation
-		x"0511"        -- TTL, protocol
+		x"0000" &    -- Identification
+		x"0000" &    -- Fragmentation
+		x"0511"      -- TTL, protocol
 		); 
 
 	constant udp4_sp   : natural :=  ip4hdr_frame'right+1;

@@ -81,7 +81,8 @@ architecture struct of mii_debug is
 	alias arp_rdy   : std_logic is mii_rdy(0);
 	alias dscb_req  : std_logic is mii_req(1);
 	alias dscb_rdy  : std_logic is mii_rdy(1);
-	alias dscb_treq : std_logic is mii_treq(1);
+	alias dscb_gnt  : std_logic is mii_gnt(1);
+	signal ip4_req  : std_logic := '0';
 
 	signal rxfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 	signal txfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
@@ -203,7 +204,7 @@ begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
 					if rxdv='1' then
-						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
+						arp_rcvd <= '0'; --typearp_rcvd and myip4a_rcvd;
 					else
 						arp_rcvd <= '0';
 					end if;
@@ -217,7 +218,7 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if arp_treq='0' and pkt_req='0' then
+				if mii_gnt=(mii_gnt'range => '0') then
 					txfrm_ptr <= (others => '0');
 				elsif txfrm_ptr(0)='0' then
 					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
@@ -249,7 +250,7 @@ begin
 		mii_txc  => mii_txc,
 
 		pl_len   => x"0000",
-		pl_txen  => pkt_req, --'0',
+		pl_txen  => ip4_req, --'0',
 		pl_txd   => x"0",
 
 		ip4sa    => myip4a,
@@ -279,7 +280,7 @@ begin
 		eth_ptr  => txfrm_ptr,
 		hwsa     => mymac,
 		hwda     => x"ff_ff_ff_ff_ff_ff",
-		llc      => llc_arp,
+		llc      => llc_ip4,
 		pl_txen  => eth_txen,
 		pl_txd   => eth_txd,
 		eth_txen => mii_txen,
@@ -323,13 +324,20 @@ begin
 		tp2 <=arp_req;
 
 		process (mii_txc)
+			variable req : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if dscb_rdy='1' then
 					dscb_req <= '0';
-				elsif pkt_req='1' then
+				elsif ip4_req='1' then
+					if mii_txen='1' then
+						ip4_req  <= '0';
+					end if;
+				elsif req='0' and pkt_req='1' then
+					ip4_req  <= '1';
 					dscb_req <= '1';
 				end if;
+				req := pkt_req;
 			end if;
 		end process;
 
