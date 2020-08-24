@@ -544,7 +544,7 @@ package body std is
 	begin
 		aux := (others => '0');
 		aux(0 to data'length-1) := unsigned(data);
-		checksum := (others => '0');
+		checksum := ('0', others => '1');
 		for i in 0 to n-1 loop
 			checksum := checksum + resize(aux(0 to size-1), checksum'length);
 			if checksum(0)='1' then

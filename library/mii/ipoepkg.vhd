@@ -90,9 +90,24 @@ package ipoepkg is
 		x"0000" &    -- Length
 		x"0000" &    -- Identification
 		x"0000" &    -- Fragmentation
-		x"0511"      -- TTL, protocol
+		x"0501"      -- TTL, protocol
 		); 
 
+	constant icmp_type : natural :=  ip4hdr_frame'right+1;
+	constant icmp_code : natural :=  ip4hdr_frame'right+2;
+	constant icmp_cksm : natural :=  ip4hdr_frame'right+3;
+	constant icmp_id   : natural :=  ip4hdr_frame'right+4;
+	constant icmp_seq  : natural :=  ip4hdr_frame'right+5;
+
+	constant icmphdr_frame : natural_vector := (
+		icmp_type => 1*octect_size,
+		icmp_code => 1*octect_size,
+		icmp_cksm => 2*octect_size);
+
+	constant icmprply_frame : natural_vector := (
+		icmp_id  => 2*octect_size,
+		icmp_seq => 2*octect_size);
+		
 	constant udp4_sp   : natural :=  ip4hdr_frame'right+1;
 	constant udp4_dp   : natural :=  ip4hdr_frame'right+2;
 	constant udp4_len  : natural :=  ip4hdr_frame'right+3;

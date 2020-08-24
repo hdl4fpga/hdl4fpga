@@ -117,7 +117,7 @@ begin
 		mii_txen => ip4shdr_txen,
 		mii_txd  => ip4shdr_txd);
 
-	pkt_len <= reverse(std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size),8);
+	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and ip4_txen;
 	ip4len_e : entity hdl4fpga.mii_mux
 	port map (

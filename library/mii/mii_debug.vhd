@@ -108,6 +108,8 @@ architecture struct of mii_debug is
 	signal arp_txd      : std_logic_vector(mii_txd'range);
 	signal arp_rcvd     : std_logic;
 
+	signal ip4pl_txen : std_logic := '0';
+	signal ip4pl_txd  : std_logic_vector(mii_txd'range);
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
 
@@ -245,13 +247,26 @@ begin
 		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
+	icmprply_e : entity hdl4fpga.icmprply_tx
+	port map (
+		mii_txc   => mii_txc,
+
+		pl_txen   => ip4_req,
+		pl_txd    => x"0",
+
+		icmp_ptr  => txfrm_ptr,
+		icmp_id   => x"0000",
+		icmp_seq  => x"0000",
+		icmp_txen => ip4pl_txen,
+		icmp_txd  => ip4pl_txd);
+
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (
 		mii_txc  => mii_txc,
 
-		pl_len   => x"0000",
-		pl_txen  => ip4_req, --'0',
-		pl_txd   => x"0",
+		pl_len   => x"0008",
+		pl_txen  => ip4pl_txen,
+		pl_txd   => ip4pl_txd,
 
 		ip4sa    => myip4a,
 		ip4da    => x"ff_ff_ff_ff_ff_ff",
