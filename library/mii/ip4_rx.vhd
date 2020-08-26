@@ -21,8 +21,6 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -34,25 +32,24 @@ use hdl4fpga.ipoepkg.all;
 
 entity ip4_rx is
 	port (
-		mii_rxc    : in  std_logic;
-		mii_rxdv   : in  std_logic;
-		mii_rxd    : in  std_logic_vector;
-
-		eth_ptr    : in  std_logic_vector;
+		mii_rxc    : in std_logic;
+		mii_rxdv   : in std_logic;
+		mii_rxd    : in std_logic_vector;
+		mii_ptr    : in  std_logic_vector;
 
 		ip4da_rxdv : out std_logic;
 		ip4sa_rxdv : out std_logic;
 
-		pl_rxdv    : in  std_logic);
+		pl_rxdv   : out std_logic);
 
 end;
 
 architecture def of ip4_rx is
 begin
 
-	ip4sa_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
-	ip4da_rxdv <= frame_decode(unsigned(eth_ptr), eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
-	pl_rxdv    <= frame_decode(unsigned(eth_ptr), eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
+	ip4sa_rxdv <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
+	ip4da_rxdv <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
+	pl_rxdv    <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
 
 end;
 

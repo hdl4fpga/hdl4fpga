@@ -90,7 +90,7 @@ architecture struct of mii_debug is
 	signal ethhwda_ena : std_logic;
 	signal ethhwsa_ena : std_logic;
 	signal ethtype_ena : std_logic;
-	signal myip4a_ena  : std_logic;
+	signal myip4a_ena  : std_logic_vector(0 to 0);
 	signal myip4a_rcvd : std_logic;
 
 	signal eth_txen  : std_logic;
@@ -112,6 +112,12 @@ architecture struct of mii_debug is
 	signal ip4pl_txd  : std_logic_vector(mii_txd'range);
 	signal ip4_txen  : std_logic := '0';
 	signal ip4_txd   : std_logic_vector(mii_txd'range);
+
+	signal ip4da_rxdv : std_logic;
+	signal ip4sa_rxdv : std_logic;
+	signal ip4pl_rxdv : std_logic;
+
+	signal icmp_rcvd     : std_logic;
 
 	signal txc_rxd : std_logic_vector(0 to mii_txd'length+1);
 	signal rxc_txd : std_logic_vector(0 to mii_txd'length+1);
@@ -140,6 +146,19 @@ begin
 		mii_rxd  => mii_rxd,
 		eth_ptr  => rxfrm_ptr,
 		tpa_rxdv => arptpa_rxdv);
+
+	ip4rx_e : entity hdl4fpga.ip4_rx
+	port map (
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd,
+
+		mii_ptr    => rxfrm_ptr,
+
+		ip4da_rxdv => ip4da_rxdv,
+		ip4sa_rxdv => ip4sa_rxdv,
+
+		pl_rxdv    => ip4pl_rxdv);
 
 	ctlr_b : block
 
@@ -190,17 +209,17 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_equ  => typearp_rcvd);
 
-		myip4a_ena <= arptpa_rxdv;
+
+		myip4a_ena <= wirebus(arptpa_rxdv & ip4da_rxdv, typearp_rcvd & typeip4_rcvd);
 		myip4acmp_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(myip4a,8))
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => mii_rxdv,
-			mii_ena  => myip4a_ena,
+			mii_ena  => myip4a_ena(0),
 			mii_rxd  => mii_rxd,
 			mii_equ  => myip4a_rcvd);
-
 
 		process (mii_rxc)
 			variable rxdv : std_logic;
@@ -208,7 +227,8 @@ begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
 					if rxdv='1' then
-						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
+						arp_rcvd  <= typearp_rcvd and myip4a_rcvd;
+--						icmp_rcvd <= typeip4_rcvd and myip4a_rcvd;
 					else
 						arp_rcvd <= '0';
 					end if;
@@ -217,7 +237,6 @@ begin
 			end if;
 		end process;
 		tp1 <= arp_rcvd;
-
 
 		process (mii_txc)
 		begin
