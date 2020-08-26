@@ -161,7 +161,7 @@ begin
 			mii_txen => pllat1_txen,
 			mii_txd  => pllat_txd);
 		
-		lat_txd  <= wirebus(cksm_txd & pllat_txd, cksm_txen & pllat1_txen);
+		lat_txd  <= wirebus(not cksm_txd & pllat_txd, cksm_txen & pllat1_txen);
 		iplenlat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
@@ -191,7 +191,7 @@ begin
 		
 	end block;
 	
-	cksm_txd   <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
+	cksm_txd   <= not wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
 	cksm_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;
 	cksmd_txen  <=frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and ip4_txen; 
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
@@ -202,7 +202,7 @@ begin
 		mii_txen  => cksm_txen,
 		mii_txd   => cksm_txd,
 
-		cksm_init => oneschecksum(ip4_shdr, 16),
+		cksm_init => oneschecksum(not ip4_shdr, 16),
 		cksm_txd  => cksmd_txd);
 
 	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and ip4_txen;

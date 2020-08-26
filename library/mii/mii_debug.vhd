@@ -119,6 +119,8 @@ architecture struct of mii_debug is
 	signal display_txen : std_logic;
 	signal display_txd  : std_logic_vector(mii_txd'range);
 
+	signal llc : std_logic_vector(llc_arp'range);
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -206,7 +208,7 @@ begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
 					if rxdv='1' then
-						arp_rcvd <= '0'; --typearp_rcvd and myip4a_rcvd;
+						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
 					else
 						arp_rcvd <= '0';
 					end if;
@@ -289,13 +291,14 @@ begin
 		arp_txen => arp_txen,
 		arp_txd  => arp_txd);
 
+	llc <= wirebus(llc_arp & llc_ip4, mii_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc  => mii_txc,
 		eth_ptr  => txfrm_ptr,
 		hwsa     => mymac,
 		hwda     => x"ff_ff_ff_ff_ff_ff",
-		llc      => llc_ip4,
+		llc      => llc,
 		pl_txen  => eth_txen,
 		pl_txd   => eth_txd,
 		eth_txen => mii_txen,

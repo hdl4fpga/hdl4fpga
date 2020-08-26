@@ -94,5 +94,5 @@ begin
 	end process;
 
 	cksm_txen <= slr(0) and not mii_txen;
-	cksm_txd  <= not reverse(std_logic_vector(sum));
+	cksm_txd  <= reverse(std_logic_vector(sum));
 end;

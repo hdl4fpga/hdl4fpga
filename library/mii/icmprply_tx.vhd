@@ -50,7 +50,7 @@ architecture def of icmprply_tx is
 	signal icmp_data : std_logic_vector(0 to 64-1);
 begin
 
-	icmp_cksm <= not oneschecksum(icmp_id & icmp_seq, icmp_cksm'length);
+	icmp_cksm <= oneschecksum(not (icmp_id & icmp_seq), icmp_cksm'length);
 	process (pl_txen, icmp_txen, mii_txc)
 		variable txen : std_logic := '0';
 	begin
