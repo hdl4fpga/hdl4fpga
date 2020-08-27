@@ -67,8 +67,9 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	constant mymac   : std_logic_vector := x"00_40_00_01_02_03";
-	constant myip4a  : std_logic_vector := x"c0_a8_00_0e";
+	constant mymac  : std_logic_vector := x"00_40_00_01_02_03";
+	constant myip4a : std_logic_vector := x"c0_a8_00_0e";
+	signal   ip4da  : std_logic_vector(0 to 32-1);
 
 	signal mii_gnt  : std_logic_vector(0 to 2-1);
 	signal mii_trdy : std_logic_vector(mii_gnt'range);
@@ -225,6 +226,13 @@ begin
 			mii_ena  => myip4a_ena(0),
 			mii_equ  => myip4a_rcvd);
 
+		ip4sender_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => ip4sa_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => ip4da);
+
 		icmpproto_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(ip4proto_icmp,8))
@@ -303,7 +311,7 @@ begin
 		pl_txd   => ip4pl_txd,
 
 		ip4sa    => myip4a,
-		ip4da    => x"ff_ff_ff_ff",
+		ip4da    => ip4da,
 		ip4proto => x"01",
 
 		ip4_ptr  => txfrm_ptr,
