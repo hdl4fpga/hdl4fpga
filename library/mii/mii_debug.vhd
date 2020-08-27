@@ -119,10 +119,14 @@ architecture struct of mii_debug is
 	signal ip4da_rxdv    : std_logic;
 	signal ip4sa_rxdv    : std_logic;
 	signal ip4proto_rxdv : std_logic;
-	signal ip4icmp_rcvd : std_logic;
+	signal ip4icmp_rcvd  : std_logic;
 	signal ip4pl_rxdv    : std_logic;
 
 	signal icmp_rcvd     : std_logic;
+	signal icmpid_rxdv   : std_logic;
+	signal icmpseq_rxdv  : std_logic;
+	signal icmpseq_data  : std_logic_vector(0 to 16-1);
+	signal icmpid_data   : std_logic_vector(0 to 16-1);
 
 	signal txc_rxd       : std_logic_vector(0 to mii_txd'length+2);
 	signal rxc_txd       : std_logic_vector(0 to mii_txd'length+2);
@@ -165,6 +169,16 @@ begin
 		ip4proto_rxdv => ip4proto_rxdv,
 
 		pl_rxdv    => ip4pl_rxdv);
+
+	icmprqstrx_e : entity hdl4fpga.icmprqst_rx
+	port map (
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd,
+		mii_ptr    => rxfrm_ptr,
+
+		icmpid_rxdv  => icmpid_rxdv,
+		icmpseq_rxdv => icmpseq_rxdv);
 
 	ctlr_b : block
 
@@ -233,6 +247,20 @@ begin
 			mii_rxd  => mii_rxd,
 			des_data => ip4da);
 
+		icmpseq_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmpseq_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => icmpseq_data);
+
+		icmpid_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmpid_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => icmpid_data);
+
 		icmpproto_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(ip4proto_icmp,8))
@@ -297,8 +325,8 @@ begin
 		pl_txd    => x"0",
 
 		icmp_ptr  => txfrm_ptr,
-		icmp_id   => x"0000",
-		icmp_seq  => x"0000",
+		icmp_id   => icmpid_data,
+		icmp_seq  => icmpseq_data,
 		icmp_txen => ip4pl_txen,
 		icmp_txd  => ip4pl_txd);
 

@@ -106,6 +106,10 @@ package ipoepkg is
 		icmp_code => 1*octect_size,
 		icmp_cksm => 2*octect_size);
 
+	constant icmprqst_frame : natural_vector := (
+		icmp_id  => 2*octect_size,
+		icmp_seq => 2*octect_size);
+		
 	constant icmprply_frame : natural_vector := (
 		icmp_id  => 2*octect_size,
 		icmp_seq => 2*octect_size);
