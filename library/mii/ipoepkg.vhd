@@ -90,8 +90,10 @@ package ipoepkg is
 		x"0000" &    -- Length
 		x"0000" &    -- Identification
 		x"0000" &    -- Fragmentation
-		x"0501"      -- TTL, protocol
-		); 
+		x"05");      -- Time To Live
+
+	constant ip4proto_icmp : std_logic_vector(0 to 8-1) := x"01";
+	constant ip4proto_udp  : std_logic_vector(0 to 8-1) := x"11";
 
 	constant icmp_type : natural :=  ip4hdr_frame'right+1;
 	constant icmp_code : natural :=  ip4hdr_frame'right+2;

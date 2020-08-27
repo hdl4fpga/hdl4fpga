@@ -40,8 +40,9 @@ entity ip4_tx is
 		pl_txen  : in  std_logic;
 		pl_txd   : in  std_logic_vector;
 
-		ip4sa    : in  std_logic_vector;
-		ip4da    : in  std_logic_vector;
+		ip4sa    : in  std_logic_vector(0 to 32-1);
+		ip4da    : in  std_logic_vector(0 to 32-1);
+		ip4proto : in  std_logic_vector(0 to 8-1);
 
 		ip4_ptr  : in  std_logic_vector;
 		ip4_txen : buffer std_logic;
@@ -54,6 +55,7 @@ architecture def of ip4_tx is
 	signal cksm_txen    : std_logic;
 	signal cksmd_txd    : std_logic_vector(ip4_txd'range);
 	signal cksmd_txen   : std_logic;
+	signal cksm_init    : std_logic_vector(0 to 16-1);
 
 	signal pllat_txd     : std_logic_vector(ip4_txd'range);
 	signal pllat_txen    : std_logic;
@@ -68,14 +70,15 @@ architecture def of ip4_tx is
 
 	signal ip4shdr_txen  : std_logic;
 	signal ip4shdr_txd   : std_logic_vector(ip4_txd'range);
-	signal ip4sa_txen  : std_logic;
-	signal ip4sa_txd   : std_logic_vector(ip4_txd'range);
-	signal ip4da_txen  : std_logic;
-	signal ip4da_txd   : std_logic_vector(ip4_txd'range);
-	signal ip4len_txen : std_logic;
-	signal ip4len_txd  : std_logic_vector(ip4_txd'range);
+	signal ip4shdr_data  : std_logic_vector(0 to ip4_shdr'length+ip4hdr_frame(ip4_proto)-1);
+	signal ip4sa_txen    : std_logic;
+	signal ip4sa_txd     : std_logic_vector(ip4_txd'range);
+	signal ip4da_txen    : std_logic;
+	signal ip4da_txd     : std_logic_vector(ip4_txd'range);
+	signal ip4len_txen   : std_logic;
+	signal ip4len_txd    : std_logic_vector(ip4_txd'range);
 
-	signal pkt_len     : std_logic_vector(0 to 16-1);
+	signal pkt_len       : std_logic_vector(0 to 16-1);
 
 	constant myip4_len : natural :=  0;
 	constant myip4_sa  : natural :=  1;
@@ -109,13 +112,13 @@ begin
 		ip4_txd'length,
 	   	ip4_proto, gt) and ip4_txen;
 
-	ip4shdr_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(ip4_shdr,8))
+	ip4shdr_data <= ip4_shdr & ip4proto;
+	ip4shdr_e : entity hdl4fpga.mii_mux
 	port map (
-		mii_txc  => mii_txc,
-		mii_txen => ip4shdr_txen,
-		mii_txd  => ip4shdr_txd);
+		mux_data => ip4shdr_data,
+        mii_txc  => mii_txc,
+        mii_txdv => ip4shdr_txen,
+        mii_txd  => ip4shdr_txd);
 
 	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and ip4_txen;
@@ -192,8 +195,9 @@ begin
 	end block;
 	
 	cksm_txd   <= not wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
-	cksm_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;
-	cksmd_txen  <=frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and ip4_txen; 
+	cksm_txen  <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;
+	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and ip4_txen; 
+	cksm_init  <= oneschecksum(not (ip4_shdr & ip4proto), cksm_init'length);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
@@ -202,7 +206,7 @@ begin
 		mii_txen  => cksm_txen,
 		mii_txd   => cksm_txd,
 
-		cksm_init => oneschecksum(not ip4_shdr, 16),
+		cksm_init => cksm_init,
 		cksm_txd  => cksmd_txd);
 
 	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and ip4_txen;
