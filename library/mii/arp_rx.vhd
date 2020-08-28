@@ -37,8 +37,9 @@ entity arp_rx is
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
+		mii_ptr  : in  std_logic_vector;
 
-		eth_ptr  : in  std_logic_vector;
+		arp_ena  : in  std_logic;
 		tpa_rxdv : out std_logic);
 
 end;
@@ -47,7 +48,7 @@ architecture def of arp_rx is
 
 begin
 
-	tpa_rxdv <= frame_decode(eth_ptr, eth_frame & arp4_frame, mii_rxd'length, arp_tpa);
+	tpa_rxdv <= arp_ena and frame_decode(mii_ptr, eth_frame & arp4_frame, mii_rxd'length, arp_tpa);
 
 end;
 

@@ -37,6 +37,7 @@ entity icmprqst_rx is
 		mii_rxd    : in std_logic_vector;
 		mii_ptr    : in std_logic_vector;
 
+		icmprqst_ena : in  std_logic;
 		icmpseq_rxdv : out std_logic;
 		icmpid_rxdv  : out std_logic);
 end;
@@ -44,8 +45,8 @@ end;
 architecture def of icmprqst_rx is
 begin
 
-	icmpseq_rxdv <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_seq);
-	icmpid_rxdv  <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_id);
+	icmpseq_rxdv <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_seq);
+	icmpid_rxdv  <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_id);
 
 end;
 

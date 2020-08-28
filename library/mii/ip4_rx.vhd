@@ -32,26 +32,27 @@ use hdl4fpga.ipoepkg.all;
 
 entity ip4_rx is
 	port (
-		mii_rxc    : in std_logic;
-		mii_rxdv   : in std_logic;
-		mii_rxd    : in std_logic_vector;
-		mii_ptr    : in  std_logic_vector;
+		mii_rxc       : in  std_logic;
+		mii_rxdv      : in  std_logic;
+		mii_rxd       : in  std_logic_vector;
+		mii_ptr       : in  std_logic_vector;
 
-		ip4da_rxdv : out std_logic;
-		ip4sa_rxdv : out std_logic;
+		ip4_ena       : in  std_logic;
+		ip4da_rxdv    : out std_logic;
+		ip4sa_rxdv    : out std_logic;
 		ip4proto_rxdv : out std_logic;
 
-		pl_rxdv   : out std_logic);
+		ip4pl_rxdv    : out std_logic);
 
 end;
 
 architecture def of ip4_rx is
 begin
 
-	ip4sa_rxdv    <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
-	ip4da_rxdv    <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
-	ip4proto_rxdv <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_proto);
-	pl_rxdv       <= frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
+	ip4sa_rxdv    <= ip4_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
+	ip4da_rxdv    <= ip4_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
+	ip4proto_rxdv <= ip4_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_proto);
+	ip4pl_rxdv    <= ip4_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
 
 end;
 

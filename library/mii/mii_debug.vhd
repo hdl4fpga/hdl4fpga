@@ -67,50 +67,52 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	constant mymac  : std_logic_vector := x"00_40_00_01_02_03";
-	constant myip4a : std_logic_vector := x"c0_a8_00_0e";
-	signal   ip4da  : std_logic_vector(0 to 32-1);
+	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
+	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
+	signal   ip4da       : std_logic_vector(0 to 32-1);
 
-	signal mii_gnt  : std_logic_vector(0 to 2-1);
-	signal mii_trdy : std_logic_vector(mii_gnt'range);
+	signal mii_gnt       : std_logic_vector(0 to 2-1);
+	signal mii_trdy      : std_logic_vector(mii_gnt'range);
 
-	signal mii_req  : std_logic_vector(mii_gnt'range);
-	signal mii_rdy  : std_logic_vector(mii_gnt'range);
+	signal mii_req       : std_logic_vector(mii_gnt'range);
+	signal mii_rdy       : std_logic_vector(mii_gnt'range);
 
-	alias arp_req   : std_logic is mii_req(0);
-	alias arp_rdy   : std_logic is mii_rdy(0);
-	alias icmp_req  : std_logic is mii_req(1);
-	alias dscb_req  : std_logic is mii_req(1);
-	alias dscb_rdy  : std_logic is mii_rdy(1);
-	alias icmp_rdy  : std_logic is mii_rdy(1);
-	alias dscb_gnt  : std_logic is mii_gnt(1);
-	alias icmp_gnt  : std_logic is mii_gnt(1);
-	signal ip4_req  : std_logic := '0';
+	alias arp_req        : std_logic is mii_req(0);
+	alias arp_rdy        : std_logic is mii_rdy(0);
+	alias icmp_req       : std_logic is mii_req(1);
+	alias dscb_req       : std_logic is mii_req(1);
+	alias dscb_rdy       : std_logic is mii_rdy(1);
+	alias icmp_rdy       : std_logic is mii_rdy(1);
+	alias dscb_gnt       : std_logic is mii_gnt(1);
+	alias icmp_gnt       : std_logic is mii_gnt(1);
+	signal ip4_req       : std_logic := '0';
 
-	signal rxfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
-	signal txfrm_ptr : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
+	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
+	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
 
-	signal ethhwda_ena : std_logic;
-	signal ethhwsa_ena : std_logic;
-	signal ethtype_ena : std_logic;
-	signal myip4a_ena  : std_logic_vector(0 to 0);
-	signal myip4a_rcvd : std_logic;
+	signal ethhwda_ena   : std_logic;
+	signal ethhwsa_ena   : std_logic;
+	signal ethtype_ena   : std_logic;
+	signal myip4a_ena    : std_logic;
+	signal myip4a_rcvd   : std_logic;
 
-	signal eth_txen  : std_logic;
-	signal eth_txd   : std_logic_vector(mii_txd'range);
-	alias  arp_gnt  : std_logic is mii_gnt(0);
+	signal eth_txen      : std_logic;
+	signal eth_txd       : std_logic_vector(mii_txd'range);
+	alias  arp_gnt       : std_logic is mii_gnt(0);
 
-	signal arptpa_rxdv : std_logic;
+	signal arptpa_rxdv   : std_logic;
 
-	signal sha_txen : std_logic;
-	signal spa_txen : std_logic;
-	signal tha_txen : std_logic;
-	signal tpa_txen : std_logic;
+	signal sha_txen      : std_logic;
+	signal spa_txen      : std_logic;
+	signal tha_txen      : std_logic;
+	signal tpa_txen      : std_logic;
 
+	signal typearp_rcvd  : std_logic;
 	signal arp_txen      : std_logic;
 	signal arp_txd       : std_logic_vector(mii_txd'range);
 	signal arp_rcvd      : std_logic;
 
+	signal typeip4_rcvd  : std_logic;
 	signal ip4pl_txen    : std_logic := '0';
 	signal ip4pl_txd     : std_logic_vector(mii_txd'range);
 	signal ip4_txen      : std_logic := '0';
@@ -131,10 +133,10 @@ architecture struct of mii_debug is
 	signal txc_rxd       : std_logic_vector(0 to mii_txd'length+2);
 	signal rxc_txd       : std_logic_vector(0 to mii_txd'length+2);
 
-	signal display_txen : std_logic;
-	signal display_txd  : std_logic_vector(mii_txd'range);
+	signal display_txen  : std_logic;
+	signal display_txd   : std_logic_vector(mii_txd'range);
 
-	signal llc : std_logic_vector(llc_arp'range);
+	signal llc           : std_logic_vector(llc_arp'range);
 
 begin
 
@@ -153,7 +155,8 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		eth_ptr   => rxfrm_ptr,
+		mii_ptr   => rxfrm_ptr,
+		arp_ena   => typearp_rcvd,
 		tpa_rxdv  => arptpa_rxdv);
 
 	ip4rx_e : entity hdl4fpga.ip4_rx
@@ -164,11 +167,12 @@ begin
 
 		mii_ptr    => rxfrm_ptr,
 
+		ip4_ena    => typeip4_rcvd,
 		ip4da_rxdv => ip4da_rxdv,
 		ip4sa_rxdv => ip4sa_rxdv,
 		ip4proto_rxdv => ip4proto_rxdv,
 
-		pl_rxdv    => ip4pl_rxdv);
+		ip4pl_rxdv => ip4pl_rxdv);
 
 	icmprqstrx_e : entity hdl4fpga.icmprqst_rx
 	port map (
@@ -177,6 +181,7 @@ begin
 		mii_rxd    => mii_rxd,
 		mii_ptr    => rxfrm_ptr,
 
+		icmprqst_ena => icmp_rcvd,
 		icmpid_rxdv  => icmpid_rxdv,
 		icmpseq_rxdv => icmpseq_rxdv);
 
@@ -184,8 +189,6 @@ begin
 
 		signal ethmymac_rcvd : std_logic;
 		signal ethbcst_rcvd  : std_logic;
-		signal typeip4_rcvd  : std_logic;
-		signal typearp_rcvd  : std_logic;
 
 	begin
 
@@ -229,7 +232,7 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_equ  => typearp_rcvd);
 
-		myip4a_ena <= wirebus(arptpa_rxdv & ip4da_rxdv, typearp_rcvd & typeip4_rcvd);
+		myip4a_ena <= arptpa_rxdv or ip4da_rxdv;
 		myip4acmp_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(myip4a,8))
@@ -237,7 +240,7 @@ begin
 			mii_rxc  => mii_rxc,
 			mii_rxdv => mii_rxdv,
 			mii_rxd  => mii_rxd,
-			mii_ena  => myip4a_ena(0),
+			mii_ena  => myip4a_ena,
 			mii_equ  => myip4a_rcvd);
 
 		ip4sender_e : entity hdl4fpga.mii_des
