@@ -70,6 +70,7 @@ architecture struct of mii_debug is
 	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
 	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
 	signal   ip4da       : std_logic_vector(0 to 32-1);
+	signal   ip4len      : std_logic_vector(0 to 16-1);
 
 	signal mii_gnt       : std_logic_vector(0 to 2-1);
 	signal mii_trdy      : std_logic_vector(mii_gnt'range);
@@ -120,6 +121,7 @@ architecture struct of mii_debug is
 
 	signal ip4da_rxdv    : std_logic;
 	signal ip4sa_rxdv    : std_logic;
+	signal ip4len_rxdv   : std_logic;
 	signal ip4proto_rxdv : std_logic;
 	signal ip4icmp_rcvd  : std_logic;
 	signal ip4pl_rxdv    : std_logic;
@@ -243,7 +245,14 @@ begin
 			mii_ena  => myip4a_ena,
 			mii_equ  => myip4a_rcvd);
 
-		ip4sender_e : entity hdl4fpga.mii_des
+		ip4lenrx_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => ip4len_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => ip4len);
+
+		ip4darx_e : entity hdl4fpga.mii_des
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => ip4sa_rxdv,
@@ -333,14 +342,15 @@ begin
 		icmp_txen => ip4pl_txen,
 		icmp_txd  => ip4pl_txd);
 
+--	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (
 		mii_txc  => mii_txc,
 
-		pl_len   => x"0008",
 		pl_txen  => ip4pl_txen,
 		pl_txd   => ip4pl_txd,
 
+		ip4len   => ip4len,
 		ip4sa    => myip4a,
 		ip4da    => ip4da,
 		ip4proto => x"01",

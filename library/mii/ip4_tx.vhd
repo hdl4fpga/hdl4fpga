@@ -36,10 +36,10 @@ entity ip4_tx is
 	port (
 		mii_txc  : in  std_logic;
 
-		pl_len   : in  std_logic_vector(16-1 downto 0);
 		pl_txen  : in  std_logic;
 		pl_txd   : in  std_logic_vector;
 
+		ip4len   : in  std_logic_vector(0 to 16-1);
 		ip4sa    : in  std_logic_vector(0 to 32-1);
 		ip4da    : in  std_logic_vector(0 to 32-1);
 		ip4proto : in  std_logic_vector(0 to 8-1);
@@ -78,7 +78,6 @@ architecture def of ip4_tx is
 	signal ip4len_txen   : std_logic;
 	signal ip4len_txd    : std_logic_vector(ip4_txd'range);
 
-	signal pkt_len       : std_logic_vector(0 to 16-1);
 
 	constant myip4_len : natural :=  0;
 	constant myip4_sa  : natural :=  1;
@@ -120,11 +119,10 @@ begin
         mii_txdv => ip4shdr_txen,
         mii_txd  => ip4shdr_txd);
 
-	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and ip4_txen;
 	ip4len_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => pkt_len,
+		mux_data => ip4len,
         mii_txc  => mii_txc,
         mii_txdv => ip4len_txen,
         mii_txd  => ip4len_txd);
