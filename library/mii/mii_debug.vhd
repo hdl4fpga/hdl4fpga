@@ -127,11 +127,6 @@ architecture struct of mii_debug is
 	signal ip4pl_rxdv    : std_logic;
 
 	signal icmp_rcvd     : std_logic;
-	signal icmpid_rxdv   : std_logic;
-	signal icmpseq_rxdv  : std_logic;
-	signal icmpseq_data  : std_logic_vector(0 to 16-1);
-	signal icmpid_data   : std_logic_vector(0 to 16-1);
-
 	signal txc_rxd       : std_logic_vector(0 to mii_txd'length+2);
 	signal rxc_txd       : std_logic_vector(0 to mii_txd'length+2);
 
@@ -177,16 +172,83 @@ begin
 
 		ip4pl_rxdv => ip4pl_rxdv);
 
-	icmprqstrx_e : entity hdl4fpga.icmprqst_rx
-	port map (
-		mii_rxc    => mii_rxc,
-		mii_rxdv   => mii_rxdv,
-		mii_rxd    => mii_rxd,
-		mii_ptr    => rxfrm_ptr,
+	icmp_b : block
 
-		icmprqst_ena => ip4icmp_rcvd,
-		icmpid_rxdv  => icmpid_rxdv,
-		icmpseq_rxdv => icmpseq_rxdv);
+		signal icmpid_rxdv   : std_logic;
+		signal icmpid_data   : std_logic_vector(0 to 16-1);
+		signal icmpseq_rxdv  : std_logic;
+		signal icmpseq_data  : std_logic_vector(0 to 16-1);
+		signal icmpcksm_rxdv : std_logic;
+		signal icmpcksm_data : std_logic_vector(0 to 16-1);
+		signal icmprply_cksm : std_logic_vector(0 to 16-1);
+
+		signal icmppl_txen   : std_logic;
+		signal icmppl_txd    : std_logic_vector(mii_txd'range);
+
+	begin
+
+		icmprqstrx_e : entity hdl4fpga.icmprqst_rx
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_ptr  => rxfrm_ptr,
+
+			icmprqst_ena  => ip4icmp_rcvd,
+			icmpid_rxdv   => icmpid_rxdv,
+			icmpchsm_rxdv => icmpid_rxdv,
+			icmpseq_rxdv  => icmpseq_rxdv);
+
+		icmpcksm_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmpcksm_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => icmpcksm_data);
+
+		icmpseq_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmpseq_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => icmpseq_data);
+
+		icmpid_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmpid_rxdv,
+			mii_rxd  => mii_rxd,
+			des_data => icmpid_data);
+
+		icmpdata_e : entity hdl4fpga.mii_ram
+		generic map (
+			mem_size => 64*octect)
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => icmppl_rxdv,
+			mii_rxd  => mii_rxd,
+
+			mii_txc  => mii_txc,
+			mii_txen => icmppl_txen,
+			mii_txd  => icmppl_txd);
+
+		icmprlpy_cksm <= onechksum(icmpcksm_data & icmptype_rqst);
+		icmprply_e : entity hdl4fpga.icmprply_tx
+		port map (
+			mii_txc   => mii_txc,
+
+			pl_txen   => icmppl_txen, --icmp_gnt,
+			pl_txd    => icmppl_txd, --x"0",
+
+			icmp_ptr  => txfrm_ptr,
+			icmp_cksm => icmprply_cksm,
+			icmp_id   => icmpid_data,
+			icmp_seq  => icmpseq_data,
+			icmp_txen => ip4pl_txen,
+			icmp_txd  => ip4pl_txd);
+
+	end block;
+
 
 	ctlr_b : block
 
@@ -260,20 +322,6 @@ begin
 			mii_rxd  => mii_rxd,
 			des_data => ip4da);
 
-		icmpseq_e : entity hdl4fpga.mii_des
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxdv => icmpseq_rxdv,
-			mii_rxd  => mii_rxd,
-			des_data => icmpseq_data);
-
-		icmpid_e : entity hdl4fpga.mii_des
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxdv => icmpid_rxdv,
-			mii_rxd  => mii_rxd,
-			des_data => icmpid_data);
-
 		icmpproto_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(ip4proto_icmp,8))
@@ -291,7 +339,7 @@ begin
 				if mii_rxdv='0' then
 					if rxdv='1' then
 						arp_rcvd  <= typearp_rcvd and myip4a_rcvd;
-						icmp_rcvd <= typeip4_rcvd and myip4a_rcvd and ip4icmp_rcvd;
+						icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
 					else
 						arp_rcvd  <= '0';
 						icmp_rcvd <= '0';
@@ -329,19 +377,6 @@ begin
 		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
 		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
-
-	icmprply_e : entity hdl4fpga.icmprply_tx
-	port map (
-		mii_txc   => mii_txc,
-
-		pl_txen   => icmp_gnt,
-		pl_txd    => x"0",
-
-		icmp_ptr  => txfrm_ptr,
-		icmp_id   => icmpid_data,
-		icmp_seq  => icmpseq_data,
-		icmp_txen => ip4pl_txen,
-		icmp_txd  => ip4pl_txd);
 
 --	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4_e : entity hdl4fpga.ip4_tx

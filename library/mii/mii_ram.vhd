@@ -50,6 +50,7 @@ architecture def of mii_ram is
 
 	signal wr_addr : unsigned(0 to addr_length);
 	signal rd_addr : unsigned(0 to addr_length);
+	signal len     : unsigned(0 to addr_length);
 
 begin
 
@@ -58,13 +59,16 @@ begin
 	severity FAILURE;
 
 	process (mii_rxc)
+		variable wr_addr : unsigned(0 to addr_length);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				wr_addr <= (others => '0');
+				addr := (others => '0');
 			elsif wr_addr(0)='0' then
-				wr_addr <= wr_addr 1 1;
+				addr := addr + 1;
+				len  := addr;
 			end if;
+			wr_addr <= addr;
 		end if;
 	end process;
 
@@ -85,14 +89,13 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txen='0' then
-				rd_addr <= to_unsigned(mem_length-1, rd_addr'length);
-			elsif rd_addr(0)='0' then
-				rd_addr <= rd_addr - 1;
+				rd_addr <= (others => '0');
+			elsif rd_addr < len then
+				rd_addr <= rd_addr + 1;
 			end if;
 		end if;
 	end process;
 
-	mii_txdv <= mii_treq and not rd_addr(0);
-	mii_trdy <= mii_treq and rd_addr(0);
+	mii_txdv <= mii_txen and setif(rd_addr < len);
 
 end;

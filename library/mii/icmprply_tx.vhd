@@ -38,6 +38,7 @@ entity icmprply_tx is
 		pl_txd    : in  std_logic_vector;
 
 		icmp_ptr  : in  std_logic_vector;
+		icmp_cksm : in  std_logic_vector(0 to 16-1);
 		icmp_id   : in  std_logic_vector(0 to 16-1);
 		icmp_seq  : in  std_logic_vector(0 to 16-1);
 		icmp_txen : buffer std_logic := '0';
@@ -50,7 +51,6 @@ architecture def of icmprply_tx is
 	signal icmp_data : std_logic_vector(0 to 64-1);
 begin
 
-	icmp_cksm <= oneschecksum(not (icmp_id & icmp_seq), icmp_cksm'length);
 	process (pl_txen, icmp_txen, mii_txc)
 		variable txen : std_logic := '0';
 	begin
@@ -66,7 +66,7 @@ begin
 		icmp_txdv <= pl_txen or txen;
 	end process;
 
-	icmp_data <= x"00_00" & icmp_cksm & icmp_id & icmp_seq;
+	icmp_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
 	icmp_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => icmp_data,
