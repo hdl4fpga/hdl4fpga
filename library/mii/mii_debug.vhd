@@ -184,7 +184,7 @@ begin
 		mii_rxd    => mii_rxd,
 		mii_ptr    => rxfrm_ptr,
 
-		icmprqst_ena => icmp_rcvd,
+		icmprqst_ena => ip4icmp_rcvd,
 		icmpid_rxdv  => icmpid_rxdv,
 		icmpseq_rxdv => icmpseq_rxdv);
 
