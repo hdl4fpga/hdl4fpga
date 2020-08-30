@@ -170,6 +170,7 @@ begin
 		mii_ptr    => rxfrm_ptr,
 
 		ip4_ena    => typeip4_rcvd,
+		ip4len_rxdv => ip4len_rxdv,
 		ip4da_rxdv => ip4da_rxdv,
 		ip4sa_rxdv => ip4sa_rxdv,
 		ip4proto_rxdv => ip4proto_rxdv,

@@ -38,10 +38,8 @@ entity mii_ram is
         mii_rxd  : in  std_logic_vector;
 
         mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
-		mii_trdy : out std_logic;
-        mii_txen : out std_logic;
+		mii_txen : in  std_logic;
+        mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -63,9 +61,9 @@ begin
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				wr_addr <= to_unsigned(mem_length-1, wr_addr'length);
-			else
-				wr_addr <= wr_addr - 1;
+				wr_addr <= (others => '0');
+			elsif wr_addr(0)='0' then
+				wr_addr <= wr_addr 1 1;
 			end if;
 		end if;
 	end process;
@@ -86,17 +84,15 @@ begin
 	process(mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq='0' then
+			if mii_txen='0' then
 				rd_addr <= to_unsigned(mem_length-1, rd_addr'length);
 			elsif rd_addr(0)='0' then
-				if mii_tena='1' then
-					rd_addr <= rd_addr - 1;
-				end if;
+				rd_addr <= rd_addr - 1;
 			end if;
 		end if;
 	end process;
 
-	mii_txen <= mii_treq and not rd_addr(0);
+	mii_txdv <= mii_treq and not rd_addr(0);
 	mii_trdy <= mii_treq and rd_addr(0);
 
 end;
