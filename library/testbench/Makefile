@@ -37,7 +37,6 @@ HDL4FPGA__mii_romcmp__def = $(LIB_HDL4FPGA)/mii_romcmp/def.dat
 HDL4FPGA__mii_romcmp = $(LIB_HDL4FPGA)/mii_romcmp/_primary.dat
 HDL4FPGA__mii_rom__def = $(LIB_HDL4FPGA)/mii_rom/def.dat
 HDL4FPGA__mii_rom = $(LIB_HDL4FPGA)/mii_rom/_primary.dat
-HDL4FPGA__mii_ramcmp__def = $(LIB_HDL4FPGA)/mii_ramcmp/def.dat
 HDL4FPGA__mii_ramcmp = $(LIB_HDL4FPGA)/mii_ramcmp/_primary.dat
 HDL4FPGA__mii_ram__def = $(LIB_HDL4FPGA)/mii_ram/def.dat
 HDL4FPGA__mii_ram = $(LIB_HDL4FPGA)/mii_ram/_primary.dat
@@ -130,7 +129,6 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_romcmp) \
     $(HDL4FPGA__mii_rom__def) \
     $(HDL4FPGA__mii_rom) \
-    $(HDL4FPGA__mii_ramcmp__def) \
     $(HDL4FPGA__mii_ramcmp) \
     $(HDL4FPGA__mii_ram__def) \
     $(HDL4FPGA__mii_ram) \
@@ -453,6 +451,7 @@ $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__ip_tx) \
 		$(HDL4FPGA__udp4_tx) \
 		$(HDL4FPGA__dhcp_dscb) \
@@ -526,9 +525,7 @@ $(HDL4FPGA__mii_ram__def) : ../mii/mii_ram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_ram.vhd
 
-$(HDL4FPGA__mii_ramcmp) \
-$(HDL4FPGA__mii_ramcmp__def) : ../mii/mii_ramcmp.vhd \
-		$(HDL4FPGA__mii_ram) \
+$(HDL4FPGA__mii_ramcmp) : ../mii/mii_ramcmp.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \

@@ -59,14 +59,14 @@ begin
 	severity FAILURE;
 
 	process (mii_rxc)
-		variable wr_addr : unsigned(0 to addr_length);
+		variable addr : unsigned(0 to addr_length);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
 				addr := (others => '0');
-			elsif wr_addr(0)='0' then
+			elsif addr(0)='0' then
 				addr := addr + 1;
-				len  := addr;
+				len  <= addr;
 			end if;
 			wr_addr <= addr;
 		end if;

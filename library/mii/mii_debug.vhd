@@ -88,8 +88,8 @@ architecture struct of mii_debug is
 	alias icmp_gnt       : std_logic is mii_gnt(1);
 	signal ip4_req       : std_logic := '0';
 
-	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
-	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((64*8)/mii_rxd'length-1));
+	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
+	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
 
 	signal ethhwda_ena   : std_logic;
 	signal ethhwsa_ena   : std_logic;
@@ -182,6 +182,7 @@ begin
 		signal icmpcksm_data : std_logic_vector(0 to 16-1);
 		signal icmprply_cksm : std_logic_vector(0 to 16-1);
 
+		signal icmppl_rxdv   : std_logic;
 		signal icmppl_txen   : std_logic;
 		signal icmppl_txd    : std_logic_vector(mii_txd'range);
 
@@ -196,8 +197,9 @@ begin
 
 			icmprqst_ena  => ip4icmp_rcvd,
 			icmpid_rxdv   => icmpid_rxdv,
-			icmpchsm_rxdv => icmpid_rxdv,
-			icmpseq_rxdv  => icmpseq_rxdv);
+			icmpcksm_rxdv => icmpcksm_rxdv,
+			icmpseq_rxdv  => icmpseq_rxdv,
+			icmppl_rxdv   => icmppl_rxdv);
 
 		icmpcksm_e : entity hdl4fpga.mii_des
 		port map (
@@ -222,18 +224,18 @@ begin
 
 		icmpdata_e : entity hdl4fpga.mii_ram
 		generic map (
-			mem_size => 64*octect)
+			mem_size => 64*octect_size)
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => icmppl_rxdv,
 			mii_rxd  => mii_rxd,
 
 			mii_txc  => mii_txc,
-			mii_txen => icmp_gnt;
+			mii_txen => icmp_gnt,
 			mii_txdv => icmppl_txen,
 			mii_txd  => icmppl_txd);
 
-		icmprlpy_cksm <= onechksum(icmpcksm_data & icmptype_rqst);
+		icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst, icmprply_cksm'length);
 		icmprply_e : entity hdl4fpga.icmprply_tx
 		port map (
 			mii_txc   => mii_txc,

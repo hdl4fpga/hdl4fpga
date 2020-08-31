@@ -47,8 +47,11 @@ end;
 
 architecture def of icmprply_tx is
 	signal icmp_txdv : std_logic;
-	signal icmp_cksm : std_logic_vector(16-1 downto 0);
 	signal icmp_data : std_logic_vector(0 to 64-1);
+	signal icmphdr_txen : std_logic;
+	signal icmphdr_txd  : std_logic_vector(icmp_txd'range);
+	signal pllat_txen : std_logic;
+	signal pllat_txd  : std_logic_vector(icmp_txd'range);
 begin
 
 	process (pl_txen, icmp_txen, mii_txc)
@@ -58,21 +61,35 @@ begin
 			if pl_txen='1' then
 				txen := '1';
 			elsif txen='1' then
-				if icmp_txen='0' then
+				if pllat_txen='0' then
 					txen := '0';
 				end if;
 			end if;
 		end if;
-		icmp_txdv <= pl_txen or txen;
+		icmp_txdv <= pl_txen or txen or pllat_txen;
 	end process;
 
+	pllat_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => (summation(icmphdr_frame & icmprqst_frame)))
+	port map (
+		mii_txc  => mii_txc,
+		lat_txen => pl_txen,
+		lat_txd  => pl_txd,
+		mii_txen => pllat_txen,
+		mii_txd  => pllat_txd);
+		
 	icmp_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
 	icmp_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => icmp_data,
         mii_txc  => mii_txc,
 		mii_txdv => icmp_txdv,
-        mii_txen => icmp_txen,
-        mii_txd  => icmp_txd);
+        mii_txen => icmphdr_txen,
+        mii_txd  => icmphdr_txd);
+
+	icmp_txd  <= wirebus(icmphdr_txd & pllat_txd, icmphdr_txen & pllat_txen);
+	icmp_txen <= icmp_txdv;
+
 end;
 
