@@ -229,7 +229,8 @@ begin
 			mii_rxd  => mii_rxd,
 
 			mii_txc  => mii_txc,
-			mii_txen => icmppl_txen,
+			mii_txen => icmp_gnt;
+			mii_txdv => icmppl_txen,
 			mii_txd  => icmppl_txd);
 
 		icmprlpy_cksm <= onechksum(icmpcksm_data & icmptype_rqst);
