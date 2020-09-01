@@ -277,7 +277,8 @@ begin
 		constant dhcp_dp : std_logic_vector := x"0044";
 		signal udpports_rxdv : std_logic;
 		signal udpports_rcvd : std_logic;
-		signal myip4a      : std_logic_vector := x"c0_a8_00_0e";
+		signal dhcpyia_rxdv : std_logic;
+		signal myip4a      : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
 	begin
 
 		udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
@@ -304,7 +305,7 @@ begin
 		dchp_yia_e : entity hdl4fpga.mii_des
 		port map (
 			mii_rxc  => mii_rxc,
-			mii_rxdv => dhcpyia_rxd,
+			mii_rxdv => dhcpyia_rxdv,
 			mii_rxd  => mii_rxd,
 			des_data => myip4a);
 
