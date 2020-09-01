@@ -126,6 +126,13 @@ architecture struct of mii_debug is
 	signal ip4icmp_rcvd  : std_logic;
 	signal ip4pl_rxdv    : std_logic;
 
+	signal udpproto_rcvd : std_logic;
+	signal udpsp_rxdv    : std_logic;
+	signal udpdp_rxdv    : std_logic;
+	signal udplen_rxdv   : std_logic;
+	signal udpcksm_rxdv  : std_logic;
+	signal udppl_rxdv    : std_logic;
+
 	signal icmp_rcvd     : std_logic;
 	signal txc_rxd       : std_logic_vector(0 to mii_txd'length+2);
 	signal rxc_txd       : std_logic_vector(0 to mii_txd'length+2);
@@ -161,7 +168,6 @@ begin
 		mii_rxc    => mii_rxc,
 		mii_rxdv   => mii_rxdv,
 		mii_rxd    => mii_rxd,
-
 		mii_ptr    => rxfrm_ptr,
 
 		ip4_ena    => typeip4_rcvd,
@@ -252,6 +258,57 @@ begin
 
 	end block;
 
+	udp4rx_e : entity hdl4fpga.udp_rx
+	port map (
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd,
+		mii_ptr    => rxfrm_ptr,
+
+		udp_ena      => udpproto_rcvd,
+		udpsp_rxdv   => udpsp_rxdv,
+		udpdp_rxdv   => udpdp_rxdv,
+		udplen_rxdv  => udplen_rxdv,
+		udpcksm_rxdv => udpcksm_rxdv,
+		udppl_rxdv   => udppl_rxdv);
+
+	dhcp_b : block
+		constant dhcp_sp : std_logic_vector := x"0043";
+		constant dhcp_dp : std_logic_vector := x"0044";
+		signal udpports_rxdv : std_logic;
+		signal udpports_rcvd : std_logic;
+		signal myip4a      : std_logic_vector := x"c0_a8_00_0e";
+	begin
+
+		udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
+		dhcpport_e : entity hdl4fpga.mii_romcmp
+		generic map (
+			mem_data => reverse(dhcp_sp & dhcp_dp,8))
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_ena  => udpports_rxdv,
+			mii_equ  => udpproto_rcvd);
+
+		dhcp_offer_e : entity hdl4fpga.dhcp_offer
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_ptr  => rxfrm_ptr,
+
+			dhcp_ena => udpproto_rcvd,
+			dhcpyia_rxdv => dhcpyia_rxdv);
+
+		dchp_yia_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => dhcpyia_rxd,
+			mii_rxd  => mii_rxd,
+			des_data => myip4a);
+
+	end block;
 
 	ctlr_b : block
 
@@ -334,6 +391,16 @@ begin
 			mii_rxd  => mii_rxd,
 			mii_ena  => ip4proto_rxdv,
 			mii_equ  => ip4icmp_rcvd);
+
+		udpproto_e : entity hdl4fpga.mii_romcmp
+		generic map (
+			mem_data => reverse(ip4proto_udp,8))
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_ena  => ip4proto_rxdv,
+			mii_equ  => udpproto_rcvd);
 
 		process (mii_rxc)
 			variable rxdv : std_logic;

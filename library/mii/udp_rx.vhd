@@ -32,48 +32,28 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_rx is
 	port (
-		mii_rxc       : in  std_logic;
-		
-		udp_
-		udp_rxd       : in  std_logic_vector;
-		udp_rxdv      : in  std_logic;
+		mii_rxc      : in  std_logic;
+		mii_rxdv     : in  std_logic;
+		mii_rxd      : in  std_logic_vector;
+		mii_ptr      : in  std_logic_vector;
+
+		udp_ena      : in  std_logic;
+		udpsp_rxdv   : out std_logic;
+		udpdp_rxdv   : out std_logic;
+		udplen_rxdv  : out std_logic;
+		udpcksm_rxdv : out std_logic;
+		udppl_rxdv   : out std_logic);
 end;
 
 architecture def of udp_rx is
 
-	constant dhcp_frame : natural :=  udp_frame+8;
-	constant dhcp_yia   : field   := (dhcp_frame+16, 4);
-	constant dhcp_sia   : field   := (dhcp_frame+20, 4);
-
-	signal dhcp_ena     : std_logic;
-	signal yia_ena      : std_logic;
-	signal sia_ena      : std_logic;
-
-	signal dis_txd   : std_logic_vector(mii_txd'range);
-	signal dis_txdv  : std_logic;
-	signal requ_txd  : std_logic_vector(mii_txd'range);
-	signal requ_txdv : std_logic;
-
-	signal offer_rcv : std_logic;
 begin
 					
-	dhcp_ena <= lookup((0 => udp_sport, 1 => udp_dport), std_logic_vector(mii_ptr));
-	yia_ena  <= lookup((0 => dhcp_yia), std_logic_vector(mii_ptr));
-	sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
-
-	mii_dhcp_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(x"00430044",8))
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxd  => mii_rxd,
-		mii_treq => udpproto_vld,
-		mii_ena  => dhcp_ena,
-		mii_pktv => dhcp_vld);
-
-	myipcfg_vld  <= dhcp_vld and yia_ena;
-	ipdaddr_vld  <= dhcp_vld and sia_ena;
-	offer_rcv    <= dhcp_vld;
+	udpsp_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_sp);
+	udpdp_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_dp);
+	udplen_rxdv  <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_len);
+	udpcksm_rxdv <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_cksm);
+	udppl_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_cksm, gt);
 
 end;
 
