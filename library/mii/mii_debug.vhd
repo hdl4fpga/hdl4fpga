@@ -273,8 +273,8 @@ begin
 		udppl_rxdv   => udppl_rxdv);
 
 	dhcp_b : block
+		constant dhcp_cp : std_logic_vector := x"0044";
 		constant dhcp_sp : std_logic_vector := x"0043";
-		constant dhcp_dp : std_logic_vector := x"0044";
 		signal udpports_rxdv : std_logic;
 		signal udpports_rcvd : std_logic;
 		signal dhcpyia_rxdv : std_logic;
@@ -284,22 +284,25 @@ begin
 		udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
 		dhcpport_e : entity hdl4fpga.mii_romcmp
 		generic map (
-			mem_data => reverse(dhcp_sp & dhcp_dp,8))
+			mem_data => reverse(dhcp_sp & dhcp_cp,8))
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => mii_rxdv,
 			mii_rxd  => mii_rxd,
 			mii_ena  => udpports_rxdv,
-			mii_equ  => udpproto_rcvd);
+			mii_equ  => udpports_rcvd);
 
 		dhcp_offer_e : entity hdl4fpga.dhcp_offer
+		generic map (
+			dhcp_dp => dhcp_sp,
+			dhcp_sp => dhcp_cp)
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => mii_rxdv,
 			mii_rxd  => mii_rxd,
 			mii_ptr  => rxfrm_ptr,
 
-			dhcp_ena => udpproto_rcvd,
+			dhcp_ena => udpports_rcvd,
 			dhcpyia_rxdv => dhcpyia_rxdv);
 
 		dchp_yia_e : entity hdl4fpga.mii_des

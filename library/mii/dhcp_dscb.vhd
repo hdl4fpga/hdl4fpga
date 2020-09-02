@@ -32,17 +32,16 @@ use hdl4fpga.ipoepkg.all;
 
 entity dhcp_dscb is
 	generic (
-		dhcp_ip4 : in std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
-		dhcp_sp  : in std_logic_vector(16-1 downto 0) := x"0044";
-		dhcp_dp  : in std_logic_vector(16-1 downto 0) := x"0043";
-		dhcp_mac : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		dhcp_sp   : std_logic_vector(0 to 16-1);
+		dhcp_dp   : std_logic_vector(0 to 16-1);
+		dhcp_mac  : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_txc   : in  std_logic;
-		dscb_cksm : buffer std_logic_vector(0 to 16-1);
-		dscb_len  : out std_logic_vector(16-1 downto 0);
-		dscb_treq : in  std_logic;
-		dscb_txen : out std_logic;
-		dscb_txd  : out std_logic_vector);
+		mii_txen  : in  std_logic;
+		udpdhcp_len  : out std_logic_vector(16-1 downto 0);
+		udpdhcp_ptr  : in  std_logic_vector;
+		udpdhcp_txen : buffer std_logic;
+		udpdhcp_txd  : out std_logic_vector);
 end;
 
 architecture def of dhcp_dscb is
@@ -50,77 +49,53 @@ architecture def of dhcp_dscb is
 	constant payload_size : natural := 244+6;
 
 	constant vendor_data : std_logic_vector := 
-		x"63825363"     &    -- MAGIC COOKIE
 		x"350101"       &    -- DHCPDISCOVER
 		x"320400000000" &    -- IP REQUEST
 		x"FF";               -- END
 
-	constant shdr1 : std_logic_vector :=
+	constant dhcp_pkt : std_logic_vector :=
 		udp_checksummed (
-			dhcp_ip4,
+			x"00000000",
 			x"ffffffff",
-			dhcp_sp     &    -- UDP Source port
-			dhcp_dp     &    -- UDP Destination port
+			dhcp_sp      &    -- UDP Source port
+			dhcp_dp      &    -- UDP Destination port
 			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
 			oneschecksum(vendor_data,16) &	-- UDP CHECKSUM
-			x"01010600" &    -- OP, HTYPE, HLEN,  HOPS
-			x"3903f326" &    -- XID
-			x"00000000" &    -- SECS, FLAGS
-			x"00000000" &    -- CIADDR
-			x"00000000" &    -- YIADDR
-			x"00000000" &    -- SIADDR
-			x"00000000" &    -- GIADDR
-			dhcp_mac    &    -- CHADDR  
-			x"0000"     &    -- CHADDR
-			x"00000000" &    -- CHADDR
-			x"00000000");    -- CHADDR
+			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
+			x"3903f326"  &    -- XID
+			dhcp_mac     &    -- CHADDR  
+			x"63825363") &    -- MAGIC COOKIE
+			vendor_data;
 
-	signal shdr1_txen  : std_logic;
-	signal shdr1_txd   : std_logic_vector(dscb_txd'range);
+	signal dhcppkt_ena : std_logic;
+	signal dhcppkt_txd : std_logic_vector(udpdhcp_txd'range);
 
-	signal names_txen  : std_logic;
-	signal names_txd   : std_logic_vector(dscb_txd'range);
-
-	signal vendor_txen : std_logic;
-	signal vendor_txd  : std_logic_vector(dscb_txd'range);
-
-	constant dhcp_shdr1 : std_logic_vector := shdr1(summation(udp4hdr_frame) to shdr1'right);
-	constant dhcp_shdr2 : std_logic_vector := (0 to summation(dhcp4hdr_frame(dhcp4_shname to dhcp4_fbname))-1 => '0');
+	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
+	constant vendor_frame : natural_vector := (
+		dhcp_vendor => vendor_data'length);
 
 begin
 
-	dscb_len  <= std_logic_vector(to_unsigned(payload_size, dscb_len'length));
---	dscb_cksm <= reverse(shdr1(summation(udp4hdr_frame(0 to udp4_cksm-1)) to summation(udp4hdr_frame(0 to udp4_cksm))-1),8);
+	udpdhcp_len <= std_logic_vector(to_unsigned(payload_size, udpdhcp_len'length));
 
---	assert false
---	report to_string(dscb_cksm)
---	severity failure;
+	dhcppkt_ena <= frame_decode(udpdhcp_ptr, udp4hdr_frame & dhcp4hdr_frame & dhcp_vendor, udpdhcp_txd'length, (
+		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 
+		dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, 
+		dhcp4_xid, 
+		dhcp4_chaddr,
+		dhcp4_cookie,
+		dhcp_vendor));
 
-	shdr1_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(dhcp_shdr1,8))
-	port map (
-		mii_txc  => mii_txc,
-		mii_txen => shdr1_txen,
-		mii_txd  => shdr1_txd);
-
-	sbname_e  : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => dhcp_shdr2)
-	port map (
-		mii_txc  => mii_txc,
-		mii_txen => names_txen,
-		mii_txd  => names_txd);
-
-	vendor_e  : entity hdl4fpga.mii_rom
+	dhcppkt_e  : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(vendor_data,8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_txen => vendor_txen,
-		mii_txd  => vendor_txd);
+		mii_txen => mii_txen,
+		mii_ena  => dhcppkt_ena,
+		mii_txdv => udpdhcp_txen,
+		mii_txd  => dhcppkt_txd);
 
-	dscb_txd  <= wirebus(shdr1_txd & names_txd & vendor_txd, shdr1_txen & names_txen & vendor_txen);
-	dscb_txen <= shdr1_txen or names_txen or vendor_txen;
+	udpdhcp_txd  <= wirebus(dhcppkt_txd, (0 to 0 =>udpdhcp_txen));
 end;
 
