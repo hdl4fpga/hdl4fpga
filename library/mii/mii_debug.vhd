@@ -48,21 +48,22 @@ entity mii_debug is
 		mii_rxd     : in  std_logic_vector;
 		mii_rxdv    : in  std_logic;
 
-		pkt_req    : in  std_logic;
+		dhcp_req    : in  std_logic;
 		mii_txc     : in  std_logic;
 		mii_txd     : buffer std_logic_vector;
 		mii_txen    : buffer std_logic;
-
-		tp1 : buffer std_logic;
-		tp2 : buffer std_logic;
-		tp3 : buffer std_logic;
-		tp4 : buffer std_logic;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
 		video_on    : out std_logic;
 		video_hs    : out std_logic;
-		video_vs    : out std_logic);
+		video_vs    : out std_logic;
+
+		tp1 : buffer std_logic;
+		tp2 : buffer std_logic;
+		tp3 : buffer std_logic;
+		tp4 : buffer std_logic);
+
 	end;
 
 architecture struct of mii_debug is
@@ -70,9 +71,10 @@ architecture struct of mii_debug is
 	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
 	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
 	signal   ip4da       : std_logic_vector(0 to 32-1);
-	signal   ip4len      : std_logic_vector(0 to 16-1);
+	signal   ip4len_rx   : std_logic_vector(0 to 16-1);
+	signal   ip4len_tx   : std_logic_vector(0 to 16-1);
 
-	signal mii_gnt       : std_logic_vector(0 to 2-1);
+	signal mii_gnt       : std_logic_vector(0 to 3-1);
 	signal mii_trdy      : std_logic_vector(mii_gnt'range);
 
 	signal mii_req       : std_logic_vector(mii_gnt'range);
@@ -80,13 +82,16 @@ architecture struct of mii_debug is
 
 	alias arp_req        : std_logic is mii_req(0);
 	alias arp_rdy        : std_logic is mii_rdy(0);
+	alias arp_gnt        : std_logic is mii_gnt(0);
 	alias icmp_req       : std_logic is mii_req(1);
-	alias dscb_req       : std_logic is mii_req(1);
-	alias dscb_rdy       : std_logic is mii_rdy(1);
 	alias icmp_rdy       : std_logic is mii_rdy(1);
-	alias dscb_gnt       : std_logic is mii_gnt(1);
 	alias icmp_gnt       : std_logic is mii_gnt(1);
-	signal ip4_req       : std_logic := '0';
+	alias dscb_req       : std_logic is mii_req(2);
+	alias dscb_rdy       : std_logic is mii_rdy(2);
+	alias dscb_gnt       : std_logic is mii_gnt(2);
+	signal udp_gnt       : std_logic;
+	signal ip4_gnt       : std_logic;
+
 
 	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
 	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
@@ -99,7 +104,6 @@ architecture struct of mii_debug is
 
 	signal eth_txen      : std_logic;
 	signal eth_txd       : std_logic_vector(mii_txd'range);
-	alias  arp_gnt       : std_logic is mii_gnt(0);
 
 	signal arptpa_rxdv   : std_logic;
 
@@ -125,6 +129,13 @@ architecture struct of mii_debug is
 	signal ip4proto_rxdv : std_logic;
 	signal ip4icmp_rcvd  : std_logic;
 	signal ip4pl_rxdv    : std_logic;
+
+	signal udpdhcp_len   : std_logic_vector(0 to 16-1);
+	signal udp_len       : std_logic_vector(0 to 16-1);
+	signal udpip_len     : std_logic_vector(0 to 16-1);
+
+	signal udpdhcp_txd   : std_logic_vector(mii_txd'range);
+	signal udpdhcp_txen  : std_logic;
 
 	signal udpproto_rcvd : std_logic;
 	signal udpsp_rxdv    : std_logic;
@@ -275,11 +286,45 @@ begin
 	dhcp_b : block
 		constant dhcp_cp : std_logic_vector := x"0044";
 		constant dhcp_sp : std_logic_vector := x"0043";
+
+		signal myip4a        : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
 		signal udpports_rxdv : std_logic;
 		signal udpports_rcvd : std_logic;
-		signal dhcpyia_rxdv : std_logic;
-		signal myip4a      : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
+		signal dhcpyia_rxdv  : std_logic;
+
+		signal ip4a_req      : std_logic := '0';
+
 	begin
+
+		process (mii_txc)
+			variable req : std_logic;
+		begin
+			if rising_edge(mii_txc) then
+				if dscb_rdy='1' then
+					dscb_req <= '0';
+				elsif ip4a_req='1' then
+					if mii_txen='1' then
+						ip4a_req <= '0';
+					end if;
+				elsif req='0' and dhcp_req='1' then
+					ip4a_req <= '1';
+					dscb_req <= '1';
+				end if;
+				req := dhcp_req;
+			end if;
+		end process;
+
+		dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
+		generic map (
+			dhcp_sp => dhcp_cp,
+			dhcp_dp => dhcp_sp)
+		port map (
+			mii_txc   => mii_txc,
+			mii_txen  => ip4a_req,
+			udpdhcp_ptr  => txfrm_ptr,
+			udpdhcp_len  => udpdhcp_len,
+			udpdhcp_txen => udpdhcp_txen,
+			udpdhcp_txd  => udpdhcp_txd);
 
 		udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
 		dhcpport_e : entity hdl4fpga.mii_romcmp
@@ -293,9 +338,6 @@ begin
 			mii_equ  => udpports_rcvd);
 
 		dhcp_offer_e : entity hdl4fpga.dhcp_offer
-		generic map (
-			dhcp_dp => dhcp_sp,
-			dhcp_sp => dhcp_cp)
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxdv => mii_rxdv,
@@ -377,7 +419,7 @@ begin
 			mii_rxc  => mii_rxc,
 			mii_rxdv => ip4len_rxdv,
 			mii_rxd  => mii_rxd,
-			des_data => ip4len);
+			des_data => ip4len_rx);
 
 		ip4darx_e : entity hdl4fpga.mii_des
 		port map (
@@ -448,11 +490,17 @@ begin
 			req => mii_req,
 			gnt => mii_gnt);
 
-		eth_txd  <= wirebus(arp_txd & ip4_txd, mii_gnt);
+		eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ip4_gnt);
 		eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 	end block;
 
---	pkt_len <= std_logic_vector(unsigned(pl_len) + (summation(ip4hdr_frame))/octect_size);
+	udp_len   <= wirebus(udpdhcp_len, "1");
+	udp_gnt   <= dscb_gnt;
+
+	udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
+	ip4len_tx <= wirebus (ip4len_rx & udpip_len, icmp_gnt & udp_gnt); 
+	ip4_gnt   <= icmp_gnt or udp_gnt;
+
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (
 		mii_txc  => mii_txc,
@@ -460,7 +508,7 @@ begin
 		pl_txen  => ip4pl_txen,
 		pl_txd   => ip4pl_txd,
 
-		ip4len   => ip4len,
+		ip4len   => ip4len_tx,
 		ip4sa    => myip4a,
 		ip4da    => ip4da,
 		ip4proto => x"01",
@@ -483,7 +531,7 @@ begin
 		arp_txen => arp_txen,
 		arp_txd  => arp_txd);
 
-	llc <= wirebus(llc_arp & llc_ip4, mii_gnt);
+	llc <= wirebus(llc_arp & llc_ip4, arp_gnt & ip4_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc  => mii_txc,
@@ -544,24 +592,6 @@ begin
 				end if;
 			end if;
 		end process;
-
---		process (mii_txc)
---			variable req : std_logic;
---		begin
---			if rising_edge(mii_txc) then
---				if dscb_rdy='1' then
---					dscb_req <= '0';
---				elsif ip4_req='1' then
---					if mii_txen='1' then
---						ip4_req  <= '0';
---					end if;
---				elsif req='0' and pkt_req='1' then
---					ip4_req  <= '1';
---					dscb_req <= '1';
---				end if;
---				req := pkt_req;
---			end if;
---		end process;
 
 		txc_txd <= mii_txd & mii_txen & '0' & '0';
 		txc2rxc_e : entity hdl4fpga.fifo
