@@ -639,7 +639,8 @@ package body std is
 		return std_logic_vector is
 		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
 	begin
-		aux := arg;
+
+		aux(0 to arg'length-1) := arg;
 		for i in 0 to aux'length/size-1 loop
 			aux(0 to size-1) := reverse(aux(0 to size-1));
 			aux:= std_logic_vector(unsigned(aux) rol size);

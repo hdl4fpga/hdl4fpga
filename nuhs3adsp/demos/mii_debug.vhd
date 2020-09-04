@@ -115,7 +115,6 @@ begin
 			end if;
 		end if;
 	end process;
-	led7 <= mii_treq;
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (

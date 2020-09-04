@@ -32,7 +32,7 @@ package ethpkg is
 
 	constant octect_size  : natural := 8;
 
-	type mode_t is (eq, ge, gt);
+	type mode_t is (le, eq, ge, gt);
 
 	constant eth_hwda : natural := 0;
 	constant eth_hwsa : natural := 1;
@@ -105,6 +105,10 @@ package body ethpkg is
 		for i in frame'range loop
 			if i=field then
 				case mode is
+				when le =>
+					if unsigned(ptr) < sumup+frame(i)/size then
+						retval := '1';
+					end if;
 				when eq =>
 					if sumup <= unsigned(ptr) and unsigned(ptr) < sumup+frame(i)/size then
 						retval := '1';

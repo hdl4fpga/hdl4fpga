@@ -94,7 +94,7 @@ architecture struct of mii_debug is
 
 
 	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
-	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
+	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((512*octect_size)/mii_rxd'length-1));
 
 	signal ethhwda_ena   : std_logic;
 	signal ethhwsa_ena   : std_logic;
@@ -118,7 +118,7 @@ architecture struct of mii_debug is
 	signal arp_rcvd      : std_logic;
 
 	signal typeip4_rcvd  : std_logic;
-	signal ip4pl_txen    : std_logic := '0';
+	signal ip4pl_txen    : std_logic;
 	signal ip4pl_txd     : std_logic_vector(mii_txd'range);
 	signal ip4_txen      : std_logic := '0';
 	signal ip4_txd       : std_logic_vector(mii_txd'range);
@@ -127,9 +127,12 @@ architecture struct of mii_debug is
 	signal ip4sa_rxdv    : std_logic;
 	signal ip4len_rxdv   : std_logic;
 	signal ip4proto_rxdv : std_logic;
+	signal ip4proto_tx   : std_logic_vector(0 to ip4hdr_frame(ip4_proto)-1);
 	signal ip4icmp_rcvd  : std_logic;
 	signal ip4pl_rxdv    : std_logic;
 
+	signal icmp_txen     : std_logic;
+	signal icmp_txd      : std_logic_vector(mii_txd'range);
 	signal udpdhcp_len   : std_logic_vector(0 to 16-1);
 	signal udp_len       : std_logic_vector(0 to 16-1);
 	signal udpip_len     : std_logic_vector(0 to 16-1);
@@ -257,17 +260,20 @@ begin
 		port map (
 			mii_txc   => mii_txc,
 
-			pl_txen   => icmppl_txen, --icmp_gnt,
-			pl_txd    => icmppl_txd, --x"0",
+			pl_txen   => icmppl_txen,
+			pl_txd    => icmppl_txd,
 
 			icmp_ptr  => txfrm_ptr,
 			icmp_cksm => icmprply_cksm,
 			icmp_id   => icmpid_data,
 			icmp_seq  => icmpseq_data,
-			icmp_txen => ip4pl_txen,
-			icmp_txd  => ip4pl_txd);
+			icmp_txen => icmp_txen,
+			icmp_txd  => icmp_txd);
 
 	end block;
+
+	ip4pl_txen <= icmp_txen or udpdhcp_txen;
+	ip4pl_txd  <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);
 
 	udp4rx_e : entity hdl4fpga.udp_rx
 	port map (
@@ -320,7 +326,7 @@ begin
 			dhcp_dp => dhcp_sp)
 		port map (
 			mii_txc   => mii_txc,
-			mii_txen  => ip4a_req,
+			mii_txen  => dscb_gnt,
 			udpdhcp_ptr  => txfrm_ptr,
 			udpdhcp_len  => udpdhcp_len,
 			udpdhcp_txen => udpdhcp_txen,
@@ -500,6 +506,7 @@ begin
 	udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4len_tx <= wirebus (ip4len_rx & udpip_len, icmp_gnt & udp_gnt); 
 	ip4_gnt   <= icmp_gnt or udp_gnt;
+	ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_icmp, icmp_gnt & udp_gnt);
 
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (
@@ -510,8 +517,8 @@ begin
 
 		ip4len   => ip4len_tx,
 		ip4sa    => myip4a,
-		ip4da    => ip4da,
-		ip4proto => x"01",
+		ip4da    => x"ff_ff_ff_ff", --ip4da,
+		ip4proto => ip4proto_icmp,
 
 		ip4_ptr  => txfrm_ptr,
 		ip4_txen => ip4_txen,

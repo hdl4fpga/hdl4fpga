@@ -36,8 +36,8 @@ entity dhcp_dscb is
 		dhcp_dp   : std_logic_vector(0 to 16-1);
 		dhcp_mac  : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_txc   : in  std_logic;
-		mii_txen  : in  std_logic;
+		mii_txc      : in  std_logic;
+		mii_txen     : in  std_logic;
 		udpdhcp_len  : out std_logic_vector(16-1 downto 0);
 		udpdhcp_ptr  : in  std_logic_vector;
 		udpdhcp_txen : buffer std_logic;
@@ -71,31 +71,31 @@ architecture def of dhcp_dscb is
 	signal dhcppkt_txd : std_logic_vector(udpdhcp_txd'range);
 
 	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
-	constant vendor_frame : natural_vector := (
+	constant dscb_frame : natural_vector(udp4hdr_frame'left to dhcp_vendor) := udp4hdr_frame & dhcp4hdr_frame & (
 		dhcp_vendor => vendor_data'length);
 
 begin
 
 	udpdhcp_len <= std_logic_vector(to_unsigned(payload_size, udpdhcp_len'length));
 
-	dhcppkt_ena <= frame_decode(udpdhcp_ptr, udp4hdr_frame & dhcp4hdr_frame & dhcp_vendor, udpdhcp_txd'length, (
+	dhcppkt_ena <= mii_txen and frame_decode(udpdhcp_ptr, dscb_frame, udpdhcp_txd'length, (
 		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 
 		dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, 
 		dhcp4_xid, 
-		dhcp4_chaddr,
+		dhcp4_chaddr6,
 		dhcp4_cookie,
 		dhcp_vendor));
+	udpdhcp_txen <= mii_txen and frame_decode(udpdhcp_ptr, dscb_frame, udpdhcp_txd'length, dhcp_vendor, le);
 
 	dhcppkt_e  : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(vendor_data,8))
+		mem_data => reverse(dhcp_pkt,8))
 	port map (
 		mii_txc  => mii_txc,
 		mii_txen => mii_txen,
 		mii_ena  => dhcppkt_ena,
-		mii_txdv => udpdhcp_txen,
 		mii_txd  => dhcppkt_txd);
 
-	udpdhcp_txd  <= wirebus(dhcppkt_txd, (0 to 0 =>udpdhcp_txen));
+	udpdhcp_txd  <= wirebus(dhcppkt_txd, (0 to 0 => dhcppkt_ena));
 end;
 
