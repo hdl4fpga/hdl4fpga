@@ -409,6 +409,7 @@ begin
 		udp_b : block
 		begin
 		end block;
+	end block;
 
 	ip4pl_txen <= icmp_txen or udpdhcp_txen;
 	ip4pl_txd  <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);

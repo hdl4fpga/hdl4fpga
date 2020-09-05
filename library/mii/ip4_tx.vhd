@@ -74,7 +74,7 @@ architecture def of ip4_tx is
 
 	signal ip4proto_txen  : std_logic;
 	signal ip4proto_txd   : std_logic_vector(ip4_txd'range);
-	signal ip4proto_data  : std_logic_vector(0 to ip4_shdr'length+ip4hdr_frame(ip4_proto)-1);
+	signal ip4proto_data  : std_logic_vector(0 to ip4hdr_frame(ip4_chksum)-1);
 
 	signal ip4sa_txen    : std_logic;
 	signal ip4sa_txd     : std_logic_vector(ip4_txd'range);
@@ -124,7 +124,7 @@ begin
         mii_txdv => ip4shdr_txen,
         mii_txd  => ip4shdr_txd);
 
-	ip4proto_data <= 0x"00" & ip4proto;
+	ip4proto_data <= x"00" & ip4proto;
 	ip4proto_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => ip4proto_data,
@@ -205,16 +205,29 @@ begin
 		
 	end block;
 	
-	process (mii_txc)
-		variable cy : std_logic;
+	xxx_b : block
+		signal cy  : std_logic;
+		signal sum : unsigned(0 to pl_txd'length+1);
+		signal op1 : unsigned(pl_txd'range);
 	begin
-		if rising_edge(mii_txc) then
-		end if;
-	end process;
-	cksm_txd   <= not wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if pl_txen='0' then
+					cy <= '0';
+				else
+					cy <= sum(0);
+				end if;
+			end if;
+		end process;
+		op1 <= unsigned(not wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen));
+		sum <= ('0' & unsigned(not ip4proto_txd) & '1') + ('0' & op1 & cy);
+		cksm_txd <= std_logic_vector(sum(1 to pl_txd'length));
+	end block;
+
 	cksm_txen  <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;
 	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and ip4_txen; 
-	cksm_init  <= oneschecksum(not (ip4_shdr & 0x"00"), cksm_init'length);
+	cksm_init  <= oneschecksum(not (ip4_shdr & x"00"), cksm_init'length);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
