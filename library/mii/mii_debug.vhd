@@ -521,7 +521,7 @@ begin
 		ip4len   => ip4len_tx,
 		ip4sa    => myip4a,
 		ip4da    => x"ff_ff_ff_ff", --ip4da,
-		ip4proto => ip4proto_icmp,
+		ip4proto => ip4proto_tx,
 
 		ip4_ptr  => txfrm_ptr,
 		ip4_txen => ip4_txen,
