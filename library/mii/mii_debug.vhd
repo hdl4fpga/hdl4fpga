@@ -509,7 +509,7 @@ begin
 	udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
 	ip4len_tx <= wirebus (ip4len_rx & udpip_len, icmp_gnt & udp_gnt); 
 	ip4_gnt   <= icmp_gnt or udp_gnt;
-	ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_icmp, icmp_gnt & udp_gnt);
+	ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & udp_gnt);
 
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (

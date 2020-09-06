@@ -52,6 +52,7 @@ end;
 architecture def of ip4_tx is
 
 	signal cksm_txd     : std_logic_vector(ip4_txd'range);
+	signal latcksm_txd  : std_logic_vector(ip4_txd'range);
 	signal cksm_txen    : std_logic;
 	signal cksmd_txd    : std_logic_vector(ip4_txd'range);
 	signal cksmd_txen   : std_logic;
@@ -73,6 +74,7 @@ architecture def of ip4_tx is
 	signal ip4shdr_data  : std_logic_vector(0 to ip4_shdr'length+ip4hdr_frame(ip4_proto)-1);
 
 	signal ip4proto_txen  : std_logic;
+	signal ip4proto_txdv  : std_logic;
 	signal ip4proto_txd   : std_logic_vector(ip4_txd'range);
 	signal ip4proto_data  : std_logic_vector(0 to ip4hdr_frame(ip4_chksum)-1);
 
@@ -124,12 +126,13 @@ begin
         mii_txdv => ip4shdr_txen,
         mii_txd  => ip4shdr_txd);
 
-	ip4proto_data <= x"00" & ip4proto;
+	ip4proto_data <= ip4proto;
 	ip4proto_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => ip4proto_data,
         mii_txc  => mii_txc,
-        mii_txdv => ip4proto_txen,
+        mii_txdv => ip4len_txen,
+        mii_txen => ip4proto_txdv,
         mii_txd  => ip4proto_txd);
 
 	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and ip4_txen;
@@ -175,7 +178,7 @@ begin
 			mii_txen => pllat1_txen,
 			mii_txd  => pllat_txd);
 		
-		lat_txd  <= wirebus(not cksm_txd & pllat_txd, cksm_txen & pllat1_txen);
+		lat_txd  <= wirebus(latcksm_txd & pllat_txd, cksm_txen & pllat1_txen);
 		iplenlat_e : entity hdl4fpga.mii_latency
 		generic map (
 			latency => 
@@ -209,6 +212,7 @@ begin
 		signal cy  : std_logic;
 		signal sum : unsigned(0 to pl_txd'length+1);
 		signal op1 : unsigned(pl_txd'range);
+		signal op2 : unsigned(pl_txd'range);
 	begin
 		process (mii_txc)
 		begin
@@ -220,9 +224,12 @@ begin
 				end if;
 			end if;
 		end process;
-		op1 <= unsigned(not wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen));
-		sum <= ('0' & unsigned(not ip4proto_txd) & '1') + ('0' & op1 & cy);
-		cksm_txd <= std_logic_vector(sum(1 to pl_txd'length));
+		latcksm_txd <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
+		op1 <= unsigned(reverse(latcksm_txd));
+		op2 <= unsigned(reverse((ip4proto_txd) and (pl_txd'range => ip4proto_txdv)));
+--		op2 <= unsigned(reverse(std_logic_vector'(x"f") and (pl_txd'range => ip4proto_txdv)));
+		sum <= ('0' & op2  & '1') + ('0' & op1 & cy);
+		cksm_txd <= not reverse(std_logic_vector(sum(1 to pl_txd'length)));
 	end block;
 
 	cksm_txen  <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;

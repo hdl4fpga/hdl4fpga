@@ -60,11 +60,11 @@ architecture def of dhcp_dscb is
 			dhcp_sp      &    -- UDP Source port
 			dhcp_dp      &    -- UDP Destination port
 			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			oneschecksum(vendor_data,16) &	-- UDP CHECKSUM
+			x"0000"      &	  -- UDP CHECKSUM
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
 			dhcp_mac     &    -- CHADDR  
-			x"63825363") &    -- MAGIC COOKIE
+			x"63825363")  &    -- MAGIC COOKIE
 			vendor_data;
 
 	signal dhcppkt_ena : std_logic;
@@ -76,7 +76,7 @@ architecture def of dhcp_dscb is
 
 begin
 
-	udpdhcp_len <= std_logic_vector(to_unsigned(payload_size, udpdhcp_len'length));
+	udpdhcp_len <= std_logic_vector(to_unsigned(payload_size+8, udpdhcp_len'length));
 
 	dhcppkt_ena <= mii_txen and frame_decode(udpdhcp_ptr, dscb_frame, udpdhcp_txd'length, (
 		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 
