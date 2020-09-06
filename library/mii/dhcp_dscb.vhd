@@ -46,7 +46,7 @@ end;
 
 architecture def of dhcp_dscb is
 
-	constant payload_size : natural := 244+6;
+	constant payload_size : natural := 250;
 
 	constant vendor_data : std_logic_vector := 
 		x"350101"       &    -- DHCPDISCOVER
@@ -55,7 +55,7 @@ architecture def of dhcp_dscb is
 
 	constant dhcp_pkt : std_logic_vector :=
 		udp_checksummed (
-			x"00000000",
+			x"c0a8000e",
 			x"ffffffff",
 			dhcp_sp      &    -- UDP Source port
 			dhcp_dp      &    -- UDP Destination port
@@ -64,8 +64,8 @@ architecture def of dhcp_dscb is
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
 			dhcp_mac     &    -- CHADDR  
-			x"63825363")  &    -- MAGIC COOKIE
-			vendor_data;
+			x"63825363"  &    -- MAGIC COOKIE
+			vendor_data);
 
 	signal dhcppkt_ena : std_logic;
 	signal dhcppkt_txd : std_logic_vector(udpdhcp_txd'range);

@@ -596,23 +596,21 @@ package body std is
 		constant dst  : std_logic_vector(0 to 32-1);
 		constant udp  : std_logic_vector)
 		return std_logic_vector is
-		variable aux1 : unsigned(0 to udp'length-1) := (others => '0');
-		variable aux  : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
+		variable len : unsigned(0 to 16-1);
+		variable aux : unsigned(0 to udp'length+src'length+32+dst'length-1) := (others => '0');
 	begin
-		aux1 := unsigned(udp);
+		aux(0 to udp'length-1) := unsigned(udp);
+		len := aux(32 to 48-1);
+		aux := aux rol udp'length;
 		aux(src'range) := unsigned(src);
 		aux := aux rol src'length;
 		aux(dst'range) := unsigned(dst);
 		aux := aux rol dst'length;
 		aux( 0 to 16-1) := x"0011";
-		aux(16 to 32-1) := aux1(32 to 32+16-1);
+		aux(16 to 32-1) := len;
 		aux := aux rol 32;
 
-		aux(0 to udp'length-1) := unsigned(udp);
-		aux(48 to 64-1) := unsigned(not oneschecksum(std_logic_vector(aux), 16));
-		if aux(48 to 64-1)=(1 to 16 => '0') then
-			aux(48 to 64-1) := (others => '1');
-		end if;
+		aux(48 to 64-1) := unsigned(oneschecksum(not std_logic_vector(aux), 16));
 		return std_logic_vector(aux(0 to udp'length-1));
 	end;
 

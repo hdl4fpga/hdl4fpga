@@ -126,7 +126,7 @@ begin
         mii_txdv => ip4shdr_txen,
         mii_txd  => ip4shdr_txd);
 
-	ip4proto_data <= ip4proto;
+	ip4proto_data <= x"00" & ip4proto;
 	ip4proto_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => ip4proto_data,
