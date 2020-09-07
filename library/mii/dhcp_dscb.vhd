@@ -55,7 +55,7 @@ architecture def of dhcp_dscb is
 
 	constant dhcp_pkt : std_logic_vector :=
 		udp_checksummed (
-			x"c0a8000e",
+			x"00000000",
 			x"ffffffff",
 			dhcp_sp      &    -- UDP Source port
 			dhcp_dp      &    -- UDP Destination port

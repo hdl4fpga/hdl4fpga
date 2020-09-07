@@ -89,6 +89,7 @@ architecture struct of mii_debug is
 	alias dscb_req       : std_logic is mii_req(2);
 	alias dscb_rdy       : std_logic is mii_rdy(2);
 	alias dscb_gnt       : std_logic is mii_gnt(2);
+	signal dscb_rcvd     : std_logic;
 	signal udp_gnt       : std_logic;
 	signal ip4_gnt       : std_logic;
 
@@ -124,6 +125,7 @@ architecture struct of mii_debug is
 	signal ip4_txd       : std_logic_vector(mii_txd'range);
 
 	signal ip4da_rxdv    : std_logic;
+	signal ip4sa_tx      : std_logic_vector(0 to 32-1);
 	signal ip4sa_rxdv    : std_logic;
 	signal ip4len_rxdv   : std_logic;
 	signal ip4proto_rxdv : std_logic;
@@ -387,6 +389,7 @@ begin
 				mii_ena  => udpports_rxdv,
 				mii_equ  => udpports_rcvd);
 
+			tp1 <= udpports_rcvd;
 			dhcp_offer_e : entity hdl4fpga.dhcp_offer
 			port map (
 				mii_rxc  => mii_rxc,
@@ -463,7 +466,7 @@ begin
 			if rising_edge(mii_rxc) then
 				if mii_rxdv='0' then
 					if rxdv='1' then
-						arp_rcvd  <= typearp_rcvd and myip4a_rcvd;
+						arp_rcvd  <= (typearp_rcvd and myip4a_rcvd);
 						icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
 					else
 						arp_rcvd  <= '0';
@@ -473,7 +476,7 @@ begin
 				rxdv := mii_rxdv;
 			end if;
 		end process;
-		tp1 <= arp_rcvd;
+--		tp1 <= arp_rcvd;
 
 		process (mii_txc)
 		begin
@@ -511,6 +514,7 @@ begin
 	ip4_gnt   <= icmp_gnt or udp_gnt;
 	ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & udp_gnt);
 
+	ip4sa_tx <= wirebus(myip4a & x"00_00_00_00", not dscb_gnt & dscb_gnt);
 	ip4_e : entity hdl4fpga.ip4_tx
 	port map (
 		mii_txc  => mii_txc,
@@ -519,7 +523,7 @@ begin
 		pl_txd   => ip4pl_txd,
 
 		ip4len   => ip4len_tx,
-		ip4sa    => myip4a,
+		ip4sa    => ip4sa_tx, --myip4a,
 		ip4da    => x"ff_ff_ff_ff", --ip4da,
 		ip4proto => ip4proto_tx,
 
