@@ -337,7 +337,7 @@ begin
 
 	ip4_b : block
 	begin
-		ip4rx_e : entity hdl4fpga.ip4_rx
+		ip4rx_e : entity hdl4fpga.ipv4_rx
 		port map (
 			mii_rxc    => mii_txc,
 			mii_rxdv   => txc_rxdv,
@@ -360,7 +360,7 @@ begin
 		ip4pl_txen  <= icmp_txen or udpdhcp_txen;
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);
 
-		ip4tx_e : entity hdl4fpga.ip4_tx
+		ip4tx_e : entity hdl4fpga.ipv4_tx
 		port map (
 			mii_txc  => mii_txc,
 
@@ -459,7 +459,7 @@ begin
 				mii_txdv => icmppl_txen,
 				mii_txd  => icmppl_txd);
 
-			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst, icmprply_cksm'length);
+			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
 			icmprply_e : entity hdl4fpga.icmprply_tx
 			port map (
 				mii_txc   => mii_txc,

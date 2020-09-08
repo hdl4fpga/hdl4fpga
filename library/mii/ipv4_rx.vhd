@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity ip4_rx is
+entity ipv4_rx is
 	port (
 		mii_rxc       : in  std_logic;
 		mii_rxdv      : in  std_logic;
@@ -47,7 +47,7 @@ entity ip4_rx is
 
 end;
 
-architecture def of ip4_rx is
+architecture def of ipv4_rx is
 begin
 
 	ip4len_rxdv   <= ip4_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_len);

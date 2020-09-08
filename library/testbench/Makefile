@@ -53,11 +53,11 @@ HDL4FPGA__mii_debug__struct = $(LIB_HDL4FPGA)/mii_debug/struct.dat
 HDL4FPGA__mii_debug = $(LIB_HDL4FPGA)/mii_debug/_primary.dat
 HDL4FPGA__mii_1chksum__beh = $(LIB_HDL4FPGA)/mii_1chksum/beh.dat
 HDL4FPGA__mii_1chksum = $(LIB_HDL4FPGA)/mii_1chksum/_primary.dat
+HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
+HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
+HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
+HDL4FPGA__ipv4_rx = $(LIB_HDL4FPGA)/ipv4_rx/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
-HDL4FPGA__ip4_tx__def = $(LIB_HDL4FPGA)/ip4_tx/def.dat
-HDL4FPGA__ip4_tx = $(LIB_HDL4FPGA)/ip4_tx/_primary.dat
-HDL4FPGA__ip4_rx__def = $(LIB_HDL4FPGA)/ip4_rx/def.dat
-HDL4FPGA__ip4_rx = $(LIB_HDL4FPGA)/ip4_rx/_primary.dat
 HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
 HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
 HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
@@ -156,11 +156,11 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_debug) \
     $(HDL4FPGA__mii_1chksum__beh) \
     $(HDL4FPGA__mii_1chksum) \
+    $(HDL4FPGA__ipv4_tx__def) \
+    $(HDL4FPGA__ipv4_tx) \
+    $(HDL4FPGA__ipv4_rx__def) \
+    $(HDL4FPGA__ipv4_rx) \
     $(HDL4FPGA__ipoepkg) \
-    $(HDL4FPGA__ip4_tx__def) \
-    $(HDL4FPGA__ip4_tx) \
-    $(HDL4FPGA__ip4_rx__def) \
-    $(HDL4FPGA__ip4_rx) \
     $(HDL4FPGA__icmprqst_rx__def) \
     $(HDL4FPGA__icmprqst_rx) \
     $(HDL4FPGA__icmprply_tx__def) \
@@ -468,8 +468,17 @@ $(HDL4FPGA__icmprqst_rx__def) : ../mii/icmprqst_rx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/icmprqst_rx.vhd
 
-$(HDL4FPGA__ip4_rx) \
-$(HDL4FPGA__ip4_rx__def) : ../mii/ip4_rx.vhd \
+$(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/ipoepkg.vhd
+
+$(HDL4FPGA__ipv4_rx) \
+$(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -477,10 +486,10 @@ $(HDL4FPGA__ip4_rx__def) : ../mii/ip4_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/ip4_rx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_rx.vhd
 
-$(HDL4FPGA__ip4_tx) \
-$(HDL4FPGA__ip4_tx__def) : ../mii/ip4_tx.vhd \
+$(HDL4FPGA__ipv4_tx) \
+$(HDL4FPGA__ipv4_tx__def) : ../mii/ipv4_tx.vhd \
 		$(HDL4FPGA__mii_1chksum) \
 		$(HDL4FPGA__mii_latency) \
 		$(HDL4FPGA__mii_mux) \
@@ -491,16 +500,7 @@ $(HDL4FPGA__ip4_tx__def) : ../mii/ip4_tx.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../mii/ip4_tx.vhd
-
-$(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
-		$(HDL4FPGA__ethpkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/ipoepkg.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_tx.vhd
 
 $(HDL4FPGA__mii_1chksum) \
 $(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
@@ -520,8 +520,8 @@ $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__icmprply_tx) \
 		$(HDL4FPGA__mii_ram) \
 		$(HDL4FPGA__icmprqst_rx) \
-		$(HDL4FPGA__ip4_tx) \
-		$(HDL4FPGA__ip4_rx) \
+		$(HDL4FPGA__ipv4_tx) \
+		$(HDL4FPGA__ipv4_rx) \
 		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__arp_rx) \
 		$(HDL4FPGA__eth_tx) \
