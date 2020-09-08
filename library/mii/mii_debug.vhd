@@ -70,7 +70,9 @@ architecture struct of mii_debug is
 
 
 	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
-	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
+--	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
+	signal dhcp_ip4a     : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+	signal myip4a        : std_logic_vector(0 to 32-1) := x"00_00_00_00";
 	signal   ip4da       : std_logic_vector(0 to 32-1);
 	signal   ip4len_rx   : std_logic_vector(0 to 16-1);
 	signal   ip4len_tx   : std_logic_vector(0 to 16-1);
@@ -90,7 +92,7 @@ architecture struct of mii_debug is
 	alias dscb_req       : std_logic is mii_req(2);
 	alias dscb_rdy       : std_logic is mii_rdy(2);
 	alias dscb_gnt       : std_logic is mii_gnt(2);
-	signal dscb_rcvd     : std_logic;
+	signal dhcp_rcvd     : std_logic;
 	signal udp_gnt       : std_logic;
 	signal ip4_gnt       : std_logic;
 
@@ -191,10 +193,9 @@ begin
 	begin
 
 		myip4a_ena <= arptpa_rxdv or ip4da_rxdv;
-		myip4acmp_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(myip4a,8))
+		myip4acmp_e : entity hdl4fpga.mii_muxcmp
 		port map (
+			mux_data => myip4a,
 			mii_rxc  => mii_txc,
 			mii_rxdv => txc_rxdv,
 			mii_rxd  => txc_rxd,
@@ -314,6 +315,8 @@ begin
 				if arp_rdy='1' then
 					arp_req	<= '0';
 				elsif arp_rcvd='1' then
+					arp_req <= '1';
+				elsif dhcp_rcvd='1' then
 					arp_req <= '1';
 				end if;
 			end if;
@@ -521,7 +524,6 @@ begin
 			constant dhcp_clntp : std_logic_vector := x"0044";
 			constant dhcp_srvp  : std_logic_vector := x"0043";
 
-			signal myip4a        : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
 			signal udpports_rxdv : std_logic;
 			signal udpports_rcvd : std_logic;
 			signal dhcpyia_rxdv  : std_logic;
@@ -571,7 +573,6 @@ begin
 				mii_ena  => udpports_rxdv,
 				mii_equ  => udpports_rcvd);
 
-			tp1 <= udpports_rcvd;
 			dhcp_offer_e : entity hdl4fpga.dhcp_offer
 			port map (
 				mii_rxc  => mii_txc,
@@ -589,6 +590,20 @@ begin
 				mii_rxd  => txc_rxd,
 				des_data => myip4a);
 
+			tp1 <= udpports_rcvd;
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					if txc_rxdv='0' then
+						if txc_eor='1' then
+							dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
+						else
+							dhcp_rcvd <= '0';
+						end if;
+					end if;
+				end if;
+			end process;
+
 		end block;
 
 	end block;
@@ -596,7 +611,7 @@ begin
 	tp2 <= arp_req;
 
 	display_txd  <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
-	display_txen <= mii_txen or '0'; --txc_rxd(mii_rxd'length+1);
+	display_txen <= mii_txen or txc_rxdv;
 
 
 	mii_display_e : entity hdl4fpga.mii_display

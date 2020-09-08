@@ -44,7 +44,7 @@ architecture def of dhcp_offer is
 
 begin
 					
-	dhcpyia_rxdv <= dhcp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & dhcp4hdr_frame, mii_rxd'length, dhcp4_yiaddr);
+	dhcpyia_rxdv <= dhcp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_rxd'length, dhcp4_yiaddr);
 
 end;
 

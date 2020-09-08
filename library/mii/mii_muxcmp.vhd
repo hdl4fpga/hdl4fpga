@@ -28,37 +28,41 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_cmp is
+entity mii_muxcmp is
     port (
-        mii_rxc    : in  std_logic;
-		mii_req    : in  std_logic;
-		mii_rdy    : in  std_logic;
-		mii_ena    : in  std_logic := '1';
-        mii_rxd1   : in  std_logic_vector;
-        mii_rxd2   : in  std_logic_vector;
-		mii_equ    : out std_logic;
-		mii_equrdy : out std_logic);
+		mux_data : in  std_logic_vector;
+        mii_rxc  : in  std_logic;
+        mii_rxdv : in  std_logic;
+        mii_rxd  : in  std_logic_vector;
+		mii_ena  : in  std_logic;
+		mii_equ  : out std_logic);
 end;
 
-architecture def of mii_cmp is
-	signal eq : std_logic;
+architecture def of mii_muxcmp is
+	signal mii_txd : std_logic_vector(mii_rxd'range);
 begin
+
+	miimux_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => mux_data,
+        mii_txc  => mii_rxc,
+        mii_txdv => mii_ena,
+        mii_txd  => mii_txd);
 
 	process (mii_rxc)
 		variable cy : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_req='0' then
-				cy := '1';
-				eq <= '0';
-			elsif mii_rdy='0' then
+			if mii_rxdv='1' then
 				if mii_ena='1' then
-					cy := cy and setif(mii_rxd1=mii_rxd2);
-					eq <= cy;
+					cy      := cy and setif(mii_txd=mii_rxd);
+					mii_equ <= cy and setif(mii_txd=mii_rxd);
 				end if;
+			else
+				cy      := '1';
+				mii_equ <= '0';
 			end if;
 		end if;
 	end process;
-	mii_equ    <= eq;
-	mii_equrdy <= eq and mii_rdy;
+
 end;
