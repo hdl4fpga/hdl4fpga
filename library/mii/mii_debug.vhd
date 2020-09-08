@@ -70,9 +70,7 @@ architecture struct of mii_debug is
 
 
 	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
---	constant myip4a      : std_logic_vector := x"c0_a8_00_0e";
-	signal dhcp_ip4a     : std_logic_vector(0 to 32-1) := x"00_00_00_00";
-	signal myip4a        : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+	signal myip4a        : std_logic_vector(0 to 32-1);
 	signal   ip4da       : std_logic_vector(0 to 32-1);
 	signal   ip4len_rx   : std_logic_vector(0 to 16-1);
 	signal   ip4len_tx   : std_logic_vector(0 to 16-1);
