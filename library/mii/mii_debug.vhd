@@ -85,21 +85,21 @@ begin
 
 		tp       => tp);
 
-	mii_display_e : entity hdl4fpga.mii_display
-	generic map (
-		timing_id   => timing_id,
-		code_spce   => code_spce, 
-		code_digits => code_digits, 
-		cga_bitrom  => cga_bitrom)
-	port map (
-		mii_txc     => mii_txc,
-		mii_txen    => debug_txen,
-		mii_txd     => debug_txd(0 to mii_txd'length-1),
-
-		video_clk   => video_clk,
-		video_dot   => video_dot,
-		video_on    => video_on ,
-		video_hs    => video_hs,
-		video_vs    => video_vs);
+--	mii_display_e : entity hdl4fpga.mii_display
+--	generic map (
+--		timing_id   => timing_id,
+--		code_spce   => code_spce, 
+--		code_digits => code_digits, 
+--		cga_bitrom  => cga_bitrom)
+--	port map (
+--		mii_txc     => mii_txc,
+--		mii_txen    => debug_txen,
+--		mii_txd     => debug_txd(0 to mii_txd'length-1),
+--
+--		video_clk   => video_clk,
+--		video_dot   => video_dot,
+--		video_on    => video_on ,
+--		video_hs    => video_hs,
+--		video_vs    => video_vs);
 
 end;
