@@ -61,9 +61,11 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal debug_txd  : std_logic_vector(0 to 8-1);
-	signal debug_txen : std_logic;
+	signal txc_rxd  : std_logic_vector(mii_rxd'range);
+	signal txc_rxdv : std_logic;
 
+	signal debug_txd  : std_logic_vector(mii_rxd'range);
+	signal debug_txen : std_logic;
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
@@ -77,8 +79,8 @@ begin
 		mii_txd    => mii_txd,
 		mii_txen   => mii_txen,
 
-		debug_txen => debug_txen,
-		debug_txd  => debug_txd,
+		txc_rxdv => txc_rxdv,
+		txc_rxd  => txc_rxd,
 
 		tp       => tp);
 
@@ -98,5 +100,8 @@ begin
 		video_on    => video_on ,
 		video_hs    => video_hs,
 		video_vs    => video_vs);
+
+	debug_txd <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
+	debug_txen <= mii_txen or txc_rxdv;
 
 end;

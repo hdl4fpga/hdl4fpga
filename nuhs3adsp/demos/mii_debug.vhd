@@ -63,7 +63,7 @@ architecture mii_debug of nuhs3adsp is
 	constant video_mode : video_modes := mode600p;
 
 	signal mii_clk  : std_logic;
-	signal mii_treq : std_logic := '0';
+	signal dhcp_req : std_logic := '0';
 
 	signal tp : std_logic_vector(1 to 4);
 begin
@@ -97,10 +97,10 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			mii_treq <= not sw1;
+			dhcp_req <= not sw1;
 		end if;
 	end process;
-	led7 <= mii_treq;
+	led7 <= dhcp_req;
 
 	process (mii_rxc)
 	begin
@@ -126,7 +126,7 @@ begin
 		mii_rxdv  => mii_rxdv,
 
 		mii_txc   => mii_txc,
-		dhcp_req  => mii_treq,
+		dhcp_req  => dhcp_req,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
 		tp => tp,

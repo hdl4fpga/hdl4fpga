@@ -43,8 +43,11 @@ entity mii_ipoe is
 		mii_txd     : buffer std_logic_vector;
 		mii_txen    : buffer std_logic;
 
-		debug_txen  : out std_logic;
-		debug_txd   : out std_logic_vector(0 to 8-1);
+		txc_rxd     : buffer std_logic_vector;
+		txc_rxdv    : buffer std_logic;
+
+		udpsp_rxdv  : buffer std_logic;
+		udpdp_rxdv  : buffer std_logic;
 
 		tp          : buffer std_logic_vector(1 to 4));
 
@@ -112,8 +115,6 @@ architecture def of mii_ipoe is
 
 	signal rxc_rxbus     : std_logic_vector(0 to mii_rxd'length);
 	signal txc_rxbus     : std_logic_vector(0 to mii_rxd'length);
-	alias  txc_rxdv      : std_logic is txc_rxbus(mii_rxd'length);
-	alias  txc_rxd       : std_logic_vector(mii_rxd'range) is txc_rxbus(0 to mii_rxd'length-1);
 	signal txc_eor       : std_logic;
 
 
@@ -134,6 +135,8 @@ begin
 		src_data => rxc_rxbus,
 		dst_clk  => mii_txc,
 		dst_data => txc_rxbus);
+	txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
+	txc_rxdv <= txc_rxbus(mii_rxd'length);
 
 	process (mii_txc)
 	begin
@@ -306,8 +309,6 @@ begin
 		signal udpdhcp_txen  : std_logic;
 
 		signal udpproto_rcvd : std_logic;
-		signal udpsp_rxdv    : std_logic;
-		signal udpdp_rxdv    : std_logic;
 		signal udplen_rxdv   : std_logic;
 		signal udpcksm_rxdv  : std_logic;
 		signal udppl_rxdv    : std_logic;
@@ -593,8 +594,5 @@ begin
 	end block;
 
 	tp(2) <= arp_req;
-
-	debug_txd(0 to mii_txd'length-1) <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
-	debug_txen <= mii_txen or txc_rxdv;
 
 end;

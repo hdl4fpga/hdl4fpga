@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-6BG381C" default_implementation="ddr">
+<BaliProject version="3.2" title="demos" device="LFE5U-12F-6BG381C" default_implementation="mii_debug">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="ddr" dir="ddr" description="ddr" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.graphics" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.uart_tx" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -591,6 +591,180 @@
             <Options/>
         </Source>
         <Source name="../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="mii_debug" dir="mii_debug" description="mii_debug" synthesis="synplify" default_strategy="Strategy1">
+        <Options def_top="hdl4fpga.vga2dvid" lib="hdl4fpga" top="ulx3s"/>
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ulx3s"/>
+        </Source>
+        <Source name="../../library/common/align.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/common/bram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/common/dpram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/common/rom.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/common/arbiter.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/ff.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/cntrcs.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/desser.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/serdes.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/arp_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/arp_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/dhcp_dscb.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/dhcp_offer.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/eth_crc32.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/eth_dll.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/eth_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/eth_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/ethpkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/icmprply_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/icmprqst_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/ipoepkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/ipv4_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/ipv4_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_1chksum.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_debug.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_des.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_display.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_ipoe.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_latency.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_mux.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_muxcmp.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_ram.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_rom.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_romcmp.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_rxpre.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/udp_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/udp_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../demos/mii_debug.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
+        </Source>
+        <Source name="../../library/video/fonts/bcdfonts.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/fonts/cp850x8x8x0to127.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/fonts/cp850x8x8x128to255.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/fonts/cp850x8x16x0to127.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/cga_rom.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
