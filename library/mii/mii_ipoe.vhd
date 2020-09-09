@@ -27,12 +27,12 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.videopkg.all;
-use hdl4fpga.cgafonts.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
+	generic (
+		mymac       : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc     : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
@@ -53,7 +53,7 @@ end;
 architecture def of mii_ipoe is
 
 
-	constant mymac       : std_logic_vector := x"00_40_00_01_02_03";
+
 	signal myip4a        : std_logic_vector(0 to 32-1);
 	signal ip4da         : std_logic_vector(0 to 32-1);
 
@@ -67,12 +67,15 @@ architecture def of mii_ipoe is
 	alias arp_req        : std_logic is mii_req(0);
 	alias arp_rdy        : std_logic is mii_rdy(0);
 	alias arp_gnt        : std_logic is mii_gnt(0);
+
 	alias icmp_req       : std_logic is mii_req(1);
 	alias icmp_rdy       : std_logic is mii_rdy(1);
 	alias icmp_gnt       : std_logic is mii_gnt(1);
+
 	alias dscb_req       : std_logic is mii_req(2);
 	alias dscb_rdy       : std_logic is mii_rdy(2);
 	alias dscb_gnt       : std_logic is mii_gnt(2);
+
 	signal dhcp_rcvd     : std_logic;
 	signal udp_gnt       : std_logic;
 	signal ip4_gnt       : std_logic;
