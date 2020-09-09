@@ -65,7 +65,7 @@ architecture mii_debug of nuhs3adsp is
 	signal mii_clk  : std_logic;
 	signal mii_treq : std_logic := '0';
 
-	signal tp1 : std_logic;
+	signal tp : std_logic_vector(1 to 4);
 begin
 
 	clkin_ibufg : ibufg
@@ -110,7 +110,7 @@ begin
 				led8  <= '0';
 			elsif mii_rxdv='1' then
 				led18 <= '1';
-			elsif tp1='1' then
+			elsif tp(1)='1' then
 				led8 <= '1';
 			end if;
 		end if;
@@ -121,7 +121,6 @@ begin
 		cga_bitrom => to_ascii("Ready Steady GO!"),
 		timing_id  => video_tab(video_mode).timing_id)
 	port map (
-		mii_clk => mii_clk,
 		mii_rxc   => mii_rxc,
 		mii_rxd   => mii_rxd,
 		mii_rxdv  => mii_rxdv,
@@ -130,7 +129,7 @@ begin
 		dhcp_req  => mii_treq,
 		mii_txd   => mii_txd,
 		mii_txen  => mii_txen,
-		tp1 => tp1,
+		tp => tp,
 
 		video_clk => vga_clk, 
 		video_dot => vga_dot,
