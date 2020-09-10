@@ -62,7 +62,7 @@ begin
 		if des'ascending /= ser_data'ascending then
 			des_r(ser_data'range) := unsigned(ser_data);
 		else
-			des_r(ser_data'reverse_range) := unsigned(ser_data);
+			des(ser_data'range) := unsigned(ser_data);
 		end if;
 		des_data <= std_logic_vector(des);
 	end process;
