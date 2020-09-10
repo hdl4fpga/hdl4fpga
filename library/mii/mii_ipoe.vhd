@@ -88,7 +88,6 @@ architecture def of mii_ipoe is
 	alias dscb_rdy       : std_logic is mii_rdy(2);
 	alias dscb_gnt       : std_logic is mii_gnt(2);
 
-	signal dhcp_rcvd     : std_logic;
 	signal udp_gnt       : std_logic;
 	signal ip4_gnt       : std_logic;
 
@@ -113,8 +112,6 @@ architecture def of mii_ipoe is
 	signal ip4_txen      : std_logic := '0';
 	signal ip4_txd       : std_logic_vector(mii_txd'range);
 
-	signal ip4da_rxdv    : std_logic;
-	signal ip4sa_rxdv    : std_logic;
 	signal ip4pl_rxdv    : std_logic;
 
 	signal rxc_rxbus     : std_logic_vector(0 to mii_rxd'length);
@@ -201,7 +198,7 @@ begin
 		eth_ptr   => rxfrm_ptr,
 		hwda_rxdv => ethhwda_rxdv,
 		hwsa_rxdv => ethhwsa_rxdv,
-		type_rxdv => ethtype_ena);
+		type_rxdv => ethtype_rxdv);
 
 	ip4llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
