@@ -32,34 +32,43 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		mymac       : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		mymac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc     : in  std_logic;
-		mii_rxd     : in  std_logic_vector;
-		mii_rxdv    : in  std_logic;
+		mii_rxc      : in  std_logic;
+		mii_rxd      : in  std_logic_vector;
+		mii_rxdv     : in  std_logic;
 
-		dhcp_req    : in  std_logic;
-		mii_txc     : in  std_logic;
-		mii_txd     : buffer std_logic_vector;
-		mii_txen    : buffer std_logic;
+		mii_txc      : in  std_logic;
+		mii_txd      : buffer std_logic_vector;
+		mii_txen     : buffer std_logic;
 
-		txc_rxd     : buffer std_logic_vector;
-		txc_rxdv    : buffer std_logic;
+		txc_rxd      : buffer std_logic_vector;
+		txc_rxdv     : buffer std_logic;
 
-		udpsp_rxdv  : buffer std_logic;
-		udpdp_rxdv  : buffer std_logic;
+		ethhwda_rxdv : buffer std_logic;
+		ethhwsa_rxdv : buffer std_logic;
+		ethtype_rxdv : buffer std_logic;
 
-		tp          : buffer std_logic_vector(1 to 4));
+		ip4da_rxdv   : buffer std_logic;
+		ip4sa_rxdv   : buffer std_logic;
+
+		udpsp_rxdv   : buffer std_logic;
+		udpdp_rxdv   : buffer std_logic;
+		udplen_rxdv  : buffer std_logic;
+		udpcksm_rxdv : buffer std_logic;
+		udppl_rxdv   : buffer std_logic;
+
+		dhcp_req     : in  std_logic;
+		dhcp_rcvd    : buffer std_logic;
+		myip4a       : buffer std_logic_vector(0 to 32-1);
+
+		tp           : buffer std_logic_vector(1 to 4));
 
 end;
 
 architecture def of mii_ipoe is
 
-
-
-	signal myip4a        : std_logic_vector(0 to 32-1);
 	signal ip4da         : std_logic_vector(0 to 32-1);
-
 
 	signal mii_gnt       : std_logic_vector(0 to 3-1);
 	signal mii_trdy      : std_logic_vector(mii_gnt'range);
@@ -83,13 +92,8 @@ architecture def of mii_ipoe is
 	signal udp_gnt       : std_logic;
 	signal ip4_gnt       : std_logic;
 
-
 	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
 	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((512*octect_size)/mii_rxd'length-1));
-
-	signal ethhwda_ena   : std_logic;
-	signal ethhwsa_ena   : std_logic;
-	signal ethtype_ena   : std_logic;
 
 	signal myip4a_ena    : std_logic;
 	signal myip4a_rcvd   : std_logic;
@@ -195,8 +199,8 @@ begin
 		mii_rxdv  => txc_rxdv,
 		mii_rxd   => txc_rxd,
 		eth_ptr   => rxfrm_ptr,
-		hwda_rxdv => ethhwda_ena,
-		hwsa_rxdv => ethhwsa_ena,
+		hwda_rxdv => ethhwda_rxdv,
+		hwsa_rxdv => ethhwsa_rxdv,
 		type_rxdv => ethtype_ena);
 
 	ip4llccmp_e : entity hdl4fpga.mii_romcmp
@@ -205,7 +209,7 @@ begin
 	port map (
 		mii_rxc  => mii_txc,
 		mii_rxdv => txc_rxdv,
-		mii_ena  => ethtype_ena ,
+		mii_ena  => ethtype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typeip4_rcvd);
 
@@ -215,7 +219,7 @@ begin
 	port map (
 		mii_rxc  => mii_txc,
 		mii_rxdv => txc_rxdv,
-		mii_ena  => ethtype_ena ,
+		mii_ena  => ethtype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typearp_rcvd);
 
@@ -309,9 +313,6 @@ begin
 		signal udpdhcp_txen  : std_logic;
 
 		signal udpproto_rcvd : std_logic;
-		signal udplen_rxdv   : std_logic;
-		signal udpcksm_rxdv  : std_logic;
-		signal udppl_rxdv    : std_logic;
 
 	begin
 

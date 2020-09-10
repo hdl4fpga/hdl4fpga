@@ -28,54 +28,93 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_miiudp is
+entity sio_udp is
 	generic (
 		preamble_disable : boolean := false;
 		crc_disable : boolean := false;
 		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc  : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_rxdv : in  std_logic;
-		myipcfg_vld   : buffer std_logic;
-		mymac_vld   : out std_logic;
+		mii_rxc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
 
-		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
 
-		so_clk   : out std_logic;
-		so_dv    : out std_logic;
-		so_data  : out std_logic_vector);
-	end;
+		dchp_req  : in  std_logic;
+		dchp_rcvd : in  std_logic;
+		myip4a    : buffer std_logic_vector(0 to 32-1);
 
-architecture struct of scopeio_miiudp is
+		sio_clk   : out std_logic;
 
-	signal udpdports_vld : std_logic_vector(0 to 0);
-	signal udpddata_vld  : std_logic;
+		si_dv     : in  std_logic;
+		si_data   : in  std_logic_vector);
+
+		so_dv     : out std_logic;
+		so_data   : out std_logic_vector);
+end;
+
+architecture struct of sio_udp is
+
+	signal txc_rxdv     : std_logic;
+	signal txc_rxd      : std_logic_vector(mii_rxd'range);
+
+	signal ethhwda_rxdv : std_logic;
+	signal ethhwsa_rxdv : std_logic;
+
+	signal ip4da_rxdv   : std_logic;
+	signal ip4sa_rxdv   : std_logic;
+
+	signal udpsp_rxdv   : std_logic;
+	signal udpdp_rxdv   : std_logic;
+	signal udplen_rxdv  : std_logic;
+	signal udpcksm_rxdv : std_logic;
+	signal udppl_rxdv   : std_logic;
+
 begin
+	
+	so_clk  <= mii_txc;
 
-
-	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
+	ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
-		preamble_disable => preamble_disable,
-		mac       => x"00_40_00_01_02_03")
+		mymac : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03")
 	port map (
-		mii_req   => mii_req,
+		mii_rxc      => mii_rxc,
+		mii_rxd      => mii_rxd,
+		mii_rxdv     => mii_rxdv,
 
-		mii_rxc   => mii_rxc,
-		mii_rxdv  => mii_rxdv,
-		mii_rxd   => mii_rxd,
-		myipcfg_vld => myipcfg_vld,
-		mymac_vld => mymac_vld,
-		udpdports_val => std_logic_vector(to_unsigned(57001,16)),
-		udpdports_vld => udpdports_vld,
-		udpddata_vld  => udpddata_vld,
+		mii_txc      => mii_txc,
+		mii_txd      => mii_txd,
+		mii_txen     => mii_txen,
 
-		mii_txc   => mii_txc,
-		mii_txdv  => mii_txdv,
-		mii_txd   => mii_txd);
+		txc_rxdv     => txc_rxdv,
+		txc_rxd      => txc_rxd,
+
+		dhcp_req     => dhcp_req,
+		dhcp_rcvd    => dhcp_rcvd,
+
+		ethhwda_rxdv => ethhwda_rxdv,
+		ethhwsa_rxdv => ethhwsa_rxdv,
+
+		ip4da_rxdv   => ip4da_rxdv,
+		ip4sa_rxdv   => ip4sa_rxdv,
+
+		udpsp_rxdv   => udpsp_rxdv,
+		udpdp_rxdv   => udpdp_rxdv,
+		udplen_rxdv  => udplen_rxdv,
+		udpcksm_rxdv => udpcksm_rxdv,
+		udppl_rxdv   => udppl_rxdv);
+
+	srvp_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(std_logic_vector(to_unsigned(57001,16)),8))
+	port map (
+		mii_rxc  => mii_txc,
+		mii_rxdv => txc_rxdv,
+		mii_ena  => udpdp_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_equ  => srvp_chk);
 
 	clip_crc_b : block
 		constant lat    : natural := 32/mii_rxd'length;
@@ -89,17 +128,17 @@ begin
 			n => 1,
 			d => (0 => lat))
 		port map (
-			clk   => mii_rxc,
-			di(0) => udpddata_vld,
+			clk   => mii_txc,
+			di(0) => udppl_rxdv,
 			do(0) => dv);
 
-		process (mii_rxc)
+		process (mii_txc)
 		begin
-			if rising_edge(mii_rxc) then
+			if rising_edge(mii_txc) then
 				if not crc_disable then
 					so_dv <= udpdports_vld(0) and dv;
 				else	
-					so_dv <= udpdports_vld(0) and udpddata_vld;
+					so_dv <= udpdports_vld(0) and udppl_rxdv;
 				end if;
 			end if;
 		end process;
@@ -109,23 +148,22 @@ begin
 			n => mii_rxd'length,
 			d => (1 to mii_rxd'length => lat))
 		port map (
-			clk => mii_rxc,
-			di  => mii_rxd,
+			clk => mii_txc,
+			di  => txc_rxd,
 			do  => data);
 
-		process (mii_rxc)
+		process (mii_txc)
 		begin
-			if rising_edge(mii_rxc) then
+			if rising_edge(mii_txc) then
 				if not crc_disable then
 					so_data <= data;
 				else	
-					so_data <= mii_rxd;
+					so_data <= txc_rxd;
 				end if;
 			end if;
 		end process;
 
 	end block;
 
-	so_clk  <= mii_rxc;
 
 end;
