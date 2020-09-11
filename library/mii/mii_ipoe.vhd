@@ -49,8 +49,11 @@ entity mii_ipoe is
 		ethhwsa_rxdv : buffer std_logic;
 		ethtype_rxdv : buffer std_logic;
 
+		ethhwsa      : buffer std_logic_vector(0 to 6*8-1);
+
 		ip4da_rxdv   : buffer std_logic;
 		ip4sa_rxdv   : buffer std_logic;
+		ip4sa_rx     : buffer std_logic_vector(0 to 32-1);
 
 		udpsp_rxdv   : buffer std_logic;
 		udpdp_rxdv   : buffer std_logic;
@@ -68,7 +71,6 @@ end;
 
 architecture def of mii_ipoe is
 
-	signal ip4da         : std_logic_vector(0 to 32-1);
 
 	signal mii_gnt       : std_logic_vector(0 to 3-1);
 	signal mii_trdy      : std_logic_vector(mii_gnt'range);
@@ -136,6 +138,7 @@ begin
 		src_data => rxc_rxbus,
 		dst_clk  => mii_txc,
 		dst_data => txc_rxbus);
+
 	txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
 	txc_rxdv <= txc_rxbus(mii_rxd'length);
 
@@ -158,13 +161,6 @@ begin
 			mii_rxd  => txc_rxd,
 			mii_ena  => myip4a_ena,
 			mii_equ  => myip4a_rcvd);
-
-		ip4darx_e : entity hdl4fpga.mii_des
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => ip4sa_rxdv,
-			mii_rxd  => txc_rxd,
-			des_data => ip4da);
 
 		process (mii_txc)
 		begin
@@ -199,6 +195,13 @@ begin
 		hwda_rxdv => ethhwda_rxdv,
 		hwsa_rxdv => ethhwsa_rxdv,
 		type_rxdv => ethtype_rxdv);
+
+	ethhwsa_e : entity hdl4fpga.mii_des
+	port map (
+		mii_rxc  => mii_txc,
+		mii_rxdv => ethhwsa_rxdv,
+		mii_rxd  => txc_rxd,
+		des_data => ethhwsa);
 
 	ip4llccmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
@@ -297,6 +300,7 @@ begin
 		signal ip4proto_tx   : std_logic_vector(0 to ip4hdr_frame(ip4_proto)-1);
 		signal ip4sa_tx      : std_logic_vector(0 to 32-1);
 		signal ip4da_tx      : std_logic_vector(0 to 32-1);
+		signal ip4sa         : std_logic_vector(0 to 32-1);
 
 		signal ip4icmp_rcvd  : std_logic;
 		signal icmp_txen     : std_logic;
@@ -334,6 +338,13 @@ begin
 			mii_rxdv => ip4len_rxdv,
 			mii_rxd  => txc_rxd,
 			des_data => ip4len_rx);
+
+		ip4sarx_e : entity hdl4fpga.mii_des
+		port map (
+			mii_rxc  => mii_txc,
+			mii_rxdv => ip4sa_rxdv,
+			mii_rxd  => txc_rxd,
+			des_data => ip4sa_rx);
 
 		ip4_gnt     <= icmp_gnt or udp_gnt;
 		ip4sa_tx    <= wirebus(myip4a & x"00_00_00_00", not dscb_gnt & dscb_gnt);
