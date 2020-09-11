@@ -74,7 +74,7 @@ begin
 		mii_rxd    => mii_rxd,
 		mii_rxdv   => mii_rxdv,
 
-		dhcp_req   => dhcp_req,
+		ipv4a_req  => dhcp_req,
 		mii_txc    => mii_txc,
 		mii_txd    => mii_txd,
 		mii_txen   => mii_txen,
