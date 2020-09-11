@@ -125,8 +125,8 @@ architecture def of mii_ipoe is
 	signal txc_rxbus     : std_logic_vector(0 to mii_rxd'length);
 	signal txc_eor       : std_logic;
 
-
-	signal ipv4_ethhwda  : std_logic_vector(0 to 48-1);
+	signal ethhwda_ipv4  : std_logic_vector(0 to 48-1);
+	alias  ethhwda_icmp  : std_logic_vector(0 to 48-1) is ethhwsa_rx;
 
 	signal hwda_tx       : std_logic_vector(0 to 48-1);
 	signal type_tx       : std_logic_vector(llc_arp'range);
@@ -190,7 +190,6 @@ begin
 		req => mii_req,
 		gnt => mii_gnt);
 
-
 	eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
 	eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
 
@@ -232,7 +231,8 @@ begin
 		mii_equ  => typearp_rcvd);
 
 	type_tx <= wirebus(llc_arp & llc_ip4, arp_gnt & ipv4_gnt);
-	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & ipv4_ethhwda, arp_gnt & ipv4_gnt);
+	ethhwda_ipv4 <= wirebus(ethhwda_icmp & x"ff_ff_ff_ff_ff_ff" & extern_hwda, icmp_gnt & dhcp_gnt & extern_gnt);
+	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & ethhwda_ipv4, arp_gnt & ipv4_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc  => mii_txc,
@@ -366,7 +366,6 @@ begin
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);
 
 		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
-		ipv4_ethhwda <= wirebus(ethhwsa_rx & x"ff_ff_ff_ff_ff_ff" & extern_hwda, icmp_gnt & dhcp_gnt & extern_gnt);
 		ip4tx_e : entity hdl4fpga.ipv4_tx
 		port map (
 			mii_txc  => mii_txc,
