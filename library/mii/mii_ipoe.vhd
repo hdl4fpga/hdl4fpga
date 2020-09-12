@@ -238,7 +238,7 @@ begin
 		mii_txc  => mii_txc,
 		eth_ptr  => txfrm_ptr,
 		hwsa     => mymac,
-		hwda     => x"ff_ff_ff_ff_ff_ff",
+		hwda     => hwda_tx, --x"ff_ff_ff_ff_ff_ff",
 		llc      => type_tx,
 		pl_txen  => eth_txen,
 		pl_txd   => eth_txd,
