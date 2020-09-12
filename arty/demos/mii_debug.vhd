@@ -27,13 +27,34 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
+use hdl4fpga.cgafonts.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture mii_debug of arty is
+	type video_params is record
+		timing_id : videotiming_ids;
+		dcm_mul   : natural;
+		dcm_div   : natural;
+	end record;
+
+	type video_modes is (
+		mode480p,
+		mode600p, 
+		mode1080p);
+
+	type videoparams_vector is array (video_modes) of video_params;
+	constant video_tab : videoparams_vector := (
+		mode480p  => (timing_id => pclk25_00m640x480at60,    dcm_mul =>  6, dcm_div => 24),
+		mode600p  => (timing_id => pclk40_00m800x600at60,    dcm_mul =>  6, dcm_div => 15),
+		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 12, dcm_div => 8));
+
+	constant video_mode : video_modes := mode600p;
+
 	signal sys_clk        : std_logic;
-	signal mii_req        : std_logic;
+	signal dhcp_req       : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
 	signal video_dot      : std_logic;
@@ -47,7 +68,7 @@ architecture mii_debug of arty is
 
 	signal txc  : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
-	signal txdv : std_logic;
+	signal txen : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -80,8 +101,8 @@ begin
 		video_dcm_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 6.0, --12.0,		-- 200 MHz
-			clkout0_divide_f => 15.0, --8.0,
+			clkfbout_mult_f  => real(video_tab(video_mode).dcm_mul), --6.0, --12.0,		-- 200 MHz
+			clkout0_divide_f => real(video_tab(video_mode).dcm_div), --15.0, --8.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -103,28 +124,30 @@ begin
 
 	txc <= not eth_txclk_bufg;
 	mii_debug_e : entity hdl4fpga.mii_debug
+	generic map (
+		cga_bitrom => to_ascii("Ready Steady GO!"),
+		timing_id  => video_tab(video_mode).timing_id)
 	port map (
-		mii_req   => mii_req,
 		mii_rxc   => rxc,
 		mii_rxd   => rxd,
 		mii_rxdv  => rxdv,
---		mii_rxc   => txc,  --rxc,
---		mii_rxd   => txd,  --rxd,
---		mii_rxdv  => txdv, --rxdv,
+
 		mii_txc   => txc,
 		mii_txd   => txd,
-		mii_txdv  => txdv,
+		mii_txen  => txen,
 
-		video_clk => video_clk,
+		dhcp_req  => dhcp_req,
+
+		video_clk => video_clk, 
 		video_dot => video_dot,
 		video_hs  => video_hs,
 		video_vs  => video_vs);
-		
+
 	process (txc)
 	begin
 		if rising_edge(txc) then
 			eth_txd   <= txd;
-			eth_tx_en <= txdv;
+			eth_tx_en <= txen;
 		end if;
 	end process;
 
@@ -132,15 +155,15 @@ begin
 	begin
 		if rising_edge(txc) then
 			if btn(0)='1' then
-				if txdv='0' then
-					mii_req <= '1';
+				if txen='0' then
+					dhcp_req <= '1';
 				end if;
-			elsif txdv='0' then
-				mii_req <= '0';
+			elsif txen='0' then
+				dhcp_req <= '0';
 			end if;
 		end if;
 	end process;
-	led(0) <= not mii_req;
+	led(0) <= not dhcp_req;
 
 	process (video_clk)
 	begin
