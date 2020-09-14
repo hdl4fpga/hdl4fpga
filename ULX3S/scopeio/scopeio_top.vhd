@@ -1299,32 +1299,32 @@ begin
 	mii_txdata <= reverse(mii_txdata_reverse);
 	mii_rxdata_reverse <= reverse(mii_rxdata);
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	generic map(
-	        preamble_disable => true,
-	        crc_disable => true
-	)
-	port map (
-		ipcfg_req   => R_btn_debounced(1),
+	--udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	--generic map(
+	--        preamble_disable => true,
+	--        crc_disable => true
+	--)
+	--port map (
+	--	ipcfg_req   => R_btn_debounced(1),
 
-		phy_rxc     => mii_clk,
-		phy_rx_dv   => mii_rxvalid,
-		phy_rx_d    => mii_rxdata_reverse,
+	--	phy_rxc     => mii_clk,
+	--	phy_rx_dv   => mii_rxvalid,
+	--	phy_rx_d    => mii_rxdata_reverse,
 
-		phy_txc     => mii_clk, 
-		phy_tx_en   => mii_txvalid,
-		phy_tx_d    => mii_txdata_reverse,
---		monitor     => monitor, btn => R_btn_debounced(2),
-		chaini_sel  => '0',
+	--	phy_txc     => mii_clk, 
+	--	phy_tx_en   => mii_txvalid,
+	--	phy_tx_d    => mii_txdata_reverse,
+	--	--monitor     => monitor, btn => R_btn_debounced(2),
+	--	chaini_sel  => '0',
 
-		chaini_frm  => '0',
-		chaini_irdy => open,
-		chaini_data => dummy_udpdaisy_data,
+	--	chaini_frm  => '0',
+	--	chaini_irdy => open,
+	--	chaini_data => dummy_udpdaisy_data,
 
-		chaino_frm  => fromistreamdaisy_frm,
-		chaino_irdy => fromistreamdaisy_irdy,
-		chaino_data => fromistreamdaisy_data
-        );
+	--	chaino_frm  => fromistreamdaisy_frm,
+	--	chaino_irdy => fromistreamdaisy_irdy,
+	--	chaino_data => fromistreamdaisy_data
+        --);
         clk_daisy <= mii_clk;
         end block;
 	end generate; -- end USB ethernet
@@ -1598,32 +1598,32 @@ begin
         rmii_mdc      <= 'Z';
         rmii_mdio     <= 'Z';
 
-	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
-	generic map(
-	        preamble_disable => false,
-	        crc_disable => false
-	)
-	port map (
-		ipcfg_req   => R_btn_debounced(1),
+	--udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	--generic map(
+	--        preamble_disable => false,
+	--        crc_disable => false
+	--)
+	--port map (
+	--	ipcfg_req   => R_btn_debounced(1),
 
-		phy_rxc     => mii_clk,
-		phy_rx_dv   => mii_rxvalid,
-		phy_rx_d    => mii_rxdata,
+	--	phy_rxc     => mii_clk,
+	--	phy_rx_dv   => mii_rxvalid,
+	--	phy_rx_d    => mii_rxdata,
 
-		phy_txc     => mii_clk,
-		phy_tx_en   => mii_txvalid,
-		phy_tx_d    => mii_txdata,
---		monitor     => monitor, btn => R_btn_debounced(2),
-		chaini_sel  => '0',
+	--	phy_txc     => mii_clk,
+	--	phy_tx_en   => mii_txvalid,
+	--	phy_tx_d    => mii_txdata,
+	--	--monitor     => monitor, btn => R_btn_debounced(2),
+	--	chaini_sel  => '0',
 
-		chaini_frm  => '0',
-		chaini_irdy => open,
-		chaini_data => dummy_udpdaisy_data,
+	--	chaini_frm  => '0',
+	--	chaini_irdy => open,
+	--	chaini_data => dummy_udpdaisy_data,
 
-		chaino_frm  => fromistreamdaisy_frm,
-		chaino_irdy => fromistreamdaisy_irdy,
-		chaino_data => fromistreamdaisy_data
-        );
+	--	chaino_frm  => fromistreamdaisy_frm,
+	--	chaino_irdy => fromistreamdaisy_irdy,
+	--	chaino_data => fromistreamdaisy_data
+        --);
         clk_daisy <= mii_clk;
         end block;
 	end generate;
