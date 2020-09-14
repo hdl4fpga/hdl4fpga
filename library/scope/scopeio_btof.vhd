@@ -70,9 +70,9 @@ begin
 	btof_req <= bin_frm;
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk     => clk,
-		rsrc_req => btof_req,
-		rsrc_gnt => btof_gnt);
+		clk => clk,
+		req => btof_req,
+		gnt => btof_gnt);
 
 	btofbin_frm   <= wirebus(bin_frm,   btof_gnt);
 	btofbin_irdy  <= wirebus(bin_irdy,  btof_gnt);
