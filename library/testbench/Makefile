@@ -9,6 +9,8 @@ LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
+IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
+IEEE__std_logic_unsigned = $(LIB_IEEE)/std_logic_unsigned/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
@@ -21,8 +23,12 @@ HDL4FPGA__videobox__def = $(LIB_HDL4FPGA)/videobox/def.dat
 HDL4FPGA__videobox = $(LIB_HDL4FPGA)/videobox/_primary.dat
 HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
+HDL4FPGA__vga2dvid__behavioral = $(LIB_HDL4FPGA)/vga2dvid/behavioral.dat
+HDL4FPGA__vga2dvid = $(LIB_HDL4FPGA)/vga2dvid/_primary.dat
 HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
 HDL4FPGA__udp_rx = $(LIB_HDL4FPGA)/udp_rx/_primary.dat
+HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
+HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
@@ -126,8 +132,12 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videobox) \
     $(HDL4FPGA__video_sync__mix) \
     $(HDL4FPGA__video_sync) \
+    $(HDL4FPGA__vga2dvid__behavioral) \
+    $(HDL4FPGA__vga2dvid) \
     $(HDL4FPGA__udp_rx__def) \
     $(HDL4FPGA__udp_rx) \
+    $(HDL4FPGA__tmds_encoder__behavioral) \
+    $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__std__body) \
     $(HDL4FPGA__std) \
     $(HDL4FPGA__serdes__def) \
@@ -518,9 +528,9 @@ $(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
 $(HDL4FPGA__mii_debug) \
 $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
-		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -530,8 +540,8 @@ $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_debug.vhd
@@ -579,21 +589,13 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__arp_rx) \
 		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__mii_romcmp) \
+		$(HDL4FPGA__mii_des) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__mii_des) \
 		$(HDL4FPGA__mii_muxcmp) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__bcdfonts) \
-		$(HDL4FPGA__cp850x8x16x128to255) \
-		$(HDL4FPGA__cp850x8x16x0to127) \
-		$(HDL4FPGA__cp850x8x8x128to255) \
-		$(HDL4FPGA__cp850x8x8x0to127) \
-		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__modeline_calculator) \
-		$(HDL4FPGA__videopkg) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -704,6 +706,14 @@ $(HDL4FPGA__std__body) : ../common/std.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../common/std.vhd
 
+$(HDL4FPGA__tmds_encoder) \
+$(HDL4FPGA__tmds_encoder__behavioral) : ../video/tmds_encoder.vhd \
+		$(IEEE__std_logic_arith) \
+		$(IEEE__std_logic_unsigned) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
+
 $(HDL4FPGA__udp_rx) \
 $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 		$(HDL4FPGA__ipoepkg) \
@@ -714,6 +724,18 @@ $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/udp_rx.vhd
+
+$(HDL4FPGA__vga2dvid) \
+$(HDL4FPGA__vga2dvid__behavioral) : ../video/vga2dvid.vhd \
+		$(HDL4FPGA__tmds_encoder) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_unsigned) \
+		$(IEEE__std_logic_arith) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/vga2dvid.vhd
 
 $(HDL4FPGA__box_edges) \
 $(HDL4FPGA__box_edges__def) \

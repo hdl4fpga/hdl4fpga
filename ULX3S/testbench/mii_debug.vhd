@@ -186,7 +186,8 @@ begin
 
 	rst <= '1', '0' after (1 us+82.5 us);
 	xtal <= not xtal after 20 ns;
-	btn(0)  <= '1', '0' after 1 us;
+	mii_clk <= not mii_clk after 10 ns;
+	btn(0)  <= '0', '0' after 1 us;
 	arp_req <= '0', '1' after 8 us;
 
 	gn(12) <= mii_clk;

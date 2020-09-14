@@ -170,19 +170,19 @@ begin
 
 	end block;
 
-	process (mii_rxc)
+	process (mii_txc)
 	begin
-		if rising_edge(mii_rxc) then
-			if btn(1)='0' then
-				led(7) <= '0';
-				led(0) <= '0';
-			elsif mii_rxdv='1' then
-				led(7) <= '1';
-			elsif tp(1)='1' then
-				led(0) <= '1';
+		if rising_edge(mii_txc) then
+			if btn(0)='1' then
+				if mii_txen='0' then
+					dhcp_req <= '1';
+				end if;
+			elsif mii_txen='0' then
+				dhcp_req <= '0';
 			end if;
 		end if;
 	end process;
+	led(0) <= dhcp_req;
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (

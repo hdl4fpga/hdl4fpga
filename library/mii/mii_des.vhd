@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity mii_des is
+	generic (
+		init_data : std_logic_vector := (0 to 0 => '-'));
     port (
         mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;
@@ -40,7 +42,7 @@ architecture def of mii_des is
 begin
 
 	process (mii_rxc)
-		variable data : unsigned(0 to des_data'length-1);
+		variable data : unsigned(0 to des_data'length-1) := rotate_right(resize(unsigned(init_data), des_data'length), init_data'length);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='1' then

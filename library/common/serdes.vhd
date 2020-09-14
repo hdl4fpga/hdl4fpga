@@ -39,9 +39,8 @@ begin
 		stop <= setif(cntr=des_data'length/ser_data'length-1);
 	end process;
 
-	process (stop, ser_data, serdes_clk)
+	process (ser_data, serdes_clk)
 		variable des   : unsigned(des_data'range);
-		alias    des_r : unsigned(des_data'reverse_range) is des;
 	begin
 		if rising_edge(serdes_clk) then
 			if serdes_frm='1' then
@@ -60,9 +59,11 @@ begin
 			end if;
 		end if;
 		if des'ascending /= ser_data'ascending then
-			des_r(ser_data'range) := unsigned(ser_data);
+			des(ser_data'reverse_range) := unsigned(ser_data);
 		else
+			des := des ror ser_data'length;
 			des(ser_data'range) := unsigned(ser_data);
+			des := des rol ser_data'length;
 		end if;
 		des_data <= std_logic_vector(des);
 	end process;

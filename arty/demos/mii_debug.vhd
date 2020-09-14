@@ -163,7 +163,7 @@ begin
 			end if;
 		end if;
 	end process;
-	led(0) <= not dhcp_req;
+	led(0) <= dhcp_req;
 
 	process (video_clk)
 	begin

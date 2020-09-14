@@ -32,6 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
 		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc       : in  std_logic;
@@ -589,6 +590,8 @@ begin
 				dhcpyia_rxdv => dhcpyia_rxdv);
 
 			dchp_yia_e : entity hdl4fpga.mii_des
+			generic map (
+				init_data => reverse(default_ipv4a,8))
 			port map (
 				mii_rxc  => mii_txc,
 				mii_rxdv => dhcpyia_rxdv,
