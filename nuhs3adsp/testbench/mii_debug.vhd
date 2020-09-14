@@ -56,9 +56,8 @@ architecture nuhs3adsp_miidebug of testbench is
 	signal dm    : std_logic_vector(1 downto 0);
 
 	signal x : std_logic;
+	signal arp_req  : std_logic := '0';
 	signal mii_refclk : std_logic;
-	signal mii_treq : std_logic := '0';
-	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
@@ -236,7 +235,7 @@ begin
 
 	clk <= not clk after 25 ns;
 
-	mii_treq <= '0', '1' after 8 us;
+	arp_req <= '0', '1' after 8 us;
 
 	sw1 <= '1', '0' after 1 us;
 
@@ -245,7 +244,7 @@ begin
 		mem_data => reverse(arppkt,8))
 	port map (
 		mii_txc  => mii_rxc,
-		mii_txen => mii_treq,
+		mii_txen => arp_req,
 		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 
