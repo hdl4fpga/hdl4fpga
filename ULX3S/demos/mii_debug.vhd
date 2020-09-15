@@ -186,6 +186,7 @@ begin
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
+		default_ipv4a => x"00_00_00_00",
 		cga_bitrom => to_ascii("Ready Steady GO!"),
 		timing_id  => video_tab(video_mode).timing_id)
 	port map (

@@ -31,6 +31,7 @@ use hdl4fpga.cgafonts.all;
 
 entity mii_debug is
 	generic (
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
 		font_bitrom : std_logic_vector := psf1cp850x8x16;
 		font_width  : natural := 8;
 		font_height : natural := 16;
@@ -69,6 +70,8 @@ architecture struct of mii_debug is
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
+	generic map (
+		default_ipv4a => default_ipv4a)
 	port map (
 		mii_rxc    => mii_rxc,
 		mii_rxd    => mii_rxd,
