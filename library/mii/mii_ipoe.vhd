@@ -148,8 +148,11 @@ begin
 		dst_clk  => mii_txc,
 		dst_data => txc_rxbus);
 
-	txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
-	txc_rxdv <= txc_rxbus(mii_rxd'length);
+--	txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
+--	txc_rxdv <= txc_rxbus(mii_rxd'length);
+
+	txc_rxd  <= mii_rxd;
+	txc_rxdv <= mii_rxdv;
 
 	process (mii_txc)
 	begin
