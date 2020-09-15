@@ -173,7 +173,7 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if btn(0)='1' then
+			if btn(1)='1' then
 				if mii_txen='0' then
 					dhcp_req <= '1';
 				end if;
