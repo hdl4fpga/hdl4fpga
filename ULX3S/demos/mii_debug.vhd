@@ -182,7 +182,7 @@ begin
 			end if;
 		end if;
 	end process;
-	led(0) <= dhcp_req;
+	led(0) <= tp(3);
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (

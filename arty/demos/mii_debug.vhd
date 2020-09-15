@@ -69,6 +69,8 @@ architecture mii_debug of arty is
 	signal txc  : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
 	signal txen : std_logic;
+
+	signal tp  : std_logic_vector(1 to 4);
 begin
 
 	clkin_ibufg : ibufg
@@ -138,6 +140,7 @@ begin
 		mii_txen  => txen,
 
 		dhcp_req  => dhcp_req,
+		tp => tp,
 
 		video_clk => video_clk, 
 		video_dot => video_dot,
@@ -164,7 +167,7 @@ begin
 			end if;
 		end if;
 	end process;
-	led(0) <= dhcp_req;
+	led(0) <= tp(3);
 
 	process (video_clk)
 	begin
