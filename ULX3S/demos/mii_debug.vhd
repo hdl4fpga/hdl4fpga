@@ -96,7 +96,7 @@ begin
 
     mii_txc    <= rmii_nint;
 	rmii_tx_en <= mii_txen;
-	(0 => rmii_tx1, 1 => rmii_tx0) <= mii_txd;
+	(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
     mii_rxc   <= rmii_nint;
 	mii_rxdv  <= rmii_crs;
