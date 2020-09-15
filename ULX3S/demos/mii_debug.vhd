@@ -100,7 +100,7 @@ begin
 
     mii_rxc   <= rmii_nint;
 	mii_rxdv  <= rmii_crs;
-	mii_rxd   <= rmii_rx0 & mii_rx1;
+	mii_rxd   <= rmii_rx0 & rmii_rx1;
 
 	rmii_mdc  <= 'Z';
 	rmii_mdio <= 'Z';
