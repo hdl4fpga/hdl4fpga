@@ -326,9 +326,9 @@ begin
 		cga_req <= cgabcd_req & cgachr_req;
 		cga_arbiter_e : entity hdl4fpga.arbiter
 		port map (
-			clk     => rgtr_clk,
-			rsrc_req => cga_req,
-			rsrc_gnt => cga_frm);
+			clk => rgtr_clk,
+			req => cga_req,
+			gnt => cga_frm);
 		cgabcd_frm  <= cga_frm(0 to cgabcd_frm'length-1);
 		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
 
@@ -599,7 +599,7 @@ begin
 		video_addr   => video_addr,
 		font_hcntr   => video_hcntr(fontwidth_bits-1 downto 0),
 		font_vcntr   => video_vcntr(fontheight_bits-1 downto 0),
-		video_blankn => cga_on,
+		video_on     => cga_on,
 		video_dot    => char_dot);
 
 	lat_e : entity hdl4fpga.align

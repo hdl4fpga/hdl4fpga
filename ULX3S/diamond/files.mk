@@ -39,6 +39,7 @@ VHDL_LIB_FILES = \
   ../../library/common/btof.vhd \
   ../../library/common/arbiter.vhd \
   ../../library/common/serdes.vhd \
+  ../../library/common/fifo.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_capture.vhd \
@@ -48,18 +49,15 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_video.vhd \
   ../../library/scope/scopeio_textbox.vhd \
   ../../library/scope/scopeio_pointer.vhd \
-  ../../library/scope/scopeio_ps2mouse2daisy.vhd \
-  ../../library/scope/scopeio_usbmouse2daisy.vhd \
-  ../../library/scope/scopeio_hostmouse2daisy.vhd \
+  ../../library/sio/scopeio_rgtr2daisy.vhd \
+  ../../library/sio/scopeio_istream.vhd \
+  ../../library/sio/scopeio_istreamdaisy.vhd \
+  ../../library/sio/scopeio_mouse2rgtr.vhd \
+  ../../library/sio/scopeio_ps2mouse2daisy.vhd \
+  ../../library/sio/scopeio_usbmouse2daisy.vhd \
+  ../../library/sio/scopeio_hostmouse2daisy.vhd \
+  ../../library/sio/scopeio_sin.vhd \
   ../../library/ps2mouse/mousem.vhd \
-  ../../library/scope/scopeio_mouse2rgtr.vhd \
-  ../../library/scope/scopeio_rgtr2daisy.vhd \
-  ../../library/scope/scopeio_miiudp.vhd \
-  ../../library/scope/scopeio_istream.vhd \
-  ../../library/scope/scopeio_istreamdaisy.vhd \
-  ../../library/scope/scopeio_sin.vhd \
-  ../../library/scope/scopeio_udpipdaisy.vhd \
-  ../../library/scope/scopeio_miiudp.vhd \
   ../../library/scope/scopeio_tds_1shot.vhd \
   ../../library/scope/scopeio_rgtrtrigger.vhd \
   ../../library/scope/scopeio_rgtrgain.vhd \
@@ -83,18 +81,35 @@ VHDL_LIB_FILES = \
   ../../library/scope/textboxpkg.vhd \
   ../../library/uart/uart_rx.vhd \
   ../../library/uart/uart_rx_f32c.vhd \
-  ../../library/mii/miirx_pre.vhd \
+  ../../library/mii/ethpkg.vhd \
+  ../../library/mii/ipoepkg.vhd \
   ../../library/mii/mii_1chksum.vhd \
-  ../../library/mii/mii_cat.vhd \
   ../../library/mii/mii_cmp.vhd \
-  ../../library/mii/mii_crc32.vhd \
-  ../../library/mii/mii_ipcfg.vhd \
-  ../../library/mii/mii_pll2ser.vhd \
-  ../../library/mii/mii_pllcmp.vhd \
   ../../library/mii/mii_ram.vhd \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
-  ../../library/mii/miitx_dll.vhd \
+  ../../library/mii/mii_rxpre.vhd \
+  ../../library/mii/mii_muxcmp.vhd \
+  ../../library/mii/mii_ipoe.vhd \
+  ../../library/mii/mii_mux.vhd \
+  ../../library/mii/mii_des.vhd \
+  ../../library/mii/mii_latency.vhd \
+  ../../library/mii/mii_debug.vhd \
+  ../../library/mii/mii_display.vhd \
+  ../../library/mii/eth_tx.vhd \
+  ../../library/mii/eth_rx.vhd \
+  ../../library/mii/eth_dll.vhd \
+  ../../library/mii/eth_crc32.vhd \
+  ../../library/mii/arp_tx.vhd \
+  ../../library/mii/arp_rx.vhd \
+  ../../library/mii/ipv4_tx.vhd \
+  ../../library/mii/ipv4_rx.vhd \
+  ../../library/mii/icmprqst_rx.vhd \
+  ../../library/mii/icmprply_tx.vhd \
+  ../../library/mii/dhcp_dscb.vhd \
+  ../../library/mii/dhcp_offer.vhd \
+  ../../library/mii/udp_tx.vhd \
+  ../../library/mii/udp_rx.vhd \
   ../../library/usb/usbcdc/usb_serial.vhd \
   ../../library/usb/usbcdc/usb_mii.vhd \
   ../../library/usb/usbcdc/usb_cdc_descriptor_pack.vhd \
@@ -134,3 +149,4 @@ VERILOG_FILES = \
   ../../library/usb/usbhost/usbh_crc16.v \
   ../../library/usb/ulpi_wrapper/ulpi_wrapper.v \
 
+#  ../../library/sio/scopeio_udpipdaisy.vhd \

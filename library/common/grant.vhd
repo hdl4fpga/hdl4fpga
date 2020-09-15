@@ -71,9 +71,9 @@ begin
 
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk      => rsrc_clk,
-		rsrc_req => dev_req,
-		rsrc_gnt => dev_gnt);
+		clk => rsrc_clk,
+		req => dev_req,
+		gnt => dev_gnt);
 
 	dev_rdy  <= setif(run='0', dev_gnt, gnt) and (dev_req'range => rsrc_rdy);
 end;
