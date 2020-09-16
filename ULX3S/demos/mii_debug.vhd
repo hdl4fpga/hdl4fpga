@@ -94,13 +94,23 @@ architecture mii_debug of ulx3s is
 
 begin
 
-    mii_txc    <= rmii_nint;
-	rmii_tx_en <= mii_txen;
-	(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+    mii_txc <= rmii_nint;
+	process(mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			rmii_tx_en <= mii_txen;
+			(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+		end if;
+	end process;
 
-    mii_rxc   <= rmii_nint;
-	mii_rxdv  <= rmii_crs;
-	mii_rxd   <= rmii_rx0 & rmii_rx1;
+    mii_rxc <= rmii_nint;
+	process(mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			mii_rxdv <= rmii_crs;
+			mii_rxd  <= rmii_rx0 & rmii_rx1;
+		end if;
+	end process;
 
 	rmii_mdc  <= 'Z';
 	rmii_mdio <= 'Z';
