@@ -94,7 +94,7 @@ architecture mii_debug of ulx3s is
 
 begin
 
-    mii_txc <= rmii_nint;
+    mii_txc <= not rmii_nint;
 	process(mii_txc)
 	begin
 		if rising_edge(mii_txc) then
@@ -103,7 +103,7 @@ begin
 		end if;
 	end process;
 
-    mii_rxc <= rmii_nint;
+    mii_rxc <= not rmii_nint;
 	process(mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
