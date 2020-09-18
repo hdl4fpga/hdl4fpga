@@ -44,8 +44,6 @@ entity arty is
 		uart_txd_in : in    std_logic;
 		uart_rxd_out : out  std_logic;
 
-		eth_ref_clk : out   std_logic;
-
 		eth_rstn    : out   std_logic;
 		eth_ref_clk : out   std_logic;
 		eth_mdio    : inout std_logic := '-';
