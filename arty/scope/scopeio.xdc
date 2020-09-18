@@ -49,6 +49,9 @@ set_property -dict { PACKAGE_PIN T9  IOSTANDARD LVCMOS33 } [ get_ports led[2]]
 set_property -dict { PACKAGE_PIN J5  IOSTANDARD LVCMOS18 } [ get_ports led[1]]
 set_property -dict { PACKAGE_PIN H5  IOSTANDARD LVCMOS18 } [ get_ports led[0]]
 
+set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS18 } [ get_ports uart_txd_in]
+set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS18 } [ get_ports uart_rxd_out]
+
 set_property -dict { PACKAGE_PIN K1  IOSTANDARD LVCMOS18 } [ get_ports RGBled[11]]
 set_property -dict { PACKAGE_PIN H6  IOSTANDARD LVCMOS18 } [ get_ports RGBled[10]]
 set_property -dict { PACKAGE_PIN K2  IOSTANDARD LVCMOS18 } [ get_ports RGBled[9]]

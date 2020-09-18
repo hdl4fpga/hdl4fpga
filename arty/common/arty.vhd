@@ -40,6 +40,11 @@ entity arty is
 		led         : out   std_logic_vector(4-1 downto 0);
 		RGBled      : out   std_logic_vector(4*3-1 downto 0);
 
+		uart_txd_in : in    std_logic;
+		uart_rxd_out : out  std_logic;
+
+		eth_ref_clk : out   std_logic;
+
 		eth_rstn    : out   std_logic;
 		eth_ref_clk : out   std_logic;
 		eth_mdio    : inout std_logic := '-';
@@ -79,6 +84,9 @@ entity arty is
 --	attribute loc of RGBled : signal is "K1 H6 K2 J3 J2 H4 G3 J4 G4 G6 F6 E1";
 --
 --	attribute loc of gclk100  : signal is "E3";
+--
+--	attribute loc of uart_txd_in  : signal is "A9";
+--	attribute loc of uart_rxd_out : signal is "D10";
 --
 --	attribute loc of eth_rstn  : signal is "C16";
 --	attribute loc of eth_ref_clk : signal is "G18";
