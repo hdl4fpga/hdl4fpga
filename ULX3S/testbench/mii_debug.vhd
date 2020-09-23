@@ -151,21 +151,49 @@ architecture ulx3s_miidebug of testbench is
 			)   &
 			x"00000000";
 		
-		constant arppkt : std_logic_vector :=
-			x"5555_5555_5555_55d5"  &
-			x"ff_ff_ff_ff_ff_ff"    &
-			x"00_00_00_00_00_00"    &
-			x"0806"                 &
-			x"0000"                 & -- arp_htype
-			x"0000"                 & -- arp_ptype
-            x"00"                   & -- arp_hlen 
-            x"00"                   & -- arp_plen 
-            x"0000"                 & -- arp_oper 
-            x"00_00_00_00_00_00"    & -- arp_sha  
-            x"00_00_00_00"          & -- arp_spa  
-            x"00_00_00_00_00_00"    & -- arp_tha  
-            x"c0_a8_00_0e"          & -- arp_tpa  
-            x"00_00_00_00";           -- crc
+	constant arppkt : std_logic_vector :=
+		x"5555_5555_5555_55d5"  &
+		x"ff_ff_ff_ff_ff_ff"    &
+		x"00_00_00_00_00_00"    &
+		x"0806"                 &
+		x"0000"                 & -- arp_htype
+		x"0000"                 & -- arp_ptype
+        x"00"                   & -- arp_hlen 
+        x"00"                   & -- arp_plen 
+        x"0000"                 & -- arp_oper 
+        x"00_00_00_00_00_00"    & -- arp_sha  
+        x"00_00_00_00"          & -- arp_spa  
+        x"00_00_00_00_00_00"    & -- arp_tha  
+        x"c0_a8_00_0e"          & -- arp_tpa  
+        x"00_00_00_00";           -- crc
+
+	constant pingpkt : std_logic_vector :=
+		x"5555_5555_5555_55d5"  &
+		x"00_40_00_01_02_03"    &
+		x"ff_ff_ff_ff_ff_ff"    &
+		x"0800"                 &
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0501"                 &    -- IP TTL, protocol
+        x"c0_a8_00_0e"          &    -- IP destination address  
+        x"00_00_00_00"          &    -- IP destination address  
+        x"00_00_00_00"          & 
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_00"          &
+        x"00_00_00_ff";           -- crc
 
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';
@@ -201,7 +229,7 @@ begin
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(arppkt,8))
+		mem_data => reverse(pingpkt,8))
 	port map (
 		mii_txc  => mii_clk,
 		mii_txen => arp_req,
