@@ -54,14 +54,14 @@ architecture def of icmprply_tx is
 	signal pllat_txd  : std_logic_vector(icmp_txd'range);
 begin
 
-	process (pl_txen, icmp_txen, mii_txc)
+	process (pl_txen, pllat_txen, icmp_txen, mii_txc)
 		variable txen : std_logic := '0';
 	begin
 		if rising_edge(mii_txc) then
 			if pl_txen='1' then
 				txen := '1';
 			elsif txen='1' then
-				if pllat_txen='0' then
+				if pllat_txen='1' then
 					txen := '0';
 				end if;
 			end if;
