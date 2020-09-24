@@ -173,27 +173,19 @@ architecture ulx3s_miidebug of testbench is
 		x"ff_ff_ff_ff_ff_ff"    &
 		x"0800"                 &
 		x"4500"                 &    -- IP Version, TOS
-		x"0000"                 &    -- IP Length
+		x"0054"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
 		x"0000"                 &    -- IP Fragmentation
 		x"0501"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP checksum
         x"c0_a8_00_0e"          &    -- IP destination address  
         x"00_00_00_00"          &    -- IP destination address  
-        x"00_00_00_00"          & 
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_00"          &
-        x"00_00_00_ff";           -- crc
+        x"0800ba60"             & 
+		x"24650006" &
+		x"56fc6c5f00000000_94050b0000000000" &
+		x"1011121314151617_18191a1b1c1d1e1f" &
+		x"2021222324252627_28292a2b2c2d2e2f" &
+		x"3031323334353637_3eeb441f";
 
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';

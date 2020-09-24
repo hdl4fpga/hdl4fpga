@@ -49,6 +49,7 @@ architecture def of mii_ram is
 	subtype addr_range is natural range 1 to addr_length;
 
 	signal wr_addr : unsigned(0 to addr_length);
+	signal wr_ena  : std_logic;
 	signal rd_addr : unsigned(0 to addr_length);
 	signal len     : unsigned(0 to addr_length);
 
@@ -58,7 +59,7 @@ begin
 	report "mem_length should be greater than 0"
 	severity FAILURE;
 
-	process (mii_rxc)
+	process (mii_rxc, mii_rxdv)
 		variable addr : unsigned(0 to addr_length);
 	begin
 		if rising_edge(mii_rxc) then
@@ -70,6 +71,7 @@ begin
 			end if;
 			wr_addr <= addr;
 		end if;
+		wr_ena <= not addr(0) and mii_rxdv;
 	end process;
 
 	mem_e : entity hdl4fpga.dpram 
@@ -77,7 +79,7 @@ begin
 		bitrom => reverse(reverse(reverse(mem_data, 8)),mii_txd'length))
 	port map (
 		wr_clk  => mii_rxc,
-		wr_ena  => mii_rxdv,
+		wr_ena  => wr_ena,
 		wr_addr => std_logic_vector(wr_addr(addr_range)),
 		wr_data => mii_rxd,
 
