@@ -27,6 +27,7 @@ use ieee.std_logic_1164.all;
 entity arty is
 	port (
 		gclk100     : in std_logic;
+		resetn      : in std_logic;
 
 		ja          : inout std_logic_vector(1 to 10) := (others => 'Z');
 		jb          : inout std_logic_vector(1 to 10) := (others => 'Z');

@@ -420,8 +420,11 @@ begin
 
 			signal icmp_rcvd     : std_logic;
 
+			signal icmprqst_ena  : std_logic;
+
 		begin
 
+			icmprqst_ena <= ip4icmp_rcvd and txc_rxdv;
 			icmprqstrx_e : entity hdl4fpga.icmprqst_rx
 			port map (
 				mii_rxc  => mii_txc,
@@ -429,7 +432,7 @@ begin
 				mii_rxd  => txc_rxd,
 				mii_ptr  => rxfrm_ptr,
 
-				icmprqst_ena  => ip4icmp_rcvd,
+				icmprqst_ena  => icmprqst_ena,
 				icmpid_rxdv   => icmpid_rxdv,
 				icmpcksm_rxdv => icmpcksm_rxdv,
 				icmpseq_rxdv  => icmpseq_rxdv,
