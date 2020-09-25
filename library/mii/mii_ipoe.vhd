@@ -127,7 +127,7 @@ architecture def of mii_ipoe is
 	signal txc_eor       : std_logic;
 
 	signal ethhwda_ipv4  : std_logic_vector(0 to 48-1);
-	alias  ethhwda_icmp  : std_logic_vector(0 to 48-1) is ethhwsa_rx;
+	signal ethhwda_icmp  : std_logic_vector(0 to 48-1);
 
 	signal hwda_tx       : std_logic_vector(0 to 48-1);
 	signal type_tx       : std_logic_vector(llc_arp'range);
@@ -316,11 +316,12 @@ begin
 		signal ip4icmp_rcvd  : std_logic;
 		signal icmp_txen     : std_logic;
 		signal icmp_txd      : std_logic_vector(mii_txd'range);
-		alias  icmp_ip4da    : std_logic_vector(0 to 32-1) is ip4sa_rx;
+		signal icmp_ip4da    : std_logic_vector(0 to 32-1);
 
 		signal udp_len       : std_logic_vector(0 to 16-1);
 		signal udpip_len     : std_logic_vector(0 to 16-1);
 
+		signal ipicmp_len    : std_logic_vector(0 to 16-1);
 		signal udpdhcp_len   : std_logic_vector(0 to 16-1);
 		signal udpdhcp_txd   : std_logic_vector(mii_txd'range);
 		signal udpdhcp_txen  : std_logic;
@@ -362,7 +363,7 @@ begin
 		ip4sa_tx    <= wirebus(myipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
 		ip4da       <= wirebus(icmp_ip4da & extern_ip4da, icmp_gnt & extern_gnt);
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
-		ip4len_tx   <= wirebus (ip4len_rx & udpip_len, icmp_gnt & dhcp_gnt); 
+		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & dhcp_gnt); 
 		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & dhcp_gnt);
 		ip4pl_txen  <= icmp_txen or udpdhcp_txen;
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);
@@ -491,9 +492,12 @@ begin
 			begin
 				if rising_edge(mii_txc) then
 					if icmp_rdy='1' then
-						icmp_req	<= '0';
+						icmp_req <= '0';
 					elsif icmp_rcvd='1' then
-						icmp_req <= '1';
+						icmp_req     <= '1';
+						ethhwda_icmp <= ethhwsa_rx;
+						icmp_ip4da   <= ip4sa_rx;
+						ipicmp_len   <= ip4len_rx;
 					end if;
 				end if;
 			end process;
