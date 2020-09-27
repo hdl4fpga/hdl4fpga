@@ -122,8 +122,6 @@ architecture def of mii_ipoe is
 
 	signal ip4pl_rxdv    : std_logic;
 
-	signal rxc_rxbus     : std_logic_vector(0 to mii_rxd'length);
-	signal txc_rxbus     : std_logic_vector(0 to mii_rxd'length);
 	signal txc_eor       : std_logic;
 
 	signal ethhwda_ipv4  : std_logic_vector(0 to 48-1);
@@ -134,22 +132,27 @@ architecture def of mii_ipoe is
 
 begin
 
-	rxc_rxbus <= mii_rxd & mii_rxdv;
-	rxc2txc_e : entity hdl4fpga.fifo
-	generic map (
-		mem_size   => 2,
-		out_rgtr   => false, 
-		check_sov  => false,
-		check_dov  => false,
-		gray_code  => false)
-	port map (
-		src_clk  => mii_rxc,
-		src_data => rxc_rxbus,
-		dst_clk  => mii_txc,
-		dst_data => txc_rxbus);
+	sync_b : block
+		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
+		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+	begin
+		rxc_rxbus <= mii_rxd & mii_rxdv;
+		rxc2txc_e : entity hdl4fpga.fifo
+		generic map (
+			mem_size   => 2,
+			out_rgtr   => false, 
+			check_sov  => false,
+			check_dov  => false,
+			gray_code  => true)
+		port map (
+			src_clk  => mii_rxc,
+			src_data => rxc_rxbus,
+			dst_clk  => mii_txc,
+			dst_data => txc_rxbus);
 
-	txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
-	txc_rxdv <= txc_rxbus(mii_rxd'length);
+		txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
+		txc_rxdv <= txc_rxbus(mii_rxd'length);
+	end block;
 
 	process (mii_txc)
 	begin
