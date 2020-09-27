@@ -104,7 +104,7 @@ begin
 		video_hs    => video_hs,
 		video_vs    => video_vs);
 
-	debug_txd <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
+	debug_txd <= wirebus (mii_txd & txc_rxd, not txc_rxdv & txc_rxdv);
 	debug_txen <= mii_txen or txc_rxdv;
 
 end;
