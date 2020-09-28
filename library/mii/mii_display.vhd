@@ -69,6 +69,7 @@ architecture struct of mii_display is
 	signal video_vcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hcntr       : std_logic_vector(11-1 downto 0);
 	signal video_addr        : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
+	signal video_base        : unsigned(video_addr'range);
 
 	signal des_data          : std_logic_vector(0 to 2*digit'length-1);
 	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
@@ -136,9 +137,11 @@ begin
 		end if;
 	end process;
 
+	video_base <= shift_left(resize(unsigned(cga_addr),video_addr'length), video_addr'length-cga_addr'length);
 	video_addr <= std_logic_vector(resize(
 		(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
-		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)), video_addr'length));
+		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)), video_addr'length)
+		+ video_base);
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
