@@ -134,14 +134,14 @@ begin
 			end if;
 			we := mii_txen;
 			cga_codes <= std_logic_vector(code);
+			video_base <= shift_left(resize(unsigned(cga_addr), video_base'length), video_base'length-cga_addr'length)-display_width*display_height;
 		end if;
 	end process;
 
-	video_base <= shift_left(resize(unsigned(cga_addr),video_addr'length), video_addr'length-cga_addr'length);
-	video_addr <= std_logic_vector(resize(
-		(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width)) +
-		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)), video_addr'length)
-		+ video_base);
+	video_addr <= std_logic_vector(
+--		resize(mul(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits)),(modeline_tab(timing_id)(0)/font_width)), video_addr'length) +
+		resize(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*(modeline_tab(timing_id)(0)/font_width), video_addr'length) +
+		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)) + video_base);
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
