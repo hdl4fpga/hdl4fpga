@@ -96,7 +96,7 @@ begin
 		mii_txdv => llc_txen,
 		mii_txd  => llc_txd);
 
-	padding_p : process (mii_txc, pl_txen)
+	padding_p : process (mii_txc, pl_txen, lat_txen)
 		variable txen : std_logic;
 		variable cntr : unsigned(0 to unsigned_num_bits(64*octect_size/eth_txd'length-1)) := (others => '1');
 	begin
@@ -107,7 +107,7 @@ begin
 				end if;
 				txen := '1';
 			elsif cntr(0)='1' then
-				if pl_txen='0' then
+				if lat_txen='0' then
 					txen := '0';
 				end if;
 			else
@@ -115,7 +115,7 @@ begin
 			end if;
 
 		end if;
-		padd_txen <= pl_txen or txen or not cntr(0);
+		padd_txen <= (pl_txen or not cntr(0)) or txen or lat_txen;
 	end process;
 	padd_txd <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
 

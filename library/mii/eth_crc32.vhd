@@ -58,6 +58,6 @@ begin
 	end process;
 
 	mii_txd  <= crc(mii_txd'range);
-	mii_txdv <= not mii_rxdv and setif(cntr(0)='0');
+	mii_txdv <= not mii_rxdv and not cntr(0);
 end;
 

@@ -54,7 +54,7 @@ architecture def of icmprply_tx is
 	signal pllat_txd  : std_logic_vector(icmp_txd'range);
 begin
 
-	process (pl_txen, pllat_txen, icmp_txen, mii_txc)
+	process (pl_txen, pllat_txen, mii_txc)
 		variable txen : std_logic := '0';
 	begin
 		if rising_edge(mii_txc) then
