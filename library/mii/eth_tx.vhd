@@ -104,14 +104,15 @@ begin
 			if pl_txen='1' then
 				if txen='0' then
 					cntr := to_unsigned((2*6+4)*8/eth_txd'length+1, cntr'length); 
+				elsif cntr(0)='0' then
+					cntr := cntr + 1;
 				end if;
 				txen := '1';
-			elsif cntr(0)='1' then
-				if lat_txen='0' then
-					txen := '0';
-				end if;
-			else
+			elsif cntr(0)='0' then
 				cntr := cntr + 1;
+				txen := '1';
+			elsif lat_txen='1' then
+				txen := '0';
 			end if;
 
 		end if;
