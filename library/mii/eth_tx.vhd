@@ -111,12 +111,12 @@ begin
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 				txen := '1';
-			elsif lat_txen='1' then
+			elsif pl_txen='0' then
 				txen := '0';
 			end if;
 
 		end if;
-		padd_txen <= (pl_txen or not cntr(0)) or txen;
+		padd_txen <= (pl_txen or not cntr(0));
 	end process;
 	padd_txd <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
 
@@ -140,7 +140,7 @@ begin
 		do(0) => lat_txen);
 
 	dll_txd  <= wirebus (hwda_txd & hwsa_txd & llc_txd & lat_txd, hwda_txen & hwsa_txen & llc_txen & lat_txen);
-	dll_txen <= hwda_txen or hwsa_txen or llc_txen or lat_txen;
+	dll_txen <= padd_txen or lat_txen;
 
 	dll_e : entity hdl4fpga.eth_dll
 	port map (

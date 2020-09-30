@@ -71,7 +71,7 @@ architecture struct of mii_display is
 	signal video_addr        : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
 	signal video_base        : unsigned(video_addr'range);
 
-	signal des_data          : std_logic_vector(0 to 2*digit'length-1);
+	signal des_data          : std_logic_vector(2*digit'length-1 downto 0);
 	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
 	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
@@ -108,7 +108,7 @@ begin
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
 		variable addr  : unsigned(cga_addr'range) := (others => '0');
 		variable we    : std_logic;
-		variable data  : unsigned(des_data'range);
+		variable data  : unsigned(des_data'reverse_range);
 	begin
 		if rising_edge(mii_txc) then
 			cga_addr <= std_logic_vector(addr);

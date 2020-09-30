@@ -26,7 +26,7 @@ begin
 		if rising_edge(serdes_clk) then
 			if des_data'length=ser_data'length then
 				cntr := (others => '0');
-			elsif serdes_frm='0' then
+			elsif serdes_frm/='1' then
 				cntr := (others => '0');
 			elsif ser_irdy='1' then
 				if 2**cntr'length=des_data'length/ser_data'length then
@@ -40,17 +40,17 @@ begin
 	end process;
 
 	process (ser_data, serdes_clk)
-		variable des   : unsigned(des_data'range);
+		variable des : unsigned(des_data'range);
 	begin
 		if rising_edge(serdes_clk) then
 			if serdes_frm='1' then
 				if ser_irdy='1' then
-					if des'ascending /= ser_data'ascending then
+					if des_data'ascending /= ser_data'ascending then
 						des(ser_data'reverse_range) := unsigned(ser_data);
 					else
 						des(ser_data'range) := unsigned(ser_data);
 					end if;
-					if ser_data'ascending then
+					if des_data'ascending then
 						des := des rol ser_data'length;
 					else
 						des := des ror ser_data'length;
@@ -58,13 +58,13 @@ begin
 				end if;
 			end if;
 		end if;
-		if des'ascending /= ser_data'ascending then
+
+		if des_data'ascending /= ser_data'ascending then
 			des(ser_data'reverse_range) := unsigned(ser_data);
 		else
-			des := des ror ser_data'length;
 			des(ser_data'range) := unsigned(ser_data);
-			des := des rol ser_data'length;
 		end if;
+
 		des_data <= std_logic_vector(des);
 	end process;
 

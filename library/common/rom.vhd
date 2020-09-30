@@ -43,7 +43,7 @@ architecture def of rom is
 	subtype word is std_logic_vector(data'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	function init_rom (
+	impure function init_rom (
 		constant bitdata : std_logic_vector;
 		constant memsize : natural)
 		return word_vector is
@@ -63,6 +63,7 @@ architecture def of rom is
 	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom, 2**addr'length);
 
 begin
+
 
 	synchronous1_g : if latency>0 generate
 		process (clk)
