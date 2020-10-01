@@ -49,20 +49,13 @@ begin
         mii_txdv => mii_ena,
         mii_txd  => mii_txd);
 
-	process (mii_rxc)
-		variable cy : std_logic;
-	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='1' then
-				if mii_ena='1' then
-					cy      := cy and setif(mii_txd=mii_rxd);
-					mii_equ <= cy and setif(mii_txd=mii_rxd);
-				end if;
-			else
-				cy      := '1';
-				mii_equ <= '0';
-			end if;
-		end if;
-	end process;
+	miicmp_e : entity hdl4fpga.mii_cmp
+    port map (
+        mii_rxc  => mii_rxc,
+        mii_rxdv => mii_rxdv,
+        mii_rxd  => mii_rxd,
+        mii_txd  => mii_txd,
+		mii_ena  => mii_ena,
+		mii_equ  => mii_equ);
 
 end;

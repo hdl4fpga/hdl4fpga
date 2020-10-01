@@ -40,20 +40,22 @@ end;
 architecture def of mii_cmp is
 begin
 
-	process (mii_rxc)
+	process (mii_rxc, mii_ena)
 		variable cy : std_logic;
+		variable eq : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='1' then
 				if mii_ena='1' then
-					cy      := cy and setif(mii_txd=mii_rxd);
-					mii_equ <= cy and setif(mii_txd=mii_rxd);
+					cy := cy and setif(mii_txd=mii_rxd);
+					eq := cy;
 				end if;
 			else
-				cy      := '1';
-				mii_equ <= '0';
+				cy := '1';
+				eq := '0';
 			end if;
 		end if;
+		mii_equ <= eq and not mii_ena;
 	end process;
 
 end;

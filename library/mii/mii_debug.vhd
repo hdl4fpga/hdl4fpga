@@ -106,8 +106,10 @@ begin
 
 --	debug_txd <= wirebus (mii_txd & txc_rxd, not txc_rxdv & txc_rxdv);
 --	debug_txen <= mii_txen or txc_rxdv;
-	debug_txd <= wirebus (mii_txd & txc_rxd, not txc_rxdv & '0');
-	debug_txen <= mii_txen or '0';
+--	debug_txd <= wirebus (mii_txd & txc_rxd, mii_txen & tp(1));
+--	debug_txen <= mii_txen or tp(1);
+	debug_txd <= wirebus (mii_txd & txc_rxd, '0' & tp(1));
+	debug_txen <= '0' or tp(1);
 --	debug_txd <= wirebus (mii_txd & txc_rxd, '0' & txc_rxdv);
 --	debug_txen <= '0' or txc_rxdv;
 

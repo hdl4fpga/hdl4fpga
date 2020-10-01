@@ -203,10 +203,19 @@ begin
 		mii_rxdv  => txc_rxdv,
 		mii_rxd   => txc_rxd,
 		eth_ptr   => rxfrm_ptr,
-		eth_pre   => tp(3),
 		hwda_rxdv => ethhwda_rxdv,
 		hwsa_rxdv => ethhwsa_rxdv,
 		type_rxdv => ethtype_rxdv);
+
+	ethcmp_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => mymac)
+    port map (
+        mii_rxc  => mii_txc,
+        mii_rxdv => txc_rxdv,
+        mii_rxd  => txc_rxd,
+        mii_ena  => ethhwda_rxdv,
+		mii_equ  => open);
 
 	ethhwsa_e : entity hdl4fpga.mii_des
 	port map (
@@ -296,12 +305,13 @@ begin
 				if txc_rxdv='0' then
 					if txc_eor='1' then
 						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
-					else
+					elsif arp_req='1' then
 						arp_rcvd <= '0';
 					end if;
 				end if;
 			end if;
 		end process;
+
 
 	end block;
 
@@ -511,13 +521,15 @@ begin
 					if txc_rxdv='0' then
 						if txc_eor='1' then
 							icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
-						else
+						elsif icmp_req='1' then
 							icmp_rcvd <= '0';
 						end if;
 					end if;
 				end if;
 			end process;
 
+--			tp(1) <= (typearp_rcvd or ip4icmp_rcvd) and myip4a_rcvd and txc_rxdv;
+			tp(1) <= (typearp_rcvd) and myip4a_rcvd and txc_rxdv;
 		end block;
 
 		udp4rx_e : entity hdl4fpga.udp_rx
@@ -609,7 +621,6 @@ begin
 				mii_rxd  => txc_rxd,
 				des_data => myipv4a);
 
-			tp(1) <= udpports_rcvd;
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
@@ -626,7 +637,5 @@ begin
 		end block;
 
 	end block;
-
-	tp(2) <= arp_req;
 
 end;
