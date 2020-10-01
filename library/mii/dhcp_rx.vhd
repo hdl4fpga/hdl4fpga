@@ -30,20 +30,24 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity dhcp_offer is
+entity dhcp_rx is
 	port (
-		mii_rxc  : in  std_logic;
-		mii_rxdv : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_ptr  : in  std_logic_vector;
-		dhcp_ena : in  std_logic;
+		mii_rxc      : in  std_logic;
+		mii_rxdv     : in  std_logic;
+		mii_rxd      : in  std_logic_vector;
+		mii_ptr      : in  std_logic_vector;
+		dhcp_ena     : in  std_logic;
+		dhcpop_rxdv  : out std_logic;
+		dhcpchaddr6_rxdv : out std_logic;
 		dhcpyia_rxdv : out std_logic);
 end;
 
-architecture def of dhcp_offer is
+architecture def of dhcp_rx is
 
 begin
 					
+	dhcpop_rxdv  <= dhcp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_rxd'length, dhcp4_op);
+	dhcpchaddr6_rxdv  <= dhcp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_rxd'length, dhcp4_chaddr6);
 	dhcpyia_rxdv <= dhcp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_rxd'length, dhcp4_yiaddr);
 
 end;

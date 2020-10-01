@@ -59,6 +59,8 @@ HDL4FPGA__mii_des__def = $(LIB_HDL4FPGA)/mii_des/def.dat
 HDL4FPGA__mii_des = $(LIB_HDL4FPGA)/mii_des/_primary.dat
 HDL4FPGA__mii_debug__struct = $(LIB_HDL4FPGA)/mii_debug/struct.dat
 HDL4FPGA__mii_debug = $(LIB_HDL4FPGA)/mii_debug/_primary.dat
+HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
+HDL4FPGA__mii_cmp = $(LIB_HDL4FPGA)/mii_cmp/_primary.dat
 HDL4FPGA__mii_1chksum__beh = $(LIB_HDL4FPGA)/mii_1chksum/beh.dat
 HDL4FPGA__mii_1chksum = $(LIB_HDL4FPGA)/mii_1chksum/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
@@ -88,8 +90,8 @@ HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
 HDL4FPGA__draw_line = $(LIB_HDL4FPGA)/draw_line/_primary.dat
 HDL4FPGA__dpram__def = $(LIB_HDL4FPGA)/dpram/def.dat
 HDL4FPGA__dpram = $(LIB_HDL4FPGA)/dpram/_primary.dat
-HDL4FPGA__dhcp_offer__def = $(LIB_HDL4FPGA)/dhcp_offer/def.dat
-HDL4FPGA__dhcp_offer = $(LIB_HDL4FPGA)/dhcp_offer/_primary.dat
+HDL4FPGA__dhcp_rx__def = $(LIB_HDL4FPGA)/dhcp_rx/def.dat
+HDL4FPGA__dhcp_rx = $(LIB_HDL4FPGA)/dhcp_rx/_primary.dat
 HDL4FPGA__dhcp_dscb__def = $(LIB_HDL4FPGA)/dhcp_dscb/def.dat
 HDL4FPGA__dhcp_dscb = $(LIB_HDL4FPGA)/dhcp_dscb/_primary.dat
 HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
@@ -168,6 +170,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_des) \
     $(HDL4FPGA__mii_debug__struct) \
     $(HDL4FPGA__mii_debug) \
+    $(HDL4FPGA__mii_cmp__def) \
+    $(HDL4FPGA__mii_cmp) \
     $(HDL4FPGA__mii_1chksum__beh) \
     $(HDL4FPGA__mii_1chksum) \
     $(HDL4FPGA__ipv4_tx__def) \
@@ -197,8 +201,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__draw_line) \
     $(HDL4FPGA__dpram__def) \
     $(HDL4FPGA__dpram) \
-    $(HDL4FPGA__dhcp_offer__def) \
-    $(HDL4FPGA__dhcp_offer) \
+    $(HDL4FPGA__dhcp_rx__def) \
+    $(HDL4FPGA__dhcp_rx) \
     $(HDL4FPGA__dhcp_dscb__def) \
     $(HDL4FPGA__dhcp_dscb) \
     $(HDL4FPGA__dfs__xilinx) \
@@ -373,8 +377,8 @@ $(HDL4FPGA__dhcp_dscb__def) : ../mii/dhcp_dscb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_dscb.vhd
 
-$(HDL4FPGA__dhcp_offer) \
-$(HDL4FPGA__dhcp_offer__def) : ../mii/dhcp_offer.vhd \
+$(HDL4FPGA__dhcp_rx) \
+$(HDL4FPGA__dhcp_rx__def) : ../mii/dhcp_rx.vhd \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -382,7 +386,7 @@ $(HDL4FPGA__dhcp_offer__def) : ../mii/dhcp_offer.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_offer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_rx.vhd
 
 $(HDL4FPGA__dpram) \
 $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
@@ -525,6 +529,15 @@ $(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_1chksum.vhd
 
+$(HDL4FPGA__mii_cmp) \
+$(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_cmp.vhd
+
 $(HDL4FPGA__mii_debug) \
 $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
@@ -577,7 +590,7 @@ $(HDL4FPGA__mii_display__struct) : ../mii/mii_display.vhd \
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
-		$(HDL4FPGA__dhcp_offer) \
+		$(HDL4FPGA__dhcp_rx) \
 		$(HDL4FPGA__dhcp_dscb) \
 		$(HDL4FPGA__udp_rx) \
 		$(HDL4FPGA__icmprply_tx) \
@@ -588,8 +601,8 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__arp_rx) \
 		$(HDL4FPGA__eth_tx) \
-		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__mii_des) \
+		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__mii_muxcmp) \
@@ -624,6 +637,7 @@ $(HDL4FPGA__mii_mux__def) : ../mii/mii_mux.vhd \
 
 $(HDL4FPGA__mii_muxcmp) \
 $(HDL4FPGA__mii_muxcmp__def) : ../mii/mii_muxcmp.vhd \
+		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__mii_mux) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -654,6 +668,7 @@ $(HDL4FPGA__mii_rom__def) : ../mii/mii_rom.vhd \
 
 $(HDL4FPGA__mii_romcmp) \
 $(HDL4FPGA__mii_romcmp__def) : ../mii/mii_romcmp.vhd \
+		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__mii_rom) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \

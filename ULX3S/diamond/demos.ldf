@@ -656,9 +656,6 @@
         <Source name="../../library/mii/dhcp_dscb.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/mii/dhcp_offer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/mii/eth_crc32.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -765,6 +762,12 @@
             <Options/>
         </Source>
         <Source name="../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/dhcp_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_cmp.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">

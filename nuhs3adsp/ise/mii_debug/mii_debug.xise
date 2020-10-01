@@ -17,22 +17,22 @@
   <files>
     <file xil_pn:name="../../demos/mii_debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="1"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="49"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="50"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="48"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="49"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_display.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="3"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="44"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/video/video.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="4"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/video/videopkg.vhd" xil_pn:type="FILE_VHDL">
@@ -57,17 +57,17 @@
     </file>
     <file xil_pn:name="../../common/nuhs3adsp.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="9"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="46"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/xilinx/dfs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="11"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="47"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="48"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_1chksum.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="12"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="20"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/eth_crc32.vhd" xil_pn:type="FILE_VHDL">
@@ -77,7 +77,7 @@
     </file>
     <file xil_pn:name="../../../library/mii/mii_ram.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="19"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_rom.vhd" xil_pn:type="FILE_VHDL">
@@ -87,7 +87,7 @@
     </file>
     <file xil_pn:name="../../../library/mii/mii_romcmp.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="21"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_rxpre.vhd" xil_pn:type="FILE_VHDL">
@@ -97,12 +97,12 @@
     </file>
     <file xil_pn:name="../../../library/mii/eth_dll.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="23"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="21"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="22"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/dpram.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="24"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="22"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/align.vhd" xil_pn:type="FILE_VHDL">
@@ -137,7 +137,7 @@
     </file>
     <file xil_pn:name="../../../library/video/cga_adapter.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="42"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/video/cga_rom.vhd" xil_pn:type="FILE_VHDL">
@@ -165,22 +165,22 @@
     </file>
     <file xil_pn:name="../../../library/common/serdes.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="49"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="40"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="41"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/eth_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="89"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="35"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="36"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/ipoepkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="90"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="20"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="21"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/arp_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="91"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="39"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="40"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/ethpkg.vhd" xil_pn:type="FILE_VHDL">
@@ -190,37 +190,37 @@
     </file>
     <file xil_pn:name="../../../library/mii/eth_tx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="94"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="34"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="35"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/ipv4_tx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="95"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="30"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="31"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/icmprqst_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="95"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="32"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_des.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="95"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="29"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="30"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/ipv4_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="95"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="31"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="32"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/arp_tx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="95"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="38"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="39"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/fifo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="96"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="41"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="42"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_latency.vhd" xil_pn:type="FILE_VHDL">
@@ -235,12 +235,12 @@
     </file>
     <file xil_pn:name="../../../library/mii/icmprply_tx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="98"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="34"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/xilinx/spartan3/ddro.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="104"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="46"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="47"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/udp_tx.vhd" xil_pn:type="FILE_VHDL">
@@ -250,32 +250,37 @@
     </file>
     <file xil_pn:name="../../../library/mii/dhcp_dscb.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="96"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="37"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="38"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/arbiter.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="97"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="42"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/udp_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="102"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/mii/dhcp_offer.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/mii/dhcp_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="103"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="36"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="37"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_muxcmp.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="104"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="29"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/mii/mii_ipoe.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="104"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="44"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../library/mii/mii_cmp.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="98"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>

@@ -163,4 +163,7 @@ package ipoepkg is
 		dhcp4_shname =>  64*octect_size,
 		dhcp4_fbname => 128*octect_size,
 		dhcp4_cookie =>   4*octect_size);
+
+	constant dhcp4_offer : std_logic_vector(0 to dhcp4hdr_frame(dhcp4_op)-1) := x"02";
+
 end;

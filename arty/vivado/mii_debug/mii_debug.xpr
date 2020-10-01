@@ -331,13 +331,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/mii/dhcp_offer.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../library/mii/eth_dll.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
@@ -402,6 +395,13 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../library/video/modeline_calculator.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/mii/dhcp_rx.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
