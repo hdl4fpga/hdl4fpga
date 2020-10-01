@@ -103,11 +103,11 @@ begin
 		end if;
 	end process;
 
-    mii_rxc <= not rmii_nint;
+    mii_rxc <= mii_txc;
 	process(mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
-			mii_rxdv <= rmii_crs;
+			mii_rxdv <= '0'; --rmii_crs;
 			mii_rxd  <= rmii_rx0 & rmii_rx1;
 		end if;
 	end process;
