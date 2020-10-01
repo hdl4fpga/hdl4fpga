@@ -70,7 +70,7 @@ entity mii_ipoe is
 		udppl_rxdv    : buffer std_logic;
 
 		ipv4a_req     : in  std_logic;
-		myipv4a       : buffer std_logic_vector(0 to 32-1) := default_ipv4a;
+		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
 
 		tp            : buffer std_logic_vector(1 to 4));
@@ -105,6 +105,7 @@ architecture def of mii_ipoe is
 
 	signal myip4a_ena    : std_logic;
 	signal myip4a_rcvd   : std_logic;
+	signal cfgipv4a      : std_logic_vector(0 to 32-1) := default_ipv4a;
 
 	signal eth_txen      : std_logic;
 	signal eth_txd       : std_logic_vector(mii_txd'range);
@@ -173,7 +174,7 @@ begin
 	myip4a_ena <= arptpa_rxdv or ip4da_rxdv;
 	myip4acmp_e : entity hdl4fpga.mii_muxcmp
 	port map (
-		mux_data => myipv4a,
+		mux_data => cfgipv4a,
 		mii_rxc  => mii_txc,
 		mii_rxdv => txc_rxdv,
 		mii_rxd  => txc_rxd,
@@ -284,9 +285,9 @@ begin
 			arp_frm  => txfrm_ptr,
 
 			sha      => mymac,
-			spa      => myipv4a,
+			spa      => cfgipv4a,
 			tha      => x"ff_ff_ff_ff_ff_ff",
-			tpa      => myipv4a,
+			tpa      => cfgipv4a,
 
 			arp_txen => arp_txen,
 			arp_txd  => arp_txd);
@@ -378,7 +379,7 @@ begin
 			des_data => ip4sa_rx);
 
 		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
-		ip4sa_tx    <= wirebus(myipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
+		ip4sa_tx    <= wirebus(cfgipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
 		ip4da       <= wirebus(icmp_ip4da & extern_ip4da, icmp_gnt & extern_gnt);
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
 		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & dhcp_gnt); 
@@ -568,7 +569,7 @@ begin
 			signal dhcpyia_rxdv  : std_logic;
 
 			signal dscb_req      : std_logic := '0';
-			signal dhcpipv4a : std_logic_vector(myipv4a'range);
+			signal dhcpipv4a : std_logic_vector(cfgipv4a'range);
 		begin
 
 			process (mii_txc)
@@ -663,7 +664,7 @@ begin
 							dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
 							if dhcpoffer_rcvd='1' then
 								if dhcpchaddr6_equ='1' then 
-									myipv4a <= dhcpipv4a;
+									cfgipv4a <= dhcpipv4a;
 								end if;
 							end if;
 						else
@@ -675,6 +676,7 @@ begin
 
 		end block;
 
+		myipv4a <= cfgipv4a;
 	end block;
 
 end;
