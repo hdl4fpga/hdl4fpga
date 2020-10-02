@@ -94,7 +94,7 @@ architecture mii_debug of ulx3s is
 
 begin
 
-    mii_txc <= clk_25mhz; --znot rmii_nint;
+    mii_txc <= not rmii_nint;
 	process(mii_txc)
 	begin
 		if rising_edge(mii_txc) then
@@ -103,11 +103,11 @@ begin
 		end if;
 	end process;
 
-    mii_rxc <= mii_txc;
+    mii_rxc <= not rmii_nint;
 	process(mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
-			mii_rxdv <= '0'; --rmii_crs;
+			mii_rxdv <= rmii_crs;
 			mii_rxd  <= rmii_rx0 & rmii_rx1;
 		end if;
 	end process;
@@ -184,8 +184,8 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if btn(1)='1' then
-					dhcp_req <= '1';
 				if mii_txen='0' then
+					dhcp_req <= '1';
 				end if;
 			elsif mii_txen='0' then
 				dhcp_req <= '0';
