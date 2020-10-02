@@ -207,8 +207,8 @@ begin
 	rst <= '1', '0' after (1 us+82.5 us);
 	xtal <= not xtal after 20 ns;
 	mii_clk <= not mii_clk after 10 ns;
-	btn(0)  <= '0', '0' after 1 us;
-	arp_req <= '0', '1' after 8 us;
+	btn(1)  <= '0', '1' after 1 us;
+	arp_req <= '0', '0' after 8 us;
 
 	gn(12) <= mii_clk;
 	gp(12) <= mii_rxdv;
@@ -221,7 +221,7 @@ begin
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(pingpkt,8))
+		mem_data => reverse(arppkt,8))
 	port map (
 		mii_txc  => mii_clk,
 		mii_txen => arp_req,
