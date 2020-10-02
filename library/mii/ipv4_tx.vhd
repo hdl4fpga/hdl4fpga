@@ -62,18 +62,15 @@ architecture def of ipv4_tx is
 	signal pllat_txen    : std_logic;
 	signal lenlat_txd    : std_logic_vector(ip4_txd'range);
 	signal lenlat_txen   : std_logic;
-	signal protolat_txd  : std_logic_vector(ip4_txd'range);
 	signal protolat_txen : std_logic;
 	signal alat_txd      : std_logic_vector(ip4_txd'range);
 	signal alat_txen     : std_logic;
 	signal lat_txd       : std_logic_vector(ip4_txd'range);
-	signal lat_txen      : std_logic;
 
 	signal ip4shdr_txen  : std_logic;
 	signal ip4shdr_txd   : std_logic_vector(ip4_txd'range);
 	signal ip4shdr_data  : std_logic_vector(0 to ip4_shdr'length+ip4hdr_frame(ip4_proto)-1);
 
-	signal ip4proto_txen  : std_logic;
 	signal ip4proto_txdv  : std_logic;
 	signal ip4proto_txd   : std_logic_vector(ip4_txd'range);
 	signal ip4proto_data  : std_logic_vector(0 to ip4hdr_frame(ip4_chksum)-1);
@@ -253,4 +250,3 @@ begin
 	ip4_txd <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or pllat_txen));
 
 end;
-
