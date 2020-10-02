@@ -85,7 +85,7 @@ begin
 				elsif aux2(0)='0' then
 					ci   <= '0';
 					aux1 := (others => '0');
-					aux1 := unsigned(reverse(reverse(cksm_init,4),8)) rol mii_txd'length;
+					aux1 := unsigned(reverse(reverse(cksm_init,cksm_txd'length),8)) rol mii_txd'length;
 				end if;
 			end if;
 			cksm <= aux1;
