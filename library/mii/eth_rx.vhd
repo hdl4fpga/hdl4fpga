@@ -42,12 +42,16 @@ entity eth_rx is
 		hwda_rxdv  : out std_logic;
 		hwsa_rxdv  : out std_logic;
 		type_rxdv  : out std_logic;
-		crc32_rxdv : out std_logic;
-		crc32_rxd  : out std_logic_vector);
+		crc32_rxdv : buffer std_logic;
+		crc32_rxd  : buffer std_logic_vector;
+		crc32_equ  : out std_logic;
+		eth_crc32  : buffer std_logic_vector(0 to 32-1);
+		ethcrc32_equ : out std_logic);
 end;
 
 architecture def of eth_rx is
 
+	constant crc32_rem : std_logic_vector(0 to 32-1) :=	x"38fb2284";
 	signal dll_frm : std_logic;
 
 begin
@@ -81,7 +85,19 @@ begin
 		mii_rxd  => mii_rxd,
 		mii_rxdv => dll_frm,
 		mii_txdv => crc32_rxdv,
-		mii_txd  => crc32_rxd);
+		mii_txd  => crc32_rxd,
+		mii_crc32 => eth_crc32);
+
+	crc32_cmp_e : entity hdl4fpga.mii_muxcmp
+	port map (
+		mux_data => reverse(crc32_rem,8),
+		mii_rxc  => mii_rxc,
+		mii_rxdv => crc32_rxdv,
+		mii_rxd  => crc32_rxd,
+		mii_ena  => crc32_rxdv,
+		mii_equ  => crc32_equ);
+
+	ethcrc32_equ <= setif(eth_crc32=crc32_rem) and crc32_rxdv;
 
 end;
 

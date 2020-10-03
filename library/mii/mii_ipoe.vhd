@@ -86,6 +86,8 @@ architecture def of mii_ipoe is
 	signal mii_rdy       : std_logic_vector(mii_gnt'range);
 	signal ethhwda_equ   : std_logic;
 
+	signal dll_rxdv   : std_logic;
+
 	alias arp_req        : std_logic is mii_req(0);
 	alias arp_rdy        : std_logic is mii_rdy(0);
 	alias arp_gnt        : std_logic is mii_gnt(0);
@@ -114,6 +116,7 @@ architecture def of mii_ipoe is
 
 	signal ethcrc32_rxdv : std_logic;
 	signal ethcrc32_rxd  : std_logic_vector(mii_txd'range);
+	signal eth_crc32     : std_logic_vector(0 to 32-1);
 
 	signal typearp_rcvd  : std_logic;
 	signal arp_txen      : std_logic;
@@ -179,7 +182,7 @@ begin
 	port map (
 		mux_data => cfgipv4a,
 		mii_rxc  => mii_txc,
-		mii_rxdv => txc_rxdv,
+		mii_rxdv => dll_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_ena  => myip4a_ena,
 		mii_equ  => myip4a_rcvd);
@@ -212,18 +215,20 @@ begin
 		mii_rxdv   => txc_rxdv,
 		mii_rxd    => txc_rxd,
 		eth_ptr    => rxfrm_ptr,
+		eth_pre    => dll_rxdv,
 		hwda_rxdv  => ethhwda_rxdv,
 		hwsa_rxdv  => ethhwsa_rxdv,
 		type_rxdv  => ethtype_rxdv,
 		crc32_rxdv => ethcrc32_rxdv,
-		crc32_rxd  => ethcrc32_rxd);
+		crc32_rxd  => ethcrc32_rxd,
+		eth_crc32  => eth_crc32);
 
 	ethcmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(mymac,8))
     port map (
         mii_rxc  => mii_txc,
-        mii_rxdv => txc_rxdv,
+        mii_rxdv => dll_rxdv,
         mii_rxd  => txc_rxd,
         mii_ena  => ethhwda_rxdv,
 		mii_equ  => ethhwda_equ);
@@ -240,7 +245,7 @@ begin
 		mem_data => reverse(llc_ip4,8))
 	port map (
 		mii_rxc  => mii_txc,
-		mii_rxdv => txc_rxdv,
+		mii_rxdv => dll_rxdv,
 		mii_ena  => ethtype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typeip4_rcvd);
@@ -250,7 +255,7 @@ begin
 		mem_data => reverse(llc_arp,8))
 	port map (
 		mii_rxc  => mii_txc,
-		mii_rxdv => txc_rxdv,
+		mii_rxdv => dll_rxdv,
 		mii_ena  => ethtype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typearp_rcvd);
@@ -277,7 +282,7 @@ begin
 		arprx_e : entity hdl4fpga.arp_rx
 		port map (
 			mii_rxc   => mii_txc,
-			mii_rxdv  => txc_rxdv,
+			mii_rxdv  => dll_rxdv,
 			mii_rxd   => txc_rxd,
 			mii_ptr   => rxfrm_ptr,
 			arp_ena   => typearp_rcvd,
@@ -313,7 +318,7 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if txc_rxdv='0' then
+				if dll_rxdv='0' then
 					if txc_eor='1' then
 						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
 					elsif arp_req='1' then
@@ -357,7 +362,7 @@ begin
 		ip4rx_e : entity hdl4fpga.ipv4_rx
 		port map (
 			mii_rxc     => mii_txc,
-			mii_rxdv    => txc_rxdv,
+			mii_rxdv    => dll_rxdv,
 			mii_rxd     => txc_rxd,
 			mii_ptr     => rxfrm_ptr,
 
@@ -414,7 +419,7 @@ begin
 			mem_data => reverse(ip4proto_icmp,8))
 		port map (
 			mii_rxc  => mii_txc,
-			mii_rxdv => txc_rxdv,
+			mii_rxdv => dll_rxdv,
 			mii_rxd  => txc_rxd,
 			mii_ena  => ip4proto_rxdv,
 			mii_equ  => ip4icmp_rcvd);
@@ -424,7 +429,7 @@ begin
 			mem_data => reverse(ip4proto_udp,8))
 		port map (
 			mii_rxc  => mii_txc,
-			mii_rxdv => txc_rxdv,
+			mii_rxdv => dll_rxdv,
 			mii_rxd  => txc_rxd,
 			mii_ena  => ip4proto_rxdv,
 			mii_equ  => udpproto_rcvd);
@@ -449,11 +454,11 @@ begin
 
 		begin
 
-			icmprqst_ena <= ip4icmp_rcvd and txc_rxdv;
+			icmprqst_ena <= ip4icmp_rcvd and dll_rxdv;
 			icmprqstrx_e : entity hdl4fpga.icmprqst_rx
 			port map (
 				mii_rxc  => mii_txc,
-				mii_rxdv => txc_rxdv,
+				mii_rxdv => dll_rxdv,
 				mii_rxd  => txc_rxd,
 				mii_ptr  => rxfrm_ptr,
 
@@ -529,7 +534,7 @@ begin
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					if txc_rxdv='0' then
+					if dll_rxdv='0' then
 						if txc_eor='1' then
 							icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
 						elsif icmp_req='1' then
@@ -546,7 +551,7 @@ begin
 		udp4rx_e : entity hdl4fpga.udp_rx
 		port map (
 			mii_rxc    => mii_txc,
-			mii_rxdv   => txc_rxdv,
+			mii_rxdv   => dll_rxdv,
 			mii_rxd    => txc_rxd,
 			mii_ptr    => rxfrm_ptr,
 
@@ -613,7 +618,7 @@ begin
 				mem_data => reverse(dhcp_srvp  & dhcp_clntp,8))
 			port map (
 				mii_rxc  => mii_txc,
-				mii_rxdv => txc_rxdv,
+				mii_rxdv => dll_rxdv,
 				mii_rxd  => txc_rxd,
 				mii_ena  => udpports_rxdv,
 				mii_equ  => udpports_rcvd);
@@ -621,7 +626,7 @@ begin
 			dhcprx_e : entity hdl4fpga.dhcp_rx
 			port map (
 				mii_rxc  => mii_txc,
-				mii_rxdv => txc_rxdv,
+				mii_rxdv => dll_rxdv,
 				mii_rxd  => txc_rxd,
 				mii_ptr  => rxfrm_ptr,
 
@@ -635,7 +640,7 @@ begin
 				mem_data => reverse(dhcp4_offer,8))
 			port map (
 				mii_rxc  => mii_txc,
-				mii_rxdv => txc_rxdv,
+				mii_rxdv => dll_rxdv,
 				mii_rxd  => txc_rxd,
 				mii_ena  => dhcpop_rxdv,
 				mii_equ  => dhcpoffer_rcvd);
@@ -645,13 +650,13 @@ begin
 				mem_data => reverse(mymac,8))
 			port map (
 				mii_rxc  => mii_txc,
-				mii_rxdv => txc_rxdv,
+				mii_rxdv => dll_rxdv,
 				mii_rxd  => txc_rxd,
 				mii_ena  => dhcpchaddr6_rxdv,
 				mii_equ  => dhcpchaddr6_equ);
 
 			dhcpipv4a_rxdv <= dhcpoffer_rcvd and dhcpyia_rxdv;
-			tp(1) <= dhcpchaddr6_rxdv and txc_rxdv;
+			tp(1) <= dhcpchaddr6_rxdv and dll_rxdv;
 			dchp_yia_e : entity hdl4fpga.mii_des
 			generic map (
 				init_data => reverse(default_ipv4a,8))
@@ -664,7 +669,7 @@ begin
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					if txc_rxdv='0' then
+					if dll_rxdv='0' then
 						if txc_eor='1' then
 							dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
 							if dhcpoffer_rcvd='1' then
