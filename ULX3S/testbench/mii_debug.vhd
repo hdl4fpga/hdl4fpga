@@ -211,13 +211,17 @@ begin
 	arp_req <= '0', '0' after 8 us;
 
 	gn(12) <= mii_clk;
-	gp(12) <= mii_rxdv;
-	gn(11) <= mii_rxd(0);
-	gp(11) <= mii_rxd(1);
+--	gp(12) <= mii_rxdv;
+--	gn(11) <= mii_rxd(0);
+--	gp(11) <= mii_rxd(1);
+--
+--	mii_txen   <= gn(10);
+--	mii_txd(0) <= gp(10);
+--	mii_txd(1) <= gn(9);
 
-	mii_txen   <= gn(10);
-	mii_txd(0) <= gp(10);
-	mii_txd(1) <= gn(9);
+	gp(12) <= gn(10);
+	gn(11) <= gp(10);
+	gp(11) <= gn(9) ;
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (

@@ -30,15 +30,15 @@ use hdl4fpga.std.all;
 
 entity eth_crc32 is
     port (
-        mii_txc  : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_rxdv : in  std_logic;
-		mii_txdv : out std_logic;
-		mii_txd  : out std_logic_vector);
+        mii_txc   : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
+		mii_txdv  : out std_logic;
+		mii_txd   : out std_logic_vector;
+		mii_crc32 : buffer std_logic_vector(0 to 32-1));
 end;
 
 architecture def of eth_crc32 is
-	signal crc  : std_logic_vector(0 to 32-1);
 	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1));
 	signal edge : std_logic;
 begin
@@ -47,17 +47,17 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_rxdv='1' then
-				crc  <= not galois_crc(mii_rxd, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
-				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
+				mii_crc32  <= not galois_crc(mii_rxd, word2byte((mii_crc32'range => '1') & not mii_crc32, edge), x"04c11db7");
+				cntr <= (others => '0');
 			elsif cntr(0)='0' then
-				crc <= std_logic_vector(unsigned(crc) rol mii_txd'length);
-				cntr <= cntr - 1;
+				mii_crc32 <= std_logic_vector(unsigned(mii_crc32) rol mii_txd'length);
+				cntr <= cntr + 1;
 			end if;
 			edge <= mii_rxdv;
 		end if;
 	end process;
 
-	mii_txd  <= crc(mii_txd'range);
+	mii_txd  <= mii_crc32(mii_txd'range);
 	mii_txdv <= not mii_rxdv and not cntr(0);
 end;
 

@@ -112,6 +112,9 @@ architecture def of mii_ipoe is
 
 	signal arptpa_rxdv   : std_logic;
 
+	signal ethcrc32_rxdv : std_logic;
+	signal ethcrc32_rxd  : std_logic_vector(mii_txd'range);
+
 	signal typearp_rcvd  : std_logic;
 	signal arp_txen      : std_logic;
 	signal arp_txd       : std_logic_vector(mii_txd'range);
@@ -205,13 +208,15 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		mii_rxc   => mii_txc,
-		mii_rxdv  => txc_rxdv,
-		mii_rxd   => txc_rxd,
-		eth_ptr   => rxfrm_ptr,
-		hwda_rxdv => ethhwda_rxdv,
-		hwsa_rxdv => ethhwsa_rxdv,
-		type_rxdv => ethtype_rxdv);
+		mii_rxc    => mii_txc,
+		mii_rxdv   => txc_rxdv,
+		mii_rxd    => txc_rxd,
+		eth_ptr    => rxfrm_ptr,
+		hwda_rxdv  => ethhwda_rxdv,
+		hwsa_rxdv  => ethhwsa_rxdv,
+		type_rxdv  => ethtype_rxdv,
+		crc32_rxdv => ethcrc32_rxdv,
+		crc32_rxd  => ethcrc32_rxd);
 
 	ethcmp_e : entity hdl4fpga.mii_romcmp
 	generic map (

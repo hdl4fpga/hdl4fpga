@@ -33,18 +33,23 @@ use hdl4fpga.ethpkg.all;
 
 entity eth_rx is
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
+		mii_rxc    : in  std_logic;
+		mii_rxd    : in  std_logic_vector;
+		mii_rxdv   : in  std_logic;
 
-		eth_ptr   : buffer std_logic_vector;
-		eth_pre   : buffer std_logic;
-		hwda_rxdv : out std_logic;
-		hwsa_rxdv : out std_logic;
-		type_rxdv : out std_logic);
+		eth_ptr    : buffer std_logic_vector;
+		eth_pre    : buffer std_logic;
+		hwda_rxdv  : out std_logic;
+		hwsa_rxdv  : out std_logic;
+		type_rxdv  : out std_logic;
+		crc32_rxdv : out std_logic;
+		crc32_rxd  : out std_logic_vector);
 end;
 
 architecture def of eth_rx is
+
+	signal dll_frm : std_logic;
+
 begin
 
 	mii_pre_e : entity hdl4fpga.mii_rxpre 
@@ -68,6 +73,15 @@ begin
 	hwda_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_hwda) and eth_pre;
 	hwsa_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_hwsa) and eth_pre;
 	type_rxdv <= frame_decode(eth_ptr, eth_frame, mii_rxd'length, eth_type) and eth_pre;
+
+	dll_frm <= mii_rxdv and eth_pre;
+	crc_e : entity hdl4fpga.eth_crc32
+    port map (
+        mii_txc  => mii_rxc,
+		mii_rxd  => mii_rxd,
+		mii_rxdv => dll_frm,
+		mii_txdv => crc32_rxdv,
+		mii_txd  => crc32_rxd);
 
 end;
 

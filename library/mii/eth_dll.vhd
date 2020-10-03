@@ -93,6 +93,6 @@ begin
 		mii_txd  => crc32_txd);
 
 	mii_txd  <= wirebus (pre_txd & lat_txd & crc32_txd, pre_txen & lat_txen & crc32_txen);
-	mii_txen <= pre_txen or lat_txen or crc32_txen;
+	mii_txen <= setif((pre_txen or lat_txen or crc32_txen)='1');
 
 end;
