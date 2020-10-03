@@ -31,6 +31,8 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity mii_mysrv is
+	generic (
+		my_udpport    : std_logic_vector(0 to 16-1));
 	port (
 		mii_txc       : in  std_logic;
 		mii_txd       : buffer std_logic_vector;
@@ -39,28 +41,27 @@ entity mii_mysrv is
 		txc_rxd       : buffer std_logic_vector;
 		txc_rxdv      : buffer std_logic;
 
-		ethhwda_rxdv  : buffer std_logic;
-		ethhwsa_rxdv  : buffer std_logic;
-		ethtype_rxdv  : buffer std_logic;
+		ethhwda_rxdv  : in  std_logic;
+		ethhwsa_rxdv  : in  std_logic;
+		ethtype_rxdv  : in  std_logic;
 
-		ethhwsa_rx    : buffer std_logic_vector(0 to 48-1);
+		ip4da_rxdv    : in  std_logic;
+		ip4sa_rxdv    : in  std_logic;
+		ip4sa_rx      : in  std_logic_vector(0 to 32-1);
 
-		ip4da_rxdv    : buffer std_logic;
-		ip4sa_rxdv    : buffer std_logic;
-		ip4sa_rx      : buffer std_logic_vector(0 to 32-1);
+		udpsp_rxdv    : in  std_logic;
+		udpdp_rxdv    : in  std_logic;
+		udplen_rxdv   : in  std_logic;
+		udpcksm_rxdv  : in  std_logic;
+		udppl_rxdv    : in  std_logic;
 
-		extern_req    : in std_logic := '0';
-		extern_rdy    : buffer std_logic;
-		extern_gnt    : buffer std_logic;
-		extern_hwda   : in std_logic_vector(0 to 48-1) := (others => '-');
-		extern_ip4da  : in std_logic_vector(0 to 32-1) := (others => '-');
-		extern_udplen : in std_logic_vector(0 to 16-1) := (others => '-');
-
-		udpsp_rxdv    : buffer std_logic;
-		udpdp_rxdv    : buffer std_logic;
-		udplen_rxdv   : buffer std_logic;
-		udpcksm_rxdv  : buffer std_logic;
-		udppl_rxdv    : buffer std_logic;
+		my_req        : in std_logic := '0';
+		my_rdy        : buffer std_logic;
+		my_gnt        : buffer std_logic;
+		my_hwsa       : in  std_logic_vector(0 to 48-1);
+		my_hwda       : buffer std_logic_vector(0 to 48-1) := (others => '-');
+		my_ip4da      : buffer std_logic_vector(0 to 32-1) := (others => '-');
+		my_udplen     : buffer std_logic_vector(0 to 16-1) := (others => '-');
 
 		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
@@ -70,8 +71,25 @@ entity mii_mysrv is
 end;
 
 architecture def of mii_mysrv is
-
+	signal myport_rcvd : std_logic;
 begin
+
+	myport_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(my_port,8))
+	port map (
+		mii_rxc  => mii_txc,
+		mii_rxdv => txc_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_ena  => udpdp_rxdv,
+		mii_equ  => myport_rcvd);
+
+	mydstport_e : entity hdl4fpga.mii_des
+	port map (
+		mii_rxc  => mii_txc,
+		mii_rxdv => udpdp_rxdv,
+		mii_rxd  => txc_rxd,
+		des_data => mydstport);
 
 	icmprqst_ena <= ip4icmp_rcvd and dll_rxdv;
 	icmprqstrx_e : entity hdl4fpga.icmprqst_rx
