@@ -32,18 +32,24 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_mysrv is
 	generic (
-		my_udpport    : std_logic_vector(0 to 16-1));
+		mysrv_port    : std_logic_vector(0 to 16-1));
 	port (
 		mii_txc       : in  std_logic;
-		mii_txd       : buffer std_logic_vector;
-		mii_txen      : buffer std_logic;
+		mii_txd       : in  std_logic_vector;
 
+		dll_rxdv      : in  std_logic;
 		txc_rxd       : buffer std_logic_vector;
-		txc_rxdv      : buffer std_logic;
+		crc32_rxdv    : in  std_logic;
+		crc32_rxd     : buffer std_logic_vector;
 
 		ethhwda_rxdv  : in  std_logic;
 		ethhwsa_rxdv  : in  std_logic;
 		ethtype_rxdv  : in  std_logic;
+		ethhwsa_rx    : in  std_logic_vector(0 to 48-1);
+		dllcrc32_rxdv : buffer std_logic;
+		dllcrc32_rxd  : buffer std_logic_vector;
+		dllcrc32      : buffer std_logic_vector(0 to 32-1);
+
 
 		ip4da_rxdv    : in  std_logic;
 		ip4sa_rxdv    : in  std_logic;
@@ -55,14 +61,19 @@ entity mii_mysrv is
 		udpcksm_rxdv  : in  std_logic;
 		udppl_rxdv    : in  std_logic;
 
-		my_req        : in std_logic := '0';
-		my_rdy        : buffer std_logic;
-		my_gnt        : buffer std_logic;
-		my_hwsa       : in  std_logic_vector(0 to 48-1);
-		my_hwda       : buffer std_logic_vector(0 to 48-1) := (others => '-');
-		my_ip4da      : buffer std_logic_vector(0 to 32-1) := (others => '-');
-		my_udplen     : buffer std_logic_vector(0 to 16-1) := (others => '-');
+		udpsp_rx      : in  std_logic_vector(0 to 16-1);
+		udpdp_rx      : in  std_logic_vector(0 to 16-1);
 
+		mysrv_req     : buffer std_logic;
+		mysrv_rdy     : buffer std_logic;
+		mysrv_gnt     : buffer std_logic;
+		mysrv_hwsa    : in  std_logic_vector(0 to 48-1);
+		mysrv_hwda    : buffer std_logic_vector(0 to 48-1) := (others => '-');
+		mysrv_ip4da   : buffer std_logic_vector(0 to 32-1) := (others => '-');
+		mysrv_udplen  : buffer std_logic_vector(0 to 16-1) := (others => '-');
+		mysrv_udpdp   : buffer std_logic_vector(0 to 16-1) := (others => '-');
+
+		myip4a_rcvd   : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
 
@@ -72,49 +83,37 @@ end;
 
 architecture def of mii_mysrv is
 	signal myport_rcvd : std_logic;
+	signal mysrv_rcvd  : std_logic;
+	signal txc_eor : std_logic;
 begin
-
-	myport_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(my_port,8))
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => txc_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_ena  => udpdp_rxdv,
-		mii_equ  => myport_rcvd);
-
-	mydstport_e : entity hdl4fpga.mii_des
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => udpdp_rxdv,
-		mii_rxd  => txc_rxd,
-		des_data => mydstport);
-
-	icmprqst_ena <= ip4icmp_rcvd and dll_rxdv;
-	icmprqstrx_e : entity hdl4fpga.icmprqst_rx
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => dll_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_ptr  => rxfrm_ptr,
-
-		icmprqst_ena  => icmprqst_ena,
-		icmpid_rxdv   => icmpid_rxdv,
-		icmpcksm_rxdv => icmpcksm_rxdv,
-		icmpseq_rxdv  => icmpseq_rxdv,
-		icmppl_rxdv   => icmppl_rxdv);
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if icmp_rdy='1' then
-				icmp_req <= '0';
-			elsif icmp_rcvd='1' then
-				icmp_req     <= '1';
-				ethhwda_icmp <= ethhwsa_rx;
-				icmp_ip4da   <= ip4sa_rx;
-				ipicmp_len   <= ip4len_rx;
+			txc_eor <= dll_rxdv;
+		end if;
+	end process;
+
+	myport_e : entity hdl4fpga.mii_romcmp
+	generic map (
+		mem_data => reverse(mysrv_port,8))
+	port map (
+		mii_rxc  => mii_txc,
+		mii_rxdv => dll_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_ena  => udpdp_rxdv,
+		mii_equ  => myport_rcvd);
+
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if mysrv_rdy='1' then
+				mysrv_req     <= '0';
+			elsif myport_rcvd='1' then
+				mysrv_req   <= '1';
+				mysrv_hwda  <= ethhwsa_rx;
+				mysrv_ip4da <= ip4sa_rx;
+				mysrv_udpdp <= udpdp_rx;
 			end if;
 		end if;
 	end process;
@@ -124,9 +123,9 @@ begin
 		if rising_edge(mii_txc) then
 			if dll_rxdv='0' then
 				if txc_eor='1' then
-					icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
-				elsif icmp_req='1' then
-					icmp_rcvd <= '0';
+					mysrv_rcvd <= myport_rcvd and myip4a_rcvd;
+				elsif mysrv_req='1' then
+					mysrv_rcvd <= '0';
 				end if;
 			end if;
 		end if;

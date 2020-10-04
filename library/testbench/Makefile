@@ -45,6 +45,8 @@ HDL4FPGA__mii_rom__def = $(LIB_HDL4FPGA)/mii_rom/def.dat
 HDL4FPGA__mii_rom = $(LIB_HDL4FPGA)/mii_rom/_primary.dat
 HDL4FPGA__mii_ram__def = $(LIB_HDL4FPGA)/mii_ram/def.dat
 HDL4FPGA__mii_ram = $(LIB_HDL4FPGA)/mii_ram/_primary.dat
+HDL4FPGA__mii_mysrv__def = $(LIB_HDL4FPGA)/mii_mysrv/def.dat
+HDL4FPGA__mii_mysrv = $(LIB_HDL4FPGA)/mii_mysrv/_primary.dat
 HDL4FPGA__mii_muxcmp__def = $(LIB_HDL4FPGA)/mii_muxcmp/def.dat
 HDL4FPGA__mii_muxcmp = $(LIB_HDL4FPGA)/mii_muxcmp/_primary.dat
 HDL4FPGA__mii_mux__def = $(LIB_HDL4FPGA)/mii_mux/def.dat
@@ -156,6 +158,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__mii_rom) \
     $(HDL4FPGA__mii_ram__def) \
     $(HDL4FPGA__mii_ram) \
+    $(HDL4FPGA__mii_mysrv__def) \
+    $(HDL4FPGA__mii_mysrv) \
     $(HDL4FPGA__mii_muxcmp__def) \
     $(HDL4FPGA__mii_muxcmp) \
     $(HDL4FPGA__mii_mux__def) \
@@ -420,6 +424,8 @@ $(HDL4FPGA__eth_dll__mix) : ../mii/eth_dll.vhd \
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
+		$(HDL4FPGA__mii_muxcmp) \
+		$(HDL4FPGA__eth_crc32) \
 		$(HDL4FPGA__mii_rxpre) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -645,6 +651,18 @@ $(HDL4FPGA__mii_muxcmp__def) : ../mii/mii_muxcmp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_muxcmp.vhd
+
+$(HDL4FPGA__mii_mysrv) \
+$(HDL4FPGA__mii_mysrv__def) : ../mii//mii_mysrv.vhd \
+		$(HDL4FPGA__mii_romcmp) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii//mii_mysrv.vhd
 
 $(HDL4FPGA__mii_ram) \
 $(HDL4FPGA__mii_ram__def) : ../mii/mii_ram.vhd \

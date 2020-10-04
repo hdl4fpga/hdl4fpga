@@ -66,6 +66,7 @@ architecture struct of mii_debug is
 	signal txc_rxdv : std_logic;
 
 	signal debug_txd  : std_logic_vector(mii_rxd'range);
+	signal dllcrc32_rxd : std_logic_vector(mii_rxd'range);
 	signal debug_txen : std_logic;
 begin
 
@@ -84,6 +85,7 @@ begin
 
 		txc_rxdv => txc_rxdv,
 		txc_rxd  => txc_rxd,
+		dllcrc32_rxd => dllcrc32_rxd,
 
 		tp       => tp);
 
