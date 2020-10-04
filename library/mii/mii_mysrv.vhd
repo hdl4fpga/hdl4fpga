@@ -105,55 +105,6 @@ begin
 		icmpseq_rxdv  => icmpseq_rxdv,
 		icmppl_rxdv   => icmppl_rxdv);
 
-	icmpcksm_e : entity hdl4fpga.mii_des
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => icmpcksm_rxdv,
-		mii_rxd  => txc_rxd,
-		des_data => icmpcksm_data);
-
-	icmpseq_e : entity hdl4fpga.mii_des
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => icmpseq_rxdv,
-		mii_rxd  => txc_rxd,
-		des_data => icmpseq_data);
-
-	icmpid_e : entity hdl4fpga.mii_des
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => icmpid_rxdv,
-		mii_rxd  => txc_rxd,
-		des_data => icmpid_data);
-
-	icmpdata_e : entity hdl4fpga.mii_ram
-	generic map (
-		mem_size => 64*octect_size)
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => icmppl_rxdv,
-		mii_rxd  => txc_rxd,
-
-		mii_txc  => mii_txc,
-		mii_txen => icmp_gnt,
-		mii_txdv => icmppl_txen,
-		mii_txd  => icmppl_txd);
-
-	icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
-	icmprply_e : entity hdl4fpga.icmprply_tx
-	port map (
-		mii_txc   => mii_txc,
-
-		pl_txen   => icmppl_txen,
-		pl_txd    => icmppl_txd,
-
-		icmp_ptr  => txfrm_ptr,
-		icmp_cksm => icmprply_cksm,
-		icmp_id   => icmpid_data,
-		icmp_seq  => icmpseq_data,
-		icmp_txen => icmp_txen,
-		icmp_txd  => icmp_txd);
-
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
