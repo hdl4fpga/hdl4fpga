@@ -65,11 +65,6 @@ architecture struct of mii_debug is
 	signal txc_rxd  : std_logic_vector(mii_rxd'range);
 	signal txc_rxdv : std_logic;
 
-	signal mii_txc       : std_logic;
-	signal mii_txd       : std_logic_vector;
-
-	signal txc_rxd       : std_logic_vector;
-
 	signal dll_rxdv      : std_logic;
 	signal dllhwsa_rx    : std_logic_vector(0 to 48-1);
 	signal dllcrc32_rxdv : std_logic;
@@ -77,8 +72,17 @@ architecture struct of mii_debug is
 	signal dllcrc32      : std_logic_vector(0 to 32-1);
 
 	signal ip4sa_rx      : std_logic_vector(0 to 32-1);
+	signal udpsp_rx      : std_logic_vector(0 to 16-1);
 	signal udpdp_rxdv    : std_logic;
 	signal udppl_rxdv    : std_logic;
+
+	signal mysrv_req     : std_logic;
+	signal mysrv_rdy     : std_logic;
+	signal mysrv_gnt     : std_logic;
+	signal mysrv_hwda    : std_logic_vector(0 to 48-1);
+	signal mysrv_ip4da   : std_logic_vector(0 to 32-1);
+	signal mysrv_udplen  : std_logic_vector(0 to 16-1);
+	signal mysrv_udpdp   : std_logic_vector(0 to 16-1);
 
 	signal debug_txd  : std_logic_vector(mii_rxd'range);
 	signal debug_txen : std_logic;
@@ -87,7 +91,7 @@ begin
 
 	mysrv_e : entity hdl4fpga.mii_mysrv
 	generic map (
-		mysrv_port    => x"dea9",
+		mysrv_port    => x"dea9")
 	port map (
 		mii_txc       => mii_txc,
 		mii_txd       => mii_txd,
@@ -102,26 +106,17 @@ begin
                                       
 		ip4sa_rx      => ip4sa_rx,
                                       
-		udpsp_rxdv    => udpsp_rxdv,
-		udpdp_rxdv    => udpdp_rxdv,
-		udplen_rxdv   => udplen_rxdv,
-		udpcksm_rxdv  => udpcksm_rxdv,
 		udppl_rxdv    => udppl_rxdv,
-                                      
-		udpdp_rx      => udpdp_rx,
+		udpdp_rxdv    => udpdp_rxdv,
+		udpsp_rx      => udpsp_rx,
                                       
 		mysrv_req     => mysrv_req,
 		mysrv_rdy     => mysrv_rdy,
 		mysrv_gnt     => mysrv_gnt,
-		mysrv_hwsa    => mysrv_hwsa,
 		mysrv_hwda    => mysrv_hwda,
 		mysrv_ip4da   => mysrv_ip4da,
 		mysrv_udplen  => mysrv_udplen,
-		mysrv_udpdp   => mysrv_udpdp,
-                                      
-		myip4a_rcvd   => myip4a_rcvd,
-		myipv4a       => myipv4a,
-		dhcp_rcvd     => dhcp_rcvd);
+		mysrv_udpdp   => mysrv_udpdp);
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
@@ -142,13 +137,13 @@ begin
 		dllhwsa_rx    => dllhwsa_rx,
 		dllcrc32_rxdv => dllcrc32_rxdv,
 		dllcrc32_rxd  => dllcrc32_rxd,
-		dllcrc32_rxd  => dllcrc32_rxd,
 
 		ip4sa_rx      => ip4sa_rx,
 		ipv4a_req     => dhcp_req,
                                       
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
+		udpsp_rx      => udpsp_rx,
 
 		tp       => tp);
 

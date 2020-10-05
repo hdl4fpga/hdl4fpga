@@ -77,7 +77,6 @@ entity mii_ipoe is
 		udpdp_rx      : buffer std_logic_vector(0 to 16-1);
 
 		ipv4a_req     : in  std_logic;
-		myip4a_rcvd   : buffer std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
 
@@ -130,6 +129,9 @@ architecture def of mii_ipoe is
 	signal ip4_txen      : std_logic := '0';
 	signal ip4_txd       : std_logic_vector(mii_txd'range);
 
+	signal myip4a_rcvd   : std_logic;
+	signal bcstipv4a_rcvd : std_logic;
+
 	signal ip4pl_rxdv    : std_logic;
 
 	signal txc_eor       : std_logic;
@@ -178,16 +180,6 @@ begin
 	mii_req(3) <= extern_req;
 	extern_rdy <= mii_rdy(3);
 	extern_gnt <= mii_gnt(3);
-
-	myip4a_ena <= arptpa_rxdv or ip4da_rxdv;
-	myip4acmp_e : entity hdl4fpga.mii_muxcmp
-	port map (
-		mux_data => cfgipv4a,
-		mii_rxc  => mii_txc,
-		mii_rxdv => dll_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_ena  => myip4a_ena,
-		mii_equ  => myip4a_rcvd);
 
 	process (mii_txc)
 	begin
@@ -349,10 +341,9 @@ begin
 		signal icmp_txd      : std_logic_vector(mii_txd'range);
 		signal icmp_ip4da    : std_logic_vector(0 to 32-1);
 
-		signal udp_len       : std_logic_vector(0 to 16-1);
+		signal ipicmp_len    : std_logic_vector(0 to 16-1);
 		signal udpip_len     : std_logic_vector(0 to 16-1);
 
-		signal ipicmp_len    : std_logic_vector(0 to 16-1);
 		signal udpdhcp_len   : std_logic_vector(0 to 16-1);
 		signal udpdhcp_txd   : std_logic_vector(mii_txd'range);
 		signal udpdhcp_txen  : std_logic;
@@ -375,6 +366,26 @@ begin
 			ip4proto_rxdv => ip4proto_rxdv,
 
 			ip4pl_rxdv => ip4pl_rxdv);
+
+		myip4a_ena <= arptpa_rxdv or ip4da_rxdv;
+		myip4acmp_e : entity hdl4fpga.mii_muxcmp
+		port map (
+			mux_data => cfgipv4a,
+			mii_rxc  => mii_txc,
+			mii_rxdv => dll_rxdv,
+			mii_rxd  => txc_rxd,
+			mii_ena  => myip4a_ena,
+			mii_equ  => myip4a_rcvd);
+
+		bcstipv4a_e : entity hdl4fpga.mii_romcmp
+		generic map (
+			mem_data => reverse(x"ff_ff_ff_ff",8))
+		port map (
+			mii_rxc  => mii_txc,
+			mii_rxdv => dll_rxdv,
+			mii_rxd  => txc_rxd,
+			mii_ena  => myip4a_ena,
+			mii_equ  => bcstipv4a_rcvd);
 
 		ip4lenrx_e : entity hdl4fpga.mii_des
 		port map (
@@ -550,159 +561,166 @@ begin
 --			tp(1) <= (typearp_rcvd) and myip4a_rcvd and txc_rxdv;
 		end block;
 
-		udp4rx_e : entity hdl4fpga.udp_rx
-		port map (
-			mii_rxc    => mii_txc,
-			mii_rxdv   => dll_rxdv,
-			mii_rxd    => txc_rxd,
-			mii_ptr    => rxfrm_ptr,
+		udp_b : block
+			signal udp_ena : std_logic;
+			signal udp_len : std_logic_vector(0 to 16-1);
 
-			udp_ena      => udpproto_rcvd,
-			udpsp_rxdv   => udpsp_rxdv,
-			udpdp_rxdv   => udpdp_rxdv,
-			udplen_rxdv  => udplen_rxdv,
-			udpcksm_rxdv => udpcksm_rxdv,
-			udppl_rxdv   => udppl_rxdv);
-
-		udpdp_e : entity hdl4fpga.mii_des
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => udpdp_rxdv,
-			mii_rxd  => txc_rxd,
-			des_data => udpdp_rx);
-
-		udpsp_e : entity hdl4fpga.mii_des
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => udpsp_rxdv,
-			mii_rxd  => txc_rxd,
-			des_data => udpsp_rx);
-
-		udp_len   <= wirebus(udpdhcp_len & extern_udplen , dhcp_gnt & extern_gnt);
-		udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
-
-		dhcp_b : block
-			constant dhcp_clntp : std_logic_vector := x"0044";
-			constant dhcp_srvp  : std_logic_vector := x"0043";
-
-			signal udpports_rxdv : std_logic;
-			signal udpports_rcvd : std_logic;
-			signal dhcpop_rxdv   : std_logic;
-			signal dhcpchaddr6_rxdv   : std_logic;
-			signal dhcpchaddr6_equ   : std_logic;
-			signal dhcpoffer_rcvd : std_logic;
-			signal dhcpipv4a_rxdv  : std_logic;
-			signal dhcpyia_rxdv  : std_logic;
-
-			signal dscb_req      : std_logic := '0';
-			signal dhcpipv4a : std_logic_vector(cfgipv4a'range);
 		begin
+			udp_ena <= udpproto_rcvd and (myip4a_rcvd or bcstipv4a_rcvd);
+			udp4rx_e : entity hdl4fpga.udp_rx
+			port map (
+				mii_rxc    => mii_txc,
+				mii_rxdv   => dll_rxdv,
+				mii_rxd    => txc_rxd,
+				mii_ptr    => rxfrm_ptr,
 
-			process (mii_txc)
-				variable req : std_logic;
+				udp_ena      => udpproto_rcvd,
+				udpsp_rxdv   => udpsp_rxdv,
+				udpdp_rxdv   => udpdp_rxdv,
+				udplen_rxdv  => udplen_rxdv,
+				udpcksm_rxdv => udpcksm_rxdv,
+				udppl_rxdv   => udppl_rxdv);
+
+			udpdp_e : entity hdl4fpga.mii_des
+			port map (
+				mii_rxc  => mii_txc,
+				mii_rxdv => udpdp_rxdv,
+				mii_rxd  => txc_rxd,
+				des_data => udpdp_rx);
+
+			udpsp_e : entity hdl4fpga.mii_des
+			port map (
+				mii_rxc  => mii_txc,
+				mii_rxdv => udpsp_rxdv,
+				mii_rxd  => txc_rxd,
+				des_data => udpsp_rx);
+
+			udp_len   <= wirebus(udpdhcp_len & extern_udplen , dhcp_gnt & extern_gnt);
+			udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
+
+			dhcp_b : block
+				constant dhcp_clntp : std_logic_vector := x"0044";
+				constant dhcp_srvp  : std_logic_vector := x"0043";
+
+				signal udpports_rxdv : std_logic;
+				signal udpports_rcvd : std_logic;
+				signal dhcpop_rxdv   : std_logic;
+				signal dhcpchaddr6_rxdv   : std_logic;
+				signal dhcpchaddr6_equ   : std_logic;
+				signal dhcpoffer_rcvd : std_logic;
+				signal dhcpipv4a_rxdv  : std_logic;
+				signal dhcpyia_rxdv  : std_logic;
+
+				signal dscb_req      : std_logic := '0';
+				signal dhcpipv4a : std_logic_vector(cfgipv4a'range);
 			begin
-				if rising_edge(mii_txc) then
-					if dhcp_rdy='1' then
-						dhcp_req <= '0';
-					elsif dscb_req='1' then
-						if mii_txen='1' then
-							dscb_req <= '0';
-						end if;
-					elsif req='0' and ipv4a_req='1' then
-						dscb_req <= '1';
-						dhcp_req <= '1';
-					end if;
-					req := ipv4a_req;
-				end if;
-			end process;
 
-			dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
-			generic map (
-				dhcp_sp => dhcp_clntp,
-				dhcp_dp => dhcp_srvp )
-			port map (
-				mii_txc   => mii_txc,
-				mii_txen  => dhcp_gnt,
-				udpdhcp_ptr  => txfrm_ptr,
-				udpdhcp_len  => udpdhcp_len,
-				udpdhcp_txen => udpdhcp_txen,
-				udpdhcp_txd  => udpdhcp_txd);
-
-			udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
-			dhcpport_e : entity hdl4fpga.mii_romcmp
-			generic map (
-				mem_data => reverse(dhcp_srvp  & dhcp_clntp,8))
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dll_rxdv,
-				mii_rxd  => txc_rxd,
-				mii_ena  => udpports_rxdv,
-				mii_equ  => udpports_rcvd);
-
-			dhcprx_e : entity hdl4fpga.dhcp_rx
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dll_rxdv,
-				mii_rxd  => txc_rxd,
-				mii_ptr  => rxfrm_ptr,
-
-				dhcp_ena => udpports_rcvd,
-				dhcpop_rxdv  => dhcpop_rxdv,
-				dhcpchaddr6_rxdv  => dhcpchaddr6_rxdv,
-				dhcpyia_rxdv => dhcpyia_rxdv);
-
-			dhcpoffer_e : entity hdl4fpga.mii_romcmp
-			generic map (
-				mem_data => reverse(dhcp4_offer,8))
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dll_rxdv,
-				mii_rxd  => txc_rxd,
-				mii_ena  => dhcpop_rxdv,
-				mii_equ  => dhcpoffer_rcvd);
-
-			dhcpchaddr_e : entity hdl4fpga.mii_romcmp
-			generic map (
-				mem_data => reverse(mymac,8))
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dll_rxdv,
-				mii_rxd  => txc_rxd,
-				mii_ena  => dhcpchaddr6_rxdv,
-				mii_equ  => dhcpchaddr6_equ);
-
-			dhcpipv4a_rxdv <= dhcpoffer_rcvd and dhcpyia_rxdv;
-			tp(1) <= dhcpchaddr6_rxdv and dll_rxdv;
-			dchp_yia_e : entity hdl4fpga.mii_des
-			generic map (
-				init_data => reverse(default_ipv4a,8))
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dhcpipv4a_rxdv,
-				mii_rxd  => txc_rxd,
-				des_data => dhcpipv4a);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					if dll_rxdv='0' then
-						if txc_eor='1' then
-							dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
-							if dhcpoffer_rcvd='1' then
-								if dhcpchaddr6_equ='1' then 
-									cfgipv4a <= dhcpipv4a;
-								end if;
+				process (mii_txc)
+					variable req : std_logic;
+				begin
+					if rising_edge(mii_txc) then
+						if dhcp_rdy='1' then
+							dhcp_req <= '0';
+						elsif dscb_req='1' then
+							if mii_txen='1' then
+								dscb_req <= '0';
 							end if;
-						else
-							dhcp_rcvd <= '0';
+						elsif req='0' and ipv4a_req='1' then
+							dscb_req <= '1';
+							dhcp_req <= '1';
+						end if;
+						req := ipv4a_req;
+					end if;
+				end process;
+
+				dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
+				generic map (
+					dhcp_sp => dhcp_clntp,
+					dhcp_dp => dhcp_srvp )
+				port map (
+					mii_txc   => mii_txc,
+					mii_txen  => dhcp_gnt,
+					udpdhcp_ptr  => txfrm_ptr,
+					udpdhcp_len  => udpdhcp_len,
+					udpdhcp_txen => udpdhcp_txen,
+					udpdhcp_txd  => udpdhcp_txd);
+
+				udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
+				dhcpport_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(dhcp_srvp  & dhcp_clntp,8))
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => dll_rxdv,
+					mii_rxd  => txc_rxd,
+					mii_ena  => udpports_rxdv,
+					mii_equ  => udpports_rcvd);
+
+				dhcprx_e : entity hdl4fpga.dhcp_rx
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => dll_rxdv,
+					mii_rxd  => txc_rxd,
+					mii_ptr  => rxfrm_ptr,
+
+					dhcp_ena => udpports_rcvd,
+					dhcpop_rxdv  => dhcpop_rxdv,
+					dhcpchaddr6_rxdv  => dhcpchaddr6_rxdv,
+					dhcpyia_rxdv => dhcpyia_rxdv);
+
+				dhcpoffer_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(dhcp4_offer,8))
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => dll_rxdv,
+					mii_rxd  => txc_rxd,
+					mii_ena  => dhcpop_rxdv,
+					mii_equ  => dhcpoffer_rcvd);
+
+				dhcpchaddr_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(mymac,8))
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => dll_rxdv,
+					mii_rxd  => txc_rxd,
+					mii_ena  => dhcpchaddr6_rxdv,
+					mii_equ  => dhcpchaddr6_equ);
+
+				dhcpipv4a_rxdv <= dhcpoffer_rcvd and dhcpyia_rxdv;
+				tp(1) <= dhcpchaddr6_rxdv and dll_rxdv;
+				dchp_yia_e : entity hdl4fpga.mii_des
+				generic map (
+					init_data => reverse(default_ipv4a,8))
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => dhcpipv4a_rxdv,
+					mii_rxd  => txc_rxd,
+					des_data => dhcpipv4a);
+
+				process (mii_txc)
+				begin
+					if rising_edge(mii_txc) then
+						if dll_rxdv='0' then
+							if txc_eor='1' then
+								dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
+								if dhcpoffer_rcvd='1' then
+									if dhcpchaddr6_equ='1' then 
+										cfgipv4a <= dhcpipv4a;
+									end if;
+								end if;
+							else
+								dhcp_rcvd <= '0';
+							end if;
 						end if;
 					end if;
-				end if;
-			end process;
+				end process;
 
+			end block;
+
+			myipv4a <= cfgipv4a;
 		end block;
-
-		myipv4a <= cfgipv4a;
 	end block;
 
 end;
