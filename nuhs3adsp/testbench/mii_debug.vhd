@@ -63,6 +63,7 @@ architecture nuhs3adsp_miidebug of testbench is
 	signal mii_rxc  : std_logic;
 	signal mii_txc  : std_logic;
 	signal mii_txen : std_logic;
+	signal mii_txd  : std_logic_vector(0 to 4-1);
 
 	signal ddr_lp_dqs : std_logic;
 
@@ -239,15 +240,17 @@ begin
 
 	sw1 <= '1', '0' after 1 us;
 
-	eth_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(arppkt,8))
-	port map (
-		mii_txc  => mii_rxc,
-		mii_txen => arp_req,
-		mii_txdv => mii_rxdv,
-		mii_txd  => mii_rxd);
+--	eth_e: entity hdl4fpga.mii_rom
+--	generic map (
+--		mem_data => reverse(arppkt,8))
+--	port map (
+--		mii_txc  => mii_rxc,
+--		mii_txen => arp_req,
+--		mii_txdv => mii_rxdv,
+--		mii_txd  => mii_rxd);
 
+	mii_rxdv <= mii_txen;
+	mii_rxd  <= mii_txd;
 	rst <= '0', '1' after 300 ns;
 	du_e : nuhs3adsp
 	port map (
@@ -274,6 +277,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,
 		mii_txen => mii_txen,
+		mii_txd => mii_txd,
 		-------------
 		-- DDR RAM --
 

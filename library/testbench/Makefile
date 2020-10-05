@@ -547,9 +547,10 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 $(HDL4FPGA__mii_debug) \
 $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 		$(HDL4FPGA__mii_display) \
+		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__mii_ipoe) \
+		$(HDL4FPGA__mii_mysrv) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -603,6 +604,7 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__mii_ram) \
 		$(HDL4FPGA__icmprqst_rx) \
 		$(HDL4FPGA__ipv4_tx) \
+		$(HDL4FPGA__mii_muxcmp) \
 		$(HDL4FPGA__ipv4_rx) \
 		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__arp_rx) \
@@ -611,7 +613,6 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__mii_muxcmp) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \

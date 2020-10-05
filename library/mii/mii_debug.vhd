@@ -68,10 +68,11 @@ architecture struct of mii_debug is
 	signal dll_rxdv      : std_logic;
 	signal dllhwsa_rx    : std_logic_vector(0 to 48-1);
 	signal dllcrc32_rxdv : std_logic;
+	signal dllcrc32_equ  : std_logic;
 	signal dllcrc32_rxd  : std_logic_vector(mii_rxd'range);
 	signal dllcrc32      : std_logic_vector(0 to 32-1);
 
-	signal ip4sa_rx      : std_logic_vector(0 to 32-1);
+	signal ipv4sa_rx     : std_logic_vector(0 to 32-1);
 	signal udpsp_rx      : std_logic_vector(0 to 16-1);
 	signal udpdp_rxdv    : std_logic;
 	signal udppl_rxdv    : std_logic;
@@ -80,7 +81,7 @@ architecture struct of mii_debug is
 	signal mysrv_rdy     : std_logic;
 	signal mysrv_gnt     : std_logic;
 	signal mysrv_hwda    : std_logic_vector(0 to 48-1);
-	signal mysrv_ip4da   : std_logic_vector(0 to 32-1);
+	signal mysrv_ipv4da   : std_logic_vector(0 to 32-1);
 	signal mysrv_udplen  : std_logic_vector(0 to 16-1);
 	signal mysrv_udpdp   : std_logic_vector(0 to 16-1);
 
@@ -91,7 +92,8 @@ begin
 
 	mysrv_e : entity hdl4fpga.mii_mysrv
 	generic map (
-		mysrv_port    => x"dea9")
+		mysrv_port    => x"0043")
+--		mysrv_port    => x"dea9")
 	port map (
 		mii_txc       => mii_txc,
 		mii_txd       => mii_txd,
@@ -101,20 +103,19 @@ begin
                                       
 		dllhwsa_rx    => dllhwsa_rx,
 		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_rxd  => dllcrc32_rxd,
-		dllcrc32      => dllcrc32,
+		dllcrc32_equ  => dllcrc32_equ,
                                       
-		ip4sa_rx      => ip4sa_rx,
+		ipv4sa_rx     => ipv4sa_rx,
                                       
 		udppl_rxdv    => udppl_rxdv,
 		udpdp_rxdv    => udpdp_rxdv,
 		udpsp_rx      => udpsp_rx,
                                       
-		mysrv_req     => mysrv_req,
 		mysrv_rdy     => mysrv_rdy,
+		mysrv_req     => mysrv_req,
 		mysrv_gnt     => mysrv_gnt,
 		mysrv_hwda    => mysrv_hwda,
-		mysrv_ip4da   => mysrv_ip4da,
+		mysrv_ipv4da  => mysrv_ipv4da,
 		mysrv_udplen  => mysrv_udplen,
 		mysrv_udpdp   => mysrv_udpdp);
 
@@ -133,12 +134,19 @@ begin
 		txc_rxdv      => txc_rxdv,
 		txc_rxd       => txc_rxd,
 
+		extern_req    => mysrv_req,
+		extern_rdy    => mysrv_rdy,
+		extern_gnt    => mysrv_gnt,
+		extern_hwda   => mysrv_hwda,
+		extern_ip4da  => mysrv_ipv4da,
+		extern_udplen => mysrv_udplen,
 		dll_rxdv      => dll_rxdv,
 		dllhwsa_rx    => dllhwsa_rx,
 		dllcrc32_rxdv => dllcrc32_rxdv,
 		dllcrc32_rxd  => dllcrc32_rxd,
+		dllcrc32_equ  => dllcrc32_equ,
 
-		ip4sa_rx      => ip4sa_rx,
+		ipv4sa_rx     => ipv4sa_rx,
 		ipv4a_req     => dhcp_req,
                                       
 		udpdp_rxdv    => udpdp_rxdv,
@@ -164,13 +172,13 @@ begin
 		video_hs    => video_hs,
 		video_vs    => video_vs);
 
-	debug_txd  <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
-	debug_txen <= mii_txen or txc_rxdv;
+--	debug_txd  <= wirebus (mii_txd & txc_rxd, mii_txen & txc_rxdv);
+--	debug_txen <= mii_txen or txc_rxdv;
 --	debug_txd <= wirebus (mii_txd & txc_rxd, mii_txen & tp(1));
 --	debug_txen <= mii_txen or tp(1);
 --	debug_txd <= wirebus (mii_txd & txc_rxd, '0' & tp(1));
 --	debug_txen <= '0' or tp(1);
---	debug_txd <= wirebus (mii_txd & txc_rxd, '0' & txc_rxdv);
---	debug_txen <= '0' or txc_rxdv;
+	debug_txd <= wirebus (mii_txd & txc_rxd, '0' & txc_rxdv);
+	debug_txen <= '0' or txc_rxdv;
 
 end;
