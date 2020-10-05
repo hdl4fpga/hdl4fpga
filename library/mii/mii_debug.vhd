@@ -65,27 +65,90 @@ architecture struct of mii_debug is
 	signal txc_rxd  : std_logic_vector(mii_rxd'range);
 	signal txc_rxdv : std_logic;
 
+	signal mii_txc       : std_logic;
+	signal mii_txd       : std_logic_vector;
+
+	signal txc_rxd       : std_logic_vector;
+
+	signal dll_rxdv      : std_logic;
+	signal dllhwsa_rx    : std_logic_vector(0 to 48-1);
+	signal dllcrc32_rxdv : std_logic;
+	signal dllcrc32_rxd  : std_logic_vector(mii_rxd'range);
+	signal dllcrc32      : std_logic_vector(0 to 32-1);
+
+	signal ip4sa_rx      : std_logic_vector(0 to 32-1);
+	signal udpdp_rxdv    : std_logic;
+	signal udppl_rxdv    : std_logic;
+
 	signal debug_txd  : std_logic_vector(mii_rxd'range);
-	signal dllcrc32_rxd : std_logic_vector(mii_rxd'range);
 	signal debug_txen : std_logic;
+
 begin
+
+	mysrv_e : entity hdl4fpga.mii_mysrv
+	generic map (
+		mysrv_port    => x"dea9",
+	port map (
+		mii_txc       => mii_txc,
+		mii_txd       => mii_txd,
+                                      
+		dll_rxdv      => dll_rxdv,
+		dll_rxd       => txc_rxd,
+                                      
+		dllhwsa_rx    => dllhwsa_rx,
+		dllcrc32_rxdv => dllcrc32_rxdv,
+		dllcrc32_rxd  => dllcrc32_rxd,
+		dllcrc32      => dllcrc32,
+                                      
+		ip4sa_rx      => ip4sa_rx,
+                                      
+		udpsp_rxdv    => udpsp_rxdv,
+		udpdp_rxdv    => udpdp_rxdv,
+		udplen_rxdv   => udplen_rxdv,
+		udpcksm_rxdv  => udpcksm_rxdv,
+		udppl_rxdv    => udppl_rxdv,
+                                      
+		udpdp_rx      => udpdp_rx,
+                                      
+		mysrv_req     => mysrv_req,
+		mysrv_rdy     => mysrv_rdy,
+		mysrv_gnt     => mysrv_gnt,
+		mysrv_hwsa    => mysrv_hwsa,
+		mysrv_hwda    => mysrv_hwda,
+		mysrv_ip4da   => mysrv_ip4da,
+		mysrv_udplen  => mysrv_udplen,
+		mysrv_udpdp   => mysrv_udpdp,
+                                      
+		myip4a_rcvd   => myip4a_rcvd,
+		myipv4a       => myipv4a,
+		dhcp_rcvd     => dhcp_rcvd);
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
-		mii_rxc    => mii_rxc,
-		mii_rxd    => mii_rxd,
-		mii_rxdv   => mii_rxdv,
+		mii_rxc       => mii_rxc,
+		mii_rxd       => mii_rxd,
+		mii_rxdv      => mii_rxdv,
 
-		ipv4a_req  => dhcp_req,
-		mii_txc    => mii_txc,
-		mii_txd    => mii_txd,
-		mii_txen   => mii_txen,
+		mii_txc       => mii_txc,
+		mii_txd       => mii_txd,
+		mii_txen      => mii_txen,
 
-		txc_rxdv => txc_rxdv,
-		txc_rxd  => txc_rxd,
-		dllcrc32_rxd => dllcrc32_rxd,
+		txc_rxdv      => txc_rxdv,
+		txc_rxd       => txc_rxd,
+
+		dll_rxdv      => dll_rxdv,
+		dllhwsa_rx    => dllhwsa_rx,
+		dllcrc32_rxdv => dllcrc32_rxdv,
+		dllcrc32_rxd  => dllcrc32_rxd,
+		dllcrc32_rxd  => dllcrc32_rxd,
+
+		ip4sa_rx      => ip4sa_rx,
+		ipv4a_req     => dhcp_req,
+                                      
+		udpdp_rxdv    => udpdp_rxdv,
+		udppl_rxdv    => udppl_rxdv,
 
 		tp       => tp);
 

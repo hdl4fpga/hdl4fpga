@@ -45,6 +45,7 @@ entity mii_ipoe is
 
 		txc_rxd       : buffer std_logic_vector;
 		txc_rxdv      : buffer std_logic;
+		dll_rxdv      : buffer std_logic;
 
 		dllcrc32_rxdv : buffer std_logic;
 		dllcrc32_rxd  : buffer std_logic_vector;
@@ -52,7 +53,7 @@ entity mii_ipoe is
 
 		dllhwda_rxdv  : buffer std_logic;
 		dllhwsa_rxdv  : buffer std_logic;
-		ethtype_rxdv  : buffer std_logic;
+		dlltype_rxdv  : buffer std_logic;
 
 		dllhwsa_rx    : buffer std_logic_vector(0 to 48-1);
 
@@ -93,7 +94,6 @@ architecture def of mii_ipoe is
 	signal mii_rdy       : std_logic_vector(mii_gnt'range);
 	signal dllhwda_equ   : std_logic;
 
-	signal dll_rxdv   : std_logic;
 
 	alias arp_req        : std_logic is mii_req(0);
 	alias arp_rdy        : std_logic is mii_rdy(0);
@@ -220,12 +220,12 @@ begin
 		eth_pre    => dll_rxdv,
 		hwda_rxdv  => dllhwda_rxdv,
 		hwsa_rxdv  => dllhwsa_rxdv,
-		type_rxdv  => ethtype_rxdv,
+		type_rxdv  => dlltype_rxdv,
 		crc32_rxdv => dllcrc32_rxdv,
 		crc32_rxd  => dllcrc32_rxd,
 		eth_crc32  => dllcrc32);
 
-	ethcmp_e : entity hdl4fpga.mii_romcmp
+	dllhwdacmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(mymac,8))
     port map (
@@ -248,7 +248,7 @@ begin
 	port map (
 		mii_rxc  => mii_txc,
 		mii_rxdv => dll_rxdv,
-		mii_ena  => ethtype_rxdv,
+		mii_ena  => dlltype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typeip4_rcvd);
 
@@ -258,7 +258,7 @@ begin
 	port map (
 		mii_rxc  => mii_txc,
 		mii_rxdv => dll_rxdv,
-		mii_ena  => ethtype_rxdv,
+		mii_ena  => dlltype_rxdv,
 		mii_rxd  => txc_rxd,
 		mii_equ  => typearp_rcvd);
 

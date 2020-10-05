@@ -38,30 +38,18 @@ entity mii_mysrv is
 		mii_txd       : in  std_logic_vector;
 
 		dll_rxdv      : in  std_logic;
-		txc_rxd       : buffer std_logic_vector;
-		crc32_rxdv    : in  std_logic;
-		crc32_rxd     : buffer std_logic_vector;
+		dll_rxd       : buffer std_logic_vector;
 
-		ethhwda_rxdv  : in  std_logic;
-		ethhwsa_rxdv  : in  std_logic;
-		ethtype_rxdv  : in  std_logic;
-		ethhwsa_rx    : in  std_logic_vector(0 to 48-1);
+		dllhwsa_rx    : in  std_logic_vector(0 to 48-1);
 		dllcrc32_rxdv : buffer std_logic;
 		dllcrc32_rxd  : buffer std_logic_vector;
 		dllcrc32      : buffer std_logic_vector(0 to 32-1);
 
-
-		ip4da_rxdv    : in  std_logic;
-		ip4sa_rxdv    : in  std_logic;
 		ip4sa_rx      : in  std_logic_vector(0 to 32-1);
 
-		udpsp_rxdv    : in  std_logic;
 		udpdp_rxdv    : in  std_logic;
-		udplen_rxdv   : in  std_logic;
-		udpcksm_rxdv  : in  std_logic;
 		udppl_rxdv    : in  std_logic;
 
-		udpsp_rx      : in  std_logic_vector(0 to 16-1);
 		udpdp_rx      : in  std_logic_vector(0 to 16-1);
 
 		mysrv_req     : buffer std_logic;
@@ -100,7 +88,7 @@ begin
 	port map (
 		mii_rxc  => mii_txc,
 		mii_rxdv => dll_rxdv,
-		mii_rxd  => txc_rxd,
+		mii_rxd  => dll_rxd,
 		mii_ena  => udpdp_rxdv,
 		mii_equ  => myport_rcvd);
 
@@ -111,7 +99,7 @@ begin
 				mysrv_req     <= '0';
 			elsif myport_rcvd='1' then
 				mysrv_req   <= '1';
-				mysrv_hwda  <= ethhwsa_rx;
+				mysrv_hwda  <= dllhwsa_rx;
 				mysrv_ip4da <= ip4sa_rx;
 				mysrv_udpdp <= udpdp_rx;
 			end if;
