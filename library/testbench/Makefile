@@ -25,6 +25,8 @@ HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
 HDL4FPGA__vga2dvid__behavioral = $(LIB_HDL4FPGA)/vga2dvid/behavioral.dat
 HDL4FPGA__vga2dvid = $(LIB_HDL4FPGA)/vga2dvid/_primary.dat
+HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
+HDL4FPGA__udp_tx = $(LIB_HDL4FPGA)/udp_tx/_primary.dat
 HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
 HDL4FPGA__udp_rx = $(LIB_HDL4FPGA)/udp_rx/_primary.dat
 HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
@@ -138,6 +140,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__video_sync) \
     $(HDL4FPGA__vga2dvid__behavioral) \
     $(HDL4FPGA__vga2dvid) \
+    $(HDL4FPGA__udp_tx__def) \
+    $(HDL4FPGA__udp_tx) \
     $(HDL4FPGA__udp_rx__def) \
     $(HDL4FPGA__udp_rx) \
     $(HDL4FPGA__tmds_encoder__behavioral) \
@@ -758,6 +762,19 @@ $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/udp_rx.vhd
+
+$(HDL4FPGA__udp_tx) \
+$(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
+		$(HDL4FPGA__mii_latency) \
+		$(HDL4FPGA__mii_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/udp_tx.vhd
 
 $(HDL4FPGA__vga2dvid) \
 $(HDL4FPGA__vga2dvid__behavioral) : ../video/vga2dvid.vhd \

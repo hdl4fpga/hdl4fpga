@@ -65,17 +65,25 @@ entity mii_ipoe is
 		extern_req    : in std_logic := '0';
 		extern_rdy    : buffer std_logic;
 		extern_gnt    : buffer std_logic;
-		extern_hwda   : in std_logic_vector(0 to 48-1) := (others => '-');
-		extern_ip4da  : in std_logic_vector(0 to 32-1) := (others => '-');
-		extern_udplen : in std_logic_vector(0 to 16-1) := (others => '-');
+
+		dll_hwda      : in std_logic_vector(0 to 48-1) := (others => '-');
+		ipv4_da       : in std_logic_vector(0 to 32-1) := (others => '-');
 
 		udpsp_rxdv    : buffer std_logic;
 		udpdp_rxdv    : buffer std_logic;
 		udplen_rxdv   : buffer std_logic;
 		udpcksm_rxdv  : buffer std_logic;
-		udppl_rxdv    : buffer std_logic;
 		udpsp_rx      : buffer std_logic_vector(0 to 16-1);
 		udpdp_rx      : buffer std_logic_vector(0 to 16-1);
+
+		udppl_len     : in  std_logic_vector(0 to 16-1) := (others => '-');
+		udppl_rxdv    : buffer std_logic;
+		udppl_txen    : in  std_logic;
+		udppl_txd     : in  std_logic_vector;
+
+		udp_cksm      : in  std_logic_vector(0 to 16-1) := (others => '0'); 
+		udp_sp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
+		udp_dp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
 
 		ipv4a_req     : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
@@ -264,7 +272,7 @@ begin
 		mii_equ  => typearp_rcvd);
 
 	type_tx <= wirebus(llc_arp & llc_ip4, arp_gnt & ipv4_gnt);
-	dllhwda_ipv4 <= wirebus(dllhwda_icmp & x"ff_ff_ff_ff_ff_ff" & extern_hwda, icmp_gnt & dhcp_gnt & extern_gnt);
+	dllhwda_ipv4 <= wirebus(dllhwda_icmp & x"ff_ff_ff_ff_ff_ff" & dll_hwda, icmp_gnt & dhcp_gnt & extern_gnt);
 	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & dllhwda_ipv4, arp_gnt & ipv4_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -353,6 +361,9 @@ begin
 		signal ipicmp_len    : std_logic_vector(0 to 16-1);
 		signal udpip_len     : std_logic_vector(0 to 16-1);
 
+		signal udp_txd   : std_logic_vector(mii_txd'range);
+		signal udp_txen  : std_logic;
+
 		signal udpdhcp_len   : std_logic_vector(0 to 16-1);
 		signal udpdhcp_txd   : std_logic_vector(mii_txd'range);
 		signal udpdhcp_txen  : std_logic;
@@ -412,12 +423,12 @@ begin
 
 		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
 		ip4sa_tx    <= wirebus(cfgipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
-		ip4da       <= wirebus(icmp_ip4da & extern_ip4da, icmp_gnt & extern_gnt);
+		ip4da       <= wirebus(icmp_ip4da & ipv4_da, icmp_gnt & extern_gnt);
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
 		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & dhcp_gnt); 
 		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & dhcp_gnt);
-		ip4pl_txen  <= icmp_txen or udpdhcp_txen;
-		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd, icmp_txen & udpdhcp_txen);
+		ip4pl_txen  <= icmp_txen or udpdhcp_txen or udp_txen;
+		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd or udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
 		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
 		ip4tx_e : entity hdl4fpga.ipv4_tx
@@ -572,7 +583,8 @@ begin
 
 		udp_b : block
 			signal udp_ena : std_logic;
-			signal udp_len : std_logic_vector(0 to 16-1);
+			signal udplen_tx : std_logic_vector(0 to 16-1);
+			signal udp_len   : std_logic_vector(0 to 16-1);
 
 		begin
 			udp_ena <= udpproto_rcvd and (myip4a_rcvd or bcstipv4a_rcvd);
@@ -604,20 +616,21 @@ begin
 				mii_rxd  => txc_rxd,
 				des_data => udpsp_rx);
 
-			udp_len   <= wirebus(udpdhcp_len & extern_udplen , dhcp_gnt & extern_gnt);
-			udpip_len <= std_logic_vector(unsigned(udp_len) + (summation(ip4hdr_frame))/octect_size);
+			udplen_tx <= wirebus(udpdhcp_len & udp_len , dhcp_gnt & extern_gnt);
+			udpip_len <= std_logic_vector(unsigned(udplen_tx) + (summation(ip4hdr_frame))/octect_size);
 
-			udp_tx : entity udp_tx is
-			port (
+			udp_tx : entity hdl4fpga.udp_tx
+			port map (
 				mii_txc  => mii_txc,
 				udp_ptr  => txfrm_ptr,
+				udppl_txen => udppl_txen,
+				udppl_txd  => udppl_txd,
+				udppl_len  => udplen_tx,
+				udp_cksm => udp_cksm,
 				udp_len  => udp_len,
-				udp_txen => udppl_txen,
-				udp_txd  => udppl_txd,
+				udp_sp   => udp_sp,
+				udp_dp   => udp_dp,
 
-				udp_sp   => extern_udpsp,
-				udp_dp   => extern_udpdp,
-				udp_len  => extern_udplen,
 				udp_txen => udp_txen,
 				udp_txd  => udp_txd);
 

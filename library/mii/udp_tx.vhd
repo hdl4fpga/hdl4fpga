@@ -51,7 +51,7 @@ end;
 
 architecture def of udp_tx is
 
-	signal udp_hdr  : std_logic_vector(0 to summation(udphdr_frame)-1);
+	signal udp_hdr  : std_logic_vector(0 to summation(udp4hdr_frame)-1);
 
 	signal pllat_txen  : std_logic;
 	signal pllat_txd   : std_logic_vector(udp_txd'range);
@@ -75,7 +75,7 @@ begin
 	end process;
 
 
-	udp_len <= std_logic_vector(unsigned(udppl_len) + (summation(udphdr_frame)/octect_size));
+	udp_len <= std_logic_vector(unsigned(udppl_len) + (summation(udp4hdr_frame)/octect_size));
 	udp_hdr <= reverse(udp_sp,8) & reverse(udp_dp,8) & reverse(udp_len,8) & udp_cksm;
 
 	udphdr_e : entity hdl4fpga.mii_mux
@@ -87,7 +87,7 @@ begin
 
 	ipalat_e : entity hdl4fpga.mii_latency
 	generic map (
-		latency => summation(udphdr_frame))
+		latency => summation(udp4hdr_frame))
 	port map (
 		mii_txc  => mii_txc,
 		lat_txen => udppl_txen,

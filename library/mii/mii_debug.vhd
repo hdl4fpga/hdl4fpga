@@ -85,6 +85,10 @@ architecture struct of mii_debug is
 	signal mysrv_udplen  : std_logic_vector(0 to 16-1);
 	signal mysrv_udpdp   : std_logic_vector(0 to 16-1);
 
+	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
+	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
+	signal mysrv_udppltxen : std_logic;
+
 	signal debug_txd  : std_logic_vector(mii_rxd'range);
 	signal debug_txen : std_logic;
 
@@ -137,9 +141,8 @@ begin
 		extern_req    => mysrv_req,
 		extern_rdy    => mysrv_rdy,
 		extern_gnt    => mysrv_gnt,
-		extern_hwda   => mysrv_hwda,
-		extern_ip4da  => mysrv_ipv4da,
-		extern_udplen => mysrv_udplen,
+		dll_hwda      => mysrv_hwda,
+		ipv4_da       => mysrv_ipv4da,
 		dll_rxdv      => dll_rxdv,
 		dllhwsa_rx    => dllhwsa_rx,
 		dllcrc32_rxdv => dllcrc32_rxdv,
@@ -152,6 +155,9 @@ begin
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
 		udpsp_rx      => udpsp_rx,
+		udppl_len     => mysrv_udppllen,
+		udppl_txen    => mysrv_udppltxen,
+		udppl_txd     => mysrv_udppltxd,
 
 		tp       => tp);
 
