@@ -51,14 +51,17 @@ entity mii_mysrv is
 
 		udpsp_rx      : in  std_logic_vector(0 to 16-1);
 
-		mysrv_req     : out std_logic;
-		mysrv_rdy     : in  std_logic;
-		mysrv_gnt     : in  std_logic;
-		mysrv_hwda    : out std_logic_vector(0 to 48-1) := (others => '-');
-		mysrv_ipv4da  : out std_logic_vector(0 to 32-1) := (others => '-');
-		mysrv_udplen  : out std_logic_vector(0 to 16-1) := (others => '-');
-		mysrv_udpdp   : out std_logic_vector(0 to 16-1) := (others => '-');
+		tx_req     : out std_logic;
+		tx_rdy     : in  std_logic;
+		tx_gnt     : in  std_logic;
 
+		dll_hwda    : out std_logic_vector(0 to 48-1) := (others => '-');
+		ipv4_da  : out std_logic_vector(0 to 32-1) := (others => '-');
+		udp_len  : out std_logic_vector(0 to 16-1) := (others => '-');
+		udp_dp   : out std_logic_vector(0 to 16-1) := (others => '-');
+
+		udppl_txen    : out  std_logic;
+		udppl_txd     : out  std_logic_vector;
 		tp            : buffer std_logic_vector(1 to 4));
 
 end;
@@ -89,11 +92,11 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mysrv_rdy='0' then
+			if tx_rdy='0' then
 				if myport_rcvd='1' then
-					mysrv_hwda  <= dllhwsa_rx;
-					mysrv_ipv4da <= ipv4sa_rx;
-					mysrv_udpdp <= udpsp_rx;
+					dll_hwda  <= dllhwsa_rx;
+					ipv4_da <= ipv4sa_rx;
+					udp_dp <= udpsp_rx;
 				end if;
 			end if;
 		end if;
@@ -103,13 +106,13 @@ begin
 		variable rcvd : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if mysrv_rdy='1' then
-				mysrv_req <= '0';
-				rcvd      := '0';
+			if tx_rdy='1' then
+				tx_req <= '0';
+				rcvd   := '0';
 			elsif dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
-					mysrv_req <= '1';
-					rcvd      := '0';
+					tx_req <= '1';
+					rcvd  := '0';
 				end if;
 			end if;
 			if dll_rxdv='1'then

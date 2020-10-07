@@ -99,29 +99,31 @@ begin
 		mysrv_port    => x"0043")
 --		mysrv_port    => x"dea9")
 	port map (
-		mii_txc       => mii_txc,
-		mii_txd       => mii_txd,
-                                      
-		dll_rxdv      => dll_rxdv,
-		dll_rxd       => txc_rxd,
-                                      
-		dllhwsa_rx    => dllhwsa_rx,
-		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_equ  => dllcrc32_equ,
-                                      
-		ipv4sa_rx     => ipv4sa_rx,
-                                      
-		udppl_rxdv    => udppl_rxdv,
-		udpdp_rxdv    => udpdp_rxdv,
-		udpsp_rx      => udpsp_rx,
-                                      
-		mysrv_rdy     => mysrv_rdy,
-		mysrv_req     => mysrv_req,
-		mysrv_gnt     => mysrv_gnt,
-		mysrv_hwda    => mysrv_hwda,
-		mysrv_ipv4da  => mysrv_ipv4da,
-		mysrv_udplen  => mysrv_udplen,
-		mysrv_udpdp   => mysrv_udpdp);
+		mii_txc         => mii_txc,
+		mii_txd         => mii_txd,
+                                        
+		dll_rxdv        => dll_rxdv,
+		dll_rxd         => txc_rxd,
+                                        
+		dllhwsa_rx      => dllhwsa_rx,
+		dllcrc32_rxdv   => dllcrc32_rxdv,
+		dllcrc32_equ    => dllcrc32_equ,
+                                        
+		ipv4sa_rx       => ipv4sa_rx,
+                                        
+		udppl_rxdv      => udppl_rxdv,
+		udpdp_rxdv      => udpdp_rxdv,
+		udpsp_rx        => udpsp_rx,
+                                        
+		tx_rdy       => mysrv_rdy,
+		tx_req       => mysrv_req,
+		tx_gnt       => mysrv_gnt,
+		dll_hwda        => mysrv_hwda,
+		ipv4_da         => mysrv_ipv4da,
+		udp_len         => mysrv_udplen,
+		udp_dp          => mysrv_udpdp,
+		udppl_txen      => mysrv_udppltxen,
+		udppl_txd       => mysrv_udppltxd);
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
