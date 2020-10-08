@@ -82,8 +82,8 @@ architecture struct of mii_debug is
 	signal mysrv_gnt     : std_logic;
 	signal mysrv_hwda    : std_logic_vector(0 to 48-1);
 	signal mysrv_ipv4da   : std_logic_vector(0 to 32-1);
-	signal mysrv_udplen  : std_logic_vector(0 to 16-1);
 	signal mysrv_udpdp   : std_logic_vector(0 to 16-1);
+	signal mysrv_udpsp   : std_logic_vector(0 to 16-1);
 
 	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
 	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
@@ -115,13 +115,14 @@ begin
 		udpdp_rxdv      => udpdp_rxdv,
 		udpsp_rx        => udpsp_rx,
                                         
-		tx_rdy       => mysrv_rdy,
-		tx_req       => mysrv_req,
-		tx_gnt       => mysrv_gnt,
+		tx_rdy          => mysrv_rdy,
+		tx_req          => mysrv_req,
+		tx_gnt          => mysrv_gnt,
 		dll_hwda        => mysrv_hwda,
 		ipv4_da         => mysrv_ipv4da,
-		udp_len         => mysrv_udplen,
+		udppl_len       => mysrv_udppllen,
 		udp_dp          => mysrv_udpdp,
+		udp_sp          => mysrv_udpsp,
 		udppl_txen      => mysrv_udppltxen,
 		udppl_txd       => mysrv_udppltxd);
 
@@ -140,9 +141,9 @@ begin
 		txc_rxdv      => txc_rxdv,
 		txc_rxd       => txc_rxd,
 
-		extern_req    => mysrv_req,
-		extern_rdy    => mysrv_rdy,
-		extern_gnt    => mysrv_gnt,
+		tx_req    => mysrv_req,
+		tx_rdy    => mysrv_rdy,
+		tx_gnt    => mysrv_gnt,
 		dll_hwda      => mysrv_hwda,
 		ipv4_da       => mysrv_ipv4da,
 		dll_rxdv      => dll_rxdv,
@@ -157,6 +158,8 @@ begin
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
 		udpsp_rx      => udpsp_rx,
+		udp_sp        => mysrv_udpsp,
+		udp_dp        => mysrv_udpdp,
 		udppl_len     => mysrv_udppllen,
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd,

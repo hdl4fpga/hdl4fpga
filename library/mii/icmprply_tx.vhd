@@ -41,7 +41,7 @@ entity icmprply_tx is
 		icmp_cksm : in  std_logic_vector(0 to 16-1);
 		icmp_id   : in  std_logic_vector(0 to 16-1);
 		icmp_seq  : in  std_logic_vector(0 to 16-1);
-		icmp_txen : buffer std_logic := '0';
+		icmp_txen : out std_logic := '0';
 		icmp_txd  : out std_logic_vector);
 end;
 

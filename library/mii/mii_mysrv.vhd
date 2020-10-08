@@ -57,8 +57,9 @@ entity mii_mysrv is
 
 		dll_hwda      : out std_logic_vector(0 to 48-1) := (others => '-');
 		ipv4_da       : out std_logic_vector(0 to 32-1) := (others => '-');
-		udp_len       : out std_logic_vector(0 to 16-1) := (others => '-');
+		udppl_len     : out std_logic_vector(0 to 16-1) := (others => '-');
 		udp_dp        : out std_logic_vector(0 to 16-1) := (others => '-');
+		udp_sp        : out std_logic_vector(0 to 16-1);
 
 		udppl_txen    : out  std_logic;
 		udppl_txd     : out  std_logic_vector;
@@ -89,6 +90,7 @@ begin
 		mii_rxd  => dll_rxd,
 		mii_ena  => udpdp_rxdv,
 		mii_equ  => myport_rcvd);
+	udp_sp <= mysrv_port;
 
 	process (mii_txc)
 	begin
@@ -127,7 +129,7 @@ begin
 		end if;
 	end process;
 
-	udp_len <= x"0002";
+	udppl_len <= x"0002";
 	myack_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => x"1234",
