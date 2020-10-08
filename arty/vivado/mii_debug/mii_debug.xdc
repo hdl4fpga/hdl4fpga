@@ -1,9 +1,14 @@
 create_clock -name gclk100 -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100 ]      
 create_clock -period 40.000 -name eth_tx_clk -waveform {0.000 20.000} [get_ports eth_tx_clk]
 
+set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS18 } [get_ports gclk100]
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { video_clk   }
 
-set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS18 } [get_ports gclk100]
+
+set_property -dict { PACKAGE_PIN C2 IOSTANDARD LVCMOS18 } [get_ports resetn]
+set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 } [ get_ports uart_txd_in]
+set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS33 } [ get_ports uart_rxd_out]
+
 
 set_property -dict { PACKAGE_PIN B8  IOSTANDARD LVCMOS33 } [ get_ports btn[3]]
 set_property -dict { PACKAGE_PIN B9  IOSTANDARD LVCMOS33 } [ get_ports btn[2]]
