@@ -63,7 +63,7 @@ entity mii_ipoe is
 		ipv4sa_rx     : buffer std_logic_vector(0 to 32-1);
 
 		extern_req    : in std_logic := '0';
-		extern_rdy    : buffer std_logic;
+		extern_rdy    : out std_logic;
 		extern_gnt    : buffer std_logic;
 
 		dll_hwda      : in std_logic_vector(0 to 48-1) := (others => '-');
@@ -96,9 +96,9 @@ end;
 architecture def of mii_ipoe is
 
 
-	signal mii_gnt       : std_logic_vector(0 to 4-1);
+	signal mii_gnt       : std_logic_vector(0 to 5-1);
 
-	signal mii_req       : std_logic_vector(mii_gnt'range);
+	signal mii_req       : std_logic_vector(mii_gnt'range) := (others => '0');
 	signal mii_rdy       : std_logic_vector(mii_gnt'range);
 	signal dllhwda_equ   : std_logic;
 
@@ -194,7 +194,7 @@ begin
 	end process;
 
 	mii_req(3) <= extern_req;
-	extern_rdy <= mii_rdy(3);
+--	extern_rdy <= mii_rdy(3);
 	extern_gnt <= mii_gnt(3);
 
 	process (mii_txc)
@@ -428,7 +428,7 @@ begin
 		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & dhcp_gnt); 
 		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & dhcp_gnt);
 		ip4pl_txen  <= icmp_txen or udpdhcp_txen or udp_txen;
-		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd or udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
+		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
 		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
 		ip4tx_e : entity hdl4fpga.ipv4_tx

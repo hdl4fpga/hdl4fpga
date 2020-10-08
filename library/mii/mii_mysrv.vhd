@@ -44,21 +44,21 @@ entity mii_mysrv is
 		dllcrc32_rxdv : in std_logic;
 		dllcrc32_equ  : in std_logic;
 
-		ipv4sa_rx      : in  std_logic_vector(0 to 32-1);
+		ipv4sa_rx     : in  std_logic_vector(0 to 32-1);
 
 		udpdp_rxdv    : in  std_logic;
 		udppl_rxdv    : in  std_logic;
 
 		udpsp_rx      : in  std_logic_vector(0 to 16-1);
 
-		tx_req     : out std_logic;
-		tx_rdy     : in  std_logic;
-		tx_gnt     : in  std_logic;
+		tx_req        : out std_logic := '0';
+		tx_rdy        : in  std_logic;
+		tx_gnt        : in  std_logic;
 
-		dll_hwda    : out std_logic_vector(0 to 48-1) := (others => '-');
-		ipv4_da  : out std_logic_vector(0 to 32-1) := (others => '-');
-		udp_len  : out std_logic_vector(0 to 16-1) := (others => '-');
-		udp_dp   : out std_logic_vector(0 to 16-1) := (others => '-');
+		dll_hwda      : out std_logic_vector(0 to 48-1) := (others => '-');
+		ipv4_da       : out std_logic_vector(0 to 32-1) := (others => '-');
+		udp_len       : out std_logic_vector(0 to 16-1) := (others => '-');
+		udp_dp        : out std_logic_vector(0 to 16-1) := (others => '-');
 
 		udppl_txen    : out  std_logic;
 		udppl_txd     : out  std_logic_vector;
@@ -70,6 +70,7 @@ architecture def of mii_mysrv is
 	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;
+	signal txdv : std_logic;
 begin
 
 	process (mii_txc)
@@ -94,10 +95,15 @@ begin
 		if rising_edge(mii_txc) then
 			if tx_rdy='0' then
 				if myport_rcvd='1' then
-					dll_hwda  <= dllhwsa_rx;
-					ipv4_da <= ipv4sa_rx;
-					udp_dp <= udpsp_rx;
+					dll_hwda <= dllhwsa_rx;
+					ipv4_da  <= ipv4sa_rx;
+					udp_dp   <= udpsp_rx;
 				end if;
+				if tx_gnt='1' then
+--					txdv <= '1';
+				end if;
+			else
+				txdv <= '0';
 			end if;
 		end if;
 	end process;
@@ -120,5 +126,14 @@ begin
 			end if;
 		end if;
 	end process;
+
+	udp_len <= x"0002";
+	myack_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => x"1234",
+        mii_txc  => mii_txc,
+		mii_txdv => tx_gnt,
+        mii_txen => udppl_txen,
+        mii_txd  => udppl_txd);
 
 end;
