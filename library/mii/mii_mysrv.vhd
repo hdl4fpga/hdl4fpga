@@ -71,7 +71,6 @@ architecture def of mii_mysrv is
 	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;
-	signal txdv : std_logic;
 begin
 
 	process (mii_txc)
@@ -101,11 +100,6 @@ begin
 					ipv4_da  <= ipv4sa_rx;
 					udp_dp   <= udpsp_rx;
 				end if;
-				if tx_gnt='1' then
---					txdv <= '1';
-				end if;
-			else
-				txdv <= '0';
 			end if;
 		end if;
 	end process;
@@ -119,7 +113,7 @@ begin
 				rcvd   := '0';
 			elsif dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
-					tx_req <= '1';
+					tx_req <= rcvd;
 					rcvd  := '0';
 				end if;
 			end if;

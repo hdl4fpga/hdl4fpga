@@ -96,8 +96,8 @@ begin
 
 	mysrv_e : entity hdl4fpga.mii_mysrv
 	generic map (
-		mysrv_port    => x"0043")
---		mysrv_port    => x"dea9")
+--		mysrv_port    => x"0043")
+		mysrv_port    => x"dea9")
 	port map (
 		mii_txc         => mii_txc,
 		mii_txd         => mii_txd,
