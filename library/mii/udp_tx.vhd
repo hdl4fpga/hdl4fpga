@@ -76,7 +76,7 @@ begin
 
 
 	udp_len <= std_logic_vector(unsigned(udppl_len) + (summation(udp4hdr_frame)/octect_size));
-	udp_hdr <= reverse(udp_sp,8) & reverse(udp_dp,8) & reverse(udp_len,8) & udp_cksm;
+	udp_hdr <= udp_sp & udp_dp & udp_len & udp_cksm;
 
 	udphdr_e : entity hdl4fpga.mii_mux
 	port map (

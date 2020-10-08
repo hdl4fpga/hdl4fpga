@@ -429,8 +429,8 @@ begin
 		ip4sa_tx    <= wirebus(cfgipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
 		ip4da       <= wirebus(icmp_ip4da & ipv4_da, icmp_gnt & extern_gnt);
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
-		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & dhcp_gnt); 
-		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & dhcp_gnt);
+		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & (dhcp_gnt or extern_gnt)); 
+		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & (dhcp_gnt or extern_gnt));
 		ip4pl_txen  <= icmp_txen or udpdhcp_txen or udp_txen;
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
@@ -586,6 +586,7 @@ begin
 
 		udp_b : block
 			signal udp_ena : std_logic;
+			signal udp_len   : std_logic_vector(0 to 16-1);
 			signal udplen_tx : std_logic_vector(0 to 16-1);
 
 		begin
@@ -618,7 +619,7 @@ begin
 				mii_rxd  => txc_rxd,
 				des_data => udpsp_rx);
 
-			udplen_tx <= wirebus(udpdhcp_len & udppl_len , dhcp_gnt & extern_gnt);
+			udplen_tx <= wirebus(udpdhcp_len & udp_len , dhcp_gnt & extern_gnt);
 			udpip_len <= std_logic_vector(unsigned(udplen_tx) + (summation(ip4hdr_frame))/octect_size);
 
 			udp_tx : entity hdl4fpga.udp_tx
@@ -627,8 +628,9 @@ begin
 				udp_ptr    => txfrm_ptr,
 				udppl_txen => udppl_txen,
 				udppl_txd  => udppl_txd,
-				udppl_len  => udplen_tx,
+				udppl_len  => udppl_len,
 				udp_cksm   => udp_cksm,
+				udp_len    => udp_len,
 				udp_sp     => udp_sp,
 				udp_dp     => udp_dp,
 
