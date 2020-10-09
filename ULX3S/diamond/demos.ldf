@@ -770,7 +770,7 @@
         <Source name="../../library/mii/mii_cmp.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/mii/mii_mysrv.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/mii/mii_demosrv.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">

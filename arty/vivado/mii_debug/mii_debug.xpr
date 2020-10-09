@@ -408,7 +408,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/mii/mii_mysrv.vhd">
+      <File Path="$PPRDIR/../../../library/mii/mii_demosrv.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>

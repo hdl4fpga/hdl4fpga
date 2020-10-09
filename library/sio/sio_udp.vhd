@@ -30,9 +30,8 @@ use hdl4fpga.std.all;
 
 entity sio_udp is
 	generic (
-		preamble_disable : boolean := false;
-		crc_disable : boolean := false;
-		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
@@ -73,97 +72,77 @@ architecture struct of sio_udp is
 	signal udppl_rxdv   : std_logic;
 
 begin
-	
-	so_clk  <= mii_txc;
 
-	ipoe_e : entity hdl4fpga.mii_ipoe
+	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
-		mymac : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03")
+		default_ipv4a => default_ipv4a,
+		mymac         => mymac)
 	port map (
-		mii_rxc      => mii_rxc,
-		mii_rxd      => mii_rxd,
-		mii_rxdv     => mii_rxdv,
+		mii_rxc       => mii_rxc,
+		mii_rxd       => mii_rxd,
+		mii_rxdv      => mii_rxdv,
 
-		mii_txc      => mii_txc,
-		mii_txd      => mii_txd,
-		mii_txen     => mii_txen,
+		mii_txc       => mii_txc,
+		mii_txd       => mii_txd,
+		mii_txen      => mii_txen,
 
-		txc_rxdv     => txc_rxdv,
-		txc_rxd      => txc_rxd,
+		txc_rxdv      => txc_rxdv,
+		txc_rxd       => txc_rxd,
 
-		dhcp_req     => dhcp_req,
-		dhcp_rcvd    => dhcp_rcvd,
+		tx_req        => mysrv_req,
+		tx_rdy        => mysrv_rdy,
+		tx_gnt        => mysrv_gnt,
+		dll_hwda      => mysrv_hwda,
+		ipv4_da       => mysrv_ipv4da,
+		dll_rxdv      => dll_rxdv,
+		dllhwsa_rx    => dllhwsa_rx,
+		dllcrc32_rxdv => dllcrc32_rxdv,
+		dllcrc32_rxd  => dllcrc32_rxd,
+		dllcrc32_equ  => dllcrc32_equ,
 
-		ethhwda_rxdv => ethhwda_rxdv,
-		ethhwsa_rxdv => ethhwsa_rxdv,
+		ipv4sa_rx     => ipv4sa_rx,
+		ipv4a_req     => dhcp_req,
+                                      
+		udpdp_rxdv    => udpdp_rxdv,
+		udppl_rxdv    => udppl_rxdv,
+		udpsp_rx      => udpsp_rx,
+		udp_sp        => mysrv_udpsp,
+		udp_dp        => mysrv_udpdp,
+		udppl_len     => mysrv_udppllen,
+		udppl_txen    => mysrv_udppltxen,
+		udppl_txd     => mysrv_udppltxd);
 
-		ip4da_rxdv   => ip4da_rxdv,
-		ip4sa_rxdv   => ip4sa_rxdv,
-
-		udpsp_rxdv   => udpsp_rxdv,
-		udpdp_rxdv   => udpdp_rxdv,
-		udplen_rxdv  => udplen_rxdv,
-		udpcksm_rxdv => udpcksm_rxdv,
-		udppl_rxdv   => udppl_rxdv);
-
-	srvp_e : entity hdl4fpga.mii_romcmp
+	miisio_e : entity hdl4fpga.mii_sioudpsrv
 	generic map (
-		mem_data => reverse(std_logic_vector(to_unsigned(57001,16)),8))
+		mysrv_port => std_logic_vector(to_unsigned(57001, 16)),
+		data       => to_ascii("Hello world"))
 	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => txc_rxdv,
-		mii_ena  => udpdp_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_equ  => srvp_chk);
-
-	clip_crc_b : block
-		constant lat    : natural := 32/mii_rxd'length;
-
-		signal dv : std_logic;
-		signal data : std_logic_vector(mii_rxd'range);
-	begin
-
-		dvlat_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => lat))
-		port map (
-			clk   => mii_txc,
-			di(0) => udppl_rxdv,
-			do(0) => dv);
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if not crc_disable then
-					so_dv <= udpdports_vld(0) and dv;
-				else	
-					so_dv <= udpdports_vld(0) and udppl_rxdv;
-				end if;
-			end if;
-		end process;
-
-		datalat_e : entity hdl4fpga.align
-		generic map (
-			n => mii_rxd'length,
-			d => (1 to mii_rxd'length => lat))
-		port map (
-			clk => mii_txc,
-			di  => txc_rxd,
-			do  => data);
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if not crc_disable then
-					so_data <= data;
-				else	
-					so_data <= txc_rxd;
-				end if;
-			end if;
-		end process;
-
-	end block;
+		mii_txc       => mii_txc,
+		mii_txd       => mii_txd,
+                                      
+		dll_rxdv      => dll_rxdv,
+		dll_rxd       => txc_rxd,
+                                      
+		dllhwsa_rx    => dllhwsa_rx,
+		dllcrc32_rxdv => dllcrc32_rxdv,
+		dllcrc32_equ  => dllcrc32_equ,
+                                      
+		ipv4sa_rx     => ipv4sa_rx,
+                                      
+		udppl_rxdv    => udppl_rxdv,
+		udpdp_rxdv    => udpdp_rxdv,
+		udpsp_rx      => udpsp_rx,
+                                      
+		tx_rdy        => mysrv_rdy,
+		tx_req        => mysrv_req,
+		tx_gnt        => mysrv_gnt,
+		dll_hwda      => mysrv_hwda,
+		ipv4_da       => mysrv_ipv4da,
+		udppl_len     => mysrv_udppllen,
+		udp_dp        => mysrv_udpdp,
+		udp_sp        => mysrv_udpsp,
+		udppl_txen    => mysrv_udppltxen,
+		udppl_txd     => mysrv_udppltxd);
 
 
 end;

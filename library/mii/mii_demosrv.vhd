@@ -30,9 +30,10 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity mii_mysrv is
+entity mii_demosrv is
 	generic (
-		mysrv_port    : std_logic_vector(0 to 16-1));
+		mysrv_port    : std_logic_vector(0 to 16-1);
+		data          : std_logic_vector);
 	port (
 		mii_txc       : in  std_logic;
 		mii_txd       : in  std_logic_vector;
@@ -67,7 +68,7 @@ entity mii_mysrv is
 
 end;
 
-architecture def of mii_mysrv is
+architecture def of mii_demosrv is
 	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;
@@ -123,13 +124,14 @@ begin
 		end if;
 	end process;
 
-	udppl_len <= x"0002";
-	myack_e : entity hdl4fpga.mii_mux
+	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
+	myack_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(data,8))
 	port map (
-		mux_data => x"1234",
         mii_txc  => mii_txc,
-		mii_txdv => tx_gnt,
-        mii_txen => udppl_txen,
+		mii_txen => tx_gnt,
+        mii_txdv => udppl_txen,
         mii_txd  => udppl_txd);
 
 end;

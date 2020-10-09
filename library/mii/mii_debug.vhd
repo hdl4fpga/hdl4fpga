@@ -65,25 +65,25 @@ architecture struct of mii_debug is
 	signal txc_rxd  : std_logic_vector(mii_rxd'range);
 	signal txc_rxdv : std_logic;
 
-	signal dll_rxdv      : std_logic;
-	signal dllhwsa_rx    : std_logic_vector(0 to 48-1);
-	signal dllcrc32_rxdv : std_logic;
-	signal dllcrc32_equ  : std_logic;
-	signal dllcrc32_rxd  : std_logic_vector(mii_rxd'range);
-	signal dllcrc32      : std_logic_vector(0 to 32-1);
+	signal dll_rxdv        : std_logic;
+	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
+	signal dllcrc32_rxdv   : std_logic;
+	signal dllcrc32_equ    : std_logic;
+	signal dllcrc32_rxd    : std_logic_vector(mii_rxd'range);
+	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
-	signal ipv4sa_rx     : std_logic_vector(0 to 32-1);
-	signal udpsp_rx      : std_logic_vector(0 to 16-1);
-	signal udpdp_rxdv    : std_logic;
-	signal udppl_rxdv    : std_logic;
+	signal ipv4sa_rx       : std_logic_vector(0 to 32-1);
+	signal udpsp_rx        : std_logic_vector(0 to 16-1);
+	signal udpdp_rxdv      : std_logic;
+	signal udppl_rxdv      : std_logic;
 
-	signal mysrv_req     : std_logic;
-	signal mysrv_rdy     : std_logic;
-	signal mysrv_gnt     : std_logic;
-	signal mysrv_hwda    : std_logic_vector(0 to 48-1);
-	signal mysrv_ipv4da   : std_logic_vector(0 to 32-1);
-	signal mysrv_udpdp   : std_logic_vector(0 to 16-1);
-	signal mysrv_udpsp   : std_logic_vector(0 to 16-1);
+	signal mysrv_req       : std_logic;
+	signal mysrv_rdy       : std_logic;
+	signal mysrv_gnt       : std_logic;
+	signal mysrv_hwda      : std_logic_vector(0 to 48-1);
+	signal mysrv_ipv4da    : std_logic_vector(0 to 32-1);
+	signal mysrv_udpdp     : std_logic_vector(0 to 16-1);
+	signal mysrv_udpsp     : std_logic_vector(0 to 16-1);
 
 	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
 	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
@@ -94,37 +94,37 @@ architecture struct of mii_debug is
 
 begin
 
-	mysrv_e : entity hdl4fpga.mii_mysrv
+	mysrv_e : entity hdl4fpga.mii_demosrv
 	generic map (
---		mysrv_port    => x"0043")
-		mysrv_port    => x"dea9")
+		mysrv_port => x"dea9",
+		data       => to_ascii("Hello world"))
 	port map (
-		mii_txc         => mii_txc,
-		mii_txd         => mii_txd,
-                                        
-		dll_rxdv        => dll_rxdv,
-		dll_rxd         => txc_rxd,
-                                        
-		dllhwsa_rx      => dllhwsa_rx,
-		dllcrc32_rxdv   => dllcrc32_rxdv,
-		dllcrc32_equ    => dllcrc32_equ,
-                                        
-		ipv4sa_rx       => ipv4sa_rx,
-                                        
-		udppl_rxdv      => udppl_rxdv,
-		udpdp_rxdv      => udpdp_rxdv,
-		udpsp_rx        => udpsp_rx,
-                                        
-		tx_rdy          => mysrv_rdy,
-		tx_req          => mysrv_req,
-		tx_gnt          => mysrv_gnt,
-		dll_hwda        => mysrv_hwda,
-		ipv4_da         => mysrv_ipv4da,
-		udppl_len       => mysrv_udppllen,
-		udp_dp          => mysrv_udpdp,
-		udp_sp          => mysrv_udpsp,
-		udppl_txen      => mysrv_udppltxen,
-		udppl_txd       => mysrv_udppltxd);
+		mii_txc       => mii_txc,
+		mii_txd       => mii_txd,
+                                      
+		dll_rxdv      => dll_rxdv,
+		dll_rxd       => txc_rxd,
+                                      
+		dllhwsa_rx    => dllhwsa_rx,
+		dllcrc32_rxdv => dllcrc32_rxdv,
+		dllcrc32_equ  => dllcrc32_equ,
+                                      
+		ipv4sa_rx     => ipv4sa_rx,
+                                      
+		udppl_rxdv    => udppl_rxdv,
+		udpdp_rxdv    => udpdp_rxdv,
+		udpsp_rx      => udpsp_rx,
+                                      
+		tx_rdy        => mysrv_rdy,
+		tx_req        => mysrv_req,
+		tx_gnt        => mysrv_gnt,
+		dll_hwda      => mysrv_hwda,
+		ipv4_da       => mysrv_ipv4da,
+		udppl_len     => mysrv_udppllen,
+		udp_dp        => mysrv_udpdp,
+		udp_sp        => mysrv_udpsp,
+		udppl_txen    => mysrv_udppltxen,
+		udppl_txd     => mysrv_udppltxd);
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
@@ -141,9 +141,9 @@ begin
 		txc_rxdv      => txc_rxdv,
 		txc_rxd       => txc_rxd,
 
-		tx_req    => mysrv_req,
-		tx_rdy    => mysrv_rdy,
-		tx_gnt    => mysrv_gnt,
+		tx_req        => mysrv_req,
+		tx_rdy        => mysrv_rdy,
+		tx_gnt        => mysrv_gnt,
 		dll_hwda      => mysrv_hwda,
 		ipv4_da       => mysrv_ipv4da,
 		dll_rxdv      => dll_rxdv,
