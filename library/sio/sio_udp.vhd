@@ -156,5 +156,65 @@ begin
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd);
 
+	serdes_e : entity hdl4fpga.serdes
+	port map (
+		serdes_clk => mii_txc,
+		serdes_frm => dll_txen,
+		ser_irdy   => '1',
+		ser_data   => mii_txd,
+
+		des_irdy   => des_irdy,
+		des_data   => des_data);
+
+	buufer_p : block
+		subtype byte is std_logic_vector(0 to hdl4fpga.std.min(des_data'length,dst_data'length)-1);
+
+
+		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
+		subtype addr_range is natural range 1 to addr_length;
+
+		signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
+		signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+
+		signal dst_ini  : std_logic;
+		signal feed_ena : std_logic;
+	begin
+
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				wr_cntr <= wr_cntr + 1;
+			end if;
+		end process;
+
+		mem_e : entity hdl4fpga.dpram(def)
+		generic map (
+			synchronous_rdaddr => false,
+			synchronous_rddata => true,
+			bitrom => mem_data)
+		port map (
+			wr_clk  => mii_txc,
+			wr_ena  => des_irdy,
+			wr_addr => std_logic_vector(wr_cntr(addr_range)),
+			wr_data => des_data, 
+
+			rd_clk  => mii_txc,
+			rd_ena  => feed_ena,
+			rd_addr => std_logic_vector(rd_cntr(addr_range)),
+			rd_data => dst_data);
+
+		dstirdy_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => 1),
+			i => (0 to 0 => '0'))
+		port map (
+			clk   => dst_clk,
+			ini   => dst_ini,
+			ena   => feed_ena,
+			di(0) => dst_irdy1,
+			do(0) => dst_irdy);
+	end block;
+
 
 end;
