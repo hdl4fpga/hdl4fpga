@@ -56,20 +56,32 @@ end;
 
 architecture struct of sio_udp is
 
-	signal txc_rxdv     : std_logic;
-	signal txc_rxd      : std_logic_vector(mii_rxd'range);
+	signal txc_rxd  : std_logic_vector(mii_rxd'range);
+	signal txc_rxdv : std_logic;
 
-	signal ethhwda_rxdv : std_logic;
-	signal ethhwsa_rxdv : std_logic;
+	signal dll_rxdv        : std_logic;
+	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
+	signal dllcrc32_rxdv   : std_logic;
+	signal dllcrc32_equ    : std_logic;
+	signal dllcrc32_rxd    : std_logic_vector(mii_rxd'range);
+	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
-	signal ip4da_rxdv   : std_logic;
-	signal ip4sa_rxdv   : std_logic;
+	signal ipv4sa_rx       : std_logic_vector(0 to 32-1);
+	signal udpsp_rx        : std_logic_vector(0 to 16-1);
+	signal udpdp_rxdv      : std_logic;
+	signal udppl_rxdv      : std_logic;
 
-	signal udpsp_rxdv   : std_logic;
-	signal udpdp_rxdv   : std_logic;
-	signal udplen_rxdv  : std_logic;
-	signal udpcksm_rxdv : std_logic;
-	signal udppl_rxdv   : std_logic;
+	signal mysrv_req       : std_logic;
+	signal mysrv_rdy       : std_logic;
+	signal mysrv_gnt       : std_logic;
+	signal mysrv_hwda      : std_logic_vector(0 to 48-1);
+	signal mysrv_ipv4da    : std_logic_vector(0 to 32-1);
+	signal mysrv_udpdp     : std_logic_vector(0 to 16-1);
+	signal mysrv_udpsp     : std_logic_vector(0 to 16-1);
+
+	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
+	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
+	signal mysrv_udppltxen : std_logic;
 
 begin
 
@@ -112,7 +124,7 @@ begin
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd);
 
-	miisio_e : entity hdl4fpga.mii_sioudpsrv
+	miisio_e : entity hdl4fpga.mii_siosrv
 	generic map (
 		mysrv_port => std_logic_vector(to_unsigned(57001, 16)),
 		data       => to_ascii("Hello world"))
