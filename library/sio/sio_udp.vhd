@@ -48,10 +48,6 @@ entity sio_udp is
 
 		sio_clk   : in  std_logic;
 
-		si_dv     : in  std_logic;
-		si_data   : in  std_logic_vector;
-
-		so_clk    : in  std_logic;
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector);
 end;
@@ -215,15 +211,15 @@ begin
 			wr_addr => std_logic_vector(wr_cntr(addr_range)),
 			wr_data => des_data, 
 
-			rd_clk  => so_clk,
+			rd_clk  => sio_clk,
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => so_data);
 
 		dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-		process(so_clk)
+		process(sio_clk)
 		begin
-			if rising_edge(so_clk) then
+			if rising_edge(sio_clk) then
 				if feed_ena='1' then
 					so_dv <= dst_irdy1;
 					if dst_irdy1='1' then

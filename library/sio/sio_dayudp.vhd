@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
 
 entity sio_dayudp is
 	generic (
@@ -47,10 +46,12 @@ entity sio_dayudp is
 		ipcfg_vld   : buffer std_logic;
 		chaini_sel  : in  std_logic := '0';
 
-		so_clk      : in  std_logic := '0';
-		soday_frm   : in  std_logic := '0';
-		soday_irdy  : in  std_logic := '0';
-		soday_data  : in  std_logic_vector;
+		sio_clk     : in  std_logic;
+		sio_addr    : in  std_logic;
+
+		si_frm      : in  std_logic := '0';
+		si_irdy     : in  std_logic := '0';
+		si_data     : in  std_logic_vector;
 
 		so_frm      : out std_logic;
 		so_irdy     : out std_logic;
@@ -58,29 +59,12 @@ entity sio_dayudp is
 	
 end;
 
-architecture beh of scopeio_udpipdaisy is
+architecture beh of sio_dayudp is
 
-	constant ipaddr_size : std_logic_vector := x"03";
-	constant id_size : std_logic_vector := rid_ipaddr & ipaddr_size;
+	signal soudp_dv   : std_logic;
+	signal soudp_data : std_logic_vector(so_data'range);
 
-	signal udpso_dv   : std_logic;
-	signal udpso_d    : std_logic_vector(phy_rx_d'range);
-
-	signal hdr_trdy   : std_logic;
-	signal hdr_dv     : std_logic;
-	signal hdr_d      : std_logic_vector(phy_tx_d'range);
-
-	signal ipaddr_dv  : std_logic;
-	signal ipaddr_d   : std_logic_vector(phy_tx_d'range);
-
-	signal myipcfg_dv : std_logic;
-	signal mymac_dv : std_logic;
-	signal frm : std_logic_vector(0 to 0);
 begin
-
-	assert phy_rx_d'length=chaini_data'length 
-	report "phy_rx_d'length is not equal chaini_data'length"
-	severity failure;
 
 	sioudpp_e : entity hdl4fpga.sio_udp
 	generic map (
@@ -92,60 +76,16 @@ begin
 		mii_rxd     => phy_rx_d,
 
 		mii_txc     => phy_txc,
-		mii_txdv    => phy_tx_en,
+		mii_txen    => phy_tx_en,
 		mii_txd     => phy_tx_d,
 
 		ipv4a_req   => ipcfg_req,
-		myip4a      => myipv4a,
-		so_clk      => so_clk,
+		sio_clk     => sio_clk,
 		so_dv       => soudp_dv,
-		so_data     => soudp_d);
+		so_data     => soudp_data);
 
-	hdr_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(id_size,8))
-    port map (
-        mii_txc  => phy_rxc,
-		mii_treq => myipcfg_dv,
-		mii_trdy => hdr_trdy,
-        mii_txdv => hdr_dv,
-        mii_txd  => hdr_d);
-
-	phy_rxd_e : entity hdl4fpga.align
-	generic map (
-		n => phy_rx_d'length,
-		d => (0 to phy_rx_d'length-1 => id_size'length/phy_rx_d'length))
-	port map (
-		clk => phy_rxc,
-		di  => phy_rx_d,
-		do  => ipaddr_d);
-
-	phy_rxdv_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => id_size'length/phy_rx_d'length))
-	port map (
-		clk   => phy_rxc,
-		di(0) => myipcfg_dv,
-		do(0) => ipaddr_dv);
-
-	process (phy_rxc)
-		variable edge : std_logic;
-	begin
-		if rising_edge(phy_rxc) then
-			if ipcfg_req='1' and edge='0' then
-				ipcfg_vld <= '0';
-			elsif ipcfg_vld='0' then
-				ipcfg_vld <= myipcfg_dv;
-			end if;
-			edge := ipcfg_req;
-		end if;
-	end process;
-
-	frm <= word2byte(word2byte(hdr_dv & ipaddr_dv, ipaddr_dv) & udpso_dv, udpso_dv);
-
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else so_udpdv; 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else so_udpdv;
-	chaino_data <= chaini_data when chaini_sel='1' else reverse(word2byte(word2byte(hdr_d  & ipaddr_d,  ipaddr_dv) & udpso_d,  udpso_dv));
+	so_frm  <= si_frm  when sio_addr='1' else soudp_dv; 
+	so_irdy <= si_irdy when sio_addr='1' else soudp_dv;
+	so_data <= si_data when sio_addr='1' else soudp_data;
 
 end;
