@@ -183,7 +183,13 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				wr_cntr <= wr_cntr + 1;
+				if udppl_rxdv='1' then
+					wr_cntr <= wr_cntr + 1;
+				elsif crc_wrong='1' then
+					wr_cntr <= rd_cntr;
+				else
+					 <= '1';
+				end if;
 			end if;
 		end process;
 
@@ -202,6 +208,19 @@ begin
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => dst_data);
+
+		dst_irdy1 <= setif(wr_cntr /= rd_cntr);
+		feed_ena  <= dst_trdy or not dst_irdy;
+		process(dst_clk)
+		begin
+			if rising_edge(dst_clk) then
+				if feed_ena='1' then
+					if dst_irdy1='1' then
+						rd_cntr <= rd_cntr+1;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		dstirdy_e : entity hdl4fpga.align
 		generic map (
