@@ -35,6 +35,8 @@ HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
 HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
+HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
+HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
@@ -154,6 +156,8 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__std) \
     $(HDL4FPGA__sio_udp__struct) \
     $(HDL4FPGA__sio_udp) \
+    $(HDL4FPGA__sio_dayudp__beh) \
+    $(HDL4FPGA__sio_dayudp) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
     $(HDL4FPGA__rom__def) \
@@ -758,6 +762,18 @@ $(HDL4FPGA__serdes__def) : ../common/serdes.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/serdes.vhd
+
+$(HDL4FPGA__sio_dayudp) \
+$(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__sio_udp) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayudp.vhd
 
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
