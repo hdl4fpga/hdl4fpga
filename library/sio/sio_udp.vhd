@@ -47,11 +47,12 @@ entity sio_udp is
 		dchp_rcvd : in  std_logic;
 		myip4a    : buffer std_logic_vector(0 to 32-1);
 
-		sio_clk   : out std_logic;
+		sio_clk   : in  std_logic;
 
 		si_dv     : in  std_logic;
 		si_data   : in  std_logic_vector;
 
+		so_clk    : in  std_logic;
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector);
 end;
@@ -159,7 +160,7 @@ begin
 
 	buffer_p : block
 		constant mem_size : natural := 2048*8;
-		signal des_data : std_logic_vector(0 to octect_size-1);
+		signal des_data : std_logic_vector(0 to so_data'length-1);
 
 		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/des_data'length-1);
 		subtype addr_range is natural range 1 to addr_length;
@@ -167,12 +168,11 @@ begin
 		signal wr_ptr    : unsigned(0 to addr_length);
 		signal wr_cntr   : unsigned(0 to addr_length);
 		signal rd_cntr   : unsigned(0 to addr_length);
-		signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);  
 
 		signal des_irdy  : std_logic;
 		signal dst_irdy  : std_logic;
 		signal dst_irdy1 : std_logic;
-		signal feed_ena : std_logic;
+		signal feed_ena  : std_logic;
 
 	begin
 
@@ -195,7 +195,7 @@ begin
 				elsif dllcrc32_rxdv='0' then
 					if rxdv='1' then
 						if dllcrc32_equ='1' then
-							wr_ptr  <= wr_contr;
+							wr_ptr  <= wr_cntr;
 						else
 							wr_cntr <= wr_ptr;
 						end if;
@@ -205,28 +205,28 @@ begin
 			end if;
 		end process;
 
-		feed_ena  <= dst_trdy or not dst_irdy;
+		feed_ena  <= not dst_irdy;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => true,
-			bitrom => mem_data)
+			synchronous_rddata => true)
 		port map (
 			wr_clk  => mii_txc,
 			wr_ena  => des_irdy,
 			wr_addr => std_logic_vector(wr_cntr(addr_range)),
 			wr_data => des_data, 
 
-			rd_clk  => mii_txc,
+			rd_clk  => so_clk,
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
-			rd_data => dst_data);
+			rd_data => so_data);
 
 		dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-		process(dst_clk)
+		process(so_clk)
 		begin
-			if rising_edge(dst_clk) then
+			if rising_edge(so_clk) then
 				if feed_ena='1' then
+					so_dv <= dst_irdy1;
 					if dst_irdy1='1' then
 						rd_cntr <= rd_cntr + 1;
 					end if;
