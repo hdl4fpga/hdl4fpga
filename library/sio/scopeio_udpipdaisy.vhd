@@ -29,11 +29,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_udpipdaisy is
+entity sio_dayudp is
 	generic (
-		preamble_disable : boolean := false;
-		crc_disable      : boolean := false
-	);
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		ipcfg_req   : in  std_logic := '-';
 
@@ -48,15 +47,14 @@ entity scopeio_udpipdaisy is
 		ipcfg_vld   : buffer std_logic;
 		chaini_sel  : in  std_logic := '0';
 
-		chaini_clk  : in  std_logic := '0';
-		chaini_frm  : in  std_logic := '0';
-		chaini_irdy : in  std_logic := '0';
-		chaini_data : in  std_logic_vector;
+		so_clk      : in  std_logic := '0';
+		soday_frm   : in  std_logic := '0';
+		soday_irdy  : in  std_logic := '0';
+		soday_data  : in  std_logic_vector;
 
-		chaino_clk  : out std_logic;
-		chaino_frm  : out std_logic;
-		chaino_irdy : out std_logic;
-		chaino_data : out std_logic_vector);
+		so_frm      : out std_logic;
+		so_irdy     : out std_logic;
+		so_data     : out std_logic_vector);
 	
 end;
 
@@ -84,25 +82,24 @@ begin
 	report "phy_rx_d'length is not equal chaini_data'length"
 	severity failure;
 
-	miiip_e : entity hdl4fpga.scopeio_miiudp
+	sioudpp_e : entity hdl4fpga.sio_udp
 	generic map (
-		preamble_disable => preamble_disable,
-		crc_disable      => crc_disable
-	)
+		default_ipv4a => default_ipv4a,
+		mymac         => mymac)
 	port map (
 		mii_rxc     => phy_rxc,
 		mii_rxdv    => phy_rx_dv,
 		mii_rxd     => phy_rx_d,
 
-		mii_req     => ipcfg_req,
 		mii_txc     => phy_txc,
 		mii_txdv    => phy_tx_en,
 		mii_txd     => phy_tx_d,
 
-		myipcfg_vld => myipcfg_dv,
-		mymac_vld => mymac_dv,
-		so_dv       => udpso_dv,
-		so_data     => udpso_d);
+		ipv4a_req   => ipcfg_req,
+		myip4a      => myipv4a,
+		so_clk      => so_clk,
+		so_dv       => soudp_dv,
+		so_data     => soudp_d);
 
 	hdr_e : entity hdl4fpga.mii_rom
 	generic map (
@@ -147,9 +144,8 @@ begin
 
 	frm <= word2byte(word2byte(hdr_dv & ipaddr_dv, ipaddr_dv) & udpso_dv, udpso_dv);
 
-	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else frm(0); 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else frm(0);
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else so_udpdv; 
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else so_udpdv;
 	chaino_data <= chaini_data when chaini_sel='1' else reverse(word2byte(word2byte(hdr_d  & ipaddr_d,  ipaddr_dv) & udpso_d,  udpso_dv));
 
 end;

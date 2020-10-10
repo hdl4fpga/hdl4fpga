@@ -243,10 +243,7 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
-	scopeio_export_b : block
-
-		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(8-1 downto 0);
+	si_b : block
 
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
@@ -257,12 +254,6 @@ begin
 		signal dmadata_ena : std_logic;
 		signal fifo_rst    : std_logic;
 		signal src_frm     : std_logic;
-
-		signal desser8_frm : std_logic;
-		signal des8_trdy   : std_logic;
-		signal des8_data   : std_logic_vector(uart_rxd'range);
-		signal ser4_irdy   : std_logic;
-		signal ser4_data   : std_logic_vector(mii_rxd'length-1 downto 0);
 
 		signal stream_frm  : std_logic;
 		signal stream_irdy : std_logic;
@@ -277,65 +268,8 @@ begin
 
 	begin
 
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => si_clk,
-			uart_sin  => rs232_rd,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
-
-		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
-		generic map (
-			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
-		port map (
-			stream_clk  => si_clk,
-			stream_dv   => uart_rxdv,
-			stream_data => uart_rxd,
-
-			chaini_data => stream_ddat,
-
-			chaino_frm  => stream_frm,  
-			chaino_irdy => stream_irdy,
-			chaino_data => stream_data);
-
-		process(stream_frm, stream_irdy, des8_trdy, si_clk)
-			variable frm  : std_logic;
-			variable edge : std_logic;
-		begin
-			if rising_edge(si_clk) then
-				if frm='0' then
-					if stream_irdy='1' then
-						frm := stream_frm;
-					end if;
-				elsif des8_trdy='0' then
-					if edge='1' then
-						frm := stream_frm;
-					end if;
-				end if;
-				edge := des8_trdy;
-			end if;
-			desser8_frm <= setif(frm='0', stream_frm and stream_irdy, stream_frm or des8_trdy);
-		end process;
-
-		des8_data <= reverse(reverse(stream_data), ser4_data'length);
-
-		desser4_e : entity hdl4fpga.desser(mux)
-		port map (
-			desser_clk => si_clk,
-			desser_frm => desser8_frm,
-			des_irdy   => stream_irdy,
-			des_trdy   => des8_trdy,
-			des_data   => des8_data,
-
-			ser_irdy   => ser4_irdy,
-			ser_data   => ser4_data);
-
 		ipcfg_req <= not sw1;
-		udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+		udpipdaisy_e : entity hdl4fpga.sio_udpdsy
 		port map (
 			ipcfg_req   => ipcfg_req,
 
@@ -357,7 +291,7 @@ begin
 			chaino_irdy => si_irdy,
 			chaino_data => si_data);
 	
-		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => si_clk,
 			sin_frm   => si_frm,

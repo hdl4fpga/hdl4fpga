@@ -33,12 +33,16 @@ HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
+HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
+HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
 HDL4FPGA__modeline_calculator__body = $(LIB_HDL4FPGA)/modeline_calculator/body.dat
 HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
+HDL4FPGA__mii_siosrv__def = $(LIB_HDL4FPGA)/mii_siosrv/def.dat
+HDL4FPGA__mii_siosrv = $(LIB_HDL4FPGA)/mii_siosrv/_primary.dat
 HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
 HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
 HDL4FPGA__mii_romcmp__def = $(LIB_HDL4FPGA)/mii_romcmp/def.dat
@@ -148,12 +152,16 @@ whole_library :     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__std__body) \
     $(HDL4FPGA__std) \
+    $(HDL4FPGA__sio_udp__struct) \
+    $(HDL4FPGA__sio_udp) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
     $(HDL4FPGA__modeline_calculator__body) \
     $(HDL4FPGA__modeline_calculator) \
+    $(HDL4FPGA__mii_siosrv__def) \
+    $(HDL4FPGA__mii_siosrv) \
     $(HDL4FPGA__mii_rxpre__def) \
     $(HDL4FPGA__mii_rxpre) \
     $(HDL4FPGA__mii_romcmp__def) \
@@ -572,7 +580,7 @@ $(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
 
 $(HDL4FPGA__mii_demosrv) \
 $(HDL4FPGA__mii_demosrv__def) : ../mii/mii_demosrv.vhd \
-		$(HDL4FPGA__mii_mux) \
+		$(HDL4FPGA__mii_rom) \
 		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -711,6 +719,19 @@ $(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_rxpre.vhd
 
+$(HDL4FPGA__mii_siosrv) \
+$(HDL4FPGA__mii_siosrv__def) : ../sio/mii_siosrv.vhd \
+		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__mii_romcmp) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/mii_siosrv.vhd
+
 $(HDL4FPGA__modeline_calculator) \
 $(HDL4FPGA__modeline_calculator__body) : ../video/modeline_calculator.vhd \
 		$(IEEE__std_logic_textio) \
@@ -737,6 +758,21 @@ $(HDL4FPGA__serdes__def) : ../common/serdes.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/serdes.vhd
+
+$(HDL4FPGA__sio_udp) \
+$(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__mii_siosrv) \
+		$(HDL4FPGA__mii_ipoe) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_udp.vhd
 
 $(HDL4FPGA__std) \
 $(HDL4FPGA__std__body) : ../common/std.vhd \

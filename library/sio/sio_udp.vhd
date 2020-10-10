@@ -44,8 +44,7 @@ entity sio_udp is
 		mii_txen  : out std_logic;
 
 		ipv4a_req : in  std_logic;
-		dchp_rcvd : in  std_logic;
-		myip4a    : buffer std_logic_vector(0 to 32-1);
+		myipv4a   : buffer std_logic_vector(0 to 32-1);
 
 		sio_clk   : in  std_logic;
 
