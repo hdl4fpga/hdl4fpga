@@ -168,28 +168,33 @@ begin
 
 	buufer_p : block
 		subtype byte is std_logic_vector(0 to hdl4fpga.std.min(des_data'length,dst_data'length)-1);
-
-
 		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
 		subtype addr_range is natural range 1 to addr_length;
 
 		signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 		signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+		signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);  
 
-		signal dst_ini  : std_logic;
 		signal feed_ena : std_logic;
+		signal dst_irdy1 : std_logic;
 	begin
 
 		process (mii_txc)
+			variable rxdv : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if udppl_rxdv='1' then
 					wr_cntr <= wr_cntr + 1;
-				elsif crc_wrong='1' then
-					wr_cntr <= rd_cntr;
-				else
-					 <= '1';
+				elsif dllcrc32_rxdv='0' then
+					if rxdv='1' the 
+						if dllcrc32_equ='1' then
+							wr_ptr  <= wr_contr;
+						else
+							wr_cntr <= wr_ptr;
+						end if;
+					end if;
 				end if;
+				rxdv := dllcrc32_rxdv;
 			end if;
 		end process;
 
@@ -216,24 +221,21 @@ begin
 			if rising_edge(dst_clk) then
 				if feed_ena='1' then
 					if dst_irdy1='1' then
-						rd_cntr <= rd_cntr+1;
+						rd_cntr <= rd_cntr + 1;
 					end if;
 				end if;
 			end if;
 		end process;
 
-		dstirdy_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => 1),
-			i => (0 to 0 => '0'))
-		port map (
-			clk   => dst_clk,
-			ini   => dst_ini,
-			ena   => feed_ena,
-			di(0) => dst_irdy1,
-			do(0) => dst_irdy);
-	end block;
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if feed_ena='1' then
+					dst_irdy <= dst_irdy1;
+				end if;
+			end if;
+		end process;
 
+	end block;
 
 end;
