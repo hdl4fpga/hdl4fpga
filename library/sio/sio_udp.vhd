@@ -27,6 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
+use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
@@ -39,16 +41,16 @@ entity sio_udp is
 
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
-		mii_txdv  : out std_logic;
+		mii_txen  : out std_logic;
 
-		dchp_req  : in  std_logic;
+		ipv4a_req : in  std_logic;
 		dchp_rcvd : in  std_logic;
 		myip4a    : buffer std_logic_vector(0 to 32-1);
 
 		sio_clk   : out std_logic;
 
 		si_dv     : in  std_logic;
-		si_data   : in  std_logic_vector);
+		si_data   : in  std_logic_vector;
 
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector);
@@ -113,7 +115,7 @@ begin
 		dllcrc32_equ  => dllcrc32_equ,
 
 		ipv4sa_rx     => ipv4sa_rx,
-		ipv4a_req     => dhcp_req,
+		ipv4a_req     => ipv4a_req,
                                       
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
@@ -130,7 +132,6 @@ begin
 		data       => to_ascii("Hello world"))
 	port map (
 		mii_txc       => mii_txc,
-		mii_txd       => mii_txd,
                                       
 		dll_rxdv      => dll_rxdv,
 		dll_rxd       => txc_rxd,
@@ -156,28 +157,34 @@ begin
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd);
 
-	serdes_e : entity hdl4fpga.serdes
-	port map (
-		serdes_clk => mii_txc,
-		serdes_frm => dll_txen,
-		ser_irdy   => '1',
-		ser_data   => mii_txd,
+	buffer_p : block
+		constant mem_size : natural := 2048*8;
+		signal des_data : std_logic_vector(0 to octect_size-1);
 
-		des_irdy   => des_irdy,
-		des_data   => des_data);
-
-	buufer_p : block
-		subtype byte is std_logic_vector(0 to hdl4fpga.std.min(des_data'length,dst_data'length)-1);
-		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
+		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/des_data'length-1);
 		subtype addr_range is natural range 1 to addr_length;
 
-		signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
-		signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+		signal wr_ptr    : unsigned(0 to addr_length);
+		signal wr_cntr   : unsigned(0 to addr_length);
+		signal rd_cntr   : unsigned(0 to addr_length);
 		signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);  
 
-		signal feed_ena : std_logic;
+		signal des_irdy  : std_logic;
+		signal dst_irdy  : std_logic;
 		signal dst_irdy1 : std_logic;
+		signal feed_ena : std_logic;
+
 	begin
+
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => mii_txc,
+			serdes_frm => dll_rxdv,
+			ser_irdy   => '1',
+			ser_data   => txc_rxd,
+
+			des_irdy   => des_irdy,
+			des_data   => des_data);
 
 		process (mii_txc)
 			variable rxdv : std_logic;
@@ -186,7 +193,7 @@ begin
 				if udppl_rxdv='1' then
 					wr_cntr <= wr_cntr + 1;
 				elsif dllcrc32_rxdv='0' then
-					if rxdv='1' the 
+					if rxdv='1' then
 						if dllcrc32_equ='1' then
 							wr_ptr  <= wr_contr;
 						else
@@ -198,6 +205,7 @@ begin
 			end if;
 		end process;
 
+		feed_ena  <= dst_trdy or not dst_irdy;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -215,7 +223,6 @@ begin
 			rd_data => dst_data);
 
 		dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-		feed_ena  <= dst_trdy or not dst_irdy;
 		process(dst_clk)
 		begin
 			if rising_edge(dst_clk) then
@@ -223,15 +230,6 @@ begin
 					if dst_irdy1='1' then
 						rd_cntr <= rd_cntr + 1;
 					end if;
-				end if;
-			end if;
-		end process;
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if feed_ena='1' then
-					dst_irdy <= dst_irdy1;
 				end if;
 			end if;
 		end process;

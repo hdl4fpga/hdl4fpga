@@ -30,13 +30,12 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity mii_demosrv is
+entity mii_siosrv is
 	generic (
 		mysrv_port    : std_logic_vector(0 to 16-1);
 		data          : std_logic_vector);
 	port (
 		mii_txc       : in  std_logic;
-		mii_txd       : in  std_logic_vector;
 
 		dll_rxdv      : in  std_logic;
 		dll_rxd       : in std_logic_vector;
@@ -68,7 +67,7 @@ entity mii_demosrv is
 
 end;
 
-architecture def of mii_demosrv is
+architecture def of mii_siosrv is
 	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;

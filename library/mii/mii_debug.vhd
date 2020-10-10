@@ -100,7 +100,6 @@ begin
 		data       => to_ascii("Hello world"))
 	port map (
 		mii_txc       => mii_txc,
-		mii_txd       => mii_txd,
                                       
 		dll_rxdv      => dll_rxdv,
 		dll_rxd       => txc_rxd,

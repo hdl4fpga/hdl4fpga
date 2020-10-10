@@ -36,7 +36,6 @@ entity mii_demosrv is
 		data          : std_logic_vector);
 	port (
 		mii_txc       : in  std_logic;
-		mii_txd       : in  std_logic_vector;
 
 		dll_rxdv      : in  std_logic;
 		dll_rxd       : in std_logic_vector;
