@@ -152,7 +152,7 @@ begin
 		dllcrc32_equ  => dllcrc32_equ,
 
 		ipv4sa_rx     => ipv4sa_rx,
-		ipv4a_req     => dhcp_req,
+		ipv4acfg_req   => dhcp_req,
                                       
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,

@@ -28,7 +28,6 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
-use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 
 library unisim;
@@ -261,6 +260,10 @@ begin
 
 		signal ipv4acfg_req : std_logic;
 
+		constant rid_dmaaddr  : std_logic_vector := x"16";
+		constant rid_dmalen   : std_logic_vector := x"17";
+		constant rid_dmadata  : std_logic_vector := x"18";
+
 	begin
 
 		ipv4acfg_req <= not sw1;
@@ -268,15 +271,16 @@ begin
 		port map (
 			ipv4acfg_req => ipv4acfg_req,
 
-			phy_rxc     => mii_rxc,
-			phy_rx_dv   => mii_rxdv,
-			phy_rx_d    => mii_rxd,
+			phy_rxc   => mii_rxc,
+			phy_rx_dv => mii_rxdv,
+			phy_rx_d  => mii_rxd,
 
-			phy_txc     => mii_txc,
-			phy_tx_en   => mii_txen,
-			phy_tx_d    => mii_txd,
+			phy_txc   => mii_txc,
+			phy_tx_en => mii_txen,
+			phy_tx_d  => mii_txd,
 		
-			si_data     => si_data,
+			sio_clk   => mii_txc,
+			si_data   => si_data,
 
 			so_frm  => si_frm,
 			so_irdy => si_irdy,
