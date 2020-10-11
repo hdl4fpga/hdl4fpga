@@ -157,7 +157,7 @@ begin
 		constant mem_size : natural := 2048*8;
 		signal des_data : std_logic_vector(0 to so_data'length-1);
 
-		constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/des_data'length-1);
+		constant addr_length : natural := unsigned_num_bits(mem_size/des_data'length-1);
 		subtype addr_range is natural range 1 to addr_length;
 
 		signal wr_ptr    : unsigned(0 to addr_length);
