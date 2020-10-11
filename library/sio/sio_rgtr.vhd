@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_rgtr is
+entity sio_rgtr is
 	generic (
 		rid       : std_logic_vector(8-1 downto 0);
 		rgtr      : boolean := true);
@@ -21,7 +21,7 @@ entity scopeio_rgtr is
 
 end;
 
-architecture def of scopeio_rgtr is
+architecture def of sio_rgtr is
 
 begin
 

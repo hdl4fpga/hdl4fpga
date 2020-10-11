@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_sin is
+entity sio_sin is
 	port (
 		sin_clk   : in  std_logic;
 		sin_frm   : in  std_logic;
@@ -21,7 +21,7 @@ entity scopeio_sin is
 		rgtr_data : out std_logic_vector);
 end;
 
-architecture beh of scopeio_sin is
+architecture beh of sio_sin is
 	subtype byte is std_logic_vector(8-1 downto 0);
 
 	signal ser_data  : std_logic_vector(sin_data'range);

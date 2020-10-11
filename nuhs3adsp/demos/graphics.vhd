@@ -263,8 +263,8 @@ begin
 
 	begin
 
-		ipcfg_req <= not sw1;
-		udpdaisy_e : entity hdl4fpga.sio_udpdsy
+		ipv4acfg_req <= not sw1;
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		port map (
 			ipv4acfg_req => ipv4acfg_req,
 
@@ -294,7 +294,7 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
-		dmaaddr_e : entity hdl4fpga.scopeio_rgtr
+		dmaaddr_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => rid_dmaaddr)
 		port map (
@@ -305,7 +305,7 @@ begin
 			dv        => fifo_rst,
 			data      => dmaio_addr);
 
-		dmalen_e : entity hdl4fpga.scopeio_rgtr
+		dmalen_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => rid_dmalen)
 		port map (
@@ -316,7 +316,7 @@ begin
 			dv        => dmaio_dv,
 			data      => dmaio_len);
 
-		base_addr_e : entity hdl4fpga.scopeio_rgtr
+		base_addr_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => x"19")
 		port map (
