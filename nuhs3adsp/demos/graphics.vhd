@@ -255,11 +255,6 @@ begin
 		signal fifo_rst    : std_logic;
 		signal src_frm     : std_logic;
 
-		signal stream_frm  : std_logic;
-		signal stream_irdy : std_logic;
-		signal stream_data : std_logic_vector(uart_rxd'range);
-		signal stream_ddat : std_logic_vector(uart_rxd'range);
-
 		signal si_frm      : std_logic;
 		signal si_irdy     : std_logic;
 		signal si_data     : std_logic_vector(mii_rxd'range);
