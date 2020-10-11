@@ -195,7 +195,7 @@ architecture graphics of nuhs3adsp is
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
-	alias si_clk : std_logic is mii_rxc;
+	alias sio_clk : std_logic is mii_txc;
 
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
@@ -254,9 +254,10 @@ begin
 		signal fifo_rst    : std_logic;
 		signal src_frm     : std_logic;
 
-		signal si_frm      : std_logic;
-		signal si_irdy     : std_logic;
-		signal si_data     : std_logic_vector(mii_rxd'range);
+		signal so_frm      : std_logic;
+		signal so_irdy     : std_logic;
+		signal so_data     : std_logic_vector(8-1 downto 0); --mii_rxd'range);
+		signal no_sidata   : std_logic_vector(8-1 downto 0); --mii_rxd'range);
 
 		signal ipv4acfg_req : std_logic;
 
@@ -266,6 +267,7 @@ begin
 
 	begin
 
+		no_sidata <= reverse(so_data,8);
 		ipv4acfg_req <= not sw1;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		port map (
@@ -279,19 +281,19 @@ begin
 			phy_tx_en => mii_txen,
 			phy_tx_d  => mii_txd,
 		
-			sio_clk   => mii_txc,
-			si_data   => si_data,
+			sio_clk   => sio_clk,
+			si_data   => no_sidata,
 
-			so_frm  => si_frm,
-			so_irdy => si_irdy,
-			so_data => si_data);
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_data => so_data);
 	
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
-			sin_clk   => si_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
-			sin_data  => si_data,
+			sin_clk   => sio_clk,
+			sin_frm   => so_frm,
+			sin_irdy  => so_irdy,
+			sin_data  => so_data,
 			data_ptr  => data_ptr,
 			data_ena  => data_ena,
 			rgtr_dv   => rgtr_dv,
@@ -302,7 +304,7 @@ begin
 		generic map (
 			rid  => rid_dmaaddr)
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -313,7 +315,7 @@ begin
 		generic map (
 			rid  => rid_dmalen)
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -324,7 +326,7 @@ begin
 		generic map (
 			rid  => x"19")
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -338,7 +340,7 @@ begin
 			mem_size  => (8*2048)/ctlr_di'length,
 			gray_code => false)
 		port map (
-			src_clk  => si_clk,
+			src_clk  => sio_clk,
 			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data,
@@ -348,10 +350,10 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
-		dmacfgio_p : process (si_clk)
+		dmacfgio_p : process (sio_clk)
 			variable io_rdy : std_logic;
 		begin
-			if rising_edge(si_clk) then
+			if rising_edge(sio_clk) then
 				if ctlr_inirdy='0' then
 					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
@@ -688,12 +690,12 @@ begin
 
 	hd_t_data <= 'Z';
 
-	process (si_clk)
+	process (sio_clk)
 		variable t : std_logic;
 		variable e : std_logic;
 		variable i : std_logic;
 	begin
-		if rising_edge(si_clk) then
+		if rising_edge(sio_clk) then
 			if i='1' and e='0' then
 				t := not t;
 			end if;

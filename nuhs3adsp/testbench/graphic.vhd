@@ -321,7 +321,8 @@ begin
 --				& x"ffff"
 			)   &
 			x"00000000"
-		,8)
+		,8) &
+		x"79afd0bb"			 -- CRC
 	)
 	port map (
 		mii_txc  => mii_rxc,
@@ -350,7 +351,7 @@ begin
 
 		rs232_rd => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_txc => '-', --mii_refclk,
+		mii_txc => mii_refclk,
 		mii_rxc => mii_refclk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,

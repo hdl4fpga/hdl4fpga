@@ -113,7 +113,7 @@ begin
 				rcvd   := '0';
 			elsif dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
-					tx_req <= rcvd;
+					tx_req <= dllcrc32_equ and rcvd;
 					rcvd  := '0';
 				end if;
 			end if;

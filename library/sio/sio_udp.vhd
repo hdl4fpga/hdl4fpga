@@ -155,19 +155,18 @@ begin
 
 	buffer_p : block
 		constant mem_size : natural := 2048*8;
-		signal des_data : std_logic_vector(0 to so_data'length-1);
+		signal des_data : std_logic_vector(so_data'range);
 
 		constant addr_length : natural := unsigned_num_bits(mem_size/des_data'length-1);
 		subtype addr_range is natural range 1 to addr_length;
 
-		signal wr_ptr    : unsigned(0 to addr_length);
-		signal wr_cntr   : unsigned(0 to addr_length);
-		signal rd_cntr   : unsigned(0 to addr_length);
+		signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
+		signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
+		signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
 
 		signal des_irdy  : std_logic;
 		signal dst_irdy  : std_logic;
 		signal dst_irdy1 : std_logic;
-		signal feed_ena  : std_logic;
 
 	begin
 
@@ -186,7 +185,9 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if udppl_rxdv='1' then
-					wr_cntr <= wr_cntr + 1;
+					if des_irdy='1' then
+						wr_cntr <= wr_cntr + 1;
+					end if;
 				elsif dllcrc32_rxdv='0' then
 					if rxdv='1' then
 						if dllcrc32_equ='1' then
@@ -200,7 +201,6 @@ begin
 			end if;
 		end process;
 
-		feed_ena  <= not dst_irdy;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -212,19 +212,16 @@ begin
 			wr_data => des_data, 
 
 			rd_clk  => sio_clk,
-			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => so_data);
 
-		dst_irdy1 <= setif(wr_cntr /= rd_cntr);
+		dst_irdy1 <= setif(wr_ptr /= rd_cntr);
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then
-				if feed_ena='1' then
-					so_dv <= dst_irdy1;
-					if dst_irdy1='1' then
-						rd_cntr <= rd_cntr + 1;
-					end if;
+				so_dv <= dst_irdy1;
+				if dst_irdy1='1' then
+					rd_cntr <= rd_cntr + 1;
 				end if;
 			end if;
 		end process;
