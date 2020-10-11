@@ -85,7 +85,7 @@ entity mii_ipoe is
 		udp_sp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
 		udp_dp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
 
-		ipv4a_req     : in  std_logic;
+		ipv4acfg_req  : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
 
@@ -664,11 +664,11 @@ begin
 							if mii_txen='1' then
 								dscb_req <= '0';
 							end if;
-						elsif req='0' and ipv4a_req='1' then
+						elsif req='0' and ipv4acfg_req='1' then
 							dscb_req <= '1';
 							dhcp_req <= '1';
 						end if;
-						req := ipv4a_req;
+						req := ipv4acfg_req;
 					end if;
 				end process;
 

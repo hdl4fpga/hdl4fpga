@@ -264,14 +264,14 @@ begin
 		signal si_irdy     : std_logic;
 		signal si_data     : std_logic_vector(mii_rxd'range);
 
-		signal ipcfg_req : std_logic;
+		signal ipv4acfg_req : std_logic;
 
 	begin
 
 		ipcfg_req <= not sw1;
-		udpipdaisy_e : entity hdl4fpga.sio_udpdsy
+		udpdaisy_e : entity hdl4fpga.sio_udpdsy
 		port map (
-			ipcfg_req   => ipcfg_req,
+			ipv4acfg_req => ipv4acfg_req,
 
 			phy_rxc     => mii_rxc,
 			phy_rx_dv   => mii_rxdv,
@@ -280,18 +280,14 @@ begin
 			phy_txc     => mii_txc,
 			phy_tx_en   => mii_txen,
 			phy_tx_d    => mii_txd,
-			ipcfg_vld   => led7,
 		
-			chaini_sel  => '0',
-			chaini_frm  => stream_frm,
-			chaini_irdy => ser4_irdy,
-			chaini_data => ser4_data,
+			si_data     => si_data,
 
-			chaino_frm  => si_frm,
-			chaino_irdy => si_irdy,
-			chaino_data => si_data);
+			so_frm  => si_frm,
+			so_irdy => si_irdy,
+			so_data => si_data);
 	
-		sio_sin_e : entity hdl4fpga.sio_sin
+		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => si_clk,
 			sin_frm   => si_frm,

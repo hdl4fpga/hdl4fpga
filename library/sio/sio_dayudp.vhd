@@ -33,7 +33,7 @@ entity sio_dayudp is
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
 		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		ipcfg_req   : in  std_logic := '-';
+		ipv4acfg_req  : in  std_logic := '-';
 
 		phy_rxc     : in  std_logic;
 		phy_rx_dv   : in  std_logic;
@@ -43,11 +43,8 @@ entity sio_dayudp is
 		phy_tx_en   : out std_logic;
 		phy_tx_d    : out std_logic_vector;
 	
-		ipcfg_vld   : buffer std_logic;
-		chaini_sel  : in  std_logic := '0';
-
 		sio_clk     : in  std_logic;
-		sio_addr    : in  std_logic;
+		sio_addr    : in  std_logic := '1';
 
 		si_frm      : in  std_logic := '0';
 		si_irdy     : in  std_logic := '0';
@@ -79,13 +76,13 @@ begin
 		mii_txen    => phy_tx_en,
 		mii_txd     => phy_tx_d,
 
-		ipv4a_req   => ipcfg_req,
+		ipv4acfg_req => ipv4acfg_req,
 		sio_clk     => sio_clk,
 		so_dv       => soudp_dv,
 		so_data     => soudp_data);
 
-	so_frm  <= si_frm  when sio_addr='1' else soudp_dv; 
-	so_irdy <= si_irdy when sio_addr='1' else soudp_dv;
-	so_data <= si_data when sio_addr='1' else soudp_data;
+	so_frm  <= si_frm  when sio_addr='0' else soudp_dv; 
+	so_irdy <= si_irdy when sio_addr='0' else soudp_dv;
+	so_data <= si_data when sio_addr='0' else soudp_data;
 
 end;

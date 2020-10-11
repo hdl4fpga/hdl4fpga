@@ -43,7 +43,7 @@ entity sio_udp is
 		mii_txd   : out std_logic_vector;
 		mii_txen  : out std_logic;
 
-		ipv4a_req : in  std_logic;
+		ipv4acfg_req : in  std_logic;
 		myipv4a   : buffer std_logic_vector(0 to 32-1);
 
 		sio_clk   : in  std_logic;
@@ -111,7 +111,7 @@ begin
 		dllcrc32_equ  => dllcrc32_equ,
 
 		ipv4sa_rx     => ipv4sa_rx,
-		ipv4a_req     => ipv4a_req,
+		ipv4acfg_req  => ipv4acfg_req,
                                       
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
