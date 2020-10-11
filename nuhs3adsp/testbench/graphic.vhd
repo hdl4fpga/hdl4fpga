@@ -58,7 +58,6 @@ architecture nuhs3adsp_graphic of testbench is
 	signal x : std_logic;
 	signal mii_refclk : std_logic;
 	signal mii_treq : std_logic := '0';
-	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
@@ -326,8 +325,7 @@ begin
 	)
 	port map (
 		mii_txc  => mii_rxc,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
+		mii_txen => mii_treq,
 		mii_txdv => mii_rxdv,
 		mii_txd  => mii_rxd);
 

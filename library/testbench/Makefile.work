@@ -2,6 +2,8 @@
 
 # Define path to each library
 LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
+LIB_MICRON = micron
+LIB_VERILOG = /opt/modeltech/linux_x86_64/../verilog
 LIB_STD = /opt/modeltech/linux_x86_64/../std
 LIB_ECP5U = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp5u/mti/ecp5u
 LIB_HDL4FPGA = hdl4fpga
@@ -25,6 +27,8 @@ UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
 HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
+MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
 HDL4FPGA__mii_rom = $(LIB_HDL4FPGA)/mii_rom/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
@@ -48,7 +52,10 @@ WORK__ulx3s__mii_debug = $(LIB_WORK)/ulx3s/mii_debug.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx3s_miidebug = $(LIB_WORK)/testbench/ulx3s_miidebug.dat
 WORK__testbench__nuhs3adsp_miidebug = $(LIB_WORK)/testbench/nuhs3adsp_miidebug.dat
+WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
+WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
+WORK__nuhs3adsp_graphic_md = $(LIB_WORK)/nuhs3adsp_graphic_md/_primary.dat
 WORK__nuhs3adsp__mii_debug = $(LIB_WORK)/nuhs3adsp/mii_debug.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
@@ -61,7 +68,10 @@ whole_library :     $(WORK__ulx3s__mii_debug) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx3s_miidebug) \
     $(WORK__testbench__nuhs3adsp_miidebug) \
+    $(WORK__testbench__nuhs3adsp_graphic) \
     $(WORK__testbench) \
+    $(WORK__nuhs3adsp_graphic_structure_md) \
+    $(WORK__nuhs3adsp_graphic_md) \
     $(WORK__nuhs3adsp__mii_debug) \
     $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp)
@@ -96,7 +106,7 @@ $(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics.vhd
+	$(VCOM) -2002 ../../nuhs3adsp/demos/graphics.vhd
 
 $(WORK__nuhs3adsp__mii_debug) : ../../nuhs3adsp/demos/mii_debug.vhd \
 		$(HDL4FPGA__ddro) \
@@ -125,6 +135,21 @@ $(WORK__testbench) : testbench.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__nuhs3adsp_graphic_md) \
+$(WORK__nuhs3adsp_graphic_structure_md) \
+$(WORK__testbench__nuhs3adsp_graphic) : ../../nuhs3adsp/testbench/graphic.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr_model) \
+		$(WORK__nuhs3adsp) \
+		$(HDL4FPGA__mii_rom) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002  ../../nuhs3adsp/testbench/graphic.vhd
 
 $(WORK__testbench__nuhs3adsp_miidebug) : ../../nuhs3adsp/testbench/mii_debug.vhd \
 		$(WORK__testbench) \
