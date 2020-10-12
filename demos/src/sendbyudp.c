@@ -4,9 +4,11 @@
 #include <unistd.h>
 #include <time.h>
 
-#ifdef WINDOWS
+#ifdef __MINGW32__
 #include <ws2tcpip.h>
 #include <wininet.h>
+#include <fcntl.h>
+#define	pipe(fds) _pipe(fds, 1024, O_BINARY)
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -24,7 +26,7 @@
 
 int main (int argc, char *argv[])
 {
-#ifdef WINDOWS
+#ifdef __MINGW32__
 	WSADATA wsaData;
 #endif
 	int   c;
@@ -38,11 +40,13 @@ int main (int argc, char *argv[])
 	unsigned char buffer[2048];
 	unsigned char *bufptr;
 	char pktmd;
+	int pipefd[2];
 
-#ifdef WINDOWS
+#ifdef __MINGW32__
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
+
 
 	pktmd  = 0;
 	opterr = 0;
@@ -82,6 +86,14 @@ int main (int argc, char *argv[])
 		perror ("Can't open socket");
 		exit (1);
 	}
+
+	pipe(pipefd);
+
+#ifdef __MINGW32__
+	CreateProcess();
+#else
+	fork();
+#endif
 
 	int n;
 	unsigned short size;
