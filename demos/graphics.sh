@@ -29,8 +29,10 @@ if [ "${PROG}" != "" ] ; then
 	sleep 1;
 fi
 
+DESTINATION=${HOST}
 if [ "$HOST" == "" ] ; then
 
+	DESTINATION=${TTY}
 	if [ ! -c "${TTY}" ] ; then
 		echo Serial port "${TTY}" not found 1>&2
 		exit -1
@@ -54,7 +56,7 @@ send_data()
 		./bin/bundle -b "${BADDR}"|./bin/stream|$XFR > "${TTY}"
 
 	else
-		./bin/bundle -b "${BADDR}" -p|./bin/sendbyudp -p -h "${HOST}"
+		./bin/bundle -b "${BADDR}" -p 2>/dev/null |./bin/sendbyudp -p -h "${HOST}"
 	fi
 }
 
@@ -63,11 +65,11 @@ convert_image ()
 	convert -resize "${WIDTH}" -size "${WIDTH}" "${IMAGE}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"
 }
 
-if [ "${BLANK}" == "YES" ] ; then
-	echo Blanking screen  1>&2
-	cat src/blank.hex|xxd -r -ps|send_data
-	sleep 1
-fi
+#if [ "${BLANK}" == "YES" ] ; then
+#	echo Blanking screen  1>&2
+#	cat src/blank.hex|xxd -r -ps|send_data
+#	sleep 1
+#fi
 
-echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${TTY}" 1>&2
+echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${DESTINATION}" 1>&2
 time convert_image|send_data
