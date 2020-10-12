@@ -56,7 +56,7 @@ send_data()
 		./bin/bundle -b "${BADDR}"|./bin/stream|$XFR > "${TTY}"
 
 	else
-		./bin/bundle -b "${BADDR}" -p 2>/dev/null |./bin/sendbyudp -p -h "${HOST}"
+		./bin/bundle -b "${BADDR}" -p|./bin/sendbyudp -p -h "${HOST}"
 	fi
 }
 

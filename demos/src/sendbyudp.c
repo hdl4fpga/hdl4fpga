@@ -163,7 +163,7 @@ int main (int argc, char *argv[])
 			break;
 	}
 
-	fprintf (stderr, "Sent packets %d, lost packets %d, Total sent %d\n", pkt_sent-pkt_lost, pkt_lost, pkt_sent);
+	fprintf (stderr, "Sent packets : %d\n Lost packets : %d\n Total sent : %d\n", pkt_sent-pkt_lost, pkt_lost, pkt_sent);
 
 	return 0;
 }
