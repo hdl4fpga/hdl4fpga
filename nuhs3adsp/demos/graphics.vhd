@@ -252,7 +252,6 @@ begin
 		signal data_ptr    : std_logic_vector(8-1 downto 0);
 		signal dmadata_ena : std_logic;
 		signal fifo_rst    : std_logic;
-		signal src_frm     : std_logic;
 
 		signal so_frm      : std_logic;
 		signal so_irdy     : std_logic;
@@ -302,6 +301,7 @@ begin
 
 		dmaaddr_e : entity hdl4fpga.sio_rgtr
 		generic map (
+			rgtr => false,
 			rid  => rid_dmaaddr)
 		port map (
 			rgtr_clk  => sio_clk,
@@ -310,6 +310,21 @@ begin
 			rgtr_data => rgtr_data,
 			dv        => fifo_rst,
 			data      => dmaio_addr);
+
+		dmaaddr_irdy <= data_ena and setif(rgtr_id=rid_dmaaddr);
+		addrqueue_e : entity hdl4fpga.fifo
+		generic map (
+			mem_size  => 8,
+			gray_code => false)
+		port map (
+			src_clk  => sio_clk,
+			src_irdy => dmaaddr_ena,
+			src_data => rgtr_data,
+
+			dst_clk  => dmacfg_clk,
+			dst_irdy => ,
+			dst_trdy => ,
+			dst_data => dmaio_addr);
 
 		dmalen_e : entity hdl4fpga.sio_rgtr
 		generic map (
@@ -334,14 +349,12 @@ begin
 
 		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 
-		src_frm <= not fifo_rst;
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size  => (8*2048)/ctlr_di'length,
 			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => src_frm,
 			src_irdy => dmadata_ena,
 			src_data => rgtr_data,
 
@@ -355,12 +368,15 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				if ctlr_inirdy='0' then
+					dmaio_trdy   <= '0';
 					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
-					if dmaio_dv='1' then
+					dmaio_trdy   <= '0';
+					if dmaio_irdy='1' then
 						dmacfgio_req <= '1';
 					end if;
 				elsif io_rdy='1' then
+					dmaio_trdy   <= '1';
 					dmacfgio_req <= '0';
 				end if;
 				io_rdy := dmaio_rdy;
