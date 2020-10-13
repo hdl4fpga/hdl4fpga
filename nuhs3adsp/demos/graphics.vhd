@@ -81,7 +81,8 @@ architecture graphics of nuhs3adsp is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
-	signal dmaio_dv       : std_logic;
+	signal dmaio_trdy       : std_logic;
+	signal dmaio_irdy       : std_logic;
 
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -196,6 +197,7 @@ architecture graphics of nuhs3adsp is
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is mii_txc;
+	signal sio_frm : std_logic;
 
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
@@ -250,8 +252,9 @@ begin
 
 		signal data_ena    : std_logic;
 		signal data_ptr    : std_logic_vector(8-1 downto 0);
-		signal dmadata_ena : std_logic;
-		signal fifo_rst    : std_logic;
+		signal dmadata_irdy : std_logic;
+		signal dmaaddr_irdy : std_logic;
+		signal dmalen_irdy : std_logic;
 
 		signal so_frm      : std_logic;
 		signal so_irdy     : std_logic;
@@ -286,6 +289,7 @@ begin
 			so_frm  => so_frm,
 			so_irdy => so_irdy,
 			so_data => so_data);
+		sio_frm <=  not ddrsys_lckd;
 	
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -299,43 +303,37 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
-		dmaaddr_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rgtr => false,
-			rid  => rid_dmaaddr)
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			dv        => fifo_rst,
-			data      => dmaio_addr);
-
-		dmaaddr_irdy <= data_ena and setif(rgtr_id=rid_dmaaddr);
-		addrqueue_e : entity hdl4fpga.fifo
+		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
+		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size  => 8,
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
-			src_irdy => dmaaddr_ena,
-			src_data => rgtr_data,
+			src_frm  => sio_frm,
+			src_irdy => dmaaddr_irdy,
+			src_data => rgtr_data(dmaio_addr'range),
 
 			dst_clk  => dmacfg_clk,
-			dst_irdy => ,
-			dst_trdy => ,
+			dst_irdy => open,
+			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_addr);
 
-		dmalen_e : entity hdl4fpga.sio_rgtr
+		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv;
+		dmalen_e : entity hdl4fpga.fifo
 		generic map (
-			rid  => rid_dmalen)
+			mem_size  => 8,
+			gray_code => true)
 		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			dv        => dmaio_dv,
-			data      => dmaio_len);
+			src_clk  => sio_clk,
+			src_frm  => sio_frm,
+			src_irdy => dmalen_irdy,
+			src_data => rgtr_data(dmaio_len'range),
+
+			dst_clk  => dmacfg_clk,
+			dst_irdy => dmaio_irdy,
+			dst_trdy => dmaio_trdy,
+			dst_data => dmaio_len);
 
 		base_addr_e : entity hdl4fpga.sio_rgtr
 		generic map (
@@ -347,15 +345,15 @@ begin
 			rgtr_data => rgtr_data,
 			data      => base_addr);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
-
+		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size  => (8*2048)/ctlr_di'length,
 			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
-			src_irdy => dmadata_ena,
+			src_frm  => sio_frm,
+			src_irdy => dmadata_irdy,
 			src_data => rgtr_data,
 
 			dst_clk  => ctlr_clk,
@@ -363,21 +361,23 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
-		dmacfgio_p : process (sio_clk)
+		dmacfgio_p : process (dmacfg_clk)
 			variable io_rdy : std_logic;
 		begin
-			if rising_edge(sio_clk) then
+			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
 					dmaio_trdy   <= '0';
 					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
-					dmaio_trdy   <= '0';
+					dmaio_trdy  <= '0';
 					if dmaio_irdy='1' then
 						dmacfgio_req <= '1';
 					end if;
 				elsif io_rdy='1' then
 					dmaio_trdy   <= '1';
 					dmacfgio_req <= '0';
+				else
+					dmaio_trdy   <= '0';
 				end if;
 				io_rdy := dmaio_rdy;
 			end if;
@@ -716,7 +716,7 @@ begin
 				t := not t;
 			end if;
 			e := i;
-			i := dmaio_dv;
+			i := dmaio_irdy;
 			i := dmaio_rdy;
 
 			led18 <= t;
