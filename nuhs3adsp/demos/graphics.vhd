@@ -289,7 +289,7 @@ begin
 			so_frm  => so_frm,
 			so_irdy => so_irdy,
 			so_data => so_data);
-		sio_frm <=  not ddrsys_lckd;
+		sio_frm <=  ddrsys_lckd;
 	
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -307,12 +307,14 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size  => 8,
+			out_rgtr  => true,
+			check_dov => true,
 			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
-			src_data => rgtr_data(dmaio_addr'range),
+			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => open,
@@ -323,12 +325,14 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			mem_size  => 8,
+			out_rgtr  => true,
+			check_dov => true,
 			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
-			src_data => rgtr_data(dmaio_len'range),
+			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaio_irdy,
@@ -369,7 +373,7 @@ begin
 					dmaio_trdy   <= '0';
 					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
-					dmaio_trdy  <= '0';
+					dmaio_trdy  <= not dmaio_irdy;
 					if dmaio_irdy='1' then
 						dmacfgio_req <= '1';
 					end if;

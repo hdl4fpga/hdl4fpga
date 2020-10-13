@@ -279,7 +279,7 @@ begin
 				x"000f"             & -- UDP Length,
 				x"0000"             & -- UPD checksum
 				x"000000"
-				& x"170200007f"
+				& x"1602000180"
 				& x"18ff"
 				& x"123456789abcdef123456789abcdef12"
 				& x"23456789abcdef123456789abcdef123"
@@ -297,32 +297,32 @@ begin
 				& x"ef123456789abcdef123456789abcdef"
 				& x"f123456789abcdef123456789abcdef1"
 				& x"123456789abcdef123456789abcdef12"
-				& x"1602000180"
+				& x"170200007f"
+				& x"1602000000"
+				& x"18ff"
+				& x"1234ffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffaabb"
+				& x"ccddffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffff6789"
+				& x"170200007f"
 				& x"ffff"
---				& x"170200007f"
---				& x"18ff"
---				& x"1234ffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffaabb"
---				& x"ccddffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffffffff"
---				& x"ffffffffffffffffffffffffffff6789"
---				& x"1602000000"
---				& x"ffff"
 			)   &
 			x"00000000"
 		,8) &
-		x"79afd0bb"			 -- CRC
+--		x"79afd0bb"			 -- CRC
+		x"20798b61"			 -- CRC
 	)
 	port map (
 		mii_txc  => mii_rxc,
