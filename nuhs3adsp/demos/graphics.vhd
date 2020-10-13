@@ -367,22 +367,26 @@ begin
 
 		dmacfgio_p : process (dmacfg_clk)
 			variable io_rdy : std_logic;
+			variable rdy    : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
 					dmaio_trdy   <= '0';
 					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
-					dmaio_trdy  <= not dmaio_irdy;
+					dmaio_trdy <= not dmaio_irdy;
 					if dmaio_irdy='1' then
 						dmacfgio_req <= '1';
 					end if;
 				elsif io_rdy='1' then
-					dmaio_trdy   <= '1';
+					if rdy='0' then
+						dmaio_trdy <= '1';
+					end if;
 					dmacfgio_req <= '0';
 				else
 					dmaio_trdy   <= '0';
 				end if;
+				rdy    := io_rdy;
 				io_rdy := dmaio_rdy;
 			end if;
 		end process;
