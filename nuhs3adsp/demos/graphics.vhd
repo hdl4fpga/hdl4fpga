@@ -366,28 +366,30 @@ begin
 			dst_data => ctlr_di);
 
 		dmacfgio_p : process (dmacfg_clk)
-			variable io_rdy : std_logic;
-			variable rdy    : std_logic;
+			variable io_rdy1 : std_logic;
+			variable io_rdy2 : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
+					dmacfgio_req <= '0';
 					dmaio_trdy   <= '0';
-					dmacfgio_req <= '0';
 				elsif dmacfgio_req='0' then
-					dmaio_trdy <= not dmaio_irdy;
 					if dmaio_irdy='1' then
-						dmacfgio_req <= '1';
+						if dmaio_trdy='0' then
+							dmacfgio_req <= '1';
+						end if;
 					end if;
-				elsif io_rdy='1' then
-					if rdy='0' then
-						dmaio_trdy <= '1';
+					dmaio_trdy <= '0';
+				elsif io_rdy1='1' then
+					if io_rdy2='0' then
+						dmacfgio_req <= '0';
+						dmaio_trdy   <= '1';
 					end if;
-					dmacfgio_req <= '0';
 				else
 					dmaio_trdy   <= '0';
 				end if;
-				rdy    := io_rdy;
-				io_rdy := dmaio_rdy;
+				io_rdy2 := io_rdy1;
+				io_rdy1 := dmaio_rdy;
 			end if;
 		end process;
 	end block;
