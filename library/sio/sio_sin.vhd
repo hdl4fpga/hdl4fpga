@@ -13,7 +13,7 @@ entity sio_sin is
 		sin_data  : in  std_logic_vector;
 		
 		data_frm  : out std_logic;
-		data_ena  : out std_logic;
+		data_trdy : out std_logic;
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_id   : out std_logic_vector;
@@ -22,24 +22,32 @@ entity sio_sin is
 end;
 
 architecture beh of sio_sin is
-	subtype byte is std_logic_vector(8-1 downto 0);
+	subtype octect is std_logic_vector(8-1 downto 0);
 
 	signal ser_data  : std_logic_vector(sin_data'range);
 	signal des8_irdy : std_logic;
-	signal des8_data : byte;
+	signal des8_data : octect;
 
 	type states is (s_id, s_size, s_data);
 	signal state : states;
 
 begin
 
-	des8_irdy <= sin_irdy;
-	des8_data <= reverse(sin_data,8);
+	byte_e : entity hdl4fpga.serdes
+	port map (
+		serdes_clk => sin_clk,
+		serdes_frm => sin_frm,
+		ser_irdy   => sin_irdy,
+		ser_data   => sin_data,
+
+		des_irdy   => des8_irdy,
+		des_data   => des8_data);
+
 	process (sin_clk)
-		variable rid   : byte;
-		variable len   : unsigned(0 to byte'length);
+		variable rid   : octect;
+		variable len   : unsigned(0 to octect'length);
 		variable data  : unsigned(rgtr_data'length-1 downto 0);
-		variable ptr   : unsigned(byte'range);
+		variable ptr   : unsigned(octect'range);
 	begin
 		if rising_edge(sin_clk) then
 			if sin_frm='0' then
@@ -74,9 +82,9 @@ begin
 			rgtr_dv   <= len(0) and des8_irdy;
 			rgtr_data <= std_logic_vector(data);
 
-			data_ena  <= des8_irdy and setif(state=s_data);
-			data_ptr  <= std_logic_vector(ptr);
 			data_frm  <= setif(state=s_data);
+			data_trdy <= des8_irdy and setif(state=s_data);
+			data_ptr  <= std_logic_vector(ptr);
 		end if;
 	end process;
 

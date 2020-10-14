@@ -114,7 +114,7 @@ begin
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
-		mem_size  => fifo_size,
+		max_depth => fifo_size,
 		out_rgtr  => true, 
 		check_sov => false,
 		check_dov => false,

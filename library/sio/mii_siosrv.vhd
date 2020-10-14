@@ -32,8 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_siosrv is
 	generic (
-		mysrv_port    : std_logic_vector(0 to 16-1);
-		data          : std_logic_vector);
+		mysrv_port    : std_logic_vector(0 to 16-1));
 	port (
 		mii_txc       : in  std_logic;
 
@@ -71,7 +70,57 @@ architecture def of mii_siosrv is
 	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;
+
+	signal rgtr_id      : std_logic_vector(8-1 downto 0);
+	signal octect_frm   : std_logic;
+	signal octect_trdy  : std_logic;
+	signal octect_data  : std_logic_vector(8-1 downto 0);
+	signal sigsin_frm   : std_logic;
+	signal sigrgtr_data : std_logic_vector(8-1 downto 0);
+	signal sig_frm      : std_logic;
+	signal sig_trdy     : std_logic;
+	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
+	signal sigrgtr_dv   : std_logic;
+	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
+	signal dv   : std_logic;
+	signal data : std_logic_vector(0 to 40-1);
+
 begin
+
+	data <= x"00" & x"02" & x"00" & x"00" & x"00";
+	siosin_e : entity hdl4fpga.sio_sin
+	port map (
+		sin_clk   => mii_txc,
+		sin_frm   => dll_rxdv,
+		sin_data  => dll_rxd,
+		rgtr_id   => rgtr_id,
+		data_frm  => octect_frm,
+		data_trdy => octect_trdy,
+		rgtr_data => octect_data);
+
+	sigsin_frm <= octect_frm and setif(rgtr_id=x"00");
+	sigsin_e : entity hdl4fpga.sio_sin
+	port map (
+		sin_clk   => mii_txc,
+		sin_frm   => sigsin_frm,
+		sin_irdy  => octect_trdy,
+		sin_data  => octect_data,
+		data_frm  => sig_frm,
+		data_trdy => sig_trdy,
+		rgtr_id   => sigrgtr_id,
+		rgtr_dv   => sigrgtr_dv,
+		rgtr_data => sigrgtr_data);
+
+	sigseq_e : entity hdl4fpga.sio_rgtr
+	generic map (
+		rid  => x"00")
+	port map (
+		rgtr_clk  => mii_txc,
+		rgtr_id   => sigrgtr_id,
+		rgtr_dv   => sigrgtr_dv,
+		rgtr_data => sigrgtr_data,
+		data      => ack_rgtr,
+		dv        => dv);
 
 	process (mii_txc)
 	begin
@@ -124,13 +173,12 @@ begin
 	end process;
 
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
-	myack_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(data,8))
+	myack_e : entity hdl4fpga.mii_mux
 	port map (
+		mux_data => data,
         mii_txc  => mii_txc,
-		mii_txen => tx_gnt,
-        mii_txdv => udppl_txen,
+		mii_txdv => tx_gnt,
+        mii_txen => udppl_txen,
         mii_txd  => udppl_txd);
 
 end;

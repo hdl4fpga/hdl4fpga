@@ -124,8 +124,7 @@ begin
 
 	miisio_e : entity hdl4fpga.mii_siosrv
 	generic map (
-		mysrv_port => std_logic_vector(to_unsigned(57001, 16)),
-		data       => to_ascii("Hello world"))
+		mysrv_port => std_logic_vector(to_unsigned(57001, 16)))
 	port map (
 		mii_txc       => mii_txc,
                                       

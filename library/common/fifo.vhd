@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		mem_size   : natural;
+		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
@@ -56,10 +56,9 @@ end;
 
 architecture def of fifo is
 
-	subtype byte is std_logic_vector(0 to hdl4fpga.std.min(src_data'length,dst_data'length)-1);
 
 
-	constant addr_length : natural := unsigned_num_bits(mem_size*byte'length/src_data'length-1);
+	constant addr_length : natural := unsigned_num_bits(max_depth-1);
 	subtype addr_range is natural range 1 to addr_length;
 
 	signal wr_ena    : std_logic;

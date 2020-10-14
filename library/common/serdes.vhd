@@ -38,7 +38,7 @@ begin
 				cntr := (others => '0');
 			end if;
 		end if;
-		stop <= setif(cntr=des_data'length/ser_data'length-1);
+		stop <= setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length);
 	end process;
 
 	process (ser_data, serdes_clk)
@@ -70,5 +70,5 @@ begin
 		des_data <= std_logic_vector(des);
 	end process;
 
-	des_irdy <= ser_irdy and setif(stop='1');
+	des_irdy <= ser_irdy and setif(stop='1' or des_data'length=ser_data'length);
 end;

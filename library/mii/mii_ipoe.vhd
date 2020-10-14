@@ -166,11 +166,11 @@ begin
 		rxc_rxbus <= mii_rxd & mii_rxdv;
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size   => 4,
-			out_rgtr   => false, 
-			check_sov  => false,
-			check_dov  => true,
-			gray_code  => false)
+			max_depth => 4,
+			out_rgtr  => false, 
+			check_sov => false,
+			check_dov => true,
+			gray_code => false)
 		port map (
 			src_clk  => mii_rxc,
 			src_data => rxc_rxbus,

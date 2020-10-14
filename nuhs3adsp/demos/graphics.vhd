@@ -81,8 +81,9 @@ architecture graphics of nuhs3adsp is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
-	signal dmaio_trdy       : std_logic;
-	signal dmaio_irdy       : std_logic;
+	signal dmaio_trdy     : std_logic;
+	signal dmaiolen_irdy  : std_logic;
+	signal dmaioaddr_irdy : std_logic;
 
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -272,6 +273,8 @@ begin
 		no_sidata <= reverse(so_data,8);
 		ipv4acfg_req <= not sw1;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			default_ipv4a => x"c0_a8_00_0e")
 		port map (
 			ipv4acfg_req => ipv4acfg_req,
 
@@ -306,7 +309,7 @@ begin
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size  => 8,
+			max_depth => 8,
 			out_rgtr  => true,
 			check_dov => true,
 			gray_code => true)
@@ -317,14 +320,14 @@ begin
 			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
-			dst_irdy => open,
+			dst_irdy => dmaioaddr_irdy,
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_addr);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv;
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size  => 8,
+			max_depth => 8,
 			out_rgtr  => true,
 			check_dov => true,
 			gray_code => true)
@@ -335,7 +338,7 @@ begin
 			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
-			dst_irdy => dmaio_irdy,
+			dst_irdy => dmaiolen_irdy,
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_len);
 
@@ -352,7 +355,7 @@ begin
 		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size  => (8*4048)/ctlr_di'length,
+			max_depth => 8*1024, --(8*(4*1024))/ctlr_di'length,
 			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
@@ -374,7 +377,7 @@ begin
 					dmacfgio_req <= '0';
 					dmaio_trdy   <= '0';
 				elsif dmacfgio_req='0' then
-					if dmaio_irdy='1' then
+					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
 						if dmaio_trdy='0' then
 							dmacfgio_req <= '1';
 						end if;
@@ -726,7 +729,7 @@ begin
 				t := not t;
 			end if;
 			e := i;
-			i := dmaio_irdy;
+			i := dmaiolen_irdy and dmaioaddr_irdy;
 			i := dmaio_rdy;
 
 			led18 <= t;
