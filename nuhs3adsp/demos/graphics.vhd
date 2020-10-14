@@ -352,7 +352,7 @@ begin
 		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size  => (8*2048)/ctlr_di'length,
+			mem_size  => (8*4048)/ctlr_di'length,
 			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
