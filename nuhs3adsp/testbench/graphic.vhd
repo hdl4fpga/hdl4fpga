@@ -268,9 +268,9 @@ begin
 			x"0000"                 &    -- IP Identification
 			x"0000"                 &    -- IP Fragmentation
 			x"0511"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
 			x"00000000"             &    -- IP Source IP address
-			x"00000000"             &    -- IP Destiantion IP Address
-			x"0000" &
+			x"c0a8000e"             &    -- IP Destiantion IP Address
 
 			udp_checksummed (
 				x"00000000",
@@ -318,11 +318,10 @@ begin
 				& x"ffffffffffffffffffffffffffff6789"
 				& x"170200007f"
 				& x"ffff"
-			)   &
-			x"00000000"
-		,8) &
---		x"79afd0bb"			 -- CRC
-		x"20798b61"			 -- CRC
+			),8)
+--		& x"79afd0bb"			 -- CRC
+--		& x"20798b61"			 -- CRC
+		& x"a6edb7a7"
 	)
 	port map (
 		mii_txc  => mii_rxc,
