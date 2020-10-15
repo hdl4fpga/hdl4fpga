@@ -80,6 +80,7 @@ architecture struct of sio_udp is
 	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
 	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
 	signal mysrv_udppltxen : std_logic;
+	signal mysrv_pktcmmt   : std_logic;
 
 begin
 
@@ -149,6 +150,7 @@ begin
 		udppl_len     => mysrv_udppllen,
 		udp_dp        => mysrv_udpdp,
 		udp_sp        => mysrv_udpsp,
+		pkt_cmmt      => mysrv_pktcmmt,
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd);
 
@@ -180,23 +182,17 @@ begin
 			des_data   => des_data);
 
 		process (mii_txc)
-			variable rxdv : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if udppl_rxdv='1' then
 					if des_irdy='1' then
 						wr_cntr <= wr_cntr + 1;
 					end if;
-				elsif dllcrc32_rxdv='0' then
-					if rxdv='1' then
-						if dllcrc32_equ='1' then
-							wr_ptr  <= wr_cntr;
-						else
-							wr_cntr <= wr_ptr;
-						end if;
-					end if;
+				elsif mysrv_pktcmmt='1' then
+					wr_ptr  <= wr_cntr;
+				else
+					wr_cntr <= wr_ptr;
 				end if;
-				rxdv := dllcrc32_rxdv;
 			end if;
 		end process;
 

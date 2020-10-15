@@ -62,6 +62,7 @@ entity mii_siosrv is
 
 		udppl_txen    : out  std_logic;
 		udppl_txd     : out  std_logic_vector;
+		pkt_cmmt      : out  std_logic;
 		tp            : buffer std_logic_vector(1 to 4));
 
 end;
@@ -72,6 +73,7 @@ architecture def of mii_siosrv is
 	signal dllcrc32_eor : std_logic;
 
 	signal rgtr_id      : std_logic_vector(8-1 downto 0);
+	signal siosin_frm   : std_logic;
 	signal octect_frm   : std_logic;
 	signal octect_trdy  : std_logic;
 	signal octect_data  : std_logic_vector(8-1 downto 0);
@@ -82,12 +84,13 @@ architecture def of mii_siosrv is
 	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
-	signal dv   : std_logic;
+	signal ack_dv   : std_logic;
 	signal data : std_logic_vector(0 to 40-1);
 
 begin
 
 	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
+	siosin_frm <= udppl_rxdv and myport_rcvd;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => mii_txc,
@@ -120,7 +123,7 @@ begin
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data,
 		data      => ack_rgtr,
-		dv        => dv);
+		dv        => ack_dv);
 
 	process (mii_txc)
 	begin
@@ -154,20 +157,44 @@ begin
 	end process;
 
 	process (mii_txc)
-		variable rcvd : std_logic;
+		variable pkt_rcvd : std_logic;
+		variable ack_last : std_logic_vector(ack_rgtr'range);
+		variable ack_rcvd : std_logic;
+		variable txrdy_edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
 			if tx_rdy='1' then
-				tx_req <= '0';
-				rcvd   := '0';
-			elsif dllcrc32_rxdv='0' then
-				if dllcrc32_eor='1' then
-					tx_req <= dllcrc32_equ and rcvd;
-					rcvd  := '0';
+				if txrdy_edge='1' then
+					tx_req <= '0';
 				end if;
 			end if;
+			txrdy_edge := tx_rdy;
+
+			pkt_cmmt <= '0';
+			if dllcrc32_rxdv='0' then
+				if dllcrc32_eor='1' then
+					if dllcrc32_equ='1' then
+						if pkt_rcvd='1'  then
+							if ack_rcvd='1' then
+								tx_req   <= '1';
+								pkt_cmmt <= setif(ack_rgtr/=ack_last);
+								ack_last := ack_rgtr;
+							else
+								pkt_cmmt <= '1';
+							end if;
+						end if;
+					end if;
+					pkt_rcvd := '0';
+					ack_rcvd := '0';
+				end if;
+			end if;
+
+			if ack_dv='1' then
+				ack_rcvd := '1';
+			end if;
+
 			if dll_rxdv='1'then
-				rcvd := myport_rcvd;
+				pkt_rcvd := myport_rcvd;
 			end if;
 		end if;
 	end process;
