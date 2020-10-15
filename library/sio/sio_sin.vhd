@@ -13,7 +13,7 @@ entity sio_sin is
 		sin_data  : in  std_logic_vector;
 		
 		data_frm  : out std_logic;
-		data_trdy : out std_logic;
+		data_irdy : out std_logic;
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_id   : out std_logic_vector;
@@ -83,7 +83,7 @@ begin
 			rgtr_data <= std_logic_vector(data);
 
 			data_frm  <= setif(state=s_data);
-			data_trdy <= des8_irdy and setif(state=s_data);
+			data_irdy <= des8_irdy and setif(state=s_data);
 			data_ptr  <= std_logic_vector(ptr);
 		end if;
 	end process;

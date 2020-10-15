@@ -1079,8 +1079,10 @@ $(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
 
 $(HDL4FPGA__mii_siosrv) \
 $(HDL4FPGA__mii_siosrv__def) : ../sio/mii_siosrv.vhd \
-		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__mii_mux) \
 		$(HDL4FPGA__mii_romcmp) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \

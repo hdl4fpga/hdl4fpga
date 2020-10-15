@@ -63,11 +63,12 @@ begin
 
 		if des_data'ascending /= ser_data'ascending then
 			des(ser_data'reverse_range) := unsigned(ser_data);
+			des_data <= reverse(std_logic_vector(des), des_data'length);
 		else
 			des(ser_data'range) := unsigned(ser_data);
+			des_data <= std_logic_vector(des);
 		end if;
 
-		des_data <= std_logic_vector(des);
 	end process;
 
 	des_irdy <= ser_irdy and setif(stop='1' or des_data'length=ser_data'length);

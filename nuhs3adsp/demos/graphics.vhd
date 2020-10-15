@@ -247,6 +247,7 @@ begin
 
 	si_b : block
 
+		constant fifo_depth : natural := 2;
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);
@@ -301,7 +302,7 @@ begin
 			sin_irdy  => so_irdy,
 			sin_data  => so_data,
 			data_ptr  => data_ptr,
-			data_ena  => data_ena,
+			data_irdy => data_ena,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -309,7 +310,7 @@ begin
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => 8,
+			max_depth => fifo_depth,
 			out_rgtr  => true,
 			check_dov => true,
 			gray_code => true)
@@ -327,7 +328,7 @@ begin
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv;
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => 8,
+			max_depth => fifo_depth,
 			out_rgtr  => true,
 			check_dov => true,
 			gray_code => true)
@@ -355,7 +356,7 @@ begin
 		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => 8*1024, --(8*(4*1024))/ctlr_di'length,
+			max_depth => fifo_depth*1024,
 			gray_code => false)
 		port map (
 			src_clk  => sio_clk,

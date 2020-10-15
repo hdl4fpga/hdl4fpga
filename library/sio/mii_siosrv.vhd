@@ -78,7 +78,7 @@ architecture def of mii_siosrv is
 	signal sigsin_frm   : std_logic;
 	signal sigrgtr_data : std_logic_vector(8-1 downto 0);
 	signal sig_frm      : std_logic;
-	signal sig_trdy     : std_logic;
+	signal sig_irdy     : std_logic;
 	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
@@ -87,15 +87,15 @@ architecture def of mii_siosrv is
 
 begin
 
-	data <= x"00" & x"02" & x"00" & x"00" & x"00";
+	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => mii_txc,
-		sin_frm   => dll_rxdv,
+		sin_frm   => udppl_rxdv,
 		sin_data  => dll_rxd,
 		rgtr_id   => rgtr_id,
 		data_frm  => octect_frm,
-		data_trdy => octect_trdy,
+		data_irdy => octect_trdy,
 		rgtr_data => octect_data);
 
 	sigsin_frm <= octect_frm and setif(rgtr_id=x"00");
@@ -106,7 +106,7 @@ begin
 		sin_irdy  => octect_trdy,
 		sin_data  => octect_data,
 		data_frm  => sig_frm,
-		data_trdy => sig_trdy,
+		data_irdy => sig_irdy,
 		rgtr_id   => sigrgtr_id,
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data);
