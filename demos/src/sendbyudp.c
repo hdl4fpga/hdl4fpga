@@ -48,6 +48,12 @@ int main (int argc, char *argv[])
 	fd_set rfds;
 	struct timeval tv;
 	int err;
+	int ack;
+	int n;
+	int l;
+	int pkt_sent = 0;
+	int pkt_lost = 0;
+	unsigned short size;
 
 
 #ifdef __MINGW32__
@@ -105,11 +111,38 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-	int n;
-	int l;
-	int pkt_sent = 0;
-	int pkt_lost = 0;
-	unsigned short size;
+	ack  = 0 ;
+	size = 0;
+	buffer[size++] = 0x00;
+	buffer[size++] = 0x02;
+	buffer[size++] = 0x00;
+	buffer[size++] = 0x00;
+	buffer[size++] = ack++;
+	buffer[size++] = 0xff;
+	buffer[size++] = 0xff;
+
+	do {
+		if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+			perror ("sending packet");
+			exit (1);
+		}
+
+		tv.tv_sec  = 0;
+		tv.tv_usec = 1000;
+
+		FD_ZERO(&rfds);
+		FD_SET(s, &rfds);
+		if ((err = select(s+1, &rfds, NULL, NULL, &tv))== -1) {
+			perror ("select");
+			exit (1);
+		} else if (err > 0) {
+			if ((l = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+				perror ("recvfrom");
+				exit (1);
+			}
+		}
+	} while (!(err > 0));
+
 	size = sizeof(buffer)-2;
 	for(;;) {
 		if (pktmd) {
@@ -125,8 +158,13 @@ int main (int argc, char *argv[])
 				exit(1);
 			}
 
-			buffer[size++] = 0xff;
-			buffer[size++] = 0xff;
+//			buffer[size++] = 0x00;
+//			buffer[size++] = 0x02;
+//			buffer[size++] = 0x00;
+//			buffer[size++] = 0x00;
+//			buffer[size++] = ack++;
+//			buffer[size++] = 0xff;
+//			buffer[size++] = 0xff;
 			fprintf (stderr, "packet length %d\n", n);
 
 			do {
@@ -153,7 +191,8 @@ int main (int argc, char *argv[])
 					}
 				}
 			} while (!(err > 0));
-
+//			exit(-1);
+//nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
 			
 		} else if (n < 0) {
 			perror ("reading packet");

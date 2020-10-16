@@ -60,8 +60,11 @@ architecture nuhs3adsp_graphic of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal eth_txen : std_logic;
+	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
+	signal txfrm_ptr     : std_logic_vector(0 to 16);
 
 	signal ddr_lp_dqs : std_logic;
 
@@ -228,6 +231,100 @@ architecture nuhs3adsp_graphic of testbench is
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
+	constant pp : std_logic_vector := 
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
+			x"00000000"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         &    -- UDP Source port, Destination port
+				x"000f"             & -- UDP Length,
+				x"0000"               -- UPD checksum
+				& x"1602000180"
+				& x"18ff"
+				& x"123456789abcdef123456789abcdef12"
+				& x"23456789abcdef123456789abcdef123"
+				& x"3456789abcdef123456789abcdef1234"
+				& x"456789abcdef123456789abcdef12345"
+				& x"56789abcdef123456789abcdef123456"
+				& x"6789abcdef123456789abcdef1234567"
+				& x"789abcdef123456789abcdef12345678"
+				& x"89abcdef123456789abcdef123456789"
+				& x"9abcdef123456789abcdef123456789a"
+				& x"abcdef123456789abcdef123456789ab"
+				& x"bcdef123456789abcdef123456789abc"
+				& x"cdef123456789abcdef123456789abcd"
+				& x"def123456789abcdef123456789abcde"
+				& x"ef123456789abcdef123456789abcdef"
+				& x"f123456789abcdef123456789abcdef1"
+				& x"123456789abcdef123456789abcdef12"
+				& x"170200003f"
+				& x"1602000000"
+				& x"18ff"
+				& x"1234ffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffaabb"
+				& x"ccddffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffff6789"
+				& x"170200003f"
+				& x"1602000400"
+				& x"18ff"
+				& x"1234ffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffaabb"
+				& x"ccddffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffff6789"
+				& x"170200003f"
+				& x"1602000800"
+				& x"18ff"
+				& x"1234ffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffaabb"
+				& x"ccddffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffffffff"
+				& x"ffffffffffffffffffffffffffff6789"
+				& x"170200003f"
+				& x"0002000005" 
+				& x"ffff");
 
 	constant delay : time := 1 ns;
 begin
@@ -256,80 +353,34 @@ begin
 		end if;
 	end process;
 
-	eth_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5"  &
-			x"00_40_00_01_02_03"    &
-			x"00_00_00_00_00_00"    &
-			x"0800"                 &
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"00000000"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
+	rst <= '0', '1' after 300 ns;
+	eth_txd <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"0044dea9"         &    -- UDP Source port, Destination port
-				x"000f"             & -- UDP Length,
-				x"0000"             & -- UPD checksum
-				x"0002000005" 
-				& x"1602000180"
-				& x"18ff"
-				& x"123456789abcdef123456789abcdef12"
-				& x"23456789abcdef123456789abcdef123"
-				& x"3456789abcdef123456789abcdef1234"
-				& x"456789abcdef123456789abcdef12345"
-				& x"56789abcdef123456789abcdef123456"
-				& x"6789abcdef123456789abcdef1234567"
-				& x"789abcdef123456789abcdef12345678"
-				& x"89abcdef123456789abcdef123456789"
-				& x"9abcdef123456789abcdef123456789a"
-				& x"abcdef123456789abcdef123456789ab"
-				& x"bcdef123456789abcdef123456789abc"
-				& x"cdef123456789abcdef123456789abcd"
-				& x"def123456789abcdef123456789abcde"
-				& x"ef123456789abcdef123456789abcdef"
-				& x"f123456789abcdef123456789abcdef1"
-				& x"123456789abcdef123456789abcdef12"
-				& x"170200007f"
-				& x"1602000000"
-				& x"18ff"
-				& x"1234ffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffaabb"
-				& x"ccddffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffff6789"
-				& x"170200007f"
-				& x"ffff"
-			),8)
---		& x"79afd0bb"			 -- CRC
---		& x"20798b61"			 -- CRC
-		& x"a6edb7a7"
-	)
+
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if mii_treq='0' then
+				txfrm_ptr <= (others => '0');
+			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length then
+				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
+			end if;
+		end if;
+	end process;
+	eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length);
+
+	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc  => mii_rxc,
-		mii_txen => mii_treq,
-		mii_txdv => mii_rxdv,
-		mii_txd  => mii_rxd);
+		eth_ptr  => txfrm_ptr,
+		hwsa     => x"00_00_00_00_00_00",
+		hwda     => x"00_40_00_01_02_03",
+		llc      => x"0800",
+		pl_txen  => eth_txen,
+		pl_txd   => eth_txd,
+		eth_txen => mii_rxdv,
+		eth_txd  => mii_rxd);
 
-	rst <= '0', '1' after 300 ns;
 	du_e : nuhs3adsp
 	port map (
 		xtal => clk,

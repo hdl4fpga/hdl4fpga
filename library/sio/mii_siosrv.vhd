@@ -63,6 +63,7 @@ entity mii_siosrv is
 		udppl_txen    : out  std_logic;
 		udppl_txd     : out  std_logic_vector;
 		pkt_cmmt      : out  std_logic;
+		cmmt_ena      : out  std_logic;
 		tp            : buffer std_logic_vector(1 to 4));
 
 end;
@@ -164,13 +165,14 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if tx_rdy='1' then
-				if txrdy_edge='1' then
+				if txrdy_edge='0' then
 					tx_req <= '0';
 				end if;
 			end if;
 			txrdy_edge := tx_rdy;
 
 			pkt_cmmt <= '0';
+			cmmt_ena <= '0';
 			if dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
 					if dllcrc32_equ='1' then
@@ -182,6 +184,7 @@ begin
 							else
 								pkt_cmmt <= '1';
 							end if;
+							cmmt_ena <= '1';
 						end if;
 					end if;
 					pkt_rcvd := '0';
