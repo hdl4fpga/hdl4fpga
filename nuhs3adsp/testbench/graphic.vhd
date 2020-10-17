@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture nuhs3adsp_graphic of testbench is
+architecture nuhs3adsp_graphics of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
@@ -60,6 +60,7 @@ architecture nuhs3adsp_graphic of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal mii_txc  : std_logic;
 	signal eth_txen : std_logic;
 	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
@@ -244,10 +245,10 @@ architecture nuhs3adsp_graphic of testbench is
 			udp_checksummed (
 				x"00000000",
 				x"ffffffff",
-				x"0044dea9"         &    -- UDP Source port, Destination port
+				x"0044dea9"         & -- UDP Source port, Destination port
 				x"000f"             & -- UDP Length,
 				x"0000"               -- UPD checksum
-				& x"1602000180"
+				& x"1602000040"
 				& x"18ff"
 				& x"123456789abcdef123456789abcdef12"
 				& x"23456789abcdef123456789abcdef123"
@@ -285,7 +286,7 @@ architecture nuhs3adsp_graphic of testbench is
 				& x"ffffffffffffffffffffffffffffffff"
 				& x"ffffffffffffffffffffffffffff6789"
 				& x"170200003f"
-				& x"1602000400"
+				& x"1602000080"
 				& x"18ff"
 				& x"1234ffffffffffffffffffffffffffff"
 				& x"ffffffffffffffffffffffffffffffff"
@@ -304,7 +305,7 @@ architecture nuhs3adsp_graphic of testbench is
 				& x"ffffffffffffffffffffffffffffffff"
 				& x"ffffffffffffffffffffffffffff6789"
 				& x"170200003f"
-				& x"1602000800"
+				& x"16020000c0"
 				& x"18ff"
 				& x"1234ffffffffffffffffffffffffffff"
 				& x"ffffffffffffffffffffffffffffffff"
@@ -323,17 +324,17 @@ architecture nuhs3adsp_graphic of testbench is
 				& x"ffffffffffffffffffffffffffffffff"
 				& x"ffffffffffffffffffffffffffff6789"
 				& x"170200003f"
-				& x"0002000005" 
-				& x"ffff");
+				& x"55ff");
 
 	constant delay : time := 1 ns;
 begin
 
-	mii_rxc <= mii_refclk after 5 ps;
+	mii_rxc <= mii_refclk;
+	mii_txc <= mii_refclk;
 
 	clk <= not clk after 25 ns;
 
-	mii_treq <= '0', '1' after 8 us;
+	mii_treq <= '0', '1' after 1 us;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 	process (rst, uart_clk)
@@ -354,7 +355,6 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
-	eth_txd <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
 
 	process (mii_rxc)
@@ -368,6 +368,7 @@ begin
 		end if;
 	end process;
 	eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length);
+	eth_txd  <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -401,8 +402,8 @@ begin
 
 		rs232_rd => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_txc => mii_refclk,
-		mii_rxc => mii_refclk,
+		mii_txc => mii_txc,
+		mii_rxc => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,
 		mii_txen => mii_txen,
@@ -446,7 +447,7 @@ end;
 library micron;
 
 configuration nuhs3adsp_graphic_structure_md of testbench is
-	for nuhs3adsp_graphic
+	for nuhs3adsp_graphics
 		for all : nuhs3adsp
 			use entity work.nuhs3adsp(structure);
 		end for;
@@ -471,10 +472,10 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_graphic_md of testbench is
-	for nuhs3adsp_graphic
+configuration nuhs3adsp_graphics_md of testbench is
+	for nuhs3adsp_graphics
 		for all : nuhs3adsp
-			use entity work.nuhs3adsp(graphic);
+			use entity work.nuhs3adsp(graphics);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

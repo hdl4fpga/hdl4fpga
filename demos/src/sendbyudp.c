@@ -153,18 +153,19 @@ int main (int argc, char *argv[])
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+			size = n;
 			if (size > MAXSIZE) {
 				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
 				exit(1);
 			}
 
-//			buffer[size++] = 0x00;
-//			buffer[size++] = 0x02;
-//			buffer[size++] = 0x00;
-//			buffer[size++] = 0x00;
-//			buffer[size++] = ack++;
-//			buffer[size++] = 0xff;
-//			buffer[size++] = 0xff;
+			buffer[size++] = 0x00;
+			buffer[size++] = 0x02;
+			buffer[size++] = 0x00;
+			buffer[size++] = 0x00;
+			buffer[size++] = ack++;
+			buffer[size++] = 0xff;
+			buffer[size++] = 0xff;
 			fprintf (stderr, "packet length %d\n", n);
 
 			do {
