@@ -587,7 +587,10 @@ begin
 		udp_b : block
 			signal udp_ena : std_logic;
 			signal udp_len   : std_logic_vector(0 to 16-1);
+			signal udplen_rx : std_logic_vector(0 to 16-1);
 			signal udplen_tx : std_logic_vector(0 to 16-1);
+			signal pl_rxdv   : std_logic;
+			signal cntr      : unsigned(0 to 16+unsigned_num_bits(octect_size/txc_rxd'length)-1);
 
 		begin
 			udp_ena <= udpproto_rcvd and (myip4a_rcvd or bcstipv4a_rcvd);
@@ -603,7 +606,7 @@ begin
 				udpdp_rxdv   => udpdp_rxdv,
 				udplen_rxdv  => udplen_rxdv,
 				udpcksm_rxdv => udpcksm_rxdv,
-				udppl_rxdv   => udppl_rxdv);
+				udppl_rxdv   => pl_rxdv);
 
 			udpdp_e : entity hdl4fpga.mii_des
 			port map (
@@ -618,6 +621,27 @@ begin
 				mii_rxdv => udpsp_rxdv,
 				mii_rxd  => txc_rxd,
 				des_data => udpsp_rx);
+
+			udplen_e : entity hdl4fpga.mii_des
+			port map (
+				mii_rxc  => mii_txc,
+				mii_rxdv => udplen_rxdv,
+				mii_rxd  => txc_rxd,
+				des_data => udplen_rx);
+
+			process(mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					if udpcksm_rxdv='1' then
+						cntr <= resize(shift_left(unsigned(udplen_rx)-summation(udp4hdr_frame)/octect_size, unsigned_num_bits(octect_size/txc_rxd'length)-1), cntr'length)-1;
+					elsif udppl_rxdv='1' then
+						if cntr(0)='0' then
+							cntr <= cntr - 1;
+						end if;
+					end if;
+				end if;
+			end process;
+			udppl_rxdv <= not cntr(0) and pl_rxdv;
 
 			udplen_tx <= wirebus(udpdhcp_len & udp_len , dhcp_gnt & extern_gnt);
 			udpip_len <= std_logic_vector(unsigned(udplen_tx) + (summation(ip4hdr_frame))/octect_size);

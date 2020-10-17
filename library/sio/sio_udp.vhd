@@ -176,7 +176,7 @@ begin
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,
-			serdes_frm => dll_rxdv,
+			serdes_frm => udppl_rxdv,
 			ser_irdy   => '1',
 			ser_data   => txc_rxd,
 

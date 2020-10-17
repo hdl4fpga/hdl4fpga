@@ -247,7 +247,7 @@ begin
 
 	si_b : block
 
-		constant fifo_depth : natural := 4;
+		constant fifo_depth : natural := 1;
 		signal rgtr_id     : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv     : std_logic;
 		signal rgtr_data   : std_logic_vector(32-1 downto 0);

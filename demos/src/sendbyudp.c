@@ -118,8 +118,6 @@ int main (int argc, char *argv[])
 	buffer[size++] = 0x00;
 	buffer[size++] = 0x00;
 	buffer[size++] = ack++;
-	buffer[size++] = 0xff;
-	buffer[size++] = 0xff;
 
 	do {
 		if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
@@ -164,8 +162,6 @@ int main (int argc, char *argv[])
 			buffer[size++] = 0x00;
 			buffer[size++] = 0x00;
 			buffer[size++] = ack++;
-			buffer[size++] = 0xff;
-			buffer[size++] = 0xff;
 			fprintf (stderr, "packet length %d\n", n);
 
 			do {

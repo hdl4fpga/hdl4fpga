@@ -1207,7 +1207,11 @@ package body std is
 				end loop;
 			end if;
 		end loop;
-		if t(a'left-1 downto 0)=(1 to a'left => '0') then
+		if t'length > 1 then
+			if t(a'left-1 downto 0)=(1 to a'left => '0') then
+				t(a'left) := '1';
+			end if;
+		else
 			t(a'left) := '1';
 		end if;
 		return gray(a xor t);

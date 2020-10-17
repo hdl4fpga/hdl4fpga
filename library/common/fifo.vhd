@@ -56,10 +56,7 @@ end;
 
 architecture def of fifo is
 
-
-
-	constant addr_length : natural := unsigned_num_bits(max_depth-1);
-	subtype addr_range is natural range 1 to addr_length;
+	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
 	signal wr_ena    : std_logic;
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
@@ -70,24 +67,63 @@ architecture def of fifo is
 
 	signal dst_ini  : std_logic;
 	signal feed_ena : std_logic;
+
 begin
 
-	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
-	mem_e : entity hdl4fpga.dpram(def)
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => out_rgtr,
-		bitrom => mem_data)
-	port map (
-		wr_clk  => src_clk,
-		wr_ena  => wr_ena,
-		wr_addr => std_logic_vector(wr_cntr(addr_range)),
-		wr_data => src_data, 
+	assert max_depth=2**addr_length
+	report "fifo_depth should be a power of 2"
+	severity FAILURE;
 
-		rd_clk  => dst_clk,
-		rd_ena  => feed_ena,
-		rd_addr => std_logic_vector(rd_cntr(addr_range)),
-		rd_data => dst_data);
+	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
+	max_depthgt1_g : if max_depth > 1 generate
+		subtype addr_range is natural range 1 to addr_length;
+	begin
+		mem_e : entity hdl4fpga.dpram(def)
+		generic map (
+			synchronous_rdaddr => false,
+			synchronous_rddata => out_rgtr,
+			bitrom => mem_data)
+		port map (
+			wr_clk  => src_clk,
+			wr_ena  => wr_ena,
+			wr_addr => std_logic_vector(wr_cntr(addr_range)),
+			wr_data => src_data, 
+
+			rd_clk  => dst_clk,
+			rd_ena  => feed_ena,
+			rd_addr => std_logic_vector(rd_cntr(addr_range)),
+			rd_data => dst_data);
+		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+	end generate;
+
+	max_depht1_g : if max_depth = 1 generate
+		signal rgtr : std_logic_vector(src_data'range);
+	begin
+		process (src_clk)
+		begin
+			if rising_edge(src_clk) then
+				if wr_ena='1' then
+					rgtr <= src_data;
+				end if;
+			end if;
+		end process;
+
+		process (rgtr, dst_clk)
+		begin
+			if out_rgtr then
+				if rising_edge(dst_clk) then
+					if feed_ena='1' then
+						dst_data <= rgtr;
+					end if;
+				end if;
+			else
+				dst_data <= rgtr;
+			end if;
+		end process;
+
+		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
+	end generate;
+
 
 	process(src_clk)
 	begin
@@ -111,7 +147,6 @@ begin
 			end if;
 		end if;
 	end process;
-	src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 
 	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
 	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));

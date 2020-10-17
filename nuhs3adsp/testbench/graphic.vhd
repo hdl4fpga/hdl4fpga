@@ -232,6 +232,27 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
+	constant pp_pl : std_logic_vector := 
+		x"1602000040"
+		& x"18ff"
+		& x"123456789abcdef123456789abcdef12"
+		& x"23456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234"
+		& x"456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef123456"
+		& x"6789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef12345678"
+		& x"89abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789a"
+		& x"abcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abc"
+		& x"cdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcde"
+		& x"ef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1"
+		& x"123456789abcdef123456789abcdef12"
+		& x"170200003f";
+
 	constant pp : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
 			x"0000"                 &    -- IP Length
@@ -246,85 +267,9 @@ architecture nuhs3adsp_graphics of testbench is
 				x"00000000",
 				x"ffffffff",
 				x"0044dea9"         & -- UDP Source port, Destination port
-				x"000f"             & -- UDP Length,
-				x"0000"               -- UPD checksum
-				& x"1602000040"
-				& x"18ff"
-				& x"123456789abcdef123456789abcdef12"
-				& x"23456789abcdef123456789abcdef123"
-				& x"3456789abcdef123456789abcdef1234"
-				& x"456789abcdef123456789abcdef12345"
-				& x"56789abcdef123456789abcdef123456"
-				& x"6789abcdef123456789abcdef1234567"
-				& x"789abcdef123456789abcdef12345678"
-				& x"89abcdef123456789abcdef123456789"
-				& x"9abcdef123456789abcdef123456789a"
-				& x"abcdef123456789abcdef123456789ab"
-				& x"bcdef123456789abcdef123456789abc"
-				& x"cdef123456789abcdef123456789abcd"
-				& x"def123456789abcdef123456789abcde"
-				& x"ef123456789abcdef123456789abcdef"
-				& x"f123456789abcdef123456789abcdef1"
-				& x"123456789abcdef123456789abcdef12"
-				& x"170200003f"
-				& x"1602000000"
-				& x"18ff"
-				& x"1234ffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffaabb"
-				& x"ccddffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffff6789"
-				& x"170200003f"
-				& x"1602000080"
-				& x"18ff"
-				& x"1234ffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffaabb"
-				& x"ccddffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffff6789"
-				& x"170200003f"
-				& x"16020000c0"
-				& x"18ff"
-				& x"1234ffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffaabb"
-				& x"ccddffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffffffff"
-				& x"ffffffffffffffffffffffffffff6789"
-				& x"170200003f"
-				& x"55ff");
+				std_logic_vector(to_unsigned(pp_pl'length/8+8,16))    & -- UDP Length,
+				x"0000" &              -- UPD checksum
+				pp_pl);
 
 	constant delay : time := 1 ns;
 begin
