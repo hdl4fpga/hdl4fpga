@@ -385,8 +385,9 @@ begin
 					q := '0';
 				end if;
 			end if;
-			dmadata_trdy <= ctlr_di_req or q;
+--			dmadata_trdy <= ctlr_di_req or q;
 		end process;
+			dmadata_trdy <= ctlr_di_req;
 
 		dmacfgio_p : process (dmacfg_clk)
 			variable io_rdy1 : std_logic;

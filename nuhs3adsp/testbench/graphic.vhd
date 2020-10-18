@@ -253,6 +253,27 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"123456789abcdef123456789abcdef12"
 		& x"170200003f";
 
+	constant pp1_pl : std_logic_vector := 
+		x"1602000080"
+		& x"18ff"
+		& x"eeee77779abcdef123456789abcdef12"
+		& x"23456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234"
+		& x"456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef123456"
+		& x"6789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef12345678"
+		& x"89abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789a"
+		& x"abcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abc"
+		& x"cdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcde"
+		& x"ef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1"
+		& x"123456789abcdef123456789abcdef12"
+		& x"170200003f";
+
 	constant pp : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
 			x"0000"                 &    -- IP Length
@@ -271,7 +292,26 @@ architecture nuhs3adsp_graphics of testbench is
 				x"0000" &              -- UPD checksum
 				pp_pl);
 
+	constant pp1 : std_logic_vector := 
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
+			x"00000000"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         & -- UDP Source port, Destination port
+				std_logic_vector(to_unsigned(pp1_pl'length/8+8,16))    & -- UDP Length,
+				x"0000" &              -- UPD checksum
+				pp1_pl);
+
 	constant delay : time := 1 ns;
+	signal n : std_logic := '0';
 begin
 
 	mii_rxc <= mii_refclk;
@@ -279,7 +319,6 @@ begin
 
 	clk <= not clk after 25 ns;
 
-	mii_treq <= '0', '1' after 1 us;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 	process (rst, uart_clk)
@@ -300,6 +339,7 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
+	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 30 us, '1' after 210 us +40 us;
 
 
 	process (mii_rxc)
@@ -312,8 +352,17 @@ begin
 			end if;
 		end if;
 	end process;
+	process (mii_treq)
+	begin
+		if rising_edge(mii_treq) then
+			n <= not n;
+		end if;
+	end process;
 	eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length);
-	eth_txd  <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
+	eth_txd  <= word2byte(
+		word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length) &
+		word2byte(reverse(pp1,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length),
+		n);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
