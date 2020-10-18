@@ -189,7 +189,7 @@ int main (int argc, char *argv[])
 				}
 			} while (!(err > 0));
 //			exit(-1);
-//nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
+nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
 			
 		} else if (n < 0) {
 			perror ("reading packet");

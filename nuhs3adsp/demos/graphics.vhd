@@ -361,7 +361,8 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth*256/(ctlr_di'length/8),
-			gray_code => false)
+			check_dov => true,
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -385,9 +386,8 @@ begin
 					q := '0';
 				end if;
 			end if;
---			dmadata_trdy <= ctlr_di_req or q;
+			dmadata_trdy <= ctlr_di_req or q;
 		end process;
-			dmadata_trdy <= ctlr_di_req;
 
 		dmacfgio_p : process (dmacfg_clk)
 			variable io_rdy1 : std_logic;

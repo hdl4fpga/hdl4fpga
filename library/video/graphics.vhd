@@ -72,6 +72,7 @@ architecture def of graphics is
 
 	signal mydma_rdy : std_logic;
 
+	signal pp : natural := 0;
 begin
 
 	process (video_clk)
@@ -87,21 +88,36 @@ begin
 			if vton_dly='0' then
 				if vton_edge='1' then
 					dma_req <= '1';
+					pp <= 1;
+				elsif mydma_rdy='1' then
+					dma_req <= '0';
+					pp <= 7;
+				else
+					pp <= 6;
 				end if;
 				level    <= to_unsigned(maxdma_len, level'length);
 				dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 				dma_addr <= base_addr; --(dma_addr'range => '0');
 				dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
 			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
+					pp <= 2;
 				level <= level - video_width;
 			elsif level <= water_mark then
-				dma_req  <= '1';
-				level    <= level + line_size;
-				dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
-				dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
-				dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
+				if mydma_rdy='0' then
+					pp <= 3;
+					dma_req  <= '1';
+					level    <= level + line_size;
+					dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
+					dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
+				else
+					pp <= 8;
+				end if;
 			elsif mydma_rdy='1' then
+					pp <= 4;
 				dma_req <= '0';
+			else
+					pp <= 5;
 			end if;
 
 			hzon_edge <= video_hzon;
