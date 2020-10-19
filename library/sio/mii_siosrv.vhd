@@ -76,7 +76,7 @@ architecture def of mii_siosrv is
 	signal rgtr_id      : std_logic_vector(8-1 downto 0);
 	signal siosin_frm   : std_logic;
 	signal octect_frm   : std_logic;
-	signal octect_trdy  : std_logic;
+	signal octect_irdy  : std_logic;
 	signal octect_data  : std_logic_vector(8-1 downto 0);
 	signal sigsin_frm   : std_logic;
 	signal sigrgtr_data : std_logic_vector(8-1 downto 0);
@@ -99,7 +99,7 @@ begin
 		sin_data  => dll_rxd,
 		rgtr_id   => rgtr_id,
 		data_frm  => octect_frm,
-		data_irdy => octect_trdy,
+		data_irdy => octect_irdy,
 		rgtr_data => octect_data);
 
 	sigsin_frm <= octect_frm and setif(rgtr_id=x"00");
@@ -107,7 +107,7 @@ begin
 	port map (
 		sin_clk   => mii_txc,
 		sin_frm   => sigsin_frm,
-		sin_irdy  => octect_trdy,
+		sin_irdy  => octect_irdy,
 		sin_data  => octect_data,
 		data_frm  => sig_frm,
 		data_irdy => sig_irdy,
