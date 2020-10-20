@@ -345,8 +345,8 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
---	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 30 us, '1' after 210 us +40 us;
-	mii_treq <= '0', '1' after  1 us, '0' after   30 us, '1' after 40 us;
+	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 30 us, '1' after 210 us +40 us;
+--	mii_treq <= '0', '1' after  1 us, '0' after   30 us, '1' after 40 us;
 
 
 	process (mii_rxc)

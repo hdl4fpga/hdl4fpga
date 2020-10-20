@@ -320,7 +320,8 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
-			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
+			src_data => b"0000000_00000000_00000000", 
+--			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
@@ -339,7 +340,8 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
-			src_data => rgtr_data(dmaio_len'length-1 downto 0),
+			src_data => b"0000000_00000000_00111111", 
+--			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
@@ -400,7 +402,7 @@ begin
 				elsif dmacfgio_req='0' then
 					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
 						if dmaio_trdy='0' then
-							dmacfgio_req <= '1';
+							dmacfgio_req <= not dmacfgio_rdy;
 						end if;
 					end if;
 					dmaio_trdy <= '0';
@@ -410,7 +412,7 @@ begin
 						dmaio_trdy   <= '1';
 					end if;
 				else
-					dmaio_trdy   <= '0';
+					dmaio_trdy <= '0';
 				end if;
 				io_rdy2 := io_rdy1;
 				io_rdy1 := dmaio_rdy;
@@ -511,7 +513,9 @@ begin
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
+--	dev_len    <= dmavideo_len  & b"0000000_00000000_0001_1111";
 	dev_addr   <= dmavideo_addr & dmaio_addr;
+--	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr

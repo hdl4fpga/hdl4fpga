@@ -141,8 +141,8 @@ int main (int argc, char *argv[])
 		}
 	} while (!(err > 0));
 
-	size = sizeof(buffer)-2;
 	for(;;) {
+		size = sizeof(buffer)-5;
 		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
 				fprintf (stderr, "packet size %d\n", size);
@@ -189,7 +189,7 @@ int main (int argc, char *argv[])
 				}
 			} while (!(err > 0));
 //			exit(-1);
-nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
+// nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
 			
 		} else if (n < 0) {
 			perror ("reading packet");
