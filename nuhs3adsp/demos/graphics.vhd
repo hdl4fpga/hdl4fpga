@@ -150,6 +150,7 @@ architecture graphics of nuhs3adsp is
 	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
 	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
+	signal mydev_addr       : std_logic_vector(0 to dmactlr_addr'length-1);
 	signal dev_we         : std_logic_vector(0 to 2-1);
 
 	signal dev_req : std_logic_vector(0 to 2-1);
@@ -202,6 +203,7 @@ architecture graphics of nuhs3adsp is
 
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
+	signal a : std_logic;
 
 begin
 
@@ -294,7 +296,6 @@ begin
 			so_frm  => so_frm,
 			so_irdy => so_irdy,
 			so_data => so_data);
-		sio_frm <=  ddrsys_lckd;
 	
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -308,6 +309,19 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
+
+		process (sio_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				if dmaaddr_irdy='1' then
+					a <= not a;
+				end if;
+			end if;
+		end process;
+		mydev_addr   <= word2byte (b"0000000_00000000_00000000" & b"0000000_00000000_00000000", a);
+
+		sio_frm <= ddrsys_lckd;
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
@@ -320,7 +334,8 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
-			src_data => b"0000000_00000000_00000000", 
+--			src_data => b"0000000_00000000_00000000", 
+			src_data => mydev_addr,
 --			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
@@ -340,7 +355,7 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
-			src_data => b"0000000_00000000_00111111", 
+			src_data => b"0000000_00000000_01111111", 
 --			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
@@ -362,7 +377,26 @@ begin
 		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
+			debug => true,
 			max_depth => fifo_depth*256/(ctlr_di'length/8),
+			mem_data => 
+				x"0000000000000000000000000000000000000000000000000000000000000000" &
+				x"0000000000000000000000000000000000000000000000000000000000000000" &
+				x"0000000000000000000000000000000000000000000000000000000000000000" &
+				x"0000000000000000000000000000000000000000000000000000000000000000" &
+				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
+				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
+				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
+				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
+
+				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000",
 			check_dov => true,
 			gray_code => true)
 		port map (
@@ -409,6 +443,8 @@ begin
 				elsif io_rdy1='1' then
 					if io_rdy2='0' then
 						dmacfgio_req <= '0';
+						dmaio_trdy   <= '1';
+					else
 						dmaio_trdy   <= '1';
 					end if;
 				else
@@ -515,7 +551,7 @@ begin
 	dev_len    <= dmavideo_len  & dmaio_len;
 --	dev_len    <= dmavideo_len  & b"0000000_00000000_0001_1111";
 	dev_addr   <= dmavideo_addr & dmaio_addr;
---	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
+--	dev_addr   <= dmavideo_addr & word2byte (b"0000000_00000000_00000000" & b"0000000_00000000_01000000", a);
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr

@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
+	debug : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		dst_offset : natural := 0;
@@ -74,7 +75,7 @@ begin
 	report "fifo_depth should be a power of 2"
 	severity FAILURE;
 
-	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
+	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov)) and setif(debug=false);
 	max_depthgt1_g : if max_depth > 1 generate
 		subtype addr_range is natural range 1 to addr_length;
 	begin

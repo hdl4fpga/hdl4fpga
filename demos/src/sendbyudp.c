@@ -157,12 +157,12 @@ int main (int argc, char *argv[])
 				exit(1);
 			}
 
-			buffer[size++] = 0x00;
-			buffer[size++] = 0x02;
-			buffer[size++] = 0x00;
-			buffer[size++] = 0x00;
-			buffer[size++] = ack++;
-			fprintf (stderr, "packet length %d\n", n);
+//			buffer[size++] = 0x00;
+//			buffer[size++] = 0x02;
+//			buffer[size++] = 0x00;
+//			buffer[size++] = 0x00;
+//			buffer[size++] = ack++;
+//			fprintf (stderr, "packet length %d\n", n);
 
 			do {
 				pkt_sent++;

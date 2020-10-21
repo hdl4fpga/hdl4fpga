@@ -44,7 +44,7 @@ entity sio_dayudp is
 		phy_tx_d    : out std_logic_vector;
 	
 		sio_clk     : in  std_logic;
-		sio_addr    : in  std_logic := '1';
+		sio_addr    : in  std_logic := '0';
 
 		si_frm      : in  std_logic := '0';
 		si_irdy     : in  std_logic := '0';
@@ -81,8 +81,8 @@ begin
 		so_dv       => soudp_dv,
 		so_data     => soudp_data);
 
-	so_frm  <= si_frm  when sio_addr='0' else soudp_dv; 
-	so_irdy <= si_irdy when sio_addr='0' else soudp_dv;
-	so_data <= si_data when sio_addr='0' else soudp_data;
+	so_frm  <= si_frm  when sio_addr/='0' else soudp_dv; 
+	so_irdy <= si_irdy when sio_addr/='0' else soudp_dv;
+	so_data <= si_data when sio_addr/='0' else soudp_data;
 
 end;

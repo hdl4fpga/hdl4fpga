@@ -85,7 +85,7 @@ architecture def of mii_siosrv is
 	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
-	signal ack_dv   : std_logic;
+	signal ack_ena      : std_logic;
 	signal data : std_logic_vector(0 to 40-1);
 
 begin
@@ -124,7 +124,7 @@ begin
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data,
 		data      => ack_rgtr,
-		dv        => ack_dv);
+		ena       => ack_ena);
 
 	process (mii_txc)
 	begin
@@ -192,7 +192,7 @@ begin
 				end if;
 			end if;
 
-			if ack_dv='1' then
+			if ack_ena='1' then
 				ack_rcvd := '1';
 			end if;
 

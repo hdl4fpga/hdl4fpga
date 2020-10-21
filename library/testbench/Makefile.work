@@ -53,12 +53,10 @@ WORK__ulx3s__mii_debug = $(LIB_WORK)/ulx3s/mii_debug.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx3s_miidebug = $(LIB_WORK)/testbench/ulx3s_miidebug.dat
 WORK__testbench__nuhs3adsp_miidebug = $(LIB_WORK)/testbench/nuhs3adsp_miidebug.dat
-WORK__testbench__nuhs3adsp_graphic = $(LIB_WORK)/testbench/nuhs3adsp_graphic.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
-WORK__nuhs3adsp_graphic_md = $(LIB_WORK)/nuhs3adsp_graphic_md/_primary.dat
 WORK__nuhs3adsp__mii_debug = $(LIB_WORK)/nuhs3adsp/mii_debug.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
@@ -71,12 +69,10 @@ whole_library :     $(WORK__ulx3s__mii_debug) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx3s_miidebug) \
     $(WORK__testbench__nuhs3adsp_miidebug) \
-    $(WORK__testbench__nuhs3adsp_graphic) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
-    $(WORK__nuhs3adsp_graphic_md) \
     $(WORK__nuhs3adsp__mii_debug) \
     $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp)
@@ -140,11 +136,9 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
-$(WORK__nuhs3adsp_graphic_md) \
 $(WORK__nuhs3adsp_graphic_structure_md) \
 $(WORK__nuhs3adsp_graphics_md) \
-$(WORK__testbench__nuhs3adsp_graphics) \
-$(WORK__testbench__nuhs3adsp_graphic) : ../../nuhs3adsp/testbench/graphic.vhd \
+$(WORK__testbench__nuhs3adsp_graphics) : ../../nuhs3adsp/testbench/graphic.vhd \
 		$(VERILOG__vl_types) \
 		$(MICRON__ddr_model) \
 		$(WORK__nuhs3adsp) \
