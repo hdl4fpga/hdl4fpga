@@ -150,7 +150,6 @@ architecture graphics of nuhs3adsp is
 	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
 	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
-	signal mydev_addr       : std_logic_vector(0 to dmactlr_addr'length-1);
 	signal dev_we         : std_logic_vector(0 to 2-1);
 
 	signal dev_req : std_logic_vector(0 to 2-1);
@@ -192,7 +191,7 @@ architecture graphics of nuhs3adsp is
 		return false;
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, mode480p);
+	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -249,40 +248,30 @@ begin
 
 	si_b : block
 
-		constant fifo_depth : natural := 2;
-		signal rgtr_id     : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv     : std_logic;
-		signal rgtr_data   : std_logic_vector(32-1 downto 0);
+		constant fifo_depth  : natural := 2;
 
-		signal data_ena    : std_logic;
-		signal data_ptr    : std_logic_vector(8-1 downto 0);
-		signal dmadata_irdy : std_logic;
-		signal dmadata_trdy : std_logic;
-		signal dmaaddr_irdy : std_logic;
-		signal dmalen_irdy : std_logic;
+		constant rid_dmaaddr : std_logic_vector := x"16";
+		constant rid_dmalen  : std_logic_vector := x"17";
+		constant rid_dmadata : std_logic_vector := x"18";
 
-		signal so_frm      : std_logic;
-		signal so_irdy     : std_logic;
-		signal so_data     : std_logic_vector(8-1 downto 0); --mii_rxd'range);
-		signal no_sidata   : std_logic_vector(8-1 downto 0); --mii_rxd'range);
+		signal rgtr_id       : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv       : std_logic;
+		signal rgtr_data     : std_logic_vector(32-1 downto 0);
+
+		signal data_ena      : std_logic;
+		signal data_ptr      : std_logic_vector(8-1 downto 0);
+		signal dmadata_irdy  : std_logic;
+		signal dmadata_trdy  : std_logic;
+		signal dmaaddr_irdy  : std_logic;
+		signal dmalen_irdy   : std_logic;
+
+		signal so_frm        : std_logic;
+		signal so_irdy       : std_logic;
+		signal so_data       : std_logic_vector(8-1 downto 0);
+		signal no_sidata     : std_logic_vector(8-1 downto 0);
 
 		signal ipv4acfg_req : std_logic;
 
-		constant rid_dmaaddr  : std_logic_vector := x"16";
-		constant rid_dmalen   : std_logic_vector := x"17";
-		constant rid_dmadata  : std_logic_vector := x"18";
-
-		function xxx (
-			constant n : natural;
-			constant size : natural)
-			return std_logic_vector is
-			variable retval : unsigned(0 to n-1);
-		begin
-			for i in 0 to n/size-1 loop
-				retval (i*size to (i+1)*size-1) := to_unsigned(2*(i/2)+(i+1) mod 2, size);
-			end loop;
-			return std_logic_vector(retval);
-		end;
 	begin
 
 		no_sidata <= reverse(so_data,8);
@@ -330,23 +319,20 @@ begin
 				end if;
 			end if;
 		end process;
-		mydev_addr   <= word2byte (b"0000000_00000000_00000000" & b"0000000_00000000_00000000", a);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
 			out_rgtr  => true,
---			check_sov => true,
+			check_sov => true,
 			check_dov => true,
 			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
---			src_data => b"0000000_00000000_00000000", 
-			src_data => mydev_addr,
---			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
+			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
@@ -358,15 +344,14 @@ begin
 		generic map (
 			max_depth => fifo_depth,
 			out_rgtr  => true,
---			check_sov => true,
+			check_sov => true,
 			check_dov => true,
 			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
-			src_data => b"0000000_00000000_01111111", 
---			src_data => rgtr_data(dmaio_len'length-1 downto 0),
+			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
@@ -387,29 +372,10 @@ begin
 		dmadata_irdy <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			debug => true,
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
-			mem_data => 
-				xxx(512*8,16),
---				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
---				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
---				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
---				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
---				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
---				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
---				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
---				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
---
---				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
---				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
---				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
---				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
---				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
---				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
---				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
---				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000",
+			check_sov => true,
 			check_dov => true,
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,

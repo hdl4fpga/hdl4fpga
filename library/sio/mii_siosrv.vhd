@@ -184,11 +184,11 @@ begin
 							else
 								pkt_cmmt <= '1';
 							end if;
-							cmmt_ena <= '1';
 						end if;
 					end if;
 					pkt_rcvd := '0';
 					ack_rcvd := '0';
+					cmmt_ena <= '1';
 				end if;
 			end if;
 

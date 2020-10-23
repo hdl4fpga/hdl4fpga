@@ -314,6 +314,17 @@ architecture nuhs3adsp_graphics of testbench is
 
 	constant delay : time := 1 ns;
 	signal n : std_logic := '0';
+		function xxx (
+			constant n : natural;
+			constant size : natural)
+			return std_logic_vector is
+			variable retval : unsigned(0 to n-1);
+		begin
+			for i in 0 to n/size-1 loop
+				retval (i*size to (i+1)*size-1) := to_unsigned(2*(i/2)+(i+1) mod 2, size);
+			end loop;
+			return std_logic_vector(retval);
+		end;
 begin
 
 	mii_rxc <= mii_refclk;

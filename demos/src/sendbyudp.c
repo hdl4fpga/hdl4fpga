@@ -110,8 +110,8 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-	int val=2;
-setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
+//	int val=2;
+//setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
 	ack  = 0 ;
 	size = 0;
 	buffer[size++] = 0x00;
@@ -158,12 +158,12 @@ setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
 				exit(1);
 			}
 
-//			buffer[size++] = 0x00;
-//			buffer[size++] = 0x02;
-//			buffer[size++] = 0x00;
-//			buffer[size++] = 0x00;
-//			buffer[size++] = ack++;
-//			fprintf (stderr, "packet length %d\n", n);
+			buffer[size++] = 0x00;
+			buffer[size++] = 0x02;
+			buffer[size++] = 0x00;
+			buffer[size++] = 0x00;
+			buffer[size++] = ack++;
+			fprintf (stderr, "packet length %d\n", n);
 
 			do {
 				pkt_sent++;
@@ -190,7 +190,7 @@ setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
 				}
 			} while (!(err > 0));
 //			exit(-1);
-// nanosleep((const struct timespec[]){ {0, 500000000L } }, NULL);
+// nanosleep((const struct timespec[]){ {0, 50000000L } }, NULL);
 			
 		} else if (n < 0) {
 			perror ("reading packet");

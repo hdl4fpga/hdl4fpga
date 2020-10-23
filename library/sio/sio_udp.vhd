@@ -167,6 +167,7 @@ begin
 		signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
 		signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
 
+		signal src_trdy  : std_logic;
 		signal des_irdy  : std_logic;
 		signal dst_irdy  : std_logic;
 		signal dst_irdy1 : std_logic;
@@ -183,19 +184,28 @@ begin
 			des_irdy   => des_irdy,
 			des_data   => des_data);
 
+		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 		process (mii_txc)
+			variable cancel : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if udppl_rxdv='1' then
-					if des_irdy='1' then
-						wr_cntr <= wr_cntr + 1;
+					if src_trdy='1' then
+						if des_irdy='1' then
+							wr_cntr <= wr_cntr + 1;
+						end if;
+					else
+						cancel := '1';
 					end if;
 				elsif mysrv_cmmtena='1' then
-					if mysrv_pktcmmt='1' then
-						wr_ptr  <= wr_cntr;
-					else
+					if cancel='1' then
 						wr_cntr <= wr_ptr;
+					elsif mysrv_pktcmmt='0' then
+						wr_cntr <= wr_ptr;
+					else
+						wr_ptr  <= wr_cntr;
 					end if;
+					cancel := '0';
 				end if;
 			end if;
 		end process;
