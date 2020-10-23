@@ -186,7 +186,6 @@ begin
 
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 		process (mii_txc)
-			variable cancel : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if udppl_rxdv='1' then
@@ -195,17 +194,13 @@ begin
 							wr_cntr <= wr_cntr + 1;
 						end if;
 					else
-						cancel := '1';
 					end if;
 				elsif mysrv_cmmtena='1' then
-					if cancel='1' then
-						wr_cntr <= wr_ptr;
-					elsif mysrv_pktcmmt='0' then
+					if mysrv_pktcmmt='0' then
 						wr_cntr <= wr_ptr;
 					else
 						wr_ptr  <= wr_cntr;
 					end if;
-					cancel := '0';
 				end if;
 			end if;
 		end process;

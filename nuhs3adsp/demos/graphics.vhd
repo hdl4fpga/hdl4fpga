@@ -191,7 +191,7 @@ architecture graphics of nuhs3adsp is
 		return false;
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -202,7 +202,6 @@ architecture graphics of nuhs3adsp is
 
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
-	signal a : std_logic;
 
 begin
 
@@ -309,16 +308,43 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
+		sig_frm <= setif(rgtr_id=x"00") and rgtr_dv;
+		sig_e : entity hdl4fpga.sio_sin
+		port map (
+			sin_clk   => sio_clk,
+			sin_frm   => sio_frm,
+			sin_irdy  => sig_irdy,
+			sin_data  => rgtr_data,
+			data_frm  => sig_frm,
+			data_irdy => sig_irdy,
+			rgtr_id   => sigrgtr_id,
+			rgtr_dv   => sigrgtr_dv,
+			rgtr_data => sigrgtr_data);
 
-		process (sio_clk)
-			variable q : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if dmaaddr_irdy='1' then
-					a <= not a;
-				end if;
-			end if;
-		end process;
+		sigseq_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid  => x"00")
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_id   => sigrgtr_id,
+			rgtr_dv   => sigrgtr_dv,
+			rgtr_data => sigrgtr_data,
+			data      => sigack_rgtr);
+
+		ack_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth => fifo_depth,
+			out_rgtr  => true,
+			check_sov => true,
+			check_dov => true)
+		port map (
+			src_clk  => sio_clk,
+			src_frm  => sio_frm,
+			src_irdy => sigack_irdy,
+			src_data => sigack_data,
+
+			dst_clk  => sio_clk,
+			dst_data => ack_data);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
@@ -528,9 +554,7 @@ begin
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
---	dev_len    <= dmavideo_len  & b"0000000_00000000_0001_1111";
 	dev_addr   <= dmavideo_addr & dmaio_addr;
---	dev_addr   <= dmavideo_addr & word2byte (b"0000000_00000000_00000000" & b"0000000_00000000_01000000", a);
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
