@@ -54,8 +54,6 @@ add wave -noupdate /testbench/du_e/dmavideo_req
 add wave -noupdate /testbench/du_e/dmavideo_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/mydma_rdy
-add wave -noupdate /testbench/du_e/adapter_b/graphics_e/dma_state
-add wave -noupdate /testbench/du_e/adapter_b/graphics_e/video_state
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vt_req
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/hz_req
 add wave -noupdate /testbench/du_e/adapter_b/sync_e/video_hzon
@@ -89,8 +87,6 @@ add wave -noupdate /testbench/du_e/ddr_we
 add wave -noupdate /testbench/du_e/ddr_ba
 add wave -noupdate /testbench/du_e/ddr_ckp
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {249240094060 fs} 1} {{Cursor 2} {249392603860 fs} 1} {{Cursor 3} {249890103340 fs} 1} {{Cursor 4} {250042581320 fs} 1} {{Cursor 5} {288238901160 fs} 1} {{Cursor 6} {288392607990 fs} 1} {{Cursor 7} {289290119670 fs} 1} {{Cursor 8} {289442590040 fs} 1} {{Cursor 9} {250691074600 fs} 0}
-quietly wave cursor active 9
 configure wave -namecolwidth 249
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left

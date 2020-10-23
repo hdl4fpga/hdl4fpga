@@ -65,7 +65,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
-	signal txfrm_ptr     : std_logic_vector(0 to 16);
+	signal txfrm_ptr     : std_logic_vector(0 to 17);
 
 	signal ddr_lp_dqs : std_logic;
 
@@ -234,49 +234,45 @@ architecture nuhs3adsp_graphics of testbench is
 	signal uart_sin : std_logic;
 	constant pp_pl : std_logic_vector := 
 		  x"18ff"
-		& x"123456789abcdef123456789abcdef12"
-		& x"23456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234"
-		& x"456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef123456"
-		& x"6789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef12345678"
-		& x"89abcdef123456789abcdef123456789"
-
-		& x"9abcdef123456789abcdef123456789a"
-		& x"abcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abc"
-		& x"cdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcde"
-		& x"ef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1"
-		& x"123456789abcdef123456789abcdef12"
-		& x"1602000040"
-		& x"170200001f"
+		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& x"18ff"
+		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 		& x"1602000060"
 		& x"170200001f";
 
 	constant pp1_pl : std_logic_vector := 
 		  x"18ff"
-		& x"eeee77779abcdef123456789abcdef12"
-		& x"23456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234"
-		& x"456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef123456"
-		& x"6789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef12345678"
-		& x"89abcdef123456789abcdef123456789"
-
-		& x"9abcdef123456789abcdef123456789a"
-		& x"abcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abc"
-		& x"cdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcde"
-		& x"ef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1"
-		& x"123456789abcdef123456789abcdef12"
-		& x"1602000080"
-		& x"170200001f"
+		& x"eeee77779abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& x"18ff"
+		& x"eeee77779abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 		& x"16020000a0"
 		& x"170200001f";
 
@@ -345,7 +341,7 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 30 us, '1' after 210 us +40 us;
+	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 50 us, '0' after 210 us +60 us;
 --	mii_treq <= '0', '1' after  1 us, '0' after   30 us, '1' after 40 us;
 
 

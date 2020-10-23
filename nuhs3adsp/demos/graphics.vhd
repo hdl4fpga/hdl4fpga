@@ -272,6 +272,17 @@ begin
 		constant rid_dmalen   : std_logic_vector := x"17";
 		constant rid_dmadata  : std_logic_vector := x"18";
 
+		function xxx (
+			constant n : natural;
+			constant size : natural)
+			return std_logic_vector is
+			variable retval : unsigned(0 to n-1);
+		begin
+			for i in 0 to n/size-1 loop
+				retval (i*size to (i+1)*size-1) := to_unsigned(2*(i/2)+(i+1) mod 2, size);
+			end loop;
+			return std_logic_vector(retval);
+		end;
 	begin
 
 		no_sidata <= reverse(so_data,8);
@@ -321,7 +332,6 @@ begin
 		end process;
 		mydev_addr   <= word2byte (b"0000000_00000000_00000000" & b"0000000_00000000_00000000", a);
 
-		sio_frm <= ddrsys_lckd;
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
@@ -378,27 +388,28 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			debug => true,
-			max_depth => fifo_depth*256/(ctlr_di'length/8),
+			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
 			mem_data => 
-				x"0000000000000000000000000000000000000000000000000000000000000000" &
-				x"0000000000000000000000000000000000000000000000000000000000000000" &
-				x"0000000000000000000000000000000000000000000000000000000000000000" &
-				x"0000000000000000000000000000000000000000000000000000000000000000" &
-				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
-				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
-				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
-				x"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" &
-
-				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
-				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
-				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
-				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
-				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
-				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
-				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
-				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000",
+				xxx(512*8,16),
+--				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
+--				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
+--				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
+--				x"ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000" &
+--				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
+--				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
+--				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
+--				x"00ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00" &
+--
+--				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+--				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+--				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+--				x"ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff000000" &
+--				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+--				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+--				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000" &
+--				x"00ff000000ff000000ff000000ff000000ff000000ff000000ff000000ff0000",
 			check_dov => true,
-			gray_code => true)
+			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -430,9 +441,11 @@ begin
 			variable io_rdy2 : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
+				sio_frm <= '1';
 				if ctlr_inirdy='0' then
 					dmacfgio_req <= '0';
 					dmaio_trdy   <= '0';
+					sio_frm <= '0';
 				elsif dmacfgio_req='0' then
 					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
 						if dmaio_trdy='0' then

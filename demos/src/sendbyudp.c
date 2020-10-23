@@ -100,7 +100,6 @@ int main (int argc, char *argv[])
 	sa_host.sin_family = AF_INET;
 	sa_host.sin_port   = htons(PORT);	
 	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
-
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		perror ("Can't open socket");
 		exit (1);
@@ -111,6 +110,8 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
+	int val=2;
+setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
 	ack  = 0 ;
 	size = 0;
 	buffer[size++] = 0x00;
