@@ -64,6 +64,11 @@ entity mii_siosrv is
 		udppl_txd     : out  std_logic_vector;
 		pkt_cmmt      : out  std_logic;
 		cmmt_ena      : out  std_logic;
+
+		si_frm        : in   std_logic := '0';
+		si_irdy       : out  std_logic := '0';
+		si_trdy       : in   std_logic := '1';
+
 		tp            : buffer std_logic_vector(1 to 4));
 
 end;
