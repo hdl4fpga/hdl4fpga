@@ -48,6 +48,7 @@ entity sio_dayudp is
 
 		si_frm      : in  std_logic := '0';
 		si_irdy     : in  std_logic := '0';
+		si_trdy     : out std_logic := '0';
 		si_data     : in  std_logic_vector;
 
 		so_frm      : out std_logic;
@@ -78,6 +79,9 @@ begin
 
 		ipv4acfg_req => ipv4acfg_req,
 		sio_clk     => sio_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_trdy     => si_trdy,
 		so_dv       => soudp_dv,
 		so_data     => soudp_data);
 

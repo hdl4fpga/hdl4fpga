@@ -47,6 +47,9 @@ entity sio_udp is
 		myipv4a   : buffer std_logic_vector(0 to 32-1);
 
 		sio_clk   : in  std_logic;
+		si_frm    : in  std_logic := '0';
+		si_irdy   : in  std_logic := '0';
+		si_trdy   : out std_logic := '0';
 
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector);
