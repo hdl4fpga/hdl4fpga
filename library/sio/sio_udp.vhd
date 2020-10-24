@@ -83,6 +83,22 @@ architecture struct of sio_udp is
 	signal mysrv_pktcmmt   : std_logic;
 	signal mysrv_cmmtena   : std_logic;
 
+	signal dllhwsa_rxdv    : std_logic;
+	signal ipv4sa_rxdv     : std_logic;
+	signal dhcpipv4a_rxdv  : std_logic;
+
+	constant hwsa_pfix     : std_logic_vector := x"00" & x"07" & x"01" & x"05";
+	signal siohwsa_txen    : std_logic;
+	signal siohwsa_txd     : std_logic_vector(mii_rxd'range);
+
+	constant ipv4a_pfix    : std_logic_vector := x"00" & x"05" & x"02" & x"03";
+	signal sioipv4a_txen   : std_logic;
+	signal sioipv4a_txd    : std_logic_vector(mii_rxd'range);
+
+	constant dhcpipv4a_pfix : std_logic_vector := x"00" & x"05" & x"03" & x"03";
+	signal dhcpipv4a_txen  : std_logic;
+	signal dhcpipv4a_txd   : std_logic_vector(mii_rxd'range);
+
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
@@ -101,6 +117,9 @@ begin
 		txc_rxdv      => txc_rxdv,
 		txc_rxd       => txc_rxd,
 
+		ipv4sa_rxdv   => ipv4sa_rxdv,
+		dllhwsa_rxdv  => dllhwsa_rxdv,
+		dhcpipv4a_rxdv=> dhcpipv4a_rxdv,
 		tx_req        => mysrv_req,
 		tx_rdy        => mysrv_rdy,
 		tx_gnt        => mysrv_gnt,
@@ -156,8 +175,37 @@ begin
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd);
 
+	siohwsa_e : entity hdl4fpga.mii_sio
+	port map (
+		sio_pfix => hwsa_pfix,
+		mii_txc  => mii_txc,
+		mii_rxdv => dllhwsa_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_txen => siohwsa_txen,
+		mii_txd  => siohwsa_txd);
+
+	sioipv4_e : entity hdl4fpga.mii_sio
+	port map (
+		sio_pfix => ipv4a_pfix,
+		mii_txc  => mii_txc,
+		mii_rxdv => ipv4sa_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_txen => sioipv4a_txen,
+		mii_txd  => sioipv4a_txd);
+
+	sioipv4sa_e : entity hdl4fpga.mii_sio
+	port map (
+		sio_pfix => ipv4a_pfix,
+		mii_txc  => mii_txc,
+		mii_rxdv => dhcpipv4a_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_txen => dhcpipv4a_txen,
+		mii_txd  => dhcpipv4a_txd);
+
 	buffer_p : block
 		constant mem_size : natural := 2048*8;
+		signal serdes_frm : std_logic;
+		signal ser_data : std_logic_vector(mii_rxd'range);
 		signal des_data : std_logic_vector(so_data'range);
 
 		constant addr_length : natural := unsigned_num_bits(mem_size/so_data'length-1);
@@ -174,12 +222,15 @@ begin
 
 	begin
 
+		serdes_frm <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
+		ser_data   <= wirebus(
+			dhcpipv4a_txd & siohwsa_txd & sioipv4a_txd & txc_rxd, siohwsa_txen & sioipv4a_txen & udppl_rxdv);
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,
 			serdes_frm => udppl_rxdv,
 			ser_irdy   => '1',
-			ser_data   => txc_rxd,
+			ser_data   => ser_data,
 
 			des_irdy   => des_irdy,
 			des_data   => des_data);

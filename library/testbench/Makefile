@@ -63,6 +63,8 @@ HDL4FPGA__modeline_calculator__body = $(LIB_HDL4FPGA)/modeline_calculator/body.d
 HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
 HDL4FPGA__mii_siosrv__def = $(LIB_HDL4FPGA)/mii_siosrv/def.dat
 HDL4FPGA__mii_siosrv = $(LIB_HDL4FPGA)/mii_siosrv/_primary.dat
+HDL4FPGA__mii_sio__beh = $(LIB_HDL4FPGA)/mii_sio/beh.dat
+HDL4FPGA__mii_sio = $(LIB_HDL4FPGA)/mii_sio/_primary.dat
 HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
 HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
 HDL4FPGA__mii_romcmp__def = $(LIB_HDL4FPGA)/mii_romcmp/def.dat
@@ -248,6 +250,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__modeline_calculator) \
     $(HDL4FPGA__mii_siosrv__def) \
     $(HDL4FPGA__mii_siosrv) \
+    $(HDL4FPGA__mii_sio__beh) \
+    $(HDL4FPGA__mii_sio) \
     $(HDL4FPGA__mii_rxpre__def) \
     $(HDL4FPGA__mii_rxpre) \
     $(HDL4FPGA__mii_romcmp__def) \
@@ -1076,6 +1080,17 @@ $(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_rxpre.vhd
+
+$(HDL4FPGA__mii_sio) \
+$(HDL4FPGA__mii_sio__beh) : ../sio/mii_sio.vhd \
+		$(HDL4FPGA__mii_latency) \
+		$(HDL4FPGA__mii_mux) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/mii_sio.vhd
 
 $(HDL4FPGA__mii_siosrv) \
 $(HDL4FPGA__mii_siosrv__def) : ../sio/mii_siosrv.vhd \

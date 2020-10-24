@@ -88,6 +88,7 @@ entity mii_ipoe is
 		ipv4acfg_req  : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
 		dhcp_rcvd     : buffer std_logic;
+		dhcpipv4a_rxdv : buffer std_logic;
 
 		tp            : buffer std_logic_vector(1 to 4));
 
@@ -671,7 +672,6 @@ begin
 				signal dhcpchaddr6_rxdv   : std_logic;
 				signal dhcpchaddr6_equ   : std_logic;
 				signal dhcpoffer_rcvd : std_logic;
-				signal dhcpipv4a_rxdv  : std_logic;
 				signal dhcpyia_rxdv  : std_logic;
 
 				signal dscb_req      : std_logic := '0';

@@ -90,7 +90,6 @@ architecture def of mii_siosrv is
 
 begin
 
-	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
 	siosin_frm <= udppl_rxdv and myport_rcvd;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
@@ -115,6 +114,7 @@ begin
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data);
 
+	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
 	sigseq_e : entity hdl4fpga.sio_rgtr
 	generic map (
 		rid  => x"00")
