@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity arbiter is
 	port (
 		clk : in  std_logic;
+		csc : in  std_logic := '1';
 		req : in  std_logic_vector;
 		gnt : buffer std_logic_vector);
 end;
@@ -64,6 +65,6 @@ begin
 
 	assert req'length=gnt'length
 		severity failure;
-	gnt <= primask(word2byte((req and gntd) & req, setif(gntd=(gntd'range => '0'))));
+	gnt <= primask(word2byte((req and gntd) & req, setif(gntd=(gntd'range => '0')))) and (gnt'range => csc);
 
 end;

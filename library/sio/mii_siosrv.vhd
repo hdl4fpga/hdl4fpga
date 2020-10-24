@@ -66,8 +66,9 @@ entity mii_siosrv is
 		cmmt_ena      : out  std_logic;
 
 		si_frm        : in   std_logic := '0';
-		si_irdy       : out  std_logic := '0';
-		si_trdy       : in   std_logic := '1';
+		si_irdy       : in   std_logic := '0';
+		si_trdy       : out  std_logic := '1';
+		si_data       : in   std_logic_vector;
 
 		tp            : buffer std_logic_vector(1 to 4));
 
@@ -93,6 +94,16 @@ architecture def of mii_siosrv is
 	signal ack_ena      : std_logic;
 	signal data : std_logic_vector(0 to 40-1);
 
+	signal mii_req : std_logic_vector(0 to 2-1);
+	signal mii_rdy : std_logic_vector(mii_req'range);
+	signal mii_gnt : std_logic_vector(mii_gnt'range);
+
+	alias  srv_req : std_logic is mii_req(0);
+	alias  srv_rdy : std_logic is mii_rdy(0);
+	alias  srv_gnt : std_logic is mii_gnt(0);
+	signal srv_txen : std_logic;
+	signal srv_txd : std_logic_vector(mii_txd'range);
+	
 begin
 
 	siosin_frm <= udppl_rxdv and myport_rcvd;
@@ -152,7 +163,7 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if tx_rdy='0' then
+			if srv_rdy='0' then
 				if myport_rcvd='1' then
 					dll_hwda <= dllhwsa_rx;
 					ipv4_da  <= ipv4sa_rx;
@@ -169,12 +180,12 @@ begin
 		variable txrdy_edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if tx_rdy='1' then
+			if srv_rdy='1' then
 				if txrdy_edge='0' then
-					tx_req <= '0';
+					srv_req <= '0';
 				end if;
 			end if;
-			txrdy_edge := tx_rdy;
+			txrdy_edge := srv_rdy;
 
 			pkt_cmmt <= '0';
 			cmmt_ena <= '0';
@@ -183,7 +194,7 @@ begin
 					if dllcrc32_equ='1' then
 						if pkt_rcvd='1'  then
 							if ack_rcvd='1' then
-								tx_req   <= '1';
+								srv_req   <= '1';
 								pkt_cmmt <= setif(ack_rgtr/=ack_last);
 								ack_last := ack_rgtr;
 							else
@@ -207,13 +218,27 @@ begin
 		end if;
 	end process;
 
+	txgnt_e : entity hdl4fpga.arbiter
+	port map (
+		clk => mii_txc,
+		csc => tx_gnt,
+		req => mii_req,
+		gnt => mii_gnt);
+
+	tx_req  <= setif(mii_req /= (mii_req'range => '0');
+	mii_req <= (0 => srv_req, 1 => si_frm);
+	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
+	si_trdy <= mii_gnt(1);
+
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
 	myack_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => data,
         mii_txc  => mii_txc,
-		mii_txdv => tx_gnt,
-        mii_txen => udppl_txen,
-        mii_txd  => udppl_txd);
+		mii_txdv => srv_gnt,
+        mii_txen => srv_txen,
+        mii_txd  => srv_txd);
 
+	udppl_txen <= srv_txen; -- or si_irdy;
+	udppl_txd  <= srv_txd;  -- wirebus(srv_txd & , srv_txen & si_irdy);
 end;
