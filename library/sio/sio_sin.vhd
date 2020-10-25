@@ -16,17 +16,20 @@ entity sio_sin is
 		data_irdy : out std_logic;
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
-		rgtr_id   : out std_logic_vector;
+		rgtr_idv  : out std_logic;
+		rgtr_id   : out std_logic_vector(8-1 downto 0);
+		rgtr_lv   : out std_logic;
+		rgtr_len  : out std_logic_vector(8-1 downto 0);
 		rgtr_dv   : out std_logic;
 		rgtr_data : out std_logic_vector);
 end;
 
 architecture beh of sio_sin is
-	subtype octect is std_logic_vector(8-1 downto 0);
+	subtype octect is
 
 	signal ser_data  : std_logic_vector(sin_data'range);
 	signal des8_irdy : std_logic;
-	signal des8_data : octect;
+	signal des8_data : std_logic_vector(rgtr_id'range);
 
 	type states is (s_id, s_size, s_data);
 	signal state : states;
@@ -44,10 +47,10 @@ begin
 		des_data   => des8_data);
 
 	process (sin_clk)
-		variable rid   : octect;
-		variable len   : unsigned(0 to octect'length);
+		variable rid   : std_logic_vector(rgtr_id'range);
+		variable len   : unsigned(0 to rgtr_id'length);
 		variable data  : unsigned(rgtr_data'length-1 downto 0);
-		variable ptr   : unsigned(octect'range);
+		variable ptr   : unsigned(rgtr_id'range);
 	begin
 		if rising_edge(sin_clk) then
 			if sin_frm='0' then
@@ -78,7 +81,10 @@ begin
 					end if;
 				end case;
 			end if;
+			rgtr_idv  <= setif(state=s_id);
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
+			rgtr_lv   <= setif(state=s_size);
+			rgtr_len  <= setif(state=s_size, std_logic_vector(resize(len, rgtr_id'length)), rgtr_len);
 			rgtr_dv   <= len(0) and des8_irdy;
 			rgtr_data <= std_logic_vector(data);
 
