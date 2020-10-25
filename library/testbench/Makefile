@@ -47,6 +47,8 @@ HDL4FPGA__sio_sin__beh = $(LIB_HDL4FPGA)/sio_sin/beh.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
 HDL4FPGA__sio_rgtr__def = $(LIB_HDL4FPGA)/sio_rgtr/def.dat
 HDL4FPGA__sio_rgtr = $(LIB_HDL4FPGA)/sio_rgtr/_primary.dat
+HDL4FPGA__sio_ram__def = $(LIB_HDL4FPGA)/sio_ram/def.dat
+HDL4FPGA__sio_ram = $(LIB_HDL4FPGA)/sio_ram/_primary.dat
 HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
@@ -234,6 +236,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sio_sin) \
     $(HDL4FPGA__sio_rgtr__def) \
     $(HDL4FPGA__sio_rgtr) \
+    $(HDL4FPGA__sio_ram__def) \
+    $(HDL4FPGA__sio_ram) \
     $(HDL4FPGA__sio_dayudp__beh) \
     $(HDL4FPGA__sio_dayudp) \
     $(HDL4FPGA__sff__xilinx) \
@@ -1175,6 +1179,16 @@ $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayudp.vhd
 
+$(HDL4FPGA__sio_ram) \
+$(HDL4FPGA__sio_ram__def) : ../sio/sio_ram.vhd \
+		$(HDL4FPGA__dpram) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_ram.vhd
+
 $(HDL4FPGA__sio_rgtr) \
 $(HDL4FPGA__sio_rgtr__def) : ../sio/sio_rgtr.vhd \
 		$(IEEE__std_logic_textio) \
@@ -1198,6 +1212,7 @@ $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__mii_sio) \
 		$(HDL4FPGA__mii_siosrv) \
 		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__ipoepkg) \
