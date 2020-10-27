@@ -321,6 +321,23 @@ begin
 			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
+		reg0_e : entity hdl4fpga.sio_ram is
+		generic map (
+			mem_data : std_logic_vector := (0 to 0 => '-');
+			mem_size : natural := 0);
+		port map (
+			si_clk   => sio_clk,
+			si_frm   => regin_frm,
+			si_irdy  => 
+			si_trdy  =>
+			si_data  => sigrgtr_data,
+
+			so_clk   => sio_clk,
+			so_frm   => regout_frm,
+			so_irdy  => ,
+			so_trdy  => ,
+			so_data  => );
+
 		sigseq_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => x"00")
