@@ -1099,6 +1099,7 @@ $(HDL4FPGA__mii_sio__beh) : ../sio/mii_sio.vhd \
 $(HDL4FPGA__mii_siosrv) \
 $(HDL4FPGA__mii_siosrv__def) : ../sio/mii_siosrv.vhd \
 		$(HDL4FPGA__mii_mux) \
+		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__sio_sin) \

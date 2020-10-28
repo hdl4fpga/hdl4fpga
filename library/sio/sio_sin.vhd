@@ -19,13 +19,12 @@ entity sio_sin is
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);
 		rgtr_lv   : out std_logic;
-		rgtr_len  : out std_logic_vector(8-1 downto 0);
+		rgtr_len  : buffer std_logic_vector(8-1 downto 0);
 		rgtr_dv   : out std_logic;
 		rgtr_data : out std_logic_vector);
 end;
 
 architecture beh of sio_sin is
-	subtype octect is
 
 	signal ser_data  : std_logic_vector(sin_data'range);
 	signal des8_irdy : std_logic;
@@ -72,8 +71,6 @@ begin
 				when s_data =>
 					ptr  := ptr + 1;
 					len  := len - 1;
-					data := data sll des8_data'length;
-					data(des8_data'range) := unsigned(des8_data);
 					if len(0)='1' then
 						state <= s_id;
 					else
@@ -81,6 +78,8 @@ begin
 					end if;
 				end case;
 			end if;
+			data := data sll des8_data'length;
+			data(des8_data'range) := unsigned(des8_data);
 			rgtr_idv  <= setif(state=s_id);
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 			rgtr_lv   <= setif(state=s_size);

@@ -68,7 +68,6 @@ entity mii_siosrv is
 		si_frm        : in   std_logic := '0';
 		si_irdy       : in   std_logic := '0';
 		si_trdy       : out  std_logic := '1';
-		si_data       : in   std_logic_vector;
 
 		tp            : buffer std_logic_vector(1 to 4));
 
@@ -96,13 +95,13 @@ architecture def of mii_siosrv is
 
 	signal mii_req : std_logic_vector(0 to 2-1);
 	signal mii_rdy : std_logic_vector(mii_req'range);
-	signal mii_gnt : std_logic_vector(mii_gnt'range);
+	signal mii_gnt : std_logic_vector(mii_req'range);
 
 	alias  srv_req : std_logic is mii_req(0);
 	alias  srv_rdy : std_logic is mii_rdy(0);
 	alias  srv_gnt : std_logic is mii_gnt(0);
 	signal srv_txen : std_logic;
-	signal srv_txd : std_logic_vector(mii_txd'range);
+	signal srv_txd : std_logic_vector(dll_rxd'range);
 	
 begin
 
@@ -225,7 +224,7 @@ begin
 		req => mii_req,
 		gnt => mii_gnt);
 
-	tx_req  <= setif(mii_req /= (mii_req'range => '0');
+	tx_req  <= setif(mii_req /= (mii_req'range => '0'));
 	mii_req <= (0 => srv_req, 1 => si_frm);
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	si_trdy <= mii_gnt(1);
