@@ -16,6 +16,7 @@ entity sio_sin is
 		data_irdy : out std_logic;
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
+		rgtr_frm  : out std_logic;
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);
 		rgtr_lv   : out std_logic;
@@ -80,6 +81,8 @@ begin
 			end if;
 			data := data sll des8_data'length;
 			data(des8_data'range) := unsigned(des8_data);
+
+			rgtr_frm  <= sin_frm;
 			rgtr_idv  <= setif(state=s_id);
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 			rgtr_lv   <= setif(state=s_size);

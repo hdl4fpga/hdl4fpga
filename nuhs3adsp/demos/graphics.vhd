@@ -253,15 +253,23 @@ begin
 		constant rid_dmalen  : std_logic_vector := x"17";
 		constant rid_dmadata : std_logic_vector := x"18";
 
+		signal rgtr_frm      : std_logic;
 		signal rgtr_idv      : std_logic;
 		signal rgtr_id       : std_logic_vector(8-1 downto 0);
 		signal rgtr_lv       : std_logic;
 		signal rgtr_len      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv       : std_logic;
 		signal rgtr_data     : std_logic_vector(32-1 downto 0);
-		signal sig_irdy      : std_logic;
 
-		signal data_irdy      : std_logic;
+		signal sigram_frm    : std_logic;
+		signal sig_frm       : std_logic;
+		signal sig_irdy      : std_logic;
+		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
+		signal sigrgtr_dv    : std_logic;
+		signal sigrgtr_data  : std_logic_vector(8-1 downto 0);
+		signal sigack_rgtr   : std_logic_vector(8-1 downto 0);
+
+		signal data_irdy     : std_logic;
 		signal data_ptr      : std_logic_vector(8-1 downto 0);
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
@@ -271,9 +279,9 @@ begin
 		signal so_frm        : std_logic;
 		signal so_irdy       : std_logic;
 		signal so_data       : std_logic_vector(8-1 downto 0);
-		signal si_data     : std_logic_vector(8-1 downto 0);
+		signal si_data       : std_logic_vector(8-1 downto 0);
 
-		signal ipv4acfg_req : std_logic;
+		signal ipv4acfg_req  : std_logic;
 
 	begin
 
@@ -308,6 +316,7 @@ begin
 			sin_data  => so_data,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
+			rgtr_frm  => rgtr_frm,
 			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_lv   => rgtr_lv,
@@ -315,14 +324,14 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
-		sig_irdy <= rgtr_idv or rgtr_lv or data_irdy;
+		sigram_frm <= rgtr_frm and setif(rgtr_id=x"00");
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*so_data'length)
 		port map (
 			si_clk   => sio_clk,
-			si_frm   => so_frm,
-			si_irdy  => sig_irdy,
+			si_frm   => sigram_frm,
+			si_irdy  => data_irdy,
 			si_data  => rgtr_data(so_data'range),
 
 			so_clk   => sio_clk,
@@ -334,8 +343,8 @@ begin
 		sig_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => datai_irdy,
-			sin_irdy  => sig_irdy,
+			sin_frm   => sigram_frm,
+			sin_irdy  => data_irdy,
 			sin_data  => rgtr_data(so_data'range),
 			data_frm  => sig_frm,
 			data_irdy => sig_irdy,
