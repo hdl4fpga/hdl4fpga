@@ -263,12 +263,15 @@ begin
 
 		signal sigram_frm    : std_logic;
 		signal sig_frm       : std_logic;
+		signal sigdata_frm   : std_logic;
 		signal sig_irdy      : std_logic;
 		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv    : std_logic;
 		signal sigrgtr_data  : std_logic_vector(8-1 downto 0);
+		signal sigack_irdy   : std_logic;
 		signal sigack_rgtr   : std_logic_vector(8-1 downto 0);
 
+		signal data_frm     : std_logic;
 		signal data_irdy     : std_logic;
 		signal data_ptr      : std_logic_vector(8-1 downto 0);
 		signal dmadata_irdy  : std_logic;
@@ -314,6 +317,7 @@ begin
 			sin_frm   => so_frm,
 			sin_irdy  => so_irdy,
 			sin_data  => so_data,
+			data_frm  => data_frm,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
 			rgtr_frm  => rgtr_frm,
@@ -340,28 +344,21 @@ begin
 			so_trdy  => open,
 			so_data  => si_data);
 
+		sigrgtr_frm <= data_frm and setif(rgtr_id=x"00"); 
 		sig_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => sigram_frm,
+			sin_frm   => sig_frm,
 			sin_irdy  => data_irdy,
 			sin_data  => rgtr_data(so_data'range),
-			data_frm  => sig_frm,
+			data_frm  => sigrgtr_frm,
 			data_irdy => sig_irdy,
 			rgtr_id   => sigrgtr_id,
 			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
-		sigseq_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid  => x"00")
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_id   => sigrgtr_id,
-			rgtr_dv   => sigrgtr_dv,
-			rgtr_data => sigrgtr_data,
-			data      => sigack_rgtr);
 
+		sigack_irdy <= setif(sigrgtr_id=x"00");
 		ack_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
@@ -370,9 +367,9 @@ begin
 			check_dov => true)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
+			src_frm  => sig_frm,
 			src_irdy => sigack_irdy,
-			src_data => sigack_data,
+			src_data => sigack_rgtr,
 
 			dst_clk  => sio_clk,
 			dst_data => ack_data);
