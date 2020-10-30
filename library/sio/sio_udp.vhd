@@ -227,7 +227,7 @@ begin
 
 		serdes_frm <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
 		ser_data   <= wirebus(
-			dhcpipv4a_txd & siohwsa_txd & sioipv4a_txd & txc_rxd, siohwsa_txen & sioipv4a_txen & udppl_rxdv);
+			dhcpipv4a_txd & siohwsa_txd & sioipv4a_txd & txc_rxd, siohwsa_txen & sioipv4a_txen & sioipv4a_txen & udppl_rxdv);
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,

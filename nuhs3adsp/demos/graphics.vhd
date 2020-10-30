@@ -261,15 +261,15 @@ begin
 		signal rgtr_dv       : std_logic;
 		signal rgtr_data     : std_logic_vector(32-1 downto 0);
 
-		signal sigram_frm    : std_logic;
-		signal sig_frm       : std_logic;
+		signal sigrgtr_frm   : std_logic;
 		signal sigdata_frm   : std_logic;
+		signal sig_frm       : std_logic;
 		signal sig_irdy      : std_logic;
+		signal sigack_irdy   : std_logic;
 		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv    : std_logic;
 		signal sigrgtr_data  : std_logic_vector(8-1 downto 0);
-		signal sigack_irdy   : std_logic;
-		signal sigack_rgtr   : std_logic_vector(8-1 downto 0);
+		signal ack_data  : std_logic_vector(8-1 downto 0);
 
 		signal data_frm     : std_logic;
 		signal data_irdy     : std_logic;
@@ -328,13 +328,14 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
-		sigram_frm <= rgtr_frm and setif(rgtr_id=x"00");
+		sigrgtr_frm <= rgtr_frm and setif(rgtr_id=x"00");
+		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*so_data'length)
 		port map (
 			si_clk   => sio_clk,
-			si_frm   => sigram_frm,
+			si_frm   => sigrgtr_frm,
 			si_irdy  => data_irdy,
 			si_data  => rgtr_data(so_data'range),
 
@@ -344,21 +345,19 @@ begin
 			so_trdy  => open,
 			so_data  => si_data);
 
-		sigrgtr_frm <= data_frm and setif(rgtr_id=x"00"); 
 		sig_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => sig_frm,
+			sin_frm   => sigdata_frm,
 			sin_irdy  => data_irdy,
 			sin_data  => rgtr_data(so_data'range),
-			data_frm  => sigrgtr_frm,
+			data_frm  => sig_frm,
 			data_irdy => sig_irdy,
 			rgtr_id   => sigrgtr_id,
 			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
-
-		sigack_irdy <= setif(sigrgtr_id=x"00");
+		sigack_irdy <= sig_frm and setif(sigrgtr_id=x"00");
 		ack_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
@@ -367,11 +366,12 @@ begin
 			check_dov => true)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => sig_frm,
+			src_frm  => sio_frm,
 			src_irdy => sigack_irdy,
-			src_data => sigack_rgtr,
+			src_data => sigrgtr_data(8-1 downto 0),
 
 			dst_clk  => sio_clk,
+			dst_trdy => dmaio_trdy,
 			dst_data => ack_data);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;

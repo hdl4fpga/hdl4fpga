@@ -251,6 +251,8 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& x"0002000001"
+		& x"0002000006"
 		& x"1602000060"
 		& x"170200001f";
 
@@ -273,6 +275,8 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& x"0002000005"
+		& x"0002000006"
 		& x"16020000a0"
 		& x"170200001f";
 
