@@ -72,9 +72,11 @@ begin
 		if rising_edge(si_clk) then
 			if si_frm='0' then
 				addr := (others => '0');
-			elsif addr(0)='0' then
-				addr := addr + 1;
-				len  <= addr;
+			elsif si_irdy='1' then 
+				if addr(0)='0' then
+					addr := addr + 1;
+					len  <= addr;
+				end if;
 			end if;
 			wr_addr <= addr;
 		end if;

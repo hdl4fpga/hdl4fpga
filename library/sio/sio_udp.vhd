@@ -207,7 +207,7 @@ begin
 
 	buffer_p : block
 		constant mem_size : natural := 2048*8;
-		signal serdes_frm : std_logic;
+		signal ser_irdy : std_logic;
 		signal ser_data : std_logic_vector(mii_rxd'range);
 		signal des_data : std_logic_vector(so_data'range);
 
@@ -225,14 +225,14 @@ begin
 
 	begin
 
-		serdes_frm <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
-		ser_data   <= wirebus(
+		ser_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
+		ser_data <= wirebus(
 			dhcpipv4a_txd & siohwsa_txd & sioipv4a_txd & txc_rxd, siohwsa_txen & sioipv4a_txen & sioipv4a_txen & udppl_rxdv);
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,
-			serdes_frm => udppl_rxdv,
-			ser_irdy   => '1',
+			serdes_frm => txc_rxdv,
+			ser_irdy   => ser_irdy,
 			ser_data   => ser_data,
 
 			des_irdy   => des_irdy,
@@ -242,7 +242,7 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if udppl_rxdv='1' then
+				if ser_irdy='1' then
 					if src_trdy='1' then
 						if des_irdy='1' then
 							wr_cntr <= wr_cntr + 1;

@@ -263,6 +263,7 @@ begin
 
 		signal sigrgtr_frm   : std_logic;
 		signal sigdata_frm   : std_logic;
+		signal sigram_irdy   : std_logic;
 		signal sig_frm       : std_logic;
 		signal sig_irdy      : std_logic;
 		signal sigack_irdy   : std_logic;
@@ -328,15 +329,15 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
-		sigrgtr_frm <= rgtr_frm and setif(rgtr_id=x"00");
 		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
+		sigram_irdy <= data_irdy and setif(rgtr_id=x"00");
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*so_data'length)
 		port map (
 			si_clk   => sio_clk,
-			si_frm   => sigrgtr_frm,
-			si_irdy  => data_irdy,
+			si_frm   => rgtr_frm,
+			si_irdy  => sigram_irdy,
 			si_data  => rgtr_data(so_data'range),
 
 			so_clk   => sio_clk,
