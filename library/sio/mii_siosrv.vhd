@@ -67,6 +67,9 @@ entity mii_siosrv is
 
 		usr_req       : in  std_logic;
 		usr_gnt       : out std_logic;
+		usr_hwda      : in  std_logic_vector(48-1 downto 0);
+		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
+		usr_dp        : in  std_logic_vector(16-1 downto 0);
 		usr_txen      : in  std_logic := '0';
 		usr_txd       : in  std_logic_vector;
 
@@ -92,7 +95,7 @@ architecture def of mii_siosrv is
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
 	signal ack_ena      : std_logic;
-	signal data : std_logic_vector(0 to 40-1);
+	signal data         : std_logic_vector(0 to 40-1);
 
 	signal mii_req : std_logic_vector(0 to 2-1);
 	signal mii_rdy : std_logic_vector(mii_req'range);
@@ -239,6 +242,6 @@ begin
         mii_txen => srv_txen,
         mii_txd  => srv_txd);
 
-	udppl_txen <= srv_txen; -- or usr_txen;
-	udppl_txd  <= srv_txd;  -- wirebus(srv_txd & , srv_txen & usr_txen);
+	udppl_txen <= srv_txen or usr_txen;
+	udppl_txd  <= wirebus(srv_txd & usr_txd, srv_txen & usr_txen);
 end;
