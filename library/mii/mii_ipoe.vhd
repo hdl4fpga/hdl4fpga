@@ -281,15 +281,15 @@ begin
 	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & dllhwda_ipv4, arp_gnt & ipv4_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_txc  => mii_txc,
-		eth_ptr  => txfrm_ptr,
-		hwsa     => mymac,
-		hwda     => hwda_tx,
-		llc      => type_tx,
-		pl_txen  => eth_txen,
-		pl_txd   => eth_txd,
-		eth_txen => mii_txen,
-		eth_txd  => mii_txd);
+		mii_txc   => mii_txc,
+		eth_ptr   => txfrm_ptr,
+		hwsa      => mymac,
+		hwda      => hwda_tx,
+		llc       => type_tx,
+		pl_txen   => eth_txen,
+		eth_rxd   => eth_txd,
+		eth_txen  => mii_txen,
+		eth_txd   => mii_txd);
 
 	arp_b : block
 		signal arp_rcvd : std_logic;

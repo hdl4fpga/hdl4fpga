@@ -65,9 +65,10 @@ entity mii_siosrv is
 		pkt_cmmt      : out  std_logic;
 		cmmt_ena      : out  std_logic;
 
-		si_frm        : in   std_logic := '0';
-		si_irdy       : in   std_logic := '0';
-		si_trdy       : out  std_logic := '1';
+		usr_req       : in  std_logic;
+		usr_gnt       : out std_logic;
+		usr_txen      : in  std_logic := '0';
+		usr_txd       : in  std_logic_vector;
 
 		tp            : buffer std_logic_vector(1 to 4));
 
@@ -225,9 +226,9 @@ begin
 		gnt => mii_gnt);
 
 	tx_req  <= setif(mii_req /= (mii_req'range => '0'));
-	mii_req <= (0 => srv_req, 1 => si_frm);
+	mii_req <= (0 => srv_req, 1 => usr_req);
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
-	si_trdy <= mii_gnt(1);
+	usr_gnt <= mii_gnt(1);
 
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
 	myack_e : entity hdl4fpga.mii_mux
@@ -238,6 +239,6 @@ begin
         mii_txen => srv_txen,
         mii_txd  => srv_txd);
 
-	udppl_txen <= srv_txen; -- or si_irdy;
-	udppl_txd  <= srv_txd;  -- wirebus(srv_txd & , srv_txen & si_irdy);
+	udppl_txen <= srv_txen; -- or usr_txen;
+	udppl_txd  <= srv_txd;  -- wirebus(srv_txd & , srv_txen & usr_txen);
 end;

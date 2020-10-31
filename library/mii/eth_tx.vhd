@@ -37,7 +37,7 @@ entity eth_tx is
 		eth_ptr  : in  std_logic_vector;
 
 		pl_txen  : in  std_logic;
-		pl_txd   : in  std_logic_vector;
+		eth_rxd  : in  std_logic_vector;
 
 		hwsa     : in  std_logic_vector;
 		hwda     : in  std_logic_vector;
@@ -118,7 +118,7 @@ begin
 		end if;
 		padd_txen <= (pl_txen or not cntr(0));
 	end process;
-	padd_txd <= pl_txd when pl_txen='1' else (padd_txd'range => '0');
+	padd_txd <= eth_rxd when pl_txen='1' else (padd_txd'range => '0');
 
 	lattxd_e : entity hdl4fpga.align
 	generic map (

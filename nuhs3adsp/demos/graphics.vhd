@@ -261,21 +261,21 @@ begin
 		signal rgtr_len      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv       : std_logic;
 		signal rgtr_data     : std_logic_vector(32-1 downto 0);
+		signal data_frm     : std_logic;
+		signal data_irdy     : std_logic;
+		signal data_ptr      : std_logic_vector(8-1 downto 0);
 
 		signal sigrgtr_frm   : std_logic;
 		signal sigdata_frm   : std_logic;
+
 		signal sigram_irdy   : std_logic;
 		signal sig_frm       : std_logic;
 		signal sig_irdy      : std_logic;
 		signal sigack_irdy   : std_logic;
 		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
-		signal sigrgtr_dv    : std_logic;
 		signal sigrgtr_data  : std_logic_vector(8-1 downto 0);
 		signal ack_data  : std_logic_vector(8-1 downto 0);
 
-		signal data_frm     : std_logic;
-		signal data_irdy     : std_logic;
-		signal data_ptr      : std_logic_vector(8-1 downto 0);
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal dmaaddr_irdy  : std_logic;
@@ -357,7 +357,6 @@ begin
 			data_frm  => sig_frm,
 			data_irdy => sig_irdy,
 			rgtr_id   => sigrgtr_id,
-			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
 		sigack_irdy <= sig_frm and setif(sigrgtr_id=x"00");
