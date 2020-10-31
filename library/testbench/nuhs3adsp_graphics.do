@@ -17,7 +17,6 @@ add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/udppl_rxdv
 add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/ethrx_e/eth_crc32
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/buffer_p/des_irdy
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/so_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/no_sidata
 add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/buffer_p/des_data
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/so_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/so_data
@@ -87,6 +86,8 @@ add wave -noupdate /testbench/du_e/ddr_we
 add wave -noupdate /testbench/du_e/ddr_ba
 add wave -noupdate /testbench/du_e/ddr_ckp
 TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {0 fs} 0}
+quietly wave cursor active 0
 configure wave -namecolwidth 249
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left

@@ -305,7 +305,7 @@ architecture nuhs3adsp_graphics of testbench is
 			x"0000"                 &    -- IP Fragmentation
 			x"0511"                 &    -- IP TTL, protocol
 			x"0000"                 &    -- IP Header Checksum
-			x"00000000"             &    -- IP Source IP address
+			x"70506040"             &    -- IP Source IP address
 			x"c0a8000e"             &    -- IP Destiantion IP Address
 
 			udp_checksummed (
@@ -386,7 +386,7 @@ begin
 	port map (
 		mii_txc  => mii_rxc,
 		eth_ptr  => txfrm_ptr,
-		hwsa     => x"00_00_00_00_00_00",
+		hwsa     => x"ff_ff_ff_ff_ff_ff",
 		hwda     => x"00_40_00_01_02_03",
 		llc      => x"0800",
 		pl_txen  => eth_txen,

@@ -254,6 +254,7 @@ begin
 		constant rid_dmadata : std_logic_vector := x"18";
 
 		signal rgtr_frm      : std_logic;
+		signal rgtr_irdy     : std_logic;
 		signal rgtr_idv      : std_logic;
 		signal rgtr_id       : std_logic_vector(8-1 downto 0);
 		signal rgtr_lv       : std_logic;
@@ -322,6 +323,7 @@ begin
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
 			rgtr_frm  => rgtr_frm,
+			rgtr_irdy => rgtr_irdy,
 			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_lv   => rgtr_lv,
@@ -329,8 +331,7 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
-		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
-		sigram_irdy <= data_irdy and setif(rgtr_id=x"00");
+		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*so_data'length)
@@ -346,6 +347,7 @@ begin
 			so_trdy  => open,
 			so_data  => si_data);
 
+		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
 		sig_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
