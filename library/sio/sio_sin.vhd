@@ -85,7 +85,15 @@ begin
 
 			rgtr_frm  <= sin_frm;
 			rgtr_irdy <= des8_irdy;
-			rgtr_idv  <= setif(state=s_id);
+			if sin_frm='1' then
+				if des8_irdy='1' then
+					if(state=s_id) then
+						rgtr_idv <= '1';
+					end if;
+				end if;
+			else
+				rgtr_idv <= '0';
+			end if;
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 			rgtr_lv   <= setif(state=s_size);
 			rgtr_len  <= setif(state=s_size, std_logic_vector(resize(len, rgtr_id'length)), rgtr_len);

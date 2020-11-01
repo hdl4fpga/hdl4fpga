@@ -82,6 +82,7 @@ begin
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_trdy     => si_trdy,
+		si_data     => si_data,
 		so_dv       => soudp_dv,
 		so_data     => soudp_data);
 

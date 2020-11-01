@@ -50,6 +50,7 @@ entity sio_udp is
 		si_frm    : in  std_logic := '0';
 		si_irdy   : in  std_logic := '0';
 		si_trdy   : out std_logic := '0';
+		si_data   : in  std_logic_vector;
 
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector);
@@ -89,6 +90,11 @@ architecture struct of sio_udp is
 	signal tx_hwda      : std_logic_vector(0 to 48-1);
 	signal tx_ipv4da    : std_logic_vector(0 to 32-1);
 	signal tx_ipport    : std_logic_vector(0 to 16-1);
+
+	signal usr_txd    : std_logic_vector(mii_txd'range);
+	signal usr_gnt        : std_logic;
+	signal usr_trdy        : std_logic;
+	signal usr_txen        : std_logic;
 
 	signal dllhwsa_rxdv    : std_logic;
 	signal udpsp_rxdv      : std_logic;
@@ -189,12 +195,12 @@ begin
 		udppl_txd     => mysrv_udppltxd,
 
 		usr_req       => si_frm,
-		usr_gnt       => si_trdy,
-		usr_hwda      => tx_hdwa,
+		usr_gnt       => usr_gnt,
+		usr_hwda      => tx_hwda,
 		usr_ipv4da    => tx_ipv4da,
 		usr_udpdp     => tx_ipport,
-		usr_txen      =>
-		usr_txd       =>);
+		usr_txen      => usr_txen,
+		usr_txd       => usr_txd);
 
 	siohwsa_e : entity hdl4fpga.mii_sio
 	port map (
@@ -331,16 +337,19 @@ begin
 
 		signal sigdata_frm   : std_logic;
 		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
+		signal sigrgtr_dv    : std_logic;
 		signal sigrgtr_data  : std_logic_vector(48-1 downto 0);
+		signal des_frm       : std_logic;
+		signal des_data      : std_logic_vector(8-1 downto 0);
 
 
 	begin
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => so_frm,
-			sin_irdy  => so_irdy,
-			sin_data  => so_data,
+			sin_frm   => si_frm,
+			sin_irdy  => si_irdy,
+			sin_data  => si_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
@@ -360,26 +369,39 @@ begin
 			sin_frm   => sigdata_frm,
 			sin_irdy  => data_irdy,
 			sin_data  => rgtr_data(so_data'range),
-			data_frm  => sig_frm,
-			data_irdy => sig_irdy,
 			rgtr_id   => sigrgtr_id,
+			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then
-				if rgtr_dv='1' then
-					case rgtr_id is
+				if sigrgtr_dv='1' then
+					case sigrgtr_id is
 					when x"01" =>
 						tx_hwda   <= sigrgtr_data(tx_hwda'range);
 					when x"02" => 
 						tx_ipv4da <= sigrgtr_data(tx_ipv4da'range);
 					when x"03" => 
 						tx_ipport <= sigrgtr_data(tx_ipport'range);
+					when others =>
 					end case;
 				end if;
 			end if;
 		end process;
 
+		des_data <= reverse(sigrgtr_data(des_data'range), 8);
+		des_frm  <= rgtr_idv and setif(rgtr_id /= x"00");
+		desser_e : entity hdl4fpga.desser
+		port map (
+			desser_clk => sio_clk,
+			des_frm    => des_frm,
+			des_irdy   => data_irdy,
+			des_trdy   => usr_trdy,
+			des_data   => des_data,
+			ser_irdy   => usr_txen,
+			ser_data   => usr_txd);
+		si_trdy <= usr_gnt and usr_trdy;
+		
 	end block;
 end;
