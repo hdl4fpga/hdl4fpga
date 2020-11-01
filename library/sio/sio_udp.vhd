@@ -87,6 +87,7 @@ architecture struct of sio_udp is
 	signal mysrv_cmmtena   : std_logic;
 
 	signal dllhwsa_rxdv    : std_logic;
+	signal udpsp_rxdv      : std_logic;
 	signal ipv4sa_rxdv     : std_logic;
 	signal dhcpipv4a_rxdv  : std_logic;
 
@@ -97,6 +98,10 @@ architecture struct of sio_udp is
 	constant ipv4a_pfix    : std_logic_vector := x"00" & x"05" & x"02" & x"03";
 	signal sioipv4a_txen   : std_logic;
 	signal sioipv4a_txd    : std_logic_vector(mii_rxd'range);
+
+	constant sp_pfix       : std_logic_vector := x"00" & x"03" & x"03" & x"01";
+	signal siosp_txen      : std_logic;
+	signal siosp_txd       : std_logic_vector(mii_rxd'range);
 
 	constant dhcpipv4a_pfix : std_logic_vector := x"00" & x"05" & x"03" & x"03";
 	signal dhcpipv4a_txen  : std_logic;
@@ -120,6 +125,7 @@ begin
 		txc_rxdv      => txc_rxdv,
 		txc_rxd       => txc_rxd,
 
+		udpsp_rxdv    => udpsp_rxdv,
 		ipv4sa_rxdv   => ipv4sa_rxdv,
 		dllhwsa_rxdv  => dllhwsa_rxdv,
 		dhcpipv4a_rxdv=> dhcpipv4a_rxdv,
@@ -205,6 +211,15 @@ begin
 		mii_txen => dhcpipv4a_txen,
 		mii_txd  => dhcpipv4a_txd);
 
+	sioipport_e : entity hdl4fpga.mii_sio
+	port map (
+		sio_pfix => sp_pfix,
+		mii_txc  => mii_txc,
+		mii_rxdv => udpsp_rxdv,
+		mii_rxd  => txc_rxd,
+		mii_txen => siosp_txen,
+		mii_txd  => siosp_txd);
+
 	buffer_p : block
 		constant mem_size : natural := 2048*8;
 		signal ser_irdy : std_logic;
@@ -227,7 +242,9 @@ begin
 
 		ser_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
 		ser_data <= wirebus(
-			dhcpipv4a_txd & siohwsa_txd & sioipv4a_txd & txc_rxd, dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & udppl_rxdv);
+			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
+			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
+
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,

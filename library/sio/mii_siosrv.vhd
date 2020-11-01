@@ -69,7 +69,7 @@ entity mii_siosrv is
 		usr_gnt       : out std_logic;
 		usr_hwda      : in  std_logic_vector(48-1 downto 0);
 		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
-		usr_dp        : in  std_logic_vector(16-1 downto 0);
+		usr_udpdp     : in  std_logic_vector(16-1 downto 0);
 		usr_txen      : in  std_logic := '0';
 		usr_txd       : in  std_logic_vector;
 
@@ -163,17 +163,23 @@ begin
 		mii_equ  => myport_rcvd);
 	udp_sp <= mysrv_port;
 
-	process (mii_txc)
+	process (mii_gnt, usr_hwda, usr_ipv4da, usr_udpdp, mii_txc)
+		variable srv_hwda   : std_logic_vector(48-1 downto 0);
+		variable srv_ipv4da : std_logic_vector(32-1 downto 0);
+		variable srv_udpdp  : std_logic_vector(16-1 downto 0);
 	begin
 		if rising_edge(mii_txc) then
 			if srv_rdy='0' then
 				if myport_rcvd='1' then
-					dll_hwda <= dllhwsa_rx;
-					ipv4_da  <= ipv4sa_rx;
-					udp_dp   <= udpsp_rx;
+					srv_hwda   := dllhwsa_rx;
+					srv_ipv4da := ipv4sa_rx;
+					srv_udpdp  := udpsp_rx;
 				end if;
 			end if;
 		end if;
+		dll_hwda <= wirebus(srv_hwda   & usr_hwda,   mii_gnt);
+		ipv4_da  <= wirebus(srv_ipv4da & usr_ipv4da, mii_gnt);
+		udp_dp   <= wirebus(srv_udpdp  & usr_udpdp,  mii_gnt);
 	end process;
 
 	process (mii_txc)
