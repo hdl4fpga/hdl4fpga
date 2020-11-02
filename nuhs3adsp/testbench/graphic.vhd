@@ -390,7 +390,7 @@ begin
 		hwda     => x"00_40_00_01_02_03",
 		llc      => x"0800",
 		pl_txen  => eth_txen,
-		pl_txd   => eth_txd,
+		eth_rxd  => eth_txd,
 		eth_txen => mii_rxdv,
 		eth_txd  => mii_rxd);
 
