@@ -34,12 +34,13 @@ entity sio_mux is
         sio_clk  : in  std_logic;
         sio_frm  : in  std_logic;
 		so_irdy  : in  std_logic;
-		so_trdy  : in  std_logic;
+		so_trdy  : out std_logic;
+		so_end   : out std_logic;
         so_data  : out std_logic_vector);
 end;
 
 architecture def of sio_mux is
-	constant mux_length : natural := unsigned_num_bits(mux_data'length/mii_txd'length-1);
+	constant mux_length : natural := unsigned_num_bits(mux_data'length/so_data'length-1);
 	subtype mux_range is natural range 1 to mux_length;
 
 	signal mux_sel : std_logic_vector(mux_range);
@@ -47,24 +48,25 @@ architecture def of sio_mux is
 
 begin
 
-	process (mii_txdv, mii_txc)
+	process (sio_irdy, sio_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
-		if rising_edge(mii_txc) then
-			if mii_txdv='0' then
-				cntr := to_unsigned(mux_data'length/mii_txd'length-1, cntr'length);
+		if rising_edge(sio_clk) then
+			if sio_frm='0' then
+				cntr := to_unsigned(mux_data'length/so_data'length-1, cntr'length);
 			elsif cntr(0)='0' then
 				cntr := cntr - 1;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
-		mii_txen <= mii_txdv and not cntr(0);
+		sio_end  <= not cntr(0);
+		sio_trdy <= sio_irdy;
 	end process;
 
-	rdata <= reverse(reverse(reverse(mux_data,8)), mii_txd'length);
+	rdata <= reverse(reverse(reverse(mux_data,8)), so_data'length);
 
-	mii_txd <= 
-		rdata when mii_txd'length=rdata'length else
-		word2byte(rdata, mux_sel, mii_txd'length);
+	so_data <= 
+		rdata when so_data'length=rdata'length else
+		word2byte(rdata, mux_sel, so_data'length);
 
 end;
