@@ -341,16 +341,17 @@ begin
 			so_trdy  => open,
 			so_data  => sig_data);
 
-		dmaaddr2_e : entity hdl4fpga.mii_sio
+		dmaaddr2_e : entity hdl4fpga.sio_mux
 		port map (
-			sio_pfix => x"01" & x"03",
-			mii_txc  => sio_clk,
-			mii_rxdv => dllhwsa_rxdv,
-			mii_rxd  => ,
-			mii_txen => ,
-			mii_txd  => );
+			mux_data =>
+			sio_clk  => sio_clk,
+			sio_frm  => 
+			so_irdy  => 
+			so_trdy  => 
+			so_end   => 
+			so_data  => dma_data);
 
-			si_data <= wiebus(sig_data & ,);
+		si_data <= wiebus(sig_data & );
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
