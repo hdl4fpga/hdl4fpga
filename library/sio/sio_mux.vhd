@@ -48,7 +48,7 @@ architecture def of sio_mux is
 
 begin
 
-	process (sio_irdy, sio_clk)
+	process (so_irdy, sio_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(sio_clk) then
@@ -59,8 +59,8 @@ begin
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
-		sio_end  <= not cntr(0);
-		sio_trdy <= sio_irdy;
+		so_end  <= not cntr(0);
+		so_trdy <= so_irdy;
 	end process;
 
 	rdata <= reverse(reverse(reverse(mux_data,8)), so_data'length);
