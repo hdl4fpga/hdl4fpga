@@ -43,6 +43,7 @@ entity sio_ram is
         so_frm   : in  std_logic;
         so_irdy  : in  std_logic;
         so_trdy  : out std_logic;
+		so_end   : out std_logic;
         so_data  : out std_logic_vector);
 end;
 
@@ -110,5 +111,6 @@ begin
 	end process;
 
 	so_trdy <= so_frm and so_irdy and setif(rd_addr < len);
+	so_end  <= setif(rd_addr = len);
 
 end;

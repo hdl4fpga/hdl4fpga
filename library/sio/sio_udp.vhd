@@ -87,12 +87,13 @@ architecture struct of sio_udp is
 	signal mysrv_pktcmmt   : std_logic;
 	signal mysrv_cmmtena   : std_logic;
 
-	signal tx_hwda      : std_logic_vector(0 to 48-1);
-	signal tx_ipv4da    : std_logic_vector(0 to 32-1);
-	signal tx_ipport    : std_logic_vector(0 to 16-1);
+	signal tx_hwda         : std_logic_vector(48-1 downto 0);
+	signal tx_ipv4da       : std_logic_vector(32-1 downto 0);
+	signal tx_ipport       : std_logic_vector(16-1 downto 0);
 
-	signal usr_txd    : std_logic_vector(mii_txd'range);
-	signal usr_gnt        : std_logic;
+	signal usr_txd         : std_logic_vector(mii_txd'range);
+	signal usr_req         : std_logic;
+	signal usr_gnt         : std_logic;
 	signal usr_trdy        : std_logic;
 	signal usr_txen        : std_logic;
 
@@ -194,7 +195,7 @@ begin
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd,
 
-		usr_req       => si_frm,
+		usr_req       => usr_req,
 		usr_gnt       => usr_gnt,
 		usr_hwda      => tx_hwda,
 		usr_ipv4da    => tx_ipv4da,
@@ -392,6 +393,7 @@ begin
 
 		des_data <= reverse(sigrgtr_data(des_data'range), 8);
 		des_frm  <= rgtr_idv and setif(rgtr_id /= x"00");
+
 		desser_e : entity hdl4fpga.desser
 		port map (
 			desser_clk => sio_clk,
@@ -401,7 +403,8 @@ begin
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		si_trdy <= usr_gnt and usr_trdy;
+		si_trdy <= sigdata_frm or (usr_gnt and usr_trdy);
+		usr_req <= des_frm;
 		
 	end block;
 end;

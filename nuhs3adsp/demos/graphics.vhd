@@ -261,25 +261,35 @@ begin
 		signal rgtr_len      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv       : std_logic;
 		signal rgtr_data     : std_logic_vector(32-1 downto 0);
-		signal data_frm     : std_logic;
+		signal data_frm      : std_logic;
 		signal data_irdy     : std_logic;
 		signal data_ptr      : std_logic_vector(8-1 downto 0);
 
 		signal sigrgtr_frm   : std_logic;
 
 		signal sigram_irdy   : std_logic;
-		signal ack_data  : std_logic_vector(8-1 downto 0);
+		signal ack_data      : std_logic_vector(8-1 downto 0);
 
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal dmaaddr_irdy  : std_logic;
 		signal dmalen_irdy   : std_logic;
 
-		signal so_frm        : std_logic;
-		signal so_irdy       : std_logic;
-		signal so_data       : std_logic_vector(8-1 downto 0);
-		signal si_data       : std_logic_vector(8-1 downto 0);
-		signal sig_data       : std_logic_vector(8-1 downto 0);
+		signal sin_frm       : std_logic;
+		signal sin_irdy      : std_logic;
+		signal sin_data      : std_logic_vector(8-1 downto 0);
+		signal sou_frm       : std_logic;
+		signal sou_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sou_data      : std_logic_vector(8-1 downto 0);
+		signal sig_data      : std_logic_vector(8-1 downto 0);
+		signal sig_irdy      : std_logic;
+		signal sig_trdy      : std_logic;
+		signal sig_end       : std_logic;
+		signal siodmaio_irdy : std_logic_vector(0 to 0); -- Xilinx ISE Bug
+		signal siodmaio_trdy : std_logic;
+		signal siodmaio_end  : std_logic;
+		signal sio_dmaio     : std_logic_vector(0 to (2+4)*8-1);
+		signal siodmaio_data : std_logic_vector(sou_data'range);
 
 		signal ipv4acfg_req  : std_logic;
 
@@ -301,18 +311,19 @@ begin
 			phy_tx_d  => mii_txd,
 		
 			sio_clk   => sio_clk,
-			si_data   => si_data,
+			si_irdy   => sou_irdy(0),
+			si_data   => sou_data,
 
-			so_frm  => so_frm,
-			so_irdy => so_irdy,
-			so_data => so_data);
+			so_frm  => sin_frm,
+			so_irdy => sin_irdy,
+			so_data => sin_data);
 	
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => so_frm,
-			sin_irdy  => so_irdy,
-			sin_data  => so_data,
+			sin_frm   => sin_frm,
+			sin_irdy  => sin_irdy,
+			sin_data  => sin_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
@@ -328,30 +339,41 @@ begin
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
-			mem_size => 128*so_data'length)
+			mem_size => 128*sin_data'length)
 		port map (
 			si_clk   => sio_clk,
 			si_frm   => rgtr_frm,
 			si_irdy  => sigram_irdy,
-			si_data  => rgtr_data(so_data'range),
+			si_data  => rgtr_data(sin_data'range),
 
 			so_clk   => sio_clk,
-			so_frm   => '0',
-			so_irdy  => '0',
-			so_trdy  => open,
+			so_frm   => sou_frm,
+			so_irdy  => sig_irdy,
+			so_trdy  => sig_trdy,
+			so_end   => sig_end,
 			so_data  => sig_data);
 
-		dmaaddr2_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data =>
-			sio_clk  => sio_clk,
-			sio_frm  => 
-			so_irdy  => 
-			so_trdy  => 
-			so_end   => 
-			so_data  => dma_data);
+		process (rgtr_frm, sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+			end if;
+			sou_frm <= rgtr_frm;
+		end process;
 
-		si_data <= wiebus(sig_data & );
+		sio_dmaio <= x"01" & x"03" & std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
+		siodmaio_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
+		siodma_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => sio_dmaio,
+			sio_clk  => sio_clk,
+			sio_frm  => sou_frm,
+			so_irdy  => siodmaio_irdy(0),
+			so_trdy  => siodmaio_trdy,
+			so_end   => siodmaio_end,
+			so_data  => siodmaio_data);
+
+		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
+		sou_irdy <= wirebus(sig_trdy & dmaio_trdy,    not sig_end & sig_end);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
