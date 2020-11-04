@@ -311,6 +311,7 @@ begin
 			phy_tx_d  => mii_txd,
 		
 			sio_clk   => sio_clk,
+			si_frm    => sou_frm,
 			si_irdy   => sou_irdy(0),
 			si_data   => sou_data,
 
@@ -348,7 +349,7 @@ begin
 
 			so_clk   => sio_clk,
 			so_frm   => sou_frm,
-			so_irdy  => sig_irdy,
+			so_irdy  => sou_irdy(0),
 			so_trdy  => sig_trdy,
 			so_end   => sig_end,
 			so_data  => sig_data);
