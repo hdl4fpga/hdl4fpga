@@ -293,7 +293,7 @@ architecture nuhs3adsp_graphics of testbench is
 			udp_checksummed (
 				x"00000000",
 				x"ffffffff",
-				x"3544dea9"         & -- UDP Source port, Destination port
+				x"0044dea9"         & -- UDP Source port, Destination port
 				std_logic_vector(to_unsigned(pp_pl'length/8+8,16))    & -- UDP Length,
 				x"0000" &              -- UPD checksum
 				pp_pl);
