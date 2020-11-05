@@ -54,13 +54,15 @@ begin
 		if rising_edge(sio_clk) then
 			if sio_frm='0' then
 				cntr := to_unsigned(mux_data'length/so_data'length-1, cntr'length);
-			elsif cntr(0)='0' then
-				cntr := cntr - 1;
+			elsif so_irdy='1' then
+				if cntr(0)='0' then
+					cntr := cntr - 1;
+				end if;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
 		end if;
-		so_end  <= not cntr(0);
-		so_trdy <= so_irdy;
+		so_end  <= cntr(0);
+		so_trdy <= not cntr(0);
 	end process;
 
 	rdata <= reverse(reverse(reverse(mux_data,8)), so_data'length);

@@ -280,12 +280,12 @@ begin
 		signal sin_data      : std_logic_vector(8-1 downto 0);
 		signal sou_frm       : std_logic;
 		signal sou_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sou_trdy      : std_logic;
 		signal sou_data      : std_logic_vector(8-1 downto 0);
 		signal sig_data      : std_logic_vector(8-1 downto 0);
-		signal sig_irdy      : std_logic;
 		signal sig_trdy      : std_logic;
 		signal sig_end       : std_logic;
-		signal siodmaio_irdy : std_logic_vector(0 to 0); -- Xilinx ISE Bug
+		signal siodmaio_irdy : std_logic;
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
 		signal sio_dmaio     : std_logic_vector(0 to (2+4)*8-1);
@@ -313,6 +313,7 @@ begin
 			sio_clk   => sio_clk,
 			si_frm    => sou_frm,
 			si_irdy   => sou_irdy(0),
+			si_trdy   => sou_trdy,
 			si_data   => sou_data,
 
 			so_frm  => sin_frm,
@@ -349,7 +350,7 @@ begin
 
 			so_clk   => sio_clk,
 			so_frm   => sou_frm,
-			so_irdy  => sou_irdy(0),
+			so_irdy  => sou_trdy,
 			so_trdy  => sig_trdy,
 			so_end   => sig_end,
 			so_data  => sig_data);
@@ -361,20 +362,21 @@ begin
 			sou_frm <= rgtr_frm;
 		end process;
 
-		sio_dmaio <= x"01" & x"03" & std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
-		siodmaio_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
+		sio_dmaio <= x"01" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
+		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
+		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_dmaio,
 			sio_clk  => sio_clk,
 			sio_frm  => sou_frm,
-			so_irdy  => siodmaio_irdy(0),
+			so_irdy  => siodmaio_irdy,
 			so_trdy  => siodmaio_trdy,
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
 		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
-		sou_irdy <= wirebus(sig_trdy & dmaio_trdy,    not sig_end & sig_end);
+		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo

@@ -71,5 +71,5 @@ begin
 
 	end process;
 
-	des_irdy <= ser_irdy and setif(stop='1' or des_data'length=ser_data'length);
+	des_irdy <= serdes_frm and ser_irdy and setif(stop='1' or des_data'length=ser_data'length);
 end;

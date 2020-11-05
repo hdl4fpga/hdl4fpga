@@ -16,6 +16,7 @@ entity mii_sio is
 end;
 
 architecture beh of mii_sio is
+	signal mux_txdv : std_logic;
 	signal mux_txen : std_logic;
 	signal mux_txd  : std_logic_vector(mii_txd'range);
 	signal lat_txen : std_logic;
@@ -26,11 +27,27 @@ begin
 	report "mii_txd not equal mii_rxd"
 	severity FAILURE;
 
+	process (mii_rxdv, lat_txen, mii_txc)
+		variable txen : std_logic := '0';
+	begin
+		if rising_edge(mii_txc) then
+			if mii_rxdv='1' then
+				txen := '1';
+			elsif txen='1' then
+				if lat_txen='1' then
+					txen := '0';
+				end if;
+			end if;
+		end if;
+		mux_txdv <= mii_rxdv or txen;
+	end process;
+
+
 	miimux_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data  => sio_pfix,
 		mii_txc   => mii_txc,
-		mii_txdv  => mii_rxdv,
+		mii_txdv  => mux_txdv,
 		mii_txen  => mux_txen,
 		mii_txd   => mux_txd);
 

@@ -86,6 +86,8 @@ begin
 
 	mem_e : entity hdl4fpga.dpram 
 	generic map (
+		synchronous_rdaddr => false,
+		synchronous_rddata => false,
 		bitrom => mem_data)
 	port map (
 		wr_clk  => si_clk,
@@ -110,7 +112,7 @@ begin
 		end if;
 	end process;
 
-	so_trdy <= so_frm and so_irdy and setif(rd_addr < len);
+	so_trdy <= setif(rd_addr < len);
 	so_end  <= setif(rd_addr = len);
 
 end;

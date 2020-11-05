@@ -259,7 +259,7 @@ begin
 
 	begin
 
-		ser_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or udppl_rxdv;
+		ser_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
 		ser_data <= wirebus(
 			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
 			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
@@ -324,6 +324,7 @@ begin
 
 	tx_b : block
 
+		signal sin_irdy      : std_logic;
 		signal rgtr_frm      : std_logic;
 		signal rgtr_irdy     : std_logic;
 		signal rgtr_idv      : std_logic;
@@ -345,11 +346,12 @@ begin
 
 
 	begin
+		sin_irdy <= si_irdy;
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
 			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
+			sin_irdy  => sin_irdy,
 			sin_data  => si_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,
@@ -403,7 +405,7 @@ begin
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		si_trdy <= sigdata_frm or (usr_gnt and usr_trdy);
+		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")) or (usr_gnt and usr_trdy);
 		usr_req <= des_frm;
 		
 	end block;
