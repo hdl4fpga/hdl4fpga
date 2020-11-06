@@ -49,7 +49,7 @@ entity sio_udp is
 		sio_clk   : in  std_logic;
 		si_frm    : in  std_logic := '0';
 		si_irdy   : in  std_logic := '0';
-		si_trdy   : out std_logic := '0';
+		si_trdy   : buffer std_logic := '0';
 		si_data   : in  std_logic_vector;
 
 		so_dv     : out std_logic;
@@ -343,10 +343,11 @@ begin
 		signal sigrgtr_data  : std_logic_vector(48-1 downto 0);
 		signal des_frm       : std_logic;
 		signal des_data      : std_logic_vector(8-1 downto 0);
+		signal xxx      : std_logic_vector(4-1 downto 0);
 
 
 	begin
-		sin_irdy <= si_irdy;
+		sin_irdy <= si_irdy and si_trdy;
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -405,7 +406,8 @@ begin
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")); -- or (usr_gnt and usr_trdy and data_irdy);
+		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")) or (usr_gnt and usr_trdy);
+		xxx <= reverse(usr_txd);
 		usr_req <= des_frm;
 		
 	end block;
