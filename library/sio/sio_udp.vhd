@@ -405,7 +405,7 @@ begin
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")) or (usr_gnt and usr_trdy);
+		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")); -- or (usr_gnt and usr_trdy and data_irdy);
 		usr_req <= des_frm;
 		
 	end block;
