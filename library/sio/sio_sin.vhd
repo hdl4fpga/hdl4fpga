@@ -66,7 +66,7 @@ begin
 				lv  := '0';
 				dv  := '0';
 				stt <= s_id;
-			elsif rgtr_trdy='1' then
+			elsif rgtr_trdy='1' or rgtr_irdy='0' then
 				if des8_irdy='1' then
 					case stt is
 					when s_id =>
@@ -116,6 +116,7 @@ begin
 			end if;
 		end if;
 	end process;
+	sim_trdy <= not rgtr_irdy or rgtr_trdy;
 
 --	process (sin_clk)
 --		variable rid   : std_logic_vector(rgtr_id'range);
