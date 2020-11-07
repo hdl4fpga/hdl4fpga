@@ -10,6 +10,7 @@ entity sio_sin is
 		sin_clk   : in  std_logic;
 		sin_frm   : in  std_logic;
 		sin_irdy  : in  std_logic := '1';
+		sin_trdy  : buffer std_logic;
 		sin_data  : in  std_logic_vector;
 		
 		data_frm  : out std_logic;
@@ -17,7 +18,7 @@ entity sio_sin is
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_frm  : out std_logic;
-		rgtr_irdy : out std_logic;
+		rgtr_irdy : buffer std_logic;
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);
 		rgtr_lv   : out std_logic;
@@ -79,7 +80,7 @@ begin
 					when s_size =>
 						ptr := (others => '0');
 						len := resize(unsigned(des8_data), len'length);
-						idv := '1';
+						idv := '0';
 						lv  := '1';
 						dv  := '0';
 						stt <= s_data;
@@ -91,7 +92,7 @@ begin
 						else
 							stt <= s_data;
 						end if;
-						idv := '1';
+						idv := '0';
 						lv  := '0';
 						dv  := '1';
 					end case;
