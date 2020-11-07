@@ -18,7 +18,8 @@ entity sio_sin is
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_frm  : out std_logic;
-		rgtr_irdy : buffer std_logic;
+		rgtr_irdy : buffer std_logic := '1';
+		rgtr_trdy : in  std_logic := '1';
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);
 		rgtr_lv   : out std_logic;
@@ -106,17 +107,16 @@ begin
 			rgtr_idv  <= idv;
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 			rgtr_lv   <= lv;
-			rgtr_len  <= len(1 to des_data8'length);
+			rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
 			rgtr_dv   <= len(0) and des8_irdy;
 			rgtr_data <= std_logic_vector(data);
 
 			data_frm  <= setif(stt=s_data);
 			data_irdy <= des8_irdy and setif(stt=s_data);
 			data_ptr  <= std_logic_vector(ptr);
-			end if;
 		end if;
 	end process;
-	sim_trdy <= not rgtr_irdy or rgtr_trdy;
+	sin_trdy <= not rgtr_irdy or rgtr_trdy;
 
 --	process (sin_clk)
 --		variable rid   : std_logic_vector(rgtr_id'range);
