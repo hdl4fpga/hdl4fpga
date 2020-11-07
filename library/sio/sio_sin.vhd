@@ -33,7 +33,7 @@ architecture beh of sio_sin is
 	signal des8_data : std_logic_vector(rgtr_id'range);
 
 	type states is (s_id, s_size, s_data);
-	signal state : states;
+	signal stt       : states;
 
 begin
 
@@ -47,60 +47,70 @@ begin
 		des_irdy   => des8_irdy,
 		des_data   => des8_data);
 
-	wr_ena <= sin_frm and des8_irdy and rgtr__trdy;
 	process (sin_clk)
-		variable rid   : std_logic_vector(rgtr_id'range);
-		variable len   : unsigned(0 to rgtr_id'length);
-		variable data  : unsigned(rgtr_data'length-1 downto 0);
-		variable ptr   : unsigned(rgtr_id'range);
+		variable rid  : std_logic_vector(rgtr_id'range);
+		variable len  : unsigned(0 to rgtr_id'length);
+		variable data : unsigned(rgtr_data'length-1 downto 0);
+		variable ptr  : unsigned(rgtr_id'range);
+		variable idv  : std_logic;
+		variable lv   : std_logic;
+		variable dv   : std_logic;
 	begin
 		if rising_edge(sin_clk) then
 			if sin_frm='0' then
-				ptr   := (others => '0');
-				rid   := (others => '-');
-				len   := (others => '0');
-				state <= s_id;
-			elsif wr_ena='1' then
-				case state is
-				when s_id =>
-					ptr   := (others => '0');
-					rid   := des8_data;
-					len   := (others => '0');
-					state <= s_size;
-				when s_size =>
-					ptr   := (others => '0');
-					len   := resize(unsigned(des8_data), len'length);
-					state <= s_data;
-				when s_data =>
-					ptr  := ptr + 1;
-					len  := len - 1;
-					if len(0)='1' then
-						state <= s_id;
-					else
-						state <= s_data;
-					end if;
-				end case;
-				data := data sll des8_data'length;
-				data(des8_data'range) := unsigned(des8_data);
+				ptr := (others => '0');
+				rid := (others => '-');
+				len := (others => '0');
+				idv := '0';
+				lv  := '0';
+				dv  := '0';
+				stt <= s_id;
+			elsif rgtr_trdy='1' then
+				if des8_irdy='1' then
+					case stt is
+					when s_id =>
+						ptr := (others => '0');
+						rid := des8_data;
+						len := (others => '0');
+						idv := '1';
+						lv  := '0';
+						dv  := '0';
+						stt <= s_size;
+					when s_size =>
+						ptr := (others => '0');
+						len := resize(unsigned(des8_data), len'length);
+						idv := '1';
+						lv  := '1';
+						dv  := '0';
+						stt <= s_data;
+					when s_data =>
+						ptr := ptr + 1;
+						len := len - 1;
+						if len(0)='1' then
+							stt <= s_id;
+						else
+							stt <= s_data;
+						end if;
+						idv := '1';
+						lv  := '0';
+						dv  := '1';
+					end case;
+
+					data := data sll des8_data'length;
+					data(des8_data'range) := unsigned(des8_data);
+				end if;
+			end if;
 
 			rgtr_irdy <= des8_irdy;
-			if sin_frm='1' then
-				if des8_irdy='1' then
-					if(state=s_id) then
-						rgtr_idv <= '1';
-					end if;
-				end if;
-			else
-				rgtr_idv <= '0';
-			end if;
+			rgtr_idv  <= idv;
 			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
-			rgtr_lv   <= setif(state=s_size);
-			rgtr_len  <= setif(state=s_size, std_logic_vector(resize(len, rgtr_id'length)), rgtr_len);
+			rgtr_lv   <= lv;
+			rgtr_len  <= len(1 to des_data8'length);
 			rgtr_dv   <= len(0) and des8_irdy;
 			rgtr_data <= std_logic_vector(data);
 
-			data_frm  <= setif(state=s_data);
-			data_irdy <= des8_irdy and setif(state=s_data);
+			data_frm  <= setif(stt=s_data);
+			data_irdy <= des8_irdy and setif(stt=s_data);
 			data_ptr  <= std_logic_vector(ptr);
 			end if;
 		end if;
@@ -117,25 +127,25 @@ begin
 --				ptr   := (others => '0');
 --				rid   := (others => '-');
 --				len   := (others => '0');
---				state <= s_id;
+--				stt <= s_id;
 --			elsif des8_irdy='1' then
---				case state is
+--				case stt is
 --				when s_id =>
 --					ptr   := (others => '0');
 --					rid   := des8_data;
 --					len   := (others => '0');
---					state <= s_size;
+--					stt <= s_size;
 --				when s_size =>
 --					ptr   := (others => '0');
 --					len   := resize(unsigned(des8_data), len'length);
---					state <= s_data;
+--					stt <= s_data;
 --				when s_data =>
 --					ptr  := ptr + 1;
 --					len  := len - 1;
 --					if len(0)='1' then
---						state <= s_id;
+--						stt <= s_id;
 --					else
---						state <= s_data;
+--						stt <= s_data;
 --					end if;
 --				end case;
 --			end if;
@@ -146,7 +156,7 @@ begin
 --			rgtr_irdy <= des8_irdy;
 --			if sin_frm='1' then
 --				if des8_irdy='1' then
---					if(state=s_id) then
+--					if(stt=s_id) then
 --						rgtr_idv <= '1';
 --					end if;
 --				end if;
@@ -154,13 +164,13 @@ begin
 --				rgtr_idv <= '0';
 --			end if;
 --			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
---			rgtr_lv   <= setif(state=s_size);
---			rgtr_len  <= setif(state=s_size, std_logic_vector(resize(len, rgtr_id'length)), rgtr_len);
+--			rgtr_lv   <= setif(stt=s_size);
+--			rgtr_len  <= setif(stt=s_size, std_logic_vector(resize(len, rgtr_id'length)), rgtr_len);
 --			rgtr_dv   <= len(0) and des8_irdy;
 --			rgtr_data <= std_logic_vector(data);
 --
---			data_frm  <= setif(state=s_data);
---			data_irdy <= des8_irdy and setif(state=s_data);
+--			data_frm  <= setif(stt=s_data);
+--			data_irdy <= des8_irdy and setif(stt=s_data);
 --			data_ptr  <= std_logic_vector(ptr);
 --		end if;
 --	end process;
