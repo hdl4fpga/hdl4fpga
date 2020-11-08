@@ -359,7 +359,7 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 			end if;
-			sou_frm <= rgtr_frm;
+			sou_frm <= rgtr_frm and not siodmaio_end;
 		end process;
 
 		sio_dmaio <= x"01" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));

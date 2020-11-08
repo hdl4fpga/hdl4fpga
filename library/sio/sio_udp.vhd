@@ -324,9 +324,9 @@ begin
 
 	tx_b : block
 
-		signal sin_irdy      : std_logic;
 		signal rgtr_frm      : std_logic;
 		signal rgtr_irdy     : std_logic;
+		signal rgtr_trdy     : std_logic;
 		signal rgtr_idv      : std_logic;
 		signal rgtr_id       : std_logic_vector(8-1 downto 0);
 		signal rgtr_lv       : std_logic;
@@ -347,18 +347,20 @@ begin
 
 
 	begin
-		sin_irdy <= si_irdy and si_trdy;
+
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
 			sin_frm   => si_frm,
-			sin_irdy  => sin_irdy,
+			sin_irdy  => si_irdy,
+			sin_trdy  => si_trdy,
 			sin_data  => si_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy,
+			rgtr_trdy => rgtr_trdy,
 			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
 			rgtr_lv   => rgtr_lv,
@@ -394,19 +396,19 @@ begin
 			end if;
 		end process;
 
-		des_data <= reverse(sigrgtr_data(des_data'range), 8);
+		des_data <= reverse(rgtr_data(des_data'range), 8);
 		des_frm  <= rgtr_idv and setif(rgtr_id /= x"00");
 
 		desser_e : entity hdl4fpga.desser
 		port map (
 			desser_clk => sio_clk,
 			des_frm    => des_frm,
-			des_irdy   => data_irdy,
+			des_irdy   => rgtr_irdy,
 			des_trdy   => usr_trdy,
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		si_trdy <= (not rgtr_idv or setif(rgtr_id=x"00")) or (usr_gnt and usr_trdy);
+		rgtr_trdy <= not usr_gnt or usr_trdy;
 		xxx <= reverse(usr_txd);
 		usr_req <= des_frm;
 		

@@ -57,8 +57,8 @@ begin
 		word2byte(std_logic_vector(rotate_right(unsigned(reverse(reverse(des_data))), ser_data'length)), mux_sel) when des_data'ascending else
 		word2byte(std_logic_vector(rotate_right(unsigned(des_data), ser_data'length)), mux_sel);
 
-	ser_irdy <= des_frm and (des_irdy or  mux_ena);
-	des_trdy <= des_frm and (ser_trdy and not mux_ena);
+	ser_irdy <= des_frm and (des_irdy or  not mux_ena);
+	des_trdy <= ser_trdy and mux_ena;
 
 end;
 
