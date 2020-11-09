@@ -368,7 +368,7 @@ begin
 			sou_frm <= rgtr_frm and not (siodmaio_end or ena);
 		end process;
 
-		sio_dmaio <= x"81" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
+		sio_dmaio <= x"51" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
 		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux

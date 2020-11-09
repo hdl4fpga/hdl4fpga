@@ -324,26 +324,26 @@ begin
 
 	tx_b : block
 
-		signal rgtr_frm      : std_logic;
-		signal rgtr_irdy     : std_logic;
-		signal rgtr_trdy     : std_logic;
-		signal rgtr_idv      : std_logic;
-		signal rgtr_id       : std_logic_vector(8-1 downto 0);
-		signal rgtr_lv       : std_logic;
-		signal rgtr_len      : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv       : std_logic;
-		signal rgtr_data     : std_logic_vector(32-1 downto 0);
+		signal rgtr_frm     : std_logic;
+		signal rgtr_irdy    : std_logic;
+		signal rgtr_trdy    : std_logic;
+		signal rgtr_idv     : std_logic;
+		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_lv      : std_logic;
+		signal rgtr_len     : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv      : std_logic;
+		signal rgtr_data    : std_logic_vector(32-1 downto 0);
 		signal data_frm     : std_logic;
-		signal data_irdy     : std_logic;
-		signal data_ptr      : std_logic_vector(8-1 downto 0);
+		signal data_irdy    : std_logic;
+		signal data_ptr     : std_logic_vector(8-1 downto 0);
 
-		signal sigdata_frm   : std_logic;
-		signal sigrgtr_id    : std_logic_vector(8-1 downto 0);
-		signal sigrgtr_dv    : std_logic;
-		signal sigrgtr_data  : std_logic_vector(48-1 downto 0);
-		signal des_frm       : std_logic;
-		signal des_data      : std_logic_vector(8-1 downto 0);
-		signal xxx      : std_logic_vector(4-1 downto 0);
+		signal sigdata_frm  : std_logic;
+		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
+		signal sigrgtr_dv   : std_logic;
+		signal sigrgtr_data : std_logic_vector(48-1 downto 0);
+		signal des_frm      : std_logic;
+		signal des_data     : std_logic_vector(8-1 downto 0);
+		signal ser_data     : std_logic_vector(mii_rxd'range);
 
 
 	begin
@@ -396,7 +396,7 @@ begin
 			end if;
 		end process;
 
-		des_data <= reverse(rgtr_data(des_data'range), 8);
+		des_data <= rgtr_data(des_data'range);
 		des_frm  <= rgtr_idv and setif(rgtr_id /= x"00");
 
 		desser_e : entity hdl4fpga.desser
@@ -407,10 +407,11 @@ begin
 			des_trdy   => usr_trdy,
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
-			ser_data   => usr_txd);
+			ser_data   => ser_data);
+
 		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_trdy);
-		xxx <= reverse(usr_txd);
-		usr_req <= des_frm;
+		usr_txd   <= ser_data;
+		usr_req   <= des_frm;
 		
 	end block;
 end;
