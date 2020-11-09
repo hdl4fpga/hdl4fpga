@@ -18,7 +18,7 @@ entity sio_sin is
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_frm  : out std_logic;
-		rgtr_irdy : buffer std_logic := '1';
+		rgtr_irdy : buffer std_logic := '0';
 		rgtr_trdy : in  std_logic := '1';
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);
@@ -59,16 +59,16 @@ begin
 		variable dv   : std_logic;
 	begin
 		if rising_edge(sin_clk) then
-			if sin_frm='0' then
-				ptr := (others => '0');
-				rid := (others => '-');
-				len := (others => '0');
-				idv := '0';
-				lv  := '0';
-				dv  := '0';
-				stt <= s_id;
-			elsif rgtr_trdy='1' or rgtr_irdy='0' then
-				if des8_irdy='1' then
+			if rgtr_trdy='1' or rgtr_irdy='0' then
+				if sin_frm='0' then
+					ptr := (others => '0');
+					rid := (others => '-');
+					len := (others => '0');
+					idv := '0';
+					lv  := '0';
+					dv  := '0';
+					stt <= s_id;
+				elsif des8_irdy='1' then
 					case stt is
 					when s_id =>
 						ptr := (others => '0');
@@ -101,22 +101,23 @@ begin
 					data := data sll des8_data'length;
 					data(des8_data'range) := unsigned(des8_data);
 				end if;
+				rgtr_frm  <= sin_frm;
+				data_frm  <= setif(stt=s_data);
 				rgtr_irdy <= des8_irdy;
+				data_irdy <= des8_irdy and setif(stt=s_data);
+				rgtr_dv   <= des8_irdy and len(0);
+
+				rgtr_idv  <= idv;
+				rgtr_id   <= rid(rgtr_id'length-1 downto 0);
+				rgtr_lv   <= lv;
+				rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
+				rgtr_data <= std_logic_vector(data);
+
+				data_ptr  <= std_logic_vector(ptr);
 			end if;
-
-			rgtr_frm  <= sin_frm;
-			rgtr_idv  <= idv;
-			rgtr_id   <= rid(rgtr_id'length-1 downto 0);
-			rgtr_lv   <= lv;
-			rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
-			rgtr_dv   <= len(0) and des8_irdy;
-			rgtr_data <= std_logic_vector(data);
-
-			data_frm  <= setif(stt=s_data);
-			data_irdy <= des8_irdy and setif(stt=s_data);
-			data_ptr  <= std_logic_vector(ptr);
 		end if;
 	end process;
 	sin_trdy <= not rgtr_irdy or rgtr_trdy;
+
 
 end;

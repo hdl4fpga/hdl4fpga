@@ -97,7 +97,7 @@ architecture def of mii_siosrv is
 	signal ack_ena      : std_logic;
 	signal data         : std_logic_vector(0 to 40-1);
 
-	signal mii_req : std_logic_vector(0 to 2-1);
+	signal mii_req : std_logic_vector(0 to 2-1) := (others => '0');
 	signal mii_rdy : std_logic_vector(mii_req'range);
 	signal mii_gnt : std_logic_vector(mii_req'range);
 
@@ -235,7 +235,7 @@ begin
 		gnt => mii_gnt);
 
 	tx_req  <= setif(mii_req /= (mii_req'range => '0'));
-	mii_req <= (0 => srv_req, 1 => usr_req);
+	mii_req(1) <= usr_req;
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	usr_gnt <= mii_gnt(1);
 

@@ -355,14 +355,20 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
-		process (rgtr_frm, sio_clk)
+		process (rgtr_frm, siodmaio_end, sio_clk)
+			variable ena : std_logic;
 		begin
 			if rising_edge(sio_clk) then
+				if rgtr_frm='0' then
+					ena := '0';
+				elsif siodmaio_end='1' then
+					ena := '1';
+				end if;
 			end if;
-			sou_frm <= rgtr_frm and not siodmaio_end;
+			sou_frm <= rgtr_frm and not (siodmaio_end or ena);
 		end process;
 
-		sio_dmaio <= x"01" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
+		sio_dmaio <= x"81" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
 		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux

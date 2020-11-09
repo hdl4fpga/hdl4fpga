@@ -408,7 +408,7 @@ begin
 			des_data   => des_data,
 			ser_irdy   => usr_txen,
 			ser_data   => usr_txd);
-		rgtr_trdy <= not usr_gnt or usr_trdy;
+		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_trdy);
 		xxx <= reverse(usr_txd);
 		usr_req <= des_frm;
 		
