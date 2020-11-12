@@ -62,9 +62,9 @@ entity mii_ipoe is
 		ipv4sa_rxdv   : buffer std_logic;
 		ipv4sa_rx     : buffer std_logic_vector(0 to 32-1);
 
-		tx_req    : in std_logic := '0';
-		tx_rdy    : out std_logic;
-		tx_gnt    : out std_logic;
+		tx_req        : in std_logic := '0';
+		tx_rdy        : out std_logic;
+		tx_gnt        : out std_logic;
 
 		dll_hwda      : in std_logic_vector(0 to 48-1) := (others => '-');
 		ipv4_da       : in std_logic_vector(0 to 32-1) := (others => '-');

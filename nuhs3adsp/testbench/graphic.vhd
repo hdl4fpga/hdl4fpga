@@ -287,7 +287,7 @@ architecture nuhs3adsp_graphics of testbench is
 			x"0000"                 &    -- IP Fragmentation
 			x"0511"                 &    -- IP TTL, protocol
 			x"0000"                 &    -- IP Header Checksum
-			x"00000000"             &    -- IP Source IP address
+			x"ffffffff"             &    -- IP Source IP address
 			x"c0a8000e"             &    -- IP Destiantion IP Address
 
 			udp_checksummed (
@@ -305,7 +305,7 @@ architecture nuhs3adsp_graphics of testbench is
 			x"0000"                 &    -- IP Fragmentation
 			x"0511"                 &    -- IP TTL, protocol
 			x"0000"                 &    -- IP Header Checksum
-			x"70506040"             &    -- IP Source IP address
+			x"ffffffff"             &    -- IP Source IP address
 			x"c0a8000e"             &    -- IP Destiantion IP Address
 
 			udp_checksummed (

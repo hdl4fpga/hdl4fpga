@@ -388,7 +388,7 @@ begin
 				if sigrgtr_dv='1' then
 					case sigrgtr_id is
 					when x"01" =>
-						tx_hwda   <= sigrgtr_data(tx_hwda'range);
+						tx_hwda   <= x"ff_ff_ff_ff_ff_ff"; --sigrgtr_data(tx_hwda'range);
 					when x"02" => 
 						tx_ipv4da <= sigrgtr_data(tx_ipv4da'range);
 					when x"03" => 
@@ -396,7 +396,6 @@ begin
 					when others =>
 					end case;
 				end if;
-		usr_req   <= des_frm or not usr_rdy;
 			end if;
 		end process;
 
@@ -416,6 +415,17 @@ begin
 		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
 		usr_txen  <= ser_irdy and usr_gnt;
 		usr_txd   <= ser_data;
+		process (des_frm, sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				if des_frm='1' then
+					usr_req <= '1';
+				elsif usr_rdy='1' then
+					usr_req <= '0';
+				end if;
+			end if;
+		end process;
+
 		
 	end block;
 end;

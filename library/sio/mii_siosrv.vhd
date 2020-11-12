@@ -204,7 +204,7 @@ begin
 					if dllcrc32_equ='1' then
 						if pkt_rcvd='1'  then
 							if ack_rcvd='1' then
-								srv_req   <= '1';
+								srv_req  <= '0'; --'1';
 								pkt_cmmt <= setif(ack_rgtr/=ack_last);
 								ack_last := ack_rgtr;
 							else
@@ -235,8 +235,23 @@ begin
 		req => mii_req,
 		gnt => mii_gnt);
 
-	tx_req  <= setif(mii_req /= (mii_req'range => '0'));
-	mii_req(1) <= usr_req;
+	tx_req <= setif(mii_req /= (mii_req'range => '0'));
+
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if usr_req='1' then
+				if tx_gnt='0' then
+					mii_req(1) <= '1';
+				elsif mii_gnt(1)='0' then
+					mii_req(1) <= '0';
+				end if;
+			else
+				mii_req(1) <= '0';
+			end if;
+		end if;
+	end process;
+
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	usr_rdy <= mii_rdy(1);
 	usr_gnt <= mii_gnt(1);
