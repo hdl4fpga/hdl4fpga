@@ -396,6 +396,7 @@ begin
 					when others =>
 					end case;
 				end if;
+		usr_req   <= des_frm or not usr_rdy;
 			end if;
 		end process;
 
@@ -415,7 +416,6 @@ begin
 		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
 		usr_txen  <= ser_irdy and usr_gnt;
 		usr_txd   <= ser_data;
-		usr_req   <= des_frm; -- or not usr_rdy;
 		
 	end block;
 end;
