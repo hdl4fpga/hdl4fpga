@@ -9,9 +9,6 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/mii_txd
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxdv
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(0) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(1) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(2) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(0) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(1) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(2) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_req
-add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_gnt
-add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/dll_hwda
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/extern_gnt
 add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/hwda_tx
@@ -21,9 +18,13 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/mii_gnt
 add wave -noupdate -expand /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/mii_gnt
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mysrv_gnt
-add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/mii_req
+add wave -noupdate -expand /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/mii_req
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_req
+add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_gnt
+add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {264651438400 fs} 0}
+WaveRestoreCursors {{Cursor 1} {265857039840 fs} 0} {{Cursor 2} {268710212730 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 249
 configure wave -valuecolwidth 165
@@ -39,4 +40,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {264127121010 fs} {265210622010 fs}
+WaveRestoreZoom {247985 ns} {283685 ns}
