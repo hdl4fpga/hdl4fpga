@@ -94,6 +94,7 @@ architecture struct of sio_udp is
 	signal usr_txd         : std_logic_vector(mii_txd'range);
 	signal usr_req         : std_logic;
 	signal usr_gnt         : std_logic;
+	signal usr_rdy         : std_logic;
 	signal usr_trdy        : std_logic;
 	signal usr_txen        : std_logic;
 
@@ -197,6 +198,7 @@ begin
 
 		usr_req       => usr_req,
 		usr_gnt       => usr_gnt,
+		usr_rdy       => usr_rdy,
 		usr_hwda      => tx_hwda,
 		usr_ipv4da    => tx_ipv4da,
 		usr_udpdp     => tx_ipport,
@@ -343,6 +345,7 @@ begin
 		signal sigrgtr_data : std_logic_vector(48-1 downto 0);
 		signal des_frm      : std_logic;
 		signal des_data     : std_logic_vector(8-1 downto 0);
+		signal ser_irdy     : std_logic;
 		signal ser_data     : std_logic_vector(mii_rxd'range);
 
 
@@ -406,12 +409,13 @@ begin
 			des_irdy   => rgtr_irdy,
 			des_trdy   => usr_trdy,
 			des_data   => des_data,
-			ser_irdy   => usr_txen,
+			ser_irdy   => ser_irdy, 
 			ser_data   => ser_data);
 
-		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_trdy);
+		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
+		usr_txen  <= ser_irdy and usr_gnt;
 		usr_txd   <= ser_data;
-		usr_req   <= des_frm;
+		usr_req   <= des_frm; -- or not usr_rdy;
 		
 	end block;
 end;

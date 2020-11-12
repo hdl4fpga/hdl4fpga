@@ -67,6 +67,7 @@ entity mii_siosrv is
 
 		usr_req       : in  std_logic;
 		usr_gnt       : out std_logic;
+		usr_rdy       : out std_logic;
 		usr_hwda      : in  std_logic_vector(48-1 downto 0);
 		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
 		usr_udpdp     : in  std_logic_vector(16-1 downto 0);
@@ -237,6 +238,7 @@ begin
 	tx_req  <= setif(mii_req /= (mii_req'range => '0'));
 	mii_req(1) <= usr_req;
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
+	usr_rdy <= mii_rdy(1);
 	usr_gnt <= mii_gnt(1);
 
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));

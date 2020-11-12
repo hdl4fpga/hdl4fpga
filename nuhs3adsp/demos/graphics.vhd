@@ -355,17 +355,22 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
-		process (rgtr_frm, siodmaio_end, sio_clk)
-			variable ena : std_logic;
+		process (siodmaio_end, sio_clk)
+			variable frm : std_logic;
+			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
-				if rgtr_frm='0' then
-					ena := '0';
-				elsif siodmaio_end='1' then
-					ena := '1';
+				if frm='0' and rgtr_frm='1' then
+					req := '1';
 				end if;
+				if req='1' then
+					if siodmaio_end='1' then
+						req := '0';
+					end if;
+				end if;
+				frm := rgtr_frm;
 			end if;
-			sou_frm <= rgtr_frm and not (siodmaio_end or ena);
+			sou_frm <= req and not siodmaio_end;
 		end process;
 
 		sio_dmaio <= x"51" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
