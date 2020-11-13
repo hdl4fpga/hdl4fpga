@@ -255,6 +255,7 @@ begin
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	usr_rdy <= mii_rdy(1);
 	usr_gnt <= mii_gnt(1);
+	tp(1) <= mii_req(1);
 
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
 	myack_e : entity hdl4fpga.mii_mux

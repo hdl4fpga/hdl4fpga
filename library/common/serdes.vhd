@@ -37,8 +37,8 @@ begin
 			else
 				cntr := (others => '0');
 			end if;
+			stop <= setif(cntr=to_unsigned(des_data'length/ser_data'length-1,cntr'length));
 		end if;
-		stop <= setif(cntr=des_data'length/ser_data'length-1 or des_data'length=ser_data'length);
 	end process;
 
 	process (ser_data, serdes_clk)
@@ -71,5 +71,5 @@ begin
 
 	end process;
 
-	des_irdy <= serdes_frm and ser_irdy and setif(stop='1' or des_data'length=ser_data'length);
+	des_irdy <= serdes_frm and ser_irdy and stop;
 end;

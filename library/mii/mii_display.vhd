@@ -113,7 +113,7 @@ begin
 		if rising_edge(mii_txc) then
 			cga_addr <= std_logic_vector(addr);
 			cga_we   <= (mii_txen and des_irdy) or (not mii_txen and we);
-			data     := unsigned(des_data);
+			data     := unsigned(reverse(des_data,8));
 			for i in 0 to des_data'length/digit'length-1 loop
 				if mii_txen='1' then
 					if des_irdy='1' then

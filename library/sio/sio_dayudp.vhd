@@ -53,7 +53,8 @@ entity sio_dayudp is
 
 		so_frm      : out std_logic;
 		so_irdy     : out std_logic;
-		so_data     : out std_logic_vector);
+		so_data     : out std_logic_vector;
+		tp : out std_logic_vector(1 to 1));
 	
 end;
 
@@ -84,7 +85,8 @@ begin
 		si_trdy     => si_trdy,
 		si_data     => si_data,
 		so_dv       => soudp_dv,
-		so_data     => soudp_data);
+		so_data     => soudp_data,
+		tp => tp);
 
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_dv; 
 	so_irdy <= si_irdy when sio_addr/='0' else soudp_dv;
