@@ -71,6 +71,8 @@ entity mii_siosrv is
 		usr_hwda      : in  std_logic_vector(48-1 downto 0);
 		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
 		usr_udpdp     : in  std_logic_vector(16-1 downto 0);
+		usr_udplen    : in  std_logic_vector(16-1 downto 0);
+		usr_ack       : in  std_logic_vector(8-1 downto 0);
 		usr_txen      : in  std_logic := '0';
 		usr_txd       : in  std_logic_vector;
 
@@ -105,6 +107,8 @@ architecture def of mii_siosrv is
 	alias  srv_req : std_logic is mii_req(0);
 	alias  srv_rdy : std_logic is mii_rdy(0);
 	alias  srv_gnt : std_logic is mii_gnt(0);
+	signal ulat_txen : std_logic;
+	signal ulat_txd : std_logic_vector(dll_rxd'range);
 	signal srv_txen : std_logic;
 	signal srv_txd : std_logic_vector(dll_rxd'range);
 	
@@ -134,7 +138,6 @@ begin
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data);
 
-	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
 	sigseq_e : entity hdl4fpga.sio_rgtr
 	generic map (
 		rid  => x"00")
@@ -257,7 +260,25 @@ begin
 	usr_gnt <= mii_gnt(1);
 	tp(1) <= mii_req(1);
 
+--	udppl_len <= std_logic_vector(
+--		to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length)+
+--		unsigned(wirebus(x"0000" & usr_udplen, mii_gnt)));
+--	data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_rgtr, mii_gnt);
+--	entity hdl4fpga.mii_latency
+--	generic map (
+--		latency => data'length);
+--	port map (
+--		mii_txc  => mii_txc,
+--		lat_txen => usr_txen,
+--		lat_txd  => usr_txd,
+--		mii_txen => ulat_txen,
+--		mii_txd  => ulat_txd);
+--
+--	udppl_txen <= srv_txen or ulat_txen;
+--	udppl_txd  <= wirebus(srv_txd & ulat_txd, srv_txen & ulat_txen);
+
 	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
+	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
 	myack_e : entity hdl4fpga.mii_mux
 	port map (
 		mux_data => data,
