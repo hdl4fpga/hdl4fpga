@@ -112,15 +112,15 @@ int main (int argc, char *argv[])
 
 //	int val=2;
 //setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
-	ack  = 0 ;
-	size = 0;
-	buffer[size++] = 0x00;
-	buffer[size++] = 0x02;
-	buffer[size++] = 0x00;
-	buffer[size++] = 0x00;
-	buffer[size++] = ack++;
-
 	do {
+		ack  = 0 ;
+		size = 0;
+		buffer[size++] = 0x00;
+		buffer[size++] = 0x02;
+		buffer[size++] = 0x00;
+		buffer[size++] = 0x00;
+		buffer[size++] = ack++;
+
 		if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 			perror ("sending packet");
 			exit (1);
