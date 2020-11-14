@@ -205,7 +205,7 @@ begin
 						if pkt_rcvd='1'  then
 							if ack_rcvd='1' then
 								srv_req  <= '1';
-								pkt_cmmt <= setif(ack_rgtr/=ack_last);
+								pkt_cmmt <= '1'; --setif(ack_rgtr/=ack_last);
 								ack_last := ack_rgtr;
 							else
 								pkt_cmmt <= '1';

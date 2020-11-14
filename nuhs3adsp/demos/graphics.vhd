@@ -194,7 +194,8 @@ architecture graphics of nuhs3adsp is
 		return false;
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
+--	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
+	constant video_mode : video_modes := mode600p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -311,6 +312,8 @@ begin
 			phy_rx_d  => mii_rxd,
 
 			phy_txc   => mii_txc,
+			phy_col   => mii_col,
+			phy_crs   => mii_crs,
 			phy_tx_en => mii_txen,
 			phy_tx_d  => mii_txd,
 		

@@ -40,6 +40,8 @@ entity sio_udp is
 		mii_rxdv  : in  std_logic;
 
 		mii_txc   : in  std_logic;
+		mii_col   : in  std_logic := '0';
+		mii_crs   : in  std_logic := '0';
 		mii_txd   : out std_logic_vector;
 		mii_txen  : out std_logic;
 
@@ -133,6 +135,8 @@ begin
 		mii_rxdv      => mii_rxdv,
 
 		mii_txc       => mii_txc,
+		mii_col       => mii_col,
+		mii_crs       => mii_crs,
 		mii_txd       => mii_txd,
 		mii_txen      => mii_txen,
 

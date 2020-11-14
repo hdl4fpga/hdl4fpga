@@ -142,8 +142,8 @@ architecture nuhs3adsp_graphics of testbench is
 			mii_rxer : in std_logic := 'Z';
 			mii_rxd  : in std_logic_vector(4-1 downto 0) := (others => 'Z');
 
-			mii_crs  : in std_logic := 'Z';
-			mii_col  : in std_logic := 'Z';
+			mii_crs  : in std_logic := '0';
+			mii_col  : in std_logic := '0';
 
 			-------------
 			-- DDR RAM --

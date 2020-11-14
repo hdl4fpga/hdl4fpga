@@ -110,8 +110,11 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
-//	int val=2;
-//setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &val, sizeof(val));
+	//	DON'T FRAGMENT, 
+	//	int tol = 2;	// Time To Live
+	//	setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(val));
+	//
+
 	do {
 		ack  = 0 ;
 		size = 0;
@@ -189,8 +192,6 @@ int main (int argc, char *argv[])
 					}
 				}
 			} while (!(err > 0));
-//			exit(-1);
-// nanosleep((const struct timespec[]){ {0, 50000000L } }, NULL);
 			
 		} else if (n < 0) {
 			perror ("reading packet");

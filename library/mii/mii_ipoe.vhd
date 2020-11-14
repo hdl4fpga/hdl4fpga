@@ -40,6 +40,8 @@ entity mii_ipoe is
 		mii_rxdv      : in  std_logic;
 
 		mii_txc       : in  std_logic;
+		mii_col       : in  std_logic := '0';
+		mii_crs       : in  std_logic := '0';
 		mii_txd       : buffer std_logic_vector;
 		mii_txen      : buffer std_logic;
 
@@ -213,7 +215,19 @@ begin
 		end if;
 	end process;
 
-	mii_rdy  <= mii_gnt and not (mii_gnt'range => mii_txen);
+	process(mii_gnt, mii_txc)
+		variable cntr : unsigned(0 to 4) := (others => '0');
+	begin
+		if rising_edge(mii_txc) then
+			if mii_txen='1' or mii_col='1' or mii_crs='1' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				cntr := cntr + 1;
+			end if;
+		end if;
+		mii_rdy <= mii_gnt and (mii_gnt'range => cntr(0) and not (mii_txen or mii_col or mii_crs));
+	end process;
+
 
 	miignt_e : entity hdl4fpga.arbiter
 	port map (
