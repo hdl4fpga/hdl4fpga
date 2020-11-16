@@ -68,6 +68,7 @@ entity mii_siosrv is
 		usr_req       : in  std_logic;
 		usr_gnt       : out std_logic;
 		usr_rdy       : out std_logic;
+		usr_ack       : in  std_logic_vector(8-1 downto 0);
 		usr_hwda      : in  std_logic_vector(48-1 downto 0);
 		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
 		usr_udpdp     : in  std_logic_vector(16-1 downto 0);
@@ -100,17 +101,17 @@ architecture def of mii_siosrv is
 	signal ack_ena      : std_logic;
 	signal data         : std_logic_vector(0 to 40-1);
 
-	signal mii_req : std_logic_vector(0 to 2-1) := (others => '0');
-	signal mii_rdy : std_logic_vector(mii_req'range);
-	signal mii_gnt : std_logic_vector(mii_req'range);
+	signal mii_req      : std_logic_vector(0 to 2-1) := (others => '0');
+	signal mii_rdy      : std_logic_vector(mii_req'range);
+	signal mii_gnt      : std_logic_vector(mii_req'range);
 
-	alias  srv_req : std_logic is mii_req(0);
-	alias  srv_rdy : std_logic is mii_rdy(0);
-	alias  srv_gnt : std_logic is mii_gnt(0);
-	signal ulat_txen : std_logic;
-	signal ulat_txd : std_logic_vector(dll_rxd'range);
-	signal srv_txen : std_logic;
-	signal srv_txd : std_logic_vector(dll_rxd'range);
+	alias  srv_req      : std_logic is mii_req(0);
+	alias  srv_rdy      : std_logic is mii_rdy(0);
+	alias  srv_gnt      : std_logic is mii_gnt(0);
+	signal ulat_txen    : std_logic;
+	signal ulat_txd     : std_logic_vector(dll_rxd'range);
+	signal srv_txen     : std_logic;
+	signal srv_txd      : std_logic_vector(dll_rxd'range);
 	
 begin
 
@@ -207,8 +208,8 @@ begin
 					if dllcrc32_equ='1' then
 						if pkt_rcvd='1'  then
 							if ack_rcvd='1' then
-								srv_req  <= '1';
-								pkt_cmmt <= '1'; --setif(ack_rgtr/=ack_last);
+								srv_req  <= ack_rgtr(ack_rgtr'left);
+								pkt_cmmt <= setif(ack_rgtr/=ack_last);
 								ack_last := ack_rgtr;
 							else
 								pkt_cmmt <= '1';

@@ -90,6 +90,7 @@ architecture struct of sio_udp is
 	signal mysrv_pktcmmt   : std_logic;
 	signal mysrv_cmmtena   : std_logic;
 
+	signal tx_ack          : std_logic_vector(8-1 downto 0);
 	signal tx_hwda         : std_logic_vector(48-1 downto 0);
 	signal tx_ipv4da       : std_logic_vector(32-1 downto 0);
 	signal tx_ipport       : std_logic_vector(16-1 downto 0);
@@ -206,6 +207,7 @@ begin
 		usr_gnt       => usr_gnt,
 		usr_rdy       => usr_rdy,
 		usr_hwda      => tx_hwda,
+		usr_ack       => tx_ack,
 		usr_ipv4da    => tx_ipv4da,
 		usr_udpdp     => tx_ipport,
 		usr_txen      => usr_txen,
@@ -396,6 +398,8 @@ begin
 			if rising_edge(sio_clk) then
 				if sigrgtr_dv='1' then
 					case sigrgtr_id is
+					when x"00" =>
+						tx_ack    <= sigrgtr_data(tx_ack'range);
 					when x"01" =>
 						tx_hwda   <= sigrgtr_data(tx_hwda'range);
 					when x"02" => 
