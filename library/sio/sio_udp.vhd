@@ -93,6 +93,7 @@ architecture struct of sio_udp is
 	signal tx_ack          : std_logic_vector(8-1 downto 0);
 	signal tx_hwda         : std_logic_vector(48-1 downto 0);
 	signal tx_ipv4da       : std_logic_vector(32-1 downto 0);
+	signal tx_udplen       : std_logic_vector(16-1 downto 0);
 	signal tx_ipport       : std_logic_vector(16-1 downto 0);
 
 	signal usr_txd         : std_logic_vector(mii_txd'range);
@@ -209,6 +210,7 @@ begin
 		usr_hwda      => tx_hwda,
 		usr_ack       => tx_ack,
 		usr_ipv4da    => tx_ipv4da,
+		usr_udplen    => tx_udplen,
 		usr_udpdp     => tx_ipport,
 		usr_txen      => usr_txen,
 		usr_txd       => usr_txd,
@@ -406,6 +408,8 @@ begin
 						tx_ipv4da <= sigrgtr_data(tx_ipv4da'range);
 					when x"03" => 
 						tx_ipport <= sigrgtr_data(tx_ipport'range);
+					when x"04" => 
+						tx_udplen <= sigrgtr_data(tx_udplen'range);
 					when others =>
 					end case;
 				end if;

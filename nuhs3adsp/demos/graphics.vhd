@@ -293,7 +293,7 @@ begin
 		signal siodmaio_irdy : std_logic;
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
-		signal sio_dmaio     : std_logic_vector(0 to (2+4)*8-1);
+		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sou_data'range);
 
 		signal ipv4acfg_req  : std_logic;
@@ -381,8 +381,9 @@ begin
 			sou_frm <= req and not siodmaio_end;
 		end process;
 
-		sio_dmaio <= x"51" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
-		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
+		sio_dmaio <= 
+			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+			x"51" & x"03" & x"abcdef89"; --std_logic_vector(resize(unsigned(dmaio_addr), 4*8));
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (

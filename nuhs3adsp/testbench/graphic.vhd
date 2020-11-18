@@ -233,7 +233,9 @@ architecture nuhs3adsp_graphics of testbench is
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
 	constant pp_pl : std_logic_vector := 
-		  x"18ff"
+		  x"0002000005"
+		& x"0002000006"
+		& x"18ff"
 		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
 		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
 		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
@@ -251,13 +253,13 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-		& x"0002000001"
-		& x"0002000006"
 		& x"1602000060"
 		& x"170200001f";
 
 	constant pp1_pl : std_logic_vector := 
-		  x"18ff"
+		  x"0002000005"
+		& x"0002000006"
+		& x"18ff"
 		& x"eeee77779abcdef123456789abcdef1223456789abcdef123456789abcdef123"
 		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
 		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
@@ -275,8 +277,6 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-		& x"0002000005"
-		& x"0002000006"
 		& x"16020000a0"
 		& x"170200001f";
 

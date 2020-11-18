@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
 	//
 
 	do {
-		ack  = 0 ;
+		ack  = (1 << 7);
 		size = 0;
 		buffer[size++] = 0x00;
 		buffer[size++] = 0x02;
@@ -154,24 +154,24 @@ int main (int argc, char *argv[])
 				break;
 		}
 
-		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+		buffer[0] = 0x00;
+		buffer[1] = 0x02;
+		buffer[2] = 0x00;
+		buffer[3] = 0x00;
+		buffer[4] = ((ack++) & ~(1 << 7));
+		if ((n = fread(buffer+5, sizeof(unsigned char), size, stdin)) > 0) {
 			size = n;
 			if (size > MAXSIZE) {
 				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
 				exit(1);
 			}
 
-			buffer[size++] = 0x00;
-			buffer[size++] = 0x02;
-			buffer[size++] = 0x00;
-			buffer[size++] = 0x00;
-			buffer[size++] = ack++;
 			fprintf (stderr, "packet length %d\n", n);
 
 			do {
 				pkt_sent++;
 				pkt_lost++;
-				if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+				if (sendto(s, buffer, size+5, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 					perror ("sending packet");
 					exit (1);
 				}

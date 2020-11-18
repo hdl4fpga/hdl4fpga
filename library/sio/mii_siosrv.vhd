@@ -73,7 +73,6 @@ entity mii_siosrv is
 		usr_ipv4da    : in  std_logic_vector(32-1 downto 0);
 		usr_udpdp     : in  std_logic_vector(16-1 downto 0);
 		usr_udplen    : in  std_logic_vector(16-1 downto 0);
-		usr_ack       : in  std_logic_vector(8-1 downto 0);
 		usr_txen      : in  std_logic := '0';
 		usr_txd       : in  std_logic_vector;
 
@@ -209,7 +208,7 @@ begin
 						if pkt_rcvd='1'  then
 							if ack_rcvd='1' then
 								srv_req  <= ack_rgtr(ack_rgtr'left);
-								pkt_cmmt <= setif(ack_rgtr/=ack_last);
+								pkt_cmmt <= setif(shift_left(unsigned(ack_rgtr),1)/=shift_left(unsigned(ack_last),1));
 								ack_last := ack_rgtr;
 							else
 								pkt_cmmt <= '1';
@@ -261,33 +260,33 @@ begin
 	usr_gnt <= mii_gnt(1);
 	tp(1) <= mii_req(1);
 
---	udppl_len <= std_logic_vector(
---		to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length)+
---		unsigned(wirebus(x"0000" & usr_udplen, mii_gnt)));
---	data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_rgtr, mii_gnt);
---	entity hdl4fpga.mii_latency
---	generic map (
---		latency => data'length);
---	port map (
---		mii_txc  => mii_txc,
---		lat_txen => usr_txen,
---		lat_txd  => usr_txd,
---		mii_txen => ulat_txen,
---		mii_txd  => ulat_txd);
---
---	udppl_txen <= srv_txen or ulat_txen;
---	udppl_txd  <= wirebus(srv_txd & ulat_txd, srv_txen & ulat_txen);
-
-	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
-	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
-	myack_e : entity hdl4fpga.mii_mux
+	udppl_len <= std_logic_vector(
+		to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length)+
+		unsigned(wirebus(x"0000" & usr_udplen, mii_gnt)));
+	data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_rgtr, mii_gnt);
+	entity hdl4fpga.mii_latency
+	generic map (
+		latency => data'length);
 	port map (
-		mux_data => data,
-        mii_txc  => mii_txc,
-		mii_txdv => srv_gnt,
-        mii_txen => srv_txen,
-        mii_txd  => srv_txd);
+		mii_txc  => mii_txc,
+		lat_txen => usr_txen,
+		lat_txd  => usr_txd,
+		mii_txen => ulat_txen,
+		mii_txd  => ulat_txd);
 
-	udppl_txen <= srv_txen or usr_txen;
-	udppl_txd  <= wirebus(srv_txd & usr_txd, srv_txen & usr_txen);
+	udppl_txen <= srv_txen or ulat_txen;
+	udppl_txd  <= wirebus(srv_txd & ulat_txd, srv_txen & ulat_txen);
+
+--	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
+--	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
+--	myack_e : entity hdl4fpga.mii_mux
+--	port map (
+--		mux_data => data,
+--        mii_txc  => mii_txc,
+--		mii_txdv => srv_gnt,
+--        mii_txen => srv_txen,
+--        mii_txd  => srv_txd);
+--
+--	udppl_txen <= srv_txen or usr_txen;
+--	udppl_txd  <= wirebus(srv_txd & usr_txd, srv_txen & usr_txen);
 end;

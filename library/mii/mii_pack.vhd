@@ -28,47 +28,41 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_mux is
+entity mii_pack is
     port (
-		mux_data : in  std_logic_vector;
-        sio_clk  : in  std_logic;
-        sio_frm  : in  std_logic;
-		so_irdy  : in  std_logic;
-		so_trdy  : out std_logic;
-		so_end   : out std_logic;
-        so_data  : out std_logic_vector);
+		data     : in  std_logic_vector;
+        mii_txc  : in  std_logic;
+        mii_rxdv : in  std_logic;
+        mii_rxd  : in  std_logic_vector;
+        mii_txen : out std_logic;
+        mii_txd  : out std_logic_vector);
 end;
 
-architecture def of sio_mux is
-	constant mux_length : natural := unsigned_num_bits(mux_data'length/so_data'length-1);
-	subtype mux_range is natural range 1 to mux_length;
-
-	signal mux_sel : std_logic_vector(mux_range);
-	signal rdata  : std_logic_vector(mux_data'range);
-
+architecture beh of mii_pack is
+	signal mux_txen : std_logic;
+	signal mux_txd  : std_logic_vector(mii_rxd'range);
+	signal lat_txen : std_logic;
+	signal lat_txd  : std_logic_vector(mii_txd'range);
 begin
 
-	process (so_irdy, sio_clk)
-		variable cntr : unsigned(0 to mux_length);
-	begin
-		if rising_edge(sio_clk) then
-			if sio_frm='0' then
-				cntr := to_unsigned(mux_data'length/so_data'length-1, cntr'length);
-			elsif so_irdy='1' then
-				if cntr(0)='0' then
-					cntr := cntr - 1;
-				end if;
-			end if;
-			mux_sel <= std_logic_vector(cntr(mux_range));
-		end if;
-		so_end  <= cntr(0);
-		so_trdy <= not cntr(0);
-	end process;
+	mux_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => data,
+        mii_txc  => mii_txc,
+        mii_txdv => mii_rxdv,
+        mii_txen => mux_txen,
+        mii_txd  => mux_txd);
 
-	rdata <= reverse(reverse(mux_data,8));
+	latency_e : entity hdl4fpga.mii_latency
+	generic map (
+		latency => data'length)
+    port map (
+        mii_txc  => mii_txc,
+        lat_txen => mii_rxdv,
+        lat_txd  => mii_rxd,
+        mii_txen => lat_txen,
+        mii_txd  => lat_txd);
 
-	so_data <= 
-		rdata when so_data'length=rdata'length else
-		word2byte(rdata, mux_sel, so_data'length);
-
+	mii_txd  <= wirebus(mux_txd & lat_txd, not lat_txen & lat_txen);
+	mii_txen <= mux_txen or lat_txen;
 end;

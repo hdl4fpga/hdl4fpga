@@ -20,12 +20,19 @@ add wave -noupdate -expand /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/mi
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mysrv_gnt
 add wave -noupdate -expand /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/miisio_e/mii_req
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/si_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_ack
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_hwda
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_ipv4da
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_udplen
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_ipport
+add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/tx_b/des_frm
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_req
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_gnt
 add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/usr_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {265857039840 fs} 0} {{Cursor 2} {268710212730 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {36311608960 fs} 0} {{Cursor 2} {259441955190 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 249
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left
@@ -40,4 +47,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {247985 ns} {283685 ns}
+WaveRestoreZoom {0 fs} {315 us}
