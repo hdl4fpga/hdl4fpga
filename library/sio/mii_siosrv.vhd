@@ -98,7 +98,7 @@ architecture def of mii_siosrv is
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
 	signal ack_ena      : std_logic;
-	signal data         : std_logic_vector(0 to 40-1);
+	signal ack_data     : std_logic_vector(0 to 40-1);
 
 	signal mii_req      : std_logic_vector(0 to 2-1) := (others => '0');
 	signal mii_rdy      : std_logic_vector(mii_req'range);
@@ -109,8 +109,8 @@ architecture def of mii_siosrv is
 	alias  srv_gnt      : std_logic is mii_gnt(0);
 	signal ulat_txen    : std_logic;
 	signal ulat_txd     : std_logic_vector(dll_rxd'range);
-	signal srv_txen     : std_logic;
-	signal srv_txd      : std_logic_vector(dll_rxd'range);
+	signal ack_txen     : std_logic;
+	signal ack_txd      : std_logic_vector(dll_rxd'range);
 	
 begin
 
@@ -261,12 +261,13 @@ begin
 	tp(1) <= mii_req(1);
 
 	udppl_len <= std_logic_vector(
-		to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length)+
+		to_unsigned((ack_data'length+octect_size-1)/octect_size, udppl_len'length)+
 		unsigned(wirebus(x"0000" & usr_udplen, mii_gnt)));
-	data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_rgtr, mii_gnt);
-	entity hdl4fpga.mii_latency
+	ack_data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_ack, mii_gnt);
+
+	ulat_e : entity hdl4fpga.mii_latency
 	generic map (
-		latency => data'length);
+		latency => ack_data'length)
 	port map (
 		mii_txc  => mii_txc,
 		lat_txen => usr_txen,
@@ -274,19 +275,14 @@ begin
 		mii_txen => ulat_txen,
 		mii_txd  => ulat_txd);
 
-	udppl_txen <= srv_txen or ulat_txen;
-	udppl_txd  <= wirebus(srv_txd & ulat_txd, srv_txen & ulat_txen);
+	ack_e : entity hdl4fpga.mii_mux
+	port map (
+		mux_data => ack_data,
+		mii_txc  => mii_txc,
+		mii_txdv => tx_gnt,
+		mii_txen => ack_txen,
+		mii_txd  => ack_txd);
 
---	udppl_len <= std_logic_vector(to_unsigned((data'length+octect_size-1)/octect_size, udppl_len'length));
---	data <= x"00" & x"02" & x"00" & x"00" & ack_rgtr;
---	myack_e : entity hdl4fpga.mii_mux
---	port map (
---		mux_data => data,
---        mii_txc  => mii_txc,
---		mii_txdv => srv_gnt,
---        mii_txen => srv_txen,
---        mii_txd  => srv_txd);
---
---	udppl_txen <= srv_txen or usr_txen;
---	udppl_txd  <= wirebus(srv_txd & usr_txd, srv_txen & usr_txen);
+	udppl_txen <= ack_txen or usr_txen;
+	udppl_txd  <= wirebus(ack_txd & ulat_txd, ack_txen & ulat_txen);
 end;
