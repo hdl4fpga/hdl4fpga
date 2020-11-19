@@ -416,7 +416,7 @@ begin
 			end if;
 		end process;
 
-		des_data <= rgtr_data(des_data'range);
+		des_data <= reverse(rgtr_data(des_data'range));
 		des_frm  <= rgtr_idv and setif(rgtr_id /= x"00");
 
 		desser_e : entity hdl4fpga.desser

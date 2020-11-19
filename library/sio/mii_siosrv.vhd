@@ -283,6 +283,6 @@ begin
 		mii_txen => ack_txen,
 		mii_txd  => ack_txd);
 
-	udppl_txen <= ack_txen or usr_txen;
+	udppl_txen <= ack_txen or ulat_txen;
 	udppl_txd  <= wirebus(ack_txd & ulat_txd, ack_txen & ulat_txen);
 end;
