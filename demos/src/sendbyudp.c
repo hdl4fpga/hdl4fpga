@@ -24,6 +24,91 @@
 #define QUEUE   4
 #define MAXSIZE 1500
 
+
+int    sckt;
+struct hostent *host = NULL;
+struct sockaddr_in sa_src;
+struct sockaddr_in sa_trgt;
+struct sockaddr_in sa_host;
+socklen_t sl_src  = sizeof(sa_src);
+socklen_t sl_trgt = sizeof(sa_trgt);
+
+void init_socket ()
+{
+	memset (&sa_trgt, 0, sizeof (sa_trgt));
+	sa_trgt.sin_family = AF_INET;
+	sa_trgt.sin_port   = htons(PORT);
+	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
+
+	memset (&sa_host, 0, sizeof (sa_host));
+	sa_host.sin_family = AF_INET;
+	sa_host.sin_port   = htons(PORT);	
+	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
+	if ((sckt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+		perror ("Can't open socket");
+		exit (1);
+	}
+
+	if (bind(sckt, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
+		perror ("can't bind socket");
+		exit (1);
+	}
+
+	//	DON'T FRAGMENT, 
+	//	int tol = 2;	// Time To Live
+	//	setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(val));
+	//
+}
+
+char buffer[2048];
+char *payload = buffer+5;
+int  pkt_sent = 0;
+int  pkt_lost = 0;
+int  ack      = 0;
+
+void send_packet(int size)
+{
+	const struct timeval to = { 0, 1000 }; 
+
+	int err;
+	int l;
+	int length;
+	fd_set rfds;
+	struct timeval tv;
+	char sb_src[1024];
+
+	buffer[0] = 0x00;
+	buffer[1] = 0x02;
+	buffer[2] = 0x00;
+	buffer[3] = 0x00;
+	buffer[4] = ack++;
+
+	do {
+		pkt_sent++;
+		pkt_lost++;
+
+		if (sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+			perror ("sending packet");
+			exit (1);
+		}
+
+		tv = to;
+
+		FD_ZERO(&rfds);
+		FD_SET(sckt, &rfds);
+
+		if ((err = select(sckt+1, &rfds, NULL, NULL, &tv))== -1) {
+			perror ("select");
+			exit (1);
+		} else if (err > 0) {
+			if ((l = recvfrom(sckt, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+				perror ("recvfrom");
+				exit (1);
+			}
+		}
+	} while (!(err > 0));
+}
+
 int main (int argc, char *argv[])
 {
 #ifdef __MINGW32__
@@ -31,28 +116,13 @@ int main (int argc, char *argv[])
 #endif
 	int   c;
 	char   hostname[256] = "";
-	struct hostent *host = NULL;
-	struct sockaddr_in sa_trgt;
-	struct sockaddr_in sa_src;
-	struct sockaddr_in sa_host;
 
-	int s;
-	socklen_t sl_src  = sizeof(sa_src);
-	socklen_t sl_trgt = sizeof(sa_trgt);
-
-	char sb_src[1024];
-	unsigned char buffer[2048];
 	unsigned char *bufptr;
 	char pktmd;
 
 	fd_set rfds;
-	struct timeval tv;
-	int err;
-	int ack;
 	int n;
 	int l;
-	int pkt_sent = 0;
-	int pkt_lost = 0;
 	unsigned short size;
 
 
@@ -60,7 +130,6 @@ int main (int argc, char *argv[])
 	if (WSAStartup(MAKEWORD(2,2), &wsaData))
 		exit(-1);
 #endif
-
 
 	pktmd  = 0;
 	opterr = 0;
@@ -91,62 +160,11 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	memset (&sa_trgt, 0, sizeof (sa_trgt));
-	sa_trgt.sin_family = AF_INET;
-	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
+	init_socket();
 
-	memset (&sa_host, 0, sizeof (sa_host));
-	sa_host.sin_family = AF_INET;
-	sa_host.sin_port   = htons(PORT);	
-	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
-	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("Can't open socket");
-		exit (1);
-	}
-
-	if (bind(s, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
-		perror ("can't bind socket");
-		exit (1);
-	}
-
-	//	DON'T FRAGMENT, 
-	//	int tol = 2;	// Time To Live
-	//	setsockopt(s, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(val));
-	//
-
-	do {
-		ack  = (1 << 7);
-		size = 0;
-		buffer[size++] = 0x00;
-		buffer[size++] = 0x02;
-		buffer[size++] = 0x00;
-		buffer[size++] = 0x00;
-		buffer[size++] = ack++;
-
-		if (sendto(s, buffer, size, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-			perror ("sending packet");
-			exit (1);
-		}
-
-		tv.tv_sec  = 0;
-		tv.tv_usec = 1000;
-
-		FD_ZERO(&rfds);
-		FD_SET(s, &rfds);
-		if ((err = select(s+1, &rfds, NULL, NULL, &tv))== -1) {
-			perror ("select");
-			exit (1);
-		} else if (err > 0) {
-			if ((l = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-				perror ("recvfrom");
-				exit (1);
-			}
-		}
-	} while (!(err > 0));
-
+	send_packet(0);
 	for(;;) {
-		size = sizeof(buffer)-5;
+		size = sizeof(buffer)-(payload-buffer);
 		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
 				fprintf (stderr, "packet size %d\n", size);
@@ -154,12 +172,7 @@ int main (int argc, char *argv[])
 				break;
 		}
 
-		buffer[0] = 0x00;
-		buffer[1] = 0x02;
-		buffer[2] = 0x00;
-		buffer[3] = 0x00;
-		buffer[4] = ((ack++) & ~(1 << 7));
-		if ((n = fread(buffer+5, sizeof(unsigned char), size, stdin)) > 0) {
+		if ((n = fread(payload, sizeof(unsigned char), size, stdin)) > 0) {
 			size = n;
 			if (size > MAXSIZE) {
 				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
@@ -167,32 +180,8 @@ int main (int argc, char *argv[])
 			}
 
 			fprintf (stderr, "packet length %d\n", n);
+			send_packet(size);
 
-			do {
-				pkt_sent++;
-				pkt_lost++;
-				if (sendto(s, buffer, size+5, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-					perror ("sending packet");
-					exit (1);
-				}
-
-				tv.tv_sec  = 0;
-				tv.tv_usec = 1000;
-
-				FD_ZERO(&rfds);
-				FD_SET(s, &rfds);
-				if ((err = select(s+1, &rfds, NULL, NULL, &tv))== -1) {
-					perror ("select");
-					exit (1);
-				} else if (err > 0) {
-					pkt_lost--;
-					if ((l = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-						perror ("recvfrom");
-						exit (1);
-					}
-				}
-			} while (!(err > 0));
-			
 		} else if (n < 0) {
 			perror ("reading packet");
 			exit(1);
