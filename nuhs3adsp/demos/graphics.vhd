@@ -85,7 +85,6 @@ architecture graphics of nuhs3adsp is
 	signal dmaio_trdy     : std_logic;
 	signal dmaiolen_irdy  : std_logic;
 	signal dmaioaddr_irdy : std_logic;
-	signal rgtr_ioaddr    : std_logic_vector(32-1 downto 0);
 
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -279,6 +278,7 @@ begin
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal dmaaddr_irdy  : std_logic;
+		signal dmaaddr_trdy  : std_logic;
 		signal dmalen_irdy   : std_logic;
 
 		signal sin_frm       : std_logic;
@@ -369,13 +369,12 @@ begin
 			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
-				if frm='0' and rgtr_frm='1' then
-					req := '1';
-				end if;
 				if req='1' then
 					if siodmaio_end='1' then
 						req := '0';
 					end if;
+				elsif frm='1' and rgtr_frm='0' then
+					req := '1';
 				end if;
 				frm := rgtr_frm;
 			end if;
@@ -384,7 +383,7 @@ begin
 
 		sio_dmaio <= 
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
-			x"51" & x"03" & rgtr_ioaddr;
+			rid_dmaaddr & x"03" & x"0" & "000" & dmaaddr_trdy & dmaioaddr_irdy & dmaio_addr;
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -402,6 +401,7 @@ begin
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
+		debug => false,
 			max_depth => fifo_depth,
 			out_rgtr  => true,
 			check_sov => true,
@@ -411,14 +411,14 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
-			src_data => rgtr_data,
+			src_trdy => dmaaddr_trdy,
+			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
 			dst_trdy => dmaio_trdy,
-			dst_data => rgtr_ioaddr);
+			dst_data => dmaio_addr);
 
-		dmaio_addr <= rgtr_ioaddr(dmaio_addr'length-1 downto 0);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv;
 		dmalen_e : entity hdl4fpga.fifo
@@ -926,7 +926,7 @@ begin
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
-	led7  <= '0';
+	led7  <= mii_txen; --'0';
 
 	-- RS232 Transceiver --
 	-----------------------

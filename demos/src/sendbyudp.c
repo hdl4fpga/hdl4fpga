@@ -30,7 +30,7 @@ char rbuff[1024];
 int  addres_rcvd = 0;
 
 
-void parse_sio(int l)
+void parse_sio(char * rbuff, int l)
 {
 	enum states { stt_id, stt_len, stt_data };
 	enum states state;
@@ -44,12 +44,12 @@ void parse_sio(int l)
 		switch(state) {
 		case stt_id:
 			id    = rbuff[i];
-			// fprintf(stderr, "id 0x%02x\n", id);
+//			fprintf(stderr, "id 0x%02x\n", id);
 			state = stt_len;
 			break;
 		case stt_len:
-			len   = rbuff[i];
-			// fprintf(stderr, "len %d\n", len);
+			len   = (unsigned char) rbuff[i];
+//			fprintf(stderr, "len %d\n", len);
 			state = stt_data;
 			data  = 0;
 			break;
@@ -62,16 +62,17 @@ void parse_sio(int l)
 				switch(id){
 				case 0x00:
 					ack_rcvd = (char) data;
-					fprintf(stderr, "ack 0x%02x\n", ack_rcvd);
+					fprintf(stderr, "ack 0x%02x ", ack_rcvd);
 					break;
-				case 0x51:
-					fprintf(stderr, "address 0x%08x\n", data);
+				case 0x16:
+					fprintf(stderr, "address 0x%08x ", data);
 					break;
 				}
 				state = stt_id;
 			}
 		}
 	}
+	fprintf (stderr, "\n");
 }
 
 int    sckt;
@@ -131,9 +132,10 @@ int send_packet(int size)
 	buffer[3] = 0x00;
 	buffer[4] = ack++;
 	do {
-		if (size != 0) 
+		if (size == 0) 
 			buffer[4] = ack++;
 
+		buffrt[4] &= 0x7f;
 		pkt_sent++;
 		pkt_lost++;
 
@@ -183,6 +185,7 @@ int main (int argc, char *argv[])
 		exit(-1);
 #endif
 
+	fprintf (stderr, "\n");
 	pktmd  = 0;
 	opterr = 0;
 	while ((c = getopt (argc, argv, "ph:")) != -1) {
@@ -214,7 +217,7 @@ int main (int argc, char *argv[])
 
 	init_socket();
 
-	parse_sio(send_packet(0));
+	parse_sio(rbuff, send_packet(0));
 
 	for(;;) {
 		size = sizeof(buffer)-(payload-buffer);
@@ -232,8 +235,10 @@ int main (int argc, char *argv[])
 				exit(1);
 			}
 
-			fprintf (stderr, "packet length %d\n", n);
-			parse_sio(send_packet(size));
+
+			parse_sio(payload, size);
+//			fprintf (stderr, "packet length %d\n", n);
+			parse_sio(rbuff, send_packet(size));
 
 		} else if (n < 0) {
 			perror ("reading packet");
@@ -243,7 +248,7 @@ int main (int argc, char *argv[])
 			break;
 	}
 
-	fprintf (stderr, "Sent packets : %d\n Lost packets : %d\n Total sent : %d\n", pkt_sent-pkt_lost, pkt_lost, pkt_sent);
+	fprintf (stderr, "Sent packets : %d Lost packets : %d Total sent : %d\n\n", pkt_sent-pkt_lost, pkt_lost, pkt_sent);
 
 	return 0;
 }

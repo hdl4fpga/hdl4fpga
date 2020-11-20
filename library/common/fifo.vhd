@@ -62,6 +62,8 @@ architecture def of fifo is
 	signal wr_ena    : std_logic;
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+	signal wr_gray   : gray(0 to addr_length) := gray(to_unsigned(dst_offset, addr_length+1));
+	signal rd_gray   : gray(0 to addr_length) := gray(to_unsigned(src_offset, addr_length+1));
 	signal dst_irdy1 : std_logic;
 
 	signal data : std_logic_vector(0 to src_data'length-1);
@@ -69,13 +71,14 @@ architecture def of fifo is
 	signal dst_ini  : std_logic;
 	signal feed_ena : std_logic;
 
+	signal rdata : std_logic_vector(dst_data'range);
 begin
 
 	assert max_depth=2**addr_length
 	report "fifo_depth should be a power of 2"
 	severity FAILURE;
 
-	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov)) and setif(debug=false);
+	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
 		subtype addr_range is natural range 1 to addr_length;
 	begin
@@ -93,8 +96,10 @@ begin
 			rd_clk  => dst_clk,
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
-			rd_data => dst_data);
-		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+			rd_data => rdata);
+		src_trdy <= 
+			setif(wr_gray(addr_range) /= rd_gray(addr_range) or wr_gray(0) = rd_gray(0)) when gray_code else
+			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
 	max_depht1_g : if max_depth = 1 generate
@@ -114,11 +119,11 @@ begin
 			if out_rgtr then
 				if rising_edge(dst_clk) then
 					if feed_ena='1' then
-						dst_data <= rgtr;
+						rdata <= rgtr;
 					end if;
 				end if;
 			else
-				dst_data <= rgtr;
+				rdata <= rgtr;
 			end if;
 		end process;
 
@@ -132,24 +137,26 @@ begin
 			if src_frm='0' then
 				if dst_mode='0' then
 					wr_cntr <= rd_cntr;
+					wr_gray <= rd_gray;
 				else	
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
+					wr_gray <= gray(to_unsigned(src_offset, wr_gray'length));
 				end if;
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						if gray_code then
-							wr_cntr <= unsigned(inc(gray(wr_cntr)));
-						else
-							wr_cntr <= wr_cntr+1;
-						end if;
+						wr_gray <= inc(wr_gray);
+						wr_cntr <= wr_cntr + 1;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
+	dst_irdy1 <=
+		setif(wr_gray /= rd_gray) when gray_code else
+		setif(wr_cntr /= rd_cntr);
+
 	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));
 	process(dst_clk)
 	begin
@@ -157,23 +164,24 @@ begin
 			if dst_frm='0' then
 				if dst_mode='0' then
 					rd_cntr <= wr_cntr;
+					rd_gray <= wr_gray;
 				else	
 					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
+					rd_gray <= gray(to_unsigned(dst_offset, rd_gray'length));
 				end if;
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
-						if gray_code then
-							rd_cntr <= unsigned(inc(gray(rd_cntr)));
-						else
-							rd_cntr <= rd_cntr+1;
-						end if;
+						rd_gray <= inc(gray(rd_gray));
+						rd_cntr <= rd_cntr + 1;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 
+	dst_data <= rdata when not debug else
+		std_logic_vector(resize(unsigned(rd_cntr & "00" & wr_cntr), rdata'length));
 	dst_ini <= not dst_frm;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
