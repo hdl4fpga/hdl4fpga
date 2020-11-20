@@ -25,6 +25,55 @@
 #define MAXSIZE 1500
 
 
+char ack_rcvd = 0;
+char rbuff[1024];
+int  addres_rcvd = 0;
+
+
+void parse_sio(int l)
+{
+	enum states { stt_id, stt_len, stt_data };
+	enum states state;
+
+	int id;
+	int len;
+	int data;
+	int i, j;
+
+	for (i = 0; i < l; i++) {
+		switch(state) {
+		case stt_id:
+			id    = rbuff[i];
+			// fprintf(stderr, "id 0x%02x\n", id);
+			state = stt_len;
+			break;
+		case stt_len:
+			len   = rbuff[i];
+			// fprintf(stderr, "len %d\n", len);
+			state = stt_data;
+			data  = 0;
+			break;
+		case stt_data:
+			data <<= 8;
+			data |= (rbuff[i] & 0xff);
+			if (len-- > 0) {
+				state = stt_data;
+			} else {
+				switch(id){
+				case 0x00:
+					ack_rcvd = (char) data;
+					fprintf(stderr, "ack 0x%02x\n", ack_rcvd);
+					break;
+				case 0x51:
+					fprintf(stderr, "address 0x%08x\n", data);
+					break;
+				}
+				state = stt_id;
+			}
+		}
+	}
+}
+
 int    sckt;
 struct hostent *host = NULL;
 struct sockaddr_in sa_src;
@@ -64,26 +113,27 @@ char buffer[2048];
 char *payload = buffer+5;
 int  pkt_sent = 0;
 int  pkt_lost = 0;
-int  ack      = 0;
+int  ack      = 1;
 
-void send_packet(int size)
+int send_packet(int size)
 {
 	const struct timeval to = { 0, 1000 }; 
 
 	int err;
-	int l;
+	int len;
 	int length;
 	fd_set rfds;
 	struct timeval tv;
-	char sb_src[1024];
 
 	buffer[0] = 0x00;
 	buffer[1] = 0x02;
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
 	buffer[4] = ack++;
-
 	do {
+		if (size != 0) 
+			buffer[4] = ack++;
+
 		pkt_sent++;
 		pkt_lost++;
 
@@ -101,12 +151,14 @@ void send_packet(int size)
 			perror ("select");
 			exit (1);
 		} else if (err > 0) {
-			if ((l = recvfrom(sckt, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+			if ((len = recvfrom(sckt, rbuff, sizeof(rbuff), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 				perror ("recvfrom");
 				exit (1);
 			}
+
 		}
 	} while (!(err > 0));
+	return len;
 }
 
 int main (int argc, char *argv[])
@@ -162,7 +214,8 @@ int main (int argc, char *argv[])
 
 	init_socket();
 
-	send_packet(0);
+	parse_sio(send_packet(0));
+
 	for(;;) {
 		size = sizeof(buffer)-(payload-buffer);
 		if (pktmd) {
@@ -180,7 +233,7 @@ int main (int argc, char *argv[])
 			}
 
 			fprintf (stderr, "packet length %d\n", n);
-			send_packet(size);
+			parse_sio(send_packet(size));
 
 		} else if (n < 0) {
 			perror ("reading packet");
