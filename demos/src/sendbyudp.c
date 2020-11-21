@@ -135,7 +135,8 @@ int send_packet(int size)
 		if (size == 0) 
 			buffer[4] = ack++;
 
-		buffrt[4] &= 0x7f;
+		buffer[4] &= 0x7f;
+		printf("******** 0x%02x\n", buffer[4]);
 		pkt_sent++;
 		pkt_lost++;
 

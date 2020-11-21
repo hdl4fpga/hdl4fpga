@@ -56,7 +56,7 @@ entity sio_dayudp is
 		so_frm      : out std_logic;
 		so_irdy     : out std_logic;
 		so_data     : out std_logic_vector;
-		tp : out std_logic_vector(1 to 1));
+		tp : out std_logic_vector(1 to 4));
 	
 end;
 

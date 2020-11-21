@@ -60,7 +60,7 @@ entity mii_siosrv is
 		udp_dp        : out std_logic_vector(0 to 16-1) := (others => '-');
 		udp_sp        : out std_logic_vector(0 to 16-1);
 
-		udppl_txen    : out  std_logic;
+		udppl_txen    : buffer  std_logic;
 		udppl_txd     : out  std_logic_vector;
 		pkt_cmmt      : out  std_logic;
 		cmmt_ena      : out  std_logic;
@@ -97,6 +97,7 @@ architecture def of mii_siosrv is
 	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 	signal sigrgtr_dv   : std_logic;
 	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
+	signal ack_equ      : std_logic_vector(8-1 downto 0);
 	signal ack_ena      : std_logic;
 	signal ack_data     : std_logic_vector(0 to 40-1);
 
@@ -191,23 +192,28 @@ begin
 		variable ack_last : std_logic_vector(ack_rgtr'range);
 		variable ack_rcvd : std_logic;
 		variable txrdy_edge : std_logic;
+		variable equ : std_logic;
 	begin
 		if rising_edge(mii_txc) then
 			if srv_rdy='1' then
 				if txrdy_edge='0' then
 					srv_req <= '0';
+					ack_equ <= (others => '0');
 				end if;
 			end if;
 			txrdy_edge := srv_rdy;
 
 			pkt_cmmt <= '0';
 			cmmt_ena <= '0';
+			equ := setif(shift_left(unsigned(ack_rgtr),1)/=shift_left(unsigned(ack_last),1));
 			if dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
 					if dllcrc32_equ='1' then
 						if pkt_rcvd='1'  then
+							ack_equ <= (others => '0');
 							if ack_rcvd='1' then
-								srv_req  <= ack_rgtr(ack_rgtr'left);
+								srv_req  <= ack_rgtr(ack_rgtr'left) or equ;
+								ack_equ(ack_equ'left) <= equ;
 								pkt_cmmt <= setif(shift_left(unsigned(ack_rgtr),1)/=shift_left(unsigned(ack_last),1));
 								ack_last := ack_rgtr;
 							else
@@ -258,12 +264,14 @@ begin
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	usr_rdy <= mii_rdy(1);
 	usr_gnt <= mii_gnt(1);
-	tp(1) <= mii_req(1);
+	tp(1) <= mii_gnt(0);
+	tp(2) <= ulat_txen;
+	tp(3) <= udppl_txen;
 
 	udppl_len <= std_logic_vector(
 		to_unsigned((ack_data'length+octect_size-1)/octect_size, udppl_len'length)+
 		unsigned(wirebus(x"0000" & usr_udplen, mii_gnt)));
-	ack_data <= x"00" & x"02" & x"00" & x"00" & wirebus(ack_rgtr & usr_ack, mii_gnt);
+	ack_data <= x"00" & x"02" & x"00" & x"00" & wirebus((ack_rgtr or ack_equ) & usr_ack, mii_gnt);
 
 	ulat_e : entity hdl4fpga.mii_latency
 	generic map (

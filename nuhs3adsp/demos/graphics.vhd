@@ -207,7 +207,7 @@ architecture graphics of nuhs3adsp is
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
 
-	signal tp : std_logic_vector(1 to 1);
+	signal tp : std_logic_vector(1 to 4);
 begin
 
 	sys_rst <= not hd_t_clock;
@@ -924,9 +924,9 @@ begin
 --	led15 <= '0';
 --	led13 <= '0';
 	led11 <= '0';
-	led9  <= '0';
-	led8  <= '0';
-	led7  <= mii_txen; --'0';
+	led9  <= tp(3);
+	led8  <= tp(2);
+	led7  <= tp(1); --'0';
 
 	-- RS232 Transceiver --
 	-----------------------

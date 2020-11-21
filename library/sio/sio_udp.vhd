@@ -56,7 +56,7 @@ entity sio_udp is
 
 		so_dv     : out std_logic;
 		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 1));
+		tp : out std_logic_vector(1 to 4));
 end;
 
 architecture struct of sio_udp is
@@ -124,7 +124,6 @@ architecture struct of sio_udp is
 	signal dhcpipv4a_txen  : std_logic;
 	signal dhcpipv4a_txd   : std_logic_vector(mii_rxd'range);
 
-	signal tp1 : std_logic_vector(1 to 4);
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
@@ -214,8 +213,7 @@ begin
 		usr_udpdp     => tx_ipport,
 		usr_txen      => usr_txen,
 		usr_txd       => usr_txd,
-		tp => tp1);
-	--tp(1) <= tp1(1);
+		tp => tp);
 
 	siohwsa_e : entity hdl4fpga.mii_sio
 	port map (
@@ -324,7 +322,6 @@ begin
 			rd_data => so_data);
 
 		dst_irdy1 <= setif(wr_ptr /= rd_cntr);
-		tp(1) <= dst_irdy1;
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then
@@ -445,5 +442,4 @@ begin
 
 		
 	end block;
---	tp(1) <= si_frm; --usr_req;
 end;
