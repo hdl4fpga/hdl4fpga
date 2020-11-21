@@ -198,7 +198,6 @@ begin
 			if srv_rdy='1' then
 				if txrdy_edge='0' then
 					srv_req <= '0';
-					ack_equ <= (others => '0');
 				end if;
 			end if;
 			txrdy_edge := srv_rdy;
