@@ -204,7 +204,7 @@ begin
 
 			pkt_cmmt <= '0';
 			cmmt_ena <= '0';
-			equ := setif(shift_left(unsigned(ack_rgtr),1)/=shift_left(unsigned(ack_last),1));
+			equ := setif(shift_left(unsigned(ack_rgtr),1)=shift_left(unsigned(ack_last),1));
 			if dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
 					if dllcrc32_equ='1' then
@@ -213,7 +213,7 @@ begin
 							if ack_rcvd='1' then
 								srv_req  <= ack_rgtr(ack_rgtr'left) or equ;
 								ack_equ(ack_equ'left) <= equ;
-								pkt_cmmt <= setif(shift_left(unsigned(ack_rgtr),1)/=shift_left(unsigned(ack_last),1));
+								pkt_cmmt <= not equ;
 								ack_last := ack_rgtr;
 							else
 								pkt_cmmt <= '1';
@@ -263,9 +263,6 @@ begin
 	mii_rdy <= mii_gnt and (mii_gnt'range => tx_rdy);
 	usr_rdy <= mii_rdy(1);
 	usr_gnt <= mii_gnt(1);
-	tp(1) <= mii_gnt(0);
-	tp(2) <= ulat_txen;
-	tp(3) <= udppl_txen;
 
 	udppl_len <= std_logic_vector(
 		to_unsigned((ack_data'length+octect_size-1)/octect_size, udppl_len'length)+

@@ -118,7 +118,7 @@ int  ack      = 1;
 
 int send_packet(int size)
 {
-	const struct timeval to = { 0, 1000 }; 
+	struct timeval to = { 0, 1000 }; 
 
 	int err;
 	int len;
@@ -130,15 +130,14 @@ int send_packet(int size)
 	buffer[1] = 0x02;
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
-	buffer[4] = ack++;
+	buffer[4] = ++ack;
+	int k=0;
 	do {
-		if (size == 0) 
-			buffer[4] = ack++;
 
 		buffer[4] &= 0x7f;
-		printf("******** 0x%02x\n", buffer[4]);
 		pkt_sent++;
 		pkt_lost++;
+
 
 		if (sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 			perror ("sending packet");
@@ -158,9 +157,11 @@ int send_packet(int size)
 				perror ("recvfrom");
 				exit (1);
 			}
+			parse_sio(rbuff, len);
 
 		}
-	} while (!(err > 0));
+		printf("k ----> %d %d 0x%02x\n", k++, err, ack_rcvd);
+	} while (!(err > 0) && (0x7f & (ack ^ ack_rcvd)) != 0);
 	return len;
 }
 
@@ -218,7 +219,7 @@ int main (int argc, char *argv[])
 
 	init_socket();
 
-	parse_sio(rbuff, send_packet(0));
+	send_packet(0);
 
 	for(;;) {
 		size = sizeof(buffer)-(payload-buffer);
@@ -237,9 +238,8 @@ int main (int argc, char *argv[])
 			}
 
 
-			parse_sio(payload, size);
 //			fprintf (stderr, "packet length %d\n", n);
-			parse_sio(rbuff, send_packet(size));
+			send_packet(size);
 
 		} else if (n < 0) {
 			perror ("reading packet");

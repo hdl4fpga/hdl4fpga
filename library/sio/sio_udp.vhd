@@ -213,7 +213,7 @@ begin
 		usr_udpdp     => tx_ipport,
 		usr_txen      => usr_txen,
 		usr_txd       => usr_txd,
-		tp => tp);
+		tp => open);
 
 	siohwsa_e : entity hdl4fpga.mii_sio
 	port map (
@@ -439,6 +439,8 @@ begin
 				end if;
 			end if;
 		end process;
+		tp(1) <= rgtr_idv;
+		tp(2) <= si_frm;
 
 		
 	end block;
