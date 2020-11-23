@@ -26,8 +26,9 @@
 
 
 char ack_rcvd = 0;
+int  addr_rcvd;
+
 char rbuff[1024];
-int  addres_rcvd = 0;
 
 
 void parse_sio(char * rbuff, int l)
@@ -37,9 +38,10 @@ void parse_sio(char * rbuff, int l)
 
 	int id;
 	int len;
-	int data;
 	int i, j;
+	int data;
 
+	addr_rcvd = 0;
 	for (i = 0; i < l; i++) {
 		switch(state) {
 		case stt_id:
@@ -65,7 +67,8 @@ void parse_sio(char * rbuff, int l)
 					fprintf(stderr, "ack 0x%02x ", ack_rcvd);
 					break;
 				case 0x16:
-					fprintf(stderr, "address 0x%08x ", data);
+					addr_rcvd = data;
+					fprintf(stderr, "address 0x%08x ", addr_rcvd);
 					break;
 				}
 				state = stt_id;
@@ -125,14 +128,22 @@ int send_packet(int size)
 	int length;
 	fd_set rfds;
 	struct timeval tv;
+	int wait;
 
 	buffer[0] = 0x00;
 	buffer[1] = 0x02;
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
 	buffer[4] = ++ack;
-	int k=0;
+
+	wait = 0;
 	do {
+		if (wait) {
+			wait = 0;
+			size = 0;
+			buffer[4] = ++ack;
+		}
+
 
 		buffer[4] &= 0x7f;
 		pkt_sent++;
@@ -143,6 +154,8 @@ int send_packet(int size)
 			perror ("sending packet");
 			exit (1);
 		}
+		fprintf(stderr, "send ---> ");
+		parse_sio(buffer, size+(payload-buffer));
 
 		tv = to;
 
@@ -157,11 +170,17 @@ int send_packet(int size)
 				perror ("recvfrom");
 				exit (1);
 			}
+			fprintf(stderr, "rcvd ---> ");
 			parse_sio(rbuff, len);
+			if ((addr_rcvd & 0xc0000000) != 0xc0000000) {
+				fprintf(stderr, "waiting 0x%08x\n", addr_rcvd);
+				wait = 1;
+			}
+		} else {
+			fprintf(stderr, "time out ---> ");
 
 		}
-		printf("k ----> %d %d 0x%02x\n", k++, err, ack_rcvd);
-	} while (!(err > 0) && (0x7f & (ack ^ ack_rcvd)) != 0);
+	} while (!(err > 0) || wait || (0x7f & (ack ^ ack_rcvd)));
 	return len;
 }
 

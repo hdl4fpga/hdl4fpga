@@ -57,6 +57,7 @@ send_data()
 
 	else
 		./bin/bundle -b "${BADDR}" -p|./bin/sendbyudp -p -h "${HOST}"
+#		./bin/bundle -b "${BADDR}" -p > out.raw
 	fi
 }
 
