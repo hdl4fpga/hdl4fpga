@@ -195,7 +195,7 @@ architecture graphics of nuhs3adsp is
 	end;
 
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
-	constant video_mode : video_modes := mode600p;
+	constant video_mode : video_modes := mode480p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
@@ -299,6 +299,7 @@ begin
 		signal siodmaio_data : std_logic_vector(sou_data'range);
 
 		signal ipv4acfg_req  : std_logic;
+		signal tp1 : std_logic_vector(32-1 downto 0);
 
 	begin
 
@@ -384,7 +385,8 @@ begin
 
 		sio_dmaio <= 
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & "000" & tp1(24) & tp1(24-1 downto 0);
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -468,6 +470,7 @@ begin
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,
 			dst_trdy => dmadata_trdy,
+			tp => tp1,
 			dst_data => ctlr_di);
 
 		process (ctlr_di_req, ctlr_clk)
@@ -497,6 +500,7 @@ begin
 					sio_frm <= '0';
 				elsif dmacfgio_req='0' then
 					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
+--					if dmaioaddr_irdy='1' then
 						if dmaio_trdy='0' then
 							dmacfgio_req <= not dmacfgio_rdy;
 						end if;
@@ -673,6 +677,8 @@ begin
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
+	dev_len    <= dmavideo_len  & dmaio_len;
+--	dev_addr   <= dmavideo_addr & b"000" & x"00000";
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr

@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-	debug : boolean := false;
+		debug : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		dst_offset : natural := 0;
@@ -52,7 +52,8 @@ entity fifo is
 		dst_frm   : in  std_logic := '1';
 		dst_irdy  : buffer std_logic;
 		dst_trdy  : in  std_logic := '1';
-		dst_data  : out std_logic_vector);
+		dst_data  : buffer std_logic_vector;
+		tp        : out std_logic_vector(32-1 downto 0));
 end;
 
 architecture def of fifo is
@@ -96,7 +97,7 @@ begin
 			rd_clk  => dst_clk,
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
-			rd_data => rdata);
+			rd_data => dst_data);
 		src_trdy <= 
 			setif(wr_gray(addr_range) /= rd_gray(addr_range) or wr_gray(0) = rd_gray(0)) when gray_code else
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
@@ -119,11 +120,11 @@ begin
 			if out_rgtr then
 				if rising_edge(dst_clk) then
 					if feed_ena='1' then
-						rdata <= rgtr;
+						dst_data <= rgtr;
 					end if;
 				end if;
 			else
-				rdata <= rgtr;
+				dst_data <= rgtr;
 			end if;
 		end process;
 
@@ -180,8 +181,6 @@ begin
 		end if;
 	end process;
 
-	dst_data <= rdata when not debug else
-		std_logic_vector(resize(unsigned(rd_cntr & "00" & wr_cntr), rdata'length));
 	dst_ini <= not dst_frm;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
@@ -194,4 +193,8 @@ begin
 		ena   => feed_ena,
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
+--	tp(16-1 downto  0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
+	tp(12-1 downto 0) <= std_logic_vector(resize(unsigned(rd_cntr),  12));
+	tp(24-1 downto 12) <= std_logic_vector(resize(unsigned(wr_cntr), 12));
+	tp(24) <= dst_irdy1;
 end;

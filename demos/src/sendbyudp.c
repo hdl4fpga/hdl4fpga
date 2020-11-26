@@ -42,6 +42,7 @@ void parse_sio(char * rbuff, int l)
 	int data;
 
 	addr_rcvd = 0;
+	state = stt_id;
 	for (i = 0; i < l; i++) {
 		switch(state) {
 		case stt_id:
