@@ -277,6 +277,7 @@ begin
 
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
+		signal ctlrdata_trdy  : std_logic;
 		signal dmaaddr_irdy  : std_logic;
 		signal dmaaddr_trdy  : std_logic;
 		signal dmalen_irdy   : std_logic;
@@ -386,8 +387,9 @@ begin
 		sio_dmaio <= 
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & "000" & tp1(24) & tp1(24-1 downto 0);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
 		siodmaio_irdy <= sig_end and sou_trdy;
+	led9  <= siodmaio_irdy; -- sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_dmaio,
@@ -465,11 +467,12 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
+			src_trdy => dmadata_trdy,
 			src_data => rgtr_data,
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,
-			dst_trdy => dmadata_trdy,
+			dst_trdy => ctlrdata_trdy,
 			tp => tp1,
 			dst_data => ctlr_di);
 
@@ -485,7 +488,7 @@ begin
 					q := '0';
 				end if;
 			end if;
-			dmadata_trdy <= ctlr_di_req or q;
+			ctlrdata_trdy <= ctlr_di_req or q;
 		end process;
 
 		dmacfgio_p : process (dmacfg_clk)
@@ -932,7 +935,6 @@ begin
 --	led15 <= '0';
 --	led13 <= '0';
 	led11 <= '0';
-	led9  <= tp(3);
 	led8  <= tp(2);
 	led7  <= tp(1); --'0';
 

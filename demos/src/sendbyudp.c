@@ -122,7 +122,7 @@ int  ack      = 1;
 
 int send_packet(int size)
 {
-	struct timeval to = { 0, 1000 }; 
+	struct timeval to = { 0, 100 }; 
 
 	int err;
 	int len;
@@ -173,7 +173,11 @@ int send_packet(int size)
 			}
 			fprintf(stderr, "rcvd ---> ");
 			parse_sio(rbuff, len);
-			if ((addr_rcvd & 0xc0000000) != 0xc0000000) {
+//			if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff)) {
+//				printf ("rajamos\n");
+//				wait = 1;
+//			}
+			if ((addr_rcvd & 0xe0000000) != 0xe0000000) {
 				fprintf(stderr, "waiting 0x%08x\n", addr_rcvd);
 				wait = 1;
 			}

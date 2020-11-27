@@ -48,7 +48,7 @@ architecture def of sio_mux is
 
 begin
 
-	process (so_irdy, sio_clk)
+	process ( sio_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(sio_clk) then
