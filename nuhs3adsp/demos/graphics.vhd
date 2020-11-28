@@ -406,7 +406,6 @@ begin
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
-		debug => false,
 			max_depth => fifo_depth,
 			out_rgtr  => true,
 			check_sov => true,
