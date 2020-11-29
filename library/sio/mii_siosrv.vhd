@@ -62,8 +62,9 @@ entity mii_siosrv is
 
 		udppl_txen    : buffer  std_logic;
 		udppl_txd     : out  std_logic_vector;
-		pkt_cmmt      : out  std_logic;
 		cmmt_ena      : out  std_logic;
+		pkt_cmmt      : out  std_logic;
+		pkt_abrt      : in   std_logic := '0';
 
 		usr_req       : in  std_logic;
 		usr_gnt       : out std_logic;
@@ -211,9 +212,9 @@ begin
 						if pkt_rcvd='1'  then
 							ack_equ <= (others => '0');
 							if ack_rcvd='1' then
-								srv_req  <= ack_rgtr(ack_rgtr'left) or equ;
+								srv_req  <= not pkt_abrt and (ack_rgtr(ack_rgtr'left) or equ);
 								ack_equ(ack_equ'left) <= equ;
-								pkt_cmmt <= not equ;
+								pkt_cmmt <= not equ and not pkt_abrt;
 								ack_last := ack_rgtr;
 							else
 								pkt_cmmt <= '1';
