@@ -270,6 +270,7 @@ begin
 		signal des_irdy  : std_logic;
 		signal dst_irdy  : std_logic;
 		signal dst_irdy1 : std_logic;
+		signal abrt      : std_logic;
 
 	begin
 
@@ -289,9 +290,9 @@ begin
 			des_data   => des_data);
 
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
-		mysrv_pktabrt <= src_trdy;
 
 		process (mii_txc)
+			variable xxx : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if ser_irdy='1' then
@@ -301,12 +302,22 @@ begin
 						end if;
 					end if;
 				elsif mysrv_cmmtena='1' then
-					if mysrv_pktcmmt='0' then
+					if mysrv_pktabrt='1' then
+						wr_cntr <= wr_ptr;
+					elsif mysrv_pktcmmt='0' then
 						wr_cntr <= wr_ptr;
 					else
 						wr_ptr  <= wr_cntr;
 					end if;
 				end if;
+
+				if xxx='0' and txc_rxdv='1' then
+					mysrv_pktabrt <= '0';
+				elsif src_trdy='0' and des_irdy='1' then
+					mysrv_pktabrt <= '1';
+				end if;
+				xxx := txc_rxdv;
+
 			end if;
 		end process;
 

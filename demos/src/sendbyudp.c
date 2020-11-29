@@ -65,7 +65,7 @@ void parse_sio(char * rbuff, int l)
 				switch(id){
 				case 0x00:
 					ack_rcvd = (char) data;
-					fprintf(stderr, "ack 0x%02x ", ack_rcvd);
+					fprintf(stderr, "ack 0x%02x ", 0xff & ack_rcvd);
 					break;
 				case 0x16:
 					addr_rcvd = data;
@@ -146,16 +146,17 @@ int send_packet(int size)
 		}
 
 
-		buffer[4] &= 0x7f;
+		buffer[4] &= 0x3f;
 		pkt_sent++;
 		pkt_lost++;
 
+		int kkk;
 
-		if (sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+		if ((kkk = sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt)) == -1) {
 			perror ("sending packet");
 			exit (1);
 		}
-		fprintf(stderr, "send ---> ");
+		fprintf(stderr, "send -- %d ---> ", kkk);
 		parse_sio(buffer, size+(payload-buffer));
 
 		tv = to;
@@ -185,7 +186,8 @@ int send_packet(int size)
 			fprintf(stderr, "time out ---> ");
 
 		}
-	} while (!(err > 0) || wait || (0x7f & (ack ^ ack_rcvd)));
+		if (ack_rcvd & 0x40) exit(1);
+	} while (!(err > 0) || wait || (0x3f & (ack ^ ack_rcvd)));
 	return len;
 }
 

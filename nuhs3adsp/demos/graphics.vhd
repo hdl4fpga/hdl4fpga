@@ -389,7 +389,6 @@ begin
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
 		siodmaio_irdy <= sig_end and sou_trdy;
-	led9  <= siodmaio_irdy; -- sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_dmaio,
@@ -934,6 +933,7 @@ begin
 --	led15 <= '0';
 --	led13 <= '0';
 	led11 <= '0';
+	led9  <= mii_rxdv;
 	led8  <= tp(2);
 	led7  <= tp(1); --'0';
 

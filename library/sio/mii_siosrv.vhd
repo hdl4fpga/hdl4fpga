@@ -205,7 +205,7 @@ begin
 
 			pkt_cmmt <= '0';
 			cmmt_ena <= '0';
-			equ := setif(shift_left(unsigned(ack_rgtr),1)=shift_left(unsigned(ack_last),1));
+			equ := setif(shift_left(unsigned(ack_rgtr),2)=shift_left(unsigned(ack_last),2));
 			if dllcrc32_rxdv='0' then
 				if dllcrc32_eor='1' then
 					if dllcrc32_equ='1' then
@@ -213,7 +213,8 @@ begin
 							ack_equ <= (others => '0');
 							if ack_rcvd='1' then
 								srv_req  <= not pkt_abrt and (ack_rgtr(ack_rgtr'left) or equ);
-								ack_equ(ack_equ'left) <= equ;
+								ack_equ(ack_equ'left-0) <= equ;
+								ack_equ(ack_equ'left-1) <= pkt_abrt;
 								pkt_cmmt <= not equ and not pkt_abrt;
 								ack_last := ack_rgtr;
 							else
