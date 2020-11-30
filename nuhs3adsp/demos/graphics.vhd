@@ -207,6 +207,7 @@ architecture graphics of nuhs3adsp is
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
 
+	signal txc_rxdv : std_logic;
 	signal tp : std_logic_vector(1 to 4);
 begin
 
@@ -320,6 +321,7 @@ begin
 			phy_crs   => mii_crs,
 			phy_tx_en => mii_txen,
 			phy_tx_d  => mii_txd,
+			txc_rxdv  => txc_rxdv,
 		
 			sio_clk   => sio_clk,
 			si_frm    => sou_frm,
@@ -933,7 +935,7 @@ begin
 --	led15 <= '0';
 --	led13 <= '0';
 	led11 <= '0';
-	led9  <= mii_rxdv;
+	led9  <= txc_rxdv ;
 	led8  <= tp(2);
 	led7  <= tp(1); --'0';
 

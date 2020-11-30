@@ -40,6 +40,7 @@ entity sio_udp is
 		mii_rxdv  : in  std_logic;
 
 		mii_txc   : in  std_logic;
+		txc_rxdv  : buffer std_logic;
 		mii_col   : in  std_logic := '0';
 		mii_crs   : in  std_logic := '0';
 		mii_txd   : out std_logic_vector;
@@ -62,7 +63,6 @@ end;
 architecture struct of sio_udp is
 
 	signal txc_rxd  : std_logic_vector(mii_rxd'range);
-	signal txc_rxdv : std_logic;
 
 	signal dll_rxdv        : std_logic;
 	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);

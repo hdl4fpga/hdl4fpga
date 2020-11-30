@@ -39,6 +39,7 @@ entity sio_dayudp is
 		phy_rx_d    : in  std_logic_vector;
 
 		phy_txc     : in  std_logic;
+		txc_rxdv    : out std_logic;
 		phy_col     : in  std_logic := '0';
 		phy_crs     : in  std_logic := '0';
 		phy_rxc     : in  std_logic;
@@ -79,6 +80,7 @@ begin
 		mii_col     => phy_col,
 		mii_crs     => phy_crs,
 		mii_txc     => phy_txc,
+		txc_rxdv    => txc_rxdv,
 		mii_txen    => phy_tx_en,
 		mii_txd     => phy_tx_d,
 
