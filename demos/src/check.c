@@ -26,7 +26,7 @@
 
 
 char ack_rcvd = 0;
-int  addr_rcvd;
+long long addr_rcvd;
 
 char rbuff[1024];
 
@@ -39,7 +39,7 @@ void parse_sio(char * rbuff, int l)
 	int id;
 	int len;
 	int i, j;
-	int data;
+	long long data;
 
 	addr_rcvd = 0;
 	state = stt_id;
@@ -65,11 +65,11 @@ void parse_sio(char * rbuff, int l)
 				switch(id){
 				case 0x00:
 					ack_rcvd = (char) data;
-					fprintf(stderr, "ack 0x%02x ", 0xff & ack_rcvd);
+					fprintf(stderr, "ack 0x%02x ", (unsigned char) ack_rcvd);
 					break;
 				case 0x16:
 					addr_rcvd = data;
-					fprintf(stderr, "address 0x%08x ", addr_rcvd);
+					fprintf(stderr, "address 0x%08llx ", addr_rcvd);
 					break;
 				}
 				state = stt_id;
@@ -118,11 +118,11 @@ char buffer[2048];
 char *payload = buffer+5;
 int  pkt_sent = 0;
 int  pkt_lost = 0;
-int  ack      = 1;
+int  ack      = 0;
 
 int send_packet(int size)
 {
-	struct timeval to = { 0, 100 }; 
+	struct timeval to = { 0, 1000 }; 
 
 	int err;
 	int len;
@@ -137,27 +137,18 @@ int send_packet(int size)
 	buffer[3] = 0x00;
 	buffer[4] = ++ack;
 
-	wait = 0;
-	do {
-		if (wait) {
-			wait = 0;
-			size = 0;
-			buffer[4] = ++ack;
-		}
+
+	buffer[4] &= 0x7f;
+	pkt_sent++;
+	pkt_lost++;
 
 
-		buffer[4] &= 0x3f;
-		pkt_sent++;
-		pkt_lost++;
-
-		int kkk;
-
-		if ((kkk = sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt)) == -1) {
-			perror ("sending packet");
-			exit (1);
-		}
-		fprintf(stderr, "send -- %d ---> ", kkk);
-		parse_sio(buffer, size+(payload-buffer));
+	if (sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+		perror ("sending packet");
+		exit (1);
+	}
+	fprintf(stderr, "send ---> ");
+	parse_sio(buffer, size+(payload-buffer));
 
 		tv = to;
 
@@ -174,21 +165,10 @@ int send_packet(int size)
 			}
 			fprintf(stderr, "rcvd ---> ");
 			parse_sio(rbuff, len);
-			if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff)) {
-				fprintf (stderr,"rajamos\n");
-				wait = 1;
-			}
-			if ((addr_rcvd & 0xe0000000) != 0xe0000000 && ((ack_rcvd ^ ack) & 0x80) == 0x00) {
-				fprintf(stderr, "waiting 0x%08x\n", addr_rcvd);
-				wait = 1;
-			}
 		} else {
 			fprintf(stderr, "time out ---> ");
 
 		}
-		if (ack_rcvd & 0x40) exit(1);
-	} while (!(err > 0) || wait || (0x3f & (ack ^ ack_rcvd)));
-	return len;
 }
 
 int main (int argc, char *argv[])
@@ -205,7 +185,7 @@ int main (int argc, char *argv[])
 	fd_set rfds;
 	int n;
 	int l;
-	unsigned short size;
+	int size;
 
 
 #ifdef __MINGW32__
@@ -213,7 +193,6 @@ int main (int argc, char *argv[])
 		exit(-1);
 #endif
 
-	fprintf (stderr, "\n");
 	pktmd  = 0;
 	opterr = 0;
 	while ((c = getopt (argc, argv, "ph:")) != -1) {
@@ -245,37 +224,26 @@ int main (int argc, char *argv[])
 
 	init_socket();
 
-	send_packet(0);
-
-	for(;;) {
-		size = sizeof(buffer)-(payload-buffer);
-		if (pktmd) {
-			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				fprintf (stderr, "packet size %d\n", size);
-			else
-				break;
-		}
-
-		if ((n = fread(payload, sizeof(unsigned char), size, stdin)) > 0) {
-			size = n;
-			if (size > MAXSIZE) {
-				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
-				exit(1);
-			}
-
-
-//			fprintf (stderr, "packet length %d\n", n);
-			send_packet(size);
-
-		} else if (n < 0) {
-			perror ("reading packet");
+	size = sizeof(buffer)-(payload-buffer);
+	if ((n = fread(payload, sizeof(unsigned char), size, stdin)) > 0) {
+		size = n;
+		if (size > MAXSIZE) {
+			fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
 			exit(1);
 		}
-		else
-			break;
+		
+
+
+
+	} else {
+		if (n < 0) {
+			perror ("reading packet");
+			exit(1);
+		} 
+		size = payload-buffer;
 	}
 
-	fprintf (stderr, "Sent packets : %d Lost packets : %d Total sent : %d\n\n", pkt_sent-pkt_lost, pkt_lost, pkt_sent);
+	send_packet(size);
 
 	return 0;
 }

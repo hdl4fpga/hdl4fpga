@@ -389,7 +389,8 @@ begin
 		sio_dmaio <= 
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & '0' & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -404,11 +405,11 @@ begin
 		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
 		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 
-		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv;
+		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => true,
+			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
 			gray_code => true)
@@ -425,7 +426,7 @@ begin
 			dst_data => dmaio_addr);
 
 
-		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv;
+		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
@@ -472,7 +473,8 @@ begin
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,
-			dst_trdy => ctlrdata_trdy,
+			dst_trdy => ctlr_di_req,
+--			dst_trdy => ctlrdata_trdy,
 			tp => tp1,
 			dst_data => ctlr_di);
 

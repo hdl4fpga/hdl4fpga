@@ -212,7 +212,7 @@ begin
 						if pkt_rcvd='1'  then
 							ack_equ <= (others => '0');
 							if ack_rcvd='1' then
-								srv_req  <= not pkt_abrt and (ack_rgtr(ack_rgtr'left) or equ);
+								srv_req  <= ack_rgtr(ack_rgtr'left) or equ or pkt_abrt;
 								ack_equ(ack_equ'left-0) <= equ;
 								ack_equ(ack_equ'left-1) <= pkt_abrt;
 								pkt_cmmt <= not equ and not pkt_abrt;
