@@ -23,6 +23,7 @@
 #define PORT	57001
 #define QUEUE   4
 #define MAXSIZE 1500
+#define printnl fprintf(stderr,"\n")
 
 
 char ack_rcvd = 0;
@@ -30,15 +31,15 @@ long long addr_rcvd;
 
 char rbuff[1024];
 
-
-void parse_sio(char * rbuff, int l)
+void sio_parse(char * buff, int l)
 {
 	enum states { stt_id, stt_len, stt_data };
 	enum states state;
 
 	int id;
 	int len;
-	int i, j;
+	int i;
+
 	long long data;
 
 	addr_rcvd = 0;
@@ -46,19 +47,19 @@ void parse_sio(char * rbuff, int l)
 	for (i = 0; i < l; i++) {
 		switch(state) {
 		case stt_id:
-			id    = rbuff[i];
+			id    = buff[i];
 //			fprintf(stderr, "id 0x%02x\n", id);
 			state = stt_len;
 			break;
 		case stt_len:
-			len   = (unsigned char) rbuff[i];
+			len   = (unsigned char) buff[i];
 //			fprintf(stderr, "len %d\n", len);
 			state = stt_data;
 			data  = 0;
 			break;
 		case stt_data:
 			data <<= 8;
-			data |= (rbuff[i] & 0xff);
+			data |= (buff[i] & 0xff);
 			if (len-- > 0) {
 				state = stt_data;
 			} else {
@@ -76,15 +77,12 @@ void parse_sio(char * rbuff, int l)
 			}
 		}
 	}
-	fprintf (stderr, "\n");
 }
 
 int    sckt;
 struct hostent *host = NULL;
-struct sockaddr_in sa_src;
 struct sockaddr_in sa_trgt;
 struct sockaddr_in sa_host;
-socklen_t sl_src  = sizeof(sa_src);
 socklen_t sl_trgt = sizeof(sa_trgt);
 
 void init_socket ()
@@ -114,70 +112,71 @@ void init_socket ()
 	//
 }
 
-char buffer[2048];
-char *payload = buffer+5;
+char sbuff[2048];
+char *sload = sbuff+5;
 int  pkt_sent = 0;
-int  pkt_lost = 0;
 int  ack      = 0;
 
-int send_packet(int size)
+void send_pkt(int psize)
 {
-	struct timeval to = { 0, 1000 }; 
+	int len = 0;
 
-	int err;
-	int len;
-	int length;
-	fd_set rfds;
-	struct timeval tv;
-	int wait;
+	sbuff[len++] = 0x00;
+	sbuff[len++] = 0x02;
+	sbuff[len++] = 0x00;
+	sbuff[len++] = 0x00;
+	sbuff[len++] = (ack & 0x03f);
+	len += psize;
 
-	buffer[0] = 0x00;
-	buffer[1] = 0x02;
-	buffer[2] = 0x00;
-	buffer[3] = 0x00;
-	buffer[4] = ++ack;
-
-
-	buffer[4] &= 0x7f;
-	pkt_sent++;
-	pkt_lost++;
-
-
-	if (sendto(sckt, buffer, size+(payload-buffer), 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+	if (sendto(sckt, sbuff, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 		perror ("sending packet");
 		exit (1);
 	}
-	fprintf(stderr, "send ---> ");
-	parse_sio(buffer, size+(payload-buffer));
+	pkt_sent++;
+}
 
-		tv = to;
+struct sockaddr_in sa_src;
+socklen_t sl_src  = sizeof(sa_src);
+int  pkt_lost = 0;
 
-		FD_ZERO(&rfds);
-		FD_SET(sckt, &rfds);
+int rcvd_pkt()
+{
+	fd_set rfds;
+	struct timeval tv;
+	int err;
+	int len;
 
-		if ((err = select(sckt+1, &rfds, NULL, NULL, &tv))== -1) {
-			perror ("select");
-			exit (1);
-		} else if (err > 0) {
+	FD_ZERO(&rfds);
+	FD_SET(sckt, &rfds);
+	tv.tv_sec  = 0;
+	tv.tv_usec = 1000;
+
+	pkt_lost++;
+	if ((err = select(sckt+1, &rfds, NULL, NULL, &tv)) == -1) {
+		perror ("select");
+		exit (1);
+	} else {
+		if (err > 0) {
 			if ((len = recvfrom(sckt, rbuff, sizeof(rbuff), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 				perror ("recvfrom");
 				exit (1);
 			}
-			fprintf(stderr, "rcvd ---> ");
-			parse_sio(rbuff, len);
-		} else {
-			fprintf(stderr, "time out ---> ");
-
+			pkt_lost--;
+			return len;
 		}
+	}
+	return 0;
 }
 
 int main (int argc, char *argv[])
 {
+
 #ifdef __MINGW32__
 	WSADATA wsaData;
 #endif
-	int   c;
-	char   hostname[256] = "";
+
+	int  c;
+	char hostname[256] = "";
 
 	unsigned char *bufptr;
 	char pktmd;
@@ -185,7 +184,8 @@ int main (int argc, char *argv[])
 	fd_set rfds;
 	int n;
 	int l;
-	int size;
+	int ssize;
+	int rlen;
 
 
 #ifdef __MINGW32__
@@ -224,26 +224,78 @@ int main (int argc, char *argv[])
 
 	init_socket();
 
-	size = sizeof(buffer)-(payload-buffer);
-	if ((n = fread(payload, sizeof(unsigned char), size, stdin)) > 0) {
-		size = n;
-		if (size > MAXSIZE) {
-			fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
-			exit(1);
-		}
-		
+	// Reset ack //
+	// --------- //
 
+	for(;;) {
+		send_pkt(0);
+		sio_parse(sbuff, sload-sbuff); printnl;
 
+		rlen = rcvd_pkt();
+		sio_parse(rbuff, rlen); printnl;
 
-	} else {
-		if (n < 0) {
-			perror ("reading packet");
-			exit(1);
-		} 
-		size = payload-buffer;
+		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
+			break;
 	}
 
-	send_packet(size);
+	for(;;) {
+		int size = sizeof(sbuff)-(sload-sbuff);
+
+		if (pktmd) {
+			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
+				fprintf (stderr, "packet size %d\n", size);
+			else
+				break;
+		}
+
+		if ((n = fread(sload, sizeof(unsigned char), size, stdin)) > 0) {
+			size = n;
+			if (size > MAXSIZE) {
+				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
+				exit(1);
+			}
+
+			ack++;
+			for(;;) {
+				send_pkt(size);
+				sio_parse(sbuff, sload-sbuff+size); printnl;
+
+				rlen = rcvd_pkt();
+				if (rlen > 0) {
+					sio_parse(rbuff, rlen); printnl;
+					if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
+						break;
+				}
+			}
+
+			for (;;) {
+				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
+					break;
+
+				ack++;
+				send_pkt(0);
+				sio_parse(sbuff, sload-sbuff); printnl;
+
+				for (;;) {
+					rlen = rcvd_pkt();
+					if (rlen > 0) {
+						sio_parse(rbuff, rlen); printnl;
+						if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
+							break;
+					} 
+					send_pkt(0);
+					sio_parse(sbuff, sload-sbuff); printnl;
+				}
+			}
+
+
+		} else if (n < 0) {
+			perror ("reading packet");
+			exit(1);
+		} else
+			break;
+
+	}
 
 	return 0;
 }
