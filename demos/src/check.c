@@ -280,9 +280,12 @@ int main (int argc, char *argv[])
 					rlen = rcvd_pkt();
 					if (rlen > 0) {
 						sio_parse(rbuff, rlen); printnl;
-						if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
-							break;
-					} 
+						if (rlen > 0)
+							if (((ack ^ ack_rcvd) & 0x3f) == 0)
+								break;
+							else
+								continue;
+					}
 					send_pkt(0);
 					sio_parse(sbuff, sload-sbuff); printnl;
 				}
