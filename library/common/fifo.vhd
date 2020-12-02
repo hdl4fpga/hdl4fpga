@@ -63,8 +63,6 @@ architecture def of fifo is
 	signal wr_ena    : std_logic;
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
-	signal wr_gray   : gray(0 to addr_length) := gray(to_unsigned(dst_offset, addr_length+1));
-	signal rd_gray   : gray(0 to addr_length) := gray(to_unsigned(src_offset, addr_length+1));
 	signal dst_irdy1 : std_logic;
 
 	signal data : std_logic_vector(0 to src_data'length-1);
@@ -98,9 +96,7 @@ begin
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => dst_data);
-		src_trdy <= 
-			setif(wr_gray(addr_range) /= rd_gray(addr_range) or wr_gray(0) = rd_gray(0)) when gray_code else
-			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
 	max_depht1_g : if max_depth = 1 generate
@@ -128,9 +124,7 @@ begin
 			end if;
 		end process;
 
-		src_trdy <= 
-			setif(wr_gray(0) = rd_gray(0)) when gray_code else
-			setif(wr_cntr(0) = rd_cntr(0));
+		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
 	end generate;
 
 
@@ -140,25 +134,32 @@ begin
 			if src_frm='0' then
 				if dst_mode='0' then
 					wr_cntr <= rd_cntr;
-					wr_gray <= rd_gray;
 				else	
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
-					wr_gray <= gray(to_unsigned(src_offset, wr_gray'length));
 				end if;
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						wr_gray <= inc(wr_gray);
-						wr_cntr <= wr_cntr + 1;
+						if gray_code and addr_length > 0 then
+							if addr_length > 1 then
+								if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+									wr_cntr(0) <= not wr_cntr(0);
+								end if;
+								wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
+							else
+								wr_cntr(0) <= wr_cntr(0) xor wr_cntr(1);
+								wr_cntr(1) <= not wr_cntr(1);
+							end if;
+						else
+							wr_cntr <= wr_cntr + 1;
+						end if;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	dst_irdy1 <=
-		setif(wr_gray /= rd_gray) when gray_code else
-		setif(wr_cntr /= rd_cntr);
+	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
 
 	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));
 	process(dst_clk)
@@ -167,16 +168,25 @@ begin
 			if dst_frm='0' then
 				if dst_mode='0' then
 					rd_cntr <= wr_cntr;
-					rd_gray <= wr_gray;
 				else	
 					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
-					rd_gray <= gray(to_unsigned(dst_offset, rd_gray'length));
 				end if;
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
-						rd_gray <= inc(gray(rd_gray));
-						rd_cntr <= rd_cntr + 1;
+						if gray_code and addr_length > 0 then
+							if addr_length > 1 then
+								if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+									rd_cntr(0) <= not rd_cntr(0);
+								end if;
+								rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
+							else
+								rd_cntr(0) <= rd_cntr(0) xor rd_cntr(1);
+								rd_cntr(1) <= not rd_cntr(1);
+							end if;
+						else
+							rd_cntr <= rd_cntr + 1;
+						end if;
 					end if;
 				end if;
 			end if;
@@ -197,6 +207,5 @@ begin
 		do(0) => dst_irdy);
 --	tp(16-1 downto  0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
 	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
---	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_gray), 12) & resize(unsigned(rd_gray),  12));
 	tp(24) <= dst_irdy1;
 end;
