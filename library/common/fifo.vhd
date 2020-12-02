@@ -196,7 +196,7 @@ begin
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
 --	tp(16-1 downto  0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
-	tp(12-1 downto 0) <= std_logic_vector(resize(unsigned(rd_gray),  12));
-	tp(24-1 downto 12) <= std_logic_vector(resize(unsigned(wr_gray), 12));
+	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
+--	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_gray), 12) & resize(unsigned(rd_gray),  12));
 	tp(24) <= dst_irdy1;
 end;

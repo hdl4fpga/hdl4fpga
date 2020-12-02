@@ -256,16 +256,21 @@ int main (int argc, char *argv[])
 			}
 
 			ack++;
-			for(;;) {
-				send_pkt(size);
-				sio_parse(sbuff, sload-sbuff+size); printnl;
 
+			send_pkt(size);
+			sio_parse(sbuff, sload-sbuff+size); printnl;
+			for(;;) {
 				rlen = rcvd_pkt();
 				if (rlen > 0) {
 					sio_parse(rbuff, rlen); printnl;
-					if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
+					if (((ack ^ ack_rcvd) & 0x3f) == 0)
 						break;
+					else 
+						continue;
 				}
+
+				send_pkt(size);
+				sio_parse(sbuff, sload-sbuff+size); printnl;
 			}
 
 			for (;;) {
@@ -290,6 +295,14 @@ int main (int argc, char *argv[])
 					sio_parse(sbuff, sload-sbuff); printnl;
 				}
 			}
+	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
+	//			break;
+		
+			for (int i = 1; i < 4; i++)
+				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
+					fprintf(stderr,"marca -->\n");
+					break;
+				}
 
 
 		} else if (n < 0) {

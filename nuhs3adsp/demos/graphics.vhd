@@ -302,6 +302,7 @@ begin
 
 		signal ipv4acfg_req  : std_logic;
 		signal tp1 : std_logic_vector(32-1 downto 0);
+		signal tp2 : std_logic_vector(32-1 downto 0);
 
 	begin
 
@@ -390,7 +391,9 @@ begin
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & '0' & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
+			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -412,7 +415,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -420,6 +423,7 @@ begin
 			src_trdy => dmaaddr_trdy,
 			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
+			tp => tp1,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
 			dst_trdy => dmaio_trdy,
@@ -430,10 +434,10 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => true,
+			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -441,6 +445,7 @@ begin
 			src_trdy => dmalen_trdy,
 			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
+			tp => tp2,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
 			dst_trdy => dmaio_trdy,
@@ -463,7 +468,7 @@ begin
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -475,7 +480,6 @@ begin
 			dst_irdy => ctlr_di_dv,
 			dst_trdy => ctlr_di_req,
 --			dst_trdy => ctlrdata_trdy,
-			tp => tp1,
 			dst_data => ctlr_di);
 
 		process (ctlr_di_req, ctlr_clk)
@@ -505,7 +509,6 @@ begin
 					sio_frm <= '0';
 				elsif dmacfgio_req='0' then
 					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
---					if dmaioaddr_irdy='1' then
 						if dmaio_trdy='0' then
 							dmacfgio_req <= not dmacfgio_rdy;
 						end if;
