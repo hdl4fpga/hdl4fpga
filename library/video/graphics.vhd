@@ -41,6 +41,7 @@ entity graphics is
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
+		dmatrans_cnl : out std_logic;
 		video_clk    : in  std_logic;
 		video_hzon   : in  std_logic;
 		video_vton   : in  std_logic;
@@ -120,7 +121,10 @@ begin
 					end if;
 				end if;
 			elsif mydma_rdy='1' then
-				dma_req <= '0';
+				dma_req      <= '0';
+				dmatrans_cnl <= '0';
+			elsif vt_req='1' then
+				dmatrans_cnl <= '1';
 			end if;
 
 			if vton_dly='0' then
@@ -149,7 +153,7 @@ begin
 		out_rgtr  => true, 
 		check_sov => false,
 		check_dov => false,
-		gray_code => false)
+		gray_code => true)
 	port map (
 		src_clk  => ctlr_clk,
 		src_irdy => ctlr_di_dv,

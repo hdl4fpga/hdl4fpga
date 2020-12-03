@@ -45,6 +45,7 @@ entity dmactlr is
 		dev_len      : in  std_logic_vector;
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
+		dmatrans_cnl : in  std_logic := '0';
 
 		dev_req      : in  std_logic_vector;
 		dev_rdy      : out std_logic_vector;
@@ -228,6 +229,7 @@ begin
 		dmatrans_ilen  => dmatrans_ilen,
 		dmatrans_taddr => dmatrans_taddr,
 		dmatrans_tlen  => dmatrans_tlen,
+		dmatrans_cnl   => dmatrans_cnl,
 
 		ctlr_inirdy    => ctlr_inirdy,
 		ctlr_refreq    => ctlr_refreq,

@@ -208,6 +208,8 @@ architecture graphics of nuhs3adsp is
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
 
+	signal dmavideotrans_cnl : std_logic;
+	signal dmatrans_cnl : std_logic;
 	signal txc_rxdv : std_logic;
 	signal tp : std_logic_vector(1 to 4);
 begin
@@ -630,6 +632,7 @@ begin
 			dma_rdy     => dmavideo_rdy,
 			dma_len     => dmavideo_len,
 			dma_addr    => dmavideo_addr,
+			dmatrans_cnl => dmavideotrans_cnl,
 			video_clk   => video_clk,
 			video_hzon  => hzon,
 			video_vton  => vton,
@@ -695,6 +698,7 @@ begin
 	dev_len    <= dmavideo_len  & dmaio_len;
 --	dev_addr   <= dmavideo_addr & b"000" & x"00000";
 	dev_we     <= "1"           & "0";
+	dmatrans_cnl <= dmavideotrans_cnl and dmavideo_req;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
@@ -712,6 +716,7 @@ begin
 		dev_len     => dev_len,
 		dev_addr    => dev_addr,
 		dev_we      => dev_we,
+		dmatrans_cnl => dmatrans_cnl,
 
 		dev_req     => dev_req,
 		dev_rdy     => dev_rdy,

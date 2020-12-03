@@ -49,6 +49,7 @@ entity dmatrans is
 		dmatrans_ilen  : in  std_logic_vector;
 		dmatrans_taddr : out std_logic_vector;
 		dmatrans_tlen  : out std_logic_vector;
+		dmatrans_cnl   : in  std_logic := '0';
 
 		ctlr_inirdy   : in std_logic;
 		ctlr_refreq   : in std_logic;
@@ -85,6 +86,7 @@ architecture def of dmatrans is
 	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
 	signal init         : std_logic;
+	signal cancel       : std_logic;
 	signal reload       : std_logic;
 	signal load         : std_logic;
  	signal act          : std_logic;
@@ -109,6 +111,14 @@ begin
 				reload       <= '0';
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
+				cancel       <= '0';
+			elsif cancel='1' then
+				load      <= '0';
+				reload    <= '0';
+				ctlr_irdy <= '0';
+				if ctlr_trdy='1' then
+					dmatrans_rdy <= '1';
+				end if;
 			elsif reload='1' then
 				if ctlr_trdy='1' then 
 					load      <= '0';
@@ -119,10 +129,12 @@ begin
 					reload    <= '1';
 					ctlr_irdy <= '0';
 				end if;
+				cancel       <= dmatrans_cnl;
 				dmatrans_rdy <= '0';
 			elsif leoc='1' then
 				load      <= '0';
 				reload    <= '0';
+				cancel       <= dmatrans_cnl;
 				ctlr_irdy <= '0';
 				if ctlr_trdy='1' then
 					dmatrans_rdy <= '1';
@@ -130,16 +142,19 @@ begin
 			elsif ceoc='1' then
 				load         <= '1';
 				reload       <= '1';
+				cancel       <= dmatrans_cnl;
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
 			elsif ref_req='1' then
 				load         <= '1';
 				reload       <= '1';
+				cancel       <= '0';
 				ctlr_irdy    <= '0';
 				dmatrans_rdy <= '0';
 			else
 				load         <= '0';
 				reload       <= '0';
+				cancel       <= dmatrans_cnl;
 				ctlr_irdy    <= '1';
 				dmatrans_rdy <= '0';
 			end if;
