@@ -197,8 +197,8 @@ architecture graphics of nuhs3adsp is
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
 	constant video_mode : video_modes := mode480p;
 
---	alias dmacfg_clk : std_logic is sys_clk;
-	alias dmacfg_clk : std_logic is mii_txc;
+	alias dmacfg_clk : std_logic is sys_clk;
+--	alias dmacfg_clk : std_logic is mii_txc;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
@@ -500,8 +500,10 @@ begin
 		end process;
 
 		dmacfgio_p : process (dmacfg_clk)
-			variable io_rdy1 : std_logic;
-			variable io_rdy2 : std_logic;
+			variable dmaio_rdy1 : std_logic;
+			variable dmaio_rdy2 : std_logic;
+			variable io_rdy1    : std_logic;
+			variable io_rdy2    : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				sio_frm <= '1';
@@ -510,7 +512,7 @@ begin
 					dmaio_trdy   <= '0';
 					sio_frm <= '0';
 				elsif dmacfgio_req='0' then
-					if dmaiolen_irdy='1' and dmaioaddr_irdy='1' then
+					if dmaio_rdy2='1' then
 						if dmaio_trdy='0' then
 							dmacfgio_req <= not dmacfgio_rdy;
 						end if;
@@ -528,6 +530,9 @@ begin
 				end if;
 				io_rdy2 := io_rdy1;
 				io_rdy1 := dmaio_rdy;
+				
+				dmaio_rdy2 := dmaio_rdy1;
+				dmaio_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
 			end if;
 		end process;
 	end block;
