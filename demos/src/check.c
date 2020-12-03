@@ -298,11 +298,11 @@ int main (int argc, char *argv[])
 	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
 	//			break;
 		
-			for (int i = 1; i < 4; i++)
-				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
-					fprintf(stderr,"marca -->\n");
-					break;
-				}
+//			for (int i = 1; i < 4; i++)
+//				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
+//					fprintf(stderr,"marca -->\n");
+//					break;
+//				}
 
 
 		} else if (n < 0) {

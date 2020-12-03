@@ -140,16 +140,11 @@ begin
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						if gray_code and addr_length > 0 then
-							if addr_length > 1 then
-								if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-									wr_cntr(0) <= not wr_cntr(0);
-								end if;
-								wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
-							else
-								wr_cntr(0) <= wr_cntr(0) xor wr_cntr(1);
-								wr_cntr(1) <= not wr_cntr(1);
+						if gray_code and addr_length > 1 then
+							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+								wr_cntr(0) <= not wr_cntr(0);
 							end if;
+							wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
 						else
 							wr_cntr <= wr_cntr + 1;
 						end if;
@@ -174,16 +169,11 @@ begin
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
-						if gray_code and addr_length > 0 then
-							if addr_length > 1 then
-								if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-									rd_cntr(0) <= not rd_cntr(0);
-								end if;
-								rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
-							else
-								rd_cntr(0) <= rd_cntr(0) xor rd_cntr(1);
-								rd_cntr(1) <= not rd_cntr(1);
+						if gray_code and addr_length > 1 then
+							if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+								rd_cntr(0) <= not rd_cntr(0);
 							end if;
+							rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
 						else
 							rd_cntr <= rd_cntr + 1;
 						end if;

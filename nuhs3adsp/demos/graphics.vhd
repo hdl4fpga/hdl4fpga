@@ -197,7 +197,8 @@ architecture graphics of nuhs3adsp is
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
 	constant video_mode : video_modes := mode480p;
 
-	alias dmacfg_clk : std_logic is sys_clk;
+--	alias dmacfg_clk : std_logic is sys_clk;
+	alias dmacfg_clk : std_logic is mii_txc;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
@@ -392,8 +393,9 @@ begin
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
-			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
+--			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000";
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -415,7 +417,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -437,7 +439,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -468,7 +470,7 @@ begin
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
 			check_sov => true,
 			check_dov => true,
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
