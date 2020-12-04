@@ -24,46 +24,48 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity scopeio_hdlc is
+entity ahdlc is
 	port (
-		clk      : in  std_logic;
+		clk        : in  std_logic;
 
-		rxdv     : in  std_logic;
-		rxd      : in  std_logic_vector;
+		uart_rxdv  : in  std_logic;
+		uarr_rxd   : in  std_logic_vector;
 
-		so_frm   : out std_logic;
-		so_irdy  : out std_logic;
-		so_data  : out std_logic_vector);
+		ahdlc_frm  : out std_logic;
+		ahdlc_irdy : out std_logic;
+		ahdlc_data : out std_logic_vector);
+
+	constant ahdlc_flag : std_logic_vector := x"7e";
+	constant ahdlc_esc  : std_logic_vector := x"7d";
+
 end;
 
-architecture struct of scopeio_hdlc is
-	signal frm  : std_logic;
-	signal esci : std_logic;
+architecture def of ahdlc is
 begin
 
-	process (clk)
+	process (rxd, rcvd, clk)
 		variable frm : std_logic;
+		variable esc : std_logic;
 	begin
 		if rising_edge(clk) then
 			if rxdv='1' then
 				case rxd is
-				when hdlc_flag =>
+				when ahdlc_flag =>
 					frm := '0';
+					esc := '0';
+				when ahdlc_esc =>
+					frm := '1';
+					esc := '1';
+				when others =>
+					frm := '1';
+					esc := '0';
+				end case;
 			end if;
 		end if;
+		ahdlc_frm  <= (rxd/=ahdlc_flag and rxdv) or (frm and not rxdv);
+		ahdlc_data <= rxd when esc='0' else rxd xor x"10";
 	end process;
 
-	so_frm <=
-		'0' when rxd=hdlc_flag and rxdv='1' else
-		'0' when rxdv='1' and rxd=eos else
-		'1' when rxdv='1' else
-		frm;
+	ahdlc_irdy <= so_frm and rxdv and rxd/=ahdlc_esc;
 
-	so_irdy <= 
-		rxdv when esci='1' else
-		'0'  when rxd=esc and rxdv='1' else
-		'0'  when rxd=eos and rxdv='1' else
-		rxdv;
-
-	so_data <= rxd;
 end;
