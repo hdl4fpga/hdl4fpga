@@ -28,51 +28,37 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_ahdlc is
-	port (
-		hdlc_rxdv : in  std_logic;
-		hdlc_rxd  : in  std_logic_vector;
-
-		sio_clk   : in  std_logic;
-		so_frm    : out std_logic;
-		so_irdy   : out std_logic;
-		so_data   : out std_logic_vector);
-
+entity crc is
+	generic (
+		g    : std_logic_vector);
+    port (
+        clk  : in  std_logic;
+		frm  : in  std_logic;
+		dv   : in  std_logic;
+		data : in  std_logic_vector;
+		crc  : buffer std_logic_vector);
 end;
 
-architecture def of sio_udp is
-
-	signal ahdlc_frm  : std_logic;
-	signal ahdlc_irdy : std_logic;
-	signal ahdlc_data : std_logic_vector(so_data'range);
+architecture def of crc is
 
 begin
 
-	ahdlc_e : entity hdl4fpga.ahdlc
-	port map (
-		clk        => sio_clk,
+	assert g'length mod data'length=0
+	report "Length of g should be a multiplo of data'length"
+	severity FAILURE;
 
-		uart_rxdv  => hdlc_rxdv,
-		uarr_rxd   => hdlc_rxd,
-
-		ahdlc_frm  => ahdlc_frm,
-		ahdlc_irdy => ahdlc_irdy,
-		ahdlc_data => ahdlc_data);
-
-
-	ccitt_e : entity hdl4fpga.crc
-	generic map (
-			g => x"");
-		port (
-			clk   : in  std_logic;
-			frm   : in  std_logic;
-			irdy  : in  std_logic;
-			trdy  : out std_logic;
-
-			div   : in  std_logic;
-			din   : in  std_logic_vector;
-			dov   : out std_logic;
-			dout  : out std_logic_vector);
-	end;
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if frm='1' then
+				if dv='1' then
+					crc  <= not galois_crc(data, not crc, g);
+				end if;
+			else
+				crc <= (crc'range => '0');
+			end if;
+		end if;
+	end process;
 
 end;
+
