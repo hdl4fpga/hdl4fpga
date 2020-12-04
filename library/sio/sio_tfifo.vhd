@@ -28,53 +28,107 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_ahdlc is
+entity sio_buff is
+	generic (
+		mem_size  : natural := 2048*8);
 	port (
-		hdlc_rxdv : in  std_logic;
-		hdlc_rxd  : in  std_logic_vector;
-
 		sio_clk   : in  std_logic;
+
+		si_frm    : in  std_logic := '0';
+		si_irdy   : in  std_logic := '0';
+		si_trdy   : buffer std_logic := '0';
+		si_data   : in  std_logic_vector;
+
+		fifo_updt : in  std_logic;
+		fifo_cmmt : in  std_logic;
+		fifo_ovfl : out std_logic;
+
 		so_frm    : out std_logic;
 		so_irdy   : out std_logic;
+		so_trdy   : in  std_logic := '1';
 		so_data   : out std_logic_vector);
-
 end;
 
-architecture def of sio_udp is
+architecture struct of sio_udp is
 
-	signal ahdlc_frm  : std_logic;
-	signal ahdlc_irdy : std_logic;
-	signal ahdlc_data : std_logic_vector(so_data'range);
+	signal des_data : std_logic_vector(so_data'range);
+
+	constant addr_length : natural := unsigned_num_bits(mem_size/so_data'length-1);
+	subtype addr_range is natural range 1 to addr_length;
+
+	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
+	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
+	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
+
+	signal src_trdy  : std_logic;
+	signal des_irdy  : std_logic;
+	signal dst_irdy  : std_logic;
+	signal dst_irdy1 : std_logic;
 
 begin
 
-	ahdlc_e : entity hdl4fpga.ahdlc
+	serdes_e : entity hdl4fpga.serdes
 	port map (
-		clk        => sio_clk,
+		serdes_clk => si_clk,
+		serdes_frm => si_frm,
+		ser_irdy   => si_irdy,
+		ser_data   => si_data,
 
-		uart_rxdv  => hdlc_rxdv,
-		uarr_rxd   => hdlc_rxd,
+		des_irdy   => des_irdy,
+		des_data   => des_data);
 
-		ahdlc_frm  => ahdlc_frm,
-		ahdlc_irdy => ahdlc_irdy,
-		ahdlc_data => ahdlc_data);
+	src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 
-	crc_ena <= (frm and hdlc_rdxdv) or not frm;
-	crc_ccitt_e : entity hdl4fpga.crc
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if fifo_updt='1' then
+				if fifo_cmmt='0' then
+					wr_cntr <= wr_ptr;
+				else
+					wr_ptr <= wr_cntr;
+				end if;
+			elsif ser_irdy='1' then
+				if src_trdy='1' then
+					if des_irdy='1' then
+						wr_cntr <= wr_cntr + 1;
+					end if;
+				end if;
+			end if;
+
+			if fifo_updt='1' then
+				fifo_ovfl <= '0';
+			elsif src_trdy='0' and des_irdy='1' then
+				fifo_ovfl <= '1';
+			end if;
+
+		end if;
+	end process;
+
+	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
-		g => x"1021")
+		synchronous_rdaddr => false,
+		synchronous_rddata => true)
 	port map (
-		clk  => sio_clk,
-		frm  => ahdlc_frm,
-		ena  => crc_ena;
-		data => ahdlc_data,
-		crc  => ahdlc_crc);
+		wr_clk  => mii_txc,
+		wr_ena  => des_irdy,
+		wr_addr => std_logic_vector(wr_cntr(addr_range)),
+		wr_data => des_data, 
 
-	process (sio_clk)
+		rd_clk  => sio_clk,
+		rd_addr => std_logic_vector(rd_cntr(addr_range)),
+		rd_data => so_data);
+
+	dst_irdy1 <= setif(wr_ptr /= rd_cntr);
+	process(sio_clk)
 	begin
 		if rising_edge(sio_clk) then
-			if x"1d0f"=ahdcl_crc then
+			so_frm <= dst_irdy1;
+			if dst_irdy1='1' and so_trdy='1' then
+				rd_cntr <= rd_cntr + 1;
 			end if;
 		end if;
-	end if;
+	end process;
+	so_irdy <= '1';
+
 end;

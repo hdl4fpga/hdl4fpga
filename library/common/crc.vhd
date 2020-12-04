@@ -54,7 +54,7 @@ begin
 				if ena='1' then
 					crc  <= not galois_crc(data, not crc, g);
 				end if;
-			elsif ena='0' then
+			elsif ena='1' then
 				crc <= (crc'range => '0');
 			end if;
 		end if;
