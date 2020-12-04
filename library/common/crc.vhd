@@ -34,7 +34,7 @@ entity crc is
     port (
         clk  : in  std_logic;
 		frm  : in  std_logic;
-		dv   : in  std_logic;
+		ena  : in  std_logic;
 		data : in  std_logic_vector;
 		crc  : buffer std_logic_vector);
 end;
@@ -51,10 +51,10 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
-				if dv='1' then
+				if ena='1' then
 					crc  <= not galois_crc(data, not crc, g);
 				end if;
-			else
+			elsif ena='0' then
 				crc <= (crc'range => '0');
 			end if;
 		end if;
