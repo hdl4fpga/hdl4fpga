@@ -28,7 +28,6 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
-use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 
 library ecp5u;
@@ -73,7 +72,10 @@ architecture graphics of ulx3s is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
-	signal dmaio_dv       : std_logic;
+	signal dmaio_trdy     : std_logic;
+	signal dmaiolen_irdy  : std_logic;
+	signal dmaioaddr_irdy : std_logic;
+
 
 	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlr_irdy      : std_logic;
@@ -220,7 +222,8 @@ architecture graphics of ulx3s is
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
-	alias si_clk       : std_logic is uart_rxc;
+	alias sio_clk      : std_logic is uart_rxc;
+	signal sio_frm : std_logic;
 	alias dmacfg_clk   : std_logic is uart_rxc;
 
 	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
@@ -366,22 +369,58 @@ begin
 
 	end block;
 
-	scopeio_export_b : block
+	sio_b : block
 
-		signal si_frm      : std_logic;
-		signal si_irdy     : std_logic;
-		signal si_data     : std_logic_vector(uart_rxd'range);
+		constant fifo_depth  : natural := 2;
 
-		signal rgtr_id     : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv     : std_logic;
-		signal rgtr_data   : std_logic_vector(32-1 downto 0);
+		constant rid_dmaaddr : std_logic_vector := x"16";
+		constant rid_dmalen  : std_logic_vector := x"17";
+		constant rid_dmadata : std_logic_vector := x"18";
 
-		signal data_ena    : std_logic;
-		signal fifo_rst    : std_logic;
-		signal src_frm     : std_logic;
-		signal data_ptr    : std_logic_vector(8-1 downto 0);
-		signal dmadata_ena : std_logic;
-		signal dst_irdy    : std_logic;
+		signal rgtr_frm      : std_logic;
+		signal rgtr_irdy     : std_logic;
+		signal rgtr_idv      : std_logic;
+		signal rgtr_id       : std_logic_vector(8-1 downto 0);
+		signal rgtr_lv       : std_logic;
+		signal rgtr_len      : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv       : std_logic;
+		signal rgtr_data     : std_logic_vector(32-1 downto 0);
+		signal data_frm      : std_logic;
+		signal data_irdy     : std_logic;
+		signal data_ptr      : std_logic_vector(8-1 downto 0);
+
+		signal sigrgtr_frm   : std_logic;
+
+		signal sigram_irdy   : std_logic;
+		signal ack_data      : std_logic_vector(8-1 downto 0);
+
+		signal dmadata_irdy  : std_logic;
+		signal dmadata_trdy  : std_logic;
+		signal ctlrdata_trdy  : std_logic;
+		signal dmaaddr_irdy  : std_logic;
+		signal dmaaddr_trdy  : std_logic;
+		signal dmalen_irdy   : std_logic;
+		signal dmalen_trdy   : std_logic;
+
+		signal sin_frm       : std_logic;
+		signal sin_irdy      : std_logic;
+		signal sin_data      : std_logic_vector(8-1 downto 0);
+		signal sou_frm       : std_logic;
+		signal sou_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sou_trdy      : std_logic;
+		signal sou_data      : std_logic_vector(8-1 downto 0);
+		signal sig_data      : std_logic_vector(8-1 downto 0);
+		signal sig_trdy      : std_logic;
+		signal sig_end       : std_logic;
+		signal siodmaio_irdy : std_logic;
+		signal siodmaio_trdy : std_logic;
+		signal siodmaio_end  : std_logic;
+		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
+		signal siodmaio_data : std_logic_vector(sou_data'range);
+
+		signal tp1 : std_logic_vector(32-1 downto 0);
+		signal tp2 : std_logic_vector(32-1 downto 0);
+
 	begin
 
 		uartrx_e : entity hdl4fpga.uart_rx
@@ -394,103 +433,170 @@ begin
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd);
 
-		scopeio_istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
-		generic map (
-			istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-			istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+		siodayahdlc_e : entity hdl4fpga.sio_dayahdlc
 		port map (
-			stream_clk  => uart_rxc,
-			stream_dv   => uart_rxdv,
-			stream_data => uart_rxd,
+			uart_clk  => uart_rxc,
+			uart_rxdv => uart_rxdv,
+			uart_rxd  => uart_rxd,
+			sio_clk   => uart_rxc,
+			si_data   => sin_data,
+			so_frm    => sin_frm,
+			so_irdy   => sin_irdy,
+			so_data   => sin_data);
 
-			chaini_data => uart_rxd,
-
-			chaino_frm  => si_frm,  
-			chaino_irdy => si_irdy,
-			chaino_data => si_data);
-
-		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		scopeio_sin_e : entity hdl4fpga.sio_sin
 		port map (
-			sin_clk   => si_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
-			sin_data  => si_data,
+			sin_clk   => sio_clk,
+			sin_frm   => sin_frm,
+			sin_irdy  => sin_irdy,
+			sin_data  => sin_data,
 			data_ptr  => data_ptr,
-			data_ena  => data_ena,
+			data_frm  => data_frm,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
-		dmaaddr_e : entity hdl4fpga.scopeio_rgtr
-		generic map (
-			rid  => rid_dmaaddr)
-		port map (
-			rgtr_clk  => si_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			dv        => fifo_rst,
-			data      => dmaio_addr);
-
-		dmalen_e : entity hdl4fpga.scopeio_rgtr
-		generic map (
-			rid  => rid_dmalen)
-		port map (
-			rgtr_clk  => si_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			dv        => dmaio_dv,
-			data      => dmaio_len);
-
-		base_addr_e : entity hdl4fpga.scopeio_rgtr
+		base_addr_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => x"19")
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
 			data      => base_addr);
 
-		dmadata_ena <= data_ena and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
+		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
+		dmaaddr_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth => fifo_depth,
+			out_rgtr  => false,
+			check_sov => true,
+			check_dov => true,
+			gray_code => true)
+		port map (
+			src_clk  => sio_clk,
+			src_frm  => sio_frm,
+			src_irdy => dmaaddr_irdy,
+			src_trdy => dmaaddr_trdy,
+			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
-		src_frm <= not fifo_rst;
+			dst_clk  => dmacfg_clk,
+			dst_irdy => dmaioaddr_irdy,
+			dst_trdy => dmaio_trdy,
+			dst_data => dmaio_addr);
+
+
+		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
+		dmalen_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth => fifo_depth,
+			out_rgtr  => false,
+			check_sov => true,
+			check_dov => true,
+			gray_code => true)
+		port map (
+			src_clk  => sio_clk,
+			src_frm  => sio_frm,
+			src_irdy => dmalen_irdy,
+			src_trdy => dmalen_trdy,
+			src_data => rgtr_data(dmaio_len'length-1 downto 0),
+
+			dst_clk  => dmacfg_clk,
+			dst_irdy => dmaiolen_irdy,
+			dst_trdy => dmaio_trdy,
+			dst_data => dmaio_len);
+
+		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			mem_size  => (8*2048)/ctlr_di'length,
-			out_rgtr  => not write_latency,
-			check_sov => false,
-			check_dov => false,
-			gray_code => false)
+			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+			check_sov => true,
+			check_dov => true,
+			gray_code => true)
 		port map (
-			src_clk  => si_clk,
-			src_frm  => src_frm,
-			src_irdy => dmadata_ena,
-			src_data => rgtr_data(16-1 downto 0),
+			src_clk  => sio_clk,
+			src_frm  => sio_frm,
+			src_irdy => dmadata_irdy,
+			src_trdy => dmadata_trdy,
+			src_data => rgtr_data,
 
 			dst_clk  => ctlr_clk,
-			dst_irdy => dst_irdy,
+			dst_irdy => ctlr_di_dv,
 			dst_trdy => ctlr_di_req,
+--			dst_trdy => ctlrdata_trdy,
 			dst_data => ctlr_di);
 
-		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
+		process (ctlr_di_req, ctlr_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(ctlr_clk) then
+				if ctlr_di_req='1' then
+					if ctlr_di_dv='0' then
+						q := '1';
+					end if;
+				else
+					q := '0';
+				end if;
+			end if;
+			ctlrdata_trdy <= ctlr_di_req or q;
+		end process;
+
+--		dmadata_e : entity hdl4fpga.fifo
+--		generic map (
+--			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+--			out_rgtr  => not write_latency,
+--			check_sov => false,
+--			check_dov => false,
+--			gray_code => false)
+--		port map (
+--			src_clk  => sio_clk,
+--			src_frm  => src_frm,
+--			src_irdy => dmadata_irdy,
+--			src_data => rgtr_data(16-1 downto 0),
+--
+--			dst_clk  => ctlr_clk,
+--			dst_irdy => dst_irdy,
+--			dst_trdy => ctlr_di_req,
+--			dst_data => ctlr_di);
+--
+--		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
 		ctlr_dm <= (others => '0');
 
-		dmacfgio_p : process (si_clk)
-			variable io_rdy : std_logic;
+		dmacfgio_p : process (dmacfg_clk)
+			variable dmaio_rdy1 : std_logic;
+			variable dmaio_rdy2 : std_logic;
+			variable io_rdy1    : std_logic;
+			variable io_rdy2    : std_logic;
 		begin
-			if rising_edge(si_clk) then
+			if rising_edge(dmacfg_clk) then
+				sio_frm <= '1';
 				if ctlr_inirdy='0' then
 					dmacfgio_req <= '0';
+					dmaio_trdy   <= '0';
+					sio_frm <= '0';
 				elsif dmacfgio_req='0' then
-					if dmaio_dv='1' then
-						dmacfgio_req <= '1';
+					if dmaio_rdy2='1' then
+						if dmaio_trdy='0' then
+							dmacfgio_req <= not dmacfgio_rdy;
+						end if;
 					end if;
-				elsif io_rdy='1' then
-					dmacfgio_req <= '0';
+					dmaio_trdy <= '0';
+				elsif io_rdy1='1' then
+					if io_rdy2='0' then
+						dmacfgio_req <= '0';
+						dmaio_trdy   <= '1';
+					else
+						dmaio_trdy   <= '1';
+					end if;
+				else
+					dmaio_trdy <= '0';
 				end if;
-				io_rdy := dmaio_rdy;
+				io_rdy2 := io_rdy1;
+				io_rdy1 := dmaio_rdy;
+				
+				dmaio_rdy2 := dmaio_rdy1;
+				dmaio_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
 			end if;
 		end process;
 

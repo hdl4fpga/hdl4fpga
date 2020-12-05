@@ -38,8 +38,8 @@ entity sio_dayahdlc is
 		sio_clk   : in std_logic;
 		sio_addr  : in  std_logic := '0';
 		si_frm    : in  std_logic := '0';
-		si_irdy   : in  std_logic := '0';
-		si_trdy   : out std_logic := '0';
+		si_irdy   : in  std_logic := '1';
+		si_trdy   : out std_logic;
 		si_data   : in  std_logic_vector;
 
 		so_frm    : out std_logic;
