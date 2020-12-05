@@ -23,52 +23,59 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ahdlc is
+entity sio_dayahdlc is
 	port (
-		clk        : in  std_logic;
+	
+		uart_clk  : in  std_logic;
+		uart_rxdv : in  std_logic;
+		uart_rxd  : in  std_logic_vector(8-1 downto 0);
 
-		uart_rxdv  : in  std_logic;
-		uart_rxd   : in  std_logic_vector(8-1 downto 0);
+		sio_clk   : in std_logic;
+		sio_addr  : in  std_logic := '0';
+		si_frm    : in  std_logic := '0';
+		si_irdy   : in  std_logic := '0';
+		si_trdy   : out std_logic := '0';
+		si_data   : in  std_logic_vector;
 
-		ahdlc_frm  : buffer std_logic;
-		ahdlc_irdy : out std_logic;
-		ahdlc_data : out std_logic_vector(8-1 downto 0));
-
-	constant ahdlc_flag : std_logic_vector := x"7e";
-	constant ahdlc_esc  : std_logic_vector := x"7d";
-
+		so_frm    : out std_logic;
+		so_irdy   : out std_logic;
+		so_trdy   : in  std_logic := '1';
+		so_data   : out std_logic_vector;
+		tp : out std_logic_vector(1 to 4));
+	
 end;
 
-architecture def of ahdlc is
+architecture beh of sio_dayahdlc is
+
+	signal soahdlc_frm  : std_logic;
+	signal soahdlc_trdy : std_logic;
+	signal soahdlc_irdy : std_logic;
+	signal soahdlc_data : std_logic_vector(so_data'range);
+
 begin
 
-	process (uart_rxd, uart_rxdv, clk)
-		variable frm : std_logic;
-		variable esc : std_logic;
-	begin
-		if rising_edge(clk) then
-			if uart_rxdv='1' then
-				case uart_rxd is
-				when ahdlc_flag =>
-					frm := '0';
-					esc := '0';
-				when ahdlc_esc =>
-					frm := '1';
-					esc := '1';
-				when others =>
-					frm := '1';
-					esc := '0';
-				end case;
-			end if;
-		end if;
-		ahdlc_frm  <= (setif(uart_rxd/=ahdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
-		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"10");
-	end process;
+	sioahdlc_e : entity hdl4fpga.sio_ahdlc
+	port map (
+		uart_clk  => uart_clk,
 
-	ahdlc_irdy <= ahdlc_frm and uart_rxdv and setif(uart_rxd/=ahdlc_esc);
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd,
+
+		sio_clk   => sio_clk,
+		so_frm    => soahdlc_frm,
+		so_irdy   => soahdlc_irdy,
+		so_trdy   => soahdlc_trdy,
+		so_data   => soahdlc_data);
+
+	so_frm  <= si_frm  when sio_addr/='0' else soahdlc_frm; 
+	so_irdy <= si_irdy when sio_addr/='0' else soahdlc_irdy;
+	si_trdy <= so_trdy when sio_addr/='0' else soahdlc_irdy;
+	so_data <= si_data when sio_addr/='0' else soahdlc_data;
+	soahdlc_trdy <= si_irdy when sio_addr/='0' else so_trdy;
 
 end;

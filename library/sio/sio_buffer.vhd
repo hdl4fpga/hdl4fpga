@@ -28,28 +28,29 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_buff is
+entity sio_buffer is
 	generic (
-		mem_size  : natural := 2048*8);
+		mem_size : natural := 2048*8);
 	port (
-		sio_clk   : in  std_logic;
+		si_clk   : in  std_logic;
 
-		si_frm    : in  std_logic := '0';
-		si_irdy   : in  std_logic := '0';
-		si_trdy   : buffer std_logic := '0';
-		si_data   : in  std_logic_vector;
+		si_frm   : in  std_logic := '0';
+		si_irdy  : in  std_logic := '0';
+		si_trdy  : buffer std_logic := '0';
+		si_data  : in  std_logic_vector;
 
-		fifo_updt : in  std_logic;
-		fifo_cmmt : in  std_logic;
-		fifo_ovfl : out std_logic;
+		rollback : in  std_logic;
+		commit   : in  std_logic;
+		overflow : out std_logic;
 
-		so_frm    : out std_logic;
-		so_irdy   : out std_logic;
-		so_trdy   : in  std_logic := '1';
-		so_data   : out std_logic_vector);
+		so_clk   : in  std_logic;
+		so_frm   : out std_logic;
+		so_irdy  : out std_logic;
+		so_trdy  : in  std_logic := '1';
+		so_data  : out std_logic_vector);
 end;
 
-architecture struct of sio_udp is
+architecture def of sio_buffer is
 
 	signal des_data : std_logic_vector(so_data'range);
 
@@ -60,10 +61,8 @@ architecture struct of sio_udp is
 	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
 	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
 
-	signal src_trdy  : std_logic;
 	signal des_irdy  : std_logic;
-	signal dst_irdy  : std_logic;
-	signal dst_irdy1 : std_logic;
+	signal so_irdy1 : std_logic;
 
 begin
 
@@ -77,29 +76,25 @@ begin
 		des_irdy   => des_irdy,
 		des_data   => des_data);
 
-	src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+	si_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 
-	process (mii_txc)
+	process (si_clk)
 	begin
-		if rising_edge(mii_txc) then
-			if fifo_updt='1' then
-				if fifo_cmmt='0' then
-					wr_cntr <= wr_ptr;
-				else
-					wr_ptr <= wr_cntr;
-				end if;
-			elsif ser_irdy='1' then
-				if src_trdy='1' then
+		if rising_edge(si_clk) then
+			if commit='1' then
+				wr_ptr    <= wr_cntr;
+				overflow <= '0';
+			elsif rollback='1' then
+				wr_cntr   <= wr_ptr;
+				overflow <= '0';
+			elsif si_trdy='1' then
+				if si_irdy='1' then
 					if des_irdy='1' then
 						wr_cntr <= wr_cntr + 1;
 					end if;
 				end if;
-			end if;
-
-			if fifo_updt='1' then
-				fifo_ovfl <= '0';
-			elsif src_trdy='0' and des_irdy='1' then
-				fifo_ovfl <= '1';
+			elsif des_irdy='1' then
+				overflow <= '1';
 			end if;
 
 		end if;
@@ -110,21 +105,21 @@ begin
 		synchronous_rdaddr => false,
 		synchronous_rddata => true)
 	port map (
-		wr_clk  => mii_txc,
+		wr_clk  => si_clk,
 		wr_ena  => des_irdy,
 		wr_addr => std_logic_vector(wr_cntr(addr_range)),
 		wr_data => des_data, 
 
-		rd_clk  => sio_clk,
+		rd_clk  => so_clk,
 		rd_addr => std_logic_vector(rd_cntr(addr_range)),
 		rd_data => so_data);
 
-	dst_irdy1 <= setif(wr_ptr /= rd_cntr);
-	process(sio_clk)
+	so_irdy1 <= setif(wr_ptr /= rd_cntr);
+	process(so_clk)
 	begin
-		if rising_edge(sio_clk) then
-			so_frm <= dst_irdy1;
-			if dst_irdy1='1' and so_trdy='1' then
+		if rising_edge(so_clk) then
+			so_frm <= so_irdy1;
+			if so_irdy1='1' and so_trdy='1' then
 				rd_cntr <= rd_cntr + 1;
 			end if;
 		end if;

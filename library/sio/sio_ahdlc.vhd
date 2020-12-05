@@ -30,51 +30,77 @@ use hdl4fpga.std.all;
 
 entity sio_ahdlc is
 	port (
-		hdlc_rxdv : in  std_logic;
-		hdlc_rxd  : in  std_logic_vector;
+		uart_clk  : in  std_logic;
+		uart_rxdv : in  std_logic;
+		uart_rxd  : in  std_logic_vector;
 
 		sio_clk   : in  std_logic;
 		so_frm    : out std_logic;
 		so_irdy   : out std_logic;
+		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector);
 
 end;
 
-architecture def of sio_udp is
+architecture def of sio_ahdlc is
+
+	constant ccitt_residue : std_logic_vector := x"1d0f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
 	signal ahdlc_data : std_logic_vector(so_data'range);
+	signal ahdlc_crc  : std_logic_vector(ccitt_residue'range);
 
+	signal buffer_cmmt : std_logic;
+	signal buffer_rlk  : std_logic;
+	signal buffer_ovfl : std_logic;
 begin
 
 	ahdlc_e : entity hdl4fpga.ahdlc
 	port map (
-		clk        => sio_clk,
+		clk        => uart_clk,
 
-		uart_rxdv  => hdlc_rxdv,
-		uarr_rxd   => hdlc_rxd,
+		uart_rxdv  => uart_rxdv,
+		uart_rxd   => uart_rxd,
 
 		ahdlc_frm  => ahdlc_frm,
 		ahdlc_irdy => ahdlc_irdy,
 		ahdlc_data => ahdlc_data);
 
-	crc_ena <= (frm and hdlc_rdxdv) or not frm;
-	crc_ccitt_e : entity hdl4fpga.crc
-	generic map (
-		g => x"1021")
-	port map (
-		clk  => sio_clk,
-		frm  => ahdlc_frm,
-		ena  => crc_ena;
-		data => ahdlc_data,
-		crc  => ahdlc_crc);
-
-	process (sio_clk)
+	llc_b : block
+		signal crc_ena : std_logic;
 	begin
-		if rising_edge(sio_clk) then
-			if x"1d0f"=ahdcl_crc then
-			end if;
-		end if;
-	end if;
+		crc_ena <= (ahdlc_frm and uart_rxdv) or not ahdlc_frm;
+		crc_ccitt_e : entity hdl4fpga.crc
+		generic map (
+			g => x"1021")
+		port map (
+			clk  => uart_clk,
+			frm  => ahdlc_frm,
+			ena  => crc_ena,
+			data => ahdlc_data,
+			crc  => ahdlc_crc);
+
+		buffer_cmmt <= '1' when ahdlc_frm='0' and ahdlc_crc =ccitt_residue else '0';
+		buffer_rlk  <= '1' when ahdlc_frm='0' and ahdlc_crc/=ccitt_residue else '0';
+
+	end block;
+
+	buffer_e : entity hdl4fpga.sio_buffer
+	port map (
+		si_clk    => uart_clk,
+		si_frm    => ahdlc_frm,
+		si_irdy   => ahdlc_irdy,
+		si_data   => ahdlc_data,
+
+		rollback  => buffer_rlk,
+		commit    => buffer_cmmt,
+		overflow  => buffer_ovfl,
+
+		so_clk    => sio_clk,
+		so_frm    => so_frm,
+		so_irdy   => so_irdy,
+		so_trdy   => so_trdy,
+		so_data   => so_data);
+
 end;
