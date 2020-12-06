@@ -197,10 +197,10 @@ architecture graphics of ulx3s is
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
---	alias uart_rxc     : std_logic is clk_25mhz;
---	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	alias uart_rxc     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;
---	constant baudrate  : natural := 1000000;
 
 --	alias uart_rxc     : std_logic is video_clk;
 --	constant uart_xtal : natural := natural(
@@ -208,11 +208,11 @@ architecture graphics of ulx3s is
 --		real(video_tab(video_mode).clki_div)/10.0/sys_per);
 --	constant baudrate  : natural := 2_000_000;
 
-	alias uart_rxc     : std_logic is ctlr_clk;
-	constant uart_xtal : natural := natural(
-		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
-		real(sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/sys_per);
-	constant baudrate  : natural := 3000000;
+--	alias uart_rxc     : std_logic is ctlr_clk;
+--	constant uart_xtal : natural := natural(
+--		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
+--		real(sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/sys_per);
+--	constant baudrate  : natural := 3_000_000;
 
 --	alias uart_rxc     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));

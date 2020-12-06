@@ -35,8 +35,8 @@ entity ahdlc_rx is
 		uart_rxd   : in  std_logic_vector(8-1 downto 0);
 
 		ahdlc_frm  : buffer std_logic;
-		ahdlc_irdy : out std_logic;
-		ahdlc_data : out std_logic_vector(8-1 downto 0));
+		ahdlc_irdy : buffer std_logic;
+		ahdlc_data : buffer std_logic_vector(8-1 downto 0));
 
 	constant ahdlc_flag : std_logic_vector := x"7e";
 	constant ahdlc_esc  : std_logic_vector := x"7d";
@@ -44,6 +44,7 @@ entity ahdlc_rx is
 end;
 
 architecture def of ahdlc_rx is
+	signal debug : std_logic_vector(8-1 downto 0);
 begin
 
 	process (uart_rxd, uart_rxdv, clk)
@@ -63,10 +64,13 @@ begin
 					frm := '1';
 					esc := '0';
 				end case;
+				if ahdlc_irdy='1' then
+					debug <= ahdlc_data;
+				end if;
 			end if;
 		end if;
 		ahdlc_frm  <= (setif(uart_rxd/=ahdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
-		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"10");
+		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"20");
 	end process;
 
 	ahdlc_irdy <= ahdlc_frm and uart_rxdv and setif(uart_rxd/=ahdlc_esc);
