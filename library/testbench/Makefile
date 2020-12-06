@@ -221,8 +221,10 @@ HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
-HDL4FPGA__ahdlc__def = $(LIB_HDL4FPGA)/ahdlc/def.dat
-HDL4FPGA__ahdlc = $(LIB_HDL4FPGA)/ahdlc/_primary.dat
+HDL4FPGA__ahdlc_tx__def = $(LIB_HDL4FPGA)/ahdlc_tx/def.dat
+HDL4FPGA__ahdlc_tx = $(LIB_HDL4FPGA)/ahdlc_tx/_primary.dat
+HDL4FPGA__ahdlc_rx__def = $(LIB_HDL4FPGA)/ahdlc_rx/def.dat
+HDL4FPGA__ahdlc_rx = $(LIB_HDL4FPGA)/ahdlc_rx/_primary.dat
 HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
 HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
 VCOM = vcom
@@ -434,19 +436,30 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__align__arch) \
     $(HDL4FPGA__align) \
-    $(HDL4FPGA__ahdlc__def) \
-    $(HDL4FPGA__ahdlc) \
+    $(HDL4FPGA__ahdlc_tx__def) \
+    $(HDL4FPGA__ahdlc_tx) \
+    $(HDL4FPGA__ahdlc_rx__def) \
+    $(HDL4FPGA__ahdlc_rx) \
     $(HDL4FPGA__aff__xilinx) \
     $(HDL4FPGA__aff)
 
-$(HDL4FPGA__ahdlc) \
-$(HDL4FPGA__ahdlc__def) : ../sio/ahdlc.vhd \
+$(HDL4FPGA__ahdlc_rx) \
+$(HDL4FPGA__ahdlc_rx__def) : ../sio/ahdlc_rx.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../sio/ahdlc.vhd
+	$(VCOM) -2002 -work hdl4fpga ../sio/ahdlc_rx.vhd
+
+$(HDL4FPGA__ahdlc_tx) \
+$(HDL4FPGA__ahdlc_tx__def) : ../sio/ahdlc_tx.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/ahdlc_tx.vhd
 
 $(HDL4FPGA__align) \
 $(HDL4FPGA__align__arch) : ../common/align.vhd \
@@ -1292,7 +1305,7 @@ $(HDL4FPGA__sio_ahdlc) \
 $(HDL4FPGA__sio_ahdlc__def) : ../sio/sio_ahdlc.vhd \
 		$(HDL4FPGA__sio_buffer) \
 		$(HDL4FPGA__crc) \
-		$(HDL4FPGA__ahdlc) \
+		$(HDL4FPGA__ahdlc_rx) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \

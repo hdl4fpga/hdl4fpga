@@ -33,7 +33,7 @@ entity ahdlc_tx is
 
 		uart_irdy  : out std_logic;
 		uart_trdy  : in  std_logic;
-		uart_txd   : in  std_logic_vector(8-1 downto 0);
+		uart_txd   : out std_logic_vector(8-1 downto 0);
 
 		ahdlc_frm  : in  std_logic;
 		ahdlc_irdy : in  std_logic;
@@ -54,7 +54,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if uart_trdy='1' then
-				if ahdl_frm='1' then
+				if ahdlc_frm='1' then
 					if ahdlc_irdy='1' then
 						if esc='1' then
 							esc := '0';
@@ -75,7 +75,7 @@ begin
 			if esc='1' then
 				uart_txd   <= ahdlc_data xor x"60";
 				uart_irdy  <= ahdlc_irdy;
-				ahdlc_trdy <= uart_tdry;
+				ahdlc_trdy <= uart_trdy;
 			elsif ahdlc_data=ahdlc_flag then
 				uart_txd   <= ahdlc_esc;
 				uart_irdy  <= ahdlc_irdy;
@@ -87,7 +87,7 @@ begin
 			else
 				uart_txd   <= ahdlc_data;
 				uart_irdy  <= ahdlc_irdy;
-				ahdlc_trdy <= uart_tdry;
+				ahdlc_trdy <= uart_trdy;
 			end if;
 		else 
 			uart_irdy <= frm;

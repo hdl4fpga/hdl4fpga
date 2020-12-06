@@ -126,8 +126,8 @@ architecture ulx3s_graphic of testbench is
 			gpdi_sda       : inout std_logic := '-';
 			gpdi_scl       : inout std_logic := '-';
 
-			gp             : inout std_logic_vector(9-1 downto 0) := (others => '-');
-			gn             : inout std_logic_vector(9-1 downto 0) := (others => '-');
+			gp             : inout std_logic_vector(28-1 downto 0) := (others => '-');
+			gn             : inout std_logic_vector(28-1 downto 0) := (others => '-');
 			gp_i           : in    std_logic_vector(12 downto 9) := (others => '-');
 
 			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
@@ -148,11 +148,9 @@ architecture ulx3s_graphic of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 115200_00;
-	constant uart_data  : std_logic_vector := 
-		x"0000" & 
-		x"1602_5c00_5c00_5c00" &
-		x"0000" &
+	constant baudrate : natural := 3_000_000;
+	constant data  : std_logic_vector := 
+		x"1602000000" &
 		x"18ff" & 
 		x"123456789abcdef123456789abcdef12" &
 		x"23456789abcdef123456789abcdef123" &
@@ -170,57 +168,68 @@ architecture ulx3s_graphic of testbench is
 		x"ef123456789abcdef123456789abcdef" &
 		x"f123456789abcdef123456789abcdef1" &
 		x"123456789abcdef123456789abcdef12" &
-		x"0000" & 
-		x"1702_5c00_5c00_7f" &
-		x"0000"; -- &
---		x"18ff"& 
---		x"1234ffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffaabb" &
---		x"ccddffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffffffff" &
---		x"ffffffffffffffffffffffffffff6789" &
---		x"0000" &
---		x"1602_5c00_5c00_5c00" & 
---		x"0000" & 
---		x"1702_5c00_5c00_7f" &
---		x"0000";
+		x"170200007f";
 
+	signal ahdlc_frm  : std_logic;
+	signal ahdlc_irdy : std_logic;
+	signal ahdlc_trdy : std_logic;
+	signal ahdlc_data : std_logic_vector(8-1 downto 0);
 
-	signal uart_clk : std_logic := '0';
-	signal uart_sin : std_logic;
+	signal uart_clk   : std_logic := '0';
+	signal uart_sin   : std_logic;
+	signal uart_trdy  : std_logic;
+	signal uart_irdy  : std_logic;
+	signal uart_txd   : std_logic_vector(8-1 downto 0);
+
+	constant uart_xtal : natural := 25 sec / 1 us;
+
 begin
 
 	rst <= '1', '0' after (1 us+82.5 us);
 	xtal <= not xtal after 20 ns;
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
+
 	process (rst, uart_clk)
-		variable data : unsigned((uart_data'length/8)*10-1 downto 0);
+		variable addr : natural;
 	begin
 		if rst='1' then
-			for i in 0 to data'length/10-1 loop
-				data(10-1 downto 0) := unsigned(uart_data(i*8 to (i+1)*8-1)) & b"01";
-				data := data ror 10;
-			end loop;
-			data := not data;
-			uart_sin <= '1';
+			ahdlc_frm <= '0';
+			addr      := 0;
 		elsif rising_edge(uart_clk) then
-			data := data srl 1;
---			data := data ror 1;
-			uart_sin <= not data(0);
+			if addr < data'length then
+				ahdlc_frm  <= '1';
+				ahdlc_data <= data(addr to addr+8-1);
+				addr       := addr + 8;
+			else
+				ahdlc_frm  <= '0';
+				ahdlc_data <= (others => '-');
+			end if;
 		end if;
 	end process;
+
+	ahdlctx_e : entity hdl4fpga.ahdlc_tx
+	port map (
+		clk        => uart_clk,
+		uart_irdy  => uart_irdy,
+		uart_trdy  => uart_trdy,
+		uart_txd   => uart_txd,
+
+		ahdlc_frm  => ahdlc_frm,
+		ahdlc_irdy => ahdlc_irdy,
+		ahdlc_trdy => ahdlc_trdy,
+		ahdlc_data => ahdlc_data);
+
+	uarttx_e : entity hdl4fpga.uart_tx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => uart_xtal)
+	port map (
+		uart_txc  => uart_clk,
+		uart_sout => uart_sin,
+		uart_trdy => uart_trdy,
+		uart_txdv => uart_irdy,
+		uart_txd  => uart_txd);
 
 	du_e : ulx3s
 	port map (
