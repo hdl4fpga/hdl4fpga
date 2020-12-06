@@ -23,85 +23,52 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_ahdlc is
+entity ahdlc_rx is
 	port (
-		uart_clk  : in  std_logic;
-		uart_rxdv : in  std_logic;
-		uart_rxd  : in  std_logic_vector;
+		clk        : in  std_logic;
 
-		sio_clk   : in  std_logic;
-		so_frm    : out std_logic;
-		so_irdy   : out std_logic;
-		so_trdy   : in  std_logic;
-		so_data   : out std_logic_vector);
+		uart_rxdv  : in  std_logic;
+		uart_rxd   : in  std_logic_vector(8-1 downto 0);
+
+		ahdlc_frm  : buffer std_logic;
+		ahdlc_irdy : out std_logic;
+		ahdlc_data : out std_logic_vector(8-1 downto 0));
+
+	constant ahdlc_flag : std_logic_vector := x"7e";
+	constant ahdlc_esc  : std_logic_vector := x"7d";
 
 end;
 
-architecture def of sio_ahdlc is
-
-	constant ccitt_residue : std_logic_vector := x"1d0f";
-
-	signal ahdlc_frm  : std_logic;
-	signal ahdlc_irdy : std_logic;
-	signal ahdlc_data : std_logic_vector(so_data'range);
-	signal ahdlc_crc  : std_logic_vector(ccitt_residue'range);
-
-	signal buffer_cmmt : std_logic;
-	signal buffer_rlk  : std_logic;
-	signal buffer_ovfl : std_logic;
-
+architecture def of ahdlc_rx is
 begin
 
-	ahdlc_e : entity hdl4fpga.ahdlc_rx
-	port map (
-		clk        => uart_clk,
-
-		uart_rxdv  => uart_rxdv,
-		uart_rxd   => uart_rxd,
-
-		ahdlc_frm  => ahdlc_frm,
-		ahdlc_irdy => ahdlc_irdy,
-		ahdlc_data => ahdlc_data);
-
-	llc_b : block
-		signal crc_ena : std_logic;
+	process (uart_rxd, uart_rxdv, clk)
+		variable frm : std_logic;
+		variable esc : std_logic;
 	begin
-		crc_ena <= (ahdlc_frm and uart_rxdv) or not ahdlc_frm;
-		crc_ccitt_e : entity hdl4fpga.crc
-		generic map (
-			g => x"1021")
-		port map (
-			clk  => uart_clk,
-			frm  => ahdlc_frm,
-			ena  => crc_ena,
-			data => ahdlc_data,
-			crc  => ahdlc_crc);
+		if rising_edge(clk) then
+			if uart_rxdv='1' then
+				case uart_rxd is
+				when ahdlc_flag =>
+					frm := '0';
+					esc := '0';
+				when ahdlc_esc =>
+					frm := '1';
+					esc := '1';
+				when others =>
+					frm := '1';
+					esc := '0';
+				end case;
+			end if;
+		end if;
+		ahdlc_frm  <= (setif(uart_rxd/=ahdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
+		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"10");
+	end process;
 
-		buffer_cmmt <= '1' when ahdlc_frm='0' and ahdlc_crc =ccitt_residue else '0';
-		buffer_rlk  <= '1' when ahdlc_frm='0' and ahdlc_crc/=ccitt_residue else '0';
-
-	end block;
-
-	buffer_e : entity hdl4fpga.sio_buffer
-	port map (
-		si_clk    => uart_clk,
-		si_frm    => ahdlc_frm,
-		si_irdy   => ahdlc_irdy,
-		si_data   => ahdlc_data,
-
-		rollback  => buffer_rlk,
-		commit    => buffer_cmmt,
-		overflow  => buffer_ovfl,
-
-		so_clk    => sio_clk,
-		so_frm    => so_frm,
-		so_irdy   => so_irdy,
-		so_trdy   => so_trdy,
-		so_data   => so_data);
+	ahdlc_irdy <= ahdlc_frm and uart_rxdv and setif(uart_rxd/=ahdlc_esc);
 
 end;

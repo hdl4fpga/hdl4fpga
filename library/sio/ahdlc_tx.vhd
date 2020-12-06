@@ -27,48 +27,72 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ahdlc is
+entity ahdlc_tx is
 	port (
 		clk        : in  std_logic;
 
-		uart_rxdv  : in  std_logic;
-		uart_rxd   : in  std_logic_vector(8-1 downto 0);
+		uart_irdy  : out std_logic;
+		uart_trdy  : in  std_logic;
+		uart_txd   : in  std_logic_vector(8-1 downto 0);
 
-		ahdlc_frm  : buffer std_logic;
-		ahdlc_irdy : out std_logic;
-		ahdlc_data : out std_logic_vector(8-1 downto 0));
+		ahdlc_frm  : in  std_logic;
+		ahdlc_irdy : in  std_logic;
+		ahdlc_trdy : out std_logic;
+		ahdlc_data : in  std_logic_vector(8-1 downto 0));
 
 	constant ahdlc_flag : std_logic_vector := x"7e";
 	constant ahdlc_esc  : std_logic_vector := x"7d";
 
 end;
 
-architecture def of ahdlc is
+architecture def of ahdlc_tx is
 begin
 
-	process (uart_rxd, uart_rxdv, clk)
+	process (ahdlc_frm, ahdlc_data, ahdlc_irdy, clk)
 		variable frm : std_logic;
 		variable esc : std_logic;
 	begin
 		if rising_edge(clk) then
-			if uart_rxdv='1' then
-				case uart_rxd is
-				when ahdlc_flag =>
-					frm := '0';
+			if uart_trdy='1' then
+				if ahdl_frm='1' then
+					if ahdlc_irdy='1' then
+						if esc='1' then
+							esc := '0';
+						elsif ahdlc_data=ahdlc_flag then
+							esc := '1';
+						end if;
+					else 
+						esc := '0';
+					end if;
+				else
 					esc := '0';
-				when ahdlc_esc =>
-					frm := '1';
-					esc := '1';
-				when others =>
-					frm := '1';
-					esc := '0';
-				end case;
+				end if;
+				frm := ahdlc_frm;
 			end if;
 		end if;
-		ahdlc_frm  <= (setif(uart_rxd/=ahdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
-		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"10");
-	end process;
 
-	ahdlc_irdy <= ahdlc_frm and uart_rxdv and setif(uart_rxd/=ahdlc_esc);
+		if ahdlc_frm='1' then
+			if esc='1' then
+				uart_txd   <= ahdlc_data xor x"60";
+				uart_irdy  <= ahdlc_irdy;
+				ahdlc_trdy <= uart_tdry;
+			elsif ahdlc_data=ahdlc_flag then
+				uart_txd   <= ahdlc_esc;
+				uart_irdy  <= ahdlc_irdy;
+				ahdlc_trdy <= '0';
+			elsif ahdlc_data=ahdlc_esc then
+				uart_txd   <= ahdlc_esc;
+				uart_irdy  <= ahdlc_irdy;
+				ahdlc_trdy <= '0';
+			else
+				uart_txd   <= ahdlc_data;
+				uart_irdy  <= ahdlc_irdy;
+				ahdlc_trdy <= uart_tdry;
+			end if;
+		else 
+			uart_irdy <= frm;
+			uart_txd  <= ahdlc_flag;
+		end if;
+	end process;
 
 end;
