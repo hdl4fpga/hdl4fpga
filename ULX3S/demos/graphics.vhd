@@ -519,7 +519,7 @@ begin
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
-			src_data => rgtr_data,
+			src_data => rgtr_data(ctlr_di'length-1 downto 0),
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,

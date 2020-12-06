@@ -99,7 +99,7 @@ begin
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
-	max_depht1_g : if max_depth = 1 generate
+	max_depth1_g : if max_depth = 1 generate
 		signal rgtr : std_logic_vector(src_data'range);
 	begin
 		process (src_clk)

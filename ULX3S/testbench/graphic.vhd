@@ -149,26 +149,26 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := 
-		x"1602000000" &
-		x"18ff" & 
-		x"123456789abcdef123456789abcdef12" &
-		x"23456789abcdef123456789abcdef123" &
-		x"3456789abcdef123456789abcdef1234" &
-		x"456789abcdef123456789abcdef12345" &
-		x"56789abcdef123456789abcdef123456" &
-		x"6789abcdef123456789abcdef1234567" &
-		x"789abcdef123456789abcdef12345678" &
-		x"89abcdef123456789abcdef123456789" &
-		x"9abcdef123456789abcdef123456789a" &
-		x"abcdef123456789abcdef123456789ab" &
-		x"bcdef123456789abcdef123456789abc" &
-		x"cdef123456789abcdef123456789abcd" &
-		x"def123456789abcdef123456789abcde" &
-		x"ef123456789abcdef123456789abcdef" &
-		x"f123456789abcdef123456789abcdef1" &
-		x"123456789abcdef123456789abcdef12" &
-		x"170200007f";
+	constant data  : std_logic_vector := x"006f007d00"; 
+--		x"1602000000" &
+--		x"18ff" & 
+--		x"123456789abcdef123456789abcdef12" &
+--		x"23456789abcdef123456789abcdef123" &
+--		x"3456789abcdef123456789abcdef1234" &
+--		x"456789abcdef123456789abcdef12345" &
+--		x"56789abcdef123456789abcdef123456" &
+--		x"6789abcdef123456789abcdef1234567" &
+--		x"789abcdef123456789abcdef12345678" &
+--		x"89abcdef123456789abcdef123456789" &
+--		x"9abcdef123456789abcdef123456789a" &
+--		x"abcdef123456789abcdef123456789ab" &
+--		x"bcdef123456789abcdef123456789abc" &
+--		x"cdef123456789abcdef123456789abcd" &
+--		x"def123456789abcdef123456789abcde" &
+--		x"ef123456789abcdef123456789abcdef" &
+--		x"f123456789abcdef123456789abcdef1" &
+--		x"123456789abcdef123456789abcdef12" &
+--		x"170200007f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
@@ -188,7 +188,8 @@ begin
 	rst <= '1', '0' after (1 us+82.5 us);
 	xtal <= not xtal after 20 ns;
 
-	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
+--	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
+	uart_clk <= xtal;
 
 	process (rst, uart_clk)
 		variable addr : natural;
@@ -198,12 +199,17 @@ begin
 			addr      := 0;
 		elsif rising_edge(uart_clk) then
 			if addr < data'length then
-				ahdlc_frm  <= '1';
 				ahdlc_data <= data(addr to addr+8-1);
-				addr       := addr + 8;
+				if ahdlc_trdy='1' then
+					addr := addr + 8;
+				end if;
+			else
+				ahdlc_data <= (others => '-');
+			end if;
+			if addr < data'length then
+				ahdlc_frm  <= '1';
 			else
 				ahdlc_frm  <= '0';
-				ahdlc_data <= (others => '-');
 			end if;
 		end if;
 	end process;
@@ -216,7 +222,7 @@ begin
 		uart_txd   => uart_txd,
 
 		ahdlc_frm  => ahdlc_frm,
-		ahdlc_irdy => ahdlc_irdy,
+		ahdlc_irdy => '1',
 		ahdlc_trdy => ahdlc_trdy,
 		ahdlc_data => ahdlc_data);
 
