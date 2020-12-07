@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -37,7 +38,7 @@ entity ahdlc_tx is
 
 		ahdlc_frm  : in  std_logic;
 		ahdlc_irdy : in  std_logic;
-		ahdlc_trdy : out std_logic;
+		ahdlc_trdy : buffer std_logic;
 		ahdlc_data : in  std_logic_vector(8-1 downto 0));
 
 	constant ahdlc_flag : std_logic_vector := x"7e";
@@ -46,9 +47,10 @@ entity ahdlc_tx is
 end;
 
 architecture def of ahdlc_tx is
+
 begin
 
-	process (ahdlc_frm, ahdlc_data, ahdlc_irdy, clk)
+	process (uart_trdy, ahdlc_frm, ahdlc_data, ahdlc_irdy, clk)
 		variable frm : std_logic;
 		variable esc : std_logic;
 	begin
@@ -101,5 +103,6 @@ begin
 			uart_txd   <= ahdlc_flag;
 		end if;
 	end process;
+
 
 end;

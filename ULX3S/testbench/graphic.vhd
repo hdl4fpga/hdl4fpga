@@ -149,26 +149,26 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector :=
-		x"1602000000" &
-		x"18ff" & 
-		x"123456789abcdef123456789abcdef12" &
-		x"23456789abcdef123456789abcdef123" &
-		x"3456789abcdef123456789abcdef1234" &
-		x"456789abcdef123456789abcdef12345" &
-		x"56789abcdef123456789abcdef123456" &
-		x"6789abcdef123456789abcdef1234567" &
-		x"789abcdef123456789abcdef12345678" &
-		x"89abcdef123456789abcdef123456789" &
-		x"9abcdef123456789abcdef123456789a" &
-		x"abcdef123456789abcdef123456789ab" &
-		x"bcdef123456789abcdef123456789abc" &
-		x"cdef123456789abcdef123456789abcd" &
-		x"def123456789abcdef123456789abcde" &
-		x"ef123456789abcdef123456789abcdef" &
-		x"f123456789abcdef123456789abcdef1" &
-		x"123456789abcdef123456789abcdef12" &
-		x"170200007f";
+	constant data  : std_logic_vector := x"667e";
+--		x"1602000000" &
+--		x"18ff" & 
+--		x"123456789abcdef123456789abcdef12" &
+--		x"23456789abcdef123456789abcdef123" &
+--		x"3456789abcdef123456789abcdef1234" &
+--		x"456789abcdef123456789abcdef12345" &
+--		x"56789abcdef123456789abcdef123456" &
+--		x"6789abcdef123456789abcdef1234567" &
+--		x"789abcdef123456789abcdef12345678" &
+--		x"89abcdef123456789abcdef123456789" &
+--		x"9abcdef123456789abcdef123456789a" &
+--		x"abcdef123456789abcdef123456789ab" &
+--		x"bcdef123456789abcdef123456789abc" &
+--		x"cdef123456789abcdef123456789abcd" &
+--		x"def123456789abcdef123456789abcde" &
+--		x"ef123456789abcdef123456789abcdef" &
+--		x"f123456789abcdef123456789abcdef1" &
+--		x"123456789abcdef123456789abcdef12" &
+--		x"170200007f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
@@ -185,7 +185,7 @@ architecture ulx3s_graphic of testbench is
 
 begin
 
-	rst <= '1', '0' after (1 us+82.5 us);
+	rst <= '1', '0' after (1 us);
 	xtal <= not xtal after 20 ns;
 
 --	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -214,17 +214,69 @@ begin
 		end if;
 	end process;
 
-	ahdlctx_e : entity hdl4fpga.ahdlc_tx
-	port map (
-		clk        => uart_clk,
-		uart_irdy  => uart_irdy,
-		uart_trdy  => uart_trdy,
-		uart_txd   => uart_txd,
+	xxx_e : block
 
-		ahdlc_frm  => ahdlc_frm,
-		ahdlc_irdy => '1',
-		ahdlc_trdy => ahdlc_trdy,
-		ahdlc_data => ahdlc_data);
+		signal cntr     : unsigned(0 to 1) := (others => '1');
+
+		signal crc_init : std_logic;
+		signal crc_sero : std_logic;
+		signal crc_ena  : std_logic;
+		signal crc      : std_logic_vector(16-1 downto 0);
+
+		signal fcs_frm  : std_logic;
+		signal fcs_data : std_logic_vector(ahdlc_data'range);
+		signal fcs_trdy : std_logic;
+
+	begin
+
+		process (uart_clk)
+		begin
+			if rising_edge(uart_clk) then
+				if ahdlc_frm='1' then 
+					if cntr(0)/='0' then
+						cntr <= to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
+					end if;
+				elsif uart_trdy='1' then
+					if cntr(0)='0' then
+						cntr <= cntr - 1;
+					end if;
+				end if;
+			end if;
+		end process;
+
+		crc_init <= not ahdlc_frm and     cntr(0);
+		crc_sero <= not ahdlc_frm and not cntr(0);
+		crc_ena  <= ahdlc_irdy and ahdlc_trdy when ahdlc_frm='1' else uart_trdy and not cntr(0);
+		crc_ccitt_e : entity hdl4fpga.crc
+		generic map (
+			g => x"1021")
+		port map (
+			clk  => uart_clk,
+			init => crc_init,
+			ena  => crc_ena,
+			sero => crc_sero,
+			data => ahdlc_data,
+			crc  => crc);
+
+		fcs_frm    <= ahdlc_frm or not cntr(0);
+		fcs_data   <= wirebus(ahdlc_data & crc(fcs_data'range), ahdlc_frm & crc_sero);
+
+		ahdlc_irdy <= '1';
+		ahdlc_trdy <= ahdlc_frm and fcs_trdy;
+		ahdlctx_e : entity hdl4fpga.ahdlc_tx
+		port map (
+			clk        => uart_clk,
+			uart_irdy  => uart_irdy,
+			uart_trdy  => uart_trdy,
+			uart_txd   => uart_txd,
+
+			ahdlc_frm  => fcs_frm,
+			ahdlc_irdy => ahdlc_irdy,
+			ahdlc_trdy => fcs_trdy,
+			ahdlc_data => fcs_data);
+
+	end block;
+
 
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
