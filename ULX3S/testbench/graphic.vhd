@@ -149,7 +149,7 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"667e";
+	constant data  : std_logic_vector := x"667e7d";
 --		x"1602000000" &
 --		x"18ff" & 
 --		x"123456789abcdef123456789abcdef12" &
@@ -214,26 +214,27 @@ begin
 		end if;
 	end process;
 
-	xxx_e : block
-
-		signal cntr     : unsigned(0 to 1) := (others => '1');
-
-		signal crc_init : std_logic;
-		signal crc_sero : std_logic;
-		signal crc_ena  : std_logic;
-		signal crc      : std_logic_vector(16-1 downto 0);
+	ahdlcfcs_e : block
 
 		signal fcs_frm  : std_logic;
 		signal fcs_data : std_logic_vector(ahdlc_data'range);
 		signal fcs_trdy : std_logic;
 
+		signal crc_init : std_logic;
+		signal crc_sero : std_logic;
+		signal crc_ena  : std_logic;
+		signal crc      : std_logic_vector(16-1 downto 0);
+		signal cy       : std_logic;
+		signal cntr     : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
+
 	begin
 
+		cy <= setif(cntr(0)/='0');
 		process (uart_clk)
 		begin
 			if rising_edge(uart_clk) then
 				if ahdlc_frm='1' then 
-					if cntr(0)/='0' then
+					if cy='1' then
 						cntr <= to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
 					end if;
 				elsif uart_trdy='1' then
@@ -244,9 +245,9 @@ begin
 			end if;
 		end process;
 
-		crc_init <= not ahdlc_frm and     cntr(0);
-		crc_sero <= not ahdlc_frm and not cntr(0);
-		crc_ena  <= ahdlc_irdy and ahdlc_trdy when ahdlc_frm='1' else uart_trdy and not cntr(0);
+		crc_init <= not ahdlc_frm and     cy;
+		crc_sero <= not ahdlc_frm and not cy;
+		crc_ena  <= ahdlc_irdy and ahdlc_trdy when ahdlc_frm='1' else uart_trdy and not cy;
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")
@@ -258,7 +259,7 @@ begin
 			data => ahdlc_data,
 			crc  => crc);
 
-		fcs_frm    <= ahdlc_frm or not cntr(0);
+		fcs_frm    <= ahdlc_frm or not cy;
 		fcs_data   <= wirebus(ahdlc_data & crc(fcs_data'range), ahdlc_frm & crc_sero);
 
 		ahdlc_irdy <= '1';
@@ -276,7 +277,6 @@ begin
 			ahdlc_data => fcs_data);
 
 	end block;
-
 
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
