@@ -149,7 +149,7 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"667e7d6677";
+	constant data  : std_logic_vector := x"77";
 --		x"1602000000" &
 --		x"18ff" & 
 --		x"123456789abcdef123456789abcdef12" &
@@ -185,7 +185,7 @@ architecture ulx3s_graphic of testbench is
 
 begin
 
-	rst <= '1', '0' after (1 us);
+	rst <= '1', '0' after (1 us), '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 --	uart_clk <= not uart_clk after (1 sec / baudrate / 2);

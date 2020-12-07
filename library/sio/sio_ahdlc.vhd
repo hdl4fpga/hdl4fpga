@@ -44,16 +44,17 @@ end;
 
 architecture def of sio_ahdlc is
 
-	constant ccitt_residue : std_logic_vector := not x"1d0f";
+	constant ccitt_residue : std_logic_vector := x"1d0f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
 	signal ahdlc_data : std_logic_vector(so_data'range);
-	signal ahdlc_crc  : std_logic_vector(ccitt_residue'range);
 
+	signal buffer_data : std_logic_vector(so_data'range);
 	signal buffer_cmmt : std_logic;
 	signal buffer_rlk  : std_logic;
 	signal buffer_ovfl : std_logic;
+	signal buffer_irdy : std_logic;
 
 begin
 
@@ -70,9 +71,10 @@ begin
 
 	llc_b : block
 		signal crc_init : std_logic;
-		signal crc_sero : std_logic;
 		signal crc_ena  : std_logic;
-		signal crc      : std_logic_vector(16-1 downto 0);
+		signal crc      : std_logic_vector(ccitt_residue'range);
+		signal ini      : std_logic;
+		signal irdy     : std_logic;
 	begin
 		crc_init <= not ahdlc_frm;
 		crc_ena  <= (ahdlc_frm and ahdlc_irdy) or not ahdlc_frm;
@@ -86,17 +88,33 @@ begin
 			data => ahdlc_data,
 			crc  => crc);
 
---		buffer_cmmt <= '1' when ahdlc_frm='0' and ahdlc_crc =ccitt_residue else '0';
---		buffer_rlk  <= '1' when ahdlc_frm='0' and ahdlc_crc/=ccitt_residue else '0';
---
+		buffer_cmmt <= '1' when ahdlc_frm='0' and crc =not ccitt_residue else '0';
+		buffer_rlk  <= '1' when ahdlc_frm='0' and crc/=not ccitt_residue else '0';
+
+		ini <= not ahdlc_frm;
+		pp : entity hdl4fpga.align 
+		generic map (
+			n => ahdlc_data'length+1,
+			i => (0 to ahdlc_data'length => '0'),
+			d => (0 to ahdlc_data'length => 2))
+		port map (
+			clk => uart_clk,
+			ini => ini,
+			ena => ahdlc_irdy,
+			di(0 to 8-1) => ahdlc_data,
+			di(8)        => '1',
+			do(0 to 8-1) => buffer_data,
+			do(8)        => irdy);
+		buffer_irdy <= irdy and ahdlc_irdy;
+
 	end block;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
 		si_clk    => uart_clk,
 		si_frm    => ahdlc_frm,
-		si_irdy   => ahdlc_irdy,
-		si_data   => ahdlc_data,
+		si_irdy   => buffer_irdy,
+		si_data   => buffer_data,
 
 		rollback  => buffer_rlk,
 		commit    => buffer_cmmt,
