@@ -149,7 +149,7 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"667e7d";
+	constant data  : std_logic_vector := x"667e7d6677";
 --		x"1602000000" &
 --		x"18ff" & 
 --		x"123456789abcdef123456789abcdef12" &
@@ -223,9 +223,9 @@ begin
 		signal crc_init : std_logic;
 		signal crc_sero : std_logic;
 		signal crc_ena  : std_logic;
-		signal crc      : std_logic_vector(16-1 downto 0);
-		signal cy       : std_logic;
+		signal crc      : std_logic_vector(0 to 16-1);
 		signal cntr     : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
+		signal cy       : std_logic;
 
 	begin
 
@@ -260,7 +260,7 @@ begin
 			crc  => crc);
 
 		fcs_frm    <= ahdlc_frm or not cy;
-		fcs_data   <= wirebus(ahdlc_data & crc(fcs_data'range), ahdlc_frm & crc_sero);
+		fcs_data   <= wirebus(ahdlc_data & crc(0 to fcs_data'length-1), ahdlc_frm & crc_sero);
 
 		ahdlc_irdy <= '1';
 		ahdlc_trdy <= ahdlc_frm and fcs_trdy;

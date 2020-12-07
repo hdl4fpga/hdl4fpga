@@ -44,7 +44,7 @@ end;
 
 architecture def of sio_ahdlc is
 
-	constant ccitt_residue : std_logic_vector := x"1d0f";
+	constant ccitt_residue : std_logic_vector := not x"1d0f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
@@ -68,24 +68,28 @@ begin
 		ahdlc_irdy => ahdlc_irdy,
 		ahdlc_data => ahdlc_data);
 
---	llc_b : block
---		signal crc_ena : std_logic;
---	begin
---		crc_ena <= (ahdlc_frm and uart_rxdv) or not ahdlc_frm;
---		crc_ccitt_e : entity hdl4fpga.crc
---		generic map (
---			g => x"1021")
---		port map (
---			clk  => uart_clk,
---			frm  => ahdlc_frm,
---			ena  => crc_ena,
---			data => ahdlc_data,
---			crc  => ahdlc_crc);
---
+	llc_b : block
+		signal crc_init : std_logic;
+		signal crc_sero : std_logic;
+		signal crc_ena  : std_logic;
+		signal crc      : std_logic_vector(16-1 downto 0);
+	begin
+		crc_init <= not ahdlc_frm;
+		crc_ena  <= (ahdlc_frm and ahdlc_irdy) or not ahdlc_frm;
+		crc_ccitt_e : entity hdl4fpga.crc
+		generic map (
+			g => x"1021")
+		port map (
+			clk  => uart_clk,
+			init => crc_init,
+			ena  => crc_ena,
+			data => ahdlc_data,
+			crc  => crc);
+
 --		buffer_cmmt <= '1' when ahdlc_frm='0' and ahdlc_crc =ccitt_residue else '0';
 --		buffer_rlk  <= '1' when ahdlc_frm='0' and ahdlc_crc/=ccitt_residue else '0';
 --
---	end block;
+	end block;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
