@@ -185,7 +185,7 @@ architecture ulx3s_graphic of testbench is
 
 begin
 
-	rst <= '1', '0' after (1 us), '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 --	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
@@ -204,6 +204,9 @@ begin
 					addr := addr + 8;
 				end if;
 			else
+				if uart_trdy='1' then
+					addr := 0;
+				end if;
 				ahdlc_data <= (others => '-');
 			end if;
 			if addr < data'length then
@@ -238,7 +241,7 @@ begin
 						cntr <= to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
 					end if;
 				elsif uart_trdy='1' then
-					if cntr(0)='0' then
+					if cy='0' then
 						cntr <= cntr - 1;
 					end if;
 				end if;
@@ -260,7 +263,7 @@ begin
 			crc  => crc);
 
 		fcs_frm    <= ahdlc_frm or not cy;
-		fcs_data   <= wirebus(ahdlc_data & crc(0 to fcs_data'length-1), ahdlc_frm & crc_sero);
+		fcs_data   <= wirebus(ahdlc_data & crc(0 to fcs_data'length-1), (cy and ahdlc_frm) & crc_sero);
 
 		ahdlc_irdy <= '1';
 		ahdlc_trdy <= ahdlc_frm and fcs_trdy;
