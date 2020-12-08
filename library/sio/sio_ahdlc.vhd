@@ -181,7 +181,9 @@ begin
 			if rising_edge(uart_clk) then
 				if uart_idle='1' then
 					if fcs='0' then
-						cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
+						if ahdlc_frm='1' then
+							cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
+						end if;
 					elsif cy='0' then
 						cntr := cntr - 1;
 					end if;

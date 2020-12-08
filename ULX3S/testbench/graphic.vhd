@@ -149,26 +149,26 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"70";
---		x"1602000000" &
---		x"18ff" & 
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"170200007f";
+	constant data  : std_logic_vector := 
+		x"1602000000" &
+		x"18ff" & 
+		x"123456789abcdef123456789abcdef12" &
+		x"23456789abcdef123456789abcdef123" &
+		x"3456789abcdef123456789abcdef1234" &
+		x"456789abcdef123456789abcdef12345" &
+		x"56789abcdef123456789abcdef123456" &
+		x"6789abcdef123456789abcdef1234567" &
+		x"789abcdef123456789abcdef12345678" &
+		x"89abcdef123456789abcdef123456789" &
+		x"9abcdef123456789abcdef123456789a" &
+		x"abcdef123456789abcdef123456789ab" &
+		x"bcdef123456789abcdef123456789abc" &
+		x"cdef123456789abcdef123456789abcd" &
+		x"def123456789abcdef123456789abcde" &
+		x"ef123456789abcdef123456789abcdef" &
+		x"f123456789abcdef123456789abcdef1" &
+		x"123456789abcdef123456789abcdef12" &
+		x"170200007f";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
@@ -235,7 +235,7 @@ begin
 			variable q : std_logic;
 		begin
 			if rising_edge(uart_clk) then
-				if uart_idle='1' then
+				if uart_trdy='1' then
 					if ahdlc_frm='1' then
 						if cy='1' then
 							q := '0';
@@ -253,9 +253,11 @@ begin
 			variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
 		begin
 			if rising_edge(uart_clk) then
-				if uart_idle='1' then
+				if uart_trdy='1' then
 					if fcs='0' then
-						cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
+						if ahdlc_frm='1' then
+							cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
+						end if;
 					elsif cy='0' then
 						cntr := cntr - 1;
 					end if;
@@ -264,7 +266,7 @@ begin
 			end if;
 		end process;
 
-		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_idle and fcs);
+		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_trdy and fcs);
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")

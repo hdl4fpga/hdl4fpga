@@ -221,6 +221,10 @@ architecture graphics of ulx3s is
 
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+	signal uart_idle   : std_logic;
+	signal uart_txen   : std_logic;
+	signal uart_txd    : std_logic_vector(8-1 downto 0);
+
 
 	alias sio_clk      : std_logic is uart_rxc;
 	signal sio_frm : std_logic;
@@ -438,6 +442,9 @@ begin
 			uart_clk  => uart_rxc,
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd,
+			uart_idle => uart_idle,
+			uart_txd  => uart_txd,
+			uart_txen => uart_txen,
 			sio_clk   => uart_rxc,
 			si_data   => sin_data,
 			so_frm    => sin_frm,
