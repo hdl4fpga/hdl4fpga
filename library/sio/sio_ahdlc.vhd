@@ -179,7 +179,7 @@ begin
 			variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
 		begin
 			if rising_edge(uart_clk) then
-				if uart_idle='1' then
+				if fcs_trdy='1' then
 					if fcs='0' then
 						if ahdlc_frm='1' then
 							cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
@@ -192,7 +192,7 @@ begin
 			end if;
 		end process;
 
-		crc_ena <= (si_irdy and si_trdy and si_frm) or (uart_idle and fcs);
+		crc_ena <= (si_irdy and si_trdy and si_frm) or (fcs_trdy and fcs);
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")

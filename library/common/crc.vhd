@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity crc is
 	generic (
+		debug : boolean := false;
 		g    : std_logic_vector);
     port (
         clk  : in  std_logic;
@@ -58,6 +59,9 @@ begin
 					crc <= std_logic_vector(unsigned(crc) rol data'length);
 				else
 					crc  <= not galois_crc(data, not crc, g);
+					if debug then
+						crc <= x"7e7d";
+					end if;
 				end if;
 			end if;
 		end if;
