@@ -37,6 +37,8 @@ HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
 HDL4FPGA__udp_tx = $(LIB_HDL4FPGA)/udp_tx/_primary.dat
 HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
 HDL4FPGA__udp_rx = $(LIB_HDL4FPGA)/udp_rx/_primary.dat
+HDL4FPGA__uart_tx__def = $(LIB_HDL4FPGA)/uart_tx/def.dat
+HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
@@ -252,6 +254,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__udp_tx) \
     $(HDL4FPGA__udp_rx__def) \
     $(HDL4FPGA__udp_rx) \
+    $(HDL4FPGA__uart_tx__def) \
+    $(HDL4FPGA__uart_tx) \
     $(HDL4FPGA__uart_rx__def) \
     $(HDL4FPGA__uart_rx) \
     $(HDL4FPGA__tmds_encoder__behavioral) \
@@ -444,22 +448,22 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__aff)
 
 $(HDL4FPGA__ahdlc_rx) \
-$(HDL4FPGA__ahdlc_rx__def) : ../sio/ahdlc_rx.vhd \
+$(HDL4FPGA__ahdlc_rx__def) : ../uart/ahdlc_rx.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../sio/ahdlc_rx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../uart/ahdlc_rx.vhd
 
 $(HDL4FPGA__ahdlc_tx) \
-$(HDL4FPGA__ahdlc_tx__def) : ../sio/ahdlc_tx.vhd \
+$(HDL4FPGA__ahdlc_tx__def) : ../uart/ahdlc_tx.vhd \
 		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../sio/ahdlc_tx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../uart/ahdlc_tx.vhd
 
 $(HDL4FPGA__align) \
 $(HDL4FPGA__align__arch) : ../common/align.vhd \
@@ -1303,7 +1307,9 @@ $(HDL4FPGA__sff__xilinx) : ../xilinx/ff.vhd \
 
 $(HDL4FPGA__sio_ahdlc) \
 $(HDL4FPGA__sio_ahdlc__def) : ../sio/sio_ahdlc.vhd \
+		$(HDL4FPGA__ahdlc_tx) \
 		$(HDL4FPGA__sio_buffer) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__ahdlc_rx) \
 		$(IEEE__std_logic_textio) \
@@ -1435,6 +1441,15 @@ $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../uart/uart_rx.vhd
+
+$(HDL4FPGA__uart_tx) \
+$(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../uart/uart_tx.vhd
 
 $(HDL4FPGA__udp_rx) \
 $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \

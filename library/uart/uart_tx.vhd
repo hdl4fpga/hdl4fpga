@@ -36,7 +36,7 @@ entity uart_tx is
 		uart_txc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sout : out std_logic;
-		uart_trdy : out std_logic;
+		uart_idle : out std_logic;
 		uart_txdv : in  std_logic;
 		uart_txd  : in  std_logic_vector(8-1 downto 0));
 end;
@@ -134,7 +134,7 @@ begin
 		end if;
 	end process;
 
-	uart_trdy <= 
+	uart_idle <= 
 		'1' when uart_state=idle_s else
 		'1' when uart_state=stop_s and full_count='1' else
 		'0';

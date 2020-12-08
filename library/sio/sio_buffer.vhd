@@ -44,7 +44,7 @@ entity sio_buffer is
 		overflow : out std_logic;
 
 		so_clk   : in  std_logic;
-		so_frm   : out std_logic;
+		so_frm   : buffer std_logic;
 		so_irdy  : out std_logic;
 		so_trdy  : in  std_logic := '1';
 		so_data  : out std_logic_vector);
@@ -124,6 +124,6 @@ begin
 			end if;
 		end if;
 	end process;
-	so_irdy <= '1';
+	so_irdy <= so_frm;
 
 end;

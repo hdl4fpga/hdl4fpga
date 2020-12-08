@@ -35,8 +35,13 @@ entity sio_dayahdlc is
 		uart_rxdv : in  std_logic;
 		uart_rxd  : in  std_logic_vector(8-1 downto 0);
 
+		uart_idle : in  std_logic;
+		uart_txen : out std_logic;
+		uart_txd  : out std_logic_vector(8-1 downto 0);
+
 		sio_clk   : in std_logic;
 		sio_addr  : in  std_logic := '0';
+
 		si_frm    : in  std_logic := '0';
 		si_irdy   : in  std_logic := '1';
 		si_trdy   : out std_logic;
@@ -52,12 +57,22 @@ end;
 
 architecture beh of sio_dayahdlc is
 
+	signal siahdlc_frm  : std_logic;
+	signal siahdlc_trdy : std_logic;
+	signal siahdlc_irdy : std_logic;
+	signal siahdlc_data : std_logic_vector(so_data'range);
+
 	signal soahdlc_frm  : std_logic;
 	signal soahdlc_trdy : std_logic;
 	signal soahdlc_irdy : std_logic;
 	signal soahdlc_data : std_logic_vector(so_data'range);
 
 begin
+
+	siahdlc_frm  <= si_frm  when sio_addr='0' else '0'; 
+	siahdlc_irdy <= si_irdy when sio_addr='0' else '0';
+	si_trdy <= siahdlc_irdy when sio_addr='0' else so_trdy;
+	siahdlc_data <= si_data;
 
 	sioahdlc_e : entity hdl4fpga.sio_ahdlc
 	port map (
@@ -66,7 +81,16 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd,
 
+		uart_idle => uart_idle,
+		uart_txd  => uart_txd,
+		uart_txen => uart_txen,
+
 		sio_clk   => sio_clk,
+		si_frm    => siahdlc_frm,
+		si_irdy   => siahdlc_irdy,
+		si_trdy   => siahdlc_trdy,
+		si_data   => siahdlc_data,
+
 		so_frm    => soahdlc_frm,
 		so_irdy   => soahdlc_irdy,
 		so_trdy   => soahdlc_trdy,
@@ -74,8 +98,7 @@ begin
 
 	so_frm  <= si_frm  when sio_addr/='0' else soahdlc_frm; 
 	so_irdy <= si_irdy when sio_addr/='0' else soahdlc_irdy;
-	si_trdy <= so_trdy when sio_addr/='0' else soahdlc_irdy;
-	so_data <= si_data when sio_addr/='0' else soahdlc_data;
 	soahdlc_trdy <= si_irdy when sio_addr/='0' else so_trdy;
+	so_data <= si_data when sio_addr/='0' else soahdlc_data;
 
 end;

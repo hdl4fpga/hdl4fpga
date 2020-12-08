@@ -149,7 +149,7 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"00";
+	constant data  : std_logic_vector := x"70";
 --		x"1602000000" &
 --		x"18ff" & 
 --		x"123456789abcdef123456789abcdef12" &
@@ -180,7 +180,6 @@ architecture ulx3s_graphic of testbench is
 	signal uart_trdy  : std_logic;
 	signal uart_irdy  : std_logic;
 	signal uart_txd   : std_logic_vector(8-1 downto 0);
-	signal cy   : std_logic;
 
 	constant uart_xtal : natural := 25 sec / 1 us;
 
@@ -228,6 +227,7 @@ begin
 		signal crc_init : std_logic;
 		signal crc_ena  : std_logic;
 		signal crc      : std_logic_vector(0 to 16-1);
+	signal cy   : std_logic;
 
 	begin
 
@@ -235,7 +235,7 @@ begin
 			variable q : std_logic;
 		begin
 			if rising_edge(uart_clk) then
-				if uart_trdy='1' then
+				if uart_idle='1' then
 					if ahdlc_frm='1' then
 						if cy='1' then
 							q := '0';
@@ -253,7 +253,7 @@ begin
 			variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
 		begin
 			if rising_edge(uart_clk) then
-				if uart_trdy='1' then
+				if uart_idle='1' then
 					if fcs='0' then
 						cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
 					elsif cy='0' then
@@ -264,7 +264,7 @@ begin
 			end if;
 		end process;
 
-		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_trdy and fcs);
+		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_idle and fcs);
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")
@@ -302,7 +302,7 @@ begin
 	port map (
 		uart_txc  => uart_clk,
 		uart_sout => uart_sin,
-		uart_trdy => uart_trdy,
+		uart_idle => uart_trdy,
 		uart_txdv => uart_irdy,
 		uart_txd  => uart_txd);
 
