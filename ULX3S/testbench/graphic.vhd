@@ -223,30 +223,30 @@ begin
 		signal fcs_frm  : std_logic;
 		signal fcs_data : std_logic_vector(ahdlc_data'range);
 		signal fcs_trdy : std_logic;
+		signal fcs      : std_logic;
 
 		signal crc_init : std_logic;
 		signal crc_ena  : std_logic;
 		signal crc      : std_logic_vector(0 to 16-1);
-		signal fcs  : std_logic;
 
 	begin
 
-		fcs_p : process (ahdlc_frm, cy,uart_clk)
-			variable fcs_q  : std_logic;
+		fcs_p : process (ahdlc_frm, cy, uart_clk)
+			variable q : std_logic;
 		begin
 			if rising_edge(uart_clk) then
 				if uart_trdy='1' then
 					if ahdlc_frm='1' then
 						if cy='1' then
-							fcs_q := '0';
+							q := '0';
 						end if;
 					else
-						fcs_q := '1';
+						q := '1';
 					end if;
 				end if;
 			end if;
-			crc_init <= cy and fcs_q;
-			fcs <= setif(ahdlc_frm='1', fcs_q and not cy, not cy);
+			crc_init <= cy and q;
+			fcs <= setif(ahdlc_frm='1', q and not cy, not cy);
 		end process;
 
 		cntr_p : process (uart_clk)
@@ -264,7 +264,7 @@ begin
 			end if;
 		end process;
 
-		crc_ena  <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_trdy and fcs);
+		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (uart_trdy and fcs);
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")
