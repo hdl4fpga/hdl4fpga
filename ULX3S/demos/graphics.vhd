@@ -459,6 +459,7 @@ begin
 			sin_data  => sin_data,
 			data_ptr  => data_ptr,
 			data_frm  => data_frm,
+			rgtr_irdy => rgtr_irdy,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);

@@ -70,7 +70,7 @@ begin
 			end if;
 		end if;
 		ahdlc_frm  <= (setif(uart_rxd/=ahdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
-		ahdlc_data <= setif(esc='0', uart_rxd, uart_rxd xor x"20");
+		ahdlc_data <= setif(esc='1', uart_rxd xor x"20", uart_rxd);
 	end process;
 
 	ahdlc_irdy <= ahdlc_frm and uart_rxdv and setif(uart_rxd/=ahdlc_esc);
