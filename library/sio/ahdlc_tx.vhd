@@ -76,11 +76,7 @@ begin
 		end if;
 
 		if ahdlc_frm='1' then
-			if frm='0' then
-				uart_txd   <= ahdlc_flag;
-				uart_irdy  <= ahdlc_irdy;
-				ahdlc_trdy <= '0';
-			elsif esc='1' then
+			if esc='1' then
 				uart_txd   <= ahdlc_data xor x"20";
 				uart_irdy  <= ahdlc_irdy;
 				ahdlc_trdy <= uart_trdy;
