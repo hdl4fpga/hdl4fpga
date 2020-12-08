@@ -73,8 +73,8 @@ begin
 		signal crc_init : std_logic;
 		signal crc_ena  : std_logic;
 		signal crc      : std_logic_vector(ccitt_residue'range);
-		signal ini      : std_logic;
-		signal irdy     : std_logic;
+		signal irdy_ini : std_logic;
+		signal irdy_ena : std_logic;
 	begin
 		crc_init <= not ahdlc_frm;
 		crc_ena  <= (ahdlc_frm and ahdlc_irdy) or not ahdlc_frm;
@@ -91,21 +91,29 @@ begin
 		buffer_cmmt <= '1' when ahdlc_frm='0' and crc =not ccitt_residue else '0';
 		buffer_rlk  <= '1' when ahdlc_frm='0' and crc/=not ccitt_residue else '0';
 
-		ini <= not ahdlc_frm;
-		pp : entity hdl4fpga.align 
+		irdy_ini <= not ahdlc_frm;
+		rdy_ena_e : entity hdl4fpga.align 
 		generic map (
-			n => ahdlc_data'length+1,
-			i => (0 to ahdlc_data'length => '0'),
-			d => (0 to ahdlc_data'length => 2))
+			n => 1,
+			i => (0 to 0 => '0'),
+			d => (0 to 0 => 2))
 		port map (
 			clk => uart_clk,
-			ini => ini,
+			ini => irdy_ini,
 			ena => ahdlc_irdy,
-			di(0 to 8-1) => ahdlc_data,
-			di(8)        => '1',
-			do(0 to 8-1) => buffer_data,
-			do(8)        => irdy);
-		buffer_irdy <= irdy and ahdlc_irdy;
+			di(0) => '1',
+			do(0) => irdy_ena);
+		buffer_irdy <= irdy_ena and ahdlc_irdy;
+
+		data_e : entity hdl4fpga.align 
+		generic map (
+			n => ahdlc_data'length,
+			d => (ahdlc_data'range => 2))
+		port map (
+			clk => uart_clk,
+			ena => ahdlc_irdy,
+			di  => ahdlc_data,
+			do  => buffer_data);
 
 	end block;
 
