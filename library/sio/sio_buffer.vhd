@@ -36,7 +36,7 @@ entity sio_buffer is
 
 		si_frm   : in  std_logic := '0';
 		si_irdy  : in  std_logic := '0';
-		si_trdy  : buffer std_logic := '0';
+		si_trdy  : buffer std_logic;
 		si_data  : in  std_logic_vector;
 
 		rollback : in  std_logic;

@@ -57,6 +57,7 @@ architecture def of dpram is
 		variable aux    : std_logic_vector(0 to size*word'length-1);
 		variable retval : word_vector(0 to size-1);
 	begin
+		aux := (others => '0');
 		if bitrom'length > 0 then  -- "if" WORKAROUND suggested by emard @ github.com
 			if aux'length >= bitrom'length then
 				aux(0 to bitrom'length-1) := bitrom0;
