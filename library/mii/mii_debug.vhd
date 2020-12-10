@@ -172,9 +172,9 @@ begin
 		code_digits => code_digits, 
 		cga_bitrom  => cga_bitrom)
 	port map (
-		mii_txc     => mii_txc,
-		mii_txen    => debug_txen,
-		mii_txd     => debug_txd(0 to mii_txd'length-1),
+		ser_clk     => mii_txc,
+		ser_frm     => debug_txen,
+		ser_data    => debug_txd(0 to mii_txd'length-1),
 
 		video_clk   => video_clk,
 		video_dot   => video_dot,

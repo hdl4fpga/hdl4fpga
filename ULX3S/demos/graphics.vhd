@@ -130,6 +130,7 @@ architecture graphics of ulx3s is
     signal video_vton     : std_logic;
     signal video_blank     : std_logic;
     signal video_on       : std_logic;
+    signal video_dot       : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
     signal base_addr      : std_logic_vector(dmactlr_addr'range);
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
@@ -613,27 +614,41 @@ begin
 
 	end block;
 
-	mii_debug_e : entity hdl4fpga.mii_debug
-	generic map (
-		default_ipv4a => x"00_00_00_00",
-		cga_bitrom => to_ascii("Ready Steady GO!"),
-		timing_id  => video_tab(video_mode).timing_id)
-	port map (
-		mii_rxc   => mii_rxc,
-		mii_rxd   => mii_rxd,
-		mii_rxdv  => mii_rxdv,
+	ser_b : block
+		constant sync_lat : natural := 1;
+		signal pixel  : std_logic_vector(video_pixel'range);
+	begin
+		mii_debug_e : entity hdl4fpga.mii_display
+		generic map (
+			code_spce   => to_ascii(" "),
+			code_digits => to_ascii("0123456789abcdef"),
+			cga_bitrom => to_ascii("Ready Steady GO!"),
+			timing_id  => video_tab(video_mode).mode)
+		port map (
+			ser_clk   => uart_rxc,
+			ser_frm   => '1',
+			ser_irdy  => uart_rxdv,
+			ser_data  => uart_rxd,
 
-		mii_txc   => mii_txc,
-		dhcp_req  => dhcp_req,
-		mii_txd   => mii_txd,
-		mii_txen  => mii_txen,
-		tp => tp,
+			video_clk => video_clk, 
+			video_dot => video_dot,
+			video_on  => video_on,
+			video_hs  => video_hzsync,
+			video_vs  => video_vtsync);
 
-		video_clk => video_clk, 
-		video_dot => video_dot,
-		video_on  => video_on,
-		video_hs  => video_hzsync,
-		video_vs  => video_vtsync);
+		pixel <= (others => video_dot);
+		topixel_e : entity hdl4fpga.align
+		generic map (
+			n => pixel'length,
+			d => (0 to pixel'length-1 => sync_lat-1))
+		port map (
+			clk => video_clk,
+			di  => pixel,
+			do  => video_pixel);
+
+		video_blank <= not video_on;
+	end block;
+
 
 --	adapter_b : block
 --		constant mode : videotiming_ids := video_tab(video_mode).mode;

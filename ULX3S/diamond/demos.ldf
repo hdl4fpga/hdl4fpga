@@ -151,7 +151,7 @@
         </Source>
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.sio_mux" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.graphics" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -336,6 +336,9 @@
             <Options/>
         </Source>
         <Source name="../../library/latticesemi/sdrphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
