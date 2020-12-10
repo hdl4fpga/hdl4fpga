@@ -201,8 +201,8 @@ architecture graphics of ulx3s is
 
 	alias uart_rxc     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
-	constant baudrate  : natural := 3000000;
---	constant baudrate  : natural := 115200;
+--	constant baudrate  : natural := 3000000;
+	constant baudrate  : natural := 115200;
 
 --	alias uart_rxc     : std_logic is video_clk;
 --	constant uart_xtal : natural := natural(
@@ -615,7 +615,11 @@ begin
 	end block;
 
 	ser_b : block
-		constant sync_lat : natural := 1;
+		constant sync_lat : natural := 4;
+		signal hzsync : std_logic;
+		signal vtsync : std_logic;
+		signal von    : std_logic;
+		signal dot    : std_logic;
 		signal pixel  : std_logic_vector(video_pixel'range);
 	begin
 		mii_debug_e : entity hdl4fpga.mii_display
@@ -631,20 +635,33 @@ begin
 			ser_data  => uart_rxd,
 
 			video_clk => video_clk, 
-			video_dot => video_dot,
-			video_on  => video_on,
-			video_hs  => video_hzsync,
-			video_vs  => video_vtsync);
+			video_dot => dot,
+			video_on  => von,
+			video_hs  => hzsync,
+			video_vs  => vtsync);
 
-		pixel <= (others => video_dot);
+		pixel <= (others => dot);
 		topixel_e : entity hdl4fpga.align
 		generic map (
 			n => pixel'length,
-			d => (0 to pixel'length-1 => sync_lat-1))
+			d => (0 to pixel'length-1 => sync_lat-4))
 		port map (
 			clk => video_clk,
 			di  => pixel,
 			do  => video_pixel);
+
+		tosync_e : entity hdl4fpga.align
+		generic map (
+			n => 3,
+			d => (0 to 3-1 => sync_lat))
+		port map (
+			clk => video_clk,
+			di(0) => von,
+			di(1) => hzsync,
+			di(2) => vtsync,
+			do(0) => video_on,
+			do(1) => video_hzsync,
+			do(2) => video_vtsync);
 
 		video_blank <= not video_on;
 	end block;

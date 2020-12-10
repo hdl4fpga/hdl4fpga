@@ -107,10 +107,3 @@ void tryfcs16(cp, len)
         printf("Good FCS\n");
 }
 
-void main ()
-{
-	u16 fcs;
-
-    fcs = pppfcs16( PPPINITFCS16, "\x77\x7e", 2 );
-	printf("0x%02x\n", (~reverse(fcs, 16)) & 0xffff);
-}
