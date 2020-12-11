@@ -190,7 +190,6 @@ int rcvd_pkt()
 		print_pkt(rbuff, len);
 		fprintf(stderr, "OK!!!!!!!! fcs 0x%04x\n", fcs);
 		pkt_lost--;
-		exit(1);
 		return len;
 	}
 
@@ -257,6 +256,7 @@ int main (int argc, char *argv[])
 			break;
 	}
 
+	exit(1);
 	for(;;) {
 		int size = sizeof(sbuff)-(sload-sbuff);
 
