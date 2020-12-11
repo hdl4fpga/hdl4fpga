@@ -45,7 +45,7 @@ if [ "$HOST" == "" ] ; then
 
 	echo Setting serial speed ${SPEED} to port "${TTY}" 1>&2
 	stty -F  "${TTY}" sane 1>&2
-	stty -F  "${TTY}" "${SPEED}" cs8 raw -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost 1>&2
+	stty -F  "${TTY}" "${SPEED}" cs8 raw -noecho -cstopb -parenb -onlcr -ocrnl -onlcr -ofdel -onlret -opost 1>&2
 
 	sleep 1
 fi
