@@ -89,7 +89,14 @@ void init_ahdlc ()
 char sbuff[2048];
 char *sload = sbuff+5;
 int  pkt_sent = 0;
-int  ack      = 0;
+int  ack      = 0x37;
+
+void print_pkt (void *pkt, int len)
+{
+	for(int i = 0; i < len; i++) {
+		fprintf(stderr,"0x%02x ", ((char unsigned *) pkt)[i]);
+	}
+}
 
 void send_char (char unsigned c)
 {
@@ -144,18 +151,18 @@ int rcvd_pkt()
 	int err;
 	int len;
 
-	FD_ZERO(&rfds);
-	FD_SET(fileno(stdin), &rfds);
-	tv.tv_sec  = 0;
-	tv.tv_usec = 1000;
-
 	pkt_lost++;
-	if ((err = select(fileno(stdin)+1, &rfds, NULL, NULL, &tv)) == -1) {
-		perror ("select");
-		exit (1);
-	} else {
-		if (err > 0) {
-			for (len = 0; len < sizeof(rbuff); len++) {
+	for (len = 0; len < sizeof(rbuff); len++) {
+		FD_ZERO(&rfds);
+		FD_SET(fileno(stdout), &rfds);
+		tv.tv_sec  = 0;
+		tv.tv_usec = 1000;
+
+		if ((err = select(fileno(stdout)+1, &rfds, NULL, NULL, &tv)) == -1) {
+			perror ("select");
+			exit (1);
+		} else {
+			if (err > 0) {
 				if (fread(rbuff+len, sizeof(char), 1, stdout) > 0)
 					if (rbuff[len] == 0x7e)
 						break;
@@ -163,17 +170,30 @@ int rcvd_pkt()
 						continue;
 				perror("reading serial");
 				exit(1);
-			}
-			fcs = pppfcs16(PPPINITFCS16, rbuff, len);
-			fprintf(stderr, "fcs 0x%04x\n", fcs);
-			if (fcs == PPPGOODFCS16) {
-			fprintf(stderr, "OK!!!!!!!! fcs 0x%04x\n", fcs);
-				pkt_lost--;
-			exit(1);
-				return len;
-			}
+			} else
+				len--;
 		}
 	}
+
+	int i;
+	int j;
+	for (i = 0, j = 0; i < len; rbuff[j++] = rbuff[i++]) {
+		if (rbuff[i] == 0x7d) {
+			rbuff[++i] ^= 0x20;
+		}
+	}
+	len += (j-i);
+	fcs = pppfcs16(PPPINITFCS16, rbuff, len);
+	fprintf(stderr, "fcs 0x%04x\n", fcs);
+	if (fcs == PPPGOODFCS16) {
+		len -= 2;
+		print_pkt(rbuff, len);
+		fprintf(stderr, "OK!!!!!!!! fcs 0x%04x\n", fcs);
+		pkt_lost--;
+		exit(1);
+		return len;
+	}
+
 	return 0;
 }
 

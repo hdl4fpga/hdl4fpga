@@ -36,7 +36,7 @@ entity sio_dayahdlc is
 		uart_rxd  : in  std_logic_vector(8-1 downto 0);
 
 		uart_idle : in  std_logic;
-		uart_txen : out std_logic;
+		uart_txen : buffer std_logic;
 		uart_txd  : out std_logic_vector(8-1 downto 0);
 
 		sio_clk   : in std_logic;
@@ -71,7 +71,7 @@ begin
 
 	siahdlc_frm  <= si_frm  when sio_addr='0' else '0'; 
 	siahdlc_irdy <= si_irdy when sio_addr='0' else '0';
-	si_trdy <= (siahdlc_irdy and uart_idle) when sio_addr='0' else so_trdy;
+	si_trdy <= (siahdlc_irdy and uart_idle and uart_txen) when sio_addr='0' else so_trdy;
 	siahdlc_data <= si_data;
 
 	sioahdlc_e : entity hdl4fpga.sio_ahdlc
