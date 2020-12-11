@@ -105,6 +105,7 @@ void send_ahdlc (int psize)
 	memcpy(sbuff+psize+0, (char *) &fcs+1, sizeof(fcs)/2);
 	memcpy(sbuff+psize+1, (char *) &fcs+0, sizeof(fcs)/2);
 	psize += sizeof(fcs);
+	send_char(0x7e);
 	for (int i = 0; i < psize; i++) {
 		if (sbuff[i] == 0x7e) {
 			send_char(0x7d);

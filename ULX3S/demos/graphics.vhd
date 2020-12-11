@@ -199,24 +199,24 @@ architecture graphics of ulx3s is
 		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	alias uart_rxc     : std_logic is clk_25mhz;
+	alias uart_clk     : std_logic is clk_25mhz;
 	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
---	constant baudrate  : natural := 3000000;
-	constant baudrate  : natural := 115200;
+	constant baudrate  : natural := 3000000;
+--	constant baudrate  : natural := 115200;
 
---	alias uart_rxc     : std_logic is video_clk;
+--	alias uart_clk     : std_logic is video_clk;
 --	constant uart_xtal : natural := natural(
 --		real(video_tab(video_mode).clkfb_div*video_tab(video_mode).clkop_div)*1.0e9/
 --		real(video_tab(video_mode).clki_div)/10.0/sys_per);
 --	constant baudrate  : natural := 2_000_000;
 
---	alias uart_rxc     : std_logic is ctlr_clk;
+--	alias uart_clk     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(
 --		real(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div)*1.0e9/
 --		real(sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/sys_per);
 --	constant baudrate  : natural := 3_000_000;
 
---	alias uart_rxc     : std_logic is ctlr_clk;
+--	alias uart_clk     : std_logic is ctlr_clk;
 --	constant uart_xtal : natural := natural(10.0**9/(real(ddr_tcp)/1000.0));
 --	constant baudrate  : natural := 115200_00;
 --	constant video_mode : natural := modedebug;
@@ -228,9 +228,9 @@ architecture graphics of ulx3s is
 	signal uart_txd    : std_logic_vector(8-1 downto 0);
 
 
-	alias sio_clk      : std_logic is uart_rxc;
-	signal sio_frm : std_logic;
-	alias dmacfg_clk   : std_logic is uart_rxc;
+	alias sio_clk      : std_logic is uart_clk;
+	signal sio_frm     : std_logic;
+	alias dmacfg_clk   : std_logic is uart_clk;
 
 	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
 	constant read_latency  : boolean := not (sdram_mode=sdram200MHz);
@@ -430,42 +430,135 @@ begin
 
 	begin
 
+	process (uart_clk)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(uart_clk) then
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			i := sin_frm;
+
+			led(0) <= t;
+			led(1) <= not t;
+		end if;
+	end process;
+
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
 			baudrate => baudrate,
 			clk_rate => uart_xtal)
 		port map (
-			uart_rxc  => uart_rxc,
+			uart_rxc  => uart_clk,
 			uart_sin  => ftdi_txd,
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd);
 
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_txc  => uart_clk,
+			uart_sout => ftdi_rxd,
+			uart_idle => uart_idle,
+			uart_txen => uart_txen,
+			uart_txd  => uart_txd);
+
 		siodayahdlc_e : entity hdl4fpga.sio_dayahdlc
 		port map (
-			uart_clk  => uart_rxc,
+			uart_clk  => uart_clk,
 			uart_rxdv => uart_rxdv,
 			uart_rxd  => uart_rxd,
 			uart_idle => uart_idle,
 			uart_txd  => uart_txd,
 			uart_txen => uart_txen,
-			sio_clk   => uart_rxc,
-			si_data   => sin_data,
+			sio_clk   => sio_clk,
+			si_frm    => sou_frm,
+			si_irdy   => sou_irdy(0),
+			si_trdy   => sou_trdy,
+			si_data   => sou_data,
+
 			so_frm    => sin_frm,
 			so_irdy   => sin_irdy,
 			so_data   => sin_data);
 
-		scopeio_sin_e : entity hdl4fpga.sio_sin
+		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
 			sin_frm   => sin_frm,
 			sin_irdy  => sin_irdy,
 			sin_data  => sin_data,
-			data_ptr  => data_ptr,
 			data_frm  => data_frm,
+			data_ptr  => data_ptr,
+			data_irdy => data_irdy,
+			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy,
-			rgtr_dv   => rgtr_dv,
+			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
+			rgtr_lv   => rgtr_lv,
+			rgtr_len  => rgtr_len,
+			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
+
+		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
+		sigram_e : entity hdl4fpga.sio_ram 
+		generic map (
+			mem_size => 128*sin_data'length)
+		port map (
+			si_clk   => sio_clk,
+			si_frm   => rgtr_frm,
+			si_irdy  => sigram_irdy,
+			si_data  => rgtr_data(sin_data'range),
+
+			so_clk   => sio_clk,
+			so_frm   => sou_frm,
+			so_irdy  => sou_trdy,
+			so_trdy  => sig_trdy,
+			so_end   => sig_end,
+			so_data  => sig_data);
+
+		process (siodmaio_end, sio_clk)
+			variable frm : std_logic;
+			variable req : std_logic := '0';
+		begin
+			if rising_edge(sio_clk) then
+				if req='1' then
+					if siodmaio_end='1' then
+						req := '0';
+					end if;
+				elsif frm='1' and rgtr_frm='0' then
+					req := '1';
+				end if;
+				frm := rgtr_frm;
+			end if;
+			sou_frm <= req and not siodmaio_end;
+		end process;
+
+		sio_dmaio <= 
+			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
+--			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000";
+		siodmaio_irdy <= sig_end and sou_trdy;
+		siodma_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => sio_dmaio,
+			sio_clk  => sio_clk,
+			sio_frm  => sou_frm,
+			so_irdy  => siodmaio_irdy,
+			so_trdy  => siodmaio_trdy,
+			so_end   => siodmaio_end,
+			so_data  => siodmaio_data);
+
+		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
+		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 
 		base_addr_e : entity hdl4fpga.sio_rgtr
 		generic map (
@@ -616,12 +709,15 @@ begin
 
 	ser_b : block
 		constant sync_lat : natural := 4;
+		signal ser_irdy : std_logic;
 		signal hzsync : std_logic;
 		signal vtsync : std_logic;
 		signal von    : std_logic;
 		signal dot    : std_logic;
 		signal pixel  : std_logic_vector(video_pixel'range);
 	begin
+--		ser_irdy <= uart_rxdv;
+		ser_irdy <= uart_txen and uart_idle;
 		mii_debug_e : entity hdl4fpga.mii_display
 		generic map (
 			code_spce   => to_ascii(" "),
@@ -629,10 +725,11 @@ begin
 			cga_bitrom => to_ascii("Ready Steady GO!"),
 			timing_id  => video_tab(video_mode).mode)
 		port map (
-			ser_clk   => uart_rxc,
+			ser_clk   => sio_clk,
 			ser_frm   => '1',
-			ser_irdy  => uart_rxdv,
-			ser_data  => uart_rxd,
+			ser_irdy  => ser_irdy,
+--			ser_data  => uart_rxd,
+			ser_data  => uart_txd,
 
 			video_clk => video_clk, 
 			video_dot => dot,
@@ -920,18 +1017,6 @@ begin
 
 		sdr_dm      => sdram_dqm,
 		sdr_dq      => sdram_d);
-
-	process (uart_rxc)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(uart_rxc) then
-			if uart_rxdv='1' then
-				led <= uart_rxd;
-			end if;
-		end if;
-	end process;
 
 	-- VGA --
 	---------

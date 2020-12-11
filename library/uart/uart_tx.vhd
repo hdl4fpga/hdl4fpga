@@ -37,7 +37,7 @@ entity uart_tx is
 		uart_ena  : in  std_logic := '1';
 		uart_sout : out std_logic;
 		uart_idle : out std_logic;
-		uart_txdv : in  std_logic;
+		uart_txen : in  std_logic;
 		uart_txd  : in  std_logic_vector(8-1 downto 0));
 end;
  
@@ -95,7 +95,7 @@ begin
 					uart_sout <= '1';
 					dcntr := (others => '-');
 					data  := unsigned(uart_txd);
-					if uart_txdv='1' then
+					if uart_txen='1' then
 						uart_sout  <= '0';
 						uart_state <= start_s;
 					end if;
@@ -123,7 +123,7 @@ begin
 					data  := unsigned(uart_txd);
 					dcntr := (others => '-');
 					if full_count='1' then
-						if uart_txdv='1' then
+						if uart_txen='1' then
 							uart_state <= start_s;
 						else
 							uart_state <= idle_s;
