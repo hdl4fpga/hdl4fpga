@@ -156,14 +156,20 @@ int rcvd_pkt()
 	} else {
 		if (err > 0) {
 			for (len = 0; len < sizeof(rbuff); len++) {
-				if (fread(rbuff+len, sizeof(char), 1, stdin) > 0)
-					continue;
+				if (fread(rbuff+len, sizeof(char), 1, stdout) > 0)
+					if (rbuff[len] == 0x7e)
+						break;
+					else
+						continue;
 				perror("reading serial");
 				exit(1);
 			}
-			fcs = ~reverse(pppfcs16(PPPINITFCS16, rbuff, len), 16);
-			if (fcs == 0x0000) {
+			fcs = pppfcs16(PPPINITFCS16, rbuff, len);
+			fprintf(stderr, "fcs 0x%04x\n", fcs);
+			if (fcs == PPPGOODFCS16) {
+			fprintf(stderr, "OK!!!!!!!! fcs 0x%04x\n", fcs);
 				pkt_lost--;
+			exit(1);
 				return len;
 			}
 		}
