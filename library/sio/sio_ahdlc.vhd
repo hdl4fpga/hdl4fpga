@@ -101,8 +101,16 @@ begin
 				data => ahdlc_data,
 				crc  => crc);
 
-			buffer_cmmt <= '1' when ahdlc_frm='0' and crc =not ccitt_residue else '0';
-			buffer_rlk  <= '1' when ahdlc_frm='0' and crc/=not ccitt_residue else '0';
+			process(uart_clk)
+				variable frm : std_logic;
+			begin
+				if rising_edge(uart_clk) then
+					frm := ahdl
+				end if;
+			end process;
+
+			fcs_vld <= '1' when ahdlc_frm='0' and crc =not ccitt_residue else '0';
+			fcs_rlk <= '1' when ahdlc_frm='0' and crc/=not ccitt_residue else '0';
 
 			irdy_ini <= not ahdlc_frm;
 			rdy_ena_e : entity hdl4fpga.align 
@@ -129,6 +137,22 @@ begin
 				do  => buffer_data);
 
 		end block;
+
+	flowrx_e : entity hdl4fpga.sio_flowrx
+	port map (
+		si_clk   => uart_clk,
+		si_frm   => ahdlc_frm,
+		si_irdy  => buffer_irdy
+		si_data  => buffer_data,
+
+		pkt_vld  => pkt_vld,
+		pkt_dup  => pkt_dup,
+		ack_rxdv => ack_rxdv,
+		acki_rxd => ack_rxd);
+
+	buffer_rlk  <= pkt_dup;
+	buffer_cmmt <= not pkt_dup;
+
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (

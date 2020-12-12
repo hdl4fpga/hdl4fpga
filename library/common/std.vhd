@@ -186,12 +186,6 @@ package std is
 		constant argf : integer := 0)
 		return integer;
 
-	function decode (
-		constant inp  : std_logic_vector;
-		constant ena  : std_logic := '1';
-		constant size : natural   := 0)
-		return std_logic_vector;
-
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
@@ -253,11 +247,6 @@ package std is
 		constant arg : gray)
 		return gray;
 	
-	function slll (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic := '0')
-		return std_logic_vector;
-
 	function pulse_delay (
 		constant clk_phases : natural;
 		constant phase     : std_logic_vector;
@@ -366,6 +355,10 @@ package std is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 	
+--	procedure edge(
+--		signal xx  : out std_logic;
+--		signal yy  : in  std_logic;
+--		signal clk : in std_logic);
 end;
 
 use std.textio.all;
@@ -926,17 +919,6 @@ package body std is
 		return argf;
 	end function;
 
-	function slll (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic := '0')
-		return std_logic_vector is
-		variable aux : std_logic_vector(arg1'range);
-	begin
-		aux := std_logic_vector(shift_left(unsigned(arg1),1));
-		aux(aux'right) := arg2;
-		return aux;
-	end;
-
 	function neg (
 		constant arg : signed;
 		constant ena : std_logic := '1')
@@ -1009,21 +991,6 @@ package body std is
 			mulr := mulr / 2;
 		end loop;
 		return rval;
-	end;
-
-	function decode (
-		constant inp  : std_logic_vector;
-		constant ena  : std_logic := '1';
-		constant size : natural   := 0)
-		return std_logic_vector is
-		variable retval : std_logic_vector(0 to 2**inp'length-1) := (others => '0');
-	begin
-		retval(to_integer(unsigned(inp))) := ena;
-		if size=0 then
-			return retval;
-		else
-			return retval(0 to size-1);
-		end if;
 	end;
 
 	function primux (
