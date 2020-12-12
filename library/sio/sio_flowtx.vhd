@@ -23,10 +23,8 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
 entity sio_flowtx is
 	port (
@@ -36,10 +34,7 @@ entity sio_flowtx is
 		so_trdy  : out std_logic;
 		so_data  : out std_logic_vector;
 		so_end   : out std_logic;
-		ack_data : in  std_logic_vector(8-1 downto 0);
-
-		pkt_vld : in  std_logic;
-		pkt_dup : in  std_logic);
+		ack_data : in  std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of sio_flowtx is

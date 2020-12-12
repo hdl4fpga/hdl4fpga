@@ -101,16 +101,15 @@ begin
 				data => ahdlc_data,
 				crc  => crc);
 
-			process(uart_clk)
-				variable frm : std_logic;
+			process(ahdlc_frm, uart_clk)
+				variable q : std_logic;
 			begin
 				if rising_edge(uart_clk) then
-					frm := ahdl
+					q := ahdlc_frm
 				end if;
+				fcs_sb <= not ahdlc_frm and q;
 			end process;
-
-			fcs_vld <= '1' when ahdlc_frm='0' and crc =not ccitt_residue else '0';
-			fcs_rlk <= '1' when ahdlc_frm='0' and crc/=not ccitt_residue else '0';
+			fcs_vld <= not setif(crc=not ccitt_residue);
 
 			irdy_ini <= not ahdlc_frm;
 			rdy_ena_e : entity hdl4fpga.align 
@@ -138,21 +137,37 @@ begin
 
 		end block;
 
-	flowrx_e : entity hdl4fpga.sio_flowrx
-	port map (
-		si_clk   => uart_clk,
-		si_frm   => ahdlc_frm,
-		si_irdy  => buffer_irdy
-		si_data  => buffer_data,
+	flow_b : block
+	begin
 
-		pkt_vld  => pkt_vld,
-		pkt_dup  => pkt_dup,
-		ack_rxdv => ack_rxdv,
-		acki_rxd => ack_rxd);
+		flowrx_e : entity hdl4fpga.sio_flowrx
+		port map (
+			si_clk   => sio_clk,
+			si_frm   => ahdlc_frm,
+			si_irdy  => buffer_irdy
+			si_data  => buffer_data,
 
-	buffer_rlk  <= pkt_dup;
-	buffer_cmmt <= not pkt_dup;
+			pkt_vld  => fcs_vld,
+			pkt_dup  => pkt_dup,
+			ack_rxdv => ack_rxdv,
+			ack_rxd  => ack_rxd);
 
+		ack_tx <= ack_rx or (pkt_dup & b"000_0000");
+		process (sio_clk)
+		flowtx_e : entity sio_flowtx is
+		port (
+			ack_data => ack_tx,
+			so_clk   => sio_clk,
+			so_frm   =>
+			so_irdy  =>
+			so_trdy  =>
+			so_data  =>
+			so_end   =>);
+
+	end block;
+
+	buffer_cmmt <= not pkt_dup and fcs_sb;
+	buffer_rlk  <= not fcs_vld and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
@@ -185,6 +200,12 @@ begin
 		signal cy       : std_logic;
 
 	begin
+
+		txgnt_e : entity hdl4fpga.arbiter
+		port map (
+			clk => si_clk,
+			req => si_req,
+			gnt => si_gnt);
 
 		fcs_p : process (si_frm, cy, uart_clk)
 			variable q : std_logic;
