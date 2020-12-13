@@ -48,10 +48,19 @@ entity sio_ahdlc is
 		so_irdy   : out std_logic;
 		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector);
-
 end;
 
 architecture def of sio_ahdlc is
+
+	signal flow_frm     : std_logic;
+	signal flow_irdy    : std_logic;
+	signal flow_trdy    : std_logic;
+	signal flow_data    : std_logic_vector(si_data'range);
+
+	signal ahdlctx_frm  : std_logic;
+	signal ahdlctx_irdy : std_logic;
+	signal ahdlctx_trdy : std_logic;
+	signal ahdlctx_data : std_logic_vector(si_data'range);
 
 begin
 
@@ -69,6 +78,12 @@ begin
 		signal ahdlc_irdy : std_logic;
 		signal ahdlc_data : std_logic_vector(so_data'range);
 
+		signal fcs_sb   : std_logic;
+		signal fcs_vld  : std_logic;
+		signal pkt_dup  : std_logic;
+		signal ack_rxdv : std_logic;
+		signal ack_rxd  : std_logic_vector(8-1 downto 0);
+
 	begin
 
 		ahdlcrx_e : entity hdl4fpga.ahdlc_rx
@@ -83,6 +98,7 @@ begin
 			ahdlc_data => ahdlc_data);
 
 		fcs_b : block
+
 			signal crc_init : std_logic;
 			signal crc_ena  : std_logic;
 			signal crc      : std_logic_vector(ccitt_residue'range);
@@ -105,7 +121,7 @@ begin
 				variable q : std_logic;
 			begin
 				if rising_edge(uart_clk) then
-					q := ahdlc_frm
+					q := ahdlc_frm;
 				end if;
 				fcs_sb <= not ahdlc_frm and q;
 			end process;
@@ -138,13 +154,15 @@ begin
 		end block;
 
 	flow_b : block
+		signal ack_txd : std_logic_vector(ack_rxd'range);
+		signal flow_end : std_logic;
 	begin
 
 		flowrx_e : entity hdl4fpga.sio_flowrx
 		port map (
 			si_clk   => sio_clk,
 			si_frm   => ahdlc_frm,
-			si_irdy  => buffer_irdy
+			si_irdy  => buffer_irdy,
 			si_data  => buffer_data,
 
 			pkt_vld  => fcs_vld,
@@ -152,17 +170,16 @@ begin
 			ack_rxdv => ack_rxdv,
 			ack_rxd  => ack_rxd);
 
-		ack_tx <= ack_rx or (pkt_dup & b"000_0000");
-		process (sio_clk)
-		flowtx_e : entity sio_flowtx is
-		port (
-			ack_data => ack_tx,
+		ack_txd <= ack_rxd or (pkt_dup & b"000_0000");
+		flowtx_e : entity hdl4fpga.sio_flowtx
+		port map(
+			ack_data => ack_txd,
 			so_clk   => sio_clk,
-			so_frm   =>
-			so_irdy  =>
-			so_trdy  =>
-			so_data  =>
-			so_end   =>);
+			so_frm   => flow_frm,
+			so_irdy  => flow_irdy,
+			so_trdy  => flow_trdy,
+			so_data  => flow_data,
+			so_end   => flow_end);
 
 	end block;
 
@@ -187,10 +204,40 @@ begin
 		so_data   => so_data);
 	end block;
 
+	artibiter_b : block
+
+		constant gnt_flow  : natural := 0;
+		constant gnt_si    : natural := 1;
+
+		signal ahdlctx_req : std_logic_vector(0 to 2-1);
+		signal ahdlctx_gnt : std_logic_vector(0 to 2-1);
+		signal ahdlctx_swp : std_logic;
+
+	begin
+
+		ahdlctx_req(gnt_flow) <= flow_frm;
+		ahdlctx_req(gnt_si)   <= si_frm;
+
+		gnt_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => sio_clk,
+			req  => ahdlctx_req,
+			gswp => ahdlctx_swp,
+			gnt  => ahdlctx_gnt);
+
+		ahdlctx_frm  <= not ahdlctx_swp and setif(ahdlctx_gnt/=(ahdlctx_gnt'range => '0'));
+		ahdlctx_irdy <= not ahdlctx_swp and wirebus(flow_irdy & si_irdy, ahdlctx_gnt)(0);
+		ahdlctx_data <= wirebus(flow_data & si_data, ahdlctx_gnt);
+
+		si_trdy      <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
+		flow_trdy    <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
+
+	end block;
+
 	ahdlcfcs_tx_b : block
 
 		signal fcs_frm  : std_logic;
-		signal fcs_data : std_logic_vector(si_data'range);
+		signal fcs_data : std_logic_vector(ahdlctx_data'range);
 		signal fcs_trdy : std_logic;
 
 		signal crc_init : std_logic;
@@ -201,18 +248,12 @@ begin
 
 	begin
 
-		txgnt_e : entity hdl4fpga.arbiter
-		port map (
-			clk => si_clk,
-			req => si_req,
-			gnt => si_gnt);
-
-		fcs_p : process (si_frm, cy, uart_clk)
+		fcs_p : process (ahdlctx_frm, cy, uart_clk)
 			variable q : std_logic;
 		begin
 			if rising_edge(uart_clk) then
 				if uart_idle='1' then
-					if si_frm='1' then
+					if ahdlctx_frm='1' then
 						if cy='1' then
 							q := '0';
 						end if;
@@ -222,7 +263,7 @@ begin
 				end if;
 			end if;
 			crc_init <= cy and q;
-			crc_sero <= setif(si_frm='1', q and not cy, not cy);
+			crc_sero <= setif(ahdlctx_frm='1', q and not cy, not cy);
 		end process;
 
 		cntr_p : process (uart_clk)
@@ -231,8 +272,8 @@ begin
 			if rising_edge(uart_clk) then
 				if fcs_trdy='1' then
 					if crc_sero='0' then
-						if si_frm='1' then
-							cntr := to_unsigned(crc'length/si_data'length-1, cntr'length);
+						if ahdlctx_frm='1' then
+							cntr := to_unsigned(crc'length/ahdlctx_data'length-1, cntr'length);
 						end if;
 					elsif cy='0' then
 						cntr := cntr - 1;
@@ -242,7 +283,7 @@ begin
 			end if;
 		end process;
 
-		crc_ena <= (si_frm and si_irdy and si_trdy) or (fcs_trdy and crc_sero);
+		crc_ena <= (ahdlctx_frm and ahdlctx_irdy and ahdlctx_trdy) or (fcs_trdy and crc_sero);
 		crc_ccitt_e : entity hdl4fpga.crc
 		generic map (
 			g => x"1021")
@@ -251,11 +292,11 @@ begin
 			init => crc_init,
 			ena  => crc_ena,
 			sero => crc_sero,
-			data => si_data,
+			data => ahdlctx_data,
 			crc  => crc);
 
-		fcs_frm  <= (si_frm or crc_sero) and not crc_init;
-		fcs_data <= wirebus(si_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
+		fcs_frm  <= (ahdlctx_frm or crc_sero) and not crc_init;
+		fcs_data <= wirebus(ahdlctx_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
 
 		ahdlctx_e : entity hdl4fpga.ahdlc_tx
 		port map (
@@ -265,11 +306,11 @@ begin
 			uart_txd   => uart_txd,
 
 			ahdlc_frm  => fcs_frm,
-			ahdlc_irdy => si_irdy,
+			ahdlc_irdy => ahdlctx_irdy,
 			ahdlc_trdy => fcs_trdy,
 			ahdlc_data => fcs_data);
 
-		si_trdy <= si_frm and fcs_trdy and not crc_init and not crc_sero;
+		ahdlctx_trdy <= ahdlctx_frm and fcs_trdy and not crc_init and not crc_sero;
 
 	end block;
 

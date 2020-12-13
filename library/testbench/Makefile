@@ -57,6 +57,10 @@ HDL4FPGA__sio_ram__def = $(LIB_HDL4FPGA)/sio_ram/def.dat
 HDL4FPGA__sio_ram = $(LIB_HDL4FPGA)/sio_ram/_primary.dat
 HDL4FPGA__sio_mux__def = $(LIB_HDL4FPGA)/sio_mux/def.dat
 HDL4FPGA__sio_mux = $(LIB_HDL4FPGA)/sio_mux/_primary.dat
+HDL4FPGA__sio_flowtx__def = $(LIB_HDL4FPGA)/sio_flowtx/def.dat
+HDL4FPGA__sio_flowtx = $(LIB_HDL4FPGA)/sio_flowtx/_primary.dat
+HDL4FPGA__sio_flowrx__def = $(LIB_HDL4FPGA)/sio_flowrx/def.dat
+HDL4FPGA__sio_flowrx = $(LIB_HDL4FPGA)/sio_flowrx/_primary.dat
 HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__sio_dayahdlc__beh = $(LIB_HDL4FPGA)/sio_dayahdlc/beh.dat
@@ -274,6 +278,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sio_ram) \
     $(HDL4FPGA__sio_mux__def) \
     $(HDL4FPGA__sio_mux) \
+    $(HDL4FPGA__sio_flowtx__def) \
+    $(HDL4FPGA__sio_flowtx) \
+    $(HDL4FPGA__sio_flowrx__def) \
+    $(HDL4FPGA__sio_flowrx) \
     $(HDL4FPGA__sio_dayudp__beh) \
     $(HDL4FPGA__sio_dayudp) \
     $(HDL4FPGA__sio_dayahdlc__beh) \
@@ -1308,7 +1316,10 @@ $(HDL4FPGA__sff__xilinx) : ../xilinx/ff.vhd \
 $(HDL4FPGA__sio_ahdlc) \
 $(HDL4FPGA__sio_ahdlc__def) : ../sio/sio_ahdlc.vhd \
 		$(HDL4FPGA__ahdlc_tx) \
+		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_buffer) \
+		$(HDL4FPGA__sio_flowtx) \
+		$(HDL4FPGA__sio_flowrx) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__ahdlc_rx) \
@@ -1351,6 +1362,27 @@ $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayudp.vhd
+
+$(HDL4FPGA__sio_flowrx) \
+$(HDL4FPGA__sio_flowrx__def) : ../sio/sio_flowrx.vhd \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__sio_sin) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_flowrx.vhd
+
+$(HDL4FPGA__sio_flowtx) \
+$(HDL4FPGA__sio_flowtx__def) : ../sio/sio_flowtx.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__sio_mux) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_flowtx.vhd
 
 $(HDL4FPGA__sio_mux) \
 $(HDL4FPGA__sio_mux__def) : ../sio/sio_mux.vhd \

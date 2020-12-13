@@ -33,6 +33,8 @@ entity arbiter is
 		clk : in  std_logic;
 		csc : in  std_logic := '1';
 		req : in  std_logic_vector;
+		swp : out std_logic;
+		gswp : out std_logic;
 		gnt : buffer std_logic_vector);
 end;
 
@@ -66,5 +68,7 @@ begin
 	assert req'length=gnt'length
 		severity failure;
 	gnt <= primask(word2byte((req and gntd) & req, setif(gntd=(gntd'range => '0')))) and (gnt'range => csc);
+	swp <= setif(gntd/=gnt);
+	gswp <= setif(gntd/=gnt and gntd/=(gntd'range => '0') and gnt/=(gnt'range => '0'));
 
 end;

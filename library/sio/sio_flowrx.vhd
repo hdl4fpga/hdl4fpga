@@ -39,7 +39,8 @@ entity sio_flowrx is
 		pkt_vld  : in  std_logic;
 		pkt_dup  : out std_logic;
 
-		ack      : in  std_logic_vector(8-1 downto 0);
+		ack_rxdv : out std_logic;
+		ack_rxd  : in  std_logic_vector(8-1 downto 0);
 
 		tp       : buffer std_logic_vector(1 to 4));
 
