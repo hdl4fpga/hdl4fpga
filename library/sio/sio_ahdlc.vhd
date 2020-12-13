@@ -53,8 +53,8 @@ end;
 architecture def of sio_ahdlc is
 
 	signal flow_frm     : std_logic;
-	signal flow_irdy    : std_logic;
 	signal flow_trdy    : std_logic;
+	signal flow_irdy    : std_logic;
 	signal flow_data    : std_logic_vector(si_data'range);
 
 	signal ahdlctx_frm  : std_logic;
@@ -74,9 +74,9 @@ begin
 		signal buffer_ovfl : std_logic;
 		signal buffer_irdy : std_logic;
 
-		signal ahdlc_frm  : std_logic;
-		signal ahdlc_irdy : std_logic;
-		signal ahdlc_data : std_logic_vector(so_data'range);
+		signal ahdlcrx_frm  : std_logic;
+		signal ahdlcrx_irdy : std_logic;
+		signal ahdlcrx_data : std_logic_vector(so_data'range);
 
 		signal fcs_sb   : std_logic;
 		signal fcs_vld  : std_logic;
@@ -93,9 +93,9 @@ begin
 			uart_rxdv  => uart_rxdv,
 			uart_rxd   => uart_rxd,
 
-			ahdlc_frm  => ahdlc_frm,
-			ahdlc_irdy => ahdlc_irdy,
-			ahdlc_data => ahdlc_data);
+			ahdlc_frm  => ahdlcrx_frm,
+			ahdlc_irdy => ahdlcrx_irdy,
+			ahdlc_data => ahdlcrx_data);
 
 		fcs_b : block
 
@@ -105,8 +105,8 @@ begin
 			signal irdy_ini : std_logic;
 			signal irdy_ena : std_logic;
 		begin
-			crc_init <= setif(ahdlc_frm/='1');
-			crc_ena  <= (ahdlc_frm and ahdlc_irdy) or not ahdlc_frm;
+			crc_init <= setif(ahdlcrx_frm/='1');
+			crc_ena  <= (ahdlcrx_frm and ahdlcrx_irdy) or not ahdlcrx_frm;
 			crc_ccitt_e : entity hdl4fpga.crc
 			generic map (
 				g => x"1021")
@@ -114,20 +114,20 @@ begin
 				clk  => uart_clk,
 				init => crc_init,
 				ena  => crc_ena,
-				data => ahdlc_data,
+				data => ahdlcrx_data,
 				crc  => crc);
 
-			process(ahdlc_frm, uart_clk)
+			process(ahdlcrx_frm, uart_clk)
 				variable q : std_logic;
 			begin
 				if rising_edge(uart_clk) then
-					q := ahdlc_frm;
+					q := ahdlcrx_frm;
 				end if;
-				fcs_sb <= not ahdlc_frm and q;
+				fcs_sb <= not ahdlcrx_frm and q;
 			end process;
-			fcs_vld <= not setif(crc=not ccitt_residue);
+			fcs_vld <= setif(crc=not ccitt_residue);
 
-			irdy_ini <= not ahdlc_frm;
+			irdy_ini <= not ahdlcrx_frm;
 			rdy_ena_e : entity hdl4fpga.align 
 			generic map (
 				n => 1,
@@ -136,32 +136,34 @@ begin
 			port map (
 				clk => uart_clk,
 				ini => irdy_ini,
-				ena => ahdlc_irdy,
+				ena => ahdlcrx_irdy,
 				di(0) => '1',
 				do(0) => irdy_ena);
-			buffer_irdy <= irdy_ena and ahdlc_irdy;
+			buffer_irdy <= irdy_ena and ahdlcrx_irdy;
 
 			data_e : entity hdl4fpga.align 
 			generic map (
-				n => ahdlc_data'length,
-				d => (ahdlc_data'range => 2))
+				n => ahdlcrx_data'length,
+				d => (ahdlcrx_data'range => 2))
 			port map (
 				clk => uart_clk,
-				ena => ahdlc_irdy,
-				di  => ahdlc_data,
+				ena => ahdlcrx_irdy,
+				di  => ahdlcrx_data,
 				do  => buffer_data);
 
 		end block;
 
 	flow_b : block
-		signal ack_txd : std_logic_vector(ack_rxd'range);
+
+		signal ack_txd  : std_logic_vector(ack_rxd'range);
 		signal flow_end : std_logic;
+
 	begin
 
 		flowrx_e : entity hdl4fpga.sio_flowrx
 		port map (
 			si_clk   => sio_clk,
-			si_frm   => ahdlc_frm,
+			si_frm   => ahdlcrx_frm,
 			si_irdy  => buffer_irdy,
 			si_data  => buffer_data,
 
@@ -170,7 +172,24 @@ begin
 			ack_rxdv => ack_rxdv,
 			ack_rxd  => ack_rxd);
 
-		ack_txd <= ack_rxd or (pkt_dup & b"000_0000");
+		process (flow_end, fcs_vld, sio_clk)
+			variable q : std_logic := '0';
+		begin
+			if rising_edge(sio_clk) then
+				if q='1' then
+					if flow_end='1' then
+						q := '0';
+					end if;
+				elsif fcs_vld='1' then
+					if fcs_sb='1' then
+						q := '1';
+					end if;
+				end if;
+			end if;
+			flow_frm <= (fcs_vld and fcs_sb) or q;
+		end process;
+
+		ack_txd <= (pkt_dup & b"000_1111");
 		flowtx_e : entity hdl4fpga.sio_flowtx
 		port map(
 			ack_data => ack_txd,
@@ -189,7 +208,7 @@ begin
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
 		si_clk    => uart_clk,
-		si_frm    => ahdlc_frm,
+		si_frm    => ahdlcrx_frm,
 		si_irdy   => buffer_irdy,
 		si_data   => buffer_data,
 
@@ -216,7 +235,7 @@ begin
 	begin
 
 		ahdlctx_req(gnt_flow) <= flow_frm;
-		ahdlctx_req(gnt_si)   <= si_frm;
+		ahdlctx_req(gnt_si)   <= '0'; --si_frm;
 
 		gnt_e : entity hdl4fpga.arbiter
 		port map (
@@ -226,11 +245,11 @@ begin
 			gnt  => ahdlctx_gnt);
 
 		ahdlctx_frm  <= not ahdlctx_swp and setif(ahdlctx_gnt/=(ahdlctx_gnt'range => '0'));
-		ahdlctx_irdy <= not ahdlctx_swp and wirebus(flow_irdy & si_irdy, ahdlctx_gnt)(0);
+		ahdlctx_irdy <= not ahdlctx_swp and wirebus(flow_trdy & si_irdy, ahdlctx_gnt)(0);
 		ahdlctx_data <= wirebus(flow_data & si_data, ahdlctx_gnt);
 
 		si_trdy      <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
-		flow_trdy    <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
+		flow_irdy    <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
 
 	end block;
 

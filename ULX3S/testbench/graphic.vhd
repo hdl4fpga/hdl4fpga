@@ -149,7 +149,7 @@ architecture ulx3s_graphic of testbench is
 	end component;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := x"0002_000000";
+	constant data  : std_logic_vector := x"0002_000004";
 --		x"0002000080" &
 --		x"1602000000" &
 --		x"18ff" & 
