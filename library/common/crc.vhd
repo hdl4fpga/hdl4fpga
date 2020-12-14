@@ -30,9 +30,9 @@ use hdl4fpga.std.all;
 
 entity crc is
 	generic (
-		debug : boolean := false;
-		g    : std_logic_vector);
+		debug : boolean := false);
     port (
+		g    : in  std_logic_vector;
         clk  : in  std_logic;
 		init : in  std_logic;
 		sero : in  std_logic := '0';

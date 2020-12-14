@@ -108,9 +108,8 @@ begin
 			crc_init <= setif(ahdlcrx_frm/='1');
 			crc_ena  <= (ahdlcrx_frm and ahdlcrx_irdy) or not ahdlcrx_frm;
 			crc_ccitt_e : entity hdl4fpga.crc
-			generic map (
-				g => x"1021")
 			port map (
+				g    => x"1021",
 				clk  => uart_clk,
 				init => crc_init,
 				ena  => crc_ena,
@@ -259,6 +258,7 @@ begin
 
 		signal fcs_frm  : std_logic;
 		signal fcs_data : std_logic_vector(ahdlctx_data'range);
+		signal fcs_irdy : std_logic;
 		signal fcs_trdy : std_logic;
 
 		signal crc_init : std_logic;
@@ -306,9 +306,8 @@ begin
 
 		crc_ena <= (ahdlctx_frm and ahdlctx_irdy and ahdlctx_trdy) or (fcs_trdy and crc_sero);
 		crc_ccitt_e : entity hdl4fpga.crc
-		generic map (
-			g => x"1021")
 		port map (
+			g    => x"1021",
 			clk  => uart_clk,
 			init => crc_init,
 			ena  => crc_ena,
@@ -318,6 +317,7 @@ begin
 
 		fcs_frm  <= (ahdlctx_frm or crc_sero) and not crc_init;
 		fcs_data <= wirebus(ahdlctx_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
+		fcs_irdy <= setif(crc_sero='0', ahdlctx_irdy, '1');
 
 		ahdlctx_e : entity hdl4fpga.ahdlc_tx
 		port map (
@@ -327,7 +327,7 @@ begin
 			uart_txd   => uart_txd,
 
 			ahdlc_frm  => fcs_frm,
-			ahdlc_irdy => ahdlctx_irdy,
+			ahdlc_irdy => fcs_irdy, 
 			ahdlc_trdy => fcs_trdy,
 			ahdlc_data => fcs_data);
 

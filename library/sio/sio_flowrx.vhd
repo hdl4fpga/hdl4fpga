@@ -40,7 +40,7 @@ entity sio_flowrx is
 		pkt_dup  : out std_logic;
 
 		ack_rxdv : out std_logic;
-		ack_rxd  : in  std_logic_vector(8-1 downto 0);
+		ack_rxd  : buffer std_logic_vector(8-1 downto 0);
 
 		tp       : buffer std_logic_vector(1 to 4));
 
@@ -58,7 +58,6 @@ architecture def of sio_flowrx is
 	signal sig_irdy     : std_logic;
 	signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 	signal sigrgtr_dv   : std_logic;
-	signal ack_rgtr     : std_logic_vector(8-1 downto 0);
 	signal ack_equ      : std_logic_vector(8-1 downto 0);
 	signal ack_ena      : std_logic;
 	signal ack_data     : std_logic_vector(0 to 40-1);
@@ -98,17 +97,18 @@ begin
 		rgtr_id   => sigrgtr_id,
 		rgtr_dv   => sigrgtr_dv,
 		rgtr_data => sigrgtr_data,
-		data      => ack_rgtr,
+		dv        => ack_rxdv,
+		data      => ack_rxd,
 		ena       => ack_ena);
 
 	process (pkt_vld, si_clk)
-		variable last : std_logic_vector(ack_rgtr'range);
+		variable last : std_logic_vector(ack_rxd'range);
 		variable dup  : std_logic;
 	begin
 		if rising_edge(si_clk) then
 			if ack_ena='1' then
-				dup  := setif(shift_left(unsigned(ack_rgtr),2)=shift_left(unsigned(last),2));
-				last := ack_rgtr;
+				dup  := setif(shift_left(unsigned(sigrgtr_data),2)=shift_left(unsigned(last),2));
+				last := ack_rxd;
 			end if;
 		end if;
 		pkt_dup <= dup and pkt_vld;

@@ -36,8 +36,8 @@ entity uart_rx is
 		uart_rxc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
-		uart_rxdv : out std_logic;
-		uart_rxd  : out std_logic_vector(8-1 downto 0));
+		uart_rxdv : buffer std_logic;
+		uart_rxd  : buffer std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of uart_rx is
@@ -48,7 +48,24 @@ architecture def of uart_rx is
 	signal init_cntr  : std_logic;
 	signal half_count : std_logic;
 	signal full_count : std_logic;
+
+	signal debug_rxd  : std_logic_vector(8-1 downto 0);
+	signal debug_rxdv : std_logic;
+
 begin
+
+	debug_p : process (uart_rxc)
+	begin
+		if rising_edge(uart_rxc) then
+			debug_rxdv <= '0';
+			if uart_rxdv='1' then
+				if uart_ena='1' then
+					debug_rxd  <= uart_rxd;
+					debug_rxdv <= '1';
+				end if;
+			end if;
+		end if;
+	end process;
 
 	sample_p : process (uart_rxc)
 		variable sin  : unsigned(0 to 1-1);

@@ -36,7 +36,7 @@ entity uart_tx is
 		uart_txc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sout : out std_logic;
-		uart_idle : out std_logic;
+		uart_idle : buffer std_logic;
 		uart_txen : in  std_logic;
 		uart_txd  : in  std_logic_vector(8-1 downto 0));
 end;
@@ -50,8 +50,24 @@ architecture def of uart_tx is
 	signal init_cntr  : std_logic;
 	signal full_count : std_logic;
 
+	signal debug_txd  : std_logic_vector(8-1 downto 0);
+	signal debug_txen : std_logic;
+
 begin
  
+	debug_p : process (uart_txc)
+	begin
+		if rising_edge(uart_txc) then
+			debug_txen <= '0';
+			if uart_ena='1' then
+				if uart_idle='1' then
+					debug_txd <= uart_txd;
+					debug_txen <= '1';
+				end if;
+			end if;
+		end if;
+	end process;
+
 	cntr_p : process (uart_txc)
 		constant max_count  : natural := (clk_rate+baudrate/2)/baudrate;
 		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);

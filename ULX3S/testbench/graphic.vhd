@@ -274,9 +274,8 @@ begin
 
 		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (fcs_trdy and fcs);
 		crc_ccitt_e : entity hdl4fpga.crc
-		generic map (
-			g    => x"1021")
 		port map (
+			g    => x"1021",
 			clk  => uart_clk,
 			init => crc_init,
 			ena  => crc_ena,
