@@ -172,13 +172,15 @@ begin
 			ack_rxdv => ack_rxdv,
 			ack_rxd  => ack_rxd);
 
-		process (flow_end, fcs_vld, sio_clk)
+		process (fcs_sb, fcs_vld, sio_clk)
 			variable q : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
 				if q='1' then
 					if flow_end='1' then
-						q := '0';
+						if flow_irdy='1' then
+							q := '0';
+						end if;
 					end if;
 				elsif fcs_vld='1' then
 					if fcs_sb='1' then

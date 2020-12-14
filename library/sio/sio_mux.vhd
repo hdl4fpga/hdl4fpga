@@ -35,7 +35,7 @@ entity sio_mux is
         sio_frm  : in  std_logic;
 		so_irdy  : in  std_logic;
 		so_trdy  : out std_logic;
-		so_end   : out std_logic;
+		so_end   : buffer std_logic;
         so_data  : out std_logic_vector);
 end;
 
@@ -44,28 +44,29 @@ architecture def of sio_mux is
 	subtype mux_range is natural range 1 to mux_length;
 
 	signal mux_sel : std_logic_vector(mux_range);
-	signal rdata  : std_logic_vector(mux_data'range);
+	signal rdata   : std_logic_vector(0 to 2**mux_length*so_data'length-1);
 
 begin
 
-	process ( sio_clk)
+	process (sio_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(sio_clk) then
 			if sio_frm='0' then
-				cntr := to_unsigned(mux_data'length/so_data'length-1, cntr'length);
+				cntr := to_unsigned(mux_data'length/so_data'length-2, cntr'length);
+				so_trdy <= '1';
 			elsif so_irdy='1' then
 				if cntr(0)='0' then
 					cntr := cntr - 1;
 				end if;
+				so_trdy <= not so_end;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
+			so_end  <= cntr(0);
 		end if;
-		so_end  <= cntr(0);
-		so_trdy <= not cntr(0);
 	end process;
 
-	rdata <= reverse(reverse(mux_data,8));
+	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), 8))) rol so_data'length);
 
 	so_data <= 
 		rdata when so_data'length=rdata'length else
