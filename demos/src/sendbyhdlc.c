@@ -89,7 +89,7 @@ void init_ahdlc ()
 char sbuff[2048];
 char *sload = sbuff+5;
 int  pkt_sent = 0;
-int  ack      = 0x37;
+int  ack      = 0x4a;
 
 void print_pkt (void *pkt, int len)
 {

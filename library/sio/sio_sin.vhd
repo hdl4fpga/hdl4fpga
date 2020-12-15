@@ -18,7 +18,7 @@ entity sio_sin is
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_frm  : out std_logic;
-		rgtr_irdy : buffer std_logic := '0';
+		rgtr_irdy : buffer std_logic;
 		rgtr_trdy : in  std_logic := '1';
 		rgtr_idv  : out std_logic;
 		rgtr_id   : out std_logic_vector(8-1 downto 0);

@@ -166,7 +166,8 @@ begin
 			si_irdy  => buffer_irdy,
 			si_data  => buffer_data,
 
-			pkt_vld  => fcs_vld,
+			fcs_sb   => fcs_sb,
+			fcs_vld  => fcs_vld,
 			pkt_dup  => pkt_dup,
 			ack_rxdv => ack_rxdv,
 			ack_rxd  => ack_rxd);
@@ -190,7 +191,7 @@ begin
 			flow_frm <= (fcs_vld and fcs_sb) or q;
 		end process;
 
-		ack_txd <= (pkt_dup & b"000_1111");
+		ack_txd <= ack_rxd;
 		flowtx_e : entity hdl4fpga.sio_flowtx
 		port map(
 			ack_data => ack_txd,
@@ -203,8 +204,8 @@ begin
 
 	end block;
 
-	buffer_cmmt <= not pkt_dup and fcs_sb;
-	buffer_rlk  <= not fcs_vld and fcs_sb;
+	buffer_cmmt <= (    fcs_vld and not pkt_dup) and fcs_sb;
+	buffer_rlk  <= (not fcs_vld  or     pkt_dup) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
@@ -236,7 +237,7 @@ begin
 	begin
 
 		ahdlctx_req(gnt_flow) <= flow_frm;
-		ahdlctx_req(gnt_si)   <= '0'; --si_frm;
+		ahdlctx_req(gnt_si)   <= si_frm;
 
 		gnt_e : entity hdl4fpga.arbiter
 		port map (

@@ -341,6 +341,12 @@
         <Source name="../../library/mii/mii_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../library/sio/sio_flowrx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/sio/sio_flowtx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
