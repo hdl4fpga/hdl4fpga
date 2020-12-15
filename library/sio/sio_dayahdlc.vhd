@@ -71,7 +71,7 @@ begin
 
 	siahdlc_frm  <= si_frm  when sio_addr='0' else '0'; 
 	siahdlc_irdy <= si_irdy when sio_addr='0' else '0';
-	si_trdy <= (siahdlc_irdy and uart_idle and uart_txen) when sio_addr='0' else so_trdy;
+	si_trdy <= (siahdlc_trdy and uart_idle and uart_txen) when sio_addr='0' else so_trdy;
 	siahdlc_data <= si_data;
 
 	sioahdlc_e : entity hdl4fpga.sio_ahdlc

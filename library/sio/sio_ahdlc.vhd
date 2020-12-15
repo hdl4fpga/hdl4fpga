@@ -242,6 +242,7 @@ begin
 		gnt_e : entity hdl4fpga.arbiter
 		port map (
 			clk  => sio_clk,
+			ena  => uart_idle,
 			req  => ahdlctx_req,
 			gswp => ahdlctx_swp,
 			gnt  => ahdlctx_gnt);
@@ -250,7 +251,7 @@ begin
 		ahdlctx_irdy <= not ahdlctx_swp and wirebus(flow_trdy & si_irdy, ahdlctx_gnt)(0);
 		ahdlctx_data <= wirebus(flow_data & si_data, ahdlctx_gnt);
 
-		si_trdy      <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
+		si_trdy      <= ahdlctx_gnt(gnt_si)   and ahdlctx_trdy;
 		flow_irdy    <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
 
 	end block;

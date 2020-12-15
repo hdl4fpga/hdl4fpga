@@ -30,12 +30,13 @@ use hdl4fpga.std.all;
 
 entity arbiter is
 	port (
-		clk : in  std_logic;
-		csc : in  std_logic := '1';
-		req : in  std_logic_vector;
-		swp : out std_logic;
+		clk  : in  std_logic;
+		ena  : in  std_logic := '1';
+		csc  : in  std_logic := '1';
+		req  : in  std_logic_vector;
+		swp  : out std_logic;
 		gswp : out std_logic;
-		gnt : buffer std_logic_vector);
+		gnt  : buffer std_logic_vector);
 end;
 
 architecture mix of arbiter is
@@ -61,7 +62,9 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			gntd <= gnt;
+			if ena='1' then
+				gntd <= gnt;
+			end if;
 		end if;
 	end process;
 
