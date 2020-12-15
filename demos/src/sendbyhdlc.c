@@ -23,14 +23,14 @@
 
 #define PORT	57001
 #define QUEUE   4
-#define MAXSIZE 1500
+#define MAXSIZE 4096
 #define printnl fprintf(stderr,"\n")
 
 
 char ack_rcvd = 0;
 long long addr_rcvd;
 
-char rbuff[1024];
+char rbuff[4096];
 
 void sio_parse(char * buff, int l)
 {
@@ -86,7 +86,7 @@ void init_ahdlc ()
 	setbuf(stdout, NULL);
 }
 
-char sbuff[2048];
+char sbuff[4096];
 char *sload = sbuff+5;
 int  pkt_sent = 0;
 int  ack      = 0x4a;
@@ -256,8 +256,6 @@ int main (int argc, char *argv[])
 			break;
 	}
 
-		rlen = rcvd_pkt();
-	exit(1);
 	for(;;) {
 		int size = sizeof(sbuff)-(sload-sbuff);
 

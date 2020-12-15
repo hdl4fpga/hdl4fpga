@@ -422,7 +422,7 @@ begin
 		signal siodmaio_irdy : std_logic;
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
-		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
+		signal sio_dmaio     : std_logic_vector(0 to ((2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sou_data'range);
 
 		signal tp1 : std_logic_vector(32-1 downto 0);
@@ -543,7 +543,7 @@ begin
 		end process;
 
 		sio_dmaio <= 
-			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+--			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
