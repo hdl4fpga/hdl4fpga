@@ -172,7 +172,7 @@ begin
 			ack_rxdv => ack_rxdv,
 			ack_rxd  => ack_rxd);
 
-		process (fcs_sb, fcs_vld, sio_clk)
+		process (fcs_sb, fcs_vld, ack_rxd, sio_clk)
 			variable q : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
@@ -184,11 +184,11 @@ begin
 					end if;
 				elsif fcs_vld='1' then
 					if fcs_sb='1' then
-						q := '1';
+						q := ack_rxd(ack_rxd'left);
 					end if;
 				end if;
 			end if;
-			flow_frm <= (fcs_vld and fcs_sb) or q;
+			flow_frm <= (fcs_vld and fcs_sb and ack_rxd(ack_rxd'left)) or q;
 		end process;
 
 		ack_txd <= ack_rxd;

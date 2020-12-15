@@ -99,18 +99,27 @@ begin
 		dv        => ack_rxdv,
 		data      => rxd);
 
-	process (pkt_dup, ack_rxd, si_clk)
+	process (fcs_sb, fcs_vld, pkt_dup, rxd, si_clk)
 		variable last : std_logic_vector(ack_rxd'range);
+		variable dup  : std_logic;
 	begin
 		if rising_edge(si_clk) then
 			if fcs_sb='1' then
 				if fcs_vld='1' then
-					last    := rxd;
+					dup  := pkt_dup;
+					last := rxd;
 					ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
 				end if;
 			end if;
 		end if;
-		pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(last),2));
+
+		if fcs_sb='1' and fcs_vld='1' then
+			pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(last),2));
+		else
+			pkt_dup <= dup;
+		end if;
+		ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
+
 	end process;
 
 end;

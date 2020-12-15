@@ -256,6 +256,7 @@ int main (int argc, char *argv[])
 			break;
 	}
 
+		rlen = rcvd_pkt();
 	exit(1);
 	for(;;) {
 		int size = sizeof(sbuff)-(sload-sbuff);

@@ -521,21 +521,25 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
-		process (siodmaio_end, sio_clk)
+		process (sio_clk)
 			variable frm : std_logic;
 			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
 				if req='1' then
-					if siodmaio_end='1' then
-						req := '0';
+					if siodmaio_irdy='1' then
+						if siodmaio_trdy='1' then
+							if siodmaio_end='1' then
+								req := '0';
+							end if;
+						end if;
 					end if;
 				elsif frm='1' and rgtr_frm='0' then
 					req := '1';
 				end if;
 				frm := rgtr_frm;
+				sou_frm <= req;
 			end if;
-			sou_frm <= req and not siodmaio_end;
 		end process;
 
 		sio_dmaio <= 
