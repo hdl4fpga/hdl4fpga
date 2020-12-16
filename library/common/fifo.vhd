@@ -30,12 +30,13 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
-		debug : boolean := false;
+		debug      : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
 		out_rgtr   : boolean := true;
+		latency    : natural := 1;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false;
 		gray_code  : boolean := true);
@@ -95,7 +96,7 @@ begin
 			rd_clk  => dst_clk,
 			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
-			rd_data => dst_data);
+			rd_data => rdata);
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
@@ -116,17 +117,16 @@ begin
 			if out_rgtr then
 				if rising_edge(dst_clk) then
 					if feed_ena='1' then
-						dst_data <= rgtr;
+						rdata <= rgtr;
 					end if;
 				end if;
 			else
-				dst_data <= rgtr;
+				rdata <= rgtr;
 			end if;
 		end process;
 
 		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
 	end generate;
-
 
 	process(src_clk)
 	begin
@@ -155,7 +155,6 @@ begin
 	end process;
 
 	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-
 	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));
 	process(dst_clk)
 	begin
@@ -186,16 +185,28 @@ begin
 	dst_ini <= not dst_frm;
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
-		n => 1,
-		d => (0 to 0 => setif(out_rgtr,1,0)),
-		i => (0 to 0 => '0'))
+		n     => 1,
+		d     => (0 to 0 => setif(out_rgtr,latency,0)),
+		i     => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,
 		ini   => dst_ini,
 		ena   => feed_ena,
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
---	tp(16-1 downto  0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
-	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
-	tp(24) <= dst_irdy1;
+
+	datalat_e : entity hdl4fpga.align
+	generic map (
+		n  => rdata'length,
+		d  => (0 to rdata'length-1 => setif(out_rgtr,latency-1,0)))
+	port map (
+		clk => dst_clk,
+		ena => feed_ena,
+		di  => rdata,
+		do  => dst_data);
+
+--	tp(16-1 downto 0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
+--	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
+--	tp(24) <= dst_irdy1;
+
 end;

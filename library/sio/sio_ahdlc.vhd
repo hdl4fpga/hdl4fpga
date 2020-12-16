@@ -184,14 +184,14 @@ begin
 					end if;
 				elsif fcs_vld='1' then
 					if fcs_sb='1' then
-						q := ack_rxd(ack_rxd'left);
+						q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
 					end if;
 				end if;
 			end if;
-			flow_frm <= (fcs_vld and fcs_sb and ack_rxd(ack_rxd'left)) or q;
+			flow_frm <= (fcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+			ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 		end process;
 
-		ack_txd <= ack_rxd;
 		flowtx_e : entity hdl4fpga.sio_flowtx
 		port map(
 			ack_data => ack_txd,
@@ -204,8 +204,8 @@ begin
 
 	end block;
 
-	buffer_cmmt <= (    fcs_vld and not pkt_dup) and fcs_sb;
-	buffer_rlk  <= (not fcs_vld  or     pkt_dup) and fcs_sb;
+	buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
+	buffer_rlk  <= (not fcs_vld  or     pkt_dup or buffer_ovfl) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (

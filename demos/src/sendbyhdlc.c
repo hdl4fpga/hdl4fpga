@@ -21,7 +21,6 @@
 #include <math.h>
 #include "ahdlc.h"
 
-#define PORT	57001
 #define QUEUE   4
 #define MAXSIZE 4096
 #define printnl fprintf(stderr,"\n")
