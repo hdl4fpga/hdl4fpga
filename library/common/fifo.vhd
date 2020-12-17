@@ -42,20 +42,20 @@ entity fifo is
 		check_dov  : boolean := false;
 		gray_code  : boolean := true);
 	port (
-		src_clk   : in  std_logic;
-		src_mode  : in  std_logic := '0';
-		src_frm   : in  std_logic := '1';
-		src_irdy  : in  std_logic := '1';
-		src_trdy  : buffer std_logic;
-		src_data  : in  std_logic_vector;
+		src_clk    : in  std_logic;
+		src_mode   : in  std_logic := '0';
+		src_frm    : in  std_logic := '1';
+		src_irdy   : in  std_logic := '1';
+		src_trdy   : buffer std_logic;
+		src_data   : in  std_logic_vector;
 
-		dst_clk   : in  std_logic;
-		dst_mode  : in  std_logic := '0';
-		dst_frm   : in  std_logic := '1';
-		dst_irdy  : buffer std_logic;
-		dst_trdy  : in  std_logic := '1';
-		dst_data  : buffer std_logic_vector;
-		tp        : out std_logic_vector(32-1 downto 0));
+		dst_clk    : in  std_logic;
+		dst_mode   : in  std_logic := '0';
+		dst_frm    : in  std_logic := '1';
+		dst_irdy   : buffer std_logic;
+		dst_trdy   : in  std_logic := '1';
+		dst_data   : buffer std_logic_vector;
+		tp         : out std_logic_vector(32-1 downto 0));
 
 
 end;
@@ -85,6 +85,15 @@ begin
 		signal rdata : std_logic_vector(0 to src_data'length-1);
 		signal rd_ena : std_logic;
 	begin
+
+		assert not (latency > 1) or out_rgtren or out_rgtr
+		report "Latency greater than 1 is not supported on out_regtren"
+		severity FAILURE;
+
+		assert not (latency > 3) or out_rgtren or not out_rgtr
+		report "Latency greater than 3 is not supported"
+		severity FAILURE;
+
 		rd_ena <= feed_ena when out_rgtren else '1';
 
 		mem_e : entity hdl4fpga.dpram(def)
@@ -102,7 +111,6 @@ begin
 			rd_ena  => rd_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
---			rd_data => dst_data);
 
 		latency_p : process (rdata, dst_clk)
 			variable rdata2 : std_logic_vector(rdata'range);
@@ -141,8 +149,6 @@ begin
 					ena2   := ena;
 					ena    := feed_ena;
 				when others =>
-					report "Hola"
-					severity FAILURE;
 				end case;
 			end if;
 
@@ -171,6 +177,11 @@ begin
 	max_depth1_g : if max_depth = 1 generate
 		signal rgtr : std_logic_vector(src_data'range);
 	begin
+
+		assert not (latency > 1)
+		report "Latency greater than 1 is not supported"
+		severity FAILURE;
+
 		process (src_clk)
 		begin
 			if rising_edge(src_clk) then

@@ -633,7 +633,6 @@ begin
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_dv,
---			dst_trdy => ctlr_di_req,
 			dst_trdy => ctlrdata_trdy,
 			dst_data => ctlr_di);
 
@@ -651,27 +650,6 @@ begin
 			end if;
 			ctlrdata_trdy <= ctlr_di_req or q;
 		end process;
-
---		dmadata_e : entity hdl4fpga.fifo
---		generic map (
---			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
---			out_rgtr  => not write_latency,
---			check_sov => true,
---			check_dov => true,
---			gray_code => true)
---		port map (
---			src_clk  => sio_clk,
---			src_frm  => sio_frm,
---			src_irdy => dmadata_irdy,
---			src_data => rgtr_data(ctlr_di'length-1 downto 0),
---
---			dst_clk  => ctlr_clk,
---			dst_irdy => dst_irdy,
---			dst_trdy => ctlr_di_req,
---			dst_data => ctlr_di);
---
---		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
-
 
 		ctlr_dm <= (others => '0');
 
