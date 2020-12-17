@@ -33,10 +33,11 @@ entity fifo is
 		debug      : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
-		latency    : natural := 3;
+		latency    : natural := 1;
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
 		out_rgtr   : boolean := true;
+		out_rgtren : boolean := false;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false;
 		gray_code  : boolean := true);
@@ -82,7 +83,10 @@ begin
 	max_depthgt1_g : if max_depth > 1 generate
 		subtype addr_range is natural range 1 to addr_length;
 		signal rdata : std_logic_vector(0 to src_data'length-1);
+		signal rd_ena : std_logic;
 	begin
+		rd_ena <= feed_ena when out_rgtren else '1';
+
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -95,28 +99,10 @@ begin
 			wr_data => src_data, 
 
 			rd_clk  => dst_clk,
---			rd_ena  => feed_ena,
+			rd_ena  => rd_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
 --			rd_data => dst_data);
-
---		latency1_p : process (rdata, dst_clk)
---			variable data : std_logic_vector(rdata'range);
---			variable ena  : std_logic;
---		begin
---			if rising_edge(dst_clk) then
---				if ena='1' then
---					data := rd_data;
---				end if;
---				ena := feed_ena;
---			end if;
---
---			if out_rgtr then
---				dst_data <= word2byte(data & rd_data, ena);
---			else
---				dst_data <= rdata;
---			end if;
---		end process;
 
 		latency_p : process (rdata, dst_clk)
 			variable rdata2 : std_logic_vector(rdata'range);
@@ -155,25 +141,23 @@ begin
 					ena2   := ena;
 					ena    := feed_ena;
 				when others =>
+					report "Hola"
+					severity FAILURE;
 				end case;
 			end if;
 
-			if out_rgtr then
+			if out_rgtr and not out_rgtren then
 				case latency is
 				when 1 => 
 					dst_data <= word2byte(data & rdata, ena);
 				when 2 =>
-					if ena2='0' then
-						dst_data <= word2byte(data2 & data,   ena);
-					else
-						dst_data <= word2byte(data  & rdata2, ena);
-					end if;
+					dst_data <= word2byte(
+				   --   00      01     10     11     
+						data2 & data & data & rdata2, ena & ena2);
 				when 3 =>
-					if ena3='0' then
-						dst_data <= word2byte(data2 & data,   ena);
-					else
-						dst_data <= word2byte(data  & rdata3, ena);
-					end if;
+					dst_data <= word2byte(
+				   --   000     001     010     011    100     101     110      111
+						data3 & data2 & data2 & data & data2 & data  & rdata3 & rdata3, ena & ena2 & ena3);
 				when others =>
 				end case;
 			else
@@ -270,7 +254,7 @@ begin
 	dstirdy_e : entity hdl4fpga.align
 	generic map (
 		n     => 1,
-		d     => (0 to 0 => setif(out_rgtr,latency,0)),
+		d     => (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)),
 		i     => (0 to 0 => '0'))
 	port map (
 		clk   => dst_clk,

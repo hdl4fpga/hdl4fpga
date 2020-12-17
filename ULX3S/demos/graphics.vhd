@@ -616,45 +616,11 @@ begin
 			dst_data => dmaio_len);
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
---		dmadata_e : entity hdl4fpga.fifo
---		generic map (
---			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
---			out_rgtr  => true,
---			check_sov => true,
---			check_dov => true,
---			gray_code => true)
---		port map (
---			src_clk  => sio_clk,
---			src_frm  => sio_frm,
---			src_irdy => dmadata_irdy,
---			src_trdy => dmadata_trdy,
---			src_data => rgtr_data(ctlr_di'length-1 downto 0),
---
---			dst_clk  => ctlr_clk,
---			dst_irdy => ctlr_di_dv,
-----			dst_trdy => ctlr_di_req,
---			dst_trdy => ctlrdata_trdy,
---			dst_data => ctlr_di);
---
---		process (ctlr_di_req, ctlr_clk)
---			variable q : std_logic;
---		begin
---			if rising_edge(ctlr_clk) then
---				if ctlr_di_req='1' then
---					if ctlr_di_dv='0' then
---						q := '1';
---					end if;
---				else
---					q := '0';
---				end if;
---			end if;
---			ctlrdata_trdy <= ctlr_di_req or q;
---		end process;
-
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
-			out_rgtr  => not write_latency,
+			out_rgtr  => true,
+			latency   => 3,
 			check_sov => true,
 			check_dov => true,
 			gray_code => true)
@@ -662,14 +628,51 @@ begin
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
+			src_trdy => dmadata_trdy,
 			src_data => rgtr_data(ctlr_di'length-1 downto 0),
 
 			dst_clk  => ctlr_clk,
-			dst_irdy => dst_irdy,
-			dst_trdy => ctlr_di_req,
+			dst_irdy => ctlr_di_dv,
+--			dst_trdy => ctlr_di_req,
+			dst_trdy => ctlrdata_trdy,
 			dst_data => ctlr_di);
 
-		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
+		process (ctlr_di_req, ctlr_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(ctlr_clk) then
+				if ctlr_di_req='1' then
+					if ctlr_di_dv='0' then
+						q := '1';
+					end if;
+				else
+					q := '0';
+				end if;
+			end if;
+			ctlrdata_trdy <= ctlr_di_req or q;
+		end process;
+
+--		dmadata_e : entity hdl4fpga.fifo
+--		generic map (
+--			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+--			out_rgtr  => not write_latency,
+--			check_sov => true,
+--			check_dov => true,
+--			gray_code => true)
+--		port map (
+--			src_clk  => sio_clk,
+--			src_frm  => sio_frm,
+--			src_irdy => dmadata_irdy,
+--			src_data => rgtr_data(ctlr_di'length-1 downto 0),
+--
+--			dst_clk  => ctlr_clk,
+--			dst_irdy => dst_irdy,
+--			dst_trdy => ctlr_di_req,
+--			dst_data => ctlr_di);
+--
+--		ctlr_di_dv <= dst_irdy and ctlr_di_req; 
+
+
 		ctlr_dm <= (others => '0');
 
 		dmacfgio_p : process (dmacfg_clk)

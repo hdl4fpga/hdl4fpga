@@ -151,6 +151,7 @@ begin
 	generic map (
 		max_depth => fifo_size,
 		out_rgtr  => true, 
+		latency   => 3,
 		check_sov => false,
 		check_dov => false,
 		gray_code => true)
