@@ -33,10 +33,10 @@ entity fifo is
 		debug      : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
+		latency    : natural := 3;
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
 		out_rgtr   : boolean := true;
-		latency    : natural := 1;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false;
 		gray_code  : boolean := true);
@@ -55,6 +55,8 @@ entity fifo is
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector;
 		tp        : out std_logic_vector(32-1 downto 0));
+
+
 end;
 
 architecture def of fifo is
@@ -66,12 +68,10 @@ architecture def of fifo is
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
 	signal dst_irdy1 : std_logic;
 
-	signal data : std_logic_vector(0 to src_data'length-1);
 
 	signal dst_ini  : std_logic;
 	signal feed_ena : std_logic;
 
-	signal rdata : std_logic_vector(dst_data'range);
 begin
 
 	assert max_depth=2**addr_length
@@ -81,6 +81,7 @@ begin
 	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
 		subtype addr_range is natural range 1 to addr_length;
+		signal rdata : std_logic_vector(0 to src_data'length-1);
 	begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
@@ -94,9 +95,92 @@ begin
 			wr_data => src_data, 
 
 			rd_clk  => dst_clk,
-			rd_ena  => feed_ena,
+--			rd_ena  => feed_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
+--			rd_data => dst_data);
+
+--		latency1_p : process (rdata, dst_clk)
+--			variable data : std_logic_vector(rdata'range);
+--			variable ena  : std_logic;
+--		begin
+--			if rising_edge(dst_clk) then
+--				if ena='1' then
+--					data := rd_data;
+--				end if;
+--				ena := feed_ena;
+--			end if;
+--
+--			if out_rgtr then
+--				dst_data <= word2byte(data & rd_data, ena);
+--			else
+--				dst_data <= rdata;
+--			end if;
+--		end process;
+
+		latency_p : process (rdata, dst_clk)
+			variable rdata2 : std_logic_vector(rdata'range);
+			variable rdata3 : std_logic_vector(rdata'range);
+			variable data   : std_logic_vector(rdata'range);
+			variable data2  : std_logic_vector(rdata'range);
+			variable data3  : std_logic_vector(rdata'range);
+			variable ena    : std_logic;
+			variable ena2   : std_logic;
+			variable ena3   : std_logic;
+		begin
+			if rising_edge(dst_clk) then
+				case latency is
+				when 1 => 
+					if ena='1' then
+						data := rdata;
+					end if;
+					ena := feed_ena;
+				when 2 =>
+					if ena2='1' then
+						data2 := data;
+						data  := rdata2;
+					end if;
+					rdata2 := rdata;
+					ena2   := ena;
+					ena    := feed_ena;
+				when 3 =>
+					if ena3='1' then
+						data3 := data2;
+						data2 := data;
+						data  := rdata2;
+					end if;
+					rdata3 := rdata;
+					rdata2 := rdata;
+					ena3   := ena2;
+					ena2   := ena;
+					ena    := feed_ena;
+				when others =>
+				end case;
+			end if;
+
+			if out_rgtr then
+				case latency is
+				when 1 => 
+					dst_data <= word2byte(data & rdata, ena);
+				when 2 =>
+					if ena2='0' then
+						dst_data <= word2byte(data2 & data,   ena);
+					else
+						dst_data <= word2byte(data  & rdata2, ena);
+					end if;
+				when 3 =>
+					if ena3='0' then
+						dst_data <= word2byte(data2 & data,   ena);
+					else
+						dst_data <= word2byte(data  & rdata3, ena);
+					end if;
+				when others =>
+				end case;
+			else
+				dst_data <= rdata;
+			end if;
+		end process;
+
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
@@ -117,11 +201,11 @@ begin
 			if out_rgtr then
 				if rising_edge(dst_clk) then
 					if feed_ena='1' then
-						rdata <= rgtr;
+						dst_data <= rgtr;
 					end if;
 				end if;
 			else
-				rdata <= rgtr;
+				dst_data <= rgtr;
 			end if;
 		end process;
 
@@ -194,16 +278,6 @@ begin
 		ena   => feed_ena,
 		di(0) => dst_irdy1,
 		do(0) => dst_irdy);
-
-	datalat_e : entity hdl4fpga.align
-	generic map (
-		n  => rdata'length,
-		d  => (0 to rdata'length-1 => setif(out_rgtr,latency-1,0)))
-	port map (
-		clk => dst_clk,
-		ena => feed_ena,
-		di  => rdata,
-		do  => dst_data);
 
 --	tp(16-1 downto 0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
 --	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
