@@ -205,7 +205,7 @@ begin
 	end block;
 
 	buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
-	buffer_rlk  <= (not fcs_vld  or     pkt_dup or buffer_ovfl) and fcs_sb;
+	buffer_rlk  <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (

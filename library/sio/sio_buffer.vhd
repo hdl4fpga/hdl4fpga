@@ -82,7 +82,7 @@ begin
 	begin
 		if rising_edge(si_clk) then
 			if commit='1' then
-				wr_ptr    <= wr_cntr;
+				wr_ptr   <= wr_cntr;
 				overflow <= '0';
 			elsif rollback='1' then
 				wr_cntr   <= wr_ptr;
@@ -93,6 +93,7 @@ begin
 						wr_cntr <= wr_cntr + 1;
 					end if;
 				end if;
+				overflow <= '0';
 			elsif des_irdy='1' then
 				overflow <= '1';
 			end if;

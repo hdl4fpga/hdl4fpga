@@ -141,9 +141,9 @@ begin
 					if ena3='1' then
 						data3 := data2;
 						data2 := data;
-						data  := rdata2;
+						data  := rdata3;
 					end if;
-					rdata3 := rdata;
+					rdata3 := rdata2;
 					rdata2 := rdata;
 					ena3   := ena2;
 					ena2   := ena;
@@ -234,7 +234,7 @@ begin
 	end process;
 
 	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-	feed_ena  <= dst_trdy or not (dst_irdy or setif(not check_dov));
+	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov))) and dst_irdy1;
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
