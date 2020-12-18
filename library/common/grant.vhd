@@ -39,41 +39,18 @@ entity grant is
 end;
 
 architecture def of grant is
-	signal req  : std_logic;
-	signal edge : std_logic;
-	signal run  : std_logic;
-	signal gnt  : std_logic_vector(dev_gnt'range);
+	signal dev_swp  : std_logic;
+	signal dev_idle : std_logic;
 begin
-
-	req <= setif((dev_gnt and dev_req) /= (dev_req'range => '0'));
-	process (rsrc_clk)
-	begin
-		if rising_edge(rsrc_clk) then
-			if rsrc_rdy='1' then
-				if (dev_gnt and dev_req)=(dev_req'range => '0') then
-					edge <= '1';
-				end if;
-			else
-				edge <= '0';
-			end if;
-			if run='0' then
-				gnt <= dev_gnt;
-			end if;
-		end if;
-	end process;
-	run <= 
-		'0' when rsrc_rdy='0' else 
-		'1' when req='0'      else
-		'1' when edge='1'     else
-		'0';
-
-	rsrc_req <= setif((setif(run='0', dev_gnt, gnt) and dev_req) /= (dev_req'range => '0'));
 
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
-		clk => rsrc_clk,
-		req => dev_req,
-		gnt => dev_gnt);
+		clk  => rsrc_clk,
+		req  => dev_req,
+		idle => dev_idle,
+		swp  => dev_swp,
+		gnt  => dev_gnt);
 
-	dev_rdy  <= setif(run='0', dev_gnt, gnt) and (dev_req'range => rsrc_rdy);
+	rsrc_req <= not dev_swp and not dev_idle;
+	dev_rdy  <= dev_gnt and (dev_req'range => rsrc_rdy);
 end;

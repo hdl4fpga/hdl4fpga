@@ -163,7 +163,7 @@ begin
 				when 3 =>
 					dst_data <= word2byte(
 				   --   000     001     010     011    100     101     110      111
-						data3 & data2 & data2 & data & data2 & data  & rdata3 & rdata3, ena & ena2 & ena3);
+						data3 & data2 & data2 & data & data2 & data  & data & rdata3, ena & ena2 & ena3);
 				when others =>
 				end case;
 			else
@@ -234,7 +234,8 @@ begin
 	end process;
 
 	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
-	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov))) and dst_irdy1;
+--	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov)));
+	feed_ena  <= dst_trdy or (not dst_irdy and setif(check_dov) and dst_irdy1);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then

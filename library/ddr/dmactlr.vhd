@@ -71,7 +71,7 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
-	signal dmargtr_rdy    : std_logic;
+	signal dmargtr_rdy    : std_logic := '0';
 	signal dmargtr_id     : std_logic_vector(unsigned_num_bits(dev_req'length-1)-1 downto 0);
 	signal dmargtr_addr   : std_logic_vector(dev_addr'length/dev_req'length-1 downto 0);
 	signal dmargtr_len    : std_logic_vector(dev_len'length/dev_req'length-1 downto 0);
