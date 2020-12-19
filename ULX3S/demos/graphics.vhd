@@ -578,7 +578,8 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => false,
+			out_rgtr  => true,
+			latency   => 1,
 			check_sov => true,
 			check_dov => true,
 			gray_code => true)
@@ -599,7 +600,8 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => false,
+			out_rgtr  => true,
+			latency   => 1,
 			check_sov => true,
 			check_dov => true,
 			gray_code => true)
@@ -623,8 +625,8 @@ begin
 			latency   => 3,
 			check_sov => true,
 			check_dov => true,
---			gray_code => true)
-			gray_code => false)
+			gray_code => true)
+--			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -641,14 +643,7 @@ begin
 			variable q : std_logic;
 		begin
 			if rising_edge(ctlr_clk) then
-				if ctlr_di_req='1' then
-					if ctlr_di_dv='0' then
-						q := '1';
-					end if;
-				else
-					q := '0';
-				end if;
-				ctlrdata_trdy <= ctlr_di_req or q;
+				ctlrdata_trdy <= ctlr_di_req;
 			end if;
 		end process;
 
