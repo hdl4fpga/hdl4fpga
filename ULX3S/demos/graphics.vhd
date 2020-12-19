@@ -581,8 +581,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
---			gray_code => true)
-			gray_code => false)
+			gray_code => true)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -624,7 +623,8 @@ begin
 			latency   => 3,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+--			gray_code => true)
+			gray_code => false)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -648,8 +648,8 @@ begin
 				else
 					q := '0';
 				end if;
+				ctlrdata_trdy <= ctlr_di_req or q;
 			end if;
-			ctlrdata_trdy <= ctlr_di_req or q;
 		end process;
 
 		ctlr_dm <= (others => '0');
