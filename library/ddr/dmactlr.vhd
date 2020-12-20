@@ -121,31 +121,17 @@ begin
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		rsrc_clk => devcfg_clk,
-		rsrc_rdy => dmargtr_rdy,
+		rsrc_req => dmargtr_dv,
+		rsrc_rdy => dmargtr_dv,
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
 		dev_rdy => dmacfg_rdy);
 
-	process (devcfg_clk)
-		variable dv : std_logic;
-	begin
-		if rising_edge(devcfg_clk) then
-			if dv='1' then
-				dmargtr_rdy <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
-			elsif dmargtr_rdy='1' then
-				dmargtr_rdy <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
-			end if;
-
-			dmargtr_dv   <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0')) and not dv;
---			dmargtr_id   <= encoder(dmacfg_gnt);
-			dmargtr_id <= setif(dmacfg_gnt/= (dmacfg_gnt'range => '0'), encoder(dmacfg_gnt), (dmargtr_id'range => '0'));
-			dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
-			dmargtr_len  <= wirebus (dev_len,  dmacfg_gnt);
-			dmargtr_we   <= wirebus (dev_we,   dmacfg_gnt);
-			dv := setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
-		end if;
-	end process;
+	dmargtr_id   <= encoder(dmacfg_gnt);
+	dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
+	dmargtr_len  <= wirebus (dev_len,  dmacfg_gnt);
+	dmargtr_we   <= wirebus (dev_we,   dmacfg_gnt);
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
