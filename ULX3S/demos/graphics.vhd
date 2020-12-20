@@ -132,7 +132,7 @@ architecture graphics of ulx3s is
     signal video_on       : std_logic;
     signal video_dot       : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
-    signal base_addr      : std_logic_vector(dmactlr_addr'range);
+    signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
 	signal dmacfgvideo_req : std_logic;
@@ -191,8 +191,8 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
-	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -318,8 +318,8 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
+--		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
 
 		signal clkos : std_logic;
 	begin
@@ -549,7 +549,7 @@ begin
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
 --			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
 --			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000";
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & dmaio_trdy & b"000" & x"00" & x"0000";
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -564,15 +564,15 @@ begin
 		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
 		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end); -- and (0 to 0 =>sou_frm);
 
-		base_addr_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid  => x"19")
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			data      => base_addr);
+--		base_addr_e : entity hdl4fpga.sio_rgtr
+--		generic map (
+--			rid  => x"19")
+--		port map (
+--			rgtr_clk  => sio_clk,
+--			rgtr_dv   => rgtr_dv,
+--			rgtr_id   => rgtr_id,
+--			rgtr_data => rgtr_data,
+--			data      => base_addr);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 		dmaaddr_e : entity hdl4fpga.fifo
@@ -841,8 +841,10 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
-	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_addr   <= dmavideo_addr & dmaio_addr;
+--	dev_len    <= dmavideo_len  & dmaio_len;
+--	dev_addr   <= dmavideo_addr & dmaio_addr;
+	dev_len    <= dmavideo_len  & (dmaio_len'range  => '0');
+	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr

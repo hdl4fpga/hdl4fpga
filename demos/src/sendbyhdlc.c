@@ -244,59 +244,82 @@ int main (int argc, char *argv[])
 	// Reset ack //
 	// --------- //
 
+	fprintf (stderr, ">>> SETTING ACK <<<\n");
 	for(;;) {
+		fprintf (stderr, "Sending acknowlage\n");
 		send_pkt(0);
 		sio_parse(sbuff, sload-sbuff); printnl;
 
+		fprintf (stderr, "Waiting acknowlage\n");
 		rlen = rcvd_pkt();
+		fprintf (stderr, "Acknowlage received\n");
 		sio_parse(rbuff, rlen); printnl;
 
 		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
 			break;
 	}
+	fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+
+	if (!pktmd)
+		fprintf (stderr, "No-packet-size mode\n");
 
 	for(;;) {
 		int size = sizeof(sbuff)-(sload-sbuff);
 
+		fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				fprintf (stderr, "packet size %d\n", size);
+				fprintf (stderr, "Packet size %d\n", size);
 			else
 				break;
 		}
 
 		if ((n = fread(sload, sizeof(unsigned char), size, stdin)) > 0) {
+			fprintf (stderr, "Packet read length %d\n", n);
 			size = n;
 			if (size > MAXSIZE) {
-				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
+				fprintf (stderr, "Packet size %d greater than %d\n", size, MAXSIZE);
 				exit(1);
 			}
 
 			ack++;
 
+			fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			send_pkt(size);
-			sio_parse(sbuff, sload-sbuff+size); printnl;
+			sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
+			fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
+				fprintf (stderr, "waiting for acknowlege\n", n); //exit(1);
 				rlen = rcvd_pkt();
 				if (rlen > 0) {
+					fprintf (stderr, "acknowlege received\n", n); //exit(1);
 					sio_parse(rbuff, rlen); printnl;
 					if (((ack ^ ack_rcvd) & 0x3f) == 0)
 						break;
-					else 
+					else {
+						fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
 						continue;
+					}
 				}
 
+				fprintf (stderr, "waiting time out\n", n); //exit(1);
+				fprintf (stderr, "sending package again\n", n); //exit(1);
 				send_pkt(size);
-				sio_parse(sbuff, sload-sbuff+size); printnl;
+				sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
 			}
 
+			fprintf (stderr, "package acknowleged\n", n); //exit(1);
+
+			fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
 				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
 					break;
 
+				fprintf (stderr, "dma not ready\n");
 				ack++;
+				fprintf (stderr, "sending new acknowlege\n");
 				send_pkt(0);
-				sio_parse(sbuff, sload-sbuff); printnl;
+				sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
 
 				for (;;) {
 					rlen = rcvd_pkt();
@@ -309,9 +332,10 @@ int main (int argc, char *argv[])
 								continue;
 					}
 					send_pkt(0);
-					sio_parse(sbuff, sload-sbuff); printnl;
+					sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
 				}
 			}
+			fprintf (stderr, "dma ready\n");
 	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
 	//			break;
 		
