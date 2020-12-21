@@ -71,7 +71,8 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
-	signal dmargtr_rdy    : std_logic := '0';
+	signal dmargtr_rdy    : std_logic;
+	signal dmargtr_req    : std_logic;
 	signal dmargtr_id     : std_logic_vector(unsigned_num_bits(dev_req'length-1)-1 downto 0);
 	signal dmargtr_addr   : std_logic_vector(dev_addr'length/dev_req'length-1 downto 0);
 	signal dmargtr_len    : std_logic_vector(dev_len'length/dev_req'length-1 downto 0);
@@ -121,8 +122,8 @@ begin
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		rsrc_clk => devcfg_clk,
-		rsrc_req => dmargtr_dv,
-		rsrc_rdy => dmargtr_dv,
+		rsrc_req => dmargtr_req,
+		rsrc_rdy => dmargtr_rdy,
 
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
@@ -132,6 +133,14 @@ begin
 	dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
 	dmargtr_len  <= wirebus (dev_len,  dmacfg_gnt);
 	dmargtr_we   <= wirebus (dev_we,   dmacfg_gnt);
+
+	process (devcfg_clk)
+	begin
+		if rising_edge(devcfg_clk) then
+			dmargtr_rdy <= dmargtr_req;
+		end if;
+	end process;
+	dmargtr_dv <= dmargtr_req and not dmargtr_rdy ;
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (

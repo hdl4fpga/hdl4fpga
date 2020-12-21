@@ -69,6 +69,8 @@ architecture graphics of ulx3s is
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
+	signal dmaiotrans_req : std_logic := '0';
+	signal dmaiotrans_rdy : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
@@ -643,17 +645,15 @@ begin
 			variable q : std_logic;
 		begin
 			if rising_edge(ctlr_clk) then
-				ctlrdata_trdy <= ctlr_di_req;
 			end if;
 		end process;
+				ctlrdata_trdy <= ctlr_di_req;
 
 		ctlr_dm <= (others => '0');
 
 		dmacfgio_p : process (dmacfg_clk)
 			variable dmaio_rdy1 : std_logic;
 			variable dmaio_rdy2 : std_logic;
-			variable io_rdy1    : std_logic;
-			variable io_rdy2    : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				sio_frm <= '1';
@@ -664,22 +664,15 @@ begin
 				elsif dmacfgio_req='0' then
 					if dmaio_rdy2='1' then
 						if dmaio_trdy='0' then
-							dmacfgio_req <= not dmacfgio_rdy;
+							dmacfgio_req <= (dmaiotrans_req xnor dmaiotrans_rdy) and not dmacfgio_rdy;
 						end if;
 					end if;
 					dmaio_trdy <= '0';
-				elsif io_rdy1='1' then
-					if io_rdy2='0' then
-						dmacfgio_req <= '0';
-						dmaio_trdy   <= '1';
-					else
-						dmaio_trdy   <= '1';
-					end if;
 				else
-					dmaio_trdy <= '0';
+					dmaiotrans_req <= (dmaiotrans_req xnor dmaiotrans_rdy) and dmacfgio_rdy;
+					dmacfgio_req   <= not dmacfgio_rdy;
+					dmaio_trdy     <= dmacfgio_rdy;
 				end if;
-				io_rdy2 := io_rdy1;
-				io_rdy1 := dmaio_rdy;
 				
 				dmaio_rdy2 := dmaio_rdy1;
 				dmaio_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
@@ -832,7 +825,16 @@ begin
 	begin
 		if rising_edge(ctlr_clk) then
 			dmavideo_req <= dmacfgvideo_rdy;
-			dmaio_req    <= dmacfgio_rdy;
+
+			if dmaio_req='1' then
+				if dmaio_rdy='1' then
+					dmaio_req      <= '0';
+					dmaiotrans_rdy <= dmaiotrans_req;
+				end if;
+			else
+				dmaio_req <= dmaiotrans_req xor dmaiotrans_rdy;
+			end if;
+
 		end if;
 	end process;
 
