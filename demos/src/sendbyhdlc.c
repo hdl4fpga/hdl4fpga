@@ -100,7 +100,7 @@ void print_pkt (void *pkt, int len)
 void send_char (char unsigned c)
 {
 	fwrite(&c, sizeof(char), 1, stdout);
-	fprintf(stderr,"0x%02x ", c);
+//	fprintf(stderr,"0x%02x ", c);
 }
 
 void send_ahdlc (int psize)
@@ -191,6 +191,9 @@ int rcvd_pkt()
 		pkt_lost--;
 		return len;
 	}
+	len -= 2;
+	print_pkt(rbuff, len);
+	fprintf(stderr, ">>> WRONG <<< fcs 0x%04x\n", fcs);
 
 	return 0;
 }

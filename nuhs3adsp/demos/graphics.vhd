@@ -372,21 +372,25 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
-		process (siodmaio_end, sio_clk)
+		ppppppppp : process (sio_clk)
 			variable frm : std_logic;
 			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
 				if req='1' then
-					if siodmaio_end='1' then
-						req := '0';
+					if siodmaio_irdy='1' then
+						if siodmaio_trdy='1' then
+							if siodmaio_end='1' then
+								req := '0';
+							end if;
+						end if;
 					end if;
 				elsif frm='1' and rgtr_frm='0' then
 					req := '1';
 				end if;
 				frm := rgtr_frm;
+				sou_frm <= req;
 			end if;
-			sou_frm <= req and not siodmaio_end;
 		end process;
 
 		sio_dmaio <= 
@@ -500,42 +504,47 @@ begin
 			ctlrdata_trdy <= ctlr_di_req or q;
 		end process;
 
-		dmacfgio_p : process (dmacfg_clk)
-			variable dmaio_rdy1 : std_logic;
-			variable dmaio_rdy2 : std_logic;
-			variable io_rdy1    : std_logic;
-			variable io_rdy2    : std_logic;
+		dma_p : process (dmacfg_clk)
+			variable trans_req : std_logic;
+			variable io_rdy2 : std_logic;
+			variable io_rdy1 : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
-				sio_frm <= '1';
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= '0';
+					dmacfgio_req <= dmacfgio_rdy;
 					dmaio_trdy   <= '0';
-					sio_frm <= '0';
-				elsif dmacfgio_req='0' then
-					if dmaio_rdy2='1' then
-						if dmaio_trdy='0' then
-							dmacfgio_req <= not dmacfgio_rdy;
-						end if;
-					end if;
-					dmaio_trdy <= '0';
-				elsif io_rdy1='1' then
-					if io_rdy2='0' then
-						dmacfgio_req <= '0';
-						dmaio_trdy   <= '1';
-					else
-						dmaio_trdy   <= '1';
-					end if;
+					trans_req    := '0';
 				else
-					dmaio_trdy <= '0';
+					if to_bit(dmacfgio_req xor dmacfgio_rdy)='0' then
+						if to_bit(dmaio_req xor dmaio_rdy)='0' then
+							if trans_req='0' then
+								if io_rdy2='1' then
+									if dmaio_trdy='0' then
+										dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
+										trans_req    := '1';
+									end if;
+								end if;
+								dmaio_trdy  <= '0';
+							else
+								dmaio_trdy <= '1';
+								dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
+								trans_req  := '0';
+							end if;
+						else
+							dmaio_trdy <= '0';
+						end if;
+					else
+						dmaio_trdy <= '0';
+					end if;
 				end if;
-				io_rdy2 := io_rdy1;
-				io_rdy1 := dmaio_rdy;
 				
-				dmaio_rdy2 := dmaio_rdy1;
-				dmaio_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				io_rdy2 := io_rdy1;
+				io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+
+				sio_frm <= ctlr_inirdy;
 			end if;
 		end process;
+
 	end block;
 
 --	mii_debug_b : block
@@ -679,14 +688,6 @@ begin
 	end process;
 
 	end block;
-
-	process(ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			dmavideo_req <= dmacfgvideo_rdy;
-			dmaio_req    <= dmacfgio_rdy;
-		end if;
-	end process;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;

@@ -59,7 +59,7 @@ begin
 		variable dv   : std_logic;
 	begin
 		if rising_edge(sin_clk) then
-			if rgtr_trdy='1' or rgtr_irdy='0' then
+			if rgtr_trdy='1' or to_stdulogic(to_bit(rgtr_irdy))='0' then
 				if sin_frm='0' then
 					ptr := (others => '0');
 					rid := (others => '-');
@@ -101,7 +101,7 @@ begin
 					data := data sll des8_data'length;
 					data(des8_data'range) := unsigned(des8_data);
 				end if;
-				rgtr_frm  <= sin_frm;
+				rgtr_frm  <= to_stdulogic(to_bit(sin_frm));
 				data_frm  <= setif(stt=s_data);
 				rgtr_irdy <= des8_irdy;
 				data_irdy <= des8_irdy and setif(stt=s_data);
@@ -117,7 +117,7 @@ begin
 			end if;
 		end if;
 	end process;
-	sin_trdy <= not rgtr_irdy or rgtr_trdy;
+	sin_trdy <= not to_stdulogic(to_bit(rgtr_irdy)) or rgtr_trdy;
 
 
 end;

@@ -562,7 +562,7 @@ begin
 			so_data  => siodmaio_data);
 
 		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
-		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end); -- and (0 to 0 =>sou_frm);
+		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
 
 --		base_addr_e : entity hdl4fpga.sio_rgtr
 --		generic map (
