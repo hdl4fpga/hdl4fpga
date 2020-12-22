@@ -134,7 +134,7 @@ begin
 			dmargtr_rdy <= dmargtr_req;
 		end if;
 	end process;
-	dmargtr_dv <= dmargtr_req and not dmargtr_rdy ;
+	dmargtr_dv <= dmargtr_req and not dmargtr_rdy;
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
@@ -200,7 +200,13 @@ begin
 		end if;
 	end process;
 
-	dmatrans_req <= ctlr_inirdy and rsrc_req;
+	process (ctlr_clk)
+	begin
+		if rising_edge(ctlr_clk) then
+			dmatrans_req <= ctlr_inirdy and rsrc_req;
+		end if;
+	end process;
+
 	dmatrans_rid <= encoder(devtrans_gnt);
 
 	dmatrans_we <= setif(trans_we(0)/='0');

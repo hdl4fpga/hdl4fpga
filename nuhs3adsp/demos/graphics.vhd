@@ -280,7 +280,7 @@ begin
 
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
-		signal ctlrdata_trdy  : std_logic;
+		signal datactlr_irdy : std_logic;
 		signal dmaaddr_irdy  : std_logic;
 		signal dmaaddr_trdy  : std_logic;
 		signal dmalen_irdy   : std_logic;
@@ -372,7 +372,7 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
-		ppppppppp : process (sio_clk)
+		process (sio_clk)
 			variable frm : std_logic;
 			variable req : std_logic := '0';
 		begin
@@ -422,7 +422,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => not debug)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -436,7 +436,6 @@ begin
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_addr);
 
-
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
@@ -444,7 +443,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => not debug)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -473,36 +472,23 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+			out_rgtr  => true,
+			latency   => 3,
 			check_sov => true,
 			check_dov => true,
-			gray_code => true)
+			gray_code => not debug)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
-			src_data => rgtr_data,
+			src_data => rgtr_data(ctlr_di'length-1 downto 0),
 
 			dst_clk  => ctlr_clk,
-			dst_irdy => ctlr_di_dv,
+			dst_irdy => datactlr_irdy,
 			dst_trdy => ctlr_di_req,
---			dst_trdy => ctlrdata_trdy,
 			dst_data => ctlr_di);
-
-		process (ctlr_di_req, ctlr_clk)
-			variable q : std_logic;
-		begin
-			if rising_edge(ctlr_clk) then
-				if ctlr_di_req='1' then
-					if ctlr_di_dv='0' then
-						q := '1';
-					end if;
-				else
-					q := '0';
-				end if;
-			end if;
-			ctlrdata_trdy <= ctlr_di_req or q;
-		end process;
+		ctlr_di_dv <= ctlr_di_req and datactlr_irdy;
 
 		dma_p : process (dmacfg_clk)
 			variable trans_req : std_logic;
@@ -511,31 +497,30 @@ begin
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= dmacfgio_rdy;
+					dmacfgio_req <= to_stdulogic(to_bit(dmacfgio_rdy));
+					dmaio_req    <= to_stdulogic(to_bit(dmaio_rdy));
 					dmaio_trdy   <= '0';
 					trans_req    := '0';
-				else
-					if to_bit(dmacfgio_req xor dmacfgio_rdy)='0' then
-						if to_bit(dmaio_req xor dmaio_rdy)='0' then
-							if trans_req='0' then
-								if io_rdy2='1' then
-									if dmaio_trdy='0' then
-										dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
-										trans_req    := '1';
-									end if;
+				elsif (dmacfgio_req xor dmacfgio_rdy)='0' then
+					if (dmaio_req xor dmaio_rdy)='0' then
+						if trans_req='0' then
+							if io_rdy2='1' then
+								if dmaio_trdy='0' then
+									dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
+									trans_req    := '1';
 								end if;
-								dmaio_trdy  <= '0';
-							else
-								dmaio_trdy <= '1';
-								dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
-								trans_req  := '0';
 							end if;
+							dmaio_trdy  <= '0';
 						else
-							dmaio_trdy <= '0';
+							dmaio_trdy <= '1';
+							dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
+							trans_req  := '0';
 						end if;
 					else
 						dmaio_trdy <= '0';
 					end if;
+				else
+					dmaio_trdy <= '0';
 				end if;
 				
 				io_rdy2 := io_rdy1;
@@ -690,10 +675,10 @@ begin
 	end block;
 
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
-	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
+	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_len    <= dmavideo_len  & dmaio_len;
@@ -736,6 +721,7 @@ begin
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act);
 
+	ctlr_dm <= (others => '0');
 	ddrctlr_e : entity hdl4fpga.ddr_ctlr
 	generic map (
 		fpga         => fpga,
