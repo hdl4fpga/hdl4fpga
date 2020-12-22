@@ -48,6 +48,8 @@ architecture ulx3s_graphic of testbench is
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
 
 	component ulx3s is
+		generic (
+			debug  : boolean := true);
 		port (
 			clk_25mhz      : in    std_logic;
 

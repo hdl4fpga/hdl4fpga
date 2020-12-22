@@ -41,14 +41,13 @@ entity dmactlr is
 
 		devcfg_clk   : in  std_logic;
 		devcfg_req   : in  std_logic_vector;
-		devcfg_rdy   : out std_logic_vector;
+		devcfg_rdy   : buffer std_logic_vector;
 		dev_len      : in  std_logic_vector;
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
-		dmatrans_cnl : in  std_logic := '0';
 
 		dev_req      : in  std_logic_vector;
-		dev_rdy      : out std_logic_vector;
+		dev_rdy      : buffer std_logic_vector;
 
 		ctlr_clk     : in  std_logic;
 
@@ -101,24 +100,8 @@ architecture def of dmactlr is
 	signal r   : std_logic_vector(ctlr_r'length-1 downto 0) := (others => '1');
 begin
 
-	devreq_sync_e : entity hdl4fpga.align
-	generic map (
-		n => devcfg_req'length,
-		d => (0 to devcfg_req'length-1 => 2))
-	port map (
-		clk => devcfg_clk,
-		di  => devcfg_req,
-		do  => dmacfg_req);
 
-	dmardy_sync_e : entity hdl4fpga.align
-	generic map (
-		n => devcfg_req'length,
-		d => (0 to devcfg_req'length-1 => 1))
-	port map (
-		clk => devcfg_clk,
-		di  => dmacfg_rdy,
-		do  => devcfg_rdy);
-
+	dmacfg_req <= devcfg_req xor to_stdlogicvector(to_bitvector(devcfg_rdy)); 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
 		rsrc_clk => devcfg_clk,
@@ -128,6 +111,17 @@ begin
 		dev_req => dmacfg_req,
 		dev_gnt => dmacfg_gnt,
 		dev_rdy => dmacfg_rdy);
+
+	process (devcfg_clk)
+	begin
+		if rising_edge(devcfg_clk) then
+			for i in devcfg_rdy'range loop
+				if dmacfg_rdy(i)='1' then
+					devcfg_rdy <= devcfg_req; 
+				end if;
+			end loop;
+		end if;
+	end process;
 
 	dmargtr_id   <= encoder(dmacfg_gnt);
 	dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
@@ -184,6 +178,7 @@ begin
 		rd_addr => dmatrans_rid,
 		rd_data => trans_we);
 
+	devtrans_req <= dev_req xor to_stdlogicvector(to_bitvector(dev_rdy));
 	dmatransgnt_e : entity hdl4fpga.grant
 	port map (
 		dev_req => devtrans_req,
@@ -195,16 +190,18 @@ begin
 		rsrc_rdy => dmatrans_rdy);
 
 	process (ctlr_clk)
-		variable delayed_req : std_logic;
 	begin
 		if rising_edge(ctlr_clk) then
-			devtrans_req <= dev_req;
-			dev_rdy      <= devtrans_rdy;
-			dmatrans_rid <= setif(devtrans_gnt/= (devtrans_gnt'range => '0'), encoder(devtrans_gnt), (dmatrans_rid'range => '0'));
-			dmatrans_req <= delayed_req;
-			delayed_req  := setif(ctlr_inirdy='1', rsrc_req);
+			for i in devtrans_rdy'range loop
+				if devtrans_rdy(i)='1' then
+					dev_rdy <= dev_req; 
+				end if;
+			end loop;
 		end if;
 	end process;
+
+	dmatrans_req <= ctlr_inirdy and rsrc_req;
+	dmatrans_rid <= encoder(devtrans_gnt);
 
 	dmatrans_we <= setif(trans_we(0)/='0');
 	dmatrans_e : entity hdl4fpga.dmatrans
@@ -224,7 +221,6 @@ begin
 		dmatrans_ilen  => dmatrans_ilen,
 		dmatrans_taddr => dmatrans_taddr,
 		dmatrans_tlen  => dmatrans_tlen,
-		dmatrans_cnl   => dmatrans_cnl,
 
 		ctlr_inirdy    => ctlr_inirdy,
 		ctlr_refreq    => ctlr_refreq,

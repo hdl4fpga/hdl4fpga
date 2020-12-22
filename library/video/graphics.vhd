@@ -33,15 +33,17 @@ entity graphics is
 	generic (
 		video_width  : natural);
 	port (
+		ctlr_inirdy  : in  std_logic;
 		ctlr_clk     : in  std_logic;
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
 		base_addr    : in  std_logic_vector;
-		dma_req      : buffer std_logic := '0';
+		dmacfg_req   : buffer std_logic;
+		dmacfg_rdy   : in  std_logic;
+		dma_req      : buffer std_logic;
 		dma_rdy      : in  std_logic;
 		dma_len      : out std_logic_vector;
 		dma_addr     : buffer std_logic_vector;
-		dmatrans_cnl : out std_logic;
 		video_clk    : in  std_logic;
 		video_hzon   : in  std_logic;
 		video_vton   : in  std_logic;
@@ -58,80 +60,77 @@ architecture def of graphics is
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
 
-	signal video_frm : std_logic;
-	signal video_on  : std_logic;
+	signal level         : unsigned(0 to unsigned_num_bits(maxdma_len-1));
 
-	signal level     : unsigned(0 to unsigned_num_bits(maxdma_len-1));
-	signal vton_dly  : std_logic;
-	signal vton_edge : std_logic;
-	signal hzon_edge : std_logic;
+	signal video_frm     : std_logic;
+	signal video_on      : std_logic;
+	signal vt_req        : std_logic;
+	signal hz_req        : std_logic;
+	signal trans_req     : std_logic;
 
-	signal src_irdy  : std_logic;
-	signal src_data  : std_logic_vector(ctlr_di'range);
+	signal src_irdy      : std_logic;
+	signal src_data      : std_logic_vector(ctlr_di'range);
 
-	signal dma_step  : unsigned(dma_addr'range);
+	signal dma_step      : unsigned(dma_addr'range);
 
-	signal mydma_rdy : std_logic;
-
-	type video_states is (
-		vertical_sync,
-		vertical_req,
-		horizontal_start,
-	    horizontal_req,
-		memory_filled);
-
-	type dma_states is (
-		dma_rdy1,
-		dma_idle,
-		dma_freed,
-		dma_vertical,
-		dma_horizontal,
-		dma_transfer);
-	signal vt_req : std_logic;
-	signal hz_req : std_logic;
 begin
 
-	process (video_clk)
+	dma_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			mydma_rdy <= dma_rdy;
-		end if;
-	end  process;
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			if dma_req='0' then
-				if mydma_rdy='0' then
-					if vt_req='1' then
-						vt_req   <= '0';
-						hz_req   <= '0';
-						dma_req  <= '1';
-						level    <= to_unsigned(maxdma_len, level'length);
-						dma_len  <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
-						dma_addr <= base_addr; --(dma_addr'range => '0');
-						dma_step <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
-					elsif hz_req='1' then
-						hz_req   <= '0';
-						dma_req  <= '1';
-						level    <= level + line_size;
-						dma_len  <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
-						dma_addr <= std_logic_vector(unsigned(dma_addr) + dma_step);
-						dma_step <= resize(to_unsigned(line_size, level'length), dma_step'length);
+			if ctlr_inirdy='0' then
+				dmacfg_req <= to_stdulogic(to_bit(dmacfg_rdy));
+				dma_req    <= to_stdulogic(to_bit(dma_rdy));
+				trans_req  <= '0';
+			elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+				if (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
+					if trans_req='0' then
+						if vt_req='1' then
+							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							trans_req  <= '1';
+						elsif hz_req='1' then
+							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							trans_req  <= '1';
+						end if;
+					else
+						dma_req   <= not to_stdulogic(to_bit(dma_rdy));
+						trans_req <= '0';
 					end if;
 				end if;
-			elsif mydma_rdy='1' then
-				dma_req      <= '0';
-				dmatrans_cnl <= '0';
-			elsif vt_req='1' then
-				dmatrans_cnl <= '1';
 			end if;
+		end if;
+	end process;
 
-			if vton_dly='0' then
-				if vton_edge='1' then
+	process (video_clk)
+		variable hzon_lat  : std_logic;
+		variable vton_lat2 : std_logic;
+		variable vton_lat  : std_logic;
+	begin
+		if rising_edge(video_clk) then
+			if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+				if trans_req='0' then
+					if vt_req='1' then
+						vt_req     <= '0';
+						hz_req     <= '0';
+						level      <= to_unsigned(maxdma_len, level'length);
+						dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
+						dma_addr   <= base_addr;
+						dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
+					elsif hz_req='1' then
+						vt_req     <= '0';
+						hz_req     <= '0';
+						level      <= level + line_size;
+						dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
+						dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
+						dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
+					end if;
+				end if;
+			end if;
+			if vton_lat='0' then
+				if vton_lat2='1' then
 					vt_req <= '1';
 				end if;
-			elsif video_vton='1' and hzon_edge='0' and video_hzon='1' then
+			elsif video_vton='1' and hzon_lat='0' and video_hzon='1' then
 				level <= level - video_width;
 			elsif level <= water_mark then
 				if hz_req='0' then
@@ -139,10 +138,10 @@ begin
 				end if;
 			end if;
 
-			hzon_edge <= video_hzon;
-			vton_edge <= vton_dly;
-			vton_dly  <= video_vton;
-			video_frm <= not setif(video_vton='0' and vton_dly='1');
+			video_frm <= not setif(video_vton='0' and vton_lat='1');
+			hzon_lat  := video_hzon;
+			vton_lat2 := vton_lat;
+			vton_lat  := video_vton;
 		end if;
 	end process;
 

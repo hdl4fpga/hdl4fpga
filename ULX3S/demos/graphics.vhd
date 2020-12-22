@@ -69,8 +69,6 @@ architecture graphics of ulx3s is
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
-	signal dmaiotrans_req : std_logic := '0';
-	signal dmaiotrans_rdy : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
@@ -172,7 +170,7 @@ architecture graphics of ulx3s is
 	constant video_tab : videoparams_vector := (
 		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk_debug),
 		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk40_00m800x600at60));
-	constant video_mode : natural := mode600p;
+	constant video_mode : natural := setif(debug, modedebug, mode600p);
 
 
 	type sdram_params is record
@@ -651,31 +649,44 @@ begin
 
 		ctlr_dm <= (others => '0');
 
-		dmacfgio_p : process (dmacfg_clk)
-			variable dmaio_rdy1 : std_logic;
-			variable dmaio_rdy2 : std_logic;
+		dma_p : process (dmacfg_clk)
+			variable trans_req : std_logic;
+			variable io_rdy2 : std_logic;
+			variable io_rdy1 : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
-				sio_frm <= '1';
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= '0';
+					dmacfgio_req <= dmacfgio_rdy;
 					dmaio_trdy   <= '0';
-					sio_frm <= '0';
-				elsif dmacfgio_req='0' then
-					if dmaio_rdy2='1' then
-						if dmaio_trdy='0' then
-							dmacfgio_req <= (dmaiotrans_req xnor dmaiotrans_rdy) and not dmacfgio_rdy;
-						end if;
-					end if;
-					dmaio_trdy <= '0';
+					trans_req    := '0';
 				else
-					dmaiotrans_req <= (dmaiotrans_req xnor dmaiotrans_rdy) and dmacfgio_rdy;
-					dmacfgio_req   <= not dmacfgio_rdy;
-					dmaio_trdy     <= dmacfgio_rdy;
+					if to_bit(dmacfgio_req xor dmacfgio_rdy)='0' then
+						if to_bit(dmaio_req xor dmaio_rdy)='0' then
+							if trans_req='0' then
+								if io_rdy2='1' then
+									if dmaio_trdy='0' then
+										dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
+										trans_req    := '1';
+									end if;
+								end if;
+								dmaio_trdy  <= '0';
+							else
+								dmaio_trdy <= '1';
+								dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
+								trans_req  := '0';
+							end if;
+						else
+							dmaio_trdy <= '0';
+						end if;
+					else
+						dmaio_trdy <= '0';
+					end if;
 				end if;
 				
-				dmaio_rdy2 := dmaio_rdy1;
-				dmaio_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				io_rdy2 := io_rdy1;
+				io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+
+				sio_frm <= ctlr_inirdy;
 			end if;
 		end process;
 
@@ -781,11 +792,14 @@ begin
 		generic map (
 			video_width => modeline_tab(video_tab(video_mode).mode)(0))
 		port map (
+			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_clk     => ctlr_clk,
 			ctlr_di_dv   => graphics_dv,
 			ctlr_di      => graphics_di,
 			base_addr    => base_addr,
-			dma_req      => dmacfgvideo_req,
+			dmacfg_req   => dmacfgvideo_req,
+			dmacfg_rdy   => dmacfgvideo_rdy,
+			dma_req      => dmavideo_req,
 			dma_rdy      => dmavideo_rdy,
 			dma_len      => dmavideo_len,
 			dma_addr     => dmavideo_addr,
@@ -821,28 +835,11 @@ begin
 		video_blank <= not video_hzon or not video_vton;
 	end block;
 
-	process(ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			dmavideo_req <= dmacfgvideo_rdy;
-
-			if dmaio_req='1' then
-				if dmaio_rdy='1' then
-					dmaio_req      <= '0';
-					dmaiotrans_rdy <= dmaiotrans_req;
-				end if;
-			else
-				dmaio_req <= dmaiotrans_req xor dmaiotrans_rdy;
-			end if;
-
-		end if;
-	end process;
-
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= dmacfg_rdy;
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
-	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= dev_rdy;
+	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 --	dev_len    <= dmavideo_len  & (dmaio_len'range  => '0');
