@@ -377,7 +377,8 @@ begin
 
 	sio_b : block
 
-		constant fifo_depth  : natural := 8;
+		constant fifo_gray   : boolean := false;
+		constant fifo_depth  : natural := 1;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
 		constant rid_dmalen  : std_logic_vector := x"17";
@@ -572,7 +573,7 @@ begin
 			latency   => 1,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -593,7 +594,7 @@ begin
 			latency   => 1,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -614,7 +615,7 @@ begin
 			latency   => 3,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
