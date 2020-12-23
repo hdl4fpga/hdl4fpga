@@ -526,7 +526,7 @@ begin
 			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
-				if req='1' then
+				if to_bit(req)='1' then
 					if siodmaio_irdy='1' then
 						if siodmaio_trdy='1' then
 							if siodmaio_end='1' then
@@ -537,8 +537,8 @@ begin
 				elsif frm='1' and rgtr_frm='0' then
 					req := '1';
 				end if;
-				frm := rgtr_frm;
-				sou_frm <= req;
+				frm := to_stdulogic(to_bit(rgtr_frm));
+				sou_frm <= to_stdulogic(to_bit(req));
 			end if;
 		end process;
 
@@ -563,16 +563,6 @@ begin
 
 		sou_data <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
 		sou_irdy <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
-
---		base_addr_e : entity hdl4fpga.sio_rgtr
---		generic map (
---			rid  => x"19")
---		port map (
---			rgtr_clk  => sio_clk,
---			rgtr_dv   => rgtr_dv,
---			rgtr_id   => rgtr_id,
---			rgtr_data => rgtr_data,
---			data      => base_addr);
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 		dmaaddr_e : entity hdl4fpga.fifo
@@ -637,6 +627,16 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req and datactlr_irdy;
+
+--		base_addr_e : entity hdl4fpga.sio_rgtr
+--		generic map (
+--			rid  => x"19")
+--		port map (
+--			rgtr_clk  => sio_clk,
+--			rgtr_dv   => rgtr_dv,
+--			rgtr_id   => rgtr_id,
+--			rgtr_data => rgtr_data,
+--			data      => base_addr);
 
 		dma_p : process (dmacfg_clk)
 			variable trans_req : std_logic;

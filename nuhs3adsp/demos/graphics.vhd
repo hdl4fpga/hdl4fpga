@@ -140,7 +140,7 @@ architecture graphics of nuhs3adsp is
     signal video_dot      : std_logic;
     signal video_on       : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
-    signal base_addr      : std_logic_vector(dmactlr_addr'range);
+    signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 
 	signal dmacfgvideo_req : std_logic;
 	signal dmacfgvideo_rdy : std_logic;
@@ -377,7 +377,7 @@ begin
 			variable req : std_logic := '0';
 		begin
 			if rising_edge(sio_clk) then
-				if req='1' then
+				if to_bit(req)='1' then
 					if siodmaio_irdy='1' then
 						if siodmaio_trdy='1' then
 							if siodmaio_end='1' then
@@ -388,8 +388,8 @@ begin
 				elsif frm='1' and rgtr_frm='0' then
 					req := '1';
 				end if;
-				frm := rgtr_frm;
-				sou_frm <= req;
+				frm := to_stdulogic(to_bit(rgtr_frm));
+				sou_frm <= to_stdulogic(to_bit(req));
 			end if;
 		end process;
 
@@ -457,17 +457,6 @@ begin
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_len);
 
---		base_addr_e : entity hdl4fpga.sio_rgtr
---		generic map (
---			rid  => x"19")
---		port map (
---			rgtr_clk  => sio_clk,
---			rgtr_dv   => rgtr_dv,
---			rgtr_id   => rgtr_id,
---			rgtr_data => rgtr_data,
---			data      => base_addr);
-		base_addr <= (others => '0');
-
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
@@ -490,6 +479,15 @@ begin
 			dst_data => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req and datactlr_irdy;
 
+--		base_addr_e : entity hdl4fpga.sio_rgtr
+--		generic map (
+--			rid  => x"19")
+--		port map (
+--			rgtr_clk  => sio_clk,
+--			rgtr_dv   => rgtr_dv,
+--			rgtr_id   => rgtr_id,
+--			rgtr_data => rgtr_data,
+--			data      => base_addr);
 
 		dma_p : process (dmacfg_clk)
 			variable trans_req : std_logic;
