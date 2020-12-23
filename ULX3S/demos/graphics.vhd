@@ -671,8 +671,13 @@ begin
 					dmaio_trdy <= '0';
 				end if;
 				
-				io_rdy2 := io_rdy1;
-				io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				if dmaio_trdy='1' then
+					io_rdy2 := '0';
+					io_rdy1 := '0';
+				else
+					io_rdy2 := io_rdy1;
+					io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				end if;
 
 				sio_frm <= ctlr_inirdy;
 			end if;

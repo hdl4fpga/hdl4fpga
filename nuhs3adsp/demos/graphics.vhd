@@ -490,6 +490,7 @@ begin
 			dst_data => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req and datactlr_irdy;
 
+
 		dma_p : process (dmacfg_clk)
 			variable trans_req : std_logic;
 			variable io_rdy2 : std_logic;
@@ -510,7 +511,7 @@ begin
 									trans_req    := '1';
 								end if;
 							end if;
-							dmaio_trdy  <= '0';
+							dmaio_trdy <= '0';
 						else
 							dmaio_trdy <= '1';
 							dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
@@ -523,8 +524,13 @@ begin
 					dmaio_trdy <= '0';
 				end if;
 				
-				io_rdy2 := io_rdy1;
-				io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				if dmaio_trdy='1' then
+					io_rdy2 := '0';
+					io_rdy1 := '0';
+				else
+					io_rdy2 := io_rdy1;
+					io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
+				end if;
 
 				sio_frm <= ctlr_inirdy;
 			end if;

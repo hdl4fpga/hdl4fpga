@@ -254,6 +254,8 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 		& x"1602000060"
+		& x"170200001f"
+		& x"1602000060"
 		& x"170200001f";
 
 	constant pp1_pl : std_logic_vector := 
@@ -278,6 +280,8 @@ architecture nuhs3adsp_graphics of testbench is
 		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
 		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 		& x"16020000a0"
+		& x"170200001f"
+		& x"1602000000"
 		& x"170200001f";
 
 	constant pp : std_logic_vector := 
