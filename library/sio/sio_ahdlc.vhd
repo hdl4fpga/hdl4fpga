@@ -208,6 +208,8 @@ begin
 	buffer_rlk  <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
+	generic map (
+		mem_size => 1*2048*8)
 	port map (
 		si_clk    => uart_clk,
 		si_frm    => ahdlcrx_frm,

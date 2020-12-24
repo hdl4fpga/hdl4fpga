@@ -22,14 +22,14 @@
 #include "ahdlc.h"
 
 #define QUEUE   4
-#define MAXSIZE 4096
+#define MAXSIZE (8*1024)
 #define printnl fprintf(stderr,"\n")
 
 
 char ack_rcvd = 0;
 long long addr_rcvd;
 
-char rbuff[4096];
+char rbuff[MAXSIZE];
 
 void sio_parse(char * buff, int l)
 {
@@ -85,7 +85,7 @@ void init_ahdlc ()
 	setbuf(stdout, NULL);
 }
 
-char sbuff[4096];
+char sbuff[MAXSIZE];
 char *sload = sbuff+5;
 int  pkt_sent = 0;
 int  ack      = 0x4a;

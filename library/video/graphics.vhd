@@ -73,6 +73,9 @@ architecture def of graphics is
 
 	signal dma_step      : unsigned(dma_addr'range);
 
+	signal rdy     : std_logic;
+	signal cfg_rdy : std_logic;
+
 	signal debug_dmacfg_req : std_logic;
 	signal debug_dmacfg_rdy : std_logic;
 	signal debug_dma_req    : std_logic;
@@ -80,34 +83,36 @@ architecture def of graphics is
 
 begin
 
-	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
-	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(dmacfg_rdy));
-	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(dma_rdy));
-	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(dma_rdy));
+	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(cfg_rdy));
+	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(cfg_rdy));
+	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(rdy));
+	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(rdy));
 
 	dma_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
 			if ctlr_inirdy='0' then
-				dmacfg_req <= to_stdulogic(to_bit(dmacfg_rdy));
-				dma_req    <= to_stdulogic(to_bit(dma_rdy));
+				dmacfg_req <= to_stdulogic(to_bit(cfg_rdy));
+				dma_req    <= to_stdulogic(to_bit(rdy));
 				trans_req  <= '0';
-			elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-				if (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
+			elsif (dmacfg_req xor to_stdulogic(to_bit(cfg_rdy)))='0' then
+				if (dma_req xor to_stdulogic(to_bit(rdy)))='0' then
 					if trans_req='0' then
 						if vt_req='1' then
-							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							dmacfg_req <= not to_stdulogic(to_bit(cfg_rdy));
 							trans_req  <= '1';
 						elsif hz_req='1' then
-							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							dmacfg_req <= not to_stdulogic(to_bit(cfg_rdy));
 							trans_req  <= '1';
 						end if;
 					else
-						dma_req   <= not to_stdulogic(to_bit(dma_rdy));
+						dma_req   <= not to_stdulogic(to_bit(rdy));
 						trans_req <= '0';
 					end if;
 				end if;
 			end if;
+			rdy     <= dma_rdy;
+			cfg_rdy <= dmacfg_rdy;
 		end if;
 	end process;
 
@@ -117,7 +122,7 @@ begin
 		variable vton_lat  : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+			if (dmacfg_req xor to_stdulogic(to_bit(cfg_rdy)))='0' then
 				if trans_req='0' then
 					if vt_req='1' then
 						vt_req     <= '0';

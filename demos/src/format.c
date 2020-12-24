@@ -8,9 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BRAM_SIZE 2048
 #define BUF_SIZE  256
-#define BUF_NUM   (2048/BUF_SIZE)
+#define BUF_NUM   (8*1024/BUF_SIZE)
 
 static unsigned char buffer[BUF_NUM*(2+BUF_SIZE)+(2+3)+(2+3)];
 static unsigned char *bufptr;
@@ -99,6 +98,7 @@ int main (int argc, char *argv[])
 					exit(-1);
 				}
 				if (!(i > 0)) {
+					perror ("Reading stdin\n");
 					exit(0);
 				}
 

@@ -112,7 +112,7 @@ void init_socket ()
 	//
 }
 
-char sbuff[2048];
+char sbuff[8*1024];
 char *sload = sbuff+5;
 int  pkt_sent = 0;
 int  ack      = 0;

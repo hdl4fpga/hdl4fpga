@@ -61,7 +61,6 @@ entity dmactlr is
 		ctlr_cas     : in  std_logic;
 		ctlr_b       : out std_logic_vector;
 		ctlr_a       : out std_logic_vector;
-		ctlr_r       : out std_logic_vector;
 		ctlr_dio_req : in  std_logic;
 		ctlr_act     : in  std_logic);
 
@@ -79,6 +78,9 @@ architecture def of dmactlr is
 
 	signal dmacfg_gnt     : std_logic_vector(devcfg_req'range);
 
+	signal dmatrans_req   : std_logic;
+	signal dmatrans_rdy   : std_logic;
+	signal dmatransgnt_req : std_logic;
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
@@ -87,14 +89,10 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
-	signal dma_gnt   : std_logic_vector(dev_req'range);
-	signal devtrans_rdy   : std_logic_vector(dev_req'range);
-	signal dmatrans_req   : std_logic;
-	signal dmatransgnt_req : std_logic;
-	signal dmatrans_rdy   : std_logic;
+	signal dma_gnt        : std_logic_vector(dev_req'range);
+	signal dma_req        : std_logic_vector(dev_req'range);
+	signal dma_rdy        : std_logic_vector(dev_req'range);
 
-
-	signal r   : std_logic_vector(ctlr_r'length-1 downto 0) := (others => '1');
 begin
 
 	dmargtrgnt_e : entity hdl4fpga.grant
@@ -168,17 +166,19 @@ begin
 		rsrc_req => dmatransgnt_req,
 		rsrc_rdy => dmatrans_rdy,
 
-		dev_req => dev_req,
+		dev_req => dma_req,
 		dev_gnt => dma_gnt,
-		dev_rdy => dev_rdy);
+		dev_rdy => dma_rdy);
 
 	dmatrans_rid <= encoder(dma_gnt);
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
+			dma_req <= dev_req;
 			dmatrans_req <= to_stdulogic(to_bit(dmatransgnt_req));
 		end if;
 	end process;
+	dev_rdy <= dma_rdy;
 
 
 	dmatrans_we <= setif(trans_we(0)/='0');
@@ -212,15 +212,5 @@ begin
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a,
 		ctlr_dio_req   => ctlr_dio_req);
-
-	r <= dmatrans_taddr(r'length-1 downto 0);
-	inbuffer_e : entity hdl4fpga.align
-	generic map (
-		n => ctlr_r'length,
-		d => (0 to ctlr_r'length-1 => 7))
-	port map (
-		clk => ctlr_clk,
-		di  => r,
-		do  => ctlr_r);
 
 end;

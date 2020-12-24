@@ -8,7 +8,7 @@ int main (int argc, char *argv[])
 	char   c;
 	unsigned char  len;
 	unsigned char  rid;
-	unsigned char  buffer[4096];
+	unsigned char  buffer[8*1024];
 	unsigned char  *bufptr;
 	unsigned int   tlen;
 	unsigned int   bsize;

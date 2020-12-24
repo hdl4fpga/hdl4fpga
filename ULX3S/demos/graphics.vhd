@@ -86,7 +86,6 @@ architecture graphics of ulx3s is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
@@ -171,7 +170,6 @@ architecture graphics of ulx3s is
 		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk_debug),
 		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk40_00m800x600at60));
 	constant video_mode : natural := setif(debug, modedebug, mode600p);
-
 
 	type sdram_params is record
 		clkos_div  : natural;
@@ -377,7 +375,7 @@ begin
 
 	sio_b : block
 
-		constant fifo_gray   : boolean := false;
+		constant fifo_gray   : boolean := true;
 		constant fifo_depth  : natural := 1;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
@@ -610,7 +608,7 @@ begin
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+			max_depth => fifo_depth*(2*256/(ctlr_di'length/8)),
 			out_rgtr  => true,
 			latency   => 3,
 			check_sov => true,
@@ -640,29 +638,31 @@ begin
 --			data      => base_addr);
 
 		dma_p : process (dmacfg_clk)
-			variable trans_req : std_logic;
-			variable io_rdy2 : std_logic;
-			variable io_rdy1 : std_logic;
+			variable trans_req  : std_logic;
+			variable io_rdy2    : std_logic;
+			variable io_rdy1    : std_logic;
+			variable dma_rdy    : std_logic;
+			variable dmacfg_rdy : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= to_stdulogic(to_bit(dmacfgio_rdy));
-					dmaio_req    <= to_stdulogic(to_bit(dmaio_rdy));
+					dmacfgio_req <= to_stdulogic(to_bit(dmacfg_rdy));
+					dmaio_req    <= to_stdulogic(to_bit(dma_rdy));
 					dmaio_trdy   <= '0';
 					trans_req    := '0';
-				elsif (dmacfgio_req xor dmacfgio_rdy)='0' then
-					if (dmaio_req xor dmaio_rdy)='0' then
+				elsif (dmacfgio_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+					if (dmaio_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
 						if trans_req='0' then
 							if io_rdy2='1' then
 								if dmaio_trdy='0' then
-									dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
+									dmacfgio_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 									trans_req    := '1';
 								end if;
 							end if;
 							dmaio_trdy  <= '0';
 						else
 							dmaio_trdy <= '1';
-							dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
+							dmaio_req  <= not to_stdulogic(to_bit(dma_rdy));
 							trans_req  := '0';
 						end if;
 					else
@@ -680,7 +680,9 @@ begin
 					io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
 				end if;
 
-				sio_frm <= ctlr_inirdy;
+				dma_rdy    := dmaio_rdy;
+				dmacfg_rdy := dmacfgio_rdy;
+				sio_frm    <= ctlr_inirdy;
 			end if;
 		end process;
 
@@ -744,21 +746,25 @@ begin
 
 
 	adapter_b : block
-		constant mode : videotiming_ids := video_tab(video_mode).mode;
+
+		constant mode     : videotiming_ids := video_tab(video_mode).mode;
 		constant sync_lat : natural := 4;
-		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(3)-1)-1 downto 0);
-		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(7)-1)-1 downto 0);
-		signal hzsync : std_logic;
-		signal vtsync : std_logic;
-		signal hzon   : std_logic;
-		signal vton   : std_logic;
-		signal video_hzon   : std_logic;
-		signal video_vton   : std_logic;
+
+		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(3)-1)-1 downto 0);
+		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(7)-1)-1 downto 0);
+		signal hzsync      : std_logic;
+		signal vtsync      : std_logic;
+		signal hzon        : std_logic;
+		signal vton        : std_logic;
+		signal video_hzon  : std_logic;
+		signal video_vton  : std_logic;
 
 		signal graphics_di : std_logic_vector(ctlr_do'range);
 		signal graphics_dv : std_logic;
-		signal pixel  : std_logic_vector(video_pixel'range);
+		signal pixel       : std_logic_vector(video_pixel'range);
+
 	begin
+
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
 			timing_id => mode)
@@ -834,9 +840,9 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
---	dev_len    <= dmavideo_len  & dmaio_len;
+	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
-	dev_len    <= dmavideo_len  & std_logic_vector(resize(unsigned'(x"7F"), dmaio_len'length));
+--	dev_len    <= dmavideo_len  & std_logic_vector(resize(unsigned'(x"7F"), dmaio_len'length));
 --	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
 	dev_we     <= "1"           & "0";
 
@@ -872,7 +878,6 @@ begin
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
-		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act);
 
