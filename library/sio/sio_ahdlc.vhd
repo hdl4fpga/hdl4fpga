@@ -207,22 +207,27 @@ begin
 	buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
 	buffer_rlk  <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
-	buffer_e : entity hdl4fpga.sio_buffer
-	port map (
-		si_clk    => uart_clk,
-		si_frm    => ahdlcrx_frm,
-		si_irdy   => buffer_irdy,
-		si_data   => buffer_data,
+--	buffer_e : entity hdl4fpga.sio_buffer
+--	port map (
+--		si_clk    => uart_clk,
+--		si_frm    => ahdlcrx_frm,
+--		si_irdy   => buffer_irdy,
+--		si_data   => buffer_data,
+--
+--		rollback  => buffer_rlk,
+--		commit    => buffer_cmmt,
+--		overflow  => buffer_ovfl,
+--
+--		so_clk    => sio_clk,
+--		so_frm    => so_frm,
+--		so_irdy   => so_irdy,
+--		so_trdy   => so_trdy,
+--		so_data   => so_data);
+	buffer_ovfl <= '0';
+	so_frm  <= ahdlcrx_frm;
+	so_irdy <= buffer_irdy;
+	so_data <= buffer_data;
 
-		rollback  => buffer_rlk,
-		commit    => buffer_cmmt,
-		overflow  => buffer_ovfl,
-
-		so_clk    => sio_clk,
-		so_frm    => so_frm,
-		so_irdy   => so_irdy,
-		so_trdy   => so_trdy,
-		so_data   => so_data);
 	end block;
 
 	artibiter_b : block

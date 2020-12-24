@@ -73,7 +73,17 @@ architecture def of graphics is
 
 	signal dma_step      : unsigned(dma_addr'range);
 
+	signal debug_dmacfg_req : std_logic;
+	signal debug_dmacfg_rdy : std_logic;
+	signal debug_dma_req    : std_logic;
+	signal debug_dma_rdy    : std_logic;
+
 begin
+
+	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
+	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(dmacfg_rdy));
+	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(dma_rdy));
+	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(dma_rdy));
 
 	dma_p : process (video_clk)
 	begin

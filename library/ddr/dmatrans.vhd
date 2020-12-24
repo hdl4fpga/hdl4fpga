@@ -110,14 +110,13 @@ begin
 				load         <= '1';
 				reload       <= '0';
 				ctlr_irdy    <= '0';
-				dmatrans_rdy <= '0';
 				cancel       <= '0';
 			elsif cancel='1' then
 				load      <= '0';
 				reload    <= '0';
 				ctlr_irdy <= '0';
 				if ctlr_trdy='1' then
-					dmatrans_rdy <= '1';
+					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 				end if;
 			elsif reload='1' then
 				if ctlr_trdy='1' then 
@@ -130,35 +129,31 @@ begin
 					ctlr_irdy <= '0';
 				end if;
 				cancel       <= dmatrans_cnl;
-				dmatrans_rdy <= '0';
 			elsif leoc='1' then
 				load      <= '0';
 				reload    <= '0';
 				cancel       <= dmatrans_cnl;
 				ctlr_irdy <= '0';
 				if ctlr_trdy='1' then
-					dmatrans_rdy <= '1';
+					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 				end if;
 			elsif ceoc='1' then
 				load         <= '1';
 				reload       <= '1';
 				cancel       <= dmatrans_cnl;
 				ctlr_irdy    <= '0';
-				dmatrans_rdy <= '0';
 			elsif ref_req='1' then
 				load         <= '1';
 				reload       <= '1';
 				cancel       <= '0';
 				ctlr_irdy    <= '0';
-				dmatrans_rdy <= '0';
 			else
 				load         <= '0';
 				reload       <= '0';
 				cancel       <= dmatrans_cnl;
 				ctlr_irdy    <= '1';
-				dmatrans_rdy <= '0';
 			end if;
-			init <= not dmatrans_req;
+			init <= to_stdulogic(to_bit(dmatrans_rdy)) xnor to_stdulogic(to_bit(dmatrans_req));
 		end if;
 	end process;
 

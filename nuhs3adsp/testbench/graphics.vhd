@@ -333,6 +333,7 @@ architecture nuhs3adsp_graphics of testbench is
 			end loop;
 			return std_logic_vector(retval);
 		end;
+		constant time_offset : time := 200 us;
 begin
 
 	mii_rxc <= mii_refclk;
@@ -360,7 +361,7 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after 210 us + 1 us, '0' after  210 us + 50 us, '0' after 210 us +60 us;
+	mii_treq <= '0', '1' after time_offset + 1 us, '0' after  time_offset + 50 us, '0' after time_offset +60 us;
 --	mii_treq <= '0', '1' after  1 us, '0' after   30 us, '1' after 40 us;
 
 

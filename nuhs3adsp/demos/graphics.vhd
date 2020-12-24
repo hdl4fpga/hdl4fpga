@@ -195,7 +195,8 @@ architecture graphics of nuhs3adsp is
 	end;
 
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
-	constant video_mode : video_modes := mode480p;
+	constant video_mode : video_modes := setif(debug, modedebug, mode480p);
+--	constant video_mode : video_modes := mode480p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;
@@ -305,6 +306,11 @@ begin
 		signal ipv4acfg_req  : std_logic;
 		signal tp1 : std_logic_vector(32-1 downto 0);
 		signal tp2 : std_logic_vector(32-1 downto 0);
+
+		signal debug_dmacfgio_req : std_logic;
+		signal debug_dmacfgio_rdy : std_logic;
+		signal debug_dmaio_req    : std_logic;
+		signal debug_dmaio_rdy    : std_logic;
 
 	begin
 
@@ -489,6 +495,11 @@ begin
 --			rgtr_data => rgtr_data,
 --			data      => base_addr);
 
+		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
+		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
+		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
+		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
+
 		dma_p : process (dmacfg_clk)
 			variable trans_req : std_logic;
 			variable io_rdy2 : std_logic;
@@ -626,9 +637,10 @@ begin
 			ctlr_di_dv  => graphics_dv,
 			ctlr_di     => graphics_di,
 			base_addr   => base_addr,
-			dma_req     => dmacfgvideo_req,
+			dmacfg_req  => dmacfgvideo_req,
+			dmacfg_rdy  => dmacfgvideo_rdy,
+			dma_req     => dmavideo_req,
 			dma_rdy     => dmavideo_rdy,
-			dmacfg_rdy     => dmavideo_rdy,
 			dma_len     => dmavideo_len,
 			dma_addr    => dmavideo_addr,
 			video_clk   => video_clk,

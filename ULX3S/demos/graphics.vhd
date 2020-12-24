@@ -834,9 +834,9 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
-	dev_len    <= dmavideo_len  & dmaio_len;
+--	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
---	dev_len    <= dmavideo_len  & (dmaio_len'range  => '0');
+	dev_len    <= dmavideo_len  & std_logic_vector(resize(unsigned'(x"7F"), dmaio_len'length));
 --	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
 	dev_we     <= "1"           & "0";
 

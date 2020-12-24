@@ -31,26 +31,45 @@ entity grant is
 	port (
 		rsrc_clk : in  std_logic;
 		rsrc_rdy : in  std_logic;
-		rsrc_req : out std_logic;
+		rsrc_req : buffer std_logic;
 
 		dev_req  : in  std_logic_vector;
 		dev_gnt  : buffer std_logic_vector;
-		dev_rdy  : out std_logic_vector);
+		dev_rdy  : buffer std_logic_vector);
 end;
 
 architecture def of grant is
-	signal dev_swp  : std_logic;
 	signal dev_idle : std_logic;
+	signal arb_req  : std_logic_vector(dev_req'range);
 begin
 
+	arb_req <= dev_req xor to_stdlogicvector(to_bitvector(dev_rdy)); 
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk  => rsrc_clk,
-		req  => dev_req,
+		req  => arb_req,
 		idle => dev_idle,
-		swp  => dev_swp,
 		gnt  => dev_gnt);
 
-	rsrc_req <= not dev_swp and not dev_idle;
-	dev_rdy  <= dev_gnt and (dev_req'range => rsrc_rdy);
+	process (rsrc_clk)
+		variable idle : std_logic;
+	begin
+		if rising_edge(rsrc_clk) then
+			if (to_stdulogic(to_bit(rsrc_req)) xor to_stdulogic(to_bit(rsrc_rdy)))='0' then
+				for i in dev_gnt'range loop
+					if dev_gnt(i)='1' then
+						if idle='1' then
+							rsrc_req <= not to_stdulogic(to_bit(rsrc_rdy));
+						else
+							dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
+						end if;
+						idle := not idle;
+					elsif dev_idle='1' then
+						idle := '1';
+					end if;
+				end loop;
+			end if;
+		end if;
+	end process;
+
 end;
