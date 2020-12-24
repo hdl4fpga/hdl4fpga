@@ -57,7 +57,7 @@ begin
 		if rising_edge(rsrc_clk) then
 			if (to_stdulogic(to_bit(rsrc_req)) xor to_stdulogic(to_bit(rsrc_rdy)))='0' then
 				if to_bitvector(gnt)=(gnt'range => '0') then
-					if dev_idle/='0' then
+					if dev_idle='0' then
 						rsrc_req <= not to_stdulogic(to_bit(rsrc_rdy));
 						gnt      := dev_gnt;
 					end if;

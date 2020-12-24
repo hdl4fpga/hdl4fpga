@@ -174,7 +174,7 @@ begin
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
-			dma_req <= dev_req;
+			dma_req      <= dev_req;
 			dmatrans_req <= to_stdulogic(to_bit(dmatransgnt_req));
 		end if;
 	end process;

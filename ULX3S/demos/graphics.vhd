@@ -608,7 +608,7 @@ begin
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth*(2*256/(ctlr_di'length/8)),
+			max_depth => fifo_depth*(1*256/(ctlr_di'length/8)),
 			out_rgtr  => true,
 			latency   => 3,
 			check_sov => true,
