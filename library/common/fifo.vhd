@@ -173,6 +173,31 @@ begin
 			end if;
 		end process;
 
+--		dst_irdy_p : process (rdata, dst_clk)
+--			variable q : std_logic_vector(0 to (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)));
+--		begin
+--			if rising_edge(dst_clk) then
+--				if dst_ini='1' then
+--					q := (others => '0');
+--				elsif feed_ena='1' then
+--					q(0) := dst_irdy1;
+--					for i in q'range loop
+--						if q(i)='1' then
+--							if i+1 < q'length then
+--								if q(i+1)='1' then
+--									exit;
+--								else
+--									q(i+1) := q(i);
+--									q(i)   := '0';
+--								end if;
+--							end if;
+--						end if;
+--					end loop;
+--				end if;
+--				dst_irdy <= q(q'right);
+--			end if;
+--		end process;
+
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 	end generate;
 
