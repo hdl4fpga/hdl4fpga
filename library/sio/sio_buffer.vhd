@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity sio_buffer is
 	generic (
-		mem_size : natural := 2048*8);
+		mem_size : natural := 4*2048*8);
 	port (
 		si_clk   : in  std_logic;
 

@@ -55,7 +55,7 @@ architecture def of graphics is
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
 	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
-	constant fifo_size   : natural := 2*line_size;
+	constant fifo_size   : natural := 4*line_size;
 	constant byteperword : natural := ctlr_di'length/video_pixel'length;
 	constant maxdma_len  : natural := fifo_size/byteperword;
 	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
@@ -163,11 +163,12 @@ begin
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
+		debug => false,
 		max_depth => fifo_size,
 		out_rgtr  => true, 
 		latency   => 3,
 		check_sov => false,
-		check_dov => false,
+		check_dov => true,
 		gray_code => true)
 	port map (
 		src_clk  => ctlr_clk,

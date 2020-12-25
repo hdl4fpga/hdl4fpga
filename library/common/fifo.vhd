@@ -82,6 +82,7 @@ begin
 	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
 		subtype addr_range is natural range 1 to addr_length;
+		signal wdata : std_logic_vector(0 to src_data'length-1);
 		signal rdata : std_logic_vector(0 to src_data'length-1);
 		signal rd_ena : std_logic;
 	begin
@@ -96,6 +97,7 @@ begin
 
 		rd_ena <= feed_ena when out_rgtren else '1';
 
+		wdata <= src_data when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -105,7 +107,7 @@ begin
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,
 			wr_addr => std_logic_vector(wr_cntr(addr_range)),
-			wr_data => src_data, 
+			wr_data => wdata, 
 
 			rd_clk  => dst_clk,
 			rd_ena  => rd_ena,
@@ -235,7 +237,8 @@ begin
 
 	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
 --	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov)));
-	feed_ena  <= dst_trdy or (not dst_irdy and setif(check_dov) and dst_irdy1);
+--	feed_ena  <= dst_trdy or (not dst_irdy and setif(check_dov) and dst_irdy1);
+	feed_ena  <= dst_trdy or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then

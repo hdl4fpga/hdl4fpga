@@ -26,6 +26,8 @@ add wave -noupdate /testbench/du_e/adapter_b/hzon
 add wave -noupdate /testbench/du_e/adapter_b/vton
 add wave -noupdate /testbench/du_e/adapter_b/hzsync
 add wave -noupdate /testbench/du_e/adapter_b/vtsync
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vt_req
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/hz_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_clk
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_rdy
@@ -44,6 +46,8 @@ add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_rdy
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_req(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_rdy(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/dmargtr_dv
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtr_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dmargtr_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/si_b/debug_dmacfgio_req
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/debug_dmacfg_req
@@ -57,24 +61,39 @@ add wave -noupdate -radix symbolic -childformat {{/testbench/du_e/dmactlr_e/dmat
 add wave -noupdate /testbench/du_e/dmactlr_e/dma_gnt
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/arb_req
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/dmactlr_e/dmacfg_gnt(1)
-add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/rsrc_clk
+add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_clk
 add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_req(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_req(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_rdy(1)
 add wave -noupdate /testbench/du_e/dmactlr_e/dma_gnt(1)
+add wave -noupdate /testbench/du_e/video_hzon
+add wave -noupdate /testbench/du_e/video_vton
+add wave -noupdate -radix hexadecimal /testbench/du_e/video_pixel
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_irdy
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_irdy1
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_e/vram_e/wr_cntr
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_ini
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/feed_ena
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_trdy
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_frm
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vram_e/dst_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_e/vram_e/rd_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_e/vram_e/dst_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_e/vram_e/max_depthgt1_g/mem_e/async_rddata
 add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_req(0)
 add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy(0)
-add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy(0)
-add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy(1)
-add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_req
-add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy
+add wave -noupdate /testbench/du_e/dmactlr_e/dma_req
+add wave -noupdate /testbench/du_e/dmactlr_e/dma_rdy
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/devcfg_req
+add wave -noupdate -expand /testbench/du_e/dmactlr_e/devcfg_rdy
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_req
 add wave -noupdate /testbench/du_e/dmactlr_e/dev_rdy
 add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/arb_req
 TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {253001155150 fs} 1} {{Cursor 2} {248918382970 fs} 0} {{Cursor 3} {252896151760 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left
@@ -89,4 +108,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {263388058880 fs} {281763058880 fs}
+WaveRestoreZoom {246457445370 fs} {251379320570 fs}

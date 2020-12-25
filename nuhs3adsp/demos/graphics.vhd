@@ -94,7 +94,6 @@ architecture graphics of nuhs3adsp is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_r         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
@@ -257,6 +256,7 @@ begin
 	si_b : block
 
 		constant fifo_depth  : natural := 2;
+		constant fifo_gray   : boolean := true;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
 		constant rid_dmalen  : std_logic_vector := x"17";
@@ -428,7 +428,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -449,7 +449,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -471,7 +471,7 @@ begin
 			latency   => 3,
 			check_sov => true,
 			check_dov => true,
-			gray_code => not debug)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -501,29 +501,31 @@ begin
 		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
 
 		dma_p : process (dmacfg_clk)
-			variable trans_req : std_logic;
-			variable io_rdy2 : std_logic;
-			variable io_rdy1 : std_logic;
+			variable trans_req  : std_logic;
+			variable io_rdy2    : std_logic;
+			variable io_rdy1    : std_logic;
+			variable dma_rdy    : std_logic;
+			variable dmacfg_rdy : std_logic;
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
-					dmacfgio_req <= to_stdulogic(to_bit(dmacfgio_rdy));
-					dmaio_req    <= to_stdulogic(to_bit(dmaio_rdy));
+					dmacfgio_req <= to_stdulogic(to_bit(dmacfg_rdy));
+					dmaio_req    <= to_stdulogic(to_bit(dma_rdy));
 					dmaio_trdy   <= '0';
 					trans_req    := '0';
-				elsif (dmacfgio_req xor dmacfgio_rdy)='0' then
-					if (dmaio_req xor dmaio_rdy)='0' then
+				elsif (dmacfgio_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+					if (dmaio_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
 						if trans_req='0' then
 							if io_rdy2='1' then
 								if dmaio_trdy='0' then
-									dmacfgio_req <= not to_stdulogic(to_bit(dmacfgio_rdy));
+									dmacfgio_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 									trans_req    := '1';
 								end if;
 							end if;
-							dmaio_trdy <= '0';
+							dmaio_trdy  <= '0';
 						else
 							dmaio_trdy <= '1';
-							dmaio_req  <= not to_stdulogic(to_bit(dmaio_rdy));
+							dmaio_req  <= not to_stdulogic(to_bit(dma_rdy));
 							trans_req  := '0';
 						end if;
 					else
@@ -541,7 +543,9 @@ begin
 					io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
 				end if;
 
-				sio_frm <= ctlr_inirdy;
+				dma_rdy    := dmaio_rdy;
+				dmacfg_rdy := dmacfgio_rdy;
+				sio_frm    <= ctlr_inirdy;
 			end if;
 		end process;
 
@@ -594,6 +598,8 @@ begin
 
 	adapter_b : block
 		constant mode : videotiming_ids := video_tab(video_mode).mode;
+		constant sync_lat : natural := 4;
+
 		signal hzcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(3)-1)-1 downto 0);
 		signal vtcntr : std_logic_vector(unsigned_num_bits(modeline_tab(mode)(7)-1)-1 downto 0);
 		signal hzsync : std_logic;
@@ -651,7 +657,7 @@ begin
 		topixel_e : entity hdl4fpga.align
 		generic map (
 			n => pixel'length,
-			d => (0 to pixel'length-1 => 4-1))
+			d => (0 to pixel'length-1 => sync_lat))
 		port map (
 			clk => video_clk,
 			di  => pixel,
@@ -660,7 +666,7 @@ begin
 		tosync_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 to 4-1 => 4))
+			d => (0 to 4-1 => sync_lat))
 		port map (
 			clk => video_clk,
 			di(0) => hzon,
@@ -698,7 +704,6 @@ begin
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_len    <= dmavideo_len  & dmaio_len;
---	dev_addr   <= dmavideo_addr & b"000" & x"00000";
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
@@ -733,7 +738,6 @@ begin
 		ctlr_rw     => ctlr_rw,
 		ctlr_b      => ctlr_b,
 		ctlr_a      => ctlr_a,
-		ctlr_r      => ctlr_r,
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act);
 

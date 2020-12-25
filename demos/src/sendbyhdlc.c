@@ -183,7 +183,6 @@ int rcvd_pkt()
 	}
 	len += (j-i);
 	fcs = pppfcs16(PPPINITFCS16, rbuff, len);
-	fprintf(stderr, "fcs 0x%04x\n", fcs);
 	if (fcs == PPPGOODFCS16) {
 		len -= 2;
 		print_pkt(rbuff, len);
