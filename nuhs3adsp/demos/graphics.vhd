@@ -643,6 +643,7 @@ begin
 			ctlr_di_dv  => graphics_dv,
 			ctlr_di     => graphics_di,
 			base_addr   => base_addr,
+			dmacfg_clk  => dmacfg_clk,
 			dmacfg_req  => dmacfgvideo_req,
 			dmacfg_rdy  => dmacfgvideo_rdy,
 			dma_req     => dmavideo_req,
