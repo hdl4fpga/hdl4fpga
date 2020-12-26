@@ -38,6 +38,7 @@ entity graphics is
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di      : in  std_logic_vector;
 		base_addr    : in  std_logic_vector;
+		dmacfg_clk   : in   std_logic;
 		dmacfg_req   : buffer std_logic;
 		dmacfg_rdy   : in  std_logic;
 		dma_req      : buffer std_logic;
@@ -66,6 +67,7 @@ architecture def of graphics is
 	signal video_on      : std_logic;
 	signal vt_req        : std_logic;
 	signal hz_req        : std_logic;
+	signal trans_rdy     : std_logic;
 	signal trans_req     : std_logic;
 
 	signal src_irdy      : std_logic;
@@ -88,31 +90,38 @@ begin
 	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(rdy));
 	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(rdy));
 
-	dma_p : process (video_clk)
+	dmacfg_p : process(dmacfg_clk)
 	begin
-		if rising_edge(video_clk) then
+		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-				dmacfg_req <= to_stdulogic(to_bit(cfg_rdy));
-				dma_req    <= to_stdulogic(to_bit(rdy));
-				trans_req  <= '0';
-			elsif (dmacfg_req xor to_stdulogic(to_bit(cfg_rdy)))='0' then
-				if (dma_req xor to_stdulogic(to_bit(rdy)))='0' then
-					if trans_req='0' then
-						if vt_req='1' then
-							dmacfg_req <= not to_stdulogic(to_bit(cfg_rdy));
-							trans_req  <= '1';
-						elsif hz_req='1' then
-							dmacfg_req <= not to_stdulogic(to_bit(cfg_rdy));
-							trans_req  <= '1';
-						end if;
+				trans_rdy <= to_stdulogic(to_bit(trans_req)));;
+			elsif (trans_req xor trans_rdy)='1' then
+				if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy))='0' then
+					if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy))='0' then
+						dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy)));
 					else
-						dma_req   <= not to_stdulogic(to_bit(rdy));
-						trans_req <= '0';
+						trans_rdy  <= trans_req;
+						dmaddr_req <= not dmaddr_rdy;
 					end if;
 				end if;
 			end if;
-			rdy     <= dma_rdy;
-			cfg_rdy <= dmacfg_rdy;
+		end if;
+	end process;
+
+	dmaddr_p : process(ddr_clk)
+	begin
+		if rising_edge(ddr_clk) then
+			if ctlr_inirdy='0' then
+				dma_req <= to_stdulogic(to_bit(dma_rdy));
+			elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy))='0' then
+				if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy))='1' then
+					if (dma_req xor to_stdulogic(to_bit(dma_rdy))='0' then
+						dma_req <= not to_stdulogic(to_bit(dma_rdy)));
+					else
+						dmaddr_rdy <= dmaddr_req;
+					end if;
+				end if;
+			end if;
 		end if;
 	end process;
 
@@ -122,23 +131,23 @@ begin
 		variable vton_lat  : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if (dmacfg_req xor to_stdulogic(to_bit(cfg_rdy)))='0' then
-				if trans_req='0' then
-					if vt_req='1' then
-						vt_req     <= '0';
-						hz_req     <= '0';
-						level      <= to_unsigned(maxdma_len, level'length);
-						dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
-						dma_addr   <= base_addr;
-						dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
-					elsif hz_req='1' then
-						vt_req     <= '0';
-						hz_req     <= '0';
-						level      <= level + line_size;
-						dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
-						dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
-						dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
-					end if;
+			if (trans_req xor trans_rdy)='0' then
+				if vt_req='1' then
+					vt_req     <= '0';
+					hz_req     <= '0';
+					level      <= to_unsigned(maxdma_len, level'length);
+					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
+					dma_addr   <= base_addr;
+					dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
+					trans_req  <= not trans_rdy;
+				elsif hz_req='1' then
+					vt_req     <= '0';
+					hz_req     <= '0';
+					level      <= level + line_size;
+					dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
+					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
+					dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
+					trans_req  <= not trans_rdy;
 				end if;
 			end if;
 			if vton_lat='0' then

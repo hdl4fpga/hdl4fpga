@@ -123,6 +123,7 @@ architecture graphics of ulx3s is
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
 	signal video_clk      : std_logic;
+	signal video_lck      : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
@@ -294,7 +295,7 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
             CLKOS2    => video_clk,
-			LOCK      => open, 
+			LOCK      => video_lck, 
             INTLOCK   => open, 
 			REFCLK    => open, --REFCLK, 
 			CLKINTFB  => open);
