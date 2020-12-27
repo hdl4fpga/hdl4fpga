@@ -29,9 +29,10 @@ add wave -noupdate /testbench/du_e/adapter_b/vtsync
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/vt_req
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/hz_req
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_clk
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_rdy
-add wave -noupdate /testbench/du_e/dmactlr_e/dmatransgnt_e/rsrc_req
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/trans_rdy
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/trans_req
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/dmaddr_req
+add wave -noupdate /testbench/du_e/adapter_b/graphics_e/dmaddr_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/dmactlr_e/dma_gnt
 add wave -noupdate /testbench/du_e/dmactlr_e/dmatrans_e/load
@@ -93,7 +94,7 @@ add wave -noupdate /testbench/du_e/dmactlr_e/dev_rdy
 add wave -noupdate /testbench/du_e/dmactlr_e/dmargtrgnt_e/arb_req
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {253001155150 fs} 1} {{Cursor 2} {248918382970 fs} 0} {{Cursor 3} {252896151760 fs} 0}
-quietly wave cursor active 2
+quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left
@@ -108,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {246457445370 fs} {251379320570 fs}
+WaveRestoreZoom {250540217550 fs} {255462092750 fs}

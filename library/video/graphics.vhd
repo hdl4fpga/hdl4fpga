@@ -97,14 +97,16 @@ begin
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-				trans_rdy <= to_stdulogic(to_bit(trans_req));
+				trans_rdy  <= to_stdulogic(to_bit(trans_req));
+				dmacfg_req <= to_stdulogic(to_bit(dmacfg_rdy));
+				dmaddr_req <= to_stdulogic(to_bit(dmaddr_rdy));
 			elsif (trans_req xor trans_rdy)='1' then
-				if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy)))='0' then
-					if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+				if (to_stdulogic(to_bit(dmaddr_req)) xor to_stdulogic(to_bit(dmaddr_rdy)))='0' then
+					if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 						dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 					else
 						trans_rdy  <= trans_req;
-						dmaddr_req <= not dmaddr_rdy;
+						dmaddr_req <= not to_stdulogic(to_bit(dmaddr_rdy));
 					end if;
 				end if;
 			end if;
@@ -115,7 +117,8 @@ begin
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='0' then
-				dma_req <= to_stdulogic(to_bit(dma_rdy));
+				dma_req    <= to_stdulogic(to_bit(dma_rdy));
+				dmaddr_rdy <= to_stdulogic(to_bit(dmaddr_req));
 			elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 				if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy)))='1' then
 					if (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
