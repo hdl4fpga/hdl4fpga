@@ -532,7 +532,6 @@ begin
 							if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 								dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 							else
-								trans_rdy  <= trans_req;
 								dmaddr_req <= not to_stdulogic(to_bit(dmaddr_rdy));
 							end if;
 						end if;
@@ -563,6 +562,8 @@ begin
 							else
 								dmaddr_rdy <= dmaddr_req;
 							end if;
+						elsif (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
+							trans_rdy <= trans_req;
 						end if;
 					end if;
 				end if;
@@ -574,7 +575,7 @@ begin
 					if ctlr_inirdy='0' then
 						trans_req <= to_stdulogic(to_bit(trans_rdy));
 					elsif (dmaiolen_irdy and dmaioaddr_irdy)='1' then
-						if dmaio_trdy='0' then
+						if (trans_req xor trans_rdy)='0' then
 							trans_req <= not to_stdulogic(to_bit(trans_rdy));
 						end if;
 					else
