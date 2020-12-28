@@ -638,54 +638,99 @@ begin
 --			rgtr_data => rgtr_data,
 --			data      => base_addr);
 
-		dma_p : process (dmacfg_clk)
-			variable trans_req  : std_logic;
-			variable io_rdy2    : std_logic;
-			variable io_rdy1    : std_logic;
-			variable dma_rdy    : std_logic;
-			variable dmacfg_rdy : std_logic;
+		process (sio_clk)
 		begin
-			if rising_edge(dmacfg_clk) then
-				if ctlr_inirdy='0' then
-					dmacfgio_req <= to_stdulogic(to_bit(dmacfg_rdy));
-					dmaio_req    <= to_stdulogic(to_bit(dma_rdy));
-					dmaio_trdy   <= '0';
-					trans_req    := '0';
-				elsif (dmacfgio_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-					if (dmaio_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
-						if trans_req='0' then
-							if io_rdy2='1' then
-								if dmaio_trdy='0' then
-									dmacfgio_req <= not to_stdulogic(to_bit(dmacfg_rdy));
-									trans_req    := '1';
+			if rising_edge(sio_clk) then
+				sio_frm <= ctlr_inirdy;
+			end if;
+		end process;
+
+		dma_b : block 
+
+			alias dmacfg_req is dmacfgio_req;
+			alias dmacfg_rdy is dmacfgio_rdy;
+			alias dma_req    is dmaio_req;
+			alias dma_rdy    is dmaio_rdy;
+
+			signal sio2cfg_req  : std_logic;
+			signal sio2cfg_rdy  : std_logic;
+			signal cfg2ctlr_req : std_logic;
+			signal cfg2ctlr_rdy : std_logic;
+			signal ctlr2sio_rdy : std_logic;
+			signal ctlr2sio_req : std_logic;
+		begin
+
+			dmacfg_p : process(dmacfg_clk)
+			begin
+				if rising_edge(dmacfg_clk) then
+					if ctlr_inirdy='0' then
+						dmacfg_req   <= '0';
+						cfg2ctlr_req <= '0';
+					elsif (to_stdulogic(to_bit(sio2cfg_req)) xor to_stdulogic(to_bit(sio2cfg_rdy)))='1' then
+						if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='0' then
+							if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+								dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							else
+								cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));
+							end if;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			dmaddr_p : process(ctlr_clk)
+			begin
+				if rising_edge(ctlr_clk) then
+					if ctlr_inirdy='0' then
+						dma_req      <= '0';
+						cfg2ctlr_rdy <= '0';
+						sio2cfg_rdy  <= '0';
+						ctlr2sio_req <= '0';
+					elsif (cfg2ctlr_req xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='1' then
+						if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+							dma_req      <= not to_stdulogic(to_bit(dma_rdy));
+							ctlr2sio_req <= not ctlr2sio_rdy;
+							if (ctlr2sio_req xor to_stdulogic(to_bit(ctlr2sio_rdy)))='1' then
+								cfg2ctlr_rdy <= to_stdulogic(to_bit(cfg2ctlr_req));
+								sio2cfg_rdy  <= to_stdulogic(to_bit(sio2cfg_req));
+							end if;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			dma_p : process (sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if ctlr_inirdy='0' then
+						sio2cfg_req  <= '0';
+						ctlr2sio_rdy <= '0';
+						dmaio_trdy   <= '0';
+					elsif (sio2cfg_req xor sio2cfg_rdy)='0' then
+						if (ctlr2sio_req xor to_stdulogic(to_bit(ctlr2sio_rdy)))='1' then
+							if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
+								dmaio_trdy   <= '1';
+								ctlr2sio_rdy <= to_stdulogic(to_bit(ctlr2sio_req));
+							else
+								dmaio_trdy  <= '0';
+							end if;
+						else
+							if (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
+								if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
+									if dmaio_trdy='0' then
+										sio2cfg_req <= not to_stdulogic(to_bit(sio2cfg_rdy));
+									end if;
 								end if;
 							end if;
-							dmaio_trdy  <= '0';
-						else
-							dmaio_trdy <= '1';
-							dmaio_req  <= not to_stdulogic(to_bit(dma_rdy));
-							trans_req  := '0';
+							dmaio_trdy <= '0';
 						end if;
 					else
 						dmaio_trdy <= '0';
 					end if;
-				else
-					dmaio_trdy <= '0';
 				end if;
-				
-				if dmaio_trdy='1' then
-					io_rdy2 := '0';
-					io_rdy1 := '0';
-				else
-					io_rdy2 := io_rdy1;
-					io_rdy1 := dmaiolen_irdy and dmaioaddr_irdy;
-				end if;
+			end process;
 
-				dma_rdy    := dmaio_rdy;
-				dmacfg_rdy := dmacfgio_rdy;
-				sio_frm    <= ctlr_inirdy;
-			end if;
-		end process;
+		end block;
 
 	end block;
 
