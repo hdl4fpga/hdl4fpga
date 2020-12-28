@@ -514,8 +514,10 @@ begin
 			alias dma_req    is dmaio_req;
 			alias dma_rdy    is dmaio_rdy;
 
-			signal trans_rdy  : std_logic;
-			signal trans_req  : std_logic;
+			signal transcfg_rdy  : std_logic;
+			signal transcfg_req  : std_logic;
+			signal transdma_rdy  : std_logic;
+			signal transdma_req  : std_logic;
 			signal dmaddr_req : std_logic;
 			signal dmaddr_rdy : std_logic;
 		begin
@@ -524,10 +526,9 @@ begin
 			begin
 				if rising_edge(dmacfg_clk) then
 					if ctlr_inirdy='0' then
-						trans_rdy  <= to_stdulogic(to_bit(trans_req));
 						dmacfg_req <= to_stdulogic(to_bit(dmacfg_rdy));
 						dmaddr_req <= to_stdulogic(to_bit(dmaddr_rdy));
-					elsif (trans_req xor trans_rdy)='1' then
+					elsif (transcfg_req xor transcfg_rdy)='1' then
 						if (to_stdulogic(to_bit(dmaddr_req)) xor to_stdulogic(to_bit(dmaddr_rdy)))='0' then
 							if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 								dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
@@ -539,31 +540,22 @@ begin
 				end if;
 			end process;
 
-			dmatrdy_p : process(dmaddr_req, dma_rdy, dmacfg_clk)
-				variable rdy : std_logic;
-			begin
-				if rising_edge(dmacfg_clk) then
-					rdy := dma_rdy;
-				end if;
-				dmaio_trdy <= rdy xor dma_rdy;
-			end process;
-
-
 			dmaddr_p : process(ctlr_clk)
 			begin
 				if rising_edge(ctlr_clk) then
 					if ctlr_inirdy='0' then
-						dma_req    <= to_stdulogic(to_bit(dma_rdy));
-						dmaddr_rdy <= to_stdulogic(to_bit(dmaddr_req));
-					elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-						if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy)))='1' then
-							if (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
-								dma_req <= not to_stdulogic(to_bit(dma_rdy));
-							else
-								dmaddr_rdy <= dmaddr_req;
+						dma_req      <= to_stdulogic(to_bit(dma_rdy));
+						dmaddr_rdy   <= to_stdulogic(to_bit(dmaddr_req));
+						transcfg_rdy <= to_stdulogic(to_bit(transcfg_req));
+						transdma_req <= to_stdulogic(to_bit(transdma_rdy));
+					elsif (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy)))='1' then
+						if (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+							dma_req      <= not to_stdulogic(to_bit(dma_rdy));
+							transdma_req <= not transdma_rdy;
+							if (transdma_req xor to_stdulogic(to_bit(transdma_rdy)))='1' then
+								dmaddr_req   <= to_stdulogic(to_bit(dmaddr_rdy));
+								transcfg_req <= to_stdulogic(to_bit(transcfg_rdy));
 							end if;
-						elsif (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
-							trans_rdy <= trans_req;
 						end if;
 					end if;
 				end if;
@@ -573,12 +565,16 @@ begin
 			begin
 				if rising_edge(sio_clk) then
 					if ctlr_inirdy='0' then
-						trans_req <= to_stdulogic(to_bit(trans_rdy));
-					elsif (dmaiolen_irdy and dmaioaddr_irdy)='1' then
-						if (trans_req xor trans_rdy)='0' then
-							trans_req <= not to_stdulogic(to_bit(trans_rdy));
+						transcfg_req <= to_stdulogic(to_bit(transcfg_rdy));
+						transdma_rdy <= to_stdulogic(to_bit(transdma_req));
+					elsif (transcfg_req xor transcfg_rdy)='0' then
+						if (transdma_req xor to_stdulogic(to_bit(transdma_rdy)))='1' then
+							if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
+								transdma_rdy <= to_stdulogic(to_bit(transdma_req));
+							end if;
+						elsif (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
+							transcfg_req <= not to_stdulogic(to_bit(transcfg_rdy));
 						end if;
-					else
 					end if;
 				end if;
 			end process;
