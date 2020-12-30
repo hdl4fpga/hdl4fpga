@@ -574,12 +574,15 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
+			src_mode => '1',
+			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
 			src_trdy => dmaaddr_trdy,
 			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
 			dst_trdy => dmaio_trdy,
@@ -595,16 +598,28 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
+			src_mode => '1',
+			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
 			src_trdy => dmalen_trdy,
 			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_len);
+
+		process (sio_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				q := ctlr_inirdy;
+				sio_frm <= q;
+			end if;
+		end process;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
@@ -612,16 +627,22 @@ begin
 			max_depth => fifo_depth*(8*4*1*256/(ctlr_di'length/8)),
 			out_rgtr  => true,
 			latency   => 3,
+--			gray_code => fifo_gray,
+--			out_rgtr  => false,
+--			latency   => 0,
+			gray_code => false,
 			check_sov => true,
-			check_dov => true,
-			gray_code => fifo_gray)
+			check_dov => true)
 		port map (
+			src_mode => '1',
+			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
 			src_data => rgtr_data(ctlr_di'length-1 downto 0),
 
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => ctlr_clk,
 			dst_irdy => datactlr_irdy,
 			dst_trdy => ctlr_di_req,
@@ -637,13 +658,6 @@ begin
 --			rgtr_id   => rgtr_id,
 --			rgtr_data => rgtr_data,
 --			data      => base_addr);
-
-		process (sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				sio_frm <= ctlr_inirdy;
-			end if;
-		end process;
 
 		dma_b : block 
 

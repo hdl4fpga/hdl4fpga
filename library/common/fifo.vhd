@@ -238,7 +238,7 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				if dst_mode='0' then
+				if src_mode='0' then
 					wr_cntr <= rd_cntr;
 				else	
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
