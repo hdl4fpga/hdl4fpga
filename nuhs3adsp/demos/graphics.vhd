@@ -428,7 +428,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => false) --fifo_gray)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
@@ -449,7 +449,7 @@ begin
 			out_rgtr  => false,
 			check_sov => true,
 			check_dov => true,
-			gray_code => false) --fifo_gray)
+			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,

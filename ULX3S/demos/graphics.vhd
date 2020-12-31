@@ -377,7 +377,7 @@ begin
 	sio_b : block
 
 		constant fifo_gray   : boolean := true;
-		constant fifo_depth  : natural := 1;
+		constant fifo_depth  : natural := 4;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
 		constant rid_dmalen  : std_logic_vector := x"17";
@@ -624,13 +624,13 @@ begin
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth*(8*4*1*256/(ctlr_di'length/8)),
+			max_depth => (8*4*1*256/(ctlr_di'length/8)),
 			out_rgtr  => true,
 			latency   => 3,
---			gray_code => fifo_gray,
+			gray_code => fifo_gray,
 --			out_rgtr  => false,
 --			latency   => 0,
-			gray_code => false,
+--			gray_code => false,
 			check_sov => true,
 			check_dov => true)
 		port map (
