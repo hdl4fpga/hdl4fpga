@@ -318,7 +318,7 @@ architecture nuhs3adsp_graphics of testbench is
 			end loop;
 			return std_logic_vector(retval);
 		end;
-		constant time_offset : time := 200 us - 23 us + 300 ns - 30 ns;
+		constant time_offset : time := 200 us - 23 us + 300 ns + 5 ns;
 begin
 
 	mii_rxc <= mii_refclk;

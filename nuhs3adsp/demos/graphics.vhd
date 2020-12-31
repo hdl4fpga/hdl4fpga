@@ -226,7 +226,7 @@ begin
 		dfs_mul => video_tab(video_mode).dcm_mul,
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
-		dcm_rst => '1', --sys_rst,
+		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
@@ -522,9 +522,6 @@ begin
 		begin
 
 			dmacfg_p : process(dmacfg_clk)
-
-				variable xxx : std_logic;
-
 			begin
 				if rising_edge(dmacfg_clk) then
 					if ctlr_inirdy='0' then
@@ -532,29 +529,23 @@ begin
 						dmacfg_req   <= '0';
 						cfg2ctlr_req <= '0';
 						ctlr2cfg_rdy <= '0';
-					elsif (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
+					elsif (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
 						if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='0' then
-							if (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-								if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
-									if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+							if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
+								if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+									if (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
 										dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
-									else
-										cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));
 									end if;
+								else
+									cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));
 								end if;
-								dmaio_trdy <= '0';
-							else
-								ctlr2cfg_rdy <= to_stdulogic(to_bit(ctlr2cfg_rdy));
-								dmaio_trdy <= '1';
 							end if;
-						else
-							dmaio_trdy <= '0';
 						end if;
-					else
 						dmaio_trdy <= '0';
+					else
+						ctlr2cfg_rdy <= to_stdulogic(to_bit(ctlr2cfg_req));
+						dmaio_trdy <= '1';
 					end if;
-				else
-					dmaio_trdy <= '0';
 				end if;
 			end process;
 
@@ -565,17 +556,17 @@ begin
 						dma_req      <= '0';
 						ctlr2cfg_req <= '0';
 						cfg2ctlr_rdy <= '0';
-					elsif (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-						if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='1' then
+					elsif (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='1' then
+						if (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
 							if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 								if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
 									dma_req <= not to_stdulogic(to_bit(dma_rdy));
 								else
-									cfg2ctlr_rdy <= cfg2ctlr_req;
+									ctlr2cfg_req <= not to_stdulogic(to_bit(ctlr2cfg_rdy));
 								end if;
 							end if;
 						else
-							ctlr2cfg_req <= not to_stdulogic(to_bit(ctlr2cfg_rdy));
+							cfg2ctlr_rdy <= to_stdulogic(to_bit(cfg2ctlr_req));
 						end if;
 					end if;
 				end if;
