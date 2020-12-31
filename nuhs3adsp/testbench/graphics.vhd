@@ -65,7 +65,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
-	signal txfrm_ptr     : std_logic_vector(0 to 17);
+	signal txfrm_ptr     : std_logic_vector(0 to 20);
 
 	signal ddr_lp_dqs : std_logic;
 
@@ -232,57 +232,60 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
+
+	function gen_natural(
+		constant start : natural := 0;
+		constant stop  : natural;
+		constant step  : natural := 1;
+		constant size  : natural)
+		return std_logic_vector is
+		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
+	begin
+		if start < stop then
+			for i in start to stop loop
+				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
+			end loop;
+		else
+			for i in start downto stop loop
+				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
+			end loop;
+		end if;
+		return retval;
+	end;
+
 	constant pp_pl : std_logic_vector := 
 		  x"0002000005"
 		& x"0002000006"
 		& x"18ff"
-		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& gen_natural(start => 0,     stop => 1*128-1, size => 16)
 		& x"18ff"
-		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-		& x"1602000060"
-		& x"170200001f"
-		& x"1602000060"
-		& x"170200001f";
-
-	constant pp1_pl : std_logic_vector := 
-		  x"0002000005"
-		& x"0002000006"
+		& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
 		& x"18ff"
-		& x"eeee77779abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+		& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
 		& x"18ff"
-		& x"f0f0f0f09abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-		& x"16020000a0"
-		& x"170200001f"
+		& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
+		& x"18ff"
+		& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
+--		& x"18ff"
+--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+--		& x"18ff"
+--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 		& x"1602000000"
-		& x"170200001f";
+		& x"170200013f";
 
 	constant pp : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
@@ -302,24 +305,6 @@ architecture nuhs3adsp_graphics of testbench is
 				x"0000" &              -- UPD checksum
 				pp_pl);
 
-	constant pp1 : std_logic_vector := 
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
-
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"0044dea9"         & -- UDP Source port, Destination port
-				std_logic_vector(to_unsigned(pp1_pl'length/8+8,16))    & -- UDP Length,
-				x"0000" &              -- UPD checksum
-				pp1_pl);
-
 	constant delay : time := 1 ns;
 	signal n : std_logic := '0';
 		function xxx (
@@ -333,7 +318,7 @@ architecture nuhs3adsp_graphics of testbench is
 			end loop;
 			return std_logic_vector(retval);
 		end;
-		constant time_offset : time := 200 us;
+		constant time_offset : time := 200 us - 23 us + 300 ns - 30 ns;
 begin
 
 	mii_rxc <= mii_refclk;
@@ -361,9 +346,7 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after time_offset + 1 us, '0' after  time_offset + 50 us, '0' after time_offset +60 us;
---	mii_treq <= '0', '1' after  1 us, '0' after   30 us, '1' after 40 us;
-
+	mii_treq <= '0', '1' after time_offset + 1 us, '0' after  time_offset + 170 us, '0' after time_offset + 180 us;
 
 	process (mii_rxc)
 	begin
@@ -382,10 +365,7 @@ begin
 		end if;
 	end process;
 	eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length);
-	eth_txd  <= word2byte(
-		word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length) &
-		word2byte(reverse(pp1,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length),
-		n);
+	eth_txd  <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
