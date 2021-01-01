@@ -183,8 +183,8 @@ begin
 		out_rgtr  => true, 
 		latency   => 3,
 		check_sov => false,
-		check_dov => true,
-		gray_code => true)
+		check_dov => false,
+		gray_code => false)
 	port map (
 		src_clk  => ctlr_clk,
 		src_irdy => ctlr_di_dv,

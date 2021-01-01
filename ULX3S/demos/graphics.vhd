@@ -574,8 +574,8 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
-			src_mode => '1',
-			dst_mode => '1',
+--			src_mode => '1',
+--			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
@@ -598,8 +598,8 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
-			src_mode => '1',
-			dst_mode => '1',
+--			src_mode => '1',
+--			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
@@ -634,8 +634,8 @@ begin
 			check_sov => true,
 			check_dov => true)
 		port map (
-			src_mode => '1',
-			dst_mode => '1',
+--			src_mode => '1',
+--			dst_mode => '1',
 			src_clk  => sio_clk,
 			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
@@ -644,10 +644,9 @@ begin
 
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => ctlr_clk,
-			dst_irdy => datactlr_irdy,
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
-		ctlr_di_dv <= ctlr_di_req and datactlr_irdy;
+		ctlr_di_dv <= ctlr_di_req;
 
 --		base_addr_e : entity hdl4fpga.sio_rgtr
 --		generic map (
