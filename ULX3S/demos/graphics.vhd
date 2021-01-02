@@ -640,14 +640,14 @@ begin
 			dmasin_irdy => dmasin_irdy,
 			dmasin_trdy => dmaio_trdy,
 									  
-			dmacfg_req  => dmacfg_req,
-			dmacfg_rdy  => dmacfg_rdy,
+			dmacfg_req  => dmacfgio_req,
+			dmacfg_rdy  => dmacfgio_rdy,
 									  
 			ctlr_clk    => ctlr_clk,
 			ctlr_inirdy => ctlr_inirdy,
 									  
-			dma_req     => dma_req,
-			dma_rdy     => dma_rdy);
+			dma_req     => dmaio_req,
+			dma_rdy     => dmaio_rdy);
 
 
 --		base_addr_e : entity hdl4fpga.sio_rgtr
