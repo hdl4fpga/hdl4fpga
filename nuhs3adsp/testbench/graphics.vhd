@@ -356,7 +356,7 @@ begin
 		variable payloadack : std_logic_vector(k2'range) := k2;
 		variable packet     : std_logic_vector(k3'range) := k3;
 
-		variable ack        : unsigned(0 to 8-1) := (others => '0');
+		variable ack        : natural := 0;
 		variable incena     : std_logic := '1';
 
 	begin
@@ -365,9 +365,24 @@ begin
 			if mii_treq='0' then
 				txfrm_ptr <= (others => '0');
 				if incena='1' then
+
+					payload := 
+						  x"18ff"
+						& gen_natural(start => (ack*5+0)*128, stop => (ack*5+1)*128-1, size => 16)
+						& x"18ff"                     
+						& gen_natural(start => (ack*5+1)*128, stop => (ack*5+2)*128-1, size => 16)
+						& x"18ff"                     
+						& gen_natural(start => (ack*5+2)*128, stop => (ack*5+3)*128-1, size => 16)
+						& x"18ff"                     
+						& gen_natural(start => (ack*5+3)*128, stop => (ack*5+4)*128-1, size => 16)
+						& x"18ff"                     
+						& gen_natural(start => (ack*5+4)*128, stop => (ack*5+5)*128-1, size => 16)
+						& x"1602000000"
+						& x"170200013f";
+
 					ack := ack + 1;
 
-					payloadack := x"00020000" & std_logic_vector(ack) & k1;
+					payloadack := x"00020000" & std_logic_vector(to_unsigned(ack,8)) & payload;
 					packet     := 
 						x"4500"                 &    -- IP Version, TOS
 						x"0000"                 &    -- IP Length

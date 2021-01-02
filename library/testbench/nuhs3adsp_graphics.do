@@ -27,8 +27,21 @@ add wave -noupdate /testbench/du_e/ctlr_di_dv
 add wave -noupdate /testbench/du_e/ctlr_di_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_clk
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_frm
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_irdy
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/src_data
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/wr_ena
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/wr_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/rd_cntr
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_clk
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_frm
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_irdy
+add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {518974535200 fs} 0}
+WaveRestoreCursors {{Cursor 2} {467955000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
@@ -44,4 +57,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {517296796800 fs} {522563203200 fs}
+WaveRestoreZoom {466928523080 fs} {468979304520 fs}
