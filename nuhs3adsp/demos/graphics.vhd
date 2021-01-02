@@ -226,7 +226,7 @@ begin
 		dfs_mul => video_tab(video_mode).dcm_mul,
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
-		dcm_rst => sys_rst,
+		dcm_rst => '1', --sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
@@ -534,7 +534,9 @@ begin
 							if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
 								if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 									if (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
-										dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+										if dmaio_trdy='0' then
+											dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+										end if;
 									end if;
 								else
 									cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));

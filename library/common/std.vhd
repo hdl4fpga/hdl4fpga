@@ -186,6 +186,12 @@ package std is
 		constant argf : integer := 0)
 		return integer;
 
+	function setif (
+		constant arg  : boolean;
+		constant argt : string;
+		constant argf : string)
+		return string;
+
 	function primux (
 		constant inp  : std_logic_vector;
 		constant ena  : std_logic_vector;
@@ -912,6 +918,18 @@ package body std is
 		constant argt : integer := 1;
 		constant argf : integer := 0)
 		return integer is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : string;
+		constant argf : string)
+		return string is
 	begin
 		if arg then
 			return argt;

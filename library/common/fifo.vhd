@@ -69,9 +69,7 @@ architecture def of fifo is
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
 	signal dst_irdy1 : std_logic;
 
-
-	signal dst_ini  : std_logic;
-	signal feed_ena : std_logic;
+	signal feed_ena  : std_logic;
 
 begin
 
@@ -81,10 +79,14 @@ begin
 
 	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
+
 		subtype addr_range is natural range 1 to addr_length;
-		signal wdata : std_logic_vector(0 to src_data'length-1);
-		signal rdata : std_logic_vector(0 to src_data'length-1);
-		signal rd_ena : std_logic;
+
+		signal wdata   : std_logic_vector(0 to src_data'length-1);
+		signal rdata   : std_logic_vector(0 to src_data'length-1);
+		signal rd_ena  : std_logic;
+		signal dst_ini : std_logic;
+
 	begin
 
 		assert not (latency > 1) or out_rgtren or out_rgtr
@@ -130,15 +132,12 @@ begin
 					if ena='1' then
 						data := rdata;
 					end if;
-					ena := feed_ena;
 				when 2 =>
 					if ena2='1' then
 						data2 := data;
 						data  := rdata2;
 					end if;
 					rdata2 := rdata;
-					ena2   := ena;
-					ena    := feed_ena;
 				when 3 =>
 					if ena3='1' then
 						data3 := data2;
@@ -147,11 +146,22 @@ begin
 					end if;
 					rdata3 := rdata2;
 					rdata2 := rdata;
-					ena3   := ena2;
-					ena2   := ena;
-					ena    := feed_ena;
 				when others =>
 				end case;
+
+				case latency is
+				when 1 => 
+					ena := feed_ena;
+				when 2 =>
+					ena2 := ena;
+					ena  := feed_ena;
+				when 3 =>
+					ena3 := ena2;
+					ena2 := ena;
+					ena  := feed_ena;
+				when others =>
+				end case;
+
 			end if;
 
 			if out_rgtr and not out_rgtren then
@@ -199,14 +209,33 @@ begin
 --		end process;
 
 		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+
+		dst_ini <= not dst_frm;
+		dstirdy_e : entity hdl4fpga.align
+		generic map (
+			n     => 1,
+			d     => (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)),
+			i     => (0 to 0 => '0'))
+		port map (
+			clk   => dst_clk,
+			ini   => dst_ini,
+			ena   => feed_ena,
+			di(0) => dst_irdy1,
+			do(0) => dst_irdy);
+
 	end generate;
 
 	max_depth1_g : if max_depth = 1 generate
-		signal rgtr : std_logic_vector(src_data'range);
+		signal rgtr    : std_logic_vector(src_data'range);
+		signal dst_ini : std_logic;
 	begin
 
 		assert not (latency > 1)
 		report "Latency greater than 1 is not supported"
+		severity FAILURE;
+
+		assert not out_rgtr or not out_rgtren
+		report "Out register enable must be on"
 		severity FAILURE;
 
 		process (src_clk)
@@ -232,6 +261,20 @@ begin
 		end process;
 
 		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
+
+		dst_ini <= not dst_frm;
+		dstirdy_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => setif(out_rgtr, 1, 0)),
+			i => (0 to 0 => '0'))
+		port map (
+			clk   => dst_clk,
+			ini   => dst_ini,
+			ena   => feed_ena,
+			di(0) => dst_irdy1,
+			do(0) => dst_irdy);
+
 	end generate;
 
 	process(src_clk)
@@ -290,21 +333,5 @@ begin
 		end if;
 	end process;
 
-	dst_ini <= not dst_frm;
-	dstirdy_e : entity hdl4fpga.align
-	generic map (
-		n     => 1,
-		d     => (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)),
-		i     => (0 to 0 => '0'))
-	port map (
-		clk   => dst_clk,
-		ini   => dst_ini,
-		ena   => feed_ena,
-		di(0) => dst_irdy1,
-		do(0) => dst_irdy);
-
---	tp(16-1 downto 0) <= std_logic_vector(resize(unsigned(dst_data) srl 4, 16));
---	tp(24-1 downto 0) <= std_logic_vector(resize(unsigned(wr_cntr), 12) & resize(unsigned(rd_cntr),  12));
---	tp(24) <= dst_irdy1;
 
 end;

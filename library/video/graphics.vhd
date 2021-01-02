@@ -180,11 +180,13 @@ begin
 	generic map (
 		debug => false,
 		max_depth => fifo_size,
+--		out_rgtr  => false, 
+--		latency   => 0,
 		out_rgtr  => true, 
 		latency   => 3,
 		check_sov => false,
-		check_dov => false,
-		gray_code => false)
+		check_dov => true,
+		gray_code => true)
 	port map (
 		src_clk  => ctlr_clk,
 		src_irdy => ctlr_di_dv,

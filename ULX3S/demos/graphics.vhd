@@ -190,8 +190,8 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -228,7 +228,6 @@ architecture graphics of ulx3s is
 
 
 	alias sio_clk      : std_logic is uart_clk;
-	signal sio_frm     : std_logic;
 	alias dmacfg_clk   : std_logic is uart_clk;
 
 	constant cmmd_latency  : boolean := sdram_mode=sdram200MHz;
@@ -304,10 +303,6 @@ begin
 
 	ctlrpll_b : block
 
-		signal clkfb : std_logic;
-		signal lock  : std_logic;
-		signal dqs   : std_logic;
-
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
 		attribute FREQUENCY_PIN_CLKOS : string; 
@@ -318,10 +313,17 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
 --		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
+--		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
 
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(sdram_mode=sdram133MHz, "133.333333", "200.000000");
+
+		signal clkfb : std_logic;
+		signal lock  : std_logic;
+		signal dqs   : std_logic;
 		signal clkos : std_logic;
+
 	begin
+
 		pll_i : EHXPLLL
         generic map (
 			PLLRST_ENA       => "DISABLED",
@@ -574,10 +576,7 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
---			src_mode => '1',
---			dst_mode => '1',
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
 			src_trdy => dmaaddr_trdy,
 			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
@@ -598,10 +597,7 @@ begin
 			check_dov => true,
 			gray_code => fifo_gray)
 		port map (
---			src_mode => '1',
---			dst_mode => '1',
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
 			src_trdy => dmalen_trdy,
 			src_data => rgtr_data(dmaio_len'length-1 downto 0),
@@ -611,15 +607,6 @@ begin
 			dst_irdy => dmaiolen_irdy,
 			dst_trdy => dmaio_trdy,
 			dst_data => dmaio_len);
-
-		process (sio_clk)
-			variable q : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				q := ctlr_inirdy;
-				sio_frm <= q;
-			end if;
-		end process;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
@@ -634,10 +621,7 @@ begin
 			check_sov => true,
 			check_dov => true)
 		port map (
---			src_mode => '1',
---			dst_mode => '1',
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
 			src_data => rgtr_data(ctlr_di'length-1 downto 0),
@@ -685,7 +669,9 @@ begin
 							if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
 								if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 									if (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
-										dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+										if dmaio_trdy='0' then
+											dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+										end if;
 									end if;
 								else
 									cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));

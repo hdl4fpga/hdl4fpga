@@ -253,58 +253,6 @@ architecture nuhs3adsp_graphics of testbench is
 		return retval;
 	end;
 
-	constant pp_pl : std_logic_vector := 
-		  x"0002000005"
-		& x"0002000006"
-		& x"18ff"
-		& gen_natural(start => 0,     stop => 1*128-1, size => 16)
-		& x"18ff"
-		& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
-		& x"18ff"
-		& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
-		& x"18ff"
-		& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
-		& x"18ff"
-		& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
---		& x"18ff"
---		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
---		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
---		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
---		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
---		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
---		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
---		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
---		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
---		& x"18ff"
---		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
---		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
---		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
---		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
---		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
---		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
---		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
---		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-		& x"1602000000"
-		& x"170200013f";
-
-	constant pp : std_logic_vector := 
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
-
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"0044dea9"         & -- UDP Source port, Destination port
-				std_logic_vector(to_unsigned(pp_pl'length/8+8,16))    & -- UDP Length,
-				x"0000" &              -- UPD checksum
-				pp_pl);
-
 	constant delay : time := 1 ns;
 	signal n : std_logic := '0';
 		function xxx (
@@ -346,26 +294,110 @@ begin
 	end process;
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after time_offset + 1 us, '0' after  time_offset + 170 us, '0' after time_offset + 180 us;
+	mii_treq <= '0', '1' after time_offset + 1 us, 
+		'0' after  time_offset + 1*170 us, '1' after time_offset + 180 us,
+		'0' after  time_offset + 2*170 us, '1' after time_offset + (2*170+10) * 1 us;
 
-	process (mii_rxc)
+	process (mii_treq, txfrm_ptr, mii_rxc)
+		constant k1 : std_logic_vector := 
+			  x"18ff"
+			& gen_natural(start => 0,     stop => 1*128-1, size => 16)
+			& x"18ff"
+			& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
+			& x"18ff"
+			& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
+			& x"18ff"
+			& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
+			& x"18ff"
+			& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
+	--		& x"18ff"
+	--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+	--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+	--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+	--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+	--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+	--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+	--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+	--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+	--		& x"18ff"
+	--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
+	--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
+	--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
+	--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
+	--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
+	--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
+	--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
+	--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
+			& x"1602000000"
+--			& x"170200013f";
+			& x"1702000000";
+
+		constant k2 : std_logic_vector := x"00020000" & (1 to 8 => '-') & k1;
+
+		constant k3 : std_logic_vector := 
+				x"4500"                 &    -- IP Version, TOS
+				x"0000"                 &    -- IP Length
+				x"0000"                 &    -- IP Identification
+				x"0000"                 &    -- IP Fragmentation
+				x"0511"                 &    -- IP TTL, protocol
+				x"0000"                 &    -- IP Header Checksum
+				x"ffffffff"             &    -- IP Source IP address
+				x"c0a8000e"             &    -- IP Destiantion IP Address
+
+				udp_checksummed (
+					x"00000000",
+					x"ffffffff",
+					x"0044dea9"         & -- UDP Source port, Destination port
+					std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
+					x"0000" &              -- UPD checksum
+					k2);
+
+		variable payload    : std_logic_vector(k1'range) := k1;
+		variable payloadack : std_logic_vector(k2'range) := k2;
+		variable packet     : std_logic_vector(k3'range) := k3;
+
+		variable ack        : unsigned(0 to 8-1) := (others => '0');
+		variable incena     : std_logic := '1';
+
 	begin
+
 		if rising_edge(mii_rxc) then
 			if mii_treq='0' then
 				txfrm_ptr <= (others => '0');
-			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length then
+				if incena='1' then
+					ack := ack + 1;
+
+					payloadack := x"00020000" & std_logic_vector(ack) & k1;
+					packet     := 
+						x"4500"                 &    -- IP Version, TOS
+						x"0000"                 &    -- IP Length
+						x"0000"                 &    -- IP Identification
+						x"0000"                 &    -- IP Fragmentation
+						x"0511"                 &    -- IP TTL, protocol
+						x"0000"                 &    -- IP Header Checksum
+						x"ffffffff"             &    -- IP Source IP address
+						x"c0a8000e"             &    -- IP Destiantion IP Address
+
+						udp_checksummed (
+							x"00000000",
+							x"ffffffff",
+							x"0044dea9"         & -- UDP Source port, Destination port
+							std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
+							x"0000" &              -- UPD checksum
+							payloadack);
+					incena := '0';
+				end if;
+
+			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < packet'length/mii_rxd'length then
+				incena := '1';
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
 			end if;
 		end if;
+
+		eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < packet'length/mii_rxd'length);
+		eth_txd  <= word2byte(reverse(packet,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
+
 	end process;
-	process (mii_treq)
-	begin
-		if rising_edge(mii_treq) then
-			n <= not n;
-		end if;
-	end process;
-	eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right))< pp'length/mii_rxd'length);
-	eth_txd  <= word2byte(reverse(pp,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
