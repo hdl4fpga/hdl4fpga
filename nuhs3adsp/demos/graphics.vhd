@@ -279,6 +279,7 @@ begin
 		signal sigram_irdy   : std_logic;
 		signal ack_data      : std_logic_vector(8-1 downto 0);
 
+		signal dmasin_irdy   : std_logic;
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal datactlr_irdy : std_logic;
@@ -507,74 +508,21 @@ begin
 			end if;
 		end process;
 
-		dma_b : block 
-
-			alias dmacfg_req is dmacfgio_req;
-			alias dmacfg_rdy is dmacfgio_rdy;
-			alias dma_req    is dmaio_req;
-			alias dma_rdy    is dmaio_rdy;
-
-			signal cfg2ctlr_req : std_logic;
-			signal cfg2ctlr_rdy : std_logic;
-
-			signal ctlr2cfg_req : std_logic;
-			signal ctlr2cfg_rdy : std_logic;
-		begin
-
-			dmacfg_p : process(dmacfg_clk)
-			begin
-				if rising_edge(dmacfg_clk) then
-					if ctlr_inirdy='0' then
-						dmaio_trdy   <= '0';
-						dmacfg_req   <= '0';
-						cfg2ctlr_req <= '0';
-						ctlr2cfg_rdy <= '0';
-					elsif (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-						if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='0' then
-							if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
-								if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-									if (to_stdulogic(to_bit(dmaiolen_irdy)) and to_stdulogic(to_bit(dmaioaddr_irdy)))='1' then
-										if dmaio_trdy='0' then
-											dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
-										end if;
-									end if;
-								else
-									cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));
-								end if;
-							end if;
-						end if;
-						dmaio_trdy <= '0';
-					else
-						ctlr2cfg_rdy <= to_stdulogic(to_bit(ctlr2cfg_req));
-						dmaio_trdy <= '1';
-					end if;
-				end if;
-			end process;
-
-			dmaddr_p : process(ctlr_clk)
-			begin
-				if rising_edge(ctlr_clk) then
-					if ctlr_inirdy='0' then
-						dma_req      <= '0';
-						ctlr2cfg_req <= '0';
-						cfg2ctlr_rdy <= '0';
-					elsif (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='1' then
-						if (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-							if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-								if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
-									dma_req <= not to_stdulogic(to_bit(dma_rdy));
-								else
-									ctlr2cfg_req <= not to_stdulogic(to_bit(ctlr2cfg_rdy));
-								end if;
-							end if;
-						else
-							cfg2ctlr_rdy <= to_stdulogic(to_bit(cfg2ctlr_req));
-						end if;
-					end if;
-				end if;
-			end process;
-
-		end block;
+		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
+		sio_dmactlr_e : entity hdl4fpga.sio_dmactlr
+		port map (
+			dmacfg_clk  => dmacfg_clk,
+			dmasin_irdy => dmasin_irdy,
+			dmasin_trdy => dmaio_trdy,
+									  
+			dmacfg_req  => dmacfgio_req,
+			dmacfg_rdy  => dmacfgio_rdy,
+									  
+			ctlr_clk    => ctlr_clk,
+			ctlr_inirdy => ctlr_inirdy,
+									  
+			dma_req     => dmaio_req,
+			dma_rdy     => dmaio_rdy);
 
 	end block;
 

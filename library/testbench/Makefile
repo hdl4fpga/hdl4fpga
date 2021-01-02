@@ -61,6 +61,8 @@ HDL4FPGA__sio_flowtx__def = $(LIB_HDL4FPGA)/sio_flowtx/def.dat
 HDL4FPGA__sio_flowtx = $(LIB_HDL4FPGA)/sio_flowtx/_primary.dat
 HDL4FPGA__sio_flowrx__def = $(LIB_HDL4FPGA)/sio_flowrx/def.dat
 HDL4FPGA__sio_flowrx = $(LIB_HDL4FPGA)/sio_flowrx/_primary.dat
+HDL4FPGA__sio_dmactlr__def = $(LIB_HDL4FPGA)/sio_dmactlr/def.dat
+HDL4FPGA__sio_dmactlr = $(LIB_HDL4FPGA)/sio_dmactlr/_primary.dat
 HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__sio_dayahdlc__beh = $(LIB_HDL4FPGA)/sio_dayahdlc/beh.dat
@@ -282,6 +284,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sio_flowtx) \
     $(HDL4FPGA__sio_flowrx__def) \
     $(HDL4FPGA__sio_flowrx) \
+    $(HDL4FPGA__sio_dmactlr__def) \
+    $(HDL4FPGA__sio_dmactlr) \
     $(HDL4FPGA__sio_dayudp__beh) \
     $(HDL4FPGA__sio_dayudp) \
     $(HDL4FPGA__sio_dayahdlc__beh) \
@@ -817,7 +821,6 @@ $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
 		$(HDL4FPGA__dmatrans) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__grant) \
-		$(HDL4FPGA__align) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -1362,6 +1365,15 @@ $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayudp.vhd
+
+$(HDL4FPGA__sio_dmactlr) \
+$(HDL4FPGA__sio_dmactlr__def) : ../sio/sio_dmactlr.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dmactlr.vhd
 
 $(HDL4FPGA__sio_flowrx) \
 $(HDL4FPGA__sio_flowrx__def) : ../sio/sio_flowrx.vhd \
