@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity fifo is
 	generic (
 		debug      : boolean := false;
+		async_mode : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		latency    : natural := 1;
@@ -65,8 +66,10 @@ architecture def of fifo is
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
 	signal wr_ena    : std_logic;
-	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
-	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+	signal wr_cntr   : std_logic_vector(0 to addr_length);
+	signal wr_cntr1  : std_logic_vector(0 to addr_length);
+	signal rd_cntr   : std_logic_vector(0 to addr_length);
+	signal rd_cntr1  : std_logic_vector(0 to addr_length);
 	signal dst_irdy1 : std_logic;
 
 	signal feed_ena  : std_logic;
@@ -108,12 +111,12 @@ begin
 		port map (
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,
-			wr_addr => std_logic_vector(wr_cntr(addr_range)),
+			wr_addr => wr_cntr(addr_range),
 			wr_data => wdata, 
 
 			rd_clk  => dst_clk,
 			rd_ena  => rd_ena,
-			rd_addr => std_logic_vector(rd_cntr(addr_range)),
+			rd_addr => rd_cntr(addr_range),
 			rd_data => rdata);
 
 		latency_p : process (rdata, dst_clk)
@@ -208,7 +211,7 @@ begin
 --			end if;
 --		end process;
 
-		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+		src_trdy <= setif(to_bitvector(wr_cntr(addr_range)) /= to_bitvector(rd_cntr1(addr_range)) or to_bit(wr_cntr(0)) = to_bit(rd_cntr1(0)));
 
 		dst_ini <= not dst_frm;
 		dstirdy_e : entity hdl4fpga.align
@@ -260,7 +263,7 @@ begin
 			end if;
 		end process;
 
-		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
+		src_trdy <= setif(wr_cntr(0) = rd_cntr1(0));
 
 		dst_ini <= not dst_frm;
 		dstirdy_e : entity hdl4fpga.align
@@ -278,58 +281,77 @@ begin
 	end generate;
 
 	process(src_clk)
+		variable cntr : unsigned(wr_cntr'range);
 	begin
 		if rising_edge(src_clk) then
+			cntr := unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr))));
 			if src_frm='0' then
 				if src_mode='0' then
-					wr_cntr <= rd_cntr;
+					cntr := unsigned(to_stdlogicvector(to_bitvector(rd_cntr)));
 				else	
-					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
+					cntr := to_unsigned(src_offset, cntr'length);
 				end if;
 			else
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
 						if gray_code and addr_length > 1 then
-							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								wr_cntr(0) <= not wr_cntr(0);
+							if cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+								cntr(0) := not cntr(0);
 							end if;
-							wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
+							cntr(1 to addr_length) := unsigned(inc(gray(cntr(1 to addr_length))));
 						else
-							wr_cntr <= wr_cntr + 1;
+							cntr := cntr + 1;
 						end if;
 					end if;
 				end if;
 			end if;
+
+			if async_mode then
+				wr_cntr1 <= std_logic_vector(wr_cntr);
+			else
+				wr_cntr1 <= std_logic_vector(cntr);
+			end if;
+			wr_cntr <= std_logic_vector(cntr);
+
 		end if;
 	end process;
 
-	dst_irdy1 <= setif(wr_cntr /= rd_cntr);
+	dst_irdy1 <= setif(to_bitvector(wr_cntr1) /= to_bitvector(rd_cntr));
 --	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov)));
 --	feed_ena  <= dst_trdy or (not dst_irdy and setif(check_dov) and dst_irdy1);
 	feed_ena  <= dst_trdy or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 	process(dst_clk)
+		variable cntr : unsigned(rd_cntr'range);
 	begin
 		if rising_edge(dst_clk) then
+			cntr := unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr))));
 			if dst_frm='0' then
 				if dst_mode='0' then
-					rd_cntr <= wr_cntr;
+					cntr := unsigned(to_stdlogicvector(to_bitvector(wr_cntr)));
 				else	
-					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
+					cntr := to_unsigned(dst_offset, cntr'length);
 				end if;
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
 						if gray_code and addr_length > 1 then
-							if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								rd_cntr(0) <= not rd_cntr(0);
+							if cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
+								cntr(0) := not cntr(0);
 							end if;
-							rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
+							cntr(1 to addr_length) := unsigned(inc(gray(cntr(1 to addr_length))));
 						else
-							rd_cntr <= rd_cntr + 1;
+							cntr := cntr + 1;
 						end if;
 					end if;
 				end if;
 			end if;
+
+			if async_mode then
+				rd_cntr1 <= std_logic_vector(rd_cntr);
+			else
+				rd_cntr1 <= std_logic_vector(cntr);
+			end if;
+			rd_cntr <= std_logic_vector(cntr);
 		end if;
 	end process;
 

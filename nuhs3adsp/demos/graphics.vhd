@@ -226,7 +226,7 @@ begin
 		dfs_mul => video_tab(video_mode).dcm_mul,
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
-		dcm_rst => '1', --sys_rst,
+		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
@@ -432,12 +432,12 @@ begin
 			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmaaddr_irdy,
 			src_trdy => dmaaddr_trdy,
 			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
 
 			tp => tp1,
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
 			dst_trdy => dmaio_trdy,
@@ -453,12 +453,11 @@ begin
 			gray_code => fifo_gray)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmalen_irdy,
 			src_trdy => dmalen_trdy,
 			src_data => rgtr_data(dmaio_len'length-1 downto 0),
 
-			tp => tp2,
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
 			dst_trdy => dmaio_trdy,
@@ -468,6 +467,7 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+			async_mode => true,
 			out_rgtr  => true,
 			latency   => 3,
 			check_sov => true,
@@ -475,11 +475,11 @@ begin
 			gray_code => false) --fifo_gray)
 		port map (
 			src_clk  => sio_clk,
-			src_frm  => sio_frm,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
 			src_data => rgtr_data(ctlr_di'length-1 downto 0),
 
+			dst_frm  => ctlr_inirdy,
 			dst_clk  => ctlr_clk,
 			dst_irdy => datactlr_irdy,
 			dst_trdy => ctlr_di_req,

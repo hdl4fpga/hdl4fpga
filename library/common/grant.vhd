@@ -69,6 +69,14 @@ begin
 					end loop;
 					gnt := (others => '0');
 				end if;
+--			elsif dev_idle='1' then
+--				for i in gnt'range loop
+--					if gnt(i)='1' then
+--						dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
+--					end if;
+--				end loop;
+--				gnt := (others => '0');
+--				rsrc_req <= to_stdulogic(to_bit(rsrc_rdy));
 			end if;
 		end if;
 	end process;

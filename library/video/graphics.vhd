@@ -179,13 +179,14 @@ begin
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		debug => false,
+		async_mode => true,
 		max_depth => fifo_size,
 --		out_rgtr  => false, 
 --		latency   => 0,
 		out_rgtr  => true, 
 		latency   => 3,
 		check_sov => false,
-		check_dov => true,
+		check_dov => false,
 		gray_code => true)
 	port map (
 		src_clk  => ctlr_clk,
