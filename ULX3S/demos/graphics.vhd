@@ -190,8 +190,8 @@ architecture graphics of ulx3s is
 		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
 		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
-	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 
 	constant ddr_tcp   : natural := 
 		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
@@ -612,15 +612,13 @@ begin
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => (8*4*1*256/(ctlr_di'length/8)),
-			out_rgtr  => true,
-			latency   => 3,
-			gray_code => fifo_gray,
---			out_rgtr  => false,
---			latency   => 0,
---			gray_code => false,
-			check_sov => true,
-			check_dov => true)
+			max_depth  => (8*4*1*256/(ctlr_di'length/8)),
+			async_mode => true,
+			out_rgtr   => true,
+			latency    => 3,
+			gray_code  => fifo_gray,
+			check_sov  => true,
+			check_dov  => true)
 		port map (
 			src_clk  => sio_clk,
 			src_irdy => dmadata_irdy,

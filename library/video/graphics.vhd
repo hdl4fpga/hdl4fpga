@@ -179,7 +179,6 @@ begin
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		debug => false,
-		async_mode => true,
 		max_depth => fifo_size,
 --		out_rgtr  => false, 
 --		latency   => 0,
