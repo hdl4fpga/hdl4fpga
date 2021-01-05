@@ -312,10 +312,9 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
---		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "200.000000";
---		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is "133.333333";
-
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(sdram_mode=sdram133MHz, "133.333333", "200.000000");
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(sdram_mode=sdram133MHz, 
+			"133.333333",
+			"200.000000");
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
@@ -546,12 +545,6 @@ begin
 		end process;
 
 		sio_dmaio <= 
---			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
---			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & "00" & x"0" & dmaioaddr_irdy & dmaio_addr;
---			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmadata_trdy & "0" & "000" & tp1(24) & tp1(24-1 downto 0);
---			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & "000" & tp1(24) & tp1(24-1 downto 0);
---			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" &
---			tp2(16-1 downto 12) & tp2(4-1 downto 0) & tp1(16-1 downto 12) & tp1(4-1 downto 0);
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & dmaio_trdy & b"000" & x"00" & x"0000";
 		siodmaio_irdy <= sig_end and sou_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
@@ -615,9 +608,8 @@ begin
 			max_depth  => (8*4*1*256/(ctlr_di'length/8)),
 			async_mode => true,
 			out_rgtr   => true,
-			out_rgtren => false, 
 			latency    => 3,
-			gray_code  => fifo_gray,
+			gray_code  => false,
 			check_sov  => true,
 			check_dov  => true)
 		port map (
@@ -647,7 +639,6 @@ begin
 									  
 			dma_req     => dmaio_req,
 			dma_rdy     => dmaio_rdy);
-
 
 		base_addr_e : entity hdl4fpga.sio_rgtr
 		generic map (
@@ -717,7 +708,6 @@ begin
 --		video_blank <= not video_on;
 --	end block;
 
-
 	adapter_b : block
 
 		constant mode     : videotiming_ids := video_tab(video_mode).mode;
@@ -753,7 +743,7 @@ begin
 		tographics_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length+1,
-			d => (0 to ctlr_do'length => 1))
+			d => (0 to ctlr_do'length => 2))
 		port map (
 			clk => ctlr_clk,
 			di(0 to ctlr_do'length-1) => ctlr_do,
@@ -816,8 +806,6 @@ begin
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
---	dev_len    <= dmavideo_len  & std_logic_vector(resize(unsigned'(x"7F"), dmaio_len'length));
---	dev_addr   <= dmavideo_addr & (dmaio_addr'range => '0');
 	dev_we     <= "1"           & "0";
 
 	dmactlr_e : entity hdl4fpga.dmactlr

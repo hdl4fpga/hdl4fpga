@@ -24,38 +24,24 @@ add wave -noupdate /testbench/du_e/vsync
 add wave -noupdate -radix hexadecimal /testbench/du_e/red
 add wave -noupdate -radix hexadecimal /testbench/du_e/green
 add wave -noupdate -radix hexadecimal /testbench/du_e/blue
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_frm
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_irdy
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/src_data
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/wr_req
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/wr_rdy
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/rd_req
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/rd_rdy
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/src_clk
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/wr_ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/wr_cmp
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/rd_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/rd_cmp
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_clk
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_frm
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_irdy
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_trdy
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/dst_irdy1
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/feed_ena
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/ena
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/ena2
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/dst_data
-add wave -noupdate /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/ena3
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/data
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/data2
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/data3
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/rdata
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/rdata2
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/dmadata_e/max_depthgt1_g/latency_p/rdata3
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/adapter_b/hzcntr
+add wave -noupdate /testbench/du_e/adapter_b/vtcntr
+add wave -noupdate /testbench/du_e/adapter_b/hzsync
+add wave -noupdate /testbench/du_e/adapter_b/vtsync
+add wave -noupdate /testbench/du_e/adapter_b/hzon
+add wave -noupdate /testbench/du_e/adapter_b/vton
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_di
+add wave -noupdate /testbench/du_e/adapter_b/graphics_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/pixel
+add wave -noupdate /testbench/du_e/video_clk
+add wave -noupdate /testbench/du_e/video_hzsync
+add wave -noupdate /testbench/du_e/video_vtsync
+add wave -noupdate /testbench/du_e/video_hzon
+add wave -noupdate /testbench/du_e/video_vton
+add wave -noupdate -radix hexadecimal /testbench/du_e/video_pixel
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {521582960580 fs} 0}
+WaveRestoreCursors {{Cursor 2} {351916928730 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
@@ -71,4 +57,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {521534656710 fs} {521637195790 fs}
+WaveRestoreZoom {0 fs} {739200 ns}

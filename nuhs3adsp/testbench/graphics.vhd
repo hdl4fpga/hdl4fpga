@@ -183,52 +183,6 @@ architecture nuhs3adsp_graphics of testbench is
 	end component;
 
 	constant baudrate : natural := 1000000;
-	constant uart_data  : std_logic_vector := 
-		x"000000" & 
-		x"1602_5c00_0180" &
-		x"0000" & 
-		x"18ff" & 
-		x"123456789abcdef123456789abcdef12" &
-		x"23456789abcdef123456789abcdef123" &
-		x"3456789abcdef123456789abcdef1234" &
-		x"456789abcdef123456789abcdef12345" &
-		x"56789abcdef123456789abcdef123456" &
-		x"6789abcdef123456789abcdef1234567" &
-		x"789abcdef123456789abcdef12345678" &
-		x"89abcdef123456789abcdef123456789" &
-		x"9abcdef123456789abcdef123456789a" &
-		x"abcdef123456789abcdef123456789ab" &
-		x"bcdef123456789abcdef123456789abc" &
-		x"cdef123456789abcdef123456789abcd" &
-		x"def123456789abcdef123456789abcde" &
-		x"ef123456789abcdef123456789abcdef" &
-		x"f123456789abcdef123456789abcdef1" &
-		x"123456789abcdef123456789abcdef12" &
-		x"0000" &
-		x"1702_5c00_5c00_7f" &
-		x"0000" &
-		x"18ff"& 
-		x"1234ffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffaabb" &
-		x"ccddffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffffffff" &
-		x"ffffffffffffffffffffffffffff6789" &
-		x"0000" &
-		x"1602_5c00_5c00_5c00" & 
-		x"0000" & 
-		x"1702_5c00_5c00_7f" &
-		x"0000";
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
@@ -276,22 +230,6 @@ begin
 
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
-	process (rst, uart_clk)
-		variable data : unsigned((uart_data'length/8)*10-1 downto 0);
-	begin
-		if rst='0' then
-			for i in 0 to data'length/10-1 loop
-				data(10-1 downto 0) := unsigned(uart_data(i*8 to (i+1)*8-1)) & b"01";
-				data := data ror 10;
-			end loop;
-			data := not data;
-			uart_sin <= '1';
-		elsif rising_edge(uart_clk) then
-			data := data srl 1;
---			data := data ror 1;
-			uart_sin <= not data(0);
-		end if;
-	end process;
 
 	rst <= '0', '1' after 300 ns;
 	mii_treq <= '0', '1' after time_offset + 1 us, 
@@ -310,26 +248,7 @@ begin
 			& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
 			& x"18ff"
 			& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
-	--		& x"18ff"
-	--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-	--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-	--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-	--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-	--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-	--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-	--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-	--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
-	--		& x"18ff"
-	--		& x"123456789abcdef123456789abcdef1223456789abcdef123456789abcdef123"
-	--		& x"3456789abcdef123456789abcdef1234456789abcdef123456789abcdef12345"
-	--		& x"56789abcdef123456789abcdef1234566789abcdef123456789abcdef1234567"
-	--		& x"789abcdef123456789abcdef1234567889abcdef123456789abcdef123456789"
-	--		& x"9abcdef123456789abcdef123456789aabcdef123456789abcdef123456789ab"
-	--		& x"bcdef123456789abcdef123456789abccdef123456789abcdef123456789abcd"
-	--		& x"def123456789abcdef123456789abcdeef123456789abcdef123456789abcdef"
-	--		& x"f123456789abcdef123456789abcdef1123456789abcdef123456789abcdef12"
 			& x"1602000000"
---			& x"170200013f";
 			& x"1702000000";
 
 		constant k2 : std_logic_vector := x"00020000" & (1 to 8 => '-') & k1;
