@@ -142,6 +142,8 @@ begin
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= to_unsigned(maxdma_len, level'length);
+--					dma_len    <= (dma_len'range => '0');
+--					dma_addr   <= base_addr;
 					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 					dma_addr   <= base_addr;
 					dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
@@ -150,6 +152,8 @@ begin
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= level + line_size;
+--					dma_len    <= (dma_len'range => '0');
+--					dma_addr   <= base_addr;
 					dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
 					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
 					dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
@@ -183,7 +187,8 @@ begin
 --		out_rgtr  => false, 
 --		latency   => 0,
 		out_rgtr  => true, 
-		latency   => 3,
+		out_rgtren => false, 
+		latency   => 1,
 		check_sov => false,
 		check_dov => false,
 		gray_code => true)

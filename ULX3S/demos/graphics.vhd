@@ -615,6 +615,7 @@ begin
 			max_depth  => (8*4*1*256/(ctlr_di'length/8)),
 			async_mode => true,
 			out_rgtr   => true,
+			out_rgtren => false, 
 			latency    => 3,
 			gray_code  => fifo_gray,
 			check_sov  => true,
@@ -648,15 +649,15 @@ begin
 			dma_rdy     => dmaio_rdy);
 
 
---		base_addr_e : entity hdl4fpga.sio_rgtr
---		generic map (
---			rid  => x"19")
---		port map (
---			rgtr_clk  => sio_clk,
---			rgtr_dv   => rgtr_dv,
---			rgtr_id   => rgtr_id,
---			rgtr_data => rgtr_data,
---			data      => base_addr);
+		base_addr_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid  => x"19")
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => base_addr);
 
 	end block;
 

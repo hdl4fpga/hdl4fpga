@@ -74,8 +74,6 @@ architecture def of fifo is
 
 	signal feed_ena  : std_logic;
 
-	signal rd_req, rd_rdy : bit;
-	signal wr_req, wr_rdy : bit;
 begin
 
 	assert max_depth=2**addr_length
@@ -171,6 +169,8 @@ begin
 
 			if out_rgtr and not out_rgtren then
 				case latency is
+				when 0 => 
+					dst_data <= rdata;
 				when 1 => 
 					dst_data <= word2byte(data & rdata, ena);
 				when 2 =>
@@ -289,7 +289,11 @@ begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
 				if src_mode='0' then
-					wr_cntr <= rd_cntr;
+					if async_mode then
+						wr_cntr <= rd_cmp;
+					else
+						wr_cntr <= rd_cntr;
+					end if;
 				else	
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
@@ -319,7 +323,11 @@ begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				if dst_mode='0' then
-					rd_cntr <= wr_cntr;
+					if async_mode then
+						rd_cntr <= wr_cmp;
+					else
+						rd_cntr <= wr_cntr;
+					end if;
 				else	
 					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
 				end if;
@@ -340,46 +348,59 @@ begin
 		end if;
 	end process;
 
-	process(src_clk)
-		variable cpied : bit;
-		variable req   : bit;
+	async_b : block
+		signal rd_req, rd_rdy : bit;
+		signal wr_req, wr_rdy : bit;
+		signal rd_cpy : unsigned(rd_cmp'range);
+		signal wr_cpy : unsigned(wr_cmp'range);
 	begin
-		if rising_edge(src_clk) then
-			if (wr_req xor wr_rdy)='1' then
-				if cpied='0' then
-					wr_cmp <= wr_cntr;
-					cpied  := '1';
-				else
-					wr_rdy <= wr_req;
-					cpied  := '0';
+		process(src_clk)
+			variable cpied : bit;
+			variable req   : bit;
+			variable rdy   : bit;
+		begin
+			if rising_edge(src_clk) then
+				if (req xor wr_rdy)='1' then
+					if cpied='0' then
+						wr_cpy <= wr_cntr;
+						cpied  := '1';
+					else
+						wr_rdy <= wr_req;
+						cpied  := '0';
+					end if;
 				end if;
+				if (rdy xor rd_req)='0' then
+					rd_cmp <= rd_cpy;
+					rd_req <= not rdy;
+				end if;
+				req := wr_req;
+				rdy := rd_rdy;
 			end if;
-			if (rd_req xor rd_rdy)='0' then
-				rd_req <= not rd_rdy;
-			end if;
-			req := wr_req;
-		end if;
-	end process;
+		end process;
 
-	process(dst_clk)
-		variable cpied : bit;
-		variable req   : bit;
-	begin
-		if rising_edge(dst_clk) then
-			if (req xor rd_rdy)='1' then
-				if cpied='0' then
-					rd_cmp <= rd_cntr;
-					cpied  := '1';
-				else
-					rd_rdy <= rd_req;
-					cpied  := '0';
+		process(dst_clk)
+			variable cpied : bit;
+			variable req   : bit;
+			variable rdy   : bit;
+		begin
+			if rising_edge(dst_clk) then
+				if (req xor rd_rdy)='1' then
+					if cpied='0' then
+						rd_cpy <= rd_cntr;
+						cpied  := '1';
+					else
+						rd_rdy <= rd_req;
+						cpied  := '0';
+					end if;
 				end if;
+				if (rdy xor wr_req)='0' then
+					wr_cmp <= wr_cpy;
+					wr_req <= not rdy;
+				end if;
+				req := rd_req;
+				rdy := wr_rdy;
 			end if;
-			if (wr_req xor wr_rdy)='0' then
-				wr_req <= not wr_rdy;
-			end if;
-			req := rd_req;
-		end if;
-	end process;
+		end process;
+	end block;
 
 end;
