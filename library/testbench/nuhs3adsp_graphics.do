@@ -25,24 +25,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/red
 add wave -noupdate -radix hexadecimal /testbench/du_e/green
 add wave -noupdate -radix hexadecimal /testbench/du_e/blue
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/adapter_b/hzcntr
-add wave -noupdate /testbench/du_e/adapter_b/vtcntr
-add wave -noupdate /testbench/du_e/adapter_b/hzsync
-add wave -noupdate /testbench/du_e/adapter_b/vtsync
-add wave -noupdate /testbench/du_e/adapter_b/hzon
-add wave -noupdate /testbench/du_e/adapter_b/vton
-add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/graphics_di
-add wave -noupdate /testbench/du_e/adapter_b/graphics_dv
-add wave -noupdate -radix hexadecimal /testbench/du_e/adapter_b/pixel
-add wave -noupdate /testbench/du_e/video_clk
-add wave -noupdate /testbench/du_e/video_hzsync
-add wave -noupdate /testbench/du_e/video_vtsync
-add wave -noupdate /testbench/du_e/video_hzon
-add wave -noupdate /testbench/du_e/video_vton
-add wave -noupdate -radix hexadecimal /testbench/du_e/video_pixel
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {351916928730 fs} 0}
-quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
 configure wave -justifyvalue left
@@ -57,4 +40,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {739200 ns}
+WaveRestoreZoom {336803124480 fs} {358196875520 fs}
