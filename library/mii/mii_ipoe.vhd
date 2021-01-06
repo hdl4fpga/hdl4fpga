@@ -170,7 +170,7 @@ begin
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 4,
-			out_rgtr  => false, 
+			latency   => 0, 
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)

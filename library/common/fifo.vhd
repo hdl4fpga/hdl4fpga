@@ -37,11 +37,9 @@ entity fifo is
 		latency    : natural := 1;
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
-		out_rgtr   : boolean := true;
-		out_rgtren : boolean := false;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false;
-		gray_code  : boolean := true);
+		gray_code  : boolean := false);
 	port (
 		src_clk    : in  std_logic;
 		src_mode   : in  std_logic := '0';
@@ -87,26 +85,20 @@ begin
 
 		signal wdata   : std_logic_vector(0 to src_data'length-1);
 		signal rdata   : std_logic_vector(0 to src_data'length-1);
-		signal rd_ena  : std_logic;
+		signal ldata   : std_logic_vector(0 to src_data'length-1);
 		signal dst_ini : std_logic;
 
 	begin
 
-		assert not (latency > 1) or out_rgtren or out_rgtr
-		report "Latency greater than 1 is not supported on out_regtren"
-		severity FAILURE;
-
-		assert not (latency > 3) or out_rgtren or not out_rgtr
+		assert not (latency > 3)
 		report "Latency greater than 3 is not supported"
 		severity FAILURE;
-
-		rd_ena <= feed_ena when out_rgtren else '1';
 
 		wdata <= src_data when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => out_rgtr,
+			synchronous_rddata => latency /= 0,
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -115,7 +107,6 @@ begin
 			wr_data => wdata, 
 
 			rd_clk  => dst_clk,
-			rd_ena  => rd_ena,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
 
@@ -164,32 +155,25 @@ begin
 					ena  := feed_ena;
 				when others =>
 				end case;
-
 			end if;
 
-			if out_rgtr and not out_rgtren then
-				case latency is
-				when 0 => 
-					dst_data <= rdata;
-				when 1 => 
-					dst_data <= word2byte(data & rdata, ena);
-				when 2 =>
-					dst_data <= word2byte(
-				   --   00      01     10     11     
-						data2 & data & data & rdata2, ena & ena2);
-				when 3 =>
-					dst_data <= word2byte(
-				   --   000     001     010     011    100     101     110      111
-						data3 & data2 & data2 & data & data2 & data  & data & rdata3, ena & ena2 & ena3);
-				when others =>
-				end case;
-			else
-				dst_data <= rdata;
-			end if;
+			case latency is
+			when 1 => 
+				ldata <= word2byte(data & rdata, ena);
+			when 2 =>              -- 00     01     10       11     
+				ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
+			when 3 =>             -- 000     001     010    011     100    101    110      111
+				ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
+			when others =>
+				ldata <= (others => '-');
+			end case;
+
 		end process;
 
+		dst_data <= rdata when latency=0 else ldata;
+
 --		dst_irdy_p : process (rdata, dst_clk)
---			variable q : std_logic_vector(0 to (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)));
+--			variable q : std_logic_vector(0 to latency);
 --		begin
 --			if rising_edge(dst_clk) then
 --				if dst_ini='1' then
@@ -221,7 +205,7 @@ begin
 		dstirdy_e : entity hdl4fpga.align
 		generic map (
 			n     => 1,
-			d     => (0 to 0 => setif(out_rgtr,setif(out_rgtren, 1, latency),0)),
+			d     => (0 to 0 => latency),
 			i     => (0 to 0 => '0'))
 		port map (
 			clk   => dst_clk,
@@ -233,54 +217,19 @@ begin
 	end generate;
 
 	max_depth1_g : if max_depth = 1 generate
-		signal rgtr    : std_logic_vector(src_data'range);
-		signal dst_ini : std_logic;
 	begin
-
-		assert not (latency > 1)
-		report "Latency greater than 1 is not supported"
-		severity FAILURE;
-
-		assert not out_rgtr or not out_rgtren
-		report "Out register enable must be on"
-		severity FAILURE;
 
 		process (src_clk)
 		begin
 			if rising_edge(src_clk) then
 				if wr_ena='1' then
-					rgtr <= src_data;
+					dst_data <= src_data;
 				end if;
-			end if;
-		end process;
-
-		process (rgtr, dst_clk)
-		begin
-			if out_rgtr then
-				if rising_edge(dst_clk) then
-					if feed_ena='1' then
-						dst_data <= rgtr;
-					end if;
-				end if;
-			else
-				dst_data <= rgtr;
 			end if;
 		end process;
 
 		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
-
-		dst_ini <= not dst_frm;
-		dstirdy_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => setif(out_rgtr, 1, 0)),
-			i => (0 to 0 => '0'))
-		port map (
-			clk   => dst_clk,
-			ini   => dst_ini,
-			ena   => feed_ena,
-			di(0) => dst_irdy1,
-			do(0) => dst_irdy);
+		dst_irdy <= dst_irdy1;
 
 	end generate;
 
@@ -314,9 +263,9 @@ begin
 		end if;
 	end process;
 
-	dst_irdy1 <= setif(wr_cntr /= rd_cntr) when not async_mode else setif(wr_cmp /= rd_cntr);
---	feed_ena  <= (dst_trdy or not (dst_irdy or setif(not check_dov)));
---	feed_ena  <= dst_trdy or (not dst_irdy and setif(check_dov) and dst_irdy1);
+	dst_irdy1 <= 
+		setif(wr_cntr /= rd_cntr) when not async_mode else 
+		setif(wr_cmp  /= rd_cntr);
 	feed_ena  <= dst_trdy or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 	process(dst_clk)
 	begin

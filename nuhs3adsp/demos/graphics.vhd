@@ -426,7 +426,7 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => false,
+			latency   => 1,
 			check_sov => true,
 			check_dov => true,
 			gray_code => fifo_gray)
@@ -447,7 +447,7 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
-			out_rgtr  => false,
+			latency   => 1,
 			check_sov => true,
 			check_dov => true,
 			gray_code => fifo_gray)
@@ -468,7 +468,6 @@ begin
 		generic map (
 			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
 			async_mode => true,
-			out_rgtr  => true,
 			latency   => 3,
 			check_sov => true,
 			check_dov => true,
