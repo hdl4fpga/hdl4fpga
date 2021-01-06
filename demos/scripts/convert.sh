@@ -1,6 +1,5 @@
 #!/bin/sh
 WIDTH="${WIDTH:-800}"
-SPEED="${SPEED:-3000000}"
 BLANK="${BLANK:-YES}"
 BADDR="${BADDR:-0x0}"
 
@@ -21,10 +20,5 @@ fi; fi
 echo make 1>&2
 make all 1>&2
 
-convert_image ()
-{
-	convert - -resize "${WIDTH}" -size "${WIDTH}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"|./bin/bundle -b "${BADDR}" -p 
-}
-
-echo Converting "${IMAGE}" to "${WIDTH}" pixel wide and sending it to "${DESTINATION}" 1>&2
-convert_image
+echo Converting "${IMAGE}" to "${WIDTH}" pixel wide 1>&2
+convert - -resize "${WIDTH}" -size "${WIDTH}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}" -w "${WSIZE}"|./bin/bundle -b "${BADDR}" -p 

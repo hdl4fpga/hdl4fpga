@@ -1,9 +1,5 @@
 .PHONY: bin
-all : bin/rgb8topixel bin/format bin/stream bin/bundle bin/sendbyudp
-
-bin/stream : src/stream.c
-	mkdir -p bin
-	cc -O2 src/stream.c -o bin/stream
+all : bin/rgb8topixel bin/format bin/stream bin/bundle bin/sendbyahdlc bin/sendbyudp
 
 bin/rgb8topixel : src/rgb8topixel.c
 	mkdir -p bin
@@ -21,11 +17,9 @@ bin/sendbyudp : src/sendbyudp.c
 	mkdir -p bin
 	cc -O2 src/sendbyudp.c -o bin/sendbyudp
 
-unstream : bin/unstream
-
-bin/unstream : src/unstream.c
+bin/sendbyahdlc : src/ahdlc.h src/ahdlc.c src/sendbyahdlc.c
 	mkdir -p bin
-	cc -O2 src/unstream.c -o bin/unstream
+	cc -O2 src/ahdlc.h src/ahdlc.c src/sendbyahdlc.c -o bin/sendbyahdlc
 
 clean :
 	rm  -rf ./bin
