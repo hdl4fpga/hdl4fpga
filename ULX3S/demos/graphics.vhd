@@ -128,9 +128,9 @@ architecture graphics of ulx3s is
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
     signal video_vton     : std_logic;
-    signal video_blank     : std_logic;
+    signal video_blank    : std_logic;
     signal video_on       : std_logic;
-    signal video_dot       : std_logic;
+    signal video_dot      : std_logic;
     signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
@@ -148,54 +148,61 @@ architecture graphics of ulx3s is
 	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 	signal dev_we         : std_logic_vector(0 to 2-1);
 
-	signal dev_req : std_logic_vector(0 to 2-1);
-	signal dev_rdy : std_logic_vector(0 to 2-1); 
+	signal dev_req        : std_logic_vector(0 to 2-1);
+	signal dev_rdy        : std_logic_vector(0 to 2-1); 
 
-	signal ctlr_ras : std_logic;
-	signal ctlr_cas : std_logic;
+	signal ctlr_ras       : std_logic;
+	signal ctlr_cas       : std_logic;
 
 	constant modedebug : natural := 0;
 	constant mode600p  : natural := 1;
 
+	type pll_params is record
+		clkos_div   : natural;
+		clkop_div   : natural;
+		clkfb_div   : natural;
+		clki_div    : natural;
+		clkos3_div  : natural;
+		clkop_phase : natural;
+	end record;
+
 	type video_params is record
-		clkos_div  : natural;
-		clkop_div  : natural;
-		clkfb_div  : natural;
-		clki_div   : natural;
-		clkos3_div : natural;
-		mode       : videotiming_ids;
+		pll  : pll_params;
+		mode : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk_debug),
-		mode600p   => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, mode => pclk40_00m800x600at60));
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), mode => pclk_debug),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), mode => pclk40_00m800x600at60));
 	constant video_mode : natural := setif(debug, modedebug, mode600p);
 
 	type sdram_params is record
-		clkos_div  : natural;
-		clkop_div  : natural;
-		clkfb_div  : natural;
-		clki_div   : natural;
-		clkos3_div : natural;
-		cas        : std_logic_vector(0 to 3-1);
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdram_vector is array (natural range <>) of sdram_params;
 	constant sdram133MHz : natural := 0;
 	constant sdram200MHz : natural := 1;
+	constant sdram250MHz : natural := 2;
+	constant sdram275MHz : natural := 3;
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
-		sdram133MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, cas => "010"),
-		sdram200MHz => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, cas => "011"));
+		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 3, clkop_phase => 15), cas => "010"),
+		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), cas => "011"),
+		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 19), cas => "011"),
+		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 21), cas => "011"));
 
 --	constant sdram_mode : natural := sdram133MHz;
 	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram250MHz;
+--	constant sdram_mode : natural := sdram275MHz;
 
 	constant ddr_tcp   : natural := 
-		(1000*natural(sys_per)*sdram_tab(sdram_mode).clki_div*sdram_tab(sdram_mode).clkos3_div)/
-		(sdram_tab(sdram_mode).clkfb_div*sdram_tab(sdram_mode).clkop_div);
+		(1000*natural(sys_per)*sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div)/
+		(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div);
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
 	alias uart_clk     : std_logic is clk_25mhz;
@@ -240,7 +247,7 @@ begin
 			DPHASE_SOURCE    => "DISABLED", 
 			PLL_LOCK_MODE    =>  0, 
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 15,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_phase,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
@@ -251,12 +258,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       => video_tab(video_mode).clkos3_div, 
+			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div, 
 			CLKOS2_DIV       =>  10, 
-			CLKOS_DIV        => video_tab(video_mode).clkos_div,
-			CLKOP_DIV        => video_tab(video_mode).clkop_div,
-			CLKFB_DIV        => video_tab(video_mode).clkfb_div,
-			CLKI_DIV         => video_tab(video_mode).clki_div)
+			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
+			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
+			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
+			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -274,7 +281,7 @@ begin
             CLKOS2    => video_clk,
 			LOCK      => video_lck, 
             INTLOCK   => open, 
-			REFCLK    => open, --REFCLK, 
+			REFCLK    => open,
 			CLKINTFB  => open);
 
 	end block;
@@ -291,8 +298,10 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(sdram_mode=sdram133MHz, 
-			"133.333333",
-			"200.000000");
+			"133.333333", setif(sdram_mode=sdram200Mhz,
+			"200.000000", setif(sdram_mode=sdram250Mhz,
+			"250.000000",
+			"275.000000")));
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
@@ -309,7 +318,7 @@ begin
 			DPHASE_SOURCE    => "DISABLED", 
 			PLL_LOCK_MODE    =>  0, 
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 15,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_phase,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 4, CLKOS3_CPHASE => 0,
@@ -320,12 +329,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKI_DIV         => sdram_tab(sdram_mode).clki_div,
-			CLKFB_DIV        => sdram_tab(sdram_mode).clkfb_div,
-			CLKOP_DIV        => sdram_tab(sdram_mode).clkop_div,
-			CLKOS_DIV        => sdram_tab(sdram_mode).clkos_div,
-			CLKOS2_DIV       => sdram_tab(sdram_mode).clkos3_div, 
-			CLKOS3_DIV       => sdram_tab(sdram_mode).clkos3_div) 
+			CLKI_DIV         => sdram_tab(sdram_mode).pll.clki_div,
+			CLKFB_DIV        => sdram_tab(sdram_mode).pll.clkfb_div,
+			CLKOP_DIV        => sdram_tab(sdram_mode).pll.clkop_div,
+			CLKOS_DIV        => sdram_tab(sdram_mode).pll.clkos_div,
+			CLKOS2_DIV       => sdram_tab(sdram_mode).pll.clkos3_div, 
+			CLKOS3_DIV       => sdram_tab(sdram_mode).pll.clkos3_div) 
         port map (
 			rst       => '0', 
 			clki      => clk_25mhz,
@@ -344,12 +353,12 @@ begin
 			CLKOS3    => dqs, 
 			LOCK      => lock, 
             INTLOCK   => open, 
-			REFCLK    => open, --REFCLK, 
+			REFCLK    => open,
 			CLKINTFB  => open);
 
 		ddrsys_rst <= not lock;
 
-		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode=sdram200MHz else (others => ctlr_clk);
+		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz else (others => ctlr_clk);
 
 	end block;
 
@@ -889,7 +898,7 @@ begin
 	sdram_sti : entity hdl4fpga.align
 	generic map (
 		n => sdrphy_sti'length,
-		d => (0 to sdrphy_sti'length-1 => setif(sdram_mode=sdram200MHz, 1, 0)))
+		d => (0 to sdrphy_sti'length-1 => setif(sdram_mode/=sdram133MHz, 1, 0)))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
