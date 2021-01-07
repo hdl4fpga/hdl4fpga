@@ -1,7 +1,8 @@
 #!/bin/sh
 TTY="${TTY:-/dev/ttyUSB0}"
 SPEED="${SPEED:-3000000}"
-
+PKMODE=${PKMODE:-STREAM}
+export TTY SPEED PKMODE
 
 ./scritps/setack.sh
 
