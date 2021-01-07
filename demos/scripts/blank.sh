@@ -2,7 +2,7 @@
 TTY="${TTY:-/dev/ttyUSB0}"
 SPEED="${SPEED:-3000000}"
 
-./scritps/setack.sh 0x10
+./scritps/setack.sh
 
 ADDR=0
 UPTO=`expr 800 \* 600`

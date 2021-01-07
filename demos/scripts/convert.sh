@@ -3,7 +3,7 @@ WIDTH="${WIDTH:-800}"
 BLANK="${BLANK:-YES}"
 BADDR="${BADDR:-0x0}"
 
-if [ "${KIT}" = "ulx3s" ] ; then
+if [ "${KIT}" == "ulx3s" ] ; then
 	PIXEL="${PIXEL:-rgb565}"
 	WSIZE="${WSIZE:-16}"
 	BSIZE="${BSIZE:-256}"
