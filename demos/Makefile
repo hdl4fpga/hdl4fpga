@@ -1,5 +1,5 @@
 .PHONY: bin
-all : bin/rgb8topixel bin/format bin/stream bin/bundle bin/sendbyahdlc bin/sendbyudp
+all : bin/rgb8topixel bin/format bin/bundle bin/sendbyahdlc bin/sendbyudp
 
 bin/rgb8topixel : src/rgb8topixel.c
 	mkdir -p bin
