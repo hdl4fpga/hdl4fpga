@@ -156,6 +156,7 @@ architecture graphics of ulx3s is
 
 	constant modedebug : natural := 0;
 	constant mode600p  : natural := 1;
+	constant mode1080p : natural := 2;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -174,8 +175,10 @@ architecture graphics of ulx3s is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), mode => pclk_debug),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), mode => pclk40_00m800x600at60));
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos3_div => 2, clkop_phase => 15), mode => pclk40_00m800x600at60),
+		mode1080p  => (pll => (clkos_div => 2, clkop_div => 24, clkfb_div => 1, clki_div => 1, clkos3_div => 1, clkop_phase => 23), mode => pclk40_00m800x600at60));
 	constant video_mode : natural := setif(debug, modedebug, mode600p);
+--	constant video_mode : natural := setif(debug, modedebug, mode1080p);
 
 	type sdram_params is record
 		pll : pll_params;
@@ -232,11 +235,15 @@ begin
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
 
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is  "40.000000";
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(video_mode=mode600p,
+			"200.000000",
+			"400.000000");
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(video_mode=mode600p,
+			"40.000000",
+			"120.000000");
 
 	begin
 		pll_i : EHXPLLL
