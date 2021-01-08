@@ -67,77 +67,81 @@ architecture def of graphics is
 	signal video_on      : std_logic;
 	signal vt_req        : std_logic;
 	signal hz_req        : std_logic;
-	signal trans_rdy     : std_logic;
-	signal trans_req     : std_logic;
+	signal trans_rdy     : bit;
+	signal trans_req     : bit;
 
 	signal src_irdy      : std_logic;
 	signal src_data      : std_logic_vector(ctlr_di'range);
 
 	signal dma_step      : unsigned(dma_addr'range);
 
-	signal rdy     : std_logic;
-	signal cfg_rdy : std_logic;
-
 	signal debug_dmacfg_req : std_logic;
 	signal debug_dmacfg_rdy : std_logic;
 	signal debug_dma_req    : std_logic;
 	signal debug_dma_rdy    : std_logic;
 
-	signal dmaddr_req : std_logic;
-	signal dmaddr_rdy : std_logic;
+	signal dmaddr_req : bit;
+	signal dmaddr_rdy : bit;
 
 begin
 
-	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(cfg_rdy));
-	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(cfg_rdy));
-	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(rdy));
-	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(rdy));
+	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
+	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(dmacfg_rdy));
+	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(dma_rdy));
+	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(dma_rdy));
 
 	dmacfg_p : process(dmacfg_clk)
+		variable req : bit;
+		variable rdy : bit;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
 				trans_rdy  <= '0';
 				dmacfg_req <= '0';
 				dmaddr_req <= '0';
-			elsif (trans_req xor trans_rdy)='1' then
-				if (to_stdulogic(to_bit(dmaddr_req)) xor to_stdulogic(to_bit(dmaddr_rdy)))='0' then
+			elsif (req xor trans_rdy)='1' then
+				if (dmaddr_req xor rdy)='0' then
 					if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
 						dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 					else
-						trans_rdy  <= trans_req;
-						dmaddr_req <= not to_stdulogic(to_bit(dmaddr_rdy));
+						trans_rdy  <= req;
+						dmaddr_req <= not rdy;
 					end if;
 				end if;
 			end if;
+			req := trans_req;
+			rdy := dmaddr_rdy;
 		end if;
 	end process;
 
 	dmaddr_p : process(ctlr_clk)
+		variable req : bit;
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='0' then
 				dma_req    <= '0';
 				dmaddr_rdy <= '0';
 			elsif (dmacfg_req xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-				if (dmaddr_req xor to_stdulogic(to_bit(dmaddr_rdy)))='1' then
+				if (req xor dmaddr_rdy)='1' then
 					if (dma_req xor to_stdulogic(to_bit(dma_rdy)))='0' then
 						dma_req <= not to_stdulogic(to_bit(dma_rdy));
 					else
-						dmaddr_rdy <= dmaddr_req;
+						dmaddr_rdy <= req;
 					end if;
 				end if;
 			end if;
+			req := dmaddr_req;
 		end if;
 	end process;
 
 	process (video_clk)
+		variable rdy       : bit;
 		variable hzon_lat  : std_logic;
 		variable vton_lat2 : std_logic;
 		variable vton_lat  : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if (to_stdulogic(to_bit(trans_req)) xor to_stdulogic(to_bit(trans_rdy)))='0' then
+			if (trans_req xor rdy)='0' then
 				if vt_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
@@ -147,7 +151,7 @@ begin
 					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 					dma_addr   <= base_addr;
 					dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
-					trans_req  <= not to_stdulogic(to_bit(trans_rdy));
+					trans_req  <= not rdy;
 				elsif hz_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
@@ -157,7 +161,7 @@ begin
 					dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
 					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
 					dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
-					trans_req  <= not to_stdulogic(to_bit(trans_rdy));
+					trans_req  <= not rdy;
 				end if;
 			end if;
 			if vton_lat='0' then
@@ -176,6 +180,7 @@ begin
 			hzon_lat  := video_hzon;
 			vton_lat2 := vton_lat;
 			vton_lat  := video_vton;
+			rdy := trans_rdy;
 		end if;
 	end process;
 
@@ -185,7 +190,7 @@ begin
 		max_depth => fifo_size,
 		async_mode => true,
 		latency   => 2,
-		check_sov => false,
+		check_sov => true,
 		check_dov => true,
 		gray_code => false)
 	port map (
