@@ -460,8 +460,8 @@ begin
 			e := i;
 			i := sin_frm;
 
-			led(0) <= video_lck; --t;
-			led(1) <= '0'; --not t;
+			led(0) <= t;
+			led(1) <= not t;
 		end if;
 	end process;
 
