@@ -154,8 +154,8 @@ architecture graphics of ulx3s is
 		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), pixel => rgb565, mode => pclk100_00m1600x900at60),
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
---	constant nodebug_videomode : natural := mode600p;
-	constant nodebug_videomode : natural := mode600p24;
+	constant nodebug_videomode : natural := mode600p;
+--	constant nodebug_videomode : natural := mode600p24;
 --	constant nodebug_videomode : natural := mode900p;
 --	constant nodebug_videomode : natural := mode1080p;
 	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
@@ -215,9 +215,9 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 19), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 21), cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram133MHz;
 --	constant sdram_mode : natural := sdram166MHz;
-	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
 --	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
