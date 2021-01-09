@@ -122,6 +122,45 @@ architecture graphics of ulx3s is
 	signal sdram_dqt      : std_logic_vector(sdram_d'range);
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
+	constant modedebug  : natural := 0;
+	constant mode600p   : natural := 1;
+	constant mode600p24 : natural := 2;
+	constant mode900p   : natural := 3;
+	constant mode1080p  : natural := 4;
+
+	type pll_params is record
+		clkos_div   : natural;
+		clkop_div   : natural;
+		clkfb_div   : natural;
+		clki_div    : natural;
+		clkos2_div  : natural;
+		clkos3_div  : natural;
+		clkop_phase : natural;
+	end record;
+
+	type pixel_types is (rgb565, rgb888);
+
+	type video_params is record
+		pll   : pll_params;
+		mode  : videotiming_ids;
+		pixel : pixel_types;
+	end record;
+
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk_debug),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), pixel => rgb888, mode => pclk40_00m800x600at60),
+		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), pixel => rgb565, mode => pclk100_00m1600x900at60),
+		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), pixel => rgb565, mode => pclk120_00m1920x1080at50));
+
+	constant nodebug_videomode : natural := mode600p;
+--	constant nodebug_videomode : natural := mode600p24p;
+--	constant nodebug_videomode : natural := mode900p;
+--	constant nodebug_videomode : natural := mode1080p;
+	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
+--	constant video_mode : natural := nodebug_videomode;
+
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
 	signal video_shift_clk : std_logic;
@@ -131,7 +170,7 @@ architecture graphics of ulx3s is
     signal video_blank    : std_logic;
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
-    signal video_pixel    : std_logic_vector(0 to ctlr_di'length-1);
+    signal video_pixel    : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 	signal dvid_crgb      : std_logic_vector(7 downto 0);
 
@@ -153,42 +192,6 @@ architecture graphics of ulx3s is
 
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
-
-	constant modedebug  : natural := 0;
-	constant mode600p   : natural := 1;
-	constant mode600p24 : natural := 2;
-	constant mode900p   : natural := 3;
-	constant mode1080p  : natural := 4;
-
-	type pll_params is record
-		clkos_div   : natural;
-		clkop_div   : natural;
-		clkfb_div   : natural;
-		clki_div    : natural;
-		clkos2_div  : natural;
-		clkos3_div  : natural;
-		clkop_phase : natural;
-	end record;
-
-	type video_params is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
-	type videoparams_vector is array (natural range <>) of video_params;
-	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase =>  15), mode => pclk_debug),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), mode => pclk40_00m800x600at60),
-		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), mode => pclk100_00m1600x900at60),
-		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), mode => pclk120_00m1920x1080at50));
-
-	constant nodebug_videomode : natural := mode600p;
---	constant nodebug_videomode : natural := mode600p24p;
---	constant nodebug_videomode : natural := mode900p;
---	constant nodebug_videomode : natural := mode1080p;
-	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
---	constant video_mode : natural := nodebug_videomode;
 
 	type sdram_params is record
 		pll : pll_params;
@@ -981,20 +984,43 @@ begin
 
 	dvi_b : block
 		signal dvid_blank : std_logic;
+		signal in_red   : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
+		signal in_green : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
+		signal in_blue  : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
 	begin
 		dvid_blank <= video_blank;
+
+		process (video_pixel)
+			variable pixel : unsigned(0 to video_pixel'length-1);
+		begin
+			pixel := unsigned(video_pixel);
+			case video_tab(video_mode).pixel is
+			when rgb565 =>
+				in_red   <= pixel(in_red'range);
+				pixel    := pixel sll 5;
+				in_green <= pixel(in_green'range);
+				pixel    := pixel sll 6;
+				in_blue  <= pixel(in_blue'range);
+			when rgb888 =>
+				in_red   <= pixel(in_red'range);
+				pixel    := pixel sll 8;
+				in_green <= pixel(in_green'range);
+				pixel    := pixel sll 8;
+				in_blue  <= pixel(in_blue'range);
+			end case;
+		end process;
 
 		vga2dvid_e : entity hdl4fpga.vga2dvid
 		generic map (
 			C_shift_clock_synchronizer => '0',
-			C_ddr   => '1',
-			C_depth => 5)
+			C_ddr     => '1',
+			C_depth   => in_green'length)
 		port map (
 			clk_pixel => video_clk,
 			clk_shift => video_shift_clk,
-			in_red    => video_pixel(0   to  0+5-1),
-			in_green  => video_pixel(0+5 to  5+5-1),
-			in_blue   => video_pixel(6+5 to 11+5-1),
+			in_red    => std_logic_vector(in_red),
+			in_green  => std_logic_vector(in_green),
+			in_blue   => std_logic_vector(in_blue),
 			in_hsync  => video_hzsync,
 			in_vsync  => video_vtsync,
 			in_blank  => dvid_blank,
