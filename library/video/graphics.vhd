@@ -29,6 +29,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
+--		mode600p   => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), mode => pclk40_00m800x600at60),
+--			in_red    => video_pixel(0   to  0+5-1),
+--			in_green  => video_pixel(0+5 to  5+5-1),
+--			in_blue   => video_pixel(6+5 to 11+5-1),
 entity graphics is
 	generic (
 		video_width  : natural);
@@ -53,13 +57,13 @@ end;
 
 architecture def of graphics is
 
+	constant wordperbyte : natural := video_pixel'length/ctlr_di'length;
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
-	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
-	constant fifo_size   : natural := 4*line_size;
-	constant byteperword : natural := ctlr_di'length/video_pixel'length;
-	constant maxdma_len  : natural := fifo_size/byteperword;
-	constant water_mark  : natural := (fifo_size-line_size)/byteperword;
+	constant line_size   : natural := 2**unsigned_num_bits(video_width-1)*wordperbyte;
+	constant fifo_size   : natural := 2*line_size*wordperbyte;
+	constant maxdma_len  : natural := fifo_size*wordperbyte;
+	constant water_mark  : natural := (fifo_size-line_size)*wordperbyte;
 
 	signal level         : unsigned(0 to unsigned_num_bits(maxdma_len-1));
 
@@ -82,6 +86,10 @@ architecture def of graphics is
 
 	signal dmaddr_req : bit;
 	signal dmaddr_rdy : bit;
+
+	signal vram_irdy : std_logic;
+	signal des_data  : std_logic_vector(video_pixel'range);
+	signal vram_data : std_logic_vector(video_pixel'range);
 
 begin
 
@@ -184,6 +192,17 @@ begin
 		end if;
 	end process;
 
+	serdes_e : entity hdl4fpga.serdes
+	port map (
+		serdes_clk => ctlr_clk,
+		serdes_frm => ctlr_di_dv,
+		ser_irdy   => '1',
+		ser_data   => ctlr_di,
+
+		des_irdy   => vram_irdy,
+		des_data   => des_data);
+	vram_data <= reverse(des_data);
+
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
@@ -195,8 +214,8 @@ begin
 		gray_code => false)
 	port map (
 		src_clk  => ctlr_clk,
-		src_irdy => ctlr_di_dv,
-		src_data => ctlr_di,
+		src_irdy => vram_irdy,
+		src_data => vram_data,
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,

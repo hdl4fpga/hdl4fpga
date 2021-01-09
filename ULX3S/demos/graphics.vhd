@@ -154,11 +154,11 @@ architecture graphics of ulx3s is
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
 
-	constant modedebug : natural := 0;
-	constant mode600p  : natural := 1;
-	constant mode768p  : natural := 2;
-	constant mode900p  : natural := 3;
-	constant mode1080p : natural := 4;
+	constant modedebug  : natural := 0;
+	constant mode600p   : natural := 1;
+	constant mode600p24 : natural := 2;
+	constant mode900p   : natural := 3;
+	constant mode1080p  : natural := 4;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -177,15 +177,14 @@ architecture graphics of ulx3s is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase => 15), mode => pclk_debug),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase => 15), mode => pclk40_00m800x600at60),
---		mode600p   => (pll => (clkos_div => 1, clkop_div => 10, clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase => 9), mode => pclk40_00m800x600at60),
-		mode768p   => (pll => (clkos_div => 1, clkop_div => 15, clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase => 14), mode => pclk75_00m1280x768at60),
-		mode900p   => (pll => (clkos_div => 1, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase => 19), mode => pclk100_00m1600x900at60),
-		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24, clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase => 23), mode => pclk120_00m1920x1080at50));
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase =>  15), mode => pclk_debug),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), mode => pclk40_00m800x600at60),
+		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), mode => pclk100_00m1600x900at60),
+		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), mode => pclk120_00m1920x1080at50));
 
 	constant nodebug_videomode : natural := mode600p;
---	constant nodebug_videomode : natural := mode768p;
+--	constant nodebug_videomode : natural := mode600p24p;
 --	constant nodebug_videomode : natural := mode900p;
 --	constant nodebug_videomode : natural := mode1080p;
 	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
@@ -257,12 +256,12 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(video_mode=mode600p,
-			"200.000000", setif(video_mode=mode768p,
-			"375.000000",
+			"200.000000", setif(video_mode=mode600p24,
+			"320.000000",
 			"400.000000"));
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(video_mode=mode600p,
-			"40.000000", setif(video_mode=mode768p,
-			"75.000000",
+			"40.000000", setif(video_mode=mode600p24,
+			"40.000000",
 			"120.000000"));
 
 	begin
