@@ -61,7 +61,7 @@ architecture def of graphics is
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
 	constant line_size   : natural := 2**unsigned_num_bits(video_width-1)*wordperbyte;
-	constant fifo_size   : natural := 4*line_size*wordperbyte;
+	constant fifo_size   : natural := 2*line_size*wordperbyte;
 	constant maxdma_len  : natural := fifo_size*wordperbyte;
 	constant water_mark  : natural := (fifo_size-line_size)*wordperbyte;
 
