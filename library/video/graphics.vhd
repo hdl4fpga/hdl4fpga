@@ -61,7 +61,7 @@ architecture def of graphics is
 --	constant line_size   : natural := 2**unsigned_num_bits(modeline_data(video_mode)(0)-1);
 --	constant fifo_size   : natural := 2**unsigned_num_bits(3*modeline_data(video_mode)(0)-1);
 	constant line_size   : natural := 2**unsigned_num_bits(video_width-1)*wordperbyte;
-	constant fifo_size   : natural := 2*line_size*wordperbyte;
+	constant fifo_size   : natural := 4*line_size*wordperbyte;
 	constant maxdma_len  : natural := fifo_size*wordperbyte;
 	constant water_mark  : natural := (fifo_size-line_size)*wordperbyte;
 
@@ -88,7 +88,7 @@ architecture def of graphics is
 	signal dmaddr_rdy : bit;
 
 	signal vram_irdy : std_logic;
-	signal des_data  : std_logic_vector(video_pixel'range);
+	signal des_data  : std_logic_vector(0 to video_pixel'length-1);
 	signal vram_data : std_logic_vector(video_pixel'range);
 
 begin
@@ -103,6 +103,8 @@ begin
 		variable rdy : bit;
 	begin
 		if rising_edge(dmacfg_clk) then
+			req := trans_req;
+			rdy := dmaddr_rdy;
 			if ctlr_inirdy='0' then
 				trans_rdy  <= '0';
 				dmacfg_req <= '0';
@@ -117,8 +119,6 @@ begin
 					end if;
 				end if;
 			end if;
-			req := trans_req;
-			rdy := dmaddr_rdy;
 		end if;
 	end process;
 
@@ -126,6 +126,7 @@ begin
 		variable req : bit;
 	begin
 		if rising_edge(ctlr_clk) then
+			req := dmaddr_req;
 			if ctlr_inirdy='0' then
 				dma_req    <= '0';
 				dmaddr_rdy <= '0';
@@ -138,7 +139,6 @@ begin
 					end if;
 				end if;
 			end if;
-			req := dmaddr_req;
 		end if;
 	end process;
 
@@ -149,6 +149,7 @@ begin
 		variable vton_lat  : std_logic;
 	begin
 		if rising_edge(video_clk) then
+			rdy := trans_rdy;
 			if (trans_req xor rdy)='0' then
 				if vt_req='1' then
 					vt_req     <= '0';
@@ -188,7 +189,6 @@ begin
 			hzon_lat  := video_hzon;
 			vton_lat2 := vton_lat;
 			vton_lat  := video_vton;
-			rdy := trans_rdy;
 		end if;
 	end process;
 
@@ -201,7 +201,7 @@ begin
 
 		des_irdy   => vram_irdy,
 		des_data   => des_data);
-	vram_data <= reverse(des_data);
+	vram_data <= reverse(des_data, ctlr_di'length);
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
