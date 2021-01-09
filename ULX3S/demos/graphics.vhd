@@ -215,9 +215,9 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 19), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 21), cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram133MHz;
 --	constant sdram_mode : natural := sdram166MHz;
---	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
 --	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
@@ -450,22 +450,22 @@ begin
 
 	begin
 
-	process (uart_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(uart_clk) then
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			i := sin_frm;
+		process (uart_clk)
+			variable t : std_logic;
+			variable e : std_logic;
+			variable i : std_logic;
+		begin
+			if rising_edge(uart_clk) then
+				if i='1' and e='0' then
+					t := not t;
+				end if;
+				e := i;
+				i := sin_frm;
 
-			led(0) <= t;
-			led(1) <= not t;
-		end if;
-	end process;
+				led(0) <= t;
+				led(1) <= not t;
+			end if;
+		end process;
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
@@ -987,8 +987,23 @@ begin
 		signal in_red   : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
 		signal in_green : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
 		signal in_blue  : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
+		signal ledq : std_logic;
 	begin
 		dvid_blank <= video_blank;
+
+		ledoddr_i : oddrx1f
+		port map(
+			sclk => video_shift_clk,
+			rst  => '0',
+			d0   => '1',
+			d1   => '0',
+			q    => ledq);
+
+		ledolvds_i : olvds 
+		port map(
+			a  => ledq,
+			z  => led(6),
+			zn => led(7));
 
 		process (video_pixel)
 			variable pixel : unsigned(0 to video_pixel'length-1);
