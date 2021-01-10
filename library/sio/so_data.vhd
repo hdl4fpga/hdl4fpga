@@ -30,30 +30,37 @@ use hdl4fpga.std.all;
 
 entity so_data is
 	port (
-		so_clk   : in  std_logic;
-		so_frm   : in  std_logic;
-		so_irdy  : in  std_logic;
-		so_trdy  : out std_logic;
+		sio_clk  : in  std_logic;
+		si_frm   : in  std_logic;
+		si_irdy  : in  std_logic;
+		si_trdy  : out std_logic;
 		si_data  : in  std_logic_vector;
+
+		so_irdy  : out std_logic;
+		so_trdy  : in  std_logic;
 		so_data  : out std_logic_vector);
 end;
 
 architecture def of so_data is
 
+	signal ser_irdy : std_logic;
+	signal ser_trdy : std_logic;
+	signal ser_data : std_logic;
+
 begin
 
 	desser_e : entity hdl4fpga.desser
-	port (
+	port map (
 		desser_clk => si_clk,
 
-		des_frm    
+		des_frm    => si_frm,
 		des_irdy   => si_irdy,
 		des_trdy   => si_trdy,
 		des_data   => si_data,
 
-		ser_irdy   : out std_logic;
-		ser_trdy   : in  std_logic := '1';
-		ser_data   : out std_logic_vector);
+		ser_irdy   => ser_irdy,
+		ser_trdy   => si_trdy,
+		ser_data   => ser_data);
 
 	process(so_clk)
 		type states is (st_rid, st_len, st_data);
@@ -65,14 +72,17 @@ begin
 				if src_irdy='1' then
 					case state is
 					when st_rid =>
-						src_data <= x"ff";
+						so_data <= x"ff";
+						so_irdy <= '1';
 						state := st_len;
 						len   := length(8-1 downto 0);
 					when st_len =>
-						src_data <= std_logic_vector(len);
+						so_data <= std_logic_vector(len);
+						so_irdy <= '1';
 						cntr  := length(8-1 downto 0);
 						state := st_data;
 					when st_data
+						so_data <= ser_data;
 						if cntr(0)='0' then
 							cntr := cntr - 1;
 						end if;
