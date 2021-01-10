@@ -29,54 +29,31 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity so_data is
-	generic (
-		mem_size : natural := 4*2048*8);
 	port (
-		si_clk   : in  std_logic;
-
-		si_frm   : in  std_logic := '0';
-		si_irdy  : in  std_logic := '0';
-		si_trdy  : buffer std_logic;
-		si_data  : in  std_logic_vector;
-
-		rollback : in  std_logic;
-		commit   : in  std_logic;
-		overflow : out std_logic;
-
 		so_clk   : in  std_logic;
-		so_frm   : buffer std_logic;
-		so_irdy  : out std_logic;
-		so_trdy  : in  std_logic := '1';
+		so_frm   : in  std_logic;
+		so_irdy  : in  std_logic;
+		so_trdy  : out std_logic;
+		si_data  : in  std_logic_vector;
 		so_data  : out std_logic_vector);
 end;
 
 architecture def of so_data is
 
-	signal des_data : std_logic_vector(so_data'range);
-
-	constant addr_length : natural := unsigned_num_bits(mem_size/so_data'length-1);
-	subtype addr_range is natural range 1 to addr_length;
-
-	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
-	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
-	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
-
-	signal des_irdy  : std_logic;
-	signal so_irdy1 : std_logic;
-
 begin
 
-	serdes_e : entity hdl4fpga.serdes
-	port map (
-		serdes_clk => si_clk,
-		serdes_frm => si_frm,
-		ser_irdy   => si_irdy,
-		ser_data   => si_data,
+	desser_e : entity hdl4fpga.desser
+	port (
+		desser_clk => si_clk,
 
-		des_irdy   => des_irdy,
-		des_data   => des_data);
+		des_frm    
+		des_irdy   => si_irdy,
+		des_trdy   => si_trdy,
+		des_data   => si_data,
 
-	si_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
+		ser_irdy   : out std_logic;
+		ser_trdy   : in  std_logic := '1';
+		ser_data   : out std_logic_vector);
 
 	process(so_clk)
 		type states is (st_rid, st_len, st_data);
@@ -107,5 +84,6 @@ begin
 			src_trdy <= not cntr(0);
 		end if;
 	end process;
+
 
 end;
