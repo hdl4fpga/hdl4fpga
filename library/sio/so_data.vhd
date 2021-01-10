@@ -36,8 +36,10 @@ entity so_data is
 		si_trdy  : out std_logic;
 		si_data  : in  std_logic_vector;
 
-		so_irdy  : out std_logic;
+		so_frm   : out std_logic;
+		so_irdy  : buffer std_logic;
 		so_trdy  : in  std_logic;
+		so_length : in std_logic_vector;
 		so_data  : out std_logic_vector);
 end;
 
@@ -45,17 +47,15 @@ architecture def of so_data is
 
 	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
-	signal ser_data : std_logic;
+	signal ser_data : std_logic_vector(so_data'range);
 
-	type states is (st_rid, st_len, st_data);
-	signal state : states;
 	signal cntr  : unsigned(0 to 8);
 
 begin
 
 	desser_e : entity hdl4fpga.desser
 	port map (
-		desser_clk => si_clk,
+		desser_clk => sio_clk,
 
 		des_frm    => si_frm,
 		des_irdy   => si_irdy,
@@ -67,9 +67,11 @@ begin
 		ser_data   => ser_data);
 
 	ser_trdy <= so_trdy and not cntr(0);
-	process(so_clk)
+	process(sio_clk)
+		type states is (st_rid, st_len, st_data);
+		variable state : states;
 	begin
-		if rising_edge(so_clk) then
+		if rising_edge(sio_clk) then
 			if so_trdy='1' or to_stdulogic(to_bit(so_irdy))='0' then
 				if si_frm='0' then
 					cntr <= (others => '0');
@@ -79,13 +81,12 @@ begin
 						so_data <= x"ff";
 						so_irdy <= '1';
 						state := st_len;
-						len   := length(8-1 downto 0);
 					when st_len =>
-						so_data <= std_logic_vector(len);
+						so_data <= so_length(8-1 downto 0);
 						so_irdy <= '1';
-						cntr  <= length(8-1 downto 0);
+						cntr  <= resize(unsigned(so_length(8-1 downto 0)), cntr'length);
 						state := st_data;
-					when st_data
+					when st_data =>
 						so_irdy <= ser_irdy;
 						so_data <= ser_data;
 						if ser_irdy='1' then
