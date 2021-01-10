@@ -47,6 +47,8 @@ architecture def of so_data is
 	signal ser_trdy : std_logic;
 	signal ser_data : std_logic;
 
+	signal cntr  : unsigned(0 to 8);
+
 begin
 
 	desser_e : entity hdl4fpga.desser
@@ -59,13 +61,13 @@ begin
 		des_data   => si_data,
 
 		ser_irdy   => ser_irdy,
-		ser_trdy   => si_trdy,
+		ser_trdy   => ser_trdy,
 		ser_data   => ser_data);
 
+	ser_trdy <= so_trdy and not cntr(0);
 	process(so_clk)
 		type states is (st_rid, st_len, st_data);
 		variable state : states;
-		variable cntr  : unsigned(0 to 8);
 	begin
 		if rising_edge(so_clk) then
 			if src_frm='1' then
@@ -79,19 +81,21 @@ begin
 					when st_len =>
 						so_data <= std_logic_vector(len);
 						so_irdy <= '1';
-						cntr  := length(8-1 downto 0);
+						cntr  <= length(8-1 downto 0);
 						state := st_data;
 					when st_data
+						so_irdy <= ser_irdy;
 						so_data <= ser_data;
-						if cntr(0)='0' then
-							cntr := cntr - 1;
+						if ser_irdy='1' and so_trdy='1' then
+							if cntr(0)='0' then
+								cntr <= cntr - 1;
+							end if;
 						end if;
 					end case;
 				end if;
 			else
-				cntr := (others => '0');
+				cntr <= (others => '0');
 			end if;
-			src_trdy <= not cntr(0);
 		end if;
 	end process;
 
