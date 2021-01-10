@@ -124,9 +124,10 @@ architecture graphics of ulx3s is
 
 	constant modedebug  : natural := 0;
 	constant mode600p   : natural := 1;
-	constant mode600p24 : natural := 2;
-	constant mode900p   : natural := 3;
-	constant mode1080p  : natural := 4;
+	constant mode600p18 : natural := 2;
+	constant mode600p24 : natural := 3;
+	constant mode900p   : natural := 4;
+	constant mode1080p  : natural := 5;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -138,7 +139,7 @@ architecture graphics of ulx3s is
 		clkop_phase : natural;
 	end record;
 
-	type pixel_types is (rgb565, rgb888);
+	type pixel_types is (rgb565, rgb666, rgb888);
 
 	type video_params is record
 		pll   : pll_params;
@@ -150,16 +151,18 @@ architecture graphics of ulx3s is
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase =>  15), pixel => rgb888, mode => pclk_debug),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), pixel => rgb888, mode => pclk40_00m800x600at60),
+		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2, clkop_phase =>  28), pixel => rgb666, mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2, clkop_phase =>  24), pixel => rgb888, mode => pclk40_00m800x600at60),
 		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), pixel => rgb565, mode => pclk100_00m1600x900at60),
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
 	constant nodebug_videomode : natural := mode600p;
+--	constant nodebug_videomode : natural := mode600p18;
 --	constant nodebug_videomode : natural := mode600p24;
 --	constant nodebug_videomode : natural := mode900p;
 --	constant nodebug_videomode : natural := mode1080p;
-	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
---	constant video_mode : natural := nodebug_videomode;
+--	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
+	constant video_mode : natural := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
@@ -259,13 +262,15 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(video_mode=mode600p,
-			"200.000000", setif(video_mode=mode600p24,
+			"200.000000", setif(video_mode=mode600p18,
+			"240.000000", setif(video_mode=mode600p24,
 			"320.000000",
-			"400.000000"));
+			"400.000000")));
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(video_mode=mode600p,
+			"40.000000", setif(video_mode=mode600p18,
 			"40.000000", setif(video_mode=mode600p24,
 			"40.000000",
-			"120.000000"));
+			"120.000000")));
 
 	begin
 		pll_i : EHXPLLL
@@ -308,6 +313,7 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
             CLKOS2    => video_clk,
+            CLKOS3    => open,
 			LOCK      => video_lck, 
             INTLOCK   => open, 
 			REFCLK    => open,
@@ -352,7 +358,7 @@ begin
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_phase,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 4, CLKOS3_CPHASE => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -387,6 +393,7 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
+		led(6) <= lock;
 		ddrsys_rst <= not lock;
 
 		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
@@ -984,26 +991,14 @@ begin
 
 	dvi_b : block
 		signal dvid_blank : std_logic;
-		signal in_red   : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
-		signal in_green : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
-		signal in_blue  : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, 8)-1);
+		signal in_red   : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8))-1);
+		signal in_green : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8))-1);
+		signal in_blue  : unsigned(0 to setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8))-1);
 		signal ledq : std_logic;
 	begin
 		dvid_blank <= video_blank;
 
-		ledoddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => '1',
-			d1   => '0',
-			q    => ledq);
-
-		ledolvds_i : olvds 
-		port map(
-			a  => ledq,
-			z  => led(6),
-			zn => led(7));
+		led(7) <= video_lck;
 
 		process (video_pixel)
 			variable pixel : unsigned(0 to video_pixel'length-1);
@@ -1013,6 +1008,12 @@ begin
 			when rgb565 =>
 				in_red   <= pixel(in_red'range);
 				pixel    := pixel sll 5;
+				in_green <= pixel(in_green'range);
+				pixel    := pixel sll 6;
+				in_blue  <= pixel(in_blue'range);
+			when rgb666 =>
+				in_red   <= pixel(in_red'range);
+				pixel    := pixel sll 6;
 				in_green <= pixel(in_green'range);
 				pixel    := pixel sll 6;
 				in_blue  <= pixel(in_blue'range);

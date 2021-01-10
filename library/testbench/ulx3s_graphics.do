@@ -30,6 +30,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/sdram_d
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/adapter_b/graphics_e/video_clk
 add wave -noupdate /testbench/du_e/video_shift_clk
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/adapter_b/sync_e/video_hzsync
 add wave -noupdate /testbench/du_e/adapter_b/sync_e/video_vtsync
 add wave -noupdate /testbench/du_e/adapter_b/sync_e/video_hzcntr
@@ -49,7 +50,7 @@ add wave -noupdate /testbench/du_e/dmactlr_e/devcfg_rdy
 add wave -noupdate -expand /testbench/du_e/dmactlr_e/dev_req
 add wave -noupdate -expand /testbench/du_e/dmactlr_e/dev_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {138467500000 fs} 0} {{Cursor 2} {1770270664580 fs} 0}
+WaveRestoreCursors {{Cursor 1} {890000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 100
@@ -65,4 +66,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {2100 us}
+WaveRestoreZoom {903158980 fs} {1005096900 fs}
