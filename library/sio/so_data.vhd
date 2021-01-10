@@ -47,6 +47,8 @@ architecture def of so_data is
 	signal ser_trdy : std_logic;
 	signal ser_data : std_logic;
 
+	type states is (st_rid, st_len, st_data);
+	signal state : states;
 	signal cntr  : unsigned(0 to 8);
 
 begin
@@ -66,12 +68,12 @@ begin
 
 	ser_trdy <= so_trdy and not cntr(0);
 	process(so_clk)
-		type states is (st_rid, st_len, st_data);
-		variable state : states;
 	begin
 		if rising_edge(so_clk) then
-			if src_frm='1' then
-				if src_irdy='1' then
+			if so_trdy='1' or to_stdulogic(to_bit(so_irdy))='0' then
+				if si_frm='0' then
+					cntr <= (others => '0');
+				else
 					case state is
 					when st_rid =>
 						so_data <= x"ff";
@@ -86,15 +88,14 @@ begin
 					when st_data
 						so_irdy <= ser_irdy;
 						so_data <= ser_data;
-						if ser_irdy='1' and so_trdy='1' then
+						if ser_irdy='1' then
 							if cntr(0)='0' then
 								cntr <= cntr - 1;
 							end if;
 						end if;
 					end case;
 				end if;
-			else
-				cntr <= (others => '0');
+				so_frm <= to_stdulogic(to_bit(si_frm));
 			end if;
 		end if;
 	end process;
