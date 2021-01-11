@@ -30,16 +30,17 @@ use hdl4fpga.std.all;
 
 entity so_data is
 	port (
-		sio_clk  : in  std_logic;
-		si_frm   : in  std_logic;
-		si_irdy  : in  std_logic;
-		si_trdy  : out std_logic;
-		si_data  : in  std_logic_vector;
+		sio_clk   : in  std_logic;
+		si_frm    : in  std_logic;
+		si_irdy   : in  std_logic;
+		si_trdy   : out std_logic;
+		si_length : in  std_logic_vector;
+		si_end    : out std_logic;
+		si_data   : in  std_logic_vector;
 
-		so_frm   : out std_logic;
+		so_frm   : buffer std_logic;
 		so_irdy  : buffer std_logic;
 		so_trdy  : in  std_logic;
-		so_length : in std_logic_vector;
 		so_data  : out std_logic_vector);
 end;
 
@@ -48,8 +49,6 @@ architecture def of so_data is
 	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
 	signal ser_data : std_logic_vector(so_data'range);
-
-	signal cntr  : unsigned(0 to 8);
 
 begin
 
@@ -66,40 +65,52 @@ begin
 		ser_trdy   => ser_trdy,
 		ser_data   => ser_data);
 
-	ser_trdy <= so_trdy and not cntr(0);
+	ser_trdy <= so_trdy and not low_cntr(0);
 	process(sio_clk)
 		type states is (st_rid, st_len, st_data);
-		variable state : states;
+		variable state     : states;
+		variable low_cntr  : unsigned(0 to 8);
+		variable high_cntr : unsigned(0 to setif(so_length > 8, so_length - 8, 0));
 	begin
 		if rising_edge(sio_clk) then
 			if so_trdy='1' or to_stdulogic(to_bit(so_irdy))='0' then
 				if si_frm='0' then
-					cntr <= (others => '0');
+					low_cntr  := (others => '-');
+					high_cntr := (others => '-');
+					so_irdy   <= '0';
+					state     := st_rid;
 				else
 					case state is
 					when st_rid =>
-						so_data <= x"ff";
-						so_irdy <= '1';
-						state := st_len;
+						if so_frm='0' then
+							low_cntr  := resize(unsigned(so_length) sll 0, low_cntr'length);
+							high_cntr := resize(unsigned(so_length) sll 8, high_cntr'length);
+						else
+							low_cntr  := '0' & (1 to 8 => '1');
+						end if;
+						so_data   <= x"ff";
+						so_irdy   <= '1';
+						state     := st_len;
 					when st_len =>
-						so_data <= so_length(8-1 downto 0);
-						so_irdy <= '1';
-						cntr  <= resize(unsigned(so_length(8-1 downto 0)), cntr'length);
-						state := st_data;
+						high_cntr := high_cntr - 1;
+						so_data   <= std_logic_vector(resize(low_cntr, so_data'length));
+						so_irdy   <= '1';
+						state     := st_data;
 					when st_data =>
-						so_irdy <= ser_irdy;
-						so_data <= ser_data;
 						if ser_irdy='1' then
-							if cntr(0)='0' then
-								cntr <= cntr - 1;
+							if low_cntr(0)='0' then
+								low_cntr := low_cntr - 1;
+							elsif high_cntr(0)='0' then
+								state := st_rid;
 							end if;
 						end if;
+						so_irdy <= ser_irdy;
+						so_data <= ser_data;
 					end case;
 				end if;
 				so_frm <= to_stdulogic(to_bit(si_frm));
 			end if;
 		end if;
 	end process;
-
 
 end;
