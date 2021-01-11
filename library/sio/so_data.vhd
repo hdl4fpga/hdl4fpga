@@ -65,12 +65,11 @@ begin
 		ser_trdy   => ser_trdy,
 		ser_data   => ser_data);
 
-	ser_trdy <= so_trdy and not low_cntr(0);
-	process(sio_clk)
+	process(so_trdy, sio_clk)
 		type states is (st_rid, st_len, st_data);
 		variable state     : states;
 		variable low_cntr  : unsigned(0 to 8);
-		variable high_cntr : unsigned(0 to setif(so_length > 8, so_length - 8, 0));
+		variable high_cntr : unsigned(0 to setif(si_length'length > 8, si_length'length - 8, 0));
 	begin
 		if rising_edge(sio_clk) then
 			if so_trdy='1' or to_stdulogic(to_bit(so_irdy))='0' then
@@ -78,13 +77,14 @@ begin
 					low_cntr  := (others => '-');
 					high_cntr := (others => '-');
 					so_irdy   <= '0';
+					si_end    <= '0';
 					state     := st_rid;
 				else
 					case state is
 					when st_rid =>
 						if so_frm='0' then
-							low_cntr  := resize(unsigned(so_length) sll 0, low_cntr'length);
-							high_cntr := resize(unsigned(so_length) sll 8, high_cntr'length);
+							low_cntr  := resize(unsigned(si_length) sll 0, low_cntr'length);
+							high_cntr := resize(unsigned(si_length) sll 8, high_cntr'length);
 						else
 							low_cntr  := '0' & (1 to 8 => '1');
 						end if;
@@ -111,6 +111,7 @@ begin
 				so_frm <= to_stdulogic(to_bit(si_frm));
 			end if;
 		end if;
+		ser_trdy <= so_trdy and not low_cntr(0);
 	end process;
 
 end;
