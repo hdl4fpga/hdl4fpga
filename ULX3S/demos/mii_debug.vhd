@@ -194,6 +194,62 @@ begin
 	end process;
 	led(0) <= tp(3);
 
+--	ser_b : block
+--		constant sync_lat : natural := 4;
+--		signal ser_irdy : std_logic;
+--		signal hzsync : std_logic;
+--		signal vtsync : std_logic;
+--		signal von    : std_logic;
+--		signal dot    : std_logic;
+--		signal pixel  : std_logic_vector(video_pixel'range);
+--	begin
+----		ser_irdy <= uart_rxdv;
+--		ser_irdy <= uart_txen and uart_idle;
+--		mii_debug_e : entity hdl4fpga.mii_display
+--		generic map (
+--			code_spce   => to_ascii(" "),
+--			code_digits => to_ascii("0123456789abcdef"),
+--			cga_bitrom => to_ascii("Ready Steady GO!"),
+--			timing_id  => video_tab(video_mode).mode)
+--		port map (
+--			ser_clk   => sio_clk,
+--			ser_frm   => '1',
+--			ser_irdy  => ser_irdy,
+----			ser_data  => uart_rxd,
+--			ser_data  => uart_txd,
+--
+--			video_clk => video_clk, 
+--			video_dot => dot,
+--			video_on  => von,
+--			video_hs  => hzsync,
+--			video_vs  => vtsync);
+--
+--		pixel <= (others => dot);
+--		topixel_e : entity hdl4fpga.align
+--		generic map (
+--			n => pixel'length,
+--			d => (0 to pixel'length-1 => sync_lat-4))
+--		port map (
+--			clk => video_clk,
+--			di  => pixel,
+--			do  => video_pixel);
+--
+--		tosync_e : entity hdl4fpga.align
+--		generic map (
+--			n => 3,
+--			d => (0 to 3-1 => sync_lat))
+--		port map (
+--			clk => video_clk,
+--			di(0) => von,
+--			di(1) => hzsync,
+--			di(2) => vtsync,
+--			do(0) => video_on,
+--			do(1) => video_hzsync,
+--			do(2) => video_vtsync);
+--
+--		video_blank <= not video_on;
+--	end block;
+
 	mii_debug_e : entity hdl4fpga.mii_debug
 	generic map (
 		default_ipv4a => x"00_00_00_00",

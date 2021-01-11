@@ -90,18 +90,26 @@ begin
 						end if;
 						so_data   <= x"ff";
 						so_irdy   <= '1';
+						si_end    <= '0';
 						state     := st_len;
 					when st_len =>
 						high_cntr := high_cntr - 1;
 						so_data   <= std_logic_vector(resize(low_cntr, so_data'length));
 						so_irdy   <= '1';
+						si_end    <= '0';
 						state     := st_data;
 					when st_data =>
 						if ser_irdy='1' then
 							if low_cntr(0)='0' then
 								low_cntr := low_cntr - 1;
+								si_end   <= '0';
+								state    := st_data;
 							elsif high_cntr(0)='0' then
-								state := st_rid;
+								si_end   <= '0';
+								state    := st_rid;
+							else
+								si_end   <= '1';
+								state    := st_data;
 							end if;
 						end if;
 						so_irdy <= ser_irdy;

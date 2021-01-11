@@ -626,7 +626,7 @@ begin
 			dst_data => dmaio_len);
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
-		dmadata_e : entity hdl4fpga.fifo
+		dmadatain_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => (8*4*1*256/(ctlr_di'length/8)),
 			async_mode => true,
@@ -672,63 +672,47 @@ begin
 			rgtr_data => rgtr_data,
 			data      => base_addr);
 
-	end block;
+		sodata_b : block
 
---	ser_b : block
---		constant sync_lat : natural := 4;
---		signal ser_irdy : std_logic;
---		signal hzsync : std_logic;
---		signal vtsync : std_logic;
---		signal von    : std_logic;
---		signal dot    : std_logic;
---		signal pixel  : std_logic_vector(video_pixel'range);
---	begin
-----		ser_irdy <= uart_rxdv;
---		ser_irdy <= uart_txen and uart_idle;
---		mii_debug_e : entity hdl4fpga.mii_display
---		generic map (
---			code_spce   => to_ascii(" "),
---			code_digits => to_ascii("0123456789abcdef"),
---			cga_bitrom => to_ascii("Ready Steady GO!"),
---			timing_id  => video_tab(video_mode).mode)
---		port map (
---			ser_clk   => sio_clk,
---			ser_frm   => '1',
---			ser_irdy  => ser_irdy,
-----			ser_data  => uart_rxd,
---			ser_data  => uart_txd,
---
---			video_clk => video_clk, 
---			video_dot => dot,
---			video_on  => von,
---			video_hs  => hzsync,
---			video_vs  => vtsync);
---
---		pixel <= (others => dot);
---		topixel_e : entity hdl4fpga.align
---		generic map (
---			n => pixel'length,
---			d => (0 to pixel'length-1 => sync_lat-4))
---		port map (
---			clk => video_clk,
---			di  => pixel,
---			do  => video_pixel);
---
---		tosync_e : entity hdl4fpga.align
---		generic map (
---			n => 3,
---			d => (0 to 3-1 => sync_lat))
---		port map (
---			clk => video_clk,
---			di(0) => von,
---			di(1) => hzsync,
---			di(2) => vtsync,
---			do(0) => video_on,
---			do(1) => video_hzsync,
---			do(2) => video_vtsync);
---
---		video_blank <= not video_on;
---	end block;
+			signal xxx         : std_logic;
+			signal sodata_irdy : std_logic;
+			signal sodata_trdy : std_logic;
+			signal sodata_data : std_logic_vector(ctlr_do'range);
+
+		begin
+
+			xxx <= ctlr_do_dv(0) and (dmaio_req xor dmaio_rdy);
+			dmadataout_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
+				async_mode => true,
+				latency    => 2,
+				gray_code  => false,
+				check_sov  => true,
+				check_dov  => true)
+			port map (
+				src_frm  => ctlr_inirdy,
+				src_clk  => ctlr_clk,
+				src_irdy => xxx,
+				src_data => ctlr_do,
+
+				dst_clk  => sio_clk,
+				dst_irdy => sodata_irdy,
+				dst_trdy => sodata_trdy,
+				dst_data => sodata_data);
+
+--			sodata_e : entity hdl4fpga.so_data
+--			port map (
+--				sio_clk   => sio_clk,
+--				si_frm    =>
+--				si_irdy   => sodata_irdy,
+--				si_trdy   => sodata_trdy,
+--				si_data   => sodata_data,
+--				si_length => sodata_length;
+
+		end block;
+
+	end block;
 
 	adapter_b : block
 
