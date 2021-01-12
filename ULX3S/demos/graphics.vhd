@@ -72,7 +72,6 @@ architecture graphics of ulx3s is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
-	signal dmaio_trdy     : std_logic;
 	signal dmaiolen_irdy  : std_logic;
 	signal dmaioaddr_irdy : std_logic;
 
@@ -426,7 +425,8 @@ begin
 		signal sigram_irdy   : std_logic;
 		signal ack_data      : std_logic_vector(8-1 downto 0);
 
-		signal dmasin_irdy   : std_logic;
+		signal dmaio_irdy    : std_logic;
+		signal dmaio_trdy    : std_logic;
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal datactlr_irdy : std_logic;
@@ -646,12 +646,12 @@ begin
 			dst_data => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req;
 
-		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
+		dmaio_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
 		sio_dmactlr_e : entity hdl4fpga.sio_dmactlr
 		port map (
 			dmacfg_clk  => dmacfg_clk,
-			dmasin_irdy => dmasin_irdy,
-			dmasin_trdy => dmaio_trdy,
+			dmaio_irdy  => dmaio_irdy,
+			dmaio_trdy  => dmaio_trdy,
 									  
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
@@ -674,14 +674,15 @@ begin
 
 		sodata_b : block
 
-			signal xxx         : std_logic;
+			signal ctlrio_irdy : std_logic;
+			signal sodata_frm  : std_logic;
 			signal sodata_irdy : std_logic;
 			signal sodata_trdy : std_logic;
 			signal sodata_data : std_logic_vector(ctlr_do'range);
 
 		begin
 
-			xxx <= ctlr_do_dv(0) and (dmaio_req xor dmaio_rdy);
+			ctlrio_irdy <= ctlr_do_dv(0) and (dmaio_req xor dmaio_rdy);
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
@@ -693,7 +694,7 @@ begin
 			port map (
 				src_frm  => ctlr_inirdy,
 				src_clk  => ctlr_clk,
-				src_irdy => xxx,
+				src_irdy => ctlrio_irdy,
 				src_data => ctlr_do,
 
 				dst_clk  => sio_clk,
@@ -701,6 +702,7 @@ begin
 				dst_trdy => sodata_trdy,
 				dst_data => sodata_data);
 
+			sodata_frm <= dmaio_trdy and to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
 --			sodata_e : entity hdl4fpga.so_data
 --			port map (
 --				sio_clk   => sio_clk,

@@ -31,8 +31,8 @@ use hdl4fpga.std.all;
 entity sio_dmactlr is
 	port (
 		dmacfg_clk  : in  std_logic;
-		dmasin_irdy : in  std_logic;
-		dmasin_trdy : buffer std_logic;
+		dmaio_irdy  : in  std_logic;
+		dmaio_trdy  : buffer std_logic;
 
 		dmacfg_req  : buffer std_logic;
 		dmacfg_rdy  : in  std_logic;
@@ -58,7 +58,7 @@ begin
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-				dmasin_trdy   <= '0';
+				dmaio_trdy   <= '0';
 				dmacfg_req   <= '0';
 				cfg2ctlr_req <= '0';
 				ctlr2cfg_rdy <= '0';
@@ -66,8 +66,8 @@ begin
 				if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='0' then
 					if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
 						if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-							if dmasin_irdy='1' then
-								if dmasin_trdy='0' then
+							if dmaio_irdy='1' then
+								if dmaio_trdy='0' then
 									dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 								end if;
 							end if;
@@ -76,10 +76,10 @@ begin
 						end if;
 					end if;
 				end if;
-				dmasin_trdy <= '0';
+				dmaio_trdy <= '0';
 			else
 				ctlr2cfg_rdy <= to_stdulogic(to_bit(ctlr2cfg_req));
-				dmasin_trdy <= '1';
+				dmaio_trdy <= '1';
 			end if;
 		end if;
 	end process;

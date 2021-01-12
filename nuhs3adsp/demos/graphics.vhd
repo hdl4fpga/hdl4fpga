@@ -511,8 +511,8 @@ begin
 		sio_dmactlr_e : entity hdl4fpga.sio_dmactlr
 		port map (
 			dmacfg_clk  => dmacfg_clk,
-			dmasin_irdy => dmasin_irdy,
-			dmasin_trdy => dmaio_trdy,
+			dmaio_irdy  => dmasin_irdy,
+			dmaio_trdy  => dmaio_trdy,
 									  
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
