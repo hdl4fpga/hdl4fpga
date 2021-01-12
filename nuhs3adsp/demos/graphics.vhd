@@ -679,7 +679,7 @@ begin
 	dev_len    <= dmavideo_len  & dmaio_len;
 	dev_addr   <= dmavideo_addr & dmaio_addr;
 	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_we     <= "1"           & "0";
+	dev_we     <= "0"           & "1";
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
