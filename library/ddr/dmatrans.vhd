@@ -233,7 +233,7 @@ begin
 		col     => col,
 		col_eoc => ceoc);
 
-	ctlr_rw <= dmatrans_we;
+	ctlr_rw <= not dmatrans_we;
 	ctlrb_p : process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then

@@ -181,7 +181,7 @@ begin
 	dev_rdy <= dma_rdy;
 
 
-	dmatrans_we <= setif(trans_we(0)/='0');
+	dmatrans_we <= to_stdulogic(to_bit(trans_we(0)));
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
 		fpga          => fpga,
