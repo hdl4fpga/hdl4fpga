@@ -82,6 +82,7 @@ architecture graphics of nuhs3adsp is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
+	signal dmaio_we       : std_logic;
 	signal dmaio_trdy     : std_logic;
 	signal dmaiolen_irdy  : std_logic;
 	signal dmaioaddr_irdy : std_logic;
@@ -304,6 +305,12 @@ begin
 		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sou_data'range);
 
+		signal sodata_frm    : std_logic;
+		signal sodata_irdy   : std_logic;
+		signal sodata_trdy   : std_logic;
+		signal sodata_end    : std_logic;
+		signal sodata_data   : std_logic_vector(ctlr_do'range);
+
 		signal ipv4acfg_req  : std_logic;
 		signal tp1 : std_logic_vector(32-1 downto 0);
 		signal tp2 : std_logic_vector(32-1 downto 0);
@@ -523,52 +530,75 @@ begin
 			dma_req     => dmaio_req,
 			dma_rdy     => dmaio_rdy);
 
-	end block;
+		sodata_b : block
 
---	mii_debug_b : block
---		constant timing_id   : videotiming_ids  := video_tab(video_mode).mode;
---		constant code_spce   : std_logic_vector := to_ascii(" ");
---		constant code_digits : std_logic_vector := to_ascii("0123456789abcdef");
---		constant cga_bitrom  : std_logic_vector := to_ascii("Ready steady, go");
---		signal debug_txen : std_logic;
---	begin
-----		debug_txen <= mii_txen and tp(1);
---		debug_txen <= tp(1);
---		mii_display_e : entity hdl4fpga.mii_display
---		generic map (
---			timing_id   => timing_id,
---			code_spce   => code_spce, 
---			code_digits => code_digits, 
---			cga_bitrom  => cga_bitrom)
---		port map (
---			mii_txc     => mii_txc,
---			mii_txen    => debug_txen,
---			mii_txd     => mii_txd,
---
---			video_clk   => video_clk,
---			video_dot   => video_dot,
---			video_on    => video_on,
---			video_hs    => video_hzsync,
---			video_vs    => video_vtsync);
---
---		video_lat_e: entity hdl4fpga.align 
---		generic map (
---			n => 3,
---			d => (0 to 3-1 => 4))
---		port map (
---			clk   => video_clk,
---			di(0) => video_hzsync,
---			di(1) => video_vtsync,
---			di(2) => video_on,
---			do(0) => hsync,
---			do(1) => vsync,
---			do(2) => blankn);
---
---		red   <= (others => video_dot);
---		green <= (others => video_dot);
---		blue  <= (others => video_dot);
---		sync  <= 'Z';
---	end block;
+			signal ctlrio_irdy : std_logic;
+			signal fifo_frm    : std_logic;
+			signal fifo_irdy   : std_logic;
+			signal fifo_trdy   : std_logic;
+			signal fifo_data   : std_logic_vector(ctlr_do'range);
+			signal fifo_length : std_logic_vector(ctlr_do'range);
+
+		begin
+
+			ctlrio_irdy <= ctlr_do_dv(0) and (dmaio_req xor dmaio_rdy);
+			dmadataout_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
+				async_mode => true,
+				latency    => 2,
+				gray_code  => false,
+				check_sov  => true,
+				check_dov  => true)
+			port map (
+				src_frm  => ctlr_inirdy,
+				src_clk  => ctlr_clk,
+				src_irdy => ctlrio_irdy,
+				src_data => ctlr_do,
+
+				dst_clk  => sio_clk,
+				dst_irdy => fifo_irdy,
+				dst_trdy => fifo_trdy,
+				dst_data => fifo_data);
+
+			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sodata_trdy, sodata_end, sio_clk)
+				variable d1 : std_logic;
+				variable d0 : std_logic;
+				variable q  : std_logic;
+			begin
+				d1 := to_stdulogic(to_bit(dmaio_we and dmaio_trdy  and dmaiolen_irdy and dmaioaddr_irdy));
+				d0 := to_stdulogic(to_bit(dmaio_we and sodata_trdy and sodata_end));
+				if rising_edge(sio_clk) then
+					if q='1' then
+						if d0='1' then
+							q := '0';
+						end if;
+					elsif d1='1' then
+						q := '1';
+					end if;
+				end if;
+				fifo_frm <= setif(q='0', d1, not d0);
+			end process;
+
+			fifo_length <= std_logic_vector(resize(unsigned(dmaio_len), fifo_length'length));
+			sodata_e : entity hdl4fpga.so_data
+			port map (
+				sio_clk   => sio_clk,
+				si_frm    => fifo_frm,
+				si_irdy   => fifo_irdy,
+				si_trdy   => fifo_trdy,
+				si_data   => fifo_data,
+				si_length => fifo_length,
+ 
+				so_frm    => sodata_frm,
+				so_irdy   => sodata_irdy,
+				so_trdy   => sodata_trdy,
+				si_end    => sodata_end,
+				so_data   => sodata_data);
+
+		end block;
+
+	end block;
 
 	adapter_b : block
 		constant mode : videotiming_ids := video_tab(video_mode).mode;

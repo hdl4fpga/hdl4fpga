@@ -72,7 +72,7 @@ architecture graphics of ulx3s is
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
-	alias  dmaio_we       : std_logic is dmaio_addr(dmaio_addr'left);
+	signal dmaio_we       : std_logic;
 	signal dmaiolen_irdy  : std_logic;
 	signal dmaioaddr_irdy : std_logic;
 
@@ -400,6 +400,27 @@ begin
 
 	end block;
 
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => uart_xtal)
+	port map (
+		uart_rxc  => uart_clk,
+		uart_sin  => ftdi_txd,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
+
+	uarttx_e : entity hdl4fpga.uart_tx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => uart_xtal)
+	port map (
+		uart_txc  => uart_clk,
+		uart_sout => ftdi_rxd,
+		uart_idle => uart_idle,
+		uart_txen => uart_txen,
+		uart_txd  => uart_txd);
+
 	sio_b : block
 
 		constant fifo_gray   : boolean := true;
@@ -428,6 +449,7 @@ begin
 
 		signal dmaio_irdy    : std_logic;
 		signal dmaio_trdy    : std_logic;
+		signal dmaio_next    : std_logic;
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
 		signal datactlr_irdy : std_logic;
@@ -463,12 +485,12 @@ begin
 		signal tp2 : std_logic_vector(32-1 downto 0);
 	begin
 
-		process (uart_clk)
+		process (sio_clk)
 			variable t : std_logic;
 			variable e : std_logic;
 			variable i : std_logic;
 		begin
-			if rising_edge(uart_clk) then
+			if rising_edge(sio_clk) then
 				if i='1' and e='0' then
 					t := not t;
 				end if;
@@ -479,27 +501,6 @@ begin
 				led(1) <= not t;
 			end if;
 		end process;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_sout => ftdi_rxd,
-			uart_idle => uart_idle,
-			uart_txen => uart_txen,
-			uart_txd  => uart_txd);
 
 		siodayahdlc_e : entity hdl4fpga.sio_dayahdlc
 		port map (
@@ -612,8 +613,9 @@ begin
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
-			dst_trdy => dmaio_trdy,
+			dst_trdy => dmaio_next, --dmaio_trdy,
 			dst_data => dmaio_addr);
+		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
 		dmalen_e : entity hdl4fpga.fifo
@@ -632,8 +634,17 @@ begin
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
-			dst_trdy => dmaio_trdy,
+			dst_trdy => dmaio_next, --dmaio_trdy,
 			dst_data => dmaio_len);
+
+		process (dmaio_trdy, sodata_trdy, sodata_end, dmaio_we)
+		begin
+			if dmaio_we='1' then
+				dmaio_next <= dmaio_trdy;
+			else
+				dmaio_next <= sodata_trdy and sodata_end;
+			end if;
+		end process;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(1-1 downto 0)=(1-1 downto 0 => '0'));
 		dmadatain_e : entity hdl4fpga.fifo
@@ -713,20 +724,26 @@ begin
 				dst_trdy => fifo_trdy,
 				dst_data => fifo_data);
 
-			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sio_clk)
-				variable d : std_logic;
-				variable q : std_logic;
+			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sodata_trdy, sodata_end, sio_clk)
+				variable d1 : std_logic;
+				variable d0 : std_logic;
+				variable q  : std_logic;
 			begin
-				d := to_stdulogic(to_bit(dmaio_trdy and dmaiolen_irdy and dmaioaddr_irdy and dmaio_addr(dmaio_addr'left)));
+				d1 := to_stdulogic(to_bit(dmaio_we and dmaio_trdy  and dmaiolen_irdy and dmaioaddr_irdy));
+				d0 := to_stdulogic(to_bit(dmaio_we and sodata_trdy and sodata_end));
 				if rising_edge(sio_clk) then
-					if d='1' then
+					if q='1' then
+						if d0='1' then
+							q := '0';
+						end if;
+					elsif d1='1' then
 						q := '1';
 					end if;
 				end if;
-				fifo_frm <= q or d;
+				fifo_frm <= setif(q='0', d1, not d0);
 			end process;
 
-			fifo_length <= dmaio_len(fifo_length'length-1 downto 0);
+			fifo_length <= std_logic_vector(resize(unsigned(dmaio_len), fifo_length'length));
 			sodata_e : entity hdl4fpga.so_data
 			port map (
 				sio_clk   => sio_clk,
