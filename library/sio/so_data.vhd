@@ -83,8 +83,8 @@ begin
 					case state is
 					when st_rid =>
 						if so_frm='0' then
-							low_cntr  := resize(unsigned(si_length) sll 0, low_cntr'length);
-							high_cntr := resize(unsigned(si_length) sll 8, high_cntr'length);
+							low_cntr  := '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
+							high_cntr := '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 						else
 							low_cntr  := '0' & (1 to 8 => '1');
 						end if;

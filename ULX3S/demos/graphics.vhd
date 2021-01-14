@@ -477,7 +477,7 @@ begin
 
 		signal sodata_frm    : std_logic;
 		signal sodata_irdy   : std_logic;
-		signal sodata_trdy   : std_logic;
+		signal sodata_trdy   : std_logic := '1';
 		signal sodata_end    : std_logic;
 		signal sodata_data   : std_logic_vector(ctlr_do'range);
 
@@ -637,12 +637,12 @@ begin
 			dst_trdy => dmaio_next, --dmaio_trdy,
 			dst_data => dmaio_len);
 
-		process (dmaio_trdy, sodata_trdy, sodata_end, dmaio_we)
+		process (dmaio_trdy, sodata_irdy, sodata_trdy, sodata_end, dmaio_we)
 		begin
 			if dmaio_we='1' then
 				dmaio_next <= dmaio_trdy;
 			else
-				dmaio_next <= sodata_trdy and sodata_end;
+				dmaio_next <= sodata_irdy and sodata_trdy and sodata_end;
 			end if;
 		end process;
 
@@ -724,13 +724,13 @@ begin
 				dst_trdy => fifo_trdy,
 				dst_data => fifo_data);
 
-			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sodata_trdy, sodata_end, sio_clk)
+			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sodata_irdy, sodata_trdy, sodata_end, sio_clk)
 				variable d1 : std_logic;
 				variable d0 : std_logic;
 				variable q  : std_logic;
 			begin
 				d1 := to_stdulogic(to_bit(dmaio_we and dmaio_trdy  and dmaiolen_irdy and dmaioaddr_irdy));
-				d0 := to_stdulogic(to_bit(dmaio_we and sodata_trdy and sodata_end));
+				d0 := to_stdulogic(to_bit(dmaio_we and sodata_irdy and sodata_trdy and sodata_end));
 				if rising_edge(sio_clk) then
 					if q='1' then
 						if d0='1' then

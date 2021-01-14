@@ -56,7 +56,7 @@ begin
 	ser_data <= word2byte(std_logic_vector(rotate_right(unsigned(des_data), ser_data'length)), mux_sel);
 
 	ser_irdy <= des_frm and (des_irdy or not mux_ena);
-	des_trdy <= ser_trdy and mux_ena;
+	des_trdy <= ser_trdy and not mux_ena;
 
 end;
 

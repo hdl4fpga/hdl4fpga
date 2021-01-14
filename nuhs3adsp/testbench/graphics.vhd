@@ -282,8 +282,8 @@ begin
 
 		if rising_edge(mii_rxc) then
 			if mii_treq='0' then
-				txfrm_ptr <= (others => '0');
 				if incena='1' then
+					txfrm_ptr <= (others => '0');
 
 					payload := 
 						  x"18ff"
@@ -296,7 +296,7 @@ begin
 						& gen_natural(start => (ack*5+3)*128, stop => (ack*5+4)*128-1, size => 16)
 						& x"18ff"                     
 						& gen_natural(start => (ack*5+4)*128, stop => (ack*5+5)*128-1, size => 16)
-						& x"1602000000"
+						& x"1602800000"
 						& x"170200013f";
 
 					ack := ack + 1;
@@ -321,9 +321,8 @@ begin
 							payloadack);
 					incena := '0';
 				end if;
-
 			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < packet'length/mii_rxd'length then
-				incena := '1';
+				incena := '0';
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
 			end if;
 		end if;
