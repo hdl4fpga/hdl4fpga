@@ -552,7 +552,7 @@ begin
 			signal fifo_irdy   : std_logic;
 			signal fifo_trdy   : std_logic;
 			signal fifo_data   : std_logic_vector(ctlr_do'range);
-			signal fifo_length : std_logic_vector(ctlr_do'range);
+			signal fifo_length : std_logic_vector(16-1 downto 0);
 
 		begin
 
@@ -566,11 +566,11 @@ begin
 				check_sov  => true,
 				check_dov  => true)
 			port map (
-				src_frm  => ctlr_inirdy,
 				src_clk  => ctlr_clk,
 				src_irdy => ctlrio_irdy,
 				src_data => ctlr_do,
 
+				dst_frm  => ctlr_inirdy,
 				dst_clk  => sio_clk,
 				dst_irdy => fifo_irdy,
 				dst_trdy => fifo_trdy,
@@ -595,7 +595,17 @@ begin
 				fifo_frm <= setif(to_bit(q)='0', d1, not d0);
 			end process;
 
-			fifo_length <= std_logic_vector(resize(unsigned(dmaio_len), fifo_length'length));
+			process (dmaio_len)
+				variable length : unsigned(fifo_length'range);
+			begin
+				length := x"0300"; --resize(unsigned(dmaio_len), length'length);
+				for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
+					length(length'left) := '1';
+					length := length rol 1;
+				end loop;
+				fifo_length <= std_logic_vector(length);
+			end process;
+
 			sodata_e : entity hdl4fpga.so_data
 			port map (
 				sio_clk   => sio_clk,

@@ -201,7 +201,7 @@ begin
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
 			setif(wr_cntr(addr_range) /= rd_cmp(addr_range) or wr_cntr(0) = rd_cmp(0));
 
-		dst_ini <= not dst_frm;
+		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 		dstirdy_e : entity hdl4fpga.align
 		generic map (
 			n     => 1,
@@ -266,7 +266,7 @@ begin
 	dst_irdy1 <= 
 		setif(wr_cntr /= rd_cntr) when not async_mode else 
 		setif(wr_cmp  /= rd_cntr);
-	feed_ena  <= dst_trdy or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
+	feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then

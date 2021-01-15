@@ -35,13 +35,14 @@ entity so_data is
 		si_irdy   : in  std_logic;
 		si_trdy   : out std_logic;
 		si_length : in  std_logic_vector;
-		si_end    : out std_logic;
+		si_end    : buffer std_logic;
 		si_data   : in  std_logic_vector;
 
-		so_frm   : buffer std_logic;
-		so_irdy  : buffer std_logic;
-		so_trdy  : in  std_logic;
-		so_data  : out std_logic_vector);
+		so_frm    : buffer std_logic;
+		so_irdy   : buffer std_logic;
+		so_trdy   : in  std_logic;
+		so_end    : out std_logic;
+		so_data   : out std_logic_vector);
 end;
 
 architecture def of so_data is
@@ -78,6 +79,7 @@ begin
 					high_cntr := (others => '-');
 					so_irdy   <= '0';
 					si_end    <= '0';
+					so_data  <= x"ff";
 					state     := st_rid;
 				else
 					case state is
@@ -88,13 +90,12 @@ begin
 						else
 							low_cntr  := '0' & (1 to 8 => '1');
 						end if;
-						so_data   <= x"ff";
 						so_irdy   <= '1';
+						so_data   <= std_logic_vector(resize(low_cntr, so_data'length));
 						si_end    <= '0';
 						state     := st_len;
 					when st_len =>
 						high_cntr := high_cntr - 1;
-						so_data   <= std_logic_vector(resize(low_cntr, so_data'length));
 						so_irdy   <= '1';
 						si_end    <= '0';
 						state     := st_data;
@@ -103,17 +104,20 @@ begin
 							if low_cntr(0)='0' then
 								low_cntr := low_cntr - 1;
 								si_end   <= '0';
+								so_data <= ser_data;
 								state    := st_data;
 							elsif high_cntr(0)='0' then
 								si_end   <= '0';
+								so_data  <= x"ff";
 								state    := st_rid;
 							else
 								si_end   <= '1';
 								state    := st_data;
 							end if;
+							si_end <= low_cntr(0) and high_cntr(0);
 						end if;
+						so_end  <= si_end;
 						so_irdy <= ser_irdy;
-						so_data <= ser_data;
 					end case;
 				end if;
 				so_frm <= to_stdulogic(to_bit(si_frm));
