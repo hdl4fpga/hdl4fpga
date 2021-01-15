@@ -556,7 +556,19 @@ begin
 
 		begin
 
-			ctlrio_irdy <= ctlr_do_dv(0) and (dmaio_req xor dmaio_rdy);
+			process (ctlr_do_dv, ctlr_clk)
+				variable data_gnt : std_logic;
+			begin
+				if rising_edge(ctlr_clk) then
+					if (dmaio_req xor dmaio_rdy)='1' then
+						data_gnt := '1';
+					elsif ctlr_do_dv(0)='0' then
+						data_gnt := '0';
+					end if;
+				end if;
+				ctlrio_irdy <= ctlr_do_dv(0) and data_gnt;
+			end process;
+
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
@@ -598,7 +610,7 @@ begin
 			process (dmaio_len)
 				variable length : unsigned(fifo_length'range);
 			begin
-				length := x"0300"; --resize(unsigned(dmaio_len), length'length);
+				length := resize(unsigned(dmaio_len), length'length);
 				for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
 					length(length'left) := '1';
 					length := length rol 1;

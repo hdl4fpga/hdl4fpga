@@ -40,8 +40,8 @@ begin
 			if ser_data'length=des_data'length then
 				cntr := (others => '1');
 			elsif des_frm='0' then
-				cntr := (others => '1');
-			elsif ser_trdy='1' then
+				cntr := to_unsigned(des_data'length/ser_data'length-2, cntr'length);
+			elsif des_irdy='1' and ser_trdy='1' then
 				if cntr(0)='0' then
 					cntr := cntr - 1;
 				elsif des_irdy='1' then
@@ -49,14 +49,14 @@ begin
 				end if;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
-			mux_ena <= not cntr(0);
+			mux_ena <= cntr(0);
 		end if;
 	end process;
 
 	ser_data <= word2byte(std_logic_vector(rotate_right(unsigned(des_data), ser_data'length)), mux_sel);
 
-	ser_irdy <= des_frm and des_irdy;
-	des_trdy <= ser_trdy and not mux_ena;
+	ser_irdy <= des_frm  and des_irdy;
+	des_trdy <= ser_trdy and mux_ena;
 
 end;
 
