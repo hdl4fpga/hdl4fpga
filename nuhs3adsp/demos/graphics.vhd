@@ -548,6 +548,8 @@ begin
 		sodata_b : block
 
 			signal ctlrio_irdy : std_logic;
+			signal fifo_req    : bit;
+			signal fifo_rdy    : bit;
 			signal fifo_frm    : std_logic;
 			signal fifo_irdy   : std_logic;
 			signal fifo_trdy   : std_logic;
@@ -557,16 +559,19 @@ begin
 		begin
 
 			process (ctlr_do_dv, ctlr_clk)
-				variable data_gnt : std_logic;
+				variable data_gnt : bit;
 			begin
 				if rising_edge(ctlr_clk) then
 					if (dmaio_req xor dmaio_rdy)='1' then
 						data_gnt := '1';
 					elsif ctlr_do_dv(0)='0' then
+						if data_gnt='1' then
+							fifo_req <= not fifo_rdy;
+						end if;
 						data_gnt := '0';
 					end if;
 				end if;
-				ctlrio_irdy <= ctlr_do_dv(0) and data_gnt;
+				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(data_gnt);
 			end process;
 
 			dmadataout_e : entity hdl4fpga.fifo
@@ -588,24 +593,17 @@ begin
 				dst_trdy => fifo_trdy,
 				dst_data => fifo_data);
 
-			process (dmaio_trdy, dmaiolen_irdy, dmaioaddr_irdy, dmaio_we, sodata_trdy, sodata_end, sio_clk)
-				variable d1 : std_logic;
-				variable d0 : std_logic;
-				variable q  : std_logic;
+			process (sio_clk)
 			begin
-				d1 := to_stdulogic(to_bit(not dmaio_we and dmaio_trdy  and dmaiolen_irdy and dmaioaddr_irdy));
-				d0 := to_stdulogic(to_bit(not dmaio_we and sodata_trdy and sodata_end));
 				if rising_edge(sio_clk) then
-					if q='1' then
-						if d0='1' then
-							q := '0';
+					if (fifo_req xor fifo_rdy)='1' then
+						if sodata_trdy='1' and sodata_end='1' then
+							fifo_rdy <= fifo_req;
 						end if;
-					elsif d1='1' then
-						q := '1';
 					end if;
 				end if;
-				fifo_frm <= setif(to_bit(q)='0', d1, not d0);
 			end process;
+			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
 			process (dmaio_len)
 				variable length : unsigned(fifo_length'range);
