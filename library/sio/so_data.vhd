@@ -85,17 +85,21 @@ begin
 				end if;
 			when st_rid  =>
 				if si_frm='1' then
-					state <= st_len;
+					if so_trdy='1' then
+						state <= st_len;
+					end if;
 				else
 					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 					state <= st_idle;
 				end if;
 			when st_len =>
-				high_cntr <= high_cntr - 1;
-				low_cntr  <= low_cntr  - 1;
 				if si_frm='1' then
-					state <= st_data;
+					if so_trdy='1' then
+						high_cntr <= high_cntr - 1;
+						low_cntr  <= low_cntr  - 1;
+						state <= st_data;
+					end if;
 				else
 					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
@@ -103,7 +107,7 @@ begin
 				end if;
 			when st_data =>
 				if si_frm='1' then
-					if ser_irdy='1' then
+					if (ser_irdy and so_trdy)='1' then
 						if low_cntr(0)='0' then
 							low_cntr <= low_cntr - 1;
 							state  <= st_data;

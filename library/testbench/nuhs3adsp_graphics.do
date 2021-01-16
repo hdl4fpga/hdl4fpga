@@ -21,8 +21,26 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/red
 add wave -noupdate -radix hexadecimal /testbench/du_e/green
 add wave -noupdate -radix hexadecimal /testbench/du_e/blue
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sio_clk
+add wave -noupdate /testbench/du_e/si_b/sout_frm(0)
+add wave -noupdate /testbench/du_e/si_b/sodata_frm
+add wave -noupdate /testbench/du_e/si_b/sts_frm
+add wave -noupdate /testbench/du_e/si_b/sout_irdy
+add wave -noupdate /testbench/du_e/si_b/sout_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sout_data
+add wave -noupdate /testbench/du_e/si_b/sts_irdy
+add wave -noupdate /testbench/du_e/si_b/sts_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sts_data
+add wave -noupdate /testbench/du_e/si_b/sodata_irdy
+add wave -noupdate /testbench/du_e/si_b/sodata_trdy
+add wave -noupdate /testbench/du_e/si_b/sodata_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sodata_data
+add wave -noupdate /testbench/du_e/si_b/sodata_b/sodata_e/so_trdy
+add wave -noupdate /testbench/du_e/si_b/sodata_b/sodata_e/state
+add wave -noupdate /testbench/du_e/si_b/sioarbiter_b/sioarbiter_e/gnt
+add wave -noupdate /testbench/du_e/si_b/sioarbiter_b/sioarbiter_e/gntd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {341004333330 fs} 0}
+WaveRestoreCursors {{Cursor 1} {342694679280 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 165
@@ -38,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {329071206830 fs} {352039956830 fs}
+WaveRestoreZoom {289655 ns} {394655 ns}
