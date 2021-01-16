@@ -21,28 +21,6 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/red
 add wave -noupdate -radix hexadecimal /testbench/du_e/green
 add wave -noupdate -radix hexadecimal /testbench/du_e/blue
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxdv
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(0) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(1) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(2) -radix hexadecimal} {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(0) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(1) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(2) {-height 29 -radix hexadecimal} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/si_b/udpdaisy_e/sioudpp_e/mii_ipoe_e/txc_rxd
-add wave -noupdate /testbench/du_e/si_b/sin_frm
-add wave -noupdate /testbench/du_e/si_b/sin_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sin_data
-add wave -noupdate /testbench/du_e/si_b/sou_frm
-add wave -noupdate /testbench/du_e/si_b/sou_irdy
-add wave -noupdate /testbench/du_e/si_b/sou_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sou_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmargtr_addr
-add wave -noupdate -radix hexadecimal /testbench/du_e/dmactlr_e/dmargtr_len
-add wave -noupdate /testbench/du_e/si_b/dmaio_trdy
-add wave -noupdate /testbench/du_e/si_b/dmaiolen_irdy
-add wave -noupdate /testbench/du_e/si_b/dmaioaddr_irdy
-add wave -noupdate /testbench/du_e/si_b/dmaio_next
-add wave -noupdate /testbench/du_e/dmaio_req
-add wave -noupdate /testbench/du_e/dmaio_rdy
-add wave -noupdate /testbench/du_e/si_b/sodata_frm
-add wave -noupdate /testbench/du_e/si_b/sodata_irdy
-add wave -noupdate /testbench/du_e/si_b/sodata_trdy
-add wave -noupdate /testbench/du_e/si_b/sodata_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/si_b/sodata_data
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {341004333330 fs} 0}
 quietly wave cursor active 1

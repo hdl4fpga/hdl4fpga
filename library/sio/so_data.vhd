@@ -87,6 +87,8 @@ begin
 				if si_frm='1' then
 					state <= st_len;
 				else
+					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
+					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 					state <= st_idle;
 				end if;
 			when st_len =>
@@ -95,6 +97,8 @@ begin
 				if si_frm='1' then
 					state <= st_data;
 				else
+					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
+					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 					state <= st_idle;
 				end if;
 			when st_data =>
@@ -109,13 +113,18 @@ begin
 						end if;
 					end if;
 				else
+					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
+					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 					state <= st_idle;
 				end if;
 			end case;
 		end if;
 	end process;
 
-	si_end   <= high_cntr(0) and low_cntr(0);
+	si_end   <= 
+		'0' when state=st_idle else 
+		si_frm and high_cntr(0) and low_cntr(0);
+
 	ser_trdy <= so_trdy when state=st_data else '0';
 
 	so_frm   <= to_stdulogic(to_bit(si_frm));

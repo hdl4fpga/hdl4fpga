@@ -476,14 +476,7 @@ begin
 			dst_trdy => dmaio_next, --dmaio_trdy,
 			dst_data => dmaio_len);
 
-		process (dmaio_trdy, sodata_trdy, sodata_end, dmaio_we)
-		begin
-			if dmaio_we='1' then
-			else
-				dmaio_next <= sodata_trdy and sodata_end;
-			end if;
-				dmaio_next <= dmaio_trdy;
-		end process;
+		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
@@ -605,15 +598,23 @@ begin
 			end process;
 			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
-			process (dmaio_len)
+			process (dmacfg_clk)
 				variable length : unsigned(fifo_length'range);
 			begin
-				length := resize(unsigned(dmaio_len), length'length);
-				for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
-					length(length'left) := '1';
-					length := length rol 1;
-				end loop;
-				fifo_length <= std_logic_vector(length);
+				if rising_edge(dmacfg_clk) then
+					if dmaioaddr_irdy='1' then
+						if dmaiolen_irdy='1' then
+							if dmaio_next='1' then
+								length := resize(unsigned(dmaio_len), length'length);
+								for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
+									length(length'left) := '1';
+									length := length rol 1;
+								end loop;
+								fifo_length <= std_logic_vector(length);
+							end if;
+						end if;
+					end if;
+				end if;
 			end process;
 
 			sodata_e : entity hdl4fpga.so_data
