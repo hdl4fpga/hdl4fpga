@@ -415,7 +415,7 @@ library micron;
 configuration ulx3s_graphic_md of testbench is
 	for ulx3s_graphic
 		for all : ulx3s
-			use entity work.ulx3s(graphics);
+			use entity work.ulx3s(graphics1);
 		end for;
 			for all : mt48lc32m16a2
 			use entity micron.mt48lc32m16a2

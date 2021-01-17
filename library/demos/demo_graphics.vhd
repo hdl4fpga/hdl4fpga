@@ -36,16 +36,16 @@ entity demo_graphics is
 		ddr_tcp      : natural;
 		fpga         : natural;
 		mark         : natural;
-		sclk_phases  : natural := 1;
-		sclk_edges   : natural := 1;
-		data_phases  : natural := 1;
-		data_edges   : natural := 1;
-		data_gear    : natural := 1;
+		sclk_phases  : natural;
+		sclk_edges   : natural;
+		data_phases  : natural;
+		data_edges   : natural;
+		data_gear    : natural;
 		bank_size    : natural;
 		addr_size    : natural;
-		coln_size    : natural := 10;
+		coln_size    : natural;
 		word_size    : natural;
-		byte_size    : natural := 8;
+		byte_size    : natural;
 		cas          : std_logic_vector(0 to 3-1);
 
 		timing_id    : videotiming_ids;
@@ -96,7 +96,7 @@ entity demo_graphics is
 		ctlrphy_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		tp           : buffer std_logic_vector(0 to 31-1));
+		tp           : buffer std_logic_vector(0 to 32-1));
 
 end;
 

@@ -174,6 +174,8 @@ HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
 HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
+HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
 HDL4FPGA__ddrto__spartan3 = $(LIB_HDL4FPGA)/ddrto/spartan3.dat
 HDL4FPGA__ddrto = $(LIB_HDL4FPGA)/ddrto/_primary.dat
 HDL4FPGA__ddro__spartan3 = $(LIB_HDL4FPGA)/ddro/spartan3.dat
@@ -399,6 +401,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__dfs) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
+    $(HDL4FPGA__demo_graphics__mix) \
+    $(HDL4FPGA__demo_graphics) \
     $(HDL4FPGA__ddrto__spartan3) \
     $(HDL4FPGA__ddrto) \
     $(HDL4FPGA__ddro__spartan3) \
@@ -767,6 +771,34 @@ $(HDL4FPGA__ddrto__spartan3) : ../xilinx/spartan3/ddro.vhd \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/ddro.vhd
+
+$(HDL4FPGA__demo_graphics) \
+$(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
+		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(IEEE__std_logic_unsigned) \
+		$(IEEE__std_logic_arith) \
+		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__graphics) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__video_sync) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__arbiter) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../demos/demo_graphics.vhd
 
 $(HDL4FPGA__desser) \
 $(HDL4FPGA__desser__mux) : ../common/desser.vhd \
