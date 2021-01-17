@@ -201,7 +201,6 @@ architecture graphics of nuhs3adsp is
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is mii_txc;
-	signal sio_frm : std_logic;
 
 	constant baudrate  : natural := 1000000;
 --	constant baudrate  : natural := 115200;
@@ -527,13 +526,6 @@ begin
 		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
 		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
 		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
-
-		process (sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				sio_frm <= ctlr_inirdy;
-			end if;
-		end process;
 
 		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
