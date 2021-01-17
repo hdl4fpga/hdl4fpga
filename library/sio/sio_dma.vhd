@@ -27,323 +27,18 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_db.all;
-use hdl4fpga.videopkg.all;
-use hdl4fpga.cgafonts.all;
 
-library unisim;
-use unisim.vcomponents.all;
+entity sio_dma is
+	generic (
+		fifo_depth  : natural := 8;
+		fifo_gray   : boolean := true;
 
-architecture graphics of nuhs3adsp is
+		rid_dmaaddr : std_logic_vector := x"16";
+		rid_dmalen  : std_logic_vector := x"17";
+		rid_dmadata : std_logic_vector := x"18";
 
-	signal sys_rst : std_logic;
-	signal sys_clk : std_logic;
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
-
-	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1; --3;
-
-	constant fpga         : natural := spartan3;
-	constant mark         : natural := m6t;
-	constant tcp          : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
-
-
-	constant sclk_phases  : natural := 4;
-	constant sclk_edges   : natural := 2;
-	constant cmmd_gear    : natural := 1;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
-	constant bank_size    : natural := ddr_ba'length;
-	constant addr_size    : natural := ddr_a'length;
-	constant coln_size    : natural := 10;
-	constant data_gear    : natural := 2;
-	constant word_size    : natural := ddr_dq'length;
-	constant byte_size    : natural := 8;
-
-	signal ddrsys_lckd    : std_logic;
-	signal ddrsys_rst     : std_logic;
-
-	constant clk0         : natural := 0;
-	constant clk90        : natural := 1;
-	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
-
-	signal dmactlr_len    : std_logic_vector(25-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(25-1 downto 2);
-
-	signal dmacfgio_req   : std_logic;
-	signal dmacfgio_rdy   : std_logic;
-	signal dmaio_req      : std_logic := '0';
-	signal dmaio_rdy      : std_logic;
-	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
-	signal dmaio_addr     : std_logic_vector(24-1 downto 0);
-	signal dmaio_we       : std_logic;
-
-	signal ctlr_irdy      : std_logic;
-	signal ctlr_trdy      : std_logic;
-	signal ctlr_rw        : std_logic;
-	signal ctlr_act       : std_logic;
-	signal ctlr_inirdy    : std_logic;
-	signal ctlr_refreq    : std_logic;
-	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
-	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlr_di_dv     : std_logic;
-	signal ctlr_di_req    : std_logic;
-	signal ctlr_dio_req   : std_logic;
-
-	signal ddrphy_rst     : std_logic;
-	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_st_dqs_open : std_logic;
-
-	signal ddr_clk        : std_logic_vector(0 downto 0);
-	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
-
-	signal mii_clk        : std_logic;
-	signal video_clk      : std_logic;
-	signal video_hzsync   : std_logic;
-    signal video_vtsync   : std_logic;
-    signal video_hzon     : std_logic;
-    signal video_vton     : std_logic;
-    signal video_dot      : std_logic;
-    signal video_on       : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
-    signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
-
-	signal dmacfgvideo_req : std_logic;
-	signal dmacfgvideo_rdy : std_logic;
-	signal dmavideo_req   : std_logic;
-	signal dmavideo_rdy   : std_logic;
-	signal dmavideo_len   : std_logic_vector(dmactlr_len'range);
-	signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
-
-	signal dmacfg_req     : std_logic_vector(0 to 2-1);
-	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
-	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
-	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
-	signal dev_we         : std_logic_vector(0 to 2-1);
-
-	signal dev_req : std_logic_vector(0 to 2-1);
-	signal dev_rdy : std_logic_vector(0 to 2-1); 
-
-	signal ctlr_ras : std_logic;
-	signal ctlr_cas : std_logic;
-
-	type display_param is record
-		mode    : videotiming_ids;
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type video_modes is (
-		modedebug,
-		mode480p,
-		mode600p,
-		mode900p,
-		mode1080p);
-
-	type displayparam_vector is array (video_modes) of display_param;
-	constant video_tab : displayparam_vector := (
-		modedebug   => (mode => pclk_debug, dcm_mul => 4, dcm_div => 2),
-		mode480p    => (mode => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
-		mode600p    => (mode => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode900p    => (mode => pclk100_00m1600x900at60,  dcm_mul => 5, dcm_div => 1),
-		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
-
-	function setif (
-		constant expr  : boolean; 
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-
---	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
-	constant video_mode : video_modes := setif(debug, modedebug, mode480p);
---	constant video_mode : video_modes := mode480p;
-
-	alias dmacfg_clk : std_logic is sys_clk;
---	alias dmacfg_clk : std_logic is mii_txc;
-	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
-
-	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
-	alias sio_clk : std_logic is mii_txc;
-	signal sio_frm : std_logic;
-
-	constant baudrate  : natural := 1000000;
---	constant baudrate  : natural := 115200;
-
-	signal dmavideotrans_cnl : std_logic;
-	signal txc_rxdv : std_logic;
-	signal tp : std_logic_vector(1 to 4);
-begin
-
-	sys_rst <= not hd_t_clock;
-	clkin_ibufg : ibufg
-	port map (
-		I => xtal ,
-		O => sys_clk);
-
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 50.0,
-		dfs_mul => video_tab(video_mode).dcm_mul,
-		dfs_div => video_tab(video_mode).dcm_div)
-	port map(
-		dcm_rst => '1', --sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk);
-
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_clk);
-
-	ddrdcm_e : entity hdl4fpga.dfsdcm
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
-	port map (
-		dfsdcm_rst   => sys_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ctlr_clk,
-		dfsdcm_clk90 => ddrsys_clks(clk90),
-		dfsdcm_lckd  => ddrsys_lckd);
-	ddrsys_rst <= not ddrsys_lckd;
-
-	si_b : block
-
-		constant fifo_depth  : natural := 8;
-		constant fifo_gray   : boolean := true;
-
-		constant rid_dmaaddr : std_logic_vector := x"16";
-		constant rid_dmalen  : std_logic_vector := x"17";
-		constant rid_dmadata : std_logic_vector := x"18";
-
-		signal rgtr_frm      : std_logic;
-		signal rgtr_irdy     : std_logic;
-		signal rgtr_idv      : std_logic;
-		signal rgtr_id       : std_logic_vector(8-1 downto 0);
-		signal rgtr_lv       : std_logic;
-		signal rgtr_len      : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv       : std_logic;
-		signal rgtr_data     : std_logic_vector(32-1 downto 0);
-		signal data_frm      : std_logic;
-		signal data_irdy     : std_logic;
-		signal data_ptr      : std_logic_vector(8-1 downto 0);
-
-		signal sigrgtr_frm   : std_logic;
-
-		signal sigram_irdy   : std_logic;
-
-		signal dmasin_irdy   : std_logic;
-		signal dmadata_irdy  : std_logic;
-		signal dmadata_trdy  : std_logic;
-		signal datactlr_irdy : std_logic;
-		signal dmaaddr_irdy  : std_logic;
-		signal dmaaddr_trdy  : std_logic;
-		signal dmalen_irdy   : std_logic;
-		signal dmalen_trdy   : std_logic;
-		signal dmaio_trdy     : std_logic;
-		signal dmaio_next     : std_logic;
-		signal dmaiolen_irdy  : std_logic;
-		signal dmaioaddr_irdy : std_logic;
-
-		signal sin_frm       : std_logic;
-		signal sin_irdy      : std_logic;
-		signal sin_data      : std_logic_vector(8-1 downto 0);
-		signal sout_frm      : std_logic_vector(0 to 0);
-		signal sout_irdy     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal sout_trdy     : std_logic;
-		signal sout_data     : std_logic_vector(8-1 downto 0);
-		signal sts_frm       : std_logic;
-		signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal sts_trdy      : std_logic;
-		signal sts_data      : std_logic_vector(8-1 downto 0);
-		signal sig_data      : std_logic_vector(8-1 downto 0);
-		signal sig_trdy      : std_logic;
-		signal sig_end       : std_logic;
-		signal siodmaio_irdy : std_logic;
-		signal siodmaio_trdy : std_logic;
-		signal siodmaio_end  : std_logic;
-		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
-		signal siodmaio_data : std_logic_vector(sout_data'range);
-
-		signal sodata_frm    : std_logic;
-		signal sodata_irdy   : std_logic;
-		signal sodata_trdy   : std_logic := '1';
-		signal sodata_end    : std_logic;
-		signal sodata_data   : std_logic_vector(sout_data'range);
-
-		signal ipv4acfg_req  : std_logic;
-		signal tp1 : std_logic_vector(32-1 downto 0);
-		signal tp2 : std_logic_vector(32-1 downto 0);
-
-		signal debug_dmacfgio_req : std_logic;
-		signal debug_dmacfgio_rdy : std_logic;
-		signal debug_dmaio_req    : std_logic;
-		signal debug_dmaio_rdy    : std_logic;
-
-	begin
-
-		ipv4acfg_req <= not sw1;
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
-		port map (
-			ipv4acfg_req => ipv4acfg_req,
-
-			phy_rxc   => mii_rxc,
-			phy_rx_dv => mii_rxdv,
-			phy_rx_d  => mii_rxd,
-
-			phy_txc   => mii_txc,
-			phy_col   => mii_col,
-			phy_crs   => mii_crs,
-			phy_tx_en => mii_txen,
-			phy_tx_d  => mii_txd,
-			txc_rxdv  => txc_rxdv,
-		
+		);
+	port (
 			sio_clk   => sio_clk,
 			si_frm    => sout_frm(0),
 			si_irdy   => sout_irdy(0),
@@ -355,6 +50,79 @@ begin
 			so_data => sin_data,
 			tp => tp);
 	
+		);
+end;
+
+architecture def of sio_dma is
+
+	signal rgtr_frm      : std_logic;
+	signal rgtr_irdy     : std_logic;
+	signal rgtr_idv      : std_logic;
+	signal rgtr_id       : std_logic_vector(8-1 downto 0);
+	signal rgtr_lv       : std_logic;
+	signal rgtr_len      : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv       : std_logic;
+	signal rgtr_data     : std_logic_vector(32-1 downto 0);
+	signal data_frm      : std_logic;
+	signal data_irdy     : std_logic;
+	signal data_ptr      : std_logic_vector(8-1 downto 0);
+
+	signal sigrgtr_frm   : std_logic;
+
+	signal sigram_irdy   : std_logic;
+
+	signal dmasin_irdy   : std_logic;
+	signal dmadata_irdy  : std_logic;
+	signal dmadata_trdy  : std_logic;
+	signal datactlr_irdy : std_logic;
+	signal dmaaddr_irdy  : std_logic;
+	signal dmaaddr_trdy  : std_logic;
+	signal dmalen_irdy   : std_logic;
+	signal dmalen_trdy   : std_logic;
+	signal dmaio_trdy     : std_logic;
+	signal dmaio_next     : std_logic;
+	signal dmaiolen_irdy  : std_logic;
+	signal dmaioaddr_irdy : std_logic;
+
+	signal sin_frm       : std_logic;
+	signal sin_irdy      : std_logic;
+	signal sin_data      : std_logic_vector(8-1 downto 0);
+	signal sout_frm      : std_logic_vector(0 to 0);
+	signal sout_irdy     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+	signal sout_trdy     : std_logic;
+	signal sout_data     : std_logic_vector(8-1 downto 0);
+	signal sts_frm       : std_logic;
+	signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+	signal sts_trdy      : std_logic;
+	signal sts_data      : std_logic_vector(8-1 downto 0);
+	signal sig_data      : std_logic_vector(8-1 downto 0);
+	signal sig_trdy      : std_logic;
+	signal sig_end       : std_logic;
+	signal siodmaio_irdy : std_logic;
+	signal siodmaio_trdy : std_logic;
+	signal siodmaio_end  : std_logic;
+	signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
+	signal siodmaio_data : std_logic_vector(sout_data'range);
+
+	signal sodata_frm    : std_logic;
+	signal sodata_irdy   : std_logic;
+	signal sodata_trdy   : std_logic := '1';
+	signal sodata_end    : std_logic;
+	signal sodata_data   : std_logic_vector(sout_data'range);
+
+	signal ipv4acfg_req  : std_logic;
+	signal tp1 : std_logic_vector(32-1 downto 0);
+	signal tp2 : std_logic_vector(32-1 downto 0);
+
+	signal debug_dmacfgio_req : std_logic;
+	signal debug_dmacfgio_rdy : std_logic;
+	signal debug_dmaio_req    : std_logic;
+	signal debug_dmaio_rdy    : std_logic;
+
+begin
+
+
+		
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -536,7 +304,7 @@ begin
 		end process;
 
 		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
-		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
+		sio_dmactlr_e : entity hdl4fpga.sio_dmactlr
 		port map (
 			dmacfg_clk  => dmacfg_clk,
 			dmaio_irdy  => dmasin_irdy,

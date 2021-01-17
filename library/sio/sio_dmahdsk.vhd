@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_dmactlr is
+entity sio_dmahdsk is
 	port (
 		dmacfg_clk  : in  std_logic;
 		dmaio_irdy  : in  std_logic;
@@ -44,7 +44,7 @@ entity sio_dmactlr is
 		dma_rdy     : in  std_logic);
 end;
 
-architecture def of sio_dmactlr is
+architecture def of sio_dmahdsk is
 
 	signal cfg2ctlr_req : std_logic;
 	signal cfg2ctlr_rdy : std_logic;

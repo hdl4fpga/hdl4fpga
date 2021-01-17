@@ -668,7 +668,7 @@ begin
 		ctlr_di_dv <= ctlr_di_req;
 
 		dmaio_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
-		sio_dmactlr_e : entity hdl4fpga.sio_dmactlr
+		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
 			dmacfg_clk  => dmacfg_clk,
 			dmaio_irdy  => dmaio_irdy,

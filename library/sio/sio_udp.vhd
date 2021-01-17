@@ -52,7 +52,7 @@ entity sio_udp is
 		sio_clk   : in  std_logic;
 		si_frm    : in  std_logic := '0';
 		si_irdy   : in  std_logic := '0';
-		si_trdy   : buffer std_logic;
+		si_trdy   : out std_logic;
 		si_data   : in  std_logic_vector;
 
 		so_dv     : out std_logic;
@@ -430,6 +430,16 @@ begin
 		des_data  <= reverse(rgtr_data(des_data'range));
 		des_frm   <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
 		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
+
+--		process (sio_clk)
+--			variable idle : std_logic;
+--		begin
+--			if rising_edge(sio_clk) then
+--				if mii_txen='0' then
+--					idle := '1';
+--				elsif rgtr
+--			end if;
+--		end process;
 
 		desser_e : entity hdl4fpga.desser
 		port map (

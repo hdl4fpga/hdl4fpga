@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity arbiter is
+	generic (
+		idle_cycle : boolean := true);
 	port (
 		clk  : in  std_logic;
 		ena  : in  std_logic := '1';
@@ -41,6 +43,7 @@ entity arbiter is
 end;
 
 architecture mix of arbiter is
+
 	function primask (
 		constant arg : std_logic_vector )
 		return std_logic_vector is
@@ -72,7 +75,10 @@ begin
 	assert req'length=gnt'length
 	severity failure;
 
-	gnt  <= primask(word2byte((req and gntd) & req, setif(gntd=(gntd'range => '0')))) and (gnt'range => csc);
+	gnt  <= 
+		(gnt'range => csc) and primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd)))) when idle_cycle else
+		(gnt'range => csc) and primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd and req))));
+
 	swp  <= setif(gntd/=gnt);
 	gswp <= setif(gntd/=gnt and gntd/=(gntd'range => '0') and gnt/=(gnt'range => '0'));
 	idle <= setif(gnt=(gnt'range => '0'));
