@@ -108,26 +108,26 @@ architecture graphics1 of nuhs3adsp is
 	signal ctlr_di_req    : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
-	signal ddrphy_rst     : std_logic;
-	signal ddrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst     : std_logic;
+	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddr_st_dqs_open : std_logic;
 
 	signal ddr_clk        : std_logic_vector(0 downto 0);
@@ -286,7 +286,7 @@ begin
 		so_frm  => sin_frm,
 		so_irdy => sin_irdy,
 		so_data => sin_data,
-		tp => tp);
+		tp => tp(0 to 4-1));
 	
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -303,7 +303,9 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		cas          => sdram_tab(sdram_mode).cas,
+--		cas          => "010",	-- 2   133 Mhz
+--		cas          => "110",	-- 2.5 166 Mhz
+		cas      => "011",	-- 3   200 Mhz
 
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => 8,
@@ -321,25 +323,23 @@ begin
 		sout_data    => sout_data,
 
 		video_clk    => video_clk,
-		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb,
 
 		dmacfg_clk   => dmacfg_clk,
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 
 		ctlrphy_rst  => ctlrphy_rst,
-		ctlrphy_cke  => ctlrphy_cke,
-		ctlrphy_cs   => ctlrphy_cs,
-		ctlrphy_ras  => ctlrphy_ras,
-		ctlrphy_cas  => ctlrphy_cas,
-		ctlrphy_we   => ctlrphy_we,
+		ctlrphy_cke  => ctlrphy_cke(0),
+		ctlrphy_cs   => ctlrphy_cs(0),
+		ctlrphy_ras  => ctlrphy_ras(0),
+		ctlrphy_cas  => ctlrphy_cas(0),
+		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dsi  => ctlrphy_dsi,
-		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => ctlrphy_dso,
+		ctlrphy_dsi  => ctlrphy_dqsi,
+		ctlrphy_dst  => ctlrphy_dqst,
+		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
@@ -378,25 +378,25 @@ begin
 		sys_clks    => ddrsys_clks,
 		sys_rst     => ddrsys_rst,
 
-		phy_cke     => ddrphy_cke,
-		phy_cs      => ddrphy_cs,
-		phy_ras     => ddrphy_ras,
-		phy_cas     => ddrphy_cas,
-		phy_we      => ddrphy_we,
-		phy_b       => ddrphy_b,
-		phy_a       => ddrphy_a,
-		phy_dqsi    => ddrphy_dqso,
-		phy_dqst    => ddrphy_dqst,
-		phy_dqso    => ddrphy_dqsi,
-		phy_dmi     => ddrphy_dmo,
-		phy_dmt     => ddrphy_dmt,
-		phy_dmo     => ddrphy_dmi,
-		phy_dqi     => ddrphy_dqo,
-		phy_dqt     => ddrphy_dqt,
-		phy_dqo     => ddrphy_dqi,
-		phy_odt     => ddrphy_odt,
-		phy_sti     => ddrphy_sti,
-		phy_sto     => ddrphy_sto,
+		phy_cke     => ctlrphy_cke,
+		phy_cs      => ctlrphy_cs,
+		phy_ras     => ctlrphy_ras,
+		phy_cas     => ctlrphy_cas,
+		phy_we      => ctlrphy_we,
+		phy_b       => ctlrphy_b,
+		phy_a       => ctlrphy_a,
+		phy_dqsi    => ctlrphy_dqso,
+		phy_dqst    => ctlrphy_dqst,
+		phy_dqso    => ctlrphy_dqsi,
+		phy_dmi     => ctlrphy_dmo,
+		phy_dmt     => ctlrphy_dmt,
+		phy_dmo     => ctlrphy_dmi,
+		phy_dqi     => ctlrphy_dqo,
+		phy_dqt     => ctlrphy_dqt,
+		phy_dqo     => ctlrphy_dqi,
+		phy_odt     => ctlrphy_odt,
+		phy_sti     => ctlrphy_sti,
+		phy_sto     => ctlrphy_sto,
 
 		ddr_sto(0) => ddr_st_dqs,
 		ddr_sto(1) => ddr_st_dqs_open,

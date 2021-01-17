@@ -64,7 +64,7 @@ entity demo_graphics is
 		sout_data    : out std_logic_vector(8-1 downto 0);
 
 		video_clk    : in  std_logic;
-		video_shift_clk :  in std_logic;
+		video_shift_clk :  in std_logic := '-';
 		video_hzsync : buffer std_logic;
 		video_vtsync : buffer std_logic;
 		video_vton   : buffer std_logic;
