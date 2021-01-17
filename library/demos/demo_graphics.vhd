@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_db.all;
 use hdl4fpga.videopkg.all;
 
 entity demo_graphics is
