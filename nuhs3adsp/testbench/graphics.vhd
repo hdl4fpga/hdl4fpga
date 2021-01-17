@@ -220,7 +220,7 @@ architecture nuhs3adsp_graphics of testbench is
 			end loop;
 			return std_logic_vector(retval);
 		end;
-		constant time_offset : time := 200 us - 23 us + 300 ns + 5 ns;
+		constant time_offset : time := 200 us + 10 us;
 begin
 
 	mii_rxc <= mii_refclk;
@@ -232,26 +232,26 @@ begin
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after time_offset + 1 us, 
-		'0' after  time_offset + 1*170 us, '1' after time_offset + 180 us,
-		'0' after  time_offset + 2*170 us, '1' after time_offset + (2*170+10) * 1 us;
+	mii_treq <= '0', '1' after time_offset + 1 us; 
+--		'0' after  time_offset + 1*170 us, '1' after time_offset + 180 us;
+--		'0' after  time_offset + 2*170 us, '1' after time_offset + (2*170+10) * 1 us;
 
 	process (mii_treq, txfrm_ptr, mii_rxc)
 		constant k1 : std_logic_vector := 
 			  x"18ff"
 			& gen_natural(start => 0,     stop => 1*128-1, size => 16)
-			& x"18ff"
-			& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
-			& x"18ff"
-			& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
-			& x"18ff"
-			& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
-			& x"18ff"
-			& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
-			& x"1602000000"
-			& x"1702000000";
+--			& x"18ff"
+--			& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
+--			& x"18ff"
+--			& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
+--			& x"18ff"
+--			& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
+--			& x"18ff"
+--			& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
+			& x"1602800000"
+			& x"170200003f";
 
-		constant k2 : std_logic_vector := x"00020000" & (1 to 8 => '-') & k1;
+		constant k2 : std_logic_vector := x"00020000" & x"23" & k1;
 
 		constant k3 : std_logic_vector := 
 				x"4500"                 &    -- IP Version, TOS
@@ -271,10 +271,10 @@ begin
 					x"0000" &              -- UPD checksum
 					k2);
 
-		variable payload    : std_logic_vector(k1'range) := k1;
-		variable payloadack : std_logic_vector(k2'range) := k2;
-		variable packet     : std_logic_vector(k3'range) := k3;
-
+--		variable payload    : std_logic_vector(k1'range) := k1;
+--		variable payloadack : std_logic_vector(k2'range) := k2;
+--		variable packet     : std_logic_vector(k3'range) := k3;
+--
 		variable ack        : natural := 0;
 		variable incena     : std_logic := '1';
 
@@ -285,50 +285,50 @@ begin
 				if incena='1' then
 					txfrm_ptr <= (others => '0');
 
-					payload := 
-						  x"18ff"
-						& gen_natural(start => (ack*5+0)*128, stop => (ack*5+1)*128-1, size => 16)
-						& x"18ff"                     
-						& gen_natural(start => (ack*5+1)*128, stop => (ack*5+2)*128-1, size => 16)
-						& x"18ff"                     
-						& gen_natural(start => (ack*5+2)*128, stop => (ack*5+3)*128-1, size => 16)
-						& x"18ff"                     
-						& gen_natural(start => (ack*5+3)*128, stop => (ack*5+4)*128-1, size => 16)
-						& x"18ff"                     
-						& gen_natural(start => (ack*5+4)*128, stop => (ack*5+5)*128-1, size => 16)
-						& x"1602800000"
-						& x"170200013f";
-
-					ack := ack + 1;
-
-					payloadack := x"00020000" & std_logic_vector(to_unsigned(ack,8)) & payload;
-					packet     := 
-						x"4500"                 &    -- IP Version, TOS
-						x"0000"                 &    -- IP Length
-						x"0000"                 &    -- IP Identification
-						x"0000"                 &    -- IP Fragmentation
-						x"0511"                 &    -- IP TTL, protocol
-						x"0000"                 &    -- IP Header Checksum
-						x"ffffffff"             &    -- IP Source IP address
-						x"c0a8000e"             &    -- IP Destiantion IP Address
-
-						udp_checksummed (
-							x"00000000",
-							x"ffffffff",
-							x"0044dea9"         & -- UDP Source port, Destination port
-							std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
-							x"0000" &              -- UPD checksum
-							payloadack);
+--					payload := 
+--						  x"18ff"
+--						& gen_natural(start => (ack*5+0)*128, stop => (ack*5+1)*128-1, size => 16)
+--						& x"18ff"                     
+--						& gen_natural(start => (ack*5+1)*128, stop => (ack*5+2)*128-1, size => 16)
+--						& x"18ff"                     
+--						& gen_natural(start => (ack*5+2)*128, stop => (ack*5+3)*128-1, size => 16)
+--						& x"18ff"                     
+--						& gen_natural(start => (ack*5+3)*128, stop => (ack*5+4)*128-1, size => 16)
+--						& x"18ff"                     
+--						& gen_natural(start => (ack*5+4)*128, stop => (ack*5+5)*128-1, size => 16)
+--						& x"1602800000"
+--						& x"170200013f";
+--
+--					ack := ack + 1;
+--
+--					payloadack := x"00020000" & std_logic_vector(to_unsigned(ack,8)) & payload;
+--					packet     := 
+--						x"4500"                 &    -- IP Version, TOS
+--						x"0000"                 &    -- IP Length
+--						x"0000"                 &    -- IP Identification
+--						x"0000"                 &    -- IP Fragmentation
+--						x"0511"                 &    -- IP TTL, protocol
+--						x"0000"                 &    -- IP Header Checksum
+--						x"ffffffff"             &    -- IP Source IP address
+--						x"c0a8000e"             &    -- IP Destiantion IP Address
+--
+--						udp_checksummed (
+--							x"00000000",
+--							x"ffffffff",
+--							x"0044dea9"         & -- UDP Source port, Destination port
+--							std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
+--							x"0000" &              -- UPD checksum
+--							payloadack);
 					incena := '0';
 				end if;
-			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < packet'length/mii_rxd'length then
+			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < k3'length/mii_rxd'length then
 				incena := '0';
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
 			end if;
 		end if;
 
-		eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < packet'length/mii_rxd'length);
-		eth_txd  <= word2byte(reverse(packet,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
+		eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < k3'length/mii_rxd'length);
+		eth_txd  <= word2byte(reverse(k3,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
 
 	end process;
 
@@ -437,7 +437,7 @@ library micron;
 configuration nuhs3adsp_graphics_md of testbench is
 	for nuhs3adsp_graphics
 		for all : nuhs3adsp
-			use entity work.nuhs3adsp(graphics);
+			use entity work.nuhs3adsp(graphics1);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

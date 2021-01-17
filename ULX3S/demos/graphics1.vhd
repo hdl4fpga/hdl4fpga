@@ -463,7 +463,6 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		cas          => sdram_tab(sdram_mode).cas,
 
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
@@ -486,8 +485,10 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		dmacfg_clk   => dmacfg_clk,
-		ctlr_clk     => ctlr_clk,
+		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
+		ctlr_bl      => "000",
+		ctlr_cl      => sdram_tab(sdram_mode).cas,
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke,

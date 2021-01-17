@@ -13,18 +13,6 @@ LIB_WORK = work
 # Define path to each design unit
 HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
-HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
-HDL4FPGA__sio_ram = $(LIB_HDL4FPGA)/sio_ram/_primary.dat
-HDL4FPGA__sio_mux = $(LIB_HDL4FPGA)/sio_mux/_primary.dat
-HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
-HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
-HDL4FPGA__sio_dmahdsk = $(LIB_HDL4FPGA)/sio_dmahdsk/_primary.dat
-HDL4FPGA__so_data = $(LIB_HDL4FPGA)/so_data/_primary.dat
-HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
-HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
-HDL4FPGA__dmactlr = $(LIB_HDL4FPGA)/dmactlr/_primary.dat
-HDL4FPGA__ddr_ctlr = $(LIB_HDL4FPGA)/ddr_ctlr/_primary.dat
-HDL4FPGA__ddr_param = $(LIB_HDL4FPGA)/ddr_param/_primary.dat
 HDL4FPGA__xcs3_ddrphy = $(LIB_HDL4FPGA)/xcs3_ddrphy/_primary.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cp850x8x8x0to127 = $(LIB_HDL4FPGA)/cp850x8x8x0to127/_primary.dat
@@ -63,14 +51,14 @@ WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_prima
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
 WORK__ulx3s__graphics1 = $(LIB_WORK)/ulx3s/graphics1.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ulx3s_graphic = $(LIB_WORK)/testbench/ulx3s_graphic.dat
 WORK__testbench__nuhs3adsp_miidebug = $(LIB_WORK)/testbench/nuhs3adsp_miidebug.dat
+WORK__testbench__ulx3s_graphic = $(LIB_WORK)/testbench/ulx3s_graphic.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__mii_debug = $(LIB_WORK)/nuhs3adsp/mii_debug.dat
-WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
+WORK__nuhs3adsp__graphics1 = $(LIB_WORK)/nuhs3adsp/graphics1.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
 VCOM = vcom
 VLOG = vlog
@@ -81,14 +69,14 @@ whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
     $(WORK__ulx3s__graphics1) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ulx3s_graphic) \
     $(WORK__testbench__nuhs3adsp_miidebug) \
+    $(WORK__testbench__ulx3s_graphic) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__mii_debug) \
-    $(WORK__nuhs3adsp__graphics) \
+    $(WORK__nuhs3adsp__graphics1) \
     $(WORK__nuhs3adsp)
 
 $(WORK__nuhs3adsp) : /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.vhd \
@@ -96,22 +84,10 @@ $(WORK__nuhs3adsp) : /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.vhd
 
-$(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
+$(WORK__nuhs3adsp__graphics1) : ../../nuhs3adsp/demos/graphics1.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__xcs3_ddrphy) \
-		$(HDL4FPGA__ddr_param) \
-		$(HDL4FPGA__ddr_ctlr) \
-		$(HDL4FPGA__dmactlr) \
-		$(HDL4FPGA__graphics) \
-		$(HDL4FPGA__align) \
-		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__so_data) \
-		$(HDL4FPGA__sio_dmahdsk) \
-		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__sio_ram) \
-		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__demo_graphics) \
 		$(HDL4FPGA__sio_dayudp) \
 		$(HDL4FPGA__dfsdcm) \
 		$(HDL4FPGA__dfs) \
@@ -131,7 +107,7 @@ $(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../nuhs3adsp/demos/graphics.vhd
+	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics1.vhd
 
 $(WORK__nuhs3adsp__mii_debug) : ../../nuhs3adsp/demos/mii_debug.vhd \
 		$(HDL4FPGA__ddro) \
@@ -211,7 +187,7 @@ $(WORK__ulx3s__graphics1) : ../../ULX3S/demos/graphics1.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../ULX3S/demos/graphics1.vhd
+	$(VCOM) -2002 ../../ULX3S/demos/graphics1.vhd
 
 $(WORK__testbench__ulx3s_graphic) \
 $(WORK__ulx3s_graphic_md) \

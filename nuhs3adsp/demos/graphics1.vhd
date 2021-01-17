@@ -205,6 +205,7 @@ architecture graphics1 of nuhs3adsp is
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;
+	alias ctlr_clks : std_logic_vector is ddrsys_clks;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
@@ -303,9 +304,6 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
---		cas          => "010",	-- 2   133 Mhz
---		cas          => "110",	-- 2.5 166 Mhz
-		cas      => "011",	-- 3   200 Mhz
 
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => 8,
@@ -326,8 +324,12 @@ begin
 		video_pixel  => video_pixel,
 
 		dmacfg_clk   => dmacfg_clk,
-		ctlr_clk     => ctlr_clk,
+		ctlr_clks    => ctlr_clks,
 		ctlr_rst     => ddrsys_rst,
+		ctlr_bl      => "001",
+--		cas          => "010",	-- 2   133 Mhz
+--		cas          => "110",	-- 2.5 166 Mhz
+		ctlr_cl      => "011",	-- 3   200 Mhz
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),

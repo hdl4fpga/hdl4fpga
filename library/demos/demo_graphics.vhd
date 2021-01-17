@@ -46,7 +46,6 @@ entity demo_graphics is
 		coln_size    : natural;
 		word_size    : natural;
 		byte_size    : natural;
-		cas          : std_logic_vector(0 to 3-1);
 
 		timing_id    : videotiming_ids;
 		red_length   : natural := 5;
@@ -73,8 +72,10 @@ entity demo_graphics is
 		dvid_crgb    : out std_logic_vector(7 downto 0);
 
 		dmacfg_clk   : in  std_logic;
-		ctlr_clk     : in  std_logic;
+		ctlr_clks    : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		ctlr_rst     : in  std_logic;
+		ctlr_bl      : in  std_logic_vector(0 to 3-1);
+		ctlr_cl      : in  std_logic_vector(0 to 3-1);
 
 		ctlrphy_rst  : out std_logic;
 		ctlrphy_cke  : out std_logic;
@@ -87,12 +88,12 @@ entity demo_graphics is
 		ctlrphy_dsi  : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_dst  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dmi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		ctlrphy_dmt  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ctlrphy_dmo  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ctlrphy_dqi  : in  std_logic_vector(word_size-1 downto 0);
-		ctlrphy_dqt  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ctlrphy_dqo  : out std_logic_vector(word_size-1 downto 0);
+		ctlrphy_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmt  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqi  : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		ctlrphy_dqt  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -115,8 +116,6 @@ architecture mix of demo_graphics is
 	signal dmaiolen_irdy  : std_logic;
 	signal dmaioaddr_irdy : std_logic;
 
-
-	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
@@ -125,9 +124,9 @@ architecture mix of demo_graphics is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di        : std_logic_vector(word_size-1 downto 0);
-	signal ctlr_do        : std_logic_vector(word_size-1 downto 0);
-	signal ctlr_dm        : std_logic_vector(word_size/byte_size-1 downto 0) := (others => '0');
+	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
@@ -154,6 +153,7 @@ architecture mix of demo_graphics is
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
 
+	alias ctlr_clk : std_logic is ctlr_clks(0);
 begin
 
 	sio_b : block
@@ -194,13 +194,8 @@ begin
 		signal dmaiolen_irdy  : std_logic;
 		signal dmaioaddr_irdy : std_logic;
 
-		signal sin_frm       : std_logic;
-		signal sin_irdy      : std_logic;
-		signal sin_data      : std_logic_vector(8-1 downto 0);
-		signal sout_frm      : std_logic_vector(0 to 0);
-		signal sout_irdy     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal sout_trdy     : std_logic;
-		signal sout_data     : std_logic_vector(8-1 downto 0);
+		signal soutv_frm     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal soutv_irdy    : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
 		signal sts_frm       : std_logic;
 		signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
 		signal sts_trdy      : std_logic;
@@ -317,8 +312,11 @@ begin
 				req  => frm_req,
 				gnt  => frm_gnt);
 
-			sout_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt);
-			sout_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt);
+			soutv_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt); -- Xilinx ISE Bug;
+			sout_frm   <= soutv_frm(0);                             -- Xilinx ISE Bug;
+			soutv_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt); -- Xilinx ISE Bug;
+			sout_irdy  <= soutv_irdy(0);                            -- Xilinx ISE Bug;
+
 			sout_data <= wirebus(sts_data & sodata_data, frm_gnt); 
 
 			(0 => sts_trdy, 1 => sodata_trdy) <= frm_gnt and (frm_gnt'range => sout_trdy);
@@ -566,7 +564,7 @@ begin
 		port map (
 			clk   => ctlr_clk,
 			di(0) => ctlr_do_dv(0),
-			do(1) => graphics_dv);
+			do(0) => graphics_dv);
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
@@ -726,15 +724,15 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size)
 	port map (
-		ctlr_bl      => "000",
-		ctlr_cl      => cas,
+		ctlr_bl      => ctlr_bl,
+		ctlr_cl      => ctlr_cl,
 
 		ctlr_cwl     => "000",
 		ctlr_wr      => "101",
 		ctlr_rtt     => "--",
 
 		ctlr_rst     => ctlr_rst,
-		ctlr_clks(0) => ctlr_clk,
+		ctlr_clks    => ctlr_clks,
 		ctlr_inirdy  => ctlr_inirdy,
 
 		ctlr_irdy    => ctlr_irdy,
@@ -773,7 +771,7 @@ begin
 		phy_sto      => ctlrphy_sto,
                                 
 		phy_dqsi     => ctlrphy_dsi,
-		phy_dqso     => open,
+		phy_dqso     => ctlrphy_dso,
 		phy_dqst     => ctlrphy_dst);
 
 end;
