@@ -58,7 +58,7 @@ WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__mii_debug = $(LIB_WORK)/nuhs3adsp/mii_debug.dat
-WORK__nuhs3adsp__graphics1 = $(LIB_WORK)/nuhs3adsp/graphics1.dat
+WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
 VCOM = vcom
 VLOG = vlog
@@ -76,7 +76,7 @@ whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__mii_debug) \
-    $(WORK__nuhs3adsp__graphics1) \
+    $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp)
 
 $(WORK__nuhs3adsp) : /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.vhd \
@@ -84,7 +84,7 @@ $(WORK__nuhs3adsp) : /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga.work/nuhs3adsp/common/nuhs3adsp.vhd
 
-$(WORK__nuhs3adsp__graphics1) : ../../nuhs3adsp/demos/graphics1.vhd \
+$(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__xcs3_ddrphy) \
 		$(HDL4FPGA__demo_graphics) \
@@ -107,7 +107,7 @@ $(WORK__nuhs3adsp__graphics1) : ../../nuhs3adsp/demos/graphics1.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics1.vhd
+	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics.vhd
 
 $(WORK__nuhs3adsp__mii_debug) : ../../nuhs3adsp/demos/mii_debug.vhd \
 		$(HDL4FPGA__ddro) \

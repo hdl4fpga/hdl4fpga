@@ -500,7 +500,7 @@ begin
 		ctlrphy_a    => ctlrphy_a,
 		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => ctlrphy_dso,
+		ctlrphy_dso  => open,
 		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,

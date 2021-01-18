@@ -437,7 +437,7 @@ library micron;
 configuration nuhs3adsp_graphics_md of testbench is
 	for nuhs3adsp_graphics
 		for all : nuhs3adsp
-			use entity work.nuhs3adsp(graphics1);
+			use entity work.nuhs3adsp(graphics);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

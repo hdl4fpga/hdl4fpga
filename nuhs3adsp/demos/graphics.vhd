@@ -34,7 +34,7 @@ use hdl4fpga.cgafonts.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture graphics1 of nuhs3adsp is
+architecture graphics of nuhs3adsp is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
