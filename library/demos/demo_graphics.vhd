@@ -430,6 +430,7 @@ begin
 			signal fifo_data   : std_logic_vector(ctlr_do'range);
 			signal fifo_length : std_logic_vector(16-1 downto 0);
 
+			signal we : std_logic;
 		begin
 
 			process (ctlr_do_dv, ctlr_clk)
@@ -437,7 +438,7 @@ begin
 			begin
 				if rising_edge(ctlr_clk) then
 					if (dmaio_req xor dmaio_rdy)='1' then
-						data_gnt := '1';
+						data_gnt := not to_bit(we);
 					elsif ctlr_do_dv(0)='0' then
 						if data_gnt='1' then
 							fifo_req <= not fifo_rdy;
@@ -492,6 +493,7 @@ begin
 									length := length rol 1;
 								end loop;
 								fifo_length <= std_logic_vector(length);
+								we <= dmaio_we;
 							end if;
 						end if;
 					end if;

@@ -81,33 +81,6 @@ architecture graphics of nuhs3adsp is
 	constant clk90        : natural := 1;
 	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
 
-	signal dmactlr_len    : std_logic_vector(25-1 downto 2);
-	signal dmactlr_addr   : std_logic_vector(25-1 downto 2);
-
-	signal dmacfgio_req   : std_logic;
-	signal dmacfgio_rdy   : std_logic;
-	signal dmaio_req      : std_logic := '0';
-	signal dmaio_rdy      : std_logic;
-	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
-	signal dmaio_addr     : std_logic_vector(24-1 downto 0);
-	signal dmaio_we       : std_logic;
-
-	signal ctlr_irdy      : std_logic;
-	signal ctlr_trdy      : std_logic;
-	signal ctlr_rw        : std_logic;
-	signal ctlr_act       : std_logic;
-	signal ctlr_inirdy    : std_logic;
-	signal ctlr_refreq    : std_logic;
-	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
-	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlr_di_dv     : std_logic;
-	signal ctlr_di_req    : std_logic;
-	signal ctlr_dio_req   : std_logic;
-
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
@@ -145,26 +118,6 @@ architecture graphics of nuhs3adsp is
     signal video_dot      : std_logic;
     signal video_on       : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
-    signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
-
-	signal dmacfgvideo_req : std_logic;
-	signal dmacfgvideo_rdy : std_logic;
-	signal dmavideo_req   : std_logic;
-	signal dmavideo_rdy   : std_logic;
-	signal dmavideo_len   : std_logic_vector(dmactlr_len'range);
-	signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
-
-	signal dmacfg_req     : std_logic_vector(0 to 2-1);
-	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
-	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
-	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
-	signal dev_we         : std_logic_vector(0 to 2-1);
-
-	signal dev_req : std_logic_vector(0 to 2-1);
-	signal dev_rdy : std_logic_vector(0 to 2-1); 
-
-	signal ctlr_ras : std_logic;
-	signal ctlr_cas : std_logic;
 
 	type display_param is record
 		mode    : videotiming_ids;
@@ -468,39 +421,6 @@ begin
 	mii_refclk <= mii_clk;	
 
 	hd_t_data <= 'Z';
-
-	process (sio_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(sio_clk) then
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			i := dmaio_rdy;
-
-			led18 <= t;
-			led16 <= not t;
-		end if;
-	end process;
-
-	process (ctlr_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			i := dmavideo_rdy;
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			led13 <= t;
-			led15 <= not t;
-		end if;
-	end process;
 
 	-- LEDs --
 	----------
