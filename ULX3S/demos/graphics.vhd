@@ -33,7 +33,7 @@ use hdl4fpga.videopkg.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture graphics1 of ulx3s is
+architecture graphics of ulx3s is
 
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
@@ -53,6 +53,7 @@ architecture graphics1 of ulx3s is
 	constant sclk_edges   : natural := 1;
 	constant data_phases  : natural := 1;
 	constant data_edges   : natural := 1;
+	constant cmmd_gear    : natural := 1;
 	constant data_gear    : natural := 1;
 	constant bank_size    : natural := sdram_ba'length;
 	constant addr_size    : natural := sdram_a'length;
@@ -153,7 +154,7 @@ architecture graphics1 of ulx3s is
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
     signal video_pixel    : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
-	signal dvid_crgb      : std_logic_vector(7 downto 0);
+	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type sdram_params is record
 		pll : pll_params;
@@ -390,14 +391,14 @@ begin
 		uart_txd  => uart_txd,
 		uart_txen => uart_txen,
 		sio_clk   => sio_clk,
+		so_frm    => sin_frm,
+		so_irdy   => sin_irdy,
+		so_data   => sin_data,
+
 		si_frm    => sout_frm,
 		si_irdy   => sout_irdy,
 		si_trdy   => sout_trdy,
-		si_data   => sout_data,
-
-		so_frm    => sin_frm,
-		so_irdy   => sin_irdy,
-		so_data   => sin_data);
+		si_data   => sout_data);
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -409,6 +410,7 @@ begin
 		data_phases  => data_phases,
 		data_edges   => data_edges,
 		data_gear    => data_gear,
+		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -463,7 +465,22 @@ begin
 
 		tp           => tp);
 
-	led <= reverse(tp(0 to 8-1));
+	process (sio_clk)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(sio_clk) then
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			i := sin_frm;
+
+			led(0) <= t;
+			led(1) <= not t;
+		end if;
+	end process;
 
 	sdram_sti : entity hdl4fpga.align
 	generic map (
