@@ -40,6 +40,7 @@ entity demo_graphics is
 		sclk_edges   : natural;
 		data_phases  : natural;
 		data_edges   : natural;
+		cmmd_gear    : natural := 1;
 		data_gear    : natural;
 		bank_size    : natural;
 		addr_size    : natural;
@@ -158,7 +159,7 @@ begin
 
 	sio_b : block
 
-		constant fifo_depth  : natural := 8;
+		constant fifo_depth  : natural := 4;
 		constant fifo_gray   : boolean := true;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
@@ -206,16 +207,16 @@ begin
 		signal siodmaio_irdy : std_logic;
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
-		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
+--		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
+		signal sio_dmaio     : std_logic_vector(0 to ((2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sout_data'range);
 
 		signal sodata_frm    : std_logic;
 		signal sodata_irdy   : std_logic;
-		signal sodata_trdy   : std_logic := '1';
+		signal sodata_trdy   : std_logic;
 		signal sodata_end    : std_logic;
 		signal sodata_data   : std_logic_vector(sout_data'range);
 
-		signal ipv4acfg_req  : std_logic;
 		signal tp1 : std_logic_vector(32-1 downto 0);
 		signal tp2 : std_logic_vector(32-1 downto 0);
 
@@ -224,6 +225,8 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
+
+		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/sin_data'length-1);
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -263,10 +266,10 @@ begin
 
 		process (sio_clk)
 			variable frm : std_logic;
-			variable req : std_logic := '0';
+			variable req : bit := '0';
 		begin
 			if rising_edge(sio_clk) then
-				if to_bit(req)='1' then
+				if req='1' then
 					if (siodmaio_irdy and siodmaio_trdy and siodmaio_end)='1' then
 						req := '0';
 					end if;
@@ -274,12 +277,12 @@ begin
 					req := '1';
 				end if;
 				frm := to_stdulogic(to_bit(rgtr_frm));
-				sts_frm <= to_stdulogic(to_bit(req));
+				sts_frm <= to_stdulogic(req);
 			end if;
 		end process;
 
 		sio_dmaio <= 
-			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+--			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000";
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
@@ -311,6 +314,11 @@ begin
 				clk  => sio_clk,
 				req  => frm_req,
 				gnt  => frm_gnt);
+
+--  		sout_frm  <= sts_frm;
+--  		sout_irdy <= sts_irdy(0);                            -- Xilinx ISE Bug;
+--  		sout_data <= sts_data; 
+--  		sts_trdy <= sout_trdy;
 
 			soutv_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt); -- Xilinx ISE Bug;
 			sout_frm   <= soutv_frm(0);                             -- Xilinx ISE Bug;
@@ -366,10 +374,10 @@ begin
 			dst_data => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
-		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(2-1 downto 0)=(2-1 downto 0 => '0'));
+		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth*(256/(ctlr_di'length/8)),
+			max_depth => (8*4*1*256/(ctlr_di'length/8)),
 			async_mode => true,
 			latency   => 2,
 			check_sov => true,
@@ -619,6 +627,7 @@ begin
 		------------------
 
 		dvi_b : block
+
 			constant subpixel_length : natural := hdl4fpga.std.min(hdl4fpga.std.min(red_length, green_length), blue_length);
 
 			signal dvid_blank : std_logic;
@@ -626,14 +635,16 @@ begin
 			signal in_green : unsigned(0 to subpixel_length-1);
 			signal in_blue  : unsigned(0 to subpixel_length-1);
 			signal ledq : std_logic;
+
 		begin
+
 			dvid_blank <= video_blank;
 
 
 			process (video_pixel)
 				variable pixel : unsigned(0 to video_pixel'length-1);
 			begin
-				pixel := unsigned(video_pixel);
+				pixel    := unsigned(video_pixel);
 				in_red   <= pixel(in_red'range);
 				pixel    := pixel sll red_length;
 				in_green <= pixel(in_green'range);
@@ -675,9 +686,9 @@ begin
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
-		fpga         => fpga,
-		mark         => mark,
-		tcp          => ddr_tcp,
+		fpga        => fpga,
+		mark        => mark,
+		tcp         => ddr_tcp,
 
 		bank_size   => bank_size,
 		addr_size   => addr_size,
@@ -715,7 +726,7 @@ begin
 		mark         => mark,
 		tcp          => ddr_tcp,
 
-		cmmd_gear    => 1,
+		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		sclk_phases  => sclk_phases,

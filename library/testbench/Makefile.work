@@ -49,7 +49,7 @@ HDL4FPGA__ahdlc_tx = $(LIB_HDL4FPGA)/ahdlc_tx/_primary.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_primary.dat
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
-WORK__ulx3s__graphics1 = $(LIB_WORK)/ulx3s/graphics1.dat
+WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__nuhs3adsp_miidebug = $(LIB_WORK)/testbench/nuhs3adsp_miidebug.dat
 WORK__testbench__ulx3s_graphic = $(LIB_WORK)/testbench/ulx3s_graphic.dat
@@ -67,7 +67,7 @@ SCCOM = sccom
 
 whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
-    $(WORK__ulx3s__graphics1) \
+    $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
     $(WORK__testbench__nuhs3adsp_miidebug) \
     $(WORK__testbench__ulx3s_graphic) \
@@ -107,7 +107,7 @@ $(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics.vhd
+	$(VCOM) -2002 ../../nuhs3adsp/demos/graphics.vhd
 
 $(WORK__nuhs3adsp__mii_debug) : ../../nuhs3adsp/demos/mii_debug.vhd \
 		$(HDL4FPGA__ddro) \
@@ -169,7 +169,7 @@ $(WORK__ulx3s) : ../../ULX3S/common/ulx3s.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../ULX3S/common/ulx3s.vhd
 
-$(WORK__ulx3s__graphics1) : ../../ULX3S/demos/graphics1.vhd \
+$(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__demo_graphics) \
@@ -187,7 +187,7 @@ $(WORK__ulx3s__graphics1) : ../../ULX3S/demos/graphics1.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../ULX3S/demos/graphics1.vhd
+	$(VCOM) -2002 ../../ULX3S/demos/graphics.vhd
 
 $(WORK__testbench__ulx3s_graphic) \
 $(WORK__ulx3s_graphic_md) \

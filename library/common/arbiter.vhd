@@ -75,9 +75,9 @@ begin
 	assert req'length=gnt'length
 	severity failure;
 
-	gnt  <= 
-		(gnt'range => csc) and primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd)))) when idle_cycle else
-		(gnt'range => csc) and primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd and req))));
+	gnt <= 
+		primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=gntd))) and (gnt'range => csc) when idle_cycle else
+		primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd and req)))) and (gnt'range => csc);
 
 	swp  <= setif(gntd/=gnt);
 	gswp <= setif(gntd/=gnt and gntd/=(gntd'range => '0') and gnt/=(gnt'range => '0'));
