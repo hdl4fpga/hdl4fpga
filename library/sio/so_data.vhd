@@ -140,8 +140,8 @@ begin
 	so_data <= 
 		x"ff"     when st_idle | st_rid,
 		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
-		std_logic_vector(resize(low_cntr, so_data'length)) when st_data;
---		ser_data  when st_data;
+--		std_logic_vector(resize(low_cntr, so_data'length)) when st_data;
+		ser_data  when st_data;
 	so_end <= si_end;
 
 end;

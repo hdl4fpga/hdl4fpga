@@ -169,8 +169,10 @@ int rcvd_pkt()
 						continue;
 				perror("reading serial");
 				exit(1);
-			} else
+			} else {
+				fprintf(stderr, "reading time out\n");
 				len--;
+			}
 		}
 	}
 

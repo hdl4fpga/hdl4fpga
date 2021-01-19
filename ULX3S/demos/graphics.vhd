@@ -44,7 +44,7 @@ architecture graphics of ulx3s is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 1000.0 / 25.0;
+	constant sys_freq     : real    := 25.0e6;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := M7E;
@@ -141,6 +141,11 @@ architecture graphics of ulx3s is
 --	constant nodebug_videomode : natural := mode600p24;
 --	constant nodebug_videomode : natural := mode900p;
 --	constant nodebug_videomode : natural := mode1080p;
+
+	constant videodot_freq : natural := 
+		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
+		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
+
 --	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
 	constant video_mode : natural := nodebug_videomode;
 
@@ -185,13 +190,17 @@ architecture graphics of ulx3s is
 --	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
 
-	constant ddr_tcp   : natural := 
-		(1000*natural(sys_per)*sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div)/
-		(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div);
+	constant ddr_tcp   : natural := natural(
+		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
+		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	alias uart_clk     : std_logic is clk_25mhz;
-	constant uart_xtal : natural := natural(10.0**9/real(sys_per));
+--	constant uart_xtal : natural := natural(sys_freq);
+--	alias uart_clk     : std_logic is clk_25mhz;
+
+	constant uart_xtal : natural := natural(videodot_freq);
+	alias uart_clk     : std_logic is video_clk;
+
 	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;
 

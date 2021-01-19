@@ -370,7 +370,7 @@ begin
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaiolen_irdy,
-			dst_trdy => dmaio_next, --dmaio_trdy,
+			dst_trdy => dmaio_next,
 			dst_data => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
