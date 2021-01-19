@@ -86,9 +86,6 @@
         <Source name="../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../demos/graphics.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
-        </Source>
         <Source name="../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -200,10 +197,16 @@
         <Source name="../../library/sio/sio_flowtx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/sio/sio_dmactlr.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../demos/graphics.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
+        </Source>
+        <Source name="../../library/demos/demo_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
