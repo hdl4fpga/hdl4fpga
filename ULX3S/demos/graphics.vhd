@@ -146,8 +146,8 @@ architecture graphics of ulx3s is
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
---	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
-	constant video_mode : natural := nodebug_videomode;
+	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
+--	constant video_mode : natural := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
@@ -183,9 +183,9 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 19), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 21), cas => "011"));
 
---	constant sdram_mode : natural := sdram133MHz;
+	constant sdram_mode : natural := sdram133MHz;
 --	constant sdram_mode : natural := sdram166MHz;
-	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
 --	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
@@ -195,11 +195,11 @@ architecture graphics of ulx3s is
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
---	constant uart_xtal : natural := natural(sys_freq);
---	alias uart_clk     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(sys_freq);
+	alias uart_clk     : std_logic is clk_25mhz;
 
-	constant uart_xtal : natural := natural(videodot_freq);
-	alias uart_clk     : std_logic is video_clk;
+--	constant uart_xtal : natural := natural(videodot_freq);
+--	alias uart_clk     : std_logic is video_clk;
 
 	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;

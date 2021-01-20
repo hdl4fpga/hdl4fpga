@@ -114,8 +114,6 @@ architecture mix of demo_graphics is
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
 	signal dmaio_we       : std_logic;
-	signal dmaiolen_irdy  : std_logic;
-	signal dmaioaddr_irdy : std_logic;
 
 	signal ctlr_irdy      : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -681,7 +679,7 @@ begin
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_addr   <= dmavideo_addr & dmaio_addr;
+	dev_addr   <= dmavideo_addr & (dmaio_addr and x"7fffff");
 	dev_we     <= '0'           & dmaio_we;
 
 	dmactlr_e : entity hdl4fpga.dmactlr

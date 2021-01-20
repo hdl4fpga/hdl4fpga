@@ -212,6 +212,8 @@ architecture ulx3s_graphic of testbench is
 --		x"123456789abcdef123456789abcdef12" &
 		x"170200007f" &
 		x"1602000080" &
+		x"170200007f" &
+		x"1602800000" &
 		x"170200007f";
 
 	signal ahdlc_frm  : std_logic;
@@ -415,7 +417,7 @@ library micron;
 configuration ulx3s_graphic_md of testbench is
 	for ulx3s_graphic
 		for all : ulx3s
-			use entity work.ulx3s(graphics1);
+			use entity work.ulx3s(graphics);
 		end for;
 			for all : mt48lc32m16a2
 			use entity micron.mt48lc32m16a2
