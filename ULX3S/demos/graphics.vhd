@@ -195,11 +195,11 @@ architecture graphics of ulx3s is
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
---	constant uart_xtal : natural := natural(sys_freq);
---	alias uart_clk     : std_logic is clk_25mhz;
+	constant uart_xtal : natural := natural(sys_freq);
+	alias uart_clk     : std_logic is clk_25mhz;
 
-	constant uart_xtal : natural := natural(videodot_freq);
-	alias uart_clk     : std_logic is video_clk;
+--	constant uart_xtal : natural := natural(videodot_freq);
+--	alias uart_clk     : std_logic is video_clk;
 
 	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;
@@ -269,7 +269,7 @@ begin
 			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
 			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
         port map (
-			rst       => '0', 
+			rst       => '1', 
 			clki      => clk_25mhz,
 			CLKFB     => clkfb, 
             PHASESEL0 => '0', PHASESEL1 => '0', 
@@ -432,6 +432,7 @@ begin
 		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)))
 
 	port map (
+		tpin  => video_lck,
 		sio_clk      => sio_clk,
 		sin_frm      => sin_frm,
 		sin_irdy     => sin_irdy,

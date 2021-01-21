@@ -214,7 +214,7 @@ architecture ulx3s_graphic of testbench is
 		x"1602000080" &
 		x"170200007f" &
 		x"1602800000" &
-		x"170200007f";
+		x"1702000000";
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;

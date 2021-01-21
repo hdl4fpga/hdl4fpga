@@ -97,6 +97,7 @@ entity demo_graphics is
 		ctlrphy_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		tpin         : in  std_logic := '-';
 
 		tp           : buffer std_logic_vector(0 to 32-1));
 
@@ -440,13 +441,13 @@ begin
 			signal fifo_length : std_logic_vector(16-1 downto 0);
 
 			signal we : std_logic;
+			signal pp : bit;
 		begin
 
 			process (ctlr_do_dv(0), ctlr_clk)
 				variable gnt : bit;
 			begin
 				if rising_edge(ctlr_clk) then
---					if (dmaio_req xor dmaio_rdy)='1' then
 					if dmaio_gnt='1' then
 						gnt := not to_bit(we);
 					elsif ctlr_do_dv(0)='0' then
@@ -455,6 +456,7 @@ begin
 						end if;
 						gnt := '0';
 					end if;
+					pp <= gnt;
 				end if;
 				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
 			end process;
@@ -547,6 +549,7 @@ begin
 		signal pixel       : std_logic_vector(video_pixel'range);
 
 		signal ctlrvideo_irdy : std_logic;
+		signal pp : bit;
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -570,14 +573,15 @@ begin
 				elsif ctlr_do_dv(0)='0' then
 					gnt := '0';
 				end if;
+				pp <= gnt;
 			end if;
-			ctlrvideo_irdy <= ctlr_do_dv(0); -- and to_stdulogic(gnt);
+			ctlrvideo_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
 		end process;
 
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => 2))
+			d => (0 to 0 => 0))
 		port map (
 			clk   => ctlr_clk,
 --			di(0) => ctlr_do_dv(0),
@@ -587,7 +591,7 @@ begin
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => 2))
+			d => (0 to ctlr_do'length-1 => 0))
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,
