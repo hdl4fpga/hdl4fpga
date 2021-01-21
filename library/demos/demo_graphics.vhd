@@ -146,8 +146,11 @@ architecture mix of demo_graphics is
 	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 	signal dev_we         : std_logic_vector(0 to 2-1);
 
-	signal dev_req        : std_logic_vector(0 to 2-1);
-	signal dev_rdy        : std_logic_vector(0 to 2-1); 
+	signal dev_gnt        : std_logic_vector(0 to 2-1);
+	signal dev_req        : std_logic_vector(dev_gnt'range);
+	signal dev_rdy        : std_logic_vector(dev_gnt'range); 
+	alias  dmavideo_gnt   : std_logic is dev_gnt(0);
+	alias  dmaio_gnt      : std_logic is dev_gnt(1);
 
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
@@ -439,20 +442,21 @@ begin
 			signal we : std_logic;
 		begin
 
-			process (ctlr_do_dv, ctlr_clk)
-				variable data_gnt : bit;
+			process (ctlr_do_dv(0), ctlr_clk)
+				variable gnt : bit;
 			begin
 				if rising_edge(ctlr_clk) then
-					if (dmaio_req xor dmaio_rdy)='1' then
-						data_gnt := not to_bit(we);
+--					if (dmaio_req xor dmaio_rdy)='1' then
+					if dmaio_gnt='1' then
+						gnt := not to_bit(we);
 					elsif ctlr_do_dv(0)='0' then
-						if data_gnt='1' then
+						if gnt='1' then
 							fifo_req <= not fifo_rdy;
 						end if;
-						data_gnt := '0';
+						gnt := '0';
 					end if;
 				end if;
-				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(data_gnt);
+				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
 			end process;
 
 			dmadataout_e : entity hdl4fpga.fifo
@@ -542,6 +546,7 @@ begin
 		signal graphics_dv : std_logic;
 		signal pixel       : std_logic_vector(video_pixel'range);
 
+		signal ctlrvideo_irdy : std_logic;
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -556,6 +561,29 @@ begin
 			video_hzon    => hzon,
 			video_vton    => vton);
 
+		process (ctlr_do_dv(0), ctlr_clk)
+			variable gnt : bit;
+		begin
+			if rising_edge(ctlr_clk) then
+				if dmavideo_gnt='1' then
+					gnt := '1';
+				elsif ctlr_do_dv(0)='0' then
+					gnt := '0';
+				end if;
+			end if;
+			ctlrvideo_irdy <= ctlr_do_dv(0); -- and to_stdulogic(gnt);
+		end process;
+
+		graphicsdv_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => 2))
+		port map (
+			clk   => ctlr_clk,
+--			di(0) => ctlr_do_dv(0),
+			di(0) => ctlrvideo_irdy,
+			do(0) => graphics_dv);
+
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length,
@@ -564,15 +592,6 @@ begin
 			clk => ctlr_clk,
 			di  => ctlr_do,
 			do  => graphics_di);
-
-		graphicsdv_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => 2))
-		port map (
-			clk   => ctlr_clk,
-			di(0) => ctlr_do_dv(0),
-			do(0) => graphics_dv);
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
@@ -700,6 +719,7 @@ begin
 		dev_we      => dev_we,
 
 		dev_req     => dev_req,
+		dev_gnt     => dev_gnt,
 		dev_rdy     => dev_rdy,
 
 		ctlr_clk    => ctlr_clk,

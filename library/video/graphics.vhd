@@ -29,10 +29,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
---		mode600p   => (pll => (clkos_div => 2, clkop_div => 128, clkfb_div => 1, clki_div => 5, clkos2_div => 16, clkos3_div => 2, clkop_phase => 127), mode => pclk40_00m800x600at60),
---			in_red    => video_pixel(0   to  0+5-1),
---			in_green  => video_pixel(0+5 to  5+5-1),
---			in_blue   => video_pixel(6+5 to 11+5-1),
 entity graphics is
 	generic (
 		video_width  : natural);

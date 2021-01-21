@@ -52,14 +52,14 @@ begin
 		gnt  => dev_gnt);
 
 	process (rsrc_clk)
-		variable gnt  : std_logic_vector(dev_gnt'range);
+		variable gnt  : bit_vector(dev_gnt'range);
 	begin
 		if rising_edge(rsrc_clk) then
 			if (to_stdulogic(to_bit(rsrc_req)) xor to_stdulogic(to_bit(rsrc_rdy)))='0' then
-				if to_bitvector(gnt)=(gnt'range => '0') then
+				if gnt=(gnt'range => '0') then
 					if dev_idle='0' then
 						rsrc_req <= not to_stdulogic(to_bit(rsrc_rdy));
-						gnt      := dev_gnt;
+						gnt      := to_bitvector(dev_gnt);
 					end if;
 				else
 					for i in gnt'range loop

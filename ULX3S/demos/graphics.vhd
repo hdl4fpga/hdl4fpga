@@ -129,7 +129,7 @@ architecture graphics of ulx3s is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div =>  1, clkos3_div => 2, clkop_phase =>  15), pixel => rgb888, mode => pclk_debug),
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk_debug),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2, clkop_phase =>  28), pixel => rgb666, mode => pclk40_00m800x600at60),
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2, clkop_phase =>  24), pixel => rgb888, mode => pclk40_00m800x600at60),
@@ -195,11 +195,11 @@ architecture graphics of ulx3s is
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	constant uart_xtal : natural := natural(sys_freq);
-	alias uart_clk     : std_logic is clk_25mhz;
+--	constant uart_xtal : natural := natural(sys_freq);
+--	alias uart_clk     : std_logic is clk_25mhz;
 
---	constant uart_xtal : natural := natural(videodot_freq);
---	alias uart_clk     : std_logic is video_clk;
+	constant uart_xtal : natural := natural(videodot_freq);
+	alias uart_clk     : std_logic is video_clk;
 
 	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;

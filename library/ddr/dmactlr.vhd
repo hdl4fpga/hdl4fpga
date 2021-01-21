@@ -47,6 +47,7 @@ entity dmactlr is
 		dev_we       : in  std_logic_vector;
 
 		dev_req      : in  std_logic_vector;
+		dev_gnt      : buffer std_logic_vector;
 		dev_rdy      : buffer std_logic_vector;
 
 		ctlr_clk     : in  std_logic;
@@ -174,11 +175,12 @@ begin
 	process (ctlr_clk)
 	begin
 		if rising_edge(ctlr_clk) then
-			dma_req      <= dev_req;
-			dmatrans_req <= to_stdulogic(to_bit(dmatransgnt_req));
+			dma_req <= dev_req;
 		end if;
 	end process;
+	dmatrans_req <= to_stdulogic(to_bit(dmatransgnt_req));
 	dev_rdy <= dma_rdy;
+	dev_gnt <= dma_gnt;
 
 
 	dmatrans_we <= to_stdulogic(to_bit(trans_we(0)));

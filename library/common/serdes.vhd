@@ -26,18 +26,21 @@ begin
 		if rising_edge(serdes_clk) then
 			if des_data'length=ser_data'length then
 				cntr := (others => '0');
-			elsif serdes_frm='1' then
-				if ser_irdy='1' then
-					if 2**cntr'length=des_data'length/ser_data'length then
-						cntr := cntr + 1;
-					elsif cntr=des_data'length/ser_data'length-1 then
-						cntr := (others => '0');
-					end if;
-				end if;
+				stop <= '1';
 			else
-				cntr := (others => '0');
+				if serdes_frm='1' then
+					if ser_irdy='1' then
+						if 2**cntr'length=des_data'length/ser_data'length then
+							cntr := cntr + 1;
+						elsif cntr=des_data'length/ser_data'length-1 then
+							cntr := (others => '0');
+						end if;
+					end if;
+				else
+					cntr := (others => '0');
+				end if;
+				stop <= setif(cntr=to_unsigned(des_data'length/ser_data'length-1,cntr'length));
 			end if;
-			stop <= setif(cntr=to_unsigned(des_data'length/ser_data'length-1,cntr'length));
 		end if;
 	end process;
 

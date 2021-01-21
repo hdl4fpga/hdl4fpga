@@ -51,16 +51,16 @@ architecture def of box_edges is
 begin
 
 	process (video_clk)
-		variable div : unsigned(video_div'length-1 downto 0) := (others => '0');
+		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
 				div := (others => '0');
 			elsif next_edge='1' then
-				div := div + 1;
+				div := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(div))) + 1);
 			end if;
-			rd_addr   <= std_logic_vector(div(rd_addr'range));
-			video_div <= std_logic_vector(div);
+			rd_addr   <= div(rd_addr'range);
+			video_div <= div;
 		end if;
 	end process;
 
@@ -191,7 +191,7 @@ begin
 			elsif extern_video='1' and extern_blankn='0' then
 				hz_cntr <= (others => '0');
 			else
-				hz_cntr <= std_logic_vector(unsigned(hz_cntr) + 1);
+				hz_cntr <= std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(hz_cntr))) + 1);
 			end if;
 		end if;
 	end process;
@@ -219,13 +219,13 @@ begin
 				if vt_ini='1' then
 					vt_cntr <= (others => '0');
 				elsif hz_ini='1' then
-					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+					vt_cntr <= std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(vt_cntr))) + 1);
 				end if;
 			else
 				if extern_vtsync='1' then
 					vt_cntr <= (others => '0');
 				elsif extern_blankn='0' and blankn_edge='1' then
-					vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+					vt_cntr <= std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(vt_cntr))) + 1);
 				end if;
 			end if;
 			blankn_edge := extern_blankn;
