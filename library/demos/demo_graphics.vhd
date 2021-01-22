@@ -440,23 +440,35 @@ begin
 			signal fifo_data   : std_logic_vector(ctlr_do'range);
 			signal fifo_length : std_logic_vector(16-1 downto 0);
 
-			signal we : std_logic;
 			signal pp : bit;
+			signal ppp : bit;
 		begin
 
 			process (ctlr_do_dv(0), ctlr_clk)
 				variable gnt : bit;
+				variable str : bit;
 			begin
 				if rising_edge(ctlr_clk) then
 					if dmaio_gnt='1' then
-						gnt := not to_bit(we);
-					elsif ctlr_do_dv(0)='0' then
-						if gnt='1' then
-							fifo_req <= not fifo_rdy;
+						gnt := not to_bit(dmaio_we);
+						if ctlr_do_dv(0)='1' then
+							str := '1';
 						end if;
-						gnt := '0';
+					elsif gnt='1' then
+						if str='1' then
+							if ctlr_do_dv(0)='0' then
+								if gnt='1' then
+									fifo_req <= not fifo_rdy;
+								end if;
+								gnt := '0';
+								str := '0';
+							end if;
+						elsif ctlr_do_dv(0)='1' then
+							str := '1';
+						end if;
 					end if;
 					pp <= gnt;
+					ppp <= str;
 				end if;
 				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
 			end process;
@@ -505,7 +517,6 @@ begin
 									length := length rol 1;
 								end loop;
 								fifo_length <= std_logic_vector(length);
-								we <= dmaio_we;
 							end if;
 						end if;
 					end if;
@@ -550,6 +561,7 @@ begin
 
 		signal ctlrvideo_irdy : std_logic;
 		signal pp : bit;
+		signal ppp : bit;
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -566,16 +578,36 @@ begin
 
 		process (ctlr_do_dv(0), ctlr_clk)
 			variable gnt : bit;
+			variable str : bit;
 		begin
 			if rising_edge(ctlr_clk) then
 				if dmavideo_gnt='1' then
 					gnt := '1';
-				elsif ctlr_do_dv(0)='0' then
-					gnt := '0';
+					if ctlr_do_dv(0)='1' then
+						str := '1';
+					end if;
+				elsif gnt='1' then
+					if str='1' then
+						if ctlr_do_dv(0)='0' then
+							gnt := '0';
+							str := '0';
+						end if;
+					elsif ctlr_do_dv(0)='1' then
+						str := '1';
+					end if;
 				end if;
-				pp <= gnt;
+				ppp <= gnt;
+				pp  <= str;
 			end if;
 			ctlrvideo_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
+		end process;
+
+		process (ctlr_clk)
+		begin
+			if falling_edge(ctlr_clk) then
+--				assert to_bit(ctlrvideo_irdy xor ctlr_do_dv(0))='0'
+--				severity failure;
+			end if;
 		end process;
 
 		graphicsdv_e : entity hdl4fpga.align
