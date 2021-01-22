@@ -269,7 +269,7 @@ begin
 			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
 			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
         port map (
-			rst       => '1', 
+			rst       => '0', 
 			clki      => clk_25mhz,
 			CLKFB     => clkfb, 
             PHASESEL0 => '0', PHASESEL1 => '0', 

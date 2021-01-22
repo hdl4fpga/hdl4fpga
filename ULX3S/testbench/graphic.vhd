@@ -231,7 +231,7 @@ architecture ulx3s_graphic of testbench is
 
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1'; --, '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 --	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
