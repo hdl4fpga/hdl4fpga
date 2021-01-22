@@ -183,9 +183,9 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 19), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 21), cas => "011"));
 
-	constant sdram_mode : natural := sdram133MHz;
+--	constant sdram_mode : natural := sdram133MHz;
 --	constant sdram_mode : natural := sdram166MHz;
---	constant sdram_mode : natural := sdram200MHz;
+	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
 --	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
