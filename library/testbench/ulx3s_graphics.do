@@ -22,8 +22,8 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmasin_irdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1804155592780 fs} 0} {{Cursor 2} {1839266517200 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {1804155592780 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -38,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1835905467320 fs} {1852311718840 fs}
+WaveRestoreZoom {1795952467020 fs} {1812358718540 fs}
