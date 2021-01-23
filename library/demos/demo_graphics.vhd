@@ -304,7 +304,6 @@ begin
 
 			signal frm_req  : std_logic_vector(0 to 2-1);
 			signal frm_gnt  : std_logic_vector(0 to 2-1);
-			signal frm_idle : std_logic;
 
 		begin
 
@@ -431,8 +430,12 @@ begin
 		sodata_b : block
 
 			signal ctlrio_irdy : std_logic;
-			signal fifo_req    : bit;
-			signal fifo_rdy    : bit;
+			signal trans_req    : bit;
+			signal trans_rdy    : bit;
+			signal len_req     : bit;
+			signal len_rdy     : bit;
+			signal fifo_req     : bit;
+			signal fifo_rdy     : bit;
 
 			signal fifo_frm    : std_logic;
 			signal fifo_irdy   : std_logic;
@@ -440,40 +443,42 @@ begin
 			signal fifo_data   : std_logic_vector(ctlr_do'range);
 			signal fifo_length : std_logic_vector(16-1 downto 0);
 
+			signal gnt_lat : std_logic;
 		begin
 
-			process (ctlr_do_dv(0), ctlr_clk)
-				variable gnt : bit;
-				variable str : bit;
+			process (dmaio_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
+				variable q   : std_logic_vector(0 to 3+8-1);
+				variable lat : std_logic;
+			begin
+				if rising_edge(ctlr_clk) then
+					q := std_logic_vector(unsigned(q) srl 1);
+				end if;
+				q(0) := dmaio_gnt and ctlr_cas;
+				lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
+				ctlrio_irdy <= ctlr_do_dv(0) and lat;
+				gnt_lat     <= lat;
+			end process;
+
+			process (ctlr_clk)
+				variable gnt : std_logic;
 			begin
 				if rising_edge(ctlr_clk) then
 					if dmaio_gnt='1' then
-						gnt := not to_bit(dmaio_we);
-						if ctlr_do_dv(0)='1' then
-							str := '1';
+						gnt := ctlr_rw;
+					elsif gnt_lat='0' then
+						if gnt='1' then
+							trans_req <= not trans_rdy;
 						end if;
-					elsif gnt='1' then
-						if str='1' then
-							if ctlr_do_dv(0)='0' then
-								if gnt='1' then
-									fifo_req <= not fifo_rdy;
-								end if;
-								gnt := '0';
-								str := '0';
-							end if;
-						elsif ctlr_do_dv(0)='1' then
-							str := '1';
-						end if;
+						gnt := '0';
 					end if;
 				end if;
-				ctlrio_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
 			end process;
 
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
 				async_mode => true,
-				latency    => 2,
+				latency    => 1,
 				gray_code  => false,
 				check_sov  => true,
 				check_dov  => true)
@@ -488,18 +493,6 @@ begin
 				dst_trdy => fifo_trdy,
 				dst_data => fifo_data);
 
-			process (sio_clk)
-			begin
-				if rising_edge(sio_clk) then
-					if (fifo_req xor fifo_rdy)='1' then
-						if sodata_trdy='1' and sodata_end='1' then
-							fifo_rdy <= fifo_req;
-						end if;
-					end if;
-				end if;
-			end process;
-			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
-
 			process (dmacfg_clk)
 				variable length : unsigned(fifo_length'range);
 			begin
@@ -507,17 +500,35 @@ begin
 					if dmaioaddr_irdy='1' then
 						if dmaiolen_irdy='1' then
 							if dmaio_next='1' then
-								length := resize(unsigned(dmaio_len), length'length);
-								for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
-									length(length'left) := '1';
-									length := length rol 1;
-								end loop;
-								fifo_length <= std_logic_vector(length);
+								if dmaio_we='0' then
+									length := resize(unsigned(dmaio_len), length'length);
+									for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
+										length(length'left) := '1';
+										length := length rol 1;
+									end loop;
+									fifo_length <= std_logic_vector(length);
+									len_req     <= not len_rdy;
+								end if;
 							end if;
 						end if;
 					end if;
 				end if;
 			end process;
+
+			process (sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if (trans_req xor trans_rdy)='1' and (len_req xor len_rdy)='1' then
+						fifo_req  <= not fifo_rdy;
+						if sodata_trdy='1' and sodata_end='1' then
+							trans_rdy <= trans_req;
+							fifo_rdy  <= fifo_req;
+							len_rdy   <= len_req;
+						end if;
+					end if;
+				end if;
+			end process;
+			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
 			sodata_e : entity hdl4fpga.so_data
 			port map (
@@ -557,8 +568,6 @@ begin
 
 		signal ctlrvideo_irdy : std_logic;
 
-		signal gnt1 : std_logic;
-		signal gnt : std_logic;
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -573,47 +582,14 @@ begin
 			video_hzon    => hzon,
 			video_vton    => vton);
 
-		gnt1 <= dmavideo_gnt and ctlr_cas;
-		xxx : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => 6))
-		port map (
-			clk   => ctlr_clk,
-			di(0) => gnt1,
-			do(0) => gnt);
-		ctlrvideo_irdy <= ctlr_do_dv(0) and to_stdulogic(to_bit(gnt));
-
---		process (ctlr_do_dv(0), ctlr_clk)
---			variable gnt : bit;
---			variable str : bit;
---		begin
---			if rising_edge(ctlr_clk) then
---				if dmavideo_gnt='1' then
---					gnt := '1';
---					if ctlr_do_dv(0)='1' then
---						str := '1';
---					end if;
---				elsif gnt='1' then
---					if str='1' then
---						if ctlr_do_dv(0)='0' then
---							gnt := '0';
---							str := '0';
---						end if;
---					elsif ctlr_do_dv(0)='1' then
---						str := '1';
---					end if;
---				end if;
---			end if;
---			ctlrvideo_irdy <= ctlr_do_dv(0) and to_stdulogic(gnt);
---		end process;
-
-		process (ctlr_clk)
+		process (dmavideo_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
+			variable q : std_logic_vector(0 to 3+8-1);
 		begin
-			if falling_edge(ctlr_clk) then
-				assert to_bit(ctlrvideo_irdy xor ctlr_do_dv(0))='0'
-				severity failure;
+			if rising_edge(ctlr_clk) then
+				q := std_logic_vector(unsigned(q) srl 1);
 			end if;
+			q(0) := dmavideo_gnt and ctlr_cas;
+			ctlrvideo_irdy <= ctlr_do_dv(0) and word2byte(q(3 to 8+3-1), ctlr_cl);
 		end process;
 
 		graphicsdv_e : entity hdl4fpga.align
@@ -622,7 +598,6 @@ begin
 			d => (0 to 0 => 0))
 		port map (
 			clk   => ctlr_clk,
---			di(0) => ctlr_do_dv(0),
 			di(0) => ctlrvideo_irdy,
 			do(0) => graphics_dv);
 
