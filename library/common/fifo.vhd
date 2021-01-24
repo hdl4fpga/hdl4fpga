@@ -94,7 +94,7 @@ begin
 		report "Latency greater than 3 is not supported"
 		severity FAILURE;
 
-		wdata <= src_data when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
+		wdata <= src_data; -- when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -110,6 +110,15 @@ begin
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
 
+		dst_data <= rdata when latency=0 else ldata;
+
+		src_trdy <= 
+			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
+			setif(wr_cntr(addr_range) /= rd_cmp(addr_range)  or wr_cntr(0) = rd_cmp(0));
+
+		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
+
+		hhh : if not debug generate
 		latency_p : process (rdata, dst_clk)
 			variable rdata2 : std_logic_vector(rdata'range);
 			variable rdata3 : std_logic_vector(rdata'range);
@@ -170,38 +179,6 @@ begin
 
 		end process;
 
-		dst_data <= rdata when latency=0 else ldata;
-
---		dst_irdy_p : process (rdata, dst_clk)
---			variable q : std_logic_vector(0 to latency);
---		begin
---			if rising_edge(dst_clk) then
---				if dst_ini='1' then
---					q := (others => '0');
---				elsif feed_ena='1' then
---					q(0) := dst_irdy1;
---					for i in q'range loop
---						if q(i)='1' then
---							if i+1 < q'length then
---								if q(i+1)='1' then
---									exit;
---								else
---									q(i+1) := q(i);
---									q(i)   := '0';
---								end if;
---							end if;
---						end if;
---					end loop;
---				end if;
---				dst_irdy <= q(q'right);
---			end if;
---		end process;
-
-		src_trdy <= 
-			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
-			setif(wr_cntr(addr_range) /= rd_cmp(addr_range) or wr_cntr(0) = rd_cmp(0));
-
-		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 		dstirdy_e : entity hdl4fpga.align
 		generic map (
 			n     => 1,
@@ -213,6 +190,94 @@ begin
 			ena   => feed_ena,
 			di(0) => dst_irdy1,
 			do(0) => dst_irdy);
+
+		feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
+		end generate;
+
+		hhh1 : if debug generate
+			signal full : std_logic;
+		begin
+		latency_p : process (rdata, dst_clk)
+			variable rdata2 : std_logic_vector(rdata'range);
+			variable rdata3 : std_logic_vector(rdata'range);
+			variable data   : std_logic_vector(rdata'range);
+			variable data2  : std_logic_vector(rdata'range);
+			variable data3  : std_logic_vector(rdata'range);
+			variable ena    : std_logic;
+			variable ena2   : std_logic;
+			variable ena3   : std_logic;
+		begin
+			if rising_edge(dst_clk) then
+				case latency is
+				when 1 => 
+					if ena='1' then
+						data := rdata;
+					end if;
+				when 2 =>
+					if ena2='1' then
+						data2 := data;
+						data  := rdata2;
+					end if;
+					rdata2 := rdata;
+				when 3 =>
+					if ena3='1' then
+						data3 := data2;
+						data2 := data;
+						data  := rdata3;
+					end if;
+					rdata3 := rdata2;
+					rdata2 := rdata;
+				when others =>
+				end case;
+
+				case latency is
+				when 1 => 
+					ena := feed_ena;
+				when 2 =>
+					ena2 := ena;
+					ena  := feed_ena;
+				when 3 =>
+					ena3 := ena2;
+					ena2 := ena;
+					ena  := feed_ena;
+				when others =>
+				end case;
+			end if;
+
+			case latency is
+			when 1 => 
+				ldata <= word2byte(data & rdata, ena);
+			when 2 =>              -- 00     01     10       11     
+				ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
+			when 3 =>             -- 000     001     010    011     100    101    110      111
+				ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
+			when others =>
+				ldata <= (others => '-');
+			end case;
+
+		end process;
+
+		dstirdy_p : process (rdata, dst_clk)
+			variable q : std_logic_vector(0 to latency);
+		begin
+			if rising_edge(dst_clk) then
+				if dst_ini='1' then
+					q := (others => '0');
+				else
+					q(0) := dst_irdy1 and feed_ena;
+					for i in latency downto 1 loop
+						if q(i)='0' then
+							q(i)   := q(i-1);
+							q(i-1) := '0';
+						end if;
+					end loop;
+				end if;
+				dst_irdy <= q(q'right);
+				full     <= setif(q(1 to latency)=(1 to latency => '1'));
+			end if;
+		end process;
+		feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not full and not setif(check_dov)) or (not full and dst_irdy1);
+		end generate;
 
 	end generate;
 
@@ -266,7 +331,6 @@ begin
 	dst_irdy1 <= 
 		setif(wr_cntr /= rd_cntr) when not async_mode else 
 		setif(wr_cmp  /= rd_cntr);
-	feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then

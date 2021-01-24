@@ -21,8 +21,33 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_req
 add wave -noupdate /testbench/du_e/grahics_e/dmaio_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmasin_irdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_clk
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_frm
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/src_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/wr_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/rd_cntr
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_clk
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_frm
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy1
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/feed_ena
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/dstirdy_p/q
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data2
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data3
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena2
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena3
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/rdata
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/rdata2
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/rdata3
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/ldata
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1804155592780 fs} 0}
+WaveRestoreCursors {{Cursor 1} {1774630789650 fs} 1}
 quietly wave cursor active 1
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 100
@@ -38,4 +63,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1795952467020 fs} {1812358718540 fs}
+WaveRestoreZoom {1774198823730 fs} {1775224214450 fs}
