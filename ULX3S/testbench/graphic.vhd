@@ -173,27 +173,8 @@ architecture ulx3s_graphic of testbench is
 	constant baudrate : natural := 3_000_000;
 	constant data  : std_logic_vector := -- x"0002_000004";
 		x"0002000080" &
-		x"1602000000" &
-		x"18ff" & 
+--		x"18ff" & 
 --		gen_natural(start => 0, stop => 127, size => 16) &
-		x"123456789abcdef123456789abcdef12" &
-		x"23456789abcdef123456789abcdef123" &
-		x"3456789abcdef123456789abcdef1234" &
-		x"456789abcdef123456789abcdef12345" &
-		x"56789abcdef123456789abcdef123456" &
-		x"6789abcdef123456789abcdef1234567" &
-		x"789abcdef123456789abcdef12345678" &
-		x"89abcdef123456789abcdef123456789" &
-		x"9abcdef123456789abcdef123456789a" &
-		x"abcdef123456789abcdef123456789ab" &
-		x"bcdef123456789abcdef123456789abc" &
-		x"cdef123456789abcdef123456789abcd" &
-		x"def123456789abcdef123456789abcde" &
-		x"ef123456789abcdef123456789abcdef" &
-		x"f123456789abcdef123456789abcdef1" &
-		x"123456789abcdef123456789abcdef12" &
-		x"18ff" & 
-		gen_natural(start => 128, stop => 255, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -210,11 +191,42 @@ architecture ulx3s_graphic of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
-		x"170200007f" &
-		x"1602000080" &
-		x"170200007f" &
-		x"1602800001" &
-		x"1702000000";
+--		x"18ff" & 
+--		gen_natural(start => 128, stop => 255, size => 16) &
+--		x"123456789abcdef123456789abcdef12" &
+--		x"23456789abcdef123456789abcdef123" &
+--		x"3456789abcdef123456789abcdef1234" &
+--		x"456789abcdef123456789abcdef12345" &
+--		x"56789abcdef123456789abcdef123456" &
+--		x"6789abcdef123456789abcdef1234567" &
+--		x"789abcdef123456789abcdef12345678" &
+--		x"89abcdef123456789abcdef123456789" &
+--		x"9abcdef123456789abcdef123456789a" &
+--		x"abcdef123456789abcdef123456789ab" &
+--		x"bcdef123456789abcdef123456789abc" &
+--		x"cdef123456789abcdef123456789abcd" &
+--		x"def123456789abcdef123456789abcde" &
+--		x"ef123456789abcdef123456789abcdef" &
+--		x"f123456789abcdef123456789abcdef1" &
+--		x"123456789abcdef123456789abcdef12" &
+--		x"170200007f" &
+--		x"1602000080" &
+--		x"170200007f" &
+--		x"1602800001" &
+--		x"1702000000";
+		x"1801" & 
+		x"1234" &
+		x"1602000000" &
+		x"1702000000"  &
+		x"1803" & 
+		x"5678" &
+		x"9abc" &
+		x"1602000000" &
+		x"1702000000" &
+		x"1602000000" &
+		x"1702000000"
+
+		;
 
 	signal ahdlc_frm  : std_logic;
 	signal ahdlc_irdy : std_logic;
@@ -231,7 +243,7 @@ architecture ulx3s_graphic of testbench is
 
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 --	uart_clk <= not uart_clk after (1 sec / baudrate / 2);

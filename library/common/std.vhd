@@ -181,6 +181,18 @@ package std is
 		return std_logic_vector;
 
 	function setif (
+		constant arg   : boolean;
+		constant argt  : unsigned;
+		constant argf  : unsigned)
+		return unsigned;
+
+	function setif (
+		constant arg   : boolean;
+		constant argt  : unsigned;
+		constant argf  : unsigned)
+		return std_logic_vector;
+
+	function setif (
 		constant arg  : boolean;
 		constant argt : integer := 1;
 		constant argf : integer := 0)
@@ -899,6 +911,30 @@ package body std is
 			return argt;
 		end if;
 		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : unsigned;
+		constant argf : unsigned)
+		return unsigned is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : unsigned;
+		constant argf : unsigned)
+		return std_logic_vector is
+	begin
+		if arg then
+			return std_logic_vector(argt);
+		end if;
+		return std_logic_vector(argf);
 	end function;
 
 	function setif (

@@ -118,166 +118,136 @@ begin
 
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
-		hhh : if not debug generate
-		latency_p : process (rdata, dst_clk)
-			variable rdata2 : std_logic_vector(rdata'range);
-			variable rdata3 : std_logic_vector(rdata'range);
-			variable data   : std_logic_vector(rdata'range);
-			variable data2  : std_logic_vector(rdata'range);
-			variable data3  : std_logic_vector(rdata'range);
-			variable ena    : std_logic;
-			variable ena2   : std_logic;
-			variable ena3   : std_logic;
-		begin
-			if rising_edge(dst_clk) then
-				case latency is
-				when 1 => 
-					if ena='1' then
-						data := rdata;
-					end if;
-				when 2 =>
-					if ena2='1' then
-						data2 := data;
-						data  := rdata2;
-					end if;
-					rdata2 := rdata;
-				when 3 =>
-					if ena3='1' then
-						data3 := data2;
-						data2 := data;
-						data  := rdata3;
-					end if;
-					rdata3 := rdata2;
-					rdata2 := rdata;
-				when others =>
-				end case;
+		legacy_g : if not debug generate
+			latency_p : process (rdata, dst_clk)
+				variable rdata2 : std_logic_vector(rdata'range);
+				variable rdata3 : std_logic_vector(rdata'range);
+				variable data   : std_logic_vector(rdata'range);
+				variable data2  : std_logic_vector(rdata'range);
+				variable data3  : std_logic_vector(rdata'range);
+				variable ena    : std_logic;
+				variable ena2   : std_logic;
+				variable ena3   : std_logic;
+			begin
+				if rising_edge(dst_clk) then
+					case latency is
+					when 1 => 
+						if ena='1' then
+							data := rdata;
+						end if;
+					when 2 =>
+						if ena2='1' then
+							data2 := data;
+							data  := rdata2;
+						end if;
+						rdata2 := rdata;
+					when 3 =>
+						if ena3='1' then
+							data3 := data2;
+							data2 := data;
+							data  := rdata3;
+						end if;
+						rdata3 := rdata2;
+						rdata2 := rdata;
+					when others =>
+					end case;
+
+					case latency is
+					when 1 => 
+						ena := feed_ena;
+					when 2 =>
+						ena2 := ena;
+						ena  := feed_ena;
+					when 3 =>
+						ena3 := ena2;
+						ena2 := ena;
+						ena  := feed_ena;
+					when others =>
+					end case;
+				end if;
 
 				case latency is
 				when 1 => 
-					ena := feed_ena;
-				when 2 =>
-					ena2 := ena;
-					ena  := feed_ena;
-				when 3 =>
-					ena3 := ena2;
-					ena2 := ena;
-					ena  := feed_ena;
+					ldata <= word2byte(data & rdata, ena);
+				when 2 =>              -- 00     01     10       11     
+					ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
+				when 3 =>             -- 000     001     010    011     100    101    110      111
+					ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
 				when others =>
+					ldata <= (others => '-');
 				end case;
-			end if;
 
-			case latency is
-			when 1 => 
-				ldata <= word2byte(data & rdata, ena);
-			when 2 =>              -- 00     01     10       11     
-				ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
-			when 3 =>             -- 000     001     010    011     100    101    110      111
-				ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
-			when others =>
-				ldata <= (others => '-');
-			end case;
+			end process;
 
-		end process;
+			dstirdy_e : entity hdl4fpga.align
+			generic map (
+				n     => 1,
+				d     => (0 to 0 => latency),
+				i     => (0 to 0 => '0'))
+			port map (
+				clk   => dst_clk,
+				ini   => dst_ini,
+				ena   => feed_ena,
+				di(0) => dst_irdy1,
+				do(0) => dst_irdy);
 
-		dstirdy_e : entity hdl4fpga.align
-		generic map (
-			n     => 1,
-			d     => (0 to 0 => latency),
-			i     => (0 to 0 => '0'))
-		port map (
-			clk   => dst_clk,
-			ini   => dst_ini,
-			ena   => feed_ena,
-			di(0) => dst_irdy1,
-			do(0) => dst_irdy);
-
-		feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
+			feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
 		end generate;
 
 		hhh1 : if debug generate
-			signal full : std_logic;
+			signal full  : std_logic;
+			signal bdata : unsigned(0 to dst_data'length-1);
 		begin
-		latency_p : process (rdata, dst_clk)
-			variable rdata2 : std_logic_vector(rdata'range);
-			variable rdata3 : std_logic_vector(rdata'range);
-			variable data   : std_logic_vector(rdata'range);
-			variable data2  : std_logic_vector(rdata'range);
-			variable data3  : std_logic_vector(rdata'range);
-			variable ena    : std_logic;
-			variable ena2   : std_logic;
-			variable ena3   : std_logic;
-		begin
-			if rising_edge(dst_clk) then
-				case latency is
-				when 1 => 
-					if ena='1' then
-						data := rdata;
-					end if;
-				when 2 =>
-					if ena2='1' then
-						data2 := data;
-						data  := rdata2;
-					end if;
-					rdata2 := rdata;
-				when 3 =>
-					if ena3='1' then
-						data3 := data2;
-						data2 := data;
-						data  := rdata3;
-					end if;
-					rdata3 := rdata2;
-					rdata2 := rdata;
-				when others =>
-				end case;
 
-				case latency is
-				when 1 => 
-					ena := feed_ena;
-				when 2 =>
-					ena2 := ena;
-					ena  := feed_ena;
-				when 3 =>
-					ena3 := ena2;
-					ena2 := ena;
-					ena  := feed_ena;
-				when others =>
-				end case;
-			end if;
-
-			case latency is
-			when 1 => 
-				ldata <= word2byte(data & rdata, ena);
-			when 2 =>              -- 00     01     10       11     
-				ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
-			when 3 =>             -- 000     001     010    011     100    101    110      111
-				ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
-			when others =>
-				ldata <= (others => '-');
-			end case;
-
-		end process;
-
-		dstirdy_p : process (rdata, dst_clk)
-			variable q : std_logic_vector(0 to latency);
-		begin
-			if rising_edge(dst_clk) then
-				if dst_ini='1' then
-					q := (others => '0');
-				else
-					q(0) := dst_irdy1 and feed_ena;
-					for i in latency downto 1 loop
-						if q(i)='0' then
-							q(i)   := q(i-1);
-							q(i-1) := '0';
-						end if;
-					end loop;
+			slr_p : process (full, dst_clk)
+				variable slr : unsigned(0 to dst_data'length*(latency-1)-1);
+			begin
+				if rising_edge(dst_clk) then
+					bdata <= slr(0 to dst_data'length-1);
+					slr   := slr ror dst_data'length;
+					slr(0 to dst_data'length-1) := unsigned(rdata);
 				end if;
-				dst_irdy <= q(q'right);
-				full     <= setif(q(1 to latency)=(1 to latency => '1'));
-			end if;
-		end process;
-		feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not full and not setif(check_dov)) or (not full and dst_irdy1);
-		end generate;
+			end process;
+
+			dstirdy_p : process (dst_clk)
+
+				variable q    : unsigned(0 to latency-1);
+				variable v    : unsigned(0 to latency-1);
+				variable data : unsigned(0 to latency*dst_data'length-1);
+
+			begin
+
+				if rising_edge(dst_clk) then
+					if dst_ini='1' then
+						q := (others => '0');
+						v := (others => '0');
+					else
+						if v(0)='1' then
+							for i in 0 to latency-1 loop
+								if q(i)='0' then
+									data(i*dst_data'length to (i+1)*dst_data'length-1) := bdata;
+									q(i) := '1';
+									exit;
+								end if;
+							end loop;
+						end if;
+						if dst_trdy='1' then
+							data(0 to dst_data'length-1) := bdata;
+							data := data rol dst_data'length;
+							q    := q sll 1;
+						end if;
+					end if;
+					dst_irdy <= q(0);
+					ldata    <= std_logic_vector(data(0 to dst_data'length-1));
+					full     <= setif(q=(q'range => '1'));
+
+					v := v sll 1;
+					v(latency-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
+				end if;
+
+			end process;
+			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or not full;
+			end generate;
 
 	end generate;
 
