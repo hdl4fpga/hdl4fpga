@@ -203,9 +203,9 @@ begin
 				variable slr : unsigned(0 to dst_data'length*(latency-1)-1);
 			begin
 				if rising_edge(dst_clk) then
-					bdata <= slr(0 to dst_data'length-1);
 					slr   := slr ror dst_data'length;
 					slr(0 to dst_data'length-1) := unsigned(rdata);
+					bdata <= slr(0 to dst_data'length-1);
 				end if;
 			end process;
 
@@ -222,23 +222,22 @@ begin
 						q := (others => '0');
 						v := (others => '0');
 					else
-						if v(0)='1' then
-							for i in 0 to latency-1 loop
-								if q(i)='0' then
+						for i in 0 to latency-1 loop
+							if q(i)='0' then
+								if v(0)='1' then
 									data(i*dst_data'length to (i+1)*dst_data'length-1) := bdata;
 									q(i) := '1';
-									exit;
 								end if;
-							end loop;
-						end if;
-						if dst_trdy='1' then
-							data(0 to dst_data'length-1) := bdata;
-							data := data rol dst_data'length;
-							q    := q sll 1;
-						end if;
+								exit;
+							end if;
+						end loop;
 					end if;
 					dst_irdy <= q(0);
 					ldata    <= std_logic_vector(data(0 to dst_data'length-1));
+					if dst_trdy='1' and q(0)='1' then
+						data := data sll dst_data'length;
+						q    := q sll 1;
+					end if;
 					full     <= setif(q=(q'range => '1'));
 
 					v := v sll 1;

@@ -27,30 +27,27 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/src_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/wr_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/wr_cmp
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/rd_cntr
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_frm
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy1
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/feed_ena
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/dstirdy_p/q
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data2
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/data3
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena2
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/ena3
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/feed_ena
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/rdata
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/rdata2
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/latency_p/rdata3
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/bdata
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/ldata
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/dstirdy_p/v
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/dstirdy_p/q
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/dstirdy_p/data
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(0) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(1) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(2) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(3) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(4) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(5) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(6) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(7) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(8) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(9) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(10) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(11) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(12) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(13) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(14) -radix hexadecimal} {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(15) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(0) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(1) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(2) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(9) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(10) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(11) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(12) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(13) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(14) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr(15) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/hhh1/slr_p/slr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1774630789650 fs} 1}
+WaveRestoreCursors {{Cursor 1} {1871692000000 fs} 0} {{Cursor 2} {1926179775280 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 259
-configure wave -valuecolwidth 100
+configure wave -valuecolwidth 287
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -63,4 +60,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1774198823730 fs} {1775224214450 fs}
+WaveRestoreZoom {1871633062320 fs} {1871761236160 fs}

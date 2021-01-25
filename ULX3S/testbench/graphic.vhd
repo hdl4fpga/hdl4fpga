@@ -173,8 +173,8 @@ architecture ulx3s_graphic of testbench is
 	constant baudrate : natural := 3_000_000;
 	constant data  : std_logic_vector := -- x"0002_000004";
 		x"0002000080" &
---		x"18ff" & 
---		gen_natural(start => 0, stop => 127, size => 16) &
+		x"18ff" & 
+		gen_natural(start => 0, stop => 127, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -191,8 +191,8 @@ architecture ulx3s_graphic of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
---		x"18ff" & 
---		gen_natural(start => 128, stop => 255, size => 16) &
+		x"18ff" & 
+		gen_natural(start => 128, stop => 255, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -209,22 +209,22 @@ architecture ulx3s_graphic of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
---		x"170200007f" &
---		x"1602000080" &
---		x"170200007f" &
---		x"1602800001" &
---		x"1702000000";
-		x"1801" & 
-		x"1234" &
-		x"1602000000" &
-		x"1702000000"  &
-		x"1803" & 
-		x"5678" &
-		x"9abc" &
-		x"1602000000" &
-		x"1702000000" &
-		x"1602000000" &
-		x"1702000000"
+		x"1602000080" &
+		x"170200007f" &
+		x"1602000080" &
+		x"170200007f"
+
+--		x"1801" & 
+--		x"1234" &
+--		x"1602000000" &
+--		x"1702000000"  &
+--		x"1803" & 
+--		x"5678" &
+--		x"9abc" &
+--		x"1602000000" &
+--		x"1702000000" &
+--		x"1602000000" &
+--		x"1702000000"
 
 		;
 
