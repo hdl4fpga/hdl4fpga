@@ -211,9 +211,9 @@ begin
 
 			dstirdy_p : process (dst_clk)
 
-				variable q    : unsigned(0 to latency-1);
+				variable q    : unsigned(0 to latency);
 				variable v    : unsigned(0 to latency-1);
-				variable data : unsigned(0 to latency*dst_data'length-1);
+				variable data : unsigned(0 to (latency+1)*dst_data'length-1);
 
 			begin
 
@@ -222,7 +222,11 @@ begin
 						q := (others => '0');
 						v := (others => '0');
 					else
-						for i in 0 to latency-1 loop
+						if dst_irdy='1' and dst_trdy='1' then
+							data := data sll dst_data'length;
+							q    := q sll 1;
+						end if;
+						for i in 0 to latency loop
 							if q(i)='0' then
 								if v(0)='1' then
 									data(i*dst_data'length to (i+1)*dst_data'length-1) := bdata;
@@ -234,10 +238,6 @@ begin
 					end if;
 					dst_irdy <= q(0);
 					ldata    <= std_logic_vector(data(0 to dst_data'length-1));
-					if dst_trdy='1' and q(0)='1' then
-						data := data sll dst_data'length;
-						q    := q sll 1;
-					end if;
 					full     <= setif(q=(q'range => '1'));
 
 					v := v sll 1;
