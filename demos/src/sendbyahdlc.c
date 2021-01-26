@@ -31,52 +31,46 @@ long long addr_rcvd;
 
 char rbuff[MAXSIZE];
 
-void sio_parse(char * buff, int l)
+struct rgtr {
+	char unsigned id;
+	char unsigned len;
+	char unsigned *data;
+	struct rgtr * next;
+};
+
+struct rgtr rgtrs[256];
+
+struct rgtr * sio_parse(char unsigned *data, int len)
 {
 	enum states { stt_id, stt_len, stt_data };
 	enum states state;
 
-	int id;
-	int len;
-	int i;
+	struct rgtr rgtr;
+	char unsigned *ptr;
 
-	long long data;
-
-	addr_rcvd = 0;
 	state = stt_id;
-	for (i = 0; i < l; i++) {
+	ptr = data;
+	while (data-ptr < len) {
 		switch(state) {
 		case stt_id:
-			id    = buff[i];
-//			fprintf(stderr, "id 0x%02x\n", id);
-			state = stt_len;
+			rgtr.id = ptr++;
+			state   = stt_len;
 			break;
 		case stt_len:
-			len   = (unsigned char) buff[i];
-//			fprintf(stderr, "len %d\n", len);
-			state = stt_data;
-			data  = 0;
+			rgtr.len = ptr++;
+			state    = stt_data;
 			break;
 		case stt_data:
-			data <<= 8;
-			data |= (buff[i] & 0xff);
-			if (len-- > 0) {
-				state = stt_data;
-			} else {
-				switch(id){
-				case 0x00:
-					ack_rcvd = (char) data;
-					fprintf(stderr, "ack 0x%02x ", (unsigned char) ack_rcvd);
-					break;
-				case 0x16:
-					addr_rcvd = data;
-					fprintf(stderr, "address 0x%08llx ", addr_rcvd);
-					break;
-				}
-				state = stt_id;
-			}
+			rgtr.data = ptr;
+			ptr += rgtr.len;
+			state = stt_id;
+			break;
 		}
 	}
+}
+
+sio_rgtr0 (char * buff, int len) {
+
 }
 
 void init_ahdlc ()
@@ -226,7 +220,7 @@ int main (int argc, char *argv[])
 
 	pktmd  = 0;
 	opterr = 0;
-	while ((c = getopt (argc, argv, "ph:")) != -1) {
+	while ((c = getopt (argc, argv, "dph:")) != -1) {
 		switch (c) {
 		case 'p':
 			pktmd = 1;
@@ -248,80 +242,80 @@ int main (int argc, char *argv[])
 	// Reset ack //
 	// --------- //
 
-	fprintf (stderr, ">>> SETTING ACK <<<\n");
+	if (debug) fprintf (stderr, ">>> SETTING ACK <<<\n");
 	for(;;) {
-		fprintf (stderr, "Sending acknowlage\n");
+		if (debug) fprintf (stderr, "Sending acknowlage\n");
 		send_pkt(0);
 		sio_parse(sbuff, sload-sbuff); printnl;
 
-		fprintf (stderr, "Waiting acknowlage\n");
+		if (debug) fprintf (stderr, "Waiting acknowlage\n");
 		rlen = rcvd_pkt();
-		fprintf (stderr, "Acknowlage received\n");
+		if (debug) fprintf (stderr, "Acknowlage received\n");
 		sio_parse(rbuff, rlen); printnl;
 
 		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
 			break;
 	}
-	fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+	if (debug) fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
 
 	if (!pktmd)
-		fprintf (stderr, "No-packet-size mode\n");
+		if (debug) fprintf (stderr, "No-packet-size mode\n");
 
 	for(;;) {
 		int size = sizeof(sbuff)-(sload-sbuff);
 
-		fprintf (stderr, ">>> READING PACKET <<<\n");
+		if (debug) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				fprintf (stderr, "Packet size %d\n", size);
+				if (debug) fprintf (stderr, "Packet size %d\n", size);
 			else
 				break;
 		}
 
 		if ((n = fread(sload, sizeof(unsigned char), size, stdin)) > 0) {
-			fprintf (stderr, "Packet read length %d\n", n);
+			if (debug) fprintf (stderr, "Packet read length %d\n", n);
 			size = n;
 			if (size > MAXSIZE) {
-				fprintf (stderr, "Packet size %d greater than %d\n", size, MAXSIZE);
+				if (debug) fprintf (stderr, "Packet size %d greater than %d\n", size, MAXSIZE);
 				exit(1);
 			}
 
 			ack++;
 
-			fprintf (stderr, ">>> SENDING PACKET <<<\n");
+			if (debug) fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			send_pkt(size);
 			sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
-			fprintf (stderr, ">>> CHECKING ACK <<<\n");
+			if (debug) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
-				fprintf (stderr, "waiting for acknowlege\n", n); //exit(1);
+				if (debug) fprintf (stderr, "waiting for acknowlege\n", n); //exit(1);
 				rlen = rcvd_pkt();
 				if (rlen > 0) {
-					fprintf (stderr, "acknowlege received\n", n); //exit(1);
+					if (debug) fprintf (stderr, "acknowlege received\n", n); //exit(1);
 					sio_parse(rbuff, rlen); printnl;
 					if (((ack ^ ack_rcvd) & 0x3f) == 0)
 						break;
 					else {
-						fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
+						if (debug) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
 						continue;
 					}
 				}
 
-				fprintf (stderr, "waiting time out\n", n); //exit(1);
-				fprintf (stderr, "sending package again\n", n); //exit(1);
+				if (debug) fprintf (stderr, "waiting time out\n", n); //exit(1);
+				if (debug) fprintf (stderr, "sending package again\n", n); //exit(1);
 				send_pkt(size);
 				sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
 			}
 
-			fprintf (stderr, "package acknowleged\n", n); //exit(1);
+			if (debug) fprintf (stderr, "package acknowleged\n", n); //exit(1);
 
-			fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
+			if (debug) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
 				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
 					break;
 
-				fprintf (stderr, "dma not ready\n");
+				if (debug) fprintf (stderr, "dma not ready\n");
 				ack++;
-				fprintf (stderr, "sending new acknowlege\n");
+				if (debug) fprintf (stderr, "sending new acknowlege\n");
 				send_pkt(0);
 				sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
 
@@ -339,13 +333,13 @@ int main (int argc, char *argv[])
 					sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
 				}
 			}
-			fprintf (stderr, "dma ready\n");
+			if (debug) fprintf (stderr, "dma ready\n");
 	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
 	//			break;
 		
 //			for (int i = 1; i < 4; i++)
 //				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
-//					fprintf(stderr,"marca -->\n");
+//					if (debug) fprintf(stderr,"marca -->\n");
 //					break;
 //				}
 
