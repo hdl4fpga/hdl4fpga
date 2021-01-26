@@ -116,7 +116,6 @@ architecture graphics of ulx3s is
 		clki_div    : natural;
 		clkos2_div  : natural;
 		clkos3_div  : natural;
-		clkop_phase : natural;
 	end record;
 
 	type pixel_types is (rgb565, rgb666, rgb888);
@@ -129,12 +128,12 @@ architecture graphics of ulx3s is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk_debug),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2, clkop_phase =>  15), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2, clkop_phase =>  28), pixel => rgb666, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2, clkop_phase =>  24), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  19), pixel => rgb565, mode => pclk100_00m1600x900at60),
-		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2, clkop_phase =>  23), pixel => rgb565, mode => pclk120_00m1920x1080at50));
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
+		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
+		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk100_00m1600x900at60),
+		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
 	constant nodebug_videomode : natural := mode600p;
 --	constant nodebug_videomode : natural := mode600p18;
@@ -176,18 +175,18 @@ architecture graphics of ulx3s is
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
-		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3, clkop_phase => 15), cas => "010"),
-		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3, clkop_phase => 19), cas => "011"),
-		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 15), cas => "011"),
-		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3, clkop_phase => 27), cas => "011"),
-		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 19), cas => "011"),
-		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2, clkop_phase => 21), cas => "011"));
+		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "010"),
+		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
+		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
+		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
+		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
+		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
 
 --	constant sdram_mode : natural := sdram133MHz;
 --	constant sdram_mode : natural := sdram166MHz;
-	constant sdram_mode : natural := sdram200MHz;
+--	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
---	constant sdram_mode : natural := sdram250MHz;
+	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
 
 	constant ddr_tcp   : natural := natural(
@@ -251,7 +250,7 @@ begin
 			DPHASE_SOURCE    => "DISABLED", 
 			PLL_LOCK_MODE    =>  0, 
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_phase,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
@@ -325,7 +324,7 @@ begin
 			DPHASE_SOURCE    => "DISABLED", 
 			PLL_LOCK_MODE    =>  0, 
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_phase,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_div-1,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,

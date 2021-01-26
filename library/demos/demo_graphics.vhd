@@ -433,8 +433,8 @@ begin
 			signal ctlrio_irdy : std_logic;
 			signal trans_req    : bit;
 			signal trans_rdy    : bit;
-			signal len_req     : bit;
-			signal len_rdy     : bit;
+			signal len_req      : bit;
+			signal len_rdy      : bit;
 			signal fifo_req     : bit;
 			signal fifo_rdy     : bit;
 

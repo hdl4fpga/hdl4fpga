@@ -85,7 +85,6 @@ begin
 
 		signal wdata   : std_logic_vector(0 to src_data'length-1);
 		signal rdata   : std_logic_vector(0 to src_data'length-1);
-		signal ldata   : std_logic_vector(0 to src_data'length-1);
 		signal dst_ini : std_logic;
 
 	begin
@@ -98,7 +97,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => (latency /= 0) and not debug,
+			synchronous_rddata => false,
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -110,91 +109,14 @@ begin
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
 
-		dst_data <= rdata when latency=0 else ldata;
-
 		src_trdy <= 
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
 			setif(wr_cntr(addr_range) /= rd_cmp(addr_range)  or wr_cntr(0) = rd_cmp(0));
 
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
-		legacy_g : if not debug generate
-			latency_p : process (rdata, dst_clk)
-				variable rdata2 : std_logic_vector(rdata'range);
-				variable rdata3 : std_logic_vector(rdata'range);
-				variable data   : std_logic_vector(rdata'range);
-				variable data2  : std_logic_vector(rdata'range);
-				variable data3  : std_logic_vector(rdata'range);
-				variable ena    : std_logic;
-				variable ena2   : std_logic;
-				variable ena3   : std_logic;
-			begin
-				if rising_edge(dst_clk) then
-					case latency is
-					when 1 => 
-						if ena='1' then
-							data := rdata;
-						end if;
-					when 2 =>
-						if ena2='1' then
-							data2 := data;
-							data  := rdata2;
-						end if;
-						rdata2 := rdata;
-					when 3 =>
-						if ena3='1' then
-							data3 := data2;
-							data2 := data;
-							data  := rdata3;
-						end if;
-						rdata3 := rdata2;
-						rdata2 := rdata;
-					when others =>
-					end case;
 
-					case latency is
-					when 1 => 
-						ena := feed_ena;
-					when 2 =>
-						ena2 := ena;
-						ena  := feed_ena;
-					when 3 =>
-						ena3 := ena2;
-						ena2 := ena;
-						ena  := feed_ena;
-					when others =>
-					end case;
-				end if;
-
-				case latency is
-				when 1 => 
-					ldata <= word2byte(data & rdata, ena);
-				when 2 =>              -- 00     01     10       11     
-					ldata <= word2byte(data2 & data & data & rdata2, ena & ena2);
-				when 3 =>             -- 000     001     010    011     100    101    110      111
-					ldata <= word2byte(data3 & data2 & data2 & data & data2 & data & data & rdata3, ena & ena2 & ena3);
-				when others =>
-					ldata <= (others => '-');
-				end case;
-
-			end process;
-
-			dstirdy_e : entity hdl4fpga.align
-			generic map (
-				n     => 1,
-				d     => (0 to 0 => latency),
-				i     => (0 to 0 => '0'))
-			port map (
-				clk   => dst_clk,
-				ini   => dst_ini,
-				ena   => feed_ena,
-				di(0) => dst_irdy1,
-				do(0) => dst_irdy);
-
-			feed_ena  <= to_stdulogic(to_bit(dst_trdy)) or (not dst_irdy and not setif(check_dov)) or (not dst_irdy and dst_irdy1);
-		end generate;
-
-		hhh1 : if debug generate
+		latency_g : if latency > 0 generate
 
 			signal full  : std_logic;
 
@@ -211,7 +133,7 @@ begin
 			begin
 
 				if rising_edge(dst_clk) then
-					slr(dst_data'length*(v'length-1) to dst_data'length*v'length-1) := unsigned(rdata);
+					slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
 					v(v'length-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
 
 					if dst_ini='1' then
@@ -260,7 +182,7 @@ begin
 					end if;
 					full     <= b(0);
 					dst_irdy <= q(0);
-					ldata    <= std_logic_vector(data(0 to dst_data'length-1));
+					dst_data <= std_logic_vector(data(0 to dst_data'length-1));
 
 					slr      := slr sll dst_data'length;
 					v        := v sll 1;
@@ -269,8 +191,12 @@ begin
 
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (not full and dst_irdy1);
-			end generate;
+		end generate;
 
+		nolatency_g : if latency = 0 generate
+			dst_irdy <= dst_irdy1;
+			dst_data <= rdata;
+		end generate;
 	end generate;
 
 	max_depth1_g : if max_depth = 1 generate
