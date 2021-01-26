@@ -98,7 +98,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => latency /= 0,
+			synchronous_rddata => (latency /= 0) and not debug,
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -195,57 +195,80 @@ begin
 		end generate;
 
 		hhh1 : if debug generate
-			signal full  : std_logic;
-			signal bdata : unsigned(0 to dst_data'length-1);
-		begin
 
-			slr_p : process (full, dst_clk)
-				variable slr : unsigned(0 to dst_data'length*(latency-1)-1);
-			begin
-				if rising_edge(dst_clk) then
-					slr   := slr ror dst_data'length;
-					slr(0 to dst_data'length-1) := unsigned(rdata);
-					bdata <= slr(0 to dst_data'length-1);
-				end if;
-			end process;
+			signal full  : std_logic;
+
+		begin
 
 			dstirdy_p : process (dst_clk)
 
-				variable q    : unsigned(0 to latency);
 				variable v    : unsigned(0 to latency-1);
-				variable data : unsigned(0 to (latency+1)*dst_data'length-1);
+				variable slr  : unsigned(0 to dst_data'length*v'length-1);
+				variable q    : unsigned(0 to latency-1);
+				variable b    : unsigned(0 to latency-1);
+				variable data : unsigned(0 to q'length*dst_data'length-1);
 
 			begin
 
 				if rising_edge(dst_clk) then
+					slr(dst_data'length*(v'length-1) to dst_data'length*v'length-1) := unsigned(rdata);
+					v(v'length-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
+
 					if dst_ini='1' then
 						q := (others => '0');
+						b := (others => '0');
 						v := (others => '0');
 					else
 						if dst_irdy='1' and dst_trdy='1' then
 							data := data sll dst_data'length;
 							q    := q sll 1;
 						end if;
-						for i in 0 to latency loop
+						for i in q'range loop
 							if q(i)='0' then
 								if v(0)='1' then
-									data(i*dst_data'length to (i+1)*dst_data'length-1) := bdata;
+									data(i*dst_data'length to (i+1)*dst_data'length-1) :=  slr(0 to dst_data'length-1);
 									q(i) := '1';
 								end if;
 								exit;
 							end if;
 						end loop;
+						if feed_ena='1' then
+							if b(b'right)='0' then
+								if dst_irdy1='1' then
+									if dst_trdy='0' then
+										b(b'right) := '1';
+									end if;
+								else
+									if dst_trdy='1' then
+										b := b ror 1;
+										b(b'right) := '0';
+									end if;
+								end if;
+							else
+								if dst_irdy1='1' then
+									if dst_trdy='0' then
+										b := b rol 1;
+										b(b'right) := '1';
+									end if;
+								else
+									if dst_trdy='1' then
+										b(b'right) := '0';
+									end if;
+								end if;
+							end if;
+						end if;
 					end if;
+					full     <= b(0);
 					dst_irdy <= q(0);
 					ldata    <= std_logic_vector(data(0 to dst_data'length-1));
-					full     <= setif(q=(q'range => '1'));
 
-					v := v sll 1;
-					v(latency-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
+					slr      := slr sll dst_data'length;
+					v        := v sll 1;
+
 				end if;
 
 			end process;
-			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or not full;
+			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (not full and dst_irdy1);
 			end generate;
 
 	end generate;

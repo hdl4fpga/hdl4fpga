@@ -381,7 +381,7 @@ begin
 			debug => true,
 			max_depth => (8*4*1*256/(ctlr_di'length/8)),
 			async_mode => true,
-			latency   => 2,
+			latency   => 3,
 			check_sov => true,
 			check_dov => true,
 			gray_code => false) --fifo_gray)
