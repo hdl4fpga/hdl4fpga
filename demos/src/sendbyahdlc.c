@@ -23,8 +23,6 @@
 
 #define QUEUE   4
 #define MAXSIZE (8*1024)
-#define printnl fprintf(stderr,"\n")
-
 
 char ack_rcvd = 0;
 long long addr_rcvd;
@@ -38,39 +36,183 @@ struct rgtr {
 	struct rgtr * next;
 };
 
+int next_free = -1;
+int free_rgtr[256];
 struct rgtr rgtrs[256];
 
-struct rgtr * sio_parse(char unsigned *data, int len)
+struct rgtr *new_rgtr()
+{
+	struct rgtr *rgtr;
+
+	if (next_free == -1) {
+		for (int i = 0; i < 256-1; i++)
+			free_rgtr[i] = i + 1;
+		free_rgtr[256-1] = -1;
+		next_free = 0;
+	}
+	rgtr = rgtrs+next_free;
+	rgtr->data = NULL;
+	next_free = free_rgtr[next_free];
+
+	return rgtr;
+}
+
+struct rgtr *delete_rgtr(struct rgtr *rgtr)
+{
+	int e = rgtr-rgtrs; 
+	free_rgtr[e] = next_free;
+	next_free = e;
+
+}
+
+struct rgtr *sio_parse(char unsigned *data, int len)
 {
 	enum states { stt_id, stt_len, stt_data };
 	enum states state;
 
-	struct rgtr rgtr;
+	struct rgtr *rgtr;
 	char unsigned *ptr;
 
 	state = stt_id;
 	ptr = data;
 	while (data-ptr < len) {
+		if (!rgtr) {
+			rgtr = new_rgtr();
+		else {
+			rgtr->next = new_rgtr();
+			rgtr = rgtr->next;
+		}
 		switch(state) {
 		case stt_id:
-			rgtr.id = ptr++;
+			rgtr->id = *ptr++;
 			state   = stt_len;
 			break;
 		case stt_len:
-			rgtr.len = ptr++;
+			rgtr->len = *ptr++;
 			state    = stt_data;
 			break;
 		case stt_data:
-			rgtr.data = ptr;
-			ptr += rgtr.len;
+			rgtr->data = ptr;
+			ptr  += rgtr->len;
+			rgtr->next = 0;
 			state = stt_id;
 			break;
 		}
 	}
 }
 
-sio_rgtr0 (char * buff, int len) {
+#define RGTR0_ID       0x00
+#define RGTRDMAADDR_ID 0x16
 
+struct rgtr *get_rgtr (int rid)
+{
+	struct rgtr *rgtr;
+
+	rgtr = rgtrs;
+	while (rgtr->id != rid) {
+		if (rgtrs-rgtr < next_free)
+			rgtr++;
+		else
+			return NULL;
+	}
+}
+
+void push_rgtr (struct rgtr rgtr)
+{
+
+}
+
+struct rgtr0 {
+	int dup:1;
+	int ack:6;
+};
+
+struct rgtr0 *get_rgtr0(struct rgtr0 *rgtr0) {
+	struct rgtr *rgtr = get_rgtr(RGTR0_ID);
+
+	if (rgtr) {
+		rgtr0->dup = (rgtr->data[0] & 0x80) ? 0 : 1;
+		rgtr0->ack = (rgtr->data[0] & 0x3f);
+		return rgtr0;
+	}
+	return NULL;
+}
+
+struct rgtr *new_rgtr0()
+{
+	struct rgtr *rgtr = new_rgtr();
+	rgtr->id   = RGTR0_ID;
+	rgtr->len  = 1;
+	rgtr->data = alloc(1);
+
+	return rgtr;
+}
+
+struct rgtr0 *set_rgtr0(struct rgtr0 *rgtr0, int ack, int dup) {
+	rgtr0->dup = dup;
+	rgtr0->ack = ack;
+	return rgtr0;
+}
+
+struct rgtr *new_rgtr0(int ack, int dup)
+{
+	struct rgtr *rgtr = new_rgtr();
+	struct rgtr0 rgtr0;
+
+	set_rgtr0(&rgtr0, ack, dup);
+	rgtr->id   = RGTR0_ID;
+	rgtr->len  = 1;
+	rgtr->data = alloc(1);
+
+	rgtr->data[0]  = (rgtr0.dup) ? 0x80 : 0x00;
+	rgtr->data[0] |= rgtr0.ack;
+
+	return rgtr;
+}
+
+struct {
+	struct rgtr *header;
+	struct rgtr *tail;
+} sendqueue;
+
+void push_rgtr (struct rgtr *rgtr)
+{
+	if (sendqueue.sendtail)
+		sendqueue.sendtail->next = rgtr0;
+		sendqueue.sendtail = rgtr0;
+	} else
+		sendqueue.sendtail = rgtr0;
+}
+
+struct rgtr_dma {
+	int dmalen_trdy:1;
+	int dmaaddr_trdy:1;
+	int dmaiolen_irdy:1;
+	int dmaioaddr_irdy:1;
+	int dmaioaddr:24;
+};
+
+void *get_rgtrdma(struct rgtr_dma *rgtr_dma) {
+
+	struct rgtr *rgtr = get_rgtr(RGTRDMAADDR_ID);
+	int data;
+
+	if (rgtr) {
+		data = 0;
+		for (int i; i < rgtr->len; i++) {
+			data <<= 8;
+			data |= rgtr->data[i];
+		}
+
+		rgtr_dma->dmalen_trdy    = (data & 0x80000000) ? 0 : 1;
+		rgtr_dma->dmaaddr_trdy   = (data & 0x40000000) ? 0 : 1;
+		rgtr_dma->dmaiolen_irdy  = (data & 0x20000000) ? 0 : 1;
+		rgtr_dma->dmaioaddr_irdy = (data & 0x10000000) ? 0 : 1;
+		rgtr_dma->dmaioaddr      = (data & 0x00ffffff);
+		return rgtr_dma;
+	}
+
+	return NULL;
 }
 
 void init_ahdlc ()
@@ -193,6 +335,8 @@ int rcvd_pkt()
 	return 0;
 }
 
+int debug;
+
 int main (int argc, char *argv[])
 {
 
@@ -246,12 +390,12 @@ int main (int argc, char *argv[])
 	for(;;) {
 		if (debug) fprintf (stderr, "Sending acknowlage\n");
 		send_pkt(0);
-		sio_parse(sbuff, sload-sbuff); printnl;
+		sio_parse(sbuff, sload-sbuff);
 
 		if (debug) fprintf (stderr, "Waiting acknowlage\n");
 		rlen = rcvd_pkt();
 		if (debug) fprintf (stderr, "Acknowlage received\n");
-		sio_parse(rbuff, rlen); printnl;
+		sio_parse(rbuff, rlen);
 
 		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
 			break;
@@ -284,14 +428,14 @@ int main (int argc, char *argv[])
 
 			if (debug) fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			send_pkt(size);
-			sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
+			sio_parse(sbuff, sload-sbuff+size);  ack = ack_rcvd;
 			if (debug) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
 				if (debug) fprintf (stderr, "waiting for acknowlege\n", n); //exit(1);
 				rlen = rcvd_pkt();
 				if (rlen > 0) {
 					if (debug) fprintf (stderr, "acknowlege received\n", n); //exit(1);
-					sio_parse(rbuff, rlen); printnl;
+					sio_parse(rbuff, rlen); 
 					if (((ack ^ ack_rcvd) & 0x3f) == 0)
 						break;
 					else {
@@ -303,7 +447,7 @@ int main (int argc, char *argv[])
 				if (debug) fprintf (stderr, "waiting time out\n", n); //exit(1);
 				if (debug) fprintf (stderr, "sending package again\n", n); //exit(1);
 				send_pkt(size);
-				sio_parse(sbuff, sload-sbuff+size); printnl; ack = ack_rcvd;
+				sio_parse(sbuff, sload-sbuff+size);  ack = ack_rcvd;
 			}
 
 			if (debug) fprintf (stderr, "package acknowleged\n", n); //exit(1);
@@ -317,12 +461,12 @@ int main (int argc, char *argv[])
 				ack++;
 				if (debug) fprintf (stderr, "sending new acknowlege\n");
 				send_pkt(0);
-				sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
+				sio_parse(sbuff, sload-sbuff);  ack = ack_rcvd;
 
 				for (;;) {
 					rlen = rcvd_pkt();
 					if (rlen > 0) {
-						sio_parse(rbuff, rlen); printnl;
+						sio_parse(rbuff, rlen); 
 						if (rlen > 0)
 							if (((ack ^ ack_rcvd) & 0x3f) == 0)
 								break;
@@ -330,7 +474,7 @@ int main (int argc, char *argv[])
 								continue;
 					}
 					send_pkt(0);
-					sio_parse(sbuff, sload-sbuff); printnl; ack = ack_rcvd;
+					sio_parse(sbuff, sload-sbuff);  ack = ack_rcvd;
 				}
 			}
 			if (debug) fprintf (stderr, "dma ready\n");
