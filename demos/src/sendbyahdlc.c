@@ -22,79 +22,174 @@
 #include "ahdlc.h"
 
 #define QUEUE   4
-#define MAXSIZE (8*1024)
+#define MAXLEN (8*1024)
+
+int loglevel;
+#define LOG0 (loglevel & (1 << 0))
+#define LOG1 (loglevel & (1 << 1))
 
 char ack_rcvd = 0;
 long long addr_rcvd;
 
-char rbuff[MAXSIZE];
-
-struct rgtr {
-	char unsigned id;
-	char unsigned len;
-	char unsigned *data;
-	struct rgtr * next;
+struct object_pool {
+	int object_free;
+	int free_objects[256];
 };
 
-int next_free = -1;
-int free_rgtr[256];
-struct rgtr rgtrs[256];
+int new_object(struct object_pool *pool)
+{
+	int object;
+
+	if (pool->object_free == -1) {
+		for (int i = 0; i < 256-1; i++)
+			pool->free_objects[i] = i + 1;
+		pool->free_objects[256-1] = -1;
+		pool->object_free = 0;
+	}
+	object = pool->object_free;
+	pool->object_free = pool->free_objects[pool->object_free];
+
+	return object;
+}
+
+void delete_object(struct object_pool *pool, int object)
+{
+	pool->free_objects[object] = pool->object_free;
+	pool->object_free = object;
+}
+
+struct rgtr_hdr {
+	char unsigned id;
+	char unsigned len;
+};
+
+struct rgtr {
+	struct rgtr_hdr hdr;
+	union {
+		char unsigned data[sizeof(long)];
+		char unsigned *ptr;
+	} payload;
+};
+
+struct rgtr_pool {
+	struct object_pool pool;
+	struct rgtr objects[256];
+} rgtr_pool;
 
 struct rgtr *new_rgtr()
 {
 	struct rgtr *rgtr;
 
-	if (next_free == -1) {
-		for (int i = 0; i < 256-1; i++)
-			free_rgtr[i] = i + 1;
-		free_rgtr[256-1] = -1;
-		next_free = 0;
-	}
-	rgtr = rgtrs+next_free;
-	rgtr->data = NULL;
-	next_free = free_rgtr[next_free];
+	int object = new_object(&rgtr_pool.pool);
+	rgtr = rgtr_pool.objects+object;
+	rgtr->payload.ptr = NULL;
 
 	return rgtr;
 }
 
-struct rgtr *delete_rgtr(struct rgtr *rgtr)
+void delete_rgtr(struct rgtr *rgtr)
 {
-	int e = rgtr-rgtrs; 
-	free_rgtr[e] = next_free;
-	next_free = e;
+	delete_object(&rgtr_pool.pool, rgtr-rgtr_pool.objects);
+}
+
+struct rgtr_node {
+	struct rgtr *rgtr;
+	struct rgtr_node *next;
+};
+
+struct rgtrnode_pool {
+	struct object_pool pool;
+	struct rgtr_node objects[256];
+} node_pool;
+
+struct rgtr_node *new_rgtrnode()
+
+{
+	struct rgtr_node *node;
+
+	int object = new_object(&node_pool.pool);
+	node = node_pool.objects+object;
+	node->rgtr = new_rgtr();
+	node->rgtr->payload.ptr = NULL;
+
+	return node;
+}
+
+void delete_rgtrnode(struct rgtr_node *node)
+{
+	delete_object(&rgtr_pool.pool, node->rgtr-rgtr_pool.objects);
+	delete_object(&node_pool.pool, node-node_pool.objects);
+}
+
+void delete_queue(struct rgtr_node *node)
+{
+	while (!node) {
+		struct rgtr_node *next;
+		next = node->next;
+		delete_rgtrnode(node);
+		node = next;
+	}
+}
+
+struct rgtr_node *get_rgtrnode(int id, struct rgtr_node *node)
+{
+	while(!node) {
+		if(node->rgtr->hdr.id == id)
+			break;
+		node = node->next;
+	}
+	return node;
 
 }
 
-struct rgtr *sio_parse(char unsigned *data, int len)
+char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
+{
+	char unsigned *ptr;
+
+	*len = 0;
+	ptr = data;
+	while(!node) {
+		*ptr++ = node->rgtr->hdr.id;
+		*ptr++ = node->rgtr->hdr.len;
+		memcpy(ptr, node->rgtr->payload.data, node->rgtr->hdr.len+1);
+		ptr  += (node->rgtr->hdr.len+1);
+		*len += ((node->rgtr->hdr.len+1) + 2);
+		node  = node->next;
+	}
+	return data;
+}
+
+struct rgtr_node *sio_parse(char unsigned *data, int len)
 {
 	enum states { stt_id, stt_len, stt_data };
 	enum states state;
 
-	struct rgtr *rgtr;
+	struct rgtr_node *node;
 	char unsigned *ptr;
 
-	state = stt_id;
+	node = NULL;
 	ptr = data;
-	while (data-ptr < len) {
-		if (!rgtr) {
-			rgtr = new_rgtr();
-		else {
-			rgtr->next = new_rgtr();
-			rgtr = rgtr->next;
+	state = stt_id;
+	while (ptr-data < len) {
+		if (!node) {
+			node = new_rgtrnode();
+		} else {
+			node->next = new_rgtrnode();
+			node = node->next;
 		}
 		switch(state) {
 		case stt_id:
-			rgtr->id = *ptr++;
+			node->rgtr->hdr.id = *ptr++;
 			state   = stt_len;
 			break;
 		case stt_len:
-			rgtr->len = *ptr++;
+			node->rgtr->hdr.len = *ptr++;
 			state    = stt_data;
 			break;
 		case stt_data:
-			rgtr->data = ptr;
-			ptr  += rgtr->len;
-			rgtr->next = 0;
+			node->rgtr->payload.ptr = ptr;
+			ptr  += node->rgtr->hdr.len;
+			node->next = 0;
 			state = stt_id;
 			break;
 		}
@@ -102,117 +197,66 @@ struct rgtr *sio_parse(char unsigned *data, int len)
 }
 
 #define RGTR0_ID       0x00
+#define RGTRACK_ID     0x00
 #define RGTRDMAADDR_ID 0x16
 
-struct rgtr *get_rgtr (int rid)
+
+struct rgtr_node *new_acknode()
 {
-	struct rgtr *rgtr;
+	struct rgtr_node *node = new_rgtrnode();
+	node->rgtr->hdr.id   = RGTR0_ID;
+	node->rgtr->hdr.len  = 1;
+	node->rgtr->payload.ptr = NULL;
 
-	rgtr = rgtrs;
-	while (rgtr->id != rid) {
-		if (rgtrs-rgtr < next_free)
-			rgtr++;
-		else
-			return NULL;
-	}
+	return node;
 }
 
-void push_rgtr (struct rgtr rgtr)
+void delete_acknode(struct rgtr_node *node)
 {
-
+	delete_object(&node_pool.pool, node-node_pool.objects);
 }
 
-struct rgtr0 {
-	int dup:1;
-	int ack:6;
-};
-
-struct rgtr0 *get_rgtr0(struct rgtr0 *rgtr0) {
-	struct rgtr *rgtr = get_rgtr(RGTR0_ID);
-
-	if (rgtr) {
-		rgtr0->dup = (rgtr->data[0] & 0x80) ? 0 : 1;
-		rgtr0->ack = (rgtr->data[0] & 0x3f);
-		return rgtr0;
-	}
-	return NULL;
+struct rgtr_node *set_rgtr0node(struct rgtr_node *node, char unsigned *data, int len) {
+	node->rgtr->hdr.id  = RGTR0_ID;
+	node->rgtr->hdr.len = len-1;
+	node->rgtr->payload.ptr  = data;
+	return node;
 }
 
-struct rgtr *new_rgtr0()
+struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
+	node->rgtr->payload.data[0]  = (dup) ? 0x80 : 0x00;
+	node->rgtr->payload.data[0] |= (0x3f & ack);
+	return node;
+}
+
+int get_rgtrdma(struct rgtr_node *node)
 {
-	struct rgtr *rgtr = new_rgtr();
-	rgtr->id   = RGTR0_ID;
-	rgtr->len  = 1;
-	rgtr->data = alloc(1);
+	int status;
 
-	return rgtr;
-}
+	status = 0;
+	if (node)
+		for (int i; i < node->rgtr->hdr.len; i++) {
+			status <<= 8;
+			status |= node->rgtr->payload.ptr[i];
+		}
 
-struct rgtr0 *set_rgtr0(struct rgtr0 *rgtr0, int ack, int dup) {
-	rgtr0->dup = dup;
-	rgtr0->ack = ack;
-	return rgtr0;
-}
-
-struct rgtr *new_rgtr0(int ack, int dup)
-{
-	struct rgtr *rgtr = new_rgtr();
-	struct rgtr0 rgtr0;
-
-	set_rgtr0(&rgtr0, ack, dup);
-	rgtr->id   = RGTR0_ID;
-	rgtr->len  = 1;
-	rgtr->data = alloc(1);
-
-	rgtr->data[0]  = (rgtr0.dup) ? 0x80 : 0x00;
-	rgtr->data[0] |= rgtr0.ack;
-
-	return rgtr;
+	return status;
 }
 
 struct {
-	struct rgtr *header;
-	struct rgtr *tail;
+	struct rgtr_node *header;
+	struct rgtr_node *tail;
 } sendqueue;
 
-void push_rgtr (struct rgtr *rgtr)
+void push_rgtr (struct rgtr_node *node)
 {
-	if (sendqueue.sendtail)
-		sendqueue.sendtail->next = rgtr0;
-		sendqueue.sendtail = rgtr0;
-	} else
-		sendqueue.sendtail = rgtr0;
-}
-
-struct rgtr_dma {
-	int dmalen_trdy:1;
-	int dmaaddr_trdy:1;
-	int dmaiolen_irdy:1;
-	int dmaioaddr_irdy:1;
-	int dmaioaddr:24;
-};
-
-void *get_rgtrdma(struct rgtr_dma *rgtr_dma) {
-
-	struct rgtr *rgtr = get_rgtr(RGTRDMAADDR_ID);
-	int data;
-
-	if (rgtr) {
-		data = 0;
-		for (int i; i < rgtr->len; i++) {
-			data <<= 8;
-			data |= rgtr->data[i];
-		}
-
-		rgtr_dma->dmalen_trdy    = (data & 0x80000000) ? 0 : 1;
-		rgtr_dma->dmaaddr_trdy   = (data & 0x40000000) ? 0 : 1;
-		rgtr_dma->dmaiolen_irdy  = (data & 0x20000000) ? 0 : 1;
-		rgtr_dma->dmaioaddr_irdy = (data & 0x10000000) ? 0 : 1;
-		rgtr_dma->dmaioaddr      = (data & 0x00ffffff);
-		return rgtr_dma;
+	if (sendqueue.tail) {
+		sendqueue.tail->next = node;
+		sendqueue.tail = node;
+	} else {
+		sendqueue.header = node;
+		sendqueue.tail   = node;
 	}
-
-	return NULL;
 }
 
 void init_ahdlc ()
@@ -221,10 +265,61 @@ void init_ahdlc ()
 	setbuf(stdout, NULL);
 }
 
-char sbuff[MAXSIZE];
-char *sload = sbuff+5;
 int  pkt_sent = 0;
 int  ack      = 0x4a;
+
+void ahdlc_send(char * data, int len)
+{
+	u16 fcs;
+
+    fcs = ~reverse(pppfcs16(PPPINITFCS16, data, len), 16);
+	memcpy(data+len+0, (char *) &fcs+1, sizeof(fcs)/2);
+	memcpy(data+len+1, (char *) &fcs+0, sizeof(fcs)/2);
+	len += sizeof(fcs);
+	putchar(0x7e);
+	for (int i = 0; i < len; i++) {
+		if (data[i] == 0x7e) {
+			putchar(0x7d);
+			data[i] ^= 0x20;
+		} else if(data[i] == 0x7d) {
+			putchar(0x7d);
+			data[i] ^= 0x20;
+		}
+		putchar(data[i]);
+	}
+	putchar(0x7e);
+}
+
+void ahdlc_sendrgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
+{
+	char unsigned buffer[MAXLEN];
+	int len1 = sizeof(buffer);
+
+	rgtr2raw(buffer, &len1, node);
+	memcpy(buffer+len1, data, len);
+	ahdlc_send(buffer, len);
+}
+
+void ahdlc_sendrgtr(struct rgtr_node *node)
+{
+	char unsigned buffer[MAXLEN];
+	int len = sizeof(buffer);
+
+	rgtr2raw(buffer, &len, node);
+	ahdlc_send(buffer, len);
+}
+
+void send_rgtr(struct rgtr_node *node)
+{
+	ahdlc_sendrgtr(node);
+}
+
+void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
+{
+	ahdlc_sendrgtrrawdata(node, data, len);
+}
+
+int  pkt_lost = 0;
 
 void print_pkt (void *pkt, int len)
 {
@@ -233,61 +328,18 @@ void print_pkt (void *pkt, int len)
 	}
 }
 
-void send_char (char unsigned c)
+int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 {
-	fwrite(&c, sizeof(char), 1, stdout);
-//	fprintf(stderr,"0x%02x ", c);
-}
+	int len;
 
-void send_ahdlc (int psize)
-{
-	u16 fcs;
-
-    fcs = ~reverse(pppfcs16(PPPINITFCS16, sbuff, psize), 16);
-	memcpy(sbuff+psize+0, (char *) &fcs+1, sizeof(fcs)/2);
-	memcpy(sbuff+psize+1, (char *) &fcs+0, sizeof(fcs)/2);
-	psize += sizeof(fcs);
-	send_char(0x7e);
-	for (int i = 0; i < psize; i++) {
-		if (sbuff[i] == 0x7e) {
-			send_char(0x7d);
-			sbuff[i] ^= 0x20;
-		} else if(sbuff[i] == 0x7d) {
-			send_char(0x7d);
-			sbuff[i] ^= 0x20;
-		}
-		send_char(sbuff[i]);
-	}
-	send_char(0x7e);
-}
-
-void send_pkt(int psize)
-{
-	int len = 0;
-
-	sbuff[len++] = 0x00;
-	sbuff[len++] = 0x02;
-	sbuff[len++] = 0x00;
-	sbuff[len++] = 0x00;
-	sbuff[len++] = (ack & 0x03f);
-	len += psize;
-
-	send_ahdlc(len);
-	pkt_sent++;
-}
-
-int  pkt_lost = 0;
-
-int rcvd_pkt()
-{
 	short unsigned fcs;
 	fd_set rfds;
 	struct timeval tv;
 	int err;
-	int len;
 
 	pkt_lost++;
-	for (len = 0; len < sizeof(rbuff); len++) {
+	len = 0;
+	for (int i = 0; i < maxlen; i++) {
 		FD_ZERO(&rfds);
 		FD_SET(fileno(stdout), &rfds);
 		tv.tv_sec  = 0;
@@ -298,44 +350,65 @@ int rcvd_pkt()
 			exit (1);
 		} else {
 			if (err > 0) {
-				if (fread(rbuff+len, sizeof(char), 1, stdout) > 0)
-					if (rbuff[len] == 0x7e)
+				char c;
+
+				if ((c = fgetc(stdout)) > 0)
+					buffer[i] = c;
+					if (c == 0x7e) {
+						len = i;
 						break;
-					else
+					} else
 						continue;
+
 				perror("reading serial");
-				exit(1);
+				abort();
 			} else {
-				fprintf(stderr, "reading time out\n");
-				len--;
+				if (LOG1) fprintf(stderr, "reading time out\n");
+				i--;
 			}
 		}
 	}
+	if (!len) {
+		if (LOG0) fprintf(stderr, "Error receiving\n");
+		return -1;
+	}
 
-	int i;
-	int j;
-	for (i = 0, j = 0; i < len; rbuff[j++] = rbuff[i++]) {
-		if (rbuff[i] == 0x7d) {
-			rbuff[++i] ^= 0x20;
-		}
+	int i, j;
+	for (i = 0, j = 0; i < len; i++, j++) {
+		if (buffer[i] == 0x7d)
+			buffer[++i] ^= 0x20;
+		buffer[j] = buffer[i];
 	}
 	len += (j-i);
-	fcs = pppfcs16(PPPINITFCS16, rbuff, len);
+
+	print_pkt(buffer, len);
+	fcs = pppfcs16(PPPINITFCS16, buffer, len);
 	if (fcs == PPPGOODFCS16) {
 		len -= 2;
-		print_pkt(rbuff, len);
-		fprintf(stderr, "OK!!!!!!!! fcs 0x%04x\n", fcs);
+		if (LOG0) fprintf(stderr, "FCS OK! ");
+		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
+		if (LOG0 | LOG1) fputc('\n', stderr); 
 		pkt_lost--;
 		return len;
 	}
 	len -= 2;
-	print_pkt(rbuff, len);
-	fprintf(stderr, ">>> WRONG <<< fcs 0x%04x\n", fcs);
 
-	return 0;
+	if (LOG0) fprintf(stderr, "FCS WRONG! ");
+	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
+	if (LOG0 | LOG1) fputc('\n', stderr); 
+
+	return -1;
 }
 
-int debug;
+struct rgtr_node *rcvd_rgtr()
+{
+	int len;
+
+	static char unsigned buffer[MAXLEN];
+	if ((len = ahdlc_rcvd(buffer, sizeof(buffer)) < 0))
+		return NULL;
+	return sio_parse(buffer, len);
+}
 
 int main (int argc, char *argv[])
 {
@@ -383,110 +456,149 @@ int main (int argc, char *argv[])
 
 	init_ahdlc();
 
+	struct rgtr_node *ack_node = new_acknode();
+	char unsigned ack_buffer[4];
+	int ack_len = sizeof(ack_buffer);
+
+	struct rgtr_node *queue;
+	struct rgtr_node *rgtr0;
+
 	// Reset ack //
 	// --------- //
 
-	if (debug) fprintf (stderr, ">>> SETTING ACK <<<\n");
+	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 	for(;;) {
-		if (debug) fprintf (stderr, "Sending acknowlage\n");
-		send_pkt(0);
-		sio_parse(sbuff, sload-sbuff);
 
-		if (debug) fprintf (stderr, "Waiting acknowlage\n");
-		rlen = rcvd_pkt();
-		if (debug) fprintf (stderr, "Acknowlage received\n");
-		sio_parse(rbuff, rlen);
 
-		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
+		if (LOG1) fprintf (stderr, "Sending ACK\n");
+		rgtr2raw(ack_buffer, &ack_len, set_acknode(ack_node, ack, 0x0));
+		send_rgtr(set_rgtr0node(ack_node, ack_buffer, ack_len));
+
+		if (LOG1) fprintf (stderr, "Waiting ACK\n");
+		queue = rcvd_rgtr();
+		if (!queue) {
+			if (LOG1) fprintf (stderr, "packet error\n");
+			continue;
+		}
+
+		if (LOG1) fprintf (stderr, "ACK received\n");
+		rgtr0 = get_rgtrnode(RGTR0_ID, queue);
+		rgtr0 = sio_parse(rgtr0->rgtr->payload.ptr, rgtr0->rgtr->hdr.len);
+
+		if (!rgtr0) {
+			if (LOG1) fprintf (stderr, "ACK error\n");
+			continue;
+		}
+
+		if (((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0)->rgtr->payload.ptr[0]) & 0x3f) == 0) {
+			if (LOG1) fprintf (stderr, "ACK misnatch 0x%02, 0x%02\n",
+				ack, get_rgtrnode(RGTRACK_ID, rgtr0)->rgtr->payload.ptr[0]);
 			break;
+		}
+
 	}
-	if (debug) fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+
+	delete_queue(queue);
+	delete_queue(rgtr0);
+	if (LOG0) fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+
+	// Processing data //
+	// --------------- //
 
 	if (!pktmd)
-		if (debug) fprintf (stderr, "No-packet-size mode\n");
+		if (LOG1) fprintf (stderr, "No-packet-size mode\n");
 
 	for(;;) {
-		int size = sizeof(sbuff)-(sload-sbuff);
+		short unsigned size;
+		char  unsigned buffer[MAXLEN];
 
-		if (debug) fprintf (stderr, ">>> READING PACKET <<<\n");
+		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
 			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				if (debug) fprintf (stderr, "Packet size %d\n", size);
+				if (LOG1) fprintf (stderr, "Packet size %d\n", size);
 			else
 				break;
 		}
 
-		if ((n = fread(sload, sizeof(unsigned char), size, stdin)) > 0) {
-			if (debug) fprintf (stderr, "Packet read length %d\n", n);
+		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+			if (LOG1) fprintf (stderr, "Packet read length %d\n", n);
 			size = n;
-			if (size > MAXSIZE) {
-				if (debug) fprintf (stderr, "Packet size %d greater than %d\n", size, MAXSIZE);
+			if (size > MAXLEN) {
+				if (LOG1) fprintf (stderr, "Packet size %d greater than %d\n", size, MAXLEN);
 				exit(1);
 			}
 
 			ack++;
 
-			if (debug) fprintf (stderr, ">>> SENDING PACKET <<<\n");
-			send_pkt(size);
-			sio_parse(sbuff, sload-sbuff+size);  ack = ack_rcvd;
-			if (debug) fprintf (stderr, ">>> CHECKING ACK <<<\n");
+			if (LOG0) fprintf (stderr, ">>> SENDING PACKET <<<\n");
+			
+			rgtr2raw(buffer, &ack_len, set_acknode(ack_node, ack, 0x0));
+			send_rgtrrawdata(set_rgtr0node(ack_node, ack_buffer, ack_len), buffer, size);
+
+			if (LOG0) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
-				if (debug) fprintf (stderr, "waiting for acknowlege\n", n); //exit(1);
-				rlen = rcvd_pkt();
-				if (rlen > 0) {
-					if (debug) fprintf (stderr, "acknowlege received\n", n); //exit(1);
-					sio_parse(rbuff, rlen); 
-					if (((ack ^ ack_rcvd) & 0x3f) == 0)
-						break;
-					else {
-						if (debug) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
+				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
+				queue = rcvd_rgtr();
+				if (queue) {
+					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
+
+					rgtr0 = get_rgtrnode(RGTR0_ID, queue);
+					rgtr0 = sio_parse(rgtr0->rgtr->payload.ptr, rgtr0->rgtr->hdr.len);
+					if (!rgtr0) {
+						if (LOG1) fprintf (stderr, "ACK missed\n");
 						continue;
 					}
+
+					if (((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0)->rgtr->payload.ptr[0]) & 0x3f) == 0)
+						break;
+					else {
+						if (LOG1) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
+						continue;
+					}
+
 				}
 
-				if (debug) fprintf (stderr, "waiting time out\n", n); //exit(1);
-				if (debug) fprintf (stderr, "sending package again\n", n); //exit(1);
-				send_pkt(size);
-				sio_parse(sbuff, sload-sbuff+size);  ack = ack_rcvd;
+				if (LOG1) fprintf (stderr, "waiting time out\n", n);
+				if (LOG1) fprintf (stderr, "sending package again\n", n);
+
+				rgtr2raw(buffer, &ack_len, set_acknode(ack_node, ack, 0x0));
+				send_rgtrrawdata(set_rgtr0node(ack_node, ack_buffer, ack_len), buffer, size);
+
+
 			}
 
-			if (debug) fprintf (stderr, "package acknowleged\n", n); //exit(1);
+			if (LOG1) fprintf (stderr, "package acknowleged\n", n); //exit(1);
 
-			if (debug) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
+			if (LOG0) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
+				get_rgtrnode(RGTRDMAADDR_ID, queue)->rgtr->payload.ptr[0];
 				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
 					break;
 
-				if (debug) fprintf (stderr, "dma not ready\n");
-				ack++;
-				if (debug) fprintf (stderr, "sending new acknowlege\n");
-				send_pkt(0);
-				sio_parse(sbuff, sload-sbuff);  ack = ack_rcvd;
+				delete_queue(queue);
+				if (LOG1) fprintf (stderr, "dma not ready\n");
+				if (LOG1) fprintf (stderr, "sending new acknowlege\n");
+				rgtr2raw(ack_buffer, &ack_len, set_acknode(ack_node, ++ack, 0x0));
+				send_rgtr(set_rgtr0node(ack_node, ack_buffer, ack_len));
 
 				for (;;) {
-					rlen = rcvd_pkt();
-					if (rlen > 0) {
-						sio_parse(rbuff, rlen); 
-						if (rlen > 0)
-							if (((ack ^ ack_rcvd) & 0x3f) == 0)
-								break;
-							else
-								continue;
-					}
-					send_pkt(0);
-					sio_parse(sbuff, sload-sbuff);  ack = ack_rcvd;
+
+					queue = rcvd_rgtr();
+					rgtr0 = get_rgtrnode(RGTR0_ID, queue);
+					rgtr0 = sio_parse(rgtr0->rgtr->payload.ptr, rgtr0->rgtr->hdr.len);
+
+					if (queue && rgtr0 && ((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0)->rgtr->payload.ptr[0]) & 0x3f) == 0)
+						break;
+					else
+						continue;
+
+					delete_queue(queue);
+					delete_queue(rgtr0);
+					rgtr2raw(ack_buffer, &ack_len, set_acknode(ack_node, ack, 0x0));
+					send_rgtr(set_rgtr0node(ack_node, ack_buffer, ack_len));
 				}
 			}
-			if (debug) fprintf (stderr, "dma ready\n");
-	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
-	//			break;
-		
-//			for (int i = 1; i < 4; i++)
-//				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
-//					if (debug) fprintf(stderr,"marca -->\n");
-//					break;
-//				}
-
+			if (LOG1) fprintf (stderr, "dma ready\n");
 
 		} else if (n < 0) {
 			perror ("reading packet");
