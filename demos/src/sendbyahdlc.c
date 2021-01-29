@@ -248,7 +248,8 @@ struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
 
 void init_ahdlc ()
 {
-	setbuf(stdin, NULL);
+	stdin = fdopen(STDIN_FILENO, "w+");
+	setbuf(stdin,  NULL);
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 }
