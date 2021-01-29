@@ -80,7 +80,6 @@ struct rgtrnode_pool {
 } node_pool = { { -1, } , };
 
 struct rgtr_node *new_rgtrnode()
-
 {
 	struct rgtr_node *node;
 
@@ -104,16 +103,6 @@ struct rgtr_node *delete_rgtrnode(struct rgtr_node *node)
 	return NULL;
 }
 
-int get_len (struct rgtr_node *node)
-{
-	return node->rgtr->len+1;
-}
-
-int get_buffer (struct rgtr_node *node)
-{
-	return node->rgtr->len+1;
-}
-
 struct rgtr_node * delete_queue(struct rgtr_node *node)
 {
 	while (node) {
@@ -133,12 +122,10 @@ struct rgtr_node *lookup(int id, struct rgtr_node *node)
 	}
 	if (node->rgtr->id != id) return NULL;
 	return node;
-
 }
 
 struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *buffer, int len)
 {
-
 	node->rgtr = (struct rgtr *) buffer;
 	node->rgtr->id  = id;
 	node->rgtr->len = len-3;
@@ -155,7 +142,7 @@ struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *bu
 	return node;
 }
 
-struct rgtr_node * nest_rgtrnode (struct rgtr_node *node, char unsigned id, char unsigned len)
+struct rgtr_node *nest_rgtrnode (struct rgtr_node *node, char unsigned id, char unsigned len)
 {
 	return set_rgtrnode(new_rgtrnode(), id, node->rgtr->data, len+2);
 }
@@ -259,19 +246,6 @@ struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
 	return node;
 }
 
-int get_rgtrdma(struct rgtr_node *node)
-{
-	int status;
-
-	status = 0;
-	if (node) for (int i; i < node->rgtr->len; i++) {
-		status <<= 8;
-		status |= node->rgtr->data[i];
-	}
-
-	return status;
-}
-
 void init_ahdlc ()
 {
 	setbuf(stdin, NULL);
@@ -341,13 +315,14 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 	int len;
 
 	short unsigned fcs;
-	fd_set rfds;
 	struct timeval tv;
 	int err;
 
 	pkt_lost++;
 	len = 0;
 	for (int i = 0; i < maxlen; i++) {
+		fd_set rfds;
+
 		FD_ZERO(&rfds);
 		FD_SET(fileno(stdout), &rfds);
 		tv.tv_sec  = 0;
@@ -417,28 +392,9 @@ struct rgtr_node *rcvd_rgtr()
 int main (int argc, char *argv[])
 {
 
-#ifdef __MINGW32__
-	WSADATA wsaData;
-#endif
-
-	int  c;
-	char hostname[256] = "";
-
-	unsigned char *bufptr;
-	char pktmd;
-
-	fd_set rfds;
-	int n;
-	int l;
-	int ssize;
-	int rlen;
-
-
-#ifdef __MINGW32__
-	if (WSAStartup(MAKEWORD(2,2), &wsaData))
-		exit(-1);
-#endif
-
+	char hostname[256];
+	int pktmd;
+	int c;
 	pktmd  = 0;
 	opterr = 0;
 	while ((c = getopt (argc, argv, "dph:")) != -1) {
@@ -519,6 +475,7 @@ int main (int argc, char *argv[])
 		if (LOG1) fprintf (stderr, "No-packet-size mode\n");
 
 	for(;;) {
+		int n;
 		short unsigned size = MAXLEN;
 		char  unsigned buffer[MAXLEN];
 
@@ -619,6 +576,6 @@ int main (int argc, char *argv[])
 		} else break;
 
 	}
-	fprint_rgtr(stdin, lookup(0xff, queue_in));
+	print_rgtr(lookup(0xff, queue_in));
 	return 0;
 }
