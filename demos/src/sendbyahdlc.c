@@ -28,9 +28,6 @@ int loglevel;
 #define LOG0 (loglevel & (1 << 0))
 #define LOG1 (loglevel & (1 << 1))
 
-char ack_rcvd = 0;
-long long addr_rcvd;
-
 struct object_pool {
 	int object_free;
 	int free_objects[256];
@@ -88,7 +85,7 @@ struct rgtr_node *new_rgtrnode()
 	struct rgtr_node *node;
 
 	int object = new_object(&node_pool.pool);
-	if (LOG1) fprintf (stderr, "object %d\n", object);
+	if (LOG1) fprintf (stderr, "new object %d\n", object);
 	node = node_pool.objects+object;
 	node->rgtr = NULL;
 	node->next = NULL;
@@ -99,6 +96,7 @@ struct rgtr_node *new_rgtrnode()
 struct rgtr_node *delete_rgtrnode(struct rgtr_node *node)
 {
 	if (node) {
+		if (LOG1) fprintf (stderr, "free object %ld\n", node-node_pool.objects);
 		delete_object(&node_pool.pool, node-node_pool.objects);
 		node->rgtr = NULL;
 		node->next = NULL;
@@ -127,15 +125,39 @@ struct rgtr_node * delete_queue(struct rgtr_node *node)
 	return NULL;
 }
 
-struct rgtr_node *get_rgtrnode(int id, struct rgtr_node *node)
+struct rgtr_node *lookup(int id, struct rgtr_node *node)
 {
-	while(!node) {
-		if(node->rgtr->id == id)
-			break;
+	while(node) {
+		if(node->rgtr->id == id) break;
 		node = node->next;
 	}
+	if (node->rgtr->id != id) return NULL;
 	return node;
 
+}
+
+struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *buffer, int len)
+{
+
+	node->rgtr = (struct rgtr *) buffer;
+	node->rgtr->id  = id;
+	node->rgtr->len = len-3;
+	if (LOG1) {
+		fprintf (stderr, "set_rgtrnode\n");
+		fprintf (stderr, "\t id   : 0x%02x\n", node->rgtr->id);
+		fprintf (stderr, "\t len  : 0x%02x\n", node->rgtr->len);
+		fprintf (stderr, "\t data : ");
+		for (int i = 0; i < (node->rgtr->len+1); i++) 
+			fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
+		fputc('\n', stderr);
+	}
+
+	return node;
+}
+
+struct rgtr_node * nest_rgtrnode (struct rgtr_node *node, char unsigned id, char unsigned len)
+{
+	return set_rgtrnode(new_rgtrnode(), id, node->rgtr->data, len+2);
 }
 
 char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
@@ -167,14 +189,16 @@ char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
 
 struct rgtr_node *rawdata2rgtr(char unsigned *data, int len)
 {
+	struct rgtr_node *head;
 	struct rgtr_node *node;
 	char unsigned *ptr;
 
-	node = NULL;
+	head = NULL;
 	ptr = data;
 	while (ptr-data < len) {
-		if (!node) {
-			node = new_rgtrnode();
+		if (!head) {
+			head = new_rgtrnode();
+			node = head;
 		} else {
 			node->next = new_rgtrnode();
 			node = node->next;
@@ -182,49 +206,49 @@ struct rgtr_node *rawdata2rgtr(char unsigned *data, int len)
 		node->rgtr = (struct rgtr *) ptr;
 		node->next = 0;
 		ptr  += node->rgtr->len + 3;
+
 	}
+	return head;
 }
 
 struct rgtr_node *childrgtrs(struct rgtr *rgtr)
 {
-	if (!rgtr)
-		return NULL;
+	if (!rgtr) return NULL;
 	return rawdata2rgtr(rgtr->data, rgtr->len+1);
+}
+
+int unsigned rgtr2int (struct rgtr_node *node)
+{
+	int unsigned data;
+
+	data = 0;
+	for (int i = 0; i < node->rgtr->len+1; i++) {
+		data <<= 8;
+		data |= node->rgtr->data[i];
+	}
+	return data;
+}
+
+void print_rgtr (struct rgtr_node *node)
+{
+	fprintf (stderr, "id   : 0x%02x\n", node->rgtr->id);
+	fprintf (stderr, "len  : 0x%02x\n", node->rgtr->len);
+	fprintf (stderr, "data : ");
+	for (int i = 0; i < (node->rgtr->len+1); i++) fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
+	fputc('\n', stderr);
+}
+
+void print_rgtrs (struct rgtr_node *node)
+{
+	while(node) {
+		print_rgtr(node);
+		node = node->next;
+	}
 }
 
 #define RGTR0_ID       0x00
 #define RGTRACK_ID     0x00
 #define RGTRDMAADDR_ID 0x16
-
-
-struct rgtr_node *new_acknode(char unsigned *buffer, int len)
-{
-	struct rgtr_node *node = new_rgtrnode();
-	node->rgtr = (struct rgtr *) buffer;
-	node->rgtr->id  = RGTR0_ID;
-	node->rgtr->len = 1;
-
-	return node;
-}
-
-struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *buffer, int len)
-{
-
-	node->rgtr = (struct rgtr *) buffer;
-	node->rgtr->id  = id;
-	node->rgtr->len = len-3;
-	if (LOG1) {
-		fprintf (stderr, "set_rgtrnode\n");
-		fprintf (stderr, "\t id   : 0x%02x\n", node->rgtr->id);
-		fprintf (stderr, "\t len  : 0x%02x\n", node->rgtr->len);
-		fprintf (stderr, "\t data : ");
-		for (int i = 0; i < (node->rgtr->len+1); i++) 
-			fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
-		fputc('\n', stderr);
-	}
-
-	return node;
-}
 
 struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
 	node->rgtr->data[0]  = (dup) ? 0x80 : 0x00;
@@ -237,11 +261,10 @@ int get_rgtrdma(struct rgtr_node *node)
 	int status;
 
 	status = 0;
-	if (node)
-		for (int i; i < node->rgtr->len; i++) {
-			status <<= 8;
-			status |= node->rgtr->data[i];
-		}
+	if (node) for (int i; i < node->rgtr->len; i++) {
+		status <<= 8;
+		status |= node->rgtr->data[i];
+	}
 
 	return status;
 }
@@ -280,9 +303,10 @@ void ahdlc_sendrgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	char unsigned buffer[MAXLEN];
 	int len1 = sizeof(buffer);
 
+		print_rgtr(node);
 	rgtr2raw(buffer, &len1, node);
 	memcpy(buffer+len1, data, len);
-	ahdlc_send(buffer, len);
+	ahdlc_send(buffer, len1+len);
 }
 
 void ahdlc_sendrgtr(struct rgtr_node *node)
@@ -292,8 +316,7 @@ void ahdlc_sendrgtr(struct rgtr_node *node)
 
 	rgtr2raw(buffer, &len, node);
 	if (LOG1) {
-		for (int i = 0; i < len; i++) 
-			fprintf (stderr, "0x%02x ", buffer[i]);
+		for (int i = 0; i < len; i++) fprintf (stderr, "0x%02x ", buffer[i]);
 		fputc('\n', stderr);
 	}
 	ahdlc_send(buffer, len);
@@ -311,16 +334,6 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 
 int  pkt_lost = 0;
 
-void print_rgtr (struct rgtr_node *node)
-{
-	fprintf (stderr, "id   : 0x%02x\n", node->rgtr->id);
-	fprintf (stderr, "len  : 0x%02x\n", node->rgtr->len);
-	fprintf (stderr, "data : ");
-	for (int i = 0; i < (node->rgtr->len+1); i++) 
-		fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
-	fputc('\n', stderr);
-}
-
 int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 {
 	int len;
@@ -330,7 +343,6 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 	struct timeval tv;
 	int err;
 
-	loglevel = 3;
 	pkt_lost++;
 	len = 0;
 	for (int i = 0; i < maxlen; i++) {
@@ -344,17 +356,11 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 			abort();
 		} else {
 			if (err > 0 && FD_ISSET(fileno(stdout), &rfds)) {
-				int c;
-
-				if ((c = fgetc(stdout)) > 0) {
-					buffer[i] = c;
-					if (LOG0) fprintf(stderr, "c %02x\n",c);
-					if (c == 0x7e) {
+				if (fread (buffer+i, sizeof(char), 1, stdout) > 0) {
+					if (buffer[i] == 0x7e) {
 						len = i;
 						break;
-					} else {
-						continue;
-					}
+					} else continue;
 				}
 
 				perror("reading serial");
@@ -393,7 +399,6 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 	if (LOG0 | LOG1) fputc('\n', stderr); 
 
-	loglevel = 2;
 	return -1;
 }
 
@@ -402,7 +407,7 @@ struct rgtr_node *rcvd_rgtr()
 	int len;
 
 	static char unsigned buffer[MAXLEN];
-	if ((len = ahdlc_rcvd(buffer, sizeof(buffer)) < 0))
+	if ((len = ahdlc_rcvd(buffer, sizeof(buffer))) < 0)
 		return NULL;
 	return rawdata2rgtr(buffer, len);
 }
@@ -453,10 +458,10 @@ int main (int argc, char *argv[])
 
 	init_ahdlc();
 
+	loglevel = 3;
 	char unsigned rgtr0_buffer[5];
 	struct rgtr_node *rgtr0_out = set_rgtrnode(new_rgtrnode(), RGTR0_ID,   rgtr0_buffer,   sizeof(rgtr0_buffer));
-	struct rgtr_node *ack_out   = set_rgtrnode(new_rgtrnode(), RGTRACK_ID, rgtr0_buffer+2, sizeof(rgtr0_buffer)-2);
-
+	struct rgtr_node *ack_out   = nest_rgtrnode(rgtr0_out, RGTRACK_ID, 1);
 
 	struct rgtr_node *queue_in = NULL;
 	struct rgtr_node *rgtr0_in = NULL;
@@ -467,7 +472,6 @@ int main (int argc, char *argv[])
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
 	int ack = 0x0a;
-	loglevel = 2;
 	for(;;) {
 
 	
@@ -486,8 +490,9 @@ int main (int argc, char *argv[])
 			continue;
 		}
 
+		print_rgtrs(queue_in);
 		if (LOG1) fprintf (stderr, "ACK received\n");
-		rgtr0_in = get_rgtrnode(RGTR0_ID, queue_in);
+		rgtr0_in = lookup(RGTR0_ID, queue_in);
 		rgtr0_in = childrgtrs(rgtr0_in->rgtr);
 
 		if (!rgtr0_in) {
@@ -495,14 +500,13 @@ int main (int argc, char *argv[])
 			continue;
 		}
 
-		if (((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0_in)->rgtr->data[0]) & 0x3f) == 0) {
-			if (LOG1) fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n",
-				ack, get_rgtrnode(RGTRACK_ID, rgtr0_in)->rgtr->data[0]);
+		if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) {
 			break;
-		}
+		} else if (LOG1) fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n",
+			ack, lookup(RGTRACK_ID, rgtr0_in)->rgtr->data[0]);
 
 	}
-	loglevel = 0;
+	loglevel = 3;
 
 	queue_in = delete_queue(queue_in);
 	rgtr0_in = delete_queue(rgtr0_in);
@@ -515,7 +519,7 @@ int main (int argc, char *argv[])
 		if (LOG1) fprintf (stderr, "No-packet-size mode\n");
 
 	for(;;) {
-		short unsigned size;
+		short unsigned size = MAXLEN;
 		char  unsigned buffer[MAXLEN];
 
 		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
@@ -531,7 +535,7 @@ int main (int argc, char *argv[])
 			size = n;
 			if (size > MAXLEN) {
 				if (LOG1) fprintf (stderr, "Packet size %d greater than %d\n", size, MAXLEN);
-				exit(1);
+				abort();
 			}
 
 			ack++;
@@ -545,20 +549,22 @@ int main (int argc, char *argv[])
 			for(;;) {
 				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
 				queue_in = rcvd_rgtr();
+				print_rgtrs(queue_in);
 				if (queue_in) {
 					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
 
-					rgtr0_in = get_rgtrnode(RGTR0_ID, queue_in);
+					rgtr0_in = lookup(RGTR0_ID, queue_in);
 					rgtr0_in = childrgtrs(rgtr0_in->rgtr);
 					if (!rgtr0_in) {
 						if (LOG1) fprintf (stderr, "ACK missed\n");
 						continue;
 					}
 
-					if (((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0_in)->rgtr->data[0]) & 0x3f) == 0)
-						break;
+					if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) break;
 					else {
-						if (LOG1) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", ack & 0xff, ack_rcvd & 0xff);
+						if (LOG1) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", 
+							(char unsigned) ack, 
+							(char unsigned) rgtr2int(lookup(RGTRACK_ID, rgtr0_in)));
 						continue;
 					}
 
@@ -575,9 +581,10 @@ int main (int argc, char *argv[])
 
 			if (LOG0) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
-				get_rgtrnode(RGTRDMAADDR_ID, queue_in)->rgtr->data[0];
-				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
-					break;
+				
+				print_rgtrs(queue_in);
+				
+				if (!((rgtr2int(lookup(RGTRDMAADDR_ID, queue_in)) & 0xc0000000) ^ 0xc0000000)) break;
 
 				queue_in = delete_queue(queue_in);
 				rgtr0_in = delete_queue(rgtr0_in);
@@ -589,11 +596,11 @@ int main (int argc, char *argv[])
 				for (;;) {
 					queue_in = rcvd_rgtr();
 					if (queue_in) {
-						rgtr0_in = get_rgtrnode(RGTR0_ID, queue_in);
+						rgtr0_in = lookup(RGTR0_ID, queue_in);
 						if (rgtr0_in) {
 							rgtr0_in = childrgtrs(rgtr0_in->rgtr);
 							if (rgtr0_in) {
-								if (((ack ^ get_rgtrnode(RGTRACK_ID, rgtr0_in)->rgtr->data[0]) & 0x3f) == 0)
+								if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0)
 									break;
 								else
 									continue;
@@ -609,8 +616,7 @@ int main (int argc, char *argv[])
 		} else if (n < 0) {
 			perror ("reading packet");
 			exit(1);
-		} else
-			break;
+		} else break;
 
 	}
 
