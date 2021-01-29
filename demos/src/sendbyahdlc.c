@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <errno.h>
 
 #ifdef __MINGW32__
 #include <ws2tcpip.h>
@@ -23,6 +24,9 @@
 
 #define QUEUE   4
 #define MAXLEN (8*1024)
+
+FILE *comm;
+FILE *fout;
 
 int loglevel;
 #define LOG0 (loglevel & (1 << 0))
@@ -246,14 +250,6 @@ struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
 	return node;
 }
 
-void init_ahdlc ()
-{
-	stdin = fdopen(STDIN_FILENO, "w+");
-	setbuf(stdin,  NULL);
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
-}
-
 void ahdlc_send(char * data, int len)
 {
 	u16 fcs;
@@ -262,18 +258,18 @@ void ahdlc_send(char * data, int len)
 	memcpy(data+len+0, (char *) &fcs+1, sizeof(fcs)/2);
 	memcpy(data+len+1, (char *) &fcs+0, sizeof(fcs)/2);
 	len += sizeof(fcs);
-	putchar(0x7e);
+	fputc(0x7e, comm);
 	for (int i = 0; i < len; i++) {
 		if (data[i] == 0x7e) {
-			putchar(0x7d);
+			fputc(0x7d, comm);
 			data[i] ^= 0x20;
 		} else if(data[i] == 0x7d) {
-			putchar(0x7d);
+			fputc(0x7d, comm);
 			data[i] ^= 0x20;
 		}
-		putchar(data[i]);
+		fputc(data[i], comm);
 	}
-	putchar(0x7e);
+	fputc(0x7e, comm);
 }
 
 void ahdlc_sendrgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
@@ -325,16 +321,16 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 		fd_set rfds;
 
 		FD_ZERO(&rfds);
-		FD_SET(fileno(stdout), &rfds);
+		FD_SET(fileno(comm), &rfds);
 		tv.tv_sec  = 0;
 		tv.tv_usec = 1000;
 
-		if ((err = select(fileno(stdout)+1, &rfds, NULL, NULL, &tv)) == -1) {
+		if ((err = select(fileno(comm)+1, &rfds, NULL, NULL, &tv)) == -1) {
 			perror ("select");
 			abort();
 		} else {
-			if (err > 0 && FD_ISSET(fileno(stdout), &rfds)) {
-				if (fread (buffer+i, sizeof(char), 1, stdout) > 0) {
+			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
+				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
 					if (buffer[i] == 0x7e) {
 						len = i;
 						break;
@@ -383,16 +379,38 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 struct rgtr_node *rcvd_rgtr()
 {
 	int len;
+	struct rgtr_node *node;
 
 	static char unsigned buffer[MAXLEN];
 	if ((len = ahdlc_rcvd(buffer, sizeof(buffer))) < 0)
 		return NULL;
-	return rawdata2rgtr(buffer, len);
+	node = rawdata2rgtr(buffer, len);
+//--	if (LOG2) print_rgtrs(node);
+	return node;
+}
+
+void init_comms ()
+{
+	comm = fdopen(3, "rw+");
+
+	if(!(comm = fdopen(3, "rw+"))) {
+		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
+		fout = (comm) ? stdin : stderr;
+		comm = stdout;
+	} else {
+		if (LOG0) fprintf (stderr, "fout -> std out\n");
+		fout = stdout;
+		setbuf(comm, NULL);
+	}
+	setvbuf(stdin,  NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
 }
 
 int main (int argc, char *argv[])
 {
 
+	loglevel = 0;
 	char hostname[256];
 	int pktmd;
 	int c;
@@ -415,7 +433,7 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	init_ahdlc();
+	init_comms();
 
 	char unsigned rgtr0_buffer[5];
 	struct rgtr_node *rgtr0_out = set_rgtrnode(new_rgtrnode(), RGTR0_ID,   rgtr0_buffer,   sizeof(rgtr0_buffer));
@@ -571,12 +589,27 @@ int main (int argc, char *argv[])
 			}
 			if (LOG1) fprintf (stderr, "dma ready\n");
 
-		} else if (n < 0) {
-			perror ("reading packet");
-			exit(1);
-		} else break;
+			while(queue_in) {
+				struct rgtr_node *node;
+
+				if (queue_in->rgtr->id != RGTR0_ID) {
+					fprintf(fout, "%02x", queue_in->rgtr->id);
+					fprintf(fout, "%02x", queue_in->rgtr->len);
+					for (int i = 0; i < queue_in->rgtr->len+1; i++) {
+						fprintf(fout, "%02x", queue_in->rgtr->data[i]);
+					}
+				}
+				node = queue_in;
+				queue_in = queue_in->next;
+				delete_rgtrnode(node);
+			}
+			rgtr0_in = delete_queue(rgtr0_in);
+		} else {
+			if(LOG0) fprintf(stderr, "eof %d\n", feof(stdin));
+			break;
+		}
 
 	}
-	print_rgtr(lookup(0xff, queue_in));
+
 	return 0;
 }
