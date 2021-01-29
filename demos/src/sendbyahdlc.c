@@ -229,19 +229,22 @@ int unsigned rgtr2int (struct rgtr_node *node)
 	return data;
 }
 
-void print_rgtr (struct rgtr_node *node)
+#define print_rgtr(x)  fprint_rgtr(stderr, x)
+#define print_rgtrs(x) fprint_rgtrs(stderr, x)
+
+void fprint_rgtr (FILE *file, struct rgtr_node *node)
 {
-	fprintf (stderr, "id   : 0x%02x\n", node->rgtr->id);
-	fprintf (stderr, "len  : 0x%02x\n", node->rgtr->len);
-	fprintf (stderr, "data : ");
-	for (int i = 0; i < (node->rgtr->len+1); i++) fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
-	fputc('\n', stderr);
+	fprintf (file, "id   : 0x%02x\n", node->rgtr->id);
+	fprintf (file, "len  : 0x%02x\n", node->rgtr->len);
+	fprintf (file, "data : ");
+	for (int i = 0; i < (node->rgtr->len+1); i++) fprintf (file, "0x%02x ", node->rgtr->data[i]);
+	fputc('\n', file);
 }
 
-void print_rgtrs (struct rgtr_node *node)
+void fprint_rgtrs (FILE *file, struct rgtr_node *node)
 {
 	while(node) {
-		print_rgtr(node);
+		fprint_rgtr(file, node);
 		node = node->next;
 	}
 }
@@ -303,7 +306,6 @@ void ahdlc_sendrgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	char unsigned buffer[MAXLEN];
 	int len1 = sizeof(buffer);
 
-		print_rgtr(node);
 	rgtr2raw(buffer, &len1, node);
 	memcpy(buffer+len1, data, len);
 	ahdlc_send(buffer, len1+len);
@@ -458,7 +460,6 @@ int main (int argc, char *argv[])
 
 	init_ahdlc();
 
-	loglevel = 3;
 	char unsigned rgtr0_buffer[5];
 	struct rgtr_node *rgtr0_out = set_rgtrnode(new_rgtrnode(), RGTR0_ID,   rgtr0_buffer,   sizeof(rgtr0_buffer));
 	struct rgtr_node *ack_out   = nest_rgtrnode(rgtr0_out, RGTRACK_ID, 1);
@@ -490,7 +491,7 @@ int main (int argc, char *argv[])
 			continue;
 		}
 
-		print_rgtrs(queue_in);
+		if (LOG1) print_rgtrs(queue_in);
 		if (LOG1) fprintf (stderr, "ACK received\n");
 		rgtr0_in = lookup(RGTR0_ID, queue_in);
 		rgtr0_in = childrgtrs(rgtr0_in->rgtr);
@@ -506,7 +507,6 @@ int main (int argc, char *argv[])
 			ack, lookup(RGTRACK_ID, rgtr0_in)->rgtr->data[0]);
 
 	}
-	loglevel = 3;
 
 	queue_in = delete_queue(queue_in);
 	rgtr0_in = delete_queue(rgtr0_in);
@@ -549,7 +549,7 @@ int main (int argc, char *argv[])
 			for(;;) {
 				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
 				queue_in = rcvd_rgtr();
-				print_rgtrs(queue_in);
+				if (LOG1) print_rgtrs(queue_in);
 				if (queue_in) {
 					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
 
@@ -582,7 +582,7 @@ int main (int argc, char *argv[])
 			if (LOG0) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
 				
-				print_rgtrs(queue_in);
+				if (LOG1) print_rgtrs(queue_in);
 				
 				if (!((rgtr2int(lookup(RGTRDMAADDR_ID, queue_in)) & 0xc0000000) ^ 0xc0000000)) break;
 
@@ -619,6 +619,6 @@ int main (int argc, char *argv[])
 		} else break;
 
 	}
-
+	fprint_rgtr(stdin, lookup(0xff, queue_in));
 	return 0;
 }
