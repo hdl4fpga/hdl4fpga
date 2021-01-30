@@ -30,10 +30,7 @@ function mem_read ()
 {
 	local ADDR=`printf %06x $(( ${1} | (1 << 23) ))`
 	local LEN=`printf %06x ${2}`
-#	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|3<>${TTY} ./bin/sendbyahdlc`
-	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>/dev/null`
-#	echo $ADDR 1>&2
-#	echo ${SIODATA} 1>&2
+	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2> debug.log`
 
 	while [ "${SIODATA}" != "" ] ; do
 		local RID=${SIODATA:0:2}
@@ -44,7 +41,7 @@ function mem_read ()
 		fi
 		SIODATA=${SIODATA:$((2*${LEN}+2+4))}
 	done
-	echo "${DATA:2:2}${DATA:0:2}"
+	echo "${DATA}"
 }
 
 function mem_write ()
@@ -53,8 +50,7 @@ function mem_write ()
 	local LEN=`printf %06x ${2}`
 	local DATA=`printf %04x ${3}`
 
-#	echo -n "1602${ADDR}1801${DATA}1702${LEN}"
-	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>/dev/null`
+	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2> debug.log`
 }
 
 ADDR=0
@@ -63,11 +59,10 @@ LFSR=0x1
 while [ ${ADDR} -lt 65535 ] ; do
 	echo "Address:`printf %06x ${ADDR}` LFSR:`printf %04x $LFSR`"
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
-#	echo $ADDR 1>&1
 	RDATA=`mem_read ${ADDR} ${LEN}`
 
 	if [ `printf %04x $LFSR` != "${RDATA}" ] ; then
-		echo "Mismacth WDATA:`printf %04x $LFSR` RDATA:${RDATA}" 
+		echo "Mismacth LFSR:`printf %04x $LFSR` RDATA:${RDATA}" 
 		exit
 	fi
 
