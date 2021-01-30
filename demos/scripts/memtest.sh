@@ -2,7 +2,7 @@
 TTY="${TTY:-/dev/ttyUSB0}"
 SPEED="${SPEED:-3000000}"
 PKMODE="STREAM"
-DEVFD="${DEVFD:-1}"
+DEVFD="${DEVFD:-3}"
 SETUART="NO"
 export TTY SPEED PKMODE DEVFD SETUART
 
@@ -30,7 +30,8 @@ function mem_read ()
 {
 	local ADDR=`printf %06x $(( ${1} | (1 << 23) ))`
 	local LEN=`printf %06x ${2}`
-	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|3<>${TTY} ./bin/sendbyahdlc`
+#	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|3<>${TTY} ./bin/sendbyahdlc`
+	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>/dev/null`
 #	echo $ADDR 1>&2
 #	echo ${SIODATA} 1>&2
 
@@ -53,7 +54,7 @@ function mem_write ()
 	local DATA=`printf %04x ${3}`
 
 #	echo -n "1602${ADDR}1801${DATA}1702${LEN}"
-	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|3<>${TTY} ./bin/sendbyahdlc`
+	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>/dev/null`
 }
 
 ADDR=0

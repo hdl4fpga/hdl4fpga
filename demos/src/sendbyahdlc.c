@@ -124,6 +124,10 @@ struct rgtr_node *lookup(int id, struct rgtr_node *node)
 		if(node->rgtr->id == id) break;
 		node = node->next;
 	}
+	if (!node) {
+		if (LOG0) fprintf(stderr, "lookup of RID 0x%02x not found\n", id);
+		return NULL;
+	}
 	if (node->rgtr->id != id) return NULL;
 	return node;
 }
@@ -212,6 +216,7 @@ int unsigned rgtr2int (struct rgtr_node *node)
 {
 	int unsigned data;
 
+	if (!node) abort();
 	data = 0;
 	for (int i = 0; i < node->rgtr->len+1; i++) {
 		data <<= 8;
