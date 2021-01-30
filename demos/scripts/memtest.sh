@@ -4,7 +4,10 @@ SPEED="${SPEED:-3000000}"
 PKMODE="STREAM"
 DEVFD="${DEVFD:-3}"
 SETUART="NO"
+DEBUGLOG="${DEBUGLOG:-debug.log}"
 export TTY SPEED PKMODE DEVFD SETUART
+
+rm -f ${DEBUGLOG}
 
 #coproc sio { ./scripts/send.sh ; }
 #{ echo -n "1602${ADDR}1702${LENGTH}"| xxd -r -ps ; } >&"${sio[1]}"
@@ -30,7 +33,7 @@ function mem_read ()
 {
 	local ADDR=`printf %06x $(( ${1} | (1 << 23) ))`
 	local LEN=`printf %06x ${2}`
-	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2> debug.log`
+	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>> ${DEBUGLOG}`
 
 	while [ "${SIODATA}" != "" ] ; do
 		local RID=${SIODATA:0:2}
@@ -50,15 +53,17 @@ function mem_write ()
 	local LEN=`printf %06x ${2}`
 	local DATA=`printf %04x ${3}`
 
-	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2> debug.log`
+	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>> ${DEBUGLOG}`
 }
 
 ADDR=0
 LEN=0x00000000
-LFSR=0x1
+LFSR=0x0001
 while [ ${ADDR} -lt 65535 ] ; do
 	echo "Address:`printf %06x ${ADDR}` LFSR:`printf %04x $LFSR`"
+	echo "### Writing ###" 2>>${DEBUGLOG} 1>&2
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
+	echo "### Reading ###" 2>>${DEBUGLOG} 1>&2
 	RDATA=`mem_read ${ADDR} ${LEN}`
 
 	if [ `printf %04x $LFSR` != "${RDATA}" ] ; then

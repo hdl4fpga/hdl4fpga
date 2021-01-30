@@ -498,22 +498,22 @@ int main (int argc, char *argv[])
 
 	for(;;) {
 		int n;
-		short unsigned size = MAXLEN;
+		short unsigned length = MAXLEN;
 		char  unsigned buffer[MAXLEN];
 
 		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
-			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				if (LOG1) fprintf (stderr, "Packet size %d\n", size);
+			if ((fread(&length, sizeof(unsigned short), 1, stdin) > 0))
+				if (LOG1) fprintf (stderr, "Packet length %d\n", length);
 			else
 				break;
 		}
 
-		if ((n = fread(buffer, sizeof(unsigned char), size, stdin)) > 0) {
+		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
 			if (LOG1) fprintf (stderr, "Packet read length %d\n", n);
-			size = n;
-			if (size > MAXLEN) {
-				if (LOG1) fprintf (stderr, "Packet size %d greater than %d\n", size, MAXLEN);
+			length = n;
+			if (length > MAXLEN) {
+				if (LOG1) fprintf (stderr, "Packet length %d greater than %d\n", length, MAXLEN);
 				abort();
 			}
 
@@ -522,7 +522,7 @@ int main (int argc, char *argv[])
 			if (LOG0) fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			
 			set_acknode(ack_out, ack, 0x0);
-			send_rgtrrawdata(rgtr0_out, buffer, size);
+			send_rgtrrawdata(rgtr0_out, buffer, length);
 
 			if (LOG0) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
@@ -539,8 +539,19 @@ int main (int argc, char *argv[])
 						continue;
 					}
 
-					if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) break;
-					else {
+					if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) {
+						if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x80) != 0) {
+							struct rgtr_node *queue_out;
+							int data;
+
+							queue_out = rawdata2rgtr(buffer, length);
+							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
+							delete_queue(queue_out);
+
+							if (data & 0x800000) ack++;
+							else break;
+						} else break;
+					} else {
 						if (LOG1) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", 
 							(char unsigned) ack, 
 							(char unsigned) rgtr2int(lookup(RGTRACK_ID, rgtr0_in)));
@@ -553,7 +564,7 @@ int main (int argc, char *argv[])
 				if (LOG1) fprintf (stderr, "sending package again\n", n);
 
 				set_acknode(ack_out, ack, 0x0);
-				send_rgtrrawdata(rgtr0_out, buffer, size);
+				send_rgtrrawdata(rgtr0_out, buffer, length);
 			}
 
 			if (LOG1) fprintf (stderr, "package acknowleged\n", n);
