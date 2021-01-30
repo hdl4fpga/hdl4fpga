@@ -60,15 +60,17 @@ ADDR=0
 LEN=0x00000000
 LFSR=0x0001
 while [ ${ADDR} -lt 65535 ] ; do
-	echo "Address:`printf %06x ${ADDR}` LFSR:`printf %04x $LFSR`"
+	echo -n "Address:`printf %06x ${ADDR}` LFSR:`printf %04x $LFSR`"
 	echo "### Writing ###" 2>>${DEBUGLOG} 1>&2
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
 	echo "### Reading ###" 2>>${DEBUGLOG} 1>&2
 	RDATA=`mem_read ${ADDR} ${LEN}`
 
 	if [ `printf %04x $LFSR` != "${RDATA}" ] ; then
-		echo "Mismacth LFSR:`printf %04x $LFSR` RDATA:${RDATA}" 
+		echo "Mismacth RDATA:${RDATA}" 
 		exit
+	else
+		echo " OK" 
 	fi
 
 	ADDR=$(( ADDR + 1 ))
