@@ -396,14 +396,12 @@ struct rgtr_node *rcvd_rgtr()
 
 void init_comms ()
 {
-	comm = fdopen(3, "rw+");
-
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
 		fout = (comm) ? stdin : stderr;
 		comm = stdout;
 	} else {
-		if (LOG0) fprintf (stderr, "fout -> std out\n");
+		if (LOG0) fprintf (stderr, "fout -> std_out\n");
 		fout = stdout;
 		setbuf(comm, NULL);
 	}
