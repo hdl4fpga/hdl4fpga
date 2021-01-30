@@ -410,7 +410,7 @@ void init_comms ()
 int main (int argc, char *argv[])
 {
 
-	loglevel = 0;
+	loglevel = 3;
 	char hostname[256];
 	int pktmd;
 	int c;
