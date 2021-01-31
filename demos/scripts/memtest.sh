@@ -89,14 +89,14 @@ ADDR=1
 LEN=0
 LFSR=1
 while [ ${ADDR} -ne 0 ] ; do
-	echo -n "Address:`printf %06x ${ADDR}` LFSR:`printf %04x $LFSR`"
+	echo -n "Address:0x`printf %08x ${ADDR}` LFSR:0x`printf %04x $LFSR`"
 	echo "### Writing ###" 2>>${DEBUGLOG} 1>&2
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
 	echo "### Reading ###" 2>>${DEBUGLOG} 1>&2
 	RDATA=`mem_read ${ADDR} ${LEN}`
 
 	if [ `printf %04x $LFSR` != "${RDATA}" ] ; then
-		echo "Mismacth RDATA:${RDATA}" 
+		echo "Mismacth RDATA:0x${RDATA}" 
 		exit
 	else
 		echo " OK" 
