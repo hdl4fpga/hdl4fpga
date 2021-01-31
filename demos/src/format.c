@@ -79,10 +79,11 @@ int main (int argc, char *argv[])
 
 		memaddr    = bufptr;
 		memaddr[0] = 0x16;
-		memaddr[1] = 0x02;
-		memaddr[2] = 0xff & (addr >> 16);
-		memaddr[3] = 0xff & (addr >>  8);
-		memaddr[4] = 0xff & (addr >>  0);
+		memaddr[1] = 0x03;
+		memaddr[2] = 0xff & (addr >> 24);
+		memaddr[3] = 0xff & (addr >> 16);
+		memaddr[4] = 0xff & (addr >>  8);
+		memaddr[5] = 0xff & (addr >>  0);
 
 		bufptr += (2 + bufptr[1] + 1);
 

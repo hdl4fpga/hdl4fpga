@@ -548,7 +548,7 @@ int main (int argc, char *argv[])
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 
-							if (data & 0x800000) ack++;
+							if (data & 0x80000000L) ack++;
 							else break;
 						} else break;
 					} else {

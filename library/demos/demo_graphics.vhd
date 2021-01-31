@@ -113,7 +113,7 @@ architecture mix of demo_graphics is
 	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
-	signal dmaio_addr     : std_logic_vector(dmactlr_addr'range);
+	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
 	signal dmaio_we       : std_logic;
 
 	signal ctlr_irdy      : std_logic;
@@ -316,11 +316,6 @@ begin
 				req  => frm_req,
 				gnt  => frm_gnt);
 
---  		sout_frm  <= sts_frm;
---  		sout_irdy <= sts_irdy(0);                            -- Xilinx ISE Bug;
---  		sout_data <= sts_data; 
---  		sts_trdy <= sout_trdy;
-
 			soutv_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt); -- Xilinx ISE Bug;
 			sout_frm   <= soutv_frm(0);                             -- Xilinx ISE Bug;
 			soutv_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt); -- Xilinx ISE Bug;
@@ -344,13 +339,13 @@ begin
 			src_clk  => sio_clk,
 			src_irdy => dmaaddr_irdy,
 			src_trdy => dmaaddr_trdy,
-			src_data => rgtr_data(dmaio_addr'length-1 downto 0),
+			src_data => rgtr_data,
 
 			tp       => tp1,
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
 			dst_irdy => dmaioaddr_irdy,
-			dst_trdy => dmaio_next, --dmaio_trdy,
+			dst_trdy => dmaio_next,
 			dst_data => dmaio_addr);
 		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
@@ -397,15 +392,15 @@ begin
 			dst_data => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req;
 
---		base_addr_e : entity hdl4fpga.sio_rgtr
---		generic map (
---			rid  => x"19")
---		port map (
---			rgtr_clk  => sio_clk,
---			rgtr_dv   => rgtr_dv,
---			rgtr_id   => rgtr_id,
---			rgtr_data => rgtr_data,
---			data      => base_addr);
+		base_addr_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid  => x"19")
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => base_addr);
 
 		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
 		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
@@ -716,7 +711,7 @@ begin
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_addr   <= dmavideo_addr & (dmaio_addr and x"7fffff");
+	dev_addr   <= dmavideo_addr & dmaio_addr(dmactlr_addr'length-1 downto 0);
 	dev_we     <= '0'           & dmaio_we;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
