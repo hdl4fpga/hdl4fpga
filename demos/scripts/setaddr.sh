@@ -4,4 +4,4 @@ SPEED="${SPEED:-3000000}"
 
 BADDR=${BADDR:-`printf %06x ${1}`}
 BADDR=${BADDR: -6}
-echo "1902${BADDR}"|xxd -r -ps|./scripts/siocomms.sh
+echo "1902${BADDR}"|xxd -r -ps|./scripts/siocomms.sh|xxd -ps| tr -d '\n'

@@ -20,7 +20,7 @@ f800f800f800f800f800f800f800f800f800f800f800f800f800f800f800f800\
 07e007e007e007e007e007e007e007e007e007e007e007e007e007e007e007e0\
 07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff\
 07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff07ff05a0\
-170200007f1602${BADDR}"|xxd -r -ps|./scripts/siocomms.sh
+170200007f1602${BADDR}"|xxd -r -ps|./scripts/siocomms.sh|xxd -ps| tr -d '\n'
 		ADDR=`expr ${ADDR} + 128`
 done
 		echo ${BADDR};

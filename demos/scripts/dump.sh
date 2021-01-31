@@ -14,4 +14,4 @@ LENGTH="${LENGTH:-${2}}"
 LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x ${LENGTH}`
 LENGTH="${LENGTH: -6}"
-echo "1603${ADDR}1702${LENGTH}"|xxd -r -ps|./scripts/siocomms.sh
+echo "1603${ADDR}1702${LENGTH}"|xxd -r -ps|./scripts/siocomms.sh|xxd -ps| tr -d '\n'

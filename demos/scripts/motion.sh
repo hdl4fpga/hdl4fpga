@@ -41,18 +41,6 @@ for file in frames/image-*.jpg ; do
 			convert ${file} -gravity center -crop 1280x960+0+0 -resize ${WIDTH}x${HEIGHT} output.jpg
 		fi
 
-		if [ "$N" -ne 0 ] ; then
-			unset PROG
-		fi
-
-		if [ "${LOAD}" == "YES" ] ; then
-			TTY="${TTY}" SPEED="${SPEED}" BSIZE="2048" BADDR="0x${BADDR}" PROG="${PROG}" BLANK="NO" IMAGE=output.jpg sh upload-image.sh
-		fi
-
-		ADDR=`expr ${ADDR} + ${FSIZE} \/ 2`
-		BADDR=`printf %06x ${ADDR}`
-		echo "1902${BADDR}"|xxd -r -ps|./bin/stream|cat > "${TTY}"
-		FRAMES=`expr ${FRAMES} + 1`
 	fi
 	N=`expr ${N} + 1`
 done
