@@ -85,10 +85,10 @@ function mem_write ()
 	local SIODATA=`echo -n "1801${DATA}1603${ADDR}1702${LEN}"|xxd -r -ps|./scripts/siocomms.sh 2>> ${DEBUGLOG}|xxd -ps| tr -d '\n'`
 }
 
-ADDR=1
+ADDR=$(( (1 << 23) ))
 LEN=0
 LFSR=1
-while [ ${ADDR} -ne 0 ] ; do
+while true ; do
 	echo -n "Address:0x`printf %08x ${ADDR}` LFSR:0x`printf %04x $LFSR`"
 	echo "### Writing ###" 2>>${DEBUGLOG} 1>&2
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
@@ -102,6 +102,12 @@ while [ ${ADDR} -ne 0 ] ; do
 		echo " OK" 
 	fi
 
+	if [ ${ADDR} -eq  1 ] ; then
+		break;
+	fi
+
 	ADDR=`lfsr24 ${ADDR}` #$(( ADDR + 1 ))
 	LFSR=`lfsr16 ${LFSR}`
 done
+
+echo "Good job, NO MISMATCH"
