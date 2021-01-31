@@ -89,7 +89,7 @@ ADDR=$(( (1 << 23) ))
 LEN=0
 LFSR=1
 while true ; do
-	echo -n "Address:0x`printf %08x ${ADDR}` LFSR:0x`printf %04x $LFSR`"
+	echo -n "Address:0x`printf %06x ${ADDR}` LFSR:0x`printf %04x $LFSR`"
 	echo "### Writing ###" 2>>${DEBUGLOG} 1>&2
 	mem_write "${ADDR}" "${LEN}" "${LFSR}"
 	echo "### Reading ###" 2>>${DEBUGLOG} 1>&2
