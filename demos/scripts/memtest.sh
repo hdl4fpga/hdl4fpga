@@ -21,7 +21,7 @@ function lfsr16 ()
 	local bit
 
 	bit=$(( (lfsr >> (16-16)) ^ (lfsr >> (16-14)) ^ (lfsr >> (16-13)) ^ (lfsr >> (16-11)) ))
-	bit=$(( (bit <<  (16-1)) & 0xffff ))
+	bit=$(( (bit <<  (16-1)) & ((1 << 16) - 1) ))
 	lfsr=$(( (lfsr >> 1) | bit ));
 
 	echo ${lfsr}
@@ -34,7 +34,7 @@ function lfsr24 ()
 	local bit
 
 	bit=$(( (lfsr >> (24-24)) ^ (lfsr >> (24-23)) ^ (lfsr >> (24-21)) ^ (lfsr >> (24-20)) ))
-	bit=$(( (bit <<  (24-1)) & 0x00ffffff ))
+	bit=$(( (bit <<  (24-1)) & ((1 << 24) -1) ))
 	lfsr=$(( (lfsr >> 1) | bit ));
 
 	echo ${lfsr}
@@ -47,7 +47,7 @@ function lfsr32 ()
 	local bit
 
 	bit=$(( (lfsr >> (32-32)) ^ (lfsr >> (32-30)) ^ (lfsr >> (32-26)) ^ (lfsr >> (32-25)) ))
-	bit=$(( (bit <<  (32-1)) & 0xffffffff ))
+	bit=$(( (bit <<  (32-1)) & ((1 << 32) -1)))
 	lfsr=$(( (lfsr >> 1) | bit ));
 
 	echo ${lfsr}
