@@ -6,4 +6,4 @@ SPEED="${SPEED:-3000000}"
 
 echo "\
 1803\
-17020000001602${BADDR}"|xxd -r -ps|./scritps/send.sh
+17020000001602${BADDR}"|xxd -r -ps|./scritps/siocomms.sh

@@ -9,7 +9,7 @@ export TTY SPEED PKMODE DEVFD SETUART
 
 rm -f ${DEBUGLOG}
 
-#coproc sio { ./scripts/send.sh ; }
+#coproc sio { ./scripts/siocomms.sh ; }
 #{ echo -n "1602${ADDR}1702${LENGTH}"| xxd -r -ps ; } >&"${sio[1]}"
 #{ while read -r data ; do echo ${data} ; done ; } <&"${sio[0]}" 
 
@@ -33,7 +33,7 @@ function mem_read ()
 {
 	local ADDR=`printf %06x $(( ${1} | (1 << 23) ))`
 	local LEN=`printf %06x ${2}`
-	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>> ${DEBUGLOG}`
+	local SIODATA=`echo -n "1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/siocomms.sh 2>> ${DEBUGLOG}|xxd  -ps| tr -d '\n'`
 
 	while [ "${SIODATA}" != "" ] ; do
 		local RID=${SIODATA:0:2}
@@ -53,7 +53,7 @@ function mem_write ()
 	local LEN=`printf %06x ${2}`
 	local DATA=`printf %04x ${3}`
 
-	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/send.sh 2>> ${DEBUGLOG}`
+	local SIODATA=`echo -n "1801${DATA}1602${ADDR}1702${LEN}"|xxd -r -ps|./scripts/siocomms.sh 2>> ${DEBUGLOG}|xxd -ps| tr -d '\n'`
 }
 
 ADDR=0

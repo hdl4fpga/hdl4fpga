@@ -607,10 +607,10 @@ int main (int argc, char *argv[])
 				struct rgtr_node *node;
 
 				if (queue_in->rgtr->id != RGTR0_ID) {
-					fprintf(fout, "%02x", queue_in->rgtr->id);
-					fprintf(fout, "%02x", queue_in->rgtr->len);
+					fputc(queue_in->rgtr->id, fout);
+					fputc(queue_in->rgtr->len, fout);
 					for (int i = 0; i < queue_in->rgtr->len+1; i++) {
-						fprintf(fout, "%02x", queue_in->rgtr->data[i]);
+						fputc(queue_in->rgtr->data[i], fout);
 					}
 				}
 				node = queue_in;

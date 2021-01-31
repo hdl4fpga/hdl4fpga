@@ -10,10 +10,10 @@ if [ "$HOST" == "" ] ; then
 		./scripts/setuart.sh
 	fi
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sendbyahdlc -p")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sendbyahdlc -p")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc -p")
 	else
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sendbyahdlc")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc")
 	fi
 fi
