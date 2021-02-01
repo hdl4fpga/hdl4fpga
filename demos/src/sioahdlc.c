@@ -398,7 +398,7 @@ void init_comms ()
 {
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
-		fout = (comm) ? stdin : stderr;
+		fout = NULL; //(comm) ? stdin : stderr;
 		comm = stdout;
 	} else {
 		if (LOG0) fprintf (stderr, "fout -> std_out\n");
@@ -413,25 +413,30 @@ void init_comms ()
 int main (int argc, char *argv[])
 {
 
-	loglevel = 3;
 	char hostname[256];
 	int pktmd;
 	int c;
-	pktmd  = 0;
-	opterr = 0;
-	while ((c = getopt (argc, argv, "dph:")) != -1) {
+	pktmd    = 0;
+	loglevel = 0;
+	opterr   = 0;
+
+
+	while ((c = getopt (argc, argv, "dloph:")) != -1) {
 		switch (c) {
 		case 'p':
 			pktmd = 1;
+			break;
+		case 'l':
+			loglevel = 3;
 			break;
 		case 'h':
 			if (optarg)
 				sscanf (optarg, "%64s", hostname);
 			break;
 		case '?':
-			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
 			exit(1);
 		default:
+			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
 			exit(1);
 		}
 	}
@@ -503,10 +508,9 @@ int main (int argc, char *argv[])
 
 		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
-			if ((fread(&length, sizeof(unsigned short), 1, stdin) > 0))
+			if (fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
 				if (LOG1) fprintf (stderr, "Packet length %d\n", length);
-			else
-				break;
+			} else break;
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
@@ -534,6 +538,10 @@ int main (int argc, char *argv[])
 
 					rgtr0_in = lookup(RGTR0_ID, queue_in);
 					rgtr0_in = childrgtrs(rgtr0_in->rgtr);
+					if (LOG1) {
+						fprintf (stderr, "rgtr0_in\n", n);
+						print_rgtrs(rgtr0_in);
+					}
 					if (!rgtr0_in) {
 						if (LOG1) fprintf (stderr, "ACK missed\n");
 						continue;
@@ -545,6 +553,10 @@ int main (int argc, char *argv[])
 							int data;
 
 							queue_out = rawdata2rgtr(buffer, length);
+							if (LOG1) {
+								fprintf (stderr, "queue_out\n", n);
+								print_rgtrs(queue_out);
+							}
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 
@@ -572,9 +584,13 @@ int main (int argc, char *argv[])
 			if (LOG0) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
 				
+				struct rgtr_node *dmaaddr;
+
 				if (LOG1) print_rgtrs(queue_in);
 				
-				if (!((rgtr2int(lookup(RGTRDMAADDR_ID, queue_in)) & 0xc0000000) ^ 0xc0000000)) break;
+				if ((dmaaddr = lookup(RGTRDMAADDR_ID, queue_in))) {
+					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) break;
+				}
 
 				queue_in = delete_queue(queue_in);
 				rgtr0_in = delete_queue(rgtr0_in);
@@ -606,7 +622,7 @@ int main (int argc, char *argv[])
 			while(queue_in) {
 				struct rgtr_node *node;
 
-				if (queue_in->rgtr->id != RGTR0_ID) {
+				if (fout && queue_in->rgtr->id != RGTR0_ID) {
 					fputc(queue_in->rgtr->id, fout);
 					fputc(queue_in->rgtr->len, fout);
 					for (int i = 0; i < queue_in->rgtr->len+1; i++) {

@@ -4,4 +4,4 @@ SPEED="${SPEED:-3000000}"
 ACK="${1:-10}"
 
 ACK=`printf %02x ${ACK}`
-echo "00020000${ACK}"|xxd -r -ps|./scripts/siocomms.sh|xxd -ps| tr -d '\n'
+echo "00020000${ACK}"|xxd -r -ps|./scripts/siocomm.sh|xxd -ps| tr -d '\n'
