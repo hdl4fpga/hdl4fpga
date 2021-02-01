@@ -3,8 +3,7 @@ TTY="${TTY:-/dev/ttyUSB0}"
 SPEED="${SPEED:-3000000}"
 DEVFD="${DEVFD:-1}"
 SETUART="${SETUART:-YES}"
-STDOUT="${STDOUT:NO}"
-
+STDOUT="${STDOUT:-NO}"
 
 if [ "${STDOUT}" == "NO" ] ; then
 	STDOUT="-o"
