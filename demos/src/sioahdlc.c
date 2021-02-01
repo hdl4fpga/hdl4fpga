@@ -319,9 +319,11 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 	short unsigned fcs;
 	struct timeval tv;
 	int err;
+	int retry;
 
 	pkt_lost++;
 	len = 0;
+	retry = 0;
 	for (int i = 0; i < maxlen; i++) {
 		fd_set rfds;
 
@@ -345,6 +347,7 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 				perror("reading serial");
 				abort();
 			} else {
+				if (retry++ > 1024) return -1;
 				if (LOG1) fprintf(stderr, "reading time out\n");
 				i--;
 			}
@@ -572,8 +575,8 @@ int main (int argc, char *argv[])
 
 				}
 
-				if (LOG1) fprintf (stderr, "waiting time out\n", n);
-				if (LOG1) fprintf (stderr, "sending package again\n", n);
+				if (LOG1) fprintf (stderr, "waiting time out\n");
+				if (LOG1) fprintf (stderr, "sending package again\n");
 
 				set_acknode(ack_out, ack, 0x0);
 				send_rgtrrawdata(rgtr0_out, buffer, length);

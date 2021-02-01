@@ -5,7 +5,7 @@ DEVFD="${DEVFD:-1}"
 SETUART="${SETUART:-YES}"
 
 if [ "$HOST" == "" ] ; then
-	if [ "{SETUART}" == "YES" ] ; then
+	if [ "${SETUART}" == "YES" ] ; then
 		export TTY SPEED
 		./scripts/setuart.sh
 	fi
