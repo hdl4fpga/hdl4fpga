@@ -194,11 +194,11 @@ architecture graphics of ulx3s is
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	constant uart_xtal : natural := natural(sys_freq);
-	alias uart_clk     : std_logic is clk_25mhz;
+--	constant uart_xtal : natural := natural(sys_freq);
+--	alias uart_clk     : std_logic is clk_25mhz;
 
---	constant uart_xtal : natural := natural(videodot_freq);
---	alias uart_clk     : std_logic is video_clk;
+	constant uart_xtal : natural := natural(videodot_freq);
+	alias uart_clk     : std_logic is video_clk;
 
 	constant baudrate  : natural := 3000000;
 --	constant baudrate  : natural := 115200;

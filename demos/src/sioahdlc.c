@@ -44,7 +44,7 @@ struct object_pool *init_pool (struct object_pool *pool)
 	for (int i = 0; i < 256-1; i++) {
 		pool->free_objects[i] = i+1;
 	}
-	pool->free_objects[255] = -1;
+	pool->free_objects[255] = -2;
 
 	return pool;
 }
@@ -53,8 +53,12 @@ int new_object(struct object_pool *pool)
 {
 	int object;
 
-	if (pool->object_free == -1)
+	if (pool->object_free == -1) {
 		init_pool(pool);
+	}
+	if (pool->object_free == -2) {
+		abort();
+	}
 	object = pool->object_free;
 	pool->object_free = pool->free_objects[pool->object_free];
 
@@ -348,7 +352,7 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 				abort();
 			} else {
 				if (retry++ > 1024) return -1;
-				if (LOG1) fprintf(stderr, "reading time out\n");
+				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
 				i--;
 			}
 		}
@@ -380,6 +384,12 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 	if (LOG0) fprintf(stderr, "FCS WRONG! ");
 	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 	if (LOG0 | LOG1) fputc('\n', stderr); 
+	if (LOG0) {
+		struct rgtr_node *print_queue;
+		print_queue = rawdata2rgtr(buffer,len);
+		print_rgtrs(print_queue);
+		delete_queue(print_queue);
+	}
 
 	return -1;
 }
@@ -401,7 +411,7 @@ void init_comms ()
 {
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
-		fout = NULL; //(comm) ? stdin : stderr;
+		fout = (comm) ? stdin : stderr;
 		comm = stdout;
 	} else {
 		if (LOG0) fprintf (stderr, "fout -> std_out\n");
@@ -418,23 +428,28 @@ int main (int argc, char *argv[])
 
 	char hostname[256];
 	int pktmd;
-	int c;
+	int nooutput;
 	pktmd    = 0;
 	loglevel = 0;
 	opterr   = 0;
+	nooutput = 0;
 
-
+	int c;
 	while ((c = getopt (argc, argv, "dloph:")) != -1) {
 		switch (c) {
-		case 'p':
-			pktmd = 1;
-			break;
 		case 'l':
 			loglevel = 3;
 			break;
+		case 'o':
+			nooutput = 1;
+			break;
+		case 'p':
+			pktmd = 1;
+			break;
 		case 'h':
-			if (optarg)
+			if (optarg) {
 				sscanf (optarg, "%64s", hostname);
+			}
 			break;
 		case '?':
 			exit(1);
@@ -445,6 +460,9 @@ int main (int argc, char *argv[])
 	}
 
 	init_comms();
+	if (nooutput) {
+		fout = NULL;
+	}
 
 	char unsigned rgtr0_buffer[5];
 	struct rgtr_node *rgtr0_out = set_rgtrnode(new_rgtrnode(), RGTR0_ID,   rgtr0_buffer,   sizeof(rgtr0_buffer));
@@ -534,6 +552,8 @@ int main (int argc, char *argv[])
 			if (LOG0) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
 				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
+				queue_in = delete_queue(queue_in);
+				rgtr0_in = delete_queue(rgtr0_in);
 				queue_in = rcvd_rgtr();
 				if (LOG1) print_rgtrs(queue_in);
 				if (queue_in) {
@@ -546,7 +566,9 @@ int main (int argc, char *argv[])
 						print_rgtrs(rgtr0_in);
 					}
 					if (!rgtr0_in) {
-						if (LOG1) fprintf (stderr, "ACK missed\n");
+						if (LOG1) {
+							fprintf (stderr, "ACK missed\n");
+						}
 						continue;
 					}
 
@@ -563,23 +585,33 @@ int main (int argc, char *argv[])
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 
-							if (data & 0x80000000L) ack++;
-							else break;
-						} else break;
+							if (data & 0x80000000L) {
+								ack++;
+							} else {
+								break;
+							}
+						} else {
+							break;
+						}
 					} else {
-						if (LOG1) fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", 
-							(char unsigned) ack, 
-							(char unsigned) rgtr2int(lookup(RGTRACK_ID, rgtr0_in)));
+						if (LOG1) {
+							fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", 
+								(char unsigned) ack, 
+								(char unsigned) rgtr2int(lookup(RGTRACK_ID, rgtr0_in)));
+						}
 						continue;
 					}
 
 				}
 
 				if (LOG1) fprintf (stderr, "waiting time out\n");
+				if (LOG1) print_rgtrs(rgtr0_out);
 				if (LOG1) fprintf (stderr, "sending package again\n");
 
+				if (LOG1) fprintf (stderr, "rgtr_out\n") ;
 				set_acknode(ack_out, ack, 0x0);
 				send_rgtrrawdata(rgtr0_out, buffer, length);
+				if (LOG1) fprintf (stderr, "rgtr_out\n") ;
 			}
 
 			if (LOG1) fprintf (stderr, "package acknowleged\n", n);
