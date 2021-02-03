@@ -100,19 +100,17 @@ begin
 		fcs_b : block
 
 			signal crc_init : std_logic;
-			signal crc_ena  : std_logic;
 			signal crc      : std_logic_vector(ccitt_residue'range);
 			signal irdy_ini : std_logic;
 			signal irdy_ena : std_logic;
 		begin
-			crc_init <= setif(ahdlcrx_frm/='1');
-			crc_ena  <= (ahdlcrx_frm and ahdlcrx_irdy) or not ahdlcrx_frm;
+			crc_init <= not to_stdulogic(to_bit(ahdlcrx_frm));
 			crc_ccitt_e : entity hdl4fpga.crc
 			port map (
 				g    => x"1021",
 				clk  => uart_clk,
 				init => crc_init,
-				ena  => crc_ena,
+				ena  => ahdlcrx_irdy,
 				data => ahdlcrx_data,
 				crc  => crc);
 

@@ -36,7 +36,7 @@ entity crc is
         clk  : in  std_logic;
 		init : in  std_logic;
 		sero : in  std_logic := '0';
-		ena  : in  std_logic;
+		ena  : in  std_logic := '1';
 		data : in  std_logic_vector;
 		crc  : buffer std_logic_vector);
 end;
@@ -58,10 +58,7 @@ begin
 				if sero='1' then
 					crc <= std_logic_vector(unsigned(crc) rol data'length);
 				else
-					crc  <= not galois_crc(data, not crc, g);
-					if debug then
-						crc <= x"7e7d";
-					end if;
+					crc <= not galois_crc(data, not crc, g);
 				end if;
 			end if;
 		end if;

@@ -169,65 +169,20 @@ architecture nuhs3adsp_miidebug of testbench is
 			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
 	end component;
 
-	constant udppkt : std_logic_vector :=
-			x"5555_5555_5555_55d5"  &
-			x"00_40_00_01_02_03"    &
-			x"00_00_00_00_00_00"    &
-			x"0800"                 &
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"00000000"             &    -- IP Source IP address
-			x"00000000"             &    -- IP Destiantion IP Address
-			x"0000" &
+	constant arppkt : std_logic_vector :=
+		x"0000"                 & -- arp_htype
+		x"0000"                 & -- arp_ptype
+		x"00"                   & -- arp_hlen 
+		x"00"                   & -- arp_plen 
+		x"0000"                 & -- arp_oper 
+		x"00_00_00_00_00_00"    & -- arp_sha  
+		x"00_00_00_00"          & -- arp_spa  
+		x"00_00_00_00_00_00"    & -- arp_tha  
+		x"c0_a8_00_0e";           -- arp_tpa  
 
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"00430044"         &    -- UDP Source port, Destination port
-				x"000f"             & -- UDP Length,
-				x"0000"             & -- UPD checksum
-				x"02010600" &
-				x"3903F326" &
-				x"00000000" &
-				x"00000000" &
-				x"C0A80164" &
-				x"C0A80101" &
-				x"00000000" &
-				x"00400001" &
-				x"02030000" &
-				x"00000000" &
-				x"00000000" &
-				(1 to 192*8 => '0') &
-				x"63825363" &
-				x"53010200"
-
-			)   &
-			x"00000000";
-		
-		constant arppkt : std_logic_vector :=
-			x"5555_5555_5555_55d5"  &
-			x"ff_ff_ff_ff_ff_ff"    &
-			x"00_00_00_00_00_00"    &
-			x"0806"                 &
-			x"0000"                 & -- arp_htype
-			x"0000"                 & -- arp_ptype
-            x"00"                   & -- arp_hlen 
-            x"00"                   & -- arp_plen 
-            x"0000"                 & -- arp_oper 
-            x"00_00_00_00_00_00"    & -- arp_sha  
-            x"00_00_00_00"          & -- arp_spa  
-            x"00_00_00_00_00_00"    & -- arp_tha  
-            x"c0_a8_00_0e"          & -- arp_tpa  
-            x"00_00_00_00";           -- crc
-
-
-
-
-
-
+	signal eth_txen : std_logic;
+	signal eth_txd  : std_logic_vector(0 to 4-1);
+	signal txfrm_ptr     : std_logic_vector(0 to 20);
 
 begin
 
@@ -240,17 +195,41 @@ begin
 
 	sw1 <= '1', '0' after 1 us;
 
---	eth_e: entity hdl4fpga.mii_rom
---	generic map (
---		mem_data => reverse(arppkt,8))
---	port map (
---		mii_txc  => mii_rxc,
---		mii_txen => arp_req,
---		mii_txdv => mii_rxdv,
---		mii_txd  => mii_rxd);
+	eth_e: entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(arppkt,8))
+	port map (
+		mii_txc  => mii_rxc,
+		mii_txen => arp_req,
+		mii_txdv => eth_txen,
+		mii_txd  => eth_txd);
 
-	mii_rxdv <= mii_txen;
-	mii_rxd  <= mii_txd;
+	process (mii_rxc)
+	begin
+
+		if rising_edge(mii_rxc) then
+			if eth_txen='0' then
+				txfrm_ptr <= (others => '0');
+			else
+				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
+			end if;
+		end if;
+	end process;
+
+	ethtx_e : entity hdl4fpga.eth_tx
+	port map (
+		mii_txc  => mii_rxc,
+		eth_ptr  => txfrm_ptr,
+		hwsa     => x"af_ff_ff_ff_ff_f5",
+		hwda     => x"a5_40_00_01_02_03",
+		llc      => x"0800",
+		pl_txen  => eth_txen,
+		eth_rxd  => eth_txd,
+		eth_txen => mii_rxdv,
+		eth_txd  => mii_rxd);
+
+--	mii_rxdv <= mii_txen;
+--	mii_rxd  <= mii_txd;
 	rst <= '0', '1' after 300 ns;
 	du_e : nuhs3adsp
 	port map (
