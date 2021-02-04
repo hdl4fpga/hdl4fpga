@@ -110,8 +110,8 @@ begin
 
 			cy := to_stdulogic(to_bit(cntr(0)));
 		end if;
-		crc32_init <= to_stdulogic(to_bit(cy and q));
-		crc32_txen <= setif(lat_txen='1', q and not cy, not cy);
+		crc32_init <= not lat_txen and cy;
+		crc32_txen <= not lat_txen and not cy;
 	end process;
 
 	crc32_e : entity hdl4fpga.crc

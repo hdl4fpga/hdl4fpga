@@ -194,6 +194,7 @@ begin
 		end generate;
 
 		nolatency_g : if latency = 0 generate
+			feed_ena <= to_stdulogic(to_bit(dst_trdy));
 			dst_irdy <= dst_irdy1;
 			dst_data <= rdata;
 		end generate;
