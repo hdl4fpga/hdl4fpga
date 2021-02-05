@@ -55,7 +55,9 @@ entity sio_udp is
 		si_trdy   : out std_logic;
 		si_data   : in  std_logic_vector;
 
-		so_dv     : out std_logic;
+		so_frm    : out std_logic;
+		so_irdy   : out std_logic;
+		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector;
 		tp : out std_logic_vector(1 to 4));
 end;
@@ -66,9 +68,7 @@ architecture struct of sio_udp is
 
 	signal dll_rxdv        : std_logic;
 	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
-	signal dllcrc32_rxdv   : std_logic;
-	signal dllcrc32_equ    : std_logic;
-	signal dllcrc32_rxd    : std_logic_vector(mii_rxd'range);
+	signal dllfcs_vld    : std_logic;
 	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
 	signal ipv4sa_rx       : std_logic_vector(0 to 32-1);
@@ -87,9 +87,6 @@ architecture struct of sio_udp is
 	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
 	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
 	signal mysrv_udppltxen : std_logic;
-	signal mysrv_pktcmmt   : std_logic;
-	signal mysrv_pktabrt   : std_logic;
-	signal mysrv_cmmtena   : std_logic;
 
 	signal tx_ack          : std_logic_vector(8-1 downto 0);
 	signal tx_hwda         : std_logic_vector(48-1 downto 0);
@@ -125,6 +122,16 @@ architecture struct of sio_udp is
 	signal dhcpipv4a_txen  : std_logic;
 	signal dhcpipv4a_txd   : std_logic_vector(mii_rxd'range);
 
+		signal buffer_cmmt   : std_logic;
+		signal buffer_rllk   : std_logic;
+		signal buffer_ovfl : std_logic;
+		signal buffer_data : std_logic_vector(mii_rxd'range);
+		signal buffer_irdy : std_logic;
+		signal flow_frm     : std_logic;
+		signal flow_trdy    : std_logic;
+		signal flow_irdy    : std_logic;
+		signal flow_data    : std_logic_vector(txc_rxd'range);
+
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
@@ -156,9 +163,7 @@ begin
 		ipv4_da       => mysrv_ipv4da,
 		dll_rxdv      => dll_rxdv,
 		dllhwsa_rx    => dllhwsa_rx,
-		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_rxd  => dllcrc32_rxd,
-		dllcrc32_equ  => dllcrc32_equ,
+		dllfcs_vld  => dllfcs_vld,
 
 		ipv4sa_rx     => ipv4sa_rx,
 		ipv4acfg_req  => ipv4acfg_req,
@@ -182,8 +187,7 @@ begin
 		dll_rxd       => txc_rxd,
                                       
 		dllhwsa_rx    => dllhwsa_rx,
-		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_equ  => dllcrc32_equ,
+		dllfcs_vld  => dllfcs_vld,
                                       
 		ipv4sa_rx     => ipv4sa_rx,
                                       
@@ -199,9 +203,6 @@ begin
 		udppl_len     => mysrv_udppllen,
 		udp_dp        => mysrv_udpdp,
 		udp_sp        => mysrv_udpsp,
-		pkt_cmmt      => mysrv_pktcmmt,
-		pkt_abrt      => mysrv_pktabrt,
-		cmmt_ena      => mysrv_cmmtena,
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd,
 
@@ -253,98 +254,121 @@ begin
 		mii_txen => siosp_txen,
 		mii_txd  => siosp_txd);
 
-	buffer_p : block
-		constant mem_size : natural := 2048*8;
-		signal ser_irdy : std_logic;
-		signal ser_data : std_logic_vector(mii_rxd'range);
-		signal des_data : std_logic_vector(so_data'range);
+	flow_b : block
 
-		constant addr_length : natural := unsigned_num_bits(mem_size/so_data'length-1);
-		subtype addr_range is natural range 1 to addr_length;
+		signal ack_rxd  : std_logic_vector(8-1 downto 0);
+		signal ack_txd  : std_logic_vector(ack_rxd'range);
+		signal fcs_end  : std_logic;
+		signal flow_end : std_logic;
 
-		signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
-		signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
-		signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
-
-		signal src_trdy  : std_logic;
-		signal des_irdy  : std_logic;
-		signal dst_irdy  : std_logic;
-		signal dst_irdy1 : std_logic;
-		signal abrt      : std_logic;
+		signal pkt_dup  : std_logic;
+		signal fcs_sb   : std_logic;
+		signal ack_rxdv : std_logic;
 
 	begin
 
-		ser_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
-		ser_data <= wirebus(
-			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
-			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
-
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => mii_txc,
-			serdes_frm => txc_rxdv,
-			ser_irdy   => ser_irdy,
-			ser_data   => ser_data,
-
-			des_irdy   => des_irdy,
-			des_data   => des_data);
-
-		src_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
-
-		process (mii_txc)
-			variable xxx : std_logic;
+		process(dll_rxdv, mii_txc)
+			variable q : std_logic;
 		begin
 			if rising_edge(mii_txc) then
-				if ser_irdy='1' then
-					if src_trdy='1' then
-						if des_irdy='1' then
-							wr_cntr <= wr_cntr + 1;
-						end if;
-					end if;
-				elsif mysrv_cmmtena='1' then
-					if mysrv_pktabrt='1' then
-						wr_cntr <= wr_ptr;
-					elsif mysrv_pktcmmt='0' then
-						wr_cntr <= wr_ptr;
-					else
-						wr_ptr  <= wr_cntr;
-					end if;
-				end if;
-
-				if xxx='0' and txc_rxdv='1' then
-					mysrv_pktabrt <= '0';
-				elsif src_trdy='0' and des_irdy='1' then
-					mysrv_pktabrt <= '1';
-				end if;
-				xxx := txc_rxdv;
-
+				q := dll_rxdv;
 			end if;
+			fcs_sb <= not dll_rxdv and q;
 		end process;
 
-		mem_e : entity hdl4fpga.dpram(def)
-		generic map (
-			synchronous_rdaddr => false,
-			synchronous_rddata => true)
+		flowrx_e : entity hdl4fpga.sio_flowrx
 		port map (
-			wr_clk  => mii_txc,
-			wr_ena  => des_irdy,
-			wr_addr => std_logic_vector(wr_cntr(addr_range)),
-			wr_data => des_data, 
+			si_clk   => mii_txc,
+			si_frm   => udppl_rxdv,
+			si_data  => txc_rxd,
 
-			rd_clk  => sio_clk,
-			rd_addr => std_logic_vector(rd_cntr(addr_range)),
-			rd_data => so_data);
+			fcs_sb   => fcs_sb,
+			fcs_vld  => dllfcs_vld,
+			pkt_dup  => pkt_dup,
+			ack_rxdv => ack_rxdv,
+			ack_rxd  => ack_rxd);
 
-		dst_irdy1 <= setif(wr_ptr /= rd_cntr);
-		process(sio_clk)
+		process (fcs_sb, dllfcs_vld, ack_rxd, mii_txc)
+			variable q : std_logic := '0';
 		begin
-			if rising_edge(sio_clk) then
-				so_dv <= dst_irdy1;
-				if dst_irdy1='1' then
-					rd_cntr <= rd_cntr + 1;
+			if rising_edge(mii_txc) then
+				if q='1' then
+					if flow_end='1' then
+						q := '0';
+					end if;
+				elsif dllfcs_vld='1' then
+					if fcs_sb='1' then
+						q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
+					end if;
 				end if;
 			end if;
+			flow_frm <= (dllfcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+			ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 		end process;
+
+		flowtx_e : entity hdl4fpga.sio_flowtx
+		port map(
+			ack_data => ack_txd,
+			so_clk   => mii_txc,
+			so_frm   => flow_frm,
+			so_irdy  => flow_irdy,
+			so_trdy  => flow_trdy,
+			so_data  => flow_data,
+			so_end   => flow_end);
+
+		buffer_cmmt <= (    dllfcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
+		buffer_rllk <= (not dllfcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
+	end block;
+
+	buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
+	buffer_data <= wirebus(
+		dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
+		dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
+
+	buffer_e : entity hdl4fpga.sio_buffer
+	port map (
+		si_clk    => mii_txc,
+		si_frm    => dll_rxdv,
+		si_irdy   => buffer_irdy,
+		si_data   => buffer_data,
+		commit    => buffer_cmmt,
+		rollback  => buffer_rllk,
+		overflow  => buffer_ovfl,
+
+		so_clk    => sio_clk,
+		so_frm    => so_frm,
+		so_irdy   => so_irdy,
+		so_trdy   => so_trdy,
+		so_data   => so_data);
+
+	artibiter_b : block
+
+		constant gnt_flow  : natural := 0;
+		constant gnt_si    : natural := 1;
+
+		signal tx_req : std_logic_vector(0 to 2-1);
+		signal tx_gnt : std_logic_vector(0 to 2-1);
+		signal tx_swp : std_logic;
+
+	begin
+
+		tx_req(gnt_flow) <= flow_frm;
+		tx_req(gnt_si)   <= si_frm;
+
+		gnt_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => sio_clk,
+			csc  => mysrv_gnt,
+			ena  => uart_idle,
+			req  => tx_req,
+			gnt  => tx_gnt);
+
+		mysrv_req <= setif(tx_req/=(tx_req'range => '0'));
+		mysrv_trdy <= wirebus(flow_trdy & si_irdy, tx_gnt)(0);
+		mysrv_data <= wirebus(flow_data & si_data, tx_gnt);
+
+		si_trdy    <= tx_gnt(gnt_si)   and mysrv_rdy;
+		flow_irdy  <= tx_gnt(gnt_flow) and mysrv_rdy;
 
 	end block;
 
@@ -371,7 +395,6 @@ begin
 		signal des_data     : std_logic_vector(8-1 downto 0);
 		signal ser_irdy     : std_logic;
 		signal ser_data     : std_logic_vector(mii_rxd'range);
-
 
 	begin
 
@@ -430,16 +453,6 @@ begin
 		des_data  <= reverse(rgtr_data(des_data'range));
 		des_frm   <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
 		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
-
---		process (sio_clk)
---			variable idle : std_logic;
---		begin
---			if rising_edge(sio_clk) then
---				if mii_txen='0' then
---					idle := '1';
---				elsif rgtr
---			end if;
---		end process;
 
 		desser_e : entity hdl4fpga.desser
 		port map (

@@ -82,7 +82,6 @@ begin
 		signal fcs_vld  : std_logic;
 		signal pkt_dup  : std_logic;
 		signal ack_rxdv : std_logic;
-		signal ack_rxd  : std_logic_vector(8-1 downto 0);
 
 	begin
 
@@ -150,77 +149,79 @@ begin
 
 		end block;
 
-	flow_b : block
+---- entity start
+		flow_b : block
+			signal ack_rxd  : std_logic_vector(8-1 downto 0);
 
-		signal ack_txd  : std_logic_vector(ack_rxd'range);
-		signal flow_end : std_logic;
+			signal ack_txd  : std_logic_vector(ack_rxd'range);
+			signal flow_end : std_logic;
 
-	begin
-
-		flowrx_e : entity hdl4fpga.sio_flowrx
-		port map (
-			si_clk   => sio_clk,
-			si_frm   => ahdlcrx_frm,
-			si_irdy  => buffer_irdy,
-			si_data  => buffer_data,
-
-			fcs_sb   => fcs_sb,
-			fcs_vld  => fcs_vld,
-			pkt_dup  => pkt_dup,
-			ack_rxdv => ack_rxdv,
-			ack_rxd  => ack_rxd);
-
-		process (fcs_sb, fcs_vld, ack_rxd, sio_clk)
-			variable q : std_logic := '0';
 		begin
-			if rising_edge(sio_clk) then
-				if q='1' then
-					if flow_end='1' then
-						if flow_irdy='1' then
-							q := '0';
+
+			flowrx_e : entity hdl4fpga.sio_flowrx
+			port map (
+				si_clk   => sio_clk,
+				si_frm   => ahdlcrx_frm,
+				si_irdy  => buffer_irdy,
+				si_data  => buffer_data,
+
+				fcs_sb   => fcs_sb,
+				fcs_vld  => fcs_vld,
+				pkt_dup  => pkt_dup,
+				ack_rxdv => ack_rxdv,
+				ack_rxd  => ack_rxd);
+
+			process (fcs_sb, fcs_vld, ack_rxd, sio_clk)
+				variable q : std_logic := '0';
+			begin
+				if rising_edge(sio_clk) then
+					if q='1' then
+						if flow_end='1' then
+							if flow_irdy='1' then
+								q := '0';
+							end if;
+						end if;
+					elsif fcs_vld='1' then
+						if fcs_sb='1' then
+							q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
 						end if;
 					end if;
-				elsif fcs_vld='1' then
-					if fcs_sb='1' then
-						q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
-					end if;
 				end if;
-			end if;
-			flow_frm <= (fcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
-			ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
-		end process;
+				flow_frm <= (fcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+				ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
+			end process;
 
-		flowtx_e : entity hdl4fpga.sio_flowtx
-		port map(
-			ack_data => ack_txd,
-			so_clk   => sio_clk,
-			so_frm   => flow_frm,
-			so_irdy  => flow_irdy,
-			so_trdy  => flow_trdy,
-			so_data  => flow_data,
-			so_end   => flow_end);
+			flowtx_e : entity hdl4fpga.sio_flowtx
+			port map(
+				ack_data => ack_txd,
+				so_clk   => sio_clk,
+				so_frm   => flow_frm,
+				so_irdy  => flow_irdy,
+				so_trdy  => flow_trdy,
+				so_data  => flow_data,
+				so_end   => flow_end);
 
-	end block;
+		end block;
 
-	buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
-	buffer_rlk  <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
+		buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
+		buffer_rlk  <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
-	buffer_e : entity hdl4fpga.sio_buffer
-	port map (
-		si_clk    => uart_clk,
-		si_frm    => ahdlcrx_frm,
-		si_irdy   => buffer_irdy,
-		si_data   => buffer_data,
+		buffer_e : entity hdl4fpga.sio_buffer
+		port map (
+			si_clk    => uart_clk,
+			si_frm    => ahdlcrx_frm,
+			si_irdy   => buffer_irdy,
+			si_data   => buffer_data,
 
-		rollback  => buffer_rlk,
-		commit    => buffer_cmmt,
-		overflow  => buffer_ovfl,
+			rollback  => buffer_rlk,
+			commit    => buffer_cmmt,
+			overflow  => buffer_ovfl,
 
-		so_clk    => sio_clk,
-		so_frm    => so_frm,
-		so_irdy   => so_irdy,
-		so_trdy   => so_trdy,
-		so_data   => so_data);
+			so_clk    => sio_clk,
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data);
 
 --	buffer_ovfl <= '0';
 --	so_frm  <= ahdlcrx_frm;
@@ -259,6 +260,7 @@ begin
 		flow_irdy    <= ahdlctx_gnt(gnt_flow) and ahdlctx_trdy;
 
 	end block;
+-- end entity
 
 	ahdlcfcs_tx_b : block
 

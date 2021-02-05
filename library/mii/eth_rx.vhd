@@ -42,8 +42,6 @@ entity eth_rx is
 		hwda_rxdv  : out std_logic;
 		hwsa_rxdv  : out std_logic;
 		type_rxdv  : out std_logic;
-		crc32_rxdv : buffer std_logic;
-		crc32_rxd  : buffer std_logic_vector;
 		crc32_equ  : out std_logic;
 		crc32_rem  : buffer std_logic_vector(0 to 32-1));
 		
@@ -84,18 +82,9 @@ begin
 		clk  => mii_rxc,
 		init => crc32_init,
 		data => mii_rxd,
-		sero => crc32_rxdv,
 		crc  => crc32_rem);
 
-	crc32_rxd <= crc32_rem(mii_rxd'range);
+	crc32_equ <= setif(crc32_rem=x"38fb2284");
 
-	crc32_cmp_e : entity hdl4fpga.mii_muxcmp
-	port map (
-		mux_data => reverse(x"38fb2284",8),
-		mii_rxc  => mii_rxc,
-		mii_rxdv => crc32_rxdv,
-		mii_rxd  => crc32_rxd,
-		mii_ena  => crc32_rxdv,
-		mii_equ  => crc32_equ);
 end;
 

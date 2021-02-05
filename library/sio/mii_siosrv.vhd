@@ -37,11 +37,10 @@ entity mii_siosrv is
 		mii_txc       : in  std_logic;
 
 		dll_rxdv      : in  std_logic;
-		dll_rxd       : in std_logic_vector;
+		dll_rxd       : in  std_logic_vector;
 
 		dllhwsa_rx    : in  std_logic_vector(0 to 48-1);
-		dllcrc32_rxdv : in std_logic;
-		dllcrc32_equ  : in std_logic;
+		dllfcs_vld    : in  std_logic;
 
 		ipv4sa_rx     : in  std_logic_vector(0 to 32-1);
 
@@ -59,12 +58,10 @@ entity mii_siosrv is
 		udppl_len     : out std_logic_vector(0 to 16-1) := (others => '-');
 		udp_dp        : out std_logic_vector(0 to 16-1) := (others => '-');
 		udp_sp        : out std_logic_vector(0 to 16-1);
+		myport_rcvd   : buffer std_logic;
 
-		udppl_txen    : buffer  std_logic;
-		udppl_txd     : out  std_logic_vector;
-		cmmt_ena      : out  std_logic;
-		pkt_cmmt      : out  std_logic;
-		pkt_abrt      : in   std_logic := '0';
+		udppl_txen    : buffer std_logic;
+		udppl_txd     : out std_logic_vector;
 
 		usr_req       : in  std_logic;
 		usr_gnt       : out std_logic;
@@ -82,7 +79,6 @@ entity mii_siosrv is
 end;
 
 architecture def of mii_siosrv is
-	signal myport_rcvd  : std_logic;
 	signal mysrv_rcvd   : std_logic;
 	signal dllcrc32_eor : std_logic;
 
@@ -116,48 +112,6 @@ architecture def of mii_siosrv is
 	
 begin
 
-	siosin_frm <= udppl_rxdv and myport_rcvd;
-	siosin_e : entity hdl4fpga.sio_sin
-	port map (
-		sin_clk   => mii_txc,
-		sin_frm   => udppl_rxdv,
-		sin_data  => dll_rxd,
-		rgtr_id   => rgtr_id,
-		data_frm  => octect_frm,
-		data_irdy => octect_irdy,
-		rgtr_data => octect_data);
-
-	sigsin_frm <= octect_frm and setif(rgtr_id=x"00");
-	sigsin_e : entity hdl4fpga.sio_sin
-	port map (
-		sin_clk   => mii_txc,
-		sin_frm   => sigsin_frm,
-		sin_irdy  => octect_irdy,
-		sin_data  => octect_data,
-		data_frm  => sig_frm,
-		data_irdy => sig_irdy,
-		rgtr_id   => sigrgtr_id,
-		rgtr_dv   => sigrgtr_dv,
-		rgtr_data => sigrgtr_data);
-
-	sigseq_e : entity hdl4fpga.sio_rgtr
-	generic map (
-		rid  => x"00")
-	port map (
-		rgtr_clk  => mii_txc,
-		rgtr_id   => sigrgtr_id,
-		rgtr_dv   => sigrgtr_dv,
-		rgtr_data => sigrgtr_data,
-		data      => ack_rgtr,
-		ena       => ack_ena);
-
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			dllcrc32_eor <= dllcrc32_rxdv;
-		end if;
-	end process;
-
 	myport_e : entity hdl4fpga.mii_romcmp
 	generic map (
 		mem_data => reverse(mysrv_port,8))
@@ -186,56 +140,6 @@ begin
 		dll_hwda <= wirebus(srv_hwda   & usr_hwda,   mii_gnt);
 		ipv4_da  <= wirebus(srv_ipv4da & usr_ipv4da, mii_gnt);
 		udp_dp   <= wirebus(srv_udpdp  & usr_udpdp,  mii_gnt);
-	end process;
-
-	process (mii_txc)
-		variable pkt_rcvd : std_logic;
-		variable ack_last : std_logic_vector(ack_rgtr'range);
-		variable ack_rcvd : std_logic;
-		variable txrdy_edge : std_logic;
-		variable equ : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			if srv_rdy='1' then
-				if txrdy_edge='0' then
-					srv_req <= '0';
-				end if;
-			end if;
-			txrdy_edge := srv_rdy;
-
-			pkt_cmmt <= '0';
-			cmmt_ena <= '0';
-			equ := setif(shift_left(unsigned(ack_rgtr),2)=shift_left(unsigned(ack_last),2));
-			if dllcrc32_rxdv='0' then
-				if dllcrc32_eor='1' then
-					if dllcrc32_equ='1' then
-						if pkt_rcvd='1'  then
-							ack_equ <= (others => '0');
-							if ack_rcvd='1' then
-								srv_req  <= ack_rgtr(ack_rgtr'left) or equ or pkt_abrt;
-								ack_equ(ack_equ'left-0) <= equ;
-								ack_equ(ack_equ'left-1) <= pkt_abrt;
-								pkt_cmmt <= not equ and not pkt_abrt;
-								ack_last := ack_rgtr;
-							else
-								pkt_cmmt <= '1';
-							end if;
-						end if;
-					end if;
-					pkt_rcvd := '0';
-					ack_rcvd := '0';
-					cmmt_ena <= '1';
-				end if;
-			end if;
-
-			if ack_ena='1' then
-				ack_rcvd := '1';
-			end if;
-
-			if dll_rxdv='1'then
-				pkt_rcvd := myport_rcvd;
-			end if;
-		end if;
 	end process;
 
 	txgnt_e : entity hdl4fpga.arbiter

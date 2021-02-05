@@ -32,7 +32,7 @@ entity sio_flowrx is
 	port (
 		si_clk  : in  std_logic;
 		si_frm  : in  std_logic;
-		si_irdy : in  std_logic;
+		si_irdy : in  std_logic := '1';
 		si_trdy : out std_logic;
 		si_data : in  std_logic_vector;
 

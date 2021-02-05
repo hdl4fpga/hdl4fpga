@@ -152,8 +152,6 @@ HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 HDL4FPGA__eth_dll__mix = $(LIB_HDL4FPGA)/eth_dll/mix.dat
 HDL4FPGA__eth_dll = $(LIB_HDL4FPGA)/eth_dll/_primary.dat
-HDL4FPGA__eth_crc32__def = $(LIB_HDL4FPGA)/eth_crc32/def.dat
-HDL4FPGA__eth_crc32 = $(LIB_HDL4FPGA)/eth_crc32/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -379,8 +377,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__eth_rx) \
     $(HDL4FPGA__eth_dll__mix) \
     $(HDL4FPGA__eth_dll) \
-    $(HDL4FPGA__eth_crc32__def) \
-    $(HDL4FPGA__eth_crc32) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -786,6 +782,7 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
 		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_mux) \
@@ -886,18 +883,9 @@ $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dpram.vhd
 
-$(HDL4FPGA__eth_crc32) \
-$(HDL4FPGA__eth_crc32__def) : ../mii/eth_crc32.vhd \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/eth_crc32.vhd
-
 $(HDL4FPGA__eth_dll) \
 $(HDL4FPGA__eth_dll__mix) : ../mii/eth_dll.vhd \
-		$(HDL4FPGA__eth_crc32) \
+		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__mii_rom) \
 		$(IEEE__std_logic_textio) \
@@ -910,7 +898,7 @@ $(HDL4FPGA__eth_dll__mix) : ../mii/eth_dll.vhd \
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(HDL4FPGA__mii_muxcmp) \
-		$(HDL4FPGA__eth_crc32) \
+		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__mii_rxpre) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -944,7 +932,6 @@ $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
 
 $(HDL4FPGA__fifo) \
 $(HDL4FPGA__fifo__def) : ../common/fifo.vhd \
-		$(HDL4FPGA__align) \
 		$(HDL4FPGA__dpram) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \

@@ -239,6 +239,7 @@ begin
 
 		so_frm  => sin_frm,
 		so_irdy => sin_irdy,
+		so_trdy => '1',
 		so_data => sin_data,
 		tp => tp(0 to 4-1));
 	

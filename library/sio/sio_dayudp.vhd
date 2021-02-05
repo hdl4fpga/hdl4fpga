@@ -56,6 +56,7 @@ entity sio_dayudp is
 
 		so_frm      : out std_logic;
 		so_irdy     : out std_logic;
+		so_trdy     : in  std_logic;
 		so_data     : out std_logic_vector;
 		tp : out std_logic_vector(1 to 4));
 	
@@ -63,10 +64,19 @@ end;
 
 architecture beh of sio_dayudp is
 
-	signal soudp_dv   : std_logic;
+	signal siudp_frm  : std_logic;
+	signal siudp_irdy : std_logic;
+	signal siudp_trdy : std_logic;
+	signal soudp_frm  : std_logic;
+	signal soudp_irdy : std_logic;
+	signal soudp_trdy : std_logic;
 	signal soudp_data : std_logic_vector(so_data'range);
 
 begin
+
+	siudp_frm  <= '0' when sio_addr/='0' else si_frm;
+	siudp_irdy <= '0' when sio_addr/='0' else si_irdy;
+	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
 	sioudpp_e : entity hdl4fpga.sio_udp
 	generic map (
@@ -86,16 +96,19 @@ begin
 
 		ipv4acfg_req => ipv4acfg_req,
 		sio_clk     => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_trdy     => si_trdy,
+		si_frm      => siudp_frm,
+		si_irdy     => siudp_irdy,
+		si_trdy     => siudp_trdy,
 		si_data     => si_data,
-		so_dv       => soudp_dv,
+		so_frm      => soudp_frm,
+		so_irdy     => soudp_irdy,
+		so_trdy     => soudp_trdy,
 		so_data     => soudp_data,
 		tp => tp);
 
-	so_frm  <= si_frm  when sio_addr/='0' else soudp_dv; 
-	so_irdy <= si_irdy when sio_addr/='0' else soudp_dv;
+	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
+	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm; 
+	so_irdy <= si_irdy when sio_addr/='0' else soudp_irdy;
 	so_data <= si_data when sio_addr/='0' else soudp_data;
 
 end;

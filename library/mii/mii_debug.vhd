@@ -68,7 +68,7 @@ architecture struct of mii_debug is
 	signal dll_rxdv        : std_logic;
 	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
 	signal dllcrc32_rxdv   : std_logic;
-	signal dllcrc32_equ    : std_logic;
+	signal dllfcs_vld    : std_logic;
 	signal dllcrc32_rxd    : std_logic_vector(mii_rxd'range);
 	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
@@ -106,7 +106,7 @@ begin
                                       
 		dllhwsa_rx    => dllhwsa_rx,
 		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_equ  => dllcrc32_equ,
+		dllcrc32_equ  => dllfcs_vld,
                                       
 		ipv4sa_rx     => ipv4sa_rx,
                                       
@@ -147,9 +147,7 @@ begin
 		ipv4_da       => mysrv_ipv4da,
 		dll_rxdv      => dll_rxdv,
 		dllhwsa_rx    => dllhwsa_rx,
-		dllcrc32_rxdv => dllcrc32_rxdv,
-		dllcrc32_rxd  => dllcrc32_rxd,
-		dllcrc32_equ  => dllcrc32_equ,
+		dllfcs_vld  => dllfcs_vld,
 
 		ipv4sa_rx     => ipv4sa_rx,
 		ipv4acfg_req   => dhcp_req,
