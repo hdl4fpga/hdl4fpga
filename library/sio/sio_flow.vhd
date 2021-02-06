@@ -50,9 +50,6 @@ entity sio_flow is
 		phyo_irdy : out std_logic;
 		phyo_data : buffer std_logic_vector;
 
-		mii_txd   : out std_logic_vector;
-		mii_txen  : out std_logic;
-
 		sio_clk   : in  std_logic;
 
 		si_frm    : in  std_logic := '0';

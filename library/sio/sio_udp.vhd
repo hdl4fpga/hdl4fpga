@@ -254,123 +254,42 @@ begin
 		mii_txen => siosp_txen,
 		mii_txd  => siosp_txd);
 
-	flow_b : block
-
-		signal ack_rxd  : std_logic_vector(8-1 downto 0);
-		signal ack_txd  : std_logic_vector(ack_rxd'range);
-		signal fcs_end  : std_logic;
-		signal flow_end : std_logic;
-
-		signal pkt_dup  : std_logic;
-		signal fcs_sb   : std_logic;
-		signal ack_rxdv : std_logic;
-
-	begin
-
-		process(dll_rxdv, mii_txc)
-			variable q : std_logic;
-		begin
-			if rising_edge(mii_txc) then
-				q := dll_rxdv;
-			end if;
-			fcs_sb <= not dll_rxdv and q;
-		end process;
-
-		flowrx_e : entity hdl4fpga.sio_flowrx
-		port map (
-			si_clk   => mii_txc,
-			si_frm   => udppl_rxdv,
-			si_data  => txc_rxd,
-
-			fcs_sb   => fcs_sb,
-			fcs_vld  => dllfcs_vld,
-			pkt_dup  => pkt_dup,
-			ack_rxdv => ack_rxdv,
-			ack_rxd  => ack_rxd);
-
-		process (fcs_sb, dllfcs_vld, ack_rxd, mii_txc)
-			variable q : std_logic := '0';
-		begin
-			if rising_edge(mii_txc) then
-				if q='1' then
-					if flow_end='1' then
-						q := '0';
-					end if;
-				elsif dllfcs_vld='1' then
-					if fcs_sb='1' then
-						q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
-					end if;
-				end if;
-			end if;
-			flow_frm <= (dllfcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
-			ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
-		end process;
-
-		flowtx_e : entity hdl4fpga.sio_flowtx
-		port map(
-			ack_data => ack_txd,
-			so_clk   => mii_txc,
-			so_frm   => flow_frm,
-			so_irdy  => flow_irdy,
-			so_trdy  => flow_trdy,
-			so_data  => flow_data,
-			so_end   => flow_end);
-
-		buffer_cmmt <= (    dllfcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
-		buffer_rllk <= (not dllfcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
-	end block;
-
 	buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
 	buffer_data <= wirebus(
 		dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
 		dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
 
-	buffer_e : entity hdl4fpga.sio_buffer
+	flow_e : entity hdl4fpga.sio_flow
 	port map (
-		si_clk    => mii_txc,
-		si_frm    => dll_rxdv,
-		si_irdy   => buffer_irdy,
-		si_data   => buffer_data,
-		commit    => buffer_cmmt,
-		rollback  => buffer_rllk,
-		overflow  => buffer_ovfl,
+		phyio_clk => mii_txc,
+		phyi_frm  => udppl_rxdv,
+		phyi_data => txc_rxd,
+		fcs_vld   => dllfcs_vld,
 
-		so_clk    => sio_clk,
-		so_frm    => so_frm,
-		so_irdy   => so_irdy,
-		so_trdy   => so_trdy,
-		so_data   => so_data);
+		buffer_frm : in std_logic;
+		buffer_irdy => buffer_irdy,
+		buffer_data => buffer_data,
 
-	artibiter_b : block
+		phyo_req  : out std_logic;
+		phyo_rdy  : in  std_logic;
+		phyo_gnt  : in  std_logic;
+		phyo_idle : in  std_logic;
 
-		constant gnt_flow  : natural := 0;
-		constant gnt_si    : natural := 1;
+		phyo_frm  => mii_rxc,
+		phyo_irdy : out std_logic;
+		phyo_data : buffer std_logic_vector;
 
-		signal tx_req : std_logic_vector(0 to 2-1);
-		signal tx_gnt : std_logic_vector(0 to 2-1);
-		signal tx_swp : std_logic;
+		sio_clk   : in  std_logic;
 
-	begin
+		si_frm    : in  std_logic := '0';
+		si_irdy   : in  std_logic := '0';
+		si_trdy   : out std_logic;
+		si_data   : in  std_logic_vector;
 
-		tx_req(gnt_flow) <= flow_frm;
-		tx_req(gnt_si)   <= si_frm;
-
-		gnt_e : entity hdl4fpga.arbiter
-		port map (
-			clk  => sio_clk,
-			csc  => mysrv_gnt,
-			ena  => uart_idle,
-			req  => tx_req,
-			gnt  => tx_gnt);
-
-		mysrv_req <= setif(tx_req/=(tx_req'range => '0'));
-		mysrv_trdy <= wirebus(flow_trdy & si_irdy, tx_gnt)(0);
-		mysrv_data <= wirebus(flow_data & si_data, tx_gnt);
-
-		si_trdy    <= tx_gnt(gnt_si)   and mysrv_rdy;
-		flow_irdy  <= tx_gnt(gnt_flow) and mysrv_rdy;
-
-	end block;
+		so_frm    : out std_logic;
+		so_irdy   : out std_logic;
+		so_trdy   : in  std_logic;
+		so_data   : out std_logic_vector);
 
 	tx_b : block
 
