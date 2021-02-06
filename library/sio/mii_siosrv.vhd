@@ -123,25 +123,6 @@ begin
 		mii_equ  => myport_rcvd);
 	udp_sp <= mysrv_port;
 
-	process (mii_gnt, usr_hwda, usr_ipv4da, usr_udpdp, mii_txc)
-		variable srv_hwda   : std_logic_vector(48-1 downto 0);
-		variable srv_ipv4da : std_logic_vector(32-1 downto 0);
-		variable srv_udpdp  : std_logic_vector(16-1 downto 0);
-	begin
-		if rising_edge(mii_txc) then
-			if srv_rdy='0' then
-				if myport_rcvd='1' then
-					srv_hwda   := dllhwsa_rx;
-					srv_ipv4da := ipv4sa_rx;
-					srv_udpdp  := udpsp_rx;
-				end if;
-			end if;
-		end if;
-		dll_hwda <= wirebus(srv_hwda   & usr_hwda,   mii_gnt);
-		ipv4_da  <= wirebus(srv_ipv4da & usr_ipv4da, mii_gnt);
-		udp_dp   <= wirebus(srv_udpdp  & usr_udpdp,  mii_gnt);
-	end process;
-
 	txgnt_e : entity hdl4fpga.arbiter
 	port map (
 		clk => mii_txc,

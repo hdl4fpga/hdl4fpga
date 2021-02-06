@@ -1241,10 +1241,6 @@ $(HDL4FPGA__mii_sio__beh) : ../sio/mii_sio.vhd \
 
 $(HDL4FPGA__mii_siosrv) \
 $(HDL4FPGA__mii_siosrv__def) : ../sio/mii_siosrv.vhd \
-		$(HDL4FPGA__mii_mux) \
-		$(HDL4FPGA__mii_latency) \
-		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__mii_romcmp) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -1402,10 +1398,11 @@ $(HDL4FPGA__sio_dmahdsk__def) : ../sio/sio_dmahdsk.vhd \
 
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
-		$(HDL4FPGA__arbiter) \
+		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_buffer) \
-		$(HDL4FPGA__sio_flowtx) \
-		$(HDL4FPGA__sio_flowrx) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
@@ -1478,6 +1475,7 @@ $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_buffer) \
 		$(HDL4FPGA__sio_flowtx) \
 		$(HDL4FPGA__sio_flowrx) \

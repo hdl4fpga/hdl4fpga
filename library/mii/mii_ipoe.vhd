@@ -33,7 +33,7 @@ use hdl4fpga.ipoepkg.all;
 entity mii_ipoe is
 	generic (
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc       : in  std_logic;
 		mii_rxd       : in  std_logic_vector;
@@ -249,7 +249,7 @@ begin
 
 	dllhwdacmp_e : entity hdl4fpga.mii_romcmp
 	generic map (
-		mem_data => reverse(mymac,8))
+		mem_data => reverse(my_mac,8))
     port map (
         mii_rxc  => mii_txc,
         mii_rxdv => dll_rxdv,
@@ -291,7 +291,7 @@ begin
 	port map (
 		mii_txc   => mii_txc,
 		eth_ptr   => txfrm_ptr,
-		hwsa      => mymac,
+		hwsa      => my_mac,
 		hwda      => hwda_tx,
 		llc       => type_tx,
 		pl_txen   => eth_txen,
@@ -318,7 +318,7 @@ begin
 			mii_txen => arp_gnt,
 			arp_frm  => txfrm_ptr,
 
-			sha      => mymac,
+			sha      => my_mac,
 			spa      => cfgipv4a,
 			tha      => x"ff_ff_ff_ff_ff_ff",
 			tpa      => cfgipv4a,
@@ -751,7 +751,7 @@ begin
 
 				dhcpchaddr_e : entity hdl4fpga.mii_romcmp
 				generic map (
-					mem_data => reverse(mymac,8))
+					mem_data => reverse(my_mac,8))
 				port map (
 					mii_rxc  => mii_txc,
 					mii_rxdv => dll_rxdv,
