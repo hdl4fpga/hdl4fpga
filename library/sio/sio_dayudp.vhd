@@ -31,7 +31,7 @@ use hdl4fpga.std.all;
 entity sio_dayudp is
 	generic (
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		mymac         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		ipv4acfg_req  : in  std_logic := '-';
 
@@ -81,7 +81,7 @@ begin
 	sioudpp_e : entity hdl4fpga.sio_udp
 	generic map (
 		default_ipv4a => default_ipv4a,
-		mymac         => mymac)
+		my_mac        => my_mac)
 	port map (
 		mii_rxc     => phy_rxc,
 		mii_rxdv    => phy_rx_dv,

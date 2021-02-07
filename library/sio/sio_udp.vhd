@@ -231,21 +231,25 @@ begin
 
 	flow_e : entity hdl4fpga.sio_flow
 	port map (
-		si_clk  => mii_txc,
-		si_frm  => udppl_rxdv,
-		si_irdy => '1',
-		si_data => txc_rxd,
+		phyi_clk  => mii_txc,
+		phyi_frm  => udppl_rxdv,
+		phyi_irdy => '1',
+		phyi_data => txc_rxd,
 		fcs_vld   => dllfcs_vld,
 
 		buffer_frm  => txc_rxdv,
 		buffer_irdy => buffer_irdy,
 		buffer_data => buffer_data,
+		so_clk => sio_clk,
+		so_irdy => so_irdy,
+		so_trdy => so_trdy,
+		so_data => so_data,
 
-		so_clk    => sio_clk,
-		so_frm    => so_frm,
-		so_irdy   => so_irdy,
-		so_trdy   => so_trdy,
-		so_data   => so_data);
+		phyo_clk    => sio_clk,
+		phyo_frm    => so_frm,
+		phyo_irdy   => so_irdy,
+		phyo_trdy   => so_trdy,
+		phyo_data   => so_data);
 
 	artibiter_b : block
 
@@ -257,44 +261,6 @@ begin
 		signal tx_swp : std_logic;
 
 	begin
-
-	udppl_len <= std_logic_vector(
-		to_unsigned((ack_data'length+octect_size-1)/octect_size, udppl_len'length)+
-		unsigned(wirebus(x"0000" & usr_udplen, tx_gnt)));
-	ack_data <= x"00" & x"02" & x"00" & x"00" & wirebus((ack_rgtr or ack_equ) & usr_ack, tx_gnt);
-
-	ulat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => ack_data'length)
-	port map (
-		mii_txc  => mii_txc,
-		lat_txen => usr_txen,
-		lat_txd  => usr_txd,
-		mii_txen => ulat_txen,
-		mii_txd  => ulat_txd);
-
-	udppl_txen <= ack_txen or ulat_txen;
-	udppl_txd  <= wirebus(ack_txd & ulat_txd, ack_txen & ulat_txen);
-
-		tx_req(gnt_flow) <= flow_frm;
-		tx_req(gnt_si)   <= si_frm;
-
-		gnt_e : entity hdl4fpga.arbiter
-		port map (
-			clk  => sio_clk,
-			csc  => phyo_gnt,
-			ena  => phyo_idle,
-			req  => tx_req,
-			gnt  => tx_gnt);
-
-		phyo_frm  <= setif(tx_gnt/=(tx_gnt'range => '0'));
-		phyo_req  <= setif(tx_req/=(tx_req'range => '0'));
-		phyo_irdy <= wirebus(flow_trdy & si_irdy, tx_gnt)(0);
-		phyo_data <= wirebus(flow_data & si_data, tx_gnt);
-
-		si_trdy    <= tx_gnt(gnt_si)   and phyo_rdy;
-		flow_irdy  <= tx_gnt(gnt_flow) and phyo_rdy;
-
 	end block;
 
 	tx_b : block
