@@ -49,8 +49,17 @@ entity sio_flow is
 		so_trdy     : in  std_logic;
 		so_data     : out std_logic_vector;
 
+		si_clk      : in  std_logic;
+		si_frm      : in  std_logic;
+		si_irdy     : in  std_logic;
+		si_trdy     : out std_logic;
+		si_data     : in  std_logic_vector;
+
+		phyo_gnt    : in  std_logic;
+		phyo_idle   : in  std_logic;
+
 		phyo_clk    : in  std_logic;
-		phyo_frm    : buffer std_logic;
+		phyo_frm    : out std_logic;
 		phyo_irdy   : out std_logic;
 		phyo_trdy   : in  std_logic;
 		phyo_data   : out std_logic_vector);
@@ -190,29 +199,11 @@ begin
 		si_data  => sigram_data,
 
 		so_clk   => so_clk,
-		so_frm   => phyo_frm,
-		so_irdy  => phyo_trdy,
+		so_frm   => flow_frm,
+		so_irdy  => flow_trdy,
 		so_trdy  => sig_trdy,
 		so_end   => sig_end,
 		so_data  => sig_data);
-
-	ack_p : process (fcs_sb, phyi_fcsvld, ack_rxd, so_clk)
-		variable q : std_logic := '0';
-	begin
-		if rising_edge(so_clk) then
-			if q='1' then
-				if flow_end='1' then
-					q := '0';
-				end if;
-			elsif phyi_fcsvld='1' then
-				if fcs_sb='1' then
-					q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
-				end if;
-			end if;
-		end if;
-		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
-		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
-	end process;
 
 	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and fcs_sb;
 	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
@@ -233,32 +224,30 @@ begin
 		so_trdy   => so_trdy,
 		so_data   => so_data);
 
+	ack_p : process (fcs_sb, phyi_fcsvld, ack_rxd, phyi_clk)
+		variable q : std_logic := '0';
+	begin
+		if rising_edge(phyi_clk) then
+			if q='1' then
+				if flow_end='1' then
+					q := '0';
+				end if;
+			elsif phyi_fcsvld='1' then
+				if fcs_sb='1' then
+					q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
+				end if;
+			end if;
+		end if;
+		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
+	end process;
+
 	tx_b : block
 		signal sioack_data : std_logic_vector(0 to 9*8-1);
-		signal ack_clk    : std_logic;
-		signal ack_frm    : std_logic;
-		signal ack_irdy   : std_logic;
 		signal ack_trdy   : std_logic;
 		signal ack_data   : std_logic_vector(phyi_data'range);
 		signal ack_end    : std_logic;
 	begin
-
-		process (phyo_clk)
-			variable frm : std_logic;
-			variable req : bit := '0';
-		begin
-			if rising_edge(phyo_clk) then
-				if req='1' then
-					if (ack_irdy and ack_trdy and ack_end)='1' then
-						req := '0';
-					end if;
-				elsif frm='1' and phyi_frm='0' then
-					req := '1';
-				end if;
-				frm := to_stdulogic(to_bit(phyi_frm));
-				phyo_frm <= to_stdulogic(req);
-			end if;
-		end process;
 
 		sioack_data <= x"00" & x"06" & 
 			x"04" & x"01" & x"00" & x"01" &
@@ -267,14 +256,42 @@ begin
 		port map (
 			mux_data => sioack_data,
 			sio_clk  => phyo_clk,
-			sio_frm  => ack_frm,
-			so_irdy  => ack_irdy,
+			sio_frm  => flow_frm,
+			so_irdy  => flow_trdy,
 			so_trdy  => ack_trdy,
 			so_end   => ack_end,
 			so_data  => ack_data);
 
-		phyo_irdy <= wirebus(sig_trdy & ack_trdy, not ack_end & ack_end)(0);
-		phyo_data <= wirebus(sig_data & ack_data, not ack_end & ack_end);
+		flow_irdy <= wirebus(sig_trdy & ack_trdy, not ack_end & ack_end)(0);
+		flow_data <= wirebus(sig_data & ack_data, not ack_end & ack_end);
+
+	end block;
+
+	artibiter_b : block
+
+		constant gnt_flow : natural := 0;
+		constant gnt_si   : natural := 1;
+
+		signal req : std_logic_vector(0 to 2-1);
+		signal gnt : std_logic_vector(0 to 2-1);
+
+	begin
+
+		gnt_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => phyo_clk,
+			ena  => phyo_idle,
+			csc  => phyo_gnt,
+			req  => req,
+			gnt  => gnt);
+
+		req       <= (gnt_flow => flow_frm, gnt_si => si_frm);
+		phyo_frm  <= setif(gnt/=(gnt'range => '0'));
+		flow_trdy <= phyo_trdy and gnt(gnt_flow);
+		si_trdy   <= phyo_trdy and gnt(gnt_si);
+
+		phyo_data <= wirebus(flow_data & si_data, gnt);
+		phyo_irdy <= wirebus(flow_irdy & si_irdy, gnt)(0);
 
 	end block;
 

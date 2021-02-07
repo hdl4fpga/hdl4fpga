@@ -155,9 +155,9 @@ begin
 		udpdp_rxdv    => udpdp_rxdv,
 		udppl_rxdv    => udppl_rxdv,
 		udpsp_rx      => udpsp_rx,
-		udp_sp        => mysrv_udpsp,
-		udp_dp        => mysrv_udpdp,
-		udppl_len     => mysrv_udppllen,
+		udpsp_tx      => mysrv_udpsp,
+		udpdp_tx      => mysrv_udpdp,
+		udppl_txlen   => mysrv_udppllen,
 		udppl_txen    => mysrv_udppltxen,
 		udppl_txd     => mysrv_udppltxd,
 

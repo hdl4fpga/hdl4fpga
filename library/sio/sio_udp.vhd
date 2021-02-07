@@ -181,9 +181,9 @@ begin
 		udpdp_rxdv     => udpdp_rxdv,
 		udppl_rxdv     => udppl_rxdv,
 		udpsp_rx       => udpsp_rx,
-		udp_sp         => ipoe_txudpsp,
-		udp_dp         => ipoe_txudpdp,
-		udppl_len      => udppl_txlen,
+		udpsp_tx       => ipoe_txudpsp,
+		udpdp_tx       => ipoe_txudpdp,
+		udppl_txlen    => udppl_txlen,
 		udppl_txen     => udppl_txen,
 		udppl_txd      => udppl_txd);
 
@@ -251,41 +251,24 @@ begin
 		buffer_data => buffer_data,
 
 		so_clk      => sio_clk,
+		so_frm      => so_frm,
 		so_irdy     => so_irdy,
 		so_trdy     => so_trdy,
 		so_data     => so_data,
 
+		si_clk      => sio_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_trdy     => si_trdy,
+		si_data     => si_data,
+
+		phyo_idle   => phyo_idle,
+		phyo_gnt    => ipoe_txgnt,
 		phyo_clk    => phyo_clk,
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
 		phyo_trdy   => flow_trdy,
 		phyo_data   => flow_data);
-
-	artibiter_b : block
-
-		constant gnt_flow  : natural := 0;
---		constant gnt_si    : natural := 1;
-
-		signal tx_req   : std_logic_vector(0 to 1-1);
-		signal tx_gnt   : std_logic_vector(0 to 1-1);
-
-		alias tx_frm   : std_logic is udppl_txen;
-		alias phyo_gnt : std_logic is ipoe_txgnt;
-	begin
-
-		gnt_e : entity hdl4fpga.arbiter
-		port map (
-			clk  => phyo_clk,
-			ena  => phyo_idle,
-			csc  => phyo_gnt,
-			req  => tx_req,
-			gnt  => tx_gnt);
-
-		tx_req    <= (gnt_flow => flow_frm);
-		tx_frm    <= setif(tx_gnt/=(tx_gnt'range => '0'));
-		flow_irdy <= tx_frm and tx_gnt(gnt_flow);
-
-	end block;
 
 	tx_b : block
 

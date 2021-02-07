@@ -75,14 +75,14 @@ entity mii_ipoe is
 		udpsp_rx      : buffer std_logic_vector(0 to 16-1);
 		udpdp_rx      : buffer std_logic_vector(0 to 16-1);
 
-		udppl_len     : in  std_logic_vector(0 to 16-1) := (others => '-');
+		udppl_txlen   : in  std_logic_vector(0 to 16-1) := (others => '-');
 		udppl_rxdv    : buffer std_logic;
 		udppl_txen    : in  std_logic;
 		udppl_txd     : in  std_logic_vector;
 
 		udp_cksm      : in  std_logic_vector(0 to 16-1) := (others => '0'); 
-		udp_sp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
-		udp_dp        : in  std_logic_vector(0 to 16-1) := (others => '-'); 
+		udpsp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
+		udpdp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
 
 		ipv4acfg_req  : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
@@ -661,11 +661,11 @@ begin
 				udp_ptr    => txfrm_ptr,
 				udppl_txen => udppl_txen,
 				udppl_txd  => udppl_txd,
-				udppl_len  => udppl_len,
+				udppl_len  => udppl_txlen,
 				udp_cksm   => udp_cksm,
 				udp_len    => udp_len,
-				udp_sp     => udp_sp,
-				udp_dp     => udp_dp,
+				udp_sp     => udpsp_tx,
+				udp_dp     => udpdp_tx,
 
 				udp_txen   => udp_txen,
 				udp_txd    => udp_txd);
