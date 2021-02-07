@@ -61,6 +61,10 @@ entity sio_udp is
 		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector;
 		tp : out std_logic_vector(1 to 4));
+
+	alias phyo_clk : std_logic is mii_txc;
+	constant phyo_idle : std_logic := '1';
+
 end;
 
 architecture struct of sio_udp is
@@ -69,7 +73,7 @@ architecture struct of sio_udp is
 
 	signal dll_rxdv        : std_logic;
 	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
-	signal dllfcs_vld    : std_logic;
+	signal dllfcs_vld      : std_logic;
 	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
 	signal ipv4sa_rx       : std_logic_vector(0 to 32-1);
@@ -77,17 +81,18 @@ architecture struct of sio_udp is
 	signal udpdp_rxdv      : std_logic;
 	signal udppl_rxdv      : std_logic;
 
-	signal mysrv_req       : std_logic;
-	signal mysrv_rdy       : std_logic;
-	signal mysrv_gnt       : std_logic;
-	signal mysrv_hwda      : std_logic_vector(0 to 48-1);
-	signal mysrv_ipv4da    : std_logic_vector(0 to 32-1);
-	signal mysrv_udpdp     : std_logic_vector(0 to 16-1);
-	signal mysrv_udpsp     : std_logic_vector(0 to 16-1);
+	signal ipoe_txreq      : std_logic;
+	signal ipoe_txrdy      : std_logic;
+	signal ipoe_txgnt      : std_logic;
 
-	signal mysrv_udppltxd  : std_logic_vector(mii_rxd'range);
-	signal mysrv_udppllen  : std_logic_vector(0 to 16-1);
-	signal mysrv_udppltxen : std_logic;
+	signal ipoe_txhwda     : std_logic_vector(0 to 48-1);
+	signal ipoe_txipv4da   : std_logic_vector(0 to 32-1);
+	signal ipoe_txudpdp    : std_logic_vector(0 to 16-1);
+	signal ipoe_txudpsp    : std_logic_vector(0 to 16-1);
+
+	signal udppl_txlen     : std_logic_vector(0 to 16-1);
+	signal udppl_txen      : std_logic;
+	signal udppl_txd       : std_logic_vector(mii_rxd'range);
 
 	signal tx_ack          : std_logic_vector(8-1 downto 0);
 	signal tx_hwda         : std_logic_vector(48-1 downto 0);
@@ -127,56 +132,60 @@ architecture struct of sio_udp is
 		signal buffer_ovfl : std_logic;
 		signal buffer_data : std_logic_vector(mii_rxd'range);
 		signal buffer_irdy : std_logic;
+
 		signal flow_frm     : std_logic;
 		signal flow_trdy    : std_logic;
 		signal flow_irdy    : std_logic;
 		signal flow_data    : std_logic_vector(txc_rxd'range);
 
 	signal myport_rcvd : std_logic;
+
 begin
 
 	mii_ipoe_e : entity hdl4fpga.mii_ipoe
 	generic map (
-		default_ipv4a => default_ipv4a,
-		my_mac        => my_mac)
+		default_ipv4a  => default_ipv4a,
+		my_mac         => my_mac)
 	port map (
-		mii_rxc       => mii_rxc,
-		mii_rxd       => mii_rxd,
-		mii_rxdv      => mii_rxdv,
+		mii_rxc        => mii_rxc,
+		mii_rxd        => mii_rxd,
+		mii_rxdv       => mii_rxdv,
 
-		mii_txc       => mii_txc,
-		mii_col       => mii_col,
-		mii_crs       => mii_crs,
-		mii_txd       => mii_txd,
-		mii_txen      => mii_txen,
+		mii_txc        => mii_txc,
+		mii_col        => mii_col,
+		mii_crs        => mii_crs,
+		mii_txd        => mii_txd,
+		mii_txen       => mii_txen,
 
-		txc_rxdv      => txc_rxdv,
-		txc_rxd       => txc_rxd,
+		txc_rxdv       => txc_rxdv,
+		txc_rxd        => txc_rxd,
 
-		udpsp_rxdv    => udpsp_rxdv,
-		ipv4sa_rxdv   => ipv4sa_rxdv,
-		dllhwsa_rxdv  => dllhwsa_rxdv,
-		dhcpipv4a_rxdv=> dhcpipv4a_rxdv,
-		tx_req        => mysrv_req,
-		tx_rdy        => mysrv_rdy,
-		tx_gnt        => mysrv_gnt,
-		dll_hwda      => mysrv_hwda,
-		ipv4_da       => mysrv_ipv4da,
-		dll_rxdv      => dll_rxdv,
-		dllhwsa_rx    => dllhwsa_rx,
-		dllfcs_vld    => dllfcs_vld,
+		udpsp_rxdv     => udpsp_rxdv,
+		ipv4sa_rxdv    => ipv4sa_rxdv,
+		dllhwsa_rxdv   => dllhwsa_rxdv,
+		dhcpipv4a_rxdv => dhcpipv4a_rxdv,
 
-		ipv4sa_rx     => ipv4sa_rx,
-		ipv4acfg_req  => ipv4acfg_req,
-                                      
-		udpdp_rxdv    => udpdp_rxdv,
-		udppl_rxdv    => udppl_rxdv,
-		udpsp_rx      => udpsp_rx,
-		udp_sp        => mysrv_udpsp,
-		udp_dp        => mysrv_udpdp,
-		udppl_len     => mysrv_udppllen,
-		udppl_txen    => mysrv_udppltxen,
-		udppl_txd     => mysrv_udppltxd);
+		tx_req         => ipoe_txreq,
+		tx_rdy         => ipoe_txrdy,
+		tx_gnt         => ipoe_txgnt,
+
+		dll_hwda       => ipoe_txhwda,
+		ipv4_da        => ipoe_txipv4da,
+		dll_rxdv       => dll_rxdv,
+		dllhwsa_rx     => dllhwsa_rx,
+		dllfcs_vld     => dllfcs_vld,
+
+		ipv4sa_rx      => ipv4sa_rx,
+		ipv4acfg_req   => ipv4acfg_req,
+                                       
+		udpdp_rxdv     => udpdp_rxdv,
+		udppl_rxdv     => udppl_rxdv,
+		udpsp_rx       => udpsp_rx,
+		udp_sp         => ipoe_txudpsp,
+		udp_dp         => ipoe_txudpdp,
+		udppl_len      => udppl_txlen,
+		udppl_txen     => udppl_txen,
+		udppl_txd      => udppl_txd);
 
 	myport_e : entity hdl4fpga.mii_romcmp
 	generic map (
@@ -231,36 +240,49 @@ begin
 
 	flow_e : entity hdl4fpga.sio_flow
 	port map (
-		phyi_clk  => mii_txc,
-		phyi_frm  => udppl_rxdv,
-		phyi_irdy => '1',
-		phyi_data => txc_rxd,
-		fcs_vld   => dllfcs_vld,
+		phyi_clk    => mii_txc,
+		phyi_frm    => udppl_rxdv,
+		phyi_irdy   => '1',
+		phyi_data   => txc_rxd,
+		phyi_fcsvld => dllfcs_vld,
 
 		buffer_frm  => txc_rxdv,
 		buffer_irdy => buffer_irdy,
 		buffer_data => buffer_data,
-		so_clk => sio_clk,
-		so_irdy => so_irdy,
-		so_trdy => so_trdy,
-		so_data => so_data,
 
-		phyo_clk    => sio_clk,
-		phyo_frm    => so_frm,
-		phyo_irdy   => so_irdy,
-		phyo_trdy   => so_trdy,
-		phyo_data   => so_data);
+		so_clk      => sio_clk,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_data     => so_data,
+
+		phyo_clk    => phyo_clk,
+		phyo_frm    => flow_frm,
+		phyo_irdy   => flow_irdy,
+		phyo_trdy   => flow_trdy,
+		phyo_data   => flow_data);
 
 	artibiter_b : block
 
 		constant gnt_flow  : natural := 0;
-		constant gnt_si    : natural := 1;
+--		constant gnt_si    : natural := 1;
 
-		signal tx_req : std_logic_vector(0 to 2-1);
-		signal tx_gnt : std_logic_vector(0 to 2-1);
-		signal tx_swp : std_logic;
+		signal tx_req   : std_logic_vector(0 to 1-1);
+		signal tx_gnt   : std_logic_vector(0 to 1-1);
 
+		alias tx_frm : std_logic is udppl_txen;
 	begin
+
+		gnt_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => phyo_clk,
+			ena  => phyo_idle,
+			req  => tx_req,
+			gnt  => tx_gnt);
+
+		tx_req <= (gnt_flow => flow_frm);
+		tx_frm <= setif(tx_gnt/=(tx_gnt'range => '0'));
+
+		flow_irdy <= tx_frm and tx_gnt(gnt_flow);
 	end block;
 
 	tx_b : block

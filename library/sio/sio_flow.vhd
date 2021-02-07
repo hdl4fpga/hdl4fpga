@@ -37,7 +37,7 @@ entity sio_flow is
 		phyi_irdy   : in  std_logic;
 		phyi_trdy   : out std_logic;
 		phyi_data   : buffer std_logic_vector;
-		fcs_vld     : in std_logic;
+		phyi_fcsvld : in std_logic;
 
 		buffer_frm  : in std_logic;
 		buffer_irdy : in std_logic;
@@ -155,13 +155,13 @@ begin
 
 		ack_frm     <= sig_frm   and setif(sigrgtr_id = x"00");
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id    = x"00") and not ack_frm;
-		process (fcs_sb, fcs_vld, pkt_dup, rxd, phyi_clk)
+		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
 			variable last : std_logic_vector(ack_rxd'range);
 			variable dup  : std_logic;
 		begin
 			if rising_edge(phyi_clk) then
 				if fcs_sb='1' then
-					if fcs_vld='1' then
+					if phyi_fcsvld='1' then
 						dup  := pkt_dup;
 						last := rxd;
 						ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
@@ -169,7 +169,7 @@ begin
 				end if;
 			end if;
 
-			if fcs_sb='1' and fcs_vld='1' then
+			if fcs_sb='1' and phyi_fcsvld='1' then
 				pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(last),2));
 			else
 				pkt_dup <= dup;
@@ -196,7 +196,7 @@ begin
 		so_end   => sig_end,
 		so_data  => sig_data);
 
-	ack_p : process (fcs_sb, fcs_vld, ack_rxd, so_clk)
+	ack_p : process (fcs_sb, phyi_fcsvld, ack_rxd, so_clk)
 		variable q : std_logic := '0';
 	begin
 		if rising_edge(so_clk) then
@@ -204,18 +204,18 @@ begin
 				if flow_end='1' then
 					q := '0';
 				end if;
-			elsif fcs_vld='1' then
+			elsif phyi_fcsvld='1' then
 				if fcs_sb='1' then
 					q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
 				end if;
 			end if;
 		end if;
-		flow_frm <= (fcs_vld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
 
-	buffer_cmmt <= (    fcs_vld and not pkt_dup and not buffer_ovfl) and fcs_sb;
-	buffer_rllk <= (not fcs_vld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
+	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and fcs_sb;
+	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	port map (
