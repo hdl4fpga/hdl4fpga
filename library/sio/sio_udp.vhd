@@ -269,20 +269,22 @@ begin
 		signal tx_req   : std_logic_vector(0 to 1-1);
 		signal tx_gnt   : std_logic_vector(0 to 1-1);
 
-		alias tx_frm : std_logic is udppl_txen;
+		alias tx_frm   : std_logic is udppl_txen;
+		alias phyo_gnt : std_logic is ipoe_txgnt;
 	begin
 
 		gnt_e : entity hdl4fpga.arbiter
 		port map (
 			clk  => phyo_clk,
 			ena  => phyo_idle,
+			csc  => phyo_gnt,
 			req  => tx_req,
 			gnt  => tx_gnt);
 
-		tx_req <= (gnt_flow => flow_frm);
-		tx_frm <= setif(tx_gnt/=(tx_gnt'range => '0'));
-
+		tx_req    <= (gnt_flow => flow_frm);
+		tx_frm    <= setif(tx_gnt/=(tx_gnt'range => '0'));
 		flow_irdy <= tx_frm and tx_gnt(gnt_flow);
+
 	end block;
 
 	tx_b : block

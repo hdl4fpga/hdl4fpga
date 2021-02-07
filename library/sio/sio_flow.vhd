@@ -234,7 +234,7 @@ begin
 		so_data   => so_data);
 
 	tx_b : block
-		signal sioack_data : std_logic_vector(0 to 40-1);
+		signal sioack_data : std_logic_vector(0 to 9*8-1);
 		signal ack_clk    : std_logic;
 		signal ack_frm    : std_logic;
 		signal ack_irdy   : std_logic;
@@ -260,7 +260,9 @@ begin
 			end if;
 		end process;
 
-		sioack_data <= x"00" & x"02" & x"00" & x"00" & ack_txd;
+		sioack_data <= x"00" & x"06" & 
+			x"04" & x"01" & x"00" & x"01" &
+			x"00" & x"00" & ack_txd;
 		ack_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sioack_data,
