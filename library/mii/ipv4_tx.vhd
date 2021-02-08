@@ -243,10 +243,10 @@ begin
 		cksm_init => cksm_init,
 		cksm_txd  => cksmd_txd);
 
-	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and ip4_txen;
-	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto) and ip4_txen;
-	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da)) and ip4_txen;
+	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and to_stdulogic(to_bit(ip4_txen));
+	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto) and to_stdulogic(to_bit(ip4_txen));
+	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da)) and to_stdulogic(to_bit(ip4_txen));
 
-	ip4_txd <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or pllat_txen));
+	ip4_txd <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or to_stdulogic(to_bit(pllat_txen))));
 
 end;

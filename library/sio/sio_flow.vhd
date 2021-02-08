@@ -59,7 +59,7 @@ entity sio_flow is
 		phyo_idle   : in  std_logic;
 
 		phyo_clk    : in  std_logic;
-		phyo_frm    : out std_logic;
+		phyo_frm    : buffer std_logic;
 		phyo_irdy   : out std_logic;
 		phyo_trdy   : in  std_logic;
 		phyo_data   : out std_logic_vector);
@@ -77,7 +77,7 @@ architecture struct of sio_flow is
 	signal flow_frm     : std_logic;
 	signal flow_trdy    : std_logic;
 	signal flow_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE bug
-	signal flow_data    : std_logic_vector(phyi_data'range);
+	signal flow_data    : std_logic_vector(si_data'range);
 
 	signal ack_rxd      : std_logic_vector(8-1 downto 0);
 	signal ack_txd      : std_logic_vector(ack_rxd'range);
@@ -91,6 +91,10 @@ architecture struct of sio_flow is
 	signal sig_data      : std_logic_vector(8-1 downto 0);
 	signal sig_trdy      : std_logic;
 	signal sig_end       : std_logic;
+
+	signal des_irdy : std_logic_vector(0 to 0); -- Xilinx's ISE bug
+	signal des_trdy : std_logic;
+	signal des_data : std_logic_vector(si_data'range);
 
 begin
 
@@ -165,23 +169,23 @@ begin
 		ack_frm     <= sig_frm   and setif(sigrgtr_id = x"00");
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id    = x"00") and not ack_frm;
 		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
-			variable last : std_logic_vector(ack_rxd'range);
-			variable dup  : std_logic;
+			variable last : bit_vector(ack_rxd'range) := x"23";
+			variable dup  : bit;
 		begin
 			if rising_edge(phyi_clk) then
 				if fcs_sb='1' then
 					if phyi_fcsvld='1' then
-						dup  := pkt_dup;
-						last := rxd;
+						dup  := to_bit(pkt_dup);
+						last := to_bitvector(rxd);
 						ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
 					end if;
 				end if;
 			end if;
 
 			if fcs_sb='1' and phyi_fcsvld='1' then
-				pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(last),2));
+				pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(to_stdlogicvector(last)),2));
 			else
-				pkt_dup <= dup;
+				pkt_dup <= to_stdulogic(dup);
 			end if;
 			ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
 
@@ -245,7 +249,7 @@ begin
 	tx_b : block
 		signal sioack_data : std_logic_vector(0 to 9*8-1);
 		signal ack_trdy   : std_logic;
-		signal ack_data   : std_logic_vector(phyi_data'range);
+		signal ack_data   : std_logic_vector(si_data'range);
 		signal ack_end    : std_logic;
 	begin
 
@@ -274,7 +278,6 @@ begin
 
 		signal req  : std_logic_vector(0 to 2-1);
 		signal gnt  : std_logic_vector(0 to 2-1);
-		signal irdy : std_logic_vector(0 to 0); -- Xilinx's ISE bug
 
 	begin
 
@@ -287,13 +290,26 @@ begin
 			gnt  => gnt);
 
 		req       <= (gnt_flow => flow_frm, gnt_si => si_frm);
-		phyo_frm  <= setif(gnt/=(gnt'range => '0'));
-		flow_trdy <= phyo_trdy and gnt(gnt_flow);
-		si_trdy   <= phyo_trdy and gnt(gnt_si);
+		phyo_frm  <= setif(to_bitvector(req)/=(req'range => '0'));
+		flow_trdy <= des_trdy and gnt(gnt_flow);
+		si_trdy   <= des_trdy and gnt(gnt_si);
 
-		phyo_data <= wirebus(flow_data & si_data, gnt);
-		irdy <= wirebus(flow_irdy & si_irdy, gnt); -- Xilinx's ISE bug
-		phyo_irdy <= irdy(0);
+		des_data <= wirebus(flow_data & si_data, gnt);
+		des_irdy <= wirebus(flow_irdy & si_irdy, gnt); -- Xilinx's ISE bug
+
 	end block;
+
+	desser_e : entity hdl4fpga.desser
+	port map (
+		desser_clk => phyo_clk,
+
+		des_frm    => phyo_frm,
+		des_irdy   => des_irdy(0),
+		des_trdy   => des_trdy,
+		des_data   => des_data,
+
+		ser_irdy   => phyo_irdy,
+		ser_trdy   => phyo_trdy,
+		ser_data   => phyo_data);
 
 end;

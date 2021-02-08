@@ -440,7 +440,7 @@ begin
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
 		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & (dhcp_gnt or extern_gnt)); 
 		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & (dhcp_gnt or extern_gnt));
-		ip4pl_txen  <= icmp_txen or udpdhcp_txen or udp_txen;
+		ip4pl_txen  <= to_stdulogic(to_bit(icmp_txen or udpdhcp_txen or udp_txen));
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
 		ip4tx_e : entity hdl4fpga.ipv4_tx

@@ -145,8 +145,8 @@ architecture nuhs3adsp_siodebug of testbench is
 			mii_rxer : in std_logic := 'Z';
 			mii_rxd  : in std_logic_vector(0 to 4-1) := (others => 'Z');
 
-			mii_crs  : in std_logic := 'Z';
-			mii_col  : in std_logic := 'Z';
+			mii_crs  : in std_logic := '0';
+			mii_col  : in std_logic := '0';
 
 			-------------
 			-- DDR RAM --
@@ -180,6 +180,54 @@ architecture nuhs3adsp_siodebug of testbench is
 		x"00_00_00_00_00_00"    & -- arp_tha  
 		x"c0_a8_00_0e";           -- arp_tpa  
 
+	function gen_natural(
+		constant start : natural := 0;
+		constant stop  : natural;
+		constant step  : natural := 1;
+		constant size  : natural)
+		return std_logic_vector is
+		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
+	begin
+		if start < stop then
+			for i in start to stop loop
+				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
+			end loop;
+		else
+			for i in start downto stop loop
+				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
+			end loop;
+		end if;
+		return retval;
+	end;
+
+	constant payload : std_logic_vector := 
+		x"00020000" & x"23"
+--		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
+		& x"1602800000"
+		& x"170200003f";
+
+	constant packet : std_logic_vector := 
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0511"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+
+		udp_checksummed (
+			x"00000000",
+			x"ffffffff",
+			x"0044dea9"         & -- UDP Source port, Destination port
+			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
+			x"0000" &              -- UPD checksum
+			payload);
+
 	signal eth_txen : std_logic;
 	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal txfrm_ptr     : std_logic_vector(0 to 20);
@@ -197,7 +245,7 @@ begin
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(arppkt,8))
+		mem_data => reverse(packet,8))
 	port map (
 		mii_txc  => mii_rxc,
 		mii_txen => arp_req,
@@ -208,7 +256,7 @@ begin
 	begin
 
 		if rising_edge(mii_rxc) then
-			if eth_txen='0' then
+			if eth_txen='0' and mii_rxdv='0' then
 				txfrm_ptr <= (others => '0');
 			else
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);

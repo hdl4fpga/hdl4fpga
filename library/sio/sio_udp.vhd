@@ -240,8 +240,8 @@ begin
 	flow_e : entity hdl4fpga.sio_flow
 	port map (
 		phyi_clk    => mii_txc,
-		phyi_frm    => udppl_rxdv,
-		phyi_irdy   => '1',
+		phyi_frm    => txc_rxdv,
+		phyi_irdy   => udppl_rxdv,
 		phyi_data   => txc_rxd,
 		phyi_fcsvld => dllfcs_vld,
 
