@@ -233,7 +233,7 @@ begin
 		gnt => mii_gnt);
 
 	eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
-	eth_txen <= setif(mii_gnt/=(mii_gnt'range => '0')) and (arp_txen or ip4_txen);
+	eth_txen <= setif((mii_gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen))/=(mii_gnt'range => '0'));
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (

@@ -127,7 +127,6 @@ architecture struct of sio_udp is
 	signal buffer_irdy : std_logic;
 
 	signal flow_frm     : std_logic;
-	signal flow_trdy    : std_logic;
 	signal flow_irdy    : std_logic;
 	signal flow_data    : std_logic_vector(txc_rxd'range);
 
@@ -241,8 +240,6 @@ begin
 	port map (
 		phyi_clk    => mii_txc,
 		phyi_frm    => txc_rxdv,
-		phyi_irdy   => udppl_rxdv,
-		phyi_data   => txc_rxd,
 		phyi_fcsvld => dllfcs_vld,
 
 		buffer_frm  => txc_rxdv,
@@ -267,7 +264,6 @@ begin
 		phyo_clk    => mii_txc,
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
-		phyo_trdy   => flow_trdy,
 		phyo_data   => flow_data);
 
 	tx_b : block
@@ -301,10 +297,10 @@ begin
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => si_frm,
-			sin_irdy  => si_irdy,
+			sin_frm   => flow_frm,
+			sin_irdy  => flow_irdy,
 			sin_trdy  => open,
-			sin_data  => si_data,
+			sin_data  => flow_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
@@ -329,6 +325,7 @@ begin
 			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
 
+		flow_udpsptx <= my_port; 
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then

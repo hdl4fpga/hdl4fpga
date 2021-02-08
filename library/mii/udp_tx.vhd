@@ -60,18 +60,18 @@ architecture def of udp_tx is
 begin
 
 	process (udppl_txen, pllat_txen, mii_txc)
-		variable txen : std_logic := '0';
+		variable txen : bit;
 	begin
 		if rising_edge(mii_txc) then
-			if udppl_txen='1' then
+			if to_stdulogic(to_bit(udppl_txen))='1' then
 				txen := '1';
 			elsif txen='1' then
-				if pllat_txen='1' then
+				if to_stdulogic(to_bit(pllat_txen))='1' then
 					txen := '0';
 				end if;
 			end if;
 		end if;
-		udp_txen <= udppl_txen or txen or pllat_txen;
+		udp_txen <= to_stdulogic(to_bit(udppl_txen or pllat_txen) or txen);
 	end process;
 
 
