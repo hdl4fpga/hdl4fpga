@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_sio is
+entity sio_mii is
 	port (
 		mii_txc   : in  std_logic;
 		sio_pfix  : in  std_logic_vector;
@@ -15,7 +15,7 @@ entity mii_sio is
 		mii_txd   : out std_logic_vector);
 end;
 
-architecture beh of mii_sio is
+architecture beh of sio_mii is
 	signal mux_txdv : std_logic;
 	signal mux_txen : std_logic;
 	signal mux_txd  : std_logic_vector(mii_txd'range);

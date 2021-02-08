@@ -212,11 +212,11 @@ begin
 --			cga_bitrom => to_ascii("Ready Steady GO!"),
 --			timing_id  => video_tab(video_mode).mode)
 --		port map (
---			ser_clk   => sio_clk,
---			ser_frm   => '1',
---			ser_irdy  => ser_irdy,
-----			ser_data  => uart_rxd,
---			ser_data  => uart_txd,
+--			phy_clk   => sio_clk,
+--			phy_frm   => '1',
+--			phy_irdy  => ser_irdy,
+----			phy_data  => uart_rxd,
+--			phy_data  => uart_txd,
 --
 --			video_clk => video_clk, 
 --			video_dot => dot,

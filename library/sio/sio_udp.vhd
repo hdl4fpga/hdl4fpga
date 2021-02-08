@@ -195,7 +195,7 @@ begin
 			mii_ena  => udpdp_rxdv,
 			mii_equ  => myport_rcvd);
 
-		siohwsa_e : entity hdl4fpga.mii_sio
+		siohwsa_e : entity hdl4fpga.sio_mii
 		port map (
 			sio_pfix => hwsa_pfix,
 			mii_txc  => mii_txc,
@@ -204,7 +204,7 @@ begin
 			mii_txen => siohwsa_txen,
 			mii_txd  => siohwsa_txd);
 
-		sioipv4_e : entity hdl4fpga.mii_sio
+		sioipv4_e : entity hdl4fpga.sio_mii
 		port map (
 			sio_pfix => ipv4a_pfix,
 			mii_txc  => mii_txc,
@@ -213,7 +213,7 @@ begin
 			mii_txen => sioipv4a_txen,
 			mii_txd  => sioipv4a_txd);
 
-		sioipv4sa_e : entity hdl4fpga.mii_sio
+		sioipv4sa_e : entity hdl4fpga.sio_mii
 		port map (
 			sio_pfix => ipv4a_pfix,
 			mii_txc  => mii_txc,
@@ -222,7 +222,7 @@ begin
 			mii_txen => dhcpipv4a_txen,
 			mii_txd  => dhcpipv4a_txd);
 
-		sioipport_e : entity hdl4fpga.mii_sio
+		sioipport_e : entity hdl4fpga.sio_mii
 		port map (
 			sio_pfix => sp_pfix,
 			mii_txc  => mii_txc,

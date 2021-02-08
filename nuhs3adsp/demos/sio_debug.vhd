@@ -116,73 +116,36 @@ begin
 		end if;
 	end process;
 
---	mii_debug_b : block
---		constant timing_id   : videotiming_ids  := video_tab(video_mode).mode;
---		constant code_spce   : std_logic_vector := to_ascii(" ");
---		constant code_digits : std_logic_vector := to_ascii("0123456789abcdef");
---		constant cga_bitrom  : std_logic_vector := to_ascii("Ready steady, go");
---		signal debug_txen : std_logic;
---	begin
-----		debug_txen <= mii_txen and tp(1);
---		debug_txen <= tp(1);
---		mii_display_e : entity hdl4fpga.mii_display
---		generic map (
---			timing_id   => timing_id,
---			code_spce   => code_spce, 
---			code_digits => code_digits, 
---			cga_bitrom  => cga_bitrom)
---		port map (
---			mii_txc     => mii_txc,
---			mii_txen    => debug_txen,
---			mii_txd     => mii_txd,
---
---			video_clk   => video_clk,
---			video_dot   => video_dot,
---			video_on    => video_on,
---			video_hs    => video_hzsync,
---			video_vs    => video_vtsync);
---
---		video_lat_e: entity hdl4fpga.align 
---		generic map (
---			n => 3,
---			d => (0 to 3-1 => 4))
---		port map (
---			clk   => video_clk,
---			di(0) => video_hzsync,
---			di(1) => video_vtsync,
---			di(2) => video_on,
---			do(0) => hsync,
---			do(1) => vsync,
---			do(2) => blankn);
---
---		red   <= (others => video_dot);
---		green <= (others => video_dot);
---		blue  <= (others => video_dot);
---		sync  <= 'Z';
---	end block;
-
-	mii_debug_e : entity hdl4fpga.mii_debug
+	ipv4acfg_req <= not sw1;
+	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (
-		default_ipv4a => x"c0_a8_00_0e",
-		cga_bitrom => to_ascii("Ready Steady GO!"),
-		timing_id  => video_tab(video_mode).timing_id)
+		default_ipv4a => x"c0_a8_00_0e")
 	port map (
-		mii_rxc   => mii_rxc,
-		mii_rxd   => mii_rxd,
-		mii_rxdv  => mii_rxdv,
+		ipv4acfg_req => ipv4acfg_req,
 
-		mii_txc   => mii_txc,
-		dhcp_req  => dhcp_req,
-		mii_txd   => mii_txd,
-		mii_txen  => mii_txen,
-		tp => tp,
+		phy_rxc   => mii_rxc,
+		phy_rx_dv => mii_rxdv,
+		phy_rx_d  => mii_rxd,
 
-		video_clk => vga_clk, 
-		video_dot => vga_dot,
-		video_on  => vga_on,
-		video_hs  => vga_hsync,
-		video_vs  => vga_vsync);
+		phy_txc   => mii_txc,
+		phy_col   => mii_col,
+		phy_crs   => mii_crs,
+		phy_tx_en => mii_txen,
+		phy_tx_d  => mii_txd,
+		txc_rxdv  => txc_rxdv,
+	
+		sio_clk   => sio_clk,
+		si_frm    => sout_frm,
+		si_irdy   => sout_irdy,
+		si_trdy   => sout_trdy,
+		si_data   => sout_data,
 
+		so_frm  => sin_frm,
+		so_irdy => sin_irdy,
+		so_trdy => '1',
+		so_data => sin_data,
+		tp => tp(0 to 4-1));
+	
 	video_lat_e: entity hdl4fpga.align 
 	generic map (
 		n => 3,

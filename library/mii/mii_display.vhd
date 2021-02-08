@@ -43,10 +43,10 @@ entity mii_display is
 		code_digits : std_logic_vector;
 		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
 	port (
-		ser_clk     : in  std_logic;
-		ser_frm     : in  std_logic;
-		ser_irdy    : in  std_logic := '1';
-		ser_data    : in  std_logic_vector;
+		phy_clk     : in  std_logic;
+		phy_frm     : in  std_logic;
+		phy_irdy    : in  std_logic := '1';
+		phy_data    : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
 		video_dot   : out std_logic;
@@ -97,26 +97,26 @@ begin
 
 	serdes_e : entity hdl4fpga.serdes
 	port map (
-		serdes_clk => ser_clk,
-		serdes_frm => ser_frm,
-		ser_irdy   => ser_irdy,
-		ser_data   => ser_data,
+		serdes_clk => phy_clk,
+		serdes_frm => phy_frm,
+		ser_irdy   => phy_irdy,
+		ser_data   => phy_data,
 
 		des_irdy   => des_irdy,
 		des_data   => des_data);
 
-	process(ser_clk)
+	process(phy_clk)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
 		variable addr  : unsigned(cga_addr'range) := (others => '0');
 		variable we    : std_logic;
 		variable data  : unsigned(des_data'reverse_range);
 	begin
-		if rising_edge(ser_clk) then
+		if rising_edge(phy_clk) then
 			cga_addr <= std_logic_vector(addr);
-			cga_we   <= (ser_frm and des_irdy) or (not ser_frm and we);
+			cga_we   <= (phy_frm and des_irdy) or (not phy_frm and we);
 			data     := unsigned(reverse(des_data,8));
 			for i in 0 to des_data'length/digit'length-1 loop
-				if ser_frm='1' then
+				if phy_frm='1' then
 					if des_irdy='1' then
 						code(font_code'range) := word2byte(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
 					end if;
@@ -126,14 +126,14 @@ begin
 				code := std_logic_vector(unsigned(code) rol font_code'length);
 				data := data rol digit'length;
 			end loop;
-			if ser_frm='1' then
+			if phy_frm='1' then
 				if des_irdy='1' then
 					addr := addr + 1;
 				end if;
 			elsif we='1' then
 				addr := addr + 1;
 			end if;
-			we := ser_frm;
+			we := phy_frm;
 			cga_codes <= std_logic_vector(code);
 			video_base <= shift_left(resize(unsigned(cga_addr), video_base'length), video_base'length-cga_addr'length)-display_width*display_height;
 		end if;
@@ -151,7 +151,7 @@ begin
 		font_height => font_height,
 		font_width  => font_width)
 	port map (
-		cga_clk     => ser_clk,
+		cga_clk     => phy_clk,
 		cga_we      => cga_we,
 		cga_addr    => cga_addr,
 		cga_data    => cga_codes,
