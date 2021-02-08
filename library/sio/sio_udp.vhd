@@ -33,7 +33,6 @@ use hdl4fpga.ipoepkg.all;
 entity sio_udp is
 	generic (
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		my_port       : std_logic_vector(0 to 16-1) := std_logic_vector(to_unsigned(57001, 16));
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc   : in  std_logic;
@@ -62,9 +61,9 @@ entity sio_udp is
 		so_data   : out std_logic_vector;
 		tp : out std_logic_vector(1 to 4));
 
-	alias phyo_clk : std_logic is mii_txc;
 	constant phyo_idle : std_logic := '1';
 
+	constant my_port : std_logic_vector(0 to 16-1) := std_logic_vector(to_unsigned(57001, 16));
 end;
 
 architecture struct of sio_udp is
@@ -262,10 +261,10 @@ begin
 		si_trdy     => si_trdy,
 		si_data     => si_data,
 
-		phyo_idle   => phyo_idle,
+		phyo_idle   => '1',
 		phyo_gnt    => flow_gnttx,
 
-		phyo_clk    => phyo_clk,
+		phyo_clk    => mii_txc,
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
 		phyo_trdy   => flow_trdy,
@@ -304,7 +303,7 @@ begin
 			sin_clk   => sio_clk,
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
-			sin_trdy  => si_trdy,
+			sin_trdy  => open,
 			sin_data  => si_data,
 			data_frm  => data_frm,
 			data_ptr  => data_ptr,

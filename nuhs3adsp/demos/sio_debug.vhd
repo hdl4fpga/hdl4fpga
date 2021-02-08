@@ -33,7 +33,7 @@ use hdl4fpga.cgafonts.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture mii_debug of nuhs3adsp is
+architecture sio_debug of nuhs3adsp is
 
 	signal sys_clk   : std_logic;
 	signal mii_req   : std_logic;
@@ -126,7 +126,6 @@ begin
 		end if;
 	end process;
 
-	ipv4acfg_req <= not sw1;
 	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (
 		default_ipv4a => x"c0_a8_00_0e")

@@ -36,7 +36,7 @@ entity sio_flow is
 		phyi_frm    : in  std_logic;
 		phyi_irdy   : in  std_logic;
 		phyi_trdy   : out std_logic;
-		phyi_data   : buffer std_logic_vector;
+		phyi_data   : in  std_logic_vector;
 		phyi_fcsvld : in std_logic;
 
 		buffer_frm  : in std_logic;
@@ -76,7 +76,7 @@ architecture struct of sio_flow is
 	signal buffer_ovfl  : std_logic;
 	signal flow_frm     : std_logic;
 	signal flow_trdy    : std_logic;
-	signal flow_irdy    : std_logic;
+	signal flow_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE bug
 	signal flow_data    : std_logic_vector(phyi_data'range);
 
 	signal ack_rxd      : std_logic_vector(8-1 downto 0);
@@ -262,7 +262,7 @@ begin
 			so_end   => ack_end,
 			so_data  => ack_data);
 
-		flow_irdy <= wirebus(sig_trdy & ack_trdy, not ack_end & ack_end)(0);
+		flow_irdy <= wirebus(sig_trdy & ack_trdy, not ack_end & ack_end);
 		flow_data <= wirebus(sig_data & ack_data, not ack_end & ack_end);
 
 	end block;
@@ -272,8 +272,9 @@ begin
 		constant gnt_flow : natural := 0;
 		constant gnt_si   : natural := 1;
 
-		signal req : std_logic_vector(0 to 2-1);
-		signal gnt : std_logic_vector(0 to 2-1);
+		signal req  : std_logic_vector(0 to 2-1);
+		signal gnt  : std_logic_vector(0 to 2-1);
+		signal irdy : std_logic_vector(0 to 0); -- Xilinx's ISE bug
 
 	begin
 
@@ -291,8 +292,8 @@ begin
 		si_trdy   <= phyo_trdy and gnt(gnt_si);
 
 		phyo_data <= wirebus(flow_data & si_data, gnt);
-		phyo_irdy <= wirebus(flow_irdy & si_irdy, gnt)(0);
-
+		irdy <= wirebus(flow_irdy & si_irdy, gnt); -- Xilinx's ISE bug
+		phyo_irdy <= irdy(0);
 	end block;
 
 end;
