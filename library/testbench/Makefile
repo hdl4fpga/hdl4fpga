@@ -117,10 +117,6 @@ HDL4FPGA__mii_display__struct = $(LIB_HDL4FPGA)/mii_display/struct.dat
 HDL4FPGA__mii_display = $(LIB_HDL4FPGA)/mii_display/_primary.dat
 HDL4FPGA__mii_des__def = $(LIB_HDL4FPGA)/mii_des/def.dat
 HDL4FPGA__mii_des = $(LIB_HDL4FPGA)/mii_des/_primary.dat
-HDL4FPGA__mii_demosrv__def = $(LIB_HDL4FPGA)/mii_demosrv/def.dat
-HDL4FPGA__mii_demosrv = $(LIB_HDL4FPGA)/mii_demosrv/_primary.dat
-HDL4FPGA__mii_debug__struct = $(LIB_HDL4FPGA)/mii_debug/struct.dat
-HDL4FPGA__mii_debug = $(LIB_HDL4FPGA)/mii_debug/_primary.dat
 HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
 HDL4FPGA__mii_cmp = $(LIB_HDL4FPGA)/mii_cmp/_primary.dat
 HDL4FPGA__mii_1chksum__beh = $(LIB_HDL4FPGA)/mii_1chksum/beh.dat
@@ -342,10 +338,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__mii_display) \
     $(HDL4FPGA__mii_des__def) \
     $(HDL4FPGA__mii_des) \
-    $(HDL4FPGA__mii_demosrv__def) \
-    $(HDL4FPGA__mii_demosrv) \
-    $(HDL4FPGA__mii_debug__struct) \
-    $(HDL4FPGA__mii_debug) \
     $(HDL4FPGA__mii_cmp__def) \
     $(HDL4FPGA__mii_cmp) \
     $(HDL4FPGA__mii_1chksum__beh) \
@@ -1049,41 +1041,6 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_cmp.vhd
-
-$(HDL4FPGA__mii_debug) \
-$(HDL4FPGA__mii_debug__struct) : ../mii/mii_debug.vhd \
-		$(HDL4FPGA__mii_display) \
-		$(HDL4FPGA__mii_ipoe) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__mii_demosrv) \
-		$(HDL4FPGA__bcdfonts) \
-		$(HDL4FPGA__cp850x8x16x128to255) \
-		$(HDL4FPGA__cp850x8x16x0to127) \
-		$(HDL4FPGA__cp850x8x8x128to255) \
-		$(HDL4FPGA__cp850x8x8x0to127) \
-		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__modeline_calculator) \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/mii_debug.vhd
-
-$(HDL4FPGA__mii_demosrv) \
-$(HDL4FPGA__mii_demosrv__def) : ../mii/mii_demosrv.vhd \
-		$(HDL4FPGA__mii_rom) \
-		$(HDL4FPGA__mii_romcmp) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/mii_demosrv.vhd
 
 $(HDL4FPGA__mii_des) \
 $(HDL4FPGA__mii_des__def) : ../mii/mii_des.vhd \

@@ -63,8 +63,18 @@ architecture mii_debug of nuhs3adsp is
 	constant video_mode : video_modes := mode600p;
 
 	signal mii_clk  : std_logic;
-	signal dhcp_req : std_logic := '0';
 
+	signal sin_frm        : std_logic;
+	signal sin_irdy       : std_logic;
+	signal sin_data       : std_logic_vector(8-1 downto 0);
+	signal sout_frm       : std_logic;
+	signal sout_irdy      : std_logic;
+	signal sout_trdy      : std_logic;
+	signal sout_data      : std_logic_vector(8-1 downto 0);
+
+	signal txc_rxdv : std_logic;
+	signal ipv4acfg_req  : std_logic;
+	alias sio_clk : std_logic is mii_txc;
 	signal tp : std_logic_vector(1 to 4);
 begin
 
@@ -97,10 +107,10 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			dhcp_req <= not sw1;
+			ipv4acfg_req <= not sw1;
 		end if;
 	end process;
-	led7 <= dhcp_req;
+	led7 <= ipv4acfg_req;
 
 	process (mii_rxc)
 	begin
@@ -144,7 +154,7 @@ begin
 		so_irdy => sin_irdy,
 		so_trdy => '1',
 		so_data => sin_data,
-		tp => tp(0 to 4-1));
+		tp => tp(1 to 4));
 	
 	video_lat_e: entity hdl4fpga.align 
 	generic map (
