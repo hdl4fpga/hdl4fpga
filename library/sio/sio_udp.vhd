@@ -80,9 +80,9 @@ architecture struct of sio_udp is
 	signal udpdp_rxdv      : std_logic;
 	signal udppl_rxdv      : std_logic;
 
-	signal flow_reqtx      : std_logic;
-	signal flow_rdytx      : std_logic;
-	signal flow_gnttx      : std_logic;
+	signal flow_req      : std_logic;
+	signal flow_rdy      : std_logic;
+	signal flow_gnt      : std_logic;
 
 	signal flow_hwdatx     : std_logic_vector(48-1 downto 0);
 	signal flow_ipv4datx   : std_logic_vector(32-1 downto 0);
@@ -97,7 +97,6 @@ architecture struct of sio_udp is
 
 	signal usr_gnt         : std_logic;
 	signal usr_rdy         : std_logic;
-	signal usr_trdy        : std_logic;
 
 	signal dllhwsa_rxdv    : std_logic;
 	signal udpsp_rxdv      : std_logic;
@@ -128,6 +127,7 @@ architecture struct of sio_udp is
 
 	signal flow_frm     : std_logic;
 	signal flow_irdy    : std_logic;
+	signal flow_trdy    : std_logic;
 	signal flow_data    : std_logic_vector(txc_rxd'range);
 
 	signal myport_rcvd : std_logic;
@@ -157,9 +157,9 @@ begin
 		dllhwsa_rxdv   => dllhwsa_rxdv,
 		dhcpipv4a_rxdv => dhcpipv4a_rxdv,
 
-		tx_req         => flow_reqtx,
-		tx_rdy         => flow_rdytx,
-		tx_gnt         => flow_gnttx,
+		tx_req         => flow_req,
+		tx_rdy         => flow_rdy,
+		tx_gnt         => flow_gnt,
 
 		dll_rxdv       => dll_rxdv,
 		dllhwsa_rx     => dllhwsa_rx,
@@ -259,59 +259,44 @@ begin
 		si_data     => si_data,
 
 		phyo_idle   => '1',
-		phyo_gnt    => flow_gnttx,
+		phyo_gnt    => flow_gnt,
 
 		phyo_clk    => mii_txc,
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
+		phyo_trdy   => flow_trdy,
 		phyo_data   => flow_data);
 
 	tx_b : block
 
-		signal rgtr_frm     : std_logic;
 		signal rgtr_irdy    : std_logic;
 		signal rgtr_trdy    : std_logic;
 		signal rgtr_idv     : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
-		signal rgtr_lv      : std_logic;
-		signal rgtr_len     : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv      : std_logic;
-		signal rgtr_data    : std_logic_vector(32-1 downto 0);
+		signal rgtr_data    : std_logic_vector(8-1 downto 0);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
-		signal data_ptr     : std_logic_vector(8-1 downto 0);
 
 		signal sigdata_frm  : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv   : std_logic;
 		signal sigrgtr_data : std_logic_vector(48-1 downto 0);
-		signal des_frm      : std_logic;
-		signal des_data     : std_logic_vector(8-1 downto 0);
-		signal ser_irdy     : std_logic;
-		signal ser_data     : std_logic_vector(mii_rxd'range);
 
 	begin
 
-		flow_reqtx <= flow_frm;
+		flow_req <= flow_frm;
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
 			sin_frm   => flow_frm,
 			sin_irdy  => flow_irdy,
-			sin_trdy  => open,
+			sin_trdy  => flow_trdy,
 			sin_data  => flow_data,
 			data_frm  => data_frm,
-			data_ptr  => data_ptr,
 			data_irdy => data_irdy,
-			rgtr_frm  => rgtr_frm,
-			rgtr_irdy => rgtr_irdy,
-			rgtr_trdy => rgtr_trdy,
 			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
-			rgtr_lv   => rgtr_lv,
-			rgtr_len  => rgtr_len,
-			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
 		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
@@ -320,7 +305,7 @@ begin
 			sin_clk   => sio_clk,
 			sin_frm   => sigdata_frm,
 			sin_irdy  => data_irdy,
-			sin_data  => rgtr_data(so_data'range),
+			sin_data  => rgtr_data,
 			rgtr_id   => sigrgtr_id,
 			rgtr_dv   => sigrgtr_dv,
 			rgtr_data => sigrgtr_data);
@@ -345,22 +330,8 @@ begin
 			end if;
 		end process;
 
-		des_data  <= reverse(rgtr_data(des_data'range));
-		des_frm   <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
-		rgtr_trdy <= setif(des_frm='0', rgtr_frm, usr_gnt and usr_trdy);
-
-		desser_e : entity hdl4fpga.desser
-		port map (
-			desser_clk => sio_clk,
-			des_frm    => des_frm,
-			des_irdy   => rgtr_irdy,
-			des_trdy   => usr_trdy,
-			des_data   => des_data,
-			ser_irdy   => ser_irdy, 
-			ser_data   => ser_data);
-
-		tp(1) <= rgtr_idv;
-		tp(2) <= si_frm;
+		udppl_txen <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+		udppl_txd  <= reverse(rgtr_data(udppl_txd'length-1 downto 0));
 
 	end block;
 		

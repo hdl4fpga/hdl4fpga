@@ -112,13 +112,13 @@ begin
 	rx_b : block
 
 		signal rgtr_frm     : std_logic;
-		signal rgtr_irdy     : std_logic;
+		signal rgtr_irdy    : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv      : std_logic;
 		signal rgtr_data    : std_logic_vector(8-1 downto 0);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
 		signal sigsin_frm   : std_logic;
-		signal sigrgtr_data : std_logic_vector(8-1 downto 0);
 		signal sig_frm      : std_logic;
 		signal sig_irdy     : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
@@ -136,38 +136,27 @@ begin
 			sin_data  => buffer_data,
 			rgtr_frm  => rgtr_frm,
 			rgtr_id   => rgtr_id,
+			rgtr_dv   => rgtr_dv,
 			rgtr_irdy => rgtr_irdy,
 			data_frm  => data_frm,
 			data_irdy => data_irdy,
 			rgtr_data => rgtr_data);
 
 		sigram_frm  <= rgtr_frm;
+		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		sigram_data <= rgtr_data;
-		sigsin_frm  <= data_frm and setif(rgtr_id=x"00");
-		sigsin_e : entity hdl4fpga.sio_sin
-		port map (
-			sin_clk   => phyi_clk,
-			sin_frm   => sigsin_frm,
-			sin_irdy  => data_irdy,
-			sin_data  => rgtr_data,
-			data_frm  => sig_frm,
-			data_irdy => sig_irdy,
-			rgtr_id   => sigrgtr_id,
-			rgtr_dv   => sigrgtr_dv,
-			rgtr_data => sigrgtr_data);
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
 		generic map (
-			rid  => x"00")
+			rid  => x"01")
 		port map (
 			rgtr_clk  => phyi_clk,
-			rgtr_id   => sigrgtr_id,
-			rgtr_dv   => sigrgtr_dv,
-			rgtr_data => sigrgtr_data,
+			rgtr_id   => rgtr_id,
+			rgtr_dv   => rgtr_dv,
+			rgtr_data => rgtr_data,
 			dv        => ack_rxdv,
 			data      => rxd);
 
-		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
 			variable last : bit_vector(ack_rxd'range) := x"23";
 			variable dup  : bit;
@@ -248,9 +237,10 @@ begin
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
 
-	sioack_data <= x"00" & x"06" & 
-		x"04" & x"01" & x"00" & x"01" &
-		x"00" & x"00" & ack_txd;
+	sioack_data <= 
+		x"00" & x"03" & x"04" & x"01" & x"00" & x"01" &
+		x"01" & x"00" & ack_txd;
+
 	ack_irdy <= sig_end and flow_trdy;
 	ack_e : entity hdl4fpga.sio_mux
 	port map (

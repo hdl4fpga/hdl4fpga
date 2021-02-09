@@ -201,7 +201,7 @@ architecture nuhs3adsp_siodebug of testbench is
 	end;
 
 	constant payload : std_logic_vector := 
-		x"00020000" & x"23"
+		x"0100" & x"23"
 --		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
