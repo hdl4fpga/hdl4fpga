@@ -119,10 +119,7 @@ architecture struct of sio_udp is
 	signal dhcpipv4a_txen  : std_logic;
 	signal dhcpipv4a_txd   : std_logic_vector(mii_rxd'range);
 
-	signal buffer_cmmt   : std_logic;
-	signal buffer_rllk   : std_logic;
-	signal buffer_ovfl : std_logic;
-	signal buffer_data : std_logic_vector(txc_rxd'length-1 downto 0);
+	signal buffer_data : std_logic_vector(txc_rxd'range);
 	signal buffer_irdy : std_logic;
 
 	signal flow_frm     : std_logic;
@@ -230,9 +227,9 @@ begin
 			mii_txd  => siosp_txd);
 
 		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
-		buffer_data <= reverse(wirebus(
+		buffer_data <= wirebus(
 			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
-			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv));
+			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
 
 	end block;
 
@@ -273,14 +270,15 @@ begin
 		signal rgtr_trdy    : std_logic;
 		signal rgtr_idv     : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
-		signal rgtr_data    : std_logic_vector(flow_data'range);
+		signal rgtr_data    : std_logic_vector(txc_rxd'range);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
 
 		signal sigdata_frm  : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv   : std_logic;
-		signal sigrgtr_data : std_logic_vector(48-1 downto 0);
+		signal sigrgtr_data : std_logic_vector(0 to 48-1);
+		alias  sig_data     : std_logic_vector(sigrgtr_data'reverse_range) is sigrgtr_data;
 
 	begin
 
@@ -317,21 +315,44 @@ begin
 				if sigrgtr_dv='1' then
 					case sigrgtr_id is
 					when x"01" =>
-						flow_hwdatx   <= sigrgtr_data(flow_hwdatx'range);
+						flow_hwdatx   <= reverse(sig_data(flow_hwdatx'range),8);
 					when x"02" =>
-						flow_ipv4datx <= sigrgtr_data(flow_ipv4datx'range);
+						flow_ipv4datx <= reverse(sig_data(flow_ipv4datx'range),8);
 					when x"03" =>
-						flow_udpdptx  <= sigrgtr_data(flow_udpdptx'range);
+						flow_udpdptx  <= reverse(sig_data(flow_udpdptx'range),8);
 					when x"04" =>
-						flow_udplentx <= sigrgtr_data(flow_udplentx'range);
+						flow_udplentx <= reverse(sig_data(flow_udplentx'range),8);
 					when others =>
 					end case;
 				end if;
 			end if;
 		end process;
 
-		udppl_txen <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
-		udppl_txd  <= reverse(rgtr_data(udppl_txd'range));
+		xxx_b : block 
+			signal txen : std_logic;
+		begin
+
+			latdat_e : entity hdl4fpga.align 
+			generic map (
+				n => rgtr_data'length,
+				d => (0 to rgtr_data'length-1 => 2))
+			port map (
+				clk => sio_clk,
+				di  => rgtr_data,
+				do  => udppl_txd);
+
+			latena_e : entity hdl4fpga.align 
+			generic map (
+				n => 1,
+				d => (0 to 0 => 1))
+			port map (
+				clk   => sio_clk,
+				di(0) => txen,
+				do(0) => udppl_txen);
+
+			udppl_txen <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+
+		end block;
 
 	end block;
 		

@@ -71,7 +71,7 @@ begin
 					case stt is
 					when s_id =>
 						ptr := (others => '0');
-						rid := des8_data;
+						rid := setif(rid'ascending, des8_data, reverse(des8_data));
 						len := (others => '0');
 						idv := '1';
 						lv  := '0';
@@ -79,7 +79,7 @@ begin
 						stt <= s_size;
 					when s_size =>
 						ptr := (others => '0');
-						len := resize(unsigned(des8_data), len'length);
+						len := resize(unsigned(setif(rid'ascending, des8_data, reverse(des8_data))), len'length);
 						idv := '1';
 						lv  := '1';
 						dv  := '0';
@@ -105,7 +105,7 @@ begin
 				rgtr_dv   <= des8_irdy and len(0);
 
 				rgtr_idv  <= idv;
-				rgtr_id   <= rid(rgtr_id'length-1 downto 0);
+				rgtr_id   <= rid;
 				rgtr_lv   <= lv;
 				rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
 
@@ -127,11 +127,7 @@ begin
 					end if;
 				end if;
 
---				if des8_irdy='1' then
---					data := data sll des8_data'length;
---					data(des8_data'range) := unsigned(des8_data);
---				end if;
-				rgtr_data <= std_logic_vector(data);
+				rgtr_data <= setif(rgtr_data'ascending=sin_data'ascending, std_logic_vector(data), reverse(std_logic_vector(data)));
 
 				data_ptr  <= std_logic_vector(ptr);
 			end if;

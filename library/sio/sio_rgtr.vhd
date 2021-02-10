@@ -35,7 +35,7 @@ entity sio_rgtr is
 	port (
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
-		rgtr_id   : in  std_logic_vector(8-1 downto 0);
+		rgtr_id   : in  std_logic_vector;
 		rgtr_data : in  std_logic_vector;
 
 		ena       : buffer std_logic;
@@ -48,7 +48,13 @@ architecture def of sio_rgtr is
 
 begin
 
-	ena <= setif(rgtr_id=rid, rgtr_dv);
+	assert rgtr_id'length=rid'length
+	report "Length of rgtr_id must be " & natural'image(rid'length) & " long"
+	severity FAILURE;
+
+	ena <= 
+	  setif(rgtr_id=reverse(rid), rgtr_dv) when rgtr_id'ascending else
+	  setif(rgtr_id=rid, rgtr_dv);
 
 	dv_p : process (rgtr_clk)
 	begin

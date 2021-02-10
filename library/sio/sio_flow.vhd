@@ -115,7 +115,7 @@ begin
 		signal rgtr_irdy    : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv      : std_logic;
-		signal rgtr_data    : std_logic_vector(8-1 downto 0);
+		signal rgtr_data    : std_logic_vector(0 to 8-1);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
 		signal sigsin_frm   : std_logic;
@@ -123,7 +123,7 @@ begin
 		signal sig_irdy     : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv   : std_logic;
-		signal rxd          : std_logic_vector(8-1 downto 0);
+		signal rxd          : std_logic_vector(0 to 8-1);
 
 	begin
 
@@ -165,18 +165,17 @@ begin
 				if fcs_sb='1' then
 					if phyi_fcsvld='1' then
 						dup  := to_bit(pkt_dup);
-						last := to_bitvector(rxd);
-						ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
+						last := to_bitvector(reverse(rxd));
 					end if;
 				end if;
 			end if;
 
 			if fcs_sb='1' and phyi_fcsvld='1' then
-				pkt_dup <= setif(shift_left(unsigned(rxd),2)=shift_left(unsigned(to_stdlogicvector(last)),2));
+				pkt_dup <= setif(shift_left(unsigned(reverse(rxd)),2)=shift_left(unsigned(to_stdlogicvector(last)),2));
 			else
 				pkt_dup <= to_stdulogic(dup);
 			end if;
-			ack_rxd <= rxd or (pkt_dup & (0 to 7-1 => '0'));
+			ack_rxd <= reverse(rxd) or (pkt_dup & (0 to 7-1 => '0'));
 
 		end process;
 
@@ -237,9 +236,9 @@ begin
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
 
-	sioack_data <= 
+	sioack_data <= reverse(
 		x"00" & x"03" & x"04" & x"01" & x"00" & x"01" &
-		x"01" & x"00" & ack_txd;
+		x"01" & x"00" & ack_txd, 8);
 
 	ack_irdy <= sig_end and flow_trdy;
 	ack_e : entity hdl4fpga.sio_mux
