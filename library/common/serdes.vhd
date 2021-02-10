@@ -45,32 +45,44 @@ begin
 	end process;
 
 	process (ser_data, serdes_clk)
+		function xxx (
+			constant des_data : unsigned;
+			constant ser_data : std_logic_vector)
+			return unsigned is
+			variable des : unsigned(des_data'range);
+		begin
+			des := des_data;
+			if des_data'ascending=ser_data'ascending then
+				des(ser_data'range) := unsigned(ser_data);
+				if ser_data'ascending then
+					des := des rol ser_data'length;
+				else
+					des := des ror ser_data'length;
+				end if;
+			else
+				if ser_data'ascending then
+					des := des rol ser_data'length;
+				else
+					des := des ror ser_data'length;
+				end if;
+				des(ser_data'reverse_range) := unsigned(ser_data);
+			end if;
+			return des;
+		end;
+
 		variable des : unsigned(des_data'range);
+
 	begin
+
 		if rising_edge(serdes_clk) then
 			if serdes_frm='1' then
 				if ser_irdy='1' then
-					if des_data'ascending /= ser_data'ascending then
-						des(ser_data'reverse_range) := unsigned(ser_data);
-					else
-						des(ser_data'range) := unsigned(ser_data);
-					end if;
-					if des_data'ascending then
-						des := des ror ser_data'length;
-					else
-						des := des rol ser_data'length;
-					end if;
+					des := xxx(des, ser_data);
 				end if;
 			end if;
 		end if;
 
-		if des_data'ascending /= ser_data'ascending then
-			des(ser_data'reverse_range) := unsigned(ser_data);
-			des_data <= reverse(std_logic_vector(des), des_data'length);
-		else
-			des(ser_data'range) := unsigned(ser_data);
-			des_data <= std_logic_vector(des);
-		end if;
+		des_data <= std_logic_vector(xxx(des, ser_data));
 
 	end process;
 

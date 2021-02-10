@@ -122,13 +122,13 @@ architecture struct of sio_udp is
 	signal buffer_cmmt   : std_logic;
 	signal buffer_rllk   : std_logic;
 	signal buffer_ovfl : std_logic;
-	signal buffer_data : std_logic_vector(mii_rxd'range);
+	signal buffer_data : std_logic_vector(txc_rxd'length-1 downto 0);
 	signal buffer_irdy : std_logic;
 
 	signal flow_frm     : std_logic;
 	signal flow_irdy    : std_logic;
 	signal flow_trdy    : std_logic;
-	signal flow_data    : std_logic_vector(txc_rxd'range);
+	signal flow_data    : std_logic_vector(0 to 8-1);
 
 	signal myport_rcvd : std_logic;
 
@@ -230,9 +230,9 @@ begin
 			mii_txd  => siosp_txd);
 
 		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
-		buffer_data <= wirebus(
+		buffer_data <= reverse(wirebus(
 			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
-			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
+			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv));
 
 	end block;
 
@@ -273,7 +273,7 @@ begin
 		signal rgtr_trdy    : std_logic;
 		signal rgtr_idv     : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
-		signal rgtr_data    : std_logic_vector(8-1 downto 0);
+		signal rgtr_data    : std_logic_vector(flow_data'range);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
 
@@ -331,7 +331,7 @@ begin
 		end process;
 
 		udppl_txen <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
-		udppl_txd  <= reverse(rgtr_data(udppl_txd'length-1 downto 0));
+		udppl_txd  <= reverse(rgtr_data(udppl_txd'range));
 
 	end block;
 		

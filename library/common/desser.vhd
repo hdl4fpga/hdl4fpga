@@ -29,7 +29,7 @@ architecture mux of desser is
 
 begin
 
-	assert des_data'length/ser_data'length=2**mux_length
+	assert des_data'length/ser_data'length=2**mux_length or des_data'length=ser_data'length 
 	report "Length of des_data is not a multiple of power of 2 of length of ser_data"
 	severity FAILURE;
 
@@ -53,7 +53,10 @@ begin
 		end if;
 	end process;
 
-	ser_data <= word2byte(std_logic_vector(rotate_right(unsigned(des_data), ser_data'length)), mux_sel);
+	ser_data <= 
+	   des_data when des_data'length=ser_data'length else
+	   word2byte(std_logic_vector(rotate_right(unsigned(des_data), ser_data'length)), mux_sel) when     des_data'ascending else
+	   word2byte(std_logic_vector(rotate_right(unsigned(reverse(reverse(des_data),ser_data'length)), ser_data'length)), mux_sel) when not des_data'ascending;
 
 	ser_irdy <= des_frm  and des_irdy;
 	des_trdy <= ser_trdy and mux_ena;

@@ -30,7 +30,6 @@ end;
 
 architecture beh of sio_sin is
 
-	signal ser_data  : std_logic_vector(sin_data'range);
 	signal des8_irdy : std_logic;
 	signal des8_data : std_logic_vector(rgtr_id'range);
 
@@ -52,7 +51,7 @@ begin
 	process (sin_clk)
 		variable rid  : std_logic_vector(rgtr_id'range);
 		variable len  : unsigned(0 to rgtr_id'length);
-		variable data : unsigned(rgtr_data'length-1 downto 0);
+		variable data : unsigned(rgtr_data'range);
 		variable ptr  : unsigned(rgtr_id'range);
 		variable idv  : std_logic;
 		variable lv   : std_logic;
@@ -98,8 +97,6 @@ begin
 						dv  := '1';
 					end case;
 
-					data := data sll des8_data'length;
-					data(des8_data'range) := unsigned(des8_data);
 				end if;
 				rgtr_frm  <= to_stdulogic(to_bit(sin_frm));
 				data_frm  <= setif(stt=s_data);
@@ -111,6 +108,29 @@ begin
 				rgtr_id   <= rid(rgtr_id'length-1 downto 0);
 				rgtr_lv   <= lv;
 				rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
+
+				if sin_irdy='1' then
+					if sin_data'ascending=data'ascending then
+						data(sin_data'range) := unsigned(sin_data);
+						if sin_data'ascending then
+							data := data rol sin_data'length;
+						else
+							data := data ror sin_data'length;
+						end if;
+					else
+						if sin_data'ascending then
+							data := data rol sin_data'length;
+						else
+							data := data ror sin_data'length;
+						end if;
+						data(sin_data'reverse_range) := unsigned(sin_data);
+					end if;
+				end if;
+
+--				if des8_irdy='1' then
+--					data := data sll des8_data'length;
+--					data(des8_data'range) := unsigned(des8_data);
+--				end if;
 				rgtr_data <= std_logic_vector(data);
 
 				data_ptr  <= std_logic_vector(ptr);

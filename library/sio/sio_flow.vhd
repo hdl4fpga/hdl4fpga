@@ -278,7 +278,7 @@ begin
 		flow_irdy <= wirebus(sig_trdy & ack_trdy, not sig_end & sig_end)(0) and gnt(gnt_flow);
 		flow_data <= wirebus(sig_data & ack_data, not sig_end & sig_end);
 
-		des_data <= reverse(wirebus(flow_data & si_data, gnt), phyo_data'length);
+		des_data <= wirebus(flow_data & si_data, gnt);
 		des_irdy <= wirebus(flow_irdy & si_irdy, gnt); -- Xilinx's ISE bug
 
 	end block;
