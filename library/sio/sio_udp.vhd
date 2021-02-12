@@ -125,7 +125,7 @@ architecture struct of sio_udp is
 	signal flow_frm     : std_logic;
 	signal flow_irdy    : std_logic;
 	signal flow_trdy    : std_logic;
-	signal flow_data    : std_logic_vector(0 to 8-1);
+	signal flow_data    : std_logic_vector(txc_rxd'range);
 
 	signal myport_rcvd : std_logic;
 
@@ -256,7 +256,7 @@ begin
 		si_data     => si_data,
 
 		phyo_idle   => '1',
-		phyo_gnt    => flow_gnt,
+		phyo_gnt    => '1',
 
 		phyo_clk    => mii_txc,
 		phyo_frm    => flow_frm,
@@ -266,13 +266,14 @@ begin
 
 	tx_b : block
 
-		signal rgtr_irdy    : std_logic;
 		signal rgtr_trdy    : std_logic;
 		signal rgtr_idv     : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_frm     : std_logic;
 		signal rgtr_data    : std_logic_vector(txc_rxd'range);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
+		signal sout_irdy    : std_logic;
 
 		signal sigdata_frm  : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
@@ -280,9 +281,9 @@ begin
 		signal sigrgtr_data : std_logic_vector(0 to 48-1);
 		alias  sig_data     : std_logic_vector(sigrgtr_data'reverse_range) is sigrgtr_data;
 
-	begin
+		signal lat_frm  : std_logic;
 
-		flow_req <= flow_frm;
+	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -293,66 +294,70 @@ begin
 			sin_data  => flow_data,
 			data_frm  => data_frm,
 			data_irdy => data_irdy,
+			sout_irdy => sout_irdy,
+			rgtr_frm  => rgtr_frm,
 			rgtr_idv  => rgtr_idv,
+			rgtr_trdy => rgtr_trdy,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
 
-		sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
-		sig_e : entity hdl4fpga.sio_sin
-		port map (
-			sin_clk   => sio_clk,
-			sin_frm   => sigdata_frm,
-			sin_irdy  => data_irdy,
-			sin_data  => rgtr_data,
-			rgtr_id   => sigrgtr_id,
-			rgtr_dv   => sigrgtr_dv,
-			rgtr_data => sigrgtr_data);
-
-		flow_udpsptx <= my_port; 
-		process(sio_clk)
+		sig_b : block
 		begin
-			if rising_edge(sio_clk) then
-				if sigrgtr_dv='1' then
-					case sigrgtr_id is
-					when x"01" =>
-						flow_hwdatx   <= reverse(sig_data(flow_hwdatx'range),8);
-					when x"02" =>
-						flow_ipv4datx <= reverse(sig_data(flow_ipv4datx'range),8);
-					when x"03" =>
-						flow_udpdptx  <= reverse(sig_data(flow_udpdptx'range),8);
-					when x"04" =>
-						flow_udplentx <= reverse(sig_data(flow_udplentx'range),8);
-					when others =>
-					end case;
+
+			sigdata_frm <= data_frm and setif(rgtr_id=x"00"); 
+			sig_e : entity hdl4fpga.sio_sin
+			port map (
+				sin_clk   => sio_clk,
+				sin_frm   => sigdata_frm,
+				sin_irdy  => sout_irdy,
+				sin_data  => rgtr_data,
+				rgtr_id   => sigrgtr_id,
+				rgtr_dv   => sigrgtr_dv,
+				rgtr_data => sigrgtr_data);
+
+			flow_udpsptx <= my_port; 
+			process(sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if sigrgtr_dv='1' then
+						case sigrgtr_id is
+						when x"01" =>
+							flow_hwdatx   <= reverse(sig_data(flow_hwdatx'range),8);
+						when x"02" =>
+							flow_ipv4datx <= reverse(sig_data(flow_ipv4datx'range),8);
+						when x"03" =>
+							flow_udpdptx  <= reverse(sig_data(flow_udpdptx'range),8);
+						when x"04" =>
+							flow_udplentx <= reverse(sig_data(flow_udplentx'range),8);
+						when others =>
+						end case;
+					end if;
 				end if;
-			end if;
-		end process;
-
-		xxx_b : block 
-			signal txen : std_logic;
-		begin
-
-			latdat_e : entity hdl4fpga.align 
-			generic map (
-				n => rgtr_data'length,
-				d => (0 to rgtr_data'length-1 => 2))
-			port map (
-				clk => sio_clk,
-				di  => rgtr_data,
-				do  => udppl_txd);
-
-			latena_e : entity hdl4fpga.align 
-			generic map (
-				n => 1,
-				d => (0 to 0 => 1))
-			port map (
-				clk   => sio_clk,
-				di(0) => txen,
-				do(0) => udppl_txen);
-
-			udppl_txen <= rgtr_idv and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
-
+			end process;
 		end block;
+
+		latfrm_e : entity hdl4fpga.align 
+		generic map (
+			n => 1,
+			d => (0 to 0 => rgtr_id'length/flow_data'length-1))
+		port map (
+			clk => sio_clk,
+			di(0)  => rgtr_frm,
+			do(0)  => lat_frm);
+		flow_req <= lat_frm and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+
+		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
+		latdat_e : entity hdl4fpga.align 
+		generic map (
+			n => rgtr_data'length,
+			d => (0 to rgtr_data'length-1 => rgtr_id'length/flow_data'length-1))
+		port map (
+			clk => sio_clk,
+			ena => rgtr_trdy,
+			di  => rgtr_data,
+			do  => udppl_txd);
+
+		udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
 
 	end block;
 		

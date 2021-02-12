@@ -204,7 +204,8 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_gnt=(mii_gnt'range => '0') then
+--			if mii_gnt=(mii_gnt'range => '0') then
+			if mii_txen='0' then
 				txfrm_ptr <= (others => '0');
 			elsif txfrm_ptr(0)='0' then
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
@@ -212,25 +213,44 @@ begin
 		end if;
 	end process;
 
-	process(mii_gnt, mii_txc)
-		variable cntr : unsigned(0 to 4) := (others => '0');
+
+
+	arbiter_b : block
+
+		signal req : std_logic_vector(mii_req'range);
+		signal gnt : std_logic_vector(mii_req'range);
+		signal ena : std_logic;
+
 	begin
-		if rising_edge(mii_txc) then
-			if mii_txen='1' or mii_col='1' or mii_crs='1' then
-				cntr := (others => '0');
-			elsif cntr(0)='0' then
-				cntr := cntr + 1;
+
+		process (mii_req, mii_txen, gnt, mii_txc)
+			variable q : std_logic_vector(mii_req'range);
+			variable cntr : std_logic_vector(0 to 4);
+		begin
+			if rising_edge(mii_txc) then
+				if mii_txen='0' then
+					q := mii_req;
+					if cntr(0)='0' then
+						cntr := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(cntr))) + 1);
+					end if;
+				else
+					cntr := (others => '0');
+				end if;
 			end if;
-		end if;
-		mii_rdy <= mii_gnt and (mii_gnt'range => cntr(0) and not (mii_txen or mii_col or mii_crs));
-	end process;
+			ena <= cntr(0);
+			req     <= mii_req or (q and (q'range => mii_txen));
+			mii_gnt <=     gnt and (gnt'range => cntr(0) or mii_txen);
+		end process;
 
+		miignt_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_txc,
+			req => req,
+			gnt => gnt);
 
-	miignt_e : entity hdl4fpga.arbiter
-	port map (
-		clk => mii_txc,
-		req => mii_req,
-		gnt => mii_gnt);
+		mii_rdy <= gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
+
+	end block;
 
 	eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
 	eth_txen <= setif((mii_gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen))/=(mii_gnt'range => '0'));

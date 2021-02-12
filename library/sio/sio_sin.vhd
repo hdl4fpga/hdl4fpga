@@ -15,6 +15,7 @@ entity sio_sin is
 		
 		data_frm  : out std_logic;
 		data_irdy : out std_logic;
+		sout_irdy : out std_logic;
 		data_ptr  : out std_logic_vector(8-1 downto 0);
 
 		rgtr_frm  : out std_logic;
@@ -61,7 +62,6 @@ begin
 			if rgtr_trdy='1' or to_stdulogic(to_bit(rgtr_irdy))='0' then
 				if sin_frm='0' then
 					ptr := (others => '0');
-					rid := (others => '-');
 					len := (others => '0');
 					idv := '0';
 					lv  := '0';
@@ -101,6 +101,7 @@ begin
 				rgtr_frm  <= to_stdulogic(to_bit(sin_frm));
 				data_frm  <= setif(stt=s_data);
 				rgtr_irdy <= des8_irdy;
+				sout_irdy <= sin_irdy;
 				data_irdy <= des8_irdy and setif(stt=s_data);
 				rgtr_dv   <= des8_irdy and len(0);
 
