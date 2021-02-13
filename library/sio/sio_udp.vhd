@@ -255,9 +255,6 @@ begin
 		si_trdy     => si_trdy,
 		si_data     => si_data,
 
-		phyo_idle   => '1',
-		phyo_gnt    => '1',
-
 		phyo_clk    => mii_txc,
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,

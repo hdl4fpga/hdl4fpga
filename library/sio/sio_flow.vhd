@@ -53,9 +53,6 @@ entity sio_flow is
 		si_trdy     : out std_logic;
 		si_data     : in  std_logic_vector;
 
-		phyo_gnt    : in  std_logic;
-		phyo_idle   : in  std_logic;
-
 		phyo_clk    : in  std_logic;
 		phyo_frm    : buffer std_logic;
 		phyo_irdy   : out std_logic;
@@ -265,7 +262,6 @@ begin
 		port map (
 			clk  => phyo_clk,
 			ena  => phyo_idle,
-			csc  => phyo_gnt,
 			req  => req,
 			gnt  => gnt);
 
