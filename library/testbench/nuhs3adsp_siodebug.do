@@ -3,8 +3,8 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/mii_rxc
 add wave -noupdate /testbench/du_e/mii_rxdv
 add wave -noupdate -radix hexadecimal /testbench/du_e/mii_rxd
-add wave -noupdate /testbench/du_e/mii_txc
 add wave -noupdate /testbench/du_e/mii_txen
+add wave -noupdate /testbench/du_e/mii_txc
 add wave -noupdate -radix hexadecimal /testbench/du_e/mii_txd
 add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/dllfcs_vld
 add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/flow_e/buffer_cmmt
@@ -26,9 +26,19 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/udpdaisy_e/sioudpp_e/flow_
 add wave -noupdate -radix hexadecimal /testbench/du_e/udpdaisy_e/sioudpp_e/flow_udpsptx
 add wave -noupdate -radix hexadecimal /testbench/du_e/udpdaisy_e/sioudpp_e/flow_udplentx
 add wave -noupdate -expand /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/mii_rdy
-add wave -noupdate -expand /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/gnt
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/ena
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/req
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/miignt_e/gnt(2)
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/req(2)
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/line__226/cntr
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/mii_rdy(2)
+add wave -noupdate /testbench/du_e/mii_txen
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/line__226/q
+add wave -noupdate /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/miignt_e/req(2)
+add wave -noupdate -expand /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/miignt_e/gnt
+add wave -noupdate -expand /testbench/du_e/udpdaisy_e/sioudpp_e/mii_ipoe_e/arbiter_b/miignt_e/req
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1115005000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {25395005000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 165
@@ -44,4 +54,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {42 us}
+WaveRestoreZoom {24968442500 fs} {25821567500 fs}
