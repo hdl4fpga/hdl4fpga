@@ -53,6 +53,8 @@ entity sio_flow is
 		si_trdy     : out std_logic;
 		si_data     : in  std_logic_vector;
 
+        phyo_idle   : in  std_logic := '1';
+		
 		phyo_clk    : in  std_logic;
 		phyo_frm    : buffer std_logic;
 		phyo_irdy   : out std_logic;
@@ -71,7 +73,7 @@ architecture struct of sio_flow is
 	signal buffer_ovfl  : std_logic;
 	signal flow_frm     : std_logic;
 	signal flow_trdy    : std_logic;
-	signal flow_irdy    : std_logic; --_vector(0 to 0); -- Xilinx's ISE bug
+	signal flow_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE bug
 	signal flow_data    : std_logic_vector(si_data'range);
 
 	signal ack_rxd      : std_logic_vector(8-1 downto 0);
@@ -270,11 +272,11 @@ begin
 		flow_trdy <= des_trdy and gnt(gnt_flow);
 		si_trdy   <= des_trdy and gnt(gnt_si);
 
-		flow_irdy <= wirebus(sig_trdy & ack_trdy, not sig_end & sig_end)(0) and gnt(gnt_flow);
+		flow_irdy <= wirebus(sig_trdy & ack_trdy, not sig_end & sig_end) and gnt(gnt_flow to gnt_flow);
 		flow_data <= wirebus(sig_data & ack_data, not sig_end & sig_end);
 
 		des_data <= wirebus(flow_data & si_data, gnt);
-		des_irdy <= wirebus(flow_irdy & si_irdy, gnt); -- Xilinx's ISE bug
+		des_irdy <= wirebus(flow_irdy(0) & si_irdy, gnt); -- Xilinx's ISE bug
 
 	end block;
 

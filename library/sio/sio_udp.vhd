@@ -279,7 +279,8 @@ begin
 		alias  sig_data     : std_logic_vector(sigrgtr_data'reverse_range) is sigrgtr_data;
 
 		signal lat_frm  : std_logic;
-
+		constant xxx : natural := rgtr_id'length/flow_data'length;
+		constant xxx1 : natural := rgtr_data'length;
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -336,7 +337,7 @@ begin
 		latfrm_e : entity hdl4fpga.align 
 		generic map (
 			n => 1,
-			d => (0 to 0 => rgtr_id'length/flow_data'length-1))
+			d => (0 to 0 => xxx-1))
 		port map (
 			clk => sio_clk,
 			di(0)  => rgtr_frm,
@@ -346,8 +347,8 @@ begin
 		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
 		latdat_e : entity hdl4fpga.align 
 		generic map (
-			n => rgtr_data'length,
-			d => (0 to rgtr_data'length-1 => rgtr_id'length/flow_data'length-1))
+			n => xxx1,
+			d => (0 to xxx1-1 => xxx-1))
 		port map (
 			clk => sio_clk,
 			ena => rgtr_trdy,
