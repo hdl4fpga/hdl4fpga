@@ -213,42 +213,43 @@ begin
 	end process;
 
 
---					if to_stdlogicvector(to_bitvector(mii_req and mii_gnt))=(mii_req'range => '0') then
---						req := (others => '0');
-
 	arbiter_b : block
-
 		signal req : std_logic_vector(mii_req'range);
-		signal ena : std_logic;
-
 	begin
 
 		process (mii_req, mii_txen, mii_txc)
 			variable q    : std_logic_vector(mii_req'range);
 			variable cntr : std_logic_vector(0 to 4);
+			variable ena  : std_logic;
 		begin
 			if rising_edge(mii_txc) then
-				if to_bit(ena)='0' then
-					q := mii_req;
-				end if;
 				if mii_txen='1' then
 					cntr := (others => '0');
-				elsif cntr(0)='0' then
+				elsif to_bit(cntr(0))='0' then
 					cntr := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(cntr))) + 1);
 				end if;
+
+				if to_bit(cntr(0))='1' then
+					ena := '1';
+				elsif to_bitvector(mii_gnt)=(mii_gnt'range => '0') then
+					ena := '0';
+				end if;
+
+				if to_bit(mii_txen)='0' then
+					q := mii_req and (q'range => mii_txen);
+				end if;
 			end if;
-			ena <= mii_txen or not cntr(0);
-			req <= mii_req or (q and (q'range => ena));
+
+			req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));
 		end process;
 
-		miignt_e : entity hdl4fpga.arbiter
+		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => mii_txc,
 			req => req,
 			gnt => mii_gnt);
 
---		mii_rdy <= mii_gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
-		mii_rdy <= mii_gnt and (mii_gnt'range => not (ena or mii_col or mii_crs));
+		mii_rdy <= mii_gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
 
 	end block;
 
