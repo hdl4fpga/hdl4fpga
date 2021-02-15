@@ -54,8 +54,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 10; --25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1; --3;
+	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 3;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -158,7 +158,7 @@ architecture graphics of nuhs3adsp is
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;
-	alias ctlr_clks : std_logic_vector is ddrsys_clks;
+	alias ctlr_clks : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
@@ -351,13 +351,13 @@ begin
 		phy_dqt     => ctlrphy_dqt,
 		phy_dqo     => ctlrphy_dqi,
 		phy_odt     => ctlrphy_odt,
-		phy_sti     => ctlrphy_sti,
-		phy_sto     => ctlrphy_sto,
+		phy_sti     => ctlrphy_sto,
+		phy_sto     => ctlrphy_sti,
 
-		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => ddr_st_dqs_open,
-		ddr_sti(0) => ddr_st_lp_dqs,
-		ddr_sti(1) => ddr_st_lp_dqs,
+		ddr_sto(0)  => ddr_st_dqs,
+		ddr_sto(1)  => ddr_st_dqs_open,
+		ddr_sti(0)  => ddr_st_lp_dqs,
+		ddr_sti(1)  => ddr_st_lp_dqs,
 		ddr_clk     => ddr_clk,
 		ddr_cke     => ddr_cke,
 		ddr_cs      => ddr_cs,
@@ -426,10 +426,10 @@ begin
 	-- LEDs --
 	----------
 		
---	led18 <= '0';
---	led16 <= '0';
---	led15 <= '0';
---	led13 <= '0';
+	led18 <= '0';
+	led16 <= '0';
+	led15 <= '0';
+	led13 <= '0';
 	led11 <= '0';
 	led9  <= txc_rxdv ;
 	led8  <= tp(2);

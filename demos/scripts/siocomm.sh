@@ -21,4 +21,12 @@ if [ "$HOST" == "" ] ; then
 	else
 		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc ${STDOUT} ${@}")
 	fi
+else
+	if [ "${PKMODE}" == "" ] ; then
+		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@} -p")
+	elif [ "${PKMODE}" == "PKT" ] ; then
+		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@} -p")
+	else
+		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@}")
+	fi
 fi

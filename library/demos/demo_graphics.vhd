@@ -564,6 +564,8 @@ begin
 
 		signal ctlrvideo_irdy : std_logic;
 
+		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complain
+
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -591,7 +593,7 @@ begin
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => 0))
+			d => (0 to 0 => 1))
 		port map (
 			clk   => ctlr_clk,
 			di(0) => ctlrvideo_irdy,
@@ -600,7 +602,7 @@ begin
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => 0))
+			d => (0 to ctlr_do'length-1 => 1))
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,
@@ -629,8 +631,8 @@ begin
 
 		topixel_e : entity hdl4fpga.align
 		generic map (
-			n => pixel'length,
-			d => (0 to pixel'length-1 => sync_lat))
+			n => pixel_width,
+			d => (0 to pixel_width => sync_lat))
 		port map (
 			clk => video_clk,
 			di  => pixel,
