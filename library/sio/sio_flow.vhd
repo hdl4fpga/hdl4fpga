@@ -146,11 +146,6 @@ begin
 			data_irdy => data_irdy,
 			rgtr_data => rgtr_data);
 
---		tp(1) <= rgtr_frm;
---		tp(2) <= rgtr_irdy;
---		tp(3 to 10) <= rgtr_id;
-
---		tp(1) <= rgtr_frm;
 		sigram_frm  <= rgtr_frm;
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		sigram_data <= rgtr_data;
@@ -177,10 +172,8 @@ begin
 					last  := to_bitvector(reverse(rxd));
 					latch := '0';
 				elsif ack_rxdv='1' then
---				elsif rgtr_dv='1' then
 					latch := '1';
 				end if;
-				tp(1) <= to_stdulogic(latch);
 			end if;
 
 			if fcs_sb='1' and phyi_fcsvld='1' then
@@ -248,6 +241,7 @@ begin
 		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
+	tp(1) <= flow_frm;
 
 	sioack_data <= reverse(
 		x"00" & x"03" & x"04" & x"01" & x"00" & x"01" &

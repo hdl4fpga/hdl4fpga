@@ -227,13 +227,13 @@ begin
 			mii_txen => siosp_txen,
 			mii_txd  => siosp_txd);
 
---		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or (udppl_rxdv and myport_rcvd);
---		buffer_data <= wirebus(
---			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
---			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & (udppl_rxdv and myport_rcvd));
+		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or (udppl_rxdv and myport_rcvd);
+		buffer_data <= wirebus(
+			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
+			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & (udppl_rxdv and myport_rcvd));
 
-		buffer_irdy <= (udppl_rxdv and myport_rcvd);
-		buffer_data <= txc_rxd; 
+--		buffer_irdy <= (udppl_rxdv and myport_rcvd);
+--		buffer_data <= txc_rxd; 
 		flowfcs_vld <= dllfcs_vld and myport_rcvd;
 
 	end block;
