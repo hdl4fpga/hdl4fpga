@@ -53,7 +53,7 @@ entity mii_display is
 		video_on    : buffer std_logic;
 		video_hs    : out std_logic;
 		video_vs    : out std_logic);
-	end;
+end;
 
 architecture struct of mii_display is
 

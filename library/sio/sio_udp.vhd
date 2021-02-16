@@ -59,7 +59,7 @@ entity sio_udp is
 		so_irdy   : out std_logic;
 		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 4));
+		tp : out std_logic_vector(1 to 32));
 
 	constant phyo_idle : std_logic := '1';
 
@@ -119,15 +119,16 @@ architecture struct of sio_udp is
 	signal dhcpipv4a_txen  : std_logic;
 	signal dhcpipv4a_txd   : std_logic_vector(mii_rxd'range);
 
-	signal buffer_data : std_logic_vector(txc_rxd'range);
-	signal buffer_irdy : std_logic;
+	signal buffer_data     : std_logic_vector(txc_rxd'range);
+	signal buffer_irdy     : std_logic;
 
-	signal flow_frm     : std_logic;
-	signal flow_irdy    : std_logic;
-	signal flow_trdy    : std_logic;
-	signal flow_data    : std_logic_vector(txc_rxd'range);
+	signal flow_frm        : std_logic;
+	signal flow_irdy       : std_logic;
+	signal flow_trdy       : std_logic;
+	signal flow_data       : std_logic_vector(txc_rxd'range);
 
-	signal myport_rcvd : std_logic;
+	signal myport_rcvd     : std_logic;
+	signal flowfcs_vld     : std_logic;
 
 begin
 
@@ -226,10 +227,14 @@ begin
 			mii_txen => siosp_txen,
 			mii_txd  => siosp_txd);
 
-		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or udppl_rxdv;
-		buffer_data <= wirebus(
-			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
-			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & udppl_rxdv);
+--		buffer_irdy <= dhcpipv4a_txen or siohwsa_txen or sioipv4a_txen or siosp_txen or (udppl_rxdv and myport_rcvd);
+--		buffer_data <= wirebus(
+--			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
+--			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & (udppl_rxdv and myport_rcvd));
+
+		buffer_irdy <= (udppl_rxdv and myport_rcvd);
+		buffer_data <= txc_rxd; 
+		flowfcs_vld <= dllfcs_vld and myport_rcvd;
 
 	end block;
 
@@ -237,7 +242,7 @@ begin
 	port map (
 		phyi_clk    => mii_txc,
 		phyi_frm    => txc_rxdv,
-		phyi_fcsvld => dllfcs_vld,
+		phyi_fcsvld => flowfcs_vld,
 
 		buffer_frm  => txc_rxdv,
 		buffer_irdy => buffer_irdy,
@@ -259,7 +264,8 @@ begin
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
 		phyo_trdy   => flow_trdy,
-		phyo_data   => flow_data);
+		phyo_data   => flow_data,
+		tp          => tp);
 
 	tx_b : block
 

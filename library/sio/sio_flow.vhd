@@ -59,7 +59,8 @@ entity sio_flow is
 		phyo_frm    : buffer std_logic;
 		phyo_irdy   : out std_logic;
 		phyo_trdy   : in  std_logic := '1';
-		phyo_data   : out std_logic_vector);
+		phyo_data   : out std_logic_vector;
+		tp          : out std_logic_vector(1 to 32));
 end;
 
 architecture struct of sio_flow is
@@ -113,6 +114,7 @@ begin
 		signal rgtr_frm     : std_logic;
 		signal rgtr_irdy    : std_logic;
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_idv     : std_logic;
 		signal rgtr_dv      : std_logic;
 		signal rgtr_data    : std_logic_vector(0 to 8-1);
 		signal data_frm     : std_logic;
@@ -123,6 +125,8 @@ begin
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv   : std_logic;
 		signal rxd          : std_logic_vector(0 to 8-1);
+
+		signal ena  : std_logic;
 
 	begin
 
@@ -135,12 +139,18 @@ begin
 			sin_data  => buffer_data,
 			rgtr_frm  => rgtr_frm,
 			rgtr_id   => rgtr_id,
+			rgtr_idv  => rgtr_idv,
 			rgtr_dv   => rgtr_dv,
 			rgtr_irdy => rgtr_irdy,
 			data_frm  => data_frm,
 			data_irdy => data_irdy,
 			rgtr_data => rgtr_data);
 
+--		tp(1) <= rgtr_frm;
+--		tp(2) <= rgtr_irdy;
+--		tp(3 to 10) <= rgtr_id;
+
+--		tp(1) <= rgtr_frm;
 		sigram_frm  <= rgtr_frm;
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		sigram_data <= rgtr_data;
@@ -157,16 +167,20 @@ begin
 			data      => rxd);
 
 		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
-			variable last : bit_vector(ack_rxd'range) := x"23";
-			variable dup  : bit;
+			variable last  : bit_vector(ack_rxd'range) := x"23";
+			variable dup   : bit;
+			variable latch : bit;
 		begin
 			if rising_edge(phyi_clk) then
-				if fcs_sb='1' then
-					if phyi_fcsvld='1' then
-						dup  := to_bit(pkt_dup);
-						last := to_bitvector(reverse(rxd));
-					end if;
+				if fcs_sb='1' and phyi_fcsvld='1' then
+					dup   := to_bit(pkt_dup);
+					last  := to_bitvector(reverse(rxd));
+					latch := '0';
+				elsif ack_rxdv='1' then
+--				elsif rgtr_dv='1' then
+					latch := '1';
 				end if;
+				tp(1) <= to_stdulogic(latch);
 			end if;
 
 			if fcs_sb='1' and phyi_fcsvld='1' then

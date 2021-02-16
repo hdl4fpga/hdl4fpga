@@ -6,6 +6,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_sin is
+	generic (
+		debug : boolean := false);
 	port (
 		sin_clk   : in  std_logic;
 		sin_frm   : in  std_logic;
@@ -26,13 +28,15 @@ entity sio_sin is
 		rgtr_lv   : out std_logic;
 		rgtr_len  : buffer std_logic_vector(8-1 downto 0);
 		rgtr_dv   : out std_logic;
-		rgtr_data : out std_logic_vector);
+		rgtr_data : out std_logic_vector;
+		tp : out std_logic_vector(1 to 32));
 end;
 
 architecture beh of sio_sin is
 
 	signal des8_irdy : std_logic;
 	signal des8_data : std_logic_vector(rgtr_id'range);
+	signal rev8_data : std_logic_vector(des8_data'range); -- Xilinx ISE's bug 
 
 	type states is (s_id, s_size, s_data);
 	signal stt       : states;
@@ -40,6 +44,8 @@ architecture beh of sio_sin is
 begin
 
 	byte_e : entity hdl4fpga.serdes
+	generic map (
+		debug => debug)
 	port map (
 		serdes_clk => sin_clk,
 		serdes_frm => sin_frm,
@@ -48,6 +54,11 @@ begin
 
 		des_irdy   => des8_irdy,
 		des_data   => des8_data);
+	rev8_data <= reverse(des8_data);
+
+	tp(1) <= sin_frm;
+	tp(2) <= des8_irdy;
+	tp(3 to 10) <= des8_data;
 
 	process (sin_clk)
 		variable rid  : std_logic_vector(rgtr_id'range);
@@ -57,6 +68,7 @@ begin
 		variable idv  : std_logic;
 		variable lv   : std_logic;
 		variable dv   : std_logic;
+
 	begin
 		if rising_edge(sin_clk) then
 			if rgtr_trdy='1' or to_stdulogic(to_bit(rgtr_irdy))='0' then
@@ -71,7 +83,8 @@ begin
 					case stt is
 					when s_id =>
 						ptr := (others => '0');
-						rid := setif(rid'ascending, des8_data, reverse(des8_data));
+--						rid := setif(rid'ascending, des8_data, reverse(des8_data));
+						rid := setif(rid'ascending, des8_data, rev8_data); -- Xilinx ISE's bug returns '0's
 						len := (others => '0');
 						idv := '1';
 						lv  := '0';
@@ -79,7 +92,8 @@ begin
 						stt <= s_size;
 					when s_size =>
 						ptr := (others => '0');
-						len := resize(unsigned(setif(rid'ascending, des8_data, reverse(des8_data))), len'length);
+--						len := resize(unsigned(setif(rid'ascending, des8_data, reverse(des8_data))), len'length); -- Xilinx ISE's bug returns '0's
+						len := resize(unsigned(setif(rid'ascending, des8_data, rev8_data)), len'length);
 						idv := '1';
 						lv  := '1';
 						dv  := '0';

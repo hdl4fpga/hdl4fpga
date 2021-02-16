@@ -633,12 +633,28 @@ package body std is
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable aux : std_logic_vector(arg'reverse_range);
+--		variable aux_asc : std_logic_vector(arg'low to arg'high);
+--		variable aux_des : std_logic_vector(arg'high downto arg'low);
 		variable val : std_logic_vector(arg'range);
 	begin
+		-- Possible Xilinx ISE's bug
 		for i in arg'range loop
 			aux(i) := arg(i);
 		end loop;
 		val := aux;
+
+--		if arg'ascending then
+--			for i in arg'range loop
+--				aux_des(i) := arg(i);
+--			end loop;
+--			val := aux_des;
+--		else
+--			for i in arg'range loop
+--				aux_asc(i) := arg(i);
+--			end loop;
+--			val := aux_asc;
+--		end if;
+
 		return val;
 	end;
 

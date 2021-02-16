@@ -75,7 +75,8 @@ architecture sio_debug of nuhs3adsp is
 	signal txc_rxdv : std_logic;
 	signal ipv4acfg_req  : std_logic;
 	alias sio_clk : std_logic is mii_txc;
-	signal tp : std_logic_vector(1 to 4);
+	signal tp : std_logic_vector(1 to 32);
+	alias aa : std_logic_vector(0 to 7) is tp(3 to 10);
 begin
 
 	clkin_ibufg : ibufg
@@ -110,21 +111,6 @@ begin
 			ipv4acfg_req <= not sw1;
 		end if;
 	end process;
-	led7 <= ipv4acfg_req;
-
-	process (mii_rxc)
-	begin
-		if rising_edge(mii_rxc) then
-			if sw1='0' then
-				led18 <= '0';
-				led8  <= '0';
-			elsif mii_rxdv='1' then
-				led18 <= '1';
-			elsif tp(1)='1' then
-				led8 <= '1';
-			end if;
-		end if;
-	end process;
 
 	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (
@@ -153,8 +139,26 @@ begin
 		so_irdy => sin_irdy,
 		so_trdy => '1',
 		so_data => sin_data,
-		tp => tp(1 to 4));
+		tp => tp);
 	
+	mii_display_e : entity hdl4fpga.mii_display
+	generic map (
+		timing_id   => video_tab(video_mode).timing_id,
+		code_spce   => to_ascii(" "),
+		code_digits => to_ascii("0123456789abcdef"),
+		cga_bitrom  => to_ascii("Ready Steady GO!"))
+	port map (
+ 		phy_clk   => mii_txc,
+ 		phy_frm   => tp(1),
+ 		phy_irdy  => tp(2),
+		phy_data  => aa,
+
+		video_clk   => vga_clk,
+		video_dot   => vga_dot,
+		video_on    => vga_on,
+		video_hs    => vga_hsync,
+		video_vs    => vga_vsync);
+
 	video_lat_e: entity hdl4fpga.align 
 	generic map (
 		n => 3,
@@ -186,7 +190,30 @@ begin
 	-- LEDs DAC --
 	--------------
 		
---	led18 <= '0';
+--	led18 <= tp(9);
+--	led16 <= tp(8);
+--	led15 <= tp(7);
+--	led13 <= tp(6);
+--	led11 <= tp(5);
+--	led9  <= tp(4);
+--	led8  <= tp(3);
+--	led7  <= tp(2);
+
+	process (mii_txc)
+		variable q1 : bit;
+		variable q2 : bit;
+	begin
+		if rising_edge(mii_txc) then
+			if q1='1' and tp(1)='0' then
+				q2 := not q2;
+			end if;
+			led7 <= to_stdulogic(q2);
+			led8 <= not to_stdulogic(q2);
+			q1 := to_bit(tp(1));
+		end if;
+	end process;
+
+	led18 <= '0';
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';

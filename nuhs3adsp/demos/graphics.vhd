@@ -169,7 +169,7 @@ architecture graphics of nuhs3adsp is
 
 	signal dmavideotrans_cnl : std_logic;
 	signal txc_rxdv : std_logic;
-	signal tp : std_logic_vector(0 to 32-1);
+	signal tp : std_logic_vector(1 to 32);
 	signal ipv4acfg_req  : std_logic;
 begin
 
@@ -241,7 +241,7 @@ begin
 		so_irdy => sin_irdy,
 		so_trdy => '1',
 		so_data => sin_data,
-		tp => tp(0 to 4-1));
+		tp => tp);
 	
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (

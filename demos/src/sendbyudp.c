@@ -601,7 +601,7 @@ int main (int argc, char *argv[])
 
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
-	int ack = 0x0a;
+	int ack = 0x0b;
 	for(;;) {
 
 	
