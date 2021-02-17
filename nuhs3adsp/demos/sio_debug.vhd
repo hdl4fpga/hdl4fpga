@@ -76,7 +76,7 @@ architecture sio_debug of nuhs3adsp is
 	signal ipv4acfg_req  : std_logic;
 	alias sio_clk : std_logic is mii_txc;
 	signal tp : std_logic_vector(1 to 32);
-	alias aa : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
+	alias aa : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
 begin
 
 	clkin_ibufg : ibufg

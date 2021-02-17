@@ -221,6 +221,7 @@ begin
 			variable q    : std_logic_vector(mii_req'range);
 			variable cntr : std_logic_vector(0 to 4);
 			variable ena  : std_logic;
+			variable txen : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if mii_txen='1' then
@@ -235,9 +236,10 @@ begin
 					ena := '0';
 				end if;
 
-				if to_bit(mii_txen)='0' then
-					q := mii_req and (q'range => mii_txen);
+				if to_bit(mii_txen)='0' or txen='0' then
+					q := mii_req;
 				end if;
+				txen := mii_txen;
 			end if;
 
 			req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));

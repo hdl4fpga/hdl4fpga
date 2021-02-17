@@ -43,8 +43,8 @@ entity sio_udp is
 		txc_rxdv  : buffer std_logic;
 		mii_col   : in  std_logic := '0';
 		mii_crs   : in  std_logic := '0';
-		mii_txd   : out std_logic_vector;
-		mii_txen  : out std_logic;
+		mii_txd   : buffer std_logic_vector;
+		mii_txen  : buffer std_logic;
 
 		ipv4acfg_req : in  std_logic;
 		myipv4a   : buffer std_logic_vector(0 to 32-1);
@@ -349,9 +349,9 @@ begin
 			di(0)  => rgtr_frm,
 			do(0)  => lat_frm);
 		flow_req <= lat_frm and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
-	tp(1) <= udppl_txen;
-	tp(2) <= '1';
-	tp(3 to 3+rgtr_id'length-1) <= rgtr_id;
+--	tp(1) <= udppl_txen;
+--	tp(2) <= '1';
+--	tp(3 to 3+rgtr_id'length-1) <= rgtr_id;
 
 		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
 		latdat_e : entity hdl4fpga.align 
@@ -365,9 +365,13 @@ begin
 			do  => udppl_txd);
 
 		udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
---	tp(1) <= lat_frm;
+--	tp(1) <= udppl_txen;
 --	tp(2) <= '1';
 --	tp(3 to 3+udppl_txd'length-1) <= udppl_txd;
+
+	tp(1) <= flow_gnt;
+	tp(2) <= '1';
+	tp(3 to 3+udppl_txd'length-1) <= mii_txd;
 
 
 	end block;

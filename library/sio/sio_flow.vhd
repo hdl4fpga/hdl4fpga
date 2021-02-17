@@ -243,7 +243,7 @@ begin
 	end process;
 
 	sioack_data <= reverse(
-		x"00" & x"03" & x"04" & x"01" & x"00" & x"01" &
+		x"00" & x"03" & x"04" & x"01" & x"00" & x"03" &
 		x"01" & x"00" & ack_txd, 8);
 
 	ack_irdy <= sig_end and flow_trdy;
