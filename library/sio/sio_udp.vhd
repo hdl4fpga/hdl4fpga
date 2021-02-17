@@ -59,7 +59,8 @@ entity sio_udp is
 		so_irdy   : out std_logic;
 		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
+
+		tp        : out std_logic_vector(1 to 32));
 
 	constant phyo_idle : std_logic := '1';
 
@@ -232,8 +233,6 @@ begin
 			dhcpipv4a_txd  & siohwsa_txd  & sioipv4a_txd  & siosp_txd  & txc_rxd, 
 			dhcpipv4a_txen & siohwsa_txen & sioipv4a_txen & siosp_txen & (udppl_rxdv and myport_rcvd));
 
---		buffer_irdy <= (udppl_rxdv and myport_rcvd);
---		buffer_data <= txc_rxd; 
 		flowfcs_vld <= dllfcs_vld and myport_rcvd;
 
 	end block;
@@ -264,8 +263,7 @@ begin
 		phyo_frm    => flow_frm,
 		phyo_irdy   => flow_irdy,
 		phyo_trdy   => flow_trdy,
-		phyo_data   => flow_data,
-		tp          => open);
+		phyo_data   => flow_data);
 
 	tx_b : block
 
@@ -349,9 +347,6 @@ begin
 			di(0)  => rgtr_frm,
 			do(0)  => lat_frm);
 		flow_req <= lat_frm and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
---	tp(1) <= udppl_txen;
---	tp(2) <= '1';
---	tp(3 to 3+rgtr_id'length-1) <= rgtr_id;
 
 		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
 		latdat_e : entity hdl4fpga.align 
@@ -365,15 +360,11 @@ begin
 			do  => udppl_txd);
 
 		udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
---	tp(1) <= udppl_txen;
---	tp(2) <= '1';
---	tp(3 to 3+udppl_txd'length-1) <= udppl_txd;
-
-	tp(1) <= flow_gnt;
-	tp(2) <= '1';
-	tp(3 to 3+udppl_txd'length-1) <= mii_txd;
-
 
 	end block;
 		
+	tp(1) <= mii_txen;
+	tp(2) <= '1';
+	tp(3 to 3+udppl_txd'length-1) <= mii_txd;
+
 end;

@@ -49,7 +49,7 @@ entity mii_ipoe is
 		txc_rxdv      : buffer std_logic;
 		dll_rxdv      : buffer std_logic;
 
-		dllfcs_vld  : buffer std_logic;
+		dllfcs_vld    : buffer std_logic;
 
 		dllhwda_rxdv  : buffer std_logic;
 		dllhwsa_rxdv  : buffer std_logic;
@@ -89,7 +89,7 @@ entity mii_ipoe is
 		dhcp_rcvd     : buffer std_logic;
 		dhcpipv4a_rxdv : buffer std_logic;
 
-		tp            : buffer std_logic_vector(1 to 4));
+		tp            : out std_logic_vector(1 to 32));
 
 end;
 
@@ -612,8 +612,6 @@ begin
 				end if;
 			end process;
 
---			tp(1) <= (typearp_rcvd or ip4icmp_rcvd) and myip4a_rcvd and txc_rxdv;
---			tp(1) <= (typearp_rcvd) and myip4a_rcvd and txc_rxdv;
 		end block;
 
 		udp_b : block
@@ -783,7 +781,6 @@ begin
 					mii_equ  => dhcpchaddr6_equ);
 
 				dhcpipv4a_rxdv <= dhcpoffer_rcvd and dhcpyia_rxdv;
-				tp(1) <= dhcpchaddr6_rxdv and dll_rxdv;
 				dchp_yia_e : entity hdl4fpga.mii_des
 				generic map (
 					init_data => reverse(default_ipv4a,8))

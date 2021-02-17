@@ -60,43 +60,44 @@ entity sio_flow is
 		phyo_irdy   : buffer std_logic;
 		phyo_trdy   : in  std_logic := '1';
 		phyo_data   : buffer std_logic_vector;
+
 		tp          : out std_logic_vector(1 to 32));
 end;
 
 architecture struct of sio_flow is
 
-	signal sigram_frm   : std_logic;
-	signal sigram_irdy  : std_logic;
-	signal sigram_data  : std_logic_vector(si_data'range);
+	signal sigram_frm  : std_logic;
+	signal sigram_irdy : std_logic;
+	signal sigram_data : std_logic_vector(si_data'range);
 
-	signal buffer_cmmt  : std_logic;
-	signal buffer_rllk  : std_logic;
-	signal buffer_ovfl  : std_logic;
-	signal flow_frm     : std_logic;
-	signal flow_trdy    : std_logic;
-	signal flow_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE bug
-	signal flow_data    : std_logic_vector(si_data'range);
+	signal buffer_cmmt : std_logic;
+	signal buffer_rllk : std_logic;
+	signal buffer_ovfl : std_logic;
+	signal flow_frm    : std_logic;
+	signal flow_trdy   : std_logic;
+	signal flow_irdy   : std_logic_vector(0 to 0); -- Xilinx's ISE core-dump bug
+	signal flow_data   : std_logic_vector(si_data'range);
 
-	signal ack_rxd      : std_logic_vector(8-1 downto 0);
-	signal ack_txd      : std_logic_vector(ack_rxd'range);
+	signal ack_rxd     : std_logic_vector(8-1 downto 0);
+	signal ack_txd     : std_logic_vector(ack_rxd'range);
 
-	signal pkt_dup      : std_logic;
-	signal fcs_sb       : std_logic;
-	signal ack_rxdv     : std_logic;
+	signal pkt_dup     : std_logic;
+	signal fcs_sb      : std_logic;
+	signal ack_rxdv    : std_logic;
 
-	signal sig_data      : std_logic_vector(si_data'range);
-	signal sig_trdy      : std_logic;
-	signal sig_end       : std_logic;
+	signal sig_data    : std_logic_vector(si_data'range);
+	signal sig_trdy    : std_logic;
+	signal sig_end     : std_logic;
 
 	signal sioack_data : std_logic_vector(0 to 9*8-1);
-	signal ack_irdy   : std_logic;
-	signal ack_trdy   : std_logic;
-	signal ack_data   : std_logic_vector(si_data'range);
-	signal ack_end    : std_logic;
+	signal ack_irdy    : std_logic;
+	signal ack_trdy    : std_logic;
+	signal ack_data    : std_logic_vector(si_data'range);
+	signal ack_end     : std_logic;
 
-	signal des_irdy : std_logic_vector(0 to 0); -- Xilinx's ISE bug
-	signal des_trdy : std_logic;
-	signal des_data : std_logic_vector(si_data'range);
+	signal des_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE core-dump bug
+	signal des_trdy    : std_logic;
+	signal des_data    : std_logic_vector(si_data'range);
 
 begin
 
@@ -283,7 +284,7 @@ begin
 		flow_data <= wirebus(sig_data & ack_data, not sig_end & sig_end);
 
 		des_data <= wirebus(flow_data & si_data, gnt);
-		des_irdy <= wirebus(flow_irdy(0) & si_irdy, gnt); -- Xilinx's ISE bug
+		des_irdy <= wirebus(flow_irdy(0) & si_irdy, gnt); -- Xilinx's ISE core-dump bug
 
 	end block;
 
