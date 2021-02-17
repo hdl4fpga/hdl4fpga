@@ -89,15 +89,11 @@ begin
 
 	begin
 
-		assert not (latency > 3)
-		report "Latency greater than 3 is not supported"
-		severity FAILURE;
-
 		wdata <= src_data; -- when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => false,
+			synchronous_rddata => setif(latency > 1, true, false),
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -134,6 +130,10 @@ begin
 
 				if rising_edge(dst_clk) then
 					slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
+					if latency > 1 then
+						slr := slr sll dst_data'length;
+					end if;
+
 					v(v'length-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
 
 					if dst_ini='1' then
