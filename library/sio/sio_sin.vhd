@@ -102,11 +102,12 @@ begin
 						ptr := ptr + 1;
 						len := len - 1;
 						if len(0)='1' then
+							idv := '0';
 							stt <= s_id;
 						else
+							idv := '1';
 							stt <= s_data;
 						end if;
-						idv := '1';
 						lv  := '0';
 						dv  := '1';
 					end case;

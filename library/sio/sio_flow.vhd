@@ -57,9 +57,9 @@ entity sio_flow is
 		
 		phyo_clk    : in  std_logic;
 		phyo_frm    : buffer std_logic;
-		phyo_irdy   : out std_logic;
+		phyo_irdy   : buffer std_logic;
 		phyo_trdy   : in  std_logic := '1';
-		phyo_data   : out std_logic_vector;
+		phyo_data   : buffer std_logic_vector;
 		tp          : out std_logic_vector(1 to 32));
 end;
 
@@ -241,7 +241,6 @@ begin
 		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
-	tp(1) <= flow_frm;
 
 	sioack_data <= reverse(
 		x"00" & x"03" & x"04" & x"01" & x"00" & x"01" &

@@ -265,7 +265,7 @@ begin
 		phyo_irdy   => flow_irdy,
 		phyo_trdy   => flow_trdy,
 		phyo_data   => flow_data,
-		tp          => tp);
+		tp          => open);
 
 	tx_b : block
 
@@ -349,6 +349,9 @@ begin
 			di(0)  => rgtr_frm,
 			do(0)  => lat_frm);
 		flow_req <= lat_frm and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+	tp(1) <= udppl_txen;
+	tp(2) <= '1';
+	tp(3 to 3+rgtr_id'length-1) <= rgtr_id;
 
 		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
 		latdat_e : entity hdl4fpga.align 
@@ -362,6 +365,10 @@ begin
 			do  => udppl_txd);
 
 		udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+--	tp(1) <= lat_frm;
+--	tp(2) <= '1';
+--	tp(3 to 3+udppl_txd'length-1) <= udppl_txd;
+
 
 	end block;
 		
