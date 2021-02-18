@@ -42,10 +42,16 @@ architecture graphics of nuhs3adsp is
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
 	signal sin_data       : std_logic_vector(8-1 downto 0);
+
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(8-1 downto 0);
+
+	signal sout1_frm      : std_logic;
+	signal sout1_irdy     : std_logic;
+	signal sout1_trdy     : std_logic;
+	signal sout1_data     : std_logic_vector(8-1 downto 0);
 
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
@@ -54,8 +60,8 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 25; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 3;
+	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
+	constant ddr_div      : natural := 1;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
@@ -232,17 +238,27 @@ begin
 		txc_rxdv  => txc_rxdv,
 	
 		sio_clk   => sio_clk,
-		si_frm    => sout_frm,
-		si_irdy   => sout_irdy,
-		si_trdy   => sout_trdy,
-		si_data   => sout_data,
+		si_frm    => sout1_frm,
+		si_irdy   => sout1_irdy,
+		si_trdy   => sout1_trdy,
+		si_data   => sout1_data,
 
-		so_frm  => sin_frm,
-		so_irdy => sin_irdy,
-		so_trdy => '1',
-		so_data => sin_data,
-		tp => tp);
+		so_frm    => sin_frm,
+		so_irdy   => sin_irdy,
+		so_trdy   => '1',
+		so_data   => sin_data,
+		tp        => tp);
 	
+--	process (sio_clk)
+--	begin
+--		if rising_edge(sio_clk) then
+--			sout1_frm  <= sout_frm  ;
+--			sout1_irdy <= sout_irdy ;
+--			sout_trdy <= sout1_trdy ;
+--			sout1_data <= sout_data ;
+--		end if;
+--	end process;
+
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ddr_tcp      => ddr_tcp,
@@ -262,7 +278,9 @@ begin
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => 8,
 		green_length => 8,
-		blue_length  => 8)
+		blue_length  => 8,
+		
+		fifo_size    => 2048)
 
 	port map (
 		sio_clk      => sio_clk,
@@ -323,7 +341,7 @@ begin
 	generic map (
 		gate_delay  => 2,
 		loopback    => true,
-		rgtr_dout => false,
+		rgtr_dout   => false,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		cmmd_gear   => cmmd_gear,

@@ -167,7 +167,7 @@ begin
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 4,
-			latency   => 0, 
+			latency   => 1, 
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)
@@ -215,6 +215,7 @@ begin
 
 	arbiter_b : block
 		signal req : std_logic_vector(mii_req'range);
+		signal gnt : std_logic_vector(mii_gnt'range);
 	begin
 
 		process (mii_req, mii_txen, mii_txc)
@@ -240,18 +241,20 @@ begin
 					q := mii_req;
 				end if;
 				txen := mii_txen;
+
+				req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));
+				mii_gnt <= gnt;
+				mii_rdy <= mii_gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
 			end if;
 
-			req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));
 		end process;
 
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => mii_txc,
 			req => req,
-			gnt => mii_gnt);
+			gnt => gnt);
 
-		mii_rdy <= mii_gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
 
 	end block;
 
@@ -557,18 +560,32 @@ begin
 				mii_rxd  => txc_rxd,
 				des_data => icmpid_data);
 
-			icmpdata_e : entity hdl4fpga.mii_ram
-			generic map (
-				mem_size => 64*octect_size)
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => icmppl_rxdv,
-				mii_rxd  => txc_rxd,
+			icmpdata_b : block
+				signal txen : std_logic;
+				signal txd  : std_logic_vector(icmppl_txd'range);
+			begin
+				icmpdata_e : entity hdl4fpga.mii_ram
+				generic map (
+					mem_size => 64*octect_size)
+				port map (
+					mii_rxc  => mii_txc,
+					mii_rxdv => icmppl_rxdv,
+					mii_rxd  => txc_rxd,
 
-				mii_txc  => mii_txc,
-				mii_txen => icmp_gnt,
-				mii_txdv => icmppl_txen,
-				mii_txd  => icmppl_txd);
+					mii_txc  => mii_txc,
+					mii_txen => icmp_gnt,
+					mii_txdv => txen,
+					mii_txd  => txd);
+
+				process (mii_txc)
+				begin
+					if rising_edge(mii_txc) then
+						icmppl_txen <= txen;
+						icmppl_txd  <= txd;
+					end if;
+				end process;
+
+			end block;
 
 			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
 			icmprply_e : entity hdl4fpga.icmprply_tx

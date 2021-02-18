@@ -352,14 +352,19 @@ begin
 		latdat_e : entity hdl4fpga.align 
 		generic map (
 			n => xxx1,
-			d => (0 to xxx1-1 => xxx-1))
+			d => (0 to xxx1-1 => xxx-1+1))
 		port map (
 			clk => sio_clk,
 			ena => rgtr_trdy,
 			di  => rgtr_data,
 			do  => udppl_txd);
 
-		udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+			process(mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+				end if;
+			end process;
 
 	end block;
 		

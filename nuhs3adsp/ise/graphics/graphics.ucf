@@ -34,10 +34,10 @@ NET "ddr_dqs[1]" TNM_NET = dqs1;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "mii_txc" TNM_NET = mii_txc;
-TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
+TIMESPEC TS_mii_txc = PERIOD "mii_txc" 40 ns HIGH 50%;
 
 NET "mii_rxc" TNM_NET = mii_rxc;
-TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
+TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
 #OFFSET = IN 0 ns VALID 20 ns BEFORE mii_rxc RISING;
 
 # NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
@@ -92,8 +92,9 @@ NET ddrsys_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 TIMESPEC TS_ddr2clk    = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
 TIMESPEC TS_sys2ddr    = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_sys2ddr1   = FROM RAMS_sysclk   TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_sys2video  = FROM FFS_sysclk    TO FFS_videoclk   TIG;
 TIMESPEC TS_video2ddr  = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_video2sys  = FROM FFS_videoclk  TO FFS_sysclk   TIG;
+TIMESPEC TS_video2sys  = FROM FFS_videoclk  TO FFS_sysclk     TIG;
 TIMESPEC TS_ddr2video  = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
 TIMESPEC TS_ddr2video1 = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
 TIMESPEC TS_ram2oddr   = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;

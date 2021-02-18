@@ -51,7 +51,9 @@ entity demo_graphics is
 		timing_id    : videotiming_ids;
 		red_length   : natural := 5;
 		green_length : natural := 6;
-		blue_length  : natural := 5);
+		blue_length  : natural := 5;
+
+		fifo_size    : natural := 8192);
 
 	port (
 		sio_clk      : in  std_logic;
@@ -100,6 +102,8 @@ entity demo_graphics is
 		tpin         : in  std_logic := '-';
 
 		tp           : buffer std_logic_vector(0 to 32-1));
+
+	constant fifo_depth : natural := (fifo_size/(ctlrphy_dqi'length/8));
 
 end;
 
@@ -374,7 +378,7 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			debug => true,
-			max_depth => (8*4*1*256/(ctlr_di'length/8)),
+			max_depth => fifo_depth,
 			async_mode => true,
 			latency   => 3,
 			check_sov => true,
@@ -472,7 +476,7 @@ begin
 
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth  => (8*4*1*256/(ctlr_di'length/8)),
+				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
 				async_mode => true,
 				latency    => 1,
 				gray_code  => false,

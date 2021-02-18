@@ -31,6 +31,8 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity sio_flow is
+	generic (
+		mem_size    : natural := 2048*8);
 	port (
 		phyi_clk    : in  std_logic;
 		phyi_frm    : in  std_logic;
@@ -208,6 +210,8 @@ begin
 	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
 
 	buffer_e : entity hdl4fpga.sio_buffer
+	generic map (
+		mem_size => mem_size)
 	port map (
 		si_clk    => so_clk,
 		si_frm    => buffer_frm,
