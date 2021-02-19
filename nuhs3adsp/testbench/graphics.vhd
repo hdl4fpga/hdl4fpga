@@ -57,7 +57,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal x : std_logic;
 	signal mii_refclk : std_logic;
-	signal mii_treq : std_logic := '0';
+	signal mii_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_txc  : std_logic;
@@ -207,20 +207,64 @@ architecture nuhs3adsp_graphics of testbench is
 		return retval;
 	end;
 
-	constant delay : time := 1 ns;
-	signal n : std_logic := '0';
-		function xxx (
-			constant n : natural;
-			constant size : natural)
-			return std_logic_vector is
-			variable retval : unsigned(0 to n-1);
-		begin
-			for i in 0 to n/size-1 loop
-				retval (i*size to (i+1)*size-1) := to_unsigned(2*(i/2)+(i+1) mod 2, size);
-			end loop;
-			return std_logic_vector(retval);
-		end;
-		constant time_offset : time := 200 us + 10 us;
+	constant arppkt : std_logic_vector :=
+		x"0000"                 & -- arp_htype
+		x"0000"                 & -- arp_ptype
+		x"00"                   & -- arp_hlen 
+		x"00"                   & -- arp_plen 
+		x"0000"                 & -- arp_oper 
+		x"00_00_00_00_00_00"    & -- arp_sha  
+		x"00_00_00_00"          & -- arp_spa  
+		x"00_00_00_00_00_00"    & -- arp_tha  
+		x"c0_a8_00_0e";           -- arp_tpa  
+
+	constant icmppkt : std_logic_vector :=
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0501"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"aaaaaaaa",8) &
+		reverse(x"ffffffff",8) ;
+
+	constant payload : std_logic_vector := 
+		x"0100" & x"23";
+--		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
+--		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
+--		& x"1602800000"
+--		& x"170200003f";
+
+	constant packet : std_logic_vector := 
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0511"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+
+		udp_checksummed (
+			x"00000000",
+			x"ffffffff",
+			x"0044dea9"         & -- UDP Source port, Destination port
+			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
+			x"0000" &              -- UPD checksum
+			payload);
+
 begin
 
 	mii_rxc <= mii_refclk;
@@ -232,104 +276,27 @@ begin
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 
 	rst <= '0', '1' after 300 ns;
-	mii_treq <= '0', '1' after time_offset + 1 us; 
---		'0' after  time_offset + 1*170 us, '1' after time_offset + 180 us;
---		'0' after  time_offset + 2*170 us, '1' after time_offset + (2*170+10) * 1 us;
 
-	process (mii_treq, txfrm_ptr, mii_rxc)
-		constant k1 : std_logic_vector := 
-			  x"18ff"
-			& gen_natural(start => 0,     stop => 1*128-1, size => 16)
---			& x"18ff"
---			& gen_natural(start => 1*128, stop => 2*128-1, size => 16)
---			& x"18ff"
---			& gen_natural(start => 2*128, stop => 3*128-1, size => 16)
---			& x"18ff"
---			& gen_natural(start => 3*128, stop => 4*128-1, size => 16)
---			& x"18ff"
---			& gen_natural(start => 4*128, stop => 5*128-1, size => 16)
-			& x"1602800000"
-			& x"170200003f";
+	mii_req <= '0', '1' after 8 us;
+	eth_e: entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(packet,8))
+	port map (
+		mii_txc  => mii_rxc,
+		mii_txen => mii_req,
+		mii_txdv => eth_txen,
+		mii_txd  => eth_txd);
 
-		constant k2 : std_logic_vector := x"00020000" & x"23" & k1;
-
-		constant k3 : std_logic_vector := 
-				x"4500"                 &    -- IP Version, TOS
-				x"0000"                 &    -- IP Length
-				x"0000"                 &    -- IP Identification
-				x"0000"                 &    -- IP Fragmentation
-				x"0511"                 &    -- IP TTL, protocol
-				x"0000"                 &    -- IP Header Checksum
-				x"ffffffff"             &    -- IP Source IP address
-				x"c0a8000e"             &    -- IP Destiantion IP Address
-
-				udp_checksummed (
-					x"00000000",
-					x"ffffffff",
-					x"0044dea9"         & -- UDP Source port, Destination port
-					std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
-					x"0000" &              -- UPD checksum
-					k2);
-
---		variable payload    : std_logic_vector(k1'range) := k1;
---		variable payloadack : std_logic_vector(k2'range) := k2;
---		variable packet     : std_logic_vector(k3'range) := k3;
---
-		variable ack        : natural := 0;
-		variable incena     : std_logic := '1';
-
+	process (mii_rxc)
 	begin
 
 		if rising_edge(mii_rxc) then
-			if mii_treq='0' then
-				if incena='1' then
-					txfrm_ptr <= (others => '0');
-
---					payload := 
---						  x"18ff"
---						& gen_natural(start => (ack*5+0)*128, stop => (ack*5+1)*128-1, size => 16)
---						& x"18ff"                     
---						& gen_natural(start => (ack*5+1)*128, stop => (ack*5+2)*128-1, size => 16)
---						& x"18ff"                     
---						& gen_natural(start => (ack*5+2)*128, stop => (ack*5+3)*128-1, size => 16)
---						& x"18ff"                     
---						& gen_natural(start => (ack*5+3)*128, stop => (ack*5+4)*128-1, size => 16)
---						& x"18ff"                     
---						& gen_natural(start => (ack*5+4)*128, stop => (ack*5+5)*128-1, size => 16)
---						& x"1602800000"
---						& x"170200013f";
---
---					ack := ack + 1;
---
---					payloadack := x"00020000" & std_logic_vector(to_unsigned(ack,8)) & payload;
---					packet     := 
---						x"4500"                 &    -- IP Version, TOS
---						x"0000"                 &    -- IP Length
---						x"0000"                 &    -- IP Identification
---						x"0000"                 &    -- IP Fragmentation
---						x"0511"                 &    -- IP TTL, protocol
---						x"0000"                 &    -- IP Header Checksum
---						x"ffffffff"             &    -- IP Source IP address
---						x"c0a8000e"             &    -- IP Destiantion IP Address
---
---						udp_checksummed (
---							x"00000000",
---							x"ffffffff",
---							x"0044dea9"         & -- UDP Source port, Destination port
---							std_logic_vector(to_unsigned(k2'length/8+8,16))    & -- UDP Length,
---							x"0000" &              -- UPD checksum
---							payloadack);
-					incena := '0';
-				end if;
-			elsif unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < k3'length/mii_rxd'length then
-				incena := '0';
+			if eth_txen='0' and mii_rxdv='0' then
+				txfrm_ptr <= (others => '0');
+			else
 				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
 			end if;
 		end if;
-
-		eth_txen <= mii_treq and setif(unsigned(txfrm_ptr(1 to txfrm_ptr'right)) < k3'length/mii_rxd'length);
-		eth_txd  <= word2byte(reverse(k3,8),txfrm_ptr(1 to txfrm_ptr'right), eth_txd'length);
-
 	end process;
 
 	ethtx_e : entity hdl4fpga.eth_tx

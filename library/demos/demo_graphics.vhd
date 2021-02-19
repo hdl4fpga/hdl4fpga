@@ -184,6 +184,7 @@ begin
 		signal data_irdy     : std_logic;
 		signal data_ptr      : std_logic_vector(8-1 downto 0);
 
+		signal ack_rgtr      : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_frm   : std_logic;
 
 		signal sigram_irdy   : std_logic;
@@ -213,8 +214,8 @@ begin
 		signal siodmaio_irdy : std_logic;
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
---		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+4))*8-1);
-		signal sio_dmaio     : std_logic_vector(0 to ((2+4))*8-1);
+		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
+--		signal sio_dmaio     : std_logic_vector(0 to ((2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sout_data'range);
 
 		signal sodata_frm    : std_logic;
@@ -270,6 +271,16 @@ begin
 			so_end   => sig_end,
 			so_data  => sig_data);
 
+		ack_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid  => x"01")
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+			data      => ack_rgtr);
+
 		process (sio_clk)
 			variable frm : std_logic;
 			variable req : bit := '0';
@@ -288,7 +299,8 @@ begin
 		end process;
 
 		sio_dmaio <= 
---			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+			x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
+			x"01" & x"00" & ack_rgtr &
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000";
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
@@ -443,6 +455,9 @@ begin
 			signal fifo_data   : std_logic_vector(ctlr_do'range);
 			signal fifo_length : std_logic_vector(16-1 downto 0);
 
+			signal dmaout_irdy : std_logic;
+			signal dmaout_data : std_logic_vector(ctlr_do'range);
+
 			signal gnt_lat : std_logic;
 		begin
 
@@ -474,18 +489,36 @@ begin
 				end if;
 			end process;
 
+			buffdv_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 to 0 => 2))
+			port map (
+				clk   => ctlr_clk,
+				di(0) => ctlrio_irdy,
+				do(0) => dmaout_irdy);
+
+			buffdo_e : entity hdl4fpga.align
+			generic map (
+				n => ctlr_do'length,
+				d => (0 to ctlr_do'length-1 => 2))
+			port map (
+				clk => ctlr_clk,
+				di  => ctlr_do,
+				do  => dmaout_data);
+
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
-				async_mode => true,
-				latency    => 1,
+				async_mode => false, --true,
+				latency    => 2,
 				gray_code  => false,
-				check_sov  => true,
-				check_dov  => true)
+				check_sov  => false, --true,
+				check_dov  => false) --true)
 			port map (
 				src_clk  => ctlr_clk,
-				src_irdy => ctlrio_irdy,
-				src_data => ctlr_do,
+				src_irdy => dmaout_irdy,
+				src_data => dmaout_data,
 
 				dst_frm  => ctlr_inirdy,
 				dst_clk  => sio_clk,

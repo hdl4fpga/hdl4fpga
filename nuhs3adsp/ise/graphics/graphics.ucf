@@ -95,6 +95,7 @@ TIMESPEC TS_sys2ddr1   = FROM RAMS_sysclk   TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_sys2video  = FROM FFS_sysclk    TO FFS_videoclk   TIG;
 TIMESPEC TS_video2ddr  = FROM FFS_videoclk  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_video2sys  = FROM FFS_videoclk  TO FFS_sysclk     TIG;
+TIMESPEC TS_video2sys1 = FROM FFS_videoclk  TO RAMS_sysclk    TIG;
 TIMESPEC TS_ddr2video  = FROM FFS_ddrsclk0  TO FFS_videoclk   TIG;
 TIMESPEC TS_ddr2video1 = FROM RAMS_ddrsclk0 TO FFS_videoclk   TIG;
 TIMESPEC TS_ram2oddr   = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;

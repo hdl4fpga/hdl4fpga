@@ -119,10 +119,7 @@ architecture graphics of nuhs3adsp is
 	signal video_clk      : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
-    signal video_hzon     : std_logic;
-    signal video_vton     : std_logic;
-    signal video_dot      : std_logic;
-    signal video_on       : std_logic;
+    signal video_blank    : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
 
 	type display_param is record
@@ -159,7 +156,7 @@ architecture graphics of nuhs3adsp is
 	end;
 
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
-	constant video_mode : video_modes := setif(debug, modedebug, mode480p);
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
 --	constant video_mode : video_modes := mode480p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
@@ -192,7 +189,7 @@ begin
 		dfs_mul => video_tab(video_mode).dcm_mul,
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
-		dcm_rst => '1', --sys_rst,
+		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
@@ -238,10 +235,10 @@ begin
 		txc_rxdv  => txc_rxdv,
 	
 		sio_clk   => sio_clk,
-		si_frm    => sout1_frm,
-		si_irdy   => sout1_irdy,
-		si_trdy   => sout1_trdy,
-		si_data   => sout1_data,
+		si_frm    => sout_frm,
+		si_irdy   => sout_irdy,
+		si_trdy   => sout_trdy,
+		si_data   => sout_data,
 
 		so_frm    => sin_frm,
 		so_irdy   => sin_irdy,
@@ -249,16 +246,6 @@ begin
 		so_data   => sin_data,
 		tp        => tp);
 	
---	process (sio_clk)
---	begin
---		if rising_edge(sio_clk) then
---			sout1_frm  <= sout_frm  ;
---			sout1_irdy <= sout_irdy ;
---			sout_trdy <= sout1_trdy ;
---			sout1_data <= sout_data ;
---		end if;
---	end process;
-
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ddr_tcp      => ddr_tcp,
@@ -293,6 +280,9 @@ begin
 		sout_data    => sout_data,
 
 		video_clk    => video_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
 		dmacfg_clk   => dmacfg_clk,
@@ -330,7 +320,7 @@ begin
 			red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
 			green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
 			blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn <= video_hzon and video_vton;
+			blankn <= not video_blank;
 			hsync  <= video_hzsync;
 			vsync  <= video_vtsync;
 			sync   <= not video_hzsync and not video_vtsync;

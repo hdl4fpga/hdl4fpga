@@ -609,7 +609,7 @@ int main (int argc, char *argv[])
 
 		if (LOG1) fprintf (stderr, "Sending ACK\n");
 
-		set_acknode(ack_out, ack, 0x80);
+		set_acknode(ack_out, ack, 0x00);
 		send_rgtr(ack_out);
 
 		if (LOG1) fprintf (stderr, "Waiting ACK\n");
