@@ -30,4 +30,3 @@ TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
 
 NET "mii_txc" TNM_NET = mii_txc;
 TIMESPEC TS_mii_txc = PERIOD "mii_txc" 40 ns HIGH 50%;
-

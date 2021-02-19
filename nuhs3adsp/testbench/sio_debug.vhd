@@ -180,6 +180,26 @@ architecture nuhs3adsp_siodebug of testbench is
 		x"00_00_00_00_00_00"    & -- arp_tha  
 		x"c0_a8_00_0e";           -- arp_tpa  
 
+	constant icmppkt : std_logic_vector :=
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0501"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"12345678",8) &
+		reverse(x"aaaaaaaa",8) &
+		reverse(x"ffffffff",8) ;
+
+
 	function gen_natural(
 		constant start : natural := 0;
 		constant stop  : natural;
@@ -245,7 +265,7 @@ begin
 
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(packet,8))
+		mem_data => reverse(icmppkt,8))
 	port map (
 		mii_txc  => mii_rxc,
 		mii_txen => arp_req,
@@ -268,8 +288,8 @@ begin
 	port map (
 		mii_txc  => mii_rxc,
 		eth_ptr  => txfrm_ptr,
-		hwsa     => x"af_ff_ff_ff_ff_f5",
-		hwda     => x"a5_40_00_01_02_03",
+		hwsa     => x"ff_ff_ff_ff_ff_ff",
+		hwda     => x"00_40_00_01_02_03",
 		llc      => x"0800",
 		pl_txen  => eth_txen,
 		eth_rxd  => eth_txd,

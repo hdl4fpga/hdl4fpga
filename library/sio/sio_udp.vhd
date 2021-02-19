@@ -82,7 +82,6 @@ architecture struct of sio_udp is
 	signal udppl_rxdv      : std_logic;
 
 	signal flow_req      : std_logic;
-	signal flow_rdy      : std_logic;
 	signal flow_gnt      : std_logic;
 
 	signal flow_hwdatx     : std_logic_vector(48-1 downto 0);
@@ -157,7 +156,6 @@ begin
 		dhcpipv4a_rxdv => dhcpipv4a_rxdv,
 
 		tx_req         => flow_req,
-		tx_rdy         => flow_rdy,
 		tx_gnt         => flow_gnt,
 
 		dll_rxdv       => dll_rxdv,
@@ -178,7 +176,8 @@ begin
 		udppl_txlen    => flow_udplentx,
 
 		udppl_txen     => udppl_txen,
-		udppl_txd      => udppl_txd);
+		udppl_txd      => udppl_txd,
+		tp => tp);
 
 	rx_b : block
 	begin
@@ -346,9 +345,8 @@ begin
 			clk => sio_clk,
 			di(0)  => rgtr_frm,
 			do(0)  => lat_frm);
-		flow_req <= lat_frm and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
 
-		rgtr_trdy <= to_stdulogic((not to_bit(flow_req) and to_bit(rgtr_frm)) or to_bit(flow_gnt));
+		rgtr_trdy <= setif((to_bitvector(rgtr_id)=x"00" and to_bit(rgtr_frm)='1') or to_bit(flow_gnt)='1');
 		latdat_e : entity hdl4fpga.align 
 		generic map (
 			n => xxx1,
@@ -359,17 +357,26 @@ begin
 			di  => rgtr_data,
 			do  => udppl_txd);
 
-			process(mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					udppl_txen <= (flow_req and flow_gnt) and setif(to_stdlogicvector(to_bitvector(rgtr_id)) /= x"00");
+		process(mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if to_bitvector(rgtr_id)=x"00" then
+					flow_req   <= '0';
+					udppl_txen <= '0';
+				elsif lat_frm='1' then
+					flow_req   <= '1';
+					udppl_txen <= flow_gnt;
+				else
+					flow_req   <= '0';
+					udppl_txen <= '0';
 				end if;
-			end process;
+			end if;
+		end process;
 
 	end block;
 		
-	tp(1) <= mii_txen;
-	tp(2) <= '1';
-	tp(3 to 3+udppl_txd'length-1) <= mii_txd;
+--	tp(1) <= txc_rxdv;
+--	tp(2) <= '1';
+--	tp(3 to 3+udppl_txd'length-1) <= txc_rxd;
 
 end;

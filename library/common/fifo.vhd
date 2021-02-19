@@ -146,8 +146,8 @@ begin
 							q    := q sll 1;
 						end if;
 						for i in q'range loop
-							if q(i)='0' then
-								if v(0)='1' then
+							if to_bit(q(i))='0' then
+								if to_bit(v(0))='1' then
 									data(i*dst_data'length to (i+1)*dst_data'length-1) :=  slr(0 to dst_data'length-1);
 									q(i) := '1';
 								end if;
@@ -155,7 +155,7 @@ begin
 							end if;
 						end loop;
 						if feed_ena='1' then
-							if b(b'right)='0' then
+							if to_bit(b(b'right))='0' then
 								if dst_irdy1='1' then
 									if dst_trdy='0' then
 										b(b'right) := '1';
@@ -180,8 +180,8 @@ begin
 							end if;
 						end if;
 					end if;
-					full     <= b(0);
-					dst_irdy <= q(0);
+					full     <= to_stdulogic(to_bit(b(0)));
+					dst_irdy <= to_stdulogic(to_bit(q(0)));
 					dst_data <= std_logic_vector(data(0 to dst_data'length-1));
 
 					slr      := slr sll dst_data'length;

@@ -62,7 +62,6 @@ entity mii_ipoe is
 		ipv4sa_rx     : buffer std_logic_vector(0 to 32-1);
 
 		tx_req        : in std_logic := '0';
-		tx_rdy        : out std_logic;
 		tx_gnt        : out std_logic;
 
 		dll_hwda      : in std_logic_vector(0 to 48-1) := (others => '-');
@@ -99,24 +98,19 @@ architecture def of mii_ipoe is
 	signal mii_gnt       : std_logic_vector(0 to 4-1);
 
 	signal mii_req       : std_logic_vector(mii_gnt'range) := (others => '0');
-	signal mii_rdy       : std_logic_vector(mii_gnt'range);
 	signal dllhwda_equ   : std_logic;
 
 
 	alias arp_req        : std_logic is mii_req(0);
-	alias arp_rdy        : std_logic is mii_rdy(0);
 	alias arp_gnt        : std_logic is mii_gnt(0);
 
 	alias icmp_req       : std_logic is mii_req(1);
-	alias icmp_rdy       : std_logic is mii_rdy(1);
 	alias icmp_gnt       : std_logic is mii_gnt(1);
 
 	alias dhcp_req       : std_logic is mii_req(2);
-	alias dhcp_rdy       : std_logic is mii_rdy(2);
 	alias dhcp_gnt       : std_logic is mii_gnt(2);
 
 	alias extern_req     : std_logic is mii_req(3);
-	alias extern_rdy     : std_logic is mii_rdy(3);
 	alias extern_gnt     : std_logic is mii_gnt(3);
 
 	signal ipv4_gnt      : std_logic;
@@ -163,11 +157,11 @@ begin
 		signal dst_irdy : std_logic;
 		signal dst_trdy : std_logic;
 	begin
-		rxc_rxbus <= mii_rxd & mii_rxdv;
+		rxc_rxbus <=  mii_rxdv & mii_rxd;
 		rxc2txc_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 4,
-			latency   => 1, 
+			latency   => 0,
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)
@@ -182,12 +176,12 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				dst_trdy <= dst_irdy;
+				dst_trdy <= to_stdulogic(to_bit(dst_irdy));
+				txc_rxdv <= txc_rxbus(0);
+				txc_rxd  <= txc_rxbus(1 to mii_rxd'length);
 			end if;
 		end process;
 
-		txc_rxd  <= txc_rxbus(0 to mii_rxd'length-1);
-		txc_rxdv <= txc_rxbus(mii_rxd'length);
 	end block;
 
 	process (mii_txc)
@@ -198,7 +192,6 @@ begin
 	end process;
 
 	extern_req <= tx_req;
-	tx_rdy <= extern_rdy;
 	tx_gnt <= extern_gnt;
 
 	process (mii_txc)
@@ -225,6 +218,7 @@ begin
 			variable txen : std_logic;
 		begin
 			if rising_edge(mii_txc) then
+
 				if mii_txen='1' then
 					cntr := (others => '0');
 				elsif to_bit(cntr(0))='0' then
@@ -242,9 +236,8 @@ begin
 				end if;
 				txen := mii_txen;
 
+				mii_gnt <= gnt and mii_req;
 				req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));
-				mii_gnt <= gnt;
-				mii_rdy <= mii_gnt and (mii_gnt'range => not (mii_txen or mii_col or mii_crs));
 			end if;
 
 		end process;
@@ -256,10 +249,10 @@ begin
 			gnt => gnt);
 
 
+		eth_txen <= setif(to_bitvector((gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen)))/=(mii_gnt'range => '0'));
+		eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
 	end block;
 
-	eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
-	eth_txen <= setif((mii_gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen))/=(mii_gnt'range => '0'));
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
@@ -355,8 +348,10 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if arp_rdy='1' then
-					arp_req	<= '0';
+				if arp_gnt='1' then
+					if arp_txen='0' then
+						arp_req	<= '0';
+					end if;
 				elsif arp_rcvd='1' then
 					arp_req <= '1';
 				elsif dhcp_rcvd='1' then
@@ -585,6 +580,9 @@ begin
 					end if;
 				end process;
 
+				tp(1) <= icmppl_txen;
+				tp(2) <= '1';
+				tp(3 to 3+4-1) <= icmppl_txd;
 			end block;
 
 			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
@@ -603,11 +601,19 @@ begin
 				icmp_txd  => icmp_txd);
 
 			process (mii_txc)
+				variable q : bit;
 			begin
 				if rising_edge(mii_txc) then
-					if icmp_rdy='1' then
-						icmp_req <= '0';
+					if icmp_gnt='1' then
+						if icmp_txen='1' then
+							q := '1';
+							icmp_req <= '1';
+						elsif q='1' then
+							q := '0';
+							icmp_req <= '0';
+						end if;
 					elsif icmp_rcvd='1' then
+						q := '0';
 						icmp_req     <= '1';
 						dllhwda_icmp <= dllhwsa_rx;
 						icmp_ip4da   <= ipv4sa_rx;
@@ -720,27 +726,8 @@ begin
 				signal dhcpoffer_rcvd : std_logic;
 				signal dhcpyia_rxdv  : std_logic;
 
-				signal dscb_req      : std_logic := '0';
 				signal dhcpipv4a : std_logic_vector(cfgipv4a'range);
 			begin
-
-				process (mii_txc)
-					variable req : std_logic;
-				begin
-					if rising_edge(mii_txc) then
-						if dhcp_rdy='1' then
-							dhcp_req <= '0';
-						elsif dscb_req='1' then
-							if mii_txen='1' then
-								dscb_req <= '0';
-							end if;
-						elsif req='0' and ipv4acfg_req='1' then
-							dscb_req <= '1';
-							dhcp_req <= '1';
-						end if;
-						req := ipv4acfg_req;
-					end if;
-				end process;
 
 				dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
 				generic map (
@@ -753,6 +740,21 @@ begin
 					udpdhcp_len  => udpdhcp_len,
 					udpdhcp_txen => udpdhcp_txen,
 					udpdhcp_txd  => udpdhcp_txd);
+
+				process (mii_txc)
+					variable req : std_logic;
+				begin
+					if rising_edge(mii_txc) then
+						if dhcp_gnt='1' then
+							if udpdhcp_txen='0' then
+								dhcp_req <= '0';
+							end if;
+						elsif req='0' and ipv4acfg_req='1' then
+							dhcp_req <= '1';
+						end if;
+						req := ipv4acfg_req;
+					end if;
+				end process;
 
 				udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
 				dhcpport_e : entity hdl4fpga.mii_romcmp
