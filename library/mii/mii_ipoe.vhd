@@ -95,25 +95,24 @@ end;
 architecture def of mii_ipoe is
 
 
-	signal mii_gnt       : std_logic_vector(0 to 4-1);
+	constant arp_gnt     : natural := 0;
+	constant icmp_gnt    : natural := 1;
+	constant dhcp_gnt    : natural := 2;
+	constant extern_gnt  : natural := 3;
 
-	signal mii_req       : std_logic_vector(mii_gnt'range) := (others => '0');
-	signal dllhwda_equ   : std_logic;
+	signal dev_gnt       : std_logic_vector(0 to 4-1);
+	signal dev_req       : std_logic_vector(dev_gnt'range);
+	signal pto_req       : std_logic_vector(dev_req'range);
+	signal pto_gnt       : std_logic_vector(dev_gnt'range);
 
-
-	alias arp_req        : std_logic is mii_req(0);
-	alias arp_gnt        : std_logic is mii_gnt(0);
-
-	alias icmp_req       : std_logic is mii_req(1);
-	alias icmp_gnt       : std_logic is mii_gnt(1);
-
-	alias dhcp_req       : std_logic is mii_req(2);
-	alias dhcp_gnt       : std_logic is mii_gnt(2);
-
-	alias extern_req     : std_logic is mii_req(3);
-	alias extern_gnt     : std_logic is mii_gnt(3);
+	alias arp_req        : std_logic is dev_req(arp_gnt);
+	alias icmp_req       : std_logic is dev_req(icmp_gnt);
+	alias dhcp_req       : std_logic is dev_req(dhcp_gnt);
+	alias extern_req     : std_logic is dev_req(extern_gnt);
 
 	signal ipv4_gnt      : std_logic;
+
+	signal dllhwda_equ   : std_logic;
 
 	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
 	signal txfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((512*octect_size)/mii_rxd'length-1));
@@ -192,7 +191,7 @@ begin
 	end process;
 
 	extern_req <= tx_req;
-	tx_gnt <= extern_gnt;
+	tx_gnt <= dev_gnt(extern_gnt);
 
 	process (mii_txc)
 	begin
@@ -207,12 +206,10 @@ begin
 
 
 	arbiter_b : block
-		signal req : std_logic_vector(mii_req'range);
-		signal gnt : std_logic_vector(mii_gnt'range);
 	begin
 
-		process (mii_req, mii_txen, mii_txc)
-			variable q    : std_logic_vector(mii_req'range);
+		process (dev_req, mii_txen, mii_txc)
+			variable q    : std_logic_vector(dev_req'range);
 			variable cntr : std_logic_vector(0 to 4);
 			variable ena  : std_logic;
 			variable txen : std_logic;
@@ -227,17 +224,17 @@ begin
 
 				if to_bit(cntr(0))='1' then
 					ena := '1';
-				elsif to_bitvector(mii_gnt)=(mii_gnt'range => '0') then
+				elsif to_bitvector(dev_gnt)=(dev_gnt'range => '0') then
 					ena := '0';
 				end if;
 
+				dev_gnt <= pto_gnt and dev_req;
+				pto_req <= (dev_req and (dev_req'range => ena)) or (q and (q'range => mii_txen));
+
 				if to_bit(mii_txen)='0' or txen='0' then
-					q := mii_req;
+					q := dev_req;
 				end if;
 				txen := mii_txen;
-
-				mii_gnt <= gnt and mii_req;
-				req <= (mii_req and (mii_req'range => ena)) or (q and (q'range => mii_txen));
 			end if;
 
 		end process;
@@ -245,12 +242,12 @@ begin
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => mii_txc,
-			req => req,
-			gnt => gnt);
+			req => pto_req,
+			gnt => pto_gnt);
 
 
-		eth_txen <= setif(to_bitvector((gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen)))/=(mii_gnt'range => '0'));
-		eth_txd  <= wirebus(arp_txd & ip4_txd, arp_gnt & ipv4_gnt);
+		eth_txen <= setif(to_bitvector((pto_gnt and (arp_txen & ip4_txen & ip4_txen & ip4_txen)))/=(dev_gnt'range => '0'));
+		eth_txd  <= wirebus(arp_txd & ip4_txd, pto_gnt(arp_gnt) & ipv4_gnt);
 	end block;
 
 
@@ -303,9 +300,9 @@ begin
 		mii_rxd  => txc_rxd,
 		mii_equ  => typearp_rcvd);
 
-	type_tx <= wirebus(llc_arp & llc_ip4, arp_gnt & ipv4_gnt);
-	dllhwda_ipv4 <= wirebus(dllhwda_icmp & x"ff_ff_ff_ff_ff_ff" & dll_hwda, icmp_gnt & dhcp_gnt & extern_gnt);
-	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & dllhwda_ipv4, arp_gnt & ipv4_gnt);
+	type_tx <= wirebus(llc_arp & llc_ip4, pto_gnt(arp_gnt) & ipv4_gnt);
+	dllhwda_ipv4 <= wirebus(dllhwda_icmp & x"ff_ff_ff_ff_ff_ff" & dll_hwda, pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
+	hwda_tx <= wirebus(x"ff_ff_ff_ff_ff_ff" & dllhwda_ipv4, pto_gnt(arp_gnt) & ipv4_gnt);
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_txc   => mii_txc,
@@ -334,7 +331,7 @@ begin
 		arptx_e : entity hdl4fpga.arp_tx
 		port map (
 			mii_txc  => mii_txc,
-			mii_txen => arp_gnt,
+			mii_txen => dev_gnt(arp_gnt),
 			arp_frm  => txfrm_ptr,
 
 			sha      => my_mac,
@@ -348,7 +345,7 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if arp_gnt='1' then
+				if dev_gnt(arp_gnt)='1' then
 					if arp_txen='0' then
 						arp_req	<= '0';
 					end if;
@@ -455,12 +452,12 @@ begin
 			mii_rxd  => txc_rxd,
 			des_data => ipv4sa_rx);
 
-		ipv4_gnt    <= icmp_gnt or dhcp_gnt or extern_gnt;
-		ip4sa_tx    <= wirebus(cfgipv4a & x"00_00_00_00", not dhcp_gnt & dhcp_gnt);
-		ip4da       <= wirebus(icmp_ip4da & ipv4_da, icmp_gnt & extern_gnt);
-		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not dhcp_gnt & dhcp_gnt);
-		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, icmp_gnt & (dhcp_gnt or extern_gnt)); 
-		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, icmp_gnt & (dhcp_gnt or extern_gnt));
+		ipv4_gnt    <= pto_gnt(icmp_gnt) or pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt);
+		ip4sa_tx    <= wirebus(cfgipv4a & x"00_00_00_00", not pto_gnt(dhcp_gnt) & pto_gnt(dhcp_gnt));
+		ip4da       <= wirebus(icmp_ip4da & ipv4_da, pto_gnt(icmp_gnt) & pto_gnt(extern_gnt));
+		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not pto_gnt(dhcp_gnt) & pto_gnt(dhcp_gnt));
+		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, pto_gnt(icmp_gnt) & (pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt))); 
+		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, pto_gnt(icmp_gnt) & (pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt)));
 		ip4pl_txen  <= to_stdulogic(to_bit(icmp_txen or udpdhcp_txen or udp_txen));
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
@@ -568,7 +565,7 @@ begin
 					mii_rxd  => txc_rxd,
 
 					mii_txc  => mii_txc,
-					mii_txen => icmp_gnt,
+					mii_txen => dev_gnt(icmp_gnt),
 					mii_txdv => txen,
 					mii_txd  => txd);
 
@@ -604,7 +601,7 @@ begin
 				variable q : bit;
 			begin
 				if rising_edge(mii_txc) then
-					if icmp_gnt='1' then
+					if dev_gnt(icmp_gnt)='1' then
 						if icmp_txen='1' then
 							q := '1';
 							icmp_req <= '1';
@@ -696,7 +693,7 @@ begin
 			end process;
 			udppl_rxdv <= not cntr(0) and pl_rxdv;
 
-			udplen_tx <= wirebus(udpdhcp_len & udp_len , dhcp_gnt & extern_gnt);
+			udplen_tx <= wirebus(udpdhcp_len & udp_len , pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
 			udpip_len <= std_logic_vector(unsigned(udplen_tx) + (summation(ip4hdr_frame))/octect_size);
 
 			udp_tx : entity hdl4fpga.udp_tx
@@ -735,7 +732,7 @@ begin
 					dhcp_dp => dhcp_srvp )
 				port map (
 					mii_txc   => mii_txc,
-					mii_txen  => dhcp_gnt,
+					mii_txen  => dev_gnt(dhcp_gnt),
 					udpdhcp_ptr  => txfrm_ptr,
 					udpdhcp_len  => udpdhcp_len,
 					udpdhcp_txen => udpdhcp_txen,
@@ -745,7 +742,7 @@ begin
 					variable req : std_logic;
 				begin
 					if rising_edge(mii_txc) then
-						if dhcp_gnt='1' then
+						if dev_gnt(dhcp_gnt)='1' then
 							if udpdhcp_txen='0' then
 								dhcp_req <= '0';
 							end if;
