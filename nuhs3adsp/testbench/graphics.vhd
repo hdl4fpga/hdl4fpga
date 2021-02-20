@@ -244,7 +244,7 @@ architecture nuhs3adsp_graphics of testbench is
 --		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
-		& x"160300000000"
+		& x"160300fffffa"
 		& x"170200003f";
 
 	constant packet : std_logic_vector := 

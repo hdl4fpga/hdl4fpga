@@ -334,7 +334,7 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	rgtr2raw(buffer, &len1, node);
 	memcpy(buffer+len1, data, len);
 
-	send_buffer(buffer, len);
+	send_buffer(buffer, len+len1);
 }
 
 
@@ -375,7 +375,6 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 					return -1;
 				}
 				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
-				abort();
 			}
 		}
 	}

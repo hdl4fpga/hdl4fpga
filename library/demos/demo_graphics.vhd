@@ -103,7 +103,7 @@ entity demo_graphics is
 
 		tp           : buffer std_logic_vector(0 to 32-1));
 
-	constant fifo_depth : natural := (fifo_size/(ctlrphy_dqi'length/8));
+	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length/8));
 
 end;
 
@@ -186,7 +186,7 @@ begin
 
 		signal rgtr_dmaaddr  : std_logic_vector(32-1 downto 0);
 		signal rgtr_dmalen   : std_logic_vector(24-1 downto 0);
-		signal ack_rgtr      : std_logic_vector(8-1 downto 0);
+		signal ack_rgtr      : std_logic_vector(0 to 8-1);
 		signal sigrgtr_frm   : std_logic;
 
 		signal sigram_irdy   : std_logic;
@@ -218,7 +218,6 @@ begin
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
 		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
---		signal sio_dmaio     : std_logic_vector(0 to ((2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sout_data'range);
 
 		signal sodata_frm    : std_logic;
@@ -226,9 +225,6 @@ begin
 		signal sodata_trdy   : std_logic;
 		signal sodata_end    : std_logic;
 		signal sodata_data   : std_logic_vector(sout_data'range);
-
-		signal tp1 : std_logic_vector(32-1 downto 0);
-		signal tp2 : std_logic_vector(32-1 downto 0);
 
 		signal debug_dmacfgio_req : std_logic;
 		signal debug_dmacfgio_rdy : std_logic;
@@ -303,8 +299,8 @@ begin
 		end process;
 
 		sio_dmaio <= 
-			reverse(x"00" & x"03" & x"04" & x"01" & x"00" & x"06" &	-- UDP Length
-			x"01" & x"00" & ack_rgtr &
+			reverse(x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
+			x"01" & x"00" & reverse(ack_rgtr) &
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000", 8);
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
@@ -351,67 +347,67 @@ begin
 		rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth,
-			latency   => 1,
-			check_sov => true,
-			check_dov => true,
-			gray_code => fifo_gray)
+			max_depth  => fifo_depth,
+			latency    => 0,
+			async_mode => true,
+			check_sov  => true,
+			check_dov  => true,
+			gray_code  => fifo_gray)
 		port map (
-			src_clk  => sio_clk,
-			src_irdy => dmaaddr_irdy,
-			src_trdy => dmaaddr_trdy,
-			src_data => rgtr_dmaaddr,
+			src_clk    => sio_clk,
+			src_irdy   => dmaaddr_irdy,
+			src_trdy   => dmaaddr_trdy,
+			src_data   => rgtr_dmaaddr,
 
-			tp       => tp1,
-			dst_frm  => ctlr_inirdy,
-			dst_clk  => dmacfg_clk,
-			dst_irdy => dmaioaddr_irdy,
-			dst_trdy => dmaio_next,
-			dst_data => dmaio_addr);
+			dst_frm    => ctlr_inirdy,
+			dst_clk    => dmacfg_clk,
+			dst_irdy   => dmaioaddr_irdy,
+			dst_trdy   => dmaio_next,
+			dst_data   => dmaio_addr);
 		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
 		rgtr_dmalen <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmalen'length)),8);
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
-			max_depth => fifo_depth,
-			latency   => 1,
-			check_sov => true,
-			check_dov => true,
-			gray_code => fifo_gray)
+			max_depth  => fifo_depth,
+			latency    => 0,
+			async_mode => true,
+			check_sov  => true,
+			check_dov  => true,
+			gray_code  => fifo_gray)
 		port map (
-			src_clk  => sio_clk,
-			src_irdy => dmalen_irdy,
-			src_trdy => dmalen_trdy,
-			src_data => rgtr_dmalen,
+			src_clk    => sio_clk,
+			src_irdy   => dmalen_irdy,
+			src_trdy   => dmalen_trdy,
+			src_data   => rgtr_dmalen,
 
-			dst_frm  => ctlr_inirdy,
-			dst_clk  => dmacfg_clk,
-			dst_irdy => dmaiolen_irdy,
-			dst_trdy => dmaio_next,
-			dst_data => dmaio_len);
+			dst_frm    => ctlr_inirdy,
+			dst_clk    => dmacfg_clk,
+			dst_irdy   => dmaiolen_irdy,
+			dst_trdy   => dmaio_next,
+			dst_data   => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
-			debug => true,
-			max_depth => fifo_depth,
+			max_depth  => fifodata_depth,
 			async_mode => true,
-			latency   => 3,
-			check_sov => true,
-			check_dov => true,
-			gray_code => false) --fifo_gray)
+			latency    => 3,
+			check_sov  => true,
+			check_dov  => true,
+			gray_code  => false)
 		port map (
-			src_clk  => sio_clk,
-			src_irdy => dmadata_irdy,
-			src_trdy => dmadata_trdy,
-			src_data => rgtr_data(0 to ctlr_di'length-1),
+			src_clk    => sio_clk,
+			src_irdy   => dmadata_irdy,
+			src_trdy   => dmadata_trdy,
+			src_data   => rgtr_data(0 to ctlr_di'length-1),
 
-			dst_frm  => ctlr_inirdy,
-			dst_clk  => ctlr_clk,
-			dst_trdy => ctlr_di_req,
-			dst_data => ctlr_di);
+			dst_frm    => ctlr_inirdy,
+			dst_clk    => ctlr_clk,
+			dst_trdy   => ctlr_di_req,
+			dst_data   => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req;
 
 		base_addr_e : entity hdl4fpga.sio_rgtr

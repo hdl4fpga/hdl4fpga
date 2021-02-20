@@ -89,7 +89,7 @@ begin
 
 	begin
 
-		wdata <= src_data; -- when not debug else std_logic_vector(resize(unsigned(wr_cntr), wdata'length));
+		wdata <= src_data;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -131,16 +131,17 @@ begin
 				if rising_edge(dst_clk) then
 					slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
 					if latency > 1 then
-						slr := slr sll dst_data'length;
+						slr(dst_data'length*((v'length-1)-1) to dst_data'length*((v'length-1))-1) := unsigned(rdata);
 					end if;
 
-					v(v'length-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
 
 					if dst_ini='1' then
 						q := (others => '0');
 						b := (others => '0');
 						v := (others => '0');
 					else
+						v(v'length-1) := feed_ena and (dst_irdy1 or not setif(check_dov));
+
 						if dst_irdy='1' and dst_trdy='1' then
 							data := data sll dst_data'length;
 							q    := q sll 1;
