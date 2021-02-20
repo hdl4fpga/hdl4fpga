@@ -64,14 +64,26 @@ begin
 	end process;
 
 	process (rgtr_clk, rgtr_data)
+
+		function xxx (
+			constant data : std_logic_vector;
+			constant size : natural)
+			return std_logic_vector is
+		begin
+			if data'ascending then
+				return std_logic_vector(resize(unsigned(data), size));
+			end if;
+			return std_logic_vector(resize(rotate_left(unsigned(data), size), size));
+		end;
+
 	begin
 		if rising_edge(rgtr_clk) then
 			if ena='1' then
-				data <= std_logic_vector(resize(unsigned(rgtr_data), data'length));
+				data <= xxx(rgtr_data, data'length);
 			end if;
 		end if;
 		if rgtr=false then
-			data <= std_logic_vector(resize(unsigned(rgtr_data), data'length));
+			data <= xxx(rgtr_data, data'length);
 		end if;
 	end process;
 

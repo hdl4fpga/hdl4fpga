@@ -238,14 +238,14 @@ architecture nuhs3adsp_graphics of testbench is
 		reverse(x"ffffffff",8) ;
 
 	constant payload : std_logic_vector := 
-		x"0100" & x"23";
+		x"0100" & x"23"
 --		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
---		& x"1602800000"
---		& x"170200003f";
+		& x"160300000000"
+		& x"170200003f";
 
 	constant packet : std_logic_vector := 
 		x"4500"                 &    -- IP Version, TOS

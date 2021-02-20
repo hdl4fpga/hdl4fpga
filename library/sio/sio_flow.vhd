@@ -165,7 +165,7 @@ begin
 			data      => rxd);
 
 		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
-			variable last  : bit_vector(ack_rxd'range) := x"23";
+			variable last  : bit_vector(ack_rxd'range); -- := x"23";
 			variable dup   : bit;
 			variable latch : bit;
 		begin

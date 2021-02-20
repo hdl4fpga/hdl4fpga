@@ -59,7 +59,7 @@ entity demo_graphics is
 		sio_clk      : in  std_logic;
 		sin_frm      : in  std_logic;
 		sin_irdy     : in  std_logic;
-		sin_data     : in  std_logic_vector(8-1 downto 0);
+		sin_data     : in  std_logic_vector(0 to 8-1);
 		sout_frm     : buffer std_logic;
 		sout_irdy    : out std_logic;
 		sout_trdy    : in  std_logic;
@@ -179,15 +179,18 @@ begin
 		signal rgtr_lv       : std_logic;
 		signal rgtr_len      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv       : std_logic;
-		signal rgtr_data     : std_logic_vector(32-1 downto 0);
+		signal rgtr_data     : std_logic_vector(0 to 32-1);
 		signal data_frm      : std_logic;
 		signal data_irdy     : std_logic;
 		signal data_ptr      : std_logic_vector(8-1 downto 0);
 
+		signal rgtr_dmaaddr  : std_logic_vector(32-1 downto 0);
+		signal rgtr_dmalen   : std_logic_vector(24-1 downto 0);
 		signal ack_rgtr      : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_frm   : std_logic;
 
 		signal sigram_irdy   : std_logic;
+		signal sigram_data   : std_logic_vector(0 to 8-1);
 
 		signal dmasin_irdy   : std_logic;
 		signal dmadata_irdy  : std_logic;
@@ -208,7 +211,7 @@ begin
 		signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
 		signal sts_trdy      : std_logic;
 		signal sts_data      : std_logic_vector(8-1 downto 0);
-		signal sig_data      : std_logic_vector(8-1 downto 0);
+		signal sig_data      : std_logic_vector(sigram_data'range);
 		signal sig_trdy      : std_logic;
 		signal sig_end       : std_logic;
 		signal siodmaio_irdy : std_logic;
@@ -255,6 +258,7 @@ begin
 			rgtr_data => rgtr_data);
 
 		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
+		sigram_data <= std_logic_vector(resize(unsigned(rgtr_data), sigram_data'length));
 		sigram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*sin_data'length)
@@ -262,7 +266,7 @@ begin
 			si_clk   => sio_clk,
 			si_frm   => rgtr_frm,
 			si_irdy  => sigram_irdy,
-			si_data  => rgtr_data(sin_data'range),
+			si_data  => sigram_data, 
 
 			so_clk   => sio_clk,
 			so_frm   => sts_frm,
@@ -344,6 +348,7 @@ begin
 		end block;
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
+		rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
@@ -355,7 +360,7 @@ begin
 			src_clk  => sio_clk,
 			src_irdy => dmaaddr_irdy,
 			src_trdy => dmaaddr_trdy,
-			src_data => rgtr_data,
+			src_data => rgtr_dmaaddr,
 
 			tp       => tp1,
 			dst_frm  => ctlr_inirdy,
@@ -366,6 +371,7 @@ begin
 		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
+		rgtr_dmalen <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmalen'length)),8);
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => fifo_depth,
@@ -377,7 +383,7 @@ begin
 			src_clk  => sio_clk,
 			src_irdy => dmalen_irdy,
 			src_trdy => dmalen_trdy,
-			src_data => rgtr_data(dmaio_len'length-1 downto 0),
+			src_data => rgtr_dmalen,
 
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => dmacfg_clk,
@@ -400,7 +406,7 @@ begin
 			src_clk  => sio_clk,
 			src_irdy => dmadata_irdy,
 			src_trdy => dmadata_trdy,
-			src_data => rgtr_data(ctlr_di'length-1 downto 0),
+			src_data => rgtr_data(0 to ctlr_di'length-1),
 
 			dst_frm  => ctlr_inirdy,
 			dst_clk  => ctlr_clk,
