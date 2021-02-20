@@ -133,7 +133,8 @@ architecture graphics of nuhs3adsp is
 		mode480p,
 		mode600p,
 		mode900p,
-		mode1080p);
+		mode1080p,
+		mode1080p1);
 
 	type displayparam_vector is array (video_modes) of display_param;
 	constant video_tab : displayparam_vector := (
@@ -141,7 +142,8 @@ architecture graphics of nuhs3adsp is
 		mode480p    => (mode => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
 		mode600p    => (mode => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode900p    => (mode => pclk100_00m1600x900at60,  dcm_mul => 5, dcm_div => 1),
-		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
+		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1),
+		mode1080p1  => (mode => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	function setif (
 		constant expr  : boolean; 
@@ -156,7 +158,8 @@ architecture graphics of nuhs3adsp is
 	end;
 
 --	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
-	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
+--	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
 --	constant video_mode : video_modes := mode480p;
 
 	alias dmacfg_clk : std_logic is sys_clk;
