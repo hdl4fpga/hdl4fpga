@@ -166,7 +166,7 @@ begin
 	sio_b : block
 
 		constant fifo_depth  : natural := 4;
-		constant fifo_gray   : boolean := true;
+		constant fifo_gray   : boolean := false;
 
 		constant rid_dmaaddr : std_logic_vector := x"16";
 		constant rid_dmalen  : std_logic_vector := x"17";
@@ -348,7 +348,7 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
-			latency    => 0,
+			latency    => 2,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -371,7 +371,7 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
-			latency    => 0,
+			latency    => 2,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -393,7 +393,7 @@ begin
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifodata_depth,
-			async_mode => true,
+			async_mode => false, --true,
 			latency    => 3,
 			check_sov  => true,
 			check_dov  => true,
@@ -512,11 +512,11 @@ begin
 			dmadataout_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
-				async_mode => false, --true,
+				async_mode => true,
 				latency    => 2,
 				gray_code  => false,
 				check_sov  => false, --true,
-				check_dov  => false) --true)
+				check_dov  => true)
 			port map (
 				src_clk  => ctlr_clk,
 				src_irdy => dmaout_irdy,

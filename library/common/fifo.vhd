@@ -115,9 +115,11 @@ begin
 		latency_g : if latency > 0 generate
 
 			signal full  : std_logic;
+			signal x : std_logic;
 
 		begin
 
+						x <= feed_ena and (dst_irdy1 or not setif(check_dov));
 			dstirdy_p : process (dst_clk)
 
 				variable v    : unsigned(0 to latency-1);
@@ -149,7 +151,7 @@ begin
 						for i in q'range loop
 							if to_bit(q(i))='0' then
 								if to_bit(v(0))='1' then
-									data(i*dst_data'length to (i+1)*dst_data'length-1) :=  slr(0 to dst_data'length-1);
+									data(i*dst_data'length to (i+1)*dst_data'length-1) := slr(0 to dst_data'length-1);
 									q(i) := '1';
 								end if;
 								exit;
@@ -182,6 +184,7 @@ begin
 						end if;
 					end if;
 					full     <= to_stdulogic(to_bit(b(0)));
+					full     <= setif(to_bitvector(std_logic_vector(b))=(b'range => '1'));
 					dst_irdy <= to_stdulogic(to_bit(q(0)));
 					dst_data <= std_logic_vector(data(0 to dst_data'length-1));
 
