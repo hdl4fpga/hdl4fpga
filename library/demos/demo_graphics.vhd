@@ -101,13 +101,15 @@ entity demo_graphics is
 		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		tpin         : in  std_logic := '-';
 
-		tp           : buffer std_logic_vector(0 to 32-1));
+		tp           : buffer std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length/8));
 
 end;
 
 architecture mix of demo_graphics is
+
+	signal tp1            : std_logic_vector(1 to 32);
 
 	signal dmactlr_len    : std_logic_vector(24-1 downto 0);
 	signal dmactlr_addr   : std_logic_vector(24-1 downto 0);
@@ -129,6 +131,7 @@ architecture mix of demo_graphics is
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal dummy          : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
@@ -370,6 +373,7 @@ begin
 		rgtr_dmalen <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmalen'length)),8);
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
+		debug => true,
 			max_depth  => fifo_depth,
 			latency    => 2,
 			async_mode => true,
@@ -386,7 +390,9 @@ begin
 			dst_clk    => dmacfg_clk,
 			dst_irdy   => dmaiolen_irdy,
 			dst_trdy   => dmaio_next,
-			dst_data   => dmaio_len);
+			dst_data   => dmaio_len,
+			tp => tp1);
+		tp(1 to 5) <= tp1(1 to 4) & dmalen_irdy;
 		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
@@ -407,7 +413,8 @@ begin
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => ctlr_clk,
 			dst_trdy   => ctlr_di_req,
-			dst_data   => ctlr_di);
+			dst_data   => dummy); --ctlr_di);
+		ctlr_di <= (others => '1');
 		ctlr_di_dv <= ctlr_di_req;
 
 		base_addr_e : entity hdl4fpga.sio_rgtr

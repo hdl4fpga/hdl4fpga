@@ -247,7 +247,7 @@ begin
 		so_irdy   => sin_irdy,
 		so_trdy   => '1',
 		so_data   => sin_data,
-		tp        => tp);
+		tp        => open);
 	
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -314,7 +314,8 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
-		ctlrphy_sti  => ctlrphy_sti);
+		ctlrphy_sti  => ctlrphy_sti,
+		tp => tp);
 
 
 	process (video_clk)
@@ -436,15 +437,31 @@ begin
 
 	-- LEDs --
 	----------
-		
-	led18 <= '0';
-	led16 <= '0';
+
+	process (mii_txc)
+		variable q : std_logic;
+		variable e : std_logic;
+		variable d : std_logic;
+	begin
+		if rising_edge(mii_txc) then
+			d := sin_frm;
+			if e='0' and d='1' then
+				q := not q;
+			end if;
+			led18 <= q;
+			led16 <= not q;
+			e := d;
+		end if;
+	end process;
+
+--	led18 <= '0';
+--	led16 <= '0';
 	led15 <= '0';
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= txc_rxdv ;
-	led8  <= tp(2);
-	led7  <= tp(1); --'0';
+	led13 <= tp(5);
+	led11 <= tp(4); -- '0';
+	led9  <= tp(3); -- txc_rxdv ;
+	led8  <= tp(2); -- tp(2);
+	led7  <= tp(1); -- tp(1); --'0';
 
 	-- RS232 Transceiver --
 	-----------------------

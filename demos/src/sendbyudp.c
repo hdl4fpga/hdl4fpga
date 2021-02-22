@@ -743,6 +743,7 @@ int main (int argc, char *argv[])
 				
 				if ((dmaaddr = lookup(RGTRDMAADDR_ID, queue_in))) {
 					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) break;
+		abort();
 				}
 
 				queue_in = delete_queue(queue_in);

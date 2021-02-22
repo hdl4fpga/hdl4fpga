@@ -54,7 +54,7 @@ entity fifo is
 		dst_irdy   : buffer std_logic;
 		dst_trdy   : in  std_logic := '1';
 		dst_data   : buffer std_logic_vector;
-		tp         : out std_logic_vector(32-1 downto 0));
+		tp         : out std_logic_vector(1 to 32));
 
 
 end;
@@ -148,6 +148,7 @@ begin
 							data := data sll dst_data'length;
 							q    := q sll 1;
 						end if;
+
 						for i in q'range loop
 							if to_bit(q(i))='0' then
 								if to_bit(v(0))='1' then
@@ -157,34 +158,35 @@ begin
 								exit;
 							end if;
 						end loop;
-						if feed_ena='1' then
-							if to_bit(b(b'right))='0' then
-								if dst_irdy1='1' then
-									if dst_trdy='0' then
-										b(b'right) := '1';
-									end if;
-								else
-									if dst_trdy='1' then
-										b := b ror 1;
-										b(b'right) := '0';
-									end if;
+
+						if to_bit(b(b'right))='0' then
+							if dst_irdy1='0' then
+								if dst_trdy='1' then
+									b := b ror 1;
+									b(b'right) := '0';
 								end if;
-							else
-								if dst_irdy1='1' then
-									if dst_trdy='0' then
-										b := b rol 1;
-										b(b'right) := '1';
-									end if;
-								else
-									if dst_trdy='1' then
-										b(b'right) := '0';
-									end if;
+							elsif dst_trdy='0' then
+								if b(0)='0' then
+									b(b'right) := '1';
 								end if;
 							end if;
+						elsif dst_irdy1='0' then
+							if dst_trdy='1' then
+								b(b'right) := '0';
+								b := b rol 1;
+							end if;
+						elsif dst_trdy='0' then
+							if b(0)='0' then
+								b := b rol 1;
+								b(b'right) := '1';
+							end if;
+						end if;
+
+						if debug then
+							tp(1 to 4) <= std_logic_vector(b & q);
 						end if;
 					end if;
-					full     <= to_stdulogic(to_bit(b(0)));
-					full     <= setif(to_bitvector(std_logic_vector(b))=(b'range => '1'));
+					full     <= b(0);
 					dst_irdy <= to_stdulogic(to_bit(q(0)));
 					dst_data <= std_logic_vector(data(0 to dst_data'length-1));
 
@@ -195,6 +197,9 @@ begin
 
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (not full and dst_irdy1);
+		end generate;
+		tp_g : if debug generate
+			tp(5) <= dst_irdy1;
 		end generate;
 
 		nolatency_g : if latency = 0 generate

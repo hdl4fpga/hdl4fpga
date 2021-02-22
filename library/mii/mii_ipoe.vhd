@@ -577,9 +577,9 @@ begin
 					end if;
 				end process;
 
-				tp(1) <= icmppl_txen;
-				tp(2) <= '1';
-				tp(3 to 3+4-1) <= icmppl_txd;
+--				tp(1) <= icmppl_txen;
+--				tp(2) <= '1';
+--				tp(3 to 3+4-1) <= icmppl_txd;
 			end block;
 
 			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
