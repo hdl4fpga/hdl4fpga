@@ -5,11 +5,13 @@
 #include <time.h>
 #include <errno.h>
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <ws2tcpip.h>
 #include <wininet.h>
 #include <fcntl.h>
 #define	pipe(fds) _pipe(fds, 1024, O_BINARY)
+
+WSADATA wsaData;
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -22,11 +24,18 @@
 #include <math.h>
 #include "ahdlc.h"
 
+#define PORT	57001
 #define QUEUE   4
 #define MAXLEN (8*1024)
 
+int pkt_sent = 0;
+int pkt_lost = 0;
+
 FILE *comm;
 FILE *fout;
+
+char hostname[256] = "";
+int sckt;
 
 int loglevel;
 #define LOG0 (loglevel & (1 << 0))
@@ -250,13 +259,25 @@ void fprint_rgtrs (FILE *file, struct rgtr_node *node)
 }
 
 #define RGTR0_ID       0x00
-#define RGTRACK_ID     0x00
+#define RGTRACK_ID     0x01
 #define RGTRDMAADDR_ID 0x16
 
 struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup) {
 	node->rgtr->data[0]  = (dup) ? 0x80 : 0x00;
 	node->rgtr->data[0] |= (0x3f & ack);
 	return node;
+}
+
+struct sockaddr_in sa_trgt;
+socklen_t sl_trgt = sizeof(sa_trgt);
+
+void socket_send(char * data, int len)
+{
+	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+		perror ("sending packet");
+		abort();
+	}
+	pkt_sent++;
 }
 
 void ahdlc_send(char * data, int len)
@@ -279,19 +300,19 @@ void ahdlc_send(char * data, int len)
 		fputc(data[i], comm);
 	}
 	fputc(0x7e, comm);
+	pkt_sent++;
 }
 
-void ahdlc_sendrgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
+void send_buffer(char * data, int len)
 {
-	char unsigned buffer[MAXLEN];
-	int len1 = sizeof(buffer);
-
-	rgtr2raw(buffer, &len1, node);
-	memcpy(buffer+len1, data, len);
-	ahdlc_send(buffer, len1+len);
+	if (strlen(hostname)) {
+		socket_send(data,len);
+	} else {
+		ahdlc_send(data, len);
+	}
 }
 
-void ahdlc_sendrgtr(struct rgtr_node *node)
+void send_rgtr(struct rgtr_node *node)
 {
 	char unsigned buffer[MAXLEN];
 	int len = sizeof(buffer);
@@ -301,32 +322,77 @@ void ahdlc_sendrgtr(struct rgtr_node *node)
 		for (int i = 0; i < len; i++) fprintf (stderr, "0x%02x ", buffer[i]);
 		fputc('\n', stderr);
 	}
-	ahdlc_send(buffer, len);
-}
 
-void send_rgtr(struct rgtr_node *node)
-{
-	ahdlc_sendrgtr(node);
+	send_buffer(buffer, len);
 }
 
 void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 {
-	ahdlc_sendrgtrrawdata(node, data, len);
+	char unsigned buffer[MAXLEN];
+	int len1 = sizeof(buffer);
+
+	rgtr2raw(buffer, &len1, node);
+	memcpy(buffer+len1, data, len);
+
+	send_buffer(buffer, len+len1);
 }
 
-int  pkt_lost = 0;
 
-int ahdlc_rcvd(char unsigned *buffer, int maxlen)
+int socket_rcvd(char unsigned *buffer, int maxlen)
 {
-	int len;
+	static struct sockaddr_in sa_src;
+	static socklen_t sl_src  = sizeof(sa_src);
 
-	short unsigned fcs;
-	struct timeval tv;
+	int len;
 	int err;
 	int retry;
 
 	pkt_lost++;
 	len = 0;
+	retry = 0;
+	{
+		fd_set rfds;
+		struct timeval tv;
+
+		FD_ZERO(&rfds);
+		FD_SET(sckt, &rfds);
+		tv.tv_sec  = 0;
+		tv.tv_usec = 1000;
+
+		if ((err = select(sckt+1, &rfds, NULL, NULL, &tv)) == -1) {
+			perror ("select");
+			abort();
+		} else {
+			if (err > 0 && FD_ISSET(sckt, &rfds)) {
+				if ((len = recvfrom(sckt, buffer, maxlen, 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+					perror ("recvfrom");
+					abort();
+				}
+				pkt_lost--;
+				return len;
+			} else {
+				if (retry++ > 1024) {
+					return -1;
+				}
+				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
+			}
+		}
+	}
+
+	return -1;
+}
+
+int ahdlc_rcvd(char unsigned *buffer, int maxlen)
+{
+	int len;
+	int err;
+	int retry;
+
+	short unsigned fcs;
+	struct timeval tv;
+
+	pkt_lost++;
+	len   = 0;
 	retry = 0;
 	for (int i = 0; i < maxlen; i++) {
 		fd_set rfds;
@@ -351,7 +417,9 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 				perror("reading serial");
 				abort();
 			} else {
-				if (retry++ > 1024) return -1;
+				if (retry++ > 1024) {
+					return -1;
+				}
 				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
 				i--;
 			}
@@ -400,11 +468,61 @@ struct rgtr_node *rcvd_rgtr()
 	struct rgtr_node *node;
 
 	static char unsigned buffer[MAXLEN];
-	if ((len = ahdlc_rcvd(buffer, sizeof(buffer))) < 0)
-		return NULL;
+	if (strlen(hostname)) {
+		if ((len = socket_rcvd(buffer, sizeof(buffer))) < 0) {
+			return NULL;
+		}
+	} else {
+		if ((len = ahdlc_rcvd(buffer, sizeof(buffer))) < 0) {
+			return NULL;
+		}
+	}
 	node = rawdata2rgtr(buffer, len);
-//--	if (LOG2) print_rgtrs(node);
+//	if (LOG2) print_rgtrs(node);
+
 	return node;
+}
+
+void init_socket ()
+{
+
+	static struct hostent *host = NULL;
+	static struct sockaddr_in sa_host;
+
+#ifdef _WIN32
+	if (WSAStartup(MAKEWORD(2,2), &wsaData)) {
+		abort();
+	}
+#endif
+
+	if (!(host=gethostbyname(hostname))) {
+		fprintf (stderr, "Hostname '%s' not found\n", hostname);
+		exit(1);
+	}
+	
+	memset (&sa_trgt, 0, sizeof (sa_trgt));
+	sa_trgt.sin_family = AF_INET;
+	sa_trgt.sin_port   = htons(PORT);
+	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
+
+	memset (&sa_host, 0, sizeof (sa_host));
+	sa_host.sin_family = AF_INET;
+	sa_host.sin_port   = htons(PORT);	
+	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
+	if ((sckt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+		perror ("Can't open socket");
+		abort();
+	}
+
+	if (bind(sckt, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
+		perror ("can't bind socket");
+		abort();
+	}
+
+	//	DON'T FRAGMENT, 
+	// int tol = 2;	// Time To Live
+	// setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(tol));
+
 }
 
 void init_comms ()
@@ -420,13 +538,11 @@ void init_comms ()
 	}
 	setvbuf(stdin,  NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
-	setvbuf(stderr, NULL, _IONBF, 0);
 }
 
 int main (int argc, char *argv[])
 {
 
-	char hostname[256];
 	int pktmd;
 	int nooutput;
 	pktmd    = 0;
@@ -434,8 +550,10 @@ int main (int argc, char *argv[])
 	opterr   = 0;
 	nooutput = 0;
 
+	setvbuf(stderr, NULL, _IONBF, 0);
+
 	int c;
-	while ((c = getopt (argc, argv, "dloph:")) != -1) {
+	while ((c = getopt (argc, argv, "loph:")) != -1) {
 		switch (c) {
 		case 'l':
 			loglevel = 3;
@@ -454,39 +572,43 @@ int main (int argc, char *argv[])
 		case '?':
 			exit(1);
 		default:
-			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
-			exit(1);
+			fprintf (stderr, "usage : sendbyudp [ -l ] [ -o ] [ -p ] [ -h hostname ]\n");
+			abort();
 		}
 	}
 
-	init_comms();
+	if (strlen(hostname) > 0) {
+		init_socket();
+		if (LOG1) fprintf (stderr, "Socket has been initialized\n");
+	} else {
+		init_comms();
+		if (LOG1) fprintf (stderr, "COMMS has been initialized\n");
+	}
+
 	if (nooutput) {
 		fout = NULL;
 	}
 
-	char unsigned rgtr0_buffer[5];
-	struct rgtr_node *rgtr0_out = set_rgtrnode(new_rgtrnode(), RGTR0_ID,   rgtr0_buffer,   sizeof(rgtr0_buffer));
-	struct rgtr_node *ack_out   = nest_rgtrnode(rgtr0_out, RGTRACK_ID, 1);
-
+	char unsigned ackout_buffer[3];
+	struct rgtr_node *ack_out  = set_rgtrnode(new_rgtrnode(), RGTRACK_ID, ackout_buffer, sizeof(ackout_buffer));
 	struct rgtr_node *queue_in = NULL;
-	struct rgtr_node *rgtr0_in = NULL;
+	struct rgtr_node *ack_in   = NULL;
 
 	// Reset ack //
 	// --------- //
 
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
-	int ack = 0x0a;
+	int ack = 0x0b;
 	for(;;) {
 
 	
 		queue_in = delete_queue(queue_in);
-		rgtr0_in = delete_queue(rgtr0_in);
 
 		if (LOG1) fprintf (stderr, "Sending ACK\n");
 
-		set_acknode(ack_out, ack, 0x0);
-		send_rgtr(rgtr0_out);
+		set_acknode(ack_out, ack, 0x00);
+		send_rgtr(ack_out);
 
 		if (LOG1) fprintf (stderr, "Waiting ACK\n");
 		queue_in = rcvd_rgtr();
@@ -497,23 +619,22 @@ int main (int argc, char *argv[])
 
 		if (LOG1) print_rgtrs(queue_in);
 		if (LOG1) fprintf (stderr, "ACK received\n");
-		rgtr0_in = lookup(RGTR0_ID, queue_in);
-		rgtr0_in = childrgtrs(rgtr0_in->rgtr);
+		ack_in = lookup(RGTRACK_ID, queue_in);
 
-		if (!rgtr0_in) {
+		if (!ack_in) {
 			if (LOG1) fprintf (stderr, "ACK error\n");
 			continue;
 		}
 
-		if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) {
+		if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0) {
 			break;
-		} else if (LOG1) fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n",
-			ack, lookup(RGTRACK_ID, rgtr0_in)->rgtr->data[0]);
+		} else {
+			if (LOG1) fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n", ack, rgtr2int(ack_in));
+		}
 
 	}
 
 	queue_in = delete_queue(queue_in);
-	rgtr0_in = delete_queue(rgtr0_in);
 	if (LOG0) fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
 
 	// Processing data //
@@ -530,63 +651,74 @@ int main (int argc, char *argv[])
 		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
 			if (fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
-				if (LOG1) fprintf (stderr, "Packet length %d\n", length);
+				if (LOG1) {
+					fprintf (stderr, "Packet length %d\n", length);
+				}
 			} else break;
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
-			if (LOG1) fprintf (stderr, "Packet read length %d\n", n);
+			if (LOG1) {
+				fprintf (stderr, "Packet read length %d\n", n);
+
+//				struct rgtr_node *head;
+//				print_rgtrs (head = rawdata2rgtr(buffer, n));
+//				delete_queue(head);
+			}
+
 			length = n;
 			if (length > MAXLEN) {
 				if (LOG1) fprintf (stderr, "Packet length %d greater than %d\n", length, MAXLEN);
 				abort();
 			}
 
-			ack++;
+			(ack = (ack += 1) % 0x40);
 
 			if (LOG0) fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			
 			set_acknode(ack_out, ack, 0x0);
-			send_rgtrrawdata(rgtr0_out, buffer, length);
+			send_rgtrrawdata(ack_out, buffer, length);
 
 			if (LOG0) fprintf (stderr, ">>> CHECKING ACK <<<\n");
 			for(;;) {
 				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
 				queue_in = delete_queue(queue_in);
-				rgtr0_in = delete_queue(rgtr0_in);
 				queue_in = rcvd_rgtr();
 				if (LOG1) print_rgtrs(queue_in);
 				if (queue_in) {
 					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
 
-					rgtr0_in = lookup(RGTR0_ID, queue_in);
-					rgtr0_in = childrgtrs(rgtr0_in->rgtr);
-					if (LOG1) {
-						fprintf (stderr, "rgtr0_in\n", n);
-						print_rgtrs(rgtr0_in);
-					}
-					if (!rgtr0_in) {
+					ack_in = lookup(RGTRACK_ID, queue_in);
+					if (!ack_in) {
 						if (LOG1) {
 							fprintf (stderr, "ACK missed\n");
 						}
 						continue;
 					}
+					if (LOG1) {
+						fprintf (stderr, "ack_in\n", n);
+						print_rgtr(ack_in);
+					}
 
-					if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0) {
-						if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x80) != 0) {
+					if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0) {
+						if (((ack ^ rgtr2int(ack_in)) & 0x80) != 0) {
 							struct rgtr_node *queue_out;
 							int data;
 
+							if (LOG1) {
+								fprintf (stderr, "----> %x\n", ack);
+							}
 							queue_out = rawdata2rgtr(buffer, length);
 							if (LOG1) {
 								fprintf (stderr, "queue_out\n", n);
 								print_rgtrs(queue_out);
 							}
+							abort();
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 
 							if (data & 0x80000000L) {
-								ack++;
+								(ack = (ack += 1) % 0x40);
 							} else {
 								break;
 							}
@@ -595,9 +727,7 @@ int main (int argc, char *argv[])
 						}
 					} else {
 						if (LOG1) {
-							fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", 
-								(char unsigned) ack, 
-								(char unsigned) rgtr2int(lookup(RGTRACK_ID, rgtr0_in)));
+							fprintf (stderr, "acknowlege sent 0x%02x received 0x%02x\n", (char unsigned) ack, (char unsigned) rgtr2int(ack_in));
 						}
 						continue;
 					}
@@ -605,12 +735,12 @@ int main (int argc, char *argv[])
 				}
 
 				if (LOG1) fprintf (stderr, "waiting time out\n");
-				if (LOG1) print_rgtrs(rgtr0_out);
+				if (LOG1) print_rgtrs(ack_out);
 				if (LOG1) fprintf (stderr, "sending package again\n");
 
 				if (LOG1) fprintf (stderr, "rgtr_out\n") ;
 				set_acknode(ack_out, ack, 0x0);
-				send_rgtrrawdata(rgtr0_out, buffer, length);
+				send_rgtrrawdata(ack_out, buffer, length);
 				if (LOG1) fprintf (stderr, "rgtr_out\n") ;
 			}
 
@@ -624,32 +754,29 @@ int main (int argc, char *argv[])
 				if (LOG1) print_rgtrs(queue_in);
 				
 				if ((dmaaddr = lookup(RGTRDMAADDR_ID, queue_in))) {
-					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) break;
+					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) {
+						break;
+					}
 				}
 
 				queue_in = delete_queue(queue_in);
-				rgtr0_in = delete_queue(rgtr0_in);
 				if (LOG1) fprintf (stderr, "dma not ready\n");
 				if (LOG1) fprintf (stderr, "sending new acknowlege\n");
-				set_acknode(ack_out, ++ack, 0x0);
-				send_rgtr(rgtr0_out);
+				set_acknode(ack_out, (ack = (ack += 1) % 0x40), 0x0);
+				send_rgtr(ack_out);
 
 				for (;;) {
 					queue_in = rcvd_rgtr();
 					if (queue_in) {
-						rgtr0_in = lookup(RGTR0_ID, queue_in);
-						if (rgtr0_in) {
-							rgtr0_in = childrgtrs(rgtr0_in->rgtr);
-							if (rgtr0_in) {
-								if (((ack ^ rgtr2int(lookup(RGTRACK_ID, rgtr0_in))) & 0x3f) == 0)
-									break;
-								else
-									continue;
-							}
+						if (ack_in = lookup(RGTRACK_ID, queue_in)) {
+							if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0)
+								break;
+							else
+								continue;
 						}
 					}
 					set_acknode(ack_out, ack, 0x0);
-					send_rgtr(rgtr0_out);
+					send_rgtr(ack_out);
 				}
 			}
 			if (LOG1) fprintf (stderr, "dma ready\n");
@@ -668,7 +795,6 @@ int main (int argc, char *argv[])
 				queue_in = queue_in->next;
 				delete_rgtrnode(node);
 			}
-			rgtr0_in = delete_queue(rgtr0_in);
 		} else {
 			if(LOG0) fprintf(stderr, "eof %d\n", feof(stdin));
 			break;

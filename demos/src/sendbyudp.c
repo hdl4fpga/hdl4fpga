@@ -470,7 +470,6 @@ struct rgtr_node *rcvd_rgtr()
 	static char unsigned buffer[MAXLEN];
 	if (strlen(hostname)) {
 		if ((len = socket_rcvd(buffer, sizeof(buffer))) < 0) {
-		fprintf (stderr, "Hostname '%s' not found\n", hostname);
 			return NULL;
 		}
 	} else {
@@ -652,19 +651,28 @@ int main (int argc, char *argv[])
 		if (LOG0) fprintf (stderr, ">>> READING PACKET <<<\n");
 		if (pktmd) {
 			if (fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
-				if (LOG1) fprintf (stderr, "Packet length %d\n", length);
+				if (LOG1) {
+					fprintf (stderr, "Packet length %d\n", length);
+				}
 			} else break;
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
-			if (LOG1) fprintf (stderr, "Packet read length %d\n", n);
+			if (LOG1) {
+				fprintf (stderr, "Packet read length %d\n", n);
+
+//				struct rgtr_node *head;
+//				print_rgtrs (head = rawdata2rgtr(buffer, n));
+//				delete_queue(head);
+			}
+
 			length = n;
 			if (length > MAXLEN) {
 				if (LOG1) fprintf (stderr, "Packet length %d greater than %d\n", length, MAXLEN);
 				abort();
 			}
 
-			ack++;
+			(ack = (ack += 1) % 0x40);
 
 			if (LOG0) fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			
@@ -681,15 +689,15 @@ int main (int argc, char *argv[])
 					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
 
 					ack_in = lookup(RGTRACK_ID, queue_in);
-					if (LOG1) {
-						fprintf (stderr, "ack_in\n", n);
-						print_rgtr(ack_in);
-					}
 					if (!ack_in) {
 						if (LOG1) {
 							fprintf (stderr, "ACK missed\n");
 						}
 						continue;
+					}
+					if (LOG1) {
+						fprintf (stderr, "ack_in\n", n);
+						print_rgtr(ack_in);
 					}
 
 					if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0) {
@@ -697,16 +705,20 @@ int main (int argc, char *argv[])
 							struct rgtr_node *queue_out;
 							int data;
 
+							if (LOG1) {
+								fprintf (stderr, "----> %x\n", ack);
+							}
 							queue_out = rawdata2rgtr(buffer, length);
 							if (LOG1) {
 								fprintf (stderr, "queue_out\n", n);
 								print_rgtrs(queue_out);
 							}
+							abort();
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 
 							if (data & 0x80000000L) {
-								ack++;
+								(ack = (ack += 1) % 0x40);
 							} else {
 								break;
 							}
@@ -742,14 +754,15 @@ int main (int argc, char *argv[])
 				if (LOG1) print_rgtrs(queue_in);
 				
 				if ((dmaaddr = lookup(RGTRDMAADDR_ID, queue_in))) {
-					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) break;
-		abort();
+					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) {
+						break;
+					}
 				}
 
 				queue_in = delete_queue(queue_in);
 				if (LOG1) fprintf (stderr, "dma not ready\n");
 				if (LOG1) fprintf (stderr, "sending new acknowlege\n");
-				set_acknode(ack_out, ++ack, 0x0);
+				set_acknode(ack_out, (ack = (ack += 1) % 0x40), 0x0);
 				send_rgtr(ack_out);
 
 				for (;;) {
