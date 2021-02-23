@@ -198,6 +198,7 @@ begin
 		signal dmasin_irdy   : std_logic;
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
+		signal rgtr_dmadata  : std_logic_vector(32-1 downto 0);
 		signal datactlr_irdy : std_logic;
 		signal dmaaddr_irdy  : std_logic;
 		signal dmaaddr_trdy  : std_logic;
@@ -304,8 +305,7 @@ begin
 		sio_dmaio <= 
 			reverse(x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
 			x"01" & x"00" & reverse(ack_rgtr) &
---			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"aff" & x"0000", 8);
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & tp(1 to 16)  & x"000", 8);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -376,8 +376,8 @@ begin
 		generic map (
 		debug => true,
 			max_depth  => fifo_depth,
-			latency    => 2,
-			async_mode => false, --true,
+			latency    => 3,
+			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => fifo_gray)
@@ -390,18 +390,19 @@ begin
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => dmacfg_clk,
 			dst_irdy   => dmaiolen_irdy,
-			dst_trdy   => '0', --dmaio_next,
+			dst_trdy   => dmaio_next,
 			dst_data   => dmaio_len,
 			tp => tp1);
 		tp <= tp1;
 		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
+		rgtr_dmadata <= reverse(rgtr_data(0 to ctlr_di'length-1),8);
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifodata_depth,
-			async_mode => false, --true,
-			latency    => 3,
+			async_mode => true,
+			latency    => 2,
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => false)
@@ -409,13 +410,12 @@ begin
 			src_clk    => sio_clk,
 			src_irdy   => dmadata_irdy,
 			src_trdy   => dmadata_trdy,
-			src_data   => rgtr_data(0 to ctlr_di'length-1),
+			src_data   => rgtr_dmadata, 
 
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => ctlr_clk,
 			dst_trdy   => ctlr_di_req,
-			dst_data   => dummy); --ctlr_di);
-		ctlr_di <= (others => '1');
+			dst_data   => ctlr_di);
 		ctlr_di_dv <= ctlr_di_req;
 
 		base_addr_e : entity hdl4fpga.sio_rgtr
@@ -521,7 +521,7 @@ begin
 			generic map (
 				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
 				async_mode => true,
-				latency    => 2,
+				latency    => 3,
 				gray_code  => false,
 				check_sov  => false, --true,
 				check_dov  => true)

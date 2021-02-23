@@ -575,8 +575,8 @@
     <property xil_pn:name="GTS Cycle During Suspend/Wakeup Sequence" xil_pn:value="4" xil_pn:valueState="default"/>
     <property xil_pn:name="GWE Cycle During Suspend/Wakeup Sequence" xil_pn:value="5" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Architecture Only (No Entity Declaration)" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Clock Region Report" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Generate Clock Region Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Constraints Interaction Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Datasheet Section" xil_pn:value="true" xil_pn:valueState="default"/>

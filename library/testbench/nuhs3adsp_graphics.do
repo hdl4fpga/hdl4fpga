@@ -30,12 +30,15 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/dst_irdy1
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(0)
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(1)
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(2)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(0)
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(1)
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(2)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(0)
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(1)
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(2)
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/data
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/rdata
 TreeUpdate [SetDefaultTree]
@@ -55,4 +58,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {20722404330 fs} {22559904330 fs}
+WaveRestoreZoom {0 fs} {42 us}

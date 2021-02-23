@@ -116,6 +116,7 @@ begin
 
 			signal fill : std_logic;
 			signal q1   : unsigned(0 to latency-1); -- XILINX synthesys BUG
+			signal v1   : unsigned(0 to latency-1); -- XILINX synthesys BUG
 		begin
 
 			dstirdy_p : process (dst_clk)
@@ -164,9 +165,10 @@ begin
 							end if;
 						end if;
 
+						v := v1;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 						v(v'length-1) := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 
-						q := q1;  -- avoid XILINX ISE's synthesys BUG register instead of latch
+						q := q1;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 						if dst_irdy='1' and dst_trdy='1' then
 							data := data sll dst_data'length;
 							q    := q sll 1;
@@ -195,7 +197,8 @@ begin
 					slr      := slr sll dst_data'length;
 					v        := v sll 1;
 
-					q1 <= q;  -- avoid XILINX ISE's synthesys BUG register instead of latch
+					q1 <= q;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
+					v1 <= v;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 				end if;
 
 			end process;

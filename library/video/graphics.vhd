@@ -197,14 +197,14 @@ begin
 
 		des_irdy   => vram_irdy,
 		des_data   => des_data);
-	vram_data <= reverse(des_data, ctlr_di'length);
+	vram_data <= des_data;
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => fifo_size,
-		async_mode => false, --true,
-		latency   => 2,
+		async_mode => true,
+		latency   => 3,
 		check_sov => false, --true,
 		check_dov => true,
 		gray_code => false)
