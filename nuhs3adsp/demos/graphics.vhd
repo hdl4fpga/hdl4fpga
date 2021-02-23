@@ -162,8 +162,8 @@ architecture graphics of nuhs3adsp is
 	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
 --	constant video_mode : video_modes := mode480p;
 
-	alias dmacfg_clk : std_logic is sys_clk;
---	alias dmacfg_clk : std_logic is mii_txc;
+--	alias dmacfg_clk : std_logic is sys_clk;
+	alias dmacfg_clk : std_logic is mii_txc;
 	alias ctlr_clks : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
 

@@ -304,7 +304,8 @@ begin
 		sio_dmaio <= 
 			reverse(x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
 			x"01" & x"00" & reverse(ack_rgtr) &
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"000" & x"0000", 8);
+--			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"aff" & x"0000", 8);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & tp(1 to 16)  & x"000", 8);
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
@@ -376,7 +377,7 @@ begin
 		debug => true,
 			max_depth  => fifo_depth,
 			latency    => 2,
-			async_mode => true,
+			async_mode => false, --true,
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => fifo_gray)
@@ -389,10 +390,10 @@ begin
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => dmacfg_clk,
 			dst_irdy   => dmaiolen_irdy,
-			dst_trdy   => dmaio_next,
+			dst_trdy   => '0', --dmaio_next,
 			dst_data   => dmaio_len,
 			tp => tp1);
-		tp(1 to 5) <= tp1(1 to 4) & dmalen_irdy;
+		tp <= tp1;
 		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
