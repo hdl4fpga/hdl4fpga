@@ -204,7 +204,7 @@ begin
 	generic map (
 		max_depth => fifo_size,
 		async_mode => true,
-		latency   => 3,
+		latency   => 2,
 		check_sov => false, --true,
 		check_dov => true,
 		gray_code => false)

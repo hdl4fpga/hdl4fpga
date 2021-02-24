@@ -113,23 +113,18 @@ begin
 
 
 		latency_g : if latency > 0 generate
-
-			signal fill : std_logic;
-			signal q1   : unsigned(0 to latency-1); -- XILINX synthesys BUG
-			signal v1   : unsigned(0 to latency-1); -- XILINX synthesys BUG
+			signal fill  : std_logic;
+			signal q_reg : unsigned(0 to latency-1); -- XILINX synthesys BUG
+			signal v_req : unsigned(0 to latency-1); -- XILINX synthesys BUG
 		begin
 
 			dstirdy_p : process (dst_clk)
-
-				variable v    : unsigned(0 to latency-1);
-				variable slr  : unsigned(0 to dst_data'length*v'length-1);
 				variable q    : unsigned(0 to latency-1);
 				variable b    : unsigned(0 to latency-1);
-				variable data : unsigned(0 to q'length*dst_data'length-1);
-				variable aux : std_logic;
-
+				variable v    : unsigned(0 to latency-1);
+				variable slr  : unsigned(0 to dst_data'length*v'length-1);
+				variable data : unsigned(0 to dst_data'length*q'length-1);
 			begin
-
 				if rising_edge(dst_clk) then
 					slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
 					if latency > 1 then
@@ -141,7 +136,6 @@ begin
 						b := (others => '0');
 						v := (others => '0');
 					else
-
 						if to_bit(b(b'right))='0' then
 							if dst_irdy1='0' then
 								if dst_trdy='1' then
@@ -165,10 +159,10 @@ begin
 							end if;
 						end if;
 
-						v := v1;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
+						v := v_req;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 						v(v'length-1) := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 
-						q := q1;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
+						q := q_reg;  -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 						if dst_irdy='1' and dst_trdy='1' then
 							data := data sll dst_data'length;
 							q    := q sll 1;
@@ -183,13 +177,8 @@ begin
 								end if;
 							end loop;
 						end if;
-
-						if debug then
-							tp(0*latency+1 to 1*latency) <= std_logic_vector(b);
-							tp(1*latency+1 to 2*latency) <= std_logic_vector(q);
-							tp(2*latency+1 to 3*latency) <= std_logic_vector(v);
-						end if;
 					end if;
+
 					fill     <= not b(0);
 					dst_irdy <= q(0);
 					dst_data <= std_logic_vector(data(0 to dst_data'length-1));
@@ -197,16 +186,11 @@ begin
 					slr      := slr sll dst_data'length;
 					v        := v sll 1;
 
-					q1 <= q;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
-					v1 <= v;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
+					q_reg <= q;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
+					v_req <= v;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 				end if;
-
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
-		end generate;
-		tp_g : if debug generate
-			tp(3*latency+1) <= dst_irdy1;
-			tp(3*latency+2 to 3*latency+2+3*(addr_length+1)-1) <= std_logic_vector(wr_cntr & wr_cmp & rd_cntr);
 		end generate;
 
 		nolatency_g : if latency = 0 generate
@@ -214,6 +198,7 @@ begin
 			dst_irdy <= dst_irdy1;
 			dst_data <= rdata;
 		end generate;
+
 	end generate;
 
 	max_depth1_g : if max_depth = 1 generate

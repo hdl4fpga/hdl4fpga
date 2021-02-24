@@ -376,7 +376,7 @@ begin
 		generic map (
 		debug => true,
 			max_depth  => fifo_depth,
-			latency    => 3,
+			latency    => 2,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -502,7 +502,7 @@ begin
 			buffdv_e : entity hdl4fpga.align
 			generic map (
 				n => 1,
-				d => (0 to 0 => 2))
+				d => (0 to 0 => 3))
 			port map (
 				clk   => ctlr_clk,
 				di(0) => ctlrio_irdy,
@@ -511,7 +511,7 @@ begin
 			buffdo_e : entity hdl4fpga.align
 			generic map (
 				n => ctlr_do'length,
-				d => (0 to ctlr_do'length-1 => 2))
+				d => (0 to ctlr_do'length-1 => 3))
 			port map (
 				clk => ctlr_clk,
 				di  => ctlr_do,
@@ -521,7 +521,7 @@ begin
 			generic map (
 				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
 				async_mode => true,
-				latency    => 3,
+				latency    => 2,
 				gray_code  => false,
 				check_sov  => false, --true,
 				check_dov  => true)
@@ -759,9 +759,9 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
-	dev_len    <= dmavideo_len  & dmaio_len;
-	dev_addr   <= dmavideo_addr & dmaio_addr(dmactlr_addr'length-1 downto 0);
-	dev_we     <= '0'           & dmaio_we;
+	dev_len  <= dmavideo_len  & dmaio_len;
+	dev_addr <= dmavideo_addr & dmaio_addr(dmactlr_addr'length-1 downto 0);
+	dev_we   <= '0'           & dmaio_we;
 
 	dmactlr_e : entity hdl4fpga.dmactlr
 	generic map (
@@ -769,6 +769,7 @@ begin
 		mark        => mark,
 		tcp         => ddr_tcp,
 
+		data_gear   => data_gear,
 		bank_size   => bank_size,
 		addr_size   => addr_size,
 		coln_size   => coln_size)

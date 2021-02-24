@@ -37,6 +37,7 @@ entity dmatrans is
 		mark          : natural := m6t;
 		tcp           : natural := 6000;
  
+		data_gear     : natural := 1;
 		bank_size     : natural;
 		addr_size     : natural;
 		coln_size     : natural);
@@ -64,6 +65,7 @@ entity dmatrans is
 		ctlr_a        : out std_logic_vector;
 		ctlr_dio_req  : in  std_logic);
 
+	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
 end;
 
 architecture def of dmatrans is
@@ -75,7 +77,7 @@ architecture def of dmatrans is
 
 	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col   : std_logic_vector(dmatrans_iaddr'length-ctlr_a'length-ctlr_b'length-1 downto 0);
+	signal ddrdma_col   : std_logic_vector(coln_size-1 downto 0);
 	signal col          : std_logic_vector(ddrdma_col'range);
 
 	signal leoc         : std_logic;
@@ -254,11 +256,7 @@ begin
 			if ctlr_cas='0' then
 				ctlr_a <= ddrdma_row;
 			else
-				if ddr_stdr(mark)=SDRAM then
-					ctlr_a <= std_logic_vector(saved_col);
-				else
-					ctlr_a <= std_logic_vector(shift_left(saved_col,1));
-				end if;
+				ctlr_a <= std_logic_vector(shift_left(saved_col,coln_align));
 			end if;
 		end if;
 	end process;

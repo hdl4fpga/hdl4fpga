@@ -42,7 +42,7 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/laten
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/data
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/rdata
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21490142720 fs} 0}
+WaveRestoreCursors {{Cursor 1} {37900988080 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 296
@@ -58,4 +58,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {42 us}
+WaveRestoreZoom {37286182560 fs} {40142832500 fs}

@@ -34,6 +34,7 @@ entity dmactlr is
 		mark          : natural;
 		tcp           : natural;
 
+		data_gear     : natural;
 		bank_size     : natural;
 		addr_size     : natural;
 		coln_size     : natural);
@@ -189,6 +190,7 @@ begin
 		fpga          => fpga,
 		mark          => mark,
 		tcp           => tcp,
+		data_gear     => data_gear,
 		bank_size     => bank_size,
 		addr_size     => addr_size,
 		coln_size     => coln_size)
