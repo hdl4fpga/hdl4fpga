@@ -33,14 +33,11 @@ use hdl4fpga.ddr_param.all;
 
 entity dmatrans is
 	generic (
-		fpga          : natural;
-		mark          : natural := m6t;
-		tcp           : natural := 6000;
- 
-		data_gear     : natural := 1;
-		bank_size     : natural;
-		addr_size     : natural;
-		coln_size     : natural);
+		lrcd           : natural;
+		data_gear      : natural;
+		bank_size      : natural;
+		addr_size      : natural;
+		coln_size      : natural);
 	port (
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
@@ -52,25 +49,25 @@ entity dmatrans is
 		dmatrans_tlen  : out std_logic_vector;
 		dmatrans_cnl   : in  std_logic := '0';
 
-		ctlr_inirdy   : in std_logic;
-		ctlr_refreq   : in std_logic;
+		ctlr_inirdy    : in std_logic;
+		ctlr_refreq    : in std_logic;
 
-		ctlr_irdy     : buffer std_logic;
-		ctlr_trdy     : in  std_logic;
-		ctlr_rw       : out std_logic := '0';
-		ctlr_ras      : in  std_logic := '0';
-		ctlr_cas      : in  std_logic := '0';
-		ctlr_act      : in  std_logic;
-		ctlr_b        : out std_logic_vector;
-		ctlr_a        : out std_logic_vector;
-		ctlr_dio_req  : in  std_logic);
+		ctlr_irdy      : buffer std_logic;
+		ctlr_trdy      : in  std_logic;
+		ctlr_rw        : out std_logic := '0';
+		ctlr_ras       : in  std_logic := '0';
+		ctlr_cas       : in  std_logic := '0';
+		ctlr_act       : in  std_logic;
+		ctlr_b         : out std_logic_vector;
+		ctlr_a         : out std_logic_vector;
+		ctlr_dio_req   : in  std_logic);
 
-	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
+	constant coln_align  : natural := unsigned_num_bits(data_gear)-1;
+
 end;
 
 architecture def of dmatrans is
 
-	constant lrcd       : natural := to_ddrlatency(tcp, mark, trcd);
 	constant latency    : natural := 2;
 
 	signal ctlrdma_irdy : std_logic;

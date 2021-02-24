@@ -27,6 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_db.all;
+use hdl4fpga.ddr_param.all;
 
 entity dmactlr is
 	generic (
@@ -187,9 +189,7 @@ begin
 	dmatrans_we <= to_stdulogic(to_bit(trans_we(0)));
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
-		fpga          => fpga,
-		mark          => mark,
-		tcp           => tcp,
+		lrcd          => to_ddrlatency(tcp, mark, tRCD),
 		data_gear     => data_gear,
 		bank_size     => bank_size,
 		addr_size     => addr_size,

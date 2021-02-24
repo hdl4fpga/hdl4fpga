@@ -109,10 +109,8 @@ end;
 
 architecture mix of demo_graphics is
 
-	signal tp1            : std_logic_vector(1 to 32);
-
-	signal dmactlr_len    : std_logic_vector(24-1 downto 0);
-	signal dmactlr_addr   : std_logic_vector(24-1 downto 0);
+	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
+	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
@@ -371,12 +369,12 @@ begin
 		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
 		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
-		rgtr_dmalen <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmalen'length)),8);
+		rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 		debug => true,
 			max_depth  => fifo_depth,
-			latency    => 2,
+			latency    => 3,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -385,15 +383,13 @@ begin
 			src_clk    => sio_clk,
 			src_irdy   => dmalen_irdy,
 			src_trdy   => dmalen_trdy,
-			src_data   => rgtr_dmalen,
+			src_data   => rgtr_dmalen(dmaio_len'range),
 
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => dmacfg_clk,
 			dst_irdy   => dmaiolen_irdy,
 			dst_trdy   => dmaio_next,
-			dst_data   => dmaio_len,
-			tp => tp1);
-		tp <= tp1;
+			dst_data   => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
 		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
@@ -759,8 +755,8 @@ begin
 
 	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
-	dev_len  <= dmavideo_len  & dmaio_len;
-	dev_addr <= dmavideo_addr & dmaio_addr(dmactlr_addr'length-1 downto 0);
+	dev_len  <= dmavideo_len  & dmaio_len(dmactlr_len'range);
+	dev_addr <= dmavideo_addr & dmaio_addr(dmactlr_addr'range);
 	dev_we   <= '0'           & dmaio_we;
 
 	dmactlr_e : entity hdl4fpga.dmactlr

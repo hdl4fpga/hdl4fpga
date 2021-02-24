@@ -60,12 +60,9 @@ architecture graphics of nuhs3adsp is
 	--------------------------------------------------
 
 	constant sys_per      : real    := 50.0;
-	constant ddr_mul      : natural := 10; --(10/1) 200 (25/3) 166, (20/3) 133
-	constant ddr_div      : natural := 1;
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
-	constant ddr_tcp      : natural := (natural(sys_per)*ddr_div*1000)/(ddr_mul); -- 1 ns /1ps
 
 
 	constant sclk_phases  : natural := 4;
@@ -75,7 +72,7 @@ architecture graphics of nuhs3adsp is
 	constant data_edges   : natural := 2;
 	constant bank_size    : natural := ddr_ba'length;
 	constant addr_size    : natural := ddr_a'length;
-	constant coln_size    : natural := 10;
+	constant coln_size    : natural := 8;
 	constant data_gear    : natural := 2;
 	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := 8;
@@ -122,10 +119,14 @@ architecture graphics of nuhs3adsp is
     signal video_blank    : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
 
-	type display_param is record
-		mode    : videotiming_ids;
+	type pll_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
+	end record;
+
+	type display_param is record
+		pll  : pll_params;
+		mode : videotiming_ids;
 	end record;
 
 	type video_modes is (
@@ -138,13 +139,33 @@ architecture graphics of nuhs3adsp is
 
 	type displayparam_vector is array (video_modes) of display_param;
 	constant video_tab : displayparam_vector := (
-		modedebug   => (mode => pclk_debug, dcm_mul => 4, dcm_div => 2),
-		mode480p    => (mode => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
-		mode600p    => (mode => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode900p    => (mode => pclk100_00m1600x900at60,  dcm_mul => 5, dcm_div => 1),
-		mode1080p   => (mode => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1),
-		mode1080p1  => (mode => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
+		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
+		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
+		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
+		mode900p    => (mode => pclk100_00m1600x900at60,  pll => (dcm_mul =>  5, dcm_div => 1)),
+		mode1080p   => (mode => pclk140_00m1920x1080at60, pll => (dcm_mul =>  7, dcm_div => 1)),
+		mode1080p1  => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
+	type ddr_params is record
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
+	end record;
+
+	type ddr_speeds is (
+		ddr_133MHz,
+		ddr_166MHz,
+		ddr_200MHz);
+
+	type ddram_vector is array (ddr_speeds) of ddr_params;
+	constant ddr_tab : ddram_vector := (
+		ddr_133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
+		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
+		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
+
+	constant ddr_speed : ddr_speeds := ddr_200MHz;
+	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
+
+	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 	function setif (
 		constant expr  : boolean; 
 		constant true  : video_modes;
@@ -157,9 +178,9 @@ architecture graphics of nuhs3adsp is
 		return false;
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
+--	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
 --	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
---	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;
@@ -188,8 +209,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 50.0,
-		dfs_mul => video_tab(video_mode).dcm_mul,
-		dfs_div => video_tab(video_mode).dcm_div)
+		dfs_mul => video_tab(video_mode).pll.dcm_mul,
+		dfs_div => video_tab(video_mode).pll.dcm_div)
 	port map(
 		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
@@ -208,8 +229,8 @@ begin
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
+		dfs_mul => ddr_param.pll.dcm_mul,
+		dfs_div => ddr_param.pll.dcm_div)
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
@@ -293,8 +314,8 @@ begin
 		ctlr_bl      => "001",
 --		cas          => "010",	-- 2   133 Mhz
 --		cas          => "110",	-- 2.5 166 Mhz
-		ctlr_cl      => "011",	-- 3   200 Mhz
-
+--		cas          => "011",	-- 3   200 Mhz
+		ctlr_cl      => ddr_param.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),

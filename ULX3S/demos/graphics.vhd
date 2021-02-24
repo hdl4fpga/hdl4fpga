@@ -57,7 +57,7 @@ architecture graphics of ulx3s is
 	constant data_gear    : natural := 1;
 	constant bank_size    : natural := sdram_ba'length;
 	constant addr_size    : natural := sdram_a'length;
-	constant coln_size    : natural := 10;
+	constant coln_size    : natural := 9;
 	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
 
