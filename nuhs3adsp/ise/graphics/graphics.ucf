@@ -24,8 +24,6 @@
 NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
-#NET "xtal" CLOCK_DEDICATED_ROUTE = FALSE;
-#PIN "mii_dfs_e/dfs_i/DCM_SP.CLKIN" CLOCK_DEDICATED_ROUTE = FALSE;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
@@ -38,11 +36,9 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 40 ns HIGH 50%;
 
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
-#OFFSET = IN 0 ns VALID 20 ns BEFORE mii_rxc RISING;
 
-# NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
-# NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
-# NET "ddrphy_dqsi*"  MAXSKEW  = 1.000 ns;
+NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.750 ns;
+NET "ctlrphy_dqsi[*]"  MAXSKEW  = 1.000 ns;
 
 # ###################### #
 # DDR 200 Mhz rate clock #

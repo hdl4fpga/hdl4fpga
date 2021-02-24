@@ -146,6 +146,22 @@ architecture graphics of nuhs3adsp is
 		mode1080p   => (mode => pclk140_00m1920x1080at60, pll => (dcm_mul =>  7, dcm_div => 1)),
 		mode1080p1  => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
+	function setif (
+		constant expr  : boolean; 
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
+
+--	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
+--	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
+	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
+
 	type ddr_params is record
 		pll : pll_params;
 		cas : std_logic_vector(0 to 3-1);
@@ -166,21 +182,6 @@ architecture graphics of nuhs3adsp is
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
-	function setif (
-		constant expr  : boolean; 
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-
---	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
---	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
-	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;

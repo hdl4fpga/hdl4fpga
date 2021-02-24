@@ -636,7 +636,7 @@ begin
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => 1))
+			d => (0 to 0 => 2))
 		port map (
 			clk   => ctlr_clk,
 			di(0) => ctlrvideo_irdy,
@@ -645,7 +645,7 @@ begin
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => 1))
+			d => (0 to ctlr_do'length-1 => 2))
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,
