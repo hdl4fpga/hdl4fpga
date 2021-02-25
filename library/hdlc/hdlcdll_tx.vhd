@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity hdlcfcs_tx is
+entity hdlcdll_tx is
 	port (
 		fcs_g       : in  std_logic_vector := x"1021";
 		fcs_rem     : in  std_logic_vector := x"1d0f";
@@ -45,7 +45,7 @@ entity hdlcfcs_tx is
 
 end;
 
-architecture def of hdlcfcs_tx is
+architecture def of hdlcdll_tx is
 
 	signal fcs_frm  : std_logic;
 	signal fcs_data : std_logic_vector(hdlctx_data'range);

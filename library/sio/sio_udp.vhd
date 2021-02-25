@@ -375,8 +375,4 @@ begin
 
 	end block;
 		
---	tp(1) <= txc_rxdv;
---	tp(2) <= '1';
---	tp(3 to 3+udppl_txd'length-1) <= txc_rxd;
-
 end;
