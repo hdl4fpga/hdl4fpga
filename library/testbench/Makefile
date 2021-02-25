@@ -152,6 +152,8 @@ HDL4FPGA__ff__xilinx = $(LIB_HDL4FPGA)/ff/xilinx.dat
 HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
 HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
+HDL4FPGA__ethfcs_tx__mix = $(LIB_HDL4FPGA)/ethfcs_tx/mix.dat
+HDL4FPGA__ethfcs_tx = $(LIB_HDL4FPGA)/ethfcs_tx/_primary.dat
 HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
 HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
@@ -381,6 +383,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ff) \
     $(HDL4FPGA__ethpkg__body) \
     $(HDL4FPGA__ethpkg) \
+    $(HDL4FPGA__ethfcs_tx__mix) \
+    $(HDL4FPGA__ethfcs_tx) \
     $(HDL4FPGA__eth_tx__def) \
     $(HDL4FPGA__eth_tx) \
     $(HDL4FPGA__eth_rx__def) \
@@ -905,7 +909,7 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 
 $(HDL4FPGA__eth_tx) \
 $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
-		$(HDL4FPGA__eth_dll) \
+		$(HDL4FPGA__ethfcs_tx) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__mii_mux) \
 		$(HDL4FPGA__ethpkg) \
@@ -915,6 +919,18 @@ $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/eth_tx.vhd
+
+$(HDL4FPGA__ethfcs_tx) \
+$(HDL4FPGA__ethfcs_tx__mix) : ../mii/ethfcs_tx.vhd \
+		$(HDL4FPGA__crc) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__mii_rom) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/ethfcs_tx.vhd
 
 $(HDL4FPGA__ethpkg) \
 $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \

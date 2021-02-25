@@ -142,7 +142,7 @@ begin
 	dll_txd  <= wirebus (hwda_txd & hwsa_txd & llc_txd & lat_txd, hwda_txen & hwsa_txen & llc_txen & lat_txen);
 	dll_txen <= padd_txen or lat_txen;
 
-	dll_e : entity hdl4fpga.eth_dll
+	fcs_e : entity hdl4fpga.ethfcs_tx
 	port map (
 		mii_txc  => mii_txc,
 		dll_txen => dll_txen,
