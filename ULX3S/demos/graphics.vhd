@@ -410,6 +410,8 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		profile      => 0,
+
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
 		mark         => mark,

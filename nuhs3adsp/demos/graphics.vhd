@@ -283,6 +283,7 @@ begin
 	
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		profile      => 1,
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
 		mark         => mark,
@@ -324,9 +325,6 @@ begin
 		ctlr_clks    => ctlr_clks,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
---		cas          => "010",	-- 2   133 Mhz
---		cas          => "110",	-- 2.5 166 Mhz
---		cas          => "011",	-- 3   200 Mhz
 		ctlr_cl      => ddr_param.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),

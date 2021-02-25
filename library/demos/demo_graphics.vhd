@@ -32,6 +32,7 @@ use hdl4fpga.videopkg.all;
 entity demo_graphics is
 	generic (
 		debug        : boolean := false;
+		profile      : natural;
 
 		ddr_tcp      : natural;
 		fpga         : natural;
@@ -350,7 +351,7 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
-			latency    => 1,
+			latency    => setif(profile=0, 0, 1),
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -373,7 +374,7 @@ begin
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
-			latency    => 1,
+			latency    => setif(profile=0, 0, 1),
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -397,7 +398,7 @@ begin
 		generic map (
 			max_depth  => fifodata_depth,
 			async_mode => true,
-			latency    => 2,
+			latency    => setif(profile=0, 3, 2),
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => false)
