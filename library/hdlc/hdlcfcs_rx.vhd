@@ -30,35 +30,35 @@ use hdl4fpga.std.all;
 
 entity hdlcfcs_rx is
 	port (
-		fcs_g     : in  std_logic_vector := x"1021";
-		fcs_rem   : in  std_logic_vector := x"1d0f";
+		fcs_g       : in  std_logic_vector := x"1021";
+		fcs_rem     : in  std_logic_vector := x"1d0f";
 
-		uart_clk  : in  std_logic;
+		uart_clk    : in  std_logic;
 
-		hdlc_frm  : in  std_logic;
-		hdlc_irdy : in  std_logic;
-		hdlc_trdy : out std_logic := '1';
-		hdlc_data : in  std_logic_vector;
+		hdlcrx_frm  : in  std_logic;
+		hdlcrx_irdy : in  std_logic;
+		hdlcrx_trdy : out std_logic := '1';
+		hdlcrx_data : in  std_logic_vector;
 
-		fcs_sb    : out std_logic;
-		fcs_vld   : out std_logic);
+		fcs_sb      : out std_logic;
+		fcs_vld     : out std_logic);
 end;
 
 architecture def of hdlcfcs_rx is
 
 	signal crc_init : std_logic;
-	signal crc      : std_logic_vector(ccitt_residue'range);
+	signal crc      : std_logic_vector(fcs_rem'range);
 
 begin
 
-	crc_init <= not to_stdulogic(to_bit(hdlc_frm));
+	crc_init <= not to_stdulogic(to_bit(hdlcrx_frm));
 	crc_ccitt_e : entity hdl4fpga.crc
 	port map (
 		g    => fcs_g,
 		clk  => uart_clk,
 		init => crc_init,
-		ena  => hdlc_irdy,
-		data => hdlc_data,
+		ena  => hdlcrx_irdy,
+		data => hdlcrx_data,
 		crc  => crc);
 
 	process(hdlcrx_frm, uart_clk)

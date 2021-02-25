@@ -36,9 +36,9 @@ entity hdlcsync_rx is
 		uart_rxdv : in  std_logic;
 		uart_rxd  : in  std_logic_vector(8-1 downto 0);
 
-		hdlc_frm  : buffer std_logic;
-		hdlc_irdy : buffer std_logic;
-		hdlc_data : buffer std_logic_vector(8-1 downto 0));
+		hdlcrx_frm  : buffer std_logic;
+		hdlcrx_irdy : buffer std_logic;
+		hdlcrx_data : buffer std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of hdlcsync_rx is
@@ -51,26 +51,25 @@ begin
 	begin
 		if rising_edge(uart_clk) then
 			if uart_rxdv='1' then
-				case uart_rxd is
-				when hdlc_flag =>
+				if uart_rxd=hdlc_flag then
 					frm := '0';
 					esc := '0';
-				when hdlc_esc =>
+				elsif uart_rxd=hdlc_esc then
 					frm := '1';
 					esc := '1';
-				when others =>
+				else
 					frm := '1';
 					esc := '0';
-				end case;
-				if hdlc_irdy='1' then
-					debug <= hdlc_data;
+				end if;
+				if hdlcrx_irdy='1' then
+					debug <= hdlcrx_data;
 				end if;
 			end if;
 		end if;
-		hdlc_frm  <= (setif(uart_rxd/=hdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
-		hdlc_data <= setif(esc='1', uart_rxd xor x"20", uart_rxd);
+		hdlcrx_frm  <= (setif(uart_rxd/=hdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
+		hdlcrx_data <= setif(esc='1', uart_rxd xor x"20", uart_rxd);
 	end process;
 
-	hdlc_irdy <= hdlc_frm and uart_rxdv and setif(uart_rxd/=hdlc_esc);
+	hdlcrx_irdy <= hdlcrx_frm and uart_rxdv and setif(uart_rxd/=hdlc_esc);
 
 end;

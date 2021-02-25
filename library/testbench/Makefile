@@ -132,6 +132,10 @@ HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
 HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
 HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
 HDL4FPGA__icmprply_tx = $(LIB_HDL4FPGA)/icmprply_tx/_primary.dat
+HDL4FPGA__hdlcsync_rx__def = $(LIB_HDL4FPGA)/hdlcsync_rx/def.dat
+HDL4FPGA__hdlcsync_rx = $(LIB_HDL4FPGA)/hdlcsync_rx/_primary.dat
+HDL4FPGA__hdlcfcs_rx__def = $(LIB_HDL4FPGA)/hdlcfcs_rx/def.dat
+HDL4FPGA__hdlcfcs_rx = $(LIB_HDL4FPGA)/hdlcfcs_rx/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__grant__def = $(LIB_HDL4FPGA)/grant/def.dat
@@ -353,6 +357,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__icmprqst_rx) \
     $(HDL4FPGA__icmprply_tx__def) \
     $(HDL4FPGA__icmprply_tx) \
+    $(HDL4FPGA__hdlcsync_rx__def) \
+    $(HDL4FPGA__hdlcsync_rx) \
+    $(HDL4FPGA__hdlcfcs_rx__def) \
+    $(HDL4FPGA__hdlcfcs_rx) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
     $(HDL4FPGA__grant__def) \
@@ -762,22 +770,22 @@ $(HDL4FPGA__ddrto__spartan3) : ../xilinx/spartan3/ddro.vhd \
 
 $(HDL4FPGA__demo_graphics) \
 $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
+		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__ddr_db) \
-		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
 		$(HDL4FPGA__vga2dvid) \
 		$(HDL4FPGA__graphics) \
-		$(HDL4FPGA__align) \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_dmahdsk) \
-		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__modeline_calculator) \
@@ -841,11 +849,11 @@ $(HDL4FPGA__dhcp_rx__def) : ../mii/dhcp_rx.vhd \
 
 $(HDL4FPGA__dmactlr) \
 $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
-		$(HDL4FPGA__ddr_param) \
-		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__dmatrans) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__grant) \
+		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -953,6 +961,25 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/graphics.vhd
+
+$(HDL4FPGA__hdlcfcs_rx) \
+$(HDL4FPGA__hdlcfcs_rx__def) : ../hdlc/hdlcfcs_rx.vhd \
+		$(HDL4FPGA__crc) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcfcs_rx.vhd
+
+$(HDL4FPGA__hdlcsync_rx) \
+$(HDL4FPGA__hdlcsync_rx__def) : ../hdlc/hdlcsync_rx.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcsync_rx.vhd
 
 $(HDL4FPGA__icmprply_tx) \
 $(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \
@@ -1329,6 +1356,7 @@ $(HDL4FPGA__sio_dmahdsk__def) : ../sio/sio_dmahdsk.vhd \
 
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
+		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_buffer) \
@@ -1416,7 +1444,7 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
-		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__sio_mii) \
