@@ -28,92 +28,77 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_hdlc is
+entity sio_dayhdlc is
 	port (
+	
 		uart_clk  : in  std_logic;
 		uart_rxdv : in  std_logic;
-		uart_rxd  : in  std_logic_vector;
+		uart_rxd  : in  std_logic_vector(8-1 downto 0);
 
 		uart_idle : in  std_logic;
-		uart_txen : out std_logic;
-		uart_txd  : out std_logic_vector;
+		uart_txen : buffer std_logic;
+		uart_txd  : out std_logic_vector(8-1 downto 0);
 
-		sio_clk   : in  std_logic;
-		si_frm    : in  std_logic;
-		si_irdy   : in  std_logic;
-		si_trdy   : buffer std_logic;
+		sio_clk   : in std_logic;
+		sio_addr  : in  std_logic := '0';
+
+		si_frm    : in  std_logic := '0';
+		si_irdy   : in  std_logic := '1';
+		si_trdy   : out std_logic;
 		si_data   : in  std_logic_vector;
 
 		so_frm    : out std_logic;
 		so_irdy   : out std_logic;
-		so_trdy   : in  std_logic;
-		so_data   : out std_logic_vector);
+		so_trdy   : in  std_logic := '1';
+		so_data   : out std_logic_vector;
+		tp : out std_logic_vector(1 to 4));
+	
 end;
 
-architecture def of sio_hdlc is
+architecture beh of sio_dayhdlc is
 
-	signal hdlcfcsrx_vld : std_logic;
+	signal sihdlc_frm  : std_logic;
+	signal sihdlc_trdy : std_logic;
+	signal sihdlc_irdy : std_logic;
+	signal sihdlc_data : std_logic_vector(so_data'range);
 
-	signal hdlcrx_frm    : std_logic;
-	signal hdlcrx_irdy   : std_logic;
-	signal hdlcrx_data   : std_logic_vector(so_data'range);
-
-	signal hdlctx_frm    : std_logic;
-	signal hdlctx_irdy   : std_logic;
-	signal hdlctx_trdy   : std_logic;
-	signal hdlctx_data   : std_logic_vector(si_data'range);
+	signal sohdlc_frm  : std_logic;
+	signal sohdlc_trdy : std_logic;
+	signal sohdlc_irdy : std_logic;
+	signal sohdlc_data : std_logic_vector(so_data'range);
 
 begin
 
-	hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
+	sihdlc_frm  <= si_frm  when sio_addr='0' else '0'; 
+	sihdlc_irdy <= si_irdy when sio_addr='0' else '0';
+	si_trdy <= (sihdlc_trdy and uart_idle and uart_txen) when sio_addr='0' else so_trdy;
+	sihdlc_data <= si_data;
+
+	siohdlc_e : entity hdl4fpga.sio_hdlc
 	port map (
-		uart_clk    => uart_clk,
-		uart_rxdv   => uart_rxdv,
-		uart_rxd    => uart_rxd,
+		uart_clk  => uart_clk,
 
-		hdlcrx_frm  => hdlcrx_frm,
-		hdlcrx_irdy => hdlcrx_irdy,
-		hdlcrx_data => hdlcrx_data,
-		fcs_vld     => hdlcfcsrx_vld);
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd,
 
-	flow_e : entity hdl4fpga.sio_flow
-	port map (
-		phyi_clk    => uart_clk,
-		phyi_frm    => hdlcrx_frm,
-		phyi_fcsvld => hdlcfcsrx_vld,
+		uart_idle => uart_idle,
+		uart_txd  => uart_txd,
+		uart_txen => uart_txen,
 
-		buffer_frm  => uart_clk,
-		buffer_irdy => hdlcrx_irdy,
-		buffer_data => hdlcrx_data,
+		sio_clk   => sio_clk,
+		si_frm    => sihdlc_frm,
+		si_irdy   => sihdlc_irdy,
+		si_trdy   => sihdlc_trdy,
+		si_data   => sihdlc_data,
 
-		so_clk      => sio_clk,
-		so_frm      => so_frm,
-		so_irdy     => so_irdy,
-		so_trdy     => so_trdy,
-		so_data     => so_data,
+		so_frm    => sohdlc_frm,
+		so_irdy   => sohdlc_irdy,
+		so_trdy   => sohdlc_trdy,
+		so_data   => sohdlc_data);
 
-		si_clk      => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_trdy     => si_trdy,
-		si_data     => si_data,
-
-		phyo_clk    => uart_clk,
-		phyo_frm    => hdlctx_frm,
-		phyo_irdy   => hdlctx_irdy,
-		phyo_trdy   => hdlctx_trdy,
-		phyo_data   => hdlctx_data);
-
-	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-	port map (
-		uart_clk    => uart_clk,
-		uart_idle   => uart_idle,
-		uart_txen   => uart_txen,
-		uart_txd    => uart_txd,
-
-		hdlctx_frm  => hdlctx_frm,
-		hdlctx_irdy => hdlctx_irdy,
-		hdlctx_trdy => hdlctx_trdy,
-		hdlctx_data => hdlctx_data);
+	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm; 
+	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;
+	sohdlc_trdy <= si_irdy when sio_addr/='0' else so_trdy;
+	so_data <= si_data when sio_addr/='0' else sohdlc_data;
 
 end;
