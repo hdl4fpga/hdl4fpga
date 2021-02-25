@@ -31,8 +31,13 @@ use hdl4fpga.videopkg.all;
 
 library ecp5u;
 use ecp5u.components.all;
+library ieee;
+use ieee.std_logic_1164.all;
 
-architecture mii_debug of ulx3s is
+library ecp5u;
+use ecp5u.components.all;
+
+architecture sio_debug of ulx3s is
 
 	constant sys_freq   : real    := 25.0e6;
 
@@ -257,7 +262,7 @@ begin
 		uart_txen => uart_txen,
 		uart_txd  => uart_txd);
 
-	siodayahdlc_e : entity hdl4fpga.sio_dayahdlc
+	siodayahdlc_e : entity hdl4fpga.sio_dayhdlc
 	port map (
 		uart_clk  => uart_clk,
 		uart_rxdv => uart_rxdv,

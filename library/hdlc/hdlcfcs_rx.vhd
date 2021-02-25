@@ -30,8 +30,8 @@ use hdl4fpga.std.all;
 
 entity hdlcfcs_rx is
 	port (
-		fcs_g       : in  std_logic_vector := x"1021";
-		fcs_rem     : in  std_logic_vector := x"1d0f";
+		fcs_g       : in  std_logic_vector := std_logic_vector'(x"1021");
+		fcs_rem     : in  std_logic_vector := std_logic_vector'(x"1d0f");
 
 		uart_clk    : in  std_logic;
 
