@@ -15,18 +15,18 @@ if [ "$HOST" == "" ] ; then
 		./scripts/setuart.sh
 	fi
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc ${STDOUT} ${@} -p")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@} -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc ${STDOUT} ${@} -p")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@} -p")
 	else
-		(eval "exec ${DEVFD}<>${TTY} ./bin/sioahdlc ${STDOUT} ${@}")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@}")
 	fi
 else
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@} -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@} -p")
 	else
-		(eval "exec ./bin/sioahdlc -h ${HOST} ${STDOUT} ${@}")
+		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@}")
 	fi
 fi

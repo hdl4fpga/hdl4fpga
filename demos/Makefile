@@ -1,5 +1,5 @@
 .PHONY: bin
-all : bin/rgb8topixel bin/format bin/bundle bin/sioahdlc
+all : bin/rgb8topixel bin/format bin/bundle bin/siosend
 
 bin/rgb8topixel : src/rgb8topixel.c
 	mkdir -p bin
@@ -13,9 +13,9 @@ bin/bundle : src/bundle.c
 	mkdir -p bin
 	cc -O2 src/bundle.c -o bin/bundle
 
-bin/sioahdlc : src/ahdlc.h src/ahdlc.c src/sioahdlc.c
+bin/siosend : src/ahdlc.h src/ahdlc.c src/siosend.c
 	mkdir -p bin
-	cc -O2 src/ahdlc.h src/ahdlc.c src/sioahdlc.c -o bin/sioahdlc
+	cc -O2 src/ahdlc.h src/ahdlc.c src/siosend.c -o bin/siosend
 
 clean :
 	rm  -rf ./bin
