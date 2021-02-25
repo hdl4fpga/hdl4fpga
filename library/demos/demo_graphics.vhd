@@ -196,7 +196,7 @@ begin
 		signal dmasin_irdy   : std_logic;
 		signal dmadata_irdy  : std_logic;
 		signal dmadata_trdy  : std_logic;
-		signal rgtr_dmadata  : std_logic_vector(32-1 downto 0);
+		signal rgtr_dmadata  : std_logic_vector(ctlr_di'length-1 downto 0);
 		signal datactlr_irdy : std_logic;
 		signal dmaaddr_irdy  : std_logic;
 		signal dmaaddr_trdy  : std_logic;
@@ -350,7 +350,7 @@ begin
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
-			latency    => 2,
+			latency    => 1,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
@@ -372,9 +372,8 @@ begin
 		rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
-		debug => true,
 			max_depth  => fifo_depth,
-			latency    => 3,
+			latency    => 1,
 			async_mode => true,
 			check_sov  => true,
 			check_dov  => true,
