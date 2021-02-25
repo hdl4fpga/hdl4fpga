@@ -37,7 +37,6 @@ entity hdlcfcs_rx is
 
 		hdlcrx_frm  : in  std_logic;
 		hdlcrx_irdy : in  std_logic;
-		hdlcrx_trdy : out std_logic := '1';
 		hdlcrx_data : in  std_logic_vector;
 
 		fcs_sb      : out std_logic;
@@ -52,7 +51,7 @@ architecture def of hdlcfcs_rx is
 begin
 
 	crc_init <= not to_stdulogic(to_bit(hdlcrx_frm));
-	crc_ccitt_e : entity hdl4fpga.crc
+	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => fcs_g,
 		clk  => uart_clk,

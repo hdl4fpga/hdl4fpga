@@ -132,10 +132,16 @@ HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
 HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
 HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
 HDL4FPGA__icmprply_tx = $(LIB_HDL4FPGA)/icmprply_tx/_primary.dat
+HDL4FPGA__hdlcsync_tx__def = $(LIB_HDL4FPGA)/hdlcsync_tx/def.dat
+HDL4FPGA__hdlcsync_tx = $(LIB_HDL4FPGA)/hdlcsync_tx/_primary.dat
 HDL4FPGA__hdlcsync_rx__def = $(LIB_HDL4FPGA)/hdlcsync_rx/def.dat
 HDL4FPGA__hdlcsync_rx = $(LIB_HDL4FPGA)/hdlcsync_rx/_primary.dat
+HDL4FPGA__hdlcfcs_tx__def = $(LIB_HDL4FPGA)/hdlcfcs_tx/def.dat
+HDL4FPGA__hdlcfcs_tx = $(LIB_HDL4FPGA)/hdlcfcs_tx/_primary.dat
 HDL4FPGA__hdlcfcs_rx__def = $(LIB_HDL4FPGA)/hdlcfcs_rx/def.dat
 HDL4FPGA__hdlcfcs_rx = $(LIB_HDL4FPGA)/hdlcfcs_rx/_primary.dat
+HDL4FPGA__hdlcdll_rx__def = $(LIB_HDL4FPGA)/hdlcdll_rx/def.dat
+HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__grant__def = $(LIB_HDL4FPGA)/grant/def.dat
@@ -150,8 +156,6 @@ HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
 HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
-HDL4FPGA__eth_dll__mix = $(LIB_HDL4FPGA)/eth_dll/mix.dat
-HDL4FPGA__eth_dll = $(LIB_HDL4FPGA)/eth_dll/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -357,10 +361,16 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__icmprqst_rx) \
     $(HDL4FPGA__icmprply_tx__def) \
     $(HDL4FPGA__icmprply_tx) \
+    $(HDL4FPGA__hdlcsync_tx__def) \
+    $(HDL4FPGA__hdlcsync_tx) \
     $(HDL4FPGA__hdlcsync_rx__def) \
     $(HDL4FPGA__hdlcsync_rx) \
+    $(HDL4FPGA__hdlcfcs_tx__def) \
+    $(HDL4FPGA__hdlcfcs_tx) \
     $(HDL4FPGA__hdlcfcs_rx__def) \
     $(HDL4FPGA__hdlcfcs_rx) \
+    $(HDL4FPGA__hdlcdll_rx__def) \
+    $(HDL4FPGA__hdlcdll_rx) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
     $(HDL4FPGA__grant__def) \
@@ -375,8 +385,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__eth_tx) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
-    $(HDL4FPGA__eth_dll__mix) \
-    $(HDL4FPGA__eth_dll) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -883,18 +891,6 @@ $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dpram.vhd
 
-$(HDL4FPGA__eth_dll) \
-$(HDL4FPGA__eth_dll__mix) : ../mii/eth_dll.vhd \
-		$(HDL4FPGA__crc) \
-		$(HDL4FPGA__align) \
-		$(HDL4FPGA__mii_rom) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/eth_dll.vhd
-
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(HDL4FPGA__crc) \
@@ -962,6 +958,18 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/graphics.vhd
 
+$(HDL4FPGA__hdlcdll_rx) \
+$(HDL4FPGA__hdlcdll_rx__def) : ../hdlc/hdlcdll_rx.vhd \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__hdlcfcs_rx) \
+		$(HDL4FPGA__hdlcsync_rx) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcdll_rx.vhd
+
 $(HDL4FPGA__hdlcfcs_rx) \
 $(HDL4FPGA__hdlcfcs_rx__def) : ../hdlc/hdlcfcs_rx.vhd \
 		$(HDL4FPGA__crc) \
@@ -972,6 +980,17 @@ $(HDL4FPGA__hdlcfcs_rx__def) : ../hdlc/hdlcfcs_rx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcfcs_rx.vhd
 
+$(HDL4FPGA__hdlcfcs_tx) \
+$(HDL4FPGA__hdlcfcs_tx__def) : ../hdlc/hdlcfcs_tx.vhd \
+		$(HDL4FPGA__hdlcsync_tx) \
+		$(HDL4FPGA__crc) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcfcs_tx.vhd
+
 $(HDL4FPGA__hdlcsync_rx) \
 $(HDL4FPGA__hdlcsync_rx__def) : ../hdlc/hdlcsync_rx.vhd \
 		$(IEEE__std_logic_textio) \
@@ -980,6 +999,15 @@ $(HDL4FPGA__hdlcsync_rx__def) : ../hdlc/hdlcsync_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcsync_rx.vhd
+
+$(HDL4FPGA__hdlcsync_tx) \
+$(HDL4FPGA__hdlcsync_tx__def) : ../hdlc/hdlcsync_tx.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcsync_tx.vhd
 
 $(HDL4FPGA__icmprply_tx) \
 $(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \

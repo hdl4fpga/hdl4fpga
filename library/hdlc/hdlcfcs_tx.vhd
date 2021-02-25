@@ -28,77 +28,100 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity hdlcsync_tx is
-	generic (
-		hdlc_flag : std_logic_vector := x"7e";
-		hdlc_esc  : std_logic_vector := x"7d");
+entity hdlcfcs_tx is
 	port (
+		fcs_g       : in  std_logic_vector := x"1021";
+		fcs_rem     : in  std_logic_vector := x"1d0f";
+
 		uart_clk    : in  std_logic;
-		uart_irdy   : out std_logic;
 		uart_idle   : in  std_logic;
-		uart_txd    : out std_logic_vector(8-1 downto 0);
+		uart_txen   : out std_logic;
+		uart_txd    : out std_logic_vector;
 
 		hdlctx_frm  : in  std_logic;
 		hdlctx_irdy : in  std_logic;
 		hdlctx_trdy : buffer std_logic;
-		hdlctx_data : in  std_logic_vector(8-1 downto 0));
-
+		hdlctx_data : in  std_logic_vector);
 
 end;
 
-architecture def of hdlcsync_tx is
+architecture def of hdlcfcs_tx is
+
+	signal fcs_frm  : std_logic;
+	signal fcs_data : std_logic_vector(hdlctx_data'range);
+	signal fcs_irdy : std_logic;
+	signal fcs_trdy : std_logic;
+
+	signal crc_init : std_logic;
+	signal crc_sero : std_logic;
+	signal crc_ena  : std_logic;
+	signal crc      : std_logic_vector(0 to 16-1);
+	signal cy       : std_logic;
 
 begin
 
-	process (uart_idle, hdlctx_frm, hdlctx_data, hdlctx_irdy, uart_clk)
-		variable frm : std_logic;
-		variable esc : std_logic;
+	cntr_p : process (uart_clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
+	begin
+		if rising_edge(uart_clk) then
+			if fcs_trdy='1' then
+				if crc_sero='0' then
+					if hdlctx_frm='1' then
+						cntr := to_unsigned(crc'length/hdlctx_data'length-1, cntr'length);
+					end if;
+				elsif cy='0' then
+					cntr := cntr - 1;
+				end if;
+			end if;
+			cy <= setif(cntr(0)/='0');
+		end if;
+	end process;
+
+	fcs_p : process (hdlctx_frm, cy, uart_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(uart_clk) then
 			if uart_idle='1' then
 				if hdlctx_frm='1' then
-					if hdlctx_irdy='1' then
-						if esc='1' then
-							esc := '0';
-						elsif hdlctx_data=hdlc_flag then
-							esc := frm;
-						elsif hdlctx_data=hdlc_esc then
-							esc := frm;
-						end if;
-					else 
-						esc := '0';
+					if cy='1' then
+						q := '0';
 					end if;
 				else
-					esc := '0';
+					q := '1';
 				end if;
-				frm := hdlctx_frm;
 			end if;
 		end if;
-
-		if hdlctx_frm='1' then
-			if esc='1' then
-				uart_txd    <= hdlctx_data xor x"20";
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= uart_idle;
-			elsif hdlctx_data=hdlc_flag then
-				uart_txd    <= hdlc_esc;
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= '0';
-			elsif hdlctx_data=hdlc_esc then
-				uart_txd    <= hdlc_esc;
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= '0';
-			else
-				uart_txd    <= hdlctx_data;
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= uart_idle;
-			end if;
-		else 
-			hdlctx_trdy <= '0';
-			uart_irdy  <= frm;
-			uart_txd   <= hdlc_flag;
-		end if;
+		crc_init <= cy and q;
+		crc_sero <= setif(hdlctx_frm='1', q and not cy, not cy);
 	end process;
 
+	crc_ena <= (hdlctx_frm and hdlctx_irdy and hdlctx_trdy) or (fcs_trdy and crc_sero);
+	crc_e : entity hdl4fpga.crc
+	port map (
+		g    => x"1021",
+		clk  => uart_clk,
+		init => crc_init,
+		ena  => crc_ena,
+		sero => crc_sero,
+		data => hdlctx_data,
+		crc  => crc);
+
+	fcs_frm  <= (hdlctx_frm or crc_sero) and not crc_init;
+	fcs_data <= wirebus(hdlctx_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
+	fcs_irdy <= setif(crc_sero='0', hdlctx_irdy, '1');
+
+	hdlctx_e : entity hdl4fpga.hdlcsync_tx
+	port map (
+		uart_clk    => uart_clk,
+		uart_irdy   => uart_txen,
+		uart_idle   => uart_idle,
+		uart_txd    => uart_txd,
+
+		hdlctx_frm  => fcs_frm,
+		hdlctx_irdy => fcs_irdy, 
+		hdlctx_trdy => fcs_trdy,
+		hdlctx_data => fcs_data);
+
+	hdlctx_trdy <= hdlctx_frm and fcs_trdy and not crc_init and not crc_sero;
 
 end;
