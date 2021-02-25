@@ -134,8 +134,7 @@ architecture graphics of nuhs3adsp is
 		mode480p,
 		mode600p,
 		mode900p,
-		mode1080p,
-		mode1080p1);
+		mode1080p);
 
 	type displayparam_vector is array (video_modes) of display_param;
 	constant video_tab : displayparam_vector := (
@@ -143,8 +142,7 @@ architecture graphics of nuhs3adsp is
 		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
 		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
 		mode900p    => (mode => pclk100_00m1600x900at60,  pll => (dcm_mul =>  5, dcm_div => 1)),
-		mode1080p   => (mode => pclk140_00m1920x1080at60, pll => (dcm_mul =>  7, dcm_div => 1)),
-		mode1080p1  => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
 	function setif (
 		constant expr  : boolean; 
@@ -157,10 +155,6 @@ architecture graphics of nuhs3adsp is
 		end if;
 		return false;
 	end;
-
---	constant video_mode : video_modes := setif(debug, modedebug, mode600p);
---	constant video_mode : video_modes := setif(debug, modedebug, mode1080p);
-	constant video_mode : video_modes := setif(debug, modedebug, mode1080p1);
 
 	type ddr_params is record
 		pll : pll_params;
@@ -178,15 +172,32 @@ architecture graphics of nuhs3adsp is
 		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
 		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
 
-	constant ddr_speed : ddr_speeds := ddr_200MHz;
+	type apps is (
+		grade4,
+		grade5);
+
+	type app_param is record
+		ddr_speed  : ddr_speeds;
+		video_mode : video_modes;
+	end record;
+
+	type apparam_vector is array (apps) of app_param;
+	constant app_tab : apparam_vector := (
+		grade4 => (ddr_166MHz, mode900p),	
+		grade5 => (ddr_200MHz, mode1080p));
+		
+	constant app : apps := grade5;
+	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
+	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
+
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	alias dmacfg_clk : std_logic is sys_clk;
 --	alias dmacfg_clk : std_logic is mii_txc;
-	alias ctlr_clks : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
-	alias ctlr_clk : std_logic is ddrsys_clks(clk0);
+	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
+	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is mii_txc;
