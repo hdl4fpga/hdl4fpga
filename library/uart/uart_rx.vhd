@@ -37,7 +37,7 @@ entity uart_rx is
 		uart_ena  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
 		uart_rxdv : buffer std_logic;
-		uart_rxd  : buffer std_logic_vector(8-1 downto 0));
+		uart_rxd  : buffer std_logic_vector);
 end;
 
 architecture def of uart_rx is
@@ -60,7 +60,11 @@ begin
 			debug_rxdv <= '0';
 			if uart_rxdv='1' then
 				if uart_ena='1' then
-					debug_rxd  <= uart_rxd;
+					if uart_rxd'ascending then
+						debug_rxd <= reverse(uart_rxd);
+					else
+						debug_rxd <= uart_rxd;
+					end if;
 					debug_rxdv <= '1';
 				end if;
 			end if;
@@ -117,7 +121,7 @@ begin
 
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
-		variable data       : unsigned(8-1 downto 0);
+		variable data       : unsigned(uart_rxd'range);
 
 	begin
 		if rising_edge(uart_rxc) then
@@ -143,7 +147,11 @@ begin
 					uart_rxdv <= '0';
 					if full_count='1' then
 						data(0) := sample_rxd;
-						data    := data ror 1;
+						if data'ascending then
+							data := data rol 1;
+						else
+							data := data ror 1;
+						end if;
 						if dcntr(0)='1' then
 							uart_rxdv <= '1';
 							uart_state <= stop_s;

@@ -137,7 +137,7 @@ architecture ulx3s_siodebug of testbench is
 	end;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := -- x"0002_000004";
+	constant data  : std_logic_vector := reverse( -- x"0002_000004";
 --		x"0002000080" &
 --		x"18ff" & 
 --		gen_natural(start => 0, stop => 127, size => 16) &
@@ -179,7 +179,7 @@ architecture ulx3s_siodebug of testbench is
 --		x"170200007f" &
 --		x"1602000080" &
 --		x"170200007f"
-		x"010023" &
+		x"010000" &
 		x"1801" & 
 		x"1234" &
 		x"1602000000" &
@@ -191,21 +191,21 @@ architecture ulx3s_siodebug of testbench is
 --		x"9abc" &
 --		x"1602000000" &
 --		x"1702000000"
+		, 8);
 
-		;
-
-	signal ahdlc_frm  : std_logic;
-	signal ahdlc_irdy : std_logic;
-	signal ahdlc_trdy : std_logic;
-	signal ahdlc_data : std_logic_vector(8-1 downto 0);
+	constant uart_xtal : natural := 25 sec / 1 us;
 
 	signal uart_clk   : std_logic := '0';
 	signal uart_sin   : std_logic;
 	signal uart_trdy  : std_logic;
 	signal uart_irdy  : std_logic;
-	signal uart_txd   : std_logic_vector(8-1 downto 0);
+	signal uart_txd   : std_logic_vector(0 to 8-1);
 
-	constant uart_xtal : natural := 25 sec / 1 us;
+	signal ahdlc_frm  : std_logic;
+	signal ahdlc_irdy : std_logic;
+	signal ahdlc_trdy : std_logic;
+	signal ahdlc_data : std_logic_vector(0 to 8-1);
+
 
 	for all: ulx3s use entity work.ulx3s(sio_debug);
 begin

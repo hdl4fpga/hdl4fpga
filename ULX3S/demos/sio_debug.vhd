@@ -127,10 +127,10 @@ architecture sio_debug of ulx3s is
 	constant baudrate  : natural := 3000000;
 
 	signal uart_rxdv   : std_logic;
-	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+	signal uart_rxd    : std_logic_vector(0 to 8-1);
 	signal uart_idle   : std_logic;
 	signal uart_txen   : std_logic;
-	signal uart_txd    : std_logic_vector(8-1 downto 0);
+	signal uart_txd    : std_logic_vector(0 to 8-1);
 
 	alias sio_clk      : std_logic is uart_clk;
 

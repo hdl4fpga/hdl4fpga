@@ -99,6 +99,7 @@ begin
 		si_data     => si_data,
 
 		phyo_clk    => uart_clk,
+		phyo_idle   => uart_idle,
 		phyo_frm    => hdlctx_frm,
 		phyo_irdy   => hdlctx_irdy,
 		phyo_trdy   => hdlctx_trdy,

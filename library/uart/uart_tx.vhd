@@ -38,7 +38,7 @@ entity uart_tx is
 		uart_sout : out std_logic;
 		uart_idle : buffer std_logic;
 		uart_txen : in  std_logic;
-		uart_txd  : in  std_logic_vector(8-1 downto 0));
+		uart_txd  : in  std_logic_vector);
 end;
  
 architecture def of uart_tx is
@@ -50,8 +50,8 @@ architecture def of uart_tx is
 	signal init_cntr  : std_logic;
 	signal full_count : std_logic;
 
-	signal debug_txd  : std_logic_vector(8-1 downto 0);
 	signal debug_txen : std_logic;
+	signal debug_txd  : std_logic_vector(8-1 downto 0);
 
 begin
  
@@ -61,7 +61,11 @@ begin
 			debug_txen <= '0';
 			if uart_ena='1' then
 				if uart_idle='1' then
-					debug_txd <= uart_txd;
+					if uart_txd'ascending then
+						debug_txd <= reverse(uart_txd);
+					else
+						debug_txd <= uart_txd;
+					end if;
 					debug_txen <= '1';
 				end if;
 			end if;
@@ -101,7 +105,7 @@ begin
 
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
-		variable data       : unsigned(8-1 downto 0);
+		variable data       : unsigned(uart_txd'range);
 
 	begin
 		if rising_edge(uart_txc) then
@@ -121,12 +125,20 @@ begin
 					if full_count='1' then
 						uart_state <= data_s;
 						uart_sout  <= data(0);
-						data := data ror 1;
+						if data'ascending then
+							data := data rol 1;
+						else
+							data := data ror 1;
+						end if;
 					end if;
 				when data_s =>
 					if full_count='1' then
 						uart_sout <= data(0);
-						data := data ror 1;
+						if data'ascending then
+							data := data rol 1;
+						else
+							data := data ror 1;
+						end if;
 						if dcntr(0)='1' then
 							uart_state <= stop_s;
 							dcntr := (others => '-');
