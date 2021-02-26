@@ -73,6 +73,8 @@ HDL4FPGA__sio_dmahdsk__def = $(LIB_HDL4FPGA)/sio_dmahdsk/def.dat
 HDL4FPGA__sio_dmahdsk = $(LIB_HDL4FPGA)/sio_dmahdsk/_primary.dat
 HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
+HDL4FPGA__sio_dayhdlc__beh = $(LIB_HDL4FPGA)/sio_dayhdlc/beh.dat
+HDL4FPGA__sio_dayhdlc = $(LIB_HDL4FPGA)/sio_dayhdlc/_primary.dat
 HDL4FPGA__sio_dayahdlc__beh = $(LIB_HDL4FPGA)/sio_dayahdlc/beh.dat
 HDL4FPGA__sio_dayahdlc = $(LIB_HDL4FPGA)/sio_dayahdlc/_primary.dat
 HDL4FPGA__sio_buffer__def = $(LIB_HDL4FPGA)/sio_buffer/def.dat
@@ -306,6 +308,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sio_dmahdsk) \
     $(HDL4FPGA__sio_dayudp__beh) \
     $(HDL4FPGA__sio_dayudp) \
+    $(HDL4FPGA__sio_dayhdlc__beh) \
+    $(HDL4FPGA__sio_dayhdlc) \
     $(HDL4FPGA__sio_dayahdlc__beh) \
     $(HDL4FPGA__sio_dayahdlc) \
     $(HDL4FPGA__sio_buffer__def) \
@@ -1381,6 +1385,16 @@ $(HDL4FPGA__sio_dayahdlc__beh) : ../sio/sio_dayahdlc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayahdlc.vhd
 
+$(HDL4FPGA__sio_dayhdlc) \
+$(HDL4FPGA__sio_dayhdlc__beh) : ../sio/sio_dayhdlc.vhd \
+		$(HDL4FPGA__sio_hdlc) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayhdlc.vhd
+
 $(HDL4FPGA__sio_dayudp) \
 $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(HDL4FPGA__ipoepkg) \
@@ -1411,8 +1425,6 @@ $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -1444,8 +1456,6 @@ $(HDL4FPGA__sio_flowtx__def) : ../sio/sio_flowtx.vhd \
 $(HDL4FPGA__sio_hdlc) \
 $(HDL4FPGA__sio_hdlc__def) : ../sio/sio_hdlc.vhd \
 		$(HDL4FPGA__hdlcdll_tx) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__hdlcdll_rx) \
 		$(IEEE__std_logic_textio) \

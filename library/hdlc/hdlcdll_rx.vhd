@@ -64,8 +64,8 @@ begin
 		hdlcrx_frm  => hdlcrx_frm,
 		hdlcrx_irdy => hdlcsyncrx_irdy,
 		hdlcrx_data => hdlcsyncrx_data,
-		fcs_sb    => fcs_sb,
-		fcs_vld   => fcs_vld);
+		fcs_sb      => fcs_sb,
+		fcs_vld     => fcs_vld);
 
 	process (hdlcsyncrx_irdy, uart_clk)
 		variable q : unsigned(0 to 2-1);
@@ -73,12 +73,12 @@ begin
 		if rising_edge(uart_clk) then
 			if hdlcrx_frm='0' then
 				q := (others => '0');
-			else
-				q(0) := hdlcsyncrx_irdy;
+			elsif hdlcsyncrx_irdy='1' then
+				q(0) := '1';
 				q := q rol 1;
 			end if;
 		end if;
-		hdlcrx_irdy <= hdlcsyncrx_irdy and q(0);
+		hdlcrx_irdy <= hdlcsyncrx_irdy and to_stdulogic(to_bit(q(0)));
 	end process;
 
 	data_e : entity hdl4fpga.align 
@@ -87,7 +87,7 @@ begin
 		d => (hdlcrx_data'range => 2))
 	port map (
 		clk => uart_clk,
-		ena => hdlcrx_irdy,
+		ena => hdlcsyncrx_irdy,
 		di  => hdlcsyncrx_data,
 		do  => hdlcrx_data);
 

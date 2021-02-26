@@ -82,7 +82,7 @@ begin
 		phyi_frm    => hdlcrx_frm,
 		phyi_fcsvld => hdlcfcsrx_vld,
 
-		buffer_frm  => uart_clk,
+		buffer_frm  => hdlcrx_frm,
 		buffer_irdy => hdlcrx_irdy,
 		buffer_data => hdlcrx_data,
 
