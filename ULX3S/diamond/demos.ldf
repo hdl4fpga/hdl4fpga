@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="sio_debug">
+<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.mii_display" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.sio_flow" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -95,9 +95,6 @@
         <Source name="../../library/uart/uart_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/uart/ahdlc_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/sio/sio_sin.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -110,16 +107,7 @@
         <Source name="../../library/sio/sio_mux.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/sio/sio_dayahdlc.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/sio/sio_buffer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/sio/sio_ahdlc.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/uart/ahdlc_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/common/crc.vhd" type="VHDL" type_short="VHDL">
@@ -191,12 +179,6 @@
         <Source name="../../library/mii/mii_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/sio/sio_flowrx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/sio/sio_flowtx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -209,12 +191,30 @@
         <Source name="../../library/demos/demo_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/hdlc/hdlcdll_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/hdlc/hdlcfcs_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/hdlc/hdlcsync_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/hdlc/hdlcsync_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
     <Implementation title="sio_debug" dir="sio_debug" description="sio_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="rom" lib="work" top="ulx3s"/>
+        <Options def_top="hdl4fpga.draw_vline" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>

@@ -137,7 +137,8 @@ architecture ulx3s_siodebug of testbench is
 	end;
 
 	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := reverse( -- x"0002_000004";
+	constant data  : std_logic_vector := reverse(
+		-- x"0002_000004";
 --		x"0002000080" &
 --		x"18ff" & 
 --		gen_natural(start => 0, stop => 127, size => 16) &
@@ -197,14 +198,13 @@ architecture ulx3s_siodebug of testbench is
 
 	signal uart_clk   : std_logic := '0';
 	signal uart_sin   : std_logic;
-	signal uart_trdy  : std_logic;
-	signal uart_irdy  : std_logic;
+	signal uart_idle  : std_logic;
+	signal uart_txen  : std_logic;
 	signal uart_txd   : std_logic_vector(0 to 8-1);
 
-	signal ahdlc_frm  : std_logic;
-	signal ahdlc_irdy : std_logic;
-	signal ahdlc_trdy : std_logic;
-	signal ahdlc_data : std_logic_vector(0 to 8-1);
+	signal hdlctx_frm  : std_logic;
+	signal hdlctx_trdy : std_logic;
+	signal hdlctx_data : std_logic_vector(0 to 8-1);
 
 
 	for all: ulx3s use entity work.ulx3s(sio_debug);
@@ -221,110 +221,43 @@ begin
 		variable n : natural;
 	begin
 		if rst='1' then
-			ahdlc_frm <= '0';
+			hdlctx_frm <= '0';
 			addr      := 0;
 			n := 0;
 		elsif rising_edge(uart_clk) then
 			if addr < data'length then
-				ahdlc_data <= data(addr to addr+8-1);
-				if ahdlc_trdy='1' then
+				hdlctx_data <= data(addr to addr+8-1);
+				if hdlctx_trdy='1' then
 					addr := addr + 8;
 				end if;
 			else
 				if n <0 then
-				if uart_trdy='1' then
+				if uart_idle='1' then
 					addr := 0;
 					n := n + 1;
 				end if;
 				end if;
-				ahdlc_data <= (others => '-');
+				hdlctx_data <= (others => '-');
 			end if;
 			if addr < data'length then
-				ahdlc_frm  <= '1';
+				hdlctx_frm  <= '1';
 			else
-				ahdlc_frm  <= '0';
+				hdlctx_frm  <= '0';
 			end if;
 		end if;
 	end process;
 
-	ahdlcfcs_e : block
+	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
+	port map (
+		uart_clk    => uart_clk,
+		uart_idle   => uart_idle,
+		uart_txen   => uart_txen,
+		uart_txd    => uart_txd,
 
-		signal fcs_frm  : std_logic;
-		signal fcs_data : std_logic_vector(ahdlc_data'range);
-		signal fcs_trdy : std_logic;
-		signal fcs      : std_logic;
-
-		signal crc_init : std_logic;
-		signal crc_ena  : std_logic;
-		signal crc      : std_logic_vector(0 to 16-1);
-		signal cy       : std_logic;
-
-	begin
-
-		fcs_p : process (ahdlc_frm, cy, uart_clk)
-			variable q : std_logic;
-		begin
-			if rising_edge(uart_clk) then
-				if uart_trdy='1' then
-					if ahdlc_frm='1' then
-						if cy='1' then
-							q := '0';
-						end if;
-					else
-						q := '1';
-					end if;
-				end if;
-			end if;
-			crc_init <= cy and q;
-			fcs <= setif(ahdlc_frm='1', q and not cy, not cy);
-		end process;
-
-		cntr_p : process (uart_clk)
-			variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
-		begin
-			if rising_edge(uart_clk) then
-				if fcs_trdy='1' then
-					if fcs='0' then
-						if ahdlc_frm='1' then
-							cntr := to_unsigned(crc'length/ahdlc_data'length-1, cntr'length);
-						end if;
-					elsif cy='0' then
-						cntr := cntr - 1;
-					end if;
-				end if;
-				cy <= setif(cntr(0)/='0');
-			end if;
-		end process;
-
-		crc_ena <= (ahdlc_irdy and ahdlc_trdy and ahdlc_frm) or (fcs_trdy and fcs);
-		crc_ccitt_e : entity hdl4fpga.crc
-		port map (
-			g    => x"1021",
-			clk  => uart_clk,
-			init => crc_init,
-			ena  => crc_ena,
-			sero => fcs,
-			data => ahdlc_data,
-			crc  => crc);
-
-		fcs_frm  <= (ahdlc_frm or fcs) and not crc_init;
-		fcs_data <= wirebus(ahdlc_data & crc(0 to fcs_data'length-1), not fcs & fcs);
-
-		ahdlc_irdy <= '1';
-		ahdlc_trdy <= ahdlc_frm and not (fcs or crc_init)and fcs_trdy;
-		ahdlctx_e : entity hdl4fpga.ahdlc_tx
-		port map (
-			clk        => uart_clk,
-			uart_irdy  => uart_irdy,
-			uart_trdy  => uart_trdy,
-			uart_txd   => uart_txd,
-
-			ahdlc_frm  => fcs_frm,
-			ahdlc_irdy => ahdlc_irdy,
-			ahdlc_trdy => fcs_trdy,
-			ahdlc_data => fcs_data);
-
-	end block;
+		hdlctx_frm  => hdlctx_frm,
+		hdlctx_irdy => '1',
+		hdlctx_trdy => hdlctx_trdy,
+		hdlctx_data => hdlctx_data);
 
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
@@ -333,8 +266,8 @@ begin
 	port map (
 		uart_txc  => uart_clk,
 		uart_sout => uart_sin,
-		uart_idle => uart_trdy,
-		uart_txen => uart_irdy,
+		uart_idle => uart_idle,
+		uart_txen => uart_txen,
 		uart_txd  => uart_txd);
 
 	du_e : ulx3s
