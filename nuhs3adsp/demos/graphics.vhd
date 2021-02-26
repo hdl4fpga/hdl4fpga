@@ -183,7 +183,7 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		grade4 => (ddr_166MHz, mode900p),	
+		grade4 => (ddr_166MHz, mode600p),	
 		grade5 => (ddr_200MHz, mode1080p));
 		
 	constant app : apps := grade5;

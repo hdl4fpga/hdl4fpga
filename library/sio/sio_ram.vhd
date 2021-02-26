@@ -115,6 +115,6 @@ begin
 	end process;
 
 	so_trdy <= setif(rd_addr < len);
-	so_end  <= setif(rd_addr >= len);
+	so_end  <= setif(rd_addr >= len) and so_frm;
 
 end;
