@@ -181,7 +181,7 @@ architecture ulx3s_siodebug of testbench is
 --		x"170200007f"
 		x"010000" &
 		x"1801" & 
-		x"1234" &
+		x"7e34" &
 		x"1602000000" &
 		x"17020000ff" --&
 --		x"1602000000" &

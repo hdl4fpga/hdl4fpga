@@ -133,10 +133,11 @@ begin
 					end if;
 				when data_s =>
 					if full_count='1' then
-						uart_sout <= data(0);
 						if data'ascending then
+							uart_sout <= data(data'left);
 							data := data rol 1;
 						else
+							uart_sout <= data(data'right);
 							data := data ror 1;
 						end if;
 						if dcntr(0)='1' then

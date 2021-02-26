@@ -148,8 +148,10 @@ begin
 					if full_count='1' then
 						data(0) := sample_rxd;
 						if data'ascending then
+							data(data'left) := sample_rxd;
 							data := data rol 1;
 						else
+							data(data'right) := sample_rxd;
 							data := data ror 1;
 						end if;
 						if dcntr(0)='1' then

@@ -151,8 +151,6 @@ begin
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= to_unsigned(maxdma_len, level'length);
---					dma_len    <= (dma_len'range => '0');
---					dma_addr   <= base_addr;
 					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 					dma_addr   <= base_addr;
 					dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
@@ -161,8 +159,6 @@ begin
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= level + line_size;
---					dma_len    <= (dma_len'range => '0');
---					dma_addr   <= base_addr;
 					dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
 					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
 					dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
@@ -196,18 +192,18 @@ begin
 		ser_data   => ctlr_di,
 
 		des_irdy   => vram_irdy,
-		des_data   => des_data);
-	vram_data <= des_data;
+		des_data   => vram_data);
+--	vram_data <= des_data;
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => fifo_size,
+		max_depth  => fifo_size,
 		async_mode => true,
-		latency   => 3,
-		check_sov => false, --true,
-		check_dov => true,
-		gray_code => false)
+		latency    => 2,
+		check_sov  => false,
+		check_dov  => true,
+		gray_code  => false)
 	port map (
 		src_clk  => ctlr_clk,
 		src_irdy => vram_irdy,

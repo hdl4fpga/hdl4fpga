@@ -37,8 +37,8 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 40 ns HIGH 50%;
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
 
-#NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.750 ns;
-#NET "ctlrphy_dqsi[*]"  MAXSKEW  = 1.000 ns;
+NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.000 ns;
+NET "ctlrphy_dqsi[*]"  MAXSKEW  = 0.500 ns;
 
 # ###################### #
 # DDR 200 Mhz rate clock #

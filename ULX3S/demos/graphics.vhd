@@ -35,15 +35,6 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	signal sys_rst : std_logic;
-	signal sys_clk : std_logic;
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
-
 	constant sys_freq     : real    := 25.0e6;
 
 	constant fpga         : natural := spartan3;
@@ -60,6 +51,9 @@ architecture graphics of ulx3s is
 	constant coln_size    : natural := 9;
 	constant word_size    : natural := sdram_d'length;
 	constant byte_size    : natural := 8;
+
+	signal sys_rst        : std_logic;
+	signal sys_clk        : std_logic;
 
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
@@ -183,10 +177,10 @@ architecture graphics of ulx3s is
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
 
 --	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram166MHz;
+	constant sdram_mode : natural := sdram166MHz;
 --	constant sdram_mode : natural := sdram200MHz;
 --	constant sdram_mode : natural := sdram233MHz;
-	constant sdram_mode : natural := sdram250MHz;
+--	constant sdram_mode : natural := sdram250MHz;
 --	constant sdram_mode : natural := sdram275MHz;
 
 	constant ddr_tcp   : natural := natural(
@@ -204,10 +198,10 @@ architecture graphics of ulx3s is
 --	constant baudrate  : natural := 115200;
 
 	signal uart_rxdv   : std_logic;
-	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+	signal uart_rxd    : std_logic_vector(0 to 8-1);
 	signal uart_idle   : std_logic;
 	signal uart_txen   : std_logic;
-	signal uart_txd    : std_logic_vector(8-1 downto 0);
+	signal uart_txd    : std_logic_vector(uart_rxd'range);
 
 	alias sio_clk      : std_logic is uart_clk;
 	alias dmacfg_clk   : std_logic is uart_clk;
@@ -390,7 +384,7 @@ begin
 		uart_txen => uart_txen,
 		uart_txd  => uart_txd);
 
-	siodayahdlc_e : entity hdl4fpga.sio_dayahdlc
+	siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 	port map (
 		uart_clk  => uart_clk,
 		uart_rxdv => uart_rxdv,
