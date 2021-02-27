@@ -280,11 +280,11 @@ void socket_send(char * data, int len)
 	pkt_sent++;
 }
 
-void ahdlc_send(char * data, int len)
+void hdlc_send(char * data, int len)
 {
 	u16 fcs;
 
-    fcs = ~reverse(pppfcs16(PPPINITFCS16, data, len), 16);
+    fcs = ~pppfcs16(PPPINITFCS16, data, len);
 	memcpy(data+len+0, (char *) &fcs+1, sizeof(fcs)/2);
 	memcpy(data+len+1, (char *) &fcs+0, sizeof(fcs)/2);
 	len += sizeof(fcs);
@@ -308,7 +308,7 @@ void send_buffer(char * data, int len)
 	if (strlen(hostname)) {
 		socket_send(data,len);
 	} else {
-		ahdlc_send(data, len);
+		hdlc_send(data, len);
 	}
 }
 
@@ -374,7 +374,9 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 				if (retry++ > 1024) {
 					return -1;
 				}
-				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
+				if (LOG1) {
+					fprintf(stderr, "reading time out %d\n", retry);
+				}
 			}
 		}
 	}
@@ -382,7 +384,7 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 	return -1;
 }
 
-int ahdlc_rcvd(char unsigned *buffer, int maxlen)
+int hdlc_rcvd(char unsigned *buffer, int maxlen)
 {
 	int len;
 	int err;
@@ -390,6 +392,10 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 
 	short unsigned fcs;
 	struct timeval tv;
+
+	if (LOG0) {
+		fprintf(stderr, "HDLC reading\n");
+	}
 
 	pkt_lost++;
 	len   = 0;
@@ -420,13 +426,17 @@ int ahdlc_rcvd(char unsigned *buffer, int maxlen)
 				if (retry++ > 1024) {
 					return -1;
 				}
-				if (LOG1) fprintf(stderr, "reading time out %d\n", retry);
+				if (LOG1) {
+					fprintf(stderr, "reading time out %d\n", retry);
+				}
 				i--;
 			}
 		}
 	}
 	if (!len) {
-		if (LOG0) fprintf(stderr, "Error receiving\n");
+		if (LOG0) {
+			fprintf(stderr, "Error receiving\n");
+		}
 		return -1;
 	}
 
@@ -473,7 +483,7 @@ struct rgtr_node *rcvd_rgtr()
 			return NULL;
 		}
 	} else {
-		if ((len = ahdlc_rcvd(buffer, sizeof(buffer))) < 0) {
+		if ((len = hdlc_rcvd(buffer, sizeof(buffer))) < 0) {
 			return NULL;
 		}
 	}
@@ -579,10 +589,14 @@ int main (int argc, char *argv[])
 
 	if (strlen(hostname) > 0) {
 		init_socket();
-		if (LOG1) fprintf (stderr, "Socket has been initialized\n");
+		if (LOG1) {
+			fprintf (stderr, "Socket has been initialized\n");
+		}
 	} else {
 		init_comms();
-		if (LOG1) fprintf (stderr, "COMMS has been initialized\n");
+		if (LOG1) {
+			fprintf (stderr, "COMMS has been initialized\n");
+		}
 	}
 
 	if (nooutput) {
@@ -605,7 +619,9 @@ int main (int argc, char *argv[])
 	
 		queue_in = delete_queue(queue_in);
 
-		if (LOG1) fprintf (stderr, "Sending ACK\n");
+		if (LOG1) {
+			fprintf (stderr, "Sending ACK\n");
+		}
 
 		set_acknode(ack_out, ack, 0x00);
 		send_rgtr(ack_out);
@@ -629,13 +645,17 @@ int main (int argc, char *argv[])
 		if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0) {
 			break;
 		} else {
-			if (LOG1) fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n", ack, rgtr2int(ack_in));
+			if (LOG1) {
+				fprintf (stderr, "ACK mismatch 0x%02x, 0x%02x\n", ack, rgtr2int(ack_in));
+			}
 		}
 
 	}
 
 	queue_in = delete_queue(queue_in);
-	if (LOG0) fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+	if (LOG0) {
+		fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
+	}
 
 	// Processing data //
 	// --------------- //

@@ -80,7 +80,7 @@ u16 pppfcs16(fcs, cp, len)
     assert(sizeof (u16) == 2);
     assert(((u16) -1) > 0);
     while (len--)
-        fcs = (fcs >> 8) ^ fcstab[(fcs ^ reverse(*cp++, 8)) & 0xff];
+        fcs = (fcs >> 8) ^ fcstab[(fcs ^ *cp++) & 0xff];
 
     return (fcs);
 }
