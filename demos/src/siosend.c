@@ -22,7 +22,7 @@ WSADATA wsaData;
 #endif
 
 #include <math.h>
-#include "ahdlc.h"
+#include "hdlc.h"
 
 #define PORT	57001
 #define QUEUE   4
@@ -297,7 +297,7 @@ void hdlc_send(char * data, int len)
 			fputc(0x7d, comm);
 			data[i] ^= 0x20;
 		}
-		fputc(data[i], comm);
+		fputc(reverse(data[i],8), comm);
 	}
 	fputc(0x7e, comm);
 	pkt_sent++;
