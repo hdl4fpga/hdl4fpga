@@ -21,10 +21,6 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_req
 add wave -noupdate /testbench/du_e/grahics_e/dmaio_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmasin_irdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/hdlcdll_rx_e/fcs_sb
-add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/hdlcdll_rx_e/fcs_vld
-add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/flow_e/phyi_frm
-add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/flow_e/buffer_e/commit
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {166977493130 fs} 0}
 quietly wave cursor active 1
@@ -42,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {165611754840 fs} {168343231420 fs}
+WaveRestoreZoom {0 fs} {1036140 ns}

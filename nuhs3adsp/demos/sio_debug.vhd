@@ -61,6 +61,8 @@ architecture sio_debug of nuhs3adsp is
 		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : video_modes := mode600p;
+    signal vga_pixel    : std_logic_vector(0 to 32-1);
+    signal vga_blank    : std_logic;
 
 	signal mii_clk  : std_logic;
 
@@ -141,42 +143,29 @@ begin
 		so_data => sin_data,
 		tp => tp);
 	
-	mii_display_e : entity hdl4fpga.mii_display
+	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id   => video_tab(video_mode).timing_id,
-		code_spce   => to_ascii(" "),
-		code_digits => to_ascii("0123456789abcdef"),
-		cga_bitrom  => to_ascii("Ready Steady GO!"))
+		timing_id    => video_tab(video_mode).timing_id,
+		red_length   => 5,
+		green_length => 6,
+		blue_length  => 5)
 	port map (
- 		phy_clk   => mii_txc,
- 		phy_frm   => tp(1),
- 		phy_irdy  => tp(2),
-		phy_data  => aa,
-
-		video_clk   => vga_clk,
-		video_dot   => vga_dot,
-		video_on    => vga_on,
-		video_hs    => vga_hsync,
-		video_vs    => vga_vsync);
-
-	video_lat_e: entity hdl4fpga.align 
-	generic map (
-		n => 3,
-		d => (0 to 3-1 => 4))
-	port map (
-		clk   => vga_clk,
-		di(0) => vga_hsync,
-		di(1) => vga_vsync,
-		di(2) => vga_on,
-		do(0) => hsync,
-		do(1) => vsync,
-		do(2) => blankn);
+		ser_clk      => mii_txc, 
+		ser_frm      => tp(1),
+		ser_irdy     => tp(2),
+		ser_data     => aa,
+		
+		video_clk    => vga_clk,
+		video_hzsync => vga_hsync,
+		video_vtsync => vga_vsync,
+		video_blank  => vga_blank,
+		video_pixel  => vga_pixel);
 
 	psave <= '1';
 	sync  <= 'Z';
-	red   <= (others => vga_dot);
-	green <= (others => vga_dot);
-	blue  <= (others => vga_dot);
+	red   <= word2byte(vga_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+	green <= word2byte(vga_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+	blue  <= word2byte(vga_pixel, std_logic_vector(to_unsigned(2,2)), 8);
 
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (

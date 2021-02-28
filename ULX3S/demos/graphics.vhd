@@ -139,7 +139,6 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
-    signal video_vton     : std_logic;
     signal video_blank    : std_logic;
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
@@ -161,9 +160,9 @@ architecture graphics of ulx3s is
 
 --	constant sdram_mode   : natural := sdram133MHz;
 --	constant sdram_mode   : natural := sdram166MHz;
---	constant sdram_mode   : natural := sdram200MHz;
+	constant sdram_mode   : natural := sdram200MHz;
 --	constant sdram_mode   : natural := sdram233MHz;
-	constant sdram_mode   : natural := sdram250MHz;
+--	constant sdram_mode   : natural := sdram250MHz;
 --	constant sdram_mode   : natural := sdram275MHz;
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
@@ -195,6 +194,7 @@ architecture graphics of ulx3s is
 	signal uart_txen   : std_logic;
 	signal uart_txd    : std_logic_vector(uart_rxd'range);
 
+	constant mem_size  : natural := 8*(1024*8);
 	signal sin_frm     : std_logic;
 	signal sin_irdy    : std_logic;
 	signal sin_data    : std_logic_vector(uart_rxd'range);
@@ -384,6 +384,8 @@ begin
 		uart_txd  => uart_txd);
 
 	siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
+	generic map (
+		mem_size  => mem_size)
 	port map (
 		uart_clk  => uart_clk,
 		uart_rxdv => uart_rxdv,
@@ -424,7 +426,8 @@ begin
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
 		green_length => setif(video_tab(video_mode).pixel=rgb565, 6, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
-		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)))
+		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
+		fifo_size    => mem_size)
 
 	port map (
 		tpin  => video_lck,

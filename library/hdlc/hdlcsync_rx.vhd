@@ -31,7 +31,7 @@ entity hdlcsync_rx is
 	generic (
 		hdlc_flag : std_logic_vector := x"7e";
 		hdlc_esc  : std_logic_vector := x"7d";
-		hdlc_5inv : std_logic_vector := x"20");
+		hdlc_invb : std_logic_vector := x"20");
 	port (
 		uart_clk  : in  std_logic;
 		uart_rxdv : in  std_logic;
@@ -45,7 +45,7 @@ end;
 architecture def of hdlcsync_rx is
 	constant flag : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_flag), hdlc_flag);
 	constant esc  : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_esc),  hdlc_esc);
-	constant inv5 : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_5inv), hdlc_5inv);
+	constant invb : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_invb), hdlc_invb);
 
 	signal debug_rx : std_logic_vector(8-1 downto 0);
 begin
@@ -56,10 +56,10 @@ begin
 	begin
 		if rising_edge(uart_clk) then
 			if uart_rxdv='1' then
-				if uart_rxd=setif(uart_rxd'ascending, reverse(hdlc_flag), hdlc_flag) then
+				if uart_rxd=flag then
 					frm := '0';
 					eon := '0';
-				elsif uart_rxd=setif(uart_rxd'ascending, reverse(hdlc_esc), hdlc_esc) then
+				elsif uart_rxd=esc then
 					frm := '1';
 					eon := '1';
 				else
@@ -71,14 +71,14 @@ begin
 				end if;
 			end if;
 		end if;
-		hdlcrx_frm  <= (setif(uart_rxd/=hdlc_flag) and uart_rxdv) or (frm and not uart_rxdv);
+		hdlcrx_frm  <= (setif(uart_rxd/=flag) and uart_rxdv) or (frm and not uart_rxdv);
 		if hdlcrx_data'ascending=uart_rxd'ascending then
-			hdlcrx_data <= setif(eon='1', uart_rxd xor inv5, uart_rxd);
+			hdlcrx_data <= setif(eon='1', uart_rxd xor invb, uart_rxd);
 		else
-			hdlcrx_data <= reverse(setif(eon='1', uart_rxd xor inv5, uart_rxd));
+			hdlcrx_data <= reverse(setif(eon='1', uart_rxd xor invb, uart_rxd));
 		end if;
 	end process;
 
-	hdlcrx_irdy <= hdlcrx_frm and uart_rxdv and setif(uart_rxd/=hdlc_esc);
+	hdlcrx_irdy <= hdlcrx_frm and uart_rxdv and setif(uart_rxd/=esc);
 
 end;

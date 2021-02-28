@@ -229,7 +229,9 @@ int unsigned rgtr2int (struct rgtr_node *node)
 {
 	int unsigned data;
 
-	if (!node) abort();
+	if (!node) {
+		abort();
+	}
 	data = 0;
 	for (int i = 0; i < node->rgtr->len+1; i++) {
 		data <<= 8;
@@ -285,19 +287,24 @@ void hdlc_send(char * data, int len)
 	u16 fcs;
 
     fcs = ~pppfcs16(PPPINITFCS16, data, len);
-	memcpy(data+len+0, (char *) &fcs+0, sizeof(fcs)/2);
-	memcpy(data+len+1, (char *) &fcs+1, sizeof(fcs)/2);
-	len += sizeof(fcs);
 	fputc(0x7e, comm);
-	for (int i = 0; i < len; i++) {
-		if (data[i] == 0x7e) {
-			fputc(0x7d, comm);
-			data[i] ^= 0x20;
-		} else if(data[i] == 0x7d) {
-			fputc(0x7d, comm);
-			data[i] ^= 0x20;
+	for (int i = 0; i < len+sizeof(fcs); i++) {
+		char c;
+
+		if (i < len) {
+			c = data[i];
+		} else {
+			c = ((char *) &fcs)[i-len];
 		}
-		fputc(data[i], comm);
+
+		if (c == 0x7e) {
+			fputc(0x7d, comm);
+			c ^= 0x20;
+		} else if(c == 0x7d) {
+			fputc(0x7d, comm);
+			c ^= 0x20;
+		}
+		fputc(c, comm);
 	}
 	fputc(0x7e, comm);
 	pkt_sent++;
@@ -332,6 +339,10 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	int len1 = sizeof(buffer);
 
 	rgtr2raw(buffer, &len1, node);
+	if (len+len1 > MAXLEN) {
+		abort();
+	}
+
 	memcpy(buffer+len1, data, len);
 
 	send_buffer(buffer, len+len1);
@@ -614,7 +625,6 @@ int main (int argc, char *argv[])
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
 	int ack = 0x0b;
-	goto aca;
 	for(;;) {
 
 	
@@ -657,8 +667,7 @@ int main (int argc, char *argv[])
 	if (LOG0) {
 		fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
 	}
-	abort();
-aca:
+
 	// Processing data //
 	// --------------- //
 
@@ -715,7 +724,6 @@ aca:
 
 				queue_in = delete_queue(queue_in);
 				queue_in = rcvd_rgtr();
-				abort();
 				if (LOG1) {
 					print_rgtrs(queue_in);
 				}

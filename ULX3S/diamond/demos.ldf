@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="sio_debug">
+<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -338,7 +338,7 @@
         <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>

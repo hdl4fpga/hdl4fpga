@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ulx3s_graphic of testbench is
+architecture ulx3s_graphics of testbench is
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -172,9 +172,9 @@ architecture ulx3s_graphic of testbench is
 
 	constant baudrate : natural := 3_000_000;
 	constant data  : std_logic_vector := reverse (
-		x"010024" &
---		x"18ff" & 
---		gen_natural(start => 0, stop => 127, size => 16) &
+		x"010001" &
+		x"18ff" & 
+		gen_natural(start => 0, stop => 127, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -209,15 +209,15 @@ architecture ulx3s_graphic of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
---		x"1602000080" &
---		x"170200007f" &
+		x"160300000000" &
+		x"170200007f"  
 --		x"1602000080" &
 --		x"170200007f"
 
-		x"1801" & 
-		x"1234" &
-		x"160301234567" &
-		x"1702000000" --&
+--		x"1801" & 
+--		x"1234" &
+--		x"160301234567" &
+--		x"1702000000" --&
 --		x"1602000000" &
 --		x"1702000000"  &
 --		x"1803" & 
@@ -335,7 +335,7 @@ end;
 library micron;
 
 configuration ulx3s_graphic_structure_md of testbench is
-	for ulx3s_graphic
+	for ulx3s_graphics
 		for all : ulx3s
 			use entity work.ulx3s(structure);
 		end for;
@@ -359,7 +359,7 @@ end;
 library micron;
 
 configuration ulx3s_graphic_md of testbench is
-	for ulx3s_graphic
+	for ulx3s_graphics
 		for all : ulx3s
 			use entity work.ulx3s(graphics);
 		end for;

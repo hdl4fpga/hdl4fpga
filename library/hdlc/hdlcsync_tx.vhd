@@ -32,7 +32,7 @@ entity hdlcsync_tx is
 	generic (
 		hdlc_flag : std_logic_vector := x"7e";
 		hdlc_esc  : std_logic_vector := x"7d";
-		hdlc_5inv : std_logic_vector := x"20");
+		hdlc_invb : std_logic_vector := x"20");
 	port (
 		uart_clk    : in  std_logic;
 		uart_irdy   : out std_logic;
@@ -51,7 +51,7 @@ architecture def of hdlcsync_tx is
 
 	constant flag : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_flag), hdlc_flag);
 	constant esc  : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_esc),  hdlc_esc);
-	constant inv5 : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_5inv), hdlc_5inv);
+	constant invb : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_invb), hdlc_invb);
 
 	signal data : std_logic_vector(hdlctx_data'range);
 
@@ -88,7 +88,7 @@ begin
 			if eon='1' then
 				uart_irdy   <= hdlctx_irdy;
 				hdlctx_trdy <= uart_idle;
-				data        <= hdlctx_data xor inv5;
+				data        <= hdlctx_data xor invb;
 			elsif hdlctx_data=flag then
 				uart_irdy   <= hdlctx_irdy;
 				hdlctx_trdy <= '0';

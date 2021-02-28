@@ -70,7 +70,6 @@ entity demo_graphics is
 		video_shift_clk :  in std_logic := '-';
 		video_hzsync : buffer std_logic;
 		video_vtsync : buffer std_logic;
-		video_vton   : buffer std_logic;
 		video_blank  : buffer std_logic;
 		video_pixel  : buffer std_logic_vector;
 		dvid_crgb    : out std_logic_vector(7 downto 0);
@@ -104,7 +103,7 @@ entity demo_graphics is
 
 		tp           : buffer std_logic_vector(1 to 32));
 
-	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length/8));
+	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
 
 end;
 
@@ -221,7 +220,6 @@ begin
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
 		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
-		signal mux_data      : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sout_data'range);
 
 		signal sodata_frm    : std_logic;
@@ -302,16 +300,14 @@ begin
 			end if;
 		end process;
 
-		sio_dmaio <= 
---			x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
-			x"00" & x"03" & x"04" & x"01" & x"7e" & x"7d" &	-- UDP Length
+		sio_dmaio <= reverse(
+			x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
 			x"01" & x"00" & reverse(ack_rgtr) &
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000";
-		mux_data <= reverse(sio_dmaio,8);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => mux_data,
+			mux_data => sio_dmaio,
 			sio_clk  => sio_clk,
 			sio_frm  => sts_frm,
 			so_irdy  => siodmaio_irdy,
@@ -395,8 +391,8 @@ begin
 			dst_data   => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
-		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
-		rgtr_dmadata <= reverse(rgtr_data(0 to ctlr_di'length-1),8);
+		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0')) and data_irdy;
+		rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifodata_depth,
@@ -593,6 +589,7 @@ begin
 
 	adapter_b : block
 
+		constant glat     : natural := 2;
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
@@ -639,7 +636,7 @@ begin
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => 2))
+			d => (0 to 0 => glat))
 		port map (
 			clk   => ctlr_clk,
 			di(0) => ctlrvideo_irdy,
@@ -648,7 +645,7 @@ begin
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
 			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => 2))
+			d => (0 to ctlr_do'length-1 => glat))
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,

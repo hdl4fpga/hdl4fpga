@@ -193,7 +193,6 @@ begin
 
 		des_irdy   => vram_irdy,
 		des_data   => vram_data);
---	vram_data <= des_data;
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo

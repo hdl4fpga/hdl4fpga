@@ -77,6 +77,10 @@ HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
 HDL4FPGA__sff = $(LIB_HDL4FPGA)/sff/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
+HDL4FPGA__ser_debug__def = $(LIB_HDL4FPGA)/ser_debug/def.dat
+HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
+HDL4FPGA__ser_analyzer__def = $(LIB_HDL4FPGA)/ser_analyzer/def.dat
+HDL4FPGA__ser_analyzer = $(LIB_HDL4FPGA)/ser_analyzer/_primary.dat
 HDL4FPGA__sdrphy__ecp = $(LIB_HDL4FPGA)/sdrphy/ecp.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
 HDL4FPGA__sdrdqphy__ecp = $(LIB_HDL4FPGA)/sdrdqphy/ecp.dat
@@ -109,8 +113,6 @@ HDL4FPGA__mii_latency__def = $(LIB_HDL4FPGA)/mii_latency/def.dat
 HDL4FPGA__mii_latency = $(LIB_HDL4FPGA)/mii_latency/_primary.dat
 HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
-HDL4FPGA__mii_display__struct = $(LIB_HDL4FPGA)/mii_display/struct.dat
-HDL4FPGA__mii_display = $(LIB_HDL4FPGA)/mii_display/_primary.dat
 HDL4FPGA__mii_des__def = $(LIB_HDL4FPGA)/mii_des/def.dat
 HDL4FPGA__mii_des = $(LIB_HDL4FPGA)/mii_des/_primary.dat
 HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
@@ -300,6 +302,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sff) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
+    $(HDL4FPGA__ser_debug__def) \
+    $(HDL4FPGA__ser_debug) \
+    $(HDL4FPGA__ser_analyzer__def) \
+    $(HDL4FPGA__ser_analyzer) \
     $(HDL4FPGA__sdrphy__ecp) \
     $(HDL4FPGA__sdrphy) \
     $(HDL4FPGA__sdrdqphy__ecp) \
@@ -332,8 +338,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__mii_latency) \
     $(HDL4FPGA__mii_ipoe__def) \
     $(HDL4FPGA__mii_ipoe) \
-    $(HDL4FPGA__mii_display__struct) \
-    $(HDL4FPGA__mii_display) \
     $(HDL4FPGA__mii_des__def) \
     $(HDL4FPGA__mii_des) \
     $(HDL4FPGA__mii_cmp__def) \
@@ -1088,26 +1092,6 @@ $(HDL4FPGA__mii_des__def) : ../mii/mii_des.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_des.vhd
 
-$(HDL4FPGA__mii_display) \
-$(HDL4FPGA__mii_display__struct) : ../mii/mii_display.vhd \
-		$(HDL4FPGA__cga_adapter) \
-		$(HDL4FPGA__serdes) \
-		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__modeline_calculator) \
-		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__bcdfonts) \
-		$(HDL4FPGA__cp850x8x16x128to255) \
-		$(HDL4FPGA__cp850x8x16x0to127) \
-		$(HDL4FPGA__cp850x8x8x128to255) \
-		$(HDL4FPGA__cp850x8x8x0to127) \
-		$(HDL4FPGA__cgafonts) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../mii/mii_display.vhd
-
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__dhcp_rx) \
@@ -1284,6 +1268,49 @@ $(HDL4FPGA__sdrphy__ecp) : ../latticesemi/sdrphy.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/sdrphy.vhd
+
+$(HDL4FPGA__ser_analyzer) \
+$(HDL4FPGA__ser_analyzer__def) : ../video/ser_analyzer.vhd \
+		$(HDL4FPGA__cga_adapter) \
+		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__video_sync) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../video/ser_analyzer.vhd
+
+$(HDL4FPGA__ser_debug) \
+$(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
+		$(IEEE__std_logic_unsigned) \
+		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__ser_analyzer) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../demos/ser_debug.vhd
 
 $(HDL4FPGA__serdes) \
 $(HDL4FPGA__serdes__def) : ../common/serdes.vhd \
