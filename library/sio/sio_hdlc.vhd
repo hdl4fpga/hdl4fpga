@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_hdlc is
+	generic (
+		mem_size  : natural := 4*(2048*8));
 	port (
 		uart_clk  : in  std_logic;
 		uart_rxdv : in  std_logic;
@@ -44,14 +46,16 @@ entity sio_hdlc is
 		si_trdy   : buffer std_logic;
 		si_data   : in  std_logic_vector;
 
-		so_frm    : out std_logic;
+		so_frm    : buffer std_logic;
 		so_irdy   : out std_logic;
 		so_trdy   : in  std_logic;
-		so_data   : out std_logic_vector);
+		so_data   : out std_logic_vector;
+		tp : out std_logic_vector(1 to 32));
 end;
 
 architecture def of sio_hdlc is
 
+	signal hdlcfcsrx_sb  : std_logic;
 	signal hdlcfcsrx_vld : std_logic;
 
 	signal hdlcrx_frm    : std_logic;
@@ -74,12 +78,16 @@ begin
 		hdlcrx_frm  => hdlcrx_frm,
 		hdlcrx_irdy => hdlcrx_irdy,
 		hdlcrx_data => hdlcrx_data,
+		fcs_sb      => hdlcfcsrx_sb,
 		fcs_vld     => hdlcfcsrx_vld);
 
 	flow_e : entity hdl4fpga.sio_flow
+	generic map (
+		mem_size    => mem_size)
 	port map (
 		phyi_clk    => uart_clk,
 		phyi_frm    => hdlcrx_frm,
+		phyi_fcssb  => hdlcfcsrx_sb,
 		phyi_fcsvld => hdlcfcsrx_vld,
 
 		buffer_frm  => hdlcrx_frm,
@@ -103,7 +111,8 @@ begin
 		phyo_frm    => hdlctx_frm,
 		phyo_irdy   => hdlctx_irdy,
 		phyo_trdy   => hdlctx_trdy,
-		phyo_data   => hdlctx_data);
+		phyo_data   => hdlctx_data,
+		tp => tp);
 
 	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
 	port map (

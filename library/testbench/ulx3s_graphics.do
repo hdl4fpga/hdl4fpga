@@ -21,24 +21,12 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_req
 add wave -noupdate /testbench/du_e/grahics_e/dmaio_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmasin_irdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/src_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/wr_cmp
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/rd_cntr
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_irdy1
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/dst_data
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmadata_e/feed_ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmadata_e/max_depthgt1_g/rdata
+add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/hdlcdll_rx_e/fcs_sb
+add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/hdlcdll_rx_e/fcs_vld
+add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/flow_e/phyi_frm
+add wave -noupdate /testbench/du_e/siodaahdlc_e/siohdlc_e/flow_e/buffer_e/commit
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1877306000000 fs} 0} {{Cursor 2} {170807758290 fs} 0} {{Cursor 3} {255590274240 fs} 0}
+WaveRestoreCursors {{Cursor 1} {166977493130 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 287
@@ -54,4 +42,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1837930998400 fs} {1916681001600 fs}
+WaveRestoreZoom {165611754840 fs} {168343231420 fs}

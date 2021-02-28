@@ -29,15 +29,17 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_dayhdlc is
+	generic (
+		mem_size  : natural := 4*(2048*8));
 	port (
 	
 		uart_clk  : in  std_logic;
 		uart_rxdv : in  std_logic;
-		uart_rxd  : in  std_logic_vector(8-1 downto 0);
+		uart_rxd  : in  std_logic_vector;
 
 		uart_idle : in  std_logic;
 		uart_txen : buffer std_logic;
-		uart_txd  : out std_logic_vector(8-1 downto 0);
+		uart_txd  : out std_logic_vector;
 
 		sio_clk   : in std_logic;
 		sio_addr  : in  std_logic := '0';
@@ -51,7 +53,7 @@ entity sio_dayhdlc is
 		so_irdy   : out std_logic;
 		so_trdy   : in  std_logic := '1';
 		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 4));
+		tp : out std_logic_vector(1 to 32));
 	
 end;
 
@@ -75,6 +77,8 @@ begin
 	sihdlc_data <= si_data;
 
 	siohdlc_e : entity hdl4fpga.sio_hdlc
+	generic map (
+		mem_size    => mem_size)
 	port map (
 		uart_clk  => uart_clk,
 
@@ -94,7 +98,8 @@ begin
 		so_frm    => sohdlc_frm,
 		so_irdy   => sohdlc_irdy,
 		so_trdy   => sohdlc_trdy,
-		so_data   => sohdlc_data);
+		so_data   => sohdlc_data,
+		tp => tp);
 
 	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm; 
 	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;

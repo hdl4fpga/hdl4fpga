@@ -73,6 +73,7 @@ architecture struct of sio_udp is
 
 	signal dll_rxdv        : std_logic;
 	signal dllhwsa_rx      : std_logic_vector(0 to 48-1);
+	signal dllfcs_sb       : std_logic;
 	signal dllfcs_vld      : std_logic;
 	signal dllcrc32        : std_logic_vector(0 to 32-1);
 
@@ -160,6 +161,7 @@ begin
 
 		dll_rxdv       => dll_rxdv,
 		dllhwsa_rx     => dllhwsa_rx,
+		dllfcs_sb      => dllfcs_sb,
 		dllfcs_vld     => dllfcs_vld,
 
 		ipv4sa_rx      => ipv4sa_rx,
@@ -240,6 +242,7 @@ begin
 	port map (
 		phyi_clk    => mii_txc,
 		phyi_frm    => txc_rxdv,
+		phyi_fcssb  => dllfcs_sb,
 		phyi_fcsvld => flowfcs_vld,
 
 		buffer_frm  => txc_rxdv,

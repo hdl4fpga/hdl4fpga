@@ -49,6 +49,7 @@ entity mii_ipoe is
 		txc_rxdv      : buffer std_logic;
 		dll_rxdv      : buffer std_logic;
 
+		dllfcs_sb     : out std_logic;
 		dllfcs_vld    : buffer std_logic;
 
 		dllhwda_rxdv  : buffer std_logic;
@@ -261,6 +262,7 @@ begin
 		hwda_rxdv  => dllhwda_rxdv,
 		hwsa_rxdv  => dllhwsa_rxdv,
 		type_rxdv  => dlltype_rxdv,
+		crc32_sb   => dllfcs_sb,
 		crc32_equ  => dllfcs_vld);
 
 	dllhwdacmp_e : entity hdl4fpga.mii_romcmp

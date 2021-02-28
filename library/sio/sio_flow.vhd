@@ -34,6 +34,7 @@ entity sio_flow is
 	port (
 		phyi_clk    : in  std_logic;
 		phyi_frm    : in  std_logic;
+		phyi_fcssb  : in std_logic;
 		phyi_fcsvld : in std_logic;
 
 		buffer_frm  : in std_logic;
@@ -82,7 +83,6 @@ architecture struct of sio_flow is
 	signal ack_txd     : std_logic_vector(ack_rxd'range);
 
 	signal pkt_dup     : std_logic;
-	signal fcs_sb      : std_logic;
 	signal ack_rxdv    : std_logic;
 
 	signal sig_data    : std_logic_vector(si_data'range);
@@ -100,15 +100,6 @@ architecture struct of sio_flow is
 	signal des_data    : std_logic_vector(si_data'range);
 
 begin
-
-	process(phyi_frm, phyi_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(phyi_clk) then
-			q := phyi_frm;
-		end if;
-		fcs_sb <= not phyi_frm and q;
-	end process;
 
 	rx_b : block
 
@@ -162,13 +153,13 @@ begin
 			dv        => ack_rxdv,
 			data      => rxd);
 
-		process (fcs_sb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
+		process (phyi_fcssb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
 			variable last  : bit_vector(ack_rxd'range); -- := x"23";
 			variable dup   : bit;
 			variable latch : bit;
 		begin
 			if rising_edge(phyi_clk) then
-				if fcs_sb='1' and phyi_fcsvld='1' then
+				if phyi_fcssb='1' and phyi_fcsvld='1' then
 					dup   := to_bit(pkt_dup);
 					last  := to_bitvector(reverse(rxd));
 					latch := '0';
@@ -177,7 +168,7 @@ begin
 				end if;
 			end if;
 
-			if fcs_sb='1' and phyi_fcsvld='1' then
+			if phyi_fcssb='1' and phyi_fcsvld='1' then
 				pkt_dup <= setif(shift_left(unsigned(reverse(rxd)),2)=shift_left(unsigned(to_stdlogicvector(last)),2));
 			else
 				pkt_dup <= to_stdulogic(dup);
@@ -204,8 +195,9 @@ begin
 		so_end   => sig_end,
 		so_data  => sig_data);
 
-	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and fcs_sb;
-	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and fcs_sb;
+	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and phyi_fcssb;
+	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and phyi_fcssb;
+	tp(1) <=buffer_cmmt;
 
 	buffer_e : entity hdl4fpga.sio_buffer
 	generic map (
@@ -225,7 +217,7 @@ begin
 		so_trdy   => so_trdy,
 		so_data   => so_data);
 
-	ack_p : process (fcs_sb, phyi_fcsvld, ack_rxd, phyi_clk)
+	ack_p : process (phyi_fcssb, phyi_fcsvld, ack_rxd, phyi_clk)
 		variable q : std_logic := '0';
 	begin
 		if rising_edge(phyi_clk) then
@@ -236,12 +228,12 @@ begin
 					end if;
 				end if;
 			elsif phyi_fcsvld='1' then
-				if fcs_sb='1' then
+				if phyi_fcssb='1' then
 					q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
 				end if;
 			end if;
 		end if;
-		flow_frm <= (phyi_fcsvld and fcs_sb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
+		flow_frm <= (phyi_fcsvld and phyi_fcssb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
 		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
 	end process;
 

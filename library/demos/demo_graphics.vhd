@@ -60,11 +60,11 @@ entity demo_graphics is
 		sio_clk      : in  std_logic;
 		sin_frm      : in  std_logic;
 		sin_irdy     : in  std_logic;
-		sin_data     : in  std_logic_vector(0 to 8-1);
+		sin_data     : in  std_logic_vector;
 		sout_frm     : buffer std_logic;
 		sout_irdy    : out std_logic;
 		sout_trdy    : in  std_logic;
-		sout_data    : out std_logic_vector(8-1 downto 0);
+		sout_data    : out std_logic_vector;
 
 		video_clk    : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
@@ -221,6 +221,7 @@ begin
 		signal siodmaio_trdy : std_logic;
 		signal siodmaio_end  : std_logic;
 		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
+		signal mux_data      : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
 		signal siodmaio_data : std_logic_vector(sout_data'range);
 
 		signal sodata_frm    : std_logic;
@@ -302,13 +303,15 @@ begin
 		end process;
 
 		sio_dmaio <= 
-			reverse(x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
+--			x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
+			x"00" & x"03" & x"04" & x"01" & x"7e" & x"7d" &	-- UDP Length
 			x"01" & x"00" & reverse(ack_rgtr) &
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
+			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000";
+		mux_data <= reverse(sio_dmaio,8);
 		siodmaio_irdy <= sig_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => sio_dmaio,
+			mux_data => mux_data,
 			sio_clk  => sio_clk,
 			sio_frm  => sts_frm,
 			so_irdy  => siodmaio_irdy,
@@ -706,10 +709,9 @@ begin
 			constant subpixel_length : natural := hdl4fpga.std.min(hdl4fpga.std.min(red_length, green_length), blue_length);
 
 			signal dvid_blank : std_logic;
-			signal in_red   : unsigned(0 to subpixel_length-1);
-			signal in_green : unsigned(0 to subpixel_length-1);
-			signal in_blue  : unsigned(0 to subpixel_length-1);
-			signal ledq : std_logic;
+			signal in_red     : unsigned(0 to subpixel_length-1);
+			signal in_green   : unsigned(0 to subpixel_length-1);
+			signal in_blue    : unsigned(0 to subpixel_length-1);
 
 		begin
 

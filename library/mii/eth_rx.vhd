@@ -42,6 +42,7 @@ entity eth_rx is
 		hwda_rxdv  : out std_logic;
 		hwsa_rxdv  : out std_logic;
 		type_rxdv  : out std_logic;
+		crc32_sb   : out std_logic;
 		crc32_equ  : out std_logic;
 		crc32_rem  : buffer std_logic_vector(0 to 32-1));
 		
@@ -84,6 +85,14 @@ begin
 		data => mii_rxd,
 		crc  => crc32_rem);
 
+	process (mii_rxdv, mii_rxc)
+		variable q : bit;
+	begin
+		if rising_edge(mii_rxc) then
+			q := to_bit(mii_rxdv);
+		end if;
+		crc32_sb <= to_stdulogic(q) and not to_stdulogic(to_bit(mii_rxdv));
+	end process;
 	crc32_equ <= setif(crc32_rem=x"38fb2284");
 
 end;

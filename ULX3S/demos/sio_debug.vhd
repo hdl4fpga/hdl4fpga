@@ -86,6 +86,7 @@ architecture sio_debug of ulx3s is
 
 	signal video_clk       : std_logic;
 	signal video_shift_clk : std_logic;
+	signal video_lck       : std_logic;
 	signal video_hzsync    : std_logic;
     signal video_vtsync    : std_logic;
     signal video_on        : std_logic;
@@ -93,86 +94,101 @@ architecture sio_debug of ulx3s is
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
 	-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-	alias rmii_tx_en : std_logic is gn(10);
-	alias rmii_tx0   : std_logic is gp(10);
-	alias rmii_tx1   : std_logic is gn(9);
+	alias rmii_tx_en       : std_logic is gn(10);
+	alias rmii_tx0         : std_logic is gp(10);
+	alias rmii_tx1         : std_logic is gn(9);
 
-	alias rmii_rx0   : std_logic is gn(11);
-	alias rmii_rx1   : std_logic is gp(11);
+	alias rmii_rx0         : std_logic is gn(11);
+	alias rmii_rx1         : std_logic is gp(11);
 
-	alias rmii_crs   : std_logic is gp(12);
+	alias rmii_crs         : std_logic is gp(12);
 
-	alias rmii_nint  : std_logic is gn(12);
-	alias rmii_mdio  : std_logic is gn(13);
-	alias rmii_mdc   : std_logic is gp(13);
+	alias rmii_nint        : std_logic is gn(12);
+	alias rmii_mdio        : std_logic is gn(13);
+	alias rmii_mdc         : std_logic is gp(13);
 
-	signal mii_txc   : std_logic;
-	signal mii_txen  : std_logic;
-	signal mii_txd   : std_logic_vector(0 to 2-1);
+	signal mii_txc         : std_logic;
+	signal mii_txen        : std_logic;
+	signal mii_txd         : std_logic_vector(0 to 2-1);
 
-	signal mii_rxc   : std_logic;
-	signal mii_rxdv  : std_logic;
-	signal mii_rxd   : std_logic_vector(0 to 2-1);
+	signal mii_rxc         : std_logic;
+	signal mii_rxdv        : std_logic;
+	signal mii_rxd         : std_logic_vector(0 to 2-1);
 
-	signal dhcp_req  : std_logic := '0';
+	signal dhcp_req        : std_logic := '0';
 
-	signal ser_irdy : std_logic;
+--	constant uart_clk      : natural := natural(sys_freq);
+--	alias uart_clk         : std_logic is clk_25mhz;
 
---	constant uart_xtal : natural := natural(sys_freq);
---	alias uart_clk     : std_logic is clk_25mhz;
+	constant baudrate      : natural := 3000000;
+	constant uart_xtal     : natural := natural(videodot_freq);
 
-	constant uart_xtal : natural := natural(videodot_freq);
-	alias uart_clk     : std_logic is video_clk;
+	alias  uart_clk        : std_logic is video_clk;
+	signal uart_rxdv       : std_logic;
+	signal uart_rxd        : std_logic_vector(0 to 8-1);
+	signal uart_idle       : std_logic;
+	signal uart_txen       : std_logic;
+	signal uart_txd        : std_logic_vector(0 to 8-1);
 
-	constant baudrate  : natural := 3000000;
+	alias  sio_clk         : std_logic is uart_clk;
 
-	signal uart_rxdv   : std_logic;
-	signal uart_rxd    : std_logic_vector(0 to 8-1);
-	signal uart_idle   : std_logic;
-	signal uart_txen   : std_logic;
-	signal uart_txd    : std_logic_vector(0 to 8-1);
+	signal sin_frm         : std_logic;
+	signal sin_irdy        : std_logic;
+	signal sin_data        : std_logic_vector(uart_rxd'range);
+	signal sout_frm        : std_logic;
+	signal sout_irdy       : std_logic;
+	signal sout_trdy       : std_logic;
+	signal sout_data       : std_logic_vector(uart_rxd'range);
 
-	alias sio_clk      : std_logic is uart_clk;
+	signal ser_frm        : std_logic;
+	signal ser_irdy        : std_logic;
+	signal ser_data        : std_logic_vector(uart_rxd'range);
 
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(8-1 downto 0);
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(8-1 downto 0);
-
+	signal tp : std_logic_vector(1 to 32);
 begin
 
-    mii_txc <= not rmii_nint;
-	process(mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			rmii_tx_en <= mii_txen;
-			(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-		end if;
-	end process;
-
-    mii_rxc <= not rmii_nint;
-	process(mii_rxc)
-	begin
-		if rising_edge(mii_rxc) then
-			mii_rxdv <= rmii_crs;
-			mii_rxd  <= rmii_rx0 & rmii_rx1;
-		end if;
-	end process;
-
-	rmii_mdc  <= 'Z';
-	rmii_mdio <= 'Z';
+--  mii_txc <= not rmii_nint;
+--	process(mii_txc)
+--	begin
+--		if rising_edge(mii_txc) then
+--			rmii_tx_en <= mii_txen;
+--			(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+--		end if;
+--	end process;
+--
+--    mii_rxc <= not rmii_nint;
+--	process(mii_rxc)
+--	begin
+--		if rising_edge(mii_rxc) then
+--			mii_rxdv <= rmii_crs;
+--			mii_rxd  <= rmii_rx0 & rmii_rx1;
+--		end if;
+--	end process;
+--
+--	process (mii_txc)
+--	begin
+--		if rising_edge(mii_txc) then
+--			if btn(1)='1' then
+--				if mii_txen='0' then
+--					dhcp_req <= '1';
+--				end if;
+--			elsif mii_txen='0' then
+--				dhcp_req <= '0';
+--			end if;
+--		end if;
+--	end process;
+--
+--	rmii_mdc  <= 'Z';
+--	rmii_mdio <= 'Z';
 
 	sys_rst <= '0';
 
 	videopll_b : block
 		signal clkfb : std_logic;
 
-		attribute FREQUENCY_PIN_CLKI  : string; 
-		attribute FREQUENCY_PIN_CLKOP : string; 
-		attribute FREQUENCY_PIN_CLKOS : string; 
+		attribute FREQUENCY_PIN_CLKI   : string; 
+		attribute FREQUENCY_PIN_CLKOP  : string; 
+		attribute FREQUENCY_PIN_CLKOS  : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
 
@@ -181,6 +197,7 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is "200.000000";
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is  "40.000000";
+
 	begin
 		pll_i : EHXPLLL
         generic map (
@@ -222,24 +239,15 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
             CLKOS2    => video_clk,
-			LOCK      => open, 
+            CLKOS3    => open,
+			LOCK      => video_lck, 
             INTLOCK   => open, 
-			REFCLK    => open, --REFCLK, 
+			REFCLK    => open,
 			CLKINTFB  => open);
 	end block;
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if btn(1)='1' then
-				if mii_txen='0' then
-					dhcp_req <= '1';
-				end if;
-			elsif mii_txen='0' then
-				dhcp_req <= '0';
-			end if;
-		end if;
-	end process;
+	led(0) <= video_lck;
+	led(2) <= video_lck;
 
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
@@ -278,97 +286,127 @@ begin
 		si_frm    => sout_frm,
 		si_irdy   => sout_irdy,
 		si_trdy   => sout_trdy,
-		si_data   => sout_data);
+		si_data   => sout_data,
+		tp => tp);
 
---	ser_irdy <= uart_rxdv;
-	ser_irdy <= uart_txen and uart_idle;
+	sio_debug_b : block
+		constant red_length      : natural := 5;
+		constant green_length    : natural := 6;
+		constant blue_length     : natural := 5;
 
-	video_b : block
-		signal hzsync : std_logic;
-		signal vtsync : std_logic;
-		signal von    : std_logic;
+		signal video_pixel : std_logic_vector(16-1 downto 0);
 	begin
-
-		mii_debug_e : entity hdl4fpga.mii_display
-		generic map (
-			code_spce   => to_ascii(" "),
-			code_digits => to_ascii("0123456789abcdef"),
-			cga_bitrom  => to_ascii("Ready Steady GO!"),
-			timing_id   => video_tab(video_mode).mode)
-		port map (
-			phy_clk     => sio_clk,
-			phy_frm     => '1',
-			phy_irdy    => ser_irdy,
-	--		phy_data    => uart_rxd,
-			phy_data    => uart_txd,
-
-			video_clk   => video_clk, 
-			video_dot   => video_dot,
-			video_on    => von,
-			video_hs    => hzsync,
-			video_vs    => vtsync);
-
-		video_lat_e : entity hdl4fpga.align
-		generic map (
-			n => 3,
-			d => (0 to 3-1 => 4))
-		port map (
-			clk => video_clk,
-			di(0) => von,
-			di(1) => hzsync,
-			di(2) => vtsync,
-			do(0) => video_on,
-			do(1) => video_hzsync,
-			do(2) => video_vtsync);
-
-	end block;
-
-	-- VGA --
-	---------
-
-	dvi_b : block
-		signal video_blank : std_logic;
-		signal in_dots    : std_logic_vector(5-1 downto 0);
-	begin
-
-		video_blank <= not video_on;
-		in_dots <= (others => video_dot);
-
-		vga2dvid_e : entity hdl4fpga.vga2dvid
-		generic map (
-			C_shift_clock_synchronizer => '0',
-			C_ddr   => '1',
-			C_depth => 5)
-		port map (
-			clk_pixel => video_clk,
-			clk_shift => video_shift_clk,
-			in_red    => in_dots,
-			in_green  => in_dots,
-			in_blue   => in_dots,
-			in_hsync  => video_hzsync,
-			in_vsync  => video_vtsync,
-			in_blank  => video_blank,
-			out_clock => dvid_crgb(7 downto 6),
-			out_red   => dvid_crgb(5 downto 4),
-			out_green => dvid_crgb(3 downto 2),
-			out_blue  => dvid_crgb(1 downto 0));
-
-		ddr_g : for i in gpdi_dp'range generate
-			signal q : std_logic;
+--		ser_frm  <= '1';
+--		ser_irdy <= (uart_txen or uart_rxdv) and uart_idle;
+--		ser_data <= wirebus(uart_rxd & uart_txd, not uart_txen & uart_txen);
+--		ser_frm  <= '1';
+--		ser_irdy <= uart_rxdv and uart_idle;
+--		ser_data <= uart_rxd;
+		ser_frm  <= tp(1);
+		ser_irdy <= tp(2);
+		ser_data <= tp(3 to 3+ser_data'length-1);
+		video_b : block
+			signal hzsync : std_logic;
+			signal vtsync : std_logic;
+			signal von    : std_logic;
 		begin
-			oddr_i : oddrx1f
-			port map(
-				sclk => video_shift_clk,
-				rst  => '0',
-				d0   => dvid_crgb(2*i),
-				d1   => dvid_crgb(2*i+1),
-				q    => q);
-			olvds_i : olvds 
-			port map(
-				a  => q,
-				z  => gpdi_dp(i),
-				zn => gpdi_dn(i));
-		end generate;
+
+			mii_debug_e : entity hdl4fpga.mii_display
+			generic map (
+				code_spce   => to_ascii(" "),
+				code_digits => to_ascii("0123456789abcdef"),
+				cga_bitrom  => to_ascii("Ready Steady GO!"),
+				timing_id   => video_tab(video_mode).mode)
+			port map (
+				phy_clk     => sio_clk,
+				phy_frm     => ser_frm,
+				phy_irdy    => ser_irdy,
+				phy_data    => ser_data,
+
+				video_clk   => video_clk, 
+				video_dot   => video_dot,
+				video_on    => von,
+				video_hs    => hzsync,
+				video_vs    => vtsync);
+
+			video_lat_e : entity hdl4fpga.align
+			generic map (
+				n => 3,
+				d => (0 to 3-1 => 4))
+			port map (
+				clk => video_clk,
+				di(0) => von,
+				di(1) => hzsync,
+				di(2) => vtsync,
+				do(0) => video_on,
+				do(1) => video_hzsync,
+				do(2) => video_vtsync);
+
+		end block;
+
+		-- VGA --
+		---------
+
+		dvi_b : block
+			constant subpixel_length : natural := hdl4fpga.std.min(hdl4fpga.std.min(red_length, green_length), blue_length);
+
+			signal dvid_blank : std_logic;
+			signal in_red     : unsigned(0 to subpixel_length-1);
+			signal in_green   : unsigned(0 to subpixel_length-1);
+			signal in_blue    : unsigned(0 to subpixel_length-1);
+
+		begin
+
+			video_pixel <= (others => video_dot);
+			process (video_pixel)
+				variable pixel : unsigned(0 to video_pixel'length-1);
+			begin
+				pixel    := unsigned(video_pixel);
+				in_red   <= pixel(in_red'range);
+				pixel    := pixel sll red_length;
+				in_green <= pixel(in_green'range);
+				pixel    := pixel sll green_length;
+				in_blue  <= pixel(in_blue'range);
+			end process;
+
+			dvid_blank <= not video_on;
+
+			vga2dvid_e : entity hdl4fpga.vga2dvid
+			generic map (
+				C_shift_clock_synchronizer => '0',
+				C_ddr   => '1',
+				C_depth => subpixel_length)
+			port map (
+				clk_pixel => video_clk,
+				clk_shift => video_shift_clk,
+				in_red    => std_logic_vector(in_red),
+				in_green  => std_logic_vector(in_green),
+				in_blue   => std_logic_vector(in_blue),
+				in_hsync  => video_hzsync,
+				in_vsync  => video_vtsync,
+				in_blank  => dvid_blank,
+				out_clock => dvid_crgb(7 downto 6),
+				out_red   => dvid_crgb(5 downto 4),
+				out_green => dvid_crgb(3 downto 2),
+				out_blue  => dvid_crgb(1 downto 0));
+
+			ddr_g : for i in gpdi_dp'range generate
+				signal q : std_logic;
+			begin
+				oddr_i : oddrx1f
+				port map(
+					sclk => video_shift_clk,
+					rst  => '0',
+					d0   => dvid_crgb(2*i),
+					d1   => dvid_crgb(2*i+1),
+					q    => q);
+				olvds_i : olvds 
+				port map(
+					a  => q,
+					z  => gpdi_dp(i),
+					zn => gpdi_dn(i));
+			end generate;
+		end block;
 	end block;
 
 end;

@@ -55,14 +55,6 @@ architecture graphics of ulx3s is
 	signal sys_rst        : std_logic;
 	signal sys_clk        : std_logic;
 
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(8-1 downto 0);
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(8-1 downto 0);
-
 	signal ddrsys_rst     : std_logic;
 	signal ddrsys_clks    : std_logic_vector(0 to 0);
 
@@ -96,12 +88,12 @@ architecture graphics of ulx3s is
 	signal sdram_dqt      : std_logic_vector(sdram_d'range);
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
-	constant modedebug  : natural := 0;
-	constant mode600p   : natural := 1;
-	constant mode600p18 : natural := 2;
-	constant mode600p24 : natural := 3;
-	constant mode900p   : natural := 4;
-	constant mode1080p  : natural := 5;
+	constant modedebug    : natural := 0;
+	constant mode600p     : natural := 1;
+	constant mode600p18   : natural := 2;
+	constant mode600p24   : natural := 3;
+	constant mode900p     : natural := 4;
+	constant mode1080p    : natural := 5;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -139,8 +131,8 @@ architecture graphics of ulx3s is
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
-	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
---	constant video_mode : natural := nodebug_videomode;
+	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
+--	constant video_mode   : natural := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
@@ -160,12 +152,19 @@ architecture graphics of ulx3s is
 	end record;
 
 	type sdram_vector is array (natural range <>) of sdram_params;
-	constant sdram133MHz : natural := 0;
-	constant sdram166MHz : natural := 1;
-	constant sdram200MHz : natural := 2;
-	constant sdram233MHz : natural := 3;
-	constant sdram250MHz : natural := 4;
-	constant sdram275MHz : natural := 5;
+	constant sdram133MHz  : natural := 0;
+	constant sdram166MHz  : natural := 1;
+	constant sdram200MHz  : natural := 2;
+	constant sdram233MHz  : natural := 3;
+	constant sdram250MHz  : natural := 4;
+	constant sdram275MHz  : natural := 5;
+
+--	constant sdram_mode   : natural := sdram133MHz;
+--	constant sdram_mode   : natural := sdram166MHz;
+--	constant sdram_mode   : natural := sdram200MHz;
+--	constant sdram_mode   : natural := sdram233MHz;
+	constant sdram_mode   : natural := sdram250MHz;
+--	constant sdram_mode   : natural := sdram275MHz;
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
@@ -175,13 +174,6 @@ architecture graphics of ulx3s is
 		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
-
---	constant sdram_mode : natural := sdram133MHz;
---	constant sdram_mode : natural := sdram166MHz;
---	constant sdram_mode : natural := sdram200MHz;
---	constant sdram_mode : natural := sdram233MHz;
-	constant sdram_mode : natural := sdram250MHz;
---	constant sdram_mode : natural := sdram275MHz;
 
 	constant ddr_tcp   : natural := natural(
 		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
@@ -203,21 +195,28 @@ architecture graphics of ulx3s is
 	signal uart_txen   : std_logic;
 	signal uart_txd    : std_logic_vector(uart_rxd'range);
 
+	signal sin_frm     : std_logic;
+	signal sin_irdy    : std_logic;
+	signal sin_data    : std_logic_vector(uart_rxd'range);
+	signal sout_frm    : std_logic;
+	signal sout_irdy   : std_logic;
+	signal sout_trdy   : std_logic;
+	signal sout_data   : std_logic_vector(uart_rxd'range);
+
 	alias sio_clk      : std_logic is uart_clk;
 	alias dmacfg_clk   : std_logic is uart_clk;
 
-	signal tp : std_logic_vector(0 to 32-1);
+	signal tp : std_logic_vector(1 to 32);
 begin
 
 	sys_rst <= '0';
 	videopll_b : block
 
 		signal clkfb : std_logic;
-		signal clks : std_logic_vector(3 downto 0);
 
-		attribute FREQUENCY_PIN_CLKI  : string; 
-		attribute FREQUENCY_PIN_CLKOP : string; 
-		attribute FREQUENCY_PIN_CLKOS : string; 
+		attribute FREQUENCY_PIN_CLKI   : string; 
+		attribute FREQUENCY_PIN_CLKOP  : string; 
+		attribute FREQUENCY_PIN_CLKOS  : string; 
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
 
@@ -356,7 +355,7 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		led(6) <= lock;
+		led(7) <= lock;
 		ddrsys_rst <= not lock;
 
 		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
@@ -400,7 +399,8 @@ begin
 		si_frm    => sout_frm,
 		si_irdy   => sout_irdy,
 		si_trdy   => sout_trdy,
-		si_data   => sout_data);
+		si_data   => sout_data,
+		tp => tp);
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -466,9 +466,7 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
-		ctlrphy_sti  => ctlrphy_sti,
-
-		tp           => tp);
+		ctlrphy_sti  => ctlrphy_sti);
 
 	process (sio_clk)
 		variable t : std_logic;
@@ -480,10 +478,27 @@ begin
 				t := not t;
 			end if;
 			e := i;
-			i := sin_frm;
+			i := tp(1);
 
 			led(0) <= t;
 			led(1) <= not t;
+		end if;
+	end process;
+
+	process (sio_clk)
+		variable t : std_logic;
+		variable e : std_logic;
+		variable i : std_logic;
+	begin
+		if rising_edge(sio_clk) then
+			if i='1' and e='0' then
+				t := not t;
+			end if;
+			e := i;
+			i := tp(2);
+
+			led(4) <= t;
+			led(5) <= not t;
 		end if;
 	end process;
 

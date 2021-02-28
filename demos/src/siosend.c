@@ -285,8 +285,8 @@ void hdlc_send(char * data, int len)
 	u16 fcs;
 
     fcs = ~pppfcs16(PPPINITFCS16, data, len);
-	memcpy(data+len+0, (char *) &fcs+1, sizeof(fcs)/2);
-	memcpy(data+len+1, (char *) &fcs+0, sizeof(fcs)/2);
+	memcpy(data+len+0, (char *) &fcs+0, sizeof(fcs)/2);
+	memcpy(data+len+1, (char *) &fcs+1, sizeof(fcs)/2);
 	len += sizeof(fcs);
 	fputc(0x7e, comm);
 	for (int i = 0; i < len; i++) {
@@ -297,7 +297,7 @@ void hdlc_send(char * data, int len)
 			fputc(0x7d, comm);
 			data[i] ^= 0x20;
 		}
-		fputc(reverse(data[i],8), comm);
+		fputc(data[i], comm);
 	}
 	fputc(0x7e, comm);
 	pkt_sent++;
@@ -371,7 +371,7 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 				pkt_lost--;
 				return len;
 			} else {
-				if (retry++ > 1024) {
+				if (retry++ > 64) {
 					return -1;
 				}
 				if (LOG1) {
@@ -423,7 +423,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 				perror("reading serial");
 				abort();
 			} else {
-				if (retry++ > 1024) {
+				if (retry++ > 64) {
 					return -1;
 				}
 				if (LOG1) {
@@ -614,6 +614,7 @@ int main (int argc, char *argv[])
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
 	int ack = 0x0b;
+	goto aca;
 	for(;;) {
 
 	
@@ -656,7 +657,8 @@ int main (int argc, char *argv[])
 	if (LOG0) {
 		fprintf (stderr, ">>> ACKNOWLEGE SET <<<\n");
 	}
-
+	abort();
+aca:
 	// Processing data //
 	// --------------- //
 
@@ -688,23 +690,35 @@ int main (int argc, char *argv[])
 
 			length = n;
 			if (length > MAXLEN) {
-				if (LOG1) fprintf (stderr, "Packet length %d greater than %d\n", length, MAXLEN);
+				if (LOG1) {
+					fprintf (stderr, "Packet length %d greater than %d\n", length, MAXLEN);
+				}
 				abort();
 			}
 
 			(ack = (ack += 1) % 0x40);
 
-			if (LOG0) fprintf (stderr, ">>> SENDING PACKET <<<\n");
+			if (LOG0) {
+				fprintf (stderr, ">>> SENDING PACKET <<<\n");
+			}
 			
 			set_acknode(ack_out, ack, 0x0);
 			send_rgtrrawdata(ack_out, buffer, length);
 
-			if (LOG0) fprintf (stderr, ">>> CHECKING ACK <<<\n");
+			if (LOG0) {
+				fprintf (stderr, ">>> CHECKING ACK <<<\n");
+			}
 			for(;;) {
-				if (LOG1) fprintf (stderr, "waiting for acknowlege\n", n);
+				if (LOG1) {
+					fprintf (stderr, "waiting for acknowlege\n", n);
+				}
+
 				queue_in = delete_queue(queue_in);
 				queue_in = rcvd_rgtr();
-				if (LOG1) print_rgtrs(queue_in);
+				abort();
+				if (LOG1) {
+					print_rgtrs(queue_in);
+				}
 				if (queue_in) {
 					if (LOG1) fprintf (stderr, "acknowlege received\n", n);
 

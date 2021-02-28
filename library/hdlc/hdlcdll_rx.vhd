@@ -36,7 +36,7 @@ entity hdlcdll_rx is
 
 		hdlcrx_frm  : buffer std_logic;
 		hdlcrx_irdy : buffer  std_logic;
-		hdlcrx_data : buffer std_logic_vector(8-1 downto 0);
+		hdlcrx_data : buffer std_logic_vector;
 		fcs_sb      : out std_logic;
 		fcs_vld     : out std_logic);
 end;
