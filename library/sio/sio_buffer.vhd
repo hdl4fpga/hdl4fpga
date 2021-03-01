@@ -41,7 +41,7 @@ entity sio_buffer is
 
 		rollback : in  std_logic;
 		commit   : in  std_logic;
-		overflow : out std_logic;
+		overflow : out std_logic := '0';
 
 		so_clk   : in  std_logic;
 		so_frm   : buffer std_logic;

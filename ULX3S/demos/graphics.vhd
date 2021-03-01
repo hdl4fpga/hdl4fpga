@@ -447,6 +447,9 @@ begin
 
 	begin
 	
+		sio_clk    <= not rmii_nint;
+		dmacfg_clk <= not rmii_nint;
+
 		mii_txc <= not rmii_nint;
 		process(mii_txc)
 		begin

@@ -67,6 +67,8 @@ end;
 
 architecture struct of sio_flow is
 
+	constant rgtrmeta_id : std_logic_vector(8-1 downto 0) := x"00";
+
 	signal metaram_frm  : std_logic;
 	signal metaram_irdy : std_logic;
 	signal metaram_data : std_logic_vector(si_data'range);
@@ -108,21 +110,17 @@ begin
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
 		signal rgtr_idv     : std_logic;
 		signal rgtr_dv      : std_logic;
-		signal rgtr_data    : std_logic_vector(buffer_data'range);
+		signal rgtr_data    : std_logic_vector(0 to 8-1);
 		signal data_frm     : std_logic;
 		signal data_irdy    : std_logic;
 		signal sigsin_frm   : std_logic;
-		signal meta_frm      : std_logic;
-		signal meta_irdy     : std_logic;
+		signal meta_frm     : std_logic;
+		signal meta_irdy    : std_logic;
 		signal sout_irdy    : std_logic;
-		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
-		signal sigrgtr_dv   : std_logic;
 		signal rxd          : std_logic_vector(0 to 8-1);
 
 		signal ena  : std_logic;
 
-		constant xxx  : natural := rgtr_id'length/metaram_data'length;
-		constant xxx1 : natural := rgtr_data'length;
 
 	begin
 
@@ -144,7 +142,7 @@ begin
 			rgtr_data => rgtr_data);
 
 		metaram_frm  <= rgtr_frm;
-		metaram_irdy <= sout_irdy and setif(rgtr_id=x"00");
+		metaram_irdy <= sout_irdy and setif(rgtr_id=rgtrmeta_id);
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
@@ -184,41 +182,51 @@ begin
 
 	end block;
 
---		latfrm_e : entity hdl4fpga.align 
---		generic map (
---			n => 1,
---			d => (0 to 0 => xxx-1))
---		port map (
---			clk => sio_clk,
---			di(0)  => metaram_frm,
---			do(0)  => lat_frm);
---
---		rgtr_trdy <= setif((to_bitvector(rgtr_id)=x"00" and to_bit(rgtr_frm)='1'));
---		latdat_e : entity hdl4fpga.align 
---		generic map (
---			n => xxx1,
---			d => (0 to xxx1-1 => xxx-1))
---		port map (
---			clk => sio_clk,
---			ena => rgtr_trdy,
---			di  => metaram_data,
---			do  => _txd);
+	meta_b : block
 
-	metaram_e : entity hdl4fpga.sio_ram 
-	generic map (
-		mem_size => 64*si_data'length)
-	port map (
-		si_clk   => phyi_clk,
-		si_frm   => metaram_frm,
-		si_irdy  => metaram_irdy,
-		si_data  => metaram_data,
+		constant xxx  : natural := rgtrmeta_id'length/metaram_data'length;
+		constant xxx1 : natural := metaram_data'length;
 
-		so_clk   => so_clk,
-		so_frm   => flow_frm,
-		so_irdy  => flow_trdy,
-		so_trdy  => meta_trdy,
-		so_end   => meta_end,
-		so_data  => meta_data);
+		signal lat_frm : std_logic;
+		signal lat_data : std_logic_vector(metaram_data'range);
+
+	begin
+
+		latfrm_e : entity hdl4fpga.align 
+		generic map (
+			n => 1,
+			d => (0 to 0 => xxx-1))
+		port map (
+			clk   => phyi_clk,
+			di(0) => metaram_frm,
+			do(0) => lat_frm);
+
+		latdat_e : entity hdl4fpga.align 
+		generic map (
+			n => xxx1,
+			d => (0 to xxx1-1 => xxx-1))
+		port map (
+			clk => phyi_clk,
+			di  => metaram_data,
+			do  => lat_data);
+
+		metaram_e : entity hdl4fpga.sio_ram 
+		generic map (
+			mem_size => 64*8)
+		port map (
+			si_clk   => phyi_clk,
+			si_frm   => lat_frm,
+			si_irdy  => metaram_irdy,
+			si_data  => lat_data,
+
+			so_clk   => so_clk,
+			so_frm   => flow_frm,
+			so_irdy  => flow_trdy,
+			so_trdy  => meta_trdy,
+			so_end   => meta_end,
+			so_data  => meta_data);
+
+	end block;
 
 	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and phyi_fcssb;
 	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and phyi_fcssb;
@@ -263,7 +271,7 @@ begin
 	end process;
 
 	sioack_data <= reverse(
-		x"00" & x"03" & x"04" & x"01" & x"00" & x"03" &
+		rgtrmeta_id & x"03" & x"04" & x"01" & x"00" & x"03" &
 		x"01" & x"00" & ack_txd, 8);
 
 	ack_irdy <= meta_end and flow_trdy;

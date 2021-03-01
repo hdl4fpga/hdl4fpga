@@ -233,7 +233,9 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/sin_data'length-1);
+		constant octect    : natural := 8;
+		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/octect-1);
+		signal xxxxx : natural := word_bits;
 
 	begin
 
@@ -391,7 +393,7 @@ begin
 			dst_data   => dmaio_len);
 		dmaio_next <= dmaio_trdy;
 
-		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0')) and data_irdy;
+		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 		rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
