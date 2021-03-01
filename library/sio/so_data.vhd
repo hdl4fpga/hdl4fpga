@@ -49,17 +49,21 @@ architecture def of so_data is
 
 	signal ser_irdy  : std_logic;
 	signal ser_trdy  : std_logic;
-	signal ser_data  : std_logic_vector(so_data'range);
+	signal ser_data  : std_logic_vector(0 to 8-1);
 	signal low_cntr  : unsigned(0 to 8);
 	signal high_cntr : unsigned(0 to setif(si_length'length > 8, si_length'length - 8, 0));
 
 	type states is (st_idle, st_rid, st_len, st_data);
 	signal state : states;
 
-	signal des_data : std_logic_vector(si_data'range);
+	signal desi_data : std_logic_vector(si_data'range);
+	signal deso_irdy : std_logic;
+	signal deso_trdy : std_logic;
+	signal deso_data : std_logic_vector(ser_data'range);
+
 begin
 
-	des_data <= reverse(reverse(si_data), ser_data'length);
+	desi_data <= reverse(reverse(si_data), ser_data'length);
 	desser_e : entity hdl4fpga.desser
 	port map (
 		desser_clk => sio_clk,
@@ -67,7 +71,7 @@ begin
 		des_frm    => si_frm,
 		des_irdy   => si_irdy,
 		des_trdy   => si_trdy,
-		des_data   => des_data,
+		des_data   => desi_data,
 
 		ser_irdy   => ser_irdy,
 		ser_trdy   => ser_trdy,
@@ -131,16 +135,30 @@ begin
 
 	ser_trdy <= so_trdy when state=st_data else '0';
 
-	so_frm   <= to_stdulogic(to_bit(si_frm));
-	so_irdy  <= 
-		'0' when state=st_idle else
+	deso_irdy  <= 
+		'0'      when state=st_idle else
 		ser_irdy when state=st_data else
 		'1';
+
 	with state select
-	so_data <= 
+	deso_data <= 
 		x"ff"                                              when st_idle | st_rid,
 		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
 		ser_data                                           when st_data;
+
+	so_frm <= to_stdulogic(to_bit(si_frm));
 	so_end <= si_end;
+	dessero_e : entity hdl4fpga.desser
+	port map (
+		desser_clk => sio_clk,
+
+		des_frm    => si_frm,
+		des_irdy   => deso_irdy,
+		des_trdy   => deso_trdy,
+		des_data   => deso_data,
+
+		ser_irdy   => so_irdy,
+		ser_trdy   => so_trdy,
+		ser_data   => so_data);
 
 end;
