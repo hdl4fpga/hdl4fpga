@@ -240,6 +240,11 @@ architecture ulx3s_graphics of testbench is
 
 	constant uart_xtal : natural := 25 sec / 1 us;
 
+	signal gp : std_logic_vector(28-1 downto 0);
+	signal gn : std_logic_vector(28-1 downto 0);
+
+	signal btn   : std_logic_vector(7-1 downto 0);
+
 begin
 
 	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
@@ -301,6 +306,108 @@ begin
 		uart_idle => uart_idle,
 		uart_txen => uart_txen,
 		uart_txd  => uart_txd);
+
+	
+	ipoe_b : block
+		signal mii_clk  : std_logic := '0';
+
+		signal mii_req  : std_logic;
+
+		signal mii_txc  : std_logic;
+		signal mii_txen : std_logic;
+		signal mii_txd  : std_logic_vector(0 to 2-1);
+		signal eth_txen : std_logic;
+		signal eth_txd  : std_logic_vector(mii_txd'range);
+
+		signal mii_rxc  : std_logic;
+		signal mii_rxdv : std_logic;
+		signal mii_rxd  : std_logic_vector(0 to 2-1);
+
+		signal arp_req  : std_logic := '0';
+
+		signal txfrm_ptr : std_logic_vector(0 to 20);
+
+		constant payload : std_logic_vector := 
+			x"0100" & x"23"
+			& x"160380000000"
+			& x"1702000002"
+			& x"1702000002"
+			& x"160380000000"
+			& x"1702000002"
+			& x"1702000002"
+			& x"1702000003"
+			& x"1702000004"
+			& x"170200000f";
+
+		constant packet : std_logic_vector := 
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
+			x"ffffffff"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         & -- UDP Source port, Destination port
+				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
+				x"0000" &              -- UPD checksum
+				payload);
+
+	begin
+
+		mii_clk <= not mii_clk after 10 ns;
+		mii_rxc <= mii_clk;
+		mii_txc <= mii_clk;
+
+		gn(12) <= mii_clk;
+
+		mii_req <= '0', '1' after 8 us;
+		eth_e: entity hdl4fpga.mii_rom
+		generic map (
+			mem_data => reverse(packet,8))
+		port map (
+			mii_txc  => mii_rxc,
+			mii_txen => mii_req,
+			mii_txdv => eth_txen,
+			mii_txd  => eth_txd);
+
+		process (mii_rxc)
+		begin
+
+			if rising_edge(mii_rxc) then
+				if eth_txen='0' and mii_rxdv='0' then
+					txfrm_ptr <= (others => '0');
+				else
+					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
+				end if;
+			end if;
+		end process;
+
+		ethtx_e : entity hdl4fpga.eth_tx
+		port map (
+			mii_txc  => mii_rxc,
+			eth_ptr  => txfrm_ptr,
+			hwsa     => x"af_ff_ff_ff_ff_f5",
+			hwda     => x"00_40_00_01_02_03",
+			llc      => x"0800",
+			pl_txen  => eth_txen,
+			eth_rxd  => eth_txd,
+			eth_txen => mii_rxdv,
+			eth_txd  => mii_rxd);
+
+		gp(12) <= mii_rxdv;
+		gn(11) <= mii_rxd(0);
+		gp(11) <= mii_rxd(1);
+
+		mii_txen   <= gn(10);
+		mii_txd(0) <= gp(10);
+		mii_txd(1) <= gn(9);
+
+	end block;
 
 	du_e : ulx3s
 	port map (
