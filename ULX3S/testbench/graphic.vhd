@@ -54,6 +54,8 @@ architecture ulx3s_graphics of testbench is
 
 	signal ftdi_txd    : std_logic;
 
+	alias mii_clk      : std_logic is gn(12);
+
 	component ulx3s is
 		generic (
 			debug  : boolean := true);
@@ -177,7 +179,7 @@ architecture ulx3s_graphics of testbench is
 		return retval;
 	end;
 
-	constant data  : std_logic_vector := reverse (
+	constant data  : std_logic_vector :=
 		x"010001" &
 		x"18ff" & 
 		gen_natural(start => 0, stop => 127, size => 16) &
@@ -232,8 +234,9 @@ architecture ulx3s_graphics of testbench is
 --		x"1602000000" &
 --		x"1702000000"
 
-		,8);
+		;
 
+	signal mii_req : std_logic;
 begin
 
 	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
@@ -252,7 +255,6 @@ begin
 			rst       : in  std_logic;
 			uart_clk  : in  std_logic;
 			uart_sout : out std_logic);
-
 		port map (
 			rst       => rst,
 			uart_clk  => xtal,
@@ -278,7 +280,7 @@ begin
 				n          := 0;
 			elsif rising_edge(uart_clk) then
 				if addr < payload'length then
-					hdlctx_data <= payload(addr to addr+8-1);
+					hdlctx_data <= reverse(payload(addr to addr+8-1));
 					if hdlctx_trdy='1' then
 						addr := addr + 8;
 					end if;
@@ -324,36 +326,38 @@ begin
 
 	end block;
 	
+	mii_req <= '0', '1' after 8 us;
+	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
-		signal mii_clk  : std_logic := '0';
+		generic (
+			baudrate  : natural := 3_000_000;
+			uart_xtal : natural := 25 sec / 1 us;
+			payload   : std_logic_vector);
+		generic map (
+			payload   => data);
 
-		signal mii_req  : std_logic;
+		port (
+			rst       : in  std_logic;
+			mii_req   : in  std_logic;
+			mii_txc   : in  std_logic;
+			mii_txen  : in  std_logic;
+			mii_txd   : in  std_logic_vector(0 to 2-1);
 
-		signal mii_txc  : std_logic;
-		signal mii_txen : std_logic;
-		signal mii_txd  : std_logic_vector(0 to 2-1);
-		signal eth_txen : std_logic;
-		signal eth_txd  : std_logic_vector(mii_txd'range);
+			mii_rxc   : in  std_logic;
+			mii_rxdv  : buffer std_logic;
+			mii_rxd   : out std_logic_vector(0 to 2-1));
+		port map (
+			rst        => rst,
+			mii_req    => mii_req,
+			mii_rxc    => mii_clk,
+			mii_rxdv   => gp(12),
+			mii_rxd(0) => gn(11),
+			mii_rxd(1) => gp(11),
 
-		signal mii_rxc  : std_logic;
-		signal mii_rxdv : std_logic;
-		signal mii_rxd  : std_logic_vector(0 to 2-1);
-
-		signal arp_req  : std_logic := '0';
-
-		signal txfrm_ptr : std_logic_vector(0 to 20);
-
-		constant payload : std_logic_vector := 
-			x"0100" & x"23"
-			& x"160380000000"
-			& x"1702000002"
-			& x"1702000002"
-			& x"160380000000"
-			& x"1702000002"
-			& x"1702000002"
-			& x"1702000003"
-			& x"1702000004"
-			& x"170200000f";
+			mii_txc    => mii_clk,
+			mii_txen   => gn(10),
+			mii_txd(0) => gp(10),
+			mii_txd(1) => gn(9));
 
 		constant packet : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
@@ -373,15 +377,13 @@ begin
 				x"0000" &              -- UPD checksum
 				payload);
 
+		signal eth_txen  : std_logic;
+		signal eth_txd   : std_logic_vector(mii_txd'range);
+
+		signal txfrm_ptr : std_logic_vector(0 to 20);
+
 	begin
 
-		mii_clk <= not mii_clk after 10 ns;
-		mii_rxc <= mii_clk;
-		mii_txc <= mii_clk;
-
-		gn(12) <= mii_clk;
-
-		mii_req <= '0', '1' after 8 us;
 		eth_e: entity hdl4fpga.mii_rom
 		generic map (
 			mem_data => reverse(packet,8))
@@ -414,14 +416,6 @@ begin
 			eth_rxd  => eth_txd,
 			eth_txen => mii_rxdv,
 			eth_txd  => mii_rxd);
-
-		gp(12) <= mii_rxdv;
-		gn(11) <= mii_rxd(0);
-		gp(11) <= mii_rxd(1);
-
-		mii_txen   <= gn(10);
-		mii_txd(0) <= gp(10);
-		mii_txd(1) <= gn(9);
 
 	end block;
 
