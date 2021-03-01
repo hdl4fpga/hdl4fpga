@@ -166,75 +166,75 @@ begin
 
 	sio_b : block
 
-		constant fifo_depth  : natural := 4;
-		constant fifo_gray   : boolean := false;
+		constant fifo_depth   : natural := 4;
+		constant fifo_gray    : boolean := false;
 
-		constant rid_dmaaddr : std_logic_vector := x"16";
-		constant rid_dmalen  : std_logic_vector := x"17";
-		constant rid_dmadata : std_logic_vector := x"18";
+		constant rid_dmaaddr  : std_logic_vector := x"16";
+		constant rid_dmalen   : std_logic_vector := x"17";
+		constant rid_dmadata  : std_logic_vector := x"18";
 
-		signal rgtr_frm      : std_logic;
-		signal rgtr_irdy     : std_logic;
-		signal rgtr_idv      : std_logic;
-		signal rgtr_id       : std_logic_vector(8-1 downto 0);
-		signal rgtr_lv       : std_logic;
-		signal rgtr_len      : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv       : std_logic;
-		signal rgtr_data     : std_logic_vector(0 to 32-1);
-		signal data_frm      : std_logic;
-		signal data_irdy     : std_logic;
-		signal data_ptr      : std_logic_vector(8-1 downto 0);
+		signal rgtr_frm       : std_logic;
+		signal rgtr_irdy      : std_logic;
+		signal rgtr_idv       : std_logic;
+		signal rgtr_id        : std_logic_vector(8-1 downto 0);
+		signal rgtr_lv        : std_logic;
+		signal rgtr_len       : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv        : std_logic;
+		signal rgtr_data      : std_logic_vector(0 to 32-1);
+		signal data_frm       : std_logic;
+		signal data_irdy      : std_logic;
+		signal data_ptr       : std_logic_vector(8-1 downto 0);
 
-		signal rgtr_dmaaddr  : std_logic_vector(32-1 downto 0);
-		signal rgtr_dmalen   : std_logic_vector(24-1 downto 0);
-		signal ack_rgtr      : std_logic_vector(0 to 8-1);
-		signal sigrgtr_frm   : std_logic;
+		signal rgtr_dmaaddr   : std_logic_vector(32-1 downto 0);
+		signal rgtr_dmalen    : std_logic_vector(24-1 downto 0);
+		signal ack_rgtr       : std_logic_vector(0 to 8-1);
+		signal sigrgtr_frm    : std_logic;
 
-		signal sigram_irdy   : std_logic;
-		signal sigram_data   : std_logic_vector(sout_data'range);
+		signal metaram_irdy   : std_logic;
+		signal metaram_data   : std_logic_vector(sout_data'range);
 
-		signal dmasin_irdy   : std_logic;
-		signal dmadata_irdy  : std_logic;
-		signal dmadata_trdy  : std_logic;
-		signal rgtr_dmadata  : std_logic_vector(ctlr_di'length-1 downto 0);
-		signal datactlr_irdy : std_logic;
-		signal dmaaddr_irdy  : std_logic;
-		signal dmaaddr_trdy  : std_logic;
-		signal dmalen_irdy   : std_logic;
-		signal dmalen_trdy   : std_logic;
+		signal dmasin_irdy    : std_logic;
+		signal dmadata_irdy   : std_logic;
+		signal dmadata_trdy   : std_logic;
+		signal rgtr_dmadata   : std_logic_vector(ctlr_di'length-1 downto 0);
+		signal datactlr_irdy  : std_logic;
+		signal dmaaddr_irdy   : std_logic;
+		signal dmaaddr_trdy   : std_logic;
+		signal dmalen_irdy    : std_logic;
+		signal dmalen_trdy    : std_logic;
 		signal dmaio_trdy     : std_logic;
 		signal dmaio_next     : std_logic;
 		signal dmaiolen_irdy  : std_logic;
 		signal dmaioaddr_irdy : std_logic;
 
-		signal soutv_frm     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal soutv_irdy    : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal sts_frm       : std_logic;
-		signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal sts_trdy      : std_logic;
-		signal sts_data      : std_logic_vector(sout_data'range);
-		signal sig_data      : std_logic_vector(sigram_data'range);
-		signal sig_trdy      : std_logic;
-		signal sig_end       : std_logic;
-		signal siodmaio_irdy : std_logic;
-		signal siodmaio_trdy : std_logic;
-		signal siodmaio_end  : std_logic;
-		signal sio_dmaio     : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
-		signal siodmaio_data : std_logic_vector(sout_data'range);
+		signal soutv_frm      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal soutv_irdy     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sts_frm        : std_logic;
+		signal sts_irdy       : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sts_trdy       : std_logic;
+		signal sts_data       : std_logic_vector(sout_data'range);
+		signal meta_data      : std_logic_vector(metaram_data'range);
+		signal meta_trdy      : std_logic;
+		signal meta_end       : std_logic;
+		signal siodmaio_irdy  : std_logic;
+		signal siodmaio_trdy  : std_logic;
+		signal siodmaio_end   : std_logic;
+		signal sio_dmaio      : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
+		signal siodmaio_data  : std_logic_vector(sout_data'range);
 
-		signal sodata_frm    : std_logic;
-		signal sodata_irdy   : std_logic;
-		signal sodata_trdy   : std_logic;
-		signal sodata_end    : std_logic;
-		signal sodata_data   : std_logic_vector(sout_data'range);
+		signal sodata_frm     : std_logic;
+		signal sodata_irdy    : std_logic;
+		signal sodata_trdy    : std_logic;
+		signal sodata_end     : std_logic;
+		signal sodata_data    : std_logic_vector(sout_data'range);
 
 		signal debug_dmacfgio_req : std_logic;
 		signal debug_dmacfgio_rdy : std_logic;
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-
 		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/sin_data'length-1);
+
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -255,23 +255,23 @@ begin
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
 
-		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
-		sigram_data <= std_logic_vector(resize(unsigned(rgtr_data), sigram_data'length));
-		sigram_e : entity hdl4fpga.sio_ram 
+		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
+		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
+		metaram_e : entity hdl4fpga.sio_ram 
 		generic map (
 			mem_size => 128*sin_data'length)
 		port map (
 			si_clk   => sio_clk,
 			si_frm   => rgtr_frm,
-			si_irdy  => sigram_irdy,
-			si_data  => sigram_data, 
+			si_irdy  => metaram_irdy,
+			si_data  => metaram_data, 
 
 			so_clk   => sio_clk,
 			so_frm   => sts_frm,
 			so_irdy  => sts_trdy,
-			so_trdy  => sig_trdy,
-			so_end   => sig_end,
-			so_data  => sig_data);
+			so_trdy  => meta_trdy,
+			so_end   => meta_end,
+			so_data  => meta_data);
 
 		ack_e : entity hdl4fpga.sio_rgtr
 		generic map (
@@ -304,7 +304,7 @@ begin
 			x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
 			x"01" & x"00" & reverse(ack_rgtr) &
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
-		siodmaio_irdy <= sig_end and sts_trdy;
+		siodmaio_irdy <= meta_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_dmaio,
@@ -315,8 +315,8 @@ begin
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
-		sts_irdy  <= wirebus(sig_trdy & siodmaio_trdy, not sig_end & sig_end);
-		sts_data  <= wirebus(sig_data & siodmaio_data, not sig_end & sig_end);
+		sts_irdy  <= wirebus(meta_trdy & siodmaio_trdy, not meta_end & meta_end);
+		sts_data  <= wirebus(meta_data & siodmaio_data, not meta_end & meta_end);
 
 		sioarbiter_b : block
 

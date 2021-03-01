@@ -158,9 +158,9 @@ architecture graphics of ulx3s is
 	constant sdram250MHz  : natural := 4;
 	constant sdram275MHz  : natural := 5;
 
---	constant sdram_mode   : natural := sdram133MHz;
+	constant sdram_mode   : natural := sdram133MHz;
 --	constant sdram_mode   : natural := sdram166MHz;
-	constant sdram_mode   : natural := sdram200MHz;
+--	constant sdram_mode   : natural := sdram200MHz;
 --	constant sdram_mode   : natural := sdram233MHz;
 --	constant sdram_mode   : natural := sdram250MHz;
 --	constant sdram_mode   : natural := sdram275MHz;

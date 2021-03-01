@@ -326,7 +326,7 @@ begin
 
 	end block;
 	
-	mii_req <= '0', '1' after 8 us;
+	mii_req <= '0', '1' after 110 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -339,25 +339,25 @@ begin
 		port (
 			rst       : in  std_logic;
 			mii_req   : in  std_logic;
-			mii_txc   : in  std_logic;
-			mii_txen  : in  std_logic;
-			mii_txd   : in  std_logic_vector(0 to 2-1);
-
 			mii_rxc   : in  std_logic;
-			mii_rxdv  : buffer std_logic;
-			mii_rxd   : out std_logic_vector(0 to 2-1));
+			mii_rxdv  : in  std_logic;
+			mii_rxd   : in  std_logic_vector(0 to 2-1);
+
+			mii_txc   : in  std_logic;
+			mii_txen  : buffer std_logic;
+			mii_txd   : out std_logic_vector(0 to 2-1));
 		port map (
 			rst        => rst,
 			mii_req    => mii_req,
-			mii_rxc    => mii_clk,
-			mii_rxdv   => gp(12),
-			mii_rxd(0) => gn(11),
-			mii_rxd(1) => gp(11),
-
 			mii_txc    => mii_clk,
-			mii_txen   => gn(10),
-			mii_txd(0) => gp(10),
-			mii_txd(1) => gn(9));
+			mii_txen   => gp(12),
+			mii_txd(0) => gn(11),
+			mii_txd(1) => gp(11),
+
+			mii_rxc    => mii_clk,
+			mii_rxdv   => gn(10),
+			mii_rxd(0) => gp(10),
+			mii_rxd(1) => gn(9));
 
 		constant packet : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
@@ -388,7 +388,7 @@ begin
 		generic map (
 			mem_data => reverse(packet,8))
 		port map (
-			mii_txc  => mii_rxc,
+			mii_txc  => mii_txc,
 			mii_txen => mii_req,
 			mii_txdv => eth_txen,
 			mii_txd  => eth_txd);
@@ -397,7 +397,7 @@ begin
 		begin
 
 			if rising_edge(mii_rxc) then
-				if eth_txen='0' and mii_rxdv='0' then
+				if eth_txen='0' and mii_txen='0' then
 					txfrm_ptr <= (others => '0');
 				else
 					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
@@ -414,8 +414,8 @@ begin
 			llc      => x"0800",
 			pl_txen  => eth_txen,
 			eth_rxd  => eth_txd,
-			eth_txen => mii_rxdv,
-			eth_txd  => mii_rxd);
+			eth_txen => mii_txen,
+			eth_txd  => mii_txd);
 
 	end block;
 
