@@ -127,9 +127,7 @@ begin
 		end if;
 	end process;
 
-	si_end   <= 
-		'0' when state=st_idle else 
-		si_frm and high_cntr(0) and low_cntr(0);
+	si_end   <= '0' when state=st_idle else si_frm and high_cntr(0) and low_cntr(0);
 
 	ser_trdy <= so_trdy when state=st_data else '0';
 
@@ -140,10 +138,9 @@ begin
 		'1';
 	with state select
 	so_data <= 
-		x"ff"     when st_idle | st_rid,
+		x"ff"                                              when st_idle | st_rid,
 		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
---		std_logic_vector(resize(low_cntr, so_data'length)) when st_data;
-		ser_data  when st_data;
+		ser_data                                           when st_data;
 	so_end <= si_end;
 
 end;

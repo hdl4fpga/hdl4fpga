@@ -33,8 +33,8 @@ architecture ulx3s_graphics of testbench is
 	constant byte_bits  : natural := 8;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	signal rst   : std_logic;
-	signal xtal  : std_logic := '0';
+	signal rst         : std_logic;
+	signal xtal        : std_logic := '0';
 
 	signal sdram_dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal sdram_addr  : std_logic_vector (addr_bits - 1 downto 0);
@@ -46,6 +46,13 @@ architecture ulx3s_graphics of testbench is
 	signal sdram_cas_n : std_logic;
 	signal sdram_we_n  : std_logic;
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
+
+	signal gp          : std_logic_vector(28-1 downto 0);
+	signal gn          : std_logic_vector(28-1 downto 0);
+
+	signal btn         : std_logic_vector(7-1 downto 0);
+
+	signal ftdi_txd    : std_logic;
 
 	component ulx3s is
 		generic (
@@ -170,7 +177,6 @@ architecture ulx3s_graphics of testbench is
 		return retval;
 	end;
 
-	constant baudrate : natural := 3_000_000;
 	constant data  : std_logic_vector := reverse (
 		x"010001" &
 		x"18ff" & 
@@ -228,85 +234,95 @@ architecture ulx3s_graphics of testbench is
 
 		,8);
 
-	signal hdlctx_frm  : std_logic;
-	signal hdlctx_trdy : std_logic;
-	signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-	signal uart_clk   : std_logic := '0';
-	signal uart_sin   : std_logic;
-	signal uart_idle  : std_logic;
-	signal uart_txen  : std_logic;
-	signal uart_txd   : std_logic_vector(0 to 8-1);
-
-	constant uart_xtal : natural := 25 sec / 1 us;
-
-	signal gp : std_logic_vector(28-1 downto 0);
-	signal gn : std_logic_vector(28-1 downto 0);
-
-	signal btn   : std_logic_vector(7-1 downto 0);
-
 begin
 
 	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
---	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
-	uart_clk <= xtal;
+	hdlc_b : block
 
-	process (rst, uart_clk)
-		variable addr : natural;
-		variable n : natural;
+		generic (
+			baudrate  : natural := 3_000_000;
+			uart_xtal : natural := 25 sec / 1 us;
+			payload   : std_logic_vector);
+		generic map (
+			payload   => data);
+
+		port (
+			rst       : in  std_logic;
+			uart_clk  : in  std_logic;
+			uart_sout : out std_logic);
+
+		port map (
+			rst       => rst,
+			uart_clk  => xtal,
+			uart_sout => ftdi_txd);
+
+		signal uart_idle   : std_logic;
+		signal uart_txen   : std_logic;
+		signal uart_txd    : std_logic_vector(0 to 8-1);
+
+		signal hdlctx_frm  : std_logic;
+		signal hdlctx_trdy : std_logic;
+		signal hdlctx_data : std_logic_vector(0 to 8-1);
+
 	begin
-		if rst='1' then
-			hdlctx_frm <= '0';
-			addr      := 0;
-			n := 0;
-		elsif rising_edge(uart_clk) then
-			if addr < data'length then
-				hdlctx_data <= data(addr to addr+8-1);
-				if hdlctx_trdy='1' then
-					addr := addr + 8;
+
+		process (rst, uart_clk)
+			variable addr : natural;
+			variable n    : natural;
+		begin
+			if rst='1' then
+				hdlctx_frm <= '0';
+				addr       := 0;
+				n          := 0;
+			elsif rising_edge(uart_clk) then
+				if addr < payload'length then
+					hdlctx_data <= payload(addr to addr+8-1);
+					if hdlctx_trdy='1' then
+						addr := addr + 8;
+					end if;
+				else
+					if n < 0 then
+						if uart_idle='1' then
+							addr := 0;
+							n := n + 1;
+						end if;
+					end if;
+					hdlctx_data <= (others => '-');
 				end if;
-			else
-				if n <0 then
-				if uart_idle='1' then
-					addr := 0;
-					n := n + 1;
+				if addr < payload'length then
+					hdlctx_frm  <= '1';
+				else
+					hdlctx_frm  <= '0';
 				end if;
-				end if;
-				hdlctx_data <= (others => '-');
 			end if;
-			if addr < data'length then
-				hdlctx_frm  <= '1';
-			else
-				hdlctx_frm  <= '0';
-			end if;
-		end if;
-	end process;
+		end process;
 
-	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-	port map (
-		uart_clk    => uart_clk,
-		uart_idle   => uart_idle,
-		uart_txen   => uart_txen,
-		uart_txd    => uart_txd,
+		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
+		port map (
+			hdlctx_frm  => hdlctx_frm,
+			hdlctx_irdy => '1',
+			hdlctx_trdy => hdlctx_trdy,
+			hdlctx_data => hdlctx_data,
 
-		hdlctx_frm  => hdlctx_frm,
-		hdlctx_irdy => '1',
-		hdlctx_trdy => hdlctx_trdy,
-		hdlctx_data => hdlctx_data);
+			uart_clk    => uart_clk,
+			uart_idle   => uart_idle,
+			uart_txen   => uart_txen,
+			uart_txd    => uart_txd);
 
-	uarttx_e : entity hdl4fpga.uart_tx
-	generic map (
-		baudrate => baudrate,
-		clk_rate => uart_xtal)
-	port map (
-		uart_txc  => uart_clk,
-		uart_sout => uart_sin,
-		uart_idle => uart_idle,
-		uart_txen => uart_txen,
-		uart_txd  => uart_txd);
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_txc  => uart_clk,
+			uart_sout => uart_sout,
+			uart_idle => uart_idle,
+			uart_txen => uart_txen,
+			uart_txd  => uart_txd);
 
+	end block;
 	
 	ipoe_b : block
 		signal mii_clk  : std_logic := '0';
@@ -412,8 +428,10 @@ begin
 	du_e : ulx3s
 	port map (
 		clk_25mhz  => xtal,
-		ftdi_txd   => uart_sin,
-
+		ftdi_txd   => ftdi_txd,
+		btn        => btn,
+		gp         => gp,
+		gn         => gn,
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
 		sdram_csn  => sdram_cs_n,

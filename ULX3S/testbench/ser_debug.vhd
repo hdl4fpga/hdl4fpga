@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ulx3s_siodebug of testbench is
+architecture ulx3s_serdebug of testbench is
 
 	component ulx3s is
 		port (

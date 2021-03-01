@@ -33,7 +33,7 @@ use hdl4fpga.cgafonts.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture sio_debug of nuhs3adsp is
+architecture ser_debug of nuhs3adsp is
 
 	signal sys_clk   : std_logic;
 	signal mii_req   : std_logic;

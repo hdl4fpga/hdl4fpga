@@ -191,7 +191,7 @@ begin
 		signal sigrgtr_frm   : std_logic;
 
 		signal sigram_irdy   : std_logic;
-		signal sigram_data   : std_logic_vector(0 to 8-1);
+		signal sigram_data   : std_logic_vector(sout_data'range);
 
 		signal dmasin_irdy   : std_logic;
 		signal dmadata_irdy  : std_logic;
@@ -212,7 +212,7 @@ begin
 		signal sts_frm       : std_logic;
 		signal sts_irdy      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
 		signal sts_trdy      : std_logic;
-		signal sts_data      : std_logic_vector(8-1 downto 0);
+		signal sts_data      : std_logic_vector(sout_data'range);
 		signal sig_data      : std_logic_vector(sigram_data'range);
 		signal sig_trdy      : std_logic;
 		signal sig_end       : std_logic;

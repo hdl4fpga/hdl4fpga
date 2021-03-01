@@ -114,6 +114,7 @@ begin
 		signal sigsin_frm   : std_logic;
 		signal sig_frm      : std_logic;
 		signal sig_irdy     : std_logic;
+		signal sout_irdy    : std_logic;
 		signal sigrgtr_id   : std_logic_vector(8-1 downto 0);
 		signal sigrgtr_dv   : std_logic;
 		signal rxd          : std_logic_vector(0 to 8-1);
@@ -134,13 +135,15 @@ begin
 			rgtr_idv  => rgtr_idv,
 			rgtr_dv   => rgtr_dv,
 			rgtr_irdy => rgtr_irdy,
+			sout_irdy => sout_irdy,
 			data_frm  => data_frm,
 			data_irdy => data_irdy,
 			rgtr_data => rgtr_data);
 
 		sigram_frm  <= rgtr_frm;
-		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
-		sigram_data <= rgtr_data;
+--		sigram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
+		sigram_irdy <= sout_irdy and setif(rgtr_id=x"00");
+		sigram_data <= std_logic_vector(resize(unsigned(rgtr_data), sigram_data'length));
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
 		generic map (

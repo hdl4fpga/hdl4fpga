@@ -37,7 +37,7 @@ use ieee.std_logic_1164.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture sio_debug of ulx3s is
+architecture ser_debug of ulx3s is
 
 	constant sys_freq   : real    := 25.0e6;
 
