@@ -239,19 +239,12 @@ architecture nuhs3adsp_graphics of testbench is
 
 	constant payload : std_logic_vector := 
 		x"0100" & x"23"
---		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
+		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
 --		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
 		& x"160380000000"
-		& x"1702000002"
-		& x"1702000002"
-		& x"160380000000"
-		& x"1702000002"
-		& x"1702000002"
-		& x"1702000003"
-		& x"1702000004"
 		& x"170200000f";
 
 	constant packet : std_logic_vector := 
@@ -278,7 +271,6 @@ begin
 	mii_txc <= mii_refclk;
 
 	clk <= not clk after 25 ns;
-
 
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 

@@ -142,7 +142,7 @@ begin
 			rgtr_data => rgtr_data);
 
 		metaram_frm  <= rgtr_frm;
-		metaram_irdy <= sout_irdy and setif(rgtr_id=rgtrmeta_id);
+		metaram_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
@@ -157,7 +157,7 @@ begin
 			data      => rxd);
 
 		process (phyi_fcssb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
-			variable last  : bit_vector(ack_rxd'range); -- := x"23";
+			variable last  : bit_vector(ack_rxd'range);
 			variable dup   : bit;
 			variable latch : bit;
 		begin

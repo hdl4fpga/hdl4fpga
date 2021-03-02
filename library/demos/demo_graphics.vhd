@@ -54,7 +54,7 @@ entity demo_graphics is
 		green_length : natural := 6;
 		blue_length  : natural := 5;
 
-		fifo_size    : natural := 8192);
+		fifo_size    : natural := 8*8192);
 
 	port (
 		sio_clk      : in  std_logic;
@@ -99,9 +99,8 @@ entity demo_graphics is
 		ctlrphy_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		tpin         : in  std_logic := '-';
 
-		tp           : buffer std_logic_vector(1 to 32));
+		tp           : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
 
@@ -261,7 +260,7 @@ begin
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 		metaram_e : entity hdl4fpga.sio_ram 
 		generic map (
-			mem_size => 128*sin_data'length)
+			mem_size => 64*8)
 		port map (
 			si_clk   => sio_clk,
 			si_frm   => rgtr_frm,

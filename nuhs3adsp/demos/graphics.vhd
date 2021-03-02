@@ -41,12 +41,12 @@ architecture graphics of nuhs3adsp is
 
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(8-1 downto 0);
+	signal sin_data       : std_logic_vector(0 to 8-1);
 
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(8-1 downto 0);
+	signal sout_data      : std_logic_vector(0 to 8-1);
 
 	signal sout1_frm      : std_logic;
 	signal sout1_irdy     : std_logic;
@@ -303,7 +303,7 @@ begin
 		green_length => 8,
 		blue_length  => 8,
 		
-		fifo_size    => 2048)
+		fifo_size    => 8*2048)
 
 	port map (
 		sio_clk      => sio_clk,

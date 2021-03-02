@@ -58,6 +58,7 @@ architecture graphics of ulx3s is
 	signal ddrsys_rst     : std_logic;
 	signal ddrsys_clks    : std_logic_vector(0 to 0);
 
+	signal sdram_lck      : std_logic;
 	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal ctlrphy_rst    : std_logic;
@@ -191,22 +192,14 @@ architecture graphics of ulx3s is
 	signal sio_clk     : std_logic;
 	signal dmacfg_clk  : std_logic;
 
-	signal tp : std_logic_vector(1 to 32);
-
-	constant link_hdlc  : natural := 0;
-	constant link_ipoe  : natural := 1;
-
-	constant io_links   : natural_vector(0 to 2-1) := (link_hdlc, link_ipoe);
-	constant io_size    : natural_vector(0 to 2-1) := (8, 2);
-
 	-----------------
 	-- Select link --
 	-----------------
 
-	constant io_hdlc    : natural := 0;
-	constant io_ipoe    : natural := 1;
+	constant io_hdlc : natural := 0;
+	constant io_ipoe : natural := 1;
 
-	constant io_link    : natural := io_ipoe;
+	constant io_link : natural := io_ipoe;
 
 begin
 
@@ -282,6 +275,7 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
+		led(6) <= video_lck;
 	end block;
 
 	ctlrpll_b : block
@@ -304,7 +298,6 @@ begin
 			"275.000000")))));
 
 		signal clkfb : std_logic;
-		signal lock  : std_logic;
 		signal dqs   : std_logic;
 		signal clkos : std_logic;
 
@@ -351,19 +344,19 @@ begin
 			CLKOS     => clkos,
 			CLKOS2    => ctlr_clk,
 			CLKOS3    => dqs, 
-			LOCK      => lock, 
+			LOCK      => sdram_lck, 
             INTLOCK   => open, 
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		led(7) <= lock;
-		ddrsys_rst <= not lock;
+		ddrsys_rst <= not sdram_lck;
+		led(7) <= sdram_lck;
 
 		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
 	end block;
 
-	hdlc_g : if io_links(io_link)=io_hdlc generate
+	hdlc_g : if io_link=io_hdlc generate
 
 	--	constant uart_xtal : natural := natural(sys_freq);
 	--	alias uart_clk     : std_logic is clk_25mhz;
@@ -379,6 +372,8 @@ begin
 		signal uart_idle   : std_logic;
 		signal uart_txen   : std_logic;
 		signal uart_txd    : std_logic_vector(uart_rxd'range);
+
+		signal tp          : std_logic_vector(1 to 32);
 
 	begin
 
@@ -420,16 +415,33 @@ begin
 			sio_clk   => sio_clk,
 			so_frm    => sin_frm,
 			so_irdy   => sin_irdy,
-			so_data   => sin_data(0 to io_size(io_link)-1),
+			so_data   => sin_data,
 
 			si_frm    => sout_frm,
 			si_irdy   => sout_irdy,
 			si_trdy   => sout_trdy,
-			si_data   => sout_data(0 to io_size(io_link)-1),
-			tp => tp);
+			si_data   => sout_data,
+			tp        => tp);
+
+		process (sio_clk)
+			variable t : std_logic;
+			variable e : std_logic;
+			variable i : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				if i='1' and e='0' then
+					t := not t;
+				end if;
+				e := i;
+				i := tp(1);
+
+				led(0) <= t;
+				led(1) <= not t;
+			end if;
+		end process;
 	end generate;
 
-	ipoe_e : if io_links(io_link)=io_ipoe generate
+	ipoe_e : if io_link=io_ipoe generate
 		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
 		alias rmii_tx_en : std_logic is gn(10);
 		alias rmii_tx0   : std_logic is gp(10);
@@ -457,7 +469,7 @@ begin
 	begin
 	
 		sio_clk    <= not rmii_nint;
-		dmacfg_clk <= not rmii_nint;
+		dmacfg_clk <= video_clk;
 
 		mii_txc <= not rmii_nint;
 		process(mii_txc)
@@ -498,13 +510,12 @@ begin
 			si_frm    => sout_frm,
 			si_irdy   => sout_irdy,
 			si_trdy   => sout_trdy,
-			si_data   => sout_data(0 to io_size(io_link)-1),
+			si_data   => sout_data,
 
 			so_frm    => sin_frm,
 			so_irdy   => sin_irdy,
 			so_trdy   => '1',
-			so_data   => sin_data(0 to io_size(io_link)-1),
-			tp        => open);
+			so_data   => sin_data);
 	end generate;
 	
 	grahics_e : entity hdl4fpga.demo_graphics
@@ -533,15 +544,14 @@ begin
 		fifo_size    => mem_size)
 
 	port map (
-		tpin  => video_lck,
 		sio_clk      => sio_clk,
 		sin_frm      => sin_frm,
 		sin_irdy     => sin_irdy,
-		sin_data     => sin_data(0 to io_size(io_link)-1),
+		sin_data     => sin_data,
 		sout_frm     => sout_frm,
 		sout_irdy    => sout_irdy,
 		sout_trdy    => sout_trdy,
-		sout_data    => sout_data(0 to io_size(io_link)-1),
+		sout_data    => sout_data,
 
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -573,40 +583,6 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
-
-	process (sio_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(sio_clk) then
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			i := tp(1);
-
-			led(0) <= t;
-			led(1) <= not t;
-		end if;
-	end process;
-
-	process (sio_clk)
-		variable t : std_logic;
-		variable e : std_logic;
-		variable i : std_logic;
-	begin
-		if rising_edge(sio_clk) then
-			if i='1' and e='0' then
-				t := not t;
-			end if;
-			e := i;
-			i := tp(2);
-
-			led(4) <= t;
-			led(5) <= not t;
-		end if;
-	end process;
 
 	sdram_sti : entity hdl4fpga.align
 	generic map (
