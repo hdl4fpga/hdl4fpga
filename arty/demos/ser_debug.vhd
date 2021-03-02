@@ -71,8 +71,8 @@ architecture ser_debug of arty is
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(8-1 downto 0);
 
+	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
-	signal tp  : std_logic_vector(1 to 4);
 
 begin
 
@@ -122,20 +122,20 @@ begin
 	generic map (
 		default_ipv4a => x"c0_a8_00_0e")
 	port map (
-		ipv4acfg_req => ipv4acfg_req,
+		ipv4acfg_req => dhcp_req,
 
-		phy_rxc   => eth_rx_clk,
+		phy_rxc   => eth_rxclk_bufg,
 		phy_rx_dv => eth_rx_dv,
 		phy_rx_d  => eth_rxd,
 
-		phy_txc   => eth_tx_clk,
+		phy_txc   => eth_txclk_bufg,
 		phy_tx_en => eth_tx_en ,
 		phy_tx_d  => eth_txd,
 
 		phy_crs   => eth_crs,
 		phy_col   => eth_col,
 
-		sio_clk   => sio_clk,
+		sio_clk   => eth_txclk_bufg,
 		si_frm    => sout_frm,
 		si_irdy   => sout_irdy,
 		si_trdy   => sout_trdy,
@@ -150,9 +150,9 @@ begin
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id    => video_tab(video_mode).timing_id,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8)
+		red_length   => 1,
+		green_length => 1,
+		blue_length  => 1)
 	port map (
 		ser_clk      => eth_txclk_bufg,
 		ser_frm      => eth_tx_en,

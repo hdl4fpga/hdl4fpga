@@ -29,13 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
-library ecp5u;
-use ecp5u.components.all;
 library ieee;
 use ieee.std_logic_1164.all;
-
-library ecp5u;
-use ecp5u.components.all;
 
 entity ser_debug is
 	generic (

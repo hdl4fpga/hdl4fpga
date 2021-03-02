@@ -79,7 +79,7 @@ begin
 	crc32_init <= not (mii_rxdv and eth_pre);
 	crc32_e : entity hdl4fpga.crc
 	port map (
-		g    => x"04c11db7",
+		g    => std_logic_vector'(x"04c11db7"),
 		clk  => mii_rxc,
 		init => crc32_init,
 		data => mii_rxd,

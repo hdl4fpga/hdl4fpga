@@ -147,7 +147,7 @@ begin
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
 		generic map (
-			rid  => x"01")
+			rid  => std_logic_vector'(x"01"))
 		port map (
 			rgtr_clk  => phyi_clk,
 			rgtr_id   => rgtr_id,
