@@ -14,33 +14,7 @@ add wave -noupdate /testbench/du_e/ddr_ba
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddr_a
 add wave -noupdate /testbench/du_e/ddr_dqs
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ddr_dq(15) -radix hexadecimal} {/testbench/du_e/ddr_dq(14) -radix hexadecimal} {/testbench/du_e/ddr_dq(13) -radix hexadecimal} {/testbench/du_e/ddr_dq(12) -radix hexadecimal} {/testbench/du_e/ddr_dq(11) -radix hexadecimal} {/testbench/du_e/ddr_dq(10) -radix hexadecimal} {/testbench/du_e/ddr_dq(9) -radix hexadecimal} {/testbench/du_e/ddr_dq(8) -radix hexadecimal} {/testbench/du_e/ddr_dq(7) -radix hexadecimal} {/testbench/du_e/ddr_dq(6) -radix hexadecimal} {/testbench/du_e/ddr_dq(5) -radix hexadecimal} {/testbench/du_e/ddr_dq(4) -radix hexadecimal} {/testbench/du_e/ddr_dq(3) -radix hexadecimal} {/testbench/du_e/ddr_dq(2) -radix hexadecimal} {/testbench/du_e/ddr_dq(1) -radix hexadecimal} {/testbench/du_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddr_dq(15) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(14) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(13) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_dq(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddr_dq
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_e/ctlr_irdy
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_e/ctlr_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/src_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/dst_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/dst_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/dst_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/rd_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/wr_cmp
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/feed_ena
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/dst_irdy1
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(0)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(1)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/b(2)
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(0)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(1)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/q(2)
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(0)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(1)
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/v(2)
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/latency_g/dstirdy_p/data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/dmalen_e/max_depthgt1_g/rdata
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {37900988080 fs} 0}
 quietly wave cursor active 1

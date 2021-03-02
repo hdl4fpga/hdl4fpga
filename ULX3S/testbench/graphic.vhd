@@ -409,7 +409,7 @@ begin
 		port map (
 			mii_txc  => mii_rxc,
 			eth_ptr  => txfrm_ptr,
-			hwsa     => x"ff_ff_ff_ff_ff_ff",
+			hwsa     => x"af_ff_ff_ff_ff_f5",
 			hwda     => x"00_40_00_01_02_03",
 			llc      => x"0800",
 			pl_txen  => eth_txen,

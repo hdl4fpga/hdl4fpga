@@ -159,12 +159,12 @@ architecture graphics of ulx3s is
 	constant sdram250MHz  : natural := 4;
 	constant sdram275MHz  : natural := 5;
 
---	constant sdram_mode   : natural := sdram133MHz;
---	constant sdram_mode   : natural := sdram166MHz;
---	constant sdram_mode   : natural := sdram200MHz;
---	constant sdram_mode   : natural := sdram233MHz;
-	constant sdram_mode   : natural := sdram250MHz;
---	constant sdram_mode   : natural := sdram275MHz;
+--	constant sdram_mode   : natural := setif(debug, sdram133MHz, sdram133MHz);
+--	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram166MHz);
+--	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram200MHz);
+--	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram233MHz);
+	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram250MHz);
+--	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram275MHz);
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
@@ -516,6 +516,24 @@ begin
 			so_irdy   => sin_irdy,
 			so_trdy   => '1',
 			so_data   => sin_data);
+
+		process (sio_clk)
+			variable t : std_logic;
+			variable e : std_logic;
+			variable i : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				if i='1' and e='0' then
+					t := not t;
+				end if;
+				e := i;
+				i := mii_rxdv;
+
+				led(0) <= t;
+				led(1) <= not mii_rxdv;
+			end if;
+		end process;
+
 	end generate;
 	
 	grahics_e : entity hdl4fpga.demo_graphics
