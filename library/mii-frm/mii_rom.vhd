@@ -32,16 +32,17 @@ entity mii_rom is
 	generic (
 		mem_data : std_logic_vector);
     port (
-        mii_txc  : in  std_logic;
-        mii_txen : in  std_logic;
-		mii_ena  : in  std_logic := '1';
-		mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+        mii_clk  : in  std_logic;
+        mii_frm  : in  std_logic;
+		mii_irdy : in  std_logic;
+		mii_trdy : out std_logic := '1';
+		mii_end  : out std_logic;
+        mii_data : out std_logic_vector);
 end;
 
 architecture def of mii_rom is
 
-	constant mem_size    : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
+	constant mem_size    : natural := (mem_data'length+mii_data'length-1)/mii_data'length;
 	constant addr_length : natural := unsigned_num_bits(mem_size-1);
 	subtype addr_range is natural range 1 to addr_length;
 
@@ -49,12 +50,12 @@ architecture def of mii_rom is
 
 begin
 
-	process (mii_txc)
+	process (mii_clk)
 	begin
-		if rising_edge(mii_txc) then
-			if mii_txen='0' then
+		if rising_edge(mii_clk) then
+			if mii_frm='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
-			elsif mii_ena='1' then 
+			elsif mii_irdy='1' then 
 				if cntr(0)='0' then
 					cntr <= cntr - 1;
 				end if;
@@ -62,12 +63,12 @@ begin
 		end if;
 	end process;
 
-	mii_txdv <= mii_txen and mii_ena and not cntr(0);
+	mii_end <= not cntr(0);
 
 	mem_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => reverse(reverse(mem_data), mii_txd'length))
+		bitrom => reverse(reverse(mem_data), mii_data'length))
 	port map (
 		addr => std_logic_vector(cntr(addr_range)),
-		data => mii_txd);
+		data => mii_data);
 end;

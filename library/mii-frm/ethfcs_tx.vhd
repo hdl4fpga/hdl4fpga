@@ -30,29 +30,31 @@ use hdl4fpga.std.all;
 
 entity ethfcs_tx is
 	port (
-		mii_rst  : in  std_logic := '0';
-		mii_txc  : in  std_logic;
-		dll_txen : in  std_logic;
+		mii_clk  : in  std_logic;
+		dll_frm  : in  std_logic;
+		dll_irdy : in  std_logic;
 		dll_txd  : in  std_logic_vector;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector);
+		mii_frm  : out std_logic;
+		mii_irdy : out std_logic;
+		mii_trdy : in  std_logic;
+		mii_data : out std_logic_vector);
 end;
 
 architecture mix of ethfcs_tx is
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 
-	signal pre_txd    : std_logic_vector(dll_txd'range);
-	signal pre_txen   : std_logic;
+	signal pre_data  : std_logic_vector(dll_txd'range);
+	signal pre_end   : std_logic;
 
-	constant lat_length : natural := mii_pre'length/mii_txd'length;
-	signal lat_txd    : std_logic_vector(dll_txd'range);
-	signal lat_txen   : std_logic;
+	constant latency : natural := mii_pre'length/mii_data'length;
+	signal lat_frm   : std_logic;
+	signal lat_data  : std_logic_vector(dll_txd'range);
 
 	constant crc32_size : natural := 32;
 	signal crc32_init : std_logic;
 	signal crc32      : std_logic_vector(0 to crc32_size-1);
-	signal crc32_txen : std_logic;
+	signal crc32_irdy : std_logic;
 
 begin
 
@@ -60,47 +62,47 @@ begin
 	generic map (
 		mem_data => mii_pre)
 	port map (
-		mii_txc  => mii_txc,
-		mii_txen => dll_txen,
-		mii_txdv => pre_txen,
-		mii_txd  => pre_txd);
+		mii_clk  => mii_clk,
+		mii_frm  => dll_frm,
+		mii_irdy => dll_irdy and mii_trdy,
+		mii_end  => pre_end,
+		mii_data => pre_data);
 
 	lattxd_e : entity hdl4fpga.align
 	generic map (
-		n  => mii_txd'length,
-		d  => (0 to mii_txd'length-1 => lat_length))
+		n  => mii_data'length,
+		d  => (0 to mii_data'length-1 => latency))
 	port map (
-		clk => mii_txc,
+		clk => mii_clk,
+		ena => dll_irdy and mii_trdy,
 		di  => dll_txd,
-		do  => lat_txd);
+		do  => lat_data);
 
 	lattxdv_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to mii_txd'length-1 => lat_length),
-		i => (0 to mii_txd'length-1 => '0'))
+		d => (0 to mii_data'length-1 => latency))
 	port map (
-		clk   => mii_txc,
-		di(0) => dll_txen,
-		do(0) => lat_txen);
+		clk   => mii_clk,
+		ena   => dll_irdy and mii_trdy,
+		di(0) => dll_frm,
+		do(0) => lat_frm);
 
-	fcs_p : process (lat_txen, mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc32_size/lat_txd'length-1)) := ('1', others => '0');
+	fcs_p : process (lat_frm, mii_clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(crc32_size/lat_data'length-1)) := ('1', others => '-')
 		variable cy   : std_logic;
 		variable q    : std_logic;
 	begin
-		if rising_edge(mii_txc) then
-			if mii_rst='1' then
-				cntr := ('1', others => '-');
-			elsif crc32_txen='0' then
-				if lat_txen='1' then
-					cntr := to_unsigned(crc32_size/lat_txd'length-1, cntr'length);
+		if rising_edge(mii_clk) then
+			if crc32_txen='0' then
+				if to_stdulogic(to_bit(lat_frm))='1' then
+					cntr := to_unsigned(crc32_size/lat_data'length-1, cntr'length);
 				end if;
 			elsif cy='0' then
 				cntr := cntr - 1;
 			end if;
 
-			if lat_txen='1' then
+			if to_stdulogic(to_bit(lat_frm))='1' then
 				if cy='1' then
 					q := '0';
 				end if;
@@ -110,20 +112,21 @@ begin
 
 			cy := to_stdulogic(to_bit(cntr(0)));
 		end if;
-		crc32_init <= not lat_txen and cy;
-		crc32_txen <= not lat_txen and not cy;
+		crc32_init <= not to_stdulogic(to_bit(lat_frm)) and cy;
+		crc32_irdy <= not to_stdulogic(to_bit(lat_frm)) and not cy;
 	end process;
 
 	crc32_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
-		clk  => mii_txc,
+		clk  => mii_clk,
+		ena  => mii_trdy,
 		init => crc32_init,
-		data => lat_txd,
-		sero => crc32_txen,
+		data => lat_data,
+		sero => crc32_irdy,
 		crc  => crc32);
 
-	mii_txd  <= wirebus(pre_txd & lat_txd & crc32(mii_txd'range), pre_txen & lat_txen & crc32_txen);
-	mii_txen <= pre_txen or lat_txen or crc32_txen;
+	mii_data <= wirebus(pre_data & lat_data & crc32(mii_data'range), not pre_end & lat_frm & crc32_irdy);
+	mii_frm  <= not pre_end or lat_frm or crc32_irdy;
 
 end;
