@@ -276,7 +276,7 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 8 us;
+	mii_req <= '0', '1' after 200 us;
 	eth_e: entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(packet,8))
