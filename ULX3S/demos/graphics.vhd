@@ -530,7 +530,7 @@ begin
 				i := mii_rxdv;
 
 				led(0) <= t;
-				led(1) <= not mii_rxdv;
+				led(1) <= not t;
 			end if;
 		end process;
 

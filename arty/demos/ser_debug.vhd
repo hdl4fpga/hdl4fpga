@@ -33,7 +33,8 @@ use hdl4fpga.cgafonts.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture mii_debug of arty is
+architecture ser_debug of arty is
+
 	type video_params is record
 		timing_id : videotiming_ids;
 		dcm_mul   : natural;
@@ -57,20 +58,22 @@ architecture mii_debug of arty is
 	signal dhcp_req       : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
-	signal video_dot      : std_logic;
-	signal video_vs       : std_logic;
-	signal video_hs       : std_logic;
 	signal video_clk      : std_logic;
+	signal video_hs       : std_logic;
+	signal video_vs       : std_logic;
+	signal video_pixel    : std_logic_vector(3-1 downto 0);
 
-	signal rxc  : std_logic;
-	signal rxd  : std_logic_vector(eth_rxd'range);
-	signal rxdv : std_logic;
+	signal sin_frm        : std_logic;
+	signal sin_irdy       : std_logic;
+	signal sin_data       : std_logic_vector(8-1 downto 0);
+	signal sout_frm       : std_logic;
+	signal sout_irdy      : std_logic;
+	signal sout_trdy      : std_logic;
+	signal sout_data      : std_logic_vector(8-1 downto 0);
 
-	signal txc  : std_logic;
-	signal txd  : std_logic_vector(eth_txd'range);
-	signal txen : std_logic;
-
+	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
 	signal tp  : std_logic_vector(1 to 4);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -97,14 +100,14 @@ begin
 		I => eth_tx_clk,
 		O => eth_txclk_bufg);
 
-	dcm_e : block
+	dcm_b : block
 		signal video_clkfb : std_logic;
 	begin
 		video_dcm_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => real(video_tab(video_mode).dcm_mul), --6.0, --12.0,		-- 200 MHz
-			clkout0_divide_f => real(video_tab(video_mode).dcm_div), --15.0, --8.0,
+			clkfbout_mult_f  => real(video_tab(video_mode).dcm_mul),
+			clkout0_divide_f => real(video_tab(video_mode).dcm_div),
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -115,54 +118,60 @@ begin
 			clkout0  => video_clk);
 	end block;
 
-	rxc <= eth_rxclk_bufg;
-	process (rxc)
-	begin
-		if rising_edge(rxc) then
-			rxd  <= eth_rxd;
-			rxdv <= eth_rx_dv;
-		end if;
-	end process;
-
-	txc <= not eth_txclk_bufg;
-	mii_debug_e : entity hdl4fpga.mii_debug
+	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (
-		default_ipv4a => x"00_00_00_00",
-		cga_bitrom => to_ascii("Ready Steady GO!"),
-		timing_id  => video_tab(video_mode).timing_id)
+		default_ipv4a => x"c0_a8_00_0e")
 	port map (
-		mii_rxc   => rxc,
-		mii_rxd   => rxd,
-		mii_rxdv  => rxdv,
+		ipv4acfg_req => ipv4acfg_req,
 
-		mii_txc   => txc,
-		mii_txd   => txd,
-		mii_txen  => txen,
+		phy_rxc   => eth_rx_clk,
+		phy_rx_dv => eth_rx_dv,
+		phy_rx_d  => eth_rxd,
 
-		dhcp_req  => dhcp_req,
-		tp => tp,
+		phy_txc   => eth_tx_clk,
+		phy_tx_en => eth_tx_en ,
+		phy_tx_d  => eth_txd,
 
-		video_clk => video_clk, 
-		video_dot => video_dot,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
+		phy_crs   => eth_crs,
+		phy_col   => eth_col,
 
-	process (txc)
+		sio_clk   => sio_clk,
+		si_frm    => sout_frm,
+		si_irdy   => sout_irdy,
+		si_trdy   => sout_trdy,
+		si_data   => sout_data,
+
+		so_frm    => sin_frm,
+		so_irdy   => sin_irdy,
+		so_trdy   => '1',
+		so_data   => sin_data,
+		tp        => tp);
+	
+	ser_debug_e : entity hdl4fpga.ser_debug
+	generic map (
+		timing_id    => video_tab(video_mode).timing_id,
+		red_length   => 8,
+		green_length => 8,
+		blue_length  => 8)
+	port map (
+		ser_clk      => eth_txclk_bufg,
+		ser_frm      => eth_tx_en,
+		ser_irdy     => '1',
+		ser_data     => eth_txd,
+				
+		video_clk    => video_clk,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
+		video_pixel  => video_pixel);
+
+	process (eth_txclk_bufg)
 	begin
-		if rising_edge(txc) then
-			eth_txd   <= txd;
-			eth_tx_en <= txen;
-		end if;
-	end process;
-
-	process (txc)
-	begin
-		if rising_edge(txc) then
+		if rising_edge(eth_txclk_bufg) then
 			if btn(0)='1' then
-				if txen='0' then
+				if eth_tx_en='0' then
 					dhcp_req <= '1';
 				end if;
-			elsif txen='0' then
+			elsif eth_tx_en='0' then
 				dhcp_req <= '0';
 			end if;
 		end if;
@@ -172,9 +181,9 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			ja(1)  <= video_dot;
-			ja(2)  <= video_dot;
-			ja(3)  <= video_dot;
+			ja(1)  <= video_pixel(2);
+			ja(2)  <= video_pixel(1);
+			ja(3)  <= video_pixel(0);
 			ja(4)  <= video_hs;
 			ja(10) <= video_vs;
 		end if;
@@ -183,4 +192,5 @@ begin
 	eth_rstn <= '1';
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
+
 end;

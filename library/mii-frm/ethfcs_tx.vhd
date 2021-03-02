@@ -56,15 +56,18 @@ architecture mix of ethfcs_tx is
 	signal crc32      : std_logic_vector(0 to crc32_size-1);
 	signal crc32_irdy : std_logic;
 
+	signal rdy        : std_logic;
+
 begin
 
+	rdy <= dll_irdy and mii_trdy,
 	miitx_pre_e  : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => mii_pre)
 	port map (
 		mii_clk  => mii_clk,
 		mii_frm  => dll_frm,
-		mii_irdy => dll_irdy and mii_trdy,
+		mii_irdy => rdy,
 		mii_end  => pre_end,
 		mii_data => pre_data);
 
@@ -74,7 +77,7 @@ begin
 		d  => (0 to mii_data'length-1 => latency))
 	port map (
 		clk => mii_clk,
-		ena => dll_irdy and mii_trdy,
+		ena => rdy,
 		di  => dll_txd,
 		do  => lat_data);
 
@@ -84,7 +87,7 @@ begin
 		d => (0 to mii_data'length-1 => latency))
 	port map (
 		clk   => mii_clk,
-		ena   => dll_irdy and mii_trdy,
+		ena   => rdy,
 		di(0) => dll_frm,
 		do(0) => lat_frm);
 
@@ -94,7 +97,7 @@ begin
 		variable q    : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if crc32_txen='0' then
+			if crc32_irdy='0' then
 				if to_stdulogic(to_bit(lat_frm))='1' then
 					cntr := to_unsigned(crc32_size/lat_data'length-1, cntr'length);
 				end if;
@@ -120,8 +123,8 @@ begin
 	port map (
 		g    => x"04c11db7",
 		clk  => mii_clk,
-		ena  => mii_trdy,
 		init => crc32_init,
+		ena  => rdy,
 		data => lat_data,
 		sero => crc32_irdy,
 		crc  => crc32);

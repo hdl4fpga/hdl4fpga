@@ -55,9 +55,9 @@ entity arty is
 		eth_tx_en   : out   std_logic;
 		eth_txd     : out   std_logic_vector(0 to 4-1);
 		eth_rx_clk  : in    std_logic := '-';
-		eth_rxerr   : in    std_logic := '-';
 		eth_rx_dv   : in    std_logic := '-';
 		eth_rxd     : in    std_logic_vector(0 to 4-1) := (others => '-');
+		eth_rxerr   : in    std_logic := '-';
 		
 		ddr3_reset  : out   std_logic := '0';
 		ddr3_clk_p  : out   std_logic := '0';

@@ -78,7 +78,7 @@ architecture ser_debug of nuhs3adsp is
 	signal ipv4acfg_req  : std_logic;
 	alias sio_clk : std_logic is mii_txc;
 	signal tp : std_logic_vector(1 to 32);
-	alias aa : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
+	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -137,23 +137,23 @@ begin
 		si_trdy   => sout_trdy,
 		si_data   => sout_data,
 
-		so_frm  => sin_frm,
-		so_irdy => sin_irdy,
-		so_trdy => '1',
-		so_data => sin_data,
-		tp => tp);
+		so_frm    => sin_frm,
+		so_irdy   => sin_irdy,
+		so_trdy   => '1',
+		so_data   => sin_data,
+		tp        => tp);
 	
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id    => video_tab(video_mode).timing_id,
-		red_length   => 5,
-		green_length => 6,
-		blue_length  => 5)
+		red_length   => 8
+		green_length => 8
+		blue_length  => 8
 	port map (
 		ser_clk      => mii_txc, 
 		ser_frm      => tp(1),
 		ser_irdy     => tp(2),
-		ser_data     => aa,
+		ser_data     => data,
 		
 		video_clk    => vga_clk,
 		video_hzsync => vga_hsync,
