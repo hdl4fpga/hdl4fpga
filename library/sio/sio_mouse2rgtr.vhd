@@ -9,7 +9,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_mouse2rgtr is
+entity sio_mouse2rgtr is
 generic
 (
   -- 0:no debug (normal use), 1:debug pointer, 2:debug trigger, 3:debug grid color
@@ -43,7 +43,7 @@ port
 );
 end;
 
-architecture def of scopeio_mouse2rgtr is
+architecture def of sio_mouse2rgtr is
   -- screen geometry functions, imported from scopeiopkg
   --constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 

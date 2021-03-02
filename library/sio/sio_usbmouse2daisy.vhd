@@ -9,7 +9,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.usbh_setup_pack.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_usbmouse2daisy is
+entity sio_usbmouse2daisy is
 generic
 (
   C_usb_speed      : std_logic := '0'; -- '0' low speed is most often, '1' full speed very rare
@@ -50,7 +50,7 @@ port
 );
 end;
 
-architecture def of scopeio_usbmouse2daisy is
+architecture def of sio_usbmouse2daisy is
   signal pointer_dv      : std_logic;
   signal pointer_x       : std_logic_vector(11-1 downto 0) := "000" & x"64";
   signal pointer_y       : std_logic_vector(11-1 downto 0) := "000" & x"64";

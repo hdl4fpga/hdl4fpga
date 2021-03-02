@@ -8,7 +8,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_ps2mouse2daisy is
+entity sio_ps2mouse2daisy is
 generic
 (
   -- to render things correctly, GUI system needs to know:
@@ -36,7 +36,7 @@ port
 );
 end;
 
-architecture def of scopeio_ps2mouse2daisy is
+architecture def of sio_ps2mouse2daisy is
   signal pointer_dv      : std_logic;
   signal pointer_x       : std_logic_vector(11-1 downto 0) := "000" & x"64";
   signal pointer_y       : std_logic_vector(11-1 downto 0) := "000" & x"64";

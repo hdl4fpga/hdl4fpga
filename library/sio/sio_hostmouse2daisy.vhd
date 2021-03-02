@@ -9,7 +9,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_hostmouse2daisy is
+entity sio_hostmouse2daisy is
 generic
 (
   -- to render things correctly, GUI system needs to know:
@@ -32,7 +32,7 @@ port
 );
 end;
 
-architecture def of scopeio_hostmouse2daisy is
+architecture def of sio_hostmouse2daisy is
   signal sin_data        : std_logic_vector(chaini_data'range);
 
   signal pointer_dv      : std_logic;
@@ -62,7 +62,7 @@ begin
     sin_data <= chaini_data;
   end generate;
 
-  E_scopeio_hostmouse_sin_e: entity hdl4fpga.scopeio_sin
+  E_scopeio_hostmouse_sin_e: entity hdl4fpga.sio_sin
   port map (
     sin_clk   => clk,
     sin_frm   => chaini_frm,

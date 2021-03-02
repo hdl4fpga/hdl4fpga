@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_rgtr2daisy is
+entity sio_rgtr2daisy is
 port
 (
 		clk         : in  std_logic;
@@ -28,7 +28,7 @@ port
 );
 end;
 
-architecture beh of scopeio_rgtr2daisy is
+architecture beh of sio_rgtr2daisy is
 	signal S_strm_frm  : std_logic;
 	signal R_strm_frm  : std_logic;
 	signal S_strm_irdy : std_logic;
