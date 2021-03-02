@@ -142,9 +142,9 @@ begin
 
 	with state select
 	deso_data <= 
-		x"ff"                                              when st_idle | st_rid,
-		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
-		ser_data                                           when st_data;
+		x"ff"                                                when st_idle | st_rid,
+		std_logic_vector(resize(low_cntr, deso_data'length)) when st_len,
+		ser_data                                             when st_data;
 
 	so_frm <= to_stdulogic(to_bit(si_frm));
 	so_end <= si_end;

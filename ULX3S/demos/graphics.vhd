@@ -158,11 +158,11 @@ architecture graphics of ulx3s is
 	constant sdram250MHz  : natural := 4;
 	constant sdram275MHz  : natural := 5;
 
-	constant sdram_mode   : natural := sdram133MHz;
+--	constant sdram_mode   : natural := sdram133MHz;
 --	constant sdram_mode   : natural := sdram166MHz;
 --	constant sdram_mode   : natural := sdram200MHz;
 --	constant sdram_mode   : natural := sdram233MHz;
---	constant sdram_mode   : natural := sdram250MHz;
+	constant sdram_mode   : natural := sdram250MHz;
 --	constant sdram_mode   : natural := sdram275MHz;
 
 	type sdramparams_vector is array (natural range <>) of sdram_params;
@@ -193,11 +193,20 @@ architecture graphics of ulx3s is
 
 	signal tp : std_logic_vector(1 to 32);
 
-	constant io_hdlc : natural := 0;
-	constant io_ipoe : natural := 1;
-	constant io_size : natural_vector(0 to 2-1) := (8, 2);
+	constant link_hdlc  : natural := 0;
+	constant link_ipoe  : natural := 1;
 
-	constant io : natural := io_ipoe;
+	constant io_links   : natural_vector(0 to 2-1) := (link_hdlc, link_ipoe);
+	constant io_size    : natural_vector(0 to 2-1) := (8, 2);
+
+	-----------------
+	-- Select link --
+	-----------------
+
+	constant io_hdlc    : natural := 0;
+	constant io_ipoe    : natural := 1;
+
+	constant io_link    : natural := io_ipoe;
 
 begin
 
@@ -354,7 +363,7 @@ begin
 
 	end block;
 
-	hdlc_g : if io=io_hdlc generate
+	hdlc_g : if io_links(io_link)=io_hdlc generate
 
 	--	constant uart_xtal : natural := natural(sys_freq);
 	--	alias uart_clk     : std_logic is clk_25mhz;
@@ -411,16 +420,16 @@ begin
 			sio_clk   => sio_clk,
 			so_frm    => sin_frm,
 			so_irdy   => sin_irdy,
-			so_data   => sin_data(0 to io_size(io)-1),
+			so_data   => sin_data(0 to io_size(io_link)-1),
 
 			si_frm    => sout_frm,
 			si_irdy   => sout_irdy,
 			si_trdy   => sout_trdy,
-			si_data   => sout_data(0 to io_size(io)-1),
+			si_data   => sout_data(0 to io_size(io_link)-1),
 			tp => tp);
 	end generate;
 
-	ipoe_e : if io=io_ipoe generate
+	ipoe_e : if io_links(io_link)=io_ipoe generate
 		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
 		alias rmii_tx_en : std_logic is gn(10);
 		alias rmii_tx0   : std_logic is gp(10);
@@ -489,12 +498,12 @@ begin
 			si_frm    => sout_frm,
 			si_irdy   => sout_irdy,
 			si_trdy   => sout_trdy,
-			si_data   => sout_data(0 to io_size(io)-1),
+			si_data   => sout_data(0 to io_size(io_link)-1),
 
 			so_frm    => sin_frm,
 			so_irdy   => sin_irdy,
 			so_trdy   => '1',
-			so_data   => sin_data(0 to io_size(io)-1),
+			so_data   => sin_data(0 to io_size(io_link)-1),
 			tp        => open);
 	end generate;
 	
@@ -528,11 +537,11 @@ begin
 		sio_clk      => sio_clk,
 		sin_frm      => sin_frm,
 		sin_irdy     => sin_irdy,
-		sin_data     => sin_data(0 to io_size(io)-1),
+		sin_data     => sin_data(0 to io_size(io_link)-1),
 		sout_frm     => sout_frm,
 		sout_irdy    => sout_irdy,
 		sout_trdy    => sout_trdy,
-		sout_data    => sout_data(0 to io_size(io)-1),
+		sout_data    => sout_data(0 to io_size(io_link)-1),
 
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
