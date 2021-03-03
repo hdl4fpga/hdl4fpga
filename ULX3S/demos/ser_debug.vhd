@@ -319,9 +319,9 @@ begin
 		sio_clk <= not rmii_nint;
 		mii_txc <= not rmii_nint;
 		rmii_tx_en <= mii_txen;
-		(0 => rmii_tx0, 1 => rmii_tx1) <= not mii_txd;
+		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_rxc  <= rmii_nint;
+		mii_rxc  <= not rmii_nint;
 		mii_rxdv <= rmii_crs;
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
