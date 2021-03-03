@@ -39,8 +39,16 @@ entity ulx3s is
 		ftdi_ndtr      : inout std_logic := 'U';
 		ftdi_txden     : inout std_logic := 'U';
 
-		led            : out   std_logic_vector(8-1 downto 0);
-		btn            : in    std_logic_vector(7-1 downto 0) := (others => 'U');
+
+		btn_pwr_n      : in  std_logic := 'U';
+		fire1          : in  std_logic := 'U';
+		fire2          : in  std_logic := 'U';
+		up             : in  std_logic := 'U';
+		down           : in  std_logic := 'U';
+		left           : in  std_logic := 'U';
+		right          : in  std_logic := 'U';
+
+		led            : out std_logic_vector(8-1 downto 0);
 		sw             : in    std_logic_vector(4-1 downto 0) := (others => 'U');
 
 

@@ -66,7 +66,7 @@ begin
 		signal von    : std_logic;
 	begin
 
-		ser_analyzer_e : entity hdl4fpga.ser_analyzer
+		ser_display_e : entity hdl4fpga.ser_display
 		generic map (
 			code_spce   => to_ascii(" "),
 			code_digits => to_ascii("0123456789abcdef"),

@@ -32,7 +32,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafonts.all;
 use hdl4fpga.videopkg.all;
 
-entity ser_analyzer is
+entity ser_display is
 	generic (
 		font_bitrom : std_logic_vector := psf1cp850x8x16;
 		font_width  : natural := 8;
@@ -55,7 +55,7 @@ entity ser_analyzer is
 		video_vs    : out std_logic);
 end;
 
-architecture def of ser_analyzer is
+architecture def of ser_display is
 
 	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
 	subtype digit     is std_logic_vector(0 to 4-1);
@@ -114,7 +114,7 @@ begin
 		if rising_edge(phy_clk) then
 			cga_addr <= std_logic_vector(addr);
 			cga_we   <= (phy_frm and des_irdy) or (not phy_frm and we);
-			data     := unsigned(reverse(des_data,8));
+			data     := unsigned(des_data);
 			for i in 0 to des_data'length/digit'length-1 loop
 				if phy_frm='1' then
 					if des_irdy='1' then

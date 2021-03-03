@@ -77,10 +77,10 @@ HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
 HDL4FPGA__sff = $(LIB_HDL4FPGA)/sff/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
+HDL4FPGA__ser_display__def = $(LIB_HDL4FPGA)/ser_display/def.dat
+HDL4FPGA__ser_display = $(LIB_HDL4FPGA)/ser_display/_primary.dat
 HDL4FPGA__ser_debug__def = $(LIB_HDL4FPGA)/ser_debug/def.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
-HDL4FPGA__ser_analyzer__def = $(LIB_HDL4FPGA)/ser_analyzer/def.dat
-HDL4FPGA__ser_analyzer = $(LIB_HDL4FPGA)/ser_analyzer/_primary.dat
 HDL4FPGA__sdrphy__ecp = $(LIB_HDL4FPGA)/sdrphy/ecp.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
 HDL4FPGA__sdrdqphy__ecp = $(LIB_HDL4FPGA)/sdrdqphy/ecp.dat
@@ -302,10 +302,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sff) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
+    $(HDL4FPGA__ser_display__def) \
+    $(HDL4FPGA__ser_display) \
     $(HDL4FPGA__ser_debug__def) \
     $(HDL4FPGA__ser_debug) \
-    $(HDL4FPGA__ser_analyzer__def) \
-    $(HDL4FPGA__ser_analyzer) \
     $(HDL4FPGA__sdrphy__ecp) \
     $(HDL4FPGA__sdrphy) \
     $(HDL4FPGA__sdrdqphy__ecp) \
@@ -1269,8 +1269,30 @@ $(HDL4FPGA__sdrphy__ecp) : ../latticesemi/sdrphy.vhd \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/sdrphy.vhd
 
-$(HDL4FPGA__ser_analyzer) \
-$(HDL4FPGA__ser_analyzer__def) : ../video/ser_analyzer.vhd \
+$(HDL4FPGA__ser_debug) \
+$(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
+		$(IEEE__std_logic_unsigned) \
+		$(IEEE__std_logic_arith) \
+		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__ser_analyzer) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../demos/ser_debug.vhd
+
+$(HDL4FPGA__ser_display) \
+$(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 		$(HDL4FPGA__cga_adapter) \
 		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__video_sync) \
@@ -1287,30 +1309,7 @@ $(HDL4FPGA__ser_analyzer__def) : ../video/ser_analyzer.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../video/ser_analyzer.vhd
-
-$(HDL4FPGA__ser_debug) \
-$(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
-		$(IEEE__std_logic_unsigned) \
-		$(HDL4FPGA__vga2dvid) \
-		$(HDL4FPGA__align) \
-		$(HDL4FPGA__bcdfonts) \
-		$(HDL4FPGA__cp850x8x16x128to255) \
-		$(HDL4FPGA__cp850x8x16x0to127) \
-		$(HDL4FPGA__cp850x8x8x128to255) \
-		$(HDL4FPGA__cp850x8x8x0to127) \
-		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__ser_analyzer) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(HDL4FPGA__modeline_calculator) \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../demos/ser_debug.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/ser_display.vhd
 
 $(HDL4FPGA__serdes) \
 $(HDL4FPGA__serdes__def) : ../common/serdes.vhd \
@@ -1381,6 +1380,7 @@ $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_buffer) \
 		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__sio_sin) \
 		$(IEEE__std_logic_textio) \

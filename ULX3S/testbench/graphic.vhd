@@ -50,8 +50,6 @@ architecture ulx3s_graphics of testbench is
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0);
 
-	signal btn         : std_logic_vector(7-1 downto 0);
-
 	signal ftdi_txd    : std_logic;
 
 	alias mii_clk      : std_logic is gn(12);
@@ -68,8 +66,15 @@ architecture ulx3s_graphics of testbench is
 			ftdi_ndtr      : inout std_logic := '-';
 			ftdi_txden     : inout std_logic := '-';
 
+			btn_pwr_n      : in  std_logic := 'U';
+			fire1          : in  std_logic := 'U';
+			fire2          : in  std_logic := 'U';
+			up             : in  std_logic := 'U';
+			down           : in  std_logic := 'U';
+			left           : in  std_logic := 'U';
+			right          : in  std_logic := 'U';
+
 			led            : out   std_logic_vector(8-1 downto 0);
-			btn            : in    std_logic_vector(7-1 downto 0) := (others => '-');
 			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
 
 
@@ -359,6 +364,17 @@ begin
 			mii_rxd(0) => gp(10),
 			mii_rxd(1) => gn(9));
 
+		constant arppkt : std_logic_vector :=
+			x"0000"                 & -- arp_htype
+			x"0000"                 & -- arp_ptype
+			x"00"                   & -- arp_hlen 
+			x"00"                   & -- arp_plen 
+			x"0000"                 & -- arp_oper 
+			x"00_00_00_00_00_00"    & -- arp_sha  
+			x"00_00_00_00"          & -- arp_spa  
+			x"00_00_00_00_00_00"    & -- arp_tha  
+			x"c0_a8_00_0e";           -- arp_tpa  
+
 		constant packet : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
 			x"0000"                 &    -- IP Length
@@ -386,7 +402,7 @@ begin
 
 		eth_e: entity hdl4fpga.mii_rom
 		generic map (
-			mem_data => reverse(packet,8))
+			mem_data => reverse(arppkt,8))
 		port map (
 			mii_txc  => mii_txc,
 			mii_txen => mii_req,
@@ -411,7 +427,7 @@ begin
 			eth_ptr  => txfrm_ptr,
 			hwsa     => x"af_ff_ff_ff_ff_f5",
 			hwda     => x"00_40_00_01_02_03",
-			llc      => x"0800",
+			llc      => x"0806",
 			pl_txen  => eth_txen,
 			eth_rxd  => eth_txd,
 			eth_txen => mii_txen,
@@ -423,7 +439,6 @@ begin
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,
-		btn        => btn,
 		gp         => gp,
 		gn         => gn,
 		sdram_clk  => sdram_clk,

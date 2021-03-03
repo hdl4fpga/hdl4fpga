@@ -69,11 +69,11 @@ architecture ser_debug of arty is
 	signal sio_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(8-1 downto 0);
+	signal sin_data       : std_logic_vector(0 to 8-1);
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(8-1 downto 0);
+	signal sout_data      : std_logic_vector(0 to 8-1);
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);

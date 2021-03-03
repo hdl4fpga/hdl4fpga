@@ -491,7 +491,7 @@ begin
 
 		rmii_mdc  <= 'Z';
 		rmii_mdio <= 'Z';
-		ipv4acfg_req <= btn(0);
+		ipv4acfg_req <= not btn_pwr_n;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
 			default_ipv4a => x"c0_a8_00_0e")
@@ -527,7 +527,7 @@ begin
 					t := not t;
 				end if;
 				e := i;
-				i := mii_rxdv;
+				i := mii_txen;
 
 				led(0) <= t;
 				led(1) <= not t;

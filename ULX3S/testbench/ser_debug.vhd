@@ -26,6 +26,14 @@ use hdl4fpga.std.all;
 
 architecture ulx3s_serdebug of testbench is
 
+	signal gp          : std_logic_vector(28-1 downto 0);
+	signal gn          : std_logic_vector(28-1 downto 0);
+
+
+	signal ftdi_txd    : std_logic;
+
+	alias mii_clk      : std_logic is gn(12);
+
 	component ulx3s is
 		port (
 			clk_25mhz      : in    std_logic;
@@ -36,8 +44,15 @@ architecture ulx3s_serdebug of testbench is
 			ftdi_ndtr      : inout std_logic := '-';
 			ftdi_txden     : inout std_logic := '-';
 
+			btn_pwr_n      : in  std_logic := 'U';
+			fire1          : in  std_logic := 'U';
+			fire2          : in  std_logic := 'U';
+			up             : in  std_logic := 'U';
+			down           : in  std_logic := 'U';
+			left           : in  std_logic := 'U';
+			right          : in  std_logic := 'U';
+
 			led            : out   std_logic_vector(8-1 downto 0);
-			btn            : in    std_logic_vector(7-1 downto 0) := (others => '-');
 			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
 
 
@@ -194,85 +209,207 @@ architecture ulx3s_serdebug of testbench is
 --		x"1702000000"
 		, 8);
 
-	constant uart_xtal : natural := 25 sec / 1 us;
+	for all: ulx3s use entity work.ulx3s(ser_debug);
 
-	signal uart_clk   : std_logic := '0';
-	signal uart_sin   : std_logic;
-	signal uart_idle  : std_logic;
-	signal uart_txen  : std_logic;
-	signal uart_txd   : std_logic_vector(0 to 8-1);
-
-	signal hdlctx_frm  : std_logic;
-	signal hdlctx_trdy : std_logic;
-	signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-
-	for all: ulx3s use entity work.ulx3s(sio_debug);
+	signal mii_req : std_logic;
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
---	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
-	uart_clk <= xtal;
+	hdlc_b : block
 
-	process (rst, uart_clk)
-		variable addr : natural;
-		variable n : natural;
+		generic (
+			baudrate  : natural := 3_000_000;
+			uart_xtal : natural := 25 sec / 1 us;
+			payload   : std_logic_vector);
+		generic map (
+			payload   => data);
+
+		port (
+			rst       : in  std_logic;
+			uart_clk  : in  std_logic;
+			uart_sout : out std_logic);
+		port map (
+			rst       => rst,
+			uart_clk  => xtal,
+			uart_sout => ftdi_txd);
+
+		signal uart_idle   : std_logic;
+		signal uart_txen   : std_logic;
+		signal uart_txd    : std_logic_vector(0 to 8-1);
+
+		signal hdlctx_frm  : std_logic;
+		signal hdlctx_trdy : std_logic;
+		signal hdlctx_data : std_logic_vector(0 to 8-1);
+
 	begin
-		if rst='1' then
-			hdlctx_frm <= '0';
-			addr      := 0;
-			n := 0;
-		elsif rising_edge(uart_clk) then
-			if addr < data'length then
-				hdlctx_data <= data(addr to addr+8-1);
-				if hdlctx_trdy='1' then
-					addr := addr + 8;
+
+		process (rst, uart_clk)
+			variable addr : natural;
+			variable n    : natural;
+		begin
+			if rst='1' then
+				hdlctx_frm <= '0';
+				addr       := 0;
+				n          := 0;
+			elsif rising_edge(uart_clk) then
+				if addr < payload'length then
+					hdlctx_data <= reverse(payload(addr to addr+8-1));
+					if hdlctx_trdy='1' then
+						addr := addr + 8;
+					end if;
+				else
+					if n < 0 then
+						if uart_idle='1' then
+							addr := 0;
+							n := n + 1;
+						end if;
+					end if;
+					hdlctx_data <= (others => '-');
 				end if;
-			else
-				if n <0 then
-				if uart_idle='1' then
-					addr := 0;
-					n := n + 1;
+				if addr < payload'length then
+					hdlctx_frm  <= '1';
+				else
+					hdlctx_frm  <= '0';
 				end if;
-				end if;
-				hdlctx_data <= (others => '-');
 			end if;
-			if addr < data'length then
-				hdlctx_frm  <= '1';
-			else
-				hdlctx_frm  <= '0';
+		end process;
+
+		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
+		port map (
+			hdlctx_frm  => hdlctx_frm,
+			hdlctx_irdy => '1',
+			hdlctx_trdy => hdlctx_trdy,
+			hdlctx_data => hdlctx_data,
+
+			uart_clk    => uart_clk,
+			uart_idle   => uart_idle,
+			uart_txen   => uart_txen,
+			uart_txd    => uart_txd);
+
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_txc  => uart_clk,
+			uart_sout => uart_sout,
+			uart_idle => uart_idle,
+			uart_txen => uart_txen,
+			uart_txd  => uart_txd);
+
+	end block;
+	
+	mii_req <= '0', '1' after 1 us;
+	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
+	ipoe_b : block
+		generic (
+			baudrate  : natural := 3_000_000;
+			uart_xtal : natural := 25 sec / 1 us;
+			payload   : std_logic_vector);
+		generic map (
+			payload   => data);
+
+		port (
+			rst       : in  std_logic;
+			mii_req   : in  std_logic;
+			mii_rxc   : in  std_logic;
+			mii_rxdv  : in  std_logic;
+			mii_rxd   : in  std_logic_vector(0 to 2-1);
+
+			mii_txc   : in  std_logic;
+			mii_txen  : buffer std_logic;
+			mii_txd   : out std_logic_vector(0 to 2-1));
+		port map (
+			rst        => rst,
+			mii_req    => mii_req,
+			mii_txc    => mii_clk,
+			mii_txen   => gp(12),
+			mii_txd(0) => gn(11),
+			mii_txd(1) => gp(11),
+
+			mii_rxc    => mii_clk,
+			mii_rxdv   => gn(10),
+			mii_rxd(0) => gp(10),
+			mii_rxd(1) => gn(9));
+
+		constant arppkt : std_logic_vector :=
+			x"0000"                 & -- arp_htype
+			x"0000"                 & -- arp_ptype
+			x"00"                   & -- arp_hlen 
+			x"00"                   & -- arp_plen 
+			x"0000"                 & -- arp_oper 
+			x"00_00_00_00_00_00"    & -- arp_sha  
+			x"00_00_00_00"          & -- arp_spa  
+			x"00_00_00_00_00_00"    & -- arp_tha  
+			x"c0_a8_00_0e";           -- arp_tpa  
+
+		constant packet : std_logic_vector := 
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0511"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
+			x"ffffffff"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+
+			udp_checksummed (
+				x"00000000",
+				x"ffffffff",
+				x"0044dea9"         & -- UDP Source port, Destination port
+				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
+				x"0000" &              -- UPD checksum
+				payload);
+
+		signal eth_txen  : std_logic;
+		signal eth_txd   : std_logic_vector(mii_txd'range);
+
+		signal txfrm_ptr : std_logic_vector(0 to 20);
+
+	begin
+
+		eth_e: entity hdl4fpga.mii_rom
+		generic map (
+			mem_data => reverse(arppkt,8))
+		port map (
+			mii_txc  => mii_txc,
+			mii_txen => mii_req,
+			mii_txdv => eth_txen,
+			mii_txd  => eth_txd);
+
+		process (mii_rxc)
+		begin
+
+			if rising_edge(mii_rxc) then
+				if eth_txen='0' and mii_txen='0' then
+					txfrm_ptr <= (others => '0');
+				else
+					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-	port map (
-		uart_clk    => uart_clk,
-		uart_idle   => uart_idle,
-		uart_txen   => uart_txen,
-		uart_txd    => uart_txd,
+		ethtx_e : entity hdl4fpga.eth_tx
+		port map (
+			mii_txc  => mii_rxc,
+			eth_ptr  => txfrm_ptr,
+			hwsa     => x"af_ff_ff_ff_ff_f5",
+			hwda     => x"00_40_00_01_02_03",
+			llc      => x"0806",
+			pl_txen  => eth_txen,
+			eth_rxd  => eth_txd,
+			eth_txen => mii_txen,
+			eth_txd  => mii_txd);
 
-		hdlctx_frm  => hdlctx_frm,
-		hdlctx_irdy => '1',
-		hdlctx_trdy => hdlctx_trdy,
-		hdlctx_data => hdlctx_data);
-
-	uarttx_e : entity hdl4fpga.uart_tx
-	generic map (
-		baudrate => baudrate,
-		clk_rate => uart_xtal)
-	port map (
-		uart_txc  => uart_clk,
-		uart_sout => uart_sin,
-		uart_idle => uart_idle,
-		uart_txen => uart_txen,
-		uart_txd  => uart_txd);
+	end block;
 
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
-		ftdi_txd  => uart_sin);
+		gp         => gp,
+		gn         => gn,
+		ftdi_txd  => ftdi_txd);
 
 end;

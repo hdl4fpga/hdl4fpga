@@ -146,9 +146,9 @@ begin
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id    => video_tab(video_mode).timing_id,
-		red_length   => 8
-		green_length => 8
-		blue_length  => 8
+		red_length   => 8,
+		green_length => 8,
+		blue_length  => 8)
 	port map (
 		ser_clk      => mii_txc, 
 		ser_frm      => tp(1),
