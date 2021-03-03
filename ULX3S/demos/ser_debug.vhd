@@ -123,6 +123,10 @@ architecture ser_debug of ulx3s is
 	constant io_len : natural_vector := (8, 2);
 
 	constant mem_size  : natural := 8*(1024*8);
+
+	signal enatx : std_logic;
+	signal enarx : std_logic;
+
 begin
 
 	sys_rst <= '0';
@@ -193,6 +197,8 @@ begin
 
 	end block;
 
+	led(2) <= enarx;
+	led(3) <= enatx;
 
 	hdlc_g : if io_link=io_hdlc generate
 
@@ -270,12 +276,17 @@ begin
 					t := not t;
 				end if;
 				e := i;
-				i := tp(1);
+				i := ser_frm;
 
 				led(0) <= t;
 				led(1) <= not t;
 			end if;
 		end process;
+
+		ser_frm  <= (uart_txen and enatx) or (uart_rxdv and enarx);
+		ser_irdy <= '1';
+		ser_data(0 to io_len(io_link)-1) <= wirebus(
+			uart_txd & uart_rxd, (uart_txen and enatx) & (not (uart_txen and enatx) and (uart_rxdv and enarx)));
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -363,19 +374,38 @@ begin
 					t := not t;
 				end if;
 				e := i;
-				i := mii_rxdv;
+				i := ser_frm;
 
 				led(0) <= t;
 				led(1) <= not t;
 			end if;
 		end process;
 
-		ser_frm  <= (mii_txen and not fire1) or (mii_rxdv and not fire2);
+		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
 		ser_irdy <= '1';
 		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and not fire1) & (not (mii_txen and not fire1) and (mii_rxdv and not fire2)));
+			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
 	end generate;
 	
+	process (sio_clk)
+		variable i : std_logic_vector(0 to 2-1);
+		variable t : std_logic_vector(0 to 2-1);
+		variable e : std_logic_vector(0 to 2-1);
+	begin
+		if rising_edge(sio_clk) then
+			for j in e'range loop
+				if i(j)='1' and e(j)='0' then
+					t(j) := not t(j);
+				end if;
+				e(j) := i(j);
+			end loop;
+			i(0) := fire1;
+			i(1) := fire2;
+			enatx <= t(0);
+			enarx <= t(1);
+		end if;
+	end process;
+
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id       => video_tab(video_mode).mode,
