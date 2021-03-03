@@ -316,27 +316,16 @@ begin
 
 	begin
 	
-		sio_clk    <= not rmii_nint;
+		sio_clk <= rmii_nint;
+		mii_txc <= rmii_nint;
+		rmii_tx_en <= mii_txen;
+		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_txc <= not rmii_nint;
-		process(mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
+		mii_rxc  <= rmii_nint;
+		mii_rxdv <= rmii_crs;
+		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
-		mii_rxc <= not rmii_nint;
-		process(mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				mii_rxdv <= rmii_crs;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-		rmii_mdc  <= 'Z';
+		rmii_mdc  <= '0';
 		rmii_mdio <= 'Z';
 		ipv4acfg_req <= not btn_pwr_n;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
