@@ -32,7 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmprply_tx is
 	port (
-		mii_txc   : in  std_logic;
+		mii_clk   : in  std_logic;
 
 		pl_txen   : in  std_logic;
 		pl_txd    : in  std_logic_vector;
@@ -42,23 +42,22 @@ entity icmprply_tx is
 		icmp_id   : in  std_logic_vector(0 to 16-1);
 		icmp_seq  : in  std_logic_vector(0 to 16-1);
 
-		icmp_frm  : out std_logic := '0';
+		icmp_frm  : buffer std_logic := '0';
 		icmp_data : out std_logic_vector);
 end;
 
 architecture def of icmprply_tx is
-	signal icmp_frm     : std_logic;
-	signal icmp_data    : std_logic_vector(0 to 64-1);
+	signal mux_data    : std_logic_vector(0 to 64-1);
 	signal icmphdr_txen : std_logic;
 	signal icmphdr_data : std_logic_vector(icmp_data'range);
 	signal pllat_txen   : std_logic;
 	signal pllat_txd    : std_logic_vector(icmp_data'range);
 begin
 
-	process (pl_txen, pllat_txen, mii_txc)
+	process (pl_txen, pllat_txen, mii_clk)
 		variable txen : std_logic := '0';
 	begin
-		if rising_edge(mii_txc) then
+		if rising_edge(mii_clk) then
 			if pl_txen='1' then
 				txen := '1';
 			elsif txen='1' then
@@ -74,19 +73,21 @@ begin
 	generic map (
 		latency => (summation(icmphdr_frame & icmprqst_frame)))
 	port map (
-		mii_txc  => mii_txc,
-		lat_txen => pl_txen,
-		lat_txd  => pl_txd,
-		mii_txen => pllat_txen,
+		mii_clk  => mii_clk,
+		lat_frm  => pl_frm,
+		lat_irdy => pl_irdy,
+		lat_data => pl_txd,
+		mii_frm  => pllat_frm,
+		mii_irdy => pllat_irdy,
 		mii_txd  => pllat_txd);
 		
-	icmp_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
+	mux_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
 	icmp_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => icmp_data,
-        sio_clk  => mii_txc,
+		mux_data => mux_data,
+        sio_clk  => mii_clk,
 		si_frm   => icmp_frm,
-		so_irdy  => '1',
+		so_irdy  => pllat_irdy,
         so_trdy  => icmphdr_txen,
         so_end   => icmphdr_txen,
         so_data  => icmphdr_data);
