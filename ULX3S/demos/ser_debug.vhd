@@ -316,10 +316,10 @@ begin
 
 	begin
 	
-		sio_clk <= rmii_nint;
-		mii_txc <= rmii_nint;
+		sio_clk <= not rmii_nint;
+		mii_txc <= not rmii_nint;
 		rmii_tx_en <= mii_txen;
-		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+		(0 => rmii_tx0, 1 => rmii_tx1) <= not mii_txd;
 
 		mii_rxc  <= rmii_nint;
 		mii_rxdv <= rmii_crs;
