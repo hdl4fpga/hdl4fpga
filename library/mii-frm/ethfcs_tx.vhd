@@ -60,7 +60,7 @@ architecture mix of ethfcs_tx is
 
 begin
 
-	rdy <= dll_irdy and mii_trdy,
+	rdy <= dll_irdy and mii_trdy;
 	miitx_pre_e  : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => mii_pre)
@@ -92,7 +92,7 @@ begin
 		do(0) => lat_frm);
 
 	fcs_p : process (lat_frm, mii_clk)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc32_size/lat_data'length-1)) := ('1', others => '-')
+		variable cntr : unsigned(0 to unsigned_num_bits(crc32_size/lat_data'length-1)) := ('1', others => '-');
 		variable cy   : std_logic;
 		variable q    : std_logic;
 	begin

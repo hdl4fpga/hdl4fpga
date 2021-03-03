@@ -249,7 +249,6 @@ begin
 	end block;
 
 	led(0) <= video_lck;
-	led(2) <= video_lck;
 
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
@@ -290,7 +289,6 @@ begin
 		si_trdy   => sout_trdy,
 		si_data   => sout_data,
 		tp => tp);
-
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

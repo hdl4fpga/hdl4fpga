@@ -32,42 +32,53 @@ entity mii_latency is
 	generic (
 		latency : natural);
     port (
-        mii_txc  : in  std_logic;
-        lat_txen : in  std_logic := '-';
-        lat_txd  : in  std_logic_vector;
-        mii_txen : out std_logic;
-        mii_txd  : out std_logic_vector);
+        mii_clk  : in  std_logic;
+		mii_frm  : in  std_logic;
+		mii_irdy : in  std_logic := '1';
+		mii_trdy : out std_logic;
+        mii_data : in  std_logic_vector;
+        lat_frm  : out std_logic;
+		lat_irdy : out std_logic;
+		lat_trdy : in  std_logic := '1';
+        lat_data : out std_logic_vector);
 end;
 
 architecture def of mii_latency is
+	signal ena : std_logic;
 begin
 
-	assert mii_txd'length = lat_txd'length
-	report "Length of mii_txd must be equal to the length of lat_txd"
+	assert mii_data'length=lat_data'length
+	report "Length of mii_data must be equal to the length of lat_data"
 	severity FAILURE;
 
-	assert latency mod mii_txd'length = 0
-	report "LATENCY must be a multiple of the length of mii_txd'length"
+	assert latency mod mii_data'length = 0
+	report "LATENCY must be a multiple of the length of mii_data'length"
 	severity FAILURE;
 
-	txd_e : entity hdl4fpga.align
-	generic map (
-		n => mii_txd'length,
-		d => (0 to mii_txd'length-1 => latency/mii_txd'length),
-		i => (0 to mii_txd'length-1 => '0'))
-	port map (
-		clk => mii_txc,
-		di => lat_txd,
-		do => mii_txd);
-		
-	txdv_e : entity hdl4fpga.align
+	ena <= mii_irdy and lat_trdy;
+	frm_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => latency/mii_txd'length),
+		d => (0 to 0 => latency/mii_data'length),
 		i => (0 to 0 => '0'))
 	port map (
-		clk   => mii_txc,
-		di(0) => lat_txen,
-		do(0) => mii_txen);
+		clk   => mii_clk,
+		ena   => ena,
+		di(0) => mii_frm,
+		do(0) => lat_frm);
+		
+	data_e : entity hdl4fpga.align
+	generic map (
+		n => mii_data'length,
+		d => (0 to mii_data'length-1 => latency/mii_data'length),
+		i => (0 to mii_data'length-1 => '0'))
+	port map (
+		clk => mii_clk,
+		ena => ena,
+		di  => mii_data,
+		do  => lat_data);
+
+	lat_irdy <= mii_irdy;
+	mii_trdy <= lat_trdy;
 		
 end;
