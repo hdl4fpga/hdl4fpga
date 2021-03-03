@@ -373,7 +373,7 @@ begin
 		ser_frm  <= (mii_txen and not fire1) or (mii_rxdv and not fire2);
 		ser_irdy <= '1';
 		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and not fire1) & (mii_rxdv and not fire2));
+			mii_txd & mii_rxd, (mii_txen and not fire1) & (not (mii_txen and not fire1) and (mii_rxdv and not fire2)));
 	end generate;
 	
 	ser_debug_e : entity hdl4fpga.ser_debug
