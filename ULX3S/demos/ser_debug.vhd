@@ -326,7 +326,7 @@ begin
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
 		rmii_mdc  <= '0';
-		rmii_mdio <= 'Z';
+		rmii_mdio <= '0';
 		ipv4acfg_req <= not btn_pwr_n;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
@@ -373,7 +373,7 @@ begin
 		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
 		ser_irdy <= '1';
 		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
+			mii_txd & mii_rxd, (mii_txen and enatx) & (mii_rxdv and enarx));
 	end generate;
 	
 	process (sio_clk)
@@ -390,8 +390,8 @@ begin
 			end loop;
 			i(0) := fire1;
 			i(1) := fire2;
-			enatx <= t(0);
-			enarx <= t(1);
+			enatx <= '1'; --t(0);
+			enarx <= '1'; --t(1);
 		end if;
 	end process;
 
