@@ -316,12 +316,12 @@ begin
 
 	begin
 	
-		sio_clk <= not rmii_nint;
-		mii_txc <= not rmii_nint;
-		rmii_tx_en <= mii_txen;
+		sio_clk <= rmii_nint;
+		mii_txc <= rmii_nint;
+		rmii_tx_en <= '0'; --mii_txen;
 		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_rxc  <= not rmii_nint;
+		mii_rxc  <= rmii_nint;
 		mii_rxdv <= rmii_crs;
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
@@ -370,10 +370,12 @@ begin
 			end if;
 		end process;
 
-		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
+		ser_frm  <= (rmii_tx_en and enatx) or (mii_rxdv and enarx);
 		ser_irdy <= '1';
 		ser_data(0 to io_len(io_link)-1) <= wirebus(
 			mii_txd & mii_rxd, (mii_txen and enatx) & (mii_rxdv and enarx));
+	led(4) <= mii_txen;
+	led(5) <= mii_rxdv;
 	end generate;
 	
 	process (sio_clk)
