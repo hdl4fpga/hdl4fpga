@@ -345,6 +345,25 @@ begin
 			x"00_00_00_00_00_00"    & -- arp_tha  
 			x"c0_a8_00_0e";           -- arp_tpa  
 
+		constant icmppkt : std_logic_vector :=
+			x"4500"                 &    -- IP Version, TOS
+			x"0000"                 &    -- IP Length
+			x"0000"                 &    -- IP Identification
+			x"0000"                 &    -- IP Fragmentation
+			x"0501"                 &    -- IP TTL, protocol
+			x"0000"                 &    -- IP Header Checksum
+			x"ffffffff"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"aaaaaaaa",8) &
+			reverse(x"ffffffff",8) ;
+
 		constant packet : std_logic_vector := 
 			x"4500"                 &    -- IP Version, TOS
 			x"0000"                 &    -- IP Length
@@ -372,7 +391,7 @@ begin
 
 		eth_e: entity hdl4fpga.mii_rom
 		generic map (
-			mem_data => reverse(arppkt,8))
+			mem_data => reverse(icmppkt,8))
 		port map (
 			mii_txc  => mii_txc,
 			mii_txen => mii_req,
@@ -397,7 +416,7 @@ begin
 			eth_ptr  => txfrm_ptr,
 			hwsa     => x"af_ff_ff_ff_ff_f5",
 			hwda     => x"00_40_00_01_02_03",
-			llc      => x"0806",
+			llc      => x"0800",
 			pl_txen  => eth_txen,
 			eth_rxd  => eth_txd,
 			eth_txen => mii_txen,

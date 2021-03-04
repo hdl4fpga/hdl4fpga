@@ -320,9 +320,14 @@ begin
 		rmii_tx_en <= mii_txen;
 		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_rxc  <= mii_clk;
-		mii_rxdv <= rmii_crs;
-		mii_rxd  <= rmii_rx0 & rmii_rx1;
+		mii_rxc <= mii_clk;
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				mii_rxdv <= rmii_crs;
+				mii_rxd  <= rmii_rx0 & rmii_rx1;
+			end if;
+		end process;
 
 		rmii_mdc  <= '0';
 		rmii_mdio <= '0';
@@ -392,7 +397,7 @@ begin
 			i(0) := fire1;
 			i(1) := fire2;
 			enatx <= '1'; --t(0);
-			enarx <= '1'; --t(1);
+			enarx <= '0'; --t(1);
 		end if;
 	end process;
 	led(2) <= enarx;

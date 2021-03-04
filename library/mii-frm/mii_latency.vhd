@@ -38,13 +38,14 @@ entity mii_latency is
 		mii_trdy : out std_logic;
         mii_data : in  std_logic_vector;
         lat_frm  : out std_logic;
-		lat_irdy : out std_logic;
+		lat_irdy : buffer std_logic;
 		lat_trdy : in  std_logic := '1';
         lat_data : out std_logic_vector);
 end;
 
 architecture def of mii_latency is
-	signal ena : std_logic;
+	signal ena1 : std_logic;
+	signal ena2 : std_logic;
 begin
 
 	assert mii_data'length=lat_data'length
@@ -55,7 +56,7 @@ begin
 	report "LATENCY must be a multiple of the length of mii_data'length"
 	severity FAILURE;
 
-	ena <= mii_irdy and lat_trdy;
+	ena <= (mii_irdy and lat_trdy) or not lat_irdy;
 	frm_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
@@ -64,9 +65,11 @@ begin
 	port map (
 		clk   => mii_clk,
 		ena   => ena,
-		di(0) => mii_frm,
-		do(0) => lat_frm);
+		di(0) => mii_irdy,
+		do(0) => lat_irdy);
+	mii_trdy <= ena;
 		
+	ena2 <= (not lat_irdy and mii_irdy) or (lat_irdy and lat_trdy); 
 	data_e : entity hdl4fpga.align
 	generic map (
 		n => mii_data'length,
@@ -74,11 +77,7 @@ begin
 		i => (0 to mii_data'length-1 => '0'))
 	port map (
 		clk => mii_clk,
-		ena => ena,
+		ena => ena2,
 		di  => mii_data,
 		do  => lat_data);
-
-	lat_irdy <= mii_irdy;
-	mii_trdy <= lat_trdy;
-		
 end;

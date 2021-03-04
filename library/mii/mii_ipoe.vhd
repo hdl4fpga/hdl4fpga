@@ -600,10 +600,11 @@ begin
 				icmp_txd  => icmp_txd);
 
 			process (mii_txc)
+				variable q : std_logic;
 			begin
 				if rising_edge(mii_txc) then
 					if dev_gnt(icmp_gnt)='1' then
-						if icmp_txen='0' then
+						if q='1' and icmp_txen='0' then
 							icmp_req <= '0';
 						end if;
 					elsif icmp_rcvd='1' then
@@ -612,6 +613,7 @@ begin
 						icmp_ip4da   <= ipv4sa_rx;
 						ipicmp_len   <= ip4len_rx;
 					end if;
+					q := icmp_txen;
 				end if;
 			end process;
 

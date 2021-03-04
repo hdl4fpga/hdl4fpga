@@ -34,9 +34,10 @@ entity icmprply_tx is
 	port (
 		mii_clk   : in  std_logic;
 
-		pl_frm   : in  std_logic;
+		pl_frm    : in  std_logic;
 		pl_irdy   : in  std_logic;
-		pl_data    : in  std_logic_vector;
+		pl_trdy   : out  std_logic;
+		pl_data   : in  std_logic_vector;
 
 		icmp_ptr  : in  std_logic_vector;
 		icmp_cksm : in  std_logic_vector(0 to 16-1);
@@ -52,8 +53,11 @@ end;
 architecture def of icmprply_tx is
 	signal mux_data     : std_logic_vector(0 to 64-1);
 	signal icmphdr_frm  : std_logic;
+	signal icmphdr_trdy : std_logic;
 	signal icmphdr_data : std_logic_vector(icmp_data'range);
+	signal icmphdr_end  : std_logic;
 	signal pllat_frm    : std_logic;
+	signal pllat_irdy   : std_logic;
 	signal pllat_data   : std_logic_vector(icmp_data'range);
 begin
 
@@ -84,21 +88,21 @@ begin
 		lat_frm  => pllat_frm,
 		lat_irdy => pllat_irdy,
 		lat_trdy => icmp_trdy,
-		lat_txd  => pllat_txd);
+		lat_data => pllat_data);
 		
-	icmp_irdy <= wirebus (pl_irdy & '1', pl_frm & pllat_frm);
 	mux_data  <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
-	icmp_e : entity hdl4fpga.sio_mux
+	icmphdr_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => mux_data,
         sio_clk  => mii_clk,
-		si_frm   => icmp_frm,
-		so_irdy  => icmp_irdy,
-        so_trdy  => icmphdr_txen,
-        so_end   => icmphdr_txen,
+		sio_frm  => icmp_frm,
+		so_irdy  => icmp_trdy,
+        so_trdy  => icmphdr_trdy,
+        so_end   => icmphdr_end,
         so_data  => icmphdr_data);
 
-	icmp_data <= wirebus(icmphdr_data & pllat_txd, icmphdr_txen & pllat_txen);
+	icmp_irdy <= wirebus(icmphdr_trdy & pllat_irdy, not icmphdr_end & icmphdr_end)(0);
+	icmp_data <= wirebus(icmphdr_data & pllat_data, not icmphdr_end & icmphdr_end);
 
 end;
 
