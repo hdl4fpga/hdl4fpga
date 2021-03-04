@@ -197,9 +197,6 @@ begin
 
 	end block;
 
-	led(2) <= enarx;
-	led(3) <= enatx;
-
 	hdlc_g : if io_link=io_hdlc generate
 
 	--	constant uart_xtal : natural := natural(sys_freq);
@@ -304,6 +301,7 @@ begin
 		alias rmii_mdio  : std_logic is gn(13);
 		alias rmii_mdc   : std_logic is gp(13);
 
+		signal mii_clk   : std_logic;
 		signal mii_txc   : std_logic;
 		signal mii_txen  : std_logic;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
@@ -316,12 +314,13 @@ begin
 
 	begin
 	
-		sio_clk <= rmii_nint;
-		mii_txc <= rmii_nint;
-		rmii_tx_en <= '0'; --mii_txen;
+		mii_clk <= rmii_nint;
+		sio_clk <= mii_clk;
+		mii_txc <= mii_clk;
+		rmii_tx_en <= mii_txen;
 		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_rxc  <= rmii_nint;
+		mii_rxc  <= mii_clk;
 		mii_rxdv <= rmii_crs;
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
@@ -370,17 +369,17 @@ begin
 			end if;
 		end process;
 
-		ser_frm  <= (rmii_tx_en and enatx) or (mii_rxdv and enarx);
+		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
 		ser_irdy <= '1';
 		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and enatx) & (mii_rxdv and enarx));
-	led(4) <= mii_txen;
-	led(5) <= mii_rxdv;
+			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
+		led(4) <= mii_txen;
+		led(5) <= mii_rxdv;
 	end generate;
 	
 	process (sio_clk)
 		variable i : std_logic_vector(0 to 2-1);
-		variable t : std_logic_vector(0 to 2-1);
+		variable t : std_logic_vector(0 to 2-1) := (others => '1');
 		variable e : std_logic_vector(0 to 2-1);
 	begin
 		if rising_edge(sio_clk) then
@@ -392,10 +391,13 @@ begin
 			end loop;
 			i(0) := fire1;
 			i(1) := fire2;
-			enatx <= '1'; --t(0);
-			enarx <= '1'; --t(1);
+			enatx <= t(0);
+			enarx <= t(1);
 		end if;
 	end process;
+	led(2) <= enarx;
+	led(3) <= enatx;
+
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

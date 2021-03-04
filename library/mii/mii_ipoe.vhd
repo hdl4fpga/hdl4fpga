@@ -600,19 +600,13 @@ begin
 				icmp_txd  => icmp_txd);
 
 			process (mii_txc)
-				variable q : bit;
 			begin
 				if rising_edge(mii_txc) then
 					if dev_gnt(icmp_gnt)='1' then
-						if icmp_txen='1' then
-							q := '1';
-							icmp_req <= '1';
-						elsif q='1' then
-							q := '0';
+						if icmp_txen='0' then
 							icmp_req <= '0';
 						end if;
 					elsif icmp_rcvd='1' then
-						q := '0';
 						icmp_req     <= '1';
 						dllhwda_icmp <= dllhwsa_rx;
 						icmp_ip4da   <= ipv4sa_rx;

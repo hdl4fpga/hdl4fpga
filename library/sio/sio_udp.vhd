@@ -138,6 +138,7 @@ begin
 		default_ipv4a  => default_ipv4a,
 		my_mac         => my_mac)
 	port map (
+		tp => tp,
 		mii_rxc        => mii_rxc,
 		mii_rxd        => mii_rxd,
 		mii_rxdv       => mii_rxdv,
@@ -178,8 +179,7 @@ begin
 		udppl_txlen    => flow_udplentx,
 
 		udppl_txen     => udppl_txen,
-		udppl_txd      => udppl_txd,
-		tp => tp);
+		udppl_txd      => udppl_txd);
 
 	rx_b : block
 	begin

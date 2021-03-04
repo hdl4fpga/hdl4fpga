@@ -34,19 +34,20 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_tx is
 	port (
-		mii_txc   : in  std_logic;
+		mii_txc    : in  std_logic;
 
 		udppl_txen : in  std_logic;
 		udppl_txd  : in  std_logic_vector;
 		udppl_len  : in  std_logic_vector(16-1 downto 0);
 
-		udp_ptr  : in  std_logic_vector;
-		udp_cksm : in  std_logic_vector(0 to 16-1) := x"0000";
-		udp_sp   : in  std_logic_vector(0 to 16-1);
-		udp_dp   : in  std_logic_vector(0 to 16-1);
-		udp_len  : buffer std_logic_vector(16-1 downto 0);
-		udp_txen : buffer std_logic;
-		udp_txd  : out std_logic_vector);
+		udp_ptr    : in  std_logic_vector;
+		udp_cksm   : in  std_logic_vector(0 to 16-1) := x"0000";
+		udp_sp     : in  std_logic_vector(0 to 16-1);
+		udp_dp     : in  std_logic_vector(0 to 16-1);
+		udp_len    : buffer std_logic_vector(16-1 downto 0);
+		udp_txen   : buffer std_logic;
+		udp_txd    : out std_logic_vector;
+		tp         : out std_logic_vector(1 to 32));
 end;
 
 architecture def of udp_tx is
@@ -60,20 +61,19 @@ architecture def of udp_tx is
 begin
 
 	process (udppl_txen, pllat_txen, mii_txc)
-		variable txen : bit;
+		variable txen : std_logic := '0';
 	begin
 		if rising_edge(mii_txc) then
-			if to_stdulogic(to_bit(udppl_txen))='1' then
+			if udppl_txen='1' then
 				txen := '1';
 			elsif txen='1' then
-				if to_stdulogic(to_bit(pllat_txen))='1' then
+				if pllat_txen='1' then
 					txen := '0';
 				end if;
 			end if;
 		end if;
-		udp_txen <= to_stdulogic(to_bit(udppl_txen or pllat_txen) or txen);
+		udp_txen <= udppl_txen or txen or pllat_txen;
 	end process;
-
 
 	udp_len <= std_logic_vector(unsigned(udppl_len) + (summation(udp4hdr_frame)/octect_size));
 	udp_hdr <= udp_sp & udp_dp & udp_len & udp_cksm;
@@ -95,7 +95,6 @@ begin
 		mii_txen => pllat_txen,
 		mii_txd  => pllat_txd);
 		
-
 	udp_txd  <= wirebus(udphdr_txd & pllat_txd, not pllat_txen & pllat_txen);
 
 end;
