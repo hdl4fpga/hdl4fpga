@@ -301,7 +301,7 @@ begin
 
 	end block;
 	
-	mii_req <= '0', '1' after 1 us;
+	mii_req <= '0', '1' after 1.005 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -379,10 +379,10 @@ begin
 			mii_txdv => eth_txen,
 			mii_txd  => eth_txd);
 
-		process (mii_rxc)
+		process (mii_txc)
 		begin
 
-			if rising_edge(mii_rxc) then
+			if rising_edge(mii_txc) then
 				if eth_txen='0' and mii_txen='0' then
 					txfrm_ptr <= (others => '0');
 				else
@@ -393,7 +393,7 @@ begin
 
 		ethtx_e : entity hdl4fpga.eth_tx
 		port map (
-			mii_txc  => mii_rxc,
+			mii_txc  => mii_txc,
 			eth_ptr  => txfrm_ptr,
 			hwsa     => x"af_ff_ff_ff_ff_f5",
 			hwda     => x"00_40_00_01_02_03",

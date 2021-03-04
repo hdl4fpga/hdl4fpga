@@ -314,7 +314,7 @@ begin
 
 	begin
 	
-		mii_clk <= rmii_nint;
+		mii_clk <= not rmii_nint;
 		sio_clk <= mii_clk;
 		mii_txc <= mii_clk;
 		rmii_tx_en <= mii_txen;
@@ -391,8 +391,8 @@ begin
 			end loop;
 			i(0) := fire1;
 			i(1) := fire2;
-			enatx <= t(0);
-			enarx <= t(1);
+			enatx <= '1'; --t(0);
+			enarx <= '1'; --t(1);
 		end if;
 	end process;
 	led(2) <= enarx;
