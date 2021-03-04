@@ -154,6 +154,8 @@ HDL4FPGA__ethfcs_tx__mix = $(LIB_HDL4FPGA)/ethfcs_tx/mix.dat
 HDL4FPGA__ethfcs_tx = $(LIB_HDL4FPGA)/ethfcs_tx/_primary.dat
 HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
 HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
+HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
+HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
@@ -379,6 +381,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ethfcs_tx) \
     $(HDL4FPGA__eth_tx__def) \
     $(HDL4FPGA__eth_tx) \
+    $(HDL4FPGA__eth_tb__def) \
+    $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
     $(HDL4FPGA__draw_vline__def) \
@@ -877,6 +881,18 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/eth_rx.vhd
 
+$(HDL4FPGA__eth_tb) \
+$(HDL4FPGA__eth_tb__def) : ../demos/eth_tb.vhd \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__mii_rom) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../demos/eth_tb.vhd
+
 $(HDL4FPGA__eth_tx) \
 $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
 		$(HDL4FPGA__ethfcs_tx) \
@@ -1281,7 +1297,7 @@ $(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
 		$(HDL4FPGA__cp850x8x8x128to255) \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__ser_analyzer) \
+		$(HDL4FPGA__ser_display) \
 		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__std_logic_textio) \

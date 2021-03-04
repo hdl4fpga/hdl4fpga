@@ -312,25 +312,60 @@ begin
 
 		signal ipv4acfg_req  : std_logic := '0';
 
+		constant loopback : boolean := true;
 	begin
 	
-		mii_clk <= not rmii_nint;
 		sio_clk <= mii_clk;
 		mii_txc <= mii_clk;
-		rmii_tx_en <= mii_txen;
-		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-
 		mii_rxc <= mii_clk;
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_crs;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
 
-		rmii_mdc  <= '0';
-		rmii_mdio <= '0';
+		loopback_g : if loopback generate
+--			mii_clk <= clk_25mhz;
+			mii_clk <= not rmii_nint;
+
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					rmii_tx_en <= mii_txen or mii_rxdv;
+					(0 => rmii_tx0, 1 => rmii_tx1) <= wirebus(mii_txd & mii_rxd, mii_txen & mii_rxdv);
+				end if;
+			end process;
+
+			eth_tb_e : entity hdl4fpga.eth_tb
+			port map (
+				mii_req1   => right,
+				mii_req2   => left,
+				mii_txc    => mii_rxc,
+				mii_txen   => mii_rxdv,
+				mii_txd    => mii_rxd,
+
+				mii_rxc    => mii_txc,
+				mii_rxdv   => mii_txen,
+				mii_rxd    => mii_txd);
+
+			rmii_mdc  <= '0';
+			rmii_mdio <= '0';
+		end generate;
+
+		LAN_g : if not loopback generate
+			mii_clk <= not rmii_nint;
+
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					rmii_tx_en <= mii_txen;
+					(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+
+					mii_rxdv <= rmii_crs;
+					mii_rxd  <= rmii_rx0 & rmii_rx1;
+				end if;
+			end process;
+
+			rmii_mdc  <= '0';
+			rmii_mdio <= '0';
+
+		end generate;
+
 		ipv4acfg_req <= not btn_pwr_n;
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
@@ -397,7 +432,7 @@ begin
 			i(0) := fire1;
 			i(1) := fire2;
 			enatx <= '1'; --t(0);
-			enarx <= '0'; --t(1);
+			enarx <= '1'; --t(1);
 		end if;
 	end process;
 	led(2) <= enarx;
