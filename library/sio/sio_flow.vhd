@@ -280,8 +280,8 @@ begin
 		mux_data => sioack_data,
 		sio_clk  => phyo_clk,
 		sio_frm  => flow_frm,
-		so_irdy  => ack_irdy,
-		so_trdy  => ack_trdy,
+		sio_irdy => ack_irdy,
+		sio_trdy => ack_trdy,
 		so_end   => ack_end,
 		so_data  => ack_data);
 

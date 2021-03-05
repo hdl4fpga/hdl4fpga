@@ -311,8 +311,8 @@ begin
 			mux_data => sio_dmaio,
 			sio_clk  => sio_clk,
 			sio_frm  => sts_frm,
-			so_irdy  => siodmaio_irdy,
-			so_trdy  => siodmaio_trdy,
+			sio_irdy => siodmaio_irdy,
+			sio_trdy => siodmaio_trdy,
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
