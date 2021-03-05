@@ -58,6 +58,7 @@ architecture def of icmprply_tx is
 	signal icmphdr_end  : std_logic;
 	signal pllat_frm    : std_logic;
 	signal pllat_irdy   : std_logic;
+	signal pllat_trdy   : std_logic;
 	signal pllat_data   : std_logic_vector(icmp_data'range);
 begin
 
@@ -76,6 +77,7 @@ begin
 		icmp_frm <= pl_frm or frm or pllat_frm;
 	end process;
 
+	pllat_trdy <= icmphdr_end and icmp_trdy;
 	pllat_e : entity hdl4fpga.mii_latency
 	generic map (
 		latency => (summation(icmphdr_frame & icmprqst_frame)))
@@ -87,7 +89,7 @@ begin
 		mii_data => pl_data,
 		lat_frm  => pllat_frm,
 		lat_irdy => pllat_irdy,
-		lat_trdy => icmp_trdy,
+		lat_trdy => pllat_trdy,
 		lat_data => pllat_data);
 		
 	mux_data  <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;

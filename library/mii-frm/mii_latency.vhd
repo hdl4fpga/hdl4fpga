@@ -35,28 +35,29 @@ entity mii_latency is
         mii_clk  : in  std_logic;
 		mii_frm  : in  std_logic;
 		mii_irdy : in  std_logic := '1';
-		mii_trdy : out std_logic;
+		mii_trdy : buffer std_logic;
         mii_data : in  std_logic_vector;
-        lat_frm  : out std_logic;
+        lat_frm  : buffer std_logic;
 		lat_irdy : buffer std_logic;
 		lat_trdy : in  std_logic := '1';
         lat_data : out std_logic_vector);
 end;
 
 architecture def of mii_latency is
-	signal ena1 : std_logic;
-	signal ena2 : std_logic;
 begin
 
 	assert mii_data'length=lat_data'length
 	report "Length of mii_data must be equal to the length of lat_data"
 	severity FAILURE;
 
-	assert latency mod mii_data'length = 0
+	assert latency mod mii_data'length=0
 	report "LATENCY must be a multiple of the length of mii_data'length"
 	severity FAILURE;
 
-	ena <= (mii_irdy and lat_trdy) or not lat_irdy;
+	mii_trdy <= 
+		((lat_trdy or  not lat_irdy) and mii_irdy) or
+		((lat_trdy and     lat_irdy) and lat_frm);
+
 	frm_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
@@ -64,12 +65,21 @@ begin
 		i => (0 to 0 => '0'))
 	port map (
 		clk   => mii_clk,
-		ena   => ena,
+		ena   => mii_trdy,
+		di(0) => mii_frm,
+		do(0) => lat_frm);
+		
+	irdy_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => latency/mii_data'length),
+		i => (0 to 0 => '0'))
+	port map (
+		clk   => mii_clk,
+		ena   => mii_trdy,
 		di(0) => mii_irdy,
 		do(0) => lat_irdy);
-	mii_trdy <= ena;
 		
-	ena2 <= (not lat_irdy and mii_irdy) or (lat_irdy and lat_trdy); 
 	data_e : entity hdl4fpga.align
 	generic map (
 		n => mii_data'length,
@@ -77,7 +87,7 @@ begin
 		i => (0 to mii_data'length-1 => '0'))
 	port map (
 		clk => mii_clk,
-		ena => ena2,
+		ena => mii_trdy,
 		di  => mii_data,
 		do  => lat_data);
 end;

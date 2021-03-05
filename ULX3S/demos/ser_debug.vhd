@@ -320,16 +320,16 @@ begin
 		mii_rxc <= mii_clk;
 
 		loopback_g : if loopback generate
---			mii_clk <= clk_25mhz;
-			mii_clk <= not rmii_nint;
+			mii_clk <= clk_25mhz;
+--			mii_clk <= rmii_nint;
 
-			process (mii_clk)
-			begin
-				if rising_edge(mii_clk) then
-					rmii_tx_en <= mii_txen or mii_rxdv;
-					(0 => rmii_tx0, 1 => rmii_tx1) <= wirebus(mii_txd & mii_rxd, mii_txen & mii_rxdv);
-				end if;
-			end process;
+--			process (mii_clk)
+--			begin
+--				if rising_edge(mii_clk) then
+--					rmii_tx_en <= mii_txen or mii_rxdv;
+--					(0 => rmii_tx0, 1 => rmii_tx1) <= wirebus(mii_txd & mii_rxd, mii_txen & mii_rxdv);
+--				end if;
+--			end process;
 
 			eth_tb_e : entity hdl4fpga.eth_tb
 			port map (
@@ -343,8 +343,8 @@ begin
 				mii_rxdv   => mii_txen,
 				mii_rxd    => mii_txd);
 
-			rmii_mdc  <= '0';
-			rmii_mdio <= '0';
+--			rmii_mdc  <= '0';
+--			rmii_mdio <= '0';
 		end generate;
 
 		LAN_g : if not loopback generate
@@ -392,6 +392,11 @@ begin
 			so_trdy   => '1',
 			so_data   => sin_data);
 
+		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
+		ser_irdy <= '1';
+		ser_data(0 to io_len(io_link)-1) <= wirebus(
+			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
+
 		process (sio_clk)
 			variable t : std_logic;
 			variable e : std_logic;
@@ -409,10 +414,6 @@ begin
 			end if;
 		end process;
 
-		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
-		ser_irdy <= '1';
-		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
 		led(4) <= mii_txen;
 		led(5) <= mii_rxdv;
 	end generate;
