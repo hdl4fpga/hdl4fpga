@@ -56,42 +56,32 @@ architecture def of icmprply_tx is
 	signal icmphdr_trdy : std_logic;
 	signal icmphdr_data : std_logic_vector(icmp_data'range);
 	signal icmphdr_end  : std_logic;
-	signal pllat_frm    : std_logic;
 	signal pllat_irdy   : std_logic;
 	signal pllat_trdy   : std_logic;
 	signal pllat_data   : std_logic_vector(icmp_data'range);
 begin
 
-	process (pl_frm, pllat_frm, mii_clk)
-		variable frm : std_logic := '0';
-	begin
-		if rising_edge(mii_clk) then
-			if pl_frm='1' then
-				frm := '1';
-			elsif frm='1' then
-				if pllat_frm='1' then
-					frm := '0';
-				end if;
-			end if;
-		end if;
-		icmp_frm <= pl_frm or frm or pllat_frm;
-	end process;
+	icmp_frm <= pl_frm or pllat_irdy;
 
 	pllat_trdy <= icmphdr_end and icmp_trdy;
-	pllat_e : entity hdl4fpga.mii_latency
+
+	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		latency => (summation(icmphdr_frame & icmprqst_frame)))
+		max_depth => (summation(icmphdr_frame & icmprqst_frame))/pl_data'length,
+		latency   => 0,
+		check_sov => true,
+		check_dov => true,
+		gray_code => false)
 	port map (
-		mii_clk  => mii_clk,
-		mii_frm  => pl_frm,
-		mii_irdy => pl_irdy,
-		mii_trdy => pl_trdy,
-		mii_data => pl_data,
-		lat_frm  => pllat_frm,
-		lat_irdy => pllat_irdy,
-		lat_trdy => pllat_trdy,
-		lat_data => pllat_data);
-		
+		src_clk   => mii_clk,
+		src_irdy  => pl_irdy,
+		src_trdy  => pl_trdy,
+		src_data  => pl_data,
+		dst_clk   => mii_clk,
+		dst_irdy  => pllat_irdy,
+		dst_trdy  => pllat_trdy,
+		dst_data  => pllat_data);
+
 	mux_data  <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
 	icmphdr_e : entity hdl4fpga.sio_mux
 	port map (
