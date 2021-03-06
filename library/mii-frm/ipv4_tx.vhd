@@ -65,15 +65,6 @@ architecture def of ipv4_tx is
 	signal cksmd_txen    : std_logic;
 	signal cksm_init     : std_logic_vector(0 to 16-1);
 
-	signal pllat_txd     : std_logic_vector(ip4_txd'range);
-	signal pllat_txen    : std_logic;
-	signal lenlat_txd    : std_logic_vector(ip4_txd'range);
-	signal lenlat_txen   : std_logic;
-	signal protolat_txen : std_logic;
-	signal alat_txd      : std_logic_vector(ip4_txd'range);
-	signal alat_txen     : std_logic;
-	signal lat_txd       : std_logic_vector(ip4_txd'range);
-
 	signal ip4shdr_frm   : std_logic;
 	signal ip4shdr_irdy  : std_logic;
 	signal ip4shdr_trdy  : std_logic_vector(ip4_txd'range);
@@ -83,10 +74,11 @@ architecture def of ipv4_tx is
 	signal ip4proto_txd   : std_logic_vector(ip4_txd'range);
 	signal ip4proto_data  : std_logic_vector(0 to ip4hdr_frame(ip4_chksum)-1);
 
-	signal ip4sa_txen    : std_logic;
-	signal ip4sa_txd     : std_logic_vector(ip4_txd'range);
-	signal ip4da_txen    : std_logic;
-	signal ip4da_txd     : std_logic_vector(ip4_txd'range);
+	signal ip4a_frm    : std_logic;
+	signal ip4a_frm    : std_logic;
+	signal ip4a_irdy     : std_logic_vector(ip4_txd'range);
+	signal ip4a_data    : std_logic;
+	signal ip4a_txd     : std_logic_vector(ip4_txd'range);
 	signal ip4len_txen   : std_logic;
 	signal ip4len_txd    : std_logic_vector(ip4_txd'range);
 
@@ -94,11 +86,6 @@ architecture def of ipv4_tx is
 	constant myip4_len : natural :=  0;
 	constant myip4_sa  : natural :=  1;
 	constant myip4_da  : natural :=  2;
-
-	constant myip4hdr_frame : natural_vector := (
-		myip4_len => ip4hdr_frame(ip4_len),
-		myip4_sa  => ip4hdr_frame(ip4_sa),
-		myip4_da  => ip4hdr_frame(ip4_da));
 
 begin
 
@@ -123,11 +110,7 @@ begin
 		dst_trdy  => pllat_trdy,
 		dst_data  => pllat_data);
 
-	ip4shdr_txen <= not frame_decode(
-		ip4_ptr,
-	   	ip4hdr_frame, 
-		ip4_txd'length,
-	   	ip4_proto, gt) and ip4_txen;
+	ip4shdr_txen <= not frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto, gt) and ip4_txen;
 
 	ip4shdr_data <= ip4_shdr & ip4proto;
 	ip4shdr_e : entity hdl4fpga.sio_mux
@@ -165,8 +148,8 @@ begin
 		mii_txdv => ip4sa_txen,
 		mii_txd  => ip4sa_txd);
 
-	ip4da_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_da) and ip4_txen;
-	ip4da_e : entity hdl4fpga.sio_mux
+	ip4a_itrdy <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_da) and ip4_txen;
+	ip4a_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => ip4da,
 		sio_clk  => mii_txc,
@@ -188,36 +171,6 @@ begin
         sio_trdy => icmphdr_trdy,
         so_end   => icmphdr_end,
         so_data  => icmphdr_data);
-
-		lat_txd  <= wirebus(latcksm_txd & pllat_txd, cksm_txen & pllat1_txen);
-		iplenlat_e : entity hdl4fpga.mii_latency
-		generic map (
-			latency => 
-				ip4hdr_frame(ip4_verihl)+
-				ip4hdr_frame(ip4_tos))
-		port map (
-			mii_txc  => mii_txc,
-			lat_txen => pllat1_txen,
-			lat_txd  => lat_txd,
-			mii_txen => pllat2_txen,
-			mii_txd  => lenlat_txd);
-
-		ipalat_e : entity hdl4fpga.mii_latency
-		generic map (
-			latency => 
-				ip4hdr_frame(ip4_ident)+
-				ip4hdr_frame(ip4_flgsfrg)+
-				ip4hdr_frame(ip4_ttl)+
-				ip4hdr_frame(ip4_proto)+
-				ip4hdr_frame(ip4_chksum))
-		port map (
-			mii_txc  => mii_txc,
-			lat_txen => pllat2_txen,
-			lat_txd  => lenlat_txd,
-			mii_txen => pllat_txen,
-			mii_txd  => alat_txd);
-		
-	end block;
 	
 	xxx_b : block
 		signal cy  : std_logic;
