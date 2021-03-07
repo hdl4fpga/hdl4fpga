@@ -41,14 +41,14 @@ entity ipv4_tx is
 		pl_trdy  : out std_logic;
 		pl_data  : in  std_logic_vector;
 
-		ip4len   : in  std_logic_vector(0 to 16-1);
-		ip4sa    : in  std_logic_vector(0 to 32-1);
-		ip4da    : in  std_logic_vector(0 to 32-1);
-		ip4proto : in  std_logic_vector(0 to 8-1);
+		ipv4len   : in  std_logic_vector(0 to 16-1);
+		ipv4sa    : in  std_logic_vector(0 to 32-1);
+		ipv4da    : in  std_logic_vector(0 to 32-1);
+		ipv4proto : in  std_logic_vector(0 to 8-1);
 
-		ip4_ptr  : in  std_logic_vector;
-		ip4_frm  : buffer std_logic;
-		ip4_data : out std_logic_vector);
+		ipv4_ptr  : in  std_logic_vector;
+		ipv4_frm  : buffer std_logic;
+		ipv4_data : out std_logic_vector);
 end;
 
 architecture def of ipv4_tx is
@@ -58,44 +58,40 @@ architecture def of ipv4_tx is
 	signal pllat_trdy    : std_logic;
 	signal pllat_data    : std_logic_vector(pl_data'range);
 
-	signal cksm_txd      : std_logic_vector(ip4_txd'range);
-	signal latcksm_txd   : std_logic_vector(ip4_txd'range);
+	signal cksm_txd      : std_logic_vector(ipv4_txd'range);
+	signal latcksm_txd   : std_logic_vector(ipv4_txd'range);
 	signal cksm_txen     : std_logic;
-	signal cksmd_txd     : std_logic_vector(ip4_txd'range);
+	signal cksmd_txd     : std_logic_vector(ipv4_txd'range);
 	signal cksmd_txen    : std_logic;
 	signal cksm_init     : std_logic_vector(0 to 16-1);
 
-	signal ip4shdr_frm   : std_logic;
-	signal ip4shdr_irdy  : std_logic;
-	signal ip4shdr_trdy  : std_logic_vector(ip4_txd'range);
-	signal ip4shdr_data  : std_logic_vector(0 to ip4_shdr'length+ip4hdr_frame(ip4_proto)-1);
+	signal ipv4shdr_frm   : std_logic;
+	signal ipv4shdr_irdy  : std_logic;
+	signal ipv4shdr_trdy  : std_logic_vector(ipv4_txd'range);
+	signal ipv4shdr_data  : std_logic_vector(0 to ipv4_shdr'length+ipv4hdr_frame(ipv4_proto)-1);
 
-	signal ip4proto_txdv  : std_logic;
-	signal ip4proto_txd   : std_logic_vector(ip4_txd'range);
-	signal ip4proto_data  : std_logic_vector(0 to ip4hdr_frame(ip4_chksum)-1);
+	signal ipv4proto_txdv  : std_logic;
+	signal ipv4proto_txd   : std_logic_vector(ipv4_txd'range);
+	signal ipv4proto_data  : std_logic_vector(0 to ipv4hdr_frame(ipv4_chksum)-1);
 
-	signal ip4a_frm    : std_logic;
-	signal ip4a_frm    : std_logic;
-	signal ip4a_irdy     : std_logic_vector(ip4_txd'range);
-	signal ip4a_data    : std_logic;
-	signal ip4a_txd     : std_logic_vector(ip4_txd'range);
-	signal ip4len_txen   : std_logic;
-	signal ip4len_txd    : std_logic_vector(ip4_txd'range);
+	signal ipv4a_frm    : std_logic;
+	signal ipv4a_frm    : std_logic;
+	signal ipv4a_irdy     : std_logic_vector(ipv4_txd'range);
+	signal ipv4a_data    : std_logic;
+	signal ipv4a_txd     : std_logic_vector(ipv4_txd'range);
+	signal ipv4len_txen   : std_logic;
+	signal ipv4len_txd    : std_logic_vector(ipv4_txd'range);
 
 
-	constant myip4_len : natural :=  0;
-	constant myip4_sa  : natural :=  1;
-	constant myip4_da  : natural :=  2;
+	constant myipv4_len : natural :=  0;
+	constant myipv4_sa  : natural :=  1;
+	constant myipv4_da  : natural :=  2;
 
 begin
 
 	pl_e : entity hdl4fpga.fifo
 	generic map (
 		fifo_depth => 
-			summation(ip4hdr_frame)-
-			ip4hdr_frame(ip4_len)-
-			ip4hdr_frame(ip4_sa)-
-			ip4hdr_frame(ip4_da)/pl_data'length,
 		latency   => 0,
 		check_sov => true,
 		check_dov => true,
@@ -110,68 +106,31 @@ begin
 		dst_trdy  => pllat_trdy,
 		dst_data  => pllat_data);
 
-	ip4shdr_txen <= not frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto, gt) and ip4_txen;
-
-	ip4shdr_data <= ip4_shdr & ip4proto;
-	ip4shdr_e : entity hdl4fpga.sio_mux
+	ipv4shdr_irdy <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_txd'length, ipv4_proto, gt);
+	ipv4shdr_data <= ipv4_hdr1 & ipv4_len & ipv4_hdr2 & ipv4proto;
+	ipv4shdr_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => ip4shdr_data,
+		mux_data => ipv4shdr_data,
         sio_clk  => mii_clk,
-        sio_frm  => ip4shdr_frm,
-        sio_irdy => ip4shdr_irdy,
-        sio_trdy => ip4shdr_trdy);
-        so_end   => ip4shdr_end);
-        so_data  => ip4shdr_data);
+        sio_frm  => ipv4_frm,
+        sio_irdy => ipv4hdr_irdy,
+        sio_trdy => ipv4hdr_trdy,
+        so_end   => ipv4hdr_end;
+        so_data  => ipv4hdr_data);
 
-	ip4proto_data <= x"00" & ip4proto;
-	ip4proto_e : entity hdl4fpga.mii_mux
+	ipv4a_itrdy <= 
+		frame_decode(ipv4_ptr, myipv4hdr_frame, ipv4_txd'length, myipv4_da) or 
+		frame_decode(ipv4_ptr, myipv4hdr_frame, ipv4_txd'length, myipv4_sa);
+	ipv4a_e : entity hdl4fpga.mii_mux
 	port map (
-		mux_data => ip4proto_data,
+		mux_data => ipv4a,
         sio_clk  => mii_clk,
-        sio_frm  => ip4len_txen,
-        sio_irdy => ip4proto_txdv,
-        mii_txd  => ip4proto_txd);
+        sio_frm  => ipv4_frm,
+        sio_irdy => ipv4a_irdy,
+        sio_trdy => ipv4a_trdy,
+        so_end   => ipv4a_end;
+        so_data  => ipv4a_data);
 
-	ip4len_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_len) and ip4_txen;
-	ip4len_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => ip4len,
-        sio_clk  => mii_clk,
-        mii_txdv => ip4len_txen,
-        mii_txd  => ip4len_txd);
-
-	ip4sa_txen <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_sa) and ip4_txen;
-	ip4sa_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => ip4sa,
-        sio_clk  => mii_clk,
-		mii_txdv => ip4sa_txen,
-		mii_txd  => ip4sa_txd);
-
-	ip4a_itrdy <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, myip4_da) and ip4_txen;
-	ip4a_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => ip4da,
-		sio_clk  => mii_txc,
-		mii_txdv => ip4da_txen,
-		mii_txd  => ip4da_txd);
-
-	lat_b : block
-		signal pllat1_txen : std_logic;
-		signal pllat2_txen : std_logic;
-	begin
-		
-	mux_data  <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
-	icmphdr_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => mux_data,
-        sio_clk  => mii_clk,
-		sio_frm  => icmp_frm,
-		sio_irdy => icmp_trdy,
-        sio_trdy => icmphdr_trdy,
-        so_end   => icmphdr_end,
-        so_data  => icmphdr_data);
-	
 	xxx_b : block
 		signal cy  : std_logic;
 		signal sum : unsigned(0 to pl_txd'length+1);
@@ -188,16 +147,16 @@ begin
 				end if;
 			end if;
 		end process;
-		latcksm_txd <= wirebus(ip4len_txd & ip4sa_txd & ip4da_txd, ip4len_txen & ip4sa_txen & ip4da_txen);
+		latcksm_txd <= wirebus(ipv4len_txd & ipv4sa_txd & ipv4da_txd, ipv4len_txen & ipv4sa_txen & ipv4da_txen);
 		op1 <= unsigned(reverse(latcksm_txd));
-		op2 <= unsigned(reverse((ip4proto_txd) and (pl_txd'range => ip4proto_txdv)));
+		op2 <= unsigned(reverse((ipv4proto_txd) and (pl_txd'range => ipv4proto_txdv)));
 		sum <= ('0' & op2  & '1') + ('0' & op1 & cy);
 		cksm_txd <= not reverse(std_logic_vector(sum(1 to pl_txd'length)));
 	end block;
 
-	cksm_txen  <= frame_decode(ip4_ptr, myip4hdr_frame, ip4_txd'length, (myip4_len, myip4_sa, myip4_da)) and ip4_txen;
-	cksmd_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_chksum) and ip4_txen; 
-	cksm_init  <= oneschecksum(not (ip4_shdr & x"00"), cksm_init'length);
+	cksm_txen  <= frame_decode(ipv4_ptr, myipv4hdr_frame, ipv4_txd'length, (myipv4_len, myipv4_sa, myipv4_da)) and ipv4_txen;
+	cksmd_txen <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_txd'length, ipv4_chksum) and ipv4_txen; 
+	cksm_init  <= oneschecksum(not (ipv4_shdr & x"00"), cksm_init'length);
 	mii1checksum_e : entity hdl4fpga.mii_1chksum
 	generic map (
 		chksum_size => 16)
@@ -209,10 +168,10 @@ begin
 		cksm_init => cksm_init,
 		cksm_txd  => cksmd_txd);
 
-	lenlat_txen   <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_len) and to_stdulogic(to_bit(ip4_txen));
-	protolat_txen <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, ip4_proto) and to_stdulogic(to_bit(ip4_txen));
-	alat_txen     <= frame_decode(ip4_ptr, ip4hdr_frame, ip4_txd'length, (ip4_sa, ip4_da)) and to_stdulogic(to_bit(ip4_txen));
+	lenlat_txen   <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_txd'length, ipv4_len) and to_stdulogic(to_bit(ipv4_txen));
+	protolat_txen <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_txd'length, ipv4_proto) and to_stdulogic(to_bit(ipv4_txen));
+	alat_txen     <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_txd'length, (ipv4_sa, ipv4_da)) and to_stdulogic(to_bit(ipv4_txen));
 
-	ip4_txd <= wirebus(ip4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ip4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or to_stdulogic(to_bit(pllat_txen))));
+	ipv4_txd <= wirebus(ipv4shdr_txd & lenlat_txd & cksmd_txd & alat_txd, ipv4shdr_txen & lenlat_txen & cksmd_txen & (alat_txen or to_stdulogic(to_bit(pllat_txen))));
 
 end;
