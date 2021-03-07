@@ -320,16 +320,16 @@ begin
 		mii_rxc <= mii_clk;
 
 		loopback_g : if loopback generate
-			mii_clk <= clk_25mhz;
---			mii_clk <= rmii_nint;
+--			mii_clk <= clk_25mhz;
+			mii_clk <= rmii_nint;
 
---			process (mii_clk)
---			begin
---				if rising_edge(mii_clk) then
---					rmii_tx_en <= mii_txen or mii_rxdv;
---					(0 => rmii_tx0, 1 => rmii_tx1) <= wirebus(mii_txd & mii_rxd, mii_txen & mii_rxdv);
---				end if;
---			end process;
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					rmii_tx_en <= mii_txen;
+					(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+				end if;
+			end process;
 
 			eth_tb_e : entity hdl4fpga.eth_tb
 			port map (
@@ -343,8 +343,8 @@ begin
 				mii_rxdv   => mii_txen,
 				mii_rxd    => mii_txd);
 
---			rmii_mdc  <= '0';
---			rmii_mdio <= '0';
+			rmii_mdc  <= '0';
+			rmii_mdio <= '0';
 		end generate;
 
 		LAN_g : if not loopback generate
