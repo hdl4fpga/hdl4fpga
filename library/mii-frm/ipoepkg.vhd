@@ -31,8 +31,8 @@ use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 
-	constant llc_ip4 : std_logic_vector := x"0800";
-	constant llc_arp : std_logic_vector := x"0806";
+	constant llc_ipv4 : std_logic_vector := x"0800";
+	constant llc_arp  : std_logic_vector := x"0806";
 
 	constant arp_htype : natural := eth_frame'right+1;
 	constant arp_ptype : natural := eth_frame'right+2;
@@ -62,44 +62,37 @@ package ipoepkg is
 		x"04"   & -- plen  
 		x"0002";  -- oper  
 	   
-	constant ip4_verihl  : natural :=  eth_frame'right+1;
-	constant ip4_tos     : natural :=  eth_frame'right+2;
-	constant ip4_len     : natural :=  eth_frame'right+3;
-	constant ip4_ident   : natural :=  eth_frame'right+4;
-	constant ip4_flgsfrg : natural :=  eth_frame'right+5;
-	constant ip4_ttl     : natural :=  eth_frame'right+6;
-	constant ip4_proto   : natural :=  eth_frame'right+7;
-	constant ip4_chksum  : natural :=  eth_frame'right+8;
-	constant ip4_sa      : natural :=  eth_frame'right+9;
-	constant ip4_da      : natural :=  eth_frame'right+10;
+	constant ipv4_verihl  : natural :=  eth_frame'right+1;
+	constant ipv4_tos     : natural :=  eth_frame'right+2;
+	constant ipv4_len     : natural :=  eth_frame'right+3;
+	constant ipv4_ident   : natural :=  eth_frame'right+4;
+	constant ipv4_flgsfrg : natural :=  eth_frame'right+5;
+	constant ipv4_ttl     : natural :=  eth_frame'right+6;
+	constant ipv4_proto   : natural :=  eth_frame'right+7;
+	constant ipv4_chksum  : natural :=  eth_frame'right+8;
+	constant ipv4_sa      : natural :=  eth_frame'right+9;
+	constant ipv4_da      : natural :=  eth_frame'right+10;
 
-	constant ip4hdr_frame : natural_vector := (
-		ip4_verihl  => 1*octect_size,
-		ip4_tos     => 1*octect_size,
-		ip4_len     => 2*octect_size,
-		ip4_ident   => 2*octect_size,
-		ip4_flgsfrg => 2*octect_size,
-		ip4_ttl     => 1*octect_size,
-		ip4_proto   => 1*octect_size,
-		ip4_chksum  => 2*octect_size,
-		ip4_sa      => 4*octect_size,
-		ip4_da      => 4*octect_size);
+	constant ipv4hdr_frame : natural_vector := (
+		ipv4_verihl  => 1*octect_size,
+		ipv4_tos     => 1*octect_size,
+		ipv4_len     => 2*octect_size,
+		ipv4_ident   => 2*octect_size,
+		ipv4_flgsfrg => 2*octect_size,
+		ipv4_ttl     => 1*octect_size,
+		ipv4_proto   => 1*octect_size,
+		ipv4_chksum  => 2*octect_size,
+		ipv4_sa      => 4*octect_size,
+		ipv4_da      => 4*octect_size);
 		
-	constant ip4_shdr : std_logic_vector := (
-		x"4500" &    -- Version, TOS
-		x"0000" &    -- Length
-		x"0000" &    -- Identification
-		x"0000" &    -- Fragmentation
-		x"05");      -- Time To Live
+	constant ipv4proto_icmp : std_logic_vector(0 to ipv4hdr_frame(ipv4_proto)-1) := x"01";
+	constant ipv4proto_udp  : std_logic_vector(0 to ipv4hdr_frame(ipv4_proto)-1) := x"11";
 
-	constant ip4proto_icmp : std_logic_vector(0 to ip4hdr_frame(ip4_proto)-1) := x"01";
-	constant ip4proto_udp  : std_logic_vector(0 to ip4hdr_frame(ip4_proto)-1) := x"11";
-
-	constant icmp_type : natural :=  ip4hdr_frame'right+1;
-	constant icmp_code : natural :=  ip4hdr_frame'right+2;
-	constant icmp_cksm : natural :=  ip4hdr_frame'right+3;
-	constant icmp_id   : natural :=  ip4hdr_frame'right+4;
-	constant icmp_seq  : natural :=  ip4hdr_frame'right+5;
+	constant icmp_type : natural :=  ipv4hdr_frame'right+1;
+	constant icmp_code : natural :=  ipv4hdr_frame'right+2;
+	constant icmp_cksm : natural :=  ipv4hdr_frame'right+3;
+	constant icmp_id   : natural :=  ipv4hdr_frame'right+4;
+	constant icmp_seq  : natural :=  ipv4hdr_frame'right+5;
 
 	constant icmphdr_frame : natural_vector := (
 		icmp_type => 1*octect_size,
@@ -118,10 +111,10 @@ package ipoepkg is
 		icmp_id  => 2*octect_size,
 		icmp_seq => 2*octect_size);
 		
-	constant udp4_sp   : natural :=  ip4hdr_frame'right+1;
-	constant udp4_dp   : natural :=  ip4hdr_frame'right+2;
-	constant udp4_len  : natural :=  ip4hdr_frame'right+3;
-	constant udp4_cksm : natural :=  ip4hdr_frame'right+4;
+	constant udp4_sp   : natural :=  ipv4hdr_frame'right+1;
+	constant udp4_dp   : natural :=  ipv4hdr_frame'right+2;
+	constant udp4_len  : natural :=  ipv4hdr_frame'right+3;
+	constant udp4_cksm : natural :=  ipv4hdr_frame'right+4;
 
 	constant udp4hdr_frame : natural_vector := (
 		udp4_sp   => 2*octect_size,
