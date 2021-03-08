@@ -312,7 +312,7 @@ begin
 
 		signal ipv4acfg_req  : std_logic := '0';
 
-		constant loopback : boolean := true;
+		constant loopback : boolean := false;
 	begin
 	
 		sio_clk <= mii_clk;
@@ -348,7 +348,7 @@ begin
 		end generate;
 
 		LAN_g : if not loopback generate
-			mii_clk <= not rmii_nint;
+			mii_clk <= rmii_nint;
 
 			process (mii_clk)
 			begin
