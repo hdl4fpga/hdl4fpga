@@ -88,8 +88,8 @@ begin
 
 	pl_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => 10,
-		latency   => 0,
+		max_depth => summation(ipv4hdr_frame)/pl_data'length,
+		latency   => 1,
 		check_sov => true,
 		check_dov => true,
 		gray_code => false)
@@ -136,6 +136,24 @@ begin
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
+	ipv4afifo_e : entity hdl4fpga.fifo
+	generic map (
+		max_depth => (ipv4_sa'length+ipv4_da'length)/pl_data'length,
+		latency   => 0,
+		check_sov => true,
+		check_dov => true,
+		gray_code => false)
+	port map (
+		src_clk   => mii_clk,
+		src_irdy  => ipv4a_irdy,
+		src_trdy  => ipv4a_trdy,
+		src_data  => ipv4a_data,
+		dst_clk   => mii_clk,
+		dst_irdy  => pllat_irdy,
+		dst_trdy  => pllat_trdy,
+		dst_data  => pllat_data);
+
+	cksm_data <= wirebus(ipv4hdr_data & ipv4cksm_data & ipv4a_data, not ipv4hdr_end & not ipv4cksm_end & not ipv4a_end);
 	cksm_irdy <= (ipv4a_irdy and ipv4a_trdy) and (ipv4hdr_irdy and ipv4hdr_trdy); 
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
@@ -160,5 +178,4 @@ begin
         so_end   => ipv4cksm_end,
         so_data  => ipv4cksm_data);
 
-	ipv4_data <= wirebus(ipv4hdr_data & ipv4cksm_data & ipv4a_data, not ipv4hdr_end & not ipv4cksm_end & not ipv4a_end);
 end;
