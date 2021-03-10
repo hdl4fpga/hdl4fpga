@@ -190,7 +190,9 @@ begin
         so_end   => ipv4cksm_end,
         so_data  => ipv4cksm_data);
 
-	ipv4_irdy <= wirebus(ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy, not ipv4hdr_end & not ipv4cksm_end & ipv4cksm_end & (ipv4cksm_end and not ipv4abuf_irdy))(0);
+	ipv4_irdy <= wirebus(
+		ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy & plbuf_irdy,
+		not ipv4hdr_end & not ipv4cksm_end & ipv4cksm_end & (ipv4cksm_end and not ipv4abuf_irdy))(0);
 	ipv4_data <= wirebus(
 		ipv4hdr_data    & ipv4cksm_data    & ipv4abuf_data                    & plbuf_data,
 		not ipv4hdr_end & not ipv4cksm_end & (ipv4cksm_end and ipv4abuf_irdy) & (ipv4cksm_end and not ipv4abuf_irdy and plbuf_irdy));
