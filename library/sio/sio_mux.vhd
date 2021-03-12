@@ -35,7 +35,8 @@ entity sio_mux is
         sio_frm  : in  std_logic;
 		sio_irdy : in  std_logic;
 		sio_trdy : out std_logic;
-		so_end   : buffer std_logic;
+		so_last  : buffer std_logic;
+		so_end   : out std_logic;
         so_data  : out std_logic_vector);
 end;
 
@@ -50,23 +51,22 @@ begin
 
 	process (sio_frm, sio_clk)
 		variable cntr : unsigned(0 to mux_length);
-		variable trdy : std_logic;
 	begin
 		if rising_edge(sio_clk) then
 			if sio_frm='0' then
-				cntr := to_unsigned(mux_data'length/so_data'length-2, cntr'length);
-				trdy := '1';
+				cntr   := to_unsigned(mux_data'length/so_data'length-2, cntr'length);
+				so_end <= '0';
 			elsif sio_irdy='1' then
 				if cntr(0)='0' then
 					cntr := cntr - 1;
 				end if;
-				trdy := not so_end;
+				so_end <= so_last;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
-			so_end  <= cntr(0);
+			so_last <= cntr(0);
 		end if;
-		sio_trdy <= sio_frm and trdy;
 	end process;
+	sio_trdy <= sio_frm;
 
 	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), 8))) rol so_data'length);
 

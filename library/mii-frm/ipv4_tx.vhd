@@ -61,9 +61,8 @@ architecture def of ipv4_tx is
 	signal cksm_frm      : std_logic;
 	signal cksm_irdy     : std_logic;
 	signal cksm_data     : std_logic_vector(ipv4_data'range);
-	signal chksum        : std_logic_vector(ipv4_data'range);
+	signal chksum        : std_logic_vector(16-1 downto 0);
 
-	signal ipv4hdr_frm   : std_logic;
 	signal ipv4hdr_irdy  : std_logic;
 	signal ipv4hdr_trdy  : std_logic;
 	signal ipv4hdr_end   : std_logic;
@@ -72,10 +71,12 @@ architecture def of ipv4_tx is
 
 	signal ipv4a_mux     : std_logic_vector(0 to ipv4_sa'length+ipv4_da'length-1);
 	signal ipv4a_irdy    : std_logic;
+	signal xxx_irdy    : std_logic;
 	signal ipv4a_trdy    : std_logic;
 	signal ipv4a_end     : std_logic;
 	signal ipv4a_data    : std_logic_vector(ipv4_data'range);
 	signal ipv4abuf_irdy : std_logic;
+	signal ipv4abuf_trdy : std_logic;
 	signal ipv4abuf_data : std_logic_vector(pl_data'range);
 
 	signal ipv4cksm_irdy : std_logic;
@@ -91,7 +92,7 @@ begin
 
 	pl_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => summation(ipv4hdr_frame)/pl_data'length,
+		max_depth => 2**(unsigned_num_bits(summation(ipv4hdr_frame)/pl_data'length-1)),
 		latency   => 1,
 		check_sov => true,
 		check_dov => true,
@@ -107,7 +108,7 @@ begin
 		dst_data  => plbuf_data);
 	ipv4_frm <= pl_frm or ipv4_irdy;
 
-	ipv4hdr_irdy <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_data'length, hdl4fpga.ipoepkg.ipv4_proto, gt) and ipv4_trdy;
+--	ipv4hdr_irdy <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_data'length, hdl4fpga.ipoepkg.ipv4_proto, gt) and ipv4_trdy;
 	ipv4hdr_mux <=
 		x"4500"    &   -- Version, TOS
 		ipv4_len   &   -- Length
@@ -121,38 +122,10 @@ begin
 		mux_data => ipv4hdr_mux,
         sio_clk  => mii_clk,
         sio_frm  => ipv4_frm,
-        sio_irdy => ipv4hdr_irdy,
+        sio_irdy => '1',
 		sio_trdy => ipv4hdr_trdy,
         so_end   => ipv4hdr_end,
         so_data  => ipv4hdr_data);
-
-	ipv4a_mux <= ipv4_sa & ipv4_da;
-	ipv4a_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => ipv4a_mux,
-        sio_clk  => mii_clk,
-        sio_frm  => ipv4_frm,
-        sio_irdy => ipv4a_irdy,
-        sio_trdy => ipv4a_trdy,
-        so_end   => ipv4a_end,
-        so_data  => ipv4a_data);
-
-	ipv4afifo_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => (ipv4_sa'length+ipv4_da'length)/pl_data'length,
-		latency   => 0,
-		check_sov => true,
-		check_dov => true,
-		gray_code => false)
-	port map (
-		src_clk   => mii_clk,
-		src_irdy  => ipv4a_trdy,
-		src_trdy  => ipv4a_irdy,
-		src_data  => ipv4a_data,
-		dst_clk   => mii_clk,
-		dst_irdy  => ipv4abuf_irdy,
-		dst_trdy  => ipv4_trdy,
-		dst_data  => ipv4abuf_data);
 
 	lenproto_mux <= ipv4_len & x"00" & ipv4_proto;
 	lenproto_e : entity hdl4fpga.sio_mux
@@ -164,8 +137,39 @@ begin
         so_end   => lenproto_end,
         so_data  => lenproto_data);
 
-	cksm_data <= wirebus(lenproto_data & ipv4a_data, not lenproto_end & not ipv4a_end);
-	cksm_irdy <= ipv4_trdy and (not lenproto_end and not ipv4a_end);
+	ipv4a_mux  <= ipv4_sa & ipv4_da;
+	ipv4a_irdy <= lenproto_end;
+	ipv4a_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data => ipv4a_mux,
+        sio_clk  => mii_clk,
+        sio_frm  => ipv4_frm,
+        sio_irdy => ipv4a_irdy,
+        sio_trdy => ipv4a_trdy,
+        so_end   => ipv4a_end,
+        so_data  => ipv4a_data);
+
+	ipv4abuf_trdy <= ipv4cksm_end and ipv4_trdy;
+	xxx_irdy <= not ipv4a_end;
+	ipv4afifo_e : entity hdl4fpga.fifo
+	generic map (
+		max_depth => (ipv4_sa'length+ipv4_da'length)/pl_data'length,
+		latency   => 0,
+		check_sov => true,
+		check_dov => true,
+		gray_code => false)
+	port map (
+		src_clk   => mii_clk,
+		src_irdy  => xxx_irdy,
+		src_trdy  => open,
+		src_data  => ipv4a_data,
+		dst_clk   => mii_clk,
+		dst_irdy  => ipv4abuf_irdy,
+		dst_trdy  => ipv4abuf_trdy,
+		dst_data  => ipv4abuf_data);
+
+	cksm_data <= wirebus(lenproto_data & ipv4a_data, not lenproto_end & (lenproto_end and not ipv4a_end));
+	cksm_irdy <= ipv4_trdy and (not lenproto_end or not ipv4a_end);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
 		cksm_init => oneschecksum(not (
@@ -195,5 +199,8 @@ begin
 		not ipv4hdr_end & not ipv4cksm_end & ipv4cksm_end & (ipv4cksm_end and not ipv4abuf_irdy))(0);
 	ipv4_data <= wirebus(
 		ipv4hdr_data    & ipv4cksm_data    & ipv4abuf_data                    & plbuf_data,
-		not ipv4hdr_end & not ipv4cksm_end & (ipv4cksm_end and ipv4abuf_irdy) & (ipv4cksm_end and not ipv4abuf_irdy and plbuf_irdy));
+		not ipv4hdr_end  & 
+		(not ipv4cksm_end  and ipv4hdr_end) & 
+		(ipv4abuf_irdy     and ipv4cksm_end)   & 
+		(not ipv4abuf_irdy and plbuf_irdy));
 end;
