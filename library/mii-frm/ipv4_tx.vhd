@@ -46,7 +46,6 @@ entity ipv4_tx is
 		ipv4_da    : in  std_logic_vector(0 to 32-1);
 		ipv4_proto : in  std_logic_vector(0 to 8-1);
 
-		ipv4_ptr  : in  std_logic_vector;
 		ipv4_frm  : buffer std_logic;
 		ipv4_irdy : buffer std_logic;
 		ipv4_trdy : in  std_logic;
@@ -56,6 +55,7 @@ end;
 architecture def of ipv4_tx is
 
 	signal plbuf_irdy    : std_logic;
+	signal plbuf_trdy    : std_logic;
 	signal plbuf_data    : std_logic_vector(pl_data'range);
 
 	signal cksm_frm      : std_logic;
@@ -71,7 +71,7 @@ architecture def of ipv4_tx is
 
 	signal ipv4a_mux     : std_logic_vector(0 to ipv4_sa'length+ipv4_da'length-1);
 	signal ipv4a_irdy    : std_logic;
-	signal xxx_irdy    : std_logic;
+	signal xxx_irdy      : std_logic;
 	signal ipv4a_trdy    : std_logic;
 	signal ipv4a_end     : std_logic;
 	signal ipv4a_data    : std_logic_vector(ipv4_data'range);
@@ -90,6 +90,7 @@ architecture def of ipv4_tx is
 
 begin
 
+	plbuf_trdy <= to_stdulogic(to_bit(ipv4_trdy and ipv4a_end and not ipv4abuf_irdy)); 
 	pl_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => 2**(unsigned_num_bits(summation(ipv4hdr_frame)/pl_data'length-1)),
@@ -104,11 +105,18 @@ begin
 		src_data  => pl_data,
 		dst_clk   => mii_clk,
 		dst_irdy  => plbuf_irdy,
-		dst_trdy  => ipv4_trdy,
+		dst_trdy  => plbuf_trdy,
 		dst_data  => plbuf_data);
-	ipv4_frm <= pl_frm or ipv4_irdy;
 
---	ipv4hdr_irdy <= frame_decode(ipv4_ptr, ipv4hdr_frame, ipv4_data'length, hdl4fpga.ipoepkg.ipv4_proto, gt) and ipv4_trdy;
+	process (pl_frm, plbuf_irdy, mii_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			q := pl_frm and pl_irdy;
+		end if;
+		ipv4_frm <= pl_frm or q or plbuf_irdy;
+	end process;
+
 	ipv4hdr_mux <=
 		x"4500"    &   -- Version, TOS
 		ipv4_len   &   -- Length
@@ -117,15 +125,53 @@ begin
 		x"05"      &   -- Time To Live
 		ipv4_proto;
 
-	ipv4hdr_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => ipv4hdr_mux,
-        sio_clk  => mii_clk,
-        sio_frm  => ipv4_frm,
-        sio_irdy => '1',
-		sio_trdy => ipv4hdr_trdy,
-        so_end   => ipv4hdr_end,
-        so_data  => ipv4hdr_data);
+	ipv4hdr_b : block 
+		signal hdr_trdy  : std_logic;
+		signal hdr_end   : std_logic;
+		signal hdr_data  : std_logic_vector(ipv4_data'range);
+	begin
+		ipv4hdr_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => ipv4hdr_mux,
+			sio_clk  => mii_clk,
+			sio_frm  => ipv4_frm,
+			sio_irdy => '1',
+			sio_trdy => hdr_trdy,
+			so_end   => hdr_end,
+			so_data  => hdr_data);
+
+		data_e : entity hdl4fpga.align
+		generic map (
+			n => pl_data'length,
+			d => (0 to pl_data'length-1 =>16/pl_data'length))
+		port map (
+			ena => ipv4_trdy,
+			clk   => mii_clk,
+			di  => hdr_data,
+			do  => ipv4hdr_data);
+
+		end_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			i => (0 to 1-1 => '0'),
+			d => (0 to 1-1 => 16/pl_data'length))
+		port map (
+			ena   => ipv4_trdy,
+			clk   => mii_clk,
+			di(0) => hdr_end,
+			do(0) => ipv4hdr_end);
+
+		trdy_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			i => (0 to 1-1 => '0'),
+			d => (0 to 1-1 => 16/pl_data'length))
+		port map (
+			ena   => ipv4_trdy,
+			clk   => mii_clk,
+			di(0) => hdr_trdy,
+			do(0) => ipv4hdr_trdy);
+	end block;
 
 	lenproto_mux <= ipv4_len & x"00" & ipv4_proto;
 	lenproto_e : entity hdl4fpga.sio_mux
@@ -150,11 +196,11 @@ begin
         so_data  => ipv4a_data);
 
 	ipv4abuf_trdy <= ipv4cksm_end and ipv4_trdy;
-	xxx_irdy <= not ipv4a_end;
+	xxx_irdy <= not ipv4a_end and ipv4a_irdy;
 	ipv4afifo_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => (ipv4_sa'length+ipv4_da'length)/pl_data'length,
-		latency   => 0,
+		latency   => 1,
 		check_sov => true,
 		check_dov => true,
 		gray_code => false)
@@ -196,11 +242,14 @@ begin
 
 	ipv4_irdy <= wirebus(
 		ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy & plbuf_irdy,
-		not ipv4hdr_end & not ipv4cksm_end & ipv4cksm_end & (ipv4cksm_end and not ipv4abuf_irdy))(0);
-	ipv4_data <= wirebus(
-		ipv4hdr_data    & ipv4cksm_data    & ipv4abuf_data                    & plbuf_data,
 		not ipv4hdr_end  & 
-		(not ipv4cksm_end  and ipv4hdr_end) & 
-		(ipv4abuf_irdy     and ipv4cksm_end)   & 
-		(not ipv4abuf_irdy and plbuf_irdy));
+		(not ipv4cksm_end and ipv4hdr_end)  & 
+		(ipv4abuf_irdy    and ipv4cksm_end) & 
+		(plbuf_irdy       and not ipv4abuf_irdy and ipv4cksm_end))(0);
+	ipv4_data <= wirebus(
+		ipv4hdr_data & ipv4cksm_data & ipv4abuf_data & plbuf_data,
+		not ipv4hdr_end                     & 
+		(not ipv4cksm_end and ipv4hdr_end)  & 
+		(ipv4abuf_irdy    and ipv4cksm_end) & 
+		(plbuf_irdy       and not ipv4abuf_irdy and ipv4cksm_end));
 end;
