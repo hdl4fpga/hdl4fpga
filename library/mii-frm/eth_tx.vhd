@@ -70,7 +70,7 @@ architecture def of eth_tx is
 
 begin
 
-	plbuf_trdy <= to_stdulogic(to_bit(ipv4_trdy and ipv4a_end and not ipv4abuf_irdy)); 
+	plbuf_trdy <= to_stdulogic(to_bit(eth_trdy and ipv4a_end and not ipv4abuf_irdy)); 
 	pl_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => 2**(unsigned_num_bits(summation(ipv4hdr_frame)/pl_data'length-1)),
@@ -94,7 +94,7 @@ begin
 		if rising_edge(mii_clk) then
 			q := pl_frm and pl_irdy;
 		end if;
-		ipv4_frm <= pl_frm or q or plbuf_irdy;
+		eth_frm <= pl_frm or q or plbuf_irdy;
 	end process;
 
 	dll_mux <= hwda & hwsa & llc;
@@ -102,20 +102,21 @@ begin
 	port map (
 		mux_data => dlc_mux,
 		sio_clk  => mii_clk,
-		sio_frm  => ipv4_frm,
-		sio_irdy => '1',
-		sio_trdy => hdr_trdy,
-		so_end   => hdr_end,
-		so_data  => hdr_data);
+		sio_frm  => eth_frm,
+		sio_irdy => eth_trdy,
+		sio_trdy => dll_trdy,
+		so_end   => dll_end,
+		so_data  => dll_data);
 
-	dll_txd  <= wirebus (hwda_txd & hwsa_txd & llc_txd & lat_txd, hwda_txen & hwsa_txen & llc_txen & lat_txen);
+	fcs_txd  <= wirebus (dll_data & plbuf_data, );
 	dll_txen <= padd_txen or lat_txen;
 
 	fcs_e : entity hdl4fpga.ethfcs_tx
 	port map (
 		mii_txc  => mii_txc,
-		dll_txen => dll_txen,
-		dll_txd  => dll_txd,
+		dll_frm  => eth_frm,
+		dll_irdy => ,
+		dll_data => dll_data,
 		mii_txen => eth_txen,
 		mii_txd  => eth_txd);
 

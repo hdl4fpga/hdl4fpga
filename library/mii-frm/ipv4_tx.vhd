@@ -135,7 +135,7 @@ begin
 			mux_data => ipv4hdr_mux,
 			sio_clk  => mii_clk,
 			sio_frm  => ipv4_frm,
-			sio_irdy => '1',
+			sio_irdy => ipv4_trdy,
 			sio_trdy => hdr_trdy,
 			so_end   => hdr_end,
 			so_data  => hdr_data);
