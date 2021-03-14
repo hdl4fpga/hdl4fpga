@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity icmprply_tx is
@@ -39,7 +38,6 @@ entity icmprply_tx is
 		pl_trdy   : out  std_logic;
 		pl_data   : in  std_logic_vector;
 
-		icmp_ptr  : in  std_logic_vector;
 		icmp_cksm : in  std_logic_vector(0 to 16-1);
 		icmp_id   : in  std_logic_vector(0 to 16-1);
 		icmp_seq  : in  std_logic_vector(0 to 16-1);
@@ -56,31 +54,9 @@ architecture def of icmprply_tx is
 	signal icmphdr_trdy : std_logic;
 	signal icmphdr_data : std_logic_vector(icmp_data'range);
 	signal icmphdr_end  : std_logic;
-	signal pllat_irdy   : std_logic;
-	signal pllat_trdy   : std_logic;
-	signal pllat_data   : std_logic_vector(icmp_data'range);
 begin
 
-	icmp_frm <= pl_frm or pllat_irdy;
-
-	pllat_trdy <= icmphdr_end and icmp_trdy;
-
-	fifo_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => (summation(icmphdr_frame & icmprqst_frame))/pl_data'length,
-		latency   => 0,
-		check_sov => true,
-		check_dov => true,
-		gray_code => false)
-	port map (
-		src_clk   => mii_clk,
-		src_irdy  => pl_irdy,
-		src_trdy  => pl_trdy,
-		src_data  => pl_data,
-		dst_clk   => mii_clk,
-		dst_irdy  => pllat_irdy,
-		dst_trdy  => pllat_trdy,
-		dst_data  => pllat_data);
+	icmp_frm <= pl_frm or pl_irdy;
 
 	mux_data  <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
 	icmphdr_e : entity hdl4fpga.sio_mux
@@ -88,13 +64,13 @@ begin
 		mux_data => mux_data,
         sio_clk  => mii_clk,
 		sio_frm  => icmp_frm,
-		so_irdy  => icmp_trdy,
-        so_trdy  => icmphdr_trdy,
+		sio_irdy => icmp_trdy,
+        sio_trdy => icmphdr_trdy,
         so_end   => icmphdr_end,
         so_data  => icmphdr_data);
 
-	icmp_irdy <= wirebus(icmphdr_trdy & pllat_irdy, not icmphdr_end & icmphdr_end)(0);
-	icmp_data <= wirebus(icmphdr_data & pllat_data, not icmphdr_end & icmphdr_end);
+	icmp_irdy <= wirebus(icmphdr_trdy & pl_irdy, not icmphdr_end & icmphdr_end)(0);
+	icmp_data <= wirebus(icmphdr_data & pl_data, not icmphdr_end & icmphdr_end);
 
 end;
 

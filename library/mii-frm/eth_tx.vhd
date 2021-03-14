@@ -37,12 +37,13 @@ entity eth_tx is
 
 		pl_frm   : in  std_logic;
 		pl_irdy  : in  std_logic;
-		pl_trdy  : out std_logic;
+		pl_trdy  : buffer std_logic;
+		pl_end   : in  std_logic;
 		pl_data  : in  std_logic_vector;
 
 		hwsa     : in  std_logic_vector;
 		hwda     : in  std_logic_vector;
-		llc      : in  std_logic_vector;
+		hwtyp    : in  std_logic_vector;
 
 		eth_frm  : buffer std_logic;
 		eth_irdy : buffer std_logic;
@@ -53,72 +54,87 @@ end;
 
 architecture def of eth_tx is
 
-	signal plbuf_irdy    : std_logic;
-	signal plbuf_trdy    : std_logic;
-	signal plbuf_data    : std_logic_vector(pl_data'range);
+	signal pre_trdy : std_logic;
+	signal pre_end  : std_logic;
+	signal pre_data : std_logic_vector(eth_data'range);
 
-	constant lat_length : natural := summation(eth_frame)/eth_txd'length;
-	signal lat_txen  : std_logic;
-	signal lat_txd   : std_logic_vector(eth_txd'range);
+	signal llc_mux  : std_logic_vector(0 to hwsa'length+hwda'length+hwtyp'length-1);
+	signal llc_irdy : std_logic;
+	signal llc_trdy : std_logic;
+	signal llc_end  : std_logic;
+	signal llc_data : std_logic_vector(eth_data'range);
 
-	signal padd_txen  : std_logic;
-	signal padd_txd   : std_logic_vector(eth_txd'range);
-
-	signal dll_txen  : std_logic;
-	signal dll_txd   : std_logic_vector(eth_txd'range);
-
+	signal fcs_irdy : std_logic;
+	signal fcs_trdy : std_logic;
+	signal fcs_mode : std_logic;
+	signal fcs_data : std_logic_vector(eth_data'range);
+	signal fcs_end  : std_logic;
+	signal fcs_crc  : std_logic_vector(0 to 32-1);
 
 begin
 
-	plbuf_trdy <= to_stdulogic(to_bit(eth_trdy and ipv4a_end and not ipv4abuf_irdy)); 
-	pl_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => 2**(unsigned_num_bits(summation(ipv4hdr_frame)/pl_data'length-1)),
-		latency   => 1,
-		check_sov => true,
-		check_dov => true,
-		gray_code => false)
+	pre_e : entity hdl4fpga.sio_mux
 	port map (
-		src_clk   => mii_clk,
-		src_irdy  => pl_irdy,
-		src_trdy  => pl_trdy,
-		src_data  => pl_data,
-		dst_clk   => mii_clk,
-		dst_irdy  => plbuf_irdy,
-		dst_trdy  => plbuf_trdy,
-		dst_data  => plbuf_data);
-
-	process (pl_frm, plbuf_irdy, mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			q := pl_frm and pl_irdy;
-		end if;
-		eth_frm <= pl_frm or q or plbuf_irdy;
-	end process;
-
-	dll_mux <= hwda & hwsa & llc;
-	dll_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => dlc_mux,
+		mux_data => reverse(x"5555_5555_5555_55d5", 8),
 		sio_clk  => mii_clk,
 		sio_frm  => eth_frm,
 		sio_irdy => eth_trdy,
-		sio_trdy => dll_trdy,
-		so_end   => dll_end,
-		so_data  => dll_data);
+		sio_trdy => pre_trdy,
+		so_end   => pre_end,
+		so_data  => pre_data);
 
-	fcs_txd  <= wirebus (dll_data & plbuf_data, );
-	dll_txen <= padd_txen or lat_txen;
-
-	fcs_e : entity hdl4fpga.ethfcs_tx
+	llc_mux  <= hwda & hwsa & hwtyp;
+	llc_irdy <= eth_trdy and pre_end;
+	llc_e : entity hdl4fpga.sio_mux
 	port map (
-		mii_txc  => mii_txc,
-		dll_frm  => eth_frm,
-		dll_irdy => ,
-		dll_data => dll_data,
-		mii_txen => eth_txen,
-		mii_txd  => eth_txd);
+		mux_data => llc_mux,
+		sio_clk  => mii_clk,
+		sio_frm  => eth_frm,
+		sio_irdy => llc_irdy,
+		so_end   => llc_end,
+		so_data  => llc_data);
 
+	fcs_data <= wirebus(llc_data & pl_data, not llc_end & llc_end);
+	fcs_irdy <= wirebus(llc_irdy & pl_irdy & eth_trdy, 
+		not llc_end              &
+		(not pl_end and llc_end) & 
+		pl_end)(0);
+
+	process (mii_clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/eth_data'length-1));
+	begin
+		if rising_edge(mii_clk) then
+			if pl_frm='0' then
+				cntr := (others => '1');
+			elsif pl_end='1' and cntr(0)='1' then
+				if fcs_irdy='1' then
+					cntr := cntr - 1; 
+				end if;
+			end if;
+			fcs_end <= cntr(0);
+		end if;
+	end process;
+
+	fcs_mode <= llc_end;
+	fcs_e : entity hdl4fpga.crc
+	port map (
+		g    => x"04c11db7",
+		clk  => mii_clk,
+		frm  => eth_frm,
+		irdy => fcs_irdy,
+		mode => fcs_mode,
+		data => fcs_data,
+		crc  => fcs_crc);
+
+	eth_irdy <= wirebus(pre_trdy & llc_trdy & pl_irdy & '1',
+		not  pre_end              & 
+		(not llc_end and pre_end) & 
+		(not pl_end  and llc_end) & 
+		(not fcs_end and pl_end))(0);
+	eth_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(eth_data'range), 
+		not  pre_end              & 
+		(not llc_end and pre_end) & 
+		(not pl_end  and llc_end) & 
+		(not fcs_end and pl_end));
 end;
 

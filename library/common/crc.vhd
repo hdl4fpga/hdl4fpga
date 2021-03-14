@@ -34,10 +34,11 @@ entity crc is
     port (
 		g    : in  std_logic_vector;
         clk  : in  std_logic;
-		init : in  std_logic;
-		sero : in  std_logic := '0';
-		ena  : in  std_logic := '1';
+		frm  : in  std_logic;
+		irdy : in  std_logic := '1';
+		trdy : out std_logic;
 		data : in  std_logic_vector;
+		mode : in  std_logic := '0';
 		crc  : buffer std_logic_vector);
 end;
 
@@ -52,10 +53,10 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if init='1' then
+			if frm='0' then
 				crc <= (crc'range => '0');
-			elsif ena='1' then
-				if sero='1' then
+			elsif irdy='1' then
+				if mode='1' then
 					crc <= std_logic_vector(unsigned(crc) rol data'length);
 				else
 					crc <= not galois_crc(data, not crc, g);
@@ -63,6 +64,8 @@ begin
 			end if;
 		end if;
 	end process;
+
+	trdy <= frm;
 
 end;
 
