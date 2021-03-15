@@ -460,6 +460,9 @@ begin
 		ip4da_tx    <= wirebus(ip4da  & x"ff_ff_ff_ff", not pto_gnt(dhcp_gnt) & pto_gnt(dhcp_gnt));
 		ip4len_tx   <= wirebus (ipicmp_len & udpip_len, pto_gnt(icmp_gnt) & (pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt))); 
 		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp, pto_gnt(icmp_gnt) & (pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt)));
+
+		ip4pl_frm   <= wirebus(icmp_frm & udpdhcp_txen or udp_txen));
+		ip4pl_txd   <= wirebus(icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 		ip4pl_txen  <= to_stdulogic(to_bit(icmp_txen or udpdhcp_txen or udp_txen));
 		ip4pl_txd   <= wirebus (icmp_txd & udpdhcp_txd & udp_txd, icmp_txen & udpdhcp_txen & udp_txen);
 
@@ -694,17 +697,19 @@ begin
 
 			udp_tx : entity hdl4fpga.udp_tx
 			port map (
-				mii_txc    => mii_txc,
-				udppl_txen => udppl_txen,
-				udppl_txd  => udppl_txd,
-				udppl_len  => udppl_txlen,
-				udp_cksm   => udp_cksm,
-				udp_len    => udp_len,
-				udp_sp     => udpsp_tx,
-				udp_dp     => udpdp_tx,
+				mii_clk  => mii_txc,
+				pl_frm   => pl_frm,
+				pl_irdy  => pl_irdy,
+				pl_data  => pl_data,
+				pl_len   => pl_len,
+				udp_cksm => udp_cksm,
+				udp_len  => udp_len,
+				udp_sp   => udpsp_tx,
+				udp_dp   => udpdp_tx,
 
-				udp_txen   => udp_txen,
-				udp_txd    => udp_txd);
+				udp_frm  => udp_frm,
+				udp_irdy => udp_irdy,
+				udp_data => udp_data);
 
 			dhcp_b : block
 				constant dhcp_clntp : std_logic_vector := x"0044";
