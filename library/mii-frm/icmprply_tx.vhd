@@ -72,5 +72,6 @@ begin
 	icmp_irdy <= wirebus(icmphdr_trdy & pl_irdy, not icmphdr_end & icmphdr_end)(0);
 	icmp_data <= wirebus(icmphdr_data & pl_data, not icmphdr_end & icmphdr_end);
 
+	pl_trdy  <= icmphdr_end and icmp_trdy;
 end;
 

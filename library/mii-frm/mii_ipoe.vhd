@@ -75,14 +75,14 @@ entity mii_ipoe is
 		udpsp_rx      : buffer std_logic_vector(0 to 16-1);
 		udpdp_rx      : buffer std_logic_vector(0 to 16-1);
 
-		udppl_txlen   : in  std_logic_vector(0 to 16-1) := (others => '-');
 		udppl_rxdv    : buffer std_logic;
-		udppl_txen    : in  std_logic;
-		udppl_txd     : in  std_logic_vector;
-
+		udppl_txlen   : in  std_logic_vector(0 to 16-1) := (others => '-');
 		udp_cksm      : in  std_logic_vector(0 to 16-1) := (others => '0'); 
 		udpsp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
 		udpdp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
+		udppl_txen    : in  std_logic;
+		udppl_txd     : in  std_logic_vector;
+
 
 		ipv4acfg_req  : in  std_logic;
 		myipv4a       : out std_logic_vector(0 to 32-1);
@@ -695,7 +695,6 @@ begin
 			udp_tx : entity hdl4fpga.udp_tx
 			port map (
 				mii_txc    => mii_txc,
-				udp_ptr    => txfrm_ptr,
 				udppl_txen => udppl_txen,
 				udppl_txd  => udppl_txd,
 				udppl_len  => udppl_txlen,
