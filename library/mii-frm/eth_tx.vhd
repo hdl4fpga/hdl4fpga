@@ -48,6 +48,7 @@ entity eth_tx is
 		eth_frm  : buffer std_logic;
 		eth_irdy : buffer std_logic;
 		eth_trdy : in  std_logic;
+		eth_end  : out std_logic;
 		eth_data : out std_logic_vector);
 
 end;
@@ -73,6 +74,7 @@ architecture def of eth_tx is
 
 begin
 
+	eth_frm <= pl_frm;
 	pre_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(x"5555_5555_5555_55d5", 8),
@@ -105,7 +107,9 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				cntr := (others => '1');
+				if cntr(0)='0' then
+					cntr := (others => '1');
+				end if;
 			elsif pl_end='1' and cntr(0)='1' then
 				if fcs_irdy='1' then
 					cntr := cntr - 1; 
@@ -136,5 +140,6 @@ begin
 		(not llc_end and pre_end) & 
 		(not pl_end  and llc_end) & 
 		(not fcs_end and pl_end));
+	eth_end <= fcs_end;
 end;
 

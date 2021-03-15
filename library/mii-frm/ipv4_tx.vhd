@@ -54,10 +54,6 @@ end;
 
 architecture def of ipv4_tx is
 
-	signal plbuf_irdy    : std_logic;
-	signal plbuf_trdy    : std_logic;
-	signal plbuf_data    : std_logic_vector(pl_data'range);
-
 	signal cksm_frm      : std_logic;
 	signal cksm_irdy     : std_logic;
 	signal cksm_data     : std_logic_vector(ipv4_data'range);
@@ -90,32 +86,8 @@ architecture def of ipv4_tx is
 
 begin
 
-	plbuf_trdy <= to_stdulogic(to_bit(ipv4_trdy and ipv4a_end and not ipv4abuf_irdy)); 
-	pl_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => 2**(unsigned_num_bits(summation(ipv4hdr_frame)/pl_data'length-1)),
-		latency   => 1,
-		check_sov => true,
-		check_dov => true,
-		gray_code => false)
-	port map (
-		src_clk   => mii_clk,
-		src_irdy  => pl_irdy,
-		src_trdy  => pl_trdy,
-		src_data  => pl_data,
-		dst_clk   => mii_clk,
-		dst_irdy  => plbuf_irdy,
-		dst_trdy  => plbuf_trdy,
-		dst_data  => plbuf_data);
-
-	process (pl_frm, plbuf_irdy, mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			q := pl_frm and pl_irdy;
-		end if;
-		ipv4_frm <= pl_frm or q or plbuf_irdy;
-	end process;
+	pl_trdy <= to_stdulogic(to_bit(ipv4_trdy and ipv4a_end and not ipv4abuf_irdy)); 
+	ipv4_frm <= pl_frm;
 
 	ipv4hdr_mux <=
 		x"4500"    &   -- Version, TOS
@@ -241,15 +213,15 @@ begin
         so_data  => ipv4cksm_data);
 
 	ipv4_irdy <= wirebus(
-		ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy & plbuf_irdy,
+		ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy & pl_irdy,
 		not ipv4hdr_end  & 
 		(not ipv4cksm_end and ipv4hdr_end)  & 
 		(ipv4abuf_irdy    and ipv4cksm_end) & 
-		(plbuf_irdy       and not ipv4abuf_irdy and ipv4cksm_end))(0);
+		(pl_irdy       and not ipv4abuf_irdy and ipv4cksm_end))(0);
 	ipv4_data <= wirebus(
-		ipv4hdr_data & ipv4cksm_data & ipv4abuf_data & plbuf_data,
+		ipv4hdr_data & ipv4cksm_data & ipv4abuf_data & pl_data,
 		not ipv4hdr_end                     & 
 		(not ipv4cksm_end and ipv4hdr_end)  & 
 		(ipv4abuf_irdy    and ipv4cksm_end) & 
-		(plbuf_irdy       and not ipv4abuf_irdy and ipv4cksm_end));
+		(pl_irdy       and not ipv4abuf_irdy and ipv4cksm_end));
 end;
