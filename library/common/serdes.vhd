@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity serdes is
 	generic (
+		rgtr  : boolean := false;
 		debug : boolean := false);
 	port (
 		serdes_clk : in  std_logic;

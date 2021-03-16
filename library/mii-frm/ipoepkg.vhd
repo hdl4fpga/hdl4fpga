@@ -55,13 +55,6 @@ package ipoepkg is
 		arp_tha   => 6*octect_size,
 		arp_tpa   => 4*octect_size);
 
-	constant arp4rply_pfx : std_logic_vector :=
-		x"0001" & -- htype 
-		x"0800" & -- ptype 
-		x"06"   & -- hlen  
-		x"04"   & -- plen  
-		x"0002";  -- oper  
-	   
 	constant ipv4_verihl  : natural :=  eth_frame'right+1;
 	constant ipv4_tos     : natural :=  eth_frame'right+2;
 	constant ipv4_len     : natural :=  eth_frame'right+3;

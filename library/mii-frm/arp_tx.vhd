@@ -32,83 +32,45 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	port (
-		mii_txc  : in  std_logic;
-		mii_txen : in  std_logic;
-		arp_frm  : in  std_logic_vector;
+		mii_clk  : in  std_logic;
+		arp_frm  : in  std_logic;
 		
 		sha      : in std_logic_vector;
 		tha      : in std_logic_vector;
 		tpa      : in std_logic_vector;
 		spa      : in std_logic_vector;
 
+		arp_irdy : in  std_logic;
+		arp_trdy : out std_logic;
+		arp_end  : out std_logic;
 
-		arp_txen : out std_logic;
-		arp_txd  : out std_logic_vector);
+		arp_data : out std_logic_vector);
 
 end;
 
 architecture def of arp_tx is
-
-	signal sha_txen : std_logic;
-	signal sha_txd  : std_logic_vector(arp_txd'range);
-
-	signal spa_txen : std_logic;
-	signal spa_txd  : std_logic_vector(arp_txd'range);
-
-	signal tha_txen : std_logic;
-	signal tha_txd  : std_logic_vector(arp_txd'range);
-
-	signal tpa_txen : std_logic;
-	signal tpa_txd  : std_logic_vector(arp_txd'range);
-
-	signal pfx_txen : std_logic;
-	signal pfx_txd  : std_logic_vector(arp_txd'range);
-
+	signal mux_data : std_logic_vector(0 to summation(arp4_frame)*8-1);
 begin
 	
-	pfx_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(arp4rply_pfx, 8))
+	mux_data <=
+		x"0001" & -- htype 
+		x"0800" & -- ptype 
+		x"06"   & -- hlen  
+		x"04"   & -- plen  
+		x"0002" & -- oper  
+	    sha     & -- Sender Hardware Address
+		spa     & -- Sender Protocol Address
+		tha     & -- Target Hardware Address
+		tpa;      -- Target Protocol Address
+
+	arpmux_e : entity hdl4fpga.sio_mux
 	port map (
-		mii_txc  => mii_txc,
-		mii_txen => mii_txen,
-		mii_txdv => pfx_txen,
-		mii_txd  => pfx_txd);
-
-	sha_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_sha);
-	sha_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => sha,
-		mii_txc  => mii_txc,
-		mii_txdv => sha_txen,
-		mii_txd  => sha_txd);
-
-	spa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_spa);
-	spa_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => spa,
-		mii_txc  => mii_txc,
-		mii_txdv => spa_txen,
-		mii_txd  => spa_txd);
-
-	tha_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tha);
-	tha_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => tha,
-		mii_txc  => mii_txc,
-		mii_txdv => tha_txen,
-		mii_txd  => tha_txd);
-
-	tpa_txen <= frame_decode(arp_frm, arp4_frame, arp_txd'length, arp_tpa);
-	tpa_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => tpa,
-		mii_txc  => mii_txc,
-		mii_txdv => tpa_txen,
-		mii_txd  => tpa_txd);
-
-
-	arp_txd  <= wirebus (pfx_txd & sha_txd & spa_txd & tha_txd & tpa_txd, pfx_txen & sha_txen & spa_txen & tha_txen & tpa_txen);
-	arp_txen <= pfx_txen or sha_txen or spa_txen or tha_txen or tpa_txen;
+		mux_data => mux_data,
+        sio_clk  => mii_clk,
+		sio_frm  => arp_frm,
+		sio_irdy => arp_irdy,
+        sio_trdy => arp_trdy,
+        so_end   => arp_end,
+        so_data  => arp_data);
 
 end;
