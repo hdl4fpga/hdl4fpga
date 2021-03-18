@@ -36,30 +36,38 @@ entity eth_rx is
 		mii_clk    : in  std_logic;
 		mii_frm    : in  std_logic;
 		mii_irdy   : in  std_logic;
-		mii_trdy   : out std_logic;
+		mii_trdy   : buffer std_logic;
 		mii_data   : in  std_logic_vector;
 
 		eth_ptr    : buffer std_logic_vector;
 		eth_pre    : buffer std_logic;
-		hwda_frm   : out std_logic;
-		hwsa_frm   : out std_logic;
-		type_frm   : out std_logic;
-		crc32_sb   : out std_logic;
-		crc32_equ  : out std_logic;
-		crc32_rem  : buffer std_logic_vector(0 to 32-1));
+		hwda_irdy  : buffer std_logic;
+		hwda_trdy  : in  std_logic;
+		hwsa_irdy  : buffer std_logic;
+		hwsa_trdy  : in  std_logic;
+		hwtyp_irdy : buffer std_logic;
+		hwtyp_trdy : in  std_logic;
+
+		crc_sb     : out std_logic;
+		crc_equ    : out std_logic;
+		crc_rem    : buffer std_logic_vector(0 to 32-1));
 		
 end;
 
 architecture def of eth_rx is
 
-	signal crc32_init : std_logic;
+	signal hwda_frm  : std_logic;
+	signal hwsa_frm  : std_logic;
+	signal hwtyp_frm : std_logic;
+	signal crc_frm   : std_logic;
+	signal crc_irdy  : std_logic;
 
 begin
 
 	mii_pre_e : entity hdl4fpga.mii_rxpre 
 	port map (
 		mii_clk  => mii_clk,
-		mii_frm  => mii_frm ,
+		mii_frm  => mii_frm,
 		mii_irdy => mii_irdy,
 		mii_data => mii_data,
 		mii_pre  => eth_pre);
@@ -69,25 +77,28 @@ begin
 		if rising_edge(mii_clk) then
 			if eth_pre='0' then
 				eth_ptr <= (eth_ptr'range => '0');
-			elsif eth_ptr(eth_ptr'left)='0' and mii_irdy='1' then
+			elsif eth_ptr(eth_ptr'left)='0' and mii_irdy='1' and mii_trdy='1' then
 				eth_ptr <= std_logic_vector(unsigned(eth_ptr) + 1);
 			end if;
 		end if;
 	end process;
 
-	hwda_frm <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda) and eth_pre;
-	hwsa_frm <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa) and eth_pre;
-	type_frm <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type) and eth_pre;
+	hwda_frm   <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda) and eth_pre;
+	hwsa_frm   <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa) and eth_pre;
+	hwtyp_frm  <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type) and eth_pre;
+	hwda_irdy  <= hwda_frm  and mii_irdy;
+	hwsa_irdy  <= hwsa_frm  and mii_irdy;
+	hwtyp_irdy <= hwtyp_frm and mii_irdy;
 
-	crc32_init <= not (mii_frm and eth_pre);
-	crc32_e : entity hdl4fpga.crc
+	crc_frm <= mii_frm and eth_pre;
+	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
 		clk  => mii_clk,
-		ena  => mii_irdy,
-		init => crc32_init,
+		frm  => crc_frm,
+		irdy => crc_irdy,
 		data => mii_data,
-		crc  => crc32_rem);
+		crc  => crc_rem);
 
 	process (mii_frm, mii_clk)
 		variable q : bit;
@@ -95,9 +106,11 @@ begin
 		if rising_edge(mii_clk) then
 			q := to_bit(mii_frm);
 		end if;
-		crc32_sb <= to_stdulogic(q) and not to_stdulogic(to_bit(mii_frm));
+		crc_sb <= to_stdulogic(q) and not to_stdulogic(to_bit(mii_frm));
 	end process;
-	crc32_equ <= setif(crc32_rem=x"38fb2284");
+	crc_equ <= setif(crc_rem=x"38fb2284");
+
+	mii_trdy <= wirebus(hwda_trdy & hwsa_trdy & hwtyp_trdy, hwda_frm & hwsa_frm & hwtyp_frm)(0);
 
 end;
 
