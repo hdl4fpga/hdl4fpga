@@ -32,77 +32,80 @@ use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	port (
-		my_ipv4a   : std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		my_mac     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		my_ipv4a   : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
 		mii_clk    : in  std_logic;
+		frmrx_ptr  : in  std_logic_vector;
 
 		arprx_frm  : in  std_logic;
 		arprx_irdy : in  std_logic;
 		arprx_trdy : out std_logic;
-		arprx_data : in  std_logic;
+		arprx_data : in  std_logic_vector;
 
-		arptx_frm  : out std_logic;
+		tparx_frm  : out std_logic;
+		tparx_vld  : in  std_logic;
+
+		arptx_frm  : buffer std_logic;
 		arptx_irdy : out std_logic;
 		arptx_trdy : in  std_logic;
-		arptx_data : out std_logic;
-
-		dllfcs_sb  : out std_logic;
-		dllfcs_vld : buffer std_logic;
+		arptx_data : out std_logic_vector;
 
 		tp         : out std_logic_vector(1 to 32));
 
 end;
 
 architecture def of arpd is
+
+	signal arptx_end : std_logic;
+	signal arptx_req : std_logic;
+	signal arptx_rdy : std_logic;
+
 begin
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
 		mii_clk  => mii_clk,
-		mii_ptr  => rxfrm_ptr,
+		mii_ptr  => frmrx_ptr,
 		arp_frm  => arprx_frm,
-		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
-		tpa_irdy => tpa_irdy);
+		tpa_frm  => tparx_frm);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if arprx_frm='1' then
+				if (arptx_req xor arptx_rdy)='0' then
+					arptx_req <= arptx_rdy xor tparx_vld;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if arptx_frm='1' then
+				if arptx_end='1' then
+					arptx_frm <= '0';
+					arptx_rdy <= arptx_req;
+				end if;
+			elsif (arptx_req xor arptx_rdy)='1' then
+				arptx_frm <= '1';
+			end if;
+		end if;
+	end process;
 
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
 		mii_clk  => mii_clk,
 		arp_frm  => arptx_frm,
 		sha      => my_mac,
-		spa      => cfgipv4a,
-		tha      => x"ff_ff_ff_ff_ff_ff",
-		tpa      => cfgipv4a,
-		arp_irdy => arptx_irdy,
+		spa      => my_ipv4a,
+		tha      => x"ffffffffffff",
+		tpa      => my_ipv4a,
+		arp_irdy => arptx_trdy,
+		arp_end  => arptx_end,
 		arp_data => arptx_data);
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if dev_gnt(arp_gnt)='1' then
-				if arp_irdy='0' then
-					arp_req	<= '0';
-				end if;
-			elsif arp_rcvd='1' then
-				arp_req <= '1';
-			elsif dhcp_rcvd='1' then
-				arp_req <= '1';
-			end if;
-		end if;
-	end process;
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if dll_rxdv='0' then
-				if txc_eor='1' then
-					arp_rcvd <= typearp_rcvd and myip4a_rcvd;
-				elsif arp_req='1' then
-					arp_rcvd <= '0';
-				end if;
-			end if;
-		end if;
-	end process;
 
 end;
