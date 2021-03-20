@@ -23,12 +23,9 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
-use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	port (
@@ -38,6 +35,8 @@ entity arpd is
 		mii_clk    : in  std_logic;
 		frmrx_ptr  : in  std_logic_vector;
 
+		arpd_req   : in  std_logic;
+		arpd_rdy   : buffer  std_logic;
 		arprx_frm  : in  std_logic;
 		arprx_irdy : in  std_logic;
 		arprx_trdy : out std_logic;
@@ -58,8 +57,6 @@ end;
 architecture def of arpd is
 
 	signal arptx_end : std_logic;
-	signal arptx_req : std_logic;
-	signal arptx_rdy : std_logic;
 
 begin
 
@@ -75,8 +72,8 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if arprx_frm='1' then
-				if (arptx_req xor arptx_rdy)='0' then
-					arptx_req <= arptx_rdy xor tparx_vld;
+				if to_bit(arpd_req xor arpd_rdy)='0' then
+					arpd_req <= arpd_rdy xor tparx_vld;
 				end if;
 			end if;
 		end if;
@@ -88,9 +85,9 @@ begin
 			if arptx_frm='1' then
 				if arptx_end='1' then
 					arptx_frm <= '0';
-					arptx_rdy <= arptx_req;
+					arpd_rdy  <= arpd_req;
 				end if;
-			elsif (arptx_req xor arptx_rdy)='1' then
+			elsif (arpd_req xor arpd_rdy)='1' then
 				arptx_frm <= '1';
 			end if;
 		end if;

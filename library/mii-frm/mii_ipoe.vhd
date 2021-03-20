@@ -58,37 +58,6 @@ entity mii_ipoe is
 
 		dllhwsa_rx    : buffer std_logic_vector(0 to 48-1);
 
-		ipv4da_rxdv   : buffer std_logic;
-		ipv4sa_rxdv   : buffer std_logic;
-		ipv4sa_rx     : buffer std_logic_vector(0 to 32-1);
-
-		tx_req        : in std_logic := '0';
-		tx_gnt        : out std_logic;
-
-		dll_hwda      : in std_logic_vector(0 to 48-1) := (others => '-');
-		ipv4_da       : in std_logic_vector(0 to 32-1) := (others => '-');
-
-		udpsp_rxdv    : buffer std_logic;
-		udpdp_rxdv    : buffer std_logic;
-		udplen_rxdv   : buffer std_logic;
-		udpcksm_rxdv  : buffer std_logic;
-		udpsp_rx      : buffer std_logic_vector(0 to 16-1);
-		udpdp_rx      : buffer std_logic_vector(0 to 16-1);
-
-		udppl_rxdv    : buffer std_logic;
-		udppl_txlen   : in  std_logic_vector(0 to 16-1) := (others => '-');
-		udp_cksm      : in  std_logic_vector(0 to 16-1) := (others => '0'); 
-		udpsp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
-		udpdp_tx      : in  std_logic_vector(0 to 16-1) := (others => '-'); 
-		udppl_txen    : in  std_logic;
-		udppl_txd     : in  std_logic_vector;
-
-
-		ipv4acfg_req  : in  std_logic;
-		myipv4a       : out std_logic_vector(0 to 32-1);
-		dhcp_rcvd     : buffer std_logic;
-		dhcpipv4a_rxdv : buffer std_logic;
-
 		tp            : out std_logic_vector(1 to 32));
 
 end;
@@ -96,7 +65,6 @@ end;
 architecture def of mii_ipoe is
 
 
-	constant arp_gnt     : natural := 0;
 	constant icmp_gnt    : natural := 1;
 	constant dhcp_gnt    : natural := 2;
 	constant extern_gnt  : natural := 3;
@@ -111,14 +79,9 @@ architecture def of mii_ipoe is
 	alias dhcp_req       : std_logic is dev_req(dhcp_gnt);
 	alias extern_req     : std_logic is dev_req(extern_gnt);
 
-	signal ipv4_gnt      : std_logic;
-
 	signal dllhwda_equ   : std_logic;
 
-	signal rxfrm_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
-
-	signal myip4a_ena    : std_logic;
-	signal cfgipv4a      : std_logic_vector(0 to 32-1) := default_ipv4a;
+	signal frmrx_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
 
 	signal eth_txen      : std_logic;
 	signal eth_txd       : std_logic_vector(mii_txd'range);
@@ -129,23 +92,6 @@ architecture def of mii_ipoe is
 	signal arp_irdy      : std_logic;
 	signal arp_data      : std_logic_vector(mii_txd'range);
 
-	signal typeip4_rcvd  : std_logic;
-	signal ip4pl_txen    : std_logic;
-	signal ip4pl_txd     : std_logic_vector(mii_txd'range);
-	signal ip4_txen      : std_logic := '0';
-	signal ip4_txd       : std_logic_vector(mii_txd'range);
-
-	signal myip4a_rcvd   : std_logic;
-	signal bcstipv4a_rcvd : std_logic;
-
-	signal ip4pl_rxdv    : std_logic;
-
-	signal txc_eor       : std_logic;
-
-	signal dllhwda_icmp  : std_logic_vector(0 to 48-1);
-
-	signal hwda_tx       : std_logic_vector(0 to 48-1);
-	signal type_tx       : std_logic_vector(llc_arp'range);
 
 begin
 
@@ -181,13 +127,6 @@ begin
 		end process;
 
 	end block;
-
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			txc_eor <= txc_rxdv;
-		end if;
-	end process;
 
 	extern_req <= tx_req;
 	tx_gnt <= dev_gnt(extern_gnt);
@@ -234,7 +173,6 @@ begin
 
 
 		eth_txen <= setif(to_bitvector((pto_gnt and (arp_irdy & ip4_txen & ip4_txen & ip4_txen)))/=(dev_gnt'range => '0'));
-		eth_txd  <= wirebus(arp_data & ip4_txd, pto_gnt(arp_gnt) & ipv4_gnt);
 	end block;
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -242,7 +180,7 @@ begin
 		mii_rxc    => mii_txc,
 		mii_rxdv   => txc_rxdv,
 		mii_rxd    => txc_rxd,
-		eth_ptr    => rxfrm_ptr,
+		eth_ptr    => frmrx_ptr,
 		eth_pre    => dll_rxdv,
 		hwda_rxdv  => dllhwda_rxdv,
 		hwsa_rxdv  => dllhwsa_rxdv,
@@ -250,13 +188,12 @@ begin
 		crc32_sb   => dllfcs_sb,
 		crc32_equ  => dllfcs_vld);
 
-	dllhwdacmp_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(my_mac,8))
+	dllhwdacmp_e : entity hdl4fpga.sio_cmp
     port map (
-        mii_rxc  => mii_txc,
-        mii_rxdv => dll_rxdv,
-        mii_rxd  => txc_rxd,
+		mem_data => reverse(my_mac,8),
+        sio_clk  => mii_txc,
+        sio_frm  => dll_rxdv,
+        si_data  => txc_rxd,
         mii_ena  => dllhwda_rxdv,
 		mii_equ  => dllhwda_equ);
 
@@ -303,533 +240,29 @@ begin
 		eth_txen  => mii_txen,
 		eth_txd   => mii_txd);
 
-	arp_b : block
-		signal arp_rcvd : std_logic;
-	begin
-
-		arprx_e : entity hdl4fpga.arp_rx
-		port map (
-			mii_rxc   => mii_txc,
-			mii_rxdv  => dll_rxdv,
-			mii_rxd   => txc_rxd,
-			mii_ptr   => rxfrm_ptr,
-			arp_ena   => typearp_rcvd,
-			tpa_rxdv  => arptpa_rxdv);
-
-		arptx_e : entity hdl4fpga.arp_tx
-		port map (
-			mii_txc  => mii_txc,
-			arp_frm  => dev_gnt(arp_gnt),
-			sha      => my_mac,
-			spa      => cfgipv4a,
-			tha      => x"ff_ff_ff_ff_ff_ff",
-			tpa      => cfgipv4a,
-			arp_irdy => arp_txen,
-			arp_data => arp_data);
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if dev_gnt(arp_gnt)='1' then
-					if arp_irdy='0' then
-						arp_req	<= '0';
-					end if;
-				elsif arp_rcvd='1' then
-					arp_req <= '1';
-				elsif dhcp_rcvd='1' then
-					arp_req <= '1';
-				end if;
-			end if;
-		end process;
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if dll_rxdv='0' then
-					if txc_eor='1' then
-						arp_rcvd <= typearp_rcvd and myip4a_rcvd;
-					elsif arp_req='1' then
-						arp_rcvd <= '0';
-					end if;
-				end if;
-			end if;
-		end process;
-
-
 	end block;
 
-	ip4_b : block
-
-		signal ip4len_rxdv   : std_logic;
-		signal ip4proto_rxdv : std_logic;
-		signal ip4len_rx     : std_logic_vector(0 to 16-1);
-		signal ip4len_tx     : std_logic_vector(0 to 16-1);
-		signal ip4proto_tx   : std_logic_vector(0 to ip4hdr_frame(ip4_proto)-1);
-		signal ip4sa_tx      : std_logic_vector(0 to 32-1);
-		signal ip4da_tx      : std_logic_vector(0 to 32-1);
-
-		signal ip4icmp_rcvd  : std_logic;
-		signal icmp_txen     : std_logic;
-		signal icmp_txd      : std_logic_vector(mii_txd'range);
-		signal icmp_ip4da    : std_logic_vector(0 to 32-1);
-
-		signal ipicmp_len    : std_logic_vector(0 to 16-1);
-		signal udpip_len     : std_logic_vector(0 to 16-1);
-
-		signal udp_txd   : std_logic_vector(mii_txd'range);
-		signal udp_txen  : std_logic;
-
-		signal udpdhcp_len   : std_logic_vector(0 to 16-1);
-		signal udpdhcp_txd   : std_logic_vector(mii_txd'range);
-		signal udpdhcp_txen  : std_logic;
-
-		signal udpproto_rcvd : std_logic;
-
-	begin
-
-		ip4rx_e : entity hdl4fpga.ipv4_rx
-		port map (
-			mii_rxc     => mii_txc,
-			mii_rxdv    => dll_rxdv,
-			mii_rxd     => txc_rxd,
-			mii_ptr     => rxfrm_ptr,
-
-			ip4_ena     => typeip4_rcvd,
-			ip4len_rxdv => ip4len_rxdv,
-			ip4da_rxdv  => ipv4da_rxdv,
-			ip4sa_rxdv  => ipv4sa_rxdv,
-			ip4proto_rxdv => ip4proto_rxdv,
-
-			ip4pl_rxdv => ip4pl_rxdv);
-
-		myip4a_ena <= arptpa_rxdv or ipv4da_rxdv;
-		myip4acmp_e : entity hdl4fpga.mii_muxcmp
-		port map (
-			mux_data => cfgipv4a,
-			mii_rxc  => mii_txc,
-			mii_rxdv => dll_rxdv,
-			mii_rxd  => txc_rxd,
-			mii_ena  => myip4a_ena,
-			mii_equ  => myip4a_rcvd);
-
-		bcstipv4a_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(x"ff_ff_ff_ff",8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => dll_rxdv,
-			mii_rxd  => txc_rxd,
-			mii_ena  => myip4a_ena,
-			mii_equ  => bcstipv4a_rcvd);
-
-		ip4lenrx_e : entity hdl4fpga.serdes
-		port map (
-			serder_clk => mii_txc,
-			serder_frm => mii_frm,
-			ser_irdy => ip4len_rxdv,
-			ser_trdy => ,
-			des_irdy =>
-			des_data => ip4len_rx);
-
-		ip4sarx_e : entity hdl4fpga.serdes
-		port map (
-			serder_clk => mii_txc,
-			serder_frm => mii_frm,
-			ser_irdy => ipv4sa_rxdv,
-			ser_trdy => ,
-			des_irdy =>
-			des_data => ipv4sa_rx);
-
-		ipv4_gnt    <= pto_gnt(icmp_gnt) or pto_gnt(dhcp_gnt) or pto_gnt(extern_gnt);
-
-		ip4pl_frm   <= wirebus(icmp_frm      & dhcpdscb_frm  & pl_frm,       pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4pl_irdy  <= wirebus(icmp_irdy     & dhcpdscb_irdy & pl_irdy,      pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4pl_data  <= wirebus(icmp_data     & dhcpdscb_data & pl_data,      pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4proto_tx <= wirebus(ip4proto_icmp & ip4proto_udp  & ip4proto_udp, pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4sa_tx    <= wirebus(cfgipv4a      & x"00000000"   & cfgipv4a,     pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4da_tx    <= wirebus(icmp_ip4da    & x"ffffffff"   & ipv4_da,      pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-		ip4len_tx   <= wirebus(ipicmp_len    & udpip_len     & udpip_len,    pto_gnt(icmp_gnt) & pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt)); 
-
-		ip4tx_e : entity hdl4fpga.ipv4_tx
-		port map (
-			mii_txc  => mii_txc,
-
-			pl_txen  => ip4pl_txen,
-			pl_txd   => ip4pl_txd,
-
-			ip4len   => ip4len_tx,
-			ip4sa    => ip4sa_tx,
-			ip4da    => ip4da_tx,
-			ip4proto => ip4proto_tx,
-
-			ip4_txen => ip4_txen,
-			ip4_txd  => ip4_txd);
-
-		icmpproto_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(ip4proto_icmp,8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => dll_rxdv,
-			mii_rxd  => txc_rxd,
-			mii_ena  => ip4proto_rxdv,
-			mii_equ  => ip4icmp_rcvd);
-
-		udpproto_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(ip4proto_udp,8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => dll_rxdv,
-			mii_rxd  => txc_rxd,
-			mii_ena  => ip4proto_rxdv,
-			mii_equ  => udpproto_rcvd);
-
-		icmp_b : block
-
-			signal icmpid_rxdv   : std_logic;
-			signal icmpid_data   : std_logic_vector(0 to 16-1);
-			signal icmpseq_rxdv  : std_logic;
-			signal icmpseq_data  : std_logic_vector(0 to 16-1);
-			signal icmpcksm_rxdv : std_logic;
-			signal icmpcksm_data : std_logic_vector(0 to 16-1);
-			signal icmprply_cksm : std_logic_vector(0 to 16-1);
-
-			signal icmppl_rxdv   : std_logic;
-			signal icmppl_txen   : std_logic;
-			signal icmppl_txd    : std_logic_vector(mii_txd'range);
-
-			signal icmp_rcvd     : std_logic;
-
-			signal icmprqst_ena  : std_logic;
-
-		begin
-
-			icmprqst_ena <= ip4icmp_rcvd and dll_rxdv;
-			icmprqstrx_e : entity hdl4fpga.icmprqst_rx
-			port map (
-				mii_rxc  => mii_txc,
-				mii_rxdv => dll_rxdv,
-				mii_rxd  => txc_rxd,
-				mii_ptr  => rxfrm_ptr,
-
-				icmprqst_ena  => icmprqst_ena,
-				icmpid_rxdv   => icmpid_rxdv,
-				icmpcksm_rxdv => icmpcksm_rxdv,
-				icmpseq_rxdv  => icmpseq_rxdv,
-				icmppl_rxdv   => icmppl_rxdv);
-
-			icmpcksm_e : entity hdl4fpga.deser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   => icmpcksm_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => icmpcksm_data);
-
-			icmpseq_e : entity hdl4fpga.deser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   => icmpseq_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => icmpseq_data);
-
-			icmpid_e : entity hdl4fpga.desser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   => icmpid_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => icmpid_data);
-
-			icmpdata_b : block
-				signal txen : std_logic;
-				signal txd  : std_logic_vector(icmppl_txd'range);
-			begin
-				icmpdata_e : entity hdl4fpga.mii_ram
-				generic map (
-					mem_size => 64*octect_size)
-				port map (
-					mii_rxc  => mii_txc,
-					mii_rxdv => icmppl_rxdv,
-					mii_rxd  => txc_rxd,
-
-					mii_txc  => mii_txc,
-					mii_txen => dev_gnt(icmp_gnt),
-					mii_txdv => txen,
-					mii_txd  => txd);
-
-				process (mii_txc)
-				begin
-					if rising_edge(mii_txc) then
-						icmppl_txen <= txen;
-						icmppl_txd  <= txd;
-					end if;
-				end process;
-
---				tp(1) <= icmppl_txen;
---				tp(2) <= '1';
---				tp(3 to 3+4-1) <= icmppl_txd;
-			end block;
-
-			icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
-			icmprply_e : entity hdl4fpga.icmprply_tx
-			port map (
-				mii_txc   => mii_txc,
-
-				pl_txen   => icmppl_txen,
-				pl_txd    => icmppl_txd,
-
-				icmp_cksm => icmprply_cksm,
-				icmp_id   => icmpid_data,
-				icmp_seq  => icmpseq_data,
-				icmp_txen => icmp_txen,
-				icmp_txd  => icmp_txd);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					if dev_gnt(icmp_gnt)='1' then
-						if icmp_txen='0' then
-							icmp_req <= '0';
-						end if;
-					elsif icmp_rcvd='1' then
-						icmp_req     <= '1';
-						dllhwda_icmp <= dllhwsa_rx;
-						icmp_ip4da   <= ipv4sa_rx;
-						ipicmp_len   <= ip4len_rx;
-					end if;
-				end if;
-			end process;
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					if dll_rxdv='0' then
-						if txc_eor='1' then
-							icmp_rcvd <= ip4icmp_rcvd and myip4a_rcvd;
-						elsif icmp_req='1' then
-							icmp_rcvd <= '0';
-						end if;
-					end if;
-				end if;
-			end process;
-
-		end block;
-
-		udp_b : block
-			signal udp_ena : std_logic;
-			signal udp_len   : std_logic_vector(0 to 16-1);
-			signal udplen_rx : std_logic_vector(0 to 16-1);
-			signal udplen_tx : std_logic_vector(0 to 16-1);
-			signal pl_rxdv   : std_logic;
-			signal cntr      : unsigned(0 to 16+unsigned_num_bits(octect_size/txc_rxd'length)-1);
-
-		begin
-			udp_ena <= udpproto_rcvd and (myip4a_rcvd or bcstipv4a_rcvd);
-			udprx_e : entity hdl4fpga.udp_rx
-			port map (
-				mii_rxc    => mii_txc,
-				mii_rxdv   => dll_rxdv,
-				mii_rxd    => txc_rxd,
-				mii_ptr    => rxfrm_ptr,
-
-				udp_ena      => udpproto_rcvd,
-				udpsp_rxdv   => udpsp_rxdv,
-				udpdp_rxdv   => udpdp_rxdv,
-				udplen_rxdv  => udplen_rxdv,
-				udpcksm_rxdv => udpcksm_rxdv,
-				udppl_rxdv   => pl_rxdv);
-
-			udpdp_e : entity hdl4fpga.deser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   =>udpdp_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => udpdp_rx);
-
-			udpsp_e : entity hdl4fpga.desser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   => udpsp_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => udpsp_rx);
-
-			udplen_e : entity hdl4fpga.desser
-			port map (
-				serder_clk => mii_txc,
-				serder_frm => mii_frm,
-				ser_irdy   => udplen_rxdv,
-				ser_trdy   => ,
-				ser_data   => txc_rxd,
-				des_irdy   =>
-				des_data   => udplen_rx);
-
-			process(mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					if udpcksm_rxdv='1' then
-						cntr <= resize(shift_left(unsigned(udplen_rx)-summation(udp4hdr_frame)/octect_size, unsigned_num_bits(octect_size/txc_rxd'length)-1), cntr'length)-1;
-					elsif udppl_rxdv='1' then
-						if cntr(0)='0' then
-							cntr <= cntr - 1;
-						end if;
-					end if;
-				end if;
-			end process;
-			udppl_rxdv <= not cntr(0) and pl_rxdv;
-
-			udplen_tx <= wirebus(udpdhcp_len & udp_len , pto_gnt(dhcp_gnt) & pto_gnt(extern_gnt));
-			udpip_len <= std_logic_vector(unsigned(udplen_tx) + (summation(ip4hdr_frame))/octect_size);
-
-			udp_tx : entity hdl4fpga.udp_tx
-			port map (
-				mii_clk  => mii_txc,
-				pl_frm   => pl_frm,
-				pl_irdy  => pl_irdy,
-				pl_data  => pl_data,
-				pl_len   => pl_len,
-				udp_cksm => udp_cksm,
-				udp_len  => udp_len,
-				udp_sp   => udpsp_tx,
-				udp_dp   => udpdp_tx,
-
-				udp_frm  => udp_frm,
-				udp_irdy => udp_irdy,
-				udp_data => udp_data);
-
-			dhcp_b : block
-				constant dhcp_clntp : std_logic_vector := x"0044";
-				constant dhcp_srvp  : std_logic_vector := x"0043";
-
-				signal udpports_rxdv : std_logic;
-				signal udpports_rcvd : std_logic;
-				signal dhcpop_rxdv   : std_logic;
-				signal dhcpchaddr6_rxdv   : std_logic;
-				signal dhcpchaddr6_equ   : std_logic;
-				signal dhcpoffer_rcvd : std_logic;
-				signal dhcpyia_rxdv  : std_logic;
-
-				signal dhcpipv4a : std_logic_vector(cfgipv4a'range);
-			begin
-
-				dhcp_dscb_e : entity hdl4fpga.dhcp_dscb
-				generic map (
-					dhcp_sp => dhcp_clntp,
-					dhcp_dp => dhcp_srvp )
-				port map (
-					mii_txc   => mii_txc,
-					mii_txen  => dev_gnt(dhcp_gnt),
-					udpdhcp_len  => udpdhcp_len,
-					udpdhcp_txen => udpdhcp_txen,
-					udpdhcp_txd  => udpdhcp_txd);
-
-				process (mii_txc)
-					variable req : std_logic;
-				begin
-					if rising_edge(mii_txc) then
-						if dev_gnt(dhcp_gnt)='1' then
-							if udpdhcp_txen='0' then
-								dhcp_req <= '0';
-							end if;
-						elsif req='0' and ipv4acfg_req='1' then
-							dhcp_req <= '1';
-						end if;
-						req := ipv4acfg_req;
-					end if;
-				end process;
-
-				udpports_rxdv <= udpsp_rxdv or udpdp_rxdv;
-				dhcpport_e : entity hdl4fpga.mii_romcmp
-				generic map (
-					mem_data => reverse(dhcp_srvp  & dhcp_clntp,8))
-				port map (
-					mii_rxc  => mii_txc,
-					mii_rxdv => dll_rxdv,
-					mii_rxd  => txc_rxd,
-					mii_ena  => udpports_rxdv,
-					mii_equ  => udpports_rcvd);
-
-				dhcprx_e : entity hdl4fpga.dhcp_rx
-				port map (
-					mii_rxc  => mii_txc,
-					mii_rxdv => dll_rxdv,
-					mii_rxd  => txc_rxd,
-					mii_ptr  => rxfrm_ptr,
-
-					dhcp_ena => udpports_rcvd,
-					dhcpop_rxdv  => dhcpop_rxdv,
-					dhcpchaddr6_rxdv  => dhcpchaddr6_rxdv,
-					dhcpyia_rxdv => dhcpyia_rxdv);
-
-				dhcpoffer_e : entity hdl4fpga.mii_romcmp
-				generic map (
-					mem_data => reverse(dhcp4_offer,8))
-				port map (
-					mii_rxc  => mii_txc,
-					mii_rxdv => dll_rxdv,
-					mii_rxd  => txc_rxd,
-					mii_ena  => dhcpop_rxdv,
-					mii_equ  => dhcpoffer_rcvd);
-
-				dhcpchaddr_e : entity hdl4fpga.mii_romcmp
-				generic map (
-					mem_data => reverse(my_mac,8))
-				port map (
-					mii_rxc  => mii_txc,
-					mii_rxdv => dll_rxdv,
-					mii_rxd  => txc_rxd,
-					mii_ena  => dhcpchaddr6_rxdv,
-					mii_equ  => dhcpchaddr6_equ);
-
-				dhcpipv4a_rxdv <= dhcpoffer_rcvd and dhcpyia_rxdv;
-				dchp_yia_e : entity hdl4fpga.serdes
-				generic map (
-					init_data => reverse(default_ipv4a,8))
-				port map (
-					serder_clk => mii_txc,
-					serder_frm => mii_frm,
-					ser_irdy   => dhcpipv4a_rxdv,
-					ser_trdy   => ,
-					ser_data   => txc_rxd,
-					des_irdy   =>
-					des_data   => dhcpipv4a);
-
-				process (mii_txc)
-				begin
-					if rising_edge(mii_txc) then
-						if dll_rxdv='0' then
-							if txc_eor='1' then
-								dhcp_rcvd <= udpproto_rcvd and udpports_rcvd;
-								if dhcpoffer_rcvd='1' then
-									if dhcpchaddr6_equ='1' then 
-										cfgipv4a <= dhcpipv4a;
-									end if;
-								end if;
-							else
-								dhcp_rcvd <= '0';
-							end if;
-						end if;
-					end if;
-				end process;
-
-			end block;
-
-			myipv4a <= cfgipv4a;
-		end block;
-	end block;
+	arpd_e : entity hdl4fgpa.arpd
+	port map (
+		my_ipv4a   => default_ipv4a,
+		my_mac     => my_mac,
+
+		mii_clk    => mii_txc,
+		frmrx_ptr  => frmrx_ptr,
+
+		arpd_req   : in  std_logic;
+		arpd_rdy   : buffer  std_logic;
+		arprx_frm  : in  std_logic;
+		arprx_irdy : in  std_logic;
+		arprx_trdy : out std_logic;
+		arprx_data : in  std_logic_vector;
+
+		tparx_frm  : out std_logic;
+		tparx_vld  : in  std_logic;
+
+		arptx_frm  : buffer std_logic;
+		arptx_irdy : out std_logic;
+		arptx_trdy : in  std_logic;
+		arptx_data : out std_logic_vector);
 
 end;
