@@ -177,54 +177,56 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		mii_rxc    => mii_txc,
-		mii_rxdv   => txc_rxdv,
-		mii_rxd    => txc_rxd,
+		mii_clk    => miirx_clk,
+		mii_frm    => miirx_frm
+		mii_irdy   => miirx_irdy,
+		mii_trdy   => miirx_trdy,
+		mii_data   => miirx_data,
+
 		eth_ptr    => frmrx_ptr,
 		eth_pre    => dll_rxdv,
-		hwda_rxdv  => dllhwda_rxdv,
-		hwsa_rxdv  => dllhwsa_rxdv,
-		type_rxdv  => dlltype_rxdv,
-		crc32_sb   => dllfcs_sb,
-		crc32_equ  => dllfcs_vld);
+		hwda_irdy  => hwdarx_irdy,
+		hwda_trdy  => hwdarx_trdy,
+		hwsa_irdy  => hwsarx_irdy,
+		hwsa_trdy  => hwsarx_trdy,
+		hwtyp_irdy => hwtyprx_irdy,
+		hwtyp_trdy => hwtyprx_trdy,
+		crc_sb     => dllfcs_sb,
+		crc_sb     => dllfcs_sb,
+		crc_equ    => dllfcs_vld);
 
-	dllhwdacmp_e : entity hdl4fpga.sio_cmp
+	hwdacmp_e : entity hdl4fpga.sio_cmp
     port map (
 		mem_data => reverse(my_mac,8),
         sio_clk  => mii_txc,
-        sio_frm  => dll_rxdv,
-        si_data  => txc_rxd,
-        mii_ena  => dllhwda_rxdv,
+        sio_frm  => mii_rxfrm,
+        sio_irdy => hwdarx_irdy,
+        sio_trdy => hwdarx_trdy,
+        si_data  => miirx_data,
+        so_equ   => dllhwda_rxdv,
 		mii_equ  => dllhwda_equ);
 
-	dllhwsa_e : entity hdl4fpga.desser
+	hwsa_e : entity hdl4fpga.desser
 	port map (
 		serder_clk => mii_txc,
 		serder_frm => mii_frm,
-		ser_irdy => dllhwsa_rxdv,
-		ser_trdy => ,
-		des_irdy => ,
-		des_data => dllhwsa_rx);
+		ser_irdy   => hwdarx_irdy,
+		ser_trdy   => hwdarx_trdy,
+		des_irdy   => ,
+		des_data   => dllhwsa_rx);
 
-	ip4llccmp_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(llc_ip4,8))
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => dll_rxdv,
-		mii_ena  => dlltype_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_equ  => typeip4_rcvd);
-
-	arpllccmp_e : entity hdl4fpga.mii_romcmp
-	generic map (
-		mem_data => reverse(llc_arp,8))
-	port map (
-		mii_rxc  => mii_txc,
-		mii_rxdv => dll_rxdv,
-		mii_ena  => dlltype_rxdv,
-		mii_rxd  => txc_rxd,
-		mii_equ  => typearp_rcvd);
+	llc_b : block
+	begin
+		arpllc_e : entity hdl4fpga.mii_romcmp
+		generic map (
+			mem_data => reverse(llc_arp,8))
+		port map (
+			mii_rxc  => mii_txc,
+			mii_rxdv => dll_rxdv,
+			mii_ena  => dlltype_rxdv,
+			mii_rxd  => txc_rxd,
+			mii_equ  => typearp_rcvd);
+	end block;
 
 	type_tx <= wirebus(llc_arp         & llc_ip4      & llc_ip4         & llc_ip4,  pto_gnt);
 	hwda_tx <= wirebus(x"ffffffffffff" & dllhwda_icmp & x"ffffffffffff" & dll_hwda, pto_gnt);
