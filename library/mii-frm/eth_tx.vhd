@@ -45,11 +45,11 @@ entity eth_tx is
 		hwda     : in  std_logic_vector;
 		hwtyp    : in  std_logic_vector;
 
-		eth_frm  : buffer std_logic;
-		eth_irdy : buffer std_logic;
-		eth_trdy : in  std_logic;
-		eth_end  : out std_logic;
-		eth_data : out std_logic_vector);
+		mii_frm  : buffer std_logic;
+		mii_irdy : buffer std_logic;
+		mii_trdy : in  std_logic;
+		mii_end  : out std_logic;
+		mii_data : out std_logic_vector);
 
 end;
 
@@ -57,53 +57,53 @@ architecture def of eth_tx is
 
 	signal pre_trdy : std_logic;
 	signal pre_end  : std_logic;
-	signal pre_data : std_logic_vector(eth_data'range);
+	signal pre_data : std_logic_vector(mii_data'range);
 
 	signal llc_mux  : std_logic_vector(0 to hwsa'length+hwda'length+hwtyp'length-1);
 	signal llc_irdy : std_logic;
 	signal llc_trdy : std_logic;
 	signal llc_end  : std_logic;
-	signal llc_data : std_logic_vector(eth_data'range);
+	signal llc_data : std_logic_vector(mii_data'range);
 
 	signal fcs_irdy : std_logic;
 	signal fcs_trdy : std_logic;
 	signal fcs_mode : std_logic;
-	signal fcs_data : std_logic_vector(eth_data'range);
+	signal fcs_data : std_logic_vector(mii_data'range);
 	signal fcs_end  : std_logic;
 	signal fcs_crc  : std_logic_vector(0 to 32-1);
 
 begin
 
-	eth_frm <= pl_frm;
+	mii_frm <= pl_frm;
 	pre_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(x"5555_5555_5555_55d5", 8),
 		sio_clk  => mii_clk,
-		sio_frm  => eth_frm,
-		sio_irdy => eth_trdy,
+		sio_frm  => mii_frm,
+		sio_irdy => mii_trdy,
 		sio_trdy => pre_trdy,
 		so_end   => pre_end,
 		so_data  => pre_data);
 
 	llc_mux  <= hwda & hwsa & hwtyp;
-	llc_irdy <= eth_trdy and pre_end;
+	llc_irdy <= mii_trdy and pre_end;
 	llc_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => llc_mux,
 		sio_clk  => mii_clk,
-		sio_frm  => eth_frm,
+		sio_frm  => mii_frm,
 		sio_irdy => llc_irdy,
 		so_end   => llc_end,
 		so_data  => llc_data);
 
 	fcs_data <= wirebus(llc_data & pl_data, not llc_end & llc_end);
-	fcs_irdy <= wirebus(llc_irdy & pl_irdy & eth_trdy, 
+	fcs_irdy <= wirebus(llc_irdy & pl_irdy & mii_trdy, 
 		not llc_end              &
 		(not pl_end and llc_end) & 
 		pl_end)(0);
 
 	process (mii_clk)
-		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/eth_data'length-1));
+		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/mii_data'length-1));
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
@@ -124,22 +124,22 @@ begin
 	port map (
 		g    => x"04c11db7",
 		clk  => mii_clk,
-		frm  => eth_frm,
+		frm  => mii_frm,
 		irdy => fcs_irdy,
 		mode => fcs_mode,
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	eth_irdy <= wirebus(pre_trdy & llc_trdy & pl_irdy & '1',
+	mii_irdy <= wirebus(pre_trdy & llc_trdy & pl_irdy & '1',
 		not  pre_end              & 
 		(not llc_end and pre_end) & 
 		(not pl_end  and llc_end) & 
 		(not fcs_end and pl_end))(0);
-	eth_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(eth_data'range), 
+	mii_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(mii_data'range), 
 		not  pre_end              & 
 		(not llc_end and pre_end) & 
 		(not pl_end  and llc_end) & 
 		(not fcs_end and pl_end));
-	eth_end <= fcs_end;
+	mii_end <= fcs_end;
 end;
 

@@ -30,48 +30,59 @@ use hdl4fpga.std.all;
 
 entity sio_cmp is
 	generic (
-		n : natura := 1);
+		n : natural := 1);
     port (
 		mux_data : in  std_logic_vector;
         sio_clk  : in  std_logic;
         sio_frm  : in  std_logic;
 		sio_irdy : in  std_logic;
 		sio_trdy : out std_logic;
+        si_data  : in  std_logic_vector;
 		so_last  : out std_logic;
 		so_end   : out std_logic;
-		so_equ   : out std_logic;
-        si_data  : in  std_logic_vector;
-        so_data  : buffer std_logic_vector);
+		so_equ   : out std_logic_vector(0 to n-1));
 end;
 
 architecture def of sio_cmp is
 begin
 
-	g1 : for i 0 to n-1 generate
+	g : for i in 0 to n-1 generate
+
+		signal sio_data : std_logic_vector(0 to mux_data'length/n-1);
+		signal so_data  : std_logic_vector(si_data'range);
+		signal sio_end  : std_logic;
+		signal sio_last : std_logic;
+
 	begin
+
+		sio_data <= word2byte(mux_data, i, sio_data'length);
 		data_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => mux_data,
+			mux_data => sio_data,
 			sio_clk  => sio_clk,
 			sio_frm  => sio_frm,
 			sio_irdy => sio_irdy,
 			sio_trdy => sio_trdy,
-			so_last  => so_last,
-			so_end   => so_end,
+			so_last  => sio_last,
+			so_end   => sio_end,
 			so_data  => so_data);
-	end generate;
 
-	process (si_data, so_data, sio_clk)
-		variable cy : std_logic;
-	begin
-		if rising_edge(sio_clk) then
-			if sio_frm='0' then
-				cy := '1';
-			elsif sio_irdy='1' then
-				cy := setif(so_data=si_data) and cy;
+		process (si_data, so_data, sio_clk)
+			variable cy : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				if sio_frm='0' then
+					cy := '1';
+				elsif sio_irdy='1' then
+					cy := setif(so_data=si_data) and cy;
+				end if;
 			end if;
-		end if;
-		so_equ <= setif(so_data=si_data) and cy;
-	end process;
+			so_equ(i) <= setif(so_data=si_data) and cy;
+		end process;
+
+		so_last <= sio_last when i=0;
+		so_end  <= sio_end  when i=0;
+
+	end generate;
 
 end;

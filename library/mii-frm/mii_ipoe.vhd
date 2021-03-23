@@ -215,34 +215,48 @@ begin
 		des_irdy   => ,
 		des_data   => dllhwsa_rx);
 
-	llc_b : block
-	begin
-		arpllc_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(llc_arp,8))
-		port map (
-			mii_rxc  => mii_txc,
-			mii_rxdv => dll_rxdv,
-			mii_ena  => dlltype_rxdv,
-			mii_rxd  => txc_rxd,
-			mii_equ  => typearp_rcvd);
-	end block;
-
-	type_tx <= wirebus(llc_arp         & llc_ip4      & llc_ip4         & llc_ip4,  pto_gnt);
-	hwda_tx <= wirebus(x"ffffffffffff" & dllhwda_icmp & x"ffffffffffff" & dll_hwda, pto_gnt);
+	llc_e : entity hdl4fpga.sio_cmp
+	generic map (
+		n => 1)
+	port map (
+		mem_data  => reverse(llc_arp,8))
+        sio_clk   => mii_clk,
+        sio_frm   => mii_frm,
+		sio_irdy  => hwtyprx_irdy,
+		sio_trdy  => hwtyprx_trdy,
+        si_data   => mii_data,
+		so_end    => 
+		so_equ(0) => );
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_txc   => mii_txc,
-		hwsa      => my_mac,
-		hwda      => hwda_tx,
-		llc       => type_tx,
-		pl_txen   => eth_txen,
-		eth_rxd   => eth_txd,
-		eth_txen  => mii_txen,
-		eth_txd   => mii_txd);
+		mii_clk  => mii_txc,
 
-	end block;
+		pl_frm   => arptx_frm,
+		pl_irdy  : in  std_logic;
+		pl_trdy  : buffer std_logic;
+		pl_end   : in  std_logic;
+		pl_data  : in  std_logic_vector;
+
+		hwsa     => my_mac,
+		hwda     => x"ff_ff_ff_ff_ff_ff",
+		hwtyp    => x"0806",
+
+		mii_frm  => miitx_frm,
+		mii_irdy => miitx_irdy,
+		mii_trdy => miitx_trdy,
+		mii_end  => miitx_end,
+		mii_data => miitx_data);
+
+	ip4arx_e : entity hdl4fpga.sio_cmp
+	port map (
+		mem_data  => reverse(default_ipv4a,8))
+        sio_clk   => mii_clk,
+        sio_frm   => ipv4arx_frm,
+		sio_irdy  => mii_irdy,
+		sio_trdy  => ipv4arx_trdy,
+        si_data   => mii_data,
+		so_equ(0) => );
 
 	arpd_e : entity hdl4fgpa.arpd
 	port map (
@@ -252,19 +266,19 @@ begin
 		mii_clk    => mii_txc,
 		frmrx_ptr  => frmrx_ptr,
 
-		arpd_req   : in  std_logic;
-		arpd_rdy   : buffer  std_logic;
-		arprx_frm  : in  std_logic;
-		arprx_irdy : in  std_logic;
-		arprx_trdy : out std_logic;
-		arprx_data : in  std_logic_vector;
+		arpd_req   => ,
+		arpd_rdy   => ,
+		arprx_frm  => arprx_frm,
+		arprx_irdy => arprx_irdy,
+		arprx_trdy => arprx_trdy,
+		arprx_data => arprx_data);
 
 		tparx_frm  : out std_logic;
 		tparx_vld  : in  std_logic;
 
-		arptx_frm  : buffer std_logic;
-		arptx_irdy : out std_logic;
-		arptx_trdy : in  std_logic;
-		arptx_data : out std_logic_vector);
+		arptx_frm  => arptx_frm,
+		arptx_irdy => arptx_irdy,
+		arptx_trdy => arptx_trdy,
+		arptx_data => arptx_data);
 
 end;
