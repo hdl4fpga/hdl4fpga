@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_cmp is
+	generic (
+		n : natura := 1);
     port (
 		mux_data : in  std_logic_vector;
         sio_clk  : in  std_logic;
@@ -45,16 +47,19 @@ end;
 architecture def of sio_cmp is
 begin
 
-	data_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => mux_data,
-        sio_clk  => sio_clk,
-		sio_frm  => sio_frm,
-		sio_irdy => sio_irdy,
-        sio_trdy => sio_trdy,
-		so_last  => so_last,
-        so_end   => so_end,
-        so_data  => so_data);
+	g1 : for i 0 to n-1 generate
+	begin
+		data_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => mux_data,
+			sio_clk  => sio_clk,
+			sio_frm  => sio_frm,
+			sio_irdy => sio_irdy,
+			sio_trdy => sio_trdy,
+			so_last  => so_last,
+			so_end   => so_end,
+			so_data  => so_data);
+	end generate;
 
 	process (si_data, so_data, sio_clk)
 		variable cy : std_logic;
