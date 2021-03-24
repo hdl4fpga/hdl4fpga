@@ -203,8 +203,7 @@ begin
         sio_irdy => hwdarx_irdy,
         sio_trdy => hwdarx_trdy,
         si_data  => miirx_data,
-        so_equ   => dllhwda_rxdv,
-		mii_equ  => dllhwda_equ);
+		so_equ(0) => dllhwda_equ);
 
 	hwsa_e : entity hdl4fpga.desser
 	port map (
@@ -233,13 +232,13 @@ begin
 		mii_clk  => mii_txc,
 
 		pl_frm   => arptx_frm,
-		pl_irdy  : in  std_logic;
-		pl_trdy  : buffer std_logic;
-		pl_end   : in  std_logic;
-		pl_data  : in  std_logic_vector;
+		pl_irdy  => arptx_irdy,
+		pl_trdy  => arptx_trdy,
+		pl_end   => arptx_end,
+		pl_data  => arptx_data,
 
 		hwsa     => my_mac,
-		hwda     => x"ff_ff_ff_ff_ff_ff",
+		hwda     => x"ffffffffffff",
 		hwtyp    => x"0806",
 
 		mii_frm  => miitx_frm,
