@@ -35,8 +35,8 @@ entity arpd is
 		mii_clk    : in  std_logic;
 		frmrx_ptr  : in  std_logic_vector;
 
-		arpd_req   : in  std_logic;
-		arpd_rdy   : buffer  std_logic;
+		arpdtx_req : in  std_logic;
+		arpdtx_rdy : buffer  std_logic;
 		arprx_frm  : in  std_logic;
 		arprx_irdy : in  std_logic;
 		arprx_trdy : out std_logic;
@@ -56,6 +56,8 @@ end;
 
 architecture def of arpd is
 
+	signal arpd_rdy  : std_logic;
+	signal arpd_rdy  : std_logic;
 	signal arptx_end : std_logic;
 
 begin
@@ -71,13 +73,16 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if arprx_frm='1' then
-				if to_bit(arpd_req xor arpd_rdy)='0' then
+			if to_bit(arpd_req xor arpd_rdy)='0' then
+				if arprx_frm='1' then
 					arpd_req <= arpd_rdy xor tparx_vld;
+				elsif to_bit(arpdtx_req xor arpd_rdy)='0' then
+					arpd_req <= not arpd_irdy;
 				end if;
 			end if;
 		end if;
 	end process;
+	arptx_rdy <= arpd_irdy;
 
 	process (mii_clk)
 	begin

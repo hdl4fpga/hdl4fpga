@@ -255,7 +255,7 @@ begin
 		sio_irdy  => mii_irdy,
 		sio_trdy  => ipv4arx_trdy,
         si_data   => mii_data,
-		so_equ(0) => );
+		so_equ(0) => ipv4arx_vld);
 
 	arpd_e : entity hdl4fgpa.arpd
 	port map (
@@ -265,15 +265,15 @@ begin
 		mii_clk    => mii_txc,
 		frmrx_ptr  => frmrx_ptr,
 
-		arpd_req   => ,
-		arpd_rdy   => ,
+		arpdtx_req => arpdtx_rdy,
+		arpdtx_rdy => arpdtx_rdy,
 		arprx_frm  => arprx_frm,
 		arprx_irdy => arprx_irdy,
 		arprx_trdy => arprx_trdy,
 		arprx_data => arprx_data);
 
-		tparx_frm  : out std_logic;
-		tparx_vld  : in  std_logic;
+		tparx_frm  => ipv4arx_frm,
+		tparx_vld  => ipv4arx_vld,
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
