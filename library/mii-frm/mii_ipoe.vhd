@@ -35,18 +35,18 @@ entity mii_ipoe is
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc       : in  std_logic;
-		mii_rxd       : in  std_logic_vector;
-		mii_rxdv      : in  std_logic;
+		mii_clk       : in  std_logic;
+		miirx_frm     : in  std_logic;
+		miirx_irdy    : in  std_logic;
+		miirx_trdy    : out std_logic;
+		miirx_data    : in  std_logic_vector;
 
-		mii_txc       : in  std_logic;
-		mii_col       : in  std_logic := '0';
-		mii_crs       : in  std_logic := '0';
-		mii_txd       : buffer std_logic_vector;
-		mii_txen      : buffer std_logic;
+		miitx_frm     : out std_logic;
+		miitx_irdy    : out  std_logic;
+		miitx_trdy    : in  std_logic;
+		miitx_end     : out std_logic;
+		miitx_data    : out  std_logic_vector;
 
-		txc_rxd       : buffer std_logic_vector;
-		txc_rxdv      : buffer std_logic;
 		dll_rxdv      : buffer std_logic;
 
 		dllfcs_sb     : out std_logic;
@@ -65,120 +65,42 @@ end;
 architecture def of mii_ipoe is
 
 
-	constant icmp_gnt    : natural := 1;
-	constant dhcp_gnt    : natural := 2;
-	constant extern_gnt  : natural := 3;
+	signal frmrx_ptr    : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/miirx_data'length-1));
 
-	signal dev_gnt       : std_logic_vector(0 to 4-1);
-	signal dev_req       : std_logic_vector(dev_gnt'range);
-	signal pto_req       : std_logic_vector(dev_req'range);
-	signal pto_gnt       : std_logic_vector(dev_gnt'range);
+	signal hwdarx_irdy  : std_logic;
+	signal hwdarx_trdy  : std_logic;
+	signal hwdarx_vld   : std_logic;
+	signal hwsarx_irdy  : std_logic;
+	signal hwsarx_trdy  : std_logic;
+	signal hwtyprx_irdy : std_logic;
+	signal hwtyprx_trdy : std_logic;
+	signal arprx_vld    : std_logic;
+	signal fcs_sb       : std_logic;
+	signal fcs_vld      : std_logic;
 
-	alias arp_req        : std_logic is dev_req(arp_gnt);
-	alias icmp_req       : std_logic is dev_req(icmp_gnt);
-	alias dhcp_req       : std_logic is dev_req(dhcp_gnt);
-	alias extern_req     : std_logic is dev_req(extern_gnt);
+	signal arprx_frm    : std_logic;
+	signal arprx_irdy   : std_logic;
+	signal arprx_trdy   : std_logic;
 
-	signal dllhwda_equ   : std_logic;
+	signal arptx_frm    : std_logic;
+	signal arptx_irdy   : std_logic;
+	signal arptx_trdy   : std_logic;
+	signal arptx_end    : std_logic;
+	signal arptx_data   : std_logic_vector(miitx_data'range);
 
-	signal frmrx_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/mii_rxd'length-1));
+	signal hwsa_rx      : std_logic_vector(my_mac'range);
+	signal ipv4arx_frm  : std_logic;
+	signal ipv4arx_trdy : std_logic;
+	signal ipv4arx_vld  : std_logic;
 
-	signal eth_txen      : std_logic;
-	signal eth_txd       : std_logic_vector(mii_txd'range);
-
-	signal arptpa_rxdv   : std_logic;
-
-	signal typearp_rcvd  : std_logic;
-	signal arp_irdy      : std_logic;
-	signal arp_data      : std_logic_vector(mii_txd'range);
-
-
+	signal arpdtx_req : std_logic;
+	signal arpdtx_rdy : std_logic;
 begin
-
-	sync_b : block
-		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-		signal dst_irdy : std_logic;
-		signal dst_trdy : std_logic;
-	begin
-		rxc_rxbus <=  mii_rxdv & mii_rxd;
-		rxc2txc_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth => 4,
-			latency   => 0,
-			check_sov => false,
-			check_dov => true,
-			gray_code => false)
-		port map (
-			src_clk  => mii_rxc,
-			src_data => rxc_rxbus,
-			dst_clk  => mii_txc,
-			dst_irdy => dst_irdy,
-			dst_trdy => dst_trdy,
-			dst_data => txc_rxbus);
-
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				dst_trdy <= to_stdulogic(to_bit(dst_irdy));
-				txc_rxdv <= txc_rxbus(0);
-				txc_rxd  <= txc_rxbus(1 to mii_rxd'length);
-			end if;
-		end process;
-
-	end block;
-
-	extern_req <= tx_req;
-	tx_gnt <= dev_gnt(extern_gnt);
-
-	arbiter_b : block
-	begin
-
-		process (dev_req, mii_txen, mii_txc)
-			variable q    : std_logic_vector(dev_req'range);
-			variable cntr : std_logic_vector(0 to 4);
-			variable ena  : std_logic;
-			variable txen : std_logic;
-		begin
-			if rising_edge(mii_txc) then
-
-				if mii_txen='1' then
-					cntr := (others => '0');
-				elsif to_bit(cntr(0))='0' then
-					cntr := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(cntr))) + 1);
-				end if;
-
-				if to_bit(cntr(0))='1' then
-					ena := '1';
-				elsif to_bitvector(dev_gnt)=(dev_gnt'range => '0') then
-					ena := '0';
-				end if;
-
-				dev_gnt <= pto_gnt and dev_req;
-				pto_req <= (dev_req and (dev_req'range => ena)) or (q and (q'range => mii_txen));
-
-				if to_bit(mii_txen)='0' or txen='0' then
-					q := dev_req;
-				end if;
-				txen := mii_txen;
-			end if;
-
-		end process;
-
-		arbiter_e : entity hdl4fpga.arbiter
-		port map (
-			clk => mii_txc,
-			req => pto_req,
-			gnt => pto_gnt);
-
-
-		eth_txen <= setif(to_bitvector((pto_gnt and (arp_irdy & ip4_txen & ip4_txen & ip4_txen)))/=(dev_gnt'range => '0'));
-	end block;
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		mii_clk    => miirx_clk,
-		mii_frm    => miirx_frm
+		mii_clk    => mii_clk,
+		mii_frm    => miirx_frm,
 		mii_irdy   => miirx_irdy,
 		mii_trdy   => miirx_trdy,
 		mii_data   => miirx_data,
@@ -191,45 +113,47 @@ begin
 		hwsa_trdy  => hwsarx_trdy,
 		hwtyp_irdy => hwtyprx_irdy,
 		hwtyp_trdy => hwtyprx_trdy,
-		crc_sb     => dllfcs_sb,
-		crc_sb     => dllfcs_sb,
-		crc_equ    => dllfcs_vld);
+		crc_sb     => fcs_sb,
+		crc_equ    => fcs_vld);
 
 	hwdacmp_e : entity hdl4fpga.sio_cmp
     port map (
-		mem_data => reverse(my_mac,8),
-        sio_clk  => mii_txc,
-        sio_frm  => mii_rxfrm,
-        sio_irdy => hwdarx_irdy,
-        sio_trdy => hwdarx_trdy,
-        si_data  => miirx_data,
-		so_equ(0) => dllhwda_equ);
+		mux_data  => reverse(my_mac,8),
+        sio_clk   => mii_clk,
+        sio_frm   => miirx_frm,
+        sio_irdy  => hwdarx_irdy,
+        sio_trdy  => hwdarx_trdy,
+        si_data   => miirx_data,
+		so_equ(0) => hwdarx_vld);
 
-	hwsa_e : entity hdl4fpga.desser
+	hwsa_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
 	port map (
-		serder_clk => mii_txc,
-		serder_frm => mii_frm,
+		serdes_clk => mii_clk,
+		serdes_frm => miirx_frm,
 		ser_irdy   => hwdarx_irdy,
 		ser_trdy   => hwdarx_trdy,
-		des_irdy   => ,
-		des_data   => dllhwsa_rx);
+		ser_data   => miirx_data,
+		des_irdy   => open,
+		des_data   => hwsa_rx);
 
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (
 		n => 1)
 	port map (
-		mem_data  => reverse(llc_arp,8))
+		mux_data  => reverse(llc_arp,8),
         sio_clk   => mii_clk,
-        sio_frm   => mii_frm,
+        sio_frm   => miirx_frm,
 		sio_irdy  => hwtyprx_irdy,
 		sio_trdy  => hwtyprx_trdy,
-        si_data   => mii_data,
-		so_end    => 
-		so_equ(0) => );
+        si_data   => miirx_data,
+		so_end    => open,
+		so_equ(0) => arprx_vld);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_clk  => mii_txc,
+		mii_clk  => mii_clk,
 
 		pl_frm   => arptx_frm,
 		pl_irdy  => arptx_irdy,
@@ -238,8 +162,8 @@ begin
 		pl_data  => arptx_data,
 
 		hwsa     => my_mac,
-		hwda     => x"ffffffffffff",
-		hwtyp    => x"0806",
+		hwda     => reverse(x"ffffffffffff",8),
+		hwtyp    => reverse(x"0806",8),
 
 		mii_frm  => miitx_frm,
 		mii_irdy => miitx_irdy,
@@ -249,20 +173,20 @@ begin
 
 	ip4arx_e : entity hdl4fpga.sio_cmp
 	port map (
-		mem_data  => reverse(default_ipv4a,8))
+		mux_data  => reverse(default_ipv4a,8),
         sio_clk   => mii_clk,
         sio_frm   => ipv4arx_frm,
-		sio_irdy  => mii_irdy,
+		sio_irdy  => miirx_irdy,
 		sio_trdy  => ipv4arx_trdy,
-        si_data   => mii_data,
+        si_data   => miirx_data,
 		so_equ(0) => ipv4arx_vld);
 
-	arpd_e : entity hdl4fgpa.arpd
+	arpd_e : entity hdl4fpga.arpd
 	port map (
 		my_ipv4a   => default_ipv4a,
 		my_mac     => my_mac,
 
-		mii_clk    => mii_txc,
+		mii_clk    => mii_clk,
 		frmrx_ptr  => frmrx_ptr,
 
 		arpdtx_req => arpdtx_rdy,
@@ -270,7 +194,7 @@ begin
 		arprx_frm  => arprx_frm,
 		arprx_irdy => arprx_irdy,
 		arprx_trdy => arprx_trdy,
-		arprx_data => arprx_data);
+		arprx_data => miirx_data,
 
 		tparx_frm  => ipv4arx_frm,
 		tparx_vld  => ipv4arx_vld,

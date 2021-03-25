@@ -57,7 +57,7 @@ end;
 architecture def of arpd is
 
 	signal arpd_rdy  : std_logic;
-	signal arpd_rdy  : std_logic;
+	signal arpd_req  : std_logic;
 	signal arptx_end : std_logic;
 
 begin
@@ -77,12 +77,12 @@ begin
 				if arprx_frm='1' then
 					arpd_req <= arpd_rdy xor tparx_vld;
 				elsif to_bit(arpdtx_req xor arpd_rdy)='0' then
-					arpd_req <= not arpd_irdy;
+					arpd_req <= not arpd_rdy;
 				end if;
 			end if;
 		end if;
 	end process;
-	arptx_rdy <= arpd_irdy;
+	arpdtx_rdy <= arpd_rdy;
 
 	process (mii_clk)
 	begin

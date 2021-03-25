@@ -13,9 +13,12 @@ entity serdes is
 		serdes_clk : in  std_logic;
 		serdes_frm : in  std_logic;
 		ser_irdy   : in  std_logic;
+		ser_trdy   : out std_logic;
 		ser_data   : in  std_logic_vector;
 
+		des_frm    : out std_logic;
 		des_irdy   : out std_logic;
+		des_trdy   : in  std_logic := '1';
 		des_data   : out std_logic_vector);
 end;
 
@@ -97,13 +100,25 @@ begin
 			if serdes_frm='1' then
 				if ser_irdy='1' then
 					des := xxx(des, ser_data, debug);
+					if rgtr then
+						des_frm  <= serdes_frm;
+						des_irdy <= ser_irdy and stop;
+						des_data <= std_logic_vector(xxx(des, ser_data, debug));
+					end if;
+				end if;
+			elsif rgtr then
+				if des_trdy='1' then
+					des_frm <= '0';
 				end if;
 			end if;
 		end if;
 
-		des_data <= std_logic_vector(xxx(des, ser_data, debug));
+		if not rgtr then
+			des_data <= std_logic_vector(xxx(des, ser_data, debug));
+		end if;
 
 	end process;
 
-	des_irdy <= serdes_frm and ser_irdy and stop;
+	des_frm  <= serdes_frm                       when not rgtr;
+	des_irdy <= serdes_frm and ser_irdy and stop when not rgtr;
 end;
