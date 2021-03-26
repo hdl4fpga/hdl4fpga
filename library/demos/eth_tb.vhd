@@ -106,6 +106,9 @@ architecture def of eth_tb is
 	signal eth_txd   : std_logic_vector(mii_txd'range);
 
 
+	signal pl_frm   : std_logic;
+	signal pl_end   : std_logic;
+	signal pl_data  : std_logic_vector(mii_txd'range);
 begin
 
 	eth1_e: entity hdl4fpga.sio_mux
@@ -124,13 +127,13 @@ begin
         sio_frm  => mii_req2,
 		so_end   => eth2_end,
         so_data  => eth2_txd);
-	pl_frm  <= mii_req1 or mii_req2,
+	pl_frm  <= mii_req1 or mii_req2;
 	pl_end  <= wirebus(eth1_end & eth2_end, mii_req1 & mii_req2)(0);
 	pl_data <= wirebus(eth1_txd & eth2_txd, mii_req1 & mii_req2);
 	eth_llc <= wirebus(x"0806" & x"0800",   mii_req1 & mii_req2);
 
 	ethtx_e : entity hdl4fpga.eth_tx
-	port (
+	port map (
 		mii_clk  => mii_txc,
 
 		pl_frm   => pl_frm,
