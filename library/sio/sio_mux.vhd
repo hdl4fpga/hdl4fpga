@@ -33,7 +33,7 @@ entity sio_mux is
 		mux_data : in  std_logic_vector;
         sio_clk  : in  std_logic;
         sio_frm  : in  std_logic;
-		sio_irdy : in  std_logic;
+		sio_irdy : in  std_logic := '1';
 		sio_trdy : out std_logic;
 		so_last  : buffer std_logic;
 		so_end   : out std_logic;

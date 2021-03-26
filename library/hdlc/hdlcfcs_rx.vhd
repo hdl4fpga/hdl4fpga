@@ -45,18 +45,18 @@ end;
 
 architecture def of hdlcfcs_rx is
 
-	signal crc_init : std_logic;
+	signal crc_frm : std_logic;
 	signal crc      : std_logic_vector(fcs_rem'range);
 
 begin
 
-	crc_init <= not to_stdulogic(to_bit(hdlcrx_frm));
+	crc_frm <= to_stdulogic(to_bit(hdlcrx_frm));
 	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => fcs_g,
 		clk  => uart_clk,
-		init => crc_init,
-		ena  => hdlcrx_irdy,
+		frm  => crc_frm,
+		irdy => hdlcrx_irdy,
 		data => hdlcrx_data,
 		crc  => crc);
 

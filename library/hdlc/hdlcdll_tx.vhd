@@ -52,9 +52,9 @@ architecture def of hdlcdll_tx is
 	signal fcs_irdy : std_logic;
 	signal fcs_trdy : std_logic;
 
-	signal crc_init : std_logic;
+	signal crc_frm  : std_logic;
 	signal crc_sero : std_logic;
-	signal crc_ena  : std_logic;
+	signal crc_irdy : std_logic;
 	signal crc      : std_logic_vector(0 to 16-1);
 	signal cy       : std_logic;
 
@@ -91,22 +91,22 @@ begin
 				end if;
 			end if;
 		end if;
-		crc_init <= cy and q;
+		crc_frm  <= not (cy and q);
 		crc_sero <= setif(hdlctx_frm='1', q and not cy, not cy);
 	end process;
 
-	crc_ena <= (hdlctx_frm and hdlctx_irdy and hdlctx_trdy) or (fcs_trdy and crc_sero);
+	crc_irdy <= (hdlctx_frm and hdlctx_irdy and hdlctx_trdy) or (fcs_trdy and crc_sero);
 	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => x"1021",
 		clk  => uart_clk,
-		init => crc_init,
-		ena  => crc_ena,
-		sero => crc_sero,
+		frm  => crc_frm,
+		irdy => crc_irdy,
+		mode => crc_sero,
 		data => hdlctx_data,
 		crc  => crc);
 
-	fcs_frm  <= (hdlctx_frm or crc_sero) and not crc_init;
+	fcs_frm  <= (hdlctx_frm or crc_sero) and crc_frm;
 	fcs_data <= wirebus(hdlctx_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
 	fcs_irdy <= setif(crc_sero='0', hdlctx_irdy, '1');
 
@@ -122,6 +122,6 @@ begin
 		hdlctx_trdy => fcs_trdy,
 		hdlctx_data => fcs_data);
 
-	hdlctx_trdy <= hdlctx_frm and fcs_trdy and not crc_init and not crc_sero;
+	hdlctx_trdy <= hdlctx_frm and fcs_trdy and crc_frm and not crc_sero;
 
 end;

@@ -114,14 +114,14 @@ begin
 
 		latency_g : if latency > 0 generate
 			signal fill  : std_logic;
-			signal q_reg : unsigned(0 to latency-1) := (others => '0); -- XILINX synthesys BUG
-			signal v_req : unsigned(0 to latency-1) := (others => '0); -- XILINX synthesys BUG
+			signal q_reg : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
+			signal v_req : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
 		begin
 
 			dstirdy_p : process (dst_clk)
-				variable q    : unsigned(0 to latency-1) := (others => '0);
-				variable b    : unsigned(0 to latency-1) := (others => '0);
-				variable v    : unsigned(0 to latency-1) := (others => '0);
+				variable q    : unsigned(0 to latency-1) := (others => '0');
+				variable b    : unsigned(0 to latency-1) := (others => '0');
+				variable v    : unsigned(0 to latency-1) := (others => '0');
 				variable slr  : unsigned(0 to dst_data'length*v'length-1);
 				variable data : unsigned(0 to dst_data'length*q'length-1);
 			begin

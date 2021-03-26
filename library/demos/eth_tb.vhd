@@ -94,60 +94,54 @@ architecture def of eth_tb is
 	signal eth1_llc   : std_logic_vector(0 to 16-1);
 	signal eth1_txen  : std_logic;
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
+	signal eth1_end   : std_logic;
+
 	signal eth2_llc   : std_logic_vector(0 to 16-1);
+	signal eth2_end   : std_logic;
 	signal eth2_txen  : std_logic;
 	signal eth2_txd   : std_logic_vector(mii_txd'range);
+
 	signal eth_llc   : std_logic_vector(0 to 16-1);
 	signal eth_txen  : std_logic;
 	signal eth_txd   : std_logic_vector(mii_txd'range);
 
-	signal txfrm_ptr : std_logic_vector(0 to 20);
 
 begin
 
-	eth1_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(arppkt,8))
+	eth1_e: entity hdl4fpga.sio_mux
 	port map (
-		mii_txc  => mii_txc,
-		mii_txen => mii_req1,
-		mii_txdv => eth1_txen,
-		mii_txd  => eth1_txd);
+		mux_data => reverse(arppkt,8),
+		sio_clk  => mii_txc,
+		sio_frm  => mii_req1,
+		so_end   => eth1_end,
+		so_data  => eth1_txd);
+	
 
-	eth2_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(icmppkt,8))
+	eth2_e: entity hdl4fpga.sio_mux
 	port map (
-		mii_txc  => mii_txc,
-		mii_txen => mii_req2,
-		mii_txdv => eth2_txen,
-		mii_txd  => eth2_txd);
-
-	eth_txen <= eth1_txen or eth2_txen;
-	eth_txd  <= wirebus(eth1_txd & eth2_txd, eth1_txen & eth2_txen);
-	eth_llc  <= wirebus(x"0806" & x"0800",   eth1_txen & eth2_txen);
-	process (mii_txc)
-	begin
-
-		if rising_edge(mii_txc) then
-			if eth_txen='0' and mii_txen='0' then
-				txfrm_ptr <= (others => '0');
-			else
-				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
-			end if;
-		end if;
-	end process;
+		mux_data => reverse(icmppkt,8),
+        sio_clk  => mii_txc,
+        sio_frm  => mii_req2,
+		so_end   => eth2_end,
+        so_data  => eth2_txd);
+	pl_frm  <= mii_req1 or mii_req2,
+	pl_end  <= wirebus(eth1_end & eth2_end, mii_req1 & mii_req2)(0);
+	pl_data <= wirebus(eth1_txd & eth2_txd, mii_req1 & mii_req2);
+	eth_llc <= wirebus(x"0806" & x"0800",   mii_req1 & mii_req2);
 
 	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_txc  => mii_txc,
-		eth_ptr  => txfrm_ptr,
+	port (
+		mii_clk  => mii_txc,
+
+		pl_frm   => pl_frm,
+		pl_end   => pl_end,
+		pl_data  => pl_data,
+
 		hwsa     => x"ff_ff_ff_ff_ff_ff",
 		hwda     => x"00_40_00_01_02_03",
-		llc      => eth_llc,
-		pl_txen  => eth_txen,
-		eth_rxd  => eth_txd,
-		eth_txen => mii_txen,
-		eth_txd  => mii_txd);
+		hwtyp    => eth_llc,
+
+		mii_frm  => mii_txen,
+		mii_data => mii_txd);
 
 end;
