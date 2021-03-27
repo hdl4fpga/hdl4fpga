@@ -36,7 +36,7 @@ entity sio_mux is
 		sio_irdy : in  std_logic := '1';
 		sio_trdy : out std_logic;
 		so_last  : buffer std_logic;
-		so_end   : out std_logic;
+		so_end   : buffer std_logic;
         so_data  : out std_logic_vector);
 end;
 
@@ -49,7 +49,7 @@ architecture def of sio_mux is
 
 begin
 
-	process (sio_frm, sio_clk)
+	process (sio_frm, so_end, sio_clk)
 		variable cntr : unsigned(0 to mux_length);
 	begin
 		if rising_edge(sio_clk) then
@@ -57,14 +57,14 @@ begin
 				cntr   := to_unsigned(mux_data'length/so_data'length-2, cntr'length);
 				so_end <= '0';
 			elsif sio_irdy='1' then
+				so_end <= cntr(0);
 				if cntr(0)='0' then
 					cntr := cntr - 1;
 				end if;
-				so_end <= so_last;
 			end if;
 			mux_sel <= std_logic_vector(cntr(mux_range));
-			so_last <= cntr(0);
 		end if;
+		so_last <= not so_end and cntr(0);
 	end process;
 	sio_trdy <= sio_frm;
 

@@ -47,6 +47,8 @@ entity eth_rx is
 		hwsa_trdy  : in  std_logic;
 		hwtyp_irdy : buffer std_logic;
 		hwtyp_trdy : in  std_logic;
+		pl_irdy    : out std_logic;
+		pl_trdy    : in  std_logic;
 
 		crc_sb     : out std_logic;
 		crc_equ    : out std_logic;
@@ -59,6 +61,7 @@ architecture def of eth_rx is
 	signal hwda_frm  : std_logic;
 	signal hwsa_frm  : std_logic;
 	signal hwtyp_frm : std_logic;
+	signal pl_frm    : std_logic;
 	signal crc_frm   : std_logic;
 	signal crc_irdy  : std_logic;
 
@@ -83,14 +86,17 @@ begin
 		end if;
 	end process;
 
-	hwda_frm   <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda) and eth_pre;
-	hwsa_frm   <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa) and eth_pre;
-	hwtyp_frm  <= frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type) and eth_pre;
+	hwda_frm   <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda);
+	hwsa_frm   <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa);
+	hwtyp_frm  <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type);
+	pl_frm     <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type, gt);
 	hwda_irdy  <= hwda_frm  and mii_irdy;
 	hwsa_irdy  <= hwsa_frm  and mii_irdy;
 	hwtyp_irdy <= hwtyp_frm and mii_irdy;
+	pl_irdy    <= pl_frm    and mii_irdy;
 
-	crc_frm <= mii_frm and eth_pre;
+	crc_frm  <= mii_frm and eth_pre;
+	crc_irdy <= mii_irdy;
 	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
@@ -110,7 +116,7 @@ begin
 	end process;
 	crc_equ <= setif(crc_rem=x"38fb2284");
 
-	mii_trdy <= wirebus(hwda_trdy & hwsa_trdy & hwtyp_trdy, hwda_frm & hwsa_frm & hwtyp_frm)(0);
+	mii_trdy <= wirebus(hwda_trdy & hwsa_trdy & hwtyp_trdy & pl_trdy, hwda_frm & hwsa_frm & hwtyp_frm & pl_frm)(0);
 
 end;
 

@@ -27,50 +27,30 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
-use hdl4fpga.ipoepkg.all;
 
-entity arp_tx is
-	port (
-		mii_clk  : in  std_logic;
-		arp_frm  : in  std_logic;
-		
-		sha      : in std_logic_vector;
-		tha      : in std_logic_vector;
-		tpa      : in std_logic_vector;
-		spa      : in std_logic_vector;
+architecture eth_tb of testbench is
+	signal mii_rxc  : std_logic;
+	signal mii_txc  : std_logic;
+	signal mii_rxdv : std_logic;
+	signal mii_req1 : std_logic;
+	signal mii_req2 : std_logic;
+	signal mii_data : std_logic_vector(0 to 8-1);
 
-		arp_irdy : in  std_logic;
-		arp_trdy : out std_logic;
-		arp_end  : out std_logic;
-
-		arp_data : out std_logic_vector);
-
-end;
-
-architecture def of arp_tx is
-	signal mux_data : std_logic_vector(0 to summation(arp4_frame)*8/arp_data'length-1);
 begin
 	
-	mux_data <=
-		x"0001" & -- htype 
-		x"0800" & -- ptype 
-		x"06"   & -- hlen  
-		x"04"   & -- plen  
-		x"0002" & -- oper  
-	    sha     & -- Sender Hardware Address
-		spa     & -- Sender Protocol Address
-		tha     & -- Target Hardware Address
-		tpa;      -- Target Protocol Address
-
-	arpmux_e : entity hdl4fpga.sio_mux
+	mii_txc  <= not to_stdulogic(to_bit(mii_txc)) after 20 ns;
+	mii_rxc  <= mii_txc;
+	mii_req1 <= '0', '1' after 70 ns;
+	mii_req2 <= '0';
+	du_e : entity hdl4fpga.eth_tb
 	port map (
-		mux_data => mux_data,
-        sio_clk  => mii_clk,
-		sio_frm  => arp_frm,
-		sio_irdy => arp_irdy,
-        sio_trdy => arp_trdy,
-        so_end   => arp_end,
-        so_data  => arp_data);
+		mii_frm1 => mii_req1,
+		mii_frm2 => mii_req2,
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_data,
+                         
+		mii_txc  => mii_txc,
+		mii_txd  => mii_data);
 
 end;

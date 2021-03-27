@@ -400,14 +400,14 @@ begin
 
 	begin
 
-		eth_e: entity hdl4fpga.mii_rom
-		generic map (
-			mem_data => reverse(arppkt,8))
-		port map (
-			mii_txc  => mii_txc,
-			mii_txen => mii_req,
-			mii_txdv => eth_txen,
-			mii_txd  => eth_txd);
+--		eth_e: entity hdl4fpga.mii_rom
+--		generic map (
+--			mem_data => reverse(arppkt,8))
+--		port map (
+--			mii_txc  => mii_txc,
+--			mii_txen => mii_req,
+--			mii_txdv => eth_txen,
+--			mii_txd  => eth_txd);
 
 		process (mii_rxc)
 		begin
@@ -421,17 +421,17 @@ begin
 			end if;
 		end process;
 
-		ethtx_e : entity hdl4fpga.eth_tx
-		port map (
-			mii_txc  => mii_rxc,
-			eth_ptr  => txfrm_ptr,
-			hwsa     => x"af_ff_ff_ff_ff_f5",
-			hwda     => x"00_40_00_01_02_03",
-			llc      => x"0806",
-			pl_txen  => eth_txen,
-			eth_rxd  => eth_txd,
-			eth_txen => mii_txen,
-			eth_txd  => mii_txd);
+--		ethtx_e : entity hdl4fpga.eth_tx
+--		port map (
+--			mii_txc  => mii_rxc,
+--			eth_ptr  => txfrm_ptr,
+--			hwsa     => x"af_ff_ff_ff_ff_f5",
+--			hwda     => x"00_40_00_01_02_03",
+--			llc      => x"0806",
+--			pl_txen  => eth_txen,
+--			eth_rxd  => eth_txd,
+--			eth_txen => mii_txen,
+--			eth_txd  => mii_txd);
 
 	end block;
 

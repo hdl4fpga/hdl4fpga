@@ -47,17 +47,6 @@ entity mii_ipoe is
 		miitx_end     : out std_logic;
 		miitx_data    : out  std_logic_vector;
 
-		dll_rxdv      : buffer std_logic;
-
-		dllfcs_sb     : out std_logic;
-		dllfcs_vld    : buffer std_logic;
-
-		dllhwda_rxdv  : buffer std_logic;
-		dllhwsa_rxdv  : buffer std_logic;
-		dlltype_rxdv  : buffer std_logic;
-
-		dllhwsa_rx    : buffer std_logic_vector(0 to 48-1);
-
 		tp            : out std_logic_vector(1 to 32));
 
 end;
@@ -69,11 +58,17 @@ architecture def of mii_ipoe is
 
 	signal hwdarx_irdy  : std_logic;
 	signal hwdarx_trdy  : std_logic;
+	signal hwdarx_last  : std_logic;
+	signal hwdarx_equ   : std_logic;
 	signal hwdarx_vld   : std_logic;
 	signal hwsarx_irdy  : std_logic;
 	signal hwsarx_trdy  : std_logic;
 	signal hwtyprx_irdy : std_logic;
 	signal hwtyprx_trdy : std_logic;
+	signal plrx_irdy    : std_logic;
+	signal plrx_trdy    : std_logic;
+	signal arprx_last   : std_logic;
+	signal arprx_equ    : std_logic;
 	signal arprx_vld    : std_logic;
 	signal fcs_sb       : std_logic;
 	signal fcs_vld      : std_logic;
@@ -106,13 +101,14 @@ begin
 		mii_data   => miirx_data,
 
 		eth_ptr    => frmrx_ptr,
-		eth_pre    => dll_rxdv,
 		hwda_irdy  => hwdarx_irdy,
-		hwda_trdy  => hwdarx_trdy,
+		hwda_trdy  => '1', --hwdarx_trdy,
 		hwsa_irdy  => hwsarx_irdy,
-		hwsa_trdy  => hwsarx_trdy,
+		hwsa_trdy  => '1', --hwsarx_trdy,
 		hwtyp_irdy => hwtyprx_irdy,
-		hwtyp_trdy => hwtyprx_trdy,
+		hwtyp_trdy => '1', --hwtyprx_trdy,
+		pl_irdy    => plrx_irdy,
+		pl_trdy    => '1', --pl_trdy,
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
@@ -124,7 +120,19 @@ begin
         sio_irdy  => hwdarx_irdy,
         sio_trdy  => hwdarx_trdy,
         si_data   => miirx_data,
-		so_equ(0) => hwdarx_vld);
+		so_last   => hwdarx_last,
+		so_equ(0) => hwdarx_equ);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				hwdarx_vld <= '0';
+			elsif hwdarx_last='1' then
+				hwdarx_vld <= hwdarx_equ;
+			end if;
+		end if;
+	end process;
 
 	hwsa_e : entity hdl4fpga.serdes
 	generic map (
@@ -148,8 +156,20 @@ begin
 		sio_irdy  => hwtyprx_irdy,
 		sio_trdy  => hwtyprx_trdy,
         si_data   => miirx_data,
-		so_end    => open,
-		so_equ(0) => arprx_vld);
+		so_last   => arprx_last,
+		so_equ(0) => arprx_equ);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				arprx_vld <= '0';
+			elsif arprx_last='1' then
+				arprx_vld <= arprx_equ;
+			end if;
+		end if;
+	end process;
+	arprx_frm <= miirx_frm and arprx_vld;
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (

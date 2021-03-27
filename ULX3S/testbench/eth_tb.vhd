@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ulx3s_serdebug of testbench is
+architecture ulx3s_ethtb of testbench is
 
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0);

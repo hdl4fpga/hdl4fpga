@@ -30,15 +30,15 @@ use hdl4fpga.std.all;
 
 entity eth_tb is 
 	port (
-		mii_req1  : in  std_logic;
-		mii_req2  : in  std_logic;
+		mii_frm1  : in  std_logic;
+		mii_frm2  : in  std_logic;
 		mii_rxc   : in  std_logic;
 		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector(0 to 2-1);
+		mii_rxd   : in  std_logic_vector(0 to 8-1);
 
 		mii_txc   : in  std_logic;
 		mii_txen  : buffer std_logic;
-		mii_txd   : out std_logic_vector(0 to 2-1));
+		mii_txd   : out std_logic_vector(0 to 8-1));
 end;
 
 architecture def of eth_tb is
@@ -90,7 +90,7 @@ architecture def of eth_tb is
 --			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 --			x"0000" &              -- UPD checksum
 --			payload);
---
+
 	signal eth1_llc   : std_logic_vector(0 to 16-1);
 	signal eth1_txen  : std_logic;
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
@@ -101,36 +101,46 @@ architecture def of eth_tb is
 	signal eth2_txen  : std_logic;
 	signal eth2_txd   : std_logic_vector(mii_txd'range);
 
-	signal eth_llc   : std_logic_vector(0 to 16-1);
-	signal eth_txen  : std_logic;
-	signal eth_txd   : std_logic_vector(mii_txd'range);
+	signal eth_llc    : std_logic_vector(0 to 16-1);
+	signal eth_txen   : std_logic;
+	signal eth_txd    : std_logic_vector(mii_txd'range);
 
+	signal pl_frm     : std_logic;
+	signal pl_end     : std_logic;
+	signal pl_data    : std_logic_vector(mii_txd'range);
 
-	signal pl_frm   : std_logic;
-	signal pl_end   : std_logic;
-	signal pl_data  : std_logic_vector(mii_txd'range);
+	signal miirx_frm  : std_logic;
+	signal miirx_irdy : std_logic;
+	signal miirx_trdy : std_logic;
+	signal miirx_data : std_logic_vector(pl_data'range);
+
+	signal miitx_frm  : std_logic;
+	signal miitx_irdy : std_logic;
+	signal miitx_trdy : std_logic;
+	signal miitx_end  : std_logic;
+	signal miitx_data : std_logic_vector(pl_data'range);
+
 begin
 
 	eth1_e: entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(arppkt,8),
 		sio_clk  => mii_txc,
-		sio_frm  => mii_req1,
+		sio_frm  => mii_frm1,
 		so_end   => eth1_end,
 		so_data  => eth1_txd);
 	
-
 	eth2_e: entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(icmppkt,8),
         sio_clk  => mii_txc,
-        sio_frm  => mii_req2,
+        sio_frm  => mii_frm2,
 		so_end   => eth2_end,
         so_data  => eth2_txd);
-	pl_frm  <= mii_req1 or mii_req2;
-	pl_end  <= wirebus(eth1_end & eth2_end, mii_req1 & mii_req2)(0);
-	pl_data <= wirebus(eth1_txd & eth2_txd, mii_req1 & mii_req2);
-	eth_llc <= wirebus(x"0806" & x"0800",   mii_req1 & mii_req2);
+	pl_frm  <= mii_frm1 or mii_frm2;
+	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
+	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
+	eth_llc <= reverse(wirebus(x"0806" & x"0800",   mii_frm1 & mii_frm2),8);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -141,10 +151,26 @@ begin
 		pl_data  => pl_data,
 
 		hwsa     => x"ff_ff_ff_ff_ff_ff",
-		hwda     => x"00_40_00_01_02_03",
+		hwda     => reverse(x"00_40_00_01_02_03",8),
 		hwtyp    => eth_llc,
 
-		mii_frm  => mii_txen,
-		mii_data => mii_txd);
+		mii_frm  => miirx_frm,
+		mii_irdy => miirx_irdy,
+		mii_trdy => '1', --miirx_trdy,
+		mii_data => miirx_data);
+
+	du_e : entity hdl4fpga.mii_ipoe
+	port map (
+		mii_clk       => mii_txc,
+		miirx_frm     => miirx_frm,
+		miirx_irdy    => miirx_irdy,
+		miirx_trdy    => miirx_trdy,
+		miirx_data    => miirx_data,
+
+		miitx_frm     => miitx_frm,
+		miitx_irdy    => miitx_irdy,
+		miitx_trdy    => miitx_trdy,
+		miitx_end     => miitx_end,
+		miitx_data    => miitx_data);
 
 end;

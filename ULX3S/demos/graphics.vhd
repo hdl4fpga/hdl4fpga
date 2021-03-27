@@ -483,30 +483,30 @@ begin
 		rmii_mdio <= 'Z';
 
 		ipv4acfg_req <= not btn_pwr_n;
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
-		port map (
-			ipv4acfg_req => ipv4acfg_req,
-
-			phy_rxc   => mii_rxc,
-			phy_rx_dv => mii_rxdv,
-			phy_rx_d  => mii_rxd,
-
-			phy_txc   => mii_txc,
-			phy_tx_en => mii_txen,
-			phy_tx_d  => mii_txd,
-		
-			sio_clk   => sio_clk,
-			si_frm    => sout_frm,
-			si_irdy   => sout_irdy,
-			si_trdy   => sout_trdy,
-			si_data   => sout_data,
-
-			so_frm    => sin_frm,
-			so_irdy   => sin_irdy,
-			so_trdy   => '1',
-			so_data   => sin_data);
+--		udpdaisy_e : entity hdl4fpga.sio_dayudp
+--		generic map (
+--			default_ipv4a => x"c0_a8_00_0e")
+--		port map (
+--			ipv4acfg_req => ipv4acfg_req,
+--
+--			phy_rxc   => mii_rxc,
+--			phy_rx_dv => mii_rxdv,
+--			phy_rx_d  => mii_rxd,
+--
+--			phy_txc   => mii_txc,
+--			phy_tx_en => mii_txen,
+--			phy_tx_d  => mii_txd,
+--		
+--			sio_clk   => sio_clk,
+--			si_frm    => sout_frm,
+--			si_irdy   => sout_irdy,
+--			si_trdy   => sout_trdy,
+--			si_data   => sout_data,
+--
+--			so_frm    => sin_frm,
+--			so_irdy   => sin_irdy,
+--			so_trdy   => '1',
+--			so_data   => sin_data);
 
 		process (sio_clk)
 			variable t : std_logic;

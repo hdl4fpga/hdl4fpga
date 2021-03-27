@@ -277,38 +277,38 @@ begin
 	rst <= '0', '1' after 300 ns;
 
 	mii_req <= '0', '1' after 200 us;
-	eth_e: entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(packet,8))
-	port map (
-		mii_txc  => mii_rxc,
-		mii_txen => mii_req,
-		mii_txdv => eth_txen,
-		mii_txd  => eth_txd);
-
-	process (mii_rxc)
-	begin
-
-		if rising_edge(mii_rxc) then
-			if eth_txen='0' and mii_rxdv='0' then
-				txfrm_ptr <= (others => '0');
-			else
-				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
-			end if;
-		end if;
-	end process;
-
-	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_txc  => mii_rxc,
-		eth_ptr  => txfrm_ptr,
-		hwsa     => x"af_ff_ff_ff_ff_f5",
-		hwda     => x"00_40_00_01_02_03",
-		llc      => x"0800",
-		pl_txen  => eth_txen,
-		eth_rxd  => eth_txd,
-		eth_txen => mii_rxdv,
-		eth_txd  => mii_rxd);
+--	eth_e: entity hdl4fpga.mii_rom
+--	generic map (
+--		mem_data => reverse(packet,8))
+--	port map (
+--		mii_txc  => mii_rxc,
+--		mii_txen => mii_req,
+--		mii_txdv => eth_txen,
+--		mii_txd  => eth_txd);
+--
+--	process (mii_rxc)
+--	begin
+--
+--		if rising_edge(mii_rxc) then
+--			if eth_txen='0' and mii_rxdv='0' then
+--				txfrm_ptr <= (others => '0');
+--			else
+--				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
+--			end if;
+--		end if;
+--	end process;
+--
+--	ethtx_e : entity hdl4fpga.eth_tx
+--	port map (
+--		mii_txc  => mii_rxc,
+--		eth_ptr  => txfrm_ptr,
+--		hwsa     => x"af_ff_ff_ff_ff_f5",
+--		hwda     => x"00_40_00_01_02_03",
+--		llc      => x"0800",
+--		pl_txen  => eth_txen,
+--		eth_rxd  => eth_txd,
+--		eth_txen => mii_rxdv,
+--		eth_txd  => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (

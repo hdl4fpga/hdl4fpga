@@ -89,6 +89,10 @@ HDL4FPGA__omdr__beh = $(LIB_HDL4FPGA)/omdr/beh.dat
 HDL4FPGA__omdr = $(LIB_HDL4FPGA)/omdr/_primary.dat
 HDL4FPGA__modeline_calculator__body = $(LIB_HDL4FPGA)/modeline_calculator/body.dat
 HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
+HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
+HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
+HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
+HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__iofifo__mix = $(LIB_HDL4FPGA)/iofifo/mix.dat
 HDL4FPGA__iofifo = $(LIB_HDL4FPGA)/iofifo/_primary.dat
@@ -112,8 +116,12 @@ HDL4FPGA__ff__xilinx = $(LIB_HDL4FPGA)/ff/xilinx.dat
 HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
 HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
+HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
+HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
 HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
+HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
+HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -181,6 +189,12 @@ HDL4FPGA__box_edges = $(LIB_HDL4FPGA)/box_edges/_primary.dat
 HDL4FPGA__bcdfonts = $(LIB_HDL4FPGA)/bcdfonts/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
+HDL4FPGA__arpd__def = $(LIB_HDL4FPGA)/arpd/def.dat
+HDL4FPGA__arpd = $(LIB_HDL4FPGA)/arpd/_primary.dat
+HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
+HDL4FPGA__arp_tx = $(LIB_HDL4FPGA)/arp_tx/_primary.dat
+HDL4FPGA__arp_rx__def = $(LIB_HDL4FPGA)/arp_rx/def.dat
+HDL4FPGA__arp_rx = $(LIB_HDL4FPGA)/arp_rx/_primary.dat
 HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
@@ -264,6 +278,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__omdr) \
     $(HDL4FPGA__modeline_calculator__body) \
     $(HDL4FPGA__modeline_calculator) \
+    $(HDL4FPGA__mii_rxpre__def) \
+    $(HDL4FPGA__mii_rxpre) \
+    $(HDL4FPGA__mii_ipoe__def) \
+    $(HDL4FPGA__mii_ipoe) \
     $(HDL4FPGA__ipoepkg) \
     $(HDL4FPGA__iofifo__mix) \
     $(HDL4FPGA__iofifo) \
@@ -287,8 +305,12 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ff) \
     $(HDL4FPGA__ethpkg__body) \
     $(HDL4FPGA__ethpkg) \
+    $(HDL4FPGA__eth_tx__def) \
+    $(HDL4FPGA__eth_tx) \
     $(HDL4FPGA__eth_tb__def) \
     $(HDL4FPGA__eth_tb) \
+    $(HDL4FPGA__eth_rx__def) \
+    $(HDL4FPGA__eth_rx) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -356,6 +378,12 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__bcdfonts) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
+    $(HDL4FPGA__arpd__def) \
+    $(HDL4FPGA__arpd) \
+    $(HDL4FPGA__arp_tx__def) \
+    $(HDL4FPGA__arp_tx) \
+    $(HDL4FPGA__arp_rx__def) \
+    $(HDL4FPGA__arp_rx) \
     $(HDL4FPGA__arbiter__mix) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__align__arch) \
@@ -380,6 +408,42 @@ $(HDL4FPGA__arbiter__mix) : ../common/arbiter.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/arbiter.vhd
+
+$(HDL4FPGA__arp_rx) \
+$(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/arp_rx.vhd
+
+$(HDL4FPGA__arp_tx) \
+$(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/arp_tx.vhd
+
+$(HDL4FPGA__arpd) \
+$(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
+		$(HDL4FPGA__arp_tx) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__arp_rx) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/arpd.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../common/barrel.vhd \
@@ -718,17 +782,43 @@ $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dpram.vhd
 
+$(HDL4FPGA__eth_rx) \
+$(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
+		$(HDL4FPGA__crc) \
+		$(HDL4FPGA__mii_rxpre) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/eth_rx.vhd
+
 $(HDL4FPGA__eth_tb) \
 $(HDL4FPGA__eth_tb__def) : ../demos/eth_tb.vhd \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_tx) \
-		$(HDL4FPGA__mii_rom) \
+		$(HDL4FPGA__sio_mux) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../demos/eth_tb.vhd
+
+$(HDL4FPGA__eth_tx) \
+$(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
+		$(HDL4FPGA__crc) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/eth_tx.vhd
 
 $(HDL4FPGA__ethpkg) \
 $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
@@ -843,6 +933,31 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ipoepkg.vhd
+
+$(HDL4FPGA__mii_ipoe) \
+$(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
+		$(HDL4FPGA__arpd) \
+		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__sio_cmp) \
+		$(HDL4FPGA__eth_rx) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_ipoe.vhd
+
+$(HDL4FPGA__mii_rxpre) \
+$(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_rxpre.vhd
 
 $(HDL4FPGA__modeline_calculator) \
 $(HDL4FPGA__modeline_calculator__body) : ../video/modeline_calculator.vhd \

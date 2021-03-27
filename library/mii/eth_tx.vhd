@@ -93,6 +93,7 @@ begin
 		sio_clk  => mii_clk,
 		sio_frm  => mii_frm,
 		sio_irdy => llc_irdy,
+		sio_trdy => llc_trdy,
 		so_end   => llc_end,
 		so_data  => llc_data);
 
@@ -107,7 +108,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				if cntr(0)='0' then
+				if to_bit(cntr(0))='0' then
 					cntr := (others => '1');
 				end if;
 			elsif pl_end='1' and cntr(0)='1' then
@@ -115,11 +116,11 @@ begin
 					cntr := cntr - 1; 
 				end if;
 			end if;
-			fcs_end <= cntr(0);
+			fcs_end <= not cntr(0);
 		end if;
 	end process;
 
-	fcs_mode <= llc_end;
+	fcs_mode <= pl_end;
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
