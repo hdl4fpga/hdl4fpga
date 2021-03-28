@@ -32,7 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
@@ -86,6 +86,8 @@ architecture def of mii_ipoe is
 	signal hwsa_rx      : std_logic_vector(my_mac'range);
 	signal ipv4arx_frm  : std_logic;
 	signal ipv4arx_trdy : std_logic;
+	signal ipv4arx_equ  : std_logic;
+	signal ipv4arx_last : std_logic;
 	signal ipv4arx_vld  : std_logic;
 
 	signal arpdtx_req : std_logic;
@@ -199,7 +201,18 @@ begin
 		sio_irdy  => miirx_irdy,
 		sio_trdy  => ipv4arx_trdy,
         si_data   => miirx_data,
-		so_equ(0) => ipv4arx_vld);
+        so_last   => ipv4arx_last,
+		so_equ(0) => ipv4arx_equ);
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4arx_frm='0' then
+				ipv4arx_vld <= '0';
+			elsif ipv4arx_last='1' then
+				ipv4arx_vld <= ipv4arx_equ;
+			end if;
+		end if;
+	end process;
 
 	arpd_e : entity hdl4fpga.arpd
 	port map (

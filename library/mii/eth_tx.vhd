@@ -97,6 +97,7 @@ begin
 		so_end   => llc_end,
 		so_data  => llc_data);
 
+	pl_trdy <= llc_end and mii_trdy;
 	fcs_data <= wirebus(llc_data & pl_data, not llc_end & llc_end);
 	fcs_irdy <= wirebus(llc_irdy & pl_irdy & mii_trdy, 
 		not llc_end              &

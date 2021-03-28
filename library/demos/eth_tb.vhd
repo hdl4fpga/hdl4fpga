@@ -106,6 +106,7 @@ architecture def of eth_tb is
 	signal eth_txd    : std_logic_vector(mii_txd'range);
 
 	signal pl_frm     : std_logic;
+	signal pl_trdy     : std_logic;
 	signal pl_end     : std_logic;
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
@@ -127,6 +128,7 @@ begin
 		mux_data => reverse(arppkt,8),
 		sio_clk  => mii_txc,
 		sio_frm  => mii_frm1,
+		sio_irdy => pl_trdy,
 		so_end   => eth1_end,
 		so_data  => eth1_txd);
 	
@@ -147,6 +149,7 @@ begin
 		mii_clk  => mii_txc,
 
 		pl_frm   => pl_frm,
+		pl_trdy  => pl_trdy,
 		pl_end   => pl_end,
 		pl_data  => pl_data,
 

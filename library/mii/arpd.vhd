@@ -56,8 +56,8 @@ end;
 
 architecture def of arpd is
 
-	signal arpd_rdy  : std_logic;
-	signal arpd_req  : std_logic;
+	signal arpd_rdy  : std_logic := '0';
+	signal arpd_req  : std_logic := '0';
 	signal arptx_end : std_logic;
 
 begin
@@ -76,7 +76,7 @@ begin
 			if to_bit(arpd_req xor arpd_rdy)='0' then
 				if arprx_frm='1' then
 					arpd_req <= arpd_rdy xor tparx_vld;
-				elsif to_bit(arpdtx_req xor arpd_rdy)='0' then
+				elsif to_bit(arpdtx_req xor arpd_rdy)='1' then
 					arpd_req <= not arpd_rdy;
 				end if;
 			end if;
