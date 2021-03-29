@@ -42,10 +42,10 @@ entity mii_ipoe is
 		miirx_data    : in  std_logic_vector;
 
 		miitx_frm     : out std_logic;
-		miitx_irdy    : out  std_logic;
+		miitx_irdy    : out std_logic;
 		miitx_trdy    : in  std_logic;
-		miitx_end     : out std_logic;
-		miitx_data    : out  std_logic_vector;
+		miitx_end     : buffer std_logic;
+		miitx_data    : out std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
 
@@ -235,6 +235,8 @@ begin
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,
-		arptx_data => arptx_data);
+		arptx_end  => arptx_end,
+		arptx_data => arptx_data,
+		miitx_end  => miitx_end);
 
 end;

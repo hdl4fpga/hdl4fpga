@@ -45,10 +45,12 @@ entity arpd is
 		tparx_frm  : out std_logic;
 		tparx_vld  : in  std_logic;
 
-		arptx_frm  : buffer std_logic;
+		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic;
 		arptx_trdy : in  std_logic;
+		arptx_end  : out std_logic;
 		arptx_data : out std_logic_vector;
+		miitx_end  : in  std_logic;
 
 		tp         : out std_logic_vector(1 to 32));
 
@@ -58,7 +60,6 @@ architecture def of arpd is
 
 	signal arpd_rdy  : std_logic := '0';
 	signal arpd_req  : std_logic := '0';
-	signal arptx_end : std_logic;
 
 begin
 
@@ -84,13 +85,15 @@ begin
 	end process;
 	arpdtx_rdy <= arpd_rdy;
 
-	process (mii_clk)
+	process (miitx_end, mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if arptx_frm='1' then
-				if arptx_end='1' then
-					arptx_frm <= '0';
-					arpd_rdy  <= arpd_req;
+				if arptx_trdy='1' then
+					if miitx_end='1' then
+						arptx_frm <= '0';
+						arpd_rdy  <= arpd_req;
+					end if;
 				end if;
 			elsif (arpd_req xor arpd_rdy)='1' then
 				arptx_frm <= '1';
@@ -100,14 +103,15 @@ begin
 
 	arptx_e : entity hdl4fpga.arp_tx
 	port map (
-		mii_clk  => mii_clk,
-		arp_frm  => arptx_frm,
-		sha      => my_mac,
-		spa      => my_ipv4a,
-		tha      => x"ffffffffffff",
-		tpa      => my_ipv4a,
-		arp_irdy => arptx_trdy,
-		arp_end  => arptx_end,
-		arp_data => arptx_data);
+		mii_clk   => mii_clk,
+		arp_frm   => arptx_frm,
+		sha       => my_mac,
+		spa       => my_ipv4a,
+		tha       => x"ffffffffffff",
+		tpa       => my_ipv4a,
+		arp_irdy  => arptx_trdy,
+		arp_trdy  => arptx_irdy,
+		arp_end   => arptx_end,
+		arp_data  => arptx_data);
 
 end;

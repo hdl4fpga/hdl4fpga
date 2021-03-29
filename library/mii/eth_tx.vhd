@@ -29,17 +29,16 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
 
 entity eth_tx is
 	port (
 		mii_clk  : in  std_logic;
 
-		pl_frm   : in  std_logic;
-		pl_irdy  : in  std_logic := '1';
+		pl_frm   : in std_logic;
+		pl_irdy  : in std_logic := '1';
 		pl_trdy  : buffer std_logic;
-		pl_end   : in  std_logic;
-		pl_data  : in  std_logic_vector;
+		pl_end   : in std_logic;
+		pl_data  : in std_logic_vector;
 
 		hwsa     : in  std_logic_vector;
 		hwda     : in  std_logic_vector;
@@ -136,12 +135,13 @@ begin
 		not  pre_end              & 
 		(not llc_end and pre_end) & 
 		(not pl_end  and llc_end) & 
-		(not fcs_end and pl_end))(0);
+		('1' and pl_end))(0);
 	mii_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(mii_data'range), 
 		not  pre_end              & 
 		(not llc_end and pre_end) & 
 		(not pl_end  and llc_end) & 
 		(not fcs_end and pl_end));
 	mii_end <= fcs_end;
+
 end;
 

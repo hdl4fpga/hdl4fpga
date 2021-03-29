@@ -53,15 +53,15 @@ architecture def of arp_tx is
 begin
 	
 	mux_data <=
-		x"0001" & -- htype 
-		x"0800" & -- ptype 
-		x"06"   & -- hlen  
-		x"04"   & -- plen  
-		x"0002" & -- oper  
-	    sha     & -- Sender Hardware Address
-		spa     & -- Sender Protocol Address
-		tha     & -- Target Hardware Address
-		tpa;      -- Target Protocol Address
+		x"0001"          & -- htype 
+		x"0800"          & -- ptype 
+		x"06"            & -- hlen  
+		x"04"            & -- plen  
+		x"0002"          & -- oper  
+	    reverse(sha,8)   & -- Sender Hardware Address
+		reverse(spa,8)   & -- Sender Protocol Address
+		reverse(tha,8)   & -- Target Hardware Address
+		reverse(tpa,8);    -- Target Protocol Address
 
 	arpmux_e : entity hdl4fpga.sio_mux
 	port map (

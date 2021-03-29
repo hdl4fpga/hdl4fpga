@@ -86,14 +86,14 @@ begin
 		end if;
 	end process;
 
-	hwda_frm   <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda);
-	hwsa_frm   <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa);
-	hwtyp_frm  <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type);
-	pl_frm     <= eth_pre and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type, gt);
-	hwda_irdy  <= hwda_frm  and mii_irdy;
-	hwsa_irdy  <= hwsa_frm  and mii_irdy;
-	hwtyp_irdy <= hwtyp_frm and mii_irdy;
-	pl_irdy    <= pl_frm    and mii_irdy;
+	hwda_frm   <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda);
+	hwsa_frm   <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa);
+	hwtyp_frm  <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type);
+	pl_frm     <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type, gt);
+	hwda_irdy  <= mii_irdy and hwda_frm;
+	hwsa_irdy  <= mii_irdy and hwsa_frm;
+	hwtyp_irdy <= mii_irdy and hwtyp_frm;
+	pl_irdy    <= mii_irdy and pl_frm;
 
 	crc_frm  <= mii_frm and eth_pre;
 	crc_irdy <= mii_irdy;
@@ -117,6 +117,5 @@ begin
 	crc_equ <= setif(crc_rem=x"38fb2284");
 
 	mii_trdy <= wirebus(hwda_trdy & hwsa_trdy & hwtyp_trdy & pl_trdy, hwda_frm & hwsa_frm & hwtyp_frm & pl_frm)(0);
-
 end;
 

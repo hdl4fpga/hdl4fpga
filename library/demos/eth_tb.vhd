@@ -32,9 +32,6 @@ entity eth_tb is
 	port (
 		mii_frm1  : in  std_logic;
 		mii_frm2  : in  std_logic;
-		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector(0 to 8-1);
 
 		mii_txc   : in  std_logic;
 		mii_txen  : buffer std_logic;
@@ -111,6 +108,7 @@ architecture def of eth_tb is
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
 	signal miirx_frm  : std_logic;
+	signal miirx_end  : std_logic;
 	signal miirx_irdy : std_logic;
 	signal miirx_trdy : std_logic;
 	signal miirx_data : std_logic_vector(pl_data'range);
@@ -139,10 +137,27 @@ begin
         sio_frm  => mii_frm2,
 		so_end   => eth2_end,
         so_data  => eth2_txd);
-	pl_frm  <= mii_frm1 or mii_frm2;
+--	pl_frm  <= (mii_frm1 and (not eth1_end or not miirx_end)) or (mii_frm2 and (not eth2_end or not miirx_end));
 	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
 	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
 	eth_llc <= reverse(wirebus(x"0806" & x"0800",   mii_frm1 & mii_frm2),8);
+
+	process (miitx_end, mii_txc)
+		variable frm : std_logic := '0';
+	begin
+		if rising_edge(mii_txc) then
+			if frm='1' then
+				if miirx_end='1' then
+					if pl_trdy='1' then
+						frm := '0';
+					end if;
+				end if;
+			elsif ((mii_frm1 and not eth1_end) or (mii_frm2 and not eth2_end))='1' then
+				frm := '1';
+			end if;
+		end if;
+		pl_frm <= frm;
+	end process;
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -160,6 +175,7 @@ begin
 		mii_frm  => miirx_frm,
 		mii_irdy => miirx_irdy,
 		mii_trdy => '1', --miirx_trdy,
+		mii_end  => miirx_end,
 		mii_data => miirx_data);
 
 	du_e : entity hdl4fpga.mii_ipoe
@@ -172,7 +188,7 @@ begin
 
 		miitx_frm     => miitx_frm,
 		miitx_irdy    => miitx_irdy,
-		miitx_trdy    => miitx_trdy,
+		miitx_trdy    => '1', --miitx_trdy,
 		miitx_end     => miitx_end,
 		miitx_data    => miitx_data);
 

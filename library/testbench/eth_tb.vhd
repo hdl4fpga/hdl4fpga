@@ -46,9 +46,6 @@ begin
 	port map (
 		mii_frm1 => mii_req1,
 		mii_frm2 => mii_req2,
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_data,
                          
 		mii_txc  => mii_txc,
 		mii_txd  => mii_data);

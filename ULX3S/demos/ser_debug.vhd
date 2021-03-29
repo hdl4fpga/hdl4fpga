@@ -337,11 +337,7 @@ begin
 				mii_frm2   => left,
 				mii_txc    => mii_rxc,
 				mii_txen   => mii_rxdv,
-				mii_txd    => mii_rxd,
-
-				mii_rxc    => mii_txc,
-				mii_rxdv   => mii_txen,
-				mii_rxd    => mii_txd);
+				mii_txd    => mii_rxd);
 
 			rmii_mdc  <= '0';
 			rmii_mdio <= '0';
