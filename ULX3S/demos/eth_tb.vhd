@@ -378,7 +378,16 @@ begin
 
 		begin
 
-			miirx_frm <= mii_rxdv;
+			process(mii_rxdv, mii_txc)
+				variable q : std_logic;
+			begin
+				if rising_edge(mii_txc) then
+					q := mii_txdv;
+				end if;
+				miirx_frm <=     mii_rxdv or  q;
+				miirx_end <= not mii_rxdv and q;
+			end process;
+
 			du_e : entity hdl4fpga.mii_ipoe
 			port map (
 				mii_clk       => mii_txc,
@@ -392,13 +401,12 @@ begin
 				miitx_trdy    => '1', --miitx_trdy,
 				miitx_end     => miitx_end,
 				miitx_data    => miitx_data);
+
+
+			ser_frm  <= miitx_frm and not miitx_end;
+			ser_irdy <= '1';
+			ser_data(0 to io_len(io_link)-1) <= miitx_data;
 		end block;
-
-
-		ser_frm  <= (mii_txen and enatx) or (mii_rxdv and enarx);
-		ser_irdy <= '1';
-		ser_data(0 to io_len(io_link)-1) <= wirebus(
-			mii_txd & mii_rxd, (mii_txen and enatx) & (not (mii_txen and enatx) and (mii_rxdv and enarx)));
 
 		process (sio_clk)
 			variable t : std_logic;

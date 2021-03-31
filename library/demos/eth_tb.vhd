@@ -178,18 +178,21 @@ begin
 		mii_end  => miirx_end,
 		mii_data => miirx_data);
 
-	du_e : entity hdl4fpga.mii_ipoe
-	port map (
-		mii_clk       => mii_txc,
-		miirx_frm     => miirx_frm,
-		miirx_irdy    => miirx_irdy,
-		miirx_trdy    => miirx_trdy,
-		miirx_data    => miirx_data,
+	mii_txen <= miirx_frm and not miirx_end;
+	mii_txd  <= miirx_data;
 
-		miitx_frm     => miitx_frm,
-		miitx_irdy    => miitx_irdy,
-		miitx_trdy    => '1', --miitx_trdy,
-		miitx_end     => miitx_end,
-		miitx_data    => miitx_data);
+--	du_e : entity hdl4fpga.mii_ipoe
+--	port map (
+--		mii_clk       => mii_txc,
+--		miirx_frm     => miirx_frm,
+--		miirx_irdy    => miirx_irdy,
+--		miirx_trdy    => miirx_trdy,
+--		miirx_data    => miirx_data,
+--
+--		miitx_frm     => miitx_frm,
+--		miitx_irdy    => miitx_irdy,
+--		miitx_trdy    => '1', --miitx_trdy,
+--		miitx_end     => miitx_end,
+--		miitx_data    => miitx_data);
 
 end;
