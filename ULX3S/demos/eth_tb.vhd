@@ -368,13 +368,13 @@ begin
 			signal miirx_end  : std_logic;
 			signal miirx_irdy : std_logic;
 			signal miirx_trdy : std_logic;
-			signal miirx_data : std_logic_vector(pl_data'range);
+			signal miirx_data : std_logic_vector(mii_txd'range);
 
 			signal miitx_frm  : std_logic;
 			signal miitx_irdy : std_logic;
 			signal miitx_trdy : std_logic;
 			signal miitx_end  : std_logic;
-			signal miitx_data : std_logic_vector(pl_data'range);
+			signal miitx_data : std_logic_vector(mii_txd'range);
 
 		begin
 
@@ -382,7 +382,7 @@ begin
 				variable q : std_logic;
 			begin
 				if rising_edge(mii_txc) then
-					q := mii_txdv;
+					q := mii_txen;
 				end if;
 				miirx_frm <=     mii_rxdv or  q;
 				miirx_end <= not mii_rxdv and q;
