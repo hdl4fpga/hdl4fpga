@@ -388,19 +388,45 @@ begin
 				miirx_end <= not mii_rxdv and q;
 			end process;
 
+			serdes_e : entity hdl4fpga.serdes
+			port (
+				serdes_clk => mii_txc,
+				serdes_frm => txc_rxdv,
+				ser_irdy   => '1',
+				ser_trdy   => open,
+				ser_data   => txc_rxd,
+
+				des_frm    => miirx_frm,
+				des_irdy   => miirx_irdy,
+				des_trdy   => miirx_trdy,
+				des_data   => miirx_data);
+
 			du_e : entity hdl4fpga.mii_ipoe
 			port map (
-				mii_clk       => mii_txc,
-				miirx_frm     => miirx_frm,
-				miirx_irdy    => miirx_irdy,
-				miirx_trdy    => miirx_trdy,
-				miirx_data    => miirx_data,
+				mii_clk    => mii_txc,
+				miirx_frm  => miirx_frm,
+				miirx_irdy => miirx_irdy,
+				miirx_trdy => miirx_trdy,
+				miirx_data => miirx_data,
 
-				miitx_frm     => miitx_frm,
-				miitx_irdy    => miitx_irdy,
-				miitx_trdy    => '1', --miitx_trdy,
-				miitx_end     => miitx_end,
-				miitx_data    => miitx_data);
+				miitx_frm  => miitx_frm,
+				miitx_irdy => miitx_irdy,
+				miitx_trdy => '1', --miitx_trdy,
+				miitx_end  => miitx_end,
+				miitx_data => miitx_data);
+
+			desser_e: entity hdl4fgpa.desser
+			port map (
+				desser_clk => mii_txc,
+
+				des_frm    => miitx_frm,
+				des_irdy   => miitx_irdy,
+				des_trdy   => miitx_trdy,
+				des_data   => miitx_data,
+
+				ser_irdy   : out std_logic;
+				ser_trdy   : in  std_logic := '1';
+				ser_data   : out std_logic_vector);
 
 
 			ser_frm  <= miitx_frm and not miitx_end;
