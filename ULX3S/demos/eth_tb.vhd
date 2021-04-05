@@ -37,7 +37,7 @@ use ieee.std_logic_1164.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture ser_debug of ulx3s is
+architecture eth_tb of ulx3s is
 
 	constant sys_freq   : real    := 25.0e6;
 
@@ -305,6 +305,8 @@ begin
 		signal mii_txc   : std_logic;
 		signal mii_txen  : std_logic;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
+		signal txc_rxdv  : std_logic;
+		signal txc_rxd   : std_logic_vector(0 to 2-1);
 
 		signal mii_rxc   : std_logic;
 		signal mii_rxdv  : std_logic;
@@ -389,7 +391,7 @@ begin
 			end process;
 
 			serdes_e : entity hdl4fpga.serdes
-			port (
+			port map (
 				serdes_clk => mii_txc,
 				serdes_frm => txc_rxdv,
 				ser_irdy   => '1',
@@ -415,7 +417,7 @@ begin
 				miitx_end  => miitx_end,
 				miitx_data => miitx_data);
 
-			desser_e: entity hdl4fgpa.desser
+			desser_e: entity hdl4fpga.desser
 			port map (
 				desser_clk => mii_txc,
 
@@ -424,10 +426,10 @@ begin
 				des_trdy   => miitx_trdy,
 				des_data   => miitx_data,
 
-				ser_irdy   : out std_logic;
-				ser_trdy   : in  std_logic := '1';
-				ser_data   : out std_logic_vector);
+				ser_irdy   => open,
+				ser_data   => mii_txd);
 
+			mii_txen <= miitx_frm and not miitx_end;
 
 			ser_frm  <= miitx_frm and not miitx_end;
 			ser_irdy <= '1';
