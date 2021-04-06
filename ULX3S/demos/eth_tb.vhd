@@ -314,7 +314,7 @@ begin
 
 		signal ipv4acfg_req  : std_logic := '0';
 
-		constant loopback : boolean := false;
+		constant loopback : boolean := true;
 	begin
 	
 		sio_clk <= mii_clk;
@@ -366,7 +366,7 @@ begin
 
 		ipv4acfg_req <= not btn_pwr_n;
 		ipoe_b : block
-			signal miirx_frm  : std_logic;
+			signal miirx_frm  : std_ulogic;
 			signal miirx_end  : std_logic;
 			signal miirx_irdy : std_logic;
 			signal miirx_trdy : std_logic;
@@ -393,12 +393,12 @@ begin
 			serdes_e : entity hdl4fpga.serdes
 			port map (
 				serdes_clk => mii_txc,
-				serdes_frm => txc_rxdv,
+				serdes_frm => miirx_frm,
 				ser_irdy   => '1',
 				ser_trdy   => open,
 				ser_data   => txc_rxd,
 
-				des_frm    => miirx_frm,
+				des_frm    => open,
 				des_irdy   => miirx_irdy,
 				des_trdy   => miirx_trdy,
 				des_data   => miirx_data);

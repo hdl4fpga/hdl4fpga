@@ -209,9 +209,10 @@ architecture ulx3s_ethtb of testbench is
 --		x"1702000000"
 		, 8);
 
-	for all: ulx3s use entity work.ulx3s(ser_debug);
+	for all: ulx3s use entity work.ulx3s(eth_tb);
 
 	signal mii_req : std_logic;
+		signal right : std_logic;
 begin
 
 	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
@@ -424,9 +425,11 @@ begin
 
 	end block;
 
+	right <= '0', '1' after 40 ns;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
+		right     => right,
 		gp         => gp,
 		gn         => gn,
 		ftdi_txd  => ftdi_txd);

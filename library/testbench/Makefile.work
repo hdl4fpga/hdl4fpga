@@ -63,6 +63,7 @@ WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.d
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
 WORK__testbench__eth_tb = $(LIB_WORK)/testbench/eth_tb.dat
+WORK__testbench__ulx3s_ethtb = $(LIB_WORK)/testbench/ulx3s_ethtb.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
@@ -89,6 +90,7 @@ whole_library :     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ulx3s_serdebug) \
     $(WORK__testbench__eth_tb) \
+    $(WORK__testbench__ulx3s_ethtb) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
@@ -196,6 +198,20 @@ $(WORK__testbench) : testbench.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__testbench__ulx3s_ethtb) : ../../ULX3S/testbench/eth_tb.vhd \
+		$(HDL4FPGA__uart_tx) \
+		$(HDL4FPGA__hdlcdll_tx) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(WORK__ulx3s) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002  ../../ULX3S/testbench/eth_tb.vhd
 
 $(WORK__testbench__eth_tb) : eth_tb.vhd \
 		$(HDL4FPGA__eth_tb) \

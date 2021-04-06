@@ -35,7 +35,7 @@ entity eth_tb is
 
 		mii_txc   : in  std_logic;
 		mii_txen  : buffer std_logic;
-		mii_txd   : out std_logic_vector(0 to 8-1));
+		mii_txd   : out std_logic_vector);
 end;
 
 architecture def of eth_tb is

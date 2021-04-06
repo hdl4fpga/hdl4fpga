@@ -49,7 +49,7 @@ entity arp_tx is
 end;
 
 architecture def of arp_tx is
-	signal mux_data : std_logic_vector(0 to summation(arp4_frame)*8/arp_data'length-1);
+	signal mux_data : std_logic_vector(0 to summation(arp4_frame)-1);
 begin
 	
 	mux_data <=
