@@ -403,7 +403,7 @@ begin
 
 				miitx_frm  => miitx_frm,
 				miitx_irdy => miitx_irdy,
-				miitx_trdy => '1', --miitx_trdy,
+				miitx_trdy => miitx_trdy,
 				miitx_end  => miitx_end,
 				miitx_data => miitx_data);
 
