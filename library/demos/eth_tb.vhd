@@ -140,7 +140,7 @@ begin
 --	pl_frm  <= (mii_frm1 and (not eth1_end or not miirx_end)) or (mii_frm2 and (not eth2_end or not miirx_end));
 	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
 	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
-	eth_llc <= reverse(wirebus(x"0806" & x"0800",   mii_frm1 & mii_frm2),8);
+	eth_llc <= reverse(wirebus(std_logic_vector'(x"0806" & x"0800"),   mii_frm1 & mii_frm2),8); -- Latticesemi Diamong requiere qualified expression
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';

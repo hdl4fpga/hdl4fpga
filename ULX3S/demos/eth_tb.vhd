@@ -305,8 +305,6 @@ begin
 		signal mii_txc   : std_logic;
 		signal mii_txen  : std_logic;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
-		signal txc_rxdv  : std_logic;
-		signal txc_rxd   : std_logic_vector(0 to 2-1);
 
 		signal mii_rxc   : std_logic;
 		signal mii_rxdv  : std_logic;
@@ -322,14 +320,13 @@ begin
 		mii_rxc <= mii_clk;
 
 		loopback_g : if loopback generate
---			mii_clk <= clk_25mhz;
-			mii_clk <= rmii_nint;
+			mii_clk <= clk_25mhz;
 
 			process (mii_clk)
 			begin
 				if rising_edge(mii_clk) then
-					rmii_tx_en <= mii_txen;
-					(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+--					rmii_tx_en <= mii_txen;
+--					(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 				end if;
 			end process;
 
@@ -341,8 +338,8 @@ begin
 				mii_txen   => mii_rxdv,
 				mii_txd    => mii_rxd);
 
-			rmii_mdc  <= '0';
-			rmii_mdio <= '0';
+--			rmii_mdc  <= '0';
+--			rmii_mdio <= '0';
 		end generate;
 
 		LAN_g : if not loopback generate
@@ -421,9 +418,9 @@ begin
 
 			mii_txen <= miitx_frm and not miitx_end;
 
-			ser_frm  <= miitx_frm and not miitx_end;
+			ser_frm  <= mii_txen;
 			ser_irdy <= '1';
---			ser_data(0 to io_len(io_link)-1) <= miitx_data;
+			ser_data(0 to io_len(io_link)-1) <= mii_txd;
 		end block;
 
 		process (sio_clk)
