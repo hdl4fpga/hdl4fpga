@@ -68,7 +68,7 @@ begin
 	end process;
 	sio_trdy <= sio_frm;
 
-	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), 8))) rol so_data'length);
+	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), so_data'length))) rol so_data'length);
 
 	so_data <= 
 		rdata when so_data'length=rdata'length else

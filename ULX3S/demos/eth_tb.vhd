@@ -367,36 +367,26 @@ begin
 		ipv4acfg_req <= not btn_pwr_n;
 		ipoe_b : block
 			signal miirx_frm  : std_ulogic;
-			signal miirx_end  : std_logic;
 			signal miirx_irdy : std_logic;
 			signal miirx_trdy : std_logic;
-			signal miirx_data : std_logic_vector(mii_txd'range);
+			signal miirx_data : std_logic_vector(0 to 8-1);
 
 			signal miitx_frm  : std_logic;
 			signal miitx_irdy : std_logic;
 			signal miitx_trdy : std_logic;
 			signal miitx_end  : std_logic;
-			signal miitx_data : std_logic_vector(mii_txd'range);
+			signal miitx_data : std_logic_vector(miirx_data'range);
 
 		begin
 
-			process(mii_rxdv, mii_txc)
-				variable q : std_logic;
-			begin
-				if rising_edge(mii_txc) then
-					q := mii_txen;
-				end if;
-				miirx_frm <=     mii_rxdv or  q;
-				miirx_end <= not mii_rxdv and q;
-			end process;
-
+			miirx_frm <= mii_rxdv;
 			serdes_e : entity hdl4fpga.serdes
 			port map (
 				serdes_clk => mii_txc,
 				serdes_frm => miirx_frm,
 				ser_irdy   => '1',
 				ser_trdy   => open,
-				ser_data   => txc_rxd,
+				ser_data   => mii_rxd,
 
 				des_frm    => open,
 				des_irdy   => miirx_irdy,
@@ -433,7 +423,7 @@ begin
 
 			ser_frm  <= miitx_frm and not miitx_end;
 			ser_irdy <= '1';
-			ser_data(0 to io_len(io_link)-1) <= miitx_data;
+--			ser_data(0 to io_len(io_link)-1) <= miitx_data;
 		end block;
 
 		process (sio_clk)
