@@ -23,52 +23,57 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
-use hdl4fpga.ipoepkg.all;
 
-entity ipv4_rx is
+entity ipv4 is
 	port (
-		mii_clk       : in  std_logic;
+		my_ipv4a   : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
-		mii_ptr       : in  std_logic_vector;
-		ipv4_frm      : in  std_logic_vector;
-		ipv4_irdy     : in  std_logic;
-		ipv4_data     : in  std_logic_vector;
+		mii_clk    : in  std_logic;
+		frmrx_ptr  : in  std_logic_vector;
 
-		ip4len_irdy   : out std_logic;
-		ip4da_frm     : buffer std_logic;
-		ip4da_irdy    : out std_logic;
-		ip4sa_irdy    : out std_logic;
-		ip4proto_irdy : out std_logic;
+		ipv4rx_frm  : in  std_logic;
+		ipv4rx_irdy : in  std_logic;
+		ipv4rx_trdy : out std_logic;
 
-		pl_irdy       : out std_logic);
+		ipv4darx_frm  : out std_logic;
+		ipv4darx_vld  : in  std_logic;
+
+		ipv4tx_frm  : buffer std_logic := '0';
+		ipv4tx_irdy : out std_logic;
+		ipv4tx_trdy : in  std_logic;
+		ipv4tx_end  : out std_logic;
+		ipv4tx_data : out std_logic_vector;
+		miitx_end  : in  std_logic;
+
+		tp         : out std_logic_vector(1 to 32));
 
 end;
 
-architecture def of ipv4_rx is
+architecture def of ipv4 is
 
-	signal ip4len_frm   : std_logic;
-	signal ip4len_frm   : std_logic;
-	signal ip4sa_frm    : std_logic;
-	signal ip4proto_frm : std_logic;
+	signal arpd_rdy  : std_logic := '0';
+	signal arpd_req  : std_logic := '0';
 
 begin
 
-	ip4len_frm   <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_len);
-	ip4sa_frm    <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
-	ip4da_frm    <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
-	ip4proto_frm <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_proto);
-	pl_frm       <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
+	ipv4rx_e : entity hdl4fpga.ipv4_rx
+	port map (
+		mii_clk       => mii_clk,
+		mii_ptr       => frmrx_ptr,
+		ipv4_frm      => ipv4rx_frm,
 
-	ip4len_irdy   <= ipv4_irdy and ip4len_frm;
-	ip4sa_irdy    <= ipv4_irdy and ip4sa_frm;
-	ip4da_irdy    <= ipv4_irdy and ip4da_frm;
-	ip4proto_irdy <= ipv4_irdy and ip4proto_frm;
-	pl_irdy       <= ipv4_irdy and pl_frm;
+		ip4len_irdy   => 
+		ip4da_frm     => 
+		ip4da_irdy    => 
+		ip4sa_irdy    => 
+		ip4proto_irdy => 
+
+		pl_irdy       => 
+		pl_trdy       => );
+
 
 end;
-
