@@ -62,7 +62,8 @@ architecture def of ipv4_tx is
 	signal ipv4hdr_irdy  : std_logic;
 	signal ipv4hdr_trdy  : std_logic;
 	signal ipv4hdr_end   : std_logic;
-	signal ipv4hdr_mux   : std_logic_vector(0 to ipv4_shdr'length+ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_proto)-1);
+	signal ipv4hdr_mux   : std_logic_vector(0 to summation(
+		ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto))-1);
 	signal ipv4hdr_data  : std_logic_vector(ipv4_data'range);
 
 	signal ipv4a_mux     : std_logic_vector(0 to ipv4_sa'length+ipv4_da'length-1);
@@ -212,12 +213,9 @@ begin
         so_end   => ipv4cksm_end,
         so_data  => ipv4cksm_data);
 
-	ipv4_irdy <= wirebus(
-		ipv4hdr_trdy & ipv4cksm_trdy & ipv4abuf_irdy & pl_irdy,
-		not ipv4hdr_end  & 
-		(not ipv4cksm_end and ipv4hdr_end)  & 
-		(ipv4abuf_irdy    and ipv4cksm_end) & 
-		(pl_irdy       and not ipv4abuf_irdy and ipv4cksm_end))(0);
+	ipv4_irdy <= primux(
+		ipv4hdr_trdy    & ipv4cksm_trdy    & ipv4abuf_irdy & pl_irdy,
+		not ipv4hdr_end & not ipv4cksm_end & ipv4abuf_irdy & pl_irdy)(0);
 	ipv4_data <= wirebus(
 		ipv4hdr_data & ipv4cksm_data & ipv4abuf_data & pl_data,
 		not ipv4hdr_end                     & 
