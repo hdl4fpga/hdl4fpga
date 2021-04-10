@@ -42,13 +42,13 @@ entity eth_rx is
 		eth_ptr    : buffer std_logic_vector;
 		eth_pre    : buffer std_logic;
 		hwda_irdy  : buffer std_logic;
-		hwda_trdy  : in  std_logic;
+		hwda_trdy  : in  std_logic := '1';
 		hwsa_irdy  : buffer std_logic;
-		hwsa_trdy  : in  std_logic;
+		hwsa_trdy  : in  std_logic := '1';
 		hwtyp_irdy : buffer std_logic;
-		hwtyp_trdy : in  std_logic;
+		hwtyp_trdy : in  std_logic := '1';
 		pl_irdy    : out std_logic;
-		pl_trdy    : in  std_logic;
+		pl_trdy    : in  std_logic := '1';
 
 		crc_sb     : out std_logic;
 		crc_equ    : out std_logic;

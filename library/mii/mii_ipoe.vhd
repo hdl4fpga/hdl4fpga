@@ -67,15 +67,16 @@ architecture def of mii_ipoe is
 	signal hwtyprx_trdy : std_logic;
 	signal plrx_irdy    : std_logic;
 	signal plrx_trdy    : std_logic;
-	signal arprx_last   : std_logic;
+	signal llc_last     : std_logic;
 	signal arprx_equ    : std_logic;
 	signal arprx_vld    : std_logic;
+	signal iprx_equ     : std_logic;
+	signal iprx_vld     : std_logic;
 	signal fcs_sb       : std_logic;
 	signal fcs_vld      : std_logic;
 
 	signal arprx_frm    : std_logic;
-	signal arprx_irdy   : std_logic;
-	signal arprx_trdy   : std_logic;
+	signal iprx_frm     : std_logic;
 
 	signal arptx_frm    : std_logic;
 	signal arptx_irdy   : std_logic;
@@ -104,13 +105,9 @@ begin
 
 		eth_ptr    => frmrx_ptr,
 		hwda_irdy  => hwdarx_irdy,
-		hwda_trdy  => '1', --hwdarx_trdy,
 		hwsa_irdy  => hwsarx_irdy,
-		hwsa_trdy  => '1', --hwsarx_trdy,
 		hwtyp_irdy => hwtyprx_irdy,
-		hwtyp_trdy => '1', --hwtyprx_trdy,
 		pl_irdy    => plrx_irdy,
-		pl_trdy    => '1', --pl_trdy,
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
@@ -150,28 +147,41 @@ begin
 
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (
-		n => 1)
+		n => 2)
 	port map (
-		mux_data  => reverse(llc_arp,8),
+		mux_data  => reverse(llc_arp & llc_ip,8),
         sio_clk   => mii_clk,
         sio_frm   => miirx_frm,
 		sio_irdy  => hwtyprx_irdy,
 		sio_trdy  => hwtyprx_trdy,
         si_data   => miirx_data,
-		so_last   => arprx_last,
-		so_equ(0) => arprx_equ);
+		so_last   => llc_last,
+		so_equ(0) => arprx_equ,
+		so_equ(1) => iprx_equ);
 
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				arprx_vld <= '0';
-			elsif arprx_last='1' then
+			elsif llc_last='1' then
 				arprx_vld <= arprx_equ;
 			end if;
 		end if;
 	end process;
 	arprx_frm <= miirx_frm and arprx_vld;
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				iprx_vld <= '0';
+			elsif llc_last='1' then
+				iprx_vld <= iprx_equ;
+			end if;
+		end if;
+	end process;
+	iprx_frm <= miirx_frm and iprx_vld;
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -220,14 +230,12 @@ begin
 		my_mac     => my_mac,
 
 		mii_clk    => mii_clk,
+		miirx_data => miirx_data,
 		frmrx_ptr  => frmrx_ptr,
 
 		arpdtx_req => arpdtx_rdy,
 		arpdtx_rdy => arpdtx_rdy,
 		arprx_frm  => arprx_frm,
-		arprx_irdy => arprx_irdy,
-		arprx_trdy => arprx_trdy,
-		arprx_data => miirx_data,
 
 		tparx_frm  => ipv4arx_frm,
 		tparx_vld  => ipv4arx_vld,
@@ -238,5 +246,30 @@ begin
 		arptx_end  => arptx_end,
 		arptx_data => arptx_data,
 		miitx_end  => miitx_end);
+
+	ipv4_e : entity hdl4fpga.ipv4
+	port map (
+		mii_clk        => mii_clk,
+		mii_data       => miirx_data,
+		frmrx_ptr  => frmrx_ptr,
+
+		ipv4rx_frm     => iprx_frm,
+		ipv4rx_irdy    => miirx_irdy,
+
+		ipv4lenrx_irdy => open,
+		ipv4protorx_irdy => open,
+		ipv4sarx_irdy  => open,
+		ipv4darx_frm   => open,
+		ipv4darx_irdy  =>  open,
+		ipv4plrx_irdy  => open,
+
+--		ipv4tx_frm     : buffer std_logic := '0';
+--		ipv4tx_irdy    : out std_logic;
+--		ipv4tx_trdy    : in  std_logic;
+--		ipv4tx_end     : out std_logic;
+		ipv4tx_data    => miitx_data,
+		miitx_end      => '1'
+
+		);
 
 end;

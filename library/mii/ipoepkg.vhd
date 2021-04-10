@@ -31,9 +31,6 @@ use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 
-	constant llc_ipv4 : std_logic_vector := x"0800";
-	constant llc_arp  : std_logic_vector := x"0806";
-
 	constant arp_htype : natural := eth_frame'right+1;
 	constant arp_ptype : natural := eth_frame'right+2;
 	constant arp_hlen  : natural := eth_frame'right+3;

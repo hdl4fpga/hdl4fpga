@@ -29,51 +29,52 @@ use hdl4fpga.std.all;
 
 entity ipv4 is
 	port (
-		my_ipv4a   : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
+		my_ipv4a       : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		my_mac         : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
-		mii_clk    : in  std_logic;
-		frmrx_ptr  : in  std_logic_vector;
+		mii_clk        : in  std_logic;
+		mii_data       : in  std_logic_vector;
+		frmrx_ptr      : in  std_logic_vector;
 
-		ipv4rx_frm  : in  std_logic;
-		ipv4rx_irdy : in  std_logic;
-		ipv4rx_trdy : out std_logic;
+		ipv4rx_frm     : in  std_logic;
+		ipv4rx_irdy    : in  std_logic;
 
-		ipv4darx_frm  : out std_logic;
-		ipv4darx_vld  : in  std_logic;
+		ipv4lenrx_irdy : out std_logic;
+		ipv4protorx_irdy : out std_logic;
+		ipv4sarx_irdy  : out std_logic;
+		ipv4darx_frm   : out std_logic;
+		ipv4darx_irdy  : out std_logic;
 
-		ipv4tx_frm  : buffer std_logic := '0';
-		ipv4tx_irdy : out std_logic;
-		ipv4tx_trdy : in  std_logic;
-		ipv4tx_end  : out std_logic;
-		ipv4tx_data : out std_logic_vector;
-		miitx_end  : in  std_logic;
+		ipv4plrx_irdy  : out std_logic;
 
-		tp         : out std_logic_vector(1 to 32));
+		ipv4tx_frm     : buffer std_logic := '0';
+		ipv4tx_irdy    : out std_logic;
+		ipv4tx_trdy    : in  std_logic := '1';
+		ipv4tx_end     : out std_logic;
+		ipv4tx_data    : out std_logic_vector;
+		miitx_end      : in  std_logic;
+
+		tp             : out std_logic_vector(1 to 32));
 
 end;
 
 architecture def of ipv4 is
-
-	signal arpd_rdy  : std_logic := '0';
-	signal arpd_req  : std_logic := '0';
-
 begin
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
 		mii_clk       => mii_clk,
+		mii_data      => mii_data,
 		mii_ptr       => frmrx_ptr,
 		ipv4_frm      => ipv4rx_frm,
+		ipv4_irdy     => ipv4rx_irdy,
 
-		ip4len_irdy   => 
-		ip4da_frm     => 
-		ip4da_irdy    => 
-		ip4sa_irdy    => 
-		ip4proto_irdy => 
+		ipv4len_irdy   => ipv4lenrx_irdy,
+		ipv4proto_irdy => ipv4protorx_irdy,
+		ipv4sa_irdy    => ipv4sarx_irdy,
+		ipv4da_frm     => ipv4darx_frm,
+		ipv4da_irdy    => ipv4darx_irdy,
 
-		pl_irdy       => 
-		pl_trdy       => );
-
+		pl_irdy       => ipv4plrx_irdy);
 
 end;

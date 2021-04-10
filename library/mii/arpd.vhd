@@ -33,14 +33,12 @@ entity arpd is
 		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
 		mii_clk    : in  std_logic;
+		miirx_data : in  std_logic_vector;
 		frmrx_ptr  : in  std_logic_vector;
 
 		arpdtx_req : in  std_logic;
 		arpdtx_rdy : buffer  std_logic;
 		arprx_frm  : in  std_logic;
-		arprx_irdy : in  std_logic;
-		arprx_trdy : out std_logic;
-		arprx_data : in  std_logic_vector;
 
 		tparx_frm  : out std_logic;
 		tparx_vld  : in  std_logic;
@@ -66,9 +64,9 @@ begin
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
 		mii_clk  => mii_clk,
+		mii_data => miirx_data,
 		mii_ptr  => frmrx_ptr,
 		arp_frm  => arprx_frm,
-		arp_data => arprx_data,
 		tpa_frm  => tparx_frm);
 
 	process (mii_clk)

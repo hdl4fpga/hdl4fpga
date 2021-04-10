@@ -33,17 +33,17 @@ use hdl4fpga.ipoepkg.all;
 entity ipv4_rx is
 	port (
 		mii_clk       : in  std_logic;
+		mii_data      : in  std_logic_vector;
 
 		mii_ptr       : in  std_logic_vector;
-		ipv4_frm      : in  std_logic_vector;
+		ipv4_frm      : in  std_logic;
 		ipv4_irdy     : in  std_logic;
-		ipv4_data     : in  std_logic_vector;
 
-		ip4len_irdy   : out std_logic;
-		ip4da_frm     : buffer std_logic;
-		ip4da_irdy    : out std_logic;
-		ip4sa_irdy    : out std_logic;
-		ip4proto_irdy : out std_logic;
+		ipv4len_irdy   : out std_logic;
+		ipv4da_frm     : buffer std_logic;
+		ipv4da_irdy    : out std_logic;
+		ipv4sa_irdy    : out std_logic;
+		ipv4proto_irdy : out std_logic;
 
 		pl_irdy       : out std_logic);
 
@@ -51,24 +51,24 @@ end;
 
 architecture def of ipv4_rx is
 
-	signal ip4len_frm   : std_logic;
-	signal ip4len_frm   : std_logic;
-	signal ip4sa_frm    : std_logic;
-	signal ip4proto_frm : std_logic;
+	signal ipv4len_frm   : std_logic;
+	signal ipv4sa_frm    : std_logic;
+	signal ipv4proto_frm : std_logic;
+	signal pl_frm : std_logic;
 
 begin
 
-	ip4len_frm   <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_len);
-	ip4sa_frm    <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_sa);
-	ip4da_frm    <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da);
-	ip4proto_frm <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_proto);
-	pl_frm       <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame, mii_rxd'length, ip4_da, gt);
+	ipv4len_frm <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame, mii_data'length, ipv4_len);
+	ipv4sa_frm  <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame, mii_data'length, ipv4_sa);
+	ipv4da_frm  <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame, mii_data'length, ipv4_da);
+	ipv4proto_frm <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame, mii_data'length, ipv4_proto);
+	pl_frm      <= ipv4_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame, mii_data'length, ipv4_da, gt);
 
-	ip4len_irdy   <= ipv4_irdy and ip4len_frm;
-	ip4sa_irdy    <= ipv4_irdy and ip4sa_frm;
-	ip4da_irdy    <= ipv4_irdy and ip4da_frm;
-	ip4proto_irdy <= ipv4_irdy and ip4proto_frm;
-	pl_irdy       <= ipv4_irdy and pl_frm;
+	ipv4len_irdy   <= ipv4_irdy and ipv4len_frm;
+	ipv4sa_irdy    <= ipv4_irdy and ipv4sa_frm;
+	ipv4da_irdy    <= ipv4_irdy and ipv4da_frm;
+	ipv4proto_irdy <= ipv4_irdy and ipv4proto_frm;
+	pl_irdy        <= ipv4_irdy and pl_frm;
 
 end;
 

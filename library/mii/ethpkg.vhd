@@ -38,6 +38,9 @@ package ethpkg is
 	constant eth_hwsa : natural := 1;
 	constant eth_type : natural := 2;
 
+	constant llc_ip  : std_logic_vector := x"0800";
+	constant llc_arp : std_logic_vector := x"0806";
+
 	constant eth_frame : natural_vector := (
 		eth_hwda => 6*8,
 		eth_hwsa => 6*8,
