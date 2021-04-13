@@ -107,8 +107,4 @@ begin
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_data  => ipv4tx_data);
 
-	ipv4d_e : entity hdl4fpga.ipv4d
-	port map (
-		);
-
 end;

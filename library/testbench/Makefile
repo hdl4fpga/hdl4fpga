@@ -93,6 +93,10 @@ HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
 HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
 HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
+HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
+HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
+HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
+HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
 HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
 HDL4FPGA__ipv4_rx = $(LIB_HDL4FPGA)/ipv4_rx/_primary.dat
 HDL4FPGA__ipv4__def = $(LIB_HDL4FPGA)/ipv4/def.dat
@@ -100,6 +104,10 @@ HDL4FPGA__ipv4 = $(LIB_HDL4FPGA)/ipv4/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__iofifo__mix = $(LIB_HDL4FPGA)/iofifo/mix.dat
 HDL4FPGA__iofifo = $(LIB_HDL4FPGA)/iofifo/_primary.dat
+HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
+HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
+HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
+HDL4FPGA__icmprply_tx = $(LIB_HDL4FPGA)/icmprply_tx/_primary.dat
 HDL4FPGA__hdlcsync_tx__def = $(LIB_HDL4FPGA)/hdlcsync_tx/def.dat
 HDL4FPGA__hdlcsync_tx = $(LIB_HDL4FPGA)/hdlcsync_tx/_primary.dat
 HDL4FPGA__hdlcsync_rx__def = $(LIB_HDL4FPGA)/hdlcsync_rx/def.dat
@@ -286,6 +294,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__mii_rxpre) \
     $(HDL4FPGA__mii_ipoe__def) \
     $(HDL4FPGA__mii_ipoe) \
+    $(HDL4FPGA__mii_1cksm__beh) \
+    $(HDL4FPGA__mii_1cksm) \
+    $(HDL4FPGA__ipv4_tx__def) \
+    $(HDL4FPGA__ipv4_tx) \
     $(HDL4FPGA__ipv4_rx__def) \
     $(HDL4FPGA__ipv4_rx) \
     $(HDL4FPGA__ipv4__def) \
@@ -293,6 +305,10 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__ipoepkg) \
     $(HDL4FPGA__iofifo__mix) \
     $(HDL4FPGA__iofifo) \
+    $(HDL4FPGA__icmprqst_rx__def) \
+    $(HDL4FPGA__icmprqst_rx) \
+    $(HDL4FPGA__icmprply_tx__def) \
+    $(HDL4FPGA__icmprply_tx) \
     $(HDL4FPGA__hdlcsync_tx__def) \
     $(HDL4FPGA__hdlcsync_tx) \
     $(HDL4FPGA__hdlcsync_rx__def) \
@@ -917,6 +933,29 @@ $(HDL4FPGA__hdlcsync_tx__def) : ../hdlc/hdlcsync_tx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcsync_tx.vhd
 
+$(HDL4FPGA__icmprply_tx) \
+$(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/icmprply_tx.vhd
+
+$(HDL4FPGA__icmprqst_rx) \
+$(HDL4FPGA__icmprqst_rx__def) : ../mii/icmprqst_rx.vhd \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/icmprqst_rx.vhd
+
 $(HDL4FPGA__iofifo) \
 $(HDL4FPGA__iofifo__mix) : ../ddr/ddr_iofifo.vhd \
 		$(HDL4FPGA__dbram) \
@@ -940,6 +979,7 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
+		$(HDL4FPGA__ipv4_tx) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipv4_rx) \
@@ -960,6 +1000,30 @@ $(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_rx.vhd
+
+$(HDL4FPGA__ipv4_tx) \
+$(HDL4FPGA__ipv4_tx__def) : ../mii/ipv4_tx.vhd \
+		$(HDL4FPGA__mii_1cksm) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_tx.vhd
+
+$(HDL4FPGA__mii_1cksm) \
+$(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_1cksm.vhd
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \

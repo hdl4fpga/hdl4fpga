@@ -52,10 +52,10 @@ architecture def of icmprqst_rx is
 
 begin
 
-	icmpcksm_frm <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_cksm);
-	icmpid_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_id);
-	icmpseq_frm  <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq);
-	icmppl_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq, gt);
+	icmpcksm_frm <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_cksm);
+	icmpid_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_id);
+	icmpseq_frm  <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq);
+	icmppl_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq, gt);
 
 	icmpcksm_irdy <= mii_irdy and icmpcksm_frm;
 	icmpid_irdy   <= mii_irdy and icmpid_frm;
