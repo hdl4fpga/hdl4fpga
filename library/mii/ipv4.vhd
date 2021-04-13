@@ -59,6 +59,17 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
+	signal ipv4len_tx   : std_logic_vector(16-1 downto 0);
+	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
+	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
+	signal ipv4proto_tx : std_logic_vector(8-1 downto 0);
+
+	signal pltx_frm  : std_logic;
+	signal pltx_irdy : std_logic;
+	signal pltx_trdy : std_logic;
+	signal pltx_data : std_logic_vector(ipv4tx_data'range);
+
+
 begin
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
@@ -76,5 +87,28 @@ begin
 		ipv4da_irdy    => ipv4darx_irdy,
 
 		pl_irdy       => ipv4plrx_irdy);
+
+	ipv4tx_e : entity hdl4fpga.ipv4_tx
+	port map (
+		mii_clk    => mii_clk,
+
+		pl_frm     => pltx_frm,
+		pl_irdy    => pltx_irdy,
+		pl_trdy    => pltx_trdy,
+		pl_data    => pltx_data,
+
+		ipv4_len   => ipv4len_tx,
+		ipv4_sa    => ipv4sa_tx,
+		ipv4_da    => ipv4da_tx,
+		ipv4_proto => ipv4proto_tx,
+
+		ipv4_frm   => ipv4tx_frm,
+		ipv4_irdy  => ipv4tx_irdy,
+		ipv4_trdy  => ipv4tx_trdy,
+		ipv4_data  => ipv4tx_data);
+
+	ipv4d_e : entity hdl4fpga.ipv4d
+	port map (
+		);
 
 end;

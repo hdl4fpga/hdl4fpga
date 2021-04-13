@@ -32,25 +32,35 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmprqst_rx is
 	port (
-		mii_rxc    : in std_logic;
-		mii_rxdv   : in std_logic;
-		mii_rxd    : in std_logic_vector;
-		mii_ptr    : in std_logic_vector;
+		mii_irdy   : in  std_logic;
+		mii_data   : in  std_logic_vector;
+		mii_ptr    : in  std_logic_vector;
 
-		icmprqst_ena : in  std_logic;
-		icmpcksm_rxdv : out std_logic;
-		icmpid_rxdv  : out std_logic;
-		icmpseq_rxdv : out std_logic;
-		icmppl_rxdv  : out std_logic);
+		icmprqst_frm : in  std_logic;
+		icmpcksm_irdy : out std_logic;
+		icmpid_irdy  : out std_logic;
+		icmpseq_irdy : out std_logic;
+		icmppl_irdy  : out std_logic);
 end;
 
 architecture def of icmprqst_rx is
+
+	signal icmpcksm_frm : std_logic;
+	signal icmpid_frm   : std_logic;
+	signal icmpseq_frm  : std_logic;
+	signal icmppl_frm   : std_logic;
+
 begin
 
-	icmpcksm_rxdv <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_cksm);
-	icmpid_rxdv   <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_id);
-	icmpseq_rxdv  <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_seq);
-	icmppl_rxdv   <= icmprqst_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_rxd'length, icmp_seq, gt);
+	icmpcksm_frm <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_cksm);
+	icmpid_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_id);
+	icmpseq_frm  <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq);
+	icmppl_frm   <= icmprqst_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & icmphdr_frame & icmprqst_frame, mii_data'length, icmp_seq, gt);
+
+	icmpcksm_irdy <= mii_irdy and icmpcksm_frm;
+	icmpid_irdy   <= mii_irdy and icmpid_frm;
+	icmpseq_irdy  <= mii_irdy and icmpseq_frm;
+	icmppl_irdy   <= mii_irdy and icmppl_frm;
 
 end;
 

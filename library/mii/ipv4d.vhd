@@ -23,73 +23,52 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ethpkg.all;
-use hdl4fpga.ipoepkg.all;
 
-entity icmprply_tx is
-	port (
-		mii_txc   : in  std_logic;
-
-		pl_txen   : in  std_logic;
-		pl_txd    : in  std_logic_vector;
-
-		icmp_ptr  : in  std_logic_vector;
-		icmp_cksm : in  std_logic_vector(0 to 16-1);
-		icmp_id   : in  std_logic_vector(0 to 16-1);
-		icmp_seq  : in  std_logic_vector(0 to 16-1);
-		icmp_txen : out std_logic := '0';
-		icmp_txd  : out std_logic_vector);
+entity ipv4d is
 end;
 
-architecture def of icmprply_tx is
-	signal icmp_txdv : std_logic;
-	signal icmp_data : std_logic_vector(0 to 64-1);
-	signal icmphdr_txen : std_logic;
-	signal icmphdr_txd  : std_logic_vector(icmp_txd'range);
-	signal pllat_txen : std_logic;
-	signal pllat_txd  : std_logic_vector(icmp_txd'range);
+architecture def of ipv4d is
 begin
 
-	process (pl_txen, pllat_txen, mii_txc)
-		variable txen : std_logic := '0';
+	llc_e : entity hdl4fpga.sio_cmp
+	generic map (
+		n => 2)
+	port map (
+		mux_data  => reverse(llc_arp & llc_ip,8),
+        sio_clk   => mii_clk,
+        sio_frm   => miirx_frm,
+		sio_irdy  => hwtyprx_irdy,
+		sio_trdy  => hwtyprx_trdy,
+        si_data   => miirx_data,
+		so_last   => llc_last,
+		so_equ(0) => arprx_equ,
+		so_equ(1) => iprx_equ);
+
+	process (mii_clk)
 	begin
-		if rising_edge(mii_txc) then
-			if pl_txen='1' then
-				txen := '1';
-			elsif txen='1' then
-				if pllat_txen='1' then
-					txen := '0';
-				end if;
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				arprx_vld <= '0';
+			elsif llc_last='1' then
+				arprx_vld <= arprx_equ;
 			end if;
 		end if;
-		icmp_txdv <= pl_txen or txen or pllat_txen;
 	end process;
+	arprx_frm <= miirx_frm and arprx_vld;
 
-	pllat_e : entity hdl4fpga.mii_latency
-	generic map (
-		latency => (summation(icmphdr_frame & icmprqst_frame)))
-	port map (
-		mii_txc  => mii_txc,
-		lat_txen => pl_txen,
-		lat_txd  => pl_txd,
-		mii_txen => pllat_txen,
-		mii_txd  => pllat_txd);
-		
-	icmp_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
-	icmp_e : entity hdl4fpga.mii_mux
-	port map (
-		mux_data => icmp_data,
-        mii_txc  => mii_txc,
-		mii_txdv => icmp_txdv,
-        mii_txen => icmphdr_txen,
-        mii_txd  => icmphdr_txd);
-
-	icmp_txd  <= wirebus(icmphdr_txd & pllat_txd, icmphdr_txen & pllat_txen);
-	icmp_txen <= icmp_txdv;
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				iprx_vld <= '0';
+			elsif llc_last='1' then
+				iprx_vld <= iprx_equ;
+			end if;
+		end if;
+	end process;
+	iprx_frm <= miirx_frm and iprx_vld;
 
 end;
-
