@@ -26,13 +26,19 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
 
 entity icmpd is
 	port (
-		mii_clk  : std_logic;
-		pmii_data : std_logic_vector;
-		miirx_data : std_logic_vector;
-		miitx_data : std_logic_vector);
+		mii_clk     : std_logic;
+		miirx_irdy  : std_logic;
+		frmrx_ptr   : std_logic_vector;
+		miirx_data  : std_logic_vector;
+		icmprx_frm  : std_logic;
+		icmptx_frm  : std_logic;
+		icmptx_irdy : std_logic;
+		icmptx_trdy : std_logic;
+		miitx_data : out std_logic_vector);
 
 end;
 
@@ -41,30 +47,32 @@ architecture def of icmpd is
 	signal icmpidrx_irdy   : std_logic;
 	signal icmpseqrx_irdy  : std_logic;
 	signal icmpcksmrx_irdy : std_logic;
-	signal icmpidrx_data   : std_logic_vector(0 to 16-1);
-	signal icmpseq_data    : std_logic_vector(0 to 16-1);
-	signal icmpcksm_data   : std_logic_vector(0 to 16-1);
-	signal icmprply_cksm   : std_logic_vector(0 to 16-1);
+	signal icmpplrx_irdy   : std_logic;
 
-	signal icmppl_irdy   : std_logic;
+	signal icmprx_type   : std_logic_vector(0 to 8-1);
+	signal icmprx_id: std_logic_vector(0 to 16-1);
+	signal icmprx_seq: std_logic_vector(0 to 16-1);
+	signal icmprx_cksm : std_logic_vector(0 to 16-1);
+	signal icmptx_cksm   : std_logic_vector(0 to 16-1);
 
-	signal pltx_irdy   : std_logic;
-	signal pltx_data    : std_logic_vector(miitx_data'range);
+	signal icmppl_irdy     : std_logic;
 
+	signal pltx_irdy       : std_logic;
+	signal pltx_data       : std_logic_vector(miitx_data'range);
 
 begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
 	port map (
-		mii_irdy      => 
-		mii_data      => 
-		mii_ptr       => 
+		mii_irdy      => miirx_irdy,
+		mii_ptr       => frmrx_ptr,
+		mii_data      => miirx_data,
 
-		icmprqst_frm  =>
+		icmprqst_frm  => icmprx_frm,
 		icmpid_irdy   => icmpidrx_irdy,
 		icmpseq_irdy  => icmpseqrx_irdy,
 		icmpcksm_irdy => icmpcksmrx_irdy,
-		icmppl_irdy   => icmpplrx_irdy  
+		icmppl_irdy   => icmpplrx_irdy);
 
 	icmpcksm_e : entity hdl4fpga.serdes
 	port map (
@@ -72,7 +80,7 @@ begin
 		serdes_frm => icmprx_frm,
 		ser_irdy   => icmpcksmrx_irdy,
 		ser_data   => miirx_data,
-		des_data   => icmpcksm_data);
+		des_data   => icmptx_cksm);
 
 	icmpseq_e : entity hdl4fpga.serdes
 	port map (
@@ -80,15 +88,15 @@ begin
 		serdes_frm => icmprx_frm,
 		ser_irdy   => icmpseqrx_irdy,
 		ser_data   => miirx_data,
-		des_data   => icmpseq_data);
+		des_data   => icmprx_seq);
 
-	icmpid_e : entity hdl4fpga.mii_des
+	icmpid_e : entity hdl4fpga.serdes
 	port map (
 		serdes_clk => mii_clk,
-		serdes_frm => icmp_frm,
+		serdes_frm => icmprx_frm,
 		ser_irdy   => icmpidrx_irdy,
 		ser_data   => miirx_data,
-		des_data   => icmpid_data);
+		des_data   => icmprx_id);
 
 	icmpdata_e : entity hdl4fpga.sio_ram
 	generic map (
@@ -100,23 +108,23 @@ begin
         si_data  => miirx_data,
 
 		so_clk   => mii_clk,
-        so_frm   => 
-        so_irdy  =>
-        so_data  => );
+        so_frm   => icmptx_frm,
+        so_irdy  => icmptx_irdy,
+        so_data  => miitx_data);
 
-	icmprply_cksm <= oneschecksum(icmpcksm_data & icmptype_rqst & x"00", icmprply_cksm'length);
+	icmptx_cksm <= oneschecksum(icmprx_cksm & icmprx_type & x"00", icmptx_cksm'length);
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (
-		mii_txc   => mii_txc,
+		mii_clk   => mii_clk,
 
-		pl_txen   => icmppl_txen,
-		pl_txd    => icmppl_txd,
+		pl_frm   => '1',
+		pl_irdy   => '1',
+		pl_data    => miirx_data,
 
-		icmp_ptr  => txfrm_ptr,
-		icmp_cksm => icmprply_cksm,
-		icmp_id   => icmpid_data,
-		icmp_seq  => icmpseq_data,
-		icmp_txen => icmp_txen,
-		icmp_txd  => icmp_txd);
+		icmp_cksm => icmptx_cksm,
+		icmp_id   => icmprx_id,
+		icmp_seq  => icmprx_seq,
+		icmp_irdy => open,
+		icmp_data  => miitx_data);
 
 end;

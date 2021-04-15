@@ -33,42 +33,4 @@ end;
 architecture def of ipv4d is
 begin
 
-	llc_e : entity hdl4fpga.sio_cmp
-	generic map (
-		n => 2)
-	port map (
-		mux_data  => reverse(llc_arp & llc_ip,8),
-        sio_clk   => mii_clk,
-        sio_frm   => miirx_frm,
-		sio_irdy  => hwtyprx_irdy,
-		sio_trdy  => hwtyprx_trdy,
-        si_data   => miirx_data,
-		so_last   => llc_last,
-		so_equ(0) => arprx_equ,
-		so_equ(1) => iprx_equ);
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
-				arprx_vld <= '0';
-			elsif llc_last='1' then
-				arprx_vld <= arprx_equ;
-			end if;
-		end if;
-	end process;
-	arprx_frm <= miirx_frm and arprx_vld;
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
-				iprx_vld <= '0';
-			elsif llc_last='1' then
-				iprx_vld <= iprx_equ;
-			end if;
-		end if;
-	end process;
-	iprx_frm <= miirx_frm and iprx_vld;
-
 end;

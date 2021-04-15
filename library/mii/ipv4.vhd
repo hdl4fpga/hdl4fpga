@@ -69,6 +69,8 @@ architecture def of ipv4 is
 	signal pltx_trdy : std_logic;
 	signal pltx_data : std_logic_vector(ipv4tx_data'range);
 
+	signal icmprx_equ : std_logic;
+	signal icmprx_last : std_logic;
 
 begin
 
@@ -106,5 +108,29 @@ begin
 		ipv4_irdy  => ipv4tx_irdy,
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_data  => ipv4tx_data);
+
+	proto_e : entity hdl4fpga.sio_cmp
+	generic map (
+		n => 1)
+	port map (
+		mux_data  => reverse(ipv4proto_icmp,8),
+        sio_clk   => mii_clk,
+        sio_frm   => ipv4rx_frm,
+		sio_irdy  => ipv4protorx_irdy,
+        si_data   => miirx_data,
+		so_last   => protorx_last,
+		so_equ(0) => icmprx_equ);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4rx_frm='0' then
+				icmprx_vld <= '0';
+			elsif protorx_last='1' then
+				icmprx_vld <= icmprx_equ;
+			end if;
+		end if;
+	end process;
+	icmprx_frm <= ipv4rx_frm and icmprx_vld;
 
 end;
