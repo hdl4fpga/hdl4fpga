@@ -28,21 +28,21 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 
-entity icmpd is
+entity icmp is
 	port (
-		mii_clk     : std_logic;
-		miirx_irdy  : std_logic;
-		frmrx_ptr   : std_logic_vector;
-		miirx_data  : std_logic_vector;
-		icmprx_frm  : std_logic;
-		icmptx_frm  : std_logic;
-		icmptx_irdy : std_logic;
-		icmptx_trdy : std_logic;
-		miitx_data : out std_logic_vector);
+		mii_clk     : in  std_logic;
+		miirx_irdy  : in  std_logic;
+		frmrx_ptr   : in  std_logic_vector;
+		miirx_data  : in  std_logic_vector;
+		icmprx_frm  : in  std_logic;
+		icmptx_frm  : buffer std_logic;
+		icmptx_irdy : buffer std_logic;
+		icmptx_trdy : in  std_logic := '1';
+		miitx_data  : out std_logic_vector);
 
 end;
 
-architecture def of icmpd is
+architecture def of icmp is
 
 	signal icmpidrx_irdy   : std_logic;
 	signal icmpseqrx_irdy  : std_logic;

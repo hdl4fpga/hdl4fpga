@@ -250,7 +250,7 @@ begin
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
 		mii_clk        => mii_clk,
-		mii_data       => miirx_data,
+		miirx_data    => miirx_data,
 		frmrx_ptr  => frmrx_ptr,
 
 		ipv4rx_frm     => iprx_frm,

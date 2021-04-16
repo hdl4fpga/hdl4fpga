@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
 	port (
@@ -33,14 +34,14 @@ entity ipv4 is
 		my_mac         : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
 		mii_clk        : in  std_logic;
-		mii_data       : in  std_logic_vector;
+		miirx_data     : in  std_logic_vector;
 		frmrx_ptr      : in  std_logic_vector;
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 
 		ipv4lenrx_irdy : out std_logic;
-		ipv4protorx_irdy : out std_logic;
+		ipv4protorx_irdy : buffer std_logic;
 		ipv4sarx_irdy  : out std_logic;
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : out std_logic;
@@ -69,15 +70,20 @@ architecture def of ipv4 is
 	signal pltx_trdy : std_logic;
 	signal pltx_data : std_logic_vector(ipv4tx_data'range);
 
-	signal icmprx_equ : std_logic;
-	signal icmprx_last : std_logic;
+	signal icmprx_frm  : std_logic;
+	signal icmprx_equ  : std_logic;
+	signal icmprx_vld  : std_logic;
+	signal icmptx_frm  : std_logic;
+	signal icmptx_irdy : std_logic;
+	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
+	signal protorx_last : std_logic;
 
 begin
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
 		mii_clk       => mii_clk,
-		mii_data      => mii_data,
+		mii_data      => miirx_data,
 		mii_ptr       => frmrx_ptr,
 		ipv4_frm      => ipv4rx_frm,
 		ipv4_irdy     => ipv4rx_irdy,
@@ -133,4 +139,18 @@ begin
 	end process;
 	icmprx_frm <= ipv4rx_frm and icmprx_vld;
 
+	icmp_e : entity hdl4fpga.icmp
+	port map (
+		mii_clk     => mii_clk,
+		icmprx_frm  => icmprx_frm,
+		miirx_irdy  => ipv4rx_irdy,
+		frmrx_ptr   => frmrx_ptr,
+		miirx_data  => miirx_data,
+		icmptx_frm  => icmptx_frm,
+		icmptx_irdy => icmptx_irdy,
+		icmptx_trdy => ipv4tx_trdy,
+		miitx_data  => icmptx_data);
+
+	pltx_frm  <= icmptx_frm;
+	pltx_irdy <= icmptx_irdy;
 end;
