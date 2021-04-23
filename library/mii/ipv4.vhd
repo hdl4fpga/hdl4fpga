@@ -132,7 +132,7 @@ begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
 				icmprx_vld <= '0';
-			elsif protorx_last='1' then
+			elsif protorx_last='1' and ipv4protorx_irdy='1' then
 				icmprx_vld <= icmprx_equ;
 			end if;
 		end if;

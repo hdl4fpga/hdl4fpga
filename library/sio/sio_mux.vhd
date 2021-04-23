@@ -50,11 +50,11 @@ architecture def of sio_mux is
 begin
 
 	process (sio_frm, so_end, sio_clk)
-		variable cntr : unsigned(0 to mux_length);
+		variable cntr : signed(0 to mux_length);
 	begin
 		if rising_edge(sio_clk) then
 			if sio_frm='0' then
-				cntr   := to_unsigned(mux_data'length/so_data'length-2, cntr'length);
+				cntr   := to_signed(mux_data'length/so_data'length-2, cntr'length);
 				so_end <= '0';
 			elsif sio_irdy='1' then
 				so_end <= cntr(0);

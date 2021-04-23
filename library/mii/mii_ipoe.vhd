@@ -127,7 +127,7 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
-			elsif hwdarx_last='1' then
+			elsif hwdarx_last='1' and miirx_irdy='1' then
 				hwdarx_vld <= hwdarx_equ;
 			end if;
 		end if;
@@ -164,7 +164,7 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				arprx_vld <= '0';
-			elsif llc_last='1' then
+			elsif llc_last='1' and miirx_irdy='1' then
 				arprx_vld <= arprx_equ;
 			end if;
 		end if;
@@ -176,7 +176,7 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				iprx_vld <= '0';
-			elsif llc_last='1' then
+			elsif llc_last='1' and miirx_irdy='1' then
 				iprx_vld <= iprx_equ;
 			end if;
 		end if;
@@ -213,12 +213,13 @@ begin
         si_data   => miirx_data,
         so_last   => ipv4arx_last,
 		so_equ(0) => ipv4arx_equ);
+
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if ipv4arx_frm='0' then
 				ipv4arx_vld <= '0';
-			elsif ipv4arx_last='1' then
+			elsif ipv4arx_last='1' and miirx_irdy='1' then
 				ipv4arx_vld <= ipv4arx_equ;
 			end if;
 		end if;

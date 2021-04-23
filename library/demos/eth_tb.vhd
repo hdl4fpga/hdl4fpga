@@ -135,12 +135,13 @@ begin
 		mux_data => reverse(icmppkt,8),
         sio_clk  => mii_txc,
         sio_frm  => mii_frm2,
+		sio_irdy => pl_trdy,
 		so_end   => eth2_end,
         so_data  => eth2_txd);
---	pl_frm  <= (mii_frm1 and (not eth1_end or not miirx_end)) or (mii_frm2 and (not eth2_end or not miirx_end));
+
 	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
 	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
-	eth_llc <= reverse(wirebus(std_logic_vector'(x"0806" & x"0800"),   mii_frm1 & mii_frm2),8); -- Latticesemi Diamong requiere qualified expression
+	eth_llc <= reverse(wirebus(std_logic_vector'(x"0806" & x"0800"), mii_frm1 & mii_frm2),8); -- Qualified expression required by Latticesemi Diamond
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';

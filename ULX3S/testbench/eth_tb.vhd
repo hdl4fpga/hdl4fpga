@@ -429,7 +429,7 @@ begin
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
-		right     => right,
+		left     => right,
 		gp         => gp,
 		gn         => gn,
 		ftdi_txd  => ftdi_txd);

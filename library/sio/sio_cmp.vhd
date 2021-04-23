@@ -44,14 +44,14 @@ entity sio_cmp is
 end;
 
 architecture def of sio_cmp is
+	signal sio_last : std_logic_vector(0 to n-1);
+	signal sio_end  : std_logic_vector(0 to n-1);
 begin
 
 	g : for i in 0 to n-1 generate
 
 		signal sio_data : std_logic_vector(0 to mux_data'length/n-1);
 		signal so_data  : std_logic_vector(si_data'range);
-		signal sio_end  : std_logic;
-		signal sio_last : std_logic;
 
 	begin
 
@@ -63,8 +63,8 @@ begin
 			sio_frm  => sio_frm,
 			sio_irdy => sio_irdy,
 			sio_trdy => sio_trdy,
-			so_last  => sio_last,
-			so_end   => sio_end,
+			so_last  => sio_last(i),
+			so_end   => sio_end(i),
 			so_data  => so_data);
 
 		process (si_data, so_data, sio_clk)
@@ -80,9 +80,9 @@ begin
 			so_equ(i) <= setif(so_data=si_data) and cy;
 		end process;
 
-		so_last <= sio_last when i=0;
-		so_end  <= sio_end  when i=0;
 
 	end generate;
 
+	so_last <= sio_last(0);
+	so_end  <= sio_end(0);
 end;
