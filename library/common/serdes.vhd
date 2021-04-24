@@ -25,7 +25,8 @@ end;
 architecture def of serdes is
 	signal stop : std_logic;
 	signal rgtr_frm  : std_logic;
-	signal rgtr_irdy  : std_logic;
+	signal rgtr_irdy : std_logic;
+	signal rgtr_des  : std_logic_vector(des_data'range);
 begin
 
 	process (serdes_clk)
@@ -102,10 +103,10 @@ begin
 			if serdes_frm='1' then
 				if ser_irdy='1' then
 					des := xxx(des, ser_data, debug);
+					rgtr_des <= std_logic_vector(des);
 					if rgtr then
 						rgtr_frm <= serdes_frm;
 						rgtr_irdy <= ser_irdy and stop;
-						des_data <= std_logic_vector(xxx(des, ser_data, debug));
 					end if;
 				end if;
 			elsif rgtr then
@@ -117,6 +118,8 @@ begin
 
 		if not rgtr then
 			des_data <= std_logic_vector(xxx(des, ser_data, debug));
+		else
+			des_data <= rgtr_des;
 		end if;
 
 	end process;
