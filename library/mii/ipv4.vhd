@@ -40,11 +40,11 @@ entity ipv4 is
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 
-		ipv4lenrx_irdy : out std_logic;
+		ipv4lenrx_irdy : buffer std_logic;
 		ipv4protorx_irdy : buffer std_logic;
-		ipv4sarx_irdy  : out std_logic;
+		ipv4sarx_irdy  : buffer std_logic;
 		ipv4darx_frm   : out std_logic;
-		ipv4darx_irdy  : out std_logic;
+		ipv4darx_irdy  : buffer std_logic;
 
 		ipv4plrx_irdy  : out std_logic;
 
@@ -82,11 +82,11 @@ begin
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
-		mii_clk       => mii_clk,
-		mii_data      => miirx_data,
-		mii_ptr       => frmrx_ptr,
-		ipv4_frm      => ipv4rx_frm,
-		ipv4_irdy     => ipv4rx_irdy,
+		mii_clk        => mii_clk,
+		mii_data       => miirx_data,
+		mii_ptr        => frmrx_ptr,
+		ipv4_frm       => ipv4rx_frm,
+		ipv4_irdy      => ipv4rx_irdy,
 
 		ipv4len_irdy   => ipv4lenrx_irdy,
 		ipv4proto_irdy => ipv4protorx_irdy,
@@ -94,7 +94,31 @@ begin
 		ipv4da_frm     => ipv4darx_frm,
 		ipv4da_irdy    => ipv4darx_irdy,
 
-		pl_irdy       => ipv4plrx_irdy);
+		pl_irdy        => ipv4plrx_irdy);
+
+	ipv4sa_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
+	port map (
+		serdes_clk => mii_clk,
+		serdes_frm => ipv4rx_frm,
+		ser_irdy   => ipv4sarx_irdy,
+		ser_trdy   => open,
+		ser_data   => miirx_data,
+		des_irdy   => open,
+		des_data   => ipv4da_tx);
+
+	ipv4len_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
+	port map (
+		serdes_clk => mii_clk,
+		serdes_frm => ipv4rx_frm,
+		ser_irdy   => ipv4lenrx_irdy,
+		ser_trdy   => open,
+		ser_data   => miirx_data,
+		des_irdy   => open,
+		des_data   => ipv4len_tx);
 
 	ipv4tx_e : entity hdl4fpga.ipv4_tx
 	port map (

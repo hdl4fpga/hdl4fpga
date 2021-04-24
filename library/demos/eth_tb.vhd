@@ -53,7 +53,7 @@ architecture def of eth_tb is
 
 	constant icmppkt : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
-		x"0000"                 &    -- IP Length
+		x"1234"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
 		x"0000"                 &    -- IP Fragmentation
 		x"0501"                 &    -- IP TTL, protocol
