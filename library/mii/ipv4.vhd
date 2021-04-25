@@ -39,6 +39,7 @@ entity ipv4 is
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
+		ipv4arx_vld    : in  std_logic;
 
 		ipv4lenrx_irdy : buffer std_logic;
 		ipv4protorx_irdy : buffer std_logic;
@@ -151,13 +152,21 @@ begin
 		so_last   => protorx_last,
 		so_equ(0) => icmprx_equ);
 
-	process (mii_clk)
+	icmp_p : process (mii_clk)
+		variable ipv4da_vld : std_logic;
+		variable proto_vld  : std_logic; <= icmprx_equ;
 	begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
-				icmprx_vld <= '0';
-			elsif protorx_last='1' and ipv4protorx_irdy='1' then
-				icmprx_vld <= icmprx_equ;
+				proto_vld  := '0';
+				ipv4da_vld := '0';
+			else
+				if ipv4da_vld='0' then
+					i
+				end if;
+				if protorx_last='1' and ipv4protorx_irdy='1' then
+					proto_vld := icmprx_equ;
+				end if;
 			end if;
 		end if;
 	end process;

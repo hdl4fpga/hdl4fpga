@@ -39,7 +39,6 @@ entity icmp is
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
 		miitx_data  : out std_logic_vector);
-
 end;
 
 architecture def of icmp is
@@ -49,11 +48,11 @@ architecture def of icmp is
 	signal icmpcksmrx_irdy : std_logic;
 	signal icmpplrx_irdy   : std_logic;
 
-	signal icmprx_type   : std_logic_vector(0 to 8-1);
-	signal icmprx_id: std_logic_vector(0 to 16-1);
-	signal icmprx_seq: std_logic_vector(0 to 16-1);
-	signal icmprx_cksm : std_logic_vector(0 to 16-1);
-	signal icmptx_cksm   : std_logic_vector(0 to 16-1);
+	signal icmprx_type     : std_logic_vector(0 to  8-1);
+	signal icmprx_id       : std_logic_vector(0 to 16-1);
+	signal icmprx_seq      : std_logic_vector(0 to 16-1);
+	signal icmprx_cksm     : std_logic_vector(0 to 16-1);
+	signal icmptx_cksm     : std_logic_vector(0 to 16-1);
 
 	signal icmppl_irdy     : std_logic;
 
@@ -117,14 +116,14 @@ begin
 	port map (
 		mii_clk   => mii_clk,
 
-		pl_frm   => '1',
+		pl_frm    => '1',
 		pl_irdy   => '1',
-		pl_data    => miirx_data,
+		pl_data   => miirx_data,
 
 		icmp_cksm => icmptx_cksm,
 		icmp_id   => icmprx_id,
 		icmp_seq  => icmprx_seq,
 		icmp_irdy => open,
-		icmp_data  => miitx_data);
+		icmp_data => miitx_data);
 
 end;

@@ -76,6 +76,7 @@ architecture def of mii_ipoe is
 	signal fcs_vld      : std_logic;
 
 	signal arprx_frm    : std_logic;
+	signal tparx_frm    : std_logic;
 	signal iprx_frm     : std_logic;
 
 	signal arptx_frm    : std_logic;
@@ -90,6 +91,8 @@ architecture def of mii_ipoe is
 	signal ipv4arx_equ  : std_logic;
 	signal ipv4arx_last : std_logic;
 	signal ipv4arx_vld  : std_logic;
+	signal ipv4darx_frm : std_logic;
+	signal ipv4darx_irdy : std_logic;
 
 	signal arpdtx_req : std_logic;
 	signal arpdtx_rdy : std_logic;
@@ -203,6 +206,7 @@ begin
 		mii_end  => miitx_end,
 		mii_data => miitx_data);
 
+	ipv4arx_frm <= tparx_frm or ipv4darx_frm;
 	ip4arx_e : entity hdl4fpga.sio_cmp
 	port map (
 		mux_data  => reverse(default_ipv4a,8),
@@ -238,7 +242,7 @@ begin
 		arpdtx_rdy => arpdtx_rdy,
 		arprx_frm  => arprx_frm,
 
-		tparx_frm  => ipv4arx_frm,
+		tparx_frm  => tparx_frm,
 		tparx_vld  => ipv4arx_vld,
 
 		arptx_frm  => arptx_frm,
@@ -251,17 +255,18 @@ begin
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
 		mii_clk        => mii_clk,
-		miirx_data    => miirx_data,
-		frmrx_ptr  => frmrx_ptr,
+		miirx_data     => miirx_data,
+		frmrx_ptr      => frmrx_ptr,
 
 		ipv4rx_frm     => iprx_frm,
 		ipv4rx_irdy    => miirx_irdy,
+		ipv4arx_vld    => ipv4arx_vld,
 
 		ipv4lenrx_irdy => open,
 		ipv4protorx_irdy => open,
 		ipv4sarx_irdy  => open,
-		ipv4darx_frm   => open,
-		ipv4darx_irdy  =>  open,
+		ipv4darx_frm   => ipv4darx_frm,
+		ipv4darx_irdy  => ipv4darx_irdy,
 		ipv4plrx_irdy  => open,
 
 --		ipv4tx_frm     : buffer std_logic := '0';
