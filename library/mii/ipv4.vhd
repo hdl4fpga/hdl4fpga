@@ -65,6 +65,7 @@ architecture def of ipv4 is
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4proto_tx : std_logic_vector(8-1 downto 0);
+	signal ipv4da_vld   : std_logic;
 
 	signal pltx_frm  : std_logic;
 	signal pltx_irdy : std_logic;
@@ -140,6 +141,17 @@ begin
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_data  => ipv4tx_data);
 
+	ipv4a_p : process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4rx_frm='0' then
+				ipv4da_vld <= '0';
+			elsif ipv4da_vld='0' then
+				ipv4da_vld <= ipv4arx_vld;
+			end if;
+		end if;
+	end process;
+
 	proto_e : entity hdl4fpga.sio_cmp
 	generic map (
 		n => 1)
@@ -153,24 +165,16 @@ begin
 		so_equ(0) => icmprx_equ);
 
 	icmp_p : process (mii_clk)
-		variable ipv4da_vld : std_logic;
-		variable proto_vld  : std_logic; <= icmprx_equ;
 	begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
-				proto_vld  := '0';
-				ipv4da_vld := '0';
-			else
-				if ipv4da_vld='0' then
-					i
-				end if;
-				if protorx_last='1' and ipv4protorx_irdy='1' then
-					proto_vld := icmprx_equ;
-				end if;
+				icmprx_vld <= '0';
+			elsif protorx_last='1' and ipv4protorx_irdy='1' then
+				icmprx_vld <= icmprx_equ;
 			end if;
 		end if;
 	end process;
-	icmprx_frm <= ipv4rx_frm and icmprx_vld;
+	icmprx_frm <= ipv4rx_frm and icmprx_vld and ipv4da_vld ;
 
 	icmp_e : entity hdl4fpga.icmp
 	port map (
