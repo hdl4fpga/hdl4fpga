@@ -43,6 +43,9 @@ end;
 
 architecture def of icmp is
 
+	signal icmpd_rdy  : bit := '0';
+	signal icmpd_req  : bit := '0';
+
 	signal icmpidrx_irdy   : std_logic;
 	signal icmpseqrx_irdy  : std_logic;
 	signal icmpcksmrx_irdy : std_logic;
@@ -54,7 +57,10 @@ architecture def of icmp is
 	signal icmprx_cksm     : std_logic_vector(0 to 16-1);
 	signal icmptx_cksm     : std_logic_vector(0 to 16-1);
 
+	signal icmptx_end      : std_logic;
 	signal icmppl_irdy     : std_logic;
+	signal icmppltx_frm    : std_logic;
+	signal icmppltx_irdy   : std_logic;
 
 	signal pltx_irdy       : std_logic;
 	signal pltx_data       : std_logic_vector(miitx_data'range);
@@ -111,19 +117,45 @@ begin
         so_irdy  => icmptx_irdy,
         so_data  => miitx_data);
 
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if (icmpd_req xor icmpd_rdy)='0' then
+				if icmprx_frm='1' then
+					icmpd_req <= not icmpd_rdy;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy) and not icmprx_frm;
 	icmptx_cksm <= oneschecksum(icmprx_cksm & icmprx_type & x"00", icmptx_cksm'length);
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (
 		mii_clk   => mii_clk,
 
-		pl_frm    => '1',
-		pl_irdy   => '1',
+		pl_frm    => icmppltx_frm,
+		pl_irdy   => icmppltx_irdy,
 		pl_data   => miirx_data,
 
 		icmp_cksm => icmptx_cksm,
 		icmp_id   => icmprx_id,
 		icmp_seq  => icmprx_seq,
-		icmp_irdy => open,
+		icmp_frm  => icmptx_frm,
+		icmp_irdy => icmptx_irdy,
+		icmp_trdy => icmptx_trdy,
+		icmp_end  => icmptx_end,
 		icmp_data => miitx_data);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if (icmpd_req xor icmpd_rdy)='1' then
+				if icmppltx_frm='1' and icmptx_irdy='1' and icmptx_trdy='1' and icmptx_end='1' then
+					icmpd_rdy <= icmpd_req xor to_bit(icmprx_frm);
+				end if;
+			end if;
+		end if;
+	end process;
 
 end;

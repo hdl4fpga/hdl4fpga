@@ -46,7 +46,7 @@ entity icmprply_tx is
 
 		icmp_frm  : out std_logic;
 		icmp_irdy : out std_logic := '0';
-		icmp_trdy : in  std_logic := '0';
+		icmp_trdy : in  std_logic := '1';
 		icmp_end  : out std_logic;
 		icmp_data : out std_logic_vector);
 end;

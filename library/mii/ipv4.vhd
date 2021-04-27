@@ -47,7 +47,6 @@ entity ipv4 is
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
 
-		ipv4plrx_irdy  : out std_logic;
 
 		ipv4tx_frm     : buffer std_logic := '0';
 		ipv4tx_irdy    : out std_logic;
@@ -66,6 +65,8 @@ architecture def of ipv4 is
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4proto_tx : std_logic_vector(8-1 downto 0);
 	signal ipv4da_vld   : std_logic;
+	signal ipv4plrx_frm : std_logic;
+	signal ipv4plrx_irdy: std_logic;
 
 	signal pltx_frm  : std_logic;
 	signal pltx_irdy : std_logic;
@@ -96,6 +97,7 @@ begin
 		ipv4da_frm     => ipv4darx_frm,
 		ipv4da_irdy    => ipv4darx_irdy,
 
+		pl_frm         => ipv4plrx_frm,
 		pl_irdy        => ipv4plrx_irdy);
 
 	ipv4sa_e : entity hdl4fpga.serdes
@@ -174,7 +176,7 @@ begin
 			end if;
 		end if;
 	end process;
-	icmprx_frm <= ipv4rx_frm and icmprx_vld and ipv4da_vld ;
+	icmprx_frm <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 
 	icmp_e : entity hdl4fpga.icmp
 	port map (

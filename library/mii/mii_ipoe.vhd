@@ -218,16 +218,7 @@ begin
         so_last   => ipv4arx_last,
 		so_equ(0) => ipv4arx_equ);
 
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if ipv4arx_frm='0' then
-				ipv4arx_vld <= '0';
-			elsif ipv4arx_last='1' and miirx_irdy='1' then
-				ipv4arx_vld <= ipv4arx_equ;
-			end if;
-		end if;
-	end process;
+	ipv4arx_vld <= ipv4arx_equ and ipv4arx_last and miirx_irdy;
 
 	arpd_e : entity hdl4fpga.arpd
 	port map (
@@ -267,7 +258,6 @@ begin
 		ipv4sarx_irdy  => open,
 		ipv4darx_frm   => ipv4darx_frm,
 		ipv4darx_irdy  => ipv4darx_irdy,
-		ipv4plrx_irdy  => open,
 
 --		ipv4tx_frm     : buffer std_logic := '0';
 --		ipv4tx_irdy    : out std_logic;
