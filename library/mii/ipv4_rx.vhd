@@ -32,12 +32,12 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipv4_rx is
 	port (
-		mii_clk       : in  std_logic;
-		mii_data      : in  std_logic_vector;
+		mii_clk        : in  std_logic;
+		mii_data       : in  std_logic_vector;
 
-		mii_ptr       : in  std_logic_vector;
-		ipv4_frm      : in  std_logic;
-		ipv4_irdy     : in  std_logic;
+		mii_ptr        : in  std_logic_vector;
+		ipv4_frm       : in  std_logic;
+		ipv4_irdy      : in  std_logic;
 
 		ipv4len_irdy   : out std_logic;
 		ipv4da_frm     : buffer std_logic;
@@ -45,7 +45,8 @@ entity ipv4_rx is
 		ipv4sa_irdy    : out std_logic;
 		ipv4proto_irdy : out std_logic;
 
-		pl_irdy       : out std_logic);
+		pl_frm         : buffer std_logic;
+		pl_irdy        : out std_logic);
 
 end;
 
@@ -54,7 +55,6 @@ architecture def of ipv4_rx is
 	signal ipv4len_frm   : std_logic;
 	signal ipv4sa_frm    : std_logic;
 	signal ipv4proto_frm : std_logic;
-	signal pl_frm : std_logic;
 
 begin
 
