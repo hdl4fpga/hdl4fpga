@@ -78,6 +78,13 @@ architecture def of mii_ipoe is
 	signal arprx_frm    : std_logic;
 	signal tparx_frm    : std_logic;
 	signal iprx_frm     : std_logic;
+	signal ipv4tx_frm   : std_logic;
+
+	signal ethpltx_frm  : std_logic;
+	signal ethpltx_irdy : std_logic;
+	signal ethpltx_trdy : std_logic;
+	signal ethpltx_end  : std_logic;
+	signal ethpltx_data : std_logic_vector(miitx_data'range);
 
 	signal arptx_frm    : std_logic;
 	signal arptx_irdy   : std_logic;
@@ -186,15 +193,21 @@ begin
 	end process;
 	iprx_frm <= miirx_frm and iprx_vld;
 
+	ethpltx_frm  <= wirebus(arptx_frm;
+	ethpltx_irdy <= wirebus(arptx_irdy;
+	ethpltx_trdy <= arptx_trdy;
+	ethpltx_end  <= wirebus(arptx_end;
+	ethpltx_data <= wirebus(arptx_data;
+
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk  => mii_clk,
 
-		pl_frm   => arptx_frm,
-		pl_irdy  => arptx_irdy,
-		pl_trdy  => arptx_trdy,
-		pl_end   => arptx_end,
-		pl_data  => arptx_data,
+		pl_frm   => ethpltx_frm,
+		pl_irdy  => ethpltx_irdy,
+		pl_trdy  => ethpltx_trdy,
+		pl_end   => ethpltx_end,
+		pl_data  => ethpltx_data,
 
 		hwsa     => my_mac,
 		hwda     => reverse(x"ffffffffffff",8),
@@ -259,9 +272,9 @@ begin
 		ipv4darx_frm   => ipv4darx_frm,
 		ipv4darx_irdy  => ipv4darx_irdy,
 
---		ipv4tx_frm     : buffer std_logic := '0';
+		ipv4tx_frm     => ipv4tx_frm,
 --		ipv4tx_irdy    : out std_logic;
---		ipv4tx_trdy    : in  std_logic;
+		ipv4tx_trdy    => miitx_trdy,
 --		ipv4tx_end     : out std_logic;
 		ipv4tx_data    => miitx_data,
 		miitx_end      => '1'

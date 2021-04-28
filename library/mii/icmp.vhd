@@ -114,22 +114,25 @@ begin
 
 		so_clk   => mii_clk,
         so_frm   => icmptx_frm,
-        so_irdy  => icmptx_irdy,
+        so_irdy  => icmptx_trdy,
         so_data  => miitx_data);
 
 	process (mii_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if (icmpd_req xor icmpd_rdy)='0' then
-				if icmprx_frm='1' then
+				if q='1' and icmprx_frm='0' then
 					icmpd_req <= not icmpd_rdy;
 				end if;
 			end if;
+			q := icmprx_frm;
 		end if;
 	end process;
 
-	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy) and not icmprx_frm;
-	icmptx_cksm <= oneschecksum(icmprx_cksm & icmprx_type & x"00", icmptx_cksm'length);
+	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy);
+	icmptx_cksm  <= oneschecksum(icmprx_cksm & icmprx_type & x"00", icmptx_cksm'length);
+	icmptx_irdy  <= '1';
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (
 		mii_clk   => mii_clk,
@@ -151,8 +154,8 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (icmpd_req xor icmpd_rdy)='1' then
-				if icmppltx_frm='1' and icmptx_irdy='1' and icmptx_trdy='1' and icmptx_end='1' then
-					icmpd_rdy <= icmpd_req xor to_bit(icmprx_frm);
+				if icmptx_end='1' then
+					icmpd_rdy <= icmpd_req;
 				end if;
 			end if;
 		end if;
