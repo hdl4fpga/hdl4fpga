@@ -119,7 +119,7 @@ begin
 			d => (0 to pl_data'length-1 =>16/pl_data'length))
 		port map (
 			ena => ipv4_trdy,
-			clk   => mii_clk,
+			clk => mii_clk,
 			di  => hdr_data,
 			do  => ipv4hdr_data);
 
@@ -134,16 +134,7 @@ begin
 			di(0) => hdr_end,
 			do(0) => ipv4hdr_end);
 
-		trdy_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			i => (0 to 1-1 => '0'),
-			d => (0 to 1-1 => 16/pl_data'length))
-		port map (
-			ena   => ipv4_trdy,
-			clk   => mii_clk,
-			di(0) => hdr_trdy,
-			do(0) => ipv4hdr_trdy);
+		ipv4hdr_trdy <= hdr_trdy;
 	end block;
 
 	lenproto_mux <= ipv4_len & x"00" & ipv4_proto;
@@ -187,7 +178,7 @@ begin
 		dst_trdy  => ipv4abuf_trdy,
 		dst_data  => ipv4abuf_data);
 
-	cksm_data <= wirebus(lenproto_data & ipv4a_data, not lenproto_end & (lenproto_end and not ipv4a_end));
+	cksm_data <= primux(lenproto_data & ipv4a_data, not lenproto_end & not ipv4a_end);
 	cksm_irdy <= ipv4_trdy and (not lenproto_end or not ipv4a_end);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
