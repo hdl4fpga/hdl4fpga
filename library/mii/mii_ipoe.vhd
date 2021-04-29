@@ -87,11 +87,13 @@ architecture def of mii_ipoe is
 
 	signal arptx_frm    : std_logic;
 	signal arptx_irdy   : std_logic;
+	signal arptx_trdy   : std_logic;
 	signal arptx_end    : std_logic;
 	signal arptx_data   : std_logic_vector(miitx_data'range);
 
 	signal ipv4tx_frm   : std_logic;
 	signal ipv4tx_irdy  : std_logic;
+	signal ipv4tx_trdy  : std_logic;
 	signal ipv4tx_end   : std_logic;
 	signal ipv4tx_data  : std_logic_vector(miitx_data'range);
 
@@ -196,10 +198,25 @@ begin
 	end process;
 	iprx_frm <= miirx_frm and iprx_vld;
 
-	ethpltx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  '0' & '0')(0);
-	ethpltx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, '0' & '0')(0);
-	ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  '0' & '0')(0);
-	ethpltx_data <= wirebus(arptx_data & ipv4tx_data, '0' & '0');
+	arbiter_b : block
+		signal dev_req : std_logic_vector(0 to 2-1);
+		signal dev_gnt : std_logic_vector(0 to 2-1);
+	begin
+
+		dev_req <= arptx_frm & ipv4tx_frm;
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_clk,
+			req => dev_req,
+			gnt => dev_gnt);
+
+		ethpltx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt)(0);
+		ethpltx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
+		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt)(0);
+		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
+		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
+
+	end block;
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
@@ -239,7 +256,7 @@ begin
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
-		arptx_trdy => ethpltx_trdy,
+		arptx_trdy => arptx_trdy,
 		arptx_end  => arptx_end,
 		arptx_data => arptx_data,
 		miitx_end  => miitx_end);
@@ -273,7 +290,7 @@ begin
 
 		ipv4tx_frm     => ipv4tx_frm,
 		ipv4tx_irdy    => ipv4tx_irdy,
-		ipv4tx_trdy    => ethpltx_trdy,
+		ipv4tx_trdy    => ipv4tx_trdy,
 		ipv4tx_end     => ipv4tx_end,
 		ipv4tx_data    => miitx_data);
 

@@ -69,6 +69,7 @@ begin
 		so_end   => icmphdr_end,
 		so_data  => icmphdr_data);
 
+	icmp_frm  <= pl_frm;
 	icmp_data <= primux(icmphdr_data & pl_data, not icmphdr_end & '1');
 	icmp_irdy <= primux(icmphdr_irdy & pl_irdy, not icmphdr_end & '1')(0);
 

@@ -131,10 +131,10 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_irdy <= wirebus(pre_trdy & llc_trdy & pl_irdy & '1',
+	mii_irdy <= primux(pre_trdy & llc_trdy & pl_irdy & '1',
 		not  pre_end              & 
-		(not llc_end and pre_end) & 
-		(not pl_end  and llc_end) & 
+		not llc_end & 
+		not pl_end  & 
 		('1' and pl_end))(0);
 	mii_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(mii_data'range), 
 		not  pre_end              & 

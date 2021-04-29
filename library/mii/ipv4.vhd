@@ -51,7 +51,7 @@ entity ipv4 is
 		ipv4tx_frm     : buffer std_logic := '0';
 		ipv4tx_irdy    : out std_logic;
 		ipv4tx_trdy    : in  std_logic := '1';
-		ipv4tx_end     : out std_logic;
+		ipv4tx_end     : out std_logic := '0';
 		ipv4tx_data    : out std_logic_vector;
 
 		tp             : out std_logic_vector(1 to 32));
