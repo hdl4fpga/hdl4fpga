@@ -53,7 +53,6 @@ entity ipv4 is
 		ipv4tx_trdy    : in  std_logic := '1';
 		ipv4tx_end     : out std_logic;
 		ipv4tx_data    : out std_logic_vector;
-		miitx_end      : in  std_logic;
 
 		tp             : out std_logic_vector(1 to 32));
 
