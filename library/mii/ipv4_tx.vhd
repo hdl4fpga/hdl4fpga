@@ -63,7 +63,7 @@ architecture def of ipv4_tx is
 	signal ipv4hdr_trdy  : std_logic;
 	signal ipv4hdr_end   : std_logic;
 	signal ipv4hdr_mux   : std_logic_vector(0 to summation(
-		ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto))-1);
+		ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_chksum))-1);
 	signal ipv4hdr_data  : std_logic_vector(ipv4_data'range);
 
 	signal ipv4a_mux     : std_logic_vector(0 to ipv4_sa'length+ipv4_da'length-1);
@@ -75,11 +75,6 @@ architecture def of ipv4_tx is
 	signal ipv4abuf_irdy : std_logic;
 	signal ipv4abuf_trdy : std_logic;
 	signal ipv4abuf_data : std_logic_vector(pl_data'range);
-
-	signal ipv4cksm_irdy : std_logic;
-	signal ipv4cksm_trdy : std_logic;
-	signal ipv4cksm_end  : std_logic;
-	signal ipv4cksm_data : std_logic_vector(ipv4_data'range);
 
 	signal lenproto_mux : std_logic_vector(0 to ipv4_len'length+8+ipv4_proto'length-1);
 	signal lenproto_end : std_logic;
@@ -96,7 +91,8 @@ begin
 		x"0000"    &   -- Identification
 		x"0000"    &   -- Fragmentation
 		x"05"      &   -- Time To Live
-		ipv4_proto;
+		ipv4_proto &
+		chksum;
 
 	ipv4hdr_b : block 
 		signal hdr_trdy  : std_logic;
@@ -154,12 +150,12 @@ begin
 		mux_data => ipv4a_mux,
         sio_clk  => mii_clk,
         sio_frm  => ipv4_frm,
-        sio_irdy => ipv4a_irdy,
-        sio_trdy => ipv4a_trdy,
+        sio_irdy => ipv4_trdy,
+        sio_trdy => open, --ipv4a_trdy,
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
-	ipv4abuf_trdy <= ipv4cksm_end and ipv4_trdy;
+	ipv4abuf_trdy <= ipv4hdr_end and ipv4_trdy;
 	xxx_irdy <= not ipv4a_end and ipv4a_irdy;
 	ipv4afifo_e : entity hdl4fpga.fifo
 	generic map (
@@ -193,24 +189,10 @@ begin
 		mii_data => cksm_data,
 		mii_cksm => chksum);
 
-	ipv4cksm_irdy <= ipv4_trdy and ipv4hdr_end;
-	ipv4chsm_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => chksum,
-        sio_clk  => mii_clk,
-        sio_frm  => ipv4_frm,
-        sio_irdy => ipv4cksm_irdy,
-        sio_trdy => ipv4cksm_trdy,
-        so_end   => ipv4cksm_end,
-        so_data  => ipv4cksm_data);
-
 	ipv4_irdy <= primux(
-		ipv4hdr_trdy    & ipv4cksm_trdy    & ipv4abuf_irdy & pl_irdy,
-		not ipv4hdr_end & not ipv4cksm_end & ipv4abuf_irdy & pl_irdy)(0);
-	ipv4_data <= wirebus(
-		ipv4hdr_data & ipv4cksm_data & ipv4abuf_data & pl_data,
-		not ipv4hdr_end                     & 
-		(not ipv4cksm_end and ipv4hdr_end)  & 
-		(ipv4abuf_irdy    and ipv4cksm_end) & 
-		(pl_irdy       and not ipv4abuf_irdy and ipv4cksm_end));
+		ipv4hdr_trdy    & ipv4abuf_irdy & pl_irdy,
+		not ipv4hdr_end & ipv4abuf_irdy & pl_irdy)(0);
+	ipv4_data <= primux(
+		ipv4hdr_data    & ipv4abuf_data & pl_data,
+		not ipv4hdr_end & ipv4abuf_irdy & pl_irdy);
 end;

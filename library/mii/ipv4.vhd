@@ -62,7 +62,7 @@ architecture def of ipv4 is
 	signal ipv4len_tx   : std_logic_vector(16-1 downto 0);
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
-	signal ipv4proto_tx : std_logic_vector(8-1 downto 0);
+	signal ipv4proto_tx : std_logic_vector(8-1 downto 0) := x"e7";
 	signal ipv4da_vld   : std_logic;
 	signal ipv4plrx_frm : std_logic;
 	signal ipv4plrx_irdy: std_logic;
@@ -133,8 +133,8 @@ begin
 		pl_data    => pltx_data,
 
 		ipv4_len   => ipv4len_tx,
-		ipv4_sa    => ipv4sa_tx,
-		ipv4_da    => ipv4da_tx,
+		ipv4_sa    => x"12345678", --ipv4sa_tx,
+		ipv4_da    => x"90abcdef", --ipv4da_tx,
 		ipv4_proto => ipv4proto_tx,
 
 		ipv4_frm   => ipv4tx_frm,
