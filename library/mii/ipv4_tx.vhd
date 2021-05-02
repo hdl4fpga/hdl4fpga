@@ -73,7 +73,7 @@ architecture def of ipv4_tx is
 	signal ipv4a_end     : std_logic;
 	signal ipv4a_data    : std_logic_vector(ipv4_data'range);
 
-	signal q : std_logic;
+	signal pre : std_logic;
 begin
 
 	ipv4_frm <= pl_frm;
@@ -82,9 +82,9 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				q := '0';
+				pre <= '0';
 			elsif ipv4a_end='1' then
-				q := ipv4a_end;
+				pre <= ipv4a_end;
 			end if;
 		end if;
 	end process;
@@ -97,7 +97,7 @@ begin
 		x"05"      &   -- Time To Live
 		ipv4_proto;
 
-	ipv4hdr_irdy <= setif(q='0' or ipv4a_end='1', '0', ipv4_trdy);
+	ipv4hdr_irdy <= setif(pre='0' or ipv4a_end='1', '0', ipv4_trdy);
 	ipv4hdr_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => ipv4hdr_mux,
@@ -108,8 +108,8 @@ begin
 		so_end   => ivp4hdr_end,
 		so_data  => ivp4hdr_data);
 
-	ipv4a_frm  <= pl_frm and setif(q='0', not ipv4a_end, ipv4hdr_end);
-	ipv4a_irdy <= setif(q='0', '1', ipv4_trdy);
+	ipv4a_frm  <= pl_frm and not ipv4a_end when pre='0' else pl_frm and ipv4hdr_end;
+	ipv4a_irdy <= '1' when pre='0' else ipv4_trdy);
 	ipv4a_mux <= ipv4_sa & ipv4_da;
 	ipv4a_e : entity hdl4fpga.sio_mux
 	port map (
@@ -121,8 +121,8 @@ begin
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
-	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not q & q);
-	cksm_irdy <= primux((ipv4a_trdy and not ipv4a_end) & (ipv4hdr_trdy and not ipv4hdr_end), not q & q);
+	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not pre & pre);
+	cksm_irdy <= primux((ipv4a_trdy and not ipv4a_end) & (ipv4hdr_trdy and not ipv4hdr_end), not pre & pre);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
 		cksm_init => x"0000")
