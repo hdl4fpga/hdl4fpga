@@ -73,20 +73,28 @@ architecture def of ipv4_tx is
 	signal ipv4a_end     : std_logic;
 	signal ipv4a_data    : std_logic_vector(ipv4_data'range);
 
-	signal pre : std_logic;
+	signal ipv4chsm_frm  : std_logic;
+	signal ipv4chsm_irdy : std_logic;
+	signal ipv4chsm_trdy : std_logic;
+	signal ipv4chsm_end  : std_logic;
+	signal ipv4chsm_data : std_logic_vector(ipv4_data'range);
+
+	signal post : std_logic;
 begin
 
 	ipv4_frm <= pl_frm;
 
 	process (mii_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				pre <= '0';
+				q := '0';
 			elsif ipv4a_end='1' then
-				pre <= ipv4a_end;
+				q := ipv4a_end;
 			end if;
 		end if;
+		post <= q or ipv4a_end;
 	end process;
 	
 	ipv4hdr_mux <=
@@ -97,19 +105,19 @@ begin
 		x"05"      &   -- Time To Live
 		ipv4_proto;
 
-	ipv4hdr_irdy <= setif(pre='0' or ipv4a_end='1', '0', ipv4_trdy);
+	ipv4hdr_irdy <= post and ipv4_trdy;
 	ipv4hdr_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => ipv4hdr_mux,
 		sio_clk  => mii_clk,
 		sio_frm  => pl_frm,
-		sio_irdy => ivp4hdr_irdy,
-		sio_trdy => ivp4hdr_trdy,
-		so_end   => ivp4hdr_end,
-		so_data  => ivp4hdr_data);
+		sio_irdy => ipv4hdr_irdy,
+		sio_trdy => ipv4hdr_trdy,
+		so_end   => ipv4hdr_end,
+		so_data  => ipv4hdr_data);
 
-	ipv4a_frm  <= pl_frm and not ipv4a_end when pre='0' else pl_frm and ipv4hdr_end;
-	ipv4a_irdy <= '1' when pre='0' else ipv4_trdy);
+	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4hdr_end;
+	ipv4a_irdy <= '1' when post='0' else ipv4_trdy;
 	ipv4a_mux <= ipv4_sa & ipv4_da;
 	ipv4a_e : entity hdl4fpga.sio_mux
 	port map (
@@ -121,8 +129,8 @@ begin
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
-	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not pre & pre);
-	cksm_irdy <= primux((ipv4a_trdy and not ipv4a_end) & (ipv4hdr_trdy and not ipv4hdr_end), not pre & pre);
+	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not post & post);
+	cksm_irdy <= primux(ipv4a_trdy & (ipv4hdr_trdy and not ipv4hdr_end), not post & post)(0);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
 		cksm_init => x"0000")
@@ -147,8 +155,8 @@ begin
 	pl_trdy <= ipv4chsm_end and ipv4_trdy; 
 
 	ipv4_irdy <= primux(
-		ipv4hdr_trdy     &     ipv4chsm_irdy & ipv4a_irdy & pl_irdy,
-		not ipv4hdr_end  & not ipv4chsm_end  & ipv4a_irdy & pl_irdy)(0);
+		ipv4hdr_trdy     &     ipv4chsm_trdy & ipv4a_trdy & pl_irdy,
+		not ipv4hdr_end  & not ipv4chsm_end  & not ipv4a_end  & pl_irdy)(0);
 	ipv4_data <= primux(
 		ipv4hdr_data    & ipv4chsm_data    & ipv4a_data & pl_data,
 		not ipv4hdr_end & not ipv4chsm_end & ipv4a_irdy & pl_irdy);
