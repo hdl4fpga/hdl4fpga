@@ -77,6 +77,7 @@ architecture def of ipv4 is
 	signal icmprx_vld  : std_logic;
 	signal icmptx_frm  : std_logic;
 	signal icmptx_irdy : std_logic;
+	signal icmptx_trdy : std_logic;
 	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
 	signal protorx_last : std_logic;
 
@@ -123,6 +124,7 @@ begin
 		des_irdy   => open,
 		des_data   => ipv4len_tx);
 
+	pltx_data <= icmptx_data;
 	ipv4tx_e : entity hdl4fpga.ipv4_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -177,6 +179,7 @@ begin
 	end process;
 	icmprx_frm <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 
+	icmptx_trdy <= pltx_trdy;
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
@@ -186,7 +189,7 @@ begin
 		miirx_data  => miirx_data,
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
-		icmptx_trdy => ipv4tx_trdy,
+		icmptx_trdy => icmptx_trdy,
 		miitx_data  => icmptx_data);
 
 	pltx_frm  <= icmptx_frm;

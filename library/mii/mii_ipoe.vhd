@@ -292,6 +292,6 @@ begin
 		ipv4tx_irdy    => ipv4tx_irdy,
 		ipv4tx_trdy    => ipv4tx_trdy,
 		ipv4tx_end     => ipv4tx_end,
-		ipv4tx_data    => miitx_data);
+		ipv4tx_data    => ipv4tx_data);
 
 end;

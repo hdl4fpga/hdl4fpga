@@ -51,7 +51,6 @@ architecture def of icmp is
 	signal icmpcksmrx_irdy : std_logic;
 	signal icmpplrx_irdy   : std_logic;
 
-	signal icmprx_type     : std_logic_vector(0 to  8-1);
 	signal icmprx_id       : std_logic_vector(0 to 16-1);
 	signal icmprx_seq      : std_logic_vector(0 to 16-1);
 	signal icmprx_cksm     : std_logic_vector(0 to 16-1);
@@ -61,9 +60,8 @@ architecture def of icmp is
 	signal icmppl_irdy     : std_logic;
 	signal icmppltx_frm    : std_logic;
 	signal icmppltx_irdy   : std_logic;
-
-	signal pltx_irdy       : std_logic;
-	signal pltx_data       : std_logic_vector(miitx_data'range);
+	signal icmppltx_trdy   : std_logic;
+	signal icmppltx_data   : std_logic_vector(miitx_data'range);
 
 begin
 
@@ -80,14 +78,18 @@ begin
 		icmppl_irdy   => icmpplrx_irdy);
 
 	icmpcksm_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
 	port map (
 		serdes_clk => mii_clk,
 		serdes_frm => icmprx_frm,
 		ser_irdy   => icmpcksmrx_irdy,
 		ser_data   => miirx_data,
-		des_data   => icmptx_cksm);
+		des_data   => icmprx_cksm);
 
 	icmpseq_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
 	port map (
 		serdes_clk => mii_clk,
 		serdes_frm => icmprx_frm,
@@ -96,6 +98,8 @@ begin
 		des_data   => icmprx_seq);
 
 	icmpid_e : entity hdl4fpga.serdes
+	generic map (
+		rgtr => true)
 	port map (
 		serdes_clk => mii_clk,
 		serdes_frm => icmprx_frm,
@@ -113,9 +117,10 @@ begin
         si_data  => miirx_data,
 
 		so_clk   => mii_clk,
-        so_frm   => icmptx_frm,
-        so_irdy  => icmptx_trdy,
-        so_data  => miitx_data);
+        so_frm   => icmppltx_frm,
+        so_irdy  => icmppltx_trdy,
+        so_trdy  => icmppltx_irdy,
+        so_data  => icmppltx_data);
 
 	process (mii_clk)
 		variable q : std_logic;
@@ -130,16 +135,16 @@ begin
 		end if;
 	end process;
 
-	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy);
-	icmptx_cksm  <= oneschecksum(icmprx_cksm & icmprx_type & x"00", icmptx_cksm'length);
-	icmptx_irdy  <= '1';
+	icmppltx_frm  <= to_stdulogic(icmpd_req xor icmpd_rdy);
+	icmptx_cksm  <= oneschecksum(icmprx_cksm & x"00" & x"00", icmptx_cksm'length);
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (
 		mii_clk   => mii_clk,
 
 		pl_frm    => icmppltx_frm,
 		pl_irdy   => icmppltx_irdy,
-		pl_data   => miirx_data,
+		pl_trdy   => icmppltx_trdy,
+		pl_data   => icmppltx_data,
 
 		icmp_cksm => icmptx_cksm,
 		icmp_id   => icmprx_id,

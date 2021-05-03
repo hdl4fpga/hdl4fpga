@@ -71,6 +71,7 @@ architecture def of ipv4_tx is
 	signal ipv4a_irdy    : std_logic;
 	signal ipv4a_trdy    : std_logic;
 	signal ipv4a_end     : std_logic;
+	signal ipv4a_last    : std_logic;
 	signal ipv4a_data    : std_logic_vector(ipv4_data'range);
 
 	signal ipv4chsm_frm  : std_logic;
@@ -85,16 +86,14 @@ begin
 	ipv4_frm <= pl_frm;
 
 	process (mii_clk)
-		variable q : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				q := '0';
-			elsif ipv4a_end='1' then
-				q := ipv4a_end;
+				post <= '0';
+			elsif ipv4a_last='1' and ipv4a_irdy='1' then
+				post <= ipv4a_last;
 			end if;
 		end if;
-		post <= q or ipv4a_end;
 	end process;
 	
 	ipv4hdr_mux <=
@@ -126,6 +125,7 @@ begin
         sio_frm  => ipv4a_frm,
         sio_irdy => ipv4a_irdy,
         sio_trdy => ipv4a_trdy,
+		so_last  => ipv4a_last,
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
@@ -152,13 +152,13 @@ begin
         so_end   => ipv4chsm_end,
         so_data  => ipv4chsm_data);
 
-	pl_trdy <= ipv4chsm_end and ipv4_trdy; 
+	pl_trdy <= ipv4chsm_end and ipv4a_end and ipv4_trdy; 
 
 	ipv4_irdy <= primux(
-		ipv4hdr_trdy     &     ipv4chsm_trdy & ipv4a_trdy & pl_irdy,
-		not ipv4hdr_end  & not ipv4chsm_end  & not ipv4a_end  & pl_irdy)(0);
+		'0'      & ipv4hdr_trdy     &     ipv4chsm_trdy & ipv4a_trdy     & pl_irdy,
+		not post & not ipv4hdr_end  & not ipv4chsm_end  & not ipv4a_end  & '1')(0);
 	ipv4_data <= primux(
-		ipv4hdr_data    & ipv4chsm_data    & ipv4a_data & pl_data,
-		not ipv4hdr_end & not ipv4chsm_end & ipv4a_irdy & pl_irdy);
+		ipv4hdr_data    & ipv4chsm_data    &     ipv4a_data & pl_data,
+		not ipv4hdr_end & not ipv4chsm_end & not ipv4a_end  & '1');
 
 end;
