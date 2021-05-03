@@ -32,28 +32,37 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_rx is
 	port (
-		mii_rxc      : in  std_logic;
-		mii_rxdv     : in  std_logic;
-		mii_rxd      : in  std_logic_vector;
-		mii_ptr      : in  std_logic_vector;
+		mii_irdy   : in  std_logic;
+		mii_data   : in  std_logic_vector;
+		mii_ptr    : in  std_logic_vector;
 
-		udp_ena      : in  std_logic;
-		udpsp_rxdv   : out std_logic;
-		udpdp_rxdv   : out std_logic;
-		udplen_rxdv  : out std_logic;
-		udpcksm_rxdv : out std_logic;
-		udppl_rxdv   : out std_logic);
+		udp_frm      : in  std_logic;
+		udpsp_irdy   : out std_logic;
+		udpdp_irdy   : out std_logic;
+		udplen_irdy  : out std_logic;
+		udpcksm_irdy : out std_logic;
+		udppl_irdy   : out std_logic);
 end;
 
 architecture def of udp_rx is
 
+	signal udpcksm_frm : std_logic;
+	signal udpid_frm   : std_logic;
+	signal udpseq_frm  : std_logic;
+	signal udppl_frm   : std_logic;
+
 begin
 					
-	udpsp_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_sp);
-	udpdp_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_dp);
-	udplen_rxdv  <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_len);
-	udpcksm_rxdv <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_cksm);
-	udppl_rxdv   <= udp_ena and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_rxd'length, udp4_cksm, gt);
+	udpsp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_sp);
+	udpdp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_dp);
+	udplen_frm  <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_len);
+	udpcksm_frm <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm);
+	udppl_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm, gt);
 
+	udpsp_irdy   <= mii_irdy and udpsp_frm;
+	udpdp_irdy   <= mii_irdy and udpdp_frm;
+	udplen_irdy  <= mii_irdy and udplen_frm;
+	udpcksm_irdy <= mii_irdy and udpcksm_frm;
+	udppl_irdy   <= mii_irdy and udppl_frm;
 end;
 
