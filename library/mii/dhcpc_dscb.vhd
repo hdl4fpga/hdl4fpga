@@ -30,22 +30,22 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity dhcp_dscb is
+entity dhcpc_dscb is
 	generic (
 		dhcp_sp   : std_logic_vector(0 to 16-1);
 		dhcp_dp   : std_logic_vector(0 to 16-1);
 		dhcp_mac  : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
-		dhcpdscb_len  : out std_logic_vector(16-1 downto 0);
 		dhcpdscb_frm  : in  std_logic;
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
 		dhcpdscb_end  : out std_logic;
+		dhcpdscb_len  : out std_logic_vector(16-1 downto 0);
 		dhcpdscb_data : out std_logic_vector);
 end;
 
-architecture def of dhcp_dscb is
+architecture def of dhcpc_dscb is
 
 	constant payload_size : natural := 250;
 
@@ -120,7 +120,7 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-	dhcpdscb_data <= wirebus(dhcppkt_data, (0 to 0 => dhcppkt_irdy));
+	dhcpdscb_data <= dhcppkt_data;
 
 end;
 

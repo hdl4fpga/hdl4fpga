@@ -30,20 +30,18 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity dhcp_req is
+entity dhcpc_offer is
 	port (
-		mii_clk      : in  std_logic;
-		mii_frm      : in  std_logic;
 		mii_irdy     : in  std_logic;
-		mii_data     : in  std_logic_vector;
 		mii_ptr      : in  std_logic_vector;
+		mii_data     : in  std_logic_vector;
 		dhcp_frm     : in  std_logic;
 		dhcpop_irdy  : out std_logic;
 		dhcpchaddr6_irdy : out std_logic;
 		dhcpyia_irdy : out std_logic);
 end;
 
-architecture def of dhcp_req is
+architecture def of dhcpc_offer is
 
 	signal dhcpop_frm      : std_logic;
 	signal dhcpchaddr6_frm : std_logic;
@@ -51,9 +49,9 @@ architecture def of dhcp_req is
 
 begin
 					
-	dhcpop_frm  <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_op);
-	dhcpchaddr6_frm <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_chaddr6);
-	dhcpyia_frm <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_yiaddr);
+	dhcpop_frm  <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_op);
+	dhcpchaddr6_frm <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_chaddr6);
+	dhcpyia_frm <= dhcp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame & dhcp4hdr_frame, mii_data'length, dhcp4_yiaddr);
 
 	dhcpop_irdy  <= mii_irdy and dhcpop_frm;
 	dhcpchaddr6_irdy <= mii_irdy and dhcpchaddr6_frm;
