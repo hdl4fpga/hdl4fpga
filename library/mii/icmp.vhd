@@ -38,6 +38,7 @@ entity icmp is
 		icmptx_frm  : buffer std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
+		icmptx_end  : buffer std_logic;
 		miitx_data  : out std_logic_vector);
 end;
 
@@ -56,11 +57,11 @@ architecture def of icmp is
 	signal icmprx_cksm     : std_logic_vector(0 to 16-1);
 	signal icmptx_cksm     : std_logic_vector(0 to 16-1);
 
-	signal icmptx_end      : std_logic;
 	signal icmppl_irdy     : std_logic;
 	signal icmppltx_frm    : std_logic;
 	signal icmppltx_irdy   : std_logic;
 	signal icmppltx_trdy   : std_logic;
+	signal icmppltx_end    : std_logic;
 	signal icmppltx_data   : std_logic_vector(miitx_data'range);
 
 begin
@@ -120,6 +121,7 @@ begin
         so_frm   => icmppltx_frm,
         so_irdy  => icmppltx_trdy,
         so_trdy  => icmppltx_irdy,
+		so_end   => icmppltx_end,
         so_data  => icmppltx_data);
 
 	process (mii_clk)
@@ -144,6 +146,7 @@ begin
 		pl_frm    => icmppltx_frm,
 		pl_irdy   => icmppltx_irdy,
 		pl_trdy   => icmppltx_trdy,
+		pl_end    => icmppltx_end,
 		pl_data   => icmppltx_data,
 
 		icmp_cksm => icmptx_cksm,

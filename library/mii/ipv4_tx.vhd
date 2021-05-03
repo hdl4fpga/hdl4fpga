@@ -39,6 +39,7 @@ entity ipv4_tx is
 		pl_frm   : in  std_logic;
 		pl_irdy  : in  std_logic;
 		pl_trdy  : out std_logic;
+		pl_end   : in  std_logic;
 		pl_data  : in  std_logic_vector;
 
 		ipv4_len   : in  std_logic_vector(0 to 16-1);
@@ -49,6 +50,7 @@ entity ipv4_tx is
 		ipv4_frm  : buffer std_logic;
 		ipv4_irdy : buffer std_logic;
 		ipv4_trdy : in  std_logic;
+		ipv4_end  : out std_logic;
 		ipv4_data : out std_logic_vector);
 end;
 
@@ -160,5 +162,5 @@ begin
 	ipv4_data <= primux(
 		ipv4hdr_data    & ipv4chsm_data    &     ipv4a_data & pl_data,
 		not ipv4hdr_end & not ipv4chsm_end & not ipv4a_end  & '1');
-
+	ipv4_end  <= post and ipv4a_end and pl_end;
 end;

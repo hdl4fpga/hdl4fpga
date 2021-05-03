@@ -37,7 +37,7 @@ entity icmprply_tx is
 		pl_frm    : in  std_logic;
 		pl_irdy   : in  std_logic;
 		pl_trdy   : out std_logic;
-		pl_end    : out std_logic;
+		pl_end    : in  std_logic;
 		pl_data   : in  std_logic_vector;
 
 		icmp_cksm : in  std_logic_vector(0 to 16-1);
@@ -73,6 +73,7 @@ begin
 	icmp_frm  <= pl_frm;
 	icmp_data <= primux(icmphdr_data & pl_data, not icmphdr_end & '1');
 	icmp_irdy <= primux(icmphdr_irdy & pl_irdy, not icmphdr_end & '1')(0);
+	icmp_end  <= icmphdr_end and pl_end;
 
 end;
 

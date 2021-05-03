@@ -70,6 +70,7 @@ architecture def of ipv4 is
 	signal pltx_frm  : std_logic;
 	signal pltx_irdy : std_logic;
 	signal pltx_trdy : std_logic;
+	signal pltx_end  : std_logic;
 	signal pltx_data : std_logic_vector(ipv4tx_data'range);
 
 	signal icmprx_frm  : std_logic;
@@ -78,6 +79,7 @@ architecture def of ipv4 is
 	signal icmptx_frm  : std_logic;
 	signal icmptx_irdy : std_logic;
 	signal icmptx_trdy : std_logic;
+	signal icmptx_end  : std_logic;
 	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
 	signal protorx_last : std_logic;
 
@@ -125,6 +127,7 @@ begin
 		des_data   => ipv4len_tx);
 
 	pltx_data <= icmptx_data;
+	pltx_end  <= icmptx_end;
 	ipv4tx_e : entity hdl4fpga.ipv4_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -132,6 +135,7 @@ begin
 		pl_frm     => pltx_frm,
 		pl_irdy    => pltx_irdy,
 		pl_trdy    => pltx_trdy,
+		pl_end     => pltx_end,
 		pl_data    => pltx_data,
 
 		ipv4_len   => ipv4len_tx,
@@ -142,6 +146,7 @@ begin
 		ipv4_frm   => ipv4tx_frm,
 		ipv4_irdy  => ipv4tx_irdy,
 		ipv4_trdy  => ipv4tx_trdy,
+		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);
 
 	ipv4a_p : process (mii_clk)
@@ -190,6 +195,7 @@ begin
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
+		icmptx_end  => icmptx_end ,
 		miitx_data  => icmptx_data);
 
 	pltx_frm  <= icmptx_frm;

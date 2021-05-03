@@ -46,18 +46,19 @@ end;
 
 architecture def of udp_rx is
 
+	signal udpsp_frm   : std_logic;
+	signal udpdp_frm   : std_logic;
+	signal udplen_frm  : std_logic;
 	signal udpcksm_frm : std_logic;
-	signal udpid_frm   : std_logic;
-	signal udpseq_frm  : std_logic;
 	signal udppl_frm   : std_logic;
 
 begin
 					
-	udpsp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_sp);
-	udpdp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_dp);
-	udplen_frm  <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_len);
-	udpcksm_frm <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm);
-	udppl_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ip4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm, gt);
+	udpsp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_sp);
+	udpdp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_dp);
+	udplen_frm  <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_len);
+	udpcksm_frm <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm);
+	udppl_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm, gt);
 
 	udpsp_irdy   <= mii_irdy and udpsp_frm;
 	udpdp_irdy   <= mii_irdy and udpdp_frm;

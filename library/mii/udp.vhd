@@ -40,10 +40,20 @@ entity udp is
 		plrx_trdy   : in  std_logic;
 		plrx_data   : out std_logic_vector;
 
+		udprx_sp    : out std_logic_vector(0 to 16-1);
+		udprx_dp    : out std_logic_vector(0 to 16-1);
+		udprx_len   : out std_logic_vector(0 to 16-1);
+		udprx_cksm  : out std_logic_vector(0 to 16-1);
+
 		pltx_frm    : in  std_logic;
 		pltx_irdy   : in  std_logic;
 		pltx_trdy   : out std_logic;
+		pltx_len    : in  std_logic_vector(0 to 16-1);
 		pltx_data   : in  std_logic_vector;
+
+		udptx_sp    : in  std_logic_vector(0 to 16-1);
+		udptx_dp    : in  std_logic_vector(0 to 16-1);
+		udptx_cksm  : in  std_logic_vector(0 to 16-1);
 
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
@@ -60,15 +70,12 @@ architecture def of udp is
 	signal udpcksmrx_irdy : std_logic;
 	signal udpplrx_irdy   : std_logic;
 
-	signal udprx_sp       : std_logic_vector(0 to 16-1);
-	signal udprx_dp       : std_logic_vector(0 to 16-1);
-	signal udprx_len      : std_logic_vector(0 to 16-1);
 
 	signal udptx_end      : std_logic;
 	signal udppl_irdy     : std_logic;
 	signal udppltx_frm    : std_logic;
 	signal udppltx_trdy   : std_logic;
-	signal udppltx_data   : std_logic_vector(miitx_data'range);
+	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
 begin
 
@@ -119,18 +126,19 @@ begin
 	port map (
 		mii_clk   => mii_clk,
 
-		pl_frm    => udppltx_frm,
-		pl_irdy   => udppltx_irdy,
-		pl_trdy   => udppltx_trdy,
-		pl_data   => udppltx_data,
+		pl_frm    => pltx_frm,
+		pl_irdy   => pltx_irdy,
+		pl_trdy   => pltx_trdy,
+		pl_len    => pltx_len,
+		pl_data   => pltx_data,
 
+		udp_sp   => udptx_sp,
+		udp_dp   => udptx_dp,
 		udp_cksm => udptx_cksm,
-		udp_id   => udprx_id,
-		udp_seq  => udprx_seq,
 		udp_frm  => udptx_frm,
 		udp_irdy => udptx_irdy,
 		udp_trdy => udptx_trdy,
 		udp_end  => udptx_end,
-		udp_data => miitx_data);
+		udp_data => udptx_data);
 
 end;

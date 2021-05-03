@@ -36,10 +36,10 @@ entity udp_tx is
 	port (
 		mii_clk  : in  std_logic;
 
-		pl_len   : in  std_logic_vector(16-1 downto 0);
 		pl_frm   : in  std_logic;
 		pl_irdy  : in  std_logic;
 		pl_trdy  : out std_logic;
+		pl_len   : in  std_logic_vector(16-1 downto 0);
 		pl_data  : in  std_logic_vector;
 
 		udp_cksm : in  std_logic_vector(0 to 16-1) := x"0000";
@@ -49,8 +49,9 @@ entity udp_tx is
 		udp_frm  : buffer std_logic;
 		udp_irdy : out std_logic;
 		udp_trdy : in  std_logic;
-		udp_data : out std_logic_vector;
 		udp_len  : buffer std_logic_vector(16-1 downto 0);
+		udp_data : out std_logic_vector;
+		udp_end  : out std_logic;
 		tp       : out std_logic_vector(1 to 32));
 end;
 
@@ -76,8 +77,8 @@ begin
 		so_end   => udphdr_end,
 		so_data  => udphdr_data);
 
-	udp_irdy <= wirebus(udphdr_trdy & pl_irdy, not udphdr_end & udphdr_end)(0);
-	udp_data <= wirebus(udphdr_data & pl_data, not udphdr_end & udphdr_end);
+	udp_irdy <= primux(udphdr_trdy & pl_irdy, not udphdr_end & '1')(0);
+	udp_data <= primux(udphdr_data & pl_data, not udphdr_end & '1');
 
 	pl_trdy  <= udphdr_end and udp_trdy;
 end;
