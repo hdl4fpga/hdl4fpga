@@ -37,10 +37,12 @@ entity dhcpc is
 		dhcpc_req   : in  std_logic;
 		dhcpc_rdy   : buffer std_logic;
 		dhcprx_frm  : in  std_logic;
+
 		dhcptx_frm  : buffer std_logic;
 		dhcptx_irdy : buffer std_logic;
 		dhcptx_trdy : in  std_logic := '1';
 		dhcptx_end  : buffer std_logic;
+		dhcptx_len  : out std_logic_vector(0 to 16-1);
 		dhcptx_data : out std_logic_vector);
 end;
 
@@ -74,5 +76,15 @@ begin
 			end if;
 		end if;
 	end process;
+
+	dhcpdscb_e : entity hdl4fpga.dhcpc_dscb
+	port map (
+		mii_clk       => mii_clk,
+		dhcpdscb_frm  => dhcptx_frm,
+		dhcpdscb_irdy => dhcptx_trdy,
+		dhcpdscb_trdy => dhcptx_irdy,
+		dhcpdscb_end  => dhcptx_end,
+		dhcpdscb_len  => dhcptx_len,
+		dhcpdscb_data => dhcptx_data);
 
 end;

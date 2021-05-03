@@ -32,8 +32,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity dhcpc_dscb is
 	generic (
-		dhcp_sp   : std_logic_vector(0 to 16-1);
-		dhcp_dp   : std_logic_vector(0 to 16-1);
+		dhcp_sp   : std_logic_vector(0 to 16-1)  := x"0044";
+		dhcp_dp   : std_logic_vector(0 to 16-1)  := x"0043";
 		dhcp_mac  : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
