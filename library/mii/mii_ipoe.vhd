@@ -106,6 +106,8 @@ architecture def of mii_ipoe is
 	signal ipv4tx_data  : std_logic_vector(miitx_data'range);
 
 	signal hwsa_rx      : std_logic_vector(my_mac'range);
+	signal hwda_tx      : std_logic_vector(my_mac'range);
+	signal hwtyp_tx     : std_logic_vector(0 to 16-1);
 	signal ipv4arx_frm  : std_logic;
 	signal ipv4arx_trdy : std_logic;
 	signal ipv4arx_equ  : std_logic;
@@ -224,6 +226,9 @@ begin
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
 
+		hwda_tx  <= wirebus(x"ff_ff_ff_ff_ff_ff" & x"00_00_00_00_00_00", dev_gnt);
+		hwtyp_tx <= wirebus(x"0806" & x"0800", dev_gnt);
+
 	end block;
 
 	ethtx_e : entity hdl4fpga.eth_tx
@@ -237,8 +242,8 @@ begin
 		pl_data  => ethpltx_data,
 
 		hwsa     => my_mac,
-		hwda     => reverse(x"ffffffffffff",8),
-		hwtyp    => reverse(x"0806",8),
+		hwda     => hwda_tx,
+		hwtyp    => hwtyp_tx,
 
 		mii_frm  => miitx_frm,
 		mii_irdy => miitx_irdy,
