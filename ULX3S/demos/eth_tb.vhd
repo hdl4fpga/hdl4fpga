@@ -367,12 +367,14 @@ begin
 			signal miirx_irdy : std_logic;
 			signal miirx_trdy : std_logic;
 			signal miirx_data : std_logic_vector(0 to 8-1);
+			signal plrx_data  : std_logic_vector(miirx_data'range);
 
 			signal miitx_frm  : std_logic;
 			signal miitx_irdy : std_logic;
 			signal miitx_trdy : std_logic;
 			signal miitx_end  : std_logic;
 			signal miitx_data : std_logic_vector(miirx_data'range);
+			signal pltx_data  : std_logic_vector(miirx_data'range);
 
 		begin
 
@@ -397,6 +399,16 @@ begin
 				miirx_irdy => miirx_irdy,
 				miirx_trdy => miirx_trdy,
 				miirx_data => miirx_data,
+
+				plrx_frm   => open,
+				plrx_irdy  => open,
+				plrx_trdy  => '0',
+				plrx_data  => plrx_data,
+
+				pltx_frm   => '0',
+				pltx_irdy  => '0',
+				pltx_trdy  => open,
+				pltx_data  => pltx_data,
 
 				miitx_frm  => miitx_frm,
 				miitx_irdy => miitx_irdy,

@@ -32,15 +32,16 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_rx is
 	port (
-		mii_irdy   : in  std_logic;
-		mii_data   : in  std_logic_vector;
-		mii_ptr    : in  std_logic_vector;
+		mii_irdy     : in  std_logic;
+		mii_data     : in  std_logic_vector;
+		mii_ptr      : in  std_logic_vector;
 
 		udp_frm      : in  std_logic;
 		udpsp_irdy   : out std_logic;
 		udpdp_irdy   : out std_logic;
 		udplen_irdy  : out std_logic;
 		udpcksm_irdy : out std_logic;
+		udppl_frm    : buffer std_logic;
 		udppl_irdy   : out std_logic);
 end;
 
@@ -50,7 +51,6 @@ architecture def of udp_rx is
 	signal udpdp_frm   : std_logic;
 	signal udplen_frm  : std_logic;
 	signal udpcksm_frm : std_logic;
-	signal udppl_frm   : std_logic;
 
 begin
 					

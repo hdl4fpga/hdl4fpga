@@ -47,6 +47,15 @@ entity ipv4 is
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
 
+		plrx_frm       : out std_logic;
+		plrx_irdy      : out std_logic;
+		plrx_trdy      : in  std_logic;
+		plrx_data      : out std_logic_vector;
+
+		pltx_frm       : in  std_logic;
+		pltx_irdy      : in  std_logic;
+		pltx_trdy      : out std_logic;
+		pltx_data      : in  std_logic_vector;
 
 		ipv4tx_frm     : buffer std_logic := '0';
 		ipv4tx_irdy    : out std_logic;
@@ -67,11 +76,11 @@ architecture def of ipv4 is
 	signal ipv4plrx_frm : std_logic;
 	signal ipv4plrx_irdy: std_logic;
 
-	signal pltx_frm  : std_logic;
-	signal pltx_irdy : std_logic;
-	signal pltx_trdy : std_logic;
-	signal pltx_end  : std_logic;
-	signal pltx_data : std_logic_vector(ipv4tx_data'range);
+	signal ipv4pltx_frm  : std_logic;
+	signal ipv4pltx_irdy : std_logic;
+	signal ipv4pltx_trdy : std_logic;
+	signal ipv4pltx_end  : std_logic;
+	signal ipv4pltx_data : std_logic_vector(ipv4tx_data'range);
 
 	signal icmprx_frm  : std_logic;
 	signal icmprx_equ  : std_logic;
@@ -81,6 +90,13 @@ architecture def of ipv4 is
 	signal icmptx_trdy : std_logic;
 	signal icmptx_end  : std_logic;
 	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
+
+	signal udptx_frm  : std_logic;
+	signal udptx_irdy : std_logic;
+	signal udptx_trdy : std_logic;
+	signal udptx_end  : std_logic;
+	signal udptx_data : std_logic_vector(ipv4tx_data'range);
+
 	signal protorx_last : std_logic;
 
 begin
@@ -126,17 +142,35 @@ begin
 		des_irdy   => open,
 		des_data   => ipv4len_tx);
 
-	pltx_data <= icmptx_data;
-	pltx_end  <= icmptx_end;
+	arbiter_b : block
+		signal dev_req : std_logic_vector(0 to 2-1);
+		signal dev_gnt : std_logic_vector(0 to 2-1);
+	begin
+
+		dev_req <= icmptx_frm & udptx_frm;
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_clk,
+			req => dev_req,
+			gnt => dev_gnt);
+
+		ipv4pltx_frm  <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt)(0);
+		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt)(0);
+		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
+		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
+		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
+
+	end block;
+
 	ipv4tx_e : entity hdl4fpga.ipv4_tx
 	port map (
 		mii_clk    => mii_clk,
 
-		pl_frm     => pltx_frm,
-		pl_irdy    => pltx_irdy,
-		pl_trdy    => pltx_trdy,
-		pl_end     => pltx_end,
-		pl_data    => pltx_data,
+		pl_frm     => ipv4pltx_frm,
+		pl_irdy    => ipv4pltx_irdy,
+		pl_trdy    => ipv4pltx_trdy,
+		pl_end     => ipv4pltx_end,
+		pl_data    => ipv4pltx_data,
 
 		ipv4_len   => ipv4len_tx,
 		ipv4_sa    => x"12345678", --ipv4sa_tx,
@@ -184,7 +218,6 @@ begin
 	end process;
 	icmprx_frm <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 
-	icmptx_trdy <= pltx_trdy;
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
@@ -198,6 +231,36 @@ begin
 		icmptx_end  => icmptx_end ,
 		miitx_data  => icmptx_data);
 
-	pltx_frm  <= icmptx_frm;
-	pltx_irdy <= icmptx_irdy;
+	udp_e : entity hdl4fpga.udp
+	port map (
+		mii_clk     => mii_clk,
+		miirx_irdy  => ipv4rx_irdy,
+		frmrx_ptr   => frmrx_ptr,
+		miirx_data  => miirx_data,
+
+		plrx_frm    => plrx_frm,
+		plrx_irdy   => plrx_irdy,
+		plrx_trdy   => plrx_trdy,
+		plrx_data   => plrx_data,
+
+		udprx_sp    => open,
+		udprx_dp    => open,
+		udprx_len   => open,
+		udprx_cksm  => open,
+
+		pltx_frm    => pltx_frm,
+		pltx_irdy   => pltx_irdy,
+		pltx_trdy   => pltx_trdy,
+		pltx_data   => pltx_data,
+		pltx_len    => x"0000",
+
+		udptx_sp    => x"0000",
+		udptx_dp    => x"0000",
+		udptx_cksm  => x"0000",
+
+		udptx_frm   => udptx_frm,
+		udptx_irdy  => udptx_irdy,
+		udptx_trdy  => udptx_trdy,
+		udptx_data  => udptx_data);
+
 end;

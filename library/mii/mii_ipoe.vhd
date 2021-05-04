@@ -41,6 +41,16 @@ entity mii_ipoe is
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
+		plrx_frm       : out std_logic;
+		plrx_irdy      : out std_logic;
+		plrx_trdy      : in  std_logic;
+		plrx_data      : out std_logic_vector;
+
+		pltx_frm       : in  std_logic;
+		pltx_irdy      : in  std_logic;
+		pltx_trdy      : out std_logic;
+		pltx_data      : in  std_logic_vector;
+
 		miitx_frm     : out std_logic;
 		miitx_irdy    : out std_logic;
 		miitx_trdy    : in  std_logic;
@@ -53,11 +63,9 @@ end;
 
 architecture def of mii_ipoe is
 
-
 	signal frmrx_ptr    : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/miirx_data'length-1));
 
 	signal hwdarx_irdy  : std_logic;
-	signal hwdarx_trdy  : std_logic;
 	signal hwdarx_last  : std_logic;
 	signal hwdarx_equ   : std_logic;
 	signal hwdarx_vld   : std_logic;
@@ -65,8 +73,8 @@ architecture def of mii_ipoe is
 	signal hwsarx_trdy  : std_logic;
 	signal hwtyprx_irdy : std_logic;
 	signal hwtyprx_trdy : std_logic;
-	signal plrx_irdy    : std_logic;
-	signal plrx_trdy    : std_logic;
+	signal ethplrx_irdy : std_logic;
+	signal ethplrx_trdy : std_logic;
 	signal llc_last     : std_logic;
 	signal arprx_equ    : std_logic;
 	signal arprx_vld    : std_logic;
@@ -122,7 +130,7 @@ begin
 		hwda_irdy  => hwdarx_irdy,
 		hwsa_irdy  => hwsarx_irdy,
 		hwtyp_irdy => hwtyprx_irdy,
-		pl_irdy    => plrx_irdy,
+		pl_irdy    => ethplrx_irdy,
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
@@ -132,7 +140,7 @@ begin
         sio_clk   => mii_clk,
         sio_frm   => miirx_frm,
         sio_irdy  => hwdarx_irdy,
-        sio_trdy  => hwdarx_trdy,
+        sio_trdy  => open,
         si_data   => miirx_data,
 		so_last   => hwdarx_last,
 		so_equ(0) => hwdarx_equ);
@@ -155,7 +163,7 @@ begin
 		serdes_clk => mii_clk,
 		serdes_frm => miirx_frm,
 		ser_irdy   => hwdarx_irdy,
-		ser_trdy   => hwdarx_trdy,
+		ser_trdy   => open,
 		ser_data   => miirx_data,
 		des_irdy   => open,
 		des_data   => hwsa_rx);
@@ -277,21 +285,31 @@ begin
 
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
-		mii_clk        => mii_clk,
-		miirx_data     => miirx_data,
-		frmrx_ptr      => frmrx_ptr,
+		mii_clk       => mii_clk,
+		miirx_data    => miirx_data,
+		frmrx_ptr     => frmrx_ptr,
 
-		ipv4rx_frm     => iprx_frm,
-		ipv4rx_irdy    => miirx_irdy,
-		ipv4arx_vld    => ipv4arx_vld,
+		ipv4rx_frm    => iprx_frm,
+		ipv4rx_irdy   => miirx_irdy,
+		ipv4arx_vld   => ipv4arx_vld,
 
-		ipv4darx_frm   => ipv4darx_frm,
-		ipv4darx_irdy  => ipv4darx_irdy,
+		ipv4darx_frm  => ipv4darx_frm,
+		ipv4darx_irdy => ipv4darx_irdy,
 
-		ipv4tx_frm     => ipv4tx_frm,
-		ipv4tx_irdy    => ipv4tx_irdy,
-		ipv4tx_trdy    => ipv4tx_trdy,
-		ipv4tx_end     => ipv4tx_end,
-		ipv4tx_data    => ipv4tx_data);
+		plrx_frm      => plrx_frm,
+		plrx_irdy     => plrx_irdy,
+		plrx_trdy     => plrx_trdy,
+		plrx_data     => plrx_data,
+
+		pltx_frm      => pltx_frm,
+		pltx_irdy     => pltx_irdy,
+		pltx_trdy     => pltx_trdy,
+		pltx_data     => pltx_data,
+
+		ipv4tx_frm    => ipv4tx_frm,
+		ipv4tx_irdy   => ipv4tx_irdy,
+		ipv4tx_trdy   => ipv4tx_trdy,
+		ipv4tx_end    => ipv4tx_end,
+		ipv4tx_data   => ipv4tx_data);
 
 end;
