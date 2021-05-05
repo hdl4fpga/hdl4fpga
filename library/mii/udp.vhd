@@ -35,11 +35,6 @@ entity udp is
 		frmrx_ptr   : in  std_logic_vector;
 		miirx_data  : in  std_logic_vector;
 
-		udprx_sp    : out std_logic_vector(0 to 16-1);
-		udprx_dp    : out std_logic_vector(0 to 16-1);
-		udprx_len   : out std_logic_vector(0 to 16-1);
-		udprx_cksm  : out std_logic_vector(0 to 16-1);
-
 		plrx_frm    : out std_logic;
 		plrx_irdy   : out std_logic;
 		plrx_trdy   : in  std_logic;
@@ -48,13 +43,8 @@ entity udp is
 		pltx_frm    : in  std_logic;
 		pltx_irdy   : in  std_logic;
 		pltx_trdy   : out std_logic;
-		pltx_end    : in  std_logic := '0';
-		pltx_len    : in  std_logic_vector(0 to 16-1);
 		pltx_data   : in  std_logic_vector;
-
-		udptx_sp    : in  std_logic_vector(0 to 16-1);
-		udptx_dp    : in  std_logic_vector(0 to 16-1);
-		udptx_cksm  : in  std_logic_vector(0 to 16-1);
+		pltx_end    : in  std_logic := '0';
 
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
@@ -64,6 +54,15 @@ entity udp is
 end;
 
 architecture def of udp is
+
+	signal udprx_sp       : std_logic_vector(0 to 16-1);
+	signal udprx_dp       : std_logic_vector(0 to 16-1);
+	signal udprx_len      : std_logic_vector(0 to 16-1);
+	signal udprx_cksm     : std_logic_vector(0 to 16-1);
+
+	signal udptx_sp       : std_logic_vector(0 to 16-1);
+	signal udptx_dp       : std_logic_vector(0 to 16-1);
+	signal udptx_cksm     : std_logic_vector(0 to 16-1);
 
 	signal udpsprx_last   : std_logic;
 	signal udpsprx_equ    : std_logic;

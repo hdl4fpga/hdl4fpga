@@ -31,7 +31,6 @@ use hdl4fpga.ipoepkg.all;
 entity ipv4 is
 	port (
 		my_ipv4a       : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		my_mac         : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
 		mii_clk        : in  std_logic;
 		miirx_data     : in  std_logic_vector;
@@ -72,6 +71,7 @@ architecture def of ipv4 is
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4proto_tx : std_logic_vector(8-1 downto 0) := x"e7";
+
 	signal ipv4da_vld   : std_logic;
 	signal ipv4plrx_frm : std_logic;
 	signal ipv4plrx_irdy: std_logic;
@@ -159,6 +159,9 @@ begin
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
+		ipv4len_tx <= wirebus(x"00_00_00_00_00_00" & x"00_00_00_00_00_00", dev_gnt);
+		ipv4sa_tx  <= my_ipv4a;
+		ipv4da_tx  <= wirebus(x"00_00_00_00" & x"00_00_00_00", dev_gnt);
 
 	end block;
 
@@ -173,8 +176,8 @@ begin
 		pl_data    => ipv4pltx_data,
 
 		ipv4_len   => ipv4len_tx,
-		ipv4_sa    => x"12345678", --ipv4sa_tx,
-		ipv4_da    => x"90abcdef", --ipv4da_tx,
+		ipv4_sa    => ipv4sa_tx,
+		ipv4_da    => ipv4da_tx,
 		ipv4_proto => ipv4proto_tx,
 
 		ipv4_frm   => ipv4tx_frm,
@@ -243,20 +246,10 @@ begin
 		plrx_trdy   => plrx_trdy,
 		plrx_data   => plrx_data,
 
-		udprx_sp    => open,
-		udprx_dp    => open,
-		udprx_len   => open,
-		udprx_cksm  => open,
-
 		pltx_frm    => pltx_frm,
 		pltx_irdy   => pltx_irdy,
 		pltx_trdy   => pltx_trdy,
 		pltx_data   => pltx_data,
-		pltx_len    => x"0000",
-
-		udptx_sp    => x"0000",
-		udptx_dp    => x"0000",
-		udptx_cksm  => x"0000",
 
 		udptx_frm   => udptx_frm,
 		udptx_irdy  => udptx_irdy,
