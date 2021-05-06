@@ -54,7 +54,7 @@ begin
 		mux_data => data,
         sio_clk  => sio_clk,
         sio_frm  => si_frm,
-		sio_irdy => si_irdy,
+		sio_irdy => so_trdy,
 		sio_trdy => mux_trdy,
 		so_end   => mux_end,
         so_data  => mux_data);
@@ -67,6 +67,7 @@ begin
 		di   => si_data,
         do   => lat_data);
 
+	so_frm  <= si_frm;
 	so_irdy <= primux(mux_trdy & si_irdy,  not mux_end & '1');
 	so_data <= primux(mux_data & lat_data, not mux_end & '1');
 end;
