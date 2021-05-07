@@ -105,7 +105,6 @@ architecture def of mii_ipoe is
 	signal ipv4tx_end   : std_logic;
 	signal ipv4tx_data  : std_logic_vector(miitx_data'range);
 
-	signal hwsa_rx      : std_logic_vector(my_mac'range);
 	signal hwda_tx      : std_logic_vector(my_mac'range);
 	signal hwtyp_tx     : std_logic_vector(0 to 16-1);
 	signal ipv4arx_frm  : std_logic;
@@ -158,18 +157,6 @@ begin
 		end if;
 	end process;
 
-	hwsa_e : entity hdl4fpga.serdes
-	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => miirx_frm,
-		ser_irdy   => hwdarx_irdy,
-		ser_trdy   => open,
-		ser_data   => miirx_data,
-		des_irdy   => open,
-		des_data   => hwsa_rx);
-
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (
 		n => 2)
@@ -183,6 +170,40 @@ begin
 		so_last   => llc_last,
 		so_equ(0) => arprx_equ,
 		so_equ(1) => iprx_equ);
+
+	b : block
+	
+	
+	rxbuffer_e : entity hdl4fpga.sio_ram
+	port map (
+		si_clk   => mii_clk,
+		si_frm   => miirx_frm,
+		si_irdy  => hwsarx_irdy,
+		si_trdy  => open,
+		si_data  => miirx_data,
+
+		so_clk   => mii_clk,
+		so_frm   =>
+		so_irdy  =>
+		so_trdy  =>
+		so_end   =>
+		so_data  => );
+	
+	fifo_e : entity hdl4fpga.fifo
+	generic map (
+		max_depth  => my_mac'length/miirx_data'length,
+		latency    => 1)
+	port map (
+		src_clk    => mii_clk,
+		src_frm    => miirx_frm;
+		src_irdy   : in  std_logic := '1';
+		src_trdy   : buffer std_logic;
+		src_data    => miirx_data,
+
+		dst_clk    => mii_clk,
+		dst_irdy   : buffer std_logic;
+		dst_trdy   : in  std_logic := '1';
+		dst_data   => );
 
 	process (mii_clk)
 	begin
