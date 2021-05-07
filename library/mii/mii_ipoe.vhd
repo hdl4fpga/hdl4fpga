@@ -172,38 +172,30 @@ begin
 		so_equ(1) => iprx_equ);
 
 	b : block
+	begin
 	
-	
-	rxbuffer_e : entity hdl4fpga.sio_ram
-	port map (
-		si_clk   => mii_clk,
-		si_frm   => miirx_frm,
-		si_irdy  => hwsarx_irdy,
-		si_trdy  => open,
-		si_data  => miirx_data,
+		fifoi_irdy <=
+			miirx_irdy when arprx_frm='1' else
+			miirx_irdy when iprx_frm='1'  else
+			hwsarx_irdy;
 
-		so_clk   => mii_clk,
-		so_frm   =>
-		so_irdy  =>
-		so_trdy  =>
-		so_end   =>
-		so_data  => );
-	
-	fifo_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth  => my_mac'length/miirx_data'length,
-		latency    => 1)
-	port map (
-		src_clk    => mii_clk,
-		src_frm    => miirx_frm;
-		src_irdy   : in  std_logic := '1';
-		src_trdy   : buffer std_logic;
-		src_data    => miirx_data,
+		fifo_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => my_mac'length/miirx_data'length,
+			latency    => 1)
+		port map (
+			src_clk    => mii_clk,
+			src_frm    => miirx_frm;
+			src_irdy   => fifoi_irdy,
+			src_trdy   => open,
+			src_data   => miirx_data,
 
-		dst_clk    => mii_clk,
-		dst_irdy   : buffer std_logic;
-		dst_trdy   : in  std_logic := '1';
-		dst_data   => );
+			dst_clk    => mii_clk,
+			dst_irdy   => fifo_irdy,
+			dst_trdy   => fifo_trdy
+			dst_data   => fifo_data);
+
+	end block;
 
 	process (mii_clk)
 	begin
