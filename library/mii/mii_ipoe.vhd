@@ -118,6 +118,7 @@ architecture def of mii_ipoe is
 
 	signal arpdtx_req : std_logic;
 	signal arpdtx_rdy : std_logic;
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -171,64 +172,6 @@ begin
 		so_last   => llc_last,
 		so_equ(0) => arprx_equ,
 		so_equ(1) => iprx_equ);
-
-	b : block
-		port (
-			sio_clk : in  std_logic;
-			si_frm  : in  std_logic;
-			si_irdy : in  std_logic;
-			si_trdy : in  std_logic;
-			si_data : in  std_logic_vector;
-			so_frm  : out std_logic;
-			so_irdy : out std_logic;
-			so_trdy : in  std_logic;
-			so_data : out std_logic_vector);
-		port map (
-			sio_clk => mii_clk,
-			si_frm  => miirx_frm,
-			si_irdy => miirx_irdy,
-			si_trdy =>
-
-
-		signal idlen_end  : std_logic;
-		signal idlen_data : std_logic_vector(miirx_data'range);
-		signal fifoi_data : std_logic_vector(miirx_data'range);
-		signal fifoo_data : std_logic_vector(miirx_data'range);
-	begin
-	
-		idlen_e : entity hdl4fpga.sio_mux is
-		port (
-			mux_data : in  std_logic_vector;
-			sio_clk  => mii_clk,
-			sio_frm  => miirx_frm,
-			so_end   => idlen_end,
-			so_data  => idlen_data);
-
-		fifoi_irdy <=
-			'1'        when idlen_end='0' else
-			miirx_irdy when arprx_frm='1' else
-			miirx_irdy when iprx_frm='1'  else
-			hwsarx_irdy;
-		fifoi_data <= primux(idlen_data, not idlen_end, miirx_data);
-
-		fifo_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => my_mac'length/miirx_data'length,
-			latency    => 1)
-		port map (
-			src_clk    => mii_clk,
-			src_frm    => miirx_frm;
-			src_irdy   => fifoi_irdy,
-			src_trdy   => open,
-			src_data   => fifoi_data,
-
-			dst_clk    => mii_clk,
-			dst_irdy   => fifoo_irdy,
-			dst_trdy   => fifoo_trdy
-			dst_data   => fifoo_data);
-
-		fifoo_data <= ethrx_data;
-	end block;
 
 	process (mii_clk)
 	begin
