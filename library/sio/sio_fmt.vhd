@@ -28,46 +28,50 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_fmt is
-    port (
-		data     : in  std_logic_vector;
-        sio_clk  : in  std_logic;
-		si_frm   : in  std_logic;
-        si_irdy  : in  std_logic;
-        si_trdy  : out std_logic;
-        si_data  : in  std_logic_vector;
-		so_frm   : out std_logic;
-        so_irdy  : out std_logic;
-        so_trdy  : in  std_logic;
-        so_data  : out std_logic_vector);
+entity is
+	port (
+		sio_clk : in  std_logic;
+		si_frm  : in  std_logic;
+		si_irdy : in  std_logic;
+		si_trdy : in  std_logic;
+		si_data : in  std_logic_vector;
+		so_frm  : out std_logic;
+		so_irdy : out std_logic;
+		so_trdy : in  std_logic;
+		so_data : out std_logic_vector);
 end;
 
-architecture beh of sio_fmt is
-	signal mux_txen : std_logic;
-	signal mux_txd  : std_logic_vector(mii_rxd'range);
-	signal lat_txen : std_logic;
-	signal lat_txd  : std_logic_vector(mii_txd'range);
+architecture of is
+	signal idlen_end  : std_logic;
+	signal idlen_data : std_logic_vector(si_data'range);
+	signal fifoi_data : std_logic_vector(si_data'range);
+	signal fifoo_data : std_logic_vector(si_data'range);
 begin
 
-	mux_e : entity hdl4pga.sio_mux
-    port (
-		mux_data => data,
-        sio_clk  => sio_clk,
-        sio_frm  => si_frm,
-		sio_irdy => so_trdy,
-		sio_trdy => mux_trdy,
-		so_end   => mux_end,
-        so_data  => mux_data);
+	idlen_e : entity hdl4fpga.sio_mux is
+	port (
+		mux_data : in  std_logic_vector;
+		sio_clk  => mii_clk,
+		sio_frm  => si_frm,
+		so_end   => idlen_end,
+		so_data  => idlen_data);
 
-	lat_e : entity hdl4fpga.align
+	fifoi_irdy <= '1' when idlen_end='0' else si_irdy;
+	fifoi_data <= primux(idlen_data, not idlen_end, si_data);
+
+	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		d => data'length)
-    port map (
-        clk  => sio_clk,
-		di   => si_data,
-        do   => lat_data);
+		max_depth => my_mac'length/miirx_data'length,
+		latency   => 0)
+	port map (
+		src_clk   => mii_clk,
+		src_frm   => si_frm;
+		src_irdy  => fifoi_irdy,
+		src_trdy  => open,
+		src_data  => fifoi_data,
 
-	so_frm  <= si_frm;
-	so_irdy <= primux(mux_trdy & si_irdy,  not mux_end & '1');
-	so_data <= primux(mux_data & lat_data, not mux_end & '1');
+		dst_clk   => mii_clk,
+		dst_irdy  => so_irdy,
+		dst_trdy  => so_trdy
+		dst_data  => so_data);
 end;
