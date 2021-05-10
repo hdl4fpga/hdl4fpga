@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_cap is
+entity sio_glue is
 	port (
 		sio_clk : in  std_logic;
 		si_frm  : in  std_logic;
@@ -41,7 +41,7 @@ entity sio_cap is
 		so_data : out std_logic_vector);
 end;
 
-architecture def of sio_cap is
+architecture def of sio_glue is
 	signal idlen_end  : std_logic;
 	signal idlen_data : std_logic_vector(si_data'range);
 	signal fifoi_data : std_logic_vector(si_data'range);
