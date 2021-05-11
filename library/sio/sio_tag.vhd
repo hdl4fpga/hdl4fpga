@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity sio_tag is
 	port (
 		sio_clk : in  std_logic;
+		sio_tag : in  std_logic_vector;
 		si_frm  : in  std_logic;
 		si_irdy : in  std_logic;
 		si_trdy : out std_logic;
@@ -55,8 +56,8 @@ begin
 
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => ,
-		sio_clk  => mii_clk,
+		mux_data => sio_tag,
+		sio_clk  => sio_clk,
 		sio_frm  => si_frm,
 		sio_irdy => so_trdy,
 		sio_trdy => tag_trdy,
@@ -65,23 +66,23 @@ begin
 
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => my_mac'length/miirx_data'length,
+		max_depth => sio_tag'length/si_data'length,
 		latency   => 0)
 	port map (
-		src_clk   => mii_clk,
-		src_frm   => si_frm;
+		src_clk   => sio_clk,
+		src_frm   => si_frm,
 		src_irdy  => si_irdy,
 		src_trdy  => open,
 		src_data  => si_data,
 
-		dst_clk   => mii_clk,
+		dst_clk   => sio_clk,
 		dst_irdy  => fifoo_irdy,
-		dst_trdy  => fifoo_trdy
+		dst_trdy  => fifoo_trdy,
 		dst_data  => fifoo_data);
 
 	so_frm     <= si_frm;
 	so_irdy    <= tag_trdy when tag_end='0' else fifoo_trdy;
 	fifoo_trdy <= '0'      when tag_end='0' else so_trdy;
-	so_data    <= primux(tag_data, not tag_end, fifoo_data);
+	so_data    <= primux(tag_data, (0 to 0 => not tag_end), fifoo_data);
 
 end;

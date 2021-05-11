@@ -33,7 +33,7 @@ entity sio_glue is
 		sio_clk : in  std_logic;
 		si_frm  : in  std_logic;
 		si_irdy : in  std_logic;
-		si_trdy : in  std_logic;
+		si_trdy : out std_logic;
 		si_data : in  std_logic_vector;
 		so_frm  : out std_logic;
 		so_irdy : out std_logic;
@@ -48,30 +48,35 @@ architecture def of sio_glue is
 	signal fifoo_data : std_logic_vector(si_data'range);
 begin
 
-	idlen_e : entity hdl4fpga.sio_mux is
+	entity sio_sin is
 	port (
-		mux_data : in  std_logic_vector;
-		sio_clk  => mii_clk,
-		sio_frm  => si_frm,
-		so_end   => idlen_end,
-		so_data  => idlen_data);
+		sin_clk   => sio_clk,
+		sin_frm   => si_frm,
+		sin_irdy  => si_irdy,
+		sin_trdy  => si_trdy,
+		sin_data  => si_data,
+		
+		data_frm  => ,
+		sout_irdy => so_irdy,
 
-	fifoi_irdy <= '1' when idlen_end='0' else si_irdy;
-	fifoi_data <= primux(idlen_data, not idlen_end, si_data);
+		rgtr_irdy => ,
+		rgtr_trdy => ,
+		rgtr_id   => rgtr_id,
+		rgtr_lv   => ,
+		rgtr_len  => rgtr_len,
+		rgtr_data => rgtr_data);
 
-	fifo_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => my_mac'length/miirx_data'length,
-		latency   => 0)
+	tag_e : entity sio_tag is
 	port map (
-		src_clk   => mii_clk,
-		src_frm   => si_frm;
-		src_irdy  => fifoi_irdy,
-		src_trdy  => open,
-		src_data  => fifoi_data,
+		sio_clk => sio_clk,
+		sio_tag =>
+		si_frm  => si_frm
+		si_irdy : in  std_logic;
+		si_trdy : out std_logic;
+		si_data : in  std_logic_vector;
+		so_frm  : out std_logic;
+		so_irdy : out std_logic;
+		so_trdy : in  std_logic;
+		so_data : out std_logic_vector);
 
-		dst_clk   => mii_clk,
-		dst_irdy  => so_irdy,
-		dst_trdy  => so_trdy
-		dst_data  => so_data);
 end;
