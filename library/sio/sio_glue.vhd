@@ -42,29 +42,46 @@ entity sio_glue is
 end;
 
 architecture def of sio_glue is
-	signal idlen_end  : std_logic;
-	signal idlen_data : std_logic_vector(si_data'range);
-	signal fifoi_data : std_logic_vector(si_data'range);
-	signal fifoo_data : std_logic_vector(si_data'range);
+	signal des_data : std_logic_vector(0 to 8-1);
+	signal ena : std_logic;
 begin
 
-	entity sio_sin is
+	serdes_e : entity hdl4fpga.serdes
 	port (
-		sin_clk   => sio_clk,
-		sin_frm   => si_frm,
-		sin_irdy  => si_irdy,
-		sin_trdy  => si_trdy,
-		sin_data  => si_data,
-		
-		data_frm  => ,
-		sout_irdy => so_irdy,
+		serdes_clk => sio_clk
+		serdes_frm => si_frm,
+		ser_irdy   => si_irdy,
+		ser_trdy   => open,
+		ser_data   => si_data,
 
-		rgtr_irdy => ,
-		rgtr_trdy => ,
-		rgtr_id   => rgtr_id,
-		rgtr_lv   => ,
-		rgtr_len  => rgtr_len,
-		rgtr_data => rgtr_data);
+		des_frm    => des_frm,
+		des_irdy   => des_irdy,
+		des_data   => des_data);
+
+	entity desser is
+		port (
+			desser_clk : in  std_logic;
+	
+			des_frm    : in  std_logic;
+			des_irdy   : in  std_logic := '1';
+			des_trdy   : out std_logic;
+			des_data   : in  std_logic_vector;
+	
+			ser_irdy   : out std_logic;
+			ser_trdy   : in  std_logic := '1';
+			ser_data   : out std_logic_vector);
+	end;
+
+	process (sio_clk)
+	begin
+		if rising_edge(sio_clk) then
+			if si_frm='0' then
+				ena <= '0';
+			elsif des_irdy='1' then
+				ena <= '1';
+			end if;
+		end if;
+	end process;
 
 	tag_e : entity sio_tag is
 	port map (
