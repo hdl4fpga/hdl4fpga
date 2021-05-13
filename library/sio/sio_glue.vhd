@@ -46,32 +46,6 @@ architecture def of sio_glue is
 	signal ena : std_logic;
 begin
 
-	serdes_e : entity hdl4fpga.serdes
-	port (
-		serdes_clk => sio_clk
-		serdes_frm => si_frm,
-		ser_irdy   => si_irdy,
-		ser_trdy   => open,
-		ser_data   => si_data,
-
-		des_frm    => des_frm,
-		des_irdy   => des_irdy,
-		des_data   => des_data);
-
-	entity desser is
-		port (
-			desser_clk : in  std_logic;
-	
-			des_frm    : in  std_logic;
-			des_irdy   : in  std_logic := '1';
-			des_trdy   : out std_logic;
-			des_data   : in  std_logic_vector;
-	
-			ser_irdy   : out std_logic;
-			ser_trdy   : in  std_logic := '1';
-			ser_data   : out std_logic_vector);
-	end;
-
 	process (sio_clk)
 	begin
 		if rising_edge(sio_clk) then
