@@ -42,9 +42,21 @@ entity sio_glue is
 end;
 
 architecture def of sio_glue is
-	signal ena : std_logic;
-	signal len : std_logic_vector(si_data'range);
+	signal ci : std_logic;
+	signal co : std_logic;
+	signal b  : std_logic_vector(si_data'range);
+	signal s  : std_logic_vector(si_data'range);
+	signal len_frm  : std_logic;
+	signal len_data : std_logic_vector(si_data'range);
 begin
+
+	addr_e : entity hdl4fpga.adder
+	port map (
+		ci => ci,
+		a  => si_data,
+		b  => b,
+		s  => len_data,
+		co => co);
 
 	process (sio_clk)
 		variable cntr : unsigned(0 to 4-1);
@@ -52,14 +64,25 @@ begin
 		if rising_edge(sio_clk) then
 			if si_frm='0' then
 				cntr := (others => '0');
-			elsif si_irdy='1' and so_trdy='1' and cntr(0)='0'then
-				cntr := cntr + si_data'length;
+				ci   <= '0';
+				len_frm <= '0';
+			elsif si_irdy='1' and so_trdy='1' then
+				if cntr(0)='0'then
+					cntr := cntr + si_data'length;
+				elsif len_frm='0' then
+					len_frm <= '1';
+				end if;
+				if cntr(0)='1' then
+					cntr := (others => '0');
+				end if;
+				ci   <= co;
 			end if;
-			ena <= cntr(0);
 		end if;
 	end process;
 
 	so_data <= 
+		len_data when len_frm='1' else
+		si_data;
 		
 
 end;
