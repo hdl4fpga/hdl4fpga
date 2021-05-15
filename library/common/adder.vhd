@@ -25,41 +25,18 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
-use hdl4fpga.std.all;
-
-entity sio_glue is
+entity adder is
 	port (
-		sio_clk : in  std_logic;
-		si_frm  : in  std_logic;
-		si_irdy : in  std_logic;
-		si_trdy : out std_logic;
-		si_data : in  std_logic_vector;
-		so_frm  : out std_logic;
-		so_irdy : out std_logic;
-		so_trdy : in  std_logic;
-		so_data : out std_logic_vector);
+		ci  : in  std_logic;
+		a   : in  std_logic_vector;
+		b   : in  std_logic_vector;
+		s   : out std_logic_vector;
+		co  : out std_logic);
 end;
 
-architecture def of sio_glue is
-	signal ena : std_logic;
-	signal len : std_logic_vector(si_data'range);
+architecture def of adder is
+	signal sum : unsigned(0 to s'length+1);
 begin
-
-	process (sio_clk)
-		variable cntr : unsigned(0 to 4-1);
-	begin
-		if rising_edge(sio_clk) then
-			if si_frm='0' then
-				cntr := (others => '0');
-			elsif si_irdy='1' and so_trdy='1' and cntr(0)='0'then
-				cntr := cntr + si_data'length;
-			end if;
-			ena <= cntr(0);
-		end if;
-	end process;
-
-	so_data <= 
-		
-
+	sum <= unsigned('0' & a & ci) + unsigned('0' & b & '1');
+	co  <= sum(0);
 end;
