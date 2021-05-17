@@ -42,42 +42,56 @@ entity sio_merg is
 end;
 
 architecture def of sio_merg is
-	signal ci : std_logic;
-	signal co : std_logic;
-	signal b  : std_logic_vector(si_data'range);
-	signal s  : std_logic_vector(si_data'range);
+
 	signal len_frm  : std_logic;
-	signal len_data : std_logic_vector(si_data'range);
+	signal len_data : std_logic_vector(so_data'range);
+	signal s : std_logic_vector(0 to so_data'length*(si_frm'length+1)-1);
+
 begin
 
-	addr_e : entity hdl4fpga.adder
-	port map (
-		ci => ci,
-		a  => si_data(0 to si_data'length/si_frm'length-1),
-		b  => si_data(0 to si_data'length/si_frm'length-1),
-		s  => len_data,
-		co => co);
+	s(so_data'range) <= si_data(so_data'range);
+	adders_g :for i in 1 to si_frm'length generate
+		signal ci : std_logic;
+		signal co : std_logic;
+	begin
+		adder_e : entity hdl4fpga.adder
+		port map (
+			ci => ci,
+			a  => s(so_data'length*(i-1) to i*so_data'length-1),
+			b  => si_data(so_data'length*i to (i+1)*so_data'length-1),
+			s  => s(so_data'length*i to (i+1)*so_data'length-1),
+			co => co);
+
+		process (sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				if si_frm=(si_frm'range => '0') then
+					ci <= '0';
+				elsif si_irdy=(si_irdy'range => '1') then
+					ci <= co;
+				end if;
+			end if;
+		end process;
+	end generate;
+	len_data <= s(si_frm'length*so_data'length to (si_frm'length+1)*so_data'length-1);
 
 	process (sio_clk)
 		variable cntr : unsigned(0 to 4-1);
 	begin
 		if rising_edge(sio_clk) then
-			if si_frm=(others => '0') then
+			if si_frm=(si_frm'range => '0') then
 				cntr := (others => '0');
-				ci   <= '0';
-				len_frm <= '0';
-			elsif si_irdy=(others => '1') then
-				if cntr(0)='0'then
+			elsif cntr(0)='0'then
+				if si_irdy=(si_irdy'range => '1') then
 					cntr := cntr + si_data'length;
 				end if;
-				ci <= co;
 			end if;
+			len_frm <= cntr(0);
 		end if;
 	end process;
 
 	so_data <= 
 		len_data when len_frm='1' else
-		si_data;
-		
+		primux(si_data, si_frm);
 
 end;
