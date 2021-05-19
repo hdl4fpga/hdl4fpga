@@ -159,6 +159,18 @@ begin
 		end if;
 	end process;
 
+	hdsa_e : entity hdl4fpga.sio_tag
+	port map (
+		sio_clk => mii_clk,
+		sio_tag => x"0105",
+		si_frm  => miirx_frm,
+		si_irdy => hwsarx_irdy,
+		si_data => miirx_data,
+		so_frm  => hdsa_frm,
+		so_irdy => hdsa_irdy,
+		so_trdy => hdsa_trdy.
+		so_data => hdsa_data);
+
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (
 		n => 2)
@@ -283,6 +295,7 @@ begin
 		miirx_data    => miirx_data,
 		frmrx_ptr     => frmrx_ptr,
 
+		miirx_frm     => miirx_frm,
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4arx_vld   => ipv4arx_vld,

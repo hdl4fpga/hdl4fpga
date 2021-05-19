@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_merg is
+entity sio_mrge is
 	port (
 		sio_clk : in  std_logic;
 		si_frm  : in  std_logic_vector;
@@ -41,7 +41,7 @@ entity sio_merg is
 		so_data : out std_logic_vector);
 end;
 
-architecture def of sio_merg is
+architecture def of sio_mrge is
 
 	signal len_frm  : std_logic;
 	signal len_data : std_logic_vector(so_data'range);
