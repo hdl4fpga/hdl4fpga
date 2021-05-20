@@ -63,6 +63,9 @@ end;
 
 architecture def of mii_ipoe is
 
+	signal metarx_irdy  : std_logic;
+	signal metarx_data  : std_logic_vector(miirx_data'range);
+
 	signal frmrx_ptr    : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/miirx_data'length-1));
 	signal ethrx_data   : std_logic_vector(miirx_data'range);
 
@@ -106,6 +109,11 @@ architecture def of mii_ipoe is
 	signal ipv4tx_end   : std_logic;
 	signal ipv4tx_data  : std_logic_vector(miitx_data'range);
 
+	signal ipv4plrx_frm  : std_logic;
+	signal ipv4plrx_irdy : std_logic;
+	signal ipv4plrx_trdy : std_logic;
+	signal ipv4plrx_data : std_logic_vector(miitx_data'range);
+
 	signal hwda_tx      : std_logic_vector(my_mac'range);
 	signal hwtyp_tx     : std_logic_vector(0 to 16-1);
 	signal ipv4arx_frm  : std_logic;
@@ -114,6 +122,7 @@ architecture def of mii_ipoe is
 	signal ipv4arx_last : std_logic;
 	signal ipv4arx_vld  : std_logic;
 	signal ipv4darx_frm : std_logic;
+	signal ipv4metarx_irdy : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
 	signal arpdtx_req : std_logic;
@@ -159,23 +168,19 @@ begin
 		end if;
 	end process;
 
-	meta_irdy <= hwsarx_irdy or
-	meta_e : entity hdl4fpga.sio_ram
-	generic map (
-		mem_data : std_logic_vector := (0 to 0 => '-');
-		mem_size : natural := 0);
+	metarx_irdy <= hwsarx_irdy or ipv4metarx_irdy;
+	meta_e : entity hdl4fpga.sio_tag
 	port map (
-		si_clk   => mii_clk,
+		sio_clk  => mii_clk,
+		sio_tag  => x"0016",
 		si_frm   => miirx_frm,
-		si_irdy  => meta_irdy,
+		si_irdy  => metarx_irdy,
 		si_data  => miirx_data,
 
-		so_clk   => mii_clk,
-		so_frm   : in  std_logic;
-		so_irdy  : in  std_logic;
-		so_trdy  : out std_logic;
-		so_end   : out std_logic;
-		so_data  : out std_logic_vector);
+		so_frm   => plrx_frm,
+		so_irdy  => plrx_irdy,
+		so_trdy  => plrx_trdy,
+		so_data  => plrx_data);
 
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (
@@ -301,18 +306,18 @@ begin
 		miirx_data    => miirx_data,
 		frmrx_ptr     => frmrx_ptr,
 
-		miirx_frm     => miirx_frm,
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4arx_vld   => ipv4arx_vld,
 
+		ipv4metarx_irdy => ipv4metarx_irdy, 
 		ipv4darx_frm  => ipv4darx_frm,
 		ipv4darx_irdy => ipv4darx_irdy,
 
-		plrx_frm      => plrx_frm,
-		plrx_irdy     => plrx_irdy,
-		plrx_trdy     => plrx_trdy,
-		plrx_data     => plrx_data,
+		plrx_frm      => ipv4plrx_frm,
+		plrx_irdy     => ipv4plrx_irdy,
+		plrx_trdy     => ipv4plrx_trdy,
+		plrx_data     => ipv4plrx_data,
 
 		pltx_frm      => pltx_frm,
 		pltx_irdy     => pltx_irdy,

@@ -40,8 +40,7 @@ entity ipv4 is
 		ipv4rx_irdy    : in  std_logic;
 		ipv4arx_vld    : in  std_logic;
 
-		ipv4protorx_irdy : buffer std_logic;
-		ipv4sarx_irdy  : buffer std_logic;
+		ipv4metarx_irdy : out std_logic;
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
 
@@ -66,7 +65,10 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
+	signal ipv4protorx_irdy : std_logic;
+	signal ipv4sarx_irdy  : std_logic;
 	signal ipv4lenrx_irdy : std_logic;
+
 	signal ipv4len_tx   : std_logic_vector(16-1 downto 0);
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
@@ -98,8 +100,11 @@ architecture def of ipv4 is
 	signal udptx_data : std_logic_vector(ipv4tx_data'range);
 
 	signal protorx_last : std_logic;
+	signal udpmetarx_irdy : std_logic;
 
 begin
+
+	ipv4metarx_irdy <= ipv4protorx_irdy or ipv4sarx_irdy or ipv4lenrx_irdy;
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
@@ -240,6 +245,7 @@ begin
 		miirx_irdy  => ipv4rx_irdy,
 		frmrx_ptr   => frmrx_ptr,
 		miirx_data  => miirx_data,
+		udpmetarx_irdy => udpmetarx_irdy,
 
 		plrx_frm    => plrx_frm,
 		plrx_irdy   => plrx_irdy,

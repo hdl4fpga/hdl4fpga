@@ -35,6 +35,7 @@ entity udp is
 		frmrx_ptr   : in  std_logic_vector;
 		miirx_data  : in  std_logic_vector;
 
+		udpmetarx_irdy : out std_logic;
 		plrx_frm    : out std_logic;
 		plrx_irdy   : out std_logic;
 		plrx_trdy   : in  std_logic;
