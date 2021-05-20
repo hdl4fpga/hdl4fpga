@@ -159,17 +159,23 @@ begin
 		end if;
 	end process;
 
-	hdsa_e : entity hdl4fpga.sio_tag
+	meta_irdy <= hwsarx_irdy or
+	meta_e : entity hdl4fpga.sio_ram
+	generic map (
+		mem_data : std_logic_vector := (0 to 0 => '-');
+		mem_size : natural := 0);
 	port map (
-		sio_clk => mii_clk,
-		sio_tag => x"0105",
-		si_frm  => miirx_frm,
-		si_irdy => hwsarx_irdy,
-		si_data => miirx_data,
-		so_frm  => hdsa_frm,
-		so_irdy => hdsa_irdy,
-		so_trdy => hdsa_trdy.
-		so_data => hdsa_data);
+		si_clk   => mii_clk,
+		si_frm   => miirx_frm,
+		si_irdy  => meta_irdy,
+		si_data  => miirx_data,
+
+		so_clk   => mii_clk,
+		so_frm   : in  std_logic;
+		so_irdy  : in  std_logic;
+		so_trdy  : out std_logic;
+		so_end   : out std_logic;
+		so_data  : out std_logic_vector);
 
 	llc_e : entity hdl4fpga.sio_cmp
 	generic map (

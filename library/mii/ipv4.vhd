@@ -40,7 +40,6 @@ entity ipv4 is
 		ipv4rx_irdy    : in  std_logic;
 		ipv4arx_vld    : in  std_logic;
 
-		ipv4lenrx_irdy : buffer std_logic;
 		ipv4protorx_irdy : buffer std_logic;
 		ipv4sarx_irdy  : buffer std_logic;
 		ipv4darx_frm   : out std_logic;
@@ -67,6 +66,7 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
+	signal ipv4lenrx_irdy : std_logic;
 	signal ipv4len_tx   : std_logic_vector(16-1 downto 0);
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
