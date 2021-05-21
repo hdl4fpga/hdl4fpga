@@ -164,7 +164,7 @@ begin
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
-		ipv4len_tx <= wirebus(x"00_00_00_00_00_00" & x"00_00_00_00_00_00", dev_gnt);
+		ipv4len_tx <= wirebus(x"0000" & x"0000", dev_gnt);
 		ipv4sa_tx  <= my_ipv4a;
 		ipv4da_tx  <= wirebus(x"00_00_00_00" & x"00_00_00_00", dev_gnt);
 
