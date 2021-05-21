@@ -66,6 +66,7 @@ begin
 
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
+		check_dov => true,
 		max_depth => sio_tag'length/si_data'length,
 		latency   => 0)
 	port map (
@@ -81,7 +82,7 @@ begin
 		dst_data  => fifoo_data);
 
 	so_frm     <= si_frm;
-	so_irdy    <= tag_trdy when tag_end='0' else fifoo_trdy;
+	so_irdy    <= tag_trdy when tag_end='0' else fifoo_irdy;
 	fifoo_trdy <= '0'      when tag_end='0' else so_trdy;
 	so_data    <= primux(tag_data, (0 to 0 => not tag_end), fifoo_data);
 

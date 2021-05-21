@@ -122,7 +122,6 @@ architecture def of mii_ipoe is
 	signal ipv4arx_last : std_logic;
 	signal ipv4arx_vld  : std_logic;
 	signal ipv4darx_frm : std_logic;
-	signal ipv4metarx_irdy : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
 	signal arpdtx_req : std_logic;
@@ -168,7 +167,7 @@ begin
 		end if;
 	end process;
 
-	metarx_irdy <= hwsarx_irdy or ipv4metarx_irdy;
+	metarx_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	meta_e : entity hdl4fpga.sio_tag
 	port map (
 		sio_clk  => mii_clk,
@@ -310,7 +309,6 @@ begin
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4arx_vld   => ipv4arx_vld,
 
-		ipv4metarx_irdy => ipv4metarx_irdy, 
 		ipv4darx_frm  => ipv4darx_frm,
 		ipv4darx_irdy => ipv4darx_irdy,
 

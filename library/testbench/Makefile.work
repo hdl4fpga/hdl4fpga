@@ -257,7 +257,7 @@ $(WORK__ulx3s__eth_tb) : ../../ULX3S/demos/eth_tb.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../ULX3S/demos/eth_tb.vhd
+	$(VCOM) -2002  ../../ULX3S/demos/eth_tb.vhd
 
 $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
