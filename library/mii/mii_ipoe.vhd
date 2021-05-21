@@ -43,7 +43,7 @@ entity mii_ipoe is
 
 		plrx_frm       : out std_logic;
 		plrx_irdy      : out std_logic;
-		plrx_trdy      : in  std_logic;
+		plrx_trdy      : in  std_logic := '1';
 		plrx_data      : out std_logic_vector;
 
 		pltx_frm       : in  std_logic;

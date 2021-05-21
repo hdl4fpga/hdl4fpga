@@ -402,7 +402,7 @@ begin
 
 				plrx_frm   => open,
 				plrx_irdy  => open,
-				plrx_trdy  => '0',
+				plrx_trdy  => '1',
 				plrx_data  => plrx_data,
 
 				pltx_frm   => '0',
