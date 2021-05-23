@@ -137,7 +137,7 @@ begin
 		end if;
 	end process;
 
-	icmppltx_frm  <= to_stdulogic(icmpd_req xor icmpd_rdy);
+	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy);
 	icmptx_cksm  <= oneschecksum(icmprx_cksm & x"00" & x"00", icmptx_cksm'length);
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (

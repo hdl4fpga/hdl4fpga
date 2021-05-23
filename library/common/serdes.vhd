@@ -53,7 +53,7 @@ begin
 		end if;
 	end process;
 
-	process (ser_data, serdes_clk)
+	process (rgtr_des, ser_data, serdes_clk)
 		function xxx (
 			constant des_data : unsigned;
 			constant ser_data : std_logic_vector;

@@ -68,7 +68,9 @@ architecture def of ipv4 is
 	signal ipv4sarx_irdy  : std_logic;
 	signal ipv4lenrx_irdy : std_logic;
 
-	signal ipv4len_tx   : std_logic_vector(16-1 downto 0);
+	signal ipv4len_rx   : std_logic_vector(0 to 16-1);
+	signal ipv4da_rx    : std_logic_vector(32-1 downto 0);
+	signal ipv4len_tx   : std_logic_vector(0 to 16-1);
 	signal ipv4sa_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4da_tx    : std_logic_vector(32-1 downto 0);
 	signal ipv4proto_tx : std_logic_vector(8-1 downto 0) := x"e7";
@@ -138,7 +140,7 @@ begin
 		ser_trdy   => open,
 		ser_data   => miirx_data,
 		des_irdy   => open,
-		des_data   => ipv4da_tx);
+		des_data   => ipv4da_rx);
 
 	ipv4len_e : entity hdl4fpga.serdes
 	generic map (
@@ -150,7 +152,7 @@ begin
 		ser_trdy   => open,
 		ser_data   => miirx_data,
 		des_irdy   => open,
-		des_data   => ipv4len_tx);
+		des_data   => ipv4len_rx);
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
