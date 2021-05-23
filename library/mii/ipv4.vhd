@@ -109,7 +109,7 @@ architecture def of ipv4 is
 begin
 
 	plrx_frm  <= ipv4rx_frm;
-	plrx_irdy <= ipv4protorx_irdy or ipv4sarx_irdy or ipv4lenrx_irdy or udpplrx_irdy;
+	plrx_irdy <= to_stdulogic(to_bit(ipv4rx_frm and (ipv4protorx_irdy or ipv4sarx_irdy or ipv4lenrx_irdy or udpplrx_irdy)));
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
