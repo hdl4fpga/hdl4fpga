@@ -34,18 +34,24 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipv4_tx is
 	port (
-		mii_clk  : in  std_logic;
+		mii_clk : in  std_logic;
 
-		pl_frm   : in  std_logic;
-		pl_irdy  : in  std_logic;
-		pl_trdy  : out std_logic;
-		pl_end   : in  std_logic;
-		pl_data  : in  std_logic_vector;
+		pl_frm  : in  std_logic;
+		pl_irdy : in  std_logic;
+		pl_trdy : out std_logic;
+		pl_end  : in  std_logic;
+		pl_data : in  std_logic_vector;
 
-		ipv4_len   : in  std_logic_vector(0 to 16-1);
-		ipv4_sa    : in  std_logic_vector(0 to 32-1);
-		ipv4_da    : in  std_logic_vector(0 to 32-1);
-		ipv4_proto : in  std_logic_vector(0 to 8-1);
+		ipv4len_irdy   : out std_logic;
+		ipv4len_data   : in  std_logic_vector;
+		ipv4proto_irdy : out std_logic;
+		ipv4proto_data : in  std_logic_vector;
+
+		ipv4a_frm   : out std_logic;
+		ipv4sa_irdy : out std_logic;
+		ipv4sa_data : in  std_logic_vector;
+		ipv4da_irdy : out std_logic;
+		ipv4da_data : in  std_logic_vector;
 
 		ipv4_frm  : buffer std_logic;
 		ipv4_irdy : buffer std_logic;
@@ -56,20 +62,23 @@ end;
 
 architecture def of ipv4_tx is
 
-	function xxx ()
+	function xxx (constant size : natural)
 		return std_logic_vector is
+		constant proto_base  : natural := summation(ipv4hdr_frame(ipv4hdr_frame'left to hdl4fpga.ipoepkg.ipv4_proto-1))/size;
+		constant length_base : natural := summation(ipv4hdr_frame(ipv4hdr_frame'left to hdl4fpga.ipoepkg.ipv4_length-1))/size;
+		variable retval : unsigned(0 to 3*summation(ipv4hdr_frame(ipv4hdr_frame'left to hdl4fpga.ipoepkg.ipv4_length-1))/size-1);
 	begin
-		for i in ipv4hdr_frame'range loop
-			for j in 0 to 
-			case i is
-			when hdl4fpga.ipoepkg.ipv4_proto =>
-			end case;
+		retval := (others => '0');
+		for i in (ipv4hdr_frame(ipv4hdr_frame'left to hdl4fpga.ipoepkg.ipv4_length)-1 loop
+			if length_base <= i and i < lenght_base+ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_length) then
+				retval(0 to 3-1) := "001";
+			elsif proto_hbase <= i and i < proto_base+ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_proto) then
+				retval(0 to 3-1) := "010";
+			else
+				retval(0 to 3-1) := "100";
+			end if;
+			retval := retval rol 3;
 		end loop;
-		summation(ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto));
-		summation(ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto));
-		ipv4_verihl  => 1*octect_size,
-		ipv4_tos     => 1*octect_size,
-
 	end;
 
 	signal cksm_frm      : std_logic;
@@ -83,6 +92,11 @@ architecture def of ipv4_tx is
 	signal ipv4hdr_mux   : std_logic_vector(0 to summation(
 		ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto))-1);
 	signal ipv4hdr_data  : std_logic_vector(ipv4_data'range);
+
+	signal ipv4sel_irdy  : std_logic;
+	signal ipv4sel_trdy  : std_logic;
+	signal ipv4sel_end   : std_logic;
+	signal ipv4sel_data  : std_logic_vector(0 to 3-1);
 
 	signal ipv4a_frm     : std_logic;
 	signal ipv4a_mux     : std_logic_vector(0 to ipv4_sa'length+ipv4_da'length-1);
@@ -131,11 +145,11 @@ begin
 		sio_irdy => ipv4hdr_irdy,
 		sio_trdy => ipv4hdr_trdy,
 		so_end   => ipv4hdr_end,
-		so_data  => ipv4hdr_data);
+		so_data  => ipv4hdr1_data);
 
 	ipv4sel_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => 3*(ipv4hdr_mux/ipv4hdr_data) ,
+		mux_data => xxx(ipv4_data'length),
 		sio_clk  => mii_clk,
 		sio_frm  => pl_frm,
 		sio_irdy => ipv4sel_irdy,
@@ -157,6 +171,17 @@ begin
         so_end   => ipv4a_end,
         so_data  => ipv4a_data);
 
+	ipv4asel_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data => xxx1(ipv4_data'length),
+		sio_clk  => mii_clk,
+        sio_frm  => ipv4a_frm,
+		sio_irdy => ipv4asel_irdy,
+		sio_trdy => ipv4asel_trdy,
+		so_end   => ipv4asel_end,
+		so_data  => ipv4asel_data);
+
+	ipv4hdr_data <= 
 	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not post & post);
 	cksm_irdy <= primux(ipv4a_trdy & (ipv4hdr_trdy and not ipv4hdr_end), not post & post)(0);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
