@@ -48,14 +48,14 @@ entity sio_ram is
 end;
 
 architecture def of sio_ram is
-	constant mem_length  : natural := setif(mem_size=0, mem_data'length, mem_size)/si_data'length;
-	constant addr_length : natural := unsigned_num_bits(mem_length-1);
-	subtype addr_range is natural range 1 to addr_length;
+	constant max_words  : natural := setif(mem_size=0, mem_data'length, mem_size)/si_data'length;
+	constant cntr_length : natural := unsigned_num_bits(max_words-1);
+	subtype addr_range is natural range 1 to cntr_length;
 
-	signal wr_addr : unsigned(0 to addr_length);
+	signal wr_addr : unsigned(0 to cntr_length);
 	signal wr_ena  : std_logic;
-	signal rd_addr : unsigned(0 to addr_length);
-	signal len     : unsigned(0 to addr_length);
+	signal rd_addr : unsigned(0 to cntr_length);
+	signal len     : unsigned(0 to cntr_length);
 
 begin
 
@@ -63,27 +63,27 @@ begin
 	report "so_data and si_data have different length"
 	severity FAILURE;
 
-	assert mem_length > 0
-	report "mem_length should be greater than 0"
+	assert max_words > 0
+	report "max_words should be greater than 0"
 	severity FAILURE;
 
 	process (si_frm, si_irdy, si_clk)
-		variable addr : unsigned(0 to addr_length);
+		variable cntr : unsigned(0 to cntr_length);
 	begin
 		if rising_edge(si_clk) then
 			if si_frm='0' then
-				addr := (others => '0');
+				cntr := (others => '0');
 			else
 				if si_irdy='1' then 
-					if addr(0)='0' then
-						addr := addr + 1;
+					if cntr(0)='0' then
+						cntr := cntr + 1;
 					end if;
 				end if;
-				len <= addr;
+				len <= cntr;
 			end if;
-			wr_addr <= addr;
+			wr_addr <= cntr;
 		end if;
-		wr_ena <= not addr(0) and si_frm and si_irdy;
+		wr_ena <= not cntr(0) and si_frm and si_irdy;
 	end process;
 
 	mem_e : entity hdl4fpga.dpram 

@@ -177,6 +177,55 @@ begin
 
 	end block;
 
+	ipv4a_b : block
+		signal ipv4sa_trdy : std_logic;
+		signal ipv4sa_end  : std_logic;
+		signal ipv4sa_data : std_logic_vector();
+		signal ipv4da_irdy : std_logic;
+		signal ipv4da_irdy : std_logic;
+		signal ipv4da_data : std_logic_vector();
+	begin
+		ipv4sa_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_size => 32)
+		port map (
+			si_clk   => mii_clk,
+			si_frm   => ,
+			si_irdy  => ,
+			si_trdy  => ,
+			si_data  => ,
+
+			so_clk   => mii_clk,
+			so_frm   => ipv4a_frm,
+			so_irdy  => ipv4a_irdy,
+			so_trdy  => ipv4sa_trdy,
+			so_end   => ipv4sa_end,
+			so_data  => ipv4sa_data);
+
+		ipv4da_irdy <= '0' when ipv4sa_end='0' else ipv4a_irdy;
+
+		ipv4da_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_size => 32)
+		port map (
+			si_clk   => mii_clk,
+			si_frm   => ,
+			si_irdy  => ,
+			si_trdy  => ,
+			si_data  => ,
+
+			so_clk   => mii_clk,
+			so_frm   => ipv4a_frm,
+			so_irdy  => ipv4da_irdy,
+			so_trdy  => ipv4da_trdy,
+			so_end   => ipv4a_end,
+			so_data  => ipv4da_data);
+
+		ipv4a_trdy <= ipv4sa_trdy when ipv4sa_end='0' else ipv4da_trdy;
+		ipv4a_data <= ipv4sa_data when ipv4sa_end='0' else ipv4da_data;
+
+	end block;
+
 	ipv4tx_e : entity hdl4fpga.ipv4_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -187,12 +236,16 @@ begin
 		pl_end     => ipv4pltx_end,
 		pl_data    => ipv4pltx_data,
 
-		ipv4_len   => ipv4len_tx,
-		ipv4_sa    => ipv4sa_tx,
-		ipv4_da    => ipv4da_tx,
-		ipv4_proto => ipv4proto_tx,
+		ipv4a_frm  => ipv4a_frm,
+		ipv4a_irdy => ipv4a_irdy,
+		ipv4a_end  => ipv4a_end,
+		ipv4a_data => ipv4a_data,
 
-		ipv4_frm   => ipv4tx_frm,
+		ipv4len_irdy   => ,
+		ipv4len_data   => ,
+		ipv4proto_irdy => ,
+		ipv4proto_data => ,
+
 		ipv4_irdy  => ipv4tx_irdy,
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
