@@ -34,11 +34,13 @@ entity ipv4 is
 	port (
 
 		mii_clk        : in  std_logic;
+		miirx_frm      : in  std_logic_vector;
+		miirx_irdy     : in  std_logic;
+		metarx_irdy    : in  std_logic;
 		miirx_data     : in  std_logic_vector;
 		frmrx_ptr      : in  std_logic_vector;
 
 		ipv4rx_frm     : in  std_logic;
-		ipv4rx_irdy    : in  std_logic;
 		ipv4arx_vld    : in  std_logic;
 
 		ipv4darx_frm   : out std_logic;
@@ -65,46 +67,47 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
+
 	signal ipv4protorx_irdy : std_logic;
-	signal ipv4sarx_irdy  : std_logic;
-	signal ipv4lenrx_irdy : std_logic;
+	signal ipv4sarx_irdy    : std_logic;
+	signal ipv4lenrx_irdy   : std_logic;
 
-	signal ipv4len_tx   : std_logic_vector(ipv4tx_data'range);
-	signal ipv4sa_tx    : std_logic_vector(ipv4tx_data'range);
-	signal ipv4da_tx    : std_logic_vector(ipv4tx_data'range);
+	signal ipv4len_tx       : std_logic_vector(ipv4tx_data'range);
+	signal ipv4sa_tx        : std_logic_vector(ipv4tx_data'range);
+	signal ipv4da_tx        : std_logic_vector(ipv4tx_data'range);
 
-	signal ipv4da_vld   : std_logic;
-	signal ipv4plrx_frm : std_logic;
-	signal ipv4plrx_irdy: std_logic;
+	signal ipv4da_vld       : std_logic;
+	signal ipv4plrx_frm     : std_logic;
+	signal ipv4plrx_irdy    : std_logic;
 
-	signal ipv4pltx_frm  : std_logic;
-	signal ipv4pltx_irdy : std_logic;
-	signal ipv4pltx_trdy : std_logic;
-	signal ipv4pltx_end  : std_logic;
-	signal ipv4pltx_data : std_logic_vector(ipv4tx_data'range);
+	signal ipv4pltx_frm     : std_logic;
+	signal ipv4pltx_irdy    : std_logic;
+	signal ipv4pltx_trdy    : std_logic;
+	signal ipv4pltx_end     : std_logic;
+	signal ipv4pltx_data    : std_logic_vector(ipv4tx_data'range);
 
-	signal icmprx_frm  : std_logic;
-	signal icmprx_equ  : std_logic;
-	signal icmprx_vld  : std_logic;
-	signal icmptx_frm  : std_logic;
-	signal icmptx_irdy : std_logic;
-	signal icmptx_trdy : std_logic;
-	signal icmptx_end  : std_logic;
-	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
+	signal icmprx_frm       : std_logic;
+	signal icmprx_equ       : std_logic;
+	signal icmprx_vld       : std_logic;
+	signal icmptx_frm       : std_logic;
+	signal icmptx_irdy      : std_logic;
+	signal icmptx_trdy      : std_logic;
+	signal icmptx_end       : std_logic;
+	signal icmptx_data      : std_logic_vector(ipv4tx_data'range);
 
-	signal udpplrx_frm  : std_logic;
-	signal udpplrx_irdy : std_logic;
-	signal udpplrx_trdy : std_logic;
-	signal udpplrx_data : std_logic_vector(miirx_data'range);
+	signal udpplrx_frm      : std_logic;
+	signal udpplrx_irdy     : std_logic;
+	signal udpplrx_trdy     : std_logic;
+	signal udpplrx_data     : std_logic_vector(miirx_data'range);
 
-	signal udptx_frm  : std_logic;
-	signal udptx_irdy : std_logic;
-	signal udptx_trdy : std_logic;
-	signal udptx_end  : std_logic;
-	signal udptx_data : std_logic_vector(ipv4tx_data'range);
+	signal udptx_frm        : std_logic;
+	signal udptx_irdy       : std_logic;
+	signal udptx_trdy       : std_logic;
+	signal udptx_end        : std_logic;
+	signal udptx_data       : std_logic_vector(ipv4tx_data'range);
 
-	signal protorx_last : std_logic;
-	signal udpmetarx_irdy : std_logic;
+	signal protorx_last     : std_logic;
+	signal udpmetarx_irdy   : std_logic;
 
 begin
 
@@ -117,7 +120,7 @@ begin
 		mii_data       => miirx_data,
 		mii_ptr        => frmrx_ptr,
 		ipv4_frm       => ipv4rx_frm,
-		ipv4_irdy      => ipv4rx_irdy,
+		ipv4_irdy      => miirx_irdy,
 
 		ipv4len_irdy   => ipv4lenrx_irdy,
 		ipv4proto_irdy => ipv4protorx_irdy,
@@ -263,10 +266,12 @@ begin
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
-		icmprx_frm  => icmprx_frm,
-		miirx_irdy  => ipv4rx_irdy,
-		frmrx_ptr   => frmrx_ptr,
+		miirx_frm   => miirx_frm,
+		miirx_irdy  => miirx_irdy,
+		metarx_irdy => open,
 		miirx_data  => miirx_data,
+		icmprx_frm  => icmprx_frm,
+		frmrx_ptr   => frmrx_ptr,
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
@@ -276,7 +281,7 @@ begin
 	udp_e : entity hdl4fpga.udp
 	port map (
 		mii_clk     => mii_clk,
-		miirx_irdy  => ipv4rx_irdy,
+		miirx_irdy  => miirx_irdy,
 		frmrx_ptr   => frmrx_ptr,
 		miirx_data  => miirx_data,
 		udpmetarx_irdy => udpmetarx_irdy,
