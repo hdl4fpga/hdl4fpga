@@ -221,19 +221,28 @@ begin
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
 
-		hwda_tx  <= wirebus(x"ff_ff_ff_ff_ff_ff" & x"00_00_00_00_00_00", dev_gnt);
-		hwtyp_tx <= wirebus(x"0806" & x"0800", dev_gnt);
+		hwdatxi_data <= wirebus(arphwda_data & ipv4hwda_data, dev_gnt);
+		hwtyptx  <= wirebus(x"0806" & x"0800", dev_gnt);
 
 	end block;
 
-	mactxa_b : block
+	ethtx_rgtr_b : block
 	begin
 
-		hwsa_e : entity hdl4fpga.sio_ram
+		hwtyp_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => 
+			mux_data => hwtyptx,
 			sio_clk  => mii_clk,
-			sio_frm  => hwsatx_frm,
+			sio_frm  => ethpltx_frm,
+			sio_irdy => hwtyptx_irdy,
+			sio_trdy => hwtyptx_trdy,
+			so_data  => hwtyptx_data);
+
+		hwsa_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => my_mac,
+			sio_clk  => mii_clk,
+			sio_frm  => ethpltx_frm,
 			sio_irdy => hwsatx_irdy,
 			sio_trdy => hwsatx_trdy,
 			so_data  => hwsatx_data);
@@ -244,13 +253,13 @@ begin
 			mem_size => 6*8)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ipv4satx_frm,
-			si_irdy  => ipv4satx_irdy,
-			si_trdy  => ipv4satx_trdy,
-			si_data  => ipv4satx_data,
+			si_frm   => '0',
+			si_irdy  => '0,
+			si_trdy  => '0',
+			si_data  => hwdatxi_data,
 
 			so_clk   => mii_clk,
-			so_frm   => hwdatx_frm,
+			so_frm   => ethpltx_frm,
 			so_irdy  => hwdatx_irdy,
 			so_trdy  => hwdatx_trdy,
 			so_end   => open,
@@ -268,11 +277,12 @@ begin
 		pl_end   => ethpltx_end,
 		pl_data  => ethpltx_data,
 
-		hwsatx_irdy => hwdarx_irdy,
-		hwsatx_data => hwdarx_data,
+		hwsatx_irdy => hwsatx_irdy,
+		hwsatx_data => hwsatx_data,
 		hwdatx_irdy => hwdatx_irdy,
 		hwdatx_data => hwdatx_data,
-		hwtyp    => hwtyp_tx,
+		hwtyp_irdy  => hwtyptx_irdy,
+		hwtyp_data  => hwtyptx_data,
 
 		mii_frm  => miitx_frm,
 		mii_irdy => miitx_irdy,
