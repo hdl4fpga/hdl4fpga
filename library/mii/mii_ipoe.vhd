@@ -226,6 +226,38 @@ begin
 
 	end block;
 
+	mactxa_b : block
+	begin
+
+		hwsa_e : entity hdl4fpga.sio_ram
+		port map (
+			mux_data => 
+			sio_clk  => mii_clk,
+			sio_frm  => hwsatx_frm,
+			sio_irdy => hwsatx_irdy,
+			sio_trdy => hwsatx_trdy,
+			so_data  => hwsatx_data);
+
+		hwda_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_data => my_ipv4a,
+			mem_size => 6*8)
+		port map (
+			si_clk   => mii_clk,
+			si_frm   => ipv4satx_frm,
+			si_irdy  => ipv4satx_irdy,
+			si_trdy  => ipv4satx_trdy,
+			si_data  => ipv4satx_data,
+
+			so_clk   => mii_clk,
+			so_frm   => hwdatx_frm,
+			so_irdy  => hwdatx_irdy,
+			so_trdy  => hwdatx_trdy,
+			so_end   => open,
+			so_data  => hwdatx_data);
+
+	end block;
+
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk  => mii_clk,
@@ -236,8 +268,10 @@ begin
 		pl_end   => ethpltx_end,
 		pl_data  => ethpltx_data,
 
-		hwsa     => my_mac,
-		hwda     => hwda_tx,
+		hwsatx_irdy => hwdarx_irdy,
+		hwsatx_data => hwdarx_data,
+		hwdatx_irdy => hwdatx_irdy,
+		hwdatx_data => hwdatx_data,
 		hwtyp    => hwtyp_tx,
 
 		mii_frm  => miitx_frm,
