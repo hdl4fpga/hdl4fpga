@@ -227,18 +227,20 @@ begin
 	end block;
 
 	meta_b : block
+		signal hwdatxi_irdy : std_logic;
 	begin
 
-		process (mii, mii_clk)
-			variable cntr : unsigned();
+		process (meta_irdy, mii_clk)
+			variable cntr : unsigned(0 to unsigned_num_bits(48/mii_data'length-1));
 		begin
 			if rising_edge(mii_clk) then
 				if meta_frm='0' then
 					cntr := to_unsigned(48/mii_data'length-1, mii_data'length);
-				else
+				elsif cntr(0)='0' then
 					cntr := cntr - mii_data'length;
 				end if;
 			end if;
+			hwdatxi_irdy <= not cntr(0) and pltx_irdy;
 		end process;
 
 		hwtyp_e : entity hdl4fpga.sio_mux
@@ -266,7 +268,7 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => meta_frm,
-			si_irdy  => meta_irdy,
+			si_irdy  => hwdatxi_irdy,
 			si_trdy  => open,
 			si_data  => meta_data,
 
