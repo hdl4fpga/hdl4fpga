@@ -226,8 +226,20 @@ begin
 
 	end block;
 
-	ethtx_rgtr_b : block
+	meta_b : block
 	begin
+
+		process (mii, mii_clk)
+			variable cntr : unsigned();
+		begin
+			if rising_edge(mii_clk) then
+				if meta_frm='0' then
+					cntr := to_unsigned(48/mii_data'length-1, mii_data'length);
+				else
+					cntr := cntr - mii_data'length;
+				end if;
+			end if;
+		end process;
 
 		hwtyp_e : entity hdl4fpga.sio_mux
 		port map (
@@ -253,10 +265,10 @@ begin
 			mem_size => 6*8)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => '0',
-			si_irdy  => '0,
-			si_trdy  => '0',
-			si_data  => hwdatxi_data,
+			si_frm   => meta_frm,
+			si_irdy  => meta_irdy,
+			si_trdy  => open,
+			si_data  => meta_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ethpltx_frm,
