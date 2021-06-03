@@ -160,7 +160,6 @@ begin
 	end block;
 
 	meta_b : block
-		signal hwdatxi_irdy : std_logic;
 	begin
 
 		process (meta_irdy, mii_clk)
@@ -176,42 +175,68 @@ begin
 			hwdatxi_irdy <= not cntr(0) and pltx_irdy;
 		end process;
 
-		_e : entity hdl4fpga.sio_mux
+		udp_len  <= std_logic_vector(unsigned(udp_len) + (summation(udp4hdr_frame)/octect_size));
+		udpcksm_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => hwtyptx,
+			mux_data => x"0000",
 			sio_clk  => mii_clk,
-			sio_frm  => ethpltx_frm,
-			sio_irdy => hwtyptx_irdy,
-			sio_trdy => hwtyptx_trdy,
-			so_data  => hwtyptx_data);
+			sio_frm  => pltx_frm,
+			sio_irdy => cksmi_irdy,
+			sio_trdy => open,
+			so_data  => cksm_data);
 
-		hwsa_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => my_mac,
-			sio_clk  => mii_clk,
-			sio_frm  => ethpltx_frm,
-			sio_irdy => hwsatx_irdy,
-			sio_trdy => hwsatx_trdy,
-			so_data  => hwsatx_data);
-
-		hwda_e : entity hdl4fpga.sio_ram
+		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_data => my_ipv4a,
-			mem_size => 6*8)
+			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => meta_frm,
-			si_irdy  => hwdatxi_irdy,
+			si_frm   => pltx_frm,
+			si_irdy  => leni_irdy,
 			si_trdy  => open,
-			si_data  => meta_data,
+			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => ethpltx_frm,
-			so_irdy  => hwdatx_irdy,
-			so_trdy  => hwdatx_trdy,
+			so_frm   => pltx_frm,
+			so_irdy  => leni_irdy,
+			so_trdy  => open,
 			so_end   => open,
-			so_data  => hwdatx_data);
+			so_data  => len_data);
 
+		udpdp_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_size => 16)
+		port map (
+			si_clk   => mii_clk,
+			si_frm   => pltx_frm,
+			si_irdy  => dpi_irdy,
+			si_trdy  => open,
+			si_data  => pltx_data,
+
+			so_clk   => mii_clk,
+			so_frm   => pltx_frm,
+			so_irdy  => dpo_irdy,
+			so_trdy  => open,
+			so_end   => open,
+			so_data  => dp_data);
+
+		udpsp_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_size => 16)
+		port map (
+			si_clk   => mii_clk,
+			si_frm   => pltx_frm,
+			si_irdy  => spi_irdy,
+			si_trdy  => open,
+			si_data  => pltx_data,
+
+			so_clk   => mii_clk,
+			so_frm   => pltx_frm,
+			so_irdy  => spo_irdy,
+			so_trdy  => open,
+			so_end   => open,
+			so_data  => sp_data);
+
+		udphdr_irdy <= primux(
 	end block;
 
 	udptx_e : entity hdl4fpga.udp_tx
