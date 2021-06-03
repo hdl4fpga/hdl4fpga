@@ -58,6 +58,7 @@ end;
 architecture def of udp_tx is
 begin
 
+	hdr_trdy <= udp_trdy;
 	udp_irdy <= primux(udphdr_trdy & pl_irdy, not hdr_end & '1')(0);
 	udp_data <= primux(udphdr_data & pl_data, not hdr_end & '1');
 
