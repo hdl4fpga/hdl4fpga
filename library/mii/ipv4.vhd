@@ -164,35 +164,6 @@ begin
 		signal ipv4da_data : std_logic_vector();
 	begin
 
-		process (ipv4pltx_irdy, mii_clk)
-			variable cntr : unsigned(0 to unsigned_num_bits((16+8+32)/mii_data'length-1));
-		begin
-			if rising_edge(mii_clk) then
-				if meta_frm='0' then
-					cntr := to_unsigned((16+8+32)/mii_data'length-1, mii_data'length);
-				elsif cntr(0)='0' then
-					cntr := cntr - mii_data'length;
-				end if;
-			end if;
-			if cntr < 32 then
-				ipv4len_irdy   <= '0';
-				ipv4proto_irdy <= '0';
-				ipv4da_irdy    <= ipv4pltx_irdy;
-			elsif cntr < (32+8) then
-				ipv4len_irdy   <= '0';
-				ipv4proto_irdy <= ipv4pltx_irdy;
-				ipv4da_irdy    <= '0';
-			elsif cntr < (16+8+32) then
-				ipv4len_irdy   <= ipv4pltx_irdy;
-				ipv4proto_irdy <= '0';
-				ipv4da_irdy    <= '0';
-			else
-				ipv4len_irdy   <= '0';
-				ipv4proto_irdy <= '0';
-				ipv4da_irdy    <= '0';
-			end if;
-		end process;
-
 		ipv4len_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
