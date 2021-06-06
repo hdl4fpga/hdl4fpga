@@ -68,24 +68,6 @@ architecture def of icmp is
 
 begin
 
-	meta_e : entity hdl4fpga.sio_ram
-	generic map (
-		mem_data => my_ipv4a,
-		mem_size => 32)
-	port map (
-		si_clk   => mii_clk,
-		si_frm   => miirx_frm,
-		si_irdy  => metarx_irdy,
-		si_trdy  => open,
-		si_data  => miirx_data,
-
-		so_clk   => mii_clk,
-		so_frm   => metatx_frm,
-		so_irdy  => metatx_irdy,
-		so_trdy  => metatx_trdy,
-		so_end   => metatx_end,
-		so_data  => metatx_data);
-
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
 	port map (
 		mii_irdy      => miirx_irdy,

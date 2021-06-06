@@ -30,11 +30,11 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
 	generic (
-		my_ipv4a       : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		my_ipv4a       : in std_logic_vector(0 to 32-1) := x"00_00_00_00");
 	port (
 
 		mii_clk        : in  std_logic;
-		miirx_frm      : in  std_logic_vector;
+		miirx_frm      : in  std_logic;
 		miirx_irdy     : in  std_logic;
 		metarx_irdy    : in  std_logic;
 		miirx_data     : in  std_logic_vector;
@@ -77,7 +77,11 @@ architecture def of ipv4 is
 	signal ipv4len_tx       : std_logic_vector(ipv4tx_data'range);
 	signal ipv4sa_tx        : std_logic_vector(ipv4tx_data'range);
 	signal ipv4da_tx        : std_logic_vector(ipv4tx_data'range);
-
+	signal ipv4atx_frm      : std_logic;
+	signal ipv4atx_irdy     : std_logic;
+	signal ipv4atx_trdy     : std_logic;
+	signal ipv4atx_data     : std_logic_vector(pltx_data'range);
+	signal ipv4atx_end      : std_logic;
 	signal ipv4da_vld       : std_logic;
 	signal ipv4plrx_frm     : std_logic;
 	signal ipv4plrx_irdy    : std_logic;
@@ -156,12 +160,13 @@ begin
 	end block;
 
 	meta_b : block
+		signal ipv4sa_irdy : std_logic;
 		signal ipv4sa_trdy : std_logic;
 		signal ipv4sa_end  : std_logic;
-		signal ipv4sa_data : std_logic_vector();
+		signal ipv4sa_data : std_logic_vector(miirx_data'range);
 		signal ipv4da_irdy : std_logic;
-		signal ipv4da_irdy : std_logic;
-		signal ipv4da_data : std_logic_vector();
+		signal ipv4da_trdy : std_logic;
+		signal ipv4da_data : std_logic_vector(miirx_data'range);
 	begin
 
 		ipv4len_e : entity hdl4fpga.sio_ram
@@ -169,14 +174,14 @@ begin
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ipv4pltx_frm,
-			si_irdy  => metalen_irdy,
+			si_frm   => miirx_frm,
+			si_irdy  => '-',
 			si_trdy  => open,
 			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => pltx_frm,
-			so_irdy  => ipv4atx_irdy,
+			so_frm   => ipv4atx_frm,
+			so_irdy  => ipv4sa_irdy,
 			so_trdy  => ipv4sa_trdy,
 			so_end   => ipv4sa_end,
 			so_data  => ipv4sa_data);
@@ -187,14 +192,14 @@ begin
 			mem_size => 32)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ipv4satx_frm,
-			si_irdy  => ipv4satx_irdy,
-			si_trdy  => ipv4satx_trdy,
-			si_data  => ipv4satx_data,
+			si_frm   => '-' ,
+			si_irdy  => '-' ,
+			si_trdy  => open,
+			si_data  => miirx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4atx_frm,
-			so_irdy  => ipv4atx_irdy,
+			so_irdy  => ipv4sa_irdy,
 			so_trdy  => ipv4sa_trdy,
 			so_end   => ipv4sa_end,
 			so_data  => ipv4sa_data);
@@ -207,12 +212,12 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => pltx_frm,
-			si_irdy  => ipv4datx_irdy,
+			si_irdy  => '-',
 			si_trdy  => open,
 			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => ipv4atx_frm,
+			so_frm   => pltx_frm,
 			so_irdy  => ipv4da_irdy,
 			so_trdy  => ipv4da_trdy,
 			so_end   => ipv4atx_end,
@@ -238,10 +243,10 @@ begin
 		ipv4a_end  => ipv4atx_end,
 		ipv4a_data => ipv4atx_data,
 
-		ipv4len_irdy   => ,
-		ipv4len_data   => ,
-		ipv4proto_irdy => ,
-		ipv4proto_data => ,
+		ipv4len_irdy   => open,
+		ipv4len_data   => (pltx_data'range => '-'),
+		ipv4proto_irdy => open,
+		ipv4proto_data => (pltx_data'range => '-'),
 
 		ipv4_irdy  => ipv4tx_irdy,
 		ipv4_trdy  => ipv4tx_trdy,
@@ -288,7 +293,6 @@ begin
 		mii_clk     => mii_clk,
 		miirx_frm   => miirx_frm,
 		miirx_irdy  => miirx_irdy,
-		metarx_irdy => open,
 		miirx_data  => miirx_data,
 		icmprx_frm  => icmprx_frm,
 		frmrx_ptr   => frmrx_ptr,
