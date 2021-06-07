@@ -40,9 +40,10 @@ entity eth_tx is
 		pl_end   : in std_logic;
 		pl_data  : in std_logic_vector;
 
-		hwsa     : in  std_logic_vector;
-		hwda     : in  std_logic_vector;
-		hwtyp    : in  std_logic_vector;
+		hwllc_irdy : buffer std_logic;
+		hwllc_trdy : in std_logic := '1';
+		hwllc_end  : in  std_logic;
+		hwllc_data : in  std_logic_vector;
 
 		mii_frm  : buffer std_logic;
 		mii_irdy : buffer std_logic;
@@ -57,12 +58,6 @@ architecture def of eth_tx is
 	signal pre_trdy : std_logic;
 	signal pre_end  : std_logic;
 	signal pre_data : std_logic_vector(mii_data'range);
-
-	signal llc_mux  : std_logic_vector(0 to hwsa'length+hwda'length+hwtyp'length-1);
-	signal llc_irdy : std_logic;
-	signal llc_trdy : std_logic;
-	signal llc_end  : std_logic;
-	signal llc_data : std_logic_vector(mii_data'range);
 
 	signal fcs_irdy : std_logic;
 	signal fcs_trdy : std_logic;
@@ -84,23 +79,13 @@ begin
 		so_end   => pre_end,
 		so_data  => pre_data);
 
-	llc_mux  <= hwda & hwsa & hwtyp;
-	llc_irdy <= mii_trdy and pre_end;
-	llc_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => llc_mux,
-		sio_clk  => mii_clk,
-		sio_frm  => mii_frm,
-		sio_irdy => llc_irdy,
-		sio_trdy => llc_trdy,
-		so_end   => llc_end,
-		so_data  => llc_data);
+	hwllc_irdy <= mii_trdy and pre_end;
 
-	pl_trdy <= llc_end and mii_trdy;
-	fcs_data <= wirebus(llc_data & pl_data, not llc_end & llc_end);
-	fcs_irdy <= wirebus(llc_irdy & pl_irdy & mii_trdy, 
-		not llc_end              &
-		(not pl_end and llc_end) & 
+	pl_trdy <= hwllc_end and mii_trdy;
+	fcs_data <= wirebus(hwllc_data & pl_data, not hwllc_end & hwllc_end);
+	fcs_irdy <= wirebus(hwllc_irdy & pl_irdy & mii_trdy, 
+		not hwllc_end              &
+		(not pl_end and hwllc_end) & 
 		pl_end)(0);
 
 	process (mii_clk)
@@ -131,15 +116,15 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_irdy <= primux(pre_trdy & llc_trdy & pl_irdy & '1',
+	mii_irdy <= primux(pre_trdy & hwllc_trdy & pl_irdy & '1',
 		not  pre_end              & 
-		not llc_end & 
+		not hwllc_end & 
 		not pl_end  & 
 		('1' and pl_end))(0);
-	mii_data <= wirebus(pre_data & llc_data & pl_data & fcs_crc(mii_data'range), 
+	mii_data <= wirebus(pre_data & hwllc_data & pl_data & fcs_crc(mii_data'range), 
 		not  pre_end              & 
-		(not llc_end and pre_end) & 
-		(not pl_end  and llc_end) & 
+		(not hwllc_end and pre_end) & 
+		(not pl_end  and hwllc_end) & 
 		(not fcs_end and pl_end));
 	mii_end <= fcs_end;
 

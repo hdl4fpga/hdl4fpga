@@ -36,7 +36,6 @@ entity ipv4 is
 		mii_clk        : in  std_logic;
 		miirx_frm      : in  std_logic;
 		miirx_irdy     : in  std_logic;
-		metarx_irdy    : in  std_logic;
 		miirx_data     : in  std_logic_vector;
 		frmrx_ptr      : in  std_logic_vector;
 
@@ -51,8 +50,6 @@ entity ipv4 is
 		plrx_trdy      : in  std_logic;
 		plrx_data      : out std_logic_vector;
 
-		metatx_frm     : in  std_logic;
-		metatx_irdy    : in  std_logic;
 		pltx_frm       : in  std_logic;
 		pltx_irdy      : in  std_logic;
 		pltx_trdy      : out std_logic;

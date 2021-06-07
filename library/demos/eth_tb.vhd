@@ -160,24 +160,20 @@ begin
 		pl_frm <= frm;
 	end process;
 
-	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_clk  => mii_txc,
-
-		pl_frm   => pl_frm,
-		pl_trdy  => pl_trdy,
-		pl_end   => pl_end,
-		pl_data  => pl_data,
-
-		hwsa     => x"ff_ff_ff_ff_ff_ff",
-		hwda     => reverse(x"00_40_00_01_02_03",8),
-		hwtyp    => eth_llc,
-
-		mii_frm  => miirx_frm,
-		mii_irdy => miirx_irdy,
-		mii_trdy => '1', --miirx_trdy,
-		mii_end  => miirx_end,
-		mii_data => miirx_data);
+--	ethtx_e : entity hdl4fpga.eth_tx
+--	port map (
+--		mii_clk  => mii_txc,
+--
+--		pl_frm   => pl_frm,
+--		pl_trdy  => pl_trdy,
+--		pl_end   => pl_end,
+--		pl_data  => pl_data,
+--
+--		mii_frm  => miirx_frm,
+--		mii_irdy => miirx_irdy,
+--		mii_trdy => '1', --miirx_trdy,
+--		mii_end  => miirx_end,
+--		mii_data => miirx_data);
 
 	mii_txen <= miirx_frm and not miirx_end;
 	mii_txd  <= miirx_data;
