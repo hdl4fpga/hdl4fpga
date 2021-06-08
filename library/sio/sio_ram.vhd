@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity sio_ram is
 	generic (
 		mem_data : std_logic_vector := (0 to 0 => '-');
+		length   : natural := 0;
 		mem_size : natural := 0);
     port (
 		si_clk   : in  std_logic;
@@ -43,12 +44,13 @@ entity sio_ram is
         so_frm   : in  std_logic;
         so_irdy  : in  std_logic;
         so_trdy  : out std_logic;
+		so_empty : out std_logic;
 		so_end   : out std_logic;
         so_data  : out std_logic_vector);
 end;
 
 architecture def of sio_ram is
-	constant max_words  : natural := setif(mem_size=0, mem_data'length, mem_size)/si_data'length;
+	constant max_words   : natural := setif(length=0, setif(mem_size=0, mem_data'length, mem_size), length)/si_data'length;
 	constant cntr_length : natural := unsigned_num_bits(max_words-1);
 	subtype addr_range is natural range 1 to cntr_length;
 
@@ -80,6 +82,9 @@ begin
 					end if;
 				end if;
 				len <= cntr;
+			end if;
+			if length /= 0 then
+				len <= to_unsigned(max_words, len'length);
 			end if;
 			wr_addr <= cntr;
 		end if;
@@ -114,7 +119,8 @@ begin
 		end if;
 	end process;
 
-	so_trdy <= setif(rd_addr < len);
-	so_end  <= setif(rd_addr >= len) and so_frm;
+	so_trdy  <= setif(rd_addr < len);
+	so_empty <= setif(len=(len'range => '0'));
+	so_end   <= setif(rd_addr >= len);
 
 end;
