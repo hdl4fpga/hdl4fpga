@@ -241,7 +241,6 @@ begin
 		signal hwdatx_irdy  : std_logic;
 		signal hwdatx_trdy  : std_logic;
 		signal hwdatx_end   : std_logic;
-		signal hwdatx_empty : std_logic;
 		signal hwdatx_data  : std_logic_vector(pltx_data'range);
 
 		signal hwtyptx_irdy  : std_logic;
@@ -253,6 +252,7 @@ begin
 		hwdatx_irdy <= ethtx_irdy;
 		hwda_e : entity hdl4fpga.sio_ram
 		generic map (
+			mem_length => my_mac'length,
 			mem_data => my_mac)
 		port map (
 			si_clk   => mii_clk,
@@ -266,10 +266,9 @@ begin
 			so_irdy  => hwdatx_irdy,
 			so_trdy  => hwdatx_trdy,
 			so_end   => hwdatx_end,
-			so_empty => hwdatx_empty,
 			so_data  => hwdatx_data);
 
-		hwsatx_irdy <= '0' when hwdatx_end='0' and hwdatx_empty='0' else ethtx_irdy;
+		hwsatx_irdy <= '0' when hwdatx_end='0' else ethtx_irdy;
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => my_mac,
@@ -299,7 +298,7 @@ begin
 		hwllc_end  => hwllctx_end,
 		hwllc_data => hwllctx_data,
 
-		pl_frm     => ethpltx_frm,
+		pl_frm     => ethtx_frm,
 		pl_irdy    => ethpltx_irdy,
 		pl_trdy    => ethpltx_trdy,
 		pl_end     => ethpltx_end,
