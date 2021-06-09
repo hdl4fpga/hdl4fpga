@@ -63,7 +63,6 @@ end;
 
 architecture def of mii_ipoe is
 
-	signal frmrx_ptr     : std_logic_vector(0 to unsigned_num_bits((128*octect_size)/miirx_data'length-1));
 	signal ethrx_data    : std_logic_vector(miirx_data'range);
 
 	signal hwdarx_irdy   : std_logic;
@@ -140,7 +139,6 @@ begin
 		mii_trdy   => miirx_trdy,
 		mii_data   => miirx_data,
 
-		eth_ptr    => frmrx_ptr,
 		hwda_irdy  => hwdarx_irdy,
 		hwsa_irdy  => hwsarx_irdy,
 		hwtyp_irdy => hwtyprx_irdy,
@@ -221,7 +219,7 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		ethtx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt)(0);
+		ethtx_frm  <= wirebus(arptx_frm  & pltx_frm,  dev_gnt)(0);
 		ethtx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt)(0);
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
@@ -259,6 +257,7 @@ begin
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
 			si_trdy  => open,
+			si_full  => 
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -290,6 +289,7 @@ begin
 
 	end block;
 
+	ethpltx_irdy <= ethtx_irdy and
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -317,7 +317,6 @@ begin
 
 		mii_clk    => mii_clk,
 		miirx_data => miirx_data,
-		frmrx_ptr  => frmrx_ptr,
 
 		arpdtx_req => arpdtx_rdy,
 		arpdtx_rdy => arpdtx_rdy,
@@ -350,10 +349,8 @@ begin
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
 		mii_clk       => mii_clk,
-		miirx_frm     => miirx_frm,
-		miirx_irdy    => miirx_irdy,
-		miirx_data    => miirx_data,
-		frmrx_ptr     => frmrx_ptr,
+		ipv4_irdy    => miirx_irdy,
+		ipv4_data    => miirx_data,
 
 		ipv4rx_frm    => iprx_frm,
 		ipv4arx_vld   => ipv4arx_vld,

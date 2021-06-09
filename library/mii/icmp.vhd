@@ -31,10 +31,8 @@ use hdl4fpga.ethpkg.all;
 entity icmp is
 	port (
 		mii_clk     : in  std_logic;
-		miirx_frm   : in  std_logic;
-		miirx_irdy  : in  std_logic;
+		icmprx_irdy  : in  std_logic;
 		metarx_irdy : in  std_logic := '0';
-		frmrx_ptr   : in  std_logic_vector;
 		miirx_data  : in  std_logic_vector;
 		icmprx_frm  : in  std_logic;
 		icmptx_frm  : buffer std_logic;
@@ -46,8 +44,8 @@ end;
 
 architecture def of icmp is
 
-	signal icmpd_rdy  : bit := '0';
-	signal icmpd_req  : bit := '0';
+	signal icmpd_rdy       : bit := '0';
+	signal icmpd_req       : bit := '0';
 
 	signal icmpidrx_irdy   : std_logic;
 	signal icmpseqrx_irdy  : std_logic;
@@ -70,8 +68,7 @@ begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
 	port map (
-		mii_irdy      => miirx_irdy,
-		mii_ptr       => frmrx_ptr,
+		mii_irdy      => icmprx_irdy,
 		mii_data      => miirx_data,
 
 		icmprqst_frm  => icmprx_frm,

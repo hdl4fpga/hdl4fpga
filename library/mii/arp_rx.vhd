@@ -35,15 +35,15 @@ use hdl4fpga.ipoepkg.all;
 entity arp_rx is
 	port (
 		mii_clk  : in  std_logic;
-		mii_data : in  std_logic_vector;
-		mii_ptr  : in  std_logic_vector;
 		arp_frm  : in  std_logic;
+		arp_data : in  std_logic_vector;
 
 		tpa_frm  : out std_logic);
 end;
 
 architecture def of arp_rx is
+	signal frm_ptr : std_logic_vector;
 begin
-	tpa_frm  <= arp_frm and frame_decode(mii_ptr, eth_frame & arp4_frame, mii_data'length, arp_tpa);
+	tpa_frm  <= arp_frm and frame_decode(frm_ptr, eth_frame & arp4_frame, arp_data'length, arp_tpa);
 end;
 

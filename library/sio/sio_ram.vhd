@@ -38,6 +38,7 @@ entity sio_ram is
         si_frm   : in  std_logic;
         si_irdy  : in  std_logic;
         si_trdy  : out std_logic;
+		si_full  : out std_logic;
         si_data  : in  std_logic_vector;
 
 		so_clk   : in  std_logic;
@@ -90,6 +91,7 @@ begin
 		end if;
 		wr_ena <= not cntr(0) and si_frm and si_irdy;
 	end process;
+	si_full <= '0' when mem_length=0 else wr_addr=max_length;
 
 	mem_e : entity hdl4fpga.dpram 
 	generic map (

@@ -39,7 +39,6 @@ entity eth_rx is
 		mii_trdy   : buffer std_logic;
 		mii_data   : in  std_logic_vector;
 
-		eth_ptr    : buffer std_logic_vector;
 		eth_pre    : buffer std_logic;
 		hwda_irdy  : buffer std_logic;
 		hwda_trdy  : in  std_logic := '1';
@@ -58,6 +57,7 @@ end;
 
 architecture def of eth_rx is
 
+	signal frm_ptr   : std_logic_vector;
 	signal hwda_frm  : std_logic;
 	signal hwsa_frm  : std_logic;
 	signal hwtyp_frm : std_logic;
@@ -79,17 +79,17 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if eth_pre='0' then
-				eth_ptr <= (eth_ptr'range => '0');
-			elsif eth_ptr(eth_ptr'left)='0' and mii_irdy='1' and mii_trdy='1' then
-				eth_ptr <= std_logic_vector(unsigned(eth_ptr) + 1);
+				frm_ptr <= (frm_ptr'range => '0');
+			elsif frm_ptr(frm_ptr'left)='0' and mii_irdy='1' and mii_trdy='1' then
+				frm_ptr <= std_logic_vector(unsigned(frm_ptr) + 1);
 			end if;
 		end if;
 	end process;
 
-	hwda_frm   <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwda);
-	hwsa_frm   <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_hwsa);
-	hwtyp_frm  <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type);
-	pl_frm     <= eth_pre  and frame_decode(eth_ptr, eth_frame, mii_data'length, eth_type, gt);
+	hwda_frm   <= eth_pre  and frame_decode(frm_ptr, eth_frame, mii_data'length, eth_hwda);
+	hwsa_frm   <= eth_pre  and frame_decode(frm_ptr, eth_frame, mii_data'length, eth_hwsa);
+	hwtyp_frm  <= eth_pre  and frame_decode(frm_ptr, eth_frame, mii_data'length, eth_type);
+	pl_frm     <= eth_pre  and frame_decode(frm_ptr, eth_frame, mii_data'length, eth_type, gt);
 	hwda_irdy  <= mii_irdy and hwda_frm;
 	hwsa_irdy  <= mii_irdy and hwsa_frm;
 	hwtyp_irdy <= mii_irdy and hwtyp_frm;
