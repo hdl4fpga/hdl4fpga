@@ -31,12 +31,12 @@ use hdl4fpga.ethpkg.all;
 entity dhcpc is
 	port (
 		mii_clk     : in  std_logic;
-		miirx_irdy  : in  std_logic;
-		frmrx_ptr   : in  std_logic_vector;
-		miirx_data  : in  std_logic_vector;
+		dhcprx_frm  : in  std_logic;
+		dhcprx_irdy  : in  std_logic;
+		dhcprx_data  : in  std_logic_vector;
+
 		dhcpc_req   : in  std_logic;
 		dhcpc_rdy   : buffer std_logic;
-		dhcprx_frm  : in  std_logic;
 
 		dhcptx_frm  : buffer std_logic;
 		dhcptx_irdy : buffer std_logic;
@@ -56,11 +56,11 @@ begin
 
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
 	port map (
-		mii_irdy     => miirx_irdy,
-		mii_ptr      => frmrx_ptr,
-		mii_data     => miirx_data,
-
+		mii_clk       => mii_clk,
 		dhcp_frm     => dhcprx_frm,
+		dhcp_irdy    => dhcprx_irdy,
+		dhcp_data    => dhcprx_data,
+
 		dhcpop_irdy  => dhcpop_irdy,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
 		dhcpyia_irdy => dhcpyia_irdy);

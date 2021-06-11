@@ -36,14 +36,29 @@ entity arp_rx is
 	port (
 		mii_clk  : in  std_logic;
 		arp_frm  : in  std_logic;
+		arp_irdy : in  std_logic;
 		arp_data : in  std_logic_vector;
 
 		tpa_frm  : out std_logic);
 end;
 
 architecture def of arp_rx is
-	signal frm_ptr : std_logic_vector;
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 begin
-	tpa_frm  <= arp_frm and frame_decode(frm_ptr, eth_frame & arp4_frame, arp_data'length, arp_tpa);
+
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if arp_frm='0' then
+				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+			elsif cntr(0)='0' and arp_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
+
+	tpa_frm  <= arp_frm and frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa);
 end;
 

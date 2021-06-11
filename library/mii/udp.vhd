@@ -33,7 +33,6 @@ entity udp is
 	port (
 		mii_clk     : in  std_logic;
 		miirx_irdy  : in  std_logic;
-		frmrx_ptr   : in  std_logic_vector;
 		miirx_data  : in  std_logic_vector;
 
 		udpmetarx_irdy : out std_logic;
@@ -101,11 +100,11 @@ begin
 
 	udp_rx_e : entity hdl4fpga.udp_rx
 	port map (
-		mii_irdy     => miirx_irdy,
-		mii_ptr      => frmrx_ptr,
-		mii_data     => miirx_data,
-
+		mii_clk      => mii_clk,
 		udp_frm      => udprx_frm,
+		udp_irdy     => miirx_irdy,
+		udp_data     => miirx_data,
+
 		udpsp_irdy   => udpsprx_irdy,
 		udpdp_irdy   => udpdprx_irdy,
 		udplen_irdy  => udplenrx_irdy,
@@ -301,10 +300,9 @@ begin
 	dhcpc_e: entity hdl4fpga.dhcpc
 	port map (
 		mii_clk     => mii_clk,
-		miirx_irdy  => miirx_irdy,
-		frmrx_ptr   => frmrx_ptr,
-		miirx_data  => miirx_data,
 		dhcprx_frm  => dhcpcrx_frm,
+		dhcprx_irdy  => miirx_irdy,
+		dhcprx_data  => miirx_data,
 		dhcpc_req   => '0',
 		dhcpc_rdy   => open,
 

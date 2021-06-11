@@ -316,11 +316,12 @@ begin
 		my_mac     => my_mac,
 
 		mii_clk    => mii_clk,
-		arprx_data => miirx_data,
 
 		arpdtx_req => arpdtx_rdy,
 		arpdtx_rdy => arpdtx_rdy,
 		arprx_frm  => arprx_frm,
+		arprx_irdy => miirx_irdy,
+		arprx_data => miirx_data,
 
 		tparx_frm  => tparx_frm,
 		tparx_vld  => ipv4arx_vld,
@@ -349,10 +350,10 @@ begin
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
 		mii_clk       => mii_clk,
-		ipv4_irdy    => miirx_irdy,
-		ipv4_data    => miirx_data,
-
 		ipv4rx_frm    => iprx_frm,
+		ipv4rx_irdy    => miirx_irdy,
+		ipv4rx_data    => miirx_data,
+
 		ipv4arx_vld   => ipv4arx_vld,
 
 		ipv4darx_frm  => ipv4darx_frm,

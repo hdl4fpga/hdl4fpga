@@ -33,11 +33,12 @@ entity arpd is
 		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 
 		mii_clk    : in  std_logic;
+		arprx_frm  : in  std_logic;
+		arprx_irdy : in  std_logic;
 		arprx_data : in  std_logic_vector;
 
 		arpdtx_req : in  std_logic;
 		arpdtx_rdy : buffer  std_logic;
-		arprx_frm  : in  std_logic;
 
 		tparx_frm  : out std_logic;
 		tparx_vld  : in  std_logic;
@@ -64,6 +65,7 @@ begin
 	port map (
 		mii_clk  => mii_clk,
 		arp_frm  => arprx_frm,
+		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
 		tpa_frm  => tparx_frm);
 

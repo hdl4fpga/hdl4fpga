@@ -32,11 +32,11 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_rx is
 	port (
-		mii_irdy     : in  std_logic;
-		mii_data     : in  std_logic_vector;
-		mii_ptr      : in  std_logic_vector;
-
+		mii_clk      : in  std_logic;
 		udp_frm      : in  std_logic;
+		udp_irdy     : in  std_logic;
+		udp_data     : in  std_logic_vector;
+
 		udpsp_irdy   : out std_logic;
 		udpdp_irdy   : out std_logic;
 		udplen_irdy  : out std_logic;
@@ -47,6 +47,8 @@ end;
 
 architecture def of udp_rx is
 
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp_data'length-1));
+
 	signal udpsp_frm   : std_logic;
 	signal udpdp_frm   : std_logic;
 	signal udplen_frm  : std_logic;
@@ -54,16 +56,29 @@ architecture def of udp_rx is
 
 begin
 					
-	udpsp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_sp);
-	udpdp_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_dp);
-	udplen_frm  <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_len);
-	udpcksm_frm <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm);
-	udppl_frm   <= udp_frm and frame_decode(mii_ptr, eth_frame & ipv4hdr_frame & udp4hdr_frame, mii_data'length, udp4_cksm, gt);
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if udp_frm='0' then
+				cntr := to_unsigned(summation(udp4hdr_frame)-1, cntr'length);
+			elsif cntr(0)='0' and udp_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
 
-	udpsp_irdy   <= mii_irdy and udpsp_frm;
-	udpdp_irdy   <= mii_irdy and udpdp_frm;
-	udplen_irdy  <= mii_irdy and udplen_frm;
-	udpcksm_irdy <= mii_irdy and udpcksm_frm;
-	udppl_irdy   <= mii_irdy and udppl_frm;
+	udpsp_frm   <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_sp);
+	udpdp_frm   <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_dp);
+	udplen_frm  <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_len);
+	udpcksm_frm <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_cksm);
+	udppl_frm   <= udp_frm and frm_ptr(0);
+
+	udpsp_irdy   <= udp_irdy and udpsp_frm;
+	udpdp_irdy   <= udp_irdy and udpdp_frm;
+	udplen_irdy  <= udp_irdy and udplen_frm;
+	udpcksm_irdy <= udp_irdy and udpcksm_frm;
+	udppl_irdy   <= udp_irdy and udppl_frm;
 end;
 
