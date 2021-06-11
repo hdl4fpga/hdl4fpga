@@ -69,6 +69,10 @@ package ethpkg is
 		constant debug  : boolean := false)
 		return std_logic;
 
+	function reverse (
+		constant arg : natural_vector)
+		return natural_vector;
+
 end;
 
 package body ethpkg is
@@ -151,6 +155,17 @@ package body ethpkg is
 			retval := retval or frame_decode(ptr, frame, size, fields(i));
 		end loop;
 
+		return retval;
+	end;
+
+	function reverse (
+		constant arg : natural_vector)
+		return natural_vector is
+		variable retval : natural_vector(arg'range);
+	begin
+		for i in arg'reverse_range loop
+			retval(i) := arg(i);
+		end loop;
 		return retval;
 	end;
 

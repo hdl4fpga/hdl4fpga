@@ -91,7 +91,10 @@ begin
 		end if;
 		wr_ena <= not cntr(0) and si_frm and si_irdy;
 	end process;
-	si_full <= '0' when mem_length=0 else wr_addr=max_length;
+	si_full <= 
+		'0' when mem_length=0 else 
+		'1' when wr_addr=mem_length else
+		'0';
 
 	mem_e : entity hdl4fpga.dpram 
 	generic map (

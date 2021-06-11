@@ -51,12 +51,25 @@ end;
 
 architecture def of ipv4_rx is
 
-	signal frm_ptr       : std_logic_vector;
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(eth_frame)/ipv4_data'length-1));
 	signal ipv4len_frm   : std_logic;
 	signal ipv4sa_frm    : std_logic;
 	signal ipv4proto_frm : std_logic;
 
 begin
+
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4_frm='0' then
+				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+			elsif cntr(0)='0' and ipv4_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
 
 	ipv4len_frm   <= ipv4_frm and frame_decode(frm_ptr, ipv4hdr_frame, ipv4_data'length, ipv4_len);
 	ipv4sa_frm    <= ipv4_frm and frame_decode(frm_ptr, ipv4hdr_frame, ipv4_data'length, ipv4_sa);

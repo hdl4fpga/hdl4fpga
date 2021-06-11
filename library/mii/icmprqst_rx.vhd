@@ -32,6 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmprqst_rx is
 	port (
+		mii_clk     : in  std_logic;
 		icmp_frm    : in  std_logic;
 		icmp_data   : in  std_logic_vector;
 		icmp_irdy   : in  std_logic;
@@ -44,7 +45,7 @@ end;
 
 architecture def of icmprqst_rx is
 
-	signal frm_ptr      : std_logic_vector;
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(eth_frame)/icmp_data'length-1));
 	signal icmpcksm_frm : std_logic;
 	signal icmpid_frm   : std_logic;
 	signal icmpseq_frm  : std_logic;
@@ -52,10 +53,23 @@ architecture def of icmprqst_rx is
 
 begin
 
-	icmpcksm_frm <= icmp_frm and frame_decode(frm_ptr, icmphdr_frame & icmprqst_frame, icmp_data'length, icmp_cksm);
-	icmpid_frm   <= icmp_frm and frame_decode(frm_ptr, icmphdr_frame & icmprqst_frame, icmp_data'length, icmp_id);
-	icmpseq_frm  <= icmp_frm and frame_decode(frm_ptr, icmphdr_frame & icmprqst_frame, icmp_data'length, icmp_seq);
-	icmppl_frm   <= icmp_frm and frame_decode(frm_ptr, icmphdr_frame & icmprqst_frame, icmp_data'length, icmp_seq, gt);
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if icmp_frm='0' then
+				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+			elsif cntr(0)='0' and icmp_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
+
+	icmpcksm_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
+	icmpid_frm   <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_id);
+	icmpseq_frm  <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_seq);
+	icmppl_frm   <= icmp_frm and frm_ptr(0);
 
 	icmpcksm_irdy <= icmp_irdy and icmpcksm_frm;
 	icmpid_irdy   <= icmp_irdy and icmpid_frm;

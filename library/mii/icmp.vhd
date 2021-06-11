@@ -68,10 +68,12 @@ begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
 	port map (
-		mii_irdy      => icmprx_irdy,
-		mii_data      => miirx_data,
+		mii_clk     => mii_clk,
+		icmp_frm    => icmprx_frm,
+		icmp_data   => miirx_data,
+		icmp_irdy   => icmprx_irdy,
 
-		icmprqst_frm  => icmprx_frm,
+
 		icmpid_irdy   => icmpidrx_irdy,
 		icmpseq_irdy  => icmpseqrx_irdy,
 		icmpcksm_irdy => icmpcksmrx_irdy,
