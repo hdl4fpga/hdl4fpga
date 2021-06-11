@@ -257,7 +257,7 @@ begin
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
 			si_trdy  => open,
-			si_full  => 
+			si_full  => open,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -289,7 +289,7 @@ begin
 
 	end block;
 
-	ethpltx_irdy <= ethtx_irdy and
+	--ethpltx_irdy <= ethtx_irdy and
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -316,7 +316,7 @@ begin
 		my_mac     => my_mac,
 
 		mii_clk    => mii_clk,
-		miirx_data => miirx_data,
+		arprx_data => miirx_data,
 
 		arpdtx_req => arpdtx_rdy,
 		arpdtx_rdy => arpdtx_rdy,

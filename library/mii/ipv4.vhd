@@ -189,7 +189,7 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4rx_frm,
-			si_irdy  => ,
+			si_irdy  => '-',
 			si_trdy  => open,
 			si_data  => ipv4rx_data,
 
@@ -210,7 +210,7 @@ begin
 			si_frm   => pltx_frm,
 			si_irdy  => '-',
 			si_trdy  => open,
-			si_full  => ,
+			si_full  => open,
 			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
@@ -288,11 +288,9 @@ begin
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
-		miirx_frm   => ipv4rx_frm,
-		miirx_irdy  => ipv4rx_irdy,
+		icmprx_frm   => ipv4rx_frm,
+		icmprx_irdy  => ipv4rx_irdy,
 		miirx_data  => ipv4rx_data,
-		icmprx_frm  => icmprx_frm,
-		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end ,

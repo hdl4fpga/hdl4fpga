@@ -31,10 +31,10 @@ use hdl4fpga.ethpkg.all;
 entity icmp is
 	port (
 		mii_clk     : in  std_logic;
-		icmprx_irdy  : in  std_logic;
 		metarx_irdy : in  std_logic := '0';
 		miirx_data  : in  std_logic_vector;
 		icmprx_frm  : in  std_logic;
+		icmprx_irdy  : in  std_logic;
 		icmptx_frm  : buffer std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
