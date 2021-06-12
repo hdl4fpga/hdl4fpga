@@ -45,7 +45,7 @@ end;
 
 architecture def of icmprqst_rx is
 
-	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(eth_frame)/icmp_data'length-1));
+	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame & icmprqst_frame)/icmp_data'length-1));
 	signal icmpcksm_frm : std_logic;
 	signal icmpid_frm   : std_logic;
 	signal icmpseq_frm  : std_logic;
@@ -58,7 +58,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if icmp_frm='0' then
-				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+				cntr := to_unsigned(summation(icmphdr_frame & icmprqst_frame)-1, cntr'length);
 			elsif cntr(0)='0' and icmp_irdy='1' then
 				cntr := cntr - 1;
 			end if;
