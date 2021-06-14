@@ -32,24 +32,24 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmprqst_rx is
 	port (
-		mii_clk     : in  std_logic;
-		icmp_frm    : in  std_logic;
-		icmp_data   : in  std_logic_vector;
-		icmp_irdy   : in  std_logic;
+		mii_clk      : in  std_logic;
+		icmp_frm     : in  std_logic;
+		icmp_data    : in  std_logic_vector;
+		icmp_irdy    : in  std_logic;
 
+		icmpcksm_frm : buffer std_logic;
 		icmpcksm_irdy : out std_logic;
+		icmpid_frm   : buffer std_logic;
 		icmpid_irdy  : out std_logic;
+		icmpseq_frm  : buffer std_logic;
 		icmpseq_irdy : out std_logic;
+		icmppl_frm   : buffer std_logic;
 		icmppl_irdy  : out std_logic);
 end;
 
 architecture def of icmprqst_rx is
 
 	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame & icmprqst_frame)/icmp_data'length-1));
-	signal icmpcksm_frm : std_logic;
-	signal icmpid_frm   : std_logic;
-	signal icmpseq_frm  : std_logic;
-	signal icmppl_frm   : std_logic;
 
 begin
 

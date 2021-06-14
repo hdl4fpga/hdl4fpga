@@ -350,9 +350,11 @@ begin
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (
 		mii_clk       => mii_clk,
+		metarx_frm    => metarx_frm,
+		metarx_irdy   => metarx_irdy,
 		ipv4rx_frm    => iprx_frm,
-		ipv4rx_irdy    => miirx_irdy,
-		ipv4rx_data    => miirx_data,
+		ipv4rx_irdy   => miirx_irdy,
+		ipv4rx_data   => miirx_data,
 
 		ipv4arx_vld   => ipv4arx_vld,
 

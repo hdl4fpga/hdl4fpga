@@ -34,6 +34,8 @@ entity ipv4 is
 	port (
 
 		mii_clk        : in  std_logic;
+		metarx_frm     : in  std_logic;
+		metarx_irdy    : in  std_logic;
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
@@ -288,9 +290,13 @@ begin
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
-		icmprx_frm   => ipv4rx_frm,
-		icmprx_irdy  => ipv4rx_irdy,
-		miirx_data  => ipv4rx_data,
+		metarx_frm  => metarx_frm,
+		metarx_irdy => metarx_irdy,
+
+		icmprx_frm  => ipv4rx_frm,
+		icmprx_irdy => ipv4rx_irdy,
+		icmprx_data => ipv4rx_data,
+
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end ,
@@ -299,8 +305,9 @@ begin
 	udp_e : entity hdl4fpga.udp
 	port map (
 		mii_clk     => mii_clk,
-		miirx_irdy  => ipv4rx_irdy,
-		miirx_data  => ipv4rx_data,
+		udprx_frm   => udptx_frm,
+		udprx_irdy  => ipv4rx_irdy,
+		udprx_data  => ipv4rx_data,
 		udpmetarx_irdy => udpmetarx_irdy,
 
 		plrx_frm    => udpplrx_frm,

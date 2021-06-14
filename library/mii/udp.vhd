@@ -32,8 +32,8 @@ use hdl4fpga.ethpkg.all;
 entity udp is
 	port (
 		mii_clk     : in  std_logic;
-		miirx_irdy  : in  std_logic;
-		miirx_data  : in  std_logic_vector;
+		udprx_irdy  : in  std_logic;
+		udprx_data  : in  std_logic_vector;
 
 		udpmetarx_irdy : out std_logic;
 		plrx_frm    : out std_logic;
@@ -102,8 +102,8 @@ begin
 	port map (
 		mii_clk      => mii_clk,
 		udp_frm      => udprx_frm,
-		udp_irdy     => miirx_irdy,
-		udp_data     => miirx_data,
+		udp_irdy     => udprx_irdy,
+		udp_data     => udprx_data,
 
 		udpsp_irdy   => udpsprx_irdy,
 		udpdp_irdy   => udpdprx_irdy,
@@ -119,7 +119,7 @@ begin
 		serdes_clk => mii_clk,
 		serdes_frm => udprx_frm,
 		ser_irdy   => udplenrx_irdy,
-		ser_data   => miirx_data,
+		ser_data   => udprx_data,
 		des_data   => udprx_len);
 
 	udprx_sp_e : entity hdl4fpga.serdes
@@ -129,7 +129,7 @@ begin
 		serdes_clk => mii_clk,
 		serdes_frm => udprx_frm,
 		ser_irdy   => udpsprx_irdy,
-		ser_data   => miirx_data,
+		ser_data   => udprx_data,
 		des_data   => udprx_sp);
 
 	udprx_dp_e : entity hdl4fpga.serdes
@@ -139,7 +139,7 @@ begin
 		serdes_clk => mii_clk,
 		serdes_frm => udprx_frm,
 		ser_irdy   => udpdprx_irdy,
-		ser_data   => miirx_data,
+		ser_data   => udprx_data,
 		des_data   => udprx_dp);
 
 	arbiter_b : block
@@ -281,7 +281,7 @@ begin
         sio_frm   => udprx_frm,
         sio_irdy  => udpdprx_irdy,
         sio_trdy  => open,
-        si_data   => miirx_data,
+        si_data   => udprx_data,
 		so_last   => udpsprx_last,
 		so_equ(0) => udpsprx_equ);
 
@@ -290,7 +290,7 @@ begin
 		if rising_edge(mii_clk) then
 			if udprx_frm='0' then
 				udpsprx_vld <= '0';
-			elsif udpsprx_last='1' and miirx_irdy='1' then
+			elsif udpsprx_last='1' and udprx_irdy='1' then
 				udpsprx_vld <= udpsprx_equ;
 			end if;
 		end if;
@@ -301,8 +301,8 @@ begin
 	port map (
 		mii_clk     => mii_clk,
 		dhcprx_frm  => dhcpcrx_frm,
-		dhcprx_irdy  => miirx_irdy,
-		dhcprx_data  => miirx_data,
+		dhcprx_irdy => udprx_irdy,
+		dhcprx_data => udprx_data,
 		dhcpc_req   => '0',
 		dhcpc_rdy   => open,
 

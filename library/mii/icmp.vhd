@@ -31,10 +31,12 @@ use hdl4fpga.ethpkg.all;
 entity icmp is
 	port (
 		mii_clk     : in  std_logic;
+		metarx_frm  : in  std_logic := '0';
 		metarx_irdy : in  std_logic := '0';
-		miirx_data  : in  std_logic_vector;
+
 		icmprx_frm  : in  std_logic;
-		icmprx_irdy  : in  std_logic;
+		icmprx_irdy : in  std_logic;
+		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
@@ -70,9 +72,8 @@ begin
 	port map (
 		mii_clk     => mii_clk,
 		icmp_frm    => icmprx_frm,
-		icmp_data   => miirx_data,
+		icmp_data   => icmprx_data,
 		icmp_irdy   => icmprx_irdy,
-
 
 		icmpid_irdy   => icmpidrx_irdy,
 		icmpseq_irdy  => icmpseqrx_irdy,
@@ -86,28 +87,25 @@ begin
 		serdes_clk => mii_clk,
 		serdes_frm => icmprx_frm,
 		ser_irdy   => icmpcksmrx_irdy,
-		ser_data   => miirx_data,
+		ser_data   => icmprx_data,
 		des_data   => icmprx_cksm);
 
-	icmpseq_e : entity hdl4fpga.serdes
+	icmpseqridx_irdy <= icmpseqrx_irdy and icmpidrx_irdy;
+	icmpseqid_e : entity hdl4fpga.sio_ram
 	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => icmprx_frm,
-		ser_irdy   => icmpseqrx_irdy,
-		ser_data   => miirx_data,
-		des_data   => icmprx_seq);
+		mem_size => 16+16)
+    port map (
+		si_clk   => mii_clk,
+        si_frm   => icmprx_frm,
+		si_irdy  => icmpseqidrx_irdy,
+        si_data  => icmprx_data,
 
-	icmpid_e : entity hdl4fpga.serdes
-	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => icmprx_frm,
-		ser_irdy   => icmpidrx_irdy,
-		ser_data   => miirx_data,
-		des_data   => icmprx_id);
+		so_clk   => mii_clk,
+        so_frm   => icmppltx_frm,
+        so_irdy  => icmppltx_trdy,
+        so_trdy  => icmppltx_irdy,
+		so_end   => icmppltx_end,
+        so_data  => icmppltx_data);
 
 	icmpdata_e : entity hdl4fpga.sio_ram
 	generic map (
@@ -116,7 +114,7 @@ begin
 		si_clk   => mii_clk,
         si_frm   => icmprx_frm,
         si_irdy  => icmpplrx_irdy,
-        si_data  => miirx_data,
+        si_data  => icmprx_data,
 
 		so_clk   => mii_clk,
         so_frm   => icmppltx_frm,
