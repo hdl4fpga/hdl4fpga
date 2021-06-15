@@ -40,9 +40,9 @@ entity icmprply_tx is
 		pl_end    : in  std_logic;
 		pl_data   : in  std_logic_vector;
 
-		icmp_cksm : in  std_logic_vector(0 to 16-1);
-		icmp_id   : in  std_logic_vector(0 to 16-1);
-		icmp_seq  : in  std_logic_vector(0 to 16-1);
+		icmpid_irdy   : out std_logic;
+		icmpseq_irdy  : out std_logic;
+		icmpcksm_irdy : out std_logic;
 
 		icmp_frm  : out std_logic;
 		icmp_irdy : out std_logic := '0';
@@ -52,28 +52,33 @@ entity icmprply_tx is
 end;
 
 architecture def of icmprply_tx is
-	signal mux_data     : std_logic_vector(0 to icmptype_rply'length+icmpcode_rply'length+icmp_cksm'length+icmp_id'length+icmp_seq'length-1);
-	signal icmphdr_irdy : std_logic;
-	signal icmphdr_end  : std_logic;
-	signal icmphdr_data : std_logic_vector(pl_data'range);
+
+	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame & icmprqst_frame)/icmp_data'length-1));
+
 begin
 
-	mux_data <= icmptype_rply & icmpcode_rply & icmp_cksm & icmp_id & icmp_seq;
-	icmp_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => mux_data,
-		sio_clk  => mii_clk,
-		sio_frm  => pl_frm,
-		sio_irdy => icmp_trdy,
-		sio_trdy => icmphdr_irdy,
-		so_end   => icmphdr_end,
-		so_data  => icmphdr_data);
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if icmp_frm='0' then
+				cntr := to_unsigned(summation(icmphdr_frame & icmprqst_frame)-1, cntr'length);
+			elsif cntr(0)='0' and icmp_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
 
-	pl_trdy   <= icmphdr_end and icmp_trdy;
+	icmpcksm_irdy <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
+	icmpid_irdy   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_id);
+	icmpseq_irdy  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_seq);
+	pl_trdy       <= icmp_trdy;
+
 	icmp_frm  <= pl_frm;
-	icmp_data <= primux(icmphdr_data & pl_data, not icmphdr_end & '1');
-	icmp_irdy <= primux(icmphdr_irdy & pl_irdy, not icmphdr_end & '1')(0);
-	icmp_end  <= icmphdr_end and pl_end;
+	icmp_data <= pl_data;
+	icmp_irdy <= pl_irdy;
+	icmp_end  <= pl_end;
 
 end;
 
