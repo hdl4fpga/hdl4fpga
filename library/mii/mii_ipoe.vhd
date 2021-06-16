@@ -63,6 +63,9 @@ end;
 
 architecture def of mii_ipoe is
 
+	signal metarx_frm  : std_logic;
+	signal metarx_irdy : std_logic;
+
 	signal ethrx_data    : std_logic_vector(miirx_data'range);
 
 	signal hwdarx_irdy   : std_logic;

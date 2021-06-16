@@ -300,12 +300,11 @@ begin
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end ,
-		miitx_data  => icmptx_data);
+		icmptx_data  => icmptx_data);
 
 	udp_e : entity hdl4fpga.udp
 	port map (
 		mii_clk     => mii_clk,
-		udprx_frm   => udptx_frm,
 		udprx_irdy  => ipv4rx_irdy,
 		udprx_data  => ipv4rx_data,
 		udpmetarx_irdy => udpmetarx_irdy,
