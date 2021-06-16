@@ -61,9 +61,9 @@ begin
 		variable cntr : unsigned(frm_ptr'range);
 	begin
 		if rising_edge(mii_clk) then
-			if icmp_frm='0' then
+			if pl_frm='0' then
 				cntr := to_unsigned(summation(icmphdr_frame & icmprqst_frame)-1, cntr'length);
-			elsif cntr(0)='0' and icmp_irdy='1' then
+			elsif cntr(0)='0' and pl_irdy='1' then
 				cntr := cntr - 1;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);

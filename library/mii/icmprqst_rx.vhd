@@ -37,6 +37,10 @@ entity icmprqst_rx is
 		icmp_data    : in  std_logic_vector;
 		icmp_irdy    : in  std_logic;
 
+		icmptype_frm : buffer std_logic;
+		icmptype_irdy : out std_logic;
+		icmpcode_frm : buffer std_logic;
+		icmpcode_irdy : out std_logic;
 		icmpcksm_frm : buffer std_logic;
 		icmpcksm_irdy : out std_logic;
 		icmpid_frm   : buffer std_logic;
@@ -66,11 +70,15 @@ begin
 		end if;
 	end process;
 
+	icmptype_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
+	icmpcode_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
 	icmpcksm_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
 	icmpid_frm   <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_id);
 	icmpseq_frm  <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_seq);
 	icmppl_frm   <= icmp_frm and frm_ptr(0);
 
+	icmptype_irdy <= icmp_irdy and icmptype_frm;
+	icmpcode_irdy <= icmp_irdy and icmpcode_frm;
 	icmpcksm_irdy <= icmp_irdy and icmpcksm_frm;
 	icmpid_irdy   <= icmp_irdy and icmpid_frm;
 	icmpseq_irdy  <= icmp_irdy and icmpseq_frm;
