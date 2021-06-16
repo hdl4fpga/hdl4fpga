@@ -56,15 +56,6 @@ end;
 
 architecture def of udp is
 
-	signal udprx_sp       : std_logic_vector(0 to 16-1);
-	signal udprx_dp       : std_logic_vector(0 to 16-1);
-	signal udprx_len      : std_logic_vector(0 to 16-1);
-	signal udprx_cksm     : std_logic_vector(0 to 16-1);
-
-	signal udptx_sp       : std_logic_vector(0 to 16-1);
-	signal udptx_dp       : std_logic_vector(0 to 16-1);
-	signal udptx_cksm     : std_logic_vector(0 to 16-1);
-
 	signal udpsprx_last   : std_logic;
 	signal udpsprx_equ    : std_logic;
 	signal udpsprx_vld    : std_logic;
@@ -112,35 +103,8 @@ begin
 		udppl_frm    => udpplrx_frm,
 		udppl_irdy   => udpplrx_irdy);
 
-	udprxlen_e : entity hdl4fpga.serdes
-	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => udprx_frm,
-		ser_irdy   => udplenrx_irdy,
-		ser_data   => udprx_data,
-		des_data   => udprx_len);
-
-	udprx_sp_e : entity hdl4fpga.serdes
-	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => udprx_frm,
-		ser_irdy   => udpsprx_irdy,
 		ser_data   => udprx_data,
 		des_data   => udprx_sp);
-
-	udprx_dp_e : entity hdl4fpga.serdes
-	generic map (
-		rgtr => true)
-	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => udprx_frm,
-		ser_irdy   => udpdprx_irdy,
-		ser_data   => udprx_data,
-		des_data   => udprx_dp);
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
@@ -194,14 +158,14 @@ begin
 			so_data  => cksm_data);
 
 --		udp_len  <= std_logic_vector(unsigned(udp_len) + (summation(udp4hdr_frame)/octect_size));
-		len_irdy <= cksm_end and udphdr_trdy;
+		udplen_irdy <= cksm_end and udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => pltx_frm,
-			si_irdy  => '-', --leni_irdy,
+			si_irdy  => udplen_irdy,
 			si_trdy  => open,
 			si_data  => pltx_data,
 
@@ -212,14 +176,14 @@ begin
 			so_end   => len_end,
 			so_data  => len_data);
 
-		dp_irdy <= len_end and udphdr_trdy;
+		udpdp_irdy <= len_end and udphdr_trdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => pltx_frm,
-			si_irdy  => '-', --dpi_irdy,
+			si_irdy  => dp_irdy,
 			si_trdy  => open,
 			si_data  => pltx_data,
 
