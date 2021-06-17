@@ -104,9 +104,6 @@ begin
 		udppl_frm    => udpplrx_frm,
 		udppl_irdy   => udpplrx_irdy);
 
-		ser_data   => udprx_data,
-		des_data   => udprx_sp);
-
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
@@ -154,6 +151,22 @@ begin
 
 	begin
 
+		process (pltx_irdy, mii_clk)
+			variable cntr : unsigned(0 to 4);
+		begin
+			if rising_edge(mii_clk) then
+				if pltx_frm='0' then
+					cntr := (others => '0');
+				elsif cntr(0)='0' and pltx_irdy='1' then
+					cntr := cntr - 1;
+				end if;
+			end if;
+
+			sptx_irdy  <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_sp);
+			dptx_irdy  <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_dp);
+			lentx_irdy <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_len);
+		end process;
+
 		cksm_irdy <= '1' and udphdr_trdy;
 		udpcksm_e : entity hdl4fpga.sio_mux
 		port map (
@@ -193,7 +206,7 @@ begin
 			s   => len_data,
 			co  => tx_co);
 
-		udplen_irdy <= cksm_end and udphdr_trdy;
+		len_irdy <= cksm_end and udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
@@ -211,7 +224,7 @@ begin
 			so_end  => len_end,
 			so_data => len_data);
 
-		udpdp_irdy <= len_end and udphdr_trdy;
+		dp_irdy <= len_end and udphdr_trdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
