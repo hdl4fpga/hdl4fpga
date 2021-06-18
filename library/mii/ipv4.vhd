@@ -23,9 +23,11 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
@@ -36,11 +38,15 @@ entity ipv4 is
 		mii_clk        : in  std_logic;
 		metarx_frm     : in  std_logic;
 		metarx_irdy    : in  std_logic;
+		metarx_data    : in  std_logic_vector;
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 		ipv4rx_data    : in  std_logic_vector;
 		ipv4arx_vld    : in  std_logic;
+
+		ipv4sarx_frm   : in  std_logic;
+		ipv4sarx_data  : in  std_logic_vector;
 
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
@@ -156,7 +162,9 @@ begin
 	end block;
 
 	meta_b : block
-		signal ipv4len_full : std_logic;
+		signal len_full     : std_logic;
+		signal lenrx_irdy   : std_logic;
+		signal lenrx_data   : std_logic_vector(metarx_data'range);
 		signal ipv4sa_irdy  : std_logic;
 		signal ipv4sa_trdy  : std_logic;
 		signal ipv4sa_end   : std_logic;
@@ -164,18 +172,52 @@ begin
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
+
+		signal tx_ci        : std_logic;
+		signal tx_co        : std_logic;
+		signal crtn_data    : std_logic_vector(pltx_data'range);
+
 	begin
 
-		ipv4len_e : entity hdl4fpga.sio_ram
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if pltx_frm='0' then
+					tx_ci <= '0';
+				elsif pltx_irdy='1' then
+					tx_ci <= tx_co;
+				end if;
+			end if;
+		end process;
+
+		lenrx_irdy <= metarx_irdy;
+		mux_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
+			sio_clk  => mii_clk,
+			sio_frm  => metarx_frm,
+			sio_irdy => lenrx_irdy,
+			sio_trdy => open,
+			so_data  => crtn_data);
+
+		tx_sum_e : entity hdl4fpga.adder
+		port map (
+			ci  => tx_ci,
+			a   => metarx_data,
+			b   => crtn_data,
+			s   => lenrx_data,
+			co  => tx_co);
+
+		len_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ipv4rx_frm,
-			si_irdy  => '-',
+			si_frm   => metarx_frm,
+			si_irdy  => lenrx_irdy,
 			si_trdy  => open,
-			si_full  => ipv4len_full,
-			si_data  => pltx_data,
+			si_full  => len_full,
+			si_data  => lenrx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4atx_frm,
@@ -184,16 +226,16 @@ begin
 			so_end   => ipv4sa_end,
 			so_data  => ipv4sa_data);
 
-		ipv4sa_e : entity hdl4fpga.sio_ram
+		sa_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_data => my_ipv4a,
 			mem_size => 32)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ipv4rx_frm,
-			si_irdy  => '-',
+			si_frm   => ipv4sarx_frm,
+			si_irdy  => ipv4sarx_irdy,
 			si_trdy  => open,
-			si_data  => ipv4rx_data,
+			si_data  => ipv4sarx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4atx_frm,
@@ -204,7 +246,7 @@ begin
 
 		ipv4da_irdy <= '0' when ipv4sa_end='0' else ipv4atx_irdy;
 
-		ipv4da_e : entity hdl4fpga.sio_ram
+		da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 32)
 		port map (

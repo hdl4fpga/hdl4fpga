@@ -134,38 +134,25 @@ begin
 		signal tx_ci      : std_logic;
 		signal tx_co      : std_logic;
 		signal crtn_data  : std_logic_vector(pltx_data'range);
+		signal lenrx_irdy : std_logic;
 		signal lentx_irdy : std_logic;
-		signal len_irdy   : std_logic;
 		signal len_end    : std_logic;
+		signal len_full   : std_logic;
 		signal len_data   : std_logic_vector(pltx_data'range);
 
+		signal sprx_irdy  : std_logic;
 		signal sptx_irdy  : std_logic;
-		signal sp_irdy    : std_logic;
 		signal sp_end     : std_logic;
+		signal sp_full    : std_logic;
 		signal sp_data    : std_logic_vector(pltx_data'range);
 
+		signal dprx_irdy  : std_logic;
 		signal dptx_irdy  : std_logic;
-		signal dp_irdy    : std_logic;
 		signal dp_end     : std_logic;
+		signal dp_full    : std_logic;
 		signal dp_data    : std_logic_vector(pltx_data'range);
 
 	begin
-
-		process (pltx_irdy, mii_clk)
-			variable cntr : unsigned(0 to 4);
-		begin
-			if rising_edge(mii_clk) then
-				if pltx_frm='0' then
-					cntr := (others => '0');
-				elsif cntr(0)='0' and pltx_irdy='1' then
-					cntr := cntr - 1;
-				end if;
-			end if;
-
-			sptx_irdy  <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_sp);
-			dptx_irdy  <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_dp);
-			lentx_irdy <= pltx_irdy and frame_decode(std_logic_vector(cntr), reverse(udp4hdr_frame), pltx_data'length, udp4_len);
-		end process;
 
 		cksm_irdy <= '1' and udphdr_trdy;
 		udpcksm_e : entity hdl4fpga.sio_mux
@@ -206,56 +193,62 @@ begin
 			s   => len_data,
 			co  => tx_co);
 
-		len_irdy <= cksm_end and udphdr_trdy;
+		lenrx_irdy <= pltx_irdy;
+		lentx_irdy <= cksm_end and udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk  => mii_clk,
 			si_frm  => pltx_frm,
-			si_irdy => lentx_irdy,
+			si_irdy => lenrx_irdy,
 			si_trdy => open,
+			si_full => len_full,
 			si_data => len_data,
 
 			so_clk  => mii_clk,
 			so_frm  => pltx_frm,
-			so_irdy => len_irdy,
+			so_irdy => lentx_irdy,
 			so_trdy => open,
 			so_end  => len_end,
 			so_data => len_data);
 
-		dp_irdy <= len_end and udphdr_trdy;
+		dprx_irdy <= pltx_irdy and len_full;
+		dptx_irdy <= len_end and udphdr_trdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk  => mii_clk,
 			si_frm  => pltx_frm,
-			si_irdy => dptx_irdy,
+			si_irdy => dprx_irdy,
 			si_trdy => open,
+			si_full => dp_full,
 			si_data => pltx_data,
 
 			so_clk  => mii_clk,
 			so_frm  => pltx_frm,
-			so_irdy => dp_irdy,
+			so_irdy => dptx_irdy,
 			so_trdy => open,
 			so_end  => dp_end,
 			so_data => dp_data);
 
-		sp_irdy <= dp_end and udphdr_trdy;
+		sprx_irdy <= pltx_irdy and dp_full;
+		sptx_irdy <= dp_end and udphdr_trdy;
 		udpsp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => pltx_frm,
-			si_irdy  => sptx_irdy,
+			si_irdy  => sprx_irdy,
 			si_trdy  => open,
+			si_full  => sp_full,
 			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => pltx_frm,
-			so_irdy  => sp_irdy,
+			so_irdy  => sptx_irdy,
 			so_trdy  => open,
 			so_end   => sp_end,
 			so_data  => sp_data);
