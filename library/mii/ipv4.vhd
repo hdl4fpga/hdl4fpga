@@ -36,9 +36,6 @@ entity ipv4 is
 	port (
 
 		mii_clk        : in  std_logic;
-		metarx_frm     : in  std_logic;
-		metarx_irdy    : in  std_logic;
-		metarx_data    : in  std_logic_vector;
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
@@ -72,6 +69,10 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
+
+	signal metarx_frm       : std_logic;
+	signal metarx_irdy      : std_logic;
+	signal metarx_data      : std_logic_vector(pltx_data'range);
 
 	signal ipv4protorx_irdy : std_logic;
 	signal ipv4sarx_irdy    : std_logic;
