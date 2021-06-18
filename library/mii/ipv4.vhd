@@ -31,8 +31,6 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
-	generic (
-		my_ipv4a       : in std_logic_vector(0 to 32-1) := x"00_00_00_00");
 	port (
 
 		mii_clk        : in  std_logic;
@@ -42,8 +40,11 @@ entity ipv4 is
 		ipv4rx_data    : in  std_logic_vector;
 		ipv4arx_vld    : in  std_logic;
 
-		ipv4sarx_frm   : in  std_logic;
-		ipv4sarx_data  : in  std_logic_vector;
+		ipv4sa_frm     : in  std_logic;
+		ipv4sa_irdy    : in  std_logic;
+		ipv4sa_trdy    : buffer std_logic;
+		ipv4sa_end     : buffer std_logic;
+		ipv4sa_data    : buffer std_logic_vector;
 
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
@@ -74,9 +75,6 @@ architecture def of ipv4 is
 	signal metarx_irdy      : std_logic;
 	signal metarx_data      : std_logic_vector(pltx_data'range);
 
-	signal ipv4protorx_irdy : std_logic;
-	signal ipv4sarx_irdy    : std_logic;
-	signal ipv4lenrx_irdy   : std_logic;
 
 	signal ipv4len_tx       : std_logic_vector(ipv4tx_data'range);
 	signal ipv4sa_tx        : std_logic_vector(ipv4tx_data'range);
@@ -119,6 +117,9 @@ architecture def of ipv4 is
 	signal protorx_last     : std_logic;
 	signal udpmetarx_irdy   : std_logic;
 
+		signal ipv4protorx_irdy : std_logic;
+		signal ipv4sarx_irdy    : std_logic;
+		signal ipv4lenrx_irdy   : std_logic;
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -139,6 +140,35 @@ begin
 
 		pl_frm         => ipv4plrx_frm,
 		pl_irdy        => ipv4plrx_irdy);
+
+	sa_e : entity hdl4fpga.sio_ram
+	generic map (
+		mem_size => 32)
+	port map (
+		si_clk   => mii_clk,
+		si_frm   => pltx_frm,
+		si_irdy  => '-',
+		si_trdy  => open,
+		si_full  => open,
+		si_data  => pltx_data,
+
+		so_clk   => mii_clk,
+		so_frm   => ipv4sa_frm,
+		so_irdy  => ipv4sa_irdy,
+		so_trdy  => open,
+		so_end   => open,
+		so_data  => ipv4sa_data);
+
+	ip4arx_e : entity hdl4fpga.sio_cmp
+	port map (
+		mux_data  => reverse(default_ipv4a,8),
+        sio_clk   => mii_clk,
+        sio_frm   => ipv4sa_frm,
+		sio_irdy  => ipv4sa_irdy,
+		sio_trdy  => ipv4arx_trdy,
+        si_data   => ipv4sa_data,
+        so_last   => ipv4arx_last,
+		so_equ(0) => ipv4arx_equ);
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
@@ -219,24 +249,6 @@ begin
 			si_trdy  => open,
 			si_full  => len_full,
 			si_data  => lenrx_data,
-
-			so_clk   => mii_clk,
-			so_frm   => ipv4atx_frm,
-			so_irdy  => ipv4sa_irdy,
-			so_trdy  => ipv4sa_trdy,
-			so_end   => ipv4sa_end,
-			so_data  => ipv4sa_data);
-
-		sa_e : entity hdl4fpga.sio_ram
-		generic map (
-			mem_data => my_ipv4a,
-			mem_size => 32)
-		port map (
-			si_clk   => mii_clk,
-			si_frm   => ipv4sarx_frm,
-			si_irdy  => ipv4sarx_irdy,
-			si_trdy  => open,
-			si_data  => ipv4sarx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4atx_frm,

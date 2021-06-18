@@ -337,17 +337,6 @@ begin
 		miitx_end  => miitx_end);
 
 	ipv4arx_frm <= tparx_frm or ipv4darx_frm;
-	ip4arx_e : entity hdl4fpga.sio_cmp
-	port map (
-		mux_data  => reverse(default_ipv4a,8),
-        sio_clk   => mii_clk,
-        sio_frm   => ipv4arx_frm,
-		sio_irdy  => miirx_irdy,
-		sio_trdy  => ipv4arx_trdy,
-        si_data   => miirx_data,
-        so_last   => ipv4arx_last,
-		so_equ(0) => ipv4arx_equ);
-
 	ipv4arx_vld <= ipv4arx_equ and ipv4arx_last and miirx_irdy;
 
 	ipv4_e : entity hdl4fpga.ipv4
@@ -356,6 +345,10 @@ begin
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,
+
+		ipv4sa_trdy    => '-',
+		ipv4sa_end     => '-',
+		ipv4sa_data    => miirx_data,
 
 		ipv4arx_vld   => ipv4arx_vld,
 
