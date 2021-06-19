@@ -31,14 +31,16 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
+	generic (
+		hwsa     : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk  : in  std_logic;
 		arp_frm  : in  std_logic;
 		
-		sha      : in std_logic_vector;
-		tha      : in std_logic_vector;
-		tpa      : in std_logic_vector;
-		spa      : in std_logic_vector;
+		pa_frm   : buffer std_logic;
+		pa_irdy  : out std_logic;
+		pa_trdy  : in  std_logic;
+		pa_data  : in  std_logic_vector;
 
 		arp_irdy : in  std_logic;
 		arp_trdy : out std_logic;
@@ -49,8 +51,32 @@ entity arp_tx is
 end;
 
 architecture def of arp_tx is
-	signal mux_data : std_logic_vector(0 to summation(arp4_frame)-1);
+	constant sha : std_logic_vector := hwsa;
+	constant tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
+
+	signal mux_data    : std_logic_vector(0 to summation(arp4_frame)-1);
+	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
+	signal arpmux_irdy : std_logic;
+
 begin
+
+	process (mii_clk)
+		variable cntr : unsigned(frm_ptr'range);
+	begin
+		if rising_edge(mii_clk) then
+			if arp_frm='0' then
+				cntr := to_unsigned(summation(arp4_frame)-1, cntr'length);
+			elsif cntr(0)='0' and arp_irdy='1' then
+				cntr := cntr - 1;
+			end if;
+			frm_ptr <= std_logic_vector(cntr);
+		end if;
+	end process;
+
+	pa_frm  <= arp_frm and (
+		frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_spa) or
+		frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa));
+	pa_irdy <= pa_frm and arp_irdy;
 	
 	mux_data <=
 		x"0001"          & -- htype 
@@ -59,16 +85,15 @@ begin
 		x"04"            & -- plen  
 		x"0002"          & -- oper  
 	    reverse(sha,8)   & -- Sender Hardware Address
-		reverse(spa,8)   & -- Sender Protocol Address
-		reverse(tha,8)   & -- Target Hardware Address
-		reverse(tpa,8);    -- Target Protocol Address
+		reverse(tha,8);    -- Target Hardware Address
 
+	arpmux_irdy <= '0' when pa_frm='1' else arp_irdy;
 	arpmux_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => mux_data,
         sio_clk  => mii_clk,
 		sio_frm  => arp_frm,
-		sio_irdy => arp_irdy,
+		sio_irdy => arpmux_irdy,
         sio_trdy => arp_trdy,
         so_end   => arp_end,
         so_data  => arp_data);
