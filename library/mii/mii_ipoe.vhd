@@ -337,7 +337,6 @@ begin
 		miitx_end  => miitx_end);
 
 	ipv4arx_frm <= tparx_frm or ipv4darx_frm;
-	ipv4arx_vld <= ipv4arx_equ and ipv4arx_last and miirx_irdy;
 
 	ipv4_e : entity hdl4fpga.ipv4
 	port map (

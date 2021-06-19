@@ -41,10 +41,7 @@ entity ipv4 is
 		ipv4arx_vld    : in  std_logic;
 
 		ipv4sa_frm     : in  std_logic;
-		ipv4sa_irdy    : in  std_logic;
-		ipv4sa_trdy    : buffer std_logic;
-		ipv4sa_end     : buffer std_logic;
-		ipv4sa_data    : buffer std_logic_vector;
+		ipv4sarx_vld   : out std_logic;
 
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
@@ -153,22 +150,23 @@ begin
 		si_data  => pltx_data,
 
 		so_clk   => mii_clk,
-		so_frm   => ipv4sa_frm,
+		so_frm   => ipv4sarx_frm,
 		so_irdy  => ipv4sa_irdy,
 		so_trdy  => open,
 		so_end   => open,
 		so_data  => ipv4sa_data);
 
-	ip4arx_e : entity hdl4fpga.sio_cmp
+	ip4sarx_e : entity hdl4fpga.sio_cmp
 	port map (
 		mux_data  => reverse(default_ipv4a,8),
         sio_clk   => mii_clk,
-        sio_frm   => ipv4sa_frm,
+        sio_frm   => ipv4sarx_frm,
 		sio_irdy  => ipv4sa_irdy,
 		sio_trdy  => ipv4arx_trdy,
         si_data   => ipv4sa_data,
         so_last   => ipv4arx_last,
 		so_equ(0) => ipv4arx_equ);
+	ipv4sarx_vld <= ipv4arx_equ and ipv4arx_last and miirx_irdy;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
