@@ -129,6 +129,12 @@ architecture def of mii_ipoe is
 	signal ipv4darx_frm  : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
+	signal ipv4sa_frm    : std_logic;
+	signal ipv4sa_trdy   : std_logic;
+	signal ipv4sa_irdy   : std_logic;
+	signal ipv4sa_end    : std_logic;
+	signal ipv4sa_data   : std_logic_vector(miitx_data'range);
+
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
 
@@ -149,7 +155,7 @@ begin
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
-	hwdacmp_e : entity hdl4fpga.sio_cmp
+	hwdacmp_e : entity hdl4fpga.sio_muxcmp
     port map (
 		mux_data  => reverse(my_mac,8),
         sio_clk   => mii_clk,
@@ -172,7 +178,7 @@ begin
 	end process;
 
 
-	llc_e : entity hdl4fpga.sio_cmp
+	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
 		n => 2)
 	port map (
@@ -314,9 +320,9 @@ begin
 		mii_data   => miitx_data);
 
 	arpd_e : entity hdl4fpga.arpd
+	generic map (
+		hwsa       => my_mac)
 	port map (
-		my_ipv4a   => default_ipv4a,
-		my_mac     => my_mac,
 
 		mii_clk    => mii_clk,
 
@@ -328,6 +334,12 @@ begin
 
 		tparx_frm  => tparx_frm,
 		tparx_vld  => ipv4arx_vld,
+
+		sparx_frm  => ipv4sa_frm,
+		sparx_irdy => ipv4sa_irdy,
+		sparx_trdy => ipv4sa_trdy,
+		sparx_end  => ipv4sa_end,
+		sparx_data => ipv4sa_data,
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
@@ -345,9 +357,11 @@ begin
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,
 
-		ipv4sa_trdy    => '-',
-		ipv4sa_end     => '-',
-		ipv4sa_data    => miirx_data,
+		ipv4sa_frm    => ipv4sa_frm,
+		ipv4sa_trdy   => ipv4sa_trdy,
+		ipv4sa_irdy   => ipv4sa_irdy,
+		ipv4sa_end    => ipv4sa_end,
+		ipv4sa_data   => ipv4sa_data,
 
 		ipv4arx_vld   => ipv4arx_vld,
 

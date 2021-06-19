@@ -28,10 +28,9 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity arpd is
+	generic (
+		hwsa       : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		my_ipv4a   : in std_logic_vector(0 to 32-1) := x"00_00_00_00";
-		my_mac     : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
-
 		mii_clk    : in  std_logic;
 		arprx_frm  : in  std_logic;
 		arprx_irdy : in  std_logic;
@@ -42,6 +41,12 @@ entity arpd is
 
 		tparx_frm  : out std_logic;
 		tparx_vld  : in  std_logic;
+
+		sparx_frm  : out std_logic;
+		sparx_irdy : out std_logic;
+		sparx_trdy : in  std_logic;
+		sparx_end  : in  std_logic;
+		sparx_data : in  std_logic_vector;
 
 		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic;
@@ -100,16 +105,20 @@ begin
 	end process;
 
 	arptx_e : entity hdl4fpga.arp_tx
+	generic map (
+		hwsa     => hwsa)
 	port map (
-		mii_clk   => mii_clk,
-		arp_frm   => arptx_frm,
-		sha       => my_mac,
-		spa       => my_ipv4a,
-		tha       => x"ffffffffffff",
-		tpa       => my_ipv4a,
-		arp_irdy  => arptx_trdy,
-		arp_trdy  => arptx_irdy,
-		arp_end   => arptx_end,
-		arp_data  => arptx_data);
+		mii_clk  => mii_clk,
+		pa_frm   => sparx_frm,
+		pa_irdy  => sparx_irdy,
+		pa_trdy  => sparx_trdy,
+		pa_end   => sparx_end,
+		pa_data  => sparx_data,
+
+		arp_frm  => arptx_frm,
+		arp_irdy => arptx_trdy,
+		arp_trdy => arptx_irdy,
+		arp_end  => arptx_end,
+		arp_data => arptx_data);
 
 end;

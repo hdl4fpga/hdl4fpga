@@ -40,6 +40,7 @@ entity arp_tx is
 		pa_frm   : buffer std_logic;
 		pa_irdy  : out std_logic;
 		pa_trdy  : in  std_logic;
+		pa_end   : in  std_logic;
 		pa_data  : in  std_logic_vector;
 
 		arp_irdy : in  std_logic;

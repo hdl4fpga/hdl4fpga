@@ -279,7 +279,7 @@ begin
 		udp_end  => udptx_end,
 		udp_data => udptx_data);
 
-	udpc_e : entity hdl4fpga.sio_cmp
+	udpc_e : entity hdl4fpga.sio_muxcmp
     port map (
 		mux_data  => reverse(x"0043",8),
         sio_clk   => mii_clk,

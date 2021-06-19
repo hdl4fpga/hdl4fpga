@@ -31,6 +31,8 @@ use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
+	generic (
+		default_ipv4a : std_logic_vector);
 	port (
 
 		mii_clk        : in  std_logic;
@@ -41,6 +43,11 @@ entity ipv4 is
 		ipv4arx_vld    : in  std_logic;
 
 		ipv4sa_frm     : in  std_logic;
+		ipv4sa_irdy    : in  std_logic;
+		ipv4sa_trdy    : out std_logic;
+		ipv4sa_data    : out std_logic_vector;
+
+		ipv4sarx_frm   : in  std_logic;
 		ipv4sarx_vld   : out std_logic;
 
 		ipv4darx_frm   : out std_logic;
@@ -117,6 +124,8 @@ architecture def of ipv4 is
 		signal ipv4protorx_irdy : std_logic;
 		signal ipv4sarx_irdy    : std_logic;
 		signal ipv4lenrx_irdy   : std_logic;
+		signal ipv4arx_last   : std_logic;
+		signal ipv4arx_equ   : std_logic;
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -150,19 +159,19 @@ begin
 		si_data  => pltx_data,
 
 		so_clk   => mii_clk,
-		so_frm   => ipv4sarx_frm,
+		so_frm   => ipv4sa_frm,
 		so_irdy  => ipv4sa_irdy,
 		so_trdy  => open,
 		so_end   => open,
 		so_data  => ipv4sa_data);
 
-	ip4sarx_e : entity hdl4fpga.sio_cmp
+	ip4sarx_e : entity hdl4fpga.sio_muxcmp
 	port map (
 		mux_data  => reverse(default_ipv4a,8),
         sio_clk   => mii_clk,
-        sio_frm   => ipv4sarx_frm,
+        sio_frm   => ipv4sa_frm,
 		sio_irdy  => ipv4sa_irdy,
-		sio_trdy  => ipv4arx_trdy,
+		sio_trdy  => ipv4sa_trdy,
         si_data   => ipv4sa_data,
         so_last   => ipv4arx_last,
 		so_equ(0) => ipv4arx_equ);
@@ -316,7 +325,7 @@ begin
 		end if;
 	end process;
 
-	proto_e : entity hdl4fpga.sio_cmp
+	proto_e : entity hdl4fpga.sio_muxcmp
 	generic map (
 		n => 1)
 	port map (
