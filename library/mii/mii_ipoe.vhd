@@ -351,6 +351,8 @@ begin
 	ipv4arx_frm <= tparx_frm or ipv4darx_frm;
 
 	ipv4_e : entity hdl4fpga.ipv4
+	generic map (
+		default_ipv4a => default_ipv4a)
 	port map (
 		mii_clk       => mii_clk,
 		ipv4rx_frm    => iprx_frm,

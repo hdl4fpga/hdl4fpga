@@ -45,9 +45,9 @@ entity ipv4 is
 		ipv4sa_frm     : in  std_logic;
 		ipv4sa_irdy    : in  std_logic;
 		ipv4sa_trdy    : out std_logic;
-		ipv4sa_data    : out std_logic_vector;
+		ipv4sa_end     : out std_logic;
+		ipv4sa_data    : buffer std_logic_vector;
 
-		ipv4sarx_frm   : in  std_logic;
 		ipv4sarx_vld   : out std_logic;
 
 		ipv4darx_frm   : out std_logic;
@@ -175,7 +175,7 @@ begin
         si_data   => ipv4sa_data,
         so_last   => ipv4arx_last,
 		so_equ(0) => ipv4arx_equ);
-	ipv4sarx_vld <= ipv4arx_equ and ipv4arx_last and miirx_irdy;
+	ipv4sarx_vld <= ipv4arx_equ and ipv4arx_last and ipv4rx_irdy;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
