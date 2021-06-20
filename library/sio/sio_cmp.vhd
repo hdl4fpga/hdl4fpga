@@ -29,60 +29,40 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_cmp is
-	generic (
-		n : natural := 1);
     port (
-		mux_data : in  std_logic_vector;
-        sio_clk  : in  std_logic;
-        sio_frm  : in  std_logic;
-		sio_irdy : in  std_logic;
-		sio_trdy : out std_logic;
-        si_data  : in  std_logic_vector;
-		so_last  : out std_logic;
-		so_end   : out std_logic;
-		so_equ   : out std_logic_vector(0 to n-1));
+        si_clk   : in  std_logic;
+        si_frm   : in  std_logic;
+		si1_irdy : in  std_logic;
+		si1_trdy : out std_logic;
+        si1_data : in  std_logic_vector;
+		si2_irdy : in  std_logic;
+		si2_trdy : out std_logic;
+        si2_data : in  std_logic_vector;
+		si_equ   : out std_logic);
 end;
 
 architecture def of sio_cmp is
-	signal sio_last : std_logic_vector(0 to n-1);
-	signal sio_end  : std_logic_vector(0 to n-1);
 begin
 
-	g : for i in 0 to n-1 generate
-
-		signal sio_data : std_logic_vector(0 to mux_data'length/n-1);
-		signal so_data  : std_logic_vector(si_data'range);
-
+	process (si_clk)
+		variable st : std_logic;
+		variable cy : std_logic;
 	begin
-
-		sio_data <= word2byte(mux_data, i, sio_data'length);
-		data_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => sio_data,
-			sio_clk  => sio_clk,
-			sio_frm  => sio_frm,
-			sio_irdy => sio_irdy,
-			sio_trdy => sio_trdy,
-			so_last  => sio_last(i),
-			so_end   => sio_end(i),
-			so_data  => so_data);
-
-		process (si_data, so_data, sio_clk)
-			variable cy : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if sio_frm='0' then
-					cy := '1';
-				elsif sio_irdy='1' then
-					cy := setif(so_data=si_data) and cy;
+		if rising_edge(si_clk) then
+			if si_frm='0' then
+				cy := '0';
+				st := '0';
+			elsif si1_irdy='1' and si2_irdy='1' then
+				if st='0' then
+					cy := setif(si1_data=si2_data); 
+				else
+					cy := setif(si1_data=si2_data) and cy; 
 				end if;
 			end if;
-			so_equ(i) <= setif(so_data=si_data) and cy;
-		end process;
+			si_equ <= cy;
+		end if;
+	end process;
+	si1_trdy <= si1_irdy and si2_irdy;
+	si2_trdy <= si1_irdy and si2_irdy;
 
-
-	end generate;
-
-	so_last <= sio_last(0);
-	so_end  <= sio_end(0);
 end;

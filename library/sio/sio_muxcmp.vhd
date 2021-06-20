@@ -28,50 +28,61 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_mux is
+entity sio_muxcmp is
+	generic (
+		n : natural := 1);
     port (
 		mux_data : in  std_logic_vector;
         sio_clk  : in  std_logic;
         sio_frm  : in  std_logic;
-		sio_irdy : in  std_logic := '1';
+		sio_irdy : in  std_logic;
 		sio_trdy : out std_logic;
-		so_last  : buffer std_logic;
-		so_end   : buffer std_logic;
-        so_data  : out std_logic_vector);
+        si_data  : in  std_logic_vector;
+		so_last  : out std_logic;
+		so_end   : out std_logic;
+		so_equ   : out std_logic_vector(0 to n-1));
 end;
 
-architecture def of sio_mux is
-	constant mux_length : natural := unsigned_num_bits(mux_data'length/so_data'length-1);
-	subtype mux_range is natural range 1 to mux_length;
-
-	signal mux_sel : std_logic_vector(mux_range);
-	signal rdata   : std_logic_vector(0 to 2**mux_length*so_data'length-1);
-
+architecture def of sio_muxcmp is
+	signal sio_last : std_logic_vector(0 to n-1);
+	signal sio_end  : std_logic_vector(0 to n-1);
 begin
 
-	process (sio_frm, so_end, sio_clk)
-		variable cntr : signed(0 to mux_length);
+	g : for i in 0 to n-1 generate
+
+		signal sio_data : std_logic_vector(0 to mux_data'length/n-1);
+		signal so_data  : std_logic_vector(si_data'range);
+
 	begin
-		if rising_edge(sio_clk) then
-			if sio_frm='0' then
-				cntr   := to_signed(mux_data'length/so_data'length-2, cntr'length);
-				so_end <= '0';
-			elsif sio_irdy='1' then
-				so_end <= cntr(0);
-				if cntr(0)='0' then
-					cntr := cntr - 1;
+
+		sio_data <= word2byte(mux_data, i, sio_data'length);
+		data_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => sio_data,
+			sio_clk  => sio_clk,
+			sio_frm  => sio_frm,
+			sio_irdy => sio_irdy,
+			sio_trdy => sio_trdy,
+			so_last  => sio_last(i),
+			so_end   => sio_end(i),
+			so_data  => so_data);
+
+		process (si_data, so_data, sio_clk)
+			variable cy : std_logic;
+		begin
+			if rising_edge(sio_clk) then
+				if sio_frm='0' then
+					cy := '1';
+				elsif sio_irdy='1' then
+					cy := setif(so_data=si_data) and cy;
 				end if;
 			end if;
-			mux_sel <= std_logic_vector(cntr(mux_range));
-		end if;
-		so_last <= not so_end and cntr(0);
-	end process;
-	sio_trdy <= sio_frm;
+			so_equ(i) <= setif(so_data=si_data) and cy;
+		end process;
 
-	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), so_data'length))) rol so_data'length);
 
-	so_data <= 
-		rdata when so_data'length=rdata'length else
-		word2byte(rdata, mux_sel, so_data'length);
+	end generate;
 
+	so_last <= sio_last(0);
+	so_end  <= sio_end(0);
 end;
