@@ -39,14 +39,13 @@ entity arpd is
 		arpdtx_req : in  std_logic;
 		arpdtx_rdy : buffer  std_logic;
 
-		tparx_frm  : out std_logic;
-		tparx_vld  : in  std_logic;
 
-		sparx_frm  : out std_logic;
-		sparx_irdy : out std_logic;
-		sparx_trdy : in  std_logic;
-		sparx_end  : in  std_logic;
-		sparx_data : in  std_logic_vector;
+		spa_frm    : out std_logic;
+		spa_irdy   : out std_logic;
+		spa_trdy   : in  std_logic;
+		spa_end    : in  std_logic;
+		spa_equ    : in  std_logic;
+		spa_data   : in  std_logic_vector;
 
 		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic;
@@ -61,6 +60,10 @@ end;
 
 architecture def of arpd is
 
+	signal tparx_frm : std_logic;
+	signal tparx_vld : std_logic;
+	signal pa_frm    : std_logic;
+	signal pa_irdy   : std_logic;
 	signal arpd_rdy  : std_logic := '0';
 	signal arpd_req  : std_logic := '0';
 
@@ -77,9 +80,20 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
+			if arprx_frm='0' then
+				tparx_vld <= '0';
+			elsif spa_end='0' then
+				tparx_vld <= tparx_equ;
+			end if;
+		end if;
+	end process;
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
 			if to_bit(arpd_req xor arpd_rdy)='0' then
 				if arprx_frm='1' then
-					arpd_req <= arpd_rdy xor tparx_vld;
+					arpd_req <= arpd_rdy xor (tparx_vld and spa_end);
 				elsif to_bit(arpdtx_req xor arpd_rdy)='1' then
 					arpd_req <= not arpd_rdy;
 				end if;
@@ -109,16 +123,19 @@ begin
 		hwsa     => hwsa)
 	port map (
 		mii_clk  => mii_clk,
-		pa_frm   => sparx_frm,
-		pa_irdy  => sparx_irdy,
-		pa_trdy  => sparx_trdy,
-		pa_end   => sparx_end,
-		pa_data  => sparx_data,
+		pa_frm   => pa_frm,
+		pa_irdy  => pa_irdy,
+		pa_trdy  => spa_trdy,
+		pa_end   => spa_end,
+		pa_data  => spa_data,
 
 		arp_frm  => arptx_frm,
 		arp_irdy => arptx_trdy,
 		arp_trdy => arptx_irdy,
 		arp_end  => arptx_end,
 		arp_data => arptx_data);
+
+	spa_frm  <= tparx_frm or pa_frm;
+	spa_irdy <= wirebus(arprx_irdy & pa_irdy, tparx_frm & pa_frm)(0);
 
 end;

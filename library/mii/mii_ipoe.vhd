@@ -126,7 +126,6 @@ architecture def of mii_ipoe is
 	signal ipv4arx_trdy  : std_logic;
 	signal ipv4arx_equ   : std_logic;
 	signal ipv4arx_last  : std_logic;
-	signal ipv4arx_vld   : std_logic;
 	signal ipv4darx_frm  : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
@@ -135,6 +134,7 @@ architecture def of mii_ipoe is
 	signal ipv4sa_irdy   : std_logic;
 	signal ipv4sa_end    : std_logic;
 	signal ipv4sa_data   : std_logic_vector(miitx_data'range);
+	signal ipv4sa_equ    : std_logic;
 
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
@@ -346,7 +346,7 @@ begin
 		arprx_data => miirx_data,
 
 		tparx_frm  => tparx_frm,
-		tparx_vld  => ipv4arx_vld,
+		tparx_vld  => ipv4sa_equ,
 
 		sparx_frm  => ipv4sa_frm,
 		sparx_irdy => ipv4sa_irdy,
@@ -377,8 +377,7 @@ begin
 		ipv4sa_irdy   => ipv4sa_irdy,
 		ipv4sa_end    => ipv4sa_end,
 		ipv4sa_data   => ipv4sa_data,
-
-		ipv4arx_vld   => ipv4arx_vld,
+		ipv4sa_equ    => ipv4sa_equ,
 
 		ipv4darx_frm  => ipv4darx_frm,
 		ipv4darx_irdy => ipv4darx_irdy,

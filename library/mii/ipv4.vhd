@@ -40,15 +40,14 @@ entity ipv4 is
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 		ipv4rx_data    : in  std_logic_vector;
-		ipv4arx_vld    : in  std_logic;
+		ipv4arx_vld    : out std_logic;
 
 		ipv4sa_frm     : in  std_logic;
 		ipv4sa_irdy    : in  std_logic;
 		ipv4sa_trdy    : out std_logic;
 		ipv4sa_end     : buffer std_logic;
 		ipv4sa_data    : buffer std_logic_vector;
-
-		ipv4sarx_vld   : out std_logic;
+		ipv4sa_equ     : buffer std_logic;
 
 		ipv4darx_frm   : out std_logic;
 		ipv4darx_irdy  : buffer std_logic;
@@ -176,21 +175,7 @@ begin
         si2_irdy  => hwdarx_irdy,
         si2_trdy  => open,
         si2_data  => ipv4rx_data,
-		si_equ    => ipv4arx_equ);
-
-	process (mii_clk)
-		variable equ : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if ipv4sa_frm='0' then
-				ipv4sarx_vld <= '0';
-			else
-				ipv4sarx_vld <= ipv4arx_equ and ipv4sa_end and ipv4rx_irdy;
-			end if;
-		end if;
-	end process;
-
-	ipv4sarx_vld <= ipv4arx_equ and ipv4sa_end and ipv4rx_irdy;
+		si_equ    => ipv4sa_equ);
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
