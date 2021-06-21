@@ -38,31 +38,25 @@ entity sio_cmp is
 		si2_irdy : in  std_logic;
 		si2_trdy : out std_logic;
         si2_data : in  std_logic_vector;
-		si_equ   : out std_logic);
+		si_equ   : buffer std_logic);
 end;
 
 architecture def of sio_cmp is
+	signal cy : std_logic;
 begin
 
 	process (si_clk)
-		variable st : std_logic;
-		variable cy : std_logic;
 	begin
 		if rising_edge(si_clk) then
 			if si_frm='0' then
-				cy := '0';
-				st := '0';
+				cy <= '1';
 			elsif si1_irdy='1' and si2_irdy='1' then
-				if st='0' then
-					cy := setif(si1_data=si2_data); 
-				else
-					cy := setif(si1_data=si2_data) and cy; 
-				end if;
+				cy <= si_equ;
 			end if;
-			si_equ <= cy;
 		end if;
 	end process;
 	si1_trdy <= si1_irdy and si2_irdy;
 	si2_trdy <= si1_irdy and si2_irdy;
+	si_equ   <= setif(si1_data=si2_data) and cy; 
 
 end;

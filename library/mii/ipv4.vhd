@@ -45,7 +45,7 @@ entity ipv4 is
 		ipv4sa_frm     : in  std_logic;
 		ipv4sa_irdy    : in  std_logic;
 		ipv4sa_trdy    : out std_logic;
-		ipv4sa_end     : out std_logic;
+		ipv4sa_end     : buffer std_logic;
 		ipv4sa_data    : buffer std_logic_vector;
 
 		ipv4sarx_vld   : out std_logic;
@@ -149,33 +149,48 @@ begin
 
 	sa_e : entity hdl4fpga.sio_ram
 	generic map (
+		mem_data => reverse(default_ipv4a,8),
 		mem_size => 32)
 	port map (
-		si_clk   => mii_clk,
-		si_frm   => pltx_frm,
-		si_irdy  => '-',
-		si_trdy  => open,
-		si_full  => open,
-		si_data  => pltx_data,
+		si_clk  => mii_clk,
+		si_frm  => pltx_frm,
+		si_irdy => '-',
+		si_trdy => open,
+		si_full => open,
+		si_data => pltx_data,
 
-		so_clk   => mii_clk,
-		so_frm   => ipv4sa_frm,
-		so_irdy  => ipv4sa_irdy,
-		so_trdy  => open,
-		so_end   => open,
-		so_data  => ipv4sa_data);
+		so_clk  => mii_clk,
+		so_frm  => ipv4sa_frm,
+		so_irdy => ipv4sa_irdy,
+		so_trdy => ipv4sa_trdy,
+		so_end  => ipv4sa_end,
+		so_data => ipv4sa_data);
 
-	ip4sarx_e : entity hdl4fpga.sio_muxcmp
-	port map (
-		mux_data  => reverse(default_ipv4a,8),
-        sio_clk   => mii_clk,
-        sio_frm   => ipv4sa_frm,
-		sio_irdy  => ipv4sa_irdy,
-		sio_trdy  => ipv4sa_trdy,
-        si_data   => ipv4sa_data,
-        so_last   => ipv4arx_last,
-		so_equ(0) => ipv4arx_equ);
-	ipv4sarx_vld <= ipv4arx_equ and ipv4arx_last and ipv4rx_irdy;
+	sacmp_e : entity hdl4fpga.sio_cmp
+    port map (
+        si_clk    => mii_clk,
+        si_frm    => ipv4sa_frm,
+        si1_irdy  => ipv4sa_irdy,
+        si1_trdy  => ipv4sa_trdy,
+        si1_data  => ipv4sa_data,
+        si2_irdy  => hwdarx_irdy,
+        si2_trdy  => open,
+        si2_data  => ipv4rx_data,
+		si_equ    => ipv4arx_equ);
+
+	process (mii_clk)
+		variable equ : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4sa_frm='0' then
+				ipv4sarx_vld <= '0';
+			else
+				ipv4sarx_vld <= ipv4arx_equ and ipv4sa_end and ipv4rx_irdy;
+			end if;
+		end if;
+	end process;
+
+	ipv4sarx_vld <= ipv4arx_equ and ipv4sa_end and ipv4rx_irdy;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);

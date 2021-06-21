@@ -68,6 +68,7 @@ architecture def of mii_ipoe is
 
 	signal ethrx_data    : std_logic_vector(miirx_data'range);
 
+	signal bcstrx_equ    : std_logic;
 	signal hwdarx_irdy   : std_logic;
 	signal hwdarx_last   : std_logic;
 	signal hwdarx_equ    : std_logic;
@@ -155,6 +156,18 @@ begin
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
+	bcstcmp_e : entity hdl4fpga.sio_cmp
+    port map (
+        si_clk    => mii_clk,
+        si_frm    => miirx_frm,
+        si1_irdy  => hwdarx_irdy,
+        si1_trdy  => open,
+        si1_data  => (miirx_data'range => '1'),
+        si2_irdy  => hwdarx_irdy,
+        si2_trdy  => open,
+        si2_data  => miirx_data,
+		si_equ    => bcstrx_equ);
+
 	hwdacmp_e : entity hdl4fpga.sio_muxcmp
     port map (
 		mux_data  => reverse(my_mac,8),
@@ -172,7 +185,7 @@ begin
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
 			elsif hwdarx_last='1' and miirx_irdy='1' then
-				hwdarx_vld <= hwdarx_equ;
+				hwdarx_vld <= hwdarx_equ or bcstrx_equ;
 			end if;
 		end if;
 	end process;
@@ -228,8 +241,8 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		ethtx_frm  <= wirebus(arptx_frm  & pltx_frm,  dev_gnt)(0);
-		ethtx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
+		ethtx_frm    <= wirebus(arptx_frm  & pltx_frm,  dev_gnt)(0);
+		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt)(0);
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
