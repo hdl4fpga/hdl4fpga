@@ -83,7 +83,7 @@ begin
 			if arprx_frm='0' then
 				tparx_vld <= '0';
 			elsif spa_end='0' then
-				tparx_vld <= tparx_equ;
+				tparx_vld <= spa_equ;
 			end if;
 		end if;
 	end process;

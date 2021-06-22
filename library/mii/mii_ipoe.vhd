@@ -345,14 +345,12 @@ begin
 		arprx_irdy => miirx_irdy,
 		arprx_data => miirx_data,
 
-		tparx_frm  => tparx_frm,
-		tparx_vld  => ipv4sa_equ,
-
-		sparx_frm  => ipv4sa_frm,
-		sparx_irdy => ipv4sa_irdy,
-		sparx_trdy => ipv4sa_trdy,
-		sparx_end  => ipv4sa_end,
-		sparx_data => ipv4sa_data,
+		spa_frm  => ipv4sa_frm,
+		spa_irdy => ipv4sa_irdy,
+		spa_trdy => ipv4sa_trdy,
+		spa_end  => ipv4sa_end,
+		spa_equ  => ipv4sa_equ,
+		spa_data => ipv4sa_data,
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,

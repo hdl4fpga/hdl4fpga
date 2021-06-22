@@ -40,11 +40,11 @@ entity ipv4 is
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 		ipv4rx_data    : in  std_logic_vector;
-		ipv4arx_vld    : out std_logic;
+		ipv4arx_vld    : buffer std_logic;
 
 		ipv4sa_frm     : in  std_logic;
 		ipv4sa_irdy    : in  std_logic;
-		ipv4sa_trdy    : out std_logic;
+		ipv4sa_trdy    : buffer std_logic;
 		ipv4sa_end     : buffer std_logic;
 		ipv4sa_data    : buffer std_logic_vector;
 		ipv4sa_equ     : buffer std_logic;
@@ -172,7 +172,7 @@ begin
         si1_irdy  => ipv4sa_irdy,
         si1_trdy  => ipv4sa_trdy,
         si1_data  => ipv4sa_data,
-        si2_irdy  => hwdarx_irdy,
+        si2_irdy  => ipv4rx_irdy,
         si2_trdy  => open,
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sa_equ);
@@ -203,10 +203,10 @@ begin
 		signal len_full     : std_logic;
 		signal lenrx_irdy   : std_logic;
 		signal lenrx_data   : std_logic_vector(metarx_data'range);
-		signal ipv4sa_irdy  : std_logic;
-		signal ipv4sa_trdy  : std_logic;
-		signal ipv4sa_end   : std_logic;
-		signal ipv4sa_data  : std_logic_vector(ipv4rx_data'range);
+		signal ipv4len_irdy  : std_logic;
+		signal ipv4len_trdy  : std_logic;
+		signal ipv4len_end   : std_logic;
+		signal ipv4len_data  : std_logic_vector(ipv4rx_data'range);
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
@@ -259,10 +259,10 @@ begin
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4atx_frm,
-			so_irdy  => ipv4sa_irdy,
-			so_trdy  => ipv4sa_trdy,
-			so_end   => ipv4sa_end,
-			so_data  => ipv4sa_data);
+			so_irdy  => ipv4len_irdy,
+			so_trdy  => ipv4len_trdy,
+			so_end   => ipv4len_end,
+			so_data  => ipv4len_data);
 
 		ipv4da_irdy <= '0' when ipv4sa_end='0' else ipv4atx_irdy;
 
@@ -284,8 +284,8 @@ begin
 			so_end   => ipv4atx_end,
 			so_data  => ipv4da_data);
 
-		ipv4atx_trdy <= ipv4sa_trdy when ipv4sa_end='0' else ipv4da_trdy;
-		ipv4atx_data <= ipv4sa_data when ipv4sa_end='0' else ipv4da_data;
+		ipv4atx_trdy <= ipv4sa_trdy  when ipv4sa_end='0' else ipv4da_trdy;
+		ipv4atx_data <= ipv4len_data when ipv4sa_end='0' else ipv4da_data;
 
 	end block;
 
