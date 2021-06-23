@@ -39,13 +39,16 @@ entity arpd is
 		arpdtx_req : in  std_logic;
 		arpdtx_rdy : buffer  std_logic;
 
+		sparx_irdy : out std_logic;
+		sparx_trdy : in  std_logic;
+		sparx_end  : in  std_logic;
+		sparx_equ  : in  std_logic;
 
-		spa_frm    : out std_logic;
-		spa_irdy   : out std_logic;
-		spa_trdy   : in  std_logic;
-		spa_end    : in  std_logic;
-		spa_equ    : in  std_logic;
-		spa_data   : in  std_logic_vector;
+		spatx_frm  : out std_logic;
+		spatx_irdy : out std_logic;
+		spatx_trdy : in  std_logic;
+		spatx_end  : in  std_logic;
+		spatx_data : in  std_logic_vector;
 
 		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic;
@@ -62,8 +65,6 @@ architecture def of arpd is
 
 	signal tparx_frm : std_logic;
 	signal tparx_vld : std_logic;
-	signal pa_frm    : std_logic;
-	signal pa_irdy   : std_logic;
 	signal arpd_rdy  : std_logic := '0';
 	signal arpd_req  : std_logic := '0';
 
@@ -77,13 +78,14 @@ begin
 		arp_data => arprx_data,
 		tpa_frm  => tparx_frm);
 
+	sparx_irdy <= tparx_frm and arprx_irdy;
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if arprx_frm='0' then
 				tparx_vld <= '0';
-			elsif spa_end='0' then
-				tparx_vld <= spa_equ;
+			elsif sparx_end='0' then
+				tparx_vld <= sparx_equ;
 			end if;
 		end if;
 	end process;
@@ -93,7 +95,7 @@ begin
 		if rising_edge(mii_clk) then
 			if to_bit(arpd_req xor arpd_rdy)='0' then
 				if arprx_frm='1' then
-					arpd_req <= arpd_rdy xor (tparx_vld and spa_end);
+					arpd_req <= arpd_rdy xor (tparx_vld and sparx_end);
 				elsif to_bit(arpdtx_req xor arpd_rdy)='1' then
 					arpd_req <= not arpd_rdy;
 				end if;
@@ -123,19 +125,16 @@ begin
 		hwsa     => hwsa)
 	port map (
 		mii_clk  => mii_clk,
-		pa_frm   => pa_frm,
-		pa_irdy  => pa_irdy,
-		pa_trdy  => spa_trdy,
-		pa_end   => spa_end,
-		pa_data  => spa_data,
+		pa_frm   => spatx_frm,
+		pa_irdy  => spatx_irdy,
+		pa_trdy  => spatx_trdy,
+		pa_end   => spatx_end,
+		pa_data  => spatx_data,
 
 		arp_frm  => arptx_frm,
 		arp_irdy => arptx_trdy,
 		arp_trdy => arptx_irdy,
 		arp_end  => arptx_end,
 		arp_data => arptx_data);
-
-	spa_frm  <= tparx_frm or pa_frm;
-	spa_irdy <= wirebus(arprx_irdy & pa_irdy, tparx_frm & pa_frm)(0);
 
 end;

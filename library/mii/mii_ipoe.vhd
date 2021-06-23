@@ -122,19 +122,22 @@ architecture def of mii_ipoe is
 	signal hwllctx_end   : std_logic;
 	signal hwllctx_data  : std_logic_vector(pltx_data'range);
 
-	signal ipv4arx_frm   : std_logic;
 	signal ipv4arx_trdy  : std_logic;
 	signal ipv4arx_equ   : std_logic;
 	signal ipv4arx_last  : std_logic;
 	signal ipv4darx_frm  : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
-	signal ipv4sa_frm    : std_logic;
-	signal ipv4sa_trdy   : std_logic;
-	signal ipv4sa_irdy   : std_logic;
-	signal ipv4sa_end    : std_logic;
-	signal ipv4sa_data   : std_logic_vector(miitx_data'range);
-	signal ipv4sa_equ    : std_logic;
+	signal ipv4sarx_trdy : std_logic;
+	signal ipv4sarx_irdy : std_logic;
+	signal ipv4sarx_end  : std_logic;
+	signal ipv4sarx_equ  : std_logic;
+
+	signal ipv4satx_frm  : std_logic;
+	signal ipv4satx_trdy : std_logic;
+	signal ipv4satx_irdy : std_logic;
+	signal ipv4satx_end  : std_logic;
+	signal ipv4satx_data : std_logic_vector(miitx_data'range);
 
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
@@ -248,7 +251,7 @@ begin
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
 
 --		hwdatxi_data <= wirebus(arphwda_data & ipv4hwda_data, dev_gnt);
-		hwtyp_tx  <= wirebus(x"0806" & x"0800", dev_gnt);
+		hwtyp_tx <= wirebus(x"0806" & x"0800", dev_gnt);
 
 	end block;
 
@@ -336,7 +339,6 @@ begin
 	generic map (
 		hwsa       => my_mac)
 	port map (
-
 		mii_clk    => mii_clk,
 
 		arpdtx_req => arpdtx_rdy,
@@ -345,12 +347,16 @@ begin
 		arprx_irdy => miirx_irdy,
 		arprx_data => miirx_data,
 
-		spa_frm  => ipv4sa_frm,
-		spa_irdy => ipv4sa_irdy,
-		spa_trdy => ipv4sa_trdy,
-		spa_end  => ipv4sa_end,
-		spa_equ  => ipv4sa_equ,
-		spa_data => ipv4sa_data,
+		sparx_irdy => ipv4sarx_irdy,
+		sparx_trdy => ipv4sarx_trdy,
+		sparx_end  => ipv4sarx_end,
+		sparx_equ  => ipv4sarx_equ,
+
+		spatx_frm  => ipv4satx_frm,
+		spatx_irdy => ipv4satx_irdy,
+		spatx_trdy => ipv4satx_trdy,
+		spatx_end  => ipv4satx_end,
+		spatx_data => ipv4satx_data,
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
@@ -358,8 +364,6 @@ begin
 		arptx_end  => arptx_end,
 		arptx_data => arptx_data,
 		miitx_end  => miitx_end);
-
-	ipv4arx_frm <= tparx_frm or ipv4darx_frm;
 
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
@@ -370,15 +374,14 @@ begin
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,
 
-		ipv4sa_frm    => ipv4sa_frm,
-		ipv4sa_trdy   => ipv4sa_trdy,
-		ipv4sa_irdy   => ipv4sa_irdy,
-		ipv4sa_end    => ipv4sa_end,
-		ipv4sa_data   => ipv4sa_data,
-		ipv4sa_equ    => ipv4sa_equ,
+		ipv4sarx_irdy => ipv4sarx_irdy,
+		ipv4sarx_trdy => ipv4sarx_trdy,
+		ipv4sarx_end  => ipv4sarx_end,
+		ipv4sarx_equ  => ipv4sarx_equ,
 
-		ipv4darx_frm  => ipv4darx_frm,
-		ipv4darx_irdy => ipv4darx_irdy,
+		ipv4satx_frm  => ipv4satx_frm,
+		ipv4satx_irdy => ipv4satx_irdy,
+		ipv4satx_data => ipv4satx_data,
 
 		plrx_frm      => ipv4plrx_frm,
 		plrx_irdy     => ipv4plrx_irdy,
