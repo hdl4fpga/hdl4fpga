@@ -48,6 +48,12 @@ entity udp is
 		pltx_data   : in  std_logic_vector;
 		pltx_end    : in  std_logic := '0';
 
+		metatx_frm  : buffer std_logic;
+		metallc_full : in std_logic;
+		metaipv4_full : in std_logic;
+		metatx_irdy : buffer std_logic;
+		metatx_trdy : in  std_logic := '0';
+
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
 		udptx_trdy  : in  std_logic;
@@ -154,7 +160,7 @@ begin
 
 	begin
 
-		cksm_irdy <= '1' and udphdr_trdy;
+		cksm_irdy <= udphdr_trdy;
 		udpcksm_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => x"0000",
@@ -193,8 +199,8 @@ begin
 			s   => len_data,
 			co  => tx_co);
 
-		lenrx_irdy <= pltx_irdy;
-		lentx_irdy <= cksm_end and udphdr_trdy;
+		lenrx_irdy <= '0' when metallc_full='0' else pltx_irdy;
+		lentx_irdy <= '0' when cksm_end='0' else udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
@@ -213,8 +219,8 @@ begin
 			so_end  => len_end,
 			so_data => len_data);
 
-		dprx_irdy <= pltx_irdy and len_full;
-		dptx_irdy <= len_end and udphdr_trdy;
+		dprx_irdy <= '0' when metaipv4_full='0' else pltx_irdy;
+		dptx_irdy <= '0' when len_end='0'       else udphdr_trdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
@@ -233,8 +239,8 @@ begin
 			so_end  => dp_end,
 			so_data => dp_data);
 
-		sprx_irdy <= pltx_irdy and dp_full;
-		sptx_irdy <= dp_end and udphdr_trdy;
+		sprx_irdy <= '0' when dp_full='0' else pltx_irdy;
+		sptx_irdy <= '0' when dp_end='0'  else udphdr_trdy;
 		udpsp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)

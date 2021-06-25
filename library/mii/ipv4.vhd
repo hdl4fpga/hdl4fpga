@@ -134,8 +134,8 @@ architecture def of ipv4 is
 	signal ipv4darx_frm     : std_logic;
 	signal ipv4darx_irdy    : std_logic;
 
-	signal ipv4sa_frm     : std_logic;
-	signal ipv4sa_irdy    : std_logic;
+	signal ipv4sa_frm       : std_logic;
+	signal ipv4sa_irdy      : wor std_logic;
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -189,7 +189,7 @@ begin
 		si_equ    => ipv4sarx_equ);
 
 	ipv4sa_frm  <= ipv4atx_frm  or ipv4satx_frm;
-	ipv4sa_irdy <= ipv4atx_irdy or ipv4satx_irdy;
+	ipv4sa_irdy <= ipv4satx_irdy;
 	satx_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_data => reverse(default_ipv4a,8),
@@ -260,7 +260,7 @@ begin
 			end if;
 		end process;
 
-		lenrx_irdy <= '0' when metatx_full='1' metatx_irdy;
+		lentx_irdy <= '0' when metatx_full='1' else metatx_irdy;
 		mux_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
@@ -296,8 +296,8 @@ begin
 			so_end   => ipv4len_end,
 			so_data  => ipv4len_data);
 
+		ipv4sa_irdy <= '0' when ipv4len_end='0'  else ipv4atx_irdy;
 		ipv4da_irdy <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
-
 		da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 32)
@@ -412,7 +412,8 @@ begin
 		pltx_data   => pltx_data,
 
 		udptx_frm   => udptx_frm,
-		metatx_full => 
+		metallc_full => metatx_full,
+		metaipv4_full => metatx_full,
 		udptx_irdy  => udptx_irdy,
 		udptx_trdy  => udptx_trdy,
 		udptx_data  => udptx_data);
