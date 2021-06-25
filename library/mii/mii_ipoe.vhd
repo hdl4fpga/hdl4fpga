@@ -244,7 +244,7 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		ethtx_frm    <= wirebus(arptx_frm  & pltx_frm,  dev_gnt)(0);
+		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt)(0);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt)(0);
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
@@ -256,6 +256,7 @@ begin
 	end block;
 
 	meta_b : block
+
 		signal hwsatx_irdy  : std_logic;
 		signal hwsatx_trdy  : std_logic;
 		signal hwsatx_end   : std_logic;
@@ -264,12 +265,14 @@ begin
 		signal hwdatx_irdy  : std_logic;
 		signal hwdatx_trdy  : std_logic;
 		signal hwdatx_end   : std_logic;
+		signal hwdatx_full  : std_logic;
 		signal hwdatx_data  : std_logic_vector(pltx_data'range);
 
-		signal hwtyptx_irdy  : std_logic;
-		signal hwtyptx_trdy  : std_logic;
-		signal hwtyptx_end   : std_logic;
-		signal hwtyptx_data  : std_logic_vector(pltx_data'range);
+		signal hwtyptx_irdy : std_logic;
+		signal hwtyptx_trdy : std_logic;
+		signal hwtyptx_end  : std_logic;
+		signal hwtyptx_data : std_logic_vector(pltx_data'range);
+
 	begin
 
 		hwdatx_irdy <= ethtx_irdy;
@@ -282,7 +285,7 @@ begin
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
 			si_trdy  => open,
-			si_full  => open,
+			si_full  => meta_full,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -394,6 +397,7 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
+		metatx_full   => metatx_full,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

@@ -32,8 +32,6 @@ use hdl4fpga.ipoepkg.all;
 entity icmp is
 	port (
 		mii_clk     : in  std_logic;
-		metarx_frm  : in  std_logic := '0';
-		metarx_irdy : in  std_logic := '0';
 
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
