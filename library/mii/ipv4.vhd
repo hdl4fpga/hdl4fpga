@@ -65,10 +65,10 @@ entity ipv4 is
 		pltx_trdy      : out std_logic;
 		pltx_data      : in  std_logic_vector;
 
-		metatx_frm     : buffer std_logic;
-		metatx_irdy    : buffer std_logic;
-		metatx_trdy    : in  std_logic := '0';
-		metatx_full    : in  std_logic;
+		dlltx_frm      : buffer std_logic;
+		dlltx_irdy     : buffer std_logic;
+		dlltx_trdy     : in  std_logic := '0';
+		dlltx_full     : in  std_logic;
 
 		ipv4tx_frm     : buffer std_logic := '0';
 		ipv4tx_irdy    : out std_logic;
@@ -260,12 +260,12 @@ begin
 			end if;
 		end process;
 
-		lentx_irdy <= '0' when metatx_full='1' else metatx_irdy;
+		lentx_irdy <= '0' when dll_full='1' else dll_irdy;
 		mux_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
 			sio_clk  => mii_clk,
-			sio_frm  => metatx_frm,
+			sio_frm  => dll_frm,
 			sio_irdy => lentx_irdy,
 			sio_trdy => open,
 			so_data  => crtn_data);
@@ -283,7 +283,7 @@ begin
 			mem_size => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => metatx_frm,
+			si_frm   => dll_frm,
 			si_irdy  => lentx_irdy,
 			si_trdy  => open,
 			si_full  => lentx_full,
@@ -412,8 +412,8 @@ begin
 		pltx_data   => pltx_data,
 
 		udptx_frm   => udptx_frm,
-		metallc_full => metatx_full,
-		metaipv4_full => metatx_full,
+		dll_full    => dll_full,
+		net_full    => net_full,
 		udptx_irdy  => udptx_irdy,
 		udptx_trdy  => udptx_trdy,
 		udptx_data  => udptx_data);
