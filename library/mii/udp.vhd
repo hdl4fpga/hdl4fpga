@@ -49,10 +49,10 @@ entity udp is
 		pltx_end    : in  std_logic := '0';
 
 		metatx_frm  : buffer std_logic;
-		metallc_full : in std_logic;
-		metaipv4_full : in std_logic;
 		metatx_irdy : buffer std_logic;
 		metatx_trdy : in  std_logic := '0';
+		dlltx_full  : in std_logic;
+		nettx_full  : in std_logic;
 
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
@@ -199,7 +199,7 @@ begin
 			s   => len_data,
 			co  => tx_co);
 
-		lenrx_irdy <= '0' when metallc_full='0' else pltx_irdy;
+		lenrx_irdy <= '0' when dlltx_full='0' else pltx_irdy;
 		lentx_irdy <= '0' when cksm_end='0' else udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
@@ -219,8 +219,8 @@ begin
 			so_end  => len_end,
 			so_data => len_data);
 
-		dprx_irdy <= '0' when metaipv4_full='0' else pltx_irdy;
-		dptx_irdy <= '0' when len_end='0'       else udphdr_trdy;
+		dprx_irdy <= '0' when nettx_full='0' else pltx_irdy;
+		dptx_irdy <= '0' when len_end='0'    else udphdr_trdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)

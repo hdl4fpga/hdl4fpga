@@ -55,7 +55,7 @@ architecture def of arp_tx is
 	constant sha : std_logic_vector := hwsa;
 	constant tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
 
-	signal mux_data    : std_logic_vector(0 to summation(arp4_frame)-1);
+	signal mux_data    : std_logic_vector(0 to summation(arp4_frame)-(arp4_frame(arp_spa)+arp4_frame(arp_tpa))-1);
 	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 	signal arpmux_irdy : std_logic;
 

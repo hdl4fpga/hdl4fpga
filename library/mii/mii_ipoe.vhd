@@ -142,7 +142,7 @@ architecture def of mii_ipoe is
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
 
-	signal metatx_full   : std_logic;
+	signal dlltx_full   : std_logic;
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -286,7 +286,7 @@ begin
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
 			si_trdy  => open,
-			si_full  => metatx_full,
+			si_full  => dlltx_full,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -398,7 +398,7 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
-		metatx_full   => metatx_full,
+		dlltx_full    => dlltx_full,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

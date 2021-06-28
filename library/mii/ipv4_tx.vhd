@@ -70,7 +70,7 @@ architecture def of ipv4_tx is
 	signal ipv4shdr_trdy : std_logic;
 	signal ipv4shdr_end  : std_logic;
 	signal ipv4shdr_mux  : std_logic_vector(0 to summation(
-		ipv4hdr_frame(hdl4fpga.ipoepkg.ipv4_verihl to hdl4fpga.ipoepkg.ipv4_proto))-1);
+		ipv4hdr_frame(ipv4_verihl to ipv4_ttl))-ipv4hdr_frame(ipv4_len)-1);
 	signal ipv4shdr_data : std_logic_vector(ipv4_data'range);
 	signal ipv4hdr_data  : std_logic_vector(ipv4_data'range);
 
