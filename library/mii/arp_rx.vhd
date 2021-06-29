@@ -51,7 +51,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if arp_frm='0' then
-				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+				cntr := to_unsigned(summation(arp4_frame)-1, cntr'length);
 			elsif cntr(0)='0' and arp_irdy='1' then
 				cntr := cntr - 1;
 			end if;

@@ -222,7 +222,7 @@ begin
 			end if;
 		end if;
 	end process;
-	arprx_frm <= miirx_frm and arprx_vld;
+	arprx_frm <= miirx_frm and arprx_vld and hwdarx_vld;
 
 	process (mii_clk)
 	begin

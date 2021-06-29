@@ -190,7 +190,7 @@ begin
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sarx_equ);
 
-	ipv4sa_frm  <= ipv4atx_frm  or ipv4satx_frm;
+	ipv4sa_frm  <= ipv4atx_frm;
 	ipv4sa_irdy <= ipv4satx_irdy;
 	satx_e : entity hdl4fpga.sio_ram
 	generic map (
