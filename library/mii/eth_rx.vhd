@@ -42,10 +42,13 @@ entity eth_rx is
 		eth_pre    : buffer std_logic;
 		hwda_irdy  : buffer std_logic;
 		hwda_trdy  : in  std_logic := '1';
+		hwda_end   : in  std_logic := '1';
 		hwsa_irdy  : buffer std_logic;
 		hwsa_trdy  : in  std_logic := '1';
+		hwsa_end   : in  std_logic := '1';
 		hwtyp_irdy : buffer std_logic;
 		hwtyp_trdy : in  std_logic := '1';
+		hwtyp_end  : in  std_logic := '1';
 		pl_irdy    : out std_logic;
 		pl_trdy    : in  std_logic := '1';
 
@@ -80,7 +83,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if eth_pre='0' then
-				cntr := to_unsigned(summation(eth_frame)-1, cntr'length);
+				cntr := to_unsigned(summation(eth_frame)/mii_data'length-1, cntr'length);
 			elsif cntr(0)='0' and mii_irdy='1' and mii_trdy='1' then
 				cntr := cntr - 1;
 			end if;
@@ -118,6 +121,6 @@ begin
 	end process;
 	crc_equ <= setif(crc_rem=x"38fb2284");
 
-	mii_trdy <= wirebus(hwda_trdy & hwsa_trdy & hwtyp_trdy & pl_trdy, hwda_frm & hwsa_frm & hwtyp_frm & pl_frm)(0);
+	mii_trdy <= primux(hwda_trdy & hwsa_trdy & hwtyp_trdy & pl_trdy, hwda_frm & hwsa_frm & hwtyp_frm & pl_frm, "1")(0);
 end;
 

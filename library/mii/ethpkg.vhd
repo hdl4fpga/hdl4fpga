@@ -161,7 +161,7 @@ package body ethpkg is
 	function reverse (
 		constant arg : natural_vector)
 		return natural_vector is
-		variable retval : natural_vector(arg'range);
+		variable retval : natural_vector(arg'reverse_range);
 	begin
 		for i in arg'reverse_range loop
 			retval(i) := arg(i);

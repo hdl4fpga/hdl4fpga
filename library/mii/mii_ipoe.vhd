@@ -71,6 +71,7 @@ architecture def of mii_ipoe is
 	signal bcstrx_equ    : std_logic;
 	signal hwdarx_irdy   : std_logic;
 	signal hwdarx_last   : std_logic;
+	signal hwdarx_end    : std_logic;
 	signal hwdarx_equ    : std_logic;
 	signal hwdarx_vld    : std_logic;
 	signal hwsarx_irdy   : std_logic;
@@ -154,6 +155,7 @@ begin
 		mii_data   => miirx_data,
 
 		hwda_irdy  => hwdarx_irdy,
+		hwda_end   => hwdarx_end,
 		hwsa_irdy  => hwsarx_irdy,
 		hwtyp_irdy => hwtyprx_irdy,
 		pl_irdy    => ethplrx_irdy,
@@ -181,6 +183,7 @@ begin
         sio_trdy  => open,
         si_data   => miirx_data,
 		so_last   => hwdarx_last,
+		so_end    => hwdarx_end,
 		so_equ(0) => hwdarx_equ);
 
 	process (mii_clk)
@@ -304,6 +307,7 @@ begin
 			sio_frm  => ethtx_frm,
 			sio_irdy => hwsatx_irdy,
 			sio_trdy => hwsatx_trdy,
+			so_end   => hwsatx_end,
 			so_data  => hwsatx_data);
 
 		hwtyptx_irdy <= '0' when hwsatx_end='0' else ethtx_irdy;

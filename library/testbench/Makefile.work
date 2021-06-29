@@ -190,7 +190,7 @@ $(WORK__testbench__ulx3s_ethtb) : ../../ULX3S/testbench/eth_tb.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002  ../../ULX3S/testbench/eth_tb.vhd
+	$(VCOM) -2002 ../../ULX3S/testbench/eth_tb.vhd
 
 $(WORK__testbench__ulx3s_serdebug) : ../../ULX3S/testbench/ser_debug.vhd \
 		$(HDL4FPGA__uart_tx) \
@@ -257,7 +257,7 @@ $(WORK__ulx3s__eth_tb) : ../../ULX3S/demos/eth_tb.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../ULX3S/demos/eth_tb.vhd
+	$(VCOM) -2002 ../../ULX3S/demos/eth_tb.vhd
 
 $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \

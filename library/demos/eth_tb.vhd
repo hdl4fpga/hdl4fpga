@@ -103,7 +103,7 @@ architecture def of eth_tb is
 	signal eth_txd    : std_logic_vector(mii_txd'range);
 
 	signal pl_frm     : std_logic;
-	signal pl_trdy     : std_logic;
+	signal pl_trdy    : std_logic;
 	signal pl_end     : std_logic;
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
@@ -118,6 +118,12 @@ architecture def of eth_tb is
 	signal miitx_trdy : std_logic;
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(pl_data'range);
+
+	signal llc_data   : std_logic_vector(0 to 2*48+16-1);
+	signal hwllc_irdy : std_logic;
+	signal hwllc_trdy : std_logic;
+	signal hwllc_end  : std_logic;
+	signal hwllc_data : std_logic_vector(pl_data'range);
 
 begin
 
@@ -141,7 +147,7 @@ begin
 
 	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
 	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
-	eth_llc <= reverse(wirebus(std_logic_vector'(x"0806" & x"0800"), mii_frm1 & mii_frm2),8); -- Qualified expression required by Latticesemi Diamond
+	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800"), mii_frm1 & mii_frm2); -- Qualified expression required by Latticesemi Diamond
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';
@@ -160,20 +166,37 @@ begin
 		pl_frm <= frm;
 	end process;
 
---	ethtx_e : entity hdl4fpga.eth_tx
---	port map (
---		mii_clk  => mii_txc,
---
---		pl_frm   => pl_frm,
---		pl_trdy  => pl_trdy,
---		pl_end   => pl_end,
---		pl_data  => pl_data,
---
---		mii_frm  => miirx_frm,
---		mii_irdy => miirx_irdy,
---		mii_trdy => '1', --miirx_trdy,
---		mii_end  => miirx_end,
---		mii_data => miirx_data);
+	hwllc_irdy <= '1';
+	llc_data <= reverse(x"00_40_00_01_02_03" & x"ff_ff_ff_ff_ff_ff" & eth_llc,8);
+	hwsa_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data => llc_data,
+		sio_clk  => mii_txc,
+		sio_frm  => pl_frm,
+		sio_irdy => hwllc_irdy,
+		sio_trdy => hwllc_trdy,
+		so_end   => hwllc_end,
+		so_data  => hwllc_data);
+
+	ethtx_e : entity hdl4fpga.eth_tx
+	port map (
+		mii_clk  => mii_txc,
+
+		pl_frm   => pl_frm,
+		pl_trdy  => pl_trdy,
+		pl_end   => pl_end,
+		pl_data  => pl_data,
+
+		hwllc_irdy => hwllc_irdy,
+		hwllc_trdy => open,
+		hwllc_end  => hwllc_end,
+		hwllc_data => hwllc_data,
+
+		mii_frm  => miirx_frm,
+		mii_irdy => miirx_irdy,
+		mii_trdy => '1', --miirx_trdy,
+		mii_end  => miirx_end,
+		mii_data => miirx_data);
 
 	mii_txen <= miirx_frm and not miirx_end;
 	mii_txd  <= miirx_data;

@@ -42,8 +42,8 @@ entity eth_tx is
 
 		hwllc_irdy : buffer std_logic;
 		hwllc_trdy : in std_logic := '1';
-		hwllc_end  : in  std_logic;
-		hwllc_data : in  std_logic_vector;
+		hwllc_end  : in std_logic;
+		hwllc_data : in std_logic_vector;
 
 		mii_frm  : buffer std_logic;
 		mii_irdy : buffer std_logic;
