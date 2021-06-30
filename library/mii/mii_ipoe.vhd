@@ -129,8 +129,9 @@ architecture def of mii_ipoe is
 	signal ipv4darx_frm  : std_logic;
 	signal ipv4darx_irdy : std_logic;
 
-	signal ipv4sarx_trdy : std_logic;
+	signal ipv4sarx_frm  : std_logic;
 	signal ipv4sarx_irdy : std_logic;
+	signal ipv4sarx_trdy : std_logic;
 	signal ipv4sarx_end  : std_logic;
 	signal ipv4sarx_equ  : std_logic;
 
@@ -318,11 +319,17 @@ begin
 			sio_frm  => ethtx_frm,
 			sio_irdy => hwtyptx_irdy,
 			sio_trdy => hwtyptx_trdy,
+			so_end   => hwllctx_end,
 			so_data  => hwtyptx_data);
+
+		hwllctx_data <= primux(
+			hwdatx_data    & hwsatx_data,
+			not hwdatx_end & not hwsatx_end,
+			hwtyptx_data);
 
 	end block;
 
-	--ethpltx_irdy <= ethtx_irdy and
+	ethpltx_irdy <= ethtx_irdy;
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk    => mii_clk,
@@ -382,6 +389,7 @@ begin
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,
 
+		ipv4sarx_frm  => miirx_frm,
 		ipv4sarx_irdy => ipv4sarx_irdy,
 		ipv4sarx_trdy => ipv4sarx_trdy,
 		ipv4sarx_end  => ipv4sarx_end,

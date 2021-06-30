@@ -79,14 +79,14 @@ begin
 		frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa));
 	pa_irdy <= pa_frm and arp_irdy;
 	
-	mux_data <=
+	mux_data <= reverse(
 		x"0001"          & -- htype 
 		x"0800"          & -- ptype 
 		x"06"            & -- hlen  
 		x"04"            & -- plen  
 		x"0002"          & -- oper  
 	    reverse(sha,8)   & -- Sender Hardware Address
-		reverse(tha,8);    -- Target Hardware Address
+		reverse(tha,8), 8);    -- Target Hardware Address
 
 	arpmux_irdy <= '0' when pa_frm='1' else arp_irdy;
 	arpmux_e : entity hdl4fpga.sio_mux

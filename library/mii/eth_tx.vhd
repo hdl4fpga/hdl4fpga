@@ -81,8 +81,8 @@ begin
 
 	hwllc_irdy <= mii_trdy and pre_end;
 
-	pl_trdy <= hwllc_end and mii_trdy;
-	fcs_data <= wirebus(hwllc_data & pl_data, not hwllc_end & hwllc_end);
+	pl_trdy  <= hwllc_end and mii_trdy;
+	fcs_data <= primux(hwllc_data, (0 => not hwllc_end), pl_data);
 	fcs_irdy <= wirebus(hwllc_irdy & pl_irdy & mii_trdy, 
 		not hwllc_end              &
 		(not pl_end and hwllc_end) & 
@@ -121,11 +121,10 @@ begin
 		not hwllc_end & 
 		not pl_end  & 
 		('1' and pl_end))(0);
-	mii_data <= wirebus(pre_data & hwllc_data & pl_data & fcs_crc(mii_data'range), 
-		not  pre_end              & 
-		(not hwllc_end and pre_end) & 
-		(not pl_end  and hwllc_end) & 
-		(not fcs_end and pl_end));
+	mii_data <= primux(
+		pre_data     & hwllc_data    & pl_data,
+		not  pre_end & not hwllc_end & not pl_end,
+		fcs_crc(mii_data'range));
 	mii_end <= fcs_end;
 
 end;

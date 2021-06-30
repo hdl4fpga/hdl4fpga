@@ -42,6 +42,7 @@ entity ipv4 is
 		ipv4rx_data    : in  std_logic_vector;
 		ipv4arx_vld    : buffer std_logic;
 
+		ipv4sarx_frm   : in  std_logic;
 		ipv4sarx_irdy  : in  std_logic;
 		ipv4sarx_trdy  : buffer std_logic;
 		ipv4sarx_end   : out std_logic;
@@ -138,6 +139,10 @@ architecture def of ipv4 is
 	signal ipv4sa_irdy      : wor std_logic;
 
 	signal nettx_full       : std_logic;
+
+	signal ipv4sack_frm     : std_logic;
+	signal ipv4sack_irdy    : std_logic;
+
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -159,21 +164,24 @@ begin
 		pl_frm         => ipv4plrx_frm,
 		pl_irdy        => ipv4plrx_irdy);
 
+	ipv4sack_frm  <= ipv4sarx_frm;
+	ipv4sack_irdy <= ipv4rxsa_irdy or ipv4sarx_irdy;
+
 	sarx_e : entity hdl4fpga.sio_ram
 	generic map (
-		mem_data => reverse(default_ipv4a,8),
-		mem_size => 32)
+		mem_data   => reverse(default_ipv4a,8),
+		mem_length => 32)
 	port map (
 		si_clk  => mii_clk,
 		si_frm  => pltx_frm,
-		si_irdy => '-',
+		si_irdy => '0',
 		si_trdy => open,
 		si_full => open,
 		si_data => pltx_data,
 
 		so_clk  => mii_clk,
-		so_frm  => ipv4rx_frm,
-		so_irdy => ipv4sarx_irdy,
+		so_frm  => ipv4sack_frm,
+		so_irdy => ipv4sack_irdy,
 		so_trdy => ipv4sarx_trdy,
 		so_end  => ipv4sarx_end,
 		so_data => ipv4sarx_data);
@@ -181,7 +189,7 @@ begin
 	sarxcmp_e : entity hdl4fpga.sio_cmp
     port map (
         si_clk    => mii_clk,
-        si_frm    => ipv4rx_frm,
+        si_frm    => ipv4sarx_frm,
         si1_irdy  => ipv4sarx_irdy,
         si1_trdy  => ipv4sarx_trdy,
         si1_data  => ipv4sarx_data,
