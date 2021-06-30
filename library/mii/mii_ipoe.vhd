@@ -280,7 +280,7 @@ begin
 
 	begin
 
-		hwdatx_irdy <= ethtx_irdy;
+		hwdatx_irdy <= hwllctx_irdy;
 		hwda_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => my_mac'length,
@@ -300,7 +300,7 @@ begin
 			so_end   => hwdatx_end,
 			so_data  => hwdatx_data);
 
-		hwsatx_irdy <= '0' when hwdatx_end='0' else ethtx_irdy;
+		hwsatx_irdy <= '0' when hwdatx_end='0' else hwllctx_irdy;
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => my_mac,
@@ -311,7 +311,7 @@ begin
 			so_end   => hwsatx_end,
 			so_data  => hwsatx_data);
 
-		hwtyptx_irdy <= '0' when hwsatx_end='0' else ethtx_irdy;
+		hwtyptx_irdy <= '0' when hwsatx_end='0' else hwllctx_irdy;
 		hwtyp_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => hwtyp_tx,
