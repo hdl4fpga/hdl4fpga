@@ -64,12 +64,12 @@ end;
 
 architecture def of arpd is
 
-	signal tparx_frm : std_logic;
-	signal tparx_vld : std_logic;
-	signal arpd_rdy  : std_logic := '0';
-	signal arpd_req  : std_logic := '0';
-	signal arptx_irdy : std_logic := '0';
-	signal arptx_trdy : std_logic := '0';
+	signal tparx_frm  : std_logic;
+	signal tparx_vld  : std_logic;
+	signal arpd_rdy   : std_logic := '0';
+	signal arpd_req   : std_logic := '0';
+	signal arptx_irdy : std_logic;
+	signal arptx_trdy : std_logic;
 	signal arptx_data : std_logic_vector(arpdtx_data'range);
 
 begin

@@ -41,7 +41,6 @@ entity dhcpc_dscb is
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
 		dhcpdscb_end  : out std_logic;
-		dhcpdscb_len  : out std_logic_vector(16-1 downto 0);
 		dhcpdscb_data : out std_logic_vector);
 end;
 
@@ -100,7 +99,7 @@ begin
 		end if;
 	end process;
 
-	dhcpdscb_len <= std_logic_vector(to_unsigned(payload_size+8, dhcpdscb_len'length));
+	--dhcpdscb_len <= std_logic_vector(to_unsigned(payload_size+8, dhcpdscb_len'length));
 
 	dhcppkt_irdy <= dhcpdscb_frm and dhcpdscb_irdy and frame_decode(dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, (
 		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 

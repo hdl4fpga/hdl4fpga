@@ -30,20 +30,20 @@ use hdl4fpga.ethpkg.all;
 
 entity dhcpc is
 	port (
-		mii_clk     : in  std_logic;
-		dhcprx_frm  : in  std_logic;
-		dhcprx_irdy  : in  std_logic;
-		dhcprx_data  : in  std_logic_vector;
+		mii_clk       : in  std_logic;
+		dhcprx_frm    : in  std_logic;
+		dhcprx_irdy   : in  std_logic;
+		dhcprx_data   : in  std_logic_vector;
 
-		dhcpc_req   : in  std_logic;
-		dhcpc_rdy   : buffer std_logic;
+		dhcpc_req     : in  std_logic;
+		dhcpc_rdy     : buffer std_logic;
 
-		dhcptx_frm  : buffer std_logic;
-		dhcptx_irdy : buffer std_logic;
-		dhcptx_trdy : in  std_logic := '1';
-		dhcptx_end  : buffer std_logic;
-		dhcptx_len  : out std_logic_vector(0 to 16-1);
-		dhcptx_data : out std_logic_vector);
+		dhcpctx_frm   : buffer std_logic;
+		nettx_full    : in std_logic;
+		dhcpcdtx_irdy : buffer std_logic;
+		dhcpcdtx_trdy : in  std_logic := '1';
+		dhcpcdtx_end  : buffer std_logic;
+		dhcpcdtx_data : out std_logic_vector);
 end;
 
 architecture def of dhcpc is
@@ -52,11 +52,14 @@ architecture def of dhcpc is
 	signal dhcpchaddr6_irdy: std_logic;
 	signal dhcpyia_irdy : std_logic;
 
+	signal dhcpctx_irdy : std_logic;
+	signal dhcpctx_trdy : std_logic;
+	signal dhcpctx_data : std_logic_vector(arpdtx_data'range);
 begin
 
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
 	port map (
-		mii_clk       => mii_clk,
+		mii_clk      => mii_clk,
 		dhcp_frm     => dhcprx_frm,
 		dhcp_irdy    => dhcprx_irdy,
 		dhcp_data    => dhcprx_data,
@@ -80,11 +83,13 @@ begin
 	dhcpdscb_e : entity hdl4fpga.dhcpc_dscb
 	port map (
 		mii_clk       => mii_clk,
-		dhcpdscb_frm  => dhcptx_frm,
-		dhcpdscb_irdy => dhcptx_trdy,
-		dhcpdscb_trdy => dhcptx_irdy,
-		dhcpdscb_end  => dhcptx_end,
-		dhcpdscb_len  => dhcptx_len,
-		dhcpdscb_data => dhcptx_data);
+		dhcpdscb_frm  => dhcpcdtx_frm,
+		dhcpdscb_irdy => dhcpctx_trdy,
+		dhcpdscb_trdy => dhcpctx_irdy,
+		dhcpdscb_end  => dhcpcdtx_end,
+		dhcpdscb_data => dhcpctx_data);
 
+	dhcpcdtx_irdy <= '1' when nettx_full='0' else dhcpctx_trdy;
+	dhcpctx_irdy  <= '0' when nettx_full='0' else dhcpcdtx_trdy;
+	dhcpcdtx_data <= (dhcpcdtx_data'range => '1') when nettx_full='0' else dhcpctx_data;
 end;
