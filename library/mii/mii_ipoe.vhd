@@ -144,7 +144,8 @@ architecture def of mii_ipoe is
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
 
-	signal dlltx_full   : std_logic;
+	signal dlltx_full    : wor std_logic;
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -283,8 +284,7 @@ begin
 		hwdatx_irdy <= hwllctx_irdy;
 		hwda_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_length => my_mac'length,
-			mem_data => my_mac)
+			mem_length => my_mac'length)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ethtx_frm,
@@ -373,11 +373,12 @@ begin
 		spatx_end  => ipv4satx_end,
 		spatx_data => ipv4satx_data,
 
-		arptx_frm  => arptx_frm,
-		arptx_irdy => arptx_irdy,
-		arptx_trdy => arptx_trdy,
-		arptx_end  => arptx_end,
-		arptx_data => arptx_data,
+		arpdtx_frm  => arptx_frm,
+		dlltx_full  => dlltx_full,
+		arpdtx_irdy => arptx_irdy,
+		arpdtx_trdy => arptx_trdy,
+		arpdtx_end  => arptx_end,
+		arpdtx_data => arptx_data,
 		miitx_end  => miitx_end);
 
 	ipv4_e : entity hdl4fpga.ipv4

@@ -37,7 +37,7 @@ entity sio_ram is
 		si_clk   : in  std_logic;
         si_frm   : in  std_logic;
         si_irdy  : in  std_logic;
-        si_trdy  : out std_logic;
+        si_trdy  : out std_logic := '1';
 		si_full  : out std_logic;
         si_data  : in  std_logic_vector;
 
@@ -93,7 +93,7 @@ begin
 	end process;
 	si_full <= 
 		'0' when mem_length=0 else 
-		'1' when wr_addr=mem_length else
+		'1' when wr_addr>=(mem_length+si_data'length-1)/si_data'length else
 		'0';
 
 	mem_e : entity hdl4fpga.dpram 

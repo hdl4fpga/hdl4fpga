@@ -50,11 +50,12 @@ entity arpd is
 		spatx_end  : in  std_logic;
 		spatx_data : in  std_logic_vector;
 
-		arptx_frm  : buffer std_logic := '0';
-		arptx_irdy : out std_logic;
-		arptx_trdy : in  std_logic;
-		arptx_end  : out std_logic;
-		arptx_data : out std_logic_vector;
+		arpdtx_frm  : buffer std_logic := '0';
+		dlltx_full  : in  std_logic;
+		arpdtx_irdy : out std_logic;
+		arpdtx_trdy : in  std_logic;
+		arpdtx_end  : out std_logic;
+		arpdtx_data : out std_logic_vector;
 		miitx_end  : in  std_logic;
 
 		tp         : out std_logic_vector(1 to 32));
@@ -67,6 +68,9 @@ architecture def of arpd is
 	signal tparx_vld : std_logic;
 	signal arpd_rdy  : std_logic := '0';
 	signal arpd_req  : std_logic := '0';
+	signal arptx_irdy : std_logic := '0';
+	signal arptx_trdy : std_logic := '0';
+	signal arptx_data : std_logic_vector(arpdtx_data'range);
 
 begin
 
@@ -107,15 +111,15 @@ begin
 	process (miitx_end, mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if arptx_frm='1' then
-				if arptx_trdy='1' then
+			if arpdtx_frm='1' then
+				if arpdtx_trdy='1' then
 					if miitx_end='1' then
-						arptx_frm <= '0';
+						arpdtx_frm <= '0';
 						arpd_rdy  <= arpd_req;
 					end if;
 				end if;
 			elsif (arpd_req xor arpd_rdy)='1' then
-				arptx_frm <= '1';
+				arpdtx_frm <= '1';
 			end if;
 		end if;
 	end process;
@@ -131,10 +135,12 @@ begin
 		pa_end   => spatx_end,
 		pa_data  => spatx_data,
 
-		arp_frm  => arptx_frm,
-		arp_irdy => arptx_trdy,
-		arp_trdy => arptx_irdy,
-		arp_end  => arptx_end,
+		arp_frm  => arpdtx_frm,
+		arp_irdy => arptx_irdy,
+		arp_trdy => arptx_trdy,
+		arp_end  => arpdtx_end,
 		arp_data => arptx_data);
-
+	arpdtx_irdy <= '1' when dlltx_full='0' else arptx_trdy;
+	arptx_irdy  <= '0' when dlltx_full='0' else arpdtx_trdy;
+	arpdtx_data <= (arpdtx_data'range => '1') when dlltx_full='0' else arptx_data;
 end;
