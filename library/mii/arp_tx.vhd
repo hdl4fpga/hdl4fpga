@@ -58,6 +58,7 @@ architecture def of arp_tx is
 	signal mux_data    : std_logic_vector(0 to summation(arp4_frame)-(arp4_frame(arp_spa)+arp4_frame(arp_tpa))-1);
 	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 	signal arpmux_irdy : std_logic;
+	signal arpmux_data : std_logic_vector(arp_data'range);
 
 begin
 
@@ -66,7 +67,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if arp_frm='0' then
-				cntr := to_unsigned(summation(arp4_frame)-1, cntr'length);
+				cntr := to_unsigned(summation(arp4_frame)/arp_data'length-1, cntr'length);
 			elsif cntr(0)='0' and arp_irdy='1' then
 				cntr := cntr - 1;
 			end if;
@@ -96,7 +97,8 @@ begin
 		sio_frm  => arp_frm,
 		sio_irdy => arpmux_irdy,
         sio_trdy => arp_trdy,
-        so_end   => arp_end,
-        so_data  => arp_data);
+        so_data  => arpmux_data);
+	arp_data <= arpmux_data when pa_frm='0' else pa_data;
+	arp_end  <= frm_ptr(0);
 
 end;

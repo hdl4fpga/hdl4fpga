@@ -198,12 +198,12 @@ begin
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sarx_equ);
 
-	ipv4sa_frm  <= ipv4atx_frm;
+	ipv4sa_frm  <= ipv4satx_frm  or  ipv4atx_frm;
 	ipv4sa_irdy <= ipv4satx_irdy;
 	satx_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_data => reverse(default_ipv4a,8),
-		mem_size => 32)
+		mem_length => 32)
 	port map (
 		si_clk  => mii_clk,
 		si_frm  => pltx_frm,

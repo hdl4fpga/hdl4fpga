@@ -286,7 +286,7 @@ begin
 			uart_txd & uart_rxd, (uart_txen and enatx) & (not (uart_txen and enatx) and (uart_rxdv and enarx)));
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link=io_ipoe generate
 		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
 		alias rmii_tx_en : std_logic is gn(10);
 		alias rmii_tx0   : std_logic is gp(10);
