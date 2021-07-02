@@ -38,6 +38,11 @@ entity dhcpc_dscb is
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
+		udplentx_irdy : in  std_logic;
+		udplentx_trdy : out std_logic;
+		udplentx_end  : out std_logic;
+		udplentx_data : out std_logic_vector;
+
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
 		dhcpdscb_end  : out std_logic;
@@ -99,7 +104,15 @@ begin
 		end if;
 	end process;
 
-	--dhcpdscb_len <= std_logic_vector(to_unsigned(payload_size+8, dhcpdscb_len'length));
+	dhcpudplen_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data => std_logic_vector(to_unsigned(payload_size+8, 16)),
+		sio_clk  => mii_clk,
+		sio_frm  => dhcpdscb_frm,
+		sio_irdy => udplentx_irdy,
+		sio_trdy => udplentx_trdy,
+		so_end   => udplentx_end,
+		so_data  => udplentx_data);
 
 	dhcppkt_irdy <= dhcpdscb_frm and dhcpdscb_irdy and frame_decode(dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, (
 		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 

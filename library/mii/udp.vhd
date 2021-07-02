@@ -94,6 +94,11 @@ architecture def of udp is
 	signal udppltx_len    : std_logic_vector(0 to 16-1);
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
+	signal udplentx_irdy  : std_logic;
+	signal udplentx_trdy  : std_logic;
+	signal udplentx_end   : std_logic;
+	signal udplentx_data  : std_logic_vector(udptx_data'range);
+
 begin
 
 	udp_rx_e : entity hdl4fpga.udp_rx
@@ -317,11 +322,16 @@ begin
 		dhcpc_req   => '0',
 		dhcpc_rdy   => open,
 
-		dhcptx_frm  => dhcpctx_frm,
-		dhcptx_irdy => dhcpctx_irdy,
-		dhcptx_trdy => dhcpctx_trdy,
-		dhcptx_end  => dhcpctx_end,
-		dhcptx_len  => dhcpctx_len,
-		dhcptx_data => dhcpctx_data);
+		dhcpcdtx_frm  => dhcpctx_frm,
+		dlltx_full    => dlltx_full,
+		udplentx_irdy => dhcplentx_irdy,
+		udplentx_trdy => dhcplentx_trdy,
+		udplentx_end  => dhcplentx_end ,
+		udplentx_data => dhcplentx_data,
+
+		dhcpcdtx_irdy => dhcpctx_irdy,
+		dhcpcdtx_trdy => dhcpctx_trdy,
+		dhcpcdtx_end  => dhcpctx_end,
+		dhcpcdtx_data => dhcpctx_data);
 
 end;

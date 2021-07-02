@@ -38,8 +38,13 @@ entity dhcpc is
 		dhcpc_req     : in  std_logic;
 		dhcpc_rdy     : buffer std_logic;
 
-		dhcpctx_frm   : buffer std_logic;
-		nettx_full    : in std_logic;
+		dhcpcdtx_frm  : buffer std_logic;
+		dlltx_full    : in std_logic;
+		udplentx_irdy : in  std_logic;
+		udplentx_trdy : out std_logic;
+		udplentx_end  : out std_logic;
+		udplentx_data : out std_logic_vector;
+
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic := '1';
 		dhcpcdtx_end  : buffer std_logic;
@@ -54,7 +59,8 @@ architecture def of dhcpc is
 
 	signal dhcpctx_irdy : std_logic;
 	signal dhcpctx_trdy : std_logic;
-	signal dhcpctx_data : std_logic_vector(arpdtx_data'range);
+	signal dhcpctx_data : std_logic_vector(dhcpcdtx_data'range);
+
 begin
 
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
@@ -84,12 +90,16 @@ begin
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
+		udplentx_irdy => udplentx_irdy,
+		udplentx_trdy => udplentx_trdy,
+		udplentx_end  => udplentx_end,
+		udplentx_data => udplentx_data,
 		dhcpdscb_irdy => dhcpctx_trdy,
 		dhcpdscb_trdy => dhcpctx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpctx_data);
 
-	dhcpcdtx_irdy <= '1' when nettx_full='0' else dhcpctx_trdy;
+	dhcpcdtx_irdy <= '1' when dlltx_full='0' else dhcpctx_trdy;
 	dhcpctx_irdy  <= '0' when nettx_full='0' else dhcpcdtx_trdy;
 	dhcpcdtx_data <= (dhcpcdtx_data'range => '1') when nettx_full='0' else dhcpctx_data;
 end;
