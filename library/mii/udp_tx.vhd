@@ -39,7 +39,6 @@ entity udp_tx is
 		pl_frm   : in  std_logic;
 		pl_irdy  : in  std_logic;
 		pl_trdy  : out std_logic;
-		pl_len   : in  std_logic_vector(16-1 downto 0);
 		pl_data  : in  std_logic_vector;
 
 		hdr_irdy : in  std_logic;

@@ -91,7 +91,6 @@ architecture def of udp is
 	signal udppltx_irdy   : std_logic;
 	signal udppltx_trdy   : std_logic;
 	signal udppltx_end    : std_logic;
-	signal udppltx_len    : std_logic_vector(0 to 16-1);
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
 	signal udplentx_irdy  : std_logic;
@@ -127,11 +126,10 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udppltx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,  dev_gnt)(0);
-		udppltx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy, dev_gnt)(0);
-		udppltx_end  <= wirebus(dhcpctx_end  & pltx_end,  dev_gnt)(0);
-		udppltx_len  <= wirebus(dhcpctx_len  & x"0000",   dev_gnt);
-		udppltx_data <= wirebus(dhcpctx_data & pltx_data, dev_gnt);
+		udppltx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,     dev_gnt)(0);
+		udppltx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy,    dev_gnt)(0);
+		udppltx_end  <= wirebus(dhcpctx_end  & pltx_end,     dev_gnt)(0);
+		udptx_data   <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => pltx_trdy) <= dev_gnt and (dev_gnt'range => udppltx_trdy); 
 
 	end block;
@@ -277,8 +275,7 @@ begin
 		pl_frm   => udppltx_frm,
 		pl_irdy  => udppltx_irdy,
 		pl_trdy  => udppltx_trdy,
-		pl_len   => udppltx_len, 
-		pl_data  => udppltx_data,
+		pl_data  => pltx_data ,
 
 		hdr_irdy => udphdr_irdy,
 		hdr_trdy => udphdr_trdy,
@@ -288,7 +285,7 @@ begin
 		udp_irdy => udptx_irdy,
 		udp_trdy => udptx_trdy,
 		udp_end  => udptx_end,
-		udp_data => udptx_data);
+		udp_data => udppltx_data);
 
 	udpc_e : entity hdl4fpga.sio_muxcmp
     port map (
@@ -324,6 +321,7 @@ begin
 
 		dhcpcdtx_frm  => dhcpctx_frm,
 		dlltx_full    => dlltx_full,
+		nettx_full    => nettx_full,
 		udplentx_irdy => dhcplentx_irdy,
 		udplentx_trdy => dhcplentx_trdy,
 		udplentx_end  => dhcplentx_end ,
