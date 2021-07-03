@@ -80,7 +80,6 @@ architecture def of udp is
 	signal dhcpctx_irdy   : std_logic;
 	signal dhcpctx_trdy   : std_logic;
 	signal dhcpctx_end    : std_logic;
-	signal dhcpctx_len    : std_logic_vector(0 to 16-1);
 	signal dhcpctx_data   : std_logic_vector(udptx_data'range);
 
 	signal udphdr_irdy    : std_logic;
@@ -90,13 +89,14 @@ architecture def of udp is
 	signal udppltx_frm    : std_logic;
 	signal udppltx_irdy   : std_logic;
 	signal udppltx_trdy   : std_logic;
-	signal udppltx_end    : std_logic;
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
 	signal udplentx_irdy  : std_logic;
 	signal udplentx_trdy  : std_logic;
 	signal udplentx_end   : std_logic;
 	signal udplentx_data  : std_logic_vector(udptx_data'range);
+
+	signal dhcplentx_end : std_logic;
 
 begin
 
@@ -126,11 +126,10 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udppltx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,     dev_gnt)(0);
-		udppltx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy,    dev_gnt)(0);
-		udppltx_end  <= wirebus(dhcpctx_end  & pltx_end,     dev_gnt)(0);
-		udptx_data   <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
-		(0 => dhcpctx_trdy, 1 => pltx_trdy) <= dev_gnt and (dev_gnt'range => udppltx_trdy); 
+		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,     dev_gnt)(0);
+		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy,    dev_gnt)(0);
+		udptx_data <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
+		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 
 	end block;
 
@@ -147,6 +146,7 @@ begin
 		signal lentx_irdy : std_logic;
 		signal len_end    : std_logic;
 		signal len_full   : std_logic;
+		signal len_datai  : std_logic_vector(pltx_data'range);
 		signal len_data   : std_logic_vector(pltx_data'range);
 
 		signal sprx_irdy  : std_logic;
@@ -199,7 +199,7 @@ begin
 			ci  => tx_ci,
 			a   => pltx_data,
 			b   => crtn_data,
-			s   => len_data,
+			s   => len_datai,
 			co  => tx_co);
 
 		lenrx_irdy <= '0' when dlltx_full='0' else pltx_irdy;
@@ -213,7 +213,7 @@ begin
 			si_irdy => lenrx_irdy,
 			si_trdy => open,
 			si_full => len_full,
-			si_data => len_data,
+			si_data => len_datai,
 
 			so_clk  => mii_clk,
 			so_frm  => pltx_frm,
@@ -273,8 +273,8 @@ begin
 		mii_clk  => mii_clk,
 
 		pl_frm   => udppltx_frm,
-		pl_irdy  => udppltx_irdy,
-		pl_trdy  => udppltx_trdy,
+		pl_irdy  => pltx_irdy,
+		pl_trdy  => pltx_trdy,
 		pl_data  => pltx_data ,
 
 		hdr_irdy => udphdr_irdy,
@@ -283,7 +283,7 @@ begin
 		hdr_data => udphdr_data,
 
 		udp_irdy => udptx_irdy,
-		udp_trdy => udptx_trdy,
+		udp_trdy => udppltx_trdy,
 		udp_end  => udptx_end,
 		udp_data => udppltx_data);
 
@@ -322,10 +322,6 @@ begin
 		dhcpcdtx_frm  => dhcpctx_frm,
 		dlltx_full    => dlltx_full,
 		nettx_full    => nettx_full,
-		udplentx_irdy => dhcplentx_irdy,
-		udplentx_trdy => dhcplentx_trdy,
-		udplentx_end  => dhcplentx_end ,
-		udplentx_data => dhcplentx_data,
 
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,

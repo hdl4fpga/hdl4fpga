@@ -40,10 +40,7 @@ entity dhcpc is
 
 		dhcpcdtx_frm  : buffer std_logic;
 		dlltx_full    : in std_logic;
-		udplentx_irdy : in  std_logic;
-		udplentx_trdy : out std_logic;
-		udplentx_end  : out std_logic;
-		udplentx_data : out std_logic_vector;
+		nettx_full    : in std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic := '1';
@@ -90,10 +87,8 @@ begin
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
-		udplentx_irdy => udplentx_irdy,
-		udplentx_trdy => udplentx_trdy,
-		udplentx_end  => udplentx_end,
-		udplentx_data => udplentx_data,
+		dlltx_full    => dlltx_full,
+		nettx_full    => nettx_full,
 		dhcpdscb_irdy => dhcpctx_trdy,
 		dhcpdscb_trdy => dhcpctx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,

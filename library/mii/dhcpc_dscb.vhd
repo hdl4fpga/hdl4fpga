@@ -38,10 +38,8 @@ entity dhcpc_dscb is
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
-		udplentx_irdy : in  std_logic;
-		udplentx_trdy : out std_logic;
-		udplentx_end  : out std_logic;
-		udplentx_data : out std_logic_vector;
+		dlltx_full    : in  std_logic;
+		nettx_full    : in  std_logic;
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
@@ -82,6 +80,11 @@ architecture def of dhcpc_dscb is
 		dhcp_vendor => vendor_data'length);
 
 	signal dhcpdscb_ptr  : std_logic_vector(0 to unsigned_num_bits((payload_size+8)*8/dhcpdscb_data'length-1));
+
+	signal udplentx_irdy : std_logic;
+	signal udplentx_trdy : std_logic;
+	signal udplentx_end  : std_logic;
+	signal udplentx_data : std_logic_vector(dhcpdscb_data'range);
 
 begin
 
@@ -132,7 +135,11 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-	dhcpdscb_data <= dhcppkt_data;
+	dhcpdscb_data <= 
+		(dhcpdscb_data'range => '1') when dlltx_full='0' else
+		udplentx_data                when udplentx_end='0' else
+		(dhcpdscb_data'range => '1') when nettx_full='0' else
+		dhcppkt_data;
 
 end;
 
