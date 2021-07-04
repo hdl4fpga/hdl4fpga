@@ -76,9 +76,12 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (dhcpcd_req xor dhcpcd_rdy)='1' then
+				dhcpcdtx_frm <= '1';
 				if dhcpcdrx_frm='0' then
 					dhcpcd_rdy <= dhcpcd_req;
 				end if;
+			else
+				dhcpcdtx_frm <= '0';
 			end if;
 		end if;
 	end process;
@@ -89,12 +92,12 @@ begin
 		dhcpdscb_frm  => dhcpcdtx_frm,
 		dlltx_full    => dlltx_full,
 		nettx_full    => nettx_full,
-		dhcpdscb_irdy => dhcpctx_trdy,
-		dhcpdscb_trdy => dhcpctx_irdy,
+		dhcpdscb_irdy => dhcpctx_irdy,
+		dhcpdscb_trdy => dhcpctx_trdy,
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpctx_data);
 
 	dhcpcdtx_irdy <= '1' when dlltx_full='0' else dhcpctx_trdy;
-	dhcpctx_irdy  <= '0' when nettx_full='0' else dhcpcdtx_trdy;
+	dhcpctx_irdy  <= '1' when nettx_full='0' else dhcpcdtx_trdy;
 	dhcpcdtx_data <= (dhcpcdtx_data'range => '1') when nettx_full='0' else dhcpctx_data;
 end;

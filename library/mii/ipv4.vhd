@@ -246,7 +246,6 @@ begin
 		signal lentx_full   : std_logic;
 		signal lentx_irdy   : std_logic;
 		signal lentx_data   : std_logic_vector(ipv4tx_data'range);
-		signal datx_full    : std_logic;
 		signal datx_irdy    : std_logic;
 
 		signal ipv4len_irdy : std_logic;
@@ -321,7 +320,7 @@ begin
 			si_frm   => metatx_frm,
 			si_irdy  => datx_irdy,
 			si_trdy  => open,
-			si_full  => datx_full,
+			si_full  => nettx_full,
 			si_data  => pltx_data,
 
 			so_clk   => mii_clk,
@@ -412,6 +411,9 @@ begin
 	udp_e : entity hdl4fpga.udp
 	port map (
 		mii_clk     => mii_clk,
+		dhcpcd_req  => dhcpcd_req,
+		dhcpcd_rdy  => dhcpcd_rdy,
+
 		udprx_irdy  => ipv4rx_irdy,
 		udprx_data  => ipv4rx_data,
 		udpmetarx_irdy => udpmetarx_irdy,

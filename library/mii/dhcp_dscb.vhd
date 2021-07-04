@@ -95,7 +95,7 @@ begin
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
 				dhcpdscb_end <= '0';
-			elsif dhcpdscb_irdy='1' then
+			elsif dhcpdscb_irdy='1' and nettx_full='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 					dhcpdscb_end <= '0';
@@ -117,7 +117,7 @@ begin
 		so_end   => udplentx_end,
 		so_data  => udplentx_data);
 
-	dhcppkt_irdy <= dhcpdscb_frm and dhcpdscb_irdy and frame_decode(dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, (
+	dhcppkt_irdy <= '0' when nettx_full='1' else dhcpdscb_frm and dhcpdscb_irdy and frame_decode(dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, (
 		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 
 		dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, 
 		dhcp4_xid, 
