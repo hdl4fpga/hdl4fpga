@@ -28,15 +28,15 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 
-entity dhcpc is
+entity dhcpcd is
 	port (
 		mii_clk       : in  std_logic;
-		dhcprx_frm    : in  std_logic;
-		dhcprx_irdy   : in  std_logic;
-		dhcprx_data   : in  std_logic_vector;
+		dhcpcdrx_frm  : in  std_logic;
+		dhcpcdrx_irdy : in  std_logic;
+		dhcpcdrx_data : in  std_logic_vector;
 
-		dhcpc_req     : in  std_logic;
-		dhcpc_rdy     : buffer std_logic;
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : buffer std_logic := '0';
 
 		dhcpcdtx_frm  : buffer std_logic;
 		dlltx_full    : in std_logic;
@@ -48,7 +48,7 @@ entity dhcpc is
 		dhcpcdtx_data : out std_logic_vector);
 end;
 
-architecture def of dhcpc is
+architecture def of dhcpcd is
 
 	signal dhcpop_irdy  : std_logic;
 	signal dhcpchaddr6_irdy: std_logic;
@@ -63,9 +63,9 @@ begin
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
 	port map (
 		mii_clk      => mii_clk,
-		dhcp_frm     => dhcprx_frm,
-		dhcp_irdy    => dhcprx_irdy,
-		dhcp_data    => dhcprx_data,
+		dhcp_frm     => dhcpcdrx_frm,
+		dhcp_irdy    => dhcpcdrx_irdy,
+		dhcp_data    => dhcpcdrx_data,
 
 		dhcpop_irdy  => dhcpop_irdy,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
@@ -75,9 +75,9 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if (dhcpc_req xor dhcpc_rdy)='1' then
-				if dhcprx_frm='0' then
-					dhcpc_rdy <= dhcpc_req;
+			if (dhcpcd_req xor dhcpcd_rdy)='1' then
+				if dhcpcdrx_frm='0' then
+					dhcpcd_rdy <= dhcpcd_req;
 				end if;
 			end if;
 		end if;

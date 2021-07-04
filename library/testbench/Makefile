@@ -155,12 +155,12 @@ HDL4FPGA__dmatrans__def = $(LIB_HDL4FPGA)/dmatrans/def.dat
 HDL4FPGA__dmatrans = $(LIB_HDL4FPGA)/dmatrans/_primary.dat
 HDL4FPGA__dmactlr__def = $(LIB_HDL4FPGA)/dmactlr/def.dat
 HDL4FPGA__dmactlr = $(LIB_HDL4FPGA)/dmactlr/_primary.dat
+HDL4FPGA__dhcpcd__def = $(LIB_HDL4FPGA)/dhcpcd/def.dat
+HDL4FPGA__dhcpcd = $(LIB_HDL4FPGA)/dhcpcd/_primary.dat
 HDL4FPGA__dhcpc_offer__def = $(LIB_HDL4FPGA)/dhcpc_offer/def.dat
 HDL4FPGA__dhcpc_offer = $(LIB_HDL4FPGA)/dhcpc_offer/_primary.dat
 HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
-HDL4FPGA__dhcpc__def = $(LIB_HDL4FPGA)/dhcpc/def.dat
-HDL4FPGA__dhcpc = $(LIB_HDL4FPGA)/dhcpc/_primary.dat
 HDL4FPGA__dfsdcm__spartan3 = $(LIB_HDL4FPGA)/dfsdcm/spartan3.dat
 HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
 HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
@@ -375,12 +375,12 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__dmatrans) \
     $(HDL4FPGA__dmactlr__def) \
     $(HDL4FPGA__dmactlr) \
+    $(HDL4FPGA__dhcpcd__def) \
+    $(HDL4FPGA__dhcpcd) \
     $(HDL4FPGA__dhcpc_offer__def) \
     $(HDL4FPGA__dhcpc_offer) \
     $(HDL4FPGA__dhcpc_dscb__def) \
     $(HDL4FPGA__dhcpc_dscb) \
-    $(HDL4FPGA__dhcpc__def) \
-    $(HDL4FPGA__dhcpc) \
     $(HDL4FPGA__dfsdcm__spartan3) \
     $(HDL4FPGA__dfsdcm) \
     $(HDL4FPGA__dfs__xilinx) \
@@ -815,8 +815,31 @@ $(HDL4FPGA__dfsdcm__spartan3) : ../xilinx/dfsdcm.vhd \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfsdcm.vhd
 
-$(HDL4FPGA__dhcpc) \
-$(HDL4FPGA__dhcpc__def) : ../mii/dhcpc.vhd \
+$(HDL4FPGA__dhcpc_dscb) \
+$(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_dscb.vhd
+
+$(HDL4FPGA__dhcpc_offer) \
+$(HDL4FPGA__dhcpc_offer__def) : ../mii/dhcp_offer.vhd \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/dhcp_offer.vhd
+
+$(HDL4FPGA__dhcpcd) \
+$(HDL4FPGA__dhcpcd__def) : ../mii/dhcpcd.vhd \
 		$(HDL4FPGA__dhcpc_dscb) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__dhcpc_offer) \
@@ -826,30 +849,7 @@ $(HDL4FPGA__dhcpc__def) : ../mii/dhcpc.vhd \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/dhcpc.vhd
-
-$(HDL4FPGA__dhcpc_dscb) \
-$(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcpc_dscb.vhd \
-		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/dhcpc_dscb.vhd
-
-$(HDL4FPGA__dhcpc_offer) \
-$(HDL4FPGA__dhcpc_offer__def) : ../mii/dhcpc_offer.vhd \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/dhcpc_offer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/dhcpcd.vhd
 
 $(HDL4FPGA__dmactlr) \
 $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
@@ -901,6 +901,7 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 
 $(HDL4FPGA__eth_tb) \
 $(HDL4FPGA__eth_tb__def) : ../demos/eth_tb.vhd \
+		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__sio_mux) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -1474,7 +1475,7 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 
 $(HDL4FPGA__udp) \
 $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
-		$(HDL4FPGA__dhcpc) \
+		$(HDL4FPGA__dhcpcd) \
 		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__udp_tx) \
 		$(HDL4FPGA__sio_ram) \

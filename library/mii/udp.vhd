@@ -33,6 +33,9 @@ use hdl4fpga.ipoepkg.all;
 entity udp is
 	port (
 		mii_clk     : in  std_logic;
+		dhcpcd_req  : in  std_logic := '0';
+		dhcpcd_rdy  : out std_logic := '0';
+
 		udprx_irdy  : in  std_logic;
 		udprx_data  : in  std_logic_vector;
 
@@ -96,7 +99,7 @@ architecture def of udp is
 	signal udplentx_end   : std_logic;
 	signal udplentx_data  : std_logic_vector(udptx_data'range);
 
-	signal dhcplentx_end : std_logic;
+	signal dhcplentx_end  : std_logic;
 
 begin
 
@@ -310,14 +313,14 @@ begin
 	end process;
 	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
 
-	dhcpc_e: entity hdl4fpga.dhcpc
+	dhcpcd_e: entity hdl4fpga.dhcpcd
 	port map (
-		mii_clk     => mii_clk,
-		dhcprx_frm  => dhcpcrx_frm,
-		dhcprx_irdy => udprx_irdy,
-		dhcprx_data => udprx_data,
-		dhcpc_req   => '0',
-		dhcpc_rdy   => open,
+		mii_clk       => mii_clk,
+		dhcpcdrx_frm  => dhcpcrx_frm,
+		dhcpcdrx_irdy => udprx_irdy,
+		dhcpcdrx_data => udprx_data,
+		dhcpcd_req    => dhcpcd_req,
+		dhcpcd_rdy    => dhcpcd_rdy,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
 		dlltx_full    => dlltx_full,
