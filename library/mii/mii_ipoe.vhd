@@ -36,6 +36,9 @@ entity mii_ipoe is
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : out std_logic := '0';
+
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic;
 		miirx_trdy    : out std_logic;
@@ -256,7 +259,6 @@ begin
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
 
---		hwdatxi_data <= wirebus(arphwda_data & ipv4hwda_data, dev_gnt);
 		hwtyp_tx <= wirebus(x"0806" & x"0800", dev_gnt);
 
 	end block;
@@ -386,6 +388,9 @@ begin
 		default_ipv4a => default_ipv4a)
 	port map (
 		mii_clk       => mii_clk,
+		dhcpcd_req    => dhcpcd_req,
+		dhcpcd_rdy    => dhcpcd_rdy,
+
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,

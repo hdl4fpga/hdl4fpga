@@ -36,6 +36,8 @@ entity ipv4 is
 	port (
 
 		mii_clk        : in  std_logic;
+		dhcpcd_req     : in  std_logic := '0';
+		dhcpcd_rdy     : out std_logic := '0';
 
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
