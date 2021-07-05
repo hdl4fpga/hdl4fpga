@@ -68,13 +68,10 @@ entity ipv4 is
 		pltx_trdy      : out std_logic;
 		pltx_data      : in  std_logic_vector;
 
-		metatx_frm     : buffer std_logic;
-		metatx_irdy    : buffer std_logic;
-		metatx_trdy    : in  std_logic := '0';
 		dlltx_full     : in  std_logic;
 
 		ipv4tx_frm     : buffer std_logic := '0';
-		ipv4tx_irdy    : out std_logic;
+		ipv4tx_irdy    : buffer std_logic;
 		ipv4tx_trdy    : in  std_logic := '1';
 		ipv4tx_end     : out std_logic := '0';
 		ipv4tx_data    : out std_logic_vector;
@@ -98,7 +95,6 @@ architecture def of ipv4 is
 	signal ipv4plrx_frm     : std_logic;
 	signal ipv4plrx_irdy    : std_logic;
 
-	signal ipv4pltx_frm     : std_logic;
 	signal ipv4pltx_irdy    : std_logic;
 	signal ipv4pltx_trdy    : std_logic;
 	signal ipv4pltx_end     : std_logic;
@@ -233,7 +229,7 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		ipv4pltx_frm  <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt)(0);
+		ipv4tx_frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt)(0);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt)(0);
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
@@ -273,12 +269,16 @@ begin
 			end if;
 		end process;
 
-		lentx_irdy <= '0' when dlltx_full='1' else metatx_irdy;
+		lentx_irdy <= 
+			'0' when dlltx_full='0' else
+			'1' when nettx_full='0' else
+			ipv4tx_irdy;
+
 		mux_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
 			sio_clk  => mii_clk,
-			sio_frm  => metatx_frm,
+			sio_frm  => ipv4tx_frm,
 			sio_irdy => lentx_irdy,
 			sio_trdy => open,
 			so_data  => crtn_data);
@@ -293,10 +293,10 @@ begin
 
 		len_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_size => 16)
+			mem_length => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => metatx_frm,
+			si_frm   => ipv4tx_frm,
 			si_irdy  => lentx_irdy,
 			si_trdy  => open,
 			si_full  => lentx_full,
@@ -317,7 +317,7 @@ begin
 			mem_size => 32)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => metatx_frm,
+			si_frm   => ipv4tx_frm,
 			si_irdy  => datx_irdy,
 			si_trdy  => open,
 			si_full  => nettx_full,
@@ -339,7 +339,7 @@ begin
 	port map (
 		mii_clk    => mii_clk,
 
-		pl_frm     => ipv4pltx_frm,
+		pl_frm     => ipv4tx_frm,
 		pl_irdy    => ipv4pltx_irdy,
 		pl_trdy    => ipv4pltx_trdy,
 		pl_end     => ipv4pltx_end,
