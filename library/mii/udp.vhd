@@ -92,6 +92,7 @@ architecture def of udp is
 	signal udppltx_frm    : std_logic;
 	signal udppltx_irdy   : std_logic;
 	signal udppltx_trdy   : std_logic;
+	signal udppltx_end    : std_logic;
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
 	signal udplentx_irdy  : std_logic;
@@ -129,8 +130,9 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,     dev_gnt)(0);
-		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy,    dev_gnt)(0);
+		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,  dev_gnt)(0);
+		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy, dev_gnt)(0);
+		udptx_end  <= wirebus(dhcpctx_end  & udppltx_end,    dev_gnt)(0);
 		udptx_data <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 
@@ -285,9 +287,9 @@ begin
 		hdr_end  => udphdr_end,
 		hdr_data => udphdr_data,
 
-		udp_irdy => udptx_irdy,
+		udp_irdy => udppltx_irdy,
 		udp_trdy => udppltx_trdy,
-		udp_end  => udptx_end,
+		udp_end  => udppltx_end,
 		udp_data => udppltx_data);
 
 	udpc_e : entity hdl4fpga.sio_muxcmp

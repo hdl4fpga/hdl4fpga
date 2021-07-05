@@ -38,5 +38,6 @@ architecture def of adder is
 	signal sum : unsigned(0 to s'length+1);
 begin
 	sum <= unsigned('0' & a & ci) + unsigned('0' & b & '1');
+	s   <= std_logic_vector(sum(1 to s'length));
 	co  <= sum(0);
 end;

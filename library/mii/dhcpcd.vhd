@@ -99,5 +99,5 @@ begin
 
 	dhcpcdtx_irdy <= '1' when dlltx_full='0' else dhcpctx_trdy;
 	dhcpctx_irdy  <= '1' when nettx_full='0' else dhcpcdtx_trdy;
-	dhcpcdtx_data <= (dhcpcdtx_data'range => '1') when nettx_full='0' else dhcpctx_data;
+	dhcpcdtx_data <= dhcpctx_data;
 end;

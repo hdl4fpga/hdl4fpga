@@ -55,8 +55,6 @@ entity ipv4 is
 		ipv4satx_trdy  : buffer std_logic;
 		ipv4satx_end   : buffer std_logic;
 		ipv4satx_data  : buffer std_logic_vector;
-		ipv4satx_equ   : buffer std_logic;
-
 
 		plrx_frm       : out std_logic;
 		plrx_irdy      : out std_logic;
@@ -74,7 +72,7 @@ entity ipv4 is
 		ipv4tx_irdy    : buffer std_logic;
 		ipv4tx_trdy    : in  std_logic := '1';
 		ipv4tx_end     : out std_logic := '0';
-		ipv4tx_data    : out std_logic_vector;
+		ipv4tx_data    : buffer std_logic_vector;
 
 		tp             : out std_logic_vector(1 to 32));
 
@@ -141,6 +139,10 @@ architecture def of ipv4 is
 	signal ipv4sack_frm     : std_logic;
 	signal ipv4sack_irdy    : std_logic;
 
+		signal ipv4len_irdy : std_logic;
+		signal ipv4len_trdy : std_logic;
+		signal ipv4len_end  : std_logic;
+		signal ipv4len_data : std_logic_vector(ipv4rx_data'range);
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -197,7 +199,7 @@ begin
 		si_equ    => ipv4sarx_equ);
 
 	ipv4sa_frm  <= ipv4satx_frm  or  ipv4atx_frm;
-	ipv4sa_irdy <= ipv4satx_irdy;
+	ipv4sa_irdy <= ipv4atx_irdy or ipv4satx_irdy;
 	satx_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_data => reverse(default_ipv4a,8),
@@ -244,10 +246,6 @@ begin
 		signal lentx_data   : std_logic_vector(ipv4tx_data'range);
 		signal datx_irdy    : std_logic;
 
-		signal ipv4len_irdy : std_logic;
-		signal ipv4len_trdy : std_logic;
-		signal ipv4len_end  : std_logic;
-		signal ipv4len_data : std_logic_vector(ipv4rx_data'range);
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
@@ -261,7 +259,7 @@ begin
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then
-				if pltx_frm='0' then
+				if ipv4tx_frm='0' then
 					tx_ci <= '0';
 				elsif pltx_irdy='1' then
 					tx_ci <= tx_co;
@@ -303,7 +301,7 @@ begin
 			si_data  => lentx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => ipv4atx_frm,
+			so_frm   => ipv4tx_frm,
 			so_irdy  => ipv4len_irdy,
 			so_trdy  => ipv4len_trdy,
 			so_end   => ipv4len_end,
@@ -314,17 +312,17 @@ begin
 		ipv4da_irdy <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
 		da_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_size => 32)
+			mem_length => 32)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4tx_frm,
 			si_irdy  => datx_irdy,
 			si_trdy  => open,
 			si_full  => nettx_full,
-			si_data  => pltx_data,
+			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => pltx_frm,
+			so_frm   => ipv4atx_frm,
 			so_irdy  => ipv4da_irdy,
 			so_trdy  => ipv4da_trdy,
 			so_end   => ipv4atx_end,
@@ -350,12 +348,13 @@ begin
 		ipv4a_end  => ipv4atx_end,
 		ipv4a_data => ipv4atx_data,
 
-		ipv4len_irdy   => open,
-		ipv4len_data   => (pltx_data'range => '-'),
+		ipv4len_irdy   => ipv4len_irdy,
+		ipv4len_data   => ipv4len_data,
 		ipv4proto_irdy => open,
 		ipv4proto_data => (pltx_data'range => '-'),
 
 		ipv4_irdy  => ipv4tx_irdy,
+		nettx_full => nettx_full,
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);
@@ -433,6 +432,7 @@ begin
 		nettx_full  => nettx_full,
 		udptx_irdy  => udptx_irdy,
 		udptx_trdy  => udptx_trdy,
+		udptx_end   => udptx_end ,
 		udptx_data  => udptx_data);
 
 end;

@@ -107,6 +107,11 @@ begin
 		end if;
 	end process;
 
+	udplentx_irdy <= 
+		'0' when dlltx_full='0' else
+		'1' when nettx_full='0' else
+		'0';
+
 	dhcpudplen_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => std_logic_vector(to_unsigned(payload_size+8, 16)),
