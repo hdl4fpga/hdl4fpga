@@ -83,7 +83,7 @@ architecture def of ipv4 is
 
 	signal ipv4len_tx       : std_logic_vector(ipv4tx_data'range);
 	signal ipv4sa_tx        : std_logic_vector(ipv4tx_data'range);
-	signal ipv4da_tx        : std_logic_vector(ipv4tx_data'range);
+	signal ipv4proto_tx     : std_logic_vector(0 to 8-1);
 	signal ipv4atx_frm      : std_logic;
 	signal ipv4atx_irdy     : std_logic;
 	signal ipv4atx_trdy     : std_logic;
@@ -139,10 +139,16 @@ architecture def of ipv4 is
 	signal ipv4sack_frm     : std_logic;
 	signal ipv4sack_irdy    : std_logic;
 
-		signal ipv4len_irdy : std_logic;
-		signal ipv4len_trdy : std_logic;
-		signal ipv4len_end  : std_logic;
-		signal ipv4len_data : std_logic_vector(ipv4rx_data'range);
+	signal ipv4len_irdy : std_logic;
+	signal ipv4len_trdy : std_logic;
+	signal ipv4len_end  : std_logic;
+	signal ipv4len_data : std_logic_vector(ipv4rx_data'range);
+
+	signal ipv4proto_irdy : std_logic;
+	signal ipv4proto_trdy : std_logic;
+	signal ipv4proto_end  : std_logic;
+	signal ipv4proto_data : std_logic_vector(ipv4rx_data'range);
+
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -236,7 +242,7 @@ begin
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
-		ipv4da_tx     <= wirebus(x"00" & x"00", dev_gnt);
+		ipv4proto_tx  <= wirebus(x"01" & x"11", dev_gnt);
 
 	end block;
 
@@ -307,6 +313,14 @@ begin
 			so_end   => ipv4len_end,
 			so_data  => ipv4len_data);
 
+		protomux_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => ipv4proto_tx,
+			sio_clk  => mii_clk,
+			sio_frm  => ipv4tx_frm,
+			sio_irdy => ipv4proto_irdy,
+			so_data  => ipv4proto_data);
+
 		ipv4sa_irdy <= '0' when ipv4len_end='0'  else ipv4atx_irdy;
 		datx_irdy   <= '0' when lentx_full='0'   else lentx_full;
 		ipv4da_irdy <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
@@ -350,8 +364,8 @@ begin
 
 		ipv4len_irdy   => ipv4len_irdy,
 		ipv4len_data   => ipv4len_data,
-		ipv4proto_irdy => open,
-		ipv4proto_data => (pltx_data'range => '-'),
+		ipv4proto_irdy => ipv4proto_irdy,
+		ipv4proto_data => ipv4proto_data,
 
 		ipv4_irdy  => ipv4tx_irdy,
 		nettx_full => nettx_full,

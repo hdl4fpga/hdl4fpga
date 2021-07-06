@@ -61,6 +61,9 @@ entity ipv4_tx is
 end;
 
 architecture def of ipv4_tx is
+	signal ipv4shdr_frm  : std_logic;
+	signal ipv4proto_frm : std_logic;
+	signal ipv4len_frm   : std_logic;
 
 	signal cksm_frm      : std_logic;
 	signal cksm_irdy     : std_logic;
@@ -121,9 +124,13 @@ begin
 		end if;
 	end process;
 
-	ipv4shdr_irdy  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl)) and post and ipv4_trdy;
-	ipv4proto_irdy <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_proto) and post and ipv4_trdy;
-	ipv4len_irdy   <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len) and post and ipv4_trdy;
+	ipv4shdr_frm  <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
+	ipv4proto_frm <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_proto);
+	ipv4len_frm   <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len);
+
+	ipv4shdr_irdy  <= ipv4shdr_frm  and ipv4_trdy;
+	ipv4proto_irdy <= ipv4proto_frm and ipv4_trdy;
+	ipv4len_irdy   <= ipv4len_frm   and ipv4_trdy;
 
 	ipv4shdr_mux <=
 		x"4500"            &   -- Version, TOS
@@ -141,7 +148,7 @@ begin
 		so_end   => ipv4shdr_end,
 		so_data  => ipv4shdr_data);
 
-	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & ipv4len_data, ipv4shdr_irdy & ipv4proto_irdy & ipv4len_irdy);
+	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & ipv4len_data, ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
 
 	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
 	ipv4a_irdy <= 
@@ -182,7 +189,7 @@ begin
 	ipv4_data <=  
 		pl_data when nettx_full='0' else 
 		primux(
-		ipv4shdr_data    & ipv4chsm_data    &     ipv4a_data,
+		ipv4hdr_data    & ipv4chsm_data    &     ipv4a_data,
 		not ipv4shdr_end & not ipv4chsm_end & not ipv4a_end,
 		pl_data);
 	ipv4_end  <= 

@@ -72,7 +72,7 @@ architecture def of dhcpc_dscb is
 
 	signal dhcppkt_irdy : std_logic;
 	signal dhcppkt_trdy : std_logic;
-	signal dhcppkt_end  : std_logic;
+	signal dhcppkt_ena  : std_logic;
 	signal dhcppkt_data : std_logic_vector(dhcpdscb_data'range);
 
 	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
@@ -94,13 +94,9 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-				dhcpdscb_end <= '0';
-			elsif dhcpdscb_irdy='1' and nettx_full='1' then
+			elsif dhcpdscb_irdy ='1' and nettx_full='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
-					dhcpdscb_end <= '0';
-				else
-					dhcpdscb_end <= '1';
 				end if;
 			end if;
 			dhcpdscb_ptr <= std_logic_vector(cntr);
@@ -122,13 +118,13 @@ begin
 		so_end   => udplentx_end,
 		so_data  => udplentx_data);
 
-	dhcppkt_irdy <= '0' when nettx_full='1' else dhcpdscb_frm and dhcpdscb_irdy and frame_decode(dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, (
-		udp4_sp, udp4_dp, udp4_len, udp4_cksm, 
-		dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, 
-		dhcp4_xid, 
-		dhcp4_chaddr6,
-		dhcp4_cookie,
-		dhcp_vendor));
+	dhcppkt_ena <= 
+		'0' when nettx_full='0' else 
+		dhcpdscb_frm and frame_decode(
+			dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, 
+			(udp4_sp, udp4_dp, udp4_len, udp4_cksm, dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, dhcp4_xid, dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
+
+	dhcppkt_irdy <= dhcppkt_ena and dhcpdscb_irdy;  
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
@@ -137,14 +133,14 @@ begin
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
         sio_trdy => dhcpdscb_trdy,
-        so_end   => dhcppkt_end,
+        so_end   => dhcpdscb_end,
         so_data  => dhcppkt_data);
 
 	dhcpdscb_data <= 
 		(dhcpdscb_data'range => '1') when dlltx_full='0' else
 		udplentx_data                when udplentx_end='0' else
 		(dhcpdscb_data'range => '1') when nettx_full='0' else
-		dhcppkt_data;
-
+		dhcppkt_data                 when dhcppkt_ena='1' else
+		(dhcpdscb_data'range => '0');
 end;
 
