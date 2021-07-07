@@ -33,7 +33,7 @@ use hdl4fpga.cgafonts.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture ser_debug of arty is
+architecture miiipoe_debug of arty is
 
 	constant sys_freq : real := 100.0e6;
 
