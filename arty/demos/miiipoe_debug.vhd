@@ -69,7 +69,7 @@ architecture ser_debug of arty is
 	signal sio_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(0 to 8-1);
+	signal sin_data       : std_logic_vector(eth_rxd'range);
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
@@ -133,57 +133,93 @@ begin
 			clkout0  => video_clk);
 	end block;
 
-	ipoe_e : if io_link=io_ipoe generate
-		signal ipv4acfg_req  : std_logic := '0';
+	ipoe_b : block
+		signal mii_txc    : std_logic;
+		signal mii_txen   : std_logic;
+		signal mii_rxd    : std_logic_vector(eth_rxd'range);
+		signal mii_txd    : std_logic_vector(eth_rxd'range);
+
+		signal miirx_frm  : std_ulogic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(0 to 8-1);
+		signal plrx_data  : std_logic_vector(miirx_data'range);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(miirx_data'range);
+		signal pltx_data  : std_logic_vector(miirx_data'range);
+
 	begin
-	
-		sio_clk <= eth_txclk_bufg;
 
-		ipv4acfg_req <= btn(0);
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
-		port map (
-			ipv4acfg_req => ipv4acfg_req,
+		mii_txc   <= eth_txclk_bufg;
+		miirx_frm <= eth_rx_dv;
+		mii_rxd	  <= eth_rxd;
 
-			phy_rxc   => eth_rxclk_bufg,
-			phy_rx_dv => eth_rx_dv,
-			phy_rx_d  => eth_rxd,
-
-			phy_txc   => eth_txclk_bufg,
-			phy_tx_en => eth_tx_en,
-			phy_tx_d  => eth_txd,
+--			phy_txc   => eth_txclk_bufg,
+--			phy_tx_en => eth_tx_en,
+--			phy_tx_d  => eth_txd,
 		
-			sio_clk   => sio_clk,
-			si_frm    => sout_frm,
-			si_irdy   => sout_irdy,
-			si_trdy   => sout_trdy,
-			si_data   => sout_data,
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => mii_txc,
+			serdes_frm => miirx_frm,
+			ser_irdy   => '1',
+			ser_trdy   => open,
+			ser_data   => mii_rxd,
 
-			so_frm    => sin_frm,
-			so_irdy   => sin_irdy,
-			so_trdy   => '1',
-			so_data   => sin_data);
+			des_frm    => open,
+			des_irdy   => miirx_irdy,
+			des_trdy   => miirx_trdy,
+			des_data   => miirx_data);
 
-		process (sio_clk)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if i='1' and e='0' then
-					t := not t;
-				end if;
-				e := i;
-				i := eth_rx_dv;
+		du_e : entity hdl4fpga.mii_ipoe
+		port map (
+			mii_clk    => mii_txc,
+			dhcpcd_req => btn(0),
+			miirx_frm  => miirx_frm,
+			miirx_irdy => miirx_irdy,
+			miirx_trdy => miirx_trdy,
+			miirx_data => miirx_data,
 
-				led(0) <= t;
-				led(1) <= not t;
-			end if;
-		end process;
+			plrx_frm   => open,
+			plrx_irdy  => open,
+			plrx_trdy  => '1',
+			plrx_data  => plrx_data,
 
-	end generate;
-	
+			pltx_frm   => '0',
+			pltx_irdy  => '0',
+			pltx_trdy  => open,
+			pltx_data  => pltx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => miitx_trdy,
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data);
+
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_txc,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => eth_txd);
+
+		mii_txen <= miitx_frm and not miitx_end;
+		eth_tx_en <=mii_txen;
+
+		sin_frm  <= mii_txen;
+		sin_irdy <= '1';
+		sin_data <= mii_txd;
+	end block;
+
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id    => video_tab(video_mode).timing_id,
