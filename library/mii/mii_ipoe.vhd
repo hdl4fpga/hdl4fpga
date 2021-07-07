@@ -259,7 +259,7 @@ begin
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
 
-		hwtyp_tx <= wirebus(x"0806" & x"0800", dev_gnt);
+		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
 
 	end block;
 
@@ -305,7 +305,7 @@ begin
 		hwsatx_irdy <= '0' when hwdatx_end='0' else hwllctx_irdy;
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => my_mac,
+			mux_data => reverse(my_mac,8),
 			sio_clk  => mii_clk,
 			sio_frm  => ethtx_frm,
 			sio_irdy => hwsatx_irdy,

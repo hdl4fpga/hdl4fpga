@@ -132,11 +132,12 @@ begin
 	ipv4proto_irdy <= ipv4proto_frm and ipv4_trdy;
 	ipv4len_irdy   <= ipv4len_frm   and ipv4_trdy;
 
-	ipv4shdr_mux <=
+	ipv4shdr_mux <= reverse(
 		x"4500"            &   -- Version, TOS
 		x"0000"            &   -- Identification
 		x"0000"            &   -- Fragmentation
-		x"05";                 -- Time To Live
+		x"05",                 -- Time To Live
+		8);
 
 	ipv4shdr_e : entity hdl4fpga.sio_mux
 	port map (
