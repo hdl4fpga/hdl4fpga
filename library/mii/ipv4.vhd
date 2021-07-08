@@ -132,7 +132,7 @@ architecture def of ipv4 is
 	signal ipv4darx_irdy    : std_logic;
 
 	signal ipv4sa_frm       : std_logic;
-	signal ipv4sa_irdy      : wor std_logic;
+	signal ipv4sa_irdy      : std_logic;
 
 	signal nettx_full       : std_logic;
 
@@ -197,15 +197,15 @@ begin
         si_clk    => mii_clk,
         si_frm    => ipv4sarx_frm,
         si1_irdy  => ipv4sarx_irdy,
-        si1_trdy  => ipv4sarx_trdy,
+        si1_trdy  => open, --ipv4sarx_trdy,
         si1_data  => ipv4sarx_data,
         si2_irdy  => ipv4sarx_irdy,
         si2_trdy  => open,
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sarx_equ);
 
-	ipv4sa_frm  <= ipv4satx_frm  or  ipv4atx_frm;
-	ipv4sa_irdy <= ipv4atx_irdy or ipv4satx_irdy;
+	ipv4sa_frm   <= ipv4satx_frm  or ipv4atx_frm;
+	ipv4sa_irdy  <= ipv4satx_irdy or ipv4atx_irdy;
 	satx_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_data => reverse(default_ipv4a,8),
@@ -321,9 +321,8 @@ begin
 			sio_irdy => ipv4proto_irdy,
 			so_data  => ipv4proto_data);
 
-		ipv4sa_irdy <= '0' when ipv4len_end='0'  else ipv4atx_irdy;
-		datx_irdy   <= '0' when lentx_full='0'   else lentx_full;
-		ipv4da_irdy <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
+		ipv4da_irdy  <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
+		datx_irdy    <= '0' when lentx_full='0'   else lentx_full;
 		da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 32)
