@@ -42,7 +42,7 @@ entity arty is
 		led         : out   std_logic_vector(4-1 downto 0);
 		RGBled      : out   std_logic_vector(4*3-1 downto 0);
 
-		uart_txd_in : in    std_logic;
+		uart_txd_in : in    std_logic := 'Z';
 		uart_rxd_out : out  std_logic;
 
 		eth_rstn    : out   std_logic;
