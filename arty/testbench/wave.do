@@ -11,8 +11,11 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/miitx_data
 add wave -noupdate /testbench/du_e/eth_tx_clk
 add wave -noupdate /testbench/du_e/eth_tx_en
 add wave -noupdate -radix hexadecimal /testbench/du_e/eth_txd
+add wave -noupdate /testbench/ethrx_e/crc_sb
+add wave -noupdate /testbench/ethrx_e/crc_equ
+add wave -noupdate -radix hexadecimal /testbench/ethrx_e/crc_rem
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {320610690 fs} 0}
+WaveRestoreCursors {{Cursor 1} {26106870230 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 301
 configure wave -valuecolwidth 100
@@ -28,4 +31,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {5250 ns}
+WaveRestoreZoom {0 fs} {42 us}

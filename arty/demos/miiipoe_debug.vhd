@@ -175,6 +175,7 @@ begin
 			des_trdy   => miirx_trdy,
 			des_data   => miirx_data);
 
+		led(0) <= btn(0);
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
