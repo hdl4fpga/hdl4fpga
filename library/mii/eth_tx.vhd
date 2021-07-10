@@ -60,7 +60,6 @@ architecture def of eth_tx is
 	signal pre_data : std_logic_vector(mii_data'range);
 
 	signal fcs_irdy : std_logic;
-	signal fcs_trdy : std_logic;
 	signal fcs_mode : std_logic;
 	signal fcs_data : std_logic_vector(mii_data'range);
 	signal fcs_end  : std_logic;
@@ -83,10 +82,7 @@ begin
 
 	pl_trdy  <= hwllc_end and mii_trdy;
 	fcs_data <= primux(hwllc_data, (0 => not hwllc_end), pl_data);
-	fcs_irdy <= wirebus(hwllc_irdy & pl_irdy & mii_trdy, 
-		not hwllc_end              &
-		(not pl_end and hwllc_end) & 
-		pl_end)(0);
+	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
 
 	process (mii_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/mii_data'length-1));
