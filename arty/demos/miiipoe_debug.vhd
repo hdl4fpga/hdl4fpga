@@ -188,6 +188,7 @@ begin
 			end if;
 		end process;
 		led(0) <= req;
+
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
@@ -223,14 +224,17 @@ begin
 			des_data   => miitx_data,
 
 			ser_irdy   => open,
-			ser_data   => eth_txd);
+			ser_data   => mii_txd);
 
-		mii_txen <= miitx_frm and not miitx_end;
-		eth_tx_en <=mii_txen;
+		mii_txen  <= miitx_frm and not miitx_end;
 
-		sin_frm  <= mii_txen;
-		sin_irdy <= '1';
-		sin_data <= mii_txd;
+		eth_tx_en <= mii_txen;
+		eth_txd   <= mii_txd;
+
+		sin_frm   <= mii_txen;
+		sin_irdy  <= '1';
+		sin_data  <= mii_txd;
+
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
