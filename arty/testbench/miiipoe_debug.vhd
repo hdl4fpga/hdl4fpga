@@ -39,13 +39,14 @@ architecture arty_miiipoedebug of testbench is
 	signal eth_txd : std_logic_vector(0 to 4-1);
 	signal eth_tx_en : std_logic;
 
-	signal btn   : std_logic := '1';
+	signal btn0   : std_logic := '0';
+	signal btn1   : std_logic := '0';
 
 begin
 
-	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 1000 ns;
-	btn <= '0', '1' after 2000 ns;
+	clk  <= not clk after 5 ns;
+	rst  <= '1', '0' after 1000 ns;
+	btn0 <= '0', '1' after 2000 ns;
 
 	du_e : entity work.arty(miiipoe_debug)
 	port map (
@@ -56,8 +57,9 @@ begin
 		gclk100 => clk,
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
-		btn(0) => btn,
-		btn(4-1 downto 1) => "---");
+		btn(0) => btn0,
+		btn(1) => btn1,
+		btn(4-1 downto 2) => "--");
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (

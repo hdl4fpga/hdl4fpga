@@ -66,7 +66,7 @@ architecture miiipoe_debug of arty is
 	signal video_vs       : std_logic;
 	signal video_pixel    : std_logic_vector(3-1 downto 0);
 
-	signal sio_clk        : std_logic;
+	signal sin_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
 	signal sin_data       : std_logic_vector(eth_rxd'range);
@@ -157,7 +157,7 @@ begin
 	begin
 
 		mii_txc   <= eth_txclk_bufg;
-		miirx_frm <= eth_rx_dv;
+		miirx_frm <= '0'; --eth_rx_dv;
 		mii_rxd	  <= eth_rxd;
 
 --			phy_txc   => eth_txclk_bufg,
@@ -231,7 +231,8 @@ begin
 		eth_tx_en <= mii_txen;
 		eth_txd   <= mii_txd;
 
-		sin_frm   <= mii_txen;
+		sin_clk   <= mii_txc;
+		sin_frm   <= req; --mii_txen;
 		sin_irdy  <= '1';
 		sin_data  <= mii_txd;
 
@@ -244,7 +245,7 @@ begin
 		green_length => 1,
 		blue_length  => 1)
 	port map (
-		ser_clk      => sio_clk,
+		ser_clk      => sin_clk,
 		ser_frm      => sin_frm,
 		ser_irdy     => sin_irdy,
 		ser_data     => sin_data,
