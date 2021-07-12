@@ -77,7 +77,7 @@ begin
 		if rising_edge(mii_clk) then
 			if (dhcpcd_req xor dhcpcd_rdy)='1' then
 				dhcpcdtx_frm <= '1';
-				if dhcpcdrx_frm='0' then
+				if dhcpcdrx_frm='1' then
 					dhcpcd_rdy <= dhcpcd_req;
 				end if;
 			else

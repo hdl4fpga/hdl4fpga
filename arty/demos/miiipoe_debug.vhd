@@ -152,7 +152,8 @@ begin
 		signal miitx_data : std_logic_vector(miirx_data'range);
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
-		signal req : std_logic;
+		signal dhcpcd_req : std_logic;
+		signal dhcpcd_rdy : std_logic;
 
 	begin
 
@@ -180,19 +181,21 @@ begin
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if req='0' then
-					req <= btn(0);
+				if dhcpcd_req='0' then
+					dhcpcd_req <= btn(0);
 				else
-					req <= not btn(1);
+					dhcpcd_req <= not btn(1);
 				end if;
 			end if;
 		end process;
-		led(0) <= req;
+		led(0) <= dhcpcd_req;
+		led(1) <= dhcpcd_rdy;
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
-			dhcpcd_req => req,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
 			miirx_trdy => miirx_trdy,
@@ -213,6 +216,7 @@ begin
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
+		led(2) <= miitx_frm;
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -232,7 +236,7 @@ begin
 		eth_txd   <= mii_txd;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= req; --mii_txen;
+		sin_frm   <= mii_txen;
 		sin_irdy  <= '1';
 		sin_data  <= mii_txd;
 
