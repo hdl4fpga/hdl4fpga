@@ -243,7 +243,7 @@ begin
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt)(0);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
-		ipv4proto_tx  <= wirebus(x"01" & x"11", dev_gnt);
+		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
 
 	end block;
 
@@ -320,6 +320,8 @@ begin
 			sio_clk  => mii_clk,
 			sio_frm  => ipv4tx_frm,
 			sio_irdy => ipv4proto_irdy,
+			sio_trdy => ipv4proto_trdy,
+			so_end   => ipv4proto_end,
 			so_data  => ipv4proto_data);
 
 		ipv4da_irdy  <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
@@ -365,6 +367,8 @@ begin
 		ipv4len_irdy   => ipv4len_irdy,
 		ipv4len_data   => ipv4len_data,
 		ipv4proto_irdy => ipv4proto_irdy,
+		ipv4proto_trdy => ipv4proto_trdy,
+		ipv4proto_end  => ipv4proto_end,
 		ipv4proto_data => ipv4proto_data,
 
 		ipv4_irdy  => ipv4tx_irdy,

@@ -45,10 +45,12 @@ entity ipv4_tx is
 		ipv4len_irdy   : buffer std_logic;
 		ipv4len_data   : in  std_logic_vector;
 		ipv4proto_irdy : buffer std_logic;
+		ipv4proto_trdy : in  std_logic;
+		ipv4proto_end  : in  std_logic;
 		ipv4proto_data : in  std_logic_vector;
 
 		ipv4a_frm  : out std_logic;
-		ipv4a_irdy : out std_logic;
+		ipv4a_irdy : buffer std_logic;
 		ipv4a_end  : in  std_logic;
 		ipv4a_data : in  std_logic_vector;
 
@@ -65,10 +67,10 @@ architecture def of ipv4_tx is
 	signal ipv4proto_frm : std_logic;
 	signal ipv4len_frm   : std_logic;
 
-	signal cksm_frm      : std_logic;
 	signal cksm_irdy     : std_logic;
 	signal cksm_data     : std_logic_vector(ipv4_data'range);
 	signal chksum        : std_logic_vector(16-1 downto 0);
+	signal chksum_rev    : std_logic_vector(16-1 downto 0);
 
 	signal ipv4shdr_irdy : std_logic;
 	signal ipv4shdr_trdy : std_logic;
@@ -157,8 +159,8 @@ begin
 		'1' when post='0' else 
 		ipv4_trdy;
 
-	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not post & post);
-	cksm_irdy <= primux(ipv4a_trdy & (ipv4shdr_trdy and not ipv4shdr_end), not post & post)(0);
+	cksm_data <= reverse(primux(ipv4a_data & ipv4hdr_data, not post & post), cksm_data'length);
+	cksm_irdy <= primux((ipv4a_trdy and ipv4a_irdy) & (ipv4shdr_trdy and not ipv4proto_end), not post & post)(0);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
 		cksm_init => x"0000")
@@ -169,10 +171,11 @@ begin
 		mii_data => cksm_data,
 		mii_cksm => chksum);
 
-	ipv4chsm_frm <= pl_frm and ipv4shdr_end;
+	ipv4chsm_frm <= pl_frm and ipv4proto_end;
+	chksum_rev <= reverse(chksum, 8);
 	ipv4cksm_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => chksum,
+		mux_data => chksum_rev,
         sio_clk  => mii_clk,
         sio_frm  => ipv4chsm_frm,
         sio_irdy => ipv4_trdy,
@@ -185,8 +188,8 @@ begin
 	ipv4_irdy <= 
 		'1' when nettx_full='0' else 
 		primux(
-		'0'      & ipv4shdr_trdy     &     ipv4chsm_trdy & ipv4a_trdy     & pl_irdy,
-		not post & not ipv4shdr_end  & not ipv4chsm_end  & not ipv4a_end  & '1')(0);
+		'0'      & ipv4shdr_trdy     &     ipv4proto_trdy &     ipv4chsm_trdy & ipv4a_trdy     & pl_irdy,
+		not post & not ipv4shdr_end  & not ipv4proto_end  & not ipv4chsm_end  & not ipv4a_end  & '1')(0);
 	ipv4_data <=  
 		pl_data when nettx_full='0' else 
 		primux(
