@@ -14,14 +14,12 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_irdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/miitx_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_end
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/mii_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_e/frm
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/miitx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/miitx_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/miitx_data
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_mode
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_crc
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_end
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ethrx_e/mii_clk
 add wave -noupdate /testbench/ethrx_e/mii_irdy
@@ -31,25 +29,18 @@ add wave -noupdate /testbench/ethrx_e/crc_equ
 add wave -noupdate /testbench/ethrx_e/crc_sb
 add wave -noupdate -radix hexadecimal /testbench/ethrx_e/crc_rem
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/chksum
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/chksum_rev
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4chsm_frm
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4chsm_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_data
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4shdr_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_frm
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4hdr_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/protomux_e/sio_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/protomux_e/sio_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/protomux_e/so_end
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2554487830 fs} 1}
+WaveRestoreCursors {{Cursor 1} {2554487830 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 191
@@ -65,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1718935400 fs} {3490810400 fs}
+WaveRestoreZoom {0 fs} {28350 ns}

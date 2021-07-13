@@ -193,8 +193,8 @@ begin
 	ipv4_data <=  
 		pl_data when nettx_full='0' else 
 		primux(
-		ipv4hdr_data    & ipv4chsm_data    &     ipv4a_data,
-		not ipv4shdr_end & not ipv4chsm_end & not ipv4a_end,
+		ipv4hdr_data     &     ipv4proto_data & ipv4chsm_data    &     ipv4a_data,
+		not ipv4shdr_end & not ipv4proto_end  & not ipv4chsm_end & not ipv4a_end,
 		pl_data);
 	ipv4_end  <= 
 		'0' when nettx_full='0' else 
