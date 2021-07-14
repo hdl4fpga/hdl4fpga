@@ -41,15 +41,16 @@ end;
 architecture beh of mii_1cksm is
 
 	signal ci  : std_logic;
-	signal op1 : std_logic_vector(mii_data'length-1 downto 0);
-	signal op2 : std_logic_vector(mii_data'length-1 downto 0);
-	signal sum : std_logic_vector(mii_data'length-1 downto 0);
+	signal op1 : std_logic_vector(mii_data'range);
+	signal op2 : std_logic_vector(mii_data'range);
+	signal sum : std_logic_vector(mii_data'range);
 	signal co  : std_logic;
+
 
 begin
 
 	op1 <= mii_cksm(mii_data'range);
-	op2 <= reverse(mii_data) when mii_frm='1' else (op2'range => '0');
+	op2 <= reverse(mii_data) when mii_irdy='1' else (op2'range => '0');
 
 	adder_e : entity hdl4fpga.adder
 	port map (
@@ -63,17 +64,19 @@ begin
 	process (sum, mii_clk)
 		variable aux : std_logic_vector(mii_cksm'range);
 	begin
+		aux(mii_data'range) := sum;
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
 				ci  <= '0';
 				aux := (others => '0');
-			elsif mii_irdy='1' then
-				aux := mii_cksm(aux'range);
+			else
+				if mii_irdy='1' then
+					aux := std_logic_vector(unsigned(aux) ror mii_data'length);
+				end if;
 				ci  <= co;
 			end if;
+			mii_cksm <= aux;
 		end if;
-		aux(sum'range) := sum;
-		mii_cksm <= aux;
 	end process;
 
 end;

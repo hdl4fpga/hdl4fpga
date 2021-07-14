@@ -69,7 +69,7 @@ architecture def of ipv4_tx is
 
 	signal cksm_irdy     : std_logic;
 	signal cksm_data     : std_logic_vector(ipv4_data'range);
-	signal chksum        : std_logic_vector(16-1 downto 0);
+	signal chksum        : std_logic_vector(0 to 16-1);
 	signal chksum_rev    : std_logic_vector(16-1 downto 0);
 
 	signal ipv4shdr_irdy : std_logic;
@@ -151,7 +151,7 @@ begin
 		so_end   => ipv4shdr_end,
 		so_data  => ipv4shdr_data);
 
-	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & ipv4len_data, ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
+	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & reverse(ipv4len_data), ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
 
 	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
 	ipv4a_irdy <= 
@@ -170,7 +170,7 @@ begin
 		mii_cksm => chksum);
 
 	ipv4chsm_frm <= pl_frm and ipv4proto_end;
-	chksum_rev <= reverse(chksum, 8);
+	chksum_rev <= not reverse(chksum, 8);
 	ipv4cksm_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => chksum_rev,
