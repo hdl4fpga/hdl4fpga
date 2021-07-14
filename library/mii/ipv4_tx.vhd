@@ -159,11 +159,9 @@ begin
 		'1' when post='0' else 
 		ipv4_trdy;
 
-	cksm_data <= reverse(primux(ipv4a_data & ipv4hdr_data, not post & post), cksm_data'length);
-	cksm_irdy <= primux((ipv4a_trdy and ipv4a_irdy) & (ipv4shdr_trdy and not ipv4proto_end), not post & post)(0);
+	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not post & post);
+	cksm_irdy <= primux((ipv4a_trdy and ipv4a_irdy) & (ipv4_trdy and not ipv4proto_end), not post & post)(0);
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
-	generic map (
-		cksm_init => x"0000")
 	port map (
 		mii_clk  => mii_clk,
 		mii_frm  => pl_frm,

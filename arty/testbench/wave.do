@@ -39,8 +39,17 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/protomux_e/sio_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/ci
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/op1
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/op2
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/sum
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/co
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/chksum
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/chksum_rev
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2554487830 fs} 0}
+WaveRestoreCursors {{Cursor 1} {598400470 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 191
@@ -56,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {28350 ns}
+WaveRestoreZoom {0 fs} {3150 ns}

@@ -29,8 +29,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity mii_1cksm is
-	generic (
-		cksm_init : std_logic_vector);
 	port (
 		mii_clk  : in  std_logic;
 		mii_frm  : in  std_logic := '1';
@@ -43,44 +41,39 @@ end;
 architecture beh of mii_1cksm is
 
 	signal ci  : std_logic;
-	signal op1 : unsigned(mii_data'range);
-	signal op2 : unsigned(mii_data'range);
-	signal sum : unsigned(mii_data'range);
+	signal op1 : std_logic_vector(mii_data'length-1 downto 0);
+	signal op2 : std_logic_vector(mii_data'length-1 downto 0);
+	signal sum : std_logic_vector(mii_data'length-1 downto 0);
 	signal co  : std_logic;
 
 begin
 
-	op1 <= unsigned(mii_cksm(mii_data'reverse_range));
-	op2 <= unsigned(reverse(mii_data)) when mii_frm='1' else (op2'range => '0');
+	op1 <= mii_cksm(mii_data'range);
+	op2 <= reverse(mii_data) when mii_frm='1' else (op2'range => '0');
 
-	adder_p: process(op1, op2, ci)
-		variable arg1 : unsigned(0 to mii_data'length+1);
-		variable arg2 : unsigned(0 to mii_data'length+1);
-		variable val  : unsigned(0 to mii_data'length+1);
-	begin
-		arg1 := "0" & unsigned(op1) & ci;
-		arg2 := "0" & unsigned(op2) & "1";
-		val  := arg1 + arg2;
-		sum  <= val(1 to mii_data'length);
-		co   <= val(0);
-	end process;
+	adder_e : entity hdl4fpga.adder
+	port map (
+		ci  => ci,
+		a   => op1,
+		b   => op2,
+		s   => sum,
+		co  => co);
 
-	process (mii_clk)
-		variable aux : unsigned(mii_cksm'range);
+
+	process (sum, mii_clk)
+		variable aux : std_logic_vector(mii_cksm'range);
 	begin
 		if rising_edge(mii_clk) then
-			aux := unsigned(mii_cksm);
 			if mii_frm='0' then
 				ci  <= '0';
 				aux := (others => '0');
-				aux := unsigned(reverse(reverse(cksm_init, mii_data'length),8)) rol mii_data'length;
 			elsif mii_irdy='1' then
-				aux(mii_data'reverse_range) := sum;
-				aux := aux rol mii_data'length;
+				aux := mii_cksm(aux'range);
 				ci  <= co;
 			end if;
-			mii_cksm <= std_logic_vector(aux);
 		end if;
+		aux(sum'range) := sum;
+		mii_cksm <= aux;
 	end process;
 
 end;
