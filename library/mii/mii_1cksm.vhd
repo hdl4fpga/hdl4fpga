@@ -41,15 +41,15 @@ end;
 architecture beh of mii_1cksm is
 
 	signal ci  : std_logic;
-	signal op1 : std_logic_vector(mii_data'range);
-	signal op2 : std_logic_vector(mii_data'range);
-	signal sum : std_logic_vector(mii_data'range);
+	signal op1 : std_logic_vector(mii_data'length-1 downto 0);
+	signal op2 : std_logic_vector(mii_data'length-1 downto 0);
+	signal sum : std_logic_vector(mii_data'length-1 downto 0);
 	signal co  : std_logic;
-
+	signal acc : std_logic_vector(mii_cksm'length-1 downto 0);
 
 begin
 
-	op1 <= mii_cksm(mii_data'range);
+	op1 <= acc(sum'range);
 	op2 <= reverse(mii_data) when mii_irdy='1' else (op2'range => '0');
 
 	adder_e : entity hdl4fpga.adder
@@ -60,23 +60,21 @@ begin
 		s   => sum,
 		co  => co);
 
-
-	process (sum, mii_clk)
-		variable aux : std_logic_vector(mii_cksm'range);
+	process (mii_cksm, mii_clk)
+		variable aux : std_logic_vector(acc'range);
 	begin
-		aux(mii_data'range) := sum;
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
-				ci  <= '0';
-				aux := (others => '0');
+				ci <= '0';
+				acc <= (others => '0');
 			else
 				if mii_irdy='1' then
-					aux := std_logic_vector(unsigned(aux) ror mii_data'length);
+					ci  <= co;
+					acc <= mii_cksm;
 				end if;
-				ci  <= co;
 			end if;
-			mii_cksm <= aux;
 		end if;
 	end process;
+	mii_cksm <= sum & acc(acc'length-1 downto sum'length);
 
 end;

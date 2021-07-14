@@ -124,13 +124,12 @@ begin
 	begin
 
 		dev_req <= dhcpctx_frm & pltx_frm;
---		arbiter_e : entity hdl4fpga.arbiter
---		port map (
---			clk => mii_clk,
---			req => dev_req,
---			gnt => dev_gnt);
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_clk,
+			req => dev_req,
+			gnt => dev_gnt);
 
-		dev_gnt <= "10";
 		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,  dev_gnt)(0);
 		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy, dev_gnt)(0);
 		udptx_end  <= wirebus(dhcpctx_end  & udppltx_end,    dev_gnt)(0);

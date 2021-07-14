@@ -247,12 +247,11 @@ begin
 	begin
 
 		dev_req <= arptx_frm & ipv4tx_frm;
---		arbiter_e : entity hdl4fpga.arbiter
---		port map (
---			clk => mii_clk,
---			req => dev_req,
---			gnt => dev_gnt);
-		dev_gnt <="01";
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_clk,
+			req => dev_req,
+			gnt => dev_gnt);
 
 		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt)(0);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt)(0);
