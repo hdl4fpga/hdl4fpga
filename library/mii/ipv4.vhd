@@ -295,7 +295,7 @@ begin
 			s   => lentx_data,
 			co  => tx_co);
 
-		len_e : entity hdl4fpga.sio_ram
+		len_e : entity hdl4fpga.sio_lifo
 		generic map (
 			mem_length => 16)
 		port map (

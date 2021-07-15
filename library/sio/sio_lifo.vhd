@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity sio_ram is
+entity sio_lifo is
 	generic (
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		mem_length : natural := 0;
@@ -50,7 +50,7 @@ entity sio_ram is
         so_data  : out std_logic_vector);
 end;
 
-architecture def of sio_ram is
+architecture def of sio_lifo is
 	constant max_words   : natural := setif(mem_length=0, setif(mem_size=0, mem_data'length, mem_size), mem_length)/si_data'length;
 	constant cntr_length : natural := unsigned_num_bits(max_words-1);
 	subtype addr_range is natural range 1 to cntr_length;
@@ -126,6 +126,6 @@ begin
 
 	so_trdy  <= not rd_addr(0);
 	so_empty <= setif(len=(len'range => '0'));
-	so_end   <= rd_add(0);
+	so_end   <= rd_addr(0);
 
 end;

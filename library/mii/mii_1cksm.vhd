@@ -29,11 +29,15 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity mii_1cksm is
+	generic (
+		n : natural);
 	port (
 		mii_clk  : in  std_logic;
 		mii_frm  : in  std_logic := '1';
 		mii_irdy : in  std_logic;
 		mii_trdy : out std_logic := '1';
+		mii_end  : in  std_logic := '0';
+		mii_empty : out std_logic;
 		mii_data : in  std_logic_vector;
 		mii_cksm : buffer std_logic_vector);
 end;
@@ -43,38 +47,56 @@ architecture beh of mii_1cksm is
 	signal ci  : std_logic;
 	signal op1 : std_logic_vector(mii_data'length-1 downto 0);
 	signal op2 : std_logic_vector(mii_data'length-1 downto 0);
-	signal sum : std_logic_vector(mii_data'length-1 downto 0);
 	signal co  : std_logic;
-	signal acc : std_logic_vector(mii_cksm'length-1 downto 0);
+	signal sum : std_logic_vector(n-1 downto 0);
+	signal acc : std_logic_vector(n-1 downto 0);
 
 begin
 
-	op1 <= acc(sum'range);
-	op2 <= reverse(mii_data) when mii_irdy='1' else (op2'range => '0');
+	op1 <= acc(mii_cksm'length-1 downto 0);
+	op2 <= 
+		(op2'range => '0') when mii_irdy='0' else
+		(op2'range => '0') when mii_end='1'  else
+		reverse(mii_data);
 
 	adder_e : entity hdl4fpga.adder
 	port map (
 		ci  => ci,
 		a   => op1,
 		b   => op2,
-		s   => sum,
+		s   => mii_cksm,
 		co  => co);
 
-	process (mii_cksm, mii_clk)
-		variable aux : std_logic_vector(acc'range);
+	process (sum, mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
-				ci <= '0';
+				ci  <= '0';
 				acc <= (others => '0');
-			else
-				if mii_irdy='1' then
-					ci  <= co;
-					acc <= mii_cksm;
-				end if;
+			elsif mii_irdy='1' then
+				ci  <= co;
+				acc <= sum;
 			end if;
 		end if;
 	end process;
-	mii_cksm <= sum & acc(acc'length-1 downto sum'length);
+
+	sum <= mii_cksm & acc(acc'length-1 downto mii_data'length);
+
+	process (mii_clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(n/mii_cksm'length-1));
+	begin
+		if rising_edge(mii_clk) then
+			if mii_frm='0' then
+				cntr := to_unsigned(n/mii_cksm'length-1, cntr'length);
+			elsif mii_irdy='1' then
+				if mii_end='1' then
+					if cntr(0)='0' then
+						cntr := cntr - 1;
+					end if;
+				end if;
+			end if;
+			mii_empty <= cntr(0);
+		end if;
+	end process;
 
 end;
