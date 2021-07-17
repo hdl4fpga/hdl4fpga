@@ -86,8 +86,8 @@ begin
 		x"06"            & -- hlen  
 		x"04"            & -- plen  
 		x"0002"          & -- oper  
-	    reverse(sha,8)   & -- Sender Hardware Address
-		reverse(tha,8), 8);    -- Target Hardware Address
+	    sha              & -- Sender Hardware Address
+		tha,             8);    -- Target Hardware Address
 
 	arpmux_irdy <= '0' when pa_frm='1' else arp_irdy;
 	arpmux_e : entity hdl4fpga.sio_mux

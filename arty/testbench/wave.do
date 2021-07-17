@@ -16,6 +16,7 @@ add wave -noupdate /testbench/ethrx_e/mii_frm
 add wave -noupdate -radix hexadecimal /testbench/ethrx_e/mii_data
 add wave -noupdate /testbench/ethrx_e/crc_equ
 add wave -noupdate /testbench/ethrx_e/crc_sb
+add wave -noupdate /testbench/ethrx_e/line__114/q
 add wave -noupdate -radix hexadecimal /testbench/ethrx_e/crc_rem
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_b/htb_e/eth1_txd
@@ -36,6 +37,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/htb_e/hwllc_data
 add wave -noupdate -radix ascii /testbench/du_e/ser_debug_e/video_b/ser_display_e/cga_codes
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_b/miirx_frm
+add wave -noupdate -radix unsigned /testbench/du_e/ipoe_b/du_e/ethtx_e/cntr1
 add wave -noupdate /testbench/du_e/ipoe_b/miirx_irdy
 add wave -noupdate /testbench/du_e/ipoe_b/miirx_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/miirx_data
@@ -44,6 +46,7 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_irdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/miitx_end
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/miitx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/miitx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/miitx_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/miitx_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/miitx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/minpkt
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_mode
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ethtx_e/fcs_data
@@ -85,7 +88,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/co
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/sum
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7908666560 fs} 0}
+WaveRestoreCursors {{Cursor 1} {12300000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
 configure wave -valuecolwidth 191
@@ -101,4 +104,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {4151250 ps} {8088750 ps}
+WaveRestoreZoom {0 fs} {15750 ns}

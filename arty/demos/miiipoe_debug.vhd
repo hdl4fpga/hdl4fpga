@@ -134,7 +134,7 @@ begin
 	end block;
 
 	ipoe_b : block
-		signal mii_txc    : std_logic;
+		alias  mii_txc    : std_logic is eth_txclk_bufg;
 		signal mii_txen   : std_logic;
 		signal mii_rxd    : std_logic_vector(eth_rxd'range);
 		signal mii_txd    : std_logic_vector(eth_rxd'range);
@@ -157,7 +157,6 @@ begin
 
 	begin
 
-		mii_txc   <= eth_txclk_bufg;
 --		miirx_frm <= eth_rx_dv;
 --		mii_rxd	  <= eth_rxd;
 
@@ -237,8 +236,17 @@ begin
 
 		mii_txen  <= miitx_frm and not miitx_end;
 
-		eth_tx_en <= mii_txen;
-		eth_txd   <= mii_txd;
+		process(mii_txc) 
+			variable en : std_logic; 
+			variable d  : std_logic_vector(mii_txd'range); 
+		begin
+			if rising_edge(mii_txc) then
+				eth_tx_en <= en;
+				eth_txd   <= d;
+				en := mii_txen;
+				d  := mii_txd;
+			end if;
+		end process;
 
 		sin_clk   <= mii_txc;
 		sin_frm   <= mii_txen;
@@ -264,20 +272,6 @@ begin
 		video_vtsync => video_vs,
 		video_pixel  => video_pixel);
 
-	process (eth_txclk_bufg)
-	begin
-		if rising_edge(eth_txclk_bufg) then
-			if btn(0)='1' then
-				if eth_tx_en='0' then
-					dhcp_req <= '1';
-				end if;
-			elsif eth_tx_en='0' then
-				dhcp_req <= '0';
-			end if;
-		end if;
-	end process;
-	led(0) <= tp(3);
-
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
@@ -289,7 +283,8 @@ begin
 		end if;
 	end process;
 
-	eth_rstn <= '1';
+	led(3) <=  not btn(3);
+	eth_rstn <= not btn(3);
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 

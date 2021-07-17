@@ -36,6 +36,7 @@ architecture arty_miiipoedebug of testbench is
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal ref_clk : std_logic;
+	signal ref_clk1 : std_logic;
 	signal eth_txd : std_logic_vector(0 to 4-1);
 	signal eth_tx_en : std_logic;
 
@@ -61,9 +62,10 @@ begin
 		btn(1) => btn1,
 		btn(4-1 downto 2) => "--");
 
+	ref_clk1 <= ref_clk;
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		mii_clk    => ref_clk,
+		mii_clk    => ref_clk1,
 		mii_frm    => eth_tx_en,
 		mii_irdy   => eth_tx_en,
 		mii_data   => eth_txd);

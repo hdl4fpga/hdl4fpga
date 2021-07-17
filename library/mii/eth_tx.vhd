@@ -48,7 +48,7 @@ entity eth_tx is
 		mii_frm  : buffer std_logic;
 		mii_irdy : buffer std_logic;
 		mii_trdy : in  std_logic := '1';
-		mii_end  : out std_logic;
+		mii_end  : buffer std_logic;
 		mii_data : out std_logic_vector);
 
 end;
@@ -59,12 +59,15 @@ architecture def of eth_tx is
 	signal pre_end  : std_logic;
 	signal pre_data : std_logic_vector(mii_data'range);
 
+	signal minpkt   : std_logic;
+
 	signal fcs_irdy : std_logic;
 	signal fcs_mode : std_logic;
 	signal fcs_data : std_logic_vector(mii_data'range);
 	signal fcs_end  : std_logic;
 	signal fcs_crc  : std_logic_vector(0 to 32-1);
 
+		signal cntr1 : unsigned(0 to unsigned_num_bits(64*8/mii_data'length-1));
 begin
 
 	mii_frm <= pl_frm;
@@ -78,11 +81,27 @@ begin
 		so_end   => pre_end,
 		so_data  => pre_data);
 
+	process(mii_clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(64*8/mii_data'length-1));
+	begin
+		if rising_edge(mii_clk) then
+			if pl_frm='0' then
+				cntr := to_unsigned((64*8-32)/mii_data'length-1, cntr'length);
+			elsif mii_trdy='1' and pre_end='1' then
+				if cntr(0)='0' then
+					cntr := cntr - 1;
+				end if;
+			end if;
+			cntr1 <= cntr;
+			minpkt <= cntr(0);
+		end if;
+	end process;
+
 	hwllc_irdy <= mii_trdy and pre_end;
 
 	pl_trdy  <= hwllc_end and mii_trdy;
-	fcs_data <= primux(hwllc_data, (0 => not hwllc_end), pl_data);
 	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
+	fcs_data <= primux(hwllc_data & pl_data, not hwllc_end & not pl_end, (pl_data'range => '0'));
 
 	process (mii_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/mii_data'length-1));
@@ -92,7 +111,7 @@ begin
 				if to_bit(cntr(0))='0' then
 					cntr := (others => '1');
 				end if;
-			elsif pl_end='1' and cntr(0)='1' then
+			elsif pl_end='1' and minpkt='1' and cntr(0)='1' then
 				if fcs_irdy='1' then
 					cntr := cntr - 1; 
 				end if;
@@ -101,7 +120,7 @@ begin
 		end if;
 	end process;
 
-	fcs_mode <= pl_end;
+	fcs_mode <= pl_end and minpkt;
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
@@ -118,8 +137,8 @@ begin
 		not pl_end  & 
 		('1' and pl_end))(0);
 	mii_data <= primux(
-		pre_data     & hwllc_data    & pl_data,
-		not  pre_end & not hwllc_end & not pl_end,
+		pre_data     & hwllc_data    & pl_data    & (pl_data'range => '0'),
+		not  pre_end & not hwllc_end & not pl_end & not minpkt,
 		fcs_crc(mii_data'range));
 	mii_end <= fcs_end;
 
