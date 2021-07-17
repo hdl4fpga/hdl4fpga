@@ -37,6 +37,7 @@ entity icmp is
 		icmprx_irdy : in  std_logic;
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
+		dlltx_end   : in  std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
 		icmptx_end  : buffer std_logic;
@@ -202,7 +203,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (icmpd_req xor icmpd_rdy)='1' then
-				if icmptx_end='1' then
+				if (dlltx_end and icmptx_end)='1' then
 					icmpd_rdy <= icmpd_req;
 				end if;
 			end if;

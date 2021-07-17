@@ -352,13 +352,14 @@ begin
 		mii_end    => miitx_end,
 		mii_data   => miitx_data);
 
+	arpdtx_req <= arpdtx_rdy;
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
 		hwsa       => my_mac)
 	port map (
 		mii_clk    => mii_clk,
 
-		arpdtx_req => arpdtx_rdy,
+		arpdtx_req => arpdtx_req,
 		arpdtx_rdy => arpdtx_rdy,
 		arprx_frm  => arprx_frm,
 		arprx_irdy => miirx_irdy,
@@ -403,6 +404,8 @@ begin
 
 		ipv4satx_frm  => ipv4satx_frm,
 		ipv4satx_irdy => ipv4satx_irdy,
+		ipv4satx_trdy => ipv4satx_trdy,
+		ipv4satx_end  => ipv4satx_end,
 		ipv4satx_data => ipv4satx_data,
 
 		plrx_frm      => ipv4plrx_frm,
@@ -417,6 +420,7 @@ begin
 
 		ipv4tx_frm    => ipv4tx_frm,
 		dlltx_full    => dlltx_full,
+		dlltx_end     => miitx_end,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

@@ -29,36 +29,36 @@ use hdl4fpga.std.all;
 
 entity arpd is
 	generic (
-		hwsa       : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		hwsa        : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_clk    : in  std_logic;
-		arprx_frm  : in  std_logic;
-		arprx_irdy : in  std_logic;
-		arprx_data : in  std_logic_vector;
+		mii_clk     : in  std_logic;
+		arprx_frm   : in  std_logic;
+		arprx_irdy  : in  std_logic;
+		arprx_data  : in  std_logic_vector;
 
-		arpdtx_req : in  std_logic;
-		arpdtx_rdy : buffer  std_logic;
+		arpdtx_req  : in  std_logic;
+		arpdtx_rdy  : buffer  std_logic;
 
-		sparx_irdy : out std_logic;
-		sparx_trdy : in  std_logic;
-		sparx_end  : in  std_logic;
-		sparx_equ  : in  std_logic;
+		sparx_irdy  : out std_logic;
+		sparx_trdy  : in  std_logic;
+		sparx_end   : in  std_logic;
+		sparx_equ   : in  std_logic;
 
-		spatx_frm  : out std_logic;
-		spatx_irdy : out std_logic;
-		spatx_trdy : in  std_logic;
-		spatx_end  : in  std_logic;
-		spatx_data : in  std_logic_vector;
+		spatx_frm   : out std_logic;
+		spatx_irdy  : out std_logic;
+		spatx_trdy  : in  std_logic;
+		spatx_end   : in  std_logic;
+		spatx_data  : in  std_logic_vector;
 
 		arpdtx_frm  : buffer std_logic := '0';
 		dlltx_full  : in  std_logic;
 		arpdtx_irdy : out std_logic;
 		arpdtx_trdy : in  std_logic;
-		arpdtx_end  : out std_logic;
+		arpdtx_end  : buffer std_logic;
 		arpdtx_data : out std_logic_vector;
-		miitx_end  : in  std_logic;
+		miitx_end   : in  std_logic;
 
-		tp         : out std_logic_vector(1 to 32));
+		tp          : out std_logic_vector(1 to 32));
 
 end;
 
@@ -112,7 +112,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if arpdtx_frm='1' then
-				if arpdtx_trdy='1' then
+				if arpdtx_end='1' then
 					if miitx_end='1' then
 						arpdtx_frm <= '0';
 						arpd_rdy  <= arpd_req;

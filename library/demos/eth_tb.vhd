@@ -88,19 +88,13 @@ architecture def of eth_tb is
 --			x"0000" &              -- UPD checksum
 --			payload);
 
-	signal eth1_llc   : std_logic_vector(0 to 16-1);
-	signal eth1_txen  : std_logic;
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
 	signal eth1_end   : std_logic;
 
-	signal eth2_llc   : std_logic_vector(0 to 16-1);
 	signal eth2_end   : std_logic;
-	signal eth2_txen  : std_logic;
 	signal eth2_txd   : std_logic_vector(mii_txd'range);
 
 	signal eth_llc    : std_logic_vector(0 to 16-1);
-	signal eth_txen   : std_logic;
-	signal eth_txd    : std_logic_vector(mii_txd'range);
 
 	signal pl_frm     : std_logic;
 	signal pl_trdy    : std_logic;
@@ -166,7 +160,6 @@ begin
 		pl_frm <= frm;
 	end process;
 
-	hwllc_irdy <= '1';
 	llc_data <= reverse(x"00_40_00_01_02_03" & x"ff_ff_ff_ff_ff_ff" & eth_llc,8);
 	hwsa_e : entity hdl4fpga.sio_mux
 	port map (

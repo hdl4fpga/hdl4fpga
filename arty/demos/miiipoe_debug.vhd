@@ -158,13 +158,18 @@ begin
 	begin
 
 		mii_txc   <= eth_txclk_bufg;
-		miirx_frm <= '0'; --eth_rx_dv;
-		mii_rxd	  <= eth_rxd;
+--		miirx_frm <= eth_rx_dv;
+--		mii_rxd	  <= eth_rxd;
 
---			phy_txc   => eth_txclk_bufg,
---			phy_tx_en => eth_tx_en,
---			phy_tx_d  => eth_txd,
-		
+		htb_e : entity hdl4fpga.eth_tb
+		port map (
+			mii_frm1 => btn(0),
+			mii_frm2 => std_logic'('0'),
+
+			mii_txc  => mii_txc,
+			mii_txen => miirx_frm,
+			mii_txd  => mii_rxd);
+
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,
@@ -194,7 +199,7 @@ begin
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
-			dhcpcd_req => dhcpcd_req,
+			dhcpcd_req => '0', --dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,

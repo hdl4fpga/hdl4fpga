@@ -41,6 +41,7 @@ entity dhcpcd is
 		dhcpcdtx_frm  : buffer std_logic;
 		dlltx_full    : in std_logic;
 		nettx_full    : in std_logic;
+		dlltx_end     : in  std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic := '1';
@@ -77,7 +78,7 @@ begin
 		if rising_edge(mii_clk) then
 			if (dhcpcd_req xor dhcpcd_rdy)='1' then
 				dhcpcdtx_frm <= '1';
-				if dhcpcdrx_frm='1' then
+				if dlltx_end='1' then
 					dhcpcd_rdy <= dhcpcd_req;
 				end if;
 			else
