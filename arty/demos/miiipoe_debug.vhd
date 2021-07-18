@@ -157,17 +157,17 @@ begin
 
 	begin
 
---		miirx_frm <= eth_rx_dv;
---		mii_rxd	  <= eth_rxd;
+		miirx_frm <= eth_rx_dv;
+		mii_rxd	  <= eth_rxd;
 
-		htb_e : entity hdl4fpga.eth_tb
-		port map (
-			mii_frm1 => btn(0),
-			mii_frm2 => std_logic'('0'),
-
-			mii_txc  => mii_txc,
-			mii_txen => miirx_frm,
-			mii_txd  => mii_rxd);
+--		htb_e : entity hdl4fpga.eth_tb
+--		port map (
+--			mii_frm1 => btn(0),
+--			mii_frm2 => std_logic'('0'),
+--
+--			mii_txc  => mii_txc,
+--			mii_txen => miirx_frm,
+--			mii_txd  => mii_rxd);
 
 		serdes_e : entity hdl4fpga.serdes
 		port map (

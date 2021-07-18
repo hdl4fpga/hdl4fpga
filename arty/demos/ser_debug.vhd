@@ -285,19 +285,19 @@ begin
 		video_vtsync => video_vs,
 		video_pixel  => video_pixel);
 
---	process (eth_txclk_bufg)
---	begin
---		if rising_edge(eth_txclk_bufg) then
---			if btn(0)='1' then
---				if eth_tx_en='0' then
---					dhcp_req <= '1';
---				end if;
---			elsif eth_tx_en='0' then
---				dhcp_req <= '0';
---			end if;
---		end if;
---	end process;
---	led(0) <= tp(3);
+	process (eth_txclk_bufg)
+	begin
+		if rising_edge(eth_txclk_bufg) then
+			if btn(0)='1' then
+				if eth_tx_en='0' then
+					dhcp_req <= '1';
+				end if;
+			elsif eth_tx_en='0' then
+				dhcp_req <= '0';
+			end if;
+		end if;
+	end process;
+	led(0) <= tp(3);
 
 	process (video_clk)
 	begin
