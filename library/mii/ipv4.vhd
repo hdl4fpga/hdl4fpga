@@ -207,16 +207,19 @@ begin
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sarx_equ);
 
-	ipv4a_p : process (mii_clk)
-		variable q : std_logic;
+	ipv4a_p : process (ipv4sarx_end, mii_clk)
+		variable vld : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
-				ipv4da_vld <= '0';
+				vld := '0';
 			elsif ipv4sarx_end='0' then
-				ipv4da_vld <= ipv4sarx_equ;
+				if ipv4sack_irdy='1' then
+					vld := ipv4sarx_equ;
+				end if;
 			end if;
 		end if;
+		ipv4da_vld <= ipv4sarx_end and vld;
 	end process;
 
 	ipv4sa_frm   <= ipv4satx_frm  or ipv4atx_frm;
