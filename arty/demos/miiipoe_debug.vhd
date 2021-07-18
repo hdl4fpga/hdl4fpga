@@ -76,7 +76,7 @@ architecture miiipoe_debug of arty is
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
 	signal tp  : std_logic_vector(1 to 32);
-	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
+	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
 
 	-----------------
 	-- Select link --
@@ -197,6 +197,7 @@ begin
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
+			tp => tp,
 			mii_clk    => mii_txc,
 			dhcpcd_req => '0', --dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
@@ -263,9 +264,9 @@ begin
 		blue_length  => 1)
 	port map (
 		ser_clk      => sin_clk,
-		ser_frm      => sin_frm,
-		ser_irdy     => sin_irdy,
-		ser_data     => sin_data,
+		ser_frm      => tp(1), --sin_frm,
+		ser_irdy     => tp(2), --sin_irdy,
+		ser_data     => data, --sin_data,
 
 		video_clk    => video_clk,
 		video_hzsync => video_hs,

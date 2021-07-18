@@ -388,6 +388,7 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
+		tp => tp,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,

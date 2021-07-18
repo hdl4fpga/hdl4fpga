@@ -42,12 +42,11 @@ entity ipv4 is
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 		ipv4rx_data    : in  std_logic_vector;
-		ipv4arx_vld    : buffer std_logic;
 
 		ipv4sarx_frm   : in  std_logic;
 		ipv4sarx_irdy  : in  std_logic;
 		ipv4sarx_trdy  : buffer std_logic;
-		ipv4sarx_end   : out std_logic;
+		ipv4sarx_end   : buffer std_logic;
 		ipv4sarx_equ   : buffer std_logic;
 
 		ipv4satx_frm   : in  std_logic;
@@ -172,7 +171,7 @@ begin
 		pl_irdy        => ipv4plrx_irdy);
 
 	ipv4sack_frm  <= ipv4sarx_frm;
-	ipv4sack_irdy <= ipv4rxsa_irdy or ipv4sarx_irdy;
+	ipv4sack_irdy <= ipv4sarx_irdy or ipv4darx_irdy;
 
 	sarx_e : entity hdl4fpga.sio_ram
 	generic map (
@@ -193,17 +192,37 @@ begin
 		so_end  => ipv4sarx_end,
 		so_data => ipv4sarx_data);
 
+	tp(1) <= ipv4darx_frm;
+	tp(2) <= ipv4darx_irdy;
+	tp(3 to 10) <= ipv4rx_data;
 	sarxcmp_e : entity hdl4fpga.sio_cmp
     port map (
         si_clk    => mii_clk,
-        si_frm    => ipv4sarx_frm,
-        si1_irdy  => ipv4sarx_irdy,
-        si1_trdy  => open, --ipv4sarx_trdy,
+        si_frm    => ipv4sack_frm,
+        si1_irdy  => ipv4sack_irdy,
+        si1_trdy  => open,
         si1_data  => ipv4sarx_data,
-        si2_irdy  => ipv4sarx_irdy,
+        si2_irdy  => ipv4sack_irdy,
         si2_trdy  => open,
         si2_data  => ipv4rx_data,
 		si_equ    => ipv4sarx_equ);
+
+	ipv4a_p : process (mii_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if ipv4rx_frm='0' then
+				ipv4da_vld <= '0';
+				q := '0';
+			elsif ipv4sarx_end='0' then
+				if ipv4rx_irdy='1' then
+					q := ipv4sarx_equ;
+				end if;
+			else
+				ipv4da_vld <= q;
+			end if;
+		end if;
+	end process;
 
 	ipv4sa_frm   <= ipv4satx_frm  or ipv4atx_frm;
 	ipv4sa_irdy  <= ipv4satx_irdy or ipv4atx_irdy;
@@ -376,17 +395,6 @@ begin
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);
-
-	ipv4a_p : process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if ipv4rx_frm='0' then
-				ipv4da_vld <= '0';
-			elsif ipv4da_vld='0' then
-				ipv4da_vld <= ipv4arx_vld;
-			end if;
-		end if;
-	end process;
 
 	proto_e : entity hdl4fpga.sio_muxcmp
 	generic map (
