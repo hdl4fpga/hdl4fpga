@@ -213,13 +213,8 @@ begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
 				ipv4da_vld <= '0';
-				q := '0';
 			elsif ipv4sarx_end='0' then
-				if ipv4rx_irdy='1' then
-					q := ipv4sarx_equ;
-				end if;
-			else
-				ipv4da_vld <= q;
+				ipv4da_vld <= ipv4sarx_equ;
 			end if;
 		end if;
 	end process;

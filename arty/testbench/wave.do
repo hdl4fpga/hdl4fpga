@@ -59,6 +59,11 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_req(1)
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_gnt(0)
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_gnt(1)
 add wave -noupdate -divider arp
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_end
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_equ
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/arpd_rdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/arpd_req
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_frm
@@ -88,9 +93,9 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/co
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/sum
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12300000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {3754470 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 323
+configure wave -namecolwidth 141
 configure wave -valuecolwidth 191
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -104,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {15750 ns}
+WaveRestoreZoom {0 ps} {4200 ns}
