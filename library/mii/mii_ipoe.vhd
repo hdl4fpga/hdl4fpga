@@ -393,6 +393,8 @@ begin
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
+		dll_frm       => miirx_frm,
+		dll_irdy      => hwsarx_irdy,
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => miirx_irdy,
 		ipv4rx_data   => miirx_data,

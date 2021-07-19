@@ -39,6 +39,8 @@ entity ipv4 is
 		dhcpcd_req     : in  std_logic := '0';
 		dhcpcd_rdy     : out std_logic := '0';
 
+		dll_frm        : in  std_logic := '1';
+		dll_irdy       : in  std_logic := '1';
 		ipv4rx_frm     : in  std_logic;
 		ipv4rx_irdy    : in  std_logic;
 		ipv4rx_data    : in  std_logic_vector;
@@ -99,6 +101,7 @@ architecture def of ipv4 is
 	signal ipv4pltx_data    : std_logic_vector(ipv4tx_data'range);
 
 	signal icmprx_frm       : std_logic;
+	signal icmprx_irdy      : std_logic;
 	signal icmprx_equ       : std_logic;
 	signal icmprx_vld       : std_logic;
 	signal icmptx_frm       : std_logic;
@@ -416,14 +419,19 @@ begin
 			end if;
 		end if;
 	end process;
-	icmprx_frm <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
+	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
+	icmprx_irdy <= icmprx_frm and ipv4rx_irdy;
 
 	icmp_e : entity hdl4fpga.icmp
 	port map (
 		mii_clk     => mii_clk,
+		dll_frm     => dll_frm,
+		dll_irdy    => dll_irdy,
+		net_frm     => ipv4rx_frm,
+		net_irdy    => ipv4darx_irdy,
 
-		icmprx_frm  => ipv4rx_frm,
-		icmprx_irdy => ipv4rx_irdy,
+		icmprx_frm  => icmprx_frm,
+		icmprx_irdy => icmprx_irdy,
 		icmprx_data => ipv4rx_data,
 
 		dlltx_end   => dlltx_end,

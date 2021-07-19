@@ -30,16 +30,19 @@ use hdl4fpga.std.all;
 
 entity mii_1cksm is
 	generic (
-		n : natural);
+		n    : natural;
+		init : std_logic_vector := (0 to 0 => '0'));
 	port (
-		mii_clk  : in  std_logic;
-		mii_frm  : in  std_logic := '1';
-		mii_irdy : in  std_logic;
-		mii_trdy : out std_logic := '1';
-		mii_end  : in  std_logic := '0';
+		mii_clk   : in  std_logic;
+		mii_frm   : in  std_logic := '1';
+		mii_irdy  : in  std_logic;
+		mii_trdy  : out std_logic := '1';
+		mii_end   : in  std_logic := '0';
 		mii_empty : out std_logic;
-		mii_data : in  std_logic_vector;
-		mii_cksm : buffer std_logic_vector);
+		mii_data  : in  std_logic_vector;
+		mii_ci    : in  std_logic := '0';
+		mii_co    : buffer std_logic;
+		mii_cksm  : buffer std_logic_vector);
 end;
 
 architecture beh of mii_1cksm is
@@ -71,8 +74,8 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
-				ci  <= '0';
-				acc <= (others => '0');
+				ci  <= mii_ci;
+				acc <= std_logic_vector(resize(unsigned(init), acc'length));
 			elsif mii_irdy='1' then
 				ci  <= co;
 				acc <= sum;
@@ -80,6 +83,7 @@ begin
 		end if;
 	end process;
 
+	mii_co <= co;
 	sum <= mii_cksm & acc(acc'length-1 downto mii_data'length);
 
 	process (mii_clk)
