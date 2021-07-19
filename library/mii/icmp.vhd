@@ -58,8 +58,6 @@ architecture def of icmp is
 
 	signal icmpcoderx_irdy : std_logic;
 	signal icmptyperx_irdy : std_logic;
-	signal icmpidrx_irdy   : std_logic;
-	signal icmpseqrx_irdy  : std_logic;
 	signal icmpcksmrx_frm  : std_logic;
 	signal icmpcksmrx_irdy : std_logic;
 	signal icmpplrx_irdy   : std_logic;
@@ -77,8 +75,8 @@ architecture def of icmp is
 	signal icmppltx_end    : std_logic;
 	signal icmppltx_data   : std_logic_vector(icmptx_data'range);
 
-	signal cksm_end : std_logic;
-	signal cksm_data : std_logic_vector(icmprx_data'range);
+	signal cksmrx_data : std_logic_vector(icmprx_data'range);
+	signal rx2tx_cy : std_logic;
 
 	signal memrx_data : std_logic_vector(icmprx_data'range);
 	signal memtx_data : std_logic_vector(icmptx_data'range);
@@ -93,27 +91,48 @@ begin
 
 		icmpcode_irdy => icmpcoderx_irdy,
 		icmptype_irdy => icmptyperx_irdy,
-		icmpid_irdy   => icmpidrx_irdy,
-		icmpseq_irdy  => icmpseqrx_irdy,
 		icmpcksm_frm  => icmpcksmrx_frm,
 		icmpcksm_irdy => icmpcksmrx_irdy,
 		icmppl_irdy   => icmpplrx_irdy);
 
-	cksm_end <= not icmpcksmrx_frm;
-	cksmrx_e : entity hdl4fpga.mii_1cksm
-	generic map (
-		n    => 16,
-		init => icmptype_rply & icmptype_rqst)
-	port map (
-		mii_clk   => mii_clk,
-		mii_frm   => dll_frm,
-		mii_irdy  => icmpcksmrx_irdy,
-		mii_end   => cksm_end,
-		mii_data  => icmprx_data,
-		mii_cksm  => cksm_data);
+	cksmrx_b : block
+		signal ci : std_logic;
+		signal co : std_logic;
+		signal adj_data : std_logic_vector(icmprx_data'range);
+	begin
+
+		mux_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => icmptype_rply & icmptype_rqst,
+			sio_clk  => mii_clk,
+			sio_frm  => dll_frm,
+			sio_irdy => icmpcksmrx_irdy,
+			sio_trdy => open,
+			so_data  => adj_data);
+
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if dll_frm='0' then
+					ci <= '0';
+				elsif icmpcksmrx_irdy='1' then
+					ci <= co;
+					rx2tx_cy <= co;
+				end if;
+			end if;
+		end process;
+
+		rx_sum_e : entity hdl4fpga.adder
+		port map (
+			ci  => ci,
+			a   => icmprx_data,
+			b   => adj_data,
+			s   => cksmrx_data,
+			co  => co);
+	end block;
 
 	memrx_data <= primux(
-		(icmptx_data'range => '0') & (icmptx_data'range => '0') & cksm_data, 
+		(icmptx_data'range => '0') & (icmptx_data'range => '0') & cksmrx_data, 
 		icmpcoderx_irdy & icmptyperx_irdy & icmpcksmrx_irdy,
 		icmprx_data);
 
@@ -148,17 +167,31 @@ begin
 	end process;
 	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy);
 
-	cksmtx_e : entity hdl4fpga.mii_1cksm
-	generic map (
-		n    => 16)
-	port map (
-		mii_clk   => mii_clk,
-		mii_frm   => icmppltx_frm,
-		mii_ci    => '-',
-		mii_irdy  => icmpcksmtx_irdy,
-		mii_end   => '-', --cksm_end,
-		mii_data  => (icmptx_data'range => '0'),
-		mii_cksm  => icmppltx_data);
+	cksmtx_b : block
+		signal ci : std_logic;
+		signal co : std_logic;
+	begin
+		process (icmppltx_frm, mii_clk)
+			variable cy : std_logic;
+		begin
+			if rising_edge(mii_clk) then
+				if icmppltx_frm='0' then
+					cy := rx2tx_cy;
+				elsif icmpcksmtx_irdy='1' then
+					cy := co;
+				end if;
+			end if;
+			ci <= setif(icmpcksmrx_irdy='1', cy, '0');
+		end process;
+
+		tx_sum_e : entity hdl4fpga.adder
+		port map (
+			ci  => ci,
+			a   => memtx_data,
+			b   => (icmptx_data'range => '0'),
+			s   => icmppltx_data,
+			co  => co);
+	end block;
 
 	icmprply_e : entity hdl4fpga.icmprply_tx
 	port map (

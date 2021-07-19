@@ -60,14 +60,14 @@ architecture def of eth_tb is
 		x"0000"                 &    -- IP Header Checksum
 		x"ffffffff"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"aaaaaaaa",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"123456ff",8) &
+		reverse(x"aaaaaaff",8) &
 		reverse(x"ffffffff",8) ;
 
 --	constant packet : std_logic_vector := 

@@ -40,8 +40,6 @@ entity mii_1cksm is
 		mii_end   : in  std_logic := '0';
 		mii_empty : out std_logic;
 		mii_data  : in  std_logic_vector;
-		mii_ci    : in  std_logic := '0';
-		mii_co    : buffer std_logic;
 		mii_cksm  : buffer std_logic_vector);
 end;
 
@@ -74,7 +72,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
-				ci  <= mii_ci;
+				ci  <= '0';
 				acc <= std_logic_vector(resize(unsigned(init), acc'length));
 			elsif mii_irdy='1' then
 				ci  <= co;
@@ -83,7 +81,6 @@ begin
 		end if;
 	end process;
 
-	mii_co <= co;
 	sum <= mii_cksm & acc(acc'length-1 downto mii_data'length);
 
 	process (mii_clk)
