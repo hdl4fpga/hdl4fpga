@@ -435,6 +435,8 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		dlltx_end   => dlltx_end,
+
+		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end,

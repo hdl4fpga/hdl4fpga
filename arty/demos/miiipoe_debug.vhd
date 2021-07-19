@@ -264,9 +264,9 @@ begin
 		blue_length  => 1)
 	port map (
 		ser_clk      => sin_clk,
-		ser_frm      => tp(1), --sin_frm,
-		ser_irdy     => tp(2), --sin_irdy,
-		ser_data     => data, --sin_data,
+		ser_frm      => sin_frm,
+		ser_irdy     => sin_irdy,
+		ser_data     => sin_data,
 
 		video_clk    => video_clk,
 		video_hzsync => video_hs,

@@ -98,23 +98,12 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4chsm_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_data
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/ci
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/op1
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/op2
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/co
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_1cksm_e/sum
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmprx_vld
 add wave -noupdate -divider icmp4
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/dll_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/dll_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/net_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/net_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmprx_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmprx_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmprx_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmpdata_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmpd_rdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmp_e/icmpd_req
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {5461637 ps} 0}
+WaveRestoreCursors {{Cursor 1} {13318231 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 243
 configure wave -valuecolwidth 191
@@ -130,4 +119,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {9450 ns}
+WaveRestoreZoom {4035 ns} {18735 ns}
