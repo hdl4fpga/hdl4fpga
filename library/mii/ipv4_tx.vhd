@@ -149,7 +149,7 @@ begin
 		so_end   => ipv4shdr_end,
 		so_data  => ipv4shdr_data);
 
-	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & reverse(ipv4len_data), ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
+	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & ipv4len_data, ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
 
 	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
 	ipv4a_irdy <= 

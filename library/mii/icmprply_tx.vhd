@@ -53,7 +53,7 @@ end;
 
 architecture def of icmprply_tx is
 
-	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame & icmprqst_frame)/icmp_data'length-1));
+	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame)/icmp_data'length-1));
 
 begin
 
@@ -62,17 +62,17 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				cntr := to_unsigned(summation(icmphdr_frame & icmprqst_frame)-1, cntr'length);
-			elsif cntr(0)='0' and pl_irdy='1' then
+				cntr := to_unsigned(summation(icmphdr_frame)/icmp_data'length-1, cntr'length);
+			elsif cntr(0)='0' and (pl_irdy and icmp_trdy)='1' then
 				cntr := cntr - 1;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);
 		end if;
 	end process;
 
-	icmpcksm_irdy <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_cksm);
-	icmpid_irdy   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_id);
-	icmpseq_irdy  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame & icmprqst_frame), icmp_data'length, icmp_seq);
+	icmpcksm_irdy <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_cksm);
+	icmpid_irdy   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_id);
+	icmpseq_irdy  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_seq);
 	pl_trdy       <= icmp_trdy;
 
 	icmp_frm  <= pl_frm;

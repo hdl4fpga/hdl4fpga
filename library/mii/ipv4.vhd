@@ -270,53 +270,21 @@ begin
 	meta_b : block
 		signal lentx_full   : std_logic;
 		signal lentx_irdy   : std_logic;
-		signal lentx_data   : std_logic_vector(ipv4tx_data'range);
 		signal datx_irdy    : std_logic;
 
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
-		signal tx_ci        : std_logic;
-		signal tx_co        : std_logic;
-		signal crtn_data    : std_logic_vector(pltx_data'range);
 
 	begin
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				if ipv4tx_frm='0' then
-					tx_ci <= '0';
-				elsif pltx_irdy='1' then
-					tx_ci <= tx_co;
-				end if;
-			end if;
-		end process;
 
 		lentx_irdy <= 
 			'0' when dlltx_full='0' else
 			'1' when nettx_full='0' else
 			ipv4tx_irdy;
 
-		mux_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
-			sio_clk  => mii_clk,
-			sio_frm  => ipv4tx_frm,
-			sio_irdy => lentx_irdy,
-			sio_trdy => open,
-			so_data  => crtn_data);
-
-		tx_sum_e : entity hdl4fpga.adder
-		port map (
-			ci  => tx_ci,
-			a   => ipv4pltx_data,
-			b   => crtn_data,
-			s   => lentx_data,
-			co  => tx_co);
-
-		len_e : entity hdl4fpga.sio_lifo
+		len_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
 		port map (
@@ -325,7 +293,7 @@ begin
 			si_irdy  => lentx_irdy,
 			si_trdy  => open,
 			si_full  => lentx_full,
-			si_data  => lentx_data,
+			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4tx_frm,
@@ -428,13 +396,16 @@ begin
 		dll_frm     => dll_frm,
 		dll_irdy    => dll_irdy,
 		net_frm     => ipv4rx_frm,
-		net_irdy    => ipv4darx_irdy,
+		net_irdy    => ipv4rxsa_irdy,
+		net1_irdy   => ipv4lenrx_irdy,
 
 		icmprx_frm  => icmprx_frm,
 		icmprx_irdy => icmprx_irdy,
 		icmprx_data => ipv4rx_data,
 
+		dlltx_full  => dlltx_full,
 		dlltx_end   => dlltx_end,
+		nettx_full  => nettx_full,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,

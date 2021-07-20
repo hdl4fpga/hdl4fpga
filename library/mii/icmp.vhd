@@ -37,12 +37,15 @@ entity icmp is
 		dll_irdy    : in  std_logic;
 		net_frm     : in  std_logic;
 		net_irdy    : in  std_logic;
+		net1_irdy   : in  std_logic;
 
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
 		dlltx_end   : in  std_logic;
+		dlltx_full  : in  std_logic;
+		nettx_full  : in  std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
 		icmptx_end  : buffer std_logic;
@@ -52,6 +55,7 @@ end;
 architecture def of icmp is
 
 	signal icmpdata_irdy   : std_logic;
+	signal icmpdatatx_irdy : std_logic;
 
 	signal icmpd_rdy       : bit := '0';
 	signal icmpd_req       : bit := '0';
@@ -98,12 +102,13 @@ begin
 	cksmrx_b : block
 		signal ci : std_logic;
 		signal co : std_logic;
+		signal data : std_logic_vector(icmprx_data'range);
 		signal adj_data : std_logic_vector(icmprx_data'range);
 	begin
 
 		mux_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => icmptype_rply & icmptype_rqst,
+			mux_data => icmptype_rqst & icmpcode_rqst,
 			sio_clk  => mii_clk,
 			sio_frm  => dll_frm,
 			sio_irdy => icmpcksmrx_irdy,
@@ -121,11 +126,11 @@ begin
 				end if;
 			end if;
 		end process;
-
+		data <= reverse(icmprx_data);
 		rx_sum_e : entity hdl4fpga.adder
 		port map (
 			ci  => ci,
-			a   => icmprx_data,
+			a   => data,
 			b   => adj_data,
 			s   => cksmrx_data,
 			co  => co);
@@ -136,7 +141,11 @@ begin
 		icmpcoderx_irdy & icmptyperx_irdy & icmpcksmrx_irdy,
 		icmprx_data);
 
-	icmpdata_irdy <= dll_irdy or net_irdy or icmprx_irdy;
+	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
+	icmpdatatx_irdy <= 
+		  '1' when dlltx_full='0' else
+		  '1' when nettx_full='0' else
+		  icmppltx_trdy;
 	icmpdata_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_size => 128*octect_size)
@@ -148,7 +157,7 @@ begin
 
 		so_clk   => mii_clk,
         so_frm   => icmppltx_frm,
-        so_irdy  => icmppltx_trdy,
+        so_irdy  => icmpdatatx_irdy,
         so_trdy  => icmppltx_irdy,
 		so_end   => icmppltx_end,
         so_data  => memtx_data);
@@ -170,6 +179,7 @@ begin
 	cksmtx_b : block
 		signal ci : std_logic;
 		signal co : std_logic;
+		signal data : std_logic_vector(icmptx_data'range);
 	begin
 		process (icmppltx_frm, mii_clk)
 			variable cy : std_logic;
@@ -181,7 +191,7 @@ begin
 					cy := co;
 				end if;
 			end if;
-			ci <= setif(icmpcksmrx_irdy='1', cy, '0');
+			ci <= setif(icmpcksmtx_irdy='1', cy, '0');
 		end process;
 
 		tx_sum_e : entity hdl4fpga.adder
@@ -189,8 +199,9 @@ begin
 			ci  => ci,
 			a   => memtx_data,
 			b   => (icmptx_data'range => '0'),
-			s   => icmppltx_data,
+			s   => data,
 			co  => co);
+		icmppltx_data <= data when icmpcksmtx_irdy='0' else reverse(data);
 	end block;
 
 	icmprply_e : entity hdl4fpga.icmprply_tx
@@ -203,6 +214,7 @@ begin
 		pl_end    => icmppltx_end,
 		pl_data   => icmppltx_data,
 
+		icmpcksm_irdy => icmpcksmtx_irdy,
 		icmp_frm  => icmptx_frm,
 		icmp_irdy => icmptx_irdy,
 		icmp_trdy => icmptx_trdy,

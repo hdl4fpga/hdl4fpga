@@ -89,8 +89,9 @@ package ipoepkg is
 		icmp_code => 1*octect_size,
 		icmp_cksm => 2*octect_size);
 
-	constant icmptype_rply : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"00";
 	constant icmpcode_rply : std_logic_vector(0 to icmphdr_frame(icmp_code)-1) := x"00";
+	constant icmptype_rply : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"00";
+	constant icmpcode_rqst : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"00";
 	constant icmptype_rqst : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"08";
 
 	constant icmprqst_frame : natural_vector := (
