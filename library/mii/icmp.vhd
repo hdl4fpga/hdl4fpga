@@ -49,7 +49,8 @@ entity icmp is
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
 		icmptx_end  : buffer std_logic;
-		icmptx_data : out std_logic_vector);
+		icmptx_data : out std_logic_vector;
+		tp : out std_logic_vector(1 to 32));
 end;
 
 architecture def of icmp is
@@ -82,6 +83,7 @@ architecture def of icmp is
 	signal cksmrx_data : std_logic_vector(icmprx_data'range);
 	signal rx2tx_cy : std_logic;
 
+	signal memrx_frm  : std_logic;
 	signal memrx_data : std_logic_vector(icmprx_data'range);
 	signal memtx_data : std_logic_vector(icmptx_data'range);
 begin
@@ -146,12 +148,14 @@ begin
 		  '1' when dlltx_full='0' else
 		  '1' when nettx_full='0' else
 		  icmppltx_trdy;
+
+	memrx_frm <= dll_frm and not icmppltx_frm;
 	icmpdata_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_size => 128*octect_size)
     port map (
 		si_clk   => mii_clk,
-        si_frm   => dll_frm,
+        si_frm   => memrx_frm, 
 		si_irdy  => icmpdata_irdy,
         si_data  => memrx_data,
 
@@ -161,20 +165,6 @@ begin
         so_trdy  => icmppltx_irdy,
 		so_end   => icmppltx_end,
         so_data  => memtx_data);
-
-	process (mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if (icmpd_req xor icmpd_rdy)='0' then
-				if q='1' and icmprx_frm='0' then
-					icmpd_req <= not icmpd_rdy;
-				end if;
-			end if;
-			q := icmprx_frm;
-		end if;
-	end process;
-	icmppltx_frm <= to_stdulogic(icmpd_req xor icmpd_rdy);
 
 	cksmtx_b : block
 		signal ci : std_logic;
@@ -224,12 +214,24 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if (icmpd_req xor icmpd_rdy)='1' then
-				if (dlltx_end and icmptx_end)='1' then
-					icmpd_rdy <= icmpd_req;
+			if (icmpd_req xor icmpd_rdy)='0' then
+				if icmppltx_frm='0' then
+					if icmprx_frm='1' then
+						icmpd_req <= not icmpd_rdy;
+					end if;
+				elsif icmptx_end='1' then
+					icmppltx_frm <= not dlltx_end;
 				end if;
+			elsif icmprx_frm='0' then
+				icmpd_rdy <= icmpd_req;
+				icmppltx_frm <= '1';
 			end if;
 		end if;
 	end process;
+
+	tp(1) <= to_stdulogic(icmpd_req);
+	tp(2) <= to_stdulogic(icmpd_rdy);
+	tp(3) <= icmppltx_frm;
+	tp(4) <= icmprx_frm;
 
 end;

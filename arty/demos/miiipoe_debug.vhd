@@ -157,8 +157,46 @@ begin
 
 	begin
 
-		miirx_frm <= eth_rx_dv;
-		mii_rxd	  <= eth_rxd;
+
+		sync_b : block
+			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+			signal dst_irdy : std_logic;
+			signal dst_trdy : std_logic;
+		begin
+
+			rxc_rxbus <= eth_rx_dv & eth_rxd;
+			rxc2txc_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth => 4,
+				latency   => 0,
+				check_sov => false,
+				check_dov => true,
+				gray_code => false)
+			port map (
+				src_clk  => eth_rxclk_bufg,
+				src_data => rxc_rxbus,
+				dst_clk  => mii_txc,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => txc_rxbus);
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					dst_trdy  <= to_stdulogic(to_bit(dst_irdy));
+				end if;
+			end process;
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					miirx_frm <= txc_rxbus(0);
+					mii_rxd	  <= txc_rxbus(1 to mii_rxd'length);
+				end if;
+			end process;
+
+		end block;
 
 --		htb_e : entity hdl4fpga.eth_tb
 --		port map (
@@ -192,8 +230,8 @@ begin
 				end if;
 			end if;
 		end process;
-		led(0) <= dhcpcd_req;
-		led(1) <= dhcpcd_rdy;
+--		led(0) <= dhcpcd_req;
+--		led(1) <= dhcpcd_rdy;
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
@@ -221,7 +259,6 @@ begin
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
-		led(2) <= miitx_frm;
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -250,9 +287,9 @@ begin
 		end process;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= mii_txen;
+		sin_frm   <= eth_rx_dv; --mii_txen;
 		sin_irdy  <= '1';
-		sin_data  <= mii_txd;
+		sin_data  <= eth_rxd; --mii_txd;
 
 	end block;
 
@@ -284,7 +321,10 @@ begin
 		end if;
 	end process;
 
-	led(3) <=  not btn(3);
+	led(0) <= tp(11);
+	led(1) <= tp(12);
+	led(2) <= tp(13);
+	led(3) <= tp(14);
 	eth_rstn <= not btn(3);
 	eth_mdc  <= '0';
 	eth_mdio <= '0';

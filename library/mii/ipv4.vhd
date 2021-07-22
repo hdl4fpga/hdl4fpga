@@ -152,6 +152,7 @@ architecture def of ipv4 is
 	signal ipv4proto_end  : std_logic;
 	signal ipv4proto_data : std_logic_vector(ipv4rx_data'range);
 
+	signal tp1 : std_logic_vector(tp'range);
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -198,6 +199,10 @@ begin
 	tp(1) <= ipv4darx_frm;
 	tp(2) <= ipv4darx_irdy;
 	tp(3 to 10) <= ipv4rx_data;
+	tp(11) <= tp1(1);
+	tp(12) <= tp1(2);
+	tp(13) <= tp1(3);
+	tp(14) <= tp1(4);
 	sarxcmp_e : entity hdl4fpga.sio_cmp
     port map (
         si_clk    => mii_clk,
@@ -411,7 +416,8 @@ begin
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end,
-		icmptx_data => icmptx_data);
+		icmptx_data => icmptx_data,
+		tp => tp1);
 
 	udp_e : entity hdl4fpga.udp
 	port map (
