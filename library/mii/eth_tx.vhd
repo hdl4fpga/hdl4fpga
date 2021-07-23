@@ -92,7 +92,7 @@ begin
 					cntr := cntr - 1;
 				end if;
 			end if;
-			cntr1 <= cntr;
+			cntr1  <= cntr;
 			minpkt <= cntr(0);
 		end if;
 	end process;
@@ -108,15 +108,13 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
-				if to_bit(cntr(0))='0' then
-					cntr := (others => '1');
-				end if;
-			elsif pl_end='1' and minpkt='1' and cntr(0)='1' then
+				cntr := (others => '0');
+			elsif pl_end='1' and minpkt='1' and cntr(0)='0' then
 				if fcs_irdy='1' then
-					cntr := cntr - 1; 
+					cntr := cntr + 1; 
 				end if;
 			end if;
-			fcs_end <= not cntr(0);
+			fcs_end <= cntr(0);
 		end if;
 	end process;
 
@@ -131,11 +129,10 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_irdy <= primux(pre_trdy & hwllc_trdy & pl_irdy & '1',
-		not  pre_end              & 
+	mii_irdy <= primux(pre_trdy & hwllc_trdy & pl_irdy,
+		not pre_end   & 
 		not hwllc_end & 
-		not pl_end  & 
-		('1' and pl_end))(0);
+		not pl_end , "1")(0);
 	mii_data <= primux(
 		pre_data     & hwllc_data    & pl_data    & (pl_data'range => '0'),
 		not  pre_end & not hwllc_end & not pl_end & not minpkt,

@@ -89,6 +89,8 @@ architecture miiipoe_debug of arty is
 
 	constant mem_size  : natural := 8*(1024*8);
 
+		signal hxdv   : std_logic;
+		signal hxd    : std_logic_vector(eth_rxd'range);
 begin
 
 	clkin_ibufg : ibufg
@@ -158,6 +160,15 @@ begin
 	begin
 
 
+		htb_e : entity hdl4fpga.eth_tb
+		port map (
+			mii_frm2 => btn(0),
+			mii_frm1 => std_logic'('0'),
+
+			mii_txc  => eth_rxclk_bufg,
+			mii_txen => hxdv,
+			mii_txd  => hxd);
+
 		sync_b : block
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
 			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
@@ -165,7 +176,8 @@ begin
 			signal dst_trdy : std_logic;
 		begin
 
-			rxc_rxbus <= eth_rx_dv & eth_rxd;
+			rxc_rxbus <= eth_rx_dv & eth_rxd when false else hxdv & hxd;
+
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 4,
@@ -188,24 +200,10 @@ begin
 				end if;
 			end process;
 
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					miirx_frm <= txc_rxbus(0);
-					mii_rxd	  <= txc_rxbus(1 to mii_rxd'length);
-				end if;
-			end process;
+			miirx_frm <= txc_rxbus(0);
+			mii_rxd	  <= txc_rxbus(1 to mii_rxd'length);
 
 		end block;
-
---		htb_e : entity hdl4fpga.eth_tb
---		port map (
---			mii_frm2 => btn(0),
---			mii_frm1 => std_logic'('0'),
---
---			mii_txc  => mii_txc,
---			mii_txen => miirx_frm,
---			mii_txd  => mii_rxd);
 
 		serdes_e : entity hdl4fpga.serdes
 		port map (
@@ -286,10 +284,24 @@ begin
 			end if;
 		end process;
 
+--		process (mii_txc)
+--			variable q : std_logic;
+--			variable e : std_logic;
+--		begin
+--			if rising_edge(mii_txc) then
+--				if e='0' and miirx_frm='1' then
+--					q := not q;
+--				end if;
+--				led(0) <= not q;
+--				led(1) <= q;
+--				e := miirx_frm;
+--			end if;
+--		end process;
+
 		sin_clk   <= mii_txc;
-		sin_frm   <= eth_rx_dv; --mii_txen;
+		sin_frm   <= hxdv; --mii_txen;
 		sin_irdy  <= '1';
-		sin_data  <= eth_rxd; --mii_txd;
+		sin_data  <= hxd; --mii_txd;
 
 	end block;
 

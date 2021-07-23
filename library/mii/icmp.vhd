@@ -215,11 +215,11 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (icmpd_req xor icmpd_rdy)='0' then
-				if icmppltx_frm='0' then
+				if to_bit(icmppltx_frm)='0' then
 					if icmprx_frm='1' then
 						icmpd_req <= not icmpd_rdy;
 					end if;
-				elsif icmptx_end='1' then
+				elsif dlltx_end='1' then
 					icmppltx_frm <= not dlltx_end;
 				end if;
 			elsif icmprx_frm='0' then
@@ -229,9 +229,9 @@ begin
 		end if;
 	end process;
 
-	tp(1) <= to_stdulogic(icmpd_req);
+	tp(1) <= dlltx_end; --to_stdulogic(icmpd_req);
 	tp(2) <= to_stdulogic(icmpd_rdy);
 	tp(3) <= icmppltx_frm;
-	tp(4) <= icmprx_frm;
+	tp(4) <= icmptx_end; --icmprx_frm;
 
 end;
