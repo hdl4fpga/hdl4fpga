@@ -74,7 +74,7 @@ architecture def of icmp is
 
 	signal icmppl_irdy     : std_logic;
 	signal icmpcksmtx_irdy : std_logic;
-	signal icmppltx_frm    : std_logic;
+	signal icmppltx_frm    : std_logic := '0';
 	signal icmppltx_irdy   : std_logic;
 	signal icmppltx_trdy   : std_logic;
 	signal icmppltx_end    : std_logic;
@@ -229,7 +229,7 @@ begin
 		end if;
 	end process;
 
-	tp(1) <= dlltx_end; --to_stdulogic(icmpd_req);
+	tp(1) <= to_stdulogic(icmpd_req);
 	tp(2) <= to_stdulogic(icmpd_rdy);
 	tp(3) <= icmppltx_frm;
 	tp(4) <= icmptx_end; --icmprx_frm;

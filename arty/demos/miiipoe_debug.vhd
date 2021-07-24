@@ -176,7 +176,7 @@ begin
 			signal dst_trdy : std_logic;
 		begin
 
-			rxc_rxbus <= eth_rx_dv & eth_rxd when false else hxdv & hxd;
+			rxc_rxbus <= eth_rx_dv & eth_rxd when sw(0)='1' else hxdv & hxd;
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
@@ -258,6 +258,10 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
+	led(0) <= miitx_frm;       --tp(11);
+	led(1) <= not miitx_frm;   --tp(12);
+	led(2) <= miitx_end;     --tp(13);
+	led(3) <= not miitx_end; --tp(14);
 		desser_e: entity hdl4fpga.desser
 		port map (
 			desser_clk => mii_txc,
@@ -299,10 +303,14 @@ begin
 --		end process;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= hxdv; --mii_txen;
 		sin_irdy  <= '1';
-		sin_data  <= hxd; --mii_txd;
+		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
+		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
+	rgbled(0) <= tp(11); -- sin_frm;
+	rgbled(3) <= tp(12); -- miitx_end;
+	rgbled(6) <= tp(13); -- not miitx_end;
+	rgbled(9) <= tp(14); -- not miitx_end;
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
@@ -333,10 +341,6 @@ begin
 		end if;
 	end process;
 
-	led(0) <= tp(11);
-	led(1) <= tp(12);
-	led(2) <= tp(13);
-	led(3) <= tp(14);
 	eth_rstn <= not btn(3);
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
