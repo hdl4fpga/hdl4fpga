@@ -93,7 +93,7 @@ begin
 				end if;
 			end if;
 			cntr1  <= cntr;
-			minpkt <= '1'; --cntr(0);
+			minpkt <= cntr(0);
 		end if;
 	end process;
 

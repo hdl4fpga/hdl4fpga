@@ -262,6 +262,7 @@ begin
 			clk => mii_clk,
 			req => dev_req,
 			gnt => dev_gnt);
+		dev_gnt <= "10";
 
 		ipv4tx_frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt)(0);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt)(0);

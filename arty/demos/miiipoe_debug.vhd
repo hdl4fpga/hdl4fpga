@@ -163,7 +163,7 @@ begin
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm2 => btn(0),
-			mii_frm1 => std_logic'('0'),
+			mii_frm1 => btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
@@ -258,10 +258,10 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
-	led(0) <= miitx_frm;       --tp(11);
-	led(1) <= not miitx_frm;   --tp(12);
+	led(0) <= miitx_irdy when btn(2)='1' else tp(15);       --tp(11);
+	led(1) <= not miitx_irdy when btn(2)='1' else tp(16);   --tp(12);
 	led(2) <= miitx_end;     --tp(13);
-	led(3) <= not miitx_end; --tp(14);
+	led(3) <= miitx_frm; --tp(14);
 		desser_e: entity hdl4fpga.desser
 		port map (
 			desser_clk => mii_txc,
