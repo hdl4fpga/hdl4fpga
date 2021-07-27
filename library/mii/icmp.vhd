@@ -74,7 +74,7 @@ architecture def of icmp is
 
 	signal icmppl_irdy     : std_logic;
 	signal icmpcksmtx_irdy : std_logic;
-	signal icmppltx_frm    : std_logic;
+	signal icmppltx_frm    : std_logic := '0';
 	signal icmppltx_irdy   : std_logic;
 	signal icmppltx_trdy   : std_logic;
 	signal icmppltx_end    : std_logic;
@@ -212,19 +212,27 @@ begin
 		icmp_data => icmptx_data);
 
 	process (mii_clk)
+		variable q : bit;
 	begin
 		if rising_edge(mii_clk) then
 			if (icmpd_req xor icmpd_rdy)='0' then
 				if icmppltx_frm='0' then
-					if icmprx_frm='1' then
-						icmpd_req <= not icmpd_rdy;
+					if q='0' then
+						if icmprx_frm='1' then
+							icmpd_req <= not icmpd_rdy;
+						end if;
+					elsif dll_frm='0' then
+						q := '0';
 					end if;
-				elsif dlltx_end='1' then
-					icmppltx_frm <= not dlltx_end;
 				end if;
-			elsif icmprx_frm='0' then
-				icmpd_rdy <= icmpd_req;
+			elsif icmppltx_frm='1' then
+				if (icmptx_end and dlltx_end)='1' then
+					icmppltx_frm <= '0';
+					icmpd_rdy <= icmpd_req;
+				end if;
+			else
 				icmppltx_frm <= '1';
+				q := '1';
 			end if;
 		end if;
 	end process;

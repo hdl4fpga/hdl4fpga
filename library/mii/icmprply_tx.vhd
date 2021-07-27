@@ -77,7 +77,7 @@ begin
 
 	icmp_frm  <= pl_frm;
 	icmp_data <= pl_data;
-	icmp_irdy <= '1'; --pl_irdy;
+	icmp_irdy <= pl_irdy;
 	icmp_end  <= pl_end;
 
 end;

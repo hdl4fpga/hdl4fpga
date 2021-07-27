@@ -58,7 +58,7 @@ begin
 		gclk100 => clk,
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
-		sw => "0000",
+		sw => "0010",
 		btn(0) => btn0,
 		btn(1) => btn1,
 		btn(4-1 downto 2) => "--");
