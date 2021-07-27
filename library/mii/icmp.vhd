@@ -56,7 +56,7 @@ end;
 architecture def of icmp is
 
 	signal icmpdata_irdy   : std_logic;
-	signal icmpdatatx_irdy : std_logic;
+	signal icmpdatatx_trdy : std_logic;
 
 	signal icmpd_rdy       : bit := '0';
 	signal icmpd_req       : bit := '0';
@@ -86,6 +86,7 @@ architecture def of icmp is
 	signal memrx_frm  : std_logic;
 	signal memrx_data : std_logic_vector(icmprx_data'range);
 	signal memtx_data : std_logic_vector(icmptx_data'range);
+	signal e : std_logic;
 begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
@@ -144,12 +145,94 @@ begin
 		icmprx_data);
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
-	icmpdatatx_irdy <= 
+	icmpdatatx_trdy <= 
 		  '1' when dlltx_full='0' else
 		  '1' when nettx_full='0' else
 		  icmppltx_trdy;
 
-	memrx_frm <= dll_frm and not icmppltx_frm;
+	buffer_e : block
+		signal rollback: std_logic;
+	begin
+
+		rollback <= not dll_frm;
+		buffer_e : entity hdl4fpga.sio_buffer
+		generic map (
+			mem_size => 128*octect_size)
+		port map (
+			si_clk   => mii_clk,
+
+			si_frm   => dll_frm,
+			si_irdy  => icmpdata_irdy;
+			si_data  => memrx_data,
+
+			rollback => rollback,
+			commit   => icmprx_frm,
+			overflow => open,
+
+			so_clk   => mii_clk,
+			so_frm   => open,
+			so_irdy  => icmppltx_irdy;
+			so_trdy  => icmpdatatx_trdy;
+			so_data  => memtx_data);
+
+		xxx_p : block
+			signal src_len  : std_logic_vector;
+			signal src_cmmt : std_logic;
+			signal dst_len  : std_logic_vector;
+		begin
+
+			process (mii_clk)
+				variable cntr : unsigned;
+			begin
+				if rising_edge(mii_clk) then
+					if dll_frm='0' then
+						cntr := (others => '0');
+					elsif icmpdata_irdy='1' then
+						cntr := cntr + 1;
+					end if;
+					src_len  <= std_logic_vector(cntr);
+					src_cmmt <= icmprx_frm;
+				end if;
+			end process;
+
+			src_irdy <= cmmt and not icmprx_frm;
+			fifo_e : entity hdl4fpga.fifo
+				generic map (
+					max_depth  => 4,
+				port map (
+					src_clk    => mii_clk,
+					src_irdy   => src_irdy,
+					src_trdy   => open
+					src_data   => src_len;
+
+					dst_clk    => mii_clk,
+					dst_irdy   => dst_irdy,
+					dst_trdy   => dst_trdy,
+					dst_data   => dst_len);
+
+			process (mii_clk)
+				variable cntr : unsigned(dst_len'range);
+			begin
+				if rising_edge(mii_clk) then
+					if iicmppltx_frm='0' then
+						cntr := (others => '0');
+					elsif (icmppltx_irdy and icmpdatatx_trdy)='1' then
+						if dst_irdy='1' then
+							if cntr < unsigned(dst_len) then
+								cntr := cntr + 1;
+							else
+								icmppltx_end <= '1';
+							end if;
+						end if;
+					end if;
+				end if;
+			end process;
+
+		end block;
+
+	end block;
+
+	memrx_frm <= dll_frm and e;
 	icmpdata_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_size => 128*octect_size)
@@ -165,6 +248,7 @@ begin
         so_trdy  => icmppltx_irdy,
 		so_end   => icmppltx_end,
         so_data  => memtx_data);
+	end block;
 
 	cksmtx_b : block
 		signal ci : std_logic;
@@ -225,12 +309,17 @@ begin
 						q := '0';
 					end if;
 				end if;
+				e <= '1';
 			elsif icmppltx_frm='1' then
 				if (icmptx_end and dlltx_end)='1' then
 					icmppltx_frm <= '0';
 					icmpd_rdy <= icmpd_req;
 				end if;
+				if icmprx_frm='0' then
+					e <= '0';
+				end if;
 			else
+				e <= '1';
 				icmppltx_frm <= '1';
 				q := '1';
 			end if;
