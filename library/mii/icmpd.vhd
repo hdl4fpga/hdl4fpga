@@ -29,7 +29,7 @@ use hdl4fpga.std.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity icmp is
+entity icmpd is
 	port (
 		mii_clk     : in  std_logic;
 
@@ -53,7 +53,7 @@ entity icmp is
 		tp : out std_logic_vector(1 to 32));
 end;
 
-architecture def of icmp is
+architecture def of icmpd is
 
 	signal icmpdata_irdy   : std_logic;
 	signal icmpdatatx_trdy : std_logic;

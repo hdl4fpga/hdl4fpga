@@ -396,7 +396,7 @@ begin
 	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm and ipv4rx_irdy;
 
-	icmp_e : entity hdl4fpga.icmp
+	icmpd_e : entity hdl4fpga.icmpd
 	port map (
 		mii_clk     => mii_clk,
 		dll_frm     => dll_frm,
