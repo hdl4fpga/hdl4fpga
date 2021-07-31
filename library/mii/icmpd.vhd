@@ -150,12 +150,11 @@ begin
 		  icmppltx_trdy;
 
 	buffer_e : block
-		signal empty    : std_logic;
+		signal busy    : std_logic;
 		signal rollback : std_logic;
 	begin
 
 		process (mii_clk)
-			variable edge : unsigned;
 			variable cntr : unsigned;
 		begin
 			if rising_edge(mii_clk) then
@@ -164,16 +163,7 @@ begin
 				elsif icmpdata_irdy='1' then
 					cntr := cntr + 1;
 				end if;
-				if (not dll_frm and edge)='1' then
-					if empty='1' then
-						fifo_trdy <='1';
-					end if;
-				else
-					fifo_trdy <='0';
-				end if;
-					
 				len  <= std_logic_vector(cntr);
-				edge := dll_frm;
 			end if;
 		end process;
 
@@ -198,19 +188,21 @@ begin
 			so_trdy  => icmpdatatx_trdy;
 			so_data  => memtx_data);
 
-		xxx_p : block
+		process (dll_frm, mii_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(mii_clk) then
+				q := dll_frm;
+			end if;
+			miirx_end <= not dll_frm and q;
+		end process;
+
+		xxx_b : block
 			signal src_len  : std_logic_vector;
-			signal src_cmmt : std_logic;
 			signal dst_len  : std_logic_vector;
 		begin
 
-			process
-			begin
-				if (_req xor _rdy)='1' then
-			end process;
-			
-			
-			src_irdy <= cmmt and not icmprx_frm;
+			src_irdy <= miirx_end and busy;
 			fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth  => 4,
@@ -221,7 +213,7 @@ begin
 					src_data   => src_len;
 
 					dst_clk    => mii_clk,
-					dst_irdy   => empty,
+					dst_irdy   => busy,
 					dst_trdy   => dst_trdy,
 					dst_data   => dst_len);
 		end block;
