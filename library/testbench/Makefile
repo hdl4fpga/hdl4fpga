@@ -119,8 +119,8 @@ HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
 HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
 HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
 HDL4FPGA__icmprply_tx = $(LIB_HDL4FPGA)/icmprply_tx/_primary.dat
-HDL4FPGA__icmp__def = $(LIB_HDL4FPGA)/icmp/def.dat
-HDL4FPGA__icmp = $(LIB_HDL4FPGA)/icmp/_primary.dat
+HDL4FPGA__icmpd__def = $(LIB_HDL4FPGA)/icmpd/def.dat
+HDL4FPGA__icmpd = $(LIB_HDL4FPGA)/icmpd/_primary.dat
 HDL4FPGA__hdlcsync_tx__def = $(LIB_HDL4FPGA)/hdlcsync_tx/def.dat
 HDL4FPGA__hdlcsync_tx = $(LIB_HDL4FPGA)/hdlcsync_tx/_primary.dat
 HDL4FPGA__hdlcsync_rx__def = $(LIB_HDL4FPGA)/hdlcsync_rx/def.dat
@@ -341,8 +341,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__icmprqst_rx) \
     $(HDL4FPGA__icmprply_tx__def) \
     $(HDL4FPGA__icmprply_tx) \
-    $(HDL4FPGA__icmp__def) \
-    $(HDL4FPGA__icmp) \
+    $(HDL4FPGA__icmpd__def) \
+    $(HDL4FPGA__icmpd) \
     $(HDL4FPGA__hdlcsync_tx__def) \
     $(HDL4FPGA__hdlcsync_tx) \
     $(HDL4FPGA__hdlcsync_rx__def) \
@@ -1018,21 +1018,22 @@ $(HDL4FPGA__hdlcsync_tx__def) : ../hdlc/hdlcsync_tx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../hdlc/hdlcsync_tx.vhd
 
-$(HDL4FPGA__icmp) \
-$(HDL4FPGA__icmp__def) : ../mii/icmp.vhd \
+$(HDL4FPGA__icmpd) \
+$(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
 		$(HDL4FPGA__icmprply_tx) \
-		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_buffer) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__icmprqst_rx) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/icmp.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/icmpd.vhd
 
 $(HDL4FPGA__icmprply_tx) \
 $(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \
@@ -1080,11 +1081,9 @@ $(HDL4FPGA__ipoepkg) : ../mii/ipoepkg.vhd \
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__udp) \
-		$(HDL4FPGA__icmp) \
+		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__ipv4_tx) \
-		$(HDL4FPGA__sio_lifo) \
-		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_cmp) \
