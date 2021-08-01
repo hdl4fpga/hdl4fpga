@@ -209,30 +209,42 @@ begin
 			signal dst_irdy : std_logic;
 			signal dst_trdy : std_logic;
 			signal dst_len  : std_logic_vector(tx_len'range);
+			signal busy     : std_logic;
 		begin
 
 			src_irdy <= miirx_end and dst_irdy;
 			fifo_e : entity hdl4fpga.fifo
 				generic map (
+					latency    => 0,
 					max_depth  => 4)
 				port map (
 					src_clk    => mii_clk,
 					src_irdy   => src_irdy,
+					src_updt   => '1',
 					src_trdy   => open,
-					src_data   => src_len,
+					src_data   => rx_len,
 
 					dst_clk    => mii_clk,
 					dst_irdy   => dst_irdy,
 					dst_trdy   => dst_trdy,
-					dst_data   => dst_len);
+					dst_data   => tx_len);
+
+			process (icmptx_end, mii_clk)
+				variable q : std_logic;
+			begin
+				if rising_edge(mii_clk) then
+					q := icmptx_frm;
+				end if;
+				dst_trdy <= q and icmptx_end;
+			end process;
 
 			process (mii_clk)
 			begin
 				if rising_edge(mii_clk) then
-					if dst_irdy='1' then
-						tx_len <= dst_len;
-					else
-						tx_len <= rx_len;
+					if icmptx_frm='0' then
+						ena := '1';
+					elsif miirx_end='1' then
+						ena := '0';
 					end if;
 				end if;
 			end process;

@@ -44,6 +44,7 @@ entity fifo is
 		src_clk    : in  std_logic;
 		src_mode   : in  std_logic := '0';
 		src_frm    : in  std_logic := '1';
+		src_updt   : in  std_logic := '0';
 		src_irdy   : in  std_logic := '1';
 		src_trdy   : buffer std_logic;
 		src_data   : in  std_logic_vector;
@@ -76,7 +77,7 @@ begin
 	report "fifo_depth should be a power of 2"
 	severity FAILURE;
 
-	wr_ena <= src_frm and src_irdy and (src_trdy or setif(not check_sov));
+	wr_ena <= src_frm and (src_irdy or src_updt) and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
 
 		subtype addr_range is natural range 1 to addr_length;
