@@ -79,23 +79,28 @@ begin
 	si_trdy <= setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0));
 
 	process (si_clk)
+		variable add : unsigned(wr_cntr'range);
 	begin
 		if rising_edge(si_clk) then
-			if commit='1' then
-				wr_ptr   <= wr_cntr;
-				overflow <= '0';
-			elsif rollback='1' then
+			if rollback='1' then
 				wr_cntr   <= wr_ptr;
 				overflow <= '0';
-			elsif si_trdy='1' then
-				if si_irdy='1' then
-					if des_irdy='1' then
-						wr_cntr <= wr_cntr + 1;
+			else
+				if si_trdy='1' then
+					if si_irdy='1' then
+						if des_irdy='1' then
+							add := wr_cntr + 1;
+							wr_cntr <= add;
+						end if;
 					end if;
+					overflow <= '0';
+				elsif des_irdy='1' then
+					overflow <= '1';
 				end if;
-				overflow <= '0';
-			elsif des_irdy='1' then
-				overflow <= '1';
+				if commit='1' then
+					wr_ptr <= add;
+					overflow <= '0';
+				end if;
 			end if;
 		end if;
 	end process;

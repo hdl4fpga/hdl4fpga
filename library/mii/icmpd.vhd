@@ -59,9 +59,6 @@ architecture def of icmpd is
 	signal icmpdata_irdy   : std_logic;
 	signal icmpdatatx_trdy : std_logic;
 
-	signal icmpd_rdy       : bit := '0';
-	signal icmpd_req       : bit := '0';
-
 	signal icmpcoderx_irdy : std_logic;
 	signal icmptyperx_irdy : std_logic;
 	signal icmpcksmrx_frm  : std_logic;
@@ -163,7 +160,9 @@ begin
 				if dll_frm='0' then
 					cntr := (others => '0');
 				elsif icmpdata_irdy='1' then
-					cntr := cntr + 1;
+					if icmprx_frm='1' then
+						cntr := cntr + 1;
+					end if;
 				end if;
 				rx_len <= std_logic_vector(cntr);
 			end if;
@@ -226,30 +225,42 @@ begin
 					dst_trdy   => dst_trdy,
 					dst_data   => tx_len);
 
-			process (icmptx_end, mii_clk)
-				variable q : std_logic;
-			begin
-				if rising_edge(mii_clk) then
-					q := icmptx_frm;
-				end if;
-				dst_trdy <= q and icmptx_end;
-			end process;
-
-
 			process (mii_clk)
-				variable cntr : unsigned(dst_len'range);
+				variable add  : unsigned(tx_len'range);
+				variable cntr : unsigned(tx_len'range);
 			begin
 				if rising_edge(mii_clk) then
 					if icmppltx_frm='0' then
 						cntr := (others => '0');
-					elsif (icmppltx_irdy and icmpdatatx_trdy)='1' then
+						icmppltx_end <= '0';
+					elsif (icmppltx_irdy and icmppltx_trdy)='1' then
+						add := cntr + 1;
 						if cntr < unsigned(tx_len) then
-							cntr := cntr + 1;
+							cntr := add;
+						end if;
+						if add < unsigned(tx_len) then
+							icmppltx_end <= '0';
 						else
 							icmppltx_end <= '1';
 						end if;
 					end if;
 				end if;
+			end process;
+
+			process (icmppltx_end, mii_clk)
+				variable q : std_logic;
+			begin
+				if rising_edge(mii_clk) then
+					if icmppltx_end='1' then
+						icmppltx_frm <= '0';
+					elsif icmprx_frm='1' then
+						icmppltx_frm <= '1';
+					elsif dst_irdy='1' then
+						icmppltx_frm <= '1';
+					end if;
+					q := icmppltx_end;
+				end if;
+				dst_trdy <= icmppltx_end and not q;
 			end process;
 		end block;
 
@@ -300,28 +311,7 @@ begin
 		icmp_end  => icmptx_end,
 		icmp_data => icmptx_data);
 
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if (icmpd_req xor icmpd_rdy)='0' then
-				if icmppltx_frm='0' then
-					if _frm='1' then
-						icmpd_req <= not icmpd_rdy;
-					end if;
-				end if;
-			elsif icmppltx_frm='1' then
-				if (icmptx_end and dlltx_end)='1' then
-					icmppltx_frm <= '0';
-					icmpd_rdy <= icmpd_req;
-				end if;
-			else
-				icmppltx_frm <= '1';
-			end if;
-		end if;
-	end process;
-
 	tp(1) <= dlltx_end; --to_stdulogic(icmpd_req);
-	tp(2) <= to_stdulogic(icmpd_rdy);
 	tp(3) <= icmppltx_frm;
 	tp(4) <= icmptx_end; --icmprx_frm;
 
