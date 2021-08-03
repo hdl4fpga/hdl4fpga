@@ -242,6 +242,7 @@ begin
 					dst_trdy   => dst_trdy,
 					dst_data   => tx_cy);
 
+			tp(4) <= dst_irdy;
 			process (mii_clk)
 				variable add  : unsigned(tx_len'range);
 				variable cntr : unsigned(tx_len'range);
@@ -272,8 +273,10 @@ begin
 						icmppltx_frm <= '0';
 					elsif icmprx_frm='1' then
 						icmppltx_frm <= '1';
-					elsif dst_irdy='1' then
+					elsif icmppltx_irdy='1' then
 						icmppltx_frm <= '1';
+					else
+						icmppltx_frm <= '0';
 					end if;
 					q := icmppltx_end;
 				end if;
@@ -330,8 +333,8 @@ begin
 		icmp_end  => icmptx_end,
 		icmp_data => icmptx_data);
 
-	tp(1) <= dlltx_end; --to_stdulogic(icmpd_req);
+	tp(1) <= icmptx_trdy;
+	tp(2) <= icmppltx_end;
 	tp(3) <= icmppltx_frm;
-	tp(4) <= icmptx_end; --icmprx_frm;
 
 end;
