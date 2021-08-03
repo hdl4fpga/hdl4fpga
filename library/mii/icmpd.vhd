@@ -71,7 +71,7 @@ architecture def of icmpd is
 	signal icmptx_cksm     : std_logic_vector(0 to 16-1);
 
 	signal icmppl_irdy     : std_logic;
-	signal icmpcksmtx_irdy : std_logic;
+	signal icmpcksmtx_frm : std_logic;
 	signal icmppltx_frm    : std_logic := '0';
 	signal icmppltx_irdy   : std_logic;
 	signal icmppltx_trdy   : std_logic;
@@ -79,7 +79,8 @@ architecture def of icmpd is
 	signal icmppltx_data   : std_logic_vector(icmptx_data'range);
 
 	signal cksmrx_data : std_logic_vector(icmprx_data'range);
-	signal rx2tx_cy : std_logic;
+	signal rx_cy       : std_logic_vector(0 to 0);
+	signal tx_cy       : std_logic_vector(0 to 0);
 
 	signal memrx_frm  : std_logic;
 	signal memrx_data : std_logic_vector(icmprx_data'range);
@@ -122,7 +123,7 @@ begin
 					ci <= '0';
 				elsif icmpcksmrx_irdy='1' then
 					ci <= co;
-					rx2tx_cy <= co;
+					rx_cy(0) <= co;
 				end if;
 			end if;
 		end process;
@@ -225,6 +226,22 @@ begin
 					dst_trdy   => dst_trdy,
 					dst_data   => tx_len);
 
+			fifo1_e : entity hdl4fpga.fifo
+				generic map (
+					latency    => 0,
+					max_depth  => 4)
+				port map (
+					src_clk    => mii_clk,
+					src_irdy   => src_irdy,
+					src_updt   => icmprx_frm,
+					src_trdy   => open,
+					src_data   => rx_cy,
+
+					dst_clk    => mii_clk,
+					dst_irdy   => open,
+					dst_trdy   => dst_trdy,
+					dst_data   => tx_cy);
+
 			process (mii_clk)
 				variable add  : unsigned(tx_len'range);
 				variable cntr : unsigned(tx_len'range);
@@ -275,13 +292,15 @@ begin
 			variable cy : std_logic;
 		begin
 			if rising_edge(mii_clk) then
-				if icmppltx_frm='0' then
-					cy := rx2tx_cy;
-				elsif icmpcksmtx_irdy='1' then
-					cy := co;
+				if icmpcksmtx_frm='0' then
+					cy := tx_cy(0);
+				elsif icmpcksmtx_frm='1' then
+					if (icmppltx_irdy and icmptx_trdy)='1' then
+						cy := co;
+					end if;
 				end if;
 			end if;
-			ci <= setif(icmpcksmtx_irdy='1', cy, '0');
+			ci <= setif(icmpcksmtx_frm='1', cy, '0');
 		end process;
 
 		tx_sum_e : entity hdl4fpga.adder
@@ -291,7 +310,7 @@ begin
 			b   => (icmptx_data'range => '0'),
 			s   => data,
 			co  => co);
-		icmppltx_data <= data when icmpcksmtx_irdy='0' else reverse(data);
+		icmppltx_data <= data when icmpcksmtx_frm='0' else reverse(data);
 	end block;
 
 	icmprply_e : entity hdl4fpga.icmprply_tx
@@ -304,7 +323,7 @@ begin
 		pl_end    => icmppltx_end,
 		pl_data   => icmppltx_data,
 
-		icmpcksm_irdy => icmpcksmtx_irdy,
+		icmpcksm_frm => icmpcksmtx_frm,
 		icmp_frm  => icmptx_frm,
 		icmp_irdy => icmptx_irdy,
 		icmp_trdy => icmptx_trdy,

@@ -405,13 +405,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/mii/icmp.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../library/mii/dhcp_offer.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
@@ -469,6 +462,20 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../library/common/fifo.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/mii/icmpd.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/sio/sio_buffer.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>

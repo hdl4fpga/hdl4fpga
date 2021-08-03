@@ -40,9 +40,9 @@ entity icmprply_tx is
 		pl_end    : in  std_logic;
 		pl_data   : in  std_logic_vector;
 
-		icmpid_irdy   : out std_logic;
-		icmpseq_irdy  : out std_logic;
-		icmpcksm_irdy : out std_logic;
+		icmpid_frm   : out std_logic;
+		icmpseq_frm  : out std_logic;
+		icmpcksm_frm : out std_logic;
 
 		icmp_frm  : out std_logic;
 		icmp_irdy : out std_logic := '0';
@@ -70,10 +70,10 @@ begin
 		end if;
 	end process;
 
-	icmpcksm_irdy <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_cksm);
-	icmpid_irdy   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_id);
-	icmpseq_irdy  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_seq);
-	pl_trdy       <= icmp_trdy;
+	icmpcksm_frm <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_cksm);
+	icmpid_frm   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_id);
+	icmpseq_frm  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_seq);
+	pl_trdy      <= icmp_trdy;
 
 	icmp_frm  <= pl_frm;
 	icmp_data <= pl_data;
