@@ -44,10 +44,15 @@ entity fifo is
 		src_clk    : in  std_logic;
 		src_mode   : in  std_logic := '0';
 		src_frm    : in  std_logic := '1';
-		src_updt   : in  std_logic := '0';
+		src_writ   : in  std_logic := '0';
+		src_auto   : in  std_logic := '1';
 		src_irdy   : in  std_logic := '1';
 		src_trdy   : buffer std_logic;
 		src_data   : in  std_logic_vector;
+
+		rollback : in  std_logic := '0';
+		commit   : in  std_logic := '1';
+		overflow : out std_logic := '0';
 
 		dst_clk    : in  std_logic;
 		dst_mode   : in  std_logic := '0';
@@ -63,6 +68,7 @@ architecture def of fifo is
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
 	signal wr_ena    : std_logic;
+	signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal wr_cmp    : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
@@ -77,7 +83,7 @@ begin
 	report "fifo_depth should be a power of 2"
 	severity FAILURE;
 
-	wr_ena <= src_frm and (src_irdy or src_updt) and (src_trdy or setif(not check_sov));
+	wr_ena <= src_frm and ((src_irdy and src_auto) or src_writ) and (src_trdy or setif(not check_sov));
 	max_depthgt1_g : if max_depth > 1 generate
 
 		subtype addr_range is natural range 1 to addr_length;
@@ -218,6 +224,7 @@ begin
 	end generate;
 
 	process(src_clk)
+		variable succ : unsigned(wr_cntr'range);
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
@@ -230,26 +237,43 @@ begin
 				else	
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
+			elsif rollback='1' then
+				wr_cntr  <= wr_ptr;
+				overflow <= '0';
 			else
+				succ := wr_cntr;
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
 						if gray_code and addr_length > 1 then
 							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								wr_cntr(0) <= not wr_cntr(0);
+--								wr_cntr(0) <= not wr_cntr(0);
+								succ(0) := not succ(0);
 							end if;
-							wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
+--							wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
+							succ(1 to addr_length) := unsigned(inc(gray(succ(1 to addr_length))));
 						else
-							wr_cntr <= wr_cntr + 1;
+--							wr_cntr <= wr_cntr + 1;
+							succ := succ + 1;
 						end if;
 					end if;
+					if src_trdy='0' and not check_sov then
+						overflow <= '1';
+					else
+						overflow <= '1';
+					end if;
+				end if;
+				wr_cntr <= succ;
+				if commit='1' then
+					wr_ptr   <= succ;
+					overflow <= '0';
 				end if;
 			end if;
 		end if;
 	end process;
 
 	dst_irdy1 <= 
-		setif(wr_cntr /= rd_cntr) when not async_mode else 
-		setif(wr_cmp  /= rd_cntr);
+		setif(wr_ptr /= rd_cntr) when not async_mode else 
+		setif(wr_cmp /= rd_cntr);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
@@ -294,7 +318,7 @@ begin
 			if rising_edge(src_clk) then
 				if (req xor wr_rdy)='1' then
 					if cpied='0' then
-						wr_cpy <= wr_cntr;
+						wr_cpy <= wr_ptr;
 						cpied  := '1';
 					else
 						wr_rdy <= wr_req;

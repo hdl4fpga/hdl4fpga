@@ -173,25 +173,23 @@ begin
 			signal rollback : std_logic;
 		begin
 			rollback <= not dll_frm;
-			buffer_e : entity hdl4fpga.sio_buffer
+			buffer_e : entity hdl4fpga.fifo
 			generic map (
-				mem_size => 128*octect_size)
-			port map (
-				si_clk   => mii_clk,
+				max_depth  => 128)
+			port map(
+				src_clk   => mii_clk,
+				src_irdy  => icmpdata_irdy,
+				src_data  => memrx_data,
 
-				si_frm   => dll_frm,
-				si_irdy  => icmpdata_irdy,
-				si_data  => memrx_data,
+				rollback  => rollback,
+				commit    => icmprx_frm,
+				overflow  => open,
 
-				rollback => rollback,
-				commit   => icmprx_frm,
-				overflow => open,
+				dst_clk   => mii_clk,
+				dst_irdy  => icmppltx_irdy,
+				dst_trdy  => icmpdatatx_trdy,
+				dst_data  => memtx_data);
 
-				so_clk   => mii_clk,
-				so_frm   => open,
-				so_irdy  => icmppltx_irdy,
-				so_trdy  => icmpdatatx_trdy,
-				so_data  => memtx_data);
 		end block;
 
 		process (dll_frm, mii_clk)
@@ -205,19 +203,23 @@ begin
 
 		frame_b : block
 			signal src_irdy : std_logic;
+			signal src_writ : std_logic;
 			signal dst_irdy : std_logic;
 			signal dst_trdy : std_logic;
 		begin
 
 			src_irdy <= miirx_end;
+			src_writ <= icmprx_frm and icmpdata_irdy;
 			fifo_e : entity hdl4fpga.fifo
 				generic map (
 					latency    => 0,
 					max_depth  => 4)
 				port map (
 					src_clk    => mii_clk,
+					src_frm    => icmppltx_irdy,
 					src_irdy   => src_irdy,
-					src_updt   => icmprx_frm,
+					src_auto   => '0',
+					src_writ   => src_writ,
 					src_trdy   => open,
 					src_data   => rx_len,
 
@@ -232,8 +234,9 @@ begin
 					max_depth  => 4)
 				port map (
 					src_clk    => mii_clk,
+					src_frm    => icmppltx_irdy,
 					src_irdy   => src_irdy,
-					src_updt   => icmprx_frm,
+					src_writ   => icmprx_frm,
 					src_trdy   => open,
 					src_data   => rx_cy,
 
@@ -243,40 +246,51 @@ begin
 					dst_data   => tx_cy);
 
 			tp(4) <= dst_irdy;
+
 			process (mii_clk)
-				variable add  : unsigned(tx_len'range);
-				variable cntr : unsigned(tx_len'range);
 			begin
 				if rising_edge(mii_clk) then
-					if icmppltx_frm='0' then
-						cntr := (others => '0');
-						icmppltx_end <= '0';
-					elsif (icmppltx_irdy and icmppltx_trdy)='1' then
-						add := cntr + 1;
-						if cntr < unsigned(tx_len) then
-							cntr := add;
+					if icmppltx_frm='1' then
+						if icmppltx_end='1' then
+							if dlltx_end='1' then
+								icmppltx_frm <= '0';
+							end if;
 						end if;
-						if add < unsigned(tx_len) then
-							icmppltx_end <= '0';
-						else
-							icmppltx_end <= '1';
+					elsif icmprx_frm='1' then
+						if icmpdata_irdy='1' then
+							icmppltx_frm <= '1';
 						end if;
 					end if;
 				end if;
 			end process;
 
 			process (icmppltx_end, mii_clk)
-				variable q : std_logic;
+				variable add  : unsigned(tx_len'range);
+				variable cntr : unsigned(tx_len'range) := (others => '0');
+				variable q    : std_logic;
 			begin
 				if rising_edge(mii_clk) then
-					if icmppltx_end='1' then
-						icmppltx_frm <= '0';
-					elsif icmprx_frm='1' then
-						icmppltx_frm <= '1';
-					elsif icmppltx_irdy='1' then
-						icmppltx_frm <= '1';
+					if icmppltx_frm='1' then
+						if to_bit(icmppltx_end)='1' then
+							if dlltx_end='1' then
+								icmppltx_end <= '0';
+							end if;
+						elsif icmppltx_irdy='1' then
+							if icmppltx_trdy='1' then
+								add := cntr + 1;
+								if add < unsigned(tx_len) then
+									icmppltx_end <= '0';
+								else
+									icmppltx_end <= '1';
+								end if;
+								if cntr < unsigned(tx_len) then
+									cntr := add;
+								end if;
+							end if;
+						end if;
 					else
-						icmppltx_frm <= '0';
+						icmppltx_end <= '0';
+						cntr := (others => '0');
 					end if;
 					q := icmppltx_end;
 				end if;
