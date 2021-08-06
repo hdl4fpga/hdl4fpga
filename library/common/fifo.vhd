@@ -282,7 +282,7 @@ begin
 					if async_mode then
 						rd_cntr <= wr_cmp;
 					else
-						rd_cntr <= wr_cntr;
+						rd_cntr <= wr_ptr;
 					end if;
 				else	
 					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);

@@ -175,7 +175,8 @@ begin
 			rollback <= not dll_frm;
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth  => 128)
+				max_depth  => 128,
+				check_dov => true)
 			port map(
 				src_clk   => mii_clk,
 				src_irdy  => icmpdata_irdy,
