@@ -59,7 +59,9 @@ architecture def of icmpd is
 	signal icmpdata_irdy   : std_logic;
 	signal icmpdatatx_trdy : std_logic;
 
+	signal icmpcoderx_frm : std_logic;
 	signal icmpcoderx_irdy : std_logic;
+	signal icmptyperx_frm : std_logic;
 	signal icmptyperx_irdy : std_logic;
 	signal icmpcksmrx_frm  : std_logic;
 	signal icmpcksmrx_irdy : std_logic;
@@ -90,11 +92,13 @@ begin
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
 	port map (
 		mii_clk       => mii_clk,
-		icmp_frm      => dll_frm,
+		icmp_frm      => icmprx_frm,
 		icmp_data     => icmprx_data,
 		icmp_irdy     => icmprx_irdy,
 
+		icmpcode_frm  => icmpcoderx_frm,
 		icmpcode_irdy => icmpcoderx_irdy,
+		icmptype_frm  => icmptyperx_frm,
 		icmptype_irdy => icmptyperx_irdy,
 		icmpcksm_frm  => icmpcksmrx_frm,
 		icmpcksm_irdy => icmpcksmrx_irdy,
@@ -139,14 +143,14 @@ begin
 
 	memrx_data <= primux(
 		(icmptx_data'range => '0') & (icmptx_data'range => '0') & cksmrx_data, 
-		icmpcoderx_irdy & icmptyperx_irdy & icmpcksmrx_irdy,
+		icmpcoderx_frm & icmptyperx_frm & icmpcksmrx_frm,
 		icmprx_data);
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
 	icmpdatatx_trdy <= 
 		  '1' when dlltx_full='0' else
 		  '1' when nettx_full='0' else
-		  icmppltx_trdy;
+		  '0'; --icmppltx_trdy;
 
 	buffer_e : block
 		signal miirx_end : std_logic;
@@ -176,6 +180,7 @@ begin
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 128,
+				latency => 0,
 				check_dov => true)
 			port map(
 				src_clk   => mii_clk,
@@ -306,7 +311,7 @@ begin
 		signal co : std_logic;
 		signal data : std_logic_vector(icmptx_data'range);
 	begin
-		process (icmppltx_frm, mii_clk)
+		process (icmpcksmtx_frm, mii_clk)
 			variable cy : std_logic;
 		begin
 			if rising_edge(mii_clk) then
