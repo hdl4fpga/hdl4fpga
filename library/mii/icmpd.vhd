@@ -151,7 +151,7 @@ begin
 	icmpdatatx_trdy <= 
 		  dlltx_irdy when dlltx_full='0' else
 		  '1' when nettx_full='0' else
-		  icmppltx_trdy;
+		  icmppltx_trdy and not icmppltx_end ;
 
 	buffer_e : block
 		signal miirx_end : std_logic;
