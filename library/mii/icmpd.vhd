@@ -272,7 +272,7 @@ begin
 			end process;
 
 			process (icmppltx_end, mii_clk)
-				variable add  : unsigned(tx_len'range);
+				variable inc  : unsigned(tx_len'range);
 				variable cntr : unsigned(tx_len'range) := (others => '0');
 				variable q    : std_logic;
 			begin
@@ -284,14 +284,14 @@ begin
 							end if;
 						elsif icmppltx_irdy='1' then
 							if icmppltx_trdy='1' then
-								add := cntr + 1;
-								if add < unsigned(tx_len) then
+								inc := cntr + 1;
+								if cntr < unsigned(tx_len) then
 									icmppltx_end <= '0';
 								else
 									icmppltx_end <= '1';
 								end if;
 								if cntr < unsigned(tx_len) then
-									cntr := add;
+									cntr := inc;
 								end if;
 							end if;
 						end if;

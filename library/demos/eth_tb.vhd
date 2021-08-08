@@ -68,7 +68,7 @@ architecture def of eth_tb is
 		x"123456ff" &
 		x"123456ff" &
 		x"aaaaaaff" &
-		x"ffffffff" ;
+		x"ffffffaa" ;
 
 --	constant packet : std_logic_vector := 
 --		x"4500"                 &    -- IP Version, TOS
