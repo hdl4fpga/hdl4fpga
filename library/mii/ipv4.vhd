@@ -67,6 +67,7 @@ entity ipv4 is
 		pltx_trdy      : out std_logic;
 		pltx_data      : in  std_logic_vector;
 
+		dlltx_irdy     : in  std_logic;
 		dlltx_full     : in  std_logic;
 		dlltx_end      : in  std_logic;
 
@@ -409,6 +410,7 @@ begin
 		icmprx_irdy => icmprx_irdy,
 		icmprx_data => ipv4rx_data,
 
+		dlltx_irdy  => dlltx_irdy,
 		dlltx_full  => dlltx_full,
 		dlltx_end   => dlltx_end,
 		nettx_full  => nettx_full,

@@ -45,6 +45,7 @@ entity icmpd is
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
 		dlltx_end   : in  std_logic;
+		dlltx_irdy  : in  std_logic;
 		dlltx_full  : in  std_logic;
 		nettx_full  : in  std_logic;
 		icmptx_irdy : buffer std_logic;
@@ -148,9 +149,9 @@ begin
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
 	icmpdatatx_trdy <= 
-		  '1' when dlltx_full='0' else
+		  dlltx_irdy when dlltx_full='0' else
 		  '1' when nettx_full='0' else
-		  '0'; --icmppltx_trdy;
+		  icmppltx_trdy;
 
 	buffer_e : block
 		signal miirx_end : std_logic;
@@ -180,7 +181,7 @@ begin
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 128,
-				latency => 0,
+				latency => 1,
 				check_dov => true)
 			port map(
 				src_clk   => mii_clk,

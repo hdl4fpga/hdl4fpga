@@ -147,6 +147,7 @@ architecture def of mii_ipoe is
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
 
+	signal dlltx_irdy    : wor std_logic;
 	signal dlltx_full    : wor std_logic;
 
 begin
@@ -291,7 +292,7 @@ begin
 			si_clk   => mii_clk,
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
-			si_trdy  => open,
+			si_trdy  => dlltx_irdy,
 			si_full  => dlltx_full,
 			si_data  => ethpltx_data,
 
@@ -422,6 +423,7 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
+		dlltx_irdy    => dlltx_irdy,
 		dlltx_full    => dlltx_full,
 		dlltx_end     => miitx_end,
 		ipv4tx_irdy   => ipv4tx_irdy,

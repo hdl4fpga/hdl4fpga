@@ -37,7 +37,7 @@ entity sio_ram is
 		si_clk   : in  std_logic;
         si_frm   : in  std_logic;
         si_irdy  : in  std_logic;
-        si_trdy  : out std_logic := '1';
+        si_trdy  : out std_logic;
 		si_full  : out std_logic;
         si_data  : in  std_logic_vector;
 
@@ -91,6 +91,7 @@ begin
 		end if;
 		wr_ena <= not cntr(0) and si_frm and si_irdy;
 	end process;
+	si_trdy <= si_frm;
 	si_full <= 
 		'0' when mem_length=0 else 
 		'1' when wr_addr>=(mem_length+si_data'length-1)/si_data'length else
