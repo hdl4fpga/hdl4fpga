@@ -162,8 +162,8 @@ begin
 
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm2 => btn(0),
-			mii_frm1 => btn(1),
+			mii_frm2 => '0', -- btn(0),
+			mii_frm1 => '0', -- btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
@@ -228,14 +228,14 @@ begin
 				end if;
 			end if;
 		end process;
---		led(0) <= dhcpcd_req;
---		led(1) <= dhcpcd_rdy;
+		led(0) <= dhcpcd_req;
+		led(1) <= dhcpcd_rdy;
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			tp => tp,
 			mii_clk    => mii_txc,
-			dhcpcd_req => '0', --dhcpcd_req,
+			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
@@ -258,10 +258,6 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
-	led(0) <= miitx_irdy when btn(2)='1' else tp(15);       --tp(11);
-	led(1) <= not miitx_irdy when btn(2)='1' else tp(16);   --tp(12);
-	led(2) <= miitx_end;     --tp(13);
-	led(3) <= miitx_frm; --tp(14);
 		desser_e: entity hdl4fpga.desser
 		port map (
 			desser_clk => mii_txc,
@@ -304,7 +300,7 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
+		sin_frm   <= mii_txen when sw(1)='1' else tp(1); --miirx_frm;
 		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
 	rgbled(0) <= tp(11); -- sin_frm;

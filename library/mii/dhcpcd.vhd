@@ -40,6 +40,7 @@ entity dhcpcd is
 
 		dhcpcdtx_frm  : buffer std_logic;
 		dlltx_full    : in std_logic;
+		dlltx_irdy    : in std_logic;
 		nettx_full    : in std_logic;
 		dlltx_end     : in  std_logic;
 
@@ -98,7 +99,7 @@ begin
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpctx_data);
 
-	dhcpcdtx_irdy <= '1' when dlltx_full='0' else dhcpctx_trdy;
+	dhcpcdtx_irdy <= dlltx_irdy when dlltx_full='0' else dhcpctx_trdy;
 	dhcpctx_irdy  <= '1' when nettx_full='0' else dhcpcdtx_trdy;
 	dhcpcdtx_data <= dhcpctx_data;
 end;

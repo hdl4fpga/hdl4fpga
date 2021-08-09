@@ -197,8 +197,10 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
+				tp(1) <='0';
 			elsif hwdarx_last='1' and miirx_irdy='1' then
 				hwdarx_vld <= hwdarx_equ or bcstrx_equ;
+				tp(1) <=hwdarx_equ;
 			end if;
 		end if;
 	end process;
@@ -390,7 +392,7 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp => tp,
+--		tp => tp,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
