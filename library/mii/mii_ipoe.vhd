@@ -379,6 +379,7 @@ begin
 
 		arpdtx_frm  => arptx_frm,
 		dlltx_full  => dlltx_full,
+		dlltx_irdy  => dlltx_irdy,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,
