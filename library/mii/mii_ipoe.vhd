@@ -52,6 +52,7 @@ entity mii_ipoe is
 		pltx_frm       : in  std_logic;
 		pltx_irdy      : in  std_logic;
 		pltx_trdy      : out std_logic;
+		pltx_end       : in  std_logic;
 		pltx_data      : in  std_logic_vector;
 
 		miitx_frm     : out std_logic;
@@ -423,6 +424,7 @@ begin
 		pltx_frm      => pltx_frm,
 		pltx_irdy     => pltx_irdy,
 		pltx_trdy     => pltx_trdy,
+		pltx_end      => pltx_end,
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,

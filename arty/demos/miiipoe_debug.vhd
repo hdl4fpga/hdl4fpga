@@ -58,7 +58,6 @@ architecture miiipoe_debug of arty is
 	constant videodot_freq : natural := (video_tab(video_mode).dcm_mul*natural(sys_freq))/(video_tab(video_mode).dcm_div);
 
 	signal sys_clk        : std_logic;
-	signal dhcp_req       : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
 	signal video_clk      : std_logic;
@@ -152,11 +151,19 @@ begin
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(miirx_data'range);
+
+		signal pltx_frm   : std_logic;
+		signal pltx_irdy  : std_logic;
+		signal pltx_trdy  : std_logic;
+		signal pltx_end   : std_logic;
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
 		signal dhcpcd_req : std_logic;
 		signal dhcpcd_rdy : std_logic;
 
+		signal pltx_req : bit;
+		signal pltx_rdy : bit;
+		constant txpkt  : std_logic_vector := x"1122334455667788";
 	begin
 
 
@@ -168,6 +175,32 @@ begin
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
 			mii_txd  => hxd);
+
+
+		process(mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if pltx_req='0' then
+					pltx_req <= to_bit(btn(2));
+				else
+					pltx_req <= not to_bit(btn(3));
+				end if;
+				if (pltx_end and miitx_end)='1' then
+					pltx_rdy <= pltx_req;
+				end if;
+			end if;
+		end process;
+
+		pltx_frm <= to_stdulogic(pltx_req xor pltx_rdy);
+		eth2_e: entity hdl4fpga.sio_mux
+		port map (
+			mux_data => txpkt,
+			sio_clk  => mii_txc,
+			sio_frm  => pltx_frm,
+			sio_irdy => pltx_trdy,
+			sio_trdy => pltx_irdy,
+			so_end   => pltx_end,
+			so_data  => pltx_data);
 
 		sync_b : block
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
@@ -221,10 +254,10 @@ begin
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if dhcpcd_req='0' then
-					dhcpcd_req <= btn(0);
+				if to_stdulogic(to_bit(dhcpcd_req))='0' then
+					dhcpcd_req <= to_stdulogic(to_bit(btn(0)));
 				else
-					dhcpcd_req <= not btn(1);
+					dhcpcd_req <= not to_stdulogic(to_bit(btn(1)));
 				end if;
 			end if;
 		end process;
@@ -247,9 +280,10 @@ begin
 			plrx_trdy  => '1',
 			plrx_data  => plrx_data,
 
-			pltx_frm   => '0',
-			pltx_irdy  => '0',
-			pltx_trdy  => open,
+			pltx_frm   => pltx_frm,
+			pltx_irdy  => pltx_irdy,
+			pltx_trdy  => pltx_trdy,
+			pltx_end   => pltx_end,
 			pltx_data  => pltx_data,
 
 			miitx_frm  => miitx_frm,
@@ -337,7 +371,7 @@ begin
 		end if;
 	end process;
 
-	eth_rstn <= not btn(3);
+	eth_rstn <= '1';
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 

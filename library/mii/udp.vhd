@@ -49,7 +49,7 @@ entity udp is
 		pltx_irdy   : in  std_logic;
 		pltx_trdy   : out std_logic;
 		pltx_data   : in  std_logic_vector;
-		pltx_end    : in  std_logic := '0';
+		pltx_end    : in  std_logic;
 
 		dlltx_end   : in std_logic;
 		dlltx_irdy  : in std_logic;
@@ -270,6 +270,7 @@ begin
 			cksm_data    & len_data    & sp_data    & dp_data,
 			not cksm_end & not len_end & not sp_end & not dp_end);
 		udphdr_irdy <= pltx_irdy;
+		udphdr_end  <= sp_end;
 	end block;
 
 	udptx_e : entity hdl4fpga.udp_tx
@@ -287,6 +288,8 @@ begin
 		hdr_data => udphdr_data,
 
 		udp_irdy => udppltx_irdy,
+		meta_full => dlltx_full,
+		meta_irdy    => dlltx_irdy,
 		udp_trdy => udppltx_trdy,
 		udp_end  => udppltx_end,
 		udp_data => udppltx_data);

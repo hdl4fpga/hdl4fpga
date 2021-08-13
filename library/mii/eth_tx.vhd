@@ -99,7 +99,10 @@ begin
 
 	hwllc_irdy <= mii_trdy and pre_end;
 
-	pl_trdy  <= hwllc_end and mii_trdy;
+	pl_trdy  <= 
+		hwllc_trdy when hwllc_end='0' else
+		mii_trdy;
+
 	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
 	fcs_data <= primux(hwllc_data & pl_data, not hwllc_end & not pl_end, (pl_data'range => '0'));
 

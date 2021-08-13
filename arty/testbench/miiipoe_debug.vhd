@@ -59,9 +59,10 @@ begin
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
 		sw => "0010",
-		btn(0) => btn0,
-		btn(1) => btn1,
-		btn(4-1 downto 2) => "--");
+		btn(0) => '0', --btn0,
+		btn(1) => '0', --btn1,
+		btn(2) => btn0,
+		btn(3) => btn1);
 
 	ref_clk1 <= ref_clk;
 	ethrx_e : entity hdl4fpga.eth_rx

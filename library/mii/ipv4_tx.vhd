@@ -149,7 +149,7 @@ begin
 		so_end   => ipv4shdr_end,
 		so_data  => ipv4shdr_data);
 
-	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & ipv4len_data, ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
+	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & reverse(ipv4len_data), ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
 
 	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
 	ipv4a_irdy <= 
@@ -163,28 +163,36 @@ begin
 	generic map (
 		n => 16)
 	port map (
-		mii_clk  => mii_clk,
-		mii_frm  => pl_frm,
-		mii_irdy => cksm_irdy,
-		mii_trdy => ipv4chsm_trdy,
-		mii_end  => ipv4proto_end,
+		mii_clk   => mii_clk,
+		mii_frm   => pl_frm,
+		mii_irdy  => cksm_irdy,
+		mii_trdy  => ipv4chsm_trdy,
+		mii_end   => ipv4proto_end,
 		mii_empty => ipv4chsm_end,
-		mii_data => cksm_data,
-		mii_cksm => ipv4chsm_data);
+		mii_data  => cksm_data,
+		mii_cksm  => ipv4chsm_data);
 
-	pl_trdy <= ipv4chsm_end and ipv4a_end and ipv4_trdy; 
+	pl_trdy <= 
+		ipv4_trdy when nettx_full='0' else
+		ipv4chsm_end and ipv4a_end and ipv4_trdy; 
 
 	ipv4_irdy <= 
-		'1' when nettx_full='0' else 
-		primux(
-		'0'      &     ipv4shdr_trdy &     ipv4proto_trdy &     ipv4chsm_trdy &     ipv4a_trdy & pl_irdy,
-		not post & not ipv4shdr_end  & not ipv4proto_end  & not ipv4chsm_end  & not ipv4a_end  & '1')(0);
+		pl_irdy        when nettx_full='0'    else 
+		'0'            when post='0' else
+		ipv4shdr_trdy  when ipv4shdr_end='0'  else
+		ipv4proto_trdy when ipv4proto_end='0' else
+		ipv4chsm_trdy  when ipv4chsm_end='0'  else
+		ipv4a_trdy     when ipv4a_end='0'     else
+	    pl_irdy;
+
 	ipv4_data <=  
-		pl_data when nettx_full='0' else 
-		primux(
-		ipv4hdr_data     &     ipv4proto_data & reverse(not ipv4chsm_data) &     ipv4a_data,
-		not ipv4shdr_end & not ipv4proto_end  & not ipv4chsm_end       & not ipv4a_end,
-		pl_data);
+		pl_data                     when nettx_full='0'    else 
+		ipv4hdr_data                when ipv4shdr_end='0'  else
+		ipv4proto_data              when ipv4proto_end='0' else
+		reverse(not ipv4chsm_data)  when ipv4chsm_end='0'  else
+		ipv4a_data                  when ipv4a_end='0'     else
+		pl_data;
+
 	ipv4_end  <= 
 		'0' when nettx_full='0' else 
 		post and ipv4a_end and pl_end;

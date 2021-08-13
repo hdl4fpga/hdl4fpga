@@ -409,6 +409,7 @@ begin
 				pltx_frm   => '0',
 				pltx_irdy  => '0',
 				pltx_trdy  => open,
+				pltx_end   => '1',
 				pltx_data  => pltx_data,
 
 				miitx_frm  => miitx_frm,

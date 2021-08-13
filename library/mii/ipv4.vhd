@@ -65,6 +65,7 @@ entity ipv4 is
 		pltx_frm       : in  std_logic;
 		pltx_irdy      : in  std_logic;
 		pltx_trdy      : out std_logic;
+		pltx_end       : in  std_logic;
 		pltx_data      : in  std_logic_vector;
 
 		dlltx_irdy     : in  std_logic;
@@ -286,8 +287,7 @@ begin
 	begin
 
 		lentx_irdy <= 
-			'0' when dlltx_full='0' else
-			'1' when nettx_full='0' else
+			'0'         when dlltx_full='0' else
 			ipv4tx_irdy;
 
 		len_e : entity hdl4fpga.sio_ram
@@ -439,6 +439,7 @@ begin
 		pltx_frm    => pltx_frm,
 		pltx_irdy   => pltx_irdy,
 		pltx_trdy   => pltx_trdy,
+		pltx_end    => pltx_end,
 		pltx_data   => pltx_data,
 
 		udptx_frm   => udptx_frm,
