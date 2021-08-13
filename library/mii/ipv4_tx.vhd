@@ -49,13 +49,13 @@ entity ipv4_tx is
 		ipv4proto_end  : in  std_logic;
 		ipv4proto_data : in  std_logic_vector;
 
-		ipv4a_frm  : out std_logic;
+		ipv4a_frm  : buffer std_logic;
 		ipv4a_irdy : buffer std_logic;
 		ipv4a_end  : in  std_logic;
 		ipv4a_data : in  std_logic_vector;
 
 		ipv4_frm  : buffer std_logic;
-		nettx_full : in std_logic;
+		nettx_full : in std_logic := '1';
 		ipv4_irdy : buffer std_logic;
 		ipv4_trdy : in  std_logic;
 		ipv4_end  : out std_logic;
@@ -173,12 +173,14 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	pl_trdy <= 
-		ipv4_trdy when nettx_full='0' else
-		ipv4chsm_end and ipv4a_end and ipv4_trdy; 
+		ipv4_trdy when nettx_full='0'   else
+		'0'       when ipv4chsm_end='0' else
+		'0'       when ipv4a_end='0'    else
+		ipv4_trdy; 
 
 	ipv4_irdy <= 
 		pl_irdy        when nettx_full='0'    else 
-		'0'            when post='0' else
+		'0'            when post='0'          else
 		ipv4shdr_trdy  when ipv4shdr_end='0'  else
 		ipv4proto_trdy when ipv4proto_end='0' else
 		ipv4chsm_trdy  when ipv4chsm_end='0'  else
@@ -186,14 +188,18 @@ begin
 	    pl_irdy;
 
 	ipv4_data <=  
-		pl_data                     when nettx_full='0'    else 
-		ipv4hdr_data                when ipv4shdr_end='0'  else
-		ipv4proto_data              when ipv4proto_end='0' else
-		reverse(not ipv4chsm_data)  when ipv4chsm_end='0'  else
-		ipv4a_data                  when ipv4a_end='0'     else
+		pl_data                    when nettx_full='0'    else 
+		ipv4hdr_data               when ipv4shdr_end='0'  else
+		ipv4proto_data             when ipv4proto_end='0' else
+		reverse(not ipv4chsm_data) when ipv4chsm_end='0'  else
+		ipv4a_data                 when ipv4a_end='0'     else
 		pl_data;
 
-	ipv4_end  <= 
-		'0' when nettx_full='0' else 
-		post and ipv4a_end and pl_end;
+	ipv4_end <= 
+		ipv4shdr_end  when ipv4shdr_end='0'  else
+		ipv4proto_end when ipv4proto_end='0' else
+		ipv4chsm_end  when ipv4chsm_end='0'  else
+		ipv4a_end     when ipv4a_end='0'     else
+	    pl_end;
+
 end;
