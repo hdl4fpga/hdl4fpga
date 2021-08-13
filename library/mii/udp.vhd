@@ -280,6 +280,7 @@ begin
 		pl_frm   => udppltx_frm,
 		pl_irdy  => pltx_irdy,
 		pl_trdy  => pltx_trdy,
+		pl_end   => pltx_end,
 		pl_data  => pltx_data ,
 
 		hdr_irdy => udphdr_irdy,
