@@ -39,6 +39,7 @@ entity udp_tx is
 		pl_frm   : in  std_logic;
 		pl_irdy  : in  std_logic;
 		pl_trdy  : out std_logic;
+		pl_end   : in  std_logic;
 		pl_data  : in  std_logic_vector;
 
 		hdr_irdy : in  std_logic;
@@ -67,5 +68,8 @@ begin
 		pl_data;
 
 	pl_trdy <= meta_irdy when meta_full='0' else udp_trdy;
+	udp_end  <= 
+		'0' when hdr_end='0' else 
+		pl_end;
 end;
 
