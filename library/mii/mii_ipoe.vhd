@@ -340,6 +340,8 @@ begin
 	port map (
 		mii_clk    => mii_clk,
 
+		dlltx_irdy => dlltx_irdy,
+		dlltx_full => dlltx_full,
 		hwllc_irdy => hwllctx_irdy,
 		hwllc_end  => hwllctx_end,
 		hwllc_data => hwllctx_data,
