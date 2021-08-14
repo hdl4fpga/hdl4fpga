@@ -38,8 +38,10 @@ entity dhcpc_dscb is
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
-		dlltx_full    : in  std_logic;
-		nettx_full    : in  std_logic;
+		dlltx_full    : in  std_logic := '1';
+		dlltx_irdy    : in  std_logic := '-';
+		nettx_full    : in  std_logic := '1';
+		nettx_irdy    : in  std_logic := '-';
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
@@ -73,6 +75,7 @@ architecture def of dhcpc_dscb is
 	signal dhcppkt_irdy : std_logic;
 	signal dhcppkt_trdy : std_logic;
 	signal dhcppkt_ena  : std_logic;
+	signal dhcppkt_end  : std_logic;
 	signal dhcppkt_data : std_logic_vector(dhcpdscb_data'range);
 
 	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
@@ -118,13 +121,15 @@ begin
 		so_end   => udplentx_end,
 		so_data  => udplentx_data);
 
-	dhcppkt_ena <= 
-		'0' when nettx_full='0' else 
-		dhcpdscb_frm and frame_decode(
-			dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, 
-			(udp4_sp, udp4_dp, udp4_len, udp4_cksm, dhcp4_op, dhcp4_htype, dhcp4_hlen, dhcp4_hops, dhcp4_xid, dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
+	dhcppkt_ena <= frame_decode(
+		dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, 
+		(udp4_sp, udp4_dp, udp4_len, udp4_cksm, dhcp4_op, dhcp4_htype, dhcp4_hlen, 
+		dhcp4_hops, dhcp4_xid, dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
-	dhcppkt_irdy <= dhcppkt_ena and dhcpdscb_irdy;  
+	dhcppkt_irdy <= 
+		'0' when dlltx_full='0' else 
+		'0' when nettx_full='0' else 
+		dhcppkt_ena;
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
@@ -132,9 +137,19 @@ begin
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
-        sio_trdy => dhcpdscb_trdy,
-        so_end   => dhcpdscb_end,
+        sio_trdy => dhcppkt_trdy, --dhcpdscb_trdy,
+        so_end   => dhcppkt_end, --dhcpdscb_end,
         so_data  => dhcppkt_data);
+
+	dhcpdscb_trdy <= 
+		dlltx_irdy when dlltx_full='0' else 
+		nettx_irdy when nettx_full='0' else 
+		dhcppkt_trdy;
+
+	dhcpdscb_end <= 
+		'0' when dlltx_full='0' else 
+		'0' when nettx_full='0' else 
+		dhcppkt_end;
 
 	dhcpdscb_data <= 
 		(dhcpdscb_data'range => '1') when dlltx_full='0' else

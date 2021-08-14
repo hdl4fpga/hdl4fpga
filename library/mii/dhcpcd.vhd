@@ -42,6 +42,7 @@ entity dhcpcd is
 		dlltx_full    : in std_logic;
 		dlltx_irdy    : in std_logic;
 		nettx_full    : in std_logic;
+		nettx_irdy    : in std_logic := '1';
 		dlltx_end     : in  std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
@@ -57,8 +58,6 @@ architecture def of dhcpcd is
 	signal dhcpyia_irdy : std_logic;
 
 	signal dhcpctx_irdy : std_logic;
-	signal dhcpctx_trdy : std_logic;
-	signal dhcpctx_data : std_logic_vector(dhcpcdtx_data'range);
 
 begin
 
@@ -94,12 +93,9 @@ begin
 		dhcpdscb_frm  => dhcpcdtx_frm,
 		dlltx_full    => dlltx_full,
 		nettx_full    => nettx_full,
-		dhcpdscb_irdy => dhcpctx_irdy,
-		dhcpdscb_trdy => dhcpctx_trdy,
+		dhcpdscb_irdy => dhcpcdtx_trdy,
+		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
-		dhcpdscb_data => dhcpctx_data);
+		dhcpdscb_data => dhcpcdtx_data);
 
-	dhcpcdtx_irdy <= dlltx_irdy when dlltx_full='0' else dhcpctx_trdy;
-	dhcpctx_irdy  <= '1' when nettx_full='0' else dhcpcdtx_trdy;
-	dhcpcdtx_data <= dhcpctx_data;
 end;
