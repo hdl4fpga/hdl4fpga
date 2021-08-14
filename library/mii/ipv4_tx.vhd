@@ -34,13 +34,13 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipv4_tx is
 	port (
-		mii_clk : in  std_logic;
+		mii_clk        : in  std_logic;
 
-		pl_frm  : in  std_logic;
-		pl_irdy : in  std_logic;
-		pl_trdy : out std_logic;
-		pl_end  : in  std_logic;
-		pl_data : in  std_logic_vector;
+		pl_frm         : in  std_logic;
+		pl_irdy        : in  std_logic;
+		pl_trdy        : out std_logic;
+		pl_end         : in  std_logic;
+		pl_data        : in  std_logic_vector;
 
 		ipv4len_irdy   : buffer std_logic;
 		ipv4len_data   : in  std_logic_vector;
@@ -49,17 +49,20 @@ entity ipv4_tx is
 		ipv4proto_end  : in  std_logic;
 		ipv4proto_data : in  std_logic_vector;
 
-		ipv4a_frm  : buffer std_logic;
-		ipv4a_irdy : buffer std_logic;
-		ipv4a_end  : in  std_logic;
-		ipv4a_data : in  std_logic_vector;
+		ipv4a_frm      : buffer std_logic;
+		ipv4a_irdy     : buffer std_logic;
+		ipv4a_end      : in  std_logic;
+		ipv4a_data     : in  std_logic_vector;
 
-		ipv4_frm  : buffer std_logic;
-		nettx_full : in std_logic := '1';
-		ipv4_irdy : buffer std_logic;
-		ipv4_trdy : in  std_logic;
-		ipv4_end  : out std_logic;
-		ipv4_data : out std_logic_vector);
+		ipv4_frm       : buffer std_logic;
+		dlltx_full     : in std_logic := '1';
+		dlltx_irdy     : in std_logic := '-';
+		nettx_full     : in std_logic := '1';
+		nettx_irdy     : in std_logic := '-';
+		ipv4_irdy      : buffer std_logic;
+		ipv4_trdy      : in  std_logic;
+		ipv4_end       : out std_logic;
+		ipv4_data      : out std_logic_vector);
 end;
 
 architecture def of ipv4_tx is
@@ -173,7 +176,8 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	pl_trdy <= 
-		ipv4_trdy when nettx_full='0'   else
+		dlltx_irdy when dlltx_full='0'   else
+		nettx_irdy when nettx_full='0'   else
 		'0'       when ipv4chsm_end='0' else
 		'0'       when ipv4a_end='0'    else
 		ipv4_trdy; 

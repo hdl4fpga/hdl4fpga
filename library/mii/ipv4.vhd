@@ -275,6 +275,7 @@ begin
 	end block;
 
 	meta_b : block
+
 		signal lentx_full   : std_logic;
 		signal lentx_irdy   : std_logic;
 		signal datx_irdy    : std_logic;
@@ -283,11 +284,10 @@ begin
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
-
 	begin
 
 		lentx_irdy <= 
-			'0'         when dlltx_full='0' else
+			'0' when dlltx_full='0' else
 			ipv4tx_irdy;
 
 		len_e : entity hdl4fpga.sio_ram
@@ -367,6 +367,7 @@ begin
 
 		ipv4_irdy  => ipv4tx_irdy,
 		nettx_full => nettx_full,
+		nettx_irdy => '1',
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);

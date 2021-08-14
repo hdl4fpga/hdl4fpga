@@ -137,8 +137,8 @@ begin
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
-        sio_trdy => dhcppkt_trdy, --dhcpdscb_trdy,
-        so_end   => dhcppkt_end, --dhcpdscb_end,
+        sio_trdy => dhcppkt_trdy,
+        so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
 	dhcpdscb_trdy <= 
