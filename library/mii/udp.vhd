@@ -207,7 +207,7 @@ begin
 			co  => tx_co);
 
 		lenrx_irdy <= '0' when dlltx_full='0' else pltx_irdy;
-		lentx_irdy <= '0' when cksm_end='0' else udphdr_trdy;
+		lentx_irdy <= '0' when cksm_end='0'  else udphdr_trdy;
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 16)
@@ -288,12 +288,12 @@ begin
 		hdr_end  => udphdr_end,
 		hdr_data => udphdr_data,
 
-		udp_irdy => udppltx_irdy,
+		udp_irdy  => udppltx_irdy,
 		meta_full => dlltx_full,
-		meta_irdy    => dlltx_irdy,
-		udp_trdy => udppltx_trdy,
-		udp_end  => udppltx_end,
-		udp_data => udppltx_data);
+		meta_irdy => dlltx_irdy,
+		udp_trdy  => udppltx_trdy,
+		udp_end   => udppltx_end,
+		udp_data  => udppltx_data);
 
 	udpc_e : entity hdl4fpga.sio_muxcmp
     port map (
