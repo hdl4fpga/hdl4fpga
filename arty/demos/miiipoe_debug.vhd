@@ -163,7 +163,7 @@ begin
 
 		signal pltx_req : bit;
 		signal pltx_rdy : bit;
-		constant txpkt  : std_logic_vector := x"1122334455667788";
+		constant txpkt  : std_logic_vector := x"112233445566778899aabbccddee00ff";
 	begin
 
 

@@ -64,24 +64,27 @@ add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv
 add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_trdy
 add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_end
 add wave -noupdate -expand -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_data
+add wave -noupdate -expand -group ipv4_tx -expand -group tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_end
 add wave -noupdate -expand -group ipv4_tx -expand -group tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_irdy
 add wave -noupdate -expand -group ipv4_tx -expand -group tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
 add wave -noupdate -expand -group ipv4_tx -expand -group tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_end
 add wave -noupdate -expand -group ipv4_tx -expand -group tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_irdy
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data
+add wave -noupdate -expand -group ipv4_tx -expand -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_irdy
+add wave -noupdate -expand -group ipv4_tx -expand -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_irdy
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_data
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/nettx_full
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/lentx_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/lentx_full
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_end
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4chsm_end
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4shdr_end
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6302086 ps} 0} {{Cursor 2} {3420000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6302086 ps} 0} {{Cursor 2} {5580000 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 288
+configure wave -namecolwidth 231
 configure wave -valuecolwidth 191
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -95,4 +98,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2501250 ps} {4338750 ps}
+WaveRestoreZoom {3742500 ps} {7417500 ps}
