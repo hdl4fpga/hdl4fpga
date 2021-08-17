@@ -93,6 +93,7 @@ architecture def of udp is
 	signal udppltx_trdy   : std_logic;
 	signal udppltx_end    : std_logic;
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
+	signal ppltx_data     : std_logic_vector(udptx_data'range);
 
 	signal udplentx_irdy  : std_logic;
 	signal udplentx_trdy  : std_logic;
@@ -145,7 +146,6 @@ begin
 
 		signal tx_ci      : std_logic;
 		signal tx_co      : std_logic;
-		signal crtn_data  : std_logic_vector(pltx_data'range);
 		signal lenrx_irdy : std_logic;
 		signal lentx_irdy : std_logic;
 		signal len_end    : std_logic;
@@ -178,39 +178,51 @@ begin
 			so_end   => cksm_end,
 			so_data  => cksm_data);
 
-		mux_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
-			sio_clk  => mii_clk,
-			sio_frm  => pltx_frm,
-			sio_irdy => lentx_irdy,
-			sio_trdy => open,
-			so_data  => crtn_data);
-
-		process (mii_clk)
+		len_b : block
+			signal crtn_data  : std_logic_vector(pltx_data'range);
 		begin
-			if rising_edge(mii_clk) then
-				if pltx_frm='0' then
-					tx_ci <= '0';
-				elsif pltx_irdy='1' then
-					tx_ci <= tx_co;
-				end if;
-			end if;
-		end process;
 
-		tx_sum_e : entity hdl4fpga.adder
-		port map (
-			ci  => tx_ci,
-			a   => pltx_data,
-			b   => crtn_data,
-			s   => len_datai,
-			co  => tx_co);
+			mux_e : entity hdl4fpga.sio_mux
+			port map (
+				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
+				sio_clk  => mii_clk,
+				sio_frm  => pltx_frm,
+				sio_irdy => lenrx_irdy,
+				sio_trdy => open,
+				so_data  => crtn_data);
+
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					if pltx_frm='0' then
+						tx_ci <= '0';
+					elsif pltx_irdy='1' then
+						tx_ci <= tx_co;
+					end if;
+				end if;
+			end process;
+
+			tx_sum_e : entity hdl4fpga.adder
+			port map (
+				ci  => tx_ci,
+				a   => pltx_data,
+				b   => crtn_data,
+				s   => len_datai,
+				co  => tx_co);
+
+			ppltx_data <= 
+				pltx_data when dlltx_full='0' else 
+				len_datai when len_full='0'   else
+				pltx_data;
+
+		end block;
 
 		lenrx_irdy <= '0' when dlltx_full='0' else pltx_irdy;
-		lentx_irdy <= '0' when cksm_end='0'  else udphdr_trdy;
+		lentx_irdy <= '0' when cksm_end='0' else udphdr_trdy;
+
 		udplen_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_size => 16)
+			mem_length => 16)
 		port map (
 			si_clk  => mii_clk,
 			si_frm  => pltx_frm,
@@ -275,18 +287,18 @@ begin
 
 	udptx_e : entity hdl4fpga.udp_tx
 	port map (
-		mii_clk  => mii_clk,
+		mii_clk   => mii_clk,
 
-		pl_frm   => udppltx_frm,
-		pl_irdy  => pltx_irdy,
-		pl_trdy  => pltx_trdy,
-		pl_end   => pltx_end,
-		pl_data  => pltx_data ,
+		pl_frm    => udppltx_frm,
+		pl_irdy   => pltx_irdy,
+		pl_trdy   => pltx_trdy,
+		pl_end    => pltx_end,
+		pl_data   => ppltx_data,
 
-		hdr_irdy => udphdr_irdy,
-		hdr_trdy => udphdr_trdy,
-		hdr_end  => udphdr_end,
-		hdr_data => udphdr_data,
+		hdr_irdy  => udphdr_irdy,
+		hdr_trdy  => udphdr_trdy,
+		hdr_end   => udphdr_end,
+		hdr_data  => udphdr_data,
 
 		udp_irdy  => udppltx_irdy,
 		meta_full => dlltx_full,

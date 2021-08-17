@@ -75,14 +75,9 @@ add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testb
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
 add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/nettx_full
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/lentx_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/lentx_full
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_end
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4chsm_end
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4shdr_end
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6302086 ps} 0} {{Cursor 2} {5580000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6302086 ps} 0} {{Cursor 2} {4069509 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 231
 configure wave -valuecolwidth 191
@@ -98,4 +93,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {3742500 ps} {7417500 ps}
+WaveRestoreZoom {0 ps} {8400 ns}

@@ -101,6 +101,7 @@ architecture def of ipv4 is
 	signal ipv4pltx_trdy    : std_logic;
 	signal ipv4pltx_end     : std_logic;
 	signal ipv4pltx_data    : std_logic_vector(ipv4tx_data'range);
+	signal pltx_data    : std_logic_vector(ipv4tx_data'range);
 
 	signal icmprx_frm       : std_logic;
 	signal icmprx_irdy      : std_logic;
@@ -198,13 +199,6 @@ begin
 		so_end  => ipv4sarx_end,
 		so_data => ipv4sarx_data);
 
-	tp(1) <= ipv4darx_frm;
-	tp(2) <= ipv4darx_irdy;
-	tp(3 to 10) <= ipv4rx_data;
-	tp(11) <= tp1(1);
-	tp(12) <= tp1(2);
-	tp(13) <= tp1(3);
-	tp(14) <= tp1(4);
 	sarxcmp_e : entity hdl4fpga.sio_cmp
     port map (
         si_clk    => mii_clk,
@@ -241,7 +235,7 @@ begin
 	port map (
 		si_clk  => mii_clk,
 		si_frm  => pltx_frm,
-		si_irdy => '-',
+		si_irdy => '0',
 		si_trdy => open,
 		si_full => open,
 		si_data => pltx_data,
@@ -285,6 +279,45 @@ begin
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
 	begin
+
+		len_b : block
+			signal crtn_data  : std_logic_vector(pltx_data'range);
+		begin
+
+			mux_e : entity hdl4fpga.sio_mux
+			port map (
+				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
+				sio_clk  => mii_clk,
+				sio_frm  => pltx_frm,
+				sio_irdy => lenrx_irdy,
+				sio_trdy => open,
+				so_data  => crtn_data);
+
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					if pltx_frm='0' then
+						tx_ci <= '0';
+					elsif pltx_irdy='1' then
+						tx_ci <= tx_co;
+					end if;
+				end if;
+			end process;
+
+			tx_sum_e : entity hdl4fpga.adder
+			port map (
+				ci  => tx_ci,
+				a   => pltx_data,
+				b   => crtn_data,
+				s   => len_datai,
+				co  => tx_co);
+
+			ppltx_data <= 
+				pltx_data when dlltx_full='0' else 
+				len_datai when len_full='0'   else
+				pltx_data;
+
+		end block;
 
 		lentx_irdy <= 
 			'0' when dlltx_full='0' else
@@ -351,7 +384,7 @@ begin
 		pl_irdy    => ipv4pltx_irdy,
 		pl_trdy    => ipv4pltx_trdy,
 		pl_end     => ipv4pltx_end,
-		pl_data    => ipv4pltx_data,
+		pl_data    => ppltx_data,
 
 		ipv4a_frm  => ipv4atx_frm,
 		ipv4a_irdy => ipv4atx_irdy,
