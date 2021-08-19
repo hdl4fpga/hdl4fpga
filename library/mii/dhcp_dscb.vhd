@@ -113,7 +113,7 @@ begin
 
 	dhcpudplen_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(std_logic_vector(to_unsigned(20+payload_size+8, 16)),8),
+		mux_data => reverse(std_logic_vector(to_unsigned(payload_size+8, 16))),
 		sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => udplentx_irdy,

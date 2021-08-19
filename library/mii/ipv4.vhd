@@ -284,14 +284,15 @@ begin
 
 		len_b : block
 			signal crtn_data  : std_logic_vector(pltx_data'range);
-			signal data : std_logic_vector(0 to 16-1);
+			signal datai : std_logic_vector(0 to 16-1);
+			signal datao : std_logic_vector(0 to 16-1);
 			signal tx_ci : std_logic;
 			signal tx_co : std_logic;
 		begin
 
 			mux_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
+				mux_data => reverse(std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16))),
 				sio_clk  => mii_clk,
 				sio_frm  => pltx_frm,
 				sio_irdy => lentx_irdy,
@@ -325,11 +326,12 @@ begin
 				si_trdy => open,
 				si_full => lentx_full,
 				si_data => len_datai,
-				so_data => data);
+				so_data => datai);
 
+			datao <= reverse(reverse(datai),8);
 			muxi_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => data,
+				mux_data => datao,
 				sio_clk  => mii_clk,
 				sio_frm  => ipv4tx_frm,
 				sio_irdy => ipv4len_irdy,
