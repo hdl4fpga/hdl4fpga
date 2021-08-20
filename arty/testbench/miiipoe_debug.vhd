@@ -48,6 +48,7 @@ begin
 	clk  <= not clk after 5 ns;
 	rst  <= '1', '0' after 1000 ns;
 	btn0 <= '0', '1' after 2000 ns;
+	btn1 <= '0', '1' after 2000 ns;
 
 	du_e : entity work.arty(miiipoe_debug)
 	port map (
@@ -60,9 +61,9 @@ begin
 		eth_txd => eth_txd,
 		sw => "0010",
 		btn(0) => '0', --btn0,
-		btn(1) => '0', --btn1,
-		btn(2) => btn0,
-		btn(3) => btn1);
+		btn(1) => btn1,
+		btn(2) => '0', --btn0,
+		btn(3) => '0'); --btn1);
 
 	ref_clk1 <= ref_clk;
 	ethrx_e : entity hdl4fpga.eth_rx

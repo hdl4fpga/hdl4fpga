@@ -163,14 +163,19 @@ begin
 
 		signal pltx_req : bit;
 		signal pltx_rdy : bit;
-		constant txpkt  : std_logic_vector := x"112233445566778899aabbccddee00ff11223344556677";
+		constant txpkt  : std_logic_vector := 
+			x"ff_ff_ff_ff_ff_ff" &  -- MAC address 
+			x"ff_ff_ff_ff"       &  -- IP address
+			reverse(x"0001")     &  -- payload length
+			x"00450046"          &  -- UDP ports
+			x"778899aabbccddee00ff11223344556677";
 	begin
 
 
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm2 => '0', -- btn(0),
-			mii_frm1 => '0', -- btn(1),
+			mii_frm1 => '0', -- btn(0),
+			mii_frm2 => btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
