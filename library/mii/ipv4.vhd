@@ -295,7 +295,7 @@ begin
 
 			mux_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => reverse(std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16))),
+				mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
 				sio_clk  => mii_clk,
 				sio_frm  => pltx_frm,
 				sio_irdy => lentx_irdy,

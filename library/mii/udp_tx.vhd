@@ -72,7 +72,10 @@ begin
 		hdr_data when hdr_end='0'   else 
 		pl_data;
 
-	pl_trdy <= meta_irdy when meta_full='0' else udp_trdy;
+	pl_trdy <= 
+		meta_irdy when meta_full='0' else
+		'0'       when hdr_end='0' else 
+		udp_trdy;
 	udp_end  <= 
 		'0' when hdr_end='0' else 
 		pl_end;
