@@ -70,8 +70,6 @@ architecture def of icmpd is
 
 	signal icmprx_id       : std_logic_vector(0 to 16-1);
 	signal icmprx_seq      : std_logic_vector(0 to 16-1);
-	signal icmprx_cksm     : std_logic_vector(0 to 16-1);
-	signal icmptx_cksm     : std_logic_vector(0 to 16-1);
 
 	signal icmppl_irdy     : std_logic;
 	signal icmpcksmtx_frm : std_logic;
@@ -142,10 +140,11 @@ begin
 			co  => co);
 	end block;
 
-	memrx_data <= primux(
-		(icmptx_data'range => '0') & (icmptx_data'range => '0') & cksmrx_data, 
-		icmpcoderx_frm & icmptyperx_frm & icmpcksmrx_frm,
-		icmprx_data);
+	memrx_data <= 
+		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
+		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
+		cksmrx_data                when icmpcksmrx_frm='1' else
+		icmprx_data;
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
 	icmpdatatx_trdy <= 
@@ -348,6 +347,7 @@ begin
 		pl_data   => icmppltx_data,
 
 		icmpcksm_frm => icmpcksmtx_frm,
+		nettx_full => nettx_full,
 		icmp_frm  => icmptx_frm,
 		icmp_irdy => icmptx_irdy,
 		icmp_trdy => icmptx_trdy,

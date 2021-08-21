@@ -44,6 +44,7 @@ entity icmprply_tx is
 		icmpseq_frm  : out std_logic;
 		icmpcksm_frm : out std_logic;
 
+		nettx_full : in std_logic := '1';
 		icmp_frm  : out std_logic;
 		icmp_irdy : out std_logic := '0';
 		icmp_trdy : in  std_logic := '1';
@@ -63,7 +64,7 @@ begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
 				cntr := to_unsigned(summation(icmphdr_frame)/icmp_data'length-1, cntr'length);
-			elsif cntr(0)='0' and (pl_irdy and icmp_trdy)='1' then
+			elsif cntr(0)='0' and nettx_full='1' and (pl_irdy and icmp_trdy)='1' then
 				cntr := cntr - 1;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);
@@ -73,7 +74,7 @@ begin
 	icmpcksm_frm <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_cksm);
 	icmpid_frm   <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_id);
 	icmpseq_frm  <= pl_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_seq);
-	pl_trdy      <= icmp_trdy;
+	pl_trdy      <= '0' when nettx_full='0' else icmp_trdy;
 
 	icmp_frm  <= pl_frm;
 	icmp_data <= pl_data;

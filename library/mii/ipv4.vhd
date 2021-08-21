@@ -155,6 +155,7 @@ architecture def of ipv4 is
 	signal ipv4proto_end  : std_logic;
 	signal ipv4proto_data : std_logic_vector(ipv4rx_data'range);
 
+	signal icmp_gnt : std_logic;
 	signal tp1 : std_logic_vector(tp'range);
 begin
 
@@ -265,6 +266,7 @@ begin
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
 		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
+		icmp_gnt <= dev_gnt(0);
 
 	end block;
 
@@ -279,6 +281,7 @@ begin
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
 		signal len_datai  : std_logic_vector(pltx_data'range);
+		signal ldatai  : std_logic_vector(pltx_data'range);
 		signal len  : std_logic_vector(0 to 16);
 	begin
 
@@ -318,6 +321,7 @@ begin
 				s   => len_datai,
 				co  => tx_co);
 
+			ldatai <= ipv4pltx_data when icmp_gnt='1' else len_datai;
 			lenrgtr_e : entity hdl4fpga.sio_ff
 			port map (
 				si_clk  => mii_clk,
@@ -325,10 +329,10 @@ begin
 				si_irdy => lentx_irdy,
 				si_trdy => open,
 				si_full => lentx_full,
-				si_data => len_datai,
+				si_data => ldatai,
 				so_data => datai);
 
-			datao <= reverse(reverse(datai),8);
+			datao <= reverse(datai) when icmp_gnt='1' else reverse(reverse(datai),8);
 			muxi_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => datao,
@@ -341,7 +345,7 @@ begin
 
 			ppltx_data <= 
 				ipv4pltx_data when dlltx_full='0' else 
-				len_datai when lentx_full='0'   else
+				len_datai     when lentx_full='0'   else
 				ipv4pltx_data;
 
 		lentx_irdy <= 
