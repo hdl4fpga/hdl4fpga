@@ -30,8 +30,9 @@ use hdl4fpga.std.all;
 
 entity eth_tb is 
 	port (
-		mii_frm1  : in  std_logic;
-		mii_frm2  : in  std_logic;
+		mii_frm1  : in  std_logic := '0';
+		mii_frm2  : in  std_logic := '0';
+		mii_frm3  : in  std_logic := '0';
 
 		mii_txc   : in  std_logic;
 		mii_txen  : buffer std_logic;
@@ -70,29 +71,33 @@ architecture def of eth_tb is
 		x"aaaaaaff" &
 		x"ffffffaa" ;
 
---	constant packet : std_logic_vector := 
---		x"4500"                 &    -- IP Version, TOS
---		x"0000"                 &    -- IP Length
---		x"0000"                 &    -- IP Identification
---		x"0000"                 &    -- IP Fragmentation
---		x"0511"                 &    -- IP TTL, protocol
---		x"0000"                 &    -- IP Header Checksum
---		x"ffffffff"             &    -- IP Source IP address
---		x"c0a8000e"             &    -- IP Destiantion IP Address
---
---		udp_checksummed (
---			x"00000000",
---			x"ffffffff",
---			x"0044dea9"         & -- UDP Source port, Destination port
---			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
---			x"0000" &              -- UPD checksum
---			payload);
+	constant payload : std_logic_vector := reverse(x"11223344",8);
+	constant packet : std_logic_vector := 
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0511"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+
+		udp_checksummed (
+			x"ffffffff",             -- IP Source IP address
+			x"c0a8000e",             -- IP Destiantion IP Address
+			x"0044dea9"         & -- UDP Source port, Destination port
+			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
+			x"0000" &              -- UPD checksum
+			payload);
 
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
 	signal eth1_end   : std_logic;
 
 	signal eth2_end   : std_logic;
 	signal eth2_txd   : std_logic_vector(mii_txd'range);
+
+	signal eth3_end   : std_logic;
+	signal eth3_txd   : std_logic_vector(mii_txd'range);
 
 	signal eth_llc    : std_logic_vector(0 to 16-1);
 
@@ -139,9 +144,18 @@ begin
 		so_end   => eth2_end,
         so_data  => eth2_txd);
 
-	pl_end  <= wirebus(eth1_end & eth2_end, mii_frm1 & mii_frm2)(0);
-	pl_data <= wirebus(eth1_txd & eth2_txd, mii_frm1 & mii_frm2);
-	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800"), mii_frm1 & mii_frm2); -- Qualified expression required by Latticesemi Diamond
+	eth3_e: entity hdl4fpga.sio_mux
+	port map (
+		mux_data => reverse(packet,8),
+        sio_clk  => mii_txc,
+        sio_frm  => mii_frm3,
+		sio_irdy => pl_trdy,
+		so_end   => eth3_end,
+        so_data  => eth3_txd);
+
+	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end, mii_frm1 & mii_frm2 & mii_frm3)(0);
+	pl_data <= wirebus(eth1_txd & eth2_txd & eth3_txd, mii_frm1 & mii_frm2 & mii_frm3);
+	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800" & x"0800"), mii_frm1 & mii_frm2 & mii_frm3); -- Qualified expression required by Latticesemi Diamond
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';
@@ -153,7 +167,7 @@ begin
 						frm := '0';
 					end if;
 				end if;
-			elsif ((mii_frm1 and not eth1_end) or (mii_frm2 and not eth2_end))='1' then
+			elsif ((mii_frm1 and not eth1_end) or (mii_frm2 and not eth2_end) or (mii_frm3 and not eth3_end))='1' then
 				frm := '1';
 			end if;
 		end if;

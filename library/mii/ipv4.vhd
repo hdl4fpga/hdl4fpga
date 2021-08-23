@@ -57,7 +57,7 @@ entity ipv4 is
 		ipv4satx_end   : buffer std_logic;
 		ipv4satx_data  : buffer std_logic_vector;
 
-		plrx_frm       : out std_logic;
+		plrx_frm       : buffer std_logic;
 		plrx_irdy      : out std_logic;
 		plrx_trdy      : in  std_logic;
 		plrx_data      : out std_logic_vector;
@@ -118,6 +118,10 @@ architecture def of ipv4 is
 	signal udpplrx_trdy     : std_logic;
 	signal udpplrx_data     : std_logic_vector(ipv4rx_data'range);
 
+	signal udprx_frm        : std_logic;
+	signal udprx_equ        : std_logic;
+	signal udprx_vld        : std_logic;
+
 	signal udptx_frm        : std_logic;
 	signal udptx_irdy       : std_logic;
 	signal udptx_trdy       : std_logic;
@@ -156,11 +160,10 @@ architecture def of ipv4 is
 	signal ipv4proto_data : std_logic_vector(ipv4rx_data'range);
 
 	signal icmp_gnt : std_logic;
-	signal tp1 : std_logic_vector(tp'range);
 begin
 
 	plrx_frm  <= ipv4rx_frm;
-	plrx_irdy <= to_stdulogic(to_bit(ipv4rx_frm and (ipv4protorx_irdy or ipv4rxsa_irdy or ipv4lenrx_irdy or udpplrx_irdy)));
+	plrx_irdy <= to_stdulogic(to_bit(plrx_frm and (ipv4rxsa_irdy or udpplrx_irdy)));
 
 	ipv4rx_e : entity hdl4fpga.ipv4_rx
 	port map (
@@ -420,27 +423,31 @@ begin
 
 	proto_e : entity hdl4fpga.sio_muxcmp
 	generic map (
-		n => 1)
+		n => 2)
 	port map (
-		mux_data  => reverse(ipv4proto_icmp,8),
+		mux_data  => reverse(ipv4proto_icmp,8) & reverse(ipv4proto_udp,8),
         sio_clk   => mii_clk,
         sio_frm   => ipv4rx_frm,
 		sio_irdy  => ipv4protorx_irdy,
         si_data   => ipv4rx_data,
 		so_last   => protorx_last,
-		so_equ(0) => icmprx_equ);
+		so_equ(0) => icmprx_equ,
+		so_equ(1) => udprx_equ);
 
 	icmp_p : process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if ipv4rx_frm='0' then
 				icmprx_vld <= '0';
+				udprx_vld  <= '0';
 			elsif protorx_last='1' and ipv4protorx_irdy='1' then
 				icmprx_vld <= icmprx_equ;
+				udprx_vld  <= udprx_equ;
 			end if;
 		end if;
 	end process;
 	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
+	udprx_frm   <= ipv4plrx_frm and udprx_vld and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm and ipv4rx_irdy;
 
 	icmpd_e : entity hdl4fpga.icmpd
@@ -465,8 +472,7 @@ begin
 		icmptx_irdy => icmptx_irdy,
 		icmptx_trdy => icmptx_trdy,
 		icmptx_end  => icmptx_end,
-		icmptx_data => icmptx_data,
-		tp => tp1);
+		icmptx_data => icmptx_data);
 
 	udp_e : entity hdl4fpga.udp
 	port map (
@@ -474,6 +480,7 @@ begin
 		dhcpcd_req  => dhcpcd_req,
 		dhcpcd_rdy  => dhcpcd_rdy,
 
+		udprx_frm   => udprx_frm,
 		udprx_irdy  => ipv4rx_irdy,
 		udprx_data  => ipv4rx_data,
 		udpmetarx_irdy => udpmetarx_irdy,

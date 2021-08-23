@@ -61,7 +61,7 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if udp_frm='0' then
-				cntr := to_unsigned(summation(udp4hdr_frame)-1, cntr'length);
+				cntr := to_unsigned(summation(udp4hdr_frame)/udp_data'length-1, cntr'length);
 			elsif cntr(0)='0' and udp_irdy='1' then
 				cntr := cntr - 1;
 			end if;

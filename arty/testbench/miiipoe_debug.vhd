@@ -61,8 +61,8 @@ begin
 		eth_txd => eth_txd,
 		sw => "0010",
 		btn(0) => '0', --btn0,
-		btn(1) => '0', --btn1,
-		btn(2) => btn0,
+		btn(1) => btn1,
+		btn(2) => '0',
 		btn(3) => '0'); --btn1);
 
 	ref_clk1 <= ref_clk;

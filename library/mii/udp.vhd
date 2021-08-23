@@ -36,11 +36,12 @@ entity udp is
 		dhcpcd_req  : in  std_logic := '0';
 		dhcpcd_rdy  : out std_logic := '0';
 
+		udprx_frm   : in  std_logic;
 		udprx_irdy  : in  std_logic;
 		udprx_data  : in  std_logic_vector;
 
 		udpmetarx_irdy : out std_logic;
-		plrx_frm    : out std_logic;
+		plrx_frm    : buffer std_logic;
 		plrx_irdy   : out std_logic;
 		plrx_trdy   : in  std_logic;
 		plrx_data   : out std_logic_vector;
@@ -69,7 +70,6 @@ architecture def of udp is
 	signal udpsprx_equ    : std_logic;
 	signal udpsprx_vld    : std_logic;
 
-	signal udprx_frm      : std_logic;
 	signal udpsprx_irdy   : std_logic;
 	signal udpdprx_irdy   : std_logic;
 	signal udplenrx_irdy  : std_logic;
@@ -339,6 +339,9 @@ begin
 		end if;
 	end process;
 	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
+	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
+	plrx_irdy   <= (udprx_frm and udpsprx_irdy) or (udpplrx_frm and udprx_irdy);
+	plrx_data   <= udprx_data;
 
 	dhcpcd_e: entity hdl4fpga.dhcpcd
 	port map (

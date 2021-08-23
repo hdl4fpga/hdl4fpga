@@ -44,7 +44,7 @@ entity mii_ipoe is
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
-		plrx_frm       : out std_logic;
+		plrx_frm       : buffer std_logic;
 		plrx_irdy      : out std_logic;
 		plrx_trdy      : in  std_logic := '1';
 		plrx_data      : out std_logic_vector;
@@ -395,7 +395,6 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
---		tp => tp,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
@@ -437,5 +436,15 @@ begin
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
+
+		plrx_frm  <= miirx_frm;
+		plrx_irdy <= plrx_frm and (hwsarx_irdy or ipv4plrx_irdy);
+		ipv4plrx_trdy <= plrx_trdy;
+		plrx_data <= ipv4plrx_data;
+
+
+
+
+
 
 end;
