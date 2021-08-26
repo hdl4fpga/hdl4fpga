@@ -510,4 +510,5 @@ begin
 		udptx_end   => udptx_end ,
 		udptx_data  => udptx_data);
 
+	plrx_data <= udpplrx_data;
 end;

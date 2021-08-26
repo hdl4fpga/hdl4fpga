@@ -45,7 +45,7 @@ entity mii_ipoe is
 		miirx_data    : in  std_logic_vector;
 
 		plrx_frm       : buffer std_logic;
-		plrx_irdy      : out std_logic;
+		plrx_irdy      : buffer std_logic;
 		plrx_trdy      : in  std_logic := '1';
 		plrx_data      : out std_logic_vector;
 
@@ -154,8 +154,6 @@ architecture def of mii_ipoe is
 	signal fifo_irdy     : std_logic;
 	signal fifo_data     : std_logic_vector(miitx_data'range);
 
-	signal fifo_rollback : std_logic;
-	signal fifo_commit   : std_logic;
 	signal fifo_frm      : std_logic;
 	signal fifo_end      : std_logic;
 
@@ -450,39 +448,25 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
-		fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
-		fifo_data <= ipv4plrx_data;
-		fifo_e : entity hdl4fpga.txn_buffer
-		port map(
-			src_frm   => plrx_frm,
-			src_clk   => mii_clk,
-			src_irdy  => fifo_irdy,
-			src_trdy  => open,
-			src_data  => fifo_data,
+	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
+	fifo_data <= ipv4plrx_data;
+	fifo_e : entity hdl4fpga.txn_buffer
+	port map(
+		src_clk   => mii_clk,
+		src_frm   => ipv4plrx_frm,
+		src_irdy  => fifo_irdy,
+		src_trdy  => open,
+		src_data  => fifo_data,
 
-			rollback  => fifo_rollback,
-			commit    => fifo_commit,
+		rollback  => fifo_rllbk,
+		commit    => fifo_cmmt,
 
-			dst_frm   => fifo_frm,
-			dst_irdy  => plrx_trdy, --'-', plrx_frm,
-			dst_trdy  => open,
-			dst_end   => fifo_end,
-			dst_data  => plrx_data);
+		dst_frm   => plrx_frm,
+		dst_irdy  => plrx_trdy,
+		dst_trdy  => plrx_irdy,
+		dst_end   => fifo_end,
+		dst_data  => plrx_data);
 
-	process (miirx_frm, fifo_end, mii_clk)
-		variable q1 : std_logic;
-		variable q2 : std_logic;
-	begin
-		if rising_egge(mii_clk) then
-			if fifo_frm='1' then
-				q1 := not fifo_end;
-			else
-				fifo_frm <= '1';
-				q1 := '1'
-			end if;
-		end if;
-		fifo_frm <= not fifo_end;
-		plrx_frm <= q and not fifo_end;
-	end process;
+	plrx_frm <= (ipv4plrx_frm and fifo_cmmt) or not fifo_end;
 
 end;

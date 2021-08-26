@@ -117,12 +117,18 @@ add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmpp
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_trdy
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_end
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udprx_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udpplrx_irdy
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_cmmt
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_rllbk
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4plrx_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/plrx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/rx_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2217471 ps} 0}
+WaveRestoreCursors {{Cursor 1} {7938750 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 99
@@ -138,4 +144,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1379080 ps} {5579080 ps}
+WaveRestoreZoom {7400625 ps} {8476875 ps}
