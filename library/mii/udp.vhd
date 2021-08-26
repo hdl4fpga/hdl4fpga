@@ -44,6 +44,8 @@ entity udp is
 		plrx_frm    : buffer std_logic;
 		plrx_irdy   : out std_logic;
 		plrx_trdy   : in  std_logic;
+		plrx_cmmt   : out std_logic;
+		plrx_rllbk  : out std_logic;
 		plrx_data   : out std_logic_vector;
 
 		pltx_frm    : in  std_logic;
@@ -340,6 +342,8 @@ begin
 	end process;
 	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
 	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
+	plrx_rllbk  <= dhcpcrx_frm;
+	plrx_cmmt   <= plrx_frm;
 	plrx_irdy   <= (udprx_frm and udpsprx_irdy) or (udpplrx_frm and udprx_irdy);
 	plrx_data   <= udprx_data;
 

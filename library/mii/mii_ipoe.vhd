@@ -151,6 +151,17 @@ architecture def of mii_ipoe is
 	signal dlltx_irdy    : wor std_logic;
 	signal dlltx_full    : wor std_logic;
 
+	signal fifo_irdy     : std_logic;
+	signal fifo_data     : std_logic_vector(miitx_data'range);
+
+	signal fifo_rollback : std_logic;
+	signal fifo_commit   : std_logic;
+	signal fifo_frm      : std_logic;
+	signal fifo_end      : std_logic;
+
+	signal fifo_cmmt     : std_logic;
+	signal fifo_rllbk    : std_logic;
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -418,6 +429,8 @@ begin
 		ipv4satx_data => ipv4satx_data,
 
 		plrx_frm      => ipv4plrx_frm,
+		plrx_cmmt     => fifo_cmmt,
+		plrx_rllbk    => fifo_rllbk,
 		plrx_irdy     => ipv4plrx_irdy,
 		plrx_trdy     => ipv4plrx_trdy,
 		plrx_data     => ipv4plrx_data,
@@ -437,14 +450,39 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
-		plrx_frm  <= miirx_frm;
-		plrx_irdy <= plrx_frm and (hwsarx_irdy or ipv4plrx_irdy);
-		ipv4plrx_trdy <= plrx_trdy;
-		plrx_data <= ipv4plrx_data;
+		fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
+		fifo_data <= ipv4plrx_data;
+		fifo_e : entity hdl4fpga.txn_buffer
+		port map(
+			src_frm   => plrx_frm,
+			src_clk   => mii_clk,
+			src_irdy  => fifo_irdy,
+			src_trdy  => open,
+			src_data  => fifo_data,
 
+			rollback  => fifo_rollback,
+			commit    => fifo_commit,
 
+			dst_frm   => fifo_frm,
+			dst_irdy  => plrx_trdy, --'-', plrx_frm,
+			dst_trdy  => open,
+			dst_end   => fifo_end,
+			dst_data  => plrx_data);
 
-
-
+	process (miirx_frm, fifo_end, mii_clk)
+		variable q1 : std_logic;
+		variable q2 : std_logic;
+	begin
+		if rising_egge(mii_clk) then
+			if fifo_frm='1' then
+				q1 := not fifo_end;
+			else
+				fifo_frm <= '1';
+				q1 := '1'
+			end if;
+		end if;
+		fifo_frm <= not fifo_end;
+		plrx_frm <= q and not fifo_end;
+	end process;
 
 end;
