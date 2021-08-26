@@ -85,9 +85,7 @@ begin
 			if src_frm='0' then
 				cntr := (others => '0');
 			elsif src_irdy='1' then
-				if commit='1' then
-					cntr := cntr + 1;
-				end if;
+				cntr := cntr + 1;
 			end if;
 			rx_data <= std_logic_vector(cntr);
 			q       := (src_frm and not src_end);
@@ -95,7 +93,7 @@ begin
 		rx_irdy <= not (src_frm and not src_end) and q;
 	end process;
 
-	rx_writ <= commit and src_irdy;
+	rx_writ <= commit;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,

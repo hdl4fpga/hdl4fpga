@@ -43,6 +43,8 @@ HDL4FPGA__uart_tx__def = $(LIB_HDL4FPGA)/uart_tx/def.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
+HDL4FPGA__txn_buffer__def = $(LIB_HDL4FPGA)/txn_buffer/def.dat
+HDL4FPGA__txn_buffer = $(LIB_HDL4FPGA)/txn_buffer/_primary.dat
 HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
@@ -265,6 +267,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__uart_tx) \
     $(HDL4FPGA__uart_rx__def) \
     $(HDL4FPGA__uart_rx) \
+    $(HDL4FPGA__txn_buffer__def) \
+    $(HDL4FPGA__txn_buffer) \
     $(HDL4FPGA__tmds_encoder__behavioral) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
@@ -1135,6 +1139,7 @@ $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
+		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__eth_tx) \
@@ -1469,6 +1474,16 @@ $(HDL4FPGA__tmds_encoder__behavioral) : ../video/tmds_encoder.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
 
+$(HDL4FPGA__txn_buffer) \
+$(HDL4FPGA__txn_buffer__def) : ../common/txn_buffer.vhd \
+		$(HDL4FPGA__fifo) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../common/txn_buffer.vhd
+
 $(HDL4FPGA__uart_rx) \
 $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \
 		$(IEEE__std_logic_textio) \
@@ -1492,10 +1507,10 @@ $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 		$(HDL4FPGA__dhcpcd) \
 		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__udp_tx) \
-		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_ff) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__udp_rx) \
 		$(HDL4FPGA__ipoepkg) \

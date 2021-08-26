@@ -5,8 +5,8 @@ add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/du_e/eth_tx_clk
 add wave -noupdate /testbench/du_e/eth_tx_en
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/eth_txd(0) -radix hexadecimal} {/testbench/du_e/eth_txd(1) -radix hexadecimal} {/testbench/du_e/eth_txd(2) -radix hexadecimal} {/testbench/du_e/eth_txd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/eth_txd(0) {-height 29 -radix hexadecimal} /testbench/du_e/eth_txd(1) {-height 29 -radix hexadecimal} /testbench/du_e/eth_txd(2) {-height 29 -radix hexadecimal} /testbench/du_e/eth_txd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/eth_txd
-add wave -noupdate /testbench/du_e/ser_debug_e/ser_clk
 add wave -noupdate /testbench/du_e/ser_debug_e/ser_frm
+add wave -noupdate /testbench/du_e/ser_debug_e/ser_clk
 add wave -noupdate /testbench/du_e/ser_debug_e/ser_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ser_debug_e/ser_data
 add wave -noupdate -divider {eth receiver}
@@ -119,16 +119,28 @@ add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmpp
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_data
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_cmmt
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_rllbk
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4plrx_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/plrx_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_end
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/src_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/src_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/src_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/rx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/rx_writ
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/line__115/cntr
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/miirx_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/miirx_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/miirx_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/miirx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/dst_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/dst_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/src_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/fifo_e/src_trdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7938750 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8247298 ps} 0} {{Cursor 3} {9877887 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 99
@@ -144,4 +156,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7400625 ps} {8476875 ps}
+WaveRestoreZoom {6015 ns} {12315 ns}
