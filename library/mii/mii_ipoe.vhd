@@ -153,14 +153,21 @@ architecture def of mii_ipoe is
 	signal dlltx_irdy    : wor std_logic;
 	signal dlltx_full    : wor std_logic;
 
-	signal fifo_irdy     : std_logic;
-	signal fifo_data     : std_logic_vector(miitx_data'range);
 
-	signal fifo_frm      : std_logic;
+	signal fifo_irdy     : std_logic;
 	signal fifo_end      : std_logic;
+	signal xxx_irdy     : std_logic;
+	signal fifo_trdy     : std_logic;
+	signal fifo_data     : std_logic_vector(miitx_data'range);
 
 	signal fifo_cmmt     : std_logic;
 	signal fifo_rllbk    : std_logic;
+
+	signal tag_frm      : std_logic;
+	signal tag_end      : std_logic;
+	signal tag_irdy     : std_logic;
+	signal tag_trdy     : std_logic;
+	signal tag_data     : std_logic_vector(miitx_data'range);
 
 begin
 
@@ -451,23 +458,22 @@ begin
 		ipv4tx_data   => ipv4tx_data);
 
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
-	fifo_data <= ipv4plrx_data;
 	fifo_e : entity hdl4fpga.txn_buffer
 	port map(
 		src_clk   => mii_clk,
 		src_frm   => miirx_frm,
 		src_irdy  => fifo_irdy,
 		src_trdy  => open,
-		src_data  => fifo_data,
+		src_data  => ipv4plrx_data,
 
 		rollback  => fifo_rllbk,
 		commit    => fifo_cmmt,
 
-		dst_frm   => plrx_frm,
-		dst_irdy  => plrx_trdy,
-		dst_trdy  => plrx_irdy,
+		dst_frm   => tag_frm,
+		dst_irdy  => tag_irdy,
+		dst_trdy  => fifo_trdy,
 		dst_end   => fifo_end,
-		dst_data  => plrx_data);
+		dst_data  => fifo_data);
 
 	process (fifo_end, mii_clk)
 		variable q : std_logic;
@@ -479,7 +485,7 @@ begin
 				q := '1';
 			end if;
 		end if;
-		plrx_frm <= q and not fifo_end;
+		tag_frm <= q and not fifo_end;
 	end process;
 
 	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
@@ -495,5 +501,20 @@ begin
 		fifo_cmmt  <= fcs_sb and     (fcs_vld and q);
 		fifo_rllbk <= fcs_sb and not (fcs_vld and q);
 	end process;
+
+	tag_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data =>  x"0008",
+		sio_clk  => mii_clk,
+		sio_frm  => tag_frm,
+		sio_irdy => tag_frm,
+		sio_trdy => tag_trdy,
+		so_end   => tag_end,
+		so_data  => tag_data);
+
+	plrx_frm  <= tag_frm;
+	plrx_irdy <= tag_trdy when tag_end='0' else fifo_trdy;
+	tag_irdy  <= '0'      when tag_end='0' else plrx_trdy;
+	plrx_data <= tag_data when tag_end='0' else fifo_data;
 
 end;

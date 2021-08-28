@@ -48,10 +48,12 @@ end;
 
 architecture def of txn_buffer is
 
+	signal rx_frm    : std_logic;
 	signal rx_irdy   : std_logic;
 	signal rx_writ   : std_logic;
 	signal rx_data   : std_logic_vector(0 to 6);
 
+	signal tx_irdy   : std_logic;
 	signal tx_trdy   : std_logic;
 	signal tx_data   : std_logic_vector(rx_data'range);
 
@@ -93,6 +95,7 @@ begin
 		rx_irdy <= not (src_frm and not src_end) and q;
 	end process;
 
+	rx_frm  <= commit or dst_trdy;
 	rx_writ <= commit;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
@@ -100,7 +103,7 @@ begin
 		max_depth  => 4)
 	port map (
 		src_clk    => src_clk,
-		src_frm    => dst_irdy,
+		src_frm    => rx_frm,
 		src_irdy   => rx_irdy,
 		src_auto   => '0',
 		src_writ   => rx_writ,
@@ -108,11 +111,11 @@ begin
 		src_data   => rx_data,
 
 		dst_clk    => src_clk,
-		dst_irdy   => open,
+		dst_irdy   => tx_irdy,
 		dst_trdy   => tx_trdy,
 		dst_data   => tx_data);
 
-	process (tx_data, src_clk)
+	process (dst_frm, dst_trdy, tx_data, src_clk)
 		variable q    : std_logic;
 		variable cntr : unsigned(tx_data'range);
 	begin
@@ -130,7 +133,7 @@ begin
 			end if;
 		end if;
 		tx_trdy <= not dst_frm and q;
-		dst_end <= not setif(cntr < unsigned(tx_data));
+		dst_end <= (not setif(cntr < unsigned(tx_data))) or not dst_trdy;
 		q := dst_frm;
 	end process;
 

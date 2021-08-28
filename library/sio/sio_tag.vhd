@@ -26,7 +26,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
 entity sio_tag is
 	port (
@@ -37,7 +36,7 @@ entity sio_tag is
 		si_trdy : out std_logic;
 		si_data : in  std_logic_vector;
 		so_frm  : out std_logic;
-		so_irdy : out std_logic;
+		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic;
 		so_data : out std_logic_vector);
 end;
@@ -81,9 +80,10 @@ begin
 		dst_trdy  => fifoo_trdy,
 		dst_data  => fifoo_data);
 
-	so_frm     <= si_frm;
+	si_trdy    <=fifoo_trdy ;
+	so_frm     <= si_frm or fifoo_irdy;
 	so_irdy    <= tag_trdy when tag_end='0' else fifoo_irdy;
 	fifoo_trdy <= '0'      when tag_end='0' else so_trdy;
-	so_data    <= primux(tag_data, (0 to 0 => not tag_end), fifoo_data);
+	so_data    <= tag_data when tag_end='0' else fifoo_data;
 
 end;

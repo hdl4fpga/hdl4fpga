@@ -144,6 +144,8 @@ begin
 		signal miirx_irdy : std_logic;
 		signal miirx_trdy : std_logic;
 		signal miirx_data : std_logic_vector(0 to 8-1);
+
+		signal plrx_trdy  : std_logic := '0';
 		signal plrx_data  : std_logic_vector(miirx_data'range);
 
 		signal miitx_frm  : std_logic;
@@ -270,6 +272,7 @@ begin
 		led(0) <= dhcpcd_req;
 		led(1) <= dhcpcd_rdy;
 
+		plrx_trdy <= '0', '1' after 25 us;
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			tp => tp,
@@ -283,7 +286,7 @@ begin
 
 			plrx_frm   => open,
 			plrx_irdy  => open,
-			plrx_trdy  => '1',
+			plrx_trdy  => plrx_trdy,
 			plrx_data  => plrx_data,
 
 			pltx_frm   => pltx_frm,
