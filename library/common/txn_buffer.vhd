@@ -57,8 +57,10 @@ architecture def of txn_buffer is
 	signal tx_trdy   : std_logic;
 	signal tx_data   : std_logic_vector(rx_data'range);
 
+	signal data_trdy : std_logic;
 begin
 
+	data_trdy <= dst_irdy and dst_frm;
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => 128,
@@ -76,7 +78,7 @@ begin
 
 		dst_clk   => src_clk,
 		dst_irdy  => dst_trdy,
-		dst_trdy  => dst_irdy,
+		dst_trdy  => data_trdy,
 		dst_data  => dst_data);
 
 	process (src_frm, src_end, src_clk)

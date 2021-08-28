@@ -457,6 +457,33 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
+	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if fcs_sb='1' then
+				q        := '0';
+			elsif ipv4plrx_cmmt='1' then
+				q := '1';
+			end if;
+		end if;
+		fifo_cmmt  <= fcs_sb and     (fcs_vld and q);
+		fifo_rllbk <= fcs_sb and not (fcs_vld and q);
+	end process;
+
+	process (fifo_end, mii_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if fcs_sb='1' then
+				q := fifo_cmmt;
+			elsif fifo_end='1' then
+				q := '1';
+			end if;
+		end if;
+		tag_frm <= q and not fifo_end;
+	end process;
+
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	fifo_e : entity hdl4fpga.txn_buffer
 	port map(
@@ -475,33 +502,7 @@ begin
 		dst_end   => fifo_end,
 		dst_data  => fifo_data);
 
-	process (fifo_end, mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if fcs_sb='1' then
-				q := fifo_cmmt;
-			elsif fifo_end='1' then
-				q := '1';
-			end if;
-		end if;
-		tag_frm <= q and not fifo_end;
-	end process;
-
-	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if fcs_sb='1' then
-				q        := '0';
-			elsif ipv4plrx_cmmt='1' then
-				q := '1';
-			end if;
-		end if;
-		fifo_cmmt  <= fcs_sb and     (fcs_vld and q);
-		fifo_rllbk <= fcs_sb and not (fcs_vld and q);
-	end process;
-
+	tag_irdy  <= '0' when tag_end='0' else plrx_trdy;
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data =>  x"0008",
@@ -513,8 +514,12 @@ begin
 		so_data  => tag_data);
 
 	plrx_frm  <= tag_frm;
-	plrx_irdy <= tag_trdy when tag_end='0' else fifo_trdy;
-	tag_irdy  <= '0'      when tag_end='0' else plrx_trdy;
-	plrx_data <= tag_data when tag_end='0' else fifo_data;
+	plrx_irdy <= 
+		'0'      when tag_frm='0' else
+		tag_trdy when tag_end='0' else
+		fifo_trdy;
+	plrx_data <= 
+		tag_data when tag_end='0' else 
+		fifo_data;
 
 end;
