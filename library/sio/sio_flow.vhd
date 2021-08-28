@@ -29,40 +29,29 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_flow is
-	generic (
-		mem_size    : natural := 2048*8);
 	port (
-		phyi_clk    : in  std_logic;
-		phyi_frm    : in  std_logic;
-		phyi_fcssb  : in std_logic;
-		phyi_fcsvld : in std_logic;
+		sio_clk : in std_logic;
 
-		buffer_frm  : in std_logic;
-		buffer_irdy : in std_logic;
-		buffer_trdy : out std_logic;
-		buffer_data : in std_logic_vector;
+		rx_frm  : in std_logic;
+		rx_irdy : in std_logic;
+		rx_trdy : out std_logic;
+		rx_data : in std_logic_vector;
 
-		so_clk      : in  std_logic;
-		so_frm      : out std_logic;
-		so_irdy     : buffer std_logic;
-		so_trdy     : in  std_logic;
-		so_data     : out std_logic_vector;
+		so_frm  : out std_logic;
+		so_irdy : buffer std_logic;
+		so_trdy : in  std_logic;
+		so_data : out std_logic_vector;
 
-		si_clk      : in  std_logic;
-		si_frm      : in  std_logic;
-		si_irdy     : in  std_logic;
-		si_trdy     : out std_logic;
-		si_data     : in  std_logic_vector;
+		si_frm  : in  std_logic;
+		si_irdy : in  std_logic;
+		si_trdy : out std_logic;
+		si_data : in  std_logic_vector;
 
-        phyo_idle   : in  std_logic := '1';
-		
-		phyo_clk    : in  std_logic;
-		phyo_frm    : buffer std_logic;
-		phyo_irdy   : buffer std_logic;
-		phyo_trdy   : in  std_logic := '1';
-		phyo_data   : buffer std_logic_vector;
+		tx_frm  : buffer std_logic;
+		tx_irdy : buffer std_logic;
+		tx_trdy : in  std_logic := '1';
+		tx_data : buffer std_logic_vector);
 
-		tp          : out std_logic_vector(1 to 32));
 end;
 
 architecture struct of sio_flow is
@@ -227,38 +216,6 @@ begin
 			so_data  => meta_data);
 
 	end block;
-
-	buffer_cmmt <= (    phyi_fcsvld and not pkt_dup and not buffer_ovfl) and phyi_fcssb;
-	buffer_rllk <= (not phyi_fcsvld  or     pkt_dup or      buffer_ovfl) and phyi_fcssb;
-	tp(1) <=buffer_cmmt;
-
---	serdes_e : entity hdl4fpga.serdes
---	port map (
---		serdes_clk => so_clk,
---		serdes_frm => buffer_frm,
---		ser_irdy   => buffer_irdy,
---		ser_data   => buffer_data,
---
---		des_irdy   => des_irdy,
---		des_data   => des_data);
-
-	buffer_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth  => 128)
-	port map(
-		src_clk   => so_clk,
-		src_irdy  => buffer_irdy,
-		src_data  => buffer_data,
-
-		commit    => buffer_cmmt,
-		rollback  => buffer_rllk,
-		overflow  => buffer_ovfl,
-
-		dst_clk   => so_clk,
-		dst_irdy  => so_irdy,
-		dst_trdy  => so_trdy,
-		dst_data  => so_data);
-	so_frm <= so_irdy;
 
 	ack_p : process (phyi_fcssb, phyi_fcsvld, ack_rxd, phyi_clk)
 		variable q : std_logic := '0';
