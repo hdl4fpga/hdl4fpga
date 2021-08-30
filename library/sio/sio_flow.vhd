@@ -63,179 +63,92 @@ architecture struct of sio_flow is
 	signal metaram_data : std_logic_vector(si_data'range);
 
 	signal buffer_cmmt  : std_logic;
-	signal buffer_rllk  : std_logic;
+	signal buffer_rllbk : std_logic;
 	signal buffer_ovfl  : std_logic;
 	signal flow_frm     : std_logic;
 	signal flow_trdy    : std_logic;
 	signal flow_irdy    : std_logic_vector(0 to 0); -- Xilinx's ISE core-dump bug
 	signal flow_data    : std_logic_vector(si_data'range);
 
-	signal ack_rxd      : std_logic_vector(8-1 downto 0);
-	signal ack_txd      : std_logic_vector(ack_rxd'range);
 
-	signal pkt_dup      : std_logic;
-	signal ack_rxdv     : std_logic;
-
-	signal meta_data    : std_logic_vector(si_data'range);
-	signal meta_trdy    : std_logic;
-	signal meta_end     : std_logic;
-
-	signal sioack_data  : std_logic_vector(0 to 9*8-1);
-	signal ack_irdy     : std_logic;
-	signal ack_trdy     : std_logic;
-	signal ack_data     : std_logic_vector(si_data'range);
-	signal ack_end      : std_logic;
-
-	signal des_irdy     : std_logic_vector(0 to 0); -- Xilinx's ISE core-dump bug
-	signal des_trdy     : std_logic;
-	signal des_data     : std_logic_vector(si_data'range);
+	signal rgtr_frm     : std_logic;
+	signal rgtr_irdy    : std_logic;
+	signal rgtr_id      : std_logic_vector(8-1 downto 0);
+	signal rgtr_idv     : std_logic;
+	signal rgtr_dv      : std_logic;
+	signal rgtr_data    : std_logic_vector(0 to 8-1);
+	signal data_frm     : std_logic;
+	signal data_irdy    : std_logic;
+	signal sigsin_frm   : std_logic;
+	signal meta_frm     : std_logic;
+	signal meta_irdy    : std_logic;
+	signal sout_irdy    : std_logic;
 
 begin
 
-	rx_b : block
+	siosin_e : entity hdl4fpga.sio_sin
+	port map (
+		sin_clk   => phyi_clk,
+		sin_frm   => buffer_frm,
+		sin_irdy  => buffer_irdy,
+		sin_trdy  => buffer_trdy,
+		sin_data  => buffer_data,
+		rgtr_frm  => rgtr_frm,
+		rgtr_id   => rgtr_id,
+		rgtr_idv  => rgtr_idv,
+		rgtr_dv   => rgtr_dv,
+		rgtr_irdy => rgtr_irdy,
+		sout_irdy => sout_irdy,
+		data_frm  => data_frm,
+		data_irdy => data_irdy,
+		rgtr_data => rgtr_data);
 
-		signal rgtr_frm     : std_logic;
-		signal rgtr_irdy    : std_logic;
-		signal rgtr_id      : std_logic_vector(8-1 downto 0);
-		signal rgtr_idv     : std_logic;
-		signal rgtr_dv      : std_logic;
-		signal rgtr_data    : std_logic_vector(0 to 8-1);
-		signal data_frm     : std_logic;
-		signal data_irdy    : std_logic;
-		signal sigsin_frm   : std_logic;
-		signal meta_frm     : std_logic;
-		signal meta_irdy    : std_logic;
-		signal sout_irdy    : std_logic;
-		signal rxd          : std_logic_vector(0 to 8-1);
+	metaram_frm  <= rgtr_frm;
+	metaram_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
+	metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 
-		signal ena  : std_logic;
+	cflow_b : block
+		signal flow_req : bit;
+		signal flow_rdy : bit;
 
-
+		signal ack_dv   : std_logic;
+		signal ack_data : std_logic_vector(0 to 8-1);
 	begin
-
-		siosin_e : entity hdl4fpga.sio_sin
-		port map (
-			sin_clk   => phyi_clk,
-			sin_frm   => buffer_frm,
-			sin_irdy  => buffer_irdy,
-			sin_trdy  => buffer_trdy,
-			sin_data  => buffer_data,
-			rgtr_frm  => rgtr_frm,
-			rgtr_id   => rgtr_id,
-			rgtr_idv  => rgtr_idv,
-			rgtr_dv   => rgtr_dv,
-			rgtr_irdy => rgtr_irdy,
-			sout_irdy => sout_irdy,
-			data_frm  => data_frm,
-			data_irdy => data_irdy,
-			rgtr_data => rgtr_data);
-
-		metaram_frm  <= rgtr_frm;
-		metaram_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
-		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 
 		sigseq_e : entity hdl4fpga.sio_rgtr
 		generic map (
 			rid  => std_logic_vector'(x"01"))
 		port map (
-			rgtr_clk  => phyi_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_id   => rgtr_id,
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data,
-			dv        => ack_rxdv,
-			data      => rxd);
+			dv        => ack_dv,
+			data      => ack_data);
 
-		process (phyi_fcssb, phyi_fcsvld, pkt_dup, rxd, phyi_clk)
-			variable last  : bit_vector(ack_rxd'range);
-			variable dup   : bit;
-			variable latch : bit;
+		process (sio_clk)
+			variable last : std_logic_vector(ack_data'range);
 		begin
-			if rising_edge(phyi_clk) then
-				if phyi_fcssb='1' and phyi_fcsvld='1' then
-					dup   := to_bit(pkt_dup);
-					last  := to_bitvector(reverse(rxd));
-					latch := '0';
-				elsif ack_rxdv='1' then
-					latch := '1';
+			if rising_edge(sio_clk) then
+				if rx_frm='1' then
+					if ack_dv='1' then
+						if shift_left(unsigned(reverse(ack_data)),2)/=last then
+							buffer_cmmt  <= '1';
+						else
+							buffer_rllbk <= '1';
+						end if;
+						flow_req <= to_bit(ack_data(ack_data'left)) xor flow_rdy;
+						last := shift_left(unsigned(ack_data),2);
+					end if;
+				else
+					buffer_cmmt  <= '0';
+					buffer_rllbk <= '0';
 				end if;
 			end if;
-
-			if phyi_fcssb='1' and phyi_fcsvld='1' then
-				pkt_dup <= setif(shift_left(unsigned(reverse(rxd)),2)=shift_left(unsigned(to_stdlogicvector(last)),2));
-			else
-				pkt_dup <= to_stdulogic(dup);
-			end if;
-			ack_rxd <= reverse(rxd) or (pkt_dup & (0 to 7-1 => '0'));
-
 		end process;
 
 	end block;
 
-	meta_b : block
-
-		constant xxx  : natural := rgtrmeta_id'length/metaram_data'length;
-		constant xxx1 : natural := metaram_data'length;
-
-		signal lat_frm : std_logic;
-		signal lat_data : std_logic_vector(metaram_data'range);
-
-	begin
-
-		latfrm_e : entity hdl4fpga.align 
-		generic map (
-			n => 1,
-			d => (0 to 0 => xxx-1))
-		port map (
-			clk   => phyi_clk,
-			di(0) => metaram_frm,
-			do(0) => lat_frm);
-
-		latdat_e : entity hdl4fpga.align 
-		generic map (
-			n => xxx1,
-			d => (0 to xxx1-1 => xxx-1))
-		port map (
-			clk => phyi_clk,
-			di  => metaram_data,
-			do  => lat_data);
-
-		metaram_e : entity hdl4fpga.sio_ram 
-		generic map (
-			mem_size => 64*8)
-		port map (
-			si_clk   => phyi_clk,
-			si_frm   => lat_frm,
-			si_irdy  => metaram_irdy,
-			si_data  => lat_data,
-
-			so_clk   => so_clk,
-			so_frm   => flow_frm,
-			so_irdy  => flow_trdy,
-			so_trdy  => meta_trdy,
-			so_end   => meta_end,
-			so_data  => meta_data);
-
-	end block;
-
-	ack_p : process (phyi_fcssb, phyi_fcsvld, ack_rxd, phyi_clk)
-		variable q : std_logic := '0';
-	begin
-		if rising_edge(phyi_clk) then
-			if q='1' then
-				if ack_end='1' then
-					if des_trdy='1' then
-						q := '0';
-					end if;
-				end if;
-			elsif phyi_fcsvld='1' then
-				if phyi_fcssb='1' then
-					q := (ack_rxd(ack_rxd'left) or buffer_ovfl);
-				end if;
-			end if;
-		end if;
-		flow_frm <= (phyi_fcsvld and phyi_fcssb and (ack_rxd(ack_rxd'left) or buffer_ovfl)) or q;
-		ack_txd  <= ack_rxd or ('0' & q & (0 to 6-1 => '0'));
-	end process;
 
 	sioack_data <= reverse(
 		rgtrmeta_id & x"03" & x"04" & x"01" & x"00" & x"03" &
@@ -281,18 +194,5 @@ begin
 		des_irdy <= wirebus(flow_irdy(0) & si_irdy, gnt); -- Xilinx's ISE core-dump bug
 
 	end block;
-
-	desser_e : entity hdl4fpga.desser
-	port map (
-		desser_clk => phyo_clk,
-
-		des_frm    => phyo_frm,
-		des_irdy   => des_irdy(0),
-		des_trdy   => des_trdy,
-		des_data   => des_data,
-
-		ser_irdy   => phyo_irdy,
-		ser_trdy   => phyo_trdy,
-		ser_data   => phyo_data);
 
 end;
