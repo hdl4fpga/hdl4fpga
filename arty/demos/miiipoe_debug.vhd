@@ -145,8 +145,15 @@ begin
 		signal miirx_trdy : std_logic;
 		signal miirx_data : std_logic_vector(0 to 8-1);
 
+		signal plrx_frm   : std_logic := '0';
+		signal plrx_irdy  : std_logic := '0';
 		signal plrx_trdy  : std_logic := '0';
 		signal plrx_data  : std_logic_vector(miirx_data'range);
+
+		signal so_frm     : std_logic;
+		signal so_irdy    : std_logic;
+		signal so_trdy    : std_logic;
+		signal so_data    : std_logic_vector(miirx_data'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -159,6 +166,12 @@ begin
 		signal pltx_trdy  : std_logic;
 		signal pltx_end   : std_logic;
 		signal pltx_data  : std_logic_vector(miirx_data'range);
+
+		signal si_frm     : std_logic;
+		signal si_irdy    : std_logic;
+		signal si_trdy    : std_logic;
+		signal si_end     : std_logic;
+		signal si_data    : std_logic_vector(miirx_data'range);
 
 		signal dhcpcd_req : std_logic;
 		signal dhcpcd_rdy : std_logic;
@@ -204,11 +217,11 @@ begin
 		port map (
 			mux_data => txpkt,
 			sio_clk  => mii_txc,
-			sio_frm  => pltx_frm,
-			sio_irdy => pltx_trdy,
-			sio_trdy => pltx_irdy,
-			so_end   => pltx_end,
-			so_data  => pltx_data);
+			sio_frm  => si_frm,
+			sio_irdy => si_irdy
+			sio_trdy => si_trdy,
+			so_end   => si_end,
+			so_data  => si_data);
 
 		sync_b : block
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
@@ -275,7 +288,6 @@ begin
 		plrx_trdy <= '0', '1' after 25 us;
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
-			tp => tp,
 			mii_clk    => mii_txc,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
@@ -284,8 +296,8 @@ begin
 			miirx_trdy => miirx_trdy,
 			miirx_data => miirx_data,
 
-			plrx_frm   => open,
-			plrx_irdy  => open,
+			plrx_frm   => plrx_frm,
+			plrx_irdy  => plrx_irdy,
 			plrx_trdy  => plrx_trdy,
 			plrx_data  => plrx_data,
 
@@ -300,6 +312,32 @@ begin
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
+
+		sioflow_e : entity hdl4fpga.sio_flow
+		port (
+			sio_clk => mii_txc,
+
+			rx_frm  => plrx_frm,
+			rx_irdy => plrx_irdy,
+			rx_trdy => plrx_trdy,
+			rx_data => plrx_data,
+
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data,
+
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_end  => si_end,
+			si_data => si_data,
+
+			tx_frm  => pltx_frm,
+			tx_irdy => pltx_irdy,
+			tx_trdy => pltx_trdy,
+			tx_end  => pltx_end,
+			tx_data => pltx_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
