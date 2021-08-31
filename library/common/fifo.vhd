@@ -59,8 +59,7 @@ entity fifo is
 		dst_frm    : in  std_logic := '1';
 		dst_irdy   : buffer std_logic;
 		dst_trdy   : in  std_logic := '1';
-		dst_data   : buffer std_logic_vector;
-		tp         : out std_logic_vector(1 to 32));
+		dst_data   : buffer std_logic_vector);
 end;
 
 architecture def of fifo is

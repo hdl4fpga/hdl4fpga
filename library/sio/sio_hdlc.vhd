@@ -81,38 +81,38 @@ begin
 		fcs_sb      => hdlcfcsrx_sb,
 		fcs_vld     => hdlcfcsrx_vld);
 
-	flow_e : entity hdl4fpga.sio_flow
-	generic map (
-		mem_size    => mem_size)
-	port map (
-		phyi_clk    => uart_clk,
-		phyi_frm    => hdlcrx_frm,
-		phyi_fcssb  => hdlcfcsrx_sb,
-		phyi_fcsvld => hdlcfcsrx_vld,
-
-		buffer_frm  => hdlcrx_frm,
-		buffer_irdy => hdlcrx_irdy,
-		buffer_data => hdlcrx_data,
-
-		so_clk      => sio_clk,
-		so_frm      => so_frm,
-		so_irdy     => so_irdy,
-		so_trdy     => so_trdy,
-		so_data     => so_data,
-
-		si_clk      => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_trdy     => si_trdy,
-		si_data     => si_data,
-
-		phyo_clk    => uart_clk,
-		phyo_idle   => uart_idle,
-		phyo_frm    => hdlctx_frm,
-		phyo_irdy   => hdlctx_irdy,
-		phyo_trdy   => hdlctx_trdy,
-		phyo_data   => hdlctx_data,
-		tp => tp);
+--	flow_e : entity hdl4fpga.sio_flow
+--	generic map (
+--		mem_size    => mem_size)
+--	port map (
+--		phyi_clk    => uart_clk,
+--		phyi_frm    => hdlcrx_frm,
+--		phyi_fcssb  => hdlcfcsrx_sb,
+--		phyi_fcsvld => hdlcfcsrx_vld,
+--
+--		buffer_frm  => hdlcrx_frm,
+--		buffer_irdy => hdlcrx_irdy,
+--		buffer_data => hdlcrx_data,
+--
+--		so_clk      => sio_clk,
+--		so_frm      => so_frm,
+--		so_irdy     => so_irdy,
+--		so_trdy     => so_trdy,
+--		so_data     => so_data,
+--
+--		si_clk      => sio_clk,
+--		si_frm      => si_frm,
+--		si_irdy     => si_irdy,
+--		si_trdy     => si_trdy,
+--		si_data     => si_data,
+--
+--		phyo_clk    => uart_clk,
+--		phyo_idle   => uart_idle,
+--		phyo_frm    => hdlctx_frm,
+--		phyo_irdy   => hdlctx_irdy,
+--		phyo_trdy   => hdlctx_trdy,
+--		phyo_data   => hdlctx_data,
+--		tp => tp);
 
 	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
 	port map (
