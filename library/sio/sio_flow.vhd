@@ -60,9 +60,9 @@ architecture struct of sio_flow is
 
 	constant rgtrmeta_id : std_logic_vector(8-1 downto 0) := x"00";
 
-	signal metarx_frm  : std_logic;
-	signal metarx_irdy : std_logic;
-	signal metarx_data : std_logic_vector(rx_data'range);
+	signal metarx_frm   : std_logic;
+	signal metarx_irdy  : std_logic;
+	signal metarx_data  : std_logic_vector(rx_data'range);
 
 	signal buffer_cmmt  : std_logic;
 	signal buffer_rllbk : std_logic;
@@ -76,10 +76,6 @@ architecture struct of sio_flow is
 	signal rgtr_data    : std_logic_vector(0 to 8-1);
 	signal data_frm     : std_logic;
 	signal data_irdy    : std_logic;
-	signal sigsin_frm   : std_logic;
-	signal meta_frm     : std_logic;
-	signal meta_irdy    : std_logic;
-	signal sout_irdy    : std_logic;
 
 	signal ackrply_req  : bit;
 	signal ackrply_rdy  : bit;
@@ -109,7 +105,7 @@ begin
 		rgtr_idv  => rgtr_idv,
 		rgtr_dv   => rgtr_dv,
 		rgtr_irdy => rgtr_irdy,
-		sout_irdy => sout_irdy,
+		sout_irdy => open,
 		data_frm  => data_frm,
 		data_irdy => data_irdy,
 		rgtr_data => rgtr_data);
