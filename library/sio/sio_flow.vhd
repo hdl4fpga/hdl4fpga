@@ -60,9 +60,9 @@ architecture struct of sio_flow is
 
 	constant rgtrmeta_id : std_logic_vector(8-1 downto 0) := x"00";
 
-	signal metaram_frm  : std_logic;
-	signal metaram_irdy : std_logic;
-	signal metaram_data : std_logic_vector(si_data'range);
+	signal metarx_frm  : std_logic;
+	signal metarx_irdy : std_logic;
+	signal metarx_data : std_logic_vector(rx_data'range);
 
 	signal buffer_cmmt  : std_logic;
 	signal buffer_rllbk : std_logic;
@@ -114,9 +114,31 @@ begin
 		data_irdy => data_irdy,
 		rgtr_data => rgtr_data);
 
-	metaram_frm  <= rgtr_frm;
-	metaram_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
-	metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
+	metarx_frm  <= rgtr_frm;
+	metarx_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
+	metarx_data <= std_logic_vector(resize(unsigned(rgtr_data), metarx_data'length));
+
+	meta_e : entity hdl4fpga.fifo
+	generic map (
+		max_depth => 64,
+		latency   => 1,
+		check_dov => true)
+	port map(
+		src_clk   => sio_clk,
+		src_irdy  => metarx_irdy,
+		src_trdy  => open,
+		src_data  => metarx_data,
+
+		rollback  => buffer_rllbk,
+		commit    => buffer_cmmt,
+		overflow  => buffer_ovfl,
+
+		dst_clk   => sio_clk,
+		dst_irdy  => so_irdy,
+		dst_trdy  => so_trdy,
+		dst_data  => so_data);
+
+	so_frm <= '1' when buffer_cmmt='1' else so_irdy;
 
 	sigseq_e : entity hdl4fpga.sio_rgtr
 	generic map (
@@ -163,17 +185,52 @@ begin
 		rgtrmeta_id & x"03" & x"04" & x"01" & x"00" & x"03" &
 		x"01" & x"00" & ackrx_data, 8);
 
-	acktx_irdy <= meta_end and acktx_trdy;
-	acktx_frm <= to_stdulogic(ackrply_req xor ackrply_rdy);
-	acktx_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => ackrply_data,
-		sio_clk  => sio_clk,
-		sio_frm  => acktx_frm,
-		sio_irdy => acktx_irdy,
-		sio_trdy => acktx_trdy,
-		so_end   => acktx_end,
-		so_data  => acktx_data);
+	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
+	acktx_b : block
+
+		signal meta_irdy : std_logic;
+		signal meta_data : std_logic_vector(rx_data'range);
+
+		signal ack_irdy  : std_logic;
+		signal ack_trdy  : std_logic;
+		signal ack_data  : std_logic_vector(tx_data'range);
+
+	begin
+
+		meta_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth => 64,
+			latency   => 1,
+			check_dov => true)
+		port map(
+			src_clk   => sio_clk,
+			src_irdy  => metarx_irdy,
+			src_trdy  => open,
+			src_data  => metarx_data,
+
+			rollback  => buffer_rllbk,
+			commit    => buffer_cmmt,
+			overflow  => buffer_ovfl,
+
+			dst_clk   => sio_clk,
+			dst_irdy  => meta_irdy,
+			dst_trdy  => acktx_trdy,
+			dst_data  => meta_data);
+
+		ack_irdy   <= '0' when meta_irdy='1' else acktx_trdy;
+		acktx_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => ackrply_data,
+			sio_clk  => sio_clk,
+			sio_frm  => acktx_frm,
+			sio_irdy => ack_irdy,
+			sio_trdy => ack_trdy,
+			so_end   => acktx_end,
+			so_data  => ack_data);
+
+		acktx_irdy <= '1'       when meta_irdy='1' else ack_trdy;
+		acktx_data <= meta_data when meta_irdy='1' else ack_data;
+	end block;
 
 	artibiter_b : block
 
