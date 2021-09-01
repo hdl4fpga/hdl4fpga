@@ -54,7 +54,6 @@ entity udp is
 		pltx_data   : in  std_logic_vector;
 		pltx_end    : in  std_logic;
 
-		dlltx_end   : in std_logic;
 		dlltx_irdy  : in std_logic;
 		dlltx_full  : in std_logic;
 		nettx_full  : in std_logic;
@@ -359,7 +358,6 @@ begin
 		dhcpcdtx_frm  => dhcpctx_frm,
 		dlltx_irdy    => dlltx_irdy,
 		dlltx_full    => dlltx_full,
-		dlltx_end     => dlltx_end,
 		nettx_full    => nettx_full,
 
 		dhcpcdtx_irdy => dhcpctx_irdy,

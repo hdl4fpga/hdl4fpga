@@ -71,7 +71,7 @@ architecture def of eth_tb is
 		x"aaaaaaff" &
 		x"ffffffaa" ;
 
-	constant payload : std_logic_vector := reverse(x"112233445566778899aabbccddee112233445566778899",8);
+	constant payload : std_logic_vector := reverse(reverse(x"0100cd",8) & x"445566778899aabbccddee112233445566778899",8);
 	constant packet : std_logic_vector := 
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length

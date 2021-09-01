@@ -103,7 +103,7 @@ architecture def of ipv4 is
 	signal ipv4pltx_trdy    : std_logic;
 	signal ipv4pltx_end     : std_logic;
 	signal ipv4pltx_data    : std_logic_vector(ipv4tx_data'range);
-	signal ppltx_data    : std_logic_vector(ipv4tx_data'range);
+	signal ppltx_data       : std_logic_vector(ipv4tx_data'range);
 
 	signal icmprx_frm       : std_logic;
 	signal icmprx_irdy      : std_logic;
@@ -151,17 +151,18 @@ architecture def of ipv4 is
 	signal ipv4sack_frm     : std_logic;
 	signal ipv4sack_irdy    : std_logic;
 
-	signal ipv4len_irdy : std_logic;
-	signal ipv4len_trdy : std_logic;
-	signal ipv4len_end  : std_logic;
-	signal ipv4len_data : std_logic_vector(ipv4rx_data'range);
+	signal ipv4len_irdy     : std_logic;
+	signal ipv4len_trdy     : std_logic;
+	signal ipv4len_end      : std_logic;
+	signal ipv4len_data     : std_logic_vector(ipv4rx_data'range);
 
-	signal ipv4proto_irdy : std_logic;
-	signal ipv4proto_trdy : std_logic;
-	signal ipv4proto_end  : std_logic;
-	signal ipv4proto_data : std_logic_vector(ipv4rx_data'range);
+	signal ipv4proto_irdy   : std_logic;
+	signal ipv4proto_trdy   : std_logic;
+	signal ipv4proto_end    : std_logic;
+	signal ipv4proto_data   : std_logic_vector(ipv4rx_data'range);
 
-	signal icmp_gnt : std_logic;
+	signal icmp_gnt         : std_logic;
+
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -467,7 +468,6 @@ begin
 
 		dlltx_irdy  => dlltx_irdy,
 		dlltx_full  => dlltx_full,
-		dlltx_end   => dlltx_end,
 		nettx_full  => nettx_full,
 
 		icmptx_frm  => icmptx_frm,
@@ -503,7 +503,6 @@ begin
 		udptx_frm   => udptx_frm,
 		dlltx_full  => dlltx_full,
 		dlltx_irdy  => dlltx_irdy,
-		dlltx_end   => dlltx_end,
 		nettx_full  => nettx_full,
 		udptx_irdy  => udptx_irdy,
 		udptx_trdy  => udptx_trdy,

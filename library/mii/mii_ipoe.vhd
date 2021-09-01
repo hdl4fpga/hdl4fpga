@@ -406,8 +406,7 @@ begin
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,
-		arpdtx_data => arptx_data,
-		miitx_end  => miitx_end);
+		arpdtx_data => arptx_data);
 
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
@@ -505,7 +504,7 @@ begin
 	tag_irdy  <= '0' when tag_end='0' else plrx_trdy;
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data =>  x"0008",
+		mux_data =>  reverse(x"000b",8),
 		sio_clk  => mii_clk,
 		sio_frm  => tag_frm,
 		sio_irdy => tag_frm,

@@ -153,7 +153,9 @@ begin
 		if rising_edge(sio_clk) then
 			if rx_frm='1' then
 				if ackrx_dv='1' then
-					if shift_left(unsigned(reverse(ackrx_data)),2)/=last then
+					if shift_left(unsigned(ackrx_data),2)/=last then
+						buffer_cmmt  <= '1';
+					elsif to_bit(ackrx_data(ackrx_data'left))='1' then
 						buffer_cmmt  <= '1';
 					else
 						buffer_rllbk <= '1';
@@ -172,7 +174,9 @@ begin
 	begin
 		if rising_edge(sio_clk) then
 			if acktx_end='1' then
-				ackrply_rdy <= ackrply_req;
+				if acktx_trdy='1' then
+					ackrply_rdy <= ackrply_req;
+				end if;
 			end if;
 		end if;
 	end process;

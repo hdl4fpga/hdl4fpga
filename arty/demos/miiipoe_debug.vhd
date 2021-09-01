@@ -212,7 +212,7 @@ begin
 			end if;
 		end process;
 
-		pltx_frm <= to_stdulogic(pltx_req xor pltx_rdy);
+		--pltx_frm <= to_stdulogic(pltx_req xor pltx_rdy);
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
 			mux_data => txpkt,
@@ -285,7 +285,6 @@ begin
 		led(0) <= dhcpcd_req;
 		led(1) <= dhcpcd_rdy;
 
-		plrx_trdy <= '0', '1' after 25 us;
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,

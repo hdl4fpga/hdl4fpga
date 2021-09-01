@@ -57,7 +57,6 @@ entity arpd is
 		arpdtx_trdy : in  std_logic;
 		arpdtx_end  : buffer std_logic;
 		arpdtx_data : out std_logic_vector;
-		miitx_end   : in  std_logic;
 
 		tp          : out std_logic_vector(1 to 32));
 
@@ -109,12 +108,12 @@ begin
 	end process;
 	arpdtx_rdy <= arpd_rdy;
 
-	process (miitx_end, mii_clk)
+	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if arpdtx_frm='1' then
 				if arpdtx_end='1' then
-					if miitx_end='1' then
+					if arpdtx_trdy='1' then
 						arpdtx_frm <= '0';
 						arpd_rdy  <= arpd_req;
 					end if;

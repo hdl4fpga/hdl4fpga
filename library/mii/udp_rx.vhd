@@ -39,7 +39,7 @@ entity udp_rx is
 
 		udpsp_irdy   : out std_logic;
 		udpdp_irdy   : out std_logic;
-		udplen_irdy  : out std_logic;
+		udplen_irdy  : buffer std_logic;
 		udpcksm_irdy : out std_logic;
 		udppl_frm    : buffer std_logic;
 		udppl_irdy   : out std_logic);
@@ -54,6 +54,9 @@ architecture def of udp_rx is
 	signal udplen_frm  : std_logic;
 	signal udpcksm_frm : std_logic;
 
+	signal pl_frm      : std_logic;
+		signal cntr : unsigned(0 to 16-1);
+		signal len  : unsigned(0 to 16-1);
 begin
 					
 	process (mii_clk)
@@ -69,11 +72,35 @@ begin
 		end if;
 	end process;
 
+	process (mii_clk)
+		variable aux  : unsigned(16-1 downto 0);
+	begin
+		if rising_edge(mii_clk) then
+			if udp_frm='0' then
+				len  <= (others => '0');
+				cntr <= (others => '0');
+			elsif udp_irdy='1' then
+				if udplen_irdy='1' then
+					aux := unsigned(reverse(std_logic_vector(len),8));
+					aux := aux rol udp_data'length;
+					aux(udp_data'reverse_range) := unsigned(udp_data);
+					len <= unsigned(reverse(std_logic_vector(aux),8));
+				end if;
+				if len < shift_left(len, unsigned_num_bits(8/udp_data'length-1)) then
+					pl_frm <= '1';
+				else
+					pl_frm <= '0';
+				end if;
+				cntr <= cntr + 1;
+			end if;
+		end if;
+	end process;
+
 	udpsp_frm   <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_sp);
 	udpdp_frm   <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_dp);
 	udplen_frm  <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_len);
 	udpcksm_frm <= udp_frm and frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_cksm);
-	udppl_frm   <= udp_frm and frm_ptr(0);
+	udppl_frm   <= udp_frm and frm_ptr(0) and pl_frm;
 
 	udpsp_irdy   <= udp_irdy and udpsp_frm;
 	udpdp_irdy   <= udp_irdy and udpdp_frm;

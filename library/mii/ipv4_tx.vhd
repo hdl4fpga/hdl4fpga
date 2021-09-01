@@ -178,8 +178,8 @@ begin
 	pl_trdy <= 
 		dlltx_irdy when dlltx_full='0'   else
 		nettx_irdy when nettx_full='0'   else
-		'0'       when ipv4chsm_end='0' else
-		'0'       when ipv4a_end='0'    else
+		'0'        when ipv4chsm_end='0' else
+		'0'        when ipv4a_end='0'    else
 		ipv4_trdy; 
 
 	ipv4_irdy <= 

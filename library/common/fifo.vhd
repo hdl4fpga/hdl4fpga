@@ -258,7 +258,7 @@ begin
 					if src_trdy='0' and not check_sov then
 						overflow <= '1';
 					else
-						overflow <= '1';
+						overflow <= '0';
 					end if;
 				end if;
 				wr_cntr <= succ;

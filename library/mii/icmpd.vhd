@@ -44,7 +44,6 @@ entity icmpd is
 		icmprx_irdy : in  std_logic;
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
-		dlltx_end   : in  std_logic;
 		dlltx_irdy  : in  std_logic;
 		dlltx_full  : in  std_logic;
 		nettx_full  : in  std_logic;
@@ -258,7 +257,7 @@ begin
 				if rising_edge(mii_clk) then
 					if icmppltx_frm='1' then
 						if icmppltx_end='1' then
-							if dlltx_end='1' then
+							if icmptx_trdy='1' then
 								icmppltx_frm <= '0';
 							end if;
 						end if;
@@ -278,7 +277,7 @@ begin
 				if rising_edge(mii_clk) then
 					if icmppltx_frm='1' then
 						if to_bit(icmppltx_end)='1' then
-							if dlltx_end='1' then
+							if icmptx_trdy='1' then
 								icmppltx_end <= '0';
 							end if;
 						elsif icmppltx_irdy='1' then

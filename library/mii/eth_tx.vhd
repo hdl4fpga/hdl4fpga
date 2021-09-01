@@ -104,7 +104,8 @@ begin
 	pl_trdy  <= 
 		dlltx_irdy when dlltx_full='0' else
 		'0'        when hwllc_end='0' else
-		mii_trdy;
+		mii_trdy   when pl_end='0' else
+		fcs_end;
 
 	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
 	fcs_data <= primux(hwllc_data & pl_data, not hwllc_end & not pl_end, (pl_data'range => '0'));
@@ -135,14 +136,17 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_irdy <= primux(pre_trdy & hwllc_trdy & pl_irdy,
-		not pre_end   & 
-		not hwllc_end & 
-		not pl_end , "1")(0);
-	mii_data <= primux(
-		pre_data     & hwllc_data    & pl_data    & (pl_data'range => '0'),
-		not  pre_end & not hwllc_end & not pl_end & not minpkt,
-		fcs_crc(mii_data'range));
+	mii_irdy <=
+		pre_trdy   when pre_end='0'   else
+		hwllc_trdy when hwllc_end='0' else
+		pl_irdy    when pl_end='0'    else
+		'1';
+	mii_data <=
+		pre_data   when pre_end='0'   else
+		hwllc_data when hwllc_end='0' else
+		pl_data    when pl_end='0'    else
+		(mii_data'range => '0') when minpkt='0' else
+		fcs_crc(mii_data'range);
 	mii_end <= fcs_end;
 
 end;
