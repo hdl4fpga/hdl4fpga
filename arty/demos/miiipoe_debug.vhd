@@ -218,7 +218,7 @@ begin
 			mux_data => txpkt,
 			sio_clk  => mii_txc,
 			sio_frm  => si_frm,
-			sio_irdy => si_irdy
+			sio_irdy => si_irdy,
 			sio_trdy => si_trdy,
 			so_end   => si_end,
 			so_data  => si_data);
@@ -314,7 +314,7 @@ begin
 			miitx_data => miitx_data);
 
 		sioflow_e : entity hdl4fpga.sio_flow
-		port (
+		port map (
 			sio_clk => mii_txc,
 
 			rx_frm  => plrx_frm,

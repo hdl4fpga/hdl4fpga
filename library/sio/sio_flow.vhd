@@ -83,7 +83,7 @@ architecture struct of sio_flow is
 	signal ackrx_dv     : std_logic;
 	signal ackrx_data   : std_logic_vector(0 to 8-1);
 
-	signal ackrply_data : std_logic_vector(0 to 8-1);
+	signal ackrply_data : std_logic_vector(0 to 8*9-1);
 	signal acktx_frm    : std_logic;
 	signal acktx_irdy   : std_logic;
 	signal acktx_trdy   : std_logic;
