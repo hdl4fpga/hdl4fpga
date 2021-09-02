@@ -112,6 +112,11 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 	
+	function reverse (
+		constant arg  : unsigned;
+		constant size : natural)
+		return unsigned;
+	
 	function to_ascii(
 		constant arg : string)
 		return std_logic_vector;
@@ -671,6 +676,15 @@ package body std is
 			aux:= std_logic_vector(unsigned(aux) rol size);
 		end loop;
 		return aux;
+	end;
+
+	function reverse (
+		constant arg  : unsigned;
+		constant size : natural)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg), size));
+
 	end;
 
 	function summation (

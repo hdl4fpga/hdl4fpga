@@ -343,7 +343,7 @@ begin
 	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
 	plrx_rllbk  <= dhcpcrx_frm;
 	plrx_cmmt   <= plrx_frm;
-	plrx_irdy   <= (udprx_frm and udpsprx_irdy) or (udpplrx_frm and udprx_irdy);
+	plrx_irdy   <= (udprx_frm and (udpsprx_irdy or udpdprx_irdy)) or (udpplrx_frm and udprx_irdy);
 	plrx_data   <= udprx_data;
 
 	dhcpcd_e: entity hdl4fpga.dhcpcd

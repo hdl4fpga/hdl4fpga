@@ -224,7 +224,6 @@ begin
 		end if;
 	end process;
 
-
 	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
 		n => 2)
@@ -504,7 +503,7 @@ begin
 	tag_irdy  <= '0' when tag_end='0' else plrx_trdy;
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data =>  reverse(x"000b",8),
+		mux_data =>  reverse(x"000d",8),
 		sio_clk  => mii_clk,
 		sio_frm  => tag_frm,
 		sio_irdy => tag_frm,
