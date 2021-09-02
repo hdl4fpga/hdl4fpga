@@ -86,7 +86,7 @@ begin
 					aux(udp_data'reverse_range) := unsigned(udp_data);
 					len <= unsigned(reverse(std_logic_vector(aux),8));
 				end if;
-				if len < shift_left(len, unsigned_num_bits(8/udp_data'length-1)) then
+				if cntr < shift_left(len, unsigned_num_bits(8/udp_data'length)-1) then
 					pl_frm <= '1';
 				else
 					pl_frm <= '0';

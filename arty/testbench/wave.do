@@ -143,6 +143,8 @@ add wave -noupdate -expand -group flow_e /testbench/du_e/ipoe_b/sioflow_e/tx_ird
 add wave -noupdate -expand -group flow_e /testbench/du_e/ipoe_b/sioflow_e/tx_trdy
 add wave -noupdate -expand -group flow_e /testbench/du_e/ipoe_b/sioflow_e/tx_end
 add wave -noupdate -expand -group flow_e -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/tx_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udp_rx_e/cntr
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udp_rx_e/pl_frm
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/line__150/last
 add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/buffer_cmmt
 add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/buffer_rllbk
@@ -152,7 +154,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/u
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udp_rx_e/udplen_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/ackrx_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {5923631 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6076006 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 205
 configure wave -valuecolwidth 99
@@ -168,4 +170,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {4830232 ps} {6798982 ps}
+WaveRestoreZoom {5080594 ps} {7049344 ps}
