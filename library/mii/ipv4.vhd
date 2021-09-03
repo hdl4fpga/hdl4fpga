@@ -146,7 +146,7 @@ architecture def of ipv4 is
 	signal ipv4sa_frm       : std_logic;
 	signal ipv4sa_irdy      : std_logic;
 
-	signal nettx_full       : std_logic;
+	signal datx_full       : std_logic;
 
 	signal ipv4sack_frm     : std_logic;
 	signal ipv4sack_irdy    : std_logic;
@@ -162,7 +162,11 @@ architecture def of ipv4 is
 	signal ipv4proto_data   : std_logic_vector(ipv4rx_data'range);
 
 	signal icmp_gnt         : std_logic;
+	signal udp_gnt          : std_logic;
 
+	signal datx_irdy    : std_logic;
+	signal lentx_full   : std_logic;
+	signal metatx_end   : std_logic;
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -257,6 +261,10 @@ begin
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
+		signal icmpdatx_irdy  : std_logic;
+		signal icmplentx_irdy : std_logic;
+		signal udpdatx_irdy   : std_logic;
+		signal udplentx_irdy  : std_logic;
 	begin
 
 		dev_req <= icmptx_frm & udptx_frm;
@@ -272,15 +280,20 @@ begin
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
 		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
-		icmp_gnt <= dev_gnt(0);
+		(icmp_gnt, udp_gnt) <= dev_gnt;
+
+		datx_irdy <= wirebus(icmpdatx_irdy & udpdatx_irdy, dev_gnt)(0);
+		icmpdatx_irdy  <= '0' when dlltx_full='0' else ipv4tx_irdy;
+		icmplentx_irdy <= '0' when datx_full='0'  else ipv4tx_irdy;
+
+		udpdatx_irdy  <= '0' when dlltx_full='0' else ipv4tx_irdy;
+		udplentx_irdy <= '0' when  datx_full='0' else ipv4tx_irdy;
 
 	end block;
 
 	meta_b : block
 
-		signal lentx_full   : std_logic;
 		signal lentx_irdy   : std_logic;
-		signal datx_irdy    : std_logic;
 
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
@@ -371,7 +384,6 @@ begin
 			so_data  => ipv4proto_data);
 
 		ipv4da_irdy  <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
-		datx_irdy    <= '0' when lentx_full='0'   else lentx_full;
 		da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 32)
@@ -380,7 +392,7 @@ begin
 			si_frm   => ipv4tx_frm,
 			si_irdy  => datx_irdy,
 			si_trdy  => open,
-			si_full  => nettx_full,
+			si_full  => datx_full,
 			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
@@ -418,8 +430,7 @@ begin
 		ipv4proto_data => ipv4proto_data,
 
 		ipv4_irdy  => ipv4tx_irdy,
-		nettx_full => nettx_full,
-		nettx_irdy => '1',
+		metatx_end => metatx_end,
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);
@@ -466,9 +477,7 @@ begin
 		icmprx_irdy => icmprx_irdy,
 		icmprx_data => ipv4rx_data,
 
-		dlltx_irdy  => dlltx_irdy,
-		dlltx_full  => dlltx_full,
-		nettx_full  => nettx_full,
+		metatx_end   => metatx_end,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
@@ -502,8 +511,7 @@ begin
 
 		udptx_frm   => udptx_frm,
 		dlltx_full  => dlltx_full,
-		dlltx_irdy  => dlltx_irdy,
-		nettx_full  => nettx_full,
+		metatx_end  => metatx_end,
 		udptx_irdy  => udptx_irdy,
 		udptx_trdy  => udptx_trdy,
 		udptx_end   => udptx_end ,

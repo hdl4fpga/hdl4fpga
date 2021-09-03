@@ -55,10 +55,8 @@ entity ipv4_tx is
 		ipv4a_data     : in  std_logic_vector;
 
 		ipv4_frm       : buffer std_logic;
-		dlltx_full     : in std_logic := '1';
-		dlltx_irdy     : in std_logic := '-';
-		nettx_full     : in std_logic := '1';
-		nettx_irdy     : in std_logic := '-';
+		metatx_end     : in std_logic := '1';
+		metatx_irdy    : in std_logic := '-';
 		ipv4_irdy      : buffer std_logic;
 		ipv4_trdy      : in  std_logic;
 		ipv4_end       : out std_logic;
@@ -156,7 +154,7 @@ begin
 
 	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
 	ipv4a_irdy <= 
-		'0' when nettx_full='0' else 
+		'0' when metatx_end='0' else 
 		'1' when post='0' else 
 		ipv4_trdy;
 
@@ -176,14 +174,13 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	pl_trdy <= 
-		dlltx_irdy when dlltx_full='0'   else
-		nettx_irdy when nettx_full='0'   else
+		metatx_irdy when metatx_end='0'   else
 		'0'        when ipv4chsm_end='0' else
 		'0'        when ipv4a_end='0'    else
 		ipv4_trdy; 
 
 	ipv4_irdy <= 
-		pl_irdy        when nettx_full='0'    else 
+		pl_irdy        when metatx_end='0'    else 
 		'0'            when post='0'          else
 		ipv4shdr_trdy  when ipv4shdr_end='0'  else
 		ipv4proto_trdy when ipv4proto_end='0' else
@@ -192,7 +189,7 @@ begin
 	    pl_irdy;
 
 	ipv4_data <=  
-		pl_data                    when nettx_full='0'    else 
+		pl_data                    when metatx_end='0'    else 
 		ipv4hdr_data               when ipv4shdr_end='0'  else
 		ipv4proto_data             when ipv4proto_end='0' else
 		reverse(not ipv4chsm_data) when ipv4chsm_end='0'  else

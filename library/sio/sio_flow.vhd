@@ -186,6 +186,7 @@ begin
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
 	acktx_b : block
 
+		signal metai_irdy : std_logic;
 		signal meta_irdy : std_logic;
 		signal meta_data : std_logic_vector(rx_data'range);
 
@@ -195,6 +196,7 @@ begin
 
 	begin
 
+		metai_irdy <= data_irdy and setif(rgtr_id=rgtrmeta_id);
 		meta_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 64,
@@ -202,7 +204,7 @@ begin
 			check_dov => true)
 		port map(
 			src_clk   => sio_clk,
-			src_irdy  => metarx_irdy,
+			src_irdy  => metai_irdy,
 			src_trdy  => open,
 			src_data  => metarx_data,
 

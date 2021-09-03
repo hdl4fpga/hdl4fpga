@@ -38,10 +38,8 @@ entity dhcpc_dscb is
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
-		dlltx_full    : in  std_logic := '1';
-		dlltx_irdy    : in  std_logic := '-';
-		nettx_full    : in  std_logic := '1';
-		nettx_irdy    : in  std_logic := '-';
+		metatx_end    : in  std_logic := '1';
+		metatx_irdy   : in  std_logic := '-';
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
@@ -97,7 +95,7 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy ='1' and nettx_full='1' then
+			elsif dhcpdscb_irdy ='1' and metatx_end='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 				end if;
@@ -107,8 +105,7 @@ begin
 	end process;
 
 	udplentx_irdy <= 
-		'0' when dlltx_full='0' else
-		'1' when nettx_full='0' else
+		'1' when metatx_end='0' else
 		'0';
 
 	dhcpudplen_e : entity hdl4fpga.sio_mux
@@ -127,8 +124,7 @@ begin
 		dhcp4_hops, dhcp4_xid, dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <= 
-		'0' when dlltx_full='0' else 
-		'0' when nettx_full='0' else 
+		'0' when metatx_end='0' else 
 		dhcppkt_ena;
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
@@ -142,19 +138,17 @@ begin
         so_data  => dhcppkt_data);
 
 	dhcpdscb_trdy <= 
-		dlltx_irdy when dlltx_full='0' else 
-		nettx_irdy when nettx_full='0' else 
+		metatx_irdy when metatx_end='0' else 
 		dhcppkt_trdy;
 
 	dhcpdscb_end <= 
-		'0' when dlltx_full='0' else 
-		'0' when nettx_full='0' else 
+		'0' when metatx_end='0' else 
 		dhcppkt_end;
 
 	dhcpdscb_data <= 
-		(dhcpdscb_data'range => '1') when dlltx_full='0' else
+		(dhcpdscb_data'range => '1') when metatx_end='0' else
 		udplentx_data                when udplentx_end='0' else
-		(dhcpdscb_data'range => '1') when nettx_full='0' else
+		(dhcpdscb_data'range => '1') when metatx_end='0' else
 		dhcppkt_data                 when dhcppkt_ena='1' else
 		(dhcpdscb_data'range => '0');
 end;

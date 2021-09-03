@@ -54,9 +54,8 @@ entity udp is
 		pltx_data   : in  std_logic_vector;
 		pltx_end    : in  std_logic;
 
-		dlltx_irdy  : in std_logic;
 		dlltx_full  : in std_logic;
-		nettx_full  : in std_logic;
+		metatx_end  : in std_logic;
 
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
@@ -167,7 +166,7 @@ begin
 
 	begin
 
-		dprx_irdy <= '0' when nettx_full='0' else pltx_irdy;
+		dprx_irdy <= '0' when metatx_end='0' else pltx_irdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -214,7 +213,7 @@ begin
 			signal datai      : std_logic_vector(0 to 16-1);
 		begin
 
-			lenrx_irdy <= '0' when dlltx_full='0' else pltx_irdy;
+			lenrx_irdy <= '0' when metatx_end='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
@@ -356,9 +355,7 @@ begin
 		dhcpcd_rdy    => dhcpcd_rdy,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
-		dlltx_irdy    => dlltx_irdy,
-		dlltx_full    => dlltx_full,
-		nettx_full    => nettx_full,
+		metatx_end    => metatx_end,
 
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,

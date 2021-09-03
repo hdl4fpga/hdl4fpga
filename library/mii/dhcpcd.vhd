@@ -39,10 +39,7 @@ entity dhcpcd is
 		dhcpcd_rdy    : buffer std_logic := '0';
 
 		dhcpcdtx_frm  : buffer std_logic;
-		dlltx_full    : in std_logic;
-		dlltx_irdy    : in std_logic;
-		nettx_full    : in std_logic;
-		nettx_irdy    : in std_logic := '1';
+		metatx_end   : in std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic := '1';
@@ -90,8 +87,7 @@ begin
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
-		dlltx_full    => dlltx_full,
-		nettx_full    => nettx_full,
+		metatx_end    => metatx_end,
 		dhcpdscb_irdy => dhcpcdtx_trdy,
 		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
