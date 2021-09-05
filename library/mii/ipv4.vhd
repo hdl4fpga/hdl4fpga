@@ -164,7 +164,13 @@ architecture def of ipv4 is
 	signal icmp_gnt         : std_logic;
 	signal udp_gnt          : std_logic;
 
-	signal datx_irdy    : std_logic;
+	signal ipdatx_irdy      : std_logic;
+	signal icmpipdatx_irdy  : std_logic;
+	signal udpipdatx_irdy   : std_logic;
+	signal iplentx_irdy     : std_logic;
+	signal icmpiplentx_irdy : std_logic;
+	signal udpiplentx_irdy  : std_logic;
+
 	signal lentx_full   : std_logic;
 	signal metatx_end   : std_logic;
 begin
@@ -282,12 +288,8 @@ begin
 		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
-		datx_irdy <= wirebus(icmpdatx_irdy & udpdatx_irdy, dev_gnt)(0);
-		icmpdatx_irdy  <= '0' when dlltx_full='0' else ipv4tx_irdy;
-		icmplentx_irdy <= '0' when datx_full='0'  else ipv4tx_irdy;
-
-		udpdatx_irdy  <= '0' when dlltx_full='0' else ipv4tx_irdy;
-		udplentx_irdy <= '0' when  datx_full='0' else ipv4tx_irdy;
+		ipdatx_irdy  <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt)(0);
+		iplentx_irdy <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt);
 
 	end block;
 
@@ -390,7 +392,7 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4tx_frm,
-			si_irdy  => datx_irdy,
+			si_irdy  => ipdatx_irdy,
 			si_trdy  => open,
 			si_full  => datx_full,
 			si_data  => ipv4pltx_data,
