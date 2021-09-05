@@ -54,8 +54,12 @@ entity udp is
 		pltx_data   : in  std_logic_vector;
 		pltx_end    : in  std_logic;
 
-		dlltx_full  : in std_logic;
-		metatx_end  : in std_logic;
+		mactx_irdy  : out std_logic;
+		mactx_end   : in  std_logic;
+		ipdatx_irdy : out std_logic;
+		ipdatx_end  : in  std_logic;
+		iplentx_irdy : out std_logic;
+		iplentx_end  : in  std_logic;
 
 		udptx_frm   : out std_logic;
 		udptx_irdy  : out std_logic;
@@ -103,6 +107,7 @@ architecture def of udp is
 	signal dhcplentx_end  : std_logic;
 
 	signal meta_full : std_logic;
+		signal len_full   : std_logic;
 begin
 
 	udp_rx_e : entity hdl4fpga.udp_rx
@@ -148,7 +153,6 @@ begin
 		signal lenrx_irdy : std_logic;
 		signal lentx_irdy : std_logic;
 		signal len_end    : std_logic;
-		signal len_full   : std_logic;
 		signal len_datai  : std_logic_vector(pltx_data'range);
 		signal len_data   : std_logic_vector(pltx_data'range);
 
@@ -166,7 +170,7 @@ begin
 
 	begin
 
-		dprx_irdy <= '0' when metatx_end='0' else pltx_irdy;
+		dprx_irdy <= '0' when ipdatx_end='0' else pltx_irdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -205,6 +209,7 @@ begin
 			so_data  => sp_data);
 
 			meta_full <= sp_full;
+
 		len_b : block
 			signal tx_ci      : std_logic;
 			signal tx_co      : std_logic;
@@ -213,7 +218,7 @@ begin
 			signal datai      : std_logic_vector(0 to 16-1);
 		begin
 
-			lenrx_irdy <= '0' when metatx_end='0' else pltx_irdy;
+			lenrx_irdy <= '0' when dp_end='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
@@ -264,8 +269,8 @@ begin
 				so_data  => len_data);
 
 			ppltx_data <= 
-				pltx_data when dlltx_full='0' else 
-				len_datai when len_full='0'   else
+				pltx_data when dp_end='0'   else 
+				len_datai when len_full='0' else
 				pltx_data;
 
 		end block;
@@ -355,7 +360,7 @@ begin
 		dhcpcd_rdy    => dhcpcd_rdy,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
-		metatx_end    => metatx_end,
+		metatx_end    => len_full,
 
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,
