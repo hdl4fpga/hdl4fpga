@@ -150,13 +150,14 @@ architecture def of mii_ipoe is
 	signal arpdtx_req    : std_logic;
 	signal arpdtx_rdy    : std_logic;
 
-	signal dlltx_irdy    : wor std_logic;
-	signal dlltx_full    : wor std_logic;
+	signal metatx_irdy   : wor std_logic;
+	signal metatx_end    : wor std_logic;
+	signal mactx_irdy    : wor std_logic;
+	signal mactx_end     : wor std_logic;
 
 
 	signal fifo_irdy     : std_logic;
 	signal fifo_end      : std_logic;
-	signal xxx_irdy     : std_logic;
 	signal fifo_trdy     : std_logic;
 	signal fifo_data     : std_logic_vector(miitx_data'range);
 
@@ -312,8 +313,8 @@ begin
 			si_clk   => mii_clk,
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
-			si_trdy  => dlltx_irdy,
-			si_full  => dlltx_full,
+			si_trdy  => mactx_irdy,
+			si_full  => mactx_end,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -355,25 +356,25 @@ begin
 	ethpltx_irdy <= ethtx_irdy;
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
-		mii_clk    => mii_clk,
+		mii_clk     => mii_clk,
 
-		dlltx_irdy => dlltx_irdy,
-		dlltx_full => dlltx_full,
-		hwllc_irdy => hwllctx_irdy,
-		hwllc_end  => hwllctx_end,
-		hwllc_data => hwllctx_data,
+		metatx_irdy => mactx_irdy,
+		metatx_end  => mactx_end,
+		hwllc_irdy  => hwllctx_irdy,
+		hwllc_end   => hwllctx_end,
+		hwllc_data  => hwllctx_data,
 
-		pl_frm     => ethtx_frm,
-		pl_irdy    => ethpltx_irdy,
-		pl_trdy    => ethpltx_trdy,
-		pl_end     => ethpltx_end,
-		pl_data    => ethpltx_data,
+		pl_frm      => ethtx_frm,
+		pl_irdy     => ethpltx_irdy,
+		pl_trdy     => ethpltx_trdy,
+		pl_end      => ethpltx_end,
+		pl_data     => ethpltx_data,
 
-		mii_frm    => miitx_frm,
-		mii_irdy   => miitx_irdy,
-		mii_trdy   => miitx_trdy,
-		mii_end    => miitx_end,
-		mii_data   => miitx_data);
+		mii_frm     => miitx_frm,
+		mii_irdy    => miitx_irdy,
+		mii_trdy    => miitx_trdy,
+		mii_end     => miitx_end,
+		mii_data    => miitx_data);
 
 	arpdtx_req <= arpdtx_rdy;
 	arpd_e : entity hdl4fpga.arpd
@@ -400,8 +401,8 @@ begin
 		spatx_data => ipv4satx_data,
 
 		arpdtx_frm  => arptx_frm,
-		dlltx_full  => dlltx_full,
-		dlltx_irdy  => dlltx_irdy,
+		dlltx_full  => mactx_end,
+		dlltx_irdy  => mactx_irdy,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,
@@ -447,9 +448,10 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
-		dlltx_irdy    => dlltx_irdy,
-		dlltx_full    => dlltx_full,
-		dlltx_end     => miitx_end,
+		metatx_irdy   => open,
+		metatx_end    => open,
+		mactx_irdy    => mactx_irdy,
+		mactx_end     => mactx_end,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

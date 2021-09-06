@@ -48,8 +48,8 @@ entity udp_tx is
 		hdr_data : in  std_logic_vector;
 
 		udp_frm  : buffer std_logic;
-		meta_full : in std_logic := '0';
-		meta_irdy : in std_logic := '1';
+		metatx_end  : in std_logic := '0';
+		metatx_irdy : in std_logic := '-';
 		udp_irdy : out std_logic;
 		udp_trdy : in  std_logic;
 		udp_data : out std_logic_vector;
@@ -61,19 +61,19 @@ architecture def of udp_tx is
 begin
 
 	hdr_trdy <= 
-		'0' when meta_full='0' else
+		'0' when metatx_end='0' else
 		udp_trdy;
 	udp_irdy <= 
-		meta_irdy when meta_full='0' else 
+		metatx_irdy when metatx_end='0' else 
 		hdr_irdy  when hdr_end='0'   else
 		pl_irdy;
 	udp_data <= 
-		pl_data  when meta_full='0' else 
+		pl_data  when metatx_end='0' else 
 		hdr_data when hdr_end='0'   else 
 		pl_data;
 
 	pl_trdy <= 
-		meta_irdy when meta_full='0' else
+		metatx_irdy when metatx_end='0' else
 		'0'       when hdr_end='0' else 
 		udp_trdy;
 	udp_end  <= 

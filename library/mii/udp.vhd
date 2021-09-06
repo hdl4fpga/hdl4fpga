@@ -54,6 +54,8 @@ entity udp is
 		pltx_data   : in  std_logic_vector;
 		pltx_end    : in  std_logic;
 
+		metatx_end  : in  std_logic := '1';
+		metatx_irdy : in  std_logic := '-';
 		mactx_irdy  : out std_logic;
 		mactx_end   : in  std_logic;
 		ipdatx_irdy : out std_logic;
@@ -107,7 +109,13 @@ architecture def of udp is
 	signal dhcplentx_end  : std_logic;
 
 	signal meta_full : std_logic;
-		signal len_full   : std_logic;
+	signal len_full   : std_logic;
+	signal dhcpcdipdatx_irdy : std_logic;
+	signal dhcpcdmactx_irdy : std_logic;
+	signal dhcpcdiplentx_irdy : std_logic;
+	signal udpmactx_irdy   : std_logic;
+	signal udpipdatx_irdy   : std_logic;
+	signal udpiplentx_irdy : std_logic;
 begin
 
 	udp_rx_e : entity hdl4fpga.udp_rx
@@ -136,12 +144,14 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,  dev_gnt)(0);
-		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy, dev_gnt)(0);
-		udptx_end  <= wirebus(dhcpctx_end  & udppltx_end,    dev_gnt)(0);
+		udptx_frm  <= wirebus(dhcpctx_frm  & pltx_frm,    dev_gnt)(0);
+		udptx_irdy <= wirebus(dhcpctx_irdy & pltx_irdy,   dev_gnt)(0);
+		udptx_end  <= wirebus(dhcpctx_end  & udppltx_end, dev_gnt)(0);
 		udptx_data <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 
+		ipdatx_irdy  <= wirebus(dhcpcdipdatx_irdy  & udpipdatx_irdy,  dev_gnt)(0);
+		iplentx_irdy <= wirebus(dhcpcdiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 	end block;
 
 	meta_b : block
@@ -317,7 +327,8 @@ begin
 		hdr_data  => udphdr_data,
 
 		udp_irdy  => udppltx_irdy,
-		meta_full => meta_full,
+		metatx_end  => udplentx_end,
+		metatx_irdy => '1',
 		udp_trdy  => udppltx_trdy,
 		udp_end   => udppltx_end,
 		udp_data  => udppltx_data);

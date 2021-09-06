@@ -32,26 +32,26 @@ use hdl4fpga.std.all;
 
 entity eth_tx is
 	port (
-		mii_clk    : in  std_logic;
+		mii_clk     : in  std_logic;
 
-		pl_frm     : in  std_logic;
-		pl_irdy    : in  std_logic := '1';
-		pl_trdy    : buffer std_logic;
-		pl_end     : in  std_logic;
-		pl_data    : in  std_logic_vector;
+		pl_frm      : in  std_logic;
+		pl_irdy     : in  std_logic := '1';
+		pl_trdy     : buffer std_logic;
+		pl_end      : in  std_logic;
+		pl_data     : in  std_logic_vector;
 
-		dlltx_full : in  std_logic := '1';
-		dlltx_irdy : in  std_logic := '-';
-		hwllc_irdy : buffer std_logic;
-		hwllc_trdy : in  std_logic := '1';
-		hwllc_end  : in  std_logic;
-		hwllc_data : in  std_logic_vector;
+		metatx_end  : in  std_logic := '1';
+		metatx_irdy : in  std_logic := '-';
+		hwllc_irdy  : buffer std_logic;
+		hwllc_trdy  : in  std_logic := '1';
+		hwllc_end   : in  std_logic;
+		hwllc_data  : in  std_logic_vector;
 
-		mii_frm    : buffer std_logic;
-		mii_irdy   : buffer std_logic;
-		mii_trdy   : in  std_logic := '1';
-		mii_end    : buffer std_logic;
-		mii_data   : out std_logic_vector);
+		mii_frm     : buffer std_logic;
+		mii_irdy    : buffer std_logic;
+		mii_trdy    : in  std_logic := '1';
+		mii_end     : buffer std_logic;
+		mii_data    : out std_logic_vector);
 
 end;
 
@@ -102,9 +102,9 @@ begin
 	hwllc_irdy <= mii_trdy and pre_end;
 
 	pl_trdy  <= 
-		dlltx_irdy when dlltx_full='0' else
-		'0'        when hwllc_end='0' else
-		mii_trdy   when pl_end='0' else
+		metatx_irdy when metatx_end ='0' else
+		'0'         when hwllc_end='0'  else
+		mii_trdy    when pl_end='0'     else
 		fcs_end;
 
 	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
