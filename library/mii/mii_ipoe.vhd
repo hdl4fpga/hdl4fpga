@@ -358,7 +358,7 @@ begin
 	port map (
 		mii_clk     => mii_clk,
 
-		metatx_irdy => mactx_irdy,
+		metatx_irdy => '1',
 		metatx_end  => mactx_end,
 		hwllc_irdy  => hwllctx_irdy,
 		hwllc_end   => hwllctx_end,
@@ -402,7 +402,7 @@ begin
 
 		arpdtx_frm  => arptx_frm,
 		dlltx_full  => mactx_end,
-		dlltx_irdy  => mactx_irdy,
+		dlltx_irdy  => '-', --open,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,
@@ -448,8 +448,6 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
-		metatx_irdy   => open,
-		metatx_end    => open,
 		mactx_irdy    => mactx_irdy,
 		mactx_end     => mactx_end,
 		ipv4tx_irdy   => ipv4tx_irdy,

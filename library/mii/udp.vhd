@@ -32,42 +32,39 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp is
 	port (
-		mii_clk     : in  std_logic;
-		dhcpcd_req  : in  std_logic := '0';
-		dhcpcd_rdy  : out std_logic := '0';
+		mii_clk      : in  std_logic;
+		dhcpcd_req   : in  std_logic := '0';
+		dhcpcd_rdy   : out std_logic := '0';
 
-		udprx_frm   : in  std_logic;
-		udprx_irdy  : in  std_logic;
-		udprx_data  : in  std_logic_vector;
+		udprx_frm    : in  std_logic;
+		udprx_irdy   : in  std_logic;
+		udprx_data   : in  std_logic_vector;
 
 		udpmetarx_irdy : out std_logic;
-		plrx_frm    : buffer std_logic;
-		plrx_irdy   : out std_logic;
-		plrx_trdy   : in  std_logic;
-		plrx_cmmt   : out std_logic;
-		plrx_rllbk  : out std_logic;
-		plrx_data   : out std_logic_vector;
+		plrx_frm     : buffer std_logic;
+		plrx_irdy    : out std_logic;
+		plrx_trdy    : in  std_logic;
+		plrx_cmmt    : out std_logic;
+		plrx_rllbk   : out std_logic;
+		plrx_data    : out std_logic_vector;
 
-		pltx_frm    : in  std_logic;
-		pltx_irdy   : in  std_logic;
-		pltx_trdy   : out std_logic;
-		pltx_data   : in  std_logic_vector;
-		pltx_end    : in  std_logic;
+		pltx_frm     : in  std_logic;
+		pltx_irdy    : in  std_logic;
+		pltx_trdy    : out std_logic;
+		pltx_data    : in  std_logic_vector;
+		pltx_end     : in  std_logic;
 
-		metatx_end  : in  std_logic := '1';
-		metatx_irdy : in  std_logic := '-';
-		mactx_irdy  : out std_logic;
-		mactx_end   : in  std_logic;
-		ipdatx_irdy : out std_logic;
-		ipdatx_end  : in  std_logic;
+		metatx_end   : in  std_logic := '1';
+		metatx_irdy  : in  std_logic := '1';
+		ipdatx_end   : in  std_logic;
 		iplentx_irdy : out std_logic;
 		iplentx_end  : in  std_logic;
 
-		udptx_frm   : out std_logic;
-		udptx_irdy  : out std_logic;
-		udptx_trdy  : in  std_logic;
-		udptx_end   : out std_logic;
-		udptx_data  : out std_logic_vector);
+		udptx_frm    : out std_logic;
+		udptx_irdy   : out std_logic;
+		udptx_trdy   : in  std_logic;
+		udptx_end    : out std_logic;
+		udptx_data   : out std_logic_vector);
 end;
 
 architecture def of udp is
@@ -150,7 +147,6 @@ begin
 		udptx_data <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 
-		ipdatx_irdy  <= wirebus(dhcpcdipdatx_irdy  & udpipdatx_irdy,  dev_gnt)(0);
 		iplentx_irdy <= wirebus(dhcpcdiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 	end block;
 
@@ -327,8 +323,8 @@ begin
 		hdr_data  => udphdr_data,
 
 		udp_irdy  => udppltx_irdy,
-		metatx_end  => udplentx_end,
-		metatx_irdy => '1',
+		metatx_end  => metatx_end,
+		metatx_irdy => metatx_irdy,
 		udp_trdy  => udppltx_trdy,
 		udp_end   => udppltx_end,
 		udp_data  => udppltx_data);

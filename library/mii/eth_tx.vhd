@@ -41,7 +41,7 @@ entity eth_tx is
 		pl_data     : in  std_logic_vector;
 
 		metatx_end  : in  std_logic := '1';
-		metatx_irdy : in  std_logic := '-';
+		metatx_irdy : in  std_logic := '1';
 		hwllc_irdy  : buffer std_logic;
 		hwllc_trdy  : in  std_logic := '1';
 		hwllc_end   : in  std_logic;
