@@ -271,10 +271,9 @@ begin
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
-		signal icmpdatx_irdy  : std_logic;
-		signal icmplentx_irdy : std_logic;
-		signal udpdatx_irdy   : std_logic;
-		signal udplentx_irdy  : std_logic;
+		signal icmpdatx_irdy   : std_logic;
+		signal icmplentx_irdy  : std_logic;
+		signal udpdatx_irdy    : std_logic;
 	begin
 
 		dev_req <= icmptx_frm & udptx_frm;
@@ -292,15 +291,13 @@ begin
 		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
-		ipdatx_irdy  <= '0' when mactx_end='0' else '1';
-		iplentx_irdy <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
-		metatx_end   <= wirebus(ipv4datx_end     & lentx_full,      dev_gnt)(0);
+		ipdatx_irdy   <= '0' when mactx_end='0' else '1';
+		metatx_end    <= wirebus(ipv4datx_end     & lentx_full,      dev_gnt)(0);
 
+		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 	end block;
 
 	meta_b : block
-
-		signal lentx_irdy   : std_logic;
 
 		signal ipv4da_irdy  : std_logic;
 		signal ipv4da_trdy  : std_logic;
@@ -324,7 +321,7 @@ begin
 				mux_data => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)),
 				sio_clk  => mii_clk,
 				sio_frm  => pltx_frm,
-				sio_irdy => lentx_irdy,
+				sio_irdy => iplentx_irdy,
 				sio_trdy => open,
 				so_data  => crtn_data);
 
@@ -352,7 +349,7 @@ begin
 			port map (
 				si_clk  => mii_clk,
 				si_frm  => ipv4tx_frm,
-				si_irdy => lentx_irdy,
+				si_irdy => iplentx_irdy,
 				si_trdy => open,
 				si_full => lentx_full,
 				si_data => ldatai,
@@ -374,9 +371,6 @@ begin
 				len_datai     when lentx_full='0'   else
 				ipv4pltx_data;
 
-		lentx_irdy <= 
-			'0' when mactx_end='0' else
-			ipv4tx_irdy;
 		end block;
 
 
@@ -438,6 +432,7 @@ begin
 
 		ipv4_irdy  => ipv4tx_irdy,
 		metatx_end => metatx_end,
+		metatx_irdy => '1',
 		ipv4_trdy  => ipv4tx_trdy,
 		ipv4_end   => ipv4tx_end,
 		ipv4_data  => ipv4tx_data);

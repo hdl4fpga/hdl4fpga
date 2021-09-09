@@ -109,10 +109,8 @@ architecture def of udp is
 	signal len_full   : std_logic;
 	signal dhcpcdipdatx_irdy : std_logic;
 	signal dhcpcdmactx_irdy : std_logic;
-	signal dhcpcdiplentx_irdy : std_logic;
 	signal udpmactx_irdy   : std_logic;
 	signal udpipdatx_irdy   : std_logic;
-	signal udpiplentx_irdy : std_logic;
 begin
 
 	udp_rx_e : entity hdl4fpga.udp_rx
@@ -147,7 +145,6 @@ begin
 		udptx_data <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 
-		iplentx_irdy <= wirebus(dhcpcdiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 	end block;
 
 	meta_b : block
@@ -177,6 +174,7 @@ begin
 	begin
 
 		dprx_irdy <= '0' when ipdatx_end='0' else pltx_irdy;
+		iplentx_irdy <= '0' when sp_full='0' else pltx_irdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -224,7 +222,7 @@ begin
 			signal datai      : std_logic_vector(0 to 16-1);
 		begin
 
-			lenrx_irdy <= '0' when dp_end='0' else pltx_irdy;
+			lenrx_irdy <= '0' when sp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
@@ -323,7 +321,7 @@ begin
 		hdr_data  => udphdr_data,
 
 		udp_irdy  => udppltx_irdy,
-		metatx_end  => metatx_end,
+		metatx_end  => len_full, --metatx_end,
 		metatx_irdy => metatx_irdy,
 		udp_trdy  => udppltx_trdy,
 		udp_end   => udppltx_end,

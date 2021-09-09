@@ -83,7 +83,7 @@ architecture struct of sio_flow is
 	signal ackrx_dv     : std_logic;
 	signal ackrx_data   : std_logic_vector(0 to 8-1);
 
-	signal ackrply_data : std_logic_vector(0 to 8*9-1);
+	signal ackrply_data : std_logic_vector(0 to 5*8-1);
 	signal acktx_frm    : std_logic;
 	signal acktx_irdy   : std_logic;
 	signal acktx_trdy   : std_logic;
@@ -172,7 +172,7 @@ begin
 	begin
 		if rising_edge(sio_clk) then
 			if acktx_end='1' then
-				if acktx_trdy='1' then
+				if tx_trdy='1' then
 					ackrply_rdy <= ackrply_req;
 				end if;
 			end if;
@@ -180,7 +180,7 @@ begin
 	end process;
 
 	ackrply_data <= reverse(
-		rgtrmeta_id & x"03" & x"04" & x"01" & x"00" & x"03" &
+		x"00" & x"03" &
 		x"01" & x"00" & ackrx_data, 8);
 
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
@@ -228,8 +228,8 @@ begin
 			so_end   => acktx_end,
 			so_data  => ack_data);
 
-		acktx_irdy <= '1'       when meta_irdy='1' else ack_trdy;
-		acktx_data <= meta_data when meta_irdy='1' else ack_data;
+		acktx_irdy <= meta_irdy when (buffer_cmmt or meta_irdy)='1' else ack_trdy;
+		acktx_data <= meta_data when (buffer_cmmt or meta_irdy)='1' else ack_data;
 	end block;
 
 	artibiter_b : block

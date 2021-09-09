@@ -101,7 +101,7 @@ begin
 	rx_writ <= commit;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		latency    => 0,
+		latency    => 1,
 		max_depth  => 4)
 	port map (
 		src_clk    => src_clk,

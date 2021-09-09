@@ -48,8 +48,8 @@ entity udp_tx is
 		hdr_data : in  std_logic_vector;
 
 		udp_frm  : buffer std_logic;
-		metatx_end  : in std_logic := '0';
-		metatx_irdy : in std_logic := '-';
+		metatx_end  : in std_logic := '1';
+		metatx_irdy : in std_logic := '1';
 		udp_irdy : out std_logic;
 		udp_trdy : in  std_logic;
 		udp_data : out std_logic_vector;
@@ -73,8 +73,8 @@ begin
 		pl_data;
 
 	pl_trdy <= 
-		metatx_irdy when metatx_end='0' else
-		'0'       when hdr_end='0' else 
+		'1' when metatx_end='0' else
+		'0' when hdr_end='0' else 
 		udp_trdy;
 	udp_end  <= 
 		'0' when hdr_end='0' else 

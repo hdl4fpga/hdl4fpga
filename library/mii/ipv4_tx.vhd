@@ -56,7 +56,7 @@ entity ipv4_tx is
 
 		ipv4_frm       : buffer std_logic;
 		metatx_end     : in std_logic := '1';
-		metatx_irdy    : in std_logic := '-';
+		metatx_irdy    : in std_logic := '1';
 		ipv4_irdy      : buffer std_logic;
 		ipv4_trdy      : in  std_logic;
 		ipv4_end       : out std_logic;

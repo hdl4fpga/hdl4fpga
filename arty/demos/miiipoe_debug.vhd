@@ -163,7 +163,7 @@ begin
 
 		signal pltx_frm   : std_logic;
 		signal pltx_irdy  : std_logic;
-		signal pltx_trdy  : std_logic;
+		signal pltx_trdy  : std_ulogic;
 		signal pltx_end   : std_logic;
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
