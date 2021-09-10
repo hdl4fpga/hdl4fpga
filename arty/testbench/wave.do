@@ -28,7 +28,7 @@ add wave -noupdate -expand -group pltx /testbench/du_e/ipoe_b/pltx_frm
 add wave -noupdate -expand -group pltx /testbench/du_e/ipoe_b/pltx_irdy
 add wave -noupdate -expand -group pltx /testbench/du_e/ipoe_b/pltx_trdy
 add wave -noupdate -expand -group pltx /testbench/du_e/ipoe_b/pltx_end
-add wave -noupdate -expand -group pltx -radix hexadecimal /testbench/du_e/ipoe_b/pltx_data
+add wave -noupdate -expand -group pltx -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/pltx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/pltx_data(0) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(1) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(2) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(3) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(4) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(5) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(6) {-radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(7) {-radix hexadecimal}} /testbench/du_e/ipoe_b/pltx_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group eth_tx /testbench/du_e/ipoe_b/du_e/ethtx_e/pl_frm
 add wave -noupdate -group eth_tx /testbench/du_e/ipoe_b/du_e/ethtx_e/pl_irdy
@@ -148,31 +148,30 @@ add wave -noupdate -group flow_e /testbench/du_e/ipoe_b/sioflow_e/buffer_ovfl
 add wave -noupdate -group flow_e -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/rgtr_id
 add wave -noupdate -group flow_e /testbench/du_e/ipoe_b/sioflow_e/ackrx_dv
 add wave -noupdate -group flow_e -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/ackrx_data
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_frm
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_irdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_trdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_end
-add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/src_data
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_frm
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_irdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_trdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_end
-add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/dst_data
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/rx_irdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/rx_writ
-add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/rx_data
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
-add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
-add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ethpltx_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udptx_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udptx_e/udp_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udptx_e/pl_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udptx_e/metatx_end
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/meta_b/lenrx_irdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_frm
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_irdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_trdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_end
+add wave -noupdate -expand -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/src_data
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_frm
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_irdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_trdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/dst_end
+add wave -noupdate -expand -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/dst_data
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/rx_irdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/rx_writ
+add wave -noupdate -expand -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/rx_data
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
+add wave -noupdate -expand -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
+add wave -noupdate -expand -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/line__120/cntr
+add wave -noupdate -expand -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/tag_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9573600 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8820000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 277
 configure wave -valuecolwidth 185
@@ -188,4 +187,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {8950769 ps} {10263269 ps}
+WaveRestoreZoom {7876979 ps} {9714479 ps}
