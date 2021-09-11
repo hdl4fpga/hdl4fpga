@@ -27,10 +27,10 @@ create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_c
 
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk   }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { video_clk   }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { input_clk }
+#set_clock_groups -asynchronous -group { eth_rx_clk  } -group { input_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { video_clk   }
 set_clock_groups -asynchronous -group { video_clk   } -group { sys_clk   }
-set_clock_groups -asynchronous -group { video_clk   } -group { input_clk }
+#set_clock_groups -asynchronous -group { video_clk   } -group { input_clk }
 set_clock_groups -asynchronous -group { input_clk   } -group { video_clk }
 
 set_property -dict { PACKAGE_PIN C2 IOSTANDARD LVCMOS18 } [get_ports resetn]

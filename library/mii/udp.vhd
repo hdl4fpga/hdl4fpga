@@ -225,7 +225,7 @@ begin
 			lenrx_irdy <= '0' when sp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)),
+				mux_data => reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length),
 				sio_clk  => mii_clk,
 				sio_frm  => pltx_frm,
 				sio_irdy => lenrx_irdy,
@@ -273,7 +273,7 @@ begin
 				so_data  => len_data);
 
 			ppltx_data <= 
-				pltx_data when dp_end='0'   else 
+				pltx_data when sp_full='0'   else 
 				len_datai when len_full='0' else
 				pltx_data;
 

@@ -51,7 +51,7 @@ entity sio_flow is
 		tx_frm  : buffer std_logic;
 		tx_irdy : buffer std_logic;
 		tx_trdy : in  std_logic := '1';
-		tx_end  : buffer std_logic;
+		tx_end  : out std_logic;
 		tx_data : buffer std_logic_vector);
 
 end;
@@ -180,7 +180,7 @@ begin
 	end process;
 
 	ackrply_data <= reverse(
-		x"00" & x"03" &
+		reverse(x"0003") &
 		x"01" & x"00" & ackrx_data, 8);
 
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
@@ -265,13 +265,6 @@ begin
 		tx_end  <= wirebus(acktx_end  & si_end,  gnt)(0);
 		tx_data <= wirebus(acktx_data & si_data, gnt);
 		(0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy); 
-
-		gnt_e : entity hdl4fpga.arbiter
-		port map (
-			clk  => sio_clk,
-			req  => req,
-			gnt  => gnt);
-
 
 	end block;
 

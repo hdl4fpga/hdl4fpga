@@ -219,7 +219,7 @@ begin
 			sio_clk  => mii_txc,
 			sio_frm  => si_frm,
 			sio_irdy => si_irdy,
-			sio_trdy => si_trdy,
+			sio_trdy => open, --si_trdy,
 			so_end   => si_end,
 			so_data  => si_data);
 
