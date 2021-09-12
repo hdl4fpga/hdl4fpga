@@ -288,7 +288,7 @@ begin
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
-			dhcpcd_req => dhcpcd_req,
+			dhcpcd_req => '0', --dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,

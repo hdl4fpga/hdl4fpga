@@ -355,7 +355,7 @@ begin
 				si_data => ldatai,
 				so_data => datai);
 
-			datao <= reverse(datai) when icmp_gnt='1' else reverse(reverse(datai),8);
+			datao <= reverse(datai) when icmp_gnt='1' else datai;
 			muxi_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => datao,

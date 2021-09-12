@@ -261,7 +261,7 @@ begin
 				si_data => len_datai,
 				so_data => datai);
 
-			datao <= reverse(datai);
+			datao <= reverse(datai,8);
 			mux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => datao,
