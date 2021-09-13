@@ -62,13 +62,13 @@ architecture def of eth_tb is
 		x"ffffffff"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
 		x"5555f7ff" &
-		x"aaaa5555" &
-		x"123456ff" &
-		x"123456ff" &
-		x"123456ff" &
-		x"123456ff" &
-		x"123456ff" &
-		x"aaaaaaff" &
+		x"01020304" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
 		x"ffffffaa" ;
 
 	constant payload : std_logic_vector := x"0100ff";

@@ -167,7 +167,6 @@ architecture def of ipv4 is
 	signal udpmactx_irdy  : std_logic;
 	signal icmpmactx_irdy  : std_logic;
 	signal ipdatx_irdy      : std_logic;
-	signal icmpipdatx_irdy  : std_logic;
 
 	signal iplentx_irdy     : std_logic;
 	signal icmpiplentx_irdy : std_logic;
@@ -273,7 +272,8 @@ begin
 		signal dev_gnt : std_logic_vector(0 to 2-1);
 		signal icmpdatx_irdy   : std_logic;
 		signal icmplentx_irdy  : std_logic;
-		signal udpdatx_irdy    : std_logic;
+		signal udpipdatx_irdy    : std_logic;
+		signal icmpipdatx_irdy  : std_logic;
 	begin
 
 		dev_req <= icmptx_frm & udptx_frm;
@@ -291,8 +291,10 @@ begin
 		ipv4proto_tx  <= reverse(wirebus(x"01" & x"11", dev_gnt),8);
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
-		ipdatx_irdy   <= '0' when mactx_end='0' else '1';
-		metatx_end    <= wirebus(ipv4datx_end     & lentx_full,      dev_gnt)(0);
+		ipdatx_irdy     <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt)(0);
+		udpipdatx_irdy  <= '0' when mactx_end='0'  else '1';
+		icmpipdatx_irdy <= '0' when lentx_full='0' else '1';
+		metatx_end      <= wirebus(ipv4datx_end    & lentx_full,      dev_gnt)(0);
 
 		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 	end block;
@@ -384,7 +386,7 @@ begin
 			so_end   => ipv4proto_end,
 			so_data  => ipv4proto_data);
 
-		ipv4da_irdy  <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
+		ipv4da_irdy <= '0' when ipv4satx_end='0' else ipv4atx_irdy;
 		da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 32)
@@ -466,6 +468,7 @@ begin
 	udprx_frm   <= ipv4plrx_frm and udprx_vld and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm and ipv4rx_irdy;
 
+	icmpiplentx_irdy <= '0' when mactx_end='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
 	port map (
 		mii_clk     => mii_clk,

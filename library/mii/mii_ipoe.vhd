@@ -402,7 +402,7 @@ begin
 
 		arpdtx_frm  => arptx_frm,
 		dlltx_full  => mactx_end,
-		dlltx_irdy  => '-', --open,
+		dlltx_irdy  => '1', --open,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,

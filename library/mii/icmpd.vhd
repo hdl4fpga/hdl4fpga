@@ -254,10 +254,12 @@ begin
 			process (mii_clk)
 			begin
 				if rising_edge(mii_clk) then
+					dst_trdy <= '0';
 					if icmppltx_frm='1' then
 						if icmppltx_end='1' then
 							if icmptx_trdy='1' then
 								icmppltx_frm <= '0';
+								dst_trdy     <= '1';
 							end if;
 						end if;
 					elsif icmprx_frm='1' then
@@ -268,37 +270,33 @@ begin
 				end if;
 			end process;
 
-			process (icmppltx_end, mii_clk)
-				variable inc  : unsigned(tx_len'range);
+			process (tx_len, icmppltx_frm, icmppltx_end, mii_clk)
 				variable cntr : unsigned(tx_len'range) := (others => '0');
-				variable q    : std_logic;
 			begin
 				if rising_edge(mii_clk) then
 					if icmppltx_frm='1' then
 						if to_bit(icmppltx_end)='1' then
 							if icmptx_trdy='1' then
-								icmppltx_end <= '0';
+								cntr := (others => '0');
 							end if;
 						elsif icmppltx_irdy='1' then
 							if icmppltx_trdy='1' then
-								inc := cntr + 1;
 								if cntr < unsigned(tx_len) then
-									icmppltx_end <= '0';
-								else
-									icmppltx_end <= '1';
-								end if;
-								if cntr < unsigned(tx_len) then
-									cntr := inc;
+									cntr := cntr + 1;
 								end if;
 							end if;
 						end if;
 					else
-						icmppltx_end <= '0';
 						cntr := (others => '0');
 					end if;
-					q := icmppltx_end;
 				end if;
-				dst_trdy <= icmppltx_end and not q;
+
+				if cntr < unsigned(tx_len) then
+					icmppltx_end <= '0';
+				else
+					icmppltx_end <= dst_irdy;
+				end if;
+
 			end process;
 		end block;
 

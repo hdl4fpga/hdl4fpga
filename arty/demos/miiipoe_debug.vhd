@@ -189,9 +189,9 @@ begin
 
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm1 => '0', -- btn(0),
-			mii_frm2 => '0', --btn(1),
-			mii_frm3 => btn(1),
+			mii_frm1 => '0', --btn(1),
+			mii_frm2 => btn(1),
+			mii_frm3 => '0', --btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
