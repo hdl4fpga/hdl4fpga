@@ -139,8 +139,10 @@ begin
 	end block;
 
 	memrx_data <= 
-		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
-		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
+		x"f1" when icmpcoderx_frm='1' else
+		x"f2"  when icmptyperx_frm='1' else 
+--		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
+--		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
 		cksmrx_data                when icmpcksmrx_frm='1' else
 		icmprx_data;
 
@@ -178,7 +180,7 @@ begin
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 128,
-				latency => 1,
+				latency => 2,
 				check_dov => true)
 			port map(
 				src_clk   => mii_clk,
