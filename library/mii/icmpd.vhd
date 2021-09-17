@@ -179,8 +179,9 @@ begin
 			rollback <= not dll_frm;
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
+				debug => true,
 				max_depth  => 128,
-				latency => 2,
+				latency => 1,
 				check_dov => true)
 			port map(
 				src_clk   => mii_clk,

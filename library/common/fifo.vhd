@@ -97,7 +97,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(latency > 1, true, false),
+			synchronous_rddata => setif(debug, true, setif(latency > 1, true, false)),
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -116,7 +116,7 @@ begin
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
 
-		latency_g : if latency > 0 generate
+		latencygt1_g : if latency > 1 generate
 			signal fill  : std_logic;
 			signal q_reg : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
 			signal v_req : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
@@ -130,10 +130,7 @@ begin
 				variable data : unsigned(0 to dst_data'length*q'length-1);
 			begin
 				if rising_edge(dst_clk) then
-					slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
-					if latency > 1 then
-						slr(dst_data'length*((v'length-1)-1) to dst_data'length*((v'length-1))-1) := unsigned(rdata);
-					end if;
+					slr(dst_data'length*((v'length-1)-1) to dst_data'length*((v'length-1))-1) := unsigned(rdata);
 
 					if dst_ini='1' then
 						q := (others => '0');
@@ -194,6 +191,37 @@ begin
 					v_req <= v;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 				end if;
 			end process;
+			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+		end generate;
+
+		latency1_g : if latency=1 generate
+			signal fill : std_logic;
+			signal data : std_logic_vector(dst_data'range);
+			signal q    : std_logic := '0';
+			signal v    : std_logic := '0';
+		begin
+
+			dstirdy_p : process (dst_clk)
+			begin
+				if rising_edge(dst_clk) then
+					if dst_ini='1' then
+						q <= '0';
+						v <= '0';
+					else
+						if v='1' then
+							q    <= '1';
+							data <= rdata;
+						elsif dst_irdy='1' and dst_trdy='1' then
+							q <= '0';
+						end if;
+						v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+					end if;
+				end if;
+			end process;
+
+			dst_irdy <= v or q;
+			fill     <= not v and not q;
+			dst_data <= primux(rdata & data, v & q);
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
 		end generate;
 
