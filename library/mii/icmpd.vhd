@@ -294,7 +294,7 @@ begin
 					end if;
 				end if;
 
-				if cntr < unsigned(tx_len) then
+				if cntr <= unsigned(tx_len) then
 					icmppltx_end <= '0';
 				else
 					icmppltx_end <= dst_irdy;
