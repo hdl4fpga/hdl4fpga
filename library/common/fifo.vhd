@@ -97,7 +97,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(debug, true, setif(latency > 1, true, false)),
+			synchronous_rddata => setif(latency > 0, true, false),
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -202,29 +202,29 @@ begin
 		begin
 
 			dstirdy_p : process (dst_clk)
-				variable d : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if dst_ini='1' then
 						q <= '0';
 						v <= '0';
 					else
-						if (dst_trdy and dst_irdy)='1' then
+						if v='1' then
+							q <= '1';
+						elsif (dst_trdy and dst_irdy)='1' then
 							q <= '0';
 						end if;
-						d := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+
 						if v='1' then
 							data <= rdata;
-							q <= '1';
 						end if;
-						v <= d;
+						v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 					end if;
 				end if;
 			end process;
 
 			dst_irdy <= v or q;
 			fill     <= not v and not q;
-			dst_data <= primux(rdata & data, v & q);
+			dst_data <= primux(rdata & data, v & q, data);
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
 		end generate;
 

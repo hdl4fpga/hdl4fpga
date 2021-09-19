@@ -1,4 +1,6 @@
 onerror {resume}
+quietly virtual signal -install /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/tx_data  } pp
+quietly virtual signal -install /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e { /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/tx_data(0 to 6)} tx
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/clk
@@ -125,7 +127,6 @@ add wave -noupdate -group udp4 -group udp_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/
 add wave -noupdate -group udp4 -group udp_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udp_rx_e/udplen_frm
 add wave -noupdate -group udp4 -group udp_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/udp_rx_e/udplen_irdy
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_frm
-add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/rd_cntr
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_irdy
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_data
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_frm
@@ -133,14 +134,11 @@ add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmpt
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_trdy
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_end
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_data
-add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_data
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_irdy
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_trdy
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_end
 add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_data
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprply_e/metatx_end
-add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/rollback
-add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/commit
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_cmmt
 add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_rllbk
 add wave -noupdate -group flow_e /testbench/du_e/ipoe_b/sioflow_e/rx_frm
@@ -179,30 +177,18 @@ add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/rx_writ
 add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/rx_data
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
-add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/line__120/cntr
 add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/src_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/src_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/src_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/wr_ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/wr_ptr
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/wr_cmp
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/rx_len
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/tx_len
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/rollback
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/commit
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/overflow
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/rd_cntr
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_irdy1
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/buffer_e/dst_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/max_depthgt1_g/latency1_g/q
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/max_depthgt1_g/latency1_g/v
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/wr_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/rd_cntr
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_irdy1
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12157739 ps} 0}
+WaveRestoreCursors {{Cursor 1} {12060000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 277
 configure wave -valuecolwidth 185
@@ -218,4 +204,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {8345 ns} {15695 ns}
+WaveRestoreZoom {11137728 ps} {12975228 ps}
