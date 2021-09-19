@@ -102,7 +102,8 @@ begin
 	end process;
 
 	rx_frm  <= commit or dst_trdy;
-	rx_writ <= commit or rx_irdy;
+--	rx_writ <= commit or rx_irdy;
+	rx_writ <= commit;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
@@ -129,7 +130,7 @@ begin
 			if dst_frm='1' then
 				if dst_irdy='1' then
 					if dst_trdy='1' then
-						if cntr < unsigned(tx_data(0 to 6)) then
+						if cntr <= unsigned(tx_data(0 to 6)) then
 							cntr := cntr + 1;
 						end if;
 					end if;
@@ -139,7 +140,7 @@ begin
 			end if;
 		end if;
 		tx_trdy <= not dst_frm and q;
-		dst_end <= (not setif(cntr < unsigned(tx_data(0 to 6))));
+		dst_end <= (not setif(cntr <= unsigned(tx_data(0 to 6))));
 		q := dst_frm;
 	end process;
 
