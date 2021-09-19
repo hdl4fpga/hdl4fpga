@@ -29,12 +29,15 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity txn_buffer is
+	generic (
+		n : natural := 1);
 	port (
 		src_clk     : in  std_logic;
 		src_frm     : in  std_logic;
 		src_irdy    : in  std_logic;
 		src_trdy    : out std_logic;
 		src_end     : in  std_logic := '0';
+		src_tag     : in  std_logic_vector(0 to n-1) := (0 to 0 => '-');
 		src_data    : in  std_logic_vector;
 		rollback    : in  std_logic;
 		commit      : in  std_logic;
@@ -43,6 +46,7 @@ entity txn_buffer is
 		dst_irdy    : in std_logic;
 		dst_trdy    : buffer std_logic;
 		dst_end     : out std_logic;
+		dst_tag     : inout  std_logic_vector(0 to n-1) := (0 to 0 => '-');
 		dst_data    : out std_logic_vector);
 end;
 
@@ -51,7 +55,7 @@ architecture def of txn_buffer is
 	signal rx_frm    : std_logic;
 	signal rx_irdy   : std_logic;
 	signal rx_writ   : std_logic;
-	signal rx_data   : std_logic_vector(0 to 6);
+	signal rx_data   : std_logic_vector(0 to 6+src_tag'length);
 
 	signal tx_irdy   : std_logic;
 	signal tx_trdy   : std_logic;
@@ -81,8 +85,8 @@ begin
 		dst_trdy  => data_trdy,
 		dst_data  => dst_data);
 
-	process (src_frm, src_end, src_clk)
-		variable cntr : unsigned(rx_data'range);
+	process (src_frm, src_tag, src_end, src_clk)
+		variable cntr : unsigned(0 to 6);
 		variable q    : std_logic;
 	begin
 		if rising_edge(src_clk) then
@@ -91,9 +95,9 @@ begin
 			elsif src_irdy='1' then
 				cntr := cntr + 1;
 			end if;
-			rx_data <= std_logic_vector(cntr);
 			q       := (src_frm and not src_end);
 		end if;
+		rx_data <= std_logic_vector(cntr) & src_tag;
 		rx_irdy <= not (src_frm and not src_end) and q;
 	end process;
 
@@ -119,7 +123,7 @@ begin
 
 	process (dst_frm, dst_trdy, tx_data, src_clk)
 		variable q    : std_logic;
-		variable cntr : unsigned(tx_data'range);
+		variable cntr : unsigned(0 to 6);
 	begin
 		if rising_edge(src_clk) then
 			if dst_frm='1' then
@@ -135,8 +139,9 @@ begin
 			end if;
 		end if;
 		tx_trdy <= not dst_frm and q;
-		dst_end <= (not setif(cntr < unsigned(tx_data))) or not dst_trdy;
+		dst_end <= (not setif(cntr < unsigned(tx_data(0 to 6)))) or not dst_trdy;
 		q := dst_frm;
 	end process;
 
+	dst_tag <= tx_data(6+1 to 6+dst_tag'length);
 end;

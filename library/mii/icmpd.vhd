@@ -154,50 +154,21 @@ begin
 
 	buffer_e : block
 		signal miirx_end : std_logic;
-		signal rx_len    : std_logic_vector(0 to 6);
-		signal tx_len    : std_logic_vector(rx_len'range);
+		signal rollback  : std_logic;
+		signal icmp_req  : bit;
+		signal icmp_rdy  : bit;
 	begin
 
 		process (mii_clk)
-			variable cntr : unsigned(rx_len'range);
-		begin
+		begin 
 			if rising_edge(mii_clk) then
-				if dll_frm='0' then
-					cntr := (others => '0');
-				elsif icmpdata_irdy='1' then
-					if icmprx_frm='1' then
-						cntr := cntr + 1;
-					end if;
+				if (icmp_req xor icmp_rdy)='0' then
+					icmp_req <= to_bit(icmprx_frm) xor icmp_rdy;
+				elsif icmptx_trdy='1' then
+					icmp_rdy <= to_bit(icmptx_end) xnor icmp_req;
 				end if;
-				rx_len <= std_logic_vector(cntr);
 			end if;
 		end process;
-
-		buffer_e : block
-			signal rollback : std_logic;
-		begin
-			rollback <= not dll_frm;
-			buffer_e : entity hdl4fpga.fifo
-			generic map (
-				debug => true,
-				max_depth  => 128,
-				latency => 1,
-				check_dov => true)
-			port map(
-				src_clk   => mii_clk,
-				src_irdy  => icmpdata_irdy,
-				src_data  => memrx_data,
-
-				rollback  => rollback,
-				commit    => icmprx_frm,
-				overflow  => open,
-
-				dst_clk   => mii_clk,
-				dst_irdy  => icmppltx_irdy,
-				dst_trdy  => icmpdatatx_trdy,
-				dst_data  => memtx_data);
-
-		end block;
 
 		process (dll_frm, mii_clk)
 			variable q : std_logic;
@@ -207,101 +178,28 @@ begin
 			end if;
 			miirx_end <= not dll_frm and q;
 		end process;
+		rollback <= not dll_frm;
 
-		frame_b : block
-			signal src_irdy : std_logic;
-			signal src_writ : std_logic;
-			signal dst_irdy : std_logic;
-			signal dst_trdy : std_logic;
-		begin
+		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
+		buffer_e : entity hdl4fpga.txn_buffer
+		port map (
+			src_clk  => mii_clk,
+			src_frm  => dll_frm,
+			src_irdy => icmpdata_irdy,
+			src_trdy => open,
+			src_end  => miirx_end,
+			src_tag  => rx_cy,
+			src_data => memrx_data,
 
-			src_irdy <= miirx_end;
-			src_writ <= icmprx_frm and icmpdata_irdy;
-			fifo_e : entity hdl4fpga.fifo
-				generic map (
-					latency    => 0,
-					max_depth  => 4)
-				port map (
-					src_clk    => mii_clk,
-					src_frm    => icmppltx_irdy,
-					src_irdy   => src_irdy,
-					src_auto   => '0',
-					src_writ   => src_writ,
-					src_trdy   => open,
-					src_data   => rx_len,
+			rollback => rollback,
+			commit   => icmprx_frm,
 
-					dst_clk    => mii_clk,
-					dst_irdy   => dst_irdy,
-					dst_trdy   => dst_trdy,
-					dst_data   => tx_len);
-
-			fifo1_e : entity hdl4fpga.fifo
-				generic map (
-					latency    => 0,
-					max_depth  => 4)
-				port map (
-					src_clk    => mii_clk,
-					src_frm    => icmppltx_irdy,
-					src_irdy   => src_irdy,
-					src_writ   => icmprx_frm,
-					src_trdy   => open,
-					src_data   => rx_cy,
-
-					dst_clk    => mii_clk,
-					dst_irdy   => open,
-					dst_trdy   => dst_trdy,
-					dst_data   => tx_cy);
-
-			tp(4) <= dst_irdy;
-
-			process (mii_clk)
-			begin
-				if rising_edge(mii_clk) then
-					dst_trdy <= '0';
-					if icmppltx_frm='1' then
-						if icmppltx_end='1' then
-							if icmptx_trdy='1' then
-								icmppltx_frm <= '0';
-								dst_trdy     <= '1';
-							end if;
-						end if;
-					elsif icmprx_frm='1' then
-						if icmpdata_irdy='1' then
-							icmppltx_frm <= '1';
-						end if;
-					end if;
-				end if;
-			end process;
-
-			process (tx_len, icmppltx_frm, icmppltx_end, mii_clk)
-				variable cntr : unsigned(tx_len'range) := (others => '0');
-			begin
-				if rising_edge(mii_clk) then
-					if icmppltx_frm='1' then
-						if to_bit(icmppltx_end)='1' then
-							if icmptx_trdy='1' then
-								cntr := (others => '0');
-							end if;
-						elsif icmppltx_irdy='1' then
-							if icmppltx_trdy='1' then
-								if cntr < unsigned(tx_len) then
-									cntr := cntr + 1;
-								end if;
-							end if;
-						end if;
-					else
-						cntr := (others => '0');
-					end if;
-				end if;
-
-				if cntr <= unsigned(tx_len) then
-					icmppltx_end <= '0';
-				else
-					icmppltx_end <= dst_irdy;
-				end if;
-
-			end process;
-		end block;
+			dst_frm  => icmppltx_frm,
+			dst_irdy => icmpdatatx_trdy,
+			dst_trdy => icmppltx_irdy,
+			dst_end  => icmppltx_end,
+			dst_tag  => tx_cy,
+			dst_data => memtx_data);
 
 	end block;
 

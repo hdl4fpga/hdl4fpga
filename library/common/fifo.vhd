@@ -202,19 +202,22 @@ begin
 		begin
 
 			dstirdy_p : process (dst_clk)
+				variable d : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if dst_ini='1' then
 						q <= '0';
 						v <= '0';
 					else
-						if v='1' then
-							q    <= '1';
-							data <= rdata;
-						elsif dst_irdy='1' and dst_trdy='1' then
+						if (dst_trdy and dst_irdy)='1' then
 							q <= '0';
 						end if;
-						v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+						d := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+						if v='1' then
+							data <= rdata;
+							q <= '1';
+						end if;
+						v <= d;
 					end if;
 				end if;
 			end process;
