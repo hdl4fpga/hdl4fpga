@@ -38,8 +38,10 @@ entity dhcpc_dscb is
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
-		metatx_end    : in  std_logic := '1';
-		metatx_irdy   : in  std_logic := '-';
+		ipdatx_full   : in  std_logic := '1';
+		ipdatx_irdy   : in  std_logic := '1';
+		udplentx_full  : in  std_logic := '1';
+		udplentx_irdy  : in  std_logic := '1';
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
@@ -58,7 +60,7 @@ architecture def of dhcpc_dscb is
 
 	constant dhcp_pkt : std_logic_vector :=
 		udp_checksummed (
-			x"00000000",
+			x"c0a8000e",
 			x"ffffffff",
 			dhcp_sp      &    -- UDP Source port
 			dhcp_dp      &    -- UDP Destination port
@@ -70,22 +72,20 @@ architecture def of dhcpc_dscb is
 			x"63825363"  &    -- MAGIC COOKIE
 			vendor_data);
 
-	signal dhcppkt_irdy : std_logic;
-	signal dhcppkt_trdy : std_logic;
-	signal dhcppkt_ena  : std_logic;
-	signal dhcppkt_end  : std_logic;
-	signal dhcppkt_data : std_logic_vector(dhcpdscb_data'range);
+	signal dhcppkt_irdy  : std_logic;
+	signal dhcppkt_trdy  : std_logic;
+	signal dhcppkt_ena   : std_logic;
+	signal dhcppkt_end   : std_logic;
+	signal dhcppkt_data  : std_logic_vector(dhcpdscb_data'range);
 
 	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
-	constant dscb_frame  : natural_vector(udp4hdr_frame'left to dhcp_vendor) := udp4hdr_frame & dhcp4hdr_frame & (
-		dhcp_vendor => vendor_data'length);
+	constant dscb_frame  : natural_vector(udp4hdr_frame'left to dhcp_vendor) := 
+		 udp4hdr_frame  & 
+		 dhcp4hdr_frame & 
+		(dhcp_vendor => vendor_data'length);
 
 	signal dhcpdscb_ptr  : std_logic_vector(0 to unsigned_num_bits((payload_size+8)*8/dhcpdscb_data'length-1));
 
-	signal udplentx_irdy : std_logic;
-	signal udplentx_trdy : std_logic;
-	signal udplentx_end  : std_logic;
-	signal udplentx_data : std_logic_vector(dhcpdscb_data'range);
 
 begin
 
@@ -95,7 +95,7 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy ='1' and metatx_end='1' then
+			elsif dhcpdscb_irdy ='1' and ipdatx_full='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 				end if;
@@ -104,32 +104,21 @@ begin
 		end if;
 	end process;
 
-	udplentx_irdy <= 
-		'1' when metatx_end='0' else
-		'0';
-
-	dhcpudplen_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => reverse(std_logic_vector(to_unsigned(payload_size+8, 16))),
-		sio_clk  => mii_clk,
-		sio_frm  => dhcpdscb_frm,
-		sio_irdy => udplentx_irdy,
-		sio_trdy => udplentx_trdy,
-		so_end   => udplentx_end,
-		so_data  => udplentx_data);
-
-	dhcppkt_ena <= frame_decode(
-		dhcpdscb_ptr, dscb_frame, dhcpdscb_data'length, 
-		(udp4_sp, udp4_dp, udp4_len, udp4_cksm, dhcp4_op, dhcp4_htype, dhcp4_hlen, 
-		dhcp4_hops, dhcp4_xid, dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
+	dhcppkt_ena <= frame_decode (
+		dhcpdscb_ptr, dscb_frame,  dhcpdscb_data'length, 
+		(udp4_sp,     udp4_dp,     udp4_len,      udp4_cksm, 
+		dhcp4_op,     dhcp4_htype, dhcp4_hlen, 
+		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <= 
-		'0' when metatx_end='0' else 
-		dhcppkt_ena;
+		'0'           when ipdatx_full='0'  else 
+		udplentx_irdy when udplentx_full='0' else
+		dhcpdscb_irdy when dhcppkt_ena='1' else
+		'0';
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(dhcp_pkt,8),
+		mux_data => reverse(reverse(std_logic_vector(to_unsigned(payload_size+8, 16))),8) & reverse(dhcp_pkt,8),
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
@@ -138,17 +127,15 @@ begin
         so_data  => dhcppkt_data);
 
 	dhcpdscb_trdy <= 
-		metatx_irdy when metatx_end='0' else 
+		ipdatx_irdy when ipdatx_full='0' else 
 		dhcppkt_trdy;
 
 	dhcpdscb_end <= 
-		'0' when metatx_end='0' else 
+		'0' when ipdatx_full='0' else 
 		dhcppkt_end;
 
 	dhcpdscb_data <= 
-		(dhcpdscb_data'range => '1') when metatx_end='0' else
-		udplentx_data                when udplentx_end='0' else
-		(dhcpdscb_data'range => '1') when metatx_end='0' else
+		(dhcpdscb_data'range => '1') when ipdatx_full='0' else
 		dhcppkt_data                 when dhcppkt_ena='1' else
 		(dhcpdscb_data'range => '0');
 end;

@@ -39,10 +39,13 @@ entity dhcpcd is
 		dhcpcd_rdy    : buffer std_logic := '0';
 
 		dhcpcdtx_frm  : buffer std_logic;
-		metatx_end   : in std_logic;
+		ipdatx_full   : in  std_logic := '1';
+		ipdatx_irdy   : in  std_logic := '1';
+		udplentx_full : in  std_logic := '1';
+		udplentx_irdy : in  std_logic := '1';
 
 		dhcpcdtx_irdy : buffer std_logic;
-		dhcpcdtx_trdy : in  std_logic := '1';
+		dhcpcdtx_trdy : in  std_logic;
 		dhcpcdtx_end  : buffer std_logic;
 		dhcpcdtx_data : out std_logic_vector);
 end;
@@ -73,21 +76,21 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (dhcpcd_req xor dhcpcd_rdy)='1' then
-				dhcpcdtx_frm <= '1';
 				if dhcpcdtx_trdy='1' then
-					dhcpcd_rdy <= dhcpcd_req;
+					dhcpcd_rdy <= dhcpcdtx_end xnor dhcpcd_req;
 				end if;
-			else
-				dhcpcdtx_frm <= '0';
 			end if;
 		end if;
 	end process;
 
+	dhcpcdtx_frm <= dhcpcd_req xor dhcpcd_rdy;
 	dhcpdscb_e : entity hdl4fpga.dhcpc_dscb
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
-		metatx_end    => metatx_end,
+		ipdatx_full   => ipdatx_full,
+		udplentx_full => udplentx_full,
+		udplentx_irdy => udplentx_irdy,
 		dhcpdscb_irdy => dhcpcdtx_trdy,
 		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,

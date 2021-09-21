@@ -278,7 +278,7 @@ begin
 				if to_stdulogic(to_bit(dhcpcd_req))='0' then
 					dhcpcd_req <= to_stdulogic(to_bit(btn(0)));
 				else
-					dhcpcd_req <= not to_stdulogic(to_bit(btn(1)));
+					dhcpcd_req <= not to_stdulogic(to_bit(btn(3)));
 				end if;
 			end if;
 		end process;
@@ -288,7 +288,7 @@ begin
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
-			dhcpcd_req => '0', --dhcpcd_req,
+			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
@@ -364,29 +364,11 @@ begin
 			end if;
 		end process;
 
---		process (mii_txc)
---			variable q : std_logic;
---			variable e : std_logic;
---		begin
---			if rising_edge(mii_txc) then
---				if e='0' and miirx_frm='1' then
---					q := not q;
---				end if;
---				led(0) <= not q;
---				led(1) <= q;
---				e := miirx_frm;
---			end if;
---		end process;
-
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else tp(1); --miirx_frm;
+		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
 		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
-	rgbled(0) <= tp(11); -- sin_frm;
-	rgbled(3) <= tp(12); -- miitx_end;
-	rgbled(6) <= tp(13); -- not miitx_end;
-	rgbled(9) <= tp(14); -- not miitx_end;
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
