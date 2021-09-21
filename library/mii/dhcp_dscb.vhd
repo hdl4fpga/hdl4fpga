@@ -32,16 +32,18 @@ use hdl4fpga.ipoepkg.all;
 
 entity dhcpc_dscb is
 	generic (
-		dhcp_sp   : std_logic_vector(0 to 16-1)  := x"0044";
-		dhcp_dp   : std_logic_vector(0 to 16-1)  := x"0043";
-		dhcp_mac  : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		dhcp_sp       : std_logic_vector(0 to 16-1)  := x"0044";
+		dhcp_dp       : std_logic_vector(0 to 16-1)  := x"0043";
+		dhcp_mac      : std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
+		ipsatx_full   : in  std_logic := '1';
+		ipsatx_irdy   : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
 		ipdatx_irdy   : in  std_logic := '1';
-		udplentx_full  : in  std_logic := '1';
-		udplentx_irdy  : in  std_logic := '1';
+		udplentx_full : in  std_logic := '1';
+		udplentx_irdy : in  std_logic := '1';
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
@@ -52,19 +54,20 @@ end;
 architecture def of dhcpc_dscb is
 
 	constant payload_size : natural := 250;
+	constant udp_size     : std_logic_vector := std_logic_vector(to_unsigned(payload_size+8,16));
 
 	constant vendor_data : std_logic_vector := 
-		x"350101"       &    -- DHCPDISCOVER
-		x"320400000000" &    -- IP REQUEST
-		x"FF";               -- END
+		x"350101"       &     -- DHCPDISCOVER
+		x"320400000000" &     -- IP REQUEST
+		x"FF";                -- END
 
 	constant dhcp_pkt : std_logic_vector :=
 		udp_checksummed (
-			x"c0a8000e",
+			x"00000000",
 			x"ffffffff",
 			dhcp_sp      &    -- UDP Source port
 			dhcp_dp      &    -- UDP Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+			udp_size     &    -- UDP Length,
 			x"0000"      &	  -- UDP CHECKSUM
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
@@ -118,7 +121,7 @@ begin
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(reverse(std_logic_vector(to_unsigned(payload_size+8, 16))),8) & reverse(dhcp_pkt,8),
+		mux_data => reverse(reverse(udp_size) & dhcp_pkt, 8),
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
@@ -135,6 +138,7 @@ begin
 		dhcppkt_end;
 
 	dhcpdscb_data <= 
+		(dhcpdscb_data'range => '0') when ipsatx_full='0' else
 		(dhcpdscb_data'range => '1') when ipdatx_full='0' else
 		dhcppkt_data                 when dhcppkt_ena='1' else
 		(dhcpdscb_data'range => '0');

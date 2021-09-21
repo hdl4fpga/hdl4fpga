@@ -175,8 +175,8 @@ begin
 
 	pl_trdy <= 
 		metatx_irdy when metatx_end='0'   else
-		'0'        when ipv4chsm_end='0' else
-		'0'        when ipv4a_end='0'    else
+		'0'         when ipv4chsm_end='0' else
+		'0'         when ipv4a_end='0'    else
 		ipv4_trdy; 
 
 	ipv4_irdy <= 

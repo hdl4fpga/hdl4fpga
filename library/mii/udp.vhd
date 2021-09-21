@@ -32,38 +32,40 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp is
 	port (
-		mii_clk      : in  std_logic;
-		dhcpcd_req   : in  std_logic := '0';
-		dhcpcd_rdy   : out std_logic := '0';
+		mii_clk       : in  std_logic;
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : out std_logic := '0';
 
-		udprx_frm    : in  std_logic;
-		udprx_irdy   : in  std_logic;
-		udprx_data   : in  std_logic_vector;
+		udprx_frm     : in  std_logic;
+		udprx_irdy    : in  std_logic;
+		udprx_data    : in  std_logic_vector;
 
-		plrx_frm     : buffer std_logic;
-		plrx_irdy    : out std_logic;
-		plrx_trdy    : in  std_logic;
-		plrx_cmmt    : out std_logic;
-		plrx_rllbk   : out std_logic;
-		plrx_data    : out std_logic_vector;
+		plrx_frm      : buffer std_logic;
+		plrx_irdy     : out std_logic;
+		plrx_trdy     : in  std_logic;
+		plrx_cmmt     : out std_logic;
+		plrx_rllbk    : out std_logic;
+		plrx_data     : out std_logic_vector;
 
-		pltx_frm     : in  std_logic;
-		pltx_irdy    : in  std_logic;
-		pltx_trdy    : out std_logic;
-		pltx_data    : in  std_logic_vector;
-		pltx_end     : in  std_logic;
+		pltx_frm      : in  std_logic;
+		pltx_irdy     : in  std_logic;
+		pltx_trdy     : out std_logic;
+		pltx_data     : in  std_logic_vector;
+		pltx_end      : in  std_logic;
 
-		metatx_end   : in  std_logic := '1';
-		metatx_irdy  : in  std_logic := '1';
-		ipdatx_full  : in  std_logic;
-		iplentx_irdy : out std_logic;
-		iplentx_full : in  std_logic;
+		ipv4sawr_frm  : out std_logic := '0';
+		ipv4sawr_irdy : out std_logic := '0';
 
-		udptx_frm    : out std_logic;
-		udptx_irdy   : out std_logic;
-		udptx_trdy   : in  std_logic;
-		udptx_end    : out std_logic;
-		udptx_data   : out std_logic_vector);
+		ipsatx_full   : in  std_logic;
+		ipdatx_full   : in  std_logic;
+		iplentx_irdy  : out std_logic;
+		iplentx_full  : in  std_logic;
+
+		udptx_frm     : out std_logic;
+		udptx_irdy    : out std_logic;
+		udptx_trdy    : in  std_logic;
+		udptx_end     : out std_logic;
+		udptx_data    : out std_logic_vector);
 end;
 
 architecture def of udp is
@@ -139,10 +141,10 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udptx_frm    <= wirebus(dhcpctx_frm  & pltx_frm,     dev_gnt)(0);
-		udptx_irdy   <= wirebus(dhcpctx_irdy & pltx_irdy,    dev_gnt)(0);
-		udptx_end    <= wirebus(dhcpctx_end  & udppltx_end,  dev_gnt)(0);
-		udptx_data   <= wirebus(dhcpctx_data & udppltx_data, dev_gnt);
+		udptx_frm    <= wirebus(dhcpctx_frm       & pltx_frm,     dev_gnt)(0);
+		udptx_irdy   <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt)(0);
+		udptx_end    <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt)(0);
+		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
 		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
 	end block;
@@ -305,25 +307,24 @@ begin
 
 	udptx_e : entity hdl4fpga.udp_tx
 	port map (
-		mii_clk   => mii_clk,
+		mii_clk    => mii_clk,
 
-		pl_frm    => udppltx_frm,
-		pl_irdy   => pltx_irdy,
-		pl_trdy   => pltx_trdy,
-		pl_end    => pltx_end,
-		pl_data   => ppltx_data,
+		pl_frm     => udppltx_frm,
+		pl_irdy    => pltx_irdy,
+		pl_trdy    => pltx_trdy,
+		pl_end     => pltx_end,
+		pl_data    => ppltx_data,
 
-		hdr_irdy  => udphdr_irdy,
-		hdr_trdy  => udphdr_trdy,
-		hdr_end   => udphdr_end,
-		hdr_data  => udphdr_data,
+		hdr_irdy   => udphdr_irdy,
+		hdr_trdy   => udphdr_trdy,
+		hdr_end    => udphdr_end,
+		hdr_data   => udphdr_data,
 
-		udp_irdy  => udppltx_irdy,
+		udp_irdy   => udppltx_irdy,
 		metatx_end => udplentx_full,
-		metatx_irdy => metatx_irdy,
-		udp_trdy  => udppltx_trdy,
-		udp_end   => udppltx_end,
-		udp_data  => udppltx_data);
+		udp_trdy   => udppltx_trdy,
+		udp_end    => udppltx_end,
+		udp_data   => udppltx_data);
 
 	udpc_e : entity hdl4fpga.sio_muxcmp
     port map (
@@ -365,6 +366,9 @@ begin
 		dhcpcdtx_frm  => dhcpctx_frm,
 		ipdatx_full   => ipdatx_full,
 		udplentx_full => iplentx_full,
+		ipv4sawr_frm  => ipv4sawr_frm,
+		ipv4sawr_irdy => ipv4sawr_irdy,
+
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,
 		dhcpcdtx_end  => dhcpctx_end,

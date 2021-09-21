@@ -38,6 +38,9 @@ entity dhcpcd is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
+		ipv4sawr_frm  : out std_logic := '0';
+		ipv4sawr_irdy : out std_logic := '0';
+
 		dhcpcdtx_frm  : buffer std_logic;
 		ipdatx_full   : in  std_logic := '1';
 		ipdatx_irdy   : in  std_logic := '1';
