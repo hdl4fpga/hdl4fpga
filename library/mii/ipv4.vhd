@@ -72,7 +72,7 @@ entity ipv4 is
 
 
 		mactx_irdy    : out std_logic;
-		mactx_end     : in  std_logic;
+		mactx_full     : in  std_logic;
 
 		ipv4tx_frm    : buffer std_logic := '0';
 		ipv4tx_irdy   : buffer std_logic;
@@ -263,7 +263,7 @@ begin
 			si_frm  => ipv4sawr_frm,
 			si_irdy => ipv4sawr_irdy,
 			si_trdy => open,
-			si_full => open,
+			si_full => ipv4satx_full,
 			si_data => pltx_data,
 
 			so_clk  => mii_clk,
@@ -299,12 +299,13 @@ begin
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
 
-
-
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
 
 		ipdatx_irdy     <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt)(0);
-		udpipdatx_irdy  <= '0' when mactx_end='0'    else '1';
+		udpipdatx_irdy  <= 
+			'0' when mactx_full='0'    else
+			'0' when (ipv4sawr_frm and not ipv4satx_full)='1' else
+			'1';
 		icmpipdatx_irdy <= '0' when iplentx_full='0' else '1';
 
 		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
@@ -380,12 +381,11 @@ begin
 				so_data  => ipv4len_data);
 
 			ppltx_data <= 
-				ipv4pltx_data when mactx_end='0'    else 
+				ipv4pltx_data when mactx_full='0'    else 
 				len_datai     when iplentx_full='0' else
 				ipv4pltx_data;
 
 		end block;
-
 
 		protomux_e : entity hdl4fpga.sio_mux
 		port map (
@@ -478,7 +478,7 @@ begin
 	udprx_frm   <= ipv4plrx_frm and udprx_vld  and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm   and ipv4rx_irdy;
 
-	icmpiplentx_irdy <= '0' when mactx_end='0' else '1';
+	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
 	port map (
 		mii_clk     => mii_clk,
@@ -527,7 +527,8 @@ begin
 		ipv4sawr_irdy => ipv4sawr_irdy,
 
 		udptx_frm    => udptx_frm,
-		ipsatx_full  => ipv4datx_full,
+		mactx_full   => mactx_full,
+		ipsatx_full  => ipv4satx_full,
 		ipdatx_full  => ipv4datx_full,
 		iplentx_full => iplentx_full,
 		iplentx_irdy => udpiplentx_irdy,

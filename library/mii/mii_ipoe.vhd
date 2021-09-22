@@ -153,7 +153,7 @@ architecture def of mii_ipoe is
 	signal metatx_irdy   : wor std_logic;
 	signal metatx_end    : wor std_logic;
 	signal mactx_irdy    : wor std_logic;
-	signal mactx_end     : wor std_logic;
+	signal mactx_full     : wor std_logic;
 
 
 	signal fifo_irdy     : std_logic;
@@ -314,7 +314,7 @@ begin
 			si_frm   => ethtx_frm,
 			si_irdy  => ethtx_irdy,
 			si_trdy  => mactx_irdy,
-			si_full  => mactx_end,
+			si_full  => mactx_full,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
@@ -359,7 +359,7 @@ begin
 		mii_clk     => mii_clk,
 
 		metatx_irdy => '1',
-		metatx_end  => mactx_end,
+		metatx_end  => mactx_full,
 		hwllc_irdy  => hwllctx_irdy,
 		hwllc_end   => hwllctx_end,
 		hwllc_data  => hwllctx_data,
@@ -401,7 +401,7 @@ begin
 		spatx_data => ipv4satx_data,
 
 		arpdtx_frm  => arptx_frm,
-		dlltx_full  => mactx_end,
+		dlltx_full  => mactx_full,
 		dlltx_irdy  => '1', --open,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
@@ -449,7 +449,7 @@ begin
 
 		ipv4tx_frm    => ipv4tx_frm,
 		mactx_irdy    => mactx_irdy,
-		mactx_end     => mactx_end,
+		mactx_full     => mactx_full,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

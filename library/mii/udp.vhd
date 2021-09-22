@@ -56,6 +56,7 @@ entity udp is
 		ipv4sawr_frm  : out std_logic := '0';
 		ipv4sawr_irdy : out std_logic := '0';
 
+		mactx_full    : in  std_logic := '1';
 		ipsatx_full   : in  std_logic;
 		ipdatx_full   : in  std_logic;
 		iplentx_irdy  : out std_logic;
@@ -364,7 +365,9 @@ begin
 		dhcpcd_rdy    => dhcpcd_rdy,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
+		mactx_full    => mactx_full,
 		ipdatx_full   => ipdatx_full,
+		ipsatx_full   => ipsatx_full,
 		udplentx_full => iplentx_full,
 		ipv4sawr_frm  => ipv4sawr_frm,
 		ipv4sawr_irdy => ipv4sawr_irdy,

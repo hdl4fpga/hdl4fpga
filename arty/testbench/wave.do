@@ -186,6 +186,9 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpcd_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_e/mux_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcpdscb_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipv4sawr_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipv4sawr_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipsatx_full
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipdatx_full
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/udplentx_full
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcpdscb_irdy
@@ -196,7 +199,7 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {5989233 ps} 1} {{Cursor 2} {3481878 ps} 0}
+WaveRestoreCursors {{Cursor 1} {5989233 ps} 1} {{Cursor 2} {4755339 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 277
 configure wave -valuecolwidth 185
@@ -212,4 +215,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {5486940 ps}
+WaveRestoreZoom {2867409 ps} {6542409 ps}

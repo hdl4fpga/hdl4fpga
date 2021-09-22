@@ -42,7 +42,9 @@ entity dhcpcd is
 		ipv4sawr_irdy : out std_logic := '0';
 
 		dhcpcdtx_frm  : buffer std_logic;
+		mactx_full    : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
+		ipsatx_full   : in  std_logic := '1';
 		ipdatx_irdy   : in  std_logic := '1';
 		udplentx_full : in  std_logic := '1';
 		udplentx_irdy : in  std_logic := '1';
@@ -91,9 +93,13 @@ begin
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
+		mactx_full    => mactx_full,
 		ipdatx_full   => ipdatx_full,
+		ipsatx_full   => ipsatx_full,
 		udplentx_full => udplentx_full,
 		udplentx_irdy => udplentx_irdy,
+		ipv4sawr_frm  => ipv4sawr_frm,
+		ipv4sawr_irdy => ipv4sawr_irdy,
 		dhcpdscb_irdy => dhcpcdtx_trdy,
 		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
