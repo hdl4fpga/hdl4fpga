@@ -52,7 +52,8 @@ entity dhcpcd is
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
 		dhcpcdtx_end  : buffer std_logic;
-		dhcpcdtx_data : out std_logic_vector);
+		dhcpcdtx_data : out std_logic_vector;
+		tp : out std_logic_vector(1 to 32));
 end;
 
 architecture def of dhcpcd is
@@ -110,7 +111,9 @@ begin
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpcdtx_data);
 
-	ipv4sawr_frm  <= dscbipv4sawr_frm  and dhcpyia_frm;
-	ipv4sawr_irdy <= dscbipv4sawr_irdy and dhcpyia_irdy;
+	ipv4sawr_frm  <= dscbipv4sawr_frm  or dhcpyia_frm;
+	ipv4sawr_irdy <= dscbipv4sawr_irdy or dhcpyia_irdy;
+	tp(1) <= dhcpcdrx_frm ;
+	tp(2) <= dhcpyia_irdy;
 
 end;

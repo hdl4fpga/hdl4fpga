@@ -535,7 +535,8 @@ begin
 		udptx_irdy   => udptx_irdy,
 		udptx_trdy   => udptx_trdy,
 		udptx_end    => udptx_end ,
-		udptx_data   => udptx_data);
+		udptx_data   => udptx_data,
+	tp => tp);
 
 	plrx_data <= udpplrx_data;
 end;

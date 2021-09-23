@@ -190,8 +190,8 @@ begin
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1 => '0', --btn(1),
-			mii_frm2 => btn(1),
-			mii_frm3 => '0', --btn(1),
+			mii_frm2 => '0', --btn(1),
+			mii_frm3 => btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
@@ -310,7 +310,7 @@ begin
 			miitx_irdy => miitx_irdy,
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
-			miitx_data => miitx_data);
+			miitx_data => miitx_data, tp => tp);
 
 		sioflow_e : entity hdl4fpga.sio_flow
 		port map (
@@ -366,7 +366,7 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
+		sin_frm   <= mii_txen when sw(1)='1' else tp(1); -- miirx_frm;
 		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
 	end block;

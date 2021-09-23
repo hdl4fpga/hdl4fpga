@@ -71,7 +71,20 @@ architecture def of eth_tb is
 		x"00000000" &
 		x"ffffffaa" ;
 
-	constant payload : std_logic_vector := x"0100ff";
+--	constant payload : std_logic_vector := x"0100ff";
+	constant payload : std_logic_vector := 
+			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
+			x"3903f326"  &    -- XID
+			x"00000000"  &
+			x"00000000"  &    -- CIADDR
+			x"c0a80002"  &    -- YIADDR
+			x"00000000"  &    -- SIADDR
+			x"00000000"  &    -- GIADDR
+			x"00400001"  &    -- CHADDR  
+			x"02030000"  &    -- CHADDR  
+			x"00000000"  &    -- CHADDR
+			x"00000000"  &    -- CHADDR
+			(0 to 192*8-1 => '0') ;
 	constant packet : std_logic_vector := 
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
@@ -85,7 +98,7 @@ architecture def of eth_tb is
 		udp_checksummed (
 			x"ffffffff",             -- IP Source IP address
 			x"c0a8000e",             -- IP Destiantion IP Address
-			x"0044dea9"         & -- UDP Source port, Destination port
+			x"00440043"         &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum
 			payload);

@@ -181,25 +181,20 @@ add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
 add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpcd_req
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpcd_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_e/mux_data
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcpdscb_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipv4sawr_frm
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipv4sawr_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipsatx_full
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/ipdatx_full
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/udplentx_full
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcpdscb_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcpdscb_ptr
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_ena
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpdscb_e/dhcppkt_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tp(1)
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/ipv4sawr_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/ipv4sawr_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpoffer_e/dhcpyia_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpoffer_e/dhcpyia_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpoffer_e/dhcp_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/udp_e/dhcpcd_e/dhcpoffer_e/dhcp_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4satx_b/satx_e/si_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4satx_b/satx_e/si_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4satx_b/satx_e/si_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4satx_b/satx_e/si_full
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4satx_b/satx_e/si_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {5989233 ps} 1} {{Cursor 2} {4755339 ps} 0}
+WaveRestoreCursors {{Cursor 1} {5989233 ps} 1} {{Cursor 2} {7428186 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 277
 configure wave -valuecolwidth 185
@@ -215,4 +210,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2867409 ps} {6542409 ps}
+WaveRestoreZoom {1211796 ps} {14673064 ps}

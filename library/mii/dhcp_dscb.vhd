@@ -143,8 +143,8 @@ begin
 		'0' when ipdatx_full='0' else 
 		dhcppkt_end;
 
-	ipv4sawr_frm  <= dhcpdscb_frm ;
-	ipv4sawr_irdy <= not ipsatx_full;
+	ipv4sawr_frm  <= dhcpdscb_frm;
+	ipv4sawr_irdy <= dhcpdscb_frm and not ipsatx_full;
 	dhcpdscb_data <= 
 		(dhcpdscb_data'range => '1') when mactx_full='0'  else
 		(dhcpdscb_data'range => '0') when ipsatx_full='0' else

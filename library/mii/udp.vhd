@@ -66,7 +66,10 @@ entity udp is
 		udptx_irdy    : out std_logic;
 		udptx_trdy    : in  std_logic;
 		udptx_end     : out std_logic;
-		udptx_data    : out std_logic_vector);
+		udptx_data    : out std_logic_vector;
+
+		tp : out std_logic_vector(1 to 32)
+	);
 end;
 
 architecture def of udp is
@@ -375,7 +378,8 @@ begin
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,
 		dhcpcdtx_end  => dhcpctx_end,
-		dhcpcdtx_data => dhcpctx_data);
+		dhcpcdtx_data => dhcpctx_data,
+	tp => tp);
 
 	dhcpciplentx_irdy <= '0' when ipdatx_full='0' else dhcpctx_irdy;
 end;

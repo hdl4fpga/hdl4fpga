@@ -217,10 +217,8 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
-				tp(1) <='0';
 			elsif hwdarx_last='1' and miirx_irdy='1' then
 				hwdarx_vld <= hwdarx_equ or bcstrx_equ;
-				tp(1) <=hwdarx_equ;
 			end if;
 		end if;
 	end process;
@@ -453,7 +451,7 @@ begin
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,
-		ipv4tx_data   => ipv4tx_data);
+		ipv4tx_data   => ipv4tx_data, tp => tp);
 
 	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
 		variable q : std_logic;
