@@ -58,10 +58,14 @@ end;
 architecture def of dhcpcd is
 
 	signal dhcpop_irdy  : std_logic;
-	signal dhcpchaddr6_irdy: std_logic;
+	signal dhcpchaddr6_irdy : std_logic;
+	signal dhcpyia_frm  : std_logic;
 	signal dhcpyia_irdy : std_logic;
 
-	signal dhcpctx_irdy : std_logic;
+	signal dhcpctx_irdy  : std_logic;
+
+	signal dscbipv4sawr_frm  : std_logic;
+	signal dscbipv4sawr_irdy : std_logic;
 
 begin
 
@@ -74,6 +78,7 @@ begin
 
 		dhcpop_irdy  => dhcpop_irdy,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
+		dhcpyia_frm  => dhcpyia_frm, 
 		dhcpyia_irdy => dhcpyia_irdy);
 
 	process (mii_clk)
@@ -98,11 +103,14 @@ begin
 		ipsatx_full   => ipsatx_full,
 		udplentx_full => udplentx_full,
 		udplentx_irdy => udplentx_irdy,
-		ipv4sawr_frm  => ipv4sawr_frm,
-		ipv4sawr_irdy => ipv4sawr_irdy,
+		ipv4sawr_frm  => dscbipv4sawr_frm,
+		ipv4sawr_irdy => dscbipv4sawr_irdy,
 		dhcpdscb_irdy => dhcpcdtx_trdy,
 		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpcdtx_data);
+
+	ipv4sawr_frm  <= dscbipv4sawr_frm  and dhcpyia_frm;
+	ipv4sawr_irdy <= dscbipv4sawr_irdy and dhcpyia_irdy;
 
 end;

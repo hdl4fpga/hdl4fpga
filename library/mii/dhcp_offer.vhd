@@ -38,6 +38,7 @@ entity dhcpc_offer is
 		dhcp_data    : in  std_logic_vector;
 		dhcpop_irdy  : out std_logic;
 		dhcpchaddr6_irdy : out std_logic;
+		dhcpyia_frm  : buffer std_logic;
 		dhcpyia_irdy : out std_logic);
 end;
 
@@ -46,7 +47,6 @@ architecture def of dhcpc_offer is
 
 	signal dhcpop_frm      : std_logic;
 	signal dhcpchaddr6_frm : std_logic;
-	signal dhcpyia_frm     : std_logic;
 
 begin
 					
