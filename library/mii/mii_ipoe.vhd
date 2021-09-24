@@ -170,6 +170,7 @@ architecture def of mii_ipoe is
 	signal tag_trdy     : std_logic;
 	signal tag_data     : std_logic_vector(miitx_data'range);
 
+		signal tp1            : std_logic_vector(1 to 32);
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -217,10 +218,17 @@ begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
+				tp(1) <= '0';
 			elsif hwdarx_last='1' and miirx_irdy='1' then
 				hwdarx_vld <= hwdarx_equ or bcstrx_equ;
+				tp(1) <= hwdarx_equ;
 			end if;
 		end if;
+	end process;
+
+	process (tp1)
+	begin
+		tp(2 to 32) <= tp1(2 to 32);
 	end process;
 
 	llc_e : entity hdl4fpga.sio_muxcmp
@@ -410,6 +418,8 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
+		tp => tp1,
+
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
@@ -451,7 +461,7 @@ begin
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,
-		ipv4tx_data   => ipv4tx_data, tp => tp);
+		ipv4tx_data   => ipv4tx_data);
 
 	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
 		variable q : std_logic;

@@ -284,9 +284,11 @@ begin
 		end process;
 		led(0) <= dhcpcd_req;
 		led(1) <= dhcpcd_rdy;
+		led(2) <= tp(2);
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
+			tp => tp,
 			mii_clk    => mii_txc,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
@@ -310,7 +312,7 @@ begin
 			miitx_irdy => miitx_irdy,
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
-			miitx_data => miitx_data, tp => tp);
+			miitx_data => miitx_data);
 
 		sioflow_e : entity hdl4fpga.sio_flow
 		port map (
@@ -366,8 +368,8 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else tp(1); -- miirx_frm;
-		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
+		sin_frm   <= tp(3)   when sw(3)='1' else mii_txen when sw(1)='1' else tp(1); -- miirx_frm;
+		sin_data  <= mii_rxd when sw(3)='1' else mii_txd  when sw(1)='1' else mii_rxd;
 
 	end block;
 

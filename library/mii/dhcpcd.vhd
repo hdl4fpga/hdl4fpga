@@ -116,10 +116,10 @@ begin
 		'0';
 	ipv4sawr_data <= 
 		(ipv4sawr_data'range => '0') when dhcpcdtx_frm='1' else
-		reverse(dhcpcdrx_data,dhcpcdrx_data'length) when dhcpyia_frm='1'  else
+		dhcpcdrx_data when dhcpyia_frm='1'  else
 		(ipv4sawr_data'range => '-');
 	
-	tp(1) <= dhcpcdrx_frm ;
+	tp(3) <= dhcpyia_frm; --dhcpcdrx_frm ;
 	tp(2) <= dhcpyia_irdy;
 
 end;

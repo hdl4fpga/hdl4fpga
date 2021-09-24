@@ -333,7 +333,7 @@ begin
 
 	udpc_e : entity hdl4fpga.sio_muxcmp
     port map (
-		mux_data  => reverse(x"0043",8),
+		mux_data  => reverse(x"0044",8),
         sio_clk   => mii_clk,
         sio_frm   => udprx_frm,
         sio_irdy  => udpdprx_irdy,
@@ -361,6 +361,7 @@ begin
 
 	dhcpcd_e: entity hdl4fpga.dhcpcd
 	port map (
+		tp => tp,
 		mii_clk       => mii_clk,
 		dhcpcdrx_frm  => dhcpcrx_frm,
 		dhcpcdrx_irdy => udprx_irdy,
@@ -380,8 +381,7 @@ begin
 		dhcpcdtx_irdy => dhcpctx_irdy,
 		dhcpcdtx_trdy => dhcpctx_trdy,
 		dhcpcdtx_end  => dhcpctx_end,
-		dhcpcdtx_data => dhcpctx_data,
-	tp => tp);
+		dhcpcdtx_data => dhcpctx_data);
 
 	dhcpciplentx_irdy <= '0' when ipdatx_full='0' else dhcpctx_irdy;
 end;

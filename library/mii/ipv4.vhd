@@ -175,6 +175,9 @@ architecture def of ipv4 is
 	signal metatx_end       : std_logic;
 	signal metatx_irdy      : std_logic;
 
+		signal ipv4sanll_vld  :std_logic := '0';
+
+		signal tp1            : std_logic_vector(1 to 32);
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -204,6 +207,7 @@ begin
 		signal ipv4sa_irdy   : std_logic;
 		signal ipv4sa_data   : std_logic_vector(ipv4rx_data'range);
 		signal ipv4bcstrx_equ  :std_logic;
+		signal ipv4sanll_equ  :std_logic;
 	begin
 
 		ipv4sa_frm  <= ipv4sarx_frm;
@@ -227,6 +231,30 @@ begin
 			so_trdy => ipv4sarx_trdy,
 			so_end  => ipv4sarx_end,
 			so_data => ipv4sa_data);
+
+		nll_e : entity hdl4fpga.sio_muxcmp
+		port map (
+			mux_data  => reverse(x"00_00_00_00",8),
+			sio_clk   => mii_clk,
+			sio_frm   => ipv4sawr_frm,
+			sio_irdy  => ipv4sawr_irdy,
+			sio_trdy  => open,
+			si_data   => ipv4sawr_data,
+			so_last   => open,
+			so_equ(0) => ipv4sanll_equ);
+
+		null_p : process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if ipv4sawr_frm='1' then
+					if ipv4satx_full='0' then
+						if ipv4sawr_irdy='1' then
+							ipv4sanll_vld <= ipv4sanll_equ;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		bcst_e : entity hdl4fpga.sio_muxcmp
 		port map (
@@ -259,11 +287,11 @@ begin
 					q  := '0';
 				elsif ipv4sarx_end='0' then
 					if ipv4sa_irdy='1' then
-						q := ipv4sarx_equ or ipv4bcstrx_equ;
+						q := ipv4sarx_equ or ipv4bcstrx_equ or ipv4sanll_vld;
 					end if;
 				end if;
 			end if;
-			ipv4da_vld   <= ipv4sarx_end and q;
+			ipv4da_vld <= ipv4sarx_end and q;
 		end process;
 
 		ipv4sard_frm  <= ipv4satx_frm  or ipv4atx_frm;
@@ -490,7 +518,13 @@ begin
 	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 	udprx_frm   <= ipv4plrx_frm and udprx_vld  and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm   and ipv4rx_irdy;
-	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
+	process (tp1)
+	begin
+		tp <= tp1;
+		tp(2) <= ipv4sanll_vld;
+	end process;
+
+--	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
 
 	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
@@ -516,6 +550,7 @@ begin
 
 	udp_e : entity hdl4fpga.udp
 	port map (
+		tp => tp1,
 		mii_clk      => mii_clk,
 		dhcpcd_req   => dhcpcd_req,
 		dhcpcd_rdy   => dhcpcd_rdy,
@@ -551,7 +586,6 @@ begin
 		udptx_trdy   => udptx_trdy,
 		udptx_end    => udptx_end ,
 		udptx_data   => udptx_data); 
-	--, tp => tp);
 
 	plrx_data <= udpplrx_data;
 end;
