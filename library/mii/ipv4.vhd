@@ -50,7 +50,6 @@ entity ipv4 is
 		ipv4sarx_trdy : buffer std_logic;
 		ipv4sarx_end  : buffer std_logic;
 		ipv4sarx_equ  : buffer std_logic;
-		ipv4bcstrx_equ  : buffer std_logic;
 
 		ipv4satx_frm  : in  std_logic;
 		ipv4satx_irdy : in  std_logic;
@@ -204,6 +203,7 @@ begin
 		signal ipv4sa_frm    : std_logic;
 		signal ipv4sa_irdy   : std_logic;
 		signal ipv4sa_data   : std_logic_vector(ipv4rx_data'range);
+		signal ipv4bcstrx_equ  :std_logic;
 	begin
 
 		ipv4sa_frm  <= ipv4sarx_frm;
@@ -490,6 +490,7 @@ begin
 	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 	udprx_frm   <= ipv4plrx_frm and udprx_vld  and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm   and ipv4rx_irdy;
+	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
 
 	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
@@ -549,8 +550,8 @@ begin
 		udptx_irdy   => udptx_irdy,
 		udptx_trdy   => udptx_trdy,
 		udptx_end    => udptx_end ,
-		udptx_data   => udptx_data,
-	tp => tp);
+		udptx_data   => udptx_data); 
+	--, tp => tp);
 
 	plrx_data <= udpplrx_data;
 end;

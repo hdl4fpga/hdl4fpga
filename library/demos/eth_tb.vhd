@@ -92,13 +92,13 @@ architecture def of eth_tb is
 		x"0000"                 &    -- IP Fragmentation
 		x"0511"                 &    -- IP TTL, protocol
 		x"0000"                 &    -- IP Header Checksum
-		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
+		x"c0a80001"             &    -- IP Source IP address
+		x"ffffffff"             &    -- IP Destiantion IP Address
 
 		udp_checksummed (
 			x"ffffffff",             -- IP Source IP address
 			x"c0a8000e",             -- IP Destiantion IP Address
-			x"00440043"         &    -- UDP Source port, Destination port
+			x"00430044"         &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum
 			payload);
