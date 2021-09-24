@@ -39,11 +39,7 @@ entity dhcpc_dscb is
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
 
-		ipv4sawr_frm  : out std_logic := '0';
-		ipv4sawr_irdy : out std_logic := '0';
-
 		mactx_full    : in  std_logic := '1';
-		ipsatx_full   : in  std_logic := '1';
 		ipsatx_irdy   : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
 		ipdatx_irdy   : in  std_logic := '1';
@@ -135,7 +131,6 @@ begin
         so_data  => dhcppkt_data);
 
 	dhcpdscb_trdy <= 
-		ipsatx_irdy when ipsatx_full='0' else 
 		ipdatx_irdy when ipdatx_full='0' else 
 		dhcppkt_trdy;
 
@@ -143,11 +138,8 @@ begin
 		'0' when ipdatx_full='0' else 
 		dhcppkt_end;
 
-	ipv4sawr_frm  <= dhcpdscb_frm;
-	ipv4sawr_irdy <= dhcpdscb_frm and not ipsatx_full;
 	dhcpdscb_data <= 
 		(dhcpdscb_data'range => '1') when mactx_full='0'  else
-		(dhcpdscb_data'range => '0') when ipsatx_full='0' else
 		(dhcpdscb_data'range => '1') when ipdatx_full='0' else
 		dhcppkt_data                 when dhcppkt_ena='1' else
 		(dhcpdscb_data'range => '0');

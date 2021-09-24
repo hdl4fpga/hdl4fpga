@@ -50,6 +50,7 @@ entity ipv4 is
 		ipv4sarx_trdy : buffer std_logic;
 		ipv4sarx_end  : buffer std_logic;
 		ipv4sarx_equ  : buffer std_logic;
+		ipv4bcstrx_equ  : buffer std_logic;
 
 		ipv4satx_frm  : in  std_logic;
 		ipv4satx_irdy : in  std_logic;
@@ -96,6 +97,7 @@ architecture def of ipv4 is
 	signal ipv4atx_data     : std_logic_vector(pltx_data'range);
 	signal ipv4atx_end      : std_logic;
 	signal ipv4da_vld       : std_logic;
+	signal ipv4bcst_vld     : std_logic;
 	signal ipv4plrx_frm     : std_logic;
 	signal ipv4plrx_irdy    : std_logic;
 
@@ -142,6 +144,7 @@ architecture def of ipv4 is
 	signal ipv4darx_irdy    : std_logic;
 	signal ipv4sawr_frm     : std_logic;
 	signal ipv4sawr_irdy    : std_logic;
+	signal ipv4sawr_data    : std_logic_vector(ipv4rx_data'range);
 
 	signal ipv4satx_full    : std_logic;
 	signal ipv4datx_full    : std_logic;
@@ -216,7 +219,7 @@ begin
 			si_irdy => ipv4sawr_irdy,
 			si_trdy => open,
 			si_full => open,
-			si_data => pltx_data,
+			si_data => ipv4sawr_data,
 
 			so_clk  => mii_clk,
 			so_frm  => ipv4sa_frm,
@@ -224,6 +227,17 @@ begin
 			so_trdy => ipv4sarx_trdy,
 			so_end  => ipv4sarx_end,
 			so_data => ipv4sa_data);
+
+		bcst_e : entity hdl4fpga.sio_muxcmp
+		port map (
+			mux_data  => reverse(x"ff_ff_ff_ff",8),
+			sio_clk   => mii_clk,
+			sio_frm   => ipv4sa_frm,
+			sio_irdy  => ipv4sa_irdy,
+			sio_trdy  => open,
+			si_data   => ipv4rx_data,
+			so_last   => open,
+			so_equ(0) => ipv4bcstrx_equ);
 
 		sarxcmp_e : entity hdl4fpga.sio_cmp
 		port map (
@@ -242,14 +256,14 @@ begin
 		begin
 			if rising_edge(mii_clk) then
 				if ipv4rx_frm='0' then
-					q := '0';
+					q  := '0';
 				elsif ipv4sarx_end='0' then
 					if ipv4sa_irdy='1' then
-						q := ipv4sarx_equ;
+						q := ipv4sarx_equ or ipv4bcstrx_equ;
 					end if;
 				end if;
 			end if;
-			ipv4da_vld <= ipv4sarx_end and q;
+			ipv4da_vld   <= ipv4sarx_end and q;
 		end process;
 
 		ipv4sard_frm  <= ipv4satx_frm  or ipv4atx_frm;
@@ -264,7 +278,7 @@ begin
 			si_irdy => ipv4sawr_irdy,
 			si_trdy => open,
 			si_full => ipv4satx_full,
-			si_data => pltx_data,
+			si_data => ipv4sawr_data,
 
 			so_clk  => mii_clk,
 			so_frm  => ipv4sard_frm,
@@ -304,7 +318,6 @@ begin
 		ipdatx_irdy     <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt)(0);
 		udpipdatx_irdy  <= 
 			'0' when mactx_full='0'    else
-			'0' when (ipv4sawr_frm and not ipv4satx_full)='1' else
 			'1';
 		icmpipdatx_irdy <= '0' when iplentx_full='0' else '1';
 
@@ -525,6 +538,7 @@ begin
 
 		ipv4sawr_frm  => ipv4sawr_frm,
 		ipv4sawr_irdy => ipv4sawr_irdy,
+		ipv4sawr_data => ipv4sawr_data,
 
 		udptx_frm    => udptx_frm,
 		mactx_full   => mactx_full,

@@ -40,6 +40,7 @@ entity dhcpcd is
 
 		ipv4sawr_frm  : out std_logic := '0';
 		ipv4sawr_irdy : out std_logic := '0';
+		ipv4sawr_data : out std_logic_vector;
 
 		dhcpcdtx_frm  : buffer std_logic;
 		mactx_full    : in  std_logic := '1';
@@ -101,18 +102,23 @@ begin
 		dhcpdscb_frm  => dhcpcdtx_frm,
 		mactx_full    => mactx_full,
 		ipdatx_full   => ipdatx_full,
-		ipsatx_full   => ipsatx_full,
 		udplentx_full => udplentx_full,
 		udplentx_irdy => udplentx_irdy,
-		ipv4sawr_frm  => dscbipv4sawr_frm,
-		ipv4sawr_irdy => dscbipv4sawr_irdy,
 		dhcpdscb_irdy => dhcpcdtx_trdy,
 		dhcpdscb_trdy => dhcpcdtx_irdy,
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpcdtx_data);
 
-	ipv4sawr_frm  <= dscbipv4sawr_frm  or dhcpyia_frm;
-	ipv4sawr_irdy <= dscbipv4sawr_irdy or dhcpyia_irdy;
+	ipv4sawr_frm  <= dhcpcdtx_frm or dhcpyia_frm;
+	ipv4sawr_irdy <= 
+		'1'          when dhcpcdtx_frm='1' else
+		dhcpyia_irdy when dhcpyia_frm='1'  else
+		'0';
+	ipv4sawr_data <= 
+		(ipv4sawr_data'range => '0') when dhcpcdtx_frm='1' else
+		reverse(dhcpcdrx_data,dhcpcdrx_data'length) when dhcpyia_frm='1'  else
+		(ipv4sawr_data'range => '-');
+	
 	tp(1) <= dhcpcdrx_frm ;
 	tp(2) <= dhcpyia_irdy;
 
