@@ -37,7 +37,7 @@ entity txn_buffer is
 		src_irdy    : in  std_logic;
 		src_trdy    : out std_logic;
 		src_end     : in  std_logic := '0';
-		src_tag     : in  std_logic_vector(0 to n-1) := (0 to 0 => '-');
+		src_tag     : in  std_logic_vector(0 to n-1) := (0 to n-1 => '-');
 		src_data    : in  std_logic_vector;
 		rollback    : in  std_logic;
 		commit      : in  std_logic;
@@ -46,7 +46,7 @@ entity txn_buffer is
 		dst_irdy    : in std_logic;
 		dst_trdy    : buffer std_logic;
 		dst_end     : out std_logic;
-		dst_tag     : inout  std_logic_vector(0 to n-1) := (0 to 0 => '-');
+		dst_tag     : out std_logic_vector(0 to n-1);
 		dst_data    : out std_logic_vector);
 end;
 
