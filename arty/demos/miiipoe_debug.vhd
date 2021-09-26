@@ -179,10 +179,11 @@ begin
 		signal si_req : bit;
 		signal si_rdy : bit;
 		constant txpkt  : std_logic_vector := reverse(
-			x"ff_ff_ff_ff_ff_ff" &  -- MAC address 
-			x"ff_ff_ff_ff"       &  -- IP address
-			x"00450046"          &  -- UDP ports
-			reverse(x"0001")     &  -- payload length
+			x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address 
+			x"ff_ff_ff_ff"       &  -- Destination IP address
+			x"dea9"              &  -- UDP source port
+			x"de00"              &  -- UDP destination port
+			reverse(x"0001")     &  -- Payload length
 			x"77",8);
 	begin
 
@@ -200,13 +201,15 @@ begin
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if (si_req xor si_rdy)='0' then
+				if si_frm='0' then
 					si_req <= si_rdy xor ((to_bit(btn(3)) and si_rdy) or (to_bit(btn(2)) and not si_rdy));
-				elsif si_trdy='1' then
-					si_req <= to_bit(si_end) xnor si_rdy;
+				elsif (si_trdy and si_end)='1' then
+					si_rdy <= si_req;
 				end if;
 			end if;
 		end process;
+		led(0) <= to_stdulogic(si_req);
+		led(1) <= to_stdulogic(si_rdy);
 
 		si_frm <= to_stdulogic(si_req xor si_rdy);
 		eth2_e: entity hdl4fpga.sio_mux
@@ -276,7 +279,6 @@ begin
 				end if;
 			end if;
 		end process;
-		led(0) <= dhcpcd_req xor dhcpcd_rdy;
 		led(2) <= tp(2);
 
 		du_e : entity hdl4fpga.mii_ipoe
