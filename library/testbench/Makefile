@@ -65,8 +65,6 @@ HDL4FPGA__sio_muxcmp__def = $(LIB_HDL4FPGA)/sio_muxcmp/def.dat
 HDL4FPGA__sio_muxcmp = $(LIB_HDL4FPGA)/sio_muxcmp/_primary.dat
 HDL4FPGA__sio_mux__def = $(LIB_HDL4FPGA)/sio_mux/def.dat
 HDL4FPGA__sio_mux = $(LIB_HDL4FPGA)/sio_mux/_primary.dat
-HDL4FPGA__sio_lifo__def = $(LIB_HDL4FPGA)/sio_lifo/def.dat
-HDL4FPGA__sio_lifo = $(LIB_HDL4FPGA)/sio_lifo/_primary.dat
 HDL4FPGA__sio_hdlc__def = $(LIB_HDL4FPGA)/sio_hdlc/def.dat
 HDL4FPGA__sio_hdlc = $(LIB_HDL4FPGA)/sio_hdlc/_primary.dat
 HDL4FPGA__sio_flow__struct = $(LIB_HDL4FPGA)/sio_flow/struct.dat
@@ -289,8 +287,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__sio_muxcmp) \
     $(HDL4FPGA__sio_mux__def) \
     $(HDL4FPGA__sio_mux) \
-    $(HDL4FPGA__sio_lifo__def) \
-    $(HDL4FPGA__sio_lifo) \
     $(HDL4FPGA__sio_hdlc__def) \
     $(HDL4FPGA__sio_hdlc) \
     $(HDL4FPGA__sio_flow__struct) \
@@ -1025,7 +1021,7 @@ $(HDL4FPGA__hdlcsync_tx__def) : ../hdlc/hdlcsync_tx.vhd \
 $(HDL4FPGA__icmpd) \
 $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
 		$(HDL4FPGA__icmprply_tx) \
-		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__icmprqst_rx) \
@@ -1085,13 +1081,13 @@ $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__udp) \
 		$(HDL4FPGA__icmpd) \
-		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__ipv4_tx) \
 		$(HDL4FPGA__sio_ff) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_cmp) \
+		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__ipv4_rx) \
 		$(HDL4FPGA__ipoepkg) \
@@ -1343,13 +1339,10 @@ $(HDL4FPGA__sio_ff__def) : ../sio/sio_ff.vhd \
 
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
-		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__sio_ram) \
-		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_sin) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -1361,7 +1354,6 @@ $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 $(HDL4FPGA__sio_hdlc) \
 $(HDL4FPGA__sio_hdlc__def) : ../sio/sio_hdlc.vhd \
 		$(HDL4FPGA__hdlcdll_tx) \
-		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__hdlcdll_rx) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -1369,16 +1361,6 @@ $(HDL4FPGA__sio_hdlc__def) : ../sio/sio_hdlc.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_hdlc.vhd
-
-$(HDL4FPGA__sio_lifo) \
-$(HDL4FPGA__sio_lifo__def) : ../sio/sio_lifo.vhd \
-		$(HDL4FPGA__dpram) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../sio/sio_lifo.vhd
 
 $(HDL4FPGA__sio_mux) \
 $(HDL4FPGA__sio_mux__def) : ../sio/sio_mux.vhd \
@@ -1431,9 +1413,9 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 $(HDL4FPGA__sio_tag) \
 $(HDL4FPGA__sio_tag__def) : ../sio/sio_tag.vhd \
 		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__sio_mux) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
+		$(HDL4FPGA__sio_mux) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

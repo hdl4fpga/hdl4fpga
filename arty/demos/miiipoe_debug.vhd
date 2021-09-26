@@ -176,14 +176,14 @@ begin
 		signal dhcpcd_req : std_logic;
 		signal dhcpcd_rdy : std_logic;
 
-		signal pltx_req : bit;
-		signal pltx_rdy : bit;
-		constant txpkt  : std_logic_vector := 
-			x"ff_ff_ff_ff_ff_ff"   &  -- MAC address 
-			x"0001"                &  -- payload length
-			x"ff_ff_ff_ff"         &  -- IP address
-			reverse(x"00450046",8) &  -- UDP ports
-			reverse(x"778899aabbccddee00ff1122334455667799",8);
+		signal si_req : bit;
+		signal si_rdy : bit;
+		constant txpkt  : std_logic_vector := reverse(
+			x"ff_ff_ff_ff_ff_ff" &  -- MAC address 
+			x"ff_ff_ff_ff"       &  -- IP address
+			x"00450046"          &  -- UDP ports
+			reverse(x"0001")     &  -- payload length
+			x"77",8);
 	begin
 
 
@@ -191,35 +191,31 @@ begin
 		port map (
 			mii_frm1 => '0', --btn(1),
 			mii_frm2 => '0', --btn(1),
-			mii_frm3 => btn(1),
+			mii_frm3 => '0', --btn(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
-
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if pltx_req='0' then
-					pltx_req <= to_bit(btn(2));
-				else
-					pltx_req <= not to_bit(btn(3));
-				end if;
-				if (pltx_end and miitx_end)='1' then
-					pltx_rdy <= pltx_req;
+				if (si_req xor si_rdy)='0' then
+					si_req <= si_rdy xor ((to_bit(btn(3)) and si_rdy) or (to_bit(btn(2)) and not si_rdy));
+				elsif si_trdy='1' then
+					si_req <= to_bit(si_end) xnor si_rdy;
 				end if;
 			end if;
 		end process;
 
-		--pltx_frm <= to_stdulogic(pltx_req xor pltx_rdy);
+		si_frm <= to_stdulogic(si_req xor si_rdy);
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
 			mux_data => txpkt,
 			sio_clk  => mii_txc,
 			sio_frm  => si_frm,
-			sio_irdy => si_irdy,
-			sio_trdy => open, --si_trdy,
+			sio_irdy => si_trdy,
+			sio_trdy => si_irdy,
 			so_end   => si_end,
 			so_data  => si_data);
 
@@ -275,15 +271,12 @@ begin
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				if to_stdulogic(to_bit(dhcpcd_req))='0' then
-					dhcpcd_req <= to_stdulogic(to_bit(btn(0)));
-				else
-					dhcpcd_req <= not to_stdulogic(to_bit(btn(3)));
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
 				end if;
 			end if;
 		end process;
-		led(0) <= dhcpcd_req;
-		led(1) <= dhcpcd_rdy;
+		led(0) <= dhcpcd_req xor dhcpcd_rdy;
 		led(2) <= tp(2);
 
 		du_e : entity hdl4fpga.mii_ipoe
