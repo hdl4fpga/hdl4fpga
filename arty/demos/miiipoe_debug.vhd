@@ -88,8 +88,6 @@ architecture miiipoe_debug of arty is
 
 	constant mem_size  : natural := 8*(1024*8);
 
-		signal hxdv   : std_logic;
-		signal hxd    : std_logic_vector(eth_rxd'range);
 begin
 
 	clkin_ibufg : ibufg
@@ -185,33 +183,44 @@ begin
 			x"de00"              &  -- UDP destination port
 			reverse(x"0001")     &  -- Payload length
 			x"77",8);
+
+		signal hxdv   : std_logic;
+		signal hxd    : std_logic_vector(eth_rxd'range);
+
+		signal si_btn2 : std_logic;
+		signal si_btn3 : std_logic;
+		signal htb_btn2 : std_logic;
+
 	begin
 
 
+		htb_btn2 <= btn(2) when sw(3 downto 2)="01" else '0';
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1 => '0', --btn(1),
 			mii_frm2 => '0', --btn(1),
 			mii_frm3 => '0', --btn(1),
+			mii_frm4 => htb_btn2,
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
+		si_btn2 <= btn(2) when sw(3 downto 0)="00" else '0';
+		si_btn3 <= btn(3) when sw(3 downto 0)="00" else '0';
+
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				if si_frm='0' then
-					si_req <= si_rdy xor ((to_bit(btn(3)) and si_rdy) or (to_bit(btn(2)) and not si_rdy));
+					si_req <= si_rdy xor ((to_bit(si_btn3) and si_rdy) or (to_bit(si_btn2) and not si_rdy));
 				elsif (si_trdy and si_end)='1' then
 					si_rdy <= si_req;
 				end if;
 			end if;
 		end process;
-		led(0) <= to_stdulogic(si_req);
-		led(1) <= to_stdulogic(si_rdy);
-
 		si_frm <= to_stdulogic(si_req xor si_rdy);
+
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
 			mux_data => txpkt,
@@ -363,8 +372,8 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= tp(3)   when sw(3)='1' else mii_txen when sw(1)='1' else tp(1); -- miirx_frm;
-		sin_data  <= mii_rxd when sw(3)='1' else mii_txd  when sw(1)='1' else mii_rxd;
+		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
+		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
 	end block;
 

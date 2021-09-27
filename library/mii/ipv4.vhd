@@ -38,6 +38,8 @@ entity ipv4 is
 		mii_clk       : in  std_logic;
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
+		arp_req       : out std_logic;
+		arp_rdy       : in  std_logic;
 
 		dll_frm       : in  std_logic := '1';
 		dll_irdy      : in  std_logic := '1';
@@ -554,6 +556,8 @@ begin
 		mii_clk      => mii_clk,
 		dhcpcd_req   => dhcpcd_req,
 		dhcpcd_rdy   => dhcpcd_rdy,
+		arp_req      => arp_req,
+		arp_rdy      => arp_rdy,
 
 		udprx_frm    => udprx_frm,
 		udprx_irdy   => ipv4rx_irdy,

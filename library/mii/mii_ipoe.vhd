@@ -147,13 +147,10 @@ architecture def of mii_ipoe is
 	signal ipv4satx_end  : std_logic;
 	signal ipv4satx_data : std_logic_vector(miitx_data'range);
 
-	signal arpdtx_req    : std_logic;
-	signal arpdtx_rdy    : std_logic;
-
 	signal metatx_irdy   : wor std_logic;
 	signal metatx_end    : wor std_logic;
 	signal mactx_irdy    : wor std_logic;
-	signal mactx_full     : wor std_logic;
+	signal mactx_full    : wor std_logic;
 
 
 	signal fifo_irdy     : std_logic;
@@ -164,13 +161,16 @@ architecture def of mii_ipoe is
 	signal fifo_cmmt     : std_logic;
 	signal fifo_rllbk    : std_logic;
 
-	signal tag_frm      : std_logic;
-	signal tag_end      : std_logic;
-	signal tag_irdy     : std_logic;
-	signal tag_trdy     : std_logic;
-	signal tag_data     : std_logic_vector(miitx_data'range);
+	signal tag_frm       : std_logic;
+	signal tag_end       : std_logic;
+	signal tag_irdy      : std_logic;
+	signal tag_trdy      : std_logic;
+	signal tag_data      : std_logic_vector(miitx_data'range);
 
-		signal tp1            : std_logic_vector(1 to 32);
+	signal arp_req       : std_logic;
+	signal arp_rdy       : std_logic;
+
+	signal tp1           : std_logic_vector(1 to 32);
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -382,15 +382,14 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
-	arpdtx_req <= arpdtx_rdy;
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
 		hwsa       => my_mac)
 	port map (
 		mii_clk    => mii_clk,
 
-		arpdtx_req => arpdtx_req,
-		arpdtx_rdy => arpdtx_rdy,
+		arpdtx_req => arp_req,
+		arpdtx_rdy => arp_rdy,
 		arprx_frm  => arprx_frm,
 		arprx_irdy => miirx_irdy,
 		arprx_data => miirx_data,
@@ -423,6 +422,8 @@ begin
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
+		arp_req       => arp_req,
+		arp_rdy       => arp_rdy,
 
 		dll_frm       => miirx_frm,
 		dll_irdy      => hwsarx_irdy,

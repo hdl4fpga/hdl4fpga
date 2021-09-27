@@ -208,15 +208,18 @@ begin
 						q <= '0';
 						v <= '0';
 					else
-						if v='1' then
+						if dst_trdy='1' then
+							if v='0' then
+								q <= '0';
+							end if;
+						elsif v='1' then
 							q <= '1';
-						elsif (dst_trdy and dst_irdy)='1' then
-							q <= '0';
 						end if;
 
 						if v='1' then
 							data <= rdata;
 						end if;
+
 						v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 					end if;
 				end if;
@@ -224,7 +227,7 @@ begin
 
 			dst_irdy <= v or q;
 			fill     <= not v and not q;
-			dst_data <= primux(rdata & data, v & q, data);
+			dst_data <= primux(data & rdata, q & v, rdata);
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
 		end generate;
 

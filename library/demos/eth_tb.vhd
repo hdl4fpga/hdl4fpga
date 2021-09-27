@@ -33,6 +33,7 @@ entity eth_tb is
 		mii_frm1  : in  std_logic := '0';
 		mii_frm2  : in  std_logic := '0';
 		mii_frm3  : in  std_logic := '0';
+		mii_frm4  : in  std_logic := '0';
 
 		mii_txc   : in  std_logic;
 		mii_txen  : buffer std_logic;
@@ -71,7 +72,6 @@ architecture def of eth_tb is
 		x"00000000" &
 		x"ffffffaa" ;
 
---	constant payload : std_logic_vector := x"0100ff";
 	constant payload : std_logic_vector := 
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
@@ -103,6 +103,25 @@ architecture def of eth_tb is
 			x"0000" &              -- UPD checksum
 			payload);
 
+	constant pyld1 : std_logic_vector := x"0100ff";
+	constant pkt1 : std_logic_vector := 
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0511"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+
+		udp_checksummed (
+			x"ffffffff",             -- IP Source IP address
+			x"c0a8000e",             -- IP Destiantion IP Address
+			x"5ff5affa"         &    -- UDP Source port, Destination port
+			std_logic_vector(to_unsigned(pyld1'length/8+8,16))    & -- UDP Length,
+			x"0000" &              -- UPD checksum
+			pyld1);
+
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
 	signal eth1_end   : std_logic;
 
@@ -111,6 +130,9 @@ architecture def of eth_tb is
 
 	signal eth3_end   : std_logic;
 	signal eth3_txd   : std_logic_vector(mii_txd'range);
+
+	signal eth4_end   : std_logic;
+	signal eth4_txd   : std_logic_vector(mii_txd'range);
 
 	signal eth_llc    : std_logic_vector(0 to 16-1);
 
@@ -166,9 +188,18 @@ begin
 		so_end   => eth3_end,
         so_data  => eth3_txd);
 
-	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end, mii_frm1 & mii_frm2 & mii_frm3)(0);
-	pl_data <= wirebus(eth1_txd & eth2_txd & eth3_txd, mii_frm1 & mii_frm2 & mii_frm3);
-	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800" & x"0800"), mii_frm1 & mii_frm2 & mii_frm3); -- Qualified expression required by Latticesemi Diamond
+	eth4_e: entity hdl4fpga.sio_mux
+	port map (
+		mux_data => reverse(pkt1,8),
+        sio_clk  => mii_txc,
+        sio_frm  => mii_frm4,
+		sio_irdy => pl_trdy,
+		so_end   => eth4_end,
+        so_data  => eth4_txd);
+
+	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end & eth4_end, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4)(0);
+	pl_data <= wirebus(eth1_txd & eth2_txd & eth3_txd & eth4_txd, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4);
+	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800" & x"0800" & x"0800"), mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4); -- Qualified expression required by Latticesemi Diamond
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';
@@ -180,7 +211,7 @@ begin
 						frm := '0';
 					end if;
 				end if;
-			elsif ((mii_frm1 and not eth1_end) or (mii_frm2 and not eth2_end) or (mii_frm3 and not eth3_end))='1' then
+			elsif ((mii_frm1 and not eth1_end) or (mii_frm2 and not eth2_end) or (mii_frm3 and not eth3_end) or (mii_frm4 and not eth4_end))='1' then
 				frm := '1';
 			end if;
 		end if;
@@ -220,19 +251,5 @@ begin
 
 	mii_txen <= miirx_frm and not miirx_end;
 	mii_txd  <= miirx_data;
-
---	du_e : entity hdl4fpga.mii_ipoe
---	port map (
---		mii_clk       => mii_txc,
---		miirx_frm     => miirx_frm,
---		miirx_irdy    => miirx_irdy,
---		miirx_trdy    => miirx_trdy,
---		miirx_data    => miirx_data,
---
---		miitx_frm     => miitx_frm,
---		miitx_irdy    => miitx_irdy,
---		miitx_trdy    => '1', --miitx_trdy,
---		miitx_end     => miitx_end,
---		miitx_data    => miitx_data);
 
 end;

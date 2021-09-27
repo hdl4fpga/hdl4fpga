@@ -49,8 +49,8 @@ begin
 	rst  <= '1', '0' after 1000 ns;
 	btn0 <= '0', '1' after 2000 ns;
 	btn1 <= 
-		'0',                 '1' after  2.000 us,
-		'0' after  13.750 us, '1' after  13.8 us; --,
+		'0',                 '1' after  2.000 us; --,
+--		'0' after  13.750 us, '1' after  13.8 us; --,
 --		'0' after 14.625 us, '1' after 14.700 us;
 
 	du_e : entity work.arty(miiipoe_debug)
@@ -62,10 +62,10 @@ begin
 		gclk100 => clk,
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
-		sw => "0010",
+		sw => "0110",
 		btn(0) => '0', --btn0,
-		btn(1) => btn1,
-		btn(2) => '0',
+		btn(1) => '0', --btn1,
+		btn(2) => btn1,
 		btn(3) => '0'); --btn1);
 
 	ref_clk1 <= ref_clk;

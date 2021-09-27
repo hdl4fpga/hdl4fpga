@@ -35,6 +35,9 @@ entity dhcpcd is
 		dhcpcdrx_irdy : in  std_logic;
 		dhcpcdrx_data : in  std_logic_vector;
 
+		arp_req       : buffer std_logic := '0';
+		arp_rdy       : in  std_logic := '0';
+
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
@@ -84,7 +87,23 @@ begin
 		dhcpyia_irdy => dhcpyia_irdy);
 
 	process (mii_clk)
-		variable q : std_logic;
+		variable req : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if to_bit(arp_req xor arp_rdy)='0' then
+				if dhcpyia_frm='0' then
+					arp_req <= req xor arp_rdy;
+					req     := '0';
+				elsif dhcpyia_frm='1' then
+					req := '1';
+				end if;
+			elsif dhcpyia_frm='1' then
+				req := '1';
+			end if;
+		end if;
+	end process;
+
+	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if (dhcpcd_req xor dhcpcd_rdy)='1' then

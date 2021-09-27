@@ -180,7 +180,7 @@ begin
 	end process;
 
 	ackrply_data <= reverse(
-		"0003" &
+		reverse(x"0003") &
 		x"01" & x"00" & ackrx_data, 8);
 
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
