@@ -119,6 +119,7 @@ begin
 		latencygt1_g : if latency > 1 generate
 			signal fill  : std_logic;
 			signal q_reg : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
+			signal b_reg : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
 			signal v_req : unsigned(0 to latency-1) := (others => '0'); -- XILINX synthesys BUG
 		begin
 
@@ -130,6 +131,7 @@ begin
 				variable data : unsigned(0 to dst_data'length*q'length-1);
 			begin
 				if rising_edge(dst_clk) then
+				--	slr(dst_data'length*(v'length-1) to dst_data'length*(v'length)-1) := unsigned(rdata);
 					slr(dst_data'length*((v'length-1)-1) to dst_data'length*((v'length-1))-1) := unsigned(rdata);
 
 					if dst_ini='1' then
@@ -187,6 +189,7 @@ begin
 					slr      := slr sll dst_data'length;
 					v        := v sll 1;
 
+					b_reg <= b;
 					q_reg <= q;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 					v_req <= v;   -- avoids XILINX ISE's synthesys BUG of using latch instead of register
 				end if;

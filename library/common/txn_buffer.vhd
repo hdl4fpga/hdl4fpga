@@ -35,7 +35,7 @@ entity txn_buffer is
 		src_clk     : in  std_logic;
 		src_frm     : in  std_logic;
 		src_irdy    : in  std_logic;
-		src_trdy    : out std_logic;
+		src_trdy    : buffer std_logic;
 		src_end     : in  std_logic := '0';
 		src_tag     : in  std_logic_vector(0 to n-1) := (0 to n-1 => '-');
 		src_data    : in  std_logic_vector;
@@ -68,7 +68,8 @@ begin
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => 128,
-		latency   => 1,
+		latency   => 3,
+		check_sov => true,
 		check_dov => true)
 	port map(
 		src_clk   => src_clk,
@@ -92,7 +93,7 @@ begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
 				cntr := (others => '0');
-			elsif src_irdy='1' then
+			elsif (src_irdy and src_trdy and not src_end)='1' then
 				cntr := cntr + 1;
 			end if;
 			q := (src_frm and not src_end);
@@ -128,11 +129,9 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if dst_frm='1' then
-				if dst_irdy='1' then
-					if dst_trdy='1' then
-						if cntr <= unsigned(tx_data(0 to 6)) then
-							cntr := cntr + 1;
-						end if;
+				if (dst_irdy and dst_trdy)='1' then
+					if cntr <= unsigned(tx_data(0 to 6)) then
+						cntr := cntr + 1;
 					end if;
 				end if;
 			else

@@ -183,8 +183,8 @@ begin
 
 	begin
 
-		dprx_irdy <= '0' when ipdatx_full='0' else pltx_irdy;
-		udpiplentx_irdy <= '0' when sp_full='0' else pltx_irdy;
+		dprx_irdy <= '0' when sp_full='0' else pltx_irdy;
+		udpiplentx_irdy <= '0' when dp_full='0' else pltx_irdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -203,7 +203,7 @@ begin
 			so_end  => dp_end,
 			so_data => dp_data);
 
-		sprx_irdy <= '0' when dp_full='0' else pltx_irdy;
+		sprx_irdy <= '0' when ipdatx_full='0' else pltx_irdy;
 		udpsp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -230,7 +230,7 @@ begin
 			signal datai      : std_logic_vector(0 to 16-1);
 		begin
 
-			lenrx_irdy <= '0' when sp_full='0' else pltx_irdy;
+			lenrx_irdy <= '0' when dp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length),
@@ -281,7 +281,7 @@ begin
 				so_data  => len_data);
 
 			ppltx_data <= 
-				pltx_data when sp_full='0'  else 
+				pltx_data when dp_full='0'  else 
 				len_datai when udplentx_full='0' else
 				pltx_data;
 

@@ -267,7 +267,7 @@ begin
 			end if;
 		end if;
 	end process;
-	iprx_frm <= miirx_frm and iprx_vld;
+	iprx_frm <= miirx_frm and iprx_vld and hwdarx_vld;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
