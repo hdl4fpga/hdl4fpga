@@ -465,17 +465,17 @@ begin
 		ipv4tx_data   => ipv4tx_data);
 
 	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
-		variable q : std_logic;
+		variable q : bit;
 	begin
 		if rising_edge(mii_clk) then
 			if fcs_sb='1' then
-				q        := '0';
+				q := '0';
 			elsif ipv4plrx_cmmt='1' then
 				q := '1';
 			end if;
 		end if;
-		fifo_cmmt  <= fcs_sb and     (fcs_vld and q);
-		fifo_rllbk <= fcs_sb and not (fcs_vld and q);
+		fifo_cmmt  <= fcs_sb and     (fcs_vld and to_stdulogic(q));
+		fifo_rllbk <= fcs_sb and not (fcs_vld and to_stdulogic(q));
 	end process;
 
 	process (fifo_end, mii_clk)

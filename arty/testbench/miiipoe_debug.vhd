@@ -49,9 +49,9 @@ begin
 	rst  <= '1', '0' after 1000 ns;
 	btn0 <= '0', '1' after 2000 ns;
 	btn1 <= 
-		'0',                 '1' after  2.000 us; --,
---		'0' after  13.750 us, '1' after  13.8 us; --,
---		'0' after 14.625 us, '1' after 14.700 us;
+		'0',                 '1' after  2.000 us,
+		'0' after  8.750 us, '1' after  8.8 us,
+		'0' after 15.725 us, '1' after 15.800 us;
 
 	du_e : entity work.arty(miiipoe_debug)
 	port map (

@@ -60,9 +60,9 @@ architecture def of eth_tb is
 		x"0000"                 &    -- IP Fragmentation
 		x"0501"                 &    -- IP TTL, protocol
 		x"0000"                 &    -- IP Header Checksum
-		x"ffffffff"             &    -- IP Source IP address
+		x"d0a10004"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
-		x"5555aa00" &
+		x"555500af" &
 		x"01020304" &
 		x"00000000" &
 		x"00000000" &

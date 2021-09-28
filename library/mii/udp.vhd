@@ -36,8 +36,9 @@ entity udp is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
 
-		arp_req       : out std_logic;
-		arp_rdy       : in  std_logic;
+		arp_req       : buffer std_logic := '0';
+		arp_rdy       : in  std_logic := '0';
+
 		udprx_frm     : in  std_logic;
 		udprx_irdy    : in  std_logic;
 		udprx_data    : in  std_logic_vector;
@@ -182,7 +183,7 @@ begin
 
 	begin
 
-		dprx_irdy <= '0' when sp_full='0' else pltx_irdy;
+		dprx_irdy <= '0' when ipdatx_full='0' else pltx_irdy;
 		udpiplentx_irdy <= '0' when sp_full='0' else pltx_irdy;
 		udpdp_e : entity hdl4fpga.sio_ram
 		generic map (
@@ -202,7 +203,7 @@ begin
 			so_end  => dp_end,
 			so_data => dp_data);
 
-		sprx_irdy <= '0' when ipdatx_full='0' else pltx_irdy;
+		sprx_irdy <= '0' when dp_full='0' else pltx_irdy;
 		udpsp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
@@ -229,7 +230,7 @@ begin
 			signal datai      : std_logic_vector(0 to 16-1);
 		begin
 
-			lenrx_irdy <= '0' when dp_full='0' else pltx_irdy;
+			lenrx_irdy <= '0' when sp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length),
@@ -368,10 +369,10 @@ begin
 		dhcpcdrx_frm  => dhcpcrx_frm,
 		dhcpcdrx_irdy => udprx_irdy,
 		dhcpcdrx_data => udprx_data,
-		arp_req       => arp_req,
-		arp_rdy       => arp_rdy,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
+		arp_req       => arp_req,
+		arp_rdy       => arp_rdy,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
 		mactx_full    => mactx_full,
