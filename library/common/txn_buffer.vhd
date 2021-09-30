@@ -67,8 +67,9 @@ begin
 	data_trdy <= dst_irdy and dst_frm;
 	data_e : entity hdl4fpga.fifo
 	generic map (
+		debug => true,
 		max_depth => 128,
-		latency   => 3,
+		latency   => 1,
 		check_sov => true,
 		check_dov => true)
 	port map(
