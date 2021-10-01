@@ -69,7 +69,7 @@ begin
 	generic map (
 		debug => true,
 		max_depth => 128,
-		latency   => 1,
+		latency   => 2,
 		check_sov => true,
 		check_dov => true)
 	port map(
