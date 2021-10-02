@@ -116,57 +116,54 @@ begin
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
 
-		latencygt1_g : if debug or latency > 1 generate
-			signal fill  : std_logic;
-			signal b_reg : unsigned(0 to latency-1) := (others => '0');
-			signal slr_reg  : unsigned(0 to latency*dst_data'length-1);
-			signal data_reg : unsigned(0 to (latency+1)*dst_data'length-1);
+		latencygt1_g : if latency > 1 generate
+			signal fill     : std_logic;
+			signal b_reg    : unsigned(0 to (latency-1)-1) := (others => '0');
+			signal v_reg    : unsigned(0 to (latency-1)-1) := (others => '0');
+			signal q_reg    : unsigned(0 to (latency-1)) := (others => '0');
+			signal slr_reg  : unsigned(0 to (latency-1)*dst_data'length-1);
+			signal data_reg : unsigned(0 to latency*dst_data'length-1);
 		begin
 
 			booking_p : process (dst_clk)
-				variable b : unsigned(0 to latency-1) := (others => '0');
+				variable b : unsigned(0 to (latency-1)-1) := (others => '0');
 			begin
 				if rising_edge(dst_clk) then
 					if dst_ini='1' then
 						b := (others => '0');
-					else
-						if to_bit(b(b'right))='0' then
-							if dst_irdy1='0' then
-								if dst_trdy='1' then
-									b := b ror 1;
-									b(b'right) := '0';
-								end if;
-							elsif dst_trdy='0' then
-								if b(0)='0' then
-									b(b'right) := '1';
-								end if;
-							else
-								b(b'right) := '1';
-								b := b rol 1;
-							end if;
-						elsif dst_irdy1='0' then
+					elsif to_bit(b(b'right))='0' then
+						if dst_irdy1='0' then
 							if dst_trdy='1' then
+								b := b ror 1;
 								b(b'right) := '0';
-								b := b rol 1;
 							end if;
 						elsif dst_trdy='0' then
 							if b(0)='0' then
-								b := b rol 1;
 								b(b'right) := '1';
 							end if;
 						else
+							b(b'right) := '1';
+							b := b rol 1;
 						end if;
-
+					elsif dst_irdy1='0' then
+						if dst_trdy='1' then
+							b(b'right) := '0';
+							b := b rol 1;
+						end if;
+					elsif dst_trdy='0' then
+						if b(0)='0' then
+							b := b rol 1;
+							b(b'right) := '1';
+						end if;
 					end if;
-
-					fill <= not b(0);
 					b_reg <= b;
+					fill <= not b(0);
 				end if;
 			end process;
 
 			dstirdy_p : process (dst_clk)
-				variable q    : unsigned(0 to latency) := (others => '0');
-				variable v    : unsigned(0 to latency-1) := (others => '0');
+				variable q    : unsigned(0 to (latency-1)) := (others => '0');
+				variable v    : unsigned(0 to (latency-1)-1) := (others => '0');
 				variable slr  : unsigned(0 to v'length*dst_data'length-1);
 				variable data : unsigned(0 to q'length*dst_data'length-1);
 			begin
@@ -194,13 +191,14 @@ begin
 						end if;
 						v(0) := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 						v    := v rol 1;
-
 					end if;
-
-					data_reg <= data;
-					slr_reg <= slr;
 					dst_irdy <= q(0);
 					dst_data <= std_logic_vector(data(rdata'range));
+
+					q_reg    <= q;
+					v_reg    <= v;
+					data_reg <= data;
+					slr_reg  <= slr;
 				end if;
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
