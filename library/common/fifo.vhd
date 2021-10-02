@@ -118,7 +118,9 @@ begin
 
 		latencygt1_g : if debug or latency > 1 generate
 			signal fill  : std_logic;
-				signal b_reg : unsigned(0 to latency-1) := (others => '0');
+			signal b_reg : unsigned(0 to latency-1) := (others => '0');
+			signal slr_reg  : unsigned(0 to latency*dst_data'length-1);
+			signal data_reg : unsigned(0 to (latency+1)*dst_data'length-1);
 		begin
 
 			booking_p : process (dst_clk)
@@ -195,6 +197,8 @@ begin
 
 					end if;
 
+					data_reg <= data;
+					slr_reg <= slr;
 					dst_irdy <= q(0);
 					dst_data <= std_logic_vector(data(rdata'range));
 				end if;
