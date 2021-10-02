@@ -204,7 +204,7 @@ begin
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
 		end generate;
 
-		latencyeq1_g : if not debug and latency=1 generate
+		latencyeq1_g : if latency=1 generate
 			signal fill : std_logic;
 			signal data : std_logic_vector(dst_data'range);
 			signal q    : std_logic := '0';

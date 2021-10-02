@@ -139,10 +139,10 @@ begin
 	end block;
 
 	memrx_data <= 
-		x"f1" when icmpcoderx_frm='1' else
-		x"f2"  when icmptyperx_frm='1' else 
---		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
---		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
+--		x"f1" when icmpcoderx_frm='1' else
+--		x"f2"  when icmptyperx_frm='1' else 
+		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
+		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
 		cksmrx_data                when icmpcksmrx_frm='1' else
 		icmprx_data;
 
