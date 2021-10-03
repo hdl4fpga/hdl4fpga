@@ -73,10 +73,16 @@ architecture def of mii_ipoe is
 	signal ethrx_data    : std_logic_vector(miirx_data'range);
 
 	signal bcstrx_equ    : std_logic;
+
+	signal hwda_frm      : std_logic;
+	signal hwda_irdy     : std_logic;
+	signal hwda_trdy     : std_logic;
+	signal hwda_last     : std_logic;
+	signal hwda_end      : std_logic;
+	signal hwda_equ      : std_logic;
+	signal hwda_vld      : std_logic;
+
 	signal hwdarx_irdy   : std_logic;
-	signal hwdarx_last   : std_logic;
-	signal hwdarx_end    : std_logic;
-	signal hwdarx_equ    : std_logic;
 	signal hwdarx_vld    : std_logic;
 	signal hwsarx_irdy   : std_logic;
 	signal hwsarx_trdy   : std_logic;
@@ -128,6 +134,9 @@ architecture def of mii_ipoe is
 	signal hwllctx_trdy  : std_logic;
 	signal hwllctx_end   : std_logic;
 	signal hwllctx_data  : std_logic_vector(pltx_data'range);
+
+	signal ipv4hwda_frm  : std_logic;
+	signal ipv4hwda_irdy : std_logic;
 
 	signal ipv4arx_trdy  : std_logic;
 	signal ipv4arx_equ   : std_logic;
@@ -182,7 +191,7 @@ begin
 		mii_data   => miirx_data,
 
 		hwda_irdy  => hwdarx_irdy,
-		hwda_end   => hwdarx_end,
+		hwda_end   => hwda_end,
 		hwsa_irdy  => hwsarx_irdy,
 		hwtyp_irdy => hwtyprx_irdy,
 		pl_irdy    => ethplrx_irdy,
@@ -201,27 +210,44 @@ begin
         si2_data  => miirx_data,
 		si_equ    => bcstrx_equ);
 
+	hwda_frm <= 
+		miirx_frm when hwdarx_vld='0' else 
+		ipv4hwda_frm;
+
+	hwda_irdy <=
+		hwdarx_irdy when hwdarx_vld='0' else 
+		ipv4hwda_irdy;
+
 	hwdacmp_e : entity hdl4fpga.sio_muxcmp
     port map (
 		mux_data  => reverse(my_mac,8),
         sio_clk   => mii_clk,
-        sio_frm   => miirx_frm,
+        sio_frm   => hwda_frm,
         sio_irdy  => hwdarx_irdy,
-        sio_trdy  => open,
+        sio_trdy  => hwda_trdy,
         si_data   => miirx_data,
-		so_last   => hwdarx_last,
-		so_end    => hwdarx_end,
-		so_equ(0) => hwdarx_equ);
+		so_last   => hwda_last,
+		so_end    => hwda_end,
+		so_equ(0) => hwda_equ);
 
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if miirx_frm='0' then
 				hwdarx_vld <= '0';
-				tp(1) <= '0';
-			elsif hwdarx_last='1' and miirx_irdy='1' then
-				hwdarx_vld <= hwdarx_equ or bcstrx_equ;
-				tp(1) <= hwdarx_equ;
+			elsif hwda_last='1' and miirx_irdy='1' then
+				hwdarx_vld <= hwda_equ or bcstrx_equ;
+			end if;
+		end if;
+	end process;
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if miirx_frm='0' then
+				hwda_vld <= '0';
+			elsif hwda_last='1' and miirx_irdy='1' then
+				hwda_vld <= hwda_equ;
 			end if;
 		end if;
 	end process;
@@ -436,6 +462,13 @@ begin
 		ipv4sarx_trdy => ipv4sarx_trdy,
 		ipv4sarx_end  => ipv4sarx_end,
 		ipv4sarx_equ  => ipv4sarx_equ,
+
+		hwda_frm      => ipv4hwda_frm,
+		hwda_irdy     => ipv4hwda_irdy,
+		hwda_trdy     => hwda_trdy,
+		hwda_last     => hwda_last,
+		hwda_equ      => hwda_equ,
+		hwdarx_vld    => hwda_vld,
 
 		ipv4satx_frm  => ipv4satx_frm,
 		ipv4satx_irdy => ipv4satx_irdy,

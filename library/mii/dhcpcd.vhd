@@ -45,6 +45,14 @@ entity dhcpcd is
 		ipv4sawr_irdy : out std_logic := '0';
 		ipv4sawr_data : out std_logic_vector;
 
+		hwda_frm      : out std_logic;
+		hwda_irdy     : out std_logic;
+		hwda_trdy     : in  std_logic;
+		hwda_last     : in  std_logic;
+		hwda_equ      : in  std_logic; 
+		hwdarx_vld    : in  std_logic; 
+
+
 		dhcpcdtx_frm  : buffer std_logic;
 		mactx_full    : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
@@ -62,12 +70,13 @@ end;
 
 architecture def of dhcpcd is
 
-	signal dhcpop_irdy  : std_logic;
-	signal dhcpchaddr6_irdy : std_logic;
-	signal dhcpyia_frm  : std_logic;
-	signal dhcpyia_irdy : std_logic;
+	signal dhcpop_irdy       : std_logic;
+	signal dhcpchaddr6_frm   : std_logic;
+	signal dhcpchaddr6_irdy  : std_logic;
+	signal dhcpyia_frm       : std_logic;
+	signal dhcpyia_irdy      : std_logic;
 
-	signal dhcpctx_irdy  : std_logic;
+	signal dhcpctx_irdy      : std_logic;
 
 	signal dscbipv4sawr_frm  : std_logic;
 	signal dscbipv4sawr_irdy : std_logic;
@@ -82,6 +91,7 @@ begin
 		dhcp_data    => dhcpcdrx_data,
 
 		dhcpop_irdy  => dhcpop_irdy,
+		dhcpchaddr6_frm  => dhcpchaddr6_frm,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
 		dhcpyia_frm  => dhcpyia_frm, 
 		dhcpyia_irdy => dhcpyia_irdy);
@@ -91,13 +101,13 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if to_bit(arp_req xor arp_rdy)='0' then
-				if dhcpyia_frm='0' then
+				if (dhcpyia_frm and hwdarx_vld)='0' then
 					arp_req <= req xor arp_rdy;
 					req     := '0';
-				elsif dhcpyia_frm='1' then
+				elsif (dhcpyia_frm and hwdarx_vld)='1' then
 					req := '1';
 				end if;
-			elsif dhcpyia_frm='1' then
+			elsif (dhcpyia_frm and hwdarx_vld)='1' then
 				req := '1';
 			end if;
 		end if;
@@ -128,10 +138,10 @@ begin
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpcdtx_data);
 
-	ipv4sawr_frm  <= dhcpcdtx_frm or dhcpyia_frm;
+	ipv4sawr_frm  <= dhcpcdtx_frm or (dhcpyia_frm and hwdarx_vld);
 	ipv4sawr_irdy <= 
 		'1'          when dhcpcdtx_frm='1' else
-		dhcpyia_irdy when dhcpyia_frm='1'  else
+		dhcpyia_irdy when (dhcpyia_frm and hwdarx_vld)='1'  else
 		'0';
 	ipv4sawr_data <= 
 		(ipv4sawr_data'range => '0') when dhcpcdtx_frm='1' else

@@ -47,6 +47,7 @@ entity ipv4 is
 		ipv4rx_irdy   : in  std_logic;
 		ipv4rx_data   : in  std_logic_vector;
 
+		ipv4hwda_frm  : out std_logic;
 		ipv4sarx_frm  : in  std_logic;
 		ipv4sarx_irdy : in  std_logic;
 		ipv4sarx_trdy : buffer std_logic;
@@ -58,6 +59,13 @@ entity ipv4 is
 		ipv4satx_trdy : buffer std_logic;
 		ipv4satx_end  : buffer std_logic;
 		ipv4satx_data : buffer std_logic_vector;
+
+		hwda_frm      : out std_logic;
+		hwda_irdy     : out std_logic;
+		hwda_trdy     : in  std_logic;
+		hwda_last     : in  std_logic;
+		hwda_equ      : in  std_logic;
+		hwdarx_vld    : in  std_logic;
 
 		plrx_frm      : buffer std_logic;
 		plrx_irdy     : out std_logic;
@@ -208,8 +216,8 @@ begin
 		signal ipv4sa_frm    : std_logic;
 		signal ipv4sa_irdy   : std_logic;
 		signal ipv4sa_data   : std_logic_vector(ipv4rx_data'range);
-		signal ipv4bcstrx_equ  :std_logic;
-		signal ipv4sanll_equ  :std_logic;
+		signal ipv4bcstrx_equ : std_logic;
+		signal ipv4sanll_equ : std_logic;
 	begin
 
 		ipv4sa_frm  <= ipv4sarx_frm;
@@ -280,6 +288,21 @@ begin
 			si2_trdy => open,
 			si2_data => ipv4rx_data,
 			si_equ   => ipv4sarx_equ);
+
+		ipbcst_p : process (ipv4sarx_end, mii_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(mii_clk) then
+				if ipv4rx_frm='0' then
+					q  := '0';
+				elsif ipv4sarx_end='0' then
+					if ipv4sa_irdy='1' then
+						q := ipv4bcstrx_equ;
+					end if;
+				end if;
+			end if;
+			ipv4bcst_vld <= ipv4sarx_end and q;
+		end process;
 
 		ipv4a_p : process (ipv4sarx_end, mii_clk)
 			variable q : std_logic;
@@ -558,10 +581,16 @@ begin
 		dhcpcd_rdy   => dhcpcd_rdy,
 		arp_req      => arp_req,
 		arp_rdy      => arp_rdy,
-
 		udprx_frm    => udprx_frm,
 		udprx_irdy   => ipv4rx_irdy,
 		udprx_data   => ipv4rx_data,
+
+		hwda_frm     => hwda_frm,
+		hwda_irdy    => hwda_irdy,
+		hwda_trdy    => hwda_trdy,
+		hwda_last    => hwda_last,
+		hwda_equ     => hwda_equ,
+		hwdarx_vld   => hwdarx_vld,
 
 		plrx_frm     => udpplrx_frm,
 		plrx_irdy    => udpplrx_irdy,

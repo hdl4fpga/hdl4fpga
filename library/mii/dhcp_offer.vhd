@@ -32,21 +32,21 @@ use hdl4fpga.ipoepkg.all;
 
 entity dhcpc_offer is
 	port (
-		mii_clk      : in  std_logic;
-		dhcp_frm     : in  std_logic;
-		dhcp_irdy    : in  std_logic;
-		dhcp_data    : in  std_logic_vector;
-		dhcpop_irdy  : out std_logic;
+		mii_clk          : in  std_logic;
+		dhcp_frm         : in  std_logic;
+		dhcp_irdy        : in  std_logic;
+		dhcp_data        : in  std_logic_vector;
+		dhcpop_irdy      : out std_logic;
+		dhcpchaddr6_frm  : buffer std_logic;
 		dhcpchaddr6_irdy : out std_logic;
-		dhcpyia_frm  : buffer std_logic;
-		dhcpyia_irdy : out std_logic);
+		dhcpyia_frm      : buffer std_logic;
+		dhcpyia_irdy     : out std_logic);
 end;
 
 architecture def of dhcpc_offer is
 	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(dhcp4hdr_frame)/dhcp_data'length-1));
 
 	signal dhcpop_frm      : std_logic;
-	signal dhcpchaddr6_frm : std_logic;
 
 begin
 					

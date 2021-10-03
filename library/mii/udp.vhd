@@ -43,6 +43,13 @@ entity udp is
 		udprx_irdy    : in  std_logic;
 		udprx_data    : in  std_logic_vector;
 
+		hwda_frm      : out std_logic;
+		hwda_irdy     : out std_logic;
+		hwda_trdy     : in  std_logic;
+		hwda_last     : in  std_logic;
+		hwda_equ      : in  std_logic; 
+		hwdarx_vld    : in  std_logic; 
+
 		plrx_frm      : buffer std_logic;
 		plrx_irdy     : out std_logic;
 		plrx_trdy     : in  std_logic;
@@ -373,6 +380,13 @@ begin
 		dhcpcd_rdy    => dhcpcd_rdy,
 		arp_req       => arp_req,
 		arp_rdy       => arp_rdy,
+
+		hwda_frm      => hwda_frm,
+		hwda_irdy     => hwda_irdy,
+		hwda_trdy     => hwda_trdy,
+		hwda_last     => hwda_last,
+		hwda_equ      => hwda_equ,
+		hwdarx_vld    => hwdarx_vld,
 
 		dhcpcdtx_frm  => dhcpctx_frm,
 		mactx_full    => mactx_full,
