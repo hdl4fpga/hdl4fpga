@@ -52,29 +52,31 @@ end;
 
 architecture def of txn_buffer is
 
-	signal rx_frm    : std_logic;
-	signal rx_irdy   : std_logic;
-	signal rx_writ   : std_logic;
-	signal rx_data   : std_logic_vector(0 to 6+src_tag'length);
+	signal rx_irdy : std_logic;
+	signal rx_writ : std_logic;
+	signal rx_data : std_logic_vector(0 to 7+src_tag'length);
 
-	signal tx_irdy   : std_logic;
-	signal tx_trdy   : std_logic;
-	signal tx_data   : std_logic_vector(rx_data'range);
+	signal tx_irdy : std_logic;
+	signal tx_trdy : std_logic;
+	signal tx_data : std_logic_vector(rx_data'range);
 
-	signal data_trdy : std_logic;
+	signal di_irdy : std_logic;
+	signal di_trdy : std_logic;
+	signal do_irdy : std_logic;
+	signal do_trdy : std_logic;
 
 begin
 
-	data_trdy <= dst_irdy and dst_frm;
+	di_irdy <= not rx_data(0) and src_irdy;
+	do_trdy <= dst_frm        and dst_irdy;
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth => 128,
-		latency   => 2,
-		check_dov => true)
+		latency   => 2)
 	port map(
 		src_clk   => src_clk,
-		src_irdy  => src_irdy,
-		src_trdy  => src_trdy,
+		src_irdy  => di_irdy,
+		src_trdy  => di_trdy,
 		src_data  => src_data,
 
 		rollback  => rollback,
@@ -82,19 +84,23 @@ begin
 		overflow  => open,
 
 		dst_clk   => src_clk,
-		dst_irdy  => dst_trdy,
-		dst_trdy  => data_trdy,
+		dst_irdy  => do_irdy,
+		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
+	src_trdy <= not rx_data(0) and di_trdy;
+	dst_trdy <= not rx_data(0) and do_irdy;
 
 	process (src_frm, src_tag, src_end, src_clk)
-		variable cntr : unsigned(0 to 6);
+		variable cntr : unsigned(0 to rx_data'length-src_tag'length-1);
 		variable q    : std_logic;
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
 				cntr := (others => '0');
 			elsif (src_irdy and src_trdy and not src_end)='1' then
-				cntr := cntr + 1;
+				if cntr(0)='0' then
+					cntr := cntr + 1;
+				end if;
 			end if;
 			q := (src_frm and not src_end);
 		end if;
@@ -102,16 +108,14 @@ begin
 		rx_irdy <= not (src_frm and not src_end) and q;
 	end process;
 
-	rx_frm  <= commit or dst_trdy;
 --	rx_writ <= commit or rx_irdy;
-	rx_writ <= commit;
+	rx_writ <= not rx_data(0) and commit;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
 		max_depth  => 4)
 	port map (
 		src_clk    => src_clk,
-		src_frm    => rx_frm,
 		src_irdy   => rx_irdy,
 		src_auto   => '0',
 		src_writ   => rx_writ,
@@ -125,12 +129,12 @@ begin
 
 	process (dst_frm, dst_trdy, tx_data, src_clk)
 		variable q    : std_logic;
-		variable cntr : unsigned(0 to 6);
+		variable cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
 	begin
 		if rising_edge(src_clk) then
 			if dst_frm='1' then
 				if (dst_irdy and dst_trdy)='1' then
-					if cntr <= unsigned(tx_data(0 to 6)) then
+					if cntr <= unsigned(tx_data(cntr'range)) then
 						cntr := cntr + 1;
 					end if;
 				end if;
@@ -139,9 +143,9 @@ begin
 			end if;
 		end if;
 		tx_trdy <= not dst_frm and q;
-		dst_end <= (not setif(cntr <= unsigned(tx_data(0 to 6))));
+		dst_end <= (not setif(cntr <= unsigned(tx_data(cntr'range))));
 		q := dst_frm;
 	end process;
 
-	dst_tag <= tx_data(6+1 to 6+dst_tag'length);
+	dst_tag <= tx_data(tx_data'length-dst_tag'length to tx_data'length-1);
 end;
