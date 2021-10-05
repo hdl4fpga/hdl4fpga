@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity txn_buffer is
 	generic (
+		m : natural := 7;
 		n : natural := 1);
 	port (
 		src_clk     : in  std_logic;
@@ -54,7 +55,7 @@ architecture def of txn_buffer is
 
 	signal rx_irdy : std_logic;
 	signal rx_writ : std_logic;
-	signal rx_data : std_logic_vector(0 to 7+src_tag'length);
+	signal rx_data : std_logic_vector(0 to m+src_tag'length);
 
 	signal tx_irdy : std_logic;
 	signal tx_trdy : std_logic;
@@ -71,8 +72,9 @@ begin
 	do_trdy <= dst_frm        and dst_irdy;
 	data_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => 128,
-		latency   => 2)
+		check_dov => false,
+		max_depth => 2**m,
+		latency   => 0)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,
@@ -87,7 +89,7 @@ begin
 		dst_irdy  => do_irdy,
 		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
-	src_trdy <= not rx_data(0) and di_trdy;
+	src_trdy <= not rx_data(0) and di_trdy and src_frm;
 	dst_trdy <= not rx_data(0) and do_irdy;
 
 	process (src_frm, src_tag, src_end, src_clk)

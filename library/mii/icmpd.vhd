@@ -182,6 +182,8 @@ begin
 
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
 		buffer_e : entity hdl4fpga.txn_buffer
+		generic map (
+			m => 5)
 		port map (
 			src_clk  => mii_clk,
 			src_frm  => dll_frm,

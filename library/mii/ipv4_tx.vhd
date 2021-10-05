@@ -118,7 +118,7 @@ begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
 				cntr := to_unsigned(summation(ipv4hdr_frame)/ipv4_data'length-1, cntr'length);
-			elsif cntr(0)='0' and post='1' and pl_irdy='1' and ipv4_trdy='1' then
+			elsif (post and not cntr(0) and ipv4_trdy and (pl_irdy or not ipv4a_end))='1' then
 				cntr := cntr - 1;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);

@@ -70,6 +70,12 @@ architecture def of eth_tb is
 		x"00000000" &
 		x"00000000" &
 		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
+		x"00000000" &
 		x"ffffffaa" ;
 
 	constant payload : std_logic_vector := 
@@ -218,7 +224,7 @@ begin
 		pl_frm <= frm;
 	end process;
 
-	llc_data <= reverse(x"00_40_00_01_02_03" & x"80_ff_ff_ff_ff_ff" & eth_llc,8);
+	llc_data <= reverse(x"00_40_00_01_02_03" & x"ff_ff_ff_ff_ff_ff" & eth_llc,8);
 	hwsa_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => llc_data,
