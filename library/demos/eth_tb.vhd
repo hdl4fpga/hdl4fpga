@@ -62,8 +62,8 @@ architecture def of eth_tb is
 		x"0000"                 &    -- IP Header Checksum
 		x"d0a10004"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
-		x"555500af" &
-		x"01020304" &
+		x"5555edcb" &
+		x"abcdefaf" &
 		x"00000000" &
 		x"00000000" &
 		x"00000000" &

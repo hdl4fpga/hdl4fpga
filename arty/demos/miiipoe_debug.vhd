@@ -198,7 +198,7 @@ begin
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1 => '0', --btn(1),
-			mii_frm2 => htb_btn2, --btn(1),
+			mii_frm2 => htb_btn2, --'0', --btn(1),
 			mii_frm3 => '0', --btn(1),
 			mii_frm4 => '0', --,
 
@@ -244,6 +244,8 @@ begin
 			generic map (
 				max_depth => 4,
 				latency   => 0,
+				dst_offset => 0,
+				src_offset => 2,
 				check_sov => false,
 				check_dov => true,
 				gray_code => false)
@@ -258,12 +260,12 @@ begin
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					dst_trdy  <= to_stdulogic(to_bit(dst_irdy));
+					dst_trdy <= to_stdulogic(to_bit(dst_irdy));
 				end if;
 			end process;
-
 			miirx_frm <= txc_rxbus(0);
 			mii_rxd	  <= txc_rxbus(1 to mii_rxd'length);
+
 
 		end block;
 
@@ -288,7 +290,10 @@ begin
 				end if;
 			end if;
 		end process;
-		led(2) <= tp(2);
+		led(0) <= tp(5);
+		led(1) <= tp(4);
+		led(2) <= tp(3);
+		led(3) <= tp(2);
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
@@ -318,31 +323,31 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
-		sioflow_e : entity hdl4fpga.sio_flow
-		port map (
-			sio_clk => mii_txc,
-
-			rx_frm  => plrx_frm,
-			rx_irdy => plrx_irdy,
-			rx_trdy => plrx_trdy,
-			rx_data => plrx_data,
-
-			so_frm  => so_frm,
-			so_irdy => so_irdy,
-			so_trdy => so_trdy,
-			so_data => so_data,
-
-			si_frm  => si_frm,
-			si_irdy => si_irdy,
-			si_trdy => si_trdy,
-			si_end  => si_end,
-			si_data => si_data,
-
-			tx_frm  => pltx_frm,
-			tx_irdy => pltx_irdy,
-			tx_trdy => pltx_trdy,
-			tx_end  => pltx_end,
-			tx_data => pltx_data);
+--		sioflow_e : entity hdl4fpga.sio_flow
+--		port map (
+--			sio_clk => mii_txc,
+--
+--			rx_frm  => plrx_frm,
+--			rx_irdy => plrx_irdy,
+--			rx_trdy => plrx_trdy,
+--			rx_data => plrx_data,
+--
+--			so_frm  => so_frm,
+--			so_irdy => so_irdy,
+--			so_trdy => so_trdy,
+--			so_data => so_data,
+--
+--			si_frm  => si_frm,
+--			si_irdy => si_irdy,
+--			si_trdy => si_trdy,
+--			si_end  => si_end,
+--			si_data => si_data,
+--
+--			tx_frm  => pltx_frm,
+--			tx_irdy => pltx_irdy,
+--			tx_trdy => pltx_trdy,
+--			tx_end  => pltx_end,
+--			tx_data => pltx_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -372,7 +377,7 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else miirx_frm;
+		sin_frm   <= mii_txen when sw(1)='1' else tp(1) when btn(3)='0' else miirx_frm;
 		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
 	end block;

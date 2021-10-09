@@ -102,13 +102,20 @@ begin
 	hwllc_irdy <= mii_trdy and pre_end;
 
 	pl_trdy  <= 
-		metatx_irdy when metatx_end ='0' else
+		metatx_irdy when metatx_end='0' else
 		'0'         when hwllc_end='0'  else
 		mii_trdy    when pl_end='0'     else
 		fcs_end;
 
-	fcs_irdy <= primux(hwllc_irdy & (pl_irdy and mii_trdy), not hwllc_end & not pl_end, (0 to 0 => mii_trdy))(0);
-	fcs_data <= primux(hwllc_data & pl_data, not hwllc_end & not pl_end, (pl_data'range => '0'));
+	fcs_irdy <= 
+		hwllc_irdy           when hwllc_end='0' else 
+		pl_irdy and mii_trdy when pl_end='0'    else
+		mii_trdy;
+
+	fcs_data <= 
+	   hwllc_data when hwllc_end='0' else
+	   pl_data    when pl_end='0'    else 
+	   (fcs_data'range => '0');
 
 	process (mii_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/mii_data'length-1));

@@ -163,9 +163,11 @@ begin
 		begin 
 			if rising_edge(mii_clk) then
 				if (icmp_req xor icmp_rdy)='0' then
-					icmp_req <= to_bit(icmprx_frm) xor icmp_rdy;
-				elsif icmptx_trdy='1' then
-					icmp_rdy <= to_bit(icmptx_end) xnor icmp_req;
+					if icmprx_frm='1' then
+						icmp_req <= not icmp_rdy;
+					end if;
+				elsif (icmptx_end and icmptx_trdy)='1' then
+					icmp_rdy <= icmp_req;
 				end if;
 			end if;
 		end process;
@@ -183,7 +185,7 @@ begin
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 5)
+			m => 3)
 		port map (
 			src_clk  => mii_clk,
 			src_frm  => dll_frm,
@@ -253,8 +255,9 @@ begin
 		icmp_end  => icmptx_end,
 		icmp_data => icmptx_data);
 
-	tp(1) <= icmptx_trdy;
-	tp(2) <= icmppltx_end;
-	tp(3) <= icmppltx_frm;
+	tp(2) <= icmppltx_frm;
+	tp(3) <= icmppltx_irdy;
+	tp(4) <= icmppltx_trdy;
+	tp(5) <= icmppltx_end ; --icmppltx_end;
 
 end;

@@ -87,7 +87,7 @@ entity ipv4 is
 		ipv4tx_frm    : buffer std_logic := '0';
 		ipv4tx_irdy   : buffer std_logic;
 		ipv4tx_trdy   : in  std_logic := '1';
-		ipv4tx_end    : out std_logic := '0';
+		ipv4tx_end    : buffer std_logic := '0';
 		ipv4tx_data   : buffer std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
@@ -319,8 +319,8 @@ begin
 			ipv4da_vld <= ipv4sarx_end and q;
 		end process;
 
-		ipv4sard_frm  <= ipv4satx_frm  or ipv4atx_frm;
-		ipv4sard_irdy <= ipv4satx_irdy or ipv4atx_irdy;
+		ipv4sard_frm  <= to_stdulogic(to_bit(ipv4satx_frm  or ipv4atx_frm));
+		ipv4sard_irdy <= to_stdulogic(to_bit(ipv4satx_irdy or ipv4atx_irdy));
 		satx_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_data => reverse(default_ipv4a,8),
@@ -447,7 +447,7 @@ begin
 				so_data  => ipv4len_data);
 
 			ppltx_data <= 
-				ipv4pltx_data when mactx_full='0'    else 
+				ipv4pltx_data when mactx_full='0'   else 
 				len_datai     when iplentx_full='0' else
 				ipv4pltx_data;
 
@@ -546,7 +546,9 @@ begin
 	process (tp1)
 	begin
 		tp <= tp1;
-		tp(2) <= ipv4sanll_vld;
+--		tp(2) <= ipv4tx_frm;
+--		tp(3) <= ipv4pltx_trdy;
+--		tp(4) <= ipv4pltx_end;
 	end process;
 
 --	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
@@ -554,6 +556,7 @@ begin
 	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
 	port map (
+		tp => tp1,
 		mii_clk     => mii_clk,
 		dll_frm     => dll_frm,
 		dll_irdy    => dll_irdy,
@@ -573,52 +576,52 @@ begin
 		icmptx_end  => icmptx_end,
 		icmptx_data => icmptx_data);
 
-	udp_e : entity hdl4fpga.udp
-	port map (
-		tp => tp1,
-		mii_clk      => mii_clk,
-		dhcpcd_req   => dhcpcd_req,
-		dhcpcd_rdy   => dhcpcd_rdy,
-		arp_req      => arp_req,
-		arp_rdy      => arp_rdy,
-		udprx_frm    => udprx_frm,
-		udprx_irdy   => ipv4rx_irdy,
-		udprx_data   => ipv4rx_data,
-
-		hwda_frm     => hwda_frm,
-		hwda_irdy    => hwda_irdy,
-		hwda_trdy    => hwda_trdy,
-		hwda_last    => hwda_last,
-		hwda_equ     => hwda_equ,
-		hwdarx_vld   => hwdarx_vld,
-
-		plrx_frm     => udpplrx_frm,
-		plrx_irdy    => udpplrx_irdy,
-		plrx_trdy    => udpplrx_trdy,
-		plrx_cmmt    => plrx_cmmt,
-		plrx_rllbk   => plrx_rllbk,
-		plrx_data    => udpplrx_data,
-
-		pltx_frm     => pltx_frm,
-		pltx_irdy    => pltx_irdy,
-		pltx_trdy    => pltx_trdy,
-		pltx_data    => pltx_data,
-		pltx_end     => pltx_end,
-
-		ipv4sawr_frm  => ipv4sawr_frm,
-		ipv4sawr_irdy => ipv4sawr_irdy,
-		ipv4sawr_data => ipv4sawr_data,
-
-		udptx_frm    => udptx_frm,
-		mactx_full   => mactx_full,
-		ipsatx_full  => ipv4satx_full,
-		ipdatx_full  => ipv4datx_full,
-		iplentx_full => iplentx_full,
-		iplentx_irdy => udpiplentx_irdy,
-		udptx_irdy   => udptx_irdy,
-		udptx_trdy   => udptx_trdy,
-		udptx_end    => udptx_end ,
-		udptx_data   => udptx_data); 
+--	udp_e : entity hdl4fpga.udp
+--	port map (
+--		tp => tp1,
+--		mii_clk      => mii_clk,
+--		dhcpcd_req   => dhcpcd_req,
+--		dhcpcd_rdy   => dhcpcd_rdy,
+--		arp_req      => arp_req,
+--		arp_rdy      => arp_rdy,
+--		udprx_frm    => udprx_frm,
+--		udprx_irdy   => ipv4rx_irdy,
+--		udprx_data   => ipv4rx_data,
+--
+--		hwda_frm     => hwda_frm,
+--		hwda_irdy    => hwda_irdy,
+--		hwda_trdy    => hwda_trdy,
+--		hwda_last    => hwda_last,
+--		hwda_equ     => hwda_equ,
+--		hwdarx_vld   => hwdarx_vld,
+--
+--		plrx_frm     => udpplrx_frm,
+--		plrx_irdy    => udpplrx_irdy,
+--		plrx_trdy    => udpplrx_trdy,
+--		plrx_cmmt    => plrx_cmmt,
+--		plrx_rllbk   => plrx_rllbk,
+--		plrx_data    => udpplrx_data,
+--
+--		pltx_frm     => pltx_frm,
+--		pltx_irdy    => pltx_irdy,
+--		pltx_trdy    => pltx_trdy,
+--		pltx_data    => pltx_data,
+--		pltx_end     => pltx_end,
+--
+--		ipv4sawr_frm  => ipv4sawr_frm,
+--		ipv4sawr_irdy => ipv4sawr_irdy,
+--		ipv4sawr_data => ipv4sawr_data,
+--
+--		udptx_frm    => udptx_frm,
+--		mactx_full   => mactx_full,
+--		ipsatx_full  => ipv4satx_full,
+--		ipdatx_full  => ipv4datx_full,
+--		iplentx_full => iplentx_full,
+--		iplentx_irdy => udpiplentx_irdy,
+--		udptx_irdy   => udptx_irdy,
+--		udptx_trdy   => udptx_trdy,
+--		udptx_end    => udptx_end ,
+--		udptx_data   => udptx_data); 
 
 	plrx_data <= udpplrx_data;
 end;

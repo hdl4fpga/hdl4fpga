@@ -158,8 +158,13 @@ begin
 		'1' when post='0' else 
 		ipv4_trdy;
 
-	cksm_data <= primux(ipv4a_data & ipv4hdr_data, not post & post);
-	cksm_irdy <= primux((ipv4a_trdy and ipv4a_irdy) & ipv4_trdy, not post & post)(0);
+	cksm_data <= 
+		ipv4a_data   when post='0' else
+		ipv4hdr_data;
+	cksm_irdy <= 
+		ipv4a_trdy and ipv4a_irdy when post='0' else
+	    ipv4_trdy;
+
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
 	generic map (
 		n => 16)

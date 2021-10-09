@@ -55,8 +55,8 @@ entity mii_ipoe is
 		pltx_end       : in  std_logic;
 		pltx_data      : in  std_logic_vector;
 
-		miitx_frm     : out std_logic;
-		miitx_irdy    : out std_logic;
+		miitx_frm     : buffer std_logic;
+		miitx_irdy    : buffer std_logic;
 		miitx_trdy    : in  std_logic;
 		miitx_end     : buffer std_logic;
 		miitx_data    : out std_logic_vector;
@@ -150,10 +150,10 @@ architecture def of mii_ipoe is
 	signal ipv4sarx_end  : std_logic;
 	signal ipv4sarx_equ  : std_logic;
 
-	signal ipv4satx_frm  : std_logic;
-	signal ipv4satx_trdy : std_logic;
-	signal ipv4satx_irdy : std_logic;
-	signal ipv4satx_end  : std_logic;
+	signal ipv4satx_frm  : std_logic :='0';
+	signal ipv4satx_trdy : std_logic :='0';
+	signal ipv4satx_irdy : std_logic :='0';
+	signal ipv4satx_end  : std_logic :='1';
 	signal ipv4satx_data : std_logic_vector(miitx_data'range);
 
 	signal metatx_irdy   : wor std_logic;
@@ -251,10 +251,18 @@ begin
 			end if;
 		end if;
 	end process;
+	tp(1) <= hwda_vld;
 
 	process (tp1)
 	begin
 		tp(2 to 32) <= tp1(2 to 32);
+
+		tp(2) <=miitx_frm;  -- ethtx_frm;
+		tp(3) <=miitx_irdy; -- ethpltx_irdy;
+		tp(4) <=miitx_trdy; -- ethpltx_trdy;
+		tp(5) <=miitx_end;  -- ethpltx_end;
+
+
 	end process;
 
 	llc_e : entity hdl4fpga.sio_muxcmp
@@ -408,36 +416,36 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
-	arpd_e : entity hdl4fpga.arpd
-	generic map (
-		hwsa       => my_mac)
-	port map (
-		mii_clk    => mii_clk,
-
-		arpdtx_req => arp_req,
-		arpdtx_rdy => arp_rdy,
-		arprx_frm  => arprx_frm,
-		arprx_irdy => miirx_irdy,
-		arprx_data => miirx_data,
-
-		sparx_irdy => ipv4sarx_irdy,
-		sparx_trdy => ipv4sarx_trdy,
-		sparx_end  => ipv4sarx_end,
-		sparx_equ  => ipv4sarx_equ,
-
-		spatx_frm  => ipv4satx_frm,
-		spatx_irdy => ipv4satx_irdy,
-		spatx_trdy => ipv4satx_trdy,
-		spatx_end  => ipv4satx_end,
-		spatx_data => ipv4satx_data,
-
-		arpdtx_frm  => arptx_frm,
-		dlltx_full  => mactx_full,
-		dlltx_irdy  => '1', --open,
-		arpdtx_irdy => arptx_irdy,
-		arpdtx_trdy => arptx_trdy,
-		arpdtx_end  => arptx_end,
-		arpdtx_data => arptx_data);
+--	arpd_e : entity hdl4fpga.arpd
+--	generic map (
+--		hwsa       => my_mac)
+--	port map (
+--		mii_clk    => mii_clk,
+--
+--		arpdtx_req => arp_req,
+--		arpdtx_rdy => arp_rdy,
+--		arprx_frm  => arprx_frm,
+--		arprx_irdy => miirx_irdy,
+--		arprx_data => miirx_data,
+--
+--		sparx_irdy => ipv4sarx_irdy,
+--		sparx_trdy => ipv4sarx_trdy,
+--		sparx_end  => ipv4sarx_end,
+--		sparx_equ  => ipv4sarx_equ,
+--
+--		spatx_frm  => ipv4satx_frm,
+--		spatx_irdy => ipv4satx_irdy,
+--		spatx_trdy => ipv4satx_trdy,
+--		spatx_end  => ipv4satx_end,
+--		spatx_data => ipv4satx_data,
+--
+--		arpdtx_frm  => arptx_frm,
+--		dlltx_full  => mactx_full,
+--		dlltx_irdy  => '1', --open,
+--		arpdtx_irdy => arptx_irdy,
+--		arpdtx_trdy => arptx_trdy,
+--		arpdtx_end  => arptx_end,
+--		arpdtx_data => arptx_data);
 
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
