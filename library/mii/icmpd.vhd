@@ -160,15 +160,17 @@ begin
 	begin
 
 		process (mii_clk)
+			variable q : std_logic;
 		begin 
 			if rising_edge(mii_clk) then
 				if (icmp_req xor icmp_rdy)='0' then
-					if icmprx_frm='1' then
+					if (icmprx_frm and not q)='1' then
 						icmp_req <= not icmp_rdy;
 					end if;
 				elsif (icmptx_end and icmptx_trdy)='1' then
 					icmp_rdy <= icmp_req;
 				end if;
+				q := icmprx_frm;
 			end if;
 		end process;
 
@@ -185,7 +187,7 @@ begin
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 3)
+			m => 7)
 		port map (
 			src_clk  => mii_clk,
 			src_frm  => dll_frm,

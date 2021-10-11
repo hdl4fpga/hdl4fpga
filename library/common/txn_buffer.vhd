@@ -76,10 +76,8 @@ begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
 				cntr := (others => '0');
-			elsif (src_irdy and src_trdy and not src_end)='1' then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
+			elsif (di_irdy and di_trdy and not src_end)='1' then
+				cntr := cntr + 1;
 			end if;
 			q := (src_frm and not src_end and commit);
 		end if;
@@ -91,8 +89,9 @@ begin
 	do_trdy <= dst_frm        and dst_irdy;
 	data_e : entity hdl4fpga.fifo
 	generic map (
-		check_dov => false,
-		max_depth => 2**(m+1),
+		check_dov => true,
+		check_sov => true,
+		max_depth => 2**m,
 		latency   => 0)
 	port map(
 		src_clk   => src_clk,
@@ -133,7 +132,7 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if dst_frm='1' then
-				if (dst_irdy and dst_trdy)='1' then
+				if (do_irdy and do_trdy)='1' then
 					if cntr <= unsigned(tx_data(cntr'range)) then
 						cntr := cntr + 1;
 					end if;
