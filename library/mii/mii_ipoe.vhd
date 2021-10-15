@@ -257,10 +257,10 @@ begin
 	begin
 		tp(2 to 32) <= tp1(2 to 32);
 
-		tp(2) <=miitx_frm;  -- ethtx_frm;
-		tp(3) <=miitx_irdy; -- ethpltx_irdy;
-		tp(4) <=miitx_trdy; -- ethpltx_trdy;
-		tp(5) <=miitx_end;  -- ethpltx_end;
+---		tp(2) <=miitx_frm;  -- ethtx_frm;
+---		tp(3) <=miitx_irdy; -- ethpltx_irdy;
+---		tp(4) <=miitx_trdy; -- ethpltx_trdy;
+---		tp(5) <=miitx_end;  -- ethpltx_end;
 
 
 	end process;

@@ -112,7 +112,7 @@ begin
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
-		max_depth  => 2)
+		max_depth  => 4)
 	port map (
 		src_clk    => src_clk,
 		src_irdy   => rx_irdy,
@@ -126,7 +126,7 @@ begin
 		dst_trdy   => tx_trdy,
 		dst_data   => tx_data);
 
-	process (dst_frm, dst_trdy, tx_data, src_clk)
+	process (dst_frm, tx_data, src_clk)
 		variable q    : std_logic;
 		variable cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
 	begin

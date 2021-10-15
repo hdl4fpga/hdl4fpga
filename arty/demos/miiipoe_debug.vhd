@@ -138,6 +138,7 @@ begin
 		signal mii_rxd    : std_logic_vector(eth_rxd'range);
 		signal mii_txd    : std_logic_vector(eth_rxd'range);
 
+		signal mii_frm    : std_ulogic;
 		signal miirx_frm  : std_ulogic;
 		signal miirx_irdy : std_logic;
 		signal miirx_trdy : std_logic;
@@ -263,8 +264,8 @@ begin
 					dst_trdy <= to_stdulogic(to_bit(dst_irdy));
 				end if;
 			end process;
-			miirx_frm <= txc_rxbus(0);
-			mii_rxd	  <= txc_rxbus(1 to mii_rxd'length);
+			mii_frm <= txc_rxbus(0);
+			mii_rxd <= txc_rxbus(1 to mii_rxd'length);
 
 
 		end block;
@@ -272,12 +273,12 @@ begin
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => mii_txc,
-			serdes_frm => miirx_frm,
+			serdes_frm => mii_frm,
 			ser_irdy   => '1',
 			ser_trdy   => open,
 			ser_data   => mii_rxd,
 
-			des_frm    => open,
+			des_frm    => miirx_frm,
 			des_irdy   => miirx_irdy,
 			des_trdy   => miirx_trdy,
 			des_data   => miirx_data);
