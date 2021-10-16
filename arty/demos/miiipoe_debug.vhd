@@ -295,6 +295,7 @@ begin
 		led(1) <= tp(4);
 		led(2) <= tp(3);
 		led(3) <= tp(2);
+		rgbled(2 downto 0) <= (others => tp(6));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (

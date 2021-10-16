@@ -69,21 +69,26 @@ architecture def of txn_buffer is
 
 begin
 
-	process (src_frm, src_tag, src_end, src_clk)
-		variable cntr : unsigned(0 to rx_data'length-src_tag'length-1);
-		variable q    : std_logic;
+	xxx_b : block
+		signal d : std_logic;
 	begin
-		if rising_edge(src_clk) then
-			if src_frm='0' then
-				cntr := (others => '0');
-			elsif (di_irdy and di_trdy and not src_end)='1' then
-				cntr := cntr + 1;
+		d <= src_frm and not src_end and commit;
+		process (src_tag, d, src_clk)
+			variable cntr : unsigned(0 to rx_data'length-src_tag'length-1);
+			variable q    : std_logic;
+		begin
+			if rising_edge(src_clk) then
+				if src_frm='0' then
+					cntr := (others => '0');
+				elsif (di_irdy and di_trdy and not src_end)='1' then
+					cntr := cntr + 1;
+				end if;
+				q := d;
 			end if;
-			q := (src_frm and not src_end and commit);
-		end if;
-		rx_data <= std_logic_vector(cntr) & src_tag;
-		rx_irdy <= not (src_frm and not src_end and commit) and q;
-	end process;
+			rx_data <= std_logic_vector(cntr) & src_tag;
+			rx_irdy <= not d and q;
+		end process;
+	end block;
 
 	di_irdy <= not rx_data(0) and src_irdy;
 	do_trdy <= dst_frm        and dst_irdy;
@@ -112,7 +117,7 @@ begin
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
-		max_depth  => 4)
+		max_depth  => 2)
 	port map (
 		src_clk    => src_clk,
 		src_irdy   => rx_irdy,
@@ -137,7 +142,7 @@ begin
 						cntr := cntr + 1;
 					end if;
 				end if;
-			else
+			elsif dst_end='1' then
 				cntr := (others => '0');
 			end if;
 			q := dst_frm;

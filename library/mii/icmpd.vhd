@@ -266,5 +266,6 @@ begin
 	tp(3) <= icmppltx_irdy;
 	tp(4) <= icmppltx_trdy;
 	tp(5) <= icmppltx_end ; --icmppltx_end;
+	tp(6) <= metatx_end ; --icmppltx_end;
 
 end;
