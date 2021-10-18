@@ -69,25 +69,24 @@ architecture def of txn_buffer is
 
 begin
 
-	xxx_b : block
-		signal d : std_logic;
+	rx_b : block
+		signal d, q : std_logic;
+		signal cntr : unsigned(0 to rx_data'length-src_tag'length-1);
 	begin
 		d <= src_frm and not src_end and commit;
-		process (src_tag, d, src_clk)
-			variable cntr : unsigned(0 to rx_data'length-src_tag'length-1);
-			variable q    : std_logic;
+		process (src_clk)
 		begin
 			if rising_edge(src_clk) then
 				if src_frm='0' then
-					cntr := (others => '0');
+					cntr <= (others => '0');
 				elsif (di_irdy and di_trdy and not src_end)='1' then
-					cntr := cntr + 1;
+					cntr <= cntr + 1;
 				end if;
-				q := d;
+				q <= d;
 			end if;
-			rx_data <= std_logic_vector(cntr) & src_tag;
-			rx_irdy <= not d and q;
 		end process;
+		rx_data <= std_logic_vector(cntr) & src_tag;
+		rx_irdy <= not d and q;
 	end block;
 
 	di_irdy <= not rx_data(0) and src_irdy;
@@ -131,25 +130,29 @@ begin
 		dst_trdy   => tx_trdy,
 		dst_data   => tx_data);
 
-	process (dst_frm, tx_data, src_clk)
-		variable q    : std_logic;
-		variable cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
+	tx_b : block
+		signal d, q : std_logic;
+		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
 	begin
-		if rising_edge(src_clk) then
-			if dst_frm='1' then
-				if (do_irdy and do_trdy)='1' then
-					if cntr <= unsigned(tx_data(cntr'range)) then
-						cntr := cntr + 1;
+		d <= dst_frm;
+		process (src_clk)
+		begin
+			if rising_edge(src_clk) then
+				if dst_frm='1' then
+					if (do_irdy and do_trdy)='1' then
+						if cntr <= unsigned(tx_data(cntr'range)) then
+							cntr <= cntr + 1;
+						end if;
 					end if;
+				elsif dst_end='1' then
+					cntr <= (others => '0');
 				end if;
-			elsif dst_end='1' then
-				cntr := (others => '0');
+				q <= d;
 			end if;
-			q := dst_frm;
-		end if;
-		tx_trdy <= not dst_frm and q;
+		end process;
+		tx_trdy <= not d and q;
 		dst_end <= (not setif(cntr <= unsigned(tx_data(cntr'range))));
-	end process;
+	end block;
 
 	src_trdy <=  not rx_data(0) and di_trdy and src_frm;
 	dst_trdy <= (not tx_data(0) and do_irdy) or (dst_end and dst_frm);

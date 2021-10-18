@@ -121,6 +121,11 @@ begin
 	end process;
 	crc_equ <= setif(crc_rem=x"38fb2284");
 
-	mii_trdy <= primux(hwda_trdy & hwsa_trdy & hwtyp_trdy & pl_trdy, hwda_frm & hwsa_frm & hwtyp_frm & pl_frm, "1")(0);
+	mii_trdy <= 
+	   hwda_trdy  when hwda_frm='1'  else
+	   hwsa_trdy  when hwsa_frm='1'  else
+	   hwtyp_trdy when hwtyp_frm='1' else
+	   pl_trdy    when pl_frm='1'    else
+	   '1';
 end;
 

@@ -144,7 +144,7 @@ architecture def of eth_tb is
 
 	signal pl_frm     : std_logic;
 	signal pl_trdy    : std_logic;
-	signal pl_end     : std_logic;
+	signal pl_end     : std_logic_vector(0 to 0);
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
 	signal miirx_frm  : std_logic;
@@ -203,7 +203,7 @@ begin
 		so_end   => eth4_end,
         so_data  => eth4_txd);
 
-	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end & eth4_end, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4)(0);
+	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end & eth4_end, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4);
 	pl_data <= wirebus(eth1_txd & eth2_txd & eth3_txd & eth4_txd, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4);
 	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800" & x"0800" & x"0800"), mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4); -- Qualified expression required by Latticesemi Diamond
 
@@ -241,7 +241,7 @@ begin
 
 		pl_frm   => pl_frm,
 		pl_trdy  => pl_trdy,
-		pl_end   => pl_end,
+		pl_end   => pl_end(0),
 		pl_data  => pl_data,
 
 		hwllc_irdy => hwllc_irdy,

@@ -218,6 +218,7 @@ begin
 		signal ci : std_logic;
 		signal co : std_logic;
 		signal data : std_logic_vector(icmptx_data'range);
+			constant kk : std_logic_vector := (0 to icmptx_data'length-1 => '0');
 	begin
 		process (icmpcksmtx_frm, mii_clk)
 			variable cy : std_logic;
@@ -238,7 +239,7 @@ begin
 		port map (
 			ci  => ci,
 			a   => memtx_data,
-			b   => (icmptx_data'range => '0'),
+			b   => kk,
 			s   => data,
 			co  => co);
 		icmppltx_data <= data when icmpcksmtx_frm='0' else reverse(data);

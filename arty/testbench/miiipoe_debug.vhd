@@ -50,7 +50,7 @@ begin
 	btn0 <= '0', '1' after 2000 ns;
 	btn1 <= 
 		'0',                 '1' after  2.000 us,
---		'0' after  10.750 us, '1' after  10.8 us,
+		'0' after  10.750 us, '1' after  10.8 us,
 		'0' after 19.525 us, '1' after 19.600 us;
 
 	du_e : entity work.arty(miiipoe_debug)

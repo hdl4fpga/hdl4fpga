@@ -55,7 +55,7 @@ entity nuhs3adsp is
 		hsync : out std_logic := '0';
 		vsync : out std_logic := '0';
 		clk_videodac : out std_logic := '1';
-		blankn : out std_logic := '0';
+		blankn : out std_logic := '1';
 		sync  : out std_logic := '0';
 		psave : out std_logic := '0';
 		red   : out std_logic_vector(8-1 downto 0) := (others => '0');
