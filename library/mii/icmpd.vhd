@@ -84,6 +84,7 @@ architecture def of icmpd is
 	signal memrx_frm  : std_logic;
 	signal memrx_data : std_logic_vector(icmprx_data'range);
 	signal memtx_data : std_logic_vector(icmptx_data'range);
+		signal tp1 :  std_logic_vector(1 to 32);
 begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
@@ -164,8 +165,8 @@ begin
 		begin 
 			if rising_edge(mii_clk) then
 				if (icmp_req xor icmp_rdy)='0' then
-					if (icmprx_frm and not q)='1' then
 						icmp_req <= not icmp_rdy;
+					if (icmprx_frm and not q)='1' then
 					end if;
 					q := icmprx_frm;
 				else
@@ -194,6 +195,7 @@ begin
 		generic map (
 			m => 7)
 		port map (
+		tp => tp1,
 			src_clk  => mii_clk,
 			src_frm  => dll_frm,
 			src_irdy => icmpdata_irdy,
@@ -268,5 +270,7 @@ begin
 	tp(4) <= icmppltx_trdy;
 	tp(5) <= icmppltx_end ; --icmppltx_end;
 	tp(6) <= metatx_end ; --icmppltx_end;
+	tp(7) <=tp1(1);
+	tp(8) <=tp1(2);
 
 end;
