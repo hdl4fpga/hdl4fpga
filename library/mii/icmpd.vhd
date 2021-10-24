@@ -165,8 +165,9 @@ begin
 		begin 
 			if rising_edge(mii_clk) then
 				if (icmp_req xor icmp_rdy)='0' then
+--					if (icmprx_frm and not q)='1' then
+					if icmprx_frm='1' then
 						icmp_req <= not icmp_rdy;
-					if (icmprx_frm and not q)='1' then
 					end if;
 					q := icmprx_frm;
 				else

@@ -140,13 +140,13 @@ begin
 		process (src_clk)
 		begin
 			if rising_edge(src_clk) then
-				if tx_trdy='0' then
+				if dst_frm='1' then
 					if (do_irdy and do_trdy)='1' then
 						if dst_end='0' then
 							cntr <= cntr + 1;
 						end if;
 					end if;
-				else
+				elsif q='1' then
 					cntr <= (others => '0');
 				end if;
 				q <= d;
