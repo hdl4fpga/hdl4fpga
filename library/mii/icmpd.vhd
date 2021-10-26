@@ -171,7 +171,7 @@ begin
 					end if;
 					q := icmprx_frm;
 				else
-					if (icmptx_end and icmptx_trdy)='1' then
+					if (icmppltx_end and icmppltx_trdy)='1' then
 						icmp_rdy <= icmp_req;
 					end if;
 					if q='1' then

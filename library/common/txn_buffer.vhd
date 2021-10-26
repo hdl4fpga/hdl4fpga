@@ -133,7 +133,7 @@ begin
 
 	tx_b : block
 		signal d, q : std_logic;
-		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
+		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1) :=(others => '0');
 	begin
 		d <= dst_frm and dst_end and dst_irdy;
 
