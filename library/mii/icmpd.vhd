@@ -150,8 +150,7 @@ begin
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
 	icmpdatatx_trdy <= 
 		  metatx_irdy   when metatx_end='0'   else
-		  icmppltx_trdy when icmppltx_end='0' else
-		  '0';
+		  icmppltx_trdy;
 
 	buffer_e : block
 		signal miirx_end : std_logic;
@@ -269,8 +268,8 @@ begin
 	tp(2) <= icmppltx_frm;
 	tp(3) <= icmppltx_irdy;
 	tp(4) <= icmppltx_trdy;
-	tp(5) <= icmppltx_end ; --icmppltx_end;
-	tp(6) <= metatx_end ; --icmppltx_end;
+	tp(5) <= icmppltx_end;
+	tp(6) <= metatx_end;
 	tp(7) <=tp1(1);
 	tp(8) <=tp1(2);
 

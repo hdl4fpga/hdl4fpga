@@ -91,7 +91,7 @@ begin
 	end block;
 
 	di_irdy <= not rx_data(0) and src_irdy;
-	do_trdy <= dst_frm        and dst_irdy;
+	do_trdy <= dst_frm        and dst_irdy and not dst_end;
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		check_dov => true,
