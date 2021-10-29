@@ -33,7 +33,8 @@ entity txn_buffer is
 		m : natural := 7;
 		n : natural := 1);
 	port (
-		tp : out std_logic_vector(1 to 32);
+		tp          : out std_logic_vector(1 to 32);
+		
 		src_clk     : in  std_logic;
 		src_frm     : in  std_logic;
 		src_irdy    : in  std_logic;
@@ -43,11 +44,11 @@ entity txn_buffer is
 		src_data    : in  std_logic_vector;
 		rollback    : in  std_logic;
 		commit      : in  std_logic;
-		tx_irdy     : out  std_logic;
+		tx_irdy     : out std_logic;
 
 
 		dst_frm     : in  std_logic;
-		dst_irdy    : in std_logic;
+		dst_irdy    : in  std_logic;
 		dst_trdy    : buffer std_logic;
 		dst_end     : buffer std_logic;
 		dst_tag     : out std_logic_vector(0 to n-1);
@@ -70,6 +71,9 @@ architecture def of txn_buffer is
 
 begin
 
+	tp(1) <= do_irdy;
+	tp(2) <= do_trdy;
+	
 	rx_b : block
 		signal d, q : std_logic;
 		signal cntr : unsigned(0 to rx_data'length-src_tag'length-1);
@@ -135,8 +139,8 @@ begin
 		signal d, q : std_logic;
 		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1) :=(others => '0');
 	begin
+	
 		d <= dst_frm and dst_end and dst_irdy;
-
 		process (src_clk)
 		begin
 			if rising_edge(src_clk) then
@@ -156,8 +160,6 @@ begin
 		tx_trdy <= not d and q;
 		dst_end <= (not setif(cntr < unsigned(tx_data(cntr'range))));
 	end block;
-	tp(1) <= do_irdy;
-	tp(2) <= do_trdy;
 
 	src_trdy <=  not rx_data(0) and di_trdy and src_frm;
 	dst_trdy <= (not tx_data(0) and do_irdy) or (dst_end and dst_frm);

@@ -220,7 +220,7 @@ begin
 		signal ci : std_logic;
 		signal co : std_logic;
 		signal data : std_logic_vector(icmptx_data'range);
-			constant kk : std_logic_vector := (0 to icmptx_data'length-1 => '0');
+		constant kk : std_logic_vector := (0 to icmptx_data'length-1 => '0');
 	begin
 		process (icmpcksmtx_frm, mii_clk)
 			variable cy : std_logic;

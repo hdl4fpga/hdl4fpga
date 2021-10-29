@@ -224,7 +224,7 @@ begin
 		pl_frm <= frm;
 	end process;
 
-	llc_data <= reverse(x"00_40_00_01_02_03" & reverse(x"f1_f2_f3_f4_f5_f6",8) & eth_llc,8);
+	llc_data <= reverse(x"00_40_00_01_02_03" & x"ff_ff_ff_ff_ff_ff" & eth_llc,8);
 	hwsa_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => llc_data,
