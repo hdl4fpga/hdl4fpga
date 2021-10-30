@@ -34,7 +34,7 @@ entity txn_buffer is
 		n : natural := 1);
 	port (
 		tp       : out std_logic_vector(1 to 32);
-		
+
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic;
 		src_irdy : in  std_logic;
@@ -73,7 +73,7 @@ begin
 
 	tp(1) <= do_irdy;
 	tp(2) <= do_trdy;
-	
+
 	rx_b : block
 		signal d, q : std_logic;
 		signal cntr : unsigned(0 to rx_data'length-src_tag'length-1);
@@ -101,7 +101,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 0)
+		latency   => 1)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,
@@ -139,7 +139,7 @@ begin
 		signal d, q : std_logic;
 		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1) :=(others => '0');
 	begin
-	
+
 		d <= dst_frm and dst_end and dst_irdy;
 		process (src_clk)
 		begin
