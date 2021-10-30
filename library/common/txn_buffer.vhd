@@ -33,26 +33,26 @@ entity txn_buffer is
 		m : natural := 7;
 		n : natural := 1);
 	port (
-		tp          : out std_logic_vector(1 to 32);
+		tp       : out std_logic_vector(1 to 32);
 		
-		src_clk     : in  std_logic;
-		src_frm     : in  std_logic;
-		src_irdy    : in  std_logic;
-		src_trdy    : buffer std_logic;
-		src_end     : in  std_logic := '0';
-		src_tag     : in  std_logic_vector(0 to n-1) := (0 to n-1 => '-');
-		src_data    : in  std_logic_vector;
-		rollback    : in  std_logic;
-		commit      : in  std_logic;
-		tx_irdy     : out std_logic;
+		src_clk  : in  std_logic;
+		src_frm  : in  std_logic;
+		src_irdy : in  std_logic;
+		src_trdy : buffer std_logic;
+		src_end  : in  std_logic := '0';
+		src_tag  : in  std_logic_vector(0 to n-1) := (0 to n-1 => '-');
+		src_data : in  std_logic_vector;
+		rollback : in  std_logic;
+		commit   : in  std_logic;
+		tx_irdy  : out std_logic;
 
 
-		dst_frm     : in  std_logic;
-		dst_irdy    : in  std_logic;
-		dst_trdy    : buffer std_logic;
-		dst_end     : buffer std_logic;
-		dst_tag     : out std_logic_vector(0 to n-1);
-		dst_data    : out std_logic_vector);
+		dst_frm  : in  std_logic;
+		dst_irdy : in  std_logic;
+		dst_trdy : buffer std_logic;
+		dst_end  : buffer std_logic;
+		dst_tag  : out std_logic_vector(0 to n-1);
+		dst_data : out std_logic_vector);
 end;
 
 architecture def of txn_buffer is
@@ -121,7 +121,7 @@ begin
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
-		max_depth  => 4)
+		max_depth  => 2)
 	port map (
 		src_clk    => src_clk,
 		src_irdy   => rx_irdy,
