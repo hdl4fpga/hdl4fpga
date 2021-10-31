@@ -48,15 +48,21 @@ begin
 	clk  <= not clk after 5 ns;
 	rst  <= '1', '0' after 1000 ns;
 	btn0 <= '0', '1' after 2000 ns;
-	process(rst, btn1)
+	process
+		variable n : natural := 0;
 	begin
 		if rst='0' then
 			if btn1='1' then
 				btn1 <= '0' after 8.750 us;
+				n := n + 1;
 			else
+				if n > 1 then
+					wait;
+				end if;
 				btn1 <= '1' after 0.050 us;
 			end if;
 		end if;
+		wait on rst, btn1;
 	end process;
 
 	du_e : entity work.arty(miiipoe_debug)

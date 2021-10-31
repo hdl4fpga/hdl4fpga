@@ -101,7 +101,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 1)
+		latency   => 2)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,
@@ -117,7 +117,7 @@ begin
 		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
 
-	rx_writ <= not rx_data(0) and (commit or rx_irdy);
+	rx_writ <= (not rx_data(0) and (commit or rx_irdy)) or not src_frm;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
