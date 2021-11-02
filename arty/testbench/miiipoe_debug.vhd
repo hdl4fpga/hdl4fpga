@@ -47,13 +47,16 @@ begin
 
 	clk  <= not clk after 5 ns;
 	rst  <= '1', '0' after 1000 ns;
-	btn0 <= '0', '1' after 2000 ns;
+--	btn0 <= '0', '1' after 2000 ns;
 	process
 		variable n : natural := 0;
 	begin
 		if rst='0' then
 			if btn1='1' then
 				btn1 <= '0' after 8.750 us;
+				if n > 0 then
+					btn0 <= '1' after 8.800 us;
+				end if;
 				n := n + 1;
 			else
 				if n > 1 then
@@ -75,7 +78,7 @@ begin
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
 		sw => "0110",
-		btn(0) => '0', --btn0,
+		btn(0) => btn0,
 		btn(1) => '0', --btn1,
 		btn(2) => btn1,
 		btn(3) => '0'); --btn1);

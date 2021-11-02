@@ -82,7 +82,7 @@ entity ipv4 is
 
 
 		mactx_irdy    : out std_logic;
-		mactx_full     : in  std_logic;
+		mactx_full    : in  std_logic;
 
 		ipv4tx_frm    : buffer std_logic := '0';
 		ipv4tx_irdy   : buffer std_logic;
@@ -369,10 +369,10 @@ begin
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
 
-		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy); 
+		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
 
 		ipdatx_irdy     <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt);
-		udpipdatx_irdy  <= 
+		udpipdatx_irdy  <=
 			'0' when mactx_full='0'    else
 			'1';
 		icmpipdatx_irdy <= '0' when iplentx_full='0' else '1';
@@ -450,8 +450,8 @@ begin
 				so_end   => ipv4len_end,
 				so_data  => ipv4len_data);
 
-			ppltx_data <= 
-				ipv4pltx_data when mactx_full='0'   else 
+			ppltx_data <=
+				ipv4pltx_data when mactx_full='0'   else
 				len_datai     when iplentx_full='0' else
 				ipv4pltx_data;
 
@@ -573,6 +573,7 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		metatx_end  => ipv4datx_full,
+		metatx_irdy => ipv4datx_full,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
@@ -625,7 +626,7 @@ begin
 --		udptx_irdy   => udptx_irdy,
 --		udptx_trdy   => udptx_trdy,
 --		udptx_end    => udptx_end ,
---		udptx_data   => udptx_data); 
+--		udptx_data   => udptx_data);
 
 	plrx_data <= udpplrx_data;
 end;

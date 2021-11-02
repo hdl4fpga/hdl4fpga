@@ -211,12 +211,12 @@ begin
         si2_data  => miirx_data,
 		si_equ    => bcstrx_equ);
 
-	hwda_frm <= 
-		miirx_frm when hwdarx_vld='0' else 
+	hwda_frm <=
+		miirx_frm when hwdarx_vld='0' else
 		ipv4hwda_frm;
 
 	hwda_irdy <=
-		hwdarx_irdy when hwdarx_vld='0' else 
+		hwdarx_irdy when hwdarx_vld='0' else
 		ipv4hwda_irdy;
 
 	hwdacmp_e : entity hdl4fpga.sio_muxcmp
@@ -310,18 +310,18 @@ begin
 	begin
 
 		dev_req <= arptx_frm & ipv4tx_frm;
---		arbiter_e : entity hdl4fpga.arbiter
---		port map (
---			clk => mii_clk,
---			req => dev_req,
---			gnt => dev_gnt);
-		dev_gnt <= "01";
+		arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => mii_clk,
+			req => dev_req,
+			gnt => dev_gnt);
+--		dev_gnt <= "01";
 
 		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
-		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy); 
+		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
 
 		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
 
@@ -418,36 +418,36 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
---	arpd_e : entity hdl4fpga.arpd
---	generic map (
---		hwsa       => my_mac)
---	port map (
---		mii_clk    => mii_clk,
---
---		arpdtx_req => arp_req,
---		arpdtx_rdy => arp_rdy,
---		arprx_frm  => arprx_frm,
---		arprx_irdy => miirx_irdy,
---		arprx_data => miirx_data,
---
---		sparx_irdy => ipv4sarx_irdy,
---		sparx_trdy => ipv4sarx_trdy,
---		sparx_end  => ipv4sarx_end,
---		sparx_equ  => ipv4sarx_equ,
---
---		spatx_frm  => ipv4satx_frm,
---		spatx_irdy => ipv4satx_irdy,
---		spatx_trdy => ipv4satx_trdy,
---		spatx_end  => ipv4satx_end,
---		spatx_data => ipv4satx_data,
---
---		arpdtx_frm  => arptx_frm,
---		dlltx_full  => mactx_full,
---		dlltx_irdy  => '1', --open,
---		arpdtx_irdy => arptx_irdy,
---		arpdtx_trdy => arptx_trdy,
---		arpdtx_end  => arptx_end,
---		arpdtx_data => arptx_data);
+	arpd_e : entity hdl4fpga.arpd
+	generic map (
+		hwsa       => my_mac)
+	port map (
+		mii_clk    => mii_clk,
+
+		arpdtx_req => arp_req,
+		arpdtx_rdy => arp_rdy,
+		arprx_frm  => arprx_frm,
+		arprx_irdy => miirx_irdy,
+		arprx_data => miirx_data,
+
+		sparx_irdy => ipv4sarx_irdy,
+		sparx_trdy => ipv4sarx_trdy,
+		sparx_end  => ipv4sarx_end,
+		sparx_equ  => ipv4sarx_equ,
+
+		spatx_frm  => ipv4satx_frm,
+		spatx_irdy => ipv4satx_irdy,
+		spatx_trdy => ipv4satx_trdy,
+		spatx_end  => ipv4satx_end,
+		spatx_data => ipv4satx_data,
+
+		arpdtx_frm  => arptx_frm,
+		dlltx_full  => mactx_full,
+		dlltx_irdy  => '1', --open,
+		arpdtx_irdy => arptx_irdy,
+		arpdtx_trdy => arptx_trdy,
+		arpdtx_end  => arptx_end,
+		arpdtx_data => arptx_data);
 
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
@@ -478,7 +478,7 @@ begin
 		hwda_trdy     => hwda_trdy,
 		hwda_last     => hwda_last,
 		hwda_equ      => hwda_equ,
-		hwdarx_vld    => hwda_vld,
+		hwdarx_vld    => hwdarx_vld,
 
 		ipv4satx_frm  => ipv4satx_frm,
 		ipv4satx_irdy => ipv4satx_irdy,
@@ -500,7 +500,7 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
-		mactx_full     => mactx_full,
+		mactx_full    => mactx_full,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,
@@ -563,12 +563,12 @@ begin
 		so_data  => tag_data);
 
 	plrx_frm  <= tag_frm;
-	plrx_irdy <= 
+	plrx_irdy <=
 		'0'      when tag_frm='0' else
 		tag_trdy when tag_end='0' else
 		fifo_trdy;
-	plrx_data <= 
-		tag_data when tag_end='0' else 
+	plrx_data <=
+		tag_data when tag_end='0' else
 		fifo_data;
 
 end;

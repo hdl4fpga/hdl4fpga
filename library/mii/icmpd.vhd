@@ -81,6 +81,8 @@ architecture def of icmpd is
 	signal rx_cy       : std_logic_vector(0 to 0);
 	signal tx_cy       : std_logic_vector(0 to 0);
 
+	signal miirx_frm  : std_logic;
+
 	signal memrx_frm  : std_logic;
 	signal memrx_data : std_logic_vector(icmprx_data'range);
 	signal memtx_data : std_logic_vector(icmptx_data'range);
@@ -139,18 +141,16 @@ begin
 			co  => co);
 	end block;
 
-	memrx_data <= 
---		x"f1" when icmpcoderx_frm='1' else
---		x"f2"  when icmptyperx_frm='1' else 
+	memrx_data <=
 		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
-		(icmptx_data'range => '0') when icmptyperx_frm='1' else 
+		(icmptx_data'range => '0') when icmptyperx_frm='1' else
 		cksmrx_data                when icmpcksmrx_frm='1' else
 		icmprx_data;
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
-	icmpdatatx_trdy <= 
-		  metatx_irdy   when metatx_end='0'   else
-		  icmppltx_trdy;
+	icmpdatatx_trdy <=
+		metatx_irdy when metatx_end='0' else
+		icmppltx_trdy;
 
 	buffer_e : block
 		signal miirx_end : std_logic;
@@ -160,22 +160,14 @@ begin
 	begin
 
 		process (mii_clk)
-			variable q : std_logic;
-		begin 
+		begin
 			if rising_edge(mii_clk) then
 				if (icmp_req xor icmp_rdy)='0' then
---					if (icmprx_frm and not q)='1' then
 					if icmprx_frm='1' then
 						icmp_req <= not icmp_rdy;
 					end if;
-					q := icmprx_frm;
-				else
-					if (icmppltx_end and icmppltx_trdy)='1' then
-						icmp_rdy <= icmp_req;
-					end if;
-					if q='1' then
-						q := icmprx_frm;
-					end if;
+				elsif (icmppltx_end and icmppltx_trdy)='1' then
+					icmp_rdy <= icmp_req;
 				end if;
 			end if;
 		end process;
@@ -186,9 +178,10 @@ begin
 			if rising_edge(mii_clk) then
 				q := dll_frm;
 			end if;
+			miirx_frm <=     dll_frm or  q;
 			miirx_end <= not dll_frm and q;
 		end process;
-		rollback <= not dll_frm;
+		rollback <= not miirx_frm;
 
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
 		buffer_e : entity hdl4fpga.txn_buffer
@@ -197,7 +190,7 @@ begin
 		port map (
 		tp => tp1,
 			src_clk  => mii_clk,
-			src_frm  => dll_frm,
+			src_frm  => miirx_frm,
 			src_irdy => icmpdata_irdy,
 			src_trdy => open,
 			src_end  => miirx_end,

@@ -94,14 +94,14 @@ begin
 		rx_irdy <= not d and q;
 	end block;
 
-	di_irdy <= not rx_data(0) and src_irdy;
+	di_irdy <= not rx_data(0) and src_irdy and src_frm;
 	do_trdy <= dst_frm        and dst_irdy and not dst_end;
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 2)
+		latency   => 3)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,

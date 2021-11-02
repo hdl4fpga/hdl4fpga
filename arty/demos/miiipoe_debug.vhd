@@ -45,7 +45,7 @@ architecture miiipoe_debug of arty is
 
 	type video_modes is (
 		mode480p,
-		mode600p, 
+		mode600p,
 		mode1080p);
 
 	type videoparams_vector is array (video_modes) of video_params;
@@ -178,7 +178,7 @@ begin
 		signal si_req : bit;
 		signal si_rdy : bit;
 		constant txpkt  : std_logic_vector := reverse(
-			x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address 
+			x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address
 			x"ff_ff_ff_ff"       &  -- Destination IP address
 			x"dea9"              &  -- UDP source port
 			x"de00"              &  -- UDP destination port
@@ -198,7 +198,7 @@ begin
 		htb_btn2 <= btn(2) when sw(3 downto 2)="01" else '0';
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm1 => '0', --btn(1),
+			mii_frm1 => btn(0),
 			mii_frm2 => htb_btn2, --'0', --btn(1),
 			mii_frm3 => '0', --btn(1),
 			mii_frm4 => '0', --,
@@ -287,7 +287,7 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
+					dhcpcd_req <= '0'; --dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
 				end if;
 			end if;
 		end process;
@@ -367,9 +367,9 @@ begin
 
 		mii_txen  <= miitx_frm and not miitx_end;
 
-		process(mii_txc) 
-			variable en : std_logic; 
-			variable d  : std_logic_vector(mii_txd'range); 
+		process(mii_txc)
+			variable en : std_logic;
+			variable d  : std_logic_vector(mii_txd'range);
 		begin
 			if rising_edge(mii_txc) then
 				eth_tx_en <= en;
