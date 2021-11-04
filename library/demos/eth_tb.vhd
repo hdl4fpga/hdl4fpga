@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity eth_tb is 
+entity eth_tb is
 	port (
 		mii_frm1  : in  std_logic := '0';
 		mii_frm2  : in  std_logic := '0';
@@ -45,13 +45,13 @@ architecture def of eth_tb is
 	constant arppkt : std_logic_vector :=
 		x"0000"                 & -- arp_htype
 		x"0000"                 & -- arp_ptype
-		x"00"                   & -- arp_hlen 
-		x"00"                   & -- arp_plen 
-		x"0000"                 & -- arp_oper 
-		x"00_00_00_00_00_00"    & -- arp_sha  
-		x"00_00_00_00"          & -- arp_spa  
-		x"00_00_00_00_00_00"    & -- arp_tha  
-		x"c0_a8_00_0e";           -- arp_tpa  
+		x"00"                   & -- arp_hlen
+		x"00"                   & -- arp_plen
+		x"0000"                 & -- arp_oper
+		x"00_00_00_00_00_00"    & -- arp_sha
+		x"00_00_00_00"          & -- arp_spa
+		x"00_00_00_00_00_00"    & -- arp_tha
+		x"c0_a8_00_0e";           -- arp_tpa
 
 	constant icmppkt : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
@@ -73,12 +73,9 @@ architecture def of eth_tb is
 		x"00000000" &
 		x"00000000" &
 		x"00000000" &
-		x"00000000" &
-		x"00000000" &
-		x"00000000" &
 		x"ffffffaa" ;
 
-	constant payload : std_logic_vector := 
+	constant payload : std_logic_vector :=
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
 			x"00000000"  &
@@ -86,12 +83,12 @@ architecture def of eth_tb is
 			x"c0a80002"  &    -- YIADDR
 			x"00000000"  &    -- SIADDR
 			x"00000000"  &    -- GIADDR
-			x"00400001"  &    -- CHADDR  
-			x"02030000"  &    -- CHADDR  
+			x"00400001"  &    -- CHADDR
+			x"02030000"  &    -- CHADDR
 			x"00000000"  &    -- CHADDR
 			x"00000000"  &    -- CHADDR
 			(0 to 192*8-1 => '0') ;
-	constant packet : std_logic_vector := 
+	constant packet : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
@@ -110,7 +107,7 @@ architecture def of eth_tb is
 			payload);
 
 	constant pyld1 : std_logic_vector := x"0100ff";
-	constant pkt1 : std_logic_vector := 
+	constant pkt1 : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
@@ -175,7 +172,7 @@ begin
 		sio_irdy => pl_trdy,
 		so_end   => eth1_end,
 		so_data  => eth1_txd);
-	
+
 	eth2_e: entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(icmppkt,8),

@@ -557,6 +557,7 @@ begin
 
 --	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
 
+	metatx_irdy <= not ipv4datx_full;
 	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
 	icmpd_e : entity hdl4fpga.icmpd
 	port map (
@@ -573,7 +574,7 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		metatx_end  => ipv4datx_full,
-		metatx_irdy => '1',
+		metatx_irdy => metatx_irdy,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,

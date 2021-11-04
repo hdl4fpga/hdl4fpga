@@ -424,7 +424,7 @@ begin
 	port map (
 		mii_clk    => mii_clk,
 
-		arpdtx_req => arp_req,
+		arpdtx_req => '0', --arp_req,
 		arpdtx_rdy => arp_rdy,
 		arprx_frm  => arprx_frm,
 		arprx_irdy => miirx_irdy,
