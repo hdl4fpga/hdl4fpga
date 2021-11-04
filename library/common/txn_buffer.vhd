@@ -77,13 +77,8 @@ begin
 	rx_b : block
 		signal d, q : std_logic;
 		signal cntr : unsigned(0 to rx_data'length-src_tag'length-1);
-		signal add1 : unsigned(0 to rx_data'length-src_tag'length-1);
 	begin
 		d <= src_frm and not src_end and commit;
-
-		add1 <=
-			cntr+1 when src_frm='1' and src_end='0' else
-			(cntr'range => '0');
 
 		process (src_clk)
 		begin
@@ -96,7 +91,8 @@ begin
 				q <= d;
 			end if;
 		end process;
-		rx_data <= std_logic_vector(cntr) & src_tag;
+		--rx_data <= word2byte(std_logic_vector(cntr) & (cntr'range => '0'), rollback) & src_tag;
+		rx_data <= word2byte(std_logic_vector(cntr) & (cntr'range => '0'), rollback) & src_tag;
 		rx_irdy <= not d and q;
 	end block;
 

@@ -573,7 +573,7 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		metatx_end  => ipv4datx_full,
-		metatx_irdy => ipv4datx_full,
+		metatx_irdy => '1',
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,

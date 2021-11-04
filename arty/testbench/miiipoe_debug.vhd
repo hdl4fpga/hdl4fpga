@@ -48,33 +48,33 @@ begin
 	clk  <= not clk after 5 ns;
 	rst  <= '1', '0' after 1000 ns;
 --	btn0 <= '0', '1' after 2000 ns;
-	process
-		variable n : natural := 0;
-		variable s : natural range 0 to 3;
-	begin
-		if rst='0' then
-			case s is
-			when 0 =>
-				btn1 <= '1' after 0.050 us;
-				s := 1;
-			when 1 =>
-				btn1 <= '0' after 8.750 us;
-				s := 2;
-			when 2 =>
-				btn0 <= '1' after 0.050 us;
-				s := 3;
-			when 3 =>
-				btn0 <= '0' after 6.000 us;
-				n := n + 1;
-				s := 0;
-			end case;
-
-			if n > 1 then
-				wait;
-			end if;
-		end if;
-		wait on rst, btn1, btn0;
-	end process;
+--	process
+--		variable n : natural := 0;
+--		variable s : natural range 0 to 3;
+--	begin
+--		if rst='0' then
+--			case s is
+--			when 0 =>
+--				btn1 <= '1' after 0.050 us;
+--				s := 1;
+--			when 1 =>
+--				btn1 <= '0' after 8.750 us;
+--				s := 0;
+--			when 2 =>
+--				btn0 <= '1' after 0.050 us;
+--				s := 3;
+--			when 3 =>
+--				btn0 <= '0' after 6.000 us;
+--				n := n + 1;
+--				s := 0;
+--			end case;
+--
+--			if n > 1 then
+--				wait;
+--			end if;
+--		end if;
+--		wait on rst, btn1, btn0;
+--	end process;
 
 	du_e : entity work.arty(miiipoe_debug)
 	port map (
