@@ -44,7 +44,7 @@ entity icmpd is
 		icmprx_irdy : in  std_logic;
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
-		metatx_irdy : in  std_logic := '1';
+		metatx_trdy : in  std_logic := '1';
 		metatx_end  : in  std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
@@ -149,7 +149,7 @@ begin
 
 	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
 	icmpdatatx_trdy <=
-		metatx_irdy when metatx_end='0' else
+		metatx_trdy when metatx_end='0' else
 		icmppltx_trdy;
 
 	buffer_e : block

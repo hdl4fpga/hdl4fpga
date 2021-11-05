@@ -158,9 +158,12 @@ architecture def of mii_ipoe is
 
 	signal metatx_irdy   : std_logic;
 	signal metatx_end    : std_logic;
-	signal mactx_irdy    : std_logic;
-	signal mactx_full    : std_logic;
 
+	signal arptxmac_full  : std_logic;
+	signal arptxmac_trdy  : std_logic;
+	signal ipv4txmac_full : std_logic;
+	signal ipv4txmac_trdy : std_logic;
+	signal mactx_full    : std_logic;
 
 	signal fifo_irdy     : std_logic;
 	signal fifo_end      : std_logic;
@@ -321,7 +324,9 @@ begin
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
 		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
-		(0 => arptx_trdy, 1 => ipv4tx_trdy) <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
+		(0 => arptx_trdy,    1 => ipv4tx_trdy)    <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
+		(0 => arptxmac_full, 1 => ipv4txmac_full) <= dev_gnt and (dev_gnt'range => mactx_full);
+		(0 => arptxmac_trdy, 1 => ipv4txmac_trdy) <= dev_gnt;
 
 		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
 
@@ -418,6 +423,7 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
+	arp_req <= to_stdulogic(to_bit(arp_rdy));
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
 		hwsa       => my_mac)
@@ -442,7 +448,7 @@ begin
 		spatx_data => ipv4satx_data,
 
 		arpdtx_frm  => arptx_frm,
-		dlltx_full  => mactx_full,
+		dlltx_full  => arptxmac_full,
 		dlltx_irdy  => '1', --open,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
@@ -458,7 +464,7 @@ begin
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
-		arp_req       => arp_req,
+		arp_req       => open, --arp_req,
 		arp_rdy       => arp_rdy,
 
 		dll_frm       => miirx_frm,
@@ -500,7 +506,8 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
-		mactx_full    => mactx_full,
+		mactx_full    => ipv4txmac_full,
+		mactx_trdy    => ipv4txmac_trdy,
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
 		ipv4tx_end    => ipv4tx_end,

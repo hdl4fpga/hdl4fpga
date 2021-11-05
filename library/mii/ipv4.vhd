@@ -81,7 +81,7 @@ entity ipv4 is
 		pltx_data     : in  std_logic_vector;
 
 
-		mactx_irdy    : out std_logic;
+		mactx_trdy    : in  std_logic;
 		mactx_full    : in  std_logic;
 
 		ipv4tx_frm    : buffer std_logic := '0';
@@ -182,7 +182,6 @@ architecture def of ipv4 is
 
 	signal iplentx_full     : std_logic;
 
-	signal metatx_end       : std_logic;
 	signal metatx_irdy      : std_logic;
 
 		signal ipv4sanll_vld  :std_logic := '0';
@@ -371,8 +370,8 @@ begin
 
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
 
-		ipdatx_irdy     <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt);
-		udpipdatx_irdy  <=
+		ipdatx_irdy    <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt);
+		udpipdatx_irdy <=
 			'0' when mactx_full='0'    else
 			'1';
 		icmpipdatx_irdy <= '0' when iplentx_full='0' else '1';
@@ -574,7 +573,7 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		metatx_end  => ipv4datx_full,
-		metatx_irdy => metatx_irdy,
+		metatx_trdy => mactx_trdy,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
