@@ -58,7 +58,7 @@ begin
 				btn1 <= '1' after 0.050 us;
 				s := 1;
 			when 1 =>
-				btn1 <= '0' after 7.550 us;
+				btn1 <= '0' after 7.750 us;
 				s := 2;
 				n := n + 1;
 			when 2 =>

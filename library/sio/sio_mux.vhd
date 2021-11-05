@@ -70,7 +70,7 @@ begin
 
 	rdata <= std_logic_vector(unsigned(reverse(reverse(std_logic_vector(resize(unsigned(mux_data), rdata'length)), so_data'length))) rol so_data'length);
 
-	so_data <= 
+	so_data <=
 		rdata when so_data'length=rdata'length else
 		word2byte(rdata, mux_sel, so_data'length);
 
