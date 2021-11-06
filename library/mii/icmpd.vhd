@@ -56,9 +56,9 @@ architecture def of icmpd is
 	signal icmpdata_irdy   : std_logic;
 	signal icmpdatatx_trdy : std_logic;
 
-	signal icmpcoderx_frm : std_logic;
+	signal icmpcoderx_frm  : std_logic;
 	signal icmpcoderx_irdy : std_logic;
-	signal icmptyperx_frm : std_logic;
+	signal icmptyperx_frm  : std_logic;
 	signal icmptyperx_irdy : std_logic;
 	signal icmpcksmrx_frm  : std_logic;
 	signal icmpcksmrx_irdy : std_logic;
@@ -68,23 +68,23 @@ architecture def of icmpd is
 	signal icmprx_seq      : std_logic_vector(0 to 16-1);
 
 	signal icmppl_irdy     : std_logic;
-	signal icmpcksmtx_frm : std_logic;
+	signal icmpcksmtx_frm  : std_logic;
 	signal icmppltx_frm    : std_logic := '0';
 	signal icmppltx_irdy   : std_logic;
 	signal icmppltx_trdy   : std_logic;
 	signal icmppltx_end    : std_logic;
 	signal icmppltx_data   : std_logic_vector(icmptx_data'range);
 
-	signal cksmrx_data : std_logic_vector(icmprx_data'range);
-	signal rx_cy       : std_logic_vector(0 to 0);
-	signal tx_cy       : std_logic_vector(0 to 0);
+	signal cksmrx_data     : std_logic_vector(icmprx_data'range);
+	signal rx_cy           : std_logic_vector(0 to 0);
+	signal tx_cy           : std_logic_vector(0 to 0);
 
-	signal miirx_frm  : std_logic;
+	signal miirx_frm       : std_logic;
 
-	signal memrx_frm  : std_logic;
-	signal memrx_data : std_logic_vector(icmprx_data'range);
-	signal memtx_data : std_logic_vector(icmptx_data'range);
-		signal tp1 :  std_logic_vector(1 to 32);
+	signal memrx_frm       : std_logic;
+	signal memrx_data      : std_logic_vector(icmprx_data'range);
+	signal memtx_data      : std_logic_vector(icmptx_data'range);
+	signal tp1             :  std_logic_vector(1 to 32);
 begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
@@ -263,5 +263,6 @@ begin
 	tp(6) <= metatx_end;
 	tp(7) <=tp1(1);
 	tp(8) <=tp1(2);
+
 
 end;

@@ -73,6 +73,7 @@ begin
 
 	tp(1) <= do_irdy;
 	tp(2) <= do_trdy;
+	tp(3) <= dst_end;
 
 	rx_b : block
 		signal d, q : std_logic;
@@ -103,7 +104,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 1)
+		latency   => 0)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,

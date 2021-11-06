@@ -67,10 +67,11 @@ begin
 					s := 0;
 				end if;
 			when 2 =>
+				b := true;
 				btn0 <= '1' after 0.050 us;
 				s := 3;
 			when 3 =>
-				btn0 <= '0' after 6.000 us;
+				btn0 <= '0' after 6.500 us;
 				s := 0;
 				n := n + 1;
 			end case;
