@@ -36,9 +36,7 @@ entity icmpd is
 
 		dll_frm     : in  std_logic;
 		dll_irdy    : in  std_logic;
-		net_frm     : in  std_logic;
 		net_irdy    : in  std_logic;
-		net1_irdy   : in  std_logic;
 
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
@@ -147,7 +145,7 @@ begin
 		cksmrx_data                when icmpcksmrx_frm='1' else
 		icmprx_data;
 
-	icmpdata_irdy   <= dll_irdy or net_irdy or net1_irdy or icmprx_irdy;
+	icmpdata_irdy   <= dll_irdy or net_irdy or icmprx_irdy;
 	icmpdatatx_trdy <=
 		metatx_trdy when metatx_end='0' else
 		icmppltx_trdy;

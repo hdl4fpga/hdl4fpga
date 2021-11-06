@@ -183,7 +183,6 @@ architecture def of mii_ipoe is
 	signal arp_rdy       : std_logic;
 
 	signal tp1           : std_logic_vector(1 to 32);
-    constant kk : std_logic_vector := (0 to miirx_data'length-1 => '1');
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -202,17 +201,21 @@ begin
 		crc_sb     => fcs_sb,
 		crc_equ    => fcs_vld);
 
-	bcstcmp_e : entity hdl4fpga.sio_cmp
-    port map (
-        si_clk    => mii_clk,
-        si_frm    => miirx_frm,
-        si1_irdy  => hwdarx_irdy,
-        si1_trdy  => open,
-        si1_data  => kk,
-        si2_irdy  => hwdarx_irdy,
-        si2_trdy  => open,
-        si2_data  => miirx_data,
-		si_equ    => bcstrx_equ);
+	bcstcmp_b : block
+		constant all1s : std_logic_vector := (0 to miirx_data'length-1 => '1');
+	begin
+		bcstcmp_e : entity hdl4fpga.sio_cmp
+		port map (
+			si_clk    => mii_clk,
+			si_frm    => miirx_frm,
+			si1_irdy  => hwdarx_irdy,
+			si1_trdy  => open,
+			si1_data  => all1s,
+			si2_irdy  => hwdarx_irdy,
+			si2_trdy  => open,
+			si2_data  => miirx_data,
+			si_equ    => bcstrx_equ);
+	end block;
 
 	hwda_frm <=
 		miirx_frm when hwdarx_vld='0' else
@@ -449,7 +452,7 @@ begin
 
 		arpdtx_frm  => arptx_frm,
 		dlltx_full  => arptxmac_full,
-		dlltx_irdy  => '1', --open,
+		dlltx_trdy  => arptxmac_trdy,
 		arpdtx_irdy => arptx_irdy,
 		arpdtx_trdy => arptx_trdy,
 		arpdtx_end  => arptx_end,

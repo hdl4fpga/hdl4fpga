@@ -103,13 +103,13 @@ begin
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,
 			wr_addr => std_logic_vector(wr_cntr(addr_range)),
-			wr_data => wdata, 
+			wr_data => wdata,
 
 			rd_clk  => dst_clk,
 			rd_addr => std_logic_vector(rd_cntr(addr_range)),
 			rd_data => rdata);
 
-		src_trdy <= 
+		src_trdy <=
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
 			setif(wr_cntr(addr_range) /= rd_cmp(addr_range)  or wr_cntr(0) = rd_cmp(0));
 
@@ -123,8 +123,10 @@ begin
 			signal q_reg    : unsigned(0 to (latency-1)) := (others => '0');
 			signal slr_reg  : unsigned(0 to (latency-1)*dst_data'length-1);
 			signal data_reg : unsigned(0 to latency*dst_data'length-1);
+			signal trdy : std_logic;
 		begin
 
+			trdy <= dst_trdy; -- or not q_reg(q_reg'right);
 			booking_p : process (dst_clk)
 				variable b : unsigned(0 to (latency-1)-1) := (others => '0');
 			begin
@@ -133,11 +135,11 @@ begin
 						b := (others => '0');
 					elsif to_bit(b(b'right))='0' then
 						if dst_irdy1='0' then
-							if dst_trdy='1' then
+							if trdy='1' then
 								b := b ror 1;
 								b(b'right) := '0';
 							end if;
-						elsif dst_trdy='0' then
+						elsif trdy='0' then
 							if b(0)='0' then
 								b(b'right) := '1';
 							end if;
@@ -146,11 +148,11 @@ begin
 							b := b rol 1;
 						end if;
 					elsif dst_irdy1='0' then
-						if dst_trdy='1' then
+						if trdy='1' then
 							b(b'right) := '0';
 							b := b rol 1;
 						end if;
-					elsif dst_trdy='0' then
+					elsif trdy='0' then
 						if b(0)='0' then
 							b := b rol 1;
 							b(b'right) := '1';
@@ -189,7 +191,7 @@ begin
 								end if;
 							end loop;
 						end if;
-						v(0) := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+						v(0) := (trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 						v    := v rol 1;
 					end if;
 					dst_irdy <= q(0);
@@ -201,7 +203,7 @@ begin
 					slr_reg  <= slr;
 				end if;
 			end process;
-			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+			feed_ena <= to_stdulogic(to_bit(trdy)) or (fill and dst_irdy1);
 		end generate;
 
 		latencyeq1_g : if latency=1 generate
@@ -277,7 +279,7 @@ begin
 					else
 						wr_cntr <= rd_cntr;
 					end if;
-				else	
+				else
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
 			elsif rollback='1' then
@@ -314,8 +316,8 @@ begin
 		end if;
 	end process;
 
-	dst_irdy1 <= 
-		setif(wr_ptr /= rd_cntr) when not async_mode else 
+	dst_irdy1 <=
+		setif(wr_ptr /= rd_cntr) when not async_mode else
 		setif(wr_cmp /= rd_cntr);
 	process(dst_clk)
 	begin
@@ -327,7 +329,7 @@ begin
 					else
 						rd_cntr <= wr_ptr;
 					end if;
-				else	
+				else
 					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
 				end if;
 			else

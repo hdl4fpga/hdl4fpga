@@ -173,21 +173,23 @@ architecture def of ipv4 is
 	signal udp_gnt          : std_logic;
 
 	signal udpmactx_irdy    : std_logic;
-	signal icmpmactx_irdy   : std_logic;
+	signal icmpnetrx_irdy   : std_logic;
 	signal ipdatx_irdy      : std_logic_vector(0 to 0);
 
 	signal iplentx_irdy     : std_logic_vector(0 to 0);
-	signal icmpiplentx_irdy : std_logic;
 	signal udpiplentx_irdy  : std_logic;
 
 	signal iplentx_full     : std_logic;
 
-	signal metatx_irdy      : std_logic;
+	signal ipv4sanll_vld    : std_logic := '0';
+	signal tp1              : std_logic_vector(1 to 32);
 
-		signal ipv4sanll_vld  :std_logic := '0';
-
-		signal tp1            : std_logic_vector(1 to 32);
 begin
+
+	process (tp1)
+	begin
+		tp <= tp1;
+	end process;
 
 	plrx_frm  <= ipv4rx_frm;
 	plrx_irdy <= to_stdulogic(to_bit(plrx_frm and (ipv4rxsa_irdy or udpplrx_irdy)));
@@ -342,13 +344,14 @@ begin
 	end block;
 
 	arbiter_b : block
-		signal dev_req : std_logic_vector(0 to 2-1);
-		signal dev_gnt : std_logic_vector(0 to 2-1);
-		signal icmpdatx_irdy   : std_logic;
-		signal icmplentx_irdy  : std_logic;
-		signal udpipdatx_irdy    : std_logic;
+		signal frm              : std_logic_vector(0 to 0);
+		signal dev_req          : std_logic_vector(0 to 2-1);
+		signal dev_gnt          : std_logic_vector(0 to 2-1);
+
+		signal udpipdatx_irdy   : std_logic;
 		signal icmpipdatx_irdy  : std_logic;
-		signal frm : std_logic_vector(0 to 0);
+		signal icmpiplentx_irdy : std_logic;
+
 	begin
 
 		dev_req <= icmptx_frm & udptx_frm;
@@ -361,22 +364,22 @@ begin
 		dev_gnt <= "10";
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
-		frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
+		frm           <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4tx_frm    <= frm(0);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
+
 		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
+		ipdatx_irdy   <= wirebus(icmpipdatx_irdy  & udpipdatx_irdy,  dev_gnt);
+		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt);
 
 		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
 
-		ipdatx_irdy    <= wirebus(icmpipdatx_irdy & udpipdatx_irdy, dev_gnt);
-		udpipdatx_irdy <=
-			'0' when mactx_full='0'    else
-			'1';
-		icmpipdatx_irdy <= '0' when iplentx_full='0' else '1';
+		udpipdatx_irdy   <= '0' when mactx_full='0'   else '1';
+		icmpiplentx_irdy <= '0' when mactx_full='0'   else '1';
+		icmpipdatx_irdy  <= '0' when iplentx_full='0' else '1';
 
-		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt);
 	end block;
 
 	meta_b : block
@@ -546,27 +549,15 @@ begin
 	icmprx_frm  <= ipv4plrx_frm and icmprx_vld and ipv4da_vld;
 	udprx_frm   <= ipv4plrx_frm and udprx_vld  and ipv4da_vld;
 	icmprx_irdy <= icmprx_frm   and ipv4rx_irdy;
-	process (tp1)
-	begin
-		tp <= tp1;
---		tp(2) <= ipv4tx_frm;
---		tp(3) <= ipv4pltx_trdy;
---		tp(4) <= ipv4pltx_end;
-	end process;
 
---	tp(1) <= ipv4plrx_frm; --   and ipv4da_vld;
-
-	metatx_irdy <= not ipv4datx_full;
-	icmpiplentx_irdy <= '0' when mactx_full='0' else '1';
+	icmpnetrx_irdy <= ipv4lenrx_irdy or ipv4rxsa_irdy;
 	icmpd_e : entity hdl4fpga.icmpd
 	port map (
 		tp => tp1,
 		mii_clk     => mii_clk,
 		dll_frm     => dll_frm,
 		dll_irdy    => dll_irdy,
-		net_frm     => ipv4rx_frm,
-		net_irdy    => ipv4rxsa_irdy,
-		net1_irdy   => ipv4lenrx_irdy,
+		net_irdy    => icmpnetrx_irdy,
 
 		icmprx_frm  => icmprx_frm,
 		icmprx_irdy => icmprx_irdy,

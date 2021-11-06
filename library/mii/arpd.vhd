@@ -51,7 +51,7 @@ entity arpd is
 		spatx_data  : in  std_logic_vector;
 
 		arpdtx_frm  : buffer std_logic := '0';
-		dlltx_irdy  : in  std_logic;
+		dlltx_trdy  : in  std_logic;
 		dlltx_full  : in  std_logic;
 		arpdtx_irdy : out std_logic;
 		arpdtx_trdy : in  std_logic;
@@ -141,7 +141,7 @@ begin
 		arp_end  => arpdtx_end,
 		arp_data => arptx_data);
 
-	arpdtx_irdy <=  dlltx_irdy when dlltx_full='0' else arptx_trdy;
+	arpdtx_irdy <=  dlltx_trdy when dlltx_full='0' else arptx_trdy;
 	arptx_irdy  <= '0' when dlltx_full='0' else arpdtx_trdy;
 	arpdtx_data <= (arpdtx_data'range => '1') when dlltx_full='0' else arptx_data;
 end;

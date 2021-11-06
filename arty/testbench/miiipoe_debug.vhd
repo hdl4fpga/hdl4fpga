@@ -51,6 +51,7 @@ begin
 	process
 		variable n : natural := 0;
 		variable s : natural range 0 to 3;
+		variable b : boolean;
 	begin
 		if rst='0' then
 			case s is
@@ -59,8 +60,12 @@ begin
 				s := 1;
 			when 1 =>
 				btn1 <= '0' after 7.750 us;
-				s := 2;
 				n := n + 1;
+				if b=false then
+					s := 2;
+				else
+					s := 0;
+				end if;
 			when 2 =>
 				btn0 <= '1' after 0.050 us;
 				s := 3;
@@ -70,9 +75,11 @@ begin
 				n := n + 1;
 			end case;
 
-			if n > 2 then
+			if n > 5 then
 				wait;
 			end if;
+		else
+			b := false;
 		end if;
 		wait on rst, btn1, btn0;
 	end process;
