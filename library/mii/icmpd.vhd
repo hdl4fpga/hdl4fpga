@@ -84,7 +84,8 @@ architecture def of icmpd is
 	signal memrx_frm       : std_logic;
 	signal memrx_data      : std_logic_vector(icmprx_data'range);
 	signal memtx_data      : std_logic_vector(icmptx_data'range);
-	signal tp1             :  std_logic_vector(1 to 32);
+	signal tp1             : std_logic_vector(1 to 32);
+	signal tx_irdy         : std_logic;
 begin
 
 	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
@@ -163,6 +164,8 @@ begin
 				if (icmp_req xor icmp_rdy)='0' then
 					if icmprx_frm='1' then
 						icmp_req <= not icmp_rdy;
+					elsif tx_irdy='1' then
+						icmp_req <= not icmp_rdy;
 					end if;
 				elsif (icmppltx_end and icmppltx_trdy)='1' then
 					icmp_rdy <= icmp_req;
@@ -197,6 +200,7 @@ begin
 
 			rollback => rollback,
 			commit   => icmprx_frm,
+			avail  => tx_irdy,
 
 			dst_frm  => icmppltx_frm,
 			dst_irdy => icmpdatatx_trdy,

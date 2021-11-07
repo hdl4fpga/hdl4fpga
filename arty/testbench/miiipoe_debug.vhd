@@ -71,12 +71,12 @@ begin
 				btn0 <= '1' after 0.050 us;
 				s := 3;
 			when 3 =>
-				btn0 <= '0' after 6.500 us;
+				btn0 <= '0' after 6.050 us;
 				s := 0;
 				n := n + 1;
 			end case;
 
-			if n > 7 then
+			if n > 5 then
 				wait;
 			end if;
 		else

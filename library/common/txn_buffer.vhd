@@ -44,7 +44,7 @@ entity txn_buffer is
 		src_data : in  std_logic_vector;
 		rollback : in  std_logic;
 		commit   : in  std_logic;
-		tx_irdy  : out std_logic;
+		avail    : out std_logic;
 
 
 		dst_frm  : in  std_logic;
@@ -61,6 +61,7 @@ architecture def of txn_buffer is
 	signal rx_writ : std_logic;
 	signal rx_data : std_logic_vector(0 to m+src_tag'length);
 
+	signal tx_irdy : std_logic;
 	signal tx_trdy : std_logic;
 	signal tx_data : std_logic_vector(rx_data'range);
 
@@ -75,25 +76,32 @@ begin
 	tp(2) <= do_trdy;
 
 	rx_b : block
-		signal d, q : std_logic;
-		signal cntr : unsigned(0 to rx_data'length-src_tag'length-1);
+		signal d, q    : std_logic;
+		signal cnt_ena : std_logic;
 	begin
 		d <= src_frm and not src_end and commit;
 
+		cnt_ena <= di_irdy and di_trdy and not src_end;
 		process (src_clk)
+			variable cntr : unsigned(0 to m);
 		begin
 			if rising_edge(src_clk) then
 				if src_frm='0' then
-					cntr <= (others => '0');
-				elsif (di_irdy and di_trdy) and not src_end)='1' then
-					cntr <= cntr + 1;
+					cntr := (others => '0');
+					rx_data(cntr'range) <= std_logic_vector(cntr);
+				elsif src_end='1' then
+					cntr := (others => '0');
+					rx_data(cntr'range) <= std_logic_vector(cntr);
+				elsif cnt_ena='1' then
+					cntr := cntr + 1;
+					rx_data(cntr'range) <= std_logic_vector(cntr);
 				end if;
 				q <= d;
 			end if;
 		end process;
-		--rx_data <= word2byte(std_logic_vector(cntr) & (cntr'range => '0'), rollback) & src_tag;
-		rx_data <= std_logic_vector(cntr) & src_tag;
+		rx_writ <= not rx_data(0) and commit and cnt_ena when src_frm='1' else '1';
 		rx_irdy <= not d and q;
+		rx_data(m+1 to rx_data'length-1) <= src_tag;
 	end block;
 
 	di_irdy <= not rx_data(0) and src_irdy and src_frm;
@@ -119,11 +127,11 @@ begin
 		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
 
-	rx_writ <= (not rx_data(0) and commit) or not src_frm;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
-		max_depth  => 2)
+		check_dov => true,
+		max_depth  => 4)
 	port map (
 		src_clk    => src_clk,
 		src_irdy   => rx_irdy,
@@ -163,6 +171,7 @@ begin
 		dst_end <= not (setif(cntr <= unsigned(tx_data(cntr'range))) and do_irdy);
 	end block;
 
+	avail    <= tx_irdy and not tx_trdy;
 	src_trdy <=  not rx_data(0) and di_trdy and src_frm;
 	dst_trdy <= (not tx_data(0) and do_irdy) or (dst_end and dst_frm);
 	dst_tag  <= tx_data(tx_data'length-dst_tag'length to tx_data'length-1);
