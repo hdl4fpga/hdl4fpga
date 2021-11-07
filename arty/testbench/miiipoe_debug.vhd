@@ -76,7 +76,7 @@ begin
 				n := n + 1;
 			end case;
 
-			if n > 5 then
+			if n > 7 then
 				wait;
 			end if;
 		else

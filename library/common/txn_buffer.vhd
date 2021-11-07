@@ -73,7 +73,6 @@ begin
 
 	tp(1) <= do_irdy;
 	tp(2) <= do_trdy;
-	tp(3) <= dst_end;
 
 	rx_b : block
 		signal d, q : std_logic;
@@ -86,14 +85,14 @@ begin
 			if rising_edge(src_clk) then
 				if src_frm='0' then
 					cntr <= (others => '0');
-				elsif (di_irdy and di_trdy and not src_end)='1' then
+				elsif (di_irdy and di_trdy) and not src_end)='1' then
 					cntr <= cntr + 1;
 				end if;
 				q <= d;
 			end if;
 		end process;
 		--rx_data <= word2byte(std_logic_vector(cntr) & (cntr'range => '0'), rollback) & src_tag;
-		rx_data <= word2byte(std_logic_vector(cntr) & (cntr'range => '0'), rollback) & src_tag;
+		rx_data <= std_logic_vector(cntr) & src_tag;
 		rx_irdy <= not d and q;
 	end block;
 
@@ -120,7 +119,7 @@ begin
 		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
 
-	rx_writ <= (not rx_data(0) and (commit or rx_irdy)) or not src_frm;
+	rx_writ <= (not rx_data(0) and commit) or not src_frm;
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		latency    => 0,
@@ -161,7 +160,7 @@ begin
 		end process;
 
 		tx_trdy <= not d and q;
-		dst_end <= (not setif(cntr < unsigned(tx_data(cntr'range))));
+		dst_end <= not (setif(cntr <= unsigned(tx_data(cntr'range))) and do_irdy);
 	end block;
 
 	src_trdy <=  not rx_data(0) and di_trdy and src_frm;

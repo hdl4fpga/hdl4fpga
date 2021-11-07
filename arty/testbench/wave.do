@@ -190,9 +190,9 @@ add wave -noupdate -expand -group txt_buffer -expand -group fifo -radix hexadeci
 add wave -noupdate -expand -group txt_buffer -expand -group fifo /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_trdy
 add wave -noupdate -expand -group txt_buffer -expand -group fifo /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_irdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8652065 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1772572 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 704
+configure wave -namecolwidth 282
 configure wave -valuecolwidth 157
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -206,4 +206,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {60167310 ps}
+WaveRestoreZoom {0 ps} {55650 ns}

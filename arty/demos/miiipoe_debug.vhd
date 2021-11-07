@@ -298,7 +298,6 @@ begin
 		rgbled(2 downto 0) <= (others => tp(6));
 		rgbled(5 downto 3) <= (others => tp(7));
 		rgbled(8 downto 6) <= (others => tp(8));
-		rgbled(11 downto 9) <= (others => not tp(5));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
