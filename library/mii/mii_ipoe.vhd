@@ -308,7 +308,7 @@ begin
 			end if;
 		end if;
 	end process;
-	iprx_frm <= miirx_frm and iprx_vld and hwdarx_vld;
+	iprx_frm <= miirx_frm and iprx_vld and hwda_vld; -- hwdarx_vld;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
@@ -426,7 +426,7 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
-	arp_req <= to_stdulogic(to_bit(arp_rdy));
+--	arp_req <= to_stdulogic(to_bit(arp_rdy));
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
 		hwsa       => my_mac)
@@ -467,7 +467,7 @@ begin
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
-		arp_req       => open, --arp_req,
+		arp_req       => arp_req,
 		arp_rdy       => arp_rdy,
 
 		dll_frm       => miirx_frm,

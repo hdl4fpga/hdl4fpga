@@ -198,7 +198,7 @@ begin
 		htb_btn2 <= btn(2) when sw(3 downto 2)="01" else '0';
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm1 => btn(0),
+			mii_frm1 => '0', --btn(0),
 			mii_frm2 => htb_btn2, --'0', --btn(1),
 			mii_frm3 => '0', --btn(1),
 			mii_frm4 => '0', --,
@@ -287,7 +287,7 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= '0'; --dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
+					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
 				end if;
 			end if;
 		end process;
@@ -298,6 +298,7 @@ begin
 		rgbled(2 downto 0) <= (others => tp(6));
 		rgbled(5 downto 3) <= (others => tp(7));
 		rgbled(8 downto 6) <= (others => tp(8));
+		rgbled(11 downto 9) <= (others => tp(9));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (

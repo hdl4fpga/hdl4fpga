@@ -44,7 +44,7 @@ entity txn_buffer is
 		src_data : in  std_logic_vector;
 		rollback : in  std_logic;
 		commit   : in  std_logic;
-		avail    : out std_logic;
+		avail    : buffer std_logic;
 
 
 		dst_frm  : in  std_logic;
@@ -74,6 +74,7 @@ begin
 
 	tp(1) <= do_irdy;
 	tp(2) <= do_trdy;
+	tp(3) <= '0'; --avail;
 
 	rx_b : block
 		signal d, q    : std_logic;

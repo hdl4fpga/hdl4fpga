@@ -187,7 +187,7 @@ begin
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 7)
+			m => 8)
 		port map (
 		tp => tp1,
 			src_clk  => mii_clk,
@@ -267,5 +267,6 @@ begin
 	tp(6) <= metatx_end;
 	tp(7) <=tp1(1);
 	tp(8) <=tp1(2);
+	tp(9) <=tp1(3);
 
 end;

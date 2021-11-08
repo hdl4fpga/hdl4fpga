@@ -49,8 +49,8 @@ entity dhcpcd is
 		hwda_irdy     : out std_logic;
 		hwda_trdy     : in  std_logic;
 		hwda_last     : in  std_logic;
-		hwda_equ      : in  std_logic; 
-		hwdarx_vld    : in  std_logic; 
+		hwda_equ      : in  std_logic;
+		hwdarx_vld    : in  std_logic;
 
 
 		dhcpcdtx_frm  : buffer std_logic;
@@ -93,7 +93,7 @@ begin
 		dhcpop_irdy  => dhcpop_irdy,
 		dhcpchaddr6_frm  => dhcpchaddr6_frm,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
-		dhcpyia_frm  => dhcpyia_frm, 
+		dhcpyia_frm  => dhcpyia_frm,
 		dhcpyia_irdy => dhcpyia_irdy);
 
 	process (mii_clk)
@@ -139,15 +139,15 @@ begin
 		dhcpdscb_data => dhcpcdtx_data);
 
 	ipv4sawr_frm  <= dhcpcdtx_frm or (dhcpyia_frm and hwdarx_vld);
-	ipv4sawr_irdy <= 
+	ipv4sawr_irdy <=
 		'1'          when dhcpcdtx_frm='1' else
 		dhcpyia_irdy when (dhcpyia_frm and hwdarx_vld)='1'  else
 		'0';
-	ipv4sawr_data <= 
+	ipv4sawr_data <=
 		(ipv4sawr_data'range => '0') when dhcpcdtx_frm='1' else
 		dhcpcdrx_data when dhcpyia_frm='1'  else
 		(ipv4sawr_data'range => '-');
-	
+
 	tp(3) <= dhcpyia_frm; --dhcpcdrx_frm ;
 	tp(2) <= dhcpyia_irdy;
 
