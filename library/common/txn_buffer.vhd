@@ -74,7 +74,7 @@ begin
 
 	tp(1) <= do_irdy;
 	tp(2) <= do_trdy;
-	tp(3) <= '0'; --avail;
+	tp(3) <= avail;
 
 	rx_b : block
 		signal d, q    : std_logic;
