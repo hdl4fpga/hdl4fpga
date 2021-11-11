@@ -59,13 +59,14 @@ begin
 				btn1 <= '1' after 0.050 us;
 				s := 1;
 			when 1 =>
-				btn1 <= '0' after 7.750 us;
+				btn1 <= '0' after 7.950 us;
 				n := n + 1;
 				if b=false then
 					s := 2;
 				else
 					s := 0;
 				end if;
+				s := 0;
 			when 2 =>
 				b := true;
 				btn0 <= '1' after 0.050 us;

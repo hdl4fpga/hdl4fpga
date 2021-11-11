@@ -141,6 +141,8 @@ begin
 	end block;
 
 	memrx_data <=
+--		x"f1" when icmpcoderx_frm='1' else
+--		x"f2" when icmptyperx_frm='1' else
 		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
 		(icmptx_data'range => '0') when icmptyperx_frm='1' else
 		cksmrx_data                when icmpcksmrx_frm='1' else
@@ -156,8 +158,20 @@ begin
 		signal rollback  : std_logic;
 		signal icmp_req  : bit;
 		signal icmp_rdy  : bit;
+		signal pp1 : std_logic;
+		signal pp : std_logic;
 	begin
 
+		dela_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => 2))
+		port map (
+			clk => mii_clk,
+			di(0) => pp1,
+			do(0) => pp);
+
+			pp1 <= to_stdulogic(icmp_req);
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then
@@ -184,7 +198,7 @@ begin
 		end process;
 		rollback <= not miirx_frm;
 
-		icmppltx_frm <= to_stdulogic(icmp_rdy xor icmp_req);
+		icmppltx_frm <= to_stdulogic(icmp_rdy xor to_bit(pp)); --icmp_req); -- and pp;
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
 			m => 8)
