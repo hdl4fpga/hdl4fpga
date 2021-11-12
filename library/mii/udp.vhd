@@ -47,8 +47,8 @@ entity udp is
 		hwda_irdy     : out std_logic;
 		hwda_trdy     : in  std_logic;
 		hwda_last     : in  std_logic;
-		hwda_equ      : in  std_logic; 
-		hwdarx_vld    : in  std_logic; 
+		hwda_equ      : in  std_logic;
+		hwdarx_vld    : in  std_logic;
 
 		plrx_frm      : buffer std_logic;
 		plrx_irdy     : out std_logic;
@@ -145,8 +145,12 @@ begin
 		udppl_irdy   => udpplrx_irdy);
 
 	arbiter_b : block
-		signal dev_req : std_logic_vector(0 to 2-1);
-		signal dev_gnt : std_logic_vector(0 to 2-1);
+		signal dev_req    : std_logic_vector(0 to 2-1);
+		signal dev_gnt    : std_logic_vector(0 to 2-1);
+		signal udp_frm    : std_logic_vector(0 to 0);
+		signal udp_irdy   : std_logic_vector(0 to 0);
+		signal udp_end    : std_logic_vector(0 to 0);
+		signal iplen_irdy : std_logic_vector(0 to 0);
 	begin
 
 		dev_req <= dhcpctx_frm & pltx_frm;
@@ -156,12 +160,16 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udptx_frm    <= wirebus(dhcpctx_frm       & pltx_frm,     dev_gnt)(0);
-		udptx_irdy   <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt)(0);
-		udptx_end    <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt)(0);
+		udp_frm      <= wirebus(dhcpctx_frm       & pltx_frm,     dev_gnt);
+		udptx_frm    <= udp_frm(0);
+		udp_irdy     <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt);
+		udptx_irdy   <= udp_irdy(0);
+		udp_end      <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt);
+		udptx_end    <= udp_end(0);
 		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
-		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt)(0);
-		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy); 
+		iplen_irdy   <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
+		iplentx_irdy <= iplen_irdy(0);
+		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
 	end block;
 
 	meta_b : block
@@ -232,15 +240,16 @@ begin
 		len_b : block
 			signal tx_ci      : std_logic;
 			signal tx_co      : std_logic;
-			signal crtn_data  : std_logic_vector(pltx_data'range);
+			signal crtn_data  : std_logic_vector(0 to pltx_data'length-1);
 			signal datao      : std_logic_vector(0 to 16-1);
 			signal datai      : std_logic_vector(0 to 16-1);
+			signal mux_data   : std_logic_vector(0 to 16-1) := reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length);
 		begin
 
 			lenrx_irdy <= '0' when dp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length),
+				mux_data => mux_data,
 				sio_clk  => mii_clk,
 				sio_frm  => pltx_frm,
 				sio_irdy => lenrx_irdy,
@@ -287,8 +296,8 @@ begin
 				so_end   => len_end,
 				so_data  => len_data);
 
-			ppltx_data <= 
-				pltx_data when dp_full='0'  else 
+			ppltx_data <=
+				pltx_data when dp_full='0'  else
 				len_datai when udplentx_full='0' else
 				pltx_data;
 
@@ -309,12 +318,12 @@ begin
 			so_end   => cksm_end,
 			so_data  => cksm_data);
 
-		udphdr_data <= 
+		udphdr_data <=
 		  dp_data   when dp_end='0'   else
 		  sp_data   when sp_end='0'   else
 		  len_data  when len_end='0'  else
 		  cksm_data when cksm_end='0' else
-		  (others => '-');
+		  (udphdr_data'range => '-');
 
 		udphdr_irdy <= pltx_irdy;
 		udphdr_end  <= cksm_end;

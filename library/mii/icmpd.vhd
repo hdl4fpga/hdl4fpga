@@ -165,7 +165,7 @@ begin
 		dela_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => 0))
+			d => (0 => 2))
 		port map (
 			clk => mii_clk,
 			di(0) => pp1,
@@ -187,16 +187,7 @@ begin
 			end if;
 		end process;
 
-		process (dll_frm, mii_clk)
-			variable q : std_logic;
-		begin
-			if rising_edge(mii_clk) then
-				q := dll_frm;
-			end if;
-			miirx_frm <=     dll_frm or  q;
-			miirx_end <= not dll_frm and q;
-		end process;
-		rollback <= not miirx_frm;
+		rollback <= not dll_frm;
 
 		icmppltx_frm <= to_stdulogic(icmp_rdy xor to_bit(pp)); --icmp_req); -- and pp;
 		buffer_e : entity hdl4fpga.txn_buffer
@@ -205,10 +196,10 @@ begin
 		port map (
 		tp => tp1,
 			src_clk  => mii_clk,
-			src_frm  => miirx_frm,
+			src_frm  => dll_frm, --miirx_frm,
 			src_irdy => icmpdata_irdy,
 			src_trdy => open,
-			src_end  => miirx_end,
+			src_end  => '0', --miirx_end,
 			src_tag  => rx_cy,
 			src_data => memrx_data,
 

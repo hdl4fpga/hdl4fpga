@@ -207,8 +207,8 @@ begin
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
-		si_btn2 <= btn(2) when sw(3 downto 0)="00" else '0';
-		si_btn3 <= btn(3) when sw(3 downto 0)="00" else '0';
+		si_btn2 <= btn(2) when sw(3 downto 2)="00" else '0';
+		si_btn3 <= btn(3) when sw(3 downto 2)="00" else '0';
 
 		process(mii_txc)
 		begin
@@ -235,11 +235,23 @@ begin
 		sync_b : block
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
 			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal dst_irdy : std_logic;
-			signal dst_trdy : std_logic;
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
 		begin
 
-			rxc_rxbus <= eth_rx_dv & eth_rxd when sw(0)='1' else hxdv & hxd;
+			process (sw(0), hxdv, hxd, eth_rxclk_bufg)
+				variable q : std_logic_vector(rxc_rxbus'range);
+			begin
+				if rising_edge(eth_rxclk_bufg) then
+					q := eth_rx_dv & eth_rxd;
+				end if;
+				if sw(0)='1' then
+					rxc_rxbus <= q;
+				else
+					rxc_rxbus <= hxdv & hxd;
+				end if;
+			end process;
+--			rxc_rxbus <= eth_rx_dv & eth_rxd when sw(0)='1' else hxdv & hxd;
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
