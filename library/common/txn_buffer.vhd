@@ -112,7 +112,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 2)
+		latency   => 0)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,

@@ -165,13 +165,13 @@ begin
 		dela_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => 2))
+			d => (0 => 0))
 		port map (
 			clk => mii_clk,
 			di(0) => pp1,
 			do(0) => pp);
 
-			pp1 <= to_stdulogic(icmp_req);
+		pp1 <= to_stdulogic(icmp_req);
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then

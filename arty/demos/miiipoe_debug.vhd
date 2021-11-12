@@ -291,14 +291,14 @@ begin
 				end if;
 			end if;
 		end process;
-		led(0) <= tp(5);
-		led(1) <= tp(4);
-		led(2) <= tp(3);
-		led(3) <= tp(2);
-		rgbled(2 downto 0) <= (others => tp(6));
-		rgbled(5 downto 3) <= (others => tp(7));
-		rgbled(8 downto 6) <= (others => tp(8));
-		rgbled(11 downto 9) <= (others => tp(9));
+		--led(0) <= tp(5);
+		--led(1) <= tp(4);
+		--led(2) <= tp(3);
+		--led(3) <= tp(2);
+		--rgbled(2 downto 0) <= (others => tp(6));
+		--rgbled(5 downto 3) <= (others => tp(7));
+		--rgbled(8 downto 6) <= (others => tp(8));
+		--rgbled(11 downto 9) <= (others => tp(9));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
