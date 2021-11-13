@@ -70,6 +70,9 @@ architecture def of txn_buffer is
 	signal do_irdy : std_logic;
 	signal do_trdy : std_logic;
 
+	signal fifo_rollback : std_logic;
+	signal fifo_commit   : std_logic;
+
 begin
 
 	tp(1) <= do_irdy;
@@ -107,6 +110,8 @@ begin
 
 	di_irdy <= not rx_data(0) and src_irdy and src_frm;
 	do_trdy <= dst_frm        and dst_irdy and not dst_end;
+	fifo_commit   <= commit   and not rx_irdy;
+	fifo_rollback <= rollback and not rx_irdy;
 	data_e : entity hdl4fpga.fifo
 	generic map (
 		check_dov => true,
@@ -119,8 +124,8 @@ begin
 		src_trdy  => di_trdy,
 		src_data  => src_data,
 
-		rollback  => rollback,
-		commit    => commit,
+		rollback  => fifo_rollback,
+		commit    => fifo_commit,
 		overflow  => open,
 
 		dst_clk   => src_clk,
