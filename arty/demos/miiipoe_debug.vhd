@@ -188,8 +188,8 @@ begin
 		signal hxdv   : std_logic;
 		signal hxd    : std_logic_vector(eth_rxd'range);
 
-		signal si_btn2 : std_logic;
-		signal si_btn3 : std_logic;
+		signal vbtn2 : std_logic_vector(0 to 4-1);
+		signal vbtn3 : std_logic_vector(0 to 4-1);
 		signal htb_btn2 : std_logic;
 
 	begin
@@ -207,14 +207,25 @@ begin
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
-		si_btn2 <= btn(2) when sw(3 downto 2)="00" else '0';
-		si_btn3 <= btn(3) when sw(3 downto 2)="00" else '0';
+		with sw(3 downto 0) select
+		vbtn2 <=
+			"000"  & btn(2)        when "00",
+			"00"   & btn(2) & "0"  when "01",
+			"0"    & btn(2) & "00" when "10",
+			btn(2) & "000"         when others;
+
+		with sw(3 downto 0) select
+		vbtn3 <=
+			"000"  & btn(3)        when "00",
+			"00"   & btn(3) & "0"  when "01",
+			"0"    & btn(3) & "00" when "10",
+			btn(3) & "000"         when others;
 
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				if si_frm='0' then
-					si_req <= si_rdy xor ((to_bit(si_btn3) and si_rdy) or (to_bit(si_btn2) and not si_rdy));
+					si_req <= si_rdy xor ((to_bit(vbtn3(0)) and si_rdy) or (to_bit(vbtn2(0)) and not si_rdy));
 				elsif (si_trdy and si_end)='1' then
 					si_rdy <= si_req;
 				end if;
@@ -340,31 +351,31 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
---		sioflow_e : entity hdl4fpga.sio_flow
---		port map (
---			sio_clk => mii_txc,
---
---			rx_frm  => plrx_frm,
---			rx_irdy => plrx_irdy,
---			rx_trdy => plrx_trdy,
---			rx_data => plrx_data,
---
---			so_frm  => so_frm,
---			so_irdy => so_irdy,
---			so_trdy => so_trdy,
---			so_data => so_data,
---
---			si_frm  => si_frm,
---			si_irdy => si_irdy,
---			si_trdy => si_trdy,
---			si_end  => si_end,
---			si_data => si_data,
---
---			tx_frm  => pltx_frm,
---			tx_irdy => pltx_irdy,
---			tx_trdy => pltx_trdy,
---			tx_end  => pltx_end,
---			tx_data => pltx_data);
+		sioflow_e : entity hdl4fpga.sio_flow
+		port map (
+			sio_clk => mii_txc,
+
+			rx_frm  => plrx_frm,
+			rx_irdy => plrx_irdy,
+			rx_trdy => plrx_trdy,
+			rx_data => plrx_data,
+
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data,
+
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_end  => si_end,
+			si_data => si_data,
+
+			tx_frm  => pltx_frm,
+			tx_irdy => pltx_irdy,
+			tx_trdy => pltx_trdy,
+			tx_end  => pltx_end,
+			tx_data => pltx_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -394,7 +405,7 @@ begin
 
 		sin_clk   <= mii_txc;
 		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else tp(1) when btn(3)='0' else miirx_frm;
+		sin_frm   <= mii_txen when sw(1)='1' else tp(1) when vbtn3(1)='0' else miirx_frm;
 		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
 
 	end block;
