@@ -61,6 +61,7 @@ architecture miiipoe_debug of arty is
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
 	signal video_clk      : std_logic;
+	signal video_lckd     : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
 	signal video_pixel    : std_logic_vector(3-1 downto 0);
@@ -129,6 +130,7 @@ begin
 			clkin1   => sys_clk,
 			clkfbin  => video_clkfb,
 			clkfbout => video_clkfb,
+			locked   => video_lckd,
 			clkout0  => video_clk);
 	end block;
 
@@ -438,7 +440,7 @@ begin
 		end if;
 	end process;
 
-	eth_rstn <= '1';
+	eth_rstn <= video_lckd;
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 
