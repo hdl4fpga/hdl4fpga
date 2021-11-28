@@ -66,10 +66,22 @@ architecture miiipoe_debug of arty is
 	signal video_vs       : std_logic;
 	signal video_pixel    : std_logic_vector(3-1 downto 0);
 
+	signal miirx_frm      : std_ulogic;
+	signal miirx_irdy     : std_logic;
+	signal miirx_trdy     : std_logic;
+	signal miirx_data     : std_logic_vector(0 to 8-1);
+
+	signal miitx_frm      : std_logic;
+	signal miitx_irdy     : std_logic;
+	signal miitx_trdy     : std_logic;
+	signal miitx_end      : std_logic;
+	signal miitx_data     : std_logic_vector(miirx_data'range);
+
 	signal sin_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(eth_rxd'range);
+	signal sin_data       : std_logic_vector(miitx_data'range);
+--	signal sin_data       : std_logic_vector(eth_rxd'range);
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
@@ -141,11 +153,6 @@ begin
 		signal mii_txd    : std_logic_vector(eth_rxd'range);
 
 		signal mii_frm    : std_ulogic;
-		signal miirx_frm  : std_ulogic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
-
 		signal plrx_frm   : std_logic := '0';
 		signal plrx_irdy  : std_logic := '0';
 		signal plrx_trdy  : std_logic := '0';
@@ -155,12 +162,6 @@ begin
 		signal so_irdy    : std_logic;
 		signal so_trdy    : std_logic;
 		signal so_data    : std_logic_vector(miirx_data'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
 
 		signal pltx_frm   : std_logic;
 		signal pltx_irdy  : std_logic;
@@ -190,18 +191,16 @@ begin
 		signal hxdv   : std_logic;
 		signal hxd    : std_logic_vector(eth_rxd'range);
 
-		signal vbtn2 : std_logic_vector(0 to 4-1);
-		signal vbtn3 : std_logic_vector(0 to 4-1);
-		signal htb_btn2 : std_logic;
+		signal vbtn2 : std_logic_vector(2-1 downto 0);
+		signal vbtn3 : std_logic_vector(2-1 downto 0);
 
 	begin
 
 
-		htb_btn2 <= btn(2) when sw(3 downto 2)="01" else '0';
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1 => '0', --btn(0),
-			mii_frm2 => htb_btn2, --'0', --btn(1),
+			mii_frm2 => vbtn2(1),
 			mii_frm3 => '0', --btn(1),
 			mii_frm4 => '0', --,
 
@@ -209,19 +208,15 @@ begin
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
-		with sw(3 downto 0) select
+		with sw(2) select
 		vbtn2 <=
-			"000"  & btn(2)        when "00",
-			"00"   & btn(2) & "0"  when "01",
-			"0"    & btn(2) & "00" when "10",
-			btn(2) & "000"         when others;
+			btn(2) & "0"    when '1',
+			"0"    & btn(2) when others;
 
-		with sw(3 downto 0) select
+		with sw(2) select
 		vbtn3 <=
-			"000"  & btn(3)        when "00",
-			"00"   & btn(3) & "0"  when "01",
-			"0"    & btn(3) & "00" when "10",
-			btn(3) & "000"         when others;
+			btn(3) & "0"    when '1',
+			"0"    & btn(3) when others;
 
 		process(mii_txc)
 		begin
@@ -258,13 +253,13 @@ begin
 				if rising_edge(eth_rxclk_bufg) then
 					q := eth_rx_dv & eth_rxd;
 				end if;
-				if sw(0)='1' then
-					rxc_rxbus <= q;
-				else
+				case sw(0) is
+				when '1' =>
 					rxc_rxbus <= hxdv & hxd;
-				end if;
+				when others => 
+					rxc_rxbus <= q;
+				end case;
 			end process;
---			rxc_rxbus <= eth_rx_dv & eth_rxd when sw(0)='1' else hxdv & hxd;
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
@@ -292,7 +287,6 @@ begin
 			mii_frm <= txc_rxbus(0);
 			mii_rxd <= txc_rxbus(1 to mii_rxd'length);
 
-
 		end block;
 
 		serdes_e : entity hdl4fpga.serdes
@@ -316,14 +310,6 @@ begin
 				end if;
 			end if;
 		end process;
-		--led(0) <= tp(5);
-		--led(1) <= tp(4);
-		--led(2) <= tp(3);
-		--led(3) <= tp(2);
-		--rgbled(2 downto 0) <= (others => tp(6));
-		--rgbled(5 downto 3) <= (others => tp(7));
-		--rgbled(8 downto 6) <= (others => tp(8));
-		--rgbled(11 downto 9) <= (others => tp(9));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
@@ -406,9 +392,25 @@ begin
 		end process;
 
 		sin_clk   <= mii_txc;
-		sin_irdy  <= '1';
-		sin_frm   <= mii_txen when sw(1)='1' else tp(1) when vbtn3(1)='0' else miirx_frm;
-		sin_data  <= mii_txd  when sw(1)='1' else mii_rxd;
+--		sin_irdy  <= '1';
+--		sin_frm   <= mii_txen when sw(1)='0' else tp(1)   when vbtn3(1)='0' else miirx_frm;
+--		sin_data  <= mii_txd  when sw(1)='0' else mii_rxd when vbtn3(1)='0' else mii_rxd;;
+
+		sin_frm   <= 
+			plrx_frm   when sw(3)='1'    else 
+			miitx_frm  when sw(1)='0'    else
+			tp(1)      when vbtn3(1)='0' else
+			miirx_trdy;
+
+		sin_irdy  <=
+			plrx_irdy  and plrx_trdy  when sw(3)='1' else 
+			miitx_irdy and miitx_trdy when sw(1)='0' else
+			miirx_irdy and miirx_trdy;
+
+		sin_data  <= 
+			plrx_data  when sw(3)='1' else 
+			miitx_data when sw(1)='0' else
+			miirx_data;
 
 	end block;
 

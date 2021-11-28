@@ -43,15 +43,15 @@ architecture beh of arty is
 	signal txd             : std_logic_vector(eth_txd'range);
 	signal txdv            : std_logic;
 
-	signal si_clk    : std_logic;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(eth_rxd'range);
-	signal so_data   : std_logic_vector(eth_txd'range);
+	signal si_clk          : std_logic;
+	signal si_frm          : std_logic;
+	signal si_irdy         : std_logic;
+	signal si_data         : std_logic_vector(eth_rxd'range);
+	signal so_data         : std_logic_vector(eth_txd'range);
 
-	signal udpip_frm    : std_logic;
-	signal udpip_irdy   : std_logic;
-	signal udpip_data   : std_logic_vector(eth_rxd'range);
+	signal udpip_frm       : std_logic;
+	signal udpip_irdy      : std_logic;
+	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
 	signal txopacity_data  : std_logic_vector(0 to inputs*32-1);
 	signal txopacity_trdy  : std_logic;
