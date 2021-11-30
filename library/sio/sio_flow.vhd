@@ -121,9 +121,9 @@ begin
 		check_dov => true)
 	port map(
 		src_clk   => sio_clk,
-		src_irdy  => metarx_irdy,
+		src_irdy  => rx_irdy,
 		src_trdy  => open,
-		src_data  => metarx_data,
+		src_data  => rx_data,
 
 		rollback  => buffer_rllbk,
 		commit    => buffer_cmmt,
@@ -134,7 +134,7 @@ begin
 		dst_trdy  => so_trdy,
 		dst_data  => so_data);
 
-	so_frm <= '1' when buffer_cmmt='1' else so_irdy;
+	so_frm <= so_irdy;
 
 	sigseq_e : entity hdl4fpga.sio_rgtr
 	generic map (
@@ -264,7 +264,7 @@ begin
 		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt)(0);
 		tx_end  <= wirebus(acktx_end  & si_end,  gnt)(0);
 		tx_data <= wirebus(acktx_data & si_data, gnt);
-		(0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy); 
+		(0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy);
 
 	end block;
 

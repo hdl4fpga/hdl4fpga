@@ -163,7 +163,7 @@ begin
 
 		signal so_frm     : std_logic;
 		signal so_irdy    : std_logic;
-		signal so_trdy    : std_logic;
+		signal so_trdy    : std_logic := '1';
 		signal so_data    : std_logic_vector(miirx_data'range);
 
 		signal pltx_frm   : std_logic;
@@ -256,7 +256,7 @@ begin
 				case sw(0) is
 				when '1' =>
 					rxc_rxbus <= hxdv & hxd;
-				when others => 
+				when others =>
 					rxc_rxbus <= q;
 				end case;
 			end process;
@@ -396,19 +396,22 @@ begin
 --		sin_frm   <= mii_txen when sw(1)='0' else tp(1)   when vbtn3(1)='0' else miirx_frm;
 --		sin_data  <= mii_txd  when sw(1)='0' else mii_rxd when vbtn3(1)='0' else mii_rxd;;
 
-		sin_frm   <= 
-			plrx_frm   when sw(3)='1'    else 
+		sin_frm   <=
+--			plrx_frm   when sw(3)='1'    else
+			so_frm     when sw(3)='1'    else
 			miitx_frm  when sw(1)='0'    else
---			tp(1)      when vbtn3(1)='1' else
+			tp(1)      when vbtn3(1)='0' else
 			miirx_frm;
 
 		sin_irdy  <=
-			plrx_irdy  and plrx_trdy  when sw(3)='1' else 
+--			plrx_irdy  and plrx_trdy  when sw(3)='1' else
+			so_irdy    and so_trdy  when sw(3)='1' else
 			miitx_irdy and miitx_trdy when sw(1)='0' else
 			miirx_irdy and miirx_trdy;
 
-		sin_data  <= 
-			plrx_data  when sw(3)='1' else 
+		sin_data  <=
+--			plrx_data  when sw(3)='1' else
+			so_data    when sw(3)='1' else
 			miitx_data when sw(1)='0' else
 			miirx_data;
 

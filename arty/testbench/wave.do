@@ -38,6 +38,17 @@ add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_irdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_trdy
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/plrx_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/plrx_data
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/rx_frm
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/rx_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/rx_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/rx_data
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/metarx_frm
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/metarx_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/metarx_data
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/so_frm
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/so_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/so_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/so_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group eth_receiver /testbench/ethrx_e/mii_clk
 add wave -noupdate -group eth_receiver /testbench/ethrx_e/mii_frm
@@ -55,7 +66,34 @@ add wave -noupdate -group pltx /testbench/du_e/ipoe_b/pltx_irdy
 add wave -noupdate -group pltx /testbench/du_e/ipoe_b/pltx_trdy
 add wave -noupdate -group pltx /testbench/du_e/ipoe_b/pltx_end
 add wave -noupdate -group pltx -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/pltx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/pltx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/pltx_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/pltx_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/pltx_data
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_frm
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_end
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/du_e/tag_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/tag_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/mii_clk
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_frm
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_irdy
+add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_data
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_req
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_rdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_irdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_trdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_end
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_equ
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/tparx_vld
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_frm
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_irdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_trdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_end
+add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_data
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_frm
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/dlltx_full
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_irdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_trdy
+add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_end
+add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_data
 add wave -noupdate -group eth_tx /testbench/du_e/ipoe_b/du_e/ethtx_e/pl_frm
 add wave -noupdate -group eth_tx /testbench/du_e/ipoe_b/du_e/ethtx_e/pl_irdy
 add wave -noupdate -group eth_tx /testbench/du_e/ipoe_b/du_e/ethtx_e/pl_trdy
@@ -82,53 +120,53 @@ add wave -noupdate -group ipv4_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4rx_e/ip
 add wave -noupdate -group ipv4_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4rx_e/ipv4proto_irdy
 add wave -noupdate -group ipv4_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4rx_e/pl_frm
 add wave -noupdate -group ipv4_rx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4rx_e/pl_irdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_clk
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_frm
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_irdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_trdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_end
-add wave -noupdate -expand -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_data
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/post
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/metatx_end
-add wave -noupdate -expand -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/frm_ptr
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_frm
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_irdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_irdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_end
-add wave -noupdate -expand -group ipv4_tx -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data
-add wave -noupdate -expand -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_irdy
-add wave -noupdate -expand -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_data
-add wave -noupdate -expand -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_frm
-add wave -noupdate -expand -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_irdy
-add wave -noupdate -expand -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_end
-add wave -noupdate -expand -group ipv4_tx -group ipv4a -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_data
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_irdy
-add wave -noupdate -expand -group ipv4_tx -group len /testbench/du_e/ipoe_b/du_e/ipv4_e/iplentx_irdy
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/len_b/datai
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/len_b/datao
-add wave -noupdate -expand -group ipv4_tx -group len -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data
-add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_irdy
-add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
-add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
-add wave -noupdate -expand -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_data
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_frm
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_irdy
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_data
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_frm
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_irdy
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_trdy
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_end
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_data
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_irdy
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_trdy
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_end
-add wave -noupdate -expand -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_data
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprply_e/metatx_end
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_cmmt
-add wave -noupdate -expand -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_rllbk
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/mii_clk
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_frm
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_irdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_trdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_end
+add wave -noupdate -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/pl_data
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/post
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/metatx_end
+add wave -noupdate -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/frm_ptr
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_frm
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_irdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_irdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_trdy
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_end
+add wave -noupdate -group ipv4_tx -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4_data
+add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_irdy
+add wave -noupdate -group ipv4_tx -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/cksm_data
+add wave -noupdate -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_frm
+add wave -noupdate -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_irdy
+add wave -noupdate -group ipv4_tx -group ipv4a /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_end
+add wave -noupdate -group ipv4_tx -group ipv4a -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4a_data
+add wave -noupdate -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_irdy
+add wave -noupdate -group ipv4_tx -group len /testbench/du_e/ipoe_b/du_e/ipv4_e/iplentx_irdy
+add wave -noupdate -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/len_b/datai
+add wave -noupdate -group ipv4_tx -group len -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/meta_b/len_b/datao
+add wave -noupdate -group ipv4_tx -group len -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4len_data
+add wave -noupdate -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_irdy
+add wave -noupdate -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_trdy
+add wave -noupdate -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_end
+add wave -noupdate -group ipv4_tx -group proto -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_e/ipv4proto_data
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_frm
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_irdy
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_data
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_frm
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_irdy
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_trdy
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_end
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmptx_data
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_irdy
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_trdy
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_end
+add wave -noupdate -group icmpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmppltx_data
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprply_e/metatx_end
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_cmmt
+add wave -noupdate -group icmpd /testbench/du_e/ipoe_b/du_e/fifo_rllbk
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_frm
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_irdy
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/src_trdy
@@ -146,33 +184,6 @@ add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
 add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/ipv4tx_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_req(0)
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_gnt(0)
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_req(1)
-add wave -noupdate /testbench/du_e/ipoe_b/du_e/arbiter_b/dev_gnt(1)
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/mii_clk
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_frm
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_irdy
-add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/arprx_data
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_req
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_rdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_irdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_trdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_end
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/sparx_equ
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/tparx_vld
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_frm
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_irdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_trdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_end
-add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/spatx_data
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_frm
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/dlltx_full
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_irdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_trdy
-add wave -noupdate -group arpd /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_end
-add wave -noupdate -group arpd -radix hexadecimal /testbench/du_e/ipoe_b/du_e/arpd_e/arpdtx_data
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/icmprx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/icmp_req
 add wave -noupdate /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/icmp_rdy
@@ -204,7 +215,7 @@ add wave -noupdate -expand -group txt_buffer -expand -group fifo /testbench/du_e
 add wave -noupdate -expand -group txt_buffer -expand -group fifo /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_trdy
 add wave -noupdate -expand -group txt_buffer -expand -group fifo -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(0) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(1) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(2) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(3) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(4) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(5) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(6) {-height 29 -radix hexadecimal} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data(7) {-height 29 -radix hexadecimal}} /testbench/du_e/ipoe_b/du_e/ipv4_e/icmpd_e/buffer_e/buffer_e/data_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8730518 ps} 0}
+WaveRestoreCursors {{Cursor 1} {7343954 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 282
 configure wave -valuecolwidth 157

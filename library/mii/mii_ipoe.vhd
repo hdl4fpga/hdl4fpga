@@ -532,13 +532,13 @@ begin
 	end process;
 
 	process (fifo_end, mii_clk)
-		variable q : std_logic;
-		variable q1 : std_logic;
-		variable q0 : std_logic;
+		variable q  : bit;
+		variable q1 : bit;
+		variable q0 : bit;
 	begin
 		if rising_edge(mii_clk) then
 			if fcs_sb='1' then
-				q0 := fifo_cmmt;
+				q0 := to_bit(fifo_cmmt);
 			elsif fifo_end='1' and fifo_trdy='1' then
 				q := '0';
 				q0 := '0';
@@ -548,7 +548,7 @@ begin
 				q1 := q0;
 			end if;
 		end if;
-		tag_frm <= q;
+		tag_frm <= to_stdulogic(q);
 	end process;
 
 	fifo_frm  <= miirx_frm or fcs_sb;
@@ -584,10 +584,10 @@ begin
 	plrx_frm  <= tag_frm;
 	plrx_irdy <=
 		'0'      when tag_frm='0' else
-		tag_trdy when tag_end='0' else
+		tag_trdy when to_bit(tag_end)='0' else
 		not fifo_end and fifo_trdy;
 	plrx_data <=
-		tag_data when tag_end='0' else
+		tag_data when to_bit(tag_end)='0' else
 		fifo_data;
 
 end;
