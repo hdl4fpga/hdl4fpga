@@ -90,6 +90,9 @@ architecture miiipoe_debug of arty is
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
 
+	signal vbtn2 : std_logic_vector(2-1 downto 0);
+	signal vbtn3 : std_logic_vector(2-1 downto 0);
+
 	-----------------
 	-- Select link --
 	-----------------
@@ -191,18 +194,15 @@ begin
 		signal hxdv   : std_logic;
 		signal hxd    : std_logic_vector(eth_rxd'range);
 
-		signal vbtn2 : std_logic_vector(2-1 downto 0);
-		signal vbtn3 : std_logic_vector(2-1 downto 0);
-
 	begin
 
 
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
-			mii_frm1 => '0', --btn(0),
-			mii_frm2 => vbtn2(1),
-			mii_frm3 => '0', --btn(1),
-			mii_frm4 => '0', --,
+			mii_frm1 => '0',
+			mii_frm2 => '0',
+			mii_frm3 => '0',
+			mii_frm4 => vbtn2(1),
 
 			mii_txc  => eth_rxclk_bufg,
 			mii_txen => hxdv,
@@ -399,8 +399,8 @@ begin
 		sin_frm   <= 
 			plrx_frm   when sw(3)='1'    else 
 			miitx_frm  when sw(1)='0'    else
-			tp(1)      when vbtn3(1)='0' else
-			miirx_trdy;
+--			tp(1)      when vbtn3(1)='1' else
+			miirx_frm;
 
 		sin_irdy  <=
 			plrx_irdy  and plrx_trdy  when sw(3)='1' else 

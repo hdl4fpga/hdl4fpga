@@ -165,6 +165,7 @@ architecture def of mii_ipoe is
 	signal ipv4txmac_trdy : std_logic;
 	signal mactx_full    : std_logic;
 
+	signal fifo_frm      : std_logic;
 	signal fifo_irdy     : std_logic;
 	signal fifo_end      : std_logic;
 	signal fifo_trdy     : std_logic;
@@ -532,22 +533,30 @@ begin
 
 	process (fifo_end, mii_clk)
 		variable q : std_logic;
+		variable q1 : std_logic;
+		variable q0 : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if fcs_sb='1' then
-				q := fifo_cmmt;
-			elsif fifo_end='1' then
-				q := '1';
+				q0 := fifo_cmmt;
+			elsif fifo_end='1' and fifo_trdy='1' then
+				q := '0';
+				q0 := '0';
+				q1 := '0';
+			else
+				q  := q1;
+				q1 := q0;
 			end if;
 		end if;
-		tag_frm <= q and not fifo_end;
+		tag_frm <= q;
 	end process;
 
+	fifo_frm  <= miirx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	fifo_e : entity hdl4fpga.txn_buffer
 	port map(
 		src_clk   => mii_clk,
-		src_frm   => miirx_frm,
+		src_frm   => fifo_frm, --miirx_frm,
 		src_irdy  => fifo_irdy,
 		src_trdy  => open,
 		src_data  => ipv4plrx_data,
@@ -576,7 +585,7 @@ begin
 	plrx_irdy <=
 		'0'      when tag_frm='0' else
 		tag_trdy when tag_end='0' else
-		fifo_trdy;
+		not fifo_end and fifo_trdy;
 	plrx_data <=
 		tag_data when tag_end='0' else
 		fifo_data;

@@ -66,6 +66,7 @@ begin
 				else
 					s := 0;
 				end if;
+				wait;
 				s := 0;
 			when 2 =>
 				b := true;
@@ -95,8 +96,8 @@ begin
 		gclk100 => clk,
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
-		sw => "0110",
-		btn(0) => btn0,
+		sw => "1101",
+		btn(0) => '0',
 		btn(1) => '0', --btn1,
 		btn(2) => btn1,
 		btn(3) => '0'); --btn1);
