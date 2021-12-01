@@ -147,10 +147,6 @@ begin
 	arbiter_b : block
 		signal dev_req    : std_logic_vector(0 to 2-1);
 		signal dev_gnt    : std_logic_vector(0 to 2-1);
-		signal udp_frm    : std_logic_vector(0 to 0);
-		signal udp_irdy   : std_logic_vector(0 to 0);
-		signal udp_end    : std_logic_vector(0 to 0);
-		signal iplen_irdy : std_logic_vector(0 to 0);
 	begin
 
 		dev_req <= dhcpctx_frm & pltx_frm;
@@ -160,15 +156,11 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udp_frm      <= wirebus(dhcpctx_frm       & pltx_frm,     dev_gnt);
-		udptx_frm    <= udp_frm(0);
-		udp_irdy     <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt);
-		udptx_irdy   <= udp_irdy(0);
-		udp_end      <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt);
-		udptx_end    <= udp_end(0);
+		udptx_frm    <= wirebus(dhcpctx_frm       & pltx_frm,     dev_gnt);
+		udptx_irdy   <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt);
+		udptx_end    <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt);
 		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
-		iplen_irdy   <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
-		iplentx_irdy <= iplen_irdy(0);
+		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
 	end block;
 

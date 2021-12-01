@@ -88,6 +88,7 @@ architecture miiipoe_debug of arty is
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
 	signal tp  : std_logic_vector(1 to 32);
+	signal tp1  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
 
 	signal vbtn2 : std_logic_vector(2-1 downto 0);
@@ -341,6 +342,7 @@ begin
 
 		sioflow_e : entity hdl4fpga.sio_flow
 		port map (
+			tp => tp1,
 			sio_clk => mii_txc,
 
 			rx_frm  => plrx_frm,
@@ -417,6 +419,10 @@ begin
 
 	end block;
 
+	led(3) <= tp1(4);
+	led(2) <= tp1(3);
+	led(0) <= tp1(1);
+	led(1) <= tp1(2);
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		timing_id    => video_tab(video_mode).timing_id,

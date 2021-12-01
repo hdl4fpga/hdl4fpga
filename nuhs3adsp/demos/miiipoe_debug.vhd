@@ -70,14 +70,21 @@ architecture miiipoe_debug of nuhs3adsp is
 	signal video_blank    : std_logic;
 	signal video_pixel    : std_logic_vector(3-1 downto 0);
 
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
+
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(so_data'range);
+
 	signal sin_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(mii_rxd'range);
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(0 to 8-1);
+	signal sin_data       : std_logic_vector(so_data'range);
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
@@ -137,11 +144,6 @@ begin
 		signal plrx_trdy  : std_logic := '0';
 		signal plrx_data  : std_logic_vector(miirx_data'range);
 
-		signal so_frm     : std_logic;
-		signal so_irdy    : std_logic;
-		signal so_trdy    : std_logic;
-		signal so_data    : std_logic_vector(miirx_data'range);
-
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
@@ -154,55 +156,36 @@ begin
 		signal pltx_end   : std_logic;
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
-		signal si_frm     : std_logic;
-		signal si_irdy    : std_logic;
-		signal si_trdy    : std_logic;
-		signal si_end     : std_logic;
-		signal si_data    : std_logic_vector(miirx_data'range);
-
 		signal dhcpcd_req : std_logic;
 		signal dhcpcd_rdy : std_logic;
 
-		signal si_req : bit;
-		signal si_rdy : bit;
-		constant txpkt  : std_logic_vector := reverse(
-			x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address 
-			x"ff_ff_ff_ff"       &  -- Destination IP address
-			x"dea9"              &  -- UDP source port
-			x"de00"              &  -- UDP destination port
-			reverse(x"0001")     &  -- Payload length
-			x"77",8);
+		signal si_req     : bit;
+		signal si_rdy     : bit;
 
-		signal hxdv   : std_logic;
-		signal hxd    : std_logic_vector(mii_rxd'range);
+		signal hxdv       : std_logic;
+		signal hxd        : std_logic_vector(mii_rxd'range);
 
-		signal si_btn2 : std_logic;
-		signal si_btn3 : std_logic;
-		signal htb_btn2 : std_logic;
+		signal htb_btn    : std_logic;
 
 	begin
 
-
-		htb_btn2 <= not sw1; --btn(2) when sw(3 downto 2)="01" else '0';
+--		htb_btn <= not sw1;
 --		htb_e : entity hdl4fpga.eth_tb
 --		port map (
---			mii_frm1 => '0', --btn(1),
---			mii_frm2 => htb_btn2, --'0', --btn(1),
---			mii_frm3 => '0', --btn(1),
---			mii_frm4 => '0', --,
+--			mii_frm1 => '0',
+--			mii_frm2 => htb_btn,
+--			mii_frm3 => '0',
+--			mii_frm4 => '0',
 --
 --			mii_txc  => mii_txc,
 --			mii_txen => hxdv,
 --			mii_txd  => hxd);
-
---		si_btn2 <= btn(2) when sw(3 downto 0)="00" else '0';
---		si_btn3 <= btn(3) when sw(3 downto 0)="00" else '0';
-
+--
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				if si_frm='0' then
-					si_req <= si_rdy xor ((to_bit(si_btn3) and si_rdy) or (to_bit(si_btn2) and not si_rdy));
+					si_req <= si_rdy xor not to_bit(sw1);
 				elsif (si_trdy and si_end)='1' then
 					si_rdy <= si_req;
 				end if;
@@ -212,7 +195,14 @@ begin
 
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
-			mux_data => txpkt,
+			mux_data => reverse(
+				x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address 
+				x"ff_ff_ff_ff"       &  -- Destination IP address
+				x"dea9"              &  -- UDP source port
+				x"de00"              &  -- UDP destination port
+				reverse(x"0001")     &  -- Payload length
+				x"77",8),
+
 			sio_clk  => mii_txc,
 			sio_frm  => si_frm,
 			sio_irdy => si_trdy,
@@ -227,17 +217,29 @@ begin
 			signal dst_trdy : std_logic;
 		begin
 
-			rxc_rxbus <= mii_rxdv & mii_rxd when not sw1='1' else hxdv & hxd;
+			process (sw1, hxdv, hxd, mii_rxc)
+				variable q : std_logic_vector(rxc_rxbus'range);
+			begin
+				if rising_edge(mii_rxc) then
+					q := mii_rxdv & mii_rxd;
+				end if;
+				case not sw1 is
+				when '1' =>
+					rxc_rxbus <= hxdv & hxd;
+				when others =>
+					rxc_rxbus <= q;
+				end case;
+			end process;
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth => 4,
-				latency   => 0,
+				max_depth  => 4,
+				latency    => 0,
 				dst_offset => 0,
 				src_offset => 2,
-				check_sov => false,
-				check_dov => true,
-				gray_code => false)
+				check_sov  => false,
+				check_dov  => true,
+				gray_code  => false)
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
@@ -249,11 +251,11 @@ begin
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					dst_trdy <= to_stdulogic(to_bit(dst_irdy));
+					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
+					mii_txcfrm <= txc_rxbus(0);
+					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
 				end if;
 			end process;
-			mii_txcfrm <= txc_rxbus(0);
-			mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
 
 
 		end block;
@@ -275,15 +277,10 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
---					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(0) and not dhcpcd_rdy));
+--					dhcpcd_req <= dhcpcd_rdy xor not sw1;
 				end if;
 			end if;
 		end process;
---		led(0) <= tp(5);
---		led(1) <= tp(4);
---		led(2) <= tp(3);
---		led(3) <= tp(2);
---		rgbled(2 downto 0) <= (others => tp(6));
 
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
@@ -313,31 +310,31 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
 
---		sioflow_e : entity hdl4fpga.sio_flow
---		port map (
---			sio_clk => mii_txc,
---
---			rx_frm  => plrx_frm,
---			rx_irdy => plrx_irdy,
---			rx_trdy => plrx_trdy,
---			rx_data => plrx_data,
---
---			so_frm  => so_frm,
---			so_irdy => so_irdy,
---			so_trdy => so_trdy,
---			so_data => so_data,
---
---			si_frm  => si_frm,
---			si_irdy => si_irdy,
---			si_trdy => si_trdy,
---			si_end  => si_end,
---			si_data => si_data,
---
---			tx_frm  => pltx_frm,
---			tx_irdy => pltx_irdy,
---			tx_trdy => pltx_trdy,
---			tx_end  => pltx_end,
---			tx_data => pltx_data);
+		sioflow_e : entity hdl4fpga.sio_flow
+		port map (
+			sio_clk => mii_txc,
+
+			rx_frm  => plrx_frm,
+			rx_irdy => plrx_irdy,
+			rx_trdy => plrx_trdy,
+			rx_data => plrx_data,
+
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data,
+
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_end  => si_end,
+			si_data => si_data,
+
+			tx_frm  => pltx_frm,
+			tx_irdy => pltx_irdy,
+			tx_trdy => pltx_trdy,
+			tx_end  => pltx_end,
+			tx_data => pltx_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -354,9 +351,9 @@ begin
 		mii_txen  <= miitx_frm and not miitx_end;
 
 		sin_clk   <= mii_txc;
-		sin_irdy  <= '1';
---		sin_frm   <= mii_txen when sw(1)='1' else tp(1) when btn(3)='0' else miirx_frm;
---		sin_data  <= mii_txd  when sw(1)='1' else mii_txcrxd;
+		sin_frm   <= so_frm;
+		sin_irdy  <= so_irdy and so_trdy;
+		sin_data  <= so_data;
 
 	end block;
 

@@ -110,9 +110,9 @@ architecture def of ipv4 is
 	signal ipv4plrx_frm     : std_logic;
 	signal ipv4plrx_irdy    : std_logic;
 
-	signal ipv4pltx_irdy    : std_logic_vector(0 to 0);
+	signal ipv4pltx_irdy    : std_logic;
 	signal ipv4pltx_trdy    : std_logic;
-	signal ipv4pltx_end     : std_logic_vector(0 to 0);
+	signal ipv4pltx_end     : std_logic;
 	signal ipv4pltx_data    : std_logic_vector(ipv4tx_data'range);
 	signal ppltx_data       : std_logic_vector(ipv4tx_data'range);
 
@@ -344,7 +344,6 @@ begin
 	end block;
 
 	arbiter_b : block
-		signal frm              : std_logic_vector(0 to 0);
 		signal dev_req          : std_logic_vector(0 to 2-1);
 		signal dev_gnt          : std_logic_vector(0 to 2-1);
 
@@ -364,8 +363,7 @@ begin
 --		dev_gnt <= "10";
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
-		frm           <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
-		ipv4tx_frm    <= frm(0);
+		ipv4tx_frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
@@ -498,9 +496,9 @@ begin
 		mii_clk    => mii_clk,
 
 		pl_frm     => ipv4tx_frm,
-		pl_irdy    => ipv4pltx_irdy(0),
+		pl_irdy    => ipv4pltx_irdy,
 		pl_trdy    => ipv4pltx_trdy,
-		pl_end     => ipv4pltx_end(0),
+		pl_end     => ipv4pltx_end,
 		pl_data    => ppltx_data,
 
 		ipv4a_frm  => ipv4atx_frm,

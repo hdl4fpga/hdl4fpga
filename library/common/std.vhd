@@ -152,6 +152,11 @@ package std is
 		constant arg : std_logic_vector)
 		return std_logic;
 
+	function wirebus (					-- Solve Xilinx XST bug
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic_vector)
+		return std_logic;
+
 	function wirebus (
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
@@ -221,7 +226,7 @@ package std is
 		constant def  : natural := 0)
 		return natural;
 
-	function word2byte (
+	function word2byte (		-- Solve Xilinx XST bug
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic;
@@ -850,6 +855,16 @@ package body std is
 			end if;
 		end loop;
 		return '0';
+	end;
+
+	function wirebus (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic_vector)
+		return std_logic is
+		variable retval : std_logic_vector(0 to 0);
+	begin
+		retval := wirebus(arg1, arg2);
+		return retval(0);
 	end;
 
 	function wirebus (

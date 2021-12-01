@@ -1022,6 +1022,7 @@ $(HDL4FPGA__icmpd) \
 $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
 		$(HDL4FPGA__icmprply_tx) \
 		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__icmprqst_rx) \

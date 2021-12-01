@@ -102,11 +102,11 @@ architecture def of mii_ipoe is
 	signal tparx_frm     : std_logic;
 	signal iprx_frm      : std_logic;
 
-	signal ethtx_frm     : std_logic_vector(0 to 0);
-	signal ethtx_irdy    : std_logic_vector(0 to 0);
+	signal ethtx_frm     : std_logic;
+	signal ethtx_irdy    : std_logic;
 	signal ethpltx_irdy  : std_logic;
 	signal ethpltx_trdy  : std_logic;
-	signal ethpltx_end   : std_logic_vector(0 to 0);
+	signal ethpltx_end   : std_logic;
 	signal ethpltx_data  : std_logic_vector(miitx_data'range);
 
 	signal arptx_frm     : std_logic;
@@ -362,14 +362,14 @@ begin
 			mem_length => my_mac'length)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => ethtx_frm(0),
-			si_irdy  => ethtx_irdy(0),
+			si_frm   => ethtx_frm,
+			si_irdy  => ethtx_irdy,
 			si_trdy  => open,
 			si_full  => mactx_full,
 			si_data  => ethpltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => ethtx_frm(0),
+			so_frm   => ethtx_frm,
 			so_irdy  => hwdatx_irdy,
 			so_trdy  => hwdatx_trdy,
 			so_end   => hwdatx_end,
@@ -380,7 +380,7 @@ begin
 		port map (
 			mux_data => reverse(my_mac,8),
 			sio_clk  => mii_clk,
-			sio_frm  => ethtx_frm(0),
+			sio_frm  => ethtx_frm,
 			sio_irdy => hwsatx_irdy,
 			sio_trdy => hwsatx_trdy,
 			so_end   => hwsatx_end,
@@ -391,7 +391,7 @@ begin
 		port map (
 			mux_data => hwtyp_tx,
 			sio_clk  => mii_clk,
-			sio_frm  => ethtx_frm(0),
+			sio_frm  => ethtx_frm,
 			sio_irdy => hwtyptx_irdy,
 			sio_trdy => hwtyptx_trdy,
 			so_end   => hwllctx_end,
@@ -404,7 +404,7 @@ begin
 
 	end block;
 
-	ethpltx_irdy <= ethtx_irdy(0);
+	ethpltx_irdy <= ethtx_irdy;
 	ethtx_e : entity hdl4fpga.eth_tx
 	port map (
 		mii_clk     => mii_clk,
@@ -415,10 +415,10 @@ begin
 		hwllc_end   => hwllctx_end,
 		hwllc_data  => hwllctx_data,
 
-		pl_frm      => ethtx_frm(0),
+		pl_frm      => ethtx_frm,
 		pl_irdy     => ethpltx_irdy,
 		pl_trdy     => ethpltx_trdy,
-		pl_end      => ethpltx_end(0),
+		pl_end      => ethpltx_end,
 		pl_data     => ethpltx_data,
 
 		mii_frm     => miitx_frm,

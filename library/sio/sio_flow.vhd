@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity sio_flow is
 	port (
+		tp : out std_logic_vector(1 to 32);
 		sio_clk : in std_logic;
 
 		rx_frm  : in std_logic;
@@ -67,6 +68,10 @@ architecture struct of sio_flow is
 	signal buffer_cmmt  : std_logic;
 	signal buffer_rllbk : std_logic;
 	signal buffer_ovfl  : std_logic;
+
+	signal meta_cmmt    : std_logic;
+	signal meta_rllbk   : std_logic;
+	signal meta_ovfl    : std_logic;
 
 	signal rgtr_frm     : std_logic;
 	signal rgtr_irdy    : std_logic;
@@ -187,16 +192,30 @@ begin
 	acktx_b : block
 
 		signal metai_irdy : std_logic;
-		signal meta_irdy : std_logic;
-		signal meta_data : std_logic_vector(rx_data'range);
+		signal meta_irdy  : std_logic;
+		signal meta_data  : std_logic_vector(rx_data'range);
 
-		signal ack_irdy  : std_logic;
-		signal ack_trdy  : std_logic;
-		signal ack_data  : std_logic_vector(tx_data'range);
+		signal ack_irdy   : std_logic;
+		signal ack_trdy   : std_logic;
+		signal ack_data   : std_logic_vector(tx_data'range);
 
-		signal sw        : std_logic;
+		signal sw         : std_logic;
+		signal rx_dfrm    : std_logic;
 
 	begin
+
+		dly_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => 2))
+		port map (
+			clk => sio_clk,
+			di(0) => rx_frm,
+			do(0) => rx_dfrm);
+
+		meta_rllbk <= not (rx_frm or rx_dfrm);
+		meta_cmmt  <= buffer_cmmt;
+		meta_ovfl  <= buffer_ovfl;
 
 		metai_irdy <= data_irdy and setif(rgtr_id=rgtrmeta_id);
 		meta_e : entity hdl4fpga.fifo
@@ -210,9 +229,9 @@ begin
 			src_trdy  => open,
 			src_data  => metarx_data,
 
-			rollback  => buffer_rllbk,
-			commit    => buffer_cmmt,
-			overflow  => buffer_ovfl,
+			rollback  => meta_rllbk,
+			commit    => meta_cmmt,
+			overflow  => meta_ovfl,
 
 			dst_clk   => sio_clk,
 			dst_irdy  => meta_irdy,
@@ -253,16 +272,18 @@ begin
 
 	begin
 
+		tp(3 to 4) <= req;
 		req <= acktx_frm & si_frm;
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => sio_clk,
 			req => req,
 			gnt => gnt);
+		tp(1 to 2) <= gnt;
 
-		tx_frm  <= wirebus(acktx_frm  & si_frm,  gnt)(0);
-		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt)(0);
-		tx_end  <= wirebus(acktx_end  & si_end,  gnt)(0);
+		tx_frm  <= wirebus(acktx_frm  & si_frm,  gnt);
+		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt);
+		tx_end  <= wirebus(acktx_end  & si_end,  gnt);
 		tx_data <= wirebus(acktx_data & si_data, gnt);
 		(0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy);
 
