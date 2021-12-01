@@ -131,24 +131,24 @@ begin
 
 
 	ipoe_b : block
+		signal mii_txcfrm : std_ulogic;
 		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
-		signal mii_txcfrm : std_ulogic;
 		signal miirx_frm  : std_ulogic;
 		signal miirx_irdy : std_logic;
 		signal miirx_trdy : std_logic;
 		signal miirx_data : std_logic_vector(0 to 8-1);
-
-		signal plrx_frm   : std_logic := '0';
-		signal plrx_irdy  : std_logic := '0';
-		signal plrx_trdy  : std_logic := '0';
-		signal plrx_data  : std_logic_vector(miirx_data'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(miirx_data'range);
+
+		signal plrx_frm   : std_logic := '0';
+		signal plrx_irdy  : std_logic := '0';
+		signal plrx_trdy  : std_logic := '0';
+		signal plrx_data  : std_logic_vector(miirx_data'range);
 
 		signal pltx_frm   : std_logic;
 		signal pltx_irdy  : std_logic;
@@ -196,7 +196,7 @@ begin
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
 			mux_data => reverse(
-				x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address 
+				x"ff_ff_ff_ff_ff_ff" &  -- Destination MAC address
 				x"ff_ff_ff_ff"       &  -- Destination IP address
 				x"dea9"              &  -- UDP source port
 				x"de00"              &  -- UDP destination port

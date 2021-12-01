@@ -39,19 +39,15 @@ architecture graphics of nuhs3adsp is
 	signal sys_rst : std_logic;
 	signal sys_clk : std_logic;
 
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(0 to 8-1);
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
 
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(0 to 8-1);
-
-	signal sout1_frm      : std_logic;
-	signal sout1_irdy     : std_logic;
-	signal sout1_trdy     : std_logic;
-	signal sout1_data     : std_logic_vector(8-1 downto 0);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
 
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
@@ -63,7 +59,6 @@ architecture graphics of nuhs3adsp is
 
 	constant fpga         : natural := spartan3;
 	constant mark         : natural := m6t;
-
 
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
@@ -106,18 +101,18 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddr_st_dqs_open : std_logic;
 
-	signal ddr_clk        : std_logic_vector(0 downto 0);
-	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt        : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo        : std_logic_vector(ddr_dq'range);
+	signal ddr_clk         : std_logic_vector(0 downto 0);
+	signal ddr_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt         : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo         : std_logic_vector(ddr_dq'range);
 
-	signal mii_clk        : std_logic;
-	signal video_clk      : std_logic;
-	signal video_hzsync   : std_logic;
-    signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal mii_clk         : std_logic;
+	signal video_clk       : std_logic;
+	signal video_hzsync    : std_logic;
+    signal video_vtsync    : std_logic;
+    signal video_blank     : std_logic;
+    signal video_pixel     : std_logic_vector(0 to 32-1);
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -145,7 +140,7 @@ architecture graphics of nuhs3adsp is
 		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
 	function setif (
-		constant expr  : boolean; 
+		constant expr  : boolean;
 		constant true  : video_modes;
 		constant false : video_modes)
 		return video_modes is
@@ -183,9 +178,9 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		grade4 => (ddr_166MHz, mode600p),	
+		grade4 => (ddr_166MHz, mode600p),
 		grade5 => (ddr_200MHz, mode1080p));
-		
+
 	constant app : apps := grade5;
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
@@ -206,7 +201,6 @@ architecture graphics of nuhs3adsp is
 --	constant baudrate  : natural := 115200;
 
 	signal dmavideotrans_cnl : std_logic;
-	signal txc_rxdv : std_logic;
 	signal tp : std_logic_vector(1 to 32);
 	signal ipv4acfg_req  : std_logic;
 begin
@@ -252,35 +246,111 @@ begin
 	ddrsys_rst <= not ddrsys_lckd;
 
 	ipv4acfg_req <= not sw1;
-	udpdaisy_e : entity hdl4fpga.sio_dayudp
-	generic map (
-		default_ipv4a => x"c0_a8_00_0e")
-	port map (
-		ipv4acfg_req => ipv4acfg_req,
+	ipoe_b : block
 
-		phy_rxc   => mii_rxc,
-		phy_rx_dv => mii_rxdv,
-		phy_rx_d  => mii_rxd,
+		signal mii_txcfrm : std_ulogic;
+		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
-		phy_txc   => mii_txc,
-		phy_col   => mii_col,
-		phy_crs   => mii_crs,
-		phy_tx_en => mii_txen,
-		phy_tx_d  => mii_txd,
-		txc_rxdv  => txc_rxdv,
-	
-		sio_clk   => sio_clk,
-		si_frm    => sout_frm,
-		si_irdy   => sout_irdy,
-		si_trdy   => sout_trdy,
-		si_data   => sout_data,
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
 
-		so_frm    => sin_frm,
-		so_irdy   => sin_irdy,
-		so_trdy   => '1',
-		so_data   => sin_data,
-		tp        => open);
-	
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(0 to 8-1);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(miirx_data'range);
+
+	begin
+
+		sync_b : block
+
+			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
+
+		begin
+
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					rxc_rxbus <= mii_rxdv & mii_rxd;
+				end if;
+			end process;
+
+			rxc2txc_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 4,
+				latency    => 0,
+				dst_offset => 0,
+				src_offset => 2,
+				check_sov  => false,
+				check_dov  => true,
+				gray_code  => false)
+			port map (
+				src_clk  => mii_rxc,
+				src_data => rxc_rxbus,
+				dst_clk  => mii_txc,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => txc_rxbus);
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
+					mii_txcfrm <= txc_rxbus(0);
+					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+				end if;
+			end process;
+		end block;
+
+		dhcp_p : process(mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					dhcpcd_req <= dhcpcd_rdy xor not sw1;
+				end if;
+			end if;
+		end process;
+
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			default_ipv4a => x"c0_a8_00_0e")
+		port map (
+			tp         => open,
+
+			sio_clk    => sio_clk,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => miirx_irdy,
+			miirx_trdy => miirx_trdy,
+			miirx_data => miirx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => miitx_trdy,
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data,
+
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_data    => si_data,
+
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data);
+
+	end block;
+
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		profile      => 1,
@@ -302,18 +372,18 @@ begin
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,
-		
+
 		fifo_size    => 8*2048)
 
 	port map (
 		sio_clk      => sio_clk,
-		sin_frm      => sin_frm,
-		sin_irdy     => sin_irdy,
-		sin_data     => sin_data,
-		sout_frm     => sout_frm,
-		sout_irdy    => sout_irdy,
-		sout_trdy    => sout_trdy,
-		sout_data    => sout_data,
+		sin_frm      => si_frm,
+		sin_irdy     => si_irdy,
+		sin_data     => si_data,
+		sout_frm     => so_frm,
+		sout_irdy    => so_irdy,
+		sout_trdy    => so_trdy,
+		sout_data    => so_data,
 
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
@@ -346,7 +416,6 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp => tp);
-
 
 	process (video_clk)
 	begin
@@ -461,7 +530,7 @@ begin
 --		dr => '0',
 --		df => '1',
 --		q => mii_refclk);
-	mii_refclk <= mii_clk;	
+	mii_refclk <= mii_clk;
 
 	hd_t_data <= 'Z';
 
@@ -474,7 +543,7 @@ begin
 		variable d : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			d := sin_frm;
+			d := si_frm;
 			if e='0' and d='1' then
 				q := not q;
 			end if;
@@ -487,11 +556,11 @@ begin
 --	led18 <= '0';
 --	led16 <= '0';
 	led15 <= '0';
-	led13 <= tp(5);
-	led11 <= tp(4); -- '0';
-	led9  <= tp(3); -- txc_rxdv ;
-	led8  <= tp(2); -- tp(2);
-	led7  <= tp(1); -- tp(1); --'0';
+	led13 <= '0'; --tp(5);
+	led11 <= '0'; --tp(4);
+	led9  <= '0'; --tp(3);
+	led8  <= '0'; --tp(2);
+	led7  <= '0'; --tp(1);
 
 	-- RS232 Transceiver --
 	-----------------------

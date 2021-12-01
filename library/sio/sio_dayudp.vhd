@@ -30,36 +30,38 @@ use hdl4fpga.std.all;
 
 entity sio_dayudp is
 	generic (
-		default_ipv4a : std_logic_vector(0 to 32-1) := x"00_00_00_00";
+		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_01_01";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		ipv4acfg_req  : in  std_logic := '-';
+		sio_clk       : in  std_logic;
+		sio_addr      : in  std_logic := '0';
 
-		phy_rx_dv   : in  std_logic;
-		phy_rx_d    : in  std_logic_vector;
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : out std_logic := '0';
 
-		phy_txc     : in  std_logic;
-		txc_rxdv    : out std_logic;
-		phy_col     : in  std_logic := '0';
-		phy_crs     : in  std_logic := '0';
-		phy_rxc     : in  std_logic;
-		phy_tx_en   : out std_logic;
-		phy_tx_d    : out std_logic_vector;
-	
-		sio_clk     : in  std_logic;
-		sio_addr    : in  std_logic := '0';
+		miirx_frm     : in  std_logic;
+		miirx_irdy    : in  std_logic;
+		miirx_trdy    : out std_logic;
+		miirx_data    : in  std_logic_vector;
 
-		si_frm      : in  std_logic := '0';
-		si_irdy     : in  std_logic := '0';
-		si_trdy     : out std_logic := '0';
-		si_data     : in  std_logic_vector;
+		miitx_frm     : buffer std_logic;
+		miitx_irdy    : buffer std_logic;
+		miitx_trdy    : in  std_logic;
+		miitx_end     : buffer std_logic;
+		miitx_data    : out std_logic_vector;
 
-		so_frm      : out std_logic;
-		so_irdy     : out std_logic;
-		so_trdy     : in  std_logic;
-		so_data     : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
-	
+		si_frm        : in  std_logic := '0';
+		si_irdy       : in  std_logic := '0';
+		si_trdy       : out std_logic := '0';
+		si_data       : in  std_logic_vector;
+
+		so_frm        : out std_logic;
+		so_irdy       : out std_logic;
+		so_trdy       : in  std_logic;
+		so_data       : out std_logic_vector;
+
+		tp            : out std_logic_vector(1 to 32));
+
 end;
 
 architecture beh of sio_dayudp is
@@ -78,28 +80,30 @@ begin
 	siudp_irdy <= '0' when sio_addr/='0' else si_irdy;
 	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
-	sioudpp_e : entity hdl4fpga.sio_udp
+	sio_udp_e : entity hdl4fpga.sio_udp
 	generic map (
 		default_ipv4a => default_ipv4a,
 		my_mac        => my_mac)
 	port map (
-		mii_rxc     => phy_rxc,
-		mii_rxdv    => phy_rx_dv,
-		mii_rxd     => phy_rx_d,
+		sio_clk    => sio_clk,
+		dhcpcd_req => dhcpcd_req,
+		dhcpcd_rdy => dhcpcd_rdy,
+		miirx_frm  => miirx_frm,
+		miirx_irdy => miirx_irdy,
+		miirx_trdy => miirx_trdy,
+		miirx_data => miirx_data,
 
-		mii_col     => phy_col,
-		mii_crs     => phy_crs,
-		mii_txc     => phy_txc,
-		txc_rxdv    => txc_rxdv,
-		mii_txen    => phy_tx_en,
-		mii_txd     => phy_tx_d,
+		miitx_frm  => miitx_frm,
+		miitx_irdy => miitx_irdy,
+		miitx_trdy => miitx_trdy,
+		miitx_end  => miitx_end,
+		miitx_data => miitx_data,
 
-		ipv4acfg_req => ipv4acfg_req,
-		sio_clk     => sio_clk,
 		si_frm      => siudp_frm,
 		si_irdy     => siudp_irdy,
 		si_trdy     => siudp_trdy,
 		si_data     => si_data,
+
 		so_frm      => soudp_frm,
 		so_irdy     => soudp_irdy,
 		so_trdy     => soudp_trdy,
@@ -107,7 +111,7 @@ begin
 		tp => tp);
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
-	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm; 
+	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;
 	so_irdy <= si_irdy when sio_addr/='0' else soudp_irdy;
 	so_data <= si_data when sio_addr/='0' else soudp_data;
 
