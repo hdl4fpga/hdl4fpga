@@ -399,7 +399,7 @@ begin
 		generic map (
 			max_depth  => fifodata_depth,
 			async_mode => true,
-			latency    => setif(profile=0, 3, 1),
+			latency    => setif(profile=0, 3, 2),
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => false)
@@ -591,7 +591,7 @@ begin
 
 	adapter_b : block
 
-		constant glat     : natural := 1;
+		constant glat     : natural := 2;
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
