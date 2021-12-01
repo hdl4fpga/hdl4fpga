@@ -60,6 +60,7 @@ entity demo_graphics is
 		sio_clk      : in  std_logic;
 		sin_frm      : in  std_logic;
 		sin_irdy     : in  std_logic;
+		sin_trdy     : out std_logic := '1';
 		sin_data     : in  std_logic_vector;
 		sout_frm     : buffer std_logic;
 		sout_irdy    : out std_logic;
@@ -146,14 +147,14 @@ architecture mix of demo_graphics is
 	signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
 
 	signal dmacfg_req     : std_logic_vector(0 to 2-1);
-	signal dmacfg_rdy     : std_logic_vector(0 to 2-1); 
+	signal dmacfg_rdy     : std_logic_vector(0 to 2-1);
 	signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 	signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 	signal dev_we         : std_logic_vector(0 to 2-1);
 
 	signal dev_gnt        : std_logic_vector(0 to 2-1);
 	signal dev_req        : std_logic_vector(dev_gnt'range);
-	signal dev_rdy        : std_logic_vector(dev_gnt'range); 
+	signal dev_rdy        : std_logic_vector(dev_gnt'range);
 	alias  dmavideo_gnt   : std_logic is dev_gnt(0);
 	alias  dmaio_gnt      : std_logic is dev_gnt(1);
 
@@ -258,14 +259,14 @@ begin
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
-		metaram_e : entity hdl4fpga.sio_ram 
+		metaram_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_size => 64*8)
 		port map (
 			si_clk   => sio_clk,
 			si_frm   => rgtr_frm,
 			si_irdy  => metaram_irdy,
-			si_data  => metaram_data, 
+			si_data  => metaram_data,
 
 			so_clk   => sio_clk,
 			so_frm   => sts_frm,
@@ -340,7 +341,7 @@ begin
 			soutv_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt); -- Xilinx ISE Bug;
 			sout_irdy  <= soutv_irdy(0);                            -- Xilinx ISE Bug;
 
-			sout_data <= wirebus(sts_data & sodata_data, frm_gnt); 
+			sout_data <= wirebus(sts_data & sodata_data, frm_gnt);
 
 			(0 => sts_trdy, 1 => sodata_trdy) <= frm_gnt and (frm_gnt'range => sout_trdy);
 
@@ -398,7 +399,7 @@ begin
 		generic map (
 			max_depth  => fifodata_depth,
 			async_mode => true,
-			latency    => setif(profile=0, 3, 2),
+			latency    => setif(profile=0, 3, 1),
 			check_sov  => true,
 			check_dov  => true,
 			gray_code  => false)
@@ -406,7 +407,7 @@ begin
 			src_clk    => sio_clk,
 			src_irdy   => dmadata_irdy,
 			src_trdy   => dmadata_trdy,
-			src_data   => rgtr_dmadata, 
+			src_data   => rgtr_dmadata,
 
 			dst_frm    => ctlr_inirdy,
 			dst_clk    => ctlr_clk,
@@ -435,13 +436,13 @@ begin
 			dmacfg_clk  => dmacfg_clk,
 			dmaio_irdy  => dmasin_irdy,
 			dmaio_trdy  => dmaio_trdy,
-									  
+
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
-									  
+
 			ctlr_clk    => ctlr_clk,
 			ctlr_inirdy => ctlr_inirdy,
-									  
+
 			dma_req     => dmaio_req,
 			dma_rdy     => dmaio_rdy);
 
@@ -577,7 +578,7 @@ begin
 				si_trdy   => fifo_trdy,
 				si_data   => fifo_data,
 				si_length => fifo_length,
- 
+
 				so_frm    => sodata_frm,
 				so_irdy   => sodata_irdy,
 				so_trdy   => sodata_trdy,
@@ -785,7 +786,7 @@ begin
 
 		ctlr_inirdy => ctlr_inirdy,
 		ctlr_refreq => ctlr_refreq,
-                                  
+
 		ctlr_irdy   => ctlr_irdy,
 		ctlr_trdy   => ctlr_trdy,
 		ctlr_ras    => ctlr_ras,
@@ -853,13 +854,13 @@ begin
 		phy_dmi      => ctlrphy_dmi,
 		phy_dmt      => ctlrphy_dmt,
 		phy_dmo      => ctlrphy_dmo,
-                               
+
 		phy_dqi      => ctlrphy_dqi,
 		phy_dqt      => ctlrphy_dqt,
 		phy_dqo      => ctlrphy_dqo,
 		phy_sti      => ctlrphy_sti,
 		phy_sto      => ctlrphy_sto,
-                                
+
 		phy_dqsi     => ctlrphy_dsi,
 		phy_dqso     => ctlrphy_dso,
 		phy_dqst     => ctlrphy_dst);

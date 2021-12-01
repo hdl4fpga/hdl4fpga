@@ -313,6 +313,8 @@ begin
 		end process;
 
 		du_e : entity hdl4fpga.mii_ipoe
+		generic map (
+			default_ipv4a => x"c0_a8_00_0e")
 		port map (
 			tp => tp,
 			mii_clk    => mii_txc,

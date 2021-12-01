@@ -349,6 +349,20 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data);
 
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_txc,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => mii_txd);
+
+		mii_txen  <= miitx_frm and not miitx_end;
+
 	end block;
 
 	grahics_e : entity hdl4fpga.demo_graphics
@@ -377,13 +391,13 @@ begin
 
 	port map (
 		sio_clk      => sio_clk,
-		sin_frm      => si_frm,
-		sin_irdy     => si_irdy,
-		sin_data     => si_data,
-		sout_frm     => so_frm,
-		sout_irdy    => so_irdy,
-		sout_trdy    => so_trdy,
-		sout_data    => so_data,
+		sin_frm      => so_frm,
+		sin_irdy     => so_irdy,
+		sin_data     => so_data,
+		sout_frm     => si_frm,
+		sout_irdy    => si_irdy,
+		sout_trdy    => si_trdy,
+		sout_data    => si_data,
 
 		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
