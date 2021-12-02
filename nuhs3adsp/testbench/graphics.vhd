@@ -62,8 +62,6 @@ architecture nuhs3adsp_graphics of testbench is
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_txd  : std_logic_vector(0 to 4-1);
 	signal mii_txc  : std_logic;
-	signal eth_txen : std_logic;
-	signal eth_txd  : std_logic_vector(0 to 4-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
 	signal txfrm_ptr     : std_logic_vector(0 to 20);
@@ -187,26 +185,6 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
-
-	function gen_natural(
-		constant start : natural := 0;
-		constant stop  : natural;
-		constant step  : natural := 1;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
-	begin
-		if start < stop then
-			for i in start to stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		else
-			for i in start downto stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		end if;
-		return retval;
-	end;
 
 begin
 

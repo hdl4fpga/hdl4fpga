@@ -69,7 +69,7 @@ entity nuhs3adsp is
 		adc_clkout : in std_logic := '0';
 		adc_da : in std_logic_vector(14-1 downto 0) := (others => '0');
 		adc_db : in std_logic_vector(14-1 downto 0) := (others => '0');
-		adc_daac_enable : in std_logic;
+		adc_daac_enable : in std_logic := '-';
 
 		-----------------------
 		-- RS232 Transceiver --

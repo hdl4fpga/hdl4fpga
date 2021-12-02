@@ -156,8 +156,8 @@ begin
 		signal pltx_end   : std_logic;
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
-		signal dhcpcd_req : std_logic;
-		signal dhcpcd_rdy : std_logic;
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
 
 		signal si_req     : bit;
 		signal si_rdy     : bit;
@@ -191,7 +191,7 @@ begin
 				end if;
 			end if;
 		end process;
-		si_frm <= to_stdulogic(si_req xor si_rdy);
+		si_frm <= '0'; --to_stdulogic(si_req xor si_rdy);
 
 		eth2_e: entity hdl4fpga.sio_mux
 		port map (
@@ -353,10 +353,9 @@ begin
 		mii_txen  <= miitx_frm and not miitx_end;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= so_frm;
-		sin_irdy  <= so_irdy and so_trdy;
-		sin_data  <= so_data;
-
+		sin_frm   <= miitx_frm;
+		sin_irdy  <= miitx_irdy and miitx_trdy;
+		sin_data  <= miitx_data;
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
