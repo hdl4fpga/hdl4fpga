@@ -156,15 +156,15 @@ begin
 	buffer_e : block
 		signal miirx_end : std_logic;
 		signal rollback  : std_logic;
-		signal icmp_req  : std_logic;
-		signal icmp_rdy  : std_logic;
+		signal icmp_req  : std_logic := '0';
+		signal icmp_rdy  : std_logic := '0';
 		signal delay_req : std_logic;
 	begin
 
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then
-				if (icmp_req xor icmp_rdy)='0' then
+				if to_bit(icmp_req xor icmp_rdy)='0' then
 					if icmprx_frm='1' then
 						icmp_req <= not icmp_rdy;
 					elsif tx_irdy='1' then

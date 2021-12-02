@@ -360,7 +360,6 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
---		dev_gnt <= "10";
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 
 		ipv4tx_frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);

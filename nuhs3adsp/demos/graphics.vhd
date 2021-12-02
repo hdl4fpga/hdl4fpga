@@ -202,7 +202,6 @@ architecture graphics of nuhs3adsp is
 
 	signal dmavideotrans_cnl : std_logic;
 	signal tp : std_logic_vector(1 to 32);
-	signal ipv4acfg_req  : std_logic;
 begin
 
 	sys_rst <= not hd_t_clock;
@@ -245,7 +244,6 @@ begin
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
-	ipv4acfg_req <= not sw1;
 	ipoe_b : block
 
 		signal mii_txcfrm : std_ulogic;
@@ -310,11 +308,24 @@ begin
 			end process;
 		end block;
 
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => mii_txc,
+			serdes_frm => mii_txcfrm,
+			ser_irdy   => '1',
+			ser_trdy   => open,
+			ser_data   => mii_txcrxd,
+
+			des_frm    => miirx_frm,
+			des_irdy   => miirx_irdy,
+			des_trdy   => miirx_trdy,
+			des_data   => miirx_data);
+
 		dhcp_p : process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor not sw1;
+			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
 				end if;
 			end if;
 		end process;
@@ -586,7 +597,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rstn <= '1';
+	mii_rstn <= ddrsys_lckd; 
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

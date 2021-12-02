@@ -60,6 +60,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal mii_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal mii_txd  : std_logic_vector(0 to 4-1);
 	signal mii_txc  : std_logic;
 	signal eth_txen : std_logic;
 	signal eth_txd  : std_logic_vector(0 to 4-1);
@@ -207,64 +208,6 @@ architecture nuhs3adsp_graphics of testbench is
 		return retval;
 	end;
 
-	constant arppkt : std_logic_vector :=
-		x"0000"                 & -- arp_htype
-		x"0000"                 & -- arp_ptype
-		x"00"                   & -- arp_hlen 
-		x"00"                   & -- arp_plen 
-		x"0000"                 & -- arp_oper 
-		x"00_00_00_00_00_00"    & -- arp_sha  
-		x"00_00_00_00"          & -- arp_spa  
-		x"00_00_00_00_00_00"    & -- arp_tha  
-		x"c0_a8_00_0e";           -- arp_tpa  
-
-	constant icmppkt : std_logic_vector :=
-		x"4500"                 &    -- IP Version, TOS
-		x"0000"                 &    -- IP Length
-		x"0000"                 &    -- IP Identification
-		x"0000"                 &    -- IP Fragmentation
-		x"0501"                 &    -- IP TTL, protocol
-		x"0000"                 &    -- IP Header Checksum
-		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"12345678",8) &
-		reverse(x"aaaaaaaa",8) &
-		reverse(x"ffffffff",8) ;
-
-	constant payload : std_logic_vector := 
-		x"0100" & x"23"
-		& x"18ff" & gen_natural(start => 0,     stop => 1*128-1, size => 16)
---		& x"18ff" & gen_natural(start => 1*128, stop => 2*128-1, size => 16)
---		& x"18ff" & gen_natural(start => 2*128, stop => 3*128-1, size => 16)
---		& x"18ff" & gen_natural(start => 3*128, stop => 4*128-1, size => 16)
---		& x"18ff" & gen_natural(start => 4*128, stop => 5*128-1, size => 16)
-		& x"160380000000"
-		& x"170200000f";
-
-	constant packet : std_logic_vector := 
-		x"4500"                 &    -- IP Version, TOS
-		x"0000"                 &    -- IP Length
-		x"0000"                 &    -- IP Identification
-		x"0000"                 &    -- IP Fragmentation
-		x"0511"                 &    -- IP TTL, protocol
-		x"0000"                 &    -- IP Header Checksum
-		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
-
-		udp_checksummed (
-			x"00000000",
-			x"ffffffff",
-			x"0044dea9"         & -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
-			x"0000" &              -- UPD checksum
-			payload);
-
 begin
 
 	mii_rxc <= mii_refclk;
@@ -276,39 +219,17 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 200 us;
---	eth_e: entity hdl4fpga.mii_rom
---	generic map (
---		mem_data => reverse(packet,8))
---	port map (
---		mii_txc  => mii_rxc,
---		mii_txen => mii_req,
---		mii_txdv => eth_txen,
---		mii_txd  => eth_txd);
---
---	process (mii_rxc)
---	begin
---
---		if rising_edge(mii_rxc) then
---			if eth_txen='0' and mii_rxdv='0' then
---				txfrm_ptr <= (others => '0');
---			else
---				txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
---			end if;
---		end if;
---	end process;
---
---	ethtx_e : entity hdl4fpga.eth_tx
---	port map (
---		mii_txc  => mii_rxc,
---		eth_ptr  => txfrm_ptr,
---		hwsa     => x"af_ff_ff_ff_ff_f5",
---		hwda     => x"00_40_00_01_02_03",
---		llc      => x"0800",
---		pl_txen  => eth_txen,
---		eth_rxd  => eth_txd,
---		eth_txen => mii_rxdv,
---		eth_txd  => mii_rxd);
+	mii_req <= '0', '1' after 1 us;
+	htb_e : entity hdl4fpga.eth_tb
+	port map (
+		mii_frm1 => '0',
+		mii_frm2 => mii_req,
+		mii_frm3 => '0',
+		mii_frm4 => '0',
+
+		mii_txc  => mii_rxc,
+		mii_txen => mii_rxdv,
+		mii_txd  => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (
@@ -330,11 +251,12 @@ begin
 
 		rs232_rd => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_txc => mii_txc,
 		mii_rxc => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd => mii_rxd,
+		mii_txc => mii_txc,
 		mii_txen => mii_txen,
+		mii_txd => mii_txd,
 		-------------
 		-- DDR RAM --
 
@@ -354,6 +276,13 @@ begin
 		ddr_dm  => dm,
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
+
+	ethrx_e : entity hdl4fpga.eth_rx
+	port map (
+		mii_clk    => mii_txc,
+		mii_frm    => mii_txen,
+		mii_irdy   => mii_txen,
+		mii_data   => mii_txd);
 
 	ddr_model_g: ddr_model
 	port map (

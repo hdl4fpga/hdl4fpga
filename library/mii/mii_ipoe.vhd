@@ -322,7 +322,6 @@ begin
 			clk => mii_clk,
 			req => dev_req,
 			gnt => dev_gnt);
---		dev_gnt <= "01";
 
 		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
@@ -427,7 +426,6 @@ begin
 		mii_end     => miitx_end,
 		mii_data    => miitx_data);
 
---	arp_req <= to_stdulogic(to_bit(arp_rdy));
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
 		hwsa       => my_mac)
