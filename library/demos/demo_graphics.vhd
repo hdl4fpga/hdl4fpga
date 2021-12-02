@@ -591,7 +591,7 @@ begin
 
 	adapter_b : block
 
-		constant glat     : natural := 2;
+		constant glat     : natural := 1;
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
