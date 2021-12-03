@@ -174,8 +174,8 @@ begin
 					-- Xilinx XST confuses the following variables by latches if they're not copied from signals
 					q    := q_reg;
 					v    := v_reg;
-					data := data_reg;
-					slr  := slr_reg;
+--					data := data_reg;
+--					slr  := slr_reg;
 
 					slr(rdata'range) := unsigned(rdata);
 					slr := slr rol rdata'length;
@@ -207,8 +207,8 @@ begin
 					-- Copy the following variables to signals for them not to be confused by XST for latches
 					q_reg    <= q;
 					v_reg    <= v;
-					data_reg <= data;
-					slr_reg  <= slr;
+--					data_reg <= data;
+--					slr_reg  <= slr;
 				end if;
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
