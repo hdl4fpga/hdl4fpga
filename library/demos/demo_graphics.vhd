@@ -239,7 +239,7 @@ begin
 
 	begin
 
-		tp(1 to 8) <= ack_rgtr;
+		tp(1 to 8) <= reverse(ack_rgtr);
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -299,7 +299,7 @@ begin
 					req := '1';
 				end if;
 				frm := to_stdulogic(to_bit(rgtr_frm));
-				sts_frm <= to_stdulogic(req);
+				sts_frm <= '0'; --to_stdulogic(req);
 			end if;
 		end process;
 

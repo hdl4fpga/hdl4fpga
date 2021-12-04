@@ -157,17 +157,21 @@ begin
 	begin
 		if rising_edge(sio_clk) then
 			if ackrx_dv='1' then
-				if shift_left(unsigned(ackrx_data),2)/=last then
-					buffer_cmmt  <= '1';
-				elsif to_bit(ackrx_data(ackrx_data'left))='1' then
+				if to_bit(ackrx_data(ackrx_data'right))='1' then
+					buffer_cmmt <= '1';
+					meta_cmmt   <= '1';
+					ackrply_req <= not ackrply_rdy;
+				elsif shift_right(unsigned(ackrx_data),2)/=last then
 					buffer_cmmt  <= '1';
 				else
 					buffer_rllbk <= '1';
+					meta_cmmt    <= '1';
+					ackrply_req  <= not ackrply_rdy;
 				end if;
-				ackrply_req <= to_bit(ackrx_data(ackrx_data'left)) xor ackrply_rdy;
-				last := shift_left(unsigned(ackrx_data),2);
+				last := shift_right(unsigned(ackrx_data),2);
 			elsif rx_frm='0' then
 				buffer_cmmt  <= '0';
+				meta_cmmt    <= '0';
 				buffer_rllbk <= '0';
 			end if;
 		end if;
@@ -214,7 +218,6 @@ begin
 			do(0) => rx_dfrm);
 
 		meta_rllbk <= not (rx_frm or rx_dfrm);
-		meta_cmmt  <= buffer_cmmt;
 		meta_ovfl  <= buffer_ovfl;
 
 		metai_irdy <= data_irdy and setif(rgtr_id=rgtrmeta_id);
