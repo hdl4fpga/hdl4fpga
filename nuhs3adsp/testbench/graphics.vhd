@@ -201,9 +201,9 @@ begin
 	htb_e : entity hdl4fpga.eth_tb
 	port map (
 		mii_frm1 => '0',
-		mii_frm2 => mii_req,
+		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => '0',
+		mii_frm4 => mii_req,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
@@ -227,33 +227,33 @@ begin
 
 		hd_t_clock => rst,
 
-		rs232_rd => uart_sin,
+		rs232_rd   => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_rxc => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd => mii_rxd,
-		mii_txc => mii_txc,
-		mii_txen => mii_txen,
-		mii_txd => mii_txd,
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd,
+		mii_txc    => mii_txc,
+		mii_txen   => mii_txen,
+		mii_txd    => mii_txd,
 		-------------
 		-- DDR RAM --
 
-		ddr_ckp => clk_p,
-		ddr_ckn => clk_n,
+		ddr_ckp    => clk_p,
+		ddr_ckn    => clk_n,
 		ddr_lp_ckp => clk_p,
 		ddr_lp_ckn => clk_n,
 		ddr_st_lp_dqs => ddr_lp_dqs,
 		ddr_st_dqs => ddr_lp_dqs,
-		ddr_cke => cke,
-		ddr_cs  => cs_n,
-		ddr_ras => ras_n,
-		ddr_cas => cas_n,
-		ddr_we  => we_n,
-		ddr_ba  => ba,
-		ddr_a   => addr,
-		ddr_dm  => dm,
-		ddr_dqs => dqs,
-		ddr_dq  => dq);
+		ddr_cke    => cke,
+		ddr_cs     => cs_n,
+		ddr_ras    => ras_n,
+		ddr_cas    => cas_n,
+		ddr_we     => we_n,
+		ddr_ba     => ba,
+		ddr_a      => addr,
+		ddr_dm     => dm,
+		ddr_dqs    => dqs,
+		ddr_dq     => dq);
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (

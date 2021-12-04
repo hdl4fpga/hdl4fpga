@@ -65,6 +65,7 @@ entity demo_graphics is
 		sout_frm     : buffer std_logic;
 		sout_irdy    : out std_logic;
 		sout_trdy    : in  std_logic;
+		sout_end     : out std_logic;
 		sout_data    : out std_logic_vector;
 
 		video_clk    : in  std_logic;
@@ -207,11 +208,10 @@ begin
 		signal dmaiolen_irdy  : std_logic;
 		signal dmaioaddr_irdy : std_logic;
 
-		signal soutv_frm      : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
-		signal soutv_irdy     : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
 		signal sts_frm        : std_logic;
-		signal sts_irdy       : std_logic_vector(0 to 0); -- Xilinx ISE Bug;
+		signal sts_irdy       : std_logic;
 		signal sts_trdy       : std_logic;
+		signal sts_end        : std_logic;
 		signal sts_data       : std_logic_vector(sout_data'range);
 		signal meta_data      : std_logic_vector(metaram_data'range);
 		signal meta_trdy      : std_logic;
@@ -239,6 +239,7 @@ begin
 
 	begin
 
+		tp(1 to 8) <= ack_rgtr;
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -317,8 +318,9 @@ begin
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
-		sts_irdy  <= wirebus(meta_trdy & siodmaio_trdy, not meta_end & meta_end);
-		sts_data  <= wirebus(meta_data & siodmaio_data, not meta_end & meta_end);
+		sts_irdy  <= meta_trdy when meta_end='0' else siodmaio_trdy;
+		sts_end   <= meta_end  when meta_end='0' else siodmaio_end;
+		sts_data  <= meta_data when meta_end='0' else siodmaio_data;
 
 		sioarbiter_b : block
 
@@ -336,11 +338,9 @@ begin
 				req  => frm_req,
 				gnt  => frm_gnt);
 
-			soutv_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt); -- Xilinx ISE Bug;
-			sout_frm   <= soutv_frm(0);                             -- Xilinx ISE Bug;
-			soutv_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt); -- Xilinx ISE Bug;
-			sout_irdy  <= soutv_irdy(0);                            -- Xilinx ISE Bug;
-
+			sout_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt);
+			sout_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt);
+			sout_end  <= wirebus(sts_end  & sodata_end,  frm_gnt);
 			sout_data <= wirebus(sts_data & sodata_data, frm_gnt);
 
 			(0 => sts_trdy, 1 => sodata_trdy) <= frm_gnt and (frm_gnt'range => sout_trdy);

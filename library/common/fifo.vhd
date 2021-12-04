@@ -121,8 +121,8 @@ begin
 			signal b_reg    : unsigned(0 to (latency-1)) := (others => '0');
 			signal v_reg    : unsigned(0 to (latency-1)-1) := (others => '0');
 			signal q_reg    : unsigned(0 to (latency-1)) := (others => '0');
-			signal slr_reg  : unsigned(0 to (latency-1)*dst_data'length-1);
-			signal data_reg : unsigned(0 to latency*dst_data'length-1);
+--			signal slr_reg  : unsigned(0 to (latency-1)*dst_data'length-1);
+--			signal data_reg : unsigned(0 to latency*dst_data'length-1);
 		begin
 
 			booking_p : process (dst_clk)

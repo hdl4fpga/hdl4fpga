@@ -2,8 +2,8 @@
 
 # Define path to each library
 LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
-LIB_SIMPRIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/simprim
-LIB_VITAL2000 = /opt/modeltech/linux_x86_64/../vital2000
+LIB_MICRON = micron
+LIB_VERILOG = /opt/modeltech/linux_x86_64/../verilog
 LIB_STD = /opt/modeltech/linux_x86_64/../std
 LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_HDL4FPGA = hdl4fpga
@@ -34,10 +34,8 @@ HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
 HDL4FPGA__xcs3_ddrphy = $(LIB_HDL4FPGA)/xcs3_ddrphy/_primary.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
-SIMPRIM__vcomponents = $(LIB_SIMPRIM)/vcomponents/_primary.dat
-VITAL2000__vital_timing = $(LIB_VITAL2000)/vital_timing/_primary.dat
-SIMPRIM__vpackage = $(LIB_SIMPRIM)/vpackage/_primary.dat
-VITAL2000__vital_primitives = $(LIB_VITAL2000)/vital_primitives/_primary.dat
+MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
@@ -49,9 +47,12 @@ HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
 WORK__testbench__arty_miiipoedebug = $(LIB_WORK)/testbench/arty_miiipoedebug.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__nuhs3debug_miiipoedebug = $(LIB_WORK)/testbench/nuhs3debug_miiipoedebug.dat
+WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_miiipoedebug_structure_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_structure_md/_primary.dat
 WORK__nuhs3adsp_miiipoedebug_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_md/_primary.dat
+WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
+WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp__miiipoe_debug = $(LIB_WORK)/nuhs3adsp/miiipoe_debug.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
@@ -65,9 +66,12 @@ SCCOM = sccom
 whole_library :     $(WORK__testbench__arty_miiipoedebug) \
     $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__nuhs3debug_miiipoedebug) \
+    $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_miiipoedebug_structure_md) \
     $(WORK__nuhs3adsp_miiipoedebug_md) \
+    $(WORK__nuhs3adsp_graphics_md) \
+    $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp__miiipoe_debug) \
     $(WORK__nuhs3adsp) \
@@ -124,10 +128,6 @@ $(WORK__nuhs3adsp__miiipoe_debug) : ../../nuhs3adsp/demos/miiipoe_debug.vhd \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__dfs) \
-		$(VITAL2000__vital_primitives) \
-		$(SIMPRIM__vpackage) \
-		$(VITAL2000__vital_timing) \
-		$(SIMPRIM__vcomponents) \
 		$(WORK__nuhs3adsp) \
 		$(UNISIM__vcomponents) \
 		$(HDL4FPGA__bcdfonts) \
@@ -171,7 +171,7 @@ $(WORK__nuhs3adsp__graphics) : ../../nuhs3adsp/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../nuhs3adsp/demos/graphics.vhd
+	$(VCOM) -2002 ../../nuhs3adsp/demos/graphics.vhd
 
 $(WORK__testbench) : testbench.vhd \
 		$(IEEE__numeric_std) \
@@ -179,13 +179,26 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
+$(WORK__nuhs3adsp_graphic_structure_md) \
+$(WORK__nuhs3adsp_graphics_md) \
+$(WORK__testbench__nuhs3adsp_graphics) : ../../nuhs3adsp/testbench/graphics.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr_model) \
+		$(WORK__nuhs3adsp) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__eth_rx) \
+		$(HDL4FPGA__eth_tb) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002  ../../nuhs3adsp/testbench/graphics.vhd
+
 $(WORK__nuhs3adsp_miiipoedebug_md) \
 $(WORK__nuhs3adsp_miiipoedebug_structure_md) \
 $(WORK__testbench__nuhs3debug_miiipoedebug) : ../../nuhs3adsp/testbench/miiipoe_debug.vhd \
-		$(VITAL2000__vital_primitives) \
-		$(SIMPRIM__vpackage) \
-		$(VITAL2000__vital_timing) \
-		$(SIMPRIM__vcomponents) \
 		$(WORK__nuhs3adsp) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \

@@ -42,6 +42,7 @@ architecture graphics of nuhs3adsp is
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
 	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	signal so_frm        : std_logic;
@@ -353,6 +354,7 @@ begin
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,
+			si_end     => si_end,
 			si_data    => si_data,
 
 			so_frm     => so_frm,
@@ -404,10 +406,12 @@ begin
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
+		sin_trdy     => so_trdy,
 		sin_data     => so_data,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,
+		sout_end     => si_end,
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
@@ -562,30 +566,14 @@ begin
 	-- LEDs --
 	----------
 
-	process (mii_txc)
-		variable q : std_logic;
-		variable e : std_logic;
-		variable d : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			d := si_frm;
-			if e='0' and d='1' then
-				q := not q;
-			end if;
-			led18 <= q;
-			led16 <= not q;
-			e := d;
-		end if;
-	end process;
-
---	led18 <= '0';
---	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0'; --tp(5);
-	led11 <= '0'; --tp(4);
-	led9  <= '0'; --tp(3);
-	led8  <= '0'; --tp(2);
-	led7  <= '0'; --tp(1);
+	led18 <= tp(8);
+	led16 <= tp(7);
+	led15 <= tp(6);
+	led13 <= tp(5);
+	led11 <= tp(4);
+	led9  <= tp(3);
+	led8  <= tp(2);
+	led7  <= tp(1);
 
 	-- RS232 Transceiver --
 	-----------------------

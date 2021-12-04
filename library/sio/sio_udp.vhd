@@ -52,7 +52,7 @@ entity sio_udp is
 
 		so_frm        : out std_logic;
 		so_irdy       : buffer std_logic;
-		so_trdy       : in  std_logic;
+		so_trdy       : in  std_logic := '1';
 		so_data       : out std_logic_vector;
 
 		si_frm        : in  std_logic;

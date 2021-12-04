@@ -53,11 +53,12 @@ entity sio_dayudp is
 		si_frm        : in  std_logic := '0';
 		si_irdy       : in  std_logic := '0';
 		si_trdy       : out std_logic := '0';
+		si_end        : in  std_logic := '0';
 		si_data       : in  std_logic_vector;
 
 		so_frm        : out std_logic;
 		so_irdy       : out std_logic;
-		so_trdy       : in  std_logic;
+		so_trdy       : in  std_logic := '1';
 		so_data       : out std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
@@ -69,6 +70,7 @@ architecture beh of sio_dayudp is
 	signal siudp_frm  : std_logic;
 	signal siudp_irdy : std_logic;
 	signal siudp_trdy : std_logic;
+	signal siudp_end  : std_logic;
 	signal soudp_frm  : std_logic;
 	signal soudp_irdy : std_logic;
 	signal soudp_trdy : std_logic;
@@ -77,6 +79,7 @@ architecture beh of sio_dayudp is
 begin
 
 	siudp_frm  <= '0' when sio_addr/='0' else si_frm;
+	siudp_end  <= '0' when sio_addr/='0' else si_end;
 	siudp_irdy <= '0' when sio_addr/='0' else si_irdy;
 	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
@@ -102,6 +105,7 @@ begin
 		si_frm      => siudp_frm,
 		si_irdy     => siudp_irdy,
 		si_trdy     => siudp_trdy,
+		si_end      => siudp_end,
 		si_data     => si_data,
 
 		so_frm      => soudp_frm,
