@@ -302,10 +302,16 @@ begin
 			end if;
 		end process;
 
-		sio_dmaio <= 
-			x"09" & x"00" &	-- UDP Length
-			reverse(x"01" & x"00" & reverse(ack_rgtr) &
-			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
+		process (sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				sio_dmaio <= 
+					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
+					reverse(x"01" & x"00" & reverse(ack_rgtr) &
+					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
+			end if;
+		end process;
+
 		siodmaio_irdy <= meta_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
