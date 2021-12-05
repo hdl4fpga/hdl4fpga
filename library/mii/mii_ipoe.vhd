@@ -571,6 +571,8 @@ begin
 	fifo_frm  <= miirx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	fifo_e : entity hdl4fpga.txn_buffer
+	generic map (
+		m => 12)
 	port map(
 		src_clk   => mii_clk,
 		src_frm   => fifo_frm, --miirx_frm,

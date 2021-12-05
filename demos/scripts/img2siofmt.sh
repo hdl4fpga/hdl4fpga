@@ -1,17 +1,22 @@
 #!/bin/sh
 KIT="${KIT:-ULX3S}"
 BADDR="${BADDR:-0}"
-PIXEL="${PIXEL:-rgb565}"
-WSIZE="${WSIZE:-16}"
-BSIZE="${BSIZE:-4096}"
-PKTMD="${PKTMD:-PKT}"
-WIDTH="${WIDTH:-800}"
 
-if  [ "${KIT}" = "nuhs3adsp" ] ; then
+case ${KIT} in
+"nuhs3adsp")
 	PIXEL="${PIXEL:-rgb32}"
 	WSIZE="${WSIZE:-32}"
 	BSIZE="${BSIZE:-1024}"
-fi 
+	;;
+"ULX3S")
+	PIXEL="${PIXEL:-rgb565}"
+	WSIZE="${WSIZE:-16}"
+	BSIZE="${BSIZE:-4096}"
+	;;
+esac
+
+PKTMD="${PKTMD:-PKT}"
+WIDTH="${WIDTH:-800}"
 
 if  [ "${PKTMD}" = "PKT" ] ; then
 	POPT="-p"
