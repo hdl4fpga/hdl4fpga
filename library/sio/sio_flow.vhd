@@ -61,7 +61,6 @@ architecture struct of sio_flow is
 
 	constant rgtrmeta_id : std_logic_vector(8-1 downto 0) := x"00";
 
-	signal metarx_frm   : std_logic;
 	signal metarx_irdy  : std_logic;
 	signal metarx_data  : std_logic_vector(rx_data'range);
 
@@ -115,7 +114,6 @@ begin
 		data_irdy => data_irdy,
 		rgtr_data => rgtr_data);
 
-	metarx_frm  <= rgtr_frm;
 	metarx_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
 	metarx_data <= std_logic_vector(resize(unsigned(rgtr_data), metarx_data'length));
 
@@ -195,7 +193,6 @@ begin
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
 	acktx_b : block
 
-		signal metai_irdy : std_logic;
 		signal meta_irdy  : std_logic;
 		signal meta_data  : std_logic_vector(rx_data'range);
 
@@ -220,7 +217,6 @@ begin
 		meta_rllbk <= not (rx_frm or rx_dfrm);
 		meta_ovfl  <= buffer_ovfl;
 
-		metai_irdy <= data_irdy and setif(rgtr_id=rgtrmeta_id);
 		meta_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 64,
@@ -228,7 +224,7 @@ begin
 			check_dov => true)
 		port map(
 			src_clk   => sio_clk,
-			src_irdy  => metai_irdy,
+			src_irdy  => metarx_irdy,
 			src_trdy  => open,
 			src_data  => metarx_data,
 

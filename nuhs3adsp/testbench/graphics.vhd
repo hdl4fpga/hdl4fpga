@@ -197,7 +197,7 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 1 us;
+	mii_req <= '0', '1' after 200 us;
 	htb_e : entity hdl4fpga.eth_tb
 	port map (
 		mii_frm1 => '0',

@@ -174,6 +174,9 @@ architecture def of mii_ipoe is
 	signal fifo_cmmt     : std_logic;
 	signal fifo_rllbk    : std_logic;
 
+	signal tagtx_irdy      : std_logic;
+	signal tagtx_trdy      : std_logic;
+
 	signal tag_frm       : std_logic;
 	signal tag_end       : std_logic;
 	signal tag_irdy      : std_logic;
@@ -185,6 +188,22 @@ architecture def of mii_ipoe is
 
 	signal tp1           : std_logic_vector(1 to 32);
 begin
+
+	process (pltx_irdy, mii_clk)
+		variable cntr : unsigned(0 to 4);
+	begin
+		if rising_edge(mii_clk) then
+			if pltx_frm='0' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				if pltx_irdy='1' then
+					cntr := cntr + pltx_data'length;
+				end if;
+			end if;
+		end if;
+		tagtx_irdy <= setif(cntr(0)='1', pltx_irdy,  '0');
+		pltx_trdy  <= setif(cntr(0)='1', tagtx_trdy, '1');
+	end process;
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
@@ -502,8 +521,8 @@ begin
 		plrx_data     => ipv4plrx_data,
 
 		pltx_frm      => pltx_frm,
-		pltx_irdy     => pltx_irdy,
-		pltx_trdy     => pltx_trdy,
+		pltx_irdy     => tagtx_irdy,
+		pltx_trdy     => tagtx_trdy,
 		pltx_end      => pltx_end,
 		pltx_data     => pltx_data,
 
@@ -571,7 +590,7 @@ begin
 	tag_irdy  <= '0' when tag_end='0' else plrx_trdy;
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data =>  reverse(x"000d",8),
+		mux_data => reverse(x"000d",8),
 		sio_clk  => mii_clk,
 		sio_frm  => tag_frm,
 		sio_irdy => tag_frm,

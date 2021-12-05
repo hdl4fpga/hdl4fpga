@@ -219,7 +219,7 @@ begin
 		signal siodmaio_irdy  : std_logic;
 		signal siodmaio_trdy  : std_logic;
 		signal siodmaio_end   : std_logic;
-		signal sio_dmaio      : std_logic_vector(0 to ((2+4)+(2+1)+(2+4))*8-1);
+		signal sio_dmaio      : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
 		signal siodmaio_data  : std_logic_vector(sout_data'range);
 
 		signal sodata_frm     : std_logic;
@@ -235,7 +235,6 @@ begin
 
 		constant octect    : natural := 8;
 		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/octect-1);
-		signal xxxxx : natural := word_bits;
 
 	begin
 
@@ -299,13 +298,13 @@ begin
 					req := '1';
 				end if;
 				frm := to_stdulogic(to_bit(rgtr_frm));
-				sts_frm <= '0'; --to_stdulogic(req);
+				sts_frm <= to_stdulogic(req);
 			end if;
 		end process;
 
-		sio_dmaio <= reverse(
-			x"00" & x"03" & x"04" & x"01" & x"00" & x"09" &	-- UDP Length
-			x"01" & x"00" & reverse(ack_rgtr) &
+		sio_dmaio <= 
+			x"09" & x"00" &	-- UDP Length
+			reverse(x"01" & x"00" & reverse(ack_rgtr) &
 			rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 		siodmaio_irdy <= meta_end and sts_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
