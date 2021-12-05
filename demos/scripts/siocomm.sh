@@ -9,6 +9,10 @@ if [ "${STDOUT}" == "NO" ] ; then
 	STDOUT="-o"
 fi
 
+if [ "${LOG}" == "YES" ] ; then
+	LOG="-l 3"
+fi
+
 if [ "$HOST" == "" ] ; then
 	if [ "${SETUART}" == "YES" ] ; then
 		export TTY SPEED
@@ -23,10 +27,10 @@ if [ "$HOST" == "" ] ; then
 	fi
 else
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@} -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@} -p")
 	else
-		(eval "exec ./bin/siosend -h ${HOST} ${STDOUT} ${@}")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@}")
 	fi
 fi
