@@ -179,10 +179,10 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		grade4 => (ddr_166MHz, mode600p),
+		grade4 => (ddr_166MHz, mode1080p),
 		grade5 => (ddr_200MHz, mode1080p));
 
-	constant app : apps := grade5;
+	constant app : apps := grade4;
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
 
@@ -335,7 +335,7 @@ begin
 		generic map (
 			default_ipv4a => x"c0_a8_00_0e")
 		port map (
-			tp         => open,
+			tp         => tp,
 
 			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
@@ -444,7 +444,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => tp);
+		tp => open);
 
 	process (video_clk)
 	begin
@@ -572,7 +572,7 @@ begin
 	led13 <= tp(5);
 	led11 <= tp(4);
 	led9  <= tp(3);
-	led8  <= tp(2);
+	led8  <= not tp(1);
 	led7  <= tp(1);
 
 	-- RS232 Transceiver --
@@ -585,7 +585,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rstn <= ddrsys_lckd; 
+	mii_rstn <= ddrsys_lckd;
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

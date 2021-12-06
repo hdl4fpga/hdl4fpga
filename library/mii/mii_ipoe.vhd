@@ -61,7 +61,7 @@ entity mii_ipoe is
 		miitx_end     : buffer std_logic;
 		miitx_data    : out std_logic_vector;
 
-		tp            : out std_logic_vector(1 to 32));
+		tp            : buffer std_logic_vector(1 to 32));
 
 end;
 
@@ -278,19 +278,19 @@ begin
 			end if;
 		end if;
 	end process;
-	tp(1) <= hwda_vld;
 
-	process (tp1)
-	begin
-		tp(2 to 32) <= tp1(2 to 32);
-
----		tp(2) <=miitx_frm;  -- ethtx_frm;
----		tp(3) <=miitx_irdy; -- ethpltx_irdy;
----		tp(4) <=miitx_trdy; -- ethpltx_trdy;
----		tp(5) <=miitx_end;  -- ethpltx_end;
-
-
-	end process;
+--	tp(1) <= hwda_vld;
+--	process (tp1)
+--	begin
+--		tp(2 to 32) <= tp1(2 to 32);
+--
+-----		tp(2) <=miitx_frm;  -- ethtx_frm;
+-----		tp(3) <=miitx_irdy; -- ethpltx_irdy;
+-----		tp(4) <=miitx_trdy; -- ethpltx_trdy;
+-----		tp(5) <=miitx_end;  -- ethpltx_end;
+--
+--
+--	end process;
 
 	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
@@ -548,24 +548,23 @@ begin
 		fifo_rllbk <= fcs_sb and not (fcs_vld and to_stdulogic(q));
 	end process;
 
-	process (fifo_end, mii_clk)
-		variable q  : bit;
-		variable q1 : bit;
-		variable q0 : bit;
+	tag_frm_p : process (mii_clk)
+		variable d : std_logic;
+		variable q : unsigned(0 to 2-1) := (others => '0');
 	begin
 		if rising_edge(mii_clk) then
 			if fcs_sb='1' then
-				q0 := to_bit(fifo_cmmt);
+				d := fifo_cmmt;
+				tp(1) <= tp(1) xor fifo_cmmt;
 			elsif fifo_end='1' and fifo_trdy='1' then
-				q := '0';
-				q0 := '0';
-				q1 := '0';
+				d := '0';
+				q := (others => '0');
 			else
-				q  := q1;
-				q1 := q0;
+				q(0) := d;
+				q := q rol 1;
 			end if;
+			tag_frm <= q(0);
 		end if;
-		tag_frm <= to_stdulogic(q);
 	end process;
 
 	fifo_frm  <= miirx_frm or fcs_sb;

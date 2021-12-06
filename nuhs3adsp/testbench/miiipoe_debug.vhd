@@ -72,7 +72,7 @@ architecture nuhs3debug_miiipoedebug of testbench is
 
 			---------------
 			-- Video DAC --
-			
+
 			hsync : out std_logic := '0';
 			vsync : out std_logic := '0';
 			clk_videodac : out std_logic := 'Z';
@@ -160,9 +160,9 @@ begin
 	htb_e : entity hdl4fpga.eth_tb
 	port map (
 		mii_frm1 => '0',
-		mii_frm2 => mii_req,
+		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => '0',
+		mii_frm4 => mii_req,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,

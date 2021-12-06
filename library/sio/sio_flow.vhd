@@ -186,9 +186,7 @@ begin
 		end if;
 	end process;
 
-	ackrply_data <= reverse(
-		reverse(x"0003") &
-		x"01" & x"00" & ackrx_data, 8);
+	ackrply_data <= reverse(reverse(x"0003") & x"01" & x"00", 8) & ackrx_data;
 
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
 	acktx_b : block

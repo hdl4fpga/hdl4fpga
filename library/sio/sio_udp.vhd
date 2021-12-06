@@ -84,6 +84,7 @@ begin
 		default_ipv4a => default_ipv4a,
 		my_mac        => my_mac)
 	port map (
+		tp => tp,
 		mii_clk    => sio_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,

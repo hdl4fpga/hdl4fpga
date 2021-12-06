@@ -353,9 +353,9 @@ begin
 		mii_txen  <= miitx_frm and not miitx_end;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= miitx_frm;
-		sin_irdy  <= miitx_irdy and miitx_trdy;
-		sin_data  <= miitx_data;
+		sin_frm   <= tp(2); --miitx_frm;
+		sin_irdy  <= tp(3); --miitx_irdy and miitx_trdy;
+		sin_data  <= tp(4 to 4+8-1); --miitx_data;
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
@@ -406,8 +406,8 @@ begin
 	led13 <= '0'; --tp(5);
 	led11 <= '0'; --tp(4); -- '0';
 	led9  <= '0'; --tp(3); -- txc_rxdv ;
-	led8  <= '0'; --tp(2); -- tp(2);
-	led7  <= '0'; --tp(1); -- tp(1); --'0';
+	led8  <= not tp(1);
+	led7  <= tp(1);
 
 	-- RS232 Transceiver --
 	-----------------------
