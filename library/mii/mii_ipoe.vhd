@@ -167,19 +167,21 @@ architecture def of mii_ipoe is
 
 	signal fifo_frm      : std_logic;
 	signal fifo_irdy     : std_logic;
-	signal fifo_end      : std_logic;
-	signal fifo_trdy     : std_logic;
+	signal fifoo_end     : std_logic;
+	signal fifoo_irdy    : std_logic;
+	signal fifoo_trdy    : std_logic;
 	signal fifo_data     : std_logic_vector(miitx_data'range);
 
 	signal fifo_cmmt     : std_logic;
+	signal fifo_avail    : std_logic;
 	signal fifo_rllbk    : std_logic;
 
 	signal tagtx_irdy      : std_logic;
 	signal tagtx_trdy      : std_logic;
 
 	signal tag_frm       : std_logic;
-	signal tag_end       : std_logic;
 	signal tag_irdy      : std_logic;
+	signal tag_end       : std_logic;
 	signal tag_trdy      : std_logic;
 	signal tag_data      : std_logic_vector(miitx_data'range);
 
@@ -532,24 +534,11 @@ begin
 		fifo_rllbk <= fcs_sb and not (fcs_vld and to_stdulogic(q));
 	end process;
 
-	tag_frm_p : process (mii_clk)
-		variable d : std_logic;
-		variable q : unsigned(0 to 2-1) := (others => '0');
-	begin
-		if rising_edge(mii_clk) then
-			if fcs_sb='1' then
-				d := fifo_cmmt;
-				tp(1) <= tp(1) xor fifo_cmmt;
-			elsif fifo_end='1' and fifo_trdy='1' then
-				d := '0';
-				q := (others => '0');
-			else
-				q(0) := d;
-				q := q rol 1;
-			end if;
-			tag_frm <= q(0);
-		end if;
-	end process;
+		tg_e : entity hdl4fpga.edgetoggle
+		port map (
+			clk => mii_clk,
+			d   => tag_frm,
+			t   => tp(1));
 
 	fifo_frm  <= miirx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
@@ -565,20 +554,38 @@ begin
 
 		rollback  => fifo_rllbk,
 		commit    => fifo_cmmt,
+		avail     => fifo_avail,
 
 		dst_frm   => tag_frm,
-		dst_irdy  => tag_irdy,
-		dst_trdy  => fifo_trdy,
-		dst_end   => fifo_end,
+		dst_irdy  => fifoo_irdy,
+		dst_trdy  => fifoo_trdy,
+		dst_end   => fifoo_end,
 		dst_data  => fifo_data);
+	tp(2) <= tag_frm;
+	tp(3) <= fifoo_trdy;
+	tp(4) <= fifoo_end;
 
-	tag_irdy  <= '0' when tag_end='0' else plrx_trdy;
+	tag_frm_p : process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if tag_frm='0' then 
+				if fifo_avail='1' then
+					tag_frm <= '1';
+				end if;
+			elsif fifoo_end='1' and fifoo_trdy='1' then
+				tag_frm <= '0';
+			end if;
+		end if;
+	end process;
+
+	fifoo_irdy  <= '0' when tag_end='0'   else plrx_trdy;
+	tag_irdy    <= fifoo_trdy;
 	tag_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(x"000d",8),
 		sio_clk  => mii_clk,
 		sio_frm  => tag_frm,
-		sio_irdy => tag_frm,
+		sio_irdy => tag_irdy,
 		sio_trdy => tag_trdy,
 		so_end   => tag_end,
 		so_data  => tag_data);
@@ -587,7 +594,7 @@ begin
 	plrx_irdy <=
 		'0'      when tag_frm='0' else
 		tag_trdy when to_bit(tag_end)='0' else
-		not fifo_end and fifo_trdy;
+		not fifoo_end and fifoo_trdy;
 	plrx_data <=
 		tag_data when to_bit(tag_end)='0' else
 		fifo_data;

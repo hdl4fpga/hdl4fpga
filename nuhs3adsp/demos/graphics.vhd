@@ -566,14 +566,14 @@ begin
 	-- LEDs --
 	----------
 
-	led18 <= tp(8);
-	led16 <= tp(7);
-	led15 <= tp(6);
-	led13 <= tp(5);
-	led11 <= tp(4);
-	led9  <= tp(3);
-	led8  <= not tp(1);
-	led7  <= tp(1);
+	led18 <= not tp(1); --tp(8);
+	led16 <= tp(1); -- '0'; --tp(7);
+	led15 <= '0'; --tp(6);
+	led13 <= '0'; --tp(3); --tp(5);
+	led11 <= '0'; --tp(4);
+	led9  <= tp(2); --tp(3);
+	led8  <= tp(3); --tp(2);
+	led7  <= tp(4);
 
 	-- RS232 Transceiver --
 	-----------------------

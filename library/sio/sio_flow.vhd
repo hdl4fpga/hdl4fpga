@@ -245,6 +245,12 @@ begin
 			so_end   => acktx_end,
 			so_data  => ack_data);
 
+		tg_e : entity hdl4fpga.edgetoggle
+		port map (
+			clk => sio_clk,
+			d   => so_irdy, --acktx_frm,
+			t   => tp(1));
+
 		process (sio_clk)
 		begin
 			if rising_edge(sio_clk) then
@@ -269,14 +275,12 @@ begin
 
 	begin
 
-		tp(3 to 4) <= req;
 		req <= acktx_frm & si_frm;
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => sio_clk,
 			req => req,
 			gnt => gnt);
-		tp(1 to 2) <= gnt;
 
 		tx_frm  <= wirebus(acktx_frm  & si_frm,  gnt);
 		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt);
