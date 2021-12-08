@@ -245,11 +245,11 @@ begin
 			so_end   => acktx_end,
 			so_data  => ack_data);
 
-		tg_e : entity hdl4fpga.edgetoggle
+		tg_e : entity hdl4fpga.et
 		port map (
 			clk => sio_clk,
 			d   => so_irdy, --acktx_frm,
-			t   => tp(1));
+			q   => tp(1));
 
 		process (sio_clk)
 		begin
