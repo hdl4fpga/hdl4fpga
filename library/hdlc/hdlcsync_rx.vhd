@@ -33,9 +33,9 @@ entity hdlcsync_rx is
 		hdlc_esc  : std_logic_vector := x"7d";
 		hdlc_invb : std_logic_vector := x"20");
 	port (
-		uart_clk  : in  std_logic;
-		uart_rxdv : in  std_logic;
-		uart_rxd  : in  std_logic_vector;
+		uart_clk    : in  std_logic;
+		uartrx_irdy : in  std_logic;
+		uartrx_data : in  std_logic_vector;
 
 		hdlcrx_frm  : buffer std_logic;
 		hdlcrx_irdy : buffer std_logic;
@@ -43,23 +43,23 @@ entity hdlcsync_rx is
 end;
 
 architecture def of hdlcsync_rx is
-	constant flag : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_flag), hdlc_flag);
-	constant esc  : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_esc),  hdlc_esc);
-	constant invb : std_logic_vector(uart_rxd'range) := setif(uart_rxd'ascending, reverse(hdlc_invb), hdlc_invb);
+	constant flag : std_logic_vector(uartrx_data'range) := setif(uartrx_data'ascending, reverse(hdlc_flag), hdlc_flag);
+	constant esc  : std_logic_vector(uartrx_data'range) := setif(uartrx_data'ascending, reverse(hdlc_esc),  hdlc_esc);
+	constant invb : std_logic_vector(uartrx_data'range) := setif(uartrx_data'ascending, reverse(hdlc_invb), hdlc_invb);
 
 	signal debug_rx : std_logic_vector(8-1 downto 0);
 begin
 
-	process (uart_rxd, uart_rxdv, uart_clk)
+	process (uartrx_data, uartrx_irdy, uart_clk)
 		variable frm : std_logic;
 		variable eon : std_logic;
 	begin
 		if rising_edge(uart_clk) then
-			if uart_rxdv='1' then
-				if uart_rxd=flag then
+			if uartrx_irdy='1' then
+				if uartrx_data=flag then
 					frm := '0';
 					eon := '0';
-				elsif uart_rxd=esc then
+				elsif uartrx_data=esc then
 					frm := '1';
 					eon := '1';
 				else
@@ -71,14 +71,14 @@ begin
 				end if;
 			end if;
 		end if;
-		hdlcrx_frm  <= (setif(uart_rxd/=flag) and uart_rxdv) or (frm and not uart_rxdv);
-		if hdlcrx_data'ascending=uart_rxd'ascending then
-			hdlcrx_data <= setif(eon='1', uart_rxd xor invb, uart_rxd);
+		hdlcrx_frm  <= (setif(uartrx_data/=flag) and uartrx_irdy) or (frm and not uartrx_irdy);
+		if hdlcrx_data'ascending=uartrx_data'ascending then
+			hdlcrx_data <= setif(eon='1', uartrx_data xor invb, uartrx_data);
 		else
-			hdlcrx_data <= reverse(setif(eon='1', uart_rxd xor invb, uart_rxd));
+			hdlcrx_data <= reverse(setif(eon='1', uartrx_data xor invb, uartrx_data));
 		end if;
 	end process;
 
-	hdlcrx_irdy <= hdlcrx_frm and uart_rxdv and setif(uart_rxd/=esc);
+	hdlcrx_irdy <= hdlcrx_frm and uartrx_irdy and setif(uartrx_data/=esc);
 
 end;

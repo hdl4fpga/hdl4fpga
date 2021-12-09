@@ -32,14 +32,14 @@ entity sio_dayhdlc is
 	generic (
 		mem_size  : natural := 4*(2048*8));
 	port (
-	
-		uart_clk  : in  std_logic;
-		uart_rxdv : in  std_logic;
-		uart_rxd  : in  std_logic_vector;
 
-		uart_idle : in  std_logic;
-		uart_txen : buffer std_logic;
-		uart_txd  : out std_logic_vector;
+		uart_clk  : in  std_logic;
+		uartrx_irdy : in  std_logic;
+		uartrx_data : in  std_logic_vector;
+
+		uarttx_irdy : buffer std_logic;
+		uarttx_trdy : in  std_logic;
+		uarttx_data : out std_logic_vector;
 
 		sio_clk   : in std_logic;
 		sio_addr  : in  std_logic := '0';
@@ -47,6 +47,7 @@ entity sio_dayhdlc is
 		si_frm    : in  std_logic := '0';
 		si_irdy   : in  std_logic := '1';
 		si_trdy   : out std_logic;
+		si_end    : in  std_logic;
 		si_data   : in  std_logic_vector;
 
 		so_frm    : out std_logic;
@@ -54,7 +55,7 @@ entity sio_dayhdlc is
 		so_trdy   : in  std_logic := '1';
 		so_data   : out std_logic_vector;
 		tp : out std_logic_vector(1 to 32));
-	
+
 end;
 
 architecture beh of sio_dayhdlc is
@@ -62,6 +63,7 @@ architecture beh of sio_dayhdlc is
 	signal sihdlc_frm  : std_logic;
 	signal sihdlc_trdy : std_logic;
 	signal sihdlc_irdy : std_logic;
+	signal sihdlc_end  : std_logic;
 	signal sihdlc_data : std_logic_vector(so_data'range);
 
 	signal sohdlc_frm  : std_logic;
@@ -71,9 +73,10 @@ architecture beh of sio_dayhdlc is
 
 begin
 
-	sihdlc_frm  <= si_frm  when sio_addr='0' else '0'; 
+	sihdlc_frm  <= si_frm  when sio_addr='0' else '0';
 	sihdlc_irdy <= si_irdy when sio_addr='0' else '0';
-	si_trdy <= (sihdlc_trdy and uart_idle and uart_txen) when sio_addr='0' else so_trdy;
+	si_trdy     <= sihdlc_trdy when sio_addr='0' else so_trdy;
+	sihdlc_end  <= si_end  when sio_addr='0' else '0';
 	sihdlc_data <= si_data;
 
 	siohdlc_e : entity hdl4fpga.sio_hdlc
@@ -82,17 +85,18 @@ begin
 	port map (
 		uart_clk  => uart_clk,
 
-		uart_rxdv => uart_rxdv,
-		uart_rxd  => uart_rxd,
+		uartrx_irdy => uartrx_irdy,
+		uartrx_data => uartrx_data,
 
-		uart_idle => uart_idle,
-		uart_txd  => uart_txd,
-		uart_txen => uart_txen,
+		uarttx_irdy => uarttx_irdy,
+		uarttx_trdy => uarttx_trdy,
+		uarttx_data => uarttx_data,
 
 		sio_clk   => sio_clk,
 		si_frm    => sihdlc_frm,
 		si_irdy   => sihdlc_irdy,
 		si_trdy   => sihdlc_trdy,
+		si_end    => sihdlc_end,
 		si_data   => sihdlc_data,
 
 		so_frm    => sohdlc_frm,
@@ -101,7 +105,7 @@ begin
 		so_data   => sohdlc_data,
 		tp => tp);
 
-	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm; 
+	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm;
 	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;
 	sohdlc_trdy <= si_irdy when sio_addr/='0' else so_trdy;
 	so_data <= si_data when sio_addr/='0' else sohdlc_data;

@@ -34,94 +34,75 @@ entity hdlcdll_tx is
 		fcs_rem     : in  std_logic_vector := std_logic_vector'(x"1d0f");
 
 		uart_clk    : in  std_logic;
-		uart_idle   : in  std_logic;
-		uart_txen   : out std_logic;
-		uart_txd    : out std_logic_vector;
+		uart_irdy   : out std_logic;
+		uart_trdy   : in  std_logic;
+		uart_data   : out std_logic_vector;
 
 		hdlctx_frm  : in  std_logic;
 		hdlctx_irdy : in  std_logic;
-		hdlctx_trdy : buffer std_logic;
+		hdlctx_trdy : buffer std_logic := '1';
+		hdlctx_end  : in  std_logic;
 		hdlctx_data : in  std_logic_vector);
 
 end;
 
 architecture def of hdlcdll_tx is
 
-	signal fcs_frm  : std_logic;
 	signal fcs_data : std_logic_vector(hdlctx_data'range);
 	signal fcs_irdy : std_logic;
 	signal fcs_trdy : std_logic;
 
-	signal crc_frm  : std_logic;
-	signal crc_sero : std_logic;
 	signal crc_irdy : std_logic;
-	signal crc      : std_logic_vector(0 to 16-1);
-	signal cy       : std_logic;
+	signal crc_trdy : std_logic := '1';
+	signal crc_data : std_logic_vector(0 to 16-1);
 
 begin
-
+hdlctx_trdy <= uart_trdy;
 	cntr_p : process (uart_clk)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/fcs_data'length-1));
+		variable cntr : unsigned(0 to unsigned_num_bits(crc_data'length/fcs_data'length-1));
 	begin
 		if rising_edge(uart_clk) then
-			if fcs_trdy='1' then
-				if crc_sero='0' then
-					if hdlctx_frm='1' then
-						cntr := to_unsigned(crc'length/hdlctx_data'length-1, cntr'length);
-					end if;
-				elsif cy='0' then
-					cntr := cntr - 1;
-				end if;
+			if hdlctx_frm='0' then
+				cntr := to_unsigned(crc_data'length/hdlctx_data'length-1, cntr'length);
+			elsif fcs_trdy='1' then
+				cntr := cntr - 1;
 			end if;
-			cy <= setif(cntr(0)/='0');
 		end if;
 	end process;
 
-	fcs_p : process (hdlctx_frm, cy, uart_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(uart_clk) then
-			if uart_idle='1' then
-				if hdlctx_frm='1' then
-					if cy='1' then
-						q := '0';
-					end if;
-				else
-					q := '1';
-				end if;
-			end if;
-		end if;
-		crc_frm  <= not (cy and q);
-		crc_sero <= setif(hdlctx_frm='1', q and not cy, not cy);
-	end process;
+	crc_irdy <=
+		hdlctx_irdy and hdlctx_trdy when hdlctx_frm='1' else
+		fcs_trdy                    when hdlctx_end='1' else
+		'0';
 
-	crc_irdy <= (hdlctx_frm and hdlctx_irdy and hdlctx_trdy) or (fcs_trdy and crc_sero);
 	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => x"1021",
 		clk  => uart_clk,
-		frm  => crc_frm,
+		frm  => hdlctx_frm,
 		irdy => crc_irdy,
-		mode => crc_sero,
+		mode => hdlctx_end,
 		data => hdlctx_data,
-		crc  => crc);
+		crc  => crc_data);
 
-	fcs_frm  <= (hdlctx_frm or crc_sero) and crc_frm;
-	fcs_data <= wirebus(hdlctx_data & crc(0 to fcs_data'length-1), not crc_sero & crc_sero);
-	fcs_irdy <= setif(crc_sero='0', hdlctx_irdy, '1');
+	fcs_data <=
+		hdlctx_data when hdlctx_end='0' else
+		crc_data(0 to fcs_data'length-1);
+	fcs_irdy <=
+		hdlctx_irdy when hdlctx_end='0' else
+		crc_trdy;
 
 	hdlctx_e : entity hdl4fpga.hdlcsync_tx
 	port map (
 		uart_clk    => uart_clk,
-		uart_irdy   => uart_txen,
-		uart_idle   => uart_idle,
-		uart_txd    => uart_txd,
+		uart_irdy   => uart_irdy,
+		uart_trdy   => uart_trdy,
+		uart_data   => uart_data,
 
-		hdlctx_frm  => fcs_frm,
-		hdlctx_irdy => fcs_irdy, 
+		hdlctx_frm  => hdlctx_frm,
+		hdlctx_irdy => fcs_irdy,
 		hdlctx_trdy => fcs_trdy,
 		hdlctx_data => fcs_data);
 
-	hdlctx_trdy <= hdlctx_frm and fcs_trdy and crc_frm and not crc_sero;
 
 end;

@@ -116,14 +116,14 @@ architecture ulx3s_graphics of testbench is
 
 			ant_433mhz     : out   std_logic;
 
-			usb_fpga_dp    : inout std_logic := '-';  
+			usb_fpga_dp    : inout std_logic := '-';
 			usb_fpga_dn    : inout std_logic := '-';
 			usb_fpga_bd_dp : inout std_logic := '-';
 			usb_fpga_bd_dn : inout std_logic := '-';
 			usb_fpga_pu_dp : inout std_logic := '-';
 			usb_fpga_pu_dn : inout std_logic := '-';
-						   
-			sdram_clk      : inout std_logic;  
+
+			sdram_clk      : inout std_logic;
 			sdram_cke      : out   std_logic;
 			sdram_csn      : out   std_logic;
 			sdram_wen      : out   std_logic;
@@ -136,7 +136,7 @@ architecture ulx3s_graphics of testbench is
 
 			gpdi_dp        : out   std_logic_vector(4-1 downto 0);
 			gpdi_dn        : out   std_logic_vector(4-1 downto 0);
-			--gpdi_ethp      : out   std_logic;  
+			--gpdi_ethp      : out   std_logic;
 			--gpdi_ethn      : out   std_logic;
 			gpdi_cec       : inout std_logic := '-';
 			gpdi_sda       : inout std_logic := '-';
@@ -186,7 +186,7 @@ architecture ulx3s_graphics of testbench is
 
 	constant data  : std_logic_vector :=
 		x"010001" &
-		x"18ff" & 
+		x"18ff" &
 		gen_natural(start => 0, stop => 127, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
@@ -204,7 +204,7 @@ architecture ulx3s_graphics of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
---		x"18ff" & 
+--		x"18ff" &
 --		gen_natural(start => 128, stop => 255, size => 16) &
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
@@ -223,17 +223,17 @@ architecture ulx3s_graphics of testbench is
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
 		x"160300000000" &
-		x"170200007f"  
+		x"170200007f"
 --		x"1602000080" &
 --		x"170200007f"
 
---		x"1801" & 
+--		x"1801" &
 --		x"1234" &
 --		x"160301234567" &
 --		x"1702000000" --&
 --		x"1602000000" &
 --		x"1702000000"  &
---		x"1803" & 
+--		x"1803" &
 --		x"5678" &
 --		x"9abc" &
 --		x"1602000000" &
@@ -244,7 +244,7 @@ architecture ulx3s_graphics of testbench is
 	signal mii_req : std_logic;
 begin
 
-	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 	hdlc_b : block
@@ -270,6 +270,7 @@ begin
 		signal uart_txd    : std_logic_vector(0 to 8-1);
 
 		signal hdlctx_frm  : std_logic;
+		signal hdlctx_end  : std_logic;
 		signal hdlctx_trdy : std_logic;
 		signal hdlctx_data : std_logic_vector(0 to 8-1);
 
@@ -281,6 +282,7 @@ begin
 		begin
 			if rst='1' then
 				hdlctx_frm <= '0';
+				hdlctx_end <= '0';
 				addr       := 0;
 				n          := 0;
 			elsif rising_edge(uart_clk) then
@@ -299,9 +301,11 @@ begin
 					hdlctx_data <= (others => '-');
 				end if;
 				if addr < payload'length then
-					hdlctx_frm  <= '1';
+					hdlctx_frm <= '1';
+					hdlctx_end <= '0';
 				else
-					hdlctx_frm  <= '0';
+					hdlctx_frm <= '1';
+					hdlctx_end <= '1';
 				end if;
 			end if;
 		end process;
@@ -311,12 +315,13 @@ begin
 			hdlctx_frm  => hdlctx_frm,
 			hdlctx_irdy => '1',
 			hdlctx_trdy => hdlctx_trdy,
+			hdlctx_end  => hdlctx_end,
 			hdlctx_data => hdlctx_data,
 
 			uart_clk    => uart_clk,
-			uart_idle   => uart_idle,
-			uart_txen   => uart_txen,
-			uart_txd    => uart_txd);
+			uart_irdy   => uart_txen,
+			uart_trdy   => uart_idle,
+			uart_data   => uart_txd);
 
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
@@ -325,12 +330,12 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => uart_sout,
-			uart_idle => uart_idle,
-			uart_txen => uart_txen,
-			uart_txd  => uart_txd);
+			uart_trdy => uart_idle,
+			uart_irdy => uart_txen,
+			uart_data => uart_txd);
 
 	end block;
-	
+
 	mii_req <= '0', '1' after 110 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
@@ -367,15 +372,15 @@ begin
 		constant arppkt : std_logic_vector :=
 			x"0000"                 & -- arp_htype
 			x"0000"                 & -- arp_ptype
-			x"00"                   & -- arp_hlen 
-			x"00"                   & -- arp_plen 
-			x"0000"                 & -- arp_oper 
-			x"00_00_00_00_00_00"    & -- arp_sha  
-			x"00_00_00_00"          & -- arp_spa  
-			x"00_00_00_00_00_00"    & -- arp_tha  
-			x"c0_a8_00_0e";           -- arp_tpa  
+			x"00"                   & -- arp_hlen
+			x"00"                   & -- arp_plen
+			x"0000"                 & -- arp_oper
+			x"00_00_00_00_00_00"    & -- arp_sha
+			x"00_00_00_00"          & -- arp_spa
+			x"00_00_00_00_00_00"    & -- arp_tha
+			x"c0_a8_00_0e";           -- arp_tpa
 
-		constant packet : std_logic_vector := 
+		constant packet : std_logic_vector :=
 			x"4500"                 &    -- IP Version, TOS
 			x"0000"                 &    -- IP Length
 			x"0000"                 &    -- IP Identification
@@ -436,6 +441,8 @@ begin
 	end block;
 
 	du_e : ulx3s
+	generic map (
+		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,

@@ -36,8 +36,8 @@ entity hdlcsync_tx is
 	port (
 		uart_clk    : in  std_logic;
 		uart_irdy   : out std_logic;
-		uart_idle   : in  std_logic;
-		uart_txd    : out std_logic_vector;
+		uart_trdy   : in  std_logic;
+		uart_data   : out std_logic_vector;
 
 		hdlctx_frm  : in  std_logic;
 		hdlctx_irdy : in  std_logic;
@@ -56,59 +56,48 @@ architecture def of hdlcsync_tx is
 	signal data : std_logic_vector(hdlctx_data'range);
 
 	signal debug_tx : std_logic_vector(8-1 downto 0);
+	signal eon : std_logic;
 begin
 
-	process (uart_idle, hdlctx_frm, hdlctx_data, hdlctx_irdy, uart_clk)
-		variable frm : std_logic;
-		variable eon : std_logic;
+	process (hdlctx_frm, hdlctx_data, hdlctx_irdy, uart_clk)
 	begin
 		if rising_edge(uart_clk) then
-			if uart_idle='1' then
-				if hdlctx_frm='1' then
-					if hdlctx_irdy='1' then
-						debug_tx <= setif(hdlctx_data'ascending, reverse(hdlctx_data), hdlctx_data);
-						if eon='1' then
-							eon := '0';
-						elsif hdlctx_data=flag then
-							eon := frm;
-						elsif hdlctx_data=esc then
-							eon := frm;
-						end if;
-					else 
-						eon := '0';
+			if hdlctx_frm='1' then
+				if (hdlctx_irdy and hdlctx_irdy)='1' then
+					debug_tx <= setif(hdlctx_data'ascending, reverse(hdlctx_data), hdlctx_data);
+					if eon='1' then
+						eon <= '0';
+					elsif hdlctx_data=flag then
+						eon <= '1';
+					elsif hdlctx_data=esc then
+						eon <= '1';
 					end if;
 				else
-					eon := '0';
+					eon <= '0';
 				end if;
-				frm := hdlctx_frm;
-			end if;
-		end if;
-
-		if hdlctx_frm='1' then
-			if eon='1' then
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= uart_idle;
-				data        <= hdlctx_data xor invb;
-			elsif hdlctx_data=flag then
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= '0';
-				data        <= esc;
-			elsif hdlctx_data=esc then
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= '0';
-				data        <= esc;
 			else
-				uart_irdy   <= hdlctx_irdy;
-				hdlctx_trdy <= uart_idle;
-				data        <= hdlctx_data;
+				eon <= '0';
 			end if;
-		else 
-			uart_irdy   <= frm;
-			hdlctx_trdy <= '0';
-			data        <= flag;
 		end if;
 	end process;
 
-	uart_txd <= setif(data'ascending=uart_txd'ascending, data, reverse(data));
+	uart_irdy <=
+		'0' when hdlctx_frm='0' else
+		hdlctx_irdy;
+
+	hdlctx_trdy <=
+		'0'       when hdlctx_frm='0'   else
+		uart_trdy when eon='1'          else
+		'0'       when hdlctx_data=flag else
+		'0'       when hdlctx_data=esc  else
+		uart_trdy;
+
+	data <= hdlctx_data when data'ascending=uart_data'ascending else reverse(hdlctx_data);
+	uart_data <=
+		flag          when hdlctx_frm='0'   else
+		data xor invb when eon='1'          else
+		esc           when hdlctx_data=flag else
+		esc           when hdlctx_data=esc  else
+		data;
 
 end;

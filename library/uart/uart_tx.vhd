@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
- 
+
 library hdl4fpga;
 use hdl4fpga.std.all;
 
@@ -36,16 +36,16 @@ entity uart_tx is
 		uart_txc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sout : out std_logic;
-		uart_idle : buffer std_logic;
-		uart_txen : in  std_logic;
-		uart_txd  : in  std_logic_vector);
+		uart_irdy : in  std_logic;
+		uart_trdy : buffer std_logic;
+		uart_data : in  std_logic_vector);
 end;
- 
+
 architecture def of uart_tx is
- 
+
 	type uart_states is (idle_s, start_s, data_s, stop_s);
 	signal uart_state : uart_states;
- 
+
 	signal sample_rxd : std_logic;
 	signal init_cntr  : std_logic;
 	signal full_count : std_logic;
@@ -54,17 +54,17 @@ architecture def of uart_tx is
 	signal debug_txd  : std_logic_vector(8-1 downto 0);
 
 begin
- 
+
 	debug_p : process (uart_txc)
 	begin
 		if rising_edge(uart_txc) then
 			debug_txen <= '0';
-			if uart_ena='1' then
-				if uart_idle='1' then
-					if uart_txd'ascending then
-						debug_txd <= reverse(uart_txd);
+			if uart_irdy='1' then
+				if uart_trdy='1' then
+					if uart_data'ascending then
+						debug_txd <= reverse(uart_data);
 					else
-						debug_txd <= uart_txd;
+						debug_txd <= uart_data;
 					end if;
 					debug_txen <= '1';
 				end if;
@@ -94,7 +94,7 @@ begin
 		end if;
 	end process;
 
-	init_cntr <= 
+	init_cntr <=
 		'1' when uart_state=idle_s  else
 		'1' when uart_state=start_s and full_count='1' else
 		'1' when uart_state=data_s  and full_count='1' else
@@ -105,7 +105,7 @@ begin
 
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
-		variable data       : unsigned(uart_txd'range);
+		variable data       : unsigned(uart_data'range);
 
 	begin
 		if rising_edge(uart_txc) then
@@ -113,14 +113,18 @@ begin
 				case uart_state is
 				when idle_s =>
 					uart_sout <= '1';
+					if uart_irdy='1' then
+						uart_trdy <= '0';
+					end if;
 					dcntr := (others => '-');
-					data  := unsigned(uart_txd);
-					if uart_txen='1' then
+					data  := unsigned(uart_data);
+					if uart_irdy='1' then
 						uart_sout  <= '0';
 						uart_state <= start_s;
 					end if;
 				when start_s =>
 					uart_sout <= '0';
+					uart_trdy <= '0';
 					dcntr := dcntr_init;
 					if full_count='1' then
 						uart_state <= data_s;
@@ -147,25 +151,26 @@ begin
 							dcntr := dcntr + 1;
 						end if;
 					end if;
+					uart_trdy <= '0';
 				when stop_s =>
 					uart_sout <= '1';
-					data  := unsigned(uart_txd);
+					data  := unsigned(uart_data);
 					dcntr := (others => '-');
 					if full_count='1' then
-						if uart_txen='1' then
+						if uart_irdy='1' then
 							uart_state <= start_s;
 						else
 							uart_state <= idle_s;
 						end if;
+						uart_trdy <= '1';
+					else
+						uart_trdy <= '0';
 					end if;
 				end case;
+			elsif uart_irdy='1' then
+				uart_trdy <= '0';
 			end if;
 		end if;
 	end process;
-
-	uart_idle <= 
-		'1' when uart_state=idle_s else
-		'1' when uart_state=stop_s and full_count='1' else
-		'0';
 
 end;

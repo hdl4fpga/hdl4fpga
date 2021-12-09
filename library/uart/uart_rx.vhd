@@ -36,8 +36,9 @@ entity uart_rx is
 		uart_rxc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
-		uart_rxdv : buffer std_logic;
-		uart_rxd  : buffer std_logic_vector);
+		uart_irdy : buffer std_logic;
+		uart_trdy : in  std_logic := '1';
+		uart_data : buffer std_logic_vector);
 end;
 
 architecture def of uart_rx is
@@ -58,12 +59,12 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 			debug_rxdv <= '0';
-			if uart_rxdv='1' then
+			if uart_irdy='1' then
 				if uart_ena='1' then
-					if uart_rxd'ascending then
-						debug_rxd <= reverse(uart_rxd);
+					if uart_data'ascending then
+						debug_rxd <= reverse(uart_data);
 					else
-						debug_rxd <= uart_rxd;
+						debug_rxd <= uart_data;
 					end if;
 					debug_rxdv <= '1';
 				end if;
@@ -110,7 +111,7 @@ begin
 		end if;
 	end process;
 
-	init_cntr <= 
+	init_cntr <=
 		'1' when uart_state=idle_s  else
 		'1' when uart_state=start_s and half_count='1' and sample_rxd='0' else
 		'1' when uart_state=data_s  and full_count='1' else
@@ -121,20 +122,20 @@ begin
 
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
-		variable data       : unsigned(uart_rxd'range);
+		variable data       : unsigned(uart_data'range);
 
 	begin
 		if rising_edge(uart_rxc) then
 			if uart_ena='1' then
 				case uart_state is
 				when idle_s =>
-					uart_rxdv <= '0';
+					uart_irdy <= '0';
 					dcntr := (others => '-');
 					if sample_rxd='0' then
 						uart_state <= start_s;
 					end if;
 				when start_s =>
-					uart_rxdv <= '0';
+					uart_irdy <= '0';
 					dcntr := dcntr_init;
 					if half_count='1' then
 						if sample_rxd='0' then
@@ -144,7 +145,7 @@ begin
 						end if;
 					end if;
 				when data_s =>
-					uart_rxdv <= '0';
+					uart_irdy <= '0';
 					if full_count='1' then
 						data(0) := sample_rxd;
 						if data'ascending then
@@ -155,7 +156,7 @@ begin
 							data := data ror 1;
 						end if;
 						if dcntr(0)='1' then
-							uart_rxdv <= '1';
+							uart_irdy <= '1';
 							uart_state <= stop_s;
 							dcntr := (others => '-');
 						else
@@ -163,7 +164,7 @@ begin
 						end if;
 					end if;
 				when stop_s =>
-					uart_rxdv <= '0';
+					uart_irdy <= '0';
 					dcntr     := (others => '-');
 					if full_count='1' then
 						if sample_rxd='1' then
@@ -171,7 +172,9 @@ begin
 						end if;
 					end if;
 				end case;
-				uart_rxd <= std_logic_vector(data);
+				uart_data <= std_logic_vector(data);
+			elsif uart_trdy='1' then
+				uart_irdy <= '0';
 			end if;
 
 		end if;

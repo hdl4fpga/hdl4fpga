@@ -55,8 +55,6 @@ HDL4FPGA__so_data__def = $(LIB_HDL4FPGA)/so_data/def.dat
 HDL4FPGA__so_data = $(LIB_HDL4FPGA)/so_data/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
 HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
-HDL4FPGA__sio_tag__def = $(LIB_HDL4FPGA)/sio_tag/def.dat
-HDL4FPGA__sio_tag = $(LIB_HDL4FPGA)/sio_tag/_primary.dat
 HDL4FPGA__sio_sin__beh = $(LIB_HDL4FPGA)/sio_sin/beh.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
 HDL4FPGA__sio_rgtr__def = $(LIB_HDL4FPGA)/sio_rgtr/def.dat
@@ -150,8 +148,8 @@ HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
-HDL4FPGA__edgetoggle__def = $(LIB_HDL4FPGA)/edgetoggle/def.dat
-HDL4FPGA__edgetoggle = $(LIB_HDL4FPGA)/edgetoggle/_primary.dat
+HDL4FPGA__et__def = $(LIB_HDL4FPGA)/et/def.dat
+HDL4FPGA__et = $(LIB_HDL4FPGA)/et/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -282,8 +280,6 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__so_data) \
     $(HDL4FPGA__sio_udp__struct) \
     $(HDL4FPGA__sio_udp) \
-    $(HDL4FPGA__sio_tag__def) \
-    $(HDL4FPGA__sio_tag) \
     $(HDL4FPGA__sio_sin__beh) \
     $(HDL4FPGA__sio_sin) \
     $(HDL4FPGA__sio_rgtr__def) \
@@ -377,8 +373,8 @@ whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
     $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
-    $(HDL4FPGA__edgetoggle__def) \
-    $(HDL4FPGA__edgetoggle) \
+    $(HDL4FPGA__et__def) \
+    $(HDL4FPGA__et) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -901,11 +897,11 @@ $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dpram.vhd
 
-$(HDL4FPGA__edgetoggle) \
-$(HDL4FPGA__edgetoggle__def) : ../common/edgetoggle.vhd \
+$(HDL4FPGA__et) \
+$(HDL4FPGA__et__def) : ../common/et.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../common/edgetoggle.vhd
+	$(VCOM) -2002 -work hdl4fpga ../common/et.vhd
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
@@ -1153,6 +1149,7 @@ $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__et) \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__eth_tx) \
@@ -1361,7 +1358,7 @@ $(HDL4FPGA__sio_ff__def) : ../sio/sio_ff.vhd \
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__edgetoggle) \
+		$(HDL4FPGA__et) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_rgtr) \
@@ -1376,7 +1373,9 @@ $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 
 $(HDL4FPGA__sio_hdlc) \
 $(HDL4FPGA__sio_hdlc__def) : ../sio/sio_hdlc.vhd \
+		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__hdlcdll_tx) \
+		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__hdlcdll_rx) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -1432,17 +1431,6 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_sin.vhd
-
-$(HDL4FPGA__sio_tag) \
-$(HDL4FPGA__sio_tag__def) : ../sio/sio_tag.vhd \
-		$(HDL4FPGA__fifo) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(HDL4FPGA__sio_mux) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../sio/sio_tag.vhd
 
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \

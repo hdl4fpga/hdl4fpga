@@ -31,8 +31,8 @@ use hdl4fpga.std.all;
 entity hdlcdll_rx is
 	port (
 		uart_clk    : in  std_logic;
-		uart_rxdv   : in  std_logic;
-		uart_rxd    : in  std_logic_vector;
+		uartrx_irdy : in  std_logic;
+		uartrx_data : in  std_logic_vector;
 
 		hdlcrx_frm  : buffer std_logic;
 		hdlcrx_irdy : buffer  std_logic;
@@ -50,8 +50,8 @@ begin
 	port map (
 		uart_clk  => uart_clk,
 
-		uart_rxdv => uart_rxdv,
-		uart_rxd  => uart_rxd,
+		uartrx_irdy => uartrx_irdy,
+		uartrx_data => uartrx_data,
 
 		hdlcrx_frm  => hdlcrx_frm,
 		hdlcrx_irdy => hdlcsyncrx_irdy,
@@ -81,7 +81,7 @@ begin
 		hdlcrx_irdy <= hdlcsyncrx_irdy and to_stdulogic(to_bit(q(0)));
 	end process;
 
-	data_e : entity hdl4fpga.align 
+	data_e : entity hdl4fpga.align
 	generic map (
 		n => hdlcrx_data'length,
 		d => (hdlcrx_data'range => 2))
