@@ -14,7 +14,7 @@ entity sio_sin is
 		sin_irdy  : in  std_logic := '1';
 		sin_trdy  : buffer std_logic;
 		sin_data  : in  std_logic_vector;
-		
+
 		data_frm  : out std_logic;
 		data_irdy : out std_logic;
 		sout_irdy : out std_logic;
@@ -36,7 +36,7 @@ architecture beh of sio_sin is
 
 	signal des8_irdy : std_logic;
 	signal des8_data : std_logic_vector(rgtr_id'range);
-	signal rev8_data : std_logic_vector(des8_data'range); -- Xilinx ISE's bug 
+	signal rev8_data : std_logic_vector(des8_data'range); -- Xilinx ISE's bug
 
 	type states is (s_id, s_size, s_data);
 	signal stt       : states;

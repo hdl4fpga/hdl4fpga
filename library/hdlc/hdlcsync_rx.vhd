@@ -39,6 +39,8 @@ entity hdlcsync_rx is
 
 		hdlcrx_frm  : buffer std_logic;
 		hdlcrx_irdy : buffer std_logic;
+		hdlcrx_trdy : in   std_logic := '1';
+		hdlcrx_end  : buffer std_logic;
 		hdlcrx_data : buffer std_logic_vector);
 end;
 
@@ -50,32 +52,55 @@ architecture def of hdlcsync_rx is
 	signal debug_rx : std_logic_vector(8-1 downto 0);
 begin
 
-	process (uartrx_data, uartrx_irdy, uart_clk)
-		variable frm : std_logic;
-		variable eon : std_logic;
+	process (uartrx_data, uartrx_irdy, hdlcrx_trdy, uart_clk)
+		variable frm_on : std_logic;
+		variable end_on : std_logic;
+		variable esc_on : std_logic;
 	begin
 		if rising_edge(uart_clk) then
 			if uartrx_irdy='1' then
 				if uartrx_data=flag then
-					frm := '0';
-					eon := '0';
+					end_on := '1';
+					esc_on := '0';
 				elsif uartrx_data=esc then
-					frm := '1';
-					eon := '1';
+					end_on := '0';
+					esc_on := '1';
+					frm_on := '1';
 				else
-					frm := '1';
-					eon := '0';
+					end_on := '0';
+					esc_on := '0';
+					frm_on := '1';
 				end if;
 				if hdlcrx_irdy='1' then
 					debug_rx <= setif(hdlcrx_data'ascending, reverse(hdlcrx_data), hdlcrx_data);
 				end if;
 			end if;
+			if hdlcrx_trdy='0'then
+				if end_on='1' then
+					end_on := '0';
+				end if;
+			end if;
 		end if;
-		hdlcrx_frm  <= (setif(uartrx_data/=flag) and uartrx_irdy) or (frm and not uartrx_irdy);
-		if hdlcrx_data'ascending=uartrx_data'ascending then
-			hdlcrx_data <= setif(eon='1', uartrx_data xor invb, uartrx_data);
+
+		if to_bit(uartrx_irdy)='1' then
+			hdlcrx_frm <= '1';
+			if uartrx_data/=flag then
+				hdlcrx_end <= '0';
+			else
+				hdlcrx_end <= '1';
+			end if;
+		elsif (hdlcrx_trdy and end_on)='1' then
+			hdlcrx_frm <= '0';
+			hdlcrx_end <= '0';
 		else
-			hdlcrx_data <= reverse(setif(eon='1', uartrx_data xor invb, uartrx_data));
+			hdlcrx_frm <= to_stdulogic(to_bit(frm_on));
+			hdlcrx_end <= to_stdulogic(to_bit(end_on));
+		end if;
+
+		if hdlcrx_data'ascending=uartrx_data'ascending then
+			hdlcrx_data <= setif(esc_on='1', uartrx_data xor invb, uartrx_data);
+		else
+			hdlcrx_data <= reverse(setif(esc_on='1', uartrx_data xor invb, uartrx_data));
 		end if;
 	end process;
 

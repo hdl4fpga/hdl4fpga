@@ -177,7 +177,7 @@ architecture def of mii_ipoe is
 	signal fifo_rllbk    : std_logic;
 
 	signal tagtx_irdy      : std_logic;
-	signal tagtx_trdy      : std_logic;
+	signal tagtx_trdy    : std_logic;
 
 	signal tag_frm       : std_logic;
 	signal tag_irdy      : std_logic;
@@ -190,7 +190,7 @@ architecture def of mii_ipoe is
 
 begin
 
-	process (pltx_irdy, mii_clk)
+	process (pltx_frm, pltx_irdy, tagtx_trdy, mii_clk)
 		variable cntr : unsigned(0 to 4);
 	begin
 		if rising_edge(mii_clk) then
@@ -202,8 +202,17 @@ begin
 				end if;
 			end if;
 		end if;
-		tagtx_irdy <= setif(cntr(0)='1', pltx_irdy,  '0');
-		pltx_trdy  <= setif(cntr(0)='1', tagtx_trdy, '1');
+
+		if pltx_frm='0' then
+			tagtx_irdy <= '0';
+			pltx_trdy  <= '0';
+		elsif cntr(0)='1' then
+			tagtx_irdy <= pltx_irdy;
+			pltx_trdy  <= tagtx_trdy;
+		else
+			tagtx_irdy <= '0';
+			pltx_trdy  <= '1';
+		end if;
 	end process;
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -503,7 +512,7 @@ begin
 		plrx_cmmt     => ipv4plrx_cmmt,
 		plrx_rllbk    => ipv4plrx_rllbk,
 		plrx_irdy     => ipv4plrx_irdy,
-		plrx_trdy     => ipv4plrx_trdy,
+		plrx_trdy     => open, --ipv4plrx_trdy,
 		plrx_data     => ipv4plrx_data,
 
 		pltx_frm      => pltx_frm,
@@ -566,15 +575,17 @@ begin
 	tp(4) <= fifoo_end;
 
 	tag_frm_p : process (mii_clk)
+		variable frm : bit;
 	begin
 		if rising_edge(mii_clk) then
-			if tag_frm='0' then 
+			if frm='0' then
 				if fifo_avail='1' then
-					tag_frm <= '1';
+					frm := '1';
 				end if;
 			elsif fifoo_end='1' and fifoo_trdy='1' then
-				tag_frm <= '0';
+				frm := '0';
 			end if;
+			tag_frm <= to_stdulogic(frm);
 		end if;
 	end process;
 

@@ -52,7 +52,7 @@ entity udp is
 
 		plrx_frm      : buffer std_logic;
 		plrx_irdy     : out std_logic;
-		plrx_trdy     : in  std_logic;
+		plrx_trdy     : in  std_logic := '1';
 		plrx_cmmt     : out std_logic;
 		plrx_rllbk    : out std_logic;
 		plrx_data     : out std_logic_vector;

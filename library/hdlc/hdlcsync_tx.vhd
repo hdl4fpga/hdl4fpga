@@ -42,6 +42,7 @@ entity hdlcsync_tx is
 		hdlctx_end  : in  std_logic := '0';
 		hdlctx_data : in  std_logic_vector;
 
+		uart_frm    : buffer std_logic := '1';
 		uart_irdy   : out std_logic;
 		uart_trdy   : in  std_logic;
 		uart_data   : out std_logic_vector);
@@ -52,55 +53,77 @@ end;
 
 architecture def of hdlcsync_tx is
 
-	constant flag : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_flag), hdlc_flag);
-	constant esc  : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_esc),  hdlc_esc);
-	constant invb : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_invb), hdlc_invb);
+	constant flag   : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_flag), hdlc_flag);
+	constant esc    : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_esc),  hdlc_esc);
+	constant invb   : std_logic_vector(hdlctx_data'range) := setif(hdlctx_data'ascending, reverse(hdlc_invb), hdlc_invb);
 
-	signal data : std_logic_vector(hdlctx_data'range);
+	signal data     : std_logic_vector(hdlctx_data'range);
+	signal esc_on   : std_logic;
 
 	signal debug_tx : std_logic_vector(8-1 downto 0);
-	signal eon : std_logic;
 begin
 
-	process (hdlctx_frm, hdlctx_data, hdlctx_irdy, uart_clk)
+	process (uart_clk)
 	begin
 		if rising_edge(uart_clk) then
 			if hdlctx_frm='1' then
-				if (hdlctx_irdy and hdlctx_irdy)='1' then
+				if hdlctx_irdy='1' then
 					debug_tx <= setif(hdlctx_data'ascending, reverse(hdlctx_data), hdlctx_data);
-					if eon='1' then
-						eon <= '0';
+					if esc_on='1' then
+						esc_on <= '0';
 					elsif hdlctx_data=flag then
-						eon <= '1';
+						esc_on <= '1';
 					elsif hdlctx_data=esc then
-						eon <= '1';
+						esc_on <= '1';
 					end if;
 				else
-					eon <= '0';
+					esc_on <= '0';
 				end if;
 			else
-				eon <= '0';
+				esc_on <= '0';
 			end if;
 		end if;
 	end process;
 
-	uart_irdy <=
-		when hdlctx_frm='0' else
-		hdlctx_irdy;
+	process (hdlctx_frm, hdlctx_irdy, uart_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(uart_clk) then
+			if hdlctx_frm='1' then
+				if (hdlctx_irdy and hdlctx_trdy)='1' then
+					q := hdlctx_end;
+				end if;
+			else
+				q := '0';
+			end if;
+		end if;
+		if hdlctx_frm='1' then
+			if hdlctx_end='0' then
+				uart_irdy <= hdlctx_irdy;
+			elsif q='1' then
+				uart_irdy <= '0';
+			end if;
+		else
+			uart_irdy <= '0';
+		end if;
+
+	end process;
 
 	hdlctx_trdy <=
 		'0'       when hdlctx_frm='0'   else
-		uart_trdy when eon='1'          else
+		uart_trdy when esc_on='1'       else
 		'0'       when hdlctx_data=flag else
 		'0'       when hdlctx_data=esc  else
 		uart_trdy;
 
 	data <= hdlctx_data when data'ascending=uart_data'ascending else reverse(hdlctx_data);
+	uart_frm  <=hdlctx_frm;
 	uart_data <=
-		flag          when hdlctx_frm='0'   else
-		data xor invb when eon='1'          else
-		esc           when hdlctx_data=flag else
-		esc           when hdlctx_data=esc  else
+		(flag'range => '-') when hdlctx_frm='0'   else
+		flag            when hdlctx_end='1'   else
+		data xor invb   when esc_on='1'       else
+		esc             when hdlctx_data=flag else
+		esc             when hdlctx_data=esc  else
 		data;
 
 end;

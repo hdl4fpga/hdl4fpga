@@ -370,6 +370,7 @@ begin
 
 		signal uart_rxdv   : std_logic;
 		signal uart_rxd    : std_logic_vector(0 to 8-1);
+		signal uarttx_frm  : std_logic;
 		signal uart_idle   : std_logic;
 		signal uart_txen   : std_logic;
 		signal uart_txd    : std_logic_vector(uart_rxd'range);
@@ -399,6 +400,7 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => ftdi_rxd,
+			uart_frm  => uarttx_frm,
 			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);
@@ -410,6 +412,7 @@ begin
 			uart_clk  => uart_clk,
 			uartrx_irdy => uart_rxdv,
 			uartrx_data => uart_rxd,
+			uarttx_frm    => uarttx_frm,
 			uarttx_trdy => uart_idle,
 			uarttx_data => uart_txd,
 			uarttx_irdy => uart_txen,

@@ -198,7 +198,6 @@ begin
 		signal ack_trdy   : std_logic;
 		signal ack_data   : std_logic_vector(tx_data'range);
 
-		signal sw         : std_logic;
 		signal rx_dfrm    : std_logic;
 
 	begin
@@ -251,20 +250,14 @@ begin
 			d   => so_irdy, --acktx_frm,
 			q   => tp(1));
 
-		process (sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				if acktx_frm='0' then
-					sw <= '0';
-				elsif meta_irdy='1' then
-					sw <= '1';
-				end if;
-			end if;
-		end process;
+--		ack_irdy   <= acktx_trdy when (not meta_irdy and sw)='1' else '0';
+--		acktx_irdy <= ack_trdy   when (not meta_irdy and sw)='1' else meta_irdy;
+--		acktx_data <= ack_data   when (not meta_irdy and sw)='1' else meta_data;
 
-		ack_irdy   <= acktx_trdy when (not meta_irdy and sw)='1' else '0';
-		acktx_irdy <= ack_trdy   when (not meta_irdy and sw)='1' else meta_irdy;
-		acktx_data <= ack_data   when (not meta_irdy and sw)='1' else meta_data;
+		ack_irdy   <= acktx_trdy when meta_irdy='0' else '0';
+		acktx_irdy <= ack_trdy   when meta_irdy='0' else meta_irdy;
+		acktx_data <= ack_data   when meta_irdy='0' else meta_data;
+
 
 	end block;
 

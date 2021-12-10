@@ -37,6 +37,8 @@ entity hdlcfcs_rx is
 
 		hdlcrx_frm  : in  std_logic;
 		hdlcrx_irdy : in  std_logic;
+		hdlcrx_trdy : out std_logic := '1';
+		hdlcrx_end  : in  std_logic;
 		hdlcrx_data : in  std_logic_vector;
 
 		fcs_sb      : out std_logic;
@@ -60,15 +62,7 @@ begin
 		data => hdlcrx_data,
 		crc  => crc);
 
-	process(hdlcrx_frm, uart_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(uart_clk) then
-			q := hdlcrx_frm;
-		end if;
-		fcs_sb <= not hdlcrx_frm and q;
-	end process;
-
+	fcs_sb  <= hdlcrx_frm and hdlcrx_end and hdlcrx_irdy;
 	fcs_vld <= setif(crc=not fcs_rem);
 
 end;

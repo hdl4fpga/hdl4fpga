@@ -353,9 +353,9 @@ begin
 		mii_txen  <= miitx_frm and not miitx_end;
 
 		sin_clk   <= mii_txc;
-		sin_frm   <= tp(2); --miitx_frm;
-		sin_irdy  <= tp(3); --miitx_irdy and miitx_trdy;
-		sin_data  <= tp(4 to 4+8-1); --miitx_data;
+		sin_frm   <= miitx_frm;
+		sin_irdy  <= miitx_irdy and miitx_trdy;
+		sin_data  <= miitx_data;
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug

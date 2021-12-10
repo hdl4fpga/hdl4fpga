@@ -34,8 +34,9 @@ entity uart_tx is
 		clk_rate : natural);
 	port (
 		uart_txc  : in  std_logic;
-		uart_ena  : in  std_logic := '1';
+		uart_txe  : in  std_logic := '1';
 		uart_sout : out std_logic;
+		uart_frm  : in  std_logic := '1';
 		uart_irdy : in  std_logic;
 		uart_trdy : buffer std_logic;
 		uart_data : in  std_logic_vector);
@@ -78,7 +79,7 @@ begin
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
 	begin
 		if rising_edge(uart_txc) then
-			if uart_ena='1' then
+			if uart_txe='1' then
 				if init_cntr='1' then
 					tcntr := tcntr_init;
 					full_count <= '0';
@@ -109,69 +110,75 @@ begin
 
 	begin
 		if rising_edge(uart_txc) then
-			if uart_ena='1' then
-				case uart_state is
-				when idle_s =>
-					uart_sout <= '1';
-					if uart_irdy='1' then
+			if uart_frm='1' then
+				if uart_txe='1' then
+					case uart_state is
+					when idle_s =>
+						uart_sout <= '1';
+						if uart_irdy='1' then
+							uart_trdy <= '0';
+						end if;
+						dcntr := (others => '-');
+						data  := unsigned(uart_data);
+						if uart_irdy='1' then
+							uart_sout  <= '0';
+							uart_state <= start_s;
+						end if;
+					when start_s =>
+						uart_sout <= '0';
 						uart_trdy <= '0';
-					end if;
-					dcntr := (others => '-');
-					data  := unsigned(uart_data);
-					if uart_irdy='1' then
-						uart_sout  <= '0';
-						uart_state <= start_s;
-					end if;
-				when start_s =>
-					uart_sout <= '0';
-					uart_trdy <= '0';
-					dcntr := dcntr_init;
-					if full_count='1' then
-						uart_state <= data_s;
-						uart_sout  <= data(0);
-						if data'ascending then
-							data := data rol 1;
-						else
-							data := data ror 1;
+						dcntr := dcntr_init;
+						if full_count='1' then
+							uart_state <= data_s;
+							uart_sout  <= data(0);
+							if data'ascending then
+								data := data rol 1;
+							else
+								data := data ror 1;
+							end if;
 						end if;
-					end if;
-				when data_s =>
-					if full_count='1' then
-						if data'ascending then
-							uart_sout <= data(data'left);
-							data := data rol 1;
-						else
-							uart_sout <= data(data'right);
-							data := data ror 1;
-						end if;
-						if dcntr(0)='1' then
-							uart_state <= stop_s;
-							uart_trdy <= '1';
-							dcntr := (others => '-');
+					when data_s =>
+						if full_count='1' then
+							if data'ascending then
+								uart_sout <= data(data'left);
+								data := data rol 1;
+							else
+								uart_sout <= data(data'right);
+								data := data ror 1;
+							end if;
+							if dcntr(0)='1' then
+								uart_state <= stop_s;
+								uart_trdy  <= uart_frm;
+								dcntr := (others => '-');
+							else
+								uart_trdy <= '0';
+								dcntr := dcntr + 1;
+							end if;
 						else
 							uart_trdy <= '0';
-							dcntr := dcntr + 1;
 						end if;
-					else
-						uart_trdy <= '0';
-					end if;
-				when stop_s =>
-					uart_sout <= '1';
-					data  := unsigned(uart_data);
-					dcntr := (others => '-');
-					if full_count='1' then
+					when stop_s =>
+						uart_sout <= '1';
+						data  := unsigned(uart_data);
+						dcntr := (others => '-');
+						if full_count='1' then
+							if uart_irdy='1' then
+								uart_state <= start_s;
+							else
+								uart_state <= idle_s;
+							end if;
+						end if;
 						if uart_irdy='1' then
-							uart_state <= start_s;
-						else
-							uart_state <= idle_s;
+							uart_trdy <= '0';
 						end if;
-					end if;
-					if uart_irdy='1' then
-						uart_trdy <= '0';
-					end if;
-				end case;
-			elsif uart_irdy='1' then
-				uart_trdy <= '0';
+					end case;
+				elsif uart_irdy='1' then
+					uart_trdy <= '0';
+				end if;
+			else
+				uart_state <= idle_s;
+				uart_sout  <= '1';
+				uart_trdy  <= '0';
 			end if;
 		end if;
 	end process;

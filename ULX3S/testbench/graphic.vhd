@@ -185,11 +185,11 @@ architecture ulx3s_graphics of testbench is
 	end;
 
 	constant data  : std_logic_vector :=
-		x"010001" ; --&
+		x"0100ff" ; --&
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &
---		gen_natural(start => 0, stop => 127, size => 16) 
+--		gen_natural(start => 0, stop => 127, size => 16)
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -242,9 +242,11 @@ architecture ulx3s_graphics of testbench is
 --		;
 
 	signal mii_req : std_logic;
+	signal nrst : std_logic;
 begin
 
-	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
 
 	hdlc_b : block
@@ -320,6 +322,7 @@ begin
 			baudrate => baudrate,
 			clk_rate => uart_xtal)
 		port map (
+			uart_frm  => nrst,
 			uart_txc  => uart_clk,
 			uart_sout => uart_sout,
 			uart_trdy => uart_trdy,

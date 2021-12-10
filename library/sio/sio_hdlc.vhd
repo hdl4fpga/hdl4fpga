@@ -37,6 +37,7 @@ entity sio_hdlc is
 		uartrx_irdy : in  std_logic;
 		uartrx_data : in  std_logic_vector;
 
+		uarttx_frm  : out std_logic;
 		uarttx_irdy : out std_logic;
 		uarttx_trdy : in  std_logic;
 		uarttx_data : out std_logic_vector;
@@ -57,7 +58,7 @@ end;
 
 architecture def of sio_hdlc is
 
-	signal rx_frm  : std_logic;
+	signal rx_frm  : std_logic := '0';
 	signal rx_irdy : std_logic;
 	signal rx_trdy : std_logic;
 	signal rx_end  : std_logic;
@@ -66,6 +67,7 @@ architecture def of sio_hdlc is
 	signal tx_frm  : std_logic;
 	signal tx_irdy : std_logic;
 	signal tx_trdy : std_logic;
+	signal tx_end  : std_logic;
 	signal tx_data : std_logic_vector(si_data'range);
 
 begin
@@ -74,6 +76,7 @@ begin
 
 		signal hdlcrx_frm    : std_logic;
 		signal hdlcrx_irdy   : std_logic;
+		signal hdlcrx_end    : std_logic;
 		signal hdlcrx_data   : std_logic_vector(so_data'range);
 
 		signal hdlcfcsrx_sb  : std_logic;
@@ -94,6 +97,7 @@ begin
 			hdlcrx_frm  => hdlcrx_frm,
 			hdlcrx_irdy => hdlcrx_irdy,
 			hdlcrx_data => hdlcrx_data,
+			hdlcrx_end  => hdlcrx_end,
 			fcs_sb      => hdlcfcsrx_sb,
 			fcs_vld     => hdlcfcsrx_vld);
 
@@ -123,7 +127,7 @@ begin
 		rx_frm_p : process (sio_clk)
 		begin
 			if rising_edge(sio_clk) then
-				if rx_frm='0' then
+				if to_bit(rx_frm)='0' then
 					if fifo_avail='1' then
 						rx_frm <= '1';
 					end if;
@@ -141,15 +145,16 @@ begin
 		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
 		port map (
 			uart_clk    => uart_clk,
+			uart_frm    => uarttx_frm,
 			uart_irdy   => uarttx_irdy,
 			uart_trdy   => uarttx_trdy,
 			uart_data   => uarttx_data,
 
-			hdlctx_frm  => si_frm,
-			hdlctx_irdy => si_irdy,
-			hdlctx_trdy => si_trdy,
-			hdlctx_end  => si_end,
-			hdlctx_data => si_data);
+			hdlctx_frm  => tx_frm,
+			hdlctx_irdy => tx_irdy,
+			hdlctx_trdy => tx_trdy,
+			hdlctx_end  => tx_end,
+			hdlctx_data => tx_data);
 
 	end block;
 
@@ -176,6 +181,7 @@ begin
 		tx_frm  => tx_frm,
 		tx_irdy => tx_irdy,
 		tx_trdy => tx_trdy,
+		tx_end  => tx_end ,
 		tx_data => tx_data);
 
 end;

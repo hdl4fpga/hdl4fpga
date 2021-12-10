@@ -36,6 +36,7 @@ entity hdlcdll_rx is
 
 		hdlcrx_frm  : buffer std_logic;
 		hdlcrx_irdy : buffer  std_logic;
+		hdlcrx_end  : buffer std_logic;
 		hdlcrx_data : buffer std_logic_vector;
 		fcs_sb      : out std_logic;
 		fcs_vld     : out std_logic);
@@ -43,7 +44,9 @@ end;
 
 architecture def of hdlcdll_rx is
 	signal hdlcsyncrx_irdy : std_logic;
+	signal hdlcsyncrx_trdy : std_logic;
 	signal hdlcsyncrx_data : std_logic_vector(hdlcrx_data'range);
+	constant dly : natural := 3;
 begin
 
 	syncrx_e : entity hdl4fpga.hdlcsync_rx
@@ -55,6 +58,8 @@ begin
 
 		hdlcrx_frm  => hdlcrx_frm,
 		hdlcrx_irdy => hdlcsyncrx_irdy,
+		hdlcrx_trdy => hdlcsyncrx_trdy,
+		hdlcrx_end  => hdlcrx_end,
 		hdlcrx_data => hdlcsyncrx_data);
 
 	fcsrx_e : entity hdl4fpga.hdlcfcs_rx
@@ -63,12 +68,14 @@ begin
 
 		hdlcrx_frm  => hdlcrx_frm,
 		hdlcrx_irdy => hdlcsyncrx_irdy,
+		hdlcrx_trdy => hdlcsyncrx_trdy,
+		hdlcrx_end  => hdlcrx_end ,
 		hdlcrx_data => hdlcsyncrx_data,
 		fcs_sb      => fcs_sb,
 		fcs_vld     => fcs_vld);
 
 	process (hdlcsyncrx_irdy, uart_clk)
-		variable q : unsigned(0 to 2-1);
+		variable q : unsigned(0 to dly-1);
 	begin
 		if rising_edge(uart_clk) then
 			if hdlcrx_frm='0' then
@@ -84,7 +91,7 @@ begin
 	data_e : entity hdl4fpga.align
 	generic map (
 		n => hdlcrx_data'length,
-		d => (hdlcrx_data'range => 2))
+		d => (hdlcrx_data'range => dly))
 	port map (
 		clk => uart_clk,
 		ena => hdlcsyncrx_irdy,

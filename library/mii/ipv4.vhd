@@ -69,7 +69,7 @@ entity ipv4 is
 
 		plrx_frm      : buffer std_logic;
 		plrx_irdy     : out std_logic;
-		plrx_trdy     : in  std_logic;
+		plrx_trdy     : in  std_logic := '1';
 		plrx_cmmt     : out std_logic;
 		plrx_rllbk    : out std_logic;
 		plrx_data     : out std_logic_vector;
@@ -590,7 +590,7 @@ begin
 
 		plrx_frm     => udpplrx_frm,
 		plrx_irdy    => udpplrx_irdy,
-		plrx_trdy    => udpplrx_trdy,
+		plrx_trdy    => open, --udpplrx_trdy,
 		plrx_cmmt    => plrx_cmmt,
 		plrx_rllbk   => plrx_rllbk,
 		plrx_data    => udpplrx_data,
