@@ -35,14 +35,17 @@ entity hdlcsync_tx is
 		hdlc_invb : std_logic_vector := x"20");
 	port (
 		uart_clk    : in  std_logic;
-		uart_irdy   : out std_logic;
-		uart_trdy   : in  std_logic;
-		uart_data   : out std_logic_vector;
 
 		hdlctx_frm  : in  std_logic;
 		hdlctx_irdy : in  std_logic;
 		hdlctx_trdy : buffer std_logic;
-		hdlctx_data : in  std_logic_vector);
+		hdlctx_end  : in  std_logic := '0';
+		hdlctx_data : in  std_logic_vector;
+
+		uart_irdy   : out std_logic;
+		uart_trdy   : in  std_logic;
+		uart_data   : out std_logic_vector);
+
 
 
 end;
@@ -82,7 +85,7 @@ begin
 	end process;
 
 	uart_irdy <=
-		'0' when hdlctx_frm='0' else
+		when hdlctx_frm='0' else
 		hdlctx_irdy;
 
 	hdlctx_trdy <=

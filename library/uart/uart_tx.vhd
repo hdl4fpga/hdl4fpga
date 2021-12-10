@@ -146,12 +146,15 @@ begin
 						end if;
 						if dcntr(0)='1' then
 							uart_state <= stop_s;
+							uart_trdy <= '1';
 							dcntr := (others => '-');
 						else
+							uart_trdy <= '0';
 							dcntr := dcntr + 1;
 						end if;
+					else
+						uart_trdy <= '0';
 					end if;
-					uart_trdy <= '0';
 				when stop_s =>
 					uart_sout <= '1';
 					data  := unsigned(uart_data);
@@ -162,8 +165,8 @@ begin
 						else
 							uart_state <= idle_s;
 						end if;
-						uart_trdy <= '1';
-					else
+					end if;
+					if uart_irdy='1' then
 						uart_trdy <= '0';
 					end if;
 				end case;

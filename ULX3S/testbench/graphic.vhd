@@ -185,9 +185,11 @@ architecture ulx3s_graphics of testbench is
 	end;
 
 	constant data  : std_logic_vector :=
-		x"010001" &
-		x"18ff" &
-		gen_natural(start => 0, stop => 127, size => 16) &
+		x"010001" ; --&
+--		x"160300000000" &
+--		x"170200007f" ; -- &
+--		x"18ff" &
+--		gen_natural(start => 0, stop => 127, size => 16) 
 --		x"123456789abcdef123456789abcdef12" &
 --		x"23456789abcdef123456789abcdef123" &
 --		x"3456789abcdef123456789abcdef1234" &
@@ -222,8 +224,6 @@ architecture ulx3s_graphics of testbench is
 --		x"ef123456789abcdef123456789abcdef" &
 --		x"f123456789abcdef123456789abcdef1" &
 --		x"123456789abcdef123456789abcdef12" &
-		x"160300000000" &
-		x"170200007f"
 --		x"1602000080" &
 --		x"170200007f"
 
@@ -239,12 +239,12 @@ architecture ulx3s_graphics of testbench is
 --		x"1602000000" &
 --		x"1702000000"
 
-		;
+--		;
 
 	signal mii_req : std_logic;
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 	hdlc_b : block
@@ -265,8 +265,8 @@ begin
 			uart_clk  => xtal,
 			uart_sout => ftdi_txd);
 
-		signal uart_idle   : std_logic;
-		signal uart_txen   : std_logic;
+		signal uart_trdy   : std_logic;
+		signal uart_irdy   : std_logic;
 		signal uart_txd    : std_logic_vector(0 to 8-1);
 
 		signal hdlctx_frm  : std_logic;
@@ -278,13 +278,11 @@ begin
 
 		process (rst, uart_clk)
 			variable addr : natural;
-			variable n    : natural;
 		begin
 			if rst='1' then
 				hdlctx_frm <= '0';
 				hdlctx_end <= '0';
 				addr       := 0;
-				n          := 0;
 			elsif rising_edge(uart_clk) then
 				if addr < payload'length then
 					hdlctx_data <= reverse(payload(addr to addr+8-1));
@@ -292,12 +290,6 @@ begin
 						addr := addr + 8;
 					end if;
 				else
-					if n < 0 then
-						if uart_idle='1' then
-							addr := 0;
-							n := n + 1;
-						end if;
-					end if;
 					hdlctx_data <= (others => '-');
 				end if;
 				if addr < payload'length then
@@ -319,8 +311,8 @@ begin
 			hdlctx_data => hdlctx_data,
 
 			uart_clk    => uart_clk,
-			uart_irdy   => uart_txen,
-			uart_trdy   => uart_idle,
+			uart_irdy   => uart_irdy,
+			uart_trdy   => uart_trdy,
 			uart_data   => uart_txd);
 
 		uarttx_e : entity hdl4fpga.uart_tx
@@ -330,8 +322,8 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => uart_sout,
-			uart_trdy => uart_idle,
-			uart_irdy => uart_txen,
+			uart_trdy => uart_trdy,
+			uart_irdy => uart_irdy,
 			uart_data => uart_txd);
 
 	end block;

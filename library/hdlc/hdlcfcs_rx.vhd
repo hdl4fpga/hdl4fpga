@@ -64,9 +64,7 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(uart_clk) then
-			if hdlcrx_irdy='1' then
-			end if;
-				q := hdlcrx_frm;
+			q := hdlcrx_frm;
 		end if;
 		fcs_sb <= not hdlcrx_frm and q;
 	end process;

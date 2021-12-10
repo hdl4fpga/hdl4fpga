@@ -15,26 +15,12 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_we
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_len
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_addr
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_clk
-add wave -noupdate /testbench/du_e/grahics_e/sin_frm
-add wave -noupdate /testbench/du_e/grahics_e/sin_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sin_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uartrx_e/debug_rxd
+add wave -noupdate /testbench/hdlc_b/uarttx_e/debug_txen
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uarttx_e/debug_txd
 add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/debug_rxdv
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_rxc
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_ena
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_sin
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_irdy
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_trdy
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_data
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_state
-add wave -noupdate /testbench/hdlc_b/hdlctx_frm
-add wave -noupdate /testbench/hdlc_b/hdlctx_end
-add wave -noupdate /testbench/hdlc_b/hdlctx_trdy
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/hdlctx_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uartrx_e/debug_rxd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {447526793080 fs} 0} {{Cursor 2} {1070774940 fs} 0}
+WaveRestoreCursors {{Cursor 1} {447526793080 fs} 0} {{Cursor 2} {72712283590 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 166
@@ -50,4 +36,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {21 us}
+WaveRestoreZoom {0 fs} {210 us}

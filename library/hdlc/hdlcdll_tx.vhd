@@ -48,16 +48,18 @@ end;
 
 architecture def of hdlcdll_tx is
 
-	signal fcs_data : std_logic_vector(hdlctx_data'range);
+	signal fcs_frm  : std_logic;
 	signal fcs_irdy : std_logic;
 	signal fcs_trdy : std_logic;
+	signal fcs_data : std_logic_vector(hdlctx_data'range);
 
 	signal crc_irdy : std_logic;
 	signal crc_trdy : std_logic := '1';
 	signal crc_data : std_logic_vector(0 to 16-1);
+	signal crc_tx   : std_logic;
 
 begin
-hdlctx_trdy <= uart_trdy;
+
 	cntr_p : process (uart_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(crc_data'length/fcs_data'length-1));
 	begin
@@ -65,10 +67,14 @@ hdlctx_trdy <= uart_trdy;
 			if hdlctx_frm='0' then
 				cntr := to_unsigned(crc_data'length/hdlctx_data'length-1, cntr'length);
 			elsif fcs_trdy='1' then
-				cntr := cntr - 1;
+				if cntr(0)='0' then
+					cntr := cntr - 1;
+				end if;
 			end if;
+			crc_tx <= cntr(0);
 		end if;
 	end process;
+	hdlctx_trdy <= uart_trdy;
 
 	crc_irdy <=
 		hdlctx_irdy and hdlctx_trdy when hdlctx_frm='1' else
@@ -85,9 +91,14 @@ hdlctx_trdy <= uart_trdy;
 		data => hdlctx_data,
 		crc  => crc_data);
 
+	fcs_frm <=
+		hdlctx_frm when hdlctx_end='0' else
+		not crc_tx;
+
 	fcs_data <=
 		hdlctx_data when hdlctx_end='0' else
 		crc_data(0 to fcs_data'length-1);
+
 	fcs_irdy <=
 		hdlctx_irdy when hdlctx_end='0' else
 		crc_trdy;
@@ -99,7 +110,7 @@ hdlctx_trdy <= uart_trdy;
 		uart_trdy   => uart_trdy,
 		uart_data   => uart_data,
 
-		hdlctx_frm  => hdlctx_frm,
+		hdlctx_frm  => fcs_frm,
 		hdlctx_irdy => fcs_irdy,
 		hdlctx_trdy => fcs_trdy,
 		hdlctx_data => fcs_data);
