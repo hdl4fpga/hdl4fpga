@@ -30,11 +30,11 @@ entity dfsdcm is
 		dcm_per : real;
 		dfs_div : natural;
 		dfs_mul : natural);
-	port ( 
-		dfsdcm_rst : in std_logic; 
-		dfsdcm_clkin : in std_logic; 
-		dfsdcm_clk0  : out std_logic; 
-		dfsdcm_clk90 : out std_logic; 
+	port (
+		dfsdcm_rst : in std_logic;
+		dfsdcm_clkin : in std_logic;
+		dfsdcm_clk0  : out std_logic;
+		dfsdcm_clk90 : out std_logic;
 		dfsdcm_lckd : out std_logic);
 end;
 

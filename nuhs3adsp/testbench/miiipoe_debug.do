@@ -139,19 +139,15 @@ add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_irdy
 add wave -noupdate -group fifo_e /testbench/du_e/ipoe_b/du_e/fifo_e/tx_trdy
 add wave -noupdate -group fifo_e -radix hexadecimal /testbench/du_e/ipoe_b/du_e/fifo_e/tx_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/acktx_b/meta_irdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/acktx_b/meta_data
 add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/acktx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/acktx_irdy
 add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/acktx_trdy
+add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/acktx_b/tx_frm
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/sioflow_e/acktx_data
-add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/tx_end
-add wave -noupdate /testbench/du_e/ipoe_b/sioflow_e/sio_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/pltx_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/pltx_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/pltx_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/pltx_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/du_e/pltx_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11940000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {13773239 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 735
 configure wave -valuecolwidth 157
@@ -167,4 +163,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {21 us}
+WaveRestoreZoom {13116989 ps} {14429489 ps}

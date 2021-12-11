@@ -199,6 +199,7 @@ begin
 		signal ack_data   : std_logic_vector(tx_data'range);
 
 		signal rx_dfrm    : std_logic;
+		signal tx_frm    : std_logic;
 
 	begin
 
@@ -234,11 +235,25 @@ begin
 			dst_trdy  => acktx_trdy,
 			dst_data  => meta_data);
 
+		wait_fifo_latency : process (acktx_frm, sio_clk)
+			variable q : unsigned(0 to 2-1);
+		begin
+			if rising_edge(sio_clk) then
+				if acktx_frm='0' then
+					q := (others => '0');
+				else
+					q(0) := acktx_frm;
+					q := q rol 1;
+				end if;
+			end if;
+			tx_frm <= acktx_frm and q(0);
+		end process;
+
 		acktx_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => ackrply_data,
 			sio_clk  => sio_clk,
-			sio_frm  => acktx_frm,
+			sio_frm  => tx_frm,
 			sio_irdy => ack_irdy,
 			sio_trdy => ack_trdy,
 			so_end   => acktx_end,
@@ -247,12 +262,8 @@ begin
 		tg_e : entity hdl4fpga.et
 		port map (
 			clk => sio_clk,
-			d   => so_irdy, --acktx_frm,
+			d   => so_irdy,
 			q   => tp(1));
-
---		ack_irdy   <= acktx_trdy when (not meta_irdy and sw)='1' else '0';
---		acktx_irdy <= ack_trdy   when (not meta_irdy and sw)='1' else meta_irdy;
---		acktx_data <= ack_data   when (not meta_irdy and sw)='1' else meta_data;
 
 		ack_irdy   <= acktx_trdy when meta_irdy='0' else '0';
 		acktx_irdy <= ack_trdy   when meta_irdy='0' else meta_irdy;
