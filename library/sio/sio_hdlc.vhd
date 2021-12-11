@@ -70,6 +70,9 @@ architecture def of sio_hdlc is
 	signal tx_end  : std_logic;
 	signal tx_data : std_logic_vector(si_data'range);
 
+	signal tagtx_irdy : std_logic;
+	signal tagtx_trdy : std_logic;
+
 begin
 
 	hdlc_b : block
@@ -151,12 +154,37 @@ begin
 			uart_data   => uarttx_data,
 
 			hdlctx_frm  => tx_frm,
-			hdlctx_irdy => tx_irdy,
-			hdlctx_trdy => tx_trdy,
+			hdlctx_irdy => tagtx_irdy,
+			hdlctx_trdy => tagtx_trdy,
 			hdlctx_end  => tx_end,
 			hdlctx_data => tx_data);
 
 	end block;
+
+	process (tx_frm, tx_irdy, tagtx_trdy, sio_clk)
+		variable cntr : unsigned(0 to 4);
+	begin
+		if rising_edge(sio_clk) then
+			if tx_frm='0' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				if tx_irdy='1' then
+					cntr := cntr + tx_data'length;
+				end if;
+			end if;
+		end if;
+
+		if tx_frm='0' then
+			tagtx_irdy <= '0';
+			tx_trdy    <= '0';
+		elsif cntr(0)='1' then
+			tagtx_irdy <= tx_irdy;
+			tx_trdy    <= tagtx_trdy;
+		else
+			tagtx_irdy <= '0';
+			tx_trdy    <= '1';
+		end if;
+	end process;
 
 	flow_e : entity hdl4fpga.sio_flow
 	port map (
@@ -176,6 +204,7 @@ begin
 		si_frm  => si_frm,
 		si_irdy => si_irdy,
 		si_trdy => si_trdy,
+		si_end  => si_end,
 		si_data => si_data,
 
 		tx_frm  => tx_frm,

@@ -40,7 +40,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal rst   : std_logic;
 	signal clk   : std_logic := '0';
 	signal led7  : std_logic;
-	signal sw1  : std_logic;
+	signal sw1  : std_logic := '1';
 
 	signal dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal dqs   : std_logic_vector (1 downto 0) := "00";
@@ -73,7 +73,7 @@ architecture nuhs3adsp_graphics of testbench is
 			debug : boolean := true);
 		port (
 			xtal : in std_logic;
-			sw1 : in std_logic;
+			sw1 : in std_logic := '1';
 
 			hd_t_data  : inout std_logic := '1';
 			hd_t_clock : in std_logic;

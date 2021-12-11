@@ -119,7 +119,7 @@ architecture graphics of ulx3s is
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk100_00m1600x900at60),
+		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk108_00m1600x900at60),
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
 	constant nodebug_videomode : natural := mode600p;
@@ -181,14 +181,15 @@ architecture graphics of ulx3s is
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
 	constant mem_size  : natural := 8*(1024*8);
-	signal sin_frm     : std_logic;
-	signal sin_irdy    : std_logic;
-	signal sin_data    : std_logic_vector(0 to 8-1);
-	signal sout_frm    : std_logic;
-	signal sout_irdy   : std_logic;
-	signal sout_trdy   : std_logic;
-	signal sout_end    : std_logic;
-	signal sout_data   : std_logic_vector(0 to 8-1);
+	signal so_frm     : std_logic;
+	signal so_irdy    : std_logic;
+	signal so_trdy    : std_logic;
+	signal so_data    : std_logic_vector(0 to 8-1);
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_trdy   : std_logic;
+	signal si_end    : std_logic;
+	signal si_data   : std_logic_vector(0 to 8-1);
 
 	signal sio_clk     : std_logic;
 	signal dmacfg_clk  : std_logic;
@@ -400,7 +401,6 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => ftdi_rxd,
-			uart_frm  => uarttx_frm,
 			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);
@@ -417,15 +417,16 @@ begin
 			uarttx_data => uart_txd,
 			uarttx_irdy => uart_txen,
 			sio_clk   => sio_clk,
-			so_frm    => sin_frm,
-			so_irdy   => sin_irdy,
-			so_data   => sin_data,
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data,
 
-			si_frm    => sout_frm,
-			si_irdy   => sout_irdy,
-			si_trdy   => sout_trdy,
-			si_end    => sout_end,
-			si_data   => sout_data,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
 			tp        => tp);
 
 		process (sio_clk)
@@ -460,58 +461,106 @@ begin
 		alias rmii_nint  : std_logic is gn(12);
 		alias rmii_mdio  : std_logic is gn(13);
 		alias rmii_mdc   : std_logic is gp(13);
+		alias mii_clk    : std_logic is rmii_nint;
+		alias sio_clk    : std_logic is rmii_nint;
 
-		signal mii_txc   : std_logic;
-		signal mii_txen  : std_logic;
+		alias mii_txen   : std_logic is rmii_tx_en;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
 
-		signal mii_rxc   : std_logic;
 		signal mii_rxdv  : std_logic;
 		signal mii_rxd   : std_logic_vector(0 to 2-1);
 
-		signal ipv4acfg_req  : std_logic := '0';
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
+
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(0 to 8-1);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(miirx_data'range);
 
 	begin
 
 		dmacfg_clk <= video_clk;
 
-		sio_clk <= rmii_nint;
-		mii_txc <= rmii_nint;
-		rmii_tx_en <= mii_txen;
 		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_rxc  <= rmii_nint;
+		mii_clk  <= rmii_nint;
 		mii_rxdv <= rmii_crs;
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
 		rmii_mdc  <= '0';
 		rmii_mdio <= 'Z';
 
-		ipv4acfg_req <= not btn_pwr_n;
---		udpdaisy_e : entity hdl4fpga.sio_dayudp
---		generic map (
---			default_ipv4a => x"c0_a8_00_0e")
---		port map (
---			ipv4acfg_req => ipv4acfg_req,
---
---			phy_rxc   => mii_rxc,
---			phy_rx_dv => mii_rxdv,
---			phy_rx_d  => mii_rxd,
---
---			phy_txc   => mii_txc,
---			phy_tx_en => mii_txen,
---			phy_tx_d  => mii_txd,
---
---			sio_clk   => sio_clk,
---			si_frm    => sout_frm,
---			si_irdy   => sout_irdy,
---			si_trdy   => sout_trdy,
---			si_data   => sout_data,
---
---			so_frm    => sin_frm,
---			so_irdy   => sin_irdy,
---			so_trdy   => '1',
---			so_data   => sin_data);
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => mii_clk,
+			serdes_frm => mii_rxdv,
+			ser_irdy   => '1',
+			ser_trdy   => open,
+			ser_data   => mii_rxd,
+
+			des_frm    => miirx_frm,
+			des_irdy   => miirx_irdy,
+			des_trdy   => miirx_trdy,
+			des_data   => miirx_data);
+
+		dhcp_p : process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					dhcpcd_req <= dhcpcd_rdy xor not btn_pwr_n;
+				end if;
+			end if;
+		end process;
+
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			default_ipv4a => x"c0_a8_00_0e")
+		port map (
+			sio_clk    => sio_clk,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => miirx_irdy,
+			miirx_trdy => miirx_trdy,
+			miirx_data => miirx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => miitx_trdy,
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data,
+
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data);
+
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_clk,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => mii_txd);
+
+		mii_txen <= miitx_frm and not miitx_end;
 
 		process (sio_clk)
 			variable t : std_logic;
@@ -559,14 +608,15 @@ begin
 
 	port map (
 		sio_clk      => sio_clk,
-		sin_frm      => sin_frm,
-		sin_irdy     => sin_irdy,
-		sin_data     => sin_data,
-		sout_frm     => sout_frm,
-		sout_irdy    => sout_irdy,
-		sout_trdy    => sout_trdy,
-		sout_end     => sout_end,
-		sout_data    => sout_data,
+		sin_frm      => so_frm,
+		sin_irdy     => so_irdy,
+		sin_trdy     => so_trdy,
+		sin_data     => so_data,
+		sout_frm     => si_frm,
+		sout_irdy    => si_irdy,
+		sout_trdy    => si_trdy,
+		sout_end     => si_end,
+		sout_data    => si_data,
 
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,

@@ -51,6 +51,7 @@ architecture ulx3s_graphics of testbench is
 	signal gn          : std_logic_vector(28-1 downto 0);
 
 	signal ftdi_txd    : std_logic;
+	signal ftdi_rxd    : std_logic;
 
 	alias mii_clk      : std_logic is gn(12);
 
@@ -271,10 +272,22 @@ begin
 		signal uart_irdy   : std_logic;
 		signal uart_txd    : std_logic_vector(0 to 8-1);
 
+		signal uartrx_trdy   : std_logic;
+		signal uartrx_irdy   : std_logic;
+		signal uartrx_data   : std_logic_vector(0 to 8-1);
+
 		signal hdlctx_frm  : std_logic;
 		signal hdlctx_end  : std_logic;
 		signal hdlctx_trdy : std_logic;
 		signal hdlctx_data : std_logic_vector(0 to 8-1);
+
+		signal hdlcrx_frm  : std_logic;
+		signal hdlcrx_end  : std_logic;
+		signal hdlcrx_trdy : std_logic;
+		signal hdlcrx_irdy : std_logic;
+		signal hdlcrx_data : std_logic_vector(0 to 8-1);
+		signal hdlcfcsrx_sb : std_logic;
+		signal hdlcfcsrx_vld : std_logic;
 
 	begin
 
@@ -328,6 +341,29 @@ begin
 			uart_trdy => uart_trdy,
 			uart_irdy => uart_irdy,
 			uart_data => uart_txd);
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_rxc  => uart_clk,
+			uart_sin  => ftdi_rxd,
+			uart_irdy => uartrx_irdy,
+			uart_data => uartrx_data);
+
+		hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
+		port map (
+			uart_clk    => uart_clk,
+			uartrx_irdy => uartrx_irdy,
+			uartrx_data => uartrx_data,
+
+			hdlcrx_frm  => hdlcrx_frm,
+			hdlcrx_irdy => hdlcrx_irdy,
+			hdlcrx_data => hdlcrx_data,
+			hdlcrx_end  => hdlcrx_end,
+			fcs_sb      => hdlcfcsrx_sb,
+			fcs_vld     => hdlcfcsrx_vld);
 
 	end block;
 
@@ -441,6 +477,7 @@ begin
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,
+		ftdi_rxd   => ftdi_rxd,
 		gp         => gp,
 		gn         => gn,
 		sdram_clk  => sdram_clk,

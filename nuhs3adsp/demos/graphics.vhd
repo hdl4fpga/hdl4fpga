@@ -129,6 +129,7 @@ architecture graphics of nuhs3adsp is
 		modedebug,
 		mode480p,
 		mode600p,
+		mode720p,
 		mode900p,
 		mode1080p);
 
@@ -137,7 +138,8 @@ architecture graphics of nuhs3adsp is
 		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
 		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
 		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
-		mode900p    => (mode => pclk100_00m1600x900at60,  pll => (dcm_mul =>  5, dcm_div => 1)),
+		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
+		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
 		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
 	function setif (
