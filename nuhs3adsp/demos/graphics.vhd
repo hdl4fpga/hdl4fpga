@@ -170,6 +170,7 @@ architecture graphics of nuhs3adsp is
 
 	type apps is (
 		grade4,
+		grade45,
 		grade5);
 
 	type app_param is record
@@ -179,10 +180,11 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		grade4 => (ddr_166MHz, mode1080p),
-		grade5 => (ddr_200MHz, mode600p));
+		grade4 => (ddr_166MHz, mode900p),
+		grade45 => (ddr_166MHz, mode1080p),
+		grade5 => (ddr_200MHz, mode1080p));
 
-	constant app : apps := grade4;
+	constant app : apps := grade45;
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
 
@@ -205,11 +207,18 @@ architecture graphics of nuhs3adsp is
 	signal tp : std_logic_vector(1 to 32);
 begin
 
-	sys_rst <= not hd_t_clock;
+--	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
 		O => sys_clk);
+
+	process(sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			sys_rst <= not sw1;
+		end if;
+	end process;
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
