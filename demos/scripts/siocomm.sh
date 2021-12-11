@@ -19,11 +19,11 @@ if [ "$HOST" == "" ] ; then
 		./scripts/setuart.sh
 	fi
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@} -p")
-	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@} -p")
-	else
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend ${STDOUT} ${@}")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@} -p")
+	elif [ "${PKMODE}" == "PKT" ] ; then                   
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@} -p")
+	else                                                   
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@}")
 	fi
 else
 	if [ "${PKMODE}" == "" ] ; then

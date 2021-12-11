@@ -15,12 +15,18 @@ add wave -noupdate /testbench/du_e/grahics_e/dmaio_we
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_len
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_addr
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/hdlc_b/uarttx_e/debug_txen
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uarttx_e/debug_txen
 add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uarttx_e/debug_txd
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/debug_rxdv
+add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uartrx_e/debug_rxdv
 add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uartrx_e/debug_rxd
+add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uarttx_e/debug_txen
+add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uarttx_e/debug_txd
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxd
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxdv
+add wave -noupdate /testbench/hdlc_b/hdlcfcsrx_sb
+add wave -noupdate /testbench/hdlc_b/hdlcfcsrx_vld
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {447526793080 fs} 0} {{Cursor 2} {72712283590 fs} 0}
+WaveRestoreCursors {{Cursor 1} {447526793080 fs} 0} {{Cursor 2} {26361185980 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 166

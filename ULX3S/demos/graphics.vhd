@@ -562,23 +562,6 @@ begin
 
 		mii_txen <= miitx_frm and not miitx_end;
 
-		process (sio_clk)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if i='1' and e='0' then
-					t := not t;
-				end if;
-				e := i;
-				i := mii_txen;
-
-				led(0) <= t;
-				led(1) <= not t;
-			end if;
-		end process;
-
 	end generate;
 
 	grahics_e : entity hdl4fpga.demo_graphics

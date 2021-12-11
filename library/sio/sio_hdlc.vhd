@@ -88,6 +88,7 @@ begin
 		signal fifo_cmmt     : std_logic;
 		signal fifo_avail    : std_logic;
 		signal fifo_rllbk    : std_logic;
+		signal fifoo_trdy    : std_logic;
 
 	begin
 
@@ -122,8 +123,8 @@ begin
 			avail    => fifo_avail,
 
 			dst_frm  => rx_frm,
-			dst_irdy => rx_irdy,
-			dst_trdy => rx_trdy,
+			dst_irdy => rx_trdy,
+			dst_trdy => fifoo_trdy,
 			dst_end  => rx_end,
 			dst_data => rx_data);
 
@@ -142,7 +143,7 @@ begin
 
 		rx_irdy <=
 			'0'     when rx_frm='0' else
-			rx_trdy when rx_end='0' else
+			fifoo_trdy when rx_end='0' else
 			'0';
 
 		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
