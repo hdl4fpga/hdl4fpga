@@ -23,6 +23,7 @@
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ipoepkg.all;
 
 architecture ulx3s_graphics of testbench is
 
@@ -370,7 +371,7 @@ begin
 
 	end block;
 
-	pl_frm <= '0', '0' after 1 us;
+	pl_frm <= '0', '1' after 1 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -410,7 +411,7 @@ begin
 			x"00_00_00_00_00_00"    & -- arp_sha
 			x"00_00_00_00"          & -- arp_spa
 			x"00_00_00_00_00_00"    & -- arp_tha
-			x"c0_a8_00_0e";           -- arp_tpa
+			aton("192.168.1.1");     -- arp_tpa
 
 		constant packet : std_logic_vector :=
 			x"4500"                 &    -- IP Version, TOS
@@ -420,7 +421,7 @@ begin
 			x"0511"                 &    -- IP TTL, protocol
 			x"0000"                 &    -- IP Header Checksum
 			x"ffffffff"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
+			aton("192.168.1.1")     &    -- IP Destiantion IP Address
 
 			udp_checksummed (
 				x"ffffffff",
@@ -459,14 +460,14 @@ begin
 
 		eth4_e: entity hdl4fpga.sio_mux
 		port map (
-			mux_data => reverse(packet,8),
+			mux_data => reverse(arppkt,8),
 			sio_clk  => mii_clk,
 			sio_frm  => pl_frm,
 			sio_irdy => pl_trdy,
 			so_end   => pl_end,
 			so_data  => pl_data);
 
-		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0800",8);
+		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0806",8);
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => llc_data,
@@ -508,8 +509,8 @@ begin
 			mii_data   => mii_rxd);
 
 	end block;
-	fire1 <= '1';
-	fire2 <= '1';
+--	fire1 <= '1';
+--	fire2 <= '1';
 	du_e : ulx3s
 	generic map (
 		debug => true)

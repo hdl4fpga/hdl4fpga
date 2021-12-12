@@ -91,12 +91,8 @@ architecture graphics of ulx3s is
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
 	constant modedebug    : natural := 0;
-	constant mode480p     : natural := 1;
+	constant mode480p24   : natural := 1;
 	constant mode600p     : natural := 2;
-	constant mode600p18   : natural := 3;
-	constant mode600p24   : natural := 4;
-	constant mode900p     : natural := 5;
-	constant mode1080p    : natural := 6;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -107,7 +103,7 @@ architecture graphics of ulx3s is
 		clkos3_div  : natural;
 	end record;
 
-	type pixel_types is (rgb565, rgb666, rgb888);
+	type pixel_types is (rgb565, rgb888);
 
 	type video_params is record
 		pll   : pll_params;
@@ -118,25 +114,18 @@ architecture graphics of ulx3s is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
-		mode480p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk108_00m1600x900at60),
-		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
+		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk25_00m640x480at60),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60));
 
+--	constant nodebug_videomode : natural := mode480p24;
 	constant nodebug_videomode : natural := mode600p;
---	constant nodebug_videomode : natural := mode600p18;
---	constant nodebug_videomode : natural := mode600p24;
---	constant nodebug_videomode : natural := mode900p;
---	constant nodebug_videomode : natural := mode1080p;
 
 	constant videodot_freq : natural :=
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
-	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
---	constant video_mode   : natural := nodebug_videomode;
+--	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
+	constant video_mode   : natural := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
@@ -146,7 +135,9 @@ architecture graphics of ulx3s is
     signal video_blank    : std_logic;
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
-    signal video_pixel    : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
+    signal video_pixel    : std_logic_vector(0 to setif(
+		video_tab(video_mode).pixel=rgb565, 16, setif(
+		video_tab(video_mode).pixel=rgb888, 32, 0))-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type sdram_params is record
@@ -204,7 +195,7 @@ architecture graphics of ulx3s is
 	constant io_hdlc : natural := 0;
 	constant io_ipoe : natural := 1;
 
-	constant io_link : natural := io_ipoe;
+	constant io_link : natural := io_hdlc;
 
 begin
 
@@ -223,16 +214,13 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(
-			video_mode=mode600p,   "200.000000", setif(
-			video_mode=mode600p,   "200.000000", setif(
-			video_mode=mode600p18, "240.000000", setif(
-			video_mode=mode600p24, "320.000000", 
-			                       "400.000000")));
+			video_mode=mode480p24, "200.000000", setif(
+			video_mode=mode600p,   "200.000000",
+			                       "000.000000"));
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
-			video_mode=mode600p,    "40.000000", setif(
-			video_mode=mode600p18,  "40.000000", setif(
-			video_mode=mode600p24,  "40.000000", 
-			                       "120.000000")));
+			video_mode=mode480p24, "25.000000", setif(
+			video_mode=mode600p,   "40.000000",
+			                       "00.000000"));
 
 	begin
 		pll_i : EHXPLLL
@@ -300,8 +288,9 @@ begin
 			sdram_mode=sdram166Mhz, "166.666666", setif(
 			sdram_mode=sdram200Mhz, "200.000000", setif(
 			sdram_mode=sdram233Mhz, "233.000000", setif(
-			sdram_mode=sdram250Mhz, "250.000000",
-			                        "275.000000")))));
+			sdram_mode=sdram250Mhz, "250.000000", setif(
+			sdram_mode=sdram275Mhz, "275.000000",
+			                        "000.000000"))))));
 
 		signal clkfb : std_logic;
 		signal dqs   : std_logic;
@@ -589,9 +578,9 @@ begin
 		byte_size    => byte_size,
 
 		timing_id    => video_tab(video_mode).mode,
-		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
-		green_length => setif(video_tab(video_mode).pixel=rgb565, 6, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
-		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb666, 6, 8)),
+		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
+		green_length => setif(video_tab(video_mode).pixel=rgb565, 6, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
+		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
 		fifo_size    => mem_size)
 
 	port map (
