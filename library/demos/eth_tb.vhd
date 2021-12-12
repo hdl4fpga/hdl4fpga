@@ -142,7 +142,7 @@ architecture def of eth_tb is
 
 	signal pl_frm     : std_logic;
 	signal pl_trdy    : std_logic;
-	signal pl_end     : std_logic_vector(0 to 0);
+	signal pl_end     : std_logic;
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
 	signal miirx_frm  : std_logic;
@@ -239,7 +239,7 @@ begin
 
 		pl_frm   => pl_frm,
 		pl_trdy  => pl_trdy,
-		pl_end   => pl_end(0),
+		pl_end   => pl_end,
 		pl_data  => pl_data,
 
 		hwllc_irdy => hwllc_irdy,

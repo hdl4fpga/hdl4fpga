@@ -106,7 +106,7 @@ begin
 			fcs_vld     => hdlcfcsrx_vld);
 
 		fifo_cmmt  <= hdlcfcsrx_sb and     hdlcfcsrx_vld;
-		fifo_rllbk <= hdlcfcsrx_sb and not hdlcfcsrx_vld;
+		fifo_rllbk <= (hdlcfcsrx_sb and not hdlcfcsrx_vld) or not hdlcrx_frm;
 
 		fifo_e : entity hdl4fpga.txn_buffer
 		generic map (

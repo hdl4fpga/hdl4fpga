@@ -150,4 +150,36 @@ package ipoepkg is
 
 	constant dhcp4_offer : std_logic_vector(0 to dhcp4hdr_frame(dhcp4_op)-1) := x"02";
 
+	function aton (
+		constant ipa : string)
+		return std_logic_vector;
 end;
+
+package body ipoepkg is
+
+	function aton (
+		constant ipa : string)
+		return std_logic_vector is
+		constant n      : natural := 8;
+		variable aux    : natural range 0 to 2**n-1;
+		variable retval : unsigned(0 to 32-1);
+	begin
+		retval := (others => '0');
+		aux    := 0;
+		for i in ipa'range loop
+			if ipa(i)='.' then
+				retval(0 to n-1) := to_unsigned(aux,n);
+				retval := retval rol 8;
+				aux := 0;
+			else
+				aux := aux * 10;
+				aux := aux + (character'pos(ipa(i))-character'pos('0'));
+			end if;
+		end loop;
+		retval(0 to n-1) := to_unsigned(aux,n);
+		retval := retval rol 8;
+		return std_logic_vector(retval);
+	end;
+
+end;
+

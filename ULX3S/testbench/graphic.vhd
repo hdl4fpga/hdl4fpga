@@ -53,6 +53,9 @@ architecture ulx3s_graphics of testbench is
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
 
+	signal fire1       : std_logic;
+	signal fire2       : std_logic;
+
 	alias mii_clk      : std_logic is gn(12);
 
 	component ulx3s is
@@ -242,7 +245,7 @@ architecture ulx3s_graphics of testbench is
 
 --		;
 
-	signal mii_req : std_logic;
+	signal pl_frm : std_logic;
 	signal nrst : std_logic;
 begin
 
@@ -367,7 +370,7 @@ begin
 
 	end block;
 
-	mii_req <= '0', '1' after 110 us;
+	pl_frm <= '0', '0' after 1 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -379,23 +382,21 @@ begin
 
 		port (
 			rst       : in  std_logic;
-			mii_req   : in  std_logic;
-			mii_rxc   : in  std_logic;
+			pl_frm    : in  std_logic;
+			mii_clk   : in  std_logic;
 			mii_rxdv  : in  std_logic;
 			mii_rxd   : in  std_logic_vector(0 to 2-1);
 
-			mii_txc   : in  std_logic;
 			mii_txen  : buffer std_logic;
 			mii_txd   : out std_logic_vector(0 to 2-1));
 		port map (
 			rst        => rst,
-			mii_req    => mii_req,
-			mii_txc    => mii_clk,
+			pl_frm     => pl_frm,
+			mii_clk    => mii_clk,
 			mii_txen   => gp(12),
 			mii_txd(0) => gn(11),
 			mii_txd(1) => gp(11),
 
-			mii_rxc    => mii_clk,
 			mii_rxdv   => gn(10),
 			mii_rxd(0) => gp(10),
 			mii_rxd(1) => gn(9));
@@ -422,9 +423,9 @@ begin
 			x"c0a8000e"             &    -- IP Destiantion IP Address
 
 			udp_checksummed (
-				x"00000000",
 				x"ffffffff",
-				x"0044dea9"         & -- UDP Source port, Destination port
+				x"c0a8000e",
+				x"4444dea9"         & -- UDP Source port, Destination port
 				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 				x"0000" &              -- UPD checksum
 				payload);
@@ -432,45 +433,83 @@ begin
 		signal eth_txen  : std_logic;
 		signal eth_txd   : std_logic_vector(mii_txd'range);
 
-		signal txfrm_ptr : std_logic_vector(0 to 20);
+		signal pl_trdy    : std_logic;
+		signal pl_end     : std_logic;
+		signal pl_data    : std_logic_vector(mii_txd'range);
+
+		signal miirx_frm  : std_logic;
+		signal miirx_end  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(pl_data'range);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(pl_data'range);
+
+		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
+		signal hwllc_irdy : std_logic;
+		signal hwllc_trdy : std_logic;
+		signal hwllc_end  : std_logic;
+		signal hwllc_data : std_logic_vector(pl_data'range);
 
 	begin
 
---		eth_e: entity hdl4fpga.mii_rom
---		generic map (
---			mem_data => reverse(arppkt,8))
---		port map (
---			mii_txc  => mii_txc,
---			mii_txen => mii_req,
---			mii_txdv => eth_txen,
---			mii_txd  => eth_txd);
+		eth4_e: entity hdl4fpga.sio_mux
+		port map (
+			mux_data => reverse(packet,8),
+			sio_clk  => mii_clk,
+			sio_frm  => pl_frm,
+			sio_irdy => pl_trdy,
+			so_end   => pl_end,
+			so_data  => pl_data);
 
-		process (mii_rxc)
-		begin
+		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0800",8);
+		hwsa_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => llc_data,
+			sio_clk  => mii_clk,
+			sio_frm  => pl_frm,
+			sio_irdy => hwllc_irdy,
+			sio_trdy => hwllc_trdy,
+			so_end   => hwllc_end,
+			so_data  => hwllc_data);
 
-			if rising_edge(mii_rxc) then
-				if eth_txen='0' and mii_txen='0' then
-					txfrm_ptr <= (others => '0');
-				else
-					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
-				end if;
-			end if;
-		end process;
+		ethtx_e : entity hdl4fpga.eth_tx
+		port map (
+			mii_clk  => mii_clk,
 
---		ethtx_e : entity hdl4fpga.eth_tx
---		port map (
---			mii_txc  => mii_rxc,
---			eth_ptr  => txfrm_ptr,
---			hwsa     => x"af_ff_ff_ff_ff_f5",
---			hwda     => x"00_40_00_01_02_03",
---			llc      => x"0806",
---			pl_txen  => eth_txen,
---			eth_rxd  => eth_txd,
---			eth_txen => mii_txen,
---			eth_txd  => mii_txd);
+			pl_frm   => pl_frm,
+			pl_trdy  => pl_trdy,
+			pl_end   => pl_end,
+			pl_data  => pl_data,
+
+			hwllc_irdy => hwllc_irdy,
+			hwllc_trdy => open,
+			hwllc_end  => hwllc_end,
+			hwllc_data => hwllc_data,
+
+			mii_frm  => miirx_frm,
+			mii_irdy => miirx_irdy,
+			mii_trdy => '1', --miirx_trdy,
+			mii_end  => miirx_end,
+			mii_data => miirx_data);
+
+		mii_txen <= miirx_frm and not miirx_end;
+		mii_txd  <= miirx_data;
+
+		ethrx_e : entity hdl4fpga.eth_rx
+		port map (
+			mii_clk    => mii_clk,
+			mii_frm    => mii_rxdv,
+			mii_irdy   => mii_rxdv,
+			mii_data   => mii_rxd);
 
 	end block;
-
+	fire1 <= '1';
+	fire2 <= '1';
 	du_e : ulx3s
 	generic map (
 		debug => true)
@@ -478,6 +517,8 @@ begin
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
+		fire1      => fire1,
+		fire2      => fire2,
 		gp         => gp,
 		gn         => gn,
 		sdram_clk  => sdram_clk,

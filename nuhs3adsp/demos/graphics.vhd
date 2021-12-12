@@ -28,6 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
 
@@ -344,7 +345,8 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
+--			default_ipv4a => x"c0_a8_00_0e")
+			default_ipv4a => aton("192.168.0.14"))
 		port map (
 			tp         => tp,
 

@@ -100,13 +100,12 @@ begin
 			if to_bit(arpd_req xor arpd_rdy)='0' then
 				if arprx_frm='1' then
 					arpd_req <= arpd_rdy xor (tparx_vld and sparx_end);
-				elsif to_bit(arpdtx_req xor arpd_rdy)='1' then
+				elsif to_bit(arpdtx_req xor arpdtx_rdy)='1' then
 					arpd_req <= not arpd_rdy;
 				end if;
 			end if;
 		end if;
 	end process;
-	arpdtx_rdy <= arpd_rdy;
 
 	process (mii_clk)
 	begin
@@ -116,6 +115,7 @@ begin
 					if arpdtx_trdy='1' then
 						arpdtx_frm <= '0';
 						arpd_rdy  <= arpd_req;
+						arpdtx_rdy <= arpdtx_req;
 					end if;
 				end if;
 			elsif (arpd_req xor arpd_rdy)='1' then

@@ -28,6 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 
 library ecp5u;
@@ -90,11 +91,12 @@ architecture graphics of ulx3s is
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
 	constant modedebug    : natural := 0;
-	constant mode600p     : natural := 1;
-	constant mode600p18   : natural := 2;
-	constant mode600p24   : natural := 3;
-	constant mode900p     : natural := 4;
-	constant mode1080p    : natural := 5;
+	constant mode480p     : natural := 1;
+	constant mode600p     : natural := 2;
+	constant mode600p18   : natural := 3;
+	constant mode600p24   : natural := 4;
+	constant mode900p     : natural := 5;
+	constant mode1080p    : natural := 6;
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -116,6 +118,7 @@ architecture graphics of ulx3s is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
+		mode480p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
@@ -201,7 +204,7 @@ architecture graphics of ulx3s is
 	constant io_hdlc : natural := 0;
 	constant io_ipoe : natural := 1;
 
-	constant io_link : natural := io_hdlc;
+	constant io_link : natural := io_ipoe;
 
 begin
 
@@ -219,16 +222,17 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(video_mode=mode600p,
-			"200.000000", setif(video_mode=mode600p18,
-			"240.000000", setif(video_mode=mode600p24,
-			"320.000000",
-			"400.000000")));
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(video_mode=mode600p,
-			"40.000000", setif(video_mode=mode600p18,
-			"40.000000", setif(video_mode=mode600p24,
-			"40.000000",
-			"120.000000")));
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(
+			video_mode=mode600p,   "200.000000", setif(
+			video_mode=mode600p,   "200.000000", setif(
+			video_mode=mode600p18, "240.000000", setif(
+			video_mode=mode600p24, "320.000000", 
+			                       "400.000000")));
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
+			video_mode=mode600p,    "40.000000", setif(
+			video_mode=mode600p18,  "40.000000", setif(
+			video_mode=mode600p24,  "40.000000", 
+			                       "120.000000")));
 
 	begin
 		pll_i : EHXPLLL
@@ -291,13 +295,13 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(sdram_mode=sdram133MHz,
-			"133.333333", setif(sdram_mode=sdram166Mhz,
-			"166.666666", setif(sdram_mode=sdram200Mhz,
-			"200.000000", setif(sdram_mode=sdram233Mhz,
-			"233.000000", setif(sdram_mode=sdram250Mhz,
-			"250.000000",
-			"275.000000")))));
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
+			sdram_mode=sdram133MHz, "133.333333", setif(
+			sdram_mode=sdram166Mhz, "166.666666", setif(
+			sdram_mode=sdram200Mhz, "200.000000", setif(
+			sdram_mode=sdram233Mhz, "233.000000", setif(
+			sdram_mode=sdram250Mhz, "250.000000",
+			                        "275.000000")))));
 
 		signal clkfb : std_logic;
 		signal dqs   : std_logic;
@@ -392,7 +396,7 @@ begin
 			uart_rxc  => uart_clk,
 			uart_sin  => ftdi_txd,
 			uart_irdy => uart_rxdv,
-			uart_data  => uart_rxd);
+			uart_data => uart_rxd);
 
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
@@ -412,7 +416,7 @@ begin
 			uart_clk  => uart_clk,
 			uartrx_irdy => uart_rxdv,
 			uartrx_data => uart_rxd,
-			uarttx_frm    => uarttx_frm,
+			uarttx_frm  => uarttx_frm,
 			uarttx_trdy => uart_idle,
 			uarttx_data => uart_txd,
 			uarttx_irdy => uart_txen,
@@ -461,8 +465,7 @@ begin
 		alias rmii_nint  : std_logic is gn(12);
 		alias rmii_mdio  : std_logic is gn(13);
 		alias rmii_mdc   : std_logic is gp(13);
-		alias mii_clk    : std_logic is rmii_nint;
-		alias sio_clk    : std_logic is rmii_nint;
+		signal mii_clk   : std_logic;
 
 		alias mii_txen   : std_logic is rmii_tx_en;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
@@ -487,10 +490,11 @@ begin
 	begin
 
 		dmacfg_clk <= video_clk;
+		sio_clk <= rmii_nint;
+		mii_clk <= rmii_nint;
 
 		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 
-		mii_clk  <= rmii_nint;
 		mii_rxdv <= rmii_crs;
 		mii_rxd  <= rmii_rx0 & rmii_rx1;
 
@@ -514,16 +518,17 @@ begin
 		begin
 			if rising_edge(mii_clk) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor not btn_pwr_n;
+					dhcpcd_req <= dhcpcd_rdy xor ((fire2 and dhcpcd_rdy) or (fire1 and not dhcpcd_rdy));
 				end if;
 			end if;
 		end process;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
+--			default_ipv4a => x"c0_a8_01_01")
+			default_ipv4a => aton("192.168.1.1"))
 		port map (
-			sio_clk    => sio_clk,
+			sio_clk    => mii_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,

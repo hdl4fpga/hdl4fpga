@@ -211,7 +211,7 @@
         </Source>
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.sio_dayudp" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.draw_vline" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -511,7 +511,7 @@
         </Source>
     </Implementation>
     <Implementation title="miiipoe_debug" dir="miiipoe_debug" description="miiipoe_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.sio_tag" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -671,9 +671,6 @@
         <Source name="../../library/mii/udp_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/sio/sio_tag.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/common/txn_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -690,6 +687,9 @@
             <Options/>
         </Source>
         <Source name="../../library/sio/sio_rgtr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/et.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
