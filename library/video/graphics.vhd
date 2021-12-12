@@ -53,15 +53,15 @@ end;
 
 architecture def of graphics is
 
-	constant wordperbyte : natural := video_pixel'length/ctlr_di'length;
---	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
---	constant fifo_size   : natural := 2**unsigned_num_bits(3*video_width-1);
-	constant line_size   : natural := 2**unsigned_num_bits(video_width-1)*wordperbyte;
-	constant fifo_size   : natural := 2*line_size*wordperbyte;
-	constant maxdma_len  : natural := fifo_size*wordperbyte;
-	constant water_mark  : natural := (fifo_size-line_size)*wordperbyte;
+	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
+	constant fifo_size   : natural := 2*line_size;
+	constant water_mark  : natural := fifo_size-line_size;
 
-	signal level         : unsigned(0 to unsigned_num_bits(maxdma_len-1));
+	constant wordperbyte : natural := video_pixel'length/ctlr_di'length;
+	constant maxdma_len  : natural := wordperbyte*fifo_size;
+	constant dma_size    : natural := wordperbyte*line_size;
+
+	signal level         : unsigned(0 to unsigned_num_bits(fifo_size-1));
 
 	signal video_frm     : std_logic;
 	signal video_on      : std_logic;
@@ -84,7 +84,6 @@ architecture def of graphics is
 	signal dmaddr_rdy : bit;
 
 	signal vram_irdy : std_logic;
-	signal des_data  : std_logic_vector(0 to video_pixel'length-1);
 	signal vram_data : std_logic_vector(video_pixel'range);
 
 begin
@@ -139,6 +138,7 @@ begin
 	end process;
 
 	process (video_clk)
+		constant xx        : natural := unsigned_num_bits(maxdma_len-1)+1;
 		variable rdy       : bit;
 		variable hzon_lat  : std_logic;
 		variable vton_lat2 : std_logic;
@@ -150,18 +150,18 @@ begin
 				if vt_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
-					level      <= to_unsigned(maxdma_len, level'length);
+					level      <= to_unsigned(fifo_size, level'length);
 					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
 					dma_addr   <= base_addr;
-					dma_step   <= resize(to_unsigned(maxdma_len, level'length), dma_step'length);
+					dma_step   <= resize(to_unsigned(maxdma_len, xx), dma_step'length);
 					trans_req  <= not rdy;
 				elsif hz_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= level + line_size;
-					dma_len    <= std_logic_vector(to_unsigned(line_size-1, dma_len'length));
+					dma_len    <= std_logic_vector(to_unsigned(dma_size-1, dma_len'length));
 					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
-					dma_step   <= resize(to_unsigned(line_size, level'length), dma_step'length);
+					dma_step   <= resize(to_unsigned(dma_size, xx), dma_step'length);
 					trans_req  <= not rdy;
 				end if;
 			end if;

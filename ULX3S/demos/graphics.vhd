@@ -117,15 +117,15 @@ architecture graphics of ulx3s is
 		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk25_00m640x480at60),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60));
 
---	constant nodebug_videomode : natural := mode480p24;
-	constant nodebug_videomode : natural := mode600p;
+	constant nodebug_videomode : natural := mode480p24;
+--	constant nodebug_videomode : natural := mode600p;
 
 	constant videodot_freq : natural :=
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
---	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
-	constant video_mode   : natural := nodebug_videomode;
+	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
+--	constant video_mode   : natural := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
@@ -353,29 +353,36 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
-	--	constant uart_xtal : natural := natural(sys_freq);
-	--	alias uart_clk     : std_logic is clk_25mhz;
+		constant uart_xtal : natural := setif(
+			videodot_freq > natural(sys_freq), videodot_freq,
+			                                   natural(sys_freq));
 
-		constant uart_xtal : natural := natural(videodot_freq);
-		signal uart_clk    : std_logic;
+		constant uart_xtal16 : natural := uart_xtal/16;
 
-		constant baudrate  : natural := 3000000;
-	--	constant baudrate  : natural := 115200;
+		constant baudrate : natural := setif(
+			uart_xtal >= 32000000, 3000000, setif(
+			uart_xtal >= 25000000, 2000000, 
+                                   115200));
 
-		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(0 to 8-1);
-		signal uarttx_frm  : std_logic;
-		signal uart_idle   : std_logic;
-		signal uart_txen   : std_logic;
-		signal uart_txd    : std_logic_vector(uart_rxd'range);
+		signal uart_clk   : std_logic;
+		signal uart_rxdv  : std_logic;
+		signal uart_rxd   : std_logic_vector(0 to 8-1);
+		signal uarttx_frm : std_logic;
+		signal uart_idle  : std_logic;
+		signal uart_txen  : std_logic;
+		signal uart_txd   : std_logic_vector(uart_rxd'range);
 
-		signal tp          : std_logic_vector(1 to 32);
+		signal tp         : std_logic_vector(1 to 32);
 
 	begin
 
-		uart_clk   <= video_clk;
-		sio_clk    <= video_clk;
-		dmacfg_clk <= video_clk;
+		assert FALSE
+			report "BAUDRATE : " & " " & integer'image(baudrate)
+			severity NOTE;
+
+		(0 => uart_clk, 1 => sio_clk, 2 => dmacfg_clk)  <= std_logic_vector'(0 to 3-1 => setif(
+			videodot_freq > natural(sys_freq), video_clk,
+			                                   clk_25mhz));
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
@@ -514,7 +521,6 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
---			default_ipv4a => x"c0_a8_01_01")
 			default_ipv4a => aton("192.168.1.1"))
 		port map (
 			sio_clk    => mii_clk,
