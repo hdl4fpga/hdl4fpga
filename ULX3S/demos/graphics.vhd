@@ -159,8 +159,8 @@ architecture graphics of ulx3s is
 	type sdram_vector is array (natural range <>) of sdram_params;
 
 	constant sdram_mode   : sdram_speed := sdram_speed'VAL(setif(not debug,
---		sdram_speed'POS(sdram250MHz),
-		sdram_speed'POS(sdram200MHz),
+		sdram_speed'POS(sdram250MHz),
+--		sdram_speed'POS(sdram166MHz),
 		sdram_speed'POS(sdram133Mhz)));
 
 	type sdramparams_vector is array (sdram_speed) of sdram_params;
