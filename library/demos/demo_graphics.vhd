@@ -305,7 +305,7 @@ begin
 		process (sio_clk)
 		begin
 			if rising_edge(sio_clk) then
-				sio_dmaio <= 
+				sio_dmaio <=
 					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
 					reverse(x"01" & x"00" & reverse(ack_rgtr) &
 					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
@@ -616,6 +616,7 @@ begin
 
 		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complain
 
+		signal aux : unsigned(ctlr_do'range) := (others => '0');
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -635,10 +636,14 @@ begin
 		begin
 			if rising_edge(ctlr_clk) then
 				q := std_logic_vector(unsigned(q) srl 1);
+				if ctlrvideo_irdy='1' then
+					aux <= aux + 1;
+				end if;
 			end if;
 			q(0) := dmavideo_gnt and ctlr_cas;
 			ctlrvideo_irdy <= ctlr_do_dv(0) and word2byte(q(3 to 8+3-1), ctlr_cl);
 		end process;
+
 
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
@@ -656,6 +661,7 @@ begin
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,
+--			di  => std_logic_vector(aux), --ctlr_do,
 			do  => graphics_di);
 
 		graphics_e : entity hdl4fpga.graphics

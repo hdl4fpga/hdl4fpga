@@ -90,10 +90,6 @@ architecture graphics of ulx3s is
 	signal sdram_dqt      : std_logic_vector(sdram_d'range);
 	signal sdram_do       : std_logic_vector(sdram_d'range);
 
-	constant modedebug    : natural := 0;
-	constant mode480p24   : natural := 1;
-	constant mode600p     : natural := 2;
-
 	type pll_params is record
 		clkos_div   : natural;
 		clkop_div   : natural;
@@ -111,25 +107,32 @@ architecture graphics of ulx3s is
 		pixel : pixel_types;
 	end record;
 
-	type videoparams_vector is array (natural range <>) of video_params;
+	type video_modes is (
+		mode480p24,
+		mode600p,
+		modedebug);
+
+	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk_debug),
 		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk25_00m640x480at60),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60));
 
-	constant nodebug_videomode : natural := mode480p24;
---	constant nodebug_videomode : natural := mode600p;
+	constant nodebug_videomode : video_modes := mode480p24;
+--	constant nodebug_videomode : video_modes := mode600p;
 
 	constant videodot_freq : natural :=
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
-	constant video_mode   : natural := setif(debug, modedebug, nodebug_videomode);
---	constant video_mode   : natural := nodebug_videomode;
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		video_modes'POS(modedebug),
+		video_modes'POS(nodebug_videomode)));
+--	constant video_mode   : video_modes := nodebug_videomode;
 
 	signal video_clk      : std_logic;
 	signal video_lck      : std_logic;
-	signal video_shift_clk : std_logic;
+	signal video_shft_clk : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
     signal video_blank    : std_logic;
@@ -145,22 +148,22 @@ architecture graphics of ulx3s is
 		cas : std_logic_vector(0 to 3-1);
 	end record;
 
+	type sdram_speed is (
+		sdram133MHz,
+		sdram166MHz,
+		sdram200MHz,
+		sdram233MHz,
+		sdram250MHz,
+		sdram275MHz);
+
 	type sdram_vector is array (natural range <>) of sdram_params;
-	constant sdram133MHz  : natural := 0;
-	constant sdram166MHz  : natural := 1;
-	constant sdram200MHz  : natural := 2;
-	constant sdram233MHz  : natural := 3;
-	constant sdram250MHz  : natural := 4;
-	constant sdram275MHz  : natural := 5;
 
---	constant sdram_mode   : natural := setif(debug, sdram133MHz, sdram133MHz);
---	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram166MHz);
---	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram200MHz);
---	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram233MHz);
-	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram250MHz);
---	constant sdram_mode   : natural := setif(debug, sdram133Mhz, sdram275MHz);
+	constant sdram_mode   : sdram_speed := sdram_speed'VAL(setif(not debug,
+--		sdram_speed'POS(sdram250MHz),
+		sdram_speed'POS(sdram200MHz),
+		sdram_speed'POS(sdram133Mhz)));
 
-	type sdramparams_vector is array (natural range <>) of sdram_params;
+	type sdramparams_vector is array (sdram_speed) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
 		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "010"),
 		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
@@ -175,15 +178,15 @@ architecture graphics of ulx3s is
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
 	constant mem_size  : natural := 8*(1024*8);
-	signal so_frm     : std_logic;
-	signal so_irdy    : std_logic;
-	signal so_trdy    : std_logic;
-	signal so_data    : std_logic_vector(0 to 8-1);
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_trdy   : std_logic;
-	signal si_end    : std_logic;
-	signal si_data   : std_logic_vector(0 to 8-1);
+	signal so_frm      : std_logic;
+	signal so_irdy     : std_logic;
+	signal so_trdy     : std_logic;
+	signal so_data     : std_logic_vector(0 to 8-1);
+	signal si_frm      : std_logic;
+	signal si_irdy     : std_logic;
+	signal si_trdy     : std_logic;
+	signal si_end      : std_logic;
+	signal si_data     : std_logic_vector(0 to 8-1);
 
 	signal sio_clk     : std_logic;
 	signal dmacfg_clk  : std_logic;
@@ -261,7 +264,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => video_shift_clk,
+			CLKOS     => video_shft_clk,
             CLKOS2    => video_clk,
             CLKOS3    => open,
 			LOCK      => video_lck,
@@ -361,7 +364,7 @@ begin
 
 		constant baudrate : natural := setif(
 			uart_xtal >= 32000000, 3000000, setif(
-			uart_xtal >= 25000000, 2000000, 
+			uart_xtal >= 25000000, 2000000,
                                    115200));
 
 		signal uart_clk   : std_logic;
@@ -602,7 +605,7 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_shift_clk => video_shift_clk,
+		video_shift_clk => video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -693,7 +696,7 @@ begin
 	begin
 		oddr_i : oddrx1f
 		port map(
-			sclk => video_shift_clk,
+			sclk => video_shft_clk,
 			rst  => '0',
 			d0   => dvid_crgb(2*i),
 			d1   => dvid_crgb(2*i+1),

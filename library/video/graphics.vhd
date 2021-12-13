@@ -53,13 +53,9 @@ end;
 
 architecture def of graphics is
 
-	constant line_size   : natural := 2**unsigned_num_bits(video_width-1);
-	constant fifo_size   : natural := 2*line_size;
-	constant water_mark  : natural := fifo_size-line_size;
-
-	constant wordperbyte : natural := video_pixel'length/ctlr_di'length;
-	constant maxdma_len  : natural := wordperbyte*fifo_size;
-	constant dma_size    : natural := wordperbyte*line_size;
+	constant line_size   : natural := 2**(unsigned_num_bits(video_width-1));
+	constant fifo_size   : natural := 4*line_size;
+	constant water_mark  : natural := fifo_size/2;
 
 	signal level         : unsigned(0 to unsigned_num_bits(fifo_size-1));
 
@@ -84,6 +80,7 @@ architecture def of graphics is
 	signal dmaddr_rdy : bit;
 
 	signal vram_irdy : std_logic;
+	signal des_data : std_logic_vector(0 to video_pixel'length-1);
 	signal vram_data : std_logic_vector(video_pixel'range);
 
 begin
@@ -138,7 +135,10 @@ begin
 	end process;
 
 	process (video_clk)
-		constant xx        : natural := unsigned_num_bits(maxdma_len-1)+1;
+		constant wordperbyte : natural := video_pixel'length/ctlr_di'length;
+		constant page_size   : natural := wordperbyte*fifo_size;
+		constant slice_size  : natural := wordperbyte*line_size;
+
 		variable rdy       : bit;
 		variable hzon_lat  : std_logic;
 		variable vton_lat2 : std_logic;
@@ -151,17 +151,17 @@ begin
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= to_unsigned(fifo_size, level'length);
-					dma_len    <= std_logic_vector(to_unsigned(maxdma_len-1, dma_len'length));
-					dma_addr   <= base_addr;
-					dma_step   <= resize(to_unsigned(maxdma_len, xx), dma_step'length);
+					dma_len    <= std_logic_vector(to_unsigned(page_size-1, dma_len'length));
+					dma_addr   <= (dma_addr'range => '0'); --base_addr;
+					dma_step   <= to_unsigned(page_size, dma_step'length);
 					trans_req  <= not rdy;
 				elsif hz_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
-					level      <= level + line_size;
-					dma_len    <= std_logic_vector(to_unsigned(dma_size-1, dma_len'length));
+					level      <= level + to_unsigned(line_size, level'length);
+					dma_len    <= std_logic_vector(to_unsigned(slice_size-1, dma_len'length));
 					dma_addr   <= std_logic_vector(unsigned(dma_addr) + dma_step);
-					dma_step   <= resize(to_unsigned(dma_size, xx), dma_step'length);
+					dma_step   <= to_unsigned(slice_size, dma_step'length);
 					trans_req  <= not rdy;
 				end if;
 			end if;
@@ -170,8 +170,8 @@ begin
 					vt_req <= '1';
 				end if;
 			elsif video_vton='1' and hzon_lat='0' and video_hzon='1' then
-				level <= level - video_width;
-			elsif level <= water_mark then
+				level <= level - to_unsigned(video_width, level'length);
+			elsif level <= to_unsigned(water_mark, level'length) then
 				if hz_req='0' then
 					hz_req <= '1';
 				end if;
@@ -192,7 +192,8 @@ begin
 		ser_data   => ctlr_di,
 
 		des_irdy   => vram_irdy,
-		des_data   => vram_data);
+		des_data   => des_data);
+	vram_data <= reverse(reverse(des_data), ctlr_di'length);
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
