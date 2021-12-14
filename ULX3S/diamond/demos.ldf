@@ -511,7 +511,7 @@
         </Source>
     </Implementation>
     <Implementation title="miiipoe_debug" dir="miiipoe_debug" description="miiipoe_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.draw_vline" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
