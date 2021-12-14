@@ -21,43 +21,18 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
+
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ipoepkg.all;
 
-architecture ulx3s_graphics of testbench is
-
-	constant bank_bits  : natural := 2;
-	constant addr_bits  : natural := 13;
-	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 2;
-	constant byte_bits  : natural := 8;
-	constant data_bits  : natural := byte_bits*data_bytes;
-
-	signal rst         : std_logic;
-	signal xtal        : std_logic := '0';
-
-	signal sdram_dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
-	signal sdram_addr  : std_logic_vector (addr_bits - 1 downto 0);
-	signal sdram_ba    : std_logic_vector (1 downto 0);
-	signal sdram_clk   : std_logic := '0';
-	signal sdram_cke   : std_logic := '1';
-	signal sdram_cs_n  : std_logic := '1';
-	signal sdram_ras_n : std_logic;
-	signal sdram_cas_n : std_logic;
-	signal sdram_we_n  : std_logic;
-	signal sdram_dqm   : std_logic_vector(1 downto 0);
-
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
-
-	signal ftdi_txd    : std_logic;
-	signal ftdi_rxd    : std_logic;
-
-	signal fire1       : std_logic;
-	signal fire2       : std_logic;
-
-	alias mii_clk      : std_logic is gn(12);
+architecture ulx3s_miiipoedebug of testbench is
 
 	component ulx3s is
 		generic (
@@ -155,231 +130,36 @@ architecture ulx3s_graphics of testbench is
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
-	component mt48lc32m16a2 is
-		port (
-			clk   : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dqm   : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0));
-	end component;
+	signal rst      : std_logic := '1';
+	signal clk      : std_logic := '1';
 
-	function gen_natural(
-		constant start : natural := 0;
-		constant stop  : natural;
-		constant step  : natural := 1;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
-	begin
-		if start < stop then
-			for i in start to stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		else
-			for i in start downto stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		end if;
-		return retval;
-	end;
+	signal xtal     : std_logic := '0';
 
-	constant data  : std_logic_vector :=
-		x"0100ff" ; --&
---		x"160300000000" &
---		x"170200007f" ; -- &
---		x"18ff" &
---		gen_natural(start => 0, stop => 127, size => 16)
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"18ff" &
---		gen_natural(start => 128, stop => 255, size => 16) &
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"1602000080" &
---		x"170200007f"
+	signal gp       : std_logic_vector(28-1 downto 0);
+	signal gn       : std_logic_vector(28-1 downto 0);
+	alias mii_clk   : std_logic is gn(12);
 
---		x"1801" &
---		x"1234" &
---		x"160301234567" &
---		x"1702000000" --&
---		x"1602000000" &
---		x"1702000000"  &
---		x"1803" &
---		x"5678" &
---		x"9abc" &
---		x"1602000000" &
---		x"1702000000"
+	signal fire1    : std_logic;
+	signal fire2    : std_logic;
 
---		;
+	signal mii_req  : std_logic := '0';
+
 
 	signal pl_frm : std_logic;
-	signal nrst : std_logic;
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
-	nrst <= not rst;
-	xtal <= not xtal after 20 ns;
-
-	hdlc_b : block
-
-		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
-			payload   : std_logic_vector);
-		generic map (
-			payload   => data);
-
-		port (
-			rst       : in  std_logic;
-			uart_clk  : in  std_logic;
-			uart_sout : out std_logic);
-		port map (
-			rst       => rst,
-			uart_clk  => xtal,
-			uart_sout => ftdi_txd);
-
-		signal uart_trdy   : std_logic;
-		signal uart_irdy   : std_logic;
-		signal uart_txd    : std_logic_vector(0 to 8-1);
-
-		signal uartrx_trdy   : std_logic;
-		signal uartrx_irdy   : std_logic;
-		signal uartrx_data   : std_logic_vector(0 to 8-1);
-
-		signal hdlctx_frm  : std_logic;
-		signal hdlctx_end  : std_logic;
-		signal hdlctx_trdy : std_logic;
-		signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-		signal hdlcrx_frm  : std_logic;
-		signal hdlcrx_end  : std_logic;
-		signal hdlcrx_trdy : std_logic;
-		signal hdlcrx_irdy : std_logic;
-		signal hdlcrx_data : std_logic_vector(0 to 8-1);
-		signal hdlcfcsrx_sb : std_logic;
-		signal hdlcfcsrx_vld : std_logic;
-
-	begin
-
-		process (rst, uart_clk)
-			variable addr : natural;
-		begin
-			if rst='1' then
-				hdlctx_frm <= '0';
-				hdlctx_end <= '0';
-				addr       := 0;
-			elsif rising_edge(uart_clk) then
-				if addr < payload'length then
-					hdlctx_data <= reverse(payload(addr to addr+8-1));
-					if hdlctx_trdy='1' then
-						addr := addr + 8;
-					end if;
-				else
-					hdlctx_data <= (others => '-');
-				end if;
-				if addr < payload'length then
-					hdlctx_frm <= '1';
-					hdlctx_end <= '0';
-				else
-					hdlctx_frm <= '1';
-					hdlctx_end <= '1';
-				end if;
-			end if;
-		end process;
-
-		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-		port map (
-			hdlctx_frm  => hdlctx_frm,
-			hdlctx_irdy => '1',
-			hdlctx_trdy => hdlctx_trdy,
-			hdlctx_end  => hdlctx_end,
-			hdlctx_data => hdlctx_data,
-
-			uart_clk    => uart_clk,
-			uart_irdy   => uart_irdy,
-			uart_trdy   => uart_trdy,
-			uart_data   => uart_txd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_frm  => nrst,
-			uart_txc  => uart_clk,
-			uart_sout => uart_sout,
-			uart_trdy => uart_trdy,
-			uart_irdy => uart_irdy,
-			uart_data => uart_txd);
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_rxd,
-			uart_irdy => uartrx_irdy,
-			uart_data => uartrx_data);
-
-		hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uartrx_irdy,
-			uartrx_data => uartrx_data,
-
-			hdlcrx_frm  => hdlcrx_frm,
-			hdlcrx_irdy => hdlcrx_irdy,
-			hdlcrx_data => hdlcrx_data,
-			hdlcrx_end  => hdlcrx_end,
-			fcs_sb      => hdlcfcsrx_sb,
-			fcs_vld     => hdlcfcsrx_vld);
-
-	end block;
+	rst     <= '0', '1' after 300 ns;
+	clk     <= not clk after 25 ns;
+	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 
 	pl_frm <= '0', '1' after 1 us;
-	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
 			baudrate  : natural := 3_000_000;
 			uart_xtal : natural := 25 sec / 1 us;
 			payload   : std_logic_vector);
 		generic map (
-			payload   => data);
+			payload   => x"0100ff");
 
 		port (
 			rst       : in  std_logic;
@@ -389,7 +169,7 @@ begin
 			mii_rxd   : in  std_logic_vector(0 to 2-1);
 
 			mii_txen  : buffer std_logic;
-			mii_txd   : out std_logic_vector(0 to 2-1));
+			mii_txd   : buffer std_logic_vector(0 to 2-1));
 		port map (
 			rst        => rst,
 			pl_frm     => pl_frm,
@@ -402,6 +182,8 @@ begin
 			mii_rxd(0) => gp(10),
 			mii_rxd(1) => gn(9));
 
+		constant myip : std_logic_vector := aton("192.168.1.1");
+
 		constant arppkt : std_logic_vector :=
 			x"0000"                 & -- arp_htype
 			x"0000"                 & -- arp_ptype
@@ -411,7 +193,7 @@ begin
 			x"00_00_00_00_00_00"    & -- arp_sha
 			x"00_00_00_00"          & -- arp_spa
 			x"00_00_00_00_00_00"    & -- arp_tha
-			aton("192.168.1.1");     -- arp_tpa
+			myip;                     -- arp_tpa
 
 		constant packet : std_logic_vector :=
 			x"4500"                 &    -- IP Version, TOS
@@ -421,11 +203,11 @@ begin
 			x"0511"                 &    -- IP TTL, protocol
 			x"0000"                 &    -- IP Header Checksum
 			x"ffffffff"             &    -- IP Source IP address
-			aton("192.168.1.1")     &    -- IP Destiantion IP Address
+			myip                    &    -- IP Destiantion IP Address
 
 			udp_checksummed (
 				x"ffffffff",
-				x"c0a8000e",
+				myip,
 				x"4444dea9"         & -- UDP Source port, Destination port
 				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 				x"0000" &              -- UPD checksum
@@ -501,98 +283,50 @@ begin
 		mii_txen <= miirx_frm and not miirx_end;
 		mii_txd  <= miirx_data;
 
-		ethrx_e : entity hdl4fpga.eth_rx
+		ethphy_e : entity hdl4fpga.eth_rx
 		port map (
 			mii_clk    => mii_clk,
 			mii_frm    => mii_rxdv,
 			mii_irdy   => mii_rxdv,
 			mii_data   => mii_rxd);
 
+		ethrx_e : entity hdl4fpga.eth_rx
+		port map (
+			mii_clk    => mii_clk,
+			mii_frm    => mii_txen,
+			mii_irdy   => mii_txen,
+			mii_data   => mii_txd);
+
 	end block;
 
-	fire1 <= '0';
-	fire2 <= '0';
-
+	fire1 <= '1';
+	fire2 <= '1';
 	du_e : ulx3s
 	generic map (
 		debug => true)
 	port map (
 		clk_25mhz  => xtal,
-		ftdi_txd   => ftdi_txd,
-		ftdi_rxd   => ftdi_rxd,
 		fire1      => fire1,
 		fire2      => fire2,
+		btn_pwr_n  => '1',
 		gp         => gp,
-		gn         => gn,
-		sdram_clk  => sdram_clk,
-		sdram_cke  => sdram_cke,
-		sdram_csn  => sdram_cs_n,
-		sdram_rasn => sdram_ras_n,
-		sdram_casn => sdram_cas_n,
-		sdram_wen  => sdram_we_n,
-		sdram_ba   => sdram_ba,
-		sdram_a    => sdram_addr,
-		sdram_dqm  => sdram_dqm,
-		sdram_d    => sdram_dq);
+		gn         => gn);
 
-	sdr_model_g: mt48lc32m16a2
-	port map (
-		clk   => sdram_clk,
-		cke   => sdram_cke,
-		cs_n  => sdram_cs_n,
-		ras_n => sdram_ras_n,
-		cas_n => sdram_cas_n,
-		we_n  => sdram_we_n,
-		ba    => sdram_ba,
-		addr  => sdram_addr,
-		dqm   => sdram_dqm,
-		dq    => sdram_dq);
 end;
 
-library micron;
-
-configuration ulx3s_graphic_structure_md of testbench is
-	for ulx3s_graphics
+configuration ulx3s_miiipoedebug_structure_md of testbench is
+	for ulx3s_miiipoedebug
 		for all : ulx3s
 			use entity work.ulx3s(structure);
 		end for;
-		for all: mt48lc32m16a2
-			use entity micron.mt48lc32m16a2
-			port map (
-				clk   => sdram_clk,
-				cke   => sdram_cke,
-				cs_n  => sdram_cs_n,
-				ras_n => sdram_ras_n,
-				cas_n => sdram_cas_n,
-				we_n  => sdram_we_n,
-				ba    => sdram_ba,
-				addr  => sdram_addr,
-				dqm   => sdram_dqm,
-				dq    => sdram_dq);
-		end for;
 	end for;
 end;
 
-library micron;
-
-configuration ulx3s_graphic_md of testbench is
-	for ulx3s_graphics
+configuration ulx3s_miiipoedebug_md of testbench is
+	for ulx3s_miiipoedebug
 		for all : ulx3s
-			use entity work.ulx3s(graphics);
-		end for;
-			for all : mt48lc32m16a2
-			use entity micron.mt48lc32m16a2
-			port map (
-				clk   => sdram_clk,
-				cke   => sdram_cke,
-				cs_n  => sdram_cs_n,
-				ras_n => sdram_ras_n,
-				cas_n => sdram_cas_n,
-				we_n  => sdram_we_n,
-				ba    => sdram_ba,
-				addr  => sdram_addr,
-				dqm   => sdram_dqm,
-				dq    => sdram_dq);
+			use entity work.ulx3s(miiipoe_debug);
 		end for;
 	end for;
 end;
+

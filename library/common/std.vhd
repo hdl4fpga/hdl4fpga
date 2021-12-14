@@ -81,7 +81,7 @@ package std is
 		return byte_vector;
 
 	function to_bytevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return byte_vector;
 
 	function to_bitrom (
@@ -106,17 +106,17 @@ package std is
 	function reverse (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
-	
+
 	function reverse (
 		constant arg  : std_logic_vector;
 		constant size : natural)
 		return std_logic_vector;
-	
+
 	function reverse (
 		constant arg  : unsigned;
 		constant size : natural)
 		return unsigned;
-	
+
 	function to_ascii(
 		constant arg : string)
 		return std_logic_vector;
@@ -231,6 +231,11 @@ package std is
 		constant addr : std_logic_vector)
 		return std_logic;
 
+	function word2byte (		-- Solve Xilinx XST bug
+		constant word : std_logic_vector;
+		constant addr : std_logic)
+		return std_logic;
+
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
@@ -274,7 +279,7 @@ package std is
 	function inc (
 		constant arg : gray)
 		return gray;
-	
+
 	function pulse_delay (
 		constant clk_phases : natural;
 		constant phase     : std_logic_vector;
@@ -283,7 +288,7 @@ package std is
 		constant word_size : natural := 4;
 		constant width     : natural := 3)
 		return std_logic_vector;
-	
+
 	-----------
 	-- ASCII --
 	-----------
@@ -293,7 +298,7 @@ package std is
 		return string;
 
 	function to_stdlogicvector (
-		constant arg : byte_vector) 
+		constant arg : byte_vector)
 		return std_logic_vector;
 
 	function max (
@@ -305,22 +310,22 @@ package std is
 		return integer;
 
 	function max (
-		constant arg1 : integer; 
+		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer;
 
 	function max (
-		constant arg1 : signed; 
+		constant arg1 : signed;
 		constant arg2 : signed)
 		return signed;
 
 	function min (
-		constant arg1 : integer; 
+		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer;
 
 	function min (
-		constant arg1 : signed; 
+		constant arg1 : signed;
 		constant arg2 : signed)
 		return signed;
 
@@ -372,7 +377,7 @@ package std is
 		constant value : std_logic_vector;
 		constant size  : natural)
 		return std_logic_vector;
-	
+
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -382,7 +387,7 @@ package std is
 		constant r : std_logic_vector;
 		constant g : std_logic_vector)
 		return std_logic_vector;
-	
+
 --	procedure edge(
 --		signal xx  : out std_logic;
 --		signal yy  : in  std_logic;
@@ -519,7 +524,7 @@ package body std is
 
 	function itoa (
 		constant arg : integer)
-		return string 
+		return string
 	is
 		constant asciitab : string(1 to 10) := "0123456789";
 		variable retval   : string(1 to 256) := (others => NUL);
@@ -574,7 +579,7 @@ package body std is
 			checksum(0) := '0';
 			aux := aux sll size;
 		end loop;
-		return std_logic_vector(checksum(1 to size));	
+		return std_logic_vector(checksum(1 to size));
 	end;
 
 	function ipheader_checksummed(
@@ -751,11 +756,11 @@ package body std is
 	end;
 
 	function to_bytevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
@@ -1145,8 +1150,6 @@ package body std is
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic is
-		variable aux  : std_logic_vector(0 to word'length-1);
-		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
 		variable retval : std_logic_vector(0 to 0);
 	begin
 		retval := word2byte(word, addr, 1);
@@ -1155,10 +1158,20 @@ package body std is
 
 	function word2byte (
 		constant word : std_logic_vector;
+		constant addr : std_logic)
+		return std_logic is
+		variable retval : std_logic_vector(0 to 0);
+	begin
+		retval := word2byte(word, addr);
+		return retval(0);
+	end;
+
+	function word2byte (
+		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
 		variable aux  : std_logic_vector(0 to word'length-1);
-		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
+		variable byte : std_logic_vector(0 to word'length/2**addr'length-1);
 	begin
 		assert word'length mod byte'length = 0
 			report "word2byte mod"
@@ -1302,7 +1315,7 @@ package body std is
 	end;
 
 	function max (
-		constant data : natural_vector) 
+		constant data : natural_vector)
 		return natural is
 		variable val : natural:= data(data'left);
 	begin
@@ -1315,7 +1328,7 @@ package body std is
 	end;
 
 	function max (
-		constant data : integer_vector) 
+		constant data : integer_vector)
 		return integer is
 		variable val : integer:= data(data'left);
 	begin
@@ -1328,25 +1341,25 @@ package body std is
 	end;
 
 	function max (
-		constant arg1 : integer; 
+		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer is
 	begin
 		if arg1 > arg2 then
 			return arg1;
-		else 
+		else
 			return arg2;
 		end if;
 	end;
 
 	function max (
-		constant arg1 : signed; 
+		constant arg1 : signed;
 		constant arg2 : signed)
 		return signed is
 	begin
 		if arg1 > arg2 then
 			return arg1;
-		else 
+		else
 			return arg2;
 		end if;
 	end;
@@ -1458,7 +1471,7 @@ package body std is
 		constant word_size : natural := 4;
 		constant width     : natural := 3)
 		return std_logic_vector is
-	
+
 		variable latency_mod : natural;
 		variable latency_quo : natural;
 		variable delay : natural;

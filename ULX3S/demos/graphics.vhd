@@ -366,7 +366,10 @@ begin
 
 		constant uart_xtal16 : natural := uart_xtal/16;
 
-		constant baudrate : natural := 3000000;
+		constant baudrate : natural := setif(
+			uart_xtal >= 32000000, 3000000, setif(
+			uart_xtal >= 25000000, 2000000,
+                                   115200));
 
 		signal uart_rxdv  : std_logic;
 		signal uart_rxd   : std_logic_vector(0 to 8-1);
@@ -430,7 +433,7 @@ begin
 			si_data   => si_data,
 			tp        => tp);
 
-		et_e : entity hdl4fpga.et
+		et01_e : entity hdl4fpga.et
 		port map (
 			clk => sio_clk,
 			d   => tp(1),
