@@ -41,12 +41,13 @@ architecture eth_tb of ulx3s is
 
 	constant sys_freq   : real    := 25.0e6;
 
-	constant modedebug  : natural := 0;
-	constant mode600p   : natural := 1;
-	constant mode600p18 : natural := 2;
-	constant mode600p24 : natural := 3;
-	constant mode900p   : natural := 4;
-	constant mode1080p  : natural := 5;
+	type video_modes is (
+		modedebug,
+		mode600p,
+		mode600p18,
+		mode600p24,
+		mode900p,
+		mode1080p);
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -65,7 +66,7 @@ architecture eth_tb of ulx3s is
 		pixel : pixel_types;
 	end record;
 
-	type videoparams_vector is array (natural range <>) of video_params;
+	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
@@ -74,12 +75,15 @@ architecture eth_tb of ulx3s is
 		mode900p   => (pll => (clkos_div => 1, clkop_div => 20,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk108_00m1600x900at60),
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
-	constant nodebug_videomode : natural := mode600p;
-	constant videodot_freq : natural := 
+	constant nodebug_videomode : video_modes := mode600p;
+	constant videodot_freq : natural :=
 		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
 		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
-	constant video_mode : natural := setif(debug, modedebug, nodebug_videomode);
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		video_modes'POS(modedebug),
+		video_modes'POS(nodebug_videomode)));
+
     signal video_pixel    : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
 
 	signal sys_rst         : std_logic;
@@ -134,11 +138,11 @@ begin
 	videopll_b : block
 		signal clkfb : std_logic;
 
-		attribute FREQUENCY_PIN_CLKI   : string; 
-		attribute FREQUENCY_PIN_CLKOP  : string; 
-		attribute FREQUENCY_PIN_CLKOS  : string; 
-		attribute FREQUENCY_PIN_CLKOS2 : string; 
-		attribute FREQUENCY_PIN_CLKOS3 : string; 
+		attribute FREQUENCY_PIN_CLKI   : string;
+		attribute FREQUENCY_PIN_CLKOP  : string;
+		attribute FREQUENCY_PIN_CLKOS  : string;
+		attribute FREQUENCY_PIN_CLKOS2 : string;
+		attribute FREQUENCY_PIN_CLKOS3 : string;
 
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
@@ -150,46 +154,46 @@ begin
 		pll_i : EHXPLLL
         generic map (
 			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED", 
+			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED", 
-			PLL_LOCK_MODE    =>  0, 
+			DPHASE_SOURCE    => "DISABLED",
+			PLL_LOCK_MODE    =>  0,
 			FEEDBK_PATH      => "CLKOP",
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
 			OUTDIVIDER_MUXC  => "DIVC",
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div, 
-			CLKOS2_DIV       => video_tab(video_mode).pll.clkos2_div, 
+			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div,
+			CLKOS2_DIV       => video_tab(video_mode).pll.clkos2_div,
 			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
 			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
 			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
 			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
         port map (
-			rst       => '0', 
+			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => clkfb, 
-            PHASESEL0 => '0', PHASESEL1 => '0', 
-			PHASEDIR  => '0', 
-            PHASESTEP => '0', PHASELOADREG => '0', 
+			CLKFB     => clkfb,
+            PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASEDIR  => '0',
+            PHASESTEP => '0', PHASELOADREG => '0',
             STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0', 
+            ENCLKOP   => '0',
 			ENCLKOS   => '0',
-			ENCLKOS2  => '0', 
-            ENCLKOS3  => '0', 
+			ENCLKOS2  => '0',
+            ENCLKOS3  => '0',
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
             CLKOS2    => video_clk,
             CLKOS3    => open,
-			LOCK      => video_lck, 
-            INTLOCK   => open, 
+			LOCK      => video_lck,
+            INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
@@ -225,7 +229,7 @@ begin
 
 		constant loopback : boolean := true;
 	begin
-	
+
 		sio_clk <= mii_clk;
 		mii_txc <= mii_clk;
 		mii_rxc <= mii_clk;
@@ -368,7 +372,7 @@ begin
 		led(4) <= mii_txen;
 		led(5) <= mii_rxdv;
 	end block;
-	
+
 	process (sio_clk)
 		variable i : std_logic_vector(0 to 2-1);
 		variable t : std_logic_vector(0 to 2-1) := (others => '1');
@@ -398,11 +402,11 @@ begin
 		green_length    => 6,
 		blue_length     => 5)
 	port map (
-		ser_clk         => sio_clk, 
-		ser_frm         => ser_frm, 
-		ser_irdy        => ser_irdy, 
-		ser_data        => ser_data(0 to io_len(io_link)-1), 
-		
+		ser_clk         => sio_clk,
+		ser_frm         => ser_frm,
+		ser_irdy        => ser_irdy,
+		ser_data        => ser_data(0 to io_len(io_link)-1),
+
 		video_clk       => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_hzsync    => video_hzsync,
@@ -420,7 +424,7 @@ begin
 			d0   => dvid_crgb(2*i),
 			d1   => dvid_crgb(2*i+1),
 			q    => q);
-		olvds_i : olvds 
+		olvds_i : olvds
 		port map(
 			a  => q,
 			z  => gpdi_dp(i),

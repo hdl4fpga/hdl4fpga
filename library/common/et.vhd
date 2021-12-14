@@ -28,7 +28,8 @@ entity et is
 	port (
 		clk   : in  std_logic;
 		d     : in  std_logic;
-		q     : buffer std_logic);
+		q     : buffer std_logic;
+		qn    : buffer std_logic);
 end;
 
 architecture def of et is
@@ -42,5 +43,6 @@ begin
 			q0 := d;
 		end if;
 	end process;
+	qn <= not q;
 
 end;

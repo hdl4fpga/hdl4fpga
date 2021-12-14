@@ -36,68 +36,73 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	constant sys_freq     : real    := 25.0e6;
+	constant sys_freq    : real    := 25.0e6;
 
-	constant fpga         : natural := spartan3;
-	constant mark         : natural := M7E;
+	constant fpga        : natural := spartan3;
+	constant mark        : natural := M7E;
 
-	constant sclk_phases  : natural := 1;
-	constant sclk_edges   : natural := 1;
-	constant data_phases  : natural := 1;
-	constant data_edges   : natural := 1;
-	constant cmmd_gear    : natural := 1;
-	constant data_gear    : natural := 1;
-	constant bank_size    : natural := sdram_ba'length;
-	constant addr_size    : natural := sdram_a'length;
-	constant coln_size    : natural := 9;
-	constant word_size    : natural := sdram_d'length;
-	constant byte_size    : natural := 8;
+	constant sclk_phases : natural := 1;
+	constant sclk_edges  : natural := 1;
+	constant data_phases : natural := 1;
+	constant data_edges  : natural := 1;
+	constant cmmd_gear   : natural := 1;
+	constant data_gear   : natural := 1;
+	constant bank_size   : natural := sdram_ba'length;
+	constant addr_size   : natural := sdram_a'length;
+	constant coln_size   : natural := 9;
+	constant word_size   : natural := sdram_d'length;
+	constant byte_size   : natural := 8;
 
-	signal sys_rst        : std_logic;
-	signal sys_clk        : std_logic;
+	signal sys_rst       : std_logic;
+	signal sys_clk       : std_logic;
 
-	signal ddrsys_rst     : std_logic;
-	signal ddrsys_clks    : std_logic_vector(0 to 0);
+	signal ddrsys_rst    : std_logic;
+	signal ddrsys_clks   : std_logic_vector(0 to 0);
 
-	signal sdram_lck      : std_logic;
-	signal sdram_dqs      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_lck     : std_logic;
+	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ctlrphy_rst    : std_logic;
-	signal ctlrphy_cke    : std_logic;
-	signal ctlrphy_cs     : std_logic;
-	signal ctlrphy_ras    : std_logic;
-	signal ctlrphy_cas    : std_logic;
-	signal ctlrphy_we     : std_logic;
-	signal ctlrphy_odt    : std_logic;
-	signal ctlrphy_b      : std_logic_vector(sdram_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dsi    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic;
+	signal ctlrphy_cs    : std_logic;
+	signal ctlrphy_ras   : std_logic;
+	signal ctlrphy_cas   : std_logic;
+	signal ctlrphy_we    : std_logic;
+	signal ctlrphy_odt   : std_logic;
+	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dsi   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
-	signal sdram_dst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqt      : std_logic_vector(sdram_d'range);
-	signal sdram_do       : std_logic_vector(sdram_d'range);
+	signal sdram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dso     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt     : std_logic_vector(sdram_d'range);
+	signal sdram_do      : std_logic_vector(sdram_d'range);
 
 	type pll_params is record
-		clkos_div   : natural;
-		clkop_div   : natural;
-		clkfb_div   : natural;
-		clki_div    : natural;
-		clkos2_div  : natural;
-		clkos3_div  : natural;
+		clkos_div  : natural;
+		clkop_div  : natural;
+		clkfb_div  : natural;
+		clki_div   : natural;
+		clkos2_div : natural;
+		clkos3_div : natural;
 	end record;
+
+	type video_modes is (
+		mode480p24,
+		mode600p,
+		modedebug);
 
 	type pixel_types is (rgb565, rgb888);
 
@@ -107,11 +112,6 @@ architecture graphics of ulx3s is
 		pixel : pixel_types;
 	end record;
 
-	type video_modes is (
-		mode480p24,
-		mode600p,
-		modedebug);
-
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
@@ -120,10 +120,6 @@ architecture graphics of ulx3s is
 
 	constant nodebug_videomode : video_modes := mode480p24;
 --	constant nodebug_videomode : video_modes := mode600p;
-
-	constant videodot_freq : natural :=
-		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
-		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
 
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
 		video_modes'POS(modedebug),
@@ -159,9 +155,8 @@ architecture graphics of ulx3s is
 
 	type sdram_vector is array (natural range <>) of sdram_params;
 
-	constant sdram_mode   : sdram_speed := sdram_speed'VAL(setif(not debug,
+	constant sdram_mode : sdram_speed := sdram_speed'VAL(setif(not debug,
 		sdram_speed'POS(sdram250MHz),
---		sdram_speed'POS(sdram166MHz),
 		sdram_speed'POS(sdram133Mhz)));
 
 	type sdramparams_vector is array (sdram_speed) of sdram_params;
@@ -173,35 +168,36 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
 
-	constant ddr_tcp   : natural := natural(
+	constant ddr_tcp  : natural := natural(
 		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
-	constant mem_size  : natural := 8*(1024*8);
-	signal so_frm      : std_logic;
-	signal so_irdy     : std_logic;
-	signal so_trdy     : std_logic;
-	signal so_data     : std_logic_vector(0 to 8-1);
-	signal si_frm      : std_logic;
-	signal si_irdy     : std_logic;
-	signal si_trdy     : std_logic;
-	signal si_end      : std_logic;
-	signal si_data     : std_logic_vector(0 to 8-1);
+	constant mem_size : natural := 8*(1024*8);
+	signal so_frm     : std_logic;
+	signal so_irdy    : std_logic;
+	signal so_trdy    : std_logic;
+	signal so_data    : std_logic_vector(0 to 8-1);
+	signal si_frm     : std_logic;
+	signal si_irdy    : std_logic;
+	signal si_trdy    : std_logic;
+	signal si_end     : std_logic;
+	signal si_data    : std_logic_vector(0 to 8-1);
 
-	signal sio_clk     : std_logic;
+	signal sio_clk    : std_logic;
 
-	alias dmacfg_clk   : std_logic is sio_clk;
-	alias uart_clk     : std_logic is sio_clk;
+	alias dmacfg_clk  : std_logic is sio_clk;
+	alias uart_clk    : std_logic is sio_clk;
 
 	-----------------
 	-- Select link --
 	-----------------
 
-	constant io_hdlc : natural := 0;
-	constant io_ipoe : natural := 1;
+	type io_iface is (
+		io_hdlc,
+		io_ipoe);
 
-	constant io_link : natural := io_hdlc;
+	constant io_link : io_iface := io_hdlc;
 
 begin
 
@@ -285,9 +281,9 @@ begin
 
 	ctlrpll_b : block
 
-		attribute FREQUENCY_PIN_CLKI  : string;
-		attribute FREQUENCY_PIN_CLKOP : string;
-		attribute FREQUENCY_PIN_CLKOS : string;
+		attribute FREQUENCY_PIN_CLKI   : string;
+		attribute FREQUENCY_PIN_CLKOP  : string;
+		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;
 		attribute FREQUENCY_PIN_CLKOS3 : string;
 
@@ -364,7 +360,9 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
-		constant uart_xtal : natural := 40000000;
+		constant uart_xtal : natural := natural(
+			(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
+			(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
 
 		constant uart_xtal16 : natural := uart_xtal/16;
 
@@ -432,22 +430,13 @@ begin
 			si_data   => si_data,
 			tp        => tp);
 
-		process (sio_clk)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if i='1' and e='0' then
-					t := not t;
-				end if;
-				e := i;
-				i := tp(1);
+		et_e : entity hdl4fpga.et
+		port map (
+			clk => sio_clk,
+			d   => tp(1),
+			q   => led(0),
+			qn  => led(1));
 
-				led(0) <= t;
-				led(1) <= not t;
-			end if;
-		end process;
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -648,44 +637,44 @@ begin
 		cmmd_latency  => false,
 		read_latency  => true,
 		write_latency => true,
-		bank_size   => sdram_ba'length,
-		addr_size   => sdram_a'length,
-		word_size   => word_size,
-		byte_size   => byte_size)
+		bank_size     => sdram_ba'length,
+		addr_size     => sdram_a'length,
+		word_size     => word_size,
+		byte_size     => byte_size)
 	port map (
-		sys_clk     => ctlr_clk,
-		sys_rst     => ddrsys_rst,
+		sys_clk       => ctlr_clk,
+		sys_rst       => ddrsys_rst,
 
-		phy_cs      => ctlrphy_cs,
-		phy_cke     => ctlrphy_cke,
-		phy_ras     => ctlrphy_ras,
-		phy_cas     => ctlrphy_cas,
-		phy_we      => ctlrphy_we,
-		phy_b       => ctlrphy_b,
-		phy_a       => ctlrphy_a,
-		phy_dsi     => ctlrphy_dso,
-		phy_dst     => ctlrphy_dst,
-		phy_dso     => ctlrphy_dsi,
-		phy_dmi     => ctlrphy_dmo,
-		phy_dmt     => ctlrphy_dmt,
-		phy_dmo     => ctlrphy_dmi,
-		phy_dqi     => ctlrphy_dqo,
-		phy_dqt     => ctlrphy_dqt,
-		phy_dqo     => ctlrphy_dqi,
-		phy_sti     => sdrphy_sti,
-		phy_sto     => ctlrphy_sti,
+		phy_cs        => ctlrphy_cs,
+		phy_cke       => ctlrphy_cke,
+		phy_ras       => ctlrphy_ras,
+		phy_cas       => ctlrphy_cas,
+		phy_we        => ctlrphy_we,
+		phy_b         => ctlrphy_b,
+		phy_a         => ctlrphy_a,
+		phy_dsi       => ctlrphy_dso,
+		phy_dst       => ctlrphy_dst,
+		phy_dso       => ctlrphy_dsi,
+		phy_dmi       => ctlrphy_dmo,
+		phy_dmt       => ctlrphy_dmt,
+		phy_dmo       => ctlrphy_dmi,
+		phy_dqi       => ctlrphy_dqo,
+		phy_dqt       => ctlrphy_dqt,
+		phy_dqo       => ctlrphy_dqi,
+		phy_sti       => sdrphy_sti,
+		phy_sto       => ctlrphy_sti,
 
-		sdr_clk     => sdram_clk,
-		sdr_cke     => sdram_cke,
-		sdr_cs      => sdram_csn,
-		sdr_ras     => sdram_rasn,
-		sdr_cas     => sdram_casn,
-		sdr_we      => sdram_wen,
-		sdr_b       => sdram_ba,
-		sdr_a       => sdram_a,
+		sdr_clk       => sdram_clk,
+		sdr_cke       => sdram_cke,
+		sdr_cs        => sdram_csn,
+		sdr_ras       => sdram_rasn,
+		sdr_cas       => sdram_casn,
+		sdr_we        => sdram_wen,
+		sdr_b         => sdram_ba,
+		sdr_a         => sdram_a,
 
-		sdr_dm      => sdram_dqm,
-		sdr_dq      => sdram_d);
+		sdr_dm        => sdram_dqm,
+		sdr_dq        => sdram_d);
 
 	-- VGA --
 	---------
