@@ -114,9 +114,9 @@ architecture graphics of ulx3s is
 
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk_debug),
-		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk25_00m640x480at60),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60));
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
+		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk25_00m640x480at60),
+		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
 
 	constant nodebug_videomode : video_modes := mode480p24;
 --	constant nodebug_videomode : video_modes := mode600p;
@@ -131,6 +131,7 @@ architecture graphics of ulx3s is
 --	constant video_mode   : video_modes := nodebug_videomode;
 
 	signal video_clk      : std_logic;
+	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
 	signal video_shft_clk : std_logic;
 	signal video_hzsync   : std_logic;
@@ -189,7 +190,9 @@ architecture graphics of ulx3s is
 	signal si_data     : std_logic_vector(0 to 8-1);
 
 	signal sio_clk     : std_logic;
-	signal dmacfg_clk  : std_logic;
+
+	alias dmacfg_clk   : std_logic is sio_clk;
+	alias uart_clk     : std_logic is sio_clk;
 
 	-----------------
 	-- Select link --
@@ -225,6 +228,11 @@ begin
 			video_mode=mode600p,   "40.000000",
 			                       "00.000000"));
 
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is setif(
+			video_mode=mode480p24, "40.000000", setif(
+			video_mode=mode600p,   "40.000000",
+			                       "00.000000"));
+
 	begin
 		pll_i : EHXPLLL
         generic map (
@@ -237,7 +245,7 @@ begin
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -266,7 +274,7 @@ begin
 			CLKOP     => clkfb,
 			CLKOS     => video_shft_clk,
             CLKOS2    => video_clk,
-            CLKOS3    => open,
+            CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
 			REFCLK    => open,
@@ -356,18 +364,12 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
-		constant uart_xtal : natural := setif(
-			videodot_freq > natural(sys_freq), videodot_freq,
-			                                   natural(sys_freq));
+		constant uart_xtal : natural := 40000000;
 
 		constant uart_xtal16 : natural := uart_xtal/16;
 
-		constant baudrate : natural := setif(
-			uart_xtal >= 32000000, 3000000, setif(
-			uart_xtal >= 25000000, 2000000,
-                                   115200));
+		constant baudrate : natural := 3000000;
 
-		signal uart_clk   : std_logic;
 		signal uart_rxdv  : std_logic;
 		signal uart_rxd   : std_logic_vector(0 to 8-1);
 		signal uarttx_frm : std_logic;
@@ -379,13 +381,11 @@ begin
 
 	begin
 
+		sio_clk <= videoio_clk;
+
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)
 			severity NOTE;
-
-		(0 => uart_clk, 1 => sio_clk, 2 => dmacfg_clk)  <= std_logic_vector'(0 to 3-1 => setif(
-			videodot_freq > natural(sys_freq), video_clk,
-			                                   clk_25mhz));
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
@@ -488,7 +488,6 @@ begin
 
 	begin
 
-		dmacfg_clk <= video_clk;
 		sio_clk <= rmii_nint;
 		mii_clk <= rmii_nint;
 

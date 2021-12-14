@@ -11,7 +11,7 @@ case ${KIT} in
 "ULX3S")
 	PIXEL="${PIXEL:-rgb565}"
 	WSIZE="${WSIZE:-16}"
-	BSIZE="${BSIZE:-4096}"
+	BSIZE="${BSIZE:-1920}"
 	;;
 esac
 

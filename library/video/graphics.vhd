@@ -155,7 +155,7 @@ begin
 					hz_req     <= '0';
 					level      <= to_unsigned(ppage_size, level'length);
 					dma_len    <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
-					dma_addr   <= (dma_addr'range => '0'); --base_addr;
+					dma_addr   <= base_addr;
 					dma_step   <= to_unsigned(dpage_size, dma_step'length);
 					trans_req  <= not rdy;
 				elsif hz_req='1' then
@@ -198,14 +198,8 @@ begin
 		des_irdy   => des_irdy,
 		des_data   => des_data);
 
-	process (ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			vram_irdy <= des_irdy;
-			vram_data <= reverse(reverse(des_data), ctlr_di'length);
-		end if;
-	end process;
-
+	vram_irdy <= des_irdy;
+	vram_data <= reverse(reverse(des_data), ctlr_di'length);
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
