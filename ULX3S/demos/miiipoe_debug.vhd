@@ -215,7 +215,7 @@ begin
 		eth_tb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1   => '0', -- right,
-			mii_frm2   => left,
+			mii_frm2   => '0', --left,
 			mii_txc    => mii_rxc,
 			mii_txen   => mii_rxdv,
 			mii_txd    => mii_rxd);
