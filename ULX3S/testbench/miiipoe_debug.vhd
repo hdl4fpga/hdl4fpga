@@ -238,6 +238,9 @@ begin
 		signal hwllc_end  : std_logic;
 		signal hwllc_data : std_logic_vector(pl_data'range);
 
+		signal datatx_null :  std_logic_vector(mii_txd'range);
+		signal datarx_null :  std_logic_vector(mii_rxd'range);
+
 	begin
 
 		eth4_e: entity hdl4fpga.sio_mux
@@ -285,6 +288,7 @@ begin
 
 		ethphy_e : entity hdl4fpga.eth_rx
 		port map (
+			dll_data   => datarx_null,
 			mii_clk    => mii_clk,
 			mii_frm    => mii_rxdv,
 			mii_irdy   => mii_rxdv,
@@ -295,12 +299,13 @@ begin
 			mii_clk    => mii_clk,
 			mii_frm    => mii_txen,
 			mii_irdy   => mii_txen,
-			mii_data   => mii_txd);
+			mii_data   => mii_txd,
+			dll_data   => datatx_null);
 
 	end block;
 
-	fire1 <= '1';
-	fire2 <= '1';
+	fire1 <= '0';
+	fire2 <= '0';
 	du_e : ulx3s
 	generic map (
 		debug => true)
@@ -308,6 +313,10 @@ begin
 		clk_25mhz  => xtal,
 		fire1      => fire1,
 		fire2      => fire2,
+		up         => '0',
+		down       => '0',
+		left       => '0',
+		right      => '0',
 		btn_pwr_n  => '1',
 		gp         => gp,
 		gn         => gn);
@@ -329,4 +338,3 @@ configuration ulx3s_miiipoedebug_md of testbench is
 		end for;
 	end for;
 end;
-

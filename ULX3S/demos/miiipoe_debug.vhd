@@ -28,6 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.ipoepkg.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -110,8 +111,6 @@ architecture miiipoe_debug of ulx3s is
   	signal mii_rxdv       : std_logic;
   	signal mii_rxd        : std_logic_vector(0 to 2-1);
 
-	constant loopback     : boolean := false;
-
 	alias sio_clk         : std_logic is mii_clk;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
@@ -126,6 +125,7 @@ architecture miiipoe_debug of ulx3s is
 	signal ser_data       : std_logic_vector(0 to 2-1);
 
 	signal tp             : std_logic_vector(1 to 32);
+	alias rx_data : std_logic_vector(0 to 8-1) is tp(9 to 16);
 
 	-----------------
 	-- Select link --
@@ -201,66 +201,46 @@ begin
 
 	end block;
 
-	loopback_g : if loopback generate
-		mii_clk <= clk_25mhz;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
-
-		eth_tb_e : entity hdl4fpga.eth_tb
-		port map (
-			mii_frm1   => '0', -- right,
-			mii_frm2   => '0', --left,
-			mii_txc    => mii_rxc,
-			mii_txen   => mii_rxdv,
-			mii_txd    => mii_rxd);
-
-	end generate;
-
-	LAN_g : if not loopback generate
 		mii_clk <= rmii_nint;
 --		mii_clk <= clk_25mhz;
 
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			rmii_tx_en <= mii_txen;
+			(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+		end if;
+	end process;
 
-				mii_rxdv <= rmii_crs;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-	end generate;
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			mii_rxdv <= rmii_crs;
+			mii_rxd  <= rmii_rx0 & rmii_rx1;
+		end if;
+	end process;
 
 	rmii_mdc  <= '0';
 	rmii_mdio <= '0';
 
 	ipoe_b : block
-		signal miirx_frm  : std_ulogic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
-		signal plrx_data  : std_logic_vector(miirx_data'range);
+		signal plrx_data  : std_logic_vector(0 to 8-1);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
-		signal pltx_data  : std_logic_vector(miirx_data'range);
+		signal pltx_data  : std_logic_vector(plrx_data'range);
+		signal miitx_data : std_logic_vector(plrx_data'range);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
-		signal rxntx      : std_logic;
-	begin
+		signal rxntx      : std_logic := '0';
+		signal fltr_on    : std_logic := '0';
+		signal myhwa_vld  : std_logic;
 
+	begin
+		wifi_en <= '0';
 		dhcp_p : process(mii_clk)
 		begin
 			if rising_edge(mii_clk) then
@@ -272,29 +252,18 @@ begin
 		led(0) <= dhcpcd_rdy;
 		led(7) <= not dhcpcd_rdy;
 
-		miirx_frm <= mii_rxdv;
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => mii_txc,
-			serdes_frm => miirx_frm,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_rxd,
-
-			des_frm    => open,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
-
 		du_e : entity hdl4fpga.mii_ipoe
+		generic map (
+			default_ipv4a => aton("192.168.1.1"))
 		port map (
+			hdplx => '1',
+			tp         => tp,
 			mii_clk    => mii_txc,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
-			miirx_trdy => miirx_trdy,
-			miirx_data => miirx_data,
+			myhwa_vld  => myhwa_vld,
+			miirx_frm  => mii_rxdv,
+			miirx_data => mii_rxd,
 
 			plrx_frm   => open,
 			plrx_irdy  => open,
@@ -333,9 +302,17 @@ begin
 				rxntx <= rxntx xor ((left and rxntx) or (right and not rxntx));
 			end if;
 		end process;
-		led(3) <= rxntx;
+		led(4) <= rxntx;
 
-		ser_frm  <= word2byte(mii_txen & mii_rxdv, rxntx);
+		fltr_on_p : process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				fltr_on <=fltr_on xor ((down and fltr_on) or (up and not fltr_on));
+			end if;
+		end process;
+		led(2) <= fltr_on;
+
+		ser_frm  <= word2byte(mii_txen & std_logic'(word2byte(tp(17) & myhwa_vld, fltr_on)), rxntx);
 		ser_irdy <= '1';
 		ser_data <= word2byte(mii_txd  & mii_rxd,  rxntx);
 

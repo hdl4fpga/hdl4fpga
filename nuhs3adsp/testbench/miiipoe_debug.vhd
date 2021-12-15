@@ -147,6 +147,7 @@ architecture nuhs3debug_miiipoedebug of testbench is
 			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
 	end component;
 
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
 begin
 
 	mii_rxc <= mii_refclk;
@@ -193,6 +194,7 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
+		dll_data   => datarx_null,
 		mii_clk    => mii_txc,
 		mii_frm    => mii_txen,
 		mii_irdy   => mii_txen,

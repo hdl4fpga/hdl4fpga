@@ -90,7 +90,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 			---------------
 			-- Video DAC --
-			
+
 			hsync : out std_logic := '0';
 			vsync : out std_logic := '0';
 			clk_videodac : out std_logic := 'Z';
@@ -186,6 +186,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
 
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
 begin
 
 	mii_rxc <= mii_refclk;
@@ -257,6 +258,7 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
+		dll_data   => datarx_null,
 		mii_clk    => mii_txc,
 		mii_frm    => mii_txen,
 		mii_irdy   => mii_txen,
@@ -312,7 +314,7 @@ configuration nuhs3adsp_graphics_md of testbench is
 		for all : nuhs3adsp
 			use entity work.nuhs3adsp(graphics);
 		end for;
-			for all : ddr_model 
+			for all : ddr_model
 			use entity micron.ddr_model
 			port map (
 				Clk   => clk_p,

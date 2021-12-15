@@ -42,6 +42,7 @@ architecture arty_miiipoedebug of testbench is
 
 	signal btn0   : std_logic := '0';
 	signal btn1   : std_logic := '0';
+	signal datarx_null :  std_logic_vector(eth_txd'range);
 
 begin
 
@@ -105,6 +106,7 @@ begin
 	ref_clk1 <= ref_clk;
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
+		dll_data   => datarx_null,
 		mii_clk    => ref_clk1,
 		mii_frm    => eth_tx_en,
 		mii_irdy   => eth_tx_en,

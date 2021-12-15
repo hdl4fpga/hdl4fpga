@@ -33,6 +33,7 @@ entity sio_dayudp is
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_01_01";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
+		hdplx         : in  std_logic := '0';   
 		sio_clk       : in  std_logic;
 		sio_addr      : in  std_logic := '0';
 
@@ -40,7 +41,7 @@ entity sio_dayudp is
 		dhcpcd_rdy    : out std_logic := '0';
 
 		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic;
+		miirx_irdy    : in  std_logic := '1';
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
@@ -88,6 +89,7 @@ begin
 		default_ipv4a => default_ipv4a,
 		my_mac        => my_mac)
 	port map (
+		hdplx      => hdplx,
 		sio_clk    => sio_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,

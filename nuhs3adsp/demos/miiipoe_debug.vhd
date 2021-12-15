@@ -131,30 +131,28 @@ begin
 
 
 	ipoe_b : block
-		signal mii_txcfrm : std_ulogic;
-		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
 		signal miirx_frm  : std_ulogic;
 		signal miirx_irdy : std_logic;
 		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
+		signal miirx_data : std_logic_vector(mii_rxd'range);
+
+		signal plrx_frm   : std_logic := '0';
+		signal plrx_irdy  : std_logic := '0';
+		signal plrx_trdy  : std_logic := '0';
+		signal plrx_data  : std_logic_vector(0 to 8-1);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
-
-		signal plrx_frm   : std_logic := '0';
-		signal plrx_irdy  : std_logic := '0';
-		signal plrx_trdy  : std_logic := '0';
-		signal plrx_data  : std_logic_vector(miirx_data'range);
+		signal miitx_data : std_logic_vector(plrx_data'range);
 
 		signal pltx_frm   : std_logic;
 		signal pltx_irdy  : std_logic;
 		signal pltx_trdy  : std_ulogic;
 		signal pltx_end   : std_logic;
-		signal pltx_data  : std_logic_vector(miirx_data'range);
+		signal pltx_data  : std_logic_vector(plrx_data'range);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
@@ -211,8 +209,8 @@ begin
 			so_data  => si_data);
 
 		sync_b : block
-			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
 			signal dst_irdy : std_logic;
 			signal dst_trdy : std_logic;
 		begin
@@ -252,32 +250,19 @@ begin
 			begin
 				if rising_edge(mii_txc) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					mii_txcfrm <= txc_rxbus(0);
-					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+					miirx_frm  <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to mii_rxd'length);
 				end if;
 			end process;
 
 
 		end block;
 
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => mii_txc,
-			serdes_frm => mii_txcfrm,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_txcrxd,
-
-			des_frm    => miirx_frm,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
-
 		process(mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
---					dhcpcd_req <= dhcpcd_rdy xor not sw1;
+					dhcpcd_req <= dhcpcd_rdy xor not sw1;
 				end if;
 			end if;
 		end process;
@@ -291,7 +276,6 @@ begin
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
 			miirx_trdy => miirx_trdy,
 			miirx_data => miirx_data,
 
@@ -311,32 +295,6 @@ begin
 			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data);
-
-		sioflow_e : entity hdl4fpga.sio_flow
-		port map (
-			sio_clk => mii_txc,
-
-			rx_frm  => plrx_frm,
-			rx_irdy => plrx_irdy,
-			rx_trdy => plrx_trdy,
-			rx_data => plrx_data,
-
-			so_frm  => so_frm,
-			so_irdy => so_irdy,
-			so_trdy => so_trdy,
-			so_data => so_data,
-
-			si_frm  => si_frm,
-			si_irdy => si_irdy,
-			si_trdy => si_trdy,
-			si_end  => si_end,
-			si_data => si_data,
-
-			tx_frm  => pltx_frm,
-			tx_irdy => pltx_irdy,
-			tx_trdy => pltx_trdy,
-			tx_end  => pltx_end,
-			tx_data => pltx_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (

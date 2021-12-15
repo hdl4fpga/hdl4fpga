@@ -35,6 +35,7 @@ entity sio_udp is
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
+		hdplx         : in  std_logic;   
 		sio_clk       : in  std_logic;
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
@@ -69,13 +70,13 @@ architecture struct of sio_udp is
 		signal plrx_frm   : std_logic;
 		signal plrx_irdy  : std_logic;
 		signal plrx_trdy  : std_logic;
-		signal plrx_data  : std_logic_vector(miirx_data'range);
+		signal plrx_data  : std_logic_vector(so_data'range);
 
 		signal pltx_frm   : std_logic;
 		signal pltx_irdy  : std_logic;
 		signal pltx_trdy  : std_ulogic;
 		signal pltx_end   : std_logic;
-		signal pltx_data  : std_logic_vector(miirx_data'range);
+		signal pltx_data  : std_logic_vector(si_data'range);
 
 begin
 
@@ -85,6 +86,7 @@ begin
 		my_mac        => my_mac)
 	port map (
 		tp => tp,
+		hdplx      => hdplx,
 		mii_clk    => sio_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,

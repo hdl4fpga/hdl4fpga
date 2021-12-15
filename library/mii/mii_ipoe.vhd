@@ -32,15 +32,19 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
+		half_duplex   : boolean := false;
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_01_01";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
+		hdplx         : in  std_logic := '0';   
+
 		mii_clk       : in  std_logic;
+		myhwa_vld     : out std_logic;
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
 
 		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic;
+		miirx_irdy    : in  std_logic := '1';
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
@@ -67,10 +71,13 @@ end;
 
 architecture def of mii_ipoe is
 
-	signal metarx_frm  : std_logic;
-	signal metarx_irdy : std_logic;
-
-	signal ethrx_data    : std_logic_vector(miirx_data'range);
+	signal pream_vld     : std_logic;
+	signal dllrx_frm     : std_logic;
+	signal dllrx_irdy    : std_logic;
+	signal dllrx_trdy    : std_logic;
+	signal dllrx_data    : std_logic_vector(plrx_data'range);
+	signal metarx_frm    : std_logic;
+	signal metarx_irdy   : std_logic;
 
 	signal bcstrx_equ    : std_logic;
 
@@ -220,35 +227,42 @@ begin
 		mii_clk    => mii_clk,
 		mii_frm    => miirx_frm,
 		mii_irdy   => miirx_irdy,
-		mii_trdy   => miirx_trdy,
 		mii_data   => miirx_data,
+
+		dll_frm    => dllrx_frm,
+		dll_irdy   => dllrx_irdy,
+		dll_trdy   => dllrx_trdy,
+		dll_data   => dllrx_data,
 
 		hwda_irdy  => hwdarx_irdy,
 		hwda_end   => hwda_end,
 		hwsa_irdy  => hwsarx_irdy,
 		hwtyp_irdy => hwtyprx_irdy,
 		pl_irdy    => ethplrx_irdy,
-		crc_sb     => fcs_sb,
-		crc_equ    => fcs_vld);
+		fcs_sb     => fcs_sb,
+		fcs_vld    => fcs_vld);
+
+	tp(9 to 16) <= dllrx_data;
+	tp(17) <= dllrx_frm;
 
 	bcstcmp_b : block
-		constant all1s : std_logic_vector := (0 to miirx_data'length-1 => '1');
+		constant all1s : std_logic_vector := (0 to dllrx_data'length-1 => '1');
 	begin
 		bcstcmp_e : entity hdl4fpga.sio_cmp
 		port map (
 			si_clk    => mii_clk,
-			si_frm    => miirx_frm,
+			si_frm    => dllrx_frm,
 			si1_irdy  => hwdarx_irdy,
 			si1_trdy  => open,
 			si1_data  => all1s,
 			si2_irdy  => hwdarx_irdy,
 			si2_trdy  => open,
-			si2_data  => miirx_data,
+			si2_data  => dllrx_data,
 			si_equ    => bcstrx_equ);
 	end block;
 
 	hwda_frm <=
-		miirx_frm when hwdarx_vld='0' else
+		dllrx_frm when hwdarx_vld='0' else
 		ipv4hwda_frm;
 
 	hwda_irdy <=
@@ -262,7 +276,7 @@ begin
         sio_frm   => hwda_frm,
         sio_irdy  => hwdarx_irdy,
         sio_trdy  => hwda_trdy,
-        si_data   => miirx_data,
+        si_data   => dllrx_data,
 		so_last   => hwda_last,
 		so_end    => hwda_end,
 		so_equ(0) => hwda_equ);
@@ -270,9 +284,9 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
+			if dllrx_frm='0' then
 				hwdarx_vld <= '0';
-			elsif hwda_last='1' and miirx_irdy='1' then
+			elsif hwda_last='1' and dllrx_irdy='1' then
 				hwdarx_vld <= hwda_equ or bcstrx_equ;
 			end if;
 		end if;
@@ -281,13 +295,15 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
+			if dllrx_frm='0' then
 				hwda_vld <= '0';
-			elsif hwda_last='1' and miirx_irdy='1' then
+			elsif hwda_last='1' and dllrx_irdy='1' then
 				hwda_vld <= hwda_equ;
 			end if;
 		end if;
 	end process;
+	myhwa_vld <= hwda_vld;
+
 
 	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
@@ -295,10 +311,10 @@ begin
 	port map (
 		mux_data  => reverse(llc_arp & llc_ip,8),
         sio_clk   => mii_clk,
-        sio_frm   => miirx_frm,
+        sio_frm   => dllrx_frm,
 		sio_irdy  => hwtyprx_irdy,
 		sio_trdy  => hwtyprx_trdy,
-        si_data   => miirx_data,
+        si_data   => dllrx_data,
 		so_last   => llc_last,
 		so_equ(0) => arprx_equ,
 		so_equ(1) => iprx_equ);
@@ -306,36 +322,39 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
+			if dllrx_frm='0' then
 				arprx_vld <= '0';
-			elsif llc_last='1' and miirx_irdy='1' then
+			elsif llc_last='1' and dllrx_irdy='1' then
 				arprx_vld <= arprx_equ;
 			end if;
 		end if;
 	end process;
-	arprx_frm <= miirx_frm and arprx_vld and hwdarx_vld;
+	arprx_frm <= dllrx_frm and arprx_vld and hwdarx_vld;
 
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if miirx_frm='0' then
+			if dllrx_frm='0' then
 				iprx_vld <= '0';
-			elsif llc_last='1' and miirx_irdy='1' then
+			elsif llc_last='1' and dllrx_irdy='1' then
 				iprx_vld <= iprx_equ;
 			end if;
 		end if;
 	end process;
-	iprx_frm <= miirx_frm and iprx_vld and hwda_vld; -- hwdarx_vld;
+	iprx_frm <= dllrx_frm and iprx_vld and hwda_vld; -- hwdarx_vld;
 
 	arbiter_b : block
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
+		signal dev_csc : std_logic;
 	begin
 
+		dev_csc <= not dllrx_frm when hdplx='1' else '1';
 		dev_req <= arptx_frm & ipv4tx_frm;
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
 			clk => mii_clk,
+			csc => dev_csc,
 			req => dev_req,
 			gnt => dev_gnt);
 
@@ -451,8 +470,8 @@ begin
 		arpdtx_req => arp_req,
 		arpdtx_rdy => arp_rdy,
 		arprx_frm  => arprx_frm,
-		arprx_irdy => miirx_irdy,
-		arprx_data => miirx_data,
+		arprx_irdy => dllrx_irdy,
+		arprx_data => dllrx_data,
 
 		sparx_irdy => ipv4sarx_irdy,
 		sparx_trdy => ipv4sarx_trdy,
@@ -483,13 +502,13 @@ begin
 		arp_req       => arp_req,
 		arp_rdy       => arp_rdy,
 
-		dll_frm       => miirx_frm,
+		dll_frm       => dllrx_frm,
 		dll_irdy      => hwsarx_irdy,
 		ipv4rx_frm    => iprx_frm,
-		ipv4rx_irdy   => miirx_irdy,
-		ipv4rx_data   => miirx_data,
+		ipv4rx_irdy   => dllrx_irdy,
+		ipv4rx_data   => dllrx_data,
 
-		ipv4sarx_frm  => miirx_frm,
+		ipv4sarx_frm  => dllrx_frm,
 		ipv4sarx_irdy => ipv4sarx_irdy,
 		ipv4sarx_trdy => ipv4sarx_trdy,
 		ipv4sarx_end  => ipv4sarx_end,
@@ -549,7 +568,7 @@ begin
 		d   => tag_frm,
 		q   => tp(1));
 
-	fifo_frm  <= miirx_frm or fcs_sb;
+	fifo_frm  <= dllrx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	fifo_e : entity hdl4fpga.txn_buffer
 	generic map (

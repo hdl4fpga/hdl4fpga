@@ -616,7 +616,6 @@ begin
 
 		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complain
 
-		signal aux : unsigned(ctlr_do'range) := (others => '0');
 	begin
 
 		sync_e : entity hdl4fpga.video_sync
@@ -636,9 +635,6 @@ begin
 		begin
 			if rising_edge(ctlr_clk) then
 				q := std_logic_vector(unsigned(q) srl 1);
-				if ctlrvideo_irdy='1' then
-					aux <= aux + 1;
-				end if;
 			end if;
 			q(0) := dmavideo_gnt and ctlr_cas;
 			ctlrvideo_irdy <= ctlr_do_dv(0) and word2byte(q(3 to 8+3-1), ctlr_cl);
@@ -661,7 +657,6 @@ begin
 		port map (
 			clk => ctlr_clk,
 			di  => ctlr_do,
---			di  => std_logic_vector(aux), --ctlr_do,
 			do  => graphics_di);
 
 		graphics_e : entity hdl4fpga.graphics

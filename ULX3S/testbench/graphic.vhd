@@ -455,6 +455,7 @@ begin
 		signal hwllc_trdy : std_logic;
 		signal hwllc_end  : std_logic;
 		signal hwllc_data : std_logic_vector(pl_data'range);
+		signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 	begin
 
@@ -503,6 +504,7 @@ begin
 
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
+			dll_data   => datarx_null,
 			mii_clk    => mii_clk,
 			mii_frm    => mii_rxdv,
 			mii_irdy   => mii_rxdv,

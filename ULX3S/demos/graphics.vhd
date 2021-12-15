@@ -197,7 +197,7 @@ architecture graphics of ulx3s is
 		io_hdlc,
 		io_ipoe);
 
-	constant io_link : io_iface := io_hdlc;
+	constant io_link : io_iface := io_ipoe;
 
 begin
 
@@ -276,7 +276,6 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		led(6) <= video_lck;
 	end block;
 
 	ctlrpll_b : block
@@ -352,7 +351,6 @@ begin
 			CLKINTFB  => open);
 
 		ddrsys_rst <= not sdram_lck;
-		led(7) <= sdram_lck;
 
 		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
@@ -433,13 +431,6 @@ begin
 			si_data   => si_data,
 			tp        => tp);
 
-		et01_e : entity hdl4fpga.et
-		port map (
-			clk => sio_clk,
-			d   => tp(1),
-			q   => led(0),
-			qn  => led(1));
-
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -467,16 +458,11 @@ begin
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
-
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
+		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
@@ -491,19 +477,6 @@ begin
 		rmii_mdc  <= '0';
 		rmii_mdio <= 'Z';
 
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => mii_clk,
-			serdes_frm => mii_rxdv,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_rxd,
-
-			des_frm    => miirx_frm,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
-
 		dhcp_p : process(mii_clk)
 		begin
 			if rising_edge(mii_clk) then
@@ -512,18 +485,19 @@ begin
 				end if;
 			end if;
 		end process;
+		led(0) <= dhcpcd_rdy;
+		led(7) <= not dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
 			default_ipv4a => aton("192.168.1.1"))
 		port map (
+			hdplx      => '1',
 			sio_clk    => mii_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
-			miirx_trdy => miirx_trdy,
-			miirx_data => miirx_data,
+			miirx_frm  => mii_rxdv,
+			miirx_data => mii_rxd,
 
 			miitx_frm  => miitx_frm,
 			miitx_irdy => miitx_irdy,
