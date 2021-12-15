@@ -199,8 +199,6 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		led(6) <= video_lck;
-
 	end block;
 
 	loopback_g : if loopback generate
@@ -226,6 +224,7 @@ begin
 
 	LAN_g : if not loopback generate
 		mii_clk <= rmii_nint;
+--		mii_clk <= clk_25mhz;
 
 		process (mii_clk)
 		begin
@@ -257,7 +256,21 @@ begin
 		signal miitx_data : std_logic_vector(miirx_data'range);
 		signal pltx_data  : std_logic_vector(miirx_data'range);
 
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
+		signal rxntx      : std_logic;
 	begin
+
+		dhcp_p : process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					dhcpcd_req <= dhcpcd_rdy xor ((fire2 and dhcpcd_rdy) or (fire1 and not dhcpcd_rdy));
+				end if;
+			end if;
+		end process;
+		led(0) <= dhcpcd_rdy;
+		led(7) <= not dhcpcd_rdy;
 
 		miirx_frm <= mii_rxdv;
 		serdes_e : entity hdl4fpga.serdes
@@ -276,7 +289,8 @@ begin
 		du_e : entity hdl4fpga.mii_ipoe
 		port map (
 			mii_clk    => mii_txc,
-			dhcpcd_req => right,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
 			miirx_trdy => miirx_trdy,
@@ -313,14 +327,20 @@ begin
 
 		mii_txen <= miitx_frm and not miitx_end;
 
-		ser_frm  <= word2byte(mii_txen & mii_rxdv, not btn_pwr_n);
+		rxtx_p : process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				rxntx <= rxntx xor ((left and rxntx) or (right and not rxntx));
+			end if;
+		end process;
+		led(3) <= rxntx;
+
+		ser_frm  <= word2byte(mii_txen & mii_rxdv, rxntx);
 		ser_irdy <= '1';
-		ser_data <= word2byte(mii_txd & mii_txd,   not btn_pwr_n);
+		ser_data <= word2byte(mii_txd  & mii_rxd,  rxntx);
 
 	end block;
 
-	led(0) <= mii_txen;
-	led(1) <= mii_rxdv;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
