@@ -118,8 +118,8 @@ architecture graphics of ulx3s is
 		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk25_00m640x480at60),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
 
-	constant nodebug_videomode : video_modes := mode480p24;
---	constant nodebug_videomode : video_modes := mode600p;
+--	constant nodebug_videomode : video_modes := mode480p24;
+	constant nodebug_videomode : video_modes := mode600p;
 
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
 		video_modes'POS(modedebug),
@@ -157,7 +157,7 @@ architecture graphics of ulx3s is
 	type sdram_vector is array (natural range <>) of sdram_params;
 
 	constant sdram_mode : sdram_speed := sdram_speed'VAL(setif(not debug,
-		sdram_speed'POS(sdram250MHz),
+		sdram_speed'POS(sdram133MHz),
 		sdram_speed'POS(sdram133Mhz)));
 
 	type sdramparams_vector is array (sdram_speed) of sdram_params;
@@ -199,7 +199,7 @@ architecture graphics of ulx3s is
 		io_hdlc,
 		io_ipoe);
 
-	constant io_link : io_iface := io_ipoe;
+	constant io_link : io_iface := io_hdlc;
 
 begin
 

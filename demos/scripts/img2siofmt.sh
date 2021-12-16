@@ -1,17 +1,16 @@
 #!/bin/sh
 KIT="${KIT:-ULX3S}"
 BADDR="${BADDR:-0}"
+BSIZE="${BSIZE:-1280}"
 
 case ${KIT} in
 "nuhs3adsp")
 	PIXEL="${PIXEL:-rgb32}"
 	WSIZE="${WSIZE:-32}"
-	BSIZE="${BSIZE:-1024}"
 	;;
 "ULX3S")
 	PIXEL="${PIXEL:-rgb565}"
 	WSIZE="${WSIZE:-16}"
-	BSIZE="${BSIZE:-1920}"
 	;;
 esac
 
