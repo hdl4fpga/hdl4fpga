@@ -148,7 +148,8 @@ architecture graphics of ulx3s is
 	type sdram_speed is (
 		sdram133MHz,
 		sdram166MHz,
-		sdram200MHz,
+		sdram200MHz,	-- Not tested yet
+		sdram225MHz,
 		sdram233MHz,
 		sdram250MHz,
 		sdram275MHz);
@@ -164,6 +165,7 @@ architecture graphics of ulx3s is
 		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "010"),
 		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
 		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
+		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
 		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
@@ -291,12 +293,13 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
 			sdram_mode=sdram133MHz, "133.333333", setif(
-			sdram_mode=sdram166Mhz, "166.666666", setif(
-			sdram_mode=sdram200Mhz, "200.000000", setif(
-			sdram_mode=sdram233Mhz, "233.000000", setif(
-			sdram_mode=sdram250Mhz, "250.000000", setif(
-			sdram_mode=sdram275Mhz, "275.000000",
-			                        "000.000000"))))));
+			sdram_mode=sdram166MHz, "166.666666", setif(
+			sdram_mode=sdram200MHz, "200.000000", setif(
+			sdram_mode=sdram225MHz, "225.000000", setif(
+			sdram_mode=sdram233MHz, "233.000000", setif(
+			sdram_mode=sdram250MHz, "250.000000", setif(
+			sdram_mode=sdram275MHz, "275.000000",
+			                        "000.000000")))))));
 
 		signal clkfb : std_logic;
 		signal dqs   : std_logic;
