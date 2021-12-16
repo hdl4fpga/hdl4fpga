@@ -306,7 +306,7 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				sio_dmaio <=
-					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
+					reverse(reverse(x"00" & x"19"),8) &	-- UDP Length
 					reverse(x"01" & x"00" & reverse(ack_rgtr) &
 					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 			end if;
@@ -640,7 +640,6 @@ begin
 			ctlrvideo_irdy <= ctlr_do_dv(0) and word2byte(q(3 to 8+3-1), ctlr_cl);
 		end process;
 
-
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
@@ -721,7 +720,6 @@ begin
 		begin
 
 			dvid_blank <= video_blank;
-
 
 			process (video_pixel)
 				variable pixel : unsigned(0 to video_pixel'length-1);

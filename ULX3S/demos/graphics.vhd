@@ -199,7 +199,7 @@ architecture graphics of ulx3s is
 		io_hdlc,
 		io_ipoe);
 
-	constant io_link : io_iface := io_hdlc;
+	constant io_link : io_iface := io_ipoe;
 
 begin
 
