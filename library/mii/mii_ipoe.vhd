@@ -36,7 +36,7 @@ entity mii_ipoe is
 		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_01_01";
 		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		hdplx         : in  std_logic := '0';   
+		hdplx         : in  std_logic := '0';
 
 		mii_clk       : in  std_logic;
 		myhwa_vld     : out std_logic;
@@ -349,7 +349,7 @@ begin
 		signal dev_csc : std_logic;
 	begin
 
-		dev_csc <= not dllrx_frm when hdplx='1' else '1';
+		dev_csc <= not miirx_frm when hdplx='1' else '1';
 		dev_req <= arptx_frm & ipv4tx_frm;
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
