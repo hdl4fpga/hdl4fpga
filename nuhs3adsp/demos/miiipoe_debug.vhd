@@ -272,6 +272,7 @@ begin
 			default_ipv4a => x"c0_a8_00_0e")
 		port map (
 			tp => tp,
+			hdplx => '1',
 			mii_clk    => mii_txc,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,

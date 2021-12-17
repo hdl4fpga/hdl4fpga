@@ -233,8 +233,8 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-		constant octect    : natural := 8;
-		constant word_bits : natural := unsigned_num_bits(ctlr_di'length/octect-1);
+		constant octect       : natural := 8;
+		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/octect-1);
 
 	begin
 
@@ -306,7 +306,7 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				sio_dmaio <=
-					reverse(reverse(x"00" & x"19"),8) &	-- UDP Length
+					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
 					reverse(x"01" & x"00" & reverse(ack_rgtr) &
 					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 			end if;

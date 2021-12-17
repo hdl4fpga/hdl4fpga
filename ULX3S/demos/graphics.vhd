@@ -36,6 +36,13 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
+	type apps is (
+		hdlc_250MHz_480p24bpp,
+		hdlc_250MHz_600p,
+		mii_250MHz_480p24bpp);
+
+	constant app : apps := mii_250MHz_480p24bpp;
+
 	constant sys_freq    : real    := 25.0e6;
 
 	constant fpga        : natural := spartan3;
@@ -104,7 +111,9 @@ architecture graphics of ulx3s is
 		mode600p,
 		modedebug);
 
-	type pixel_types is (rgb565, rgb888);
+	type pixel_types is (
+		rgb565,
+		rgb888);
 
 	type video_params is record
 		pll   : pll_params;
@@ -118,14 +127,6 @@ architecture graphics of ulx3s is
 		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk25_00m640x480at60),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
 
---	constant nodebug_videomode : video_modes := mode480p24;
-	constant nodebug_videomode : video_modes := mode600p;
-
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
---	constant video_mode   : video_modes := nodebug_videomode;
-
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
@@ -135,15 +136,7 @@ architecture graphics of ulx3s is
     signal video_blank    : std_logic;
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
-    signal video_pixel    : std_logic_vector(0 to setif(
-		video_tab(video_mode).pixel=rgb565, 16, setif(
-		video_tab(video_mode).pixel=rgb888, 32, 0))-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
-
-	type sdram_params is record
-		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
-	end record;
 
 	type sdram_speed is (
 		sdram133MHz,
@@ -154,11 +147,10 @@ architecture graphics of ulx3s is
 		sdram250MHz,
 		sdram275MHz);
 
-	type sdram_vector is array (natural range <>) of sdram_params;
-
-	constant sdram_mode : sdram_speed := sdram_speed'VAL(setif(not debug,
-		sdram_speed'POS(sdram250MHz),
-		sdram_speed'POS(sdram133Mhz)));
+	type sdram_params is record
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
+	end record;
 
 	type sdramparams_vector is array (sdram_speed) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
@@ -170,9 +162,6 @@ architecture graphics of ulx3s is
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
 		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
 
-	constant ddr_tcp  : natural := natural(
-		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
-		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
 	constant mem_size : natural := 8*(1024*8);
@@ -191,15 +180,40 @@ architecture graphics of ulx3s is
 	alias dmacfg_clk  : std_logic is sio_clk;
 	alias uart_clk    : std_logic is sio_clk;
 
-	-----------------
-	-- Select link --
-	-----------------
-
 	type io_iface is (
 		io_hdlc,
 		io_ipoe);
 
-	constant io_link : io_iface := io_ipoe;
+	type app_record is record
+		iface : io_iface;
+		mode  : video_modes;
+		speed : sdram_speed;
+	end record;
+
+	type app_vector is array (apps) of app_record;
+	constant app_tab : app_vector := (
+		hdlc_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
+		hdlc_250MHz_600p      => (iface => io_hdlc, mode => mode600p,   speed => sdram250MHz),
+		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
+
+	constant nodebug_videomode : video_modes := app_tab(app).mode;
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		video_modes'POS(modedebug),
+		video_modes'POS(nodebug_videomode)));
+
+    signal video_pixel    : std_logic_vector(0 to setif(
+		video_tab(app_tab(app).mode).pixel=rgb565, 16, setif(
+		video_tab(app_tab(app).mode).pixel=rgb888, 32, 0))-1);
+
+	constant sdram_mode : sdram_speed := sdram_speed'VAL(setif(not debug,
+		sdram_speed'POS(app_tab(app).speed),
+		sdram_speed'POS(sdram133Mhz)));
+
+	constant ddr_tcp  : natural := natural(
+		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
+		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
+
+	constant io_link : io_iface := app_tab(app).iface;
 
 begin
 
@@ -452,7 +466,7 @@ begin
 		alias rmii_mdc   : std_logic is gp(13);
 		signal mii_clk   : std_logic;
 
-		alias mii_txen   : std_logic is rmii_tx_en;
+		signal mii_txen  : std_logic;
 		signal mii_txd   : std_logic_vector(0 to 2-1);
 
 		signal mii_rxdv  : std_logic;
@@ -469,16 +483,29 @@ begin
 
 	begin
 
+		wifi_en <= '0';
+
 		sio_clk <= rmii_nint;
 		mii_clk <= rmii_nint;
 
-		(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				mii_txen  <= rmii_tx_en;
+				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+			end if;
+		end process;
 
-		mii_rxdv <= rmii_crs;
-		mii_rxd  <= rmii_rx0 & rmii_rx1;
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				mii_rxdv <= rmii_crs;
+				mii_rxd  <= rmii_rx0 & rmii_rx1;
+			end if;
+		end process;
 
 		rmii_mdc  <= '0';
-		rmii_mdio <= 'Z';
+		rmii_mdio <= '0';
 
 		dhcp_p : process(mii_clk)
 		begin
