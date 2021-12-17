@@ -38,12 +38,16 @@ architecture graphics of ulx3s is
 
 	type apps is (
 		hdlc_250MHz_480p24bpp,
-		hdlc_250MHz_600p,
+
+		hdlc_133MHz_600p16bpp,
+		hdlc_200MHz_600p16bpp,
+		hdlc_250MHz_600p16bpp,
+
 		mii_166MHz_480p24bpp,
 		mii_200MHz_480p24bpp,
 		mii_250MHz_480p24bpp);
 
-	constant app : apps := mii_166MHz_480p24bpp;
+	constant app : apps := mii_250MHz_480p24bpp;
 
 	constant sys_freq    : real    := 25.0e6;
 
@@ -110,7 +114,7 @@ architecture graphics of ulx3s is
 
 	type video_modes is (
 		mode480p24,
-		mode600p,
+		mode600p16,
 		modedebug);
 
 	type pixel_types is (
@@ -127,7 +131,7 @@ architecture graphics of ulx3s is
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
 		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk25_00m640x480at60),
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
+		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -195,7 +199,9 @@ architecture graphics of ulx3s is
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
 		hdlc_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
-		hdlc_250MHz_600p      => (iface => io_hdlc, mode => mode600p,   speed => sdram250MHz),
+		hdlc_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
+		hdlc_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),
+		hdlc_250MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram250MHz),
 		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
 		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
 		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
@@ -237,16 +243,16 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(
 			video_mode=mode480p24, "200.000000", setif(
-			video_mode=mode600p,   "200.000000",
+			video_mode=mode600p16, "200.000000",
 			                       "000.000000"));
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
 			video_mode=mode480p24, "25.000000", setif(
-			video_mode=mode600p,   "40.000000",
+			video_mode=mode600p16, "40.000000",
 			                       "00.000000"));
 
 		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is setif(
 			video_mode=mode480p24, "40.000000", setif(
-			video_mode=mode600p,   "40.000000",
+			video_mode=mode600p16, "40.000000",
 			                       "00.000000"));
 
 	begin
@@ -309,6 +315,10 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
 
+		constant clkos3_freq  : real :=
+			(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq)/
+			(real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div*1e6));
+
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
 			sdram_mode=sdram133MHz, "133.333333", setif(
 			sdram_mode=sdram166MHz, "166.666666", setif(
@@ -324,6 +334,10 @@ begin
 		signal clkos : std_logic;
 
 	begin
+
+		assert false
+		report real'image(clkos3_freq)
+		severity NOTE;
 
 		pll_i : EHXPLLL
         generic map (
