@@ -39,12 +39,12 @@ architecture graphics of ulx3s is
 	----------------------------
 	-- Set of profiles        --
 	type apps is (
-		hdlc_250MHz_480p24bpp,
+		uart_250MHz_480p24bpp,
 
-		hdlc_133MHz_600p16bpp,
-		hdlc_166MHz_600p16bpp,
-		hdlc_200MHz_600p16bpp,
-		hdlc_250MHz_600p16bpp,
+		uart_133MHz_600p16bpp,
+		uart_166MHz_600p16bpp,
+		uart_200MHz_600p16bpp,
+		uart_250MHz_600p16bpp,
 
 		mii_166MHz_480p24bpp,
 		mii_200MHz_480p24bpp,
@@ -53,7 +53,7 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := hdlc_250MHz_480p24bpp;
+	constant app : apps := uart_250MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -205,11 +205,11 @@ architecture graphics of ulx3s is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
-		hdlc_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
-		hdlc_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
-		hdlc_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
-		hdlc_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),
-		hdlc_250MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram250MHz),
+		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
+		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
+		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
+		uart_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),
+		uart_250MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram250MHz),
 		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
 		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
 		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
