@@ -39,9 +39,11 @@ architecture graphics of ulx3s is
 	type apps is (
 		hdlc_250MHz_480p24bpp,
 		hdlc_250MHz_600p,
+		mii_166MHz_480p24bpp,
+		mii_200MHz_480p24bpp,
 		mii_250MHz_480p24bpp);
 
-	constant app : apps := mii_250MHz_480p24bpp;
+	constant app : apps := mii_166MHz_480p24bpp;
 
 	constant sys_freq    : real    := 25.0e6;
 
@@ -194,6 +196,8 @@ architecture graphics of ulx3s is
 	constant app_tab : app_vector := (
 		hdlc_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
 		hdlc_250MHz_600p      => (iface => io_hdlc, mode => mode600p,   speed => sdram250MHz),
+		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
+		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
 		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
 
 	constant nodebug_videomode : video_modes := app_tab(app).mode;
@@ -491,7 +495,7 @@ begin
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then
-				mii_txen  <= rmii_tx_en;
+				rmii_tx_en <= mii_txen;
 				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 			end if;
 		end process;

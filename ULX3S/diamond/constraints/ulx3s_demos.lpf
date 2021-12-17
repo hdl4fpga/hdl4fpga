@@ -12,7 +12,7 @@ BLOCK INTERCLOCKDOMAIN PATHS;
 LOCATE COMP "clk_25mhz" SITE "G2";
 IOBUF  PORT "clk_25mhz" PULLMODE=NONE IO_TYPE=LVCMOS33;
 FREQUENCY PORT "clk_25mhz" 25 MHZ;
-FREQUENCY PORT "gn(12)" 50 MHZ;
+FREQUENCY PORT "gn[12]" 50 MHZ;
 
 # JTAG and SPI FLASH voltage 3.3V and options to boot from SPI flash
 # write to FLASH possible any time from JTAG:
