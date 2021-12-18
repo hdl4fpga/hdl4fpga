@@ -208,18 +208,14 @@ begin
 		signal dmaiolen_irdy  : std_logic;
 		signal dmaioaddr_irdy : std_logic;
 
-		signal sts_frm        : std_logic;
-		signal sts_irdy       : std_logic;
-		signal sts_trdy       : std_logic;
-		signal sts_end        : std_logic;
-		signal sts_data       : std_logic_vector(sout_data'range);
 		signal meta_data      : std_logic_vector(metaram_data'range);
 		signal meta_trdy      : std_logic;
 		signal meta_end       : std_logic;
+
+		signal sio_dmaio      : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
 		signal siodmaio_irdy  : std_logic;
 		signal siodmaio_trdy  : std_logic;
 		signal siodmaio_end   : std_logic;
-		signal sio_dmaio      : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
 		signal siodmaio_data  : std_logic_vector(sout_data'range);
 
 		signal sodata_frm     : std_logic;
@@ -235,6 +231,11 @@ begin
 
 		constant octect       : natural := 8;
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/octect-1);
+
+		signal sout_req       : bit;
+		signal sout_rdy       : bit;
+
+		signal payload_size   : std_logic_vector(0 to 16-1) := x"0000";
 
 	begin
 
@@ -269,8 +270,8 @@ begin
 			si_data  => metaram_data,
 
 			so_clk   => sio_clk,
-			so_frm   => sts_frm,
-			so_irdy  => sts_trdy,
+			so_frm   => sout_frm,
+			so_irdy  => sout_trdy,
 			so_trdy  => meta_trdy,
 			so_end   => meta_end,
 			so_data  => meta_data);
@@ -292,13 +293,12 @@ begin
 			if rising_edge(sio_clk) then
 				if req='1' then
 					if (siodmaio_irdy and siodmaio_trdy and siodmaio_end)='1' then
-						req := '0';
+						sout_rdy <= sout_req;
 					end if;
 				elsif frm='1' and rgtr_frm='0' then
-					req := '1';
+					sout_rdy <= not sout_req;
 				end if;
 				frm := to_stdulogic(to_bit(rgtr_frm));
-				sts_frm <= to_stdulogic(req);
 			end if;
 		end process;
 
@@ -309,48 +309,32 @@ begin
 					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
 					reverse(x"01" & x"00" & reverse(ack_rgtr) &
 					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
+				payload_size <= std_logic_vector(unsigned'(x"0009") + resize(unsigned(dmaio_len), payload_size'length));
 			end if;
 		end process;
 
-		siodmaio_irdy <= meta_end and sts_trdy;
+		siodmaio_irdy <= '0' when meta_end='0' else sout_trdy;
 		siodma_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_dmaio,
 			sio_clk  => sio_clk,
-			sio_frm  => sts_frm,
+			sio_frm  => sout_frm,
 			sio_irdy => siodmaio_irdy,
 			sio_trdy => siodmaio_trdy,
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
-		sts_irdy  <= meta_trdy when meta_end='0' else siodmaio_trdy;
-		sts_end   <= meta_end  when meta_end='0' else siodmaio_end;
-		sts_data  <= meta_data when meta_end='0' else siodmaio_data;
 
-		sioarbiter_b : block
-
-			signal frm_req  : std_logic_vector(0 to 2-1);
-			signal frm_gnt  : std_logic_vector(0 to 2-1);
-
-		begin
-
-			frm_req <= (0 => sts_frm, 1 => sodata_frm);
-			sioarbiter_e : entity hdl4fpga.arbiter
-			generic map (
-				idle_cycle => false)
-			port map (
-				clk  => sio_clk,
-				req  => frm_req,
-				gnt  => frm_gnt);
-
-			sout_frm  <= wirebus(sts_frm  & sodata_frm,  frm_gnt);
-			sout_irdy <= wirebus(sts_irdy & sodata_irdy, frm_gnt);
-			sout_end  <= wirebus(sts_end  & sodata_end,  frm_gnt);
-			sout_data <= wirebus(sts_data & sodata_data, frm_gnt);
-
-			(0 => sts_trdy, 1 => sodata_trdy) <= frm_gnt and (frm_gnt'range => sout_trdy);
-
-		end block;
+		sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
+		sout_irdy <= meta_trdy     when meta_end='0' else
+		             siodmaio_trdy when siodmaio_end='0' else
+		             sodata_irdy;
+		sout_end  <= '0' when meta_end='0'     else
+					 '0' when siodmaio_end='0' else
+					 sodata_end;
+		sout_data <= meta_data     when meta_end='0'     else
+		             siodmaio_data when siodmaio_end='0' else
+		             sodata_data;
 
 		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 		rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
@@ -575,6 +559,7 @@ begin
 			end process;
 			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
+			sodata_trdy <= '0' when siodmaio_end='0' else sout_trdy;
 			sodata_e : entity hdl4fpga.so_data
 			port map (
 				sio_clk   => sio_clk,

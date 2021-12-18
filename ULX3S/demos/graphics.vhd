@@ -36,9 +36,11 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	----------------------------
-	-- Set of profiles        --
+	--------------------------------------
+	-- Set of profiles                  --
+
 	type apps is (
+	-- Interface_SdramSpeed_PixelFormat --
 		uart_250MHz_480p24bpp,
 
 		uart_133MHz_600p16bpp,
@@ -49,11 +51,14 @@ architecture graphics of ulx3s is
 		mii_166MHz_480p24bpp,
 		mii_200MHz_480p24bpp,
 		mii_250MHz_480p24bpp);
-	----------------------------
+
+	--------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
+
 	constant app : apps := uart_250MHz_480p24bpp;
+
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
