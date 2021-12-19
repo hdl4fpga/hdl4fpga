@@ -30,15 +30,103 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
 
 entity main is
 end;
 
 architecture def of main is
 begin
-	process
+	main_p : process
+		variable msg : line;
+
+		function shr (
+			constant arg1 : string;
+			constant arg2 : natural)
+			return string is
+			variable retval : string(arg1'range);
+		begin
+			retval := arg1;
+			for i in arg1'reverse_range loop
+				if i > arg2 then
+					retval(i) := arg1(i-arg2);
+				end if;
+				for i in 1 to arg2 loop
+					retval(i) := ' ';
+				end loop;
+			end loop;
+			return retval;
+		end;
+
+		impure function fcvt (
+			constant num     : real;
+			constant ndigits : natural)
+			return string is
+			variable n : natural;
+			variable mant   : real;
+			variable exp    : integer;
+			variable retval : string(1 to 16);
+			variable cy     : natural range 0 to 1;
+			constant tab : string := "0123456789";
+			variable digit  : natural range 0 to 9;
+			variable msg    : line;
+		begin
+			mant := abs(num);
+			exp  := 0;
+			if mant/=0.0 then
+				loop
+					exit when mant >= 1.0;
+					mant := mant * 2.0;
+					exp  := exp - 1;
+				end loop;
+
+				loop
+					exit when mant < 1.0;
+					mant := mant / 2.0;
+					exp  := exp + 1;
+				end loop;
+
+			write(msg, mant);
+			write(msg, string'(" : "));
+			write(msg, exp);
+			writeline(output, msg);
+				retval(1) := '0';
+				n := 1;
+				for i in 0 to exp-1 loop
+					digit := character'pos(retval(n))-character'pos('0');
+					mant  := mant * 2.0;
+					cy    := setif(mant >= 1.0, 1, 0);
+					mant  := mant - real(cy);
+					for i in n downto 1 loop
+						if digit < 5 then
+							retval(i) := tab(2*digit+cy+1);
+							cy := 0;
+						else
+							retval(i) := tab(2*digit+cy-10+1);
+							cy := 1;
+						end if;
+					end loop;
+					if cy > 0 then
+						retval := shr(retval, 1);
+						retval(1) := '1';
+						n := n + 1;
+					end if;
+
+				write(msg, string'(" -> ") & retval );
+				writeline(output, msg);
+				end loop;
+return retval;
+			else
+				return "0.00000000";
+			end if;
+--			write(msg, mant);
+--			write(msg, string'(" : "));
+--			write(msg, exp);
+--			writeline(output, msg);
+			return retval;
+
+		end;
 	begin
+		write(msg, fcvt(5.0, 10));
 		wait;
 	end process;
 
