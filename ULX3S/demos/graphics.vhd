@@ -38,7 +38,6 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	-- Set of profiles                  --
-
 	type apps is (
 	-- Interface_SdramSpeed_PixelFormat --
 		uart_250MHz_480p24bpp,
@@ -51,15 +50,13 @@ architecture graphics of ulx3s is
 		mii_166MHz_480p24bpp,
 		mii_200MHz_480p24bpp,
 		mii_250MHz_480p24bpp);
-
 	--------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
-
 	constant app : apps := uart_250MHz_480p24bpp;
-
 	---------------------------------------------
+
 
 	constant sys_freq    : real    := 25.0e6;
 
@@ -251,22 +248,24 @@ begin
 		attribute FREQUENCY_PIN_CLKOS2 : string;
 		attribute FREQUENCY_PIN_CLKOS3 : string;
 
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is "25.000000";
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is "25.000000";
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is setif(
-			video_mode=mode480p24, "200.000000", setif(
-			video_mode=mode600p16, "200.000000",
-			                       "000.000000"));
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
-			video_mode=mode480p24, "25.000000", setif(
-			video_mode=mode600p16, "40.000000",
-			                       "00.000000"));
+		constant video_freq  : real :=
+			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is setif(
-			video_mode=mode480p24, "40.000000", setif(
-			video_mode=mode600p16, "40.000000",
-			                       "00.000000"));
+		constant video_shift_freq  : real :=
+			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos_div*1e6));
+
+		constant videoio_freq  : real :=
+			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div*1e6));
+
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq, 10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq, 10);
 
 	begin
 		pll_i : EHXPLLL
@@ -325,22 +324,14 @@ begin
 		attribute FREQUENCY_PIN_CLKOS2 : string;
 		attribute FREQUENCY_PIN_CLKOS3 : string;
 
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
-		constant clkos3_freq  : real :=
+		constant sdram_freq  : real :=
 			(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq)/
 			(real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is setif(
-			sdram_mode=sdram133MHz, "133.333333", setif(
-			sdram_mode=sdram166MHz, "166.666666", setif(
-			sdram_mode=sdram200MHz, "200.000000", setif(
-			sdram_mode=sdram225MHz, "225.000000", setif(
-			sdram_mode=sdram233MHz, "233.000000", setif(
-			sdram_mode=sdram250MHz, "250.000000", setif(
-			sdram_mode=sdram275MHz, "275.000000",
-			                        "000.000000")))))));
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(sdram_freq, 10);
 
 		signal clkfb : std_logic;
 		signal dqs   : std_logic;
@@ -349,7 +340,7 @@ begin
 	begin
 
 		assert false
-		report real'image(clkos3_freq)
+		report real'image(sdram_freq)
 		severity NOTE;
 
 		pll_i : EHXPLLL

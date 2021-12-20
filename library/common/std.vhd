@@ -68,8 +68,18 @@ package std is
 		constant char : character := NUL)
 		return string;
 
+	function shift_right (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string;
+
 	function itoa (
 		constant arg : integer)
+		return string;
+
+	function ftoa (
+		constant num     : real;
+		constant ndigits : natural)
 		return string;
 
 	function to_stdlogicvector (
@@ -398,6 +408,7 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_textio.all;
+use ieee.math_real.all;
 
 package body std is
 
@@ -423,7 +434,7 @@ package body std is
 		alias astr2 : string(1 to str2'length) is str2;
 	begin
 --		report astr2 & " " & astr1;
---		report itoa(astr2'length) & " " & itoa(astr1'length);
+--		report integer'image(astr2'length) & " " & integer'image(astr1'length);
 		if strlen(str1)/=strlen(str2) then
 			return false;
 		else
@@ -522,6 +533,24 @@ package body std is
 		return retval;
 	end;
 
+	function shift_right (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string is
+		variable retval : string(arg1'range);
+	begin
+		retval := arg1;
+		for i in arg1'reverse_range loop
+			if i > arg2 then
+				retval(i) := arg1(i-arg2);
+			end if;
+			for i in 1 to arg2 loop
+				retval(i) := ' ';
+			end loop;
+		end loop;
+		return retval;
+	end;
+
 	function itoa (
 		constant arg : integer)
 		return string
@@ -542,6 +571,109 @@ package body std is
 			end if;
 		end loop;
 		return strrev(retval(1 to strlen(retval)));
+	end;
+
+	function ftoa (
+		constant num     : real;
+		constant ndigits : natural)
+		return string is
+		constant lookup : string := "0123456789";
+
+		variable mant   : real;
+		variable exp    : integer;
+		variable retval : string(1 to ndigits+1);
+		variable cy     : natural range 0 to 1;
+		variable digit  : natural range 0 to 9;
+		variable n      : natural;
+
+		variable msg    : line;
+	begin
+		mant := abs(num);
+		exp  := 0;
+		n    := 1;
+		retval(1) := '0';
+		if mant/=0.0 then
+			if mant > 1.0 then
+				loop
+					exit when mant >= 1.0;
+					mant := mant * 2.0;
+					exp  := exp - 1;
+				end loop;
+
+				loop
+					exit when mant < 1.0;
+					mant := mant / 2.0;
+					exp  := exp + 1;
+				end loop;
+
+				double_dabble_lp : for i in 0 to exp-1 loop
+					mant  := mant * 2.0;
+					cy    := setif(mant >= 1.0, 1, 0);
+					mant  := mant - real(cy);
+					for i in n downto 1 loop
+						digit := character'pos(retval(i))-character'pos('0');
+						if digit < 5 then
+							retval(i) := lookup(2*digit+cy+1);
+							cy := 0;
+						else
+							retval(i) := lookup(2*digit+cy-10+1);
+							cy := 1;
+						end if;
+					end loop;
+					if cy > 0 then
+						retval := shift_right(retval, 1);
+						n      := n + 1;
+						retval(1) := '1';
+					end if;
+				end loop;
+
+			end if;
+		end if;
+
+		n := n + 1;
+		retval(n) := '.';
+		for i in 1 to ndigits-n loop
+			digit := natural(floor(10.0*mant));
+			mant  := mant*10.0-floor(10.0*mant);
+			retval(n+i) := lookup(digit+1);
+		end loop;
+		n := ndigits;
+
+		cy := setif(character'pos(retval(n))-character'pos('0') >= 5, 1, 0);
+		round_loop : if cy > 0 then
+			for i in n downto 1 loop
+				next when retval(i)='.';
+				digit := character'pos(retval(i))-character'pos('0');
+				if digit < 9 then
+					retval(i) := lookup(digit+cy+1);
+					cy := 0;
+				elsif cy > 0 then
+					retval(i) := lookup(digit+cy-10+1);
+					cy := 1;
+				end if;
+			end loop;
+			if cy > 0 then
+				retval := shift_right(retval, 1);
+				n      := n + 1;
+				retval(1) := '1';
+			end if;
+		end if;
+
+		if num < 0.0 then
+			retval := shift_right(retval,1);
+			retval(1) := '-';
+		end if;
+		if retval(ndigits)='.' then
+			retval := shift_right(retval,1);
+		end if;
+
+--		write(msg, string'(" -> ") & retval(1 to ndigits));
+--		writeline(output, msg);
+--		write(msg, mant);
+--		write(msg, string'(" : "));
+--		write(msg, exp);
+--		writeline(output, msg);
+		return retval(1 to ndigits);
 	end;
 
 	function encoder (
