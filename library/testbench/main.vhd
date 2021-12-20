@@ -27,6 +27,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -61,62 +62,67 @@ begin
 			constant num     : real;
 			constant ndigits : natural)
 			return string is
-			variable n : natural;
+			constant lookup : string := "0123456789";
+
 			variable mant   : real;
 			variable exp    : integer;
 			variable retval : string(1 to 16);
 			variable cy     : natural range 0 to 1;
-			constant tab : string := "0123456789";
 			variable digit  : natural range 0 to 9;
+			variable n      : natural;
+
 			variable msg    : line;
 		begin
 			mant := abs(num);
 			exp  := 0;
 			if mant/=0.0 then
-				loop
-					exit when mant >= 1.0;
-					mant := mant * 2.0;
-					exp  := exp - 1;
-				end loop;
-
-				loop
-					exit when mant < 1.0;
-					mant := mant / 2.0;
-					exp  := exp + 1;
-				end loop;
-
-			write(msg, mant);
-			write(msg, string'(" : "));
-			write(msg, exp);
-			writeline(output, msg);
 				retval(1) := '0';
 				n := 1;
-				for i in 0 to exp-1 loop
-					digit := character'pos(retval(n))-character'pos('0');
-					mant  := mant * 2.0;
-					cy    := setif(mant >= 1.0, 1, 0);
-					mant  := mant - real(cy);
-					for i in n downto 1 loop
-						if digit < 5 then
-							retval(i) := tab(2*digit+cy+1);
-							cy := 0;
-						else
-							retval(i) := tab(2*digit+cy-10+1);
-							cy := 1;
-						end if;
+				if mant > 1.0 then
+					loop
+						exit when mant >= 1.0;
+						mant := mant * 2.0;
+						exp  := exp - 1;
 					end loop;
-					if cy > 0 then
-						retval := shr(retval, 1);
-						retval(1) := '1';
-						n := n + 1;
-					end if;
 
+					loop
+						exit when mant < 1.0;
+						mant := mant / 2.0;
+						exp  := exp + 1;
+					end loop;
+
+					for i in 0 to exp-1 loop
+						mant  := mant * 2.0;
+						cy    := setif(mant >= 1.0, 1, 0);
+						mant  := mant - real(cy);
+						for i in n downto 1 loop
+							digit := character'pos(retval(i))-character'pos('0');
+							if digit < 5 then
+								retval(i) := lookup(2*digit+cy+1);
+								cy := 0;
+							else
+								retval(i) := lookup(2*digit+cy-10+1);
+								cy := 1;
+							end if;
+						end loop;
+						if cy > 0 then
+							retval := shr(retval, 1);
+							n      := n + 1;
+							retval(1) := '1';
+						end if;
+
+					end loop;
+				end if;
+
+				n      := n + 1;
+				retval(n) := '.';
+				for i in 1 to 5 loop
+					digit := natural(floor(10.0*mant));
+					mant  := mant*10.0-floor(10.0*mant);
+					retval(n+i) := lookup(digit+1);
+				end loop;
 				write(msg, string'(" -> ") & retval );
 				writeline(output, msg);
-				end loop;
-return retval;
-			else
-				return "0.00000000";
 			end if;
 --			write(msg, mant);
 --			write(msg, string'(" : "));
@@ -126,7 +132,7 @@ return retval;
 
 		end;
 	begin
-		write(msg, fcvt(5.0, 10));
+		write(msg, fcvt(0.00001, 10));
 		wait;
 	end process;
 
