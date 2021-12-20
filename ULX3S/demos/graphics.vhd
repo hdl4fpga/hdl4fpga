@@ -39,24 +39,23 @@ architecture graphics of ulx3s is
 	--------------------------------------
 	-- Set of profiles                  --
 	type apps is (
-	-- Interface_SdramSpeed_PixelFormat --
-		uart_250MHz_480p24bpp,
+	--	Interface_SdramSpeed_PixelFormat--
+		uart_250MHz_480p24bpp,          --
 
-		uart_133MHz_600p16bpp,
-		uart_166MHz_600p16bpp,
-		uart_200MHz_600p16bpp,
-		uart_250MHz_600p16bpp,
+		uart_133MHz_600p16bpp,          --
+		uart_166MHz_600p16bpp,          --
+		uart_200MHz_600p16bpp,          --
+		uart_250MHz_600p16bpp,          --
 
-		mii_166MHz_480p24bpp,
-		mii_200MHz_480p24bpp,
-		mii_250MHz_480p24bpp);
+		mii_166MHz_480p24bpp,           --
+		mii_200MHz_480p24bpp,           --
+		mii_250MHz_480p24bpp);          --
 	--------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
 	constant app : apps := uart_250MHz_480p24bpp;
 	---------------------------------------------
-
 
 	constant sys_freq    : real    := 25.0e6;
 
@@ -169,13 +168,13 @@ architecture graphics of ulx3s is
 
 	type sdramparams_vector is array (sdram_speed) of sdram_params;
 	constant sdram_tab : sdramparams_vector := (
-		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "010"),
-		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
-		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
-		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
-		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 3), cas => "011"),
-		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"),
-		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 0, clkos3_div => 2), cas => "011"));
+		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "010"),
+		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
+		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
+		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
+		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
+		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
+		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"));
 
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
@@ -230,7 +229,7 @@ architecture graphics of ulx3s is
 		sdram_speed'POS(sdram133Mhz)));
 
 	constant ddr_tcp  : natural := natural(
-		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div))/
+		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos2_div))/
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
 
 	constant io_link : io_iface := app_tab(app).iface;
@@ -240,16 +239,11 @@ begin
 	sys_rst <= '0';
 	videopll_b : block
 
-		signal clkfb : std_logic;
-
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
 		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;
 		attribute FREQUENCY_PIN_CLKOS3 : string;
-
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKI   : string;
+		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant video_freq  : real :=
 			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
@@ -264,8 +258,12 @@ begin
 			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div*1e6));
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,       10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,     10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+
+		signal clkfb : std_logic;
 
 	begin
 		pll_i : EHXPLLL
@@ -276,10 +274,10 @@ begin
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -287,9 +285,9 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div,
-			CLKOS2_DIV       => video_tab(video_mode).pll.clkos2_div,
 			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
+			CLKOS2_DIV       => video_tab(video_mode).pll.clkos2_div,
+			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div,
 			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
 			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
 			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
@@ -318,24 +316,22 @@ begin
 
 	ctlrpll_b : block
 
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
 		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;
 		attribute FREQUENCY_PIN_CLKOS3 : string;
+		attribute FREQUENCY_PIN_CLKI   : string;
+		attribute FREQUENCY_PIN_CLKOP  : string;
 
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		constant sdram_freq  : real :=
 			(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq)/
-			(real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos3_div*1e6));
+			(real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos2_div*1e6));
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(sdram_freq, 10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
-		signal dqs   : std_logic;
-		signal clkos : std_logic;
 
 	begin
 
@@ -351,10 +347,10 @@ begin
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
 			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_div-1,
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_tab(sdram_mode).pll.clkop_div-1,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -362,12 +358,12 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKI_DIV         => sdram_tab(sdram_mode).pll.clki_div,
-			CLKFB_DIV        => sdram_tab(sdram_mode).pll.clkfb_div,
+--			CLKOS_DIV        => sdram_tab(sdram_mode).pll.clkos_div,
+			CLKOS2_DIV       => sdram_tab(sdram_mode).pll.clkos2_div,
+--			CLKOS3_DIV       => sdram_tab(sdram_mode).pll.clkos3_div,
 			CLKOP_DIV        => sdram_tab(sdram_mode).pll.clkop_div,
-			CLKOS_DIV        => sdram_tab(sdram_mode).pll.clkos_div,
-			CLKOS2_DIV       => sdram_tab(sdram_mode).pll.clkos3_div,
-			CLKOS3_DIV       => sdram_tab(sdram_mode).pll.clkos3_div)
+			CLKFB_DIV        => sdram_tab(sdram_mode).pll.clkfb_div,
+			CLKI_DIV         => sdram_tab(sdram_mode).pll.clki_div)
         port map (
 			rst       => '0',
 			clki      => clk_25mhz,
@@ -381,9 +377,9 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => clkos,
+			CLKOS     => open,
 			CLKOS2    => ctlr_clk,
-			CLKOS3    => dqs,
+			CLKOS3    => open,
 			LOCK      => sdram_lck,
             INTLOCK   => open,
 			REFCLK    => open,
