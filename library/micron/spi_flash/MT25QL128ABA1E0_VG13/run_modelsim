@@ -1,0 +1,62 @@
+#!/bin/csh -f
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+#
+#  MT25QL128ABA1E0 
+#
+#  Verilog Behavioral Model
+#  Version 1.0 
+#
+#  Copyright (c) 2013 Micron Inc.
+#
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+#-MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON--MICRON-
+
+set RUNDIR  = ./
+set CODEDIR = ./code
+set STIMDIR = ./stim
+set TOPDIR  = ./top
+set SIMDIR  = ./sim
+
+
+if (-e $SIMDIR/work) then
+\rm -r $SIMDIR/work
+endif
+vlib $SIMDIR/work
+
+
+#CODE
+vlog -work $SIMDIR/work $CODEDIR/N25Qxxx.v
+if ( $status != 0 ) exit 2
+
+
+#STIM
+#vlog -work $SIMDIR/work $STIMDIR/read_dtr.v
+#vlog -work $SIMDIR/work $STIMDIR/program.v
+#vlog -work $SIMDIR/work $STIMDIR/read_.v
+#vlog -work $SIMDIR/work $STIMDIR/read_nonarray_.v
+#vlog -work $SIMDIR/work $STIMDIR/NVCR_1_0_reserved.v
+#vlog -work $SIMDIR/work $STIMDIR/LockBlock.v
+vlog -work $SIMDIR/work $STIMDIR/LockBlock_MSE.v
+#vlog -work $SIMDIR/work $STIMDIR/erase_.v
+if ( $status != 0 ) exit 3
+
+
+#TOP
+vlog -work $SIMDIR/work $TOPDIR/Testbench.v
+if ( $status != 0 ) exit 4
+vlog -work $SIMDIR/work $TOPDIR/StimTasks.v
+if ( $status != 0 ) exit 4
+vlog -work $SIMDIR/work $TOPDIR/ClockGenerator.v
+if ( $status != 0 ) exit 4
+
+
+# Simulate
+cd $SIMDIR
+vsim -gui -novopt -do do.do -t 1ps work.Testbench $1 &
+#vsim -novopt -do do.do -t 1fs work.Testbench $1 &
+if ( $status != 0 ) exit 5
+
+
