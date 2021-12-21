@@ -54,7 +54,6 @@ entity spi_flash is
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 
 		phy_rst      : out std_logic;
-		phy_cke      : out std_logic;
 		phy_cs       : out std_logic;
 
 		phy_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0);
