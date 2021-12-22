@@ -95,6 +95,7 @@ architecture struct of sio_flow is
 	signal acktx_end    : std_logic;
 	signal acktx_data   : std_logic_vector(tx_data'range);
 
+	signal ackrx_dup    : std_logic;
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -156,7 +157,7 @@ begin
 		if rising_edge(sio_clk) then
 			if ackrx_dv='1' then
 				if to_bit(ackrx_data(ackrx_data'right))='1' then
-					buffer_cmmt <= '1';
+					buffer_rllbk <= '1';
 					meta_cmmt   <= '1';
 					ackrply_req <= not ackrply_rdy;
 				elsif shift_right(unsigned(ackrx_data),2)/=last then
@@ -186,7 +187,7 @@ begin
 		end if;
 	end process;
 
-	ackrply_data <= reverse(reverse(x"0003") & x"01" & x"00", 8) & ackrx_data;
+	ackrply_data <= reverse(reverse(x"0003") & x"01" & x"00", 8) & (x"01" or ackrx_data);
 
 	acktx_frm  <= to_stdulogic(ackrply_req xor ackrply_rdy);
 	acktx_b : block

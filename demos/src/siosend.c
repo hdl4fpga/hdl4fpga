@@ -41,6 +41,7 @@ int loglevel;
 #define LOG0 (loglevel & (1 << 0))
 #define LOG1 (loglevel & (1 << 1))
 #define LOG2 (loglevel & (1 << 2))
+#define LOG3 (loglevel & (1 << 3))
 
 struct object_pool {
 	int object_free;
@@ -434,7 +435,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 		} else {
 			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
 				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
-					if (LOG2) {
+					if (LOG3) {
 						fprintf(stderr, "RX data 0x%02x\n", (unsigned char) buffer[i]);
 					}
 					if (buffer[i] == 0x7e) {
@@ -589,7 +590,7 @@ int main (int argc, char *argv[])
 	while ((c = getopt (argc, argv, "loph:")) != -1) {
 		switch (c) {
 		case 'l':
-			loglevel = 3;
+			loglevel = 8+3;
 			break;
 		case 'o':
 			nooutput = 1;

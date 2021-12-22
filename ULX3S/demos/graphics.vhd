@@ -456,6 +456,7 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => ftdi_rxd,
+			uart_frm  => video_lck,
 			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);

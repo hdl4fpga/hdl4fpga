@@ -190,8 +190,8 @@ architecture ulx3s_graphics of testbench is
 	end;
 
 	constant data  : std_logic_vector :=
-		x"01008f" &
-		x"010009_160300000000_1702000000";
+--		x"010001" &
+		x"01000c_160300000000_1702000000";
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &

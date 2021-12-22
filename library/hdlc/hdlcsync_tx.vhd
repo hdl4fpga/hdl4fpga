@@ -43,7 +43,7 @@ entity hdlcsync_tx is
 		hdlctx_data : in  std_logic_vector;
 
 		uart_frm    : buffer std_logic := '1';
-		uart_irdy   : out std_logic;
+		uart_irdy   : buffer std_logic;
 		uart_trdy   : in  std_logic;
 		uart_data   : out std_logic_vector);
 
@@ -69,15 +69,15 @@ begin
 			if hdlctx_frm='1' then
 				if hdlctx_irdy='1' then
 					debug_tx <= setif(hdlctx_data'ascending, reverse(hdlctx_data), hdlctx_data);
-					if esc_on='1' then
-						esc_on <= '0';
-					elsif hdlctx_data=flag then
-						esc_on <= '1';
-					elsif hdlctx_data=esc then
-						esc_on <= '1';
+					if uart_trdy='1' then
+						if esc_on='1' then
+							esc_on <= '0';
+						elsif hdlctx_data=flag then
+							esc_on <= '1';
+						elsif hdlctx_data=esc then
+							esc_on <= '1';
+						end if;
 					end if;
-				else
-					esc_on <= '0';
 				end if;
 			else
 				esc_on <= '0';
@@ -111,7 +111,7 @@ begin
 
 	hdlctx_trdy <=
 		'0'       when hdlctx_frm='0'   else
-		uart_trdy when esc_on='1'       else
+		uart_trdy when esc_on='1' else
 		'0'       when hdlctx_data=flag else
 		'0'       when hdlctx_data=esc  else
 		uart_trdy;

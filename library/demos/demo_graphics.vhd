@@ -379,15 +379,16 @@ begin
 		sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
 		sout_irdy <= meta_trdy     when meta_end='0' else
 		             siodmaio_trdy when siodmaio_end='0' else
-		             siodmaio_trdy when status_rw='0' else
+		             '1' when status_rw='0' else
 		             sodata_irdy;
 		sout_end  <= '0' when meta_end='0'     else
 					 '0' when siodmaio_end='0' else
 					 '1' when status_rw='0'    else
 					 sodata_end;
 		sout_data <= meta_data     when meta_end='0'     else
-		             siodmaio_data when siodmaio_end='0' else
-		             sodata_data;
+					siodmaio_data when siodmaio_end='0' else
+--					 siodmaio_data when status_rw='0'    else
+					sodata_data;
 
 		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
 		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);
