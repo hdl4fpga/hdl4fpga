@@ -155,7 +155,7 @@ struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *bu
 		fprintf (stderr, "\t id   : 0x%02x\n", node->rgtr->id);
 		fprintf (stderr, "\t len  : 0x%02x\n", node->rgtr->len);
 		fprintf (stderr, "\t data : ");
-		for (int i = 0; i < (node->rgtr->len+1); i++) 
+		for (int i = 0; i < (node->rgtr->len+1); i++)
 			fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
 		fputc('\n', stderr);
 	}
@@ -180,7 +180,7 @@ char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
 			fprintf (stderr, "\t id   : 0x%02x\n", node->rgtr->id);
 			fprintf (stderr, "\t len  : 0x%02x\n", node->rgtr->len);
 			fprintf (stderr, "\t data : ");
-			for (int i = 0; i < (node->rgtr->len+1); i++) 
+			for (int i = 0; i < (node->rgtr->len+1); i++)
 				fprintf (stderr, "0x%02x ", node->rgtr->data[i]);
 			fputc('\n', stderr);
 		}
@@ -425,6 +425,9 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 		} else {
 			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
 				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
+					if (LOG1) {
+						fprintf(stderr, "RX data 0x%02xn", (unsigned) buffer[i]);
+					}
 					if (buffer[i] == 0x7e) {
 						len = i;
 						break;
@@ -464,7 +467,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 		len -= 2;
 		if (LOG0) fprintf(stderr, "FCS OK! ");
 		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
-		if (LOG0 | LOG1) fputc('\n', stderr); 
+		if (LOG0 | LOG1) fputc('\n', stderr);
 		pkt_lost--;
 		return len;
 	}
@@ -472,7 +475,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 
 	if (LOG0) fprintf(stderr, "FCS WRONG! ");
 	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
-	if (LOG0 | LOG1) fputc('\n', stderr); 
+	if (LOG0 | LOG1) fputc('\n', stderr);
 	if (LOG0) {
 		struct rgtr_node *print_queue;
 		print_queue = rawdata2rgtr(buffer,len);
@@ -520,7 +523,7 @@ void init_socket ()
 		fprintf (stderr, "Hostname '%s' not found\n", hostname);
 		exit(1);
 	}
-	
+
 	memset (&sa_trgt, 0, sizeof (sa_trgt));
 	sa_trgt.sin_family = AF_INET;
 	sa_trgt.sin_port   = htons(PORT);
@@ -528,7 +531,7 @@ void init_socket ()
 
 	memset (&sa_host, 0, sizeof (sa_host));
 	sa_host.sin_family = AF_INET;
-	sa_host.sin_port   = htons(PORT);	
+	sa_host.sin_port   = htons(PORT);
 	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
 	if ((sckt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		perror ("Can't open socket");
@@ -540,7 +543,7 @@ void init_socket ()
 		abort();
 	}
 
-	//	DON'T FRAGMENT, 
+	//	DON'T FRAGMENT,
 	// int tol = 2;	// Time To Live
 	// setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(tol));
 
@@ -624,21 +627,22 @@ int main (int argc, char *argv[])
 
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
-	int ack = 0x0b;
+	int ack = 0xff;
 	for(;;) {
 
-	
+
 		queue_in = delete_queue(queue_in);
 
 		if (LOG1) {
 			fprintf (stderr, "Sending ACK\n");
 		}
 
-		set_acknode(ack_out, ack, 0x00);
+		set_acknode(ack_out, ack, 0x80);
 		send_rgtr(ack_out);
 
 		if (LOG1) fprintf (stderr, "Waiting ACK\n");
 		queue_in = rcvd_rgtr();
+		exit(0);
 		if (!queue_in) {
 			if (LOG1) fprintf (stderr, "packet error\n");
 			continue;
@@ -710,7 +714,7 @@ int main (int argc, char *argv[])
 			if (LOG0) {
 				fprintf (stderr, ">>> SENDING PACKET <<<\n");
 			}
-			
+
 			set_acknode(ack_out, ack, 0x0);
 			send_rgtrrawdata(ack_out, buffer, length);
 
@@ -790,11 +794,11 @@ int main (int argc, char *argv[])
 
 			if (LOG0) fprintf (stderr, ">>> CHECKING DMA STATUS <<<\n");
 			for (;;) {
-				
+
 				struct rgtr_node *dmaaddr;
 
 				if (LOG1) print_rgtrs(queue_in);
-				
+
 				if ((dmaaddr = lookup(RGTRDMAADDR_ID, queue_in))) {
 					if (!((rgtr2int(dmaaddr) & 0xc0000000) ^ 0xc0000000)) {
 						break;

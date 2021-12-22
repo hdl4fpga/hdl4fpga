@@ -11,7 +11,10 @@ LIB_HDL4FPGA = hdl4fpga
 LIB_WORK = work
 
 # Define path to each design unit
+HDL4FPGA__sio_flow = $(LIB_HDL4FPGA)/sio_flow/_primary.dat
+IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
+HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__xcs3_ddrphy = $(LIB_HDL4FPGA)/xcs3_ddrphy/_primary.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cp850x8x8x0to127 = $(LIB_HDL4FPGA)/cp850x8x8x0to127/_primary.dat
@@ -22,23 +25,20 @@ HDL4FPGA__bcdfonts = $(LIB_HDL4FPGA)/bcdfonts/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
 HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
-HDL4FPGA__sio_flow = $(LIB_HDL4FPGA)/sio_flow/_primary.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
-HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
-HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 HDL4FPGA__ddr_db = $(LIB_HDL4FPGA)/ddr_db/_primary.dat
-HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
-HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
 HDL4FPGA__sio_dayhdlc = $(LIB_HDL4FPGA)/sio_dayhdlc/_primary.dat
-HDL4FPGA__et = $(LIB_HDL4FPGA)/et/_primary.dat
-HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
-HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
+HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
+HDL4FPGA__modeline_calculator = $(LIB_HDL4FPGA)/modeline_calculator/_primary.dat
+HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
+HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 MICRON__mt48lc32m16a2 = $(LIB_MICRON)/mt48lc32m16a2/_primary.dat
 VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
 HDL4FPGA__hdlcdll_tx = $(LIB_HDL4FPGA)/hdlcdll_tx/_primary.dat
@@ -61,15 +61,16 @@ WORK__ulx3s_miiipoedebug_structure_md = $(LIB_WORK)/ulx3s_miiipoedebug_structure
 WORK__ulx3s_miiipoedebug_md = $(LIB_WORK)/ulx3s_miiipoedebug_md/_primary.dat
 WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_primary.dat
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
-WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__miiipoe_debug = $(LIB_WORK)/ulx3s/miiipoe_debug.dat
+WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
+WORK__ulx3s__hdlc_debug = $(LIB_WORK)/ulx3s/hdlc_debug.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
+WORK__testbench__ulx3s_miiipoedebug = $(LIB_WORK)/testbench/ulx3s_miiipoedebug.dat
 WORK__testbench__arty_miiipoedebug = $(LIB_WORK)/testbench/arty_miiipoedebug.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__nuhs3debug_miiipoedebug = $(LIB_WORK)/testbench/nuhs3debug_miiipoedebug.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
-WORK__testbench__ulx3s_miiipoedebug = $(LIB_WORK)/testbench/ulx3s_miiipoedebug.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_miiipoedebug_structure_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_structure_md/_primary.dat
 WORK__nuhs3adsp_miiipoedebug_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_md/_primary.dat
@@ -78,6 +79,8 @@ WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_m
 WORK__nuhs3adsp__miiipoe_debug = $(LIB_WORK)/nuhs3adsp/miiipoe_debug.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
+WORK__main__def = $(LIB_WORK)/main/def.dat
+WORK__main = $(LIB_WORK)/main/_primary.dat
 WORK__arty__miiipoe_debug = $(LIB_WORK)/arty/miiipoe_debug.dat
 WORK__arty = $(LIB_WORK)/arty/_primary.dat
 VCOM = vcom
@@ -89,15 +92,16 @@ whole_library :     $(WORK__ulx3s_miiipoedebug_structure_md) \
     $(WORK__ulx3s_miiipoedebug_md) \
     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
-    $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s__miiipoe_debug) \
+    $(WORK__ulx3s__graphics) \
+    $(WORK__ulx3s__hdlc_debug) \
     $(WORK__ulx3s) \
+    $(WORK__testbench__ulx3s_miiipoedebug) \
     $(WORK__testbench__arty_miiipoedebug) \
     $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__nuhs3debug_miiipoedebug) \
     $(WORK__testbench__ulx3s_graphics) \
-    $(WORK__testbench__ulx3s_miiipoedebug) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_miiipoedebug_structure_md) \
     $(WORK__nuhs3adsp_miiipoedebug_md) \
@@ -106,6 +110,8 @@ whole_library :     $(WORK__ulx3s_miiipoedebug_structure_md) \
     $(WORK__nuhs3adsp__miiipoe_debug) \
     $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp) \
+    $(WORK__main__def) \
+    $(WORK__main) \
     $(WORK__arty__miiipoe_debug) \
     $(WORK__arty)
 
@@ -141,6 +147,16 @@ $(WORK__arty__miiipoe_debug) : ../../arty/demos/miiipoe_debug.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../arty/demos/miiipoe_debug.vhd
+
+$(WORK__main) \
+$(WORK__main__def) : main.vhd \
+		$(HDL4FPGA__std) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002  main.vhd
 
 $(WORK__nuhs3adsp) : ../../nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
@@ -181,11 +197,9 @@ $(WORK__nuhs3adsp__miiipoe_debug) : ../../nuhs3adsp/demos/miiipoe_debug.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__ser_debug) \
 		$(HDL4FPGA__desser) \
-		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__mii_ipoe) \
-		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__dfs) \
@@ -272,14 +286,11 @@ $(WORK__ulx3s) : ../../ULX3S/common/ulx3s.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002  ../../ULX3S/common/ulx3s.vhd
 
-$(WORK__ulx3s__miiipoe_debug) : ../../ULX3S/demos/miiipoe_debug.vhd \
+$(WORK__ulx3s__hdlc_debug) : ../../ULX3S/demos/hdlc_debug.vhd \
 		$(HDL4FPGA__ser_debug) \
-		$(HDL4FPGA__desser) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__mii_ipoe) \
-		$(HDL4FPGA__serdes) \
-		$(HDL4FPGA__eth_tb) \
+		$(HDL4FPGA__sio_dayhdlc) \
+		$(HDL4FPGA__uart_tx) \
+		$(HDL4FPGA__uart_rx) \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -290,7 +301,7 @@ $(WORK__ulx3s__miiipoe_debug) : ../../ULX3S/demos/miiipoe_debug.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../ULX3S/demos/miiipoe_debug.vhd
+	$(VCOM) -2002  ../../ULX3S/demos/hdlc_debug.vhd
 
 $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
@@ -298,8 +309,6 @@ $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__demo_graphics) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
-		$(HDL4FPGA__serdes) \
-		$(HDL4FPGA__et) \
 		$(HDL4FPGA__sio_dayhdlc) \
 		$(HDL4FPGA__uart_tx) \
 		$(HDL4FPGA__uart_rx) \
@@ -317,6 +326,24 @@ $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../ULX3S/demos/graphics.vhd
+
+$(WORK__ulx3s__miiipoe_debug) : ../../ULX3S/demos/miiipoe_debug.vhd \
+		$(HDL4FPGA__ser_debug) \
+		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__mii_ipoe) \
+		$(WORK__ulx3s) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__modeline_calculator) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 ../../ULX3S/demos/miiipoe_debug.vhd
 
 $(WORK__testbench__ulx3s_graphics) \
 $(WORK__ulx3s_graphic_md) \
@@ -360,5 +387,5 @@ $(WORK__ulx3s_miiipoedebug_structure_md) : ../../ULX3S/testbench/miiipoe_debug.v
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002  ../../ULX3S/testbench/miiipoe_debug.vhd
+	$(VCOM) -2002 ../../ULX3S/testbench/miiipoe_debug.vhd
 

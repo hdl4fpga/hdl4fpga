@@ -223,6 +223,10 @@ begin
 		signal siodmaio_end   : std_logic;
 		signal siodmaio_data  : std_logic_vector(sout_data'range);
 
+		signal acktx_irdy     : std_logic;
+		signal acktx_trdy     : std_logic;
+		signal acktx_data     : std_logic_vector(rgtr_ack'range);
+
 		signal sodata_frm     : std_logic;
 		signal sodata_irdy    : std_logic;
 		signal sodata_trdy    : std_logic;
@@ -280,15 +284,39 @@ begin
 			so_end   => meta_end,
 			so_data  => meta_data);
 
+		acktx_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => 4,
+			latency    => 2,
+			async_mode => true,
+			check_sov  => true,
+			check_dov  => true,
+			gray_code  => fifo_gray)
+		port map (
+			src_clk    => dmacfg_clk,
+			src_irdy   => dmaio_next,
+			src_trdy   => open, --dmaioack_irdy,
+			src_data   => dmaio_ack,
+
+			dst_frm    => ctlr_inirdy,
+			dst_clk    => sio_clk,
+			dst_irdy   => acktx_irdy,
+			dst_trdy   => acktx_trdy,
+			dst_data   => acktx_data);
+
 		process (sio_clk)
 		begin
 			if rising_edge(sio_clk) then
 				if (sout_rdy xor sout_req)='0' then
-					if (dmaioack_irdy and dmaio_next)='1' then
+					if acktx_irdy='1' then
 						sout_rdy <= not sout_req;
 					end if;
+					acktx_trdy <= '0';
 				elsif (sout_irdy and sout_trdy and sout_end)='1' then
-					sout_rdy <= sout_req;
+					sout_rdy   <= sout_req;
+					acktx_trdy <= '1';
+				else
+					acktx_trdy <= '0';
 				end if;
 			end if;
 		end process;
@@ -299,7 +327,7 @@ begin
 				sio_dmaio <=
 --					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
 					reverse(reverse(payload_size),8) &	-- UDP Length
-					reverse(x"01" & x"00" & reverse(dmaio_ack) &
+					reverse(x"01" & x"00" & reverse(acktx_data) &
 					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
 				payload_size <= std_logic_vector(unsigned'(x"0009") + resize(shift_left(unsigned(dmaio_len)+1,2), payload_size'length));
 			end if;
@@ -330,7 +358,7 @@ begin
 
 		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
 		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);
-		ackr_e : entity hdl4fpga.fifo
+		ackrx_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
 			latency    => setif(profile=0, 0, 1),
@@ -349,8 +377,8 @@ begin
 			dst_irdy   => dmaioack_irdy,
 			dst_trdy   => dmaio_next,
 			dst_data   => dmaio_ack);
-		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 
+		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 		rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
 		dmaaddr_e : entity hdl4fpga.fifo
 		generic map (
