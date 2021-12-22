@@ -111,7 +111,7 @@ begin
 
 	hdlctx_trdy <=
 		'0'       when hdlctx_frm='0'   else
-		uart_trdy when esc_on='1' else
+		uart_trdy when esc_on='1'       else
 		'0'       when hdlctx_data=flag else
 		'0'       when hdlctx_data=esc  else
 		uart_trdy;
