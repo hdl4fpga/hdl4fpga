@@ -11,12 +11,6 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/sdram_ba
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/sdram_a(12) -radix hexadecimal} {/testbench/du_e/sdram_a(11) -radix hexadecimal} {/testbench/du_e/sdram_a(10) -radix hexadecimal} {/testbench/du_e/sdram_a(9) -radix hexadecimal} {/testbench/du_e/sdram_a(8) -radix hexadecimal} {/testbench/du_e/sdram_a(7) -radix hexadecimal} {/testbench/du_e/sdram_a(6) -radix hexadecimal} {/testbench/du_e/sdram_a(5) -radix hexadecimal} {/testbench/du_e/sdram_a(4) -radix hexadecimal} {/testbench/du_e/sdram_a(3) -radix hexadecimal} {/testbench/du_e/sdram_a(2) -radix hexadecimal} {/testbench/du_e/sdram_a(1) -radix hexadecimal} {/testbench/du_e/sdram_a(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdram_a(12) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(11) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(10) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(9) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(8) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_a(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdram_a
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdram_d
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/line__137/wordperbyte
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/line__137/slice_size
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/line__137/page_size
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/fifo_size
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/line_size
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/water_mark
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vt_req
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/hz_req
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/level

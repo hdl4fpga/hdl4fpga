@@ -190,7 +190,8 @@ architecture ulx3s_graphics of testbench is
 	end;
 
 	constant data  : std_logic_vector :=
-		x"01008f" ; --&
+		x"01008f" &
+		x"010009_160300000000_1702000000";
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &
@@ -336,8 +337,8 @@ begin
 
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			baudrate  => baudrate,
+			clk_rate  => uart_xtal)
 		port map (
 			uart_frm  => nrst,
 			uart_txc  => uart_clk,
@@ -348,8 +349,8 @@ begin
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			baudrate  => baudrate,
+			clk_rate  => uart_xtal)
 		port map (
 			uart_rxc  => uart_clk,
 			uart_sin  => ftdi_rxd,

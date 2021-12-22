@@ -117,7 +117,7 @@ architecture mix of demo_graphics is
 	signal dmacfgio_rdy   : std_logic;
 	signal dmaio_req      : std_logic := '0';
 	signal dmaio_rdy      : std_logic;
-	signal dmaio_ack      : std_logic_vector(8-1 downto 0);
+	signal dmaio_ack      : std_logic_vector(0 to 8-1);
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
 	signal dmaio_we       : std_logic;
@@ -244,8 +244,11 @@ begin
 		signal sout_req       : bit;
 		signal sout_rdy       : bit;
 
-		signal payload_size   : std_logic_vector(0 to 16-1) := x"0000";
+		signal pay_length     : unsigned(0 to 16-1) := x"0000";
+		signal trans_length   : unsigned(0 to 16-1);
 
+		signal status         : std_logic_vector(0 to 5-1);
+		alias  status_rw      : std_logic is status(status'right);
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -284,38 +287,65 @@ begin
 			so_end   => meta_end,
 			so_data  => meta_data);
 
-		acktx_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => 4,
-			latency    => 2,
-			async_mode => true,
-			check_sov  => true,
-			check_dov  => true,
-			gray_code  => fifo_gray)
-		port map (
-			src_clk    => dmacfg_clk,
-			src_irdy   => dmaio_next,
-			src_trdy   => open, --dmaioack_irdy,
-			src_data   => dmaio_ack,
+		xxx_b : block
+			signal src_data : std_logic_vector(0 to dmaio_ack'length+pay_length'length+status'length-1);
+			signal dst_data : std_logic_vector(src_data'range);
+		begin
+			src_data <=
+				dmaio_ack &
+				std_logic_vector(resize(shift_left(unsigned(dmaio_len), word_bits), pay_length'length)) &
+				dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & dmaio_addr(dmaio_addr'left);
 
-			dst_frm    => ctlr_inirdy,
-			dst_clk    => sio_clk,
-			dst_irdy   => acktx_irdy,
-			dst_trdy   => acktx_trdy,
-			dst_data   => acktx_data);
+			acktx_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 4,
+				latency    => 2,
+				async_mode => true,
+				check_sov  => true,
+				check_dov  => true,
+				gray_code  => fifo_gray)
+			port map (
+				src_clk    => dmacfg_clk,
+				src_irdy   => dmaio_next,
+				src_trdy   => open, --dmaioack_irdy,
+				src_data   => src_data,
+
+				dst_frm    => ctlr_inirdy,
+				dst_clk    => sio_clk,
+				dst_irdy   => acktx_irdy,
+				dst_trdy   => acktx_trdy,
+				dst_data   => dst_data);
+
+			process (dst_data)
+				variable aux : unsigned(dst_data'range);
+			begin
+				aux := unsigned(dst_data);
+				acktx_data   <= std_logic_vector(aux(acktx_data'range));
+				aux := aux sll acktx_data'length;
+				trans_length <= aux(trans_length'range);
+				aux := aux sll trans_length'length;
+				status <= std_logic_vector(aux(0 to status'length-1));
+			end process;
+
+		end block;
 
 		process (sio_clk)
 		begin
 			if rising_edge(sio_clk) then
-				if (sout_rdy xor sout_req)='0' then
+				if ctlr_inirdy='0' then
+					sout_req   <= sout_rdy;
+					acktx_trdy <= '0';
+				elsif (sout_rdy xor sout_req)='0' then
 					if acktx_irdy='1' then
-						sout_rdy <= not sout_req;
+						sout_req <= not sout_rdy;
 					else
-						sout_rdy <= sout_req;
+						sout_req <= sout_rdy;
 					end if;
 					acktx_trdy <= '0';
+				elsif acktx_trdy='1' then
+					sout_req   <= sout_rdy;
+					acktx_trdy <= '0';
 				elsif (sout_irdy and sout_trdy and sout_end)='1' then
-					sout_rdy   <= sout_req;
 					acktx_trdy <= '1';
 				else
 					acktx_trdy <= '0';
@@ -328,10 +358,10 @@ begin
 			if rising_edge(sio_clk) then
 				sio_dmaio <=
 --					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
-					reverse(reverse(payload_size),8) &	-- UDP Length
-					reverse(x"01" & x"00" & reverse(acktx_data) &
-					rid_dmaaddr & x"03" & dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & x"0000" & x"000", 8);
-				payload_size <= std_logic_vector(unsigned'(x"0009") + resize(shift_left(unsigned(dmaio_len)+1,2), payload_size'length));
+					reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
+					reverse(x"01" & x"00" & acktx_data &
+					rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
+				pay_length <= trans_length + x"0009";
 			end if;
 		end process;
 
@@ -346,13 +376,14 @@ begin
 			so_end   => siodmaio_end,
 			so_data  => siodmaio_data);
 
-
 		sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
 		sout_irdy <= meta_trdy     when meta_end='0' else
 		             siodmaio_trdy when siodmaio_end='0' else
+		             siodmaio_trdy when status_rw='0' else
 		             sodata_irdy;
 		sout_end  <= '0' when meta_end='0'     else
 					 '0' when siodmaio_end='0' else
+					 '1' when status_rw='0'    else
 					 sodata_end;
 		sout_data <= meta_data     when meta_end='0'     else
 		             siodmaio_data when siodmaio_end='0' else
@@ -603,7 +634,11 @@ begin
 			end process;
 			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
-			sodata_trdy <= '0' when siodmaio_end='0' else sout_trdy;
+			sodata_trdy <=
+				'0' when siodmaio_end='0' else
+				'0' when status_rw='0'    else
+				sout_trdy;
+
 			sodata_e : entity hdl4fpga.so_data
 			port map (
 				sio_clk   => sio_clk,
