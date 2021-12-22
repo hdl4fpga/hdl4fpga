@@ -435,7 +435,7 @@ begin
 		begin
 			if rising_edge(uart_clk) then
 				if uart_rxdv='1' then
-					led <= uart_rxd;
+--					led <= uart_rxd;
 				end if;
 			end if;
 		end process;
@@ -460,6 +460,8 @@ begin
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);
 
+			led(0) <= si_frm;
+			led(2) <= si_irdy;
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (
 			mem_size  => mem_size)

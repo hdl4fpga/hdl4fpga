@@ -282,12 +282,20 @@ void socket_send(char * data, int len)
 	pkt_sent++;
 }
 
+void uart_send(char c, FILE *comm)
+{
+	fputc(c, comm);
+	if (LOG1) {
+		fprintf(stderr, "TX data 0x%02x\n", (unsigned char) c);
+	}
+}
+
 void hdlc_send(char * data, int len)
 {
 	u16 fcs;
 
     fcs = ~pppfcs16(PPPINITFCS16, data, len);
-	fputc(0x7e, comm);
+	uart_send(0x7e, comm);
 	for (int i = 0; i < len+sizeof(fcs); i++) {
 		char c;
 
@@ -298,15 +306,15 @@ void hdlc_send(char * data, int len)
 		}
 
 		if (c == 0x7e) {
-			fputc(0x7d, comm);
+			uart_send(0x7d, comm);
 			c ^= 0x20;
 		} else if(c == 0x7d) {
-			fputc(0x7d, comm);
+			uart_send(0x7d, comm);
 			c ^= 0x20;
 		}
-		fputc(c, comm);
+		uart_send(c, comm);
 	}
-	fputc(0x7e, comm);
+	uart_send(0x7e, comm);
 	pkt_sent++;
 }
 
@@ -426,7 +434,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
 				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
 					if (LOG1) {
-						fprintf(stderr, "RX data 0x%02xn", (unsigned) buffer[i]);
+						fprintf(stderr, "RX data 0x%02x\n", (unsigned char) buffer[i]);
 					}
 					if (buffer[i] == 0x7e) {
 						len = i;
@@ -627,7 +635,7 @@ int main (int argc, char *argv[])
 
 	if (LOG0) fprintf (stderr, ">>> SETTING ACK <<<\n");
 
-	int ack = 0xff;
+	int ack = 0x08;
 	for(;;) {
 
 
@@ -642,7 +650,6 @@ int main (int argc, char *argv[])
 
 		if (LOG1) fprintf (stderr, "Waiting ACK\n");
 		queue_in = rcvd_rgtr();
-		exit(0);
 		if (!queue_in) {
 			if (LOG1) fprintf (stderr, "packet error\n");
 			continue;

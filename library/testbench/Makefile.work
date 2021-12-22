@@ -156,7 +156,7 @@ $(WORK__main__def) : main.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002  main.vhd
+	$(VCOM) -2002 main.vhd
 
 $(WORK__nuhs3adsp) : ../../nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
@@ -301,7 +301,7 @@ $(WORK__ulx3s__hdlc_debug) : ../../ULX3S/demos/hdlc_debug.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../ULX3S/demos/hdlc_debug.vhd
+	$(VCOM) -2002 ../../ULX3S/demos/hdlc_debug.vhd
 
 $(WORK__ulx3s__graphics) : ../../ULX3S/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
@@ -368,7 +368,7 @@ $(WORK__ulx3s_graphic_structure_md) : ../../ULX3S/testbench/graphic.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 ../../ULX3S/testbench/graphic.vhd
+	$(VCOM) -2002  ../../ULX3S/testbench/graphic.vhd
 
 $(WORK__testbench__ulx3s_miiipoedebug) \
 $(WORK__ulx3s_miiipoedebug_md) \

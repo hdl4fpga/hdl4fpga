@@ -102,7 +102,7 @@ architecture hdlc_debug of ulx3s is
 	signal ser_irdy       : std_logic;
 	signal ser_data       : std_logic_vector(0 to 2-1);
 
-	alias uart_clk    : std_logic is sio_clk;
+	alias uart_clk    : std_logic is videoio_clk;
 	signal tp             : std_logic_vector(1 to 32);
 	alias rx_data : std_logic_vector(0 to 8-1) is tp(9 to 16);
 
@@ -158,7 +158,7 @@ begin
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -278,8 +278,8 @@ begin
 		blue_length     => 5)
 	port map (
 		ser_clk         => sio_clk,
-		ser_frm         => '1',
-		ser_irdy        => uart_rxdv,
+		ser_frm         => uart_rxdv,
+		ser_irdy        => '1',
 		ser_data        => uart_rxd,
 
 		video_clk       => video_clk,

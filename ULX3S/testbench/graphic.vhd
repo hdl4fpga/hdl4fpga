@@ -250,7 +250,7 @@ architecture ulx3s_graphics of testbench is
 	signal nrst : std_logic;
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
 
