@@ -310,6 +310,8 @@ begin
 				if (sout_rdy xor sout_req)='0' then
 					if acktx_irdy='1' then
 						sout_rdy <= not sout_req;
+					else
+						sout_rdy <= sout_req;
 					end if;
 					acktx_trdy <= '0';
 				elsif (sout_irdy and sout_trdy and sout_end)='1' then
