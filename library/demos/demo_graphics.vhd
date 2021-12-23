@@ -184,6 +184,7 @@ begin
 		signal rgtr_len       : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv        : std_logic;
 		signal rgtr_data      : std_logic_vector(0 to 32-1);
+		signal rgtr_revs      : std_logic_vector(32-1 downto 0);
 		signal data_frm       : std_logic;
 		signal data_irdy      : std_logic;
 		signal data_ptr       : std_logic_vector(8-1 downto 0);
@@ -268,6 +269,7 @@ begin
 			rgtr_len  => rgtr_len,
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);
+		rgtr_revs <= reverse(rgtr_data,8);
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
@@ -391,8 +393,19 @@ begin
 			siodmaio_data when siodmaio_end='0' else
 			reverse(sodata_data);
 
-		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
-		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);
+		rgtr_ack_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid       => rid_ack)
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_revs(rgtr_ack'length-1 downto 0),
+			data      => rgtr_ack);
+		dmaack_irdy <= dmaaddr_irdy;
+
+--		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
+--		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);
 		ackrx_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,
@@ -436,8 +449,19 @@ begin
 			dst_data   => dmaio_addr);
 		dmaio_we <= not dmaio_addr(dmaio_addr'left);
 
-		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
-		rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
+		rgtr_dmalen_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid       => rid_dmalen)
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_revs(rgtr_dmalen'range),
+			data      => rgtr_dmalen);
+		dmalen_irdy <= dmaaddr_irdy;
+
+--		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
+--		rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
 		dmalen_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth  => fifo_depth,

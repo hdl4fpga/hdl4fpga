@@ -52,7 +52,7 @@ begin
 	report "Length of rgtr_id must be " & natural'image(rid'length) & " long"
 	severity FAILURE;
 
-	ena <= 
+	ena <=
 	  setif(rgtr_id=reverse(rid), rgtr_dv) when rgtr_id'ascending else
 	  setif(rgtr_id=rid, rgtr_dv);
 
@@ -70,7 +70,7 @@ begin
 			constant size : natural)
 			return std_logic_vector is
 		begin
-			if data'ascending then
+			if not data'ascending then
 				return std_logic_vector(resize(unsigned(data), size));
 			end if;
 			return std_logic_vector(resize(rotate_left(unsigned(data), size), size));
