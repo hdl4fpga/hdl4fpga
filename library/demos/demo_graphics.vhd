@@ -653,7 +653,7 @@ begin
 				so_frm    => sodata_frm,
 				so_irdy   => sodata_irdy,
 				so_trdy   => sodata_trdy,
-				si_end    => sodata_end,
+				so_end    => sodata_end,
 				so_data   => sodata_data);
 
 		end block;

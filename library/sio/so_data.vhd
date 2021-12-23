@@ -82,6 +82,7 @@ begin
 		if rising_edge(sio_clk) then
 			case state is
 			when st_idle =>
+				so_end    <= si_end;
 				low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 				high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
 				if si_frm='1' then
@@ -92,28 +93,32 @@ begin
 			when st_rid  =>
 				if si_frm='1' then
 					if so_trdy='1' then
-						state <= st_len;
+						so_end <= si_end;
+						state  <= st_len;
 					end if;
 				else
 					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state <= st_idle;
+					state     <= st_idle;
 				end if;
 			when st_len =>
 				if si_frm='1' then
 					if so_trdy='1' then
+						so_end    <= si_end;
 						high_cntr <= high_cntr - 1;
 						low_cntr  <= low_cntr  - 1;
-						state <= st_data;
+						state     <= st_data;
 					end if;
 				else
+					so_end    <= si_end;
 					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state <= st_idle;
+					state     <= st_idle;
 				end if;
 			when st_data =>
 				if si_frm='1' then
 					if (ser_irdy and so_trdy)='1' then
+						so_end <= si_end;
 						if low_cntr(0)='0' then
 							low_cntr <= low_cntr - 1;
 							state  <= st_data;
@@ -125,7 +130,7 @@ begin
 				else
 					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
 					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state <= st_idle;
+					state     <= st_idle;
 				end if;
 			end case;
 		end if;
@@ -147,7 +152,6 @@ begin
 		ser_data                                             when st_data;
 
 	so_frm <= to_stdulogic(to_bit(si_frm));
-	so_end <= si_end;
 	dessero_e : entity hdl4fpga.desser
 	port map (
 		desser_clk => sio_clk,
