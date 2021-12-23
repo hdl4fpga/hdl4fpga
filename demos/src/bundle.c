@@ -63,16 +63,6 @@ int main (int argc, char *argv[])
 						tlen <<= 8;
 						tlen |=  (bufptr-len-1)[j];
 					}
-					fprintf(stderr, "buffer : 0x%08x, ", bsize);
-					fprintf(stderr, "transfer : 0x%08x\n", tlen);
-
-					pktsz = bufptr-buffer;
-					if (pktmd)
-						fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
-					fwrite (buffer, sizeof(unsigned char), pktsz, stdout);
-
-					bsize  = 0;
-					bufptr = buffer;
 
 					break;
 
@@ -89,6 +79,17 @@ int main (int argc, char *argv[])
 						(bufptr-len-1)[j] = (addr & 0xff);
 						addr >>= 8;
 					}
+
+					fprintf(stderr, "buffer : 0x%08x, ", bsize);
+					fprintf(stderr, "transfer : 0x%08x\n", tlen);
+					pktsz = bufptr-buffer;
+					if (pktmd)
+						fwrite (&pktsz, sizeof(unsigned short), 1, stdout);
+					fwrite (buffer, sizeof(unsigned char), pktsz, stdout);
+
+					bsize  = 0;
+					bufptr = buffer;
+
 					break;
 				}
 			} else {

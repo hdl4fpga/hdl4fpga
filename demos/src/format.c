@@ -77,16 +77,6 @@ int main (int argc, char *argv[])
 
 		bufptr = buffer;
 
-		memaddr    = bufptr;
-		memaddr[0] = 0x16;
-		memaddr[1] = 0x03;
-		memaddr[2] = 0xff & (addr >> 24);
-		memaddr[3] = 0xff & (addr >> 16);
-		memaddr[4] = 0xff & (addr >>  8);
-		memaddr[5] = 0xff & (addr >>  0);
-
-		bufptr += (2 + bufptr[1] + 1);
-
 		int i;
 		for (i = 0; i < bsize; i += n) {
 
@@ -111,13 +101,22 @@ int main (int argc, char *argv[])
 			bufptr += (2 + bufptr[1] + 1);
 		}
 
-
 		memlen    = bufptr;
 		memlen[0] = 0x17;
 		memlen[1] = 0x02;
 		memlen[2] = 0xff & ((i/wsize-1) >> 16);
 		memlen[3] = 0xff & ((i/wsize-1) >>  8);
 		memlen[4] = 0xff & ((i/wsize-1) >>  0);
+
+		bufptr += (2 + bufptr[1] + 1);
+
+		memaddr    = bufptr;
+		memaddr[0] = 0x16;
+		memaddr[1] = 0x03;
+		memaddr[2] = 0xff & (addr >> 24);
+		memaddr[3] = 0xff & (addr >> 16);
+		memaddr[4] = 0xff & (addr >>  8);
+		memaddr[5] = 0xff & (addr >>  0);
 
 		bufptr += (2 + bufptr[1] + 1);
 
