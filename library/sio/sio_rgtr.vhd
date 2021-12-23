@@ -70,7 +70,7 @@ begin
 			constant size : natural)
 			return std_logic_vector is
 		begin
-			if not data'ascending then
+			if data'ascending then
 				return std_logic_vector(resize(unsigned(data), size));
 			end if;
 			return std_logic_vector(resize(rotate_left(unsigned(data), size), size));
