@@ -357,7 +357,6 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				sio_dmaio <=
---					reverse(reverse(x"00" & x"09"),8) &	-- UDP Length
 					reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
 					reverse(x"01" & x"00" & acktx_data &
 					rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
@@ -377,18 +376,20 @@ begin
 			so_data  => siodmaio_data);
 
 		sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
-		sout_irdy <= meta_trdy     when meta_end='0' else
-		             siodmaio_trdy when siodmaio_end='0' else
-		             '1' when status_rw='0' else
-		             sodata_irdy;
-		sout_end  <= '0' when meta_end='0'     else
-					 '0' when siodmaio_end='0' else
-					 '1' when status_rw='0'    else
-					 sodata_end;
-		sout_data <= meta_data     when meta_end='0'     else
-					siodmaio_data when siodmaio_end='0' else
---					 siodmaio_data when status_rw='0'    else
-					sodata_data;
+		sout_irdy <=
+			meta_trdy     when meta_end='0' else
+			siodmaio_trdy when siodmaio_end='0' else
+			'1' when status_rw='0' else
+			sodata_irdy;
+		sout_end  <=
+			'0' when meta_end='0'     else
+			'0' when siodmaio_end='0' else
+			'1' when status_rw='0'    else
+			sodata_end;
+		sout_data <=
+			meta_data     when meta_end='0'     else
+			siodmaio_data when siodmaio_end='0' else
+			reverse(sodata_data);
 
 		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
 		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);

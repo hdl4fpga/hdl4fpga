@@ -191,7 +191,7 @@ architecture ulx3s_graphics of testbench is
 
 	constant data  : std_logic_vector :=
 --		x"010001" &
-		x"01000c_160300000000_1702000000";
+		x"01000c_160300000000_1801aa55_1702000000_160380000000_1702000000";
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &

@@ -135,13 +135,13 @@ begin
 
 	ser_trdy <= so_trdy when state=st_data else '0';
 
-	deso_irdy  <= 
+	deso_irdy  <=
 		'0'      when state=st_idle else
 		ser_irdy when state=st_data else
 		'1';
 
 	with state select
-	deso_data <= 
+	deso_data <=
 		x"ff"                                                when st_idle | st_rid,
 		std_logic_vector(resize(low_cntr, deso_data'length)) when st_len,
 		ser_data                                             when st_data;

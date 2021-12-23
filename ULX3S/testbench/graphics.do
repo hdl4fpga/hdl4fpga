@@ -18,29 +18,21 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphi
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_addr
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_step
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_clk
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzsync
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_vtsync
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/serdes_clk
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/serdes_frm
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/ser_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/ser_data
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/des_frm
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/des_irdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/ser_irdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/des_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/serdes_e/des_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_data
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_vton
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_on
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/src_irdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/src_trdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/wr_ptr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/rd_cntr
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxd
+add wave -noupdate /testbench/hdlc_b/uartrx_e/debug_rxdv
+add wave -noupdate /testbench/hdlc_b/hdlcdll_rx_e/hdlcrx_frm
+add wave -noupdate /testbench/hdlc_b/hdlcdll_rx_e/hdlcrx_irdy
+add wave -noupdate /testbench/hdlc_b/hdlcdll_rx_e/hdlcrx_end
+add wave -noupdate -radix hexadecimal /testbench/hdlc_b/hdlcdll_rx_e/hdlcrx_data
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sodata_frm
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sodata_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sodata_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sodata_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/sodata_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/sodata_b/sodata_e/low_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/sodata_b/sodata_e/si_length
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {164130127980 fs} 0} {{Cursor 2} {33728182500000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {290740996880 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 259
 configure wave -valuecolwidth 166
@@ -56,4 +48,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {138077491360 fs} {227327508640 fs}
+WaveRestoreZoom {290260266840 fs} {304615860440 fs}
