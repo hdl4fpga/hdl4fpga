@@ -7,6 +7,8 @@ STDOUT="${STDOUT:-NO}"
 
 if [ "${STDOUT}" == "NO" ] ; then
 	STDOUT="-o"
+else
+	unset STDOUT
 fi
 
 if [ "${LOG}" == "YES" ] ; then

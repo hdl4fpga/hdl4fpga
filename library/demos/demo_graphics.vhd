@@ -343,7 +343,7 @@ begin
 					end if;
 					acktx_trdy <= '0';
 				elsif acktx_trdy='1' then
-					sout_req   <= sout_rdy;
+					sout_rdy   <= sout_req;
 					acktx_trdy <= '0';
 				elsif (sout_irdy and sout_trdy and sout_end)='1' then
 					acktx_trdy <= '1';

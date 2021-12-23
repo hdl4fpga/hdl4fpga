@@ -41,7 +41,7 @@ entity so_data is
 		so_frm    : buffer std_logic;
 		so_irdy   : buffer std_logic;
 		so_trdy   : in  std_logic;
-		so_end    : out std_logic;
+		so_end    : buffer std_logic;
 		so_data   : out std_logic_vector);
 end;
 
@@ -141,6 +141,7 @@ begin
 	ser_trdy <= so_trdy when state=st_data else '0';
 
 	deso_irdy  <=
+		'1'      when so_end='1' else
 		'0'      when state=st_idle else
 		ser_irdy when state=st_data else
 		'1';
