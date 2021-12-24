@@ -302,7 +302,7 @@ begin
 --			so_irdy  => sout_trdy,
 --			so_trdy  => meta_trdy,
 --			so_end   => meta_end,
---			so_data  => meta_data);
+			so_data  => meta_data);
 
 		rx_b : block
 		begin
@@ -561,13 +561,19 @@ begin
 			end process;
 
 			process (sio_clk)
+				variable total_length : unsigned(pay_length'range);
 			begin
 				if rising_edge(sio_clk) then
 					sio_dmaio <=
 						reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
 						reverse(x"01" & x"00" & acktx_data &
 						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
-					pay_length <= trans_length + x"0009";
+						pay_length <= total_length;
+						if status(status'right)='0' then
+							total_length := trans_length + x"0009";
+						else
+							total_length := x"0009";
+						end if;
 				end if;
 			end process;
 
