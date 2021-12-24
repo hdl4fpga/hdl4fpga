@@ -590,7 +590,7 @@ int main (int argc, char *argv[])
 	while ((c = getopt (argc, argv, "loph:")) != -1) {
 		switch (c) {
 		case 'l':
-			loglevel = 8+3;
+			loglevel = 8|0|2|1;
 			break;
 		case 'o':
 			nooutput = 1;

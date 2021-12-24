@@ -189,7 +189,7 @@ begin
 		signal data_irdy      : std_logic;
 		signal data_ptr       : std_logic_vector(8-1 downto 0);
 
-		signal rgtr_ack       : std_logic_vector(dmaio_ack'range);
+		signal rgtr_dmaack    : std_logic_vector(dmaio_ack'range);
 		signal rgtr_dmaaddr   : std_logic_vector(32-1 downto 0);
 		signal rgtr_dmalen    : std_logic_vector(24-1 downto 0);
 		signal sigrgtr_frm    : std_logic;
@@ -226,7 +226,7 @@ begin
 
 		signal acktx_irdy     : std_logic;
 		signal acktx_trdy     : std_logic;
-		signal acktx_data     : std_logic_vector(rgtr_ack'range);
+		signal acktx_data     : std_logic_vector(rgtr_dmaack'range);
 
 		signal sodata_frm     : std_logic;
 		signal sodata_irdy    : std_logic;
@@ -289,7 +289,199 @@ begin
 			so_end   => meta_end,
 			so_data  => meta_data);
 
-		xxx_b : block
+		rx_b : block
+		begin
+
+--			dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
+--			rgtr_dmaack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaack'length)),8);
+--			ackrx_e : entity hdl4fpga.fifo
+--			generic map (
+--				max_depth  => fifo_depth,
+--				latency    => setif(profile=0, 0, 1),
+--				async_mode => true,
+--				check_sov  => true,
+--				check_dov  => true,
+--				gray_code  => fifo_gray)
+--			port map (
+--				src_clk    => sio_clk,
+--				src_irdy   => dmaack_irdy,
+--				src_trdy   => dmaack_trdy,
+--				src_data   => rgtr_dmaack,
+--
+--				dst_frm    => ctlr_inirdy,
+--				dst_clk    => dmacfg_clk,
+--				dst_irdy   => dmaioack_irdy,
+--				dst_trdy   => dmaio_next,
+--				dst_data   => dmaio_ack);
+
+--			dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
+--			rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
+--			dmalen_e : entity hdl4fpga.fifo
+--			generic map (
+--				max_depth  => fifo_depth,
+--				latency    => setif(profile=0, 0, 1),
+--				async_mode => true,
+--				check_sov  => true,
+--				check_dov  => true,
+--				gray_code  => fifo_gray)
+--			port map (
+--				src_clk    => sio_clk,
+--				src_irdy   => dmalen_irdy,
+--				src_trdy   => dmalen_trdy,
+--				src_data   => rgtr_dmalen(dmaio_len'range),
+--
+--				dst_frm    => ctlr_inirdy,
+--				dst_clk    => dmacfg_clk,
+--				dst_irdy   => dmaiolen_irdy,
+--				dst_trdy   => dmaio_next,
+--				dst_data   => dmaio_len);
+
+			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
+			rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
+--			dmaaddr_e : entity hdl4fpga.fifo
+--			generic map (
+--				max_depth  => fifo_depth,
+--				latency    => setif(profile=0, 0, 1),
+--				async_mode => true,
+--				check_sov  => true,
+--				check_dov  => true,
+--				gray_code  => fifo_gray)
+--			port map (
+--				src_clk    => sio_clk,
+--				src_irdy   => dmaaddr_irdy,
+--				src_trdy   => dmaaddr_trdy,
+--				src_data   => rgtr_dmaaddr,
+--
+--				dst_frm    => ctlr_inirdy,
+--				dst_clk    => dmacfg_clk,
+--				dst_irdy   => dmaioaddr_irdy,
+--				dst_trdy   => dmaio_next,
+--				dst_data   => dmaio_addr);
+
+			fifo_b : block
+				signal src_data : std_logic_vector(0 to rgtr_dmaaddr'length+rgtr_dmalen'length+rgtr_dmaack'length-1);
+				signal dst_data : std_logic_vector(src_data'range);
+
+			begin
+
+				rgtr_ack_e : entity hdl4fpga.sio_rgtr
+				generic map (
+					rid       => rid_ack)
+				port map (
+					rgtr_clk  => sio_clk,
+					rgtr_dv   => rgtr_dv,
+					rgtr_id   => rgtr_id,
+					rgtr_data => rgtr_revs(rgtr_dmaack'length-1 downto 0),
+					data      => rgtr_dmaack);
+				dmaack_trdy <= dmaaddr_trdy;
+				dmaack_irdy <= dmaaddr_irdy;
+				dmaioack_irdy <= dmaioaddr_irdy;
+
+				rgtr_dmalen_e : entity hdl4fpga.sio_rgtr
+				generic map (
+					rid       => rid_dmalen)
+				port map (
+					rgtr_clk  => sio_clk,
+					rgtr_dv   => rgtr_dv,
+					rgtr_id   => rgtr_id,
+					rgtr_data => rgtr_revs(rgtr_dmalen'range),
+					data      => rgtr_dmalen);
+				dmalen_trdy <= dmaaddr_trdy;
+				dmalen_irdy <= dmaaddr_irdy;
+				dmaiolen_irdy <= dmaioaddr_irdy;
+
+				src_data <= rgtr_dmaaddr & rgtr_dmalen & rgtr_dmaack;
+				dmafifo_e : entity hdl4fpga.fifo
+				generic map (
+					max_depth  => fifo_depth,
+					latency    => setif(profile=0, 0, 1),
+					async_mode => true,
+					check_sov  => true,
+					check_dov  => true,
+					gray_code  => fifo_gray)
+				port map (
+					src_clk    => sio_clk,
+					src_irdy   => dmaaddr_irdy,
+					src_trdy   => dmaaddr_trdy,
+					src_data   => src_data,
+
+					dst_frm    => ctlr_inirdy,
+					dst_clk    => dmacfg_clk,
+					dst_irdy   => dmaioaddr_irdy,
+					dst_trdy   => dmaio_next,
+					dst_data   => dst_data);
+
+				process(dst_data)
+					variable aux : unsigned(dst_data'range);
+				begin
+					aux := unsigned(dst_data);
+					dmaio_addr <= std_logic_vector(aux(0 to dmaio_addr'length-1));
+					aux := aux sll dmaio_addr'length;
+					dmaio_len <= std_logic_vector(aux(0 to dmaio_len'length-1));
+					aux := aux sll dmaio_len'length;
+					dmaio_ack <= std_logic_vector(aux(0 to dmaio_ack'length-1));
+				end process;
+
+			end block;
+			dmaio_we   <= not dmaio_addr(dmaio_addr'left);
+			dmaio_next <= dmaio_trdy;
+
+			dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
+			rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
+			dmadata_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => fifodata_depth,
+				async_mode => true,
+				latency    => setif(profile=0, 3, 2),
+				check_sov  => true,
+				check_dov  => true,
+				gray_code  => false)
+			port map (
+				src_clk    => sio_clk,
+				src_irdy   => dmadata_irdy,
+				src_trdy   => dmadata_trdy,
+				src_data   => rgtr_dmadata,
+
+				dst_frm    => ctlr_inirdy,
+				dst_clk    => ctlr_clk,
+				dst_trdy   => ctlr_di_req,
+				dst_data   => ctlr_di);
+			ctlr_di_dv <= ctlr_di_req;
+
+			base_addr_e : entity hdl4fpga.sio_rgtr
+			generic map (
+				rid  => x"19")
+			port map (
+				rgtr_clk  => sio_clk,
+				rgtr_dv   => rgtr_dv,
+				rgtr_id   => rgtr_id,
+				rgtr_data => rgtr_data,
+				data      => base_addr);
+
+		end block;
+
+		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
+		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
+		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
+		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
+
+		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
+		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
+		port map (
+			dmacfg_clk  => dmacfg_clk,
+			dmaio_irdy  => dmasin_irdy,
+			dmaio_trdy  => dmaio_trdy,
+
+			dmacfg_req  => dmacfgio_req,
+			dmacfg_rdy  => dmacfgio_rdy,
+
+			ctlr_clk    => ctlr_clk,
+			ctlr_inirdy => ctlr_inirdy,
+
+			dma_req     => dmaio_req,
+			dma_rdy     => dmaio_rdy);
+
+		tx_b : block
 			signal src_data : std_logic_vector(0 to dmaio_ack'length+pay_length'length+status'length-1);
 			signal dst_data : std_logic_vector(src_data'range);
 		begin
@@ -329,318 +521,26 @@ begin
 				status <= std_logic_vector(aux(0 to status'length-1));
 			end process;
 
-		end block;
-
-		process (sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				if ctlr_inirdy='0' then
-					sout_req   <= sout_rdy;
-					acktx_trdy <= '0';
-				elsif (sout_rdy xor sout_req)='0' then
-					if acktx_irdy='1' then
-						sout_req <= not sout_rdy;
+			process (sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if ctlr_inirdy='0' then
+						sout_req   <= sout_rdy;
+						acktx_trdy <= '0';
+					elsif (sout_rdy xor sout_req)='0' then
+						if acktx_irdy='1' then
+							sout_req <= not sout_rdy;
+						else
+							sout_req <= sout_rdy;
+						end if;
+						acktx_trdy <= '0';
+					elsif acktx_trdy='1' then
+						sout_rdy   <= sout_req;
+						acktx_trdy <= '0';
+					elsif (sout_irdy and sout_trdy and sout_end)='1' then
+						acktx_trdy <= '1';
 					else
-						sout_req <= sout_rdy;
-					end if;
-					acktx_trdy <= '0';
-				elsif acktx_trdy='1' then
-					sout_rdy   <= sout_req;
-					acktx_trdy <= '0';
-				elsif (sout_irdy and sout_trdy and sout_end)='1' then
-					acktx_trdy <= '1';
-				else
-					acktx_trdy <= '0';
-				end if;
-			end if;
-		end process;
-
-		process (sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				sio_dmaio <=
-					reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
-					reverse(x"01" & x"00" & acktx_data &
-					rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
-				pay_length <= trans_length + x"0009";
-			end if;
-		end process;
-
-		siodmaio_irdy <= '0' when meta_end='0' else sout_trdy;
-		siodma_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => sio_dmaio,
-			sio_clk  => sio_clk,
-			sio_frm  => sout_frm,
-			sio_irdy => siodmaio_irdy,
-			sio_trdy => siodmaio_trdy,
-			so_end   => siodmaio_end,
-			so_data  => siodmaio_data);
-
-		sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
-		sout_irdy <=
-			meta_trdy     when meta_end='0' else
-			siodmaio_trdy when siodmaio_end='0' else
-			'1' when status_rw='0' else
-			sodata_irdy;
-		sout_end  <=
-			'0' when meta_end='0'     else
-			'0' when siodmaio_end='0' else
-			'1' when status_rw='0'    else
-			sodata_end;
-		sout_data <=
-			meta_data     when meta_end='0'     else
-			siodmaio_data when siodmaio_end='0' else
-			reverse(sodata_data);
-
-		rgtr_ack_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid       => rid_ack)
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_revs(rgtr_ack'length-1 downto 0),
-			data      => rgtr_ack);
-		dmaack_irdy <= dmaaddr_irdy;
-
---		dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
---		rgtr_ack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_ack'length)),8);
-		ackrx_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => fifo_depth,
-			latency    => setif(profile=0, 0, 1),
-			async_mode => true,
-			check_sov  => true,
-			check_dov  => true,
-			gray_code  => fifo_gray)
-		port map (
-			src_clk    => sio_clk,
-			src_irdy   => dmaack_irdy,
-			src_trdy   => dmaack_trdy,
-			src_data   => rgtr_ack,
-
-			dst_frm    => ctlr_inirdy,
-			dst_clk    => dmacfg_clk,
-			dst_irdy   => dmaioack_irdy,
-			dst_trdy   => dmaio_next,
-			dst_data   => dmaio_ack);
-
-		dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
-		rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
-		dmaaddr_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => fifo_depth,
-			latency    => setif(profile=0, 0, 1),
-			async_mode => true,
-			check_sov  => true,
-			check_dov  => true,
-			gray_code  => fifo_gray)
-		port map (
-			src_clk    => sio_clk,
-			src_irdy   => dmaaddr_irdy,
-			src_trdy   => dmaaddr_trdy,
-			src_data   => rgtr_dmaaddr,
-
-			dst_frm    => ctlr_inirdy,
-			dst_clk    => dmacfg_clk,
-			dst_irdy   => dmaioaddr_irdy,
-			dst_trdy   => dmaio_next,
-			dst_data   => dmaio_addr);
-		dmaio_we <= not dmaio_addr(dmaio_addr'left);
-
-		rgtr_dmalen_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid       => rid_dmalen)
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_revs(rgtr_dmalen'range),
-			data      => rgtr_dmalen);
-		dmalen_irdy <= dmaaddr_irdy;
-
---		dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
---		rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
-		dmalen_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => fifo_depth,
-			latency    => setif(profile=0, 0, 1),
-			async_mode => true,
-			check_sov  => true,
-			check_dov  => true,
-			gray_code  => fifo_gray)
-		port map (
-			src_clk    => sio_clk,
-			src_irdy   => dmalen_irdy,
-			src_trdy   => dmalen_trdy,
-			src_data   => rgtr_dmalen(dmaio_len'range),
-
-			dst_frm    => ctlr_inirdy,
-			dst_clk    => dmacfg_clk,
-			dst_irdy   => dmaiolen_irdy,
-			dst_trdy   => dmaio_next,
-			dst_data   => dmaio_len);
-		dmaio_next <= dmaio_trdy;
-
-		dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
-		rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
-		dmadata_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => fifodata_depth,
-			async_mode => true,
-			latency    => setif(profile=0, 3, 2),
-			check_sov  => true,
-			check_dov  => true,
-			gray_code  => false)
-		port map (
-			src_clk    => sio_clk,
-			src_irdy   => dmadata_irdy,
-			src_trdy   => dmadata_trdy,
-			src_data   => rgtr_dmadata,
-
-			dst_frm    => ctlr_inirdy,
-			dst_clk    => ctlr_clk,
-			dst_trdy   => ctlr_di_req,
-			dst_data   => ctlr_di);
-		ctlr_di_dv <= ctlr_di_req;
-
-		base_addr_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid  => x"19")
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-			data      => base_addr);
-
-		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
-		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
-		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
-		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
-
-		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
-		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
-		port map (
-			dmacfg_clk  => dmacfg_clk,
-			dmaio_irdy  => dmasin_irdy,
-			dmaio_trdy  => dmaio_trdy,
-
-			dmacfg_req  => dmacfgio_req,
-			dmacfg_rdy  => dmacfgio_rdy,
-
-			ctlr_clk    => ctlr_clk,
-			ctlr_inirdy => ctlr_inirdy,
-
-			dma_req     => dmaio_req,
-			dma_rdy     => dmaio_rdy);
-
-		sodata_b : block
-
-			signal ctlrio_irdy : std_logic;
-			signal trans_req    : bit;
-			signal trans_rdy    : bit;
-			signal len_req      : bit;
-			signal len_rdy      : bit;
-			signal fifo_req     : bit;
-			signal fifo_rdy     : bit;
-
-			signal fifo_frm    : std_logic;
-			signal fifo_irdy   : std_logic;
-			signal fifo_trdy   : std_logic;
-			signal fifo_data   : std_logic_vector(ctlr_do'range);
-			signal fifo_length : std_logic_vector(16-1 downto 0);
-
-			signal dmaout_irdy : std_logic;
-			signal dmaout_data : std_logic_vector(ctlr_do'range);
-
-			signal gnt_lat : std_logic;
-		begin
-
-			process (dmaio_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
-				variable q   : std_logic_vector(0 to 3+8-1);
-				variable lat : std_logic;
-			begin
-				if rising_edge(ctlr_clk) then
-					q := std_logic_vector(unsigned(q) srl 1);
-				end if;
-				q(0) := dmaio_gnt and ctlr_cas;
-				lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
-				ctlrio_irdy <= ctlr_do_dv(0) and lat;
-				gnt_lat     <= lat;
-			end process;
-
-			process (ctlr_clk)
-				variable gnt : std_logic;
-			begin
-				if rising_edge(ctlr_clk) then
-					if dmaio_gnt='1' then
-						gnt := ctlr_rw;
-					elsif gnt_lat='0' then
-						if gnt='1' then
-							trans_req <= not trans_rdy;
-						end if;
-						gnt := '0';
-					end if;
-				end if;
-			end process;
-
-			buffdv_e : entity hdl4fpga.align
-			generic map (
-				n => 1,
-				d => (0 to 0 => 3))
-			port map (
-				clk   => ctlr_clk,
-				di(0) => ctlrio_irdy,
-				do(0) => dmaout_irdy);
-
-			buffdo_e : entity hdl4fpga.align
-			generic map (
-				n => ctlr_do'length,
-				d => (0 to ctlr_do'length-1 => 3))
-			port map (
-				clk => ctlr_clk,
-				di  => ctlr_do,
-				do  => dmaout_data);
-
-			dmadataout_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => (2*4*1*256/(ctlr_di'length/8)),
-				async_mode => true,
-				latency    => 2,
-				gray_code  => false,
-				check_sov  => false, --true,
-				check_dov  => true)
-			port map (
-				src_clk  => ctlr_clk,
-				src_irdy => dmaout_irdy,
-				src_data => dmaout_data,
-
-				dst_frm  => ctlr_inirdy,
-				dst_clk  => sio_clk,
-				dst_irdy => fifo_irdy,
-				dst_trdy => fifo_trdy,
-				dst_data => fifo_data);
-
-			process (dmacfg_clk)
-				variable length : unsigned(fifo_length'range);
-			begin
-				if rising_edge(dmacfg_clk) then
-					if dmaioaddr_irdy='1' then
-						if dmaiolen_irdy='1' then
-							if dmaio_next='1' then
-								if dmaio_we='0' then
-									length := resize(unsigned(dmaio_len), length'length);
-									for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
-										length(length'left) := '1';
-										length := length rol 1;
-									end loop;
-									fifo_length <= std_logic_vector(length);
-									len_req     <= not len_rdy;
-								end if;
-							end if;
-						end if;
+						acktx_trdy <= '0';
 					end if;
 				end if;
 			end process;
@@ -648,40 +548,188 @@ begin
 			process (sio_clk)
 			begin
 				if rising_edge(sio_clk) then
-					if (trans_req xor trans_rdy)='1' and (len_req xor len_rdy)='1' then
-						fifo_req  <= not fifo_rdy;
-						if sodata_trdy='1' and sodata_end='1' then
-							trans_rdy <= trans_req;
-							fifo_rdy  <= fifo_req;
-							len_rdy   <= len_req;
-						end if;
-					end if;
+					sio_dmaio <=
+						reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
+						reverse(x"01" & x"00" & acktx_data &
+						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
+					pay_length <= trans_length + x"0009";
 				end if;
 			end process;
-			fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
-			sodata_trdy <=
-				'0' when siodmaio_end='0' else
-				'0' when status_rw='0'    else
-				sout_trdy;
-
-			sodata_e : entity hdl4fpga.so_data
+			siodmaio_irdy <= '0' when meta_end='0' else sout_trdy;
+			siodma_e : entity hdl4fpga.sio_mux
 			port map (
-				sio_clk   => sio_clk,
-				si_frm    => fifo_frm,
-				si_irdy   => fifo_irdy,
-				si_trdy   => fifo_trdy,
-				si_data   => fifo_data,
-				si_length => fifo_length,
+				mux_data => sio_dmaio,
+				sio_clk  => sio_clk,
+				sio_frm  => sout_frm,
+				sio_irdy => siodmaio_irdy,
+				sio_trdy => siodmaio_trdy,
+				so_end   => siodmaio_end,
+				so_data  => siodmaio_data);
 
-				so_frm    => sodata_frm,
-				so_irdy   => sodata_irdy,
-				so_trdy   => sodata_trdy,
-				so_end    => sodata_end,
-				so_data   => sodata_data);
+			sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
+			sout_irdy <=
+				meta_trdy     when meta_end='0' else
+				siodmaio_trdy when siodmaio_end='0' else
+				'1' when status_rw='0' else
+				sodata_irdy;
+			sout_end  <=
+				'0' when meta_end='0'     else
+				'0' when siodmaio_end='0' else
+				'1' when status_rw='0'    else
+				sodata_end;
+			sout_data <=
+				meta_data     when meta_end='0'     else
+				siodmaio_data when siodmaio_end='0' else
+				reverse(sodata_data);
 
+
+			sodata_b : block
+
+				signal ctlrio_irdy : std_logic;
+				signal trans_req    : bit;
+				signal trans_rdy    : bit;
+				signal len_req      : bit;
+				signal len_rdy      : bit;
+				signal fifo_req     : bit;
+				signal fifo_rdy     : bit;
+
+				signal fifo_frm    : std_logic;
+				signal fifo_irdy   : std_logic;
+				signal fifo_trdy   : std_logic;
+				signal fifo_data   : std_logic_vector(ctlr_do'range);
+				signal fifo_length : std_logic_vector(16-1 downto 0);
+
+				signal dmaout_irdy : std_logic;
+				signal dmaout_data : std_logic_vector(ctlr_do'range);
+
+				signal gnt_lat : std_logic;
+			begin
+
+				process (dmaio_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
+					variable q   : std_logic_vector(0 to 3+8-1);
+					variable lat : std_logic;
+				begin
+					if rising_edge(ctlr_clk) then
+						q := std_logic_vector(unsigned(q) srl 1);
+					end if;
+					q(0) := dmaio_gnt and ctlr_cas;
+					lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
+					ctlrio_irdy <= ctlr_do_dv(0) and lat;
+					gnt_lat     <= lat;
+				end process;
+
+				process (ctlr_clk)
+					variable gnt : std_logic;
+				begin
+					if rising_edge(ctlr_clk) then
+						if dmaio_gnt='1' then
+							gnt := ctlr_rw;
+						elsif gnt_lat='0' then
+							if gnt='1' then
+								trans_req <= not trans_rdy;
+							end if;
+							gnt := '0';
+						end if;
+					end if;
+				end process;
+
+				buffdv_e : entity hdl4fpga.align
+				generic map (
+					n => 1,
+					d => (0 to 0 => 3))
+				port map (
+					clk   => ctlr_clk,
+					di(0) => ctlrio_irdy,
+					do(0) => dmaout_irdy);
+
+				buffdo_e : entity hdl4fpga.align
+				generic map (
+					n => ctlr_do'length,
+					d => (0 to ctlr_do'length-1 => 3))
+				port map (
+					clk => ctlr_clk,
+					di  => ctlr_do,
+					do  => dmaout_data);
+
+				dmadataout_e : entity hdl4fpga.fifo
+				generic map (
+					max_depth  => (2*4*1*256/(ctlr_di'length/8)),
+					async_mode => true,
+					latency    => 2,
+					gray_code  => false,
+					check_sov  => false, --true,
+					check_dov  => true)
+				port map (
+					src_clk  => ctlr_clk,
+					src_irdy => dmaout_irdy,
+					src_data => dmaout_data,
+
+					dst_frm  => ctlr_inirdy,
+					dst_clk  => sio_clk,
+					dst_irdy => fifo_irdy,
+					dst_trdy => fifo_trdy,
+					dst_data => fifo_data);
+
+				process (dmacfg_clk)
+					variable length : unsigned(fifo_length'range);
+				begin
+					if rising_edge(dmacfg_clk) then
+						if dmaioaddr_irdy='1' then
+							if dmaiolen_irdy='1' then
+								if dmaio_next='1' then
+									if dmaio_we='0' then
+										length := resize(unsigned(dmaio_len), length'length);
+										for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
+											length(length'left) := '1';
+											length := length rol 1;
+										end loop;
+										fifo_length <= std_logic_vector(length);
+										len_req     <= not len_rdy;
+									end if;
+								end if;
+							end if;
+						end if;
+					end if;
+				end process;
+
+				process (sio_clk)
+				begin
+					if rising_edge(sio_clk) then
+						if (trans_req xor trans_rdy)='1' and (len_req xor len_rdy)='1' then
+							fifo_req  <= not fifo_rdy;
+							if sodata_trdy='1' and sodata_end='1' then
+								trans_rdy <= trans_req;
+								fifo_rdy  <= fifo_req;
+								len_rdy   <= len_req;
+							end if;
+						end if;
+					end if;
+				end process;
+				fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
+
+				sodata_trdy <=
+					'0' when siodmaio_end='0' else
+					'0' when status_rw='0'    else
+					sout_trdy;
+
+				sodata_e : entity hdl4fpga.so_data
+				port map (
+					sio_clk   => sio_clk,
+					si_frm    => fifo_frm,
+					si_irdy   => fifo_irdy,
+					si_trdy   => fifo_trdy,
+					si_data   => fifo_data,
+					si_length => fifo_length,
+
+					so_frm    => sodata_frm,
+					so_irdy   => sodata_irdy,
+					so_trdy   => sodata_trdy,
+					so_end    => sodata_end,
+					so_data   => sodata_data);
+
+			end block;
 		end block;
-
 	end block;
 
 	adapter_b : block
