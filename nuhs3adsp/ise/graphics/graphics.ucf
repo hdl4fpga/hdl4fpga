@@ -42,8 +42,8 @@ TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
 # DDR 200 Mhz rate clock #
 # ###################### #
 
-#NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.000 ns;
-#NET "ctlrphy_dqsi[*]"  MAXSKEW  = 0.500 ns;
+NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.000 ns;
+NET "ctlrphy_dqsi[*]"  MAXSKEW  = 0.500 ns;
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns    HIGH 50% INPUT_JITTER 0.750 ns;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.750 ns;

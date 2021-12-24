@@ -42,8 +42,8 @@ entity txn_buffer is
 		src_end  : in  std_logic := '0';
 		src_tag  : in  std_logic_vector(0 to n-1) := (0 to n-1 => '-');
 		src_data : in  std_logic_vector;
-		rollback : in  std_logic;
-		commit   : in  std_logic;
+		rollback : in  std_logic := '0';
+		commit   : in  std_logic := '1';
 		avail    : buffer std_logic;
 
 

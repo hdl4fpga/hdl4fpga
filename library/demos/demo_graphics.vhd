@@ -273,21 +273,36 @@ begin
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
-		metaram_e : entity hdl4fpga.sio_ram
+		metafifo_e : entity hdl4fpga.txn_buffer
 		generic map (
-			mem_size => 64*8)
+			m => 5)
 		port map (
-			si_clk   => sio_clk,
-			si_frm   => rgtr_frm,
-			si_irdy  => metaram_irdy,
-			si_data  => metaram_data,
+			src_clk  => sio_clk,
+			src_frm  => rgtr_frm,
+			src_irdy => metaram_irdy,
+			src_data => metaram_data,
 
-			so_clk   => sio_clk,
-			so_frm   => sout_frm,
-			so_irdy  => sout_trdy,
-			so_trdy  => meta_trdy,
-			so_end   => meta_end,
-			so_data  => meta_data);
+			dst_frm  => sout_frm,
+			dst_irdy => sout_trdy,
+			dst_trdy => meta_trdy,
+			dst_end  => meta_end,
+			dst_data => meta_data);
+
+--		metaram_e : entity hdl4fpga.sio_ram
+--		generic map (
+--			mem_size => 64*8)
+--		port map (
+--			si_clk   => sio_clk,
+--			si_frm   => rgtr_frm,
+--			si_irdy  => metaram_irdy,
+--			si_data  => metaram_data,
+--
+--			so_clk   => sio_clk,
+--			so_frm   => sout_frm,
+--			so_irdy  => sout_trdy,
+--			so_trdy  => meta_trdy,
+--			so_end   => meta_end,
+--			so_data  => meta_data);
 
 		rx_b : block
 		begin
