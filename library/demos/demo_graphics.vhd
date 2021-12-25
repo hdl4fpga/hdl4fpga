@@ -288,91 +288,11 @@ begin
 			dst_end  => meta_end,
 			dst_data => meta_data);
 
---		metaram_e : entity hdl4fpga.sio_ram
---		generic map (
---			mem_size => 64*8)
---		port map (
---			si_clk   => sio_clk,
---			si_frm   => rgtr_frm,
---			si_irdy  => metaram_irdy,
---			si_data  => metaram_data,
---
---			so_clk   => sio_clk,
---			so_frm   => sout_frm,
---			so_irdy  => sout_trdy,
---			so_trdy  => meta_trdy,
---			so_end   => meta_end,
---			so_data  => meta_data);
-
 		rx_b : block
 		begin
 
---			dmaack_irdy <= setif(rgtr_id=rid_ack) and rgtr_dv and rgtr_irdy;
---			rgtr_dmaack <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaack'length)),8);
---			ackrx_e : entity hdl4fpga.fifo
---			generic map (
---				max_depth  => fifo_depth,
---				latency    => setif(profile=0, 0, 1),
---				async_mode => true,
---				check_sov  => true,
---				check_dov  => true,
---				gray_code  => fifo_gray)
---			port map (
---				src_clk    => sio_clk,
---				src_irdy   => dmaack_irdy,
---				src_trdy   => dmaack_trdy,
---				src_data   => rgtr_dmaack,
---
---				dst_frm    => ctlr_inirdy,
---				dst_clk    => dmacfg_clk,
---				dst_irdy   => dmaioack_irdy,
---				dst_trdy   => dmaio_next,
---				dst_data   => dmaio_ack);
-
---			dmalen_irdy <= setif(rgtr_id=rid_dmalen) and rgtr_dv and rgtr_irdy;
---			rgtr_dmalen <= std_logic_vector(resize(unsigned(reverse(rgtr_data, 8)), rgtr_dmalen'length));
---			dmalen_e : entity hdl4fpga.fifo
---			generic map (
---				max_depth  => fifo_depth,
---				latency    => setif(profile=0, 0, 1),
---				async_mode => true,
---				check_sov  => true,
---				check_dov  => true,
---				gray_code  => fifo_gray)
---			port map (
---				src_clk    => sio_clk,
---				src_irdy   => dmalen_irdy,
---				src_trdy   => dmalen_trdy,
---				src_data   => rgtr_dmalen(dmaio_len'range),
---
---				dst_frm    => ctlr_inirdy,
---				dst_clk    => dmacfg_clk,
---				dst_irdy   => dmaiolen_irdy,
---				dst_trdy   => dmaio_next,
---				dst_data   => dmaio_len);
-
 			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
 			rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
---			dmaaddr_e : entity hdl4fpga.fifo
---			generic map (
---				max_depth  => fifo_depth,
---				latency    => setif(profile=0, 0, 1),
---				async_mode => true,
---				check_sov  => true,
---				check_dov  => true,
---				gray_code  => fifo_gray)
---			port map (
---				src_clk    => sio_clk,
---				src_irdy   => dmaaddr_irdy,
---				src_trdy   => dmaaddr_trdy,
---				src_data   => rgtr_dmaaddr,
---
---				dst_frm    => ctlr_inirdy,
---				dst_clk    => dmacfg_clk,
---				dst_irdy   => dmaioaddr_irdy,
---				dst_trdy   => dmaio_next,
---				dst_data   => dmaio_addr);
-
 			fifo_b : block
 				signal src_data : std_logic_vector(0 to rgtr_dmaaddr'length+rgtr_dmalen'length+rgtr_dmaack'length-1);
 				signal dst_data : std_logic_vector(src_data'range);
@@ -588,25 +508,7 @@ begin
 				so_end   => siodmaio_end,
 				so_data  => siodmaio_data);
 
-			sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
-			sout_irdy <=
-				meta_trdy     when meta_end='0' else
-				siodmaio_trdy when siodmaio_end='0' else
-				'1'           when status_rw='0' else
-				sodata_irdy;
-			sout_end  <=
-				'0' when meta_end='0'     else
-				'0' when siodmaio_end='0' else
-				'1' when status_rw='0'    else
-				sodata_end;
-			sout_data <=
-				meta_data     when meta_end='0'     else
-				siodmaio_data when siodmaio_end='0' else
-				reverse(sodata_data);
-
-
 			sodata_b : block
-
 				signal ctlrio_irdy : std_logic;
 				signal trans_req    : bit;
 				signal trans_rdy    : bit;
@@ -750,6 +652,23 @@ begin
 					so_data   => sodata_data);
 
 			end block;
+
+			sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
+			sout_irdy <=
+				meta_trdy     when meta_end='0' else
+				siodmaio_trdy when siodmaio_end='0' else
+				'1'           when status_rw='0' else
+				sodata_irdy;
+			sout_end  <=
+				'0' when meta_end='0'     else
+				'0' when siodmaio_end='0' else
+				'1' when status_rw='0'    else
+				sodata_end;
+			sout_data <=
+				meta_data     when meta_end='0'     else
+				siodmaio_data when siodmaio_end='0' else
+				reverse(sodata_data);
+
 		end block;
 	end block;
 
