@@ -37,8 +37,14 @@ use unisim.vcomponents.all;
 
 architecture graphics of nuhs3adsp is
 
-	signal sys_rst : std_logic;
-	signal sys_clk : std_logic;
+	type apps is (
+		mode900p_ddr166mhz,
+		mode1080p_ddr166mhz,
+		mode1080p_ddr200mhz);
+	constant app         : apps := mode1080p_ddr200mhz; --mode900p_ddr166mhz;
+
+	signal sys_rst       : std_logic;
+	signal sys_clk       : std_logic;
 
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
@@ -57,29 +63,29 @@ architecture graphics of nuhs3adsp is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per      : real    := 50.0;
+	constant sys_per       : real    := 50.0;
 
-	constant fpga         : natural := spartan3;
-	constant mark         : natural := m6t;
+	constant fpga          : natural := spartan3;
+	constant mark          : natural := m6t;
 
-	constant sclk_phases  : natural := 4;
-	constant sclk_edges   : natural := 2;
-	constant cmmd_gear    : natural := 1;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
-	constant bank_size    : natural := ddr_ba'length;
-	constant addr_size    : natural := ddr_a'length;
-	constant coln_size    : natural := 8;
-	constant data_gear    : natural := 2;
-	constant word_size    : natural := ddr_dq'length;
-	constant byte_size    : natural := 8;
+	constant sclk_phases   : natural := 4;
+	constant sclk_edges    : natural := 2;
+	constant cmmd_gear     : natural := 1;
+	constant data_phases   : natural := 2;
+	constant data_edges    : natural := 2;
+	constant bank_size     : natural := ddr_ba'length;
+	constant addr_size     : natural := ddr_a'length;
+	constant coln_size     : natural := 8;
+	constant data_gear     : natural := 2;
+	constant word_size     : natural := ddr_dq'length;
+	constant byte_size     : natural := 8;
 
-	signal ddrsys_lckd    : std_logic;
-	signal ddrsys_rst     : std_logic;
+	signal ddrsys_lckd     : std_logic;
+	signal ddrsys_rst      : std_logic;
 
-	constant clk0         : natural := 0;
-	constant clk90        : natural := 1;
-	signal ddrsys_clks    : std_logic_vector(0 to 2-1);
+	constant clk0          : natural := 0;
+	constant clk90         : natural := 1;
+	signal ddrsys_clks     : std_logic_vector(0 to 2-1);
 
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -171,11 +177,6 @@ architecture graphics of nuhs3adsp is
 		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
 		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
 
-	type apps is (
-		grade4,
-		grade45,
-		grade5);
-
 	type app_param is record
 		ddr_speed  : ddr_speeds;
 		video_mode : video_modes;
@@ -183,11 +184,10 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		grade4 => (ddr_166MHz, mode900p),
-		grade45 => (ddr_166MHz, mode1080p),
-		grade5 => (ddr_200MHz, mode1080p));
+		mode900p_ddr166mhz  => (ddr_166MHz, mode900p),
+		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p),
+		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p));
 
-	constant app : apps := grade5;
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
 

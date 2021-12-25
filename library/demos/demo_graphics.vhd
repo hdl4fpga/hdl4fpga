@@ -302,7 +302,7 @@ begin
 --			so_irdy  => sout_trdy,
 --			so_trdy  => meta_trdy,
 --			so_end   => meta_end,
-			so_data  => meta_data);
+--			so_data  => meta_data);
 
 		rx_b : block
 		begin
@@ -430,11 +430,11 @@ begin
 					variable aux : unsigned(dst_data'range);
 				begin
 					aux := unsigned(dst_data);
-					dmaio_addr <= std_logic_vector(aux(0 to dmaio_addr'length-1));
-					aux := aux sll dmaio_addr'length;
-					dmaio_len <= std_logic_vector(aux(0 to dmaio_len'length-1));
-					aux := aux sll dmaio_len'length;
-					dmaio_ack <= std_logic_vector(aux(0 to dmaio_ack'length-1));
+					dmaio_addr <= std_logic_vector(resize(aux(0 to rgtr_dmaaddr'length-1), dmaio_addr'length));
+					aux := aux sll rgtr_dmaaddr'length;
+					dmaio_len <= std_logic_vector(resize(aux(0 to rgtr_dmalen'length-1), dmaio_len'length));
+					aux := aux sll rgtr_dmalen'length;
+					dmaio_ack <= std_logic_vector(resize(aux(0 to rgtr_dmaack'length-1), dmaio_ack'length));
 				end process;
 
 			end block;
@@ -569,7 +569,7 @@ begin
 						reverse(x"01" & x"00" & acktx_data &
 						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
 						pay_length <= total_length;
-						if status(status'right)='0' then
+						if status_rw='1' then
 							total_length := trans_length + x"0009";
 						else
 							total_length := x"0009";
@@ -592,7 +592,7 @@ begin
 			sout_irdy <=
 				meta_trdy     when meta_end='0' else
 				siodmaio_trdy when siodmaio_end='0' else
-				'1' when status_rw='0' else
+				'1'           when status_rw='0' else
 				sodata_irdy;
 			sout_end  <=
 				'0' when meta_end='0'     else
@@ -699,7 +699,7 @@ begin
 						if dmaioaddr_irdy='1' then
 							if dmaiolen_irdy='1' then
 								if dmaio_next='1' then
-									if dmaio_we='0' then
+									if status_rw='1' then
 										length := resize(unsigned(dmaio_len), length'length);
 										for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
 											length(length'left) := '1';

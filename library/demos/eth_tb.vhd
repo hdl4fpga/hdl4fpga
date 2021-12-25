@@ -107,7 +107,7 @@ architecture def of eth_tb is
 			payload);
 
 --	constant pyld1 : std_logic_vector := x"160300000000_01007e_180300010203_1702000000_160380000000_1702000000";
-	constant pyld1 : std_logic_vector := x"010001_1702000000_160380000000";
+	constant pyld1 : std_logic_vector := x"010009_1702000001_180301020304_160300123456";
 --	constant pyld1 : std_logic_vector := x"01008b";
 	constant pkt1 : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS

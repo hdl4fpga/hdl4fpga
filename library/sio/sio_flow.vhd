@@ -152,7 +152,7 @@ begin
 		data      => ackrx_data);
 
 	process (sio_clk)
-		variable last : unsigned(ackrx_data'range);
+		variable last : unsigned(ackrx_data'range) := (others => '0');
 	begin
 		if rising_edge(sio_clk) then
 			if ackrx_dv='1' then

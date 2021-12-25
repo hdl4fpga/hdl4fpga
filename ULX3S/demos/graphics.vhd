@@ -54,7 +54,7 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := uart_250MHz_480p24bpp;
+	constant app : apps := mii_166MHz_480p24bpp; --uart_250MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -234,6 +234,7 @@ architecture graphics of ulx3s is
 
 	constant io_link : io_iface := app_tab(app).iface;
 
+	constant hdplx : std_logic := setif(debug, '0', '1');
 begin
 
 	sys_rst <= '0';
@@ -561,7 +562,7 @@ begin
 		generic map (
 			default_ipv4a => aton("192.168.1.1"))
 		port map (
-			hdplx      => '1',
+			hdplx      => hdplx,
 			sio_clk    => mii_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,

@@ -192,7 +192,7 @@ architecture ulx3s_graphics of testbench is
 	constant data  : std_logic_vector :=
 --		x"010001" &
 --		x"01000c_18017e7d_1702000000_160300000000_1702_00_00_01_160380000000";
-		x"01000c_1702_00_00_01_160300000001";
+		x"010000_1702_00_00_01_160300000001";
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &
@@ -373,7 +373,7 @@ begin
 
 	end block;
 
-	pl_frm <= '0', '1' after 1 us;
+	pl_frm <= '0', '1' after 100 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -427,7 +427,7 @@ begin
 
 			udp_checksummed (
 				x"ffffffff",
-				x"c0a8000e",
+				aton("192.168.1.1"),
 				x"4444dea9"         & -- UDP Source port, Destination port
 				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 				x"0000" &              -- UPD checksum
@@ -463,14 +463,14 @@ begin
 
 		eth4_e: entity hdl4fpga.sio_mux
 		port map (
-			mux_data => reverse(arppkt,8),
+			mux_data => reverse(packet,8),
 			sio_clk  => mii_clk,
 			sio_frm  => pl_frm,
 			sio_irdy => pl_trdy,
 			so_end   => pl_end,
 			so_data  => pl_data);
 
-		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0806",8);
+		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0800",8);
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => llc_data,
