@@ -68,7 +68,7 @@ entity udp is
 		ipv4sawr_data : out std_logic_vector;
 
 		mactx_full    : in  std_logic := '1';
-		metatx_trdy    : in  std_logic := '1';
+		metatx_trdy   : in  std_logic := '1';
 		ipsatx_full   : in  std_logic;
 		ipdatx_full   : in  std_logic;
 		iplentx_irdy  : out std_logic;

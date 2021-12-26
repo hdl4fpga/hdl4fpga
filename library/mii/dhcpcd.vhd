@@ -57,7 +57,6 @@ entity dhcpcd is
 		mactx_full    : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
 		ipsatx_full   : in  std_logic := '1';
-		ipdatx_irdy   : in  std_logic := '1';
 		udplentx_full : in  std_logic := '1';
 		udplentx_irdy : in  std_logic := '1';
 

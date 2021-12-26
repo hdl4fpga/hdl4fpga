@@ -40,7 +40,6 @@ entity dhcpc_dscb is
 		dhcpdscb_frm  : in  std_logic;
 
 		mactx_full    : in  std_logic := '1';
-		ipsatx_irdy   : in  std_logic := '1';
 		ipdatx_full   : in  std_logic := '1';
 		ipdatx_irdy   : in  std_logic := '1';
 		udplentx_full : in  std_logic := '1';
@@ -57,7 +56,7 @@ architecture def of dhcpc_dscb is
 	constant payload_size : natural := 250;
 	constant udp_size     : std_logic_vector := std_logic_vector(to_unsigned(payload_size+8,16));
 
-	constant vendor_data : std_logic_vector := 
+	constant vendor_data : std_logic_vector :=
 		x"350101"       &     -- DHCPDISCOVER
 		x"320400000000" &     -- IP REQUEST
 		x"FF";                -- END
@@ -72,7 +71,7 @@ architecture def of dhcpc_dscb is
 			x"0000"      &	  -- UDP CHECKSUM
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
-			dhcp_mac     &    -- CHADDR  
+			dhcp_mac     &    -- CHADDR
 			x"63825363"  &    -- MAGIC COOKIE
 			vendor_data);
 
@@ -83,9 +82,9 @@ architecture def of dhcpc_dscb is
 	signal dhcppkt_data  : std_logic_vector(dhcpdscb_data'range);
 
 	constant dhcp_vendor : natural := dhcp4hdr_frame'right+1;
-	constant dscb_frame  : natural_vector(udp4hdr_frame'left to dhcp_vendor) := 
-		 udp4hdr_frame  & 
-		 dhcp4hdr_frame & 
+	constant dscb_frame  : natural_vector(udp4hdr_frame'left to dhcp_vendor) :=
+		 udp4hdr_frame  &
+		 dhcp4hdr_frame &
 		(dhcp_vendor => vendor_data'length);
 
 	signal dhcpdscb_ptr  : std_logic_vector(0 to unsigned_num_bits((payload_size+8)*8/dhcpdscb_data'length-1));
@@ -99,7 +98,7 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy ='1' and ipdatx_full='1' then
+			elsif dhcpdscb_irdy='1' and ipdatx_full='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 				end if;
@@ -109,13 +108,13 @@ begin
 	end process;
 
 	dhcppkt_ena <= frame_decode (
-		dhcpdscb_ptr, dscb_frame,  dhcpdscb_data'length, 
-		(udp4_sp,     udp4_dp,     udp4_len,      udp4_cksm, 
-		dhcp4_op,     dhcp4_htype, dhcp4_hlen, 
+		dhcpdscb_ptr, dscb_frame,  dhcpdscb_data'length,
+		(udp4_sp,     udp4_dp,     udp4_len,      udp4_cksm,
+		dhcp4_op,     dhcp4_htype, dhcp4_hlen,
 		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
-	dhcppkt_irdy <= 
-		'0'           when ipdatx_full='0'  else 
+	dhcppkt_irdy <=
+		'0'           when ipdatx_full='0'  else
 		udplentx_irdy when udplentx_full='0' else
 		dhcpdscb_irdy when dhcppkt_ena='1' else
 		'0';
@@ -130,15 +129,15 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-	dhcpdscb_trdy <= 
-		ipdatx_irdy when ipdatx_full='0' else 
+	dhcpdscb_trdy <=
+		ipdatx_irdy when ipdatx_full='0' else
 		dhcppkt_trdy;
 
-	dhcpdscb_end <= 
-		'0' when ipdatx_full='0' else 
+	dhcpdscb_end <=
+		'0' when ipdatx_full='0' else
 		dhcppkt_end;
 
-	dhcpdscb_data <= 
+	dhcpdscb_data <=
 		(dhcpdscb_data'range => '1') when mactx_full='0'  else
 		(dhcpdscb_data'range => '1') when ipdatx_full='0' else
 		dhcppkt_data                 when dhcppkt_ena='1' else
