@@ -59,7 +59,7 @@ architecture mix of arbiter is
 		return (arg'range => '0');
 	end;
 
-	signal gntd : std_logic_vector(gnt'range) := (others => '0');
+	signal gntq : std_logic_vector(gnt'range) := (others => '0');
 
 begin
 
@@ -67,7 +67,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				gntd <= gnt;
+				if gntq=(gntq'range => '0') then
+					gntq <= req and (gnt'range => csc);
+				else
+					gntq <= gnt;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -75,12 +79,12 @@ begin
 	assert req'length=gnt'length
 	severity failure;
 
-	gnt <= 
-		primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=gntd))) and (gntd or (gnt'range => csc)) when idle_cycle else
-		primask(word2byte((req and gntd) & req, setif((gntd'range => '0')=(gntd and req)))) and (gntd or (gnt'range => csc));
+	gnt <=
+		primask(word2byte((req and gntq) & (req and (gnt'range => csc)), setif((gntq'range => '0')=gntq))) and gntq when idle_cycle else
+		primask(word2byte((req and gntq) & (req and (gnt'range => csc)), setif((gntq'range => '0')=(gntq and req))));
 
-	swp  <= setif(gntd/=gnt);
-	gswp <= setif(gntd/=gnt and gntd/=(gntd'range => '0') and gnt/=(gnt'range => '0'));
+	swp  <= setif(gntq/=gnt);
+	gswp <= setif(gntq/=gnt and gntq/=(gntq'range => '0') and gnt/=(gnt'range => '0'));
 	idle <= setif(gnt=(gnt'range => '0'));
 
 end;

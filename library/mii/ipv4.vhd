@@ -181,6 +181,9 @@ architecture def of ipv4 is
 
 	signal iplentx_full     : std_logic;
 
+	signal icmpmactx_trdy   : std_logic;
+	signal udpmactx_trdy    : std_logic;
+
 	signal ipv4sanll_vld    : std_logic := '0';
 	signal tp1              : std_logic_vector(1 to 32);
 
@@ -371,7 +374,8 @@ begin
 		ipdatx_irdy   <= wirebus(icmpipdatx_irdy  & udpipdatx_irdy,  dev_gnt);
 		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt);
 
-		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
+		(0 => icmptx_trdy,    1 => udptx_trdy)    <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
+		(0 => icmpmactx_trdy, 1 => udpmactx_trdy) <= dev_gnt and (dev_gnt'range => mactx_trdy);
 
 		udpipdatx_irdy   <= '0' when mactx_full='0'   else '1';
 		icmpiplentx_irdy <= '0' when mactx_full='0'   else '1';
@@ -561,7 +565,7 @@ begin
 		icmprx_data => ipv4rx_data,
 
 		metatx_end  => ipv4datx_full,
-		metatx_trdy => mactx_trdy,
+		metatx_trdy => icmpmactx_trdy,
 
 		icmptx_frm  => icmptx_frm,
 		icmptx_irdy => icmptx_irdy,
@@ -607,6 +611,7 @@ begin
 
 		udptx_frm    => udptx_frm,
 		mactx_full   => mactx_full,
+		metatx_trdy  => udpmactx_trdy,
 		ipsatx_full  => ipv4satx_full,
 		ipdatx_full  => ipv4datx_full,
 		iplentx_full => iplentx_full,

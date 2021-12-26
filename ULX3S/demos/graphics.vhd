@@ -42,6 +42,7 @@ architecture graphics of ulx3s is
 	--	Interface_SdramSpeed_PixelFormat--
 		uart_250MHz_480p24bpp,          --
 
+		uart_133MHz_480p24bpp,          --
 		uart_133MHz_600p16bpp,          --
 		uart_166MHz_600p16bpp,          --
 		uart_200MHz_600p16bpp,          --
@@ -54,7 +55,7 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := uart_250MHz_480p24bpp;
+	constant app : apps := uart_133MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -207,6 +208,7 @@ architecture graphics of ulx3s is
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
 		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
+		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram133MHz),
 		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
 		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
 		uart_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),

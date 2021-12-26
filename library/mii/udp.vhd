@@ -68,6 +68,7 @@ entity udp is
 		ipv4sawr_data : out std_logic_vector;
 
 		mactx_full    : in  std_logic := '1';
+		metatx_trdy    : in  std_logic := '1';
 		ipsatx_full   : in  std_logic;
 		ipdatx_full   : in  std_logic;
 		iplentx_irdy  : out std_logic;
@@ -121,8 +122,9 @@ architecture def of udp is
 	signal dhcplentx_end  : std_logic;
 
 	signal udplentx_full     : std_logic;
+	signal udpmetatx_trdy    : std_logic;
 	signal dhcpcdipdatx_irdy : std_logic;
-	signal dhcpcdmactx_irdy  : std_logic;
+	signal dhcpmetatx_trdy    : std_logic;
 	signal udpmactx_irdy     : std_logic;
 	signal udpipdatx_irdy    : std_logic;
 	signal udpiplentx_irdy   : std_logic;
@@ -162,6 +164,7 @@ begin
 		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
 		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
 		(0 => dhcpctx_trdy, 1 => udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
+		(0 => dhcpmetatx_trdy, 1 => udpmetatx_trdy) <= dev_gnt and (dev_gnt'range => metatx_trdy);
 	end block;
 
 	meta_b : block
@@ -338,6 +341,7 @@ begin
 
 		udp_irdy   => udppltx_irdy,
 		metatx_end => udplentx_full,
+		metatx_trdy => udpmetatx_trdy,
 		udp_trdy   => udppltx_trdy,
 		udp_end    => udppltx_end,
 		udp_data   => udppltx_data);
