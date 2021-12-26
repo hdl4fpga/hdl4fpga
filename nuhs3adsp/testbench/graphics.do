@@ -35,8 +35,6 @@ add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/sio_flow_e/tx_trd
 add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/sio_flow_e/tx_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaioack_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaiolen_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaioaddr_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaio_next
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_len
@@ -61,6 +59,8 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/line__471/aux
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/line__471/aux1
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/trans_length
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/pay_length
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_length
@@ -71,7 +71,7 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/len_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {207450834 ps} 0}
+WaveRestoreCursors {{Cursor 1} {217708235 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -87,4 +87,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {203113167 ps} {231988167 ps}
+WaveRestoreZoom {178643574 ps} {294143558 ps}

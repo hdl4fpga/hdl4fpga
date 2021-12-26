@@ -202,16 +202,10 @@ begin
 		signal dmadata_trdy   : std_logic;
 		signal rgtr_dmadata   : std_logic_vector(ctlr_di'length-1 downto 0);
 		signal datactlr_irdy  : std_logic;
-		signal dmaack_irdy    : std_logic;
-		signal dmaack_trdy    : std_logic;
 		signal dmaaddr_irdy   : std_logic;
 		signal dmaaddr_trdy   : std_logic;
-		signal dmalen_irdy    : std_logic;
-		signal dmalen_trdy    : std_logic;
 		signal dmaio_trdy     : std_logic;
 		signal dmaio_next     : std_logic;
-		signal dmaioack_irdy  : std_logic;
-		signal dmaiolen_irdy  : std_logic;
 		signal dmaioaddr_irdy : std_logic;
 
 		signal meta_data      : std_logic_vector(metaram_data'range);
@@ -293,9 +287,6 @@ begin
 					rgtr_id   => rgtr_id,
 					rgtr_data => rgtr_revs(rgtr_dmaack'length-1 downto 0),
 					data      => rgtr_dmaack);
-				dmaack_trdy <= dmaaddr_trdy;
-				dmaack_irdy <= dmaaddr_irdy;
-				dmaioack_irdy <= dmaioaddr_irdy;
 
 				rgtr_dmalen_e : entity hdl4fpga.sio_rgtr
 				generic map (
@@ -306,15 +297,12 @@ begin
 					rgtr_id   => rgtr_id,
 					rgtr_data => rgtr_revs(rgtr_dmalen'range),
 					data      => rgtr_dmalen);
-				dmalen_trdy <= dmaaddr_trdy;
-				dmalen_irdy <= dmaaddr_irdy;
-				dmaiolen_irdy <= dmaioaddr_irdy;
 
 				src_data <= rgtr_dmaaddr & rgtr_dmalen & rgtr_dmaack;
 				dmafifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth  => fifo_depth,
-					latency    => setif(profile=0, 0, 1),
+					latency    => 2,
 					async_mode => true,
 					check_sov  => true,
 					check_dov  => true,
@@ -352,7 +340,7 @@ begin
 			generic map (
 				max_depth  => fifodata_depth,
 				async_mode => true,
-				latency    => setif(profile=0, 3, 2),
+				latency    => 2,
 				check_sov  => true,
 				check_dov  => true,
 				gray_code  => false)
@@ -385,7 +373,7 @@ begin
 		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
 		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
 
-		dmasin_irdy <= to_stdulogic(to_bit(dmaiolen_irdy and dmaioaddr_irdy));
+		dmasin_irdy <= to_stdulogic(to_bit(dmaioaddr_irdy));
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
 			dmacfg_clk  => dmacfg_clk,
@@ -422,8 +410,8 @@ begin
 		begin
 			src_data <=
 				dmaio_ack &
-				std_logic_vector(resize(shift_left(unsigned(dmaio_len), word_bits), pay_length'length)) &
-				dmalen_trdy & dmaaddr_trdy & dmaiolen_irdy & dmaioaddr_irdy & dmaio_addr(dmaio_addr'left);
+				std_logic_vector(resize(unsigned(dmaio_len), pay_length'length)) &
+				dmaaddr_trdy & dmaaddr_trdy & dmaioaddr_irdy & dmaioaddr_irdy & dmaio_addr(dmaio_addr'left);
 
 			acktx_e : entity hdl4fpga.fifo
 			generic map (
@@ -436,7 +424,7 @@ begin
 			port map (
 				src_clk    => dmacfg_clk,
 				src_irdy   => dmaio_next,
-				src_trdy   => open, --dmaioack_irdy,
+				src_trdy   => open,
 				src_data   => src_data,
 
 				dst_frm    => ctlr_inirdy,
@@ -482,6 +470,8 @@ begin
 
 			process (sio_clk)
 				variable total_length : unsigned(pay_length'range);
+				variable aux : unsigned(total_length'range);
+				variable aux1 : unsigned(total_length'range);
 			begin
 				if rising_edge(sio_clk) then
 					sio_dmaio <=
@@ -489,10 +479,17 @@ begin
 						reverse(x"01" & x"00" & acktx_data &
 						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
 						pay_length <= total_length;
+						total_length := resize(x"0009", total_length'length);
 						if status_rw='1' then
-							total_length := trans_length + (x"000b" + shift_left(x"0001", word_bits));
-						else
-							total_length := x"0009";
+							aux := unsigned(trans_length);
+							aux := shift_left(aux, word_bits);
+							aux1 := aux;
+							aux := aux + shift_left(resize(b"1", aux'length), word_bits);
+							total_length := total_length + aux;
+							aux1 := shift_right(aux1, 8); -- Number of bits of (256-1) minus 1
+							aux := aux1 + 1;
+							aux := shift_left(aux, 1); -- Number of bits of (256-1) minus 1
+							total_length := total_length + aux;
 						end if;
 				end if;
 			end process;
@@ -605,7 +602,7 @@ begin
 								aux := (others => '1');
 								aux := shift_left(aux, unsigned_num_bits(fifo_data'length/sodata_data'length-1));
 								aux := not aux;
-								length := resize(unsigned(trans_length), length'length);
+								length := resize(shift_left(unsigned(trans_length), word_bits), length'length);
 								fifo_length <= std_logic_vector(length or aux);
 								len_req     <= not len_rdy;
 							end if;
