@@ -553,6 +553,7 @@ void init_socket ()
 		abort();
 	}
 
+	fout = stdout;
 	//	DON'T FRAGMENT,
 	// int tol = 2;	// Time To Live
 	// setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(tol));
@@ -769,7 +770,7 @@ int main (int argc, char *argv[])
 								fprintf (stderr, "queue_out\n", n);
 								print_rgtrs(queue_out);
 							}
-							abort();
+//							abort();
 							data = rgtr2int(lookup(RGTRDMAADDR_ID, queue_out));
 							delete_queue(queue_out);
 

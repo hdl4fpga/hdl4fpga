@@ -4,7 +4,7 @@ SPEED="${SPEED:-3000000}"
 PKMODE="STREAM"
 DEVFD="${DEVFD:-3}"
 STDOUT="YES"
-export TTY SPEED PKMODE DEVFD STDOUT
+export TTY SPEED PKMODE DEVFD STDOUT HOST
 
 ADDR="${ADDR:-${1}}"
 ADDR="${ADDR:-0}"
@@ -17,5 +17,5 @@ LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"
 echo $ADDR $LENGTH
-echo "1603${ADDR}1702${LENGTH}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
+echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
 echo

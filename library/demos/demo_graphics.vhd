@@ -218,21 +218,9 @@ begin
 		signal meta_trdy      : std_logic;
 		signal meta_end       : std_logic;
 
-		signal sio_dmaio      : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
-		signal siodmaio_irdy  : std_logic;
-		signal siodmaio_trdy  : std_logic;
-		signal siodmaio_end   : std_logic;
-		signal siodmaio_data  : std_logic_vector(sout_data'range);
-
 		signal acktx_irdy     : std_logic;
 		signal acktx_trdy     : std_logic;
 		signal acktx_data     : std_logic_vector(rgtr_dmaack'range);
-
-		signal sodata_frm     : std_logic;
-		signal sodata_irdy    : std_logic;
-		signal sodata_trdy    : std_logic;
-		signal sodata_end     : std_logic;
-		signal sodata_data    : std_logic_vector(sout_data'range);
 
 		signal debug_dmacfgio_req : std_logic;
 		signal debug_dmacfgio_rdy : std_logic;
@@ -244,9 +232,6 @@ begin
 
 		signal sout_req       : bit;
 		signal sout_rdy       : bit;
-
-		signal pay_length     : unsigned(0 to 16-1) := x"0000";
-		signal trans_length   : unsigned(0 to 16-1);
 
 		signal status         : std_logic_vector(0 to 5-1);
 		alias  status_rw      : std_logic is status(status'right);
@@ -417,8 +402,23 @@ begin
 			dma_rdy     => dmaio_rdy);
 
 		tx_b : block
-			signal src_data : std_logic_vector(0 to dmaio_ack'length+pay_length'length+status'length-1);
-			signal dst_data : std_logic_vector(src_data'range);
+			signal trans_length  : unsigned(0 to 16-1);
+			signal pay_length    : unsigned(trans_length'range);
+
+			signal src_data      : std_logic_vector(0 to dmaio_ack'length+pay_length'length+status'length-1);
+			signal dst_data      : std_logic_vector(src_data'range);
+
+			signal sio_dmaio     : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
+			signal siodmaio_irdy : std_logic;
+			signal siodmaio_trdy : std_logic;
+			signal siodmaio_end  : std_logic;
+			signal siodmaio_data : std_logic_vector(sout_data'range);
+
+			signal sodata_irdy   : std_logic;
+			signal sodata_trdy   : std_logic;
+			signal sodata_end    : std_logic;
+			signal sodata_data   : std_logic_vector(sout_data'range);
+
 		begin
 			src_data <=
 				dmaio_ack &
@@ -490,7 +490,7 @@ begin
 						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
 						pay_length <= total_length;
 						if status_rw='1' then
-							total_length := trans_length + x"0009";
+							total_length := trans_length + (x"000b" + shift_left(x"0001", word_bits));
 						else
 							total_length := x"0009";
 						end if;
@@ -510,18 +510,19 @@ begin
 
 			sodata_b : block
 				signal ctlrio_irdy : std_logic;
-				signal trans_req    : bit;
-				signal trans_rdy    : bit;
-				signal len_req      : bit;
-				signal len_rdy      : bit;
-				signal fifo_req     : bit;
-				signal fifo_rdy     : bit;
+
+				signal trans_req   : bit;
+				signal trans_rdy   : bit;
+				signal len_req     : bit;
+				signal len_rdy     : bit;
+				signal fifo_req    : bit;
+				signal fifo_rdy    : bit;
 
 				signal fifo_frm    : std_logic;
 				signal fifo_irdy   : std_logic;
 				signal fifo_trdy   : std_logic;
 				signal fifo_data   : std_logic_vector(ctlr_do'range);
-				signal fifo_length : std_logic_vector(16-1 downto 0);
+				signal fifo_length : std_logic_vector(trans_length'range);
 
 				signal dmaout_irdy : std_logic;
 				signal dmaout_data : std_logic_vector(ctlr_do'range);
@@ -596,21 +597,17 @@ begin
 
 				process (dmacfg_clk)
 					variable length : unsigned(fifo_length'range);
+					variable aux    : unsigned(fifo_length'range);
 				begin
 					if rising_edge(dmacfg_clk) then
-						if dmaioaddr_irdy='1' then
-							if dmaiolen_irdy='1' then
-								if dmaio_next='1' then
-									if status_rw='1' then
-										length := resize(unsigned(dmaio_len), length'length);
-										for i in 1 to unsigned_num_bits(fifo_data'length/sodata_data'length)-1 loop
-											length(length'left) := '1';
-											length := length rol 1;
-										end loop;
-										fifo_length <= std_logic_vector(length);
-										len_req     <= not len_rdy;
-									end if;
-								end if;
+						if acktx_irdy='1' then
+							if status_rw='1' then
+								aux := (others => '1');
+								aux := shift_left(aux, unsigned_num_bits(fifo_data'length/sodata_data'length-1));
+								aux := not aux;
+								length := resize(unsigned(trans_length), length'length);
+								fifo_length <= std_logic_vector(length or aux);
+								len_req     <= not len_rdy;
 							end if;
 						end if;
 					end if;
@@ -621,7 +618,7 @@ begin
 					if rising_edge(sio_clk) then
 						if (trans_req xor trans_rdy)='1' and (len_req xor len_rdy)='1' then
 							fifo_req  <= not fifo_rdy;
-							if sodata_trdy='1' and sodata_end='1' then
+							if (acktx_irdy and acktx_trdy)='1' then
 								trans_rdy <= trans_req;
 								fifo_rdy  <= fifo_req;
 								len_rdy   <= len_req;
@@ -645,7 +642,6 @@ begin
 					si_data   => fifo_data,
 					si_length => fifo_length,
 
-					so_frm    => sodata_frm,
 					so_irdy   => sodata_irdy,
 					so_trdy   => sodata_trdy,
 					so_end    => sodata_end,
