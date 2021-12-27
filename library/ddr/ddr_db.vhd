@@ -68,7 +68,7 @@ package ddr_db is
 	constant WRL : natural := 3;
 	constant CWL : natural := 4;
 
-	-- Latencies 
+	-- Latencies
 	constant cDLL   : natural := 1;
 	constant MRD    : natural := 2;
 	constant MODu   : natural := 3;
@@ -234,7 +234,7 @@ package ddr_db is
 		latency_record'(fpga => latticeECP3, param => XPR,        value =>   5),
 		latency_record'(fpga => latticeECP3, param => WIDL,       value =>   4),
 		latency_record'(fpga => latticeECP3, param => RDFIFO_LAT, value => 3),
-	
+
 		latency_record'(fpga => virtex7,     param => cDLL,       value => 500),
 		latency_record'(fpga => virtex7,     param => STRL,       value =>   0),
 		latency_record'(fpga => virtex7,     param => RWNL,       value =>   4),
@@ -259,7 +259,7 @@ package ddr_db is
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE));
-		
+
 	constant cnfglat_db : cnfglat_tab := (
 
 		-- SDRAM standard --
@@ -363,7 +363,7 @@ package ddr_db is
 		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  8*2, code => "011"));
 
 	function ddr_stdr (
-		mark : natural) 
+		mark : natural)
 		return natural;
 
 	function ddr_query_size (
@@ -379,7 +379,7 @@ package ddr_db is
 
 	function ddr_timing (
 		constant mark  : natural;
-		constant param : natural) 
+		constant param : natural)
 		return natural;
 
 	function ddr_latency (
@@ -427,7 +427,7 @@ end package;
 package body ddr_db is
 
 	function ddr_stdr (
-		mark : natural) 
+		mark : natural)
 		return natural is
 	begin
 		for i in tmark_db'range loop
@@ -494,7 +494,7 @@ package body ddr_db is
 
 	function ddr_timing (
 		constant mark  : natural;
-		constant param : natural) 
+		constant param : natural)
 		return natural is
 	begin
 		for i in timing_db'range loop
