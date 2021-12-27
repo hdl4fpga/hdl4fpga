@@ -110,6 +110,7 @@ end;
 
 architecture mix of demo_graphics is
 
+
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
@@ -168,6 +169,8 @@ begin
 
 	sio_b : block
 
+		constant siobyte_size : natural := 8;
+		constant dataout_size : natural := 2*1024;
 		constant fifo_depth   : natural := 4;
 		constant fifo_gray    : boolean := false;
 
@@ -390,13 +393,12 @@ begin
 			dma_rdy     => dmaio_rdy);
 
 		tx_b : block
-			signal trans_length  : unsigned(0 to 16-1);
-			signal pay_length    : unsigned(trans_length'range);
+			signal trans_length  : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
-			signal src_data      : std_logic_vector(0 to dmaio_ack'length+pay_length'length+status'length-1);
+			signal src_data      : std_logic_vector(0 to dmaio_ack'length+trans_length'length+status'length-1);
 			signal dst_data      : std_logic_vector(src_data'range);
 
-			signal sio_dmaio     : std_logic_vector(0 to (2+(2+1)+(2+4))*8-1);
+			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+4)))*8-1);
 			signal siodmaio_irdy : std_logic;
 			signal siodmaio_trdy : std_logic;
 			signal siodmaio_end  : std_logic;
@@ -410,7 +412,7 @@ begin
 		begin
 			src_data <=
 				dmaio_ack &
-				std_logic_vector(resize(unsigned(dmaio_len), pay_length'length)) &
+				std_logic_vector(resize(unsigned(dmaio_len), trans_length'length)) &
 				dmaaddr_trdy & dmaaddr_trdy & dmaioaddr_irdy & dmaioaddr_irdy & dmaio_addr(dmaio_addr'left);
 
 			acktx_e : entity hdl4fpga.fifo
@@ -437,9 +439,9 @@ begin
 				variable aux : unsigned(dst_data'range);
 			begin
 				aux := unsigned(dst_data);
-				acktx_data   <= std_logic_vector(aux(acktx_data'range));
+				acktx_data   <= std_logic_vector(aux(0 to acktx_data'length-1));
 				aux := aux sll acktx_data'length;
-				trans_length <= aux(trans_length'range);
+				trans_length <= aux(0 to trans_length'length-1);
 				aux := aux sll trans_length'length;
 				status <= std_logic_vector(aux(0 to status'length-1));
 			end process;
@@ -469,28 +471,32 @@ begin
 			end process;
 
 			process (sio_clk)
-				variable total_length : unsigned(pay_length'range);
-				variable aux : unsigned(total_length'range);
-				variable aux1 : unsigned(total_length'range);
+				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
+				variable pay_length  : unsigned(trans_length'range);
+				variable data_length : unsigned(pay_length'range);
+				variable hdr_length  : unsigned(pay_length'range);
 			begin
 				if rising_edge(sio_clk) then
 					sio_dmaio <=
-						reverse(reverse(std_logic_vector(pay_length)),8) &	-- UDP Length
-						reverse(x"01" & x"00" & acktx_data &
-						rid_dmaaddr & x"03" & status & b"000" &  x"00" & x"0000", 8);
-						pay_length <= total_length;
-						total_length := resize(x"0009", total_length'length);
+						std_logic_vector(reverse(reverse(resize(pay_length,16)),8)) & reverse(
+						x"01"       & x"00" & acktx_data &
+						rid_dmaaddr & x"03" & status     & b"000" & x"000000", 8);
+
 						if status_rw='1' then
-							aux := unsigned(trans_length);
-							aux := shift_left(aux, word_bits);
-							aux1 := aux;
-							aux := aux + shift_left(resize(b"1", aux'length), word_bits);
-							total_length := total_length + aux;
-							aux1 := shift_right(aux1, 8); -- Number of bits of (256-1) minus 1
-							aux := aux1 + 1;
-							aux := shift_left(aux, 1); -- Number of bits of (256-1) minus 1
-							total_length := total_length + aux;
+							pay_length := hdr_length + data_length;
+						else
+							pay_length := to_unsigned(pfix_size, pay_length'length);
 						end if;
+
+						hdr_length  := unsigned(trans_length);
+						hdr_length  := hdr_length sll (8-word_bits);
+						hdr_length  := hdr_length + 1;
+						hdr_length  := hdr_length sll 1;
+
+						data_length := unsigned(trans_length);
+						data_length := data_length sll word_bits;
+						data_length := data_length + (pfix_size + 2**word_bits);
+
 				end if;
 			end process;
 
@@ -575,7 +581,7 @@ begin
 
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
-					max_depth  => (2*4*1*256/(ctlr_di'length/8)),
+					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
 					async_mode => true,
 					latency    => 2,
 					gray_code  => false,
@@ -872,72 +878,84 @@ begin
 		ctlr_dio_req => ctlr_dio_req,
 		ctlr_act    => ctlr_act);
 
-	ctlr_dm <= (others => '0');
-	ddrctlr_e : entity hdl4fpga.ddr_ctlr
-	generic map (
-		fpga         => fpga,
-		mark         => mark,
-		tcp          => ddr_tcp,
+	ddrctlr_b : block
+		signal inirdy : std_logic;
+	begin
+		ctlr_dm <= (others => '0');
+		ddrctlr_e : entity hdl4fpga.ddr_ctlr
+		generic map (
+			fpga         => fpga,
+			mark         => mark,
+			tcp          => ddr_tcp,
 
-		cmmd_gear    => cmmd_gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
-		data_phases  => data_phases,
-		data_edges   => data_edges,
-		data_gear    => data_gear,
-		word_size    => word_size,
-		byte_size    => byte_size)
-	port map (
-		ctlr_bl      => ctlr_bl,
-		ctlr_cl      => ctlr_cl,
+			cmmd_gear    => cmmd_gear,
+			bank_size    => bank_size,
+			addr_size    => addr_size,
+			sclk_phases  => sclk_phases,
+			sclk_edges   => sclk_edges,
+			data_phases  => data_phases,
+			data_edges   => data_edges,
+			data_gear    => data_gear,
+			word_size    => word_size,
+			byte_size    => byte_size)
+		port map (
+			ctlr_bl      => ctlr_bl,
+			ctlr_cl      => ctlr_cl,
 
-		ctlr_cwl     => "000",
-		ctlr_wr      => "101",
-		ctlr_rtt     => "--",
+			ctlr_cwl     => "000",
+			ctlr_wr      => "101",
+			ctlr_rtt     => "--",
 
-		ctlr_rst     => ctlr_rst,
-		ctlr_clks    => ctlr_clks,
-		ctlr_inirdy  => ctlr_inirdy,
+			ctlr_rst     => ctlr_rst,
+			ctlr_clks    => ctlr_clks,
+			ctlr_inirdy  => inirdy,
 
-		ctlr_irdy    => ctlr_irdy,
-		ctlr_trdy    => ctlr_trdy,
-		ctlr_rw      => ctlr_rw,
-		ctlr_b       => ctlr_b,
-		ctlr_a       => ctlr_a,
-		ctlr_ras     => ctlr_ras,
-		ctlr_cas     => ctlr_cas,
-		ctlr_di_dv   => ctlr_di_dv,
-		ctlr_di_req  => ctlr_di_req,
-		ctlr_act     => ctlr_act,
-		ctlr_di      => ctlr_di,
-		ctlr_dm      => ctlr_dm,
-		ctlr_do_dv   => ctlr_do_dv,
-		ctlr_do      => ctlr_do,
-		ctlr_refreq  => ctlr_refreq,
-		ctlr_dio_req => ctlr_dio_req,
+			ctlr_irdy    => ctlr_irdy,
+			ctlr_trdy    => ctlr_trdy,
+			ctlr_rw      => ctlr_rw,
+			ctlr_b       => ctlr_b,
+			ctlr_a       => ctlr_a,
+			ctlr_ras     => ctlr_ras,
+			ctlr_cas     => ctlr_cas,
+			ctlr_di_dv   => ctlr_di_dv,
+			ctlr_di_req  => ctlr_di_req,
+			ctlr_act     => ctlr_act,
+			ctlr_di      => ctlr_di,
+			ctlr_dm      => ctlr_dm,
+			ctlr_do_dv   => ctlr_do_dv,
+			ctlr_do      => ctlr_do,
+			ctlr_refreq  => ctlr_refreq,
+			ctlr_dio_req => ctlr_dio_req,
 
-		phy_rst      => ctlrphy_rst,
-		phy_cke      => ctlrphy_cke,
-		phy_cs       => ctlrphy_cs,
-		phy_ras      => ctlrphy_ras,
-		phy_cas      => ctlrphy_cas,
-		phy_we       => ctlrphy_we,
-		phy_b        => ctlrphy_b,
-		phy_a        => ctlrphy_a,
-		phy_dmi      => ctlrphy_dmi,
-		phy_dmt      => ctlrphy_dmt,
-		phy_dmo      => ctlrphy_dmo,
+			phy_rst      => ctlrphy_rst,
+			phy_cke      => ctlrphy_cke,
+			phy_cs       => ctlrphy_cs,
+			phy_ras      => ctlrphy_ras,
+			phy_cas      => ctlrphy_cas,
+			phy_we       => ctlrphy_we,
+			phy_b        => ctlrphy_b,
+			phy_a        => ctlrphy_a,
+			phy_dmi      => ctlrphy_dmi,
+			phy_dmt      => ctlrphy_dmt,
+			phy_dmo      => ctlrphy_dmo,
 
-		phy_dqi      => ctlrphy_dqi,
-		phy_dqt      => ctlrphy_dqt,
-		phy_dqo      => ctlrphy_dqo,
-		phy_sti      => ctlrphy_sti,
-		phy_sto      => ctlrphy_sto,
+			phy_dqi      => ctlrphy_dqi,
+			phy_dqt      => ctlrphy_dqt,
+			phy_dqo      => ctlrphy_dqo,
+			phy_sti      => ctlrphy_sti,
+			phy_sto      => ctlrphy_sto,
 
-		phy_dqsi     => ctlrphy_dsi,
-		phy_dqso     => ctlrphy_dso,
-		phy_dqst     => ctlrphy_dst);
+			phy_dqsi     => ctlrphy_dsi,
+			phy_dqso     => ctlrphy_dso,
+			phy_dqst     => ctlrphy_dst);
 
+		inirdy_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => 2))
+		port map (
+			clk => ctlr_clk,
+			di(0) => inirdy,
+			do(0) => ctlr_inirdy);
+		end block;
 end;

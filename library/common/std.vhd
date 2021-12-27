@@ -123,6 +123,10 @@ package std is
 		return std_logic_vector;
 
 	function reverse (
+		constant arg : unsigned)
+		return unsigned;
+
+	function reverse (
 		constant arg  : unsigned;
 		constant size : natural)
 		return unsigned;
@@ -821,12 +825,18 @@ package body std is
 	end;
 
 	function reverse (
+		constant arg  : unsigned)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg)));
+	end;
+
+	function reverse (
 		constant arg  : unsigned;
 		constant size : natural)
 		return unsigned is
 	begin
 		return unsigned(reverse(std_logic_vector(arg), size));
-
 	end;
 
 	function summation (
