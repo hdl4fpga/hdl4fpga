@@ -489,7 +489,7 @@ begin
 						end if;
 
 						hdr_length  := unsigned(trans_length);
-						hdr_length  := hdr_length sll (8-word_bits);
+						hdr_length  := hdr_length srl (8-word_bits);
 						hdr_length  := hdr_length + 1;
 						hdr_length  := hdr_length sll 1;
 
@@ -524,7 +524,7 @@ begin
 				signal fifo_frm    : std_logic;
 				signal fifo_irdy   : std_logic;
 				signal fifo_trdy   : std_logic;
-				signal fifo_data   : std_logic_vector(ctlr_do'range);
+				signal fifo_data   : std_logic_vector(ctlr_do'reverse_range);
 				signal fifo_length : std_logic_vector(trans_length'range);
 
 				signal dmaout_irdy : std_logic;
@@ -880,6 +880,7 @@ begin
 
 	ddrctlr_b : block
 		signal inirdy : std_logic;
+		signal q      : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
 		ddrctlr_e : entity hdl4fpga.ddr_ctlr
@@ -949,13 +950,28 @@ begin
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
 
+--		process (sio_clk)
+--		begin
+--			if rising_edge(sio_clK) then
+--				q <= inirdy;
+--			end if;
+--		end process;
+--
+--		process (ctlr_clk)
+--		begin
+--			if rising_edge(ctlr_clk) then
+--				ctlr_inirdy <= q;
+--			end if;
+--		end process;
+
 		inirdy_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
 			d => (0 to 0 => 2))
 		port map (
-			clk => ctlr_clk,
+			clk => sio_clk,
 			di(0) => inirdy,
 			do(0) => ctlr_inirdy);
-		end block;
+
+	end block;
 end;

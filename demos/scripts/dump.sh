@@ -16,6 +16,16 @@ LENGTH="${LENGTH:-${2}}"
 LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"
-echo $ADDR $LENGTH
-echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
+echo -n "$ADDR : "
+data=`echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'`
+data=`echo $data|cut -b 21-`
+while [ "$data" != "" ] ; do
+	len=`echo -n $data|cut -b 1-2`
+	len=`printf %d $(( 0x${len} ))`
+	data=`echo -n $data|cut -b 3-`
+	len=`expr 2 \* \( $len \+ 1 \)`
+	echo -n $data|cut -b 1-$len|tr -d '\n'
+	len=`expr  $len \+ 3 `
+	data=`echo -n $data|cut -b $len-`
+done
 echo

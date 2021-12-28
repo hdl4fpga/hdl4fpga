@@ -56,14 +56,12 @@ architecture def of so_data is
 	type states is (st_idle, st_rid, st_len, st_data);
 	signal state : states;
 
-	signal desi_data : std_logic_vector(si_data'range);
 	signal deso_irdy : std_logic;
 	signal deso_trdy : std_logic;
 	signal deso_data : std_logic_vector(ser_data'range);
 
 begin
 
-	desi_data <= reverse(reverse(si_data), ser_data'length);
 	desser_e : entity hdl4fpga.desser
 	port map (
 		desser_clk => sio_clk,
@@ -71,7 +69,7 @@ begin
 		des_frm    => si_frm,
 		des_irdy   => si_irdy,
 		des_trdy   => si_trdy,
-		des_data   => desi_data,
+		des_data   => si_data,
 
 		ser_irdy   => ser_irdy,
 		ser_trdy   => ser_trdy,
