@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
 	while ((c = getopt (argc, argv, "loph:")) != -1) {
 		switch (c) {
 		case 'l':
-			loglevel = 8|0|2|1;
+			loglevel = 8|4|2|1;
 			break;
 		case 'o':
 			nooutput = 1;
@@ -105,6 +105,7 @@ int main (int argc, char *argv[])
 				abort();
 			}
 
+			queue_in = sio_request(buffer, length);
 			sio_dump (queue_in);
 		} else {
 			if(LOG0) fprintf(stderr, "eof %d\n", feof(stdin));

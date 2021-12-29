@@ -18,7 +18,7 @@ LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"
 #$echo -n $ADDR ' : '
 data=`echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'`
-data=`echo $data|cut -b 21-`
+data=`echo $data|cut -b 15-`
 while [ "$data" != "" ] ; do
 	len=`echo -n $data|cut -b 1-2`
 	len=`printf %d $(( 0x${len} ))`

@@ -247,7 +247,7 @@ void uart_send(char c, FILE *comm)
 {
 	fputc(c, comm);
 	if (LOG2) {
-		fprintf(stderr, "TX data 0x%02x\n", (unsigned char) c);
+//		fprintf(stderr, "TX data 0x%02x\n", (unsigned char) c);
 	}
 }
 
@@ -395,7 +395,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
 				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
 					if (LOG3) {
-						fprintf(stderr, "RX data 0x%02x\n", (unsigned char) buffer[i]);
+//						fprintf(stderr, "RX data 0x%02x\n", (unsigned char) buffer[i]);
 					}
 					if (buffer[i] == 0x7e) {
 						len = i;
