@@ -59,15 +59,10 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/line__471/aux
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/line__471/aux1
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/trans_length
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/pay_length
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_length
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/trans_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/trans_rdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/len_rdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/len_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_rdy
 TreeUpdate [SetDefaultTree]
@@ -87,4 +82,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {178643574 ps} {294143558 ps}
+WaveRestoreZoom {188833239 ps} {246583231 ps}

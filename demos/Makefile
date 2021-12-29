@@ -13,9 +13,9 @@ bin/bundle : src/bundle.c
 	mkdir -p bin
 	cc -O2 src/bundle.c -o bin/bundle
 
-bin/siosend : src/hdlc.h src/hdlc.c src/siosend.c
+bin/siosend : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 	mkdir -p bin
-	cc -O2 src/hdlc.h src/hdlc.c src/siosend.c -o bin/siosend
+	cc -O2 src/siolib.c src/hdlc.c src/siosend.c -o bin/siosend
 
 clean :
 	rm  -rf ./bin

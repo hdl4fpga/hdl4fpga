@@ -33,6 +33,7 @@ entity demo_graphics is
 	generic (
 		debug        : boolean := false;
 		profile      : natural;
+		fifo_size    : natural := 8*8192;
 
 		ddr_tcp      : natural;
 		fpga         : natural;
@@ -52,9 +53,8 @@ entity demo_graphics is
 		timing_id    : videotiming_ids;
 		red_length   : natural := 5;
 		green_length : natural := 6;
-		blue_length  : natural := 5;
+		blue_length  : natural := 5);
 
-		fifo_size    : natural := 8*8192);
 
 	port (
 		sio_clk      : in  std_logic;
@@ -171,7 +171,6 @@ begin
 
 		constant siobyte_size : natural := 8;
 		constant dataout_size : natural := 2*1024;
-		constant fifo_depth   : natural := 4;
 		constant fifo_gray    : boolean := false;
 
 		constant rid_ack      : std_logic_vector := x"01";
@@ -230,8 +229,9 @@ begin
 		signal sout_req       : bit;
 		signal sout_rdy       : bit;
 
-		signal status         : std_logic_vector(0 to 5-1);
+		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
+
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -304,8 +304,8 @@ begin
 				src_data <= rgtr_dmaaddr & rgtr_dmalen & rgtr_dmaack;
 				dmafifo_e : entity hdl4fpga.fifo
 				generic map (
-					max_depth  => fifo_depth,
-					latency    => 2,
+					max_depth  => 4,
+					latency    => 0, --setif(profile=0, 0, 2),
 					async_mode => true,
 					check_sov  => true,
 					check_dov  => true,
@@ -343,7 +343,7 @@ begin
 			generic map (
 				max_depth  => fifodata_depth,
 				async_mode => true,
-				latency    => 2,
+				latency    => setif(profile=0, 3, 2),
 				check_sov  => true,
 				check_dov  => true,
 				gray_code  => false)
@@ -398,7 +398,7 @@ begin
 			signal src_data      : std_logic_vector(0 to dmaio_ack'length+trans_length'length+status'length-1);
 			signal dst_data      : std_logic_vector(src_data'range);
 
-			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+4)))*8-1);
+			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
 			signal siodmaio_irdy : std_logic;
 			signal siodmaio_trdy : std_logic;
 			signal siodmaio_end  : std_logic;
@@ -413,12 +413,12 @@ begin
 			src_data <=
 				dmaio_ack &
 				std_logic_vector(resize(unsigned(dmaio_len), trans_length'length)) &
-				dmaaddr_trdy & dmaaddr_trdy & dmaioaddr_irdy & dmaioaddr_irdy & dmaio_addr(dmaio_addr'left);
+				dmaaddr_trdy & dmaioaddr_irdy & b"00000" & dmaio_addr(dmaio_addr'left);
 
 			acktx_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 4,
-				latency    => 2,
+				latency    => 1,
 				async_mode => true,
 				check_sov  => true,
 				check_dov  => true,
@@ -478,9 +478,9 @@ begin
 			begin
 				if rising_edge(sio_clk) then
 					sio_dmaio <=
-						std_logic_vector(reverse(reverse(resize(pay_length,16)),8)) & reverse(
-						x"01"       & x"00" & acktx_data &
-						rid_dmaaddr & x"03" & status     & b"000" & x"000000", 8);
+						reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+						rid_ack     & x"00" & acktx_data &
+						rid_dmaaddr & x"00" & status, 8);
 
 						if status_rw='1' then
 							pay_length := hdr_length + data_length;
@@ -512,12 +512,11 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
+				constant dram_lat  : natural := 2;
 				signal ctlrio_irdy : std_logic;
 
 				signal trans_req   : bit;
 				signal trans_rdy   : bit;
-				signal len_req     : bit;
-				signal len_rdy     : bit;
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
 
@@ -563,8 +562,9 @@ begin
 
 				buffdv_e : entity hdl4fpga.align
 				generic map (
+					style => "register",
 					n => 1,
-					d => (0 to 0 => 3))
+					d => (0 to 0 => dram_lat))
 				port map (
 					clk   => ctlr_clk,
 					di(0) => ctlrio_irdy,
@@ -572,8 +572,9 @@ begin
 
 				buffdo_e : entity hdl4fpga.align
 				generic map (
+					style => "register",
 					n => ctlr_do'length,
-					d => (0 to ctlr_do'length-1 => 3))
+					d => (0 to ctlr_do'length-1 => dram_lat))
 				port map (
 					clk => ctlr_clk,
 					di  => ctlr_do,
@@ -583,7 +584,7 @@ begin
 				generic map (
 					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
 					async_mode => true,
-					latency    => 2,
+					latency    => 1,
 					gray_code  => false,
 					check_sov  => false, --true,
 					check_dov  => true)
@@ -600,31 +601,23 @@ begin
 
 				process (dmacfg_clk)
 					variable length : unsigned(fifo_length'range);
-					variable aux    : unsigned(fifo_length'range);
 				begin
 					if rising_edge(dmacfg_clk) then
-						if acktx_irdy='1' then
-							if status_rw='1' then
-								aux := (others => '1');
-								aux := shift_left(aux, unsigned_num_bits(fifo_data'length/sodata_data'length-1));
-								aux := not aux;
-								length := resize(shift_left(unsigned(trans_length), word_bits), length'length);
-								fifo_length <= std_logic_vector(length or aux);
-								len_req     <= not len_rdy;
-							end if;
-						end if;
+						length := (others => '1');
+						length := length srl (length'length-unsigned_num_bits(fifo_data'length/sodata_data'length-1));
+						length := length or  (trans_length sll word_bits);
+						fifo_length <= std_logic_vector(length);
 					end if;
 				end process;
 
 				process (sio_clk)
 				begin
 					if rising_edge(sio_clk) then
-						if (trans_req xor trans_rdy)='1' and (len_req xor len_rdy)='1' then
+						if (trans_req xor trans_rdy)='1' then
 							fifo_req  <= not fifo_rdy;
 							if (acktx_irdy and acktx_trdy)='1' then
 								trans_rdy <= trans_req;
 								fifo_rdy  <= fifo_req;
-								len_rdy   <= len_req;
 							end if;
 						end if;
 					end if;
@@ -673,7 +666,7 @@ begin
 
 	adapter_b : block
 
-		constant glat     : natural := 1;
+		constant glat     : natural := 2;
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
@@ -719,6 +712,7 @@ begin
 
 		graphicsdv_e : entity hdl4fpga.align
 		generic map (
+			style => "register",
 			n => 1,
 			d => (0 to 0 => glat))
 		port map (
@@ -728,6 +722,7 @@ begin
 
 		graphicsdi_e : entity hdl4fpga.align
 		generic map (
+			style => "register",
 			n => ctlr_do'length,
 			d => (0 to ctlr_do'length-1 => glat))
 		port map (
@@ -966,6 +961,7 @@ begin
 
 		inirdy_e : entity hdl4fpga.align
 		generic map (
+			style => "register",
 			n => 1,
 			d => (0 to 0 => 2))
 		port map (

@@ -346,7 +346,6 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
---			default_ipv4a => x"c0_a8_00_0e")
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
 			tp         => tp,

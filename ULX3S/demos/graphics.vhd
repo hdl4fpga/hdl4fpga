@@ -55,7 +55,7 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := uart_133MHz_480p24bpp;
+	constant app : apps := uart_250MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;

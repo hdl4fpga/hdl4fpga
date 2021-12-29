@@ -29,6 +29,7 @@ use hdl4fpga.std.all;
 
 entity align is
 	generic (
+		style : string := "srl";
 		n : natural := 1;
 		d : natural_vector;
 		i : std_logic_vector := (0 to 0 => '-'));
@@ -44,8 +45,14 @@ architecture arch of align is
 	constant dly : natural_vector(0 to d'length-1) := d;
 	constant val : std_logic_vector(0 to i'length) := i & '-';
 begin
+	assert style="register" or style="srl"
+	report "Invalid style"
+	severity FAILURE;
+
 	delay: for j in 0 to n-1 generate
 		signal q : std_logic_vector(0 to dly(j)) := (others => val(setif(j < i'length, j, i'length)));
+		attribute shreg_extract : string;
+		attribute shreg_extract of q : signal is setif(style="register", "no", "yes");
 	begin
 		q(q'right) <= di(j);
 		process (clk)
