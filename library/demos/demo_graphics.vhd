@@ -666,7 +666,7 @@ begin
 
 	adapter_b : block
 
-		constant glat     : natural := 2;
+		constant glat     : natural := setif(profile=0,3,2);
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
@@ -753,6 +753,7 @@ begin
 
 		topixel_e : entity hdl4fpga.align
 		generic map (
+			style => "register",
 			n => pixel_width,
 			d => (0 to pixel_width => sync_lat))
 		port map (
@@ -762,6 +763,7 @@ begin
 
 		tosync_e : entity hdl4fpga.align
 		generic map (
+			style => "register",
 			n => 4,
 			d => (0 to 4-1 => sync_lat))
 		port map (
@@ -944,20 +946,6 @@ begin
 			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
-
---		process (sio_clk)
---		begin
---			if rising_edge(sio_clK) then
---				q <= inirdy;
---			end if;
---		end process;
---
---		process (ctlr_clk)
---		begin
---			if rising_edge(ctlr_clk) then
---				ctlr_inirdy <= q;
---			end if;
---		end process;
 
 		inirdy_e : entity hdl4fpga.align
 		generic map (
