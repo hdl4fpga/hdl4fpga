@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "siolib.h"
 
 int pkt_sent = 0;
@@ -769,3 +770,78 @@ void sio_dump (struct rgtr_node *queue_in)
 		delete_rgtrnode(node);
 	}
 }
+int unsigned to_hex (char c)
+{
+	if ('A' <= toupper(c) && toupper(c) <= 'F')
+		return toupper(c)-'A'+10;
+	else if ('0' <= toupper(c) && toupper(c) <= '9')
+		return toupper(c)-'0';
+	else {
+		fprintf(stderr, "No hex char 0x%02x\n", (unsigned char) c);
+		abort();
+	}
+
+}
+
+char *to_bytearray(char *bytearray, const char *hexstr)
+{
+
+	for(;;) {
+		for (int i = 0; i < 2; i++) {
+			if (!*hexstr)
+				return bytearray;
+			*bytearray <<= 4;
+			*bytearray |= (0xf & to_hex(*hexstr++));
+		}
+		bytearray++;
+	}
+}
+
+int sio2raw(char *buffer, const char unsigned *siobuf, size_t size);
+int raw2sio(char  *siobuf, const char *buffer, size_t size);
+int raw2sio(char  *siobuf, const char *buffer, size_t size)
+{
+	char unsigned *bufptr;
+	char unsigned *sioptr;
+	int length;
+
+	bufptr = (char unsigned *) buffer;
+	sioptr = (char unsigned *) siobuf;
+
+	length    = size-1;
+	sioptr    = to_bytearray(siobuf, "18");
+	*sioptr++ = length % 256;
+	memcpy(sioptr, bufptr, sioptr[-1]+1);
+	length -=    sioptr[-1]+1;
+	bufptr += sioptr[-1]+1;
+	sioptr += sioptr[-1]+1;
+
+	for (length >>= 8; !(length < 0); length--) {
+		sioptr    = to_bytearray(sioptr, "18");
+		*sioptr++ = 256-1;
+		memcpy(sioptr, bufptr, 256);
+		bufptr += 256;
+		sioptr += 256;
+	}
+
+	return sioptr-(char unsigned *)siobuf;
+}
+
+int sio2raw(char *buffer, const char unsigned *siobuf, size_t size)
+{
+	char *bufptr;
+	const char unsigned *sioptr;
+
+	bufptr = buffer;
+	sioptr = siobuf;
+
+	for(sioptr = siobuf; sioptr < siobuf+size; sioptr += (*sioptr + 2)) {
+		if (*sioptr++ == 0x18) {
+			memcpy(bufptr, sioptr+1, *sioptr + 1);
+			bufptr += *sioptr + 1;
+		}
+	}
+
+	return bufptr-buffer;
+}
+

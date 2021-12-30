@@ -138,6 +138,8 @@ architecture mix of demo_graphics is
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
+	constant buffdo_lat   : natural := setif(profile=0,3,3);
+	signal buff_do        : std_logic_vector(ctlr_do'range);
 	signal ctlr_dio_req   : std_logic;
 
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
@@ -512,7 +514,6 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
-				constant dram_lat  : natural := 2;
 				signal ctlrio_irdy : std_logic;
 
 				signal fifo_req    : bit;
@@ -525,7 +526,6 @@ begin
 				signal fifo_length : std_logic_vector(trans_length'range);
 
 				signal dmaout_irdy : std_logic;
-				signal dmaout_data : std_logic_vector(ctlr_do'range);
 
 			begin
 
@@ -545,21 +545,11 @@ begin
 				generic map (
 					style => "register",
 					n => 1,
-					d => (0 to 0 => dram_lat))
+					d => (0 to 0 => buffdo_lat))
 				port map (
 					clk   => ctlr_clk,
 					di(0) => ctlrio_irdy,
 					do(0) => dmaout_irdy);
-
-				buffdo_e : entity hdl4fpga.align
-				generic map (
-					style => "register",
-					n => ctlr_do'length,
-					d => (0 to ctlr_do'length-1 => dram_lat))
-				port map (
-					clk => ctlr_clk,
-					di  => ctlr_do,
-					do  => dmaout_data);
 
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
@@ -572,7 +562,7 @@ begin
 				port map (
 					src_clk  => ctlr_clk,
 					src_irdy => dmaout_irdy,
-					src_data => dmaout_data,
+					src_data => buff_do,
 
 					dst_frm  => ctlr_inirdy,
 					dst_clk  => sio_clk,
@@ -646,7 +636,6 @@ begin
 
 	adapter_b : block
 
-		constant glat     : natural := setif(profile=0,3,2);
 		constant sync_lat : natural := 4;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
@@ -694,21 +683,12 @@ begin
 		generic map (
 			style => "register",
 			n => 1,
-			d => (0 to 0 => glat))
+			d => (0 to 0 => buffdo_lat))
 		port map (
 			clk   => ctlr_clk,
 			di(0) => ctlrvideo_irdy,
 			do(0) => graphics_dv);
-
-		graphicsdi_e : entity hdl4fpga.align
-		generic map (
-			style => "register",
-			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => glat))
-		port map (
-			clk => ctlr_clk,
-			di  => ctlr_do,
-			do  => graphics_di);
+		graphics_di <= buff_do;
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
@@ -926,6 +906,16 @@ begin
 			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
+
+		buffdo_e : entity hdl4fpga.align
+		generic map (
+			style => "register",
+			n => ctlr_do'length,
+			d => (0 to ctlr_do'length-1 => buffdo_lat))
+		port map (
+			clk => ctlr_clk,
+			di  => ctlr_do,
+			do  => buff_do);
 
 		inirdy_e : entity hdl4fpga.align
 		generic map (

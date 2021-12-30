@@ -1,316 +1,135 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
+#include "siolib.h"
 
-#ifdef __MINGW32__
-#include <ws2tcpip.h>
-#include <wininet.h>
-#include <fcntl.h>
-#define	pipe(fds) _pipe(fds, 1024, O_BINARY)
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <netdb.h>
-#endif
-
-#include <math.h>
-
-#define PORT	57001
-#define QUEUE   4
-#define MAXSIZE 1500
-#define printnl fprintf(stderr,"\n")
-
-
-char ack_rcvd = 0;
-long long addr_rcvd;
-
-char rbuff[1024];
-
-void sio_parse(char * buff, int l)
+__int128 unsigned lfsr_mask(int size)
 {
-	enum states { stt_id, stt_len, stt_data };
-	enum states state;
+	__int128 unsigned mask;
 
-	int id;
-	int len;
-	int i;
+	mask = -1;
+	mask >>= (128-size);
 
-	long long data;
-
-	addr_rcvd = 0;
-	state = stt_id;
-	for (i = 0; i < l; i++) {
-		switch(state) {
-		case stt_id:
-			id    = buff[i];
-//			fprintf(stderr, "id 0x%02x\n", id);
-			state = stt_len;
-			break;
-		case stt_len:
-			len   = (unsigned char) buff[i];
-//			fprintf(stderr, "len %d\n", len);
-			state = stt_data;
-			data  = 0;
-			break;
-		case stt_data:
-			data <<= 8;
-			data |= (buff[i] & 0xff);
-			if (len-- > 0) {
-				state = stt_data;
-			} else {
-				switch(id){
-				case 0x00:
-					ack_rcvd = (char) data;
-					fprintf(stderr, "ack 0x%02x ", (unsigned char) ack_rcvd);
-					break;
-				case 0x16:
-					addr_rcvd = data;
-					fprintf(stderr, "address 0x%08llx ", addr_rcvd);
-					break;
-				}
-				state = stt_id;
-			}
-		}
-	}
+	return mask;
 }
 
-int    sckt;
-struct hostent *host = NULL;
-struct sockaddr_in sa_trgt;
-struct sockaddr_in sa_host;
-socklen_t sl_trgt = sizeof(sa_trgt);
-
-void init_socket ()
+__int128 unsigned lfsr_p (int size)
 {
-	memset (&sa_trgt, 0, sizeof (sa_trgt));
-	sa_trgt.sin_family = AF_INET;
-	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
-
-	memset (&sa_host, 0, sizeof (sa_host));
-	sa_host.sin_family = AF_INET;
-	sa_host.sin_port   = htons(PORT);	
-	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
-	if ((sckt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("Can't open socket");
-		exit (1);
+	unsigned __int128 p;
+	switch(size) {
+	case 128:
+		p   = 0xE100000000000000;
+		p <<= 64;
+		break;
+	case 64:
+		p = 0xD800000000000000;
+		break;
+	case 32:
+		p = 0xA3000000;
+		break;
+	default:
+		break;
 	}
-
-	if (bind(sckt, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
-		perror ("can't bind socket");
-		exit (1);
-	}
-
-	//	DON'T FRAGMENT, 
-	//	int tol = 2;	// Time To Live
-	//	setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(val));
-	//
+	p ^= (((__int128) 1) << (size-1));
+	return p;
 }
 
-char sbuff[8*1024];
-char *sload = sbuff+5;
-int  pkt_sent = 0;
-int  ack      = 0;
-
-void send_pkt(int psize)
+__int128 unsigned lfsr_next(__int128 unsigned lfsr, int size)
 {
-	int len = 0;
-
-	sbuff[len++] = 0x00;
-	sbuff[len++] = 0x02;
-	sbuff[len++] = 0x00;
-	sbuff[len++] = 0x00;
-	sbuff[len++] = (ack & 0x03f);
-	len += psize;
-
-	if (sendto(sckt, sbuff, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-		perror ("sending packet");
-		exit (1);
-	}
-	pkt_sent++;
+	return ((lfsr>>1)|((lfsr&1)<<(size-1))) ^ (((lfsr&1) ? lfsr_mask(size) : 0) & lfsr_p(size));
 }
 
-struct sockaddr_in sa_src;
-socklen_t sl_src  = sizeof(sa_src);
-int  pkt_lost = 0;
-
-int rcvd_pkt()
+__int128 lfsr_fill (char *buffer, int length, __int128 lfsr, size_t lfsr_size)
 {
-	fd_set rfds;
-	struct timeval tv;
-	int err;
-	int len;
-
-	FD_ZERO(&rfds);
-	FD_SET(sckt, &rfds);
-	tv.tv_sec  = 0;
-	tv.tv_usec = 1000;
-
-	pkt_lost++;
-	if ((err = select(sckt+1, &rfds, NULL, NULL, &tv)) == -1) {
-		perror ("select");
-		exit (1);
-	} else {
-		if (err > 0) {
-			if ((len = recvfrom(sckt, rbuff, sizeof(rbuff), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-				perror ("recvfrom");
-				exit (1);
-			}
-			pkt_lost--;
-			return len;
-		}
+	for (int i = 0; i < length; i += lfsr_size/8) {
+		memcpy(buffer+i, &lfsr, lfsr_size/8);
+		lfsr = lfsr_next(lfsr, lfsr_size);
 	}
-	return 0;
+	return lfsr;
 }
 
 int main (int argc, char *argv[])
 {
+	int nooutput;
 
-#ifdef __MINGW32__
-	WSADATA wsaData;
-#endif
+	loglevel = 0;
+	opterr   = 0;
+	nooutput = 0;
 
-	int  c;
-	char hostname[256] = "";
+	setvbuf(stderr, NULL, _IONBF, 0);
 
-	unsigned char *bufptr;
-	char pktmd;
-
-	fd_set rfds;
-	int n;
-	int l;
-	int ssize;
-	int rlen;
-
-
-#ifdef __MINGW32__
-	if (WSAStartup(MAKEWORD(2,2), &wsaData))
-		exit(-1);
-#endif
-
-	pktmd  = 0;
-	opterr = 0;
-	while ((c = getopt (argc, argv, "ph:")) != -1) {
+	int c;
+	int lfsr_size = 32;
+	while ((c = getopt (argc, argv, "d:loh:")) != -1) {
 		switch (c) {
-		case 'p':
-			pktmd = 1;
+		case 'l':
+			loglevel = 8|4|2|1;
+			break;
+		case 'd' :
+			sscanf (optarg, "%d", &lfsr_size);
+		case 'o':
+			nooutput = 1;
 			break;
 		case 'h':
-			if (optarg)
+			if (optarg) {
 				sscanf (optarg, "%64s", hostname);
+			}
 			break;
 		case '?':
-			fprintf (stderr, "usage : sendbyudp -p -h hostname\n");
 			exit(1);
 		default:
-			exit(1);
+			fprintf (stderr, "usage : sendbyudp [ -l ] [ -o ] [ -p ] [ -h hostname ]\n");
+			abort();
 		}
 	}
 
-	if (!strlen(hostname)) {
-		strcpy (hostname, "kit");
-		fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
-	}
-
-	if (!(host=gethostbyname(hostname))) {
-		fprintf (stderr, "Hostname '%s' not found\n", hostname);
-		exit(1);
-	}
-
-	init_socket();
-
-	// Reset ack //
-	// --------- //
-
-	for(;;) {
-		send_pkt(0);
-		sio_parse(sbuff, sload-sbuff); printnl;
-
-		rlen = rcvd_pkt();
-		sio_parse(rbuff, rlen); printnl;
-
-		if (((ack ^ ack_rcvd) & 0x3f) == 0 && rlen > 0)
-			break;
-	}
-
-	for(;;) {
-		int size = sizeof(sbuff)-(sload-sbuff);
-
-		if (pktmd) {
-			if ((fread(&size, sizeof(unsigned short), 1, stdin) > 0))
-				fprintf (stderr, "packet size %d\n", size);
-			else
-				break;
+	if (strlen(hostname) > 0) {
+		init_socket();
+		if (LOG1) {
+			fprintf (stderr, "Socket has been initialized\n");
 		}
+	} else {
+		init_comms();
+		if (LOG1) {
+			fprintf (stderr, "COMMS has been initialized\n");
+		}
+	}
 
-		if ((n = fread(sload, sizeof(unsigned char), size, stdin)) > 0) {
-			size = n;
-			if (size > MAXSIZE) {
-				fprintf (stderr, "packet size %d greater than %d\n", size, MAXSIZE);
-				exit(1);
-			}
+	lfsr_size=32;
+	int  length = 256+4;
+	char buffer[2048];
+	char siobuf[2048];
+	__int128 lfsr;
 
-			ack++;
+	lfsr = lfsr_fill(buffer, length, lfsr_mask(lfsr_size), lfsr_size);
+	length = raw2sio(siobuf, buffer, length);
 
-			send_pkt(size);
-			sio_parse(sbuff, sload-sbuff+size); printnl;
-			for(;;) {
-				rlen = rcvd_pkt();
-				if (rlen > 0) {
-					sio_parse(rbuff, rlen); printnl;
-					if (((ack ^ ack_rcvd) & 0x3f) == 0)
-						break;
-					else 
-						continue;
-				}
+	length = sio2raw(buffer, siobuf, length);
+	for(int i = 0; i < length; i++) {
+		putchar(buffer[i]);
+	}
+//	fprintf(stderr, "%d\n", len);
+	abort();
 
-				send_pkt(size);
-				sio_parse(sbuff, sload-sbuff+size); printnl;
-			}
-
-			for (;;) {
-				if (!((addr_rcvd & 0xc0000000) ^ 0xc0000000)) 
-					break;
-
-				ack++;
-				send_pkt(0);
-				sio_parse(sbuff, sload-sbuff); printnl;
-
-				for (;;) {
-					rlen = rcvd_pkt();
-					if (rlen > 0) {
-						sio_parse(rbuff, rlen); printnl;
-						if (rlen > 0)
-							if (((ack ^ ack_rcvd) & 0x3f) == 0)
-								break;
-							else
-								continue;
-					}
-					send_pkt(0);
-					sio_parse(sbuff, sload-sbuff); printnl;
-				}
-			}
-	//		if ((addr_rcvd & 0xfff) != ((addr_rcvd >> 12) & 0xfff))
-	//			break;
-		
-//			for (int i = 1; i < 4; i++)
-//				if ((addr_rcvd & 0xf) != ((addr_rcvd >> (4*i) & 0xf))) {
-//					fprintf(stderr,"marca -->\n");
-//					break;
-//				}
-
-
-		} else if (n < 0) {
-			perror ("reading packet");
-			exit(1);
-		} else
+	abort();
+	for(long long unsigned i = 0; i < (long long unsigned) 1 << 32; i++) {
+		switch(lfsr_size) {
+		case 32:
+			fprintf(stderr,"0x%08lx\n", (long unsigned int) lfsr);
 			break;
-
+		case 64:
+			fprintf(stderr,"0x%016llx\n", (long long unsigned int) lfsr);
+			break;
+		case 128:
+			fprintf(stderr,"0x%016llx%016llx\n",
+				(long long unsigned int ) (lfsr >> 64),
+				(long long unsigned int ) (lfsr &  lfsr_mask(lfsr_size)));
+			break;
+		default:
+			fprintf(stderr,"invalid size\n");
+			return -1;
+		}
+		lfsr = lfsr_next(lfsr, lfsr_size);
 	}
 
 	return 0;

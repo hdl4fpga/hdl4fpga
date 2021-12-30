@@ -111,7 +111,6 @@ int main (int argc, char *argv[])
 			if(LOG0) fprintf(stderr, "eof %d\n", feof(stdin));
 			break;
 		}
-
 	}
 
 	return 0;
