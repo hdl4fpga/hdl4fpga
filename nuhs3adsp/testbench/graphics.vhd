@@ -55,7 +55,6 @@ architecture nuhs3adsp_graphics of testbench is
 	signal we_n  : std_logic;
 	signal dm    : std_logic_vector(1 downto 0);
 
-	signal x : std_logic;
 	signal mii_refclk : std_logic;
 	signal mii_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
@@ -64,7 +63,6 @@ architecture nuhs3adsp_graphics of testbench is
 	signal mii_txc  : std_logic;
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
-	signal txfrm_ptr     : std_logic_vector(0 to 20);
 
 	signal ddr_lp_dqs : std_logic;
 
@@ -223,8 +221,6 @@ begin
 		adc_da => (others => '0'),
 		adc_db => (others => '0'),
 
-		adc_clkab  => x,
-		adc_clkout => x,
 
 		hd_t_clock => rst,
 

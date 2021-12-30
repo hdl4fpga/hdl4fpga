@@ -35,6 +35,7 @@ int new_object(struct object_pool *pool)
 		init_pool(pool);
 	}
 	if (pool->object_free == -2) {
+		fprintf(stderr,"No free object\n");
 		abort();
 	}
 	object = pool->object_free;
@@ -190,6 +191,7 @@ int unsigned rgtr2int (struct rgtr_node *node)
 	int unsigned data;
 
 	if (!node) {
+		fprintf(stderr, "Null node at rgtr2int\n");
 		abort();
 	}
 	data = 0;
@@ -309,6 +311,7 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 
 	rgtr2raw(buffer, &len1, node);
 	if (len+len1 > MAXLEN) {
+		fprintf(stderr, "LEN+LEN1 %d\n", len+len1);
 		abort();
 	}
 
@@ -535,14 +538,14 @@ void init_comms ()
 }
 
 int ack;
-char unsigned ackout_buffer[3];
-struct rgtr_node *ack_out;
 
 int sio_init (int ack_val)
 {
 
 	struct rgtr_node *queue_in = NULL;
+	struct rgtr_node *ack_out;
 	struct rgtr_node *ack_in   = NULL;
+	char unsigned ackout_buffer[3];
 
 	ack_out  = set_rgtrnode(new_rgtrnode(), RGTRACK_ID, ackout_buffer, sizeof(ackout_buffer));
 	queue_in = delete_queue(queue_in);
@@ -554,6 +557,7 @@ int sio_init (int ack_val)
 	ack = ack_val;
 	set_acknode(ack_out, ack, 0x80);
 	send_rgtr(ack_out);
+	delete_rgtrnode(ack_out);
 
 	if (LOG1) {
 		fprintf (stderr, "Waiting ACK\n");
@@ -598,12 +602,15 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 {
 	struct rgtr_node *queue_in = NULL;
 	struct rgtr_node *ack_in   = NULL;
+	struct rgtr_node *ack_out;
+	char unsigned ackout_buffer[3];
 
 	(ack = (ack += 1) % 0x40);
 	if (LOG0) {
 		fprintf (stderr, ">>> SENDING PACKET <<<\n");
 	}
 
+	ack_out  = set_rgtrnode(new_rgtrnode(), RGTRACK_ID, ackout_buffer, sizeof(ackout_buffer));
 	set_acknode(ack_out, ack, 0x0);
 	send_rgtrrawdata(ack_out, buffer, length);
 
@@ -741,6 +748,7 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 		fprintf (stderr, "\tdma ready\n");
 	}
 
+	delete_rgtrnode(ack_out);
 	return queue_in;
 }
 

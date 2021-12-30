@@ -30,7 +30,8 @@ use unisim.vcomponents.all;
 
 entity xcs3_ddrdqphy is
 	generic (
-		rgtr_dout : boolean;
+		latency     : natural := 0;
+--		rgtr_dout : boolean;
 		loopback    : boolean;
 		gear        : natural;
 		byte_size   : natural);
@@ -81,13 +82,24 @@ begin
 		clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
 
 		registered_g : for j in clks'range generate
-			process (clks(j))
-			begin
-				if rising_edge(clks(j)) then
-					rdqo(j) <= phy_dqi(j*byte_size+i);
-				end if;
-			end process;
-			dqo(j) <= rdqo(j) when rgtr_dout else phy_dqi(j*byte_size+i);
+		begin
+--			process (clks(j))
+--			begin
+--				if rising_edge(clks(j)) then
+--					rdqo(j) <= phy_dqi(j*byte_size+i);
+--				end if;
+--			end process;
+--			dqo(j) <= rdqo(j) when rgtr_dout else phy_dqi(j*byte_size+i);
+
+			lat_e : entity hdl4fpga.align
+			generic map (
+				style => "register",
+				n     => 1,
+				d     => (0 to 0 => LATENCY))
+			port map (
+				clk   => clks(j),
+				di(0) => phy_dqi(j*byte_size+i),
+				do(0) => dqo(j));
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
@@ -117,18 +129,32 @@ begin
 		begin
 			dmt(i) <= '0';
 
-			rdmi(i) <= s when t='1' and not loopback else d;
-			process (clks(i))
-			begin
-				if rising_edge(clks(i)) then
-					t <= phy_dmt(i);
-					d <= phy_dmi(i);
-					s <= phy_sti(i);
-				end if;
-			end process;
+			lat_e : entity hdl4fpga.align
+			generic map (
+				style => "register",
+				n     => 3,
+				d     => (0 to 3-1 => LATENCY))
+			port map (
+				clk   => clks(i),
+				di(0) => phy_dmt(i),
+				di(1) => phy_dmi(i),
+				di(2) => phy_sti(i),
+				do(0) => t,
+				do(1) => d,
+				do(2) => s);
+
+--			process (clks(i))
+--			begin
+--				if rising_edge(clks(i)) then
+--					t <= phy_dmt(i);
+--					d <= phy_dmi(i);
+--					s <= phy_sti(i);
+--				end if;
+--			end process;
+--			rdmi(i) <= s when t='1' and not loopback else d;
 
 			dmi(i) <=
-				rdmi(i)    when rgtr_dout else 
+				rdmi(i)    when latency/=0 else
 				phy_sti(i) when phy_dmt(i)='1' and not loopback else
 				phy_dmi(i);
 
@@ -155,9 +181,9 @@ begin
 		df  => phy_sti(1),
 		q   => ddr_sto);
 
-	dqso_b : block 
-		signal clk_n : std_logic;
-		signal dt : std_logic;
+	dqso_b : block
+		signal clk_n  : std_logic;
+		signal dt     : std_logic;
 		signal dqso_r : std_logic;
 		signal dqso_f : std_logic;
 	begin

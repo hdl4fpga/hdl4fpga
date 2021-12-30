@@ -27,15 +27,16 @@ use ieee.numeric_std.ALL;
 
 entity dfsdcm is
 	generic (
+		dfs_mode : string := "HIGH";
 		dcm_per : real;
 		dfs_div : natural;
 		dfs_mul : natural);
 	port (
-		dfsdcm_rst : in std_logic;
+		dfsdcm_rst   : in std_logic;
 		dfsdcm_clkin : in std_logic;
 		dfsdcm_clk0  : out std_logic;
 		dfsdcm_clk90 : out std_logic;
-		dfsdcm_lckd : out std_logic);
+		dfsdcm_lckd  : out std_logic);
 end;
 
 library unisim;
@@ -66,7 +67,7 @@ begin
 		clkfx_multiply => dfs_mul,
 		clkout_phase_shift => "NONE",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "LOW",
+		dfs_frequency_mode => dfs_mode,
 		duty_cycle_correction => TRUE,
 		factory_jf   => X"C080",
 		phase_shift  => 0,
@@ -103,7 +104,7 @@ begin
 		clkin_period => (dcm_per*real(dfs_div))/real(dfs_mul),
 		clkout_phase_shift => "NONE",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "LOW",
+		dfs_frequency_mode => dfs_mode,
 		duty_cycle_correction => TRUE,
 		factory_jf => x"C080",
 		phase_shift => 0,

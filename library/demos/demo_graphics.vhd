@@ -116,7 +116,7 @@ architecture mix of demo_graphics is
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
-	signal dmaio_req      : std_logic := '0';
+	signal dmaio_req      : std_logic;
 	signal dmaio_rdy      : std_logic;
 	signal dmaio_ack      : std_logic_vector(0 to 8-1);
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
@@ -515,8 +515,6 @@ begin
 				constant dram_lat  : natural := 2;
 				signal ctlrio_irdy : std_logic;
 
-				signal trans_req   : bit;
-				signal trans_rdy   : bit;
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
 
@@ -529,7 +527,6 @@ begin
 				signal dmaout_irdy : std_logic;
 				signal dmaout_data : std_logic_vector(ctlr_do'range);
 
-				signal gnt_lat : std_logic;
 			begin
 
 				process (dmaio_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
@@ -542,22 +539,6 @@ begin
 					q(0) := dmaio_gnt and ctlr_cas;
 					lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
 					ctlrio_irdy <= ctlr_do_dv(0) and lat;
-					gnt_lat     <= lat;
-				end process;
-
-				process (ctlr_clk)
-					variable gnt : std_logic;
-				begin
-					if rising_edge(ctlr_clk) then
-						if dmaio_gnt='1' then
-							gnt := ctlr_rw;
-						elsif gnt_lat='0' then
-							if gnt='1' then
-								trans_req <= not trans_rdy;
-							end if;
-							gnt := '0';
-						end if;
-					end if;
 				end process;
 
 				buffdv_e : entity hdl4fpga.align
@@ -613,10 +594,9 @@ begin
 				process (sio_clk)
 				begin
 					if rising_edge(sio_clk) then
-						if (trans_req xor trans_rdy)='1' then
-							fifo_req  <= not fifo_rdy;
+						if status_rw='1' then
+							fifo_req <= not fifo_rdy;
 							if (acktx_irdy and acktx_trdy)='1' then
-								trans_rdy <= trans_req;
 								fifo_rdy  <= fifo_req;
 							end if;
 						end if;
@@ -951,7 +931,7 @@ begin
 		generic map (
 			style => "register",
 			n => 1,
-			d => (0 to 0 => 2))
+			d => (0 to 0 => 0))
 		port map (
 			clk => sio_clk,
 			di(0) => inirdy,

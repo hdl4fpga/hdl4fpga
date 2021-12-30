@@ -106,7 +106,7 @@ architecture def of eth_tb is
 			x"0000" &              -- UPD checksum
 			payload);
 
-	constant pyld1 : std_logic_vector := x"010009_1803_8cac_c300_1702000000_160300000000_1702000001_160380000000";
+	constant pyld1 : std_logic_vector := x"010009_170200003f_160380000000";
 --	constant pyld1 : std_logic_vector := x"010009_170200003f_160380000000";
 --	constant pyld1 : std_logic_vector := x"01008b";
 	constant pkt1 : std_logic_vector :=

@@ -46,11 +46,11 @@ end;
 
 architecture def of sio_dmahdsk is
 
-	signal cfg2ctlr_req : std_logic;
-	signal cfg2ctlr_rdy : std_logic;
+	signal cfg2ctlr_req : bit;
+	signal cfg2ctlr_rdy : bit;
 
-	signal ctlr2cfg_req : std_logic;
-	signal ctlr2cfg_rdy : std_logic;
+	signal ctlr2cfg_req : bit;
+	signal ctlr2cfg_rdy : bit;
 
 begin
 
@@ -62,23 +62,23 @@ begin
 				dmacfg_req   <= '0';
 				cfg2ctlr_req <= '0';
 				ctlr2cfg_rdy <= '0';
-			elsif (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-				if (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='0' then
-					if (to_stdulogic(to_bit(dma_rdy)) xor to_stdulogic(to_bit(dma_req)))='0' then
-						if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
+			elsif (ctlr2cfg_req xor ctlr2cfg_rdy)='0' then
+				if (cfg2ctlr_req xor cfg2ctlr_rdy)='0' then
+					if to_bit(dma_rdy xor dma_req)='0' then
+						if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
 							if dmaio_irdy='1' then
 								if dmaio_trdy='0' then
 									dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 								end if;
 							end if;
 						else
-							cfg2ctlr_req <= not to_stdulogic(to_bit(cfg2ctlr_rdy));
+							cfg2ctlr_req <= not cfg2ctlr_rdy;
 						end if;
 					end if;
 				end if;
 				dmaio_trdy <= '0';
 			else
-				ctlr2cfg_rdy <= to_stdulogic(to_bit(ctlr2cfg_req));
+				ctlr2cfg_rdy <= ctlr2cfg_req;
 				dmaio_trdy <= '1';
 			end if;
 		end if;
@@ -91,17 +91,17 @@ begin
 				dma_req      <= '0';
 				ctlr2cfg_req <= '0';
 				cfg2ctlr_rdy <= '0';
-			elsif (to_stdulogic(to_bit(cfg2ctlr_req)) xor to_stdulogic(to_bit(cfg2ctlr_rdy)))='1' then
-				if (to_stdulogic(to_bit(ctlr2cfg_req)) xor to_stdulogic(to_bit(ctlr2cfg_rdy)))='0' then
-					if (to_stdulogic(to_bit(dmacfg_req)) xor to_stdulogic(to_bit(dmacfg_rdy)))='0' then
-						if (to_stdulogic(to_bit(dma_req)) xor to_stdulogic(to_bit(dma_rdy)))='0' then
+			elsif (cfg2ctlr_req xor cfg2ctlr_rdy)='1' then
+				if (ctlr2cfg_req xor ctlr2cfg_rdy)='0' then
+					if (dmacfg_req xor dmacfg_rdy)='0' then
+						if (dma_req xor dma_rdy)='0' then
 							dma_req <= not to_stdulogic(to_bit(dma_rdy));
 						else
-							ctlr2cfg_req <= not to_stdulogic(to_bit(ctlr2cfg_rdy));
+							ctlr2cfg_req <= not ctlr2cfg_rdy;
 						end if;
 					end if;
 				else
-					cfg2ctlr_rdy <= to_stdulogic(to_bit(cfg2ctlr_req));
+					cfg2ctlr_rdy <= cfg2ctlr_req;
 				end if;
 			end if;
 		end if;
