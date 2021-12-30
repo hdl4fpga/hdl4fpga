@@ -797,9 +797,7 @@ char *to_bytearray(char *bytearray, const char *hexstr)
 	}
 }
 
-int sio2raw(char *buffer, const char unsigned *siobuf, size_t size);
-int raw2sio(char  *siobuf, const char *buffer, size_t size);
-int raw2sio(char  *siobuf, const char *buffer, size_t size)
+int raw2sio(char  *siobuf, char unsigned rgtr_id, const char *buffer, size_t size)
 {
 	char unsigned *bufptr;
 	char unsigned *sioptr;
@@ -809,7 +807,7 @@ int raw2sio(char  *siobuf, const char *buffer, size_t size)
 	sioptr = (char unsigned *) siobuf;
 
 	length    = size-1;
-	sioptr    = to_bytearray(siobuf, "18");
+	*sioptr++ = rgtr_id;
 	*sioptr++ = length % 256;
 	memcpy(sioptr, bufptr, sioptr[-1]+1);
 	length -=    sioptr[-1]+1;
@@ -817,7 +815,7 @@ int raw2sio(char  *siobuf, const char *buffer, size_t size)
 	sioptr += sioptr[-1]+1;
 
 	for (length >>= 8; !(length < 0); length--) {
-		sioptr    = to_bytearray(sioptr, "18");
+		*sioptr++ = rgtr_id;
 		*sioptr++ = 256-1;
 		memcpy(sioptr, bufptr, 256);
 		bufptr += 256;
@@ -827,7 +825,7 @@ int raw2sio(char  *siobuf, const char *buffer, size_t size)
 	return sioptr-(char unsigned *)siobuf;
 }
 
-int sio2raw(char *buffer, const char unsigned *siobuf, size_t size)
+int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, size_t size)
 {
 	char *bufptr;
 	const char unsigned *sioptr;
@@ -836,9 +834,12 @@ int sio2raw(char *buffer, const char unsigned *siobuf, size_t size)
 	sioptr = siobuf;
 
 	for(sioptr = siobuf; sioptr < siobuf+size; sioptr += (*sioptr + 2)) {
-		if (*sioptr++ == 0x18) {
+		if (*sioptr == rgtr_id) {
+			sioptr++;
 			memcpy(bufptr, sioptr+1, *sioptr + 1);
 			bufptr += *sioptr + 1;
+		} else {
+			break;
 		}
 	}
 

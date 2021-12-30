@@ -34,9 +34,9 @@ __int128 unsigned lfsr_p (int size)
 	return p;
 }
 
-__int128 unsigned lfsr_next(__int128 unsigned lfsr, int size)
+__int128 unsigned lfsr_next(__int128 unsigned lfsr, int lfsr_size)
 {
-	return ((lfsr>>1)|((lfsr&1)<<(size-1))) ^ (((lfsr&1) ? lfsr_mask(size) : 0) & lfsr_p(size));
+	return ((lfsr>>1)|((lfsr&1)<<(lfsr_size-1))) ^ (((lfsr&1) ? lfsr_mask(lfsr_size) : 0) & lfsr_p(lfsr_size));
 }
 
 __int128 lfsr_fill (char *buffer, int length, __int128 lfsr, size_t lfsr_size)
@@ -96,22 +96,27 @@ int main (int argc, char *argv[])
 	}
 
 	lfsr_size=32;
+	__int128 lfsr;
+
 	int  length = 256+4;
 	char buffer[2048];
 	char siobuf[2048];
-	__int128 lfsr;
+	char *sioptr;
+	int  mem_address;
+	int  mem_length;
 
-	lfsr = lfsr_fill(buffer, length, lfsr_mask(lfsr_size), lfsr_size);
-	length = raw2sio(siobuf, buffer, length);
-
-	length = sio2raw(buffer, siobuf, length);
-	for(int i = 0; i < length; i++) {
-		putchar(buffer[i]);
+	lfsr    = lfsr_fill(buffer, length, lfsr_mask(lfsr_size), lfsr_size);
+	sioptr  = raw2sio(siobuf, 0x18, buffer, length) + siobuf;
+	sioptr += raw2sio(sioptr, 0x17, hton(&mem_address), 4);
+	sioptr += raw2sio(sioptr, 0x16, &mem_length,  3);
+	for(int i = 0; i < sioptr-siobuf; i++) {
+		putchar(siobuf[i]);
 	}
-//	fprintf(stderr, "%d\n", len);
 	abort();
 
-	abort();
+	sio_request(siobuf, sioptr-siobuf);
+
+
 	for(long long unsigned i = 0; i < (long long unsigned) 1 << 32; i++) {
 		switch(lfsr_size) {
 		case 32:

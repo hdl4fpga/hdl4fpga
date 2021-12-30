@@ -103,7 +103,7 @@ int sio_init (int ack_val);
 struct rgtr_node *sio_request (char *buffer, size_t length);
 void sio_dump (struct rgtr_node *queue_in);
 char *to_bytearray(char *bytearray, const char *hexstr);
-int sio2raw(char *buffer, const char unsigned *siobuf, size_t size);
-int raw2sio(char  *siobuf, const char *buffer, size_t size);
+int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, size_t size);
+int raw2sio(char *siobuf, char unsigned rgtr_id, const char *buffer, size_t size);
 
 #endif
