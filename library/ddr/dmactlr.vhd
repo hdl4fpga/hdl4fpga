@@ -58,9 +58,9 @@ entity dmactlr is
 		ctlr_inirdy  : in  std_logic;
 		ctlr_refreq  : in  std_logic;
 
-		ctlr_cl      : in  std_logic_vector(0 to 3-1) := (others => '-');
-		ctlr_do_dv   : in  std_logic := '-';
-		trans_do_dv  : out std_logic;
+		ctlr_cl      : in  std_logic_vector;
+		ctlr_do_dv   : in  std_logic;
+		dev_do_dv    : out std_logic_vector;
 
 		ctlr_irdy    : out  std_logic;
 		ctlr_trdy    : in  std_logic;
@@ -103,18 +103,20 @@ architecture def of dmactlr is
 
 begin
 
-	process (dmatransgnt_req, dmatrans_rdy, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
-		variable q   : std_logic_vector(0 to 3+8-1); -- Magic numbers that have to bel recalled
-		variable lat : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			q(0) := ctlr_cas and (dmatransgnt_req xor dmatrans_rdy);
-			q := std_logic_vector(unsigned(q) srl 1);
-		end if;
-		q(0) := ctlr_cas and (dmatransgnt_req xor dmatrans_rdy);
-		lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
-		trans_do_dv <= ctlr_do_dv and lat;
-	end process;
+	do_dv_g : for i in dev_gnt'range generate
+		process (dev_gnt(i), ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
+			variable q   : std_logic_vector(0 to 3+8-1); -- Magic numbers that have to be recalled
+			variable lat : std_logic;
+		begin
+			if rising_edge(ctlr_clk) then
+				q(0) := ctlr_cas and dev_gnt(i);
+				q := std_logic_vector(unsigned(q) srl 1);
+			end if;
+			q(0) := ctlr_cas and dev_gnt(i);
+			lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
+			dev_do_dv(i) <= ctlr_do_dv and lat;
+		end process;
+	end generate;
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (

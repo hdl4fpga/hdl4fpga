@@ -55,7 +55,6 @@ entity demo_graphics is
 		green_length : natural := 6;
 		blue_length  : natural := 5);
 
-
 	port (
 		sio_clk      : in  std_logic;
 		sin_frm      : in  std_logic;
@@ -110,7 +109,6 @@ end;
 
 architecture mix of demo_graphics is
 
-
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
@@ -138,9 +136,6 @@ architecture mix of demo_graphics is
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
-	constant buffdo_lat   : natural := setif(profile=0,3,3);
-	signal buff_do        : std_logic_vector(ctlr_do'range);
-	signal buff_dv        : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
@@ -161,8 +156,10 @@ architecture mix of demo_graphics is
 	signal dev_gnt        : std_logic_vector(0 to 2-1);
 	signal dev_req        : std_logic_vector(dev_gnt'range);
 	signal dev_rdy        : std_logic_vector(dev_gnt'range);
-	alias  dmavideo_gnt   : std_logic is dev_gnt(0);
-	alias  dmaio_gnt      : std_logic is dev_gnt(1);
+	signal dma_do         : std_logic_vector(ctlr_do'range);
+	signal dma_do_dv      : std_logic_vector(dev_gnt'range);
+	alias  dmavideo_do_dv : std_logic is dma_do_dv(0);
+	alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
@@ -515,8 +512,6 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
-				signal ctlrio_irdy : std_logic;
-
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
 
@@ -530,38 +525,7 @@ begin
 
 			begin
 
-				process (dmaio_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
-					variable q   : std_logic_vector(0 to 3+8-1);
-					variable lat : std_logic;
-				begin
-					if rising_edge(ctlr_clk) then
-						q(0) := dmaio_gnt and ctlr_cas;
-						q := std_logic_vector(unsigned(q) srl 1);
-					end if;
-					q(0) := dmaio_gnt and ctlr_cas;
-					lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
-					ctlrio_irdy <= ctlr_do_dv(0) and lat;
-				end process;
-
---				grant_e : entity hdl4fpga.align
---				generic map (
---					style => "register",
---					n => 1,
---					d => (0 to 0 => buffdo_lat))
---				port map (
---					clk   => ctlr_clk,
---					di(0) => ctlrio_irdy,
---					do(0) => dmaio);
-
-				buffdv_e : entity hdl4fpga.align
-				generic map (
-					style => "register",
-					n => 1,
-					d => (0 to 0 => buffdo_lat))
-				port map (
-					clk   => ctlr_clk,
-					di(0) => ctlrio_irdy,
-					do(0) => dmaout_irdy);
+				dmaout_irdy <= dmaio_do_dv;
 
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
@@ -574,7 +538,7 @@ begin
 				port map (
 					src_clk  => ctlr_clk,
 					src_irdy => dmaout_irdy,
-					src_data => buff_do,
+					src_data => dma_do,
 
 					dst_frm  => ctlr_inirdy,
 					dst_clk  => sio_clk,
@@ -681,27 +645,8 @@ begin
 			video_hzon    => hzon,
 			video_vton    => vton);
 
-		process (dmavideo_gnt, ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
-			variable q : std_logic_vector(0 to 3+8-1);
-		begin
-			if rising_edge(ctlr_clk) then
-				q(0) := dmavideo_gnt and ctlr_cas;
-				q := std_logic_vector(unsigned(q) srl 1);
-			end if;
-			q(0) := dmavideo_gnt and ctlr_cas;
-			ctlrvideo_irdy <= ctlr_do_dv(0) and word2byte(q(3 to 8+3-1), ctlr_cl);
-		end process;
-
-		graphicsdv_e : entity hdl4fpga.align
-		generic map (
-			style => "register",
-			n => 1,
-			d => (0 to 0 => buffdo_lat))
-		port map (
-			clk   => ctlr_clk,
-			di(0) => ctlrvideo_irdy,
-			do(0) => graphics_dv);
-		graphics_di <= buff_do;
+		graphics_dv <= dmavideo_do_dv;
+		graphics_di <= dma_do;
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
@@ -811,44 +756,71 @@ begin
 	dev_addr <= dmavideo_addr & dmaio_addr(dmactlr_addr'range);
 	dev_we   <= '0'           & dmaio_we;
 
-	dmactlr_e : entity hdl4fpga.dmactlr
-	generic map (
-		fpga        => fpga,
-		mark        => mark,
-		tcp         => ddr_tcp,
+	dmactlr_b : block
+		constant buffdo_lat : natural := setif(profile=0,3,3);
+		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
+	begin
+		dmactlr_e : entity hdl4fpga.dmactlr
+		generic map (
+			fpga        => fpga,
+			mark        => mark,
+			tcp         => ddr_tcp,
 
-		data_gear   => data_gear,
-		bank_size   => bank_size,
-		addr_size   => addr_size,
-		coln_size   => coln_size)
-	port map (
-		devcfg_clk  => dmacfg_clk,
-		devcfg_req  => dmacfg_req,
-		devcfg_rdy  => dmacfg_rdy,
-		dev_len     => dev_len,
-		dev_addr    => dev_addr,
-		dev_we      => dev_we,
+			data_gear   => data_gear,
+			bank_size   => bank_size,
+			addr_size   => addr_size,
+			coln_size   => coln_size)
+		port map (
+			devcfg_clk  => dmacfg_clk,
+			devcfg_req  => dmacfg_req,
+			devcfg_rdy  => dmacfg_rdy,
+			dev_len     => dev_len,
+			dev_addr    => dev_addr,
+			dev_we      => dev_we,
 
-		dev_req     => dev_req,
-		dev_gnt     => dev_gnt,
-		dev_rdy     => dev_rdy,
+			dev_req     => dev_req,
+			dev_gnt     => dev_gnt,
+			dev_rdy     => dev_rdy,
+			dev_do_dv   => dev_do_dv,
 
-		ctlr_clk    => ctlr_clk,
-		ctlr_cl     => ctlr_cl,
-		ctlr_do_dv  =>ctlr_do_dv(0),
+			ctlr_clk    => ctlr_clk,
+			ctlr_cl     => ctlr_cl,
+			ctlr_do_dv  => ctlr_do_dv(0),
 
-		ctlr_inirdy => ctlr_inirdy,
-		ctlr_refreq => ctlr_refreq,
+			ctlr_inirdy => ctlr_inirdy,
+			ctlr_refreq => ctlr_refreq,
 
-		ctlr_irdy   => ctlr_irdy,
-		ctlr_trdy   => ctlr_trdy,
-		ctlr_ras    => ctlr_ras,
-		ctlr_cas    => ctlr_cas,
-		ctlr_rw     => ctlr_rw,
-		ctlr_b      => ctlr_b,
-		ctlr_a      => ctlr_a,
-		ctlr_dio_req => ctlr_dio_req,
-		ctlr_act    => ctlr_act);
+			ctlr_irdy   => ctlr_irdy,
+			ctlr_trdy   => ctlr_trdy,
+			ctlr_ras    => ctlr_ras,
+			ctlr_cas    => ctlr_cas,
+			ctlr_rw     => ctlr_rw,
+			ctlr_b      => ctlr_b,
+			ctlr_a      => ctlr_a,
+			ctlr_dio_req => ctlr_dio_req,
+			ctlr_act    => ctlr_act);
+
+		dmadv_e : entity hdl4fpga.align
+		generic map (
+			style => "register",
+			n => 2,
+			d => (0 to 2-1 => buffdo_lat))
+		port map (
+			clk   => ctlr_clk,
+			di => dev_do_dv,
+			do => dma_do_dv);
+
+		dmado_e : entity hdl4fpga.align
+		generic map (
+			style => "register",
+			n => ctlr_do'length,
+			d => (0 to ctlr_do'length-1 => buffdo_lat))
+		port map (
+			clk => ctlr_clk,
+			di  => ctlr_do,
+			do  => dma_do);
+
+	end block;
 
 	ddrctlr_b : block
 		signal inirdy : std_logic;
@@ -921,26 +893,6 @@ begin
 			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
-
-		buffdv_e : entity hdl4fpga.align
-		generic map (
-			style => "register",
-			n => 1,
-			d => (0 to 1-1 => buffdo_lat))
-		port map (
-			clk => ctlr_clk,
-			di(0)  => ctlr_do_dv(0),
-			do(0)  => buff_dv);
-
-		buffdo_e : entity hdl4fpga.align
-		generic map (
-			style => "register",
-			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => buffdo_lat))
-		port map (
-			clk => ctlr_clk,
-			di  => ctlr_do,
-			do  => buff_do);
 
 		inirdy_e : entity hdl4fpga.align
 		generic map (
