@@ -140,6 +140,7 @@ architecture mix of demo_graphics is
 	signal ctlr_di_req    : std_logic;
 	constant buffdo_lat   : natural := setif(profile=0,3,3);
 	signal buff_do        : std_logic_vector(ctlr_do'range);
+	signal buff_dv        : std_logic;
 	signal ctlr_dio_req   : std_logic;
 
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
@@ -541,6 +542,16 @@ begin
 					ctlrio_irdy <= ctlr_do_dv(0) and lat;
 				end process;
 
+--				grant_e : entity hdl4fpga.align
+--				generic map (
+--					style => "register",
+--					n => 1,
+--					d => (0 to 0 => buffdo_lat))
+--				port map (
+--					clk   => ctlr_clk,
+--					di(0) => ctlrio_irdy,
+--					do(0) => dmaio);
+
 				buffdv_e : entity hdl4fpga.align
 				generic map (
 					style => "register",
@@ -906,6 +917,16 @@ begin
 			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
+
+		buffdv_e : entity hdl4fpga.align
+		generic map (
+			style => "register",
+			n => ctlr_do'length,
+			d => (0 to ctlr_do'length-1 => buffdo_lat))
+		port map (
+			clk => ctlr_clk,
+			di  => ctlr_do_dv(0),
+			do  => buff_dv);
 
 		buffdo_e : entity hdl4fpga.align
 		generic map (

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <arpa/inet.h>
 #include "siolib.h"
 
 __int128 unsigned lfsr_mask(int size)
@@ -102,13 +103,16 @@ int main (int argc, char *argv[])
 	char buffer[2048];
 	char siobuf[2048];
 	char *sioptr;
-	int  mem_address;
-	int  mem_length;
+	int  mem_address = 0x12345678;
+	int  mem_length =1;
 
 	lfsr    = lfsr_fill(buffer, length, lfsr_mask(lfsr_size), lfsr_size);
 	sioptr  = raw2sio(siobuf, 0x18, buffer, length) + siobuf;
-	sioptr += raw2sio(sioptr, 0x17, hton(&mem_address), 4);
-	sioptr += raw2sio(sioptr, 0x16, &mem_length,  3);
+	int nmem_length = htonl(mem_length);
+	nmem_length >>= 8;
+	sioptr += raw2sio(sioptr, 0x17, (char *) &nmem_length,  3);
+	int nmem_address = htonl(mem_address);
+	sioptr += raw2sio(sioptr, 0x16, (char *) &nmem_address, 4);
 	for(int i = 0; i < sioptr-siobuf; i++) {
 		putchar(siobuf[i]);
 	}
