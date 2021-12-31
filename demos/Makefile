@@ -1,5 +1,5 @@
 .PHONY: bin
-all : bin/rgb8topixel bin/format bin/bundle bin/siosend bin/check
+all : bin/rgb8topixel bin/format bin/bundle bin/siosend bin/memtest
 
 bin/rgb8topixel : src/rgb8topixel.c
 	mkdir -p bin
@@ -17,9 +17,9 @@ bin/siosend : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 	mkdir -p bin
 	cc -O3 src/siolib.c src/hdlc.c src/siosend.c -o bin/siosend
 
-bin/check : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/check.c
+bin/memtest : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/memtest.c
 	mkdir -p bin
-	cc -O3 src/siolib.c src/hdlc.c src/check.c -o bin/check
+	cc -O3 src/siolib.c src/hdlc.c src/memtest.c -o bin/memtest
 
 clean :
 	rm  -rf ./bin

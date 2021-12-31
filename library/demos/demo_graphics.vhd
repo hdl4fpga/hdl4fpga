@@ -535,6 +535,7 @@ begin
 					variable lat : std_logic;
 				begin
 					if rising_edge(ctlr_clk) then
+						q(0) := dmaio_gnt and ctlr_cas;
 						q := std_logic_vector(unsigned(q) srl 1);
 					end if;
 					q(0) := dmaio_gnt and ctlr_cas;
@@ -684,6 +685,7 @@ begin
 			variable q : std_logic_vector(0 to 3+8-1);
 		begin
 			if rising_edge(ctlr_clk) then
+				q(0) := dmavideo_gnt and ctlr_cas;
 				q := std_logic_vector(unsigned(q) srl 1);
 			end if;
 			q(0) := dmavideo_gnt and ctlr_cas;
@@ -832,6 +834,8 @@ begin
 		dev_rdy     => dev_rdy,
 
 		ctlr_clk    => ctlr_clk,
+		ctlr_cl     => ctlr_cl,
+		ctlr_do_dv  =>ctlr_do_dv(0),
 
 		ctlr_inirdy => ctlr_inirdy,
 		ctlr_refreq => ctlr_refreq,
@@ -921,12 +925,12 @@ begin
 		buffdv_e : entity hdl4fpga.align
 		generic map (
 			style => "register",
-			n => ctlr_do'length,
-			d => (0 to ctlr_do'length-1 => buffdo_lat))
+			n => 1,
+			d => (0 to 1-1 => buffdo_lat))
 		port map (
 			clk => ctlr_clk,
-			di  => ctlr_do_dv(0),
-			do  => buff_dv);
+			di(0)  => ctlr_do_dv(0),
+			do(0)  => buff_dv);
 
 		buffdo_e : entity hdl4fpga.align
 		generic map (

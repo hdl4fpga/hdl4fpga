@@ -33,17 +33,17 @@ entity grant is
 		rsrc_rdy : in  std_logic;
 		rsrc_req : buffer std_logic;
 
+		dev_idle : buffer std_logic;
 		dev_req  : in  std_logic_vector;
 		dev_gnt  : buffer std_logic_vector;
 		dev_rdy  : buffer std_logic_vector);
 end;
 
 architecture def of grant is
-	signal dev_idle : std_logic;
 	signal arb_req  : std_logic_vector(dev_req'range);
 begin
 
-	arb_req <= dev_req xor to_stdlogicvector(to_bitvector(dev_rdy)); 
+	arb_req <= dev_req xor to_stdlogicvector(to_bitvector(dev_rdy));
 	arbiter_e : entity hdl4fpga.arbiter
 	port map (
 		clk  => rsrc_clk,

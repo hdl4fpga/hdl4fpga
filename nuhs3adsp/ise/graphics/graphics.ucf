@@ -38,35 +38,35 @@ NET "mii_rxc" CLOCK_DEDICATED_ROUTE = FALSE;
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
 
-#NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.000 ns;
-#NET "ctlrphy_dqsi[*]"  MAXSKEW  = 0.500 ns;
+NET "ctlrphy_dqsi[*]"  MAXDELAY = 2.000 ns;
+NET "ctlrphy_dqsi[*]"  MAXSKEW  = 0.500 ns;
 
 # ###################### #
 # DDR 200 Mhz rate clock #
 # ###################### #
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns    HIGH 50% PHASE 0.0 INPUT_JITTER 0.800 ns;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.800 ns;
-
-NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
-
-OFFSET = IN 0.0 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN 0.0 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns    HIGH 50% PHASE 0.0 INPUT_JITTER 0.800 ns;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.800 ns;
+#
+#NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
+#NET "ddr_st_lp_dqs" OFFSET = IN 1.25 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
+#
+#OFFSET = IN 0.0 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
+#OFFSET = IN 0.0 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
 
 
 # ###################### #
 # DDR 166 Mhz rate clock #
 # ###################### #
 
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns  HIGH 50% PHASE 0.0 INPUT_JITTER 0.900 ns;
-#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.900 ns;
-#
-#NET "ddr_st_lp_dqs" OFFSET = IN 1.500 ns VALID 3.000 ns BEFORE ddr_dqs[0] RISING;
-#NET "ddr_st_lp_dqs" OFFSET = IN 1.500 ns VALID 3.000 ns BEFORE ddr_dqs[1] RISING;
-#
-#OFFSET = IN 0.0 ns VALID 3 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN 0.0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns  HIGH 50% PHASE 0.0 INPUT_JITTER 0.900 ns;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.900 ns;
+
+NET "ddr_st_lp_dqs" OFFSET = IN 1.500 ns VALID 3.000 ns BEFORE ddr_dqs[0] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.500 ns VALID 3.000 ns BEFORE ddr_dqs[1] RISING;
+
+OFFSET = IN 0.0 ns VALID 3 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN 0.0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
 
  ###################### #
 # Ignore crossclock time #

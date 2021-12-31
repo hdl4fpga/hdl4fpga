@@ -40,14 +40,37 @@ __int128 unsigned lfsr_next(__int128 unsigned lfsr, int lfsr_size)
 	return ((lfsr>>1)|((lfsr&1)<<(lfsr_size-1))) ^ (((lfsr&1) ? lfsr_mask(lfsr_size) : 0) & lfsr_p(lfsr_size));
 }
 
-__int128 lfsr_fill (char *buffer, int length, __int128 lfsr, size_t lfsr_size)
+__int128 lfsr_fill (char *buffer, int size, __int128 lfsr, size_t lfsr_size)
 {
-	for (int i = 0; i < length; i += lfsr_size/8) {
+	for (int i = 0; i < size; i += lfsr_size/8) {
 		memcpy(buffer+i, &lfsr, lfsr_size/8);
 		lfsr = lfsr_next(lfsr, lfsr_size);
 	}
 	return lfsr;
 }
+
+int set_trans(char *siobuf, int mem_address, int mem_length)
+{
+	char *sioptr;
+	int nmem_address;
+	int nmem_length;
+
+	nmem_address = htonl(mem_address);
+	nmem_length  = htonl(mem_length);
+	nmem_length  >>= 8;
+
+	sioptr  = siobuf;
+	sioptr += raw2sio(sioptr, 0x17, (char *) &nmem_length,  3);
+	sioptr += raw2sio(sioptr, 0x16, (char *) &nmem_address, 4);
+
+	return sioptr-siobuf;
+}
+
+#define BYTE_SIZE      8
+#define WORD_SIZE      32
+#define WORD_PER_BYTE  (WORD_SIZE/BYTE_SIZE)
+#define MAX_WORDS      (256*1024*1024/WORD_SIZE)
+#define MAX_PAYLOAD    (1024/WORD_SIZE)
 
 int main (int argc, char *argv[])
 {
@@ -58,6 +81,7 @@ int main (int argc, char *argv[])
 	nooutput = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
 
 	int c;
 	int lfsr_size = 32;
@@ -99,26 +123,38 @@ int main (int argc, char *argv[])
 	lfsr_size=32;
 	__int128 lfsr;
 
-	int  length = 256+4;
 	char buffer[2048];
 	char siobuf[2048];
 	char *sioptr;
-	int  mem_address = 0x12345678;
+	int  mem_address;
 	int  mem_length =1;
 
-	lfsr    = lfsr_fill(buffer, length, lfsr_mask(lfsr_size), lfsr_size);
-	sioptr  = raw2sio(siobuf, 0x18, buffer, length) + siobuf;
-	int nmem_length = htonl(mem_length);
-	nmem_length >>= 8;
-	sioptr += raw2sio(sioptr, 0x17, (char *) &nmem_length,  3);
-	int nmem_address = htonl(mem_address);
-	sioptr += raw2sio(sioptr, 0x16, (char *) &nmem_address, 4);
-	for(int i = 0; i < sioptr-siobuf; i++) {
-		putchar(siobuf[i]);
-	}
+	lfsr = lfsr_mask(lfsr_size);
+
+	mem_length = 1280/WORD_PER_BYTE;
+	for (mem_address = 0; mem_address < MAX_WORDS; mem_address += mem_length) {
+		int nmem_length;
+		int nmem_address;
+		int byte_length;
+
+		byte_length    = mem_length*WORD_PER_BYTE;
+
+		lfsr   =  lfsr_fill(buffer, byte_length, lfsr_mask(lfsr_size), lfsr_size);
+		sioptr =  siobuf;
+		sioptr += raw2sio(sioptr, 0x18, buffer, byte_length);
+		sioptr += set_trans(sioptr, mem_address, mem_length);
+		delete_queue(sio_request(siobuf, sioptr-siobuf));
+
+		sioptr =  siobuf;
+		sioptr += set_trans(sioptr, 0x80000000 | mem_address, mem_length);
+		sio_dump(sio_request(siobuf, sioptr-siobuf));
+//	for(int i = 0; i < sioptr-siobuf; i++) {
+//		putchar(siobuf[i]);
+//	}
 	abort();
 
-	sio_request(siobuf, sioptr-siobuf);
+	}
+
 
 
 	for(long long unsigned i = 0; i < (long long unsigned) 1 << 32; i++) {

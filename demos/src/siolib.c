@@ -538,7 +538,7 @@ void init_comms ()
 	setvbuf(stdout, NULL, _IONBF, 0);
 }
 
-int ack;
+int ack = -1;
 
 int sio_init (int ack_val)
 {
@@ -605,6 +605,10 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 	struct rgtr_node *ack_in   = NULL;
 	struct rgtr_node *ack_out;
 	char unsigned ackout_buffer[3];
+
+	if (ack == -1) {
+		sio_init(0);
+	}
 
 	(ack = (ack += 1) % 0x40);
 	if (LOG0) {
@@ -845,4 +849,3 @@ int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, si
 
 	return bufptr-buffer;
 }
-
