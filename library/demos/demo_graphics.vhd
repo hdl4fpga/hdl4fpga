@@ -512,6 +512,8 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
+				constant dma_lat   : natural := 0;
+
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
 
@@ -521,11 +523,28 @@ begin
 				signal fifo_data   : std_logic_vector(ctlr_do'reverse_range);
 				signal fifo_length : std_logic_vector(trans_length'range);
 
-				signal dmaout_irdy : std_logic;
+				signal dmaso_irdy  : std_logic;
+				signal dmaso_data  : std_logic_vector(ctlr_do'range);
 
 			begin
 
-				dmaout_irdy <= dmaio_do_dv;
+				dmao_dv_e : entity hdl4fpga.align
+				generic map (
+					n => 1,
+					d => (0 to 1-1 => dma_lat))
+				port map (
+					clk   => ctlr_clk,
+					di(0) => dmaio_do_dv,
+					do(0) => dmaso_irdy);
+
+				dmao_data_e : entity hdl4fpga.align
+				generic map (
+					n => dmaso_data'length,
+					d => (0 to dmaso_data'length-1 => dma_lat))
+				port map (
+					clk => ctlr_clk,
+					di  => dma_do,
+					do  => dmaso_data);
 
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
@@ -537,8 +556,8 @@ begin
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
-					src_irdy => dmaout_irdy,
-					src_data => dma_do,
+					src_irdy => dmaso_irdy,
+					src_data => dmaso_data,
 
 					dst_frm  => ctlr_inirdy,
 					dst_clk  => sio_clk,

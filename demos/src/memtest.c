@@ -56,7 +56,7 @@ int set_trans(char *siobuf, int mem_address, int mem_length)
 	int nmem_length;
 
 	nmem_address = htonl(mem_address);
-	nmem_length  = htonl(mem_length);
+	nmem_length  = htonl(mem_length-1);
 	nmem_length  >>= 8;
 
 	sioptr  = siobuf;
@@ -125,6 +125,8 @@ int main (int argc, char *argv[])
 
 	char buffer[2048];
 	char siobuf[2048];
+	char rawbuf[2048];
+	char datbuf[2048];
 	char *sioptr;
 	int  mem_address;
 	int  mem_length =1;
@@ -147,11 +149,18 @@ int main (int argc, char *argv[])
 
 		sioptr =  siobuf;
 		sioptr += set_trans(sioptr, 0x80000000 | mem_address, mem_length);
-		sio_dump(sio_request(siobuf, sioptr-siobuf));
-//	for(int i = 0; i < sioptr-siobuf; i++) {
-//		putchar(siobuf[i]);
-//	}
-	abort();
+		int rawbuf_len = sizeof(rawbuf);
+		delete_queue(rgtr2raw(rawbuf, &rawbuf_len, sio_request(siobuf, sioptr-siobuf)));
+		int length = sio2raw(datbuf, 0xff, rawbuf, rawbuf_len);
+		for(int i = 0; i < length; i++) {
+			if (datbuf[i]!=buffer[i]) {
+				fprintf(stderr, "Salio mal\n", rawbuf_len);
+				putchar(datbuf[i]);
+				exit(0);
+			}
+		}
+	fprintf(stderr, "%d\n", rawbuf_len);
+	exit(0);
 
 	}
 

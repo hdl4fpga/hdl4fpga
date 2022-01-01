@@ -21,9 +21,8 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ddr_dq(15) 
 add wave -noupdate /testbench/du_e/ddr_st_dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/line__533/q(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {210269040 ps} 0}
+WaveRestoreCursors {{Cursor 1} {217684728 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -39,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {210067400 ps} {210518600 ps}
+WaveRestoreZoom {217458424 ps} {217911032 ps}

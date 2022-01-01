@@ -72,7 +72,7 @@ struct rgtr_node * delete_queue(struct rgtr_node *node);
 struct rgtr_node *lookup(int id, struct rgtr_node *node);
 struct rgtr_node *set_rgtrnode(struct rgtr_node *node, int id, char unsigned *buffer, int len);
 struct rgtr_node *nest_rgtrnode (struct rgtr_node *node, char unsigned id, char unsigned len);
-char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node);
+struct rgtr_node *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node);
 struct rgtr_node *rawdata2rgtr(char unsigned *data, int len);
 struct rgtr_node *childrgtrs(struct rgtr *rgtr);
 int unsigned rgtr2int (struct rgtr_node *node);

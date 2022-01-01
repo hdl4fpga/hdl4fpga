@@ -130,10 +130,12 @@ struct rgtr_node *nest_rgtrnode (struct rgtr_node *node, char unsigned id, char 
 	return set_rgtrnode(new_rgtrnode(), id, node->rgtr->data, len+2);
 }
 
-char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
+struct rgtr_node *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *queue_in)
 {
+	struct rgtr_node *node;
 	char unsigned *ptr;
 
+	node = queue_in;
 	*len = 0;
 	ptr = data;
 	if (LOG1) fprintf (stderr, "rgtr2raw\n");
@@ -154,7 +156,7 @@ char unsigned *rgtr2raw(char unsigned *data, int * len, struct rgtr_node *node)
 		*len += ((node->rgtr->len+1) + 2);
 		node  = node->next;
 	}
-	return data;
+	return queue_in;
 }
 
 struct rgtr_node *rawdata2rgtr(char unsigned *data, int len)
@@ -843,7 +845,8 @@ int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, si
 			memcpy(bufptr, sioptr+1, *sioptr + 1);
 			bufptr += *sioptr + 1;
 		} else {
-			break;
+			sioptr++;
+//			break;
 		}
 	}
 
