@@ -579,9 +579,10 @@ begin
 				process (sio_clk)
 				begin
 					if rising_edge(sio_clk) then
-						if status_rw='1' then
+****** revisa
+						if acktx_irdy='1' and status_rw='1' then
 							fifo_req <= not fifo_rdy;
-							if (acktx_irdy and acktx_trdy)='1' then
+							if acktx_trdy='1' then
 								fifo_rdy  <= fifo_req;
 							end if;
 						end if;
