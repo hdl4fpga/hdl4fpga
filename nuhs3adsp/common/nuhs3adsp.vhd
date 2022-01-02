@@ -51,7 +51,7 @@ entity nuhs3adsp is
 
 		---------------
 		-- Video DAC --
-		
+
 		hsync : out std_logic := '0';
 		vsync : out std_logic := '0';
 		clk_videodac : out std_logic := '1';
@@ -133,7 +133,7 @@ entity nuhs3adsp is
 		lcd_rw : out std_logic;
 		lcd_data : inout std_logic_vector(0 to 7);
 		lcd_backlight : out std_logic);
-		
+
 	attribute loc : string;
 	attribute iostandard : string;
 	attribute fast : string;
@@ -147,7 +147,7 @@ entity nuhs3adsp is
 	attribute loc of hd_t_data  : signal is "H22";
 	attribute loc of hd_t_clock : signal is "F11";
 	attribute loc of dip : signal is "AA6 AB15 W10 Y6 Y7 Y12 V10 AA8";
-	
+
 	attribute loc of led18 : signal is "A13";
 	attribute loc of led16 : signal is "B15";
 	attribute loc of led15 : signal is "A14";
@@ -174,7 +174,7 @@ entity nuhs3adsp is
 	attribute drive of led9 : signal is "24";
 	attribute drive of led8 : signal is "24";
 	attribute drive of led7 : signal is "24";
-	
+
 	attribute fast of led18 : signal is "true";
 	attribute fast of led16 : signal is "true";
 	attribute fast of led15 : signal is "true";
@@ -186,7 +186,7 @@ entity nuhs3adsp is
 
 	---------------
 	-- Video DAC --
-		
+
 	attribute loc of clk_videodac : signal is "M17";
 	attribute loc of hsync : signal is "M22";
 	attribute loc of vsync : signal is "N22";
@@ -196,7 +196,7 @@ entity nuhs3adsp is
 	attribute loc of red   : signal is "R22 T18 U18 U19 AA22 V20 W19 Y21";
 	attribute loc of green : signal is "T22 U20 U22 N19 N20  W22 Y22 R18";
 	attribute loc of blue  : signal is "P16 N17 P22 T17 P19  R19 R20 T20";
- 
+
 	attribute iostandard of clk_videodac : signal is "lvttl";
 	attribute iostandard of blankn : signal is "lvttl";
 	attribute iostandard of sync  : signal is "lvttl";
@@ -206,7 +206,7 @@ entity nuhs3adsp is
 	attribute iostandard of blue  : signal is "lvttl";
 	attribute iostandard of vsync : signal is "lvttl";
 	attribute iostandard of hsync : signal is "lvttl";
-	
+
 	attribute fast of clk_videodac : signal is "true";
 	attribute fast of red : signal is "true";
 	attribute fast of blue : signal is "true";
@@ -226,7 +226,7 @@ entity nuhs3adsp is
 	attribute drive of red   : signal is "24";
 	attribute drive of green : signal is "24";
 	attribute drive of blue  : signal is "24";
-	
+
 	---------
 	-- LCD --
 
@@ -262,8 +262,8 @@ entity nuhs3adsp is
 	attribute loc of adc_da : signal is "E6 D6 D7 E7 D9  E8  F8  F9  G8  B4  A5  C5  B6  A6";
 	attribute loc of adc_db : signal is "C6 A7 C7 C8 C9 A10 C10 A11 B11 D10 E10 A12 C12 F12";
 	attribute loc of adc_daac_enable : signal is "A20";
-	
-	attribute iostandard of adc_clkab : signal is "lvttl";	
+
+	attribute iostandard of adc_clkab : signal is "lvttl";
 	attribute iostandard of adc_da : signal is "lvttl";
 	attribute iostandard of adc_db : signal is "lvttl";
 	attribute iostandard of adc_daac_enable : signal is "lvttl";
