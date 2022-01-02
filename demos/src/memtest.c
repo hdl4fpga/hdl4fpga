@@ -154,13 +154,11 @@ int main (int argc, char *argv[])
 		int length = sio2raw(datbuf, 0xff, rawbuf, rawbuf_len);
 		for(int i = 0; i < length; i++) {
 			if (datbuf[i]!=buffer[i]) {
-				fprintf(stderr, "Salio mal\n", rawbuf_len);
-				putchar(datbuf[i]);
+				fprintf(stderr, "Salio mal %x\n", i);
 				exit(0);
 			}
 		}
 	fprintf(stderr, "%d\n", rawbuf_len);
-	exit(0);
 
 	}
 

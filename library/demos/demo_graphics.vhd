@@ -634,6 +634,7 @@ begin
 	adapter_b : block
 
 		constant sync_lat : natural := 4;
+		constant dma_lat  : natural := 0;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
 		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
@@ -666,8 +667,23 @@ begin
 			video_hzon    => hzon,
 			video_vton    => vton);
 
-		graphics_dv <= dmavideo_do_dv;
-		graphics_di <= dma_do;
+		dmao_dv_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 1-1 => dma_lat))
+		port map (
+			clk   => ctlr_clk,
+			di(0) => dmavideo_do_dv,
+			do(0) => graphics_dv);
+
+		dmao_data_e : entity hdl4fpga.align
+		generic map (
+			n => graphics_di'length,
+			d => (0 to graphics_di'length-1 => dma_lat))
+		port map (
+			clk => ctlr_clk,
+			di  => dma_do,
+			do  => graphics_di);
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
