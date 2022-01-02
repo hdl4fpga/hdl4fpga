@@ -42,7 +42,7 @@ architecture graphics of nuhs3adsp is
 		mode1080p_ddr166mhz,
 		mode1080p_ddr200mhz);
 
-	constant app         : apps := mode1080p_ddr166mhz; --mode900p_ddr166mhz;
+	constant app         : apps := mode1080p_ddr200mhz; --mode900p_ddr166mhz;
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
