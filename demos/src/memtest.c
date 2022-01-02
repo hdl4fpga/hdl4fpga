@@ -141,7 +141,7 @@ int main (int argc, char *argv[])
 
 		byte_length    = mem_length*WORD_PER_BYTE;
 
-		lfsr   =  lfsr_fill(buffer, byte_length, lfsr_mask(lfsr_size), lfsr_size);
+		lfsr   =  lfsr_fill(buffer, byte_length, lfsr, lfsr_size);
 		sioptr =  siobuf;
 		sioptr += raw2sio(sioptr, 0x18, buffer, byte_length);
 		sioptr += set_trans(sioptr, mem_address, mem_length);
@@ -152,37 +152,37 @@ int main (int argc, char *argv[])
 		int rawbuf_len = sizeof(rawbuf);
 		delete_queue(rgtr2raw(rawbuf, &rawbuf_len, sio_request(siobuf, sioptr-siobuf)));
 		int length = sio2raw(datbuf, 0xff, rawbuf, rawbuf_len);
-		for(int i = 0; i < length; i++) {
-			if (datbuf[i]!=buffer[i]) {
-				fprintf(stderr, "Salio mal %x\n", i);
+		for(int i = 0; i < length/WORD_PER_BYTE; i++) {
+//			fprintf(stderr, "0x%08x\n", ((int unsigned *) datbuf)[i]);
+			if (((int unsigned *) datbuf)[i]!=((int unsigned *) buffer)[i]) {
+				fprintf(stderr, "Fallo\n", rawbuf_len);
 				exit(0);
 			}
 		}
-	fprintf(stderr, "%d\n", rawbuf_len);
 
 	}
 
 
 
-	for(long long unsigned i = 0; i < (long long unsigned) 1 << 32; i++) {
-		switch(lfsr_size) {
-		case 32:
-			fprintf(stderr,"0x%08lx\n", (long unsigned int) lfsr);
-			break;
-		case 64:
-			fprintf(stderr,"0x%016llx\n", (long long unsigned int) lfsr);
-			break;
-		case 128:
-			fprintf(stderr,"0x%016llx%016llx\n",
-				(long long unsigned int ) (lfsr >> 64),
-				(long long unsigned int ) (lfsr &  lfsr_mask(lfsr_size)));
-			break;
-		default:
-			fprintf(stderr,"invalid size\n");
-			return -1;
-		}
-		lfsr = lfsr_next(lfsr, lfsr_size);
-	}
+//	for(long long unsigned i = 0; i < (long long unsigned) 1 << 32; i++) {
+//		switch(lfsr_size) {
+//		case 32:
+//			fprintf(stderr,"0x%08lx\n", (long unsigned int) lfsr);
+//			break;
+//		case 64:
+//			fprintf(stderr,"0x%016llx\n", (long long unsigned int) lfsr);
+//			break;
+//		case 128:
+//			fprintf(stderr,"0x%016llx%016llx\n",
+//				(long long unsigned int ) (lfsr >> 64),
+//				(long long unsigned int ) (lfsr &  lfsr_mask(lfsr_size)));
+//			break;
+//		default:
+//			fprintf(stderr,"invalid size\n");
+//			return -1;
+//		}
+//		lfsr = lfsr_next(lfsr, lfsr_size);
+//	}
 
 	return 0;
 }
