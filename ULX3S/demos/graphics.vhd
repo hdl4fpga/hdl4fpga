@@ -40,9 +40,11 @@ architecture graphics of ulx3s is
 	-- Set of profiles                  --
 	type apps is (
 	--	Interface_SdramSpeed_PixelFormat--
-		uart_250MHz_480p24bpp,          --
 
 		uart_133MHz_480p24bpp,          --
+		uart_200MHz_480p24bpp,          --
+		uart_250MHz_480p24bpp,          --
+
 		uart_133MHz_600p16bpp,          --
 		uart_166MHz_600p16bpp,          --
 		uart_200MHz_600p16bpp,          --
@@ -160,6 +162,7 @@ architecture graphics of ulx3s is
 		sdram225MHz,	-- Not tested yet
 		sdram233MHz,
 		sdram250MHz,
+		sdram262MHz,
 		sdram275MHz);
 
 	type sdram_params is record
@@ -175,7 +178,8 @@ architecture graphics of ulx3s is
 		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
 		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
 		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
-		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"));
+		sdram262MHz => (pll => (clkos_div => 2, clkop_div => 21, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"), -- Doesn't pass the LFSR test
+		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011")); -- Doesn't pass the LFSR test
 
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
@@ -207,12 +211,15 @@ architecture graphics of ulx3s is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
-		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
 		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram133MHz),
+		uart_200MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram200MHz),
+		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
+
 		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
 		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
 		uart_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),
 		uart_250MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram250MHz),
+
 		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
 		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
 		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));

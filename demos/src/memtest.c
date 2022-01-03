@@ -6,7 +6,7 @@
 #include "lfsr.h"
 
 __int128 lfsr;
-size_t lfsr_size = 32;
+const size_t lfsr_size = 32;
 
 void test_init ()
 {
@@ -39,8 +39,8 @@ int set_trans(char *siobuf, int mem_address, int mem_length)
 }
 
 #define BYTE_SIZE      8
-#define WORD_SIZE      32
-#define WORD_PER_BYTE  (WORD_SIZE/BYTE_SIZE)
+#define WORD_SIZE      16
+#define BYTES_PER_WORD (WORD_SIZE/BYTE_SIZE)
 #define MAX_WORDS      (256*1024*1024/WORD_SIZE)
 #define MAX_PAYLOAD    (1024/WORD_SIZE)
 
@@ -56,13 +56,11 @@ int main (int argc, char *argv[])
 	setvbuf(stdout, NULL, _IONBF, 0);
 
 	int c;
-	while ((c = getopt (argc, argv, "d:loh:")) != -1) {
+	while ((c = getopt (argc, argv, "loh:")) != -1) {
 		switch (c) {
 		case 'l':
 			loglevel = 8|4|2|1;
 			break;
-		case 'd' :
-			sscanf (optarg, "%ld", &lfsr_size);
 		case 'o':
 			nooutput = 1;
 			break;
@@ -91,10 +89,10 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	char buffer[2048];
-	char siobuf[2048];
-	char rawbuf[2048];
-	char datbuf[2048];
+	char buffer[8*1024];
+	char siobuf[8*1024];
+	char rawbuf[8*1024];
+	char datbuf[8*1024];
 	char *sioptr;
 	int  mem_address;
 	int  mem_length;
@@ -102,7 +100,7 @@ int main (int argc, char *argv[])
 
 
 	byte_length = 1024;
-	mem_length  = byte_length/WORD_PER_BYTE;
+	mem_length  = byte_length/BYTES_PER_WORD;
 	test_init();
 	for(int pass = 1;;pass++) {
 		for (mem_address = 0; mem_address < MAX_WORDS; mem_address += mem_length) {
@@ -119,14 +117,17 @@ int main (int argc, char *argv[])
 			delete_queue(rgtr2raw(rawbuf, &rawbuf_len, sio_request(siobuf, sioptr-siobuf)));
 			int length = sio2raw(datbuf, 0xff, rawbuf, rawbuf_len);
 
-			for(int i = 0; i < length/WORD_PER_BYTE; i++) {
-				int data;
+			for(int i = 0; i < length/lfsr_size; i++) {
+				int data_rd;
+				int data_wt;
 
-				data = ((int unsigned *) datbuf)[i];
-				if (((int unsigned *) buffer)[i]!=data) {
+				data_rd = ((int unsigned *) datbuf)[i];
+				data_wt = ((int unsigned *) buffer)[i];
+				if (data_wt!=data_rd) {
 					fprintf(stderr, "Check failed : ");
-					fprintf(stderr, "word address : 0x%08x", mem_address);
-					fprintf(stderr, " : data : 0x%08x\n", data);
+					fprintf(stderr, "word address : 0x%08lx", mem_address+i*lfsr_size);
+					fprintf(stderr, " : data read : 0x%08x", data_rd);
+					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
 					exit(-1);
 				}
 			}

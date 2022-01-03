@@ -512,7 +512,7 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
-				constant dma_lat   : natural := 0;
+				constant dma_lat   : natural := setif(profile=0, 1, 0);
 
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
@@ -634,7 +634,7 @@ begin
 	adapter_b : block
 
 		constant sync_lat : natural := 4;
-		constant dma_lat  : natural := 0;
+		constant dma_lat  : natural :=  setif(profile=0, 1, 0);
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
 		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
@@ -794,7 +794,7 @@ begin
 	dev_we   <= '0'           & dmaio_we;
 
 	dmactlr_b : block
-		constant buffdo_lat : natural := setif(profile=0,3,3);
+		constant buffdo_lat : natural := setif(profile=0,2,3);
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
 	begin
 		dmactlr_e : entity hdl4fpga.dmactlr
