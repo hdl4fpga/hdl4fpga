@@ -38,11 +38,12 @@ use unisim.vcomponents.all;
 architecture graphics of nuhs3adsp is
 
 	type apps is (
+		mode600p_ddr166mhz,
 		mode900p_ddr166mhz,
 		mode1080p_ddr166mhz,
 		mode1080p_ddr200mhz);
 
-	constant app         : apps := mode1080p_ddr166mhz; --mode900p_ddr166mhz;
+	constant app         : apps := mode1080p_ddr166mhz;
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -150,18 +151,6 @@ architecture graphics of nuhs3adsp is
 		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
 		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
-	function setif (
-		constant expr  : boolean;
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-
 	type ddr_params is record
 		pll : pll_params;
 		cas : std_logic_vector(0 to 3-1);
@@ -185,11 +174,24 @@ architecture graphics of nuhs3adsp is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
+		mode600p_ddr166mhz  => (ddr_166MHz, mode600p),
 		mode900p_ddr166mhz  => (ddr_166MHz, mode900p),
 		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p),
 		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p));
 
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
+
+	function setif (
+		constant expr  : boolean;
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
 
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
