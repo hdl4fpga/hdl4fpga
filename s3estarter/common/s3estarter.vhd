@@ -26,6 +26,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity s3estarter is
+	generic (
+		debug     : boolean := false);
 	port (
 		xtal      : in std_logic := '0';
 		sw0       : in std_logic := '0';
@@ -73,7 +75,7 @@ entity s3estarter is
 
 		---------
 		-- VGA --
-	
+
 		vga_red   : out std_logic;
 		vga_green : out std_logic;
 		vga_blue  : out std_logic;
@@ -132,7 +134,7 @@ entity s3estarter is
 		rs232_dte_txd : out std_logic := 'Z';
 		rs232_dce_rxd : in  std_logic := 'Z';
 		rs232_dce_txd : out std_logic := 'Z');
-		
+
 	attribute loc : string;
 	attribute iostandard : string;
 	attribute fast : string;
@@ -147,7 +149,7 @@ entity s3estarter is
 	attribute loc of btn_north  : signal is "V4";
 	attribute loc of btn_east   : signal is "H3";
 	attribute loc of btn_west   : signal is "D18";
-	
+
 	attribute iostandard of xtal : signal is "LVCMOS33";
 	attribute iostandard of sw0 : signal is "LVCMOS33";
 	attribute iostandard of btn_north : signal is "LVCMOS33";
@@ -185,7 +187,7 @@ entity s3estarter is
 	attribute drive of led5 : signal is "8";
 	attribute drive of led6 : signal is "8";
 	attribute drive of led7 : signal is "8";
-	
+
 	attribute slew of led0 : signal is "fast";
 	attribute slew of led1 : signal is "fast";
 	attribute slew of led2 : signal is "fast";
@@ -337,7 +339,7 @@ entity s3estarter is
 	attribute slew  of sf_ce0     : signal is "slow";
 	attribute slew  of fpga_init_b : signal is "slow";
 	attribute slew  of spi_ss_b   : signal is "slow";
-	
+
 
 	attribute loc   of vga_red   : signal is "H14";
 	attribute loc   of vga_green : signal is "H15";
