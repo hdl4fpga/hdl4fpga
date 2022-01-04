@@ -609,7 +609,7 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 	char unsigned ackout_buffer[3];
 
 	if (ack == -1) {
-		sio_init(0);
+		while(sio_init(0));
 	}
 
 	(ack = (ack += 1) % 0x40);
