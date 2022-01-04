@@ -120,7 +120,7 @@ architecture mix of demo_graphics is
 	constant latencies_tab : latencies_vector := (
 		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),
 		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),
-		2 => (ddro => 3, dmaio => 3, sodata => 2, adapter => 3));
+		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3));
 
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);

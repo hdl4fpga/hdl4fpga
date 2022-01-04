@@ -31,15 +31,15 @@ entity ulx4m is
 	generic (
 		debug : boolean := false);
 	port (
-		clk_25mhz      : in    std_logic;
-		btn            : in  std_logic_vector(0 to 2-1);
+		clk_25mhz      : in    std_logic := 'Z';
+		btn            : in  std_logic_vector(0 to 2-1) := (others => 'Z');
 		led            : out std_logic_vector(4-1 downto 0);
 
 		ftdi_rxd       : out   std_logic;
-		ftdi_txd       : in    std_logic := 'U';
-		ftdi_nrts      : inout std_logic := 'U';
-		ftdi_ndtr      : inout std_logic := 'U';
-		ftdi_txden     : inout std_logic := 'U';
+		ftdi_txd       : in    std_logic := 'Z';
+		ftdi_nrts      : inout std_logic := 'Z';
+		ftdi_ndtr      : inout std_logic := 'Z';
+		ftdi_txden     : inout std_logic := 'Z';
 
 
 		oled_clk       : out   std_logic;
@@ -61,15 +61,15 @@ entity ulx4m is
 		sd_wp          : in    std_logic := '-';
 		sd_cdn         : in    std_logic := '-'; -- card detect not connected
 
-		usb_fpga_dp    : inout std_logic;
-		usb_fpga_dn    : inout std_logic;
-		usb_fpga_bd_dp : inout std_logic;
-		usb_fpga_bd_dn : inout std_logic;
-		usb_fpga_pu_dp : inout std_logic;
-		usb_fpga_pu_dn : inout std_logic;
-		usb_fpga_otg_dp : inout std_logic;
-		usb_fpga_otg_dn : inout std_logic;
-		n_extrst       : inout std_logic;
+		usb_fpga_dp    : inout std_logic := 'Z';
+		usb_fpga_dn    : inout std_logic := 'Z';
+		usb_fpga_bd_dp : inout std_logic := 'Z';
+		usb_fpga_bd_dn : inout std_logic := 'Z';
+		usb_fpga_pu_dp : inout std_logic := 'Z';
+		usb_fpga_pu_dn : inout std_logic := 'Z';
+		usb_fpga_otg_dp : inout std_logic := 'Z';
+		usb_fpga_otg_dn : inout std_logic := 'Z';
+		n_extrst       : inout std_logic := 'Z';
 
 		sdram_clk      : inout std_logic;
 		sdram_cke      : out   std_logic;
@@ -79,12 +79,12 @@ entity ulx4m is
 		sdram_casn     : out   std_logic;
 		sdram_a        : out   std_logic_vector(13-1 downto 0);
 		sdram_ba       : out   std_logic_vector(2-1 downto 0);
-		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'U');
-		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
+		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 
-		gpdi_cec       : inout std_logic := '-';
---		gpdi_sda       : inout std_logic := '-';
-	--	gpdi_scl       : inout std_logic := '-';
+		gpdi_cec       : inout std_logic := 'Z';
+--		gpdi_sda       : inout std_logic := 'Z';
+--		gpdi_scl       : inout std_logic := 'Z';
 
 		gpdi_dp        : out   std_logic_vector(8-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(8-1 downto 0);

@@ -44,7 +44,7 @@ architecture graphics of ulx4m is
 		uart_133MHz_480p24bpp,          --
 		uart_200MHz_480p24bpp,          --
 		uart_250MHz_480p24bpp,          --
-		uart_275MHz_480p24bpp,          --
+		uart_262MHz_480p24bpp,          --
 
 		uart_133MHz_600p16bpp,          --
 		uart_166MHz_600p16bpp,          --
@@ -215,7 +215,7 @@ architecture graphics of ulx4m is
 		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram133MHz),
 		uart_200MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram200MHz),
 		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
-		uart_275MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram275MHz),
+		uart_262MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram262MHz),
 
 		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
 		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
@@ -753,5 +753,14 @@ begin
 			z  => gpdi_dp(i),
 			zn => gpdi_dn(i));
 	end generate;
+
+	process (ctlr_clk)
+		variable q : std_logic;
+	begin
+		if falling_edge(ctlr_clk) then
+			q := not q;
+			led(1)<= q;
+		end if;
+	end process;
 
 end;
