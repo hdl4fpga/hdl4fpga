@@ -5,8 +5,12 @@
 #include "siolib.h"
 #include "lfsr.h"
 
+#define BYTE_SIZE 8
+
+typedef int unsigned lfsr_word;
+
 __int128 lfsr;
-const size_t lfsr_size = 32;
+const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
 
 void test_init ()
 {
@@ -15,8 +19,8 @@ void test_init ()
 
 void test_fill (char *buffer, int length)
 {
-	for (int i = 0; i < length; i += lfsr_size/8) {
-		memcpy(buffer+i, &lfsr, lfsr_size/8);
+	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
+		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
 		lfsr = lfsr_next(lfsr, lfsr_size);
 	}
 }
@@ -38,11 +42,7 @@ int set_trans(char *siobuf, int mem_address, int mem_length)
 	return sioptr-siobuf;
 }
 
-#define BYTE_SIZE      8
-#define WORD_SIZE      16
-#define BYTES_PER_WORD (WORD_SIZE/BYTE_SIZE)
-#define MAX_WORDS      (256*1024*1024/WORD_SIZE)
-#define MAX_PAYLOAD    (1024/WORD_SIZE)
+#define MAX_ADDRESS    (32*1024*1024)
 
 int main (int argc, char *argv[])
 {
@@ -96,18 +96,15 @@ int main (int argc, char *argv[])
 	char *sioptr;
 	int  mem_address;
 	int  mem_length;
-	int  byte_length;
 
-
-	byte_length = 1024;
-	mem_length  = byte_length/BYTES_PER_WORD;
+	mem_length  = 1024;
 	test_init();
 	for(int pass = 1;;pass++) {
-		for (mem_address = 0; mem_address < MAX_WORDS; mem_address += mem_length) {
+		for (mem_address = 0; mem_address < MAX_ADDRESS; mem_address += mem_length) {
 
-			test_fill(buffer, byte_length);
+			test_fill(buffer, mem_length);
 			sioptr =  siobuf;
-			sioptr += raw2sio(sioptr, 0x18, buffer, byte_length);
+			sioptr += raw2sio(sioptr, 0x18, buffer, mem_length);
 			sioptr += set_trans(sioptr, mem_address, mem_length);
 			delete_queue(sio_request(siobuf, sioptr-siobuf));
 
@@ -117,18 +114,22 @@ int main (int argc, char *argv[])
 			delete_queue(rgtr2raw(rawbuf, &rawbuf_len, sio_request(siobuf, sioptr-siobuf)));
 			int length = sio2raw(datbuf, 0xff, rawbuf, rawbuf_len);
 
-			for(int i = 0; i < length/lfsr_size; i++) {
-				int data_rd;
-				int data_wt;
+			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
+				lfsr_word data_rd;
+				lfsr_word data_wt;
 
-				data_rd = ((int unsigned *) datbuf)[i];
-				data_wt = ((int unsigned *) buffer)[i];
+				data_rd = *(lfsr_word *) (datbuf+i);
+				data_wt = *(lfsr_word *) (buffer+i);
 				if (data_wt!=data_rd) {
 					fprintf(stderr, "Check failed : ");
-					fprintf(stderr, "word address : 0x%08lx", mem_address+i*lfsr_size);
+					fprintf(stderr, "word address : 0x%08x", mem_address+i);
 					fprintf(stderr, " : data read : 0x%08x", data_rd);
 					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
 					exit(-1);
+				} else {
+//					fprintf(stderr, "word address : 0x%08x", mem_address+i);
+//					fprintf(stderr, " : data read : 0x%08x", data_rd);
+//					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
 				}
 			}
 

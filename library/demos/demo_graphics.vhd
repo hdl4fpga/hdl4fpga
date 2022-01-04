@@ -326,8 +326,10 @@ begin
 					variable aux : unsigned(dst_data'range);
 				begin
 					aux := unsigned(dst_data);
+					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
 					dmaio_addr <= std_logic_vector(resize(aux(0 to rgtr_dmaaddr'length-1), dmaio_addr'length));
 					aux := aux sll rgtr_dmaaddr'length;
+					aux(0 to rgtr_dmalen'length-1) := shift_right(aux(0 to rgtr_dmalen'length-1),  word_bits);
 					dmaio_len <= std_logic_vector(resize(aux(0 to rgtr_dmalen'length-1), dmaio_len'length));
 					aux := aux sll rgtr_dmalen'length;
 					dmaio_ack <= std_logic_vector(resize(aux(0 to rgtr_dmaack'length-1), dmaio_ack'length));

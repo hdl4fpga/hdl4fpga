@@ -30,14 +30,14 @@ use unisim.vcomponents.ALL;
 
 entity dfs is
 	generic (
-		dfs_frequency_mode : string := "high";
+		dfs_mode : string := "HIGH";
 		dcm_per : real := 20.0;
 		dfs_div : natural := 3;
 		dfs_mul : natural := 10);
 	port (
-        dcm_rst : in  std_logic; 
-		dcm_clk : in  std_logic; 
-		dfs_clk : out std_logic; 
+        dcm_rst : in  std_logic;
+		dcm_clk : in  std_logic;
+		dfs_clk : out std_logic;
 		dcm_lck : out std_logic);
 end;
 
@@ -52,7 +52,7 @@ begin
 	port map (
 		I => dcm_clk0,
 		O => dcm_clkfb);
-   
+
 	dfs_i : dcm
 	generic map(
 		clk_feedback => "1x",
@@ -63,8 +63,7 @@ begin
 		clkin_period => dcm_per,
 		clkout_phase_shift => "none",
 		deskew_adjust => "system_synchronous",
-		dfs_frequency_mode => dfs_frequency_mode,
-		dll_frequency_mode => "high",
+		dfs_frequency_mode => dfs_mode,
 		duty_cycle_correction => true,
 		factory_jf   => x"c080",
 		phase_shift  => 0,

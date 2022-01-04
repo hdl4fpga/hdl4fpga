@@ -228,8 +228,7 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 50.0,
+		dcm_per => sys_per,
 		dfs_mul => video_tab(video_mode).pll.dcm_mul,
 		dfs_div => video_tab(video_mode).pll.dcm_div)
 	port map(
@@ -239,7 +238,7 @@ begin
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (
-		dcm_per => 50.0,
+		dcm_per => sys_per,
 		dfs_mul => 5,
 		dfs_div => 4)
 	port map (

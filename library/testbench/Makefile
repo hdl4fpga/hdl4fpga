@@ -10,6 +10,7 @@ LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
 ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
+IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
 IEEE__std_logic_unsigned = $(LIB_IEEE)/std_logic_unsigned/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
@@ -788,12 +789,11 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
 		$(HDL4FPGA__align) \
+		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
@@ -1476,6 +1476,7 @@ $(HDL4FPGA__so_data__def) : ../sio/so_data.vhd \
 
 $(HDL4FPGA__std) \
 $(HDL4FPGA__std__body) : ../common/std.vhd \
+		$(IEEE__math_real) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
@@ -1615,8 +1616,11 @@ $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
 
 $(HDL4FPGA__xcs3_ddrbaphy) \
 $(HDL4FPGA__xcs3_ddrbaphy__xlnx) : ../xilinx/xcs3_ddrbaphy.vhd \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__omdr) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
+		$(HDL4FPGA__align) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/xcs3_ddrbaphy.vhd
@@ -1625,6 +1629,7 @@ $(HDL4FPGA__xcs3_ddrdqphy) \
 $(HDL4FPGA__xcs3_ddrdqphy__xlnx) : ../xilinx/xcs3_ddrdqphy.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__ddrto) \
+		$(HDL4FPGA__align) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \

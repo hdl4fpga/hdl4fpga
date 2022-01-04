@@ -38,12 +38,11 @@ use unisim.vcomponents.all;
 architecture graphics of s3estarter is
 
 	type apps is (
+		mode480p_ddr133mhz,
 		mode600p_ddr166mhz,
-		mode900p_ddr166mhz,
-		mode1080p_ddr166mhz,
 		mode1080p_ddr200mhz);
 
-	constant app         : apps := mode1080p_ddr166mhz;
+	constant app         : apps := mode600p_ddr166mhz;
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -58,12 +57,6 @@ architecture graphics of s3estarter is
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
 
 	constant sys_per       : real    := 20.0;
 
@@ -139,17 +132,15 @@ architecture graphics of s3estarter is
 		mode480p,
 		mode600p,
 		mode720p,
-		mode900p,
 		mode1080p);
 
 	type displayparam_vector is array (video_modes) of display_param;
 	constant video_tab : displayparam_vector := (
 		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
-		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
-		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
-		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
-		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 4)),
+		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  4, dcm_div => 5)),
+		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 2)),
+		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul =>  3, dcm_div => 1)));
 
 	type ddr_params is record
 		pll : pll_params;
@@ -161,11 +152,17 @@ architecture graphics of s3estarter is
 		ddr_166MHz,
 		ddr_200MHz);
 
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --   8     --  10     --   4     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
+
 	type ddram_vector is array (ddr_speeds) of ddr_params;
 	constant ddr_tab : ddram_vector := (
-		ddr_133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
-		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
-		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
+		ddr_133MHz => (pll => (dcm_mul =>  8, dcm_div => 3), cas => "010"),
+		ddr_166MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
+		ddr_200MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
 
 	type app_param is record
 		ddr_speed  : ddr_speeds;
@@ -174,9 +171,8 @@ architecture graphics of s3estarter is
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
+		mode480p_ddr133mhz  => (ddr_133MHz, mode480p),
 		mode600p_ddr166mhz  => (ddr_166MHz, mode600p),
-		mode900p_ddr166mhz  => (ddr_166MHz, mode900p),
-		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p),
 		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p));
 
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
@@ -213,7 +209,6 @@ architecture graphics of s3estarter is
 	signal tp : std_logic_vector(1 to 32);
 begin
 
---	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => xtal ,
@@ -228,7 +223,6 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
-		dfs_frequency_mode => "high",
 		dcm_per => sys_per,
 		dfs_mul => video_tab(video_mode).pll.dcm_mul,
 		dfs_div => video_tab(video_mode).pll.dcm_div)
@@ -236,16 +230,6 @@ begin
 		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
-
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_clk);
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (

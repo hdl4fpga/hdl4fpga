@@ -42,15 +42,26 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of pgm_delay is
-	constant blut : string(1 to 2) := "FG";
+	constant ena             : std_logic_vector(n-1 downto 0) := (others => '1');
+	constant  blut           : string(1 to 2) := "FG";
+
+	attribute dont_touch     : string;
+	attribute keep           : string;
+	attribute keep_hierarchy : string;
+
 	signal d : std_logic_vector(0 to n-1);
-	constant ena : unsigned(n-1 downto 0) := to_unsigned(2**(n-1),n);
+
+	attribute dont_touch of d : signal is "true";
+	attribute keep  of d      : signal is "true";
 
 begin
 	d(n-1) <= '-';
 	chain_g: for i in n-1 downto 1 generate
+		attribute dont_touch     of lut : label is "true";
+		attribute keep           of lut : label is "true";
+		attribute keep_hierarchy of lut : label is "true";
 	begin
-		lut : lut4 
+		lut : lut4
 		generic map (
 			init => x"00ca")
 		port map (
@@ -60,7 +71,8 @@ begin
 			i3 => '0',
 			o  => d(i-1));
 	end generate;
-	lutp : lut4 
+
+	lutp : lut4
 	generic map (
 		init => x"00ca")
 	port map (
@@ -69,7 +81,8 @@ begin
 		i2 => ena(0),
 		i3 => '0',
 		o  => x_p);
-	lutn : lut4 
+
+	lutn : lut4
 	generic map (
 		init => x"0035")
 	port map (

@@ -32,12 +32,6 @@ int main (int argc, char *argv[])
 {
 	while ((c = getopt (argc, argv, "b:w:")) != -1) {
 		switch (c) {
-		case 'w':
-			if (optarg){
-				sscanf (optarg, "%d", &wsize);
-			}
-			wsize /= 8;
-			break;
 		case 'b':
 			if (optarg){
 				sscanf (optarg, "%d", &bsize);
@@ -56,12 +50,6 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	if (!wsize) {
-		help();
-		exit(-1);
-	} else
-		fprintf (stderr, "word size is %d\n", wsize);
-
 	if (!bsize) {
 		help();
 		exit(-1);
@@ -71,7 +59,7 @@ int main (int argc, char *argv[])
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
-	addr = 0; 
+	addr = 0;
 	int j = 0;
 	do {
 
@@ -104,9 +92,9 @@ int main (int argc, char *argv[])
 		memlen    = bufptr;
 		memlen[0] = 0x17;
 		memlen[1] = 0x02;
-		memlen[2] = 0xff & ((i/wsize-1) >> 16);
-		memlen[3] = 0xff & ((i/wsize-1) >>  8);
-		memlen[4] = 0xff & ((i/wsize-1) >>  0);
+		memlen[2] = 0xff & ((i-1) >> 16);
+		memlen[3] = 0xff & ((i-1) >>  8);
+		memlen[4] = 0xff & ((i-1) >>  0);
 
 		bufptr += (2 + bufptr[1] + 1);
 
@@ -122,7 +110,7 @@ int main (int argc, char *argv[])
 
 		fwrite(buffer, sizeof(char), bufptr-buffer, stdout);
 
-		addr += (i/wsize);
+		addr += i;
 
 	} while (n > 0);
 
