@@ -109,6 +109,19 @@ end;
 
 architecture mix of demo_graphics is
 
+	type latencies is record
+		ddro    : natural;
+		dmaio   : natural;
+		sodata  : natural;
+		adapter : natural;
+	end record;
+
+	type latencies_vector is array (natural range <>) of latencies;
+	constant latencies_tab : latencies_vector := (
+		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),
+		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),
+		2 => (ddro => 3, dmaio => 3, sodata => 2, adapter => 3));
+
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
@@ -345,7 +358,7 @@ begin
 			generic map (
 				max_depth  => fifodata_depth,
 				async_mode => true,
-				latency    => setif(profile=0, 3, 2),
+				latency    => latencies_tab(profile).dmaio,
 				check_sov  => true,
 				check_dov  => true,
 				gray_code  => false)
@@ -514,7 +527,7 @@ begin
 				so_data  => siodmaio_data);
 
 			sodata_b : block
-				constant dma_lat   : natural := setif(profile=0, 1, 0);
+				constant dma_lat   : natural := latencies_tab(profile).sodata;
 
 				signal fifo_req    : bit;
 				signal fifo_rdy    : bit;
@@ -636,7 +649,7 @@ begin
 	adapter_b : block
 
 		constant sync_lat : natural := 4;
-		constant dma_lat  : natural :=  setif(profile=0, 1, 0);
+		constant dma_lat  : natural := latencies_tab(profile).adapter;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
 		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
@@ -796,7 +809,7 @@ begin
 	dev_we   <= '0'           & dmaio_we;
 
 	dmactlr_b : block
-		constant buffdo_lat : natural := setif(profile=0,2,3);
+		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
 	begin
 		dmactlr_e : entity hdl4fpga.dmactlr

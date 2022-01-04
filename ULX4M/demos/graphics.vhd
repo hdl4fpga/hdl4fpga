@@ -501,121 +501,121 @@ begin
 
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
-		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		alias rmii_tx_en : std_logic is gn(10);
-		alias rmii_tx0   : std_logic is gp(10);
-		alias rmii_tx1   : std_logic is gn(9);
-
-		alias rmii_rx0   : std_logic is gn(11);
-		alias rmii_rx1   : std_logic is gp(11);
-
-		alias rmii_crs   : std_logic is gp(12);
-
-		alias rmii_nint  : std_logic is gn(12);
-		alias rmii_mdio  : std_logic is gn(13);
-		alias rmii_mdc   : std_logic is gp(13);
-		signal mii_clk   : std_logic;
-
-		signal mii_txen  : std_logic;
-		signal mii_txd   : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv  : std_logic;
-		signal mii_rxd   : std_logic_vector(0 to 2-1);
-
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-	begin
-
-		wifi_en <= '0';
-
-		sio_clk <= rmii_nint;
-		mii_clk <= rmii_nint;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_crs;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-		rmii_mdc  <= '0';
-		rmii_mdio <= '0';
-
-		dhcp_p : process(mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor ((fire2 and dhcpcd_rdy) or (fire1 and not dhcpcd_rdy));
-				end if;
-			end if;
-		end process;
-		led(0) <= dhcpcd_rdy;
-		led(7) <= not dhcpcd_rdy;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			default_ipv4a => aton("192.168.1.1"))
-		port map (
-			hdplx      => hdplx,
-			sio_clk    => mii_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => mii_rxdv,
-			miirx_data => mii_rxd,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_clk,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-
-	end generate;
+--	ipoe_e : if io_link=io_ipoe generate
+--		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
+--		alias rmii_tx_en : std_logic is gn(10);
+--		alias rmii_tx0   : std_logic is gp(10);
+--		alias rmii_tx1   : std_logic is gn(9);
+--
+--		alias rmii_rx0   : std_logic is gn(11);
+--		alias rmii_rx1   : std_logic is gp(11);
+--
+--		alias rmii_crs   : std_logic is gp(12);
+--
+--		alias rmii_nint  : std_logic is gn(12);
+--		alias rmii_mdio  : std_logic is gn(13);
+--		alias rmii_mdc   : std_logic is gp(13);
+--		signal mii_clk   : std_logic;
+--
+--		signal mii_txen  : std_logic;
+--		signal mii_txd   : std_logic_vector(0 to 2-1);
+--
+--		signal mii_rxdv  : std_logic;
+--		signal mii_rxd   : std_logic_vector(0 to 2-1);
+--
+--		signal dhcpcd_req : std_logic := '0';
+--		signal dhcpcd_rdy : std_logic := '0';
+--
+--		signal miitx_frm  : std_logic;
+--		signal miitx_irdy : std_logic;
+--		signal miitx_trdy : std_logic;
+--		signal miitx_end  : std_logic;
+--		signal miitx_data : std_logic_vector(si_data'range);
+--
+--	begin
+--
+--		wifi_en <= '0';
+--
+--		sio_clk <= rmii_nint;
+--		mii_clk <= rmii_nint;
+--
+--		process (mii_clk)
+--		begin
+--			if rising_edge(mii_clk) then
+--				rmii_tx_en <= mii_txen;
+--				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
+--			end if;
+--		end process;
+--
+--		process (mii_clk)
+--		begin
+--			if rising_edge(mii_clk) then
+--				mii_rxdv <= rmii_crs;
+--				mii_rxd  <= rmii_rx0 & rmii_rx1;
+--			end if;
+--		end process;
+--
+--		rmii_mdc  <= '0';
+--		rmii_mdio <= '0';
+--
+--		dhcp_p : process(mii_clk)
+--		begin
+--			if rising_edge(mii_clk) then
+--				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+--					dhcpcd_req <= dhcpcd_rdy xor ((fire2 and dhcpcd_rdy) or (fire1 and not dhcpcd_rdy));
+--				end if;
+--			end if;
+--		end process;
+--		led(0) <= dhcpcd_rdy;
+--		led(7) <= not dhcpcd_rdy;
+--
+--		udpdaisy_e : entity hdl4fpga.sio_dayudp
+--		generic map (
+--			default_ipv4a => aton("192.168.1.1"))
+--		port map (
+--			hdplx      => hdplx,
+--			sio_clk    => mii_clk,
+--			dhcpcd_req => dhcpcd_req,
+--			dhcpcd_rdy => dhcpcd_rdy,
+--			miirx_frm  => mii_rxdv,
+--			miirx_data => mii_rxd,
+--
+--			miitx_frm  => miitx_frm,
+--			miitx_irdy => miitx_irdy,
+--			miitx_trdy => miitx_trdy,
+--			miitx_end  => miitx_end,
+--			miitx_data => miitx_data,
+--
+--			si_frm     => si_frm,
+--			si_irdy    => si_irdy,
+--			si_trdy    => si_trdy,
+--			si_end     => si_end,
+--			si_data    => si_data,
+--
+--			so_frm     => so_frm,
+--			so_irdy    => so_irdy,
+--			so_trdy    => so_trdy,
+--			so_data    => so_data);
+--
+--		desser_e: entity hdl4fpga.desser
+--		port map (
+--			desser_clk => mii_clk,
+--
+--			des_frm    => miitx_frm,
+--			des_irdy   => miitx_irdy,
+--			des_trdy   => miitx_trdy,
+--			des_data   => miitx_data,
+--
+--			ser_irdy   => open,
+--			ser_data   => mii_txd);
+--
+--		mii_txen <= miitx_frm and not miitx_end;
+--
+--	end generate;
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		profile      => 0,
+		profile      => 2,
 
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
@@ -737,7 +737,7 @@ begin
 	-- VGA --
 	---------
 
-	ddr_g : for i in gpdi_dp'range generate
+	ddr_g : for i in 4-1 downto 0 generate
 		signal q : std_logic;
 	begin
 		oddr_i : oddrx1f
