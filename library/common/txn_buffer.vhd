@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity txn_buffer is
 	generic (
+		debug : boolean := false;
 		m : natural := 7;
 		n : natural := 1;
 		lat : natural:= 1);
@@ -136,7 +137,7 @@ begin
 
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		latency    => lat,
+		latency    => setif(debug, 0, lat),
 		check_dov => true,
 		max_depth  => 4)
 	port map (

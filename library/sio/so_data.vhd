@@ -38,6 +38,7 @@ entity so_data is
 		si_end    : buffer std_logic;
 		si_data   : in  std_logic_vector;
 
+		so_rid    : in  std_logic_vector(0 to 8-1) := x"18";
 		so_frm    : buffer std_logic;
 		so_irdy   : buffer std_logic;
 		so_trdy   : in  std_logic;
@@ -146,7 +147,7 @@ begin
 
 	with state select
 	deso_data <=
-		x"ff"                                                when st_idle | st_rid,
+		so_rid                                               when st_idle | st_rid,
 		std_logic_vector(resize(low_cntr, deso_data'length)) when st_len,
 		ser_data                                             when st_data;
 

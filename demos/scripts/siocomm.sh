@@ -5,12 +5,6 @@ DEVFD="${DEVFD:-1}"
 SETUART="${SETUART:-YES}"
 STDOUT="${STDOUT:-NO}"
 
-if [ "${STDOUT}" == "NO" ] ; then
-	STDOUT="-o"
-else
-	unset STDOUT
-fi
-
 if [ "${LOG}" == "YES" ] ; then
 	LOG="-l 3"
 fi
@@ -21,18 +15,18 @@ if [ "$HOST" == "" ] ; then
 		./scripts/setuart.sh
 	fi
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@} -p")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@} -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then                   
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@} -p")
-	else                                                   
-		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${STDOUT} ${@}")
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@} -p")
+	else                                                  
+		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@}")
 	fi
 else
 	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
 	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@} -p")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
 	else
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${STDOUT} ${@}")
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@}")
 	fi
 fi

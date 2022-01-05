@@ -34,18 +34,6 @@ WSADATA wsaData;
 extern int pkt_sent;
 extern int pkt_lost;
 
-extern FILE *comm;
-extern FILE *fout;
-
-extern char hostname[256];
-extern int sckt;
-
-extern int loglevel;
-#define LOG0 (loglevel & (1 << 0))
-#define LOG1 (loglevel & (1 << 1))
-#define LOG2 (loglevel & (1 << 2))
-#define LOG3 (loglevel & (1 << 3))
-
 struct object_pool {
 	int object_free;
 	int free_objects[256];
@@ -89,6 +77,8 @@ void fprint_rgtrs (FILE *file, struct rgtr_node *node);
 #define RGTRACK_ID     0x01
 #define RGTRDMAADDR_ID 0x16
 
+void sio_setloglevel(int);
+void sio_sethostname(char *);
 void init_comms ();
 void uart_send(char c, FILE *comm);
 void hdlc_send(char * data, int len);
@@ -101,7 +91,7 @@ void socket_send(char * data, int len);
 int socket_rcvd(char unsigned *buffer, int maxlen);
 int sio_init (int ack_val);
 struct rgtr_node *sio_request (char *buffer, size_t length);
-void sio_dump (struct rgtr_node *queue_in);
+void sio_dump (FILE *, struct rgtr_node *queue_in);
 char *to_bytearray(char *bytearray, const char *hexstr);
 int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, size_t size);
 int raw2sio(char *siobuf, char unsigned rgtr_id, const char *buffer, size_t size);

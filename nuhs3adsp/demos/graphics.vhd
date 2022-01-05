@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.cgafonts.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -38,6 +37,7 @@ use unisim.vcomponents.all;
 architecture graphics of nuhs3adsp is
 
 	type apps is (
+		mode480p_ddr166mhz,
 		mode600p_ddr166mhz,
 		mode900p_ddr166mhz,
 		mode1080p_ddr166mhz,
@@ -170,14 +170,16 @@ architecture graphics of nuhs3adsp is
 	type app_param is record
 		ddr_speed  : ddr_speeds;
 		video_mode : video_modes;
+		profile    : natural;
 	end record;
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		mode600p_ddr166mhz  => (ddr_166MHz, mode600p),
-		mode900p_ddr166mhz  => (ddr_166MHz, mode900p),
-		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p),
-		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p));
+		mode480p_ddr166mhz  => (ddr_166MHz, mode480p,  1),
+		mode600p_ddr166mhz  => (ddr_166MHz, mode600p,  1),
+		mode900p_ddr166mhz  => (ddr_166MHz, mode900p,  1),
+		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p, 1),
+		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p, 1));
 
 	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
 
@@ -394,7 +396,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		profile      => 1,
+		profile      => app_tab(app).profile,
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
 		mark         => mark,

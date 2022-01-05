@@ -4,17 +4,16 @@
 int pkt_sent = 0;
 int pkt_lost = 0;
 
-FILE *comm;
-FILE *fout;
+static FILE *comm;
 
-char hostname[256] = "";
-int sckt;
+static char hostname[256] = "";
+static int sckt;
 
-int loglevel;
 #define LOG0 (loglevel & (1 << 0))
 #define LOG1 (loglevel & (1 << 1))
 #define LOG2 (loglevel & (1 << 2))
 #define LOG3 (loglevel & (1 << 3))
+static int loglevel;
 
 struct object_pool *init_pool (struct object_pool *pool)
 {
@@ -284,6 +283,11 @@ void hdlc_send(char * data, int len)
 	pkt_sent++;
 }
 
+void sio_sethostname (char *name)
+{
+	strcpy(hostname, name);
+}
+
 void send_buffer(char * data, int len)
 {
 	if (strlen(hostname)) {
@@ -518,7 +522,6 @@ void init_socket ()
 		abort();
 	}
 
-	fout = stdout;
 	//	DON'T FRAGMENT,
 	// int tol = 2;	// Time To Live
 	// setsockopt(sckt, IPPROTO_IP, IP_PMTUDISC_DO, &tol, sizeof(tol));
@@ -529,15 +532,17 @@ void init_comms ()
 {
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
-		fout = (comm) ? stdin : stderr;
 		comm = stdout;
 	} else {
-		if (LOG0) fprintf (stderr, "fout -> std_out\n");
-		fout = stdout;
 		setbuf(comm, NULL);
 	}
 	setvbuf(stdin,  NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
+}
+
+void sio_setloglevel(int level)
+{
+	loglevel = level;
 }
 
 int ack = -1;
@@ -759,7 +764,7 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 	return queue_in;
 }
 
-void sio_dump (struct rgtr_node *queue_in)
+void sio_dump (FILE *fout, struct rgtr_node *queue_in)
 {
 	while(queue_in) {
 		struct rgtr_node *node;
@@ -773,9 +778,9 @@ void sio_dump (struct rgtr_node *queue_in)
 		}
 		node = queue_in;
 		queue_in = queue_in->next;
-		delete_rgtrnode(node);
 	}
 }
+
 int unsigned to_hex (char c)
 {
 	if ('A' <= toupper(c) && toupper(c) <= 'F')
