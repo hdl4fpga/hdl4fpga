@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity eth_tb is
 	port (
+		mii_data4 : in  std_logic_vector := x"010000";
 		mii_frm1  : in  std_logic := '0';
 		mii_frm2  : in  std_logic := '0';
 		mii_frm3  : in  std_logic := '0';
@@ -106,26 +107,9 @@ architecture def of eth_tb is
 			x"0000" &              -- UPD checksum
 			payload);
 
-	constant pyld1 : std_logic_vector := x"010009_180312345678_1702000000_160300000000_1702000000_160380000000";
 --	constant pyld1 : std_logic_vector := x"010009_170200003f_160380000000";
 --	constant pyld1 : std_logic_vector := x"01008b";
-	constant pkt1 : std_logic_vector :=
-		x"4500"                 &    -- IP Version, TOS
-		x"0000"                 &    -- IP Length
-		x"0000"                 &    -- IP Identification
-		x"0000"                 &    -- IP Fragmentation
-		x"0511"                 &    -- IP TTL, protocol
-		x"0000"                 &    -- IP Header Checksum
-		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
-
-		udp_checksummed (
-			x"ffffffff",             -- IP Source IP address
-			x"c0a8000e",             -- IP Destiantion IP Address
-			x"5ff5affa"         &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(pyld1'length/8+8,16))    & -- UDP Length,
-			x"0000" &              -- UPD checksum
-			pyld1);
+	signal pkt1 : std_logic_vector (0 to 224+mii_data4'length-1);
 
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
 	signal eth1_end   : std_logic;
@@ -193,9 +177,27 @@ begin
 		so_end   => eth3_end,
         so_data  => eth3_txd);
 
+	pkt1 <= reverse(
+		x"4500"                 &    -- IP Version, TOS
+		x"0000"                 &    -- IP Length
+		x"0000"                 &    -- IP Identification
+		x"0000"                 &    -- IP Fragmentation
+		x"0511"                 &    -- IP TTL, protocol
+		x"0000"                 &    -- IP Header Checksum
+		x"ffffffff"             &    -- IP Source IP address
+		x"c0a8000e"             &    -- IP Destiantion IP Address
+
+		udp_checksummed (
+			x"ffffffff",             -- IP Source IP address
+			x"c0a8000e",             -- IP Destiantion IP Address
+			x"5ff5affa"         &    -- UDP Source port, Destination port
+			std_logic_vector(to_unsigned(mii_data4'length/8+8,16))    & -- UDP Length,
+			x"0000" &              -- UPD checksum
+			mii_data4),8);
+
 	eth4_e: entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(pkt1,8),
+		mux_data => pkt1,
         sio_clk  => mii_txc,
         sio_frm  => mii_frm4,
 		sio_irdy => pl_trdy,

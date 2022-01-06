@@ -285,6 +285,8 @@ begin
 			dst_end  => meta_end,
 			dst_data => meta_data);
 
+		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
+
 		rx_b : block
 		begin
 
@@ -443,7 +445,7 @@ begin
 			port map (
 				src_clk    => dmacfg_clk,
 				src_irdy   => dmaio_next,
-				src_trdy   => open,
+				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
 				dst_frm    => ctlr_inirdy,
@@ -452,6 +454,7 @@ begin
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
 
+			tp(6) <= dmaio_trdy;
 			process (dst_data)
 				variable aux : unsigned(dst_data'range);
 			begin

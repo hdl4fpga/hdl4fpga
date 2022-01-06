@@ -75,7 +75,7 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 	return sioptr-siobuf;
 }
 
-#define MAX_ADDRESS    (64*1024*1024)
+#define MAX_ADDRESS    (32*1024*1024)
 
 int main (int argc, char *argv[])
 {
@@ -139,6 +139,7 @@ int main (int argc, char *argv[])
 				if (data_wt!=data_rd) {
 					fprintf(stderr, "Check failed : ");
 					fprintf(stderr, "word address : 0x%08x", address+i);
+					fprintf(stderr, " : missed : 0x%08x", data_rd ^ data_wt);
 					fprintf(stderr, " : data read : 0x%08x", data_rd);
 					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
 					exit(-1);

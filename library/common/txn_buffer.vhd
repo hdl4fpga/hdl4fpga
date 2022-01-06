@@ -119,7 +119,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 2)
+		latency   => setif(debug, 2, lat))
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,

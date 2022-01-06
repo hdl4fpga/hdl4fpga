@@ -730,6 +730,8 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 			if (!((rgtr2int(dmaaddr) & 0x80) ^ 0x80)) {
 				break;
 			}
+		} else {
+			break;
 		}
 
 		queue_in = delete_queue(queue_in);
