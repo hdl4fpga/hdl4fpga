@@ -271,6 +271,7 @@ begin
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 		metafifo_e : entity hdl4fpga.txn_buffer
 		generic map (
+			debug => true,
 			m => 5)
 		port map (
 			src_clk  => sio_clk,

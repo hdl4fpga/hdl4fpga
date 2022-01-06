@@ -195,6 +195,7 @@ architecture def of mii_ipoe is
 	signal arp_req       : std_logic;
 	signal arp_rdy       : std_logic;
 
+	signal	tp1            : std_logic_vector(1 to 32);
 begin
 
 	process (pltx_frm, pltx_irdy, tagtx_trdy, mii_clk)
@@ -349,6 +350,8 @@ begin
 		signal dev_csc : std_logic;
 	begin
 
+		tp(5 to 6) <= tp1(1 to 2);
+--		tp(7) <= dev_csc;
 		dev_csc <= not miirx_frm when hdplx='1' else '1';
 		dev_req <= arptx_frm & ipv4tx_frm;
 		arbiter_e : entity hdl4fpga.arbiter
@@ -496,6 +499,7 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
+		tp => tp1,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,

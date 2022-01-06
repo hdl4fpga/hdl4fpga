@@ -191,7 +191,7 @@ begin
 
 	process (tp1)
 	begin
-		tp <= tp1;
+--		tp <= tp1;
 	end process;
 
 	plrx_frm  <= ipv4rx_frm;
@@ -364,6 +364,7 @@ begin
 			gnt => dev_gnt);
 
 		(icmp_gnt, udp_gnt) <= dev_gnt;
+		tp(1 to 2) <= dev_gnt;
 
 		ipv4tx_frm    <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);

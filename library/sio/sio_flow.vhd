@@ -287,6 +287,7 @@ begin
 			req => req,
 			gnt => gnt);
 
+		tp(5 to 6) <= gnt;
 		tx_frm  <= wirebus(acktx_frm  & si_frm,  gnt);
 		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt);
 		tx_end  <= wirebus(acktx_end  & si_end,  gnt);
