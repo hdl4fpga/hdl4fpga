@@ -1,0 +1,45 @@
+#                                                                            #
+# Author(s):                                                                 #
+#   Miguel Angel Sagreras                                                    #
+#                                                                            #
+# Copyright (C) 2015                                                         #
+#    Miguel Angel Sagreras                                                   #
+#                                                                            #
+# This source file may be used and distributed without restriction provided  #
+# that this copyright statement is not removed from the file and that any    #
+# derivative work contains  the original copyright notice and the associated #
+# disclaimer.                                                                #
+#                                                                            #
+# This source file is free software; you can redistribute it and/or modify   #
+# it under the terms of the GNU General Public License as published by the   #
+# Free Software Foundation, either version 3 of the License, or (at your     #
+# option) any later version.                                                 #
+#                                                                            #
+# This source is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
+# more details at http://www.gnu.org/licenses/.                              #
+#                                                                            #
+
+NET "xtal" TNM_NET = xtal;
+TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
+NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+
+NET "mii_rxc" TNM_NET = mii_rxc;
+TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
+
+TIMESPEC TS_adc_clkout = PERIOD "adc_clkout" 7.8125 ns HIGH 50%;
+NET "adc_clkout" TNM_NET = adc_clkout;
+OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
+OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
+
+NET "vga_clk" TNM_NET = FFS  FFS_videoclk;
+NET "vga_clk" TNM_NET = RAMS RAMS_videoclk;
+NET "adc_clk" TNM_NET = FFS  FFS_adcclk;
+NET "adc_clk" TNM_NET = RAMS RAMS_adcclk;
+
+TIMESPEC TS_video2adc1 = FROM FFS_videoclk TO FFS_adcclk  TIG;
+TIMESPEC TS_video2adc2 = FROM FFS_videoclk TO RAMS_adcclk TIG;
+TIMESPEC TS_adc2video1 = FROM FFS_adcclk TO FFS_videoclk TIG;
+#TIMESPEC TS_adc2video2 = FROM RAMS_adcclk TO FFS_videoclk TIG;
+#
