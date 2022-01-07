@@ -40,23 +40,25 @@ end;
 
 architecture def of mii_rxpre is
 begin
-	process(mii_clk)
+	process(mii_frm, mii_clk)
+		variable vld  : std_logic;
 		variable data : unsigned(0 to mii_data'length);
 		variable cy   : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if mii_frm='0' then
-				mii_pre  <= '0';
+				vld  := '0';
 				cy   := '0';
 				data := (others => '0');
 			elsif mii_irdy='1' then
-				if mii_pre='0' then
+				if vld ='0' then
 					data := data(0) & unsigned(mii_data);
+
 					for i in mii_data'range loop
 						if (data(0) xnor data(1))='1' then
 							if cy='1' then
 								if data(0)='1' then
-									mii_pre <= '1';
+									vld := '1';
 								end if;
 							end if;
 							cy := '0';
@@ -68,5 +70,6 @@ begin
 				end if;
 			end if;
 		end if;
+		mii_pre <= mii_frm and vld;
 	end process;
 end;
