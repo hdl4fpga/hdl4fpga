@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.cgafonts.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -456,7 +455,7 @@ begin
 		end if;
 	end process;
 
-	ddrphy_e : entity hdl4fpga.xcs3_ddrphy
+	ddrphy_e : entity hdl4fpga.xc3s_ddrphy
 	generic map (
 		gate_delay  => 2,
 		loopback    => false,
