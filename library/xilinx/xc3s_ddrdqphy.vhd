@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity xcs3_ddrdqphy is
+entity xc3s_ddrdqphy is
 	generic (
 		latency     : natural := 0;
 --		rgtr_dout : boolean;
@@ -65,7 +65,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture xlnx of xcs3_ddrdqphy is
+architecture xilinx of xc3s_ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate

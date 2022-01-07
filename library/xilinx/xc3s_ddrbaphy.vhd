@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xcs3_ddrbaphy is
+entity xc3s_ddrbaphy is
 	generic (
 		LATENCY    : natural;
 		DATA_EDGE  : string  := "OPPOSITE_EDGE";
@@ -58,7 +58,7 @@ end;
 
 library hdl4fpga;
 
-architecture xlnx of xcs3_ddrbaphy is
+architecture xilnix of xc3s_ddrbaphy is
 
 	signal lat_rst : std_logic_vector(gear-1 downto 0) := (others => '-');
 	signal lat_cs  : std_logic_vector(gear-1 downto 0);

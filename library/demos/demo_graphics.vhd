@@ -56,52 +56,62 @@ entity demo_graphics is
 		blue_length  : natural := 5);
 
 	port (
-		sio_clk      : in  std_logic;
-		sin_frm      : in  std_logic;
-		sin_irdy     : in  std_logic;
-		sin_trdy     : out std_logic := '1';
-		sin_data     : in  std_logic_vector;
-		sout_frm     : buffer std_logic;
-		sout_irdy    : buffer std_logic;
-		sout_trdy    : in  std_logic;
-		sout_end     : buffer std_logic;
-		sout_data    : out std_logic_vector;
+		sio_clk       : in  std_logic;
+		sin_frm       : in  std_logic;
+		sin_irdy      : in  std_logic;
+		sin_trdy      : out std_logic := '1';
+		sin_data      : in  std_logic_vector;
+		sout_frm      : buffer std_logic;
+		sout_irdy     : buffer std_logic;
+		sout_trdy     : in  std_logic;
+		sout_end      : buffer std_logic;
+		sout_data     : out std_logic_vector;
 
-		video_clk    : in  std_logic;
+		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
-		video_hzsync : buffer std_logic;
-		video_vtsync : buffer std_logic;
-		video_blank  : buffer std_logic;
-		video_pixel  : buffer std_logic_vector;
-		dvid_crgb    : out std_logic_vector(7 downto 0);
+		video_hzsync  : buffer std_logic;
+		video_vtsync  : buffer std_logic;
+		video_blank   : buffer std_logic;
+		video_pixel   : buffer std_logic_vector;
+		dvid_crgb     : out std_logic_vector(7 downto 0);
 
-		dmacfg_clk   : in  std_logic;
-		ctlr_clks    : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
-		ctlr_rst     : in  std_logic;
-		ctlr_bl      : in  std_logic_vector(0 to 3-1);
-		ctlr_cl      : in  std_logic_vector(0 to 3-1);
+		dmacfg_clk    : in  std_logic;
+		ctlr_clks     : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
+		ctlr_rst      : in  std_logic;
+		ctlr_bl       : in  std_logic_vector(0 to 3-1);
+		ctlr_cl       : in  std_logic_vector(0 to 3-1);
 
-		ctlrphy_rst  : out std_logic;
-		ctlrphy_cke  : out std_logic;
-		ctlrphy_cs   : out std_logic;
-		ctlrphy_ras  : out std_logic;
-		ctlrphy_cas  : out std_logic;
-		ctlrphy_we   : out std_logic;
-		ctlrphy_b    : out std_logic_vector(bank_size-1 downto 0);
-		ctlrphy_a    : out std_logic_vector(addr_size-1 downto 0);
-		ctlrphy_dsi  : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		ctlrphy_dst  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dmt  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dqi  : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlrphy_dqt  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlrphy_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		ctlrphy_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlr_wlrdy    : in  std_logic := '-';
+		ctlr_wlreq    : out std_logic;
+		ctlr_rlcal    : in  std_logic := '0';
+		ctlr_rlseq    : out std_logic;
 
-		tp           : out std_logic_vector(1 to 32));
+		ctlrphy_wlrdy : in  std_logic := '-';
+		ctlrphy_wlreq : out std_logic;
+		ctlrphy_rlcal : in  std_logic := '0';
+		ctlrphy_rlseq : out std_logic;
+
+		ctlrphy_rst   : out std_logic;
+		ctlrphy_cke   : out std_logic;
+		ctlrphy_cs    : out std_logic;
+		ctlrphy_ras   : out std_logic;
+		ctlrphy_cas   : out std_logic;
+		ctlrphy_we    : out std_logic;
+		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
+		ctlrphy_dsi   : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlrphy_dst   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
+		tp            : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
 
@@ -929,6 +939,10 @@ begin
 			ctlr_refreq  => ctlr_refreq,
 			ctlr_dio_req => ctlr_dio_req,
 
+			phy_wlrdy    => ctlrphy_wlrdy,
+			phy_wlreq    => ctlrphy_wlreq,
+			phy_rlcal    => ctlrphy_rlcal,
+			phy_rlseq    => ctlrphy_rlseq,
 			phy_rst      => ctlrphy_rst,
 			phy_cke      => ctlrphy_cke,
 			phy_cs       => ctlrphy_cs,

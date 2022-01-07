@@ -197,7 +197,212 @@ begin
 		ddr_rst     => ddrs_rst,
 		gtx_rst     => gtx_rst);
 
-	ddrphy_ini <= ddrphy_rlreq;
+	ipoe_b : block
+
+		signal mii_txcfrm : std_ulogic;
+		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
+
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
+
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(0 to 8-1);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(miirx_data'range);
+
+	begin
+
+		sync_b : block
+
+			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
+
+		begin
+
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					rxc_rxbus <= mii_rxdv & mii_rxd;
+				end if;
+			end process;
+
+			rxc2txc_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 4,
+				latency    => 0,
+				dst_offset => 0,
+				src_offset => 2,
+				check_sov  => false,
+				check_dov  => true,
+				gray_code  => false)
+			port map (
+				src_clk  => mii_rxc,
+				src_data => rxc_rxbus,
+				dst_clk  => mii_txc,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => txc_rxbus);
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
+					mii_txcfrm <= txc_rxbus(0);
+					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+				end if;
+			end process;
+		end block;
+
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => mii_txc,
+			serdes_frm => mii_txcfrm,
+			ser_irdy   => '1',
+			ser_trdy   => open,
+			ser_data   => mii_txcrxd,
+
+			des_frm    => miirx_frm,
+			des_irdy   => miirx_irdy,
+			des_trdy   => miirx_trdy,
+			des_data   => miirx_data);
+
+		dhcp_p : process(mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
+				end if;
+			end if;
+		end process;
+
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			default_ipv4a => aton("192.168.0.14"))
+		port map (
+			tp         => tp,
+
+			sio_clk    => sio_clk,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => miirx_irdy,
+			miirx_trdy => miirx_trdy,
+			miirx_data => miirx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => miitx_trdy,
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data,
+
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data);
+
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_txc,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => mii_txd);
+
+		mii_txen  <= miitx_frm and not miitx_end;
+
+	end block;
+
+	grahics_e : entity hdl4fpga.demo_graphics
+	generic map (
+		profile      => app_tab(app).profile,
+		ddr_tcp      => ddr_tcp,
+		fpga         => fpga,
+		mark         => mark,
+		sclk_phases  => sclk_phases,
+		sclk_edges   => sclk_edges,
+		data_phases  => data_phases,
+		data_edges   => data_edges,
+		data_gear    => data_gear,
+		bank_size    => bank_size,
+		addr_size    => addr_size,
+		coln_size    => coln_size,
+		word_size    => word_size,
+		byte_size    => byte_size,
+
+		timing_id    => video_tab(video_mode).mode,
+		red_length   => 8,
+		green_length => 8,
+		blue_length  => 8,
+
+		fifo_size    => 8*2048)
+
+	port map (
+		sio_clk       => sio_clk,
+		sin_frm       => so_frm,
+		sin_irdy      => so_irdy,
+		sin_trdy      => so_trdy,
+		sin_data      => so_data,
+		sout_frm      => si_frm,
+		sout_irdy     => si_irdy,
+		sout_trdy     => si_trdy,
+		sout_end      => si_end,
+		sout_data     => si_data,
+
+		video_clk     => video_clk,
+		video_hzsync  => video_hzsync,
+		video_vtsync  => video_vtsync,
+		video_blank   => video_blank,
+		video_pixel   => video_pixel,
+
+		dmacfg_clk    => dmacfg_clk,
+		ctlr_clks     => ctlr_clks,
+		ctlr_rst      => ddrsys_rst,
+		ddrs_rtt      => "11",
+		ctlr_bl       => "001",
+		ctlr_cl       => ddr_param.cas,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
+		ctlrphy_rlcal => ctlrphy_rlcal,
+		ctlrphy_rlseq => ctlrphy_rlseq,
+		ctlrphy_rst   => ctlrphy_rst,
+		ctlrphy_cke   => ctlrphy_cke(0),
+		ctlrphy_cs    => ctlrphy_cs(0),
+		ctlrphy_ras   => ctlrphy_ras(0),
+		ctlrphy_cas   => ctlrphy_cas(0),
+		ctlrphy_we    => ctlrphy_we(0),
+		ctlrphy_b     => ctlrphy_b,
+		ctlrphy_a     => ctlrphy_a,
+		ctlrphy_dsi   => ctlrphy_dqsi,
+		ctlrphy_dst   => ctlrphy_dqst,
+		ctlrphy_dso   => ctlrphy_dqso,
+		ctlrphy_dmi   => ctlrphy_dmi,
+		ctlrphy_dmt   => ctlrphy_dmt,
+		ctlrphy_dmo   => ctlrphy_dmo,
+		ctlrphy_dqi   => ctlrphy_dqi,
+		ctlrphy_dqt   => ctlrphy_dqt,
+		ctlrphy_dqo   => ctlrphy_dqo,
+		ctlrphy_sto   => ctlrphy_sto,
+		ctlrphy_sti   => ctlrphy_sti,
+		tp => open);
+
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (

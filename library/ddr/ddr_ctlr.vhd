@@ -57,10 +57,6 @@ entity ddr_ctlr is
 		ctlr_clks    : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		ctlr_inirdy  : out std_logic;
 
-		ctlr_wlrdy   : in  std_logic := '-';
-		ctlr_wlreq   : out std_logic;
-		ctlr_rlcal   : in  std_logic := '0';
-		ctlr_rlseq   : out std_logic;
 
 		ctlr_irdy    : in  std_logic;
 		ctlr_trdy    : out std_logic;
@@ -82,6 +78,10 @@ entity ddr_ctlr is
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
 
+		phy_wlrdy    : in  std_logic := '-';
+		phy_wlreq    : out std_logic;
+		phy_rlcal    : in  std_logic := '0';
+		phy_rlseq    : out std_logic;
 		phy_rst      : out std_logic;
 		phy_cke      : out std_logic;
 		phy_cs       : out std_logic;
@@ -232,8 +232,8 @@ begin
 		ddr_init_a     => ddr_init_a,
 		ddr_init_b     => ddr_init_b,
 		ddr_init_odt   => ddr_init_odt,
-		ddr_init_wlreq => ctlr_wlreq,
-		ddr_init_wlrdy => ctlr_wlrdy,
+		ddr_init_wlreq => phy_wlreq,
+		ddr_init_wlrdy => phy_wlrdy,
 		ddr_refi_req   => ddr_refi_req,
 		ddr_refi_rdy   => ddr_refi_rdy);
 
@@ -264,10 +264,10 @@ begin
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 		ddr_pgm_ref   => ddr_mpu_ref,
 		ddr_pgm_rrdy  => ddr_refi_rdy,
-		ddr_pgm_cal   => ctlr_rlcal,
+		ddr_pgm_cal   => phy_rlcal,
 		ddr_pgm_idl   => ctlr_idl,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
-		ddr_pgm_seq   => ctlr_rlseq,
+		ddr_pgm_seq   => phy_rlseq,
 		ddr_pgm_rw    => ctlr_rw);
 
 	ctlr_ras <=ddr_pgm_ras and ddr_mpu_trdy;
@@ -322,14 +322,14 @@ begin
 		data_gear   => data_gear,
 		cl_cod      => cl_cod,
 		cwl_cod     => cwl_cod,
-                                 
+
 		strl_tab    => strl_tab,
 		rwnl_tab    => rwnl_tab,
 		dqszl_tab   => dqszl_tab,
 		dqsol_tab   => dqsol_tab,
 		dqzl_tab    => dqzl_tab,
 		wwnl_tab    => wwnl_tab,
-                                 
+
 		strx_lat    => strx_lat,
 		rwnx_lat    => rwnx_lat,
 		dqszx_lat   => dqszx_lat,
@@ -354,7 +354,7 @@ begin
 		ddr_wwn     => ddr_sch_wwn);
 
 	ddr_win_dqs <= phy_sti;
-	ddr_win_dq  <= (others => ddr_sch_rwn(0)); 
+	ddr_win_dq  <= (others => ddr_sch_rwn(0));
 
 	process (
 		ddr_wr_dm,
@@ -397,7 +397,7 @@ begin
 		ddr_win_dqs => ddr_win_dqs,
 		ddr_dqsi    => phy_dqsi,
 		ddr_dqi     => phy_dqi);
-		
+
 	rot_val <= ddr_rotval (
 		line_size => data_gear*word_size,
 		word_size => word_size,
@@ -410,7 +410,7 @@ begin
 		disp => rot_val,
 		di   => ctlr_di,
 		do   => rot_di);
-		
+
 	process (ctlr_clks(ctlr_clks'high))
 	begin
 		for k in 0 to word_size/byte_size-1 loop
@@ -444,7 +444,7 @@ begin
 			ctlr_dmi    => ctlr_dm,
 			ddr_clks    => ddr_wclks,
 			ddr_dmo     => dmo,
-			ddr_enas    => ddr_wenas, 
+			ddr_enas    => ddr_wenas,
 			ddr_dqo     => dqo);
 
 		phy_dqo   <= rot_di  when bypass='1' else dqo;

@@ -18,12 +18,12 @@ IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
-HDL4FPGA__xcs3_ddrphy__xnlx = $(LIB_HDL4FPGA)/xcs3_ddrphy/xnlx.dat
-HDL4FPGA__xcs3_ddrphy = $(LIB_HDL4FPGA)/xcs3_ddrphy/_primary.dat
-HDL4FPGA__xcs3_ddrdqphy__xlnx = $(LIB_HDL4FPGA)/xcs3_ddrdqphy/xlnx.dat
-HDL4FPGA__xcs3_ddrdqphy = $(LIB_HDL4FPGA)/xcs3_ddrdqphy/_primary.dat
-HDL4FPGA__xcs3_ddrbaphy__xlnx = $(LIB_HDL4FPGA)/xcs3_ddrbaphy/xlnx.dat
-HDL4FPGA__xcs3_ddrbaphy = $(LIB_HDL4FPGA)/xcs3_ddrbaphy/_primary.dat
+HDL4FPGA__xc3s_ddrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_ddrphy/xnlx.dat
+HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
+HDL4FPGA__xc3s_ddrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/xilinx.dat
+HDL4FPGA__xc3s_ddrdqphy = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/_primary.dat
+HDL4FPGA__xc3s_ddrbaphy__xilnix = $(LIB_HDL4FPGA)/xc3s_ddrbaphy/xilnix.dat
+HDL4FPGA__xc3s_ddrbaphy = $(LIB_HDL4FPGA)/xc3s_ddrbaphy/_primary.dat
 HDL4FPGA__videopkg__body = $(LIB_HDL4FPGA)/videopkg/body.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__videobox_layout__def = $(LIB_HDL4FPGA)/videobox_layout/def.dat
@@ -246,12 +246,12 @@ VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(HDL4FPGA__xcs3_ddrphy__xnlx) \
-    $(HDL4FPGA__xcs3_ddrphy) \
-    $(HDL4FPGA__xcs3_ddrdqphy__xlnx) \
-    $(HDL4FPGA__xcs3_ddrdqphy) \
-    $(HDL4FPGA__xcs3_ddrbaphy__xlnx) \
-    $(HDL4FPGA__xcs3_ddrbaphy) \
+whole_library :     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
+    $(HDL4FPGA__xc3s_ddrphy) \
+    $(HDL4FPGA__xc3s_ddrdqphy__xilinx) \
+    $(HDL4FPGA__xc3s_ddrdqphy) \
+    $(HDL4FPGA__xc3s_ddrbaphy__xilnix) \
+    $(HDL4FPGA__xc3s_ddrbaphy) \
     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videopkg) \
     $(HDL4FPGA__videobox_layout__def) \
@@ -1614,8 +1614,8 @@ $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/videopkg.vhd
 
-$(HDL4FPGA__xcs3_ddrbaphy) \
-$(HDL4FPGA__xcs3_ddrbaphy__xlnx) : ../xilinx/xcs3_ddrbaphy.vhd \
+$(HDL4FPGA__xc3s_ddrbaphy) \
+$(HDL4FPGA__xc3s_ddrbaphy__xilnix) : ../xilinx/xc3s_ddrbaphy.vhd \
 		$(HDL4FPGA__omdr) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -1623,10 +1623,10 @@ $(HDL4FPGA__xcs3_ddrbaphy__xlnx) : ../xilinx/xcs3_ddrbaphy.vhd \
 		$(HDL4FPGA__align) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xcs3_ddrbaphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrbaphy.vhd
 
-$(HDL4FPGA__xcs3_ddrdqphy) \
-$(HDL4FPGA__xcs3_ddrdqphy__xlnx) : ../xilinx/xcs3_ddrdqphy.vhd \
+$(HDL4FPGA__xc3s_ddrdqphy) \
+$(HDL4FPGA__xc3s_ddrdqphy__xilinx) : ../xilinx/xc3s_ddrdqphy.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__ddrto) \
 		$(HDL4FPGA__align) \
@@ -1636,13 +1636,13 @@ $(HDL4FPGA__xcs3_ddrdqphy__xlnx) : ../xilinx/xcs3_ddrdqphy.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xcs3_ddrdqphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrdqphy.vhd
 
-$(HDL4FPGA__xcs3_ddrphy) \
-$(HDL4FPGA__xcs3_ddrphy__xnlx) : ../xilinx/xcs3_ddrphy.vhd \
+$(HDL4FPGA__xc3s_ddrphy) \
+$(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/xc3s_ddrphy.vhd \
 		$(HDL4FPGA__pgm_delay) \
-		$(HDL4FPGA__xcs3_ddrdqphy) \
-		$(HDL4FPGA__xcs3_ddrbaphy) \
+		$(HDL4FPGA__xc3s_ddrdqphy) \
+		$(HDL4FPGA__xc3s_ddrbaphy) \
 		$(HDL4FPGA__ddro) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
@@ -1650,5 +1650,5 @@ $(HDL4FPGA__xcs3_ddrphy__xnlx) : ../xilinx/xcs3_ddrphy.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xcs3_ddrphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrphy.vhd
 
