@@ -270,13 +270,13 @@ begin
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
 		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
+		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
+		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
@@ -318,7 +318,7 @@ begin
 				if rising_edge(mii_txc) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
 					miirx_frm  <= txc_rxbus(0);
-					miirx_irdy <= '1';
+					miirx_irdy <= txc_rxbus(0);
 					miirx_data <= txc_rxbus(1 to mii_rxd'length);
 				end if;
 			end process;
