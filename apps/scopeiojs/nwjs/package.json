@@ -1,0 +1,16 @@
+{
+	"name": "ScopeIO",
+	"main": "html/scopeio.html",
+	"window": {
+		"width": 500,
+		"height": 520
+	},
+	"scripts": {
+		"start": "nw"
+	},
+	"dependencies": {
+		"nw": "^0.46.2",
+		"serialport": "^9.0.0"
+	},
+	"devDependencies": {}
+}

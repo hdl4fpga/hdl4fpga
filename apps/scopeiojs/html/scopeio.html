@@ -1,0 +1,74 @@
+<!--                                                                            -->
+<!-- Author(s):                                                                 -->
+<!--   Miguel Angel Sagreras                                                    -->
+<!--                                                                            -->
+<!-- Copyright (C) 2015                                                         -->
+<!--    Miguel Angel Sagreras                                                   -->
+<!--                                                                            -->
+<!-- This source file may be used and distributed without restriction provided  -->
+<!-- that this copyright statement is not removed from the file and that any    -->
+<!-- derivative work contains  the original copyright notice and the associated -->
+<!-- disclaimer.                                                                -->
+<!--                                                                            -->
+<!-- This source file is free software; you can redistribute it and/or modify   -->
+<!-- it under the terms of the GNU General Public License as published by the   -->
+<!-- Free Software Foundation, either version 3 of the License, or (at your     -->
+<!-- option) any later version.                                                 -->
+<!--                                                                            -->
+<!-- This source is distributed in the hope that it will be useful, but WITHOUT -->
+<!-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      -->
+<!-- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   -->
+<!-- more details at http://www.gnu.org/licenses/.                              -->
+<!--                                                                            -->
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>ScopeIO</title>
+		<link rel="stylesheet" href="scopeio.css">
+		<meta charset="utf-8">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+		<script src="../srcjs/i18n.js"></script>
+		<script src="../srcjs/registers.js"></script>
+		<script src="../srcjs/comm.js"></script>
+		<script src="../srcjs/command.js"></script>
+		<script src="../srcjs/commwidget.js"></script>
+		<script src="../srcjs/channel.js"></script>
+		<script src="../srcjs/color.js"></script>
+		<script src="../srcjs/scope.js"></script>
+	</head>
+	<body style="background-color:#444444;text-align:left;vertical-align:top;font-family:verdana;font-size:10pt;font-weight:bold;">
+		<div style="text-align:left;padding:0pt;margin:1pt;background-color:#444444;display:vertical-align:middle;border:solid #404040 1pt;">
+			<!-- Languages -->
+			<div style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 2pt;text-align:left">
+				<select id="lang-select" style="display:inline-block;">
+					<option value="0">en</option>
+					<option value="1">es</option>
+				</select>
+			</div>
+			<!-- Number of inputs ontainer -->
+			<div style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 1pt;text-align:left">
+				<label id="inputnumlbl" style="color:#ffffff"></label>
+				<input id="inputnum"    type="number" size="3" style="text-align:right;width:32pt;" value="1"></input>
+			</div>
+			<!-- Communication container -->
+			<div id="comm" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 1pt;text-align:left">
+				<select id="comm-select" style="display:inline-block;">
+					<option id="UART" value="0">UART</option>
+					<option id="TCPIP" value="1">TCPIP</option>
+				</select>
+				<div id="comm-param" style="text-align:center;color:#ffffff;display:inline-block;vertical-align:middle;">
+				</div>
+			</div>
+		</div>
+
+		<div id="control" style="vertical-align:top;display:inline-block;">
+			<div id="hzcontrol" style="display:inline-block;vertical-align:top;">
+			</div>
+			<div id="vtcontrol" style="display:inline-block;vertical-align:top;text-align:left;">
+			</div>
+		</div>
+		<div id="palette" style="vertical-align:top;display:inline-block;text-align:center;">
+		</div>
+	</body>
+</html>
