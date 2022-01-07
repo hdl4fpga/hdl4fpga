@@ -35,7 +35,7 @@ use hdl4fpga.xdr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture scope of ml509 is
+architecture graphics of ml509 is
 	constant SCLK_PHASES  : natural := 4;
 	constant SCLK_EDGES   : natural := 2;
 	constant DATA_PHASES  : natural := 2;
@@ -184,7 +184,7 @@ begin
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul     => ddr_mul,
-		ddr_div     => ddr_div, 
+		ddr_div     => ddr_div,
 		sys_per     => UCLK_PERIOD)
 	port map (
 		sys_rst     => sys_rst,
@@ -197,21 +197,10 @@ begin
 		ddr_rst     => ddrs_rst,
 		gtx_rst     => gtx_rst);
 
-	testpattern_e : entity hdl4fpga.lfsr_gen
-	generic map (
-		g => g)
-	port map (
-		clk => input_clk,
-		rst => input_rst,
-		req => input_req,
-		so  => input_data);
-
 	ddrphy_ini <= ddrphy_rlreq;
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
---		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
---		MAC_DESTADDR => x"00270e0a90e9",	-- MAC Destination Address casa
 		DDR_TESTCORE   => FALSE,
 
 		fpga           => VIRTEX5,
@@ -278,7 +267,7 @@ begin
 		mii_txc        => gtx_clk,
 		mii_txen       => mii_txen,
 		mii_txd        => mii_txd);
-	
+
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ddrphy_cke(i) <= ddrphy_cke(0);
 		ddrphy_cs(i)  <= ddrphy_cs(0);
@@ -320,7 +309,7 @@ begin
 		end if;
 	end process;
 
-	ddrphy_e : entity hdl4fpga.ddrphy
+	ddrphy_e : entity hdl4fpga.xc5v_ddrphy
 	generic map (
 		LOOPBACK    => FALSE,
 		BANK_SIZE   => BANK_SIZE,
@@ -451,7 +440,7 @@ begin
 				o   => dqsi,
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
-			
+
 			dqsidelay_i : idelay
 			port map (
 				rst => '0',
@@ -468,7 +457,7 @@ begin
 		end generate;
 
 	end block;
-	
+
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';
@@ -507,12 +496,12 @@ begin
 		end process;
 	end block;
 
-	gpio_led <= 
+	gpio_led <=
 		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else
 		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
 
 	bus_error <= (others => 'Z');
-	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= 
+	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <=
 		word2byte(word => tp_bit, addr => tp_sel);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
