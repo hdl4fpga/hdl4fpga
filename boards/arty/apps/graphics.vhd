@@ -113,7 +113,17 @@ architecture graphics of arty is
 	signal ddrsys_rst : std_logic;
 	signal ddrsys_clks       : std_logic_vector(0 to 5-1);
 
-	signal ctlrphy_rst     : std_logic;
+	signal ctlrphy_cmd_rdy : std_logic;
+	signal ctlrphy_cmd_req : std_logic;
+	signal ctlrphy_act : std_logic;
+	signal ctlrphy_wlreq : std_logic;
+	signal ctlrphy_wlrdy : std_logic;
+	signal ctlrphy_rlreq : std_logic;
+	signal ctlrphy_rlrdy : std_logic;
+	signal ctlrphy_rlcal : std_logic;
+	signal ctlrphy_rlseq : std_logic;
+
+	signal ctlrphy_rst     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -399,7 +409,7 @@ begin
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
+		signal miitx_data : std_logic_vector(so_data'range);
 
 	begin
 
@@ -550,7 +560,7 @@ begin
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => ddr_param.cas,
-		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
 		ctlrphy_ras  => ctlrphy_ras(0),

@@ -78,7 +78,7 @@ begin
 		clk  => clk,
 		load => load,
 		ena  => ena_addr,
-		updn => '0',
+		updn => std_logic'('0'),
 		d    => iaddr,
 		q    => addr_q,
 		eoc  => addr_eoc);
@@ -101,7 +101,7 @@ begin
 	port map (
 		clk     => clk,
 		load    => load,
-		updn    => '1',
+		updn    => std_logic'('1'),
 		ena     => ena_cntr,
 		d       => ilen,
 		q       => tlen,

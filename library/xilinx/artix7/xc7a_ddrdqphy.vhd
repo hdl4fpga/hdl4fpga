@@ -221,7 +221,7 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '1',
+				edge    => std_logic'('1'),
 				clk     => sys_clks(iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
@@ -243,11 +243,11 @@ begin
 				cntvaluein  => delay(1 to delay'right),
 				idatain     => ddqi,
 				dataout     => dqi(i),
-				cinvctrl    => '0',
-				ce          => '0',
-				inc         => '0',
-				ldpipeen    => '0',
-				datain      => '0');
+				cinvctrl    => std_logic'('0'),
+				ce          => std_logic'('0'),
+				inc         => std_logic'('0'),
+				ldpipeen    => std_logic'('0'),
+				datain      => std_logic'('0'));
 
 		end block;
 
@@ -398,7 +398,7 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '0',
+				edge    => std_logic'('0'),
 				clk     => sys_clks(iodclk),
 				req     => adjdqs_req,
 				rdy     => adjdqs_rdy,
