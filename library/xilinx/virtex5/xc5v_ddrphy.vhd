@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrphy is
+entity xc5v_ddrphy is
 	generic (
 		iddron : boolean := false;
 		registered_dout : boolean := true;
@@ -44,8 +44,12 @@ entity ddrphy is
 	port (
 		sys_clks : in std_logic_vector(0 to 2-1);
 		phy_rst  : in std_logic;
+		phy_wlrdy : in  std_logic := '-';
+		phy_wlreq : out std_logic;
+		phy_rlcal : in  std_logic := '0';
+		phy_rlseq : out std_logic;
 
-		
+
 		sys_rst  : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
 		sys_cs   : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
 		sys_cke  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
@@ -103,7 +107,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture virtex of ddrphy is
+architecture xilinx of xc5v_ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -114,11 +118,11 @@ architecture virtex of ddrphy is
 	type bline_vector is array (natural range <>) of bline_word;
 
 	function to_bytevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(byte'range));
@@ -128,11 +132,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function to_blinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return bline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -142,11 +146,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function to_dlinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return dline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -198,11 +202,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function shuffle_stdlogicvector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable dat : std_logic_vector(0 to arg'length-1);
 		variable val : std_logic_vector(dat'range);
-	begin	
+	begin
 		dat := arg;
 		for i in word_size/byte_size-1 downto 0 loop
 			for j in data_gear-1 downto 0 loop
@@ -213,11 +217,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function shuffle_dlinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return dline_vector is
 		variable dat : byte_vector(0 to arg'length/byte'length-1);
 		variable val : byte_vector(dat'range);
-	begin	
+	begin
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
 			for j in data_gear-1 downto 0 loop
@@ -228,11 +232,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function unshuffle(
-		constant arg : dline_vector) 
+		constant arg : dline_vector)
 		return byte_vector is
 		variable val : byte_vector(sys_dqi'length/byte_size-1 downto 0);
 		variable aux : byte_vector(0 to data_gear-1);
-	begin	
+	begin
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
 			for j in aux'range loop
@@ -276,14 +280,14 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	ddrbaphy_i : entity hdl4fpga.ddrbaphy
+	ddrbaphy_i : entity hdl4fpga.xc3s_ddrbaphy
 	generic map (
 		GEAR      => CMMD_GEAR,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
 		sys_clks => sys_clks,
-          
+
 		phy_rst => phy_rst,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
@@ -294,7 +298,7 @@ begin
 		sys_cas => sys_cas,
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
-        
+
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
 		ddr_cs  => ddr_cs,

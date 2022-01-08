@@ -31,6 +31,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity eth_tx is
+	generic (
+		debug : boolean := false);
 	port (
 		mii_clk     : in  std_logic;
 
@@ -95,26 +97,26 @@ begin
 				end if;
 			end if;
 			cntr1  <= cntr;
-			minpkt <= cntr(0);
+			minpkt <= cntr(0) or setif(debug);
 		end if;
 	end process;
 
 	hwllc_irdy <= mii_trdy and pre_end;
 
-	pl_trdy  <= 
+	pl_trdy  <=
 		metatx_irdy when metatx_end='0' else
 		'0'         when hwllc_end='0'  else
 		mii_trdy    when pl_end='0'     else
 		fcs_end;
 
-	fcs_irdy <= 
-		hwllc_irdy           when hwllc_end='0' else 
+	fcs_irdy <=
+		hwllc_irdy           when hwllc_end='0' else
 		pl_irdy and mii_trdy when pl_end='0'    else
 		mii_trdy;
 
-	fcs_data <= 
+	fcs_data <=
 	   hwllc_data when hwllc_end='0' else
-	   pl_data    when pl_end='0'    else 
+	   pl_data    when pl_end='0'    else
 	   (fcs_data'range => '0');
 
 	process (mii_clk)
@@ -125,7 +127,7 @@ begin
 				cntr := (others => '0');
 			elsif pl_end='1' and minpkt='1' and cntr(0)='0' then
 				if fcs_irdy='1' then
-					cntr := cntr + 1; 
+					cntr := cntr + 1;
 				end if;
 			end if;
 			fcs_end <= cntr(0);

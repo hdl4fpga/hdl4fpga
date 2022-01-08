@@ -36,14 +36,14 @@ use unisim.vcomponents.all;
 
 architecture graphics of nuhs3adsp is
 
-	type apps is (
+	type profiles is (
 		mode480p_ddr166mhz,
 		mode600p_ddr166mhz,
 		mode900p_ddr166mhz,
 		mode1080p_ddr166mhz,
 		mode1080p_ddr200mhz);
 
-	constant app         : apps := mode1080p_ddr166mhz;
+	constant profile     : profiles := mode1080p_ddr166mhz;
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -167,21 +167,21 @@ architecture graphics of nuhs3adsp is
 		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
 		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
 
-	type app_param is record
+	type profile_param is record
 		ddr_speed  : ddr_speeds;
 		video_mode : video_modes;
 		profile    : natural;
 	end record;
 
-	type apparam_vector is array (apps) of app_param;
-	constant app_tab : apparam_vector := (
+	type profileparam_vector is array (profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
 		mode480p_ddr166mhz  => (ddr_166MHz, mode480p,  1),
 		mode600p_ddr166mhz  => (ddr_166MHz, mode600p,  1),
 		mode900p_ddr166mhz  => (ddr_166MHz, mode900p,  1),
 		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p, 1),
 		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p, 1));
 
-	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
+	constant ddr_speed  : ddr_speeds  := profile_tab(profile).ddr_speed;
 
 	function setif (
 		constant expr  : boolean;
@@ -194,7 +194,7 @@ architecture graphics of nuhs3adsp is
 		end if;
 		return false;
 	end;
-	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
+	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(profile).video_mode);
 
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 
@@ -382,7 +382,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		profile      => app_tab(app).profile,
+		profile      => profile_tab(profile).profile,
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
 		mark         => mark,

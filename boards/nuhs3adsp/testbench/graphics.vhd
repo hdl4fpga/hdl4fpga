@@ -197,10 +197,24 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 200 us, '0' after 229 us, '1' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	ping_req <= '0', '1' after 236 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	process
+	begin
+		wait for 206 us;
+		loop
+		if ping_req='1' then
+			ping_req <= '0' after 5.8 us;
+		else
+			ping_req <= '1' after 250 ns;
+		end if;
+		wait on ping_req;
+		end loop;
+	end process;
 	htb_e : entity hdl4fpga.eth_tb
+	generic map (
+		debug =>false)
 	port map (
+		mii_data4 => x"01007e_1702_0004ff_1603_8000_0000",
 		mii_frm1 => '0',
 		mii_frm2 => ping_req,
 		mii_frm3 => '0',

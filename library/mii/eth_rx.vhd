@@ -83,7 +83,7 @@ begin
 
 		des_frm    => dll_frm,
 		des_irdy   => dll_irdy,
-		des_trdy   => dll_trdy,
+		des_trdy   => open,
 		des_data   => dll_data);
 
 	dllrx_e : entity hdl4fpga.dll_rx

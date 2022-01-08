@@ -36,7 +36,7 @@ entity ddrdqphy is
 		byte_size  : natural);
 	port (
 		sys_clks   : in  std_logic_vector(0 to 2-1);
-		sys_calreq : in std_logic := '0';
+		sys_wrseq  : in  std_logic := '0';
 		sys_dmt    : in  std_logic_vector(0 to gear-1) := (others => '-');
 		sys_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(0 to gear-1) := (others => '-');
@@ -84,10 +84,16 @@ begin
 			process (clks(j))
 			begin
 				if rising_edge(clks(j)) then
-					rdqo(j) <= sys_dqi(j*byte_size+i);
+					if j mod 2=0 then
+						rdqo(j) <= sys_dqi(j*byte_size+i) or      sys_wrseq;
+					else
+						rdqo(j) <= sys_dqi(j*byte_size+i) and not sys_wrseq;
+					end if;
 				end if;
 			end process;
-			dqo(j) <= rdqo(j) when registered_dout else sys_dqi(j*byte_size+i);
+			dqo(j) <= rdqo(j) when registered_dout else
+				sys_dqi(j*byte_size+i) or      sys_calreq when j mod 2=0 else
+				sys_dqi(j*byte_size+i) and not sys_calreq when j mod 2=1:
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
@@ -121,13 +127,13 @@ begin
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
-				
+
 					if t='1' and not loopback then
 						rdmi(i) <= s;
 					else
 						rdmi(i) <= d;
 					end if;
-					
+
 					t <= sys_dmt(i);
 					d <= sys_dmi(i);
 					s <= sys_sti(i);
@@ -135,7 +141,7 @@ begin
 			end process;
 
 			dmi(i) <=
-				rdmi(i)    when registered_dout else 
+				rdmi(i)    when registered_dout else
 				sys_sti(i) when sys_dmt(i)='1' and not loopback else
 				sys_dmi(i);
 
@@ -162,7 +168,7 @@ begin
 		df  => sys_sti(1),
 		q   => ddr_sto);
 
-	dqso_b : block 
+	dqso_b : block
 		signal clk_n : std_logic;
 		signal dt : std_logic;
 		signal dqso_r : std_logic;
