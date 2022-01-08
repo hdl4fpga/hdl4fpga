@@ -34,7 +34,7 @@ use unisim.vcomponents.all;
 
 architecture graphics of arty is
 
-	constant sys_freq : real := 100.0e6;
+	constant sys_per  : real := 10.0;
 
 	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
@@ -65,7 +65,6 @@ architecture graphics of arty is
 		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 12, dcm_div => 8));
 
 	constant video_mode    : video_modes := mode600p;
-	constant videodot_freq : natural := (video_tab(video_mode).dcm_mul*natural(sys_freq))/(video_tab(video_mode).dcm_div);
 
 	signal sys_clk        : std_logic;
 	signal eth_txclk_bufg : std_logic;

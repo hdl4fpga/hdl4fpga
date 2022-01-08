@@ -260,12 +260,6 @@ begin
 			so_end   => acktx_end,
 			so_data  => ack_data);
 
-		tg_e : entity hdl4fpga.et
-		port map (
-			clk => sio_clk,
-			d   => so_irdy,
-			q   => tp(1));
-
 		ack_irdy   <= acktx_trdy when meta_irdy='0' else '0';
 		acktx_irdy <= ack_trdy   when meta_irdy='0' else meta_irdy;
 		acktx_data <= ack_data   when meta_irdy='0' else meta_data;

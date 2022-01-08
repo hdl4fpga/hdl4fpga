@@ -437,34 +437,22 @@ begin
 		end process;
 
 		rotras_i : entity hdl4fpga.barrel
-		generic map (
-			d => "RIGHT",
-			n => sys_ras'length,
-			m => rotba'length)
 		port map (
-			rot  => std_logic_vector(rotba),
-			din  => sys_ras,
-			dout => ba_ras);
+			shf => std_logic_vector(rotba),
+			di  => sys_ras,
+			do => ba_ras);
 
 		rotcas_i : entity hdl4fpga.barrel
-		generic map (
-			d => "RIGHT",
-			n => sys_cas'length,
-			m => rotba'length)
 		port map (
-			rot  => std_logic_vector(rotba),
-			din  => sys_cas,
-			dout => ba_cas);
+			shf => std_logic_vector(rotba),
+			di => sys_cas,
+			do => ba_cas);
 
 		rotwe_i : entity hdl4fpga.barrel
-		generic map (
-			d => "RIGHT",
-			n => sys_we'length,
-			m => rotba'length)
 		port map (
-			rot  => std_logic_vector(rotba),
-			din  => sys_we,
-			dout => ba_we);
+			shf => std_logic_vector(rotba),
+			di   => sys_we,
+			do  => ba_we);
 	end generate;
 
 	dircmmd_g : if CMMD_GEAR=1 generate
@@ -473,7 +461,7 @@ begin
 		ba_we  <= sys_we;
 	end generate;
 
-	ddrbaphy_i : entity hdl4fpga.ddrbaphy
+	ddrbaphy_i : entity hdl4fpga.xc7a_ddrbaphy
 	generic map (
 		DATA_EDGE => "SAME_EDGE",
 		GEAR      => CMMD_GEAR,
@@ -538,7 +526,7 @@ begin
 	end process;
 
 	byte_g : for i in ddr_dqsi'range generate
-		ddrdqphy_i : entity hdl4fpga.ddrdqphy
+		ddrdqphy_i : entity hdl4fpga.xc7a_ddrdqphy
 		generic map (
 			TCP        => TCP,
 			TAP_DLY    => TAP_DELAY,
