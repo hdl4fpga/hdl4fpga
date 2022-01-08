@@ -18,6 +18,11 @@ IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
+HDL4FPGA__xc7a_ddrphy__virtex7 = $(LIB_HDL4FPGA)/xc7a_ddrphy/virtex7.dat
+HDL4FPGA__xc7a_ddrphy = $(LIB_HDL4FPGA)/xc7a_ddrphy/_primary.dat
+HDL4FPGA__xc7a_ddrdqphy = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/_primary.dat
+HDL4FPGA__xc7a_ddrbaphy__virtex = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/virtex.dat
+HDL4FPGA__xc7a_ddrbaphy = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/_primary.dat
 HDL4FPGA__xc3s_ddrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_ddrphy/xnlx.dat
 HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
 HDL4FPGA__xc3s_ddrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/xilinx.dat
@@ -118,6 +123,8 @@ HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__iofifo__mix = $(LIB_HDL4FPGA)/iofifo/mix.dat
 HDL4FPGA__iofifo = $(LIB_HDL4FPGA)/iofifo/_primary.dat
+HDL4FPGA__imdr__beh = $(LIB_HDL4FPGA)/imdr/beh.dat
+HDL4FPGA__imdr = $(LIB_HDL4FPGA)/imdr/_primary.dat
 HDL4FPGA__icmprqst_rx__def = $(LIB_HDL4FPGA)/icmprqst_rx/def.dat
 HDL4FPGA__icmprqst_rx = $(LIB_HDL4FPGA)/icmprqst_rx/_primary.dat
 HDL4FPGA__icmprply_tx__def = $(LIB_HDL4FPGA)/icmprply_tx/def.dat
@@ -239,6 +246,14 @@ HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
 HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
+HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
+HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
+HDL4FPGA__adjpha__beh = $(LIB_HDL4FPGA)/adjpha/beh.dat
+HDL4FPGA__adjpha = $(LIB_HDL4FPGA)/adjpha/_primary.dat
+HDL4FPGA__adjdqs__beh = $(LIB_HDL4FPGA)/adjdqs/beh.dat
+HDL4FPGA__adjdqs = $(LIB_HDL4FPGA)/adjdqs/_primary.dat
+HDL4FPGA__adjdqi__beh = $(LIB_HDL4FPGA)/adjdqi/beh.dat
+HDL4FPGA__adjdqi = $(LIB_HDL4FPGA)/adjdqi/_primary.dat
 HDL4FPGA__adder__def = $(LIB_HDL4FPGA)/adder/def.dat
 HDL4FPGA__adder = $(LIB_HDL4FPGA)/adder/_primary.dat
 VCOM = vcom
@@ -246,7 +261,12 @@ VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
+whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
+    $(HDL4FPGA__xc7a_ddrphy) \
+    $(HDL4FPGA__xc7a_ddrdqphy) \
+    $(HDL4FPGA__xc7a_ddrbaphy__virtex) \
+    $(HDL4FPGA__xc7a_ddrbaphy) \
+    $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__xc3s_ddrphy) \
     $(HDL4FPGA__xc3s_ddrdqphy__xilinx) \
     $(HDL4FPGA__xc3s_ddrdqphy) \
@@ -346,6 +366,8 @@ whole_library :     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__ipoepkg) \
     $(HDL4FPGA__iofifo__mix) \
     $(HDL4FPGA__iofifo) \
+    $(HDL4FPGA__imdr__beh) \
+    $(HDL4FPGA__imdr) \
     $(HDL4FPGA__icmprqst_rx__def) \
     $(HDL4FPGA__icmprqst_rx) \
     $(HDL4FPGA__icmprply_tx__def) \
@@ -467,6 +489,14 @@ whole_library :     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__align) \
     $(HDL4FPGA__aff__xilinx) \
     $(HDL4FPGA__aff) \
+    $(HDL4FPGA__adjsto__def) \
+    $(HDL4FPGA__adjsto) \
+    $(HDL4FPGA__adjpha__beh) \
+    $(HDL4FPGA__adjpha) \
+    $(HDL4FPGA__adjdqs__beh) \
+    $(HDL4FPGA__adjdqs) \
+    $(HDL4FPGA__adjdqi__beh) \
+    $(HDL4FPGA__adjdqi) \
     $(HDL4FPGA__adder__def) \
     $(HDL4FPGA__adder)
 
@@ -476,6 +506,42 @@ $(HDL4FPGA__adder__def) : ../common/adder.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/adder.vhd
+
+$(HDL4FPGA__adjdqi) \
+$(HDL4FPGA__adjdqi__beh) : ../xilinx/artix7/adjdqi.vhd \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/adjdqi.vhd
+
+$(HDL4FPGA__adjdqs) \
+$(HDL4FPGA__adjdqs__beh) : ../xilinx/artix7/adjdqs.vhd \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/adjdqs.vhd
+
+$(HDL4FPGA__adjpha) \
+$(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjpha.vhd
+
+$(HDL4FPGA__adjsto) \
+$(HDL4FPGA__adjsto__def) : ../xilinx/artix7/adjsto.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/adjsto.vhd
 
 $(HDL4FPGA__align) \
 $(HDL4FPGA__align__arch) : ../common/align.vhd \
@@ -1087,6 +1153,14 @@ $(HDL4FPGA__icmprqst_rx__def) : ../mii/icmprqst_rx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/icmprqst_rx.vhd
 
+$(HDL4FPGA__imdr) \
+$(HDL4FPGA__imdr__beh) : ../xilinx/imdr.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/imdr.vhd
+
 $(HDL4FPGA__iofifo) \
 $(HDL4FPGA__iofifo__mix) : ../ddr/ddr_iofifo.vhd \
 		$(HDL4FPGA__dbram) \
@@ -1168,7 +1242,6 @@ $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__txn_buffer) \
-		$(HDL4FPGA__et) \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__eth_tx) \
@@ -1377,7 +1450,6 @@ $(HDL4FPGA__sio_ff__def) : ../sio/sio_ff.vhd \
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__et) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__sio_rgtr) \
@@ -1651,4 +1723,33 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/xc3s_ddrphy.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrphy.vhd
+
+$(HDL4FPGA__xc7a_ddrbaphy) \
+$(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__omdr) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrbaphy.vhd
+
+$(HDL4FPGA__xc7a_ddrdqphy) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \
+		$(UNISIM__vcomponents) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrdqphy.vhd
+
+$(HDL4FPGA__xc7a_ddrphy) \
+$(HDL4FPGA__xc7a_ddrphy__virtex7) : ../xilinx/artix7/xc7a_ddrphy.vhd \
+		$(HDL4FPGA__xc7a_ddrdqphy) \
+		$(HDL4FPGA__xc7a_ddrbaphy) \
+		$(HDL4FPGA__barrel) \
+		$(HDL4FPGA__ddro) \
+		$(UNISIM__vcomponents) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrphy.vhd
 

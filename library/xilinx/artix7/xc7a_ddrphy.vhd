@@ -47,7 +47,7 @@ entity xc7a_ddrphy is
 		tp1          : out std_logic_vector(6-1 downto 0);
 
 		sys_clks     : in  std_logic_vector(0 to 5-1);
-		phy_rsts     : in  std_logic_vector(0 to 3-1);
+		phy_rsts     : in  std_logic_vector(0 to 3-1) := (others => '1');
 
 		phy_ini      : out std_logic;
 		phy_rw       : out std_logic;

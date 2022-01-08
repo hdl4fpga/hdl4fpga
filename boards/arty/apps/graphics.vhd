@@ -113,6 +113,34 @@ architecture graphics of arty is
 	signal ddrsys_rst : std_logic;
 	signal ddrsys_clks       : std_logic_vector(0 to 5-1);
 
+	signal ctlrphy_rst     : std_logic;
+	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_b       : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
+	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+
 	type video_params is record
 		pll  : pll_params;
 		mode : videotiming_ids;
@@ -156,11 +184,13 @@ architecture graphics of arty is
 
 	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	signal video_clk      : std_logic;
+	signal video_shf_clk  : std_logic;
 	signal video_lkd     : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
     signal video_blank     : std_logic;
     signal video_pixel     : std_logic_vector(0 to 32-1);
+	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 
 	signal miirx_frm      : std_ulogic;
@@ -185,11 +215,7 @@ architecture graphics of arty is
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
 	signal tp  : std_logic_vector(1 to 32);
-	signal tp1  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
-
-	signal vbtn2 : std_logic_vector(2-1 downto 0);
-	signal vbtn3 : std_logic_vector(2-1 downto 0);
 
 	-----------------
 	-- Select link --
@@ -202,6 +228,9 @@ architecture graphics of arty is
 
 	constant mem_size  : natural := 8*(1024*8);
 
+	signal tp_delay       : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
+	signal tp1  : std_logic_vector(1 to 32);
 begin
 
 	sys_rst <= btn(0);
@@ -323,6 +352,7 @@ begin
 				clk0     => ddr_clk0,
 				clk90    => ddr_clk90);
 
+			ctlrphy_dqsi <= (others => ddr_clk90div);
 			ddrsys_rst <= not ddr_lkd;
 		end block;
 
@@ -543,7 +573,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
-		tcp          => integer(uclk_period*1000.0*real(ddr_div)/ddr_mul),
+		tcp          => ddr_tcp,
 		tap_delay    => 78,
 		bank_size    => bank_size,
         addr_size    => addr_size,
@@ -555,45 +585,42 @@ begin
 
 		tp_sel    => sw(3),
 		tp_delay  => tp_delay,
-		tp1       => tp1,
+		tp1       => tp1(1 to 6),
 		tp_bit    => tp_bit,
 
-		sys_clks => sys_clks,
-		phy_rsts => phy_rsts,
-		phy_ini      => ddrphy_ini,
-		phy_rw       => ddrphy_rw,
-		phy_cmd_rdy  => ddrphy_cmd_rdy,
-		phy_cmd_req  => ddrphy_cmd_req,
-		sys_act      => ddrphy_act,
+		sys_clks => ddrsys_clks,
+		phy_cmd_rdy  => ctlrphy_cmd_rdy,
+		phy_cmd_req  => ctlrphy_cmd_req,
+		sys_act      => ctlrphy_act,
 
-		sys_wlreq    => ddrphy_wlreq,
-		sys_wlrdy    => ddrphy_wlrdy,
+		sys_wlreq    => ctlrphy_wlreq,
+		sys_wlrdy    => ctlrphy_wlrdy,
 
-		sys_rlreq    => ddrphy_rlreq,
-		sys_rlrdy    => ddrphy_rlrdy,
-		sys_rlcal    => ddrphy_rlcal,
-		sys_rlseq    => ddrphy_rlseq,
+		sys_rlreq    => ctlrphy_rlreq,
+		sys_rlrdy    => ctlrphy_rlrdy,
+		sys_rlcal    => ctlrphy_rlcal,
+		sys_rlseq    => ctlrphy_rlseq,
 
-		sys_cke      => ddrphy_cke,
-		sys_rst      => ddrphy_rst,
-		sys_cs       => ddrphy_cs,
-		sys_ras      => ddrphy_ras,
-		sys_cas      => ddrphy_cas,
-		sys_we       => ddrphy_we,
-		sys_b        => ddrphy_b,
-		sys_a        => ddrphy_a,
+		sys_cke      => ctlrphy_cke,
+		sys_rst      => ctlrphy_rst,
+		sys_cs       => ctlrphy_cs,
+		sys_ras      => ctlrphy_ras,
+		sys_cas      => ctlrphy_cas,
+		sys_we       => ctlrphy_we,
+		sys_b        => ctlrphy_b,
+		sys_a        => ctlrphy_a,
 
-		sys_dqst     => ddrphy_dqst,
-		sys_dqso     => ddrphy_dqso,
-		sys_dmi      => ddrphy_dmo,
-		sys_dmt      => ddrphy_dmt,
-		sys_dmo      => ddrphy_dmi,
-		sys_dqo      => ddrphy_dqo,
-		sys_dqt      => ddrphy_dqt,
-		sys_dqi      => ddrphy_dqi,
-		sys_odt      => ddrphy_odt,
-		sys_sti      => ddrphy_sto,
-		sys_sto      => ddrphy_sti,
+		sys_dqst     => ctlrphy_dqst,
+		sys_dqso     => ctlrphy_dqso,
+		sys_dmi      => ctlrphy_dmo,
+		sys_dmt      => ctlrphy_dmt,
+		sys_dmo      => ctlrphy_dmi,
+		sys_dqo      => ctlrphy_dqo,
+		sys_dqt      => ctlrphy_dqt,
+		sys_dqi      => ctlrphy_dqi,
+		sys_odt      => ctlrphy_odt,
+		sys_sti      => ctlrphy_sto,
+		sys_sto      => ctlrphy_sti,
 
 		ddr_rst      => ddr3_reset,
 		ddr_clk      => ddr3_clk,
@@ -612,30 +639,84 @@ begin
 		ddr_dqst     => ddr3_dqst,
 		ddr_dqsi     => ddr3_dqsi,
 		ddr_dqso     => ddr3_dqso);
+
+	ddriob_b : block
+	begin
+
+		ddr_clks_g : for i in ddr3_clk'range generate
+			ddr_ck_obufds : obufds
+			generic map (
+				iostandard => "DIFF_SSTL135")
+			port map (
+				i  => ddr3_clk(i),
+				o  => ddr3_clk_p,
+				ob => ddr3_clk_n);
+		end generate;
+
+		ddr_dqs_g : for i in ddr3_dqs_p'range generate
+			dqsiobuf_i : iobufds
+			generic map (
+				iostandard => "DIFF_SSTL135")
+			port map (
+				t   => ddr3_dqst(i),
+				i   => ddr3_dqso(i),
+				o   => ddr3_dqsi(i),
+				io  => ddr3_dqs_p(i),
+				iob => ddr3_dqs_n(i));
+
+		end generate;
+
+		ddr_d_g : for i in ddr3_dq'range generate
+			ddr3_dq(i) <= ddr3_dqo(i) when ddr3_dqt(i)='0' else 'Z';
+		end generate;
+
+	end block;
+
+	process (tp_delay)
+		variable aux1 : std_logic_vector(3 downto 0);
+		variable aux0 : std_logic_vector(3 downto 0);
+		variable sel  : std_logic_vector(2-1 downto 0);
+
+	begin
+		rgbled <= (others => '0');
+		aux1 := "000" & tp_delay(5-1 downto 4);
+		aux0 := tp_delay(3 downto 0);
+		sel(0) := btn(1);
+		for i in 4-1 downto 0 loop
+			if btn(1)='1' then
+				rgbled(3*i+2) <= aux1(i);
+			else
+				rgbled(3*i+2) <= aux0(i);
+			end if;
+		end loop;
+	end process;
+
+	tp_g : for i in 2-1 downto 0 generate
+		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);
+		led(i+2) <= tp1(i+2) when btn(3)='1' else tp_bit(i*5+1) when btn(1)='1' else tp_bit(i*5+0);
+	end generate;
+
 	ddr3_dm <= (others => '0');
 
-	ddrphy_dqsi <= (others => ddrs_clk90div);
 
 	-- VGA --
 	---------
 
 	hdmi_b : block
-		signal q : std_logic_vecto(0 to 4-1);
-		signal p : std_logic_vecto(q'range);
-		signal n : std_logic_vecto(p'range);
+		signal q : std_logic_vector(0 to 4-1);
+		signal p : std_logic_vector(q'range);
+		signal n : std_logic_vector(p'range);
 	begin
 		oddr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 4,
 			GEAR => 2)
 		port map (
-			clk(0) => video_shft_clkin,
+			clk(0) => video_shf_clk,
 			clk(1) => '-',
 			d      => dvid_crgb,
 			q      => q);
 
-		p <= jb(1) & jb(3) & jb(7) & jb(9);
-		n <= jb(2) & jb(4) & jb(8) & jb(10);
 		hdmi_g : for i in q'range generate
 			obufds_i : obufds
 			generic map (
@@ -645,6 +726,8 @@ begin
 				o  => p(i),
 				ob => n(i));
 		end generate;
+		(jb(1), jb(3), jb(7), jb(9)) <= p;
+		(jb(2), jb(4), jb(8), jb(10)) <= n;
 
 	end block;
 

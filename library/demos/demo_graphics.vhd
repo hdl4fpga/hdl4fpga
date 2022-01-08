@@ -80,6 +80,7 @@ entity demo_graphics is
 		ctlr_rst      : in  std_logic;
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
+		ctlr_inirdy   : buffer std_logic;
 
 		ctlr_wlrdy    : in  std_logic := '-';
 		ctlr_wlreq    : out std_logic;
@@ -149,7 +150,6 @@ architecture mix of demo_graphics is
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
-	signal ctlr_inirdy    : std_logic;
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);

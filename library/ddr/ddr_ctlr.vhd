@@ -407,9 +407,9 @@ begin
 
 	rotate_i : entity hdl4fpga.barrel
 	port map (
-		disp => rot_val,
-		di   => ctlr_di,
-		do   => rot_di);
+		shf => rot_val,
+		di  => ctlr_di,
+		do  => rot_di);
 
 	process (ctlr_clks(ctlr_clks'high))
 	begin
