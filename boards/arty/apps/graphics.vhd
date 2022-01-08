@@ -27,14 +27,76 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_db.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.ipoepkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of arty is
 
+	type profiles is (
+		mode1080p_ddr333MHz,
+		mode1080p_ddr350MHz,
+		mode1080p_ddr400MHz,
+		mode1080p_ddr500MHz,
+		mode1080p_ddr525MHz,
+		mode1080p_ddr550MHz);
+
+	constant profile     : profiles := mode1080p_ddr550MHz;
+
+	signal sys_rst : std_logic;
+
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+
+
 	constant sys_per  : real := 10.0;
+
+	--------------------------------------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
+	-- Multiply by --  10     --   7     --   4     --  20     --  21      22     --
+	-- Divide by   --   3     --   2     --   1     --   4     --   4       4     --
+	--------------------------------------------------------------------------------
+
+	constant DDR_MUL      : real    := 21.0; --18;
+	constant DDR_DIV      : natural := 4;  --4;
+
+	type pll_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type ddr_params is record
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
+	end record;
+
+	type ddr_speeds is (
+		ddr333MHz,
+		ddr350MHz,
+		ddr400MHz,
+		ddr500MHz,
+		ddr525MHz,
+		ddr550MHz);
+
+	type ddram_vector is array (ddr_speeds) of ddr_params;
+	constant ddr_tab : ddram_vector := (
+		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "010"),
+		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cas => "110"),
+		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"),
+		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cas => "011"),
+		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cas => "011"),
+		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cas => "011"));
 
 	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
@@ -44,36 +106,62 @@ architecture graphics of arty is
 
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
+	constant coln_size    : natural := 7;
 	constant word_size    : natural := ddr3_dq'length;
 	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
-	type video_modes is (
-		mode480p,
-		mode600p,
-		mode1080p);
+	signal ddrsys_rst : std_logic;
+	signal ddrsys_clks       : std_logic_vector(0 to 5-1);
 
 	type video_params is record
-		timing_id : videotiming_ids;
-		dcm_mul   : natural;
-		dcm_div   : natural;
+		pll  : pll_params;
+		mode : videotiming_ids;
 	end record;
+
+	type video_modes is (
+		modedebug,
+		mode1080p);
 
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,    dcm_mul =>  6, dcm_div => 24),
-		mode600p  => (timing_id => pclk40_00m800x600at60,    dcm_mul =>  6, dcm_div => 15),
-		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 12, dcm_div => 8));
+		modedebug => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
+		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
-	constant video_mode    : video_modes := mode600p;
+	constant video_mode    : video_modes := mode1080p;
+
+	type profile_param is record
+		ddr_speed  : ddr_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		mode1080p_ddr333MHz => (ddr333MHz, mode1080p, 1),
+		mode1080p_ddr350MHz => (ddr350MHz, mode1080p, 1),
+		mode1080p_ddr400MHz => (ddr400MHz, mode1080p, 1),
+		mode1080p_ddr500MHz => (ddr500MHz, mode1080p, 1),
+		mode1080p_ddr525MHz => (ddr525MHz, mode1080p, 1),
+		mode1080p_ddr550MHz => (ddr550MHz, mode1080p, 1));
+
+	constant ddr_speed : ddr_speeds  := profile_tab(profile).ddr_speed;
+	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
+	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	signal sys_clk        : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
+	alias sio_clk  : std_logic is eth_rxclk_bufg;
+	alias dmacfg_clk : std_logic is eth_rxclk_bufg;
+
+	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	signal video_clk      : std_logic;
-	signal video_lckd     : std_logic;
+	signal video_lkd     : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
-	signal video_pixel    : std_logic_vector(3-1 downto 0);
+    signal video_blank     : std_logic;
+    signal video_pixel     : std_logic_vector(0 to 32-1);
+
 
 	signal miirx_frm      : std_ulogic;
 	signal miirx_irdy     : std_logic;
@@ -116,6 +204,8 @@ architecture graphics of arty is
 
 begin
 
+	sys_rst <= btn(0);
+
 	clkin_ibufg : ibufg
 	port map (
 		I => gclk100,
@@ -141,9 +231,23 @@ begin
 		O => eth_txclk_bufg);
 
 	dcm_b : block
+		constant clk0div   : natural := 0;
+		constant clk90div  : natural := 1;
+		constant iodclk    : natural := 2;
+		constant clk0      : natural := 3;
+		constant clk90     : natural := 4;
+		constant clk270div : natural := 5;
+
+		signal ddr_clk0     : std_logic;
+		signal ddr_clk90    : std_logic;
+		signal ddr_clk0div  : std_logic;
+		signal ddr_clk90div : std_logic;
 	begin
 
 		ioctrl_b : block
+			signal ioctrl_clk   : std_logic;
+			signal ioctrl_clkfb : std_logic;
+			signal ioctrl_lkd  : std_logic;
 		begin
 			ioctrl_i :  mmcme2_base
 			generic map (
@@ -158,22 +262,28 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				locked   => ioctrl_lckd);
+				locked   => ioctrl_lkd);
 		end block;
 
 		ddr_b : block
+			signal ddr_lkd            : std_logic;
+			signal ddr_clkfb          : std_logic;
+			signal ddr_clk0_mmce2     : std_logic;
+			signal ddr_clk90_mmce2    : std_logic;
+			signal ddr_clk0div_mmce2  : std_logic;
+			signal ddr_clk90div_mmce2 : std_logic;
 		begin
 			ddr_i : mmcme2_base
 			generic map (
-				divclk_divide => ddr_div,
-				clkfbout_mult_f => 2.0*ddr_mul,
-				clkin1_period => sys_per,
-				clkout1_phase => 90.0+180.0,
-				clkout3_phase => 90.0/real((DDR_GEAR/2))+270.0,
-				clkout0_divide_f => real(DDR_GEAR/2),
-				clkout1_divide => DDR_GEAR/2,
-				clkout2_divide => DDR_GEAR,
-				clkout3_divide => DDR_GEAR)
+				divclk_divide    => ddr_param.pll.dcm_div,
+				clkfbout_mult_f  => real(2*ddr_param.pll.dcm_mul),
+				clkin1_period    => sys_per,
+				clkout1_phase    => 90.0+180.0,
+				clkout3_phase    => 90.0/real((data_gear/2))+270.0,
+				clkout0_divide_f => real(data_gear/2),
+				clkout1_divide   => data_gear/2,
+				clkout2_divide   => data_gear,
+				clkout3_divide   => data_gear)
 			port map (
 				pwrdwn   => '0',
 				rst      => sys_rst,
@@ -184,7 +294,7 @@ begin
 				clkout1  => ddr_clk90_mmce2,
 				clkout2  => ddr_clk0div_mmce2,
 				clkout3  => ddr_clk90div_mmce2,
-				locked   => ddr_lckd);
+				locked   => ddr_lkd);
 
 			ddr_clk0_bufg : bufio
 			port map (
@@ -206,13 +316,14 @@ begin
 				i => ddr_clk90div_mmce2,
 				o => ddr_clk90div);
 
-			sys_clks <= (
-				clk0div  => ddrs_clk0div,
-				clk90div => ddrs_clk90div,
+			ddrsys_clks <= (
+				clk0div  => ddr_clk0div,
+				clk90div => ddr_clk90div,
 				iodclk   => sys_clk,
-				clk0     => ddrs_clk0,
-				clk90    => ddrs_clk90);
+				clk0     => ddr_clk0,
+				clk90    => ddr_clk90);
 
+			ddrsys_rst <= not ddr_lkd;
 		end block;
 
 		video_b :  block
@@ -221,8 +332,8 @@ begin
 			video_dcm_i : mmcme2_base
 			generic map (
 				clkin1_period    => 10.0,
-				clkfbout_mult_f  => real(video_tab(video_mode).dcm_mul),
-				clkout0_divide_f => real(video_tab(video_mode).dcm_div),
+				clkfbout_mult_f  => real(video_tab(video_mode).pll.dcm_mul),
+				clkout0_divide_f => real(video_tab(video_mode).pll.dcm_div),
 				bandwidth        => "LOW")
 			port map (
 				pwrdwn   => '0',
@@ -230,7 +341,7 @@ begin
 				clkin1   => sys_clk,
 				clkfbin  => video_clkfb,
 				clkfbout => video_clkfb,
-				locked   => video_lckd,
+				locked   => video_lkd,
 				clkout0  => video_clk);
 		end block;
 
@@ -367,10 +478,10 @@ begin
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => ddr_tcp,
 		fpga         => virtex7,
-		mark         => mark,
+		mark         => M15E,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
-		data_phases  => data_phases,
+		data_phases  => data_gear,
 		data_edges   => data_edges,
 		data_gear    => data_gear,
 		bank_size    => bank_size,
@@ -399,8 +510,8 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
@@ -537,7 +648,7 @@ begin
 
 	end block;
 
-	eth_rstn <= video_lckd;
+	eth_rstn <= video_lkd;
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 

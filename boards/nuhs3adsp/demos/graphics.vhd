@@ -129,7 +129,7 @@ architecture graphics of nuhs3adsp is
 		dcm_div : natural;
 	end record;
 
-	type display_param is record
+	type video_params is record
 		pll  : pll_params;
 		mode : videotiming_ids;
 	end record;
@@ -142,8 +142,8 @@ architecture graphics of nuhs3adsp is
 		mode900p,
 		mode1080p);
 
-	type displayparam_vector is array (video_modes) of display_param;
-	constant video_tab : displayparam_vector := (
+	type videoparams_vector is array (video_modes) of video_params;
+	constant video_tab : videoparams_vector := (
 		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
 		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
 		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
@@ -157,15 +157,15 @@ architecture graphics of nuhs3adsp is
 	end record;
 
 	type ddr_speeds is (
-		ddr_133MHz,
-		ddr_166MHz,
-		ddr_200MHz);
+		ddr133MHz,
+		ddr166MHz,
+		ddr200MHz);
 
 	type ddram_vector is array (ddr_speeds) of ddr_params;
 	constant ddr_tab : ddram_vector := (
-		ddr_133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
-		ddr_166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
-		ddr_200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
+		ddr133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
+		ddr166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
+		ddr200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
 
 	type profile_param is record
 		ddr_speed  : ddr_speeds;
@@ -175,11 +175,11 @@ architecture graphics of nuhs3adsp is
 
 	type profileparam_vector is array (profiles) of profile_param;
 	constant profile_tab : profileparam_vector := (
-		mode480p_ddr166mhz  => (ddr_166MHz, mode480p,  1),
-		mode600p_ddr166mhz  => (ddr_166MHz, mode600p,  1),
-		mode900p_ddr166mhz  => (ddr_166MHz, mode900p,  1),
-		mode1080p_ddr166mhz => (ddr_166MHz, mode1080p, 1),
-		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p, 1));
+		mode480p_ddr166mhz  => (ddr166MHz, mode480p,  1),
+		mode600p_ddr166mhz  => (ddr166MHz, mode600p,  1),
+		mode900p_ddr166mhz  => (ddr166MHz, mode900p,  1),
+		mode1080p_ddr166mhz => (ddr166MHz, mode1080p, 1),
+		mode1080p_ddr200mhz => (ddr200MHz, mode1080p, 1));
 
 	constant ddr_speed  : ddr_speeds  := profile_tab(profile).ddr_speed;
 
