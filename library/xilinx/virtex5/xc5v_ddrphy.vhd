@@ -107,7 +107,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture xilinx of xc5v_ddrphy is
+architecture virtex5 of xc5v_ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 

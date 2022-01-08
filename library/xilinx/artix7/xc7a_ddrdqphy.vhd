@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity ddrdqphy is
+entity xc7a_ddrdqphy is
 	generic (
 		TCP          : natural;
 		TAP_DLY      : natural;
@@ -67,10 +67,10 @@ entity ddrdqphy is
 		ddr_dqst     : out std_logic;
 		ddr_dqso     : out std_logic);
 
-		constant clk0div   : natural := 0; 
+		constant clk0div   : natural := 0;
 		constant clk90div  : natural := 1;
 		constant iodclk    : natural := 2;
-		constant clk0      : natural := 3; 
+		constant clk0      : natural := 3;
 		constant clk90     : natural := 4;
 
 		constant rst0div  : natural := 0;
@@ -82,7 +82,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture virtex of ddrdqphy is
+architecture virtex7 of xc7a_ddrdqphy is
 
 	signal dqi        : std_logic_vector(ddr_dqi'range);
 	signal adjdqs_req : std_logic;
@@ -232,7 +232,7 @@ begin
 
 
 			ddqi <= transport ddr_dqi(i) after line_delay;
-			dqi_i : idelaye2 
+			dqi_i : idelaye2
 			generic map (
 				DELAY_SRC    => "IDATAIN",
 				IDELAY_TYPE  => "VAR_LOAD")
@@ -266,7 +266,7 @@ begin
 
 		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
 
-		clks <= 
+		clks <=
 			(0 => sys_clks(clk90div), 1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => sys_clks(clk90div), 1 => sys_clks(clk90div));
 
@@ -316,7 +316,7 @@ begin
 
 		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
 
-		clks <= 
+		clks <=
 			(0 => sys_clks(clk90div), 1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => sys_clks(clk90div), 1 => sys_clks(clk90div));
 
@@ -345,7 +345,7 @@ begin
 
 	end block;
 
-	dqso_b : block 
+	dqso_b : block
 		signal edge      : std_logic;
 		signal smp       : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto       : std_logic;
@@ -409,7 +409,7 @@ begin
 
 			ddqsi <= transport ddr_dqsi after line_delay;
 			tp_dqsdly <= delay;
-			dqsidelay_i : idelaye2 
+			dqsidelay_i : idelaye2
 			generic map (
 				DELAY_SRC      => "IDATAIN",
 				IDELAY_TYPE    => "VAR_LOAD",
@@ -500,7 +500,7 @@ begin
 				st := sto;
 			end if;
 		end process;
-	
+
 		process (sys_dqso)
 		begin
 			dqso <= (others => '0');

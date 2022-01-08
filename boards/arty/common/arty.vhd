@@ -35,8 +35,8 @@ entity arty is
 		jd          : inout std_logic_vector(1 to 10) := (others => 'Z');
 		vaux_p      : in    std_logic_vector(16-1 downto 0) := (others => '-');
 		vaux_n      : in    std_logic_vector(16-1 downto 0) := (others => '-');
-		v_p         : in    std_logic_vector(0 to 1-1) := (others => '-'); 
-		v_n         : in    std_logic_vector(0 to 1-1) := (others => '-'); 
+		v_p         : in    std_logic_vector(0 to 1-1) := (others => '-');
+		v_n         : in    std_logic_vector(0 to 1-1) := (others => '-');
 		btn         : in    std_logic_vector(4-1 downto 0) := (others => '-');
 		sw          : in    std_logic_vector(4-1 downto 0) := (others => '-');
 		led         : out   std_logic_vector(4-1 downto 0);
@@ -58,7 +58,7 @@ entity arty is
 		eth_rx_dv   : in    std_logic := '-';
 		eth_rxd     : in    std_logic_vector(0 to 4-1) := (others => '-');
 		eth_rxerr   : in    std_logic := '-';
-		
+
 		ddr3_reset  : out   std_logic := '0';
 		ddr3_clk_p  : out   std_logic := '0';
 		ddr3_clk_n  : out   std_logic := '0';
@@ -75,7 +75,6 @@ entity arty is
 		ddr3_dq     : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 		ddr3_odt    : out   std_logic := '1');
 
---! Bus signal doesnt work on Vivado !-
 
 --	attribute loc : string;
 --	attribute loc of btn : signal is "B8,B9,C9,D9";

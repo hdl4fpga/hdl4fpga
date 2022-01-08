@@ -431,6 +431,81 @@ begin
 		ctlrphy_sti  => ctlrphy_sti,
 		tp => open);
 
+	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
+	generic map (
+		tcp          => integer(uclk_period*1000.0*real(ddr_div)/ddr_mul),
+		tap_delay    => 78,
+		bank_size    => bank_size,
+        addr_size    => addr_size,
+		cmmd_gear    => cmmd_gear,
+		data_gear    => data_gear,
+		word_size    => word_size,
+		byte_size    => byte_size)
+	port map (
+
+		tp_sel    => sw(3),
+		tp_delay  => tp_delay,
+		tp1       => tp1,
+		tp_bit    => tp_bit,
+
+		sys_clks => sys_clks,
+		phy_rsts => phy_rsts,
+		phy_ini      => ddrphy_ini,
+		phy_rw       => ddrphy_rw,
+		phy_cmd_rdy  => ddrphy_cmd_rdy,
+		phy_cmd_req  => ddrphy_cmd_req,
+		sys_act      => ddrphy_act,
+
+		sys_wlreq    => ddrphy_wlreq,
+		sys_wlrdy    => ddrphy_wlrdy,
+
+		sys_rlreq    => ddrphy_rlreq,
+		sys_rlrdy    => ddrphy_rlrdy,
+		sys_rlcal    => ddrphy_rlcal,
+		sys_rlseq    => ddrphy_rlseq,
+
+		sys_cke      => ddrphy_cke,
+		sys_rst      => ddrphy_rst,
+		sys_cs       => ddrphy_cs,
+		sys_ras      => ddrphy_ras,
+		sys_cas      => ddrphy_cas,
+		sys_we       => ddrphy_we,
+		sys_b        => ddrphy_b,
+		sys_a        => ddrphy_a,
+
+		sys_dqst     => ddrphy_dqst,
+		sys_dqso     => ddrphy_dqso,
+		sys_dmi      => ddrphy_dmo,
+		sys_dmt      => ddrphy_dmt,
+		sys_dmo      => ddrphy_dmi,
+		sys_dqo      => ddrphy_dqo,
+		sys_dqt      => ddrphy_dqt,
+		sys_dqi      => ddrphy_dqi,
+		sys_odt      => ddrphy_odt,
+		sys_sti      => ddrphy_sto,
+		sys_sto      => ddrphy_sti,
+
+		ddr_rst      => ddr3_reset,
+		ddr_clk      => ddr3_clk,
+		ddr_cke      => ddr3_cke,
+		ddr_cs       => ddr3_cs,
+		ddr_ras      => ddr3_ras,
+		ddr_cas      => ddr3_cas,
+		ddr_we       => ddr3_we,
+		ddr_b        => ddr3_ba,
+		ddr_a        => ddr3_a,
+		ddr_odt      => ddr3_odt,
+--		ddr_dm       => ddr3_dm,
+		ddr_dqo      => ddr3_dqo,
+		ddr_dqi      => ddr3_dq,
+		ddr_dqt      => ddr3_dqt,
+		ddr_dqst     => ddr3_dqst,
+		ddr_dqsi     => ddr3_dqsi,
+		ddr_dqso     => ddr3_dqso);
+	ddr3_dm <= (others => '0');
+
+	ddrphy_dqsi <= (others => ddrs_clk90div);
+
 	-- VGA --
 	---------
 

@@ -64,7 +64,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture virtex of ddrdqphy is
+architecture virtex5 of ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate

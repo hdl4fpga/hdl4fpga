@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrphy is
+entity xc7a_ddrphy is
 	generic (
 		TCP          : natural;
 		TAP_DELAY    : natural;
@@ -103,10 +103,10 @@ entity ddrphy is
 		ddr_dqsi     : in  std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 		ddr_dqso     : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0));
 
-		constant clk0div  : natural := 0; 
+		constant clk0div  : natural := 0;
 		constant clk90div : natural := 1;
 		constant iodclk   : natural := 2;
-		constant clk0     : natural := 3; 
+		constant clk0     : natural := 3;
 		constant clk90    : natural := 4;
 
 		constant rst0div  : natural := 0;
@@ -120,7 +120,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture virtex of ddrphy is
+architecture virtex7 of xc7a_ddrphy is
 	subtype tapsw is std_logic_vector(6-1 downto 0);
 	type tapsw_vector is array (natural range <>) of tapsw;
 
@@ -148,11 +148,11 @@ architecture virtex of ddrphy is
 	type bline_vector is array (natural range <>) of bline_word;
 
 	function to_bytevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(byte'range));
@@ -162,11 +162,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function to_blinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return bline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -176,11 +176,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function to_dlinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return dline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
+	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -232,11 +232,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function shuffle_stdlogicvector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable dat : std_logic_vector(0 to arg'length-1);
 		variable val : std_logic_vector(dat'range);
-	begin	
+	begin
 		dat := arg;
 		for i in word_size/byte_size-1 downto 0 loop
 			for j in data_gear-1 downto 0 loop
@@ -247,11 +247,11 @@ architecture virtex of ddrphy is
 	end;
 
 	function shuffle_dlinevector (
-		constant arg : std_logic_vector) 
+		constant arg : std_logic_vector)
 		return dline_vector is
 		variable dat : byte_vector(0 to arg'length/byte'length-1);
 		variable val : byte_vector(dat'range);
-	begin	
+	begin
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
 			for j in data_gear-1 downto 0 loop
@@ -262,11 +262,11 @@ architecture virtex of ddrphy is
 	end;
 
 	impure function unshuffle(
-		constant arg : dline_vector) 
+		constant arg : dline_vector)
 		return byte_vector is
 		variable val : byte_vector(sys_dqo'length/byte_size-1 downto 0);
 		variable aux : byte_vector(0 to data_gear-1);
-	begin	
+	begin
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
 			for j in aux'range loop
@@ -332,9 +332,9 @@ begin
 			sys_rlrdy   <= rlrdy;
 
 			phy_cmd_req <= cmd_req;
-			if rlcal_h2l='1' then 
-				if rlcal='0' then 
-					if sys_rlseq='1' then 
+			if rlcal_h2l='1' then
+				if rlcal='0' then
+					if sys_rlseq='1' then
 						phy_cmd_req <= cmd_req;
 					end if;
 				end if;
@@ -357,7 +357,7 @@ begin
 
 	phy_ba  <= sys_b when lvl='0' else (others => '0');
 	phy_a   <= sys_a when lvl='0' else (others => '0');
-	
+
 	process (sys_clks(iodclk))
 	begin
 		if rising_edge(sys_clks(iodclk)) then
@@ -372,14 +372,14 @@ begin
 				if sys_rlreq='1' then
 					if cmd_req='1' then
 						if cmd_rdy='0' then
-							if rw='0' then 
+							if rw='0' then
 								cmd_req <= '0';
 							elsif rlrdy='1' then
 								cmd_req <= rlcal;
 							end if;
 						end if;
 					elsif cmd_rdy='1' then
-						if rw='0' then 
+						if rw='0' then
 							cmd_req <= '1';
 						else
 							ini <= '1';
@@ -438,27 +438,27 @@ begin
 
 		rotras_i : entity hdl4fpga.barrel
 		generic map (
-			d => "RIGHT", 
+			d => "RIGHT",
 			n => sys_ras'length,
 			m => rotba'length)
 		port map (
 			rot  => std_logic_vector(rotba),
 			din  => sys_ras,
 			dout => ba_ras);
-			
+
 		rotcas_i : entity hdl4fpga.barrel
 		generic map (
-			d => "RIGHT", 
+			d => "RIGHT",
 			n => sys_cas'length,
 			m => rotba'length)
 		port map (
 			rot  => std_logic_vector(rotba),
 			din  => sys_cas,
 			dout => ba_cas);
-			
+
 		rotwe_i : entity hdl4fpga.barrel
 		generic map (
-			d => "RIGHT", 
+			d => "RIGHT",
 			n => sys_we'length,
 			m => rotba'length)
 		port map (
@@ -472,7 +472,7 @@ begin
 		ba_cas <= sys_cas;
 		ba_we  <= sys_we;
 	end generate;
-		
+
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		DATA_EDGE => "SAME_EDGE",
@@ -492,7 +492,7 @@ begin
 		sys_cas    => ba_cas,
 		sys_we     => ba_we,
 		sys_odt    => sys_odt,
-        
+
 		ddr_rst    => ddr_rst,
 		ddr_cke    => ddr_cke,
 		ddr_odt    => ddr_odt,

@@ -566,12 +566,6 @@ begin
 		fifo_rllbk <= fcs_sb and not (fcs_vld and to_stdulogic(q));
 	end process;
 
-	tg_e : entity hdl4fpga.et
-	port map (
-		clk => mii_clk,
-		d   => tag_frm,
-		q   => tp(1));
-
 	fifo_frm  <= dllrx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
 	fifo_e : entity hdl4fpga.txn_buffer
