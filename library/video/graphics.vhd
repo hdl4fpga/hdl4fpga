@@ -79,14 +79,20 @@ architecture def of graphics is
 	signal dmaddr_req : bit;
 	signal dmaddr_rdy : bit;
 
-	signal des_irdy : std_logic;
-	signal des_data : std_logic_vector(0 to video_pixel'length-1);
-	signal vram_irdy : std_logic;
-	signal vram_data : std_logic_vector(video_pixel'range);
+	signal video_word : std_logic_vector(0 to setif(video_pixel'length < ctlr_di'length, ctlr_di'length, video_pixel'length)-1);
+	signal vram_irdy  : std_logic;
+	signal vram_data  : std_logic_vector(video_word'range);
 	signal serdes_frm : std_logic;
 
 begin
 
+	assert ctlr_di'length mod video_pixel'length=0 or video_pixel'length mod ctlr_di'length=0
+	report
+		"video_pixel " & natural'image(video_pixel'length) &
+		" is not multiple of " &
+		"ctlr_di "     & natural'image(ctlr_di'length) &
+		" or viceversa"
+	severity FAILURE;
 	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
 	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(dmacfg_rdy));
 	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(dma_rdy));
@@ -188,18 +194,28 @@ begin
 		end if;
 	end process;
 
-	serdes_e : entity hdl4fpga.serdes
-	port map (
-		serdes_clk => ctlr_clk,
-		serdes_frm => serdes_frm,
-		ser_irdy   => ctlr_di_dv,
-		ser_data   => ctlr_di,
+	serdes_g : if ctlr_di'length <= video_pixel'length generate
+		signal des_irdy : std_logic;
+		signal des_data : std_logic_vector(0 to video_pixel'length-1);
+	begin
+		serdes_e : entity hdl4fpga.serdes
+		port map (
+			serdes_clk => ctlr_clk,
+			serdes_frm => serdes_frm,
+			ser_irdy   => ctlr_di_dv,
+			ser_data   => ctlr_di,
 
-		des_irdy   => des_irdy,
-		des_data   => des_data);
+			des_irdy   => des_irdy,
+			des_data   => des_data);
 
-	vram_irdy <= des_irdy;
-	vram_data <= reverse(reverse(des_data), ctlr_di'length);
+			vram_irdy <= des_irdy;
+			vram_data <= reverse(reverse(des_data), ctlr_di'length);
+	end generate;
+
+	bypass_input_g : if ctlr_di'length > video_pixel'length generate
+		vram_irdy <= ctlr_di_dv;
+		vram_data <= ctlr_di;
+	end generate;
 
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
@@ -218,6 +234,19 @@ begin
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,
 		dst_trdy => video_on,
-		dst_data => video_pixel);
+		dst_data => video_word);
+
+	bypass_output_g : if ctlr_di'length <= video_pixel'length generate
+		video_pixel <= video_word;
+	end generate;
+
+	desser_g : if ctlr_di'length > video_pixel'length generate
+		desser_e : entity hdl4fpga.desser
+		port map (
+			desser_clk => video_clk,
+			des_frm    => video_frm,
+			des_data   => video_word,
+			ser_data   => video_pixel);
+	end generate;
 
 end;

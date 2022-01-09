@@ -258,7 +258,8 @@ package ddr_db is
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => FALSE),
-		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE));
+		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE),
+		cntlrcnfg_boolean'(fpga => virtex7,     param => RDFIFO_DELAY, value => TRUE));
 
 	constant cnfglat_db : cnfglat_tab := (
 
@@ -645,7 +646,9 @@ package body ddr_db is
 				end if;
 			end if;
 		end loop;
-		assert FALSE severity FAILURE;
+		assert FALSE
+		report "fpga : " &  natural'image(fpga) & ", param : " &  natural'image(param)
+		severity FAILURE;
 		return FALSE;
 	end;
 

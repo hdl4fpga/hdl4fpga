@@ -20,10 +20,11 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets sys_clk]
 
 create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
-create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ] 
+create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
 
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk   }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { video_clk   }
@@ -68,53 +69,52 @@ set_property -dict { PACKAGE_PIN G6  IOSTANDARD LVCMOS18 } [ get_ports RGBled[2]
 set_property -dict { PACKAGE_PIN F6  IOSTANDARD LVCMOS18 } [ get_ports RGBled[1]]
 set_property -dict { PACKAGE_PIN E1  IOSTANDARD LVCMOS18 } [ get_ports RGBled[0]]
 
-set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 } [ get_ports eth_rstn]
-set_property -dict { PACKAGE_PIN G18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_ref_clk]
-set_property -dict { PACKAGE_PIN F16 IOSTANDARD LVCMOS33 } [ get_ports eth_mdc]
-set_property -dict { PACKAGE_PIN G14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_crs]
-set_property -dict { PACKAGE_PIN D17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_col]
-set_property -dict { PACKAGE_PIN K13 IOSTANDARD LVCMOS33 } [ get_ports eth_mdio]
-set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_tx_clk]
-set_property -dict { PACKAGE_PIN H15 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_tx_en]
-set_property -dict { PACKAGE_PIN D18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[0]]
-set_property -dict { PACKAGE_PIN E17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[1]]
-set_property -dict { PACKAGE_PIN E18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[2]]
-set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[3]]
-set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [ get_ports eth_rx_clk]
-set_property -dict { PACKAGE_PIN C17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxerr]
-set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rx_dv]
-set_property -dict { PACKAGE_PIN H14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[0]]
-set_property -dict { PACKAGE_PIN J14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[1]]
-set_property -dict { PACKAGE_PIN J13 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[2]]
-set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[3]]
-                      
+set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS25 } [ get_ports eth_rstn]
+set_property -dict { PACKAGE_PIN G18 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_ref_clk]
+set_property -dict { PACKAGE_PIN F16 IOSTANDARD LVCMOS25 } [ get_ports eth_mdc]
+set_property -dict { PACKAGE_PIN G14 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_crs]
+set_property -dict { PACKAGE_PIN D17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_col]
+set_property -dict { PACKAGE_PIN K13 IOSTANDARD LVCMOS25 } [ get_ports eth_mdio]
+set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_tx_clk]
+set_property -dict { PACKAGE_PIN H15 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_tx_en]
+set_property -dict { PACKAGE_PIN D18 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[0]]
+set_property -dict { PACKAGE_PIN E17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[1]]
+set_property -dict { PACKAGE_PIN E18 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[2]]
+set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[3]]
+set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS25 } [ get_ports eth_rx_clk]
+set_property -dict { PACKAGE_PIN C17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxerr]
+set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rx_dv]
+set_property -dict { PACKAGE_PIN H14 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_txd[0]]
+set_property -dict { PACKAGE_PIN J14 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_txd[1]]
+set_property -dict { PACKAGE_PIN J13 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_txd[2]]
+set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_txd[3]]
 
-set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS33 } [get_ports { ja[1] }];
-set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { ja[2] }];
-set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS33 } [get_ports { ja[3] }];
-set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS33 } [get_ports { ja[4] }];
-set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS33 } [get_ports { ja[7] }];
-set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS33 } [get_ports { ja[8] }];
-set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS33 } [get_ports { ja[9] }];
-set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 } [get_ports { ja[10] }];
+set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS25 } [get_ports { ja[1] }];
+set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS25 } [get_ports { ja[2] }];
+set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS25 } [get_ports { ja[3] }];
+set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS25 } [get_ports { ja[4] }];
+set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS25 } [get_ports { ja[7] }];
+set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS25 } [get_ports { ja[8] }];
+set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS25 } [get_ports { ja[9] }];
+set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS25 } [get_ports { ja[10] }];
 
-set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS33 } [get_ports { ja[1] }];
-set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { ja[2] }];
-set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS33 } [get_ports { ja[3] }];
-set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS33 } [get_ports { ja[4] }];
-set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS33 } [get_ports { ja[7] }];
-set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS33 } [get_ports { ja[8] }];
-set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS33 } [get_ports { ja[9] }];
-set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 } [get_ports { ja[10] }];
+set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS_25 } [get_ports { ja[1] }];
+set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS_25 } [get_ports { ja[2] }];
+set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS_25 } [get_ports { ja[3] }];
+set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS_25 } [get_ports { ja[4] }];
+set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS_25 } [get_ports { ja[7] }];
+set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS_25 } [get_ports { ja[8] }];
+set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS_25 } [get_ports { ja[9] }];
+set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS_25 } [get_ports { ja[10] }];
 
-set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVCMOS33 } [get_ports { jb[1] }];
-set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 } [get_ports { jb[2] }];
-set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 } [get_ports { jb[3] }];
-set_property -dict { PACKAGE_PIN C15 IOSTANDARD LVCMOS33 } [get_ports { jb[4] }];
-set_property -dict { PACKAGE_PIN J17 IOSTANDARD LVCMOS33 } [get_ports { jb[7] }];
-set_property -dict { PACKAGE_PIN J18 IOSTANDARD LVCMOS33 } [get_ports { jb[8] }];
-set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 } [get_ports { jb[9] }];
-set_property -dict { PACKAGE_PIN J15 IOSTANDARD LVCMOS33 } [get_ports { jb[10] }];
+set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVDS_25 } [get_ports { jb[1] }];
+set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVDS_25 } [get_ports { jb[2] }];
+set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVDS_25 } [get_ports { jb[3] }];
+set_property -dict { PACKAGE_PIN C15 IOSTANDARD LVDS_25 } [get_ports { jb[4] }];
+set_property -dict { PACKAGE_PIN J17 IOSTANDARD LVDS_25 } [get_ports { jb[7] }];
+set_property -dict { PACKAGE_PIN J18 IOSTANDARD LVDS_25 } [get_ports { jb[8] }];
+set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVDS_25 } [get_ports { jb[9] }];
+set_property -dict { PACKAGE_PIN J15 IOSTANDARD LVDS_25 } [get_ports { jb[10] }];
 
 set_property -dict { PACKAGE_PIN U12   IOSTANDARD LVCMOS33 } [get_ports { jc[1] }];
 set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { jc[2] }];

@@ -80,6 +80,8 @@ entity demo_graphics is
 		ctlr_rst      : in  std_logic;
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
+		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
+		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := "---";
 		ctlr_inirdy   : buffer std_logic;
 
 		ctlr_wlrdy    : in  std_logic := '-';
@@ -914,9 +916,9 @@ begin
 			ctlr_bl      => ctlr_bl,
 			ctlr_cl      => ctlr_cl,
 
-			ctlr_cwl     => "000",
+			ctlr_cwl     => ctlr_cwl,
 			ctlr_wr      => "101",
-			ctlr_rtt     => "--",
+			ctlr_rtt     => ctlr_rtt,
 
 			ctlr_rst     => ctlr_rst,
 			ctlr_clks    => ctlr_clks,

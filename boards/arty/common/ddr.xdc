@@ -23,12 +23,12 @@
 
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
 
-set_property -dict { PACKAGE_PIN U9  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_clk_p    ]
-set_property -dict { PACKAGE_PIN V9  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_clk_n    ]
-set_property -dict { PACKAGE_PIN U2  IOSTANDARD SSTL135 } [ get_ports ddr3_dqs_p[1] ]
-set_property -dict { PACKAGE_PIN V2  IOSTANDARD SSTL135 } [ get_ports ddr3_dqs_n[1] ]
-set_property -dict { PACKAGE_PIN N2  IOSTANDARD SSTL135 } [ get_ports ddr3_dqs_p[0] ]
-set_property -dict { PACKAGE_PIN N1  IOSTANDARD SSTL135 } [ get_ports ddr3_dqs_n[0] ]
+set_property -dict { PACKAGE_PIN U9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_p    ]
+set_property -dict { PACKAGE_PIN V9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_n    ]
+set_property -dict { PACKAGE_PIN U2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_p[1] ]
+set_property -dict { PACKAGE_PIN V2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_n[1] ]
+set_property -dict { PACKAGE_PIN N2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_p[0] ]
+set_property -dict { PACKAGE_PIN N1  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_n[0] ]
 
 set_property -dict { PACKAGE_PIN R3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[15] ]  
 set_property -dict { PACKAGE_PIN U3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[14] ]  

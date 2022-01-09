@@ -62,15 +62,6 @@ architecture graphics of arty is
 
 	constant sys_per  : real := 10.0;
 
-	--------------------------------------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
-	-- Multiply by --  10     --   7     --   4     --  20     --  21      22     --
-	-- Divide by   --   3     --   2     --   1     --   4     --   4       4     --
-	--------------------------------------------------------------------------------
-
-	constant DDR_MUL      : real    := 21.0; --18;
-	constant DDR_DIV      : natural := 4;  --4;
-
 	type pll_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
@@ -78,25 +69,35 @@ architecture graphics of arty is
 
 	type ddr_params is record
 		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 3-1);
+		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
 	type ddr_speeds is (
 		ddr333MHz,
 		ddr350MHz,
 		ddr400MHz,
+		ddr450MHz,
 		ddr500MHz,
 		ddr525MHz,
 		ddr550MHz);
 
 	type ddram_vector is array (ddr_speeds) of ddr_params;
+
+	-------------------------------------------------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz -- 450 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
+	-- Multiply by --  10     --   7     --   4     --   9     --   5     --  21      22     --
+	-- Divide by   --   3     --   2     --   1     --   2     --   1     --   4       4     --
+	-------------------------------------------------------------------------------------------
+
 	constant ddr_tab : ddram_vector := (
-		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "010"),
-		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cas => "110"),
-		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"),
-		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cas => "011"),
-		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cas => "011"),
-		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cas => "011"));
+		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "010", cwl => "000"),
+		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
+		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
+		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
+		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cl => "101", cwl => "010"));
 
 	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
@@ -115,7 +116,7 @@ architecture graphics of arty is
 
 	signal ctlrphy_cmd_rdy : std_logic;
 	signal ctlrphy_cmd_req : std_logic;
-	signal ctlrphy_act : std_logic;
+	signal ctlrphy_act   : std_logic;
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_rlreq : std_logic;
@@ -123,6 +124,8 @@ architecture graphics of arty is
 	signal ctlrphy_rlcal : std_logic;
 	signal ctlrphy_rlseq : std_logic;
 
+	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
+	signal ddr_a           : std_logic_vector(ddr3_a'range);
 	signal ctlrphy_rst     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
@@ -130,7 +133,7 @@ architecture graphics of arty is
 	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_b       : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -163,7 +166,7 @@ architecture graphics of arty is
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
 		modedebug => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 6, dcm_div => 4)));
 
 	constant video_mode    : video_modes := mode1080p;
 
@@ -192,14 +195,14 @@ architecture graphics of arty is
 	alias sio_clk  : std_logic is eth_rxclk_bufg;
 	alias dmacfg_clk : std_logic is eth_rxclk_bufg;
 
-	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
+	alias ctlr_clk        : std_logic is ddrsys_clks(0);
 	signal video_clk      : std_logic;
 	signal video_shf_clk  : std_logic;
-	signal video_lkd     : std_logic;
+	signal video_lkd      : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
-    signal video_blank     : std_logic;
-    signal video_pixel     : std_logic_vector(0 to 32-1);
+    signal video_blank    : std_logic;
+    signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 
@@ -224,6 +227,14 @@ architecture graphics of arty is
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
+	alias mii_rxc     : std_logic is eth_rxclk_bufg;
+	alias mii_rxdv    : std_logic is eth_rx_dv;
+	alias mii_rxd     : std_logic_vector(eth_rxd'range) is eth_rxd;
+
+	alias mii_txc     : std_logic is eth_txclk_bufg;
+	alias mii_txen    : std_logic is eth_tx_en;
+	alias mii_txd     : std_logic_vector(eth_txd'range) is eth_txd;
+
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
 
@@ -238,12 +249,23 @@ architecture graphics of arty is
 
 	constant mem_size  : natural := 8*(1024*8);
 
-	signal tp_delay       : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
-	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
-	signal tp1  : std_logic_vector(1 to 32);
+	signal ioctrl_rst : std_logic;
+	signal ioctrl_clk : std_logic;
+	signal ioctrl_rdy : std_logic;
+
+	signal tp_delay   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+	signal tp_bit     : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
+	signal tp1        : std_logic_vector(1 to 32);
 begin
 
 	sys_rst <= btn(0);
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => ioctrl_rst,
+		refclk => ioctrl_clk,
+		rdy    => ioctrl_rdy);
+
 
 	clkin_ibufg : ibufg
 	port map (
@@ -284,7 +306,6 @@ begin
 	begin
 
 		ioctrl_b : block
-			signal ioctrl_clk   : std_logic;
 			signal ioctrl_clkfb : std_logic;
 			signal ioctrl_lkd  : std_logic;
 		begin
@@ -302,6 +323,8 @@ begin
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
 				locked   => ioctrl_lkd);
+			ioctrl_rst <= not ioctrl_lkd;
+
 		end block;
 
 		ddr_b : block
@@ -388,14 +411,6 @@ begin
 	end block;
 
 	ipoe_b : block
-
-		alias mii_rxc     : std_logic is eth_rxclk_bufg;
-		alias mii_rxdv    : std_logic is eth_rx_dv;
-		alias mii_rxd     : std_logic_vector(eth_rxd'range) is eth_rxd;
-
-		alias mii_txc     : std_logic is eth_txclk_bufg;
-		alias mii_txen    : std_logic is eth_tx_en;
-		alias mii_txd     : std_logic_vector(eth_txd'range) is eth_txd;
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
@@ -556,18 +571,20 @@ begin
 		video_pixel  => video_pixel,
 
 		dmacfg_clk   => dmacfg_clk,
-		ctlr_clks    => ctlr_clks,
+		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => ddr_param.cas,
+		ctlr_cl      => ddr_param.cl,
+		ctlr_cwl     => ddr_param.cwl,
+		ctlr_rtt     => "001",
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
 		ctlrphy_ras  => ctlrphy_ras(0),
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
-		ctlrphy_b    => ctlrphy_b,
-		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_b    => ddr_ba,
+		ctlrphy_a    => ddr_a,
 		ctlrphy_dsi  => ctlrphy_dqsi,
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
@@ -580,6 +597,24 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp => open);
+
+	process (ddr_ba)
+	begin
+		for i in ddr_ba'range loop
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+			end loop;
+		end loop;
+	end process;
+
+	process (ddr_a)
+	begin
+		for i in ddr_a'range loop
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+			end loop;
+		end loop;
+	end process;
 
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
@@ -617,7 +652,7 @@ begin
 		sys_ras      => ctlrphy_ras,
 		sys_cas      => ctlrphy_cas,
 		sys_we       => ctlrphy_we,
-		sys_b        => ctlrphy_b,
+		sys_b        => ctlrphy_ba,
 		sys_a        => ctlrphy_a,
 
 		sys_dqst     => ctlrphy_dqst,
@@ -730,7 +765,7 @@ begin
 		hdmi_g : for i in q'range generate
 			obufds_i : obufds
 			generic map (
-				iostandard => "LVDS")
+				iostandard => "LVDS_25")
 			port map (
 				i  => q(i),
 				o  => p(i),
