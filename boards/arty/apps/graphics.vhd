@@ -154,21 +154,9 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
-	type video_params is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
 	type video_modes is (
 		modedebug,
 		mode1080p);
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		modedebug => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 6, dcm_div => 4)));
-
-	constant video_mode    : video_modes := mode1080p;
 
 	type profile_param is record
 		ddr_speed  : ddr_speeds;
@@ -185,7 +173,19 @@ architecture graphics of arty is
 		mode1080p_ddr525MHz => (ddr525MHz, mode1080p, 1),
 		mode1080p_ddr550MHz => (ddr550MHz, mode1080p, 1));
 
-	constant ddr_speed : ddr_speeds  := profile_tab(profile).ddr_speed;
+	type video_params is record
+		pll  : pll_params;
+		mode : videotiming_ids;
+	end record;
+
+	type videoparams_vector is array (video_modes) of video_params;
+	constant video_tab : videoparams_vector := (
+		modedebug => (mode => pclk_debug,               pll => (dcm_mul => 1, dcm_div => 32)),
+		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 1, dcm_div =>  8)));
+
+	constant video_mode    : video_modes := profile_tab(profile).video_mode;
+
+	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
@@ -311,9 +311,11 @@ begin
 		begin
 			ioctrl_i :  mmcme2_base
 			generic map (
-				clkfbout_mult_f => 8.0,		-- 200 MHz
+				clkfbout_mult_f => 12.0,		-- 200 MHz
 				clkin1_period => sys_per,
-				clkout0_divide_f => 4.0,
+				clkout0_divide_f => real(video_tab(video_mode).pll.dcm_div)/real(video_tab(video_mode).pll.dcm_mul),
+				clkout1_divide   => 6,
+				clkout2_divide   => integer(real(video_tab(video_mode).pll.dcm_div)/real(5*video_tab(video_mode).pll.dcm_mul)),
 				bandwidth => "LOW")
 			port map (
 				pwrdwn   => '0',
@@ -321,7 +323,9 @@ begin
 				clkin1   => sys_clk,
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
-				clkout0  => ioctrl_clk,
+				clkout0  => video_clk,
+				clkout1  => ioctrl_clk,
+				clkout2  => video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
 
@@ -575,6 +579,7 @@ begin
 		video_vtsync => video_vs,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
+		dvid_crgb    => dvid_crgb,
 
 		dmacfg_clk   => dmacfg_clk,
 		ctlr_clks(0) => ctlr_clk,

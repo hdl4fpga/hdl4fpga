@@ -1,17 +1,7 @@
 #!/bin/sh
-KIT="${KIT:-ULX3S}"
+PIXEL="${PIXEL:-rgb32}"
 BADDR="${BADDR:-0}"
 BSIZE="${BSIZE:-1280}"
-
-case ${KIT} in
-"nuhs3adsp")
-	PIXEL="${PIXEL:-rgb32}"
-	;;
-"ULX3S")
-	PIXEL="${PIXEL:-rgb565}"
-	;;
-esac
-
 PKTMD="${PKTMD:-PKT}"
 WIDTH="${WIDTH:-800}"
 
