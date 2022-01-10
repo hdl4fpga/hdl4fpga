@@ -20,7 +20,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets sys_clk]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_rxclk_bufg]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_txclk_bufg]
 
 create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
