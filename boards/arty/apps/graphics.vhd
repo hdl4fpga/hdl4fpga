@@ -37,14 +37,14 @@ use unisim.vcomponents.all;
 architecture graphics of arty is
 
 	type profiles is (
-		mode1080p_ddr333MHz,
-		mode1080p_ddr350MHz,
-		mode1080p_ddr400MHz,
-		mode1080p_ddr500MHz,
-		mode1080p_ddr525MHz,
-		mode1080p_ddr550MHz);
+		mode900p_ddr333MHz,
+		mode900p_ddr350MHz,
+		mode900p_ddr400MHz,
+		mode900p_ddr500MHz,
+		mode900p_ddr525MHz,
+		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode1080p_ddr550MHz;
+	constant profile     : profiles := mode900p_ddr550MHz;
 
 	signal sys_rst : std_logic;
 
@@ -156,7 +156,7 @@ architecture graphics of arty is
 
 	type video_modes is (
 		modedebug,
-		mode1080p);
+		mode900p);
 
 	type profile_param is record
 		ddr_speed  : ddr_speeds;
@@ -166,12 +166,12 @@ architecture graphics of arty is
 
 	type profileparam_vector is array (profiles) of profile_param;
 	constant profile_tab : profileparam_vector := (
-		mode1080p_ddr333MHz => (ddr333MHz, mode1080p, 1),
-		mode1080p_ddr350MHz => (ddr350MHz, mode1080p, 1),
-		mode1080p_ddr400MHz => (ddr400MHz, mode1080p, 1),
-		mode1080p_ddr500MHz => (ddr500MHz, mode1080p, 1),
-		mode1080p_ddr525MHz => (ddr525MHz, mode1080p, 1),
-		mode1080p_ddr550MHz => (ddr550MHz, mode1080p, 1));
+		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
+		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
+		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
+		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
+		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
+		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1));
 
 	type video_params is record
 		pll  : pll_params;
@@ -180,8 +180,8 @@ architecture graphics of arty is
 
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug => (mode => pclk_debug,               pll => (dcm_mul => 1, dcm_div => 32)),
-		mode1080p => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 1, dcm_div =>  8)));
+		modedebug => (mode => pclk_debug,              pll => (dcm_mul => 1, dcm_div => 32)),
+		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
 
 	constant video_mode    : video_modes := profile_tab(profile).video_mode;
 
@@ -306,16 +306,18 @@ begin
 	begin
 
 		ioctrl_b : block
-			signal ioctrl_clkfb : std_logic;
-			signal ioctrl_lkd  : std_logic;
+			signal video_clk_mmce2 : std_logic;
+			signal video_shf_clk_mmce2 : std_logic;
+			signal ioctrl_clkfb  : std_logic;
+			signal ioctrl_lkd    : std_logic;
 		begin
 			ioctrl_i :  mmcme2_base
 			generic map (
-				clkfbout_mult_f => 12.0,		-- 200 MHz
+				clkfbout_mult_f => 10.75,		-- 200 MHz
 				clkin1_period => sys_per,
-				clkout0_divide_f => real(video_tab(video_mode).pll.dcm_div)/real(video_tab(video_mode).pll.dcm_mul),
-				clkout1_divide   => 6,
-				clkout2_divide   => integer(real(video_tab(video_mode).pll.dcm_div)/real(5*video_tab(video_mode).pll.dcm_mul)),
+				clkout0_divide_f => 5.375,
+				clkout1_divide   => 10,
+				clkout2_divide   => 2,
 				bandwidth => "LOW")
 			port map (
 				pwrdwn   => '0',
@@ -323,11 +325,21 @@ begin
 				clkin1   => sys_clk,
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
-				clkout0  => video_clk,
-				clkout1  => ioctrl_clk,
+				clkout0  => ioctrl_clk,
+				clkout1  => video_clk,
 				clkout2  => video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
+
+--			video_shf_clk_bufio : bufg
+--			port map (
+--				i => video_shf_clk_mmce2,
+--				o => video_shf_clk);
+--
+--			video_clk_bufg : bufg
+--			port map (
+--				i => video_clk_mmce2,
+--				o => video_clk);
 
 		end block;
 

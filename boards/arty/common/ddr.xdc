@@ -28,6 +28,7 @@ create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports dd
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
+set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
 set_input_delay -clock dqso0 -max 0 [get_ports ddr3_dq[*] ]
 set_input_delay -clock dqso1 -max 0 [get_ports ddr3_dq[*] ]
 

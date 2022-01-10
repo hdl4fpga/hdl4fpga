@@ -21,19 +21,24 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_clk0div_mmce2   }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_clk90div_mmce2   }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ioctrl_clk  }
-set_clock_groups -asynchronous -group { dqso0       } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso1       } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso0       } -group { ddr_clk90_mmce2   }
-set_clock_groups -asynchronous -group { dqso1       } -group { ddr_clk90_mmce2   }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_clk0div_mmce2   }
-set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
-set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { sys_clk     }
-set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_tx_clk  }
-set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_rx_clk  }
+set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk0div_mmce2  }
+set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk90div_mmce2 }
+set_clock_groups -asynchronous -group { sys_clk    } -group { ioctrl_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk } -group { sys_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk } -group { ddr_clk0div_mmce2 }
+set_clock_groups -asynchronous -group { eth_rx_clk } -group { video_clk_mmce2  }
+set_clock_groups -asynchronous -group { eth_rx_clk } -group { video_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
+set_clock_groups -asynchronous -group { video_clk_mmce2 } -group { eth_rx_clk }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { sys_clk    }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_tx_clk }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_rx_clk }
+
+set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
+set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk90_mmce2 }
+
+set_clock_groups -asynchronous -group { dqso1      } -group { sys_clk     }
+set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90_mmce2 }
 
 create_clock -name dqso0   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[0] ]
 create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[1] ]
