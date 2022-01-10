@@ -405,31 +405,6 @@ begin
 			ddrsys_rst <= not ddr_lkd;
 		end block;
 
---		video_b :  block
---			signal video_clkfb : std_logic;
---			signal video_clk_mmce2 : std_logic;
---		begin
---			video_dcm_i : mmcme2_base
---			generic map (
---				clkin1_period    => 10.0,
---				clkfbout_mult_f  => real(video_tab(video_mode).pll.dcm_mul),
---				clkout0_divide_f => real(video_tab(video_mode).pll.dcm_div),
---				bandwidth        => "LOW")
---			port map (
---				pwrdwn   => '0',
---				rst      => sys_rst,
---				clkin1   => sys_clk,
---				clkfbin  => video_clkfb,
---				clkfbout => video_clkfb,
---				locked   => video_lkd,
---				clkout0  => video_clk_mmce2);
---			ddr_clk90div_bufg : bufg
---			port map (
---				i => video_clk_mmce2,
---				o => video_clk);
---
---		end block;
-
 	end block;
 
 	ipoe_b : block
