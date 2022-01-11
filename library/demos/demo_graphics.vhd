@@ -84,15 +84,16 @@ entity demo_graphics is
 		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := "---";
 		ctlr_inirdy   : buffer std_logic;
 
-		ctlrphy_wlrdy : in  std_logic := '-';
 		ctlrphy_wlreq : out std_logic;
+		ctlrphy_wlrdy : in  std_logic := '-';
+		ctlrphy_rlreq : out std_logic;
+		ctlrphy_rlrdy : in  std_logic := '-';
 		ctlrphy_rlcal : in  std_logic := '0';
 		ctlrphy_rlseq : out std_logic;
 		ctlrphy_irdy  : in  std_logic := '0';
 		ctlrphy_trdy  : out std_logic := '0';
 
 		ctlrphy_ini   : in  std_logic := '1';
-		ctlrphy_inirdy   : out  std_logic;
 		ctlrphy_rst   : out std_logic;
 		ctlrphy_cke   : out std_logic;
 		ctlrphy_cs    : out std_logic;
@@ -147,8 +148,8 @@ architecture mix of demo_graphics is
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
 	signal dmaio_we       : std_logic;
 
-	signal ctlrdma_irdy   : std_logic;
-	signal ctlrdma_trdy   : std_logic;
+	signal ctlr_irdy      : std_logic;
+	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
 	signal ctlr_refreq    : std_logic;
@@ -858,8 +859,8 @@ begin
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_refreq => ctlr_refreq,
 
-			ctlr_irdy   => ctlrdma_irdy,
-			ctlr_trdy   => ctlrdma_trdy,
+			ctlr_irdy   => ctlr_irdy,
+			ctlr_trdy   => ctlr_trdy,
 			ctlr_ras    => ctlr_ras,
 			ctlr_cas    => ctlr_cas,
 			ctlr_rw     => ctlr_rw,
@@ -891,16 +892,9 @@ begin
 	end block;
 
 	ddrctlr_b : block
-		signal inirdy : std_logic;
-		signal q      : std_logic;
-		signal irdy : std_logic;
-		signal trdy : std_logic;
+		signal inirdy    : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
-		ctlrdma_trdy <= trdy when ctlrphy_ini='1' else '0';
-		ctlrphy_trdy <= trdy when ctlrphy_ini='0' else '0';
-		ctlrphy_inirdy  <= inirdy ;
-		irdy <= ctlrdma_irdy when ctlrphy_ini='1' else ctlrphy_irdy;
 		ddrctlr_e : entity hdl4fpga.ddr_ctlr
 		generic map (
 			fpga         => fpga,
@@ -929,8 +923,8 @@ begin
 			ctlr_clks    => ctlr_clks,
 			ctlr_inirdy  => inirdy,
 
-			ctlr_irdy    => irdy,
-			ctlr_trdy    => trdy,
+			ctlr_irdy    => ctlr_irdy,
+			ctlr_trdy    => ctlr_trdy,
 			ctlr_rw      => ctlr_rw,
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a,
@@ -945,9 +939,13 @@ begin
 			ctlr_do      => ctlr_do,
 			ctlr_refreq  => ctlr_refreq,
 			ctlr_dio_req => ctlr_dio_req,
-
+			phy_inirdy   => ctlrphy_ini,
+			phy_irdy     => ctlrphy_irdy,
+			phy_trdy     => ctlrphy_trdy,
 			phy_wlrdy    => ctlrphy_wlrdy,
 			phy_wlreq    => ctlrphy_wlreq,
+			phy_rlrdy    => ctlrphy_rlrdy,
+			phy_rlreq    => ctlrphy_rlreq,
 			phy_rlcal    => ctlrphy_rlcal,
 			phy_rlseq    => ctlrphy_rlseq,
 			phy_rst      => ctlrphy_rst,

@@ -172,8 +172,8 @@ package ddr_db is
 
 --		timing_record'(mark => M15E, param => tPreRST, value => 200*1_000_000),
 --		timing_record'(mark => M15E, param => tPstRST, value => 500*1_000_000),
-		timing_record'(mark => M15E, param => tPreRST, value => 20*1_000_000),
-		timing_record'(mark => M15E, param => tPstRST, value => 50*1_000_000),
+		timing_record'(mark => M15E, param => tPreRST, value => 4*1_000_000),
+		timing_record'(mark => M15E, param => tPstRST, value => 5*1_000_000),
 		timing_record'(mark => M15E, param => tWR,   value => 15000),
 		timing_record'(mark => M15E, param => tRCD,  value => 13910),
 		timing_record'(mark => M15E, param => tRP,   value => 13910),

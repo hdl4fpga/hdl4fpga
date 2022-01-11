@@ -32,20 +32,20 @@ use hdl4fpga.ddr_param.all;
 
 entity ddr_ctlr is
 	generic (
-		fpga        : natural;
-		mark        : natural := m6t;
-		tcp         : natural := 6000;
+		fpga         : natural;
+		mark         : natural := m6t;
+		tcp          : natural := 6000;
 
-		cmmd_gear   : natural :=  1;
-		bank_size   : natural :=  2;
-		addr_size   : natural := 13;
-		sclk_phases : natural :=  4;
-		sclk_edges  : natural :=  2;
-		data_phases : natural :=  2;
-		data_edges  : natural :=  2;
-		data_gear   : natural :=  2;
-		word_size   : natural := 16;
-		byte_size   : natural :=  8);
+		cmmd_gear    : natural :=  1;
+		bank_size    : natural :=  2;
+		addr_size    : natural := 13;
+		sclk_phases  : natural :=  4;
+		sclk_edges   : natural :=  2;
+		data_phases  : natural :=  2;
+		data_edges   : natural :=  2;
+		data_gear    : natural :=  2;
+		word_size    : natural := 16;
+		byte_size    : natural :=  8);
 	port (
 		ctlr_bl      : in std_logic_vector(2 downto 0);
 		ctlr_cl      : in std_logic_vector(2 downto 0);
@@ -55,8 +55,8 @@ entity ddr_ctlr is
 
 		ctlr_rst     : in std_logic;
 		ctlr_clks    : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
+		ctlr_cfgrdy  : out std_logic;
 		ctlr_inirdy  : out std_logic;
-
 
 		ctlr_irdy    : in  std_logic;
 		ctlr_trdy    : out std_logic;
@@ -78,8 +78,13 @@ entity ddr_ctlr is
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
 
+		phy_irdy     : in  std_logic := '0';
+		phy_trdy     : out std_logic;
+		phy_inirdy   : in  std_logic := '1';
 		phy_wlrdy    : in  std_logic := '-';
 		phy_wlreq    : out std_logic;
+		phy_rlreq    : out std_logic;
+		phy_rlrdy    : in  std_logic := '1';
 		phy_rlcal    : in  std_logic := '0';
 		phy_rlseq    : out std_logic;
 		phy_rst      : out std_logic;
@@ -160,6 +165,8 @@ architecture mix of ddr_ctlr is
 	signal ddr_init_a     : std_logic_vector(addr_size-1 downto 0);
 	signal ddr_init_b     : std_logic_vector(bank_size-1 downto 0);
 
+	signal ddr_pgm_irdy   : std_logic;
+	signal ddr_pgm_trdy   : std_logic;
 	signal ddr_pgm_cmd    : std_logic_vector(0 to 2);
 	signal ddr_pgm_ras    : std_logic;
 
@@ -199,10 +206,14 @@ architecture mix of ddr_ctlr is
 	signal ddr_mpu_sel    : std_logic;
 	signal init_rdy       : std_logic;
 
+
 	signal fifo_bypass : std_logic;
 begin
 
-	ddr_cwl      <= ctlr_cl when stdr=2 else ctlr_cwl;
+	ctlr_trdy    <= ddr_pgm_trdy when phy_inirdy='1' else '0';
+	phy_trdy     <= ddr_pgm_trdy when phy_inirdy='0' else '0';
+	ddr_pgm_irdy <= ctlr_irdy    when phy_inirdy='1' else phy_irdy;
+	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
 
 	ddr_init_e : entity hdl4fpga.ddr_init
@@ -248,7 +259,9 @@ begin
 	phy_a       <= ctlr_a       when ddr_mpu_sel='1' else ddr_init_a;
 	phy_b       <= ctlr_b       when ddr_mpu_sel='1' else ddr_init_b;
 	phy_odt     <= ddr_init_odt when ddr_mpu_sel='0' else ddr_sch_odt(0) when stdr=3 else '1';
-	ctlr_inirdy <= init_rdy;
+	phy_rlreq   <= init_rdy;
+	ctlr_cfgrdy <= init_rdy;
+	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
@@ -257,8 +270,8 @@ begin
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
 		ctlr_refreq   => ctlr_refreq,
-		ddr_pgm_irdy  => ctlr_irdy,
-		ddr_pgm_trdy  => ctlr_trdy,
+		ddr_pgm_irdy  => ddr_pgm_irdy,
+		ddr_pgm_trdy  => ddr_pgm_trdy,
 		ddr_pgm_ras   => ddr_pgm_ras,
 		ddr_pgm_cas   => ctlr_cas,
 		ddr_pgm_cmd   => ddr_pgm_cmd,

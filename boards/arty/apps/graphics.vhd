@@ -99,32 +99,32 @@ architecture graphics of arty is
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
 		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cl => "101", cwl => "010"));
 
-	constant sclk_phases  : natural := 1;
-	constant sclk_edges   : natural := 1;
-	constant data_edges   : natural := 1;
-	constant cmmd_gear    : natural := 2;
-	constant data_gear    : natural := 4;
+	constant sclk_phases   : natural := 1;
+	constant sclk_edges    : natural := 1;
+	constant data_edges    : natural := 1;
+	constant cmmd_gear     : natural := 2;
+	constant data_gear     : natural := 4;
 
-	constant bank_size    : natural := ddr3_ba'length;
-	constant addr_size    : natural := ddr3_a'length;
-	constant coln_size    : natural := 7;
-	constant word_size    : natural := ddr3_dq'length;
-	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
+	constant bank_size     : natural := ddr3_ba'length;
+	constant addr_size     : natural := ddr3_a'length;
+	constant coln_size     : natural := 7;
+	constant word_size     : natural := ddr3_dq'length;
+	constant byte_size     : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
-	signal ddrsys_rst : std_logic;
-	signal ddrsys_clks       : std_logic_vector(0 to 5-1);
+	signal ddrsys_rst      : std_logic;
+	signal ddrsys_clks     : std_logic_vector(0 to 5-1);
 
-	signal ctlrphy_ini : std_logic;
-	signal ctlrphy_inirdy : std_logic;
+	signal ctlrphy_inirdy  : std_logic;
+	signal ctlrphy_ini     : std_logic;
 	signal ctlrphy_cmd_rdy : std_logic;
 	signal ctlrphy_cmd_req : std_logic;
-	signal ctlrphy_act   : std_logic;
-	signal ctlrphy_wlreq : std_logic;
-	signal ctlrphy_wlrdy : std_logic;
-	signal ctlrphy_rlreq : std_logic;
-	signal ctlrphy_rlrdy : std_logic;
-	signal ctlrphy_rlcal : std_logic;
-	signal ctlrphy_rlseq : std_logic;
+	signal ctlrphy_act     : std_logic;
+	signal ctlrphy_wlreq   : std_logic;
+	signal ctlrphy_wlrdy   : std_logic;
+	signal ctlrphy_rlreq   : std_logic;
+	signal ctlrphy_rlrdy   : std_logic;
+	signal ctlrphy_rlcal   : std_logic;
+	signal ctlrphy_rlseq   : std_logic;
 
 	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
 	signal ddr_a           : std_logic_vector(ddr3_a'range);
@@ -149,12 +149,12 @@ architecture graphics of arty is
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_clk        : std_logic_vector(1-1 downto 0);
+	signal ddr3_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqsi       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqo        : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqt        : std_logic_vector(word_size-1 downto 0);
 
 	type video_modes is (
 		modedebug,
@@ -194,8 +194,8 @@ architecture graphics of arty is
 	signal sys_clk        : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
-	alias sio_clk  : std_logic is eth_rxclk_bufg;
-	alias dmacfg_clk : std_logic is eth_rxclk_bufg;
+	alias sio_clk         : std_logic is eth_rxclk_bufg;
+	alias dmacfg_clk      : std_logic is eth_rxclk_bufg;
 
 	alias ctlr_clk        : std_logic is ddrsys_clks(0);
 	signal video_clk      : std_logic;
@@ -206,7 +206,6 @@ architecture graphics of arty is
     signal video_blank    : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
-
 
 	signal miirx_frm      : std_ulogic;
 	signal miirx_irdy     : std_logic;
@@ -229,13 +228,13 @@ architecture graphics of arty is
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
-	alias mii_rxc     : std_logic is eth_rxclk_bufg;
-	alias mii_rxdv    : std_logic is eth_rx_dv;
-	alias mii_rxd     : std_logic_vector(eth_rxd'range) is eth_rxd;
+	alias mii_rxc         : std_logic is eth_rxclk_bufg;
+	alias mii_rxdv        : std_logic is eth_rx_dv;
+	alias mii_rxd         : std_logic_vector(eth_rxd'range) is eth_rxd;
 
-	alias mii_txc     : std_logic is eth_txclk_bufg;
-	alias mii_txen    : std_logic is eth_tx_en;
-	alias mii_txd     : std_logic_vector(eth_txd'range) is eth_txd;
+	alias mii_txc         : std_logic is eth_txclk_bufg;
+	alias mii_txen        : std_logic is eth_tx_en;
+	alias mii_txd         : std_logic_vector(eth_txd'range) is eth_txd;
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
@@ -255,8 +254,8 @@ architecture graphics of arty is
 	signal ioctrl_clk : std_logic;
 	signal ioctrl_rdy : std_logic;
 
-	signal tp_delay   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
-	signal tp_bit     : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
+	signal tp_delay   : std_logic_vector(word_size/byte_size*5-1 downto 0);
+	signal tp_bit     : std_logic_vector(word_size/byte_size*5-1 downto 0) := (others  => 'Z');
 	signal tp1        : std_logic_vector(1 to 32);
 begin
 
@@ -267,7 +266,6 @@ begin
 		rst    => ioctrl_rst,
 		refclk => ioctrl_clk,
 		rdy    => ioctrl_rdy);
-
 
 	clkin_ibufg : ibufg
 	port map (
@@ -577,13 +575,15 @@ begin
 		ctlr_cl      => ddr_param.cl,
 		ctlr_cwl     => ddr_param.cwl,
 		ctlr_rtt     => "001",
+		ctlr_inirdy   => ctlrphy_inirdy,
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
 		ctlrphy_rlcal => ctlrphy_rlcal,
 		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_ini  => ctlrphy_ini,
-		ctlrphy_inirdy  => ctlrphy_inirdy,
 		ctlrphy_irdy => ctlrphy_cmd_req,
 		ctlrphy_trdy => ctlrphy_cmd_rdy,
 		ctlrphy_rst  => ctlrphy_rst(0),
@@ -633,7 +633,6 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ctlrphy_rlreq <= ctlrphy_inirdy;
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
 		tcp          => ddr_tcp,
@@ -651,9 +650,12 @@ begin
 		tp1         => tp1(1 to 6),
 		tp_bit      => tp_bit,
 
+		phy_rsts(0) => sys_rst,
+		phy_rsts(1) => sys_rst,
+		phy_rsts(2) => sys_rst,
 		sys_clks    => ddrsys_clks,
-		phy_cmd_rdy => ctlrphy_cmd_rdy,
 		phy_cmd_req => ctlrphy_cmd_req,
+		phy_cmd_rdy => ctlrphy_cmd_rdy,
 		phy_ini     => ctlrphy_ini,
 		sys_act     => ctlrphy_act,
 
