@@ -153,21 +153,20 @@ begin
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
 
-	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	process
-	begin
-		wait for 206 us;
-		loop
-		if ping_req='1' then
-			ping_req <= '0' after 5.8 us;
-		else
-			ping_req <= '1' after 250 ns;
-		end if;
-		wait on ping_req;
-		end loop;
-	end process;
+	mii_req <= '0', '1' after 500 us, '0' after 506 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+--	process
+--	begin
+--		wait for 206 us;
+--		loop
+--			if ping_req='1' then
+--				ping_req <= '0' after 5.8 us;
+--			else
+--				ping_req <= '1' after 250 ns;
+--			end if;
+--			wait on ping_req;
+--		end loop;
+--	end process;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -190,7 +189,7 @@ begin
 
 		gclk100     => xtal,
 		eth_rstn    => open,
-		eth_ref_clk => open,
+		eth_ref_clk => mii_refclk,
 		eth_mdc     => open,
 		eth_crs     => '-',
 		eth_col     => '-',

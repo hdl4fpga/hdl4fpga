@@ -114,6 +114,8 @@ architecture graphics of arty is
 	signal ddrsys_rst : std_logic;
 	signal ddrsys_clks       : std_logic_vector(0 to 5-1);
 
+	signal ctlrphy_ini : std_logic;
+	signal ctlrphy_inirdy : std_logic;
 	signal ctlrphy_cmd_rdy : std_logic;
 	signal ctlrphy_cmd_req : std_logic;
 	signal ctlrphy_act   : std_logic;
@@ -528,7 +530,7 @@ begin
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => ddr_tcp,
+		ddr_tcp      => 2*ddr_tcp,
 		fpga         => virtex7,
 		mark         => M15E,
 		sclk_phases  => sclk_phases,
@@ -571,10 +573,19 @@ begin
 		dmacfg_clk   => dmacfg_clk,
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
-		ctlr_bl      => "001",
+		ctlr_bl      => "000",
 		ctlr_cl      => ddr_param.cl,
 		ctlr_cwl     => ddr_param.cwl,
 		ctlr_rtt     => "001",
+		ctlrphy_wlreq => ctlrphy_wlreq,
+		ctlrphy_wlrdy => ctlrphy_wlrdy,
+		ctlrphy_rlcal => ctlrphy_rlcal,
+		ctlrphy_rlseq => ctlrphy_rlseq,
+
+		ctlrphy_ini  => ctlrphy_ini,
+		ctlrphy_inirdy  => ctlrphy_inirdy,
+		ctlrphy_irdy => ctlrphy_cmd_req,
+		ctlrphy_trdy => ctlrphy_cmd_rdy,
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -614,6 +625,15 @@ begin
 		end loop;
 	end process;
 
+	ctlrphy_rst(1) <= ctlrphy_rst(0);
+	ctlrphy_cke(1) <= ctlrphy_cke(0);
+	ctlrphy_cs(1)  <= ctlrphy_cs(0);
+	ctlrphy_ras(1) <= '1';
+	ctlrphy_cas(1) <= '1';
+	ctlrphy_we(1)  <= '1';
+	ctlrphy_odt(1) <= ctlrphy_odt(0);
+
+	ctlrphy_rlreq <= ctlrphy_inirdy;
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
 		tcp          => ddr_tcp,
@@ -626,62 +646,63 @@ begin
 		byte_size    => byte_size)
 	port map (
 
-		tp_sel    => sw(3),
-		tp_delay  => tp_delay,
-		tp1       => tp1(1 to 6),
-		tp_bit    => tp_bit,
+		tp_sel      => sw(3),
+		tp_delay    => tp_delay,
+		tp1         => tp1(1 to 6),
+		tp_bit      => tp_bit,
 
-		sys_clks => ddrsys_clks,
-		phy_cmd_rdy  => ctlrphy_cmd_rdy,
-		phy_cmd_req  => ctlrphy_cmd_req,
-		sys_act      => ctlrphy_act,
+		sys_clks    => ddrsys_clks,
+		phy_cmd_rdy => ctlrphy_cmd_rdy,
+		phy_cmd_req => ctlrphy_cmd_req,
+		phy_ini     => ctlrphy_ini,
+		sys_act     => ctlrphy_act,
 
-		sys_wlreq    => ctlrphy_wlreq,
-		sys_wlrdy    => ctlrphy_wlrdy,
+		sys_wlreq   => ctlrphy_wlreq,
+		sys_wlrdy   => ctlrphy_wlrdy,
 
-		sys_rlreq    => ctlrphy_rlreq,
-		sys_rlrdy    => ctlrphy_rlrdy,
-		sys_rlcal    => ctlrphy_rlcal,
-		sys_rlseq    => ctlrphy_rlseq,
+		sys_rlreq   => ctlrphy_rlreq,
+		sys_rlrdy   => ctlrphy_rlrdy,
+		sys_rlcal   => ctlrphy_rlcal,
+		sys_rlseq   => ctlrphy_rlseq,
 
-		sys_cke      => ctlrphy_cke,
-		sys_rst      => ctlrphy_rst,
-		sys_cs       => ctlrphy_cs,
-		sys_ras      => ctlrphy_ras,
-		sys_cas      => ctlrphy_cas,
-		sys_we       => ctlrphy_we,
-		sys_b        => ctlrphy_ba,
-		sys_a        => ctlrphy_a,
+		sys_cke     => ctlrphy_cke,
+		sys_rst     => ctlrphy_rst,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_ba,
+		sys_a       => ctlrphy_a,
 
-		sys_dqst     => ctlrphy_dqst,
-		sys_dqso     => ctlrphy_dqso,
-		sys_dmi      => ctlrphy_dmo,
-		sys_dmt      => ctlrphy_dmt,
-		sys_dmo      => ctlrphy_dmi,
-		sys_dqo      => ctlrphy_dqo,
-		sys_dqt      => ctlrphy_dqt,
-		sys_dqi      => ctlrphy_dqi,
-		sys_odt      => ctlrphy_odt,
-		sys_sti      => ctlrphy_sto,
-		sys_sto      => ctlrphy_sti,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqso,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmt     => ctlrphy_dmt,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqo     => ctlrphy_dqo,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqi     => ctlrphy_dqi,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
 
-		ddr_rst      => ddr3_reset,
-		ddr_clk      => ddr3_clk,
-		ddr_cke      => ddr3_cke,
-		ddr_cs       => ddr3_cs,
-		ddr_ras      => ddr3_ras,
-		ddr_cas      => ddr3_cas,
-		ddr_we       => ddr3_we,
-		ddr_b        => ddr3_ba,
-		ddr_a        => ddr3_a,
-		ddr_odt      => ddr3_odt,
---		ddr_dm       => ddr3_dm,
-		ddr_dqo      => ddr3_dqo,
-		ddr_dqi      => ddr3_dq,
-		ddr_dqt      => ddr3_dqt,
-		ddr_dqst     => ddr3_dqst,
-		ddr_dqsi     => ddr3_dqsi,
-		ddr_dqso     => ddr3_dqso);
+		ddr_rst     => ddr3_reset,
+		ddr_clk     => ddr3_clk,
+		ddr_cke     => ddr3_cke,
+		ddr_cs      => ddr3_cs,
+		ddr_ras     => ddr3_ras,
+		ddr_cas     => ddr3_cas,
+		ddr_we      => ddr3_we,
+		ddr_b       => ddr3_ba,
+		ddr_a       => ddr3_a,
+		ddr_odt     => ddr3_odt,
+--		ddr_dm      => ddr3_dm,
+		ddr_dqo     => ddr3_dqo,
+		ddr_dqi     => ddr3_dq,
+		ddr_dqt     => ddr3_dqt,
+		ddr_dqst    => ddr3_dqst,
+		ddr_dqsi    => ddr3_dqsi,
+		ddr_dqso    => ddr3_dqso);
 
 	ddriob_b : block
 	begin
