@@ -117,7 +117,7 @@ architecture graphics of arty is
 	signal ctlrphy_inirdy  : std_logic;
 	signal ctlrphy_ini     : std_logic;
 	signal ctlrphy_trdy    : std_logic;
-	signal ctlrphy_irdy    : std_logic;
+	signal ctlrphy_frm     : std_logic;
 	signal ctlrphy_rw      : std_logic;
 	signal ctlrphy_act     : std_logic;
 	signal ctlrphy_wlreq   : std_logic;
@@ -136,6 +136,7 @@ architecture graphics of arty is
 	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -578,6 +579,7 @@ begin
 		ctlr_cl      => ddr_param.cl,
 		ctlr_cwl     => ddr_param.cwl,
 		ctlr_rtt     => "001",
+		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy   => ctlrphy_inirdy,
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
@@ -587,7 +589,7 @@ begin
 		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_ini  => ctlrphy_ini,
-		ctlrphy_irdy => ctlrphy_irdy,
+		ctlrphy_irdy => ctlrphy_frm,
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_rw   => ctlrphy_rw,
 		ctlrphy_rst  => ctlrphy_rst(0),
@@ -659,12 +661,13 @@ begin
 		phy_rsts(1) => prst,
 		phy_rsts(2) => prst,
 		sys_clks    => ddrsys_clks,
-		phy_irdy    => ctlrphy_irdy,
+		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
 		phy_rw      => ctlrphy_rw,
 		phy_ini     => ctlrphy_ini,
 		sys_act     => ctlrphy_act,
 
+		sys_cmd     => ctlrphy_cmd,
 		sys_wlreq   => ctlrphy_wlreq,
 		sys_wlrdy   => ctlrphy_wlrdy,
 

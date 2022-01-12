@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_param.all;
 
 entity xc7a_ddrphy is
 	generic (
@@ -51,9 +52,10 @@ entity xc7a_ddrphy is
 
 		phy_ini      : buffer std_logic;
 		phy_rw       : buffer std_logic;
-		phy_irdy     : buffer std_logic;
+		phy_frm      : buffer std_logic;
 		phy_trdy     : in  std_logic;
 
+		sys_cmd      : in  std_logic_vector(0 to 3-1);
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
 		sys_rlreq    : in  std_logic;
@@ -350,12 +352,14 @@ begin
 		if rising_edge(sys_clks(clk0div)) then
 			if phy_rsts(clk0div)='1' then
 				cmd_req <= cmd_rdy;
-			elsif (phy_irdy and not phy_trdy)='1' then
-				cmd_req <= cmd_rdy;
+			elsif (phy_frm and phy_trdy)='1' then
+				if sys_cmd=ddr_mpu_write then
+					cmd_req <= cmd_rdy;
+				end if;
 			end if;
 		end if;
 	end process;
-	phy_irdy <= cmd_req xor cmd_rdy;
+	phy_frm <= cmd_req xor cmd_rdy;
 
 	process (sys_clks(iodclk))
 		type states is (s_reset, s_write, s_read);

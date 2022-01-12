@@ -34,15 +34,16 @@ add wave -noupdate /testbench/du_e/ddrphy_e/sys_rlcal
 add wave -noupdate /testbench/du_e/ddrphy_e/sys_rlseq
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/level
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_frm
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_trdy
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_rw
+add wave -noupdate /testbench/du_e/ddrphy_e/sys_cmd
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/phy_rw
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_trdy
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_cas
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_act
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_irdy
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_trdy
-add wave -noupdate /testbench/du_e/ddrphy_e/line__360/state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17904471 ps} 0}
+WaveRestoreCursors {{Cursor 1} {17893510 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -58,4 +59,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {17859978 ps} {18007370 ps}
+WaveRestoreZoom {17859980 ps} {18007370 ps}

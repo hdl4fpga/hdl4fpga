@@ -58,9 +58,9 @@ entity ddr_ctlr is
 		ctlr_cfgrdy  : out std_logic;
 		ctlr_inirdy  : out std_logic;
 
-		ctlr_irdy    : in  std_logic;
+		ctlr_frm     : in  std_logic;
 		ctlr_trdy    : out std_logic;
-		ctlr_mpu_ena : out std_logic;
+		ctlr_cmd     : out std_logic_vector(0 to 2);
 		ctlr_rw      : in  std_logic;
 		ctlr_b       : in  std_logic_vector(bank_size-1 downto 0);
 		ctlr_a       : in  std_logic_vector(addr_size-1 downto 0);
@@ -77,8 +77,7 @@ entity ddr_ctlr is
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
-
-		phy_irdy     : in  std_logic := '0';
+		phy_frm      : in  std_logic := '0';
 		phy_trdy     : out std_logic;
 		phy_rw       : in  std_logic := '-';
 		phy_inirdy   : in  std_logic := '1';
@@ -213,8 +212,8 @@ architecture mix of ddr_ctlr is
 begin
 
 	ctlr_trdy    <= ddr_pgm_trdy when phy_inirdy='1' else '0';
-	phy_trdy     <= ddr_pgm_trdy when phy_inirdy='0' else '0';
-	ddr_pgm_irdy <= ctlr_irdy    when phy_inirdy='1' else phy_irdy;
+	phy_trdy     <= ddr_mpu_trdy when phy_inirdy='0' else '0';
+	ddr_pgm_irdy <= ctlr_frm     when phy_inirdy='1' else phy_frm;
 	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
 	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
@@ -256,7 +255,6 @@ begin
 	phy_cke     <= ddr_init_cke;
 	phy_cs      <= '0'          when ddr_mpu_sel='1' else ddr_init_cs;
 	phy_ras     <= ddr_mpu_ras  when ddr_mpu_sel='1' else ddr_init_ras;
-	phy_ras     <= ddr_mpu_ras  when ddr_mpu_sel='1' else ddr_init_ras;
 	phy_cas     <= ddr_mpu_cas  when ddr_mpu_sel='1' else ddr_init_cas;
 	phy_we      <= ddr_mpu_we   when ddr_mpu_sel='1' else ddr_init_we;
 	phy_a       <= ctlr_a       when ddr_mpu_sel='1' else ddr_init_a;
@@ -286,7 +284,7 @@ begin
 		ddr_pgm_seq   => phy_rlseq,
 		ddr_pgm_rw    => ddr_pgm_rw);
 
-	ctlr_ras <=ddr_pgm_ras and ddr_mpu_trdy;
+	ctlr_ras <= ddr_pgm_ras and ddr_mpu_trdy;
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
@@ -323,10 +321,10 @@ begin
 		ddr_mpu_wwin  => ddr_mpu_wwin,
 		ddr_mpu_rwwin => ddr_mpu_rwwin);
 
+	ctlr_cmd     <= ddr_pgm_cmd;
 	ctlr_di_req  <= ddr_mpu_wwin;
 	ctlr_do_req  <= ddr_mpu_rwin;
 	ctlr_dio_req <= ddr_mpu_rwwin;
-	ctlr_mpu_ena <= ddr_mpu_trdy;
 
 	ddr_sch_e : entity hdl4fpga.ddr_sch
 	generic map (

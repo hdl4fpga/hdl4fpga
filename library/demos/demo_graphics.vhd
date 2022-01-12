@@ -82,6 +82,7 @@ entity demo_graphics is
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
 		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := "---";
+		ctlr_cmd      : out std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
 
 		ctlrphy_wlreq : out std_logic;
@@ -925,11 +926,12 @@ begin
 			ctlr_clks    => ctlr_clks,
 			ctlr_inirdy  => inirdy,
 
-			ctlr_irdy    => ctlr_irdy,
+			ctlr_frm     => ctlr_irdy,
 			ctlr_trdy    => ctlr_trdy,
 			ctlr_rw      => ctlr_rw,
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a,
+			ctlr_cmd     => ctlr_cmd,
 			ctlr_ras     => ctlr_ras,
 			ctlr_cas     => ctlr_cas,
 			ctlr_di_dv   => ctlr_di_dv,
@@ -942,7 +944,7 @@ begin
 			ctlr_refreq  => ctlr_refreq,
 			ctlr_dio_req => ctlr_dio_req,
 			phy_inirdy   => ctlrphy_ini,
-			phy_irdy     => ctlrphy_irdy,
+			phy_frm      => ctlrphy_irdy,
 			phy_trdy     => ctlrphy_trdy,
 			phy_rw       => ctlrphy_rw,
 			phy_wlrdy    => ctlrphy_wlrdy,

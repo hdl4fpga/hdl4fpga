@@ -80,6 +80,14 @@ package ddr_param is
 	constant ddr_ref : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '1');
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
+	constant ddr_mpu_nop   : std_logic_vector(0 to 2) := "111";
+	constant ddr_mpu_act   : std_logic_vector(0 to 2) := "011";
+	constant ddr_mpu_read  : std_logic_vector(0 to 2) := "101";
+	constant ddr_mpu_write : std_logic_vector(0 to 2) := "100";
+	constant ddr_mpu_pre   : std_logic_vector(0 to 2) := "010";
+	constant ddr_mpu_aut   : std_logic_vector(0 to 2) := "001";
+	constant ddr_mpu_dcare : std_logic_vector(0 to 2) := "000";
+
 	--------------
 	-- DDR init --
 	--------------
@@ -225,7 +233,7 @@ package ddr_param is
 	end record;
 
 	type fd_vector is array (natural range <>) of fd;
-		
+
 	function mr_field (
 		constant mask : fd_vector;
 		constant src  : std_logic_vector;
@@ -321,7 +329,7 @@ package ddr_param is
 
 	constant ddr3_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
 	constant ddr3_ods  : fd_vector(0 to 1) := (
-		0 => (off => 1, sz => 1), 
+		0 => (off => 1, sz => 1),
 		1 => (off => 5, sz => 1));
 	constant ddr3_rtt  : fd_vector(0 to 2) := (
 		0 => (off => 2, sz => 1),
@@ -371,12 +379,12 @@ package body ddr_param is
 
 		subtype word is std_logic_vector(unsigned_num_bits(LINE_SIZE/WORD_SIZE-1)-1 downto 0);
 		type word_vector is array(natural range <>) of word;
-		
+
 		subtype latword is std_logic_vector(0 to lat_val'length-1);
 		type latword_vector is array (natural range <>) of latword;
 
 		constant algn : natural := unsigned_num_bits(WORD_SIZE-1);
-		
+
 		function to_latwordvector(
 			constant arg : std_logic_vector)
 			return latword_vector is
@@ -408,9 +416,9 @@ package body ddr_param is
 			end loop;
 			return val;
 		end;
-		
+
 		constant lc   : latword_vector := to_latwordvector(lat_cod);
-		
+
 		variable sel_sch : word_vector(lc'range);
 		variable val : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
 		variable disp : natural;
@@ -420,7 +428,7 @@ package body ddr_param is
 		setup_l : for i in 0 to lat_tab'length-1 loop
 			sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length));
 		end loop;
-		
+
 		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
 		val := val sll algn;
 		return std_logic_vector(val);
@@ -529,25 +537,25 @@ package body ddr_param is
 	constant sc1_wai  : s_code := "1101";
 
 	constant sdram_pgm : s_table := (
-		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)), 
-		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)), 
-		(sc1_pre1, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
-		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
-		(sc1_ref2, sc1_lm1,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),  
+		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)),
+		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)),
+		(sc1_pre1, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)),
+		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)),
+		(sc1_ref2, sc1_lm1,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),
 		(sc1_lm1,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),
 		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)));
 
 	constant ddr1_pgm : s_table := (
-		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)), 
-		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)), 
-		(sc1_pre1, sc1_lm1,  "0", "0", "11000", ddr_mrs, ddr1mr_setemr, ddr_mr1, to_unsigned(TMR1_MRD, TMR_SIZE)), 
-		(sc1_lm1,  sc1_lm2,  "0", "0", "11000", ddr_mrs, ddr1mr_rstdll, ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)), 
-		(sc1_lm2,  sc1_pre2, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)), 
-		(sc1_pre2, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
-		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
-		(sc1_ref2, sc1_lm3,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),  
-		(sc1_lm3,  sc1_wai,  "0", "0", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_DLL, TMR_SIZE)),  
-		(sc1_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),  
+		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)),
+		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)),
+		(sc1_pre1, sc1_lm1,  "0", "0", "11000", ddr_mrs, ddr1mr_setemr, ddr_mr1, to_unsigned(TMR1_MRD, TMR_SIZE)),
+		(sc1_lm1,  sc1_lm2,  "0", "0", "11000", ddr_mrs, ddr1mr_rstdll, ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),
+		(sc1_lm2,  sc1_pre2, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, to_unsigned(TMR1_RPA, TMR_SIZE)),
+		(sc1_pre2, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)),
+		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)),
+		(sc1_ref2, sc1_lm3,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),
+		(sc1_lm3,  sc1_wai,  "0", "0", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_DLL, TMR_SIZE)),
+		(sc1_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),
 		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)));
 
 	constant sc2_cke  : s_code := "0001";
@@ -573,19 +581,19 @@ package body ddr_param is
 	                              --    |||||
                                   --    vvvvv
 	constant ddr2_pgm : s_table := (
-		(sc_rst,   sc2_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_CKE, TMR_SIZE)), 
-		(sc2_cke,  sc2_pre1, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_unsigned(TMR2_RPA, TMR_SIZE)), 
-		(sc2_pre1, sc2_lm1,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, to_unsigned(TMR2_MRD, TMR_SIZE)), 
-		(sc2_lm1,  sc2_lm2,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, to_unsigned(TMR2_MRD, TMR_SIZE)), 
-		(sc2_lm2,  sc2_lm3,  "0", "0", "11000", ddr_mrs, ddr2mr_enadll,  ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)), 
-		(sc2_lm3,  sc2_lm4,  "0", "0", "11000", ddr_mrs, ddr2mr_rstdll,  ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)), 
+		(sc_rst,   sc2_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_CKE, TMR_SIZE)),
+		(sc2_cke,  sc2_pre1, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_unsigned(TMR2_RPA, TMR_SIZE)),
+		(sc2_pre1, sc2_lm1,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm1,  sc2_lm2,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm2,  sc2_lm3,  "0", "0", "11000", ddr_mrs, ddr2mr_enadll,  ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm3,  sc2_lm4,  "0", "0", "11000", ddr_mrs, ddr2mr_rstdll,  ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),
 		(sc2_lm4,  sc2_pre2, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_unsigned(TMR2_RPA, TMR_SIZE)),
-		(sc2_pre2, sc2_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)), 
-		(sc2_ref1, sc2_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)), 
-		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm7,  sc2_wai,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_DLL, TMR_SIZE)),  
+		(sc2_pre2, sc2_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)),
+		(sc2_ref1, sc2_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)),
+		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),
+		(sc2_lm7,  sc2_wai,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_DLL, TMR_SIZE)),
  		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR2_REF, TMR_SIZE)),
 		(sc_ref,   sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)));
 
@@ -605,7 +613,7 @@ package body ddr_param is
  	constant sc3_wlf  : s_code := "1010";
 
  	constant sc3_wai  : s_code := "1011";
- 
+
 	                              --    +------< rst
 	                              --    |+-----< cke
 	                              --    ||+----< rdy
@@ -613,24 +621,24 @@ package body ddr_param is
 	                              --    ||||+--< odt
 	                              --    |||||
                                   --    vvvvv
- 	constant ddr3_pgm : s_table := (          
+ 	constant ddr3_pgm : s_table := (
  		(sc_rst,   sc3_rrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_RRDY, TMR_SIZE)),
- 		(sc3_rrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_CKE, TMR_SIZE)), 
- 		(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, to_unsigned(TMR3_MRD, TMR_SIZE)), 
- 		(sc3_lmr2, sc3_lmr3, "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, to_unsigned(TMR3_MRD, TMR_SIZE)), 
- 		(sc3_lmr3, sc3_lmr1, "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MRD, TMR_SIZE)), 
- 		(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, to_unsigned(TMR3_MOD, TMR_SIZE)), 
+ 		(sc3_rrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_CKE, TMR_SIZE)),
+ 		(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, to_unsigned(TMR3_MRD, TMR_SIZE)),
+ 		(sc3_lmr2, sc3_lmr3, "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, to_unsigned(TMR3_MRD, TMR_SIZE)),
+ 		(sc3_lmr3, sc3_lmr1, "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MRD, TMR_SIZE)),
+ 		(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, to_unsigned(TMR3_MOD, TMR_SIZE)),
  		(sc3_lmr0, sc3_zqi,  "0", "0", "11000", ddr_zqc, ddr3mr_zqc, ddr_mrx,    to_unsigned(TMR3_ZQINIT, TMR_SIZE)),
- 		(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)), 
- 		(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLDQSEN, TMR_SIZE)),  
- 		(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),  
- 		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),  
- 		(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_MRD, TMR_SIZE)),  
- 		(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),  
+ 		(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),
+ 		(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLDQSEN, TMR_SIZE)),
+ 		(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),
+ 		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),
+ 		(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_MRD, TMR_SIZE)),
+ 		(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),
  		(sc3_wlf,  sc3_wai,  "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_DLL, TMR_SIZE)),
  		(sc3_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
  		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)));
- 
+
 	function to_sout (
 		constant output : std_logic_vector(0 to 5-1))
 		return s_out is
@@ -698,7 +706,7 @@ package body ddr_param is
 				TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_ddrlatency(tCP, mark, tREFI));
 	begin
-		case stdr is 
+		case stdr is
 		when SDRAM|DDR1 =>
 			return ddr1_timer;
 		when DDR2 =>
@@ -707,7 +715,7 @@ package body ddr_param is
 			return ddr3_timer;
 		end case;
 	end;
-		
+
 	function mr_field (
 		constant mask : fd_vector;
 		constant src  : std_logic_vector;
@@ -795,7 +803,7 @@ package body ddr_param is
 		when ddr1mr_preall =>
 			return mr_field(mask => ddr1_preall, src => "1", size => ddr_a_max);
 		when ddr1mr_rstdll =>
-			return 
+			return
 				mr_field(mask => ddr1_bl,   src => ddr_mr_bl, size => ddr_a_max) or
 				mr_field(mask => ddr1_bt,   src => ddr_mr_bt, size => ddr_a_max) or
 				mr_field(mask => ddr1_cl,   src => ddr_mr_cl, size => ddr_a_max) or

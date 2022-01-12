@@ -20,6 +20,7 @@ IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
 HDL4FPGA__xc7a_ddrphy__virtex7 = $(LIB_HDL4FPGA)/xc7a_ddrphy/virtex7.dat
 HDL4FPGA__xc7a_ddrphy = $(LIB_HDL4FPGA)/xc7a_ddrphy/_primary.dat
+HDL4FPGA__xc7a_ddrdqphy__virtex7 = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/virtex7.dat
 HDL4FPGA__xc7a_ddrdqphy = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/_primary.dat
 HDL4FPGA__xc7a_ddrbaphy__virtex = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/virtex.dat
 HDL4FPGA__xc7a_ddrbaphy = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/_primary.dat
@@ -263,6 +264,7 @@ SCCOM = sccom
 
 whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__xc7a_ddrphy) \
+    $(HDL4FPGA__xc7a_ddrdqphy__virtex7) \
     $(HDL4FPGA__xc7a_ddrdqphy) \
     $(HDL4FPGA__xc7a_ddrbaphy__virtex) \
     $(HDL4FPGA__xc7a_ddrbaphy) \
@@ -1052,6 +1054,7 @@ $(HDL4FPGA__grant__def) : ../common/grant.vhd \
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
+		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__modeline_calculator) \
@@ -1732,11 +1735,19 @@ $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrbaphy.vhd
 
-$(HDL4FPGA__xc7a_ddrdqphy) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \
+$(HDL4FPGA__xc7a_ddrdqphy) \
+$(HDL4FPGA__xc7a_ddrdqphy__virtex7) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \
+		$(HDL4FPGA__adjsto) \
+		$(HDL4FPGA__omdr) \
+		$(HDL4FPGA__adjpha) \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__imdr) \
 		$(UNISIM__vcomponents) \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrdqphy.vhd
 
 $(HDL4FPGA__xc7a_ddrphy) \
@@ -1745,6 +1756,8 @@ $(HDL4FPGA__xc7a_ddrphy__virtex7) : ../xilinx/artix7/xc7a_ddrphy.vhd \
 		$(HDL4FPGA__xc7a_ddrbaphy) \
 		$(HDL4FPGA__barrel) \
 		$(HDL4FPGA__ddro) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
