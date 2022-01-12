@@ -40,8 +40,8 @@ entity xc7a_ddrdqphy is
 		tp_sel       : in  std_logic;
 		tp_delay     : out std_logic_vector(5-1 downto 0);
 
-		sys_rsts   : in std_logic_vector;
-		sys_clks   : in std_logic_vector;
+		sys_rsts     : in std_logic_vector;
+		sys_clks     : in std_logic_vector;
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
 		sys_rlreq    : in  std_logic;

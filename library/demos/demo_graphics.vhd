@@ -92,6 +92,7 @@ entity demo_graphics is
 		ctlrphy_rlseq : out std_logic;
 		ctlrphy_irdy  : in  std_logic := '0';
 		ctlrphy_trdy  : out std_logic := '0';
+		ctlrphy_rw    : in  std_logic := '-';
 
 		ctlrphy_ini   : in  std_logic := '1';
 		ctlrphy_rst   : out std_logic;
@@ -100,12 +101,13 @@ entity demo_graphics is
 		ctlrphy_ras   : out std_logic;
 		ctlrphy_cas   : out std_logic;
 		ctlrphy_we    : out std_logic;
+		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
 		ctlrphy_dsi   : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_dst   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		ctlrphy_dmt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
@@ -942,6 +944,7 @@ begin
 			phy_inirdy   => ctlrphy_ini,
 			phy_irdy     => ctlrphy_irdy,
 			phy_trdy     => ctlrphy_trdy,
+			phy_rw       => ctlrphy_rw,
 			phy_wlrdy    => ctlrphy_wlrdy,
 			phy_wlreq    => ctlrphy_wlreq,
 			phy_rlrdy    => ctlrphy_rlrdy,
@@ -953,6 +956,7 @@ begin
 			phy_cs       => ctlrphy_cs,
 			phy_ras      => ctlrphy_ras,
 			phy_cas      => ctlrphy_cas,
+			phy_odt      => ctlrphy_odt,
 			phy_we       => ctlrphy_we,
 			phy_b        => ctlrphy_b,
 			phy_a        => ctlrphy_a,

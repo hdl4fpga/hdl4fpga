@@ -30,39 +30,32 @@ entity barrel is
 		shift : boolean := FALSE;
 		left  : boolean := TRUE);
 	port (
-		shf  : in  std_logic_vector;
-		di    : in  std_logic_vector;
-		do    : out std_logic_vector);
+		shf : in  std_logic_vector;
+		di  : in  std_logic_vector;
+		do  : out std_logic_vector);
 end;
 
 architecture beh of barrel is
 begin
 	process (di, shf)
-
---		function rotate (val: std_logic_vector; shf : natural, dir : string) 
---			return std_logic_vector is
---			variable aux : std_logic_vector (val'length-1 downto 0) := val;
---		begin
---			if dir="LEFT" then
---				return aux(aux'left-shf downto 0) & aux(aux'left downto aux'left-shf+1);
---			else
---				return aux(shf-1 downto 0)        & aux(aux'left downto shf);
---			end if;
---		end;
-
 		variable aux :  unsigned(di'length-1 downto 0);
-		
 	begin
 		aux := unsigned(di);
 
 		for i in shf'range loop
 			if shf(i)= '1' then
 				if left then
-					aux := aux rol 2**i;
-					aux := aux sll 2**i;
+					if shift then
+						aux := shift_left (aux, 2**i);
+					else
+						aux := rotate_left(aux, 2**i);
+					end if;
 				else
-					aux := aux ror 2**i;
-					aux := aux srl 2**i;
+					if shift then
+						aux := shift_left(aux,   2**i);
+					else
+						aux := rotate_right(aux, 2**i);
+					end if;
 				end if;
 			end if;
 		end loop;

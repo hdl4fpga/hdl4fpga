@@ -116,8 +116,9 @@ architecture graphics of arty is
 
 	signal ctlrphy_inirdy  : std_logic;
 	signal ctlrphy_ini     : std_logic;
-	signal ctlrphy_cmd_rdy : std_logic;
-	signal ctlrphy_cmd_req : std_logic;
+	signal ctlrphy_trdy    : std_logic;
+	signal ctlrphy_irdy    : std_logic;
+	signal ctlrphy_rw      : std_logic;
 	signal ctlrphy_act     : std_logic;
 	signal ctlrphy_wlreq   : std_logic;
 	signal ctlrphy_wlrdy   : std_logic;
@@ -257,6 +258,7 @@ architecture graphics of arty is
 	signal tp_delay   : std_logic_vector(word_size/byte_size*5-1 downto 0);
 	signal tp_bit     : std_logic_vector(word_size/byte_size*5-1 downto 0) := (others  => 'Z');
 	signal tp1        : std_logic_vector(1 to 32);
+	signal prst : std_logic;
 begin
 
 	sys_rst <= btn(0);
@@ -373,6 +375,7 @@ begin
 				clkout2  => ddr_clk0div_mmce2,
 				clkout3  => ddr_clk90div_mmce2,
 				locked   => ddr_lkd);
+			prst <= not ddr_lkd;
 
 			ddr_clk0_bufg : bufio
 			port map (
@@ -584,14 +587,16 @@ begin
 		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_ini  => ctlrphy_ini,
-		ctlrphy_irdy => ctlrphy_cmd_req,
-		ctlrphy_trdy => ctlrphy_cmd_rdy,
+		ctlrphy_irdy => ctlrphy_irdy,
+		ctlrphy_trdy => ctlrphy_trdy,
+		ctlrphy_rw   => ctlrphy_rw,
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
 		ctlrphy_ras  => ctlrphy_ras(0),
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
 		ctlrphy_dsi  => ctlrphy_dqsi,
@@ -650,12 +655,13 @@ begin
 		tp1         => tp1(1 to 6),
 		tp_bit      => tp_bit,
 
-		phy_rsts(0) => sys_rst,
-		phy_rsts(1) => sys_rst,
-		phy_rsts(2) => sys_rst,
+		phy_rsts(0) => prst,
+		phy_rsts(1) => prst,
+		phy_rsts(2) => prst,
 		sys_clks    => ddrsys_clks,
-		phy_cmd_req => ctlrphy_cmd_req,
-		phy_cmd_rdy => ctlrphy_cmd_rdy,
+		phy_irdy    => ctlrphy_irdy,
+		phy_trdy    => ctlrphy_trdy,
+		phy_rw      => ctlrphy_rw,
 		phy_ini     => ctlrphy_ini,
 		sys_act     => ctlrphy_act,
 
@@ -681,9 +687,9 @@ begin
 		sys_dmi     => ctlrphy_dmo,
 		sys_dmt     => ctlrphy_dmt,
 		sys_dmo     => ctlrphy_dmi,
-		sys_dqo     => ctlrphy_dqo,
+		sys_dqo     => ctlrphy_dqi,
 		sys_dqt     => ctlrphy_dqt,
-		sys_dqi     => ctlrphy_dqi,
+		sys_dqi     => ctlrphy_dqo,
 		sys_odt     => ctlrphy_odt,
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,

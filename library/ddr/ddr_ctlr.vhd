@@ -80,6 +80,7 @@ entity ddr_ctlr is
 
 		phy_irdy     : in  std_logic := '0';
 		phy_trdy     : out std_logic;
+		phy_rw       : in  std_logic := '-';
 		phy_inirdy   : in  std_logic := '1';
 		phy_wlrdy    : in  std_logic := '-';
 		phy_wlreq    : out std_logic;
@@ -167,6 +168,7 @@ architecture mix of ddr_ctlr is
 
 	signal ddr_pgm_irdy   : std_logic;
 	signal ddr_pgm_trdy   : std_logic;
+	signal ddr_pgm_rw     : std_logic;
 	signal ddr_pgm_cmd    : std_logic_vector(0 to 2);
 	signal ddr_pgm_ras    : std_logic;
 
@@ -213,6 +215,7 @@ begin
 	ctlr_trdy    <= ddr_pgm_trdy when phy_inirdy='1' else '0';
 	phy_trdy     <= ddr_pgm_trdy when phy_inirdy='0' else '0';
 	ddr_pgm_irdy <= ctlr_irdy    when phy_inirdy='1' else phy_irdy;
+	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
 	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
 
@@ -281,7 +284,7 @@ begin
 		ddr_pgm_idl   => ctlr_idl,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_seq   => phy_rlseq,
-		ddr_pgm_rw    => ctlr_rw);
+		ddr_pgm_rw    => ddr_pgm_rw);
 
 	ctlr_ras <=ddr_pgm_ras and ddr_mpu_trdy;
 

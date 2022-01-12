@@ -49,16 +49,16 @@ entity xc7a_ddrphy is
 		sys_clks     : in  std_logic_vector(0 to 5-1);
 		phy_rsts     : in  std_logic_vector(0 to 3-1) := (others => '1');
 
-		phy_ini      : out std_logic;
-		phy_rw       : out std_logic;
-		phy_cmd_rdy  : in  std_logic;
-		phy_cmd_req  : out std_logic;
+		phy_ini      : buffer std_logic;
+		phy_rw       : buffer std_logic;
+		phy_irdy     : buffer std_logic;
+		phy_trdy     : in  std_logic;
 
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
 		sys_rlreq    : in  std_logic;
-		sys_rlrdy    : out std_logic;
-		sys_rlcal    : out std_logic;
+		sys_rlrdy    : buffer std_logic;
+		sys_rlcal    : buffer std_logic;
 		sys_rlseq    : in  std_logic;
 
 		sys_rst      : in  std_logic_vector(0 to cmmd_gear-1) := (others => '-');
@@ -305,13 +305,10 @@ architecture virtex7 of xc7a_ddrphy is
 	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
 
 	signal wlrdy   : std_logic_vector(0 to word_size/byte_size-1);
-	signal ini     : std_logic;
-	signal rw      : std_logic;
 	signal cmd_req : std_logic;
 	signal cmd_rdy : std_logic;
 	signal rlrdy   : std_logic;
-	signal lvl     : std_logic;
-	signal rlcal   : std_logic;
+	signal level     : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
 begin
@@ -328,14 +325,10 @@ begin
 		variable rlcal_h2l : std_logic;
 	begin
 		if rising_edge(sys_clks(clk0div)) then
-			phy_rw      <= rw;
-			sys_rlrdy   <= rlrdy;
 
-			phy_cmd_req <= cmd_req;
 			if rlcal_h2l='1' then
-				if rlcal='0' then
+				if sys_rlcal='0' then
 					if sys_rlseq='1' then
-						phy_cmd_req <= cmd_req;
 					end if;
 				end if;
 			end if;
@@ -343,92 +336,101 @@ begin
 			if phy_rsts(rstiod)='1' then
 				rlcal_h2l := '0';
 			else
-				rlcal_h2l := rlcal;
+				rlcal_h2l := sys_rlcal;
 			end if;
 		end if;
 	end process;
 
-	process (sys_clks(iodclk))
-	begin
-		if rising_edge(sys_clks(iodclk)) then
-			cmd_rdy <= phy_cmd_rdy;
-		end if;
-	end process;
 
-	phy_ba  <= sys_b when lvl='0' else (others => '0');
-	phy_a   <= sys_a when lvl='0' else (others => '0');
+	phy_ba  <= sys_b when level='0' else (others => '0');
+	phy_a   <= sys_a when level='0' else (others => '0');
 
-	process (sys_clks(iodclk))
+	process (sys_clks(clk0div))
 	begin
-		if rising_edge(sys_clks(iodclk)) then
-			if phy_rsts(rstiod)='1' then
-				ini     <= '0';
-				rw      <= '0';
-				cmd_req <= '0';
-				lvl     <= '0';
-				phy_ini <= '0';
-				tp1     <= (others => '0');
-			elsif ini='0' then
-				if sys_rlreq='1' then
-					if cmd_req='1' then
-						if cmd_rdy='0' then
-							if rw='0' then
-								cmd_req <= '0';
-							elsif rlrdy='1' then
-								cmd_req <= rlcal;
-							end if;
-						end if;
-					elsif cmd_rdy='1' then
-						if rw='0' then
-							cmd_req <= '1';
-						else
-							ini <= '1';
-						end if;
-						rw <= '1';
-					end if;
-					lvl <= '1';
-				elsif cmd_rdy='1' then
-					cmd_req <= '1';
-					lvl     <= '0';
-				else
-					cmd_req <= rlcal;
-					lvl     <= '0';
-				end if;
-			else
-				cmd_req <= rlcal;
-				if sys_act='1' then
-					lvl     <= '0';
-					phy_ini <= '1';
-				end if;
+		if rising_edge(sys_clks(clk0div)) then
+			if phy_rsts(clk0div)='1' then
+				cmd_req <= cmd_rdy;
+			elsif (phy_irdy and not phy_trdy)='1' then
+				cmd_req <= cmd_rdy;
 			end if;
-			tp1(0) <= cmd_rdy;
-			tp1(1) <= cmd_req;
-			tp1(2) <= rlcal;
-			tp1(3) <= rw;
-			tp1(4) <= rlrdy;
-			tp1(5) <= lvl;
 		end if;
 	end process;
+	phy_irdy <= cmd_req xor cmd_rdy;
 
 	process (sys_clks(iodclk))
+		type states is (s_reset, s_write, s_read);
+		variable state : states;
 		variable aux : std_logic;
 	begin
 		if rising_edge(sys_clks(iodclk)) then
+			if phy_rsts(rstiod)='1' then
+				tp1     <= (others => '0');
+				phy_rw  <= '0';
+				phy_ini <= '0';
+				level   <= '0';
+				cmd_rdy <= '0';
+				state   := s_reset;
+			elsif (cmd_rdy xor cmd_req)='0' then
+				case state is
+				when s_reset =>
+					phy_rw  <= '0';
+					phy_ini <= '0';
+					if sys_rlreq='1' then
+						level   <= '1';
+						cmd_rdy <= not cmd_req;
+						state   := s_write;
+					end if;
+				when s_write =>
+					phy_rw  <= '1';
+					phy_ini <= '0';
+					level   <= '1';
+					cmd_rdy <= not cmd_req;
+					state   := s_read;
+				when s_read =>
+					phy_rw      <= '-';
+					if (sys_rlrdy and sys_rlcal)='1' then
+						level   <= '0';
+						phy_ini <= '1';
+					else
+						level   <= '1';
+						phy_ini <= '0';
+					end if;
+				end case;
+			end if;
+
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
 			sys_wlrdy <= aux;
+			tp1(0) <= cmd_rdy;
+			tp1(1) <= cmd_rdy;
+			tp1(2) <= sys_rlcal;
+			tp1(3) <= phy_rw;
+			tp1(4) <= sys_rlrdy;
+			tp1(5) <= level;
 		end if;
 	end process;
+
+--	process (sys_clks(iodclk))
+--		variable aux : std_logic;
+--	begin
+--		if rising_edge(sys_clks(iodclk)) then
+--			aux := '1';
+--			for i in wlrdy'range loop
+--				aux := aux and wlrdy(i);
+--			end loop;
+--			sys_wlrdy <= aux;
+--		end if;
+--	end process;
 
 	rotcmmd_g : if cmmd_gear > 1 generate
 		process (sys_clks(clk0div))
 		begin
 			if rising_edge(sys_clks(clk0div)) then
-				if rlcal='0' then
+				if sys_rlcal='0' then
 					rotba <= (others => '0');
-				elsif ini='1' then
+				elsif phy_ini='1' then
 					rotba <= (others => '0');
 				elsif sys_rlseq='1' then
 					rotba <= rotba + 1;
@@ -451,7 +453,7 @@ begin
 		rotwe_i : entity hdl4fpga.barrel
 		port map (
 			shf => std_logic_vector(rotba),
-			di   => sys_we,
+			di  => sys_we,
 			do  => ba_we);
 	end generate;
 
@@ -508,10 +510,9 @@ begin
 			for i in byte_rlcal'range loop
 				aux := aux and byte_rlcal(i);
 			end loop;
-			rlcal <= aux and not rlrdy;
+			sys_rlcal <= aux and not sys_rlrdy;
 		end if;
 	end process;
-	sys_rlcal <= rlcal;
 
 	process (sys_clks(iodclk))
 		variable aux : std_logic;
@@ -521,7 +522,7 @@ begin
 			for i in byte_rlrdy'range loop
 				aux := aux and byte_rlrdy(i);
 			end loop;
-			rlrdy <= aux;
+			sys_rlrdy <= aux;
 		end if;
 	end process;
 
