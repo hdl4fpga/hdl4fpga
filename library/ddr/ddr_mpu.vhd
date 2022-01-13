@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_param.all;
 
 entity ddr_mpu is
 	generic (
@@ -107,24 +108,11 @@ architecture arch of ddr_mpu is
 	constant lat_size : natural := timer_size(lrcd, lrfc, lwr, lrp, bl_tab, cl_tab, cwl_tab);
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
-	constant ddr_nop       : std_logic_vector(0 to 2) := "111";
-	constant ddr_act       : std_logic_vector(0 to 2) := "011";
-	constant ddr_read      : std_logic_vector(0 to 2) := "101";
-	constant ddr_write     : std_logic_vector(0 to 2) := "100";
-	constant ddr_pre       : std_logic_vector(0 to 2) := "010";
-	constant ddr_aut       : std_logic_vector(0 to 2) := "001";
-	constant ddr_dcare     : std_logic_vector(0 to 2) := "000";
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
 
 	type ddrs_states is (ddrs_act, ddrs_read_bl, ddrs_read_cl, ddrs_write_bl, ddrs_write_cl, ddrs_pre);
 
---	constant ddrs_act      : std_logic_vector(0 to 2) := "011";
---	constant ddrs_read_bl  : std_logic_vector(0 to 2) := "101";
---	constant ddrs_read_cl  : std_logic_vector(0 to 2) := "001";
---	constant ddrs_write_bl : std_logic_vector(0 to 2) := "100";
---	constant ddrs_write_cl : std_logic_vector(0 to 2) := "000";
---	constant ddrs_pre      : std_logic_vector(0 to 2) := "010";
 	type state_names is (s_act, s_readbl, s_readcl, s_writebl, s_writecl, s_pre, s_none);
 	signal mpu_state : state_names;
 
@@ -150,76 +138,76 @@ architecture arch of ddr_mpu is
 	constant ddr_state_tab : ddr_state_vector(0 to 13-1) := (
 
 		-------------
-		-- ddr_pre --
+		-- mpu_pre --
 		-------------
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
-		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => id_idle,
+		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
-		 ddr_cmi => ddr_pre, ddr_cmo => ddr_pre, ddr_lat => id_rp,
+		 ddr_cmi => mpu_pre, ddr_cmo => mpu_pre, ddr_lat => id_rp,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_act,
-		 ddr_cmi => ddr_act, ddr_cmo => ddr_act, ddr_lat => id_rcd,
+		 ddr_cmi => mpu_act, ddr_cmo => mpu_act, ddr_lat => id_rcd,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
-		 ddr_cmi => ddr_aut, ddr_cmo => ddr_aut, ddr_lat => id_rfc,
+		 ddr_cmi => mpu_aut, ddr_cmo => mpu_aut, ddr_lat => id_rfc,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		-------------
-		-- ddr_act --
+		-- mpu_act --
 		-------------
 
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_read_bl,
-		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => id_bl,
+		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
 		 ddr_rea => '1', ddr_cen => '1',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_write_bl,
-		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => id_bl,
+		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
 		 ddr_rea => '0', ddr_cen => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 
 		--------------
-		-- ddr_read --
+		-- mpu_read --
 		--------------
 
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
-		 ddr_cmi => ddr_read, ddr_cmo => ddr_read, ddr_lat => id_bl,
+		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
 		 ddr_rea => '1', ddr_cen => '1',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
-		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => id_idle,
+		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
 		 ddr_rea => '1', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_cl,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => id_cl,
+		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cl,
 		 ddr_rea => '1', ddr_cen => '0',
 		 ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_cl, ddr_state_n => ddrs_pre,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => id_rp,
+		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_pre, ddr_lat => id_rp,
 		 ddr_rea => '1', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 
 		---------------
-		-- ddr_write --
+		-- mpu_write --
 		---------------
 
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_bl,
-		 ddr_cmi => ddr_write, ddr_cmo => ddr_write, ddr_lat => id_bl,
+		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
 		 ddr_rea => '0', ddr_cen => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_cl,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => id_cwl,
+		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cwl,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_write_cl, ddr_state_n => ddrs_pre,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => id_rp,
+		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_pre, ddr_lat => id_rp,
 		 ddr_rea => '0', ddr_cen => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'));
 
@@ -344,9 +332,9 @@ begin
 					end loop;
 				else
 					ddr_mpu_cen <= '0';
-					ddr_mpu_ras <= ddr_nop(ras);
-					ddr_mpu_cas <= ddr_nop(cas);
-					ddr_mpu_we  <= ddr_nop(we);
+					ddr_mpu_ras <= mpu_nop(ras);
+					ddr_mpu_cas <= mpu_nop(cas);
+					ddr_mpu_we  <= mpu_nop(we);
 					lat_timer   <= lat_timer - 1;
 				end if;
 			else
@@ -383,12 +371,12 @@ begin
 
 	cmd_debug : with ddr_mpu_cmd select
 	cmd_name <=
-		c_nop   when ddr_nop,
-		c_act	when ddr_act,
-		c_read  when ddr_read,
-		c_write when ddr_write,
-		c_pre   when ddr_pre,
-		c_aut   when ddr_aut,
+		c_nop   when mpu_nop,
+		c_act	when mpu_act,
+		c_read  when mpu_read,
+		c_write when mpu_write,
+		c_pre   when mpu_pre,
+		c_aut   when mpu_aut,
 		c_dcare when others;
 
 end;

@@ -347,86 +347,103 @@ begin
 	phy_ba  <= sys_b when level='0' else (others => '0');
 	phy_a   <= sys_a when level='0' else (others => '0');
 
-	process (sys_clks(clk0div))
+	rl_b : block
+		type states is (s_reset, s_write, s_read);
+		signal state : states;
 	begin
-		if rising_edge(sys_clks(clk0div)) then
-			if phy_rsts(clk0div)='1' then
-				cmd_req <= cmd_rdy;
-			elsif (phy_frm and phy_trdy)='1' then
-				if sys_cmd=ddr_mpu_write then
+		process (sys_clks(clk0div))
+		begin
+			if rising_edge(sys_clks(clk0div)) then
+				if phy_rsts(clk0div)='1' then
 					cmd_req <= cmd_rdy;
+				elsif (phy_frm and phy_trdy)='1' then
+					case state is
+					when s_reset =>
+						phy_ini <= '0';
+						phy_rw  <= '0';
+					when s_write =>
+						phy_ini <= '0';
+						phy_rw  <= '1';
+						if sys_cmd=mpu_act then
+							cmd_req <= cmd_rdy;
+						end if;
+					when s_read =>
+						if sys_cmd=mpu_pre then
+							phy_ini <= '1';
+							phy_rw  <= '-';
+							cmd_req <= cmd_rdy;
+						end if;
+					end case;
 				end if;
 			end if;
-		end if;
-	end process;
-	phy_frm <= cmd_req xor cmd_rdy;
+		end process;
+		phy_frm <= cmd_req xor cmd_rdy;
+
+		process (sys_clks(iodclk))
+		begin
+			if rising_edge(sys_clks(iodclk)) then
+				if phy_rsts(rstiod)='1' then
+					tp1     <= (others => '0');
+					level   <= '0';
+					cmd_rdy <= '0';
+					state   <= s_reset;
+				elsif (cmd_rdy xor cmd_req)='0' then
+					case state is
+					when s_reset =>
+						phy_rw  <= '0';
+						phy_ini <= '0';
+						if sys_rlreq='1' then
+							level   <= '1';
+							cmd_rdy <= not cmd_req;
+							state   <= s_write;
+						end if;
+					when s_write =>
+						phy_rw  <= '1';
+						phy_ini <= '0';
+						level   <= '1';
+						cmd_rdy <= not cmd_req;
+						state   <= s_read;
+					when s_read =>
+						level   <= '0';
+						phy_rw  <= '-';
+						phy_ini <= '1';
+					end case;
+				else
+					case state is
+					when s_reset|s_write =>
+					when s_read =>
+						if (sys_rlrdy and sys_rlcal)='1' then
+							level   <= '0';
+							cmd_rdy <= cmd_req;
+						else
+							level   <= '1';
+							phy_ini <= '0';
+							cmd_rdy <= not cmd_req;
+						end if;
+					end case;
+				end if;
+
+				tp1(0) <= cmd_rdy;
+				tp1(1) <= cmd_rdy;
+				tp1(2) <= sys_rlcal;
+				tp1(3) <= phy_rw;
+				tp1(4) <= sys_rlrdy;
+				tp1(5) <= level;
+			end if;
+		end process;
+	end block;
 
 	process (sys_clks(iodclk))
-		type states is (s_reset, s_write, s_read);
-		variable state : states;
 		variable aux : std_logic;
 	begin
 		if rising_edge(sys_clks(iodclk)) then
-			if phy_rsts(rstiod)='1' then
-				tp1     <= (others => '0');
-				phy_rw  <= '0';
-				phy_ini <= '0';
-				level   <= '0';
-				cmd_rdy <= '0';
-				state   := s_reset;
-			elsif (cmd_rdy xor cmd_req)='0' then
-				case state is
-				when s_reset =>
-					phy_rw  <= '0';
-					phy_ini <= '0';
-					if sys_rlreq='1' then
-						level   <= '1';
-						cmd_rdy <= not cmd_req;
-						state   := s_write;
-					end if;
-				when s_write =>
-					phy_rw  <= '1';
-					phy_ini <= '0';
-					level   <= '1';
-					cmd_rdy <= not cmd_req;
-					state   := s_read;
-				when s_read =>
-					phy_rw      <= '-';
-					if (sys_rlrdy and sys_rlcal)='1' then
-						level   <= '0';
-						phy_ini <= '1';
-					else
-						level   <= '1';
-						phy_ini <= '0';
-					end if;
-				end case;
-			end if;
-
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
 			sys_wlrdy <= aux;
-			tp1(0) <= cmd_rdy;
-			tp1(1) <= cmd_rdy;
-			tp1(2) <= sys_rlcal;
-			tp1(3) <= phy_rw;
-			tp1(4) <= sys_rlrdy;
-			tp1(5) <= level;
 		end if;
 	end process;
-
---	process (sys_clks(iodclk))
---		variable aux : std_logic;
---	begin
---		if rising_edge(sys_clks(iodclk)) then
---			aux := '1';
---			for i in wlrdy'range loop
---				aux := aux and wlrdy(i);
---			end loop;
---			sys_wlrdy <= aux;
---		end if;
---	end process;
 
 	rotcmmd_g : if cmmd_gear > 1 generate
 		process (sys_clks(clk0div))

@@ -388,6 +388,7 @@ begin
 		mark         => mark,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
+		cmmd_gear    => cmmd_gear,
 		data_phases  => data_phases,
 		data_edges   => data_edges,
 		data_gear    => data_gear,

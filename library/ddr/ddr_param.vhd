@@ -80,13 +80,13 @@ package ddr_param is
 	constant ddr_ref : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '1');
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
-	constant ddr_mpu_nop   : std_logic_vector(0 to 2) := "111";
-	constant ddr_mpu_act   : std_logic_vector(0 to 2) := "011";
-	constant ddr_mpu_read  : std_logic_vector(0 to 2) := "101";
-	constant ddr_mpu_write : std_logic_vector(0 to 2) := "100";
-	constant ddr_mpu_pre   : std_logic_vector(0 to 2) := "010";
-	constant ddr_mpu_aut   : std_logic_vector(0 to 2) := "001";
-	constant ddr_mpu_dcare : std_logic_vector(0 to 2) := "000";
+	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
+	constant mpu_act   : std_logic_vector(0 to 2) := "011";
+	constant mpu_read  : std_logic_vector(0 to 2) := "101";
+	constant mpu_write : std_logic_vector(0 to 2) := "100";
+	constant mpu_pre   : std_logic_vector(0 to 2) := "010";
+	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
+	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
 	--------------
 	-- DDR init --

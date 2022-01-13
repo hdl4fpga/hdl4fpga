@@ -539,6 +539,7 @@ begin
 		sclk_edges   => sclk_edges,
 		data_phases  => data_gear,
 		data_edges   => data_edges,
+		cmmd_gear    => cmmd_gear,
 		data_gear    => data_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,

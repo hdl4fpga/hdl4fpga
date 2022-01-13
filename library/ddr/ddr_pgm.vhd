@@ -46,13 +46,6 @@ entity ddr_pgm is
 		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
 
 	constant latency   : boolean := true;
-	constant ddr_nop   : std_logic_vector(0 to 2) := "111";
-	constant ddr_act   : std_logic_vector(0 to 2) := "011";
-	constant ddr_read  : std_logic_vector(0 to 2) := "101";
-	constant ddr_write : std_logic_vector(0 to 2) := "100";
-	constant ddr_pre   : std_logic_vector(0 to 2) := "010";
-	constant ddr_aut   : std_logic_vector(0 to 2) := "001";
-	constant ddr_dcare : std_logic_vector(0 to 2) := "000";
 
 	constant casc : natural := 7;
 	constant rasc : natural := 6;
@@ -183,6 +176,7 @@ end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_param.all;
 
 architecture registered of ddr_pgm is
 
@@ -276,19 +270,19 @@ begin
 			if rising_edge(ctlr_clk) then
 				if ctlr_rst='1' then
 					ddr_pgm_idl <= '1';
-					ddr_pgm_cmd <=  ddr_nop; 
+					ddr_pgm_cmd <=  mpu_nop; 
 					ddr_pgm_ras <= '0';
 					ddr_pgm_cas <= '0';
 				elsif ddr_mpu_trdy='1' then
-					ddr_pgm_idl <= setif(pgm_cmd=ddr_nop); 
-					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, ddr_nop); 
+					ddr_pgm_idl <= setif(pgm_cmd=mpu_nop); 
+					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop); 
 					ddr_pgm_ras <= pgm_ras;
 					ddr_pgm_cas <= pgm_cas;
 				end if;
 			end if;
 		else
-			ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=ddr_nop), '1'); 
-			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, ddr_nop),  ddr_nop); 
+			ddr_pgm_idl <= setif(ctlr_rst='0', setif(pgm_cmd=mpu_nop), '1'); 
+			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, mpu_nop),  mpu_nop); 
 			ddr_pgm_ras <= setif(ctlr_rst='0', pgm_ras,  '0'); 
 			ddr_pgm_cas <= setif(ctlr_rst='0', pgm_cas,  '0'); 
 		end if;

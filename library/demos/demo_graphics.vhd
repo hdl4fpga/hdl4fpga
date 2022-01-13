@@ -42,7 +42,7 @@ entity demo_graphics is
 		sclk_edges   : natural;
 		data_phases  : natural;
 		data_edges   : natural;
-		cmmd_gear    : natural := 1;
+		cmmd_gear    : natural;
 		data_gear    : natural;
 		bank_size    : natural;
 		addr_size    : natural;
