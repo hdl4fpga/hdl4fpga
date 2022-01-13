@@ -307,8 +307,6 @@ architecture virtex7 of xc7a_ddrphy is
 	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
 
 	signal wlrdy   : std_logic_vector(0 to word_size/byte_size-1);
-	signal cmd_req : std_logic;
-	signal cmd_rdy : std_logic;
 	signal rlrdy   : std_logic;
 	signal level     : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
@@ -343,88 +341,107 @@ begin
 		end if;
 	end process;
 
-
 	phy_ba  <= sys_b when level='0' else (others => '0');
 	phy_a   <= sys_a when level='0' else (others => '0');
 
 	rl_b : block
-		type states is (s_reset, s_write, s_read);
+		type states is (s_write, s_read);
 		signal state : states;
+		signal ddr_idle : std_logic;
+
+		signal write_req : std_logic;
+		signal write_rdy : std_logic;
+		signal read_req  : std_logic;
+		signal read_rdy  : std_logic;
+		signal leveled   : std_logic;
 	begin
 		process (sys_clks(clk0div))
 		begin
 			if rising_edge(sys_clks(clk0div)) then
 				if phy_rsts(clk0div)='1' then
-					cmd_req <= cmd_rdy;
-				elsif (phy_frm and phy_trdy)='1' then
-					case state is
-					when s_reset =>
-						phy_ini <= '0';
-						phy_rw  <= '0';
-					when s_write =>
-						phy_ini <= '0';
+					phy_ini   <= '0';
+					phy_frm   <= '0';
+					phy_rw    <= '0';
+					level     <= '0';
+					ddr_idle  <= '0';
+					read_req  <= '0';
+					write_req <= '0';
+				else
+					if (write_req xor write_rdy)='1'  then
+						phy_ini  <= '0';
+						phy_frm  <= '1';
+						phy_rw   <= '0';
+						level    <= '1';
+						if sys_cmd=mpu_act and phy_trdy='1' then
+							phy_frm   <= '0';
+							write_req <= write_rdy;
+						end if;
+					end if;
+
+					if phy_ini='1' then
+						phy_frm  <= '0';
+						phy_rw   <= '-';
+						phy_ini  <= '1';
+						level    <= '0';
+						read_req <= read_rdy;
+					elsif leveled='1' then
+						if (ddr_idle and phy_trdy)='1' then
+							phy_ini  <= '1';
+						elsif sys_cmd=mpu_pre and phy_trdy='1' then
+							phy_ini  <= '0';
+						end if;
+						phy_frm <= '0';
 						phy_rw  <= '1';
-						if sys_cmd=mpu_act then
-							cmd_req <= cmd_rdy;
-						end if;
-					when s_read =>
-						if sys_cmd=mpu_pre then
+						level   <= '1';
+					elsif (read_req xor read_rdy)='1' then
+						if leveled='1' then
 							phy_ini <= '1';
-							phy_rw  <= '-';
-							cmd_req <= cmd_rdy;
+							phy_frm <= '0';
+						elsif ddr_idle='1'  and phy_trdy='1' then
+							phy_ini <= '0';
+							phy_frm <= '1';
 						end if;
-					end case;
+						phy_rw   <= '1';
+						level    <= '1';
+					end if;
+
+					if phy_trdy='1' then
+						if sys_cmd=mpu_pre then
+							ddr_idle <= '1';
+						else
+							ddr_idle <= '0';
+						end if;
+					end if;
 				end if;
 			end if;
 		end process;
-		phy_frm <= cmd_req xor cmd_rdy;
 
 		process (sys_clks(iodclk))
 		begin
 			if rising_edge(sys_clks(iodclk)) then
 				if phy_rsts(rstiod)='1' then
-					tp1     <= (others => '0');
-					level   <= '0';
-					cmd_rdy <= '0';
-					state   <= s_reset;
-				elsif (cmd_rdy xor cmd_req)='0' then
-					case state is
-					when s_reset =>
-						phy_rw  <= '0';
-						phy_ini <= '0';
-						if sys_rlreq='1' then
-							level   <= '1';
-							cmd_rdy <= not cmd_req;
-							state   <= s_write;
-						end if;
-					when s_write =>
-						phy_rw  <= '1';
-						phy_ini <= '0';
-						level   <= '1';
-						cmd_rdy <= not cmd_req;
-						state   <= s_read;
-					when s_read =>
-						level   <= '0';
-						phy_rw  <= '-';
-						phy_ini <= '1';
-					end case;
+					tp1       <= (others => '0');
+					read_rdy  <= '0';
+					write_rdy <= '0';
+					leveled   <= '0';
+					state     <= s_write;
 				else
 					case state is
-					when s_reset|s_write =>
+					when s_write =>
+						if sys_rlreq='1' then
+							write_rdy <= not write_req;
+							state     <= s_read;
+						end if;
 					when s_read =>
-						if (sys_rlrdy and sys_rlcal)='1' then
-							level   <= '0';
-							cmd_rdy <= cmd_req;
-						else
-							level   <= '1';
-							phy_ini <= '0';
-							cmd_rdy <= not cmd_req;
+						if (write_rdy xor write_req)='0' then
+							read_rdy <= not read_req;
 						end if;
 					end case;
+					if (sys_rlrdy and sys_rlcal)='1' then
+						leveled <= '1';
+					end if;
 				end if;
 
-				tp1(0) <= cmd_rdy;
-				tp1(1) <= cmd_rdy;
 				tp1(2) <= sys_rlcal;
 				tp1(3) <= phy_rw;
 				tp1(4) <= sys_rlrdy;

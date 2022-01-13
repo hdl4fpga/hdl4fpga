@@ -35,7 +35,7 @@ add wave -noupdate /testbench/du_e/ddrphy_e/phy_rw
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {19025000 ps} 0} {{Cursor 2} {17963280 ps} 0}
+WaveRestoreCursors {{Cursor 1} {18866655 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -51,4 +51,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {17579640 ps} {17907768 ps}
+WaveRestoreZoom {18524215 ps} {19180471 ps}
