@@ -42,13 +42,14 @@ entity demo_graphics is
 		sclk_edges   : natural;
 		data_phases  : natural;
 		data_edges   : natural;
-		cmmd_gear    : natural;
 		data_gear    : natural;
+		cmmd_gear    : natural;
 		bank_size    : natural;
 		addr_size    : natural;
 		coln_size    : natural;
 		word_size    : natural;
 		byte_size    : natural;
+		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
 		red_length   : natural := 5;
@@ -139,7 +140,8 @@ architecture mix of demo_graphics is
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
-	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
+	constant coln_bits    : natural := coln_size-(unsigned_num_bits(data_gear)-1);
+	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_bits-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
 	signal dmacfgio_req   : std_logic;
@@ -252,8 +254,8 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-		constant octect       : natural := 8;
-		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/octect-1);
+--		constant word_bits    : natural := unsigned_num_bits(setif(burst_length=0,ctlr_di'length,burst_length*word_size)/byte_size-1);
+		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size-1);
 
 		signal sout_req       : bit;
 		signal sout_rdy       : bit;
@@ -838,6 +840,7 @@ begin
 			mark        => mark,
 			tcp         => ddr_tcp,
 
+			burst_length => burst_length,
 			data_gear   => data_gear,
 			bank_size   => bank_size,
 			addr_size   => addr_size,

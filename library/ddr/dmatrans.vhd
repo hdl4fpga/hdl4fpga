@@ -34,6 +34,7 @@ use hdl4fpga.ddr_param.all;
 entity dmatrans is
 	generic (
 		lrcd           : natural;
+		burst_length   : natural := 0;
 		data_gear      : natural;
 		bank_size      : natural;
 		addr_size      : natural;
@@ -62,7 +63,10 @@ entity dmatrans is
 		ctlr_a         : out std_logic_vector;
 		ctlr_dio_req   : in  std_logic);
 
-	constant coln_align  : natural := unsigned_num_bits(data_gear)-1;
+	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
+	constant burst_bits : natural := unsigned_num_bits(burst_length)-1;
+	constant mask_addr : std_logic_vector(dmatrans_iaddr'range) := std_logic_vector(shift_left(unsigned'(dmatrans_iaddr'range => '1'), burst_bits-coln_align));
+	constant mask_len  : std_logic_vector(dmatrans_ilen'range)  := std_logic_vector(shift_left(unsigned'(dmatrans_ilen'range  => '1'), burst_bits-coln_align));
 
 end;
 
@@ -72,9 +76,10 @@ architecture def of dmatrans is
 
 	signal ctlrdma_irdy : std_logic;
 
-	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
+	signal ddrdma_col   : std_logic_vector(coln_size-1 downto coln_align);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col   : std_logic_vector(coln_size-1 downto 0);
+	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
+	signal row          : std_logic_vector(ddrdma_row'range);
 	signal col          : std_logic_vector(ddrdma_col'range);
 
 	signal leoc         : std_logic;
@@ -167,8 +172,8 @@ begin
 					ilen  <= tlen;
 					iaddr <= taddr;
 				else
-					ilen  <= dmatrans_ilen;
-					iaddr <= dmatrans_iaddr;
+					ilen  <= dmatrans_ilen  or not mask_len;
+					iaddr <= dmatrans_iaddr and mask_addr;
 				end if;
 			end if;
 		end if;
@@ -179,7 +184,7 @@ begin
 	generic map (
 		n => 1,
 --		d => (0 to 1-1 => 0),
-		d => (0 to 1-1 => lrcd-latency),
+		d => (0 to 1-1 => lrcd-latency-1),
 		i => (0 to 1-1 => '0'))
 	port map (
 		clk   => dmatrans_clk,
@@ -207,10 +212,20 @@ begin
 		di  => taddr,
 		do  => dmatrans_taddr);
 
+	rowlat_e : entity hdl4fpga.align
+	generic map (
+		n => row'length,
+		d => (0 to row'length-1 => 0))
+	port map (
+		clk => dmatrans_clk,
+		ena => '1', --ctlrdma_irdy,
+		di  => row,
+		do  => ddrdma_row);
+
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => latency))
+		d => (0 to col'length-1 => latency+1))
 	port map (
 		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
@@ -228,7 +243,7 @@ begin
 		tlen    => tlen,
 		len_eoc => leoc,
 		bnk     => ddrdma_bnk,
-		row     => ddrdma_row,
+		row     => row,
 		col     => col,
 		col_eoc => ceoc);
 

@@ -32,14 +32,15 @@ use hdl4fpga.ddr_param.all;
 
 entity dmactlr is
 	generic (
-		fpga          : natural;
-		mark          : natural;
-		tcp           : natural;
+		fpga         : natural;
+		mark         : natural;
+		tcp          : natural;
 
-		data_gear     : natural;
-		bank_size     : natural;
-		addr_size     : natural;
-		coln_size     : natural);
+		data_gear    : natural;
+		burst_length : natural := 0;
+		bank_size    : natural;
+		addr_size    : natural;
+		coln_size    : natural);
 	port (
 
 		devcfg_clk   : in  std_logic;
@@ -209,6 +210,7 @@ begin
 	generic map (
 		lrcd          => to_ddrlatency(tcp, mark, tRCD),
 		data_gear     => data_gear,
+		burst_length  => burst_length,
 		bank_size     => bank_size,
 		addr_size     => addr_size,
 		coln_size     => coln_size)

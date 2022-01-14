@@ -107,7 +107,7 @@ architecture graphics of arty is
 
 	constant bank_size     : natural := ddr3_ba'length;
 	constant addr_size     : natural := ddr3_a'length;
-	constant coln_size     : natural := 7;
+	constant coln_size     : natural := 9;
 	constant word_size     : natural := ddr3_dq'length;
 	constant byte_size     : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
@@ -537,10 +537,11 @@ begin
 		mark         => M15E,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
+		burst_length => 8,
 		data_phases  => data_gear,
 		data_edges   => data_edges,
-		cmmd_gear    => cmmd_gear,
 		data_gear    => data_gear,
+		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
