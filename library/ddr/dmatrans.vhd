@@ -118,7 +118,7 @@ begin
 					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 				end if;
 			elsif reload='1' then
-				if ctlr_trdy='1' then 
+				if ctlr_trdy='1' then
 					load      <= '0';
 					reload    <= '0';
 					ctlr_irdy <= '1';

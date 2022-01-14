@@ -306,9 +306,9 @@ architecture virtex7 of xc7a_ddrphy is
 	signal ba_we  : std_logic_vector(sys_we'range);
 	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
 
-	signal wlrdy   : std_logic_vector(0 to word_size/byte_size-1);
-	signal rlrdy   : std_logic;
-	signal level     : std_logic;
+	signal wlrdy  : std_logic_vector(0 to word_size/byte_size-1);
+	signal rlrdy  : std_logic;
+	signal level  : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
 begin
@@ -321,34 +321,11 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	process (sys_clks(clk0div))
-		variable rlcal_h2l : std_logic;
-	begin
-		if rising_edge(sys_clks(clk0div)) then
-
-			if rlcal_h2l='1' then
-				if sys_rlcal='0' then
-					if sys_rlseq='1' then
-					end if;
-				end if;
-			end if;
-
-			if phy_rsts(rstiod)='1' then
-				rlcal_h2l := '0';
-			else
-				rlcal_h2l := sys_rlcal;
-			end if;
-		end if;
-	end process;
 
 	phy_ba  <= sys_b when level='0' else (others => '0');
 	phy_a   <= sys_a when level='0' else (others => '0');
 
-	rl_b : block
-		type states is (s_write, s_read);
-		signal state : states;
-		signal ddr_idle : std_logic;
-
+	read_leveling_l_b : block
 		signal write_req : std_logic;
 		signal write_rdy : std_logic;
 		signal read_req  : std_logic;
@@ -356,6 +333,7 @@ begin
 		signal leveled   : std_logic;
 	begin
 		process (sys_clks(clk0div))
+			variable ddr_idle : std_logic;
 		begin
 			if rising_edge(sys_clks(clk0div)) then
 				if phy_rsts(clk0div)='1' then
@@ -363,7 +341,7 @@ begin
 					phy_frm   <= '0';
 					phy_rw    <= '0';
 					level     <= '0';
-					ddr_idle  <= '0';
+					ddr_idle  := '0';
 					read_req  <= '0';
 					write_req <= '0';
 				else
@@ -407,9 +385,9 @@ begin
 
 					if phy_trdy='1' then
 						if sys_cmd=mpu_pre then
-							ddr_idle <= '1';
+							ddr_idle := '1';
 						else
-							ddr_idle <= '0';
+							ddr_idle := '0';
 						end if;
 					end if;
 				end if;
@@ -417,6 +395,8 @@ begin
 		end process;
 
 		process (sys_clks(iodclk))
+			type states is (s_write, s_read);
+			variable state : states;
 		begin
 			if rising_edge(sys_clks(iodclk)) then
 				if phy_rsts(rstiod)='1' then
@@ -424,13 +404,13 @@ begin
 					read_rdy  <= '0';
 					write_rdy <= '0';
 					leveled   <= '0';
-					state     <= s_write;
+					state     := s_write;
 				else
 					case state is
 					when s_write =>
 						if sys_rlreq='1' then
 							write_rdy <= not write_req;
-							state     <= s_read;
+							state     := s_read;
 						end if;
 					when s_read =>
 						if (write_rdy xor write_req)='0' then

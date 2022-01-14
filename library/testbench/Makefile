@@ -746,6 +746,8 @@ $(HDL4FPGA__ddr_init__def) : ../ddr/ddr_init.vhd \
 
 $(HDL4FPGA__ddr_mpu) \
 $(HDL4FPGA__ddr_mpu__arch) : ../ddr/ddr_mpu.vhd \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -765,6 +767,8 @@ $(HDL4FPGA__ddr_param__body) : ../ddr/ddr_param.vhd \
 
 $(HDL4FPGA__ddr_pgm) \
 $(HDL4FPGA__ddr_pgm__registered) : ../ddr/ddr_pgm.vhd \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
