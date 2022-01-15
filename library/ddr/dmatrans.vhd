@@ -173,7 +173,7 @@ begin
 					iaddr <= taddr;
 				else
 					ilen  <= dmatrans_ilen  or not mask_len;
-					iaddr <= dmatrans_iaddr and mask_addr;
+					iaddr <= dmatrans_iaddr;
 				end if;
 			end if;
 		end if;
@@ -225,7 +225,7 @@ begin
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => latency+1))
+		d => (0 to col'length-1 => latency+2))
 	port map (
 		clk => dmatrans_clk,
 		ena => ctlrdma_irdy,
@@ -262,7 +262,7 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if ctlrdma_irdy='1' then
-				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length);
+				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length) and unsigned(mask_addr(ctlr_a'range));
 			end if;
 
 			if ctlr_cas='0' then
