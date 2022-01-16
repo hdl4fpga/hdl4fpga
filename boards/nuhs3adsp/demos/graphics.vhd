@@ -234,7 +234,7 @@ begin
 		dfs_mul => video_tab(video_mode).pll.dcm_mul,
 		dfs_div => video_tab(video_mode).pll.dcm_div)
 	port map(
-		dcm_rst => sys_rst,
+		dcm_rst => '1', --sys_rst,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 

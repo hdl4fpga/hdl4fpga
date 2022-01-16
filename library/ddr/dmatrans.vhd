@@ -28,7 +28,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_db.all;
 use hdl4fpga.ddr_param.all;
 
 entity dmatrans is
@@ -53,18 +52,16 @@ entity dmatrans is
 		ctlr_inirdy    : in std_logic;
 		ctlr_refreq    : in std_logic;
 
-		ctlr_irdy      : buffer std_logic;
+		ctlr_frm       : buffer std_logic;
+		ctlr_cmd       : in  std_logic_vector(0 to 3-1);
 		ctlr_trdy      : in  std_logic;
 		ctlr_rw        : out std_logic := '0';
-		ctlr_ras       : in  std_logic := '0';
-		ctlr_cas       : in  std_logic := '0';
-		ctlr_act       : in  std_logic;
 		ctlr_b         : out std_logic_vector;
 		ctlr_a         : out std_logic_vector;
 		ctlr_dio_req   : in  std_logic);
 
 	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
-	constant burst_bits : natural := unsigned_num_bits(burst_length)-1;
+	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0,data_gear,burst_length))-1;
 	constant mask_addr : std_logic_vector(dmatrans_iaddr'range) := std_logic_vector(shift_left(unsigned'(dmatrans_iaddr'range => '1'), burst_bits-coln_align));
 	constant mask_len  : std_logic_vector(dmatrans_ilen'range)  := std_logic_vector(shift_left(unsigned'(dmatrans_ilen'range  => '1'), burst_bits-coln_align));
 
@@ -73,8 +70,6 @@ end;
 architecture def of dmatrans is
 
 	constant latency    : natural := 2;
-
-	signal ctlrdma_irdy : std_logic;
 
 	signal ddrdma_col   : std_logic_vector(coln_size-1 downto coln_align);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
@@ -96,6 +91,11 @@ architecture def of dmatrans is
  	signal act          : std_logic;
 
 	signal ref_req      : std_logic;
+	signal ctlr_act     : std_logic;
+	signal ctlr_ras     : std_logic;
+	signal ctlr_cas     : std_logic;
+	signal ctlrdma_irdy : std_logic;
+	signal ena          : std_logic;
 begin
 
 	process (dmatrans_clk, ctlr_refreq, ctlr_dio_req)
@@ -113,12 +113,12 @@ begin
 			if init='1' then
 				load         <= '1';
 				reload       <= '0';
-				ctlr_irdy    <= '0';
+				ctlr_frm     <= '0';
 				cancel       <= '0';
 			elsif cancel='1' then
 				load      <= '0';
 				reload    <= '0';
-				ctlr_irdy <= '0';
+				ctlr_frm  <= '0';
 				if ctlr_trdy='1' then
 					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 				end if;
@@ -126,18 +126,18 @@ begin
 				if ctlr_trdy='1' then
 					load      <= '0';
 					reload    <= '0';
-					ctlr_irdy <= '1';
+					ctlr_frm  <= '1';
 				else
 					load      <= '1';
 					reload    <= '1';
-					ctlr_irdy <= '0';
+					ctlr_frm  <= '0';
 				end if;
 				cancel       <= dmatrans_cnl;
 			elsif leoc='1' then
 				load      <= '0';
 				reload    <= '0';
 				cancel       <= dmatrans_cnl;
-				ctlr_irdy <= '0';
+				ctlr_frm  <= '0';
 				if ctlr_trdy='1' then
 					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 				end if;
@@ -145,17 +145,17 @@ begin
 				load         <= '1';
 				reload       <= '1';
 				cancel       <= dmatrans_cnl;
-				ctlr_irdy    <= '0';
+				ctlr_frm     <= '0';
 			elsif ref_req='1' then
 				load         <= '1';
 				reload       <= '1';
 				cancel       <= '0';
-				ctlr_irdy    <= '0';
+				ctlr_frm     <= '0';
 			else
 				load         <= '0';
 				reload       <= '0';
 				cancel       <= dmatrans_cnl;
-				ctlr_irdy    <= '1';
+				ctlr_frm     <= '1';
 			end if;
 			init <= to_stdulogic(to_bit(dmatrans_rdy)) xnor to_stdulogic(to_bit(dmatrans_req));
 		end if;
@@ -179,26 +179,13 @@ begin
 		end if;
 	end process;
 
-	act <= ctlr_ras or ctlr_act or ctlr_dio_req;
-	dmardy_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
---		d => (0 to 1-1 => 0),
-		d => (0 to 1-1 => lrcd-latency-1),
-		i => (0 to 1-1 => '0'))
-	port map (
-		clk   => dmatrans_clk,
-		ini   => load,
-		di(0) => act,
-		do(0) => ctlrdma_irdy);
-
 	tlenlat_e : entity hdl4fpga.align
 	generic map (
 		n => dmatrans_tlen'length,
 		d => (0 to dmatrans_tlen'length-1 => latency))
 	port map (
 		clk => dmatrans_clk,
-		ena => ctlrdma_irdy,
+		ena => ctlr_cas,
 		di  => tlen,
 		do  => dmatrans_tlen);
 
@@ -208,7 +195,7 @@ begin
 		d => (0 to dmatrans_taddr'length-1 => latency))
 	port map (
 		clk => dmatrans_clk,
-		ena => ctlrdma_irdy,
+		ena => ctlr_cas,
 		di  => taddr,
 		do  => dmatrans_taddr);
 
@@ -218,17 +205,17 @@ begin
 		d => (0 to row'length-1 => 0))
 	port map (
 		clk => dmatrans_clk,
-		ena => '1', --ctlrdma_irdy,
+		ena => ctlr_cas,
 		di  => row,
 		do  => ddrdma_row);
 
 	collat_e : entity hdl4fpga.align
 	generic map (
 		n => col'length,
-		d => (0 to col'length-1 => latency+2))
+		d => (0 to col'length-1 => 0)) --setif(burst_length=0,latency,latency+2)))
 	port map (
 		clk => dmatrans_clk,
-		ena => ctlrdma_irdy,
+		ena => ctlr_cas,
 		di  => col,
 		do  => ddrdma_col);
 
@@ -236,7 +223,7 @@ begin
 	port map (
 		clk     => dmatrans_clk,
 		load    => load,
-		ena     => ctlrdma_irdy,
+		ena     => ena,
 		iaddr   => iaddr,
 		ilen    => ilen,
 		taddr   => taddr,
@@ -248,28 +235,40 @@ begin
 		col_eoc => ceoc);
 
 	ctlr_rw <= not dmatrans_we;
-	ctlrb_p : process (dmatrans_clk)
+
+	process (dmatrans_clk)
+		variable ras : std_logic;
+		variable cas : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			if ctlr_ras='1' then
-				ctlr_b <= ddrdma_bnk;
+			if ctlr_cmd=mpu_act and ctlr_trdy='1' then
+				ras := '1';
+			else
+				ras := '0';
+			end if;
+
+			if (ctlr_cmd=mpu_read or ctlr_cmd=mpu_write) and ctlr_trdy='1' then
+				ctlr_cas <= '1';
+			else
+				ctlr_cas <= '0';
 			end if;
 		end if;
 	end process;
 
-	ctlra_p : process (dmatrans_clk)
+	ctlra_p : process (ctlr_ras, dmatrans_clk)
 		variable saved_col : unsigned(ctlr_a'range);
 	begin
 		if rising_edge(dmatrans_clk) then
-			if ctlrdma_irdy='1' then
+			if ctlr_ras='1' then
 				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length) and unsigned(mask_addr(ctlr_a'range));
 			end if;
+		end if;
 
-			if ctlr_cas='0' then
-				ctlr_a <= ddrdma_row;
-			else
-				ctlr_a <= std_logic_vector(shift_left(saved_col,coln_align));
-			end if;
+		if ctlr_ras='1' then
+			ctlr_a <= ddrdma_row;
+			ctlr_b <= ddrdma_bnk;
+		else
+			ctlr_a <= std_logic_vector(shift_left(saved_col,coln_align));
 		end if;
 	end process;
 

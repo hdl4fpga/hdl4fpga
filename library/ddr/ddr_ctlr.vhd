@@ -70,7 +70,6 @@ entity ddr_ctlr is
 		ctlr_do_req  : out std_logic;
 		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
-		ctlr_idl     : out std_logic;
 		ctlr_ras     : out std_logic;
 		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
@@ -165,11 +164,9 @@ architecture mix of ddr_ctlr is
 	signal ddr_init_a     : std_logic_vector(addr_size-1 downto 0);
 	signal ddr_init_b     : std_logic_vector(bank_size-1 downto 0);
 
-	signal ddr_pgm_irdy   : std_logic;
-	signal ddr_pgm_trdy   : std_logic;
+	signal ddr_pgm_frm    : std_logic;
 	signal ddr_pgm_rw     : std_logic;
 	signal ddr_pgm_cmd    : std_logic_vector(0 to 2);
-	signal ddr_pgm_ras    : std_logic;
 
 	signal ddr_mpu_rst    : std_logic;
 	signal ddr_mpu_trdy   : std_logic;
@@ -211,9 +208,9 @@ architecture mix of ddr_ctlr is
 	signal fifo_bypass : std_logic;
 begin
 
-	ctlr_trdy    <= ddr_pgm_trdy when phy_inirdy='1' else '0';
+	ctlr_trdy    <= ddr_mpu_trdy when phy_inirdy='1' else '0';
 	phy_trdy     <= ddr_mpu_trdy when phy_inirdy='0' else '0';
-	ddr_pgm_irdy <= ctlr_frm     when phy_inirdy='1' else phy_frm;
+	ddr_pgm_frm  <= ctlr_frm     when phy_inirdy='1' else phy_frm;
 	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
 	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
@@ -271,20 +268,15 @@ begin
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
 		ctlr_refreq   => ctlr_refreq,
-		ddr_pgm_irdy  => ddr_pgm_irdy,
-		ddr_pgm_trdy  => ddr_pgm_trdy,
-		ddr_pgm_ras   => ddr_pgm_ras,
-		ddr_pgm_cas   => ctlr_cas,
+		ddr_pgm_frm   => ddr_pgm_frm ,
+		ddr_pgm_end   => open,
+		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
+		ddr_pgm_rw    => ddr_pgm_rw,
 		ddr_pgm_ref   => ddr_mpu_ref,
 		ddr_pgm_rrdy  => ddr_refi_rdy,
 		ddr_pgm_cal   => phy_rlcal,
-		ddr_pgm_idl   => ctlr_idl,
-		ddr_mpu_trdy  => ddr_mpu_trdy,
-		ddr_pgm_seq   => phy_rlseq,
-		ddr_pgm_rw    => ddr_pgm_rw);
-
-	ctlr_ras <= ddr_pgm_ras and ddr_mpu_trdy;
+		ddr_pgm_seq   => phy_rlseq);
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;

@@ -63,15 +63,13 @@ entity dmactlr is
 		ctlr_do_dv   : in  std_logic;
 		dev_do_dv    : out std_logic_vector;
 
-		ctlr_irdy    : out  std_logic;
+		ctlr_frm     : out  std_logic;
 		ctlr_trdy    : in  std_logic;
+		ctlr_cmd     : in  std_logic_vector(0 to 3-1);
 		ctlr_rw      : out std_logic;
-		ctlr_ras     : in  std_logic;
-		ctlr_cas     : in  std_logic;
 		ctlr_b       : out std_logic_vector;
 		ctlr_a       : out std_logic_vector;
-		ctlr_dio_req : in  std_logic;
-		ctlr_act     : in  std_logic);
+		ctlr_dio_req : in  std_logic);
 
 end;
 
@@ -105,6 +103,10 @@ architecture def of dmactlr is
 begin
 
 	do_dv_g : for i in dev_gnt'range generate
+	signal ctlr_act     : std_logic;
+	signal ctlr_ras     : std_logic;
+	signal ctlr_cas     : std_logic;
+	begin
 		process (dev_gnt(i), ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
 			variable q   : std_logic_vector(0 to 3+8-1); -- Magic numbers that have to be recalled
 			variable lat : std_logic;
@@ -227,12 +229,10 @@ begin
 		ctlr_inirdy    => ctlr_inirdy,
 		ctlr_refreq    => ctlr_refreq,
 
-		ctlr_irdy      => ctlr_irdy,
+		ctlr_frm       => ctlr_frm,
 		ctlr_trdy      => ctlr_trdy,
+		ctlr_cmd       => ctlr_cmd,
 		ctlr_rw        => ctlr_rw,
-		ctlr_ras       => ctlr_ras,
-		ctlr_cas       => ctlr_cas,
-		ctlr_act       => ctlr_act,
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a,
 		ctlr_dio_req   => ctlr_dio_req);

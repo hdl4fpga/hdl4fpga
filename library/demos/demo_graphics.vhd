@@ -83,7 +83,7 @@ entity demo_graphics is
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
 		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := "---";
-		ctlr_cmd      : out std_logic_vector(0 to 3-1);
+		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
 
 		ctlrphy_wlreq : out std_logic;
@@ -153,7 +153,7 @@ architecture mix of demo_graphics is
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
 	signal dmaio_we       : std_logic;
 
-	signal ctlr_irdy      : std_logic;
+	signal ctlr_frm       : std_logic;
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
@@ -865,15 +865,13 @@ begin
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_refreq => ctlr_refreq,
 
-			ctlr_irdy   => ctlr_irdy,
+			ctlr_frm    => ctlr_frm,
 			ctlr_trdy   => ctlr_trdy,
-			ctlr_ras    => ctlr_ras,
-			ctlr_cas    => ctlr_cas,
+			ctlr_cmd    => ctlr_cmd,
 			ctlr_rw     => ctlr_rw,
 			ctlr_b      => ctlr_b,
 			ctlr_a      => ctlr_a,
-			ctlr_dio_req => ctlr_dio_req,
-			ctlr_act    => ctlr_act);
+			ctlr_dio_req => ctlr_dio_req);
 
 		dmadv_e : entity hdl4fpga.align
 		generic map (
@@ -929,7 +927,7 @@ begin
 			ctlr_clks    => ctlr_clks,
 			ctlr_inirdy  => inirdy,
 
-			ctlr_frm     => ctlr_irdy,
+			ctlr_frm     => ctlr_frm ,
 			ctlr_trdy    => ctlr_trdy,
 			ctlr_rw      => ctlr_rw,
 			ctlr_b       => ctlr_b,

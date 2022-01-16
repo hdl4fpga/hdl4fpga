@@ -192,7 +192,7 @@ architecture ulx3s_graphics of testbench is
 	constant data  : std_logic_vector :=
 --		x"010001" &
 --		x"01000c_18017e7d_1702000000_160300000000_1702_00_00_01_160380000000";
-		x"010000_1702_00_00_01_160300000001";
+		x"01007e_1702_00_00_00_160380000000";
 --		x"160300000000" &
 --		x"170200007f" ; -- &
 --		x"18ff" &
@@ -252,7 +252,7 @@ architecture ulx3s_graphics of testbench is
 	signal nrst : std_logic;
 begin
 
-	rst <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 60 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
 
@@ -377,8 +377,6 @@ begin
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
 			payload   : std_logic_vector);
 		generic map (
 			payload   => data);
