@@ -32,7 +32,6 @@ use hdl4fpga.ddr_param.all;
 
 entity dmatrans is
 	generic (
-		lrcd           : natural;
 		burst_length   : natural := 0;
 		data_gear      : natural;
 		bank_size      : natural;
@@ -79,21 +78,18 @@ architecture def of dmatrans is
 
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
+	signal lat_ceoc     : std_logic;
 	signal ilen         : std_logic_vector(dmatrans_ilen'range);
 	signal iaddr        : std_logic_vector(dmatrans_iaddr'range);
 	signal tlen         : std_logic_vector(dmatrans_tlen'range);
 	signal taddr        : std_logic_vector(dmatrans_taddr'range);
 
-	signal init         : std_logic;
-	signal cancel       : std_logic;
-	signal reload       : std_logic;
 	signal load         : std_logic;
- 	signal act          : std_logic;
 
 	signal ref_req      : std_logic;
-	signal ctlr_act     : std_logic;
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
+	signal state_idl    : std_logic;
 	signal ctlrdma_irdy : std_logic;
 	signal ena          : std_logic;
 begin
@@ -107,118 +103,35 @@ begin
 		end if;
 	end process;
 
-	process (dmatrans_clk)
+	process (lat_ceoc, state_idl, dmatrans_clk)
+--		type states is ();
+--		variable state : state;
+		variable frm : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			if init='1' then
-				load         <= '1';
-				reload       <= '0';
-				ctlr_frm     <= '0';
-				cancel       <= '0';
-			elsif cancel='1' then
-				load      <= '0';
-				reload    <= '0';
-				ctlr_frm  <= '0';
-				if ctlr_trdy='1' then
-					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
-				end if;
-			elsif reload='1' then
-				if ctlr_trdy='1' then
-					load      <= '0';
-					reload    <= '0';
-					ctlr_frm  <= '1';
+			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
+				if leoc='1' then
+					frm := '0';
+					if ctlr_trdy='1' then
+						dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
+					end if;
+				elsif state_idl='1' then
+					frm := '1';
+				elsif lat_ceoc='1' and state_idl='0' then
+					frm := '0';
 				else
-					load      <= '1';
-					reload    <= '1';
-					ctlr_frm  <= '0';
+					frm := '1';
 				end if;
-				cancel       <= dmatrans_cnl;
-			elsif leoc='1' then
-				load      <= '0';
-				reload    <= '0';
-				cancel       <= dmatrans_cnl;
-				ctlr_frm  <= '0';
-				if ctlr_trdy='1' then
-					dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
-				end if;
-			elsif ceoc='1' then
-				load         <= '1';
-				reload       <= '1';
-				cancel       <= dmatrans_cnl;
-				ctlr_frm     <= '0';
-			elsif ref_req='1' then
-				load         <= '1';
-				reload       <= '1';
-				cancel       <= '0';
-				ctlr_frm     <= '0';
 			else
-				load         <= '0';
-				reload       <= '0';
-				cancel       <= dmatrans_cnl;
-				ctlr_frm     <= '1';
+				frm := '0';
 			end if;
-			init <= to_stdulogic(to_bit(dmatrans_rdy)) xnor to_stdulogic(to_bit(dmatrans_req));
+			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
+		ctlr_frm <= frm and not (lat_ceoc and not state_idl);
 	end process;
 
-	load_p : process (dmatrans_clk)
-	begin
-		if rising_edge(dmatrans_clk) then
-			if reload='0' then
-				if ceoc='1' then
-					ilen  <= tlen;
-					iaddr <= taddr;
-				elsif ref_req='1' then
-					ilen  <= tlen;
-					iaddr <= taddr;
-				else
-					ilen  <= dmatrans_ilen  or not mask_len;
-					iaddr <= dmatrans_iaddr;
-				end if;
-			end if;
-		end if;
-	end process;
-
-	tlenlat_e : entity hdl4fpga.align
-	generic map (
-		n => dmatrans_tlen'length,
-		d => (0 to dmatrans_tlen'length-1 => latency))
-	port map (
-		clk => dmatrans_clk,
-		ena => ctlr_cas,
-		di  => tlen,
-		do  => dmatrans_tlen);
-
-	taddrlat_e : entity hdl4fpga.align
-	generic map (
-		n => dmatrans_taddr'length,
-		d => (0 to dmatrans_taddr'length-1 => latency))
-	port map (
-		clk => dmatrans_clk,
-		ena => ctlr_cas,
-		di  => taddr,
-		do  => dmatrans_taddr);
-
-	rowlat_e : entity hdl4fpga.align
-	generic map (
-		n => row'length,
-		d => (0 to row'length-1 => 0))
-	port map (
-		clk => dmatrans_clk,
-		ena => ctlr_cas,
-		di  => row,
-		do  => ddrdma_row);
-
-	collat_e : entity hdl4fpga.align
-	generic map (
-		n => col'length,
-		d => (0 to col'length-1 => 0)) --setif(burst_length=0,latency,latency+2)))
-	port map (
-		clk => dmatrans_clk,
-		ena => ctlr_cas,
-		di  => col,
-		do  => ddrdma_col);
-
+	ilen  <= dmatrans_ilen  or not mask_len;
+	iaddr <= dmatrans_iaddr;
 	dma_e : entity hdl4fpga.ddrdma
 	port map (
 		clk     => dmatrans_clk,
@@ -234,25 +147,60 @@ begin
 		col     => col,
 		col_eoc => ceoc);
 
+	ceoclat_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 1-1 => 1))
+	port map (
+		clk => dmatrans_clk,
+		di(0) => ceoc,
+		do(0) => lat_ceoc);
+
+	rowlat_e : entity hdl4fpga.align
+	generic map (
+		n => row'length,
+		d => (0 to row'length-1 => 0))
+	port map (
+		clk => dmatrans_clk,
+		di  => row,
+		do  => ddrdma_row);
+
+	collat_e : entity hdl4fpga.align
+	generic map (
+		n => col'length,
+		d => (0 to col'length-1 => 0)) --setif(burst_length=0,latency,latency+2)))
+	port map (
+		clk => dmatrans_clk,
+		di  => col,
+		do  => ddrdma_col);
+
 	ctlr_rw <= not dmatrans_we;
 
-	process (dmatrans_clk)
-		variable ras : std_logic;
-		variable cas : std_logic;
+	process (ceoc, dmatrans_clk)
+		variable ras  : std_logic;
+		variable cas  : std_logic;
+		variable idl  : std_logic;
+		variable trdy : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
-			if ctlr_cmd=mpu_act and ctlr_trdy='1' then
-				ras := '1';
+			if ctlr_trdy='1' then
+				ras := setif(ctlr_cmd=mpu_act);
+				idl := setif(ctlr_cmd/=mpu_act and ctlr_cmd/=mpu_read and ctlr_cmd/=mpu_write);
 			else
 				ras := '0';
 			end if;
-
-			if (ctlr_cmd=mpu_read or ctlr_cmd=mpu_write) and ctlr_trdy='1' then
-				ctlr_cas <= '1';
+			if trdy='1' then
+				cas := setif(ctlr_cmd=mpu_read or ctlr_cmd=mpu_write);
 			else
-				ctlr_cas <= '0';
+				cas := '0';
 			end if;
+
+			ctlr_cas  <= cas;
+			ctlr_ras  <= ras;
+			state_idl <= idl;
+			trdy     := ctlr_trdy;
 		end if;
+		ena <= ras or (cas and not ceoc);
 	end process;
 
 	ctlra_p : process (ctlr_ras, dmatrans_clk)

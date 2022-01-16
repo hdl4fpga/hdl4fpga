@@ -72,7 +72,7 @@ begin
 				if load='1' then
 					cntr(left1 downto right1) := '0' & unsigned(aliasd(left downto right));
 
-					if i/=slices'left then 
+					if i/=slices'left then
 						if updn='0' then
 							cntr1(left1 downto right1) <= cntr(left1 downto right1) + 1;
 						else
@@ -83,7 +83,7 @@ begin
 					eoc(i) <= '0';
 
 				elsif ena='1' then
-					if i=slices'left then 
+					if i=slices'left then
 						if updn='0' then
 							cntr(left1 downto right1)  := cntr(left1 downto right1) + 1;
 						else

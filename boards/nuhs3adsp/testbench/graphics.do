@@ -46,7 +46,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactl
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/col_eoc
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/len_eoc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {208879974 ps} 0}
+WaveRestoreCursors {{Cursor 1} {208872991 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
