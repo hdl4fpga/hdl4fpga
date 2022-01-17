@@ -127,8 +127,9 @@ begin
 		signal tlen    : std_logic_vector(dmatrans_tlen'range);
 		signal taddr   : std_logic_vector(dmatrans_taddr'range);
 
+		signal row_irdy : std_logic;
 		signal col_in  : std_logic_vector(col'range);
-		signal col_out : std_logic_vector(col'range);
+		signal l : std_logic;
 
 		constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
 	begin
@@ -137,6 +138,7 @@ begin
 			variable ras1 : std_logic;
 		begin
 			if rising_edge(dmatrans_clk) then
+				l <= load;
 				ras1 := ctlr_ras;
 			end if;
 			ena <= (ctlr_ras or ras1) or (ctlr_cas and not ceoc);
@@ -159,6 +161,24 @@ begin
 			col     => col,
 			col_eoc => ceoc);
 
+		row_irdy <= l or (ceoc and ena);
+		row_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => 4,
+			latency    => 0,
+			check_sov  => false,
+			check_dov  => false,
+			gray_code  => false)
+		port map (
+			src_clk  => dmatrans_clk,
+			src_irdy => row_irdy,
+			src_trdy => open,
+			src_data => row,
+			dst_clk  => dmatrans_clk,
+			dst_irdy => open,
+			dst_trdy => ctlr_ras,
+			dst_data => ddrdma_row);
+
 		col_in <= col and mask_col;
 		col_e : entity hdl4fpga.fifo
 		generic map (
@@ -178,7 +198,6 @@ begin
 			dst_data => ddrdma_col);
 
 		ddrdma_bnk <= bnk;
-		ddrdma_row <= row;
 
 	end block;
 
