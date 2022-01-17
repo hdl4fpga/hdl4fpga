@@ -61,7 +61,6 @@ entity dmatrans is
 
 	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
 	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0,data_gear,burst_length))-1;
-	constant mask_addr : std_logic_vector(dmatrans_iaddr'range) := std_logic_vector(shift_left(unsigned'(dmatrans_iaddr'range => '1'), burst_bits-coln_align));
 	constant mask_len  : std_logic_vector(dmatrans_ilen'range)  := std_logic_vector(shift_left(unsigned'(dmatrans_ilen'range  => '1'), burst_bits-coln_align));
 
 end;
@@ -70,31 +69,23 @@ architecture def of dmatrans is
 
 	constant latency    : natural := 2;
 
-	signal ddrdma_col   : std_logic_vector(coln_size-1 downto coln_align);
-	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
 	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
-	signal row          : std_logic_vector(ddrdma_row'range);
-	signal col          : std_logic_vector(ddrdma_col'range);
-
-	signal leoc         : std_logic;
-	signal ceoc         : std_logic;
-	signal lat_ceoc     : std_logic;
-	signal ilen         : std_logic_vector(dmatrans_ilen'range);
-	signal iaddr        : std_logic_vector(dmatrans_iaddr'range);
-	signal tlen         : std_logic_vector(dmatrans_tlen'range);
-	signal taddr        : std_logic_vector(dmatrans_taddr'range);
+	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
+	signal ddrdma_col   : std_logic_vector(coln_size-1 downto coln_align);
 
 	signal load         : std_logic;
 
 	signal ref_req      : std_logic;
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
-	signal state_idl    : std_logic;
+	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
 	signal ena          : std_logic;
+	signal leoc         : std_logic;
+	signal ceoc         : std_logic;
 begin
 
-	process (dmatrans_clk, ctlr_refreq, ctlr_dio_req)
+	process (dmatrans_clk, ctlr_cmd, ctlr_trdy)
 		variable q : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
@@ -103,121 +94,135 @@ begin
 		end if;
 	end process;
 
-	process (lat_ceoc, state_idl, dmatrans_clk)
---		type states is ();
---		variable state : state;
-		variable frm : std_logic;
+	process (dmatrans_clk)
 	begin
 		if rising_edge(dmatrans_clk) then
 			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
 				if leoc='1' then
-					frm := '0';
+					ctlr_frm <= '0';
 					if ctlr_trdy='1' then
 						dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 					end if;
-				elsif state_idl='1' then
-					frm := '1';
-				elsif lat_ceoc='1' and state_idl='0' then
-					frm := '0';
+				elsif state_nop='1' then
+					ctlr_frm <= '1';
+				elsif ceoc='1' then
+					ctlr_frm <= '0';
 				else
-					frm := '1';
+					ctlr_frm <= '1';
 				end if;
 			else
-				frm := '0';
+				ctlr_frm <= '0';
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
-		ctlr_frm <= frm and not (lat_ceoc and not state_idl);
 	end process;
 
-	ilen  <= dmatrans_ilen  or not mask_len;
-	iaddr <= dmatrans_iaddr;
-	dma_e : entity hdl4fpga.ddrdma
-	port map (
-		clk     => dmatrans_clk,
-		load    => load,
-		ena     => ena,
-		iaddr   => iaddr,
-		ilen    => ilen,
-		taddr   => taddr,
-		tlen    => tlen,
-		len_eoc => leoc,
-		bnk     => ddrdma_bnk,
-		row     => row,
-		col     => col,
-		col_eoc => ceoc);
+	dma_b : block
 
-	ceoclat_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 1-1 => 1))
-	port map (
-		clk => dmatrans_clk,
-		di(0) => ceoc,
-		do(0) => lat_ceoc);
+		signal bnk     : std_logic_vector(ctlr_b'range);
+		signal row     : std_logic_vector(ddrdma_row'range);
+		signal col     : std_logic_vector(ddrdma_col'range);
+		signal ilen    : std_logic_vector(dmatrans_ilen'range);
+		signal iaddr   : std_logic_vector(dmatrans_iaddr'range);
+		signal tlen    : std_logic_vector(dmatrans_tlen'range);
+		signal taddr   : std_logic_vector(dmatrans_taddr'range);
 
-	rowlat_e : entity hdl4fpga.align
-	generic map (
-		n => row'length,
-		d => (0 to row'length-1 => 0))
-	port map (
-		clk => dmatrans_clk,
-		di  => row,
-		do  => ddrdma_row);
+		signal col_in  : std_logic_vector(col'range);
+		signal col_out : std_logic_vector(col'range);
 
-	collat_e : entity hdl4fpga.align
-	generic map (
-		n => col'length,
-		d => (0 to col'length-1 => 0)) --setif(burst_length=0,latency,latency+2)))
-	port map (
-		clk => dmatrans_clk,
-		di  => col,
-		do  => ddrdma_col);
+		constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
+	begin
+
+		process (ctlr_cas, ctlr_ras, ceoc, dmatrans_clk)
+			variable ras1 : std_logic;
+		begin
+			if rising_edge(dmatrans_clk) then
+				ras1 := ctlr_ras;
+			end if;
+			ena <= (ctlr_ras or ras1) or (ctlr_cas and not ceoc);
+		end process;
+
+		ilen  <= dmatrans_ilen or not mask_len;
+		iaddr <= dmatrans_iaddr;
+		dma_e : entity hdl4fpga.ddrdma
+		port map (
+			clk     => dmatrans_clk,
+			load    => load,
+			ena     => ena,
+			iaddr   => iaddr,
+			ilen    => ilen,
+			taddr   => taddr,
+			tlen    => tlen,
+			len_eoc => leoc,
+			bnk     => bnk,
+			row     => row,
+			col     => col,
+			col_eoc => ceoc);
+
+		col_in <= col and mask_col;
+		col_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => 4,
+			latency    => 0,
+			check_sov  => false,
+			check_dov  => false,
+			gray_code  => false)
+		port map (
+			src_clk  => dmatrans_clk,
+			src_irdy => ena,
+			src_trdy => open,
+			src_data => col,
+			dst_clk  => dmatrans_clk,
+			dst_irdy => open,
+			dst_trdy => ctlr_cas,
+			dst_data => ddrdma_col);
+
+		ddrdma_bnk <= bnk;
+		ddrdma_row <= row;
+
+	end block;
 
 	ctlr_rw <= not dmatrans_we;
 
 	process (ceoc, dmatrans_clk)
 		variable ras  : std_logic;
 		variable cas  : std_logic;
-		variable idl  : std_logic;
-		variable trdy : std_logic;
+		variable nop  : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
 			if ctlr_trdy='1' then
-				ras := setif(ctlr_cmd=mpu_act);
-				idl := setif(ctlr_cmd/=mpu_act and ctlr_cmd/=mpu_read and ctlr_cmd/=mpu_write);
+				case ctlr_cmd is
+				when mpu_act   =>
+					ras := '1';
+					cas := '0';
+					nop := '0';
+				when mpu_write =>
+					ras := '0';
+					cas := '1';
+					nop := '0';
+				when mpu_read  =>
+					ras := '0';
+					cas := '1';
+					nop := '0';
+				when others    =>
+					ras := '0';
+					cas := '0';
+					nop := '1';
+				end case;
 			else
 				ras := '0';
-			end if;
-			if trdy='1' then
-				cas := setif(ctlr_cmd=mpu_read or ctlr_cmd=mpu_write);
-			else
 				cas := '0';
 			end if;
 
 			ctlr_cas  <= cas;
 			ctlr_ras  <= ras;
-			state_idl <= idl;
-			trdy     := ctlr_trdy;
-		end if;
-		ena <= ras or (cas and not ceoc);
-	end process;
-
-	ctlra_p : process (ctlr_ras, dmatrans_clk)
-		variable saved_col : unsigned(ctlr_a'range);
-	begin
-		if rising_edge(dmatrans_clk) then
-			if ctlr_ras='1' then
-				saved_col := resize(unsigned(ddrdma_col), ctlr_a'length) and unsigned(mask_addr(ctlr_a'range));
-			end if;
-		end if;
-
-		if ctlr_ras='1' then
-			ctlr_a <= ddrdma_row;
-			ctlr_b <= ddrdma_bnk;
-		else
-			ctlr_a <= std_logic_vector(shift_left(saved_col,coln_align));
+			state_nop <= nop;
 		end if;
 	end process;
+
+	ctlr_b <= ddrdma_bnk;
+	ctlr_a <=
+		ddrdma_row when ctlr_ras='1' else
+		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), coln_align));
 
 end;
