@@ -215,7 +215,7 @@ begin
 	generic map (
 		debug =>false)
 	port map (
-		mii_data4 => x"01007e_1702_000007_1603_8000_13fc",
+		mii_data4 => x"01007e_1702_00ffff_1603_80ff_fff4",
 		mii_frm1 => '0',
 		mii_frm2 => ping_req,
 		mii_frm3 => '0',
