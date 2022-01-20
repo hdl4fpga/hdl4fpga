@@ -193,6 +193,7 @@ begin
 
 	clk <= not clk after 25 ns;
 
+
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 
 	rst <= '0', '1' after 300 ns;
