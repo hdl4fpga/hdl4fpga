@@ -81,9 +81,9 @@ architecture def of dmatrans is
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
-	signal ena          : std_logic;
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
+	signal lat_ceoc         : std_logic;
 	signal loaded   : std_logic;
 begin
 
@@ -125,6 +125,7 @@ begin
 
 	dma_b : block
 
+		signal dma_ena   : std_logic;
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
 		signal col   : std_logic_vector(ddrdma_col'range);
@@ -133,16 +134,19 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
-		signal pre_load : std_logic;
 	begin
 
-		process (loaded, ctlr_cas, ctlr_ras, ceoc, dmatrans_clk)
-			variable look_ahead : std_logic;
+		process (loaded, all, dmatrans_clk)
+			variable lahead : std_logic;
+			variable bload  : std_logic;
+			variable ena    : std_logic;
 		begin
-			if rising_edge(dmatrans_clk) then
-				look_ahead := pre_load;
+			if rising_edge(dmatans_clk) then
+				lahead := loaded;
 			end if;
-			ena <= pre_load or ((look_ahead or ctlr_cas) and not ceoc);
+			ena      := lahead or (ctlr_cas and not ceoc);
+			dma_ena  <= ena;
+			bnk_irdy <= loaded or lahead or ena;;
 		end process;
 
 		ilen  <= dmatrans_ilen or not mask_len;
@@ -151,7 +155,7 @@ begin
 		port map (
 			clk     => dmatrans_clk,
 			load    => load,
-			ena     => ena,
+			ena     => dma_ena,
 			iaddr   => iaddr,
 			ilen    => ilen,
 			taddr   => taddr,
@@ -166,6 +170,7 @@ begin
 			constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
 
 			signal fifo_frm : std_logic;
+			signal bnk_load : std_logic;
 			signal bnk_irdy : std_logic;
 			signal bnk_trdy : std_logic;
 			signal row_irdy : std_logic;
@@ -177,19 +182,21 @@ begin
 
 			fifo_frm <= not load;
 			process (dmatrans_clk)
+				variable q : std_logic;
 			begin
 				if rising_edge(dmatrans_clk) then
-					pre_load <= loaded or (ceoc and ena1);
+					bnk_load <= loaded or (ceoc and ena1) or q;
+					q        := (ceoc and ena1);
 					ena1     <= ena;
 					row_trdy <= ctlr_ras;
 				end if;
 			end process;
 
-			bnk_irdy <= loaded or pre_load or ena;
+			row_irdy <= loaded or (ceoc and ena1);
 			bnk_trdy <= ctlr_ras or ctlr_cas or (state_pre and ctlr_trdy);
 			bnk_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth => 4,
+				max_depth => 8,
 				latency   => 0,
 				check_sov => false,
 				check_dov => false,
@@ -208,7 +215,6 @@ begin
 				dst_trdy  => bnk_trdy,
 				dst_data  => ddrdma_bnk);
 
-			row_irdy <= loaded or (ceoc and ena1);
 			row_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 4,
@@ -231,7 +237,7 @@ begin
 				dst_data  => ddrdma_row);
 
 			col_in   <= col and mask_col;
-			col_irdy <= ena;
+			col_irdy <= loaded or ena;
 			col_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 4,
