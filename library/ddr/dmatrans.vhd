@@ -84,7 +84,7 @@ architecture def of dmatrans is
 	signal ena          : std_logic;
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
-			signal loaded   : std_logic;
+	signal loaded   : std_logic;
 begin
 
 	process (dmatrans_clk, ctlr_cmd, ctlr_trdy)
@@ -100,22 +100,24 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
-				if leoc='1' then
-					ctlr_frm <= '0';
-					if ctlr_trdy='1' then
-						dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
+				if load='0' then
+					if leoc='1' then
+						ctlr_frm <= '0';
+						if ctlr_trdy='1' then
+							dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
+						end if;
+					elsif state_nop='1' then
+						ctlr_frm <= '1';
+					elsif ceoc='1' then
+						ctlr_frm <= '0';
+					else
+						ctlr_frm <= '1';
 					end if;
-				elsif state_nop='1' then
-					ctlr_frm <= '1';
-				elsif ceoc='1' then
-					ctlr_frm <= '0';
-				else
-					ctlr_frm <= '1';
 				end if;
-				loaded   <= load;
+				loaded <= load;
 			else
 				ctlr_frm <= '0';
-				loaded <= '0';
+				loaded   <= '0';
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
@@ -131,15 +133,16 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
+		signal pre_load : std_logic;
 	begin
 
-		process (ctlr_cas, ctlr_ras, ceoc, dmatrans_clk)
+		process (loaded, ctlr_cas, ctlr_ras, ceoc, dmatrans_clk)
 			variable look_ahead : std_logic;
 		begin
 			if rising_edge(dmatrans_clk) then
-				look_ahead := ctlr_ras;
+				look_ahead := pre_load;
 			end if;
-			ena <= (ctlr_ras or look_ahead) or (ctlr_cas and not ceoc);
+			ena <= pre_load or ((look_ahead or ctlr_cas) and not ceoc);
 		end process;
 
 		ilen  <= dmatrans_ilen or not mask_len;
@@ -162,7 +165,6 @@ begin
 		fifo_b : block
 			constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
 
-			signal pre_load : std_logic;
 			signal fifo_frm : std_logic;
 			signal bnk_irdy : std_logic;
 			signal bnk_trdy : std_logic;
@@ -170,7 +172,7 @@ begin
 			signal row_trdy : std_logic;
 			signal col_irdy : std_logic;
 			signal col_in   : std_logic_vector(col'range);
-				signal ena1 : std_logic;
+			signal ena1     : std_logic;
 		begin
 
 			fifo_frm <= not load;

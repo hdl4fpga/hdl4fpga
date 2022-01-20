@@ -82,7 +82,10 @@ begin
 	report "fifo_depth should be a power of 2"
 	severity FAILURE;
 
-	wr_ena <= src_frm and ((src_irdy and src_auto) or src_writ) and (src_trdy or setif(not check_sov));
+	wr_ena <=
+		((src_irdy and src_auto) or src_writ) and (src_trdy or setif(not check_sov)) when src_frm='1' else
+		src_writ;
+
 	max_depthgt1_g : if max_depth > 1 generate
 
 		subtype addr_range is natural range 1 to addr_length;
