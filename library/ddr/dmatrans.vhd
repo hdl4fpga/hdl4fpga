@@ -78,6 +78,7 @@ architecture def of dmatrans is
 	signal ref_req      : std_logic;
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
+	signal ctlr_pre     : std_logic;
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -100,7 +101,7 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
-				if load='0' then
+				if true or load='0' then
 					if leoc='1' then
 						ctlr_frm <= '0';
 						if ctlr_trdy='1' then
@@ -125,7 +126,7 @@ begin
 
 	dma_b : block
 
-		signal dma_ena   : std_logic;
+		signal ena   : std_logic;
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
 		signal col   : std_logic_vector(ddrdma_col'range);
@@ -136,17 +137,13 @@ begin
 
 	begin
 
-		process (loaded, all, dmatrans_clk)
-			variable lahead : std_logic;
-			variable bload  : std_logic;
-			variable ena    : std_logic;
+		process (ctlr_ras, ctlr_cas, ceoc, dmatrans_clk)
+			variable look_ahead : std_logic;
 		begin
-			if rising_edge(dmatans_clk) then
-				lahead := loaded;
+			if rising_edge(dmatrans_clk) then
+				look_ahead := loaded;
 			end if;
-			ena      := lahead or (ctlr_cas and not ceoc);
-			dma_ena  <= ena;
-			bnk_irdy <= loaded or lahead or ena;;
+			ena <= look_ahead or (ctlr_cas and not ceoc) or (ctlr_pre and ceoc);
 		end process;
 
 		ilen  <= dmatrans_ilen or not mask_len;
@@ -155,7 +152,7 @@ begin
 		port map (
 			clk     => dmatrans_clk,
 			load    => load,
-			ena     => dma_ena,
+			ena     => ena,
 			iaddr   => iaddr,
 			ilen    => ilen,
 			taddr   => taddr,
@@ -170,33 +167,20 @@ begin
 			constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
 
 			signal fifo_frm : std_logic;
-			signal bnk_load : std_logic;
 			signal bnk_irdy : std_logic;
 			signal bnk_trdy : std_logic;
 			signal row_irdy : std_logic;
 			signal row_trdy : std_logic;
 			signal col_irdy : std_logic;
 			signal col_in   : std_logic_vector(col'range);
-			signal ena1     : std_logic;
 		begin
 
 			fifo_frm <= not load;
-			process (dmatrans_clk)
-				variable q : std_logic;
-			begin
-				if rising_edge(dmatrans_clk) then
-					bnk_load <= loaded or (ceoc and ena1) or q;
-					q        := (ceoc and ena1);
-					ena1     <= ena;
-					row_trdy <= ctlr_ras;
-				end if;
-			end process;
-
-			row_irdy <= loaded or (ceoc and ena1);
-			bnk_trdy <= ctlr_ras or ctlr_cas or (state_pre and ctlr_trdy);
+			bnk_irdy <= loaded or (ceoc and ena);
+			bnk_trdy <= (state_pre and ctlr_trdy);
 			bnk_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth => 8,
+				max_depth => 4,
 				latency   => 0,
 				check_sov => false,
 				check_dov => false,
@@ -215,6 +199,8 @@ begin
 				dst_trdy  => bnk_trdy,
 				dst_data  => ddrdma_bnk);
 
+			row_irdy <= loaded or (ceoc and ena);
+			row_trdy <= ctlr_pre;
 			row_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 4,
@@ -237,7 +223,7 @@ begin
 				dst_data  => ddrdma_row);
 
 			col_in   <= col and mask_col;
-			col_irdy <= loaded or ena;
+			col_irdy <= ena;
 			col_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 4,
@@ -302,9 +288,11 @@ begin
 				end case;
 				ctlr_ras <= ras;
 				ctlr_cas <= cas;
+				ctlr_pre <= pre;
 			else
 				ctlr_ras <= '0';
 				ctlr_cas <= '0';
+				ctlr_pre <= '0';
 			end if;
 
 			state_pre <= pre;
