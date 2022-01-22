@@ -128,7 +128,6 @@ begin
 
 		signal ena   : std_logic;
 		signal l   : std_logic;
-		signal look_ahead   : std_logic;
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
 		signal col   : std_logic_vector(ddrdma_col'range);
@@ -139,28 +138,19 @@ begin
 
 	begin
 
-		xxx : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => 1))
-		port map (
-			clk => dmatrans_clk,
-			di(0) => ctlr_frm,
-			do(0) => look_ahead);
-
-		cas_p : process(dmatrans_clk)
+		cas_p : process(ceoc, ctlr_pre,dmatrans_clk)
 			variable cntr : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
 		begin
 			if rising_edge(dmatrans_clk) then
-				if look_ahead='0' then
-					cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
+				if ctlr_frm='0' or ctlr_cmd=mpu_nop then
+					cntr := to_unsigned(0, cntr'length);
 				elsif cntr(0)='0' then
 					cntr := cntr - 1;
-				else
+				elsif ceoc='0' then
 					cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
 				end if;
-				ena <= look_ahead and cntr(0) and not ceoc;
 			end if;
+			ena <= (cntr(0) and not ceoc) or ctlr_pre ;
 		end process;
 
 		ilen  <= dmatrans_ilen or not mask_len;
