@@ -101,19 +101,17 @@ begin
 	begin
 		if rising_edge(dmatrans_clk) then
 			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
-				if true or load='0' then
-					if leoc='1' then
-						ctlr_frm <= '0';
-						if ctlr_trdy='1' then
-							dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
-						end if;
-					elsif state_nop='1' then
-						ctlr_frm <= '1';
-					elsif ceoc='1' then
-						ctlr_frm <= '0';
-					else
-						ctlr_frm <= '1';
+				if leoc='1' then
+					ctlr_frm <= '0';
+					if (ctlr_trdy and state_pre)='1' then
+						dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 					end if;
+				elsif state_nop='1' then
+					ctlr_frm <= '1';
+				elsif ceoc='1' then
+					ctlr_frm <= '0';
+				else
+					ctlr_frm <= '1';
 				end if;
 				loaded <= load;
 			else
@@ -136,9 +134,11 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
+			signal q : std_logic;
+
 	begin
 
-		cas_p : process(ceoc, ctlr_pre,dmatrans_clk)
+		cas_p : process(ctlr_cmd, ctlr_ras, ceoc, ctlr_pre,dmatrans_clk)
 			variable cntr : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
 		begin
 			if rising_edge(dmatrans_clk) then
@@ -150,8 +150,9 @@ begin
 					cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
 				end if;
 			end if;
-			ena <= (cntr(0) and not ceoc) or ctlr_pre ;
+			ena <= (cntr(0) and not ceoc) or (ctlr_ras and ceoc);
 		end process;
+				q<= setif(ctlr_cmd=mpu_act) and ceoc;
 
 		ilen  <= dmatrans_ilen or not mask_len;
 		iaddr <= dmatrans_iaddr;
@@ -183,7 +184,7 @@ begin
 		begin
 
 			fifo_frm <= not load;
-			bnk_irdy <= loaded or (ceoc and ena);
+			bnk_irdy <= loaded or q; --(ceoc and ena);
 			bnk_trdy <= (state_pre and ctlr_trdy);
 			bnk_e : entity hdl4fpga.fifo
 			generic map (
@@ -206,7 +207,7 @@ begin
 				dst_trdy  => bnk_trdy,
 				dst_data  => ddrdma_bnk);
 
-			row_irdy <= loaded or (ceoc and ena);
+			row_irdy <= loaded or q; -- or (ceoc and ena);
 			row_trdy <= ctlr_pre;
 			row_e : entity hdl4fpga.fifo
 			generic map (
