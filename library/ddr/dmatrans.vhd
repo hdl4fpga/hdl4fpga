@@ -86,6 +86,7 @@ architecture def of dmatrans is
 	signal ceoc         : std_logic;
 	signal lat_ceoc         : std_logic;
 	signal loaded   : std_logic;
+			signal restart : std_logic;
 begin
 
 	process (dmatrans_clk, ctlr_cmd, ctlr_trdy)
@@ -98,6 +99,7 @@ begin
 	end process;
 
 	process (dmatrans_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
 			if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
@@ -108,7 +110,7 @@ begin
 					end if;
 				elsif state_nop='1' then
 					ctlr_frm <= '1';
-				elsif ceoc='1' then
+				elsif ceoc='1' and restart='0' then
 					ctlr_frm <= '0';
 				else
 					ctlr_frm <= '1';
@@ -125,7 +127,6 @@ begin
 	dma_b : block
 
 		signal ena   : std_logic;
-		signal l   : std_logic;
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
 		signal col   : std_logic_vector(ddrdma_col'range);
@@ -134,14 +135,21 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
-			signal q : std_logic;
+		signal reload : std_logic;
 
 	begin
 
-		cas_p : process(ctlr_cmd, ctlr_ras, ceoc, ctlr_pre,dmatrans_clk)
+		cas_p : process(restart, ctlr_cmd, ctlr_ras, ceoc, ctlr_pre,dmatrans_clk)
 			variable cntr : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
 		begin
 			if rising_edge(dmatrans_clk) then
+
+				if ctlr_frm='0' then
+					restart <= ceoc;
+				elsif cntr(0)='1' then
+					restart <= '0';
+				end if;
+
 				if ctlr_frm='0' or ctlr_cmd=mpu_nop then
 					cntr := to_unsigned(0, cntr'length);
 				elsif cntr(0)='0' then
@@ -149,11 +157,10 @@ begin
 				elsif ceoc='0' then
 					cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
 				end if;
+				reload <= state_pre and ctlr_trdy;
 			end if;
-			ena <= (cntr(0) and not ceoc) or (ctlr_ras and ceoc);
+			ena <= (cntr(0) and not ceoc) or (cntr(0) and restart);
 		end process;
-				q<= setif(ctlr_cmd=mpu_act) and ceoc;
-
 		ilen  <= dmatrans_ilen or not mask_len;
 		iaddr <= dmatrans_iaddr;
 		dma_e : entity hdl4fpga.ddrdma
@@ -184,7 +191,7 @@ begin
 		begin
 
 			fifo_frm <= not load;
-			bnk_irdy <= loaded or q; --(ceoc and ena);
+			bnk_irdy <= loaded or reload;
 			bnk_trdy <= (state_pre and ctlr_trdy);
 			bnk_e : entity hdl4fpga.fifo
 			generic map (
@@ -207,7 +214,7 @@ begin
 				dst_trdy  => bnk_trdy,
 				dst_data  => ddrdma_bnk);
 
-			row_irdy <= loaded or q; -- or (ceoc and ena);
+			row_irdy <= loaded or reload;
 			row_trdy <= ctlr_pre;
 			row_e : entity hdl4fpga.fifo
 			generic map (
