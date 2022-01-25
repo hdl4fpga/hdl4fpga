@@ -87,16 +87,8 @@ architecture def of dmatrans is
 	signal lat_ceoc         : std_logic;
 	signal loaded   : std_logic;
 			signal restart : std_logic;
+	signal ctlr_trdy1 : std_logic;
 begin
-
-	process (dmatrans_clk, ctlr_cmd, ctlr_trdy)
-		variable q : std_logic;
-	begin
-		if rising_edge(dmatrans_clk) then
-			ref_req <= setif((ctlr_refreq and ctlr_dio_req)='1' and q='0');
-			q := ctlr_refreq and ctlr_dio_req;
-		end if;
-	end process;
 
 	process (dmatrans_clk)
 		variable q : std_logic;
@@ -110,6 +102,8 @@ begin
 					end if;
 				elsif state_nop='1' then
 					ctlr_frm <= '1';
+				elsif ctlr_refreq='1' then
+					ctlr_frm <= '0';
 				elsif ceoc='1' and restart='0' then
 					ctlr_frm <= '0';
 				else
@@ -126,6 +120,8 @@ begin
 
 	dma_b : block
 
+		signal reload : std_logic;
+
 		signal ena   : std_logic;
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
@@ -135,32 +131,51 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
-		signal reload : std_logic;
-
 	begin
 
-		cas_p : process(restart, ctlr_cmd, ctlr_ras, ceoc, ctlr_pre,dmatrans_clk)
+		cas_p : process(restart, ctlr_refreq, ceoc, dmatrans_clk)
 			variable cntr : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
+			type states is (activate, bursting);
+			variable state : states;
 		begin
 			if rising_edge(dmatrans_clk) then
 
 				if ctlr_frm='0' then
-					restart <= ceoc;
+					restart <= ceoc or ctlr_refreq;
 				elsif cntr(0)='1' then
 					restart <= '0';
 				end if;
 
-				if ctlr_frm='0' or ctlr_cmd=mpu_nop then
+				case state is
+				when activate =>
+					if ctlr_frm='1' and (ctlr_cmd=mpu_act and ctlr_trdy='1') then
+						state := bursting;
+					end if;
+				when bursting =>
+					if ctlr_frm='0' then
+						state := activate;
+					elsif ctlr_refreq='1' then
+						state := activate;
+					end if;
+				end case;
+
+				case state is
+				when activate =>
 					cntr := to_unsigned(0, cntr'length);
-				elsif cntr(0)='0' then
-					cntr := cntr - 1;
-				elsif ceoc='0' then
-					cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
-				end if;
+				when bursting =>
+					if cntr(0)='0' then
+						cntr := cntr - 1;
+					elsif ceoc='0' then
+						cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
+					end if;
+				end case;
+
 				reload <= state_pre and ctlr_trdy;
 			end if;
-			ena <= (cntr(0) and not ceoc) or (cntr(0) and restart);
+
+			ena <= (cntr(0) and not ceoc and not ctlr_refreq) or (cntr(0) and restart);
 		end process;
+
 		ilen  <= dmatrans_ilen or not mask_len;
 		iaddr <= dmatrans_iaddr;
 		dma_e : entity hdl4fpga.ddrdma
@@ -241,7 +256,7 @@ begin
 			col_irdy <= ena;
 			col_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth => 4,
+				max_depth => 8,
 				latency   => 0,
 				check_sov => false,
 				check_dov => false,
@@ -266,7 +281,7 @@ begin
 
 	ctlr_rw <= not dmatrans_we;
 
-	process (ceoc, dmatrans_clk)
+	process (dmatrans_clk)
 		variable ras  : std_logic;
 		variable cas  : std_logic;
 		variable pre  : std_logic;
@@ -312,6 +327,7 @@ begin
 
 			state_pre <= pre;
 			state_nop <= nop;
+			ctlr_trdy1 <= ctlr_trdy;
 		end if;
 	end process;
 
