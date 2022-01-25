@@ -23,27 +23,22 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/load
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/iaddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/ilen
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/taddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/tlen
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/bnk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/row
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/col
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/bnk_eoc
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/row_eoc
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/col_eoc
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_e/len_eoc
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_irdy
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_frm
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_trdy
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_state
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/ena
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/cas_p/cntr
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/cas_p/state
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_ilen
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/ilen
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(23) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(22) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(21) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(20) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(19) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(18) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(17) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(16) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(15) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(14) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(13) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(12) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(11) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(10) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(9) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(8) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(7) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(6) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(5) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(4) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(3) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(2) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(1) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(23) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(22) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(21) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(20) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(19) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(18) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(17) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(16) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(15) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(14) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(13) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(12) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(11) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(10) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(9) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(2) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(1) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr(0) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_iaddr
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/iaddr
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/bnk
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/row
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29858637 ps} 0}
+WaveRestoreCursors {{Cursor 1} {29830619 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -59,4 +54,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {29764339 ps} {29985827 ps}
+WaveRestoreZoom {29789587 ps} {30011075 ps}

@@ -161,7 +161,8 @@ begin
 
 				case state is
 				when activate =>
-					cntr := to_unsigned(0, cntr'length);
+--					cntr := to_unsigned(0, cntr'length);
+					cntr := to_unsigned(1, cntr'length);
 				when bursting =>
 					if cntr(0)='0' then
 						cntr := cntr - 1;
@@ -176,8 +177,10 @@ begin
 			ena <= (cntr(0) and not ceoc and not ctlr_refreq) or (cntr(0) and restart);
 		end process;
 
-		ilen  <= dmatrans_ilen or not mask_len;
-		iaddr <= dmatrans_iaddr;
+--		ilen  <= dmatrans_ilen or not mask_len;
+--		iaddr <= dmatrans_iaddr;
+		ilen  <= std_logic_vector(unsigned(dmatrans_ilen) srl burst_bits-coln_align);
+		iaddr <= std_logic_vector(unsigned(dmatrans_iaddr) srl burst_bits-coln_align);
 		dma_e : entity hdl4fpga.ddrdma
 		port map (
 			clk     => dmatrans_clk,
@@ -202,7 +205,6 @@ begin
 			signal row_irdy : std_logic;
 			signal row_trdy : std_logic;
 			signal col_irdy : std_logic;
-			signal col_in   : std_logic_vector(col'range);
 		begin
 
 			fifo_frm <= not load;
@@ -252,7 +254,6 @@ begin
 				dst_trdy  => row_trdy,
 				dst_data  => ddrdma_row);
 
-			col_in   <= col and mask_col;
 			col_irdy <= ena;
 			col_e : entity hdl4fpga.fifo
 			generic map (
@@ -334,6 +335,6 @@ begin
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
 		ddrdma_row when ctlr_ras='1' else
-		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), coln_align));
+		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
