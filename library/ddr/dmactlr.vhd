@@ -54,6 +54,8 @@ entity dmactlr is
 		ctlr_refreq  : in  std_logic;
 
 		ctlr_cl      : in  std_logic_vector;
+		ctlr_alat    : in  std_logic_vector(2 downto 0);
+		ctlr_blat    : in  std_logic_vector(2 downto 0);
 		ctlr_do_dv   : in  std_logic;
 		dev_do_dv    : out std_logic_vector;
 
@@ -62,8 +64,7 @@ entity dmactlr is
 		ctlr_cmd     : in  std_logic_vector(0 to 3-1);
 		ctlr_rw      : out std_logic;
 		ctlr_b       : out std_logic_vector;
-		ctlr_a       : out std_logic_vector;
-		ctlr_dio_req : in  std_logic);
+		ctlr_a       : out std_logic_vector);
 
 end;
 
@@ -94,26 +95,13 @@ architecture def of dmactlr is
 	signal dma_req        : std_logic_vector(dev_req'range);
 	signal dma_rdy        : std_logic_vector(dev_req'range);
 
+	signal ctlr_act       : std_logic;
+	signal ctlr_ras       : std_logic;
+	signal ctlr_cas       : std_logic;
+
 begin
 
-	do_dv_g : for i in dev_gnt'range generate
-	signal ctlr_act     : std_logic;
-	signal ctlr_ras     : std_logic;
-	signal ctlr_cas     : std_logic;
-	begin
-		process (dev_gnt(i), ctlr_cl, ctlr_cas, ctlr_do_dv, ctlr_clk)
-			variable q   : std_logic_vector(0 to 3+8-1); -- Magic numbers that have to be recalled
-			variable lat : std_logic;
-		begin
-			if rising_edge(ctlr_clk) then
-				q(0) := ctlr_cas and dev_gnt(i);
-				q := std_logic_vector(unsigned(q) srl 1);
-			end if;
-			q(0) := ctlr_cas and dev_gnt(i);
-			lat  := word2byte(q(3 to 8+3-1), ctlr_cl);
-			dev_do_dv(i) <= ctlr_do_dv and lat;
-		end process;
-	end generate;
+	dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and dev_gnt;
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
@@ -226,8 +214,9 @@ begin
 		ctlr_trdy      => ctlr_trdy,
 		ctlr_cmd       => ctlr_cmd,
 		ctlr_rw        => ctlr_rw,
+		ctlr_alat      => ctlr_alat,
+		ctlr_blat      => ctlr_blat,
 		ctlr_b         => ctlr_b,
-		ctlr_a         => ctlr_a,
-		ctlr_dio_req   => ctlr_dio_req);
+		ctlr_a         => ctlr_a);
 
 end;

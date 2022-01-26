@@ -158,6 +158,8 @@ architecture mix of demo_graphics is
 	signal ctlr_rw        : std_logic;
 	signal ctlr_act       : std_logic;
 	signal ctlr_refreq    : std_logic;
+	signal ctlr_alat      : std_logic_vector(2 downto 0);
+	signal ctlr_blat      : std_logic_vector(2 downto 0);
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
@@ -167,7 +169,6 @@ architecture mix of demo_graphics is
 	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
-	signal ctlr_dio_req   : std_logic;
 
     signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 
@@ -865,9 +866,10 @@ begin
 			ctlr_trdy   => ctlr_trdy,
 			ctlr_cmd    => ctlr_cmd,
 			ctlr_rw     => ctlr_rw,
+			ctlr_alat   => ctlr_alat,
+			ctlr_blat   => ctlr_blat,
 			ctlr_b      => ctlr_b,
-			ctlr_a      => ctlr_a,
-			ctlr_dio_req => ctlr_dio_req);
+			ctlr_a      => ctlr_a);
 
 		dmadv_e : entity hdl4fpga.align
 		generic map (
@@ -912,6 +914,8 @@ begin
 			word_size    => word_size,
 			byte_size    => byte_size)
 		port map (
+			ctlr_alat    => ctlr_alat,
+			ctlr_blat    => ctlr_blat,
 			ctlr_bl      => ctlr_bl,
 			ctlr_cl      => ctlr_cl,
 
@@ -939,7 +943,6 @@ begin
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
 			ctlr_refreq  => ctlr_refreq,
-			ctlr_dio_req => ctlr_dio_req,
 			phy_inirdy   => ctlrphy_ini,
 			phy_frm      => ctlrphy_irdy,
 			phy_trdy     => ctlrphy_trdy,

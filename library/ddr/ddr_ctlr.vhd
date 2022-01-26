@@ -47,6 +47,8 @@ entity ddr_ctlr is
 		word_size    : natural := 16;
 		byte_size    : natural :=  8);
 	port (
+		ctlr_alat    : out std_logic_vector(2 downto 0);
+		ctlr_blat    : out std_logic_vector(2 downto 0);
 		ctlr_bl      : in std_logic_vector(2 downto 0);
 		ctlr_cl      : in std_logic_vector(2 downto 0);
 		ctlr_cwl     : in std_logic_vector(2 downto 0);
@@ -208,13 +210,14 @@ architecture mix of ddr_ctlr is
 	signal fifo_bypass : std_logic;
 begin
 
+	ctlr_alat    <= std_logic_vector(to_unsigned(lrcd, ctlr_alat'length));
+
 	ctlr_trdy    <= ddr_mpu_trdy when phy_inirdy='1' else '0';
 	phy_trdy     <= ddr_mpu_trdy when phy_inirdy='0' else '0';
 	ddr_pgm_frm  <= ctlr_frm     when phy_inirdy='1' else phy_frm;
 	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
 	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
-
 	ddr_init_e : entity hdl4fpga.ddr_init
 	generic map (
 		ddr_stdr       => stdr,
@@ -306,6 +309,7 @@ begin
 		ddr_mpu_act   => ctlr_act,
 		ddr_mpu_cas   => ddr_mpu_cas,
 		ddr_mpu_ras   => ddr_mpu_ras,
+		ddr_mpu_blat  => ctlr_blat,
 		ddr_mpu_we    => ddr_mpu_we,
 		ddr_mpu_rea   => ddr_mpu_rea,
 		ddr_mpu_wri   => ddr_mpu_wri,

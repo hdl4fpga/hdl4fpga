@@ -55,9 +55,10 @@ entity dmatrans is
 		ctlr_cmd       : in  std_logic_vector(0 to 3-1);
 		ctlr_trdy      : in  std_logic;
 		ctlr_rw        : out std_logic := '0';
+		ctlr_alat      : in  std_logic_vector(2 downto 0);
+		ctlr_blat      : in  std_logic_vector(2 downto 0);
 		ctlr_b         : out std_logic_vector;
-		ctlr_a         : out std_logic_vector;
-		ctlr_dio_req   : in  std_logic);
+		ctlr_a         : out std_logic_vector);
 
 	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
 	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0,data_gear,burst_length))-1;
@@ -84,10 +85,10 @@ architecture def of dmatrans is
 	signal ctlrdma_irdy : std_logic;
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
-	signal lat_ceoc         : std_logic;
-	signal loaded   : std_logic;
-			signal restart : std_logic;
-	signal ctlr_trdy1 : std_logic;
+	signal lat_ceoc     : std_logic;
+	signal loaded       : std_logic;
+	signal restart      : std_logic;
+	signal ctlr_trdy1   : std_logic;
 begin
 
 	process (dmatrans_clk)
@@ -131,12 +132,14 @@ begin
 		signal tlen  : std_logic_vector(dmatrans_tlen'range);
 		signal taddr : std_logic_vector(dmatrans_taddr'range);
 
+		signal col_frm : std_logic;
+
 	begin
 
-		cas_p : process(restart, ctlr_refreq, ceoc, dmatrans_clk)
-			variable cntr : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
+		cas_p : process(ceoc, ctlr_refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
+			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
 		begin
 			if rising_edge(dmatrans_clk) then
 
@@ -161,13 +164,12 @@ begin
 
 				case state is
 				when activate =>
---					cntr := to_unsigned(0, cntr'length);
-					cntr := to_unsigned(1, cntr'length);
+					cntr := resize(unsigned(ctlr_alat)-3, cntr'length);
 				when bursting =>
 					if cntr(0)='0' then
 						cntr := cntr - 1;
 					elsif ceoc='0' then
-						cntr := to_unsigned(burst_length/data_gear-2, cntr'length);
+						cntr := resize(unsigned(ctlr_blat), cntr'length);
 					end if;
 				end case;
 
@@ -177,9 +179,7 @@ begin
 			ena <= (cntr(0) and not ceoc and not ctlr_refreq) or (cntr(0) and restart);
 		end process;
 
---		ilen  <= dmatrans_ilen or not mask_len;
---		iaddr <= dmatrans_iaddr;
-		ilen  <= std_logic_vector(unsigned(dmatrans_ilen) srl burst_bits-coln_align);
+		ilen  <= std_logic_vector(unsigned(dmatrans_ilen)  srl burst_bits-coln_align);
 		iaddr <= std_logic_vector(unsigned(dmatrans_iaddr) srl burst_bits-coln_align);
 		dma_e : entity hdl4fpga.ddrdma
 		port map (
@@ -196,87 +196,37 @@ begin
 			col     => col,
 			col_eoc => ceoc);
 
-		fifo_b : block
-			constant mask_col : std_logic_vector(col'range) := std_logic_vector(shift_left(unsigned'(col'range => '1'), burst_bits-coln_align));
-
-			signal fifo_frm : std_logic;
-			signal bnk_irdy : std_logic;
-			signal bnk_trdy : std_logic;
-			signal row_irdy : std_logic;
-			signal row_trdy : std_logic;
-			signal col_irdy : std_logic;
+		process (dmatrans_clk)
 		begin
+			if rising_edge(dmatrans_clk) then
+				if (loaded or reload)='1' then
+					ddrdma_bnk <= bnk;
+					ddrdma_row <= row;
+				end if;
+			end if;
+		end process;
 
-			fifo_frm <= not load;
-			bnk_irdy <= loaded or reload;
-			bnk_trdy <= (state_pre and ctlr_trdy);
-			bnk_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth => 4,
-				latency   => 0,
-				check_sov => false,
-				check_dov => false,
-				gray_code => false)
-			port map (
-				src_clk   => dmatrans_clk,
-				src_mode  => '1',
-				src_frm   => fifo_frm,
-				src_irdy  => bnk_irdy,
-				src_trdy  => open,
-				src_data  => bnk,
-				dst_clk   => dmatrans_clk,
-				dst_mode  => '1',
-				dst_frm   => fifo_frm,
-				dst_irdy  => open,
-				dst_trdy  => bnk_trdy,
-				dst_data  => ddrdma_bnk);
-
-			row_irdy <= loaded or reload;
-			row_trdy <= ctlr_pre;
-			row_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth => 4,
-				latency   => 0,
-				check_sov => false,
-				check_dov => false,
-				gray_code => false)
-			port map (
-				src_clk   => dmatrans_clk,
-				src_mode  => '1',
-				src_frm   => fifo_frm,
-				src_irdy  => row_irdy,
-				src_trdy  => open,
-				src_data  => row,
-				dst_clk   => dmatrans_clk,
-				dst_mode  => '1',
-				dst_frm   => fifo_frm,
-				dst_irdy  => open,
-				dst_trdy  => row_trdy,
-				dst_data  => ddrdma_row);
-
-			col_irdy <= ena;
-			col_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth => 8,
-				latency   => 0,
-				check_sov => false,
-				check_dov => false,
-				gray_code => false)
-			port map (
-				src_clk   => dmatrans_clk,
-				src_mode  => '1',
-				src_frm   => fifo_frm,
-				src_irdy  => col_irdy,
-				src_trdy  => open,
-				src_data  => col,
-				dst_clk   => dmatrans_clk,
-				dst_mode  => '1',
-				dst_frm   => fifo_frm,
-				dst_irdy  => open,
-				dst_trdy  => ctlr_cas,
-				dst_data  => ddrdma_col);
-
-		end block;
+		col_frm <= not load;
+		col_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth => 8,
+			latency   => 0,
+			check_sov => false,
+			check_dov => false,
+			gray_code => false)
+		port map (
+			src_clk   => dmatrans_clk,
+			src_mode  => '1',
+			src_frm   => col_frm,
+			src_irdy  => ena,
+			src_trdy  => open,
+			src_data  => col,
+			dst_clk   => dmatrans_clk,
+			dst_mode  => '1',
+			dst_frm   => col_frm,
+			dst_irdy  => open,
+			dst_trdy  => ctlr_cas,
+			dst_data  => ddrdma_col);
 
 	end block;
 

@@ -37,8 +37,9 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactl
 add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/bnk
 add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/row
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_col
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29830619 ps} 0}
+WaveRestoreCursors {{Cursor 1} {29911899 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -54,4 +55,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {29789587 ps} {30011075 ps}
+WaveRestoreZoom {29867619 ps} {29922991 ps}

@@ -45,6 +45,7 @@ entity ddr_mpu is
 		cwl_cod : std_logic_vector;
 		cwl_tab : natural_vector);
 	port (
+		ddr_mpu_blat : out std_logic_vector;
 		ddr_mpu_bl  : in std_logic_vector;
 		ddr_mpu_cl  : in std_logic_vector;
 		ddr_mpu_cwl : in std_logic_vector;
@@ -104,7 +105,7 @@ architecture arch of ddr_mpu is
 		return val;
 	end;
 
-		
+
 	constant lat_size : natural := timer_size(lrcd, lrfc, lwr, lrp, bl_tab, cl_tab, cwl_tab);
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
@@ -264,13 +265,14 @@ architecture arch of ddr_mpu is
 			end loop;
 			return val;
 		end;
-			
+
 	begin
 		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
 	end;
 
 begin
 
+	ddr_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(ddr_mpu_bl, bl_cod, bl_tab))), ddr_mpu_blat'length));
 	ddr_mpu_p: process (ddr_mpu_clk)
 		variable state_set : boolean;
 	begin
@@ -295,7 +297,7 @@ begin
 					ddr_rdy_ena   <= '-';
 					ddr_mpu_cen   <= '-';
 					for i in ddr_state_tab'range loop
-						if ddr_state=ddr_state_tab(i).ddr_state then 
+						if ddr_state=ddr_state_tab(i).ddr_state then
 							if ddr_state_tab(i).ddr_cmi=ddr_mpu_cmd or
 							   ddr_state_tab(i).ddr_cmi="000" then
 								state_set    := true;
