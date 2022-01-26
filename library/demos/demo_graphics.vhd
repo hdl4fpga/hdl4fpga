@@ -255,7 +255,6 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
---		constant word_bits    : natural := unsigned_num_bits(setif(burst_length=0,ctlr_di'length,burst_length*word_size)/byte_size-1);
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size-1);
 
 		signal sout_req       : bit;

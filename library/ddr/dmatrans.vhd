@@ -62,7 +62,6 @@ entity dmatrans is
 
 	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
 	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0,data_gear,burst_length))-1;
-	constant mask_len  : std_logic_vector(dmatrans_ilen'range)  := std_logic_vector(shift_left(unsigned'(dmatrans_ilen'range  => '1'), burst_bits-coln_align));
 
 end;
 

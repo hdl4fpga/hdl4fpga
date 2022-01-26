@@ -401,7 +401,7 @@ begin
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => 8,
 		green_length => 8,
-		blue_length  => 8,
+--		blue_length  => 8,
 
 		fifo_size    => 8*2048)
 
@@ -427,6 +427,7 @@ begin
 		ctlr_clks    => ctlr_clks,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
+--		ctlr_bl      => "011",				-- Busrt length 8
 		ctlr_cl      => ddr_param.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
