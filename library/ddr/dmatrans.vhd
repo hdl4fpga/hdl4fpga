@@ -75,10 +75,10 @@ architecture def of dmatrans is
 
 	signal load         : std_logic;
 
-	signal ref_req      : std_logic;
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
 	signal ctlr_pre     : std_logic;
+	signal state_cas    : std_logic;
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -88,6 +88,7 @@ architecture def of dmatrans is
 	signal loaded       : std_logic;
 	signal restart      : std_logic;
 	signal ctlr_trdy1   : std_logic;
+	signal refreq       : std_logic;
 begin
 
 	process (dmatrans_clk)
@@ -102,7 +103,7 @@ begin
 					end if;
 				elsif state_nop='1' then
 					ctlr_frm <= '1';
-				elsif ctlr_refreq='1' then
+				elsif refreq='1' then
 					ctlr_frm <= '0';
 				elsif ceoc='1' and restart='0' then
 					ctlr_frm <= '0';
@@ -113,6 +114,11 @@ begin
 			else
 				ctlr_frm <= '0';
 				loaded   <= '0';
+			end if;
+			if state_cas='1' then
+				refreq <= ctlr_refreq;
+			elsif refreq='1' then
+				refreq <= ctlr_refreq;
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
@@ -135,7 +141,7 @@ begin
 
 	begin
 
-		cas_p : process(ceoc, ctlr_refreq, restart, dmatrans_clk)
+		cas_p : process(ceoc, refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
 			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
@@ -143,7 +149,7 @@ begin
 			if rising_edge(dmatrans_clk) then
 
 				if ctlr_frm='0' then
-					restart <= ceoc or ctlr_refreq;
+					restart <= ceoc or refreq;
 				elsif cntr(0)='1' then
 					restart <= '0';
 				end if;
@@ -156,7 +162,7 @@ begin
 				when bursting =>
 					if ctlr_frm='0' then
 						state := activate;
-					elsif ctlr_refreq='1' then
+					elsif refreq='1' then
 						state := activate;
 					end if;
 				end case;
@@ -175,7 +181,7 @@ begin
 				reload <= state_pre and ctlr_trdy;
 			end if;
 
-			ena <= (cntr(0) and not ceoc and not ctlr_refreq) or (cntr(0) and restart);
+			ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
 		end process;
 
 		ilen  <= std_logic_vector(unsigned(dmatrans_ilen)  srl burst_bits-coln_align);
@@ -275,6 +281,7 @@ begin
 				ctlr_pre <= '0';
 			end if;
 
+			state_cas <= cas;
 			state_pre <= pre;
 			state_nop <= nop;
 			ctlr_trdy1 <= ctlr_trdy;
