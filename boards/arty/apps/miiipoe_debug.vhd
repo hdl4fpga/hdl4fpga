@@ -93,7 +93,7 @@ architecture miiipoe_debug of arty is
 
 	signal vbtn2 : std_logic_vector(2-1 downto 0);
 	signal vbtn3 : std_logic_vector(2-1 downto 0);
-
+	signal myhwa_vld : std_logic;
 	-----------------
 	-- Select link --
 	-----------------
@@ -324,6 +324,7 @@ begin
 			miirx_irdy => miirx_irdy,
 			miirx_trdy => miirx_trdy,
 			miirx_data => miirx_data,
+			myhwa_vld  => myhwa_vld,
 
 			plrx_frm   => plrx_frm,
 			plrx_irdy  => plrx_irdy,
@@ -401,10 +402,10 @@ begin
 --		sin_data  <= mii_txd  when sw(1)='0' else mii_rxd when vbtn3(1)='0' else mii_rxd;;
 
 		sin_frm   <=
---			plrx_frm   when sw(3)='1'    else
-			so_frm     when sw(3)='1'    else
-			miitx_frm  when sw(1)='0'    else
-			tp(1)      when vbtn3(1)='0' else
+--			plrx_frm  when sw(3)='1'    else
+			so_frm    when sw(3)='1'    else
+			miitx_frm when sw(1)='0'    else
+			myhwa_vld when vbtn3(1)='0' else
 			miirx_frm;
 
 		sin_irdy  <=
@@ -457,4 +458,11 @@ begin
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 
+	ddr3_clk_obufds : obufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		i  => '0',
+		o  => ddr3_clk_p,
+		ob => ddr3_clk_n);
 end;

@@ -37,11 +37,14 @@ architecture arty_miiipoedebug of testbench is
 	signal clk   : std_logic := '1';
 	signal ref_clk : std_logic;
 	signal ref_clk1 : std_logic;
-	signal eth_txd : std_logic_vector(0 to 4-1);
+	signal eth_rx_dv : std_logic;
+	signal eth_rxd : std_logic_vector(0 to 4-1);
 	signal eth_tx_en : std_logic;
+	signal eth_txd : std_logic_vector(0 to 4-1);
 
 	signal btn0   : std_logic := '0';
 	signal btn1   : std_logic := '0';
+	signal ping_req   : std_logic := '0';
 	signal datarx_null :  std_logic_vector(eth_txd'range);
 
 begin
@@ -88,6 +91,21 @@ begin
 		wait on rst, btn1, btn0;
 	end process;
 
+	ping_req <= not rst;
+	htb_e : entity hdl4fpga.eth_tb
+	generic map (
+		debug =>false)
+	port map (
+		mii_data4 => x"01007e_1702_00004f_1603_80ff_fff0",
+		mii_frm1 => '0',
+		mii_frm2 => ping_req,
+		mii_frm3 => '0',
+		mii_frm4 => '0',
+
+		mii_txc  => ref_clk,
+		mii_txen => eth_rx_dv,
+		mii_txd  => eth_rxd);
+
 	du_e : entity work.arty(miiipoe_debug)
 	port map (
 		resetn => rst,
@@ -95,9 +113,11 @@ begin
 		eth_rx_clk  => ref_clk ,
 		eth_ref_clk => ref_clk ,
 		gclk100 => clk,
+		eth_rx_dv => eth_rx_dv,
+		eth_rxd => eth_rxd,
 		eth_tx_en => eth_tx_en,
 		eth_txd => eth_txd,
-		sw => "1101",
+		sw => "0010",
 		btn(0) => '0',
 		btn(1) => '0', --btn1,
 		btn(2) => btn1,

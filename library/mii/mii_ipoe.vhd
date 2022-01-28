@@ -45,7 +45,7 @@ entity mii_ipoe is
 
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic := '1';
-		miirx_trdy    : out std_logic;
+		miirx_trdy    : out std_logic := '1';
 		miirx_data    : in  std_logic_vector;
 
 		plrx_frm       : buffer std_logic;
