@@ -287,7 +287,7 @@ begin
 	port map (
 		I => eth_rx_clk,
 		O => eth_rxclk_bufg);
-	mii_rxc <= not eth_rxclk_bufg;
+	mii_rxc <= eth_rxclk_bufg;
 
 	eth_tx_clk_ibufg : ibufg
 	port map (
@@ -757,7 +757,7 @@ begin
 
 	end block;
 
-	process (tp_delay)
+	process (btn, tp_delay)
 		variable aux1 : std_logic_vector(3 downto 0);
 		variable aux0 : std_logic_vector(3 downto 0);
 		variable sel  : std_logic_vector(2-1 downto 0);

@@ -37,8 +37,9 @@ set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
 
-create_clock -name eth_rx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_rx_clk ]
+
 create_clock -name eth_tx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_tx_clk ]
+create_clock -name eth_rx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_rx_clk ]
 set_input_delay -clock eth_rx_clk -min 6.0  [get_ports [list eth_rx_dv eth_rxd[*]] ]
 set_input_delay -clock eth_rx_clk -max 40.0 [get_ports [list eth_rx_dv eth_rxd[*]] ]
 
