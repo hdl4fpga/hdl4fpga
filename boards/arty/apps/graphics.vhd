@@ -193,11 +193,10 @@ architecture graphics of arty is
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
-	signal sys_clk        : std_logic;
-	alias ctlr_clk        : std_logic is ddrsys_clks(0);
+	alias  sys_clk        : std_logic is gclk100;
+	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
 	signal video_clk      : std_logic;
 	signal video_shf_clk  : std_logic;
-	signal video_lkd      : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
     signal video_blank    : std_logic;
@@ -225,13 +224,13 @@ architecture graphics of arty is
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
-	signal mii_rxc        : std_logic;
-	alias mii_rxdv        : std_logic is eth_rx_dv;
-	alias mii_rxd         : std_logic_vector(eth_rxd'range) is eth_rxd;
-	alias sio_clk         : std_logic is mii_rxc;
-	alias dmacfg_clk      : std_logic is mii_rxc;
+	alias  mii_rxc        : std_logic is eth_rx_clk;
+	alias  mii_rxdv       : std_logic is eth_rx_dv;
+	alias  mii_rxd        : std_logic_vector(eth_rxd'range) is eth_rxd;
 
-	alias mii_txc         : std_logic is eth_tx_clk;
+	alias  mii_txc        : std_logic is eth_tx_clk;
+	alias  sio_clk        : std_logic is mii_txc;
+	alias  dmacfg_clk     : std_logic is mii_txc;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
 
@@ -242,12 +241,12 @@ architecture graphics of arty is
 	-- Select link --
 	-----------------
 
-	constant io_hdlc : natural := 0;
-	constant io_ipoe : natural := 1;
+	constant io_hdlc  : natural := 0;
+	constant io_ipoe  : natural := 1;
 
-	constant io_link : natural := io_hdlc;
+	constant io_link  : natural := io_hdlc;
 
-	constant mem_size  : natural := 8*(1024*8);
+	constant mem_size : natural := 8*(1024*8);
 
 	signal ioctrl_rst : std_logic;
 	signal ioctrl_clk : std_logic;
@@ -256,7 +255,8 @@ architecture graphics of arty is
 	signal tp_delay   : std_logic_vector(word_size/byte_size*5-1 downto 0);
 	signal tp_bit     : std_logic_vector(word_size/byte_size*5-1 downto 0) := (others  => 'Z');
 	signal tp1        : std_logic_vector(1 to 32);
-	signal prst : std_logic;
+	signal prst       : std_logic;
+
 begin
 
 	sys_rst <= btn(0);
@@ -267,11 +267,6 @@ begin
 		refclk => ioctrl_clk,
 		rdy    => ioctrl_rdy);
 
-	clkin_ibufg : ibufg
-	port map (
-		I => gclk100,
-		O => sys_clk);
-
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
 	begin
@@ -281,7 +276,6 @@ begin
 		end if;
 	end process;
 
-	mii_rxc <= eth_rx_clk;
 
 	dcm_b : block
 		constant clk0div   : natural := 0;
@@ -805,7 +799,7 @@ begin
 
 	end block;
 
-	eth_rstn <= video_lkd;
+	eth_rstn <= not ioctrl_rst;
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 

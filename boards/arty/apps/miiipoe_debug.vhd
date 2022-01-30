@@ -57,7 +57,7 @@ architecture miiipoe_debug of arty is
 	constant video_mode    : video_modes := mode600p;
 	constant videodot_freq : natural := (video_tab(video_mode).dcm_mul*natural(sys_freq))/(video_tab(video_mode).dcm_div);
 
-	signal sys_clk        : std_logic;
+	alias  sys_clk        : std_logic is gclk100;
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
 	signal video_hs       : std_logic;
@@ -104,11 +104,6 @@ architecture miiipoe_debug of arty is
 	constant mem_size  : natural := 8*(1024*8);
 
 begin
-
-	clkin_ibufg : ibufg
-	port map (
-		I => gclk100,
-		O => sys_clk);
 
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
@@ -443,10 +438,6 @@ begin
 		end if;
 	end process;
 
-	eth_rstn <= video_lckd;
-	eth_mdc  <= '0';
-	eth_mdio <= '0';
-
 	ddr3_clk_obufds : obufds
 	generic map (
 		iostandard => "DIFF_SSTL135")
@@ -454,4 +445,9 @@ begin
 		i  => '0',
 		o  => ddr3_clk_p,
 		ob => ddr3_clk_n);
+
+	eth_rstn <= video_lckd;
+	eth_mdc  <= '0';
+	eth_mdio <= '0';
+
 end;
