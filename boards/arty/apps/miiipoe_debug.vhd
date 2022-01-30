@@ -58,8 +58,6 @@ architecture miiipoe_debug of arty is
 	constant videodot_freq : natural := (video_tab(video_mode).dcm_mul*natural(sys_freq))/(video_tab(video_mode).dcm_div);
 
 	signal sys_clk        : std_logic;
-	signal eth_txclk_bufg : std_logic;
-	signal eth_rxclk_bufg : std_logic;
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
 	signal video_hs       : std_logic;
@@ -121,16 +119,6 @@ begin
 		end if;
 	end process;
 
-	eth_rx_clk_ibufg : ibufg
-	port map (
-		I => eth_rx_clk,
-		O => eth_rxclk_bufg);
-
-	eth_tx_clk_ibufg : ibufg
-	port map (
-		I => eth_tx_clk,
-		O => eth_txclk_bufg);
-
 	dcm_b : block
 		signal video_clkfb : std_logic;
 	begin
@@ -151,7 +139,8 @@ begin
 	end block;
 
 	ipoe_b : block
-		alias  mii_txc    : std_logic is eth_txclk_bufg;
+		alias  mii_rxc    : std_logic is eth_rx_clk;
+		alias  mii_txc    : std_logic is eth_tx_clk;
 		signal mii_txen   : std_logic;
 		signal mii_rxd    : std_logic_vector(eth_rxd'range);
 		signal mii_txd    : std_logic_vector(eth_rxd'range);
@@ -197,7 +186,6 @@ begin
 
 	begin
 
-
 		htb_e : entity hdl4fpga.eth_tb
 		port map (
 			mii_frm1 => '0',
@@ -205,7 +193,7 @@ begin
 			mii_frm3 => '0',
 			mii_frm4 => vbtn2(1),
 
-			mii_txc  => eth_rxclk_bufg,
+			mii_txc  => mii_rxc,
 			mii_txen => hxdv,
 			mii_txd  => hxd);
 
@@ -248,10 +236,10 @@ begin
 			signal dst_trdy  : std_logic;
 		begin
 
-			process (sw(0), hxdv, hxd, eth_rxclk_bufg)
+			process (sw(0), hxdv, hxd, mii_rxc)
 				variable q : std_logic_vector(rxc_rxbus'range);
 			begin
-				if rising_edge(eth_rxclk_bufg) then
+				if rising_edge(mii_rxc) then
 					q := eth_rx_dv & eth_rxd;
 				end if;
 				case sw(0) is
@@ -272,7 +260,7 @@ begin
 				check_dov => true,
 				gray_code => false)
 			port map (
-				src_clk  => eth_rxclk_bufg,
+				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
 				dst_clk  => mii_txc,
 				dst_irdy => dst_irdy,

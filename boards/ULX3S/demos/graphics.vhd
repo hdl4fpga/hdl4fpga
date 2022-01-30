@@ -582,6 +582,7 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
+			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.1.1"))
 		port map (
 			hdplx      => hdplx,

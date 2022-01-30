@@ -268,6 +268,7 @@ begin
 
 		du_e : entity hdl4fpga.mii_ipoe
 		generic map (
+			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => x"c0_a8_00_0e")
 		port map (
 			tp => tp,

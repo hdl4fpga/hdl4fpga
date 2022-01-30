@@ -194,8 +194,6 @@ architecture graphics of arty is
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	signal sys_clk        : std_logic;
-	signal eth_txclk_bufg : std_logic;
-	signal eth_rxclk_bufg : std_logic;
 	alias ctlr_clk        : std_logic is ddrsys_clks(0);
 	signal video_clk      : std_logic;
 	signal video_shf_clk  : std_logic;
@@ -233,7 +231,7 @@ architecture graphics of arty is
 	alias sio_clk         : std_logic is mii_rxc;
 	alias dmacfg_clk      : std_logic is mii_rxc;
 
-	alias mii_txc         : std_logic is eth_txclk_bufg;
+	alias mii_txc         : std_logic is eth_tx_clk;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
 
@@ -283,16 +281,7 @@ begin
 		end if;
 	end process;
 
-	eth_rx_clk_ibufg : ibufg
-	port map (
-		I => eth_rx_clk,
-		O => eth_rxclk_bufg);
-	mii_rxc <= eth_rxclk_bufg;
-
-	eth_tx_clk_ibufg : ibufg
-	port map (
-		I => eth_tx_clk,
-		O => eth_txclk_bufg);
+	mii_rxc <= eth_rx_clk;
 
 	dcm_b : block
 		constant clk0div   : natural := 0;
