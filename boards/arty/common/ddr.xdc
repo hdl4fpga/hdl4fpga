@@ -22,15 +22,7 @@
 #                                                                            #
 
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
-
-create_clock -name dqso0   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[0] ]
-create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[1] ]
-
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
-set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
-set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
-set_input_delay -clock dqso0 -max 0 [get_ports ddr3_dq[*] ]
-set_input_delay -clock dqso1 -max 0 [get_ports ddr3_dq[*] ]
 
 set_property -dict { PACKAGE_PIN U9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_p    ]
 set_property -dict { PACKAGE_PIN V9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_n    ]

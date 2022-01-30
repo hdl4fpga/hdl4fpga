@@ -19,17 +19,35 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
 # more details at http://www.gnu.org/licenses/.                              #
-#                                                                            #
+#                         \
+
+set ddr_tck  1.667
+set ddr_qh   [ expr $ddr_tck*0.38 ]
+set ddr_dqsq 0.150
+
+create_clock -name dqso0 -period $ddr_tck -waveform [list 0 [expr $ddr_tck/2 ]] [ get_ports ddr3_dqs_p[0] ]
+set_input_delay -clock dqso0 -min [ expr -$ddr_dqsq ] [get_ports ddr3_dq[*] ]
+set_input_delay -clock dqso0 -max $ddr_qh [get_ports ddr3_dq[*] ]
+
+
+create_clock -name dqso1 -period $ddr_tck -waveform [list 0 [expr $ddr_tck/2 ]] [ get_ports ddr3_dqs_p[1] ]
+set_input_delay -clock dqso1 -min [ expr -$ddr_dqsq ]  [get_ports ddr3_dq[*] ]
+set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
+
+#set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
+#set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
+
+create_clock -name eth_rx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_rx_clk ]
+create_clock -name eth_tx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_tx_clk ]
+set_input_delay -clock eth_rx_clk -min 6.0  [get_ports [list eth_rx_dv eth_rxd[*]] ]
+set_input_delay -clock eth_rx_clk -max 40.0 [get_ports [list eth_rx_dv eth_rxd[*]] ]
 
 set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk0div_mmce2  }
 set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk90div_mmce2 }
-set_clock_groups -asynchronous -group { sys_clk    } -group { ioctrl_clk }
 set_clock_groups -asynchronous -group { eth_rx_clk } -group { sys_clk }
 set_clock_groups -asynchronous -group { eth_rx_clk } -group { ddr_clk0div_mmce2 }
-set_clock_groups -asynchronous -group { eth_rx_clk } -group { video_clk_mmce2  }
 set_clock_groups -asynchronous -group { eth_rx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
-set_clock_groups -asynchronous -group { video_clk_mmce2 } -group { eth_rx_clk }
 set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { sys_clk    }
 set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_rx_clk }
@@ -40,7 +58,5 @@ set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { dqso1      } -group { sys_clk     }
 set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90_mmce2 }
 
-create_clock -name dqso0   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[0] ]
-create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[1] ]
 
 set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/rdfifo_i/bytes_g[*].DATA_PHASES_g[*].inbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins grahics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]

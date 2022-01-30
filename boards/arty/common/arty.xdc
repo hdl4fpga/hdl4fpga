@@ -22,8 +22,6 @@
 #                                                                            #
 
 create_clock -name sys_clk    -period 10 -waveform { 0.0  5.0 } [ get_ports gclk100    ]
-create_clock -name eth_rx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_rx_clk ]
-create_clock -name eth_tx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_tx_clk ]
 
 set_property -dict { PACKAGE_PIN C2 IOSTANDARD LVCMOS18 } [get_ports resetn]
 
@@ -66,7 +64,7 @@ set_property -dict { PACKAGE_PIN F16 IOSTANDARD LVCMOS25 } [ get_ports eth_mdc]
 set_property -dict { PACKAGE_PIN G14 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_crs]
 set_property -dict { PACKAGE_PIN D17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_col]
 set_property -dict { PACKAGE_PIN K13 IOSTANDARD LVCMOS25 } [ get_ports eth_mdio]
-set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_tx_clk]
+set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS25 } [ get_ports eth_tx_clk]
 set_property -dict { PACKAGE_PIN H15 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_tx_en]
 set_property -dict { PACKAGE_PIN D18 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[0]]
 set_property -dict { PACKAGE_PIN E17 IOSTANDARD LVCMOS25 IOB TRUE } [ get_ports eth_rxd[1]]
@@ -88,15 +86,6 @@ set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS25 } [get_ports { ja[7] }]
 set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS25 } [get_ports { ja[8] }];
 set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS25 } [get_ports { ja[9] }];
 set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS25 } [get_ports { ja[10] }];
-
-set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS_25 } [get_ports { ja[1] }];
-set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS_25 } [get_ports { ja[2] }];
-set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS_25 } [get_ports { ja[3] }];
-set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS_25 } [get_ports { ja[4] }];
-set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS_25 } [get_ports { ja[7] }];
-set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS_25 } [get_ports { ja[8] }];
-set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS_25 } [get_ports { ja[9] }];
-set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS_25 } [get_ports { ja[10] }];
 
 set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVDS_25 } [get_ports { jb[1] }];
 set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVDS_25 } [get_ports { jb[2] }];

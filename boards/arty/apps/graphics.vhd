@@ -196,9 +196,6 @@ architecture graphics of arty is
 	signal sys_clk        : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
-	alias sio_clk         : std_logic is eth_rxclk_bufg;
-	alias dmacfg_clk      : std_logic is eth_rxclk_bufg;
-
 	alias ctlr_clk        : std_logic is ddrsys_clks(0);
 	signal video_clk      : std_logic;
 	signal video_shf_clk  : std_logic;
@@ -230,13 +227,15 @@ architecture graphics of arty is
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
-	alias mii_rxc         : std_logic is eth_rxclk_bufg;
+	signal mii_rxc        : std_logic;
 	alias mii_rxdv        : std_logic is eth_rx_dv;
 	alias mii_rxd         : std_logic_vector(eth_rxd'range) is eth_rxd;
+	alias sio_clk         : std_logic is mii_rxc;
+	alias dmacfg_clk      : std_logic is mii_rxc;
 
 	alias mii_txc         : std_logic is eth_txclk_bufg;
-	alias mii_txen        : std_logic is eth_tx_en;
-	alias mii_txd         : std_logic_vector(eth_txd'range) is eth_txd;
+	signal mii_txen       : std_logic;
+	signal mii_txd        : std_logic_vector(eth_txd'range);
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
@@ -288,6 +287,7 @@ begin
 	port map (
 		I => eth_rx_clk,
 		O => eth_rxclk_bufg);
+	mii_rxc <= not eth_rxclk_bufg;
 
 	eth_tx_clk_ibufg : ibufg
 	port map (
@@ -425,7 +425,7 @@ begin
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(so_data'range);
+		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
@@ -484,6 +484,7 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
+			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
 			tp         => tp,
@@ -526,6 +527,13 @@ begin
 			ser_data   => mii_txd);
 
 		mii_txen <= miitx_frm and not miitx_end;
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				eth_tx_en <= mii_txen;
+				eth_txd   <= mii_txd;
+			end if;
+		end process;
 
 	end block;
 

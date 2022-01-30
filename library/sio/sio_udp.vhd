@@ -32,8 +32,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
-		default_ipv4a : std_logic_vector(0 to 32-1) := x"c0_a8_00_0e";
-		my_mac        : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		default_ipv4a : std_logic_vector(0 to 32-1);
+		my_mac        : std_logic_vector(0 to 48-1));
 	port (
 		hdplx         : in  std_logic;
 		sio_clk       : in  std_logic;
