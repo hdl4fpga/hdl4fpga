@@ -25,6 +25,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity arty is
+	generic (
+		debug : boolean := false);
 	port (
 		gclk100     : in std_logic;
 		resetn      : in std_logic := '1';

@@ -78,7 +78,6 @@ architecture def of dmatrans is
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
 	signal ctlr_pre     : std_logic;
-	signal state_cas    : std_logic;
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -114,13 +113,6 @@ begin
 				ctlr_frm <= '0';
 				loaded   <= '0';
 			end if;
-			if state_cas='1' then
-				refreq <= ctlr_refreq;
-			elsif refreq='1' then
-				refreq <= ctlr_refreq;
-			else
-				refreq <= '0';
-			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
 	end process;
@@ -149,10 +141,18 @@ begin
 		begin
 			if rising_edge(dmatrans_clk) then
 
-				if ctlr_frm='0' then
+				restart_transfer : if ctlr_frm='0' then
 					restart <= ceoc or refreq;
 				elsif cntr(0)='1' then
 					restart <= '0';
+				end if;
+
+				sync_refresh_with_cas : if ctlr_cas='0' then
+					refreq <= ctlr_refreq;
+				elsif refreq='1' then
+					refreq <= ctlr_refreq;
+				else
+					refreq <= '0';
 				end if;
 
 				case state is
@@ -282,7 +282,6 @@ begin
 				ctlr_pre <= '0';
 			end if;
 
-			state_cas <= cas;
 			state_pre <= pre;
 			state_nop <= nop;
 			ctlr_trdy1 <= ctlr_trdy;

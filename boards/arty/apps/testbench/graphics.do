@@ -1,9 +1,11 @@
 onerror {resume}
+quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e { /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/wr_cntr(1 to 3)} wr
+quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e { /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/rd_cntr(1 to 3)} rd
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/btn(0)
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_clk
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_dv
-add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rxd
+add wave -noupdate -expand -group eth_rx -radix hexadecimal /testbench/du_e/eth_rxd
 add wave -noupdate -expand -group eth_tx /testbench/du_e/eth_tx_clk
 add wave -noupdate -expand -group eth_tx /testbench/du_e/eth_tx_en
 add wave -noupdate -expand -group eth_tx /testbench/du_e/eth_txd
@@ -23,28 +25,29 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_req
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_gnt
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/line__104/gnt_dv
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_gnt(0)
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_gnt(1)
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/ctlr_do_dv
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_do_dv(0)
 add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_do_dv(1)
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_do_dv(7)
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/wr_ptr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_length
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_len
+add wave -noupdate /testbench/du_e/grahics_e/dmaio_we
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmaio_addr
+add wave -noupdate /testbench/du_e/grahics_e/ctlr_di_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlr_di
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmaso_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/line__605/length
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_irdy
-add wave -noupdate /testbench/du_e/eth_tx_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/fifo_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/low_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/high_cntr
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_end
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/si_frm
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/si_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/si_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/si_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/si_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmaso_data
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_do_dv(7)
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_do
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {30337828 ps} 0}
+WaveRestoreCursors {{Cursor 1} {170018044 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
-configure wave -valuecolwidth 135
+configure wave -valuecolwidth 595
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -57,4 +60,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {29738944 ps} {29903008 ps}
+WaveRestoreZoom {170013426 ps} {170035314 ps}

@@ -217,8 +217,8 @@ begin
 		signal rgtr_lv        : std_logic;
 		signal rgtr_len       : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv        : std_logic;
-		signal rgtr_data      : std_logic_vector(0 to 32-1);
-		signal rgtr_revs      : std_logic_vector(32-1 downto 0);
+		signal rgtr_data      : std_logic_vector(0 to max(32,ctlr_di'length)-1);
+		signal rgtr_revs      : std_logic_vector(rgtr_data'reverse_range);
 		signal data_frm       : std_logic;
 		signal data_irdy      : std_logic;
 		signal data_ptr       : std_logic_vector(8-1 downto 0);
@@ -824,11 +824,12 @@ begin
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 
-	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+--	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
+	dev_req <= (0 => '0' , 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
-	dev_len  <= dmavideo_len  & dmaio_len(dmactlr_len'range);
-	dev_addr <= dmavideo_addr & dmaio_addr(dmactlr_addr'range);
-	dev_we   <= '0'           & dmaio_we;
+	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
+	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
+	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
 
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;

@@ -40,11 +40,12 @@ architecture graphics of arty is
 		mode900p_ddr333MHz,
 		mode900p_ddr350MHz,
 		mode900p_ddr400MHz,
+		mode900p_ddr450MHz,
 		mode900p_ddr500MHz,
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr550MHz;
+	constant profile     : profiles := mode900p_ddr450MHz;
 
 	signal sys_rst : std_logic;
 
@@ -173,6 +174,7 @@ architecture graphics of arty is
 		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
 		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
 		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
+		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
 		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
 		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
 		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1));
@@ -187,7 +189,8 @@ architecture graphics of arty is
 		modedebug => (mode => pclk_debug,              pll => (dcm_mul => 1, dcm_div => 32)),
 		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
 
-	constant video_mode    : video_modes := profile_tab(profile).video_mode;
+	constant video_mode : video_modes := video_modes'val(
+		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
 
 	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
@@ -312,20 +315,10 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => video_clk,
-				clkout2  => video_shf_clk,
+				clkout1  => open, --video_clk,
+				clkout2  => open, --video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
-
---			video_shf_clk_bufio : bufg
---			port map (
---				i => video_shf_clk_mmce2,
---				o => video_shf_clk);
---
---			video_clk_bufg : bufg
---			port map (
---				i => video_clk_mmce2,
---				o => video_clk);
 
 		end block;
 

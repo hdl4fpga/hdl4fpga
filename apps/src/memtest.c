@@ -27,6 +27,15 @@ void test_fill (char *buffer, int length)
 	}
 }
 
+void test_seq (char *buffer, int length)
+{
+	static char p = 0;
+	for (int i = 0; i < length; i += sizeof(p)) {
+		memcpy(buffer+i, &p, sizeof(p));
+		p += 1;
+	}
+}
+
 int sio_memtrans(char *siobuf, size_t mem_address, size_t mem_length)
 {
 	char *sioptr;
@@ -126,7 +135,7 @@ int main (int argc, char *argv[])
 	for(int pass = 1;;pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-			test_fill(wr_buffer, length);
+			test_seq(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);
 

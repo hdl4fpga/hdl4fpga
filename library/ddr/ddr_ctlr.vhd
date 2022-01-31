@@ -283,7 +283,8 @@ begin
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
---	ddr_mpu_ref <= '0', '1' after 208.861 us, '0' after 208.871 us;
+--	ddr_mpu_ref <= '0', '1' after 208.861 us, '0' after 208.871 us; -- refresh test ddr on nuhs3adsp
+--	ddr_mpu_ref <= '0', '1' after 30 us, '0' after 30.010 us; -- refresh test ddr3 on arty
 	ddr_mpu_ref <= ddr_refi_req;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (

@@ -101,7 +101,19 @@ architecture def of dmactlr is
 
 begin
 
-	dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and dev_gnt;
+	process (ctlr_do_dv, ctlr_clk)
+		variable gnt_dv : std_logic_vector(dev_gnt'range);
+	begin
+		if rising_edge(ctlr_clk) then
+			if gnt_dv=(dev_gnt'range => '0') then
+				gnt_dv := dev_gnt;
+			elsif ctlr_do_dv='0' then
+				gnt_dv := dev_gnt;
+			end if;
+		end if;
+		dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and gnt_dv;
+	end process;
+
 
 	dmargtrgnt_e : entity hdl4fpga.grant
 	port map (
