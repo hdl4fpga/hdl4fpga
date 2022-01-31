@@ -84,7 +84,6 @@ architecture def of dmatrans is
 	signal ctlrdma_irdy : std_logic;
 	signal leoc         : std_logic;
 	signal ceoc         : std_logic;
-	signal lat_ceoc     : std_logic;
 	signal loaded       : std_logic;
 	signal restart      : std_logic;
 	signal ctlr_trdy1   : std_logic;
@@ -119,6 +118,8 @@ begin
 				refreq <= ctlr_refreq;
 			elsif refreq='1' then
 				refreq <= ctlr_refreq;
+			else
+				refreq <= '0';
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
