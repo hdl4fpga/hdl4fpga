@@ -588,7 +588,7 @@ begin
 			ddr_dqst   => ddr_dqst(i),
 			ddr_dqso   => ddr_dqso(i));
 
-		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(1);
+		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
 	end generate;
 
 	ddr_dqt <= to_stdlogicvector(ddqt);

@@ -349,7 +349,6 @@ begin
 		signal edge      : std_logic;
 		signal smp       : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto       : std_logic;
-		signal sti       : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal dqso      : std_logic_vector(sys_dqso'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);

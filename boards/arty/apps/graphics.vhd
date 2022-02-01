@@ -130,13 +130,13 @@ architecture graphics of arty is
 
 	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
 	signal ddr_a           : std_logic_vector(ddr3_a'range);
-	signal ctlrphy_rst     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_rst     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cke     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cs      : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_ras     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cas     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_we      : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_odt     : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
@@ -149,8 +149,8 @@ architecture graphics of arty is
 	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ctlrphy_sti     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
 	signal ddr3_clk        : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -335,12 +335,12 @@ begin
 				divclk_divide    => ddr_param.pll.dcm_div,
 				clkfbout_mult_f  => real(2*ddr_param.pll.dcm_mul),
 				clkin1_period    => sys_per,
-				clkout1_phase    => 90.0+180.0,
-				clkout3_phase    => 90.0/real((data_gear/2))+270.0,
 				clkout0_divide_f => real(data_gear/2),
 				clkout1_divide   => data_gear/2,
+				clkout1_phase    => 90.0+180.0,
 				clkout2_divide   => data_gear,
-				clkout3_divide   => data_gear)
+				clkout3_divide   => data_gear,
+				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
 			port map (
 				pwrdwn   => '0',
 				rst      => sys_rst,
