@@ -50,7 +50,7 @@ begin
 				inc <= not cnt(0);
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
-			d   := word2byte(dly & ddr_sti, sel);
+			d   := word2byte(reverse(dly & ddr_sti), sel);
 			sto <= st;
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
