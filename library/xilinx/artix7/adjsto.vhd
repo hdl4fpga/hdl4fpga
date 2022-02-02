@@ -54,8 +54,8 @@ begin
 			sto <= st;
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
-			
-			ddr_sto <= sto;
+
+			ddr_sto <= d(0);
 		end if;
 	end process;
 
@@ -78,7 +78,7 @@ begin
 			sel      <= (others => '0');
 			finish   <= '0';
 		elsif rising_edge(iod_clk) then
-			if finish='0' then 
+			if finish='0' then
 				if start='1' then
 					if tmr(0)='1' then
 						if inc='1' then
