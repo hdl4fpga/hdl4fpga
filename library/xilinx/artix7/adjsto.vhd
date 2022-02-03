@@ -12,7 +12,7 @@ entity adjsto is
 		ddr_clk  : in  std_logic;
 		ddr_smp  : in  std_logic_vector(0 to GEAR-1);
 		ddr_sti  : in  std_logic;
-		ddr_sto  : out std_logic);
+		ddr_sto  : buffer std_logic);
 end;
 
 library hdl4fpga;
@@ -21,26 +21,23 @@ use hdl4fpga.std.all;
 architecture def of adjsto is
 
 	constant bl       : natural := 8/2;
-	signal   st       : std_logic;
-	signal   sto      : std_logic;
 	signal   inc      : std_logic;
-	signal   dly      : std_logic_vector(bl-1 downto 1);
-	signal   sel      : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
+	signal   sel      : std_logic_vector(0 to unsigned_num_bits(bl-1)-1);
 	signal   start    : std_logic;
 	signal   finish   : std_logic;
 
 begin
 
-	process (ddr_clk)
+	process (ddr_sti, sel, ddr_clk)
 		variable cnt  : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
-		variable d    : std_logic_vector(0 to 0);
+		variable dly  : unsigned(0 to bl-1);
 		variable smp  : std_logic_vector(ddr_smp'range);
 	begin
 		if rising_edge(ddr_clk) then
 			if start='0' then
 				inc <= '0';
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
-			elsif st='1' then
+			elsif ddr_sto='1' then
 				for i in 0 to GEAR/2-1 loop
 					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
 						cnt := cnt + 1;
@@ -50,13 +47,10 @@ begin
 				inc <= not cnt(0);
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
-			d   := word2byte(reverse(dly & ddr_sti), sel);
-			sto <= st;
-			st  <= d(0);
-			dly <= dly(dly'left-1 downto 1) & ddr_sti;
-
-			ddr_sto <= d(0);
+			dly := shift_right(dly, 1);
 		end if;
+		dly(0) := ddr_sti;
+		ddr_sto <= word2byte(std_logic_vector(dly), sel);
 	end process;
 
 	process (sys_req, ddr_clk)

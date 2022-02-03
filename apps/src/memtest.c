@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
 	for(int pass = 1;;pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-			test_fill(wr_buffer, length);
+			test_seq(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);
 
@@ -151,6 +151,19 @@ int main (int argc, char *argv[])
 					fprintf(stderr, " : missed : 0x%08x", data_rd ^ data_wt);
 					fprintf(stderr, " : data read : 0x%08x", data_rd);
 					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
+					for (int  j=0; j < length; j += 16) {
+						for(int l=0; l < 16; l++) {
+							fprintf(stderr, "%02x", ((unsigned char *) wr_buffer)[j+l]);
+							fprintf(stderr, " ");
+						}
+						fprintf(stderr, "\n");
+						for(int l=0; l < 16; l++) {
+							fprintf(stderr, "%02x", ((unsigned char *) rd_buffer)[j+l]);
+							fprintf(stderr, " ");
+						}
+						fprintf(stderr, "\n");
+						fprintf(stderr, "\n");
+					}
 					exit(-1);
 				} else {
 //					fprintf(stderr, "word address : 0x%08x", mem_address+i);

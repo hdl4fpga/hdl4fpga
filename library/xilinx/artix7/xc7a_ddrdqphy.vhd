@@ -99,6 +99,7 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqsiod_ce  : std_logic;
 	signal imdr_inv   : std_logic;
 
+	signal dq        : std_logic_vector(sys_dqo'range);
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
 	constant line_delay : time := 1.17 ns;
@@ -131,7 +132,6 @@ begin
 		signal imdr_rst  : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal adjdqi_st : std_logic;
-		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
 	begin
 
 		process (sys_clks(clk90div))
@@ -158,15 +158,21 @@ begin
 			rst  => imdr_rst,
 			clk  => imdr_clk,
 			d(0) => dqi(i),
-			q     => dq);
+			q(0) => dq(0*BYTE_SIZE+i),
+			q(1) => dq(1*BYTE_SIZE+i),
+			q(2) => dq(2*BYTE_SIZE+i),
+			q(3) => dq(3*BYTE_SIZE+i));
 
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 1, 1))
+			d => (1, 1, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
-			di  => dq,
+			di(0) => dq(2*BYTE_SIZE+i),
+			di(1) => dq(3*BYTE_SIZE+i),
+			di(2) => dq(0*BYTE_SIZE+i),
+			di(3) => dq(1*BYTE_SIZE+i),
 		    do(0) => sys_dqo(2*BYTE_SIZE+i),
 		    do(1) => sys_dqo(3*BYTE_SIZE+i),
 		    do(2) => sys_dqo(0*BYTE_SIZE+i),
@@ -184,6 +190,7 @@ begin
 			signal iod_ce        : std_logic;
 			signal iod_rst       : std_logic;
 			signal ddqi : std_logic;
+			alias dq1 : std_logic is dq(3*BYTE_SIZE+i);
 		begin
 			process (sys_clks(iodclk))
 				variable q : std_logic;
@@ -213,7 +220,7 @@ begin
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= dq(1);
+				tp_bit(4) <= dq1;
 			end generate;
 
 			adjdqi_e : entity hdl4fpga.adjpha
@@ -227,7 +234,7 @@ begin
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => dq(1),
+				smp     => dq1,
 				dly     => adjpha_dly);
 
 
