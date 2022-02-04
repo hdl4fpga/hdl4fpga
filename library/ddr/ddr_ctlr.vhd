@@ -32,6 +32,7 @@ use hdl4fpga.ddr_param.all;
 
 entity ddr_ctlr is
 	generic (
+		debug        : boolean := false;
 		fpga         : natural;
 		mark         : natural := m6t;
 		tcp          : natural := 6000;
@@ -145,7 +146,7 @@ architecture mix of ddr_ctlr is
 	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
 	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
 	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
-	constant timers       : natural_vector   := ddr_timers(tcp, mark);
+	constant timers       : natural_vector   := ddr_timers(tcp, mark, debug=> debug);
 	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
 	constant rdfifo_delay : boolean          := ddr_cntlrcnfg(fpga, hdl4fpga.ddr_db.rdfifo_delay);
 
@@ -285,6 +286,8 @@ begin
 	ddr_mpu_sel <= init_rdy;
 --	ddr_mpu_ref <= '0', '1' after 208.861 us, '0' after 208.871 us; -- refresh test ddr on nuhs3adsp
 --	ddr_mpu_ref <= '0', '1' after 30 us, '0' after 30.010 us; -- refresh test ddr3 on arty
+--	ddr_mpu_ref <= '0', '1' after 30 us, '0' after 30.010 us; -- refresh test ddr3 on arty
+--	ddr_mpu_ref <= '0', '1' after 169.95 us, '0' after 169.96  us; -- refresh test ddr3 on arty
 	ddr_mpu_ref <= ddr_refi_req;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (

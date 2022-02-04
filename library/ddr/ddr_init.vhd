@@ -109,7 +109,7 @@ begin
 
 	ddr_mr_data <= std_logic_vector(resize(unsigned(ddr_mrfile(
 		ddr_stdr => ddr_stdr,
-		ddr_mr_addr => mr_addr, 
+		ddr_mr_addr => mr_addr,
 		ddr_mr_srt  => ddr_init_srt,
 		ddr_mr_bl   => ddr_init_bl,
 		ddr_mr_bt   => ddr_init_bt,
@@ -136,12 +136,12 @@ begin
 		if rising_edge(ddr_init_clk) then
 			if ddr_init_req='0' then
 				row := (
-					state   => (others => '-'), 
+					state   => (others => '-'),
 					state_n => (others => '-'),
 					mask    => (others => '-'),
 					input   => (others => '-'),
 					output  => (others => '-'),
-					cmd     => (cs => '-', ras => '-', cas => '-', we => '-'), 
+					cmd     => (cs => '-', ras => '-', cas => '-', we => '-'),
 					bnk     => (others => '-'),
 					mr      => (others => '-'),
 					tid     => to_unsigned(TMR_RST, TMR_SIZE));

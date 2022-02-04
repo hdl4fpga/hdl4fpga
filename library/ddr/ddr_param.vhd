@@ -158,7 +158,8 @@ package ddr_param is
 	function ddr_timers (
 		constant tCP  : natural;
 		constant mark : natural;
-		constant gear : natural := 2)
+		constant gear : natural := 2;
+		debug : boolean := false)
 		return natural_vector;
 
 	function ddr_rotval (
@@ -672,7 +673,8 @@ package body ddr_param is
 	function ddr_timers (
 		constant tCP  : natural;
 		constant mark : natural;
-		constant gear : natural := 2)
+		constant gear : natural := 2;
+		debug : boolean := false)
 		return natural_vector  is
 		constant stdr : natural := ddr_stdr(mark);
 
@@ -695,8 +697,8 @@ package body ddr_param is
 				TMR2_REF => to_ddrlatency(tCP, mark, tREFI));
 
 		constant ddr3_timer : natural_vector := (
-				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
-				TMR3_RRDY => to_ddrlatency(tCP, mark, tPstRST),
+				TMR_RST  => to_ddrlatency(tCP, mark,  tPreRST)/setif(debug, 100, 1),
+				TMR3_RRDY => to_ddrlatency(tCP, mark, tPstRST)/setif(debug, 100, 1),
 				TMR3_WLC => ddr_latency(stdr, MODu),
 				TMR3_WLDQSEN => 25,
 				TMR3_CKE => to_ddrlatency(tCP, mark, tXPR),

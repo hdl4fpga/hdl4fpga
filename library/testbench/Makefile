@@ -251,10 +251,6 @@ HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
 HDL4FPGA__adjpha__beh = $(LIB_HDL4FPGA)/adjpha/beh.dat
 HDL4FPGA__adjpha = $(LIB_HDL4FPGA)/adjpha/_primary.dat
-HDL4FPGA__adjdqs__beh = $(LIB_HDL4FPGA)/adjdqs/beh.dat
-HDL4FPGA__adjdqs = $(LIB_HDL4FPGA)/adjdqs/_primary.dat
-HDL4FPGA__adjdqi__beh = $(LIB_HDL4FPGA)/adjdqi/beh.dat
-HDL4FPGA__adjdqi = $(LIB_HDL4FPGA)/adjdqi/_primary.dat
 HDL4FPGA__adder__def = $(LIB_HDL4FPGA)/adder/def.dat
 HDL4FPGA__adder = $(LIB_HDL4FPGA)/adder/_primary.dat
 VCOM = vcom
@@ -495,10 +491,6 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__adjsto) \
     $(HDL4FPGA__adjpha__beh) \
     $(HDL4FPGA__adjpha) \
-    $(HDL4FPGA__adjdqs__beh) \
-    $(HDL4FPGA__adjdqs) \
-    $(HDL4FPGA__adjdqi__beh) \
-    $(HDL4FPGA__adjdqi) \
     $(HDL4FPGA__adder__def) \
     $(HDL4FPGA__adder)
 
@@ -508,24 +500,6 @@ $(HDL4FPGA__adder__def) : ../common/adder.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/adder.vhd
-
-$(HDL4FPGA__adjdqi) \
-$(HDL4FPGA__adjdqi__beh) : ../xilinx/artix7/adjdqi.vhd \
-		$(HDL4FPGA__std) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/adjdqi.vhd
-
-$(HDL4FPGA__adjdqs) \
-$(HDL4FPGA__adjdqs__beh) : ../xilinx/artix7/adjdqs.vhd \
-		$(HDL4FPGA__std) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/adjdqs.vhd
 
 $(HDL4FPGA__adjpha) \
 $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
@@ -850,9 +824,9 @@ $(HDL4FPGA__ddrto__spartan3) : ../xilinx/spartan3/ddro.vhd \
 
 $(HDL4FPGA__demo_graphics) \
 $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
-		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
@@ -952,11 +926,11 @@ $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
 
 $(HDL4FPGA__dmactlr) \
 $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__dmatrans) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__grant) \
-		$(HDL4FPGA__ddr_param) \
-		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -966,10 +940,10 @@ $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
 
 $(HDL4FPGA__dmatrans) \
 $(HDL4FPGA__dmatrans__def) : ../ddr/dmatrans.vhd \
+		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__ddrdma) \
-		$(HDL4FPGA__align) \
-		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \

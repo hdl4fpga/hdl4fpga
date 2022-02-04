@@ -515,6 +515,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug        => debug,
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => 2*ddr_tcp,
 		fpga         => virtex7,

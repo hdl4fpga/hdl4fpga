@@ -103,7 +103,7 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dq        : std_logic_vector(sys_dqo'range);
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	constant line_delay : time := 0 ns; --1.17 ns;
+	constant line_delay : time := ((tcp * 1 ps)*00)/10;
 begin
 
 
@@ -167,7 +167,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 1, 1))
+			d => (0, 0, 0, 0))
 		port map (
 			clk => sys_clks(clk90div),
 			di(0) => dq(0*BYTE_SIZE+i),
@@ -492,7 +492,7 @@ begin
 			end if;
 		end process;
 
-		sto_smp <= to_stdlogicvector(to_bitvector(smp));
+		sto_smp <= smp;
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
