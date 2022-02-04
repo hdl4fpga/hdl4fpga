@@ -94,6 +94,7 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal rlrdy      : std_logic;
 
 	signal iod_rst    : std_logic;
+	signal dqsi_buf   : std_logic;
 	signal dqsi       : std_logic;
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
@@ -189,8 +190,8 @@ begin
 			signal dly_req       : std_logic;
 			signal iod_ce        : std_logic;
 			signal iod_rst       : std_logic;
-			signal ddqi : std_logic;
-			alias dq1 : std_logic is dq(3*BYTE_SIZE+i);
+			signal ddqi          : std_logic;
+			signal dq1           : std_logic;
 		begin
 			process (sys_clks(iodclk))
 				variable q : std_logic;
@@ -223,6 +224,7 @@ begin
 				tp_bit(4) <= dq1;
 			end generate;
 
+			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
@@ -363,6 +365,8 @@ begin
 		signal adjdly    : std_logic_vector(0 to 5);
 		signal imdr_rst  : std_logic;
 		signal adjdqs_st : std_logic;
+		signal dqs_smp   : std_logic;
+		signal sto_smp   : std_logic_vector(smp'range);
 	begin
 
 		adjdqs_b : block
@@ -399,6 +403,7 @@ begin
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
 			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
+			dqs_smp <= to_stdulogic(to_bit(smp(1)));
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
@@ -410,7 +415,7 @@ begin
 				rdy     => adjdqs_rdy,
 				dly_rdy => dly_rdy,
 				dly_req => adjpha_dlyreq,
-				smp     => smp(1),
+				smp     => dqs_smp,
 				dly     => adjpha_dly);
 
 			ddqsi <= transport ddr_dqsi after line_delay;
@@ -426,12 +431,13 @@ begin
 				ld         => '1',
 				cntvaluein => delay,
 				idatain    => ddqsi,
-				dataout    => dqsi,
+				dataout    => dqsi_buf,
 				cinvctrl   => '0',
 				ce         => '0',
 				inc        => '0',
 				ldpipeen   => '0',
 				datain     => '0');
+				dqsi <= to_stdulogic(to_bit(dqsi_buf));
 
 		end block;
 
@@ -480,12 +486,13 @@ begin
 		begin
 			if rising_edge(sys_clks(iodclk)) then
 				if adjdqs_req='0' then
-					edge     <= smp(0);
+					edge     <= to_stdulogic(to_bit(smp(0)));
 					imdr_inv <= '0'; --not smp(0);
 				end if;
 			end if;
 		end process;
 
+		sto_smp <= to_stdlogicvector(to_bitvector(smp));
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
@@ -494,7 +501,7 @@ begin
 			iod_clk  => sys_clks(iodclk),
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
-			ddr_smp  => smp,
+			ddr_smp  => sto_smp,
 			sys_req  => adjsto_req,
 			sys_rdy  => adjsto_rdy);
 
