@@ -31,7 +31,6 @@ begin
 	process (ddr_sti, sel, ddr_clk)
 		variable cnt  : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
 		variable dly  : unsigned(0 to bl-1);
-		variable smp  : std_logic_vector(ddr_smp'range);
 	begin
 		if rising_edge(ddr_clk) then
 			if start='0' then
