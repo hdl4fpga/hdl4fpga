@@ -47,12 +47,11 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqph
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/line__31/dly
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/imdr_i/reg_g(0)/po
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/line__66/tmr(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {13211114 ps} 0} {{Cursor 2} {13554816 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {13278864 ps} 0} {{Cursor 2} {13234157 ps} 0} {{Cursor 3} {169925788 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 221
-configure wave -valuecolwidth 126
+configure wave -valuecolwidth 321
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -65,4 +64,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13044369 ps} {13369189 ps}
+WaveRestoreZoom {169826310 ps} {170025266 ps}

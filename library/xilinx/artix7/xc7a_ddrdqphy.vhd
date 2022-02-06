@@ -167,7 +167,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
+			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di(0) => dq(0*BYTE_SIZE+i),
@@ -437,7 +437,8 @@ begin
 				inc        => '0',
 				ldpipeen   => '0',
 				datain     => '0');
-				dqsi <= to_stdulogic(to_bit(dqsi_buf));
+--				dqsi <= to_stdulogic(to_bit(dqsi_buf));
+				dqsi <= dqsi_buf;
 
 		end block;
 

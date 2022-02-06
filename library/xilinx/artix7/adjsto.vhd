@@ -37,11 +37,15 @@ begin
 				inc <= '0';
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			elsif ddr_sto='1' then
-				for i in 0 to GEAR/2-1 loop
-					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
-						cnt := cnt + 1;
-					end if;
-				end loop;
+				case ddr_smp(0 to 3) is
+				when "0010"|"1001"|"0100" =>
+					cnt := cnt + 1;
+				when "1010"|"0101" =>
+					cnt := cnt + 2;
+				when "010X" =>
+					cnt := cnt + 1;
+				when others =>
+				end case;
 			else
 				inc <= not cnt(0);
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
@@ -49,7 +53,7 @@ begin
 			dly := shift_right(dly, 1);
 		end if;
 		dly(0) := ddr_sti;
-		ddr_sto <= word2byte(std_logic_vector(dly), sel);
+		ddr_sto <= word2byte(reverse(std_logic_vector(dly)), sel);
 	end process;
 
 	process (sys_req, ddr_clk)
