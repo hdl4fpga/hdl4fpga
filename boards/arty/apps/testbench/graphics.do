@@ -46,9 +46,11 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/line__31/cnt
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/line__31/dly
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/imdr_i/reg_g(0)/po
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dq
+add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(7)
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {13278864 ps} 0} {{Cursor 2} {13234157 ps} 0} {{Cursor 3} {169925788 ps} 0}
+WaveRestoreCursors {{Cursor 1} {13278864 ps} 0} {{Cursor 2} {13234157 ps} 0} {{Cursor 3} {169899854 ps} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 321
