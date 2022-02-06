@@ -167,13 +167,13 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 1, 1))
+			d => (1, 1, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
-			di(0) => dq(0*BYTE_SIZE+i),
-			di(1) => dq(1*BYTE_SIZE+i),
-			di(2) => dq(2*BYTE_SIZE+i),
-			di(3) => dq(3*BYTE_SIZE+i),
+			di(0) => dq(2*BYTE_SIZE+i),
+			di(1) => dq(3*BYTE_SIZE+i),
+			di(2) => dq(0*BYTE_SIZE+i),
+			di(3) => dq(1*BYTE_SIZE+i),
 		    do(0) => sys_dqo(2*BYTE_SIZE+i),
 		    do(1) => sys_dqo(3*BYTE_SIZE+i),
 		    do(2) => sys_dqo(0*BYTE_SIZE+i),
