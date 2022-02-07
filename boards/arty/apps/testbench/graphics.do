@@ -2,6 +2,7 @@ onerror {resume}
 quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e { /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/wr_cntr(1 to 3)} wr
 quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e { /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/rd_cntr(1 to 3)} rd
 quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/du_e/grahics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} pp
+quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/du_e/grahics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} soddata
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/btn(0)
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_clk
@@ -25,11 +26,18 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sout_frm
+add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sout_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/soddata
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/ctlr_clks(0)
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_do_dv(1)
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlr_do
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmaso_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmaso_data
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_do_dv(0)
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dev_do_dv(1)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/iod_clk
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/sys_req
@@ -50,8 +58,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqph
 add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(7)
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {13278864 ps} 0} {{Cursor 2} {13234157 ps} 0} {{Cursor 3} {169899854 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {13278864 ps} 0} {{Cursor 2} {13234157 ps} 0} {{Cursor 3} {170079182 ps} 0} {{Cursor 4} {175375000 ps} 0}
+quietly wave cursor active 4
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 321
 configure wave -justifyvalue left
@@ -66,4 +74,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {169826310 ps} {170025266 ps}
+WaveRestoreZoom {232110816 ps} {234331402 ps}
