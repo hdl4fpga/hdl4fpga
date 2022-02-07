@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 			}
 
 			queue_in = sio_request(buffer, length);
-//			sio_dump (stdout, queue_in);
+			sio_dump (stdout, queue_in);
 			delete_queue(queue_in);
 		} else {
 			if(log) fprintf(stderr, "eof %d\n", feof(stdin));
