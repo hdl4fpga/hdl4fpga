@@ -288,7 +288,7 @@ begin
 --	ddr_mpu_ref <= '0', '1' after 30 us, '0' after 30.010 us; -- refresh test ddr3 on arty
 --	ddr_mpu_ref <= '0', '1' after 30 us, '0' after 30.010 us; -- refresh test ddr3 on arty
 --	ddr_mpu_ref <= '0', '1' after 170 us, '0' after 170.01 us; -- refresh test ddr3 on arty
-	ddr_mpu_ref <= '0'; --ddr_refi_req;
+	ddr_mpu_ref <= ddr_refi_req;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
 		gear        => data_gear,
