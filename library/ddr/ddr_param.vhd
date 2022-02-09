@@ -706,7 +706,9 @@ package body ddr_param is
 				TMR3_MOD => ddr_latency(stdr, MODu),
 				TMR3_DLL => ddr_latency(stdr, cDLL),
 				TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
-				TMR3_REF => to_ddrlatency(tCP, mark, tREFI));
+				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 35106));
+--				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 34980));
+--				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 31244));
 	begin
 		case stdr is
 		when SDRAM|DDR1 =>

@@ -265,8 +265,24 @@ begin
 			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, mpu_nop),  mpu_nop);
 		end if;
 	end process;
-	ddr_pgm_end  <= setif(ctlr_rst='0', pgm_end,  '1');
-	ctlr_refreq  <= setif(ctlr_rst='0', pgm_refq, '0');
-	ddr_pgm_rrdy <= setif(ctlr_rst='0', pgm_refy, '0');
+	ddr_pgm_end  <= '1' when ctlr_rst='1' else pgm_end;
+	ctlr_refreq  <= '0' when ctlr_rst='1' else pgm_refq;
+	ddr_pgm_rrdy <= '0' when ctlr_rst='1' else  pgm_refy and ddr_mpu_trdy;
+--	process (ctlr_rst, ctlr_clk)
+--		variable q : std_logic;
+--	begin
+--		if rising_edge(ctlr_clk) then
+--			if ctlr_rst='1' then
+--				q := '0';
+--			else
+--				q := pgm_refy and ddr_mpu_trdy;
+--			end if;
+--		end if;
+--		if ctlr_rst='1' then
+--			ddr_pgm_rrdy <= '0';
+--		else
+--			ddr_pgm_rrdy <= q;
+--		end if;
+--	end process;
 
 end;

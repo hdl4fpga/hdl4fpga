@@ -490,7 +490,7 @@ begin
 						sout_req   <= sout_rdy;
 						acktx_trdy <= '0';
 					elsif (sout_rdy xor sout_req)='0' then
-						if acktx_irdy='1' then
+						if (dmaio_req xor dmaio_rdy)='0' and acktx_irdy='1' then
 							sout_req <= not sout_rdy;
 						else
 							sout_req <= sout_rdy;
@@ -860,7 +860,7 @@ begin
 			ctlr_do_dv  => ctlr_do_dv(0),
 
 			ctlr_inirdy => ctlr_inirdy,
-			ctlr_refreq => ctlr_refreq,
+			ctlr_refreq => '0', --ctlr_refreq,
 
 			ctlr_frm    => ctlr_frm,
 			ctlr_trdy   => ctlr_trdy,

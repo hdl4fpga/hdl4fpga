@@ -77,6 +77,7 @@ architecture def of dmatrans is
 
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
+	signal state_cas    : std_logic;
 	signal ctlr_pre     : std_logic;
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
@@ -147,7 +148,7 @@ begin
 					restart <= '0';
 				end if;
 
-				sync_refresh_with_cas : if ctlr_cas='0' then
+				sync_refresh_with_cas : if state_cas='1' and ctlr_cas='0' then
 					refreq <= ctlr_refreq;
 				elsif refreq='1' then
 					refreq <= ctlr_refreq;
@@ -282,6 +283,7 @@ begin
 				ctlr_pre <= '0';
 			end if;
 
+			state_cas <= cas;
 			state_pre <= pre;
 			state_nop <= nop;
 			ctlr_trdy1 <= ctlr_trdy;

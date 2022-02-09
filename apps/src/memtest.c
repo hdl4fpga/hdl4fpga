@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
 	for(int pass = 1;;pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-			test_fill(wr_buffer, length);
+			test_seq(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);
 
