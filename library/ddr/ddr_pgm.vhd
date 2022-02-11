@@ -36,7 +36,6 @@ entity ddr_pgm is
 		ddr_pgm_cal   : in  std_logic := '0';
 		ddr_pgm_rrdy  : out std_logic := '0';
 		ddr_pgm_frm   : in  std_logic := '1';
-		ddr_pgm_end   : out std_logic;
 		ddr_mpu_trdy  : in  std_logic := '1';
 		ddr_pgm_rw    : in  std_logic := '1';
 		ddr_pgm_seq   : out std_logic := '0';
@@ -44,36 +43,34 @@ entity ddr_pgm is
 
 	constant latency   : boolean := true;
 
-	constant refy : natural := 5;
-	constant refq : natural := 4;
-	constant fsh  : natural := 3;
+	constant refy : natural := 4;
+	constant refq : natural := 3;
 	constant ras  : natural := 2;
 	constant cas  : natural := 1;
 	constant we   : natural := 0;
 
-	                      --> ddr_pgm_end   <---------------------+
-	                      --> ctlr_refreq   <--------------------+|
-	                      --> pgm_refy      <-------------------+||
-	                      --                                    |||
-	                      --                                    |||
-	                      --                                    |||
-	                      --                                    VVV
-	constant ddro_act   : std_logic_vector(5 downto 0)     := B"000" & "011";
-	constant ddro_acty  : std_logic_vector(ddro_act'range) := B"100" & "011";
-	constant ddro_area  : std_logic_vector(ddro_act'range) := B"000" & "101";
-	constant ddro_areaq : std_logic_vector(ddro_act'range) := B"010" & "101";
-	constant ddro_awri  : std_logic_vector(ddro_act'range) := B"000" & "100";
-	constant ddro_awriq : std_logic_vector(ddro_act'range) := B"010" & "100";
-	constant ddro_rea   : std_logic_vector(ddro_act'range) := B"000" & "101";
-	constant ddro_reaq  : std_logic_vector(ddro_act'range) := B"010" & "101";
-	constant ddro_wri   : std_logic_vector(ddro_act'range) := B"000" & "100";
-	constant ddro_wriq  : std_logic_vector(ddro_act'range) := B"010" & "100";
-	constant ddro_pre   : std_logic_vector(ddro_act'range) := B"000" & "010";
-	constant ddro_preq  : std_logic_vector(ddro_act'range) := B"010" & "010";
-	constant ddro_autq  : std_logic_vector(ddro_act'range) := B"110" & "001";
-	constant ddro_auty  : std_logic_vector(ddro_act'range) := B"111" & "001";
-	constant ddro_nop   : std_logic_vector(ddro_act'range) := B"001" & "111";
-	constant ddro_nopy  : std_logic_vector(ddro_act'range) := B"101" & "111";
+	                      --> ctlr_refreq   <--------------------+
+	                      --> pgm_refy      <-------------------+|
+	                      --                                    ||
+	                      --                                    ||
+	                      --                                    ||
+	                      --                                    VV
+	constant ddro_act   : std_logic_vector(4 downto 0)     := B"00" & "011";
+	constant ddro_acty  : std_logic_vector(ddro_act'range) := B"10" & "011";
+	constant ddro_area  : std_logic_vector(ddro_act'range) := B"00" & "101";
+	constant ddro_areaq : std_logic_vector(ddro_act'range) := B"01" & "101";
+	constant ddro_awri  : std_logic_vector(ddro_act'range) := B"00" & "100";
+	constant ddro_awriq : std_logic_vector(ddro_act'range) := B"01" & "100";
+	constant ddro_rea   : std_logic_vector(ddro_act'range) := B"00" & "101";
+	constant ddro_reaq  : std_logic_vector(ddro_act'range) := B"01" & "101";
+	constant ddro_wri   : std_logic_vector(ddro_act'range) := B"00" & "100";
+	constant ddro_wriq  : std_logic_vector(ddro_act'range) := B"01" & "100";
+	constant ddro_pre   : std_logic_vector(ddro_act'range) := B"00" & "010";
+	constant ddro_preq  : std_logic_vector(ddro_act'range) := B"01" & "010";
+	constant ddro_autq  : std_logic_vector(ddro_act'range) := B"11" & "001";
+	constant ddro_auty  : std_logic_vector(ddro_act'range) := B"01" & "001";
+	constant ddro_nop   : std_logic_vector(ddro_act'range) := B"00" & "111";
+	constant ddro_nopy  : std_logic_vector(ddro_act'range) := B"10" & "111";
 
 	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre, ddrs_aut);
 
@@ -118,8 +115,8 @@ entity ddr_pgm is
 --	                |+---- ddr_pgm_rw
 --	                ||+--- ddr_pgm_ref
 --                  |||
---                  vvv
 	constant pgm_tab : trans_tab := (
+--                  vvv
 		(ddrs_act, "000", ddrs_wri, ddro_awri),	 ---------
 		(ddrs_act, "001", ddrs_wri, ddro_awriq), -- ACT --
 		(ddrs_act, "010", ddrs_rea, ddro_area),  ---------
@@ -243,7 +240,6 @@ begin
 			if ddr_pgm_pc=pgm_tab(i).state then
 				if ddr_input=pgm_tab(i).input then
 					pgm_cmd  <= pgm_tab(i).cmd_n(ras downto we);
-					pgm_end  <= pgm_tab(i).cmd_n(fsh);
 					pgm_refq <= pgm_tab(i).cmd_n(refq);
 					pgm_refy <= pgm_tab(i).cmd_n(refy);
 				end if;
@@ -265,9 +261,8 @@ begin
 			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, mpu_nop),  mpu_nop);
 		end if;
 	end process;
-	ddr_pgm_end  <= '1' when ctlr_rst='1' else pgm_end;
 	ctlr_refreq  <= '0' when ctlr_rst='1' else pgm_refq;
-	ddr_pgm_rrdy <= '0' when ctlr_rst='1' else  pgm_refy and ddr_mpu_trdy;
+	ddr_pgm_rrdy <= '0' when ctlr_rst='1' else pgm_refy; -- and ddr_mpu_trdy;
 --	process (ctlr_rst, ctlr_clk)
 --		variable q : std_logic;
 --	begin

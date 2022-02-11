@@ -157,8 +157,8 @@ begin
 	mii_txc <= mii_refclk;
 
 
-	mii_req  <= '0', '1' after 21 us, '0' after 110 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req1 <= '0', '1' after 161 us; --, '0' after 110 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us, '0' after 39 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req1 <= '0', '1' after 40 us; --, '0' after 110 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	process
 --	begin
 --		wait for 206 us;
@@ -214,8 +214,8 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0000_0000",
-		mii_data5 => x"010000_1702_0003ff_1603_80000000",
+		x"1702_0003ff_1603_0007_3000",
+		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
 		mii_frm1 => '0',
 		mii_frm2 => '0', --ping_req,

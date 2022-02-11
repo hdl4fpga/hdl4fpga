@@ -860,7 +860,7 @@ begin
 			ctlr_do_dv  => ctlr_do_dv(0),
 
 			ctlr_inirdy => ctlr_inirdy,
-			ctlr_refreq => '0', --ctlr_refreq,
+			ctlr_refreq => ctlr_refreq,
 
 			ctlr_frm    => ctlr_frm,
 			ctlr_trdy   => ctlr_trdy,
@@ -899,7 +899,8 @@ begin
 		ctlr_dm <= (others => '0');
 		ddrctlr_e : entity hdl4fpga.ddr_ctlr
 		generic map (
-			debug => debug,
+			test         => false,
+			debug        => debug,
 			fpga         => fpga,
 			mark         => mark,
 			tcp          => ddr_tcp,

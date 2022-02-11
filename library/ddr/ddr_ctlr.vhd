@@ -32,6 +32,7 @@ use hdl4fpga.ddr_param.all;
 
 entity ddr_ctlr is
 	generic (
+		test         : boolean := false;
 		debug        : boolean := false;
 		fpga         : natural;
 		mark         : natural := m6t;
@@ -208,6 +209,7 @@ architecture mix of ddr_ctlr is
 	signal init_rdy       : std_logic;
 
 
+	signal refreq : std_logic;
 	signal fifo_bypass : std_logic;
 begin
 
@@ -265,15 +267,16 @@ begin
 	ctlr_cfgrdy <= init_rdy;
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
 
+--	ctlr_refreq <= refreq when not test else '0';
+	ctlr_refreq <= '0';
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
 		cmmd_gear => cmmd_gear)
 	port map (
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
-		ctlr_refreq   => ctlr_refreq,
+		ctlr_refreq   => refreq,
 		ddr_pgm_frm   => ddr_pgm_frm ,
-		ddr_pgm_end   => open,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 		ddr_pgm_rw    => ddr_pgm_rw,
@@ -284,7 +287,7 @@ begin
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
-	ddr_mpu_ref <= ddr_refi_req;
+	ddr_mpu_ref <= ddr_refi_req when not test else '0';
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
 		gear        => data_gear,
