@@ -899,7 +899,7 @@ begin
 		ctlr_dm <= (others => '0');
 		ddrctlr_e : entity hdl4fpga.ddr_ctlr
 		generic map (
-			test         => false,
+			test => true,
 			debug        => debug,
 			fpga         => fpga,
 			mark         => mark,

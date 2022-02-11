@@ -27,21 +27,20 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		CMMD_GEAR  : natural := 1);
+		test         : boolean := false;
+		cmmd_gear    : natural := 1);
 	port (
-		ctlr_clk      : in  std_logic := '0';
-		ctlr_rst      : in  std_logic := '0';
-		ctlr_refreq   : out std_logic := '0';
-		ddr_pgm_ref   : in  std_logic := '0';
-		ddr_pgm_cal   : in  std_logic := '0';
-		ddr_pgm_rrdy  : out std_logic := '0';
-		ddr_pgm_frm   : in  std_logic := '1';
-		ddr_mpu_trdy  : in  std_logic := '1';
-		ddr_pgm_rw    : in  std_logic := '1';
-		ddr_pgm_seq   : out std_logic := '0';
-		ddr_pgm_cmd   : out std_logic_vector(0 to 2));
-
-	constant latency   : boolean := true;
+		ctlr_clk     : in  std_logic := '0';
+		ctlr_rst     : in  std_logic := '0';
+		ctlr_refreq  : out std_logic := '0';
+		ddr_pgm_cal  : in  std_logic := '0';
+		ddr_pgm_seq  : out std_logic := '0';
+		ddr_pgm_frm  : in  std_logic := '1';
+		ddr_pgm_rw   : in  std_logic := '1';
+		ddr_mpu_trdy : in  std_logic := '1';
+		ddr_ref_req  : in  std_logic := '0';
+		ddr_ref_rdy  : buffer std_logic := '0';
+		ddr_pgm_cmd  : out std_logic_vector(0 to 2));
 
 	constant refy : natural := 4;
 	constant refq : natural := 3;
@@ -56,7 +55,6 @@ entity ddr_pgm is
 	                      --                                    ||
 	                      --                                    VV
 	constant ddro_act   : std_logic_vector(4 downto 0)     := B"00" & "011";
-	constant ddro_acty  : std_logic_vector(ddro_act'range) := B"10" & "011";
 	constant ddro_area  : std_logic_vector(ddro_act'range) := B"00" & "101";
 	constant ddro_areaq : std_logic_vector(ddro_act'range) := B"01" & "101";
 	constant ddro_awri  : std_logic_vector(ddro_act'range) := B"00" & "100";
@@ -67,12 +65,10 @@ entity ddr_pgm is
 	constant ddro_wriq  : std_logic_vector(ddro_act'range) := B"01" & "100";
 	constant ddro_pre   : std_logic_vector(ddro_act'range) := B"00" & "010";
 	constant ddro_preq  : std_logic_vector(ddro_act'range) := B"01" & "010";
-	constant ddro_autq  : std_logic_vector(ddro_act'range) := B"11" & "001";
-	constant ddro_auty  : std_logic_vector(ddro_act'range) := B"01" & "001";
+	constant ddro_aut   : std_logic_vector(ddro_act'range) := B"11" & "001";
 	constant ddro_nop   : std_logic_vector(ddro_act'range) := B"00" & "111";
-	constant ddro_nopy  : std_logic_vector(ddro_act'range) := B"10" & "111";
 
-	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre, ddrs_aut);
+	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre);
 
 	type trans_row is record
 		state   : ddrs_states;
@@ -83,7 +79,7 @@ entity ddr_pgm is
 
 	type trans_tab is array (natural range <>) of trans_row;
 
---           +------ pgm_irdy
+--           +------ pgm_frm
 --           |+----- pgm_rw
 --           ||+---- pgm_ref
 --           |||
@@ -93,22 +89,19 @@ entity ddr_pgm is
 --     act | wri  | wri  | rea  | rea  | wri  | wri  | rea  | rea  |
 --     rea | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
 --     wri | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     pre | pre  | aut  | pre  | aut  | act  | aut  | act  | aut  |
---     aut | pre  | pre  | pre  | pre  | act  | aut  | act  | aut  |
+--     pre | pre  | pre  | pre  | aut  | act  | aut  | act  | aut  |
 --         +------+------+------+------+------+------+------+------+
 
 --                       --                 --
 --                       -- OUTPUT COMMANDS --
 --                       --                 --
-
 --
 --           000    001    010    011    100    101    110    111
 --         +------+------+------+------+------+------+------+------+
 --     act | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
 --     rea | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
 --     wri | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     pre | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     aut | nopy | auty | nopy | auty | acty | auty | acty | auty |
+--     pre | nop  | aut  | nop  | aut  | act  | aut  | act  | aut  |
 --         +------+------+------+------+------+------+------+------+
 
 --	                +----- ddr_pgm_frm
@@ -145,22 +138,13 @@ entity ddr_pgm is
 		(ddrs_wri, "111", ddrs_rea, ddro_reaq),
 
 		(ddrs_pre, "000", ddrs_pre, ddro_nop),	---------
-		(ddrs_pre, "001", ddrs_aut, ddro_autq),	-- PRE --
+		(ddrs_pre, "001", ddrs_pre, ddro_aut),	-- PRE --
 		(ddrs_pre, "010", ddrs_pre, ddro_nop),	---------
-		(ddrs_pre, "011", ddrs_aut, ddro_autq),
+		(ddrs_pre, "011", ddrs_pre, ddro_aut),
 		(ddrs_pre, "100", ddrs_act, ddro_act),
-		(ddrs_pre, "101", ddrs_aut, ddro_autq),
+		(ddrs_pre, "101", ddrs_pre, ddro_aut),
 		(ddrs_pre, "110", ddrs_act, ddro_act),
-		(ddrs_pre, "111", ddrs_aut, ddro_autq),
-
-		(ddrs_aut, "000", ddrs_pre, ddro_nopy),	---------
-		(ddrs_aut, "001", ddrs_pre, ddro_auty),	-- AUT --
-		(ddrs_aut, "010", ddrs_pre, ddro_nopy),	---------
-		(ddrs_aut, "011", ddrs_pre, ddro_auty),
-		(ddrs_aut, "100", ddrs_act, ddro_acty),
-		(ddrs_aut, "101", ddrs_aut, ddro_auty),
-		(ddrs_aut, "110", ddrs_act, ddro_acty),
-		(ddrs_aut, "111", ddrs_aut, ddro_auty));
+		(ddrs_pre, "111", ddrs_pre, ddro_aut));
 
 end;
 
@@ -183,25 +167,25 @@ architecture registered of ddr_pgm is
 
 begin
 
-	ddr_input(0) <= ddr_pgm_frm ;
+	ddr_input(0) <= ddr_pgm_frm;
 	ddr_input(1) <= ddr_pgm_rw;
-	ddr_input(2) <= ddr_pgm_ref;
+	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy; -- when not test else '0';
 
 	calibrate_p : process (ctlr_clk, ddr_mpu_trdy, ddr_pgm_cal)
-		variable t : signed(0 to unsigned_num_bits(CMMD_GEAR-1));
+		variable t : signed(0 to unsigned_num_bits(cmmd_gear-1));
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
-				t := to_signed(CMMD_GEAR-1, t'length);
+				t := to_signed(cmmd_gear-1, t'length);
 			elsif ddr_pgm_cal='0' then
-				t := to_signed(CMMD_GEAR-1, t'length);
+				t := to_signed(cmmd_gear-1, t'length);
 			elsif ddr_mpu_trdy='1' then
 				if ddr_pgm_cal='1' then
-					if CMMD_GEAR > 1 then
+					if cmmd_gear > 1 then
 						if t(0)='0' then
 							t := t - 1;
 						else
-							t := to_signed(CMMD_GEAR-1, t'length);
+							t := to_signed(cmmd_gear-1, t'length);
 						end if;
 					else
 						t := not t;
@@ -247,37 +231,39 @@ begin
 		end loop;
 	end process;
 
-	process (ctlr_rst, pgm_cmd, ctlr_clk)
+	process (ctlr_clk)
 	begin
-		if latency then
-			if rising_edge(ctlr_clk) then
-				if ctlr_rst='1' then
-					ddr_pgm_cmd <=  mpu_nop;
-				elsif ddr_mpu_trdy='1' then
-					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
-				end if;
+		if rising_edge(ctlr_clk) then
+			if ctlr_rst='1' then
+				ctlr_refreq <= '0';
+				ddr_ref_rdy <= '0';
+				ddr_pgm_cmd <= mpu_nop;
+			elsif ddr_mpu_trdy='1' then
+				ctlr_refreq <= setif(test, '0', pgm_refq);
+				ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
+				ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
 			end if;
-		else
-			ddr_pgm_cmd <= setif(ctlr_rst='0', setif(calibrating='0', pgm_cmd, mpu_nop),  mpu_nop);
 		end if;
 	end process;
-	ctlr_refreq  <= '0' when ctlr_rst='1' else pgm_refq;
-	ddr_pgm_rrdy <= '0' when ctlr_rst='1' else pgm_refy; -- and ddr_mpu_trdy;
---	process (ctlr_rst, ctlr_clk)
---		variable q : std_logic;
---	begin
---		if rising_edge(ctlr_clk) then
---			if ctlr_rst='1' then
---				q := '0';
---			else
---				q := pgm_refy and ddr_mpu_trdy;
---			end if;
---		end if;
---		if ctlr_rst='1' then
---			ddr_pgm_rrdy <= '0';
---		else
---			ddr_pgm_rrdy <= q;
---		end if;
---	end process;
+
+	debug_b : block
+		type dram_labels is (dram_nop, dram_act, dram_read, dram_write, dram_pre, dram_aut, dram_none);
+		signal dram_label : dram_labels;
+		subtype xxx is bit_vector(pgm_cmd'range);
+	begin
+		debug_s : with xxx'(to_bitvector(pgm_cmd)) select
+		dram_label <=
+			dram_nop   when "111",
+			dram_act   when "011",
+			dram_read  when "101",
+			dram_write when "100",
+			dram_pre   when "010",
+			dram_aut   when "001",
+			dram_none  when others;
+		assert dram_label/=dram_none
+		report "wrong command"
+		severity warning;
+
+	end block;
 
 end;

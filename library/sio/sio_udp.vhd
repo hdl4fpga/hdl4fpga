@@ -32,6 +32,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
+		debug         : boolean := false;
 		default_ipv4a : std_logic_vector(0 to 32-1);
 		my_mac        : std_logic_vector(0 to 48-1));
 	port (
@@ -112,6 +113,8 @@ begin
 		miitx_data => miitx_data);
 
 	sio_flow_e : entity hdl4fpga.sio_flow
+	generic map (
+		debug   => debug)
 	port map (
 		tp => tp,
 		sio_clk => sio_clk,

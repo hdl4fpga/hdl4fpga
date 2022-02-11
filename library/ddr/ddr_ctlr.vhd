@@ -174,7 +174,6 @@ architecture mix of ddr_ctlr is
 
 	signal ddr_mpu_rst    : std_logic;
 	signal ddr_mpu_trdy   : std_logic;
-	signal ddr_mpu_ref    : std_logic;
 	signal ddr_mpu_ras    : std_logic;
 	signal ddr_mpu_cas    : std_logic;
 	signal ddr_mpu_we     : std_logic;
@@ -267,27 +266,25 @@ begin
 	ctlr_cfgrdy <= init_rdy;
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
 
---	ctlr_refreq <= refreq when not test else '0';
-	ctlr_refreq <= '0';
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
-		cmmd_gear => cmmd_gear)
+		test          => test,
+		cmmd_gear     => cmmd_gear)
 	port map (
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
-		ctlr_refreq   => refreq,
+		ctlr_refreq   => ctlr_refreq,
 		ddr_pgm_frm   => ddr_pgm_frm ,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 		ddr_pgm_rw    => ddr_pgm_rw,
-		ddr_pgm_ref   => ddr_mpu_ref,
-		ddr_pgm_rrdy  => ddr_refi_rdy,
+		ddr_ref_req   => ddr_refi_req,
+		ddr_ref_rdy   => ddr_refi_rdy,
 		ddr_pgm_cal   => phy_rlcal,
 		ddr_pgm_seq   => phy_rlseq);
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
-	ddr_mpu_ref <= ddr_refi_req when not test else '0';
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
 		gear        => data_gear,

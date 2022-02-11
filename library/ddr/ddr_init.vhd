@@ -203,9 +203,7 @@ begin
 		if rising_edge(ddr_init_clk)then
 			if ddr_init_pc=sc_ref then
 				if ddr_timer_rdy='1' then
-					ddr_refi_req <= '1';
-				elsif ddr_refi_rdy='1' then
-					ddr_refi_req <='0';
+					ddr_refi_req <= not ddr_refi_rdy;
 				end if;
 			else
 				ddr_refi_req <= '0';

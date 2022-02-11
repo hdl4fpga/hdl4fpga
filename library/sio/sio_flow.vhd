@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity sio_flow is
+	generic (
+		debug : boolean := false);
 	port (
 		tp : out std_logic_vector(1 to 32);
 		sio_clk : in std_logic;
@@ -160,7 +162,7 @@ begin
 					buffer_rllbk <= '1';
 					meta_cmmt   <= '1';
 					ackrply_req <= not ackrply_rdy;
-				elsif shift_right(unsigned(ackrx_data),2)/=last then
+				elsif shift_right(unsigned(ackrx_data),2)/=last or debug then
 					buffer_cmmt  <= '1';
 				else
 					buffer_rllbk <= '1';
