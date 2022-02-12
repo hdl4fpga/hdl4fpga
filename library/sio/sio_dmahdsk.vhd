@@ -68,11 +68,11 @@ begin
 						if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
 							if dmaio_irdy='1' then
 								if dmaio_trdy='0' then
-									dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+									dmacfg_req   <= not to_stdulogic(to_bit(dmacfg_rdy));
+									cfg2ctlr_req <= not cfg2ctlr_rdy;
 								end if;
 							end if;
 						else
-							cfg2ctlr_req <= not cfg2ctlr_rdy;
 						end if;
 					end if;
 				end if;
@@ -98,10 +98,10 @@ begin
 							dma_req <= not to_stdulogic(to_bit(dma_rdy));
 						else
 							ctlr2cfg_req <= not ctlr2cfg_rdy;
+							cfg2ctlr_rdy <= cfg2ctlr_req;
 						end if;
 					end if;
 				else
-					cfg2ctlr_rdy <= cfg2ctlr_req;
 				end if;
 			end if;
 		end if;

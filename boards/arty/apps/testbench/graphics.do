@@ -26,6 +26,10 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_req
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_frm
 add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
@@ -63,8 +67,17 @@ add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_p
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/mpu_state
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/cmd_name
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(8) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(7) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(6) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(5) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(4) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(3) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(2) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(2) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_rdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr2cfg_req
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr2cfg_rdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg2ctlr_req
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg2ctlr_rdy
+add wave -noupdate /testbench/du_e/eth_tx_clk
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmaio_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_req
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(8) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(7) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(6) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(5) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(4) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(3) -radix hexadecimal} {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(2) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col(2) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaio_next
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/dmaio_trdy
@@ -72,8 +85,8 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {55282008 ps} 0} {{Cursor 3} {70233420 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {70635097 ps} 0} {{Cursor 3} {30292802 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 247
 configure wave -justifyvalue left
@@ -88,4 +101,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {69805216 ps} {70661624 ps}
+WaveRestoreZoom {45337658 ps} {82350650 ps}

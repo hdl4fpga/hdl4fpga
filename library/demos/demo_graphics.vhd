@@ -461,11 +461,14 @@ begin
 				gray_code  => fifo_gray)
 			port map (
 				src_clk    => dmacfg_clk,
+				src_frm    => ctlr_inirdy,
+				src_mode   => '1',
 				src_irdy   => dmaio_next,
 				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
 				dst_frm    => ctlr_inirdy,
+				dst_mode   => '1',
 				dst_clk    => sio_clk,
 				dst_irdy   => acktx_irdy,
 				dst_trdy   => acktx_trdy,
