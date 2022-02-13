@@ -335,6 +335,7 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
+			debug         => debug,
 			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
@@ -383,6 +384,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug        => debug,
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,

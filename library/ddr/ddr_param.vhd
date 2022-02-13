@@ -679,7 +679,7 @@ package body ddr_param is
 		constant stdr : natural := ddr_stdr(mark);
 
 		constant ddr1_timer : natural_vector := (
-				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST)/setif(debug, 20, 1),
 				TMR1_CKE => to_ddrlatency(tCP, mark, tXPR),
 				TMR1_MRD => to_ddrlatency(tCP, mark, tMRD),
 				TMR1_RPA => to_ddrlatency(tCP, mark, tRP),

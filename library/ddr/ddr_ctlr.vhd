@@ -146,7 +146,7 @@ architecture mix of ddr_ctlr is
 	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
 	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
 	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
-	constant timers       : natural_vector   := ddr_timers(tcp, mark, debug=> debug);
+	constant timers       : natural_vector   := ddr_timers(tcp, mark, debug => debug);
 	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
 	constant rdfifo_delay : boolean          := ddr_cntlrcnfg(fpga, hdl4fpga.ddr_db.rdfifo_delay);
 

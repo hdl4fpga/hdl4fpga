@@ -57,6 +57,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal mii_refclk : std_logic;
 	signal mii_req : std_logic := '0';
+	signal mii_req1 : std_logic := '0';
 	signal ping_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
@@ -186,6 +187,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal uart_sin : std_logic;
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
+
 begin
 
 	mii_rxc <= mii_refclk;
@@ -198,7 +200,9 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
-	mii_req <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+--	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req1 <= '0', '1' after 101 us; --, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
 	ping_req <= '0';
 --	process
 --	begin
@@ -216,12 +220,51 @@ begin
 	generic map (
 		debug =>false)
 	port map (
-		mii_data4 => x"01007e_1702_000408_1603_80ff_fffc",
---		mii_data4 => x"01007e_1702_000508_1603_80ff_ff80",
+		mii_data4 =>
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_0003ff_1603_0007_3000",
+		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
 		mii_frm1 => '0',
 		mii_frm2 => ping_req,
 		mii_frm3 => '0',
 		mii_frm4 => mii_req,
+		mii_frm5 => mii_req1,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,

@@ -208,7 +208,7 @@ begin
 			x"ffffffff",             -- IP Source IP address
 			x"c0a8000e",             -- IP Destiantion IP Address
 			x"5ff5affa"         &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(mii_data4'length/8+8,16))    & -- UDP Length,
+			std_logic_vector(to_unsigned(mii_data5'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum
 			mii_data5),8);
 
