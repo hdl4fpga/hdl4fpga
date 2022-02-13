@@ -218,7 +218,7 @@ begin
 		signal rgtr_len       : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv        : std_logic;
 		signal rgtr_data      : std_logic_vector(0 to max(32,ctlr_di'length)-1);
-		signal rgtr_revs      : std_logic_vector(rgtr_data'reverse_range);
+		signal rgtr_revs      : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE does'nt allow to use reverse_range
 		signal data_frm       : std_logic;
 		signal data_irdy      : std_logic;
 		signal data_ptr       : std_logic_vector(8-1 downto 0);
@@ -902,7 +902,6 @@ begin
 		ctlr_dm <= (others => '0');
 		ddrctlr_e : entity hdl4fpga.ddr_ctlr
 		generic map (
-			test => true,
 			debug        => debug,
 			fpga         => fpga,
 			mark         => mark,

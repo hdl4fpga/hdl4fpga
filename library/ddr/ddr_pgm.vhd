@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 entity ddr_pgm is
 	generic (
-		test         : boolean := false;
 		cmmd_gear    : natural := 1);
 	port (
 		ctlr_clk     : in  std_logic := '0';
@@ -169,7 +168,7 @@ begin
 
 	ddr_input(0) <= ddr_pgm_frm;
 	ddr_input(1) <= ddr_pgm_rw;
-	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy; -- when not test else '0';
+	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy;
 
 	calibrate_p : process (ctlr_clk, ddr_mpu_trdy, ddr_pgm_cal)
 		variable t : signed(0 to unsigned_num_bits(cmmd_gear-1));
@@ -239,7 +238,7 @@ begin
 				ddr_ref_rdy <= '0';
 				ddr_pgm_cmd <= mpu_nop;
 			elsif ddr_mpu_trdy='1' then
-				ctlr_refreq <= setif(test, '0', pgm_refq);
+				ctlr_refreq <= pgm_refq;
 				ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
 				ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
 			end if;

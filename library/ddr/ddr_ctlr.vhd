@@ -32,7 +32,6 @@ use hdl4fpga.ddr_param.all;
 
 entity ddr_ctlr is
 	generic (
-		test         : boolean := false;
 		debug        : boolean := false;
 		fpga         : natural;
 		mark         : natural := m6t;
@@ -268,7 +267,6 @@ begin
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	generic map (
-		test          => test,
 		cmmd_gear     => cmmd_gear)
 	port map (
 		ctlr_clk      => ctlr_clks(0),

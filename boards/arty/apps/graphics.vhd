@@ -273,7 +273,7 @@ begin
 	debug_q : if debug generate
 		signal q : bit;
 	begin
-		q <= not q after 3 ns;
+		q <= not q after 1 ns;
 		eth_ref_clk <= to_stdulogic(q);
 	end generate;
 
@@ -743,29 +743,30 @@ begin
 
 	end block;
 
-	process (btn, tp_delay)
-		variable aux1 : std_logic_vector(3 downto 0);
-		variable aux0 : std_logic_vector(3 downto 0);
-		variable sel  : std_logic_vector(2-1 downto 0);
-
-	begin
-		rgbled <= (others => '0');
-		aux1 := "000" & tp_delay(5-1 downto 4);
-		aux0 := tp_delay(3 downto 0);
-		sel(0) := btn(1);
-		for i in 4-1 downto 0 loop
-			if btn(1)='1' then
-				rgbled(3*i+2) <= aux1(i);
-			else
-				rgbled(3*i+2) <= aux0(i);
-			end if;
-		end loop;
-	end process;
-
-	tp_g : for i in 2-1 downto 0 generate
-		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);
-		led(i+2) <= tp1(i+2) when btn(3)='1' else tp_bit(i*5+1) when btn(1)='1' else tp_bit(i*5+0);
-	end generate;
+	led <= si_frm & si_irdy & si_trdy & si_end;
+--	process (btn, tp_delay)
+--		variable aux1 : std_logic_vector(3 downto 0);
+--		variable aux0 : std_logic_vector(3 downto 0);
+--		variable sel  : std_logic_vector(2-1 downto 0);
+--
+--	begin
+--		rgbled <= (others => '0');
+--		aux1 := "000" & tp_delay(5-1 downto 4);
+--		aux0 := tp_delay(3 downto 0);
+--		sel(0) := btn(1);
+--		for i in 4-1 downto 0 loop
+--			if btn(1)='1' then
+--				rgbled(3*i+2) <= aux1(i);
+--			else
+--				rgbled(3*i+2) <= aux0(i);
+--			end if;
+--		end loop;
+--	end process;
+--
+--	tp_g : for i in 2-1 downto 0 generate
+--		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);
+--		led(i+2) <= tp1(i+2) when btn(3)='1' else tp_bit(i*5+1) when btn(1)='1' else tp_bit(i*5+0);
+--	end generate;
 
 	ddr3_dm <= (others => '0');
 
