@@ -43,7 +43,7 @@ entity hdlcsync_tx is
 		hdlctx_data : in  std_logic_vector;
 
 		uart_frm    : buffer std_logic := '1';
-		uart_irdy   : buffer std_logic;
+		uart_irdy   : out std_logic;
 		uart_trdy   : in  std_logic;
 		uart_data   : out std_logic_vector);
 

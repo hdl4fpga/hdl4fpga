@@ -38,7 +38,7 @@ entity sio_dayhdlc is
 		uartrx_data : in  std_logic_vector;
 
 		uarttx_frm  : out std_logic;
-		uarttx_irdy : buffer std_logic;
+		uarttx_irdy : out std_logic;
 		uarttx_trdy : in  std_logic;
 		uarttx_data : out std_logic_vector;
 
