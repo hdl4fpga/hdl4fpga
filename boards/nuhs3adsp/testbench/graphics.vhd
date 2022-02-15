@@ -201,8 +201,8 @@ begin
 	rst <= '0', '1' after 300 ns;
 
 --	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req1 <= '1' after 101 us; --, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us,  '0' after 14.5 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req1 <= '0', '1' after 14.6 us; --, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
 	ping_req <= '0';
 --	process
 --	begin

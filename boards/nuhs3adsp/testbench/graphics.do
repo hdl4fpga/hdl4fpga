@@ -36,6 +36,9 @@ add wave -noupdate -expand -group ddr /testbench/du_e/ddr_dq
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_dqs
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_refreq
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_refreq
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/refreq
 add wave -noupdate /testbench/ethrx_e/mii_clk
 add wave -noupdate -label mii_data -radix hexadecimal /testbench/ethrx_e/mii_rdata002
 add wave -noupdate /testbench/ethrx_e/fcs_sb
@@ -74,8 +77,8 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_req
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_rdy
@@ -90,8 +93,8 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -label sout_data -radix hexadecimal /testbench/du_e/grahics_e/sout_rdata
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {142522818 ps} 0} {{Cursor 2} {84000000 ps} 0} {{Cursor 3} {16985000 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {20563722 ps} 0} {{Cursor 4} {21276454 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 189
 configure wave -valuecolwidth 76
 configure wave -justifyvalue left
@@ -106,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {16262368 ps} {17574868 ps}
+WaveRestoreZoom {20486963 ps} {20614874 ps}

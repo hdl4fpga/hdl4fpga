@@ -75,9 +75,9 @@ begin
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			else
-				ctlr_rdy <= ctlr_req;
+			elsif (dma_req xor dma_rdy)='0' then
 				dmaio_trdy <= '1';
+				ctlr_rdy <= ctlr_req;
 			end if;
 		end if;
 	end process;

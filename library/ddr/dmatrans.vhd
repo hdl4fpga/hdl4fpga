@@ -148,7 +148,7 @@ begin
 					restart <= '0';
 				end if;
 
-				sync_refresh_with_cas : if state_cas='1' and ctlr_cas='0' then
+				sync_refresh_with_cas : if state_cas='1' and (ctlr_cas='0' or burst_length=0) then
 					refreq <= ctlr_refreq;
 				elsif refreq='1' then
 					refreq <= ctlr_refreq;
