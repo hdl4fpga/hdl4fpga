@@ -142,7 +142,7 @@ begin
 		end process;
 
 		rx_irdy <=
-			'0'     when rx_frm='0' else
+			'0'        when rx_frm='0' else
 			fifoo_trdy when rx_end='0' else
 			'0';
 
@@ -195,6 +195,7 @@ begin
 		rx_frm  => rx_frm,
 		rx_irdy => rx_irdy,
 		rx_trdy => rx_trdy,
+		rx_end  => rx_end,
 		rx_data => rx_data,
 
 		so_frm  => so_frm,

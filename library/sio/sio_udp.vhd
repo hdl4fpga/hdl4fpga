@@ -71,6 +71,7 @@ architecture struct of sio_udp is
 		signal plrx_frm   : std_logic;
 		signal plrx_irdy  : std_logic;
 		signal plrx_trdy  : std_logic;
+		signal plrx_end   : std_logic;
 		signal plrx_data  : std_logic_vector(so_data'range);
 
 		signal pltx_frm   : std_logic;
@@ -98,6 +99,7 @@ begin
 		plrx_frm   => plrx_frm,
 		plrx_irdy  => plrx_irdy,
 		plrx_trdy  => plrx_trdy,
+		plrx_end   => plrx_end,
 		plrx_data  => plrx_data,
 
 		pltx_frm   => pltx_frm,
@@ -122,6 +124,7 @@ begin
 		rx_frm  => plrx_frm,
 		rx_irdy => plrx_irdy,
 		rx_trdy => plrx_trdy,
+		rx_end  => plrx_end,
 		rx_data => plrx_data,
 
 		so_frm  => so_frm,

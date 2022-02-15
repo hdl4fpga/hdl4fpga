@@ -51,6 +51,7 @@ entity mii_ipoe is
 		plrx_frm       : buffer std_logic;
 		plrx_irdy      : buffer std_logic;
 		plrx_trdy      : in  std_logic := '1';
+		plrx_end       : out std_logic;
 		plrx_data      : out std_logic_vector;
 
 		pltx_frm       : in  std_logic;
@@ -599,12 +600,13 @@ begin
 				if fifo_avail='1' then
 					frm := '1';
 				end if;
-			elsif fifoo_end='1' and fifoo_trdy='1' then
+			elsif fifoo_end='1' and plrx_trdy='1' then
 				frm := '0';
 			end if;
 			tag_frm <= to_stdulogic(frm);
 		end if;
 	end process;
+	plrx_end <= fifoo_end;
 
 	fifoo_irdy  <= '0' when tag_end='0'   else plrx_trdy;
 	tag_irdy    <= fifoo_trdy;

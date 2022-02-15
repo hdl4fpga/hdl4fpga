@@ -38,6 +38,7 @@ entity sio_flow is
 		rx_frm  : in std_logic;
 		rx_irdy : in std_logic;
 		rx_trdy : out std_logic;
+		rx_end  : in std_logic := '0';
 		rx_data : in std_logic_vector;
 
 		so_frm  : out std_logic;
@@ -74,6 +75,7 @@ architecture struct of sio_flow is
 	signal meta_rllbk   : std_logic;
 	signal meta_ovfl    : std_logic;
 
+	signal sin_trdy     : std_logic;
 	signal rgtr_frm     : std_logic;
 	signal rgtr_irdy    : std_logic;
 	signal rgtr_id      : std_logic_vector(8-1 downto 0);
@@ -100,19 +102,19 @@ architecture struct of sio_flow is
 	signal ackrx_dup    : std_logic;
 begin
 
+	rx_trdy <= sin_trdy when rx_end='0' else not so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => sio_clk,
 		sin_frm   => rx_frm,
 		sin_irdy  => rx_irdy,
-		sin_trdy  => rx_trdy,
+		sin_trdy  => sin_trdy,
 		sin_data  => rx_data,
 		rgtr_frm  => rgtr_frm,
 		rgtr_id   => rgtr_id,
 		rgtr_idv  => rgtr_idv,
 		rgtr_dv   => rgtr_dv,
 		rgtr_irdy => rgtr_irdy,
-		sout_irdy => open,
 		data_frm  => data_frm,
 		data_irdy => data_irdy,
 		rgtr_data => rgtr_data);
@@ -124,6 +126,7 @@ begin
 	generic map (
 		max_depth => 64,
 		latency   => 1,
+		check_sov => true,
 		check_dov => true)
 	port map(
 		src_clk   => sio_clk,

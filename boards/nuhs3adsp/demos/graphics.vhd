@@ -573,14 +573,30 @@ begin
 	-- LEDs --
 	----------
 
-	led18 <= not tp(1); --tp(8);
-	led16 <= tp(1); -- '0'; --tp(7);
-	led15 <= tp(7);
-	led13 <= tp(6); --tp(5);
-	led11 <= tp(5);
-	led9  <= tp(2); --tp(3);
-	led8  <= tp(3); --tp(2);
-	led7  <= tp(4);
+	process (si_frm)
+		variable q : std_logic;
+	begin
+		if rising_edge(si_frm) then
+			led16 <= q;
+			q := not q;
+			led18 <= q;
+		end if;
+	end process;
+
+	process (so_frm)
+		variable q : std_logic;
+	begin
+		if rising_edge(so_frm) then
+			led15 <= q;
+			q := not q;
+			led13 <= q;
+		end if;
+	end process;
+
+	led11 <= '0'; --tp(5);
+	led9  <= '0'; --tp(2); --tp(3);
+	led8  <= '0'; --tp(3); --tp(2);
+	led7  <= '0'; --tp(4);
 
 	-- RS232 Transceiver --
 	-----------------------

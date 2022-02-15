@@ -176,7 +176,7 @@ begin
 		end process;
 
 		tx_trdy <= not d and q;
-		dst_end <= not (setif(cntr <= unsigned(tx_data(cntr'range))) and do_irdy);
+		dst_end <= not (setif(cntr < unsigned(tx_data(cntr'range))) and do_irdy);
 	end block;
 
 	avail    <= tx_irdy and not tx_trdy;
