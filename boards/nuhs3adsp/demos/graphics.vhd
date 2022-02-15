@@ -238,15 +238,24 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_clk);
+--	nodebug_g : if not debug generate
+		mii_dfs_e : entity hdl4fpga.dfs
+		generic map (
+			dcm_per => sys_per,
+			dfs_mul => 5,
+			dfs_div => 4)
+		port map (
+			dcm_rst => '0',
+			dcm_clk => sys_clk,
+			dfs_clk => mii_clk);
+--	end generate;
+
+--	debug_g : if debug generate
+--		signal q : bit;
+--	begin
+--		q <= not q after 1 ns;
+--		mii_clk <= to_stdulogic(q);
+--	end generate;
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (

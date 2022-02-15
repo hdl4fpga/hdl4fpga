@@ -46,11 +46,11 @@ end;
 
 architecture def of sio_dmahdsk is
 
-	signal cfg2ctlr_req : bit;
-	signal cfg2ctlr_rdy : bit;
+	signal cfg_req : bit;
+	signal cfg_rdy : bit;
 
-	signal ctlr2cfg_req : bit;
-	signal ctlr2cfg_rdy : bit;
+	signal ctlr_req : bit;
+	signal ctlr_rdy : bit;
 
 begin
 
@@ -60,25 +60,23 @@ begin
 			if ctlr_inirdy='0' then
 				dmaio_trdy   <= '0';
 				dmacfg_req   <= '0';
-				cfg2ctlr_req <= '0';
-				ctlr2cfg_rdy <= '0';
-			elsif (ctlr2cfg_req xor ctlr2cfg_rdy)='0' then
-				if (cfg2ctlr_req xor cfg2ctlr_rdy)='0' then
+				cfg_req <= '0';
+				ctlr_rdy <= '0';
+			elsif (ctlr_req xor ctlr_rdy)='0' then
+				if (cfg_req xor cfg_rdy)='0' then
 					if to_bit(dma_rdy xor dma_req)='0' then
 						if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
-							if dmaio_irdy='1' then
-								if dmaio_trdy='0' then
-									dmacfg_req   <= not to_stdulogic(to_bit(dmacfg_rdy));
-									cfg2ctlr_req <= not cfg2ctlr_rdy;
-								end if;
+							if (dmaio_irdy and not dmaio_trdy)='1' then
+								dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 							end if;
 						else
+							cfg_req <= not cfg_rdy;
 						end if;
 					end if;
 				end if;
 				dmaio_trdy <= '0';
 			else
-				ctlr2cfg_rdy <= ctlr2cfg_req;
+				ctlr_rdy <= ctlr_req;
 				dmaio_trdy <= '1';
 			end if;
 		end if;
@@ -89,19 +87,19 @@ begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='0' then
 				dma_req      <= '0';
-				ctlr2cfg_req <= '0';
-				cfg2ctlr_rdy <= '0';
-			elsif (cfg2ctlr_req xor cfg2ctlr_rdy)='1' then
-				if (ctlr2cfg_req xor ctlr2cfg_rdy)='0' then
+				ctlr_req <= '0';
+				cfg_rdy <= '0';
+			elsif (cfg_req xor cfg_rdy)='1' then
+				if (ctlr_req xor ctlr_rdy)='0' then
 					if (dmacfg_req xor dmacfg_rdy)='0' then
 						if (dma_req xor dma_rdy)='0' then
 							dma_req <= not to_stdulogic(to_bit(dma_rdy));
 						else
-							ctlr2cfg_req <= not ctlr2cfg_rdy;
-							cfg2ctlr_rdy <= cfg2ctlr_req;
+							ctlr_req <= not ctlr_rdy;
 						end if;
 					end if;
 				else
+					cfg_rdy <= cfg_req;
 				end if;
 			end if;
 		end if;

@@ -168,7 +168,7 @@ begin
 
 	ddr_input(0) <= ddr_pgm_frm;
 	ddr_input(1) <= ddr_pgm_rw;
-	ddr_input(2) <= '0'; --ddr_ref_req xor ddr_ref_rdy;
+	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy;
 
 	calibrate_p : process (ctlr_clk, ddr_mpu_trdy, ddr_pgm_cal)
 		variable t : signed(0 to unsigned_num_bits(cmmd_gear-1));
