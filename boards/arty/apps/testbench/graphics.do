@@ -3,6 +3,8 @@ quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dm
 quietly virtual signal -install /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e { /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/rd_cntr(1 to 3)} rd
 quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/du_e/grahics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} pp
 quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/du_e/grahics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} soddata
+quietly virtual signal -install /testbench/ethrx_e { (context /testbench/ethrx_e )( mii_data(3) & mii_data(2) & mii_data(1) & mii_data(0) )} mii_rdata
+quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/du_e/grahics_e )( sin_data(7) & sin_data(6) & sin_data(5) & sin_data(4) & sin_data(3) & sin_data(2) & sin_data(1) & sin_data(0) )} sin_rdata
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/btn(0)
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_clk
@@ -26,6 +28,13 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ethrx_e/mii_clk
+add wave -noupdate /testbench/ethrx_e/mii_frm
+add wave -noupdate /testbench/ethrx_e/mii_irdy
+add wave -noupdate /testbench/ethrx_e/mii_trdy
+add wave -noupdate -radix hexadecimal /testbench/ethrx_e/mii_rdata
+add wave -noupdate /testbench/ethrx_e/fcs_sb
+add wave -noupdate /testbench/ethrx_e/fcs_vld
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_rdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_frm
@@ -33,11 +42,18 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/soddata
+add wave -noupdate /testbench/du_e/grahics_e/sin_frm
+add wave -noupdate /testbench/du_e/grahics_e/sio_clk
+add wave -noupdate /testbench/du_e/grahics_e/sin_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
+add wave -noupdate -label sin_data -radix hexadecimal /testbench/du_e/grahics_e/sin_rdata
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmaio_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmaio_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_inirdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_rdy
@@ -52,8 +68,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {70635097 ps} 0} {{Cursor 3} {16621294 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {18258103 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 247
 configure wave -justifyvalue left
@@ -68,4 +84,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {16572693 ps} {16669895 ps}
+WaveRestoreZoom {18253526 ps} {18280310 ps}

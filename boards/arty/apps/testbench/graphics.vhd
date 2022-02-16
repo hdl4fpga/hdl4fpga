@@ -144,6 +144,7 @@ architecture arty_graphics of testbench is
 	signal xtal_n : std_logic := '0';
 	signal xtal_p : std_logic := '0';
 
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
 begin
 
 	rst   <= '1', '0' after 1.1 us;
@@ -157,8 +158,8 @@ begin
 	mii_txc <= mii_refclk;
 
 
-	mii_req  <= '0', '1' after 10 us; --, '0' after 39 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
---	mii_req1 <= '0', '1' after 40 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us, '0' after 14.45 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
 --	process
 --	begin
 --		wait for 206 us;
@@ -242,7 +243,7 @@ begin
 		eth_col     => '-',
 		eth_tx_clk  => mii_rxc,
 		eth_tx_en   => mii_txen,
-		eth_txd     => open,
+		eth_txd     => mii_txd,
 		eth_rx_clk  => mii_rxc,
 		eth_rxerr   => '-',
 		eth_rx_dv   => mii_rxdv,
@@ -266,6 +267,13 @@ begin
 		ddr3_dm    => dm,
 		ddr3_odt   => odt);
 
+	ethrx_e : entity hdl4fpga.eth_rx
+	port map (
+		dll_data   => datarx_null,
+		mii_clk    => mii_txc,
+		mii_frm    => mii_txen,
+		mii_irdy   => mii_txen,
+		mii_data   => mii_txd);
 
 	mt_u : ddr3_model
 	port map (
