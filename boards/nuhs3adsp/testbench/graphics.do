@@ -93,7 +93,7 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -label sout_data -radix hexadecimal /testbench/du_e/grahics_e/sout_rdata
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {20563722 ps} 0} {{Cursor 4} {21276454 ps} 0}
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {16590000 ps} 0} {{Cursor 4} {25402450 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 189
 configure wave -valuecolwidth 76
@@ -109,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {20486963 ps} {20614874 ps}
+WaveRestoreZoom {15656616 ps} {17625384 ps}

@@ -289,7 +289,7 @@ begin
 		metafifo_e : entity hdl4fpga.txn_buffer
 		generic map (
 			debug => true,
-			m => 5)
+			m => 8)
 		port map (
 			src_clk  => sio_clk,
 			src_frm  => rgtr_frm,
