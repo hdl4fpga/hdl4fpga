@@ -191,7 +191,7 @@ begin
 		icmppltx_frm <= to_stdulogic(to_bit(icmp_rdy) xor to_bit(delay_req));
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 8)
+			m => 4)
 		port map (
 		tp => tp1,
 			src_clk  => mii_clk,

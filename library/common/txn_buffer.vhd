@@ -84,7 +84,7 @@ begin
 	rx_b : block
 		signal d, q : std_logic;
 	begin
-		d <= src_frm and not src_end;
+		d <= src_frm and not src_end and commit;
 		process (src_clk)
 			variable cntr : unsigned(0 to m);
 		begin
@@ -100,13 +100,13 @@ begin
 				q <= d;
 			end if;
 		end process;
-		rx_writ <= commit and not src_frm;
-		rx_irdy <= commit and not d and q;
+		rx_writ <= commit or not src_frm;
+		rx_irdy <= not d and q;
 		rx_data(m+1 to rx_data'length-1) <= src_tag;
 	end block;
 
-	fifo_commit   <= commit   and not rx_irdy;
-	fifo_rollback <= rollback and not rx_irdy;
+	fifo_commit   <= (commit   and     di_trdy) and not rx_irdy;
+	fifo_rollback <= (rollback or  not di_trdy) and not rx_irdy;
 
 	di_irdy <= (src_frm and not src_end) and src_irdy;
 	do_trdy <= (dst_frm and not dst_end) and dst_irdy;
@@ -122,8 +122,8 @@ begin
 		src_trdy  => di_trdy,
 		src_data  => src_data,
 
-		rollback  => rollback,
-		commit    => commit,
+		rollback  => fifo_rollback,
+		commit    => fifo_commit,
 		overflow  => open,
 
 		dst_clk   => src_clk,
