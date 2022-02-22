@@ -82,9 +82,18 @@ begin
 	tp(3) <= avail;
 
 	rx_b : block
-		signal d, q : std_logic;
 	begin
-		d <= src_frm and not src_end and commit;
+		process (src_frm, src_end, commit, src_clk)
+			variable d, q : std_logic;
+		begin
+			d := src_frm and not src_end and commit;
+			if rising_edge(src_clk) then
+				q := d;
+			end if;
+			rx_irdy <= not d and q;
+		end process;
+		rx_writ <= commit or not src_frm;
+
 		process (src_clk)
 			variable cntr : unsigned(0 to m);
 		begin
@@ -97,16 +106,13 @@ begin
 					end if;
 					rx_data(cntr'range) <= std_logic_vector(cntr);
 				end if;
-				q <= d;
 			end if;
 		end process;
-		rx_writ <= commit or not src_frm;
-		rx_irdy <= not d and q;
 		rx_data(m+1 to rx_data'length-1) <= src_tag;
 	end block;
 
-	fifo_commit   <= (commit   and     di_trdy) and not rx_irdy;
-	fifo_rollback <= (rollback or  not di_trdy) and not rx_irdy;
+	fifo_commit   <= commit;
+	fifo_rollback <= rollback or not src_frm;
 
 	di_irdy <= (src_frm and not src_end) and src_irdy;
 	do_trdy <= (dst_frm and not dst_end) and dst_irdy;
