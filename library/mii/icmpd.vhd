@@ -37,6 +37,8 @@ entity icmpd is
 		dll_frm     : in  std_logic;
 		dll_irdy    : in  std_logic;
 		net_irdy    : in  std_logic;
+		fcs_sb      : in  std_logic;
+		fcs_vld     : in  std_logic;
 
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
@@ -53,7 +55,10 @@ end;
 
 architecture def of icmpd is
 
+	signal icmpdata_frm   : std_logic;
 	signal icmpdata_irdy   : std_logic;
+	signal icmpdata_trdy   : std_logic;
+	signal icmpdata_end   : std_logic;
 	signal icmpdatatx_trdy : std_logic;
 
 	signal icmpcoderx_frm  : std_logic;
@@ -155,6 +160,7 @@ begin
 
 	buffer_e : block
 		signal miirx_end : std_logic;
+		signal commit    : std_logic;
 		signal rollback  : std_logic;
 		signal icmp_req  : std_logic := '0';
 		signal icmp_rdy  : std_logic := '0';
@@ -186,24 +192,27 @@ begin
 			do(0) => delay_req);
 
 
-		rollback <= not dll_frm;
+		icmpdata_frm <= dll_frm or fcs_sb;
+		icmpdata_end <= not icmprx_frm;
+		rollback <= (fcs_sb and not fcs_vld) or  not icmpdata_frm;
+		commit   <= (fcs_sb and fcs_vld)     and (icmprx_frm or fcs_sb)  and icmpdata_trdy;
 
 		icmppltx_frm <= to_stdulogic(to_bit(icmp_rdy) xor to_bit(delay_req));
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 4)
+			m => 8)
 		port map (
 		tp => tp1,
 			src_clk  => mii_clk,
-			src_frm  => dll_frm, --miirx_frm,
+			src_frm  => icmpdata_frm,
 			src_irdy => icmpdata_irdy,
-			src_trdy => open,
-			src_end  => '0', --miirx_end,
+			src_trdy => icmpdata_trdy,
+			src_end  => icmpdata_end,
 			src_tag  => rx_cy,
 			src_data => memrx_data,
 
 			rollback => rollback,
-			commit   => icmprx_frm,
+			commit   => commit,
 			avail  => tx_irdy,
 
 			dst_frm  => icmppltx_frm,

@@ -179,7 +179,7 @@ begin
 		dst_end <= not (setif(cntr < unsigned(tx_data(cntr'range))) and do_irdy);
 	end block;
 
-	src_trdy <= di_trdy or src_end;
+	src_trdy <= di_trdy;
 	dst_trdy <= do_irdy or dst_end;
 	dst_tag  <= tx_data(tx_data'length-dst_tag'length to tx_data'length-1);
 

@@ -509,6 +509,8 @@ begin
 
 		dll_frm       => dllrx_frm,
 		dll_irdy      => hwsarx_irdy,
+		fcs_sb        => fcs_sb,
+		fcs_vld       => fcs_vld,
 		ipv4rx_frm    => iprx_frm,
 		ipv4rx_irdy   => dllrx_irdy,
 		ipv4rx_data   => dllrx_data,

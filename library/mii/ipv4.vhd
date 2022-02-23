@@ -43,6 +43,8 @@ entity ipv4 is
 
 		dll_frm       : in  std_logic := '1';
 		dll_irdy      : in  std_logic := '1';
+		fcs_sb        : in  std_logic;
+		fcs_vld       : in  std_logic;
 		ipv4rx_frm    : in  std_logic;
 		ipv4rx_irdy   : in  std_logic;
 		ipv4rx_data   : in  std_logic_vector;
@@ -95,7 +97,6 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
-
 
 	signal ipv4len_tx       : std_logic_vector(ipv4tx_data'range);
 	signal ipv4sa_tx        : std_logic_vector(ipv4tx_data'range);
@@ -157,7 +158,6 @@ architecture def of ipv4 is
 
 	signal ipv4satx_full    : std_logic;
 	signal ipv4datx_full    : std_logic;
-
 
 	signal ipv4len_irdy     : std_logic;
 	signal ipv4len_trdy     : std_logic;
@@ -559,6 +559,8 @@ begin
 		mii_clk     => mii_clk,
 		dll_frm     => dll_frm,
 		dll_irdy    => dll_irdy,
+		fcs_sb      => fcs_sb,
+		fcs_vld     => fcs_vld,
 		net_irdy    => icmpnetrx_irdy,
 
 		icmprx_frm  => icmprx_frm,
