@@ -170,9 +170,7 @@ begin
 		begin
 			if rising_edge(mii_clk) then
 				if to_bit(icmp_req xor icmp_rdy)='0' then
-					if icmprx_frm='1' then
-						icmp_req <= not icmp_rdy;
-					elsif tx_irdy='1' then
+					if tx_irdy='1' then
 						icmp_req <= not icmp_rdy;
 					end if;
 				elsif (icmppltx_end and icmppltx_trdy)='1' then
@@ -223,7 +221,7 @@ begin
 
 			rollback => rollback,
 			commit   => commit,
-			avail  => tx_irdy,
+			avail    => tx_irdy,
 
 			dst_frm  => icmppltx_frm,
 			dst_irdy => icmpdatatx_trdy,
