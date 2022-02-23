@@ -559,7 +559,7 @@ begin
 		variable q : bit;
 	begin
 		if rising_edge(mii_clk) then
-			if fcs_sb='1' then
+			if dllrx_frm='0' then
 				q := '0';
 			elsif ipv4plrx_cmmt='1' then
 				q := '1';

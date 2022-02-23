@@ -92,7 +92,6 @@ begin
 			end if;
 			rx_irdy <= not d and q;
 		end process;
-		rx_writ <= commit or not src_frm;
 
 		process (src_clk)
 			variable cntr : unsigned(0 to m);
@@ -104,15 +103,16 @@ begin
 					if (src_irdy and di_trdy)='1' then
 						cntr := cntr + 1;
 					end if;
-					rx_data(cntr'range) <= std_logic_vector(cntr);
 				end if;
+				rx_writ <= commit or not src_frm;
+				rx_data(cntr'range) <= std_logic_vector(cntr);
 			end if;
 		end process;
 		rx_data(m+1 to rx_data'length-1) <= src_tag;
 	end block;
 
-	fifo_commit   <= commit;
 	fifo_rollback <= rollback or not src_frm;
+	fifo_commit   <= commit;
 
 	di_irdy <= (src_frm and not src_end) and src_irdy;
 	do_trdy <= (dst_frm and not dst_end) and dst_irdy;

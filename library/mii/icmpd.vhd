@@ -58,7 +58,6 @@ architecture def of icmpd is
 	signal icmpdata_frm   : std_logic;
 	signal icmpdata_irdy   : std_logic;
 	signal icmpdata_trdy   : std_logic;
-	signal icmpdata_end   : std_logic;
 	signal icmpdatatx_trdy : std_logic;
 
 	signal icmpcoderx_frm  : std_logic;
@@ -193,9 +192,20 @@ begin
 
 
 		icmpdata_frm <= dll_frm or fcs_sb;
-		icmpdata_end <= not icmprx_frm;
-		rollback <= (fcs_sb and not fcs_vld) or  not icmpdata_frm;
-		commit   <= (fcs_sb and fcs_vld)     and (icmprx_frm or fcs_sb)  and icmpdata_trdy;
+		rollback <= (fcs_sb and not fcs_vld) or not icmpdata_frm;
+		cmmt_p : process (fcs_vld, icmpdata_trdy, fcs_sb, mii_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(mii_clk) then
+				if dll_frm='0' then
+					q := '0';
+				elsif icmprx_frm='1' then
+					q := '1';
+				end if;
+			end if;
+			commit <= (fcs_sb and fcs_vld) and q and icmpdata_trdy;
+		end process;
+
 
 		icmppltx_frm <= to_stdulogic(to_bit(icmp_rdy) xor to_bit(delay_req));
 		buffer_e : entity hdl4fpga.txn_buffer
@@ -207,7 +217,7 @@ begin
 			src_frm  => icmpdata_frm,
 			src_irdy => icmpdata_irdy,
 			src_trdy => icmpdata_trdy,
-			src_end  => icmpdata_end,
+			src_end  => open,
 			src_tag  => rx_cy,
 			src_data => memrx_data,
 

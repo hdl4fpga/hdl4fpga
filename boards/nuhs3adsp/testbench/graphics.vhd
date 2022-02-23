@@ -206,10 +206,11 @@ begin
 --	ping_req <= '0';
 	process
 	begin
-		wait for 23 us;
+		wait for 27 us;
 		loop
 			if ping_req='1' then
 				ping_req <= '0' after 0.3 us;
+				wait;
 			else
 				ping_req <= '1' after 10.5 ns;
 			end if;
