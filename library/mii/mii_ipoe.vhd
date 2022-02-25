@@ -175,6 +175,7 @@ architecture def of mii_ipoe is
 
 	signal fifo_frm      : std_logic;
 	signal fifo_irdy     : std_logic;
+	signal fifo_trdy     : std_logic;
 	signal fifoo_end     : std_logic;
 	signal fifoo_irdy    : std_logic;
 	signal fifoo_trdy    : std_logic;
@@ -555,8 +556,8 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
-	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
-		variable q : bit;
+	cmmt_p : process (fcs_vld, fcs_sb, fifo_trdy, mii_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if dllrx_frm='0' then
@@ -565,9 +566,9 @@ begin
 				q := '1';
 			end if;
 		end if;
-		fifo_cmmt  <= fcs_sb and     (fcs_vld and to_stdulogic(q));
-		fifo_rllbk <= fcs_sb and not (fcs_vld and to_stdulogic(q));
+		fifo_cmmt  <= fcs_sb and     (fcs_vld and q and fifo_trdy);
 	end process;
+	fifo_rllbk <= (fcs_sb and not fcs_vld) or not fifo_frm;
 
 	fifo_frm  <= dllrx_frm or fcs_sb;
 	fifo_irdy <= hwsarx_irdy or ipv4plrx_irdy;
@@ -578,7 +579,7 @@ begin
 		src_clk   => mii_clk,
 		src_frm   => fifo_frm,
 		src_irdy  => fifo_irdy,
-		src_trdy  => open,
+		src_trdy  => fifo_trdy,
 		src_data  => ipv4plrx_data,
 
 		rollback  => fifo_rllbk,
