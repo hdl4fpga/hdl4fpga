@@ -556,17 +556,22 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
-	cmmt_p : process (fcs_vld, fcs_sb, fifo_trdy, mii_clk)
+	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
 		variable q : std_logic;
+		variable c : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if dllrx_frm='0' then
 				q := '0';
+				c := '1';
+			elsif fifo_irdy='1' and fifo_trdy='0' then
+				q := '0';
+				c := '0';
 			elsif ipv4plrx_cmmt='1' then
-				q := '1';
+				q := c;
 			end if;
 		end if;
-		fifo_cmmt  <= fcs_sb and     (fcs_vld and q and fifo_trdy);
+		fifo_cmmt <= fcs_sb and fcs_vld and q;
 	end process;
 	fifo_rllbk <= (fcs_sb and not fcs_vld) or not fifo_frm;
 

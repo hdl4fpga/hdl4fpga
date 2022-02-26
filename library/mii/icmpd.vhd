@@ -189,22 +189,27 @@ begin
 			do(0) => delay_req);
 
 
-		icmpdata_frm <= dll_frm or fcs_sb;
 		rollback <= (fcs_sb and not fcs_vld) or not icmpdata_frm;
-		cmmt_p : process (fcs_vld, icmpdata_trdy, fcs_sb, mii_clk)
+		cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
 			variable q : std_logic;
+			variable c : std_logic;
 		begin
 			if rising_edge(mii_clk) then
 				if dll_frm='0' then
 					q := '0';
+					c := '1';
+				elsif icmpdata_irdy='1' and icmpdata_trdy='0' then
+					c := '0';
+					q := '0';
 				elsif icmprx_frm='1' then
-					q := '1';
+					q := c;
 				end if;
 			end if;
-			commit <= (fcs_sb and fcs_vld) and q and icmpdata_trdy;
+			commit <= fcs_sb and fcs_vld and q;
 		end process;
 
 
+		icmpdata_frm <= dll_frm or fcs_sb;
 		icmppltx_frm <= to_stdulogic(to_bit(icmp_rdy) xor to_bit(delay_req));
 		buffer_e : entity hdl4fpga.txn_buffer
 		generic map (

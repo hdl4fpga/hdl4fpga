@@ -205,12 +205,16 @@ begin
 	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
 --	ping_req <= '0';
 	process
+		variable x : natural := 0;
 	begin
-		wait for 27 us;
+		wait for 21 us;
 		loop
 			if ping_req='1' then
 				ping_req <= '0' after 0.3 us;
-				wait;
+				if x > 10 then
+					wait;
+				end if;
+				x := x + 1;
 			else
 				ping_req <= '1' after 10.5 ns;
 			end if;

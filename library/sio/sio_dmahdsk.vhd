@@ -58,20 +58,18 @@ begin
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-				dmaio_trdy   <= '0';
-				dmacfg_req   <= '0';
-				cfg_req <= '0';
-				ctlr_rdy <= '0';
+				dmaio_trdy <= '0';
+				dmacfg_req <= '0';
+				cfg_req    <= '0';
+				ctlr_rdy   <= '0';
 			elsif (ctlr_req xor ctlr_rdy)='0' then
 				if (cfg_req xor cfg_rdy)='0' then
-					if to_bit(dma_rdy xor dma_req)='0' then
-						if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
-							if (dmaio_irdy and not dmaio_trdy)='1' then
-								dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
-							end if;
-						else
-							cfg_req <= not cfg_rdy;
+					if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
+						if (dmaio_irdy and not dmaio_trdy)='1' then
+							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
 						end if;
+					else
+						cfg_req <= not cfg_rdy;
 					end if;
 				end if;
 				dmaio_trdy <= '0';
