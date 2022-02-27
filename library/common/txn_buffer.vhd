@@ -51,7 +51,7 @@ entity txn_buffer is
 
 		dst_frm  : in  std_logic;
 		dst_irdy : in  std_logic;
-		dst_trdy : buffer std_logic;
+		dst_trdy : out std_logic;
 		dst_end  : buffer std_logic;
 		dst_tag  : out std_logic_vector(0 to n-1);
 		dst_data : out std_logic_vector);
@@ -158,33 +158,31 @@ begin
 		dst_data   => tx_data);
 
 	tx_b : block
-		signal d, q : std_logic;
 		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
 	begin
 
-		d <= dst_frm;
-		process (src_clk)
+		process (dst_frm, src_clk)
+			variable d, q : std_logic;
 		begin
+			d := dst_frm;
 			if rising_edge(src_clk) then
 				if dst_frm='0' then
 					cntr <= (others => '0');
 				elsif tx_irdy='0' then
 					cntr <= (others => '0');
-				else
-					if (do_irdy and do_trdy and not dst_end)='1' then
-						cntr <= cntr + 1;
-					end if;
+				elsif (do_irdy and do_trdy)='1' then
+					cntr <= cntr + 1;
 				end if;
-				q <= d;
+				q := d;
 			end if;
+			tx_trdy <= not d and q;
 		end process;
 
-		tx_trdy <= not d and q;
 		dst_end <= not setif(cntr < unsigned(tx_data(cntr'range)));
 	end block;
 
-	src_trdy <= di_trdy and rx_trdy;
-	dst_trdy <= do_irdy or dst_end;
+	src_trdy <= (di_trdy and rx_trdy) or src_end;
+	dst_trdy <= (do_irdy and tx_irdy) or dst_end;
 	dst_tag  <= tx_data(tx_data'length-dst_tag'length to tx_data'length-1);
 
 	avail    <= tx_irdy and not tx_trdy;

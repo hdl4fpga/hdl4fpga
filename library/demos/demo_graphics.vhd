@@ -454,7 +454,7 @@ begin
 			acktx_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 4,
-				latency    => 1,
+				latency    => 0,
 				async_mode => true,
 				check_sov  => true,
 				check_dov  => true,

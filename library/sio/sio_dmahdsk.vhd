@@ -73,7 +73,7 @@ begin
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			elsif (dma_req xor dma_rdy)='0' then
+			else
 				dmaio_trdy <= '1';
 				ctlr_rdy <= ctlr_req;
 			end if;
@@ -89,12 +89,10 @@ begin
 				cfg_rdy <= '0';
 			elsif (cfg_req xor cfg_rdy)='1' then
 				if (ctlr_req xor ctlr_rdy)='0' then
-					if (dmacfg_req xor dmacfg_rdy)='0' then
-						if (dma_req xor dma_rdy)='0' then
-							dma_req <= not to_stdulogic(to_bit(dma_rdy));
-						else
-							ctlr_req <= not ctlr_rdy;
-						end if;
+					if (dma_req xor dma_rdy)='0' then
+						dma_req <= not to_stdulogic(to_bit(dma_rdy));
+					else
+						ctlr_req <= not ctlr_rdy;
 					end if;
 				else
 					cfg_rdy <= cfg_req;

@@ -58,6 +58,7 @@ architecture nuhs3adsp_graphics of testbench is
 	signal mii_refclk : std_logic;
 	signal mii_req : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
+	signal rep_req : std_logic := '0';
 	signal ping_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
@@ -202,25 +203,27 @@ begin
 
 --	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 	mii_req  <= '0', '1' after 10 us,  '0' after 14.5 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
---	ping_req <= '0';
+--	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
 	process
 		variable x : natural := 0;
 	begin
-		wait for 21 us;
+		wait for 14.5 us;
 		loop
-			if ping_req='1' then
-				ping_req <= '0' after 0.3 us;
+			if rep_req='1' then
+				rep_req <= '0' after 0.3 us;
 				if x > 10 then
 					wait;
 				end if;
 				x := x + 1;
 			else
-				ping_req <= '1' after 10.5 ns;
+				rep_req <= '1' after 10.5 ns;
 			end if;
-		wait on ping_req;
+		wait on rep_req;
 		end loop;
 	end process;
+	mii_req1  <= rep_req;
+	ping_req <= '0';
+
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
 		debug =>false)
