@@ -46,57 +46,37 @@ end;
 
 architecture def of sio_dmahdsk is
 
-	signal cfg_req : bit;
-	signal cfg_rdy : bit;
-
-	signal ctlr_req : bit;
-	signal ctlr_rdy : bit;
-
 begin
 
 	dmacfg_p : process(dmacfg_clk)
+		variable cfg_busy   : std_logic;
+		variable trans_busy : std_logic;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
 				dmaio_trdy <= '0';
 				dmacfg_req <= '0';
-				cfg_req    <= '0';
-				ctlr_rdy   <= '0';
-			elsif (ctlr_req xor ctlr_rdy)='0' then
-				if (cfg_req xor cfg_rdy)='0' then
-					if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
+				cfg_busy   := '0';
+				trans_busy := '0';
+			elsif trans_busy='0' then
+				if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
+					if cfg_busy='0' then
 						if (dmaio_irdy and not dmaio_trdy)='1' then
 							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+							cfg_busy := '1';
 						end if;
+						trans_busy := '0';
 					else
-						cfg_req <= not cfg_rdy;
+						dma_req    <= not dma_rdy;
+						cfg_busy   := '0';
+						trans_busy := '1';
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			else
+			elsif (dma_req xor dma_rdy)='0' then
 				dmaio_trdy <= '1';
-				ctlr_rdy <= ctlr_req;
-			end if;
-		end if;
-	end process;
-
-	dmaddr_p : process(ctlr_clk)
-	begin
-		if rising_edge(ctlr_clk) then
-			if ctlr_inirdy='0' then
-				dma_req      <= '0';
-				ctlr_req <= '0';
-				cfg_rdy <= '0';
-			elsif (cfg_req xor cfg_rdy)='1' then
-				if (ctlr_req xor ctlr_rdy)='0' then
-					if (dma_req xor dma_rdy)='0' then
-						dma_req <= not to_stdulogic(to_bit(dma_rdy));
-					else
-						ctlr_req <= not ctlr_rdy;
-					end if;
-				else
-					cfg_rdy <= cfg_req;
-				end if;
+				cfg_busy   := '0';
+				trans_busy := '0';
 			end if;
 		end if;
 	end process;
