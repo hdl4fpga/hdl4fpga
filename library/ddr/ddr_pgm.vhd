@@ -238,7 +238,8 @@ begin
 				ddr_ref_rdy <= '0';
 				ddr_pgm_cmd <= mpu_nop;
 			elsif ddr_mpu_trdy='1' then
-				ctlr_refreq <= pgm_refq;
+--				ctlr_refreq <= pgm_refq;
+				ctlr_refreq <= '0';
 				ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
 				ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
 			end if;

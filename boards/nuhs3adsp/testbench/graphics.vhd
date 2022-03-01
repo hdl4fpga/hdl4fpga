@@ -211,7 +211,7 @@ begin
 		loop
 			if rep_req='1' then
 				rep_req <= '0' after 0.3 us;
-				if x > 10 then
+				if x >= 0 then
 					wait;
 				end if;
 				x := x + 1;

@@ -29,6 +29,7 @@ add wave -noupdate -expand -group ddr3 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(1)
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_dqs_p(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/pgm_refq
 add wave -noupdate /testbench/ethrx_e/mii_clk
 add wave -noupdate /testbench/ethrx_e/mii_frm
 add wave -noupdate /testbench/ethrx_e/mii_irdy
@@ -50,13 +51,9 @@ add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
 add wave -noupdate -label sin_data -radix hexadecimal /testbench/du_e/grahics_e/sin_rdata
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_b/d
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_b/q
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_b/d
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_b/q
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_b/cntr
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/wm
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
@@ -66,12 +63,8 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmaio_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_inirdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_req
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/cfg_rdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_rdy
@@ -79,10 +72,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {18268226 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {17299900 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 221
-configure wave -valuecolwidth 247
+configure wave -valuecolwidth 89
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -95,4 +88,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {18069294 ps} {18447614 ps}
+WaveRestoreZoom {15324697 ps} {19488059 ps}
