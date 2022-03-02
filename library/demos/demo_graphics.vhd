@@ -135,10 +135,14 @@ architecture mix of demo_graphics is
 
 	type latencies_vector is array (natural range <>) of latencies;
 	constant latencies_tab : latencies_vector := (
-		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
-		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
-		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
-		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
+		0 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX3S BOARD
+		1 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
+		2 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX4M BOARD
+		3 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0)); -- NUHS3ADSP BOARD 166 MHz
+--		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
+--		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
+--		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
+--		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant coln_bits    : natural := coln_size-(unsigned_num_bits(data_gear)-1);
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_bits-1 downto 0);
@@ -305,6 +309,7 @@ begin
 		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
 
 		rx_b : block
+			signal q1 : std_logic;
 		begin
 
 			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
@@ -356,6 +361,7 @@ begin
 					dst_trdy   => dmaio_next,
 					dst_data   => dst_data);
 
+
 				process(dst_data)
 					variable aux : unsigned(dst_data'range);
 				begin
@@ -391,9 +397,40 @@ begin
 
 				dst_frm    => ctlr_inirdy,
 				dst_clk    => ctlr_clk,
+				dst_irdy   => q1,
 				dst_trdy   => ctlr_di_req,
 				dst_data   => ctlr_di);
 			ctlr_di_dv <= ctlr_di_req;
+
+			process (ctlr_clk)
+				variable q : std_logic;
+			begin
+				if rising_edge(ctlr_clk) then
+					if ctlr_inirdy='0' then
+						q := '0';
+					elsif ctlr_di_req='1' then
+						if q='0' then
+							q := not q1;
+						end if;
+					end if;
+					tp(6) <= q;
+				end if;
+			end process;
+
+--			process (sio_clk)
+--				variable q : std_logic;
+--			begin
+--				if rising_edge(sio_clk) then
+--					if ctlr_inirdy='0' then
+--						q := '0';
+--					elsif dmadata_irdy='1' then
+--						if q='0' then
+--							q := not dmadata_trdy;
+--						end if;
+--					end if;
+--					tp(6) <= q;
+--				end if;
+--			end process;
 
 			base_addr_e : entity hdl4fpga.sio_rgtr
 			generic map (
@@ -474,7 +511,7 @@ begin
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
 
-			tp(6) <= dmaio_trdy;
+--			tp(6) <= dmaio_trdy;
 			process (dst_data)
 				variable aux : unsigned(dst_data'range);
 			begin

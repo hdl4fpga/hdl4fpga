@@ -273,7 +273,7 @@ begin
 	debug_q : if debug generate
 		signal q : bit;
 	begin
-		q <= not q after 1 ns;
+		q <= not q after 20 ns;
 		eth_ref_clk <= to_stdulogic(q);
 	end generate;
 
@@ -472,7 +472,7 @@ begin
 			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
-			tp         => tp,
+			tp         => open,
 
 			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
@@ -608,7 +608,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => open);
+		tp => tp);
 
 	process (ddr_ba)
 	begin
@@ -743,7 +743,8 @@ begin
 
 	end block;
 
-	led <= si_frm & si_irdy & si_trdy & si_end;
+--	led <= si_frm & si_irdy & si_trdy & si_end;
+	led(3) <= tp(6);
 --	process (btn, tp_delay)
 --		variable aux1 : std_logic_vector(3 downto 0);
 --		variable aux0 : std_logic_vector(3 downto 0);

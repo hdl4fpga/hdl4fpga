@@ -69,6 +69,7 @@ architecture arty_graphics of testbench is
 	signal mii_req : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
 	signal ping_req : std_logic := '0';
+	signal rep_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_txd  : std_logic_vector(0 to 4-1);
@@ -158,20 +159,22 @@ begin
 	mii_txc <= mii_refclk;
 
 
-	mii_req  <= '0', '1' after 10 us, '0' after 14.45 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
---	process
---	begin
---		wait for 206 us;
---		loop
---			if ping_req='1' then
---				ping_req <= '0' after 5.8 us;
---			else
---				ping_req <= '1' after 250 ns;
---			end if;
---			wait on ping_req;
---		end loop;
---	end process;
+	mii_req  <= '0', '1' after 10 us, '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+	process
+	begin
+		wait for 150 us;
+		loop
+			if rep_req='1' then
+				wait;
+				rep_req <= '0' after 5.8 us;
+			else
+				rep_req <= '1' after 250 ns;
+			end if;
+			wait on rep_req;
+		end loop;
+	end process;
+	mii_req1 <= rep_req;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
