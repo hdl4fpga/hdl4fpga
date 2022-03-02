@@ -57,20 +57,20 @@ architecture def of eth_tb is
 		x"00_00_00_00"          & -- arp_spa
 		x"00_00_00_00_00_00"    & -- arp_tha
 		x"c0_a8_00_0e";           -- arp_tpa
-
+-- 00400001020300270e0ff59508004500_001c_d1de_0000_4001_279c_c0a80008_c0a8000e_080048c7_d048deef
+-- 00270e0ff59500400001020308004500_001c_0000_0000_0501_f531_c0a8000e_c0a80008_000050c7_d048deef_000000000000000000000000000000000000c88c7b58
+-- correct 0x347b
 	constant icmppkt : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
-		x"1234"                 &    -- IP Length
-		x"0000"                 &    -- IP Identification
+		x"001c"                 &    -- IP Length
+		x"d1de"                 &    -- IP Identification
 		x"0000"                 &    -- IP Fragmentation
-		x"0501"                 &    -- IP TTL, protocol
-		x"0000"                 &    -- IP Header Checksum
-		x"d0a10004"             &    -- IP Source IP address
+		x"4001"                 &    -- IP TTL, protocol
+		x"279c"                 &    -- IP Header Checksum
+		x"c0a80008"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
-		x"5555edcb" &
-		x"abcdefaf" &
-		x"ffffffaa" ;
-
+		x"080048c7" &
+		x"d048deef";
 	constant payload : std_logic_vector :=
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID
