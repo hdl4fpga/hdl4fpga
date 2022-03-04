@@ -57,6 +57,7 @@ entity demo_graphics is
 		blue_length  : natural := 5);
 
 	port (
+		tpin : in std_logic := '0';
 		sio_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
 		sin_irdy      : in  std_logic;
@@ -135,14 +136,14 @@ architecture mix of demo_graphics is
 
 	type latencies_vector is array (natural range <>) of latencies;
 	constant latencies_tab : latencies_vector := (
-		0 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX3S BOARD
-		1 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
-		2 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX4M BOARD
-		3 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0)); -- NUHS3ADSP BOARD 166 MHz
---		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
---		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
---		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
---		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
+--		0 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX3S BOARD
+--		1 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
+--		2 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX4M BOARD
+--		3 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0)); -- NUHS3ADSP BOARD 166 MHz
+		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
+		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
+		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
+		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant coln_bits    : natural := coln_size-(unsigned_num_bits(data_gear)-1);
 	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_bits-1 downto 0);
@@ -306,10 +307,10 @@ begin
 			dst_end  => meta_end,
 			dst_data => meta_data);
 
-		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
+--		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
 
 		rx_b : block
-			signal q1 : std_logic;
+			signal q11 : std_logic;
 		begin
 
 			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
@@ -397,12 +398,15 @@ begin
 
 				dst_frm    => ctlr_inirdy,
 				dst_clk    => ctlr_clk,
-				dst_irdy   => q1,
+				dst_irdy   => q11,
 				dst_trdy   => ctlr_di_req,
 				dst_data   => ctlr_di);
 			ctlr_di_dv <= ctlr_di_req;
 
 			process (ctlr_clk)
+				variable q3 : std_logic;
+				variable q2 : std_logic;
+				variable q1 : std_logic;
 				variable q : std_logic;
 			begin
 				if rising_edge(ctlr_clk) then
@@ -410,13 +414,16 @@ begin
 						q := '0';
 					elsif ctlr_di_req='1' then
 						if q='0' then
-							q := not q1;
+							q := not q11;
 						end if;
 					end if;
-					tp(6) <= q;
+					tp(6) <= q1;
+					q1 := q2;
+					q2 := q3;
+					q3 := q;
 				end if;
 			end process;
-
+--
 --			process (sio_clk)
 --				variable q : std_logic;
 --			begin
@@ -428,7 +435,7 @@ begin
 --							q := not dmadata_trdy;
 --						end if;
 --					end if;
---					tp(6) <= q;
+--					tp(5) <= q;
 --				end if;
 --			end process;
 
@@ -955,6 +962,7 @@ begin
 			word_size    => word_size,
 			byte_size    => byte_size)
 		port map (
+			tpin => tpin,
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,
 			ctlr_bl      => ctlr_bl,

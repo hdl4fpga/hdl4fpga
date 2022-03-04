@@ -550,6 +550,7 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
+		tpin         => sw(0),
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -745,6 +746,7 @@ begin
 
 --	led <= si_frm & si_irdy & si_trdy & si_end;
 	led(3) <= tp(6);
+	led(2) <= tp(5);
 --	process (btn, tp_delay)
 --		variable aux1 : std_logic_vector(3 downto 0);
 --		variable aux0 : std_logic_vector(3 downto 0);

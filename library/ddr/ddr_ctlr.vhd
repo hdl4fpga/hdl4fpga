@@ -48,6 +48,7 @@ entity ddr_ctlr is
 		word_size    : natural := 16;
 		byte_size    : natural :=  8);
 	port (
+		tpin : in std_logic := '0';
 		ctlr_alat    : out std_logic_vector(2 downto 0);
 		ctlr_blat    : out std_logic_vector(2 downto 0);
 		ctlr_bl      : in std_logic_vector(2 downto 0);
@@ -269,6 +270,7 @@ begin
 	generic map (
 		cmmd_gear     => cmmd_gear)
 	port map (
+			tpin => tpin,
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
 		ctlr_refreq   => ctlr_refreq,
