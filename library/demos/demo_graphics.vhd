@@ -57,7 +57,7 @@ entity demo_graphics is
 		blue_length  : natural := 5);
 
 	port (
-		tpin : in std_logic := '0';
+		tpin          : in  std_logic_vector(0 to 4-1) := (others => '0');
 		sio_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
 		sin_irdy      : in  std_logic;

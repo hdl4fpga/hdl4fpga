@@ -550,7 +550,7 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
-		tpin         => sw(0),
+		tpin         => sw,
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,

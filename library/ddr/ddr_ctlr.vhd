@@ -48,7 +48,7 @@ entity ddr_ctlr is
 		word_size    : natural := 16;
 		byte_size    : natural :=  8);
 	port (
-		tpin : in std_logic := '0';
+		tpin : in std_logic_vector(0 to 4-1) := (others => '0');
 		ctlr_alat    : out std_logic_vector(2 downto 0);
 		ctlr_blat    : out std_logic_vector(2 downto 0);
 		ctlr_bl      : in std_logic_vector(2 downto 0);

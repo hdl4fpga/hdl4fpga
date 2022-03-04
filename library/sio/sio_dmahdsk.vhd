@@ -46,11 +46,23 @@ end;
 
 architecture def of sio_dmahdsk is
 
+	signal req : std_logic;
 begin
+
+	 process(ctlr_clk)
+		variable q, q1 : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			dma_req <= q;
+			q := q1;
+			q1 := req;
+		end if;
+	end process;
 
 	dmacfg_p : process(dmacfg_clk)
 		variable cfg_busy   : std_logic;
 		variable trans_busy : std_logic;
+		variable q, q1 : std_logic;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
@@ -67,17 +79,19 @@ begin
 						end if;
 						trans_busy := '0';
 					else
-						dma_req    <= not dma_rdy;
+						req    <= not dma_rdy;
 						cfg_busy   := '0';
 						trans_busy := '1';
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			elsif (dma_req xor dma_rdy)='0' then
+			elsif q='0' then
 				dmaio_trdy <= '1';
 				cfg_busy   := '0';
 				trans_busy := '0';
 			end if;
+			q := q1;
+			q1 := (req xor dma_rdy);
 		end if;
 	end process;
 
