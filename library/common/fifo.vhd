@@ -69,9 +69,9 @@ architecture def of fifo is
 	signal wr_ena    : std_logic;
 	signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
 	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
-	signal wr_cmp    : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
+	signal wr_cmp    : std_logic_vector(0 to addr_length) := std_logic_vector(to_unsigned(dst_offset, addr_length+1));
 	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
-	signal rd_cmp    : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
+	signal rd_cmp    : std_logic_vector(0 to addr_length) := std_logic_vector(to_unsigned(src_offset, addr_length+1));
 	signal dst_irdy1 : std_logic;
 
 	signal feed_ena  : std_logic;
@@ -114,7 +114,7 @@ begin
 
 		src_trdy <=
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
-			setif(wr_cntr(addr_range) /= rd_cmp(addr_range)  or wr_cntr(0) = rd_cmp(0));
+			setif(wr_cntr(addr_range) /= unsigned(rd_cmp(addr_range))  or wr_cntr(0) = rd_cmp(0));
 
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
@@ -286,7 +286,7 @@ begin
 			if src_frm='0' then
 				if src_mode='0' then
 					if async_mode then
-						wr_cntr <= rd_cmp;
+						wr_cntr <= unsigned(rd_cmp);
 					else
 						wr_cntr <= rd_cntr;
 					end if;
@@ -329,14 +329,14 @@ begin
 
 	dst_irdy1 <=
 		setif(wr_ptr /= rd_cntr) when not async_mode else
-		setif(wr_cmp /= rd_cntr);
+		setif(unsigned(wr_cmp) /= rd_cntr);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				if dst_mode='0' then
 					if async_mode then
-						rd_cntr <= wr_cmp;
+						rd_cntr <= unsigned(wr_cmp);
 					else
 						rd_cntr <= wr_ptr;
 					end if;
@@ -360,103 +360,27 @@ begin
 		end if;
 	end process;
 
-	async_b : block
-		signal rd_req, rd_rdy : bit;
-		signal wr_req, wr_rdy : bit;
-		signal rd_cpy : unsigned(rd_cmp'range);
-		signal wr_cpy : unsigned(wr_cmp'range);
-	begin
-
 	sync_b : block
-
-		constant n : natural := 2;
-
 	begin
-		for i in 0 to n-1 generate
-			signal rd_req  : logic;
-			signal rd_rdy  : std_logic;
-			signal wr_addr : std_logic_vector(0 to 4-1);
-			signal rd_addr : std_logic_vector(wr_addr'range);
-		begin
 
-			process(dst_ptr, src_ptr);
-				variable aux : unsigned(0 to n*wr_ptr'length-1);
-			begin
-				aux := unsigned(dst_ptr & src_ptr);
-				aux := aux rol i*wr_ptr'lenght;
-				wr_ptr <= std_logic_vector(aux(0 to wr_ptr'length-));
-			end process;
+		src2dst_e : entity hdl4fpga.sync_transfer
+		port map (
+			src_clk    => src_clk,
+			src_frm    => src_frm,
+			src_data   => std_logic_vector(wr_ptr),
+			dst_frm    => dst_frm,
+			dst_clk    => dst_clk,
+			dst_data   => wr_cmp);
 
-			process (src_clk)
-				variable cntr : unsigned(wr_addr'range);
-				variable we   : std_logic;
-			begin
-				if rising_edge(src_clk) then
-					if (rd_req xor rd_rdy)='0' then
-						if we='0' then
-							we <= '1';
-						else
-							rd_req <= not rd_rdy;
-							cntr   := cntr + 1;
-							we     <= '0';
-						end if;
-					end if;
-					wr_addr <= std_logic_vector(cntr);
-				end if;
-			end process;
+		dst2src_e : entity hdl4fpga.sync_transfer
+		port map (
+			src_clk    => dst_clk,
+			src_frm    => dst_frm,
+			src_data   => std_logic_vector(rd_cntr),
+			dst_clk    => src_clk,
+			dst_frm    => src_frm,
+			dst_data   => rd_cmp);
 
-			mem_e : entity hdl4fpga.dpram(def)
-			generic map (
-				synchronous_rdaddr => false,
-				synchronous_rddata => false)
-			port map (
-				wr_clk  => src_clk,
-				wr_addr => wr_addr,
-				wr_data => wr_ptr,
-
-				rd_clk  => dst_clk,
-				rd_addr => rd_addr,
-				rd_data => rd_cpy);
-
-			process (dst_clk)
-				variable cntr : unsigned(rd_addr'range);
-			begin
-				if rising_edge(dst_clk) then
-					if (rd_req xor rd_rdy)='1' then
-						rd_cmp  <= rd_cpy;
-						cntr   := cntr + 1;
-						rd_rdy <= rd_req;
-					end if;
-					wr_addr <= std_logic_vector(cntr);
-				end if;
-			end process;
-
-		end generate;
-	end block;
-
-		process(dst_clk)
-			variable cpied : bit;
-			variable req   : bit;
-			variable rdy   : bit;
-		begin
-			if rising_edge(dst_clk) then
-				if (req xor rd_rdy)='1' then
-					if cpied='0' then
-						rd_cpy <= rd_cntr;
-						cpied  := '1';
-					else
-						rd_rdy <= rd_req;
-						cpied  := '0';
-					end if;
-				end if;
-				if (rdy xor wr_req)='0' then
-					wr_cmp <= wr_cpy;
-					wr_req <= not rdy;
-				end if;
-				req := rd_req;
-				rdy := wr_rdy;
-			end if;
-		end process;
 	end block;
 
 end;

@@ -395,37 +395,34 @@ begin
 				gray_code  => false)
 			port map (
 				src_clk    => sio_clk,
-				src_frm    => ctlr_inirdy,
-				src_mode   => '1',
 				src_irdy   => dmadata_irdy,
 				src_trdy   => dmadata_trdy,
 				src_data   => rgtr_dmadata,
 
 				dst_frm    => ctlr_inirdy,
-				dst_mode   => '1',
 				dst_clk    => ctlr_clk,
 				dst_irdy   => ctlr_di_rdy,
 				dst_trdy   => ctlr_di_req,
---				dst_data   => ctlr_di);
-				dst_data   => di_dummy);
-			process (ctlr_clk)
-				variable pp : unsigned(0 to 16-1);
-				variable xxx : unsigned(0 to ctlr_di'length-1);
-			begin
-				if rising_edge(ctlr_clk) then
-					if ctlr_di_req='0' then
-						pp := (others => '0');
-					else
-						pp := pp + 1;
-					end if;
-					xxx := (others => '0');
-					for i in 0 to ctlr_di'length/pp'length-1 loop
-						xxx := xxx srl pp'length;
-						xxx(pp'range) := reverse(reverse(pp),8);
-					end loop;
-					ctlr_di <= std_logic_vector(xxx);
-				end if;
-			end process;
+				dst_data   => ctlr_di);
+--				dst_data   => di_dummy);
+--			process (ctlr_clk)
+--				variable pp : unsigned(0 to 16-1);
+--				variable xxx : unsigned(0 to ctlr_di'length-1);
+--			begin
+--				if rising_edge(ctlr_clk) then
+--					if ctlr_di_req='0' then
+--						pp := (others => '0');
+--					else
+--						pp := pp + 1;
+--					end if;
+--					xxx := (others => '0');
+--					for i in 0 to ctlr_di'length/pp'length-1 loop
+--						xxx := xxx srl pp'length;
+--						xxx(pp'range) := reverse(reverse(pp),8);
+--					end loop;
+--					ctlr_di <= std_logic_vector(xxx);
+--				end if;
+--			end process;
 
 			ctlr_di_dv <= ctlr_di_req;
 
@@ -659,14 +656,11 @@ begin
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
---					src_frm  => ctlr_inirdy,
---					src_mode => '1',
 					src_irdy => dmaso_irdy,
 					src_data => dmaso_data,
 
 					dst_clk  => sio_clk,
 					dst_frm  => ctlr_inirdy,
---					dst_mode => '1',
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);
