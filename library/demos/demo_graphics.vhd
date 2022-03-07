@@ -77,7 +77,6 @@ entity demo_graphics is
 		video_pixel   : buffer std_logic_vector;
 		dvid_crgb     : out std_logic_vector(7 downto 0);
 
-		dmacfg_clk    : in  std_logic;
 		ctlr_clks     : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		ctlr_rst      : in  std_logic;
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
@@ -168,6 +167,7 @@ architecture mix of demo_graphics is
 	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal di_dummy        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal dummy          : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
@@ -310,7 +310,7 @@ begin
 --		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
 
 		rx_b : block
-			signal q11 : std_logic;
+			signal ctlr_di_rdy: std_logic;
 		begin
 
 			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
@@ -346,18 +346,20 @@ begin
 				generic map (
 					max_depth  => 4,
 					latency    => 0, --setif(profile=0, 0, 2),
-					async_mode => true,
 					check_sov  => true,
 					check_dov  => true,
 					gray_code  => fifo_gray)
 				port map (
 					src_clk    => sio_clk,
+					src_frm    => ctlr_inirdy,
+					src_mode   => '1',
 					src_irdy   => dmaaddr_irdy,
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
 					dst_frm    => ctlr_inirdy,
-					dst_clk    => dmacfg_clk,
+					dst_mode   => '1',
+					dst_clk    => sio_clk,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
 					dst_data   => dst_data);
@@ -367,7 +369,8 @@ begin
 					variable aux : unsigned(dst_data'range);
 				begin
 					aux := unsigned(dst_data);
-					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
+--					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
+					aux(1 to rgtr_dmaaddr'length-1) := (others => '0');
 					dmaio_addr <= std_logic_vector(resize(aux(0 to rgtr_dmaaddr'length-1), dmaio_addr'length));
 					aux := aux sll rgtr_dmaaddr'length;
 					aux(0 to rgtr_dmalen'length-1) := shift_right(aux(0 to rgtr_dmalen'length-1),  word_bits);
@@ -392,21 +395,41 @@ begin
 				gray_code  => false)
 			port map (
 				src_clk    => sio_clk,
+				src_frm    => ctlr_inirdy,
+				src_mode   => '1',
 				src_irdy   => dmadata_irdy,
 				src_trdy   => dmadata_trdy,
 				src_data   => rgtr_dmadata,
 
 				dst_frm    => ctlr_inirdy,
+				dst_mode   => '1',
 				dst_clk    => ctlr_clk,
-				dst_irdy   => q11,
+				dst_irdy   => ctlr_di_rdy,
 				dst_trdy   => ctlr_di_req,
-				dst_data   => ctlr_di);
+--				dst_data   => ctlr_di);
+				dst_data   => di_dummy);
+			process (ctlr_clk)
+				variable pp : unsigned(0 to 16-1);
+				variable xxx : unsigned(0 to ctlr_di'length-1);
+			begin
+				if rising_edge(ctlr_clk) then
+					if ctlr_di_req='0' then
+						pp := (others => '0');
+					else
+						pp := pp + 1;
+					end if;
+					xxx := (others => '0');
+					for i in 0 to ctlr_di'length/pp'length-1 loop
+						xxx := xxx srl pp'length;
+						xxx(pp'range) := reverse(reverse(pp),8);
+					end loop;
+					ctlr_di <= std_logic_vector(xxx);
+				end if;
+			end process;
+
 			ctlr_di_dv <= ctlr_di_req;
 
 			process (ctlr_clk)
-				variable q3 : std_logic;
-				variable q2 : std_logic;
-				variable q1 : std_logic;
 				variable q : std_logic;
 			begin
 				if rising_edge(ctlr_clk) then
@@ -414,30 +437,27 @@ begin
 						q := '0';
 					elsif ctlr_di_req='1' then
 						if q='0' then
-							q := not q11;
+							q := not ctlr_di_rdy;
 						end if;
 					end if;
-					tp(6) <= q1;
-					q1 := q2;
-					q2 := q3;
-					q3 := q;
+					tp(6) <= q;
 				end if;
 			end process;
---
---			process (sio_clk)
---				variable q : std_logic;
---			begin
---				if rising_edge(sio_clk) then
---					if ctlr_inirdy='0' then
---						q := '0';
---					elsif dmadata_irdy='1' then
---						if q='0' then
---							q := not dmadata_trdy;
---						end if;
---					end if;
---					tp(5) <= q;
---				end if;
---			end process;
+
+			process (sio_clk)
+				variable q : std_logic;
+			begin
+				if rising_edge(sio_clk) then
+					if ctlr_inirdy='0' then
+						q := '0';
+					elsif dmadata_irdy='1' then
+						if q='0' then
+							q := not dmadata_trdy;
+						end if;
+					end if;
+					tp(5) <= q;
+				end if;
+			end process;
 
 			base_addr_e : entity hdl4fpga.sio_rgtr
 			generic map (
@@ -459,7 +479,7 @@ begin
 		dmasin_irdy <= to_stdulogic(to_bit(dmaioaddr_irdy));
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
-			dmacfg_clk  => dmacfg_clk,
+			dmacfg_clk  => sio_clk,
 			dmaio_irdy  => dmasin_irdy,
 			dmaio_trdy  => dmaio_trdy,
 
@@ -499,12 +519,11 @@ begin
 			generic map (
 				max_depth  => 4,
 				latency    => 0,
-				async_mode => true,
 				check_sov  => true,
 				check_dov  => true,
 				gray_code  => fifo_gray)
 			port map (
-				src_clk    => dmacfg_clk,
+				src_clk    => sio_clk,
 				src_frm    => ctlr_inirdy,
 				src_mode   => '1',
 				src_irdy   => dmaio_next,
@@ -636,23 +655,26 @@ begin
 					async_mode => true,
 					latency    => 1,
 					gray_code  => false,
-					check_sov  => false, --true,
+					check_sov  => true,
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
+--					src_frm  => ctlr_inirdy,
+--					src_mode => '1',
 					src_irdy => dmaso_irdy,
 					src_data => dmaso_data,
 
-					dst_frm  => ctlr_inirdy,
 					dst_clk  => sio_clk,
+					dst_frm  => ctlr_inirdy,
+--					dst_mode => '1',
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);
 
-				process (dmacfg_clk)
+				process (sio_clk)
 					variable length : unsigned(fifo_length'range);
 				begin
-					if rising_edge(dmacfg_clk) then
+					if rising_edge(sio_clk) then
 						length := (others => '1');
 						length := length srl (length'length-unsigned_num_bits(fifo_data'length/sodata_data'length-1));
 						length := length or  (trans_length sll word_bits);
@@ -778,7 +800,7 @@ begin
 			ctlr_di_dv   => graphics_dv,
 			ctlr_di      => graphics_di,
 			base_addr    => base_addr,
-			dmacfg_clk   => dmacfg_clk,
+			dmacfg_clk   => sio_clk,
 			dmacfg_req   => dmacfgvideo_req,
 			dmacfg_rdy   => dmacfgvideo_rdy,
 			dma_req      => dmavideo_req,
@@ -875,8 +897,10 @@ begin
 	dev_req <= (0 => '0' , 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
-	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
-	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
+--	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
+	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
+--	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
+	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
 
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
@@ -890,7 +914,7 @@ begin
 			addr_size   => addr_size,
 			coln_size   => coln_size)
 		port map (
-			devcfg_clk  => dmacfg_clk,
+			devcfg_clk  => sio_clk,
 			devcfg_req  => dmacfg_req,
 			devcfg_rdy  => dmacfg_rdy,
 			dev_len     => dev_len,

@@ -202,18 +202,16 @@ begin
 	rst <= '0', '1' after 300 ns;
 
 --	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req  <= '0', '1' after 10 us,  '0' after 14.5 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
 	process
 		variable x : natural := 0;
 	begin
-		wait for 14.5 us;
+		wait for 150 us;
 		loop
 			if rep_req='1' then
-				rep_req <= '0' after 0.3 us;
-				if x >= 0 then
 					wait;
-				end if;
+				rep_req <= '0' after 0.3 us;
 				x := x + 1;
 			else
 				rep_req <= '1' after 10.5 ns;

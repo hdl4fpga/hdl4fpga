@@ -205,7 +205,6 @@ architecture graphics of ulx3s is
 
 	signal sio_clk    : std_logic;
 
-	alias dmacfg_clk  : std_logic is sio_clk;
 	alias uart_clk    : std_logic is sio_clk;
 
 	type io_iface is (
@@ -667,7 +666,6 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		dmacfg_clk   => dmacfg_clk,
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",

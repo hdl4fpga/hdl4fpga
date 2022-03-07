@@ -708,7 +708,7 @@ package body ddr_param is
 				TMR3_DLL => ddr_latency(stdr, cDLL),
 				TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
 --				TMR3_REF => to_ddrlatency(tCP, mark, tREFI)/setif(debug, 60, 1));
-				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 28779));
+				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 28729));
 --				TMR3_REF => to_ddrlatency(tCP, mark, tREFI));
 --				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 6160));
 --				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 31244));

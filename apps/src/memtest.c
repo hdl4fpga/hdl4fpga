@@ -152,7 +152,6 @@ int main (int argc, char *argv[])
 		fprintf (stderr, "COMMS has been initialized\n");
 	}
 
-	test_init();
 
 	char wr_buffer[8*1024];
 	char rd_buffer[8*1024];
@@ -160,12 +159,14 @@ int main (int argc, char *argv[])
 	int  length;
 
 	length  = 1024;
+	test_init();
 	for(int pass = 1;;pass++) {
 		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
 			test_seq(wr_buffer, length);
 //			test_fill(wr_buffer, length);
+//			memset(wr_buffer, 0, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);
 

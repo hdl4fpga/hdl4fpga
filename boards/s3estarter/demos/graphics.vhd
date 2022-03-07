@@ -193,8 +193,6 @@ architecture graphics of s3estarter is
 
 	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
-	alias dmacfg_clk : std_logic is sys_clk;
---	alias dmacfg_clk : std_logic is mii_txc;
 	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
 
@@ -420,7 +418,6 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		dmacfg_clk   => dmacfg_clk,
 		ctlr_clks    => ctlr_clks,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",

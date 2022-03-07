@@ -569,7 +569,6 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		dmacfg_clk   => dmacfg_clk,
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",

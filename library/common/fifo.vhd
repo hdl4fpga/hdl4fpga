@@ -366,29 +366,73 @@ begin
 		signal rd_cpy : unsigned(rd_cmp'range);
 		signal wr_cpy : unsigned(wr_cmp'range);
 	begin
-		process(src_clk)
-			variable cpied : bit;
-			variable req   : bit;
-			variable rdy   : bit;
+
+	sync_b : block
+
+		constant n : natural := 2;
+
+	begin
+		for i in 0 to n-1 generate
+			signal rd_req  : logic;
+			signal rd_rdy  : std_logic;
+			signal wr_addr : std_logic_vector(0 to 4-1);
+			signal rd_addr : std_logic_vector(wr_addr'range);
 		begin
-			if rising_edge(src_clk) then
-				if (req xor wr_rdy)='1' then
-					if cpied='0' then
-						wr_cpy <= wr_ptr;
-						cpied  := '1';
-					else
-						wr_rdy <= wr_req;
-						cpied  := '0';
+
+			process(dst_ptr, src_ptr);
+				variable aux : unsigned(0 to n*wr_ptr'length-1);
+			begin
+				aux := unsigned(dst_ptr & src_ptr);
+				aux := aux rol i*wr_ptr'lenght;
+				wr_ptr <= std_logic_vector(aux(0 to wr_ptr'length-));
+			end process;
+
+			process (src_clk)
+				variable cntr : unsigned(wr_addr'range);
+				variable we   : std_logic;
+			begin
+				if rising_edge(src_clk) then
+					if (rd_req xor rd_rdy)='0' then
+						if we='0' then
+							we <= '1';
+						else
+							rd_req <= not rd_rdy;
+							cntr   := cntr + 1;
+							we     <= '0';
+						end if;
 					end if;
+					wr_addr <= std_logic_vector(cntr);
 				end if;
-				if (rdy xor rd_req)='0' then
-					rd_cmp <= rd_cpy;
-					rd_req <= not rdy;
+			end process;
+
+			mem_e : entity hdl4fpga.dpram(def)
+			generic map (
+				synchronous_rdaddr => false,
+				synchronous_rddata => false)
+			port map (
+				wr_clk  => src_clk,
+				wr_addr => wr_addr,
+				wr_data => wr_ptr,
+
+				rd_clk  => dst_clk,
+				rd_addr => rd_addr,
+				rd_data => rd_cpy);
+
+			process (dst_clk)
+				variable cntr : unsigned(rd_addr'range);
+			begin
+				if rising_edge(dst_clk) then
+					if (rd_req xor rd_rdy)='1' then
+						rd_cmp  <= rd_cpy;
+						cntr   := cntr + 1;
+						rd_rdy <= rd_req;
+					end if;
+					wr_addr <= std_logic_vector(cntr);
 				end if;
-				req := wr_req;
-				rdy := rd_rdy;
-			end if;
-		end process;
+			end process;
+
+		end generate;
+	end block;
 
 		process(dst_clk)
 			variable cpied : bit;
