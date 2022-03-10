@@ -426,36 +426,6 @@ begin
 
 			ctlr_di_dv <= ctlr_di_req;
 
-			process (ctlr_clk)
-				variable q : std_logic;
-			begin
-				if rising_edge(ctlr_clk) then
-					if ctlr_inirdy='0' then
-						q := '0';
-					elsif ctlr_di_req='1' then
-						if q='0' then
-							q := not ctlr_di_rdy;
-						end if;
-					end if;
-					tp(6) <= q;
-				end if;
-			end process;
-
-			process (sio_clk)
-				variable q : std_logic;
-			begin
-				if rising_edge(sio_clk) then
-					if ctlr_inirdy='0' then
-						q := '0';
-					elsif dmadata_irdy='1' then
-						if q='0' then
-							q := not dmadata_trdy;
-						end if;
-					end if;
-					tp(5) <= q;
-				end if;
-			end process;
-
 			base_addr_e : entity hdl4fpga.sio_rgtr
 			generic map (
 				rid  => x"19")
@@ -553,10 +523,8 @@ begin
 						sout_req   <= sout_rdy;
 						acktx_trdy <= '0';
 					elsif (sout_rdy xor sout_req)='0' then
-						if (dmaio_req xor dmaio_rdy)='0' and acktx_irdy='1' then
+						if acktx_irdy='1' then
 							sout_req <= not sout_rdy;
-						else
-							sout_req <= sout_rdy;
 						end if;
 						acktx_trdy <= '0';
 					elsif acktx_trdy='1' then
@@ -718,6 +686,10 @@ begin
 				siodmaio_trdy when siodmaio_end='0' else
 				'1'           when status_rw='0' else
 				sodata_irdy;
+			tp(1) <= meta_trdy;
+			tp(2) <= siodmaio_trdy;
+			tp(3) <= sodata_irdy;
+
 			sout_end  <=
 				'0' when meta_end='0'     else
 				'0' when siodmaio_end='0' else

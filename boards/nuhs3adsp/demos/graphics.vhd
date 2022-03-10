@@ -346,7 +346,7 @@ begin
 			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
-			tp         => tp,
+--			tp         => tp,
 
 			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
@@ -457,7 +457,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => open);
+		tp => tp);
 
 	process (video_clk)
 	begin
@@ -579,30 +579,14 @@ begin
 	-- LEDs --
 	----------
 
-	process (si_frm)
-		variable q : std_logic;
-	begin
-		if rising_edge(si_frm) then
-			led16 <= q;
-			q := not q;
-			led18 <= q;
-		end if;
-	end process;
-
-	process (so_frm)
-		variable q : std_logic;
-	begin
-		if rising_edge(so_frm) then
-			led15 <= q;
-			q := not q;
-			led13 <= q;
-		end if;
-	end process;
-
-	led11 <= '0'; --tp(5);
-	led9  <= '0'; --tp(2); --tp(3);
-	led8  <= '0'; --tp(3); --tp(2);
-	led7  <= '0'; --tp(4);
+	led18 <= tp(3); --'0';
+	led16 <= tp(2);
+	led15 <= tp(1);
+	led13 <= '0';
+	led11 <= si_end;
+	led9  <= si_trdy;
+	led8  <= si_irdy;
+	led7  <= si_frm;
 
 	-- RS232 Transceiver --
 	-----------------------
