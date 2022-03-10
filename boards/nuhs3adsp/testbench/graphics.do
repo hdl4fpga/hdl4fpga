@@ -95,6 +95,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
@@ -103,12 +105,15 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_rdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/status_rw
 add wave -noupdate /testbench/du_e/grahics_e/sout_frm
 add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -label sout_data -radix hexadecimal /testbench/du_e/grahics_e/sout_rdata
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/siodmaio_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/src_frm
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/src_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/src_trdy
@@ -122,9 +127,9 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/wr_ptr
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/wr_cntr
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/rx_b/fifo_b/dmafifo_e/rd_cntr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {143642000 ps} 0} {{Cursor 4} {160533384 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 373
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {160302232 ps} 0} {{Cursor 4} {160533384 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 163
 configure wave -valuecolwidth 96
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -138,4 +143,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {187531228 ps} {200656252 ps}
+WaveRestoreZoom {158768360 ps} {161852960 ps}

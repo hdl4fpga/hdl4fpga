@@ -262,9 +262,6 @@ begin
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size-1);
 
-		signal sout_req       : bit;
-		signal sout_rdy       : bit;
-
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
 
@@ -307,7 +304,6 @@ begin
 			dst_end  => meta_end,
 			dst_data => meta_data);
 
---		tp(1 to 5) <= sout_frm & sout_trdy & meta_trdy & meta_end & acktx_irdy;
 
 		rx_b : block
 			signal ctlr_di_rdy: std_logic;
@@ -504,7 +500,6 @@ begin
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
 
---			tp(6) <= dmaio_trdy;
 			process (dst_data)
 				variable aux : unsigned(dst_data'range);
 			begin
@@ -520,15 +515,15 @@ begin
 			begin
 				if rising_edge(sio_clk) then
 					if ctlr_inirdy='0' then
-						sout_req   <= sout_rdy;
+						sout_frm   <= '0';
 						acktx_trdy <= '0';
-					elsif (sout_rdy xor sout_req)='0' then
+					elsif sout_frm='0' then
 						if acktx_irdy='1' then
-							sout_req <= not sout_rdy;
+							sout_frm <= '1';
 						end if;
 						acktx_trdy <= '0';
 					elsif acktx_trdy='1' then
-						sout_rdy   <= sout_req;
+						sout_frm   <= '0';
 						acktx_trdy <= '0';
 					elsif (sout_irdy and sout_trdy and sout_end)='1' then
 						acktx_trdy <= '1';
@@ -680,7 +675,6 @@ begin
 
 			end block;
 
-			sout_frm  <= to_stdulogic(sout_req xor sout_rdy);
 			sout_irdy <=
 				meta_trdy     when meta_end='0' else
 				siodmaio_trdy when siodmaio_end='0' else
