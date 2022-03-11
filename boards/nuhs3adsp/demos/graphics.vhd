@@ -582,7 +582,7 @@ begin
 	led18 <= tp(3); --'0';
 	led16 <= tp(2);
 	led15 <= tp(1);
-	led13 <= '0';
+	led13 <= tp(4);
 	led11 <= si_end;
 	led9  <= si_trdy;
 	led8  <= si_irdy;
