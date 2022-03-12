@@ -248,6 +248,7 @@ begin
 		signal dmaioaddr_irdy : std_logic;
 
 		signal meta_data      : std_logic_vector(metaram_data'range);
+		signal meta_avail     : std_logic;
 		signal meta_trdy      : std_logic;
 		signal meta_end       : std_logic;
 
@@ -265,6 +266,7 @@ begin
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
 
+		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -290,14 +292,16 @@ begin
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
 		metafifo_e : entity hdl4fpga.txn_buffer
 		generic map (
-			debug => true,
+			debug => false,
 			m => 8)
 		port map (
+			tp => tp_meta,
 			src_clk  => sio_clk,
 			src_frm  => rgtr_frm,
 			src_irdy => metaram_irdy,
 			src_data => metaram_data,
 
+			avail    => meta_avail,
 			dst_frm  => sout_frm,
 			dst_irdy => sout_trdy,
 			dst_trdy => meta_trdy,
@@ -343,18 +347,14 @@ begin
 					max_depth  => 4,
 					latency    => 0, --setif(profile=0, 0, 2),
 					check_sov  => true,
-					check_dov  => true,
-					gray_code  => fifo_gray)
+					check_dov  => true)
 				port map (
 					src_clk    => sio_clk,
-					src_frm    => ctlr_inirdy,
-					src_mode   => '1',
 					src_irdy   => dmaaddr_irdy,
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
 					dst_frm    => ctlr_inirdy,
-					dst_mode   => '1',
 					dst_clk    => sio_clk,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
@@ -365,8 +365,7 @@ begin
 					variable aux : unsigned(dst_data'range);
 				begin
 					aux := unsigned(dst_data);
---					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
-					aux(1 to rgtr_dmaaddr'length-1) := (others => '0');
+					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
 					dmaio_addr <= std_logic_vector(resize(aux(0 to rgtr_dmaaddr'length-1), dmaio_addr'length));
 					aux := aux sll rgtr_dmaaddr'length;
 					aux(0 to rgtr_dmalen'length-1) := shift_right(aux(0 to rgtr_dmalen'length-1),  word_bits);
@@ -449,7 +448,6 @@ begin
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
 
-			ctlr_clk    => ctlr_clk,
 			ctlr_inirdy => ctlr_inirdy,
 
 			dma_req     => dmaio_req,
@@ -483,19 +481,15 @@ begin
 				max_depth  => 4,
 				latency    => 0,
 				check_sov  => true,
-				check_dov  => true,
-				gray_code  => fifo_gray)
+				check_dov  => true)
 			port map (
 				src_clk    => sio_clk,
-				src_frm    => ctlr_inirdy,
-				src_mode   => '1',
 				src_irdy   => dmaio_next,
 				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
-				dst_frm    => ctlr_inirdy,
-				dst_mode   => '1',
 				dst_clk    => sio_clk,
+				dst_frm    => ctlr_inirdy,
 				dst_irdy   => acktx_irdy,
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
@@ -519,7 +513,7 @@ begin
 						acktx_trdy <= '0';
 					elsif sout_frm='0' then
 						if acktx_irdy='1' then
-							sout_frm <= '1';
+							sout_frm <= meta_avail;
 						end if;
 						acktx_trdy <= '0';
 					elsif acktx_trdy='1' then
@@ -680,10 +674,16 @@ begin
 				siodmaio_trdy when siodmaio_end='0' else
 				'1'           when status_rw='0' else
 				sodata_irdy;
-			tp(1) <= meta_trdy;
-			tp(2) <= siodmaio_trdy;
-			tp(3) <= sodata_irdy;
-			tp(4) <= sodata_end;
+
+--			tp(4) <= sout_frm;
+--			tp(3) <= sout_trdy;
+--			tp(2) <= meta_trdy;
+--			tp(1) <= meta_end;
+
+			tp(4) <= tp_meta(4);
+			tp(3) <= tp_meta(3);
+			tp(2) <= tp_meta(2);
+			tp(1) <= tp_meta(1);
 
 			sout_end  <=
 				'0' when meta_end='0'     else
@@ -858,10 +858,10 @@ begin
 	dev_req <= (0 => '0' , 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
 	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
---	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
-	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
---	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
-	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
+	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
+--	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
+	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
+--	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
 
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;

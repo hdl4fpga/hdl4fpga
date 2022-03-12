@@ -579,9 +579,9 @@ begin
 	-- LEDs --
 	----------
 
-	led18 <= tp(3); --'0';
+	led18 <= tp(1); --'0';
 	led16 <= tp(2);
-	led15 <= tp(1);
+	led15 <= tp(3);
 	led13 <= tp(4);
 	led11 <= si_end;
 	led9  <= si_trdy;

@@ -124,7 +124,7 @@ begin
 
 	meta_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth => 64,
+		max_depth => 128,
 		latency   => 1,
 		check_sov => true,
 		check_dov => true)

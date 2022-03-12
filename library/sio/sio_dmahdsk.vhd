@@ -37,7 +37,6 @@ entity sio_dmahdsk is
 		dmacfg_req  : buffer std_logic;
 		dmacfg_rdy  : in  std_logic;
 
-		ctlr_clk    : in  std_logic;
 		ctlr_inirdy : in  std_logic;
 
 		dma_req     : buffer std_logic;
@@ -50,6 +49,7 @@ begin
 	dmacfg_p : process(dmacfg_clk)
 		variable cfg_busy   : std_logic;
 		variable trans_busy : std_logic;
+		variable rdy : std_logic;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
@@ -72,11 +72,12 @@ begin
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			elsif (dma_req xor dma_rdy)='0' then
+			elsif (dma_req xor rdy)='0' then
 				dmaio_trdy <= '1';
 				cfg_busy   := '0';
 				trans_busy := '0';
 			end if;
+			rdy := dma_rdy;
 		end if;
 	end process;
 

@@ -78,10 +78,6 @@ architecture def of txn_buffer is
 
 begin
 
-	tp(1) <= do_irdy;
-	tp(2) <= do_trdy;
-	tp(3) <= avail;
-
 	rx_b : block
 	begin
 		process (src_frm, src_end, commit, src_clk)
@@ -170,8 +166,10 @@ begin
 					cntr <= (others => '0');
 				elsif tx_irdy='0' then
 					cntr <= (others => '0');
-				elsif (do_irdy and do_trdy)='1' then
-					cntr <= cntr + 1;
+				elsif dst_end='0' then
+					if (do_irdy and do_trdy)='1' then
+						cntr <= cntr + 1;
+					end if;
 				end if;
 				q := d;
 			end if;
@@ -183,6 +181,8 @@ begin
 
 	src_trdy <= (di_trdy and rx_trdy) or src_end;
 	dst_trdy <= (do_irdy and tx_irdy) or dst_end;
+	tp(4) <= do_irdy;
+	tp(3) <= tx_irdy;
 	dst_tag  <= tx_data(tx_data'length-dst_tag'length to tx_data'length-1);
 
 	avail    <= tx_irdy and not tx_trdy;
