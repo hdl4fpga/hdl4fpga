@@ -579,14 +579,14 @@ begin
 	-- LEDs --
 	----------
 
-	led18 <= tp(1); --'0';
-	led16 <= tp(2);
-	led15 <= tp(3);
-	led13 <= tp(4);
-	led11 <= si_end;
-	led9  <= si_trdy;
-	led8  <= si_irdy;
-	led7  <= si_frm;
+	led18 <= '0'; --tp(1); --'0';
+	led16 <= '0'; --tp(2);
+	led15 <= '0'; --tp(3);
+	led13 <= '0'; --tp(4);
+	led11 <= '0'; --si_end;
+	led9  <= '0'; --si_trdy;
+	led8  <= '0'; --si_irdy;
+	led7  <= '0'; --si_frm;
 
 	-- RS232 Transceiver --
 	-----------------------

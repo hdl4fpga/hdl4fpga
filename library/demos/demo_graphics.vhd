@@ -354,8 +354,8 @@ begin
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
-					dst_frm    => ctlr_inirdy,
 					dst_clk    => sio_clk,
+					dst_frm    => ctlr_inirdy,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
 					dst_data   => dst_data);
@@ -390,35 +390,15 @@ begin
 				gray_code  => false)
 			port map (
 				src_clk    => sio_clk,
+				src_frm    => ctlr_inirdy,
 				src_irdy   => dmadata_irdy,
 				src_trdy   => dmadata_trdy,
 				src_data   => rgtr_dmadata,
 
-				dst_frm    => ctlr_inirdy,
 				dst_clk    => ctlr_clk,
 				dst_irdy   => ctlr_di_rdy,
 				dst_trdy   => ctlr_di_req,
 				dst_data   => ctlr_di);
---				dst_data   => di_dummy);
---			process (ctlr_clk)
---				variable pp : unsigned(0 to 16-1);
---				variable xxx : unsigned(0 to ctlr_di'length-1);
---			begin
---				if rising_edge(ctlr_clk) then
---					if ctlr_di_req='0' then
---						pp := (others => '0');
---					else
---						pp := pp + 1;
---					end if;
---					xxx := (others => '0');
---					for i in 0 to ctlr_di'length/pp'length-1 loop
---						xxx := xxx srl pp'length;
---						xxx(pp'range) := reverse(reverse(pp),8);
---					end loop;
---					ctlr_di <= std_logic_vector(xxx);
---				end if;
---			end process;
-
 			ctlr_di_dv <= ctlr_di_req;
 
 			base_addr_e : entity hdl4fpga.sio_rgtr
@@ -442,14 +422,15 @@ begin
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
 			dmacfg_clk  => sio_clk,
+			ctlr_inirdy => ctlr_inirdy,
 			dmaio_irdy  => dmasin_irdy,
 			dmaio_trdy  => dmaio_trdy,
 
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
 
-			ctlr_inirdy => ctlr_inirdy,
 
+			ctlr_clk    => ctlr_clk,
 			dma_req     => dmaio_req,
 			dma_rdy     => dmaio_rdy);
 
@@ -718,7 +699,7 @@ begin
 
 		signal ctlrvideo_irdy : std_logic;
 
-		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complain
+		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complaint
 
 	begin
 
@@ -854,13 +835,13 @@ begin
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 
---	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
-	dev_req <= (0 => '0' , 1 => dmaio_req);
 	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
+	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
 	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
---	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
 	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
+--	dev_req <= (0 => '0' , 1 => dmaio_req);
+--	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
 --	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
 
 	dmactlr_b : block

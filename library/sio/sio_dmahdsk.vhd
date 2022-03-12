@@ -37,19 +37,28 @@ entity sio_dmahdsk is
 		dmacfg_req  : buffer std_logic;
 		dmacfg_rdy  : in  std_logic;
 
+		ctlr_clk    : in  std_logic;
 		ctlr_inirdy : in  std_logic;
 
-		dma_req     : buffer std_logic;
+		dma_req     : out std_logic;
 		dma_rdy     : in  std_logic);
 end;
 
 architecture def of sio_dmahdsk is
+	signal rdy : std_logic;
+	signal req : std_logic;
 begin
+
+	ctlr_p : process(ctlr_clk)
+	begin
+		if rising_edge(ctlr_clk) then
+			dma_req <= req;
+		end if;
+	end process;
 
 	dmacfg_p : process(dmacfg_clk)
 		variable cfg_busy   : std_logic;
 		variable trans_busy : std_logic;
-		variable rdy : std_logic;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
@@ -57,6 +66,7 @@ begin
 				dmacfg_req <= '0';
 				cfg_busy   := '0';
 				trans_busy := '0';
+				req        <= rdy;
 			elsif trans_busy='0' then
 				if to_bit(dmacfg_req xor dmacfg_rdy)='0' then
 					if cfg_busy='0' then
@@ -66,18 +76,18 @@ begin
 						end if;
 						trans_busy := '0';
 					else
-						dma_req    <= not dma_rdy;
+						req        <= not rdy;
 						cfg_busy   := '0';
 						trans_busy := '1';
 					end if;
 				end if;
 				dmaio_trdy <= '0';
-			elsif (dma_req xor rdy)='0' then
+			elsif (req xor rdy)='0' then
 				dmaio_trdy <= '1';
 				cfg_busy   := '0';
 				trans_busy := '0';
 			end if;
-			rdy := dma_rdy;
+			rdy <= dma_rdy;
 		end if;
 	end process;
 
