@@ -31,20 +31,20 @@ add wave -noupdate -expand -group mii_rx -radix hexadecimal /testbench/du_e/mii_
 add wave -noupdate -expand -group mii_tx /testbench/du_e/mii_txc
 add wave -noupdate -expand -group mii_tx /testbench/du_e/mii_txen
 add wave -noupdate -expand -group mii_tx -radix hexadecimal /testbench/du_e/mii_txd
-add wave -noupdate -group ddr /testbench/du_e/ddr_ckp
-add wave -noupdate -group ddr /testbench/du_e/ddr_cs
-add wave -noupdate -group ddr /testbench/du_e/ddr_cke
-add wave -noupdate -group ddr -divider {New Divider}
-add wave -noupdate -group ddr /testbench/du_e/ddr_ras
-add wave -noupdate -group ddr /testbench/du_e/ddr_cas
-add wave -noupdate -group ddr /testbench/du_e/ddr_we
-add wave -noupdate -group ddr -radix hexadecimal /testbench/du_e/ddr_ba
-add wave -noupdate -group ddr -radix hexadecimal /testbench/du_e/ddr_a
-add wave -noupdate -group ddr -divider {New Divider}
-add wave -noupdate -group ddr /testbench/du_e/ddr_dqs
-add wave -noupdate -group ddr /testbench/du_e/ddr_dq
-add wave -noupdate -group ddr /testbench/du_e/ddr_st_dqs
-add wave -noupdate -group ddr /testbench/du_e/ddr_st_lp_dqs
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_ckp
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cs
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cke
+add wave -noupdate -expand -group ddr -divider {New Divider}
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_ras
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cas
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_we
+add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_ba
+add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_a
+add wave -noupdate -expand -group ddr -divider {New Divider}
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_dqs
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_dq
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_dqs
+add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_e/mii_frm
 add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_e/mii_end
@@ -98,7 +98,6 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_rdy
 add wave -noupdate -divider {New Divider}
@@ -112,39 +111,19 @@ add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_end
 add wave -noupdate -label sout_data -radix hexadecimal /testbench/du_e/grahics_e/sout_rdata
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/debug
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/tp
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/fifo_rollback
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/metafifo_e/src_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_tag
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/src_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/rollback
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/commit
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/avail
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_tag
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/dst_data
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_rdy
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_req
+add wave -noupdate /testbench/du_e/grahics_e/video_clk
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_hzon
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_vton
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_clk
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_req
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_rdy
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_req
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/rx_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/rx_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/rx_writ
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/rx_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/di_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/di_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/do_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e/do_trdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {141485411 ps} 0} {{Cursor 4} {160533384 ps} 0}
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {145681927 ps} 0} {{Cursor 4} {160533384 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 163
 configure wave -valuecolwidth 96
