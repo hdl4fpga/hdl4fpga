@@ -183,6 +183,10 @@ int main (int argc, char *argv[])
 					fprintf(stderr, " : data read : 0x%08x", data_rd);
 					fprintf(stderr, " : data written : 0x%08x\n", data_wt);
 					for (int  j=0; j < length; j += 16) {
+						if (j <= i &&  i < j+16) {
+							fprintf(stderr, "*\n");
+						}
+
 						for(int l=0; l < 16; l++) {
 							fprintf(stderr, "%02x", ((unsigned char *) wr_buffer)[j+l]);
 							fprintf(stderr, " ");

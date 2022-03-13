@@ -59,7 +59,7 @@ entity dmactlr is
 		ctlr_do_dv   : in  std_logic;
 		dev_do_dv    : out std_logic_vector;
 
-		ctlr_frm     : out  std_logic;
+		ctlr_frm     : buffer std_logic;
 		ctlr_trdy    : in  std_logic;
 		ctlr_cmd     : in  std_logic_vector(0 to 3-1);
 		ctlr_rw      : out std_logic;
@@ -71,8 +71,6 @@ end;
 architecture def of dmactlr is
 
 	signal dmargtr_dv     : std_logic;
-	signal dmargtr_rdy    : std_logic;
-	signal dmargtr_req    : std_logic;
 	signal dmargtr_id     : std_logic_vector(unsigned_num_bits(dev_req'length-1)-1 downto 0);
 	signal dmargtr_addr   : std_logic_vector(dev_addr'length/dev_req'length-1 downto 0);
 	signal dmargtr_len    : std_logic_vector(dev_len'length/dev_req'length-1 downto 0);
@@ -82,7 +80,6 @@ architecture def of dmactlr is
 
 	signal dmatrans_req   : std_logic;
 	signal dmatrans_rdy   : std_logic;
-	signal dmatransgnt_req : std_logic;
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
@@ -91,7 +88,6 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
-	signal dma_gnt        : std_logic_vector(dev_req'range);
 	signal dma_req        : std_logic_vector(dev_req'range);
 	signal dma_rdy        : std_logic_vector(dev_req'range);
 
@@ -114,29 +110,34 @@ begin
 		dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and gnt_dv;
 	end process;
 
+	dmacfg_b : block
+		signal req  : std_logic_vector(dev_req'range);
+	begin
+		req <= to_stdlogicvector(to_bitvector(devcfg_req)) xor to_stdlogicvector(to_bitvector(devcfg_rdy));
+		dmacfg_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => devcfg_clk,
+			req  => req,
+			gnt  => dmacfg_gnt);
 
-	dmargtrgnt_e : entity hdl4fpga.grant
-	port map (
-		rsrc_clk => devcfg_clk,
-		rsrc_req => dmargtr_req,
-		rsrc_rdy => dmargtr_rdy,
+		process (devcfg_clk)
+		begin
+			if rising_edge(devcfg_clk) then
+				for i in dmacfg_gnt'range loop
+					if dmacfg_gnt(i)='1' then
+						devcfg_rdy(i) <= devcfg_req(i);
+					end if;
+				end loop;
+			end if;
+		end process;
 
-		dev_req => devcfg_req,
-		dev_gnt => dmacfg_gnt,
-		dev_rdy => devcfg_rdy);
+	end block;
 
 	dmargtr_id   <= encoder(dmacfg_gnt);
 	dmargtr_addr <= wirebus (dev_addr, dmacfg_gnt);
 	dmargtr_len  <= wirebus (dev_len,  dmacfg_gnt);
 	dmargtr_we   <= wirebus (dev_we,   dmacfg_gnt);
-	dmargtr_dv   <= dmargtr_req xor to_stdulogic(to_bit(dmargtr_rdy));
-
-	process (devcfg_clk)
-	begin
-		if rising_edge(devcfg_clk) then
-			dmargtr_rdy <= to_stdulogic(to_bit(dmargtr_req));
-		end if;
-	end process;
+	dmargtr_dv   <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
 
 	dmaaddr_rgtr_e : entity hdl4fpga.dpram
 	generic map (
@@ -180,28 +181,45 @@ begin
 		rd_addr => dmatrans_rid,
 		rd_data => trans_we);
 
-	dmatransgnt_e : entity hdl4fpga.grant
-	port map (
-		rsrc_clk => ctlr_clk,
-		rsrc_req => dmatransgnt_req,
-		rsrc_rdy => dmatrans_rdy,
-
-		dev_req => dma_req,
-		dev_gnt => dma_gnt,
-		dev_rdy => dma_rdy);
-
-	dmatrans_rid <= encoder(dma_gnt);
-	process (ctlr_clk)
+	dmatrans_b : block
+		signal req  : std_logic_vector(dev_req'range);
 	begin
-		if rising_edge(ctlr_clk) then
-			dma_req <= dev_req;
-		end if;
-	end process;
-	dmatrans_req <= to_stdulogic(to_bit(dmatransgnt_req));
-	dev_rdy <= dma_rdy;
-	dev_gnt <= dma_gnt;
+		req <= to_stdlogicvector(to_bitvector(dev_req)) xor to_stdlogicvector(to_bitvector(dev_rdy));
+		dmacfg_e : entity hdl4fpga.arbiter
+		port map (
+			clk  => ctlr_clk,
+			req  => req,
+			gnt  => dev_gnt);
 
-	dmatrans_we <= to_stdulogic(to_bit(trans_we(0)));
+		process (ctlr_clk)
+			variable  busy : std_logic;
+		begin
+			if rising_edge(ctlr_clk) then
+				if dev_gnt/=(dev_gnt'range => '0') then
+					if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='0' then
+						if busy='1' then
+							for i in dev_gnt'range loop
+								if dev_gnt(i)='1' then
+									dev_rdy(i) <= dev_req(i);
+								end if;
+							end loop;
+							busy := '0';
+						else
+							dmatrans_req <= not to_stdulogic(to_bit(dmatrans_rdy));
+							busy := '1';
+						end if;
+					end if;
+				else
+					busy := '0';
+				end if;
+			end if;
+		end process;
+
+	end block;
+
+	dmatrans_rid <= encoder(dev_gnt);
+	dmatrans_we  <= trans_we(0) and ctlr_frm;
+
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
 		data_gear     => data_gear,

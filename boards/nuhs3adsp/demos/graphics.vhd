@@ -226,15 +226,20 @@ begin
 		end if;
 	end process;
 
+	xxx : block
+		signal sys_rst1 : std_logic;
+	begin
+		sys_rst1 <= setif(true, '1', sys_rst);
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
 		dfs_mul => video_tab(video_mode).pll.dcm_mul,
 		dfs_div => video_tab(video_mode).pll.dcm_div)
 	port map(
-		dcm_rst => sys_rst,
+		dcm_rst => sys_rst1,
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
+	end block;
 
 	nodebug_g : if not debug generate
 		mii_dfs_e : entity hdl4fpga.dfs

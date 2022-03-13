@@ -146,8 +146,6 @@ HDL4FPGA__hdlcdll_rx__def = $(LIB_HDL4FPGA)/hdlcdll_rx/def.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
-HDL4FPGA__grant__def = $(LIB_HDL4FPGA)/grant/def.dat
-HDL4FPGA__grant = $(LIB_HDL4FPGA)/grant/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ff__xilinx = $(LIB_HDL4FPGA)/ff/xilinx.dat
@@ -386,8 +384,6 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__hdlcdll_rx) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
-    $(HDL4FPGA__grant__def) \
-    $(HDL4FPGA__grant) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ff__xilinx) \
@@ -930,7 +926,7 @@ $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__dmatrans) \
 		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__grant) \
+		$(HDL4FPGA__arbiter) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -1014,16 +1010,6 @@ $(HDL4FPGA__fifo__def) : ../common/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/fifo.vhd
-
-$(HDL4FPGA__grant) \
-$(HDL4FPGA__grant__def) : ../common/grant.vhd \
-		$(HDL4FPGA__arbiter) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../common/grant.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
@@ -1533,10 +1519,10 @@ $(HDL4FPGA__std__body) : ../common/std.vhd \
 
 $(HDL4FPGA__sync_transfer) \
 $(HDL4FPGA__sync_transfer__def) : ../common/sync_transfer.vhd \
-		$(HDL4FPGA__dpram) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__dpram) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/sync_transfer.vhd

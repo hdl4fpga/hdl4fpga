@@ -143,8 +143,8 @@ entity ddr_pgm is
 		(ddrs_pre, "010", ddrs_pre, ddro_nop),	---------
 		(ddrs_pre, "011", ddrs_pre, ddro_aut),
 		(ddrs_pre, "100", ddrs_act, ddro_act),
---		(ddrs_pre, "101", ddrs_pre, ddro_aut),
-		(ddrs_pre, "101", ddrs_pre, ddro_nopq),
+		(ddrs_pre, "101", ddrs_pre, ddro_aut),
+--		(ddrs_pre, "101", ddrs_pre, ddro_nopq),
 		(ddrs_pre, "110", ddrs_act, ddro_act),
 		(ddrs_pre, "111", ddrs_pre, ddro_aut));
 

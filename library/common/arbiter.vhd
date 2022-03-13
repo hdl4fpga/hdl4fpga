@@ -80,7 +80,7 @@ begin
 	severity failure;
 
 	gnt <=
-		primask(word2byte((req and gntq) & (req and (gnt'range => csc)), setif((gntq'range => '0')=gntq))) and gntq when idle_cycle else
+		primask(word2byte((req and gntq) & (req and (gnt'range => csc)), setif((gntq'range => '0')=gntq))) when idle_cycle else
 		primask(word2byte((req and gntq) & (req and (gnt'range => csc)), setif((gntq'range => '0')=(gntq and req))));
 
 	swp  <= setif(gntq/=gnt);

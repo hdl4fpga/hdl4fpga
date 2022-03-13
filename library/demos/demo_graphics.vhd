@@ -832,15 +832,16 @@ begin
 
 	end block;
 
+	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
-
-	(0 => dmavideo_rdy, 1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
---	dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
 	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
 	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
 	dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
-	dev_req <= (0 => '0' , 1 => dmaio_req);
+	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
+	(0 => dmavideo_rdy,    1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
+
+--	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
+--	dev_req    <= (0 => '0', 1 => dmaio_req);
 --	dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
 --	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
 

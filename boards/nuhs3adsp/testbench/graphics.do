@@ -41,8 +41,8 @@ add wave -noupdate -expand -group ddr /testbench/du_e/ddr_we
 add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_ba
 add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_a
 add wave -noupdate -expand -group ddr -divider {New Divider}
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_dqs
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_dq
+add wave -noupdate -expand -group ddr -expand /testbench/du_e/ddr_dqs
+add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_dq
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_dqs
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
@@ -91,41 +91,27 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/sio_flow_e/so_irdy
 add wave -noupdate -label so_data -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(7) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(7) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(6) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(5) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(4) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(3) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(2) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(1) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_data(0) {-radix hexadecimal}} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/so_rdata
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_rdy
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/ctlr_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_iaddr
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_ilen
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_req
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dma_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/status_rw
-add wave -noupdate /testbench/du_e/grahics_e/sout_frm
-add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_end
-add wave -noupdate -label sout_data -radix hexadecimal /testbench/du_e/grahics_e/sout_rdata
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_rdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_req
-add wave -noupdate /testbench/du_e/grahics_e/video_clk
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_hzon
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_vton
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_clk
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_req
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_rdy
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_req
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_rdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_frm
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_trdy
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_rw
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {145681927 ps} 0} {{Cursor 4} {160533384 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 163
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {149734278 ps} 0} {{Cursor 4} {145642161 ps} 0}
+quietly wave cursor active 3
+configure wave -namecolwidth 274
 configure wave -valuecolwidth 96
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -139,4 +125,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {210 us}
+WaveRestoreZoom {144001536 ps} {147282786 ps}
