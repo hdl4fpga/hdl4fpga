@@ -416,6 +416,7 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
+		tpin => "0000",
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
