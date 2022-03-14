@@ -112,7 +112,7 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 	return sioptr-siobuf;
 }
 
-#define MAX_ADDRESS    (256*1024*1024)
+#define MAX_ADDRESS    (32*1024*1024)
 
 int main (int argc, char *argv[])
 {
