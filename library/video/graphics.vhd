@@ -148,8 +148,9 @@ begin
 
 	process (video_clk)
 		constant dataperpixel : natural := video_pixel'length/ctlr_di'length;
-		constant dpage_size   : natural := dataperpixel*ppage_size;
-		constant dslice_size  : natural := dataperpixel*pslice_size;
+		constant pixelperdata : natural := ctlr_di'length/video_pixel'length;
+		constant dpage_size   : natural := setif(dataperpixel/=0, ppage_size*dataperpixel,  ppage_size/pixelperdata);
+		constant dslice_size  : natural := setif(dataperpixel/=0, pslice_size*dataperpixel, pslice_size/pixelperdata);
 
 		variable vrdy      : bit;
 		variable hzon_lat  : std_logic;
