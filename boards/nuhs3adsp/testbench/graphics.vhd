@@ -202,7 +202,7 @@ begin
 	rst <= '0', '1' after 300 ns;
 
 --	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0'; --'0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
 	process
 		variable x : natural := 0;
@@ -222,7 +222,7 @@ begin
 		wait on rep_req;
 		end loop;
 	end process;
-	mii_req1  <= rep_req;
+	mii_req1  <= '0'; --rep_req;
 	ping_req <= '0';
 
 	htb_e : entity hdl4fpga.eth_tb
