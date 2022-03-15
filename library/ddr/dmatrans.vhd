@@ -61,7 +61,7 @@ entity dmatrans is
 		ctlr_a         : out std_logic_vector);
 
 	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
-	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0,data_gear,burst_length))-1;
+	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0, data_gear, burst_length))-1;
 
 end;
 
@@ -138,7 +138,8 @@ begin
 		cas_p : process(ceoc, refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
-			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
+--			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
+			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear)));
 		begin
 			if rising_edge(dmatrans_clk) then
 

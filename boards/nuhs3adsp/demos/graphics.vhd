@@ -229,7 +229,7 @@ begin
 	xxx : block
 		signal sys_rst1 : std_logic;
 	begin
-		sys_rst1 <= setif(debug, '1', sys_rst);
+		sys_rst1 <= setif(debug and false, '1', sys_rst);
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
@@ -443,7 +443,7 @@ begin
 		ctlr_clks    => ctlr_clks,
 		ctlr_rst     => ddrsys_rst,
 --		ctlr_bl      => "001",
-		ctlr_bl      => "010",
+		ctlr_bl      => "010",				-- Busrt length 4
 --		ctlr_bl      => "011",				-- Busrt length 8
 		ctlr_cl      => ddr_param.cas,
 		ctlrphy_rst  => ctlrphy_rst,
