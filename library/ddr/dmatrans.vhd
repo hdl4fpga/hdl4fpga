@@ -71,7 +71,7 @@ architecture def of dmatrans is
 
 	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
-	signal ddrdma_col   : std_logic_vector(coln_size-1 downto coln_align);
+	signal ddrdma_col   : std_logic_vector(coln_size-1 downto burst_bits);
 
 	signal load         : std_logic;
 
@@ -126,10 +126,10 @@ begin
 		signal bnk   : std_logic_vector(ctlr_b'range);
 		signal row   : std_logic_vector(ddrdma_row'range);
 		signal col   : std_logic_vector(ddrdma_col'range);
-		signal ilen  : std_logic_vector(dmatrans_ilen'range);
-		signal iaddr : std_logic_vector(dmatrans_iaddr'range);
-		signal tlen  : std_logic_vector(dmatrans_tlen'range);
-		signal taddr : std_logic_vector(dmatrans_taddr'range);
+		signal ilen  : std_logic_vector(dmatrans_ilen'length-1 downto burst_bits-coln_align);
+		signal iaddr : std_logic_vector(dmatrans_iaddr'length-1 downto burst_bits-coln_align);
+		signal tlen  : std_logic_vector(ilen'range);
+		signal taddr : std_logic_vector(iaddr'range);
 
 		signal col_frm : std_logic;
 
@@ -187,8 +187,8 @@ begin
 			ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
 		end process;
 
-		ilen  <= std_logic_vector(unsigned(dmatrans_ilen)  srl burst_bits-coln_align);
-		iaddr <= std_logic_vector(unsigned(dmatrans_iaddr) srl burst_bits-coln_align);
+		ilen  <= std_logic_vector(resize(shift_right(unsigned(dmatrans_ilen),  burst_bits-coln_align), ilen'length));
+		iaddr <= std_logic_vector(resize(shift_right(unsigned(dmatrans_iaddr), burst_bits-coln_align), iaddr'length));
 		dma_e : entity hdl4fpga.ddrdma
 		port map (
 			clk     => dmatrans_clk,
@@ -293,7 +293,8 @@ begin
 
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
-		ddrdma_row when ctlr_ras='1' else
+		(ctlr_a'range => '0') when state_pre='1' else
+		ddrdma_row            when ctlr_ras='1' else
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
