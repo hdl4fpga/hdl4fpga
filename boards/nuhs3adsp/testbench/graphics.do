@@ -25,12 +25,12 @@ quietly virtual signal -install /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_
 quietly virtual signal -install /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fifo_e { (context /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fifo_e )( tx_data(11) & tx_data(10) & tx_data(9) & tx_data(8) & tx_data(7) & tx_data(6) & tx_data(5) & tx_data(4) & tx_data(3) & tx_data(2) & tx_data(1) & tx_data(0) )} tx_rdata001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxc
-add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxdv
-add wave -noupdate -expand -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
-add wave -noupdate -expand -group mii_tx /testbench/du_e/mii_txc
-add wave -noupdate -expand -group mii_tx /testbench/du_e/mii_txen
-add wave -noupdate -expand -group mii_tx -radix hexadecimal /testbench/du_e/mii_txd
+add wave -noupdate -group mii_rx /testbench/du_e/mii_rxc
+add wave -noupdate -group mii_rx /testbench/du_e/mii_rxdv
+add wave -noupdate -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
+add wave -noupdate -group mii_tx /testbench/du_e/mii_txc
+add wave -noupdate -group mii_tx /testbench/du_e/mii_txen
+add wave -noupdate -group mii_tx -radix hexadecimal /testbench/du_e/mii_txd
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_ckp
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cs
 add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cke
@@ -61,6 +61,9 @@ add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mi
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/miirx_trdy
 add wave -noupdate -group ethrx_e -label miirx_data -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(7) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(7) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(6) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(5) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(4) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(3) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(2) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(1) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(0) {-radix hexadecimal}} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_bnk
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_row
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_col
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/video_hzsync
 add wave -noupdate /testbench/du_e/grahics_e/video_vtsync
@@ -111,8 +114,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphi
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {52783631 ps} 0} {{Cursor 4} {56219097 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {13791220 ps} 0} {{Cursor 4} {15164238 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 156
 configure wave -valuecolwidth 96
 configure wave -justifyvalue left
@@ -127,4 +130,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {99870017 ps} {101059473 ps}
+WaveRestoreZoom {15053087 ps} {15461114 ps}
