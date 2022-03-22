@@ -290,7 +290,7 @@ begin
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
 		ddrdma_row            when ctlr_ras='1' else
---		(ctlr_a'range => '0') when state_pre='1' else
+		(ctlr_a'range => '0') when state_pre='1' else
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
