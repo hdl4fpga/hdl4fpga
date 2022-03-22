@@ -53,6 +53,7 @@ entity ddr_mpu is
 		ddr_mpu_rst : in std_logic;
 		ddr_mpu_clk : in std_logic;
 		ddr_mpu_cmd : in std_logic_vector(0 to 2) := (others => '1');
+		ddr_mpu_fch : out std_logic;
 		ddr_mpu_trdy : out std_logic;
 		ddr_mpu_act : out std_logic;
 		ddr_mpu_ras : out std_logic;
@@ -131,9 +132,11 @@ architecture arch of ddr_mpu is
 		ddr_rph     : std_logic;
 		ddr_wph     : std_logic;
 		ddr_rdy     : std_logic;
+		ddr_fch     : std_logic;
 	end record;
 
 	signal ddr_rdy_ena : std_logic;
+	signal ddr_rdy_fch : std_logic;
 
 	type ddr_state_vector is array(natural range <>) of ddr_state_word;
 	constant ddr_state_tab : ddr_state_vector(0 to 13-1) := (
@@ -144,20 +147,20 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_pre, ddr_cmo => mpu_pre, ddr_lat => id_rp,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_act,
 		 ddr_cmi => mpu_act, ddr_cmo => mpu_act, ddr_lat => id_rcd,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_aut, ddr_cmo => mpu_aut, ddr_lat => id_rfc,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		-------------
@@ -166,11 +169,11 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
-		 ddr_rea => '1', ddr_cen => '1',
+		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_write_bl,
 		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
-		 ddr_rea => '0', ddr_cen => '1',
+		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 
 		--------------
@@ -179,19 +182,19 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
-		 ddr_rea => '1', ddr_cen => '1',
+		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
-		 ddr_rea => '1', ddr_cen => '0',
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_cl,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cl,
-		 ddr_rea => '1', ddr_cen => '0',
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_cl, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_pre, ddr_lat => id_rp,
-		 ddr_rea => '1', ddr_cen => '0',
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 
@@ -201,15 +204,15 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_bl,
 		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
-		 ddr_rea => '0', ddr_cen => '1',
+		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '1',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_cl,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cwl,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
 		 ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_write_cl, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_pre, ddr_lat => id_rp,
-		 ddr_rea => '0', ddr_cen => '0',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'));
 
 --		attribute fsm_encoding : string;
@@ -295,6 +298,7 @@ begin
 					ddr_mpu_wwin  <= '-';
 					ddr_mpu_rwwin <= '-';
 					ddr_rdy_ena   <= '-';
+					ddr_rdy_fch   <= '-';
 					ddr_mpu_cen   <= '-';
 					for i in ddr_state_tab'range loop
 						if ddr_state=ddr_state_tab(i).ddr_state then
@@ -311,6 +315,7 @@ begin
 								ddr_mpu_wwin <= ddr_state_tab(i).ddr_wph;
 								ddr_mpu_rwwin <= ddr_state_tab(i).ddr_wph or ddr_state_tab(i).ddr_rph;
 								ddr_rdy_ena  <= ddr_state_tab(i).ddr_rdy;
+								ddr_rdy_fch  <= ddr_state_tab(i).ddr_fch;
 
 								case ddr_state_tab(i).ddr_lat is
 								when id_bl =>
@@ -351,6 +356,7 @@ begin
 				ddr_mpu_wwin  <= ddr_state_tab(0).ddr_wph;
 				ddr_mpu_rwwin <= ddr_state_tab(0).ddr_wph or ddr_state_tab(0).ddr_rph;
 				ddr_rdy_ena   <= '1';
+				ddr_rdy_fch   <= '1';
 				lat_timer     <= (others => '1');
 			end if;
 
@@ -360,6 +366,7 @@ begin
 	ddr_mpu_act  <= setif(ddr_state=ddrs_act);
 	ddr_mpu_wri  <= setif(ddr_state=ddrs_write_cl or ddr_state=ddrs_write_bl);
 	ddr_mpu_trdy <= lat_timer(0) and ddr_rdy_ena;
+	ddr_mpu_fch  <= lat_timer(0) and ddr_rdy_fch;
 
 	debug : with ddr_state select
 	mpu_state <=

@@ -54,6 +54,7 @@ entity dmatrans is
 		ctlr_frm       : buffer std_logic;
 		ctlr_cmd       : in  std_logic_vector(0 to 3-1);
 		ctlr_trdy      : in  std_logic;
+		ctlr_fch       : in  std_logic;
 		ctlr_rw        : out std_logic := '0';
 		ctlr_alat      : in  std_logic_vector(2 downto 0);
 		ctlr_blat      : in  std_logic_vector(2 downto 0);
@@ -86,7 +87,6 @@ architecture def of dmatrans is
 	signal ceoc         : std_logic;
 	signal loaded       : std_logic;
 	signal restart      : std_logic;
-	signal ctlr_trdy1   : std_logic;
 	signal refreq       : std_logic;
 begin
 
@@ -181,7 +181,7 @@ begin
 					end if;
 				end case;
 
-				reload <= state_pre and ctlr_trdy;
+				reload <= state_pre and ctlr_fch;
 			end if;
 
 			ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
@@ -224,13 +224,10 @@ begin
 			gray_code => false)
 		port map (
 			src_clk   => dmatrans_clk,
-			src_mode  => '1',
-			src_frm   => col_frm,
 			src_irdy  => ena,
 			src_trdy  => open,
 			src_data  => col,
 			dst_clk   => dmatrans_clk,
-			dst_mode  => '1',
 			dst_frm   => col_frm,
 			dst_irdy  => open,
 			dst_trdy  => ctlr_cas,
@@ -287,14 +284,13 @@ begin
 			state_cas <= cas;
 			state_pre <= pre;
 			state_nop <= nop;
-			ctlr_trdy1 <= ctlr_trdy;
 		end if;
 	end process;
 
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
-		(ctlr_a'range => '0') when state_pre='1' else
 		ddrdma_row            when ctlr_ras='1' else
+--		(ctlr_a'range => '0') when state_pre='1' else
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;

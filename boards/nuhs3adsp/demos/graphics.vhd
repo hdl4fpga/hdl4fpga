@@ -417,7 +417,7 @@ begin
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => 8,
 		green_length => 8,
---		blue_length  => 8,
+		blue_length  => 8,
 
 		fifo_size    => 8*2048)
 

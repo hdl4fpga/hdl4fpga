@@ -144,7 +144,6 @@ entity ddr_pgm is
 		(ddrs_pre, "011", ddrs_pre, ddro_aut),
 		(ddrs_pre, "100", ddrs_act, ddro_act),
 		(ddrs_pre, "101", ddrs_pre, ddro_aut),
---		(ddrs_pre, "101", ddrs_pre, ddro_nopq),
 		(ddrs_pre, "110", ddrs_act, ddro_act),
 		(ddrs_pre, "111", ddrs_pre, ddro_aut));
 
@@ -240,11 +239,13 @@ begin
 				ctlr_refreq <= '0';
 				ddr_ref_rdy <= '0';
 				ddr_pgm_cmd <= mpu_nop;
-			elsif ddr_mpu_trdy='1' then
---				ctlr_refreq <= pgm_refq;
-				ctlr_refreq <= setif(tpin(1)='1', '0', pgm_refq);
-				ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
-				ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
+			else
+				if ddr_mpu_trdy='1' then
+	--				ctlr_refreq <= pgm_refq;
+					ctlr_refreq <= setif(tpin(1)='1', '0', pgm_refq);
+					ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
+					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
+				end if;
 			end if;
 		end if;
 	end process;

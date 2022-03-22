@@ -100,9 +100,9 @@ entity demo_graphics is
 		ctlrphy_rst   : out std_logic;
 		ctlrphy_cke   : out std_logic;
 		ctlrphy_cs    : out std_logic;
-		ctlrphy_ras   : out std_logic;
-		ctlrphy_cas   : out std_logic;
-		ctlrphy_we    : out std_logic;
+		ctlrphy_ras   : buffer std_logic;
+		ctlrphy_cas   : buffer std_logic;
+		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
@@ -200,6 +200,7 @@ architecture mix of demo_graphics is
 
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
+	signal ctlr_fch       : std_logic;
 
 	alias ctlr_clk : std_logic is ctlr_clks(0);
 begin
@@ -878,6 +879,7 @@ begin
 
 			ctlr_frm    => ctlr_frm,
 			ctlr_trdy   => ctlr_trdy,
+			ctlr_fch    => ctlr_fch,
 			ctlr_cmd    => ctlr_cmd,
 			ctlr_rw     => ctlr_rw,
 			ctlr_alat   => ctlr_alat,
@@ -943,8 +945,9 @@ begin
 			ctlr_clks    => ctlr_clks,
 			ctlr_inirdy  => inirdy,
 
-			ctlr_frm     => ctlr_frm ,
+			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,
+			ctlr_fch     => ctlr_fch,
 			ctlr_rw      => ctlr_rw,
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a,

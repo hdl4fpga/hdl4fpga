@@ -64,6 +64,7 @@ entity ddr_ctlr is
 
 		ctlr_frm     : in  std_logic;
 		ctlr_trdy    : out std_logic;
+		ctlr_fch     : out std_logic;
 		ctlr_cmd     : out std_logic_vector(0 to 2);
 		ctlr_rw      : in  std_logic;
 		ctlr_b       : in  std_logic_vector(bank_size-1 downto 0);
@@ -307,6 +308,7 @@ begin
 		ddr_mpu_clk   => ctlr_clks(0),
 		ddr_mpu_cmd   => ddr_pgm_cmd,
 		ddr_mpu_trdy  => ddr_mpu_trdy,
+		ddr_mpu_fch   => ctlr_fch,
 		ddr_mpu_act   => ctlr_act,
 		ddr_mpu_cas   => ddr_mpu_cas,
 		ddr_mpu_ras   => ddr_mpu_ras,

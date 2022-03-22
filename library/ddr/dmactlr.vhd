@@ -61,6 +61,7 @@ entity dmactlr is
 
 		ctlr_frm     : buffer std_logic;
 		ctlr_trdy    : in  std_logic;
+		ctlr_fch     : in  std_logic;
 		ctlr_cmd     : in  std_logic_vector(0 to 3-1);
 		ctlr_rw      : out std_logic;
 		ctlr_b       : out std_logic_vector;
@@ -242,6 +243,7 @@ begin
 
 		ctlr_frm       => ctlr_frm,
 		ctlr_trdy      => ctlr_trdy,
+		ctlr_fch       => ctlr_fch,
 		ctlr_cmd       => ctlr_cmd,
 		ctlr_rw        => ctlr_rw,
 		ctlr_alat      => ctlr_alat,
