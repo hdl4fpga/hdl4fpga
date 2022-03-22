@@ -144,7 +144,9 @@ begin
 			if rising_edge(dmatrans_clk) then
 
 				restart_transfer : if ctlr_frm='0' then
-					restart <= ceoc or refreq;
+					if ctlr_trdy='1' then
+						restart <= ceoc or refreq;
+					end if;
 				elsif cntr(0)='1' then
 					restart <= '0';
 				end if;

@@ -147,20 +147,20 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
-		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_pre, ddr_cmo => mpu_pre, ddr_lat => id_rp,
-		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_act,
 		 ddr_cmi => mpu_act, ddr_cmo => mpu_act, ddr_lat => id_rcd,
-		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_pre, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_aut, ddr_cmo => mpu_aut, ddr_lat => id_rfc,
-		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		-------------
@@ -169,11 +169,11 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
-		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '1',
+		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_act, ddr_state_n => ddrs_write_bl,
 		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
-		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 
 		--------------
@@ -182,11 +182,11 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_read, ddr_cmo => mpu_read, ddr_lat => id_bl,
-		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '1',
+		 ddr_rea => '1', ddr_cen => '1', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_bl,
 		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
-		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_bl, ddr_state_n => ddrs_read_cl,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cl,
@@ -194,7 +194,7 @@ architecture arch of ddr_mpu is
 		 ddr_rdy => '0', ddr_rph => '0', ddr_wph => '0'),
 		(ddr_state => ddrs_read_cl, ddr_state_n => ddrs_pre,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_pre, ddr_lat => id_rp,
-		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '1',
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 
@@ -204,7 +204,7 @@ architecture arch of ddr_mpu is
 
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_bl,
 		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
-		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '1',
+		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
 		(ddr_state => ddrs_write_bl, ddr_state_n => ddrs_write_cl,
 		 ddr_cmi => mpu_dcare, ddr_cmo => mpu_nop, ddr_lat => id_cwl,
