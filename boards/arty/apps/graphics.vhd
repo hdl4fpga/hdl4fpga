@@ -45,7 +45,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr450MHz;
+	constant profile     : profiles := mode900p_ddr333MHz;
 
 	signal sys_rst : std_logic;
 
@@ -108,7 +108,7 @@ architecture graphics of arty is
 
 	constant bank_size     : natural := ddr3_ba'length;
 	constant addr_size     : natural := ddr3_a'length;
-	constant coln_size     : natural := 9;
+	constant coln_size     : natural := 10;
 	constant word_size     : natural := ddr3_dq'length;
 	constant byte_size     : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
@@ -323,8 +323,8 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => video_clk,
-				clkout2  => video_shf_clk,
+				clkout1  => open, --video_clk,
+				clkout2  => open, --video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
 

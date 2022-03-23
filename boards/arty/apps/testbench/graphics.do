@@ -52,15 +52,13 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ethrx_e/mii_clk
-add wave -noupdate /testbench/ethrx_e/mii_frm
-add wave -noupdate /testbench/ethrx_e/mii_irdy
-add wave -noupdate /testbench/ethrx_e/mii_trdy
-add wave -noupdate -radix hexadecimal /testbench/ethrx_e/mii_rdata
-add wave -noupdate /testbench/ethrx_e/fcs_sb
-add wave -noupdate /testbench/ethrx_e/fcs_vld
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_req
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sout_rdy
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/mii_clk
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/mii_frm
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/mii_irdy
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/mii_trdy
+add wave -noupdate -expand -group ethrx_e -radix hexadecimal /testbench/ethrx_e/mii_rdata
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/fcs_sb
+add wave -noupdate -expand -group ethrx_e /testbench/ethrx_e/fcs_vld
 add wave -noupdate /testbench/du_e/grahics_e/sout_frm
 add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
@@ -80,12 +78,12 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {107915755 ps} 0} {{Cursor 3} {143066990 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 221
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {26915851 ps} 0} {{Cursor 3} {143066990 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 656
 configure wave -valuecolwidth 146
 configure wave -justifyvalue left
-configure wave -signalnamewidth 1
+configure wave -signalnamewidth 0
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -96,4 +94,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {140688078 ps} {145445902 ps}
+WaveRestoreZoom {25480068 ps} {29503972 ps}

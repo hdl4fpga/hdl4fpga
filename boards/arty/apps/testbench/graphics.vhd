@@ -237,7 +237,7 @@ begin
 	port map (
 		btn(0) => rst,
 		btn(4-1 downto 1) => (1 to 3 => '-'),
-		sw => "0000",
+		sw => "0100",
 
 		gclk100     => xtal,
 		eth_rstn    => open,
