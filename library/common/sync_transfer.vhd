@@ -25,6 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity sync_transfer is
 	port (
@@ -42,23 +43,23 @@ entity sync_transfer is
 end;
 
 architecture def of sync_transfer is
-	signal rd_req  : bit;
-	signal rd_rdy  : bit;
-	signal wr_addr : std_logic_vector(0 to 0);
-	signal rd_addr : std_logic_vector(wr_addr'range);
+	signal rd_req  : std_logic_vector(0 to 2-1);
+	signal rd_rdy  : std_logic_vector(rd_req'range);
+	signal wr_addr : std_logic_vector(rd_req'range);
+	signal rd_addr : std_logic_vector(rd_rdy'range);
 begin
 
 	process (src_clk)
-		variable we   : std_logic;
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				rd_req <= not rd_rdy;
-			elsif (rd_req xor rd_rdy)='0' then
+				rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rd_rdy))));
+			elsif rd_req=rd_rdy then
 				if src_trdy='0' then
 					if src_irdy='1' then
+						rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rd_rdy))));
+						wr_addr <= inc(gray(rd_rdy));
 						src_trdy <= '1';
-						rd_req <= not rd_rdy;
 					end if;
 				else
 					src_trdy <= '0';
@@ -69,12 +70,10 @@ begin
 		end if;
 	end process;
 
-	wr_addr(0) <= to_stdulogic(rd_req);
-	rd_addr(0) <= to_stdulogic(not rd_rdy);
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
 		synchronous_rdaddr => false,
-		synchronous_rddata => true)
+		synchronous_rddata => false)
 	port map (
 		wr_clk  => src_clk,
 		wr_addr => wr_addr,
@@ -88,10 +87,11 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
-				rd_rdy <= '0';
-			elsif (rd_req xor rd_rdy)='1' then
-				if dst_trdy='1'  then
-					rd_rdy <= rd_req;
+				rd_rdy <= (others => '0');
+			elsif rd_req/=rd_rdy then
+				if dst_trdy='1' then
+					rd_addr <= rd_rdy;
+					rd_rdy  <= rd_req;
 				end if;
 				dst_irdy <= dst_trdy;
 			else
