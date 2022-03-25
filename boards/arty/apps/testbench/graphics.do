@@ -61,7 +61,9 @@ add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sy
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/src2dst_e/dst_clk
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/src2dst_e/mem_e/async_rddata
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/src2dst_e/dst_data
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/src_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/dst_irdy1
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/dst2src_e/src_clk
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/dst2src_e/src_data
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/dmadataout_e/sync_b/dst2src_e/wr_addr
@@ -107,7 +109,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {141980328 ps} 0} {{Cursor 3} {158793102 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {141980328 ps} 0} {{Cursor 3} {159020000 ps} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 263
 configure wave -valuecolwidth 146
@@ -123,4 +125,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {158751426 ps} {158915490 ps}
+WaveRestoreZoom {158870880 ps} {159169120 ps}

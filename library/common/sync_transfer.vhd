@@ -50,15 +50,16 @@ architecture def of sync_transfer is
 begin
 
 	process (src_clk)
+		variable rdy : std_logic_vector(rd_rdy'range);
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rd_rdy))));
-			elsif rd_req=rd_rdy then
+				rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rdy))));
+			elsif rd_req=rdy then
 				if src_trdy='0' then
 					if src_irdy='1' then
-						rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rd_rdy))));
-						wr_addr <= inc(gray(rd_rdy));
+						rd_req  <= inc(gray(to_stdlogicvector(to_bitvector(rdy))));
+						wr_addr <= inc(gray(rdy));
 						src_trdy <= '1';
 					end if;
 				else
@@ -67,13 +68,14 @@ begin
 			else
 				src_trdy <= '0';
 			end if;
+			rdy := rd_rdy;
 		end if;
 	end process;
 
 	mem_e : entity hdl4fpga.dpram(def)
 	generic map (
 		synchronous_rdaddr => false,
-		synchronous_rddata => false)
+		synchronous_rddata => true)
 	port map (
 		wr_clk  => src_clk,
 		wr_addr => wr_addr,
@@ -84,19 +86,21 @@ begin
 		rd_data => dst_data);
 
 	process (dst_clk)
+		variable req : std_logic_vector(rd_req'range);
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				rd_rdy <= (others => '0');
-			elsif rd_req/=rd_rdy then
+			elsif req/=rd_rdy then
 				if dst_trdy='1' then
 					rd_addr <= rd_rdy;
-					rd_rdy  <= rd_req;
+					rd_rdy  <= req;
 				end if;
 				dst_irdy <= dst_trdy;
 			else
 				dst_irdy <= '0';
 			end if;
+			req := rd_req;
 		end if;
 	end process;
 

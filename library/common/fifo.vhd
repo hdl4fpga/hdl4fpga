@@ -124,15 +124,13 @@ begin
 			signal b_reg    : unsigned(0 to (latency-1)) := (others => '0');
 			signal v_reg    : unsigned(0 to (latency-1)-1) := (others => '0');
 			signal q_reg    : unsigned(0 to (latency-1)) := (others => '0');
---			signal slr_reg  : unsigned(0 to (latency-1)*dst_data'length-1);
---			signal data_reg : unsigned(0 to latency*dst_data'length-1);
 		begin
 
 			booking_p : process (dst_clk)
 				variable b : unsigned(0 to (latency-1)) := (others => '0');
 			begin
 				if rising_edge(dst_clk) then
-					b := b_reg;			-- Xilinx XST confuses b by latches if it's not copied from a signal
+					b := b_reg;			-- Xilinx XST confuses b with latches if it's not copied from a signal
 
 					if dst_ini='1' then
 						b := (others => '0');
@@ -174,11 +172,9 @@ begin
 				variable data : unsigned(0 to q'length*dst_data'length-1);
 			begin
 				if rising_edge(dst_clk) then
-					-- Xilinx XST confuses the following variables by latches if they're not copied from signals
+					-- Xilinx XST confuses the following variables with latches if they're not copied from signals
 					q    := q_reg;
 					v    := v_reg;
---					data := data_reg;
---					slr  := slr_reg;
 
 					slr(rdata'range) := unsigned(rdata);
 					slr := slr rol rdata'length;
@@ -210,8 +206,6 @@ begin
 					-- Copy the following variables to signals for them not to be confused by XST for latches
 					q_reg    <= q;
 					v_reg    <= v;
---					data_reg <= data;
---					slr_reg  <= slr;
 				end if;
 			end process;
 			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
