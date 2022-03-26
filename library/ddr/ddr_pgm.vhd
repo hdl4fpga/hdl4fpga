@@ -67,7 +67,7 @@ entity ddr_pgm is
 	constant ddro_preq  : std_logic_vector(ddro_act'range) := B"01" & "010";
 	constant ddro_aut   : std_logic_vector(ddro_act'range) := B"11" & "001";
 	constant ddro_nop   : std_logic_vector(ddro_act'range) := B"00" & "111";
-	constant ddro_nopq  : std_logic_vector(ddro_act'range) := B"10" & "111";
+	constant ddro_nopq  : std_logic_vector(ddro_act'range) := B"11" & "111";
 
 	type ddrs_states is (ddrs_act, ddrs_rea, ddrs_wri, ddrs_pre);
 
@@ -137,6 +137,11 @@ entity ddr_pgm is
 		(ddrs_wri, "101", ddrs_wri, ddro_wriq),
 		(ddrs_wri, "110", ddrs_rea, ddro_rea),
 		(ddrs_wri, "111", ddrs_rea, ddro_reaq),
+
+--		(ddrs_pre, "001", ddrs_pre, ddro_nopq),	-- PRE --
+--		(ddrs_pre, "011", ddrs_pre, ddro_nopq),
+--		(ddrs_pre, "101", ddrs_pre, ddro_nopq),
+--		(ddrs_pre, "111", ddrs_pre, ddro_nopq));
 
 		(ddrs_pre, "000", ddrs_pre, ddro_nop),	---------
 		(ddrs_pre, "001", ddrs_pre, ddro_aut),	-- PRE --
