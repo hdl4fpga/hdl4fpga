@@ -39,6 +39,11 @@ add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_i
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_input(2)
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_input(1)
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/pgm_refq
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
+add wave -noupdate -expand /testbench/du_e/ddrphy_e/sys_sti
+add wave -noupdate -expand /testbench/du_e/ddrphy_e/sys_sto
+add wave -noupdate -expand /testbench/du_e/grahics_e/ctlrphy_sti
+add wave -noupdate /testbench/du_e/grahics_e/ctlrphy_sto
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
@@ -130,10 +135,10 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {141980328 ps} 0} {{Cursor 3} {246880000 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 263
-configure wave -valuecolwidth 146
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {14836258 ps} 0} {{Cursor 3} {158662878 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 228
+configure wave -valuecolwidth 287
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -146,4 +151,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {245312109 ps} {248443981 ps}
+WaveRestoreZoom {13533600 ps} {16138916 ps}
