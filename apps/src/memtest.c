@@ -26,7 +26,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#if __MINGW32__
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
+
 #include "siolib.h"
 #include "lfsr.h"
 
