@@ -530,6 +530,7 @@ void init_socket ()
 
 void init_comms ()
 {
+#ifndef __MINGW32__
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
 		comm = stdout;
@@ -538,6 +539,7 @@ void init_comms ()
 	}
 	setvbuf(stdin,  NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
+#endif
 }
 
 void sio_setloglevel(int level)
