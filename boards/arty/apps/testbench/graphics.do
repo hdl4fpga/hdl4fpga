@@ -40,10 +40,12 @@ add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_i
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_input(1)
 add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/pgm_refq
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
-add wave -noupdate -expand /testbench/du_e/ddrphy_e/sys_sti
-add wave -noupdate -expand /testbench/du_e/ddrphy_e/sys_sto
-add wave -noupdate -expand /testbench/du_e/grahics_e/ctlrphy_sti
-add wave -noupdate /testbench/du_e/grahics_e/ctlrphy_sto
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sto
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ddrphy_e/sys_sti(7) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(6) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(5) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(4) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(3) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(2) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(1) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddrphy_e/sys_sti(7) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(6) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(5) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(4) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(3) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(2) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(1) {-radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(0) {-radix hexadecimal}} /testbench/du_e/ddrphy_e/sys_sti
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(2)
+add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(2)
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(0)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_req
@@ -135,7 +137,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {14836258 ps} 0} {{Cursor 3} {158662878 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {12278316 ps} 0} {{Cursor 3} {158674494 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 287
@@ -151,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13533600 ps} {16138916 ps}
+WaveRestoreZoom {12196899 ps} {12359733 ps}

@@ -272,7 +272,7 @@ begin
 	debug_q : if debug generate
 		signal q : bit;
 	begin
-		q <= not q after 20 ns;
+		q <= not q after 1 ns;
 		eth_ref_clk <= to_stdulogic(q);
 	end generate;
 
