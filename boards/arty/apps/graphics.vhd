@@ -647,7 +647,7 @@ begin
 		byte_size    => byte_size)
 	port map (
 
-		tp_sel      => sw(3),
+		tp_sel      => btn(3),
 		tp_delay    => tp_delay,
 		tp1         => tp1(1 to 6),
 		tp_bit      => tp_bit,
@@ -742,27 +742,19 @@ begin
 
 	end block;
 
---	led <= si_frm & si_irdy & si_trdy & si_end;
-	led(3) <= tp(6);
-	led(2) <= tp(5);
---	process (btn, tp_delay)
---		variable aux1 : std_logic_vector(3 downto 0);
---		variable aux0 : std_logic_vector(3 downto 0);
---		variable sel  : std_logic_vector(2-1 downto 0);
---
---	begin
---		rgbled <= (others => '0');
---		aux1 := "000" & tp_delay(5-1 downto 4);
---		aux0 := tp_delay(3 downto 0);
---		sel(0) := btn(1);
---		for i in 4-1 downto 0 loop
---			if btn(1)='1' then
---				rgbled(3*i+2) <= aux1(i);
---			else
---				rgbled(3*i+2) <= aux0(i);
---			end if;
---		end loop;
---	end process;
+	process (sw, tp_delay)
+		variable data : std_logic_vector(5-1 downto 0);
+	begin
+		data := word2byte(tp_delay, sw(2-1 downto 0), data'length);
+		for i in 0 to 4-1 loop
+			if data(i)='1' then
+				rgbled(3*(i+1)-1 downto 3*i)<= (others => '1');
+			else
+				rgbled(3*(i+1)-1 downto 3*i) <= (others => '0');
+			end if;
+		end loop;
+		led(0) <= data(4);
+	end process;
 --
 --	tp_g : for i in 2-1 downto 0 generate
 --		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);

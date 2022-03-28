@@ -103,7 +103,8 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dq        : std_logic_vector(sys_dqo'range);
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	constant line_delay : time := ((tcp * 1 ps)*00)/10;
+	constant dqs_linedelay : time := (tcp * 1 ps)/3;
+	constant dqi_linedelay : time := 27*(tcp * 1 ps)/32;
 begin
 
 
@@ -255,7 +256,8 @@ begin
 				dly     => adjpha_dly);
 
 
-			ddqi <= transport ddr_dqi(i) after line_delay;
+--			ddqi <= transport ddr_dqi(i) after (line_delay + (1 ps/10000));
+			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
 			dqi_i : idelaye2
 			generic map (
 				DELAY_SRC    => "IDATAIN",
@@ -433,7 +435,7 @@ begin
 				smp     => dqs_smp,
 				dly     => adjpha_dly);
 
-			ddqsi <= transport ddr_dqsi after line_delay;
+			ddqsi <= transport ddr_dqsi after dqs_linedelay;
 			tp_dqsdly <= delay;
 			dqsidelay_i : idelaye2
 			generic map (
