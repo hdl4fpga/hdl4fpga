@@ -46,12 +46,30 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/tp_delay
 add wave -noupdate /testbench/du_e/RGBled
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/tp_dqidly
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/sever
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/TCP
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/TAP_DLY
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/clk
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/dly_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/dly_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/edge
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/smp
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/dly
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/pha
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/phb
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/phc
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/step
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/num_of_taps
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/num_of_steps
+add wave -noupdate -radix unsigned /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/gaptab
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(2)
 add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(2)
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(0)
 add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(0)
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi
 add wave -noupdate -radix binary /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/tp_dqsdly

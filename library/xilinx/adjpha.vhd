@@ -33,10 +33,11 @@ use hdl4fpga.std.all;
 
 entity adjpha is
 	generic (
+		sever : SEVERITY_LEVEL := FAILURE;
 		TCP     : natural;
 		TAP_DLY : natural := 27);
 	port (
-		
+
 		clk     : in     std_logic;
 		req     : in     std_logic;
 		rdy     : buffer std_logic;
@@ -49,38 +50,43 @@ entity adjpha is
 end;
 
 architecture beh of adjpha is
-	constant num_of_taps  : natural := tCP/(2*tap_dly);
-	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+2;
-	subtype gap_word is unsigned(dly'length-1 downto 0);
+	constant required_taps : natural := tCP/(2*tap_dly)-1;
+	constant num_of_taps   : natural := setif(required_taps < 2**(dly'length-1), required_taps, 2**(dly'length-1)-1);
+	constant num_of_steps  : natural := unsigned_num_bits(num_of_taps)+1;
+	subtype gap_word is unsigned(0 to dly'length-1);
 	type gword_vector is array(natural range <>) of gap_word;
 
 	function create_gaps (
 		constant num_of_taps  : natural;
 		constant num_of_steps : natural)
 		return gword_vector is
-		variable val : gword_vector(2**unsigned_num_bits(num_of_steps)-1 downto 0);
-		variable aux : natural;
+		variable val : gword_vector(2**unsigned_num_bits(num_of_steps-1)-1 downto 0):= (others => (others => '-'));
+		variable c, q : natural;
 	begin
-		val := (others => (others => '-'));
-		aux := num_of_taps;
+		(c, q) := natural_vector'(num_of_taps, 1);
 		val(num_of_steps-1) := to_unsigned(2**(gap_word'length-1), gap_word'length);
-		for i in num_of_steps-2 downto 1 loop
-			val(i) := to_unsigned((aux+1)/2, gap_word'length);
-			aux    := aux / 2;
+		for i in num_of_steps-2 downto 0 loop
+			(c, q) := natural_vector'((c + q) / 2, (c+q) mod 2);
+			val(i) := to_unsigned(c, gap_word'length);
 		end loop;
-		val(0) := (others => '0');
 		return val;
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
 
-	signal   pha    : gap_word;
-	signal   phb    : gap_word;
-	signal   phc    : gap_word;
-	signal   step   : unsigned(0 to unsigned_num_bits(num_of_steps-1));
+	signal pha  : gap_word;
+	signal phb  : gap_word;
+	signal phc  : gap_word;
+	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1)-1);
 
 begin
-  
+
+	assert num_of_taps < 2**(dly'length-1)
+	report "num_of_steps " & integer'image(num_of_taps) &
+	       " greater or equal than 2**(dly'length-1) "  &
+	       integer'image(2**(dly'length-1))
+	severity sever;
+
 	process(req, clk)
 	begin
 		if rising_edge(clk) then
@@ -118,6 +124,6 @@ begin
 			end if;
 		end if;
 	end process;
-	dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+	dly <= std_logic_vector(pha);
 
 end;

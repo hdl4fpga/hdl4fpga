@@ -243,6 +243,7 @@ begin
 			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
+				sever => warning,
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
@@ -423,6 +424,7 @@ begin
 			dqs_smp <= to_stdulogic(to_bit(smp(1)));
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
+				sever => warning,
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
