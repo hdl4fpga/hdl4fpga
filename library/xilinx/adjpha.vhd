@@ -33,11 +33,8 @@ use hdl4fpga.std.all;
 
 entity adjpha is
 	generic (
-		sever : SEVERITY_LEVEL := FAILURE;
-		TCP     : natural;
-		TAP_DLY : natural := 27);
+		taps    : natural);
 	port (
-
 		clk     : in     std_logic;
 		req     : in     std_logic;
 		rdy     : buffer std_logic;
@@ -50,9 +47,8 @@ entity adjpha is
 end;
 
 architecture beh of adjpha is
-	constant requested_taps : natural := tCP/(2*tap_dly)-1;
-	constant num_of_taps    : natural := setif(requested_taps < 2**(dly'length-1), requested_taps, 2**(dly'length-1)-1);
-	constant num_of_steps   : natural := unsigned_num_bits(num_of_taps)+1;
+	constant num_of_taps  : natural := setif(taps < 2**(dly'length-1), taps, 2**(dly'length-1)-1);
+	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+1;
 	subtype gap_word is unsigned(0 to dly'length-1);
 	type gword_vector is array(natural range <>) of gap_word;
 
@@ -85,7 +81,7 @@ begin
 	report "num_of_steps " & integer'image(num_of_taps) &
 	       " greater or equal than 2**(dly'length-1) "  &
 	       integer'image(2**(dly'length-1))
-	severity sever;
+	severity WARNING;
 
 	process(req, clk)
 	begin

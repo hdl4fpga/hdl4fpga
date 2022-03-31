@@ -46,8 +46,6 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/tp_delay
 add wave -noupdate /testbench/du_e/RGBled
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/tp_dqidly
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/sever
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/requested_taps
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/clk
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/rdy
@@ -66,6 +64,7 @@ add wave -noupdate -radix unsigned /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/adjdqs_rdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/taps
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(2)
 add wave -noupdate /testbench/du_e/ddrphy_e/sys_sto(2)
@@ -164,10 +163,10 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {12821048 ps} 0} {{Cursor 3} {14042180 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 228
-configure wave -valuecolwidth 287
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {12144969 ps} 0} {{Cursor 3} {14042180 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 167
+configure wave -valuecolwidth 106
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -180,4 +179,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {15544335 ps} {16023983 ps}
+WaveRestoreZoom {12074468 ps} {12217772 ps}
