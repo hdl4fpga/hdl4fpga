@@ -43,7 +43,7 @@ entity xc7a_ddrphy is
 		clkinv       : std_logic := '0');
 	port (
 		tp_bit       : out std_logic_vector(word_size/byte_size*5-1 downto 0);
-	   	tp_delay     : out std_logic_vector(word_size/byte_size*5-1 downto 0);
+	   	tp_delay     : out std_logic_vector(word_size/byte_size*6-1 downto 0);
 		tp_sel       : in  std_logic := '0';
 		tp1          : out std_logic_vector(6-1 downto 0);
 
@@ -554,7 +554,7 @@ begin
 			byte_size  => byte_size)
 		port map (
 			tp_sel     => tp_sel,
-			tp_delay   => tp_delay(5*(i+1)-1 downto 5*i),
+			tp_delay   => tp_delay(6*(i+1)-1 downto 6*i),
 			tp_bit     => tp_bit(5*(i+1)-1 downto i*5),
 			sys_clks   => sys_clks,
 			sys_rsts   => phy_rsts,

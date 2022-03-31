@@ -45,7 +45,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr333MHz;
+	constant profile     : profiles := mode900p_ddr350MHz;
 
 	signal sys_rst : std_logic;
 
@@ -254,7 +254,7 @@ architecture graphics of arty is
 	signal ioctrl_clk : std_logic;
 	signal ioctrl_rdy : std_logic;
 
-	signal tp_delay   : std_logic_vector(word_size/byte_size*5-1 downto 0);
+	signal tp_delay   : std_logic_vector(word_size/byte_size*6-1 downto 0);
 	signal tp_bit     : std_logic_vector(word_size/byte_size*5-1 downto 0) := (others  => 'Z');
 	signal tp1        : std_logic_vector(1 to 32);
 	signal prst       : std_logic;
@@ -743,7 +743,7 @@ begin
 	end block;
 
 	process (sw, tp_delay)
-		variable data : std_logic_vector(5-1 downto 0);
+		variable data : std_logic_vector(6-1 downto 0);
 	begin
 		data := word2byte(tp_delay, sw(2-1 downto 0), data'length);
 		for i in 0 to 4-1 loop
@@ -754,6 +754,7 @@ begin
 			end if;
 		end loop;
 		led(0) <= data(4);
+		led(1) <= data(5);
 	end process;
 --
 --	tp_g : for i in 2-1 downto 0 generate

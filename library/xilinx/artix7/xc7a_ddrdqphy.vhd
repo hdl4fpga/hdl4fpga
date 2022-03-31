@@ -38,7 +38,7 @@ entity xc7a_ddrdqphy is
 	port (
 		tp_bit       : out std_logic_vector(5-1 downto 0);
 		tp_sel       : in  std_logic;
-		tp_delay     : out std_logic_vector(5-1 downto 0);
+		tp_delay     : out std_logic_vector(6-1 downto 0);
 
 		sys_rsts     : in std_logic_vector;
 		sys_clks     : in std_logic_vector;
@@ -101,8 +101,8 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal imdr_inv   : std_logic;
 
 	signal dq        : std_logic_vector(sys_dqo'range);
-	signal tp_dqidly : std_logic_vector(0 to 5-1);
-	signal tp_dqsdly : std_logic_vector(0 to 5-1);
+	signal tp_dqidly : std_logic_vector(0 to 6-1);
+	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 	constant dqs_linedelay : time := (tcp * 1 ps)/3;
 	constant dqi_linedelay : time := 27*(tcp * 1 ps)/32;
 begin
@@ -165,35 +165,35 @@ begin
 			q(2) => dq(2*BYTE_SIZE+i),
 			q(3) => dq(3*BYTE_SIZE+i));
 
-		dly_g : entity hdl4fpga.align
-		generic map (
-			n => 4,
-			d => (1, 1, 1, 1))
-		port map (
-			clk => sys_clks(clk90div),
-			di(0) => dq(2*BYTE_SIZE+i),
-			di(1) => dq(3*BYTE_SIZE+i),
-			di(2) => dq(0*BYTE_SIZE+i),
-			di(3) => dq(1*BYTE_SIZE+i),
-		    do(0) => sys_dqo(2*BYTE_SIZE+i),
-		    do(1) => sys_dqo(3*BYTE_SIZE+i),
-		    do(2) => sys_dqo(0*BYTE_SIZE+i),
-		    do(3) => sys_dqo(1*BYTE_SIZE+i));
-
 --		dly_g : entity hdl4fpga.align
 --		generic map (
 --			n => 4,
---			d => (1, 1, 0, 0))
+--			d => (1, 1, 1, 1))
 --		port map (
 --			clk => sys_clks(clk90div),
 --			di(0) => dq(2*BYTE_SIZE+i),
 --			di(1) => dq(3*BYTE_SIZE+i),
 --			di(2) => dq(0*BYTE_SIZE+i),
 --			di(3) => dq(1*BYTE_SIZE+i),
---			do(0) => sys_dqo(0*BYTE_SIZE+i),
---			do(1) => sys_dqo(1*BYTE_SIZE+i),
---			do(2) => sys_dqo(2*BYTE_SIZE+i),
---			do(3) => sys_dqo(3*BYTE_SIZE+i));
+--		    do(0) => sys_dqo(2*BYTE_SIZE+i),
+--		    do(1) => sys_dqo(3*BYTE_SIZE+i),
+--		    do(2) => sys_dqo(0*BYTE_SIZE+i),
+--		    do(3) => sys_dqo(1*BYTE_SIZE+i));
+
+		dly_g : entity hdl4fpga.align
+		generic map (
+			n => 4,
+			d => (1, 1, 0, 0))
+		port map (
+			clk => sys_clks(clk90div),
+			di(0) => dq(2*BYTE_SIZE+i),
+			di(1) => dq(3*BYTE_SIZE+i),
+			di(2) => dq(0*BYTE_SIZE+i),
+			di(3) => dq(1*BYTE_SIZE+i),
+			do(0) => sys_dqo(0*BYTE_SIZE+i),
+			do(1) => sys_dqo(1*BYTE_SIZE+i),
+			do(2) => sys_dqo(2*BYTE_SIZE+i),
+			do(3) => sys_dqo(3*BYTE_SIZE+i));
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
@@ -236,7 +236,7 @@ begin
 			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			tp_g : if i=0 generate
-				tp_dqidly <= delay;
+				tp_dqidly <= adjpha_dly(0) & delay;
 				tp_bit(4) <= dq1;
 			end generate;
 
@@ -438,7 +438,7 @@ begin
 				dly     => adjpha_dly);
 
 			ddqsi <= transport ddr_dqsi after dqs_linedelay;
-			tp_dqsdly <= delay;
+			tp_dqsdly <= adjpha_dly(0)  & delay;
 			dqsidelay_i : idelaye2
 			generic map (
 				DELAY_SRC      => "IDATAIN",

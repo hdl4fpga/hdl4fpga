@@ -50,9 +50,9 @@ entity adjpha is
 end;
 
 architecture beh of adjpha is
-	constant required_taps : natural := tCP/(2*tap_dly)-1;
-	constant num_of_taps   : natural := setif(required_taps < 2**(dly'length-1), required_taps, 2**(dly'length-1)-1);
-	constant num_of_steps  : natural := unsigned_num_bits(num_of_taps)+1;
+	constant requested_taps : natural := tCP/(2*tap_dly)-1;
+	constant num_of_taps    : natural := setif(requested_taps < 2**(dly'length-1), requested_taps, 2**(dly'length-1)-1);
+	constant num_of_steps   : natural := unsigned_num_bits(num_of_taps)+1;
 	subtype gap_word is unsigned(0 to dly'length-1);
 	type gword_vector is array(natural range <>) of gap_word;
 
@@ -77,7 +77,7 @@ architecture beh of adjpha is
 	signal pha  : gap_word;
 	signal phb  : gap_word;
 	signal phc  : gap_word;
-	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1)-1);
+	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 
 begin
 
