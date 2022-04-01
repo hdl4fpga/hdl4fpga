@@ -33,30 +33,31 @@ use hdl4fpga.std.all;
 
 entity adjpha is
 	generic (
-		taps    : natural);
+		taps : natural);
 	port (
-		clk     : in     std_logic;
-		req     : in     std_logic;
-		rdy     : buffer std_logic;
-		dly_rdy : in     std_logic;
-		dly_req : buffer std_logic;
-		edge    : in     std_logic;
-		smp     : in     std_logic;
-		dly     : out    std_logic_vector);
-
+		clk      : in   std_logic;
+		req      : in  std_logic;
+		rdy      : buffer std_logic;
+		step_req : buffer std_logic;
+		step_rdy : in  std_logic;
+		edge     : in  std_logic;
+		smp      : in  std_logic;
+		inv      : out std_logic;
+		delay    : out std_logic_vector);
 end;
 
 architecture beh of adjpha is
-	constant num_of_taps  : natural := setif(taps < 2**(dly'length-1), taps, 2**(dly'length-1)-1);
+
+	constant num_of_taps  : natural := setif(taps < 2**(delay'length-1), taps, 2**(delay'length-1)-1);
 	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+1;
-	subtype gap_word is unsigned(0 to dly'length-1);
+	subtype gap_word is unsigned(0 to delay'length);
 	type gword_vector is array(natural range <>) of gap_word;
 
 	function create_gaps (
 		constant num_of_taps  : natural;
 		constant num_of_steps : natural)
 		return gword_vector is
-		variable val : gword_vector(2**unsigned_num_bits(num_of_steps-1)-1 downto 0):= (others => (others => '-'));
+		variable val  : gword_vector(2**unsigned_num_bits(num_of_steps-1)-1 downto 0):= (others => (others => '-'));
 		variable c, q : natural;
 	begin
 		(c, q) := natural_vector'(num_of_taps, 1);
@@ -70,56 +71,44 @@ architecture beh of adjpha is
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
 
-	signal pha  : gap_word;
-	signal phb  : gap_word;
-	signal phc  : gap_word;
-	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-
 begin
 
-	assert num_of_taps < 2**(dly'length-1)
+	assert num_of_taps < 2**(delay'length-1)
 	report "num_of_steps " & integer'image(num_of_taps) &
-	       " greater or equal than 2**(dly'length-1) "  &
-	       integer'image(2**(dly'length-1))
+	       " greater or equal than 2**(delay'length-1) "  &
+	       integer'image(2**(delay'length-1))
 	severity WARNING;
 
-	process(req, clk)
+	process(clk)
+		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
+		variable phase : gap_word;
+		variable saved : gap_word;
 	begin
 		if rising_edge(clk) then
-			if req='0' then
-				step <= to_unsigned(num_of_steps-1, step'length);
-				phb  <= (others => '0');
-				pha  <= (others => '0');
-				rdy  <= '0';
-				dly_req <= '0';
+			if (req xor rdy)='0' then
+				saved  := (others => '0');
+				phase  := (others => '0');
+				step   := to_unsigned(num_of_steps-1, step'length);
+				step_req <= step_rdy;
 			elsif step(0)='0' then
-				if dly_rdy='1' then
-					if dly_req='1' then
-						if smp=edge then
-							phb <= pha;
-						end if;
-						pha  <= phc + gaptab(to_integer(step(1 to step'right)));
-						step <= step - 1;
-					end if;
-					dly_req <= '0';
-				else
+				if (step_req xor step_rdy)='0' then
 					if smp=edge then
-						phc <= pha;
+						saved := phase;
+						phase := phase + gaptab(to_integer(step(1 to step'right)));
 					else
-						phc <= phb;
+						phase := saved + gaptab(to_integer(step(1 to step'right)));
 					end if;
-					dly_req <= '1';
+					step     := step - 1;
+					step_req <= not step_rdy;
 				end if;
-				rdy <= '0';
-			elsif rdy='0' then
-				if dly_rdy='0' then
-					dly_req <= '1';
-				elsif dly_req='1' then
-					rdy <= dly_rdy;
-				end if;
+				inv   <= phase(0);
+				delay <= std_logic_vector(phase(1 to delay'length));
+			else
+--				delay <= std_logic_vector(phase + gaptab(num_of_steps-1));
+				delay <= std_logic_vector(phase(1 to delay'length));
+				rdy   <= req;
 			end if;
 		end if;
 	end process;
-	dly <= std_logic_vector(pha);
 
 end;

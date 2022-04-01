@@ -98,17 +98,16 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqsi       : std_logic;
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
-	signal imdr_inv   : std_logic;
 
 	signal dq        : std_logic_vector(sys_dqo'range);
-	signal tp_dqidly : std_logic_vector(0 to 6-1);
-	signal tp_dqsdly : std_logic_vector(0 to 6-1);
+	signal tp_dqidly : std_logic_vector(0 to 5-1);
+	signal tp_dqsdly : std_logic_vector(0 to 5-1);
 	constant dqs_linedelay : time := (tcp * 1 ps)/3;
 	constant dqi_linedelay : time := 27*(tcp * 1 ps)/32;
 begin
 
 
-	tp_delay <= tp_dqidly when tp_sel='1' else tp_dqsdly;
+	tp_delay <= '0' & tp_dqidly when tp_sel='1' else '0' & tp_dqsdly;
 	sys_wlrdy <= sys_wlreq;
 	process (sys_clks(iodclk))
 		variable aux : std_logic;
@@ -197,8 +196,7 @@ begin
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
-			signal delay         : std_logic_vector(1 to 6-1);
-			signal adjpha_dly    : std_logic_vector(0 to 6-1);
+			signal delay         : std_logic_vector(0 to 5-1);
 			signal adjdqi_dlyreq : std_logic;
 			signal adjpha_dlyreq : std_logic;
 			signal adjpha_rdy    : std_logic;
@@ -233,12 +231,6 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
-
-			tp_g : if i=0 generate
-				tp_dqidly <= adjpha_dly(0) & delay;
-				tp_bit(4) <= dq1;
-			end generate;
 
 			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
 			adjdqi_e : entity hdl4fpga.adjpha
@@ -249,11 +241,15 @@ begin
 				clk     => sys_clks(iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
-				dly_req => adjpha_dlyreq,
-				dly_rdy => dly_rdy,
+				step_req => adjpha_dlyreq,
+				step_rdy => dly_rdy,
 				smp     => dq1,
-				dly     => adjpha_dly);
+				delay   => delay);
 
+			tp_g : if i=0 generate
+				tp_dqidly <= delay;
+				tp_bit(4) <= dq1;
+			end generate;
 
 --			ddqi <= transport ddr_dqi(i) after (line_delay + (1 ps/10000));
 			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
@@ -265,7 +261,7 @@ begin
 				regrst      => iod_rst,
 				c           => sys_clks(iodclk),
 				ld          => '1',
-				cntvaluein  => delay(1 to delay'right),
+				cntvaluein  => delay,
 				idatain     => ddqi,
 				dataout     => dqi(i),
 				cinvctrl    => std_logic'('0'),
@@ -371,7 +367,6 @@ begin
 	end block;
 
 	dqso_b : block
-		signal edge      : std_logic;
 		signal smp       : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto       : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
@@ -386,55 +381,36 @@ begin
 	begin
 
 		adjdqs_b : block
-			signal delay         : std_logic_vector(1 to 6-1);
-			signal adjpha_dly    : std_logic_vector(0 to 6-1);
-			signal adjsto_dlyreq : std_logic;
-			signal adjpha_dlyreq : std_logic;
-			signal dly_rdy       : std_logic;
-			signal dly_req       : std_logic;
-			signal iod_rst       : std_logic;
-			signal iod_ce        : std_logic;
-			signal ddqsi : std_logic;
+			signal step_rdy : std_logic;
+			signal step_req : std_logic;
+			signal delay    : std_logic_vector(0 to 5-1);
+			signal ddqsi    : std_logic;
 		begin
 
 			process (sys_clks(iodclk))
-				variable q : std_logic;
 			begin
 				if rising_edge(sys_clks(iodclk)) then
-					if adjdqs_rdy='0'then
-						adjsto_dlyreq <= '0';
-					elsif dly_rdy='0' then
-						adjsto_dlyreq <= '1';
+					if (step_req xor step_rdy)='1' then
+						step_rdy <= step_req;
 					end if;
-
-					if dly_req='0' then
-						dly_rdy <= '0';
-					else
-						dly_rdy <= q;
-					end if;
-					q := dly_req;
 				end if;
 			end process;
-
-			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			dqs_smp <= to_stdulogic(to_bit(smp(1)));
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
 				taps    => tCP/tap_dly-1)
 			port map (
-				edge    => std_logic'('0'),
-				clk     => sys_clks(iodclk),
-				req     => adjdqs_req,
-				rdy     => adjdqs_rdy,
-				dly_rdy => dly_rdy,
-				dly_req => adjpha_dlyreq,
-				smp     => dqs_smp,
-				dly     => adjpha_dly);
+				edge     => std_logic'('0'),
+				clk      => sys_clks(iodclk),
+				req      => adjdqs_req,
+				rdy      => adjdqs_rdy,
+				step_req => step_rdy,
+				step_rdy => step_rdy,
+				smp      => dqs_smp,
+				delay    => delay);
 
 			ddqsi <= transport ddr_dqsi after dqs_linedelay;
-			tp_dqsdly <= adjpha_dly(0)  & delay;
 			dqsidelay_i : idelaye2
 			generic map (
 				DELAY_SRC      => "IDATAIN",
@@ -452,9 +428,9 @@ begin
 				inc        => '0',
 				ldpipeen   => '0',
 				datain     => '0');
---				dqsi <= to_stdulogic(to_bit(dqsi_buf));
-				dqsi <= dqsi_buf;
+				dqsi       <= dqsi_buf;
 
+			tp_dqsdly <= delay;
 		end block;
 
 		process (sys_clks(clk0div))
@@ -483,18 +459,16 @@ begin
 			d(0) => dqsi,
 			q    => smp);
 
-
-		process (sys_rlreq, sys_clks(iodclk))
-			variable q : std_logic;
+		process (sys_clks(iodclk))
 		begin
-			if sys_rlreq='0' then
-				adjdqs_req <= '0';
-				q := '0';
-			elsif rising_edge(sys_clks(iodclk)) then
-				if adjdqs_req='0' then
-					adjdqs_req <= q;
+			if rising_edge(sys_clks(iodclk)) then
+				if sys_rlreq='0' then
+					adjdqs_req <= '0';
+				elsif sys_sti(0)='1' then
+					if (adjdqs_req xor adjdqs_rdy)='0' then
+						adjdqs_req <= not adjdqs_rdy;
+					end if;
 				end if;
-				q := sys_sti(0);
 			end if;
 		end process;
 
@@ -502,8 +476,6 @@ begin
 		begin
 			if rising_edge(sys_clks(iodclk)) then
 				if adjdqs_req='0' then
-					edge     <= to_stdulogic(to_bit(smp(0)));
-					imdr_inv <= '0'; --not smp(0);
 				end if;
 			end if;
 		end process;
