@@ -390,9 +390,7 @@ begin
 			process (sys_clks(iodclk))
 			begin
 				if rising_edge(sys_clks(iodclk)) then
-					if (step_req xor step_rdy)='1' then
-						step_rdy <= step_req;
-					end if;
+					step_rdy <= step_req;
 				end if;
 			end process;
 
@@ -405,7 +403,7 @@ begin
 				clk      => sys_clks(iodclk),
 				req      => adjdqs_req,
 				rdy      => adjdqs_rdy,
-				step_req => step_rdy,
+				step_req => step_req,
 				step_rdy => step_rdy,
 				smp      => dqs_smp,
 				delay    => delay);

@@ -48,7 +48,7 @@ end;
 
 architecture beh of adjpha is
 
-	constant num_of_taps  : natural := setif(taps < 2**(delay'length-1), taps, 2**(delay'length-1)-1);
+	constant num_of_taps  : natural := setif(taps < 2**delay'length-1, taps, 2**delay'length-1);
 	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+1;
 	subtype gap_word is unsigned(0 to delay'length);
 	type gword_vector is array(natural range <>) of gap_word;
@@ -73,37 +73,41 @@ architecture beh of adjpha is
 
 begin
 
-	assert num_of_taps < 2**(delay'length-1)
+	assert num_of_taps < 2**delay'length
 	report "num_of_steps " & integer'image(num_of_taps) &
-	       " greater or equal than 2**(delay'length-1) "  &
-	       integer'image(2**(delay'length-1))
+	       " greater or equal than 2**delay'length-1 "  &
+	       integer'image(2**delay'length-1)
 	severity WARNING;
 
 	process(clk)
-		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 		variable phase : gap_word;
 		variable saved : gap_word;
+		variable start : std_logic;
+		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 	begin
 		if rising_edge(clk) then
-			if (req xor rdy)='0' then
-				saved  := (others => '0');
-				phase  := (others => '0');
-				step   := to_unsigned(num_of_steps-1, step'length);
-				step_req <= step_rdy;
-			elsif step(0)='0' then
-				if (step_req xor step_rdy)='0' then
-					if smp=edge then
-						saved := phase;
-						phase := phase + gaptab(to_integer(step(1 to step'right)));
-					else
-						phase := saved + gaptab(to_integer(step(1 to step'right)));
+			if to_bit(req xor rdy)='1' then
+				if start='0' then
+					saved := (others => '0');
+					phase := (others => '0');
+					start := '1';
+					step  := to_unsigned(num_of_steps-1, step'length);
+				elsif step(0)='0' then
+					if to_bit(step_req xor step_rdy)='0' then
+						if smp=edge then
+							saved := phase;
+							phase := phase + gaptab(to_integer(step(1 to step'right)));
+						else
+							phase := saved + gaptab(to_integer(step(1 to step'right)));
+						end if;
+						step     := step - 1;
+						step_req <= not to_stdulogic(to_bit(step_rdy));
 					end if;
-					step     := step - 1;
-					step_req <= not step_rdy;
+					inv   <= phase(0);
+					delay <= std_logic_vector(phase(1 to delay'length));
 				end if;
-				inv   <= phase(0);
-				delay <= std_logic_vector(phase(1 to delay'length));
 			else
+				start := '0';
 --				delay <= std_logic_vector(phase + gaptab(num_of_steps-1));
 				delay <= std_logic_vector(phase(1 to delay'length));
 				rdy   <= req;
