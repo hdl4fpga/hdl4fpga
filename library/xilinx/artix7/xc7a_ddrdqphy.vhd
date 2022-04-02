@@ -388,16 +388,23 @@ begin
 		begin
 
 			process (sys_clks(iodclk))
+				variable q : unsigned(0 to 4-1);
 			begin
 				if rising_edge(sys_clks(iodclk)) then
-					step_rdy <= step_req;
+					if (step_rdy xor step_req)='1' then
+						step_rdy <= q(0) and step_req;
+						q := q + 1;
+					else
+						step_rdy <= step_req;
+						q := (others => '0');
+					end if;
 				end if;
 			end process;
 
 			dqs_smp <= to_stdulogic(to_bit(smp(1)));
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
-				taps    => tCP/tap_dly-1)
+				taps    => 23) --tCP/tap_dly-1)
 			port map (
 				edge     => std_logic'('0'),
 				clk      => sys_clks(iodclk),

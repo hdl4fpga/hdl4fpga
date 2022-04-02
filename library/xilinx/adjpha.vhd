@@ -33,7 +33,7 @@ use hdl4fpga.std.all;
 
 entity adjpha is
 	generic (
-		taps : natural);
+		taps     : natural);
 	port (
 		clk      : in   std_logic;
 		req      : in  std_logic;
@@ -70,6 +70,7 @@ architecture beh of adjpha is
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
+	constant tap4   : natural := num_of_steps-2;
 
 begin
 
@@ -105,11 +106,19 @@ begin
 					end if;
 					inv   <= phase(0);
 					delay <= std_logic_vector(phase(1 to delay'length));
+				else
+					if num_of_taps-gaptab(num_of_steps-1) <= gaptab(num_of_steps-1) then
+						saved := phase + gaptab(tap4);
+					else
+						saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
+					end if;
+					inv   <= saved(0);
+					delay <= std_logic_vector(saved(1 to delay'length));
+					start := '0';
+					rdy   <= req;
 				end if;
 			else
 				start := '0';
---				delay <= std_logic_vector(phase + gaptab(num_of_steps-1));
-				delay <= std_logic_vector(phase(1 to delay'length));
 				rdy   <= req;
 			end if;
 		end if;
