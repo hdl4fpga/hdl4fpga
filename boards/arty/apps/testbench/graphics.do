@@ -47,8 +47,8 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/edge
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/smp
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/inv
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_buf
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_clks(3)
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_buf
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/delay
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/num_of_taps
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/num_of_steps
@@ -57,6 +57,7 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/tap4
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/line__83/start
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjdqs_b/adjdqs_e/line__83/step
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/smp
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_clk
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_sti(2)
@@ -153,7 +154,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {12822019 ps} 0} {{Cursor 3} {13091287 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {13352587 ps} 0} {{Cursor 3} {13885926 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 106
@@ -169,4 +170,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {12693446 ps} {13734886 ps}
+WaveRestoreZoom {12374529 ps} {14212033 ps}

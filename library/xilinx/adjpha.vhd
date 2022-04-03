@@ -94,7 +94,7 @@ begin
 					start := '1';
 					step  := to_unsigned(num_of_steps-1, step'length);
 				elsif step(0)='0' then
-					if to_bit(step_req xor step_rdy)='0' then
+					if to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
 						if smp=edge then
 							saved := phase;
 							phase := phase + gaptab(to_integer(step(1 to step'right)));
@@ -107,7 +107,7 @@ begin
 					inv   <= phase(0);
 					delay <= std_logic_vector(phase(1 to delay'length));
 				else
-					if num_of_taps-gaptab(num_of_steps-1) <= gaptab(num_of_steps-1) then
+					if num_of_taps-phase(1 to delay'length) <= gaptab(tap4) then
 						saved := phase + gaptab(tap4);
 					else
 						saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));

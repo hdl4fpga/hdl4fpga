@@ -391,11 +391,10 @@ begin
 				variable q : unsigned(0 to 4-1);
 			begin
 				if rising_edge(sys_clks(iodclk)) then
-					if (step_rdy xor step_req)='1' then
-						step_rdy <= q(0) and step_req;
+					if (to_stdulogic(to_bit(step_rdy)) xor step_req)='1' then
+						step_rdy <= q(0) xnor to_stdulogic(to_bit(step_req));
 						q := q + 1;
 					else
-						step_rdy <= step_req;
 						q := (others => '0');
 					end if;
 				end if;
