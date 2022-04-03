@@ -107,7 +107,7 @@ begin
 					inv   <= phase(0);
 					delay <= std_logic_vector(phase(1 to delay'length));
 				else
-					if num_of_taps-phase(1 to delay'length) <= gaptab(tap4) then
+					if num_of_taps-gaptab(tap4) >= phase(1 to delay'length) then
 						saved := phase + gaptab(tap4);
 					else
 						saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
