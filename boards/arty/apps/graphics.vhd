@@ -255,7 +255,6 @@ architecture graphics of arty is
 	signal ioctrl_rdy : std_logic;
 
 	signal tp_delay   : std_logic_vector(word_size/byte_size*6-1 downto 0);
-	signal tp_bit     : std_logic_vector(word_size/byte_size*5-1 downto 0) := (others  => 'Z');
 	signal tp1        : std_logic_vector(1 to 32);
 	signal prst       : std_logic;
 
@@ -650,7 +649,6 @@ begin
 		tp_sel      => btn(3),
 		tp_delay    => tp_delay,
 		tp1         => tp1(1 to 6),
-		tp_bit      => tp_bit,
 
 		phy_rsts(0) => prst,
 		phy_rsts(1) => prst,

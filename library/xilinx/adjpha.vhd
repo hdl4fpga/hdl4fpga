@@ -70,7 +70,7 @@ architecture beh of adjpha is
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
-	constant tap4   : natural := num_of_steps-2;
+	constant tap4   : natural := num_of_steps-3;
 
 begin
 
@@ -93,8 +93,8 @@ begin
 					phase := (others => '0');
 					start := '1';
 					step  := to_unsigned(num_of_steps-1, step'length);
-				elsif step(0)='0' then
-					if to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
+				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
+					if step(0)='0' then
 						if smp=edge then
 							saved := phase;
 							phase := phase + gaptab(to_integer(step(1 to step'right)));
@@ -103,19 +103,19 @@ begin
 						end if;
 						step     := step - 1;
 						step_req <= not to_stdulogic(to_bit(step_rdy));
-					end if;
-					inv   <= phase(0);
-					delay <= std_logic_vector(phase(1 to delay'length));
-				else
-					if num_of_taps-gaptab(tap4) >= phase(1 to delay'length) then
-						saved := phase + gaptab(tap4);
+						inv   <= phase(0);
+						delay <= std_logic_vector(phase(1 to delay'length));
 					else
-						saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
+						if num_of_taps-gaptab(tap4) >= phase(1 to delay'length) then
+							saved := phase + gaptab(tap4);
+						else
+							saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
+						end if;
+						inv   <= saved(0);
+						delay <= std_logic_vector(saved(1 to delay'length));
+						start := '0';
+						rdy   <= req;
 					end if;
-					inv   <= saved(0);
-					delay <= std_logic_vector(saved(1 to delay'length));
-					start := '0';
-					rdy   <= req;
 				end if;
 			else
 				start := '0';

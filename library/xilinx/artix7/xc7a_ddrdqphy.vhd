@@ -36,7 +36,6 @@ entity xc7a_ddrdqphy is
 		DATA_EDGE    : boolean;
 		BYTE_SIZE    : natural);
 	port (
-		tp_bit       : out std_logic_vector(5-1 downto 0);
 		tp_sel       : in  std_logic;
 		tp_delay     : out std_logic_vector(6-1 downto 0);
 
@@ -124,9 +123,124 @@ begin
 	sys_rlrdy <= rlrdy;
 	rlrdy <= adjsto_rdy;
 
-	tp_bit(1) <= adjdqs_rdy;
-	tp_bit(2) <= adjsto_req;
-	tp_bit(3) <= adjsto_rdy;
+	process (sys_clks(iodclk))
+	begin
+		if rising_edge(sys_clks(iodclk)) then
+			if sys_rlreq='0' then
+				adjdqs_req <= '0';
+			elsif sys_sti(0)='1' then
+				adjdqs_req <= '1';
+			end if;
+		end if;
+	end process;
+	adjdqi_req <= adjdqs_rdy;
+
+	dqsi_b : block
+		signal step_rdy : std_logic;
+		signal step_req : std_logic;
+		signal delay    : std_logic_vector(0 to 5-1);
+		signal ddqsi    : std_logic;
+		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
+		signal dqs_smp  : std_logic;
+		signal sto      : std_logic;
+		signal sto_smp  : std_logic_vector(smp'range);
+		signal imdr_rst : std_logic;
+		signal imdr_clk : std_logic_vector(0 to 5-1);
+	begin
+
+		step_delay_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => 4))
+		port map (
+			clk => sys_clks(iodclk),
+			di(0) => step_req,
+			do(0) => step_rdy);
+
+		dqs_smp <= to_stdulogic(to_bit(smp(1)));
+		adjdqs_e : entity hdl4fpga.adjpha
+		generic map (
+			taps    => tCP/tap_dly-1)
+		port map (
+			edge     => std_logic'('0'),
+			clk      => sys_clks(iodclk),
+			req      => adjdqs_req,
+			rdy      => adjdqs_rdy,
+		step_req => step_req,
+			step_rdy => step_rdy,
+			smp      => dqs_smp,
+			delay    => delay);
+
+		ddqsi <= transport ddr_dqsi after dqs_linedelay;
+		dqsidelay_i : idelaye2
+		generic map (
+			DELAY_SRC      => "IDATAIN",
+			IDELAY_TYPE    => "VAR_LOAD",
+			SIGNAL_PATTERN => "CLOCK")
+		port map (
+			regrst     => sys_rsts(rstiod),
+			c          => sys_clks(iodclk),
+			ld         => '1',
+			cntvaluein => delay,
+			idatain    => ddqsi,
+			dataout    => dqsi_buf,
+			cinvctrl   => '0',
+			ce         => '0',
+			inc        => '0',
+			ldpipeen   => '0',
+			datain     => '0');
+			dqsi       <= dqsi_buf;
+
+		imdr_clk <= (
+			0 => sys_clks(clk0div),
+			1 => sys_clks(clk0),
+			2 => not sys_clks(clk90),
+			3 => not sys_clks(clk0),
+			4 => sys_clks(clk90));
+
+		imdr_i : entity hdl4fpga.imdr
+		generic map (
+			SIZE => 1,
+			GEAR => DATA_GEAR)
+		port map (
+			rst  => imdr_rst,
+			clk  => imdr_clk,
+			d(0) => dqsi,
+			q    => smp);
+
+		tp_dqsdly <= delay;
+		process (sys_clks(clk0div))
+			variable q : std_logic;
+		begin
+			if rising_edge(sys_clks(clk0div)) then
+				imdr_rst <= q;
+				q := sys_rsts(rst0div);
+			end if;
+		end process;
+
+		adjsto_e : entity hdl4fpga.adjsto
+		generic map (
+			GEAR => DATA_GEAR)
+		port map (
+			ddr_clk  => sys_clks(clk0div),
+			iod_clk  => sys_clks(iodclk),
+			ddr_sti  => sys_sti(0),
+			ddr_sto  => sto,
+			ddr_smp  => sto_smp,
+			sys_req  => adjsto_req,
+			sys_rdy  => adjsto_rdy);
+
+		process (sys_clks(clk90div))
+			variable st : std_logic;
+		begin
+			if rising_edge(sys_clks(clk90div)) then
+				sys_sto <= (others => sto);
+				st := sto;
+			end if;
+		end process;
+
+		sto_smp <= smp;
+	end block;
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in ddr_dqi'range generate
@@ -134,6 +248,68 @@ begin
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal adjdqi_st : std_logic;
 	begin
+
+		adjdqi_b : block
+			signal delay    : std_logic_vector(0 to 5-1);
+			signal step_req : std_logic;
+			signal step_rdy : std_logic;
+			signal ddqi     : std_logic;
+			signal dq1      : std_logic;
+		begin
+
+			step_delay_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 => 4))
+			port map (
+				clk   => sys_clks(iodclk),
+				di(0) => step_req,
+				do(0) => step_rdy);
+
+			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
+			adjdqi_e : entity hdl4fpga.adjpha
+			generic map (
+				taps     => tCP/tap_dly-1)
+			port map (
+				edge     => std_logic'('1'),
+				clk      => sys_clks(iodclk),
+				req      => adjdqi_req,
+				rdy      => adjdqi_rdy(i),
+				step_req => step_req,
+				step_rdy => step_rdy,
+				smp      => dq1,
+				delay    => delay);
+
+			tp_g : if i=0 generate
+				tp_dqidly <= delay;
+			end generate;
+
+			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
+			dqi_i : idelaye2
+			generic map (
+				DELAY_SRC    => "IDATAIN",
+				IDELAY_TYPE  => "VAR_LOAD")
+			port map (
+				regrst      => iod_rst,
+				c           => sys_clks(iodclk),
+				ld          => '1',
+				cntvaluein  => delay,
+				idatain     => ddqi,
+				dataout     => dqi(i),
+				cinvctrl    => std_logic'('0'),
+				ce          => std_logic'('0'),
+				inc         => std_logic'('0'),
+				ldpipeen    => std_logic'('0'),
+				datain      => std_logic'('0'));
+
+		end block;
+
+		imdr_clk <= (
+			0 => sys_clks(clk90div),
+			1 => sys_clks(clk90),
+			2 => sys_clks(clk90),
+			3 => not sys_clks(clk90),
+			4 => not sys_clks(clk90));
 
 		process (sys_clks(clk90div))
 			variable q : std_logic;
@@ -143,13 +319,6 @@ begin
 				q := sys_rsts(rst90div) or not adjdqs_req;
 			end if;
 		end process;
-
-		imdr_clk <= (
-			0 => sys_clks(clk90div),
-			1 => sys_clks(clk90),
-			2 => sys_clks(clk90),
-			3 => not sys_clks(clk90),
-			4 => not sys_clks(clk90));
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -193,84 +362,6 @@ begin
 			do(1) => sys_dqo(1*BYTE_SIZE+i),
 			do(2) => sys_dqo(2*BYTE_SIZE+i),
 			do(3) => sys_dqo(3*BYTE_SIZE+i));
-
-		adjdqi_req <= adjdqs_rdy;
-		adjdqi_b : block
-			signal delay         : std_logic_vector(0 to 5-1);
-			signal adjdqi_dlyreq : std_logic;
-			signal adjpha_dlyreq : std_logic;
-			signal adjpha_rdy    : std_logic;
-			signal dly_rdy       : std_logic;
-			signal dly_req       : std_logic;
-			signal iod_ce        : std_logic;
-			signal iod_rst       : std_logic;
-			signal ddqi          : std_logic;
-			signal dq1           : std_logic;
-		begin
-			process (sys_clks(iodclk))
-				variable q : std_logic;
-			begin
-				if rising_edge(sys_clks(iodclk)) then
-					if adjpha_rdy='0'then
-						adjdqi_dlyreq <= '0';
-						adjdqi_rdy(i) <= '0';
-					elsif dly_rdy='0' then
-						adjdqi_dlyreq <= '1';
-						adjdqi_rdy(i) <= '0';
-					else
-						adjdqi_rdy(i) <= '1';
-					end if;
-
-					if dly_req='0' then
-						dly_rdy <= '0';
-					else
-						dly_rdy <= q;
-					end if;
-					q := dly_req;
-				end if;
-			end process;
-
-			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-
-			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
-			adjdqi_e : entity hdl4fpga.adjpha
-			generic map (
-				taps    => tCP/tap_dly-1)
-			port map (
-				edge    => std_logic'('1'),
-				clk     => sys_clks(iodclk),
-				req     => adjdqi_req,
-				rdy     => adjpha_rdy,
-				step_req => adjpha_dlyreq,
-				step_rdy => dly_rdy,
-				smp     => dq1,
-				delay   => delay);
-
-			tp_g : if i=0 generate
-				tp_dqidly <= delay;
-				tp_bit(4) <= dq1;
-			end generate;
-
---			ddqi <= transport ddr_dqi(i) after (line_delay + (1 ps/10000));
-			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
-			dqi_i : idelaye2
-			generic map (
-				DELAY_SRC    => "IDATAIN",
-				IDELAY_TYPE  => "VAR_LOAD")
-			port map (
-				regrst      => iod_rst,
-				c           => sys_clks(iodclk),
-				ld          => '1',
-				cntvaluein  => delay,
-				idatain     => ddqi,
-				dataout     => dqi(i),
-				cinvctrl    => std_logic'('0'),
-				ce          => std_logic'('0'),
-				inc         => std_logic'('0'),
-				ldpipeen    => std_logic'('0'),
-				datain      => std_logic'('0'));
-
-		end block;
 
 	end generate;
 
@@ -367,144 +458,12 @@ begin
 	end block;
 
 	dqso_b : block
-		signal smp       : std_logic_vector(0 to DATA_GEAR-1);
-		signal sto       : std_logic;
-		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal dqso      : std_logic_vector(sys_dqso'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
 		signal adjdly    : std_logic_vector(0 to 5);
-		signal imdr_rst  : std_logic;
 		signal adjdqs_st : std_logic;
-		signal dqs_smp   : std_logic;
-		signal sto_smp   : std_logic_vector(smp'range);
 	begin
-
-		adjdqs_b : block
-			signal step_rdy : std_logic;
-			signal step_req : std_logic;
-			signal delay    : std_logic_vector(0 to 5-1);
-			signal ddqsi    : std_logic;
-		begin
-
-			process (sys_clks(iodclk))
-				variable q : unsigned(0 to 4-1);
-			begin
-				if rising_edge(sys_clks(iodclk)) then
-					if (to_stdulogic(to_bit(step_rdy)) xor step_req)='1' then
-						step_rdy <= q(0) xnor to_stdulogic(to_bit(step_req));
-						q := q + 1;
-					else
-						q := (others => '0');
-					end if;
-				end if;
-			end process;
-
-			dqs_smp <= to_stdulogic(to_bit(smp(1)));
-			adjdqs_e : entity hdl4fpga.adjpha
-			generic map (
-				taps    => 23) --tCP/tap_dly-1)
-			port map (
-				edge     => std_logic'('0'),
-				clk      => sys_clks(iodclk),
-				req      => adjdqs_req,
-				rdy      => adjdqs_rdy,
-				step_req => step_req,
-				step_rdy => step_rdy,
-				smp      => dqs_smp,
-				delay    => delay);
-
-			ddqsi <= transport ddr_dqsi after dqs_linedelay;
-			dqsidelay_i : idelaye2
-			generic map (
-				DELAY_SRC      => "IDATAIN",
-				IDELAY_TYPE    => "VAR_LOAD",
-				SIGNAL_PATTERN => "CLOCK")
-			port map (
-				regrst     => sys_rsts(rstiod),
-				c          => sys_clks(iodclk),
-				ld         => '1',
-				cntvaluein => delay,
-				idatain    => ddqsi,
-				dataout    => dqsi_buf,
-				cinvctrl   => '0',
-				ce         => '0',
-				inc        => '0',
-				ldpipeen   => '0',
-				datain     => '0');
-				dqsi       <= dqsi_buf;
-
-			tp_dqsdly <= delay;
-		end block;
-
-		process (sys_clks(clk0div))
-			variable q : std_logic;
-		begin
-			if rising_edge(sys_clks(clk0div)) then
-				imdr_rst <= q;
-				q := sys_rsts(rst0div);
-			end if;
-		end process;
-
-		imdr_clk <= (
-			0 => sys_clks(clk0div),
-			1 => sys_clks(clk0),
-			2 => not sys_clks(clk90),
-			3 => not sys_clks(clk0),
-			4 => sys_clks(clk90));
-
-		imdr_i : entity hdl4fpga.imdr
-		generic map (
-			SIZE => 1,
-			GEAR => DATA_GEAR)
-		port map (
-			rst  => imdr_rst,
-			clk  => imdr_clk,
-			d(0) => dqsi,
-			q    => smp);
-
-		process (sys_clks(iodclk))
-		begin
-			if rising_edge(sys_clks(iodclk)) then
-				if sys_rlreq='0' then
-					adjdqs_req <= '0';
-				elsif sys_sti(0)='1' then
-					if (adjdqs_req xor adjdqs_rdy)='0' then
-						adjdqs_req <= not adjdqs_rdy;
-					end if;
-				end if;
-			end if;
-		end process;
-
-		process (sys_clks(iodclk))
-		begin
-			if rising_edge(sys_clks(iodclk)) then
-				if adjdqs_req='0' then
-				end if;
-			end if;
-		end process;
-
-		sto_smp <= smp;
-		adjsto_e : entity hdl4fpga.adjsto
-		generic map (
-			GEAR => DATA_GEAR)
-		port map (
-			ddr_clk  => sys_clks(clk0div),
-			iod_clk  => sys_clks(iodclk),
-			ddr_sti  => sys_sti(0),
-			ddr_sto  => sto,
-			ddr_smp  => sto_smp,
-			sys_req  => adjsto_req,
-			sys_rdy  => adjsto_rdy);
-
-		process (sys_clks(clk90div))
-			variable st : std_logic;
-		begin
-			if rising_edge(sys_clks(clk90div)) then
-				sys_sto <= (others => sto);
-				st := sto;
-			end if;
-		end process;
 
 		process (sys_dqso)
 		begin
@@ -530,6 +489,5 @@ begin
 			d    => dqso,
 			q(0) => ddr_dqso);
 
-		tp_bit(0) <= smp(0);
 	end block;
 end;
