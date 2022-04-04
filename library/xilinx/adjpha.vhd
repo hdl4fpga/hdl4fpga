@@ -110,6 +110,9 @@ begin
 							saved := phase + gaptab(tap4);
 						else
 							saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
+							assert true
+							report "hola"
+							severity failure;
 						end if;
 						inv   <= saved(0);
 						delay <= std_logic_vector(saved(1 to delay'length));
