@@ -223,7 +223,6 @@ begin
 			GEAR => DATA_GEAR)
 		port map (
 			ddr_clk  => sys_clks(clk0div),
-			iod_clk  => sys_clks(iodclk),
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
 			ddr_smp  => sto_smp,
