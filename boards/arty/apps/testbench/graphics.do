@@ -79,6 +79,8 @@ add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddr
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sti
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sto
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/cy
+add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/line__41/cntr
+add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/line__41/sto
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/line__41/acc
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/line__41/start
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/sel
@@ -203,4 +205,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13412168 ps} {13494807 ps}
+WaveRestoreZoom {13358590 ps} {13672450 ps}
