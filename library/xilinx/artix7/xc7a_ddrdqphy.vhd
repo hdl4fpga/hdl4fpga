@@ -208,7 +208,7 @@ begin
 			d(0) => dqsi,
 			q    => smp);
 
-		tp_dqsdly <= delay;
+--		tp_dqsdly <= delay;
 		process (sys_clks(clk0div))
 			variable q : std_logic;
 		begin
@@ -222,6 +222,7 @@ begin
 		generic map (
 			GEAR => DATA_GEAR)
 		port map (
+			tp => tp_dqsdly(0 to 2),
 			ddr_clk  => sys_clks(clk0div),
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,

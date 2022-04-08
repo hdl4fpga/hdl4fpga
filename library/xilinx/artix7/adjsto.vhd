@@ -6,6 +6,7 @@ entity adjsto is
 	generic (
 		GEAR     : natural);
 	port (
+		tp       : out std_logic_vector(1 to 3);
 		ddr_clk  : in std_logic;
 		sys_req  : in std_logic;
 		sys_rdy  : buffer std_logic;
@@ -28,6 +29,7 @@ architecture def of adjsto is
 
 begin
 
+	tp(1 to 3) <= std_logic_vector(sel);
 	process (ddr_sti, sel, ddr_clk)
 		variable delay : unsigned(0 to bl-1);
 	begin
