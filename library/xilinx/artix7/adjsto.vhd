@@ -20,7 +20,7 @@ use hdl4fpga.std.all;
 architecture def of adjsto is
 
 	constant bl     : natural := 8/2;
-	signal cy       : std_logic;
+	signal sync     : std_logic;
 	signal sel      : unsigned(0 to unsigned_num_bits(bl-1));
 
 	signal step_req : std_logic;
@@ -38,35 +38,33 @@ begin
 		ddr_sto <= word2byte(reverse(std_logic_vector(delay) & ddr_sti), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
-	process (ddr_clk)
+	 process (ddr_clk)
 		variable start : std_logic;
-		variable acc   : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
 		variable sto   : std_logic;
 	begin
 		if rising_edge(ddr_clk) then
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
-					cy   <= '0';
-					acc  := to_unsigned(GEAR/2-1, acc'length);
+					sync   <= '1';
 					cntr := to_unsigned(GEAR/2-1, cntr'length);
 					if ddr_sto='0' then
 						start := '1';
 					end if;
 				else
 					if cntr(0)='1' then
-						cy       <= '0'; --acc(0);
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
 						case ddr_smp(0 to 3) is
 						when "0010"|"1001"|"0100" =>
-							acc := acc + 1;
-						when "1010"|"0101" =>
-							acc := acc + 2;
-						when "010X" =>
-							acc := acc + 1;
+							sync  <= '0';
+						when "1010" =>
+							sync  <= '0';
+						when "0101" =>
+							sync  <= sync and '1';
 						when others =>
+							sync  <= '0';
 						end case;
 					elsif sto='1' then
 						cntr := cntr - 1;
@@ -92,7 +90,7 @@ begin
 				elsif start='1' then
 					if sel(0)='0' then
 						if to_bit(step_req xor step_rdy)='0' then
-							if cy ='0' then
+							if sync ='0' then
 								sel      <= sel + 1;
 								step_req <= not step_rdy;
 							else

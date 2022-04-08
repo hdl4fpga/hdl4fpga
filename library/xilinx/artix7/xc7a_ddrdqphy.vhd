@@ -94,7 +94,6 @@ architecture virtex7 of xc7a_ddrdqphy is
 
 	signal iod_rst    : std_logic;
 	signal dqsi_buf   : std_logic;
-	signal dqsi       : std_logic;
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
 
@@ -139,6 +138,7 @@ begin
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
 		signal delay    : std_logic_vector(0 to 5-1);
+		signal dqsi     : std_logic;
 		signal ddqsi    : std_logic;
 		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
 		signal dqs_smp  : std_logic;
