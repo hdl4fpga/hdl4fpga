@@ -29,13 +29,13 @@ architecture def of adjsto is
 begin
 
 	process (ddr_sti, sel, ddr_clk)
-		variable delay : unsigned(1 to bl-1);
+		variable delay : unsigned(0 to bl-1);
 	begin
 		if rising_edge(ddr_clk) then
-			delay(1) := ddr_sti;
+			delay(0) := ddr_sti;
 			delay    := rotate_left(delay,1);
 		end if;
-		ddr_sto <= word2byte(reverse(std_logic_vector(delay) & ddr_sti), std_logic_vector(resize(sel,sel'length-1)));
+		ddr_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
 	 process (ddr_clk)
@@ -56,12 +56,9 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
-						case ddr_smp(0 to 3) is
-						when "0101" =>
-							sync  <= sync and '1';
-						when others =>
+						if ddr_smp/="0101" then
 							sync  <= '0';
-						end case;
+						end if;
 					elsif sto='1' then
 						cntr := cntr - 1;
 					end if;
