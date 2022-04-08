@@ -57,10 +57,6 @@ begin
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
 						case ddr_smp(0 to 3) is
-						when "0010"|"1001"|"0100" =>
-							sync  <= '0';
-						when "1010" =>
-							sync  <= '0';
 						when "0101" =>
 							sync  <= sync and '1';
 						when others =>

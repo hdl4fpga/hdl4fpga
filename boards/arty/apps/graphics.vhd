@@ -39,13 +39,14 @@ architecture graphics of arty is
 	type profiles is (
 		mode900p_ddr333MHz,
 		mode900p_ddr350MHz,
+		mode900p_ddr375MHz,
 		mode900p_ddr400MHz,
 		mode900p_ddr450MHz,
 		mode900p_ddr500MHz,
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr350MHz;
+	constant profile     : profiles := mode900p_ddr375MHz;
 
 	signal sys_rst : std_logic;
 
@@ -76,6 +77,7 @@ architecture graphics of arty is
 	type ddr_speeds is (
 		ddr333MHz,
 		ddr350MHz,
+		ddr375MHz,
 		ddr400MHz,
 		ddr450MHz,
 		ddr500MHz,
@@ -93,6 +95,7 @@ architecture graphics of arty is
 	constant ddr_tab : ddram_vector := (
 		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "010", cwl => "000"),
 		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
+		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
 		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
@@ -172,6 +175,7 @@ architecture graphics of arty is
 	constant profile_tab : profileparam_vector := (
 		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
 		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
+		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
 		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
 		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
 		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
