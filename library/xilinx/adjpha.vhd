@@ -41,7 +41,7 @@ entity adjpha is
 		step_req : buffer std_logic;
 		step_rdy : in  std_logic;
 		edge     : in  std_logic;
-		smp      : in  std_logic;
+		smp      : in  std_logic_vector;
 		inv      : out std_logic;
 		delay    : out std_logic_vector);
 end;
@@ -85,6 +85,7 @@ begin
 		variable saved : gap_word;
 		variable start : std_logic;
 		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
+		variable seq   : unsigned(0 to smp'length-1);
 	begin
 		if rising_edge(clk) then
 			if to_bit(req xor rdy)='1' then
@@ -95,7 +96,16 @@ begin
 					step  := to_unsigned(num_of_steps-1, step'length);
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
 					if step(0)='0' then
-						if smp=edge then
+						seq := (others => '-');
+						for i in smp'range loop
+							if i mod 2=0 then
+								seq(0) := edge;
+							else
+								seq(0) := not edge;
+							end if;
+							seq := shift_left(seq, 1);
+						end loop;
+						if smp=std_logic_vector(seq) then
 							saved := phase;
 							phase := phase + gaptab(to_integer(step(1 to step'right)));
 						else

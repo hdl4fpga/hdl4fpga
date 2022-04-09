@@ -141,7 +141,7 @@ begin
 		signal dqsi     : std_logic;
 		signal ddqsi    : std_logic;
 		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
-		signal dqs_smp  : std_logic;
+		signal dqs_smp  : std_logic_vector(smp'range);
 		signal sto      : std_logic;
 		signal sto_smp  : std_logic_vector(smp'range);
 		signal imdr_rst : std_logic;
@@ -157,7 +157,7 @@ begin
 			di(0) => step_req,
 			do(0) => step_rdy);
 
-		dqs_smp <= to_stdulogic(to_bit(smp(1)));
+		dqs_smp <= to_stdlogicvector(to_bitvector(smp));
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			taps    => tCP/tap_dly-1)
@@ -253,8 +253,8 @@ begin
 			signal delay    : std_logic_vector(0 to 5-1);
 			signal step_req : std_logic;
 			signal step_rdy : std_logic;
+			signal dq_smp   : std_logic_vector(0 to DATA_GEAR-1);
 			signal ddqi     : std_logic;
-			signal dq1      : std_logic;
 		begin
 
 			step_delay_e : entity hdl4fpga.align
@@ -266,7 +266,10 @@ begin
 				di(0) => step_req,
 				do(0) => step_rdy);
 
-			dq1 <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
+			dq_smp(0) <= to_stdulogic(to_bit(dq(0*BYTE_SIZE+i)));
+			dq_smp(1) <= to_stdulogic(to_bit(dq(1*BYTE_SIZE+i)));
+			dq_smp(2) <= to_stdulogic(to_bit(dq(2*BYTE_SIZE+i)));
+			dq_smp(3) <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
 				taps     => tCP/tap_dly-1)
@@ -277,7 +280,7 @@ begin
 				rdy      => adjdqi_rdy(i),
 				step_req => step_req,
 				step_rdy => step_rdy,
-				smp      => dq1,
+				smp      => dq_smp,
 				delay    => delay);
 
 			tp_g : if i=0 generate
