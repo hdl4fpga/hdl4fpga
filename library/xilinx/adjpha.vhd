@@ -69,8 +69,9 @@ architecture beh of adjpha is
 		return val;
 	end;
 
-	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
-	constant tap4   : natural := num_of_steps-3;
+	constant gaptab   : gword_vector := create_gaps(num_of_taps, num_of_steps);
+	constant tap4     : natural := num_of_steps-3;
+	constant tap4_gap : gap_word := gaptab(tap4);
 
 begin
 
@@ -97,13 +98,13 @@ begin
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
 					if step(0)='0' then
 						seq := (others => '-');
-						for i in smp'range loop
+						for i in seq'range loop
 							if i mod 2=0 then
 								seq(0) := edge;
 							else
 								seq(0) := not edge;
 							end if;
-							seq := shift_left(seq, 1);
+							seq := rotate_left(seq, 1);
 						end loop;
 						if smp=std_logic_vector(seq) then
 							saved := phase;
@@ -116,10 +117,10 @@ begin
 						inv   <= phase(0);
 						delay <= std_logic_vector(phase(1 to delay'length));
 					else
-						if num_of_taps-gaptab(tap4) >= phase(1 to delay'length) then
-							saved := phase + gaptab(tap4);
+						if num_of_taps-tap4_gap >= phase(1 to delay'length) then
+							saved := phase + tap4_gap-1;
 						else
-							saved := phase + (gaptab(tap4) + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
+							saved := phase + (tap4_gap + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
 							assert true
 							report "hola"
 							severity failure;

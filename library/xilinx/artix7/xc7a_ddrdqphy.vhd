@@ -162,7 +162,7 @@ begin
 		generic map (
 			taps    => tCP/tap_dly-1)
 		port map (
-			edge     => std_logic'('0'),
+			edge     => std_logic'('1'),
 			clk      => sys_clks(iodclk),
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
@@ -224,6 +224,7 @@ begin
 		port map (
 			tp => tp_dqsdly(0 to 2),
 			ddr_clk  => sys_clks(clk0div),
+			edge => '0',
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
 			ddr_smp  => sto_smp,
@@ -266,15 +267,12 @@ begin
 				di(0) => step_req,
 				do(0) => step_rdy);
 
-			dq_smp(0) <= to_stdulogic(to_bit(dq(0*BYTE_SIZE+i)));
-			dq_smp(1) <= to_stdulogic(to_bit(dq(1*BYTE_SIZE+i)));
-			dq_smp(2) <= to_stdulogic(to_bit(dq(2*BYTE_SIZE+i)));
-			dq_smp(3) <= to_stdulogic(to_bit(dq(3*BYTE_SIZE+i)));
+			dq_smp <= (dq(0*BYTE_SIZE+i), dq(1*BYTE_SIZE+i), dq(2*BYTE_SIZE+i), dq(3*BYTE_SIZE+i));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
 				taps     => tCP/tap_dly-1)
 			port map (
-				edge     => std_logic'('1'),
+				edge     => std_logic'('0'),
 				clk      => sys_clks(iodclk),
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),

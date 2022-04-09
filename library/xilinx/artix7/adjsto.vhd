@@ -8,9 +8,10 @@ entity adjsto is
 	port (
 		tp       : out std_logic_vector(1 to 3);
 		ddr_clk  : in std_logic;
+		edge     : in std_logic;
 		sys_req  : in std_logic;
 		sys_rdy  : buffer std_logic;
-		ddr_smp  : in std_logic_vector(0 to GEAR-1);
+		ddr_smp  : in std_logic_vector;
 		ddr_sti  : in std_logic;
 		ddr_sto  : buffer std_logic);
 end;
@@ -41,6 +42,7 @@ begin
 	end process;
 
 	 process (ddr_clk)
+		variable seq   : unsigned(0 to ddr_smp'length-1);
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
 		variable sto   : std_logic;
@@ -58,7 +60,15 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
-						if ddr_smp/="0101" then
+						for i in seq'range loop
+							if i mod 2=0 then
+								seq(0) := edge;
+							else
+								seq(0) := not edge;
+							end if;
+							seq := rotate_left(seq, 1);
+						end loop;
+						if ddr_smp/=std_logic_vector(seq) then
 							sync  <= '0';
 						end if;
 					elsif sto='1' then
