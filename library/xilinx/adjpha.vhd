@@ -73,6 +73,8 @@ architecture beh of adjpha is
 	constant tap4     : natural := num_of_steps-3;
 	constant tap4_gap : gap_word := gaptab(tap4);
 
+	signal ledge      : gap_word;
+	signal redge      : gap_word;
 begin
 
 	assert num_of_taps < 2**delay'length
@@ -89,7 +91,7 @@ begin
 		variable seq   : unsigned(0 to smp'length-1);
 	begin
 		if rising_edge(clk) then
-			if to_bit(req xor rdy)='1' then
+			if to_bit(edge_req xor edge_rdy)='1' then
 				if start='0' then
 					saved := (others => '0');
 					phase := (others => '0');
@@ -128,32 +130,43 @@ begin
 						inv   <= saved(0);
 						delay <= std_logic_vector(saved(1 to delay'length));
 						start := '0';
-						rdy   <= req;
+						edge_rdy <= edge_req;
 					end if;
 				end if;
 			else
 				start := '0';
-				rdy   <= req;
+				edge_rdy <= edge_req;
 			end if;
 		end if;
 	end process;
 
 	process(clk)
-		variable edge1 : unsigned(delay'range);
-		variable edge2 : unsigned(delay'range);
 		variable start : std_logic;
-		variable xxx   :
+		variable rledge : std_logic;
 	begin
 		if rising_edge(clk) then
 			if to_bit(req xor rdy)='1' then
 				if start='0' then
-				    xxx := 0;
+				    rledge := 0;
 					start := '1';
 					edge_req <= not edge_redy;
 				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
-					if xxx='0' then
+					if rledge='0' then
+						ledge <= phase;
+						rledge := '1';
+						edge_req <= not edge_redy;
+					elsif phase < ledge then
+						ledge := ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
+						ledge := shift_right(ledge,1);
+						delay <= std_logic_vector(ledge(1 to delay'length));
+						start := '0';
+						edge_req <= edge_rdy;
+						rdy   <= req;
+					end if;
 				end if;
 			else
+				edge_req <= edge_rdy;
+				rdy   <= req;
 				start := '0';
 			end if;
 		end if;
