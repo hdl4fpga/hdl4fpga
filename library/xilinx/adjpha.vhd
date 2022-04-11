@@ -105,9 +105,9 @@ begin
 						seq := (others => '-');
 						for i in seq'range loop
 							if i mod 2=0 then
-								seq(0) := edge;
+								seq(0) := (edge xor rledge);
 							else
-								seq(0) := not edge;
+								seq(0) := not (edge xor rledge);
 							end if;
 							seq := rotate_left(seq, 1);
 						end loop;
