@@ -69,12 +69,14 @@ architecture beh of adjpha is
 		return val;
 	end;
 
-	constant gaptab   : gword_vector := create_gaps(num_of_taps, num_of_steps);
-	constant tap4     : natural := num_of_steps-3;
-	constant tap4_gap : gap_word := gaptab(tap4);
+	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
 
-	signal ledge      : gap_word;
-	signal redge      : gap_word;
+	signal edge_req : std_logic;
+	signal edge_rdy : std_logic;
+	signal phase    : gap_word;
+	signal ledge    : gap_word;
+	signal redge    : gap_word;
+
 begin
 
 	assert num_of_taps < 2**delay'length
@@ -84,7 +86,6 @@ begin
 	severity WARNING;
 
 	process(clk)
-		variable phase : gap_word;
 		variable saved : gap_word;
 		variable start : std_logic;
 		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
@@ -94,7 +95,7 @@ begin
 			if to_bit(edge_req xor edge_rdy)='1' then
 				if start='0' then
 					saved := (others => '0');
-					phase := (others => '0');
+					phase <= (others => '0');
 					step  := to_unsigned(num_of_steps-1, step'length);
 					start := '1';
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
@@ -110,25 +111,14 @@ begin
 						end loop;
 						if smp=std_logic_vector(seq) then
 							saved := phase;
-							phase := phase + gaptab(to_integer(step(1 to step'right)));
+							phase <= phase + gaptab(to_integer(step(1 to step'right)));
 						else
-							phase := saved + gaptab(to_integer(step(1 to step'right)));
+							phase <= saved + gaptab(to_integer(step(1 to step'right)));
 						end if;
-						step     := step - 1;
-						step_req <= not to_stdulogic(to_bit(step_rdy));
+						step  := step - 1;
 						inv   <= phase(0);
-						delay <= std_logic_vector(phase(1 to delay'length));
+						step_req <= not to_stdulogic(to_bit(step_rdy));
 					else
-						if num_of_taps-tap4_gap >= phase(1 to delay'length) then
-							saved := phase + tap4_gap-1;
-						else
-							saved := phase + (tap4_gap + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1)));
-							assert true
-							report "hola"
-							severity failure;
-						end if;
-						inv   <= saved(0);
-						delay <= std_logic_vector(saved(1 to delay'length));
 						start := '0';
 						edge_rdy <= edge_req;
 					end if;
@@ -141,27 +131,33 @@ begin
 	end process;
 
 	process(clk)
-		variable start : std_logic;
+		variable start  : std_logic;
 		variable rledge : std_logic;
+		variable avrge  : gap_word;
 	begin
 		if rising_edge(clk) then
 			if to_bit(req xor rdy)='1' then
 				if start='0' then
-				    rledge := 0;
-					start := '1';
-					edge_req <= not edge_redy;
+				    rledge   := '0';
+					edge_req <= not edge_rdy;
+					start    := '1';
 				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
 					if rledge='0' then
-						ledge <= phase;
-						rledge := '1';
-						edge_req <= not edge_redy;
-					elsif phase < ledge then
-						ledge := ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
-						ledge := shift_right(ledge,1);
-						delay <= std_logic_vector(ledge(1 to delay'length));
-						start := '0';
+						ledge    <= phase;
+						rledge   := '1';
+						edge_req <= not edge_rdy;
+						start    := '1';
+					else
+						if phase < ledge then
+							avrge := ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
+						else
+							avrge := ledge + phase;
+						end if;
+						avrge := shift_right(avrge,1);
+						delay <= std_logic_vector(avrge(1 to delay'length));
 						edge_req <= edge_rdy;
 						rdy   <= req;
+						start := '0';
 					end if;
 				end if;
 			else
