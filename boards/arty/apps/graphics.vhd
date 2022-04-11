@@ -41,6 +41,7 @@ architecture graphics of arty is
 		mode900p_ddr350MHz,
 		mode900p_ddr375MHz,
 		mode900p_ddr400MHz,
+		mode900p_ddr425MHz,
 		mode900p_ddr450MHz,
 		mode900p_ddr500MHz,
 		mode900p_ddr525MHz,
@@ -79,6 +80,7 @@ architecture graphics of arty is
 		ddr350MHz,
 		ddr375MHz,
 		ddr400MHz,
+		ddr425MHz,
 		ddr450MHz,
 		ddr500MHz,
 		ddr525MHz,
@@ -86,17 +88,18 @@ architecture graphics of arty is
 
 	type ddram_vector is array (ddr_speeds) of ddr_params;
 
-	------------------------------------------------------------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 450 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
-	-- Multiply by --  10     --   7     --  15     --   4     --   9     --   5     --  21      22     --
-	-- Divide by   --   3     --   2     --   4     --   1     --   2     --   1     --   4       4     --
-	------------------------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz -- 450 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
+	-- Multiply by --  10     --   7     --  15     --   4     --  17     --   9     --   5     --  21      22     --
+	-- Divide by   --   3     --   2     --   4     --   1     --   4     --   2     --   1     --   4       4     --
+	-----------------------------------------------------------------------------------------------------------------
 
 	constant ddr_tab : ddram_vector := (
 		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "010", cwl => "000"),
 		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
 		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
+		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
 		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
@@ -177,6 +180,7 @@ architecture graphics of arty is
 		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
 		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
 		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
+		mode900p_ddr425MHz => (ddr425MHz, mode900p, 1),
 		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
 		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
 		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),

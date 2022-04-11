@@ -93,8 +93,8 @@ begin
 				if start='0' then
 					saved := (others => '0');
 					phase := (others => '0');
-					start := '1';
 					step  := to_unsigned(num_of_steps-1, step'length);
+					start := '1';
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
 					if step(0)='0' then
 						seq := (others => '-');
@@ -134,6 +134,27 @@ begin
 			else
 				start := '0';
 				rdy   <= req;
+			end if;
+		end if;
+	end process;
+
+	process(clk)
+		variable edge1 : unsigned(delay'range);
+		variable edge2 : unsigned(delay'range);
+		variable start : std_logic;
+		variable xxx   :
+	begin
+		if rising_edge(clk) then
+			if to_bit(req xor rdy)='1' then
+				if start='0' then
+				    xxx := 0;
+					start := '1';
+					edge_req <= not edge_redy;
+				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
+					if xxx='0' then
+				end if;
+			else
+				start := '0';
 			end if;
 		end if;
 	end process;
