@@ -76,6 +76,8 @@ architecture beh of adjpha is
 	signal phase    : gap_word;
 	signal ledge    : gap_word;
 	signal redge    : gap_word;
+	signal rledge   : std_logic;
+	signal avrge    : gap_word;
 
 begin
 
@@ -117,6 +119,7 @@ begin
 						end if;
 						step  := step - 1;
 						inv   <= phase(0);
+						delay <= std_logic_vector(avrge(1 to delay'length));
 						step_req <= not to_stdulogic(to_bit(step_rdy));
 					else
 						start := '0';
@@ -132,28 +135,26 @@ begin
 
 	process(clk)
 		variable start  : std_logic;
-		variable rledge : std_logic;
-		variable avrge  : gap_word;
 	begin
 		if rising_edge(clk) then
 			if to_bit(req xor rdy)='1' then
 				if start='0' then
-				    rledge   := '0';
+				    rledge   <= '0';
 					edge_req <= not edge_rdy;
 					start    := '1';
 				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
 					if rledge='0' then
 						ledge    <= phase;
-						rledge   := '1';
+						rledge   <= '1';
 						edge_req <= not edge_rdy;
 						start    := '1';
 					else
 						if phase < ledge then
-							avrge := ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
+							avrge <= ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
 						else
-							avrge := ledge + phase;
+							avrge <= ledge + phase;
 						end if;
-						avrge := shift_right(avrge,1);
+						avrge <= shift_right(avrge,1);
 						delay <= std_logic_vector(avrge(1 to delay'length));
 						edge_req <= edge_rdy;
 						rdy   <= req;
@@ -167,5 +168,9 @@ begin
 			end if;
 		end if;
 	end process;
+
+	delay <=
+		std_logic_vector(phase) when to_bit(rdy xor req)='1' else
+		std_logic_vector(shift_right(avrge,1));
 
 end;
