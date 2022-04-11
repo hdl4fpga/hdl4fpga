@@ -75,10 +75,11 @@ architecture beh of adjpha is
 	signal edge_rdy : std_logic;
 	signal phase    : gap_word;
 	signal ledge    : gap_word;
-	signal redge    : gap_word;
 	signal rledge   : std_logic;
 	signal avrge    : gap_word;
-
+	signal sum1    : gap_word;
+	signal saved : gap_word;
+	constant xxx : natural := (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
 begin
 
 	assert num_of_taps < 2**delay'length
@@ -88,38 +89,48 @@ begin
 	severity WARNING;
 
 	process(clk)
-		variable saved : gap_word;
 		variable start : std_logic;
 		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 		variable seq   : unsigned(0 to smp'length-1);
+		variable gap   : gap_word;
 	begin
 		if rising_edge(clk) then
 			if to_bit(edge_req xor edge_rdy)='1' then
 				if start='0' then
-					saved := (others => '0');
+					saved <= (others => '0');
 					phase <= (others => '0');
 					step  := to_unsigned(num_of_steps-1, step'length);
+					step_req <= not to_stdulogic(to_bit(step_rdy));
 					start := '1';
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
-					if step(0)='0' then
-						seq := (others => '-');
-						for i in seq'range loop
-							if i mod 2=0 then
-								seq(0) := (edge xor rledge);
-							else
-								seq(0) := not (edge xor rledge);
-							end if;
-							seq := rotate_left(seq, 1);
-						end loop;
-						if smp=std_logic_vector(seq) then
-							saved := phase;
-							phase <= phase + gaptab(to_integer(step(1 to step'right)));
+					seq := (others => '-');
+					for i in seq'range loop
+						if i mod 2=0 then
+							seq(0) := (edge xor rledge);
 						else
-							phase <= saved + gaptab(to_integer(step(1 to step'right)));
+							seq(0) := not (edge xor rledge);
 						end if;
+						seq := rotate_left(seq, 1);
+					end loop;
+
+					if smp=std_logic_vector(seq) then
+						saved <= phase;
+					end if;
+
+					if step(0)='0' then
+						gap := gaptab(to_integer(step(1 to step'right)));
+					else
+						gap := (others => '0');
+					end if;
+
+					if smp=std_logic_vector(seq) then
+						phase <= phase + gap;
+					else
+						phase <= saved + gap;
+					end if;
+
+					if step(0)='0' then
 						step  := step - 1;
-						inv   <= phase(0);
-						delay <= std_logic_vector(avrge(1 to delay'length));
 						step_req <= not to_stdulogic(to_bit(step_rdy));
 					else
 						start := '0';
@@ -128,19 +139,20 @@ begin
 				end if;
 			else
 				start := '0';
-				edge_rdy <= edge_req;
+				edge_rdy <= to_stdulogic(to_bit(edge_req));
 			end if;
 		end if;
 	end process;
 
 	process(clk)
-		variable start  : std_logic;
+		variable start : std_logic;
+		variable sum   : gap_word;
 	begin
 		if rising_edge(clk) then
 			if to_bit(req xor rdy)='1' then
 				if start='0' then
 				    rledge   <= '0';
-					edge_req <= not edge_rdy;
+					edge_req <= not to_stdulogic(to_bit(edge_rdy));
 					start    := '1';
 				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
 					if rledge='0' then
@@ -149,13 +161,13 @@ begin
 						edge_req <= not edge_rdy;
 						start    := '1';
 					else
+						sum := resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length);
 						if phase < ledge then
-							avrge <= ledge + phase + (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
-						else
-							avrge <= ledge + phase;
+							sum1 <= sum;
+							sum := sum + xxx;
+--							assert false severity failure;
 						end if;
-						avrge <= shift_right(avrge,1);
-						delay <= std_logic_vector(avrge(1 to delay'length));
+						avrge <= sum;
 						edge_req <= edge_rdy;
 						rdy   <= req;
 						start := '0';
@@ -169,8 +181,9 @@ begin
 		end if;
 	end process;
 
+	inv  <= phase(0);
 	delay <=
-		std_logic_vector(phase) when to_bit(rdy xor req)='1' else
-		std_logic_vector(shift_right(avrge,1));
+		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
+		std_logic_vector(avrge(0 to delay'length-1));
 
 end;
