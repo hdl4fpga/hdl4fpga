@@ -162,7 +162,7 @@ begin
 		generic map (
 			taps    => tCP/tap_dly-1)
 		port map (
-			edge     => std_logic'('1'),
+			edge     => std_logic'('0'),
 			clk      => sys_clks(iodclk),
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
