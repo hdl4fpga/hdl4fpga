@@ -47,7 +47,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr450MHz;
+	constant profile     : profiles := mode900p_ddr400MHz;
 
 	signal sys_rst : std_logic;
 
@@ -100,7 +100,7 @@ architecture graphics of arty is
 		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
 		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "01r", cwl => "001"),
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
 		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cl => "101", cwl => "010"));
@@ -532,7 +532,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => natural(2.0*ddr_tcp*10.0e12),
+		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => virtex7,
 		mark         => M15E,
 		sclk_phases  => sclk_phases,
