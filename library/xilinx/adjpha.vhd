@@ -49,7 +49,7 @@ end;
 architecture beh of adjpha is
 
 	constant num_of_taps  : natural := setif(taps < 2**delay'length-1, taps, 2**delay'length-1);
-	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+1;
+	constant num_of_steps : natural := unsigned_num_bits(num_of_taps);
 	subtype gap_word is unsigned(0 to delay'length);
 	type gword_vector is array(natural range <>) of gap_word;
 
@@ -61,8 +61,7 @@ architecture beh of adjpha is
 		variable c, q : natural;
 	begin
 		(c, q) := natural_vector'(num_of_taps, 1);
-		val(num_of_steps-1) := to_unsigned(2**(gap_word'length-1), gap_word'length);
-		for i in num_of_steps-2 downto 0 loop
+		for i in num_of_steps-1 downto 0 loop
 			(c, q) := natural_vector'((c + q) / 2, (c+q) mod 2);
 			val(i) := to_unsigned(c, gap_word'length);
 		end loop;
@@ -79,6 +78,7 @@ architecture beh of adjpha is
 	signal avrge    : gap_word;
 	signal sum1    : gap_word;
 	signal saved : gap_word;
+		signal step1  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 	constant xxx : natural := (2**unsigned_num_bits(num_of_taps)-(num_of_taps+1));
 begin
 
@@ -98,7 +98,7 @@ begin
 			if to_bit(edge_req xor edge_rdy)='1' then
 				if start='0' then
 					saved <= (others => '0');
-					phase <= (others => '0');
+					phase <= to_unsigned(2**(gap_word'length-1), gap_word'length);
 					step  := to_unsigned(num_of_steps-1, step'length);
 					step_req <= not to_stdulogic(to_bit(step_rdy));
 					start := '1';
@@ -141,6 +141,7 @@ begin
 				start := '0';
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
 			end if;
+			step1 <= step;
 		end if;
 	end process;
 
@@ -162,7 +163,7 @@ begin
 						start    := '1';
 					else
 						sum := resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length);
-						if phase < ledge then
+						if shift_left(phase,1) < shift_left(ledge,1) then
 							sum1 <= sum;
 							sum := sum + xxx;
 --							assert false severity failure;
