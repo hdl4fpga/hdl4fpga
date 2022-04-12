@@ -30,8 +30,7 @@ use unisim.vcomponents.all;
 
 entity xc7a_ddrdqphy is
 	generic (
-		TCP          : natural;
-		TAP_DLY      : natural;
+		taps      : natural;
 		DATA_GEAR    : natural;
 		DATA_EDGE    : boolean;
 		BYTE_SIZE    : natural);
@@ -75,7 +74,6 @@ entity xc7a_ddrdqphy is
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
 		constant rstiod   : natural := 1;
-		constant TCP4     : natural := (TCP/TAP_DLY+3)/4-1;
 end;
 
 library hdl4fpga;
@@ -100,8 +98,8 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dq        : std_logic_vector(sys_dqo'range);
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	constant dqs_linedelay : time := (tcp * 1 ps)/3;
-	constant dqi_linedelay : time := 27*(tcp * 1 ps)/32;
+	constant dqs_linedelay : time := 1 ps;
+	constant dqi_linedelay : time := 1 ps; --27*(tcp * 1 ps)/32;
 begin
 
 
@@ -160,9 +158,9 @@ begin
 		dqs_smp <= to_stdlogicvector(to_bitvector(smp));
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			taps    => tCP/tap_dly-1)
+			taps    => taps)
 		port map (
-			edge     => std_logic'('0'),
+			edge     => std_logic'('1'),
 			clk      => sys_clks(iodclk),
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
@@ -270,7 +268,7 @@ begin
 			dq_smp <= (dq(0*BYTE_SIZE+i), dq(1*BYTE_SIZE+i), dq(2*BYTE_SIZE+i), dq(3*BYTE_SIZE+i));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
-				taps     => tCP/tap_dly-1)
+				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),
 				clk      => sys_clks(iodclk),

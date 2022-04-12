@@ -31,8 +31,7 @@ use hdl4fpga.ddr_param.all;
 
 entity xc7a_ddrphy is
 	generic (
-		tcp          : natural;
-		tap_delay    : natural;
+		taps         : natural;
 		cmmd_gear    : natural   :=  1;
 		data_edge    : boolean   := false;
 		data_gear    : natural   :=  2;
@@ -546,8 +545,7 @@ begin
 	byte_g : for i in ddr_dqsi'range generate
 		ddrdqphy_i : entity hdl4fpga.xc7a_ddrdqphy
 		generic map (
-			tcp        => tcp,
-			tap_dly    => tap_delay,
+			taps       => taps,
 			data_gear  => data_gear,
 			data_edge  => data_edge,
 			byte_size  => byte_size)

@@ -62,7 +62,7 @@ architecture graphics of arty is
 	signal so_trdy : std_logic;
 	signal so_data : std_logic_vector(0 to 8-1);
 
-	constant sys_per  : real := 10.0;
+	constant sys_per  : real := 10.0*1.0e-9;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -100,7 +100,7 @@ architecture graphics of arty is
 		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
 		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "01r", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
 		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cl => "101", cwl => "010"));
@@ -201,7 +201,7 @@ architecture graphics of arty is
 
 	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
-	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
+	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
@@ -317,7 +317,7 @@ begin
 			ioctrl_i :  mmcme2_base
 			generic map (
 				clkfbout_mult_f => 10.75,		-- 200 MHz
-				clkin1_period => sys_per,
+				clkin1_period => sys_per*1.0e9,
 				clkout0_divide_f => 5.375,
 				clkout1_divide   => 10,
 				clkout2_divide   => 2,
@@ -348,7 +348,7 @@ begin
 			generic map (
 				divclk_divide    => ddr_param.pll.dcm_div,
 				clkfbout_mult_f  => real(2*ddr_param.pll.dcm_mul),
-				clkin1_period    => sys_per,
+				clkin1_period    => sys_per*1.0e9,
 				clkout0_divide_f => real(data_gear/2),
 				clkout1_divide   => data_gear/2,
 				clkout1_phase    => 90.0+180.0,
@@ -532,7 +532,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => 2*ddr_tcp,
+		ddr_tcp      => natural(2.0*ddr_tcp*10.0e12),
 		fpga         => virtex7,
 		mark         => M15E,
 		sclk_phases  => sclk_phases,
@@ -644,8 +644,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
-		tcp          => ddr_tcp,
-		tap_delay    => 78,
+		taps         => natural(ddr_tcp*(32.0*2.0)/(sys_per/2.0))-1,
 		bank_size    => bank_size,
         addr_size    => addr_size,
 		cmmd_gear    => cmmd_gear,
