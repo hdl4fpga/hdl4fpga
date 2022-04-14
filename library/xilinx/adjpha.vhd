@@ -69,6 +69,7 @@ architecture beh of adjpha is
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
+	constant tap2   : natural := (num_of_taps+2)/2;
 
 	signal edge_req : std_logic;
 	signal edge_rdy : std_logic;
@@ -79,7 +80,8 @@ architecture beh of adjpha is
 	signal sum1    : gap_word;
 	signal saved : gap_word;
 	signal step1  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-	constant xxx : natural := (num_of_taps+1)/2;
+	signal seq   : unsigned(0 to smp'length-1);
+
 begin
 
 	assert num_of_taps < 2**delay'length
@@ -88,10 +90,21 @@ begin
 	       integer'image(2**delay'length-1)
 	severity WARNING;
 
+	process (edge, rledge)
+	begin
+		seq <= (others => '-');
+		for i in seq'range loop
+			if i mod 2=0 then
+				seq(i) <= (edge xor rledge);
+			else
+				seq(i) <= not (edge xor rledge);
+			end if;
+		end loop;
+	end process;
+
 	process(clk)
 		variable start : std_logic;
 		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-		variable seq   : unsigned(0 to smp'length-1);
 		variable gap   : gap_word;
 	begin
 		if rising_edge(clk) then
@@ -103,16 +116,6 @@ begin
 					step_req <= not to_stdulogic(to_bit(step_rdy));
 					start := '1';
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
-					seq := (others => '-');
-					for i in seq'range loop
-						if i mod 2=0 then
-							seq(0) := (edge xor rledge);
-						else
-							seq(0) := not (edge xor rledge);
-						end if;
-						seq := rotate_left(seq, 1);
-					end loop;
-
 					if smp=std_logic_vector(seq) then
 						saved <= phase;
 					end if;
@@ -165,7 +168,11 @@ begin
 						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length),1);
 						if shift_left(phase,1) < shift_left(ledge,1) then
 							sum1 <= sum;
-							sum := sum + xxx;
+							if sum <= tap2 then
+								sum := sum + tap2;
+							else
+								sum := sum - tap2;
+							end if;
 --							assert false severity failure;
 						end if;
 						avrge <= sum;
