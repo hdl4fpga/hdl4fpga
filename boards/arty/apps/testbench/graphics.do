@@ -36,54 +36,60 @@ add wave -noupdate -group ethrx_e -radix hexadecimal /testbench/ethrx_e/mii_rdat
 add wave -noupdate -group ethrx_e /testbench/ethrx_e/fcs_sb
 add wave -noupdate -group ethrx_e /testbench/ethrx_e/fcs_vld
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/taps
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/num_of_taps
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/num_of_steps
-add wave -noupdate -expand -group adjdqs1 -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(5) -radix hexadecimal} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(0) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(0) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/clk
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/req
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/rdy
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/step_req
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/step_rdy
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge
-add wave -noupdate -expand -group adjdqs1 -radix binary /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/phase
-add wave -noupdate -expand -group adjdqs1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/delay
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/smp
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/inv
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_req
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_rdy
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/rledge
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/seq
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/step1
-add wave -noupdate -expand -group adjdqs1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge
-add wave -noupdate -expand -group adjdqs1 -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/sum1
-add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/avrge
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_clks(3)
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/taps
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/num_of_taps
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/num_of_steps
+add wave -noupdate -group adjdqs1 -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(5) -radix hexadecimal} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(0) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab(0) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/gaptab
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/clk
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/req
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/rdy
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/step_req
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/step_rdy
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge
+add wave -noupdate -group adjdqs1 -radix binary /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/phase
+add wave -noupdate -group adjdqs1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/delay
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/inv
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_req
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_rdy
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/rledge
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/seq
+add wave -noupdate -group adjdqs1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge
+add wave -noupdate -group adjdqs1 -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/sum1
+add wave -noupdate -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/avrge
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk(1)
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_buf
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/smp
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -group dqsimr1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/rst
+add wave -noupdate -group dqsimr1 -expand /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk
+add wave -noupdate -group dqsimr1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk(1)
+add wave -noupdate -group dqsimr1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/d(0)
+add wave -noupdate -group dqsimr1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/q
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqi(1)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/taps
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/clk
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/req
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/rdy
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/step_req
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/step_rdy
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/smp
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/inv
-add wave -noupdate -expand -group adjdqi0_1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(4) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(4) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge_req
-add wave -noupdate -expand -group adjdqi0_1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/sum1
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge_rdy
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/phase
-add wave -noupdate -expand -group adjdqi0_1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/ledge
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/rledge
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/seq
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/avrge
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/num_of_taps
-add wave -noupdate -expand -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/num_of_steps
-add wave -noupdate -expand -group adjdqi0_1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(7) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(6) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(5) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(4) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(3) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(2) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(1) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(0) -radix binary}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(7) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(6) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(5) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(4) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(3) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(2) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(1) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(0) {-height 29 -radix binary}} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/taps
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/clk
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/req
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/rdy
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/step_req
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/step_rdy
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/smp
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/inv
+add wave -noupdate -group adjdqi0_1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(4) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay(4) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/delay
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge_req
+add wave -noupdate -group adjdqi0_1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/sum1
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/edge_rdy
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/phase
+add wave -noupdate -group adjdqi0_1 -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/ledge
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/rledge
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/seq
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/avrge
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/num_of_taps
+add wave -noupdate -group adjdqi0_1 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/num_of_steps
+add wave -noupdate -group adjdqi0_1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(7) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(6) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(5) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(4) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(3) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(2) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(1) -radix binary} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(0) -radix binary}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(7) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(6) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(5) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(4) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(3) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(2) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(1) {-height 29 -radix binary} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab(0) {-height 29 -radix binary}} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/adjdqi_b/adjdqi_e/gaptab
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_clks(3)
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqi(1)
 add wave -noupdate -divider {New Divider}
@@ -205,8 +211,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {21238194 ps} 0} {{Cursor 3} {13553988 ps} 0} {{Cursor 6} {13556211 ps} 0}
-quietly wave cursor active 4
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {17107477 ps} 0} {{Cursor 3} {17373978 ps} 0} {{Cursor 6} {17104495 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 236
 configure wave -valuecolwidth 244
 configure wave -justifyvalue left
@@ -221,4 +227,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13549556 ps} {13562868 ps}
+WaveRestoreZoom {0 ps} {18375 ns}

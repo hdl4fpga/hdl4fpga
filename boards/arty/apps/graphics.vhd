@@ -47,7 +47,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr450MHz;
+	constant profile     : profiles := mode900p_ddr500MHz;
 
 	signal sys_rst : std_logic;
 
@@ -100,8 +100,8 @@ architecture graphics of arty is
 		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
 		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "010", cwl => "000"),
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "010", cwl => "000"),
---		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+--		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "010", cwl => "000"),
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul => 20, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "101", cwl => "010"),
 		ddr550MHz => (pll => (dcm_mul => 22, dcm_div => 4), cl => "101", cwl => "010"));
@@ -263,7 +263,7 @@ architecture graphics of arty is
 	signal ioctrl_clk : std_logic;
 	signal ioctrl_rdy : std_logic;
 
-	signal tp_delay   : std_logic_vector(word_size/byte_size*6-1 downto 0);
+	signal tp_delay   : std_logic_vector(word_size/byte_size*8-1 downto 0);
 	signal tp1        : std_logic_vector(1 to 32);
 	signal prst       : std_logic;
 
@@ -749,7 +749,7 @@ begin
 	end block;
 
 	process (sw, tp_delay)
-		variable data : std_logic_vector(6-1 downto 0);
+		variable data : std_logic_vector(8-1 downto 0);
 	begin
 		data := word2byte(tp_delay, sw(2-1 downto 0), data'length);
 		for i in 0 to 4-1 loop
@@ -761,7 +761,10 @@ begin
 		end loop;
 		led(0) <= data(4);
 		led(1) <= data(5);
+		led(2) <= data(6);
+		led(3) <= data(7);
 	end process;
+--	led(3) <= sw(3);
 --
 --	tp_g : for i in 2-1 downto 0 generate
 --		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);

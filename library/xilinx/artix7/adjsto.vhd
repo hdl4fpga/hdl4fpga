@@ -28,6 +28,7 @@ architecture def of adjsto is
 	signal step_req : std_logic;
 	signal step_rdy : std_logic;
 
+	signal seq   : std_logic_vector(0 to ddr_smp'length-1);
 begin
 
 	tp(1 to 3) <= std_logic_vector(sel);
@@ -41,8 +42,19 @@ begin
 		ddr_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
+	process (edge)
+	begin
+		seq <= (others => '-');
+		for i in seq'range loop
+			if i mod 2=0 then
+				seq(i) <= edge;
+			else
+				seq(i) <= not edge;
+			end if;
+		end loop;
+	end process;
+
 	 process (ddr_clk)
-		variable seq   : unsigned(0 to ddr_smp'length-1);
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
 		variable sto   : std_logic;
@@ -60,15 +72,7 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
-						for i in seq'range loop
-							if i mod 2=0 then
-								seq(0) := edge;
-							else
-								seq(0) := not edge;
-							end if;
-							seq := rotate_left(seq, 1);
-						end loop;
-						if ddr_smp/=std_logic_vector(seq) then
+						if ddr_smp/=seq then
 							sync  <= '0';
 						end if;
 					elsif sto='1' then

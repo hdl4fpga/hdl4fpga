@@ -79,8 +79,7 @@ architecture beh of adjpha is
 	signal avrge    : gap_word;
 	signal sum1    : gap_word;
 	signal saved : gap_word;
-	signal step1  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-	signal seq   : unsigned(0 to smp'length-1);
+	signal seq   : std_logic_vector(0 to smp'length-1);
 
 begin
 
@@ -116,7 +115,7 @@ begin
 					step_req <= not to_stdulogic(to_bit(step_rdy));
 					start := '1';
 				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
-					if smp=std_logic_vector(seq) then
+					if smp=seq then
 						saved <= phase;
 					end if;
 
@@ -126,7 +125,7 @@ begin
 						gap := (others => '0');
 					end if;
 
-					if smp=std_logic_vector(seq) then
+					if smp=seq then
 						phase <= phase + gap;
 					else
 						phase <= saved + gap;
@@ -144,7 +143,6 @@ begin
 				start := '0';
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
 			end if;
-			step1 <= step;
 		end if;
 	end process;
 
@@ -165,7 +163,7 @@ begin
 						edge_req <= not edge_rdy;
 						start    := '1';
 					else
-						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length),1);
+						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length)+1,1);
 						if shift_left(phase,1) < shift_left(ledge,1) then
 							sum1 <= sum;
 							if sum <= tap2 then
