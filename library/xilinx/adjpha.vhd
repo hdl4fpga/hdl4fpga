@@ -69,12 +69,13 @@ architecture beh of adjpha is
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
-	constant tap2   : natural := (num_of_taps+2)/2;
+	constant tap2   : natural := (num_of_taps+1+1)/2;
 
 	signal edge_req : std_logic;
 	signal edge_rdy : std_logic;
 	signal phase    : gap_word;
 	signal ledge    : gap_word;
+	signal redge    : gap_word;
 	signal rledge   : std_logic;
 	signal avrge    : gap_word;
 	signal sum1    : gap_word;
@@ -163,10 +164,13 @@ begin
 						edge_req <= not edge_rdy;
 						start    := '1';
 					else
-						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length)+1,1);
+						redge    <= phase;
+						sum := shift_right(
+							resize(ledge(1 to delay'length), sum'length) +
+							resize(phase(1 to delay'length), sum'length) + 1, 1);
 						if shift_left(phase,1) < shift_left(ledge,1) then
 							sum1 <= sum;
-							if sum <= tap2 then
+							if sum < tap2 then
 								sum := sum + tap2;
 							else
 								sum := sum - tap2;
@@ -190,6 +194,7 @@ begin
 	inv  <= phase(0);
 	delay <=
 		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
+--		std_logic_vector(redge(1 to delay'length));
 		std_logic_vector(avrge(1 to delay'length));
 
 end;
