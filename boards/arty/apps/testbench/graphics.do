@@ -52,14 +52,15 @@ add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddr
 add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_req
 add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/edge_rdy
 add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/rledge
+add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/smp
 add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/seq
-add wave -noupdate -expand -group adjdqs1 -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge
+add wave -noupdate -expand -group adjdqs1 -radix binary -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge(5) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/ledge
+add wave -noupdate -expand -group adjdqs1 -radix binary -childformat {{/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(5) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge(5) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/redge
 add wave -noupdate -expand -group adjdqs1 -radix decimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/sum1
 add wave -noupdate -expand -group adjdqs1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/avrge
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk(0)
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk(1)
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_buf
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjdqs_e/smp
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group dqsimr1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/rst
 add wave -noupdate -group dqsimr1 -expand /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/imdr_i/clk
@@ -211,8 +212,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {15907164 ps} 0} {{Cursor 3} {17373978 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {17015863 ps} 0} {{Cursor 3} {17461442 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 236
 configure wave -valuecolwidth 244
 configure wave -justifyvalue left
@@ -227,4 +228,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {14810581 ps} {19404373 ps}
+WaveRestoreZoom {17431811 ps} {17503589 ps}

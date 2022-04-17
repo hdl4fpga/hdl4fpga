@@ -99,7 +99,7 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
 	signal tp_dqssel : std_logic_vector(0 to 3-1);
-	constant dqs_linedelay : time := 1.2 ns;
+	constant dqs_linedelay : time := 1.35 ns;
 	constant dqi_linedelay : time := 1 ps;
 begin
 

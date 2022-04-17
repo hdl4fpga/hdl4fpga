@@ -72,7 +72,11 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
-						if ddr_smp/=seq then
+						if ddr_smp=seq then
+							sync  <= sync;
+						elsif shift_left(unsigned(ddr_smp),1)="0010" then
+							sync  <= sync;
+						else
 							sync  <= '0';
 						end if;
 					elsif sto='1' then

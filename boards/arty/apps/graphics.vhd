@@ -48,7 +48,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr450MHz;
+	constant profile     : profiles := mode900p_ddr500MHz;
 
 	signal sys_rst : std_logic;
 
@@ -112,7 +112,7 @@ architecture graphics of arty is
 
 		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "010", cwl => "000"),
 --		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
-		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "010", cwl => "001"),
+		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "100", cwl => "001"),
 --		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "010", cwl => "001"),
 --		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "100", cwl => "001"),

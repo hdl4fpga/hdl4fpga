@@ -220,9 +220,9 @@ begin
 		col_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 8,
-			latency   => 0,
+			latency   => 1,
 			check_sov => false,
-			check_dov => false,
+			check_dov => true,
 			gray_code => false)
 		port map (
 			src_clk   => dmatrans_clk,
@@ -291,7 +291,7 @@ begin
 
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
-		ddrdma_row            when ctlr_ras='1' else
+		ddrdma_row            when ctlr_ras='1'  else
 		(ctlr_a'range => '0') when state_pre='1' else
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 

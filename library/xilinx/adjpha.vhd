@@ -78,10 +78,10 @@ architecture beh of adjpha is
 	signal redge    : gap_word;
 	signal rledge   : std_logic;
 	signal avrge    : gap_word;
-	signal sum1    : gap_word;
-	signal saved : gap_word;
-	signal seq   : std_logic_vector(0 to smp'length-1);
+	signal saved    : gap_word;
+	signal seq      : std_logic_vector(0 to smp'length-1);
 
+	signal sum1     : gap_word;
 begin
 
 	assert num_of_taps < 2**delay'length
