@@ -116,8 +116,8 @@ architecture graphics of arty is
 --		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "100", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "100", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "100", cwl => "010"),
-		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "100", cwl => "010"));
---		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"));
+--		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "100", cwl => "010"));
+		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"));
 
 	constant sclk_phases   : natural := 1;
 	constant sclk_edges    : natural := 1;
