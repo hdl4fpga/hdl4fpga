@@ -7,12 +7,13 @@ entity adjsto is
 		GEAR     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 3);
-		ddr_clk  : in std_logic;
-		edge     : in std_logic;
-		sys_req  : in std_logic;
+		ddr_clk  : in  std_logic;
+		inc      : in  std_logic := '0';
+		edge     : in  std_logic;
+		sys_req  : in  std_logic;
 		sys_rdy  : buffer std_logic;
-		ddr_smp  : in std_logic_vector;
-		ddr_sti  : in std_logic;
+		ddr_smp  : in  std_logic_vector;
+		ddr_sti  : in  std_logic;
 		ddr_sto  : buffer std_logic);
 end;
 
@@ -29,6 +30,7 @@ architecture def of adjsto is
 	signal step_rdy : std_logic;
 
 	signal seq   : std_logic_vector(0 to ddr_smp'length-1);
+	signal pre   : std_logic_vector(0 to ddr_smp'length-1);
 begin
 
 	tp(1 to 3) <= std_logic_vector(sel);
@@ -42,7 +44,7 @@ begin
 		ddr_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
-	process (edge)
+	process (inc, edge)
 	begin
 		seq <= (others => '-');
 		for i in seq'range loop
@@ -52,6 +54,11 @@ begin
 				seq(i) <= not edge;
 			end if;
 		end loop;
+		if inc='0' then
+			pre <= seq;
+		else
+			pre <= std_logic_vector(shift_left(unsigned(seq),1));
+		end if;
 	end process;
 
 	 process (ddr_clk)
@@ -72,11 +79,15 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
-						if ddr_smp=seq then
-							sync  <= sync;
-						elsif shift_left(unsigned(ddr_smp),1)="0010" then
-							sync  <= sync;
-						else
+						if sto='0' then
+							if inc='0' then
+								if ddr_smp/=pre then
+									sync  <= '0';
+								end if;
+							elsif std_logic_vector(shift_left(unsigned(ddr_smp),1))/=pre then
+								sync  <= '0';
+							end if;
+						elsif ddr_smp/=seq then
 							sync  <= '0';
 						end if;
 					elsif sto='1' then
