@@ -4,11 +4,12 @@ use ieee.numeric_std.all;
 
 entity adjsto is
 	generic (
+		both     : boolean := true;
 		GEAR     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 3);
 		ddr_clk  : in  std_logic;
-		inc      : in  std_logic := '0';
+		inv      : in  std_logic := '0';
 		edge     : in  std_logic;
 		sys_req  : in  std_logic;
 		sys_rdy  : buffer std_logic;
@@ -30,7 +31,7 @@ architecture def of adjsto is
 	signal step_rdy : std_logic;
 
 	signal seq   : std_logic_vector(0 to ddr_smp'length-1);
-	signal pre   : std_logic_vector(0 to ddr_smp'length-1);
+		signal pre   : unsigned(seq'range);
 begin
 
 	tp(1 to 3) <= std_logic_vector(sel);
@@ -44,7 +45,7 @@ begin
 		ddr_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
-	process (inc, edge)
+	process (edge)
 	begin
 		seq <= (others => '-');
 		for i in seq'range loop
@@ -54,11 +55,12 @@ begin
 				seq(i) <= not edge;
 			end if;
 		end loop;
-		if inc='0' then
-			pre <= seq;
-		else
-			pre <= std_logic_vector(shift_left(unsigned(seq),1));
-		end if;
+	end process;
+
+	process (seq)
+	begin
+		pre    <= shift_left(unsigned(seq),1);
+		pre(0) <= '0';
 	end process;
 
 	 process (ddr_clk)
@@ -80,14 +82,16 @@ begin
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
 						if sto='0' then
-							if inc='0' then
-								if ddr_smp/=pre then
-									sync  <= '0';
-								end if;
-							elsif std_logic_vector(shift_left(unsigned(ddr_smp),1))/=pre then
-								sync  <= '0';
+							if ddr_smp=seq and (inv='0' or both) then
+								sync <= sync;
+							elsif shift_left(unsigned(ddr_smp),1)=pre and (inv='1' or both) then
+								sync <= sync;
+							else
+								sync <= '0';
 							end if;
-						elsif ddr_smp/=seq then
+						elsif ddr_smp=seq then
+							sync <= sync;
+						else
 							sync  <= '0';
 						end if;
 					elsif sto='1' then
