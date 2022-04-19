@@ -96,11 +96,13 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqsiod_ce  : std_logic;
 
 	signal dq        : std_logic_vector(sys_dqo'range);
+	signal dq0 : std_logic_vector(dq'range);
+	signal dq1 : std_logic_vector(dq'range);
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
 	signal tp_dqssel : std_logic_vector(0 to 3-1);
 	constant dqs_linedelay : time := 1.35 ns;
-	constant dqi_linedelay : time := 1.35 ns;
+	constant dqi_linedelay : time := 0 ns; --1.35 ns;
 	signal dqs180 : std_logic;
 	signal dqspre : std_logic;
 begin
@@ -149,7 +151,6 @@ begin
 		signal sto      : std_logic;
 		signal imdr_rst : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
-		signal dqs180   : std_logic;
 	begin
 
 		step_delay_e : entity hdl4fpga.align
@@ -229,7 +230,8 @@ begin
 			edge     => '0',
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
-			ddr_smp  => smp,
+			dqs_smp  => smp,
+			dqs_pre  => dqspre,
 			sys_req  => adjsto_req,
 			sys_rdy  => adjsto_rdy);
 
@@ -334,8 +336,6 @@ begin
 			q(3) => dq(3*BYTE_SIZE+i));
 
 		dly_b : block
-			signal dq0 : std_logic_vector(dq'range);
-			signal dq1 : std_logic_vector(dq'range);
 		begin
 			dly0_g : entity hdl4fpga.align
 			generic map (
@@ -367,10 +367,10 @@ begin
 				do(2) => dq1(2*BYTE_SIZE+i),
 				do(3) => dq1(3*BYTE_SIZE+i));
 
-			sys_dqo <= dq0 when (dqspre xor dqs180)='0' else dq1;
 		end block;
 
 	end generate;
+	sys_dqo <= dq0 when (dqspre xor dqs180)='0' else dq1;
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
 		signal dqo   : std_logic_vector(0 to DATA_GEAR-1);

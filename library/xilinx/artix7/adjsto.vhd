@@ -13,8 +13,8 @@ entity adjsto is
 		edge     : in  std_logic;
 		sys_req  : in  std_logic;
 		sys_rdy  : buffer std_logic;
-		ddr_smp  : in  std_logic_vector;
-		ddr_pre  : out std_logic;
+		dqs_smp  : in  std_logic_vector;
+		dqs_pre  : out std_logic;
 		ddr_sti  : in  std_logic;
 		ddr_sto  : buffer std_logic);
 end;
@@ -31,7 +31,7 @@ architecture def of adjsto is
 	signal step_req : std_logic;
 	signal step_rdy : std_logic;
 
-	signal seq   : std_logic_vector(0 to ddr_smp'length-1);
+	signal seq   : std_logic_vector(0 to dqs_smp'length-1);
 		signal pre   : unsigned(seq'range);
 begin
 
@@ -83,16 +83,16 @@ begin
 						step_rdy <= step_req;
 					elsif ddr_sto='1' then
 						if sto='0' then
-							if ddr_smp=seq and (inv='0' or both) then
+							if dqs_smp=seq and (inv='0' or both) then
 								sync <= sync;
-								ddr_pre <= '0';
-							elsif shift_left(unsigned(ddr_smp),1)=pre and (inv='1' or both) then
-								ddr_pre <= '1';
+								dqs_pre <= '0';
+							elsif shift_left(unsigned(dqs_smp),1)=pre and (inv='1' or both) then
+								dqs_pre <= '1';
 								sync <= sync;
 							else
 								sync <= '0';
 							end if;
-						elsif ddr_smp=seq then
+						elsif dqs_smp=seq then
 							sync <= sync;
 						else
 							sync  <= '0';

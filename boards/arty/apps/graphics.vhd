@@ -48,7 +48,7 @@ architecture graphics of arty is
 		mode900p_ddr525MHz,
 		mode900p_ddr550MHz);
 
-	constant profile     : profiles := mode900p_ddr550MHz;
+	constant profile     : profiles := mode900p_ddr425MHz;
 
 	signal sys_rst : std_logic;
 
@@ -98,7 +98,7 @@ architecture graphics of arty is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "010", cwl => "000"),
+		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "001", cwl => "000"),
 		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
 		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
 		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
@@ -110,14 +110,11 @@ architecture graphics of arty is
 		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
 		------------------------------------------------------------------------
 
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "010", cwl => "000"),
---		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
-		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "100", cwl => "001"),
---		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "100", cwl => "001"),
-		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "100", cwl => "001"),
-		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "100", cwl => "010"),
---		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "100", cwl => "010"));
-		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"));
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
+		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
+		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
+		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010")); -- latency 9
 
 	constant sclk_phases   : natural := 1;
 	constant sclk_edges    : natural := 1;
