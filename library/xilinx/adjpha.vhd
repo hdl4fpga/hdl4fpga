@@ -42,6 +42,7 @@ entity adjpha is
 		step_rdy : in  std_logic;
 		edge     : in  std_logic;
 		smp      : in  std_logic_vector;
+		ph180    : out std_logic;
 		inv      : out std_logic;
 		delay    : out std_logic_vector);
 end;
@@ -164,9 +165,7 @@ begin
 						edge_req <= not edge_rdy;
 						start    := '1';
 					else
-						sum := shift_right(
-							resize(ledge(1 to delay'length), sum'length) +
-							resize(phase(1 to delay'length), sum'length), 1);
+						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length), 1);
 						if shift_left(phase,1) < shift_left(ledge,1) then
 							sum1 <= sum;
 							if sum <= (taps+1)/2 then
@@ -191,7 +190,8 @@ begin
 		end if;
 	end process;
 
-	inv  <= phase(0);
+	ph180 <= '1' when avrge(1 to delay'length) > (taps+1)/2 else '0';
+	inv   <= phase(0);
 	delay <=
 		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
 --		std_logic_vector(redge(1 to delay'length));

@@ -100,7 +100,9 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
 	signal tp_dqssel : std_logic_vector(0 to 3-1);
 	constant dqs_linedelay : time := 1.35 ns;
-	constant dqi_linedelay : time := 1 ps;
+	constant dqi_linedelay : time := 1.35 ns;
+	signal dqs180 : std_logic;
+	signal dqspre : std_logic;
 begin
 
 
@@ -147,6 +149,7 @@ begin
 		signal sto      : std_logic;
 		signal imdr_rst : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
+		signal dqs180   : std_logic;
 	begin
 
 		step_delay_e : entity hdl4fpga.align
@@ -169,6 +172,7 @@ begin
 			step_req => step_req,
 			step_rdy => step_rdy,
 			smp      => smp,
+			ph180    => dqs180,
 			delay    => delay);
 
 		ddqsi <= transport ddr_dqsi after dqs_linedelay;
@@ -329,35 +333,42 @@ begin
 			q(2) => dq(2*BYTE_SIZE+i),
 			q(3) => dq(3*BYTE_SIZE+i));
 
-		dly_g : entity hdl4fpga.align
-		generic map (
-			n => 4,
-			d => (1, 1, 1, 1))
-		port map (
-			clk => sys_clks(clk90div),
-			di(0) => dq(0*BYTE_SIZE+i),
-			di(1) => dq(1*BYTE_SIZE+i),
-			di(2) => dq(2*BYTE_SIZE+i),
-			di(3) => dq(3*BYTE_SIZE+i),
-			do(0) => sys_dqo(0*BYTE_SIZE+i),
-			do(1) => sys_dqo(1*BYTE_SIZE+i),
-			do(2) => sys_dqo(2*BYTE_SIZE+i),
-			do(3) => sys_dqo(3*BYTE_SIZE+i));
+		dly_b : block
+			signal dq0 : std_logic_vector(dq'range);
+			signal dq1 : std_logic_vector(dq'range);
+		begin
+			dly0_g : entity hdl4fpga.align
+			generic map (
+				n => 4,
+				d => (0, 0, 1, 1))
+			port map (
+				clk => sys_clks(clk90div),
+				di(0) => dq(0*BYTE_SIZE+i),
+				di(1) => dq(1*BYTE_SIZE+i),
+				di(2) => dq(2*BYTE_SIZE+i),
+				di(3) => dq(3*BYTE_SIZE+i),
+				do(0) => dq0(2*BYTE_SIZE+i),
+				do(1) => dq0(3*BYTE_SIZE+i),
+				do(2) => dq0(0*BYTE_SIZE+i),
+				do(3) => dq0(1*BYTE_SIZE+i));
 
---		dly_g : entity hdl4fpga.align
---		generic map (
---			n => 4,
---			d => (0, 0, 1, 1))
---		port map (
---			clk => sys_clks(clk90div),
---			di(0) => dq(0*BYTE_SIZE+i),
---			di(1) => dq(1*BYTE_SIZE+i),
---			di(2) => dq(2*BYTE_SIZE+i),
---			di(3) => dq(3*BYTE_SIZE+i),
---			do(0) => sys_dqo(2*BYTE_SIZE+i),
---			do(1) => sys_dqo(3*BYTE_SIZE+i),
---			do(2) => sys_dqo(0*BYTE_SIZE+i),
---			do(3) => sys_dqo(1*BYTE_SIZE+i));
+			dly1_g : entity hdl4fpga.align
+			generic map (
+				n => 4,
+				d => (1, 1, 1, 1))
+			port map (
+				clk => sys_clks(clk90div),
+				di(0) => dq(0*BYTE_SIZE+i),
+				di(1) => dq(1*BYTE_SIZE+i),
+				di(2) => dq(2*BYTE_SIZE+i),
+				di(3) => dq(3*BYTE_SIZE+i),
+				do(0) => dq1(0*BYTE_SIZE+i),
+				do(1) => dq1(1*BYTE_SIZE+i),
+				do(2) => dq1(2*BYTE_SIZE+i),
+				do(3) => dq1(3*BYTE_SIZE+i));
+
+			sys_dqo <= dq0 when (dqspre xor dqs180)='0' else dq1;
+		end block;
 
 	end generate;
 

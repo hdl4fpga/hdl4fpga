@@ -14,6 +14,7 @@ entity adjsto is
 		sys_req  : in  std_logic;
 		sys_rdy  : buffer std_logic;
 		ddr_smp  : in  std_logic_vector;
+		ddr_pre  : out std_logic;
 		ddr_sti  : in  std_logic;
 		ddr_sto  : buffer std_logic);
 end;
@@ -71,7 +72,7 @@ begin
 		if rising_edge(ddr_clk) then
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
-					sync   <= '1';
+					sync    <= '1';
 					cntr := to_unsigned(GEAR/2-1, cntr'length);
 					if ddr_sto='0' then
 						start := '1';
@@ -84,7 +85,9 @@ begin
 						if sto='0' then
 							if ddr_smp=seq and (inv='0' or both) then
 								sync <= sync;
+								ddr_pre <= '0';
 							elsif shift_left(unsigned(ddr_smp),1)=pre and (inv='1' or both) then
+								ddr_pre <= '1';
 								sync <= sync;
 							else
 								sync <= '0';
