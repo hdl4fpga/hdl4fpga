@@ -236,9 +236,15 @@ begin
 			sys_rdy  => adjsto_rdy);
 
 		process (sys_clks(clk90div))
+			variable q : std_logic;
 		begin
 			if rising_edge(sys_clks(clk90div)) then
-				sys_sto <= (others => sto);
+				if (not dqspre and dqs180)='1' then
+					sys_sto <= (others => sto);
+				else
+					sys_sto <= (others => q);
+				end if;
+				q := sto;
 			end if;
 		end process;
 
