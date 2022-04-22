@@ -35,7 +35,7 @@ entity adjpha is
 	generic (
 		taps     : natural);
 	port (
-		clk      : in   std_logic;
+		clk      : in  std_logic;
 		req      : in  std_logic;
 		rdy      : buffer std_logic;
 		step_req : buffer std_logic;
@@ -51,7 +51,7 @@ architecture beh of adjpha is
 
 	constant num_of_taps  : natural := setif(taps < 2**delay'length-1, taps, 2**delay'length-1);
 	constant num_of_steps : natural := unsigned_num_bits(num_of_taps);
-	subtype gap_word is unsigned(0 to delay'length);
+	subtype gap_word  is unsigned(0 to delay'length);
 	type gword_vector is array(natural range <>) of gap_word;
 
 	function create_gaps (

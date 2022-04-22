@@ -81,7 +81,6 @@ use hdl4fpga.std.all;
 
 architecture virtex7 of xc7a_ddrdqphy is
 
-	signal dqi        : std_logic_vector(ddr_dqi'range);
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
@@ -95,22 +94,26 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
 
-	signal dq        : std_logic_vector(sys_dqo'range);
-	signal dq0 : std_logic_vector(dq'range);
-	signal dq1 : std_logic_vector(dq'range);
-	signal tp_dqidly : std_logic_vector(0 to 5-1);
-	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	signal tp_dqssel : std_logic_vector(0 to 3-1);
+	signal dqs180     : std_logic;
+	signal dqspre     : std_logic;
+	signal dq         : std_logic_vector(sys_dqo'range);
+	signal dqi        : std_logic_vector(ddr_dqi'range);
+	signal dqh        : std_logic_vector(dq'range);
+	signal dqf        : std_logic_vector(dq'range);
+
 	constant dqs_linedelay : time := 1.35 ns;
 	constant dqi_linedelay : time := 0 ns; --1.35 ns;
-	signal dqs180 : std_logic;
-	signal dqspre : std_logic;
+
+	signal tp_dqidly  : std_logic_vector(0 to 5-1);
+	signal tp_dqsdly  : std_logic_vector(0 to 5-1);
+	signal tp_dqssel  : std_logic_vector(0 to 3-1);
+
 begin
 
 
 	with tp_sel select
 	tp_delay <=
-		std_logic_vector(resize(unsigned(tp_dqidly), tp_delay'length)) when '1',
+		dqs180 & dqspre & std_logic_vector(resize(unsigned(tp_dqidly), tp_delay'length-2)) when '1',
 		std_logic_vector(resize(unsigned(std_logic_vector'(tp_dqssel & tp_dqsdly)), tp_delay'length)) when others;
 
 	sys_wlrdy <= sys_wlreq;
@@ -353,10 +356,10 @@ begin
 				di(1) => dq(1*BYTE_SIZE+i),
 				di(2) => dq(2*BYTE_SIZE+i),
 				di(3) => dq(3*BYTE_SIZE+i),
-				do(0) => dq0(2*BYTE_SIZE+i),
-				do(1) => dq0(3*BYTE_SIZE+i),
-				do(2) => dq0(0*BYTE_SIZE+i),
-				do(3) => dq0(1*BYTE_SIZE+i));
+				do(0) => dqh(2*BYTE_SIZE+i),
+				do(1) => dqh(3*BYTE_SIZE+i),
+				do(2) => dqh(0*BYTE_SIZE+i),
+				do(3) => dqh(1*BYTE_SIZE+i));
 
 			dly1_g : entity hdl4fpga.align
 			generic map (
@@ -368,15 +371,15 @@ begin
 				di(1) => dq(1*BYTE_SIZE+i),
 				di(2) => dq(2*BYTE_SIZE+i),
 				di(3) => dq(3*BYTE_SIZE+i),
-				do(0) => dq1(0*BYTE_SIZE+i),
-				do(1) => dq1(1*BYTE_SIZE+i),
-				do(2) => dq1(2*BYTE_SIZE+i),
-				do(3) => dq1(3*BYTE_SIZE+i));
+				do(0) => dqf(0*BYTE_SIZE+i),
+				do(1) => dqf(1*BYTE_SIZE+i),
+				do(2) => dqf(2*BYTE_SIZE+i),
+				do(3) => dqf(3*BYTE_SIZE+i));
 
 		end block;
 
 	end generate;
-	sys_dqo <= dq0 when (dqspre xor dqs180)='0' else dq1;
+	sys_dqo <= dqh when (dqspre xor dqs180)='0' else dqf;
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
 		signal dqo   : std_logic_vector(0 to DATA_GEAR-1);
