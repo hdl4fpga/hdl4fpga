@@ -33,6 +33,7 @@ use hdl4fpga.std.all;
 
 entity adjpha is
 	generic (
+		dtaps    : natural := 0;
 		taps     : natural);
 	port (
 		clk      : in  std_logic;
@@ -82,7 +83,6 @@ architecture beh of adjpha is
 	signal saved    : gap_word;
 	signal seq      : std_logic_vector(0 to smp'length-1);
 
-	signal sum1     : gap_word;
 begin
 
 	assert num_of_taps < 2**delay'length
@@ -167,16 +167,28 @@ begin
 					else
 						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length), 1);
 						if shift_left(phase,1) < shift_left(ledge,1) then
-							sum1 <= sum;
 							if sum <= (taps+1)/2 then
 								sum := sum + (taps+0)/2;
 							else
 								sum := sum - (taps+1)/2;
 							end if;
---							assert false severity failure;
+							-- assert false severity failure;
 						end if;
 						redge <= phase;
 						avrge <= sum;
+						if avrge(1 to delay'length) > (taps+1)/2 then
+							ph180 <= '1';
+						else
+							ph180 <= '0';
+						end if;
+
+						if dtaps/=0 then
+							sum := resize(ledge(1 to delay'length), sum'length) + dtaps;
+							if sum > taps then
+								sum := sum - (taps+1);
+							end if;
+							avrge <= sum;
+						end if;
 						edge_req <= edge_rdy;
 						rdy   <= req;
 						start := '0';
@@ -190,11 +202,9 @@ begin
 		end if;
 	end process;
 
-	ph180 <= '1' when avrge(1 to delay'length) > (taps+1)/2 else '0';
 	inv   <= phase(0);
 	delay <=
 		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
---		std_logic_vector(redge(1 to delay'length));
 		std_logic_vector(avrge(1 to delay'length));
 
 end;
