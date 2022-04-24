@@ -45,7 +45,7 @@ entity adjpha is
 		smp      : in  std_logic_vector;
 		ph180    : out std_logic;
 		inv      : out std_logic;
-		delay    : out std_logic_vector);
+		delay    : buffer std_logic_vector);
 end;
 
 architecture beh of adjpha is
@@ -75,10 +75,8 @@ architecture beh of adjpha is
 
 	signal edge_req : std_logic;
 	signal edge_rdy : std_logic;
-	signal phase    : gap_word;
-	signal ledge    : gap_word;
-	signal redge    : gap_word;
 	signal rledge   : std_logic;
+	signal phase    : gap_word;
 	signal avrge    : gap_word;
 	signal saved    : gap_word;
 	signal seq      : std_logic_vector(0 to smp'length-1);
@@ -148,61 +146,83 @@ begin
 		end if;
 	end process;
 
-	process(clk)
-		variable start : std_logic;
-		variable sum   : gap_word;
+	avrge_g : if dtaps=0 generate
+		signal ledge    : gap_word;
+		signal redge    : gap_word;
 	begin
-		if rising_edge(clk) then
-			if to_bit(req xor rdy)='1' then
-				if start='0' then
-				    rledge   <= '0';
-					edge_req <= not to_stdulogic(to_bit(edge_rdy));
-					start    := '1';
-				elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
-					if rledge='0' then
-						ledge    <= phase;
-						rledge   <= '1';
-						edge_req <= not edge_rdy;
+		process(clk)
+			variable start : std_logic;
+			variable sum   : gap_word;
+		begin
+			if rising_edge(clk) then
+				if to_bit(req xor rdy)='1' then
+					if start='0' then
+						rledge   <= '0';
+						edge_req <= not to_stdulogic(to_bit(edge_rdy));
 						start    := '1';
-					else
-						sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length), 1);
-						if shift_left(phase,1) < shift_left(ledge,1) then
-							if sum <= (taps+1)/2 then
-								sum := sum + (taps+0)/2;
-							else
-								sum := sum - (taps+1)/2;
-							end if;
-							-- assert false severity failure;
-						end if;
-						redge <= phase;
-						avrge <= sum;
-						if avrge(1 to delay'length) > (taps+1)/2 then
-							ph180 <= '1';
+					elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
+						if rledge='0' then
+							rledge   <= '1';
+							ledge    <= phase;
+							edge_req <= not edge_rdy;
+							start    := '1';
 						else
-							ph180 <= '0';
-						end if;
-
-						if dtaps/=0 then
-							sum := resize(ledge(1 to delay'length), sum'length) + dtaps;
-							if sum > taps then
-								sum := sum - (taps+1);
+							sum := shift_right(resize(ledge(1 to delay'length), sum'length) + resize(phase(1 to delay'length), sum'length), 1);
+							if shift_left(phase,1) < shift_left(ledge,1) then
+								if sum <= (taps+1)/2 then
+									sum := sum + (taps+0)/2;
+								else
+									sum := sum - (taps+1)/2;
+								end if;
 							end if;
+							redge <= phase;
 							avrge <= sum;
+							edge_req <= edge_rdy;
+							rdy   <= req;
+							start := '0';
 						end if;
+					end if;
+				else
+					edge_req <= edge_rdy;
+					rdy   <= req;
+					start := '0';
+				end if;
+			end if;
+		end process;
+	end generate;
+
+	dtasp_g : if dtaps/=0 generate
+		process(clk)
+			variable start : std_logic;
+			variable sum   : gap_word;
+		begin
+			if rising_edge(clk) then
+				if to_bit(req xor rdy)='1' then
+					if start='0' then
+						edge_req <= not to_stdulogic(to_bit(edge_rdy));
+						start    := '1';
+					elsif to_bit(edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
+						sum := resize(phase(1 to delay'length), sum'length) + dtaps;
+						if sum > taps then
+							sum := sum - (taps+1);
+						end if;
+						avrge <= sum;
 						edge_req <= edge_rdy;
 						rdy   <= req;
 						start := '0';
 					end if;
+				else
+					edge_req <= edge_rdy;
+					rdy   <= req;
+					start := '0';
 				end if;
-			else
-				edge_req <= edge_rdy;
-				rdy   <= req;
-				start := '0';
 			end if;
-		end if;
-	end process;
+		end process;
+		rledge <= '0';
+	end generate;
 
 	inv   <= phase(0);
+	ph180 <= '0' when unsigned(delay) < (taps+1)/2 else '0';
 	delay <=
 		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
 		std_logic_vector(avrge(1 to delay'length));
