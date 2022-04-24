@@ -222,7 +222,7 @@ begin
 	end generate;
 
 	inv   <= phase(0);
-	ph180 <= '0' when unsigned(delay) < (taps+1)/2 else '0';
+	ph180 <= '0' when unsigned(delay) < (taps+1)/2 else '1';
 	delay <=
 		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
 		std_logic_vector(avrge(1 to delay'length));
