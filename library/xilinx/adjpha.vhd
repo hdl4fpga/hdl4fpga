@@ -71,7 +71,6 @@ architecture beh of adjpha is
 	end;
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
-	constant tap2   : natural := (num_of_taps+1)/2;
 
 	signal edge_req : std_logic;
 	signal edge_rdy : std_logic;

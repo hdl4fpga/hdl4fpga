@@ -31,45 +31,45 @@ use unisim.vcomponents.all;
 entity xc7a_ddrdqphy is
 	generic (
 		taps      : natural;
-		DATA_GEAR    : natural;
-		DATA_EDGE    : boolean;
-		BYTE_SIZE    : natural);
+		data_gear : natural;
+		data_edge : boolean;
+		byte_size : natural);
 	port (
-		tp_sel       : in  std_logic;
-		tp_delay     : out std_logic_vector(8-1 downto 0);
+		tp_sel    : in  std_logic;
+		tp_delay  : out std_logic_vector(8-1 downto 0);
 
-		sys_rsts     : in std_logic_vector;
-		sys_clks     : in std_logic_vector;
-		sys_wlreq    : in  std_logic;
-		sys_wlrdy    : out std_logic;
-		sys_rlreq    : in  std_logic;
-		sys_rlrdy    : out std_logic;
-		sys_rlcal    : out std_logic;
-		sys_dmt      : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
-		sys_dmi      : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
-		sys_sti      : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
-		sys_sto      : out std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqi      : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqt      : in  std_logic_vector(DATA_GEAR-1 downto 0);
-		sys_dqo      : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqso     : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqst     : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_rsts  : in  std_logic_vector;
+		sys_clks  : in  std_logic_vector;
+		sys_wlreq : in  std_logic;
+		sys_wlrdy : out std_logic;
+		sys_rlreq : in  std_logic;
+		sys_rlrdy : out std_logic;
+		sys_rlcal : out std_logic;
+		sys_dmt   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
+		sys_dmi   : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
+		sys_sti   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
+		sys_sto   : out std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqi   : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqt   : in  std_logic_vector(DATA_GEAR-1 downto 0);
+		sys_dqo   : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqso  : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqst  : in  std_logic_vector(0 to DATA_GEAR-1);
 
-		ddr_dmt      : out std_logic;
-		ddr_dmo      : out std_logic;
-		ddr_dqsi     : in  std_logic;
-		ddr_dqi      : in  std_logic_vector(BYTE_SIZE-1 downto 0);
-		ddr_dqt      : out std_logic_vector(BYTE_SIZE-1 downto 0);
-		ddr_dqo      : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		ddr_dmt   : out std_logic;
+		ddr_dmo   : out std_logic;
+		ddr_dqsi  : in  std_logic;
+		ddr_dqi   : in  std_logic_vector(BYTE_SIZE-1 downto 0);
+		ddr_dqt   : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		ddr_dqo   : out std_logic_vector(BYTE_SIZE-1 downto 0);
 
-		ddr_dqst     : out std_logic;
-		ddr_dqso     : out std_logic);
+		ddr_dqst  : out std_logic;
+		ddr_dqso  : out std_logic);
 
-		constant clk0div   : natural := 0;
-		constant clk90div  : natural := 1;
-		constant iodclk    : natural := 2;
-		constant clk0      : natural := 3;
-		constant clk90     : natural := 4;
+		constant clk0div  : natural := 0;
+		constant clk90div : natural := 1;
+		constant iodclk   : natural := 2;
+		constant clk0     : natural := 3;
+		constant clk90    : natural := 4;
 
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
@@ -101,15 +101,14 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqh        : std_logic_vector(dq'range);
 	signal dqf        : std_logic_vector(dq'range);
 
-	constant dqs_linedelay : time := 1.35 ns;
-	constant dqi_linedelay : time := 0 ns; --1.35 ns;
-
 	signal tp_dqidly  : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly  : std_logic_vector(0 to 5-1);
 	signal tp_dqssel  : std_logic_vector(0 to 3-1);
 
-begin
+	constant dqs_linedelay : time := 1.35 ns;
+	constant dqi_linedelay : time := 0 ns; --1.35 ns;
 
+begin
 
 	with tp_sel select
 	tp_delay <=
@@ -167,6 +166,8 @@ begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
+--			dtaps   => (taps+7)/8,
+--			dtaps   => (taps+3)/4,
 			taps    => taps)
 		port map (
 			edge     => std_logic'('1'),
@@ -244,6 +245,8 @@ begin
 			if rising_edge(sys_clks(clk90div)) then
 				if (not dqspre and dqs180)='1' then
 					sys_sto <= (others => sto);
+				elsif (not dqspre and not dqs180)='1' then
+					sys_sto <= (others => sto);
 				else
 					sys_sto <= (others => q);
 				end if;
@@ -280,6 +283,8 @@ begin
 			dq_smp <= (dq(0*BYTE_SIZE+i), dq(1*BYTE_SIZE+i), dq(2*BYTE_SIZE+i), dq(3*BYTE_SIZE+i));
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
+--				dtaps    => (taps+7)/8,
+--				dtaps    => (taps+3)/4,
 				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),

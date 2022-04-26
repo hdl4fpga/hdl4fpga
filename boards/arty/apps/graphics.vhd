@@ -46,9 +46,11 @@ architecture graphics of arty is
 		mode900p_ddr475MHz,
 		mode900p_ddr500MHz,
 		mode900p_ddr525MHz,
-		mode900p_ddr550MHz);
+		mode900p_ddr550MHz,
+		mode900p_ddr575MHz,
+		mode900p_ddr600MHz);
 
-	constant profile     : profiles := mode900p_ddr425MHz;
+	constant profile : profiles := mode900p_ddr600MHz;
 
 	signal sys_rst : std_logic;
 
@@ -86,7 +88,9 @@ architecture graphics of arty is
 		ddr475MHz,
 		ddr500MHz,
 		ddr525MHz,
-		ddr550MHz);
+		ddr550MHz,
+		ddr575MHz,
+		ddr600MHz);
 
 	type ddram_vector is array (ddr_speeds) of ddr_params;
 
@@ -114,7 +118,16 @@ architecture graphics of arty is
 		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
 		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010")); -- latency 9
+		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
+		
+		-----------------------------
+		-- Frequency   --  600 Mhz --
+		-- Multiply by --   22     --
+		-- Divide by   --    4     --
+		-----------------------------
+
+		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
+		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
 
 	constant sclk_phases   : natural := 1;
 	constant sclk_edges    : natural := 1;
@@ -196,7 +209,9 @@ architecture graphics of arty is
 		mode900p_ddr475MHz => (ddr475MHz, mode900p, 1),
 		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
 		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
-		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1));
+		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1),
+		mode900p_ddr575MHz => (ddr575MHz, mode900p, 1),
+		mode900p_ddr600MHz => (ddr600MHz, mode900p, 1));
 
 	type video_params is record
 		pll  : pll_params;
