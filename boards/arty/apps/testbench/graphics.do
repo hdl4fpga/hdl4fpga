@@ -215,8 +215,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {23816840 ps} 0} {{Cursor 3} {23928144 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {23816815 ps} 0} {{Cursor 3} {23980812 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 236
 configure wave -valuecolwidth 244
 configure wave -justifyvalue left
@@ -231,4 +231,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {22996520 ps} {24637160 ps}
+WaveRestoreZoom {23775732 ps} {24185892 ps}
