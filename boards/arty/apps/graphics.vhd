@@ -51,7 +51,7 @@ architecture graphics of arty is
 		mode900p_ddr575MHz,
 		mode900p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr575MHz;
+	constant profile : profiles := mode900p_ddr500MHz;
 
 	signal sys_rst : std_logic;
 
@@ -357,8 +357,8 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => open, --video_clk,
-				clkout2  => open, --video_shf_clk,
+				clkout1  => video_clk,
+				clkout2  => video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
 
@@ -562,7 +562,7 @@ begin
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => virtex7,
-		mark         => M15E,
+		mark         => M2G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,
@@ -608,7 +608,7 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => ddr_param.cl,
 		ctlr_cwl     => ddr_param.cwl,
-		ctlr_rtt     => "001",
+		ctlr_rtt     => "000",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy   => ctlrphy_inirdy,
 		ctlrphy_wlreq => ctlrphy_wlreq,
@@ -785,7 +785,7 @@ begin
 				rgbled(3*i+0) <= '1';
 			end if;
 		end loop;
-		rgbled(3*3+2) <= sw(3);
+		rgbled(3*3+2) <= sw(3) or sw(2);
 		led(0) <= data(4);
 		led(1) <= data(5);
 		led(2) <= data(6);

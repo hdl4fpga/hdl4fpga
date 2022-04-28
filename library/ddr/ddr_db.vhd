@@ -47,9 +47,9 @@ package ddr_db is
 	constant DDR3  : natural := 3;
 
 	constant M6T  : natural := 1;
-	constant M15E : natural := 2;
+	constant M1G15E : natural := 2;
 	constant M3   : natural := 3;
-	constant M125 : natural := 3;
+	constant M2G125 : natural := 5;
 	constant M7E  : natural := 4;
 
 	constant tPreRST : natural :=  1;
@@ -112,8 +112,8 @@ package ddr_db is
 		tmark_record'(mark => M7E,  stdr => SDRAM),
 		tmark_record'(mark => M6T,  stdr => DDR1),
 		tmark_record'(mark => M3,   stdr => DDR2),
-		tmark_record'(mark => M15E, stdr => DDR3),
-		tmark_record'(mark => M125, stdr => DDR3));
+		tmark_record'(mark => M1G15E, stdr => DDR3),
+		tmark_record'(mark => M2G125, stdr => DDR3));
 
 	type latency_record is record
 		fpga  : natural;
@@ -149,17 +149,14 @@ package ddr_db is
 		timing_record'(mark => M7E,  param => tMRD,  value => 15000),
 		timing_record'(mark => M7E,  param => tREFI, value => integer(64.0e9/8192.0)),
 --		timing_record'(mark => M7E,  param => tREFI, value => 800000),
---		timing_record'(mark => M7E,  param => tREFI, value => 8000),
 
 		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_000),
---		timing_record'(mark => M6T,  param => tPreRST, value => 1*1_000_000),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000),
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000),
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
---		timing_record'(mark => M6T,  param => tREFI, value => 700000),
 
 		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
@@ -170,17 +167,25 @@ package ddr_db is
 		timing_record'(mark => M3,  param => tRPA,  value => 15000),
 		timing_record'(mark => M3,  param => tREFI, value => 7800000),
 
-		timing_record'(mark => M15E, param => tPreRST, value => 200*1_000_000),
-		timing_record'(mark => M15E, param => tPstRST, value => 500*1_000_000),
---		timing_record'(mark => M15E, param => tPreRST, value => 4*1_000_000),
---		timing_record'(mark => M15E, param => tPstRST, value => 5*1_000_000),
-		timing_record'(mark => M15E, param => tWR,   value => 15000),
-		timing_record'(mark => M15E, param => tRCD,  value => 13910),
-		timing_record'(mark => M15E, param => tRP,   value => 13910),
-		timing_record'(mark => M15E, param => tMRD,  value => 15000),
-		timing_record'(mark => M15E, param => tRFC,  value => 110000),
-		timing_record'(mark => M15E, param => tXPR,  value => 110000 + 10000),
-		timing_record'(mark => M15E, param => tREFI, value => 7800000));
+		timing_record'(mark => M1G15E, param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M1G15E, param => tPstRST, value => 500*1_000_000),
+		timing_record'(mark => M1G15E, param => tWR,   value => 15000),
+		timing_record'(mark => M1G15E, param => tRCD,  value => 13910),
+		timing_record'(mark => M1G15E, param => tRP,   value => 13910),
+		timing_record'(mark => M1G15E, param => tMRD,  value => 15000),
+		timing_record'(mark => M1G15E, param => tRFC,  value => 110000),
+		timing_record'(mark => M1G15E, param => tXPR,  value => 110000 + 10000),
+		timing_record'(mark => M1G15E, param => tREFI, value =>  integer(64.0e9/8192.0)),
+
+		timing_record'(mark => M2G125, param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M2G125, param => tPstRST, value => 500*1_000_000),
+		timing_record'(mark => M2G125, param => tWR,   value => 15000),
+		timing_record'(mark => M2G125, param => tRCD,  value => 13750),
+		timing_record'(mark => M2G125, param => tRP,   value => 13750),
+		timing_record'(mark => M2G125, param => tMRD,  value => 15000),
+		timing_record'(mark => M2G125, param => tRFC,  value => 160000),
+		timing_record'(mark => M2G125, param => tXPR,  value => 160000 + 10000),
+		timing_record'(mark => M2G125, param => tREFI, value => integer(64.0e9/8192.0)));
 
 	constant latency_db : latency_tab := (
 		latency_record'(fpga => spartan3,    param => cDLL,       value => 200),
