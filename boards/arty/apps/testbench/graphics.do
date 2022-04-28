@@ -106,6 +106,7 @@ add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddr
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sto
 add wave -noupdate -expand -group adjsto1 /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi_b/adjsto_e/sel
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_refreq
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dq
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i/sys_clks(0)
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ddrphy_e/sys_sti(7) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(6) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(5) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(4) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(3) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(2) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(1) -radix hexadecimal} {/testbench/du_e/ddrphy_e/sys_sti(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddrphy_e/sys_sti(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddrphy_e/sys_sti(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddrphy_e/sys_sti
@@ -214,8 +215,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sio_b/metafifo_e
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
 add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/ctlr_inirdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {12556347 ps} 0} {{Cursor 3} {23732172 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {14366111 ps} 1} {{Cursor 2} {23816840 ps} 0} {{Cursor 3} {23928144 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 236
 configure wave -valuecolwidth 244
 configure wave -justifyvalue left
@@ -230,4 +231,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {23712822 ps} {23751957 ps}
+WaveRestoreZoom {22996520 ps} {24637160 ps}

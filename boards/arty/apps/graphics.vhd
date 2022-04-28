@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -50,7 +51,7 @@ architecture graphics of arty is
 		mode900p_ddr575MHz,
 		mode900p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr600MHz;
+	constant profile : profiles := mode900p_ddr575MHz;
 
 	signal sys_rst : std_logic;
 
@@ -120,11 +121,11 @@ architecture graphics of arty is
 		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
 		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
 		
-		-----------------------------
-		-- Frequency   --  600 Mhz --
-		-- Multiply by --   22     --
-		-- Divide by   --    4     --
-		-----------------------------
+		---------------------------------------
+		-- Frequency   -- 575 Mhz -- 600 Mhz --
+		-- Multiply by --  23     --   6     --
+		-- Divide by   --   4     --   1     --
+		---------------------------------------
 
 		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
 		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
@@ -671,7 +672,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
 	generic map (
-		taps         => natural(ddr_tcp*(32.0*2.0)/(sys_per/2.0))-1,
+		taps         => natural(floor(ddr_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size    => bank_size,
         addr_size    => addr_size,
 		cmmd_gear    => cmmd_gear,
