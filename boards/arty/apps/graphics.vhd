@@ -256,7 +256,6 @@ architecture graphics of arty is
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
 	signal sin_data       : std_logic_vector(miitx_data'range);
---	signal sin_data       : std_logic_vector(eth_rxd'range);
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
@@ -785,17 +784,11 @@ begin
 				rgbled(3*i+0) <= '1';
 			end if;
 		end loop;
---		rgbled(3*3+2) <= sw(3) or sw(2);
 		led(0) <= data(4);
 		led(1) <= data(5);
 		led(2) <= data(6);
 		led(3) <= data(7);
 	end process;
---
---	tp_g : for i in 2-1 downto 0 generate
---		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);
---		led(i+2) <= tp1(i+2) when btn(3)='1' else tp_bit(i*5+1) when btn(1)='1' else tp_bit(i*5+0);
---	end generate;
 
 	ddr3_dm <= (others => '0');
 
