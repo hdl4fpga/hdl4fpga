@@ -372,7 +372,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../apps/miiipoe_debug.vhd">
+      <File Path="$PPRDIR/../../apps/demos/miiipoe_debug.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
