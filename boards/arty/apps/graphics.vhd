@@ -584,7 +584,7 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
-		tpin         => sw,
+--		tpin         => sw,
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -785,7 +785,7 @@ begin
 				rgbled(3*i+0) <= '1';
 			end if;
 		end loop;
-		rgbled(3*3+2) <= sw(3) or sw(2);
+--		rgbled(3*3+2) <= sw(3) or sw(2);
 		led(0) <= data(4);
 		led(1) <= data(5);
 		led(2) <= data(6);

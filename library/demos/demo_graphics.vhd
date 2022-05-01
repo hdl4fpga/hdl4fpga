@@ -931,7 +931,7 @@ begin
 			word_size    => word_size,
 			byte_size    => byte_size)
 		port map (
-			tpin => tpin,
+--			tpin => tpin,
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,
 			ctlr_bl      => ctlr_bl,
