@@ -426,17 +426,17 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/xilinx/xc3s_ddrbaphy.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/xilinx/spartan3/xc3s_ddrbaphy.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="141"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="68"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/xilinx/xc3s_ddrdqphy.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/xilinx/spartan3/xc3s_ddrdqphy.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="142"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="67"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/xilinx/xc3s_ddrphy.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/xilinx/spartan3/xc3s_ddrphy.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="143"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="78"/>
       <library xil_pn:name="hdl4fpga"/>
