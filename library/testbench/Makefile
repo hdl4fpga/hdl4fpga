@@ -1249,14 +1249,14 @@ $(HDL4FPGA__omdr__beh) : ../xilinx/omdr.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/omdr.vhd
 
 $(HDL4FPGA__pgm_delay) \
-$(HDL4FPGA__pgm_delay__mix) : ../xilinx/pgm_delay.vhd \
+$(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/pgm_delay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/misc/pgm_delay.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
@@ -1519,10 +1519,10 @@ $(HDL4FPGA__std__body) : ../common/std.vhd \
 
 $(HDL4FPGA__sync_transfer) \
 $(HDL4FPGA__sync_transfer__def) : ../common/sync_transfer.vhd \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__dpram) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/sync_transfer.vhd
@@ -1659,7 +1659,7 @@ $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../video/videopkg.vhd
 
 $(HDL4FPGA__xc3s_ddrbaphy) \
-$(HDL4FPGA__xc3s_ddrbaphy__xilnix) : ../xilinx/xc3s_ddrbaphy.vhd \
+$(HDL4FPGA__xc3s_ddrbaphy__xilnix) : ../xilinx/spartan3/xc3s_ddrbaphy.vhd \
 		$(HDL4FPGA__omdr) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -1667,10 +1667,10 @@ $(HDL4FPGA__xc3s_ddrbaphy__xilnix) : ../xilinx/xc3s_ddrbaphy.vhd \
 		$(HDL4FPGA__align) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrbaphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrbaphy.vhd
 
 $(HDL4FPGA__xc3s_ddrdqphy) \
-$(HDL4FPGA__xc3s_ddrdqphy__xilinx) : ../xilinx/xc3s_ddrdqphy.vhd \
+$(HDL4FPGA__xc3s_ddrdqphy__xilinx) : ../xilinx/spartan3/xc3s_ddrdqphy.vhd \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__ddrto) \
 		$(HDL4FPGA__align) \
@@ -1680,10 +1680,10 @@ $(HDL4FPGA__xc3s_ddrdqphy__xilinx) : ../xilinx/xc3s_ddrdqphy.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrdqphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrdqphy.vhd
 
 $(HDL4FPGA__xc3s_ddrphy) \
-$(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/xc3s_ddrphy.vhd \
+$(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/spartan3/xc3s_ddrphy.vhd \
 		$(HDL4FPGA__pgm_delay) \
 		$(HDL4FPGA__xc3s_ddrdqphy) \
 		$(HDL4FPGA__xc3s_ddrbaphy) \
@@ -1694,7 +1694,7 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/xc3s_ddrphy.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_ddrphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrphy.vhd
 
 $(HDL4FPGA__xc7a_ddrbaphy) \
 $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
@@ -1706,11 +1706,11 @@ $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
 
 $(HDL4FPGA__xc7a_ddrdqphy) \
 $(HDL4FPGA__xc7a_ddrdqphy__virtex7) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \
-		$(HDL4FPGA__adjsto) \
 		$(HDL4FPGA__omdr) \
+		$(HDL4FPGA__adjsto) \
+		$(HDL4FPGA__imdr) \
 		$(HDL4FPGA__adjpha) \
 		$(HDL4FPGA__align) \
-		$(HDL4FPGA__imdr) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
