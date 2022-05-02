@@ -32,7 +32,7 @@ use hdl4fpga.videopkg.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture hdlc_debug of ulx3s is
+architecture hdlc_debug of ulx4m_ld is
 
 	constant sys_freq   : real    := 25.0e6;
 

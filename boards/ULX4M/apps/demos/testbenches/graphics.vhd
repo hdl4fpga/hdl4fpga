@@ -25,7 +25,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ipoepkg.all;
 
-architecture ulx3s_graphics of testbench is
+architecture ulx4mld_graphics of testbench is
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -59,11 +59,13 @@ architecture ulx3s_graphics of testbench is
 
 	alias mii_clk      : std_logic is gn(12);
 
-	component ulx3s is
+	component ulx4m_ld is
 		generic (
 			debug  : boolean := true);
 		port (
 			clk_25mhz      : in    std_logic;
+			btn            : in    std_logic_vector(0 to 3-1) := (others => '-');
+			led            : out   std_logic_vector(4-1 downto 0);
 
 			ftdi_rxd       : out   std_logic;
 			ftdi_txd       : in    std_logic := '-';
@@ -71,16 +73,6 @@ architecture ulx3s_graphics of testbench is
 			ftdi_ndtr      : inout std_logic := '-';
 			ftdi_txden     : inout std_logic := '-';
 
-			btn_pwr_n      : in  std_logic := 'U';
-			fire1          : in  std_logic := 'U';
-			fire2          : in  std_logic := 'U';
-			up             : in  std_logic := 'U';
-			down           : in  std_logic := 'U';
-			left           : in  std_logic := 'U';
-			right          : in  std_logic := 'U';
-
-			led            : out   std_logic_vector(8-1 downto 0);
-			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
 
 
 			oled_clk       : out   std_logic;
@@ -102,25 +94,6 @@ architecture ulx3s_graphics of testbench is
 			sd_wp          : in    std_logic := '-';
 			sd_cdn         : in    std_logic := '-'; -- card detect not connected
 
-			adc_csn        : out   std_logic;
-			adc_mosi       : out   std_logic;
-			adc_miso       : in    std_logic := '-';
-			adc_sclk       : out   std_logic;
-
-			audio_l        : out   std_logic_vector(4-1 downto 0);
-			audio_r        : out   std_logic_vector(4-1 downto 0);
-			audio_v        : out   std_logic_vector(4-1 downto 0);
-
-			wifi_en        : out   std_logic := '1'; -- '0' disables ESP32
-			wifi_rxd       : out   std_logic;
-			wifi_txd       : in    std_logic := '-';
-			wifi_gpio0     : out   std_logic := '1'; -- '0' requests ESP32 to upload "passthru" bitstream
-			wifi_gpio5     : inout std_logic := '-';
-			wifi_gpio16    : inout std_logic := '-';
-			wifi_gpio17    : inout std_logic := '-';
-
-			ant_433mhz     : out   std_logic;
-
 			usb_fpga_dp    : inout std_logic := '-';
 			usb_fpga_dn    : inout std_logic := '-';
 			usb_fpga_bd_dp : inout std_logic := '-';
@@ -139,17 +112,13 @@ architecture ulx3s_graphics of testbench is
 			sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => '-');
 			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
 
-			gpdi_dp        : out   std_logic_vector(4-1 downto 0);
-			gpdi_dn        : out   std_logic_vector(4-1 downto 0);
+			gpdi_dp        : out   std_logic_vector(0 to 8-1);
+			gpdi_dn        : out   std_logic_vector(0 to 8-1);
 			--gpdi_ethp      : out   std_logic;
 			--gpdi_ethn      : out   std_logic;
 			gpdi_cec       : inout std_logic := '-';
 			gpdi_sda       : inout std_logic := '-';
 			gpdi_scl       : inout std_logic := '-';
-
-			gp             : inout std_logic_vector(28-1 downto 0) := (others => '-');
-			gn             : inout std_logic_vector(28-1 downto 0) := (others => '-');
-			gp_i           : in    std_logic_vector(12 downto 9) := (others => '-');
 
 			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
@@ -517,15 +486,16 @@ begin
 	fire1 <= '0';
 	fire2 <= '0';
 
-	du_e : ulx3s
+	du_e : ulx4m_ld
 	generic map (
 		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
-		fire1      => fire1,
-		fire2      => fire2,
+		btn(0)     => fire1,
+		btn(1)     => fire2,
+		btn(2)     => '-',
 		gp         => gp,
 		gn         => gn,
 		sdram_clk  => sdram_clk,
@@ -555,10 +525,10 @@ end;
 
 library micron;
 
-configuration ulx3s_graphic_structure_md of testbench is
-	for ulx3s_graphics
-		for all : ulx3s
-			use entity work.ulx3s(structure);
+configuration ulx4mld_graphic_structure_md of testbench is
+	for ulx4mld_graphics
+		for all : ulx4m
+			use entity work.ulx4m_ld(structure);
 		end for;
 		for all: mt48lc32m16a2
 			use entity micron.mt48lc32m16a2
@@ -579,10 +549,10 @@ end;
 
 library micron;
 
-configuration ulx3s_graphic_md of testbench is
-	for ulx3s_graphics
-		for all : ulx3s
-			use entity work.ulx3s(graphics);
+configuration ulx4mld_graphic_md of testbench is
+	for ulx4mld_graphics
+		for all : ulx4m_ld
+			use entity work.ulx4m_ld(graphics);
 		end for;
 			for all : mt48lc32m16a2
 			use entity micron.mt48lc32m16a2
