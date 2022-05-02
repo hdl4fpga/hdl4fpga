@@ -4,9 +4,9 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.sio_dayudp" lib="hdl4fpga" top="ulx4m"/>
-        <Source name="../common/ulx4m.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ulx4m"/>
+        <Options def_top="hdl4fpga.sio_dayhdlc" lib="hdl4fpga" top="ulx4m_ld"/>
+        <Source name="../common/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ulx4m_ld"/>
         </Source>
         <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -158,9 +158,6 @@
         <Source name="../../../library/common/barrel.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/grant.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/common/timer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -296,20 +293,17 @@
         <Source name="../../../library/sio/sio_muxcmp.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/et.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="ulx4m.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
     <Implementation title="hdlc_debug" dir="hdlc_debug" description="hdlc_debug" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.sio_dayhdlc" lib="hdl4fpga" top="ulx4m"/>
-        <Source name="../common/ulx4m.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ulx4m"/>
+        <Options def_top="hdl4fpga.sio_dayhdlc" lib="hdl4fpga" top="ulx4m_ld"/>
+        <Source name="../common/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ulx4m_ld"/>
         </Source>
         <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -443,14 +437,14 @@
         <Source name="../../../library/sio/sio_hdlc.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="ulx4m.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
     <Implementation title="miiipoe_debug" dir="miiipoe_debug" description="miiipoe_debug" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx4m"/>
-        <Source name="../common/ulx4m.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ulx4m"/>
+        <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx4m_ld"/>
+        <Source name="../common/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ulx4m_ld"/>
         </Source>
         <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -632,7 +626,7 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="ulx4m.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>

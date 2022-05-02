@@ -27,33 +27,13 @@ use ieee.std_logic_1164.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity ulx4m is
+entity ulx4m_ld is
 	generic (
 		debug : boolean := false);
 	port (
 		clk_25mhz      : in    std_logic := 'Z';
-		btn            : in  std_logic_vector(0 to 2-1) := (others => 'Z');
-		led            : out std_logic_vector(4-1 downto 0);
-
-		ftdi_rxd       : out   std_logic;
-		ftdi_txd       : in    std_logic := 'Z';
-		ftdi_nrts      : inout std_logic := 'Z';
-		ftdi_ndtr      : inout std_logic := 'Z';
-		ftdi_txden     : inout std_logic := 'Z';
-
-
-		oled_clk       : out   std_logic;
-		oled_mosi      : out   std_logic;
-		oled_dc        : out   std_logic;
-		oled_resn      : out   std_logic;
-		oled_csn       : out   std_logic;
-
---		flash_csn      : out   std_logic;
---		flash_clk      : out   std_logic;
---		flash_mosi     : out   std_logic;
---		flash_miso     : in    std_logic;
---		flash_holdn    : out   std_logic;
---		flash_wpn      : out   std_logic;
+		btn            : in    std_logic_vector(0 to 3-1) := (others => '-');
+		led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
 		sd_clk         : in    std_logic := '-';
 		sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
@@ -71,29 +51,38 @@ entity ulx4m is
 		usb_fpga_otg_dn : inout std_logic := 'Z';
 		n_extrst       : inout std_logic := 'Z';
 
-		sdram_clk      : inout std_logic;
-		sdram_cke      : out   std_logic;
-		sdram_csn      : out   std_logic;
-		sdram_wen      : out   std_logic;
-		sdram_rasn     : out   std_logic;
-		sdram_casn     : out   std_logic;
-		sdram_a        : out   std_logic_vector(13-1 downto 0);
-		sdram_ba       : out   std_logic_vector(2-1 downto 0);
-		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+		eth_reset      : out   std_logic;
+		eth_ref_clk    : out   std_logic;
+		eth_mdio       : inout std_logic := '-';
+		eth_mdc        : out   std_logic;
+
+		rgmii_tx_clk   : in    std_logic := '-';
+		rgmii_tx_en    : buffer std_logic;
+		rgmii_txd      : buffer std_logic_vector(0 to 4-1);
+		rgmii_rx_clk   : in    std_logic := '-';
+		rgmii_rx_dv    : in    std_logic := '-';
+		rgmii_rxd      : in    std_logic_vector(0 to 4-1) := (others => '-');
+
+		ddram_clk      : inout std_logic;
+		ddram_reset_n  : out   std_logic;
+		ddram_cke      : out   std_logic;
+		ddram_cs_n     : out   std_logic;
+		ddram_ras_n    : out   std_logic;
+		ddram_cas_n    : out   std_logic;
+		ddram_we_n     : out   std_logic;
+		ddram_odt      : out   std_logic;
+		ddram_a        : out   std_logic_vector(15-1 downto 0);
+		ddram_ba       : out   std_logic_vector(3-1 downto 0);
+		ddram_dm       : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+		ddram_dqs      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 
 		gpdi_cec       : inout std_logic := 'Z';
---		gpdi_sda       : inout std_logic := 'Z';
---		gpdi_scl       : inout std_logic := 'Z';
 
 		gpdi_dp        : out   std_logic_vector(8-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(8-1 downto 0);
 
 
-		--gpdi_ethp      : out   std_logic;
-		--gpdi_ethn      : out   std_logic;
-
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
-		shutdown       : out   std_logic := '0' -- '1' power off the board, 10uA sleep
-	);
+		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 end;
