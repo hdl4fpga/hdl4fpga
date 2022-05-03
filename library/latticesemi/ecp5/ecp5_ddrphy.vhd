@@ -33,18 +33,18 @@ use hdl4fpga.std.all;
 
 entity ecp5_ddrphy is
 	generic (
+		tcp       : real;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		data_gear : natural := 32;
 		word_size : natural := 16;
-		byte_size : natural := 8;
-		tcp : real);
+		byte_size : natural := 8);
 	port (
-		phy_sclk : in  std_logic;
-		phy_sclk2x : in std_logic;
-		phy_eclk : in  std_logic;
-		phy_rst : in std_logic;
+		sclk      : in std_logic;
+		sclk2x    : in std_logic;
+		eclk      : in std_logic;
+		rst       : in std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_wlreq : in  std_logic;
@@ -70,20 +70,20 @@ entity ecp5_ddrphy is
 		phy_dqsi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		phy_pll   : out std_logic_vector(8-1 downto 0);
 
-		ddr_rst : out std_logic;
-		ddr_ck  : out std_logic;
-		ddr_cke : out std_logic := '1';
-		ddr_cs  : out std_logic := '0';
-		ddr_ras : out std_logic;
-		ddr_cas : out std_logic;
-		ddr_we  : out std_logic;
-		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
-		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
-		ddr_odt : out std_logic;
+		ddr_rst   : out std_logic;
+		ddr_ck    : out std_logic;
+		ddr_cke   : out std_logic := '1';
+		ddr_cs    : out std_logic := '0';
+		ddr_ras   : out std_logic;
+		ddr_cas   : out std_logic;
+		ddr_we    : out std_logic;
+		ddr_b     : out std_logic_vector(bank_size-1 downto 0);
+		ddr_a     : out std_logic_vector(addr_size-1 downto 0);
+		ddr_odt   : out std_logic;
 
-		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
-		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
+		ddr_dm    : out std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dq    : inout std_logic_vector(word_size-1 downto 0);
+		ddr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
 architecture lscc of ecp5_ddrphy is
@@ -249,8 +249,8 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		phy_sclk => phy_sclk,
-		phy_sclk2x => phy_sclk2x,
+		sclk => sclk,
+		sclk2x => sclk2x,
           
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
@@ -285,30 +285,30 @@ begin
 		signal lock : std_logic;
 		signal uddcntln : std_logic;
 		signal dqsdllb_uddcntln : std_logic;
-		signal rst : std_logic;
+		signal rst_2x : std_logic;
 	begin
-		process(phy_sclk2x)
+		process(sclk2x)
 		begin
-			if rising_edge(phy_sclk2x) then
-				rst <= phy_rst; 
+			if rising_edge(sclk2x) then
+				rst_2x <= rst; 
 			end if;
 		end process;
 
 		dqsdllb_i : dqsdllb
 		port map (
-			rst => rst,
-			clk => phy_sclk2x,
+			rst => rst_2x,
+			clk => sclk2x,
 			uddcntln => dqsdllb_uddcntln,
 			dqsdel => dqsdel,
 			lock => lock);
 
 		dqsdllb_dqsdel <= dqsdel;
-		process (phy_sclk)
+		process (sclk)
 			variable q : std_logic_vector(0 to 4-1);
 			variable wlr_edge : std_logic;
 		begin
-			if rising_edge(phy_sclk) then
-				if phy_rst='1' then
+			if rising_edge(sclk) then
+				if rst='1' then
 					q := (others => '0');
 				elsif wlr='1' and wlr_edge='0' then
 					q := (others => '0');
@@ -325,9 +325,9 @@ begin
 			clkstart_rst <= not q(0);
 		end process;
 
-		process (phy_sclk2x)
+		process (sclk2x)
 		begin
-			if rising_edge(phy_sclk2x) then
+			if rising_edge(sclk2x) then
 				dqsdllb_uddcntln <= uddcntln;
 			end if;
 		end process;
@@ -336,8 +336,8 @@ begin
 	clk_start_i : entity hdl4fpga.clk_start
 	port map (
 		rst  => clkstart_rst,
-		sclk => phy_sclk,
-		eclk => phy_eclk,
+		sclk => sclk,
+		eclk => eclk,
 		eclksynca_start => eclksynca_start,
 		dqsbufd_rst => dqsbufd_rst);
 	eclksynca_stop <= not eclksynca_start;
@@ -362,7 +362,7 @@ begin
 
 		phase_ff_1_i : entity hdl4fpga.ff
 		port map(
-			clk => phy_sclk,
+			clk => sclk,
 			d => dqclk1bar_ff_q,
 			q => xxx);
 	end block;
@@ -370,14 +370,14 @@ begin
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
-		eclki => phy_eclk,
+		eclki => eclk,
 		eclko => eclksynca_eclk);
 	yyy <= eclksynca_eclk after (integer(tcp*2.0)/16.0) * 1 ps;
 
-	process (phy_sclk)
+	process (sclk)
 		variable aux : std_logic;
 	begin
-		if rising_edge(phy_sclk) then
+		if rising_edge(sclk) then
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
@@ -398,9 +398,9 @@ begin
 			byte_size => byte_size)
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
-			phy_sclk => phy_sclk,
-			phy_sclk2x => phy_sclk2x,
-			phy_eclk => phy_eclk,
+			sclk => sclk,
+			sclk2x => sclk2x,
+			eclk => eclk,
 			phy_eclkw => yyy,
 			sys_dqsdel => dqsdllb_dqsdel,
 			sys_rw => sys_sti(i*data_gear+0),
@@ -439,7 +439,7 @@ begin
 		n => 2*data_gear,
 		d => (0 to 2*data_gear-1 => 3))
 	port map (
-		clk => phy_sclk,
+		clk => sclk,
 		di  => sys_sti,
 		do  => sys_sto);
 
@@ -480,7 +480,7 @@ begin
 		end loop;
 	end process;
 
-	sys_dqso <= (others => phy_sclk);
+	sys_dqso <= (others => sclk);
 	sys_dmo  <= to_stdlogicvector(sdmo);
 	sys_dqo  <= to_stdlogicvector(sdqo);
 end;
