@@ -36,29 +36,18 @@ use ecp5u.components.all;
 
 architecture graphics of ulx4m_ld is
 
-	--------------------------------------
-	-- Set of profiles                  --
+	---------------------------------------
+	-- Set of profiles                   --
 	type apps is (
-	--	Interface_SdramSpeed_PixelFormat--
-
-		uart_133MHz_480p24bpp,          --
-		uart_200MHz_480p24bpp,          --
-		uart_250MHz_480p24bpp,          --
-		uart_262MHz_480p24bpp,          --
-
-		uart_133MHz_600p16bpp,          --
-		uart_166MHz_600p16bpp,          --
-		uart_200MHz_600p16bpp,          --
-		uart_250MHz_600p16bpp,          --
-
-		mii_166MHz_480p24bpp,           --
-		mii_200MHz_480p24bpp,           --
-		mii_250MHz_480p24bpp);          --
-	--------------------------------------
+	--	Interface_SdramSpeed_PixelFormat --
+		mii_166MHz_480p24bpp,            --
+		mii_200MHz_480p24bpp,            --
+		mii_250MHz_480p24bpp);           --
+	---------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := uart_250MHz_480p24bpp;
+	constant app : apps := mii_250MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -206,16 +195,6 @@ architecture graphics of ulx4m_ld is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
-		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram133MHz),
-		uart_200MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram200MHz),
-		uart_250MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram250MHz),
-		uart_262MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram262MHz),
-
-		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
-		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
-		uart_200MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram200MHz),
-		uart_250MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram250MHz),
-
 		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
 		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
 		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
@@ -611,11 +590,10 @@ begin
 		di  => ctlrphy_sto,
 		do  => sdrphy_sti);
 
-	sdrphy_e : entity hdl4fpga.sdrphy
+	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
-		cmmd_latency  => false,
-		read_latency  => true,
-		write_latency => true,
+		cmmd_gear     => cmmd_gear,
+		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,
 		addr_size     => ddram_a'length,
 		word_size     => word_size,
@@ -643,17 +621,18 @@ begin
 		phy_sti       => sdrphy_sti,
 		phy_sto       => ctlrphy_sti,
 
-		sdr_clk       => ddram_clk,
-		sdr_cke       => ddram_cke,
-		sdr_cs        => ddram_cs_n,
-		sdr_ras       => ddram_ras_n,
-		sdr_cas       => ddram_cas_n,
-		sdr_we        => ddram_we_n,
-		sdr_b         => ddram_ba,
-		sdr_a         => ddram_a,
+		ddr_ck        => ddram_clk,
+		ddr_cke       => ddram_cke,
+		ddr_cs        => ddram_cs_n,
+		ddr_ras       => ddram_ras_n,
+		ddr_cas       => ddram_cas_n,
+		ddr_we        => ddram_we_n,
+		ddr_b         => ddram_ba,
+		ddr_a         => ddram_a,
 
-		sdr_dm        => ddram_dm,
-		sdr_dq        => ddram_dq);
+		ddr_dm        => ddram_dm,
+		ddr_dq        => ddram_dq);
+		ddr_dqs       => ddram_dqs);
 
 	-- VGA --
 	---------
