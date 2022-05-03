@@ -27,8 +27,8 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant bank_bits  : natural := 2;
-	constant addr_bits  : natural := 13;
+	constant bank_bits  : natural := 3;
+	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 9;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -37,56 +37,18 @@ architecture ulx4mld_graphics of testbench is
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
 
-	signal sdram_dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
-	signal sdram_addr  : std_logic_vector (addr_bits - 1 downto 0);
-	signal sdram_ba    : std_logic_vector (1 downto 0);
-	signal sdram_clk   : std_logic := '0';
-	signal sdram_cke   : std_logic := '1';
-	signal sdram_cs_n  : std_logic := '1';
-	signal sdram_ras_n : std_logic;
-	signal sdram_cas_n : std_logic;
-	signal sdram_we_n  : std_logic;
-	signal sdram_dqm   : std_logic_vector(1 downto 0);
-
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0);
-
-	signal ftdi_txd    : std_logic;
-	signal ftdi_rxd    : std_logic;
-
-	signal fire1       : std_logic;
-	signal fire2       : std_logic;
 
 	alias mii_clk      : std_logic is gn(12);
 
 	component ulx4m_ld is
 		generic (
-			debug  : boolean := true);
+			debug          : boolean := true);
 		port (
 			clk_25mhz      : in    std_logic;
 			btn            : in    std_logic_vector(0 to 3-1) := (others => '-');
-			led            : out   std_logic_vector(4-1 downto 0);
-
-			ftdi_rxd       : out   std_logic;
-			ftdi_txd       : in    std_logic := '-';
-			ftdi_nrts      : inout std_logic := '-';
-			ftdi_ndtr      : inout std_logic := '-';
-			ftdi_txden     : inout std_logic := '-';
-
-
-
-			oled_clk       : out   std_logic;
-			oled_mosi      : out   std_logic;
-			oled_dc        : out   std_logic;
-			oled_resn      : out   std_logic;
-			oled_csn       : out   std_logic;
-
-			--flash_csn      : out   std_logic;
-			--flash_clk      : out   std_logic;
-			--flash_mosi     : out   std_logic;
-			--flash_miso     : in    std_logic;
-			--flash_holdn    : out   std_logic;
-			--flash_wpn      : out   std_logic;
+			led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
 			sd_clk         : in    std_logic := '-';
 			sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
@@ -101,41 +63,67 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_pu_dp : inout std_logic := '-';
 			usb_fpga_pu_dn : inout std_logic := '-';
 
-			sdram_clk      : inout std_logic;
-			sdram_cke      : out   std_logic;
-			sdram_csn      : out   std_logic;
-			sdram_wen      : out   std_logic;
-			sdram_rasn     : out   std_logic;
-			sdram_casn     : out   std_logic;
-			sdram_a        : out   std_logic_vector(13-1 downto 0);
-			sdram_ba       : out   std_logic_vector(2-1 downto 0);
-			sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => '-');
-			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
+			ddram_clk      : inout std_logic;
+			ddram_reset_n  : out   std_logic;
+			ddram_cke      : out   std_logic;
+			ddram_cs_n     : out   std_logic;
+			ddram_ras_n    : out   std_logic;
+			ddram_cas_n    : out   std_logic;
+			ddram_we_n     : out   std_logic;
+			ddram_odt      : out   std_logic;
+			ddram_a        : out   std_logic_vector(15-1 downto 0);
+			ddram_ba       : out   std_logic_vector(3-1 downto 0);
+			ddram_dm       : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+			ddram_dqs      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 
 			gpdi_dp        : out   std_logic_vector(0 to 8-1);
 			gpdi_dn        : out   std_logic_vector(0 to 8-1);
-			--gpdi_ethp      : out   std_logic;
-			--gpdi_ethn      : out   std_logic;
 			gpdi_cec       : inout std_logic := '-';
-			gpdi_sda       : inout std_logic := '-';
-			gpdi_scl       : inout std_logic := '-';
 
 			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
-	component mt48lc32m16a2 is
+	signal rst_n : std_logic;
+	signal cke   : std_logic;
+	signal ddr_clk   : std_logic;
+	signal ddr_clk_p : std_logic;
+	signal ddr_clk_n : std_logic;
+	signal cs_n  : std_logic;
+	signal ras_n : std_logic;
+	signal cas_n : std_logic;
+	signal we_n  : std_logic;
+	signal ba    : std_logic_vector (bank_bits-1 downto 0);
+	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
+	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs   : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_p : std_logic_vector (dqs'range) := (others => 'Z');
+	signal dqs_n : std_logic_vector (dqs'range) := (others => 'Z');
+	signal dm    : std_logic_vector(data_bytes-1 downto 0);
+	signal odt   : std_logic;
+	signal scl   : std_logic;
+	signal sda   : std_logic;
+	signal tdqs_n : std_logic_vector(dqs'range);
+
+	component ddr3_model is
 		port (
-			clk   : in std_logic;
+			rst_n : in std_logic;
+			ck    : in std_logic;
+			ck_n  : in std_logic;
 			cke   : in std_logic;
 			cs_n  : in std_logic;
 			ras_n : in std_logic;
 			cas_n : in std_logic;
 			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dqm   : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0));
+			ba    : in std_logic_vector(3-1 downto 0);
+			addr  : in std_logic_vector(13-1 downto 0);
+			dm_tdqs : in std_logic_vector(2-1 downto 0);
+			dq    : inout std_logic_vector(16-1 downto 0);
+			dqs   : inout std_logic_vector(2-1 downto 0);
+			dqs_n : inout std_logic_vector(2-1 downto 0);
+			tdqs_n : inout std_logic_vector(2-1 downto 0);
+			odt   : in std_logic);
 	end component;
 
 	function gen_natural(
@@ -158,391 +146,163 @@ architecture ulx4mld_graphics of testbench is
 		return retval;
 	end;
 
-	constant data  : std_logic_vector :=
---		x"010001" &
---		x"01000c_18017e7d_1702000000_160300000000_1702_00_00_01_160380000000";
-		x"010000_1702_00_00_01_160300000001";
---		x"160300000000" &
---		x"170200007f" ; -- &
---		x"18ff" &
---		gen_natural(start => 0, stop => 127, size => 16)
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"18ff" &
---		gen_natural(start => 128, stop => 255, size => 16) &
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"1602000080" &
---		x"170200007f"
-
---		x"1801" &
---		x"1234" &
---		x"160301234567" &
---		x"1702000000" --&
---		x"1602000000" &
---		x"1702000000"  &
---		x"1803" &
---		x"5678" &
---		x"9abc" &
---		x"1602000000" &
---		x"1702000000"
-
---		;
+	signal mii_refclk : std_logic;
+	signal mii_req : std_logic := '0';
+	signal mii_req1 : std_logic := '0';
+	signal ping_req : std_logic := '0';
+	signal rep_req : std_logic := '0';
+	signal mii_rxdv : std_logic;
+	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal mii_txd  : std_logic_vector(0 to 4-1);
+	signal mii_txc  : std_logic;
+	signal mii_rxc  : std_logic;
+	signal mii_txen : std_logic;
 
 	signal pl_frm : std_logic;
 	signal nrst : std_logic;
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
+
 begin
 
 	rst <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
 
-	hdlc_b : block
-
-		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
-			payload   : std_logic_vector);
-		generic map (
-			payload   => data);
-
-		port (
-			rst       : in  std_logic;
-			uart_clk  : in  std_logic;
-			uart_sout : out std_logic);
-		port map (
-			rst       => rst,
-			uart_clk  => xtal,
-			uart_sout => ftdi_txd);
-
-		signal uart_trdy   : std_logic;
-		signal uart_irdy   : std_logic;
-		signal uart_txd    : std_logic_vector(0 to 8-1);
-
-		signal uartrx_trdy   : std_logic;
-		signal uartrx_irdy   : std_logic;
-		signal uartrx_data   : std_logic_vector(0 to 8-1);
-
-		signal hdlctx_frm  : std_logic;
-		signal hdlctx_end  : std_logic;
-		signal hdlctx_trdy : std_logic;
-		signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-		signal hdlcrx_frm  : std_logic;
-		signal hdlcrx_end  : std_logic;
-		signal hdlcrx_trdy : std_logic;
-		signal hdlcrx_irdy : std_logic;
-		signal hdlcrx_data : std_logic_vector(0 to 8-1);
-		signal hdlcfcsrx_sb : std_logic;
-		signal hdlcfcsrx_vld : std_logic;
-
-	begin
-
-		process (rst, uart_clk)
-			variable addr : natural;
-		begin
-			if rst='1' then
-				hdlctx_frm <= '0';
-				hdlctx_end <= '0';
-				addr       := 0;
-			elsif rising_edge(uart_clk) then
-				if addr < payload'length then
-					hdlctx_data <= reverse(payload(addr to addr+8-1));
-					if hdlctx_trdy='1' then
-						addr := addr + 8;
-					end if;
-				else
-					hdlctx_data <= (others => '-');
-				end if;
-				if addr < payload'length then
-					hdlctx_frm <= '1';
-					hdlctx_end <= '0';
-				else
-					hdlctx_frm <= '1';
-					hdlctx_end <= '1';
-				end if;
-			end if;
-		end process;
-
-		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-		port map (
-			hdlctx_frm  => hdlctx_frm,
-			hdlctx_irdy => '1',
-			hdlctx_trdy => hdlctx_trdy,
-			hdlctx_end  => hdlctx_end,
-			hdlctx_data => hdlctx_data,
-
-			uart_clk    => uart_clk,
-			uart_irdy   => uart_irdy,
-			uart_trdy   => uart_trdy,
-			uart_data   => uart_txd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate  => baudrate,
-			clk_rate  => uart_xtal)
-		port map (
-			uart_frm  => nrst,
-			uart_txc  => uart_clk,
-			uart_sout => uart_sout,
-			uart_trdy => uart_trdy,
-			uart_irdy => uart_irdy,
-			uart_data => uart_txd);
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate  => baudrate,
-			clk_rate  => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_rxd,
-			uart_irdy => uartrx_irdy,
-			uart_data => uartrx_data);
-
-		hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uartrx_irdy,
-			uartrx_data => uartrx_data,
-
-			hdlcrx_frm  => hdlcrx_frm,
-			hdlcrx_irdy => hdlcrx_irdy,
-			hdlcrx_data => hdlcrx_data,
-			hdlcrx_end  => hdlcrx_end,
-			fcs_sb      => hdlcfcsrx_sb,
-			fcs_vld     => hdlcfcsrx_vld);
-
-	end block;
-
 	pl_frm <= '0', '1' after 100 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
-	ipoe_b : block
-		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
-			payload   : std_logic_vector);
-		generic map (
-			payload   => data);
 
-		port (
-			rst       : in  std_logic;
-			pl_frm    : in  std_logic;
-			mii_clk   : in  std_logic;
-			mii_rxdv  : in  std_logic;
-			mii_rxd   : in  std_logic_vector(0 to 2-1);
+	htb_e : entity hdl4fpga.eth_tb
+	generic map (
+		debug =>false)
+	port map (
+		mii_data4 =>
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_0003ff_1603_0007_3000",
+		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
+--		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
+		mii_frm1 => '0',
+		mii_frm2 => '0', --ping_req,
+		mii_frm3 => '0',
+		mii_frm4 => mii_req,
+		mii_frm5 => mii_req1,
 
-			mii_txen  : buffer std_logic;
-			mii_txd   : out std_logic_vector(0 to 2-1));
-		port map (
-			rst        => rst,
-			pl_frm     => pl_frm,
-			mii_clk    => mii_clk,
-			mii_txen   => gp(12),
-			mii_txd(0) => gn(11),
-			mii_txd(1) => gp(11),
-
-			mii_rxdv   => gn(10),
-			mii_rxd(0) => gp(10),
-			mii_rxd(1) => gn(9));
-
-		constant arppkt : std_logic_vector :=
-			x"0000"                 & -- arp_htype
-			x"0000"                 & -- arp_ptype
-			x"00"                   & -- arp_hlen
-			x"00"                   & -- arp_plen
-			x"0000"                 & -- arp_oper
-			x"00_00_00_00_00_00"    & -- arp_sha
-			x"00_00_00_00"          & -- arp_spa
-			x"00_00_00_00_00_00"    & -- arp_tha
-			aton("192.168.1.1");     -- arp_tpa
-
-		constant packet : std_logic_vector :=
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			aton("192.168.1.1")     &    -- IP Destiantion IP Address
-
-			udp_checksummed (
-				x"ffffffff",
-				aton("192.168.1.1"),
-				x"4444dea9"         & -- UDP Source port, Destination port
-				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
-				x"0000" &              -- UPD checksum
-				payload);
-
-		signal eth_txen  : std_logic;
-		signal eth_txd   : std_logic_vector(mii_txd'range);
-
-		signal pl_trdy    : std_logic;
-		signal pl_end     : std_logic;
-		signal pl_data    : std_logic_vector(mii_txd'range);
-
-		signal miirx_frm  : std_logic;
-		signal miirx_end  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(pl_data'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(pl_data'range);
-
-		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
-		signal hwllc_irdy : std_logic;
-		signal hwllc_trdy : std_logic;
-		signal hwllc_end  : std_logic;
-		signal hwllc_data : std_logic_vector(pl_data'range);
-		signal datarx_null :  std_logic_vector(mii_rxd'range);
-
-	begin
-
-		eth4_e: entity hdl4fpga.sio_mux
-		port map (
-			mux_data => reverse(packet,8),
-			sio_clk  => mii_clk,
-			sio_frm  => pl_frm,
-			sio_irdy => pl_trdy,
-			so_end   => pl_end,
-			so_data  => pl_data);
-
-		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0800",8);
-		hwsa_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => llc_data,
-			sio_clk  => mii_clk,
-			sio_frm  => pl_frm,
-			sio_irdy => hwllc_irdy,
-			sio_trdy => hwllc_trdy,
-			so_end   => hwllc_end,
-			so_data  => hwllc_data);
-
-		ethtx_e : entity hdl4fpga.eth_tx
-		port map (
-			mii_clk  => mii_clk,
-
-			pl_frm   => pl_frm,
-			pl_trdy  => pl_trdy,
-			pl_end   => pl_end,
-			pl_data  => pl_data,
-
-			hwllc_irdy => hwllc_irdy,
-			hwllc_trdy => open,
-			hwllc_end  => hwllc_end,
-			hwllc_data => hwllc_data,
-
-			mii_frm  => miirx_frm,
-			mii_irdy => miirx_irdy,
-			mii_trdy => '1', --miirx_trdy,
-			mii_end  => miirx_end,
-			mii_data => miirx_data);
-
-		mii_txen <= miirx_frm and not miirx_end;
-		mii_txd  <= miirx_data;
-
-		ethrx_e : entity hdl4fpga.eth_rx
-		port map (
-			dll_data   => datarx_null,
-			mii_clk    => mii_clk,
-			mii_frm    => mii_rxdv,
-			mii_irdy   => mii_rxdv,
-			mii_data   => mii_rxd);
-
-	end block;
-
-	fire1 <= '0';
-	fire2 <= '0';
+		mii_txc  => mii_rxc,
+		mii_txen => mii_rxdv,
+		mii_txd  => mii_rxd);
 
 	du_e : ulx4m_ld
 	generic map (
 		debug => true)
 	port map (
 		clk_25mhz  => xtal,
-		ftdi_txd   => ftdi_txd,
-		ftdi_rxd   => ftdi_rxd,
-		btn(0)     => fire1,
-		btn(1)     => fire2,
-		btn(2)     => '-',
-		gp         => gp,
-		gn         => gn,
-		sdram_clk  => sdram_clk,
-		sdram_cke  => sdram_cke,
-		sdram_csn  => sdram_cs_n,
-		sdram_rasn => sdram_ras_n,
-		sdram_casn => sdram_cas_n,
-		sdram_wen  => sdram_we_n,
-		sdram_ba   => sdram_ba,
-		sdram_a    => sdram_addr,
-		sdram_dqm  => sdram_dqm,
-		sdram_d    => sdram_dq);
+		btn(0)     => '0',
+		btn(1 to 2) => (others => '-'),
 
-	sdr_model_g: mt48lc32m16a2
+		ddram_reset_n => rst_n,
+		ddram_clk   => ddr_clk,
+		ddram_cke   => cke,
+		ddram_cs_n  => cs_n,
+		ddram_ras_n => ras_n,
+		ddram_cas_n => cas_n,
+		ddram_we_n  => we_n,
+		ddram_ba    => ba,
+		ddram_a     => addr,
+		ddram_dqs   => dqs,
+		ddram_dq    => dq,
+		ddram_dm    => dm,
+		ddram_odt   => odt);
+
+	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		clk   => sdram_clk,
-		cke   => sdram_cke,
-		cs_n  => sdram_cs_n,
-		ras_n => sdram_ras_n,
-		cas_n => sdram_cas_n,
-		we_n  => sdram_we_n,
-		ba    => sdram_ba,
-		addr  => sdram_addr,
-		dqm   => sdram_dqm,
-		dq    => sdram_dq);
+		dll_data   => datarx_null,
+		mii_clk    => mii_txc,
+		mii_frm    => mii_txen,
+		mii_irdy   => mii_txen,
+		mii_data   => mii_txd);
+
+	mt_u : ddr3_model
+	port map (
+		rst_n => rst_n,
+		Ck    => ddr_clk_p,
+		Ck_n  => ddr_clk_n,
+		Cke   => cke,
+		Cs_n  => cs_n,
+		Ras_n => ras_n,
+		Cas_n => cas_n,
+		We_n  => we_n,
+		Ba    => ba,
+		Addr  => addr(13-1 downto 0),
+		Dm_tdqs  => dm,
+		Dq    => dq,
+		Dqs   => dqs,
+		Dqs_n => dqs_n,
+		tdqs_n => tdqs_n,
+		Odt   => odt);
+
 end;
 
 library micron;
 
 configuration ulx4mld_graphic_structure_md of testbench is
 	for ulx4mld_graphics
-		for all : ulx4m
+		for all : ulx4m_ld
 			use entity work.ulx4m_ld(structure);
 		end for;
-		for all: mt48lc32m16a2
-			use entity micron.mt48lc32m16a2
+		for all: ddr3_model
+			use entity micron.ddr3
 			port map (
-				clk   => sdram_clk,
-				cke   => sdram_cke,
-				cs_n  => sdram_cs_n,
-				ras_n => sdram_ras_n,
-				cas_n => sdram_cas_n,
-				we_n  => sdram_we_n,
-				ba    => sdram_ba,
-				addr  => sdram_addr,
-				dqm   => sdram_dqm,
-				dq    => sdram_dq);
+				rst_n => rst_n,
+				Ck    => ck,
+				Ck_n  => ck_n,
+				Cke   => cke,
+				Cs_n  => cs_n,
+				Ras_n => ras_n,
+				Cas_n => cas_n,
+				We_n  => we_n,
+				Ba    => ba,
+				Addr  => addr,
+				Dm_tdqs  => dm,
+				Dq    => dq,
+				Dqs   => dqs,
+				Dqs_n => dqs_n,
+				tdqs_n => tdqs_n,
+				Odt   => odt);
 		end for;
 	end for;
 end;
@@ -554,19 +314,25 @@ configuration ulx4mld_graphic_md of testbench is
 		for all : ulx4m_ld
 			use entity work.ulx4m_ld(graphics);
 		end for;
-			for all : mt48lc32m16a2
-			use entity micron.mt48lc32m16a2
+		for all: ddr3_model
+			use entity micron.ddr3
 			port map (
-				clk   => sdram_clk,
-				cke   => sdram_cke,
-				cs_n  => sdram_cs_n,
-				ras_n => sdram_ras_n,
-				cas_n => sdram_cas_n,
-				we_n  => sdram_we_n,
-				ba    => sdram_ba,
-				addr  => sdram_addr,
-				dqm   => sdram_dqm,
-				dq    => sdram_dq);
+				rst_n => rst_n,
+				Ck    => ck,
+				Ck_n  => ck_n,
+				Cke   => cke,
+				Cs_n  => cs_n,
+				Ras_n => ras_n,
+				Cas_n => cas_n,
+				We_n  => we_n,
+				Ba    => ba,
+				Addr  => addr,
+				Dm_tdqs  => dm,
+				Dq    => dq,
+				Dqs   => dqs,
+				Dqs_n => dqs_n,
+				tdqs_n => tdqs_n,
+				Odt   => odt);
 		end for;
 	end for;
 end;
