@@ -74,7 +74,6 @@ architecture lscc of ecp5_ddrdqphy is
 	signal dqclk0 : std_logic;
 	signal dqclk1 : std_logic;
 	
-	signal prmbdet : std_logic;
 	signal ddrclkpol : std_logic := '1';
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
@@ -116,20 +115,27 @@ begin
 			smp      => ddr_dqi(0 to 0),
 			delay    => sys_wlpha);
 
-		dqsbufd_i : dqsbufd 
+		dqsbufd_i : dqsbufm 
 		port map (
-			dqsdel => sys_dqsdel,
-			dqsi   => ddr_dqsi,
-			eclkdqsr => idqs_eclk,
+			ddrdel    => sys_dqsdel,
+			dqsi      => ddr_dqsi,
+			dqsr90    => idqs_eclk,
 	
-			sclk => sclk,
-			read => rw,
+			sclk      => sclk,
+			read0     => rw,
+			read1     => rw,
 			ddrclkpol => ddrclkpol,
-			ddrlat  => ddrlat,
-			prmbdet => prmbdet,
+			ddrlat    => ddrlat,
+			rdpntr0   => rdpntr(0),
+			rdpntr1   => rdpntr(1),
+			rdpntr2   => rdpntr(2),
 	
-			eclk => eclkw,
+			eclk      => eclkw,
+
 			datavalid => open,
+			burstdet  => open,
+			rdcflag   => open,
+			wrcflag   => open,
 	
 			rst  => dqsbufd_rst,
 			dyndelay0 => sys_wlpha(0),
