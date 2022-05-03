@@ -482,7 +482,7 @@ $(WORK__ulx4m_ld) : ../../boards/ULX4M/common/ulx4m_ld.vhd \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M/common/ulx4m_ld.vhd
+	$(VCOM) -2002  ../../boards/ULX4M/common/ulx4m_ld.vhd
 
 $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \

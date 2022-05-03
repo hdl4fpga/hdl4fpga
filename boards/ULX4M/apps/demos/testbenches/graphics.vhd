@@ -58,6 +58,18 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_pu_dp : inout std_logic := '-';
 			usb_fpga_pu_dn : inout std_logic := '-';
 
+			eth_reset      : out   std_logic;
+			eth_ref_clk    : out   std_logic;
+			eth_mdio       : inout std_logic := '-';
+			eth_mdc        : out   std_logic;
+	
+			rgmii_tx_clk   : in    std_logic := '-';
+			rgmii_tx_en    : buffer std_logic;
+			rgmii_txd      : buffer std_logic_vector(0 to 4-1);
+			rgmii_rx_clk   : in    std_logic := '-';
+			rgmii_rx_dv    : in    std_logic := '-';
+			rgmii_rxd      : in    std_logic_vector(0 to 4-1) := (others => '-');
+
 			ddram_clk      : inout std_logic;
 			ddram_reset_n  : out   std_logic;
 			ddram_cke      : out   std_logic;
@@ -101,22 +113,22 @@ architecture ulx4mld_graphics of testbench is
 
 	component ddr3_model is
 		port (
-			rst_n : in std_logic;
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(3-1 downto 0);
-			addr  : in std_logic_vector(13-1 downto 0);
+			rst_n   : in std_logic;
+			ck      : in std_logic;
+			ck_n    : in std_logic;
+			cke     : in std_logic;
+			cs_n    : in std_logic;
+			ras_n   : in std_logic;
+			cas_n   : in std_logic;
+			we_n    : in std_logic;
+			ba      : in std_logic_vector(3-1 downto 0);
+			addr    : in std_logic_vector(13-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
-			dq    : inout std_logic_vector(16-1 downto 0);
-			dqs   : inout std_logic_vector(2-1 downto 0);
-			dqs_n : inout std_logic_vector(2-1 downto 0);
-			tdqs_n : inout std_logic_vector(2-1 downto 0);
-			odt   : in std_logic);
+			dq      : inout std_logic_vector(16-1 downto 0);
+			dqs     : inout std_logic_vector(2-1 downto 0);
+			dqs_n   : inout std_logic_vector(2-1 downto 0);
+			tdqs_n  : inout std_logic_vector(2-1 downto 0);
+			odt     : in std_logic);
 	end component;
 
 	function gen_natural(
@@ -140,25 +152,23 @@ architecture ulx4mld_graphics of testbench is
 	end;
 
 	signal mii_refclk : std_logic;
-	signal mii_req : std_logic := '0';
-	signal mii_req1 : std_logic := '0';
-	signal ping_req : std_logic := '0';
-	signal rep_req : std_logic := '0';
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
-	signal mii_txd  : std_logic_vector(0 to 4-1);
-	signal mii_txc  : std_logic;
-	signal mii_rxc  : std_logic;
-	signal mii_txen : std_logic;
+	signal mii_req    : std_logic := '0';
+	signal mii_req1   : std_logic := '0';
+	signal ping_req   : std_logic := '0';
+	signal rep_req    : std_logic := '0';
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 4-1);
+	signal mii_txd    : std_logic_vector(0 to 4-1);
+	signal mii_txc    : std_logic;
+	signal mii_rxc    : std_logic;
+	signal mii_txen   : std_logic;
 
-	signal pl_frm : std_logic;
-	signal nrst : std_logic;
+	signal pl_frm     : std_logic;
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 begin
 
-	rst <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
-	nrst <= not rst;
+	rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 	pl_frm <= '0', '1' after 100 us;
@@ -209,7 +219,6 @@ begin
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_0003ff_1603_0007_3000",
 		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
---		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
 		mii_frm1 => '0',
 		mii_frm2 => '0', --ping_req,
 		mii_frm3 => '0',
@@ -224,9 +233,19 @@ begin
 	generic map (
 		debug => true)
 	port map (
-		clk_25mhz  => xtal,
-		btn(0)     => '0',
-		btn(1 to 2) => (others => '-'),
+		clk_25mhz    => xtal,
+		btn(0)       => '0',
+		btn(1 to 2)  => (others => '-'),
+
+		eth_reset    => open,
+		eth_ref_clk  => mii_refclk,
+		eth_mdc      => open,
+		rgmii_tx_clk => mii_rxc,
+		rgmii_tx_en  => mii_txen,
+		rgmii_txd    => mii_txd,
+		rgmii_rx_clk => mii_rxc,
+		rgmii_rx_dv  => mii_rxdv,
+		rgmii_rxd    => mii_rxd,
 
 		ddram_reset_n => rst_n,
 		ddram_clk   => ddr_clk_p,
@@ -244,11 +263,11 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		dll_data   => datarx_null,
-		mii_clk    => mii_txc,
-		mii_frm    => mii_txen,
-		mii_irdy   => mii_txen,
-		mii_data   => mii_txd);
+		dll_data => datarx_null,
+		mii_clk  => mii_txc,
+		mii_frm  => mii_txen,
+		mii_irdy => mii_txen,
+		mii_data => mii_txd);
 
 	mt_u : ddr3_model
 	port map (
@@ -262,7 +281,7 @@ begin
 		We_n  => we_n,
 		Ba    => ba,
 		Addr  => addr(13-1 downto 0),
-		Dm_tdqs  => dm,
+		Dm_tdqs => dm,
 		Dq    => dq,
 		Dqs   => dqs,
 		Dqs_n => dqs_n,
