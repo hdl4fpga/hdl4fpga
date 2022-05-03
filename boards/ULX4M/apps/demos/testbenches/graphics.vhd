@@ -37,11 +37,6 @@ architecture ulx4mld_graphics of testbench is
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
 
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
-
-	alias mii_clk      : std_logic is gn(12);
-
 	component ulx4m_ld is
 		generic (
 			debug          : boolean := true);
@@ -51,10 +46,10 @@ architecture ulx4mld_graphics of testbench is
 			led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
 			sd_clk         : in    std_logic := '-';
-			sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
-			sd_d           : inout std_logic_vector(4-1 downto 0) := (others => '-'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
+			sd_cmd         : out   std_logic; 
+			sd_d           : inout std_logic_vector(4-1 downto 0) := (others => '-');
 			sd_wp          : in    std_logic := '-';
-			sd_cdn         : in    std_logic := '-'; -- card detect not connected
+			sd_cdn         : in    std_logic := '-';
 
 			usb_fpga_dp    : inout std_logic := '-';
 			usb_fpga_dn    : inout std_logic := '-';
@@ -72,34 +67,32 @@ architecture ulx4mld_graphics of testbench is
 			ddram_we_n     : out   std_logic;
 			ddram_odt      : out   std_logic;
 			ddram_a        : out   std_logic_vector(15-1 downto 0);
-			ddram_ba       : out   std_logic_vector(3-1 downto 0);
-			ddram_dm       : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddram_ba       : out   std_logic_vector( 3-1 downto 0);
+			ddram_dm       : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-			ddram_dqs      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
 			gpdi_dp        : out   std_logic_vector(0 to 8-1);
 			gpdi_dn        : out   std_logic_vector(0 to 8-1);
 			gpdi_cec       : inout std_logic := '-';
 
-			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
-			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
+			user_programn  : out   std_logic := '1';
+			shutdown       : out   std_logic := '0');
 	end component;
 
 	signal rst_n : std_logic;
 	signal cke   : std_logic;
-	signal ddr_clk   : std_logic;
 	signal ddr_clk_p : std_logic;
 	signal ddr_clk_n : std_logic;
 	signal cs_n  : std_logic;
 	signal ras_n : std_logic;
 	signal cas_n : std_logic;
 	signal we_n  : std_logic;
-	signal ba    : std_logic_vector (bank_bits-1 downto 0);
-	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
-	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_p : std_logic_vector (dqs'range) := (others => 'Z');
-	signal dqs_n : std_logic_vector (dqs'range) := (others => 'Z');
+	signal ba    : std_logic_vector(bank_bits-1 downto 0);
+	signal addr  : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
+	signal dq    : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs   : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n : std_logic_vector(dqs'range) := (others => 'Z');
 	signal dm    : std_logic_vector(data_bytes-1 downto 0);
 	signal odt   : std_logic;
 	signal scl   : std_logic;
@@ -169,7 +162,8 @@ begin
 	xtal <= not xtal after 20 ns;
 
 	pl_frm <= '0', '1' after 100 us;
-	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
+	mii_rxc <= mii_refclk;
+	mii_txc <= mii_refclk;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -235,7 +229,7 @@ begin
 		btn(1 to 2) => (others => '-'),
 
 		ddram_reset_n => rst_n,
-		ddram_clk   => ddr_clk,
+		ddram_clk   => ddr_clk_p,
 		ddram_cke   => cke,
 		ddram_cs_n  => cs_n,
 		ddram_ras_n => ras_n,

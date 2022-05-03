@@ -46,19 +46,19 @@ architecture arty_graphics of testbench is
 	signal rst   : std_logic;
 	signal led7  : std_logic;
 
-	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
-	signal ba    : std_logic_vector (bank_bits-1 downto 0);
+	signal rst_n : std_logic;
 	signal ddr_clk_p : std_logic;
 	signal ddr_clk_n : std_logic;
 	signal cke   : std_logic;
-	signal rst_n : std_logic;
 	signal cs_n  : std_logic;
 	signal ras_n : std_logic;
 	signal cas_n : std_logic;
 	signal we_n  : std_logic;
+	signal ba    : std_logic_vector (bank_bits-1 downto 0);
+	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
+	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
 	signal dm    : std_logic_vector(data_bytes-1 downto 0);
 	signal odt   : std_logic;
 	signal scl   : std_logic;
