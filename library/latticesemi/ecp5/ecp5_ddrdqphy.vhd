@@ -23,7 +23,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -31,28 +30,28 @@ use ecp5u.components.all;
 entity ecp5_ddrdqphy is
 	generic (
 		taps        : natural;
-		DATA_GEAR   : natural;
+		data_gear   : natural;
 		byte_size   : natural);
 	port (
-		dqsbuf_rst  : in  std_logic;
+		rst         : in  std_logic;
 		read        : in  std_logic_vector(2-1 downto 0);
 		readclksel  : in  std_logic_vector(3-1 downto 0);
 		sclk        : in  std_logic;
 		eclk        : in  std_logic;
 
-		sys_dqsdel  : in  std_logic;
-		sys_rw      : in  std_logic;
-		sys_wlreq   : in  std_logic;
-		sys_wlrdy   : buffer std_logic;
-		sys_dmt     : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
-		sys_dmi     : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
-		sys_dmo     : out std_logic_vector(DATA_GEAR-1 downto 0);
-		sys_dqo     : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqt     : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqi     : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqso    : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqst    : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_wlpha   : buffer std_logic_vector(8-1 downto 0);
+		phy_dqsdel  : in  std_logic;
+		phy_rw      : in  std_logic;
+		phy_wlreq   : in  std_logic;
+		phy_wlrdy   : buffer std_logic;
+		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
+		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		phy_dmo     : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqo     : out std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqt     : in  std_logic_vector(0 to data_gear-1);
+		phy_dqi     : in  std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqso    : in  std_logic_vector(0 to data_gear-1);
+		phy_dqst    : in  std_logic_vector(0 to data_gear-1);
+		phy_wlpha   : buffer std_logic_vector(8-1 downto 0);
 
 		ddr_dmt     : out std_logic;
 		ddr_dmi     : in  std_logic := '-';
@@ -79,18 +78,18 @@ architecture lscc of ecp5_ddrdqphy is
 	
 	signal rw     : std_logic;
 	
-	signal dqi    : std_logic_vector(sys_dqi'range);
+	signal dqi    : std_logic_vector(phy_dqi'range);
 
-	signal dqt    : std_logic_vector(sys_dqt'range);
-	signal dqst   : std_logic_vector(sys_dqst'range);
-	signal dqso   : std_logic_vector(sys_dqso'range);
+	signal dqt    : std_logic_vector(phy_dqt'range);
+	signal dqst   : std_logic_vector(phy_dqst'range);
+	signal dqso   : std_logic_vector(phy_dqso'range);
 	signal wle    : std_logic;
 
 	signal rdpntr : std_logic_vector(3-1 downto 0);
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 begin
-	rw <= not sys_rw;
+	rw <= not phy_rw;
 
 	wl_b : block
 		signal step_rdy : std_logic;
@@ -112,20 +111,23 @@ begin
 		port map (
 			edge     => std_logic'('1'),
 			clk      => sclk,
-			req      => sys_wlreq,
-			rdy      => sys_wlrdy,
+			req      => phy_wlreq,
+			rdy      => phy_wlrdy,
 			step_req => step_req,
 			step_rdy => step_rdy,
 			smp      => ddr_dqi(0 downto 0),
-			delay    => sys_wlpha);
+			delay    => phy_wlpha);
 
 		dqsbufm_i : dqsbufm 
 		port map (
-			ddrdel    => sys_dqsdel,
+			rst       => rst,
+			sclk      => sclk,
+			eclk      => eclk,
+
+			ddrdel    => phy_dqsdel,
 			dqsi      => ddr_dqsi,
 			dqsr90    => dqsr90,
 	
-			sclk      => sclk,
 			read0     => read(0),
 			read1     => read(1),
 			readclksel0 => readclksel(0),
@@ -139,22 +141,20 @@ begin
 			wrpntr1   => wrpntr(1),
 			wrpntr2   => wrpntr(2),
 	
-			eclk      => eclk,
 
 			datavalid => open,
 			burstdet  => open,
 			rdcflag   => open,
 			wrcflag   => open,
 	
-			rst       => dqsbuf_rst,
-			dyndelay0 => sys_wlpha(0),
-			dyndelay1 => sys_wlpha(1),
-			dyndelay2 => sys_wlpha(2),
-			dyndelay3 => sys_wlpha(3),
-			dyndelay4 => sys_wlpha(4),
-			dyndelay5 => sys_wlpha(5),
-			dyndelay6 => sys_wlpha(6),
-			dyndelay7 => sys_wlpha(7),
+			dyndelay0 => phy_wlpha(0),
+			dyndelay1 => phy_wlpha(1),
+			dyndelay2 => phy_wlpha(2),
+			dyndelay3 => phy_wlpha(3),
+			dyndelay4 => phy_wlpha(4),
+			dyndelay5 => phy_wlpha(5),
+			dyndelay6 => phy_wlpha(6),
+			dyndelay7 => phy_wlpha(7),
 	
 			dqsw      => dqsw);
 
@@ -176,10 +176,10 @@ begin
 			wrpntr1 => wrpntr(1),
 			wrpntr2 => wrpntr(2),
 			d       => ddr_dqi(i),
-			q0      => sys_dqo(0*byte_size+i),
-			q1      => sys_dqo(1*byte_size+i),
-			q2      => sys_dqo(2*byte_size+i),
-			q3      => sys_dqo(3*byte_size+i));
+			q0      => phy_dqo(0*byte_size+i),
+			q1      => phy_dqo(1*byte_size+i),
+			q2      => phy_dqo(2*byte_size+i),
+			q3      => phy_dqo(3*byte_size+i));
 	end generate;
 
 	dmi_g : block
@@ -192,26 +192,26 @@ begin
 			eclk => eclk,
 			dqsr90 => dqsr90,
 			d    => ddr_dmi,
-			q0   => sys_dmo(0),
-			q1   => sys_dmo(1),
-			q2   => sys_dmo(2),
-			q3   => sys_dmo(3));
+			q0   => phy_dmo(0),
+			q1   => phy_dmo(1),
+			q2   => phy_dmo(2),
+			q3   => phy_dmo(3));
 	end block;
 
 	process (sclk)
 	begin
 		if rising_edge(sclk) then
-			wle <= sys_wlrdy xor sys_wlreq;
+			wle <= phy_wlrdy xor phy_wlreq;
 		end if;
 	end process;
-	dqt <= sys_dqt when wle='0' else (others => '1');
+	dqt <= phy_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of tshx2dqa_i : label is "DQS_ALIGNED";
 	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
-			rst  => dqsbuf_rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
@@ -224,10 +224,10 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			d0   => sys_dqi(0*byte_size+i),
-			d1   => sys_dqi(1*byte_size+i),
-			d2   => sys_dqi(2*byte_size+i),
-			d3   => sys_dqi(3*byte_size+i),
+			d0   => phy_dqi(0*byte_size+i),
+			d1   => phy_dqi(1*byte_size+i),
+			d2   => phy_dqi(2*byte_size+i),
+			d3   => phy_dqi(3*byte_size+i),
 			q    => ddr_dqo(i));
 	end generate;
 
@@ -237,7 +237,7 @@ begin
 	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
-			rst  => dqsbuf_rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
@@ -247,19 +247,19 @@ begin
 
 		oddrx2dqa_i : oddrx2dqa
 		port map (
-			rst  => dqsbuf_rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			d0   => sys_dmi(0),
-			d1   => sys_dmi(1),
-			d2   => sys_dmi(2),
-			d3   => sys_dmi(3),
+			d0   => phy_dmi(0),
+			d1   => phy_dmi(1),
+			d2   => phy_dmi(2),
+			d3   => phy_dmi(3),
 			q    => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when wle='0' else (others => '0');
-	dqso <= sys_dqso when wle='0' else (others => '1');
+	dqst <= phy_dqst when wle='0' else (others => '0');
+	dqso <= phy_dqso when wle='0' else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
@@ -268,7 +268,7 @@ begin
 
 		tshx2dqsa_i : tshx2dqsa
 		port map (
-			rst  => dqsbuf_rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw => dqsw270,
@@ -278,7 +278,7 @@ begin
 
 		oddrx2dqsb_i : oddrx2dqsb
 		port map (
-			rst  => dqsbuf_rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw => dqsw270,

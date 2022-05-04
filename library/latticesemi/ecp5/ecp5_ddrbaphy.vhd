@@ -24,8 +24,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ecp5;
-use ecp5.components.all;
+library ecp5u;
+use ecp5u.components.all;
 
 entity ecp5_ddrbaphy is
 	generic (
@@ -33,18 +33,19 @@ entity ecp5_ddrbaphy is
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
-		sys_sclk   : in  std_logic;
-		sys_sclk2x : in  std_logic;
+		rst     : in  std_logic;
+		sclk    : in  std_logic;
+		eclk    : in  std_logic;
 
-		sys_rst : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cs  : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cke : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		sys_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_ras : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cas : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_we  : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_odt : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_rst : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_cs  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_cke : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		phy_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		phy_ras : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_cas : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_we  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_odt : in  std_logic_vector(cmmd_gear-1 downto 0);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic;
@@ -58,104 +59,95 @@ entity ecp5_ddrbaphy is
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
-architecture lscc of ecp3_ddrbaphy is
+architecture lscc of ecp5_ddrbaphy is
 
-	signal dqsi_delay : std_logic;
-	signal idqs_eclk  : std_logic;
-	signal dqsw  : std_logic;
-	signal dqclk0 : std_logic;
-	signal dqclk1 : std_logic;
-
-	signal dqst : std_logic_vector(cmmd_gear-1 downto 0);
-	
-	signal dqsdll_lock : std_logic;
-	signal prmbdet : std_logic;
-	signal ddrclkpol : std_logic;
-	signal ddrlat : std_logic;
-	signal dqstclk : std_logic;
 	attribute oddrapps : string;
 	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
 	attribute oddrapps of ck_i : label is "SCLK_CENTERED";
 	signal cs : std_logic;
 begin
 
-	ck_i : oddrxd1
+	ck_i : oddrx2f
 	port map (
-		sclk => sys_sclk2x,
-		da => '0',
-		db => '1',
-		q  => ddr_ck);
+		sclk => sclk,
+		eclk => eclk,
+		d0   => '0',
+		d1   => '1',
+		d2   => '0',
+		d3   => '1',
+		q    => ddr_ck);
 
 	b_g : for i in 0 to bank_size-1 generate
 		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
 	begin
-		oddr_i : oddrxd1
+		oddr_i : oddrx1f
 		port map (
-			sclk => sys_sclk,
-			da => sys_b(bank_size*0+i),
-			db => '1', --sys_b(bank_size*1+i),
+			sclk => sclk,
+			d0 => phy_b(bank_size*0+i),
+			d1 => '1', --phy_b(bank_size*1+i),
 			q  => ddr_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
 		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
 	begin
-		oddr_i : oddrxd1
+		oddr_i : oddrx1f
 		port map (
-			sclk => sys_sclk,
-			da => sys_a(addr_size*0+i),
-			db => '1', --sys_a(addr_size*1+i),
-			q => ddr_a(i));
+			sclk => sclk,
+			d0   => phy_a(addr_size*0+i),
+			d1   => '1', --phy_a(addr_size*1+i),
+			q    => ddr_a(i));
 	end generate;
 
-	ras_i : oddrxd1
+	ras_i : oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_ras(0),
-		db => '1', --sys_ras(1),
-		q  => ddr_ras);
+		sclk => sclk,
+		d0   => phy_ras(0),
+		d1   => '1', --phy_ras(1),
+		q    => ddr_ras);
 
-	cas_i :oddrxd1
+	cas_i :oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_cas(0),
-		db => '1', --sys_cas(1),
-		q  => ddr_cas);
+		sclk => sclk,
+		d0   => phy_cas(0),
+		d1   => '1', --phy_cas(1),
+		q    => ddr_cas);
 
-	we_i : oddrxd1
+	we_i : oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_we(0),
-		db => '1', --sys_we(1),
-		q  => ddr_we);
+		sclk => sclk,
+		d0   => phy_we(0),
+		d1   => '1', --phy_we(1),
+		q    => ddr_we);
 
-	cs <= not sys_cke(0);
-	cs_i : oddrxd1
+	cs_i : oshx2a
 	port map (
-		sclk => sys_sclk,
-		da => cs, --sys_cs(0),
-		db => cs, --sys_cs(0),
-		q  => ddr_cs);
+		rst  => rst,
+		sclk => sclk,
+		eclk => eclk, 
+		d0   => phy_cs(0),
+		d1   => phy_cs(0),
+		q    => ddr_cs);
 
-	cke_i : oddrxd1
+	cke_i : oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_cke(0),
-		db => sys_cke(0),
-		q  => ddr_cke);
+		sclk => sclk,
+		d0   => phy_cke(0),
+		d1   => phy_cke(0),
+		q    => ddr_cke);
 
-	odt_i : oddrxd1
+	odt_i : oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_odt(0),
-		db => sys_odt(0),
-		q  => ddr_odt);
+		sclk => sclk,
+		d0   => phy_odt(0),
+		d1   => phy_odt(0),
+		q    => ddr_odt);
 
-	rst_i : oddrxd1
+	rst_i : oddrx1f
 	port map (
-		sclk => sys_sclk,
-		da => sys_rst(0),
-		db => sys_rst(0),
-		q  => ddr_rst);
+		sclk => sclk,
+		d0   => phy_rst(0),
+		d1   => phy_rst(0),
+		q    => ddr_rst);
 
 end;

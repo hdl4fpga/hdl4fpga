@@ -25,8 +25,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library ecp5;
-use ecp5.components.all;
+library ecp5u;
+use ecp5u.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -41,10 +41,10 @@ entity ecp5_ddrphy is
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
+		rst       : in std_logic;
 		sclk      : in std_logic;
 		sclk2x    : in std_logic;
 		eclk      : in std_logic;
-		rst       : in std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_wlreq : in  std_logic;
@@ -249,18 +249,19 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
+		rst => rst,
+		eclk => eclk,
 		sclk => sclk,
-		sclk2x => sclk2x,
           
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => sys_b,
-		sys_a   => sys_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
+		phy_rst => phy_rst,
+		phy_cs  => phy_cs,
+		phy_cke => phy_cke,
+		phy_b   => phy_b,
+		phy_a   => phy_a,
+		phy_ras => phy_ras,
+		phy_cas => phy_cas,
+		phy_we  => phy_we,
+		phy_odt => phy_odt,
         
 		ddr_rst => ddr_rst,
 		ddr_ck  => ddr_ck,
@@ -273,13 +274,13 @@ begin
 		ddr_b   => ddr_b,
 		ddr_a   => ddr_a);
 
-	sdmi <= to_blinevector(sys_dmi);
-	sdmt <= to_blinevector(not sys_dmt);
-	sdqt <= to_blinevector(not sys_dqt);
-	sdqi <= shuffle_dlinevector(sys_dqi);
+	sdmi <= to_blinevector(phy_dmi);
+	sdmt <= to_blinevector(not phy_dmt);
+	sdqt <= to_blinevector(not phy_dqt);
+	sdqi <= shuffle_dlinevector(phy_dqi);
 	ddqi <= to_bytevector(ddr_dq);
-	sdqsi <= to_blinevector(sys_dqsi);
-	sdqst <= to_blinevector(sys_dqst);
+	sdqsi <= to_blinevector(phy_dqsi);
+	sdqst <= to_blinevector(phy_dqst);
 
 	dqsdll_b : block
 		signal lock : std_logic;
@@ -385,10 +386,10 @@ begin
 			wlr<= aux;
 		end if;
 	end process;
-	sys_wlrdy <= wlr;
+	phy_wlrdy <= wlr;
 
-	sys_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
-	wlreq <= sys_wlreq;
+	phy_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
+	wlreq <= phy_wlreq;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
@@ -398,39 +399,33 @@ begin
 			byte_size => byte_size)
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
-			sclk => sclk,
-			sclk2x => sclk2x,
-			eclk => eclk,
-			phy_eclkw => yyy,
-			sys_dqsdel => dqsdllb_dqsdel,
-			sys_rw => sys_sti(i*data_gear+0),
-			sys_wlreq => wlreq,
-			sys_wlrdy => wlrdy(i),
-			sys_wlpha => wlpha(i),
+			sclk      => sclk,
+			sclk2x    => sclk2x,
+			eclk      => eclk,
+			phy_rw    => phy_sti(i*data_gear+0),
+			phy_wlreq => wlreq,
+			phy_wlrdy => wlrdy(i),
+			phy_wlpha => wlpha(i),
+			phy_dmt   => sdmt(i),
+			phy_dmi   => sdmi(i),
+			phy_dmo   => sdmo(i),
+			phy_dqi   => sdqi(i),
+			phy_dqt   => sdqt(i),
+			phy_dqo   => sdqo(i),
+			phy_dqso  => sdqsi(i),
+			phy_dqst  => sdqst(i),
 
-			sys_dmt => sdmt(i),
-			sys_dmi => sdmi(i),
-			sys_dmo => sdmo(i),
+			ddr_dqi   => ddqi(i),
+			ddr_dqt   => ddqt(i),
+			ddr_dqo   => ddqo(i),
 
-			sys_dqi => sdqi(i),
-			sys_dqt => sdqt(i),
-			sys_dqo => sdqo(i),
+--			ddr_dmi   => ddr_dm(i),
+			ddr_dmt   => ddmt(i),
+			ddr_dmo   => ddmo(i),
 
-			sys_dqso => sdqsi(i),
-			sys_dqst => sdqst(i),
-
-			ddr_dqi => ddqi(i),
-			ddr_dqt => ddqt(i),
-			ddr_dqo => ddqo(i),
-
---			ddr_dmi => ddr_dm(i),
-			ddr_dmt => ddmt(i),
-			ddr_dmo => ddmo(i),
-
-			ddr_dqsi => ddr_dqs(i),
-			ddr_dqst => ddqst(i),
-			ddr_dqso => ddqsi(i));
-
+			ddr_dqsi  => ddr_dqs(i),
+			ddr_dqst  => ddqst(i),
+			ddr_dqso  => ddqsi(i));
 
 	end generate;
 
@@ -440,8 +435,8 @@ begin
 		d => (0 to 2*data_gear-1 => 3))
 	port map (
 		clk => sclk,
-		di  => sys_sti,
-		do  => sys_sto);
+		di  => phy_sti,
+		do  => phy_sto);
 
 	process (ddqsi, ddqst)
 	begin
@@ -480,7 +475,7 @@ begin
 		end loop;
 	end process;
 
-	sys_dqso <= (others => sclk);
-	sys_dmo  <= to_stdlogicvector(sdmo);
-	sys_dqo  <= to_stdlogicvector(sdqo);
+	phy_dqso <= (others => sclk);
+	phy_dmo  <= to_stdlogicvector(sdmo);
+	phy_dqo  <= to_stdlogicvector(sdqo);
 end;
