@@ -30,38 +30,40 @@ use ecp5u.components.all;
 
 entity ecp5_ddrdqphy is
 	generic (
-		taps : natural;
-		DATA_GEAR : natural;
-		byte_size : natural);
+		taps        : natural;
+		DATA_GEAR   : natural;
+		byte_size   : natural);
 	port (
-		dqsbufd_rst : in  std_logic;
-		sclk : in  std_logic;
-		eclkw : in  std_logic;
+		dqsbuf_rst  : in  std_logic;
+		read        : in  std_logic_vector(2-1 downto 0);
+		readclksel  : in  std_logic_vector(3-1 downto 0);
+		sclk        : in  std_logic;
+		eclk        : in  std_logic;
 
-		sys_dqsdel : in  std_logic;
-		sys_rw : in  std_logic;
-		sys_wlreq : in  std_logic;
-		sys_wlrdy : buffer std_logic;
-		sys_dmt  : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
-		sys_dmi  : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
-		sys_dmo  : out std_logic_vector(DATA_GEAR-1 downto 0);
-		sys_dqo  : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqt  : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqi  : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqso : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_dqst : in  std_logic_vector(0 to DATA_GEAR-1);
-		sys_wlpha : buffer std_logic_vector(8-1 downto 0);
+		sys_dqsdel  : in  std_logic;
+		sys_rw      : in  std_logic;
+		sys_wlreq   : in  std_logic;
+		sys_wlrdy   : buffer std_logic;
+		sys_dmt     : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
+		sys_dmi     : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
+		sys_dmo     : out std_logic_vector(DATA_GEAR-1 downto 0);
+		sys_dqo     : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqt     : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqi     : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqso    : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqst    : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_wlpha   : buffer std_logic_vector(8-1 downto 0);
 
-		ddr_dmt  : out std_logic;
-		ddr_dmi  : in  std_logic := '-';
-		ddr_dmo  : out std_logic;
-		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
-		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dmt     : out std_logic;
+		ddr_dmi     : in  std_logic := '-';
+		ddr_dmo     : out std_logic;
+		ddr_dqi     : in  std_logic_vector(byte_size-1 downto 0);
+		ddr_dqt     : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dqo     : out std_logic_vector(byte_size-1 downto 0);
 
-		ddr_dqsi : in  std_logic;
-		ddr_dqst : out std_logic;
-		ddr_dqso : out std_logic);
+		ddr_dqsi    : in  std_logic;
+		ddr_dqst    : out std_logic;
+		ddr_dqso    : out std_logic);
 
 end;
 
@@ -70,21 +72,22 @@ library hdl4fpga;
 architecture lscc of ecp5_ddrdqphy is
 
 	signal dqsr90  : std_logic;
-	signal dqsw  : std_logic;
-	signal dqclk0 : std_logic;
-	signal dqclk1 : std_logic;
+	signal dqsw270 : std_logic;
+	signal dqsw    : std_logic;
+	signal dqclk0  : std_logic;
+	signal dqclk1  : std_logic;
 	
-	signal rw : std_logic;
+	signal rw     : std_logic;
 	
-	signal dqi : std_logic_vector(sys_dqi'range);
+	signal dqi    : std_logic_vector(sys_dqi'range);
 
-	signal dqt : std_logic_vector(sys_dqt'range);
-	signal dqst : std_logic_vector(sys_dqst'range);
-	signal dqso : std_logic_vector(sys_dqso'range);
-	signal wle : std_logic;
+	signal dqt    : std_logic_vector(sys_dqt'range);
+	signal dqst   : std_logic_vector(sys_dqst'range);
+	signal dqso   : std_logic_vector(sys_dqso'range);
+	signal wle    : std_logic;
 
-	signal rdpntr : std_logic_vector(2-1 downto 0);
-	signal wrpntr : std_logic_vector(2-1 downto 0);
+	signal rdpntr : std_logic_vector(3-1 downto 0);
+	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 begin
 	rw <= not sys_rw;
@@ -113,7 +116,7 @@ begin
 			rdy      => sys_wlrdy,
 			step_req => step_req,
 			step_rdy => step_rdy,
-			smp      => ddr_dqi(0 to 0),
+			smp      => ddr_dqi(0 downto 0),
 			delay    => sys_wlpha);
 
 		dqsbufm_i : dqsbufm 
@@ -123,8 +126,12 @@ begin
 			dqsr90    => dqsr90,
 	
 			sclk      => sclk,
-			read0     => rw,
-			read1     => rw,
+			read0     => read(0),
+			read1     => read(1),
+			readclksel0 => readclksel(0),
+			readclksel1 => readclksel(1),
+			readclksel2 => readclksel(2),
+
 			rdpntr0   => rdpntr(0),
 			rdpntr1   => rdpntr(1),
 			rdpntr2   => rdpntr(2),
@@ -132,14 +139,14 @@ begin
 			wrpntr1   => wrpntr(1),
 			wrpntr2   => wrpntr(2),
 	
-			eclk      => eclkw,
+			eclk      => eclk,
 
 			datavalid => open,
 			burstdet  => open,
 			rdcflag   => open,
 			wrcflag   => open,
 	
-			rst  => dqsbufd_rst,
+			rst       => dqsbuf_rst,
 			dyndelay0 => sys_wlpha(0),
 			dyndelay1 => sys_wlpha(1),
 			dyndelay2 => sys_wlpha(2),
@@ -147,12 +154,9 @@ begin
 			dyndelay4 => sys_wlpha(4),
 			dyndelay5 => sys_wlpha(5),
 			dyndelay6 => sys_wlpha(6),
-			dyndelpol => sys_wlpha(7),
-			eclkw => eclkw,
+			dyndelay7 => sys_wlpha(7),
 	
-			dqsw => dqsw,
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1);
+			dqsw      => dqsw);
 
 	end block;
 
@@ -162,20 +166,20 @@ begin
 	begin
 		iddrx2_i : iddrx2dqa
 		port map (
-			sclk => sclk,
-			eclk => eclkw,
-			dqsr90 => dqsr90,
-			rdpntr0   => rdpntr(0),
-			rdpntr1   => rdpntr(1),
-			rdpntr2   => rdpntr(2),
-			wrpntr0   => wrpntr(0),
-			wrpntr1   => wrpntr(1),
-			wrpntr2   => wrpntr(2),
-			d   => ddr_dqi(i),
-			q0 => sys_dqo(0*byte_size+i),
-			q1 => sys_dqo(1*byte_size+i),
-			q2 => sys_dqo(2*byte_size+i),
-			q3 => sys_dqo(3*byte_size+i));
+			sclk    => sclk,
+			eclk    => eclk,
+			dqsr90  => dqsr90,
+			rdpntr0 => rdpntr(0),
+			rdpntr1 => rdpntr(1),
+			rdpntr2 => rdpntr(2),
+			wrpntr0 => wrpntr(0),
+			wrpntr1 => wrpntr(1),
+			wrpntr2 => wrpntr(2),
+			d       => ddr_dqi(i),
+			q0      => sys_dqo(0*byte_size+i),
+			q1      => sys_dqo(1*byte_size+i),
+			q2      => sys_dqo(2*byte_size+i),
+			q3      => sys_dqo(3*byte_size+i));
 	end generate;
 
 	dmi_g : block
@@ -185,13 +189,13 @@ begin
 		iddrx2_i : iddrx2dqa
 		port map (
 			sclk => sclk,
-			eclk => eclkw,
+			eclk => eclk,
 			dqsr90 => dqsr90,
-			d   => ddr_dmi,
-			q0 => sys_dmo(0),
-			q1 => sys_dmo(1),
-			q2 => sys_dmo(2),
-			q3 => sys_dmo(3));
+			d    => ddr_dmi,
+			q0   => sys_dmo(0),
+			q1   => sys_dmo(1),
+			q2   => sys_dmo(2),
+			q3   => sys_dmo(3));
 	end block;
 
 	process (sclk)
@@ -207,22 +211,24 @@ begin
 	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
+			rst  => dqsbuf_rst,
 			sclk => sclk,
-			ta => dqt(0),
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1,
-			q  => ddr_dqt(i));
+			eclk => eclk,
+			dqsw270 => dqsw270,
+			t0  => dqt(0),
+			t1  => dqt(0),
+			q   => ddr_dqt(i));
 
 		oddrx2dqa_i : oddrx2dqa
 		port map (
 			sclk => sclk,
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1,
-			da0 => sys_dqi(0*byte_size+i),
-			db0 => sys_dqi(1*byte_size+i),
-			da1 => sys_dqi(2*byte_size+i),
-			db1 => sys_dqi(3*byte_size+i),
-			q   => ddr_dqo(i));
+			eclk => eclk,
+			dqsw270 => dqsw270,
+			d0   => sys_dqi(0*byte_size+i),
+			d1   => sys_dqi(1*byte_size+i),
+			d2   => sys_dqi(2*byte_size+i),
+			d3   => sys_dqi(3*byte_size+i),
+			q    => ddr_dqo(i));
 	end generate;
 
 	dm_b : block
@@ -231,22 +237,25 @@ begin
 	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
+			rst  => dqsbuf_rst,
 			sclk => sclk,
-			ta => sys_dmt(0),
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1,
-			q  => ddr_dmt);
+			eclk => eclk,
+			dqsw270 => dqsw270,
+			t0  => dqt(0),
+			t1  => dqt(0),
+			q   => ddr_dmt);
 
 		oddrx2dqa_i : oddrx2dqa
 		port map (
+			rst  => dqsbuf_rst,
 			sclk => sclk,
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1,
-			da0 => sys_dmi(0),
-			db0 => sys_dmi(1),
-			da1 => sys_dmi(2),
-			db1 => sys_dmi(3),
-			q   => ddr_dmo);
+			eclk => eclk,
+			dqsw270 => dqsw270,
+			d0   => sys_dmi(0),
+			d1   => sys_dmi(1),
+			d2   => sys_dmi(2),
+			d3   => sys_dmi(3),
+			q    => ddr_dmo);
 	end block;
 
 	dqst <= sys_dqst when wle='0' else (others => '0');
@@ -259,23 +268,25 @@ begin
 
 		tshx2dqsa_i : tshx2dqsa
 		port map (
+			rst  => dqsbuf_rst,
 			sclk => sclk,
-			db => dqst(0),
-			ta => dqst(2),
-			dqstclk => dqstclk,
-			dqsw => dqsw,
-			q => ddr_dqst);
+			eclk => eclk,
+			dqsw => dqsw270,
+			t0   => dqt(0),
+			t1   => dqt(0),
+			q    => ddr_dqst);
 
 		oddrx2dqsb_i : oddrx2dqsb
 		port map (
+			rst  => dqsbuf_rst,
 			sclk => sclk,
-			db0 => dqso(2*0),
-			db1 => dqso(2*1),
-			dqsw => dqsw,
-			dqclk0 => dqclk0,
-			dqclk1 => dqclk1,
-			dqstclk => dqstclk,
-			q => ddr_dqso);
+			eclk => eclk,
+			dqsw => dqsw270,
+			d0   => '0',
+			d1   => dqso(2*0),
+			d2   => '0',
+			d3   => dqso(2*1),
+			q    => ddr_dqso);
 
 	end block;
 end;
