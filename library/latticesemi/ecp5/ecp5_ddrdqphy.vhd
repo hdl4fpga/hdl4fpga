@@ -69,13 +69,11 @@ library hdl4fpga;
 
 architecture lscc of ecp5_ddrdqphy is
 
-	signal idqs_eclk  : std_logic;
+	signal dqsr90  : std_logic;
 	signal dqsw  : std_logic;
 	signal dqclk0 : std_logic;
 	signal dqclk1 : std_logic;
 	
-	signal ddrclkpol : std_logic := '1';
-	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
 	signal dqi : std_logic_vector(sys_dqi'range);
@@ -84,6 +82,9 @@ architecture lscc of ecp5_ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
+
+	signal rdpntr : std_logic_vector(2-1 downto 0);
+	signal wrpntr : std_logic_vector(2-1 downto 0);
 
 begin
 	rw <= not sys_rw;
@@ -115,20 +116,21 @@ begin
 			smp      => ddr_dqi(0 to 0),
 			delay    => sys_wlpha);
 
-		dqsbufd_i : dqsbufm 
+		dqsbufm_i : dqsbufm 
 		port map (
 			ddrdel    => sys_dqsdel,
 			dqsi      => ddr_dqsi,
-			dqsr90    => idqs_eclk,
+			dqsr90    => dqsr90,
 	
 			sclk      => sclk,
 			read0     => rw,
 			read1     => rw,
-			ddrclkpol => ddrclkpol,
-			ddrlat    => ddrlat,
 			rdpntr0   => rdpntr(0),
 			rdpntr1   => rdpntr(1),
 			rdpntr2   => rdpntr(2),
+			wrpntr0   => wrpntr(0),
+			wrpntr1   => wrpntr(1),
+			wrpntr2   => wrpntr(2),
 	
 			eclk      => eclkw,
 
@@ -162,9 +164,13 @@ begin
 		port map (
 			sclk => sclk,
 			eclk => eclkw,
-			eclkdqsr => idqs_eclk,
-			ddrclkpol => ddrclkpol,
-			ddrlat => ddrlat,
+			dqsr90 => dqsr90,
+			rdpntr0   => rdpntr(0),
+			rdpntr1   => rdpntr(1),
+			rdpntr2   => rdpntr(2),
+			wrpntr0   => wrpntr(0),
+			wrpntr1   => wrpntr(1),
+			wrpntr2   => wrpntr(2),
 			d   => ddr_dqi(i),
 			q0 => sys_dqo(0*byte_size+i),
 			q1 => sys_dqo(1*byte_size+i),
@@ -180,9 +186,7 @@ begin
 		port map (
 			sclk => sclk,
 			eclk => eclkw,
-			eclkdqsr => idqs_eclk,
-			ddrclkpol => ddrclkpol,
-			ddrlat => ddrlat,
+			dqsr90 => dqsr90,
 			d   => ddr_dmi,
 			q0 => sys_dmo(0),
 			q1 => sys_dmo(1),
