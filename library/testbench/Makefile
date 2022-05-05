@@ -158,6 +158,8 @@ HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
+HDL4FPGA__ecp5_ddrphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrphy/lscc.dat
+HDL4FPGA__ecp5_ddrphy = $(LIB_HDL4FPGA)/ecp5_ddrphy/_primary.dat
 HDL4FPGA__ecp5_ddrdqphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrdqphy/lscc.dat
 HDL4FPGA__ecp5_ddrdqphy = $(LIB_HDL4FPGA)/ecp5_ddrdqphy/_primary.dat
 HDL4FPGA__ecp5_ddrbaphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrbaphy/lscc.dat
@@ -226,6 +228,8 @@ HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
 HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
+HDL4FPGA__clk_start__ecp3 = $(LIB_HDL4FPGA)/clk_start/ecp3.dat
+HDL4FPGA__clk_start = $(LIB_HDL4FPGA)/clk_start/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cga_rom__beh = $(LIB_HDL4FPGA)/cga_rom/beh.dat
@@ -400,6 +404,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
+    $(HDL4FPGA__ecp5_ddrphy__lscc) \
+    $(HDL4FPGA__ecp5_ddrphy) \
     $(HDL4FPGA__ecp5_ddrdqphy__lscc) \
     $(HDL4FPGA__ecp5_ddrdqphy) \
     $(HDL4FPGA__ecp5_ddrbaphy__lscc) \
@@ -468,6 +474,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__cp850x8x16x0to127) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
+    $(HDL4FPGA__clk_start__ecp3) \
+    $(HDL4FPGA__clk_start) \
     $(HDL4FPGA__cgafonts__body) \
     $(HDL4FPGA__cgafonts) \
     $(HDL4FPGA__cga_rom__beh) \
@@ -636,6 +644,13 @@ $(HDL4FPGA__cgafonts__body) : ../video/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/cgafonts.vhd
+
+$(HDL4FPGA__clk_start) \
+$(HDL4FPGA__clk_start__ecp3) : ../latticesemi/ecp3/clkstart.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/clkstart.vhd
 
 $(HDL4FPGA__cntrcs) \
 $(HDL4FPGA__cntrcs__def) : ../common/cntrcs.vhd \
@@ -984,6 +999,23 @@ $(HDL4FPGA__ecp5_ddrdqphy__lscc) : ../latticesemi/ecp5/ecp5_ddrdqphy.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_ddrdqphy.vhd
+
+$(HDL4FPGA__ecp5_ddrphy) \
+$(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
+		$(HDL4FPGA__align) \
+		$(HDL4FPGA__ecp5_ddrdqphy) \
+		$(HDL4FPGA__ecp5_ddrbaphy) \
+		$(HDL4FPGA__ff) \
+		$(HDL4FPGA__aff) \
+		$(HDL4FPGA__clk_start) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_ddrphy.vhd
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \

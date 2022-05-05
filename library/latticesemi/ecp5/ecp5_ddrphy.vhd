@@ -43,8 +43,7 @@ entity ecp5_ddrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in std_logic;
-		sclk      : in std_logic;
-		sclk2x    : in std_logic;
+		sclk      : buffer std_logic;
 		eclk      : in std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
@@ -69,7 +68,6 @@ entity ecp5_ddrphy is
 		phy_dqso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqst  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqsi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
-		phy_pll   : out std_logic_vector(8-1 downto 0);
 
 		ddr_rst   : out std_logic;
 		ddr_ck    : out std_logic;
@@ -96,7 +94,6 @@ architecture lscc of ecp5_ddrphy is
 
 	subtype bline_word is std_logic_vector(data_gear*word_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
-
 
 	function to_bytevector (
 		constant arg : std_logic_vector) 
@@ -220,11 +217,12 @@ architecture lscc of ecp5_ddrphy is
 	signal ddrrst         : std_logic;
 	signal ddrdel         : std_logic;
 	signal ddrlck         : std_logic;
+	signal uddcntln       : std_logic;
 	signal eclksync_start : std_logic;
 	signal eclksync_stop  : std_logic;
 	signal eclksync_eclk  : std_logic;
 
-	signal dqsbufd_rst : std_logic;
+	signal dqsbuf_rst : std_logic;
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
@@ -234,16 +232,74 @@ architecture lscc of ecp5_ddrphy is
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
-	signal xxx : std_logic;
-	signal yyy : std_logic;
-
-	attribute hgroup : string;
-	attribute pbbox  : string;
-
-	attribute hgroup of clk_start_i : label is "clk_stop";
-	attribute pbbox  of clk_start_i : label is "3,2";
 
 begin
+
+	mem_sync_b : block
+		attribute hgroup : string;
+		attribute pbbox  : string;
+	
+		attribute hgroup of clk_start_i    : label is "clk_stop";
+		attribute pbbox  of clk_start_i    : label is "3,2";
+	
+		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
+		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
+		attribute pbbox  of phase_ff_1_i   : label is "1,1";
+		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
+
+		signal dqclk1bar_ff_q : std_logic;
+		signal dqclk1bar_ff_d : std_logic;
+		signal phase_ff_1_q   : std_logic;
+
+	begin
+
+		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
+		dqclk1bar_ff_i : entity hdl4fpga.aff
+		port map(
+			ar  => dqsbuf_rst,
+			clk => eclksync_eclk,
+			d   => dqclk1bar_ff_d,
+			q   => dqclk1bar_ff_q);
+
+		phase_ff_1_i : entity hdl4fpga.ff
+		port map(
+			clk => sclk,
+			d   => dqclk1bar_ff_q,
+			q   => phase_ff_1_q);
+
+		process (sclk)
+			variable q : std_logic_vector(0 to 4-1);
+			variable wlr_edge : std_logic;
+		begin
+			if rising_edge(sclk) then
+				if rst='1' then
+					q := (others => '0');
+				elsif wlr='1' and wlr_edge='0' then
+					q := (others => '0');
+				elsif q(0)='0' then
+					if ddrlck='1' then
+						q := inc(gray(q));
+					elsif wlr='1' then
+						q := inc(gray(q));
+					end if;
+				end if;
+				wlr_edge := wlr;
+			end if;
+			uddcntln     <= not q(2);
+			clkstart_rst <= not q(0);
+
+		end process;
+
+		clk_start_i : entity hdl4fpga.clk_start
+		port map (
+			rst  => clkstart_rst,
+			sclk => sclk,
+			eclk => eclk,
+			eclksynca_start => eclksync_start,
+			dqsbufd_rst => dqsbuf_rst);
+		eclksync_stop <= not eclksync_start;
+
+	end block;
 
 	eclksyncb_i : eclksyncb
 	port map (
@@ -251,41 +307,21 @@ begin
 		eclki => eclk,
 		eclko => eclksync_eclk);
 
-	memsync_b : block
-	begin
-		clk_start_i : entity hdl4fpga.clk_start
-		port map (
-			rst  => clkstart_rst,
-			sclk => sclk,
-			eclk => eclk,
-			eclksynca_start => eclksync_start,
-			dqsbufd_rst => dqsbufd_rst);
-		eclksync_stop <= not eclksync_start;
-	end block;
-	dqclk_b : block
-		signal dqclk1bar_ff_q : std_logic;
-		signal dqclk1bar_ff_d : std_logic;
+	clkdivf_i : clkdivf
+	port map (
+		rst     => ddrrst,
+		alignwd => '0',
+		clki    => eclksync_eclk,
+		cdivx   => sclk);
 
-		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-	begin
-		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-		dqclk1bar_ff_i : entity hdl4fpga.aff
-		port map(
-			ar => dqsbufd_rst,
-			clk => yyy,
-			d => dqclk1bar_ff_d,
-			q => dqclk1bar_ff_q);
-
-		phase_ff_1_i : entity hdl4fpga.ff
-		port map(
-			clk => sclk,
-			d => dqclk1bar_ff_q,
-			q => xxx);
-	end block;
+	ddrdll_i : ddrdlla
+	port map (
+		rst      => ddrrst,
+		clk      => eclksync_eclk,
+		freeze   => '-',
+		uddcntln => uddcntln,
+		ddrdel   => ddrdel,
+		lock     => ddrlck);
 
 	process (sclk)
 		variable aux : std_logic;
@@ -300,7 +336,6 @@ begin
 	end process;
 	phy_wlrdy <= wlr;
 
-	phy_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
 	wlreq <= phy_wlreq;
 
 
@@ -344,38 +379,7 @@ begin
 	sdqst <= to_blinevector(phy_dqst);
 
 	ddrdll_b : block
-		signal uddcntln : std_logic;
 	begin
-
-		ddrdll_i : ddrdlla
-		port map (
-			rst      => ddrrst,
-			clk      => eclksync_eclk,
-			uddcntln => uddcntln,
-			ddrdel   => ddrdel,
-			lock     => ddrlck);
-
-		process (sclk)
-			variable q : std_logic_vector(0 to 4-1);
-			variable wlr_edge : std_logic;
-		begin
-			if rising_edge(sclk) then
-				if rst='1' then
-					q := (others => '0');
-				elsif wlr='1' and wlr_edge='0' then
-					q := (others => '0');
-				elsif q(0)='0' then
-					if ddrlck='1' then
-						q := inc(gray(q));
-					elsif wlr='1' then
-						q := inc(gray(q));
-					end if;
-				end if;
-				wlr_edge := wlr;
-			end if;
-			uddcntln <= not q(2);
-			clkstart_rst <= not q(0);
-		end process;
 
 	end block;
 
@@ -386,7 +390,7 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			rst       => dqsbufd_rst,
+			rst       => dqsbuf_rst,
 			sclk      => sclk,
 			eclk      => eclksync_eclk,
 			ddrdel    => ddrdel,
