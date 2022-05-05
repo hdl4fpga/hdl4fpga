@@ -40,14 +40,16 @@ architecture graphics of ulx4m_ld is
 	-- Set of profiles                   --
 	type apps is (
 	--	Interface_SdramSpeed_PixelFormat --
-		mii_166MHz_480p24bpp,            --
-		mii_200MHz_480p24bpp,            --
-		mii_250MHz_480p24bpp);           --
+		mii_400MHz_480p24bpp,            --
+		mii_425MHz_480p24bpp,            --
+		mii_450MHz_480p24bpp,            --
+		mii_475MHz_480p24bpp,            --
+		mii_500MHz_480p24bpp);           --
 	---------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := mii_250MHz_480p24bpp;
+	constant app : apps := mii_400MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -71,10 +73,11 @@ architecture graphics of ulx4m_ld is
 	signal sys_clk       : std_logic;
 
 	signal ddrsys_rst    : std_logic;
-	signal ddrsys_clks   : std_logic_vector(0 to 0);
+	signal physys_clk    : std_logic;
 
 	signal ddram_lck     : std_logic;
 
+	signal ctlrphy_clk   : std_logic;
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
 	signal ctlrphy_wlreq : std_logic;
@@ -154,22 +157,26 @@ architecture graphics of ulx4m_ld is
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type ddram_speed is (
-		sdram400MHz,
-		sdram450MHz,
-		sdram500MHz);
+		ddram400MHz,
+		ddram425MHz,
+		ddram450MHz,
+		ddram475MHz,
+		ddram500MHz);
 
 	type ddram_params is record
 		pll : pll_params;
 		cas : std_logic_vector(0 to 3-1);
 	end record;
 
-	type sdramparams_vector is array (ddram_speed) of ddram_params;
-	constant ddram_tab : sdramparams_vector := (
-		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
-		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"));
+	type ddramparams_vector is array (ddram_speed) of ddram_params;
+	constant ddram_tab : ddramparams_vector := (
+		ddram400MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
+		ddram425MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
+		ddram450MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
+		ddram475MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
+		ddram500MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"));
 
-	alias ctlr_clk     : std_logic is ddrsys_clks(0);
+	signal ctlr_clk   : std_logic;
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -194,9 +201,11 @@ architecture graphics of ulx4m_ld is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
-		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
-		mii_200MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram200MHz),
-		mii_250MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram250MHz));
+		mii_400MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram400MHz),
+		mii_425MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram425MHz),
+		mii_450MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram450MHz),
+		mii_475MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram475MHz),
+		mii_500MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram500MHz));
 
 	constant nodebug_videomode : video_modes := app_tab(app).mode;
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
@@ -209,11 +218,10 @@ architecture graphics of ulx4m_ld is
 
 	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
 		ddram_speed'POS(app_tab(app).speed),
-		ddram_speed'POS(sdram133Mhz)));
+		ddram_speed'POS(ddram400Mhz)));
 
 	constant ddr_tcp  : natural := natural(
-		(1.0e12*real(ddram_tab(ddram_mode).pll.clki_div*ddram_tab(ddram_mode).pll.clkos2_div))/
-		(real(ddram_tab(ddram_mode).pll.clkfb_div*ddram_tab(ddram_mode).pll.clkop_div)*sys_freq));
+		2.0*(1.0e12*real(ddram_tab(ddram_mode).pll.clki_div))/(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq));
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -317,12 +325,10 @@ begin
 
 
 		constant ddram_freq  : real :=
-			(real(ddram_tab(ddram_mode).pll.clkfb_div*ddram_tab(ddram_mode).pll.clkop_div)*sys_freq)/
-			(real(ddram_tab(ddram_mode).pll.clki_div*ddram_tab(ddram_mode).pll.clkos2_div*1e6));
+			real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq/real(ddram_tab(ddram_mode).pll.clki_div*1e6);
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(ddram_freq, 10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_freq, 10);
+		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
 
@@ -352,7 +358,7 @@ begin
 			OUTDIVIDER_MUXA  => "DIVA",
 
 --			CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
-			CLKOS2_DIV       => ddram_tab(ddram_mode).pll.clkos2_div,
+--			CLKOS2_DIV       => ddram_tab(ddram_mode).pll.clkos2_div,
 --			CLKOS3_DIV       => ddram_tab(ddram_mode).pll.clkos3_div,
 			CLKOP_DIV        => ddram_tab(ddram_mode).pll.clkop_div,
 			CLKFB_DIV        => ddram_tab(ddram_mode).pll.clkfb_div,
@@ -371,17 +377,15 @@ begin
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
 			CLKOS     => open,
-			CLKOS2    => ,
+			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_lck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
-		ddram_clk <=
+		physys_clk <= clkfb;
 		
 		ddrsys_rst <= not ddram_lck;
-
-		ctlrphy_dso <= (others => not ctlr_clk) when ddram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
 	end block;
 
@@ -571,7 +575,7 @@ begin
 		ctlrphy_a    => ctlrphy_a,
 		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => open,
+		ctlrphy_dso  => ctlrphy_dso,
 		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
@@ -589,55 +593,55 @@ begin
 	ddrphy_we  <= (others => ctlrphy_we);
 	ddrphy_odt <= (others => ctlrphy_odt);
 
-	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
-	generic map (
-		taps => 31,
-		cmmd_gear     => cmmd_gear,
-		data_gear     => data_gear,
-		bank_size     => ddram_ba'length,
-		addr_size     => ddram_a'length,
-		word_size     => word_size,
-		byte_size     => byte_size)
-	port map (
-		rst           => ddrsys_rst,
-		eclk          => ctlr_clk,
-
-		phy_wlreq     => ctlrphy_wlreq,
-		phy_wlrdy     => ctlrphy_wlrdy,
-		phy_rst       => (others =>'0'),
-		phy_cs        => ddrphy_cs,
-		phy_cke       => ddrphy_cke,
-		phy_ras       => ddrphy_ras,
-		phy_cas       => ddrphy_cas,
-		phy_we        => ddrphy_we,
-		phy_odt       => ddrphy_odt,
-		phy_b         => ctlrphy_b,
-		phy_a         => ctlrphy_a,
-		phy_dqsi      => ctlrphy_dso,
-		phy_dqst      => ctlrphy_dst,
-		phy_dqso      => ctlrphy_dsi,
-		phy_dmi       => ctlrphy_dmo,
-		phy_dmt       => ctlrphy_dmt,
-		phy_dmo       => ctlrphy_dmi,
-		phy_dqi       => ctlrphy_dqo,
-		phy_dqt       => ctlrphy_dqt,
-		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => ctlrphy_sto,
-		phy_sto       => ctlrphy_sti,
-
-		ddr_ck        => ddram_clk,
-		ddr_cke       => ddram_cke,
-		ddr_cs        => ddram_cs_n,
-		ddr_ras       => ddram_ras_n,
-		ddr_cas       => ddram_cas_n,
-		ddr_we        => ddram_we_n,
-		ddr_odt       => ddram_odt,
-		ddr_b         => ddram_ba,
-		ddr_a         => ddram_a,
-
-		ddr_dm        => ddram_dm,
-		ddr_dq        => ddram_dq,
-		ddr_dqs       => ddram_dqs);
+--	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
+--	generic map (
+--		taps => 31,
+--		cmmd_gear     => cmmd_gear,
+--		data_gear     => data_gear,
+--		bank_size     => ddram_ba'length,
+--		addr_size     => ddram_a'length,
+--		word_size     => word_size,
+--		byte_size     => byte_size)
+--	port map (
+--		rst           => ddrsys_rst,
+--		eclk          => ctlr_clk,
+--
+--		phy_wlreq     => ctlrphy_wlreq,
+--		phy_wlrdy     => ctlrphy_wlrdy,
+--		phy_rst       => (others =>'0'),
+--		phy_cs        => ddrphy_cs,
+--		phy_cke       => ddrphy_cke,
+--		phy_ras       => ddrphy_ras,
+--		phy_cas       => ddrphy_cas,
+--		phy_we        => ddrphy_we,
+--		phy_odt       => ddrphy_odt,
+--		phy_b         => ctlrphy_b,
+--		phy_a         => ctlrphy_a,
+--		phy_dqsi      => ctlrphy_dso,
+--		phy_dqst      => ctlrphy_dst,
+--		phy_dqso      => ctlrphy_dsi,
+--		phy_dmi       => ctlrphy_dmo,
+--		phy_dmt       => ctlrphy_dmt,
+--		phy_dmo       => ctlrphy_dmi,
+--		phy_dqi       => ctlrphy_dqo,
+--		phy_dqt       => ctlrphy_dqt,
+--		phy_dqo       => ctlrphy_dqi,
+--		phy_sti       => ctlrphy_sto,
+--		phy_sto       => ctlrphy_sti,
+--
+--		ddr_ck        => ddram_clk,
+--		ddr_cke       => ddram_cke,
+--		ddr_cs        => ddram_cs_n,
+--		ddr_ras       => ddram_ras_n,
+--		ddr_cas       => ddram_cas_n,
+--		ddr_we        => ddram_we_n,
+--		ddr_odt       => ddram_odt,
+--		ddr_b         => ddram_ba,
+--		ddr_a         => ddram_a,
+--
+--		ddr_dm        => ddram_dm,
+--		ddr_dq        => ddram_dq,
+--		ddr_dqs       => ddram_dqs);
 
 	-- VGA --
 	---------
