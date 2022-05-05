@@ -33,7 +33,6 @@ use hdl4fpga.std.all;
 
 entity ecp5_ddrphy is
 	generic (
-		tcp       : real;
 		taps      : natural;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;

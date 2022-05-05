@@ -77,6 +77,8 @@ architecture graphics of ulx4m_ld is
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
+	signal ctlrphy_wlreq : std_logic;
+	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_cs    : std_logic;
 	signal ctlrphy_ras   : std_logic;
 	signal ctlrphy_cas   : std_logic;
@@ -95,8 +97,15 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddram_st_dqs_open : std_logic;
+	signal ddrphy_rst    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cs     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cke    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_odt    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_ras    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_cas    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_we     : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ddrphy_b      : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
+	signal ddrphy_a      : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
 
 	signal ddram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddram_dso     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -145,14 +154,9 @@ architecture graphics of ulx4m_ld is
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type ddram_speed is (
-		sdram133MHz,
-		sdram166MHz,
-		sdram200MHz,
-		sdram225MHz,	-- Not tested yet
-		sdram233MHz,
-		sdram250MHz,
-		sdram262MHz,
-		sdram275MHz);
+		sdram400MHz,
+		sdram450MHz,
+		sdram500MHz);
 
 	type ddram_params is record
 		pll : pll_params;
@@ -161,14 +165,9 @@ architecture graphics of ulx4m_ld is
 
 	type sdramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : sdramparams_vector := (
-		sdram133MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "010"),
-		sdram166MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
 		sdram200MHz => (pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
 		sdram225MHz => (pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		sdram233MHz => (pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
-		sdram262MHz => (pll => (clkos_div => 2, clkop_div => 21, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"), -- Doesn't pass the LFSR test
-		sdram275MHz => (pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011")); -- Doesn't pass the LFSR test
+		sdram250MHz => (pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"));
 
 	alias ctlr_clk     : std_logic is ddrsys_clks(0);
 
@@ -372,13 +371,14 @@ begin
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
 			CLKOS     => open,
-			CLKOS2    => ctlr_clk,
+			CLKOS2    => ,
 			CLKOS3    => open,
 			LOCK      => ddram_lck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
-
+		ddram_clk <=
+		
 		ddrsys_rst <= not ddram_lck;
 
 		ctlrphy_dso <= (others => not ctlr_clk) when ddram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
@@ -581,17 +581,17 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	ddram_sti : entity hdl4fpga.align
-	generic map (
-		n => sdrphy_sti'length,
-		d => (0 to sdrphy_sti'length-1 => setif(ddram_mode/=sdram133MHz, 1, 0)))
-	port map (
-		clk => ctlr_clk,
-		di  => ctlrphy_sto,
-		do  => sdrphy_sti);
+	ddrphy_rst <= (others => ctlrphy_rst);
+	ddrphy_cs  <= (others => ctlrphy_cs);
+	ddrphy_cke <= (others => ctlrphy_cke);
+	ddrphy_ras <= (others => ctlrphy_ras);
+	ddrphy_cas <= (others => ctlrphy_cas);
+	ddrphy_we  <= (others => ctlrphy_we);
+	ddrphy_odt <= (others => ctlrphy_odt);
 
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
+		taps => 31,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,
@@ -599,26 +599,30 @@ begin
 		word_size     => word_size,
 		byte_size     => byte_size)
 	port map (
-		sys_clk       => ctlr_clk,
-		sys_rst       => ddrsys_rst,
+		rst           => ddrsys_rst,
+		eclk          => ctlr_clk,
 
-		phy_cs        => ctlrphy_cs,
-		phy_cke       => ctlrphy_cke,
-		phy_ras       => ctlrphy_ras,
-		phy_cas       => ctlrphy_cas,
-		phy_we        => ctlrphy_we,
+		phy_wlreq     => ctlrphy_wlreq,
+		phy_wlrdy     => ctlrphy_wlrdy,
+		phy_rst       => (others =>'0'),
+		phy_cs        => ddrphy_cs,
+		phy_cke       => ddrphy_cke,
+		phy_ras       => ddrphy_ras,
+		phy_cas       => ddrphy_cas,
+		phy_we        => ddrphy_we,
+		phy_odt       => ddrphy_odt,
 		phy_b         => ctlrphy_b,
 		phy_a         => ctlrphy_a,
-		phy_dsi       => ctlrphy_dso,
-		phy_dst       => ctlrphy_dst,
-		phy_dso       => ctlrphy_dsi,
+		phy_dqsi      => ctlrphy_dso,
+		phy_dqst      => ctlrphy_dst,
+		phy_dqso      => ctlrphy_dsi,
 		phy_dmi       => ctlrphy_dmo,
 		phy_dmt       => ctlrphy_dmt,
 		phy_dmo       => ctlrphy_dmi,
 		phy_dqi       => ctlrphy_dqo,
 		phy_dqt       => ctlrphy_dqt,
 		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => sdrphy_sti,
+		phy_sti       => ctlrphy_sto,
 		phy_sto       => ctlrphy_sti,
 
 		ddr_ck        => ddram_clk,
@@ -627,11 +631,12 @@ begin
 		ddr_ras       => ddram_ras_n,
 		ddr_cas       => ddram_cas_n,
 		ddr_we        => ddram_we_n,
+		ddr_odt       => ddram_odt,
 		ddr_b         => ddram_ba,
 		ddr_a         => ddram_a,
 
 		ddr_dm        => ddram_dm,
-		ddr_dq        => ddram_dq);
+		ddr_dq        => ddram_dq,
 		ddr_dqs       => ddram_dqs);
 
 	-- VGA --
