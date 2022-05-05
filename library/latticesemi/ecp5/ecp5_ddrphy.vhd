@@ -34,6 +34,7 @@ use hdl4fpga.std.all;
 entity ecp5_ddrphy is
 	generic (
 		tcp       : real;
+		taps      : natural;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -196,31 +197,32 @@ architecture lscc of ecp5_ddrphy is
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
 
-	signal dqsdel : std_logic;
-	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmt   : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmi   : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmo   : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqt   : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqi   : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqo   : dline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqsi : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqsi  : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqst  : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmo   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmt   : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqst  : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqsi  : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqi   : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal dqsdllb_dqsdel : std_logic;
-	signal eclksynca_start : std_logic;
-	signal eclksynca_stop : std_logic;
-	signal eclksynca_eclk : std_logic;
+	signal ddrrst         : std_logic;
+	signal ddrdel         : std_logic;
+	signal ddrlck         : std_logic;
+	signal eclksync_start : std_logic;
+	signal eclksync_stop  : std_logic;
+	signal eclksync_eclk  : std_logic;
 
 	signal dqsbufd_rst : std_logic;
 
@@ -243,106 +245,23 @@ architecture lscc of ecp5_ddrphy is
 
 begin
 
-	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
-	generic map (
-		cmmd_gear => cmmd_gear,
-		bank_size => bank_size,
-		addr_size => addr_size)
+	eclksyncb_i : eclksyncb
 	port map (
-		rst => rst,
-		eclk => eclk,
-		sclk => sclk,
-          
-		phy_rst => phy_rst,
-		phy_cs  => phy_cs,
-		phy_cke => phy_cke,
-		phy_b   => phy_b,
-		phy_a   => phy_a,
-		phy_ras => phy_ras,
-		phy_cas => phy_cas,
-		phy_we  => phy_we,
-		phy_odt => phy_odt,
-        
-		ddr_rst => ddr_rst,
-		ddr_ck  => ddr_ck,
-		ddr_cke => ddr_cke,
-		ddr_odt => ddr_odt,
-		ddr_cs  => ddr_cs,
-		ddr_ras => ddr_ras,
-		ddr_cas => ddr_cas,
-		ddr_we  => ddr_we,
-		ddr_b   => ddr_b,
-		ddr_a   => ddr_a);
+		stop  => eclksync_stop,
+		eclki => eclk,
+		eclko => eclksync_eclk);
 
-	sdmi <= to_blinevector(phy_dmi);
-	sdmt <= to_blinevector(not phy_dmt);
-	sdqt <= to_blinevector(not phy_dqt);
-	sdqi <= shuffle_dlinevector(phy_dqi);
-	ddqi <= to_bytevector(ddr_dq);
-	sdqsi <= to_blinevector(phy_dqsi);
-	sdqst <= to_blinevector(phy_dqst);
-
-	dqsdll_b : block
-		signal lock : std_logic;
-		signal uddcntln : std_logic;
-		signal dqsdllb_uddcntln : std_logic;
-		signal rst_2x : std_logic;
+	memsync_b : block
 	begin
-		process(sclk2x)
-		begin
-			if rising_edge(sclk2x) then
-				rst_2x <= rst; 
-			end if;
-		end process;
-
-		dqsdllb_i : dqsdllb
+		clk_start_i : entity hdl4fpga.clk_start
 		port map (
-			rst => rst_2x,
-			clk => sclk2x,
-			uddcntln => dqsdllb_uddcntln,
-			dqsdel => dqsdel,
-			lock => lock);
-
-		dqsdllb_dqsdel <= dqsdel;
-		process (sclk)
-			variable q : std_logic_vector(0 to 4-1);
-			variable wlr_edge : std_logic;
-		begin
-			if rising_edge(sclk) then
-				if rst='1' then
-					q := (others => '0');
-				elsif wlr='1' and wlr_edge='0' then
-					q := (others => '0');
-				elsif q(0)='0' then
-					if lock='1' then
-						q := inc(gray(q));
-					elsif wlr='1' then
-						q := inc(gray(q));
-					end if;
-				end if;
-				wlr_edge := wlr;
-			end if;
-			uddcntln <= not q(2);
-			clkstart_rst <= not q(0);
-		end process;
-
-		process (sclk2x)
-		begin
-			if rising_edge(sclk2x) then
-				dqsdllb_uddcntln <= uddcntln;
-			end if;
-		end process;
+			rst  => clkstart_rst,
+			sclk => sclk,
+			eclk => eclk,
+			eclksynca_start => eclksync_start,
+			dqsbufd_rst => dqsbufd_rst);
+		eclksync_stop <= not eclksync_start;
 	end block;
-
-	clk_start_i : entity hdl4fpga.clk_start
-	port map (
-		rst  => clkstart_rst,
-		sclk => sclk,
-		eclk => eclk,
-		eclksynca_start => eclksynca_start,
-		dqsbufd_rst => dqsbufd_rst);
-	eclksynca_stop <= not eclksynca_start;
-
 	dqclk_b : block
 		signal dqclk1bar_ff_q : std_logic;
 		signal dqclk1bar_ff_d : std_logic;
@@ -368,13 +287,6 @@ begin
 			q => xxx);
 	end block;
 
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclksynca_stop,
-		eclki => eclk,
-		eclko => eclksynca_eclk);
-	yyy <= eclksynca_eclk after (integer(tcp*2.0)/16.0) * 1 ps;
-
 	process (sclk)
 		variable aux : std_logic;
 	begin
@@ -391,17 +303,95 @@ begin
 	phy_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
 	wlreq <= phy_wlreq;
 
+
+	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
+	generic map (
+		cmmd_gear => cmmd_gear,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		rst     => rst,
+		eclk    => eclksync_eclk,
+		sclk    => sclk,
+          
+		phy_rst => phy_rst,
+		phy_cs  => phy_cs,
+		phy_cke => phy_cke,
+		phy_b   => phy_b,
+		phy_a   => phy_a,
+		phy_ras => phy_ras,
+		phy_cas => phy_cas,
+		phy_we  => phy_we,
+		phy_odt => phy_odt,
+        
+		ddr_rst => ddr_rst,
+		ddr_ck  => ddr_ck,
+		ddr_cke => ddr_cke,
+		ddr_odt => ddr_odt,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_b,
+		ddr_a   => ddr_a);
+
+	sdmi  <= to_blinevector(phy_dmi);
+	sdmt  <= to_blinevector(not phy_dmt);
+	sdqt  <= to_blinevector(not phy_dqt);
+	sdqi  <= shuffle_dlinevector(phy_dqi);
+	ddqi  <= to_bytevector(ddr_dq);
+	sdqsi <= to_blinevector(phy_dqsi);
+	sdqst <= to_blinevector(phy_dqst);
+
+	ddrdll_b : block
+		signal uddcntln : std_logic;
+	begin
+
+		ddrdll_i : ddrdlla
+		port map (
+			rst      => ddrrst,
+			clk      => eclksync_eclk,
+			uddcntln => uddcntln,
+			ddrdel   => ddrdel,
+			lock     => ddrlck);
+
+		process (sclk)
+			variable q : std_logic_vector(0 to 4-1);
+			variable wlr_edge : std_logic;
+		begin
+			if rising_edge(sclk) then
+				if rst='1' then
+					q := (others => '0');
+				elsif wlr='1' and wlr_edge='0' then
+					q := (others => '0');
+				elsif q(0)='0' then
+					if ddrlck='1' then
+						q := inc(gray(q));
+					elsif wlr='1' then
+						q := inc(gray(q));
+					end if;
+				end if;
+				wlr_edge := wlr;
+			end if;
+			uddcntln <= not q(2);
+			clkstart_rst <= not q(0);
+		end process;
+
+	end block;
+
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
-			tcp => tcp,
+			taps => taps,
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			dqsbufd_rst => dqsbufd_rst,
+			rst       => dqsbufd_rst,
 			sclk      => sclk,
-			sclk2x    => sclk2x,
-			eclk      => eclk,
+			eclk      => eclksync_eclk,
+			ddrdel    => ddrdel,
+			read      => (others => '0'),
+			readclksel => (others => '0'),
 			phy_rw    => phy_sti(i*data_gear+0),
 			phy_wlreq => wlreq,
 			phy_wlrdy => wlrdy(i),

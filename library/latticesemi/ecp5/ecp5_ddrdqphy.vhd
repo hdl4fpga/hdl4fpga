@@ -38,8 +38,8 @@ entity ecp5_ddrdqphy is
 		readclksel  : in  std_logic_vector(3-1 downto 0);
 		sclk        : in  std_logic;
 		eclk        : in  std_logic;
+		ddrdel      : in  std_logic;
 
-		phy_dqsdel  : in  std_logic;
 		phy_rw      : in  std_logic;
 		phy_wlreq   : in  std_logic;
 		phy_wlrdy   : buffer std_logic;
@@ -124,7 +124,7 @@ begin
 			sclk      => sclk,
 			eclk      => eclk,
 
-			ddrdel    => phy_dqsdel,
+			ddrdel    => ddrdel,
 			dqsi      => ddr_dqsi,
 			dqsr90    => dqsr90,
 	
