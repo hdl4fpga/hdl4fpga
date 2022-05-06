@@ -54,9 +54,6 @@ architecture graphics of ulx4m_ld is
 
 	constant sys_freq    : real    := 25.0e6;
 
-	constant fpga        : natural := spartan3;
-	constant mark        : natural := M7E;
-
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
 	constant data_edges  : natural := 1;
@@ -99,13 +96,6 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddrphy_rst    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cs     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cke    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_odt    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_ras    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_cas    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_we     : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal ddr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
@@ -219,8 +209,7 @@ architecture graphics of ulx4m_ld is
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
 
-	constant ddr_tcp  : natural := natural(
-		2.0*(1.0e12*real(ddram_tab(ddram_mode).pll.clki_div))/(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq));
+	constant ddr_tcp : real := real(ddram_tab(ddram_mode).pll.clki_div)/(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -537,11 +526,12 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug        => debug,
 		profile      => 2,
 
-		ddr_tcp      => ddr_tcp,
-		fpga         => fpga,
-		mark         => mark,
+		ddr_tcp      => natural(1.0e12*2.0*ddr_tcp),
+		fpga         => virtex7,
+		mark         => M2G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		data_phases  => data_gear,
@@ -553,6 +543,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
+		burst_length => 8,
 
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
@@ -588,6 +579,7 @@ begin
 		ctlrphy_ras  => ctlrphy_ras(0),
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
 		ctlrphy_dsi  => ctlrphy_dsi,
@@ -639,17 +631,18 @@ begin
 		byte_size     => byte_size)
 	port map (
 		rst           => ddrsys_rst,
-		eclk          => ctlr_clk,
+		eclk          => physys_clk,
+		sclk          => ctlr_clk,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
 		phy_rst       => (others =>'0'),
-		phy_cs        => ddrphy_cs,
-		phy_cke       => ddrphy_cke,
-		phy_ras       => ddrphy_ras,
-		phy_cas       => ddrphy_cas,
-		phy_we        => ddrphy_we,
-		phy_odt       => ddrphy_odt,
+		phy_cs        => ctlrphy_cs,
+		phy_cke       => ctlrphy_cke,
+		phy_ras       => ctlrphy_ras,
+		phy_cas       => ctlrphy_cas,
+		phy_we        => ctlrphy_we,
+		phy_odt       => ctlrphy_odt,
 		phy_b         => ctlrphy_ba,
 		phy_a         => ctlrphy_a,
 		phy_dqsi      => ctlrphy_dso,
@@ -664,6 +657,7 @@ begin
 		phy_sti       => ctlrphy_sto,
 		phy_sto       => ctlrphy_sti,
 
+		ddr_rst       => ddram_reset_n,
 		ddr_ck        => ddram_clk,
 		ddr_cke       => ddram_cke,
 		ddr_cs        => ddram_cs_n,
@@ -697,14 +691,5 @@ begin
 			z  => gpdi_dp(i),
 			zn => gpdi_dn(i));
 	end generate;
-
-	process (ctlr_clk)
-		variable q : std_logic;
-	begin
-		if falling_edge(ctlr_clk) then
-			q := not q;
-			led(1)<= q;
-		end if;
-	end process;
 
 end;

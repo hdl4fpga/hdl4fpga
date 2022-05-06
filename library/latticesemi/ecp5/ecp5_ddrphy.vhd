@@ -232,6 +232,7 @@ architecture lscc of ecp5_ddrphy is
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 
+	signal sync_clk : std_logic;
 begin
 
 	mem_sync_b : block
@@ -266,11 +267,11 @@ begin
 			d   => dqclk1bar_ff_q,
 			q   => phase_ff_1_q);
 
-		process (sclk)
+		process (sync_clk)
 			variable q : std_logic_vector(0 to 4-1);
 			variable wlr_edge : std_logic;
 		begin
-			if rising_edge(sclk) then
+			if rising_edge(sync_clk) then
 				if rst='1' then
 					q := (others => '0');
 				elsif wlr='1' and wlr_edge='0' then
@@ -286,17 +287,19 @@ begin
 			end if;
 			uddcntln     <= not q(2);
 			clkstart_rst <= not q(0);
+			ddrrst <= rst;
 
 		end process;
 
 		clk_start_i : entity hdl4fpga.clk_start
 		port map (
 			rst  => clkstart_rst,
-			sclk => sclk,
+			sclk => sync_clk,
 			eclk => eclk,
 			eclksynca_start => eclksync_start,
 			dqsbufd_rst => dqsbuf_rst);
-		eclksync_stop <= not eclksync_start;
+		eclksync_stop <= '0' ; --not eclksync_start;
+		sync_clk <= eclk;
 
 	end block;
 
@@ -317,7 +320,7 @@ begin
 	port map (
 		rst      => ddrrst,
 		clk      => eclksync_eclk,
-		freeze   => '-',
+		freeze   => '0',
 		uddcntln => uddcntln,
 		ddrdel   => ddrdel,
 		lock     => ddrlck);
