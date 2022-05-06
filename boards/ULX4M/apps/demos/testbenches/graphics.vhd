@@ -163,7 +163,6 @@ architecture ulx4mld_graphics of testbench is
 	signal mii_rxc    : std_logic;
 	signal mii_txen   : std_logic;
 
-	signal pl_frm     : std_logic;
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 begin
@@ -171,9 +170,25 @@ begin
 	rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	pl_frm <= '0', '1' after 100 us;
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
+
+	mii_req  <= '0', '1' after 15 us, '0' after 20 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+	process
+	begin
+		wait for 23 us;
+		loop
+			if rep_req='1' then
+				wait;
+				rep_req <= '0' after 5.8 us;
+			else
+				rep_req <= '1' after 250 ns;
+			end if;
+			wait on rep_req;
+		end loop;
+	end process;
+	mii_req1 <= rep_req;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (

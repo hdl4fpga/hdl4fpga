@@ -236,6 +236,24 @@ architecture graphics of ulx4m_ld is
 
 begin
 
+	debug_q : if debug generate
+		signal q : bit;
+	begin
+		q <= not q after 1 ns;
+		eth_ref_clk <= to_stdulogic(q);
+	end generate;
+
+	nodebug_g : if not debug generate
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
+	end generate;
+
 	sys_rst <= '0';
 	videopll_b : block
 
