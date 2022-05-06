@@ -59,15 +59,14 @@ architecture graphics of ulx4m_ld is
 
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
-	constant data_phases : natural := 1;
 	constant data_edges  : natural := 1;
-	constant cmmd_gear   : natural := 1;
-	constant data_gear   : natural := 1;
+	constant cmmd_gear   : natural := 2;
+	constant data_gear   : natural := 4;
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
-	constant coln_size   : natural := 9;
+	constant coln_size   : natural := 10;
 	constant word_size   : natural := ddram_dq'length;
-	constant byte_size   : natural := 8;
+	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -77,28 +76,28 @@ architecture graphics of ulx4m_ld is
 
 	signal ddram_lck     : std_logic;
 
-	signal ctlrphy_clk   : std_logic;
-	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic;
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
-	signal ctlrphy_cs    : std_logic;
-	signal ctlrphy_ras   : std_logic;
-	signal ctlrphy_cas   : std_logic;
-	signal ctlrphy_we    : std_logic;
-	signal ctlrphy_odt   : std_logic;
-	signal ctlrphy_b     : std_logic_vector(ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(ddram_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cke   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cs    : std_logic_vector(0 to 2-1);
+	signal ctlrphy_ras   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cas   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
+	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
+	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddrphy_rst    : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_cs     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -107,8 +106,8 @@ architecture graphics of ulx4m_ld is
 	signal ddrphy_ras    : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_cas    : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ddrphy_we     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ddrphy_b      : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
-	signal ddrphy_a      : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
+	signal ddr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
+	signal ddr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
 	signal ddram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddram_dso     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -527,7 +526,7 @@ begin
 		mark         => mark,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
-		data_phases  => data_phases,
+		data_phases  => data_gear,
 		data_edges   => data_edges,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
@@ -565,14 +564,14 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => ddram_tab(ddram_mode).cas,
 
-		ctlrphy_rst  => ctlrphy_rst,
-		ctlrphy_cke  => ctlrphy_cke,
-		ctlrphy_cs   => ctlrphy_cs,
-		ctlrphy_ras  => ctlrphy_ras,
-		ctlrphy_cas  => ctlrphy_cas,
-		ctlrphy_we   => ctlrphy_we,
-		ctlrphy_b    => ctlrphy_b,
-		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_rst  => ctlrphy_rst(0),
+		ctlrphy_cke  => ctlrphy_cke(0),
+		ctlrphy_cs   => ctlrphy_cs(0),
+		ctlrphy_ras  => ctlrphy_ras(0),
+		ctlrphy_cas  => ctlrphy_cas(0),
+		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_b    => ddr_ba,
+		ctlrphy_a    => ddr_a,
 		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
 		ctlrphy_dso  => ctlrphy_dso,
@@ -585,63 +584,81 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	ddrphy_rst <= (others => ctlrphy_rst);
-	ddrphy_cs  <= (others => ctlrphy_cs);
-	ddrphy_cke <= (others => ctlrphy_cke);
-	ddrphy_ras <= (others => ctlrphy_ras);
-	ddrphy_cas <= (others => ctlrphy_cas);
-	ddrphy_we  <= (others => ctlrphy_we);
-	ddrphy_odt <= (others => ctlrphy_odt);
+	process (ddr_ba)
+	begin
+		for i in ddr_ba'range loop
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+			end loop;
+		end loop;
+	end process;
 
---	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
---	generic map (
---		taps => 31,
---		cmmd_gear     => cmmd_gear,
---		data_gear     => data_gear,
---		bank_size     => ddram_ba'length,
---		addr_size     => ddram_a'length,
---		word_size     => word_size,
---		byte_size     => byte_size)
---	port map (
---		rst           => ddrsys_rst,
---		eclk          => ctlr_clk,
---
---		phy_wlreq     => ctlrphy_wlreq,
---		phy_wlrdy     => ctlrphy_wlrdy,
---		phy_rst       => (others =>'0'),
---		phy_cs        => ddrphy_cs,
---		phy_cke       => ddrphy_cke,
---		phy_ras       => ddrphy_ras,
---		phy_cas       => ddrphy_cas,
---		phy_we        => ddrphy_we,
---		phy_odt       => ddrphy_odt,
---		phy_b         => ctlrphy_b,
---		phy_a         => ctlrphy_a,
---		phy_dqsi      => ctlrphy_dso,
---		phy_dqst      => ctlrphy_dst,
---		phy_dqso      => ctlrphy_dsi,
---		phy_dmi       => ctlrphy_dmo,
---		phy_dmt       => ctlrphy_dmt,
---		phy_dmo       => ctlrphy_dmi,
---		phy_dqi       => ctlrphy_dqo,
---		phy_dqt       => ctlrphy_dqt,
---		phy_dqo       => ctlrphy_dqi,
---		phy_sti       => ctlrphy_sto,
---		phy_sto       => ctlrphy_sti,
---
---		ddr_ck        => ddram_clk,
---		ddr_cke       => ddram_cke,
---		ddr_cs        => ddram_cs_n,
---		ddr_ras       => ddram_ras_n,
---		ddr_cas       => ddram_cas_n,
---		ddr_we        => ddram_we_n,
---		ddr_odt       => ddram_odt,
---		ddr_b         => ddram_ba,
---		ddr_a         => ddram_a,
---
---		ddr_dm        => ddram_dm,
---		ddr_dq        => ddram_dq,
---		ddr_dqs       => ddram_dqs);
+	process (ddr_a)
+	begin
+		for i in ddr_a'range loop
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+			end loop;
+		end loop;
+	end process;
+
+	ctlrphy_rst(1) <= ctlrphy_rst(0);
+	ctlrphy_cke(1) <= ctlrphy_cke(0);
+	ctlrphy_cs(1)  <= ctlrphy_cs(0);
+	ctlrphy_ras(1) <= '1';
+	ctlrphy_cas(1) <= '1';
+	ctlrphy_we(1)  <= '1';
+	ctlrphy_odt(1) <= ctlrphy_odt(0);
+
+	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
+	generic map (
+		taps => 31,
+		cmmd_gear     => cmmd_gear,
+		data_gear     => data_gear,
+		bank_size     => ddram_ba'length,
+		addr_size     => ddram_a'length,
+		word_size     => word_size,
+		byte_size     => byte_size)
+	port map (
+		rst           => ddrsys_rst,
+		eclk          => ctlr_clk,
+
+		phy_wlreq     => ctlrphy_wlreq,
+		phy_wlrdy     => ctlrphy_wlrdy,
+		phy_rst       => (others =>'0'),
+		phy_cs        => ddrphy_cs,
+		phy_cke       => ddrphy_cke,
+		phy_ras       => ddrphy_ras,
+		phy_cas       => ddrphy_cas,
+		phy_we        => ddrphy_we,
+		phy_odt       => ddrphy_odt,
+		phy_b         => ctlrphy_ba,
+		phy_a         => ctlrphy_a,
+		phy_dqsi      => ctlrphy_dso,
+		phy_dqst      => ctlrphy_dst,
+		phy_dqso      => ctlrphy_dsi,
+		phy_dmi       => ctlrphy_dmo,
+		phy_dmt       => ctlrphy_dmt,
+		phy_dmo       => ctlrphy_dmi,
+		phy_dqi       => ctlrphy_dqo,
+		phy_dqt       => ctlrphy_dqt,
+		phy_dqo       => ctlrphy_dqi,
+		phy_sti       => ctlrphy_sto,
+		phy_sto       => ctlrphy_sti,
+
+		ddr_ck        => ddram_clk,
+		ddr_cke       => ddram_cke,
+		ddr_cs        => ddram_cs_n,
+		ddr_ras       => ddram_ras_n,
+		ddr_cas       => ddram_cas_n,
+		ddr_we        => ddram_we_n,
+		ddr_odt       => ddram_odt,
+		ddr_b         => ddram_ba,
+		ddr_a         => ddram_a,
+
+		ddr_dm        => ddram_dm,
+		ddr_dq        => ddram_dq,
+		ddr_dqs       => ddram_dqs);
 
 	-- VGA --
 	---------
