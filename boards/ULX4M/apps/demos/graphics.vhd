@@ -74,14 +74,10 @@ architecture graphics of ulx4m_ld is
 
 	signal ddram_clklck     : std_logic;
 
-	signal ctlrphy_rw      : std_logic;
-
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_rlreq : std_logic;
 	signal ctlrphy_rlrdy : std_logic;
-	signal ctlrphy_rlcal : std_logic;
-	signal ctlrphy_rlseq : std_logic;
 
 	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
@@ -162,16 +158,17 @@ architecture graphics of ulx4m_ld is
 
 	type ddram_params is record
 		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 3-1);
+		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
-		ddram425MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
-		ddram450MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
-		ddram475MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"),
-		ddram500MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cas => "011"));
+		ddram400MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
 
 	signal ctlr_clk   : std_logic;
 
@@ -319,8 +316,8 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => video_shft_clk,
-            CLKOS2    => video_clk,
+			CLKOS     => open, --video_shft_clk,
+			CLKOS2    => open, --video_clk,
             CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
@@ -530,6 +527,7 @@ begin
 
 	end block;
 
+	ctlrphy_rlrdy <= ctlrphy_rlreq;
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
@@ -577,14 +575,12 @@ begin
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => ddram_tab(ddram_mode).cas,
+		ctlr_cl      => ddram_tab(ddram_mode).cl,
+		ctlr_cwl     => ddram_tab(ddram_mode).cwl,
+		ctlr_rtt     => "001",
 
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
-		ctlrphy_rlreq => ctlrphy_rlreq,
-		ctlrphy_rlrdy => ctlrphy_rlrdy,
-		ctlrphy_rlcal => ctlrphy_rlcal,
-		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
