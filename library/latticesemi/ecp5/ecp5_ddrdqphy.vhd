@@ -73,10 +73,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal dqsr90  : std_logic;
 	signal dqsw270 : std_logic;
 	signal dqsw    : std_logic;
-	signal dqclk0  : std_logic;
-	signal dqclk1  : std_logic;
 	
-	signal rw     : std_logic;
 	
 	signal dqi    : std_logic_vector(phy_dqi'range);
 
@@ -89,7 +86,6 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 begin
-	rw <= not phy_rw;
 
 	wl_b : block
 		signal step_rdy : std_logic;
@@ -147,16 +143,22 @@ begin
 			rdcflag   => open,
 			wrcflag   => open,
 	
-			dyndelay0 => phy_wlpha(0),
-			dyndelay1 => phy_wlpha(1),
-			dyndelay2 => phy_wlpha(2),
-			dyndelay3 => phy_wlpha(3),
-			dyndelay4 => phy_wlpha(4),
-			dyndelay5 => phy_wlpha(5),
-			dyndelay6 => phy_wlpha(6),
-			dyndelay7 => phy_wlpha(7),
+			rdloadn   => '0',
+			rddirection => '0',
+			wrloadn   => '0',
+			wrdirection => '0',
+			pause => '0',
+			dyndelay0 => '0', --phy_wlpha(0),
+			dyndelay1 => '0', --phy_wlpha(1),
+			dyndelay2 => '0', --phy_wlpha(2),
+			dyndelay3 => '0', --phy_wlpha(3),
+			dyndelay4 => '0', --phy_wlpha(4),
+			dyndelay5 => '0', --phy_wlpha(5),
+			dyndelay6 => '0', --phy_wlpha(6),
+			dyndelay7 => '0', --phy_wlpha(7),
 	
-			dqsw      => dqsw);
+			dqsw      => dqsw,
+			dqsw270   => dqsw270);
 
 	end block;
 
@@ -272,8 +274,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw => dqsw270,
-			t0   => dqt(0),
-			t1   => dqt(0),
+			t0   => dqst(0),
+			t1   => dqst(0),
 			q    => ddr_dqst);
 
 		oddrx2dqsb_i : oddrx2dqsb
