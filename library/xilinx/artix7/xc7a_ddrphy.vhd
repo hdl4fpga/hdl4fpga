@@ -67,7 +67,6 @@ entity xc7a_ddrphy is
 		sys_ras      : in  std_logic_vector(0 to cmmd_gear-1);
 		sys_cas      : in  std_logic_vector(0 to cmmd_gear-1);
 		sys_we       : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_act      : in  std_logic;
 		sys_b        : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
 		sys_a        : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		sys_odt      : in  std_logic_vector(0 to cmmd_gear-1);

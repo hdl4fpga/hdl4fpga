@@ -145,12 +145,10 @@ architecture graphics of arty is
 	signal ddrsys_rst      : std_logic;
 	signal ddrsys_clks     : std_logic_vector(0 to 5-1);
 
-	signal ctlrphy_inirdy  : std_logic;
-	signal ctlrphy_ini     : std_logic;
-	signal ctlrphy_trdy    : std_logic;
 	signal ctlrphy_frm     : std_logic;
+	signal ctlrphy_trdy    : std_logic;
+	signal ctlrphy_ini     : std_logic;
 	signal ctlrphy_rw      : std_logic;
-	signal ctlrphy_act     : std_logic;
 	signal ctlrphy_wlreq   : std_logic;
 	signal ctlrphy_wlrdy   : std_logic;
 	signal ctlrphy_rlreq   : std_logic;
@@ -609,7 +607,6 @@ begin
 		ctlr_cwl     => ddr_param.cwl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
-		ctlr_inirdy   => ctlrphy_inirdy,
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,
@@ -617,9 +614,9 @@ begin
 		ctlrphy_rlcal => ctlrphy_rlcal,
 		ctlrphy_rlseq => ctlrphy_rlseq,
 
-		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_irdy => ctlrphy_frm,
 		ctlrphy_trdy => ctlrphy_trdy,
+		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -692,7 +689,6 @@ begin
 		phy_trdy    => ctlrphy_trdy,
 		phy_rw      => ctlrphy_rw,
 		phy_ini     => ctlrphy_ini,
-		sys_act     => ctlrphy_act,
 
 		sys_cmd     => ctlrphy_cmd,
 		sys_wlreq   => ctlrphy_wlreq,

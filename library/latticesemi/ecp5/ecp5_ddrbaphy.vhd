@@ -83,8 +83,8 @@ begin
 		oddr_i : oddrx1f
 		port map (
 			sclk => sclk,
-			d0 => phy_b(bank_size*0+i),
-			d1 => '1', --phy_b(bank_size*1+i),
+			d0 => phy_b(cmmd_gear*i+0),
+			d1 => phy_b(cmmd_gear*i+1),
 			q  => ddr_b(i));
 	end generate;
 
@@ -94,8 +94,8 @@ begin
 		oddr_i : oddrx1f
 		port map (
 			sclk => sclk,
-			d0   => phy_a(addr_size*0+i),
-			d1   => '1', --phy_a(addr_size*1+i),
+			d0   => phy_a(cmmd_gear*i+0),
+			d1   => phy_a(cmmd_gear*i+1),
 			q    => ddr_a(i));
 	end generate;
 
@@ -103,21 +103,21 @@ begin
 	port map (
 		sclk => sclk,
 		d0   => phy_ras(0),
-		d1   => '1', --phy_ras(1),
+		d1   => phy_ras(1),
 		q    => ddr_ras);
 
 	cas_i :oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_cas(0),
-		d1   => '1', --phy_cas(1),
+		d1   => phy_cas(1),
 		q    => ddr_cas);
 
 	we_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_we(0),
-		d1   => '1', --phy_we(1),
+		d1   => phy_we(1),
 		q    => ddr_we);
 
 	cs_i : oshx2a

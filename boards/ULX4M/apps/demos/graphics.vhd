@@ -40,11 +40,11 @@ architecture graphics of ulx4m_ld is
 	-- Set of profiles                   --
 	type apps is (
 	--	Interface_SdramSpeed_PixelFormat --
-		mii_400MHz_480p24bpp,            --
-		mii_425MHz_480p24bpp,            --
-		mii_450MHz_480p24bpp,            --
-		mii_475MHz_480p24bpp,            --
-		mii_500MHz_480p24bpp);           --
+		mii_400MHz_480p24bpp,
+		mii_425MHz_480p24bpp,
+		mii_450MHz_480p24bpp,
+		mii_475MHz_480p24bpp,
+		mii_500MHz_480p24bpp);
 	---------------------------------------
 
 	---------------------------------------------
@@ -69,12 +69,20 @@ architecture graphics of ulx4m_ld is
 	signal sys_clk       : std_logic;
 
 	signal ddrsys_rst    : std_logic;
+	signal ddrphy_rst    : std_logic;
 	signal physys_clk    : std_logic;
 
-	signal ddram_lck     : std_logic;
+	signal ddram_clklck     : std_logic;
+
+	signal ctlrphy_rw      : std_logic;
 
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
+	signal ctlrphy_rlreq : std_logic;
+	signal ctlrphy_rlrdy : std_logic;
+	signal ctlrphy_rlcal : std_logic;
+	signal ctlrphy_rlseq : std_logic;
+
 	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cke   : std_logic_vector(0 to 2-1);
@@ -385,14 +393,12 @@ begin
 			CLKOS     => open,
 			CLKOS2    => open,
 			CLKOS3    => open,
-			LOCK      => ddram_lck,
+			LOCK      => ddram_clklck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 		physys_clk <= clkfb;
 		
-		ddrsys_rst <= not ddram_lck;
-
 	end block;
 
 	ipoe_b : block
@@ -529,7 +535,7 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		ddr_tcp      => natural(1.0e12*2.0*ddr_tcp),
+		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => virtex7,
 		mark         => M2G125,
 		sclk_phases  => sclk_phases,
@@ -572,6 +578,13 @@ begin
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => ddram_tab(ddram_mode).cas,
+
+		ctlrphy_wlreq => ctlrphy_wlreq,
+		ctlrphy_wlrdy => ctlrphy_wlrdy,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
+		ctlrphy_rlcal => ctlrphy_rlcal,
+		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -620,6 +633,17 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
+
+	ddrphy_rst <= not ddram_clklck;
+	process (ddram_clklck, ctlr_clk)
+	begin
+		if ddram_clklck='0' then
+			ddrsys_rst <= '1';
+		elsif rising_edge(ctlr_clk) then
+			ddrsys_rst <= '0';
+		end if;
+	end process;
+
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
 		taps => 31,
@@ -630,13 +654,13 @@ begin
 		word_size     => word_size,
 		byte_size     => byte_size)
 	port map (
-		rst           => ddrsys_rst,
+		rst           => ddrphy_rst,
 		eclk          => physys_clk,
 		sclk          => ctlr_clk,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
-		phy_rst       => (others =>'0'),
+		phy_rst       => ctlrphy_rst,
 		phy_cs        => ctlrphy_cs,
 		phy_cke       => ctlrphy_cke,
 		phy_ras       => ctlrphy_ras,

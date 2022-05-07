@@ -94,6 +94,7 @@ architecture ulx4mld_graphics of testbench is
 
 	signal rst_n : std_logic;
 	signal cke   : std_logic;
+	signal ddr_clk : std_logic;
 	signal ddr_clk_p : std_logic;
 	signal ddr_clk_n : std_logic;
 	signal cs_n  : std_logic;
@@ -263,7 +264,7 @@ begin
 		rgmii_rxd    => mii_rxd,
 
 		ddram_reset_n => rst_n,
-		ddram_clk   => ddr_clk_p,
+		ddram_clk   => ddr_clk,
 		ddram_cke   => cke,
 		ddram_cs_n  => cs_n,
 		ddram_ras_n => ras_n,
@@ -283,6 +284,9 @@ begin
 		mii_frm  => mii_txen,
 		mii_irdy => mii_txen,
 		mii_data => mii_txd);
+
+	ddr_clk_p <= ddr_clk;
+	ddr_clk_n <= not ddr_clk;
 
 	mt_u : ddr3_model
 	port map (
