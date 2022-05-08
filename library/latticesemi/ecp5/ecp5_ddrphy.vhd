@@ -47,7 +47,7 @@ entity ecp5_ddrphy is
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_wlreq : in  std_logic;
-		phy_wlrdy : out std_logic;
+		phy_wlrdy : buffer std_logic;
 		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
 		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -225,7 +225,6 @@ architecture lscc of ecp5_ddrphy is
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
-	signal wlreq : std_logic;
 	signal wlr : std_logic;
 	signal clkstart_rst : std_logic;
 
@@ -325,21 +324,15 @@ begin
 		ddrdel   => ddrdel,
 		lock     => ddrlck);
 
-	process (sclk)
-		variable aux : std_logic;
+	process (wlrdy)
+		variable aux : bit;
 	begin
-		if rising_edge(sclk) then
-			aux := '1';
-			for i in wlrdy'range loop
-				aux := aux and wlrdy(i);
-			end loop;
-			wlr<= aux;
-		end if;
+		aux := '1';
+		for i in wlrdy'range loop
+			aux := aux and (to_bit(wlrdy(i)) xor to_bit(phy_wlreq));
+		end loop;
+		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
 	end process;
-	phy_wlrdy <= wlr;
-
-	wlreq <= phy_wlreq;
-
 
 	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
 	generic map (
@@ -386,6 +379,7 @@ begin
 	end block;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
+	begin
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
 			taps => taps,
@@ -399,7 +393,7 @@ begin
 			read      => (others => '0'),
 			readclksel => (others => '0'),
 			phy_rw    => phy_sti(i*data_gear+0),
-			phy_wlreq => wlreq,
+			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_wlpha => wlpha(i),
 			phy_dmt   => sdmt(i),

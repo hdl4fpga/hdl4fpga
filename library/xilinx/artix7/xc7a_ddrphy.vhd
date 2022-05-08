@@ -293,8 +293,10 @@ architecture virtex7 of xc7a_ddrphy is
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal byte_rlrdy : std_logic_vector(ddr_dqsi'range);
-	signal byte_rlcal : std_logic_vector(ddr_dqsi'range);
+
+	signal wlrdy  : std_logic_vector(0 to word_size/byte_size-1);
+	signal rlrdy : std_logic_vector(ddr_dqsi'range);
+	signal rlcal : std_logic_vector(ddr_dqsi'range);
 
 	signal phy_ba : std_logic_vector(sys_b'range);
 	signal phy_a  : std_logic_vector(sys_a'range);
@@ -303,8 +305,6 @@ architecture virtex7 of xc7a_ddrphy is
 	signal ba_we  : std_logic_vector(sys_we'range);
 	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
 
-	signal wlrdy  : std_logic_vector(0 to word_size/byte_size-1);
-	signal rlrdy  : std_logic;
 	signal level  : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
@@ -414,28 +414,52 @@ begin
 							read_rdy <= not read_req;
 						end if;
 					end case;
-					if (sys_rlrdy and sys_rlcal)='1' then
+					if ((to_stdulogic(to_bit(sys_rlrdy)) xnor sys_rlreq) and sys_rlcal)='1' then
 						leveled <= '1';
 					end if;
 				end if;
 
 				tp1(2) <= sys_rlcal;
 				tp1(3) <= phy_rw;
-				tp1(4) <= sys_rlrdy;
+				tp1(4) <= (to_stdulogic(to_bit(sys_rlrdy)) xnor sys_rlreq);
 				tp1(5) <= level;
 			end if;
 		end process;
 	end block;
 
 	process (sys_clks(iodclk))
-		variable aux : std_logic;
+		variable aux : bit;
 	begin
 		if rising_edge(sys_clks(iodclk)) then
 			aux := '1';
 			for i in wlrdy'range loop
-				aux := aux and wlrdy(i);
+				aux := aux and (to_bit(wlrdy(i)) xor to_bit(sys_wlreq));
 			end loop;
-			sys_wlrdy <= aux;
+			sys_wlrdy <= to_stdulogic(aux) xor sys_wlreq;
+		end if;
+	end process;
+
+	process (sys_clks(iodclk))
+		variable aux : bit;
+	begin
+		aux := '1';
+		if rising_edge(sys_clks(iodclk)) then
+			for i in rlrdy'range loop
+				aux := aux and (to_bit(rlrdy(i)) xor to_bit(sys_rlreq));
+			end loop;
+			sys_rlrdy <= to_stdulogic(aux) xor sys_rlreq;
+		end if;
+	end process;
+
+	process (sys_clks(iodclk))
+		variable aux : std_logic;
+	begin
+		aux := '1';
+		if rising_edge(sys_clks(iodclk)) then
+			for i in rlcal'range loop
+				aux := aux and rlcal(i);
+			end loop;
+			sys_rlcal <= aux;
 		end if;
 	end process;
 
@@ -517,30 +541,6 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	process (sys_clks(iodclk))
-		variable aux : std_logic;
-	begin
-		aux := '1';
-		if rising_edge(sys_clks(iodclk)) then
-			for i in byte_rlcal'range loop
-				aux := aux and byte_rlcal(i);
-			end loop;
-			sys_rlcal <= aux and not sys_rlrdy;
-		end if;
-	end process;
-
-	process (sys_clks(iodclk))
-		variable aux : std_logic;
-	begin
-		aux := '1';
-		if rising_edge(sys_clks(iodclk)) then
-			for i in byte_rlrdy'range loop
-				aux := aux and byte_rlrdy(i);
-			end loop;
-			sys_rlrdy <= aux;
-		end if;
-	end process;
-
 	byte_g : for i in ddr_dqsi'range generate
 		ddrdqphy_i : entity hdl4fpga.xc7a_ddrdqphy
 		generic map (
@@ -556,8 +556,8 @@ begin
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
 			sys_rlreq  => sys_rlreq,
-			sys_rlrdy  => byte_rlrdy(i),
-			sys_rlcal  => byte_rlcal(i),
+			sys_rlrdy  => rlrdy(i),
+			sys_rlcal  => rlcal(i),
 
 			sys_sti    => ssti(i),
 			sys_dmt    => sdmt(i),

@@ -200,12 +200,8 @@ begin
 			q3   => phy_dmo(3));
 	end block;
 
-	process (sclk)
-	begin
-		if rising_edge(sclk) then
-			wle <= phy_wlrdy xor phy_wlreq;
-		end if;
-	end process;
+	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
+
 	dqt <= phy_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;

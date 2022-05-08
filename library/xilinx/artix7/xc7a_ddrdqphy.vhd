@@ -43,7 +43,7 @@ entity xc7a_ddrdqphy is
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
 		sys_rlreq : in  std_logic;
-		sys_rlrdy : out std_logic;
+		sys_rlrdy : buffer std_logic;
 		sys_rlcal : out std_logic;
 		sys_dmt   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
 		sys_dmi   : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
@@ -87,7 +87,6 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
-	signal rlrdy      : std_logic;
 
 	signal iod_rst    : std_logic;
 	signal dqsi_buf   : std_logic;
@@ -116,32 +115,57 @@ begin
 		std_logic_vector(resize(unsigned(std_logic_vector'(tp_dqssel & tp_dqsdly)), tp_delay'length)) when others;
 
 	sys_wlrdy <= sys_wlreq;
+
 	process (sys_clks(iodclk))
-		variable aux : std_logic;
+		variable aux : bit;
 	begin
 		aux := '1';
 		if rising_edge(sys_clks(iodclk)) then
 			for i in adjdqi_rdy'range loop
-				aux := aux and adjdqi_rdy(i);
+				aux := aux and (to_bit(adjdqi_rdy(i)) xor to_bit(adjdqi_req));
 			end loop;
-			adjsto_req <= aux;
+			adjsto_req <= to_stdulogic(aux) xor to_stdulogic(to_bit(adjdqi_req));
 		end if;
 	end process;
-	sys_rlcal <= adjsto_req;
-	sys_rlrdy <= rlrdy;
-	rlrdy <= adjsto_rdy;
 
 	process (sys_clks(iodclk))
+		type states is (sync_start, sync_dqs, sync_dqi, sync_sto);
+		variable state : states;
 	begin
 		if rising_edge(sys_clks(iodclk)) then
-			if sys_rlreq='0' then
-				adjdqs_req <= '0';
-			elsif sys_sti(0)='1' then
-				adjdqs_req <= '1';
+			if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
+				adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
+				adjdqi_req <= to_stdulogic(to_bit(adjsto_rdy));
+				adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
+				state := sync_start;
+			else
+				case state is
+				when sync_start =>
+					if sys_sti(0)='1' then
+						adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
+						state := sync_dqs;
+					end if;
+				when sync_dqs =>
+					if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
+						adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
+						state := sync_dqi;
+					end if;
+				when sync_dqi =>
+					if (adjsto_req xor adjdqi_req)='0' then
+						adjsto_req <= not adjsto_rdy;
+						state := sync_sto;
+					end if;
+				when sync_sto =>
+					if (adjsto_req xor adjdqi_req)='0' then
+						sys_rlrdy <= sys_rlreq;
+						state := sync_start;
+					end if;
+				end case;
 			end if;
 		end if;
 	end process;
-	adjdqi_req <= adjdqs_rdy;
+
+	sys_rlcal <= to_stdulogic(to_bit(adjsto_req) xor to_bit(adjsto_rdy));
 
 	dqsi_b : block
 		signal step_rdy : std_logic;
@@ -405,9 +429,9 @@ begin
 
 		registered_g : for j in clks'range generate
 			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
-				process (rlrdy, clks(j))
+				process (sys_rlrdy, sys_rlreq, clks(j))
 				begin
-					if rlrdy='0' then
+					if (to_bit(sys_rlrdy) xor to_bit(sys_rlreq))='1' then
 						if j mod 2=1 then
 							dqo(l*DATA_GEAR/clks'length+j) <= '1';
 						else
