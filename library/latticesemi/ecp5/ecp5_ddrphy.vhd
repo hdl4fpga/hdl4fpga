@@ -33,7 +33,6 @@ use hdl4fpga.std.all;
 
 entity ecp5_ddrphy is
 	generic (
-		taps      : natural;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -229,7 +228,6 @@ architecture lscc of ecp5_ddrphy is
 	signal clkstart_rst : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
-	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 
 	signal sync_clk : std_logic;
 begin
@@ -324,7 +322,7 @@ begin
 		ddrdel   => ddrdel,
 		lock     => ddrlck);
 
-	process (wlrdy)
+	process (phy_wlreq, wlrdy)
 		variable aux : bit;
 	begin
 		aux := '1';
@@ -382,7 +380,6 @@ begin
 	begin
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
-			taps => taps,
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
@@ -395,7 +392,6 @@ begin
 			phy_rw    => phy_sti(i*data_gear+0),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
-			phy_wlpha => wlpha(i),
 			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),

@@ -642,7 +642,6 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
-		taps => 31,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,

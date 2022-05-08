@@ -287,6 +287,7 @@ begin
 
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;
+	dqs_n <= not dqs;
 
 	mt_u : ddr3_model
 	port map (

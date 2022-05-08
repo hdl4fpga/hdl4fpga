@@ -29,7 +29,6 @@ use ecp5u.components.all;
 
 entity ecp5_ddrdqphy is
 	generic (
-		taps        : natural;
 		data_gear   : natural;
 		byte_size   : natural);
 	port (
@@ -51,7 +50,6 @@ entity ecp5_ddrdqphy is
 		phy_dqi     : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		phy_dqso    : in  std_logic_vector(0 to data_gear-1);
 		phy_dqst    : in  std_logic_vector(0 to data_gear-1);
-		phy_wlpha   : buffer std_logic_vector(8-1 downto 0);
 
 		ddr_dmt     : out std_logic;
 		ddr_dmi     : in  std_logic := '-';
@@ -90,6 +88,7 @@ begin
 	wl_b : block
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
+		signal wlpha : std_logic_vector(8-1 downto 0);
 	begin
 
 		step_delay_e : entity hdl4fpga.align
@@ -103,16 +102,16 @@ begin
 	
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			taps     => taps)
+			taps     => 2**wlpha'length-1)
 		port map (
-			edge     => std_logic'('1'),
+			edge     => std_logic'('0'),
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
 			step_req => step_req,
 			step_rdy => step_rdy,
 			smp      => ddr_dqi(0 downto 0),
-			delay    => phy_wlpha);
+			delay    => wlpha);
 
 		dqsbufm_i : dqsbufm 
 		port map (
@@ -148,14 +147,14 @@ begin
 			wrloadn   => '0',
 			wrdirection => '0',
 			pause => '0',
-			dyndelay0 => '0', --phy_wlpha(0),
-			dyndelay1 => '0', --phy_wlpha(1),
-			dyndelay2 => '0', --phy_wlpha(2),
-			dyndelay3 => '0', --phy_wlpha(3),
-			dyndelay4 => '0', --phy_wlpha(4),
-			dyndelay5 => '0', --phy_wlpha(5),
-			dyndelay6 => '0', --phy_wlpha(6),
-			dyndelay7 => '0', --phy_wlpha(7),
+			dyndelay0 => wlpha(0),
+			dyndelay1 => wlpha(1),
+			dyndelay2 => wlpha(2),
+			dyndelay3 => wlpha(3),
+			dyndelay4 => wlpha(4),
+			dyndelay5 => wlpha(5),
+			dyndelay6 => wlpha(6),
+			dyndelay7 => wlpha(7),
 	
 			dqsw      => dqsw,
 			dqsw270   => dqsw270);
@@ -269,7 +268,7 @@ begin
 			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
-			dqsw => dqsw270,
+			dqsw => dqsw,
 			t0   => dqst(0),
 			t1   => dqst(0),
 			q    => ddr_dqst);
@@ -279,7 +278,7 @@ begin
 			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
-			dqsw => dqsw270,
+			dqsw => dqsw,
 			d0   => '0',
 			d1   => dqso(2*0),
 			d2   => '0',
