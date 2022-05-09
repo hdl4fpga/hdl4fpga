@@ -269,8 +269,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw => dqsw,
-			t0   => dqst(0),
-			t1   => dqst(0),
+			t0   => dqst(2*1),
+			t1   => dqst(2*0),
 			q    => ddr_dqst);
 
 		oddrx2dqsb_i : oddrx2dqsb

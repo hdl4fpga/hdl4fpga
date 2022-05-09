@@ -39,6 +39,7 @@ package ddr_db is
 	constant VIRTEX5     : natural := 2;
 	constant LATTICEECP3 : natural := 3;
 	constant VIRTEX7     : natural := 4;
+	constant LATTICEECP5 : natural := 5;
 
 
 	constant SDRAM : natural := 0;
@@ -242,6 +243,26 @@ package ddr_db is
 		latency_record'(fpga => latticeECP3, param => WIDL,       value =>   4),
 		latency_record'(fpga => latticeECP3, param => RDFIFO_LAT, value => 3),
 
+		latency_record'(fpga => latticeECP5, param => cDLL,       value => 500),
+		latency_record'(fpga => latticeECP5, param => STRL,       value =>   4),
+		latency_record'(fpga => latticeECP5, param => RWNL,       value =>   4),
+		latency_record'(fpga => latticeECP5, param => DQSL,       value =>   0),
+		latency_record'(fpga => latticeECP5, param => DQSZL,      value =>   2),
+		latency_record'(fpga => latticeECP5, param => DQZL,       value =>   2),
+		latency_record'(fpga => latticeECP5, param => WWNL,       value =>   2),
+		latency_record'(fpga => latticeECP5, param => STRXL,      value =>   0),
+		latency_record'(fpga => latticeECP5, param => RWNXL,      value =>   0),
+		latency_record'(fpga => latticeECP5, param => DQSXL,      value =>   2),
+		latency_record'(fpga => latticeECP5, param => DQSZXL,     value =>   2),
+		latency_record'(fpga => latticeECP5, param => DQZXL,      value =>   0),
+		latency_record'(fpga => latticeECP5, param => WWNXL,      value =>   2),
+		latency_record'(fpga => latticeECP5, param => ZQINIT,     value => 500),
+		latency_record'(fpga => latticeECP5, param => MRD,        value =>   4),
+		latency_record'(fpga => latticeECP5, param => MODu,       value =>  12),
+		latency_record'(fpga => latticeECP5, param => XPR,        value =>   5),
+		latency_record'(fpga => latticeECP5, param => WIDL,       value =>   4),
+		latency_record'(fpga => latticeECP5, param => RDFIFO_LAT, value => 3),
+
 		latency_record'(fpga => virtex7,     param => cDLL,       value => 500),
 		latency_record'(fpga => virtex7,     param => STRL,       value =>   0),
 		latency_record'(fpga => virtex7,     param => RWNL,       value =>   4),
@@ -266,6 +287,7 @@ package ddr_db is
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE),
+		cntlrcnfg_boolean'(fpga => latticeECP5, param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => virtex7,     param => RDFIFO_DELAY, value => TRUE));
 
 	constant cnfglat_db : cnfglat_tab := (

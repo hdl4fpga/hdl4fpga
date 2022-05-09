@@ -24,8 +24,9 @@ add wave -noupdate /testbench/du_e/ctlrphy_wlreq
 add wave -noupdate /testbench/du_e/ctlrphy_wlrdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_wlreq
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_wlrdy
+add wave -noupdate -expand /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqst
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21663649920 fs} 0}
+WaveRestoreCursors {{Cursor 1} {21633163460 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 135
@@ -41,4 +42,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {21639702430 fs} {21677797570 fs}
+WaveRestoreZoom {21630333930 fs} {21687407610 fs}

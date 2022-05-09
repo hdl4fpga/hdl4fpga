@@ -534,10 +534,11 @@ begin
 		profile      => 2,
 
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
-		fpga         => virtex7,
+		fpga         => LatticeECP5,
 		mark         => M2G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
+		burst_length => 8,
 		data_phases  => data_gear,
 		data_edges   => data_edges,
 		data_gear    => data_gear,
@@ -547,7 +548,6 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		burst_length => 8,
 
 		timing_id    => video_tab(video_mode).mode,
 		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
