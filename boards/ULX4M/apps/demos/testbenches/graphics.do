@@ -18,15 +18,19 @@ add wave -noupdate -expand -group ddram /testbench/du_e/ddram_odt
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_a
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_ba
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
-add wave -noupdate -expand -group ddram -expand /testbench/du_e/ddram_dqs
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_dqs
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dq
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_sti
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsr90
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/sclk
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_sti(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/BURSTDET
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DATAVALID
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_sto
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/ddr_dqi
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {24266315650 fs} 0}
+WaveRestoreCursors {{Cursor 1} {23751770410 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 221
+configure wave -namecolwidth 192
 configure wave -valuecolwidth 135
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -40,4 +44,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {23498892150 fs} {25465483880 fs}
+WaveRestoreZoom {23745900160 fs} {23757640660 fs}

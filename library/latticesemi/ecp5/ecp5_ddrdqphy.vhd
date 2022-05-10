@@ -138,6 +138,8 @@ begin
 	
 
 			datavalid => open,
+			rdmove    => '0',
+			wrmove    => '0',
 			burstdet  => open,
 			rdcflag   => open,
 			wrcflag   => open,
@@ -167,6 +169,7 @@ begin
 	begin
 		iddrx2_i : iddrx2dqa
 		port map (
+			rst     => '0',
 			sclk    => sclk,
 			eclk    => eclk,
 			dqsr90  => dqsr90,
@@ -189,14 +192,21 @@ begin
 	begin
 		iddrx2_i : iddrx2dqa
 		port map (
-			sclk => sclk,
-			eclk => eclk,
-			dqsr90 => dqsr90,
-			d    => ddr_dmi,
-			q0   => phy_dmo(0),
-			q1   => phy_dmo(1),
-			q2   => phy_dmo(2),
-			q3   => phy_dmo(3));
+			rst     => '0',
+			sclk    => sclk,
+			eclk    => eclk,
+			dqsr90  => dqsr90,
+			rdpntr0 => rdpntr(0),
+			rdpntr1 => rdpntr(1),
+			rdpntr2 => rdpntr(2),
+			wrpntr0 => wrpntr(0),
+			wrpntr1 => wrpntr(1),
+			wrpntr2 => wrpntr(2),
+			d       => ddr_dmi,
+			q0      => phy_dmo(0),
+			q1      => phy_dmo(1),
+			q2      => phy_dmo(2),
+			q3      => phy_dmo(3));
 	end block;
 
 	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
