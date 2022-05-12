@@ -129,12 +129,12 @@ begin
 			readclksel1 => readclksel(1),
 			readclksel2 => readclksel(2),
 
-			rdpntr0   => rdpntr(0),
-			rdpntr1   => rdpntr(1),
 			rdpntr2   => rdpntr(2),
-			wrpntr0   => wrpntr(0),
-			wrpntr1   => wrpntr(1),
+			rdpntr1   => rdpntr(1),
+			rdpntr0   => rdpntr(0),
 			wrpntr2   => wrpntr(2),
+			wrpntr1   => wrpntr(1),
+			wrpntr0   => wrpntr(0),
 	
 
 			datavalid => open,
@@ -166,24 +166,30 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2_i : label is "DQS_ALIGNED";
+		signal d : std_logic;
 	begin
+		delay_i : delayg
+		port map (
+			a => ddr_dqi(i),
+			z => d);
+
 		iddrx2_i : iddrx2dqa
 		port map (
 			rst     => '0',
 			sclk    => sclk,
 			eclk    => eclk,
 			dqsr90  => dqsr90,
-			rdpntr0 => rdpntr(0),
-			rdpntr1 => rdpntr(1),
 			rdpntr2 => rdpntr(2),
-			wrpntr0 => wrpntr(0),
-			wrpntr1 => wrpntr(1),
+			rdpntr1 => rdpntr(1),
+			rdpntr0 => rdpntr(0),
 			wrpntr2 => wrpntr(2),
-			d       => ddr_dqi(i),
-			q0      => phy_dqo(0*byte_size+i),
-			q1      => phy_dqo(1*byte_size+i),
-			q2      => phy_dqo(2*byte_size+i),
-			q3      => phy_dqo(3*byte_size+i));
+			wrpntr1 => wrpntr(1),
+			wrpntr0 => wrpntr(0),
+			d       => d,
+			q2      => phy_dqo(0*byte_size+i),
+			q3      => phy_dqo(1*byte_size+i),
+			q0      => phy_dqo(2*byte_size+i),
+			q1      => phy_dqo(3*byte_size+i));
 	end generate;
 
 	dmi_g : block

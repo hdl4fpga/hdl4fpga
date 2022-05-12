@@ -244,7 +244,7 @@ package ddr_db is
 		latency_record'(fpga => latticeECP3, param => RDFIFO_LAT, value => 3),
 
 		latency_record'(fpga => latticeECP5, param => cDLL,       value => 500),
-		latency_record'(fpga => latticeECP5, param => STRL,       value =>   4),
+		latency_record'(fpga => latticeECP5, param => STRL,       value =>   0),
 		latency_record'(fpga => latticeECP5, param => RWNL,       value =>   4),
 		latency_record'(fpga => latticeECP5, param => DQSL,       value =>   0),
 		latency_record'(fpga => latticeECP5, param => DQSZL,      value =>   2),

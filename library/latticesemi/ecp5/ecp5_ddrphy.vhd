@@ -230,6 +230,8 @@ architecture lscc of ecp5_ddrphy is
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 
 	signal sync_clk : std_logic;
+	signal read     : std_logic_vector(0 to 2-1);
+
 begin
 
 	mem_sync_b : block
@@ -376,6 +378,17 @@ begin
 
 	end block;
 
+	process(sclk, phy_sti(0))
+		variable q : unsigned(0 to 2-1);
+	begin
+		if rising_edge(sclk) then
+			q(0) := phy_sti(0);
+			q := q rol 1;
+		end if;
+		read(1) <= q(1) or q(0);
+		read(0) <= q(1) or q(0);
+	end process;
+
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 	begin
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
@@ -387,9 +400,9 @@ begin
 			sclk      => sclk,
 			eclk      => eclksync_eclk,
 			ddrdel    => ddrdel,
-			read(0)   => phy_sti(0),
-			read(1)   => phy_sti(0),
-			readclksel => (others => '0'),
+			read(0)   => read(0),
+			read(1)   => read(1),
+			readclksel => "000" , --(others => '0'),
 			phy_rw    => phy_sti(i*data_gear+0),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
