@@ -60,25 +60,31 @@ entity ecp5_ddrbaphy is
 end;
 
 architecture lscc of ecp5_ddrbaphy is
-
-	attribute oddrapps : string;
-	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
-	attribute oddrapps of ck_i : label is "SCLK_CENTERED";
-	signal cs : std_logic;
 begin
 
-	ck_i : oddrx2f
-	port map (
-		sclk => sclk,
-		eclk => eclk,
-		d0   => '0',
-		d1   => '1',
-		d2   => '0',
-		d3   => '1',
-		q    => ddr_ck);
+	ck_b : block
+		signal ck : std_logic;
+	begin
+		ck_i : oddrx2f
+		port map (
+			sclk => sclk,
+			eclk => eclk,
+			d0   => '0',
+			d1   => '1',
+			d2   => '0',
+			d3   => '1',
+			q    => ck);
+
+		delay_i : delayg
+		generic map (
+			del_mode => "DQS_ALIGNED_X2")
+		port map (
+			a => ck,
+			z => ddr_ck);
+
+	end block;
 
 	b_g : for i in 0 to bank_size-1 generate
-		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
 	begin
 		oddr_i : oddrx1f
 		port map (
@@ -89,8 +95,6 @@ begin
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
-		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
-	begin
 		oddr_i : oddrx1f
 		port map (
 			sclk => sclk,
@@ -120,14 +124,27 @@ begin
 		d1   => phy_we(1),
 		q    => ddr_we);
 
-	cs_i : oshx2a
-	port map (
-		rst  => rst,
-		sclk => sclk,
-		eclk => eclk, 
-		d0   => phy_cs(0),
-		d1   => phy_cs(0),
-		q    => ddr_cs);
+	cs_b : block
+		signal cs : std_logic;
+	begin
+
+		cs_i : oshx2a
+		port map (
+			rst  => rst,
+			sclk => sclk,
+			eclk => eclk, 
+			d0   => phy_cs(0),
+			d1   => phy_cs(0),
+			q    => cs);
+
+		delay_i : delayg
+		generic map (
+			del_mode => "DQS_ALIGNED_X2")
+		port map (
+			a => cs,
+			z => ddr_cs);
+
+	end block;
 
 	cke_i : oddrx1f
 	port map (

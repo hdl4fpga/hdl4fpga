@@ -89,6 +89,7 @@ begin
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
 		signal wlpha : std_logic_vector(8-1 downto 0);
+		signal xxx : std_logic;
 	begin
 
 		step_delay_e : entity hdl4fpga.align
@@ -113,6 +114,7 @@ begin
 			smp      => ddr_dqi(0 downto 0),
 			delay    => wlpha);
 
+		xxx <= ddr_dqsi;
 		dqsbufm_i : dqsbufm 
 		port map (
 			rst       => rst,
@@ -120,7 +122,7 @@ begin
 			eclk      => eclk,
 
 			ddrdel    => ddrdel,
-			dqsi      => ddr_dqsi,
+			dqsi      => xxx, --ddr_dqsi,
 			dqsr90    => dqsr90,
 	
 			read0     => read(0),
@@ -164,11 +166,11 @@ begin
 	end block;
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		attribute iddrapps : string;
-		attribute iddrapps of iddrx2_i : label is "DQS_ALIGNED";
 		signal d : std_logic;
 	begin
 		delay_i : delayg
+		generic map (
+			del_mode => "DQS_ALIGNED_X2")
 		port map (
 			a => ddr_dqi(i),
 			z => d);
@@ -228,8 +230,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			t0  => dqt(0),
-			t1  => dqt(0),
+			t0  => dqt(2*1),
+			t1  => dqt(2*0),
 			q   => ddr_dqt(i));
 
 		oddrx2dqa_i : oddrx2dqa

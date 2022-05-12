@@ -212,15 +212,10 @@ architecture lscc of ecp5_ddrphy is
 	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal ddrrst         : std_logic;
 	signal ddrdel         : std_logic;
 	signal ddrlck         : std_logic;
 	signal uddcntln       : std_logic;
-	signal eclksync_start : std_logic;
-	signal eclksync_stop  : std_logic;
 	signal eclksync_eclk  : std_logic;
-
-	signal dqsbuf_rst : std_logic;
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
@@ -235,37 +230,9 @@ architecture lscc of ecp5_ddrphy is
 begin
 
 	mem_sync_b : block
-		attribute hgroup : string;
-		attribute pbbox  : string;
-	
-		attribute hgroup of clk_start_i    : label is "clk_stop";
-		attribute pbbox  of clk_start_i    : label is "3,2";
-	
-		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-		signal dqclk1bar_ff_q : std_logic;
-		signal dqclk1bar_ff_d : std_logic;
-		signal phase_ff_1_q   : std_logic;
-
 	begin
 
-		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-		dqclk1bar_ff_i : entity hdl4fpga.aff
-		port map(
-			ar  => dqsbuf_rst,
-			clk => eclksync_eclk,
-			d   => dqclk1bar_ff_d,
-			q   => dqclk1bar_ff_q);
-
-		phase_ff_1_i : entity hdl4fpga.ff
-		port map(
-			clk => sclk,
-			d   => dqclk1bar_ff_q,
-			q   => phase_ff_1_q);
-
+		sync_clk <= eclk;
 		process (sync_clk)
 			variable q : std_logic_vector(0 to 4-1);
 			variable wlr_edge : std_logic;
@@ -283,41 +250,30 @@ begin
 					end if;
 				end if;
 				wlr_edge := wlr;
+				uddcntln     <= not q(2);
+				clkstart_rst <= not q(0);
 			end if;
-			uddcntln     <= not q(2);
-			clkstart_rst <= not q(0);
-			ddrrst <= rst;
 
 		end process;
-
-		clk_start_i : entity hdl4fpga.clk_start
-		port map (
-			rst  => clkstart_rst,
-			sclk => sync_clk,
-			eclk => eclk,
-			eclksynca_start => eclksync_start,
-			dqsbufd_rst => dqsbuf_rst);
-		eclksync_stop <= '0' ; --not eclksync_start;
-		sync_clk <= eclk;
 
 	end block;
 
 	eclksyncb_i : eclksyncb
 	port map (
-		stop  => eclksync_stop,
+		stop  => rst,
 		eclki => eclk,
 		eclko => eclksync_eclk);
 
 	clkdivf_i : clkdivf
 	port map (
-		rst     => ddrrst,
+		rst     => rst,
 		alignwd => '0',
 		clki    => eclksync_eclk,
 		cdivx   => sclk);
 
 	ddrdll_i : ddrdlla
 	port map (
-		rst      => ddrrst,
+		rst      => rst,
 		clk      => eclksync_eclk,
 		freeze   => '0',
 		uddcntln => uddcntln,
@@ -379,14 +335,14 @@ begin
 	end block;
 
 	process(sclk, phy_sti(0))
-		variable q : unsigned(0 to 2-1);
+		variable q : unsigned(0 to 1-1);
 	begin
 		if rising_edge(sclk) then
 			q(0) := phy_sti(0);
 			q := q rol 1;
 		end if;
-		read(1) <= q(1) or q(0);
-		read(0) <= q(1) or q(0);
+		read(1) <= phy_sti(0) or q(0);
+		read(0) <= phy_sti(0) or q(0);
 	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
@@ -396,13 +352,13 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			rst       => dqsbuf_rst,
+			rst       => rst,
 			sclk      => sclk,
 			eclk      => eclksync_eclk,
 			ddrdel    => ddrdel,
 			read(0)   => read(0),
 			read(1)   => read(1),
-			readclksel => "000" , --(others => '0'),
+			readclksel => "100" , --(others => '0'),
 			phy_rw    => phy_sti(i*data_gear+0),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
