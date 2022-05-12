@@ -88,8 +88,7 @@ begin
 	wl_b : block
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
-		signal wlpha : std_logic_vector(8-1 downto 0);
-		signal xxx : std_logic;
+		signal wlpha    : std_logic_vector(8-1 downto 0);
 	begin
 
 		step_delay_e : entity hdl4fpga.align
@@ -114,7 +113,6 @@ begin
 			smp      => ddr_dqi(0 downto 0),
 			delay    => wlpha);
 
-		xxx <= ddr_dqsi;
 		dqsbufm_i : dqsbufm 
 		port map (
 			rst       => rst,
@@ -122,7 +120,7 @@ begin
 			eclk      => eclk,
 
 			ddrdel    => ddrdel,
-			dqsi      => xxx, --ddr_dqsi,
+			dqsi      => ddr_dqsi,
 			dqsr90    => dqsr90,
 	
 			read0     => read(0),
@@ -195,9 +193,15 @@ begin
 	end generate;
 
 	dmi_g : block
-		attribute iddrapps : string;
-		attribute iddrapps of iddrx2_i : label is "DQS_ALIGNED";
+		signal d : std_logic;
 	begin
+		delay_i : delayg
+		generic map (
+			del_mode => "DQS_ALIGNED_X2")
+		port map (
+			a => ddr_dmi,
+			z => d);
+
 		iddrx2_i : iddrx2dqa
 		port map (
 			rst     => '0',
@@ -210,7 +214,7 @@ begin
 			wrpntr0 => wrpntr(0),
 			wrpntr1 => wrpntr(1),
 			wrpntr2 => wrpntr(2),
-			d       => ddr_dmi,
+			d       => d,
 			q0      => phy_dmo(0),
 			q1      => phy_dmo(1),
 			q2      => phy_dmo(2),
@@ -221,9 +225,6 @@ begin
 
 	dqt <= phy_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
-		attribute oddrapps : string;
-		attribute oddrapps of tshx2dqa_i : label is "DQS_ALIGNED";
-	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
 			rst  => rst,
@@ -247,8 +248,6 @@ begin
 	end generate;
 
 	dm_b : block
-		attribute oddrapps : string;
-		attribute oddrapps of oddrx2dqa_i : label is "DQS_ALIGNED";
 	begin
 		tshx2dqa_i : tshx2dqa
 		port map (
@@ -256,8 +255,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			t0  => dqt(0),
-			t1  => dqt(0),
+			t0  => dqt(2*1),
+			t1  => dqt(2*0),
 			q   => ddr_dmt);
 
 		oddrx2dqa_i : oddrx2dqa
@@ -275,10 +274,8 @@ begin
 
 	dqst <= phy_dqst when wle='0' else (others => '0');
 	dqso <= phy_dqso when wle='0' else (others => '1');
+
 	dqso_b : block 
-		signal dqstclk : std_logic;
-		attribute oddrapps : string;
-		attribute oddrapps of tshx2dqsa_i : label is "DQS_CENTERED";
 	begin
 
 		tshx2dqsa_i : tshx2dqsa

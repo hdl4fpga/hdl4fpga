@@ -212,6 +212,7 @@ architecture lscc of ecp5_ddrphy is
 	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
 
+	signal ddr_reset      : std_logic;
 	signal ddrdel         : std_logic;
 	signal ddrlck         : std_logic;
 	signal uddcntln       : std_logic;
@@ -220,8 +221,6 @@ architecture lscc of ecp5_ddrphy is
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal wlr : std_logic;
-	signal clkstart_rst : std_logic;
-
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 
 	signal sync_clk : std_logic;
@@ -250,30 +249,38 @@ begin
 					end if;
 				end if;
 				wlr_edge := wlr;
-				uddcntln     <= not q(2);
-				clkstart_rst <= not q(0);
+				uddcntln <= not q(2);
 			end if;
 
+		end process;
+
+		process (rst, sync_clk)
+		begin
+			if rst='1' then
+				ddr_reset <= '1'; 
+			elsif rising_edge(sync_clk) then
+				ddr_reset <= '0';
+			end if;
 		end process;
 
 	end block;
 
 	eclksyncb_i : eclksyncb
 	port map (
-		stop  => rst,
+		stop  => ddr_reset,
 		eclki => eclk,
 		eclko => eclksync_eclk);
 
 	clkdivf_i : clkdivf
 	port map (
-		rst     => rst,
+		rst     => ddr_reset,
 		alignwd => '0',
 		clki    => eclksync_eclk,
 		cdivx   => sclk);
 
 	ddrdll_i : ddrdlla
 	port map (
-		rst      => rst,
+		rst      => ddr_reset,
 		clk      => eclksync_eclk,
 		freeze   => '0',
 		uddcntln => uddcntln,
@@ -296,7 +303,7 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		rst     => rst,
+		rst     => ddr_reset,
 		eclk    => eclksync_eclk,
 		sclk    => sclk,
           
@@ -352,7 +359,7 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			rst       => rst,
+			rst       => ddr_reset,
 			sclk      => sclk,
 			eclk      => eclksync_eclk,
 			ddrdel    => ddrdel,
