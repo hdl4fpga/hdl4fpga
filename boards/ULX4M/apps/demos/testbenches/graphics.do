@@ -27,24 +27,25 @@ add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/d
 add wave -noupdate -expand -group dqsbufm_0 -expand /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/read
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/readclksel
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DDRDEL
+add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DQSR90
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/ECLK
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/SCLK
-add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DQSR90
-add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/BURSTDET
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DATAVALID
+add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/BURSTDET
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/phy_dqo
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_dqo
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wrpntr
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rdpntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_dqo
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/read_q
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/read_ena
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/dqs_clean
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/dqs_ena
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlreq
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlrdy
+add wave -noupdate /testbench/du_e/grahics_e/ctlrphy_rlreq
+add wave -noupdate /testbench/du_e/grahics_e/ctlrphy_rlrdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23752126010 fs} 0} {{Cursor 2} {23736243390 fs} 0} {{Cursor 3} {23768185100 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {23750625000 fs} 0} {{Cursor 2} {23781696690 fs} 0} {{Cursor 3} {23789873300 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 181
-configure wave -valuecolwidth 236
+configure wave -valuecolwidth 119
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -57,4 +58,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {23726184400 fs} {23782832400 fs}
+WaveRestoreZoom {0 fs} {24990 ns}

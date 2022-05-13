@@ -39,7 +39,6 @@ entity ecp5_ddrdqphy is
 		eclk        : in  std_logic;
 		ddrdel      : in  std_logic;
 
-		phy_rw      : in  std_logic;
 		phy_wlreq   : in  std_logic;
 		phy_wlrdy   : buffer std_logic;
 		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');

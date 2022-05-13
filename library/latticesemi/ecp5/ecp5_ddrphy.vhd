@@ -78,7 +78,7 @@ entity ecp5_ddrphy is
 		ddr_a     : out std_logic_vector(addr_size-1 downto 0);
 		ddr_odt   : out std_logic;
 
-		ddr_dm    : out std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq    : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
@@ -336,24 +336,18 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
-	ddrdll_b : block
-	begin
-
-	end block;
-
 	process(sclk, phy_sti(0))
-		variable q : unsigned(0 to 1-1);
+		variable q : unsigned(0 to 3-1);
 	begin
 		if rising_edge(sclk) then
+			q := q ror 1;
 			q(0) := phy_sti(0);
-			q := q rol 1;
 		end if;
-		read(1) <= phy_sti(0) or q(0);
-		read(0) <= phy_sti(0) or q(0);
+		read(1) <= q(1) or q(0);
+		read(0) <= q(1) or q(0);
 	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
-	begin
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
 			data_gear => data_gear,
@@ -365,8 +359,7 @@ begin
 			ddrdel    => ddrdel,
 			read(0)   => read(0),
 			read(1)   => read(1),
-			readclksel => "100" , --(others => '0'),
-			phy_rw    => phy_sti(i*data_gear+0),
+			readclksel => "000" , --(others => '0'),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_dmt   => sdmt(i),
@@ -382,14 +375,13 @@ begin
 			ddr_dqt   => ddqt(i),
 			ddr_dqo   => ddqo(i),
 
---			ddr_dmi   => ddr_dm(i),
+			ddr_dmi   => ddr_dm(i),
 			ddr_dmt   => ddmt(i),
 			ddr_dmo   => ddmo(i),
 
 			ddr_dqsi  => ddr_dqs(i),
 			ddr_dqst  => ddqst(i),
 			ddr_dqso  => ddqsi(i));
-
 	end generate;
 
 	sto_i : entity hdl4fpga.align
