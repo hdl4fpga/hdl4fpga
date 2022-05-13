@@ -394,8 +394,11 @@ begin
 			q := q ror 1;
 			q(0) := phy_sti(0);
 		end if;
-		read(1) <= phy_sti(0);
-		read(0) <= q(0);
+--		read(1) <= phy_sti(0); -- 010
+--		read(0) <= q(0); -- 010
+
+		read(1) <= q(0); -- 011
+		read(0) <= q(1); -- 011
 	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
@@ -410,7 +413,8 @@ begin
 			ddrdel    => ddrdel,
 			read(0)   => read(0),
 			read(1)   => read(1),
-			readclksel => "100" , --(others => '0'),
+--			readclksel => "100" , -- 010
+			readclksel => "000", -- 011
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_dmt   => sdmt(i),
