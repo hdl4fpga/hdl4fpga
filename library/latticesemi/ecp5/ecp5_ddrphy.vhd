@@ -45,8 +45,13 @@ entity ecp5_ddrphy is
 		eclk      : in std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_wlreq : in  std_logic;
+		phy_ini   : buffer std_logic;
+		phy_wlreq : in  std_logic := '0';
 		phy_wlrdy : buffer std_logic;
+		phy_rlreq : in  std_logic := '0';
+		phy_rlrdy : buffer std_logic;
+		phy_rlcal : buffer std_logic;
+		phy_rlseq : in  std_logic := '0';
 		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
 		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -226,7 +231,12 @@ architecture lscc of ecp5_ddrphy is
 	signal sync_clk : std_logic;
 	signal read     : std_logic_vector(0 to 2-1);
 
+	signal ba_ras : std_logic_vector(phy_ras'range);
+	signal ba_cas : std_logic_vector(phy_cas'range);
+	signal ba_we  : std_logic_vector(phy_we'range);
+
 begin
+
 
 	mem_sync_b : block
 	begin
@@ -297,6 +307,47 @@ begin
 		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
 	end process;
 
+	rotcmmd_g : if cmmd_gear > 1 generate
+		signal rotba : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
+	begin
+		process (sclk)
+		begin
+			if rising_edge(sclk) then
+				if phy_rlcal='0' then
+					rotba <= (others => '0');
+				elsif phy_ini='1' then
+					rotba <= (others => '0');
+				elsif phy_rlseq='1' then
+					rotba <= rotba + 1;
+				end if;
+			end if;
+		end process;
+
+		rotras_i : entity hdl4fpga.barrel
+		port map (
+			shf => std_logic_vector(rotba),
+			di  => phy_ras,
+			do  => ba_ras);
+
+		rotcas_i : entity hdl4fpga.barrel
+		port map (
+			shf => std_logic_vector(rotba),
+			di => phy_cas,
+			do => ba_cas);
+
+		rotwe_i : entity hdl4fpga.barrel
+		port map (
+			shf => std_logic_vector(rotba),
+			di  => phy_we,
+			do  => ba_we);
+	end generate;
+
+	dircmmd_g : if cmmd_gear=1 generate
+		ba_ras <= phy_ras;
+		ba_cas <= phy_cas;
+		ba_we  <= phy_we;
+	end generate;
+
 	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
 	generic map (
 		cmmd_gear => cmmd_gear,
@@ -343,8 +394,8 @@ begin
 			q := q ror 1;
 			q(0) := phy_sti(0);
 		end if;
-		read(1) <= q(1) or q(0);
-		read(0) <= q(1) or q(0);
+		read(1) <= phy_sti(0);
+		read(0) <= q(0);
 	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
@@ -359,7 +410,7 @@ begin
 			ddrdel    => ddrdel,
 			read(0)   => read(0),
 			read(1)   => read(1),
-			readclksel => "000" , --(others => '0'),
+			readclksel => "100" , --(others => '0'),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_dmt   => sdmt(i),
