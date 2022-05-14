@@ -41,8 +41,9 @@ entity ecp5_ddrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in std_logic;
+		clkop     : in std_logic;
 		sclk      : buffer std_logic;
-		eclk      : in std_logic;
+		eclk      : buffer std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_ini   : buffer std_logic;
@@ -219,9 +220,6 @@ architecture lscc of ecp5_ddrphy is
 
 	signal ddr_reset      : std_logic;
 	signal ddrdel         : std_logic;
-	signal ddrlck         : std_logic;
-	signal uddcntln       : std_logic;
-	signal eclksync_eclk  : std_logic;
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
@@ -235,67 +233,60 @@ architecture lscc of ecp5_ddrphy is
 	signal ba_cas : std_logic_vector(phy_cas'range);
 	signal ba_we  : std_logic_vector(phy_we'range);
 
+	signal memsync_pause : std_logic;
 begin
 
 
 	mem_sync_b : block
+		signal uddcntln : std_logic;
+		signal freeze   : std_logic;
+		signal stop     : std_logic;
+		signal dll_rst  : std_logic;
+		signal dll_lock : std_logic;
+		signal pll_lock : std_logic;
+		signal update   : std_logic;
 	begin
 
-		sync_clk <= eclk;
-		process (sync_clk)
-			variable q : std_logic_vector(0 to 4-1);
-			variable wlr_edge : std_logic;
-		begin
-			if rising_edge(sync_clk) then
-				if rst='1' then
-					q := (others => '0');
-				elsif wlr='1' and wlr_edge='0' then
-					q := (others => '0');
-				elsif q(0)='0' then
-					if ddrlck='1' then
-						q := inc(gray(q));
-					elsif wlr='1' then
-						q := inc(gray(q));
-					end if;
-				end if;
-				wlr_edge := wlr;
-				uddcntln <= not q(2);
-			end if;
+		sync_clk <= clkop;
+		pll_lock <= '1';
+		update <= '0';
+		mem_sync_i : entity ecp5u.mem_sync
+		port map (
+			rst => rst,
+			start_clk => sync_clk,
+			pll_lock  => pll_lock,
+			dll_lock  => dll_lock,
+			update    => update,
+			pause     => memsync_pause,
+			stop      => stop,
+			freeze    => freeze,
+			uddcntln  => uddcntln,
+			dll_rst   => dll_rst,
+			ddr_rst   => ddr_reset,
+			ready => open);
 
-		end process;
-
-		process (rst, sync_clk)
-		begin
-			if rst='1' then
-				ddr_reset <= '1'; 
-			elsif rising_edge(sync_clk) then
-				ddr_reset <= '0';
-			end if;
-		end process;
-
+		eclksyncb_i : eclksyncb
+		port map (
+			stop  => stop,
+			eclki => clkop,
+			eclko => eclk);
+	
+		clkdivf_i : clkdivf
+		port map (
+			rst     => ddr_reset,
+			alignwd => '0',
+			clki    => eclk,
+			cdivx   => sclk);
+	
+		ddrdll_i : ddrdlla
+		port map (
+			rst      => dll_rst,
+			clk      => eclk,
+			freeze   => freeze,
+			uddcntln => uddcntln,
+			ddrdel   => ddrdel,
+			lock     => dll_lock);
 	end block;
-
-	eclksyncb_i : eclksyncb
-	port map (
-		stop  => ddr_reset,
-		eclki => eclk,
-		eclko => eclksync_eclk);
-
-	clkdivf_i : clkdivf
-	port map (
-		rst     => ddr_reset,
-		alignwd => '0',
-		clki    => eclksync_eclk,
-		cdivx   => sclk);
-
-	ddrdll_i : ddrdlla
-	port map (
-		rst      => ddr_reset,
-		clk      => eclksync_eclk,
-		freeze   => '0',
-		uddcntln => uddcntln,
-		ddrdel   => ddrdel,
-		lock     => ddrlck);
 
 	process (phy_wlreq, wlrdy)
 		variable aux : bit;
@@ -355,7 +346,7 @@ begin
 		addr_size => addr_size)
 	port map (
 		rst     => ddr_reset,
-		eclk    => eclksync_eclk,
+		eclk    => eclk,
 		sclk    => sclk,
           
 		phy_rst => phy_rst,
@@ -387,19 +378,19 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
-	process(sclk, phy_sti(0))
-		variable q : unsigned(0 to 3-1);
+	xxx_b : block
+		signal q : std_logic_vector(0 to 3-1);
 	begin
-		if rising_edge(sclk) then
-			q := q ror 1;
-			q(0) := phy_sti(0);
-		end if;
---		read(1) <= phy_sti(0); -- 010
---		read(0) <= q(0); -- 010
-
-		read(1) <= q(0); -- 011
-		read(0) <= q(1); -- 011
-	end process;
+		q(0) <= phy_sti(0);
+		process(sclk)
+		begin
+			if rising_edge(sclk) then
+				q(1 to q'right) <= q(0 to q'right-1);
+			end if;
+		end process;
+		read(1) <= word2byte(q(0 to q'right-1), '1');
+		read(0) <= word2byte(q(1 to q'right),   '1');
+	end block;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
@@ -409,12 +400,13 @@ begin
 		port map (
 			rst       => ddr_reset,
 			sclk      => sclk,
-			eclk      => eclksync_eclk,
+			eclk      => eclk,
 			ddrdel    => ddrdel,
+			pause     => memsync_pause,
 			read(0)   => read(0),
 			read(1)   => read(1),
---			readclksel => "100" , -- 010
-			readclksel => "000", -- 011
+			readclksel => "000" , -- 010
+--			readclksel => "000", -- 011
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_dmt   => sdmt(i),

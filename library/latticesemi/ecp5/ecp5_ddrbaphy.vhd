@@ -37,15 +37,15 @@ entity ecp5_ddrbaphy is
 		sclk    : in  std_logic;
 		eclk    : in  std_logic;
 
-		phy_rst : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cs  : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cke : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_rst : in  std_logic_vector(0 to cmmd_gear-1);
+		phy_cs  : in  std_logic_vector(0 to cmmd_gear-1);
+		phy_cke : in  std_logic_vector(0 to cmmd_gear-1);
 		phy_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
 		phy_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		phy_ras : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cas : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_we  : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_odt : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_ras : in  std_logic_vector(0 to cmmd_gear-1);
+		phy_cas : in  std_logic_vector(0 to cmmd_gear-1);
+		phy_we  : in  std_logic_vector(0 to cmmd_gear-1);
+		phy_odt : in  std_logic_vector(0 to cmmd_gear-1);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic;
@@ -134,7 +134,7 @@ begin
 			sclk => sclk,
 			eclk => eclk, 
 			d0   => phy_cs(0),
-			d1   => phy_cs(0),
+			d1   => phy_cs(1),
 			q    => cs);
 
 		delay_i : delayg
@@ -150,21 +150,21 @@ begin
 	port map (
 		sclk => sclk,
 		d0   => phy_cke(0),
-		d1   => phy_cke(0),
+		d1   => phy_cke(1),
 		q    => ddr_cke);
 
 	odt_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_odt(0),
-		d1   => phy_odt(0),
+		d1   => phy_odt(1),
 		q    => ddr_odt);
 
 	rst_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_rst(0),
-		d1   => phy_rst(0),
+		d1   => phy_rst(1),
 		q    => ddr_rst);
 
 end;
