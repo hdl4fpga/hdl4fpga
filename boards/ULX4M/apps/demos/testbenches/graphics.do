@@ -68,13 +68,10 @@ add wave -noupdate -expand -group dqsbufm_0 -radix hexadecimal /testbench/du_e/d
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/dqs_clean
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/DATAVALID
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wl_b/dqsbufm_i/BURSTDET
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_sti
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/xxx(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_sti
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
-add wave -noupdate /testbench/du_e/ddrphy_e/ddr3baphy_i/phy_ras
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/phy_dqo
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_dqo
-add wave -noupdate -expand /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_dqt
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {2411409200 fs} 0} {{Cursor 2} {23744348910 fs} 0} {{Cursor 3} {21643595860 fs} 0}
 quietly wave cursor active 2
