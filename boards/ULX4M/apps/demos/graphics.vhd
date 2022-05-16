@@ -650,6 +650,7 @@ begin
 		byte_size     => byte_size)
 	port map (
 		rst           => ddrphy_rst,
+		sync_clk      => clk_25mhz,
 		clkop         => physys_clk,
 		sclk          => ctlr_clk,
 

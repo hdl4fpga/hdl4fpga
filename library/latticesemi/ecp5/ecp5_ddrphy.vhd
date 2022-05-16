@@ -41,6 +41,7 @@ entity ecp5_ddrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in std_logic;
+		sync_clk  : in std_logic;
 		clkop     : in std_logic;
 		sclk      : buffer std_logic;
 		eclk      : buffer std_logic;
@@ -226,7 +227,6 @@ architecture lscc of ecp5_ddrphy is
 	signal wlr : std_logic;
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 
-	signal sync_clk : std_logic;
 	signal read     : std_logic_vector(0 to 2-1);
 
 	signal ba_ras : std_logic_vector(phy_ras'range);
@@ -264,9 +264,8 @@ begin
 		signal update   : std_logic;
 	begin
 
-		sync_clk <= clkop;
 		pll_lock <= '1';
-		update <= '0';
+		update   <= '0';
 
 		mem_sync_i : mem_sync
 		port map (
