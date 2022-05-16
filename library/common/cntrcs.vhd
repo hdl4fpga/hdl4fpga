@@ -43,13 +43,17 @@ end;
 
 architecture def of cntrcs is
 
-	alias aliasd : std_logic_vector(d'length-1 downto 0) is d;
-	alias aliasq : std_logic_vector(q'length-1 downto 0) is q;
+--	alias aliasd : std_logic_vector(d'length-1 downto 0) is d;
+--	alias aliasq : std_logic_vector(q'length-1 downto 0) is q;
+
+	signal aliasd : std_logic_vector(d'length-1 downto 0); -- Workaround Lattice Diamond 3.11 cannot deal with VHDL alias
+	signal aliasq : std_logic_vector(q'length-1 downto 0); -- Workaround Lattice Diamond 3.11 cannot deal with VHDL alias
 
 	signal cntr1 : unsigned(q'length+slices'length-1 downto 0);
 
 begin
 
+	aliasd <= d; -- Workaround Lattice Diamond 3.11 cannot deal with VHDL alias
 	cntr_p : process (clk)
 
 		variable cntr  : unsigned(q'length+slices'length-1 downto 0);
@@ -116,5 +120,6 @@ begin
 			end loop;
 		end if;
 	end process;
+	q <= aliasq; -- Workaround Lattice Diamond 3.11 cannot deal with VHDL alias
 
 end;

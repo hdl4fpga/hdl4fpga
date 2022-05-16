@@ -205,41 +205,41 @@ IOBUF PORT "ddram_dq[14]" IO_TYPE=SSTL135_I SLEWRATE=FAST TERMINATION=OFF;
 IOBUF PORT "ddram_dq[15]" IO_TYPE=SSTL135_I SLEWRATE=FAST TERMINATION=OFF;
 
 # GPDI differential interface (Video) "gpdi" sheet
-LOCATE COMP "gpdi_dp[0]" SITE "F17"; # Blue +
-LOCATE COMP "gpdi_dn[0]" SITE "G18"; # Blue -
-LOCATE COMP "gpdi_dp[1]" SITE "D18"; # Green +
-LOCATE COMP "gpdi_dn[1]" SITE "E17"; # Green -
-LOCATE COMP "gpdi_dp[2]" SITE "C18"; # Red +
-LOCATE COMP "gpdi_dn[2]" SITE "D17"; # Red -
-LOCATE COMP "gpdi_dp[3]" SITE "J20"; # Clock +
-LOCATE COMP "gpdi_dn[3]" SITE "K20"; # Clock -
-LOCATE COMP "gpdi_cec" SITE "A18";
-IOBUF PORT "gpdi_dp[0]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[1]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[2]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[3]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_cec" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
+# LOCATE COMP "gpdi_dp[0]" SITE "F17"; # Blue +
+# LOCATE COMP "gpdi_dn[0]" SITE "G18"; # Blue -
+# LOCATE COMP "gpdi_dp[1]" SITE "D18"; # Green +
+# LOCATE COMP "gpdi_dn[1]" SITE "E17"; # Green -
+# LOCATE COMP "gpdi_dp[2]" SITE "C18"; # Red +
+# LOCATE COMP "gpdi_dn[2]" SITE "D17"; # Red -
+# LOCATE COMP "gpdi_dp[3]" SITE "J20"; # Clock +
+# LOCATE COMP "gpdi_dn[3]" SITE "K20"; # Clock -
+# LOCATE COMP "gpdi_cec" SITE "A18";
+# IOBUF PORT "gpdi_dp[0]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[1]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[2]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[3]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_cec" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
 
-LOCATE COMP "gpdi_dp[4]" SITE "B9"; # Blue +
-LOCATE COMP "gpdi_dn[4]" SITE "C10"; # Blue -
-LOCATE COMP "gpdi_dp[5]" SITE "A7"; # Green +
-LOCATE COMP "gpdi_dn[5]" SITE "A8"; # Green -
-LOCATE COMP "gpdi_dp[6]" SITE "C8"; # Red +
-LOCATE COMP "gpdi_dn[6]" SITE "B8"; # Red -
-LOCATE COMP "gpdi_dp[7]" SITE "B11"; # Clock +
-LOCATE COMP "gpdi_dn[7]" SITE "C11"; # Clock -
-IOBUF PORT "gpdi_dp[4]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[4]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[5]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[5]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[6]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[6]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[7]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[7]" IO_TYPE=LVCMOS33 DRIVE=4;
+# LOCATE COMP "gpdi_dp[4]" SITE "B9"; # Blue +
+# LOCATE COMP "gpdi_dn[4]" SITE "C10"; # Blue -
+# LOCATE COMP "gpdi_dp[5]" SITE "A7"; # Green +
+# LOCATE COMP "gpdi_dn[5]" SITE "A8"; # Green -
+# LOCATE COMP "gpdi_dp[6]" SITE "C8"; # Red +
+# LOCATE COMP "gpdi_dn[6]" SITE "B8"; # Red -
+# LOCATE COMP "gpdi_dp[7]" SITE "B11"; # Clock +
+# LOCATE COMP "gpdi_dn[7]" SITE "C11"; # Clock -
+# IOBUF PORT "gpdi_dp[4]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[4]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[5]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[5]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[6]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[6]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dp[7]" IO_TYPE=LVCMOS33 DRIVE=4;
+# IOBUF PORT "gpdi_dn[7]" IO_TYPE=LVCMOS33 DRIVE=4;
 
 
 LOCATE COMP "cam_enable" SITE "A17"; #  CAM_GPIO

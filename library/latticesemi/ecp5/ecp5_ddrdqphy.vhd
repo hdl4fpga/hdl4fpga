@@ -243,6 +243,7 @@ begin
 
 		oddrx2dqa_i : oddrx2dqa
 		port map (
+			rst     => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
