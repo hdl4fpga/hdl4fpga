@@ -164,11 +164,11 @@ architecture graphics of ulx4m_ld is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		ddram425MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram450MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram475MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram500MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
+		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
 
 	signal ctlr_clk   : std_logic;
 
@@ -357,8 +357,8 @@ begin
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
 			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => ddram_tab(ddram_mode).pll.clkop_div-1,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
@@ -368,7 +368,7 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
---			CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
+			CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
 --			CLKOS2_DIV       => ddram_tab(ddram_mode).pll.clkos2_div,
 --			CLKOS3_DIV       => ddram_tab(ddram_mode).pll.clkos3_div,
 			CLKOP_DIV        => ddram_tab(ddram_mode).pll.clkop_div,
@@ -387,7 +387,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => open,
+			CLKOS     => ctlr_clk,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_clklck,
@@ -639,7 +639,7 @@ begin
 			ddrsys_rst <= '0';
 		end if;
 	end process;
-
+ctlrphy_dsi <= (others => ctlr_clk);
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
 		cmmd_gear     => cmmd_gear,
@@ -652,7 +652,6 @@ begin
 		rst           => ddrphy_rst,
 		sync_clk      => clk_25mhz,
 		clkop         => physys_clk,
-		sclk          => ctlr_clk,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
@@ -667,7 +666,7 @@ begin
 		phy_a         => ctlrphy_a,
 		phy_dqsi      => ctlrphy_dso,
 		phy_dqst      => ctlrphy_dst,
-		phy_dqso      => ctlrphy_dsi,
+--		phy_dqso      => ctlrphy_dsi,
 		phy_dmi       => ctlrphy_dmo,
 		phy_dmt       => ctlrphy_dmt,
 		phy_dmo       => ctlrphy_dmi,

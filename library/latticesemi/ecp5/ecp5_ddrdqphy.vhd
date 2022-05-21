@@ -167,7 +167,7 @@ begin
 
 	end block;
 
-	iddr_g : for i in 0 to byte_size-1 generate
+	iddr_g : for i in byte_size to byte_size-1 generate
 		signal d : std_logic;
 		signal z : std_logic;
 	begin
@@ -198,34 +198,34 @@ begin
 			q1      => phy_dqo(3*byte_size+i));
 	end generate;
 
-	dmi_g : block
-		signal d : std_logic;
-	begin
-		delay_i : delayg
-		generic map (
-			del_mode => "DQS_ALIGNED_X2")
-		port map (
-			a => ddr_dmi,
-			z => d);
-
-		iddrx2_i : iddrx2dqa
-		port map (
-			rst     => rst,
-			sclk    => sclk,
-			eclk    => eclk,
-			dqsr90  => dqsr90,
-			rdpntr0 => rdpntr(0),
-			rdpntr1 => rdpntr(1),
-			rdpntr2 => rdpntr(2),
-			wrpntr0 => wrpntr(0),
-			wrpntr1 => wrpntr(1),
-			wrpntr2 => wrpntr(2),
-			d       => d,
-			q0      => phy_dmo(0),
-			q1      => phy_dmo(1),
-			q2      => phy_dmo(2),
-			q3      => phy_dmo(3));
-	end block;
+--	dmi_g : block
+--		signal d : std_logic;
+--	begin
+--		delay_i : delayg
+--		generic map (
+--			del_mode => "DQS_ALIGNED_X2")
+--		port map (
+--			a => ddr_dmi,
+--			z => d);
+--
+--		iddrx2_i : iddrx2dqa
+--		port map (
+--			rst     => rst,
+--			sclk    => sclk,
+--			eclk    => eclk,
+--			dqsr90  => dqsr90,
+--			rdpntr0 => rdpntr(0),
+--			rdpntr1 => rdpntr(1),
+--			rdpntr2 => rdpntr(2),
+--			wrpntr0 => wrpntr(0),
+--			wrpntr1 => wrpntr(1),
+--			wrpntr2 => wrpntr(2),
+--			d       => d,
+--			q0      => phy_dmo(0),
+--			q1      => phy_dmo(1),
+--			q2      => phy_dmo(2),
+--			q3      => phy_dmo(3));
+--	end block;
 
 	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
 
