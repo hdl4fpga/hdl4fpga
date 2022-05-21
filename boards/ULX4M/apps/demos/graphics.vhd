@@ -357,7 +357,7 @@ begin
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
 			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => ddram_tab(ddram_mode).pll.clkop_div-1,
@@ -387,7 +387,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => ctlr_clk,
+			CLKOS     => open, --ctlr_clk,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_clklck,
@@ -629,7 +629,6 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-
 	ddrphy_rst <= not ddram_clklck;
 	process (ddram_clklck, ctlr_clk)
 	begin
@@ -639,7 +638,7 @@ begin
 			ddrsys_rst <= '0';
 		end if;
 	end process;
-ctlrphy_dsi <= (others => ctlr_clk);
+	
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
 		cmmd_gear     => cmmd_gear,
@@ -652,6 +651,7 @@ ctlrphy_dsi <= (others => ctlr_clk);
 		rst           => ddrphy_rst,
 		sync_clk      => clk_25mhz,
 		clkop         => physys_clk,
+		sclk          => ctlr_clk,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
@@ -666,7 +666,7 @@ ctlrphy_dsi <= (others => ctlr_clk);
 		phy_a         => ctlrphy_a,
 		phy_dqsi      => ctlrphy_dso,
 		phy_dqst      => ctlrphy_dst,
---		phy_dqso      => ctlrphy_dsi,
+		phy_dqso      => ctlrphy_dsi,
 		phy_dmi       => ctlrphy_dmo,
 		phy_dmt       => ctlrphy_dmt,
 		phy_dmo       => ctlrphy_dmi,
@@ -690,6 +690,7 @@ ctlrphy_dsi <= (others => ctlr_clk);
 		ddr_dm        => ddram_dm,
 		ddr_dq        => ddram_dq,
 		ddr_dqs       => ddram_dqs);
+	ctlrphy_dsi <= (others => ctlr_clk);
 
 	-- VGA --
 	---------

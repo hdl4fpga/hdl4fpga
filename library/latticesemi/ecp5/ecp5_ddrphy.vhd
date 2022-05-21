@@ -359,36 +359,36 @@ begin
 		ba_we  <= phy_we;
 	end generate;
 
---	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
---	generic map (
---		cmmd_gear => cmmd_gear,
---		bank_size => bank_size,
---		addr_size => addr_size)
---	port map (
---		rst     => ddr_reset,
---		eclk    => eclk,
---		sclk    => sclk,
---          
---		phy_rst => phy_rst,
---		phy_cs  => phy_cs,
---		phy_cke => phy_cke,
---		phy_b   => phy_b,
---		phy_a   => phy_a,
---		phy_ras => phy_ras,
---		phy_cas => phy_cas,
---		phy_we  => phy_we,
---		phy_odt => phy_odt,
---        
---		ddr_rst => ddr_rst,
---		ddr_ck  => ddr_ck,
---		ddr_cke => ddr_cke,
---		ddr_odt => ddr_odt,
---		ddr_cs  => ddr_cs,
---		ddr_ras => ddr_ras,
---		ddr_cas => ddr_cas,
---		ddr_we  => ddr_we,
---		ddr_b   => ddr_b,
---		ddr_a   => ddr_a);
+	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
+	generic map (
+		cmmd_gear => cmmd_gear,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		rst     => ddr_reset,
+		eclk    => eclk,
+		sclk    => sclk,
+          
+		phy_rst => phy_rst,
+		phy_cs  => phy_cs,
+		phy_cke => phy_cke,
+		phy_b   => phy_b,
+		phy_a   => phy_a,
+		phy_ras => phy_ras,
+		phy_cas => phy_cas,
+		phy_we  => phy_we,
+		phy_odt => phy_odt,
+        
+		ddr_rst => ddr_rst,
+		ddr_ck  => ddr_ck,
+		ddr_cke => ddr_cke,
+		ddr_odt => ddr_odt,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_b,
+		ddr_a   => ddr_a);
 
 	sdmi  <= to_blinevector(phy_dmi);
 	sdmt  <= to_blinevector(not phy_dmt);
@@ -412,7 +412,7 @@ begin
 		read(0) <= word2byte(q(1 to q'right),   '1');
 	end block;
 
-	byte_g : for i in 1 to word_size/byte_size-1 generate
+	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
 			data_gear => data_gear,
@@ -497,7 +497,7 @@ begin
 		end loop;
 	end process;
 
---	phy_dqso <= (others => sclk);
+	phy_dqso <= (others => sclk);
 	phy_dmo  <= to_stdlogicvector(sdmo);
 	phy_dqo  <= to_stdlogicvector(sdqo);
 end;
