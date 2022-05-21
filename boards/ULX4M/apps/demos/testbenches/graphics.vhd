@@ -59,7 +59,7 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_pu_dn : inout std_logic := '-';
 
 			eth_reset      : out   std_logic;
-			eth_ref_clk    : out   std_logic;
+			rgmii_ref_clk    : out   std_logic;
 			eth_mdio       : inout std_logic := '-';
 			eth_mdc        : out   std_logic;
 	
@@ -84,8 +84,8 @@ architecture ulx4mld_graphics of testbench is
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
-			gpdi_dp        : out   std_logic_vector(0 to 8-1);
-			gpdi_dn        : out   std_logic_vector(0 to 8-1);
+			gpdi_dp        : out   std_logic_vector(8-1 downto 4);
+			gpdi_dn        : out   std_logic_vector(8-1 downto 4);
 			gpdi_cec       : inout std_logic := '-';
 
 			user_programn  : out   std_logic := '1';
@@ -254,7 +254,7 @@ begin
 		btn(1 to 2)  => (others => '-'),
 
 		eth_reset    => open,
-		eth_ref_clk  => mii_refclk,
+		rgmii_ref_clk  => mii_refclk,
 		eth_mdc      => open,
 		rgmii_tx_clk => mii_rxc,
 		rgmii_tx_en  => mii_txen,

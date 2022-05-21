@@ -234,7 +234,7 @@ begin
 		signal q : bit;
 	begin
 		q <= not q after 1 ns;
-		eth_ref_clk <= to_stdulogic(q);
+		rgmii_ref_clk <= to_stdulogic(q);
 	end generate;
 
 	nodebug_g : if not debug generate
@@ -243,7 +243,7 @@ begin
 		begin
 			if rising_edge(sys_clk) then
 				div := div + 1;
-				eth_ref_clk <= div(0);
+				rgmii_ref_clk <= div(0);
 			end if;
 		end process;
 	end generate;
@@ -708,8 +708,8 @@ begin
 		olvds_i : olvds
 		port map(
 			a  => q,
-			z  => gpdi_dp(i),
-			zn => gpdi_dn(i));
+			z  => gpdi_dp(i+4),
+			zn => gpdi_dn(i+4));
 	end generate;
 
 end;

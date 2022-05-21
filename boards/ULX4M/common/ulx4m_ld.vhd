@@ -52,7 +52,7 @@ entity ulx4m_ld is
 		n_extrst       : inout std_logic := 'Z';
 
 		eth_reset      : out   std_logic;
-		eth_ref_clk    : out   std_logic;
+		rgmii_ref_clk  : out   std_logic;
 		eth_mdio       : inout std_logic := '-';
 		eth_mdc        : out   std_logic;
 
@@ -79,8 +79,8 @@ entity ulx4m_ld is
 
 		gpdi_cec       : inout std_logic := 'Z';
 
-		gpdi_dp        : out   std_logic_vector(8-1 downto 0);
-		gpdi_dn        : out   std_logic_vector(8-1 downto 0);
+		gpdi_dp        : out   std_logic_vector(8-1 downto 4);
+		gpdi_dn        : out   std_logic_vector(8-1 downto 4);
 
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
