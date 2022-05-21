@@ -42,7 +42,7 @@ architecture ulx4mld_graphics of testbench is
 			debug          : boolean := true);
 		port (
 			clk_25mhz      : in    std_logic;
-			btn            : in    std_logic_vector(0 to 3-1) := (others => '-');
+			btn            : in    std_logic_vector(1 to 3) := (others => '-');
 			led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
 			sd_clk         : in    std_logic := '-';
@@ -84,9 +84,10 @@ architecture ulx4mld_graphics of testbench is
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
-			gpdi_dp        : out   std_logic_vector(8-1 downto 4);
-			gpdi_dn        : out   std_logic_vector(8-1 downto 4);
-			gpdi_cec       : inout std_logic := '-';
+			fpdi_clk       :  out std_logic; 
+			fpdi_d0        :  out std_logic;
+			fpdi_d1        :  out std_logic;
+			fpdi_d2        :  out std_logic;
 
 			user_programn  : out   std_logic := '1';
 			shutdown       : out   std_logic := '0');
@@ -250,8 +251,8 @@ begin
 		debug => true)
 	port map (
 		clk_25mhz    => xtal,
-		btn(0)       => '0',
-		btn(1 to 2)  => (others => '-'),
+		btn(1)       => '0',
+		btn(2 to 3)  => (others => '-'),
 
 		eth_reset    => open,
 		rgmii_ref_clk  => mii_refclk,

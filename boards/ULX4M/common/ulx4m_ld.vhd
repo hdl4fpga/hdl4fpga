@@ -32,7 +32,7 @@ entity ulx4m_ld is
 		debug : boolean := false);
 	port (
 		clk_25mhz      : in    std_logic := 'Z';
-		btn            : in    std_logic_vector(0 to 3-1) := (others => '-');
+		btn            : in    std_logic_vector(1 to 3) := (others => '-');
 		led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
 		sd_clk         : in    std_logic := '-';
@@ -52,9 +52,10 @@ entity ulx4m_ld is
 		n_extrst       : inout std_logic := 'Z';
 
 		eth_reset      : out   std_logic;
-		rgmii_ref_clk  : out   std_logic;
 		eth_mdio       : inout std_logic := '-';
 		eth_mdc        : out   std_logic;
+
+		rgmii_ref_clk  : out   std_logic;
 
 		rgmii_tx_clk   : in    std_logic := '-';
 		rgmii_tx_en    : buffer std_logic;
@@ -77,11 +78,10 @@ entity ulx4m_ld is
 		ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 		ddram_dqs      : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 
-		gpdi_cec       : inout std_logic := 'Z';
-
-		gpdi_dp        : out   std_logic_vector(8-1 downto 4);
-		gpdi_dn        : out   std_logic_vector(8-1 downto 4);
-
+		fpdi_clk       :  out std_logic; 
+		fpdi_d0        :  out std_logic;
+		fpdi_d1        :  out std_logic;
+		fpdi_d2        :  out std_logic;
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep

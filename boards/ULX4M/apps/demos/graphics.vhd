@@ -464,7 +464,7 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					if btn(0)='1' then
+					if btn(1)='1' then
 						dhcpcd_req <= not dhcpcd_rdy;
 					end if;
 				end if;
@@ -687,29 +687,45 @@ begin
 		ddr_b         => ddram_ba,
 		ddr_a         => ddram_a,
 
-		ddr_dm        => ddram_dm,
+		ddr_dm        => open,
 		ddr_dq        => ddram_dq,
 		ddr_dqs       => ddram_dqs);
+	ddram_dm <= (others => '0');
 	ctlrphy_dsi <= (others => ctlr_clk);
 
 	-- VGA --
 	---------
 
-	ddr_g : for i in 4-1 downto 0 generate
-		signal q : std_logic;
-	begin
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shft_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => q);
-		olvds_i : olvds
-		port map(
-			a  => q,
-			z  => gpdi_dp(i+4),
-			zn => gpdi_dn(i+4));
-	end generate;
-
+	fpdi_clk_i : oddrx1f
+	port map(
+		sclk => video_shft_clk,
+		rst  => '0',
+		d0   => dvid_crgb(2*0),
+		d1   => dvid_crgb(2*0+1),
+		q    => fpdi_clk);
+ 
+	fpdi_d0_i : oddrx1f
+	port map(
+		sclk => video_shft_clk,
+		rst  => '0',
+		d0   => dvid_crgb(2*1),
+		d1   => dvid_crgb(2*1+1),
+		q    => fpdi_d0);
+ 
+	fpdi_d1_i : oddrx1f
+	port map(
+		sclk => video_shft_clk,
+		rst  => '0',
+		d0   => dvid_crgb(2*2),
+		d1   => dvid_crgb(2*2+1),
+		q    => fpdi_d1);
+ 
+	fpdi_d2_i : oddrx1f
+	port map(
+		sclk => video_shft_clk,
+		rst  => '0',
+		d0   => dvid_crgb(2*3),
+		d1   => dvid_crgb(2*3+1),
+		q    => fpdi_d2);
+ 
 end;

@@ -28,15 +28,6 @@ SYSCONFIG CONFIG_IOVOLTAGE=3.3 COMPRESS_CONFIG=ON MCCLK_FREQ=62 SLAVE_SPI_PORT=D
 
 LOCATE COMP "user_programn" SITE "M4"; IOBUF  PORT "user_programn" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
 
-# ######## #
-# SHUTDOWN #
-# ######## #
-
-# "power", "ram" sheet (connected from PCB v1.7.5)
-#  on PCB v1.7 shutdown is not connected to FPGA
-
-LOCATE COMP "shutdown" SITE "G16"; IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4; # FPGA receives
-
 # #### #
 # LEDs #
 # #### #
@@ -58,15 +49,14 @@ LOCATE COMP "led[0]" SITE "A3"; IOBUF  PORT "led[7]" PULLMODE=NONE IO_TYPE=LVCMO
 
 # "blinkey" and "gpio" sheet
 
-LOCATE COMP "btn[0]" SITE "E1"; IOBUF  PORT "btn[0]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
-LOCATE COMP "btn[1]" SITE "D2"; IOBUF  PORT "btn[1]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
-LOCATE COMP "btn[2]" SITE "F1"; IOBUF  PORT "btn[2]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "btn[1]" SITE "E1"; IOBUF  PORT "btn[0]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "btn[2]" SITE "D2"; IOBUF  PORT "btn[1]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "btn[3]" SITE "F1"; IOBUF  PORT "btn[2]" PULLMODE=NONE IO_TYPE=LVCMOS33;
 
 # ##### #
 # RGMII #
 # ##### #
 
-LOCATE COMP "eth_ref_clk"  SITE "H12"; IOBUF PORT "eth_reset"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_reset"    SITE "G5"; IOBUF PORT "eth_reset"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_mdio"     SITE "F6"; IOBUF PORT "eth_mdio"   PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_mdc"      SITE "J5"; IOBUF PORT "eth_mdc"    PULLMODE=NONE IO_TYPE=LVCMOS33;
@@ -75,7 +65,7 @@ LOCATE COMP "eth_int_n"    SITE "M1"; IOBUF PORT "eth_int_n"  PULLMODE=NONE IO_T
 LOCATE COMP "rgmii_ref_clk" SITE "H2"; IOBUF PORT "rgmii_ref_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 
 LOCATE COMP "rgmii_tx_clk" SITE "H4"; IOBUF PORT "rgmii_tx_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "rgmii_tx_en"  SITE "K5"; IOBUF PORT "rgmii_tx_en"  PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_tx_en"  SITE "K3"; IOBUF PORT "rgmii_tx_en"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "rgmii_txd[0]" SITE "K5"; IOBUF PORT "rgmii_txd[0]" PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "rgmii_txd[1]" SITE "J4"; IOBUF PORT "rgmii_txd[1]" PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "rgmii_txd[2]" SITE "L4"; IOBUF PORT "rgmii_txd[2]" PULLMODE=NONE IO_TYPE=LVCMOS33;
@@ -137,8 +127,8 @@ LOCATE COMP "ddram_dq[5]"    SITE "M19"; IOBUF PORT "ddram_dq[5]"   IO_TYPE=SSTL
 LOCATE COMP "ddram_dq[6]"    SITE "N18"; IOBUF PORT "ddram_dq[6]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF";
 LOCATE COMP "ddram_dq[7]"    SITE "N17"; IOBUF PORT "ddram_dq[7]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF";
 
-LOCATE COMP "ddram_dm[0]"    SITE "L18"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Group 89. It should be 41 to comply
-# LOCATE COMP "ddram_dm[0]"    SITE "F16"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST; # Group 89. It should be 41 to comply
+# LOCATE COMP "ddram_dm[0]"    SITE "L18"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Proposed Group 89 PAD to comply
+LOCATE COMP "ddram_dm[0]"    SITE "F16"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST; # Group 89. It should be 41 to comply 
 
 LOCATE VREF "BANK_2_VREF" SITE "D20" ;
 LOCATE COMP "ddram_dqs[1]"   SITE "G19"; IOBUF PORT "ddram_dqs[1]"  IO_TYPE=SSTL135D_I SLEWRATE=FAST DIFFRESISTOR=100 TERMINATION=OFF; # Group 41
@@ -152,8 +142,8 @@ LOCATE COMP "ddram_dq[13]"   SITE "K19"; IOBUF PORT "ddram_dq[13]"   IO_TYPE=SST
 LOCATE COMP "ddram_dq[14]"   SITE "E19"; IOBUF PORT "ddram_dq[14]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
 LOCATE COMP "ddram_dq[15]"   SITE "G20"; IOBUF PORT "ddram_dq[15]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
 
-LOCATE COMP "ddram_dm[1]"    SITE "K18"; IOBUF PORT "ddram_dm[1]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
-# LOCATE COMP "ddram_dm[1]"    SITE "U16"; IOBUF PORT "ddram_dm[1]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 89. It should be 41 to comply
+# LOCATE COMP "ddram_dm[1]"    SITE "K18"; IOBUF PORT "ddram_dm[1]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Proposed Group 41 PAD to comply
+LOCATE COMP "ddram_dm[1]"    SITE "U16"; IOBUF PORT "ddram_dm[1]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 89. It should be 41 to comply
 
 # ####### #
 # SD card #
@@ -177,24 +167,14 @@ LOCATE COMP "sd_pwr_on" SITE "E15"; IOBUF PORT "sd_pwr_on" PULLMODE=NONE IO_TYPE
 
 # differential interface (Video) "gpdi" sheet
 
-# LOCATE COMP "gpdi_dp[0]" SITE "F17"; IOBUF PORT "gpdi_dp[0]" IO_TYPE=LVCMOS33 DRIVE=4; # Blue +
-# LOCATE COMP "gpdi_dn[0]" SITE "G18"; IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4; # Blue -
-# LOCATE COMP "gpdi_dp[1]" SITE "D18"; IOBUF PORT "gpdi_dp[1]" IO_TYPE=LVCMOS33 DRIVE=4; # Green +
-# LOCATE COMP "gpdi_dn[1]" SITE "E17"; IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4; # Green -
-# LOCATE COMP "gpdi_dp[2]" SITE "C18"; IOBUF PORT "gpdi_dp[2]" IO_TYPE=LVCMOS33 DRIVE=4; # Red +
-# LOCATE COMP "gpdi_dn[2]" SITE "D17"; IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4; # Red -
-# LOCATE COMP "gpdi_dp[3]" SITE "J20"; IOBUF PORT "gpdi_dp[3]" IO_TYPE=LVCMOS33 DRIVE=4; # Clock +
-# LOCATE COMP "gpdi_dn[3]" SITE "K20"; IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4; # Clock -
-# LOCATE COMP "gpdi_cec" SITE "A18";   IOBUF PORT "gpdi_cec" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
-
-LOCATE COMP "gpdi_dp[4]" SITE "B9";  IOBUF PORT "gpdi_dp[4]" IO_TYPE=LVCMOS33 DRIVE=4;# Blue +
-LOCATE COMP "gpdi_dn[4]" SITE "C10"; IOBUF PORT "gpdi_dn[4]" IO_TYPE=LVCMOS33 DRIVE=4;# Blue -
-LOCATE COMP "gpdi_dp[5]" SITE "A7";  IOBUF PORT "gpdi_dp[5]" IO_TYPE=LVCMOS33 DRIVE=4;# Green +
-LOCATE COMP "gpdi_dn[5]" SITE "A8";  IOBUF PORT "gpdi_dn[5]" IO_TYPE=LVCMOS33 DRIVE=4;# Green -
-LOCATE COMP "gpdi_dp[6]" SITE "C8";  IOBUF PORT "gpdi_dp[6]" IO_TYPE=LVCMOS33 DRIVE=4;# Red +
-LOCATE COMP "gpdi_dn[6]" SITE "B8";  IOBUF PORT "gpdi_dn[6]" IO_TYPE=LVCMOS33 DRIVE=4;# Red -
-LOCATE COMP "gpdi_dp[7]" SITE "B11"; IOBUF PORT "gpdi_dp[7]" IO_TYPE=LVCMOS33 DRIVE=4;# Clock +
-LOCATE COMP "gpdi_dn[7]" SITE "C11"; IOBUF PORT "gpdi_dn[7]" IO_TYPE=LVCMOS33 DRIVE=4;# Clock -
+LOCATE COMP "fpdi_d0"  SITE "F17"; IOBUF PORT "fpdi_d0"  IO_TYPE=SSTL135D_I;
+LOCATE COMP "fpdi_d1"  SITE "D18"; IOBUF PORT "fpdi_d1"  IO_TYPE=SSTL135D_I;
+LOCATE COMP "fpdi_d2"  SITE "C18"; IOBUF PORT "fpdi_d2"  IO_TYPE=SSTL135D_I;
+LOCATE COMP "fpdi_clk" SITE "J20"; IOBUF PORT "fpdi_clk" IO_TYPE=SSTL135D_I;
+# LOCATE COMP "fpdi_d0_n"  SITE "G18"; IOBUF PORT "gpdi_dn[4]" IO_TYPE=SSTL135D_I;
+# LOCATE COMP "fpdi_d1_n"  SITE "E17"; IOBUF PORT "gpdi_dn[5]" IO_TYPE=SSTL135D_I;
+# LOCATE COMP "fpdi_d3_n"  SITE "D17"; IOBUF PORT "gpdi_dn[6]" IO_TYPE=SSTL135D_I;
+# LOCATE COMP "fpdi_clk_n" SITE "K20"; IOBUF PORT "gpdi_dn[7]" IO_TYPE=SSTL135D_I;
 
 # ########## #
 # Second USB #
