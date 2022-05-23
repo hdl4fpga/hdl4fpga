@@ -25,9 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
---library lattice;
---use lattice.components.all;
-
 library ecp5u;
 use ecp5u.components.all;
 
@@ -36,6 +33,7 @@ use hdl4fpga.std.all;
 
 entity ecp5_ddrphy is
 	generic (
+		ddr_tcp   : real;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -265,8 +263,9 @@ begin
 		signal dll_lock : std_logic;
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
-		attribute FREQUENCY_PIN_CDIVX  : string;
-		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is "200.000";
+
+		attribute FREQUENCY_PIN_CDIVX : string;
+		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(ddr_tcp*2.0), 10);
 	begin
 
 		pll_lock <= '1';

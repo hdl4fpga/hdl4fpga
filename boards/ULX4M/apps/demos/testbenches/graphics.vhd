@@ -59,11 +59,11 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_pu_dn : inout std_logic := '-';
 
 			eth_reset      : out   std_logic;
-			rgmii_ref_clk    : out   std_logic;
+			rgmii_ref_clk  : in    std_logic;
 			eth_mdio       : inout std_logic := '-';
 			eth_mdc        : out   std_logic;
 	
-			rgmii_tx_clk   : in    std_logic := '-';
+			rgmii_tx_clk   : out    std_logic := '-';
 			rgmii_tx_en    : buffer std_logic;
 			rgmii_txd      : buffer std_logic_vector(0 to 4-1);
 			rgmii_rx_clk   : in    std_logic := '-';
@@ -172,8 +172,8 @@ begin
 	rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	mii_rxc <= mii_refclk;
-	mii_txc <= mii_refclk;
+	mii_rxc    <= mii_txc;
+	mii_refclk <= mii_txc;
 
 	mii_req  <= '0', '1' after 15 us, '0' after 20 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
@@ -257,7 +257,7 @@ begin
 		eth_reset    => open,
 		rgmii_ref_clk  => mii_refclk,
 		eth_mdc      => open,
-		rgmii_tx_clk => mii_rxc,
+		rgmii_tx_clk => mii_txc,
 		rgmii_tx_en  => mii_txen,
 		rgmii_txd    => mii_txd,
 		rgmii_rx_clk => mii_rxc,

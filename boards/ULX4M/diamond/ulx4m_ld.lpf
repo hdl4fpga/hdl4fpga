@@ -51,9 +51,9 @@ LOCATE COMP "led[0]" SITE "A3"; IOBUF  PORT "led[7]" PULLMODE=NONE IO_TYPE=LVCMO
 
 # "blinkey" and "gpio" sheet
 
-LOCATE COMP "btn[1]" SITE "E1"; IOBUF  PORT "btn[0]" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "btn[2]" SITE "D2"; IOBUF  PORT "btn[1]" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "btn[3]" SITE "F1"; IOBUF  PORT "btn[2]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "btn[1]" SITE "E1"; IOBUF  PORT "btn[1]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "btn[2]" SITE "D2"; IOBUF  PORT "btn[2]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "btn[3]" SITE "F1"; IOBUF  PORT "btn[3]" PULLMODE=NONE IO_TYPE=LVCMOS33;
 
 # ##### #
 # RGMII #
@@ -78,11 +78,11 @@ LOCATE COMP "rgmii_txd[3]" SITE "L3"; IOBUF PORT "rgmii_txd[3]" PULLMODE=NONE IO
 LOCATE COMP "rgmii_rx_clk" SITE "H5"; IOBUF PORT "rgmii_rx_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 FREQUENCY PORT "rgmii_rx_clk" 25 MHZ;
 
-LOCATE COMP "rgmii_rx_dv"  SITE "J1"; IOBUF PORT "rgmii_rx_dv"  PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "rgmii_rxd[0]" SITE "K1"; IOBUF PORT "rgmii_rxd[0]" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "rgmii_rxd[1]" SITE "K2"; IOBUF PORT "rgmii_rxd[1]" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "rgmii_rxd[2]" SITE "L1"; IOBUF PORT "rgmii_rxd[2]" PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "rgmii_rxd[3]" SITE "L2"; IOBUF PORT "rgmii_rxd[3]" PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_rx_dv"  SITE "J1"; IOBUF PORT "rgmii_rx_dv"  PULLMODE=UP IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_rxd[0]" SITE "K1"; IOBUF PORT "rgmii_rxd[0]" PULLMODE=UP IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_rxd[1]" SITE "K2"; IOBUF PORT "rgmii_rxd[1]" PULLMODE=UP IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_rxd[2]" SITE "L1"; IOBUF PORT "rgmii_rxd[2]" PULLMODE=UP IO_TYPE=LVCMOS33;
+LOCATE COMP "rgmii_rxd[3]" SITE "L2"; IOBUF PORT "rgmii_rxd[3]" PULLMODE=UP IO_TYPE=LVCMOS33;
 
 LOCATE COMP "clk_25mhz" SITE "G2"; IOBUF  PORT "clk_25mhz" PULLMODE=NONE IO_TYPE=LVCMOS33;
 FREQUENCY PORT "clk_25mhz" 25 MHZ;
@@ -196,3 +196,23 @@ LOCATE COMP "usb_fpga_pu_dp"  SITE "F5";  IOBUF  PORT "usb_fpga_pu_dp"  PULLMODE
 LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF  PORT "usb_fpga_pu_dn"  PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;
 LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF  PORT "usb_fpga_otg_id" PULLMODE=UP   IO_TYPE=LVCMOS33  DRIVE=4;
 LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE=UP   IO_TYPE=LVCMOS33  DRIVE=4;
+
+# # ######## #
+# # PROGRAMN #
+# # ######## #
+# 
+# # (reload bitstream from FLASH, exit from bootloader)
+# # PCB v2.0.5 and higher
+# 
+# LOCATE COMP "user_programn" SITE "M4";
+# IOBUF  PORT "user_programn" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
+# 
+# # ######## #
+# # SHUTDOWN #
+# # ######## #
+# 
+# # "power", "ram" sheet (connected from PCB v1.7.5)
+# # on PCB v1.7 shutdown is not connected to FPGA
+# 
+# LOCATE COMP "shutdown" SITE "G16"; # FPGA receives
+# IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4;

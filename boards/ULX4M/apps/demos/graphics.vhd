@@ -214,7 +214,8 @@ architecture graphics of ulx4m_ld is
 
 	signal ctlr_clk   : std_logic;
 
-	constant ddr_tcp : real := real(ddram_tab(ddram_mode).pll.clki_div)/(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+
+	constant ddr_tcp : real := real(ddram_tab(ddram_mode).pll.clki_div)/(real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -222,31 +223,13 @@ architecture graphics of ulx4m_ld is
 	alias  mii_rxdv       : std_logic is rgmii_rx_dv;
 	alias  mii_rxd        : std_logic_vector(rgmii_rxd'range) is rgmii_rxd;
 
-	alias  mii_txc        : std_logic is rgmii_tx_clk;
+	alias  mii_txc        : std_logic is rgmii_ref_clk;
 	alias  sio_clk        : std_logic is mii_txc;
 	alias  dmacfg_clk     : std_logic is mii_txc;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(rgmii_txd'range);
 
 begin
-
-	debug_q : if debug generate
-		signal q : bit;
-	begin
-		q <= not q after 1 ns;
-		rgmii_ref_clk <= to_stdulogic(q);
-	end generate;
-
-	nodebug_g : if not debug generate
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				rgmii_ref_clk <= div(0);
-			end if;
-		end process;
-	end generate;
 
 	sys_rst <= '0';
 	videopll_b : block
@@ -335,19 +318,18 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 
-		constant ddram_freq : real :=
-			real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq/real(ddram_tab(ddram_mode).pll.clki_div*1e6);
+		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
 
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_freq/2.0, 10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
+		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_mhz/2.0, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
-		signal ctlr_clkfb : std_logic;
+		signal clkfb : std_logic;
 
 	begin
 
 		assert false
-		report real'image(ddram_freq)
+		report real'image(ddram_mhz)
 		severity NOTE;
 
 		pll_i : EHXPLLL
@@ -378,7 +360,7 @@ begin
         port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => ctlr_clkfb,
+			CLKFB     => clkfb,
             PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
             PHASESTEP => '0', PHASELOADREG => '0',
@@ -388,7 +370,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => physys_clk,
-			CLKOS     => ctlr_clkfb, --,open, --ctlr_clk,
+			CLKOS     => clkfb,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_clklck,
@@ -630,6 +612,7 @@ begin
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	ddrphy_rst <= not ddram_clklck;
+	eth_reset  <= not ddram_clklck;
 	process (ddram_clklck, ctlr_clk)
 	begin
 		if ddram_clklck='0' then
@@ -641,6 +624,7 @@ begin
 	
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
+		ddr_tcp       => ddr_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,
@@ -691,10 +675,27 @@ begin
 		ddr_dq        => ddram_dq,
 		ddr_dqs       => ddram_dqs);
 	ddram_dm <= (others => '0');
---	ctlrphy_dsi <= (others => ctlr_clk);
 
 	-- VGA --
 	---------
+
+
+	debug_q : if debug generate
+		signal q : bit;
+	begin
+		q <= not q after 1 ns;
+		rgmii_tx_clk <= to_stdulogic(q);
+	end generate;
+
+	nodebug_g : if not debug generate
+		rgmii_ref_clk_i : oddrx1f
+		port map(
+			sclk => rgmii_ref_clk,
+			rst  => '0',
+			d0   => '1',
+			d1   => '0',
+			q    => rgmii_tx_clk);
+	end generate;
 
 	fpdi_clk_i : oddrx1f
 	port map(
