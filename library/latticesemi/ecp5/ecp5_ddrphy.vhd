@@ -265,6 +265,8 @@ begin
 		signal dll_lock : std_logic;
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
+		attribute FREQUENCY_PIN_CDIVX  : string;
+		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is "200.000";
 	begin
 
 		pll_lock <= '1';

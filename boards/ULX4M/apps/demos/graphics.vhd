@@ -164,13 +164,11 @@ architecture graphics of ulx4m_ld is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 8, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		ddram425MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram450MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram500MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
-
-	signal ctlr_clk   : std_logic;
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -213,6 +211,8 @@ architecture graphics of ulx4m_ld is
 	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
+
+	signal ctlr_clk   : std_logic;
 
 	constant ddr_tcp : real := real(ddram_tab(ddram_mode).pll.clki_div)/(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
@@ -316,8 +316,8 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => open, --video_shft_clk,
-			CLKOS2    => open, --video_clk,
+			CLKOS     => video_shft_clk,
+			CLKOS2    => video_clk,
             CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
@@ -335,13 +335,14 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 
-		constant ddram_freq  : real :=
-			real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq/real(ddram_tab(ddram_mode).pll.clki_div*1e6);
+		constant ddram_freq : real :=
+			real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq/real(ddram_tab(ddram_mode).pll.clki_div*1e6);
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_freq, 10);
+		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_freq/2.0, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
-		signal clkfb : std_logic;
+		signal ctlr_clkfb : std_logic;
 
 	begin
 
@@ -356,11 +357,11 @@ begin
 			STDBY_ENABLE     => "DISABLED",
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+			FEEDBK_PATH      => "CLKOS",
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => ddram_tab(ddram_mode).pll.clkos_div-1,
 			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => ddram_tab(ddram_mode).pll.clkop_div-1,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -377,7 +378,7 @@ begin
         port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => clkfb,
+			CLKFB     => ctlr_clkfb,
             PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
             PHASESTEP => '0', PHASELOADREG => '0',
@@ -386,15 +387,14 @@ begin
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => open, --ctlr_clk,
+			CLKOP     => physys_clk,
+			CLKOS     => ctlr_clkfb, --,open, --ctlr_clk,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_clklck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
-		physys_clk <= clkfb;
 		
 	end block;
 
@@ -691,7 +691,7 @@ begin
 		ddr_dq        => ddram_dq,
 		ddr_dqs       => ddram_dqs);
 	ddram_dm <= (others => '0');
-	ctlrphy_dsi <= (others => ctlr_clk);
+--	ctlrphy_dsi <= (others => ctlr_clk);
 
 	-- VGA --
 	---------
