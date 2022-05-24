@@ -227,7 +227,7 @@ architecture graphics of ulx4m_ld is
 	alias  sio_clk        : std_logic is rgmii_ref_clk;
 	alias  dmacfg_clk     : std_logic is rgmii_ref_clk;
 	signal mii_txen       : std_logic;
-	signal mii_txd        : std_logic_vector(rgmii_txd'range);
+	signal mii_txd        : std_logic_vector(0 to 2*rgmii_txd'length-1);
 
 begin
 
@@ -464,7 +464,7 @@ begin
 					lock     => lock,
 					ddrdel   => ddrdel);
 
-				rmgmii_g : for i in rgmii_rxd'range generate
+				rmgmii_rxd_g : for i in rgmii_rxd'range generate
 					signal d : std_logic;
 				begin
 					delay_i : delayg
@@ -482,6 +482,27 @@ begin
 						q0   => mii_rxd(rgmii_rxd'length*0+i),
 						q1   => mii_rxd(rgmii_rxd'length*1+i));
 				end generate;
+				
+			rmgmii_txd_i : oddrx1f
+			port map (
+				rst  => ddr_reset,
+				sclk => rgmii_ref_clk,
+				d0   => mii_txen,
+				d1   => '0',
+				q    => rgmii_tx_en);
+
+			rmgmii_txd_g : for i in rgmii_txd'range generate
+				begin
+					oddr_i : oddrx1f
+					port map (
+						rst  => ddr_reset,
+						sclk => rgmii_ref_clk,
+						d0   => mii_txd(rgmii_txd'length*0+i),
+						d1   => mii_txd(rgmii_txd'length*1+i),
+						q    => rgmii_txd(i));
+				end generate;
+				
+
 			end block;
 
 			process (mii_rxc)
@@ -576,13 +597,6 @@ begin
 			ser_data   => mii_txd);
 
 		mii_txen <= miitx_frm and not miitx_end;
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				rgmii_tx_en <= mii_txen;
-				rgmii_txd   <= mii_txd;
-			end if;
-		end process;
 
 	end block;
 
