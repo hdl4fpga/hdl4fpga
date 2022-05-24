@@ -153,7 +153,7 @@ architecture ulx4mld_graphics of testbench is
 		return retval;
 	end;
 
-	signal mii_refclk : std_logic;
+	signal mii_refclk : std_logic := '0';
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
@@ -172,8 +172,8 @@ begin
 	rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	mii_rxc    <= mii_txc;
-	mii_refclk <= mii_txc;
+	mii_rxc    <= mii_refclk;
+	mii_refclk <= not mii_refclk after 0.5 ns;
 
 	mii_req  <= '0', '1' after 15 us, '0' after 20 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;

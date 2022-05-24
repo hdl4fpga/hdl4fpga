@@ -236,26 +236,26 @@ architecture lscc of ecp5_ddrphy is
 
 	signal memsync_pause : std_logic;
 
-	component mem_sync
-		port (
-			rst : in std_logic;
-			start_clk : in std_logic;
-			pll_lock  : in std_logic;
-			dll_lock  : in std_logic;
-			update    : in std_logic;
-			pause     : out std_logic;
-			stop      : out std_logic;
-			freeze    : out std_logic;
-			uddcntln  : out std_logic;
-			dll_rst   : out std_logic;
-			ddr_rst   : out std_logic;
-			ready : out std_logic);
-		end component;
-
 begin
 
 
 	mem_sync_b : block
+		component mem_sync
+			port (
+				rst       : in  std_logic;
+				start_clk : in  std_logic;
+				pll_lock  : in  std_logic;
+				dll_lock  : in  std_logic;
+				update    : in  std_logic;
+				pause     : out std_logic;
+				stop      : out std_logic;
+				freeze    : out std_logic;
+				uddcntln  : out std_logic;
+				dll_rst   : out std_logic;
+				ddr_rst   : out std_logic;
+				ready     : out std_logic);
+		end component;
+
 		signal uddcntln : std_logic;
 		signal freeze   : std_logic;
 		signal stop     : std_logic;

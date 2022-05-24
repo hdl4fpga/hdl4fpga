@@ -219,13 +219,13 @@ architecture graphics of ulx4m_ld is
 
 	constant io_link : io_iface := app_tab(app).iface;
 
-	alias  mii_rxc        : std_logic is rgmii_rx_clk;
-	alias  mii_rxdv       : std_logic is rgmii_rx_dv;
-	alias  mii_rxd        : std_logic_vector(rgmii_rxd'range) is rgmii_rxd;
+	alias   mii_rxc       : std_logic is rgmii_rx_clk;
+	signal  mii_rxdv      : std_logic;
+	signal  mii_rxd       : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 
 	alias  mii_txc        : std_logic is rgmii_ref_clk;
-	alias  sio_clk        : std_logic is mii_txc;
-	alias  dmacfg_clk     : std_logic is mii_txc;
+	alias  sio_clk        : std_logic is rgmii_ref_clk;
+	alias  dmacfg_clk     : std_logic is rgmii_ref_clk;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(rgmii_txd'range);
 
@@ -406,6 +406,83 @@ begin
 			signal dst_trdy  : std_logic;
 
 		begin
+
+			rgmii_b : block
+
+				component rxdll_sync
+					port (
+						rst       : in std_logic;
+						sync_clk  : in std_logic;
+						update    : in std_logic;
+						ddr_reset : out std_logic;
+						dll_reset : out std_logic;
+						uddcntln  : out std_logic;
+						freeze    : out std_logic;
+						stop      : out std_logic;
+						ready     : out std_logic);
+				end component;
+
+				signal dll_reset : std_logic;
+				signal ddr_reset : std_logic;
+				signal sync_rst  : std_logic;
+				signal sclk      : std_logic;
+				signal ddrdel    : std_logic;
+				signal uddcntln  : std_logic;
+				signal freeze    : std_logic;
+				signal lock      : std_logic;
+
+			begin
+
+				sync_rst  <= not ddram_clklck;
+				eth_reset <= not sync_rst;
+				sync_i : rxdll_sync
+				port map (
+					rst       => sync_rst,
+					sync_clk  => clk_25mhz,
+					update    => '0',
+					ddr_reset => ddr_reset,
+					dll_reset => dll_reset,
+					uddcntln  => uddcntln,
+					freeze    => freeze,
+					stop      => open,
+					ready     => open);
+
+				dlldel_i : dlldeld
+				port map(
+					move      => '0',
+					direction => '0',
+					ddrdel    => ddrdel,
+					a         => rgmii_ref_clk,
+					z         => sclk);
+
+				ddrdll_i : ddrdlla
+				port map (
+					rst      => dll_reset,
+					clk      => sclk,
+					uddcntln => uddcntln,
+					freeze   => freeze,
+					lock     => lock,
+					ddrdel   => ddrdel);
+
+				rmgmii_g : for i in rgmii_rxd'range generate
+					signal d : std_logic;
+				begin
+					delay_i : delayg
+					generic map (
+						del_mode => "SCLK_ALIGNED")
+					port map (
+						a => rgmii_rxd(i),
+						z => d);
+
+					iddr_i : iddrx1f
+					port map (
+						rst  => ddr_reset,
+						sclk => sclk,
+						d    => d,
+						q0   => mii_rxd(rgmii_rxd'length*0+i),
+						q1   => mii_rxd(rgmii_rxd'length*1+i));
+				end generate;
+			end block;
 
 			process (mii_rxc)
 			begin
@@ -612,7 +689,6 @@ begin
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	ddrphy_rst <= not ddram_clklck;
-	eth_reset  <= not ddram_clklck;
 	process (ddram_clklck, ctlr_clk)
 	begin
 		if ddram_clklck='0' then
@@ -678,7 +754,6 @@ begin
 
 	-- VGA --
 	---------
-
 
 	debug_q : if debug generate
 		signal q : bit;
