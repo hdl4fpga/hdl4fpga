@@ -159,11 +159,19 @@ architecture ulx4mld_graphics of testbench is
 	signal ping_req   : std_logic := '0';
 	signal rep_req    : std_logic := '0';
 	signal mii_rxdv   : std_logic;
-	signal mii_rxd    : std_logic_vector(0 to 4-1);
-	signal mii_txd    : std_logic_vector(0 to 4-1);
+	signal mii_rxd    : std_logic_vector(0 to 8-1);
+	signal mii_txd    : std_logic_vector(0 to 8-1);
 	signal mii_txc    : std_logic;
 	signal mii_rxc    : std_logic;
 	signal mii_txen   : std_logic;
+
+	alias rgmii_rxc   : std_logic is mii_rxc;
+	alias rgmii_rxdv  : std_logic is mii_rxdv;
+	signal rgmii_rxd  : std_logic_vector(0 to 4-1);
+
+	alias rgmii_txc   : std_logic is mii_txc;
+	signal rgmii_txen : std_logic;
+	signal rgmii_txd  : std_logic_vector(0 to 4-1);
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
@@ -246,6 +254,8 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
+	rgmii_rxd <= word2byte(mii_rxd, not rgmii_rxc);
+
 	du_e : ulx4m_ld
 	generic map (
 		debug => true)
@@ -257,12 +267,12 @@ begin
 		eth_reset    => open,
 		rgmii_ref_clk  => mii_refclk,
 		eth_mdc      => open,
-		rgmii_tx_clk => mii_txc,
-		rgmii_tx_en  => mii_txen,
-		rgmii_txd    => mii_txd,
-		rgmii_rx_clk => mii_rxc,
-		rgmii_rx_dv  => mii_rxdv,
-		rgmii_rxd    => mii_rxd,
+		rgmii_tx_clk => rgmii_txc,
+		rgmii_tx_en  => rgmii_txen,
+		rgmii_txd    => rgmii_txd,
+		rgmii_rx_clk => rgmii_rxc,
+		rgmii_rx_dv  => rgmii_rxdv,
+		rgmii_rxd    => rgmii_rxd,
 
 		ddram_reset_n => rst_n,
 		ddram_clk   => ddr_clk,
@@ -277,6 +287,18 @@ begin
 		ddram_dq    => dq,
 		ddram_dm    => dm,
 		ddram_odt   => odt);
+
+	process (rgmii_txc)
+		variable en : std_logic;
+	begin
+		if rising_edge(rgmii_txc) then
+			mii_txen <= en;
+			en := rgmii_txen;
+			mii_txd(0 to 4-1) <= rgmii_txd;
+		elsif rising_edge(rgmii_txc) then
+			mii_txd(4 to 8-1) <= rgmii_txd;
+		end if;
+	end process;
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (

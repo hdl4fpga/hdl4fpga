@@ -414,11 +414,12 @@ begin
 						rst       : in std_logic;
 						sync_clk  : in std_logic;
 						update    : in std_logic;
-						ddr_reset : out std_logic;
+						dll_lock  : in  std_logic;
 						dll_reset : out std_logic;
 						uddcntln  : out std_logic;
 						freeze    : out std_logic;
 						stop      : out std_logic;
+						ddr_reset : out std_logic;
 						ready     : out std_logic);
 				end component;
 
@@ -429,7 +430,7 @@ begin
 				signal ddrdel    : std_logic;
 				signal uddcntln  : std_logic;
 				signal freeze    : std_logic;
-				signal lock      : std_logic;
+				signal dll_lock  : std_logic;
 
 			begin
 
@@ -440,11 +441,12 @@ begin
 					rst       => sync_rst,
 					sync_clk  => clk_25mhz,
 					update    => '0',
-					ddr_reset => ddr_reset,
+					dll_lock  => dll_lock,
 					dll_reset => dll_reset,
 					uddcntln  => uddcntln,
 					freeze    => freeze,
 					stop      => open,
+					ddr_reset => ddr_reset,
 					ready     => open);
 
 				dlldel_i : dlldeld
@@ -452,7 +454,7 @@ begin
 					move      => '0',
 					direction => '0',
 					ddrdel    => ddrdel,
-					a         => rgmii_ref_clk,
+					a         => rgmii_rx_clk,
 					z         => sclk);
 
 				ddrdll_i : ddrdlla
@@ -461,7 +463,7 @@ begin
 					clk      => sclk,
 					uddcntln => uddcntln,
 					freeze   => freeze,
-					lock     => lock,
+					lock     => dll_lock,
 					ddrdel   => ddrdel);
 
 				rmgmii_rxd_g : for i in rgmii_rxd'range generate
