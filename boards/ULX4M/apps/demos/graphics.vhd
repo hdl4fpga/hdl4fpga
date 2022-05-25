@@ -452,6 +452,7 @@ begin
 				dlldel_i : dlldeld
 				port map(
 					move      => '0',
+					loadn     => '0',
 					direction => '0',
 					ddrdel    => ddrdel,
 					a         => rgmii_rx_clk,
