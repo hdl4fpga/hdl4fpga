@@ -36,6 +36,7 @@ entity uart_rx is
 		uart_rxc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
+		uart_frm  : out std_logic := '1';
 		uart_irdy : buffer std_logic;
 		uart_trdy : in  std_logic := '1';
 		uart_data : buffer std_logic_vector);
