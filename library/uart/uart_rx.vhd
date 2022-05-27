@@ -41,10 +41,10 @@ entity uart_rx is
 		uart_trdy  : in  std_logic := '1';
 		uart_srdv  : out std_logic := '-';
 		uart_spdv  : out std_logic := '-';
-		uart_rxdv  : out std_logic := '0';
-		uart_rxd   : out std_logic := '0';
-		uart_start : out std_logic := '-';
-		uart_stop  : out std_logic := '-';
+		uart_rxdv  : out std_logic;
+		uart_rxd   : out std_logic;
+		uart_start : out std_logic;
+		uart_stop  : out std_logic;
 		uart_data  : buffer std_logic_vector(8-1 downto 0));
 end;
 
@@ -91,17 +91,17 @@ begin
 
 	uart_rxd <= sample_rxd;
 	with uart_state select
-	uart_srdv <= 
+	uart_rxdv <= 
 		half_count when data_s,
 		'0'        when others;
 
 	with uart_state select
-	uart_rxdv <= 
+	uart_srdv <= 
 		full_count when start_s,
 		'0'        when others;
 
 	with uart_state select
-	uart_rxdv <= 
+	uart_spdv <= 
 		full_count when stop_s,
 		'0'        when others;
 
