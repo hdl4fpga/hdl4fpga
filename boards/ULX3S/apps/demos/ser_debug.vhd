@@ -93,7 +93,7 @@ architecture ser_debug of ulx3s is
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic;
-	signal ser_data        : std_logic_vector(0 to 8-1);
+	signal ser_data        : std_logic_vector(0 to 0);
 
 begin
 
@@ -170,7 +170,7 @@ begin
 		constant baudrate  : natural := 3000000;
 
 		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(0 to 8-1);
+		signal uart_rxd    : std_logic_vector(0 to 0);
 
 	begin
 
@@ -183,8 +183,8 @@ begin
 		port map (
 			uart_rxc  => ser_clk,
 			uart_sin  => ftdi_txd,
-			uart_irdy => uart_rxdv,
-			uart_data => uart_rxd);
+			uart_rxd  => uart_rxd(0),
+			uart_rxdv => uart_rxdv);
 
 		ser_frm  <= uart_rxdv;
 		ser_irdy <= '1';

@@ -45,7 +45,7 @@ entity uart_rx is
 		uart_rxd   : out std_logic := '0';
 		uart_start : out std_logic := '-';
 		uart_stop  : out std_logic := '-';
-		uart_data  : buffer std_logic_vector);
+		uart_data  : buffer std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of uart_rx is
@@ -88,16 +88,21 @@ begin
 			sin         := sin rol 1;
 		end if;
 	end process;
-	uart_rxd <= sample_rxd;
 
+	uart_rxd <= sample_rxd;
 	with uart_state select
-	uart_sttdv <= 
-		full_count when data_s,
+	uart_srdv <= 
+		half_count when data_s,
 		'0'        when others;
 
 	with uart_state select
 	uart_rxdv <= 
 		full_count when start_s,
+		'0'        when others;
+
+	with uart_state select
+	uart_rxdv <= 
+		full_count when stop_s,
 		'0'        when others;
 
 	cntr_p : process (uart_rxc)
@@ -147,6 +152,7 @@ begin
 			if uart_ena='1' then
 				case uart_state is
 				when idle_s =>
+					uart_frm  <= '0';
 					uart_irdy <= '0';
 					dcntr := (others => '-');
 					uart_start <= sample_rxd;
@@ -154,6 +160,7 @@ begin
 						uart_state <= start_s;
 					end if;
 				when start_s =>
+					uart_frm  <= '1';
 					uart_irdy <= '0';
 					dcntr := dcntr_init;
 					uart_start <= sample_rxd;
@@ -165,6 +172,7 @@ begin
 						end if;
 					end if;
 				when data_s =>
+					uart_frm  <= '1';
 					uart_irdy <= '0';
 					if full_count='1' then
 						data(0) := sample_rxd;
@@ -183,6 +191,7 @@ begin
 						end if;
 					end if;
 				when stop_s =>
+					uart_frm  <= '1';
 					uart_irdy <= '0';
 					dcntr     := (others => '-');
 					uart_stop <= sample_rxd;
