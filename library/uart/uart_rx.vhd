@@ -33,13 +33,19 @@ entity uart_rx is
 		baudrate : natural := 115200;
 		clk_rate : natural);
 	port (
-		uart_rxc  : in  std_logic;
-		uart_ena  : in  std_logic := '1';
-		uart_sin  : in  std_logic;
-		uart_frm  : out std_logic := '1';
-		uart_irdy : buffer std_logic;
-		uart_trdy : in  std_logic := '1';
-		uart_data : buffer std_logic_vector);
+		uart_rxc   : in  std_logic;
+		uart_ena   : in  std_logic := '1';
+		uart_sin   : in  std_logic;
+		uart_frm   : out std_logic := '1';
+		uart_irdy  : buffer std_logic;
+		uart_trdy  : in  std_logic := '1';
+		uart_srdv  : out std_logic := '-';
+		uart_spdv  : out std_logic := '-';
+		uart_rxdv  : out std_logic := '0';
+		uart_rxd   : out std_logic := '0';
+		uart_start : out std_logic := '-';
+		uart_stop  : out std_logic := '-';
+		uart_data  : buffer std_logic_vector);
 end;
 
 architecture def of uart_rx is
@@ -82,6 +88,17 @@ begin
 			sin         := sin rol 1;
 		end if;
 	end process;
+	uart_rxd <= sample_rxd;
+
+	with uart_state select
+	uart_sttdv <= 
+		full_count when data_s,
+		'0'        when others;
+
+	with uart_state select
+	uart_rxdv <= 
+		full_count when start_s,
+		'0'        when others;
 
 	cntr_p : process (uart_rxc)
 		constant max_count  : natural := (clk_rate+baudrate/2)/baudrate;
@@ -132,12 +149,14 @@ begin
 				when idle_s =>
 					uart_irdy <= '0';
 					dcntr := (others => '-');
+					uart_start <= sample_rxd;
 					if sample_rxd='0' then
 						uart_state <= start_s;
 					end if;
 				when start_s =>
 					uart_irdy <= '0';
 					dcntr := dcntr_init;
+					uart_start <= sample_rxd;
 					if half_count='1' then
 						if sample_rxd='0' then
 							uart_state <= data_s;
@@ -157,7 +176,6 @@ begin
 							data := data ror 1;
 						end if;
 						if dcntr(0)='1' then
-							uart_irdy <= '1';
 							uart_state <= stop_s;
 							dcntr := (others => '-');
 						else
@@ -167,8 +185,10 @@ begin
 				when stop_s =>
 					uart_irdy <= '0';
 					dcntr     := (others => '-');
+					uart_stop <= sample_rxd;
 					if full_count='1' then
 						if sample_rxd='1' then
+							uart_irdy <= '1';
 							uart_state <= idle_s;
 						end if;
 					end if;
