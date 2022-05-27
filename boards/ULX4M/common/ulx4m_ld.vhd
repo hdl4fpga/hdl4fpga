@@ -56,7 +56,7 @@ entity ulx4m_ld is
 		eth_mdio        : inout std_logic := '-';
 		eth_mdc         : out std_logic;
 
-		rgmii_ref_clk   : in std_logic;
+--		rgmii_ref_clk   : in std_logic;
 
 		rgmii_tx_clk    : out std_logic := '-';
 		rgmii_tx_en     : buffer std_logic;

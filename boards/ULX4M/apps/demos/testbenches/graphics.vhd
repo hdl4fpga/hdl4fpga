@@ -59,7 +59,7 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_pu_dn : inout std_logic := '-';
 
 			eth_reset      : out   std_logic;
-			rgmii_ref_clk  : in    std_logic;
+--			rgmii_ref_clk  : in    std_logic;
 			eth_mdio       : inout std_logic := '-';
 			eth_mdc        : out   std_logic;
 	
@@ -265,7 +265,7 @@ begin
 		btn(2 to 3)  => (others => '-'),
 
 		eth_reset    => open,
-		rgmii_ref_clk  => mii_refclk,
+--		rgmii_ref_clk  => mii_refclk,
 		eth_mdc      => open,
 		rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,

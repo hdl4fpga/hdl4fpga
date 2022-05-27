@@ -223,9 +223,9 @@ architecture graphics of ulx4m_ld is
 	signal  mii_rxdv      : std_logic;
 	signal  mii_rxd       : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 
-	alias  mii_txc        : std_logic is rgmii_ref_clk;
-	alias  sio_clk        : std_logic is rgmii_ref_clk;
-	alias  dmacfg_clk     : std_logic is rgmii_ref_clk;
+	alias  mii_txc        : std_logic is rgmii_rx_clk;
+	alias  sio_clk        : std_logic is clk_25mhz;
+	alias  dmacfg_clk     : std_logic is clk_25mhz;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(0 to 2*rgmii_txd'length-1);
 
@@ -467,6 +467,16 @@ begin
 --					lock     => dll_lock,
 --					ddrdel   => ddrdel);
 
+				rmgmii_rxdv_i : iddrx1f
+				port map (
+--					rst  => ddr_reset,
+					rst  => sync_rst,
+--					sclk => sclk,
+					sclk => rgmii_rx_clk,
+					d    => rgmii_rx_dv,
+					q0   => mii_rxdv,
+					q1   => open);
+	
 				rmgmii_rxd_g : for i in rgmii_rxd'range generate
 					signal d : std_logic;
 				begin
@@ -488,25 +498,34 @@ begin
 						q1   => mii_rxd(rgmii_rxd'length*1+i));
 				end generate;
 				
-			rmgmii_txd_i : oddrx1f
-			port map (
-				rst  => ddr_reset,
-				sclk => rgmii_ref_clk,
-				d0   => mii_txen,
-				d1   => '0',
-				q    => rgmii_tx_en);
-
-			rmgmii_txd_g : for i in rgmii_txd'range generate
+				rmgmii_txd_i : oddrx1f
+				port map (
+					rst  => ddr_reset,
+					sclk => rgmii_rx_clk,
+					d0   => mii_txen,
+					d1   => '0',
+					q    => rgmii_tx_en);
+	
+				rmgmii_txd_g : for i in rgmii_txd'range generate
+					signal d : std_logic;
 				begin
 					oddr_i : oddrx1f
 					port map (
 						rst  => ddr_reset,
-						sclk => rgmii_ref_clk,
+						sclk => rgmii_rx_clk,
 						d0   => mii_txd(rgmii_txd'length*0+i),
 						d1   => mii_txd(rgmii_txd'length*1+i),
-						q    => rgmii_txd(i));
-				end generate;
-				
+						q    => d);
+
+					delay_i : delayg
+					generic map (
+						del_mode => "SCLK_ALIGNED")
+					port map (
+						a => d,
+						z => rgmii_txd(i));
+		
+					end generate;
+					
 
 			end block;
 
@@ -784,7 +803,7 @@ begin
 	nodebug_g : if not debug generate
 		rgmii_ref_clk_i : oddrx1f
 		port map(
-			sclk => rgmii_ref_clk,
+			sclk => rgmii_rx_clk,
 			rst  => '0',
 			d0   => '1',
 			d1   => '0',
