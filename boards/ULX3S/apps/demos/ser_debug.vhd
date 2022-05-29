@@ -167,6 +167,7 @@ begin
 
 		constant baudrate  : natural := 3000000;
 
+		signal uart_frm    : std_logic;
 		signal uart_rxdv   : std_logic;
 		signal uart_rxd    : std_logic_vector(0 to 0);
 
@@ -181,10 +182,12 @@ begin
 		port map (
 			uart_rxc  => ser_clk,
 			uart_sin  => ftdi_txd,
+			uart_frm  => uart_frm,
 			uart_rxd  => uart_rxd(0),
 			uart_rxdv => uart_rxdv);
 
-		ser_frm  <= '1';
+--		ser_frm  <= '1';
+		ser_frm  <= uart_frm;
 		ser_irdy <= uart_rxdv;
 		ser_data <= uart_rxd;
 
