@@ -45,7 +45,7 @@ entity uart_rx is
 		uart_rxd   : out std_logic;
 		uart_start : out std_logic;
 		uart_stop  : out std_logic;
-		uart_data  : buffer std_logic_vector(8-1 downto 0));
+		uart_data  : buffer std_logic_vector(0 to 8-1));
 end;
 
 architecture def of uart_rx is
@@ -92,12 +92,12 @@ begin
 	uart_rxd <= sample_rxd;
 	with uart_state select
 	uart_rxdv <= 
-		half_count when data_s,
+		full_count when data_s,
 		'0'        when others;
 
 	with uart_state select
 	uart_srdv <= 
-		full_count when start_s,
+		half_count and not sample_rxd when start_s,
 		'0'        when others;
 
 	with uart_state select

@@ -39,11 +39,11 @@ architecture ser_debug of ulx3s is
 
 	constant sys_freq   : real    := 25.0e6;
 
-	constant modedebug  : natural := 0;
-	constant mode600p   : natural := 1;
-	constant mode600p18 : natural := 2;
-	constant mode600p24 : natural := 3;
-	constant mode1080p  : natural := 4;
+	type video_modes is (
+		mode600p,
+		mode600p18,
+		mode600p24,
+		mode1080p);
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -62,20 +62,18 @@ architecture ser_debug of ulx3s is
 		pixel : pixel_types;
 	end record;
 
-	type videoparams_vector is array (natural range <>) of video_params;
+	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk_debug),
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
-	constant nodebug_videomode : natural := mode600p;
+	constant video_mode : video_modes := mode600p;
 	constant videodot_freq : natural := 
-		(video_tab(nodebug_videomode).pll.clkfb_div*video_tab(nodebug_videomode).pll.clkop_div*natural(sys_freq))/
-		(video_tab(nodebug_videomode).pll.clki_div*video_tab(nodebug_videomode).pll.clkos2_div);
+		(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
+		(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
 
-	constant video_mode    : natural := setif(debug, modedebug, nodebug_videomode);
     signal video_pixel     : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
 
 	signal sys_rst         : std_logic;
@@ -163,7 +161,7 @@ begin
 
 	end block;
 
-	uart_b : block
+	dut_b : block
 
 		constant uart_xtal : natural := natural(videodot_freq);
 
@@ -186,8 +184,8 @@ begin
 			uart_rxd  => uart_rxd(0),
 			uart_rxdv => uart_rxdv);
 
-		ser_frm  <= uart_rxdv;
-		ser_irdy <= '1';
+		ser_frm  <= '1';
+		ser_irdy <= uart_rxdv;
 		ser_data <= uart_rxd;
 
 	end block;
