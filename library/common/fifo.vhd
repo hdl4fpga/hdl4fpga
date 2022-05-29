@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity fifo is
 	generic (
+		sync_read  : boolean := true;
 		debug      : boolean := false;
 		async_mode : boolean := false;
 		max_depth  : natural;
@@ -100,7 +101,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(latency > 0, true, false),
+			synchronous_rddata => setif(latency > 0, setif(latency > 1, true, sync_read), false),
 			bitrom => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -212,40 +213,63 @@ begin
 		end generate;
 
 		latencyeq1_g : if latency=1 generate
-			signal fill : std_logic;
-			signal data : std_logic_vector(dst_data'range);
-			signal q    : std_logic := '0';
-			signal v    : std_logic := '0';
-		begin
-
-			dstirdy_p : process (dst_clk)
+			sync_read_g : if sync_read generate
+				signal fill : std_logic;
+				signal data : std_logic_vector(dst_data'range);
+				signal q    : std_logic := '0';
+				signal v    : std_logic := '0';
 			begin
-				if rising_edge(dst_clk) then
-					if dst_ini='1' then
-						q <= '0';
-						v <= '0';
-					else
-						if dst_trdy='1' then
-							if v='0' then
-								q <= '0';
+	
+				dstirdy_p : process (dst_clk)
+				begin
+					if rising_edge(dst_clk) then
+						if dst_ini='1' then
+							q <= '0';
+							v <= '0';
+						else
+							if dst_trdy='1' then
+								if v='0' then
+									q <= '0';
+								end if;
+							elsif v='1' then
+								q <= '1';
 							end if;
-						elsif v='1' then
-							q <= '1';
+	
+							if v='1' then
+								data <= rdata;
+							end if;
+	
+							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 						end if;
-
-						if v='1' then
-							data <= rdata;
-						end if;
-
-						v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
 					end if;
-				end if;
-			end process;
+				end process;
+	
+				dst_irdy <= v or q;
+				fill     <= not v and not q;
+				dst_data <= primux(data & rdata, q & v, rdata);
+				feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+			end generate;
 
-			dst_irdy <= v or q;
-			fill     <= not v and not q;
-			dst_data <= primux(data & rdata, q & v, rdata);
-			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+			no_syncread_g : if not sync_read generate
+				signal v    : std_logic;
+				signal fill : std_logic;
+			begin
+				
+				dstirdy_p : process (dst_clk)
+				begin
+					if rising_edge(dst_clk) then
+						if dst_ini='1' then
+							v <= '0';
+						else
+							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+						end if;
+					end if;
+				end process;
+
+				dst_irdy <= v;
+				feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+				fill     <= not v;
+			end generate;
 		end generate;
 
 		nolatency_g : if latency = 0 generate
