@@ -354,8 +354,8 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => open, --video_clk,
-				clkout2  => open, --video_shf_clk,
+				clkout1  => video_clk,
+				clkout2  => video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
 

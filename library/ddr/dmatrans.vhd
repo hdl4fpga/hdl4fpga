@@ -292,7 +292,7 @@ begin
 
 	ctlr_b <= ddrdma_bnk;
 	ctlr_a <=
-		wirebus((ctlr_a'range => '0') & ddrdma_row, state_pre & ctlr_ras) when (state_pre or ctlr_ras)='1' else
+		(ctlr_a'range => ctlr_ras) and ddrdma_row when (state_pre or ctlr_ras)='1' else
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
