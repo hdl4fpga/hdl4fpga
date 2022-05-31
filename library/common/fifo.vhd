@@ -251,17 +251,26 @@ begin
 			end generate;
 
 			no_syncread_g : if not sync_read generate
-				signal v    : std_logic;
+				signal v    : std_logic := '0';
 				signal fill : std_logic;
 			begin
 				
-				dstirdy_p : process (dst_clk)
+				process (dst_clk)
 				begin
 					if rising_edge(dst_clk) then
 						if dst_ini='1' then
 							v <= '0';
 						else
 							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
+						end if;
+					end if;
+				end process;
+
+				process (dst_clk)
+				begin
+					if rising_edge(dst_clk) then
+						if feed_ena='1' then
+							dst_data <= rdata;
 						end if;
 					end if;
 				end process;
