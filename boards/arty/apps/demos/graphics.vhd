@@ -283,13 +283,14 @@ architecture graphics of arty is
 
 	constant mem_size : natural := 8*(1024*8);
 
+	signal rst0div_rst : std_logic;
+	signal rst90div_rst : std_logic;
 	signal ioctrl_rst : std_logic;
 	signal ioctrl_clk : std_logic;
 	signal ioctrl_rdy : std_logic;
 
 	signal tp_delay   : std_logic_vector(word_size/byte_size*8-1 downto 0);
 	signal tp1        : std_logic_vector(1 to 32);
-	signal prst       : std_logic;
 
 begin
 
@@ -391,7 +392,6 @@ begin
 				clkout2  => ddr_clk0div_mmce2,
 				clkout3  => ddr_clk90div_mmce2,
 				locked   => ddr_lkd);
-			prst <= not ddr_lkd;
 
 			ddr_clk0_bufg : bufio
 			port map (
@@ -422,6 +422,21 @@ begin
 
 			ctlrphy_dqsi <= (others => ddr_clk90div);
 			ddrsys_rst <= not ddr_lkd;
+
+			process(ddr_clk0div)
+			begin
+				if rising_edge(ddr_clk0div) then
+					rst0div_rst <= ddrsys_rst;
+				end if;
+			end process;
+
+			process(ddr_clk90div)
+			begin
+				if rising_edge(ddr_clk90div) then
+					rst90div_rst <= ddrsys_rst;
+				end if;
+			end process;
+
 		end block;
 
 	end block;
@@ -681,9 +696,9 @@ begin
 		tp_delay    => tp_delay,
 		tp1         => tp1(1 to 6),
 
-		phy_rsts(0) => prst,
-		phy_rsts(1) => prst,
-		phy_rsts(2) => prst,
+		phy_rsts(0) => rst0div_rst,
+		phy_rsts(1) => rst90div_rst,
+		phy_rsts(2) => ioctrl_rst,
 		sys_clks    => ddrsys_clks,
 		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
