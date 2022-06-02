@@ -119,7 +119,7 @@ begin
 	process (sys_clks(iodclk))
 		type states is (sync_start, sync_dqs, sync_dqi, sync_sto);
 		variable state : states;
-		variable aux : bit;
+		variable aux : std_logic;
 	begin
 		if rising_edge(sys_clks(iodclk)) then
 			if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
@@ -140,22 +140,21 @@ begin
 						state := sync_dqi;
 					end if;
 				when sync_dqi =>
-					if (adjsto_req xor adjdqi_req)='0' then
+					aux := '0';
+					for i in adjdqi_rdy'range loop
+						aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
+					end loop;
+					if aux='0' then
 						adjsto_req <= not adjsto_rdy;
 						state := sync_sto;
 					end if;
 				when sync_sto =>
-					if (adjsto_req xor adjdqi_req)='0' then
+					if (adjsto_req xor adjsto_rdy)='0' then
 						sys_rlrdy <= sys_rlreq;
 						state := sync_start;
 					end if;
 				end case;
 
-				aux := '1';
-				for i in adjdqi_rdy'range loop
-					aux := aux and (to_bit(adjdqi_rdy(i)) xor to_bit(adjdqi_req));
-				end loop;
-				adjsto_req <= to_stdulogic(aux) xor to_stdulogic(to_bit(adjdqi_req));
 			end if;
 		end if;
 	end process;
