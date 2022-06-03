@@ -305,7 +305,7 @@ architecture virtex7 of xc7a_ddrphy is
 	signal ba_we  : std_logic_vector(sys_we'range);
 	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
 
-	signal level  : std_logic;
+	signal leveling : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
 begin
@@ -319,8 +319,8 @@ begin
 	end generate;
 
 
-	phy_ba  <= sys_b when level='0' else (others => '0');
-	phy_a   <= sys_a when level='0' else (others => '0');
+	phy_ba  <= sys_b when leveling='0' else (others => '0');
+	phy_a   <= sys_a when leveling='0' else (others => '0');
 
 	read_leveling_l_b : block
 		signal write_req : std_logic;
@@ -337,16 +337,16 @@ begin
 					phy_ini   <= '0';
 					phy_frm   <= '0';
 					phy_rw    <= '0';
-					level     <= '0';
+					leveling  <= '0';
 					ddr_idle  := '0';
-					read_req  <= '0';
+					read_rdy  <= '0';
 					write_req <= '0';
 				else
 					if (write_req xor write_rdy)='1'  then
 						phy_ini  <= '0';
 						phy_frm  <= '1';
 						phy_rw   <= '0';
-						level    <= '1';
+						leveling    <= '1';
 						if sys_cmd=mpu_act and phy_trdy='1' then
 							phy_frm   <= '0';
 							write_req <= write_rdy;
@@ -357,27 +357,29 @@ begin
 						phy_frm  <= '0';
 						phy_rw   <= '-';
 						phy_ini  <= '1';
-						level    <= '0';
-						read_req <= read_rdy;
+						leveling <= '0';
+						read_rdy <= read_req;
 					elsif leveled='1' then
 						if (ddr_idle and phy_trdy)='1' then
-							phy_ini  <= '1';
+							phy_ini <= '1';
 						elsif sys_cmd=mpu_pre and phy_trdy='1' then
-							phy_ini  <= '0';
+							phy_ini <= '0';
 						end if;
-						phy_frm <= '0';
-						phy_rw  <= '1';
-						level   <= '1';
+						phy_frm  <= '0';
+						phy_rw   <= '1';
+						leveling <= '1';
+						read_rdy <= read_req;
 					elsif (read_req xor read_rdy)='1' then
 						if leveled='1' then
 							phy_ini <= '1';
 							phy_frm <= '0';
+							read_rdy <= read_req;
 						elsif ddr_idle='1'  and phy_trdy='1' then
 							phy_ini <= '0';
 							phy_frm <= '1';
 						end if;
 						phy_rw   <= '1';
-						level    <= '1';
+						leveling <= '1';
 					end if;
 
 					if phy_trdy='1' then
@@ -398,31 +400,32 @@ begin
 			if rising_edge(sys_clks(iodclk)) then
 				if phy_rsts(rstiod)='1' then
 					tp1       <= (others => '0');
-					read_rdy  <= '0';
+					read_req  <= '0';
 					write_rdy <= '0';
 					leveled   <= '0';
 					state     := s_write;
 				else
 					case state is
 					when s_write =>
-						if sys_rlreq='1' then
+						if (sys_rlrdy xor sys_rlreq)='1' then
 							write_rdy <= not write_req;
 							state     := s_read;
 						end if;
 					when s_read =>
 						if (write_rdy xor write_req)='0' then
-							read_rdy <= not read_req;
+							read_req <= not read_rdy;
+						end if;
+						if (sys_rlrdy xor sys_rlreq)='0' then
+							leveled <= '1';
+							state     := s_write;
 						end if;
 					end case;
-					if ((to_stdulogic(to_bit(sys_rlrdy)) xnor sys_rlreq) and sys_rlcal)='1' then
-						leveled <= '1';
-					end if;
 				end if;
 
 				tp1(2) <= sys_rlcal;
 				tp1(3) <= phy_rw;
 				tp1(4) <= (to_stdulogic(to_bit(sys_rlrdy)) xnor sys_rlreq);
-				tp1(5) <= level;
+				tp1(5) <= leveling;
 			end if;
 		end process;
 	end block;
@@ -442,10 +445,10 @@ begin
 	process (sys_clks(iodclk))
 		variable aux : bit;
 	begin
-		aux := '1';
 		if rising_edge(sys_clks(iodclk)) then
+			aux := '0';
 			for i in rlrdy'range loop
-				aux := aux and (to_bit(rlrdy(i)) xor to_bit(sys_rlreq));
+				aux := aux or (to_bit(rlrdy(i)) xor to_bit(sys_rlreq));
 			end loop;
 			sys_rlrdy <= to_stdulogic(aux) xor sys_rlreq;
 		end if;
