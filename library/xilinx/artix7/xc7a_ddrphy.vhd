@@ -328,9 +328,30 @@ begin
 		signal read_req  : std_logic;
 		signal read_rdy  : std_logic;
 		signal leveled   : std_logic;
+
+		signal ddr_act   : std_logic;
+		signal ddr_pre   : std_logic;
+		signal ddr_idle  : std_logic;
 	begin
+
+		process (phy_trdy, sys_clks(clk0div))
+			variable s_pre : std_logic;
+		begin
+			if rising_edge(sys_clks(clk0div)) then
+				if phy_trdy='1' then
+					if sys_cmd=mpu_pre then
+						s_pre := '1';
+					else
+						s_pre := '0';
+					end if;
+				end if;
+			end if;
+			ddr_idle <= s_pre and phy_trdy;
+		end process;
+		ddr_act <= phy_trdy when sys_cmd=mpu_act else '0';
+		ddr_pre <= phy_trdy when sys_cmd=mpu_pre else '0';
+
 		process (sys_clks(clk0div))
-			variable ddr_idle : std_logic;
 		begin
 			if rising_edge(sys_clks(clk0div)) then
 				if phy_rsts(clk0div)='1' then
@@ -338,56 +359,43 @@ begin
 					phy_frm   <= '0';
 					phy_rw    <= '0';
 					leveling  <= '0';
-					ddr_idle  := '0';
 					read_rdy  <= '0';
 					write_req <= '0';
-				else
-					if (write_req xor write_rdy)='1'  then
-						phy_ini  <= '0';
-						phy_frm  <= '1';
-						phy_rw   <= '0';
-						leveling    <= '1';
-						if sys_cmd=mpu_act and phy_trdy='1' then
-							phy_frm   <= '0';
-							write_req <= write_rdy;
-						end if;
+				elsif phy_ini='1' then
+					phy_frm  <= '0';
+					phy_rw   <= '-';
+					phy_ini  <= '1';
+					leveling <= '0';
+					read_rdy <= read_req;
+				elsif leveled='1' then
+					if ddr_idle='1' then
+						phy_ini <= '1';
+					elsif ddr_pre='1' then
+						phy_ini <= '0';
 					end if;
-
-					if phy_ini='1' then
-						phy_frm  <= '0';
-						phy_rw   <= '-';
-						phy_ini  <= '1';
-						leveling <= '0';
+					phy_frm  <= '0';
+					phy_rw   <= '1';
+					leveling <= '1';
+					read_rdy <= read_req;
+				elsif (read_req xor read_rdy)='1' then
+					if leveled='1' then
+						phy_ini <= '1';
+						phy_frm <= '0';
 						read_rdy <= read_req;
-					elsif leveled='1' then
-						if (ddr_idle and phy_trdy)='1' then
-							phy_ini <= '1';
-						elsif sys_cmd=mpu_pre and phy_trdy='1' then
-							phy_ini <= '0';
-						end if;
-						phy_frm  <= '0';
-						phy_rw   <= '1';
-						leveling <= '1';
-						read_rdy <= read_req;
-					elsif (read_req xor read_rdy)='1' then
-						if leveled='1' then
-							phy_ini <= '1';
-							phy_frm <= '0';
-							read_rdy <= read_req;
-						elsif ddr_idle='1'  and phy_trdy='1' then
-							phy_ini <= '0';
-							phy_frm <= '1';
-						end if;
-						phy_rw   <= '1';
-						leveling <= '1';
+					elsif ddr_idle='1' then
+						phy_ini <= '0';
+						phy_frm <= '1';
 					end if;
-
-					if phy_trdy='1' then
-						if sys_cmd=mpu_pre then
-							ddr_idle := '1';
-						else
-							ddr_idle := '0';
-						end if;
+					phy_rw   <= '1';
+					leveling <= '1';
+				elsif (write_req xor write_rdy)='1'  then
+					phy_ini  <= '0';
+					phy_frm  <= '1';
+					phy_rw   <= '0';
+					leveling <= '1';
+					if ddr_act='1' then
+						phy_frm   <= '0';
+						write_req <= write_rdy;
 					end if;
 				end if;
 			end if;

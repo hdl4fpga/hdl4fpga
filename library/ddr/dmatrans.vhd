@@ -220,7 +220,7 @@ begin
 		col_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 8,
-			sync_read => false,
+			sync_read => true,
 			latency   => 1,
 			check_sov => false,
 			check_dov => true,
