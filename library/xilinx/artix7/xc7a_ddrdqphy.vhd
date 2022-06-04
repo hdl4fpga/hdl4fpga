@@ -422,10 +422,20 @@ begin
 			(0 => sys_clks(clk90div), 1 => sys_clks(clk90div));
 
 		registered_g : for j in clks'range generate
+			signal xxx : std_logic;
+		begin
+
+			process (sys_clks(iodclk))
+			begin
+				if rising_edge(sys_clks(iodclk)) then
+					xxx <= to_stdulogic(to_bit(sys_rlrdy) xor to_bit(sys_rlreq));
+				end if;
+			end process;
+
 			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
-				process (sys_rlrdy, sys_rlreq, clks(j))
+				process (xxx, clks(j))
 				begin
-					if (to_bit(sys_rlrdy) xor to_bit(sys_rlreq))='1' then
+					if xxx='1' then
 						if j mod 2=1 then
 							dqo(l*DATA_GEAR/clks'length+j) <= '1';
 						else

@@ -308,7 +308,9 @@ architecture virtex7 of xc7a_ddrphy is
 	signal leveling : std_logic;
 	signal dqsdly : std_logic_vector(2*6-1 downto 0);
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
+
 begin
+
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
@@ -334,6 +336,7 @@ begin
 		signal ddr_idle  : std_logic;
 	begin
 
+		leveling <= to_stdulogic(to_bit(sys_rlrdy) xor to_bit(sys_rlreq));
 		process (phy_trdy, sys_clks(clk0div))
 			variable s_pre : std_logic;
 		begin
@@ -358,14 +361,12 @@ begin
 					phy_ini   <= '0';
 					phy_frm   <= '0';
 					phy_rw    <= '0';
-					leveling  <= '0';
 					read_rdy  <= '0';
 					write_req <= '0';
 				elsif phy_ini='1' then
 					phy_frm  <= '0';
 					phy_rw   <= '-';
 					phy_ini  <= '1';
-					leveling <= '0';
 					read_rdy <= read_req;
 				elsif leveled='1' then
 					if ddr_idle='1' then
@@ -375,7 +376,6 @@ begin
 					end if;
 					phy_frm  <= '0';
 					phy_rw   <= '1';
-					leveling <= '1';
 					read_rdy <= read_req;
 				elsif (read_req xor read_rdy)='1' then
 					if leveled='1' then
@@ -387,12 +387,10 @@ begin
 						phy_frm <= '1';
 					end if;
 					phy_rw   <= '1';
-					leveling <= '1';
 				elsif (write_req xor write_rdy)='1'  then
 					phy_ini  <= '0';
 					phy_frm  <= '1';
 					phy_rw   <= '0';
-					leveling <= '1';
 					if ddr_act='1' then
 						phy_frm   <= '0';
 						write_req <= write_rdy;

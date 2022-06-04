@@ -51,7 +51,7 @@ architecture graphics of arty is
 		mode900p_ddr575MHz,
 		mode900p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr550MHz;
+	constant profile : profiles := mode900p_ddr600MHz;
 
 	signal sys_rst : std_logic;
 
