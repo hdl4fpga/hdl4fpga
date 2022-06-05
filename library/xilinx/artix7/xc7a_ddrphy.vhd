@@ -320,7 +320,6 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-
 	phy_ba  <= sys_b when leveling='0' else (others => '0');
 	phy_a   <= sys_a when leveling='0' else (others => '0');
 
