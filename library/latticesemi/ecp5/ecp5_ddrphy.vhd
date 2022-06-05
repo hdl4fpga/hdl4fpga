@@ -30,6 +30,7 @@ use ecp5u.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.ddr_param.all;
 
 entity ecp5_ddrphy is
 	generic (
@@ -48,6 +49,10 @@ entity ecp5_ddrphy is
 		eclk      : buffer std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_frm   : buffer std_logic;
+		phy_trdy  : buffer std_logic;
+		phy_rw    : buffer std_logic;
+		phy_cmd   : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini   : buffer std_logic;
 		phy_wlreq : in  std_logic := '0';
 		phy_wlrdy : buffer std_logic;
@@ -228,12 +233,11 @@ architecture lscc of ecp5_ddrphy is
 	signal wlr : std_logic;
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 
-	signal read     : std_logic_vector(0 to 2-1);
-
 	signal ba_ras : std_logic_vector(phy_ras'range);
 	signal ba_cas : std_logic_vector(phy_cas'range);
 	signal ba_we  : std_logic_vector(phy_we'range);
 
+	signal leveling : std_logic;
 	signal memsync_pause : std_logic;
 
 begin
@@ -307,6 +311,96 @@ begin
 			uddcntln => uddcntln,
 			ddrdel   => ddrdel,
 			lock     => dll_lock);
+	end block;
+
+	read_leveling_l_b : block
+		signal read_req  : std_logic;
+		signal read_rdy  : std_logic;
+		signal leveled   : std_logic;
+
+		signal ddr_act   : std_logic;
+		signal ddr_pre   : std_logic;
+		signal ddr_idle  : std_logic;
+
+		signal rlrdy     : std_logic_vector(ddr_dqs'range);
+	begin
+
+		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
+		process (phy_trdy, sclk)
+			variable s_pre : std_logic;
+		begin
+			if rising_edge(sclk) then
+				if phy_trdy='1' then
+					if phy_cmd=mpu_pre then
+						s_pre := '1';
+					else
+						s_pre := '0';
+					end if;
+				end if;
+			end if;
+			ddr_idle <= s_pre and phy_trdy;
+		end process;
+		ddr_act <= phy_trdy when phy_cmd=mpu_act else '0';
+		ddr_pre <= phy_trdy when phy_cmd=mpu_pre else '0';
+
+		process (rst, sclk)
+		begin
+			if rst='1' then
+				phy_ini  <= '0';
+				phy_frm  <= '0';
+				phy_rw   <= '0';
+				read_rdy <= read_req;
+			elsif rising_edge(sclk) then
+				if phy_ini='1' then
+					phy_frm  <= '0';
+					phy_rw   <= '-';
+					phy_ini  <= '1';
+					read_rdy <= read_req;
+				elsif leveled='1' then
+					if ddr_idle='1' then
+						phy_ini <= '1';
+					elsif ddr_pre='1' then
+						phy_ini <= '0';
+					end if;
+					phy_frm  <= '0';
+					phy_rw   <= '1';
+					read_rdy <= read_req;
+				elsif (read_req xor read_rdy)='1' then
+					if leveled='1' then
+						phy_ini <= '1';
+						phy_frm <= '0';
+						read_rdy <= read_req;
+					elsif ddr_idle='1' then
+						phy_ini <= '0';
+						phy_frm <= '1';
+					end if;
+					phy_rw   <= '1';
+				end if;
+			end if;
+		end process;
+
+		process (rst, sclk)
+		begin
+			if rst='1' then
+				read_req  <= '0';
+				leveled   <= '0';
+			elsif rising_edge(sclk) then
+				if (phy_rlrdy xor phy_rlreq)='0' then
+					leveled <= '1';
+				end if;
+			end if;
+		end process;
+
+		process (phy_rlreq, rlrdy)
+			variable aux : bit;
+		begin
+			aux := '0';
+			for i in rlrdy'range loop
+				aux := aux or (to_bit(rlrdy(i)) xor to_bit(phy_rlreq));
+			end loop;
+			phy_rlrdy <= to_stdulogic(aux) xor phy_rlreq;
+		end process;
+
 	end block;
 
 	process (phy_wlreq, wlrdy)
@@ -399,20 +493,6 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
-	xxx_b : block
-		signal q : std_logic_vector(0 to 3-1);
-	begin
-		q(0) <= phy_sti(0);
-		process(sclk)
-		begin
-			if rising_edge(sclk) then
-				q(1 to q'right) <= q(0 to q'right-1);
-			end if;
-		end process;
-		read(1) <= word2byte(q(0 to q'right-1), '1');
-		read(0) <= word2byte(q(1 to q'right),   '1');
-	end block;
-
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
@@ -424,10 +504,6 @@ begin
 			eclk      => eclk,
 			ddrdel    => ddrdel,
 			pause     => memsync_pause,
-			read(0)   => read(0),
-			read(1)   => read(1),
-			readclksel => "000" , -- 010
---			readclksel => "000", -- 011
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_dmt   => sdmt(i),

@@ -404,7 +404,6 @@ begin
 		begin
 			if rising_edge(sys_clks(iodclk)) then
 				if phy_rsts(rstiod)='1' then
-					tp1       <= (others => '0');
 					read_req  <= '0';
 					write_rdy <= '0';
 					leveled   <= '0';
@@ -422,15 +421,10 @@ begin
 						end if;
 						if (sys_rlrdy xor sys_rlreq)='0' then
 							leveled <= '1';
-							state     := s_write;
+							state   := s_write;
 						end if;
 					end case;
 				end if;
-
-				tp1(2) <= sys_rlcal;
-				tp1(3) <= phy_rw;
-				tp1(4) <= (to_stdulogic(to_bit(sys_rlrdy)) xnor sys_rlreq);
-				tp1(5) <= leveling;
 			end if;
 		end process;
 	end block;

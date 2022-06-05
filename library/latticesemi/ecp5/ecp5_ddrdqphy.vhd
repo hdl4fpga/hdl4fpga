@@ -33,8 +33,6 @@ entity ecp5_ddrdqphy is
 		byte_size   : natural);
 	port (
 		rst         : in  std_logic;
-		read        : in  std_logic_vector(2-1 downto 0);
-		readclksel  : in  std_logic_vector(3-1 downto 0);
 		sclk        : in  std_logic;
 		eclk        : in  std_logic;
 		ddrdel      : in  std_logic;
@@ -42,6 +40,10 @@ entity ecp5_ddrdqphy is
 
 		phy_wlreq   : in  std_logic;
 		phy_wlrdy   : buffer std_logic;
+		phy_rlreq   : in  std_logic := 'U';
+		phy_rlrdy   : buffer std_logic;
+		phy_rlcal   : out std_logic;
+		phy_sti     : in  std_logic := 'U';
 		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo     : out std_logic_vector(data_gear-1 downto 0);
@@ -65,6 +67,7 @@ entity ecp5_ddrdqphy is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture lscc of ecp5_ddrdqphy is
 
@@ -83,14 +86,86 @@ architecture lscc of ecp5_ddrdqphy is
 	signal rdpntr : std_logic_vector(3-1 downto 0);
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
-	signal xxx : std_logic_vector(0 to 0);
+	signal read   : std_logic_vector(0 to 2-1);
+	signal readclksel : std_logic_vector(3-1 downto 0);
+
 	constant delay : time := 6 ns;
 begin
+
+	rl_b : block
+		signal adjdqs_req : std_logic;
+		signal adjdqs_rdy : std_logic;
+		signal adjdqi_req : std_logic;
+		signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
+		signal adjsto_req : std_logic;
+		signal adjsto_rdy : std_logic;
+
+	begin
+		readclksel <= "000";
+		xxx_b : block
+			signal q : std_logic_vector(0 to 3-1);
+		begin
+			q(0) <= phy_sti;
+			process(sclk)
+			begin
+				if rising_edge(sclk) then
+					q(1 to q'right) <= q(0 to q'right-1);
+				end if;
+			end process;
+			read(1) <= word2byte(q(0 to q'right-1), '1');
+			read(0) <= word2byte(q(1 to q'right),   '1');
+		end block;
+
+		process (sclk)
+			type states is (sync_start, sync_dqs, sync_dqi, sync_sto);
+			variable state : states;
+			variable aux : std_logic;
+		begin
+			if rising_edge(sclk) then
+				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='0' then
+					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
+					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
+					state := sync_start;
+				else
+					case state is
+					when sync_start =>
+						if phy_sti='1' then
+							adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
+							state := sync_dqs;
+						end if;
+					when sync_dqs =>
+						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
+							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
+							state := sync_dqi;
+						end if;
+					when sync_dqi =>
+						aux := '0';
+						for i in adjdqi_rdy'range loop
+							aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
+						end loop;
+						if aux='0' then
+							adjsto_req <= not adjsto_rdy;
+							state := sync_sto;
+						end if;
+					when sync_sto =>
+						if (adjsto_req xor adjsto_rdy)='0' then
+							phy_rlrdy <= phy_rlreq;
+							state := sync_start;
+						end if;
+					end case;
+	
+				end if;
+			end if;
+		end process;
+
+		phy_rlcal <= to_stdulogic(to_bit(adjsto_req) xor to_bit(adjsto_rdy));
+	end block;
 
 	wl_b : block
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
 		signal wlpha    : std_logic_vector(8-1 downto 0);
+		signal xxx      : std_logic_vector(0 to 0);
 	begin
 
 		step_delay_e : entity hdl4fpga.align
