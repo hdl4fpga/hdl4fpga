@@ -137,13 +137,6 @@ begin
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
 							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
 							state := sync_dqi;
-						end if;
-					when sync_dqi =>
-						aux := '0';
-						for i in adjdqi_rdy'range loop
-							aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
-						end loop;
-						if aux='0' then
 							adjsto_req <= not adjsto_rdy;
 							state := sync_sto;
 						end if;
