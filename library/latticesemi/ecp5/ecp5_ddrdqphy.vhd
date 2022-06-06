@@ -88,6 +88,7 @@ architecture lscc of ecp5_ddrdqphy is
 
 	signal read   : std_logic_vector(0 to 2-1);
 	signal readclksel : std_logic_vector(3-1 downto 0);
+	signal wlpha  : std_logic_vector(8-1 downto 0);
 
 	constant delay : time := 6 ns;
 begin
@@ -117,7 +118,7 @@ begin
 		end block;
 
 		process (sclk)
-			type states is (sync_start, sync_dqs, sync_dqi, sync_sto);
+			type states is (sync_start, sync_dqs);
 			variable state : states;
 			variable aux : std_logic;
 		begin
@@ -129,21 +130,13 @@ begin
 				else
 					case state is
 					when sync_start =>
-						if phy_sti='1' then
-							adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-							state := sync_dqs;
-						end if;
+						adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
+						state := sync_dqs;
 					when sync_dqs =>
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
 							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
-							state := sync_dqi;
 							adjsto_req <= not adjsto_rdy;
 							state := sync_sto;
-						end if;
-					when sync_sto =>
-						if (adjsto_req xor adjsto_rdy)='0' then
-							phy_rlrdy <= phy_rlreq;
-							state := sync_start;
 						end if;
 					end case;
 	
@@ -157,7 +150,6 @@ begin
 	wl_b : block
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
-		signal wlpha    : std_logic_vector(8-1 downto 0);
 		signal xxx      : std_logic_vector(0 to 0);
 	begin
 
@@ -184,56 +176,56 @@ begin
 			smp      => xxx,
 			delay    => wlpha);
 
-		dqsbufm_i : dqsbufm 
-		port map (
-			rst       => rst,
-			sclk      => sclk,
-			eclk      => eclk,
-
-			ddrdel    => ddrdel,
-			pause     => pause,
-
-			dqsi      => xxx(0), --ddr_dqsi,
-			dqsr90    => dqsr90,
-	
-			read0     => read(0),
-			read1     => read(1),
-			readclksel0 => readclksel(0),
-			readclksel1 => readclksel(1),
-			readclksel2 => readclksel(2),
-
-			rdpntr2   => rdpntr(2),
-			rdpntr1   => rdpntr(1),
-			rdpntr0   => rdpntr(0),
-			wrpntr2   => wrpntr(2),
-			wrpntr1   => wrpntr(1),
-			wrpntr0   => wrpntr(0),
-
-			datavalid => open,
-			rdmove    => '0',
-			wrmove    => '0',
-			burstdet  => open,
-			rdcflag   => open,
-			wrcflag   => open,
-	
-			rdloadn   => '0',
-			rddirection => '0',
-			wrloadn   => '0',
-			wrdirection => '0',
-
-			dyndelay0 => wlpha(0),
-			dyndelay1 => wlpha(1),
-			dyndelay2 => wlpha(2),
-			dyndelay3 => wlpha(3),
-			dyndelay4 => wlpha(4),
-			dyndelay5 => wlpha(5),
-			dyndelay6 => wlpha(6),
-			dyndelay7 => wlpha(7),
-	
-			dqsw      => dqsw,
-			dqsw270   => dqsw270);
-
 	end block;
+
+	dqsbufm_i : dqsbufm 
+	port map (
+		rst       => rst,
+		sclk      => sclk,
+		eclk      => eclk,
+
+		ddrdel    => ddrdel,
+		pause     => pause,
+
+		dqsi      => xxx(0), --ddr_dqsi,
+		dqsr90    => dqsr90,
+
+		read0     => read(0),
+		read1     => read(1),
+		readclksel0 => readclksel(0),
+		readclksel1 => readclksel(1),
+		readclksel2 => readclksel(2),
+
+		rdpntr2   => rdpntr(2),
+		rdpntr1   => rdpntr(1),
+		rdpntr0   => rdpntr(0),
+		wrpntr2   => wrpntr(2),
+		wrpntr1   => wrpntr(1),
+		wrpntr0   => wrpntr(0),
+
+		datavalid => open,
+		rdmove    => '0',
+		wrmove    => '0',
+		burstdet  => open,
+		rdcflag   => open,
+		wrcflag   => open,
+
+		rdloadn   => '0',
+		rddirection => '0',
+		wrloadn   => '0',
+		wrdirection => '0',
+
+		dyndelay0 => wlpha(0),
+		dyndelay1 => wlpha(1),
+		dyndelay2 => wlpha(2),
+		dyndelay3 => wlpha(3),
+		dyndelay4 => wlpha(4),
+		dyndelay5 => wlpha(5),
+		dyndelay6 => wlpha(6),
+		dyndelay7 => wlpha(7),
+
+		dqsw      => dqsw,
+		dqsw270   => dqsw270);
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal d : std_logic;
