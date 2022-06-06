@@ -257,6 +257,8 @@ HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
 HDL4FPGA__adjpha__beh = $(LIB_HDL4FPGA)/adjpha/beh.dat
 HDL4FPGA__adjpha = $(LIB_HDL4FPGA)/adjpha/_primary.dat
+HDL4FPGA__adjbrst__def = $(LIB_HDL4FPGA)/adjbrst/def.dat
+HDL4FPGA__adjbrst = $(LIB_HDL4FPGA)/adjbrst/_primary.dat
 HDL4FPGA__adder__def = $(LIB_HDL4FPGA)/adder/def.dat
 HDL4FPGA__adder = $(LIB_HDL4FPGA)/adder/_primary.dat
 VCOM = vcom
@@ -503,6 +505,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__adjsto) \
     $(HDL4FPGA__adjpha__beh) \
     $(HDL4FPGA__adjpha) \
+    $(HDL4FPGA__adjbrst__def) \
+    $(HDL4FPGA__adjbrst) \
     $(HDL4FPGA__adder__def) \
     $(HDL4FPGA__adder)
 
@@ -512,6 +516,15 @@ $(HDL4FPGA__adder__def) : ../common/adder.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/adder.vhd
+
+$(HDL4FPGA__adjbrst) \
+$(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/adjbrst.vhd
 
 $(HDL4FPGA__adjpha) \
 $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
@@ -990,14 +1003,14 @@ $(HDL4FPGA__ecp5_ddrbaphy__lscc) : ../latticesemi/ecp5/ecp5_ddrbaphy.vhd \
 $(HDL4FPGA__ecp5_ddrdqphy) \
 $(HDL4FPGA__ecp5_ddrdqphy__lscc) : ../latticesemi/ecp5/ecp5_ddrdqphy.vhd \
 		$(HDL4FPGA__adjpha) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__std) \
 		$(HDL4FPGA__align) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_ddrdqphy.vhd
 
 $(HDL4FPGA__ecp5_ddrphy) \
@@ -1005,9 +1018,9 @@ $(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__ecp5_ddrdqphy) \
 		$(HDL4FPGA__ecp5_ddrbaphy) \
-		$(HDL4FPGA__ff) \
-		$(HDL4FPGA__aff) \
-		$(HDL4FPGA__clk_start) \
+		$(HDL4FPGA__barrel) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__std_logic_arith) \

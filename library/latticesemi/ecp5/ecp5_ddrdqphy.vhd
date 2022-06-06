@@ -91,6 +91,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 
 	constant delay : time := 6 ns;
+	signal xxx      : std_logic_vector(0 to 0);
 begin
 
 	rl_b : block
@@ -118,7 +119,7 @@ begin
 		end block;
 
 		process (sclk)
-			type states is (sync_start, sync_dqs);
+			type states is (sync_start, sync_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
@@ -131,8 +132,8 @@ begin
 					case state is
 					when sync_start =>
 						adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-						state := sync_dqs;
-					when sync_dqs =>
+						state := sync_sto;
+					when sync_sto =>
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
 							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
 							adjsto_req <= not adjsto_rdy;
@@ -150,7 +151,6 @@ begin
 	wl_b : block
 		signal step_rdy : std_logic;
 		signal step_req : std_logic;
-		signal xxx      : std_logic_vector(0 to 0);
 	begin
 
 		step_delay_e : entity hdl4fpga.align
