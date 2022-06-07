@@ -158,7 +158,7 @@ begin
 							lat := lat + 1;
 						end if;
 						dctct_req <= not dctct_rdy;
-					elsif (step_rdy xor step_req)='1' then
+					elsif (step_rdy xor step_req)='0' then
 					end if;
 				when s_hl =>
 				end case;
