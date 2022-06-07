@@ -152,10 +152,13 @@ begin
 				when s_lh =>
 					if (dctct_req xor dctct_rdy)='0' then
 						if burstdet='1' then
-							dctct_req <= not dctct_rdy;
 							base <= unsigned(phase);
 							state := s_hl;
+						elsif ddr_sti='1'
+							lat := lat + 1;
 						end if;
+						dctct_req <= not dctct_rdy;
+					elsif (step_rdy xor step_req)='1' then
 					end if;
 				when s_hl =>
 				end case;
