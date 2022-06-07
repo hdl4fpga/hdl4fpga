@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
  entity phadctor is
 	port (
 		clk       : in  std_logic;
-		dctct_req : in  std_logic := '-';
-		dctct_rdy : buffer std_logic;
+		dtct_req : in  std_logic := '-';
+		dtct_rdy : buffer std_logic;
 		step_req  : buffer std_logic;
 		step_rdy  : in  std_logic := '-';
 		input     : in  std_logic;
@@ -58,7 +58,7 @@ use hdl4fpga.std.all;
 		severity WARNING;
 
 		if rising_edge(clk) then
-			if to_bit(dctct_req xor dctct_rdy)='1' then
+			if to_bit(dtct_req xor dtct_rdy)='1' then
 				if start='0' then
 					saved <= (others => '0');
 					phase <= std_logic_vector(to_unsigned(2**(gap_word'length-1), gap_word'length));
@@ -87,12 +87,12 @@ use hdl4fpga.std.all;
 						step_req <= not to_stdulogic(to_bit(step_rdy));
 					else
 						start := '0';
-						dctct_rdy <= dctct_req;
+						dtct_rdy <= dtct_req;
 					end if;
 				end if;
 			else
 				start := '0';
-				dctct_rdy <= to_stdulogic(to_bit(dctct_req));
+				dtct_rdy <= to_stdulogic(to_bit(dtct_req));
 			end if;
 		end if;
 	end process;
@@ -107,10 +107,11 @@ entity adjbrst is
 		ddr_clk  : in  std_logic;
 		adj_req  : in  std_logic;
 		adj_rdy  : buffer std_logic;
-		step_req : buffer std_logic;
-		step_rdy : in  std_logic;
+		adjstep_req : buffer std_logic;
+		adjstep_rdy : in  std_logic;
 		ddr_sti  : in  std_logic;
 		burstdet : in  std_logic;
+		phase    : out std_logic_vector(0 to 3);
 		ddr_sto  : buffer std_logic);
 end;
 
@@ -119,55 +120,82 @@ use hdl4fpga.std.all;
 
 architecture def of adjbrst is
 
-	signal phase : std_logic_vector(0 to 3);
+	signal dctor_phase : std_logic_vector(0 to 3);
 
-	signal dctct_req : std_logic;
-	signal dctct_rdy : std_logic;
+	signal dtct_req : std_logic;
+	signal dtct_rdy : std_logic;
+	signal step_rdy  : std_logic;
 
-	signal base : unsigned(phase'range);
+	signal base : unsigned(dctor_phase'range);
+	signal input : std_logic;
+	signal lat : unsigned (0 to 0);
 
 begin
 
 	phadctor_i : entity hdl4fpga.phadctor
 	port map (
-		clk       => ddr_clk,
-		dctct_req => dctct_req,
-		dctct_rdy => dctct_rdy,
-		step_req  => step_req,
-		step_rdy  => step_rdy,
-		input     => burstdet,
-		phase     => phase);
+		clk      => ddr_clk,
+		dtct_req => dtct_req,
+		dtct_rdy => dtct_rdy,
+		step_req => adjstep_req,
+		step_rdy => step_rdy,
+		input    => input,
+		phase    => dctor_phase);
 
 	process(ddr_clk)
-		type states is (s_start, s_lh, s_hl);
+		type states is (s_start, s_lh, s_hl, s_finish);
 		variable state : states;
+		variable dcted : std_logic;
 
 	begin
 		if rising_edge(ddr_clk) then
 			if to_bit(adj_req xor adj_rdy)='1' then
 				case state is
 				when s_start =>
-					dctct_req <= not dctct_rdy;
-					state := s_lh;
+					dtct_req <= not dtct_rdy;
+					step_rdy <= adjstep_rdy;
+					state    := s_lh;
+					input    <= burstdet;
 				when s_lh =>
-					if (dctct_req xor dctct_rdy)='0' then
-						if burstdet='1' then
-							base <= unsigned(phase);
+					if (dtct_req xor dtct_rdy)='0' then
+						if dcted='1' then
+							base  <= unsigned(dctor_phase);
+							input <= not burstdet;
 							state := s_hl;
-						elsif ddr_sti='1'
-							lat := lat + 1;
+						else
+							lat   <= lat + 1;
+							input <= burstdet;
 						end if;
-						dctct_req <= not dctct_rdy;
-					elsif (step_rdy xor step_req)='0' then
+						dtct_req <= not dtct_rdy;
+					elsif (adjstep_rdy xor adjstep_req)='0' then
+						if ddr_sti='1' then
+							dcted    := burstdet;
+							step_rdy <= adjstep_rdy;
+						end if;
+						input <= burstdet;
 					end if;
+					phase <= dctor_phase;
 				when s_hl =>
+					if (dtct_req xor dtct_rdy)='0' then
+						phase <= std_logic_vector(base + shift_right(unsigned(dctor_phase),1));
+						state := s_finish;
+					elsif (adjstep_rdy xor adjstep_req)='0' then
+						if ddr_sti='1' then
+							dcted    := burstdet;
+							step_rdy <= adjstep_rdy;
+						end if;
+						phase <= std_logic_vector(base + unsigned(dctor_phase));
+					end if;
+					input <= not burstdet;
+				when s_finish =>
+					input <= '-';
 				end case;
 			else
-				dctct_req <= dctct_rdy;
-				adj_rdy   <= adj_req;
-				state     := s_start;
+				dtct_req <= dtct_rdy;
+				adj_rdy  <= adj_req;
+				step_rdy <= adjstep_rdy;
+				state    := s_start;
 			end if;
 		end if;
 	end process;
-
 end;
