@@ -87,24 +87,23 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 	signal read   : std_logic_vector(0 to 2-1);
+	signal lat : std_logic_vector(3-1 downto 0);
 	signal readclksel : std_logic_vector(3-1 downto 0);
 	signal wlpha  : std_logic_vector(8-1 downto 0);
+	signal burstdet : std_logic;
 
 	constant delay : time := 6 ns;
 	signal xxx      : std_logic_vector(0 to 0);
 begin
 
 	rl_b : block
-		signal adjdqs_req : std_logic;
-		signal adjdqs_rdy : std_logic;
-		signal adjdqi_req : std_logic;
-		signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
-		signal adjsto_req : std_logic;
-		signal adjsto_rdy : std_logic;
+
+		signal adjstep_req : std_logic;
+		signal adjstep_rdy : std_logic;
 
 	begin
-		readclksel <= "000";
-		xxx_b : block
+
+		lat_b : block
 			signal q : std_logic_vector(0 to 3-1);
 		begin
 			q(0) <= phy_sti;
@@ -114,38 +113,22 @@ begin
 					q(1 to q'right) <= q(0 to q'right-1);
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), '1');
-			read(0) <= word2byte(q(1 to q'right),   '1');
+			read(1) <= word2byte(q(0 to q'right-1), lat);
+			read(0) <= word2byte(q(1 to q'right),   lat);
 		end block;
 
-		process (sclk)
-			type states is (sync_start, sync_sto);
-			variable state : states;
-			variable aux : std_logic;
-		begin
-			if rising_edge(sclk) then
-				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='0' then
-					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
-					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state := sync_start;
-				else
-					case state is
-					when sync_start =>
-						adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-						state := sync_sto;
-					when sync_sto =>
-						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
-							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
-							adjsto_req <= not adjsto_rdy;
-							state := sync_sto;
-						end if;
-					end case;
-	
-				end if;
-			end if;
-		end process;
+		adjbrst_e : entity hdl4fpga.adjbrst
+		port map (
+			sclk        => sclk,
+			adj_req     => phy_rlreq,
+			adj_rdy     => phy_rlrdy,
+			adjstep_req => adjstep_req,
+			adjstep_rdy => adjstep_rdy,
+			read        => read(1),
+			burstdet    => burstdet,
+			lat         => lat,
+			readclksel  => readclksel);
 
-		phy_rlcal <= to_stdulogic(to_bit(adjsto_req) xor to_bit(adjsto_rdy));
 	end block;
 
 	wl_b : block
@@ -206,7 +189,7 @@ begin
 		datavalid => open,
 		rdmove    => '0',
 		wrmove    => '0',
-		burstdet  => open,
+		burstdet  => burstdet,
 		rdcflag   => open,
 		wrcflag   => open,
 

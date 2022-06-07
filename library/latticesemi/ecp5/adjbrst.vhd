@@ -104,15 +104,15 @@ use ieee.numeric_std.all;
 
 entity adjbrst is
 	port (
-		ddr_clk  : in  std_logic;
-		adj_req  : in  std_logic;
-		adj_rdy  : buffer std_logic;
+		sclk        : in  std_logic;
+		adj_req     : in  std_logic;
+		adj_rdy     : buffer std_logic;
 		adjstep_req : buffer std_logic;
 		adjstep_rdy : in  std_logic;
-		ddr_sti  : in  std_logic;
-		burstdet : in  std_logic;
-		phase    : out std_logic_vector(0 to 3);
-		ddr_sto  : buffer std_logic);
+		read        : in  std_logic;
+		burstdet    : in  std_logic;
+		lat         : buffer std_logic_vector;
+		readclksel  : out std_logic_vector);
 end;
 
 library hdl4fpga;
@@ -120,35 +120,33 @@ use hdl4fpga.std.all;
 
 architecture def of adjbrst is
 
-	signal dctor_phase : std_logic_vector(0 to 3);
+	signal phase : std_logic_vector(0 to 3);
 
 	signal dtct_req : std_logic;
 	signal dtct_rdy : std_logic;
 	signal step_rdy  : std_logic;
 
-	signal base : unsigned(dctor_phase'range);
+	signal base : unsigned(phase'range);
 	signal input : std_logic;
-	signal lat : unsigned (0 to 0);
 
 begin
 
 	phadctor_i : entity hdl4fpga.phadctor
 	port map (
-		clk      => ddr_clk,
+		clk      => sclk,
 		dtct_req => dtct_req,
 		dtct_rdy => dtct_rdy,
 		step_req => adjstep_req,
 		step_rdy => step_rdy,
 		input    => input,
-		phase    => dctor_phase);
+		phase    => phase);
 
-	process(ddr_clk)
+	process(sclk)
 		type states is (s_start, s_lh, s_hl, s_finish);
 		variable state : states;
 		variable dcted : std_logic;
-
 	begin
-		if rising_edge(ddr_clk) then
+		if rising_edge(sclk) then
 			if to_bit(adj_req xor adj_rdy)='1' then
 				case state is
 				when s_start =>
@@ -159,32 +157,32 @@ begin
 				when s_lh =>
 					if (dtct_req xor dtct_rdy)='0' then
 						if dcted='1' then
-							base  <= unsigned(dctor_phase);
+							base  <= unsigned(phase);
 							input <= not burstdet;
 							state := s_hl;
 						else
-							lat   <= lat + 1;
+							lat   <= std_logic_vector(unsigned(lat) + 1);
 							input <= burstdet;
 						end if;
 						dtct_req <= not dtct_rdy;
 					elsif (adjstep_rdy xor adjstep_req)='0' then
-						if ddr_sti='1' then
+						if read='1' then
 							dcted    := burstdet;
 							step_rdy <= adjstep_rdy;
 						end if;
 						input <= burstdet;
 					end if;
-					phase <= dctor_phase;
+					readclksel <= phase;
 				when s_hl =>
 					if (dtct_req xor dtct_rdy)='0' then
-						phase <= std_logic_vector(base + shift_right(unsigned(dctor_phase),1));
+						readclksel <= std_logic_vector(base + shift_right(unsigned(phase),1));
 						state := s_finish;
 					elsif (adjstep_rdy xor adjstep_req)='0' then
-						if ddr_sti='1' then
+						if read='1' then
 							dcted    := burstdet;
 							step_rdy <= adjstep_rdy;
 						end if;
-						phase <= std_logic_vector(base + unsigned(dctor_phase));
+						readclksel <= std_logic_vector(base + unsigned(phase));
 					end if;
 					input <= not burstdet;
 				when s_finish =>

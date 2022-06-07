@@ -104,6 +104,8 @@ HDL4FPGA__sdrbaphy__ecp = $(LIB_HDL4FPGA)/sdrbaphy/ecp.dat
 HDL4FPGA__sdrbaphy = $(LIB_HDL4FPGA)/sdrbaphy/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
+HDL4FPGA__phadctor__beh = $(LIB_HDL4FPGA)/phadctor/beh.dat
+HDL4FPGA__phadctor = $(LIB_HDL4FPGA)/phadctor/_primary.dat
 HDL4FPGA__pgm_delay__mix = $(LIB_HDL4FPGA)/pgm_delay/mix.dat
 HDL4FPGA__pgm_delay = $(LIB_HDL4FPGA)/pgm_delay/_primary.dat
 HDL4FPGA__omdr__beh = $(LIB_HDL4FPGA)/omdr/beh.dat
@@ -352,6 +354,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__sdrbaphy) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
+    $(HDL4FPGA__phadctor__beh) \
+    $(HDL4FPGA__phadctor) \
     $(HDL4FPGA__pgm_delay__mix) \
     $(HDL4FPGA__pgm_delay) \
     $(HDL4FPGA__omdr__beh) \
@@ -516,15 +520,6 @@ $(HDL4FPGA__adder__def) : ../common/adder.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/adder.vhd
-
-$(HDL4FPGA__adjbrst) \
-$(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio) \
-		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/adjbrst.vhd
 
 $(HDL4FPGA__adjpha) \
 $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
@@ -1331,6 +1326,17 @@ $(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/misc/pgm_delay.vhd
+
+$(HDL4FPGA__adjbrst) \
+$(HDL4FPGA__adjbrst__def) \
+$(HDL4FPGA__phadctor) \
+$(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/adjbrst.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/adjbrst.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
