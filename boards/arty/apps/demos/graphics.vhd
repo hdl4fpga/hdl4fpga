@@ -622,6 +622,7 @@ begin
 		ctlr_cwl     => ddr_param.cwl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
+
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,
@@ -633,6 +634,7 @@ begin
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
+
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),

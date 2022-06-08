@@ -74,12 +74,16 @@ architecture graphics of ulx4m_ld is
 
 	signal ddram_clklck     : std_logic;
 
+	signal ctlrphy_frm     : std_logic;
+	signal ctlrphy_trdy    : std_logic;
+	signal ctlrphy_ini     : std_logic;
+	signal ctlrphy_rw      : std_logic;
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_rlreq : std_logic;
 	signal ctlrphy_rlrdy : std_logic;
-	signal ctlrphy_rlcal   : std_logic;
-	signal ctlrphy_rlseq   : std_logic;
+	signal ctlrphy_rlcal : std_logic;
+	signal ctlrphy_rlseq : std_logic;
 
 	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
@@ -89,6 +93,7 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_cas   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
 	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -676,6 +681,7 @@ begin
 		ctlr_cl      => ddram_tab(ddram_mode).cl,
 		ctlr_cwl     => ddram_tab(ddram_mode).cwl,
 		ctlr_rtt     => "001",
+		ctlr_cmd     => ctlrphy_cmd,
 
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
@@ -684,6 +690,10 @@ begin
 		ctlrphy_rlcal => ctlrphy_rlcal,
 		ctlrphy_rlseq => ctlrphy_rlseq,
 
+		ctlrphy_irdy => ctlrphy_frm,
+		ctlrphy_trdy => ctlrphy_trdy,
+		ctlrphy_ini  => ctlrphy_ini,
+		ctlrphy_rw   => ctlrphy_rw,
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -756,14 +766,19 @@ begin
 		sync_clk      => clk_25mhz,
 		clkop         => physys_clk,
 		sclk          => ctlr_clk,
+		phy_frm       => ctlrphy_frm,
+		phy_trdy      => ctlrphy_trdy,
+		phy_cmd       => ctlrphy_cmd,
+		phy_rw        => ctlrphy_rw,
+		phy_ini       => ctlrphy_ini,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
 
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
-		phy_rlcal   => ctlrphy_rlcal,
-		phy_rlseq   => ctlrphy_rlseq,
+		phy_rlreq     => ctlrphy_rlreq,
+		phy_rlrdy     => ctlrphy_rlrdy,
+		phy_rlcal     => ctlrphy_rlcal,
+		phy_rlseq     => ctlrphy_rlseq,
 
 		phy_rst       => ctlrphy_rst,
 		phy_cs        => ctlrphy_cs,

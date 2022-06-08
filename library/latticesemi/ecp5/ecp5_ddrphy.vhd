@@ -50,7 +50,7 @@ entity ecp5_ddrphy is
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_frm   : buffer std_logic;
-		phy_trdy  : buffer std_logic;
+		phy_trdy  : in  std_logic;
 		phy_rw    : buffer std_logic;
 		phy_cmd   : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini   : buffer std_logic;
@@ -236,7 +236,8 @@ architecture lscc of ecp5_ddrphy is
 	signal ba_cas : std_logic_vector(phy_cas'range);
 	signal ba_we  : std_logic_vector(phy_we'range);
 
-	signal leveling : std_logic;
+	signal ddrphy_b  : std_logic_vector(phy_b'range);
+	signal ddrphy_a  : std_logic_vector(phy_a'range);
 	signal memsync_pause : std_logic;
 
 begin
@@ -315,6 +316,7 @@ begin
 	read_leveling_l_b : block
 		signal read_req  : std_logic;
 		signal read_rdy  : std_logic;
+		signal leveling : std_logic;
 		signal leveled   : std_logic;
 
 		signal ddr_act   : std_logic;
@@ -322,6 +324,9 @@ begin
 		signal ddr_idle  : std_logic;
 
 	begin
+
+		ddrphy_b <= phy_b when leveling='0' else (others => '0');
+		ddrphy_a <= phy_a when leveling='0' else (others => '0');
 
 		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
 		process (phy_trdy, sclk)
@@ -362,13 +367,12 @@ begin
 					end if;
 					phy_frm  <= '0';
 					phy_rw   <= '1';
-					read_rdy <= read_req;
 				elsif (read_req xor read_rdy)='1' then
 					if leveled='1' then
 						phy_ini <= '1';
 						phy_frm <= '0';
 						read_rdy <= read_req;
-					elsif ddr_idle='1' then
+					else
 						phy_ini <= '0';
 						phy_frm <= '1';
 					end if;
@@ -383,8 +387,15 @@ begin
 				read_req  <= '0';
 				leveled   <= '0';
 			elsif rising_edge(sclk) then
-				if (phy_rlrdy xor phy_rlreq)='0' then
-					leveled <= '1';
+				if to_bit(phy_rlrdy xor phy_rlreq)='0' then
+					if (read_req xor read_rdy)='1' then
+						leveled <= '1';
+					else
+						leveled <= '0';
+					end if;
+				elsif to_bit(read_req xor read_rdy)='0' then
+					read_req <= not read_rdy;
+					leveled  <= '0';
 				end if;
 			end if;
 		end process;
@@ -392,7 +403,7 @@ begin
 		process (phy_rlreq, rlrdy)
 			variable aux : bit;
 		begin
-			aux := '0';
+			aux := '1';
 			for i in rlrdy'range loop
 				aux := aux or (to_bit(rlrdy(i)) xor to_bit(phy_rlreq));
 			end loop;
@@ -404,7 +415,7 @@ begin
 	process (sclk)
 		variable aux : std_logic;
 	begin
-		aux := '1';
+		aux := '0';
 		if rising_edge(sclk) then
 			for i in rlcal'range loop
 				aux := aux and rlcal(i);
@@ -477,8 +488,8 @@ begin
 		phy_rst => phy_rst,
 		phy_cs  => phy_cs,
 		phy_cke => phy_cke,
-		phy_b   => phy_b,
-		phy_a   => phy_a,
+		phy_b   => ddrphy_b,
+		phy_a   => ddrphy_a,
 		phy_ras => phy_ras,
 		phy_cas => phy_cas,
 		phy_we  => phy_we,

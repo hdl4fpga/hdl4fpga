@@ -3,12 +3,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
  entity phadctor is
+	generic (
+		taps      : natural);
 	port (
 		clk       : in  std_logic;
-		dtct_req : in  std_logic := '-';
-		dtct_rdy : buffer std_logic;
+		dtct_req  : in  std_logic;
+		dtct_rdy  : buffer std_logic;
 		step_req  : buffer std_logic;
-		step_rdy  : in  std_logic := '-';
+		step_rdy  : in  std_logic;
 		input     : in  std_logic;
 		phase     : buffer std_logic_vector);
  end;
@@ -17,7 +19,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
  architecture beh of phadctor is
-	subtype gap_word  is unsigned(0 to phase'length);
+	subtype gap_word  is unsigned(0 to phase'length-1);
 
 	signal saved : gap_word;
 
@@ -25,8 +27,7 @@ use hdl4fpga.std.all;
 
 	process(clk)
 
-		constant taps : natural := 31;
-		constant num_of_taps  : natural := setif(taps < 2**phase'length-1, taps, 2**phase'length-1);
+		constant num_of_taps  : natural := setif(taps < 2**(phase'length-1)-1, taps, 2**(phase'length-1)-1);
 		constant num_of_steps : natural := unsigned_num_bits(num_of_taps);
 		type gword_vector is array(natural range <>) of gap_word;
 	
@@ -53,8 +54,8 @@ use hdl4fpga.std.all;
 
 	begin
 
-		assert num_of_taps < 2**phase'length
-		report "num_of_steps " & integer'image(num_of_taps) & " greater or equal than 2**phase'length-1 "  & integer'image(2**phase'length-1)
+		assert num_of_taps < 2**(phase'length-1)
+		report "num_of_steps " & integer'image(num_of_taps) & " greater or equal than 2**(phase'length-1)-1 "  & integer'image(2**(phase'length-1)-1)
 		severity WARNING;
 
 		if rising_edge(clk) then
@@ -120,18 +121,20 @@ use hdl4fpga.std.all;
 
 architecture def of adjbrst is
 
-	signal phase : std_logic_vector(0 to 3);
+	signal phase : std_logic_vector(readclksel'range);
 
 	signal dtct_req : std_logic;
 	signal dtct_rdy : std_logic;
 	signal step_rdy  : std_logic;
 
-	signal base : unsigned(phase'range);
+	signal base  : unsigned(lat'length+readclksel'length-1 downto 0);
 	signal input : std_logic;
 
 begin
 
 	phadctor_i : entity hdl4fpga.phadctor
+	generic map (
+		taps => 2**readclksel'length-1)
 	port map (
 		clk      => sclk,
 		dtct_req => dtct_req,
@@ -157,7 +160,7 @@ begin
 				when s_lh =>
 					if (dtct_req xor dtct_rdy)='0' then
 						if dcted='1' then
-							base  <= unsigned(phase);
+							base  <= unsigned(std_logic_vector'(lat & phase));
 							input <= not burstdet;
 							state := s_hl;
 						else
@@ -172,7 +175,7 @@ begin
 						end if;
 						input <= burstdet;
 					end if;
-					readclksel <= phase;
+					readclksel <= phase(readclksel'length-1 downto 0);
 				when s_hl =>
 					if (dtct_req xor dtct_rdy)='0' then
 						readclksel <= std_logic_vector(base + shift_right(unsigned(phase),1));
@@ -182,7 +185,8 @@ begin
 							dcted    := burstdet;
 							step_rdy <= adjstep_rdy;
 						end if;
-						readclksel <= std_logic_vector(base + unsigned(phase));
+						lat        <= std_logic_vector(resize(shift_right(base + unsigned(phase), readclksel'length), lat'length));
+						readclksel <= std_logic_vector(resize(shift_right(base + unsigned(phase), 0),                 readclksel'length));
 					end if;
 					input <= not burstdet;
 				when s_finish =>
