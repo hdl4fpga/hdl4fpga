@@ -129,6 +129,7 @@ begin
 			lat         => lat,
 			readclksel  => readclksel);
 
+		phy_rlcal <= phy_rlreq xor phy_rlrdy;
 	end block;
 
 	wl_b : block

@@ -78,6 +78,8 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_rlreq : std_logic;
 	signal ctlrphy_rlrdy : std_logic;
+	signal ctlrphy_rlcal   : std_logic;
+	signal ctlrphy_rlseq   : std_logic;
 
 	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
@@ -624,7 +626,6 @@ begin
 
 	end block;
 
-	ctlrphy_rlrdy <= ctlrphy_rlreq;
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
@@ -678,6 +679,11 @@ begin
 
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
+		ctlrphy_rlcal => ctlrphy_rlcal,
+		ctlrphy_rlseq => ctlrphy_rlseq,
+
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -753,6 +759,12 @@ begin
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,
+
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
+		phy_rlcal   => ctlrphy_rlcal,
+		phy_rlseq   => ctlrphy_rlseq,
+
 		phy_rst       => ctlrphy_rst,
 		phy_cs        => ctlrphy_cs,
 		phy_cke       => ctlrphy_cke,

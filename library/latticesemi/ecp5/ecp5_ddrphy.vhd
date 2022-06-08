@@ -228,10 +228,9 @@ architecture lscc of ecp5_ddrphy is
 	signal ddr_reset      : std_logic;
 	signal ddrdel         : std_logic;
 
-	signal wlnxt : std_logic;
+	signal rlcal : std_logic_vector(ddr_dqs'range);
+	signal rlrdy     : std_logic_vector(ddr_dqs'range);
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
-	signal wlr : std_logic;
-	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 
 	signal ba_ras : std_logic_vector(phy_ras'range);
 	signal ba_cas : std_logic_vector(phy_cas'range);
@@ -322,7 +321,6 @@ begin
 		signal ddr_pre   : std_logic;
 		signal ddr_idle  : std_logic;
 
-		signal rlrdy     : std_logic_vector(ddr_dqs'range);
 	begin
 
 		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
@@ -402,6 +400,18 @@ begin
 		end process;
 
 	end block;
+
+	process (sclk)
+		variable aux : std_logic;
+	begin
+		aux := '1';
+		if rising_edge(sclk) then
+			for i in rlcal'range loop
+				aux := aux and rlcal(i);
+			end loop;
+			phy_rlcal <= aux;
+		end if;
+	end process;
 
 	process (phy_wlreq, wlrdy)
 		variable aux : bit;
@@ -506,6 +516,10 @@ begin
 			pause     => memsync_pause,
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
+			phy_rlreq  => phy_rlreq,
+			phy_rlrdy  => rlrdy(i),
+			phy_rlcal  => rlcal(i),
+
 			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),
