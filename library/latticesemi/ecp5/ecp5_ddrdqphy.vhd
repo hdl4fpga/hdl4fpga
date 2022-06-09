@@ -87,8 +87,9 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 	signal read   : std_logic_vector(0 to 2-1);
-	signal lat : std_logic_vector(3-1 downto 0);
+	signal lat : std_logic_vector(1-1 downto 0);
 	signal readclksel : std_logic_vector(3-1 downto 0);
+	signal readclksel1 : std_logic_vector(3-1 downto 0);
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 	signal burstdet : std_logic;
 
@@ -102,19 +103,30 @@ begin
 		signal adjstep_rdy : std_logic;
 
 	begin
+		process (sclk)
+		begin
+			if rising_edge(sclk) then
+				adjstep_rdy <= adjstep_req;
+			end if;
+		end process;
 
+	readclksel  <= readclksel1;
 		lat_b : block
-			signal q : std_logic_vector(0 to 3-1);
+			signal q : std_logic_vector(0 to 5-1);
 		begin
 			q(0) <= phy_sti;
 			process(sclk)
 			begin
 				if rising_edge(sclk) then
-					q(1 to q'right) <= q(0 to q'right-1);
+					if phy_sti='0' then
+						q(1 to q'right) <= (others => '0');
+					else
+						q(1 to q'right) <= q(0 to q'right-1);
+					end if;
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), lat);
-			read(0) <= word2byte(q(1 to q'right),   lat);
+			read(1) <= word2byte(q(0 to q'right-1), lat(0)) and not word2byte(q(2 to q'right-1), lat(0));
+			read(0) <= word2byte(q(1 to q'right),   lat(0)) and not word2byte(q(3 to q'right),   lat(0));
 		end block;
 
 		adjbrst_e : entity hdl4fpga.adjbrst
@@ -127,7 +139,7 @@ begin
 			read        => read(1),
 			burstdet    => burstdet,
 			lat         => lat,
-			readclksel  => readclksel);
+			readclksel  => readclksel1);
 
 		phy_rlcal <= phy_rlreq xor phy_rlrdy;
 	end block;
@@ -174,11 +186,11 @@ begin
 		dqsi      => xxx(0), --ddr_dqsi,
 		dqsr90    => dqsr90,
 
-		read0     => read(0),
 		read1     => read(1),
-		readclksel0 => readclksel(0),
-		readclksel1 => readclksel(1),
+		read0     => read(0),
 		readclksel2 => readclksel(2),
+		readclksel1 => readclksel(1),
+		readclksel0 => readclksel(0),
 
 		rdpntr2   => rdpntr(2),
 		rdpntr1   => rdpntr(1),

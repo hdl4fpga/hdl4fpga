@@ -156,6 +156,7 @@ begin
 					dtct_req <= not dtct_rdy;
 					step_rdy <= adjstep_rdy;
 					state    := s_lh;
+					lat      <= (lat'range => '0');
 					input    <= burstdet;
 				when s_lh =>
 					if (dtct_req xor dtct_rdy)='0' then
@@ -175,10 +176,10 @@ begin
 						end if;
 						input <= burstdet;
 					end if;
-					readclksel <= phase(readclksel'length-1 downto 0);
+					readclksel <= phase;
 				when s_hl =>
 					if (dtct_req xor dtct_rdy)='0' then
-						readclksel <= std_logic_vector(base + shift_right(unsigned(phase),1));
+						readclksel <= std_logic_vector(resize(base + unsigned(phase), readclksel'length));
 						state := s_finish;
 					elsif (adjstep_rdy xor adjstep_req)='0' then
 						if read='1' then

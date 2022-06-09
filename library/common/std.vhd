@@ -1304,7 +1304,7 @@ package body std is
 		return std_logic is
 		variable retval : std_logic_vector(0 to 0);
 	begin
-		retval := word2byte(word, addr);
+		retval := word2byte(word, (0 to 0 => addr), 1);
 		return retval(0);
 	end;
 
@@ -1666,14 +1666,19 @@ package body std is
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
-		assert data'length <= size
-			report "fill : size lower than size -> data length : " & itoa(data'length) & " : " & itoa(size)
-			severity failure;
-		retval_right(0 to data'length-1)    := data;
-		retval_left(data'length-1 downto 0) := data;
 		if right then
+			if data'length > size then
+				retval_right(0 to size-1):= std_logic_vector(resize(rotate_left(unsigned(data), size), size));
+				return retval_right(0 to size-1);
+			end if;
+			retval_right(0 to data'length-1) := data;
 			return retval_right;
 		end if;
+		if data'length > size then
+			retval_left(size-1 downto 0) :=  std_logic_vector(resize(unsigned(data), size));
+			return retval_left(size-1 downto 0);
+		end if;
+		retval_left(data'length-1 downto 0) := data;
 		return retval_left;
 	end;
 

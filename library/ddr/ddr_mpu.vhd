@@ -139,7 +139,7 @@ architecture arch of ddr_mpu is
 	signal ddr_rdy_fch : std_logic;
 
 	type ddr_state_vector is array(natural range <>) of ddr_state_word;
-	constant ddr_state_tab : ddr_state_vector(0 to 13-1) := (
+	constant ddr_state_tab : ddr_state_vector(0 to 14-1) := (
 
 		-------------
 		-- mpu_pre --
@@ -175,6 +175,10 @@ architecture arch of ddr_mpu is
 		 ddr_cmi => mpu_write, ddr_cmo => mpu_write, ddr_lat => id_bl,
 		 ddr_rea => '0', ddr_cen => '1', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '1'),
+		(ddr_state => ddrs_act, ddr_state_n => ddrs_read_bl,
+		 ddr_cmi => mpu_nop, ddr_cmo => mpu_nop, ddr_lat => id_idle,
+		 ddr_rea => '1', ddr_cen => '0', ddr_fch => '0',
+		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'),
 
 		--------------
 		-- mpu_read --

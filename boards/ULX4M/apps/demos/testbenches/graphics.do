@@ -1,4 +1,7 @@
 onerror {resume}
+quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i { (context /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i )&{DYNDELAY7 , DYNDELAY6 , DYNDELAY5 , DYNDELAY4 , DYNDELAY3 , DYNDELAY2 , DYNDELAY1 , DYNDELAY0 }} dyndelay_0
+quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i {/testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READCLKSEL2  } readclksel_0
+quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i { (context /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i )&{READCLKSEL2 , READCLKSEL1 , READCLKSEL0 }} readclksel_0001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/clk_25mhz
 add wave -noupdate -expand -group rgmii /testbench/du_e/rgmii_rx_clk
@@ -64,39 +67,39 @@ add wave -noupdate -group dqsbufm_0 -radix hexadecimal /testbench/du_e/ddrphy_e/
 add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/dqs_clean
 add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/DATAVALID
 add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/BURSTDET
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_sti
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/taps
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/num_of_steps
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/num_of_taps
-add wave -noupdate -radix binary -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/gaptab(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/gaptab(0) -radix unsigned}} -expand -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/gaptab(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/gaptab(0) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phadctor_i/line__28/gaptab
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/phy_dqo
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_dqo
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlreq
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlrdy
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_rlreq
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_rlrdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/sclk
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/phy_frm
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/phy_we
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/phy_trdy
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/phy_rw
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/SCLK
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READCLKSEL2
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READCLKSEL1
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READCLKSEL0
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READ1
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READ0
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/DQSI
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/BURSTDET
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_rlcal
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/leveled
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_frm
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_trdy
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_rw
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_ini
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_cmd
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_rlseq
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_idle
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/dyndelay_0
+add wave -noupdate -label readclksel_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/readclksel_0001
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/sclk
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/line__147/state
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/adj_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/adj_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/adjstep_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/adjstep_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/read
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/lat
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/readclksel
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/phase
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/dtct_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/dtct_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/step_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/base
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/input
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {438140560 fs} 0} {{Cursor 2} {11636802390 fs} 0} {{Cursor 3} {14992176490 fs} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 283
-configure wave -valuecolwidth 209
+WaveRestoreCursors {{Cursor 1} {11670000000 fs} 0} {{Cursor 2} {14500104600 fs} 0} {{Cursor 3} {14992176490 fs} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 187
+configure wave -valuecolwidth 91
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -109,4 +112,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11583806360 fs} {11645329800 fs}
+WaveRestoreZoom {11640287890 fs} {11755774330 fs}

@@ -62,7 +62,7 @@ entity ecp5_ddrphy is
 		phy_rlseq : in  std_logic := '0';
 		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
 		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_sto   : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_b     : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
 		phy_a     : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		phy_cke   : in  std_logic_vector(cmmd_gear-1 downto 0);
@@ -314,14 +314,14 @@ begin
 	end block;
 
 	read_leveling_l_b : block
-		signal read_req  : std_logic;
-		signal read_rdy  : std_logic;
+		signal read_req : std_logic;
+		signal read_rdy : std_logic;
 		signal leveling : std_logic;
-		signal leveled   : std_logic;
+		signal leveled  : std_logic;
 
-		signal ddr_act   : std_logic;
-		signal ddr_pre   : std_logic;
-		signal ddr_idle  : std_logic;
+		signal ddr_act  : std_logic;
+		signal ddr_pre  : std_logic;
+		signal ddr_idle : std_logic;
 
 	begin
 
@@ -403,7 +403,7 @@ begin
 		process (phy_rlreq, rlrdy)
 			variable aux : bit;
 		begin
-			aux := '1';
+			aux := '0';
 			for i in rlrdy'range loop
 				aux := aux or (to_bit(rlrdy(i)) xor to_bit(phy_rlreq));
 			end loop;
@@ -415,7 +415,7 @@ begin
 	process (sclk)
 		variable aux : std_logic;
 	begin
-		aux := '0';
+		aux := '1';
 		if rising_edge(sclk) then
 			for i in rlcal'range loop
 				aux := aux and rlcal(i);
@@ -527,10 +527,11 @@ begin
 			pause     => memsync_pause,
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
-			phy_rlreq  => phy_rlreq,
-			phy_rlrdy  => rlrdy(i),
-			phy_rlcal  => rlcal(i),
+			phy_rlreq => phy_rlreq,
+			phy_rlrdy => rlrdy(i),
+			phy_rlcal => rlcal(i),
 
+			phy_sti   => phy_sto(0),
 			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),
@@ -556,7 +557,7 @@ begin
 	sto_i : entity hdl4fpga.align
 	generic map (
 		n => 2*data_gear,
-		d => (0 to 2*data_gear-1 => 3))
+		d => (0 to 2*data_gear-1 => 0))
 	port map (
 		clk => sclk,
 		di  => phy_sti,
