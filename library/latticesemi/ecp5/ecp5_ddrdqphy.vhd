@@ -93,7 +93,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 	signal burstdet : std_logic;
 
-	constant delay : time := 6 ns;
+	constant delay : time := 2 ns;
 	signal xxx      : std_logic_vector(0 to 0);
 begin
 
@@ -103,14 +103,17 @@ begin
 		signal adjstep_rdy : std_logic;
 
 	begin
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				adjstep_rdy <= adjstep_req;
-			end if;
-		end process;
 
-	readclksel  <= readclksel1;
+		step_delay_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => 4))
+		port map (
+			clk => sclk,
+			di(0) => adjstep_req,
+			do(0) => adjstep_rdy);
+
+		readclksel  <= readclksel1;
 		lat_b : block
 			signal q : std_logic_vector(0 to 5-1);
 		begin

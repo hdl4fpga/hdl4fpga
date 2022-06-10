@@ -93,6 +93,7 @@ use hdl4fpga.std.all;
 				end if;
 			else
 				start := '0';
+				phase <= (phase'range => '0');
 				dtct_rdy <= to_stdulogic(to_bit(dtct_req));
 			end if;
 		end if;
@@ -125,7 +126,8 @@ architecture def of adjbrst is
 
 	signal dtct_req : std_logic;
 	signal dtct_rdy : std_logic;
-	signal step_rdy  : std_logic;
+	signal dtct0_rdy : std_logic;
+	signal step_rdy : std_logic;
 
 	signal base  : unsigned(lat'length+readclksel'length-1 downto 0);
 	signal input : std_logic;
@@ -138,11 +140,20 @@ begin
 	port map (
 		clk      => sclk,
 		dtct_req => dtct_req,
-		dtct_rdy => dtct_rdy,
+		dtct_rdy => dtct0_rdy,
 		step_req => adjstep_req,
 		step_rdy => step_rdy,
 		input    => input,
 		phase    => phase);
+
+	step_delay_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 => 4))
+	port map (
+		clk => sclk,
+		di(0) => dtct0_rdy,
+		do(0) => dtct_rdy);
 
 	process(sclk)
 		type states is (s_start, s_lh, s_hl, s_finish);
