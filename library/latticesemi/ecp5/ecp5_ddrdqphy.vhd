@@ -107,7 +107,7 @@ begin
 		step_delay_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => 4))
+			d => (0 => 64))
 		port map (
 			clk => sclk,
 			di(0) => adjstep_req,
