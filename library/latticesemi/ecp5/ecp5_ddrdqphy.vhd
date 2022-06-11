@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -87,14 +88,17 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr : std_logic_vector(3-1 downto 0);
 
 	signal read   : std_logic_vector(0 to 2-1);
-	signal lat : std_logic_vector(1-1 downto 0);
+	signal lat    : std_logic_vector(1-1 downto 0);
 	signal readclksel : std_logic_vector(3-1 downto 0);
 	signal readclksel1 : std_logic_vector(3-1 downto 0);
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 	signal burstdet : std_logic;
+	signal dqs_pause : std_logic;
+	signal rl_pause : std_logic;
+	signal datavalid : std_logic;
 
-	constant delay : time := 2 ns;
-	signal xxx      : std_logic_vector(0 to 0);
+	constant delay : time := 0 ns;
+	signal xxx     : std_logic_vector(0 to 0);
 begin
 
 	rl_b : block
@@ -104,14 +108,27 @@ begin
 
 	begin
 
-		step_delay_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => 64))
-		port map (
-			clk => sclk,
-			di(0) => adjstep_req,
-			do(0) => adjstep_rdy);
+		process (sclk)
+			variable cntr : unsigned(0 to 6);
+		begin
+			if rising_edge(sclk) then
+				if to_bit(adjstep_rdy xor adjstep_req)='0' then
+					rl_pause <= '0';
+					cntr := (others => '0');
+					adjstep_rdy <= to_stdulogic(to_bit(adjstep_req));
+				elsif cntr(0)='0' then
+					if cntr(1)='0' then
+						rl_pause <= '1';
+					else
+						rl_pause <= '0';
+					end if;
+					cntr := cntr + 1;
+				else
+					rl_pause <= '0';
+					adjstep_rdy <= to_stdulogic(to_bit(adjstep_req));
+				end if;
+			end if;
+		end process;
 
 		readclksel  <= readclksel1;
 		lat_b : block
@@ -140,6 +157,7 @@ begin
 			adjstep_req => adjstep_req,
 			adjstep_rdy => adjstep_rdy,
 			read        => read(1),
+			datavalid   => datavalid,
 			burstdet    => burstdet,
 			lat         => lat,
 			readclksel  => readclksel1);
@@ -177,6 +195,7 @@ begin
 
 	end block;
 
+	dqs_pause <= rl_pause or pause;
 	dqsbufm_i : dqsbufm 
 	port map (
 		rst       => rst,
@@ -184,7 +203,7 @@ begin
 		eclk      => eclk,
 
 		ddrdel    => ddrdel,
-		pause     => pause,
+		pause     => dqs_pause,
 
 		dqsi      => xxx(0), --ddr_dqsi,
 		dqsr90    => dqsr90,
@@ -202,7 +221,7 @@ begin
 		wrpntr1   => wrpntr(1),
 		wrpntr0   => wrpntr(0),
 
-		datavalid => open,
+		datavalid => datavalid,
 		rdmove    => '0',
 		wrmove    => '0',
 		burstdet  => burstdet,
