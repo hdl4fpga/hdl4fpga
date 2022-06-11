@@ -203,12 +203,14 @@ begin
 				when s_hl =>
 					if (dtct_req xor dtct_rdy)='0' then
 						state := s_finish;
-					lat        <= std_logic_vector(resize(shift_right(base + (unsigned(phase) srl 1), readclksel'length), lat'length));
-					readclksel <= std_logic_vector(resize(shift_right(base + (unsigned(phase) srl 1), 0),                 readclksel'length));
-					elsif (adjstep_rdy xor adjstep_req)='0' then
+					lat        <= std_logic_vector(resize(shift_right(base + ((unsigned(phase)+1) srl 1), readclksel'length), lat'length));
+					readclksel <= std_logic_vector(resize(shift_right(base + ((unsigned(phase)+1) srl 1), 0),                 readclksel'length));
+					else
+						if (adjstep_rdy xor adjstep_req)='0' then
+							step_rdy <= adjstep_rdy;
+						end if;
 						lat        <= std_logic_vector(resize(shift_right(base + unsigned(phase), readclksel'length), lat'length));
 						readclksel <= std_logic_vector(resize(shift_right(base + unsigned(phase), 0),                 readclksel'length));
-						step_rdy <= adjstep_rdy;
 					end if;
 					edge  <= '1';
 				when s_finish =>
