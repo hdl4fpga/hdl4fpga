@@ -93,7 +93,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 	signal burstdet : std_logic;
 	signal dqs_pause : std_logic;
-	signal rl_pause : std_logic;
+	signal lv_pause : std_logic;
 	signal datavalid : std_logic;
 
 	signal wladjstep_req : std_logic;
@@ -107,27 +107,28 @@ architecture lscc of ecp5_ddrdqphy is
 	signal xxx     : std_logic_vector(0 to 0);
 begin
 
-	adjstep_req <= 
-		to_bit(rladjstep_req) xor to_bit(rladjstep_rdy) xor
-		to_bit(wladjstep_req) xor to_bit(wladjstep_rdy);
+	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_rdy);
+	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy);
 	process (sclk)
 		variable cntr : unsigned(0 to 6);
 	begin
 		if rising_edge(sclk) then
 			if (adjstep_rdy xor adjstep_req)='0' then
-				rl_pause <= '0';
+				lv_pause <= '0';
 				cntr := (others => '0');
-				adjstep_rdy <= adjstep_req;
+				rladjstep_rdy <= rladjstep_req;
+				wladjstep_rdy <= wladjstep_req;
 			elsif cntr(0)='0' then
 				if cntr(1)='0' then
-					rl_pause <= '1';
+					lv_pause <= '1';
 				else
-					rl_pause <= '0';
+					lv_pause <= '0';
 				end if;
 				cntr := cntr + 1;
 			else
-				rl_pause <= '0';
-				adjstep_rdy <= adjstep_req;
+				lv_pause <= '0';
+				rladjstep_rdy <= rladjstep_req;
+				wladjstep_rdy <= wladjstep_req;
 			end if;
 		end if;
 	end process;
@@ -188,7 +189,7 @@ begin
 
 	end block;
 
-	dqs_pause <= rl_pause or pause;
+	dqs_pause <= lv_pause or pause;
 	dqsbufm_i : dqsbufm 
 	port map (
 		rst       => rst,
