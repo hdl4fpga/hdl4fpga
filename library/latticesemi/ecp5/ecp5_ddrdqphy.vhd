@@ -90,47 +90,51 @@ architecture lscc of ecp5_ddrdqphy is
 	signal read   : std_logic_vector(0 to 2-1);
 	signal lat    : std_logic_vector(1-1 downto 0);
 	signal readclksel : std_logic_vector(3-1 downto 0);
-	signal readclksel1 : std_logic_vector(3-1 downto 0);
 	signal wlpha  : std_logic_vector(8-1 downto 0);
 	signal burstdet : std_logic;
 	signal dqs_pause : std_logic;
 	signal rl_pause : std_logic;
 	signal datavalid : std_logic;
 
+	signal wladjstep_req : std_logic;
+	signal wladjstep_rdy : std_logic;
+	signal rladjstep_req : std_logic;
+	signal rladjstep_rdy : std_logic;
+	signal adjstep_req   : bit;
+	signal adjstep_rdy   : bit;
+
 	constant delay : time := 3 ns;
 	signal xxx     : std_logic_vector(0 to 0);
 begin
 
-	rl_b : block
-
-		signal adjstep_req : std_logic;
-		signal adjstep_rdy : std_logic;
-
+	adjstep_req <= 
+		to_bit(rladjstep_req) xor to_bit(rladjstep_rdy) xor
+		to_bit(wladjstep_req) xor to_bit(wladjstep_rdy);
+	process (sclk)
+		variable cntr : unsigned(0 to 6);
 	begin
-
-		process (sclk)
-			variable cntr : unsigned(0 to 6);
-		begin
-			if rising_edge(sclk) then
-				if to_bit(adjstep_rdy xor adjstep_req)='0' then
-					rl_pause <= '0';
-					cntr := (others => '0');
-					adjstep_rdy <= to_stdulogic(to_bit(adjstep_req));
-				elsif cntr(0)='0' then
-					if cntr(1)='0' then
-						rl_pause <= '1';
-					else
-						rl_pause <= '0';
-					end if;
-					cntr := cntr + 1;
+		if rising_edge(sclk) then
+			if (adjstep_rdy xor adjstep_req)='0' then
+				rl_pause <= '0';
+				cntr := (others => '0');
+				adjstep_rdy <= adjstep_req;
+			elsif cntr(0)='0' then
+				if cntr(1)='0' then
+					rl_pause <= '1';
 				else
 					rl_pause <= '0';
-					adjstep_rdy <= to_stdulogic(to_bit(adjstep_req));
 				end if;
+				cntr := cntr + 1;
+			else
+				rl_pause <= '0';
+				adjstep_rdy <= adjstep_req;
 			end if;
-		end process;
+		end if;
+	end process;
 
-		readclksel  <= readclksel1;
+	rl_b : block
+	begin
+
 		lat_b : block
 			signal q : std_logic_vector(0 to 5-1);
 		begin
@@ -154,31 +158,20 @@ begin
 			sclk        => sclk,
 			adj_req     => phy_rlreq,
 			adj_rdy     => phy_rlrdy,
-			adjstep_req => adjstep_req,
-			adjstep_rdy => adjstep_rdy,
+			adjstep_req => rladjstep_req,
+			adjstep_rdy => rladjstep_rdy,
 			read        => read(1),
 			datavalid   => datavalid,
 			burstdet    => burstdet,
 			lat         => lat,
-			readclksel  => readclksel1);
+			readclksel  => readclksel);
 
 		phy_rlcal <= phy_rlreq xor phy_rlrdy;
 	end block;
 
 	wl_b : block
-		signal step_rdy : std_logic;
-		signal step_req : std_logic;
 	begin
 
-		step_delay_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => 4))
-		port map (
-			clk => sclk,
-			di(0) => step_req,
-			do(0) => step_rdy);
-	
 		xxx(0) <= transport ddr_dqsi after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
@@ -188,8 +181,8 @@ begin
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
-			step_req => step_req,
-			step_rdy => step_rdy,
+			step_req => wladjstep_req,
+			step_rdy => wladjstep_rdy,
 			smp      => xxx,
 			delay    => wlpha);
 

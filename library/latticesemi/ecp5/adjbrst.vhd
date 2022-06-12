@@ -127,7 +127,6 @@ architecture def of adjbrst is
 
 	signal dtct_req : std_logic;
 	signal dtct_rdy : std_logic;
-	signal dtct0_rdy : std_logic;
 --	signal step_rdy : std_logic;
 
 	signal edge  : std_logic;
