@@ -128,9 +128,8 @@ architecture def of adjbrst is
 	signal dtct_req : std_logic;
 	signal dtct_rdy : std_logic;
 	signal dtct0_rdy : std_logic;
-	signal step_rdy : std_logic;
+--	signal step_rdy : std_logic;
 
-	signal base  : unsigned(lat'length+readclksel'length-1 downto 0);
 	signal edge  : std_logic;
 	signal input : std_logic;
 
@@ -144,40 +143,38 @@ begin
 		dtct_req => dtct_req,
 		dtct_rdy => dtct_rdy,
 		step_req => adjstep_req,
-		step_rdy => step_rdy,
+		step_rdy => adjstep_rdy,
 		edge     => edge,
 		input    => input,
 		phase    => phase);
 
---	step_delay_e : entity hdl4fpga.align
---	generic map (
---		n => 1,
---		d => (0 => 4))
---	port map (
---		clk => sclk,
---		di(0) => dtct0_rdy,
---		do(0) => dtct_rdy);
-
 	process(sclk)
-		type states is (s_start, s_lh, s_hl, s_finish);
-		variable state : states;
-		variable dcted : std_logic;
-		variable ena : std_logic;
+		variable latch : std_logic;
 	begin
 		if rising_edge(sclk) then
 			if read='1' then
-				ena := '1';
-			elsif ena='1' then
+				latch := '0';
+			elsif latch='0' then
 				if datavalid='1' then
+					latch := '1';
 					input <= burstdet;
-					ena := '0';
 				end if;
 			end if;
+		end if;
+	end process;
+
+	process(sclk, input)
+		type states is (s_start, s_lh, s_hl, s_finish);
+		variable state : states;
+		variable dcted : std_logic;
+		variable aux   : unsigned(lat'length+readclksel'length-1 downto 0);
+		variable base  : unsigned(lat'length+readclksel'length-1 downto 0);
+	begin
+		if rising_edge(sclk) then
 			if to_bit(adj_req xor adj_rdy)='1' then
 				case state is
 				when s_start =>
 					dtct_req <= not dtct_rdy;
-					step_rdy <= adjstep_rdy;
 					state    := s_lh;
 					lat      <= (lat'range => '0');
 					dcted    := '0';
@@ -185,7 +182,7 @@ begin
 				when s_lh =>
 					if (dtct_req xor dtct_rdy)='0' then
 						if dcted='1' then
-							base  <= unsigned(std_logic_vector'(lat & phase));
+							base  := unsigned(std_logic_vector'(lat & phase));
 							state := s_hl;
 						else
 							lat   <= std_logic_vector(unsigned(lat) + 1);
@@ -196,29 +193,31 @@ begin
 						if dcted='0' then
 							dcted := input;
 						end if;
-						step_rdy <= adjstep_rdy;
 					end if;
 					edge  <= '0';
 					readclksel <= phase;
 				when s_hl =>
+					aux := base + unsigned(phase);
+					aux := aux rol lat'length;
+					lat <= std_logic_vector(aux(lat'range));
+					aux := aux rol readclksel'length;
+					readclksel <= std_logic_vector(aux(readclksel'range));
+					edge <= '1';
 					if (dtct_req xor dtct_rdy)='0' then
+						aux   := resize(unsigned(phase), aux'length) + 1;
+						base  := base + shift_right(aux,1);
 						state := s_finish;
-					lat        <= std_logic_vector(resize(shift_right(base + ((unsigned(phase)+1) srl 1), readclksel'length), lat'length));
-					readclksel <= std_logic_vector(resize(shift_right(base + ((unsigned(phase)+1) srl 1), 0),                 readclksel'length));
-					else
-						if (adjstep_rdy xor adjstep_req)='0' then
-							step_rdy <= adjstep_rdy;
-						end if;
-						lat        <= std_logic_vector(resize(shift_right(base + unsigned(phase), readclksel'length), lat'length));
-						readclksel <= std_logic_vector(resize(shift_right(base + unsigned(phase), 0),                 readclksel'length));
 					end if;
-					edge  <= '1';
 				when s_finish =>
+					aux := base;
+					aux := aux rol lat'length;
+					lat <= std_logic_vector(aux(lat'range));
+					aux := aux rol readclksel'length;
+					readclksel <= std_logic_vector(aux(readclksel'range));
 				end case;
 			else
 				dtct_req <= dtct_rdy;
 				adj_rdy  <= adj_req;
-				step_rdy <= adjstep_rdy;
 				state    := s_start;
 			end if;
 		end if;

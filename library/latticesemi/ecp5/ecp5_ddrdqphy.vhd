@@ -97,7 +97,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal rl_pause : std_logic;
 	signal datavalid : std_logic;
 
-	constant delay : time := 0 ns;
+	constant delay : time := 3 ns;
 	signal xxx     : std_logic_vector(0 to 0);
 begin
 
