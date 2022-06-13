@@ -77,7 +77,7 @@ begin
 
 		delay_i : delayg
 		generic map (
-			del_mode => "DQS_ALIGNED_X2")
+			del_mode => "DQS_CMD_CLK")
 		port map (
 			a => ck,
 			z => ddr_ck);

@@ -68,6 +68,8 @@ add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i
 add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/DATAVALID
 add wave -noupdate -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/BURSTDET
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/sclk
+add wave -noupdate /testbench/du_e/mii_rxdv
+add wave -noupdate -radix hexadecimal /testbench/du_e/mii_rxd
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/SCLK
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/READCLKSEL2
@@ -89,8 +91,8 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/l
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/dtct_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/dtct_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11980093920 fs} 0} {{Cursor 2} {13557369120 fs} 0} {{Cursor 3} {14626382370 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {11980093920 fs} 0} {{Cursor 2} {13557369120 fs} 0} {{Cursor 3} {15000758240 fs} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 233
 configure wave -valuecolwidth 255
 configure wave -justifyvalue left
@@ -105,4 +107,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {10951647300 fs} {14160439620 fs}
+WaveRestoreZoom {14984709260 fs} {15034290740 fs}
