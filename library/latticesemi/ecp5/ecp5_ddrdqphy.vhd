@@ -108,7 +108,6 @@ architecture lscc of ecp5_ddrdqphy is
 begin
 
 	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_rdy);
-	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy);
 	process (sclk)
 		variable cntr : unsigned(0 to 6);
 	begin
@@ -132,6 +131,7 @@ begin
 			end if;
 		end if;
 	end process;
+	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy);
 
 	rl_b : block
 	begin

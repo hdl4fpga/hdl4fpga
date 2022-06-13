@@ -328,7 +328,7 @@ begin
 		ddrphy_b <= phy_b when leveling='0' else (others => '0');
 		ddrphy_a <= phy_a when leveling='0' else (others => '0');
 
-		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
+--		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
 		process (phy_trdy, sclk)
 			variable s_pre : std_logic;
 		begin
@@ -391,10 +391,12 @@ begin
 					if (read_req xor read_rdy)='1' then
 						leveled <= '1';
 					else
+						leveling <= '0';
 						leveled <= '0';
 					end if;
 				elsif to_bit(read_req xor read_rdy)='0' then
 					read_req <= not read_rdy;
+					leveling <= '1';
 					leveled  <= '0';
 				end if;
 			end if;

@@ -213,6 +213,7 @@ begin
 					lat <= std_logic_vector(aux(lat'range));
 					aux := aux rol readclksel'length;
 					readclksel <= std_logic_vector(aux(readclksel'range));
+					adj_rdy <= adj_req;
 				end case;
 			else
 				dtct_req <= dtct_rdy;
