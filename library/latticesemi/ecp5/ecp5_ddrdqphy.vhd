@@ -178,7 +178,7 @@ begin
 		generic map (
 			taps     => 2**wlpha'length-1)
 		port map (
-			edge     => std_logic'('0'),
+			edge     => std_logic'('1'),
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
