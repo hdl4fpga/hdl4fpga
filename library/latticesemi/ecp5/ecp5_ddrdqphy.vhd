@@ -72,29 +72,28 @@ use hdl4fpga.std.all;
 
 architecture lscc of ecp5_ddrdqphy is
 
-	signal dqsr90  : std_logic;
-	signal dqsw270 : std_logic;
-	signal dqsw    : std_logic;
+	signal dqsr90        : std_logic;
+	signal dqsw          : std_logic;
+	signal dqsw270       : std_logic;
 	
-	
-	signal dqi    : std_logic_vector(phy_dqi'range);
+	signal dqi           : std_logic_vector(phy_dqi'range);
 
-	signal dqt    : std_logic_vector(phy_dqt'range);
-	signal dqst   : std_logic_vector(phy_dqst'range);
-	signal dqso   : std_logic_vector(phy_dqso'range);
-	signal wle    : std_logic;
+	signal dqt           : std_logic_vector(phy_dqt'range);
+	signal dqst          : std_logic_vector(phy_dqst'range);
+	signal dqso          : std_logic_vector(phy_dqso'range);
+	signal wle           : std_logic;
 
-	signal rdpntr : std_logic_vector(3-1 downto 0);
-	signal wrpntr : std_logic_vector(3-1 downto 0);
+	signal rdpntr        : std_logic_vector(3-1 downto 0);
+	signal wrpntr        : std_logic_vector(3-1 downto 0);
 
-	signal read   : std_logic_vector(0 to 2-1);
-	signal lat    : std_logic_vector(1-1 downto 0);
-	signal readclksel : std_logic_vector(3-1 downto 0);
-	signal wlpha  : std_logic_vector(8-1 downto 0);
-	signal burstdet : std_logic;
-	signal dqs_pause : std_logic;
-	signal lv_pause : std_logic;
-	signal datavalid : std_logic;
+	signal read          : std_logic_vector(0 to 2-1);
+	signal lat           : std_logic_vector(1-1 downto 0);
+	signal readclksel    : std_logic_vector(3-1 downto 0);
+	signal wlpha         : std_logic_vector(8-1 downto 0);
+	signal burstdet      : std_logic;
+	signal dqs_pause     : std_logic;
+	signal lv_pause      : std_logic;
+	signal datavalid     : std_logic;
 
 	signal wladjstep_req : std_logic;
 	signal wladjstep_rdy : std_logic;
@@ -103,11 +102,12 @@ architecture lscc of ecp5_ddrdqphy is
 	signal adjstep_req   : bit;
 	signal adjstep_rdy   : bit;
 
-	constant delay : time := 3 ns;
-	signal xxx     : std_logic_vector(0 to 0);
+	constant delay       : time := 0 ns;
+	signal xxx           : std_logic_vector(0 to 0);
+
 begin
 
-	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_rdy);
+	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_req);
 	process (sclk)
 		variable cntr : unsigned(0 to 6);
 	begin
@@ -115,8 +115,8 @@ begin
 			if (adjstep_rdy xor adjstep_req)='0' then
 				lv_pause <= '0';
 				cntr := (others => '0');
-				rladjstep_rdy <= rladjstep_req;
-				wladjstep_rdy <= wladjstep_req;
+				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
+				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
 			elsif cntr(0)='0' then
 				if cntr(1)='0' then
 					lv_pause <= '1';
@@ -126,8 +126,8 @@ begin
 				cntr := cntr + 1;
 			else
 				lv_pause <= '0';
-				rladjstep_rdy <= rladjstep_req;
-				wladjstep_rdy <= wladjstep_req;
+				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
+				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
 			end if;
 		end if;
 	end process;
@@ -171,24 +171,27 @@ begin
 	end block;
 
 	wl_b : block
+		signal d : std_logic_vector(0 to 0);
 	begin
 
-		xxx(0) <= transport ddr_dqsi after delay;
+		d(0) <= transport ddr_dqi(0) after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
+			dtaps => 1,
 			taps     => 2**wlpha'length-1)
 		port map (
-			edge     => std_logic'('1'),
+			edge     => std_logic'('0'),
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
 			step_req => wladjstep_req,
 			step_rdy => wladjstep_rdy,
-			smp      => xxx,
+			smp      => d,
 			delay    => wlpha);
 
 	end block;
 
+	xxx(0) <= transport ddr_dqsi after delay;
 	dqs_pause <= lv_pause or pause;
 	dqsbufm_i : dqsbufm 
 	port map (
