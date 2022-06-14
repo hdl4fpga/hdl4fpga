@@ -103,7 +103,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal adjstep_rdy   : bit;
 
 	constant delay       : time := 0 ns;
-	signal xxx           : std_logic_vector(0 to 0);
+	signal dqsi          : std_logic;
 
 begin
 
@@ -150,8 +150,8 @@ begin
 					end if;
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), lat(0)) and not word2byte(q(2 to q'right-1), lat(0));
-			read(0) <= word2byte(q(1 to q'right),   lat(0)) and not word2byte(q(3 to q'right),   lat(0));
+			read(1) <= word2byte(q(0 to q'right-1), '0') and not word2byte(q(2 to q'right-1), '0');
+			read(0) <= word2byte(q(0 to q'right-1), lat(0)) and not word2byte(q(2 to q'right-1), lat(0));
 		end block;
 
 		adjbrst_e : entity hdl4fpga.adjbrst
@@ -191,7 +191,7 @@ begin
 
 	end block;
 
-	xxx(0) <= transport ddr_dqsi after delay;
+	dqsi <= transport ddr_dqsi after delay;
 	dqs_pause <= lv_pause or pause;
 	dqsbufm_i : dqsbufm 
 	port map (
@@ -202,7 +202,7 @@ begin
 		ddrdel    => ddrdel,
 		pause     => dqs_pause,
 
-		dqsi      => xxx(0), --ddr_dqsi,
+		dqsi      => dqsi,
 		dqsr90    => dqsr90,
 
 		read1     => read(1),
