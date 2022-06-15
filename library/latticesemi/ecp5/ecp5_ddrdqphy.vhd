@@ -150,7 +150,7 @@ begin
 					end if;
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), '0') and not word2byte(q(2 to q'right-1), '0');
+			read(1) <= word2byte(q(0 to q'right-1), lat(0)) and not word2byte(q(2 to q'right-1), lat(0));
 			read(0) <= word2byte(q(0 to q'right-1), lat(0)) and not word2byte(q(2 to q'right-1), lat(0));
 		end block;
 
