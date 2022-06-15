@@ -112,7 +112,7 @@ entity adjbrst is
 		adjstep_req : buffer std_logic;
 		adjstep_rdy : in  std_logic;
 		read        : in  std_logic;
-		datavalid    : in  std_logic;
+		datavalid   : in  std_logic;
 		burstdet    : in  std_logic;
 		lat         : buffer std_logic_vector;
 		readclksel  : out std_logic_vector);
@@ -125,12 +125,15 @@ architecture def of adjbrst is
 
 	signal phase : std_logic_vector(readclksel'range);
 
-	signal dtct_req : std_logic;
-	signal dtct_rdy : std_logic;
---	signal step_rdy : std_logic;
+	signal brststep_req : std_logic;
+	signal brststep_rdy : std_logic;
+	signal phstep_req   : std_logic;
+	signal phstep_rdy   : std_logic;
+	signal dtct_req     : std_logic;
+	signal dtct_rdy     : std_logic;
 
-	signal edge  : std_logic;
-	signal input : std_logic;
+	signal edge         : std_logic;
+	signal input        : std_logic;
 
 begin
 
@@ -141,8 +144,8 @@ begin
 		clk      => sclk,
 		dtct_req => dtct_req,
 		dtct_rdy => dtct_rdy,
-		step_req => adjstep_req,
-		step_rdy => adjstep_rdy,
+		step_req => phstep_req,
+		step_rdy => phstep_rdy,
 		edge     => edge,
 		input    => input,
 		phase    => phase);
@@ -162,6 +165,17 @@ begin
 		end if;
 	end process;
 
+	adjstep_req <= to_stdulogic(to_bit(phstep_req)) xor to_stdulogic(to_bit(brststep_req));
+	process (sclk)
+	begin
+		if rising_edge(sclk) then
+			if (to_bit(adjstep_req) xor to_bit(adjstep_rdy))='0' then
+				phstep_rdy   <= to_stdulogic(to_bit(phstep_req));
+				brststep_rdy <= to_stdulogic(to_bit(brststep_req));
+			end if;
+		end if;
+	end process;
+
 	process(sclk, input)
 		type states is (s_start, s_lh, s_hl, s_finish);
 		variable state : states;
@@ -174,6 +188,7 @@ begin
 				case state is
 				when s_start =>
 					dtct_req <= not dtct_rdy;
+					brststep_req  <= brststep_rdy;
 					state    := s_lh;
 					lat      <= (lat'range => '0');
 					dcted    := '0';
@@ -189,12 +204,13 @@ begin
 						dcted := '0';
 						dtct_req <= not dtct_rdy;
 					elsif (adjstep_rdy xor adjstep_req)='0' then
-						if dcted='0' then
+						if to_bit(dcted)='0' then
 							dcted := input;
 						end if;
 					end if;
 					edge  <= '0';
 					readclksel <= phase;
+					brststep_req  <= brststep_rdy;
 				when s_hl =>
 					aux := base + unsigned(phase);
 					aux := aux rol lat'length;
@@ -206,6 +222,7 @@ begin
 						aux   := resize(unsigned(phase), aux'length) + 1;
 						base  := base + shift_right(aux,1);
 						state := s_finish;
+						brststep_req <= not brststep_rdy;
 					end if;
 				when s_finish =>
 					aux := base;
@@ -213,11 +230,14 @@ begin
 					lat <= std_logic_vector(aux(lat'range));
 					aux := aux rol readclksel'length;
 					readclksel <= std_logic_vector(aux(readclksel'range));
-					adj_rdy <= adj_req;
+					if (brststep_req xor brststep_rdy)='0' then
+						adj_rdy <= adj_req;
+					end if;
 				end case;
 			else
 				dtct_req <= dtct_rdy;
 				adj_rdy  <= adj_req;
+				brststep_req  <= brststep_rdy;
 				state    := s_start;
 			end if;
 		end if;
