@@ -160,6 +160,8 @@ begin
 				if datavalid='1' then
 					latch := '1';
 					input <= burstdet;
+				else
+					input <= '0';
 				end if;
 			end if;
 		end if;
