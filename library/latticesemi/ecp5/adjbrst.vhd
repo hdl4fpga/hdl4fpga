@@ -124,10 +124,7 @@ use hdl4fpga.std.all;
 architecture def of adjbrst is
 
 
-	signal brst_req  : std_logic;
 	signal brst_rdy  : std_logic;
-	signal phase_req : std_logic;
-	signal phase_rdy : std_logic;
 	signal dtct_req  : std_logic;
 	signal dtct_rdy  : std_logic;
 
@@ -167,8 +164,8 @@ begin
 		clk      => sclk,
 		dtct_req => dtct_req,
 		dtct_rdy => dtct_rdy,
-		step_req => phase_req,
-		step_rdy => phase_rdy,
+		step_req => adjstep_req,
+		step_rdy => adjstep_rdy,
 		edge     => edge,
 		input    => input,
 		phase    => phase);
@@ -187,17 +184,6 @@ begin
 				end if;
 			else
 				dcted <= '0';
-			end if;
-		end if;
-	end process;
-
-	adjstep_req <= to_stdulogic(to_bit(phase_req)) xor to_stdulogic(to_bit(brst_req));
-	process (sclk)
-	begin
-		if rising_edge(sclk) then
-			if (to_bit(adjstep_req) xor to_bit(adjstep_rdy))='0' then
-				phase_rdy   <= to_stdulogic(to_bit(phase_req));
-				brst_rdy <= to_stdulogic(to_bit(brst_req));
 			end if;
 		end if;
 	end process;
@@ -223,7 +209,6 @@ begin
 				case state is
 				when s_start =>
 					dtct_req <= not dtct_rdy;
-					brst_req <= brst_rdy;
 					base  <= (others => '0');
 					edge  <= '0';
 					state := s_lh;
@@ -238,22 +223,17 @@ begin
 						end if;
 						dtct_req <= not dtct_rdy;
 					end if;
-					brst_req <= brst_rdy;
 				when s_hl =>
 					if (dtct_req xor dtct_rdy)='0' then
-						brst_req <= not brst_rdy;
 						base  <= base - shift_right(resize(unsigned(phase), base'length), 1);
 						state := s_finish;
 					end if;
 				when s_finish =>
-					if (brst_req xor brst_rdy)='0' then
-						adj_rdy <= adj_req;
-					end if;
+					adj_rdy <= adj_req;
 				end case;
 			else
 				dtct_req <= dtct_rdy;
 				adj_rdy  <= adj_req;
-				brst_req <= brst_rdy;
 				edge     <= '-';
 				state    := s_start;
 			end if;

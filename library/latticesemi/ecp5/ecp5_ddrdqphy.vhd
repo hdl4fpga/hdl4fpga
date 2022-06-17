@@ -38,13 +38,15 @@ entity ecp5_ddrdqphy is
 		eclk        : in  std_logic;
 		ddrdel      : in  std_logic;
 		pause       : in  std_logic;
+		pause_req   : in  std_logic;
+		pause_rdy   : buffer std_logic;
 
 		phy_wlreq   : in  std_logic;
 		phy_wlrdy   : buffer std_logic;
 		phy_rlreq   : in  std_logic := 'U';
 		phy_rlrdy   : buffer std_logic;
 		phy_rlcal   : out std_logic;
-		phy_sti     : in  std_logic := 'U';
+		phy_sti     : in  std_logic;
 		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo     : out std_logic_vector(data_gear-1 downto 0);
@@ -87,7 +89,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr        : std_logic_vector(3-1 downto 0);
 
 	signal read          : std_logic_vector(0 to 2-1);
-	signal lat           : std_logic_vector(1-1 downto 0);
+	signal lat           : std_logic_vector(2-1 downto 0);
 	signal readclksel    : std_logic_vector(3-1 downto 0);
 	signal wlpha         : std_logic_vector(8-1 downto 0);
 	signal burstdet      : std_logic;
@@ -102,12 +104,12 @@ architecture lscc of ecp5_ddrdqphy is
 	signal adjstep_req   : bit;
 	signal adjstep_rdy   : bit;
 
-	constant delay       : time := 1 ns;
+	constant delay       : time := 2 ns;
 	signal dqsi          : std_logic;
 
 begin
 
-	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_req);
+	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_req) xor to_bit(pause_req);
 	process (sclk)
 		variable cntr : unsigned(0 to 6);
 	begin
@@ -117,6 +119,7 @@ begin
 				cntr := (others => '0');
 				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
 				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
+				pause_rdy     <= to_stdulogic(to_bit(pause_req));
 			elsif cntr(0)='0' then
 				if cntr(1)='0' then
 					lv_pause <= '1';
@@ -128,10 +131,11 @@ begin
 				lv_pause <= '0';
 				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
 				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
+				pause_rdy     <= to_stdulogic(to_bit(pause_req));
 			end if;
 		end if;
 	end process;
-	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy);
+	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy) xor to_bit(pause_rdy);
 
 	rl_b : block
 	begin
@@ -143,14 +147,10 @@ begin
 			process(sclk)
 			begin
 				if rising_edge(sclk) then
-					if phy_sti='0' then
-						q(1 to q'right) <= (others => '0');
-					else
-						q(1 to q'right) <= q(0 to q'right-1);
-					end if;
+					q(1 to q'right) <= q(0 to q'right-1);
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), lat(0));
+			read(1) <= word2byte(q(0 to q'right-1), lat, 1)(0);
 			read(0) <= read(1);
 		end block;
 

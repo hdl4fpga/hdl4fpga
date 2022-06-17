@@ -229,7 +229,7 @@ architecture lscc of ecp5_ddrphy is
 	signal ddrdel         : std_logic;
 
 	signal rlcal : std_logic_vector(ddr_dqs'range);
-	signal rlrdy     : std_logic_vector(ddr_dqs'range);
+	signal rlrdy : std_logic_vector(ddr_dqs'range);
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 
 	signal ba_ras : std_logic_vector(phy_ras'range);
@@ -240,6 +240,8 @@ architecture lscc of ecp5_ddrphy is
 	signal ddrphy_a  : std_logic_vector(phy_a'range);
 	signal memsync_pause : std_logic;
 
+	signal pause_rdy      : std_logic;
+	signal pause_req         : std_logic;
 begin
 
 
@@ -328,7 +330,6 @@ begin
 		ddrphy_b <= phy_b when leveling='0' else (others => '0');
 		ddrphy_a <= phy_a when leveling='0' else (others => '0');
 
---		leveling <= to_stdulogic(to_bit(phy_rlrdy) xor to_bit(phy_rlreq));
 		process (phy_trdy, sclk)
 			variable s_pre : std_logic;
 		begin
@@ -361,6 +362,7 @@ begin
 					read_rdy <= read_req;
 				elsif leveled='1' then
 					if ddr_idle='1' then
+						pause_req <= not pause_rdy;
 						phy_ini <= '1';
 					elsif ddr_pre='1' then
 						phy_ini <= '0';
@@ -411,6 +413,7 @@ begin
 			end loop;
 			phy_rlrdy <= to_stdulogic(aux) xor phy_rlreq;
 		end process;
+
 
 	end block;
 
@@ -527,6 +530,8 @@ begin
 			eclk      => eclk,
 			ddrdel    => ddrdel,
 			pause     => memsync_pause,
+			pause_req => pause_req,
+			pause_rdy => pause_rdy,
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_rlreq => phy_rlreq,
