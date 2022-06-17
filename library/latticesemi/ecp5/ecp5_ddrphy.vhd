@@ -240,8 +240,8 @@ architecture lscc of ecp5_ddrphy is
 	signal ddrphy_a  : std_logic_vector(phy_a'range);
 	signal memsync_pause : std_logic;
 
-	signal pause_rdy      : std_logic;
-	signal pause_req         : std_logic;
+	signal pause_rdy : std_logic_vector(ddr_dqs'range);
+	signal pause_req : std_logic;
 begin
 
 
@@ -362,7 +362,7 @@ begin
 					read_rdy <= read_req;
 				elsif leveled='1' then
 					if ddr_idle='1' then
-						pause_req <= not pause_rdy;
+						pause_req <= not pause_rdy(0);
 						phy_ini <= '1';
 					elsif ddr_pre='1' then
 						phy_ini <= '0';
@@ -531,7 +531,7 @@ begin
 			ddrdel    => ddrdel,
 			pause     => memsync_pause,
 			pause_req => pause_req,
-			pause_rdy => pause_rdy,
+			pause_rdy => pause_rdy(i),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_rlreq => phy_rlreq,

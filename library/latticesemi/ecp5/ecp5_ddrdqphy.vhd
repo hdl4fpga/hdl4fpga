@@ -107,6 +107,7 @@ architecture lscc of ecp5_ddrdqphy is
 	constant delay       : time := 2 ns;
 	signal dqsi          : std_logic;
 
+	signal dqi0 : std_logic;
 begin
 
 	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_req) xor to_bit(pause_req);
@@ -174,7 +175,7 @@ begin
 		signal d : std_logic_vector(0 to 0);
 	begin
 
-		d(0) <= transport ddr_dqi(0) after delay;
+		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			dtaps => 1,
@@ -247,6 +248,9 @@ begin
 		signal z : std_logic;
 	begin
 		d <= transport ddr_dqi(i) after delay;
+		xxx : if i=0 generate
+			dqi0 <= z;
+		end generate;
 		delay_i : delayg
 		generic map (
 			del_mode => "DQS_ALIGNED_X2")
