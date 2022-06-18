@@ -425,8 +425,10 @@ begin
 	end block;
 
 	pause_b : block
+
 		signal step_req : bit;
 		signal step_rdy : bit;
+
 	begin
 
 		req_p : process (rlstep_req, wlstep_req)
