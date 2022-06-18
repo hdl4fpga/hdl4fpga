@@ -38,8 +38,10 @@ entity ecp5_ddrdqphy is
 		eclk        : in  std_logic;
 		ddrdel      : in  std_logic;
 		pause       : in  std_logic;
-		pause_req   : in  std_logic;
-		pause_rdy   : buffer std_logic;
+		wlstep_req  : buffer std_logic;
+		wlstep_rdy  : in  std_logic;
+		rlstep_req  : buffer std_logic;
+		rlstep_rdy  : in std_logic;
 
 		phy_wlreq   : in  std_logic;
 		phy_wlrdy   : buffer std_logic;
@@ -94,13 +96,8 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpha         : std_logic_vector(8-1 downto 0);
 	signal burstdet      : std_logic;
 	signal dqs_pause     : std_logic;
-	signal lv_pause      : std_logic;
 	signal datavalid     : std_logic;
 
-	signal wladjstep_req : std_logic;
-	signal wladjstep_rdy : std_logic;
-	signal rladjstep_req : std_logic;
-	signal rladjstep_rdy : std_logic;
 	signal adjstep_req   : bit;
 	signal adjstep_rdy   : bit;
 
@@ -109,34 +106,6 @@ architecture lscc of ecp5_ddrdqphy is
 
 	signal dqi0 : std_logic;
 begin
-
-	adjstep_req <= to_bit(rladjstep_req) xor to_bit(wladjstep_req) xor to_bit(pause_req);
-	process (sclk)
-		variable cntr : unsigned(0 to 6);
-	begin
-		if rising_edge(sclk) then
-			if (adjstep_rdy xor adjstep_req)='0' then
-				lv_pause <= '0';
-				cntr := (others => '0');
-				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
-				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
-				pause_rdy     <= to_stdulogic(to_bit(pause_req));
-			elsif cntr(0)='0' then
-				if cntr(1)='0' then
-					lv_pause <= '1';
-				else
-					lv_pause <= '0';
-				end if;
-				cntr := cntr + 1;
-			else
-				lv_pause <= '0';
-				rladjstep_rdy <= to_stdulogic(to_bit(rladjstep_req));
-				wladjstep_rdy <= to_stdulogic(to_bit(wladjstep_req));
-				pause_rdy     <= to_stdulogic(to_bit(pause_req));
-			end if;
-		end if;
-	end process;
-	adjstep_rdy <= to_bit(rladjstep_rdy) xor to_bit(wladjstep_rdy) xor to_bit(pause_rdy);
 
 	rl_b : block
 	begin
@@ -160,8 +129,8 @@ begin
 			sclk        => sclk,
 			adj_req     => phy_rlreq,
 			adj_rdy     => phy_rlrdy,
-			adjstep_req => rladjstep_req,
-			adjstep_rdy => rladjstep_rdy,
+			adjstep_req => rlstep_req,
+			adjstep_rdy => rlstep_rdy,
 			read        => read(1),
 			datavalid   => datavalid,
 			burstdet    => burstdet,
@@ -185,15 +154,14 @@ begin
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
-			step_req => wladjstep_req,
-			step_rdy => wladjstep_rdy,
+			step_req => wlstep_req,
+			step_rdy => wlstep_rdy,
 			smp      => d,
 			delay    => wlpha);
 
 	end block;
 
 	dqsi <= transport ddr_dqsi after delay;
-	dqs_pause <= lv_pause or pause;
 	dqsbufm_i : dqsbufm 
 	port map (
 		rst       => rst,
@@ -201,7 +169,7 @@ begin
 		eclk      => eclk,
 
 		ddrdel    => ddrdel,
-		pause     => dqs_pause,
+		pause     => pause,
 
 		dqsi      => dqsi,
 		dqsr90    => dqsr90,

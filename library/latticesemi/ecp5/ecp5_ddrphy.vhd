@@ -238,10 +238,17 @@ architecture lscc of ecp5_ddrphy is
 
 	signal ddrphy_b  : std_logic_vector(phy_b'range);
 	signal ddrphy_a  : std_logic_vector(phy_a'range);
-	signal memsync_pause : std_logic;
+	signal ms_pause : std_logic;
+	signal lv_pause : std_logic;
+	signal dqs_pause : std_logic;
 
-	signal pause_rdy : std_logic_vector(ddr_dqs'range);
-	signal pause_req : std_logic;
+	signal rlstep_req : std_logic_vector(ddr_dqs'range);
+	signal rlstep_rdy : std_logic_vector(ddr_dqs'range);
+	signal wlstep_req : std_logic_vector(ddr_dqs'range);
+	signal wlstep_rdy : std_logic_vector(ddr_dqs'range);
+
+	signal pause_rdy  : std_logic_vector(ddr_dqs'range);
+	signal pause_req  : std_logic;
 begin
 
 
@@ -284,7 +291,7 @@ begin
 			pll_lock  => pll_lock,
 			dll_lock  => dll_lock,
 			update    => update,
-			pause     => memsync_pause,
+			pause     => ms_pause,
 			stop      => stop,
 			freeze    => freeze,
 			uddcntln  => uddcntln,
@@ -417,6 +424,57 @@ begin
 
 	end block;
 
+	pause_b : block
+		signal step_req : bit;
+		signal step_rdy : bit;
+	begin
+
+		req_p : process (rlstep_req, wlstep_req)
+			variable req : bit;
+		begin
+			req := '0';
+			for i in rlstep_req'range loop
+				req := to_bit(rlstep_req(i)) xor to_bit(wlstep_req(i));
+			end loop;
+			step_req <= req;
+		end process;
+
+		rdy_p : process (rlstep_rdy, wlstep_rdy)
+			variable rdy : bit;
+		begin
+			rdy := '0';
+			for i in rlstep_rdy'range loop
+				rdy := to_bit(rlstep_rdy(i)) xor to_bit(wlstep_rdy(i));
+			end loop;
+			step_rdy <= rdy;
+		end process;
+
+		process (sclk)
+			variable cntr : unsigned(0 to 6);
+		begin
+			if rising_edge(sclk) then
+				if (step_rdy xor step_req)='0' then
+					lv_pause <= '0';
+					cntr := (others => '0');
+					rlstep_rdy <= to_stdlogicvector(to_bitvector(rlstep_req));
+					wlstep_rdy <= to_stdlogicvector(to_bitvector(wlstep_req));
+				elsif cntr(0)='0' then
+					if cntr(1)='0' then
+						lv_pause <= '1';
+					else
+						lv_pause <= '0';
+					end if;
+					cntr := cntr + 1;
+				else
+					lv_pause <= '0';
+					rlstep_rdy <= to_stdlogicvector(to_bitvector(rlstep_req));
+					wlstep_rdy <= to_stdlogicvector(to_bitvector(wlstep_req));
+				end if;
+			end if;
+		end process;
+
+	end block;
+
 	process (sclk)
 		variable aux : std_logic;
 	begin
@@ -519,6 +577,7 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
+	dqs_pause <= ms_pause or lv_pause;
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
@@ -529,9 +588,11 @@ begin
 			sclk      => sclk,
 			eclk      => eclk,
 			ddrdel    => ddrdel,
-			pause     => memsync_pause,
-			pause_req => pause_req,
-			pause_rdy => pause_rdy(i),
+			rlstep_req => rlstep_req(i),
+			rlstep_rdy => rlstep_rdy(i),
+			wlstep_req => wlstep_req(i),
+			wlstep_rdy => wlstep_rdy(i),
+			pause     => dqs_pause,
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wlrdy(i),
 			phy_rlreq => phy_rlreq,
