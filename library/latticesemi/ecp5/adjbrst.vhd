@@ -106,16 +106,16 @@ use ieee.numeric_std.all;
 
 entity adjbrst is
 	port (
-		sclk        : in  std_logic;
-		adj_req     : in  std_logic;
-		adj_rdy     : buffer std_logic;
-		adjstep_req : buffer std_logic;
-		adjstep_rdy : in  std_logic;
-		read        : in  std_logic;
-		datavalid   : in  std_logic;
-		burstdet    : in  std_logic;
-		lat         : buffer std_logic_vector;
-		readclksel  : out std_logic_vector);
+		sclk       : in  std_logic;
+		adj_req    : in  std_logic;
+		adj_rdy    : buffer std_logic;
+		step_req   : buffer std_logic;
+		step_rdy   : in  std_logic;
+		read       : in  std_logic;
+		datavalid  : in  std_logic;
+		burstdet   : in  std_logic;
+		lat        : buffer std_logic_vector;
+		readclksel : out std_logic_vector);
 end;
 
 library hdl4fpga;
@@ -142,7 +142,7 @@ begin
 		variable latch : std_logic;
 	begin
 		if rising_edge(sclk) then
-			if (adjstep_rdy xor adjstep_req)='1' then
+			if (step_rdy xor step_req)='1' then
 				if latch='0' then
 					if (burstdet and datavalid)='1' then
 						input <= '1';
@@ -164,8 +164,8 @@ begin
 		clk      => sclk,
 		dtct_req => dtct_req,
 		dtct_rdy => dtct_rdy,
-		step_req => adjstep_req,
-		step_rdy => adjstep_rdy,
+		step_req => step_req,
+		step_rdy => step_rdy,
 		edge     => edge,
 		input    => input,
 		phase    => phase);
@@ -176,7 +176,7 @@ begin
 		if rising_edge(sclk) then
 			if (dtct_req xor dtct_rdy)='1' then
 				if dcted='0' then
-					if (adjstep_rdy xor adjstep_req)='1' then
+					if (step_rdy xor step_req)='1' then
 						if datavalid='1' then
 							dcted <= burstdet;
 						end if;

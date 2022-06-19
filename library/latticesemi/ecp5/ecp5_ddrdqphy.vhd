@@ -126,18 +126,16 @@ begin
 
 		adjbrst_e : entity hdl4fpga.adjbrst
 		port map (
-			sclk        => sclk,
-			adj_req     => phy_rlreq,
-			adj_rdy     => phy_rlrdy,
-			adjstep_req => rlstep_req,
-			adjstep_rdy => rlstep_rdy,
-			read        => read(1),
-			datavalid   => datavalid,
-			burstdet    => burstdet,
-			lat         => lat,
-			readclksel  => readclksel);
-
-		phy_rlcal <= phy_rlreq xor phy_rlrdy;
+			sclk       => sclk,
+			adj_req    => phy_rlreq,
+			adj_rdy    => phy_rlrdy,
+			step_req   => rlstep_req,
+			step_rdy   => rlstep_rdy,
+			read       => read(1),
+			datavalid  => datavalid,
+			burstdet   => burstdet,
+			lat        => lat,
+			readclksel => readclksel);
 	end block;
 
 	wl_b : block
