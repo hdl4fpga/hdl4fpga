@@ -393,6 +393,37 @@ begin
 			end if;
 		end process;
 
+		process (sclk)
+			type states is (s_pause, s_read);
+			variable state : states;
+		begin
+			if rising_edge(sclk) then
+				for i in rl_req'range loop
+					if (rl_req(i) xor rl_rdy(i))='1' then
+						if (rlstep_req(i) xor rlstep_rdy(i))='1' then
+							case state is
+							when s_pause =>
+								if (pause_req xor pause_rdy)='0' then
+									read_req <= not ready_rdy;
+									state := s_read;
+								end if;
+							when s_read =>
+								if (read_req xor read_rdy)='0' then
+									rlstep_req <= rlstep_rdy;
+									state := s_pause;
+								end if;
+							end case;
+							end if;
+						end if;
+						exit;
+					end if;
+					state := s_pause;
+					pause_req <= pause_rdy;
+					read_req  <= read_rdy;
+				end loop;
+			end if;
+		end process;
+
 	end block;
 
 	pause_b : block
@@ -402,6 +433,7 @@ begin
 
 	begin
 
+		pause_req <= rlpause_req xor wlpause_req;
 		process (sclk)
 			variable cntr : unsigned(0 to 6);
 		begin
@@ -419,28 +451,6 @@ begin
 				else
 					lv_pause <= '0';
 					pause_rdy <= pause_req;
-				end if;
-			end if;
-		end process;
-
-		req_p : process (rlstep_req, wlstep_req)
-			variable req : bit;
-		begin
-			req := '0';
-			for i in rlstep_req'range loop
-				req := to_bit(rlstep_req(i)) xor to_bit(wlstep_req(i));
-			end loop;
-			pause_req <= req;
-		end process;
-
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
-					if (read_req xor read_rdy)='0' then
-						rlstep_rdy <= to_stdlogicvector(to_bitvector(rlstep_req));
-					end if;
-					wlstep_rdy <= to_stdlogicvector(to_bitvector(wlstep_req));
 				end if;
 			end if;
 		end process;
