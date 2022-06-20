@@ -170,7 +170,7 @@ begin
 		input    => input,
 		phase    => phase);
 
-	brstdet_p : process(sclk)
+	brstdet_p : process(sclk,dtct_rdy)
 		variable valid : std_logic;
 	begin
 		if rising_edge(sclk) then
@@ -188,7 +188,7 @@ begin
 		end if;
 	end process;
 
-	process (sclk)
+	process (sclk, dtct_req)
 		variable acc : unsigned(lat'length+readclksel'length-1 downto 0);
 	begin
 		if rising_edge(sclk) then

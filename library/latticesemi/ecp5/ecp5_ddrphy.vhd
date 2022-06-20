@@ -224,30 +224,21 @@ architecture lscc of ecp5_ddrphy is
 	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal ddr_reset      : std_logic;
-	signal ddrdel         : std_logic;
+	signal ddr_reset  : std_logic;
+	signal ddrdel     : std_logic;
 
-	signal rl_req : std_logic_vector(ddr_dqs'range);
-	signal rl_rdy : std_logic_vector(ddr_dqs'range);
-	signal wl_rdy  : std_logic_vector(0 to word_size/byte_size-1);
+	signal rl_req     : std_logic_vector(ddr_dqs'range);
+	signal rl_rdy     : std_logic_vector(ddr_dqs'range);
+	signal wl_rdy     : std_logic_vector(0 to word_size/byte_size-1);
 
-	signal ddrphy_b  : std_logic_vector(phy_b'range);
-	signal ddrphy_a  : std_logic_vector(phy_a'range);
-	signal ms_pause : std_logic;
-	signal lv_pause : std_logic;
-	signal dqs_pause : std_logic;
+	signal ddrphy_b   : std_logic_vector(phy_b'range);
+	signal ddrphy_a   : std_logic_vector(phy_a'range);
+	signal ms_pause   : std_logic;
 
-	signal rlstep_req : std_logic_vector(ddr_dqs'range);
-	signal rlstep_rdy : std_logic_vector(ddr_dqs'range);
-	signal wlstep_req : std_logic_vector(ddr_dqs'range);
-	signal wlstep_rdy : std_logic_vector(ddr_dqs'range);
+	signal read_req   : std_logic_vector(ddr_dqs'range);
+	signal read_rdy   : std_logic_vector(ddr_dqs'range);
 
-	signal rlpause_rdy  : bit;
-	signal rlpause_req  : bit;
-	signal wlpause_rdy  : bit;
-	signal wlpause_req  : bit;
 begin
-
 
 	mem_sync_b : block
 		component mem_sync
@@ -320,8 +311,6 @@ begin
 	end block;
 
 	read_leveling_l_b : block
-		signal read_req : bit;
-		signal read_rdy : bit;
 		signal leveling : std_logic;
 
 		signal ddr_act  : std_logic;
@@ -350,148 +339,59 @@ begin
 		ddr_act <= phy_trdy when phy_cmd=mpu_act else '0';
 		ddr_pre <= phy_trdy when phy_cmd=mpu_pre else '0';
 
-		readcycle_p : process (sclk)
+		readcycle_p : process (sclk, read_rdy)
 			type states is (s_start, s_stop);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (read_req xor read_rdy)='1' then
-					case state is
-					when s_start =>
-						phy_frm  <= '1';
-						leveling <= '1';
-						if ddr_act='1' then
-							phy_frm <= '0';
-							state := s_stop;
-						end if;
-					when s_stop =>
-						if ddr_idle='1' then
-							leveling <= '0';
-							read_rdy <= read_req;
-							state := s_start;
-						end if;
-					end case;
-				else
+				for i in read_req'reverse_range loop
+					if (read_req(i) xor read_rdy(i))='1' then
+						case state is
+						when s_start =>
+							phy_frm  <= '1';
+							leveling <= '1';
+							if ddr_act='1' then
+								phy_frm <= '0';
+								state := s_stop;
+							end if;
+						when s_stop =>
+							if ddr_idle='1' then
+								leveling <= '0';
+								read_rdy <= read_req;
+								state := s_start;
+							end if;
+						end case;
+						exit;
+					end if;
 					leveling <= '0';
 					phy_frm  <= '0';
 					state := s_start;
-				end if;
+				end loop;
 				phy_rw <= '1';
 			end if;
 		end process;
 
-		process (sclk)
+		process (rst, sclk)
+			type states is (s_start, s_ready);
+			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+				if rst='1' then
+					phy_ini <= '0';
+				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
 					for i in rl_req'reverse_range loop
 						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
 							rl_req(i) <= phy_rlreq;
 							exit;
 						end if;
+						phy_ini   <= '1';
 						phy_rlrdy <= phy_rlreq;
 					end loop;
 				end if;
 			end if;
 		end process;
 
-		process (sclk, read_req)
-			type states is (s_start, s_pause, s_read);
-			variable state : states;
-		begin
-			if rising_edge(sclk) then
-				for i in rl_req'reverse_range loop
-					if (to_bit(rl_req(i)) xor to_bit(rl_rdy(i)))='1' then
-						if (to_bit(rlstep_req(i)) xor to_bit(rlstep_rdy(i)))='1' then
-							case state is
-							when s_start =>
-								rlpause_req <= not rlpause_rdy;
-								state := s_pause;
-							when s_pause =>
-								if (rlpause_req xor rlpause_rdy)='0' then
-									read_req <= not read_rdy;
-									state    := s_read;
-								end if;
-							when s_read =>
-								if (read_req xor read_rdy)='0' then
-									rlstep_rdy(i) <= rlstep_req(i);
-									state      := s_start;
-								end if;
-							end case;
-						end if;
-						exit;
-					end if;
-					rlpause_req <= rlpause_rdy;
-					read_req    <= read_rdy;
-					state       := s_start;
-				end loop;
-			end if;
-		end process;
-
 	end block;
-
-	pause_b : block
-
-		signal pause_req : bit;
-		signal pause_rdy : bit;
-
-	begin
-
-		pause_req <= rlpause_req xor wlpause_req;
-		process (sclk)
-			variable cntr : unsigned(0 to 6);
-		begin
-			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
-					lv_pause <= '0';
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
-					if cntr(1)='0' then
-						lv_pause <= '1';
-					else
-						lv_pause <= '0';
-					end if;
-					cntr := cntr + 1;
-				else
-					lv_pause  <= '0';
-					pause_rdy <= pause_req;
-				end if;
-			end if;
-		end process;
-
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
-					wlpause_rdy <= wlpause_req;
-					rlpause_rdy <= rlpause_req;
-				end if;
-			end if;
-		end process;
-
-	end block;
-
-	process (wlstep_rdy, wlstep_req)
-		variable aux : bit;
-	begin
-		aux := '1';
-		for i in wl_rdy'range loop
-			aux := aux and (to_bit(wlstep_rdy(i)) xor to_bit(wlstep_req(i)));
-		end loop;
-		wlpause_req <= aux xor wlpause_rdy;
-	end process;
-
-	process (sclk)
-		variable aux : bit;
-	begin
-		if rising_edge(sclk) then
-			if (wlpause_req xor wlpause_rdy)='0' then
-				for i in wl_rdy'range loop
-					wlstep_rdy(i) <= wlstep_req(i);
-				end loop;
-			end if;
-		end if;
-	end process;
 
 	process (phy_wlreq, wl_rdy)
 		variable aux : bit;
@@ -542,7 +442,6 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
-	dqs_pause <= ms_pause or lv_pause;
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
@@ -553,11 +452,9 @@ begin
 			sclk      => sclk,
 			eclk      => eclk,
 			ddrdel    => ddrdel,
-			rlstep_req => rlstep_req(i),
-			rlstep_rdy => rlstep_rdy(i),
-			wlstep_req => wlstep_req(i),
-			wlstep_rdy => wlstep_rdy(i),
-			pause     => dqs_pause,
+			pause     => ms_pause,
+			read_req  => read_req(i),
+			read_rdy  => read_rdy(i),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wl_rdy(i),
 			phy_rlreq => rl_req(i),
