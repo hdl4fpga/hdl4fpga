@@ -161,7 +161,7 @@ begin
 								state    := s_read;
 							end if;
 						when s_read =>
-							if (read_req xor read_rdy)='0' then
+							if (read_req xor to_stdulogic(to_bit(read_rdy)))='0' then
 								step_rdy <= step_req;
 								state    := s_start;
 							end if;
