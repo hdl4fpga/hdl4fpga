@@ -47,7 +47,6 @@ entity ecp5_ddrdqphy is
 		phy_wlrdy   : buffer std_logic;
 		phy_rlreq   : in  std_logic := 'U';
 		phy_rlrdy   : buffer std_logic;
-		phy_rlcal   : out std_logic;
 		phy_sti     : in  std_logic;
 		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');

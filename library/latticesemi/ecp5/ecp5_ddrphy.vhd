@@ -242,8 +242,10 @@ architecture lscc of ecp5_ddrphy is
 	signal wlstep_req : std_logic_vector(ddr_dqs'range);
 	signal wlstep_rdy : std_logic_vector(ddr_dqs'range);
 
-	signal pause_rdy  : std_logic_vector(ddr_dqs'range);
-	signal pause_req  : std_logic;
+	signal rlpause_rdy  : bit;
+	signal rlpause_req  : bit;
+	signal wlpause_rdy  : bit;
+	signal wlpause_req  : bit;
 begin
 
 
@@ -318,8 +320,8 @@ begin
 	end block;
 
 	read_leveling_l_b : block
-		signal read_req : std_logic;
-		signal read_rdy : std_logic;
+		signal read_req : bit;
+		signal read_rdy : bit;
 		signal leveling : std_logic;
 
 		signal ddr_act  : std_logic;
@@ -381,45 +383,47 @@ begin
 		process (sclk)
 		begin
 			if rising_edge(sclk) then
-				if to_bit(phy_rlrdy xor phy_rlreq)='1' then
-					for i in rl_req'range loop
-						if (phy_rlreq xor rl_rdy(i))='1' then
+				if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					for i in rl_req'reverse_range loop
+						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
 							rl_req(i) <= phy_rlreq;
 							exit;
 						end if;
+						phy_rlrdy <= phy_rlreq;
 					end loop;
-					phy_rlrdy <= phy_rlreq;
 				end if;
 			end if;
 		end process;
 
-		process (sclk)
-			type states is (s_pause, s_read);
+		process (sclk, read_req)
+			type states is (s_start, s_pause, s_read);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				for i in rl_req'range loop
-					if (rl_req(i) xor rl_rdy(i))='1' then
-						if (rlstep_req(i) xor rlstep_rdy(i))='1' then
+				for i in rl_req'reverse_range loop
+					if (to_bit(rl_req(i)) xor to_bit(rl_rdy(i)))='1' then
+						if (to_bit(rlstep_req(i)) xor to_bit(rlstep_rdy(i)))='1' then
 							case state is
+							when s_start =>
+								rlpause_req <= not rlpause_rdy;
+								state := s_pause;
 							when s_pause =>
-								if (pause_req xor pause_rdy)='0' then
-									read_req <= not ready_rdy;
-									state := s_read;
+								if (rlpause_req xor rlpause_rdy)='0' then
+									read_req <= not read_rdy;
+									state    := s_read;
 								end if;
 							when s_read =>
 								if (read_req xor read_rdy)='0' then
-									rlstep_req <= rlstep_rdy;
-									state := s_pause;
+									rlstep_rdy(i) <= rlstep_req(i);
+									state      := s_start;
 								end if;
 							end case;
-							end if;
 						end if;
 						exit;
 					end if;
-					state := s_pause;
-					pause_req <= pause_rdy;
-					read_req  <= read_rdy;
+					rlpause_req <= rlpause_rdy;
+					read_req    <= read_rdy;
+					state       := s_start;
 				end loop;
 			end if;
 		end process;
@@ -449,13 +453,45 @@ begin
 					end if;
 					cntr := cntr + 1;
 				else
-					lv_pause <= '0';
+					lv_pause  <= '0';
 					pause_rdy <= pause_req;
 				end if;
 			end if;
 		end process;
 
+		process (sclk)
+		begin
+			if rising_edge(sclk) then
+				if (pause_rdy xor pause_req)='0' then
+					wlpause_rdy <= wlpause_req;
+					rlpause_rdy <= rlpause_req;
+				end if;
+			end if;
+		end process;
+
 	end block;
+
+	process (wlstep_rdy, wlstep_req)
+		variable aux : bit;
+	begin
+		aux := '1';
+		for i in wl_rdy'range loop
+			aux := aux and (to_bit(wlstep_rdy(i)) xor to_bit(wlstep_req(i)));
+		end loop;
+		wlpause_req <= aux xor wlpause_rdy;
+	end process;
+
+	process (sclk)
+		variable aux : bit;
+	begin
+		if rising_edge(sclk) then
+			if (wlpause_req xor wlpause_rdy)='0' then
+				for i in wl_rdy'range loop
+					wlstep_rdy(i) <= wlstep_req(i);
+				end loop;
+			end if;
+		end if;
+	end process;
 
 	process (phy_wlreq, wl_rdy)
 		variable aux : bit;

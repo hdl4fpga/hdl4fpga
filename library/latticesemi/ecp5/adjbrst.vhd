@@ -60,14 +60,14 @@ use hdl4fpga.std.all;
 		severity WARNING;
 
 		if rising_edge(clk) then
-			if to_bit(dtct_req xor dtct_rdy)='1' then
+			if (to_bit(dtct_req) xor to_bit(dtct_rdy))='1' then
 				if start='0' then
 					saved <= (others => '0');
 					phase <= std_logic_vector(to_unsigned(2**(gap_word'length-1), gap_word'length));
 					step  := to_unsigned(num_of_steps-1, step'length);
 					step_req <= not to_stdulogic(to_bit(step_rdy));
 					start := '1';
-				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
+				elsif (to_bit(step_req) xor to_bit(step_rdy))='0' then
 					if input=edge then
 						saved <= unsigned(phase);
 					end if;
@@ -142,7 +142,7 @@ begin
 		variable latch : std_logic;
 	begin
 		if rising_edge(sclk) then
-			if (step_rdy xor step_req)='1' then
+			if (to_bit(step_rdy) xor to_bit(step_req))='1' then
 				if latch='0' then
 					if (burstdet and datavalid)='1' then
 						input <= '1';
@@ -174,9 +174,9 @@ begin
 		variable valid : std_logic;
 	begin
 		if rising_edge(sclk) then
-			if (dtct_req xor dtct_rdy)='1' then
+			if (to_bit(dtct_req) xor to_bit(dtct_rdy))='1' then
 				if dcted='0' then
-					if (step_rdy xor step_req)='1' then
+					if (to_bit(step_rdy) xor to_bit(step_req))='1' then
 						if datavalid='1' then
 							dcted <= burstdet;
 						end if;
@@ -205,7 +205,7 @@ begin
 		variable state : states;
 	begin
 		if rising_edge(sclk) then
-			if to_bit(adj_req xor adj_rdy)='1' then
+			if (to_bit(adj_req) xor to_bit(adj_rdy))='1' then
 				case state is
 				when s_start =>
 					dtct_req <= not dtct_rdy;
