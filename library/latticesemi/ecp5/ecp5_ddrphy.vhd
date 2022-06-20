@@ -345,7 +345,7 @@ begin
 		begin
 			if rising_edge(sclk) then
 				for i in read_req'reverse_range loop
-					if (read_req(i) xor read_rdy(i))='1' then
+					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
 						case state is
 						when s_start =>
 							phy_frm  <= '1';

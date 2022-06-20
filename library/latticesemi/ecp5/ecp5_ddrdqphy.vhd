@@ -157,7 +157,7 @@ begin
 							state := s_pause;
 						when s_pause =>
 							if (rlpause_req xor rlpause_rdy)='0' then
-								read_req <= not read_rdy;
+								read_req <= not to_stdulogic(to_bit(read_rdy));
 								state    := s_read;
 							end if;
 						when s_read =>
@@ -169,7 +169,7 @@ begin
 					end if;
 				else
 					rlpause_req <= rlpause_rdy;
-					read_req    <= read_rdy;
+					read_req    <= to_stdulogic(to_bit(read_rdy));
 					state       := s_start;
 				end if;
 			end if;
@@ -241,6 +241,7 @@ begin
 
 	end block;
 
+	dqs_pause <= pause or lv_pause;
 	dqsi <= transport ddr_dqsi after delay;
 	dqsbufm_i : dqsbufm 
 	port map (
@@ -249,7 +250,7 @@ begin
 		eclk      => eclk,
 
 		ddrdel    => ddrdel,
-		pause     => pause,
+		pause     => dqs_pause,
 
 		dqsi      => dqsi,
 		dqsr90    => dqsr90,
