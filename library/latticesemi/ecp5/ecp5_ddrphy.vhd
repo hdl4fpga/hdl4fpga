@@ -314,7 +314,6 @@ begin
 		signal leveling : std_logic;
 
 		signal ddr_act  : std_logic;
-		signal ddr_pre  : std_logic;
 		signal ddr_idle : std_logic;
 
 	begin
@@ -330,14 +329,13 @@ begin
 					if phy_cmd=mpu_pre then
 						s_pre := '1';
 					else
+						ddr_idle <= s_pre;
 						s_pre := '0';
 					end if;
 				end if;
 			end if;
-			ddr_idle <= s_pre and phy_trdy;
 		end process;
 		ddr_act <= phy_trdy when phy_cmd=mpu_act else '0';
-		ddr_pre <= phy_trdy when phy_cmd=mpu_pre else '0';
 
 		readcycle_p : process (sclk, read_rdy)
 			type states is (s_start, s_stop);

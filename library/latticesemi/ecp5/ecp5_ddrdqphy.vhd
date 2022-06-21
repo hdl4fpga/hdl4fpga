@@ -104,7 +104,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 0 ns;
+	constant delay      : time := 2 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req  : std_logic;
