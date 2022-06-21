@@ -100,18 +100,28 @@ add wave -noupdate /testbench/du_e/ddrphy_e/phy_trdy
 add wave -noupdate /testbench/du_e/ddrphy_e/phy_cmd
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_act
+add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/line__324/s_pre
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_idle
+add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/leveling
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(1)
 add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(1)
 add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(0)
 add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(0)
-add wave -noupdate /testbench/du_e/ddrphy_e/phy_ini
+add wave -noupdate /testbench/du_e/ddrphy_e/read_rdy(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/read_req(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/read_req(1)
+add wave -noupdate /testbench/du_e/ddrphy_e/read_rdy(1)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/sclk
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/read_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/read_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_ini
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36642993850 fs} 0} {{Cursor 2} {17052419070 fs} 0}
+WaveRestoreCursors {{Cursor 1} {36642993850 fs} 0} {{Cursor 2} {17095065870 fs} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 230
+configure wave -namecolwidth 185
 configure wave -valuecolwidth 88
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -125,4 +135,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13876036240 fs} {19611465040 fs}
+WaveRestoreZoom {14525774340 fs} {20498643460 fs}

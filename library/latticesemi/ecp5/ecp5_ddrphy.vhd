@@ -338,33 +338,42 @@ begin
 		ddr_act <= phy_trdy when phy_cmd=mpu_act else '0';
 
 		readcycle_p : process (sclk, read_rdy)
-			type states is (s_start, s_stop);
+			type states is (s_idle, s_start, s_stop);
 			variable state : states;
+			variable z     : std_logic;
 		begin
 			if rising_edge(sclk) then
+				z := '0';
 				for i in read_req'reverse_range loop
 					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
-						case state is
-						when s_start =>
-							phy_frm  <= '1';
-							leveling <= '1';
-							if ddr_act='1' then
-								phy_frm <= '0';
-								state := s_stop;
-							end if;
-						when s_stop =>
-							if ddr_idle='1' then
-								leveling <= '0';
-								read_rdy <= read_req;
-								state := s_start;
-							end if;
-						end case;
-						exit;
+						z := '1';
 					end if;
+				end loop;
+
+				case state is
+				when s_start =>
+					phy_frm  <= '1';
+					leveling <= '1';
+					if ddr_act='1' then
+						phy_frm <= '0';
+						state   := s_stop;
+					end if;
+				when s_stop =>
+					if ddr_idle='1' then
+						phy_frm  <= '0';
+						leveling <= '0';
+						read_rdy <= read_req;
+						state    := s_idle;
+					end if;
+				when s_idle =>
 					leveling <= '0';
 					phy_frm  <= '0';
-					state := s_start;
-				end loop;
+					if z='1' then
+						phy_frm  <= '1';
+						leveling <= '1';
+						state := s_start;
+					end if;
+				end case;
 				phy_rw <= '1';
 			end if;
 		end process;
@@ -381,7 +390,6 @@ begin
 						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
 							z := '1';
 							rl_req(i) <= phy_rlreq;
-							exit;
 						end if;
 					end loop;
 					if z='0' then
