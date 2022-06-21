@@ -102,8 +102,14 @@ add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_act
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_idle
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(1)
+add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(1)
+add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(0)
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_ini
+add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36642993850 fs} 0} {{Cursor 2} {17096124300 fs} 0}
+WaveRestoreCursors {{Cursor 1} {36642993850 fs} 0} {{Cursor 2} {17052419070 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 230
 configure wave -valuecolwidth 88
@@ -119,4 +125,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9086574280 fs} {20029793480 fs}
+WaveRestoreZoom {13876036240 fs} {19611465040 fs}

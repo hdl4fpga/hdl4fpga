@@ -370,21 +370,24 @@ begin
 		end process;
 
 		process (rst, sclk)
-			type states is (s_start, s_ready);
-			variable state : states;
+			variable z : std_logic;
 		begin
 			if rising_edge(sclk) then
 				if rst='1' then
 					phy_ini <= '0';
 				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					z := '0';
 					for i in rl_req'reverse_range loop
 						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
+							z := '1';
 							rl_req(i) <= phy_rlreq;
 							exit;
 						end if;
+					end loop;
+					if z='0' then
 						phy_ini   <= '1';
 						phy_rlrdy <= phy_rlreq;
-					end loop;
+					end if;
 				end if;
 			end if;
 		end process;
