@@ -46,6 +46,7 @@ entity ecp5_ddrdqphy is
 		read_rdy    : in  std_logic;
 		read_req    : buffer std_logic;
 		phy_sti     : in  std_logic;
+		phy_sto     : out std_logic;
 		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo     : out std_logic_vector(data_gear-1 downto 0);
@@ -104,7 +105,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 2 ns;
+	constant delay      : time := 5 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req  : std_logic;
@@ -115,6 +116,9 @@ begin
 	rl_b : block
 		signal step_req : std_logic;
 		signal step_rdy : std_logic;
+		signal adj_req : std_logic;
+		signal adj_rdy : std_logic;
+
 	begin
 
 		lat_b : block
@@ -131,11 +135,14 @@ begin
 			read(0) <= read(1);
 		end block;
 
+		adj_req   <= phy_rlreq;
+		phy_rlrdy <= adj_req;
+
 		adjbrst_e : entity hdl4fpga.adjbrst
 		port map (
 			sclk       => sclk,
-			adj_req    => phy_rlreq,
-			adj_rdy    => phy_rlrdy,
+			adj_req    => adj_req,
+			adj_rdy    => adj_rdy,
 			step_req   => step_req,
 			step_rdy   => step_rdy,
 			read       => read(1),
