@@ -101,11 +101,13 @@ architecture lscc of ecp5_ddrdqphy is
 
 	signal rlpause_rdy  : bit;
 	signal rlpause_req  : bit;
+	signal rlpause1_rdy  : bit;
+	signal rlpause1_req  : bit;
 	signal wlpause_rdy  : bit;
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 5 ns;
+	constant delay      : time := 5.1 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req  : std_logic;
@@ -152,11 +154,39 @@ begin
 			readclksel => readclksel);
 
 		process (sclk, read_req)
-			type states is (s_start, s_pause, s_read);
+			type states is (s_start, s_adj, s_paused);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
 				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
+					case state is
+					when s_start =>
+						adj_req <= not to_stdulogic(to_bit(adj_rdy));
+						state := s_adj;
+					when s_adj =>
+						if (to_bit(adj_req) xor to_bit(adj_rdy))='0' then
+							rlpause1_req <= not rlpause1_rdy;
+							state := s_paused;
+						end if;
+					when s_paused =>
+						if (rlpause1_req xor rlpause1_rdy)='0' then
+							phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+							state := s_start;
+						end if;
+					end case;
+				else
+					rlpause1_req <= rlpause1_rdy;
+					state       := s_start;
+				end if;
+			end if;
+		end process;
+
+		process (sclk, read_req)
+			type states is (s_start, s_pause, s_read);
+			variable state : states;
+		begin
+			if rising_edge(sclk) then
+				if (to_bit(adj_req) xor to_bit(adj_rdy))='1' then
 					if (to_bit(step_req) xor to_bit(step_rdy))='1' then
 						case state is
 						when s_start =>
@@ -214,7 +244,7 @@ begin
 
 	begin
 
-		pause_req <= rlpause_req xor wlpause_req;
+		pause_req <= rlpause_req xor rlpause1_req xor wlpause_req;
 		process (sclk)
 			variable cntr : unsigned(0 to 6);
 		begin
@@ -241,6 +271,7 @@ begin
 			if rising_edge(sclk) then
 				if (pause_rdy xor pause_req)='0' then
 					wlpause_rdy <= wlpause_req;
+					rlpause1_rdy <= rlpause1_req;
 					rlpause_rdy <= rlpause_req;
 				end if;
 			end if;

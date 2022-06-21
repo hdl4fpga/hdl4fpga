@@ -342,13 +342,6 @@ begin
 			variable z     : std_logic;
 		begin
 			if rising_edge(sclk) then
-				z := '0';
-				for i in read_req'reverse_range loop
-					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
-						z := '1';
-					end if;
-				end loop;
-
 				case state is
 				when s_start =>
 					phy_frm  <= '1';
@@ -374,6 +367,14 @@ begin
 					end if;
 				end case;
 				phy_rw <= '1';
+
+				z := '0';
+				for i in read_req'reverse_range loop
+					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
+						z := '1';
+					end if;
+				end loop;
+
 			end if;
 		end process;
 
@@ -384,6 +385,10 @@ begin
 				if rst='1' then
 					phy_ini <= '0';
 				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					if z='0' then
+						phy_ini   <= '1';
+						phy_rlrdy <= phy_rlreq;
+					end if;
 					z := '0';
 					for i in rl_req'reverse_range loop
 						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
@@ -391,10 +396,6 @@ begin
 							rl_req(i) <= phy_rlreq;
 						end if;
 					end loop;
-					if z='0' then
-						phy_ini   <= '1';
-						phy_rlrdy <= phy_rlreq;
-					end if;
 				end if;
 			end if;
 		end process;
