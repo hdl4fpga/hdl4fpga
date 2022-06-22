@@ -469,7 +469,8 @@ begin
 			phy_rlreq => rl_req(i),
 			phy_rlrdy => rl_rdy(i),
 
-			phy_sti   => phy_sto(0),
+			phy_sti   => phy_sti(0),
+			phy_sto   => phy_sto(data_gear*i),
 			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),
@@ -491,15 +492,6 @@ begin
 			ddr_dqst  => ddqst(i),
 			ddr_dqso  => ddqsi(i));
 	end generate;
-
-	sto_i : entity hdl4fpga.align
-	generic map (
-		n => 2*data_gear,
-		d => (0 to 2*data_gear-1 => 0))
-	port map (
-		clk => sclk,
-		di  => phy_sti,
-		do  => phy_sto);
 
 	process (ddqsi, ddqst)
 	begin

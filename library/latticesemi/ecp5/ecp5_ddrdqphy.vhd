@@ -152,6 +152,7 @@ begin
 			burstdet   => burstdet,
 			lat        => lat,
 			readclksel => readclksel);
+		phy_sto <- datavalid;
 
 		process (sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
