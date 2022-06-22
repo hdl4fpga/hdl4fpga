@@ -100,41 +100,53 @@ begin
 	end process;
 
 	di  <= to_wordvector(ddr_dqi);
-	bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
-		DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
-			signal pll_req : std_logic;
-		begin
-
-			process (sys_clk)
-				variable q : std_logic_vector(0 to data_delay);
-			begin 
-				if rising_edge(sys_clk) then
-					q := q(1 to q'right) & ddr_win_dq(i*DATA_PHASES+j);
-					pll_req <= q(0);
-				end if;
-			end process;
-			sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j) when data_delay=0 else pll_req;
-
-
-			inbyte_i : entity hdl4fpga.iofifo
-			generic map (
-				acntr_delay => acntr_delay,
-				pll2ser => false,
-				DATA_PHASES => 1,
-				WORD_SIZE  => word'length,
-				BYTE_SIZE  => byte'length)
-			port map (
-				pll_clk => sys_clk,
-				pll_req => pll_req,
-
-				ser_ar(0)  => sys_do_win,
-				ser_ena(0) => ddr_win_dqs(i*DATA_PHASES+j),
-				ser_clk(0) => ddr_dqsi(i*DATA_PHASES+j),
-
-				di  => di(i*DATA_PHASES+j),
-				do  => do(j*WORD_SIZE/BYTE_SIZE+i));
+	datadelay_g : if data_delay/=0 generate
+		bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
+			DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+				signal pll_req : std_logic;
+			begin
+	
+				process (sys_clk)
+					variable q : std_logic_vector(0 to data_delay);
+				begin 
+					if rising_edge(sys_clk) then
+						q := q(1 to q'right) & ddr_win_dq(i*DATA_PHASES+j);
+						pll_req <= q(0);
+					end if;
+				end process;
+				sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j) when data_delay=0 else pll_req;
+	
+	
+				inbyte_i : entity hdl4fpga.iofifo
+				generic map (
+					acntr_delay => acntr_delay,
+					pll2ser => false,
+					DATA_PHASES => 1,
+					WORD_SIZE  => word'length,
+					BYTE_SIZE  => byte'length)
+				port map (
+					pll_clk => sys_clk,
+					pll_req => pll_req,
+	
+					ser_ar(0)  => sys_do_win,
+					ser_ena(0) => ddr_win_dqs(i*DATA_PHASES+j),
+					ser_clk(0) => ddr_dqsi(i*DATA_PHASES+j),
+	
+					di  => di(i*DATA_PHASES+j),
+					do  => do(j*WORD_SIZE/BYTE_SIZE+i));
+			end generate;
 		end generate;
 	end generate;
-	sys_do <= ddr_dqi when data_delay=0 else to_stdlogicvector(do);
+
+	no_datadelay_g : if data_delay=0 generate
+		bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
+			DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+				do(j*WORD_SIZE/BYTE_SIZE+i) <= di(i*DATA_PHASES+j);
+			end generate;
+		end generate;
+	end generate;
+
+	
+	sys_do <= to_stdlogicvector(do);
 
 end;

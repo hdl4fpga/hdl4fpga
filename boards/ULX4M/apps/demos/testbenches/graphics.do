@@ -10,19 +10,19 @@ add wave -noupdate -expand -group rgmii -radix hexadecimal /testbench/du_e/rgmii
 add wave -noupdate -expand -group rgmii /testbench/du_e/rgmii_tx_clk
 add wave -noupdate -expand -group rgmii /testbench/du_e/rgmii_tx_en
 add wave -noupdate -expand -group rgmii -radix hexadecimal /testbench/du_e/rgmii_txd
-add wave -noupdate -group ddram /testbench/du_e/ddram_clk
-add wave -noupdate -group ddram /testbench/du_e/ddram_reset_n
-add wave -noupdate -group ddram /testbench/du_e/ddram_cke
-add wave -noupdate -group ddram /testbench/du_e/ddram_cs_n
-add wave -noupdate -group ddram /testbench/du_e/ddram_ras_n
-add wave -noupdate -group ddram /testbench/du_e/ddram_cas_n
-add wave -noupdate -group ddram /testbench/du_e/ddram_we_n
-add wave -noupdate -group ddram /testbench/du_e/ddram_odt
-add wave -noupdate -group ddram -radix hexadecimal /testbench/du_e/ddram_a
-add wave -noupdate -group ddram -radix hexadecimal /testbench/du_e/ddram_ba
-add wave -noupdate -group ddram -radix hexadecimal -childformat {{/testbench/du_e/ddram_dq(15) -radix hexadecimal} {/testbench/du_e/ddram_dq(14) -radix hexadecimal} {/testbench/du_e/ddram_dq(13) -radix hexadecimal} {/testbench/du_e/ddram_dq(12) -radix hexadecimal} {/testbench/du_e/ddram_dq(11) -radix hexadecimal} {/testbench/du_e/ddram_dq(10) -radix hexadecimal} {/testbench/du_e/ddram_dq(9) -radix hexadecimal} {/testbench/du_e/ddram_dq(8) -radix hexadecimal} {/testbench/du_e/ddram_dq(7) -radix hexadecimal} {/testbench/du_e/ddram_dq(6) -radix hexadecimal} {/testbench/du_e/ddram_dq(5) -radix hexadecimal} {/testbench/du_e/ddram_dq(4) -radix hexadecimal} {/testbench/du_e/ddram_dq(3) -radix hexadecimal} {/testbench/du_e/ddram_dq(2) -radix hexadecimal} {/testbench/du_e/ddram_dq(1) -radix hexadecimal} {/testbench/du_e/ddram_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddram_dq(15) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(14) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(13) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddram_dq
-add wave -noupdate -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
-add wave -noupdate -group ddram -expand /testbench/du_e/ddram_dqs
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_clk
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_reset_n
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_cke
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_cs_n
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_ras_n
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_cas_n
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_we_n
+add wave -noupdate -expand -group ddram /testbench/du_e/ddram_odt
+add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_a
+add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_ba
+add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testbench/du_e/ddram_dq(15) -radix hexadecimal} {/testbench/du_e/ddram_dq(14) -radix hexadecimal} {/testbench/du_e/ddram_dq(13) -radix hexadecimal} {/testbench/du_e/ddram_dq(12) -radix hexadecimal} {/testbench/du_e/ddram_dq(11) -radix hexadecimal} {/testbench/du_e/ddram_dq(10) -radix hexadecimal} {/testbench/du_e/ddram_dq(9) -radix hexadecimal} {/testbench/du_e/ddram_dq(8) -radix hexadecimal} {/testbench/du_e/ddram_dq(7) -radix hexadecimal} {/testbench/du_e/ddram_dq(6) -radix hexadecimal} {/testbench/du_e/ddram_dq(5) -radix hexadecimal} {/testbench/du_e/ddram_dq(4) -radix hexadecimal} {/testbench/du_e/ddram_dq(3) -radix hexadecimal} {/testbench/du_e/ddram_dq(2) -radix hexadecimal} {/testbench/du_e/ddram_dq(1) -radix hexadecimal} {/testbench/du_e/ddram_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddram_dq(15) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(14) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(13) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddram_dq
+add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
+add wave -noupdate -expand -group ddram -expand /testbench/du_e/ddram_dqs
 add wave -noupdate -group mem_sync -group states /testbench/du_e/ddrphy_e/mem_sync_b/mem_sync_i/INIT
 add wave -noupdate -group mem_sync -group states /testbench/du_e/ddrphy_e/mem_sync_b/mem_sync_i/FREEZE
 add wave -noupdate -group mem_sync -group states /testbench/du_e/ddrphy_e/mem_sync_b/mem_sync_i/STOP
@@ -74,20 +74,19 @@ add wave -noupdate -expand -group dqsbufm_0 -radix hexadecimal /testbench/du_e/d
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/DATAVALID
 add wave -noupdate -expand -group dqsbufm_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i/BURSTDET
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
-add wave -noupdate /testbench/du_e/ipoe_b/miirx_frm
-add wave -noupdate /testbench/du_e/ipoe_b/miirx_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/miirx_data
+add wave -noupdate /testbench/du_e/grahics_e/ctlr_do_dv(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlr_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqi
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18164700570 fs} 0} {{Cursor 2} {23493692460 fs} 0}
+WaveRestoreCursors {{Cursor 1} {22255690150 fs} 0} {{Cursor 2} {23480750640 fs} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 186
-configure wave -valuecolwidth 137
+configure wave -namecolwidth 176
+configure wave -valuecolwidth 248
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -100,4 +99,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {22857662430 fs} {24484387710 fs}
+WaveRestoreZoom {23389408840 fs} {23572092440 fs}
