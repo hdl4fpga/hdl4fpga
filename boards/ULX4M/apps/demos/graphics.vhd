@@ -442,38 +442,38 @@ begin
 
 				sync_rst  <= not ddram_clklck;
 				eth_reset <= not sync_rst;
-				sync_i : rxdll_sync
-				port map (
-					rst       => sync_rst,
-					sync_clk  => clk_25mhz,
-					update    => '0',
-					dll_lock  => dll_lock,
-					dll_reset => dll_reset,
-					uddcntln  => uddcntln,
-					freeze    => freeze,
-					stop      => open,
-					ddr_reset => ddr_reset,
-					ready     => open);
+--				sync_i : rxdll_sync
+--				port map (
+--					rst       => sync_rst,
+--					sync_clk  => clk_25mhz,
+--					update    => '0',
+--					dll_lock  => dll_lock,
+--					dll_reset => dll_reset,
+--					uddcntln  => uddcntln,
+--					freeze    => freeze,
+--					stop      => open,
+--					ddr_reset => ddr_reset,
+--					ready     => open);
+--
+--				dlldel_i : dlldeld
+--				port map(
+--					move      => '0',
+--					loadn     => '0',
+--					direction => '0',
+--					ddrdel    => ddrdel,
+--					a         => rgmii_rx_clk,
+--					z         => sclk);
+--
+--				ddrdll_i : ddrdlla
+--				port map (
+--					rst      => dll_reset,
+--					clk      => sclk,
+--					uddcntln => uddcntln,
+--					freeze   => freeze,
+--					lock     => dll_lock,
+--					ddrdel   => ddrdel);
 
-				dlldel_i : dlldeld
-				port map(
-					move      => '0',
-					loadn     => '0',
-					direction => '0',
-					ddrdel    => ddrdel,
-					a         => rgmii_rx_clk,
-					z         => sclk);
-
-				ddrdll_i : ddrdlla
-				port map (
-					rst      => dll_reset,
-					clk      => sclk,
-					uddcntln => uddcntln,
-					freeze   => freeze,
-					lock     => dll_lock,
-					ddrdel   => ddrdel);
-
---				sclk <= rgmii_rx_clk;
+				sclk <= rgmii_rx_clk;
 				rmgmii_rxdv_b : block
 					signal d : std_logic;
 				begin

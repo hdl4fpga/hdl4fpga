@@ -79,54 +79,14 @@ add wave -noupdate /testbench/du_e/ipoe_b/miirx_frm
 add wave -noupdate /testbench/du_e/ipoe_b/miirx_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/miirx_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_wlreq
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_wlrdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/pause_b/pause_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/pause_b/pause_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wlstep_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/wlstep_req
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/base
-add wave -noupdate -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/lat
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/lat(0)
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/readclksel
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/read_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/read_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqs_pause
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/step_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/step_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rlpause_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rlpause_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/rl_b/adjbrst_e/line__203/state
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_rlreq
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_rlrdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_cmd
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_act
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_idle
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/leveling
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(1)
-add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(1)
-add wave -noupdate /testbench/du_e/ddrphy_e/rl_req(0)
-add wave -noupdate /testbench/du_e/ddrphy_e/rl_rdy(0)
-add wave -noupdate /testbench/du_e/ddrphy_e/read_rdy(0)
-add wave -noupdate /testbench/du_e/ddrphy_e/read_req(0)
-add wave -noupdate /testbench/du_e/ddrphy_e/read_req(1)
-add wave -noupdate /testbench/du_e/ddrphy_e/read_rdy(1)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/sclk
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/read_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(1)/ddr3phy_i/read_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_ini
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18164700574 fs} 0} {{Cursor 2} {23493692461 fs} 0}
+WaveRestoreCursors {{Cursor 1} {18164700570 fs} 0} {{Cursor 2} {23493692460 fs} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 116
+configure wave -namecolwidth 186
 configure wave -valuecolwidth 137
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -140,4 +100,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {23117163396 fs} {23891538404 fs}
+WaveRestoreZoom {22857662430 fs} {24484387710 fs}

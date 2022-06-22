@@ -137,9 +137,6 @@ begin
 			read(0) <= read(1);
 		end block;
 
-		adj_req   <= phy_rlreq;
-		phy_rlrdy <= adj_req;
-
 		adjbrst_e : entity hdl4fpga.adjbrst
 		port map (
 			sclk       => sclk,
@@ -152,7 +149,7 @@ begin
 			burstdet   => burstdet,
 			lat        => lat,
 			readclksel => readclksel);
-		phy_sto <- datavalid;
+		phy_sto <= datavalid;
 
 		process (sclk, read_req)
 			type states is (s_start, s_adj, s_paused);

@@ -203,6 +203,22 @@ architecture lscc of ecp5_ddrphy is
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
 
+--	function unshuffle_dlinevector (
+--		constant arg : dline_vector) 
+--		return std_logic_vectoris
+--		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
+--		variable val : byte_vector(dat'range);
+--	begin	
+--		dat := to_bytevector(arg);
+--		for i in word_size/byte_size-1 downto 0 loop
+--			for j in data_gear*word_size/word_size-1 downto 0 loop
+--				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
+--			end loop;
+--		end loop;
+--		return to_dlinevector(to_stdlogicvector(val));
+--	end;
+
+
 	signal sdmt   : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi   : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo   : bline_vector(word_size/byte_size-1 downto 0);
@@ -325,16 +341,21 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if phy_trdy='1' then
-					if phy_cmd=mpu_pre then
+					ddr_idle <= s_pre;
+					case phy_cmd is
+					when mpu_pre =>
+						ddr_act <= '0';
 						s_pre := '1';
-					else
-						ddr_idle <= s_pre;
+					when mpu_act =>
+						ddr_act <= '1';
 						s_pre := '0';
-					end if;
+					when others =>
+						ddr_act <= '0';
+						s_pre := '0';
+					end case;
 				end if;
 			end if;
 		end process;
-		ddr_act <= phy_trdy when phy_cmd=mpu_act else '0';
 
 		readcycle_p : process (sclk, read_rdy)
 			type states is (s_idle, s_start, s_stop);
@@ -452,6 +473,9 @@ begin
 	sdqst <= to_blinevector(phy_dqst);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
+		signal sto : std_logic;
+	begin
+		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
 			data_gear => data_gear,
@@ -470,7 +494,7 @@ begin
 			phy_rlrdy => rl_rdy(i),
 
 			phy_sti   => phy_sti(0),
-			phy_sto   => phy_sto(data_gear*i),
+			phy_sto   => sto,
 			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),

@@ -113,7 +113,7 @@ begin
 					pll_req <= q(0);
 				end if;
 			end process;
-			sys_rdy(i*DATA_PHASES+j) <= pll_req;
+			sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j) when data_delay=0 else pll_req;
 
 
 			inbyte_i : entity hdl4fpga.iofifo
@@ -135,6 +135,6 @@ begin
 				do  => do(j*WORD_SIZE/BYTE_SIZE+i));
 		end generate;
 	end generate;
-	sys_do <= to_stdlogicvector(do);
+	sys_do <= ddr_dqi when data_delay=0 else to_stdlogicvector(do);
 
 end;
