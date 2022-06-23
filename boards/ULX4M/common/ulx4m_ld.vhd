@@ -84,6 +84,21 @@ entity ulx4m_ld is
 		fpdi_d1         : out std_logic;
 		fpdi_d2         : out std_logic;
 
+		gpio6           : inout std_logic := 'Z'; 
+		gpio7           : inout std_logic := 'Z'; 
+		gpio8           : inout std_logic := 'Z'; 
+		gpio9           : inout std_logic := 'Z'; 
+		gpio10          : inout std_logic := 'Z'; 
+		gpio11          : inout std_logic := 'Z'; 
+		gpio13          : inout std_logic := 'Z'; 
+		gpio17          : inout std_logic := 'Z'; 
+		gpio19          : inout std_logic := 'Z'; 
+		gpio22          : inout std_logic := 'Z'; 
+		gpio23          : inout std_logic := 'Z'; 
+		gpio24          : inout std_logic := 'Z'; 
+		gpio25          : inout std_logic := 'Z'; 
+
+		gpio2           : inout std_logic := 'Z';
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
