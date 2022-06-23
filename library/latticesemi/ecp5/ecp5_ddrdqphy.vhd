@@ -356,10 +356,10 @@ begin
 			wrpntr1 => wrpntr(1),
 			wrpntr0 => wrpntr(0),
 			d       => z,
-			q2      => phy_dqo(0*byte_size+i),
-			q3      => phy_dqo(1*byte_size+i),
-			q0      => phy_dqo(2*byte_size+i),
-			q1      => phy_dqo(3*byte_size+i));
+			q0      => phy_dqo(0*byte_size+i),
+			q1      => phy_dqo(1*byte_size+i),
+			q2      => phy_dqo(2*byte_size+i),
+			q3      => phy_dqo(3*byte_size+i));
 	end generate;
 
 	dmi_g : block
