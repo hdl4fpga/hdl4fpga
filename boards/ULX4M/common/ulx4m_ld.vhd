@@ -84,6 +84,7 @@ entity ulx4m_ld is
 		fpdi_d1         : out std_logic;
 		fpdi_d2         : out std_logic;
 
+		cbus            : inout std_logic_vector(0 to 4-1);
 		gpio6           : inout std_logic := 'Z'; 
 		gpio7           : inout std_logic := 'Z'; 
 		gpio8           : inout std_logic := 'Z'; 

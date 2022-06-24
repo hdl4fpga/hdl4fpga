@@ -229,11 +229,12 @@ architecture graphics of ulx4m_ld is
 	signal  mii_rxd       : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 
 	alias  mii_txc        : std_logic is rgmii_rx_clk;
-	alias  sio_clk        : std_logic is rgmii_rx_clk;
---	alias  sio_clk        : std_logic is clk_25mhz;
+	signal sio_clk        : std_logic;
+	alias uart_clk    : std_logic is sio_clk;
 	alias  dmacfg_clk     : std_logic is clk_25mhz;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(0 to 2*rgmii_txd'length-1);
+	constant hdplx : std_logic := setif(debug, '0', '1');
 
 begin
 
@@ -386,15 +387,132 @@ begin
 		
 	end block;
 
-	ipoe_b : block
+	hdlc_g : if io_link=io_hdlc generate
+
+		constant uart_xtal : natural := natural(
+			(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
+			(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
+
+		constant uart_xtal16 : natural := uart_xtal/16;
+
+		constant baudrate : natural := setif(
+			uart_xtal >= 32000000, 3000000, setif(
+			uart_xtal >= 25000000, 2000000,
+                                   115200));
+
+		signal uart_rxdv  : std_logic;
+		signal uart_rxd   : std_logic_vector(0 to 8-1);
+		signal uarttx_frm : std_logic;
+		signal uart_idle  : std_logic;
+		signal uart_txen  : std_logic;
+		signal uart_txd   : std_logic_vector(uart_rxd'range);
+
+		signal tp         : std_logic_vector(1 to 32);
+
+		alias ftdi_txd : std_logic is gpio23;
+		alias ftdi_rxd : std_logic is gpio24;
+	begin
+
+		sio_clk <= videoio_clk;
+
+		assert FALSE
+			report "BAUDRATE : " & " " & integer'image(baudrate)
+			severity NOTE;
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_rxc  => uart_clk,
+			uart_sin  => ftdi_txd,
+			uart_irdy => uart_rxdv,
+			uart_data => uart_rxd);
+
+		process (uart_clk)
+		begin
+			if rising_edge(uart_clk) then
+				if uart_rxdv='1' then
+--					led <= uart_rxd;
+				end if;
+			end if;
+		end process;
+
+		process (uart_clk)
+		begin
+			if rising_edge(uart_clk) then
+				if uart_txen='1' then
+--					led <= uart_txd;
+				end if;
+			end if;
+		end process;
+
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_txc  => uart_clk,
+			uart_sout => ftdi_rxd,
+			uart_frm  => video_lck,
+			uart_irdy => uart_txen,
+			uart_trdy => uart_idle,
+			uart_data => uart_txd);
+
+			led(0) <= si_frm;
+			led(2) <= si_irdy;
+		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
+		generic map (
+			mem_size  => mem_size)
+		port map (
+			uart_clk  => uart_clk,
+			uartrx_irdy => uart_rxdv,
+			uartrx_data => uart_rxd,
+			uarttx_frm  => uarttx_frm,
+			uarttx_trdy => uart_idle,
+			uarttx_data => uart_txd,
+			uarttx_irdy => uart_txen,
+			sio_clk   => sio_clk,
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data,
+
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+			tp        => tp);
+
+	end generate;
+
+	ipoe_e : if io_link=io_ipoe generate
+		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
+		alias rmii_crs   : std_logic is gpio17;
+
+		alias rmii_tx_en : std_logic is gpio6;
+		alias rmii_tx0   : std_logic is gpio7;
+		alias rmii_tx1   : std_logic is gpio8;
+
+		alias rmii_rx_dv : std_logic is rmii_crs;
+		alias rmii_rx0   : std_logic is gpio9;
+		alias rmii_rx1   : std_logic is gpio11;
+
+
+		alias rmii_nint  : std_logic is gpio19;
+		alias rmii_mdio  : std_logic is gpio22;
+		alias rmii_mdc   : std_logic is gpio25;
+		signal mii_clk   : std_logic;
+
+		signal mii_txen  : std_logic;
+		signal mii_txd   : std_logic_vector(0 to 2-1);
+
+		signal mii_rxdv  : std_logic;
+		signal mii_rxd   : std_logic_vector(0 to 2-1);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -404,206 +522,50 @@ begin
 
 	begin
 
-		sync_b : block
+		sio_clk <= rmii_nint;
+		mii_clk <= rmii_nint;
 
-			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-
+		process (mii_clk)
 		begin
-
-			rgmii_b : block
-
-				component rxdll_sync
-					port (
-						rst       : in std_logic;
-						sync_clk  : in std_logic;
-						update    : in std_logic;
-						dll_lock  : in  std_logic;
-						dll_reset : out std_logic;
-						uddcntln  : out std_logic;
-						freeze    : out std_logic;
-						stop      : out std_logic;
-						ddr_reset : out std_logic;
-						ready     : out std_logic);
-				end component;
-
-				signal dll_reset : std_logic;
-				signal ddr_reset : std_logic;
-				signal sync_rst  : std_logic;
-				signal sclk      : std_logic;
-				signal ddrdel    : std_logic;
-				signal uddcntln  : std_logic;
-				signal freeze    : std_logic;
-				signal dll_lock  : std_logic;
-
-			begin
-
-				sync_rst  <= not ddram_clklck;
-				eth_reset <= not sync_rst;
-				sync_i : rxdll_sync
-				port map (
-					rst       => sync_rst,
-					sync_clk  => clk_25mhz,
-					update    => '0',
-					dll_lock  => dll_lock,
-					dll_reset => dll_reset,
-					uddcntln  => uddcntln,
-					freeze    => freeze,
-					stop      => open,
-					ddr_reset => ddr_reset,
-					ready     => open);
-
-				dlldel_i : dlldeld
-				port map(
-					move      => '0',
-					loadn     => '0',
-					direction => '0',
-					ddrdel    => ddrdel,
-					a         => rgmii_rx_clk,
-					z         => sclk);
-
-				ddrdll_i : ddrdlla
-				port map (
-					rst      => dll_reset,
-					clk      => sclk,
-					uddcntln => uddcntln,
-					freeze   => freeze,
-					lock     => dll_lock,
-					ddrdel   => ddrdel);
-
---				sclk <= rgmii_rx_clk;
-				rmgmii_rxdv_b : block
-					signal d : std_logic;
-				begin
-					delay_i : delayg
-					generic map (
-						del_mode => "SCLK_ALIGNED")
-					port map (
-						a => rgmii_rx_dv,
-						z => d);
-
-					rmgmii_rxdv_i : iddrx1f
-					port map (
-						rst  => sync_rst,
-						sclk => sclk,
-						d    => d,
-						q0   => mii_rxdv,
-						q1   => open);
-				end block;
-	
-				rmgmii_rxd_g : for i in rgmii_rxd'range generate
-					signal d : std_logic;
-				begin
-					delay_i : delayg
-					generic map (
-						del_mode => "SCLK_ALIGNED")
-					port map (
-						a => rgmii_rxd(i),
-						z => d);
-
-					iddr_i : iddrx1f
-					port map (
-						rst  => sync_rst,
-						sclk => sclk,
-						d    => d,
-						q0   => mii_rxd(rgmii_rxd'length*0+i),
-						q1   => mii_rxd(rgmii_rxd'length*1+i));
-				end generate;
-				
-				rmgmii_txd_i : oddrx1f
-				port map (
-					rst  => ddr_reset,
-					sclk => rgmii_rx_clk, --sclk,
-					d0   => mii_txen,
-					d1   => '0',
-					q    => rgmii_tx_en);
-
-				rmgmii_txd_g : for i in rgmii_txd'range generate
-					signal d : std_logic;
-				begin
-					oddr_i : oddrx1f
-					port map (
-						rst  => ddr_reset,
-						sclk => rgmii_rx_clk, --sclk,
-						d0   => mii_txd(rgmii_txd'length*0+i),
-						d1   => mii_txd(rgmii_txd'length*1+i),
-						q    => d);
-
-					delay_i : delayg
-					generic map (
-						del_mode => "SCLK_ALIGNED")
-					port map (
-						a => d,
-						z => rgmii_txd(i));
-		
-					end generate;
-					
-
-			end block;
-
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
-				end if;
-			end process;
-
-			rxc2txc_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => 4,
-				latency    => 0,
-				dst_offset => 0,
-				src_offset => 2,
-				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
-			port map (
-				src_clk  => mii_rxc,
-				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
-				dst_irdy => dst_irdy,
-				dst_trdy => dst_trdy,
-				dst_data => txc_rxbus);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					miirx_frm  <= txc_rxbus(0);
-					miirx_irdy <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_rxd'length);
-				end if;
-			end process;
-		end block;
-
-		dhcp_p : process(mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					if btn(1)='1' then
-						dhcpcd_req <= not dhcpcd_rdy;
-					end if;
-				end if;
+			if rising_edge(mii_clk) then
+				rmii_tx_en <= mii_txen;
+				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
 			end if;
 		end process;
 
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				mii_rxdv <= rmii_rx_dv;
+				mii_rxd  <= rmii_rx0 & rmii_rx1;
+			end if;
+		end process;
+
+		rmii_mdc  <= '0';
+		rmii_mdio <= '0';
+
+		dhcp_p : process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
+				end if;
+			end if;
+		end process;
+		led(0) <= dhcpcd_rdy;
+		led(7) <= not dhcpcd_rdy;
+
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
-			debug         => debug,
 			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
+			default_ipv4a => aton("192.168.1.1"))
 		port map (
-			tp         => open,
-
-			sio_clk    => sio_clk,
+			hdplx      => hdplx,
+			sio_clk    => mii_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
-			miirx_trdy => open,
-			miirx_data => miirx_data,
+			miirx_frm  => mii_rxdv,
+			miirx_data => mii_rxd,
 
 			miitx_frm  => miitx_frm,
 			miitx_irdy => miitx_irdy,
@@ -624,7 +586,7 @@ begin
 
 		desser_e: entity hdl4fpga.desser
 		port map (
-			desser_clk => mii_txc,
+			desser_clk => mii_clk,
 
 			des_frm    => miitx_frm,
 			des_irdy   => miitx_irdy,
@@ -636,7 +598,7 @@ begin
 
 		mii_txen <= miitx_frm and not miitx_end;
 
-	end block;
+	end generate;
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
