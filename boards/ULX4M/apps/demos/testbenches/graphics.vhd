@@ -93,25 +93,66 @@ architecture ulx4mld_graphics of testbench is
 			shutdown       : out   std_logic := '0');
 	end component;
 
-	signal rst_n : std_logic;
-	signal cke   : std_logic;
-	signal ddr_clk : std_logic;
+	constant snd_data : std_logic_vector := 
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_0003ff_1603_0007_3000";
+	constant req_data : std_logic_vector := x"010000_1702_00001f_1603_8007_3000";
+
+	signal rst_n     : std_logic;
+	signal cke       : std_logic;
+	signal ddr_clk   : std_logic;
 	signal ddr_clk_p : std_logic;
 	signal ddr_clk_n : std_logic;
-	signal cs_n  : std_logic;
-	signal ras_n : std_logic;
-	signal cas_n : std_logic;
-	signal we_n  : std_logic;
-	signal ba    : std_logic_vector(bank_bits-1 downto 0);
-	signal addr  : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
-	signal dq    : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n : std_logic_vector(dqs'range) := (others => 'Z');
-	signal dm    : std_logic_vector(data_bytes-1 downto 0);
-	signal odt   : std_logic;
-	signal scl   : std_logic;
-	signal sda   : std_logic;
-	signal tdqs_n : std_logic_vector(dqs'range);
+	signal cs_n      : std_logic;
+	signal ras_n     : std_logic;
+	signal cas_n     : std_logic;
+	signal we_n      : std_logic;
+	signal ba        : std_logic_vector(bank_bits-1 downto 0);
+	signal addr      : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
+	signal dq        : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs       : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n     : std_logic_vector(dqs'range) := (others => 'Z');
+	signal dm        : std_logic_vector(data_bytes-1 downto 0);
+	signal odt       : std_logic;
+	signal scl       : std_logic;
+	signal sda       : std_logic;
+	signal tdqs_n    : std_logic_vector(dqs'range);
 
 	component ddr3_model is
 		port (
@@ -133,27 +174,6 @@ architecture ulx4mld_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
-	function gen_natural(
-		constant start : natural := 0;
-		constant stop  : natural;
-		constant step  : natural := 1;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
-	begin
-		if start < stop then
-			for i in start to stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		else
-			for i in start downto stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		end if;
-		return retval;
-	end;
-
-	signal mii_refclk : std_logic := '0';
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
@@ -175,86 +195,212 @@ architecture ulx4mld_graphics of testbench is
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
+	signal ftdi_txd    : std_logic;
+	signal ftdi_rxd    : std_logic;
+
 begin
 
-	rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 60 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	mii_rxc    <= mii_refclk;
-	mii_refclk <= not mii_refclk after 0.5 ns;
+	hdlc_b : block
 
-	mii_req  <= '0', '1' after 20 us, '0' after 22 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
---	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
-	process
+		generic (
+			baudrate  : natural := 3_000_000;
+			uart_xtal : natural := 25 sec / 1 us;
+			payload   : std_logic_vector);
+		generic map (
+			payload   => snd_data & req_data);
+
+		port (
+			rst       : in  std_logic;
+			uart_clk  : in  std_logic;
+			uart_sout : out std_logic);
+		port map (
+			rst       => rst,
+			uart_clk  => xtal,
+			uart_sout => ftdi_txd);
+
+		signal uart_trdy   : std_logic;
+		signal uart_irdy   : std_logic;
+		signal uart_txd    : std_logic_vector(0 to 8-1);
+
+		signal uartrx_trdy   : std_logic;
+		signal uartrx_irdy   : std_logic;
+		signal uartrx_data   : std_logic_vector(0 to 8-1);
+
+		signal hdlctx_frm  : std_logic;
+		signal hdlctx_end  : std_logic;
+		signal hdlctx_trdy : std_logic;
+		signal hdlctx_data : std_logic_vector(0 to 8-1);
+
+		signal hdlcrx_frm  : std_logic;
+		signal hdlcrx_end  : std_logic;
+		signal hdlcrx_trdy : std_logic;
+		signal hdlcrx_irdy : std_logic;
+		signal hdlcrx_data : std_logic_vector(0 to 8-1);
+		signal hdlcfcsrx_sb : std_logic;
+		signal hdlcfcsrx_vld : std_logic;
+		signal nrst : std_logic;
+
 	begin
-		wait for 23 us;
-		loop
-			if rep_req='1' then
-				wait;
-				rep_req <= '0' after 5.8 us;
-			else
-				rep_req <= '1' after 250 ns;
+
+		nrst <= not rst;
+		process (rst, uart_clk)
+			variable addr : natural;
+		begin
+			if rst='1' then
+				hdlctx_frm <= '0';
+				hdlctx_end <= '0';
+				addr       := 0;
+			elsif rising_edge(uart_clk) then
+				if addr < payload'length then
+					hdlctx_data <= reverse(payload(addr to addr+8-1));
+					if hdlctx_trdy='1' then
+						addr := addr + 8;
+					end if;
+				else
+					hdlctx_data <= (others => '-');
+				end if;
+				if addr < payload'length then
+					hdlctx_frm <= '1';
+					hdlctx_end <= '0';
+				else
+					hdlctx_frm <= '1';
+					hdlctx_end <= '1';
+				end if;
 			end if;
-			wait on rep_req;
-		end loop;
-	end process;
-	mii_req1 <= rep_req;
+		end process;
 
-	htb_e : entity hdl4fpga.eth_tb
-	generic map (
-		debug =>false)
-	port map (
-		mii_data4 =>
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0007_3000",
-		mii_data5 => x"010000_1702_00001f_1603_8007_3000",
-		mii_frm1 => '0',
-		mii_frm2 => '0', --ping_req,
-		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
+		port map (
+			hdlctx_frm  => hdlctx_frm,
+			hdlctx_irdy => '1',
+			hdlctx_trdy => hdlctx_trdy,
+			hdlctx_end  => hdlctx_end,
+			hdlctx_data => hdlctx_data,
 
-		mii_txc  => mii_rxc,
-		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd);
+			uart_clk    => uart_clk,
+			uart_irdy   => uart_irdy,
+			uart_trdy   => uart_trdy,
+			uart_data   => uart_txd);
 
-	rgmii_rxd <= word2byte(mii_rxd, not rgmii_rxc);
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate  => baudrate,
+			clk_rate  => uart_xtal)
+		port map (
+			uart_frm  => nrst,
+			uart_txc  => uart_clk,
+			uart_sout => uart_sout,
+			uart_trdy => uart_trdy,
+			uart_irdy => uart_irdy,
+			uart_data => uart_txd);
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate  => baudrate,
+			clk_rate  => uart_xtal)
+		port map (
+			uart_rxc  => uart_clk,
+			uart_sin  => ftdi_rxd,
+			uart_irdy => uartrx_irdy,
+			uart_data => uartrx_data);
+
+		hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
+		port map (
+			uart_clk    => uart_clk,
+			uartrx_irdy => uartrx_irdy,
+			uartrx_data => uartrx_data,
+
+			hdlcrx_frm  => hdlcrx_frm,
+			hdlcrx_irdy => hdlcrx_irdy,
+			hdlcrx_data => hdlcrx_data,
+			hdlcrx_end  => hdlcrx_end,
+			fcs_sb      => hdlcfcsrx_sb,
+			fcs_vld     => hdlcfcsrx_vld);
+
+	end block;
+
+
+	ipoe_b : block
+
+		signal eth_txen  : std_logic;
+		signal eth_txd   : std_logic_vector(mii_txd'range);
+
+		signal pl_trdy    : std_logic;
+		signal pl_end     : std_logic;
+		signal pl_data    : std_logic_vector(mii_txd'range);
+
+		signal miirx_frm  : std_logic;
+		signal miirx_end  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(pl_data'range);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(pl_data'range);
+
+		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
+		signal hwllc_irdy : std_logic;
+		signal hwllc_trdy : std_logic;
+		signal hwllc_end  : std_logic;
+		signal hwllc_data : std_logic_vector(pl_data'range);
+		signal datarx_null :  std_logic_vector(mii_rxd'range);
+
+	begin
+
+		rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
+		xtal <= not xtal after 20 ns;
+	
+		mii_req  <= '0', '1' after 20 us, '0' after 22 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+
+		process
+		begin
+			wait for 23 us;
+			loop
+				if rep_req='1' then
+					wait;
+					rep_req <= '0' after 5.8 us;
+				else
+					rep_req <= '1' after 250 ns;
+				end if;
+				wait on rep_req;
+			end loop;
+		end process;
+		mii_req1 <= rep_req;
+	
+		rgmii_rxd <= word2byte(mii_rxd, not rgmii_rxc);
+
+		htb_e : entity hdl4fpga.eth_tb
+		generic map (
+			debug =>false)
+		port map (
+			mii_data4 => snd_data,
+			mii_data5 => req_data,
+			mii_frm1 => '0',
+			mii_frm2 => '0', --ping_req,
+			mii_frm3 => '0',
+			mii_frm4 => mii_req,
+			mii_frm5 => mii_req1,
+	
+			mii_txc  => mii_rxc,
+			mii_txen => mii_rxdv,
+			mii_txd  => mii_rxd);
+
+		ethrx_e : entity hdl4fpga.eth_rx
+		port map (
+			dll_data   => datarx_null,
+			mii_clk    => mii_rxc,
+			mii_frm    => mii_rxdv,
+			mii_irdy   => mii_rxdv,
+			mii_data   => mii_rxd);
+
+	end block;
 
 	du_e : ulx4m_ld
 	generic map (
@@ -265,7 +411,6 @@ begin
 		btn(2 to 3)  => (others => '-'),
 
 		eth_reset    => open,
---		rgmii_ref_clk  => mii_refclk,
 		eth_mdc      => open,
 		rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,
