@@ -36,20 +36,27 @@ use ecp5u.components.all;
 
 architecture graphics of ulx4m_ld is
 
-	---------------------------------------
-	-- Set of profiles                   --
+	--------------------------------------
+	-- Set of profiles                  --
 	type apps is (
-	--	Interface_SdramSpeed_PixelFormat --
+	--	Interface_SdramSpeed_PixelFormat--
+
+		uart_400MHz_480p24bpp,
+		uart_425MHz_480p24bpp,
+		uart_450MHz_480p24bpp,
+		uart_475MHz_480p24bpp,
+		uart_500MHz_480p24bpp,
+
 		mii_400MHz_480p24bpp,
 		mii_425MHz_480p24bpp,
 		mii_450MHz_480p24bpp,
 		mii_475MHz_480p24bpp,
 		mii_500MHz_480p24bpp);
-	---------------------------------------
+	--------------------------------------
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := mii_400MHz_480p24bpp;
+	constant app : apps := uart_400MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
@@ -198,6 +205,12 @@ architecture graphics of ulx4m_ld is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
+		uart_400MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram400MHz),
+		uart_425MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram425MHz),
+		uart_450MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram450MHz),
+		uart_475MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram475MHz),
+		uart_500MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram500MHz),
+
 		mii_400MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram400MHz),
 		mii_425MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram425MHz),
 		mii_450MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram450MHz),
@@ -229,9 +242,9 @@ architecture graphics of ulx4m_ld is
 	signal  mii_rxd       : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 
 	alias  mii_txc        : std_logic is rgmii_rx_clk;
-	signal sio_clk        : std_logic;
-	alias uart_clk    : std_logic is sio_clk;
 	alias  dmacfg_clk     : std_logic is clk_25mhz;
+	signal uart_clk       : std_logic;
+	signal sio_clk        : std_logic;
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(0 to 2*rgmii_txd'length-1);
 	constant hdplx : std_logic := setif(debug, '0', '1');
@@ -324,7 +337,6 @@ begin
 		attribute FREQUENCY_PIN_CLKI   : string;
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
-
 		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
@@ -389,16 +401,17 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
-		constant uart_xtal : natural := natural(
-			(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
-			(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
+		constant uart_xtal : real := real(setif(debug, 1e9, natural(
+			video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*natural(sys_freq)/
+			video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
 
-		constant uart_xtal16 : natural := uart_xtal/16;
+		constant uart_xtal16 : real := uart_xtal/16.0;
 
 		constant baudrate : natural := setif(
-			uart_xtal >= 32000000, 3000000, setif(
-			uart_xtal >= 25000000, 2000000,
-                                   115200));
+			debug              , 1e9/16,  setif(
+			uart_xtal >= 32.0e9, 3000000, setif(
+			uart_xtal >= 25.0e9, 2000000,
+                                 115200)));
 
 		signal uart_rxdv  : std_logic;
 		signal uart_rxd   : std_logic_vector(0 to 8-1);
@@ -413,7 +426,15 @@ begin
 		alias ftdi_rxd : std_logic is gpio24;
 	begin
 
-		sio_clk <= videoio_clk;
+		nodebug_g : if not debug generate
+			sio_clk <= videoio_clk;
+			uart_clk <= videoio_clk;
+		end generate;
+
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 1e9 ns /2;
+			sio_clk  <= uart_clk;
+		end generate;
 
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)

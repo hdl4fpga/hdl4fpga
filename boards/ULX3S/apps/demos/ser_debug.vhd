@@ -70,9 +70,9 @@ architecture ser_debug of ulx3s is
 		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
 
 	constant video_mode : video_modes := mode600p;
-	constant videodot_freq : natural := 
-		(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
-		(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
+	constant videodot_freq : real := 
+		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
+		real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
 
     signal video_pixel     : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
 
@@ -163,7 +163,7 @@ begin
 
 	dut_b : block
 
-		constant uart_xtal : natural := natural(videodot_freq);
+		constant uart_xtal : real := videodot_freq;
 
 		constant baudrate  : natural := 3000000;
 

@@ -107,16 +107,16 @@ architecture hdlc_debug of ulx3s is
 	alias rx_data : std_logic_vector(0 to 8-1) is tp(9 to 16);
 
 
-	constant uart_xtal : natural := natural(
-		(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div*natural(sys_freq))/
-		(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
+	constant uart_xtal : real := 
+		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
+		real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div);
 
-	constant uart_xtal16 : natural := uart_xtal/16;
+	constant uart_xtal16 : real := uart_xtal/16.0;
 
 	constant baudrate : natural := setif(
-		uart_xtal >= 32000000, 3000000, setif(
-		uart_xtal >= 25000000, 2000000,
-                               115200));
+		uart_xtal >= 32.0e6, 3000000, setif(
+		uart_xtal >= 25.0e6, 2000000,
+                             115200));
 
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(0 to 8-1);

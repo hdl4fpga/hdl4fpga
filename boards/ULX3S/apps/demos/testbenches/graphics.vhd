@@ -260,7 +260,7 @@ begin
 
 		generic (
 			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
+			uart_xtal : real := 25.0e6;
 			payload   : std_logic_vector);
 		generic map (
 			payload   => data);

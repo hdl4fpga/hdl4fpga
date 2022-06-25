@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -31,7 +32,7 @@ use hdl4fpga.std.all;
 entity uart_tx is
 	generic (
 		baudrate : natural := 115200;
-		clk_rate : natural);
+		clk_rate : real);
 	port (
 		uart_txc  : in  std_logic;
 		uart_txe  : in  std_logic := '1';
@@ -41,6 +42,7 @@ entity uart_tx is
 		uart_trdy : buffer std_logic;
 		uart_data : in  std_logic_vector);
 end;
+
 
 architecture def of uart_tx is
 
@@ -74,7 +76,7 @@ begin
 	end process;
 
 	cntr_p : process (uart_txc)
-		constant max_count  : natural := (clk_rate+baudrate/2)/baudrate;
+		constant max_count  : natural := natural(floor((clk_rate+real(baudrate/2))/real(baudrate)));
 		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
 	begin

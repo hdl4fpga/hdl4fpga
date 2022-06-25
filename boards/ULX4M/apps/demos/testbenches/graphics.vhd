@@ -84,6 +84,20 @@ architecture ulx4mld_graphics of testbench is
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
+			gpio6          : inout std_logic := 'Z'; 
+			gpio7          : inout std_logic := 'Z'; 
+			gpio8          : inout std_logic := 'Z'; 
+			gpio9          : inout std_logic := 'Z'; 
+			gpio10         : inout std_logic := 'Z'; 
+			gpio11         : inout std_logic := 'Z'; 
+			gpio13         : inout std_logic := 'Z'; 
+			gpio17         : inout std_logic := 'Z'; 
+			gpio19         : inout std_logic := 'Z'; 
+			gpio22         : inout std_logic := 'Z'; 
+			gpio23         : inout std_logic := 'Z'; 
+			gpio24         : inout std_logic := 'Z'; 
+			gpio25         : inout std_logic := 'Z'; 
+
 			fpdi_clk       :  out std_logic; 
 			fpdi_d0        :  out std_logic;
 			fpdi_d1        :  out std_logic;
@@ -198,16 +212,18 @@ architecture ulx4mld_graphics of testbench is
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
 
+	signal uart_clk : std_logic := '0';
 begin
 
-	rst <= '1', '0' after 60 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
+	uart_clk <= not uart_clk after 500 ps;
 	hdlc_b : block
 
 		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
+			baudrate  : natural := 1e9/16;
+			uart_xtal : real := 1.0e9;
 			payload   : std_logic_vector);
 		generic map (
 			payload   => snd_data & req_data);
@@ -218,7 +234,7 @@ begin
 			uart_sout : out std_logic);
 		port map (
 			rst       => rst,
-			uart_clk  => xtal,
+			uart_clk  => uart_clk,
 			uart_sout => ftdi_txd);
 
 		signal uart_trdy   : std_logic;
@@ -353,9 +369,6 @@ begin
 
 	begin
 
-		rst  <= '1', '0' after 110 us; --, '1' after 30 us, '0' after 31 us;
-		xtal <= not xtal after 20 ns;
-	
 		mii_req  <= '0', '1' after 20 us, '0' after 22 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 	--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
 
@@ -419,19 +432,21 @@ begin
 		rgmii_rx_dv  => rgmii_rxdv,
 		rgmii_rxd    => rgmii_rxd,
 
+		gpio23       => ftdi_txd,
+		gpio24       => ftdi_rxd,
 		ddram_reset_n => rst_n,
-		ddram_clk   => ddr_clk,
-		ddram_cke   => cke,
-		ddram_cs_n  => cs_n,
-		ddram_ras_n => ras_n,
-		ddram_cas_n => cas_n,
-		ddram_we_n  => we_n,
-		ddram_ba    => ba,
-		ddram_a     => addr,
-		ddram_dqs   => dqs,
-		ddram_dq    => dq,
-		ddram_dm    => dm,
-		ddram_odt   => odt);
+		ddram_clk    => ddr_clk,
+		ddram_cke    => cke,
+		ddram_cs_n   => cs_n,
+		ddram_ras_n  => ras_n,
+		ddram_cas_n  => cas_n,
+		ddram_we_n   => we_n,
+		ddram_ba     => ba,
+		ddram_a      => addr,
+		ddram_dqs    => dqs,
+		ddram_dq     => dq,
+		ddram_dm     => dm,
+		ddram_odt    => odt);
 
 	process (rgmii_txc)
 		variable en : std_logic;
