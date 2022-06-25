@@ -27,6 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
+	constant debug :boolean := true;
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 9;
@@ -215,10 +216,11 @@ architecture ulx4mld_graphics of testbench is
 	signal uart_clk : std_logic := '0';
 begin
 
-	rst <= '1', '0' after 1 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 4 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	uart_clk <= not uart_clk after 500 ps;
+
+	uart_clk <= not uart_clk after 0.1 ns /2 when debug else '0';
 	hdlc_b : block
 
 		generic (
@@ -391,7 +393,7 @@ begin
 
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
-			debug =>false)
+			debug => false)
 		port map (
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
@@ -417,7 +419,7 @@ begin
 
 	du_e : ulx4m_ld
 	generic map (
-		debug => true)
+		debug => debug)
 	port map (
 		clk_25mhz    => xtal,
 		btn(1)       => '0',

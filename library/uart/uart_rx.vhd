@@ -106,7 +106,7 @@ begin
 		full_count when stop_s,
 		'0'        when others;
 
-	cntr_p : process (uart_rxc)
+	cntr_p : process (uart_ena, uart_rxc)
 		constant max_count  : natural := natural(floor((clk_rate+real(baudrate/2))/real(baudrate)));
 		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);

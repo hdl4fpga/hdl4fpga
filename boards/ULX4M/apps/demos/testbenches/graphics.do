@@ -4,7 +4,6 @@ quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqs
 quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i { (context /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufm_i )&{READCLKSEL2 , READCLKSEL1 , READCLKSEL0 }} readclksel_0001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/clk_25mhz
-add wave -noupdate /testbench/uart_clk
 add wave -noupdate /testbench/du_e/hdlc_g/ftdi_txd
 add wave -noupdate /testbench/du_e/hdlc_g/ftdi_rxd
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_rx_clk
@@ -80,31 +79,23 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlr_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqi
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/hdlc_b/hdlctx_frm
-add wave -noupdate /testbench/hdlc_b/hdlcrx_trdy
-add wave -noupdate /testbench/hdlc_b/hdlctx_end
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/hdlctx_data
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/hdlc_b/hdlcdll_tx_e/uart_trdy
-add wave -noupdate /testbench/hdlc_b/hdlcdll_tx_e/uart_irdy
-add wave -noupdate /testbench/hdlc_b/hdlcdll_tx_e/uart_frm
-add wave -noupdate /testbench/hdlc_b/hdlcdll_tx_e/uart_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_txc
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_frm
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_irdy
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_trdy
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_data
-add wave -noupdate /testbench/hdlc_b/uarttx_e/debug_txen
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uarttx_e/debug_txd
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/sout_frm
+add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sout_end
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
+add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/clk_rate
+add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/baudrate
+add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_rxc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1223478510 fs} 0} {{Cursor 2} {23480750640 fs} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 176
-configure wave -valuecolwidth 248
+WaveRestoreCursors {{Cursor 1} {24301662780 fs} 0} {{Cursor 2} {3895769710 fs} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 193
+configure wave -valuecolwidth 164
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -117,4 +108,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {12600002560 fs}
+WaveRestoreZoom {39784747460 fs} {40030290900 fs}

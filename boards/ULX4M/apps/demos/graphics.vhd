@@ -319,8 +319,8 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => open, --video_shft_clk,
-			CLKOS2    => open, --video_clk,
+			CLKOS     => video_shft_clk,
+			CLKOS2    => video_clk,
             CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
@@ -402,15 +402,15 @@ begin
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := real(setif(debug, 1e9, natural(
-			video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*natural(sys_freq)/
-			video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div));
+			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
+			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div))));
 
 		constant uart_xtal16 : real := uart_xtal/16.0;
 
 		constant baudrate : natural := setif(
 			debug              , 1e9/16,  setif(
-			uart_xtal >= 32.0e9, 3000000, setif(
-			uart_xtal >= 25.0e9, 2000000,
+			uart_xtal >= 32.0e6, 3000000, setif(
+			uart_xtal >= 25.0e6, 2000000,
                                  115200)));
 
 		signal uart_rxdv  : std_logic;
@@ -432,7 +432,7 @@ begin
 		end generate;
 
 		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 1e9 ns /2;
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 			sio_clk  <= uart_clk;
 		end generate;
 
@@ -480,8 +480,8 @@ begin
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);
 
-			led(0) <= si_frm;
-			led(2) <= si_irdy;
+		led(0) <= si_frm;
+		led(2) <= si_irdy;
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (
 			mem_size  => mem_size)

@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.sio_dayhdlc">
+        <Options def_top="hdl4fpga.draw_vline">
             <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
             <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="ulx4m_ld"/>

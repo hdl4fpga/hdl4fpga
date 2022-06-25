@@ -114,7 +114,7 @@ begin
 						pll_req <= q(0);
 					end if;
 				end process;
-				sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j) when data_delay=0 else pll_req;
+				sys_rdy(i*DATA_PHASES+j) <= pll_req;
 	
 	
 				inbyte_i : entity hdl4fpga.iofifo
@@ -141,6 +141,7 @@ begin
 	no_datadelay_g : if data_delay=0 generate
 		bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
 			DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+				sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j);
 				do(j*WORD_SIZE/BYTE_SIZE+i) <= di(i*DATA_PHASES+j);
 			end generate;
 		end generate;
