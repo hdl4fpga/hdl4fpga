@@ -189,70 +189,26 @@ architecture ulx3s_graphics of testbench is
 		return retval;
 	end;
 
-	constant data  : std_logic_vector :=
---		x"010001" &
---		x"01000c_18017e7d_1702000000_160300000000_1702_00_00_01_160380000000";
-		x"01007e_1702_00_00_00_160380000000";
---		x"160300000000" &
---		x"170200007f" ; -- &
---		x"18ff" &
---		gen_natural(start => 0, stop => 127, size => 16)
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"18ff" &
---		gen_natural(start => 128, stop => 255, size => 16) &
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"1602000080" &
---		x"170200007f"
-
---		x"1801" &
---		x"1234" &
---		x"160301234567" &
---		x"1702000000" --&
---		x"1602000000" &
---		x"1702000000"  &
---		x"1803" &
---		x"5678" &
---		x"9abc" &
---		x"1602000000" &
---		x"1702000000"
-
---		;
+	constant snd_data  : std_logic_vector :=
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_0000ff_1603_0007_3000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_00001f_1603_8007_3000";
 
 	signal pl_frm : std_logic;
 	signal nrst : std_logic;
 begin
 
-	rst <= '1', '0' after 60 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
 
@@ -261,9 +217,11 @@ begin
 		generic (
 			baudrate  : natural := 3_000_000;
 			uart_xtal : real := 25.0e6;
+			xxx : natural_vector;
 			payload   : std_logic_vector);
 		generic map (
-			payload   => data);
+			xxx => (0 => snd_data'length, 1 => req_data'length),
+			payload   => snd_data & req_data);
 
 		port (
 			rst       : in  std_logic;
@@ -297,30 +255,44 @@ begin
 
 	begin
 
-		process (rst, uart_clk)
-			variable addr : natural;
+		process 
+			variable i     : natural;
+			variable total : natural;
+			variable addr  : natural;
 		begin
 			if rst='1' then
 				hdlctx_frm <= '0';
 				hdlctx_end <= '0';
 				addr       := 0;
+				total      := 0;
+				i          := 0;
 			elsif rising_edge(uart_clk) then
-				if addr < payload'length then
+				if addr < total then
 					hdlctx_data <= reverse(payload(addr to addr+8-1));
 					if hdlctx_trdy='1' then
 						addr := addr + 8;
 					end if;
+					if addr < total then
+						hdlctx_frm <= '1';
+						hdlctx_end <= '0';
+					else
+						hdlctx_frm <= '1';
+						hdlctx_end <= '1';
+					end if;
+				elsif i < xxx'length then
+					if i > 0 then
+						wait for 100 us;
+						hdlctx_frm <= '0';
+						hdlctx_end <= '0';
+					end if;
+					total := total + xxx(i);
+					i     := i + 1;
 				else
 					hdlctx_data <= (others => '-');
 				end if;
-				if addr < payload'length then
-					hdlctx_frm <= '1';
-					hdlctx_end <= '0';
-				else
-					hdlctx_frm <= '1';
-					hdlctx_end <= '1';
-				end if;
+
 			end if;
+			wait on rst, uart_clk;
 		end process;
 
 		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
@@ -379,7 +351,7 @@ begin
 		generic (
 			payload   : std_logic_vector);
 		generic map (
-			payload   => data);
+			payload   => snd_data);
 
 		port (
 			rst       : in  std_logic;

@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug :boolean := false;
+	constant debug :boolean := true;
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 9;
@@ -226,8 +226,10 @@ begin
 		generic (
 			baudrate  : natural := setif(debug, 1e9/16, 3e6);
 			uart_xtal : real := real(setif(debug, 1e9, 25e6));
+			xxx : natural_vector;
 			payload   : std_logic_vector);
 		generic map (
+			xxx => (0 => snd_data'length, 1 => req_data'length),
 			payload   => snd_data & req_data);
 
 		port (
@@ -259,35 +261,49 @@ begin
 		signal hdlcrx_data : std_logic_vector(0 to 8-1);
 		signal hdlcfcsrx_sb : std_logic;
 		signal hdlcfcsrx_vld : std_logic;
-		signal nrst : std_logic;
 
+		signal nrst : std_logic;
 	begin
 
-		nrst <= not rst;
-		process (rst, uart_clk)
-			variable addr : natural;
+	nrst <= not rst;
+		process 
+			variable i     : natural;
+			variable total : natural;
+			variable addr  : natural;
 		begin
 			if rst='1' then
 				hdlctx_frm <= '0';
 				hdlctx_end <= '0';
 				addr       := 0;
+				total      := 0;
+				i          := 0;
 			elsif rising_edge(uart_clk) then
-				if addr < payload'length then
+				if addr < total then
 					hdlctx_data <= reverse(payload(addr to addr+8-1));
 					if hdlctx_trdy='1' then
 						addr := addr + 8;
 					end if;
+					if addr < total then
+						hdlctx_frm <= '1';
+						hdlctx_end <= '0';
+					else
+						hdlctx_frm <= '1';
+						hdlctx_end <= '1';
+					end if;
+				elsif i < xxx'length then
+					if i > 0 then
+						wait for 5 us;
+						hdlctx_frm <= '0';
+						hdlctx_end <= '0';
+					end if;
+					total := total + xxx(i);
+					i     := i + 1;
 				else
 					hdlctx_data <= (others => '-');
 				end if;
-				if addr < payload'length then
-					hdlctx_frm <= '1';
-					hdlctx_end <= '0';
-				else
-					hdlctx_frm <= '1';
-					hdlctx_end <= '1';
-				end if;
+
 			end if;
+			wait on rst, uart_clk;
 		end process;
 
 		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
@@ -339,7 +355,6 @@ begin
 			fcs_vld     => hdlcfcsrx_vld);
 
 	end block;
-
 
 	ipoe_b : block
 
