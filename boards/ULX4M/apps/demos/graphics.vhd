@@ -405,8 +405,6 @@ begin
 			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
 			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div))));
 
-		constant uart_xtal16 : real := uart_xtal/16.0;
-
 		constant baudrate : natural := setif(
 			debug              , 1e9/16,  setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
@@ -453,6 +451,23 @@ begin
 			uart_data => uart_rxd);
 
 		process (uart_clk)
+			variable edge : std_logic;
+			variable q : std_logic;
+		begin
+			if rising_edge(uart_clk) then
+				if uart_rxdv='1' then
+					led <= uart_rxd;
+				end if;
+				if to_bit(ftdi_txd and not edge)='1' then
+--					led(2) <= q;
+--					led(3) <= not q;
+					q := not to_stdulogic(to_bit(q));
+				end if;
+				edge := ftdi_txd;
+			end if;
+		end process;
+
+		process (uart_clk)
 		begin
 			if rising_edge(uart_clk) then
 				if uart_rxdv='1' then
@@ -482,8 +497,20 @@ begin
 			uart_trdy => uart_idle,
 			uart_data => uart_txd);
 
-		led(0) <= si_frm;
-		led(2) <= si_irdy;
+		process (uart_clk)
+			variable edge : std_logic;
+			variable q : std_logic;
+		begin
+			if rising_edge(uart_clk) then
+				if to_bit(ftdi_rxd and not edge)='1' then
+--					led(0) <= q;
+--					led(1) <= not q;
+					q := not to_stdulogic(to_bit(q));
+				end if;
+				edge := ftdi_rxd;
+			end if;
+		end process;
+
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (
 			mem_size  => mem_size)

@@ -419,8 +419,6 @@ begin
 			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
 			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div);
 
-		constant uart_xtal16 : real := uart_xtal/16.0;
-
 		constant baudrate : natural := setif(
 			uart_xtal >= 32.0e6, 3e6, setif(
 			uart_xtal >= 25.0e6, 2e6, 115200));
