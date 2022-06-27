@@ -630,7 +630,7 @@ begin
 
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => LatticeECP5,
-		mark         => M2G125,
+		mark         => A4G12,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

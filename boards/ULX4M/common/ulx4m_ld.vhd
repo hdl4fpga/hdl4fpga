@@ -90,12 +90,12 @@ entity ulx4m_ld is
 		gpio9           : inout std_logic := 'Z'; 
 		gpio10          : inout std_logic := 'Z'; 
 		gpio11          : inout std_logic := 'Z'; 
-		gpio13          : inout std_logic := 'Z'; 
+		gpio13          : out std_logic := 'Z'; 
 		gpio17          : inout std_logic := 'Z'; 
 		gpio19          : inout std_logic := 'Z'; 
 		gpio22          : inout std_logic := 'Z'; 
-		gpio23          : inout std_logic := 'Z'; 
-		gpio24          : inout std_logic := 'Z'; 
+		gpio23          : in std_logic := 'Z'; 
+		gpio24          : out std_logic := 'Z'; 
 		gpio25          : inout std_logic := 'Z'; 
 
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
