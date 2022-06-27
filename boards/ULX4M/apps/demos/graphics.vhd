@@ -422,10 +422,12 @@ begin
 
 		signal tp         : std_logic_vector(1 to 32);
 
-		alias ftdi_txd : std_logic is gpio23;
-		alias ftdi_rxd : std_logic is gpio24;
+		alias ftdi_txd  : std_logic is gpio23;
+		alias ftdi_txen : std_logic is gpio13;
+		alias ftdi_rxd  : std_logic is gpio24;
 	begin
 
+		ftdi_txen <= '1';
 		nodebug_g : if not debug generate
 			sio_clk <= videoio_clk;
 			uart_clk <= videoio_clk;
