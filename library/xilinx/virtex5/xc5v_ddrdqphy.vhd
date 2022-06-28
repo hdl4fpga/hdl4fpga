@@ -25,6 +25,111 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+entity adjser is
+	port (
+		clk   : in  std_logic;
+		rst   : in  std_logic;
+		delay : in std_logic_vector;
+		ce    : out std_logic;
+		inc   : out std_logic);
+end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+architecture beh of adjser is
+begin
+	process (clk)
+		variable dgtn : unsigned(unsigned_num_bits(delay'length)-1 downto 0);
+		variable taps : unsigned(2**dgtn'length-1 downto 0);
+		variable acc  : unsigned(taps'range);
+		variable cntr : unsigned(delay'length-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			acc := (others => '1');
+			acc(cntr'range) := cntr;
+			if rst='1' then
+				taps := (others => '0');
+				dgtn := (others => '0');
+				cntr := (others => '1');
+			elsif acc(to_integer(dgtn))='0' then
+				cntr := cntr + 1;
+			else
+				acc  := taps xor resize(unsigned(delay), delay'length);
+				if acc(to_integer(dgtn))='1' then
+					taps(to_integer(dgtn)) := delay(to_integer(dgtn));
+					cntr := (others => '0');
+					dgtn := dgtn + 1;
+				end if;
+			end if;
+			ce  <= not cntr(to_integer(dgtn));
+			acc := resize(unsigned(delay), acc'length);
+			inc <= acc(to_integer(dgtn));
+		end if;
+	end process;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity iodelay15 is
+	port (
+		clk     : in  std_logic;
+		rst     : in  std_logic;
+		delay   : in  std_logic_vector;
+		t       : in std_logic;
+		datain  : in std_logic;
+		odatain : in std_logic;
+		idatain : in std_logic;
+		dataout : out std_logic);
+end;
+
+library hdl4fpga;
+
+library unisim;
+use unisim.vcomponents.all;
+
+architecture def of iodelay15 is
+
+	signal ce    : std_logic;
+	signal inc   : std_logic;
+	
+begin
+
+	adjser_i : entity hdl4fpga.adjser
+	port map (
+		clk   => clk,
+		rst   => rst,
+		delay => delay,
+		ce    => ce,
+		inc   => inc);
+
+	dqi_i : iodelay
+	generic map (
+		delay_src        => "io",
+		high_performance_mode => true,
+		idelay_type      => "variable",
+		idelay_value     => 0,
+		odelay_value     => 0,
+		refclk_frequency => 200.0, -- frequency used for idelayctrl 175.0 to 225.0
+		signal_pattern   => "data") 
+	port map (
+		c       => clk,
+		rst     => rst,
+		ce      => ce,
+		inc     => inc,
+		t       => t,
+		datain  => datain,
+		odatain => odatain,
+		idatain => idatain,
+		dataout => dataout);
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 library unisim;
 use unisim.vcomponents.all;
 
@@ -127,57 +232,59 @@ begin
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in 0 to byte_size-1 generate
-		signal ce    : std_logic;
-		signal inc   : std_logic;
-		signal delay : unsigned(8-1 downto 0);
+		signal delay : std_logic_vector(6-1 downto 0);
 	begin
-
 		phase_g : for j in  DATA_GEAR-1 downto 0 generate
-			process (iod_clk)
-				variable taps : unsigned(8-1 downto 0);
-				variable cntr : unsigned(taps'range);
-				variable dgtn : unsigned(unsigned_num_bits(taps'length)-1 downto 0);
-				variable acc  : unsigned(taps'range);
-			begin
-				if rising_edge(iod_clk) then
-					if iod_rst='1' then
-						taps := (others => '0');
-						dgtn := (others => '0');
-						cntr := (others => '1');
-					elsif cntr(to_integer(dgtn))='0' then
-						cntr := cntr + 1;
-					else
-						acc  := taps xor delay;
-						if acc(to_integer(dgtn))='1' then
-							taps(to_integer(dgtn)) := delay(to_integer(dgtn));
-							cntr := (others => '0');
-							dgtn := dgtn + 1;
-						end if;
-					end if;
-					ce  <= not cntr(to_integer(dgtn));
-					inc <= delay(to_integer(dgtn));
-				end if;
-			end process;
+			iodelay15_b : block
+				port (
+					clk     : in  std_logic;
+					rst     : in  std_logic;
+					delay   : in  std_logic_vector;
+					datain  : in std_logic;
+					odatain : in std_logic;
+					idatain : in std_logic;
+					dataout : out std_logic);
+				port map(
+					clk   => iod_clk,
+					rst   => iod_rst,
+					delay => delay,
+					datain  => '0',
+					odatain => '0',
+					idatain => ddr_dqi(i),
+					dataout => sys_dqo(j*byte_size+i));
 
-			dqi_i : iodelay
-			generic map (
-				delay_src        => "io",
-				high_performance_mode => true,
-				idelay_type      => "variable",
-				idelay_value     => 0,
-				odelay_value     => 0,
-				refclk_frequency => 200.0, -- frequency used for idelayctrl 175.0 to 225.0
-				signal_pattern   => "data") 
-			port map (
-				c       => iod_clk,
-				rst     => iod_rst,
-				ce      => ce,
-				inc     => inc,
-				t       => ddr_dqt(i),
-				datain  => '0',
-				odatain => '0',
-				idatain => ddr_dqi(i),
-				dataout => sys_dqo(j*byte_size+i));
+
+				signal ce    : std_logic;
+				signal inc   : std_logic;
+			begin
+				adjser_i : entity hdl4fpga.adjser
+				port map (
+					clk   => clk,
+					rst   => rst,
+					delay => delay,
+					ce    => ce,
+					inc   => inc);
+
+				dqi_i : iodelay
+				generic map (
+					delay_src        => "io",
+					high_performance_mode => true,
+					idelay_type      => "variable",
+					idelay_value     => 0,
+					odelay_value     => 0,
+					refclk_frequency => 200.0, -- frequency used for idelayctrl 175.0 to 225.0
+					signal_pattern   => "data") 
+				port map (
+					c       => iod_clk,
+					rst     => iod_rst,
+					ce      => ce,
+					inc     => inc,
+					t       => ddr_dqt(i),
+					datain  => '0',
+					odatain => '0',
+					idatain => ddr_dqi(i),
+					dataout => sys_dqo(j*byte_size+i));
+			end block;
 
 		end generate;
 	end generate;
