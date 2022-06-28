@@ -485,6 +485,15 @@ begin
 			end if;
 		end process;
 
+		process (uart_clk)
+		begin
+			if rising_edge(uart_clk) then
+				if uart_rxdv='1' then
+--					led <= uart_txd;
+				end if;
+			end if;
+		end process;
+
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
 			baudrate => baudrate,
