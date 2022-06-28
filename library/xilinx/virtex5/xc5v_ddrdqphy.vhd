@@ -143,21 +143,18 @@ begin
 					if iod_rst='1' then
 						taps := (others => '0');
 						dgtn := (others => '0');
-						ce   <= '0';
+						cntr := (others => '1');
+					elsif cntr(to_integer(dgtn))='0' then
+						cntr := cntr + 1;
 					else
-						acc := taps xor delay;
+						acc  := taps xor delay;
 						if acc(to_integer(dgtn))='1' then
-							if cntr(to_integer(dgtn))='0' then
-								cntr := cntr + 1;
-							end if;
-							taps(to_integer(dgtn)) := cntr(to_integer(dgtn)) xor delay(to_integer(dgtn));
-							ce <= not cntr(to_integer(dgtn));
-						else
+							taps(to_integer(dgtn)) := delay(to_integer(dgtn));
 							cntr := (others => '0');
 							dgtn := dgtn + 1;
-							ce   <= '0';
 						end if;
 					end if;
+					ce  <= not cntr(to_integer(dgtn));
 					inc <= delay(to_integer(dgtn));
 				end if;
 			end process;

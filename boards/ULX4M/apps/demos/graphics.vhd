@@ -491,11 +491,11 @@ begin
 			clk_rate => uart_xtal)
 		port map (
 			uart_txc  => uart_clk,
-			uart_sout => ftdi_rxd,
 			uart_frm  => video_lck,
-			uart_irdy => uart_txen,
+			uart_irdy => uart_rxdv, --uart_txen,
 			uart_trdy => uart_idle,
-			uart_data => uart_txd);
+			uart_data => uart_rxd, -- uart_txd);
+			uart_sout => ftdi_rxd);
 
 		process (uart_clk)
 			variable edge : std_logic;
