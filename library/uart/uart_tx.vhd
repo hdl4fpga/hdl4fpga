@@ -58,7 +58,7 @@ architecture def of uart_tx is
 
 begin
 
-	debug_p : process (uart_txc)
+	debug_p : process (uart_txc, sample_rxd)
 	begin
 		if rising_edge(uart_txc) then
 			debug_txen <= '0';
@@ -75,7 +75,7 @@ begin
 		end if;
 	end process;
 
-	cntr_p : process (uart_txc)
+	cntr_p : process (uart_txc, debug_txen)
 		constant max_count  : natural := natural(floor((clk_rate+real(baudrate/2))/real(baudrate)));
 		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);

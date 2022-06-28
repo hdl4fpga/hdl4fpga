@@ -497,6 +497,7 @@ begin
 			uart_data => uart_rxd, -- uart_txd);
 			uart_sout => ftdi_rxd);
 
+--		ftdi_rxd <= ftdi_txd;
 		process (uart_clk)
 			variable edge : std_logic;
 			variable q : std_logic;

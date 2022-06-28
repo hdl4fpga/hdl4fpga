@@ -998,7 +998,7 @@ $(HDL4FPGA__ecp5_ddrbaphy__lscc) : ../latticesemi/ecp5/ecp5_ddrbaphy.vhd \
 $(HDL4FPGA__ecp5_ddrdqphy) \
 $(HDL4FPGA__ecp5_ddrdqphy__lscc) : ../latticesemi/ecp5/ecp5_ddrdqphy.vhd \
 		$(HDL4FPGA__adjpha) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__adjbrst) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(IEEE__std_logic_textio) \
@@ -1010,10 +1010,8 @@ $(HDL4FPGA__ecp5_ddrdqphy__lscc) : ../latticesemi/ecp5/ecp5_ddrdqphy.vhd \
 
 $(HDL4FPGA__ecp5_ddrphy) \
 $(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
-		$(HDL4FPGA__align) \
 		$(HDL4FPGA__ecp5_ddrdqphy) \
 		$(HDL4FPGA__ecp5_ddrbaphy) \
-		$(HDL4FPGA__barrel) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -1638,6 +1636,7 @@ $(HDL4FPGA__uart_rx) \
 $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -1647,6 +1646,7 @@ $(HDL4FPGA__uart_tx) \
 $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
