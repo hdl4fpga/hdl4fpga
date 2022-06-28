@@ -129,31 +129,38 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal ce    : std_logic;
 		signal inc   : std_logic;
-		signal delay : unsigned(6-1 downto 0);
+		signal delay : unsigned(8-1 downto 0);
 	begin
+
 		phase_g : for j in  DATA_GEAR-1 downto 0 generate
 			process (iod_clk)
 				variable taps : unsigned(8-1 downto 0);
-				variable dgtn : unsigned(3-1 downto 0);
-				variable cntr : unsigned(8-1 downto 0);
+				variable cntr : unsigned(taps'range);
+				variable dgtn : unsigned(unsigned_num_bits(taps'length)-1 downto 0);
+				variable acc  : unsigned(taps'range);
 			begin
 				if rising_edge(iod_clk) then
 					if iod_rst='1' then
 						taps := (others => '0');
+						dgtn := (others => '0');
+						ce   <= '0';
 					else
-						if word2byte(std_logic_vector(taps xor resize(unsigned(delay), taps'length)), std_logic_vector(dgtn), 1)(0)='1' then
+						acc := taps xor delay;
+						if acc(to_integer(dgtn))='1' then
 							if cntr(to_integer(dgtn))='0' then
 								cntr := cntr + 1;
 							end if;
-							ce <= cntr(i);
+							taps(to_integer(dgtn)) := cntr(to_integer(dgtn)) xor delay(to_integer(dgtn));
+							ce <= not cntr(to_integer(dgtn));
 						else
 							cntr := (others => '0');
 							dgtn := dgtn + 1;
+							ce   <= '0';
 						end if;
 					end if;
+					inc <= delay(to_integer(dgtn));
 				end if;
 			end process;
-			inc <= delay(0);
 
 			dqi_i : iodelay
 			generic map (
