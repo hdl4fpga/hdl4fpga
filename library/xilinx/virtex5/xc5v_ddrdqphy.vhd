@@ -234,59 +234,81 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal delay : std_logic_vector(6-1 downto 0);
 	begin
-		phase_g : for j in  DATA_GEAR-1 downto 0 generate
-			iodelay15_b : block
-				port (
-					clk     : in  std_logic;
-					rst     : in  std_logic;
-					delay   : in  std_logic_vector;
-					datain  : in std_logic;
-					odatain : in std_logic;
-					idatain : in std_logic;
-					dataout : out std_logic);
-				port map(
-					clk   => iod_clk,
-					rst   => iod_rst,
-					delay => delay,
-					datain  => '0',
-					odatain => '0',
-					idatain => ddr_dqi(i),
-					dataout => sys_dqo(j*byte_size+i));
+		adjdqi_b : block
+			signal delay    : std_logic_vector(0 to 5-1);
+			signal step_req : std_logic;
+			signal step_rdy : std_logic;
+			signal dq_smp   : std_logic_vector(0 to DATA_GEAR-1);
+			signal ddqi     : std_logic;
+			signal dqi      : std_logic_vector(0 to DATA_GEAR-1);
+		begin
 
+			step_delay_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 => 4))
+			port map (
+				clk   => iod_clk,
+				di(0) => step_req,
+				do(0) => step_rdy);
 
-				signal ce    : std_logic;
-				signal inc   : std_logic;
+			smp_p : process (dq)
 			begin
-				adjser_i : entity hdl4fpga.adjser
-				port map (
-					clk   => clk,
-					rst   => rst,
-					delay => delay,
-					ce    => ce,
-					inc   => inc);
+				for j in dq_smp'range loop
+					dq_smp(i) <= dq(j*BYTE_SIZE+i);
+				end loop;
+			end process;
 
-				dqi_i : iodelay
-				generic map (
-					delay_src        => "io",
-					high_performance_mode => true,
-					idelay_type      => "variable",
-					idelay_value     => 0,
-					odelay_value     => 0,
-					refclk_frequency => 200.0, -- frequency used for idelayctrl 175.0 to 225.0
-					signal_pattern   => "data") 
-				port map (
-					c       => iod_clk,
-					rst     => iod_rst,
-					ce      => ce,
-					inc     => inc,
-					t       => ddr_dqt(i),
-					datain  => '0',
-					odatain => '0',
-					idatain => ddr_dqi(i),
-					dataout => sys_dqo(j*byte_size+i));
-			end block;
+			adjdqi_e : entity hdl4fpga.adjpha
+			generic map (
+--				dtaps    => (taps+7)/8,
+--				dtaps    => (taps+3)/4,
+				taps     => taps)
+			port map (
+				edge     => std_logic'('0'),
+				clk      => sys_clks(iodclk),
+				req      => adjdqi_req,
+				rdy      => adjdqi_rdy(i),
+				step_req => step_req,
+				step_rdy => step_rdy,
+				smp      => dq_smp,
+				delay    => delay);
 
-		end generate;
+			tp_g : if i=0 generate
+				tp_dqidly <= delay;
+			end generate;
+
+			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
+			dqi_p : process (dq)
+			begin
+				for j in dq_smp'range loop
+					dqi(i) <= dq(j*BYTE_SIZE+i);
+				end loop;
+			end process;
+
+			dqi_i : entity hdl4fpga.iodelay15
+			port map(
+				clk     => iod_clk,
+				rst     => iod_rst,
+				delay   => delay,
+				t       => ddr_dqt(i),
+				datain  => '0',
+				odatain => '0',
+				idatain => ddqi,
+				dataout => dqi(i));
+
+		end block;
+
+		imdr_i : entity hdl4fpga.imdr
+		generic map (
+			SIZE => 1,
+			GEAR => DATA_GEAR)
+		port map (
+			rst  => imdr_rst,
+			clk  => imdr_clk,
+			d(0) => dqi(i),
+			q    => dq);
+
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
