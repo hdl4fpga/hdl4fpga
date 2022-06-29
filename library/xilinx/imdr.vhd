@@ -31,7 +31,7 @@ entity imdr is
 		GEAR : natural);
 	port (
 		rst  : in  std_logic := '0';
-		clk  : in  std_logic_vector(0 to 5-1);
+		clk  : in  std_logic_vector;
 		d    : in  std_logic_vector(0 to SIZE-1);
 		q    : out std_logic_vector(0 to SIZE*GEAR-1));
 end;

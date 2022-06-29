@@ -409,10 +409,6 @@ begin
 		signal clks  : std_logic_vector(0 to 2-1);
 		signal dqt   : std_logic_vector(sys_dqt'range);
 		signal dqclk : std_logic_vector(0 to 2-1);
-		signal dq000 : std_logic_vector(0 to 2*DATA_GEAR-1);
-		signal dq270 : std_logic_vector(0 to 2*DATA_GEAR-1);
-		signal dq180 : std_logic_vector(0 to 2*DATA_GEAR-1);
-		signal dq090 : std_logic_vector(0 to 2*DATA_GEAR-1);
 	begin
 
 		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
@@ -470,9 +466,6 @@ begin
 		signal dmi   : std_logic_vector(sys_dmi'range);
 		signal clks  : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
-		signal dq270 : std_logic_vector(0 to DATA_GEAR-1);
-		signal dq180 : std_logic_vector(0 to DATA_GEAR-1);
-		signal dq090 : std_logic_vector(0 to DATA_GEAR-1);
 	begin
 
 		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
