@@ -30,9 +30,6 @@ entity xc5_idelay is
 		clk     : in  std_logic;
 		rst     : in  std_logic;
 		delay   : in  std_logic_vector;
-		t       : in std_logic;
-		datain  : in std_logic;
-		odatain : in std_logic;
 		idatain : in std_logic;
 		dataout : out std_logic);
 end;
@@ -57,23 +54,12 @@ begin
 		ce    => ce,
 		inc   => inc);
 
-	dqi_i : iodelay
-	generic map (
-		delay_src        => "io",
-		high_performance_mode => true,
-		idelay_type      => "variable",
-		idelay_value     => 0,
-		odelay_value     => 0,
-		refclk_frequency => 200.0, -- frequency used for idelayctrl 175.0 to 225.0
-		signal_pattern   => "data") 
+	idelay_i : idelay
 	port map (
-		c       => clk,
-		rst     => rst,
-		ce      => ce,
-		inc     => inc,
-		t       => t,
-		datain  => datain,
-		odatain => odatain,
-		idatain => idatain,
-		dataout => dataout);
+		c    => clk,
+		rst  => rst,
+		ce   => ce,
+		inc  => inc,
+		i    => idatain,
+		o    => dataout);
 end;

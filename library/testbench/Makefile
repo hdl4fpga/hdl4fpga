@@ -24,8 +24,8 @@ HDL4FPGA__xc7a_ddrdqphy__virtex7 = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/virtex7.dat
 HDL4FPGA__xc7a_ddrdqphy = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/_primary.dat
 HDL4FPGA__xc7a_ddrbaphy__virtex = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/virtex.dat
 HDL4FPGA__xc7a_ddrbaphy = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/_primary.dat
-HDL4FPGA__xc5_iodelay__def = $(LIB_HDL4FPGA)/xc5_iodelay/def.dat
-HDL4FPGA__xc5_iodelay = $(LIB_HDL4FPGA)/xc5_iodelay/_primary.dat
+HDL4FPGA__xc5_idelay__def = $(LIB_HDL4FPGA)/xc5_idelay/def.dat
+HDL4FPGA__xc5_idelay = $(LIB_HDL4FPGA)/xc5_idelay/_primary.dat
 HDL4FPGA__xc3s_ddrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_ddrphy/xnlx.dat
 HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
 HDL4FPGA__xc3s_ddrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/xilinx.dat
@@ -280,8 +280,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__xc7a_ddrdqphy) \
     $(HDL4FPGA__xc7a_ddrbaphy__virtex) \
     $(HDL4FPGA__xc7a_ddrbaphy) \
-    $(HDL4FPGA__xc5_iodelay__def) \
-    $(HDL4FPGA__xc5_iodelay) \
+    $(HDL4FPGA__xc5_idelay__def) \
+    $(HDL4FPGA__xc5_idelay) \
     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__xc3s_ddrphy) \
     $(HDL4FPGA__xc3s_ddrdqphy__xilinx) \
@@ -874,6 +874,7 @@ $(HDL4FPGA__ddrdma__def) : ../ddr/ddrdma.vhd \
 $(HDL4FPGA__ddrdqphy) \
 $(HDL4FPGA__ddrdqphy__virtex5) : ../xilinx/virtex5/xc5v_ddrdqphy.vhd \
 		$(HDL4FPGA__omdr) \
+		$(HDL4FPGA__adjsto) \
 		$(HDL4FPGA__imdr) \
 		$(HDL4FPGA__xc5_iodelay) \
 		$(HDL4FPGA__adjpha) \
@@ -1820,14 +1821,14 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/spartan3/xc3s_ddrphy.vhd \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrphy.vhd
 
-$(HDL4FPGA__xc5_iodelay) \
-$(HDL4FPGA__xc5_iodelay__def) : ../xilinx/virtex5/xc5_iodelay.vhd \
+$(HDL4FPGA__xc5_idelay) \
+$(HDL4FPGA__xc5_idelay__def) : ../xilinx/virtex5/xc5_idelay.vhd \
 		$(HDL4FPGA__adjser) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5_iodelay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5_idelay.vhd
 
 $(HDL4FPGA__xc7a_ddrbaphy) \
 $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
