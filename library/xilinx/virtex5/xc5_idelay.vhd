@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xc5_iodelay is
+entity xc5_idelay is
 	port (
 		clk     : in  std_logic;
 		rst     : in  std_logic;
@@ -42,7 +42,7 @@ library hdl4fpga;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture def of xc5_iodelay is
+architecture def of xc5_idelay is
 
 	signal ce    : std_logic;
 	signal inc   : std_logic;
