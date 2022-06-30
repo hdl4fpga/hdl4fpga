@@ -24,6 +24,8 @@ HDL4FPGA__xc7a_ddrdqphy__virtex7 = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/virtex7.dat
 HDL4FPGA__xc7a_ddrdqphy = $(LIB_HDL4FPGA)/xc7a_ddrdqphy/_primary.dat
 HDL4FPGA__xc7a_ddrbaphy__virtex = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/virtex.dat
 HDL4FPGA__xc7a_ddrbaphy = $(LIB_HDL4FPGA)/xc7a_ddrbaphy/_primary.dat
+HDL4FPGA__xc5_iodelay__def = $(LIB_HDL4FPGA)/xc5_iodelay/def.dat
+HDL4FPGA__xc5_iodelay = $(LIB_HDL4FPGA)/xc5_iodelay/_primary.dat
 HDL4FPGA__xc3s_ddrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_ddrphy/xnlx.dat
 HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
 HDL4FPGA__xc3s_ddrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/xilinx.dat
@@ -196,6 +198,8 @@ HDL4FPGA__ddrto__spartan3 = $(LIB_HDL4FPGA)/ddrto/spartan3.dat
 HDL4FPGA__ddrto = $(LIB_HDL4FPGA)/ddrto/_primary.dat
 HDL4FPGA__ddro__spartan3 = $(LIB_HDL4FPGA)/ddro/spartan3.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
+HDL4FPGA__ddrdqphy__virtex5 = $(LIB_HDL4FPGA)/ddrdqphy/virtex5.dat
+HDL4FPGA__ddrdqphy = $(LIB_HDL4FPGA)/ddrdqphy/_primary.dat
 HDL4FPGA__ddrdma__def = $(LIB_HDL4FPGA)/ddrdma/def.dat
 HDL4FPGA__ddrdma = $(LIB_HDL4FPGA)/ddrdma/_primary.dat
 HDL4FPGA__ddr_wrfifo__struct = $(LIB_HDL4FPGA)/ddr_wrfifo/struct.dat
@@ -257,6 +261,8 @@ HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
 HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
 HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
+HDL4FPGA__adjser__beh = $(LIB_HDL4FPGA)/adjser/beh.dat
+HDL4FPGA__adjser = $(LIB_HDL4FPGA)/adjser/_primary.dat
 HDL4FPGA__adjpha__beh = $(LIB_HDL4FPGA)/adjpha/beh.dat
 HDL4FPGA__adjpha = $(LIB_HDL4FPGA)/adjpha/_primary.dat
 HDL4FPGA__adjbrst__def = $(LIB_HDL4FPGA)/adjbrst/def.dat
@@ -274,6 +280,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__xc7a_ddrdqphy) \
     $(HDL4FPGA__xc7a_ddrbaphy__virtex) \
     $(HDL4FPGA__xc7a_ddrbaphy) \
+    $(HDL4FPGA__xc5_iodelay__def) \
+    $(HDL4FPGA__xc5_iodelay) \
     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__xc3s_ddrphy) \
     $(HDL4FPGA__xc3s_ddrdqphy__xilinx) \
@@ -446,6 +454,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__ddrto) \
     $(HDL4FPGA__ddro__spartan3) \
     $(HDL4FPGA__ddro) \
+    $(HDL4FPGA__ddrdqphy__virtex5) \
+    $(HDL4FPGA__ddrdqphy) \
     $(HDL4FPGA__ddrdma__def) \
     $(HDL4FPGA__ddrdma) \
     $(HDL4FPGA__ddr_wrfifo__struct) \
@@ -507,6 +517,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__aff) \
     $(HDL4FPGA__adjsto__def) \
     $(HDL4FPGA__adjsto) \
+    $(HDL4FPGA__adjser__beh) \
+    $(HDL4FPGA__adjser) \
     $(HDL4FPGA__adjpha__beh) \
     $(HDL4FPGA__adjpha) \
     $(HDL4FPGA__adjbrst__def) \
@@ -521,6 +533,16 @@ $(HDL4FPGA__adder__def) : ../common/adder.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/adder.vhd
 
+$(HDL4FPGA__adjbrst) \
+$(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
+		$(HDL4FPGA__phadctor) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/adjbrst.vhd
+
 $(HDL4FPGA__adjpha) \
 $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
 		$(HDL4FPGA__std) \
@@ -529,6 +551,15 @@ $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjpha.vhd
+
+$(HDL4FPGA__adjser) \
+$(HDL4FPGA__adjser__beh) : ../xilinx/virtex5/adjser.vhd \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/adjser.vhd
 
 $(HDL4FPGA__adjsto) \
 $(HDL4FPGA__adjsto__def) : ../xilinx/artix7/adjsto.vhd \
@@ -839,6 +870,21 @@ $(HDL4FPGA__ddrdma__def) : ../ddr/ddrdma.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../ddr/ddrdma.vhd
+
+$(HDL4FPGA__ddrdqphy) \
+$(HDL4FPGA__ddrdqphy__virtex5) : ../xilinx/virtex5/xc5v_ddrdqphy.vhd \
+		$(HDL4FPGA__omdr) \
+		$(HDL4FPGA__imdr) \
+		$(HDL4FPGA__xc5_iodelay) \
+		$(HDL4FPGA__adjpha) \
+		$(HDL4FPGA__align) \
+		$(UNISIM__vcomponents) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5v_ddrdqphy.vhd
 
 $(HDL4FPGA__ddro) \
 $(HDL4FPGA__ddro__spartan3) \
@@ -1325,16 +1371,14 @@ $(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/misc/pgm_delay.vhd
 
-$(HDL4FPGA__adjbrst) \
-$(HDL4FPGA__adjbrst__def) \
 $(HDL4FPGA__phadctor) \
-$(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/adjbrst.vhd \
+$(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/phadctor.vhd \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/adjbrst.vhd
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/phadctor.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
@@ -1775,6 +1819,15 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/spartan3/xc3s_ddrphy.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrphy.vhd
+
+$(HDL4FPGA__xc5_iodelay) \
+$(HDL4FPGA__xc5_iodelay__def) : ../xilinx/virtex5/xc5_iodelay.vhd \
+		$(HDL4FPGA__adjser) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5_iodelay.vhd
 
 $(HDL4FPGA__xc7a_ddrbaphy) \
 $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
