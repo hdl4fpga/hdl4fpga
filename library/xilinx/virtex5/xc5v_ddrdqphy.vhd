@@ -43,6 +43,7 @@ entity ddrdqphy is
 		sys_rlrdy  : buffer std_logic;
 		read_rdy   : in  std_logic;
 		read_req   : buffer std_logic;
+		read_brst  : out std_logic;
 		sys_dmt    : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
 		sys_dmi    : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
@@ -142,6 +143,7 @@ begin
 					case state is
 					when sync_start =>
 						read_req <= not read_rdy;
+						read_brst <= '1';
 						if sys_sti(0)='1' then
 							adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
 							state := sync_dqs;
@@ -157,8 +159,11 @@ begin
 							aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
 						end loop;
 						if aux='0' then
-							adjsto_req <= not adjsto_rdy;
-							state := sync_sto;
+							read_brst <= '0';
+							if to_bit(read_req xor read_rdy)='0' then
+								adjsto_req <= not adjsto_rdy;
+								state := sync_sto;
+							end if;
 						end if;
 					when sync_sto =>
 						if (adjsto_req xor adjsto_rdy)='0' then
