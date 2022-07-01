@@ -403,76 +403,6 @@ begin
 		ctlrphy_sti   => ctlrphy_sti,
 		tp => open);
 
-	input_rdy <= not input_rst;
-	scope_e : entity hdl4fpga.scope
-	generic map (
-		DDR_TESTCORE   => FALSE,
-
-		fpga           => VIRTEX5,
-		DDR_MARK       => M3,
-		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKEDGES  => SCLK_EDGES,
-		DDR_STROBE     => "INTERNAL",
-		DDR_CLMNSIZE   => 7,
-		DDR_BANKSIZE   => BANK_SIZE,
-		DDR_ADDRSIZE   => ADDR_SIZE,
-		DDR_CMMDGEAR   => CMMD_GEAR,
-		DDR_SCLKPHASES => SCLK_PHASES,
-		DDR_DATAPHASES => DATA_PHASES,
-		DDR_DATAEDGES  => DATA_EDGES,
-		DDR_DATAGEAR   => DATA_GEAR,
-		DDR_WORDSIZE   => WORD_SIZE,
-		DDR_BYTESIZE   => BYTE_SIZE)
-	port map (
-
-		input_clk      => input_clk,
-		input_req      => input_req,
-		input_rdy      => input_rdy,
-		input_data     => input_data,
-
-		ddrs_rst       => ddrs_rst,
-		ddrs_clks(0)   => ddrs_clk0,
-		ddrs_clks(1)   => ddrs_clk90,
-		ddrs_bl        => "011",
-		ddrs_cl        => "101",
-		ddrs_rtt       => "11",
-		ddr_cke        => ddrphy_cke(0),
-		ddr_rlreq      => ddrphy_rlreq,
-		ddr_rlrdy      => ddrphy_rlrdy,
-		ddr_rlcal      => ddrphy_rlcal,
-		ddr_rlseq      => ddrphy_rlseq,
-		ddr_phyini     => ddrphy_ini,
-		ddr_phyrw      => ddrphy_rw,
-		ddr_phycmd_req => ddrphy_cmd_req,
-		ddrs_cmd_rdy   => ddrphy_cmd_rdy,
-		ddrs_act       => ddrphy_act,
-		ddr_cs         => ddrphy_cs(0),
-		ddr_ras        => ddrphy_ras(0),
-		ddr_cas        => ddrphy_cas(0),
-		ddr_we         => ddrphy_we(0),
-		ddr_b          => ddr_b,
-		ddr_a          => ddr_a,
-		ddr_dmi        => ddrphy_dmi,
-		ddr_dmt        => ddrphy_dmt,
-		ddr_dmo        => ddrphy_dmo,
-		ddr_dqst       => ddrphy_dqst,
-		ddr_dqsi       => ddrphy_dqso,
-		ddr_dqso       => ddrphy_dqsi,
-		ddr_dqi        => ddrphy_dqo,
-		ddr_dqt        => ddrphy_dqt,
-		ddr_dqo        => ddrphy_dqi,
-		ddr_odt        => ddrphy_odt(0),
-		ddr_sto        => ddrphy_sto,
-		ddr_sti        => ddrphy_sti,
-
---		mii_rst        => mii_rst,
-		mii_rxc        => mii_rxc,
-		mii_rxdv       => mii_rxdv,
-		mii_rxd        => mii_rxd,
-		mii_txc        => gtx_clk,
-		mii_txen       => mii_txen,
-		mii_txd        => mii_txd);
-
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ddrphy_cke(i) <= ddrphy_cke(0);
 		ddrphy_cs(i)  <= ddrphy_cs(0);
@@ -500,17 +430,12 @@ begin
 		end loop;
 	end process;
 
-	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => sys_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
-	phy_rsts <= (0 => ddrs_rst, 2 => phy_iodrst, others => '0');
 	process (sys_rst, sys_clk)
-		variable sync : std_logic;
 	begin
 		if sys_rst='1' then
 			phy_iodrst <= '1';
-			sync := '1';
 		elsif rising_edge(sys_clk) then
 			phy_iodrst <= sync;
-			sync := '0';
 		end if;
 	end process;
 
@@ -524,8 +449,8 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		phy_rst     => phy_rsts(0),
+		iod_rst     => phy_iodrst,
 		sys_clks    => sys_clks(0 to 1),
-		sys_rst     => (others => '-'),
 		sys_cke     => ddrphy_cke,
 		sys_cs      => ddrphy_cs,
 		sys_ras     => ddrphy_ras,
