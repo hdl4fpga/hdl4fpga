@@ -28,6 +28,8 @@ HDL4FPGA__xc5v_idelay__def = $(LIB_HDL4FPGA)/xc5v_idelay/def.dat
 HDL4FPGA__xc5v_idelay = $(LIB_HDL4FPGA)/xc5v_idelay/_primary.dat
 HDL4FPGA__xc5v_ddrphy__virtex5 = $(LIB_HDL4FPGA)/xc5v_ddrphy/virtex5.dat
 HDL4FPGA__xc5v_ddrphy = $(LIB_HDL4FPGA)/xc5v_ddrphy/_primary.dat
+HDL4FPGA__xc5v_ddrbaphy__virtex = $(LIB_HDL4FPGA)/xc5v_ddrbaphy/virtex.dat
+HDL4FPGA__xc5v_ddrbaphy = $(LIB_HDL4FPGA)/xc5v_ddrbaphy/_primary.dat
 HDL4FPGA__xc3s_ddrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_ddrphy/xnlx.dat
 HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
 HDL4FPGA__xc3s_ddrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_ddrdqphy/xilinx.dat
@@ -286,6 +288,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__xc5v_idelay) \
     $(HDL4FPGA__xc5v_ddrphy__virtex5) \
     $(HDL4FPGA__xc5v_ddrphy) \
+    $(HDL4FPGA__xc5v_ddrbaphy__virtex) \
+    $(HDL4FPGA__xc5v_ddrbaphy) \
     $(HDL4FPGA__xc3s_ddrphy__xnlx) \
     $(HDL4FPGA__xc3s_ddrphy) \
     $(HDL4FPGA__xc3s_ddrdqphy__xilinx) \
@@ -1827,7 +1831,10 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/spartan3/xc3s_ddrphy.vhd \
 $(HDL4FPGA__xc5v_ddrphy) \
 $(HDL4FPGA__xc5v_ddrphy__virtex5) : ../xilinx/virtex5/xc5v_ddrphy.vhd \
 		$(HDL4FPGA__ddrdqphy) \
+		$(HDL4FPGA__xc5v_ddrbaphy) \
 		$(HDL4FPGA__ddro) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -1845,13 +1852,15 @@ $(HDL4FPGA__xc5v_idelay__def) : ../xilinx/virtex5/xc5v_idelay.vhd \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5v_idelay.vhd
 
+$(HDL4FPGA__xc5v_ddrbaphy) \
+$(HDL4FPGA__xc5v_ddrbaphy__virtex) \
 $(HDL4FPGA__xc7a_ddrbaphy) \
-$(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
+$(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/virtex5/xc5v_ddrbaphy.vhd \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__omdr) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/artix7/xc7a_ddrbaphy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5v_ddrbaphy.vhd
 
 $(HDL4FPGA__xc7a_ddrdqphy) \
 $(HDL4FPGA__xc7a_ddrdqphy__virtex7) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \

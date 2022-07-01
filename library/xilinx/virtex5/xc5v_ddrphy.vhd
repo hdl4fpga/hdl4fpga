@@ -300,7 +300,7 @@ begin
 	port map (
 		sys_clks => sys_clks,
 
-		phy_rst => phy_rst,
+		phy_rst => iod_rst,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
