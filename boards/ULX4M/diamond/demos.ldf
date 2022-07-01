@@ -315,6 +315,9 @@
         <Source name="../../../library/latticesemi/ecp5/adjbrst.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../../library/latticesemi/ecp5/phadctor.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>

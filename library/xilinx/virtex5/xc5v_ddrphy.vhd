@@ -100,9 +100,6 @@ entity xc5v_ddrphy is
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
 
-	attribute keep : string;
-	attribute keep of sys_dqso : signal is "TRUE";
-	attribute keep of ddr_dqsi : signal is "TRUE";
 end;
 
 library hdl4fpga;
@@ -473,6 +470,9 @@ begin
 			ddr_dqso  => ddr_dqso(i));
 
 
+--	attribute keep : string;
+--	attribute keep of sys_dqso : signal is "TRUE";
+--	attribute keep of ddr_dqsi : signal is "TRUE";
 --		dqs_delayed_e : entity hdl4fpga.pgm_delay
 --		generic map(
 --			n => gate_delay)
@@ -483,6 +483,8 @@ begin
 --		sys_dqso(data_gear*i+1) <= dqso(0) after 1 ns;
 --		sys_dqso(data_gear*i+0) <= dqso(1) after 1 ns;
 
+		sys_dqso(data_gear*i+1) <= ddr_dqsi(i);
+		sys_dqso(data_gear*i+0) <= ddr_dqsi(i);
 	end generate;
 
 --	process(ddr_dmi, ddr_sti)

@@ -73,7 +73,6 @@ architecture graphics of ulx4m_ld is
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 
 	signal sys_rst       : std_logic;
-	signal sys_clk       : std_logic;
 
 	signal ddrsys_rst    : std_logic;
 	signal ddrphy_rst    : std_logic;
@@ -90,7 +89,6 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_rlreq : std_logic;
 	signal ctlrphy_rlrdy : std_logic;
 
-	signal ctlrphy_clk   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cke   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cs    : std_logic_vector(0 to 2-1);
@@ -114,11 +112,6 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal ddr_a         : std_logic_vector(ddram_a'length-1 downto 0);
-
-	signal ddram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddram_dso     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddram_dqt     : std_logic_vector(ddram_dq'range);
-	signal ddram_do      : std_logic_vector(ddram_dq'range);
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -154,11 +147,6 @@ architecture graphics of ulx4m_ld is
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
 	signal video_shft_clk : std_logic;
-	signal video_hzsync   : std_logic;
-    signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
-    signal video_on       : std_logic;
-    signal video_dot      : std_logic;
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type ddram_speed is (
@@ -238,15 +226,11 @@ architecture graphics of ulx4m_ld is
 	constant io_link : io_iface := app_tab(app).iface;
 
 	alias   mii_rxc       : std_logic is rgmii_rx_clk;
-	signal  mii_rxdv      : std_logic;
-	signal  mii_rxd       : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 
 	alias  mii_txc        : std_logic is rgmii_rx_clk;
 	alias  dmacfg_clk     : std_logic is clk_25mhz;
 	signal uart_clk       : std_logic;
 	signal sio_clk        : std_logic;
-	signal mii_txen       : std_logic;
-	signal mii_txd        : std_logic_vector(0 to 2*rgmii_txd'length-1);
 	constant hdplx : std_logic := setif(debug, '0', '1');
 
 begin
@@ -417,6 +401,7 @@ begin
 		signal uart_idle  : std_logic;
 		signal uart_txen  : std_logic;
 		signal uart_txd   : std_logic_vector(uart_rxd'range);
+		signal dummy_txd   : std_logic_vector(uart_rxd'range);
 
 		signal tp         : std_logic_vector(1 to 32);
 
@@ -450,49 +435,19 @@ begin
 			uart_irdy => uart_rxdv,
 			uart_data => uart_rxd);
 
-		process (uart_clk)
-			variable edge : std_logic;
-			variable q : std_logic;
-		begin
-			if rising_edge(uart_clk) then
-				if uart_rxdv='1' then
-					led <= uart_rxd;
-				end if;
-				if to_bit(ftdi_txd and not edge)='1' then
---					led(2) <= q;
---					led(3) <= not q;
-					q := not to_stdulogic(to_bit(q));
-				end if;
-				edge := ftdi_txd;
-			end if;
-		end process;
-
-		process (uart_clk)
-		begin
-			if rising_edge(uart_clk) then
-				if uart_rxdv='1' then
---					led <= uart_rxd;
-				end if;
-			end if;
-		end process;
-
-		process (uart_clk)
-		begin
-			if rising_edge(uart_clk) then
-				if uart_txen='1' then
---					led <= uart_txd;
-				end if;
-			end if;
-		end process;
-
-		process (uart_clk)
-		begin
-			if rising_edge(uart_clk) then
-				if uart_rxdv='1' then
---					led <= uart_txd;
-				end if;
-			end if;
-		end process;
+--		process (uart_clk)
+--			variable data : std_logic_vector(uart_rxd'range);
+--		begin
+--			if rising_edge(uart_clk) then
+--				if uart_rxdv='1' then
+--					uart_txen <= '1';
+--					uart_txd  <= uart_rxd;
+--				elsif uart_idle='1' then
+--					uart_txen <= '0';
+--					uart_txd  <= uart_rxd;
+--				end if;
+--			end if;
+--		end process;
 
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
@@ -501,25 +456,10 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_frm  => video_lck,
-			uart_irdy => uart_rxdv, --uart_txen,
+			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
-			uart_data => uart_rxd, -- uart_txd);
+			uart_data => uart_txd,
 			uart_sout => ftdi_rxd);
-
---		ftdi_rxd <= ftdi_txd;
-		process (uart_clk)
-			variable edge : std_logic;
-			variable q : std_logic;
-		begin
-			if rising_edge(uart_clk) then
-				if to_bit(ftdi_rxd and not edge)='1' then
---					led(0) <= q;
---					led(1) <= not q;
-					q := not to_stdulogic(to_bit(q));
-				end if;
-				edge := ftdi_rxd;
-			end if;
-		end process;
 
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (

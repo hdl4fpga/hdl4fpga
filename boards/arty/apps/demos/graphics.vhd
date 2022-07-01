@@ -239,35 +239,18 @@ architecture graphics of arty is
     signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
-	signal miirx_frm      : std_ulogic;
-	signal miirx_irdy     : std_logic;
-	signal miirx_trdy     : std_logic;
-	signal miirx_data     : std_logic_vector(0 to 8-1);
-
-	signal miitx_frm      : std_logic;
-	signal miitx_irdy     : std_logic;
-	signal miitx_trdy     : std_logic;
-	signal miitx_end      : std_logic;
-	signal miitx_data     : std_logic_vector(miirx_data'range);
-
 	signal sin_clk        : std_logic;
 	signal sin_frm        : std_logic;
 	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(miitx_data'range);
+	signal sin_data       : std_logic_vector(0 to 8-1); 
 	signal sout_frm       : std_logic;
 	signal sout_irdy      : std_logic;
 	signal sout_trdy      : std_logic;
 	signal sout_data      : std_logic_vector(0 to 8-1);
 
-	alias  mii_rxc        : std_logic is eth_rx_clk;
-	alias  mii_rxdv       : std_logic is eth_rx_dv;
-	alias  mii_rxd        : std_logic_vector(eth_rxd'range) is eth_rxd;
-
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
 	alias  dmacfg_clk     : std_logic is mii_txc;
-	signal mii_txen       : std_logic;
-	signal mii_txd        : std_logic_vector(eth_txd'range);
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
@@ -443,6 +426,12 @@ begin
 
 	ipoe_b : block
 
+		alias  mii_rxc    : std_logic is eth_rx_clk;
+		alias  mii_rxdv   : std_logic is eth_rx_dv;
+		alias  mii_rxd    : std_logic_vector(eth_rxd'range) is eth_rxd;
+
+		signal mii_txd    : std_logic_vector(eth_txd'range);
+		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 

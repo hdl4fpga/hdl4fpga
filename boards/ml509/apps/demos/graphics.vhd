@@ -30,7 +30,7 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_db.all;
+use hdl4fpga.ddr_db.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -46,11 +46,8 @@ architecture graphics of ml509 is
 	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
-	constant UCLK_PERIOD  : real := 10.0;
+	constant UCLK_PERIOD  : real := 10.0e-9;
 
-	signal ictlr_clk_bufg : std_logic;
-	signal ictlr_clk      : std_logic;
-	signal ictlr_rdy      : std_logic;
 
 	signal sys_clk        : std_logic;
 	signal ddrs_rst       : std_logic;
@@ -108,7 +105,6 @@ architecture graphics of ml509 is
 	signal mii_rxdv       : std_logic;
 	signal mii_rxc        : std_logic;
 	signal mii_rxd        : std_logic_vector(phy_rxd'range);
-	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(phy_txd'range);
 
 	signal sys_rst        : std_logic;
@@ -125,7 +121,8 @@ architecture graphics of ml509 is
 	constant DDR_MUL      : natural := 8; --3; --10;
 	constant DDR_DIV      : natural := 3; --1; --3;
 
-	signal ictlr_rst      : std_logic;
+	signal iod_clk      : std_logic;
+	signal iod_rst      : std_logic;
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
@@ -145,59 +142,126 @@ architecture graphics of ml509 is
 	attribute keep of ddrphy_dqso : signal is "TRUE";
 begin
 
-	idelay_ibufg_i : IBUFGDS_LVPECL_25
-	port map (
-		I  => clk_fpga_p,
-		IB => clk_fpga_n,
-		O  => ictlr_clk_bufg );
-
-	idelay_bufg_i : BUFG
-	port map (
-		i => ictlr_clk_bufg,
-		o => ictlr_clk);
-
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
 		O => sys_clk);
 
-	process (gpio_sw_c, ictlr_clk)
-		variable tmr : unsigned(0 to 8-1) := (others => '0');
+	iod_b : block
+		signal iod_rdy : std_logic;
+		signal bufg    : std_logic;
 	begin
-		if gpio_sw_c='1' then
-			tmr := (others => '0');
-		elsif rising_edge(ictlr_clk) then
-			if tmr(0)='0' then
-				tmr := tmr + 1;
+
+		idelay_ibufg_i : IBUFGDS_LVPECL_25
+		port map (
+			I  => clk_fpga_p,
+			IB => clk_fpga_n,
+			O  => bufg);
+	
+		idelay_bufg_i : BUFG
+		port map (
+			i => bufg,
+			o => iod_clk);
+	
+		process (gpio_sw_c, iod_clk)
+			variable tmr : unsigned(0 to 8-1) := (others => '0');
+		begin
+			if gpio_sw_c='1' then
+				tmr := (others => '0');
+			elsif rising_edge(iod_clk) then
+				if tmr(0)='0' then
+					tmr := tmr + 1;
+				end if;
 			end if;
-		end if;
-		ictlr_rst <= not tmr(0);
-	end process;
+			iod_rst <= not tmr(0);
+		end process;
+	
+		idelayctrl_i : idelayctrl
+		port map (
+			rst    => iod_rst,
+			refclk => iod_clk,
+			rdy    => iod_rdy);
+	
+		sys_rst <= not iod_rdy;
+	end block;
 
-	idelayctrl_i : idelayctrl
-	port map (
-		rst    => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy    => ictlr_rdy);
-
-	sys_rst <= not ictlr_rdy;
-	dcms_e : entity hdl4fpga.dcms
+	gtx_i : dcm_base
 	generic map (
-		ddr_mul     => ddr_mul,
-		ddr_div     => ddr_div,
-		sys_per     => UCLK_PERIOD)
+		clkin_period   => UCLK_PERIOD*1.0e9,
+		clkfx_multiply => 5,
+		clkfx_divide   => 4)
 	port map (
-		sys_rst     => sys_rst,
-		sys_clk     => sys_clk,
-		input_clk   => input_clk,
-		ddr_clk0    => ddrs_clk0,
-		ddr_clk90   => ddrs_clk90,
-		gtx_clk     => gtx_clk,
-		input_rst   => input_rst,
-		ddr_rst     => ddrs_rst,
-		gtx_rst     => gtx_rst);
+		rst    => '0',
+		clkin  => sys_clk,
+		clkfx  => gtx_clk);
+
+	dcm_b : block
+	begin
+
+		ddr_b : block
+			constant clk0      : natural := 0;
+			constant clk90     : natural := 1;
+
+			signal clkfx     : std_logic;
+			signal locked    : std_logic;
+			signal dcm_rst   : std_logic;
+			signal ddr_clk0  : std_logic;
+			signal ddr_clk90 : std_logic;
+		begin
+				dfs_i : dcm_base
+				generic map (
+					clkin_period       => UCLK_PERIOD*1.0e9,
+					clkfx_divide       => ddr_param.pll.dcm_div,
+					clkfx_multiply     => 2*ddr_param.pll.dcm_mul,
+					dfs_frequency_mode => "HIGH",
+				port map (
+					rst    => dfsdcm_rst,
+					clkfb  => clkfb,
+					clkin  => sys_clk,
+					clk2x  => ioctrl_clk,
+					clkfx  => clkfx,
+					locked => locked);
+
+				dcm_rst <= not locked;
+				dcm_i : dcm_base
+				generic map (
+					clkin_period       => (UCLK_PERIOD*1.0e9*real(ddr_param.pll.dcm_div))/real(2*ddr_param.pll.dcm_mul),
+					dll_frequency_mode => "HIGH")
+				port map (
+					rst    => dcm_rst,
+					clkin  => clkfx,
+					clk0   => ddr_clk0,
+					clk90  => ddr_clk90,
+					locked => ddr_locked);
+   
+			ctlrphy_dqsi <= (others => ddr_clk0);
+			ddrsys_rst <= not ddr_locked;
+
+		end block;
+
+	end block;
 
 	ipoe_b : block
+
+		alias  mii_rxc    : std_logic is phy_rxclk;
+		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
+		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
+
+		signal mii_txd    : std_logic_vector(phy_txd'range);
+		signal mii_txen   : std_logic;
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
+
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_trdy : std_logic;
+		signal miirx_data : std_logic_vector(mii_rxd'range);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(si_data'range);
 
 		signal mii_txcfrm : std_ulogic;
 		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
@@ -216,6 +280,7 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(miirx_data'range);
 
+		signal mii_txen    : std_logic;
 	begin
 
 		sync_b : block
@@ -326,7 +391,14 @@ begin
 			ser_irdy   => open,
 			ser_data   => mii_txd);
 
-		mii_txen  <= miitx_frm and not miitx_end;
+		mii_txen <= miitx_frm and not miitx_end;
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				phy_txctl_txen <= mii_txen;
+				phy_txd  <= mii_txd;
+			end if;
+		end process;
 
 	end block;
 
@@ -501,26 +573,16 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
-	mii_rxc <= not phy_rxclk;
-
-	mii_iob_e : entity hdl4fpga.mii_iob
-	generic map (
-		xd_len => 8)
 	port map (
-		mii_rxc  => mii_rxc,
-		iob_rxdv => phy_rxctl_rxdv,
-		iob_rxd  => phy_rxd,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => gtx_clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
-		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd,
-		iob_gtxclk => phy_txc_gtxclk);
-
-	iob_b : block
+		c => gtx_clk,
+		ce => '1',
+		s  => '0',
+		r  => '0',
+		d1 => '0',
+		d2 => '1',
+		q  => phy_txc_gtxclk);
+	
+	ddriob_b : block
 	begin
 
 		ddr_clks_g : for i in ddr2_clk'range generate
@@ -546,19 +608,7 @@ begin
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
-			signal dqsi : std_logic;
-			attribute keep of dqsi        : signal is "TRUE";
 		begin
-			dmidelay_i : idelay
-			port map (
-				rst => '0',
-				i   => ddr2_dm(i),
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr_dmi(i));
---			ddr_dmi(i) <= ddr2_dm(i);
-
 			ddr2_dm(i) <= ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
 
 			dqsiobuf_i : iobufds
@@ -571,15 +621,6 @@ begin
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 
-			dqsidelay_i : idelay
-			port map (
-				rst => '0',
-				i   => dqsi,
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr2_dqsi(i));
---			ddr2_dqsi(i) <= dqsi;
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
@@ -602,37 +643,9 @@ begin
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
 
-	sel_b : block
-		signal clk : std_logic;
-	begin
-		process (gpio_sw_w, gpio_sw_e)
-		begin
-			if gpio_sw_w='1' then
-				clk <= '1';
-			elsif gpio_sw_e='1' then
-				clk <= '0';
-			end if;
-		end process;
-
-		process (gpio_sw_c, clk)
-			variable sel : unsigned(tp_sel'range);
-		begin
-			if gpio_sw_c='1' then
-				sel := (others => '0');
-			elsif rising_edge(clk) then
-				sel := sel + 1;
-			end if;
-			tp_sel <= std_logic_vector(sel);
-		end process;
-	end block;
-
-	gpio_led <=
-		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else
-		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
-
+	gpio_led <= (others => '0');
 	bus_error <= (others => 'Z');
-	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <=
-		word2byte(word => tp_bit, addr => tp_sel);
+	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= (others => '0');
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

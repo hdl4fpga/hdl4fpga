@@ -1828,6 +1828,14 @@ $(HDL4FPGA__xc3s_ddrphy__xnlx) : ../xilinx/spartan3/xc3s_ddrphy.vhd \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/spartan3/xc3s_ddrphy.vhd
 
+$(HDL4FPGA__xc5v_ddrbaphy) \
+$(HDL4FPGA__xc5v_ddrbaphy__virtex) : ../xilinx/virtex5/xc5v_ddrbaphy.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__omdr) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5v_ddrbaphy.vhd
+
 $(HDL4FPGA__xc5v_ddrphy) \
 $(HDL4FPGA__xc5v_ddrphy__virtex5) : ../xilinx/virtex5/xc5v_ddrphy.vhd \
 		$(HDL4FPGA__ddrdqphy) \
@@ -1852,8 +1860,6 @@ $(HDL4FPGA__xc5v_idelay__def) : ../xilinx/virtex5/xc5v_idelay.vhd \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/virtex5/xc5v_idelay.vhd
 
-$(HDL4FPGA__xc5v_ddrbaphy) \
-$(HDL4FPGA__xc5v_ddrbaphy__virtex) \
 $(HDL4FPGA__xc7a_ddrbaphy) \
 $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/virtex5/xc5v_ddrbaphy.vhd \
 		$(IEEE__numeric_std) \
