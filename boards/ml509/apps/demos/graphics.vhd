@@ -31,11 +31,133 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.videopkg.all;
+use hdl4fpga.ipoepkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of ml509 is
+
+	type profiles is (
+		mode900p_ddr333MHz,
+		mode900p_ddr350MHz,
+		mode900p_ddr375MHz,
+		mode900p_ddr400MHz,
+		mode900p_ddr425MHz,
+		mode900p_ddr450MHz,
+		mode900p_ddr475MHz,
+		mode900p_ddr500MHz,
+		mode900p_ddr525MHz,
+		mode900p_ddr550MHz,
+		mode900p_ddr575MHz,
+		mode900p_ddr600MHz);
+
+	constant profile : profiles := mode900p_ddr600MHz;
+
+	type pll_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type ddr_params is record
+		pll : pll_params;
+		cl  : std_logic_vector(0 to 3-1);
+		cwl : std_logic_vector(0 to 3-1);
+	end record;
+
+	type ddr_speeds is (
+		ddr333MHz,
+		ddr350MHz,
+		ddr375MHz,
+		ddr400MHz,
+		ddr425MHz,
+		ddr450MHz,
+		ddr475MHz,
+		ddr500MHz,
+		ddr525MHz,
+		ddr550MHz,
+		ddr575MHz,
+		ddr600MHz);
+
+	type ddram_vector is array (ddr_speeds) of ddr_params;
+
+	constant ddr_tab : ddram_vector := (
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
+		-- Multiply by --  10     --   7     --  15     --   4     --  17     --
+		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
+		------------------------------------------------------------------------
+
+		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "001", cwl => "000"),
+		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
+		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
+		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
+		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
+		-- Multiply by --   9     --  19     --   5     --  21     --  22     --
+		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
+		------------------------------------------------------------------------
+
+		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
+		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
+		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
+		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
+		
+		---------------------------------------
+		-- Frequency   -- 575 Mhz -- 600 Mhz --
+		-- Multiply by --  23     --   6     --
+		-- Divide by   --   4     --   1     --
+		---------------------------------------
+
+		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
+		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
+
+	type video_modes is (
+		modedebug,
+		mode900p);
+
+	type profile_param is record
+		ddr_speed  : ddr_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
+		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
+		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
+		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
+		mode900p_ddr425MHz => (ddr425MHz, mode900p, 1),
+		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
+		mode900p_ddr475MHz => (ddr475MHz, mode900p, 1),
+		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
+		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
+		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1),
+		mode900p_ddr575MHz => (ddr575MHz, mode900p, 1),
+		mode900p_ddr600MHz => (ddr600MHz, mode900p, 1));
+
+	type video_params is record
+		pll  : pll_params;
+		mode : videotiming_ids;
+	end record;
+
+	type videoparams_vector is array (video_modes) of video_params;
+	constant video_tab : videoparams_vector := (
+		modedebug => (mode => pclk_debug,              pll => (dcm_mul => 1, dcm_div => 32)),
+		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
+
+	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
+	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
+
+	constant sys_per  : real := 10.0e-9;
+	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
+
 	constant SCLK_PHASES  : natural := 4;
 	constant SCLK_EDGES   : natural := 2;
 	constant DATA_PHASES  : natural := 2;
@@ -46,21 +168,47 @@ architecture graphics of ml509 is
 	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
-	constant UCLK_PERIOD  : real := 10.0e-9;
 
+	signal ddrsys_rst      : std_logic;
+	signal ddrsys_clks     : std_logic_vector(0 to 5-1);
+
+	signal ctlrphy_frm     : std_logic;
+	signal ctlrphy_trdy    : std_logic;
+	signal ctlrphy_ini     : std_logic;
+	signal ctlrphy_rw      : std_logic;
+	signal ctlrphy_wlreq   : std_logic;
+	signal ctlrphy_wlrdy   : std_logic;
+	signal ctlrphy_rlreq   : std_logic;
+	signal ctlrphy_rlrdy   : std_logic;
+	signal ctlrphy_rlcal   : std_logic;
+	signal ctlrphy_rlseq   : std_logic;
+
+	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
+	signal ddr_a           : std_logic_vector(ddr3_a'range);
+	signal ctlrphy_rst     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cke     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cs      : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_ras     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cas     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_we      : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_odt     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
+	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ctlrphy_sti     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
 	signal sys_clk        : std_logic;
-	signal ddrs_rst       : std_logic;
-	signal input_rst      : std_logic;
 
-	signal input_clk      : std_logic;
-	signal input_rdy      : std_logic;
-	signal input_req      : std_logic;
-	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-
-	signal ddrs_clk0      : std_logic;
-	signal ddrs_clk90     : std_logic;
 	signal ddr_b          : std_logic_vector(BANK_SIZE-1 downto 0);
 	signal ddr_a          : std_logic_vector(ADDR_SIZE-1 downto 0);
 
@@ -158,7 +306,7 @@ begin
 			IB => clk_fpga_n,
 			O  => bufg);
 	
-		idelay_bufg_i : BUFG
+		idelay_bufg_i : iBUFG
 		port map (
 			i => bufg,
 			o => iod_clk);
@@ -186,13 +334,15 @@ begin
 	end block;
 
 	gtx_i : dcm_base
-	generic map (
-		clkin_period   => UCLK_PERIOD*1.0e9,
+	generic map  (
+		CLK_FEEDBACK   => "NONE",
+		clkin_period   => sys_per*1.0e9,
 		clkfx_multiply => 5,
 		clkfx_divide   => 4)
 	port map (
 		rst    => '0',
 		clkin  => sys_clk,
+		clkfb  => '0',
 		clkfx  => gtx_clk);
 
 	dcm_b : block
@@ -207,34 +357,36 @@ begin
 			signal dcm_rst   : std_logic;
 			signal ddr_clk0  : std_logic;
 			signal ddr_clk90 : std_logic;
+			signal ddr_locked : std_logic;
 		begin
 				dfs_i : dcm_base
 				generic map (
-					clkin_period       => UCLK_PERIOD*1.0e9,
-					clkfx_divide       => ddr_param.pll.dcm_div,
-					clkfx_multiply     => 2*ddr_param.pll.dcm_mul,
-					dfs_frequency_mode => "HIGH",
+					clk_feedback   => "NONE",
+					clkin_period   => sys_per*1.0e9,
+					clkfx_divide   => ddr_param.pll.dcm_div,
+					clkfx_multiply => 2*ddr_param.pll.dcm_mul,
+					dfs_frequency_mode => "HIGH")
 				port map (
-					rst    => dfsdcm_rst,
-					clkfb  => clkfb,
+					rst    => '0',
+					clkfb  => '0',
 					clkin  => sys_clk,
-					clk2x  => ioctrl_clk,
 					clkfx  => clkfx,
 					locked => locked);
 
 				dcm_rst <= not locked;
 				dcm_i : dcm_base
 				generic map (
-					clkin_period       => (UCLK_PERIOD*1.0e9*real(ddr_param.pll.dcm_div))/real(2*ddr_param.pll.dcm_mul),
+					clk_feedback       => "NONE",
+					clkin_period       => ddr_tcp*1.0e9,
 					dll_frequency_mode => "HIGH")
 				port map (
 					rst    => dcm_rst,
 					clkin  => clkfx,
+					clkfb  => '0',
 					clk0   => ddr_clk0,
 					clk90  => ddr_clk90,
 					locked => ddr_locked);
    
-			ctlrphy_dqsi <= (others => ddr_clk0);
 			ddrsys_rst <= not ddr_locked;
 
 		end block;
@@ -462,7 +614,7 @@ begin
 		ctlrphy_we    => ctlrphy_we(0),
 		ctlrphy_b     => ctlrphy_b,
 		ctlrphy_a     => ctlrphy_a,
-		ctlrphy_dsi   => ctlrphy_dqsi,
+		ctlrphy_dsi   => (others => ddr_clk0);
 		ctlrphy_dst   => ctlrphy_dqst,
 		ctlrphy_dso   => ctlrphy_dqso,
 		ctlrphy_dmi   => ctlrphy_dmi,
