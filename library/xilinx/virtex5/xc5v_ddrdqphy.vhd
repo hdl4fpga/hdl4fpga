@@ -38,7 +38,6 @@ entity ddrdqphy is
 	port (
 		iod_rst    : in  std_logic;
 		iod_clk    : in  std_logic;
-		sys_rsts   : in  std_logic_vector;
 		sys_clks   : in  std_logic_vector;
 		sys_rlreq  : in  std_logic;
 		sys_rlrdy  : buffer std_logic;
@@ -218,13 +217,20 @@ begin
 		end if;
 	end process;
 
+	process (sys_clks(0))
+	begin
+		if rising_edge(sys_clks(0)) then
+			imdr_rst <= iod_rst;
+			omdr_rst <= iod_rst;
+		end if;
+	end process;
+
 	dqsi_b : block
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
 		signal ddqsi    : std_logic;
 		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto      : std_logic;
-		signal imdr_rst : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
 	begin
 
@@ -244,7 +250,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		dqsidelay_i : entity hdl4fpga.xc5_idelay
+		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			clk     => iod_clk,
 			rst     => iod_rst,
@@ -283,7 +289,7 @@ begin
 		process (sys_clks(clk0div))
 		begin
 			if rising_edge(sys_clks(clk0div)) then
-				imdr_rst <= sys_rsts(rst0div);
+				imdr_rst <= iod_rst;
 			end if;
 		end process;
 
@@ -363,7 +369,7 @@ begin
 				end loop;
 			end process;
 
-			dqi_i : entity hdl4fpga.xc5_idelay
+			dqi_i : entity hdl4fpga.xc5v_idelay
 			port map(
 				clk     => iod_clk,
 				rst     => iod_rst,
@@ -374,13 +380,6 @@ begin
 		end block;
 
 		tp_dqsdly <= delay;
-		process (sys_clks(0))
-		begin
-			if rising_edge(sys_clks(0)) then
-				imdr_rst <= '0';
-			end if;
-		end process;
-
 		process (sys_clks)
 		begin
 			case DATA_GEAR is

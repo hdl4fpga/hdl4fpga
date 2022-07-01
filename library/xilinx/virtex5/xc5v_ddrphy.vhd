@@ -30,20 +30,21 @@ use hdl4fpga.std.all;
 
 entity xc5v_ddrphy is
 	generic (
-		iddron : boolean := false;
-		registered_dout : boolean := true;
-		loopback : boolean;
+		taps       : natural;
 		gate_delay : natural := 1;
-		CMMD_GEAR : natural := 1;
-		data_gear : natural := 2;
-		bank_size : natural := 2;
-		addr_size : natural := 13;
-		word_size : natural := 16;
-		byte_size : natural := 8;
-		clkinv : std_logic := '0');
+		CMMD_GEAR  : natural := 1;
+		data_gear  : natural := 2;
+		data_edge  : boolean := false;
+		bank_size  : natural := 2;
+		addr_size  : natural := 13;
+		word_size  : natural := 16;
+		byte_size  : natural := 8;
+		clkinv     : std_logic := '0');
 	port (
-		sys_clks : in std_logic_vector(0 to 2-1);
-		phy_rst  : in std_logic;
+		iod_rst   : in  std_logic;
+		iod_clk   : in  std_logic;
+		sys_clks  : in std_logic_vector(0 to 2-1);
+		phy_rsts  : in std_logic_logic;
 		phy_wlrdy : in  std_logic := '-';
 		phy_wlreq : out std_logic;
 		phy_rlcal : in  std_logic := '0';
@@ -280,33 +281,33 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	ddrbaphy_i : entity hdl4fpga.xc3s_ddrbaphy
-	generic map (
-		GEAR      => CMMD_GEAR,
-		bank_size => bank_size,
-		addr_size => addr_size)
-	port map (
-		sys_clks => sys_clks,
-
-		phy_rst => phy_rst,
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => sys_b,
-		sys_a   => sys_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
-
-		ddr_cke => ddr_cke,
-		ddr_odt => ddr_odt,
-		ddr_cs  => ddr_cs,
-		ddr_ras => ddr_ras,
-		ddr_cas => ddr_cas,
-		ddr_we  => ddr_we,
-		ddr_b   => ddr_b,
-		ddr_a   => ddr_a);
+--	ddrbaphy_i : entity hdl4fpga.xc3s_ddrbaphy
+--	generic map (
+--		GEAR      => CMMD_GEAR,
+--		bank_size => bank_size,
+--		addr_size => addr_size)
+--	port map (
+--		sys_clks => sys_clks,
+--
+--		phy_rst => phy_rst,
+--		sys_rst => sys_rst,
+--		sys_cs  => sys_cs,
+--		sys_cke => sys_cke,
+--		sys_b   => sys_b,
+--		sys_a   => sys_a,
+--		sys_ras => sys_ras,
+--		sys_cas => sys_cas,
+--		sys_we  => sys_we,
+--		sys_odt => sys_odt,
+--
+--		ddr_cke => ddr_cke,
+--		ddr_odt => ddr_odt,
+--		ddr_cs  => ddr_cs,
+--		ddr_ras => ddr_ras,
+--		ddr_cas => ddr_cas,
+--		ddr_we  => ddr_we,
+--		ddr_b   => ddr_b,
+--		ddr_a   => ddr_a);
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	ssti  <= to_blinevector(sys_sti);
@@ -323,11 +324,14 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			registered_dout => registered_dout,
-			loopback => loopback,
-			gear => data_gear,
+			taps      => taps,
+			data_edge  => data_edge,
+			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
+			iod_rst  => iod_rst,
+			iod_clk  => iod_clk,
+			sys_rsts => 
 			sys_clks => sys_clks,
 
 			sys_sti => ssti(i),
