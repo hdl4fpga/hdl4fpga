@@ -29,6 +29,7 @@ HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__xc3s_ddrphy = $(LIB_HDL4FPGA)/xc3s_ddrphy/_primary.dat
+MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
@@ -84,6 +85,7 @@ WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.d
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
+WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter__graphics = $(LIB_WORK)/s3estarter/graphics.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
@@ -129,6 +131,7 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ulx3s_graphics) \
+    $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter__graphics) \
     $(WORK__s3estarter) \
@@ -240,7 +243,7 @@ $(WORK__ml509__graphics) : ../../boards/ml509/apps/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002  ../../boards/ml509/apps/demos/graphics.vhd
+	$(VCOM) -2002 ../../boards/ml509/apps/demos/graphics.vhd
 
 $(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
@@ -332,6 +335,21 @@ $(WORK__testbench) : testbench.vhd \
 	$(VCOM) -2002 testbench.vhd
 
 $(WORK__arty_graphics_md) \
+$(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/graphics.vhd \
+		$(WORK__ml509) \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr2) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__eth_rx) \
+		$(HDL4FPGA__eth_tb) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__std) \
+		$(STD__textio)
+	$(VCOM) -2002  ../../boards/ml509/apps/demos/testbenches/graphics.vhd
+
 $(WORK__arty_structure_md) \
 $(WORK__testbench__arty_graphics) : ../../boards/arty/apps/demos/testbenches/graphics.vhd \
 		$(VERILOG__vl_types) \

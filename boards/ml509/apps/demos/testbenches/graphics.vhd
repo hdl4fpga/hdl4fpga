@@ -29,99 +29,166 @@ use hdl4fpga.std.all;
 library ieee;
 use ieee.std_logic_textio.all;
 
-architecture arty_graphics of testbench is
+library micron;
+
+architecture ml509_graphics of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
-	constant cols_bits  : natural := 10;
-	constant data_bytes : natural := 2;
+	constant cols_bits  : natural := 9;
+	constant data_bytes : natural := 8;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	signal reset_n : std_logic;
-	signal rst   : std_logic;
-	signal led7  : std_logic;
+	signal reset_n    : std_logic;
+	signal rst        : std_logic;
+	signal led7       : std_logic;
 
-	signal rst_n : std_logic;
-	signal ddr_clk_p : std_logic;
-	signal ddr_clk_n : std_logic;
-	signal cke   : std_logic;
-	signal cs_n  : std_logic;
+
+	signal clk_p : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal clk_n : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal cke   : std_logic_vector (2-1 downto 0) := (others => '1');
+	signal cs_n  : std_logic_vector (2-1 downto 0) := (others => '1');
 	signal ras_n : std_logic;
 	signal cas_n : std_logic;
 	signal we_n  : std_logic;
 	signal ba    : std_logic_vector (bank_bits-1 downto 0);
-	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
-	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
+	signal addr  : std_logic_vector (addr_bits-1 downto 0);
 	signal dm    : std_logic_vector(data_bytes-1 downto 0);
-	signal odt   : std_logic;
+	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs   : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal rdqs_n : std_logic_vector(dqs'range);
+	signal odt   : std_logic_vector(2-1 downto 0);
+
 	signal scl   : std_logic;
 	signal sda   : std_logic;
-	signal tdqs_n : std_logic_vector(dqs_p'range);
 
 	signal mii_refclk : std_logic;
-	signal mii_req : std_logic := '0';
-	signal mii_req1 : std_logic := '0';
-	signal ping_req : std_logic := '0';
-	signal rep_req : std_logic := '0';
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
-	signal mii_txd  : std_logic_vector(0 to 4-1);
-	signal mii_txc  : std_logic;
-	signal mii_rxc  : std_logic;
-	signal mii_txen : std_logic;
+	signal mii_req    : std_logic := '0';
+	signal mii_req1   : std_logic := '0';
+	signal ping_req   : std_logic := '0';
+	signal rep_req    : std_logic := '0';
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 8-1);
+	signal mii_txd    : std_logic_vector(0 to 8-1);
+	signal mii_txc    : std_logic;
+	signal mii_rxc    : std_logic;
+	signal mii_txen   : std_logic;
 
-	component arty is
+	component ml509 is
 		generic (
 			debug : boolean := false);
 		port (
-			btn : in std_logic_vector(4-1 downto 0) := (others => '-');
-			sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
-			led : out std_logic_vector(8-1 downto 4);
-			RGBled : out std_logic_vector(4*3-1 downto 0);
+			bus_error : out std_logic_vector(2 downto 1);
+	
+--			cfg_addr_out : in std_logic_vector(2-1 downto 0);
+--			cpld_io_1 : in std_logic;
+	
+			clk_27mhz_fpga : in std_logic := '-';
+			clk_33mhz_fpga : in std_logic := '-';
+			clk_fpga_p     : in std_logic := '-';
+			clk_fpga_n     : in std_logic := '-';
+	
+			ddr2_clk_p     : out std_logic_vector(2-1 downto 0);
+			ddr2_clk_n     : out std_logic_vector(2-1 downto 0);
+			ddr2_cs        : out std_logic_vector(2-1 downto 0);
+			ddr2_cke       : out std_logic_vector( 2-1 downto 0);
+			ddr2_ras       : out std_logic;
+			ddr2_cas       : out std_logic;
+			ddr2_we        : out std_logic;
+			ddr2_a         : out std_logic_vector(14-1 downto 0);
+			ddr2_ba        : out std_logic_vector( 3-1 downto 0);
+			ddr2_dqs_p     : inout std_logic_vector(8-1 downto 0);
+			ddr2_dqs_n     : inout std_logic_vector(8-1 downto 0);
+			ddr2_dm        : inout std_logic_vector( 8-1 downto 0);
+			ddr2_d         : inout std_logic_vector(64-1 downto 0);
+			ddr2_odt       : out std_logic_vector( 2-1 downto 0);
+--			ddr2_scl       : out std_logic;
+--			ddr2_sda       : in  std_logic;
+	
+			dvi_xclk_n     : out std_logic;
+			dvi_xclk_p     : out std_logic;
+			dvi_reset      : out std_logic;
+			dvi_gpio1      : out std_logic;
+			dvi_de         : out std_logic;
+			dvi_d          : out std_logic_vector(12-1 downto 0);
+			dvi_v          : inout std_logic;
+			dvi_h          : inout std_logic;
+	
+--			fan_alert      : out std_logic;
+	
+			fpga_diff_clk_out_p : out std_logic;
+			fpga_diff_clk_out_n : out std_logic;
+--			fpga_rotary_inca : in std_logic;
+--			fpga_rotary_incb : in std_logic;
+--			fpga_rotary_push : in std_logic;
+			fpga_serial_rx : in std_logic_vector(1 to 2) := (others => 'Z');
+			fpga_serial_tx : out std_logic_vector(1 to 2);
+	
+--			gpio_dip_sw    : in std_logic_vector(8 downto 1);
+			gpio_led       : out std_logic_vector(8-1 downto 0);
+			gpio_led_c     : out std_logic;
+			gpio_led_e     : out std_logic;
+			gpio_led_n     : out std_logic;
+			gpio_led_s     : out std_logic;
+			gpio_led_w     : out std_logic;
+			gpio_sw_c      : in std_logic := 'Z';
+			gpio_sw_e      : in std_logic := 'Z';
+			gpio_sw_n      : in std_logic := 'Z';
+			gpio_sw_s      : in std_logic := 'Z';
+			gpio_sw_w      : in std_logic := 'Z';
+	
+			hdr1           : std_logic_vector(1 to 32):= (others => '-');
+			hdr2_diff_p    : std_logic_vector(0 to 4-1) := (others => 'Z');
+			hdr2_diff_n    : std_logic_vector(0 to 4-1) := (others => 'Z');
+			hdr2_sm_p      : std_logic_vector(4 to 16-1) := (others => 'Z');
+			hdr2_sm_n      : std_logic_vector(4 to 16-1) := (others => 'Z');
+	
+--			lcd_fpga_db    : std_logic_vector(8-1 downto 4);
+	
+			phy_reset      : out std_logic;
+			phy_col        : in std_logic := 'Z';
+			phy_crs        : in std_logic := 'Z';
+			phy_int        : in std_logic := 'Z';		-- open drain
+			phy_mdc        : out std_logic;
+			phy_mdio       : inout std_logic;
+	
+			phy_rxclk      : in std_logic;
+			phy_rxctl_rxdv : in std_logic;
+			phy_rxd        : in std_logic_vector(0 to 8-1);
+			phy_rxer       : in std_logic := 'Z';
+	
+			phy_txc_gtxclk : out std_logic;
+			phy_txclk      : in std_logic;
+			phy_txctl_txen : out std_logic;
+			phy_txd        : out std_logic_vector(0 to 8-1);
+			phy_txer       : out std_logic;
 
-			gclk100   : in std_logic;
-			eth_rstn  : out std_logic;
-			eth_ref_clk : out std_logic;
-			eth_mdio  : inout std_logic;
-			eth_mdc   : out std_logic;
-			eth_crs   : in std_logic;
-			eth_col   : in std_logic;
-			eth_tx_clk  : in std_logic;
-			eth_tx_en : out std_logic;
-			eth_txd   : out std_logic_vector(0 to 4-1);
-			eth_rx_clk  : in std_logic;
-			eth_rxerr : in std_logic;
-			eth_rx_dv : in std_logic;
-			eth_rxd   : in std_logic_vector(0 to 4-1);
-
-			ddr3_reset : out std_logic := '0';
-			ddr3_clk_p : out std_logic := '0';
-			ddr3_clk_n : out std_logic := '0';
-			ddr3_cke : out std_logic := '0';
-			ddr3_cs  : out std_logic := '1';
-			ddr3_ras : out std_logic := '1';
-			ddr3_cas : out std_logic := '1';
-			ddr3_we  : out std_logic := '1';
-			ddr3_ba  : out std_logic_vector( 3-1 downto 0) := (others => '1');
-			ddr3_a   : out std_logic_vector(14-1 downto 0) := (others => '1');
-			ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-			ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-			ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-			ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-			ddr3_odt : out std_logic := '1');
+--			sram_bw        : std_logic_vector(4-1 downto 0);
+--			sram_d         : std_logic_vector(32-1 downto 16);
+--			sram_dqp       : std_logic_vector(4-1 downto 0);
+--			sram_flash_a   : std_logic_vector(22-1 downto 0);
+--			sram_flash_d   : std_logic_vector(16-1 downto 0);
+--
+--			sysace_mpa     : std_logic_vector(7-1 downto 0);
+--			sysace_usb_d   : std_logic_vector(16-1 downto 0);
+--
+--			trc_ts         : std_logic_vector(6 downto 3);
+--
+--			vga_in_blue    : std_logic_vector(8-1 downto 0);
+--			vga_in_green   : std_logic_vector(8-1 downto 0);
+--			vga_in_red     : std_logic_vector(8-1 downto 0)
+			user_clk       : in std_logic);
 
 	end component;
 
-	component ddr3_model is
+	component ddr2_model is
 		port (
-			rst_n : in std_logic;
 			ck    : in std_logic;
 			ck_n  : in std_logic;
 			cke   : in std_logic;
@@ -129,13 +196,13 @@ architecture arty_graphics of testbench is
 			ras_n : in std_logic;
 			cas_n : in std_logic;
 			we_n  : in std_logic;
-			ba    : in std_logic_vector(3-1 downto 0);
-			addr  : in std_logic_vector(13-1 downto 0);
-			dm_tdqs : in std_logic_vector(2-1 downto 0);
+			ba    : in std_logic_vector(1 downto 0);
+			addr  : in std_logic_vector(addr_bits-1 downto 0);
+			dm_rdqs : in std_logic_vector(2-1 downto 0);
 			dq    : inout std_logic_vector(16-1 downto 0);
 			dqs   : inout std_logic_vector(2-1 downto 0);
 			dqs_n : inout std_logic_vector(2-1 downto 0);
-			tdqs_n : inout std_logic_vector(2-1 downto 0);
+			rdqs_n : inout std_logic_vector(2-1 downto 0);
 			odt   : in std_logic);
 	end component;
 
@@ -200,7 +267,7 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff"   &
+		x"18ff" &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
 		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
 		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
@@ -231,45 +298,35 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	du_e : arty
+	du_e : ml509
 	generic map (
 		debug => true)
 	port map (
-		btn(0) => rst,
-		btn(4-1 downto 1) => (1 to 3 => '-'),
-		sw => "0000",
+		ddr2_clk_p     => clk_p,
+		ddr2_clk_n     => clk_n,
+		ddr2_cke       => cke,
+		ddr2_cs        => cs_n,
+		ddr2_ras       => ras_n,
+		ddr2_cas       => cas_n,
+		ddr2_we        => we_n,
+		ddr2_ba        => ba,
+		ddr2_a         => addr,
+		ddr2_dm        => dm,
+		ddr2_d         => dq,
+		ddr2_dqs_p     => dqs,
+		ddr2_dqs_n     => dqs_n,
+		ddr2_odt       => odt,
 
-		gclk100     => xtal,
-		eth_rstn    => open,
-		eth_ref_clk => mii_refclk,
-		eth_mdc     => open,
-		eth_crs     => '-',
-		eth_col     => '-',
-		eth_tx_clk  => mii_rxc,
-		eth_tx_en   => mii_txen,
-		eth_txd     => mii_txd,
-		eth_rx_clk  => mii_rxc,
-		eth_rxerr   => '-',
-		eth_rx_dv   => mii_rxdv,
-		eth_rxd     => mii_rxd,
+		phy_rxclk      => mii_rxc,
+		phy_rxctl_rxdv => mii_rxdv,
+		phy_rxd        => mii_rxd,
 
-		-- DDR RAM --
+		phy_txc_gtxclk => mii_refclk,
+		phy_txclk      => mii_rxc,
+		phy_txctl_txen => mii_txen,
+		phy_txd        => mii_txd,
 
-		ddr3_reset => rst_n,
-		ddr3_clk_p => ddr_clk_p,
-		ddr3_clk_n => ddr_clk_n,
-		ddr3_cke   => cke,
-		ddr3_cs    => cs_n,
-		ddr3_ras   => ras_n,
-		ddr3_cas   => cas_n,
-		ddr3_we    => we_n,
-		ddr3_ba    => ba,
-		ddr3_a     => addr,
-		ddr3_dqs_p => dqs_p,
-		ddr3_dqs_n => dqs_n,
-		ddr3_dq    => dq,
-		ddr3_dm    => dm,
-		ddr3_odt   => odt);
+		user_clk       => xtal);
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
@@ -279,84 +336,87 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	mt_u : ddr3_model
-	port map (
-		rst_n => rst_n,
-		Ck    => ddr_clk_p,
-		Ck_n  => ddr_clk_n,
-		Cke   => cke,
-		Cs_n  => cs_n,
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba,
-		Addr  => addr(13-1 downto 0),
-		Dm_tdqs  => dm,
-		Dq    => dq,
-		Dqs   => dqs_p,
-		Dqs_n => dqs_n,
-		tdqs_n => tdqs_n,
-		Odt   => odt);
+	simm_g : for i in 8/2-1 downto 0 generate
+		mt_u : 	entity micron.ddr2
+		port map (
+			Ck      => clk_p(0),
+			Ck_n    => clk_n(0),
+			Cke     => cke(0),
+			Cs_n    => cs_n(0),
+			Ras_n   => ras_n,
+			Cas_n   => cas_n,
+			We_n    => we_n,
+			Ba      => ba(2-1 downto 0),
+			Addr    => addr,
+			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
+			Dqs     => dqs(2*(i+1)-1 downto 2*i),
+			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
+			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
+			Dq      => dq(16*(i+1)-1 downto 16*i),
+			Odt     => odt(i/2));
+	end generate;
 end;
 
-library micron;
+--library micron;
 
-configuration arty_structure_md of testbench is
-	for arty_graphics
-		for all: arty
-			use entity work.arty(structure);
-		end for;
+--configuration arty_structure_md of testbench is
+--	for ml509_graphics
+--		for all: ml509
+--			use entity work.ml509(structure);
+--		end for;
+--
+--		for simm_g
+--			for all : ddr2_model
+--				use entity micron.ddr2
+--				port map (
+--					Ck      => clk_p(0),
+--					Ck_n    => clk_n(0),
+--					Cke     => cke(0),
+--					Cs_n    => cs_n(0),
+--					Ras_n   => ras_n,
+--					Cas_n   => cas_n,
+--					We_n    => we_n,
+--					Ba      => ba(2-1 downto 0),
+--					Addr    => addr,
+--					Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
+--					Dqs     => dqs(2*(i+1)-1 downto 2*i),
+--					Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
+--					rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
+--					Dq      => dq(16*(i+1)-1 downto 16*i),
+--					Odt     => odt(i/2));
+--			end for;
+--		end for;
+--	end for;
+--end;
 
-		for all : ddr3_model
-			use entity micron.ddr3
-			port map (
-				rst_n => rst_n,
-				Ck    => ck,
-				Ck_n  => ck_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr(13-1 downto 0),
-				Dm_tdqs  => dm,
-				Dq    => dq,
-				Dqs   => dqs,
-				Dqs_n => dqs_n,
-				tdqs_n => tdqs_n,
-				Odt   => odt);
-		end for;
-	end for;
-end;
+--library micron;
 
-library micron;
-
-configuration arty_graphics_md of testbench is
-	for arty_graphics
-		for all: arty
-			use entity work.arty(graphics);
-		end for;
-
-		for all: ddr3_model
-			use entity micron.ddr3
-			port map (
-				rst_n => rst_n,
-				Ck    => ck,
-				Ck_n  => ck_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr,
-				Dm_tdqs  => dm,
-				Dq    => dq,
-				Dqs   => dqs,
-				Dqs_n => dqs_n,
-				tdqs_n => tdqs_n,
-				Odt   => odt);
-		end for;
-	end for;
-end;
+--configuration arty_graphics_md of testbench is
+--	for ml509_graphics
+--		for all: ml509
+--			use entity work.ml509(graphics);
+--		end for;
+--
+--		for simm_g
+--			for all : ddr2_model
+--				use entity micron.ddr2
+--				port map (
+--					Ck      => clk_p(0),
+--					Ck_n    => clk_n(0),
+--					Cke     => cke(0),
+--					Cs_n    => cs_n(0),
+--					Ras_n   => ras_n,
+--					Cas_n   => cas_n,
+--					We_n    => we_n,
+--					Ba      => ba(2-1 downto 0),
+--					Addr    => addr,
+--					Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
+--					Dqs     => dqs(2*(i+1)-1 downto 2*i),
+--					Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
+--					rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
+--					Dq      => dq(16*(i+1)-1 downto 16*i),
+--					Odt     => odt(i/2));
+--			end for;
+--		end for;
+--	end for;
+--end;
