@@ -66,7 +66,7 @@ architecture graphics of arty is
 	signal so_trdy : std_logic;
 	signal so_data : std_logic_vector(0 to 8-1);
 
-	constant sys_per  : real := 10.0*1.0e-9;
+	constant sys_per  : real := 10.0e-9;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -250,7 +250,6 @@ architecture graphics of arty is
 
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
-	alias  dmacfg_clk     : std_logic is mii_txc;
 
 	signal tp  : std_logic_vector(1 to 32);
 	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
@@ -437,7 +436,6 @@ begin
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
 		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;

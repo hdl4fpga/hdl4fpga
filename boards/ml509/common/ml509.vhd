@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity ml509 is
+	generic (
+		debug : boolean := false);
 	port(
 		bus_error : out std_logic_vector(2 downto 1);
 

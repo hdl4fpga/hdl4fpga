@@ -158,6 +158,9 @@ architecture graphics of ml509 is
 	constant sys_per  : real := 10.0e-9;
 	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
+	constant video_mode : video_modes := video_modes'val(
+		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
+
 	constant SCLK_PHASES  : natural := 4;
 	constant SCLK_EDGES   : natural := 2;
 	constant DATA_PHASES  : natural := 2;
@@ -168,6 +171,18 @@ architecture graphics of ml509 is
 	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
+	constant coln_size     : natural := 10;
+
+	signal si_frm  : std_logic;
+	signal si_irdy : std_logic;
+	signal si_trdy : std_logic;
+	signal si_end  : std_logic;
+	signal si_data : std_logic_vector(0 to 8-1);
+
+	signal so_frm  : std_logic;
+	signal so_irdy : std_logic;
+	signal so_trdy : std_logic;
+	signal so_data : std_logic_vector(0 to 8-1);
 
 	signal ddrsys_rst      : std_logic;
 	signal ddrsys_clks     : std_logic_vector(0 to 5-1);
@@ -183,8 +198,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlcal   : std_logic;
 	signal ctlrphy_rlseq   : std_logic;
 
-	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
-	signal ddr_a           : std_logic_vector(ddr3_a'range);
+	signal ddr_ba          : std_logic_vector(ddr2_ba'range);
+	signal ddr_a           : std_logic_vector(ddr2_a'range);
 	signal ctlrphy_rst     : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cke     : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cs      : std_logic_vector(0 to cmmd_gear-1);
@@ -193,8 +208,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_we      : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_odt     : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
-	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr2_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr2_a'length-1 downto 0);
 	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -209,9 +224,7 @@ architecture graphics of ml509 is
 
 	signal sys_clk        : std_logic;
 
-	signal ddr_b          : std_logic_vector(BANK_SIZE-1 downto 0);
-	signal ddr_a          : std_logic_vector(ADDR_SIZE-1 downto 0);
-
+	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
 	signal ddr2_clk       : std_logic_vector(2-1 downto 0);
 	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
@@ -250,27 +263,18 @@ architecture graphics of ml509 is
 
 	signal gtx_clk        : std_logic;
 	signal gtx_rst        : std_logic;
-	signal mii_rxdv       : std_logic;
-	signal mii_rxc        : std_logic;
-	signal mii_rxd        : std_logic_vector(phy_rxd'range);
-	signal mii_txd        : std_logic_vector(phy_txd'range);
 
 	signal sys_rst        : std_logic;
 	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
 	signal phy_iodrst     : std_logic;
 
-	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
-	-- Multiply by --  10     --   8     --   9     --
-	-- Divide by   --   3     --   2     --   2     --
-	--------------------------------------------------
-
-	constant DDR_MUL      : natural := 8; --3; --10;
-	constant DDR_DIV      : natural := 3; --1; --3;
-
 	signal iod_clk      : std_logic;
 	signal iod_rst      : std_logic;
+
+	alias  mii_txc        : std_logic is gtx_clk;
+	alias  sio_clk        : std_logic is mii_txc;
+	alias  dmacfg_clk     : std_logic is mii_txc;
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
@@ -387,6 +391,7 @@ begin
 					clk90  => ddr_clk90,
 					locked => ddr_locked);
    
+			ctlrphy_dqsi => (others => ctlr_clk),
 			ddrsys_rst <= not ddr_locked;
 
 		end block;
@@ -406,7 +411,6 @@ begin
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
 		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
@@ -415,24 +419,8 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
-		signal mii_txcfrm : std_ulogic;
 		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
-
-		signal mii_txen    : std_logic;
 	begin
 
 		sync_b : block
@@ -472,24 +460,11 @@ begin
 			begin
 				if rising_edge(mii_txc) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					mii_txcfrm <= txc_rxbus(0);
-					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+					miirx_frm  <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
 				end if;
 			end process;
 		end block;
-
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => mii_txc,
-			serdes_frm => mii_txcfrm,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_txcrxd,
-
-			des_frm    => miirx_frm,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
 
 		dhcp_p : process(mii_txc)
 		begin
@@ -502,16 +477,18 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
+			debug         => false,
+			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
-			tp         => tp,
+			tp         => open,
 
 			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
-			miirx_trdy => miirx_trdy,
+			miirx_trdy => open,
 			miirx_data => miirx_data,
 
 			miitx_frm  => miitx_frm,
@@ -556,12 +533,13 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		profile      => app_tab(app).profile,
-		ddr_tcp      => ddr_tcp,
-		fpga         => fpga,
-		mark         => mark,
+		profile      => profile_tab(profile).profile,
+		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
+		fpga         => virtex7,
+		mark         => M2G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
+		cmmd_gear    => cmmd_gear,
 		data_phases  => data_phases,
 		data_edges   => data_edges,
 		data_gear    => data_gear,
@@ -596,25 +574,24 @@ begin
 		video_blank   => video_blank,
 		video_pixel   => video_pixel,
 
-		dmacfg_clk    => dmacfg_clk,
-		ctlr_clks     => ctlr_clks,
+		ctlr_clks(0)  => ctlr_clk,
 		ctlr_rst      => ddrsys_rst,
-		ddrs_rtt      => "11",
+		ctlr_rtt      => "11",
 		ctlr_bl       => "001",
-		ctlr_cl       => ddr_param.cas,
+		ctlr_cl      => ddr_param.cl,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
 		ctlrphy_rlcal => ctlrphy_rlcal,
 		ctlrphy_rlseq => ctlrphy_rlseq,
-		ctlrphy_rst   => ctlrphy_rst,
+		ctlrphy_rst   => ctlrphy_rst(0),
 		ctlrphy_cke   => ctlrphy_cke(0),
 		ctlrphy_cs    => ctlrphy_cs(0),
 		ctlrphy_ras   => ctlrphy_ras(0),
 		ctlrphy_cas   => ctlrphy_cas(0),
 		ctlrphy_we    => ctlrphy_we(0),
-		ctlrphy_b     => ctlrphy_b,
-		ctlrphy_a     => ctlrphy_a,
-		ctlrphy_dsi   => (others => ddr_clk0);
+		ctlrphy_b     => ddr_ba,
+		ctlrphy_a     => ddr_a,
+		ctlrphy_dsi   => ctlrphy_dqsi,
 		ctlrphy_dst   => ctlrphy_dqst,
 		ctlrphy_dso   => ctlrphy_dqso,
 		ctlrphy_dmi   => ctlrphy_dmi,
@@ -636,11 +613,11 @@ begin
 		ddrphy_odt(i) <= ddrphy_odt(0);
 	end generate;
 
-	process (ddr_b)
+	process (ddr_ba)
 	begin
-		for i in ddr_b'range loop
+		for i in ddr_ba'range loop
 			for j in 0 to CMMD_GEAR-1 loop
-				ddrphy_b(i*CMMD_GEAR+j) <= ddr_b(i);
+				ddrphy_b(i*CMMD_GEAR+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -659,22 +636,32 @@ begin
 		if sys_rst='1' then
 			phy_iodrst <= '1';
 		elsif rising_edge(sys_clk) then
-			phy_iodrst <= sync;
+			phy_iodrst <= sys_rst;
 		end if;
 	end process;
 
 	ddrphy_e : entity hdl4fpga.xc5v_ddrphy
 	generic map (
-		LOOPBACK    => FALSE,
+		taps => 0,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,
 		DATA_GEAR   => DATA_GEAR,
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		phy_rst     => phy_rsts(0),
 		iod_rst     => phy_iodrst,
-		sys_clks    => sys_clks(0 to 1),
+		iod_clk     => iod_clk,
+
+		sys_clks    => ddrsys_clks,
+		phy_frm     => ctlrphy_frm,
+		phy_trdy    => ctlrphy_trdy,
+		phy_rw      => ctlrphy_rw,
+		phy_ini     => ctlrphy_ini,
+
+		phy_cmd     => ctlrphy_cmd,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
+
 		sys_cke     => ddrphy_cke,
 		sys_cs      => ddrphy_cs,
 		sys_ras     => ddrphy_ras,
@@ -725,6 +712,7 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
+	phy_txc_gtxclk_i : oddr
 	port map (
 		c => gtx_clk,
 		ce => '1',
