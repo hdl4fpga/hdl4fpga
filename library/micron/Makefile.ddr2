@@ -24,15 +24,14 @@ $(MICRON__ddr2) \
 $(MICRON__ddr2_mcp) \
 $(MICRON__ddr2_module) \
 $(MICRON__dqrx) \
-$(MICRON__tb) : /home/msagre/work/hdl4fpga/library/micron.com/ddr2/tb.v \
-		 ../../library/micron.com/ddr2/ddr2_parameters.vh \
-		 ../../library/micron.com/ddr2/subtest.vh /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2_module.v \
-		 /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2_mcp.v \
-		 /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2.v
-	$(VLOG) -work micron +incdir+../../library/micron.com/ddr2 \
+$(MICRON__tb) : ../micron/ddr2/tb.v \
+		 ../micron/ddr2/ddr2_parameters.vh \
+		 ../micron/ddr2/subtest.vh ../micron/ddr2/ddr2_module.v \
+		 ../micron/ddr2/ddr2_mcp.v \
+		../micron/ddr2/ddr2.v
+	$(VLOG) -work micron +incdir+../micron/ddr2 \
 		 +define+sg3 +define+x16 -L mtiAvm -L mtiOvm \
-		 -L mtiUvm -L mtiUPF /home/msagre/work/hdl4fpga/library/micron.com/ddr2/tb.v \
-		 /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2_module.v \
-		 /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2_mcp.v \
-		 /home/msagre/work/hdl4fpga/library/micron.com/ddr2/ddr2.v
-
+		 -L mtiUvm -L mtiUPF ../micron/ddr2/tb.v \
+		 ../micron/ddr2/ddr2_module.v \
+		 ../micron/ddr2/ddr2_mcp.v \
+		 ../micron/ddr2/ddr2.v
