@@ -160,6 +160,18 @@ architecture graphics of ml509 is
 
 	constant video_mode : video_modes := video_modes'val(
 		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
+	signal video_clk      : std_logic;
+	signal videoio_clk    : std_logic;
+	signal video_lck      : std_logic;
+	signal video_shf_clk  : std_logic;
+	signal video_hzsync   : std_logic;
+    signal video_vtsync   : std_logic;
+    signal video_blank    : std_logic;
+    signal video_on       : std_logic;
+    signal video_dot      : std_logic;
+    signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+
 
 	constant SCLK_PHASES  : natural := 4;
 	constant SCLK_EDGES   : natural := 2;
@@ -232,35 +244,6 @@ architecture graphics of ml509 is
 	signal ddr2_dqo       : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr2_dqt       : std_logic_vector(WORD_SIZE-1 downto 0);
 
-	signal ddrphy_cke     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_ras     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(CMMD_GEAR*2-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(CMMD_GEAR*ADDR_SIZE-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
-	signal ddrphy_sti     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
-	signal ddrphy_ini     : std_logic;
-	signal ddrphy_act     : std_logic;
-	signal ddrphy_rlreq   : std_logic;
-	signal ddrphy_rlrdy   : std_logic;
-	signal ddrphy_rlcal   : std_logic;
-	signal ddrphy_rlseq   : std_logic;
-	signal ddrphy_rw      : std_logic;
-	signal ddrphy_cmd_req : std_logic;
-	signal ddrphy_cmd_rdy : std_logic;
-
 	signal gtx_clk        : std_logic;
 	signal gtx_rst        : std_logic;
 
@@ -289,9 +272,6 @@ architecture graphics of ml509 is
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
-	attribute keep : string;
-	attribute keep of ddr2_dqsi   : signal is "TRUE";
-	attribute keep of ddrphy_dqso : signal is "TRUE";
 begin
 
 	clkin_ibufg : ibufg
@@ -391,7 +371,7 @@ begin
 					clk90  => ddr_clk90,
 					locked => ddr_locked);
    
-			ctlrphy_dqsi => (others => ctlr_clk),
+			ctlrphy_dqsi <= (others => ctlr_clk);
 			ddrsys_rst <= not ddr_locked;
 
 		end block;
@@ -568,15 +548,14 @@ begin
 		sout_end      => si_end,
 		sout_data     => si_data,
 
-		video_clk     => video_clk,
-		video_hzsync  => video_hzsync,
-		video_vtsync  => video_vtsync,
-		video_blank   => video_blank,
-		video_pixel   => video_pixel,
+		video_clk    => video_clk,
+		video_shift_clk => video_shf_clk,
+		video_pixel  => video_pixel,
+		dvid_crgb    => dvid_crgb,
 
 		ctlr_clks(0)  => ctlr_clk,
 		ctlr_rst      => ddrsys_rst,
-		ctlr_rtt      => "11",
+		ctlr_rtt      => b"0_11",
 		ctlr_bl       => "001",
 		ctlr_cl      => ddr_param.cl,
 		ctlrphy_rlreq => ctlrphy_rlreq,
@@ -605,19 +584,19 @@ begin
 		tp => open);
 
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
-		ddrphy_cke(i) <= ddrphy_cke(0);
-		ddrphy_cs(i)  <= ddrphy_cs(0);
-		ddrphy_ras(i) <= '1';
-		ddrphy_cas(i) <= '1';
-		ddrphy_we(i)  <= '1';
-		ddrphy_odt(i) <= ddrphy_odt(0);
+		ctlrphy_cke(i) <= ctlrphy_cke(0);
+		ctlrphy_cs(i)  <= ctlrphy_cs(0);
+		ctlrphy_ras(i) <= '1';
+		ctlrphy_cas(i) <= '1';
+		ctlrphy_we(i)  <= '1';
+		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
 			for j in 0 to CMMD_GEAR-1 loop
-				ddrphy_b(i*CMMD_GEAR+j) <= ddr_ba(i);
+				ctlrphy_ba(i*CMMD_GEAR+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -626,7 +605,7 @@ begin
 	begin
 		for i in ddr_a'range loop
 			for j in 0 to CMMD_GEAR-1 loop
-				ddrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
+				ctlrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -652,7 +631,7 @@ begin
 		iod_rst     => phy_iodrst,
 		iod_clk     => iod_clk,
 
-		sys_clks    => ddrsys_clks,
+		sys_clks    => ddrsys_clks(0 to 2-1),
 		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
 		phy_rw      => ctlrphy_rw,
@@ -662,26 +641,26 @@ begin
 		phy_rlreq   => ctlrphy_rlreq,
 		phy_rlrdy   => ctlrphy_rlrdy,
 
-		sys_cke     => ddrphy_cke,
-		sys_cs      => ddrphy_cs,
-		sys_ras     => ddrphy_ras,
-		sys_cas     => ddrphy_cas,
-		sys_we      => ddrphy_we,
-		sys_b       => ddrphy_b,
-		sys_a       => ddrphy_a,
+		sys_cke     => ctlrphy_cke,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_ba,
+		sys_a       => ctlrphy_a,
 
-		sys_dqst    => ddrphy_dqst,
-		sys_dqso    => ddrphy_dqso,
-		sys_dqsi    => ddrphy_dqsi,
-		sys_dmi     => ddrphy_dmo,
-		sys_dmt     => ddrphy_dmt,
-		sys_dmo     => ddrphy_dmi,
-		sys_dqi     => ddrphy_dqi,
-		sys_dqt     => ddrphy_dqt,
-		sys_dqo     => ddrphy_dqo,
-		sys_odt     => ddrphy_odt,
-		sys_sti     => ddrphy_sto,
-		sys_sto     => ddrphy_sti,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqso,
+		sys_dqsi    => ctlrphy_dqsi,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmt     => ctlrphy_dmt,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqi     => ctlrphy_dqi,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqo     => ctlrphy_dqo,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
 		ddr_clk     => ddr2_clk,
 		ddr_cke     => ddr2_cke(0),
 		ddr_cs      => ddr2_cs(0),
@@ -744,7 +723,6 @@ begin
 				ce  => '0',
 				inc => '0',
 				o   => ddr_d(i));
---			ddr_d(i) <= ddr2_d(i);
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
@@ -757,7 +735,7 @@ begin
 			port map (
 				t   => ddr2_dqst(i),
 				i   => ddr2_dqso(i),
-				o   => dqsi,
+				o   => ddr2_dqsi(i),
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 
@@ -785,7 +763,7 @@ begin
 
 	gpio_led <= (others => '0');
 	bus_error <= (others => 'Z');
-	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= (others => '0');
+	--(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= (others => '0');
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
