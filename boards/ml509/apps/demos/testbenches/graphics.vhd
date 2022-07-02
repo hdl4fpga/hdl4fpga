@@ -357,14 +357,14 @@ begin
 	end generate;
 end;
 
---library micron;
+library micron;
 
---configuration arty_structure_md of testbench is
---	for ml509_graphics
---		for all: ml509
---			use entity work.ml509(structure);
---		end for;
---
+configuration ml509_structure_md of testbench is
+	for ml509_graphics
+		for all: ml509
+			use entity work.ml509(structure);
+		end for;
+
 --		for simm_g
 --			for all : ddr2_model
 --				use entity micron.ddr2
@@ -386,17 +386,17 @@ end;
 --					Odt     => odt(i/2));
 --			end for;
 --		end for;
---	end for;
---end;
+	end for;
+end;
 
---library micron;
+library micron;
 
---configuration arty_graphics_md of testbench is
---	for ml509_graphics
---		for all: ml509
---			use entity work.ml509(graphics);
---		end for;
---
+configuration ml509_graphics_md of testbench is
+	for ml509_graphics
+		for all: ml509
+			use entity work.ml509(graphics);
+		end for;
+
 --		for simm_g
 --			for all : ddr2_model
 --				use entity micron.ddr2
@@ -418,5 +418,5 @@ end;
 --					Odt     => odt(i/2));
 --			end for;
 --		end for;
---	end for;
---end;
+	end for;
+end;

@@ -335,6 +335,7 @@ $(WORK__testbench) : testbench.vhd \
 	$(VCOM) -2002 testbench.vhd
 
 $(WORK__arty_graphics_md) \
+$(WORK__arty_structure_md) \
 $(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/graphics.vhd \
 		$(WORK__ml509) \
 		$(VERILOG__vl_types) \
@@ -350,11 +351,7 @@ $(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/g
 		$(STD__textio)
 	$(VCOM) -2002  ../../boards/ml509/apps/demos/testbenches/graphics.vhd
 
-$(WORK__arty_structure_md) \
 $(WORK__testbench__arty_graphics) : ../../boards/arty/apps/demos/testbenches/graphics.vhd \
-		$(VERILOG__vl_types) \
-		$(MICRON__ddr3) \
-		$(WORK__arty) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \

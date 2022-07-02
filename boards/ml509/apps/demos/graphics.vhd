@@ -173,17 +173,18 @@ architecture graphics of ml509 is
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 
-	constant SCLK_PHASES  : natural := 4;
-	constant SCLK_EDGES   : natural := 2;
-	constant DATA_PHASES  : natural := 2;
-	constant DATA_EDGES   : natural := 2;
-	constant CMMD_GEAR    : natural := 1;
-	constant BANK_SIZE    : natural := 2;
-	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := ddr2_d'length;
-	constant DATA_GEAR    : natural := 2;
-	constant BYTE_SIZE    : natural := 8;
-	constant coln_size     : natural := 10;
+	constant sclk_phases  : natural := 4;
+	constant sclk_edges   : natural := 2;
+	constant data_phases  : natural := 2;
+	constant data_edges   : natural := 2;
+	constant data_gear    : natural := 2;
+	constant cmmd_gear    : natural := 1;
+
+	constant bank_size     : natural := ddr2_ba'length;
+	constant addr_size     : natural := ddr2_a'length;
+	constant coln_size    : natural := 10;
+	constant word_size    : natural := ddr2_d'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
 
 	signal si_frm  : std_logic;
 	signal si_irdy : std_logic;
@@ -515,8 +516,8 @@ begin
 	generic map (
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
-		fpga         => virtex7,
-		mark         => M2G125,
+		fpga         => virtex5,
+		mark         => M3,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,
@@ -548,16 +549,16 @@ begin
 		sout_end      => si_end,
 		sout_data     => si_data,
 
-		video_clk    => video_clk,
+		video_clk     => video_clk,
 		video_shift_clk => video_shf_clk,
-		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb,
+		video_pixel   => video_pixel,
+		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks(0)  => ctlr_clk,
+		ctlr_clks     => ddrsys_clks(0 to 2-1),
 		ctlr_rst      => ddrsys_rst,
 		ctlr_rtt      => b"0_11",
 		ctlr_bl       => "001",
-		ctlr_cl      => ddr_param.cl,
+		ctlr_cl       => ddr_param.cl,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
 		ctlrphy_rlcal => ctlrphy_rlcal,
