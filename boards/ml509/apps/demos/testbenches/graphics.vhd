@@ -347,7 +347,7 @@ begin
 			Cas_n   => cas_n,
 			We_n    => we_n,
 			Ba      => ba(2-1 downto 0),
-			Addr    => addr,
+			Addr    => addr(13-1 downto 0),
 			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
 			Dqs     => dqs(2*(i+1)-1 downto 2*i),
 			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),

@@ -29,6 +29,9 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity ddrdqphy is
 	generic (
 		taps       : natural;
@@ -68,8 +71,8 @@ entity ddrdqphy is
 	constant clk0div  : natural := 0;
 	constant clk90div : natural := 1;
 	constant iodclk   : natural := 2;
-	constant clk0     : natural := 3;
-	constant clk90    : natural := 4;
+	constant clk0     : natural := setif(data_gear=2, 0, 3);
+	constant clk90    : natural := setif(data_gear=2, 0, 4);
 
 	constant rst0div  : natural := 0;
 	constant rst90div : natural := 1;
@@ -246,7 +249,7 @@ begin
 			taps    => taps)
 		port map (
 			edge     => std_logic'('1'),
-			clk      => sys_clks(iodclk),
+			clk      => iod_clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -343,7 +346,7 @@ begin
 			smp_p : process (dq)
 			begin
 				for j in dq_smp'range loop
-					dq_smp(i) <= dq(j*BYTE_SIZE+i);
+					dq_smp(j) <= dq(j*BYTE_SIZE+i);
 				end loop;
 			end process;
 
@@ -370,7 +373,7 @@ begin
 			dqi_p : process (dqii)
 			begin
 				for j in dqii'range loop
-					dq(j*BYTE_SIZE+i) <= dqii(i);
+					dq(j*BYTE_SIZE+i) <= dqii(j);
 				end loop;
 			end process;
 
@@ -420,18 +423,19 @@ begin
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
 
-		dqclk <= (0 => sys_clks(clk90), 1 => sys_clks(clk90));
 
 		process (sys_clks)
 		begin
 			case data_gear is
 			when 2 =>
+				dqclk <= (0 => sys_clks(clk90), 1 => sys_clks(clk90));
 				if data_edge then
 					clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
 				else
 					clks <= (0 => sys_clks(clk90), 1 => sys_clks(clk90));
 				end if;
 			when 4 =>
+				dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
 				if data_edge then
 					clks <= (0 => sys_clks(clk90div), 1 => not sys_clks(clk90div));
 				else
