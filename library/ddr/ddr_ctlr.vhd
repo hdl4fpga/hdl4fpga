@@ -441,7 +441,7 @@ begin
 		signal dqo    : std_logic_vector(phy_dqo'range);
 		signal dmo    : std_logic_vector(ddr_wr_dm'range);
 	begin
-		bypass <= setif(stdr=SDRAM or select_lat(ctlr_cwl, cwl_cod, cwl_tab)=0);
+		bypass <= '1' when stdr=SDRAM else '0';
 
 		wrfifo_i : entity hdl4fpga.ddr_wrfifo
 		generic map (

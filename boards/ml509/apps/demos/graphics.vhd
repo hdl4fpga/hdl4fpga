@@ -556,9 +556,10 @@ begin
 
 		ctlr_clks     => ddrsys_clks(0 to 2-1),
 		ctlr_rst      => ddrsys_rst,
+		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"0_11",
-		ctlr_bl       => "001",
-		ctlr_cl       => ddr_param.cl,
+		ctlr_bl       => "011", --"001",
+		ctlr_cl       => "101", --ddr_param.cl,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
 		ctlrphy_rlcal => ctlrphy_rlcal,
