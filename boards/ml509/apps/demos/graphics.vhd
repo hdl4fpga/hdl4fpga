@@ -53,7 +53,7 @@ architecture graphics of ml509 is
 		mode900p_ddr575MHz,
 		mode900p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr600MHz;
+	constant profile : profiles := mode900p_ddr333MHz;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -266,6 +266,9 @@ architecture graphics of ml509 is
 	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
 	constant ddr_bytes : std_logic_vector(ddr2_d'length/BYTE_SIZE-1 downto 0) := (0 => '1', 7 => '1', others => '0');
+	signal ddr_cs   : std_logic;
+	signal ddr_cke   : std_logic;
+	signal ddr_odt   : std_logic;
 	signal ddr_d    : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr_dmi  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dmo  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -318,20 +321,20 @@ begin
 		sys_rst <= not iod_rdy;
 	end block;
 
-	gtx_i : dcm_base
-	generic map  (
-		CLK_FEEDBACK   => "NONE",
-		clkin_period   => sys_per*1.0e9,
-		clkfx_multiply => 5,
-		clkfx_divide   => 4)
-	port map (
-		rst    => '0',
-		clkin  => sys_clk,
-		clkfb  => '0',
-		clkfx  => gtx_clk);
-
 	dcm_b : block
 	begin
+
+		gtx_i : dcm_base
+		generic map  (
+			CLK_FEEDBACK   => "NONE",
+			clkin_period   => sys_per*1.0e9,
+			clkfx_multiply => 5,
+			clkfx_divide   => 4)
+		port map (
+			rst    => '0',
+			clkin  => sys_clk,
+			clkfb  => '0',
+			clkfx  => gtx_clk);
 
 		ddr_b : block
 			constant clk0      : natural := 0;
@@ -349,7 +352,7 @@ begin
 					clk_feedback   => "NONE",
 					clkin_period   => sys_per*1.0e9,
 					clkfx_divide   => ddr_param.pll.dcm_div,
-					clkfx_multiply => 2*ddr_param.pll.dcm_mul,
+					clkfx_multiply => ddr_param.pll.dcm_mul,
 					dfs_frequency_mode => "HIGH")
 				port map (
 					rst    => '0',
@@ -358,7 +361,20 @@ begin
 					clkfx  => clkfx,
 					locked => locked);
 
-				dcm_rst <= not locked;
+
+				process (sys_clk, locked)
+					variable cntr : unsigned(0 to 2);
+				begin
+					if locked='0' then
+						cntr := (others => '0');
+					elsif rising_edge(sys_clk) then
+						if cntr(0)='0' then
+							cntr := cntr + 1;
+						end if;
+					end if;
+					dcm_rst <= not cntr(0);
+				end process;
+
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback       => "NONE",
@@ -372,8 +388,9 @@ begin
 					clk90  => ddr_clk90,
 					locked => ddr_locked);
    
+			ddrsys_clks(0 to 2-1) <= (0 => ddr_clk0, 1 => ddr_clk90);
 			ctlrphy_dqsi <= (others => ctlr_clk);
-			ddrsys_rst <= not ddr_locked;
+			ddrsys_rst   <= not ddr_locked;
 
 		end block;
 
@@ -514,8 +531,9 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
+		ddr_tcp      => natural(ddr_tcp*1.0e12),
 		fpga         => virtex5,
 		mark         => M3,
 		sclk_phases  => sclk_phases,
@@ -664,31 +682,28 @@ begin
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
 		ddr_clk     => ddr2_clk,
-		ddr_cke     => ddr2_cke(0),
-		ddr_cs      => ddr2_cs(0),
+		ddr_cke     => ddr_cke,
+		ddr_cs      => ddr_cs,
 		ddr_ras     => ddr2_ras,
 		ddr_cas     => ddr2_cas,
 		ddr_we      => ddr2_we,
-		ddr_b       => ddr2_ba(BANK_SIZE-1 downto 0),
-		ddr_a       => ddr2_a(ADDR_SIZE-1 downto 0),
-		ddr_odt     => ddr2_odt(0),
+		ddr_b       => ddr2_ba,
+		ddr_a       => ddr2_a,
+		ddr_odt     => ddr_odt,
 
-		ddr_dmt     => ddr_dmt(WORD_SIZE/BYTE_SIZE-1 downto 0),
-		ddr_dmi     => ddr_dmi(WORD_SIZE/BYTE_SIZE-1 downto 0),
-		ddr_dmo     => ddr_dmo(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dmt     => ddr_dmt,
+		ddr_dmi     => ddr_dmi,
+		ddr_dmo     => ddr_dmo,
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr_d(WORD_SIZE-1 downto 0),
+		ddr_dqi     => ddr_d,
 		ddr_dqt     => ddr2_dqt,
-		ddr_dqst    => ddr2_dqst(WORD_SIZE/BYTE_SIZE-1 downto 0),
-		ddr_dqsi    => ddr2_dqsi(WORD_SIZE/BYTE_SIZE-1 downto 0),
-		ddr_dqso    => ddr2_dqso(WORD_SIZE/BYTE_SIZE-1 downto 0));
+		ddr_dqst    => ddr2_dqst,
+		ddr_dqsi    => ddr2_dqsi,
+		ddr_dqso    => ddr2_dqso);
 
-	ddr2_a(14-1 downto ADDR_SIZE) <= (others => '0');
-	ddr2_ba(3-1 downto 2)  <= (others => '0');
-	ddr2_cs(1 downto 1)    <= "1";
-  	ddr2_cke(1 downto 1)   <= "0";
-	ddr2_odt(1 downto 1)   <= (others => 'Z');
-	ddr2_d(ddr2_d'left downto WORD_SIZE) <= (others => 'Z');
+	ddr2_cs  <= (others => ddr_cs);
+	ddr2_cke <= (others => ddr_cke);
+	ddr2_odt <= (others => ddr_odt);
 
 	phy_mdc  <= '0';
 	phy_mdio <= '0';

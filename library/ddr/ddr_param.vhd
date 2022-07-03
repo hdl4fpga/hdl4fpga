@@ -689,7 +689,8 @@ package body ddr_param is
 --				TMR1_REF => to_ddrlatency(tCP, mark, tREFI));
 
 		constant ddr2_timer : natural_vector := (
-				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+--				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST),
+				TMR_RST  => to_ddrlatency(tCP, mark,  tPreRST)/setif(debug, 100, 1),
 				TMR2_CKE => to_ddrlatency(tCP, mark, tXPR),
 				TMR2_MRD => ddr_latency(stdr, MRD),
 				TMR2_RPA => to_ddrlatency(tCP, mark, tRPA),

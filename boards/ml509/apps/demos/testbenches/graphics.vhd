@@ -82,7 +82,7 @@ architecture ml509_graphics of testbench is
 
 	component ml509 is
 		generic (
-			debug : boolean := false);
+			debug : boolean := true);
 		port (
 			bus_error : out std_logic_vector(2 downto 1);
 	
@@ -336,7 +336,7 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	simm_g : for i in 8/2-1 downto 0 generate
+	simm_g : for i in 0 to 0 generate
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck      => clk_p(0),
