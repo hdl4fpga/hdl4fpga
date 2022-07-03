@@ -212,6 +212,10 @@ architecture ml509_graphics of testbench is
 	signal xtal_n : std_logic := '0';
 	signal xtal_p : std_logic := '0';
 
+	signal clk_fpga   : std_logic := '0';
+	signal clk_fpga_n : std_logic := '0';
+	signal clk_fpga_p : std_logic := '0';
+
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 begin
 
@@ -221,6 +225,10 @@ begin
 	xtal   <= not xtal after 5 ns;
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
+
+	clk_fpga <= not clk_fpga after 2.5 ns;
+	clk_fpga_p <= clk_fpga;
+	clk_fpga_n <= not clk_fpga;
 
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
@@ -302,6 +310,8 @@ begin
 	generic map (
 		debug => true)
 	port map (
+		clk_fpga_p     => clk_fpga_p,
+		clk_fpga_n     => clk_fpga_n,
 		ddr2_clk_p     => clk_p,
 		ddr2_clk_n     => clk_n,
 		ddr2_cke       => cke,

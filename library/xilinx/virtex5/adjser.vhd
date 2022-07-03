@@ -55,7 +55,7 @@ begin
 			elsif acc(to_integer(dgtn))='0' then
 				cntr := cntr + 1;
 			else
-				acc  := taps xor resize(unsigned(delay), delay'length);
+				acc  := taps xor resize(unsigned(delay), acc'length);
 				if acc(to_integer(dgtn))='1' then
 					taps(to_integer(dgtn)) := delay(to_integer(dgtn));
 					cntr := (others => '0');

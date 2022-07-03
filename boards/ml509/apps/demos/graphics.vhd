@@ -238,7 +238,7 @@ architecture graphics of ml509 is
 	signal sys_clk        : std_logic;
 
 	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
-	signal ddr2_clk       : std_logic_vector(2-1 downto 0);
+	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqsi      : std_logic_vector(ddr2_dqs_p'range);
@@ -390,7 +390,7 @@ begin
    
 			ddrsys_clks(0 to 2-1) <= (0 => ddr_clk0, 1 => ddr_clk90);
 			ctlrphy_dqsi <= (others => ctlr_clk);
-			ddrsys_rst   <= not ddr_locked;
+			ddrsys_rst   <= not ddr_locked or iod_rst;
 
 		end block;
 
@@ -578,6 +578,7 @@ begin
 		ctlr_rtt      => b"0_11",
 		ctlr_bl       => "011", --"001",
 		ctlr_cl       => "101", --ddr_param.cl,
+		ctlrphy_ini   => ctlrphy_ini,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
 		ctlrphy_rlcal => ctlrphy_rlcal,
