@@ -182,7 +182,7 @@ architecture graphics of ml509 is
 
 	constant bank_size     : natural := ddr2_ba'length;
 	constant addr_size     : natural := ddr2_a'length;
-	constant coln_size    : natural := 10;
+	constant coln_size    : natural := 7;
 	constant word_size    : natural := ddr2_d'length;
 	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
 
@@ -581,8 +581,9 @@ begin
 		ctlrphy_ini   => ctlrphy_ini,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
-		ctlrphy_rlcal => ctlrphy_rlcal,
-		ctlrphy_rlseq => ctlrphy_rlseq,
+		ctlrphy_irdy  => ctlrphy_frm,
+		ctlrphy_rw    => ctlrphy_rw,
+		ctlrphy_trdy  => ctlrphy_trdy,
 		ctlrphy_rst   => ctlrphy_rst(0),
 		ctlrphy_cke   => ctlrphy_cke(0),
 		ctlrphy_cs    => ctlrphy_cs(0),
