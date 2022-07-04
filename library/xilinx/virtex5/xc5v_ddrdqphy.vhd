@@ -149,6 +149,7 @@ begin
 					when s_start =>
 						write_req <= not to_stdulogic(to_bit(write_rdy));
 						read_brst <= '0';
+						state := s_write;
 					when s_write =>
 						if (to_bit(write_req) xor to_bit(write_rdy))='0' then
 							read_req <= not to_stdulogic(to_bit(read_rdy));
@@ -243,7 +244,6 @@ begin
 	dqsi_b : block
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
-		signal ddqsi    : std_logic;
 		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto      : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
@@ -253,7 +253,7 @@ begin
 		generic map (
 --			dtaps   => (taps+7)/8,
 --			dtaps   => (taps+3)/4,
-			taps    => taps)
+			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
 			edge     => std_logic'('1'),
 			clk      => iod_clk,
@@ -265,14 +265,14 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
+		dqsi <= ddr_dqsi;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			clk     => iod_clk,
 			rst     => iod_rst,
 			delay   => delay,
-			idatain => ddqsi,
+			idatain => dqsi,
 			dataout => dqsi_buf);
-		dqsi  <= dqsi_buf;
 
 		process (sys_clks)
 		begin
@@ -297,7 +297,7 @@ begin
 		port map (
 			rst  => imdr_rst,
 			clk  => imdr_clk,
-			d(0) => dqsi,
+			d(0) => dqsi_buf,
 			q    => smp);
 
 		tp_dqsdly <= delay;

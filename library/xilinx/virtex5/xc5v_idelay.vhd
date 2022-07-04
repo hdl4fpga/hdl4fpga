@@ -55,6 +55,8 @@ begin
 		inc   => inc);
 
 	idelay_i : idelay
+	generic map (
+		IOBDELAY_TYPE => "VARIABLE")
 	port map (
 		c    => clk,
 		rst  => rst,
