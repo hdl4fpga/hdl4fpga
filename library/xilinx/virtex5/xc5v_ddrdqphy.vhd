@@ -46,6 +46,8 @@ entity ddrdqphy is
 		sys_rlrdy  : buffer std_logic;
 		read_rdy   : in  std_logic;
 		read_req   : buffer std_logic;
+		write_rdy  : in  std_logic;
+		write_req  : buffer std_logic;
 		read_brst  : out std_logic;
 		sys_dmt    : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
 		sys_dmi    : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
@@ -131,8 +133,8 @@ begin
 	rl_b : block
 	begin
 
-		process (sys_clks(0))
-			type states is (sync_start, sync_dqs, sync_dqi, sync_sto);
+		process (pause_req, sys_clks(0))
+			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
@@ -141,22 +143,26 @@ begin
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(to_bit(adjsto_rdy));
 					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state := sync_start;
+					state := s_start;
 				else
 					case state is
-					when sync_start =>
-						read_req <= not read_rdy;
-						read_brst <= '1';
-						if sys_sti(0)='1' then
-							adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-							state := sync_dqs;
+					when s_start =>
+						write_req <= not to_stdulogic(to_bit(write_rdy));
+					when s_write =>
+						if (to_bit(write_req) xor to_bit(write_rdy))='0' then
+							read_req <= not to_stdulogic(to_bit(read_rdy));
+							read_brst <= '1';
+							if sys_sti(0)='1' then
+								adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
+								state := s_dqs;
+							end if;
 						end if;
-					when sync_dqs =>
+					when s_dqs =>
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
 							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
-							state := sync_dqi;
+							state := s_dqi;
 						end if;
-					when sync_dqi =>
+					when s_dqi =>
 						aux := '0';
 						for i in adjdqi_rdy'range loop
 							aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
@@ -165,13 +171,13 @@ begin
 							read_brst <= '0';
 							if to_bit(read_req xor read_rdy)='0' then
 								adjsto_req <= not adjsto_rdy;
-								state := sync_sto;
+								state := s_sto;
 							end if;
 						end if;
-					when sync_sto =>
+					when s_sto =>
 						if (adjsto_req xor adjsto_rdy)='0' then
 							sys_rlrdy <= sys_rlreq;
-							state := sync_start;
+							state := s_start;
 						end if;
 					end case;
 				end if;

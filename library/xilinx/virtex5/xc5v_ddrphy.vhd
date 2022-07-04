@@ -272,9 +272,15 @@ architecture virtex5 of xc5v_ddrphy is
 
 	signal rl_req     : std_logic_vector(ddr_dqsi'range);
 	signal rl_rdy     : std_logic_vector(rl_req'range);
-	signal read_req   : std_logic_vector(ddr_dqi'range);
-	signal read_rdy   : std_logic_vector(read_req'range);
-	signal read_brst  : std_logic_vector(read_req'range);
+	signal wr_req     : std_logic_vector(ddr_dqsi'range);
+	signal wr_rdy     : std_logic_vector(rl_req'range);
+	signal rd_req     : std_logic_vector(ddr_dqi'range);
+	signal rd_rdy     : std_logic_vector(rd_req'range);
+	signal read_req   : bit;
+	signal read_rdy   : bit;
+	signal read_brst  : std_logic_vector(rd_req'range);
+	signal write_req  : bit;
+	signal write_rdy  : bit;
 	signal ddrphy_b   : std_logic_vector(sys_b'range);
 	signal ddrphy_a   : std_logic_vector(sys_a'range);
 
@@ -358,7 +364,7 @@ begin
 			end if;
 		end process;
 
-		readcycle_p : process (sys_clks(0), read_rdy)
+		readcycle_p : process (sys_clks(0), rd_rdy)
 			type states is (s_idle, s_start, s_stop);
 			variable state : states;
 			variable z     : std_logic;
@@ -369,7 +375,7 @@ begin
 					phy_frm  <= '1';
 					leveling <= '1';
 					if ddr_act='1' then
-						if read_brst=(read_brst'range  => '1') then
+						if read_brst=(read_brst'range  => '0') then
 							phy_frm <= '0';
 							state   := s_stop;
 						end if;
@@ -378,7 +384,8 @@ begin
 					if ddr_idle='1' then
 						phy_frm  <= '0';
 						leveling <= '0';
-						read_rdy <= read_req;
+						rd_rdy   <= rd_req;
+						wr_rdy   <= wr_req;
 						state    := s_idle;
 					end if;
 				when s_idle =>
@@ -387,18 +394,36 @@ begin
 					if z='1' then
 						phy_frm  <= '1';
 						leveling <= '1';
-						state := s_start;
+						state    := s_start;
 					end if;
 				end case;
-				phy_rw <= '1';
 
-				z := '0';
-				for i in read_req'reverse_range loop
-					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
-						z := '1';
+				if (read_req xor read_rdy)='0' then
+					if to_bitvector(rd_req) = not to_bitvector(rd_rdy) then
+						read_req <= not read_rdy;
 					end if;
-				end loop;
+				elsif to_bitvector(rd_req) = to_bitvector(rd_rdy) then
+					read_rdy <= not read_req;
+				end if;
 
+				if (write_req xor write_rdy)='0' then
+					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
+						write_req <= not write_rdy;
+					end if;
+				elsif to_bitvector(wr_req) = to_bitvector(wr_rdy) then
+					write_rdy <= not write_req;
+				end if;
+
+				if (read_req xor read_rdy)='1' then
+					phy_rw <= '1';
+					z      := '1';
+				elsif (write_req xor write_rdy)='1' then
+					phy_rw <= '0';
+					z      := '1';
+				else
+					phy_rw <= '1';
+					z      := '0';
+				end if;
 			end if;
 		end process;
 
@@ -441,9 +466,11 @@ begin
 			iod_clk   => iod_clk,
 			sys_rlreq => rl_req(i),
 			sys_rlrdy => rl_rdy(i),
-			read_req  => read_req(i),
-			read_rdy  => read_rdy(i),
+			read_req  => rd_req(i),
+			read_rdy  => rd_rdy(i),
 			read_brst => read_brst(i),
+			write_req => wr_req(i),
+			write_rdy => wr_rdy(i),
 			sys_clks  => sys_clks,
 
 			sys_sti   => ssti(i),
