@@ -367,7 +367,6 @@ begin
 		readcycle_p : process (sys_clks(0), rd_rdy)
 			type states is (s_idle, s_start, s_stop);
 			variable state : states;
-			variable z     : std_logic;
 		begin
 			if rising_edge(sys_clks(0)) then
 				case state is
@@ -382,17 +381,25 @@ begin
 					end if;
 				when s_stop =>
 					if ddr_idle='1' then
-						phy_frm  <= '0';
-						leveling <= '0';
-						rd_rdy   <= rd_req;
-						wr_rdy   <= wr_req;
+						phy_frm   <= '0';
+						leveling  <= '0';
+						rd_rdy    <= rd_req;
+						wr_rdy    <= wr_req;
+						read_rdy  <= read_req;
+						write_rdy <= write_req;
 						state    := s_idle;
 					end if;
 				when s_idle =>
 					leveling <= '0';
 					phy_frm  <= '0';
-					if z='1' then
+					if (read_req xor read_rdy)='1' then
 						phy_frm  <= '1';
+						phy_rw   <= '1';
+						leveling <= '1';
+						state    := s_start;
+					elsif (write_req xor write_rdy)='1' then
+						phy_frm  <= '1';
+						phy_rw   <= '0';
 						leveling <= '1';
 						state    := s_start;
 					end if;
@@ -402,28 +409,14 @@ begin
 					if to_bitvector(rd_req) = not to_bitvector(rd_rdy) then
 						read_req <= not read_rdy;
 					end if;
-				elsif to_bitvector(rd_req) = to_bitvector(rd_rdy) then
-					read_rdy <= not read_req;
 				end if;
 
 				if (write_req xor write_rdy)='0' then
 					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
 						write_req <= not write_rdy;
 					end if;
-				elsif to_bitvector(wr_req) = to_bitvector(wr_rdy) then
-					write_rdy <= not write_req;
 				end if;
 
-				if (read_req xor read_rdy)='1' then
-					phy_rw <= '1';
-					z      := '1';
-				elsif (write_req xor write_rdy)='1' then
-					phy_rw <= '0';
-					z      := '1';
-				else
-					phy_rw <= '1';
-					z      := '0';
-				end if;
 			end if;
 		end process;
 
