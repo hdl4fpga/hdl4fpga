@@ -148,6 +148,7 @@ begin
 					case state is
 					when s_start =>
 						write_req <= not to_stdulogic(to_bit(write_rdy));
+						read_brst <= '0';
 					when s_write =>
 						if (to_bit(write_req) xor to_bit(write_rdy))='0' then
 							read_req <= not to_stdulogic(to_bit(read_rdy));
@@ -197,7 +198,7 @@ begin
 							state := s_start;
 					end case;
 				else
-					state       := s_start;
+					state := s_start;
 				end if;
 			end if;
 		end process;

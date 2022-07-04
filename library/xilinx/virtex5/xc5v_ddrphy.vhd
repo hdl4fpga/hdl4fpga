@@ -274,7 +274,7 @@ architecture virtex5 of xc5v_ddrphy is
 	signal rl_rdy     : std_logic_vector(rl_req'range);
 	signal wr_req     : std_logic_vector(ddr_dqsi'range);
 	signal wr_rdy     : std_logic_vector(rl_req'range);
-	signal rd_req     : std_logic_vector(ddr_dqi'range);
+	signal rd_req     : std_logic_vector(ddr_dqsi'range);
 	signal rd_rdy     : std_logic_vector(rd_req'range);
 	signal read_req   : bit;
 	signal read_rdy   : bit;
@@ -294,43 +294,6 @@ begin
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
 	end generate;
-
-	ddrbaphy_i : entity hdl4fpga.xc5v_ddrbaphy
-	generic map (
-		GEAR      => CMMD_GEAR,
-		bank_size => bank_size,
-		addr_size => addr_size)
-	port map (
-		sys_clks => sys_clks,
-
-		phy_rst => iod_rst,
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => sys_b,
-		sys_a   => sys_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
-
-		ddr_cke => ddr_cke,
-		ddr_odt => ddr_odt,
-		ddr_cs  => ddr_cs,
-		ddr_ras => ddr_ras,
-		ddr_cas => ddr_cas,
-		ddr_we  => ddr_we,
-		ddr_b   => ddr_b,
-		ddr_a   => ddr_a);
-
-	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
-	ssti  <= to_blinevector(sys_sti);
-	sdmt  <= to_blinevector(not sys_dmt);
-	sdqt  <= to_blinevector(not sys_dqt);
-	sdqi  <= shuffle_dlinevector(sys_dqi);
-	ddqi  <= to_bytevector(ddr_dqi);
-	sdqsi <= to_blinevector(sys_dqsi);
-	sdqst <= to_blinevector(sys_dqst);
 
 	read_leveling_l_b : block
 		signal leveling : std_logic;
@@ -367,6 +330,7 @@ begin
 		readcycle_p : process (sys_clks(0), rd_rdy)
 			type states is (s_idle, s_start, s_stop);
 			variable state : states;
+			variable burst : std_logic;
 		begin
 			if rising_edge(sys_clks(0)) then
 				case state is
@@ -374,7 +338,7 @@ begin
 					phy_frm  <= '1';
 					leveling <= '1';
 					if ddr_act='1' then
-						if read_brst=(read_brst'range  => '0') then
+						if burst='0' then
 							phy_frm <= '0';
 							state   := s_stop;
 						end if;
@@ -404,6 +368,12 @@ begin
 						state    := s_start;
 					end if;
 				end case;
+
+				if read_brst=(read_brst'range  => '0') then
+					burst := '0';
+				else
+					burst := '1';
+				end if;
 
 				if (read_req xor read_rdy)='0' then
 					if to_bitvector(rd_req) = not to_bitvector(rd_rdy) then
@@ -443,6 +413,43 @@ begin
 		end process;
 
 	end block;
+
+	ddrbaphy_i : entity hdl4fpga.xc5v_ddrbaphy
+	generic map (
+		GEAR      => CMMD_GEAR,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		sys_clks => sys_clks,
+
+		phy_rst => iod_rst,
+		sys_rst => sys_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => ddrphy_b,
+		sys_a   => ddrphy_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
+
+		ddr_cke => ddr_cke,
+		ddr_odt => ddr_odt,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_b,
+		ddr_a   => ddr_a);
+
+	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
+	ssti  <= to_blinevector(sys_sti);
+	sdmt  <= to_blinevector(not sys_dmt);
+	sdqt  <= to_blinevector(not sys_dqt);
+	sdqi  <= shuffle_dlinevector(sys_dqi);
+	ddqi  <= to_bytevector(ddr_dqi);
+	sdqsi <= to_blinevector(sys_dqsi);
+	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		signal dqso : std_logic_vector(0 to 1);

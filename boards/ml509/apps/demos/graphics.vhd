@@ -578,6 +578,7 @@ begin
 		ctlr_rtt      => b"0_11",
 		ctlr_bl       => "011", --"001",
 		ctlr_cl       => "101", --ddr_param.cl,
+		ctlr_cmd      => ctlrphy_cmd,
 		ctlrphy_ini   => ctlrphy_ini,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
@@ -672,8 +673,8 @@ begin
 		sys_a       => ctlrphy_a,
 
 		sys_dqst    => ctlrphy_dqst,
-		sys_dqso    => ctlrphy_dqso,
-		sys_dqsi    => ctlrphy_dqsi,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dqso    => ctlrphy_dqsi,
 		sys_dmi     => ctlrphy_dmo,
 		sys_dmt     => ctlrphy_dmt,
 		sys_dmo     => ctlrphy_dmi,
