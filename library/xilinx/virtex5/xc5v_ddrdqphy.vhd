@@ -181,6 +181,7 @@ begin
 							sys_rlrdy <= sys_rlreq;
 							state := s_start;
 						end if;
+						read_brst <= '0';
 					end case;
 				end if;
 			end if;

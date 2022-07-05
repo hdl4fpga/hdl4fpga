@@ -328,7 +328,7 @@ begin
 		end process;
 
 		readcycle_p : process (sys_clks(0), rd_rdy)
-			type states is (s_idle, s_start, s_stop);
+			type states is (s_idle, s_start, s_run);
 			variable state : states;
 			variable burst : std_logic;
 		begin
@@ -340,18 +340,20 @@ begin
 					if ddr_act='1' then
 						if burst='0' then
 							phy_frm <= '0';
-							state   := s_stop;
 						end if;
+						state   := s_run;
 					end if;
-				when s_stop =>
+				when s_run =>
 					if ddr_idle='1' then
-						phy_frm   <= '0';
 						leveling  <= '0';
 						rd_rdy    <= rd_req;
 						wr_rdy    <= wr_req;
 						read_rdy  <= read_req;
 						write_rdy <= write_req;
 						state    := s_idle;
+					end if;
+					if burst='0' then
+						phy_frm <= '0';
 					end if;
 				when s_idle =>
 					leveling <= '0';
