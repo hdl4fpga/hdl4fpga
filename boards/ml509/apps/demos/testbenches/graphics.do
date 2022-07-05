@@ -42,8 +42,14 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_brst
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/burst
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlreq
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlrdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {10347100 ps} 0} {{Cursor 2} {14211432 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1710723 ps} 0} {{Cursor 2} {14393788 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 251
 configure wave -valuecolwidth 101
@@ -59,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {10024909 ps} {20525005 ps}
+WaveRestoreZoom {14813707 ps} {15469957 ps}
