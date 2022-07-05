@@ -60,7 +60,7 @@ begin
 					cntr := cntr + 1;
 					ce   <= '1';
 				else
-					taps := taps xor acc;
+					taps := taps xor dgtn;
 					cntr := (0 => '1', others => '0');
 					dgtn := rotate_left(dgtn, 1);
 					ce   <= '1';

@@ -91,8 +91,8 @@ architecture virtex5 of ddrdqphy is
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
-	signal adjsto_req : std_logic;
-	signal adjsto_rdy : std_logic;
+	signal adjsto_req : bit;
+	signal adjsto_rdy : bit;
 	signal adjbrt_req : std_logic;
 	signal adjbrt_rdy : std_logic;
 
@@ -141,8 +141,8 @@ begin
 			if rising_edge(sys_clks(0)) then
 				if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
-					adjdqi_req <= to_stdulogic(to_bit(adjsto_rdy));
-					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
+					adjdqi_req <= to_stdulogic(adjsto_rdy);
+					adjsto_req <= adjsto_rdy;
 					state := s_start;
 				else
 					case state is
@@ -161,7 +161,7 @@ begin
 						end if;
 					when s_dqs =>
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
-							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
+							adjdqi_req <= not to_stdulogic(adjsto_req);
 							state := s_dqi;
 						end if;
 					when s_dqi =>
@@ -171,7 +171,8 @@ begin
 						end loop;
 						if aux='0' then
 							read_brst <= '0';
-							if to_bit(read_req xor read_rdy)='0' then
+							if (to_bit(read_req) xor to_bit(read_rdy))='0' then
+								read_req   <= not read_rdy;
 								adjsto_req <= not adjsto_rdy;
 								state := s_sto;
 							end if;
@@ -180,6 +181,8 @@ begin
 						if (adjsto_req xor adjsto_rdy)='0' then
 							sys_rlrdy <= sys_rlreq;
 							state := s_start;
+						elsif (read_req xor read_rdy)='0' then
+								read_req   <= not read_rdy;
 						end if;
 						read_brst <= '0';
 					end case;
@@ -187,7 +190,7 @@ begin
 			end if;
 		end process;
 
-		process (sys_clks(clk0div))
+		process (adjsto_req,sys_clks(clk0div))
 			type states is (s_start, s_adj);
 			variable state : states;
 		begin
@@ -197,7 +200,9 @@ begin
 					when s_start =>
 						state := s_adj;
 					when s_adj =>
+						if (read_req xor read_rdy)='0' then
 							state := s_start;
+						end if;
 					end case;
 				else
 					state := s_start;
@@ -266,7 +271,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		dqsi <= transport ddr_dqsi after 2 ns;
+		dqsi <= transport ddr_dqsi after dqs_linedelay;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			clk     => iod_clk,
