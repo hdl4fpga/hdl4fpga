@@ -219,8 +219,8 @@ begin
 	end block;
 
 	pause_req <= rlpause_req;
-	process (iod_clk)
-		variable cntr : unsigned(0 to 2**unsigned_num_bits(taps));
+	process (iod_clk, pause_rdy)
+		variable cntr : unsigned(0 to unsigned_num_bits(63));
 	begin
 		if rising_edge(iod_clk) then
 			if (pause_rdy xor pause_req)='0' then

@@ -32,9 +32,20 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidela
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/idelay_i/C
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/idelay_i/CE
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/idelay_i/INC
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/idelay_i/RST
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/idelay_i/prcs_refclk/TapCount_var
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjdqs_e/delay
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/taps
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/line__42/taps
+add wave -noupdate -radix unsigned /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(0)
+add wave -noupdate -radix unsigned -childformat {{/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(0) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(1) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(2) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(3) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(4) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(5) -radix unsigned} {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(6) -radix unsigned}} -subitemconfig {/testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(0) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(1) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(2) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(3) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(4) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(5) {-height 29 -radix unsigned} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr(6) {-height 29 -radix unsigned}} /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/line__222/cntr
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/ce
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/inc
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/line__42/cntr
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/line__42/dgtn
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/delay
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/dqsidelay_i/adjser_i/line__42/taps
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {4939600 ps} 0} {{Cursor 2} {711220 ps} 0}
+WaveRestoreCursors {{Cursor 1} {4976748 ps} 0} {{Cursor 2} {711220 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 215
 configure wave -valuecolwidth 163
@@ -50,4 +61,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {4936052 ps} {4991150 ps}
+WaveRestoreZoom {0 ps} {1886848 ps}

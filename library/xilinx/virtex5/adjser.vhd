@@ -40,31 +40,31 @@ use hdl4fpga.std.all;
 architecture beh of adjser is
 begin
 	process (clk)
-		variable dgtn : unsigned(unsigned_num_bits(delay'length)-1 downto 0);
-		variable taps : unsigned(2**dgtn'length-1 downto 0);
-		variable acc  : unsigned(taps'range);
-		variable cntr : unsigned(delay'length-1 downto 0);
+		variable dgtn : unsigned(delay'length-1 downto 0);
+		variable taps : unsigned(dgtn'range);
+		variable acc  : unsigned(dgtn'range);
+		variable cntr : unsigned(dgtn'range);
 	begin
 		if rising_edge(clk) then
 			acc := (others => '1');
 			acc(cntr'range) := cntr;
 			if rst='1' then
 				taps := (others => '0');
-				dgtn := (others => '0');
+				dgtn := ('1', others => '0');
 				cntr := (others => '1');
-			elsif acc(to_integer(dgtn))='0' then
+			elsif (dgtn and acc)/=(acc'range => '0') then
 				cntr := cntr + 1;
 			else
 				acc  := taps xor resize(unsigned(delay), acc'length);
 				if acc(to_integer(dgtn))='1' then
 					taps(to_integer(dgtn)) := delay(to_integer(dgtn));
 					cntr := (others => '0');
-					dgtn := dgtn + 1;
 				end if;
+				dgtn := dgtn sll 1;
 			end if;
-			ce  <= not cntr(to_integer(dgtn));
+			ce  <= setif((dgtn and acc)/=(acc'range => '0'));
 			acc := resize(unsigned(delay), acc'length);
-			inc <= acc(to_integer(dgtn));
+			inc <= setif((dgtn and acc)/=(acc'range => '0'));
 		end if;
 	end process;
 end;
