@@ -26,7 +26,7 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -644,7 +644,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.xc5v_ddrphy
 	generic map (
-		taps => 0,
+		taps        => natural(floor(ddr_tcp*(64.0*200.0e6)))-1,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,
 		DATA_GEAR   => DATA_GEAR,
@@ -766,7 +766,6 @@ begin
 		end generate;
 
 	end block;
-
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';

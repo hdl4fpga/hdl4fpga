@@ -265,7 +265,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		dqsi <= ddr_dqsi;
+		dqsi <= transport ddr_dqsi after 2 ns;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			clk     => iod_clk,

@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adjser is
+	generic (
+		tap_value : natural := 0);
 	port (
 		clk   : in  std_logic;
 		rst   : in  std_logic;
@@ -40,31 +42,35 @@ use hdl4fpga.std.all;
 architecture beh of adjser is
 begin
 	process (clk)
-		variable dgtn : unsigned(delay'length-1 downto 0);
-		variable taps : unsigned(dgtn'range);
-		variable acc  : unsigned(dgtn'range);
-		variable cntr : unsigned(dgtn'range);
+		variable taps : unsigned(delay'length-1 downto 0);
+		variable cntr : unsigned(taps'range);
+		variable dgtn : unsigned(taps'range);
+		variable acc  : unsigned(taps'range);
 	begin
 		if rising_edge(clk) then
-			acc := (others => '1');
-			acc(cntr'range) := cntr;
+			acc := (unsigned(delay) xor taps) and dgtn;
+			inc <= setif((acc and taps)=(delay'range => '0'));
 			if rst='1' then
-				taps := (others => '0');
-				dgtn := ('1', others => '0');
-				cntr := (others => '1');
-			elsif (dgtn and acc)/=(acc'range => '0') then
-				cntr := cntr + 1;
-			else
-				acc  := taps xor resize(unsigned(delay), acc'length);
-				if acc(to_integer(dgtn))='1' then
-					taps(to_integer(dgtn)) := delay(to_integer(dgtn));
-					cntr := (others => '0');
+				taps := to_unsigned(tap_value, delay'length);
+				dgtn := (0 => '1', others => '0');
+				cntr := (0 => '1', others => '0');
+				ce   <= '0';
+			elsif acc/=(delay'range => '0') then
+				if (acc and cntr)=(delay'range => '0') then
+					cntr := cntr + 1;
+					ce   <= '1';
+				else
+					taps := taps xor acc;
+					cntr := (0 => '1', others => '0');
+					dgtn := rotate_left(dgtn, 1);
+					ce   <= '1';
 				end if;
-				dgtn := dgtn sll 1;
+			else
+				taps := taps xor acc;
+				cntr := (0 => '1', others => '0');
+				dgtn := rotate_left(dgtn, 1);
+				ce   <= '0';
 			end if;
-			ce  <= setif((dgtn and acc)/=(acc'range => '0'));
-			acc := resize(unsigned(delay), acc'length);
-			inc <= setif((dgtn and acc)/=(acc'range => '0'));
 		end if;
 	end process;
 end;

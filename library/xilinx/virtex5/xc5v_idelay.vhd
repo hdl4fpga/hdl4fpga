@@ -43,20 +43,25 @@ architecture def of xc5v_idelay is
 
 	signal ce    : std_logic;
 	signal inc   : std_logic;
+	signal del   : std_logic_vector(delay'range);
 	
 begin
 
+	del <= to_stdlogicvector(to_bitvector(delay));
 	adjser_i : entity hdl4fpga.adjser
+--	generic map (
+--		tap_value => 63)
 	port map (
 		clk   => clk,
 		rst   => rst,
-		delay => delay,
+		delay => del,
 		ce    => ce,
 		inc   => inc);
 
 	idelay_i : idelay
-	generic map (
-		IOBDELAY_TYPE => "VARIABLE")
+--	generic map (
+--		IOBDELAY_VALUE => 63,
+--		IOBDELAY_TYPE => "VARIABLE")
 	port map (
 		c    => clk,
 		rst  => rst,
