@@ -262,6 +262,7 @@ architecture virtex5 of xc5v_ddrphy is
 	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal dsto : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ssto : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
@@ -453,8 +454,7 @@ begin
 	sdqsi <= to_blinevector(sys_dqsi);
 	sdqst <= to_blinevector(sys_dqst);
 
-	byte_g : for i in word_size/byte_size-1 downto 0 generate
-		signal dqso : std_logic_vector(0 to 1);
+	byte_g : for i in ddr_dqsi'range  generate
 	begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
@@ -474,7 +474,7 @@ begin
 			write_req => wr_req(i),
 			write_rdy => wr_rdy(i),
 			sys_clks  => sys_clks,
-
+			sys_sto   => ssto(i),
 			sys_sti   => ssti(i),
 			sys_dmt   => sdmt(i),
 			sys_dmi   => sdmi(i),
@@ -499,22 +499,9 @@ begin
 			ddr_dqso  => ddr_dqso(i));
 
 
---	attribute keep : string;
---	attribute keep of sys_dqso : signal is "TRUE";
---	attribute keep of ddr_dqsi : signal is "TRUE";
---		dqs_delayed_e : entity hdl4fpga.pgm_delay
---		generic map(
---			n => gate_delay)
---		port map (
---			xi  => ddr_dqsi(i),
---			x_p => dqso(0),
---			x_n => dqso(1));
---		sys_dqso(data_gear*i+1) <= dqso(0) after 1 ns;
---		sys_dqso(data_gear*i+0) <= dqso(1) after 1 ns;
-
-		sys_dqso(data_gear*i+1) <= ddr_dqsi(i);
-		sys_dqso(data_gear*i+0) <= ddr_dqsi(i);
+		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
 	end generate;
+	sys_dqso <= (others => sys_clks(0));
 
 --	process(ddr_dmi, ddr_sti)
 --	begin

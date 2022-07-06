@@ -238,8 +238,6 @@ begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
---			dtaps   => (taps+7)/8,
---			dtaps   => (taps+3)/4,
 			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
 			edge     => std_logic'('1'),
@@ -265,7 +263,7 @@ begin
 		begin
 			case DATA_GEAR is
 			when 2 =>
-				imdr_clk(0 to 2-1) <= (0 => sys_clks(0), 1 => sys_clks(0));
+				imdr_clk(0 to 2-1) <= (0 => sys_clks(clk0), 1 => sys_clks(clk0));
 			when 4 =>
 				imdr_clk <= (
 					0 => sys_clks(clk0div),
@@ -311,20 +309,21 @@ begin
 			sys_rdy  => adjbrt_rdy);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
-		process (sys_clks(clk90div))
-			variable q : std_logic;
-		begin
-			if rising_edge(sys_clks(clk90div)) then
-				if (not dqspre and dqs180)='1' then
+--		process (sys_clks(clk90div))
+--			variable q : std_logic;
+--		begin
+--			if rising_edge(sys_clks(clk90div)) then
+--				if (not dqspre and dqs180)='1' then
+--					sys_sto <= (others => sto);
+--				elsif (not dqspre and not dqs180)='1' then
+--					sys_sto <= (others => sto);
+--				else
+--					sys_sto <= (others => q);
+--				end if;
+--				q := sto;
+--			end if;
+--		end process;
 					sys_sto <= (others => sto);
-				elsif (not dqspre and not dqs180)='1' then
-					sys_sto <= (others => sto);
-				else
-					sys_sto <= (others => q);
-				end if;
-				q := sto;
-			end if;
-		end process;
 
 	end block;
 
@@ -348,8 +347,6 @@ begin
 
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
---				dtaps    => (taps+7)/8,
---				dtaps    => (taps+3)/4,
 				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),
@@ -366,12 +363,9 @@ begin
 			end generate;
 
 			ddqi <= transport ddr_dqi(i) after dqi_linedelay;
-			dqi_p : process (dqii)
-			begin
-				for j in dqii'range loop
-					dq(j*BYTE_SIZE+i) <= dqii(j);
-				end loop;
-			end process;
+			dqi_p : for j in dqii'range generate
+				dq(j*BYTE_SIZE+i) <= dqii(j);
+			end generate;
 
 			dqi_i : entity hdl4fpga.xc5v_idelay
 			port map(
@@ -581,4 +575,5 @@ begin
 			q(0) => ddr_dqso);
 
 	end block;
+	sys_dqo <= dq;
 end;
