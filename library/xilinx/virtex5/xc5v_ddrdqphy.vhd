@@ -74,7 +74,7 @@ entity ddrdqphy is
 	constant clk90div : natural := 1;
 	constant iodclk   : natural := 2;
 	constant clk0     : natural := setif(data_gear=2, 0, 3);
-	constant clk90    : natural := setif(data_gear=2, 0, 4);
+	constant clk90    : natural := setif(data_gear=2, 1, 4);
 
 	constant rst0div  : natural := 0;
 	constant rst90div : natural := 1;
