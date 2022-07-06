@@ -125,7 +125,7 @@ architecture virtex5 of ddrdqphy is
 	signal pause_req   : bit;
 	signal pause_rdy   : bit;
 
-	constant dqs_linedelay : time := 3 ns;
+	constant dqs_linedelay : time := 7 ns;
 	constant dqi_linedelay : time := 0 ns; --1.35 ns;
 
 begin
@@ -178,38 +178,19 @@ begin
 							end if;
 						end if;
 					when s_sto =>
-						if (adjsto_req xor adjsto_rdy)='0' then
-							sys_rlrdy <= sys_rlreq;
-							state := s_start;
-						elsif (read_req xor read_rdy)='0' then
-								read_req   <= not read_rdy;
+						if (read_req xor read_rdy)='0' then
+							if (adjsto_req xor adjsto_rdy)='0' then
+								sys_rlrdy <= sys_rlreq;
+								state := s_start;
+							else
+								read_req <= not read_rdy;
+							end if;
 						end if;
 						read_brst <= '0';
 					end case;
 				end if;
 			end if;
 		end process;
-
-		process (adjsto_req,sys_clks(clk0div))
-			type states is (s_start, s_adj);
-			variable state : states;
-		begin
-			if rising_edge(sys_clks(clk0div)) then
-				if (adjsto_req xor adjsto_rdy)='1' then
-					case state is
-					when s_start =>
-						state := s_adj;
-					when s_adj =>
-						if (read_req xor read_rdy)='0' then
-							state := s_start;
-						end if;
-					end case;
-				else
-					state := s_start;
-				end if;
-			end if;
-		end process;
-
 
 		rlpause_req <= to_bit(dqipau_req) xor to_bit(dqspau_req);
 		process (iod_clk)
