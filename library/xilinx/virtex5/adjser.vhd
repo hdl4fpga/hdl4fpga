@@ -32,7 +32,7 @@ entity adjser is
 		clk   : in  std_logic;
 		rst   : in  std_logic;
 		delay : in std_logic_vector;
-		ce    : out std_logic;
+		ce    : buffer std_logic;
 		inc   : out std_logic);
 end;
 
@@ -49,25 +49,26 @@ begin
 	begin
 		if rising_edge(clk) then
 			acc := (unsigned(delay) xor taps) and dgtn;
-			inc <= setif((acc and taps)=(delay'range => '0'));
 			if rst='1' then
 				taps := to_unsigned(tap_value, delay'length);
 				dgtn := (0 => '1', others => '0');
-				cntr := (0 => '1', others => '0');
+				cntr := (others => '1');
 				ce   <= '0';
+			elsif (rotate_right(dgtn,1) and cntr)=(delay'range => '0') then
+				cntr := cntr + 1;
+				ce   <= '1';
 			elsif acc/=(delay'range => '0') then
-				if (acc and cntr)=(delay'range => '0') then
-					cntr := cntr + 1;
-					ce   <= '1';
+				if (taps and dgtn)=(delay'range => '0') then
+					inc <= '1';
 				else
-					taps := taps xor dgtn;
-					cntr := (0 => '1', others => '0');
-					dgtn := rotate_left(dgtn, 1);
-					ce   <= '1';
+					inc <= '0';
 				end if;
+				taps := taps xor dgtn;
+				cntr := to_unsigned(1, cntr'length);
+				dgtn := rotate_left(dgtn, 1);
+				ce   <= '1';
 			else
-				taps := taps xor acc;
-				cntr := (0 => '1', others => '0');
+				cntr := (others => '1');
 				dgtn := rotate_left(dgtn, 1);
 				ce   <= '0';
 			end if;

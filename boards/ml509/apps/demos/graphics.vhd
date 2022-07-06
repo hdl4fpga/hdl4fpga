@@ -485,7 +485,7 @@ begin
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
+			miirx_irdy => '1', --miirx_irdy,
 			miirx_trdy => open,
 			miirx_data => miirx_data,
 
@@ -782,7 +782,6 @@ begin
 
 	gpio_led <= (others => '0');
 	bus_error <= (others => 'Z');
-	--(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= (others => '0');
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

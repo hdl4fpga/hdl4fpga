@@ -234,22 +234,22 @@ begin
 	mii_txc <= mii_refclk;
 
 
-	mii_req  <= '0', '1' after 15 us, '0' after 20 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 15 us; --, '0' after 20 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
-	process
-	begin
-		wait for 23 us;
-		loop
-			if rep_req='1' then
-				wait;
-				rep_req <= '0' after 5.8 us;
-			else
-				rep_req <= '1' after 250 ns;
-			end if;
-			wait on rep_req;
-		end loop;
-	end process;
-	mii_req1 <= rep_req;
+--	process
+--	begin
+--		wait for 23 us;
+--		loop
+--			if rep_req='1' then
+--				wait;
+--				rep_req <= '0' after 5.8 us;
+--			else
+--				rep_req <= '1' after 250 ns;
+--			end if;
+--			wait on rep_req;
+--		end loop;
+--	end process;
+--	mii_req1 <= rep_req;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -300,7 +300,7 @@ begin
 		mii_frm2 => '0', --ping_req,
 		mii_frm3 => '0',
 		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		mii_frm5 => '0', --mii_req1,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
@@ -367,66 +367,18 @@ begin
 	end generate;
 end;
 
-library micron;
-
 configuration ml509_structure_md of testbench is
 	for ml509_graphics
 		for all: ml509
 			use entity work.ml509(structure);
 		end for;
-
---		for simm_g
---			for all : ddr2_model
---				use entity micron.ddr2
---				port map (
---					Ck      => clk_p(0),
---					Ck_n    => clk_n(0),
---					Cke     => cke(0),
---					Cs_n    => cs_n(0),
---					Ras_n   => ras_n,
---					Cas_n   => cas_n,
---					We_n    => we_n,
---					Ba      => ba(2-1 downto 0),
---					Addr    => addr,
---					Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
---					Dqs     => dqs(2*(i+1)-1 downto 2*i),
---					Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
---					rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
---					Dq      => dq(16*(i+1)-1 downto 16*i),
---					Odt     => odt(i/2));
---			end for;
---		end for;
 	end for;
 end;
-
-library micron;
 
 configuration ml509_graphics_md of testbench is
 	for ml509_graphics
 		for all: ml509
 			use entity work.ml509(graphics);
 		end for;
-
---		for simm_g
---			for all : ddr2_model
---				use entity micron.ddr2
---				port map (
---					Ck      => clk_p(0),
---					Ck_n    => clk_n(0),
---					Cke     => cke(0),
---					Cs_n    => cs_n(0),
---					Ras_n   => ras_n,
---					Cas_n   => cas_n,
---					We_n    => we_n,
---					Ba      => ba(2-1 downto 0),
---					Addr    => addr,
---					Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
---					Dqs     => dqs(2*(i+1)-1 downto 2*i),
---					Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
---					rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
---					Dq      => dq(16*(i+1)-1 downto 16*i),
---					Odt     => odt(i/2));
---			end for;
---		end for;
 	end for;
 end;

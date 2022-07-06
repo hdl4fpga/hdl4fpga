@@ -37,27 +37,19 @@ add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/id
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/idelay_i/prcs_refclk/TapCount_var
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/idatain
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/dataout
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_brst
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/burst
-add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlreq
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlrdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_req
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_rdy
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/sel
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/pre
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sti
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sto
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/dqs_smp
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/dqs_pre
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_ini
+add wave -noupdate /testbench/du_e/phy_rxclk
+add wave -noupdate /testbench/du_e/phy_rxctl_rxdv
+add wave -noupdate -radix hexadecimal /testbench/du_e/phy_rxd
+add wave -noupdate /testbench/du_e/grahics_e/sin_frm
+add wave -noupdate /testbench/du_e/grahics_e/sin_irdy
+add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
+add wave -noupdate /testbench/du_e/grahics_e/sin_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlrphy_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14269249 ps} 0} {{Cursor 2} {14397084 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14996993 ps} 0} {{Cursor 2} {32559621 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 251
+configure wave -namecolwidth 190
 configure wave -valuecolwidth 101
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -71,4 +63,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {14185965 ps} {14780589 ps}
+WaveRestoreZoom {32550515 ps} {32744777 ps}
