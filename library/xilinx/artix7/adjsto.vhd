@@ -67,6 +67,7 @@ begin
 	 process (ddr_clk)
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
+		variable sto1   : std_logic;
 		variable sto   : std_logic;
 	begin
 		if rising_edge(ddr_clk) then
@@ -81,6 +82,7 @@ begin
 					if cntr(0)='1' then
 						start    := '0';
 						step_rdy <= step_req;
+--					elsif sto1='1' then
 					elsif ddr_sto='1' then
 						if sto='0' then
 							if dqs_smp=seq and (inv='0' or both) then
@@ -105,6 +107,8 @@ begin
 				start    := '0';
 				step_rdy <= to_stdulogic(to_bit(step_req));
 			end if;
+--			sto := sto1;
+--			sto1 := ddr_sto;
 			sto := ddr_sto;
 		end if;
 	end process;

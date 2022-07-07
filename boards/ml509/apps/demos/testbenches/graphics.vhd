@@ -346,7 +346,7 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	simm_g : for i in 0 to 0 generate
+	simm_g : for i in 0 to dqs'length/2-1 generate
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck      => clk_p(0),

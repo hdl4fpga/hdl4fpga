@@ -4,9 +4,9 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -group phy_rx /testbench/du_e/phy_rxclk
 add wave -noupdate -group phy_rx /testbench/du_e/phy_rxctl_rxdv
 add wave -noupdate -group phy_rx /testbench/du_e/phy_rxd
-add wave -noupdate -group phy_tx /testbench/du_e/phy_txclk
-add wave -noupdate -group phy_tx /testbench/du_e/phy_txctl_txen
-add wave -noupdate -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
+add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txclk
+add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txctl_txen
+add wave -noupdate -expand -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_clk_p(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cs(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cke(0)
@@ -34,11 +34,15 @@ add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/id
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/idelay_i/prcs_refclk/TapCount_var
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/idatain
 add wave -noupdate -group dqi_0 /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/dataout
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_do
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_do_dv(15)
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/sys_dqo
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi_b/adjsto_e/ddr_sto
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {35160826 ps} 0} {{Cursor 2} {40491000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {35151953 ps} 0} {{Cursor 2} {35340984 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 190
-configure wave -valuecolwidth 100
+configure wave -namecolwidth 160
+configure wave -valuecolwidth 340
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -51,4 +55,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {47880 ns}
+WaveRestoreZoom {35315323 ps} {35354943 ps}

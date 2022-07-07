@@ -698,7 +698,7 @@ begin
 		ddr_dmi     => ddr_dmi,
 		ddr_dmo     => ddr_dmo,
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr_d,
+		ddr_dqi     => ddr2_d,
 		ddr_dqt     => ddr2_dqt,
 		ddr_dqst    => ddr2_dqst,
 		ddr_dqsi    => ddr2_dqsi,
@@ -734,17 +734,6 @@ begin
 				ob => ddr2_clk_n(i));
 		end generate;
 
-		ddr_dq_g : for i  in WORD_SIZE-1 downto 0 generate
-			idelay_i : idelay
-			port map (
-				rst => '0',
-				i   => ddr2_d(i),
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr_d(i));
-		end generate;
-
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 		begin
 			ddr2_dm(i) <= ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
@@ -761,7 +750,7 @@ begin
 
 		end generate;
 
-		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
+		ddr_d_g : for i in ddr2_d'range generate
 			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
 		end generate;
 
