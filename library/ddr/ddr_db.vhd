@@ -226,7 +226,7 @@ package ddr_db is
 		latency_record'(fpga => virtex5,     param => DQSZL,      value =>  -2),
 		latency_record'(fpga => virtex5,     param => DQZL,       value =>  -2),
 		latency_record'(fpga => virtex5,     param => WWNL,       value =>  -4),
-		latency_record'(fpga => virtex5,     param => STRXL,      value =>   1),
+		latency_record'(fpga => virtex5,     param => STRXL,      value =>   0),
 		latency_record'(fpga => virtex5,     param => RWNXL,      value =>   0),
 		latency_record'(fpga => virtex5,     param => DQSXL,      value =>   0),
 		latency_record'(fpga => virtex5,     param => DQSZXL,     value =>   4),

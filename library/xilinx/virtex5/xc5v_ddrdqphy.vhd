@@ -296,6 +296,7 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
+			lat  => 1,
 			GEAR => DATA_GEAR)
 		port map (
 			tp       => tp_dqssel,

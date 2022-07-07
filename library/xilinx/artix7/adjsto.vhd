@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity adjsto is
 	generic (
 		both     : boolean := true;
+		lat      : natural := 0;
 		GEAR     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 3);
@@ -67,10 +68,11 @@ begin
 	 process (ddr_clk)
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
-		variable sto1   : std_logic;
-		variable sto   : std_logic;
+		variable sto  : unsigned(0 to lat+1);
+--		variable sto   : std_logic;
 	begin
 		if rising_edge(ddr_clk) then
+			sto(0) := ddr_sto;
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
 					sync    <= '1';
@@ -82,9 +84,9 @@ begin
 					if cntr(0)='1' then
 						start    := '0';
 						step_rdy <= step_req;
---					elsif sto1='1' then
-					elsif ddr_sto='1' then
-						if sto='0' then
+					elsif sto(lat)='1' then
+--					elsif ddr_sto='1' then
+						if sto(lat+1)='0' then
 							if dqs_smp=seq and (inv='0' or both) then
 								sync <= sync;
 								dqs_pre <= '0';
@@ -99,7 +101,8 @@ begin
 						else
 							sync  <= '0';
 						end if;
-					elsif sto='1' then
+--					elsif sto='1' then
+					elsif sto(lat+1)='1' then
 						cntr := cntr - 1;
 					end if;
 				end if;
@@ -107,9 +110,7 @@ begin
 				start    := '0';
 				step_rdy <= to_stdulogic(to_bit(step_req));
 			end if;
---			sto := sto1;
---			sto1 := ddr_sto;
-			sto := ddr_sto;
+			sto := shift_right(sto,1);
 		end if;
 	end process;
 
