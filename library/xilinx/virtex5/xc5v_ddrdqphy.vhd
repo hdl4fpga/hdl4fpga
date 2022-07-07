@@ -527,7 +527,6 @@ begin
 		port map (
 			rst   => omdr_rst,
 			clk   => dqclk,
-			t     => (others => '0'),
 			tq(0) => ddr_dmt,
 			d     => dmi,
 			q(0)  => ddr_dmo);
