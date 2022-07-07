@@ -158,8 +158,8 @@ architecture graphics of ml509 is
 	constant sys_per  : real := 10.0e-9;
 	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
-	constant video_mode : video_modes := video_modes'val(
-		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
+	constant video_mode : video_modes :=profile_tab(profile).video_mode; --'val(
+--		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
@@ -257,8 +257,8 @@ architecture graphics of ml509 is
 	signal iod_rst      : std_logic;
 
 	alias  mii_txc        : std_logic is gtx_clk;
-	alias  sio_clk        : std_logic is mii_txc;
-	alias  dmacfg_clk     : std_logic is mii_txc;
+	alias  sio_clk        : std_logic is gtx_clk;
+	alias  dmacfg_clk     : std_logic is gtx_clk;
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
