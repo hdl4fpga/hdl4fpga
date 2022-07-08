@@ -251,6 +251,14 @@ begin
 --	end process;
 --	mii_req1 <= rep_req;
 
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
+--		x"ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff" &
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
 		debug =>false)

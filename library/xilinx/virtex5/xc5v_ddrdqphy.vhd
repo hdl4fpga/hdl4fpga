@@ -192,15 +192,7 @@ begin
 			end if;
 		end process;
 
-		process (dqspau_req, dqipau_req)
-			variable z : bit;
-		begin
-			z := to_bit(dqspau_req);
-			for i in dqipau_req'range loop
-				z := z xor to_bit(dqipau_req(i));
-			end loop;
-			rlpause_req <= z;
-		end process;
+		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req xor dqipau_rdy)=(dqipau_req'range => '1'));
 
 		process (iod_clk)
 		begin
@@ -478,6 +470,7 @@ begin
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
+			DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 			GEAR => DATA_GEAR)
 		port map (
 			rst   => omdr_rst,
@@ -532,6 +525,7 @@ begin
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
+			DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 			GEAR => DATA_GEAR)
 		port map (
 			rst   => omdr_rst,
@@ -564,7 +558,7 @@ begin
 		begin
 			case data_gear is
 			when 2 =>
-				dqsclk <= (0 => sys_clks(clk0),    1 => sys_clks(clk0));
+				dqsclk <= (0 => sys_clks(clk0),    1 => not sys_clks(clk0));
 			when 4 =>
 				dqsclk <= (0 => sys_clks(clk0div), 1 => sys_clks(clk0));
 			when others =>
@@ -574,6 +568,7 @@ begin
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
+			DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 			GEAR => DATA_GEAR)
 		port map (
 			rst  => omdr_rst,

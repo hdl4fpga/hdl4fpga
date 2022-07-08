@@ -75,10 +75,10 @@ architecture graphics of nuhs3adsp is
 	constant cmmd_gear     : natural := 1;
 	constant data_phases   : natural := 2;
 	constant data_edges    : natural := 2;
+	constant data_gear     : natural := 2;
 	constant bank_size     : natural := ddr_ba'length;
 	constant addr_size     : natural := ddr_a'length;
 	constant coln_size     : natural := 9;
-	constant data_gear     : natural := 2;
 	constant word_size     : natural := ddr_dq'length;
 	constant byte_size     : natural := 8;
 

@@ -175,10 +175,10 @@ architecture graphics of ml509 is
 
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 1;
-	constant data_gear    : natural := 2;
 	constant cmmd_gear    : natural := 1;
+	constant data_phases  : natural := 2;
+	constant data_edges   : natural := 2;
+	constant data_gear    : natural := 2;
 
 	constant bank_size     : natural := ddr2_ba'length;
 	constant addr_size     : natural := ddr2_a'length;
@@ -687,6 +687,7 @@ begin
 	ddrphy_e : entity hdl4fpga.xc5v_ddrphy
 	generic map (
 		taps        => natural(floor(ddr_tcp*(64.0*200.0e6)))-1,
+		data_edge   => true,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,
 		DATA_GEAR   => DATA_GEAR,

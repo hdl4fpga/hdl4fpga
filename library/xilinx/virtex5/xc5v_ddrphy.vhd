@@ -35,7 +35,7 @@ entity xc5v_ddrphy is
 		gate_delay : natural := 1;
 		CMMD_GEAR  : natural := 1;
 		data_gear  : natural := 2;
-		data_edge  : boolean := false;
+		data_edge  : boolean := true;
 		bank_size  : natural := 2;
 		addr_size  : natural := 13;
 		word_size  : natural := 16;
