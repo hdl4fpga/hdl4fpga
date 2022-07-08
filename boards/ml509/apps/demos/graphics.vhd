@@ -276,6 +276,7 @@ architecture graphics of ml509 is
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
+	signal phy_rxclk_bufg : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -292,12 +293,7 @@ begin
 		port map (
 			I  => clk_fpga_p,
 			IB => clk_fpga_n,
-			O  => bufg);
-	
-		idelay_bufg_i : iBUFG
-		port map (
-			i => bufg,
-			o => iod_clk);
+			O  => iod_clk);
 	
 		process (gpio_sw_c, iod_clk)
 			variable tmr : unsigned(0 to 8-1) := (others => '0');
@@ -324,18 +320,28 @@ begin
 	dcm_b : block
 	begin
 
-		gtx_i : dcm_base
-		generic map  (
-			CLK_FEEDBACK   => "NONE",
-			clkin_period   => sys_per*1.0e9,
-			clkfx_multiply => 5,
-			clkfx_divide   => 4)
-		port map (
-			rst    => '0',
-			clkin  => sys_clk,
-			clkfb  => '0',
-			clkfx  => gtx_clk);
+		gtx_b : block
+			signal clkbuf : std_logic;
+		begin
+			gtx_i : dcm_base
+			generic map  (
+				CLK_FEEDBACK   => "NONE",
+				clkin_period   => sys_per*1.0e9,
+				clkfx_multiply => 5,
+				clkfx_divide   => 4)
+			port map (
+				rst    => '0',
+				clkin  => sys_clk,
+				clkfb  => '0',
+				clkfx  => clkbuf);
 
+			bufg_i : bufg
+			port map (
+				i => clkbuf,
+				o => gtx_clk);
+
+		end block;
+	
 		ddr_b : block
 			constant clk0      : natural := 0;
 			constant clk90     : natural := 1;
@@ -347,6 +353,9 @@ begin
 			signal ddr_clk90 : std_logic;
 			signal ddr_locked : std_logic;
 		begin
+			dfs_b : block
+				signal clkbuf : std_logic;
+			begin
 				dfs_i : dcm_base
 				generic map (
 					clk_feedback   => "NONE",
@@ -358,23 +367,33 @@ begin
 					rst    => '0',
 					clkfb  => '0',
 					clkin  => sys_clk,
-					clkfx  => clkfx,
+					clkfx  => clkbuf,
 					locked => locked);
 
+				bufg_i : bufg
+				port map (
+					i => clkbuf,
+					o => clkfx);
 
-				process (sys_clk, locked)
-					variable cntr : unsigned(0 to 2);
-				begin
-					if locked='0' then
-						cntr := (others => '0');
-					elsif rising_edge(sys_clk) then
-						if cntr(0)='0' then
-							cntr := cntr + 1;
-						end if;
+			end block;
+
+			process (sys_clk, locked)
+				variable cntr : unsigned(0 to 2);
+			begin
+				if locked='0' then
+					cntr := (others => '0');
+				elsif rising_edge(sys_clk) then
+					if cntr(0)='0' then
+						cntr := cntr + 1;
 					end if;
-					dcm_rst <= not cntr(0);
-				end process;
+				end if;
+				dcm_rst <= not cntr(0);
+			end process;
 
+			dcm_b : block
+				signal clkbuf0  : std_logic;
+				signal clkbuf90 : std_logic;
+			begin
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback       => "NONE",
@@ -384,10 +403,22 @@ begin
 					rst    => dcm_rst,
 					clkin  => clkfx,
 					clkfb  => '0',
-					clk0   => ddr_clk0,
-					clk90  => ddr_clk90,
+					clk0   => clkbuf0,
+					clk90  => clkbuf90,
 					locked => ddr_locked);
    
+				bufg0_i : bufg
+				port map (
+					i => clkbuf0,
+					o => ddr_clk0);
+
+				bufg90_i : bufg
+				port map (
+					i => clkbuf90,
+					o => ddr_clk90);
+
+			end block;
+
 			ddrsys_clks(0 to 2-1) <= (0 => ddr_clk0, 1 => ddr_clk90);
 			ctlrphy_dqsi <= (others => ctlr_clk);
 			ddrsys_rst   <= not ddr_locked or iod_rst;
@@ -396,9 +427,14 @@ begin
 
 	end block;
 
+				bufg0_i : bufg
+				port map (
+					i => phy_rxclk,
+					o => phy_rxclk_bufg);
+
 	ipoe_b : block
 
-		alias  mii_rxc    : std_logic is phy_rxclk;
+		alias  mii_rxc    : std_logic is phy_rxclk_bufg;
 		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
 		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
 
@@ -724,6 +760,7 @@ begin
 	ddriob_b : block
 	begin
 
+--		ddr2_scl <= '0';
 		ddr_clks_g : for i in ddr2_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
@@ -736,7 +773,7 @@ begin
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 		begin
-			ddr2_dm(i) <= ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
+			ddr2_dm(i) <= '0'; --ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
 
 			dqsiobuf_i : iobufds
 			generic map (

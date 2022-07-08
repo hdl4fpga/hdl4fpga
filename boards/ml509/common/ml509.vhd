@@ -73,26 +73,26 @@ entity ml509 is
 --		fpga_rotary_incb : in std_logic;
 --		fpga_rotary_push : in std_logic;
 		fpga_serial_rx : in  std_logic_vector(1 to 2);
-		fpga_serial_tx : out std_logic_vector(1 to 2);
+--		fpga_serial_tx : out std_logic_vector(1 to 2);
 
 --		gpio_dip_sw    : in std_logic_vector(8 downto 1);
 		gpio_led       : out std_logic_vector(8-1 downto 0);
-		gpio_led_c     : out std_logic;
-		gpio_led_e     : out std_logic;
-		gpio_led_n     : out std_logic;
-		gpio_led_s     : out std_logic;
-		gpio_led_w     : out std_logic;
+--		gpio_led_c     : out std_logic;
+--		gpio_led_e     : out std_logic;
+--		gpio_led_n     : out std_logic;
+--		gpio_led_s     : out std_logic;
+--		gpio_led_w     : out std_logic;
 		gpio_sw_c      : in std_logic;
 		gpio_sw_e      : in std_logic;
 		gpio_sw_n      : in std_logic;
 		gpio_sw_s      : in std_logic;
 		gpio_sw_w      : in std_logic;
 
-		hdr1           : std_logic_vector(1 to 32):= (others => '-');
-		hdr2_diff_p    : std_logic_vector(0 to 4-1);
-		hdr2_diff_n    : std_logic_vector(0 to 4-1);
-		hdr2_sm_p      : std_logic_vector(4 to 16-1);
-		hdr2_sm_n      : std_logic_vector(4 to 16-1);
+--		hdr1           : std_logic_vector(1 to 32):= (others => '-');
+--		hdr2_diff_p    : std_logic_vector(0 to 4-1);
+--		hdr2_diff_n    : std_logic_vector(0 to 4-1);
+--		hdr2_sm_p      : std_logic_vector(4 to 16-1);
+--		hdr2_sm_n      : std_logic_vector(4 to 16-1);
 
 --		lcd_fpga_db    : std_logic_vector(8-1 downto 4);
 
@@ -142,7 +142,7 @@ entity ml509 is
 	attribute loc of clk_fpga_p  : signal is "L19";
 --	attribute loc of cpld_io_1 : signal is "W10";
 
---	attribute loc of ddr2_scl  : signal is "E29";
+	--attribute loc of ddr2_scl  : signal is "E29";
 --	attribute loc of ddr2_sda  : signal is "F29";
 	attribute loc of ddr2_clk_p : signal is "E28 AK29";
 	attribute loc of ddr2_clk_n : signal is "F28 AJ29";
@@ -162,8 +162,8 @@ entity ml509 is
 
 --	attribute iostandard of ddr2_clk_p : signal is "DIFF_SSTL18_II";
 --	attribute iostandard of ddr2_clk_n : signal is "DIFF_SSTL18_II";
-	attribute iostandard of ddr2_dqs_p : signal is "DIFF_SSTL18_II_DCI";
-	attribute iostandard of ddr2_dqs_n : signal is "DIFF_SSTL18_II_DCI";
+--	attribute iostandard of ddr2_dqs_p : signal is "DIFF_SSTL18_II_DCI";
+--	attribute iostandard of ddr2_dqs_n : signal is "DIFF_SSTL18_II_DCI";
 --	attribute iostandard of ddr2_d   : signal is "SSTL18_II_DCI";
 --	attribute iostandard of ddr2_dm  : signal is "SSTL18_II";
 --	attribute iostandard of ddr2_we  : signal is "SSTL18_II";
@@ -211,7 +211,7 @@ entity ml509 is
 --	attribute loc of fpga_rotary_incb : signal is "AG30";
 --	attribute loc of fpga_rotary_push : signal is "AH29";
 	attribute loc of fpga_serial_rx : signal is "AG15 G10";
-	attribute loc of fpga_serial_tx : signal is "AG20 F10";
+--	attribute loc of fpga_serial_tx : signal is "AG20 F10";
 
 --	attribute iostandard of fpga_rotary_inca  : signal is "SSTL18_II_DCI";
 --	attribute iostandard of fpga_rotary_incb  : signal is "SSTL18_II_DCI";
@@ -219,11 +219,11 @@ entity ml509 is
 
 --	attribute loc of gpio_dip_sw : signal is "AC24 AC25 AE26 AE27 AF26 AF25 AG27 U25";
 	attribute loc of gpio_led : signal is "AE24 AD24 AD25 G16 AD26 G15 L18 H18";
-	attribute loc of gpio_led_c : signal is "E8";
-	attribute loc of gpio_led_e : signal is "AG23";
-	attribute loc of gpio_led_n : signal is "AF13";
-	attribute loc of gpio_led_s : signal is "AG12";
-	attribute loc of gpio_led_w : signal is "AF23";
+--	attribute loc of gpio_led_c : signal is "E8";
+--	attribute loc of gpio_led_e : signal is "AG23";
+--	attribute loc of gpio_led_n : signal is "AF13";
+--	attribute loc of gpio_led_s : signal is "AG12";
+--	attribute loc of gpio_led_w : signal is "AF23";
 	attribute loc of gpio_sw_c  : signal is "AJ6";
 	attribute loc of gpio_sw_e  : signal is "AK7";
 	attribute loc of gpio_sw_n  : signal is "U8";
@@ -231,13 +231,13 @@ entity ml509 is
 	attribute loc of gpio_sw_w  : signal is "AJ7";
 
 --	attribute iostandard of gpio_dip_sw : signal is "SSTL18_II_DCI";
-	attribute loc of hdr1 : signal is "AN33 AN34 AM32 AJ34 AM33 AL33 AL34 AK32 AJ32 AK33 AK34 AH32 AG32 AE32 AH34 W32 Y32 Y34 AD32 AA34 N34 P34 M32 L33 J34 J32 H32 G32 G33 H34 F34 H33";
-
-	attribute loc of hdr2_sm_p : signal is "AC33 AC34 Y33  K33 L34 AN32 U33 U32 AF33 AC32 AF34 W34";
-	attribute loc of hdr2_sm_n : signal is "AB33 AD34 AA33 K32 K34 AP32 T34 U31 AE33 AB32 AE34 V34";
-
-	attribute loc of hdr2_diff_p : signal is "P32 T33 R33 V32";
-	attribute loc of hdr2_diff_n : signal is "N32 R34 R32 V33";
+--	attribute loc of hdr1 : signal is "AN33 AN34 AM32 AJ34 AM33 AL33 AL34 AK32 AJ32 AK33 AK34 AH32 AG32 AE32 AH34 W32 Y32 Y34 AD32 AA34 N34 P34 M32 L33 J34 J32 H32 G32 G33 H34 F34 H33";
+--
+--	attribute loc of hdr2_sm_p : signal is "AC33 AC34 Y33  K33 L34 AN32 U33 U32 AF33 AC32 AF34 W34";
+--	attribute loc of hdr2_sm_n : signal is "AB33 AD34 AA33 K32 K34 AP32 T34 U31 AE33 AB32 AE34 V34";
+--
+--	attribute loc of hdr2_diff_p : signal is "P32 T33 R33 V32";
+--	attribute loc of hdr2_diff_n : signal is "N32 R34 R32 V33";
 
 --	attribute loc of lcd_fpga_db : signal is "T11 G6 G7 T9";
 

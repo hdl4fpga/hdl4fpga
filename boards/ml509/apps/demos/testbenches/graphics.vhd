@@ -128,26 +128,26 @@ architecture ml509_graphics of testbench is
 --			fpga_rotary_incb : in std_logic;
 --			fpga_rotary_push : in std_logic;
 			fpga_serial_rx : in std_logic_vector(1 to 2) := (others => 'Z');
-			fpga_serial_tx : out std_logic_vector(1 to 2);
+--			fpga_serial_tx : out std_logic_vector(1 to 2);
 	
 --			gpio_dip_sw    : in std_logic_vector(8 downto 1);
 			gpio_led       : out std_logic_vector(8-1 downto 0);
-			gpio_led_c     : out std_logic;
-			gpio_led_e     : out std_logic;
-			gpio_led_n     : out std_logic;
-			gpio_led_s     : out std_logic;
-			gpio_led_w     : out std_logic;
+--			gpio_led_c     : out std_logic;
+--			gpio_led_e     : out std_logic;
+--			gpio_led_n     : out std_logic;
+--			gpio_led_s     : out std_logic;
+--			gpio_led_w     : out std_logic;
 			gpio_sw_c      : in std_logic := 'Z';
 			gpio_sw_e      : in std_logic := 'Z';
 			gpio_sw_n      : in std_logic := 'Z';
 			gpio_sw_s      : in std_logic := 'Z';
 			gpio_sw_w      : in std_logic := 'Z';
 	
-			hdr1           : std_logic_vector(1 to 32):= (others => '-');
-			hdr2_diff_p    : std_logic_vector(0 to 4-1) := (others => 'Z');
-			hdr2_diff_n    : std_logic_vector(0 to 4-1) := (others => 'Z');
-			hdr2_sm_p      : std_logic_vector(4 to 16-1) := (others => 'Z');
-			hdr2_sm_n      : std_logic_vector(4 to 16-1) := (others => 'Z');
+--			hdr1           : std_logic_vector(1 to 32):= (others => '-');
+--			hdr2_diff_p    : std_logic_vector(0 to 4-1) := (others => 'Z');
+--			hdr2_diff_n    : std_logic_vector(0 to 4-1) := (others => 'Z');
+--			hdr2_sm_p      : std_logic_vector(4 to 16-1) := (others => 'Z');
+--			hdr2_sm_n      : std_logic_vector(4 to 16-1) := (others => 'Z');
 	
 --			lcd_fpga_db    : std_logic_vector(8-1 downto 4);
 	

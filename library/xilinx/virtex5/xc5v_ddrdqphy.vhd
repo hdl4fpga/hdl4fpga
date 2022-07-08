@@ -107,12 +107,12 @@ architecture virtex5 of ddrdqphy is
 	signal dqh        : std_logic_vector(dq'range);
 	signal dqf        : std_logic_vector(dq'range);
 
-	signal dqipau_rdy : std_logic;
-	signal dqipau_req : std_logic;
-	signal dqspau_rdy : std_logic;
+	signal dqipau_req : std_logic_vector(ddr_dqi'range);
+	signal dqipau_rdy : std_logic_vector(ddr_dqi'range);
 	signal dqspau_req : std_logic;
-	signal stopau_rdy : std_logic;
+	signal dqspau_rdy : std_logic;
 	signal stopau_req : std_logic;
+	signal stopau_rdy : std_logic;
 
 	signal imdr_rst   : std_logic;
 	signal omdr_rst   : std_logic;
@@ -192,7 +192,16 @@ begin
 			end if;
 		end process;
 
-		rlpause_req <= to_bit(dqipau_req) xor to_bit(dqspau_req);
+		process (dqspau_req, dqipau_req)
+			variable z : bit;
+		begin
+			z := to_bit(dqspau_req);
+			for i in dqipau_req'range loop
+				z := z xor to_bit(dqipau_req(i));
+			end loop;
+			rlpause_req <= z;
+		end process;
+
 		process (iod_clk)
 		begin
 			if rising_edge(iod_clk) then
@@ -354,8 +363,8 @@ begin
 				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
-				step_req => dqipau_req,
-				step_rdy => dqipau_rdy,
+				step_req => dqipau_req(i),
+				step_rdy => dqipau_rdy(i),
 				smp      => dq_smp,
 				delay    => delay);
 
