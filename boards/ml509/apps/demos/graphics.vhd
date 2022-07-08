@@ -347,7 +347,7 @@ begin
 			constant clk0      : natural := 0;
 			constant clk90     : natural := 1;
 
-			signal clkfx     : std_logic;
+			signal ddr_clk   : std_logic;
 			signal locked    : std_logic;
 			signal dcm_rst   : std_logic;
 			signal ddr_clk0  : std_logic;
@@ -355,7 +355,7 @@ begin
 			signal ddr_locked : std_logic;
 		begin
 			dfs_b : block
-				signal clkbuf : std_logic;
+				signal clkfx : std_logic;
 			begin
 				dfs_i : dcm_base
 				generic map (
@@ -371,10 +371,10 @@ begin
 					clkfx  => clkfx,
 					locked => locked);
 
---				bufg_i : bufg
---				port map (
---					i => clkbuf,
---					o => clkfx);
+				bufg_i : bufg
+				port map (
+					i => clkfx,
+					o => ddr_clk);
 
 			end block;
 
@@ -402,7 +402,7 @@ begin
 					dll_frequency_mode => "HIGH")
 				port map (
 					rst    => dcm_rst,
-					clkin  => clkfx,
+					clkin  => ddr_clk,
 					clkfb  => '0',
 					clk0   => clkbuf0,
 					clk90  => clkbuf90,
