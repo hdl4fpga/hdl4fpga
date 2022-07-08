@@ -176,7 +176,7 @@ architecture graphics of ml509 is
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
 	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
+	constant data_edges   : natural := 1;
 	constant data_gear    : natural := 2;
 	constant cmmd_gear    : natural := 1;
 
@@ -256,9 +256,12 @@ architecture graphics of ml509 is
 	signal iod_clk      : std_logic;
 	signal iod_rst      : std_logic;
 
-	alias  mii_txc        : std_logic is gtx_clk;
-	alias  sio_clk        : std_logic is gtx_clk;
-	alias  dmacfg_clk     : std_logic is gtx_clk;
+	signal phy_rxclk_bufg : std_logic;
+	signal phy_txclk_bufg : std_logic;
+
+	alias  mii_txc        : std_logic is phy_txclk_bufg;
+	alias  sio_clk        : std_logic is phy_txclk_bufg;
+	alias  dmacfg_clk     : std_logic is phy_txclk_bufg;
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
@@ -276,7 +279,6 @@ architecture graphics of ml509 is
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
-	signal phy_rxclk_bufg : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -286,7 +288,6 @@ begin
 
 	iod_b : block
 		signal iod_rdy : std_logic;
-		signal bufg    : std_logic;
 	begin
 
 		idelay_ibufg_i : IBUFGDS_LVPECL_25
@@ -321,7 +322,7 @@ begin
 	begin
 
 		gtx_b : block
-			signal clkbuf : std_logic;
+			signal gtx_clk_bufg : std_logic;
 		begin
 			gtx_i : dcm_base
 			generic map  (
@@ -333,11 +334,11 @@ begin
 				rst    => '0',
 				clkin  => sys_clk,
 				clkfb  => '0',
-				clkfx  => clkbuf);
+				clkfx  => gtx_clk_bufg);
 
 			bufg_i : bufg
 			port map (
-				i => clkbuf,
+				i => gtx_clk_bufg,
 				o => gtx_clk);
 
 		end block;
@@ -367,13 +368,13 @@ begin
 					rst    => '0',
 					clkfb  => '0',
 					clkin  => sys_clk,
-					clkfx  => clkbuf,
+					clkfx  => clkfx,
 					locked => locked);
 
-				bufg_i : bufg
-				port map (
-					i => clkbuf,
-					o => clkfx);
+--				bufg_i : bufg
+--				port map (
+--					i => clkbuf,
+--					o => clkfx);
 
 			end block;
 
@@ -427,10 +428,15 @@ begin
 
 	end block;
 
-				bufg0_i : bufg
-				port map (
-					i => phy_rxclk,
-					o => phy_rxclk_bufg);
+	phy_rxclk_bufg_i : bufg
+	port map (
+		i => phy_rxclk,
+		o => phy_rxclk_bufg);
+
+	phy_txclk_bufg_i : bufg
+	port map (
+		i => phy_txclk,
+		o => phy_txclk_bufg);
 
 	ipoe_b : block
 

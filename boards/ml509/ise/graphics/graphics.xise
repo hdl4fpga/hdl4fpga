@@ -575,7 +575,7 @@
     <property xil_pn:name="Functional Model Target Language Coregen" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Functional Model Target Language Schematic" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Architecture Only (No Entity Declaration)" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Clock Region Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Constraints Interaction Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -584,7 +584,7 @@
     <property xil_pn:name="Generate Detailed MAP Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Multiple Hierarchical Netlist Files" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Post-Place &amp; Route Power Report" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Post-Place &amp; Route Simulation Model" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Post-Place &amp; Route Simulation Model" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate RTL Schematic" xil_pn:value="No" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate SAIF File for Power Optimization/Estimation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Testbench File" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -668,8 +668,8 @@
     <property xil_pn:name="Pack I/O Registers into IOBs" xil_pn:value="Yes" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Pack I/O Registers/Latches into IOBs" xil_pn:value="For Inputs and Outputs" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Package" xil_pn:value="ff1136" xil_pn:valueState="default"/>
-    <property xil_pn:name="Perform Advanced Analysis" xil_pn:value="true" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Perform Advanced Analysis" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Timing-Driven Packing and Placement" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Place &amp; Route Effort Level (Overall)" xil_pn:value="High" xil_pn:valueState="default"/>
     <property xil_pn:name="Place And Route Mode" xil_pn:value="Route Only" xil_pn:valueState="default"/>

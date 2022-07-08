@@ -27,16 +27,13 @@ TIMESPEC ts_sys_clk = PERIOD "sys_clk" 10 ns HIGH 50%;
 NET "iod_clk" TNM_NET = iod_clk;
 TIMESPEC ts_iod_clk = PERIOD "iod_clk" 5 ns HIGH 50%;
 
-#NET "phy_rxclk" TNM_NET = phy_rxclk;
-#TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 40 ns HIGH 50%;
-#OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk falling;
-#
-#NET "phy_txclk" TNM_NET = phy_txclk;
-#TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 40 ns HIGH 50%;
-#
-NET "gtx_clk" TNM_NET = gtx_clk;
-TIMESPEC ts_gtx_clk = PERIOD "gtx_clk" 40 ns HIGH 50%;
-# 
+NET "phy_rxclk_bufg" TNM_NET = phy_rxclk_bufg;
+TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 40 ns HIGH 50%;
+OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk_bufg falling;
+
+NET "phy_txclk" TNM_NET = phy_txclk;
+TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 40 ns HIGH 50%;
+
 
 # ###################### #
 # Ignore crossclock time #
