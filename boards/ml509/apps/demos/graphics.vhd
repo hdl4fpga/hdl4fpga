@@ -355,7 +355,7 @@ begin
 			signal ddr_locked : std_logic;
 		begin
 			dfs_b : block
-				signal clkfx : std_logic;
+				signal ddr_clkfx_bufg : std_logic;
 			begin
 				dfs_i : dcm_base
 				generic map (
@@ -368,12 +368,12 @@ begin
 					rst    => '0',
 					clkfb  => '0',
 					clkin  => sys_clk,
-					clkfx  => clkfx,
+					clkfx  => ddr_clkfx_bufg,
 					locked => locked);
 
 				bufg_i : bufg
 				port map (
-					i => clkfx,
+					i => ddr_clkfx_bufg,
 					o => ddr_clk);
 
 			end block;
@@ -392,8 +392,8 @@ begin
 			end process;
 
 			dcm_b : block
-				signal clkbuf0  : std_logic;
-				signal clkbuf90 : std_logic;
+				signal ddr_clk0_bufg  : std_logic;
+				signal ddr_clk90_bufg : std_logic;
 			begin
 				dcm_i : dcm_base
 				generic map (
@@ -404,18 +404,18 @@ begin
 					rst    => dcm_rst,
 					clkin  => ddr_clk,
 					clkfb  => '0',
-					clk0   => clkbuf0,
-					clk90  => clkbuf90,
+					clk0   => ddr_clk0_bufg,
+					clk90  => ddr_clk90_bufg,
 					locked => ddr_locked);
    
 				bufg0_i : bufg
 				port map (
-					i => clkbuf0,
+					i => ddr_clk0_bufg,
 					o => ddr_clk0);
 
 				bufg90_i : bufg
 				port map (
-					i => clkbuf90,
+					i => ddr_clk90_bufg,
 					o => ddr_clk90);
 
 			end block;
