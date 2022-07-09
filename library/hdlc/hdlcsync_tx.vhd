@@ -47,8 +47,6 @@ entity hdlcsync_tx is
 		uart_trdy   : in  std_logic;
 		uart_data   : out std_logic_vector);
 
-
-
 end;
 
 architecture def of hdlcsync_tx is
@@ -102,6 +100,8 @@ begin
 				uart_irdy <= hdlctx_irdy;
 			elsif q='1' then
 				uart_irdy <= '0';
+			else
+				uart_irdy <= hdlctx_irdy;
 			end if;
 		else
 			uart_irdy <= '0';

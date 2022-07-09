@@ -8,7 +8,7 @@ add wave -noupdate /testbench/du_e/hdlc_g/ftdi_txd
 add wave -noupdate /testbench/du_e/hdlc_g/ftdi_rxd
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_rx_clk
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_rx_dv
-add wave -noupdate -group rgmii -radix hexadecimal /testbench/du_e/rgmii_rxd
+add wave -noupdate -group rgmii -radix hexadecimal -childformat {{/testbench/du_e/rgmii_rxd(0) -radix hexadecimal} {/testbench/du_e/rgmii_rxd(1) -radix hexadecimal} {/testbench/du_e/rgmii_rxd(2) -radix hexadecimal} {/testbench/du_e/rgmii_rxd(3) -radix hexadecimal}} -expand -subitemconfig {/testbench/du_e/rgmii_rxd(0) {-height 29 -radix hexadecimal} /testbench/du_e/rgmii_rxd(1) {-height 29 -radix hexadecimal} /testbench/du_e/rgmii_rxd(2) {-height 29 -radix hexadecimal} /testbench/du_e/rgmii_rxd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/rgmii_rxd
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_tx_clk
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_tx_en
 add wave -noupdate -group rgmii -radix hexadecimal /testbench/du_e/rgmii_txd
@@ -82,17 +82,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sout_frm
-add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/clk_rate
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/baudrate
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_rxc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {24301662780 fs} 0} {{Cursor 2} {3895769710 fs} 0}
+WaveRestoreCursors {{Cursor 1} {245543440 fs} 0} {{Cursor 2} {19734750000 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 193
 configure wave -valuecolwidth 164
@@ -108,4 +99,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {39784747460 fs} {40030290900 fs}
+WaveRestoreZoom {19433906250 fs} {19926093750 fs}
