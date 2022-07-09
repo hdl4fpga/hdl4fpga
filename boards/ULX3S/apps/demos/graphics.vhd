@@ -48,6 +48,7 @@ architecture graphics of ulx3s is
 		uart_166MHz_600p16bpp,          --
 
 		uart_200MHz_600p24bpp,          --
+		uart_225MHz_600p24bpp,          --
 		uart_250MHz_600p24bpp,          --
 
 		uart_275MHz_600p24bpp,          --
@@ -61,20 +62,18 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := uart_200MHz_600p24bpp;
+	constant app : apps := uart_225MHz_600p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 25.0e6;
 
-	constant fpga        : natural := spartan3;
-	constant mark        : natural := M7E;
-
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
+	constant cmmd_gear   : natural := 1;
 	constant data_phases : natural := 1;
 	constant data_edges  : natural := 1;
-	constant cmmd_gear   : natural := 1;
 	constant data_gear   : natural := 1;
+
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
 	constant coln_size   : natural := 9;
@@ -82,7 +81,6 @@ architecture graphics of ulx3s is
 	constant byte_size   : natural := 8;
 
 	signal sys_rst       : std_logic;
-	signal sys_clk       : std_logic;
 
 	signal ddrsys_rst    : std_logic;
 	signal ddrsys_clks   : std_logic_vector(0 to 0);
@@ -168,7 +166,7 @@ architecture graphics of ulx3s is
 		sdram133MHz,
 		sdram166MHz,
 		sdram200MHz,
-		sdram225MHz,	-- Not tested yet
+		sdram225MHz,
 		sdram233MHz,
 		sdram250MHz,
 		sdram262MHz,
@@ -204,7 +202,6 @@ architecture graphics of ulx3s is
 	signal si_data    : std_logic_vector(0 to 8-1);
 
 	signal sio_clk    : std_logic;
-
 	alias uart_clk    : std_logic is sio_clk;
 
 	type io_iface is (
@@ -226,6 +223,7 @@ architecture graphics of ulx3s is
 		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
 
 		uart_200MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram200MHz),
+		uart_225MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram225MHz),
 		uart_250MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram250MHz),
 
 		uart_275MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram275MHz),
@@ -436,6 +434,14 @@ begin
 
 		sio_clk <= videoio_clk;
 
+		nodebug_g : if not debug generate
+			uart_clk <= videoio_clk;
+		end generate;
+
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		end generate;
+
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)
 			severity NOTE;
@@ -450,38 +456,18 @@ begin
 			uart_irdy => uart_rxdv,
 			uart_data => uart_rxd);
 
-		process (uart_clk)
-		begin
-			if rising_edge(uart_clk) then
-				if uart_rxdv='1' then
---					led <= uart_rxd;
-				end if;
-			end if;
-		end process;
-
-		process (uart_clk)
-		begin
-			if rising_edge(uart_clk) then
-				if uart_txen='1' then
---					led <= uart_txd;
-				end if;
-			end if;
-		end process;
-
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
 			baudrate => baudrate,
 			clk_rate => uart_xtal)
 		port map (
 			uart_txc  => uart_clk,
-			uart_sout => ftdi_rxd,
 			uart_frm  => video_lck,
 			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
-			uart_data => uart_txd);
+			uart_data => uart_txd,
+			uart_sout => ftdi_rxd);
 
-			led(0) <= si_frm;
-			led(2) <= si_irdy;
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (
 			mem_size  => mem_size)
@@ -505,6 +491,26 @@ begin
 			si_end    => si_end,
 			si_data   => si_data,
 			tp        => tp);
+
+--			led(0) <= si_frm;
+--			led(2) <= si_irdy;
+--		process (uart_clk)
+--		begin
+--			if rising_edge(uart_clk) then
+--				if uart_rxdv='1' then
+--					led <= uart_rxd;
+--				end if;
+--			end if;
+--		end process;
+
+--		process (uart_clk)
+--		begin
+--			if rising_edge(uart_clk) then
+--				if uart_txen='1' then
+--					led <= uart_txd;
+--				end if;
+--			end if;
+--		end process;
 
 	end generate;
 
@@ -626,8 +632,8 @@ begin
 		profile      => 0,
 
 		ddr_tcp      => ddr_tcp,
-		fpga         => fpga,
-		mark         => mark,
+		fpga         => spartan3,
+		mark         => M7E,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		data_phases  => data_phases,

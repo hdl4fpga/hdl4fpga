@@ -27,7 +27,8 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug :boolean := true;
+	constant debug      : boolean := true;
+
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 9;
@@ -264,7 +265,11 @@ begin
 					end if;
 				elsif i < xxx'length then
 					if i > 0 then
-						wait for 100 us;
+						if debug then
+							wait for 5 us;
+						else
+							wait for 100 us;
+						end if;
 						hdlctx_frm <= '0';
 						hdlctx_end <= '0';
 					end if;

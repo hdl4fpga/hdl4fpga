@@ -63,9 +63,10 @@ architecture graphics of ulx4m_ld is
 
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
-	constant data_edges  : natural := 1;
 	constant cmmd_gear   : natural := 2;
+	constant data_edges  : natural := 1;
 	constant data_gear   : natural := 4;
+
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
 	constant coln_size   : natural := 10;
@@ -78,12 +79,12 @@ architecture graphics of ulx4m_ld is
 	signal ddrphy_rst    : std_logic;
 	signal physys_clk    : std_logic;
 
-	signal ddram_clklck     : std_logic;
+	signal ddram_clklck  : std_logic;
 
-	signal ctlrphy_frm     : std_logic;
-	signal ctlrphy_trdy    : std_logic;
-	signal ctlrphy_ini     : std_logic;
-	signal ctlrphy_rw      : std_logic;
+	signal ctlrphy_frm   : std_logic;
+	signal ctlrphy_trdy  : std_logic;
+	signal ctlrphy_ini   : std_logic;
+	signal ctlrphy_rw    : std_logic;
 	signal ctlrphy_wlreq : std_logic;
 	signal ctlrphy_wlrdy : std_logic;
 	signal ctlrphy_rlreq : std_logic;
@@ -125,6 +126,8 @@ architecture graphics of ulx4m_ld is
 	type video_modes is (
 		mode480p24,
 		mode600p16,
+		mode600p24,
+		mode900p24,
 		modedebug);
 
 	type pixel_types is (
@@ -138,10 +141,13 @@ architecture graphics of ulx4m_ld is
 	end record;
 
 	type videoparams_vector is array (video_modes) of video_params;
+	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
 		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
-		mode480p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk25_00m640x480at60),
-		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60));
+		mode480p24 => (pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, mode => pclk25_00m640x480at60),
+		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, mode => pclk40_00m800x600at60),
+		mode900p24 => (pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -170,6 +176,8 @@ architecture graphics of ulx4m_ld is
 		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram500MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
 
+	signal ctlr_clk   : std_logic;
+
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
 	signal so_irdy    : std_logic;
@@ -180,6 +188,9 @@ architecture graphics of ulx4m_ld is
 	signal si_trdy    : std_logic;
 	signal si_end     : std_logic;
 	signal si_data    : std_logic_vector(0 to 8-1);
+
+	signal sio_clk    : std_logic;
+	alias uart_clk    : std_logic is sio_clk;
 
 	type io_iface is (
 		io_hdlc,
@@ -218,20 +229,13 @@ architecture graphics of ulx4m_ld is
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
 
-	signal ctlr_clk   : std_logic;
-
-
-	constant ddr_tcp : real := real(ddram_tab(ddram_mode).pll.clki_div)/(real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+	constant ddr_tcp : real := 
+		real(ddram_tab(ddram_mode).pll.clki_div)/
+		(real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
-	alias   mii_rxc       : std_logic is rgmii_rx_clk;
-
-	alias  mii_txc        : std_logic is rgmii_rx_clk;
-	alias  dmacfg_clk     : std_logic is clk_25mhz;
-	signal uart_clk       : std_logic;
-	signal sio_clk        : std_logic;
-	constant hdplx : std_logic := setif(debug, '0', '1');
+	constant hdplx   : std_logic := setif(debug, '0', '1');
 
 begin
 
@@ -412,13 +416,11 @@ begin
 
 		ftdi_txen <= '1';
 		nodebug_g : if not debug generate
-			sio_clk <= videoio_clk;
 			uart_clk <= videoio_clk;
 		end generate;
 
 		debug_g : if debug generate
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-			sio_clk  <= uart_clk;
 		end generate;
 
 		assert FALSE
@@ -449,27 +451,27 @@ begin
 
 		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
 		generic map (
-			mem_size  => mem_size)
+			mem_size    => mem_size)
 		port map (
-			uart_clk  => uart_clk,
+			uart_clk    => uart_clk,
 			uartrx_irdy => uart_rxdv,
 			uartrx_data => uart_rxd,
 			uarttx_frm  => uarttx_frm,
 			uarttx_trdy => uart_idle,
 			uarttx_data => uart_txd,
 			uarttx_irdy => uart_txen,
-			sio_clk   => sio_clk,
-			so_frm    => so_frm,
-			so_irdy   => so_irdy,
-			so_trdy   => so_trdy,
-			so_data   => so_data,
+			sio_clk     => sio_clk,
+			so_frm      => so_frm,
+			so_irdy     => so_irdy,
+			so_trdy     => so_trdy,
+			so_data     => so_data,
 
-			si_frm    => si_frm,
-			si_irdy   => si_irdy,
-			si_trdy   => si_trdy,
-			si_end    => si_end,
-			si_data   => si_data,
-			tp        => tp);
+			si_frm      => si_frm,
+			si_irdy     => si_irdy,
+			si_trdy     => si_trdy,
+			si_end      => si_end,
+			si_data     => si_data,
+			tp          => tp);
 
 	end generate;
 
@@ -625,8 +627,10 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shft_clk,
+		video_clk    => '0',
+		video_shift_clk => '0',
+--		video_clk    => video_clk,
+--		video_shift_clk => video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
