@@ -237,6 +237,7 @@ architecture graphics of ulx4m_ld is
 
 	constant hdplx   : std_logic := setif(debug, '0', '1');
 
+	signal tp : std_logic_vector(1 to 32);
 begin
 
 	sys_rst <= '0';
@@ -615,7 +616,6 @@ begin
 		green_length => setif(video_tab(video_mode).pixel=rgb565, 6, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
 		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
 		fifo_size    => mem_size)
-
 	port map (
 		sio_clk      => sio_clk,
 		sin_frm      => so_frm,
@@ -640,8 +640,8 @@ begin
 		ctlr_cwl     => ddram_tab(ddram_mode).cwl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
+		ctlr_inirdy  => tp(1),
 
-		ctlrphy_inirdy => tp(1),
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,

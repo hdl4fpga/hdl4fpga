@@ -265,12 +265,18 @@ begin
 		end process;
 
 		process (sclk)
+			variable finished : std_logic;
 		begin
 			if rising_edge(sclk) then
 				if (pause_rdy xor pause_req)='0' then
-					wlpause_rdy <= wlpause_req;
-					rlpause1_rdy <= rlpause1_req;
-					rlpause_rdy <= rlpause_req;
+					if finished='1' then
+						wlpause_rdy  <= wlpause_req;
+						rlpause1_rdy <= rlpause1_req;
+						rlpause_rdy  <= rlpause_req;
+						finished     := '0';
+					end if;
+				else
+					finished := '1';
 				end if;
 			end if;
 		end process;
