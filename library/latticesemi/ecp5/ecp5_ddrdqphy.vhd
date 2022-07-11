@@ -242,7 +242,6 @@ begin
 
 	begin
 
-		pause_req <= rlpause_req xor rlpause1_req xor wlpause_req;
 		process (sclk)
 			variable cntr : unsigned(0 to 6);
 		begin
@@ -265,19 +264,30 @@ begin
 		end process;
 
 		process (sclk)
-			variable finished : std_logic;
+			variable q : bit;
+			variable y : bit;
 		begin
 			if rising_edge(sclk) then
 				if (pause_rdy xor pause_req)='0' then
-					if finished='1' then
+					if q='1' then
+						pause_req <= not pause_rdy;
+					end if;
+					if y='1' then
 						wlpause_rdy  <= wlpause_req;
 						rlpause1_rdy <= rlpause1_req;
 						rlpause_rdy  <= rlpause_req;
-						finished     := '0';
+						y := '0';
+						q := '0';
+					else
+						q := 
+							(rlpause_req  xor rlpause_rdy)  and 
+							(rlpause1_req xor rlpause1_rdy) and 
+							(wlpause_req  xor wlpause_req);
 					end if;
 				else
-					finished := '1';
+					y := '1';
 				end if;
+				
 			end if;
 		end process;
 
