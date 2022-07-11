@@ -143,7 +143,7 @@ architecture graphics of ulx4m_ld is
 	type videoparams_vector is array (video_modes) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
+		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16,    clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
 		mode480p24 => (pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, mode => pclk25_00m640x480at60),
 		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, mode => pclk40_00m800x600at60),
@@ -170,7 +170,7 @@ architecture graphics of ulx4m_ld is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 8, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div =>  8, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		ddram425MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram450MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
@@ -405,13 +405,14 @@ begin
 		signal uart_idle  : std_logic;
 		signal uart_txen  : std_logic;
 		signal uart_txd   : std_logic_vector(uart_rxd'range);
-		signal dummy_txd   : std_logic_vector(uart_rxd'range);
+		signal dummy_txd  : std_logic_vector(uart_rxd'range);
 
 		signal tp         : std_logic_vector(1 to 32);
 
-		alias ftdi_txd  : std_logic is gpio23;
-		alias ftdi_txen : std_logic is gpio13;
-		alias ftdi_rxd  : std_logic is gpio24;
+		alias ftdi_txd    : std_logic is gpio23;
+		alias ftdi_txen   : std_logic is gpio13;
+		alias ftdi_rxd    : std_logic is gpio24;
+
 	begin
 
 		ftdi_txen <= '1';
@@ -471,7 +472,7 @@ begin
 			si_trdy     => si_trdy,
 			si_end      => si_end,
 			si_data     => si_data,
-			tp          => tp);
+			tp          => open);
 
 	end generate;
 
@@ -627,10 +628,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0',
-		video_shift_clk => '0',
---		video_clk    => video_clk,
---		video_shift_clk => video_shft_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -642,6 +641,7 @@ begin
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 
+		ctlrphy_inirdy => tp(1),
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,
