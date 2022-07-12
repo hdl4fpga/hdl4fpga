@@ -673,9 +673,20 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	tp(2) <=  ctlrphy_wlreq, ctlrphy_wlrdy => ctlrphy_wlrdy,
-		ctlrphy_rlreq => ctlrphy_rlreq,
-		ctlrphy_rlrdy => ctlrphy_rlrdy,
+	tp(2) <= ctlrphy_wlreq xor ctlrphy_wlrdy;
+	tp(3) <= ctlrphy_rlreq xor ctlrphy_rlrdy;
+	tp(4) <= ctlrphy_ini;
+
+	process (clk_25mhz)
+	begin
+		if rising_edge(clk_25mhz) then
+			led(0) <= tp(1);
+			led(1) <= tp(2);
+			led(2) <= tp(3);
+			led(3) <= tp(4);
+		end if;
+	end process;
+
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
