@@ -673,6 +673,9 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
+	tp(2) <=  ctlrphy_wlreq, ctlrphy_wlrdy => ctlrphy_wlrdy,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop

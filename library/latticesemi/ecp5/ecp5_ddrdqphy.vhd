@@ -276,18 +276,17 @@ begin
 						wlpause_rdy  <= wlpause_req;
 						rlpause1_rdy <= rlpause1_req;
 						rlpause_rdy  <= rlpause_req;
-						y := '0';
-						q := '0';
 					else
 						q := 
 							(rlpause_req  xor rlpause_rdy)  and 
 							(rlpause1_req xor rlpause1_rdy) and 
 							(wlpause_req  xor wlpause_req);
 					end if;
+					y := '0';
 				else
+					q := '0';
 					y := '1';
 				end if;
-				
 			end if;
 		end process;
 
