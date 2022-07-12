@@ -90,13 +90,13 @@ begin
 		variable acc : unsigned(lat'length+readclksel'length-1 downto 0);
 	begin
 		if rising_edge(sclk) then
-			if lat(lat'left)='0' then
+--			if lat(lat'left)='0' then
 				acc := base + unsigned(phase);
 				acc := rotate_left(acc, lat'length);
 				lat <= std_logic_vector(acc(lat'range));
 				acc := rotate_left(acc, readclksel'length);
 				readclksel <= std_logic_vector(acc(readclksel'range));
-			end if;
+--			end if;
 		end if;
 	end process;
 

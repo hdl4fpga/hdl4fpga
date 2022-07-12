@@ -673,8 +673,8 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	tp(2) <= ctlrphy_wlreq xor ctlrphy_wlrdy;
-	tp(3) <= ctlrphy_rlreq xor ctlrphy_rlrdy;
+	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
+	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
 	tp(4) <= ctlrphy_ini;
 
 	process (clk_25mhz)

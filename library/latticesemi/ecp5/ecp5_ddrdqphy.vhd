@@ -263,7 +263,7 @@ begin
 			end if;
 		end process;
 
-		process (sclk)
+		process (sclk, pause_rdy )
 			variable q : bit;
 			variable y : bit;
 		begin
@@ -278,9 +278,9 @@ begin
 						rlpause_rdy  <= rlpause_req;
 					else
 						q := 
-							(rlpause_req  xor rlpause_rdy)  and 
-							(rlpause1_req xor rlpause1_rdy) and 
-							(wlpause_req  xor wlpause_req);
+							(rlpause_req  xor rlpause_rdy)  or 
+							(rlpause1_req xor rlpause1_rdy) or 
+							(wlpause_req  xor wlpause_rdy);
 					end if;
 					y := '0';
 				else
