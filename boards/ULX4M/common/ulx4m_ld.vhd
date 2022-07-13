@@ -65,7 +65,7 @@ entity ulx4m_ld is
 		rgmii_rx_dv     : in  std_logic := '-';
 		rgmii_rxd       : in  std_logic_vector(0 to 4-1) := (others => '-');
 
-		ddram_clk       : inout std_logic;
+		ddram_clk       : out std_logic;
 		ddram_reset_n   : out std_logic;
 		ddram_cke       : out std_logic;
 		ddram_cs_n      : out std_logic;
