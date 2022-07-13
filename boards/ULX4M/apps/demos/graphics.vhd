@@ -46,6 +46,8 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_480p24bpp,
 		uart_475MHz_480p24bpp,
 		uart_500MHz_480p24bpp,
+		uart_400MHz_600p24bpp,
+
 
 		mii_400MHz_480p24bpp,
 		mii_425MHz_480p24bpp,
@@ -209,6 +211,7 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram450MHz),
 		uart_475MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram475MHz),
 		uart_500MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => ddram500MHz),
+		uart_400MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => ddram400MHz),
 
 		mii_400MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram400MHz),
 		mii_425MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram425MHz),
@@ -390,15 +393,14 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
-		constant uart_xtal : real := real(setif(debug, 1e9, natural(
+		constant uart_xtal : real := 
 			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
-			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div))));
+			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div);
 
 		constant baudrate : natural := setif(
-			debug              , 1e9/16,  setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
 			uart_xtal >= 25.0e6, 2000000,
-                                 115200)));
+                                 115200));
 
 		signal uart_rxdv  : std_logic;
 		signal uart_rxd   : std_logic_vector(0 to 8-1);
@@ -406,7 +408,6 @@ begin
 		signal uart_idle  : std_logic;
 		signal uart_txen  : std_logic;
 		signal uart_txd   : std_logic_vector(uart_rxd'range);
-		signal dummy_txd  : std_logic_vector(uart_rxd'range);
 
 		signal tp         : std_logic_vector(1 to 32);
 
@@ -414,7 +415,19 @@ begin
 		alias ftdi_txen   : std_logic is gpio13;
 		alias ftdi_rxd    : std_logic is gpio24;
 
+		signal dummy_txd  : std_logic_vector(uart_rxd'range);
 	begin
+
+		process (uart_clk)
+			variable q : std_logic := '0';
+		begin
+			if rising_edge(uart_clk) then
+				if tp(1)='1' then
+					led(4) <= q;
+					q := not q;
+				end if;
+			end if;
+		end process;
 
 		ftdi_txen <= '1';
 		nodebug_g : if not debug generate
@@ -473,7 +486,7 @@ begin
 			si_trdy     => si_trdy,
 			si_end      => si_end,
 			si_data     => si_data,
-			tp          => open);
+			tp          => tp);
 
 	end generate;
 

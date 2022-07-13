@@ -29,7 +29,7 @@ use ecp5u.components.all;
 
 entity ulx4m_ld is
 	generic (
-		debug : boolean := false);
+		debug           : boolean := false);
 	port (
 
 		clk_25mhz       : in  std_logic := 'Z';
