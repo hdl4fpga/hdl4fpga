@@ -419,13 +419,25 @@ begin
 	begin
 
 		process (uart_clk)
-			variable q : std_logic := '0';
 		begin
 			if rising_edge(uart_clk) then
 				if tp(1)='1' then
-					led(4) <= q;
+					led(4) <= tp(2);
+				end if;
+			end if;
+		end process;
+
+		process (uart_clk)
+			variable q : std_logic := '0';
+			variable e : std_logic;
+		begin
+			if rising_edge(uart_clk) then
+				if (so_frm and not e)='1' then
+					led(5) <= q;
 					q := not q;
 				end if;
+				led(6) <= so_frm;
+				e := so_frm;
 			end if;
 		end process;
 

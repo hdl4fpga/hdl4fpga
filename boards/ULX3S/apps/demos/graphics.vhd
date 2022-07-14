@@ -472,45 +472,25 @@ begin
 		generic map (
 			mem_size  => mem_size)
 		port map (
-			uart_clk  => uart_clk,
+			uart_clk    => uart_clk,
 			uartrx_irdy => uart_rxdv,
 			uartrx_data => uart_rxd,
 			uarttx_frm  => uarttx_frm,
 			uarttx_trdy => uart_idle,
 			uarttx_data => uart_txd,
 			uarttx_irdy => uart_txen,
-			sio_clk   => sio_clk,
-			so_frm    => so_frm,
-			so_irdy   => so_irdy,
-			so_trdy   => so_trdy,
-			so_data   => so_data,
+			sio_clk     => sio_clk,
+			so_frm      => so_frm,
+			so_irdy     => so_irdy,
+			so_trdy     => so_trdy,
+			so_data     => so_data,
 
-			si_frm    => si_frm,
-			si_irdy   => si_irdy,
-			si_trdy   => si_trdy,
-			si_end    => si_end,
-			si_data   => si_data,
-			tp        => tp);
-
---			led(0) <= si_frm;
---			led(2) <= si_irdy;
---		process (uart_clk)
---		begin
---			if rising_edge(uart_clk) then
---				if uart_rxdv='1' then
---					led <= uart_rxd;
---				end if;
---			end if;
---		end process;
-
---		process (uart_clk)
---		begin
---			if rising_edge(uart_clk) then
---				if uart_txen='1' then
---					led <= uart_txd;
---				end if;
---			end if;
---		end process;
+			si_frm      => si_frm,
+			si_irdy     => si_irdy,
+			si_trdy     => si_trdy,
+			si_end      => si_end,
+			si_data     => si_data,
+			tp          => tp);
 
 	end generate;
 

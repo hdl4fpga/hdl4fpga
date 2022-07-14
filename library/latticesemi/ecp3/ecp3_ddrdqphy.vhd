@@ -108,20 +108,22 @@ begin
 	dyndelay <= wlpha;
 	dqsbufd_i : dqsbufd 
 	port map (
-		dqsdel => sys_dqsdel,
-		dqsi   => ddr_dqsi,
+		rst       => dqsbufd_rst,
+		sclk      => sys_sclk,
+		eclk      => sys_eclkw,
+		eclkw     => sys_eclkw,
+		dqsdel   => sys_dqsdel,
+
+		dqsi     => ddr_dqsi,
 		eclkdqsr => idqs_eclk,
 
-		sclk => sys_sclk,
 		read => rw,
 		ddrclkpol => ddrclkpol,
 		ddrlat  => ddrlat,
 		prmbdet => prmbdet,
 
-		eclk => sys_eclkw,
 		datavalid => open,
 
-		rst  => dqsbufd_rst,
 		dyndelay0 => dyndelay(0),
 		dyndelay1 => dyndelay(1),
 		dyndelay2 => dyndelay(2),
@@ -130,11 +132,11 @@ begin
 		dyndelay5 => dyndelay(5),
 		dyndelay6 => dyndelay(6),
 		dyndelpol => dyndelay(7),
-		eclkw => sys_eclkw,
 
-		dqsw => dqsw,
-		dqclk0 => dqclk0,
-		dqclk1 => dqclk1);
+
+		dqsw      => dqsw,
+		dqclk0    => dqclk0,
+		dqclk1    => dqclk1);
 
 
 	iddr_g : for i in 0 to byte_size-1 generate

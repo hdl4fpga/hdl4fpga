@@ -74,35 +74,35 @@ use hdl4fpga.std.all;
 
 architecture lscc of ecp5_ddrdqphy is
 
-	signal dqsr90        : std_logic;
-	signal dqsw          : std_logic;
-	signal dqsw270       : std_logic;
+	signal dqsr90       : std_logic;
+	signal dqsw         : std_logic;
+	signal dqsw270      : std_logic;
 	
-	signal dqi           : std_logic_vector(phy_dqi'range);
+	signal dqi          : std_logic_vector(phy_dqi'range);
 
-	signal dqt           : std_logic_vector(phy_dqt'range);
-	signal dqst          : std_logic_vector(phy_dqst'range);
-	signal dqso          : std_logic_vector(phy_dqso'range);
-	signal wle           : std_logic;
+	signal dqt          : std_logic_vector(phy_dqt'range);
+	signal dqst         : std_logic_vector(phy_dqst'range);
+	signal dqso         : std_logic_vector(phy_dqso'range);
+	signal wle          : std_logic;
 
-	signal rdpntr        : std_logic_vector(3-1 downto 0);
-	signal wrpntr        : std_logic_vector(3-1 downto 0);
+	signal rdpntr       : std_logic_vector(3-1 downto 0);
+	signal wrpntr       : std_logic_vector(3-1 downto 0);
 
-	signal read          : std_logic_vector(0 to 2-1);
-	signal lat           : std_logic_vector(2-1 downto 0);
-	signal readclksel    : std_logic_vector(3-1 downto 0);
-	signal wlpha         : std_logic_vector(8-1 downto 0);
-	signal burstdet      : std_logic;
-	signal dqs_pause     : std_logic;
-	signal datavalid     : std_logic;
+	signal read         : std_logic_vector(0 to 2-1);
+	signal lat          : std_logic_vector(2-1 downto 0);
+	signal readclksel   : std_logic_vector(3-1 downto 0);
+	signal wlpha        : std_logic_vector(8-1 downto 0);
+	signal burstdet     : std_logic;
+	signal dqs_pause    : std_logic;
+	signal datavalid    : std_logic;
 
-	signal adjstep_req   : bit;
-	signal adjstep_rdy   : bit;
+	signal adjstep_req  : bit;
+	signal adjstep_rdy  : bit;
 
 	signal rlpause_rdy  : bit;
 	signal rlpause_req  : bit;
-	signal rlpause1_rdy  : bit;
-	signal rlpause1_req  : bit;
+	signal rlpause1_rdy : bit;
+	signal rlpause1_req : bit;
 	signal wlpause_rdy  : bit;
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
@@ -110,16 +110,16 @@ architecture lscc of ecp5_ddrdqphy is
 	constant delay      : time := 5.1 ns;
 	signal dqsi         : std_logic;
 
-	signal wlstep_req  : std_logic;
-	signal wlstep_rdy  : std_logic;
-	signal dqi0 : std_logic;
+	signal wlstep_req   : std_logic;
+	signal wlstep_rdy   : std_logic;
+	signal dqi0         : std_logic;
 begin
 
 	rl_b : block
 		signal step_req : std_logic;
 		signal step_rdy : std_logic;
-		signal adj_req : std_logic;
-		signal adj_rdy : std_logic;
+		signal adj_req  : std_logic;
+		signal adj_rdy  : std_logic;
 
 	begin
 
