@@ -30,7 +30,6 @@ use ecp3.components.all;
 
 entity ecp3_ddrdqphy is
 	generic (
-		tcp : natural;
 		DATA_GEAR : natural;
 		byte_size : natural);
 	port (

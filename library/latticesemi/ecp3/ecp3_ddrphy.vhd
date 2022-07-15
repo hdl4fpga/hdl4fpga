@@ -25,8 +25,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library ecp5u;
-use ecp5u.components.all;
+library ecp3;
+use ecp3.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -43,13 +43,10 @@ entity ecp_ddrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in std_logic;
-		sync_clk  : in std_logic;
-		sys_sclk  : in  std_logic;
-		sys_sclk2x : in std_logic;
-		sys_eclk  : in  std_logic;
 
-		clkop     : in std_logic;
-		sclk      : buffer std_logic;
+		sclk      : in  std_logic;
+		sclk2x    : in std_logic;
+		eclk      : in  std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_frm   : buffer std_logic;
@@ -221,26 +218,25 @@ architecture lscc of ecp_ddrphy is
 --		return to_dlinevector(to_stdlogicvector(val));
 --	end;
 
+	signal sdmt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmi      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmo      : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdmt   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmi   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmo   : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqi      : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqo      : dline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqi   : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo   : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqsi     : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqst     : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqsi  : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst  : bline_vector(word_size/byte_size-1 downto 0);
+	signal ddmo      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmt      : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddmo   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt   : std_logic_vector(word_size/byte_size-1 downto 0);
-
-	signal ddqst  : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi  : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqi   : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqst     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqsi     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqi      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
 
 	signal ddr_reset : std_logic;
 	signal ddrdel    : std_logic;
@@ -256,19 +252,23 @@ architecture lscc of ecp_ddrphy is
 	signal read_req  : std_logic_vector(ddr_dqs'range);
 	signal read_rdy  : std_logic_vector(ddr_dqs'range);
 
-	signal uddcntln : std_logic;
+	signal eclksynca_stop : std_logic;
+	signal eclksynca_clk  : std_logic;
+
+	signal uddcntln  : std_logic;
+	signal dqsdel    : std_logic;
+	signal dll_lock  : std_logic;
 
 begin
 
-	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
+	ddr3baphy_i : entity hdl4fpga.ecp3_ddrbaphy
 	generic map (
 		cmmd_gear => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		rst     => ddr_reset,
-		eclk    => sys_eclk,
-		sclk    => sys_sclk,
+		sclk    => sclk,
+		sclk2x  => sclk2x,
           
 		phy_rst => phy_rst,
 		phy_cs  => phy_cs,
@@ -294,13 +294,13 @@ begin
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
-		eclki => sys_eclk,
-		eclko => eclkw);
+		eclki => eclk,
+		eclko => eclksynca_clk);
 
 	dqsdllb_i : dqsdllb
 	port map (
 		rst      => rst,
-		clk      => sys_sclk2x,
+		clk      => sclk2x,
 		uddcntln => uddcntln,
 		dqsdel   => dqsdel,
 		lock     => dll_lock);
@@ -432,8 +432,8 @@ begin
 		port map (
 			rst       => ddr_reset,
 			sclk      => sclk,
-			eclk      => eclk,
-			ddrdel    => ddrdel,
+			eclk      => eclksynca_clk,
+			dqsdel    => dqsdel,
 
 			pause     => ms_pause,
 			read_req  => read_req(i),

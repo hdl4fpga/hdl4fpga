@@ -168,6 +168,8 @@ HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
+HDL4FPGA__ecp_ddrphy__lscc = $(LIB_HDL4FPGA)/ecp_ddrphy/lscc.dat
+HDL4FPGA__ecp_ddrphy = $(LIB_HDL4FPGA)/ecp_ddrphy/_primary.dat
 HDL4FPGA__ecp5_ddrphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrphy/lscc.dat
 HDL4FPGA__ecp5_ddrphy = $(LIB_HDL4FPGA)/ecp5_ddrphy/_primary.dat
 HDL4FPGA__ecp5_ddrdqphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrdqphy/lscc.dat
@@ -176,6 +178,8 @@ HDL4FPGA__ecp5_ddrbaphy__lscc = $(LIB_HDL4FPGA)/ecp5_ddrbaphy/lscc.dat
 HDL4FPGA__ecp5_ddrbaphy = $(LIB_HDL4FPGA)/ecp5_ddrbaphy/_primary.dat
 HDL4FPGA__ecp3_ddrdqphy__lscc = $(LIB_HDL4FPGA)/ecp3_ddrdqphy/lscc.dat
 HDL4FPGA__ecp3_ddrdqphy = $(LIB_HDL4FPGA)/ecp3_ddrdqphy/_primary.dat
+HDL4FPGA__ecp3_ddrbaphy__lscc = $(LIB_HDL4FPGA)/ecp3_ddrbaphy/lscc.dat
+HDL4FPGA__ecp3_ddrbaphy = $(LIB_HDL4FPGA)/ecp3_ddrbaphy/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -430,6 +434,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
+    $(HDL4FPGA__ecp_ddrphy__lscc) \
+    $(HDL4FPGA__ecp_ddrphy) \
     $(HDL4FPGA__ecp5_ddrphy__lscc) \
     $(HDL4FPGA__ecp5_ddrphy) \
     $(HDL4FPGA__ecp5_ddrdqphy__lscc) \
@@ -438,6 +444,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__ecp5_ddrbaphy) \
     $(HDL4FPGA__ecp3_ddrdqphy__lscc) \
     $(HDL4FPGA__ecp3_ddrdqphy) \
+    $(HDL4FPGA__ecp3_ddrbaphy__lscc) \
+    $(HDL4FPGA__ecp3_ddrbaphy) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -1047,6 +1055,13 @@ $(HDL4FPGA__dpram__def) : ../common/dpram.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/dpram.vhd
 
+$(HDL4FPGA__ecp3_ddrbaphy) \
+$(HDL4FPGA__ecp3_ddrbaphy__lscc) : ../latticesemi/ecp3/ecp3_ddrbaphy.vhd \
+		$(ECP3__components) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ecp3_ddrbaphy.vhd
+
 $(HDL4FPGA__ecp3_ddrdqphy) \
 $(HDL4FPGA__ecp3_ddrdqphy__lscc) : ../latticesemi/ecp3/ecp3_ddrdqphy.vhd \
 		$(HDL4FPGA__adjpha) \
@@ -1094,6 +1109,19 @@ $(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_ddrphy.vhd
+
+$(HDL4FPGA__ecp_ddrphy) \
+$(HDL4FPGA__ecp_ddrphy__lscc) : ../latticesemi/ecp3/ecp3_ddrphy.vhd \
+		$(HDL4FPGA__ecp3_ddrdqphy) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__ddr_param) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(ECP3__components) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/ecp3_ddrphy.vhd
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
