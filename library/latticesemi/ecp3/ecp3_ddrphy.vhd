@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_param.all;
 
-entity ecp_ddrphy is
+entity ecp3_ddrphy is
 	generic (
 		ddr_tcp   : real;
 		cmmd_gear : natural := 2;
@@ -94,7 +94,7 @@ entity ecp_ddrphy is
 		ddr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
-architecture lscc of ecp_ddrphy is
+architecture lscc of ecp3_ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
