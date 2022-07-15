@@ -50,7 +50,6 @@ entity ecp_ddrphy is
 
 		clkop     : in std_logic;
 		sclk      : buffer std_logic;
-		eclk      : buffer std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_frm   : buffer std_logic;
@@ -257,6 +256,8 @@ architecture lscc of ecp_ddrphy is
 	signal read_req  : std_logic_vector(ddr_dqs'range);
 	signal read_rdy  : std_logic_vector(ddr_dqs'range);
 
+	signal uddcntln : std_logic;
+
 begin
 
 	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
@@ -266,8 +267,8 @@ begin
 		addr_size => addr_size)
 	port map (
 		rst     => ddr_reset,
-		eclk    => eclk,
-		sclk    => sclk,
+		eclk    => sys_eclk,
+		sclk    => sys_sclk,
           
 		phy_rst => phy_rst,
 		phy_cs  => phy_cs,
@@ -290,99 +291,19 @@ begin
 		ddr_b   => ddr_b,
 		ddr_a   => ddr_a);
 
-	dqsdll_b : block
-		signal lock     : std_logic;
-		signal uddcntln : std_logic;
-		signal dqsdllb_uddcntln : std_logic;
-		signal rst      : std_logic;
-	begin
-
-		process(sys_sclk2x)
-		begin
-			if rising_edge(sys_sclk2x) then
-				rst <= phy_rst; 
-			end if;
-		end process;
-
-		dqsdllb_i : dqsdllb
-		port map (
-			rst      => rst,
-			clk      => sys_sclk2x,
-			uddcntln => dqsdllb_uddcntln,
-			dqsdel   => dqsdel,
-			lock     => lock);
-
-		dqsdllb_dqsdel <= dqsdel;
-		process (sys_sclk)
-			variable q : std_logic_vector(0 to 4-1);
-			variable wlr_edge : std_logic;
-		begin
-			if rising_edge(sys_sclk) then
-				if phy_rst='1' then
-					q := (others => '0');
-				elsif wlr='1' and wlr_edge='0' then
-					q := (others => '0');
-				elsif q(0)='0' then
-					if lock='1' then
-						q := inc(gray(q));
-					elsif wlr='1' then
-						q := inc(gray(q));
-					end if;
-				end if;
-				wlr_edge := wlr;
-			end if;
-			uddcntln     <= not q(2);
-			clkstart_rst <= not q(0);
-		end process;
-
-		process (sys_sclk2x)
-		begin
-			if rising_edge(sys_sclk2x) then
-				dqsdllb_uddcntln <= uddcntln;
-			end if;
-		end process;
-	end block;
-
-	clk_start_i : entity hdl4fpga.clk_start
-	port map (
-		rst  => clkstart_rst,
-		sclk => sys_sclk,
-		eclk => sys_eclk,
-		eclksynca_start => eclksynca_start,
-		dqsbufd_rst => dqsbufd_rst);
-	eclksynca_stop <= not eclksynca_start;
-
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
 		eclki => sys_eclk,
-		eclko => eclksynca_eclk);
-	yyy <= eclksynca_eclk after (tcp*2)/16 * 1 ps;
+		eclko => eclkw);
 
-	dqclk_b : block
-		signal dqclk1bar_ff_q : std_logic;
-		signal dqclk1bar_ff_d : std_logic;
-
-		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-	begin
-		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-		dqclk1bar_ff_i : entity hdl4fpga.aff
-		port map(
-			ar => dqsbufd_rst,
-			clk => yyy,
-			d => dqclk1bar_ff_d,
-			q => dqclk1bar_ff_q);
-
-		phase_ff_1_i : entity hdl4fpga.ff
-		port map(
-			clk => sys_sclk,
-			d => dqclk1bar_ff_q,
-			q => xxx);
-	end block;
+	dqsdllb_i : dqsdllb
+	port map (
+		rst      => rst,
+		clk      => sys_sclk2x,
+		uddcntln => uddcntln,
+		dqsdel   => dqsdel,
+		lock     => dll_lock);
 
 	read_leveling_l_b : block
 		signal leveling : std_logic;
@@ -504,7 +425,7 @@ begin
 		signal sto : std_logic;
 	begin
 		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
-		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
+		ddr3phy_i : entity hdl4fpga.ecp3_ddrdqphy
 		generic map (
 			data_gear => data_gear,
 			byte_size => byte_size)
@@ -513,6 +434,7 @@ begin
 			sclk      => sclk,
 			eclk      => eclk,
 			ddrdel    => ddrdel,
+
 			pause     => ms_pause,
 			read_req  => read_req(i),
 			read_rdy  => read_rdy(i),

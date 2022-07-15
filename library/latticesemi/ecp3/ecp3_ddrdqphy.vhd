@@ -34,12 +34,10 @@ entity ecp3_ddrdqphy is
 		DATA_GEAR : natural;
 		byte_size : natural);
 	port (
-		dqsbufd_rst : in  std_logic;
-		sys_sclk : in  std_logic;
-		sys_sclk2x : in  std_logic;
-		sys_eclk : in  std_logic;
-		sys_eclkw : in  std_logic;
-		sys_dqsdel : in  std_logic;
+		rst    : in  std_logic;
+		sclk   : in  std_logic;
+		eclk   : in  std_logic;
+		dqsdel : in  std_logic;
 		sys_rw : in  std_logic;
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
@@ -70,7 +68,7 @@ library hdl4fpga;
 
 architecture lscc of ecp3_ddrdqphy is
 
-	signal idqs_eclk  : std_logic;
+	signal eclkdqsr  : std_logic;
 	signal dqsw  : std_logic;
 	signal dqclk0 : std_logic;
 	signal dqclk1 : std_logic;
@@ -78,7 +76,7 @@ architecture lscc of ecp3_ddrdqphy is
 	signal prmbdet : std_logic;
 	signal ddrclkpol : std_logic := '1';
 	signal ddrlat : std_logic;
-	signal rw : std_logic;
+	signal read : std_logic;
 	
 	signal wlpha : std_logic_vector(8-1 downto 0);
 	signal dyndelay : std_logic_vector(8-1 downto 0);
@@ -91,38 +89,40 @@ architecture lscc of ecp3_ddrdqphy is
 	signal wle : std_logic;
 	signal wlrdy : std_logic;
 
+	constant delay      : time := 5.1 ns;
+	signal dqsi         : std_logic;
+
 begin
-	rw <= not sys_rw;
+	read <= not sys_rw;
 	sys_wlpha <= wlpha;
 	sys_wlrdy <= wlrdy;
 	adjpha_e : entity hdl4fpga.adjdqs
 	generic map (
 		tcp => tcp)
 	port map (
-		clk => sys_sclk,
+		clk => sclk,
 		rdy => wlrdy,
 		req => sys_wlreq,
 		smp => wlok,
 		dly => wlpha);
 
 	dyndelay <= wlpha;
+	dqsi <= transport ddr_dqsi after delay;
 	dqsbufd_i : dqsbufd 
 	port map (
-		rst       => dqsbufd_rst,
-		sclk      => sys_sclk,
-		eclk      => sys_eclkw,
-		eclkw     => sys_eclkw,
-		dqsdel   => sys_dqsdel,
+		rst      => rst,
+		sclk     => sclk,
+		eclk     => eclk,
+		dqsdel   => dqsdel,
 
-		dqsi     => ddr_dqsi,
-		eclkdqsr => idqs_eclk,
+		dqsi     => dqsi,
+		eclkdqsr => eclkdqsr,
 
-		read => rw,
+		read     => read,
 		ddrclkpol => ddrclkpol,
-		ddrlat  => ddrlat,
-		prmbdet => prmbdet,
-
-		datavalid => open,
+		ddrlat    => ddrlat,
+		prmbdet   => prmbdet,
+		datavalid => datavalid,
 
 		dyndelay0 => dyndelay(0),
 		dyndelay1 => dyndelay(1),
@@ -145,9 +145,9 @@ begin
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
-			sclk => sys_sclk,
-			eclk => sys_eclkw,
-			eclkdqsr => idqs_eclk,
+			sclk      => sclk,
+			eclk      => eclk,
+			eclkdqsr  => eclkdqsr,
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
@@ -164,9 +164,9 @@ begin
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
-			sclk => sys_sclk,
-			eclk => sys_eclkw,
-			eclkdqsr => idqs_eclk,
+			sclk => sclk,
+			eclk => eclk,
+			eclkdqsr => eclkdqsr,
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dmi,
@@ -176,9 +176,9 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
-	process (sys_sclk)
+	process (sclk)
 	begin
-		if rising_edge(sys_sclk) then
+		if rising_edge(sclk) then
 			wle <= not wlrdy and sys_wlreq;
 		end if;
 	end process;
@@ -189,7 +189,7 @@ begin
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			ta => dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
@@ -197,7 +197,7 @@ begin
 
 		oddrx2d_i : oddrx2d
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			da0 => sys_dqi(0*byte_size+i),
@@ -213,7 +213,7 @@ begin
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			ta => sys_dmt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
@@ -221,7 +221,7 @@ begin
 
 		oddrx2d_i : oddrx2d
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			da0 => sys_dmi(0),
@@ -241,7 +241,7 @@ begin
 
 		oddrtdqsa_i : oddrtdqsa
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			db => dqst(0),
 			ta => dqst(2),
 			dqstclk => dqstclk,
@@ -250,7 +250,7 @@ begin
 
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
-			sclk => sys_sclk,
+			sclk => sclk,
 			db0 => dqso(2*0),
 			db1 => dqso(2*1),
 			dqsw => dqsw,

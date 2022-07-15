@@ -319,10 +319,10 @@ begin
 		wrpntr1   => wrpntr(1),
 		wrpntr0   => wrpntr(0),
 
+		burstdet  => burstdet,
 		datavalid => datavalid,
 		rdmove    => '0',
 		wrmove    => '0',
-		burstdet  => burstdet,
 		rdcflag   => open,
 		wrcflag   => open,
 

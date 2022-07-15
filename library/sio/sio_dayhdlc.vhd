@@ -30,10 +30,9 @@ use hdl4fpga.std.all;
 
 entity sio_dayhdlc is
 	generic (
-		mem_size  : natural := 4*(2048*8));
+		mem_size    : natural := 4*(2048*8));
 	port (
-
-		uart_clk  : in  std_logic;
+		uart_clk    : in  std_logic;
 		uartrx_irdy : in  std_logic;
 		uartrx_data : in  std_logic_vector;
 
@@ -42,20 +41,20 @@ entity sio_dayhdlc is
 		uarttx_trdy : in  std_logic;
 		uarttx_data : out std_logic_vector;
 
-		sio_clk   : in std_logic;
-		sio_addr  : in  std_logic := '0';
+		sio_clk     : in std_logic;
+		sio_addr    : in  std_logic := '0';
 
-		si_frm    : in  std_logic := '0';
-		si_irdy   : in  std_logic := '1';
-		si_trdy   : out std_logic;
-		si_end    : in  std_logic;
-		si_data   : in  std_logic_vector;
+		si_frm      : in  std_logic := '0';
+		si_irdy     : in  std_logic := '1';
+		si_trdy     : out std_logic;
+		si_end      : in  std_logic;
+		si_data     : in  std_logic_vector;
 
-		so_frm    : out std_logic;
-		so_irdy   : out std_logic;
-		so_trdy   : in  std_logic := '1';
-		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
+		so_frm      : out std_logic;
+		so_irdy     : out std_logic;
+		so_trdy     : in  std_logic := '1';
+		so_data     : out std_logic_vector;
+		tp          : out std_logic_vector(1 to 32));
 
 end;
 

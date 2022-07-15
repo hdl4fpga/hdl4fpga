@@ -419,24 +419,33 @@ begin
 	begin
 
 		process (uart_clk)
+			variable q0 : std_logic := '0';
+			variable q1 : std_logic := '0';
 		begin
 			if rising_edge(uart_clk) then
+				led(6) <= q1;
+				led(7) <= q0;
 				if tp(1)='1' then
-					led(4) <= tp(2);
+					if tp(2)='1' then
+						q1 := not q1;
+					end if;
+				end if;
+				if uart_rxdv='1' then
+					q0 := not q0;
 				end if;
 			end if;
 		end process;
 
-		process (uart_clk)
+		process (dummy_txd ,uart_clk)
 			variable q : std_logic := '0';
-			variable e : std_logic;
+			variable e : std_logic := '1';
 		begin
 			if rising_edge(uart_clk) then
+				led(5) <= q;
 				if (so_frm and not e)='1' then
-					led(5) <= q;
 					q := not q;
 				end if;
-				led(6) <= so_frm;
+				led(4) <= so_frm;
 				e := so_frm;
 			end if;
 		end process;
@@ -706,9 +715,6 @@ begin
 	begin
 		if rising_edge(clk_25mhz) then
 			led(0) <= tp(1);
-			led(1) <= tp(2);
-			led(2) <= tp(3);
-			led(3) <= tp(4);
 		end if;
 	end process;
 

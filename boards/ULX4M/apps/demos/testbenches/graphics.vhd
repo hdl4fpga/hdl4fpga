@@ -190,15 +190,15 @@ architecture ulx4mld_graphics of testbench is
 	signal uart_clk : std_logic := '0';
 begin
 
-	rst      <= '1', '0' after 15 us when debug else '1', '0' after 4 us;
+	rst      <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
 	xtal     <= not xtal after 20 ns;
-	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 20 ns;
+	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 
 	hdlc_b : block
 
 		generic (
-			baudrate  : natural := setif(debug, 1e9/16, 3e6);
-			uart_xtal : real := real(setif(debug, 1e9, 25e6));
+			baudrate  : natural := 3e6;
+			uart_xtal : real := 40.0e6;
 			xxx : natural_vector;
 			payload   : std_logic_vector);
 		generic map (

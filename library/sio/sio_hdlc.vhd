@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity sio_hdlc is
 	generic (
-		mem_size  : natural := 4*(2048*8));
+		mem_size    : natural := 4*(2048*8));
 	port (
 		uart_clk    : in  std_logic;
 
@@ -42,18 +42,18 @@ entity sio_hdlc is
 		uarttx_trdy : in  std_logic;
 		uarttx_data : out std_logic_vector;
 
-		sio_clk   : in  std_logic;
-		si_frm    : in  std_logic;
-		si_irdy   : in  std_logic;
-		si_trdy   : buffer std_logic;
-		si_end    : in  std_logic;
-		si_data   : in  std_logic_vector;
+		sio_clk     : in  std_logic;
+		si_frm      : in  std_logic;
+		si_irdy     : in  std_logic;
+		si_trdy     : buffer std_logic;
+		si_end      : in  std_logic;
+		si_data     : in  std_logic_vector;
 
-		so_frm    : buffer std_logic;
-		so_irdy   : out std_logic;
-		so_trdy   : in  std_logic;
-		so_data   : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
+		so_frm      : buffer std_logic;
+		so_irdy     : out std_logic;
+		so_trdy     : in  std_logic;
+		so_data     : out std_logic_vector;
+		tp          : out std_logic_vector(1 to 32));
 end;
 
 architecture def of sio_hdlc is

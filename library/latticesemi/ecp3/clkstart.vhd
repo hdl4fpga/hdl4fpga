@@ -27,11 +27,11 @@ use ieee.numeric_std.all;
 
 entity clk_start is
 	port (
-		rst  : in  std_logic;
-		sclk : in  std_logic;
-		eclk : in  std_logic;
-		eclksynca_start : out std_logic;
-		dqsbufd_rst     : buffer std_logic);
+		rst         : in  std_logic;
+		sclk        : in  std_logic;
+		eclk        : in  std_logic;
+		eclksynca_stop : out std_logic;
+		dqsbufd_rst : buffer std_logic);
 end;
 
 architecture ecp3 of clk_start is
@@ -58,8 +58,8 @@ begin
 		elsif rising_edge(eclk) then
 			q := q(1 to q'right) & sclk_q;
 		end if;
-		eclksynca_start <= q(0);
-		dqsbufd_rst     <= not q(1);
+		eclksynca_stop <= not q(0);
+		dqsbufd_rst    <= not q(1);
 	end process;
 
 end;
