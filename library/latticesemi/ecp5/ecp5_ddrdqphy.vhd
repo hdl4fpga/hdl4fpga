@@ -30,42 +30,42 @@ use ecp5u.components.all;
 
 entity ecp5_ddrdqphy is
 	generic (
-		data_gear   : natural;
-		byte_size   : natural);
+		data_gear : natural;
+		byte_size : natural);
 	port (
-		rst         : in  std_logic;
-		sclk        : in  std_logic;
-		eclk        : in  std_logic;
-		ddrdel      : in  std_logic;
-		pause       : in  std_logic;
+		rst       : in  std_logic;
+		sclk      : in  std_logic;
+		eclk      : in  std_logic;
+		ddrdel    : in  std_logic;
+		pause     : in  std_logic;
 
-		phy_wlreq   : in  std_logic;
-		phy_wlrdy   : buffer std_logic;
-		phy_rlreq   : in  std_logic := 'U';
-		phy_rlrdy   : buffer std_logic;
-		read_rdy    : in  std_logic;
-		read_req    : buffer std_logic;
-		phy_sti     : in  std_logic;
-		phy_sto     : out std_logic;
-		phy_dmt     : in  std_logic_vector(0 to data_gear-1) := (others => '-');
-		phy_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		phy_dmo     : out std_logic_vector(data_gear-1 downto 0);
-		phy_dqo     : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqt     : in  std_logic_vector(0 to data_gear-1);
-		phy_dqi     : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqso    : in  std_logic_vector(0 to data_gear-1);
-		phy_dqst    : in  std_logic_vector(0 to data_gear-1);
+		phy_wlreq : in  std_logic;
+		phy_wlrdy : buffer std_logic;
+		phy_rlreq : in  std_logic := 'U';
+		phy_rlrdy : buffer std_logic;
+		read_rdy  : in  std_logic;
+		read_req  : buffer std_logic;
+		phy_sti   : in  std_logic;
+		phy_sto   : out std_logic;
+		phy_dmt   : in  std_logic_vector(0 to data_gear-1) := (others => '-');
+		phy_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		phy_dmo   : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqt   : in  std_logic_vector(0 to data_gear-1);
+		phy_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqso  : in  std_logic_vector(0 to data_gear-1);
+		phy_dqst  : in  std_logic_vector(0 to data_gear-1);
 
-		ddr_dmt     : out std_logic;
-		ddr_dmi     : in  std_logic := '-';
-		ddr_dmo     : out std_logic;
-		ddr_dqi     : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqt     : out std_logic_vector(byte_size-1 downto 0);
-		ddr_dqo     : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dmt   : out std_logic;
+		ddr_dmi   : in  std_logic := '-';
+		ddr_dmo   : out std_logic;
+		ddr_dqi   : in  std_logic_vector(byte_size-1 downto 0);
+		ddr_dqt   : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dqo   : out std_logic_vector(byte_size-1 downto 0);
 
-		ddr_dqsi    : in  std_logic;
-		ddr_dqst    : out std_logic;
-		ddr_dqso    : out std_logic);
+		ddr_dqsi  : in  std_logic;
+		ddr_dqst  : out std_logic;
+		ddr_dqso  : out std_logic);
 
 end;
 
@@ -348,7 +348,7 @@ begin
 		signal z : std_logic;
 	begin
 		d <= transport ddr_dqi(i) after delay;
-		xxx : if i=0 generate
+		dqi0_g : if i=0 generate
 			dqi0 <= z;
 		end generate;
 		delay_i : delayg
