@@ -74,7 +74,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture lscc of ecp3_ddrdqphy is
-
 	
 	signal dqsw         : std_logic;
 	signal dqclk0       : std_logic;

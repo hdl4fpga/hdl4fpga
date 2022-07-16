@@ -16,6 +16,8 @@ HDL4FPGA__xc7a_ddrphy = $(LIB_HDL4FPGA)/xc7a_ddrphy/_primary.dat
 HDL4FPGA__omdr = $(LIB_HDL4FPGA)/omdr/_primary.dat
 HDL4FPGA__sio_flow = $(LIB_HDL4FPGA)/sio_flow/_primary.dat
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
+HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
+HDL4FPGA__phadctor = $(LIB_HDL4FPGA)/phadctor/_primary.dat
 HDL4FPGA__ecp3_ddrphy = $(LIB_HDL4FPGA)/ecp3_ddrphy/_primary.dat
 HDL4FPGA__xc5v_ddrphy = $(LIB_HDL4FPGA)/xc5v_ddrphy/_primary.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
@@ -80,14 +82,14 @@ WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__hdlc_debug = $(LIB_WORK)/ulx3s/hdlc_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ulx3s_miiipoedebug = $(LIB_WORK)/testbench/ulx3s_miiipoedebug.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__arty_miiipoedebug = $(LIB_WORK)/testbench/arty_miiipoedebug.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__nuhs3debug_miiipoedebug = $(LIB_WORK)/testbench/nuhs3debug_miiipoedebug.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter__graphics = $(LIB_WORK)/s3estarter/graphics.dat
@@ -130,14 +132,14 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__ulx3s__hdlc_debug) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
+    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ulx3s_miiipoedebug) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__arty_miiipoedebug) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__nuhs3debug_miiipoedebug) \
     $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__arty_graphics) \
-    $(WORK__testbench__ulx3s_graphics) \
-    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter__graphics) \
@@ -222,7 +224,7 @@ $(WORK__arty__miiipoe_debug) : ../../boards/arty/apps/demos/miiipoe_debug.vhd \
 $(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/ecp3versa/common/ecp3versa.vhd
+	$(VCOM) -2002 ../../boards/ecp3versa/common/ecp3versa.vhd
 
 $(WORK__ecp3versa__graphics) : ../../boards/ecp3versa/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ddr_param) \
@@ -234,6 +236,8 @@ $(WORK__ecp3versa__graphics) : ../../boards/ecp3versa/apps/demos/graphics.vhd \
 		$(HDL4FPGA__uart_tx) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__uart_rx) \
+		$(HDL4FPGA__phadctor) \
+		$(HDL4FPGA__ff) \
 		$(WORK__ecp3versa) \
 		$(ECP3__components) \
 		$(HDL4FPGA__modeline_calculator) \

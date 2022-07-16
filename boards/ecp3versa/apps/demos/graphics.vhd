@@ -311,7 +311,23 @@ begin
 		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_mhz, 10);
 		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(ddram_mhz/2.0, 10);
 
-		signal clkfb : std_logic;
+
+		attribute hgroup : string;
+		attribute pbbox  : string;
+		
+		attribute pbbox  of phase_ff_0_i : label is "1,1";
+		attribute hgroup of phase_ff_0_i : label is "clk_phase0";
+		
+		signal clkfb      : std_logic;
+
+		signal dtct_req   : std_logic;
+		signal dtct_rdy   : std_logic;
+		signal step_req   : std_logic;
+		signal step_rdy   : std_logic;
+
+		signal phase_ff_q : std_logic;
+		signal eclk_rpha  : std_logic_vector(4-1 downto 0);
+		signal dfpa3      : std_logic;
 
 	begin
 
@@ -319,6 +335,7 @@ begin
 		report real'image(ddram_mhz)
 		severity NOTE;
 
+		dfpa3 <= not eclk_rpha(3);
 		pll_i : ehxpllf
 		generic map (
 			CLKOS_TRIM_DELAY => 0,
@@ -346,11 +363,18 @@ begin
 			rst              => '0', 
 			rstk             => '0',
 			clki             => clk,
---			drpai3 => ddr_pha(3),  drpai2 => ddr_pha(2), drpai1 => ddr_pha(1), drpai0 => ddr_pha(0), 
---			dfpai3 => dfpa3,       dfpai2 => ddr_pha(2), dfpai1 => ddr_pha(1), dfpai0 => ddr_pha(0), 
-			drpai3 => '0',  drpai2 => '0', drpai1 => '0', drpai0 => '0', 
-			dfpai3 => '0',  dfpai2 => '0', dfpai1 => '0', dfpai0 => '0', 
-			fda3             => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
+			drpai3           => eclk_rpha(3),
+			drpai2           => eclk_rpha(2), 
+			drpai1           => eclk_rpha(1), 
+			drpai0           => eclk_rpha(0), 
+			dfpai3           => dfpa3,
+			dfpai2           => eclk_rpha(2), 
+			dfpai1           => eclk_rpha(1), 
+			dfpai0           => eclk_rpha(0), 
+			fda3             => '0',
+			fda2             => '0',
+			fda1             => '0',
+			fda0             => '0', 
 			wrdel            => '0',
 			clkintfb         => clkfb,
 			clkfb            => clkfb,
@@ -359,6 +383,25 @@ begin
 			clkok            => ddr_sclk,
 			clkok2           => open,
 			lock             => ddram_clklck);
+		
+		phase_ff_0_i : entity hdl4fpga.ff
+		port map (
+			clk => ddr_sclk,
+			d   => ddr_eclk,
+			q   => phase_ff_q);
+		
+		phadctor_e : entity hdl4fpga.phadctor
+		generic map (
+			taps      => 2**eclk_rpha'length-1)
+		port map (
+			clk       => ddr_sclk,
+			dtct_req  => dtct_req,
+			dtct_rdy  => dtct_rdy,
+			step_req  => step_req,
+			step_rdy  => step_rdy,
+			edge      => '1',
+			input     => phase_ff_q,
+			phase     => eclk_rpha);
 
 	end block;
 

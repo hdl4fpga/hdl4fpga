@@ -1077,6 +1077,7 @@ $(HDL4FPGA__ecp3_ddrdqphy__lscc) : ../latticesemi/ecp3/ecp3_ddrdqphy.vhd \
 $(HDL4FPGA__ecp3_ddrphy) \
 $(HDL4FPGA__ecp3_ddrphy__lscc) : ../latticesemi/ecp3/ecp3_ddrphy.vhd \
 		$(HDL4FPGA__ecp3_ddrdqphy) \
+		$(HDL4FPGA__clk_start) \
 		$(HDL4FPGA__ecp3_ddrbaphy) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \

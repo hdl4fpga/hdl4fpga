@@ -238,7 +238,6 @@ architecture lscc of ecp3_ddrphy is
 	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal ddr_reset : std_logic;
 	signal ddrdel    : std_logic;
 
 	signal rl_req    : std_logic_vector(ddr_dqs'range);
@@ -255,9 +254,16 @@ architecture lscc of ecp3_ddrphy is
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_clk  : std_logic;
 
-	signal uddcntln  : std_logic;
-	signal dqsdel    : std_logic;
-	signal dll_lock  : std_logic;
+	signal dqsbuf_rst : std_logic;
+	signal uddcntln   : std_logic;
+	signal dqsdel     : std_logic;
+	signal dll_lock   : std_logic;
+
+	attribute hgroup  : string;
+	attribute pbbox   : string;
+
+	attribute hgroup of clk_start_i : label is "clk_stop";
+	attribute pbbox  of clk_start_i : label is "3,2";
 
 begin
 
@@ -291,12 +297,45 @@ begin
 		ddr_b   => ddr_b,
 		ddr_a   => ddr_a);
 
+	clk_start_i : entity hdl4fpga.clk_start
+	port map (
+		rst        => '0',
+		sclk       => sclk,
+		eclk       => eclk,
+		eclk_stop  => eclksynca_stop,
+		dqsbuf_rst => dqsbuf_rst);
+
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
 		eclki => eclk,
 		eclko => eclksynca_clk);
 
+	dqclk_b : block
+		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
+		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
+		attribute pbbox  of phase_ff_1_i   : label is "1,1";
+		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
+
+		signal dqclk1bar_ff_q : std_logic;
+		signal dqclk1bar_ff_d : std_logic;
+
+	begin
+		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
+		dqclk1bar_ff_i : entity hdl4fpga.aff
+		port map(
+			ar => dqsbuf_rst,
+			clk => eclksynca_clk,
+			d => dqclk1bar_ff_d,
+			q => dqclk1bar_ff_q);
+
+		phase_ff_1_i : entity hdl4fpga.ff
+		port map(
+			clk => sclk,
+			d => dqclk1bar_ff_q,
+			q => open);
+	end block;
+	
 	dqsdllb_i : dqsdllb
 	port map (
 		rst      => rst,
@@ -430,7 +469,7 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			rst       => ddr_reset,
+			rst       => dqsbuf_rst,
 			sclk      => sclk,
 			eclk      => eclksynca_clk,
 			dqsdel    => dqsdel,
