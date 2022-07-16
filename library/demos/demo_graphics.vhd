@@ -90,8 +90,6 @@ entity demo_graphics is
 		ctlrphy_wlrdy : in  std_logic := '-';
 		ctlrphy_rlreq : out std_logic;
 		ctlrphy_rlrdy : in  std_logic := '-';
-		ctlrphy_rlcal : in  std_logic := '0';
-		ctlrphy_rlseq : out std_logic;
 		ctlrphy_irdy  : in  std_logic := '0';
 		ctlrphy_trdy  : out std_logic := '0';
 		ctlrphy_rw    : in  std_logic := '-';
@@ -970,8 +968,6 @@ begin
 			phy_wlreq    => ctlrphy_wlreq,
 			phy_rlrdy    => ctlrphy_rlrdy,
 			phy_rlreq    => ctlrphy_rlreq,
-			phy_rlcal    => ctlrphy_rlcal,
-			phy_rlseq    => ctlrphy_rlseq,
 			phy_rst      => ctlrphy_rst,
 			phy_cke      => ctlrphy_cke,
 			phy_cs       => ctlrphy_cs,

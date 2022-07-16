@@ -153,8 +153,6 @@ architecture graphics of arty is
 	signal ctlrphy_wlrdy   : std_logic;
 	signal ctlrphy_rlreq   : std_logic;
 	signal ctlrphy_rlrdy   : std_logic;
-	signal ctlrphy_rlcal   : std_logic;
-	signal ctlrphy_rlseq   : std_logic;
 
 	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
 	signal ddr_a           : std_logic_vector(ddr3_a'range);
@@ -614,8 +612,6 @@ begin
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
-		ctlrphy_rlcal => ctlrphy_rlcal,
-		ctlrphy_rlseq => ctlrphy_rlseq,
 
 		ctlrphy_irdy => ctlrphy_frm,
 		ctlrphy_trdy => ctlrphy_trdy,
@@ -694,14 +690,12 @@ begin
 		phy_rw      => ctlrphy_rw,
 		phy_ini     => ctlrphy_ini,
 
-		sys_cmd     => ctlrphy_cmd,
-		sys_wlreq   => ctlrphy_wlreq,
-		sys_wlrdy   => ctlrphy_wlrdy,
+		phy_cmd     => ctlrphy_cmd,
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
 
-		sys_rlreq   => ctlrphy_rlreq,
-		sys_rlrdy   => ctlrphy_rlrdy,
-		sys_rlcal   => ctlrphy_rlcal,
-		sys_rlseq   => ctlrphy_rlseq,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
 
 		sys_cke     => ctlrphy_cke,
 		sys_rst     => ctlrphy_rst,
@@ -709,7 +703,7 @@ begin
 		sys_ras     => ctlrphy_ras,
 		sys_cas     => ctlrphy_cas,
 		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_ba,
+		sys_ba      => ctlrphy_ba,
 		sys_a       => ctlrphy_a,
 
 		sys_dqst    => ctlrphy_dqst,

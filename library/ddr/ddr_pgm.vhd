@@ -29,12 +29,9 @@ entity ddr_pgm is
 	generic (
 		cmmd_gear    : natural := 1);
 	port (
-		tpin         : in  std_logic_vector(0 to 4-1) := (others => '0');
 		ctlr_clk     : in  std_logic := '0';
 		ctlr_rst     : in  std_logic := '0';
 		ctlr_refreq  : out std_logic := '0';
-		ddr_pgm_cal  : in  std_logic := '0';
-		ddr_pgm_seq  : out std_logic := '0';
 		ddr_pgm_frm  : in  std_logic := '1';
 		ddr_pgm_rw   : in  std_logic := '1';
 		ddr_mpu_trdy : in  std_logic := '1';
@@ -169,39 +166,11 @@ architecture registered of ddr_pgm is
 	signal pgm_refq : std_logic;
 	signal pgm_refy : std_logic;
 
-	signal calibrating : std_logic;
-
 begin
 
 	ddr_input(0) <= ddr_pgm_frm;
 	ddr_input(1) <= ddr_pgm_rw;
-	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy when tpin(0)='0' else '0';
-
-	calibrate_p : process (ctlr_clk, ddr_mpu_trdy, ddr_pgm_cal)
-		variable t : signed(0 to unsigned_num_bits(cmmd_gear-1));
-	begin
-		if rising_edge(ctlr_clk) then
-			if ctlr_rst='1' then
-				t := to_signed(cmmd_gear-1, t'length);
-			elsif ddr_pgm_cal='0' then
-				t := to_signed(cmmd_gear-1, t'length);
-			elsif ddr_mpu_trdy='1' then
-				if ddr_pgm_cal='1' then
-					if cmmd_gear > 1 then
-						if t(0)='0' then
-							t := t - 1;
-						else
-							t := to_signed(cmmd_gear-1, t'length);
-						end if;
-					else
-						t := not t;
-					end if;
-				end if;
-			end if;
-		end if;
-		ddr_pgm_seq <= t(0);
-		calibrating <= ddr_pgm_cal and ddr_mpu_trdy and t(0);
-	end process;
+	ddr_input(2) <= ddr_ref_req xor ddr_ref_rdy;
 
 	process (ctlr_clk)
 	begin
@@ -246,10 +215,9 @@ begin
 				ddr_pgm_cmd <= mpu_nop;
 			else
 				if ddr_mpu_trdy='1' then
-	--				ctlr_refreq <= pgm_refq;
-					ctlr_refreq <= setif(tpin(1)='1', '0', pgm_refq);
+					ctlr_refreq <= pgm_refq;
 					ddr_ref_rdy <= ddr_ref_rdy xor pgm_refy;
-					ddr_pgm_cmd <= setif(calibrating='0', pgm_cmd, mpu_nop);
+					ddr_pgm_cmd <= pgm_cmd;
 				end if;
 			end if;
 		end if;

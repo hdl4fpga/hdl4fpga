@@ -48,7 +48,6 @@ entity ddr_ctlr is
 		word_size    : natural := 16;
 		byte_size    : natural :=  8);
 	port (
-		tpin : in std_logic_vector(0 to 4-1) := (others => '0');
 		ctlr_alat    : out std_logic_vector(2 downto 0);
 		ctlr_blat    : out std_logic_vector(2 downto 0);
 		ctlr_bl      : in std_logic_vector(2 downto 0);
@@ -89,8 +88,6 @@ entity ddr_ctlr is
 		phy_wlreq    : out std_logic;
 		phy_rlreq    : out std_logic;
 		phy_rlrdy    : in  std_logic := '1';
-		phy_rlcal    : in  std_logic := '0';
-		phy_rlseq    : out std_logic;
 		phy_rst      : out std_logic;
 		phy_cke      : out std_logic;
 		phy_cs       : out std_logic;
@@ -271,7 +268,6 @@ begin
 	generic map (
 		cmmd_gear     => cmmd_gear)
 	port map (
-			tpin => tpin,
 		ctlr_clk      => ctlr_clks(0),
 		ctlr_rst      => ddr_mpu_rst,
 		ctlr_refreq   => ctlr_refreq,
@@ -280,9 +276,7 @@ begin
 		ddr_pgm_cmd   => ddr_pgm_cmd,
 		ddr_pgm_rw    => ddr_pgm_rw,
 		ddr_ref_req   => ddr_refi_req,
-		ddr_ref_rdy   => ddr_refi_rdy,
-		ddr_pgm_cal   => phy_rlcal,
-		ddr_pgm_seq   => phy_rlseq);
+		ddr_ref_rdy   => ddr_refi_rdy);
 
 	ddr_mpu_rst <= not init_rdy;
 	ddr_mpu_sel <= init_rdy;
