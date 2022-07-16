@@ -46,20 +46,18 @@ entity xc7a_ddrphy is
 		tp1          : out std_logic_vector(6-1 downto 0);
 
 		sys_clks     : in  std_logic_vector(0 to 5-1);
-		phy_rsts     : in  std_logic_vector(0 to 3-1) := (others => '1');
 
-		phy_ini      : buffer std_logic;
-		phy_rw       : buffer std_logic;
+		phy_rsts     : in  std_logic_vector(0 to 3-1) := (others => '1');
 		phy_frm      : buffer std_logic;
 		phy_trdy     : in  std_logic;
+		phy_rw       : buffer std_logic;
+		phy_cmd      : in  std_logic_vector(0 to 3-1);
+		phy_ini      : buffer std_logic;
 
-		sys_cmd      : in  std_logic_vector(0 to 3-1);
-		sys_wlreq    : in  std_logic;
-		sys_wlrdy    : out std_logic;
-		sys_rlreq    : in  std_logic;
-		sys_rlrdy    : buffer std_logic;
-		sys_rlcal    : buffer std_logic;
-		sys_rlseq    : in  std_logic;
+		phy_wlreq    : in  std_logic;
+		phy_wlrdy    : out std_logic;
+		phy_rlreq    : in  std_logic;
+		phy_rlrdy    : buffer std_logic;
 
 		sys_rst      : in  std_logic_vector(0 to cmmd_gear-1) := (others => '-');
 		sys_cke      : in  std_logic_vector(0 to cmmd_gear-1);
@@ -67,7 +65,7 @@ entity xc7a_ddrphy is
 		sys_ras      : in  std_logic_vector(0 to cmmd_gear-1);
 		sys_cas      : in  std_logic_vector(0 to cmmd_gear-1);
 		sys_we       : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_b        : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_ba       : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
 		sys_a        : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		sys_odt      : in  std_logic_vector(0 to cmmd_gear-1);
 
@@ -102,15 +100,17 @@ entity xc7a_ddrphy is
 		ddr_dqsi     : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso     : out std_logic_vector(word_size/byte_size-1 downto 0));
 
-		constant clk0div  : natural := 0;
-		constant clk90div : natural := 1;
-		constant iodclk   : natural := 2;
-		constant clk0     : natural := 3;
-		constant clk90    : natural := 4;
+	alias clk0div_rst  : std_logic is phy_rsts(0);
+	alias clk90div_rst : std_logic is phy_rsts(1);
+	alias iod_rst  : std_logic is phy_rsts(2);
 
-		constant rst0div  : natural := 0;
-		constant rst90div : natural := 1;
-		constant rstiod   : natural := 2;
+	alias clk0div  : std_logic is sys_clks(0);
+	alias clk90div : std_logic is sys_clks(1);
+	alias iod_clk  : std_logic is sys_clks(2);
+
+	alias clk0     : std_logic is sys_clks(3);
+	alias clk90    : std_logic is sys_clks(4);
+
 end;
 
 library hdl4fpga;
@@ -120,6 +120,8 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture virtex7 of xc7a_ddrphy is
+
+
 	subtype tapsw is std_logic_vector(6-1 downto 0);
 	type tapsw_vector is array (natural range <>) of tapsw;
 
@@ -275,233 +277,55 @@ architecture virtex7 of xc7a_ddrphy is
 		return val;
 	end;
 
-	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
-	signal ssti : bline_vector(word_size/byte_size-1 downto 0);
-	signal ssto : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmi      : bline_vector(word_size/byte_size-1 downto 0);
+	signal ssti      : bline_vector(word_size/byte_size-1 downto 0);
+	signal ssto      : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqi      : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqo      : dline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqsi : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqsi     : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqst     : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmo      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmt      : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqi      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal wlrdy  : std_logic_vector(0 to word_size/byte_size-1);
-	signal rlrdy : std_logic_vector(ddr_dqsi'range);
-	signal rlcal : std_logic_vector(ddr_dqsi'range);
+	signal wl_rdy    : std_logic_vector(ddr_dqsi'range);
+	signal rl_req    : std_logic_vector(ddr_dqsi'range);
+	signal rl_rdy    : std_logic_vector(ddr_dqsi'range);
+	signal wr_req    : std_logic_vector(ddr_dqsi'range);
+	signal wr_rdy    : std_logic_vector(rl_req'range);
+	signal rd_req    : std_logic_vector(ddr_dqsi'range);
+	signal rd_rdy    : std_logic_vector(rd_req'range);
 
-	signal phy_ba : std_logic_vector(sys_b'range);
-	signal phy_a  : std_logic_vector(sys_a'range);
-	signal ba_ras : std_logic_vector(sys_ras'range);
-	signal ba_cas : std_logic_vector(sys_cas'range);
-	signal ba_we  : std_logic_vector(sys_we'range);
-	signal rotba  : unsigned(0 to unsigned_num_bits(cmmd_gear-1)-1);
+	signal read_brst : std_logic_vector(rd_req'range);
+	signal write_req : bit;
+	signal write_rdy : bit;
+	signal read_req   : std_logic_vector(ddr_dqsi'range);
+	signal read_rdy   : std_logic_vector(ddr_dqsi'range);
 
-	signal leveling : std_logic;
-	signal dqsdly : std_logic_vector(2*6-1 downto 0);
-	signal dqidly : std_logic_vector(2*6-1 downto 0);
+	signal ddrphy_ba : std_logic_vector(sys_ba'range);
+	signal ddrphy_a  : std_logic_vector(sys_a'range);
+
+	signal leveling  : std_logic;
+	signal dqsdly    : std_logic_vector(2*6-1 downto 0);
+	signal dqidly    : std_logic_vector(2*6-1 downto 0);
 
 begin
 
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk0),
+			clk => clk0,
 			dr => '0' xor clkinv,
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
-	end generate;
-
-	phy_ba  <= sys_b when leveling='0' else (others => '0');
-	phy_a   <= sys_a when leveling='0' else (others => '0');
-
-	read_leveling_l_b : block
-		signal write_req : std_logic;
-		signal write_rdy : std_logic;
-		signal read_req  : std_logic;
-		signal read_rdy  : std_logic;
-		signal leveled   : std_logic;
-
-		signal ddr_act   : std_logic;
-		signal ddr_pre   : std_logic;
-		signal ddr_idle  : std_logic;
-	begin
-
-		leveling <= to_stdulogic(to_bit(sys_rlrdy) xor to_bit(sys_rlreq));
-		process (phy_trdy, sys_clks(clk0div))
-			variable s_pre : std_logic;
-		begin
-			if rising_edge(sys_clks(clk0div)) then
-				if phy_trdy='1' then
-					if sys_cmd=mpu_pre then
-						s_pre := '1';
-					else
-						s_pre := '0';
-					end if;
-				end if;
-			end if;
-			ddr_idle <= s_pre and phy_trdy;
-		end process;
-		ddr_act <= phy_trdy when sys_cmd=mpu_act else '0';
-		ddr_pre <= phy_trdy when sys_cmd=mpu_pre else '0';
-
-		process (sys_clks(clk0div))
-		begin
-			if rising_edge(sys_clks(clk0div)) then
-				if phy_rsts(clk0div)='1' then
-					phy_ini   <= '0';
-					phy_frm   <= '0';
-					phy_rw    <= '0';
-					read_rdy  <= '0';
-					write_req <= '0';
-				elsif phy_ini='1' then
-					phy_frm  <= '0';
-					phy_rw   <= '-';
-					phy_ini  <= '1';
-					read_rdy <= read_req;
-				elsif leveled='1' then
-					if ddr_idle='1' then
-						phy_ini <= '1';
-					elsif ddr_pre='1' then
-						phy_ini <= '0';
-					end if;
-					phy_frm  <= '0';
-					phy_rw   <= '1';
-					read_rdy <= read_req;
-				elsif (read_req xor read_rdy)='1' then
-					if leveled='1' then
-						phy_ini <= '1';
-						phy_frm <= '0';
-						read_rdy <= read_req;
-					elsif ddr_idle='1' then
-						phy_ini <= '0';
-						phy_frm <= '1';
-					end if;
-					phy_rw   <= '1';
-				elsif (write_req xor write_rdy)='1'  then
-					phy_ini  <= '0';
-					phy_frm  <= '1';
-					phy_rw   <= '0';
-					if ddr_act='1' then
-						phy_frm   <= '0';
-						write_req <= write_rdy;
-					end if;
-				end if;
-			end if;
-		end process;
-
-		process (sys_clks(iodclk))
-			type states is (s_write, s_read);
-			variable state : states;
-		begin
-			if rising_edge(sys_clks(iodclk)) then
-				if phy_rsts(rstiod)='1' then
-					read_req  <= '0';
-					write_rdy <= '0';
-					leveled   <= '0';
-					state     := s_write;
-				else
-					case state is
-					when s_write =>
-						if (sys_rlrdy xor sys_rlreq)='1' then
-							write_rdy <= not write_req;
-							state     := s_read;
-						end if;
-					when s_read =>
-						if (write_rdy xor write_req)='0' then
-							read_req <= not read_rdy;
-						end if;
-						if (sys_rlrdy xor sys_rlreq)='0' then
-							leveled <= '1';
-							state   := s_write;
-						end if;
-					end case;
-				end if;
-			end if;
-		end process;
-	end block;
-
-	process (sys_clks(iodclk))
-		variable aux : bit;
-	begin
-		if rising_edge(sys_clks(iodclk)) then
-			aux := '1';
-			for i in wlrdy'range loop
-				aux := aux and (to_bit(wlrdy(i)) xor to_bit(sys_wlreq));
-			end loop;
-			sys_wlrdy <= to_stdulogic(aux) xor sys_wlreq;
-		end if;
-	end process;
-
-	process (sys_clks(iodclk))
-		variable aux : bit;
-	begin
-		if rising_edge(sys_clks(iodclk)) then
-			aux := '0';
-			for i in rlrdy'range loop
-				aux := aux or (to_bit(rlrdy(i)) xor to_bit(sys_rlreq));
-			end loop;
-			sys_rlrdy <= to_stdulogic(aux) xor sys_rlreq;
-		end if;
-	end process;
-
-	process (sys_clks(iodclk))
-		variable aux : std_logic;
-	begin
-		aux := '1';
-		if rising_edge(sys_clks(iodclk)) then
-			for i in rlcal'range loop
-				aux := aux and rlcal(i);
-			end loop;
-			sys_rlcal <= aux;
-		end if;
-	end process;
-
-	rotcmmd_g : if cmmd_gear > 1 generate
-		process (sys_clks(clk0div))
-		begin
-			if rising_edge(sys_clks(clk0div)) then
-				if sys_rlcal='0' then
-					rotba <= (others => '0');
-				elsif phy_ini='1' then
-					rotba <= (others => '0');
-				elsif sys_rlseq='1' then
-					rotba <= rotba + 1;
-				end if;
-			end if;
-		end process;
-
-		rotras_i : entity hdl4fpga.barrel
-		port map (
-			shf => std_logic_vector(rotba),
-			di  => sys_ras,
-			do => ba_ras);
-
-		rotcas_i : entity hdl4fpga.barrel
-		port map (
-			shf => std_logic_vector(rotba),
-			di => sys_cas,
-			do => ba_cas);
-
-		rotwe_i : entity hdl4fpga.barrel
-		port map (
-			shf => std_logic_vector(rotba),
-			di  => sys_we,
-			do  => ba_we);
-	end generate;
-
-	dircmmd_g : if cmmd_gear=1 generate
-		ba_ras <= sys_ras;
-		ba_cas <= sys_cas;
-		ba_we  <= sys_we;
 	end generate;
 
 	ddrbaphy_i : entity hdl4fpga.xc7a_ddrbaphy
@@ -511,17 +335,17 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clks(0) => sys_clks(clk0div),
-		sys_clks(1) => sys_clks(clk0),
-     	phy_rst    => phy_rsts(rst0div),
+		sys_clks(0) => clk0div,
+		sys_clks(1) => clk0,
+     	phy_rst    => clk0div_rst,
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
 		sys_cke    => sys_cke,
-		sys_b      => phy_ba,
-		sys_a      => phy_a,
-		sys_ras    => ba_ras,
-		sys_cas    => ba_cas,
-		sys_we     => ba_we,
+		sys_b      => ddrphy_ba,
+		sys_a      => ddrphy_a,
+		sys_ras    => sys_ras,
+		sys_cas    => sys_cas,
+		sys_we     => sys_we,
 		sys_odt    => sys_odt,
 
 		ddr_rst    => ddr_rst,
@@ -533,6 +357,140 @@ begin
 		ddr_we     => ddr_we,
 		ddr_b      => ddr_b,
 		ddr_a      => ddr_a);
+
+	write_leveling_p : process (phy_wlreq, wl_rdy)
+		variable aux : bit;
+	begin
+		aux := '1';
+		for i in wl_rdy'range loop
+			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
+		end loop;
+		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
+	end process;
+
+	read_leveling_l_b : block
+		signal leveling : std_logic;
+
+		signal ddr_act  : std_logic;
+		signal ddr_idle : std_logic;
+
+	begin
+
+		ddrphy_ba <= sys_ba when leveling='0' else (others => '0');
+		ddrphy_a  <= sys_a  when leveling='0' else (others => '0');
+
+		process (phy_trdy, clk0div)
+			variable s_pre : std_logic;
+		begin
+			if rising_edge(clk0div) then
+				if phy_trdy='1' then
+					ddr_idle <= s_pre;
+					case phy_cmd is
+					when mpu_pre =>
+						ddr_act <= '0';
+						s_pre := '1';
+					when mpu_act =>
+						ddr_act <= '1';
+						s_pre := '0';
+					when others =>
+						ddr_act <= '0';
+						s_pre := '0';
+					end case;
+				end if;
+			end if;
+		end process;
+
+		readcycle_p : process (clk0div, rd_rdy)
+			type states is (s_idle, s_start, s_run);
+			variable state : states;
+			variable burst : std_logic;
+			variable z     : std_logic;
+		begin
+			if rising_edge(clk0div) then
+				case state is
+				when s_start =>
+					phy_frm  <= '1';
+					leveling <= '1';
+					if ddr_act='1' then
+						if burst='0' then
+							phy_frm <= '0';
+						end if;
+						state   := s_run;
+					end if;
+				when s_run =>
+					if ddr_idle='1' then
+						leveling  <= '0';
+						rd_rdy    <= rd_req;
+						wr_rdy    <= wr_req;
+						read_rdy  <= read_req;
+						write_rdy <= write_req;
+						state    := s_idle;
+					end if;
+					if burst='0' then
+						phy_frm <= '0';
+					end if;
+				when s_idle =>
+					leveling <= '0';
+					phy_frm  <= '0';
+					if z='1' then
+						phy_frm  <= '1';
+						phy_rw   <= '1';
+						leveling <= '1';
+						state    := s_start;
+					elsif (write_req xor write_rdy)='1' then
+						phy_frm  <= '1';
+						phy_rw   <= '0';
+						leveling <= '1';
+						state    := s_start;
+					end if;
+				end case;
+
+				if read_brst=(read_brst'range  => '0') then
+					burst := '0';
+				else
+					burst := '1';
+				end if;
+
+				z := '0';
+				for i in read_req'reverse_range loop
+					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
+						z := '1';
+					end if;
+				end loop;
+
+
+				if (write_req xor write_rdy)='0' then
+					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
+						write_req <= not write_rdy;
+					end if;
+				end if;
+
+			end if;
+		end process;
+
+		process (iod_rst, clk0div)
+			variable z : std_logic;
+		begin
+			if rising_edge(clk0div) then
+				if iod_rst='1' then
+					phy_ini <= '0';
+				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					if z='0' then
+						phy_ini   <= '1';
+						phy_rlrdy <= phy_rlreq;
+					end if;
+					z := '0';
+					for i in rl_req'reverse_range loop
+						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
+							z := '1';
+							rl_req(i) <= phy_rlreq;
+						end if;
+					end loop;
+				end if;
+			end if;
+		end process;
+
+	end block;
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	ssti  <= to_blinevector(sys_sti);
@@ -555,11 +513,14 @@ begin
 			tp_delay   => tp_delay(8*(i+1)-1 downto 8*i),
 			sys_clks   => sys_clks,
 			sys_rsts   => phy_rsts,
-			sys_wlreq  => sys_wlreq,
-			sys_wlrdy  => wlrdy(i),
-			sys_rlreq  => sys_rlreq,
-			sys_rlrdy  => rlrdy(i),
-			sys_rlcal  => rlcal(i),
+			sys_wlreq  => phy_wlreq,
+			sys_wlrdy  => wl_rdy(i),
+			sys_rlreq  => rl_req(i),
+			sys_rlrdy  => rl_rdy(i),
+			write_req  => wr_req(i),
+			write_rdy  => wr_rdy(i),
+			read_req   => read_req(i),
+			read_rdy   => read_rdy(i),
 
 			sys_sti    => ssti(i),
 			sys_dmt    => sdmt(i),

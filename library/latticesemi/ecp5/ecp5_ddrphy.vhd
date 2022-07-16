@@ -54,10 +54,12 @@ entity ecp5_ddrphy is
 		phy_rw    : out std_logic := '1';
 		phy_cmd   : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini   : out std_logic;
+
 		phy_wlreq : in  std_logic := '0';
 		phy_wlrdy : buffer std_logic;
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
+
 		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
 		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto   : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -325,6 +327,47 @@ begin
 			lock     => dll_lock);
 	end block;
 
+	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
+	generic map (
+		cmmd_gear => cmmd_gear,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		rst     => ddr_reset,
+		eclk    => eclk,
+		sclk    => sclk,
+          
+		phy_rst => phy_rst,
+		phy_cs  => phy_cs,
+		phy_cke => phy_cke,
+		phy_b   => ddrphy_b,
+		phy_a   => ddrphy_a,
+		phy_ras => phy_ras,
+		phy_cas => phy_cas,
+		phy_we  => phy_we,
+		phy_odt => phy_odt,
+        
+		ddr_rst => ddr_rst,
+		ddr_ck  => ddr_ck,
+		ddr_cke => ddr_cke,
+		ddr_odt => ddr_odt,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_b,
+		ddr_a   => ddr_a);
+
+	write_leveling_p : process (phy_wlreq, wl_rdy)
+		variable aux : bit;
+	begin
+		aux := '1';
+		for i in wl_rdy'range loop
+			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
+		end loop;
+		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
+	end process;
+
 	read_leveling_l_b : block
 		signal leveling : std_logic;
 
@@ -422,47 +465,6 @@ begin
 		end process;
 
 	end block;
-
-	process (phy_wlreq, wl_rdy)
-		variable aux : bit;
-	begin
-		aux := '1';
-		for i in wl_rdy'range loop
-			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
-		end loop;
-		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
-	end process;
-
-	ddr3baphy_i : entity hdl4fpga.ecp5_ddrbaphy
-	generic map (
-		cmmd_gear => cmmd_gear,
-		bank_size => bank_size,
-		addr_size => addr_size)
-	port map (
-		rst     => ddr_reset,
-		eclk    => eclk,
-		sclk    => sclk,
-          
-		phy_rst => phy_rst,
-		phy_cs  => phy_cs,
-		phy_cke => phy_cke,
-		phy_b   => ddrphy_b,
-		phy_a   => ddrphy_a,
-		phy_ras => phy_ras,
-		phy_cas => phy_cas,
-		phy_we  => phy_we,
-		phy_odt => phy_odt,
-        
-		ddr_rst => ddr_rst,
-		ddr_ck  => ddr_ck,
-		ddr_cke => ddr_cke,
-		ddr_odt => ddr_odt,
-		ddr_cs  => ddr_cs,
-		ddr_ras => ddr_ras,
-		ddr_cas => ddr_cas,
-		ddr_we  => ddr_we,
-		ddr_b   => ddr_b,
-		ddr_a   => ddr_a);
 
 	sdmi  <= to_blinevector(phy_dmi);
 	sdmt  <= to_blinevector(not phy_dmt);

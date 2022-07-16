@@ -46,9 +46,9 @@ entity ddrdqphy is
 		sys_rlrdy  : buffer std_logic;
 		read_rdy   : in  std_logic;
 		read_req   : buffer std_logic;
+		read_brst  : out std_logic;
 		write_rdy  : in  std_logic;
 		write_req  : buffer std_logic;
-		read_brst  : out std_logic;
 		sys_dmt    : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
 		sys_dmi    : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
@@ -111,8 +111,6 @@ architecture virtex5 of ddrdqphy is
 	signal dqipau_rdy : std_logic_vector(ddr_dqi'range);
 	signal dqspau_req : std_logic;
 	signal dqspau_rdy : std_logic;
-	signal stopau_req : std_logic;
-	signal stopau_rdy : std_logic;
 
 	signal imdr_rst   : std_logic;
 	signal omdr_rst   : std_logic;
@@ -325,7 +323,7 @@ begin
 --				q := sto;
 --			end if;
 --		end process;
-					sys_sto <= (others => sto);
+		sys_sto <= (others => sto);
 
 	end block;
 
