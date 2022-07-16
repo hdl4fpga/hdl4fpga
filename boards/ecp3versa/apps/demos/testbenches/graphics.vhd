@@ -25,7 +25,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ipoepkg.all;
 
-architecture ulx4mld_graphics of testbench is
+architecture ecp3versa_graphics of testbench is
 
 	constant debug      : boolean := true;
 
@@ -36,77 +36,69 @@ architecture ulx4mld_graphics of testbench is
 	constant byte_bits  : natural := 8;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	signal rst         : std_logic;
-	signal xtal        : std_logic := '0';
+	signal reset        : std_logic;
+	signal reset_n      : std_logic;
+	signal xtal         : std_logic := '0';
 
-	component ulx4m_ld is
+	component ecp3versa
 		generic (
-			debug          : boolean := debug);
+			debug : boolean := false);
 		port (
-			clk_25mhz      : in    std_logic;
-			btn            : in    std_logic_vector(1 to 3) := (others => '-');
-			led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
-
-			sd_clk         : in    std_logic := '-';
-			sd_cmd         : out   std_logic; 
-			sd_d           : inout std_logic_vector(4-1 downto 0) := (others => '-');
-			sd_wp          : in    std_logic := '-';
-			sd_cdn         : in    std_logic := '-';
-
-			usb_fpga_dp    : inout std_logic := '-';
-			usb_fpga_dn    : inout std_logic := '-';
-			usb_fpga_bd_dp : inout std_logic := '-';
-			usb_fpga_bd_dn : inout std_logic := '-';
-			usb_fpga_pu_dp : inout std_logic := '-';
-			usb_fpga_pu_dn : inout std_logic := '-';
-
-			eth_reset      : out   std_logic;
---			rgmii_ref_clk  : in    std_logic;
-			eth_mdio       : inout std_logic := '-';
-			eth_mdc        : out   std_logic;
+			clk         : in std_logic := 'Z';
 	
-			rgmii_tx_clk   : out    std_logic := '-';
-			rgmii_tx_en    : buffer std_logic;
-			rgmii_txd      : buffer std_logic_vector(0 to 4-1);
-			rgmii_rx_clk   : in    std_logic := '-';
-			rgmii_rx_dv    : in    std_logic := '-';
-			rgmii_rxd      : in    std_logic_vector(0 to 4-1) := (others => '-');
-
-			ddram_clk      : inout std_logic;
-			ddram_reset_n  : out   std_logic;
-			ddram_cke      : out   std_logic;
-			ddram_cs_n     : out   std_logic;
-			ddram_ras_n    : out   std_logic;
-			ddram_cas_n    : out   std_logic;
-			ddram_we_n     : out   std_logic;
-			ddram_odt      : out   std_logic;
-			ddram_a        : out   std_logic_vector(15-1 downto 0);
-			ddram_ba       : out   std_logic_vector( 3-1 downto 0);
-			ddram_dm       : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
-			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
-
-			gpio6          : inout std_logic := 'Z'; 
-			gpio7          : inout std_logic := 'Z'; 
-			gpio8          : inout std_logic := 'Z'; 
-			gpio9          : inout std_logic := 'Z'; 
-			gpio10         : inout std_logic := 'Z'; 
-			gpio11         : inout std_logic := 'Z'; 
-			gpio13         : inout std_logic := 'Z'; 
-			gpio17         : inout std_logic := 'Z'; 
-			gpio19         : inout std_logic := 'Z'; 
-			gpio22         : inout std_logic := 'Z'; 
-			gpio23         : inout std_logic := 'Z'; 
-			gpio24         : inout std_logic := 'Z'; 
-			gpio25         : inout std_logic := 'Z'; 
-
-			fpdi_clk       :  out std_logic; 
-			fpdi_d0        :  out std_logic;
-			fpdi_d1        :  out std_logic;
-			fpdi_d2        :  out std_logic;
-
-			user_programn  : out   std_logic := '1';
-			shutdown       : out   std_logic := '0');
+			led         : out std_logic_vector(7 downto 0) := (others => 'Z');
+			seg         : out std_logic_vector(0 to 14) := (others => 'Z');
+			
+			ddr3_clk    : out std_logic := '0';
+			ddr3_rst    : out std_logic := '0';
+			ddr3_cke    : out std_logic := '0';
+			ddr3_cs     : out std_logic := '1';
+			ddr3_ras    : out std_logic := '1';
+			ddr3_cas    : out std_logic := '1';
+			ddr3_we     : out std_logic := '1';
+			ddr3_ba     : out std_logic_vector( 2 downto 0) := (others => '1');
+			ddr3_a      : out std_logic_vector(12 downto 0) := (others => '1');
+			ddr3_dm     : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddr3_dqs    : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddr3_dq     : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+			ddr3_odt    : out std_logic := '1';
+	
+	
+			phy1_125clk : in    std_logic := '-';
+			phy1_rst    : out   std_logic;
+			phy1_coma   : out   std_logic := 'Z';
+			phy1_mdio   : inout std_logic;
+			phy1_mdc    : out   std_logic;
+			phy1_gtxclk : out   std_logic;
+			phy1_crs    : out   std_logic;
+			phy1_col    : out   std_logic;
+			phy1_txc    : in    std_logic := '-';
+			phy1_tx_d   : out   std_logic_vector(0 to 8-1);
+			phy1_tx_en  : out   std_logic;
+			phy1_rxc    : in    std_logic := '-';
+			phy1_rx_er  : in    std_logic := '-';
+			phy1_rx_dv  : in    std_logic := '-';
+			phy1_rx_d   : in    std_logic_vector(0 to 8-1) := (others => '-');
+	--
+	--		phy2_125clk : in std_logic;
+	--		phy2_rst    : out std_logic;
+	--		phy2_coma   : out std_logic;
+	--		phy2_mdio   : inout std_logic;
+	--		phy2_mdc    : out std_logic;
+	--		phy2_gtxclk : out std_logic;
+	--		phy2_crs    : out std_logic;
+	--		phy2_col    : out std_logic;
+	--		phy2_txc    : out std_logic;
+	--		phy2_tx_d   : out std_logic_vector(0 to 8-1);
+	--		phy2_tx_en  : out std_logic;
+	--		phy2_rxc    : in std_logic;
+	--		phy2_rx_er  : in std_logic;
+	--		phy2_rx_dv  : in std_logic;
+	--		phy2_rx_d   : in std_logic_vector(0 to 8-1);
+	
+			expansionx4 : inout std_logic_vector(3 to 7);
+			expansionx3 : inout std_logic_vector(4 to 8);
+			fpga_gsrn   : in std_logic := '-');
 	end component;
 
 	constant snd_data : std_logic_vector := 
@@ -174,25 +166,21 @@ architecture ulx4mld_graphics of testbench is
 	signal mii_rxc    : std_logic;
 	signal mii_txen   : std_logic;
 
-	alias rgmii_rxc   : std_logic is mii_rxc;
-	alias rgmii_rxdv  : std_logic is mii_rxdv;
-	signal rgmii_rxd  : std_logic_vector(0 to 4-1);
-
-	alias rgmii_txc   : std_logic is mii_txc;
-	signal rgmii_txen : std_logic;
-	signal rgmii_txd  : std_logic_vector(0 to 4-1);
-
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
 
 	signal uart_clk : std_logic := '0';
+
+	signal phy1_125clk : std_logic := '0';
+
 begin
 
-	rst      <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
-	xtal     <= not xtal after 20 ns;
-	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	reset       <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
+	xtal        <= not xtal after 5 ns;
+	uart_clk    <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	phy1_125clk <= not phy1_125clk after 4 ns;
 
 	hdlc_b : block
 
@@ -210,7 +198,7 @@ begin
 			uart_clk  : in  std_logic;
 			uart_sout : out std_logic);
 		port map (
-			rst       => rst,
+			rst       => reset,
 			uart_clk  => uart_clk,
 			uart_sout => ftdi_txd);
 
@@ -235,10 +223,10 @@ begin
 		signal hdlcfcsrx_sb : std_logic;
 		signal hdlcfcsrx_vld : std_logic;
 
-		signal nrst : std_logic;
+		signal rst_n : std_logic;
 	begin
 
-		nrst <= not rst;
+		rst_n <= not rst;
 		process 
 			variable i     : natural;
 			variable total : natural;
@@ -301,7 +289,7 @@ begin
 			baudrate  => baudrate,
 			clk_rate  => uart_xtal)
 		port map (
-			uart_frm  => nrst,
+			uart_frm  => rst_n,
 			uart_txc  => uart_clk,
 			uart_sout => uart_sout,
 			uart_trdy => uart_trdy,
@@ -359,7 +347,6 @@ begin
 		signal hwllc_trdy : std_logic;
 		signal hwllc_end  : std_logic;
 		signal hwllc_data : std_logic_vector(pl_data'range);
-		signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 	begin
 
@@ -381,8 +368,6 @@ begin
 		end process;
 		mii_req1 <= rep_req;
 	
-		rgmii_rxd <= word2byte(mii_rxd, not rgmii_rxc);
-
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
 			debug => false)
@@ -409,50 +394,39 @@ begin
 
 	end block;
 
-	du_e : ulx4m_ld
+	reset_n <= not reset;
+	du_e : ecp3versa
 	generic map (
 		debug => debug)
 	port map (
-		clk_25mhz    => xtal,
-		btn(1)       => '0',
-		btn(2 to 3)  => (others => '-'),
+		clk         => xtal,
+		fpga_gsrn   => reset_n,
 
-		eth_reset    => open,
-		eth_mdc      => open,
-		rgmii_tx_clk => rgmii_txc,
-		rgmii_tx_en  => rgmii_txen,
-		rgmii_txd    => rgmii_txd,
-		rgmii_rx_clk => rgmii_rxc,
-		rgmii_rx_dv  => rgmii_rxdv,
-		rgmii_rxd    => rgmii_rxd,
+		phy1_125clk => phy1_125clk,
+		phy1_rxc    => mii_rxc,
+		phy1_rx_dv  => mii_rxdv,
+		phy1_rx_d   => mii_rxd,
 
-		gpio23       => ftdi_txd,
-		gpio24       => ftdi_rxd,
-		ddram_reset_n => rst_n,
-		ddram_clk    => ddr_clk,
-		ddram_cke    => cke,
-		ddram_cs_n   => cs_n,
-		ddram_ras_n  => ras_n,
-		ddram_cas_n  => cas_n,
-		ddram_we_n   => we_n,
-		ddram_ba     => ba,
-		ddram_a      => addr,
-		ddram_dqs    => dqs,
-		ddram_dq     => dq,
-		ddram_dm     => dm,
-		ddram_odt    => odt);
+		phy1_txc   => open,
+		phy1_tx_en => mii_txen,
 
-	process (rgmii_txc)
-		variable en : std_logic;
-	begin
-		if rising_edge(rgmii_txc) then
-			mii_txen <= en;
-			en := rgmii_txen;
-			mii_txd(0 to 4-1) <= rgmii_txd;
-		elsif rising_edge(rgmii_txc) then
-			mii_txd(4 to 8-1) <= rgmii_txd;
-		end if;
-	end process;
+		--         --
+		-- DDR RAM --
+		--         --
+
+		ddr3_rst => rst_n,
+		ddr3_clk => ddr_clk,
+		ddr3_cs  => cs_n,
+		ddr3_cke => cke,
+		ddr3_ras => ras_n,
+		ddr3_cas => cas_n,
+		ddr3_we  => we_n,
+		ddr3_ba  => ba,
+		ddr3_a   => addr(12 downto 0),
+		ddr3_dqs => dqs,
+		ddr3_dq  => dq,
+		ddr3_dm  => dm,
+		ddr3_odt => odt);
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
@@ -490,9 +464,9 @@ end;
 library micron;
 
 configuration ulx4mld_graphic_structure_md of testbench is
-	for ulx4mld_graphics
-		for all : ulx4m_ld
-			use entity work.ulx4m_ld(structure);
+	for ecp3versa_graphics
+		for all : ecp3versa
+			use entity work.ecp3versa(structure);
 		end for;
 		for all: ddr3_model
 			use entity micron.ddr3
@@ -520,9 +494,9 @@ end;
 library micron;
 
 configuration ulx4mld_graphic_md of testbench is
-	for ulx4mld_graphics
-		for all : ulx4m_ld
-			use entity work.ulx4m_ld(graphics);
+	for ecp3versa_graphics
+		for all : ecp3versa
+			use entity work.ecp3versa(graphics);
 		end for;
 		for all: ddr3_model
 			use entity micron.ddr3
