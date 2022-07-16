@@ -219,8 +219,8 @@ architecture arch of ddr_mpu is
 		 ddr_rea => '0', ddr_cen => '0', ddr_fch => '0',
 		 ddr_rdy => '1', ddr_rph => '0', ddr_wph => '0'));
 
---		attribute fsm_encoding : string;
---		attribute fsm_encoding of ddr_state : signal is "compact";
+		attribute fsm_encoding : string;
+		attribute fsm_encoding of ddr_state : signal is "compact";
 
 	function "+" (
 		constant tab : natural_vector;
