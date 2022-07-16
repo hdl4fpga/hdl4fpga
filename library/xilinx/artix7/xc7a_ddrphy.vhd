@@ -100,16 +100,16 @@ entity xc7a_ddrphy is
 		ddr_dqsi     : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso     : out std_logic_vector(word_size/byte_size-1 downto 0));
 
-	alias clk0div_rst  : std_logic is phy_rsts(0);
-	alias clk90div_rst : std_logic is phy_rsts(1);
-	alias iod_rst  : std_logic is phy_rsts(2);
+	alias clk0_rst  : std_logic is phy_rsts(0);
+	alias clk90_rst : std_logic is phy_rsts(1);
+	alias iod_rst   : std_logic is phy_rsts(2);
 
-	alias clk0div  : std_logic is sys_clks(0);
-	alias clk90div : std_logic is sys_clks(1);
-	alias iod_clk  : std_logic is sys_clks(2);
+	alias clk0      : std_logic is sys_clks(0);
+	alias clk90     : std_logic is sys_clks(1);
+	alias iod_clk   : std_logic is sys_clks(2);
 
-	alias clk0     : std_logic is sys_clks(3);
-	alias clk90    : std_logic is sys_clks(4);
+	alias clk0x2    : std_logic is sys_clks(3);
+	alias clk90x2   : std_logic is sys_clks(4);
 
 end;
 
@@ -322,7 +322,7 @@ begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
-			clk => clk0,
+			clk => clk0x2,
 			dr => '0' xor clkinv,
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
@@ -335,9 +335,9 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clks(0) => clk0div,
-		sys_clks(1) => clk0,
-     	phy_rst    => clk0div_rst,
+		sys_clks(0) => clk0,
+		sys_clks(1) => clk0x2,
+     	phy_rst    => clk0_rst,
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
 		sys_cke    => sys_cke,
@@ -379,10 +379,10 @@ begin
 		ddrphy_ba <= sys_ba when leveling='0' else (others => '0');
 		ddrphy_a  <= sys_a  when leveling='0' else (others => '0');
 
-		process (phy_trdy, clk0div)
+		process (phy_trdy, clk0)
 			variable s_pre : std_logic;
 		begin
-			if rising_edge(clk0div) then
+			if rising_edge(clk0) then
 				if phy_trdy='1' then
 					ddr_idle <= s_pre;
 					case phy_cmd is
@@ -400,13 +400,13 @@ begin
 			end if;
 		end process;
 
-		readcycle_p : process (clk0div, rd_rdy)
+		readcycle_p : process (clk0, rd_rdy)
 			type states is (s_idle, s_start, s_run);
 			variable state : states;
 			variable burst : std_logic;
 			variable z     : std_logic;
 		begin
-			if rising_edge(clk0div) then
+			if rising_edge(clk0) then
 
 				z := '0';
 				for i in read_req'reverse_range loop
@@ -468,79 +468,11 @@ begin
 			end if;
 		end process;
 
---		readcycle_p : process (clk0div, rd_rdy)
---			type states is (s_idle, s_start, s_run);
---			variable state : states;
---			variable burst : std_logic;
---			variable z     : std_logic;
---		begin
---			if rising_edge(clk0div) then
---				case state is
---				when s_start =>
---					phy_frm  <= '1';
---					leveling <= '1';
---					if ddr_act='1' then
---						if burst='0' then
---							phy_frm <= '0';
---						end if;
---						state   := s_run;
---					end if;
---				when s_run =>
---					if ddr_idle='1' then
---						leveling  <= '0';
---						rd_rdy    <= rd_req;
---						wr_rdy    <= wr_req;
---						read_rdy  <= read_req;
---						write_rdy <= write_req;
---						state    := s_idle;
---					end if;
---					if burst='0' then
---						phy_frm <= '0';
---					end if;
---				when s_idle =>
---					leveling <= '0';
---					phy_frm  <= '0';
---					if z='1' then
---						phy_frm  <= '1';
---						phy_rw   <= '1';
---						leveling <= '1';
---						state    := s_start;
---					elsif (write_req xor write_rdy)='1' then
---						phy_frm  <= '1';
---						phy_rw   <= '0';
---						leveling <= '1';
---						state    := s_start;
---					end if;
---				end case;
---
---				if read_brst=(read_brst'range  => '0') then
---					burst := '0';
---				else
---					burst := '1';
---				end if;
---
---				z := '0';
---				for i in read_req'reverse_range loop
---					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
---						z := '1';
---					end if;
---				end loop;
---
---
---				if (write_req xor write_rdy)='0' then
---					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
---						write_req <= not write_rdy;
---					end if;
---				end if;
---
---			end if;
---		end process;
-
-		process (iod_rst, clk0div)
+		process (clk0_rst, clk0)
 			variable z : std_logic;
 		begin
-			if rising_edge(clk0div) then
-				if iod_rst='1' then
+			if rising_edge(clk0) then
+				if clk0_rst='1' then
 					phy_ini <= '0';
 				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
 					if z='0' then

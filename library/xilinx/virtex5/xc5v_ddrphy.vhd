@@ -476,7 +476,6 @@ begin
 			byte_size => byte_size)
 		port map (
 			iod_rst   => iod_rst,
-			iod_clk   => iod_clk,
 			sys_rlreq => rl_req(i),
 			sys_rlrdy => rl_rdy(i),
 			read_req  => rd_req(i),
