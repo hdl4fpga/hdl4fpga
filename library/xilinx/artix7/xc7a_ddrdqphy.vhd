@@ -138,12 +138,12 @@ begin
 	rl_b : block
 	begin
 
-		process (pause_req, clk0)
+		process (pause_req, iod_clk)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
-			if rising_edge(clk0) then
+			if rising_edge(iod_clk) then
 				if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(adjsto_rdy);
@@ -199,9 +199,9 @@ begin
 
 		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req xor dqipau_rdy)=(dqipau_req'range => '1'));
 
-		process (clk0)
+		process (iod_clk)
 		begin
-			if rising_edge(clk0) then
+			if rising_edge(iod_clk) then
 				if (pause_rdy xor pause_req)='0' then
 					dqspau_rdy <= dqspau_req;
 					dqipau_rdy <= dqipau_req;
@@ -398,7 +398,7 @@ begin
 		begin
 			if rising_edge(clk90) then
 				imdr_rst <= q;
-				q := clk90_rst or not adjdqs_req;
+				q := clk90_rst or not (adjdqs_req xor adjdqs_rdy);
 			end if;
 		end process;
 
@@ -416,6 +416,7 @@ begin
 			q(3) => dq(3*BYTE_SIZE+i));
 
 		dly_b : block
+			signal q : std_logic;
 		begin
 			dly0_g : entity hdl4fpga.align
 			generic map (
@@ -447,10 +448,17 @@ begin
 				do(2) => dqf(2*BYTE_SIZE+i),
 				do(3) => dqf(3*BYTE_SIZE+i));
 
+			process(iod_clk) 
+			begin
+				if rising_edge(iod_clk) then
+					q <= (dqspre xor dqs180);
+				end if;
+			end process;
+			sys_dqo <= dqh when q='0' else dqf;
+
 		end block;
 
 	end generate;
-	sys_dqo <= dqh when (dqspre xor dqs180)='0' else dqf;
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
 		signal dqo   : std_logic_vector(0 to DATA_GEAR-1);

@@ -68,8 +68,7 @@ begin
 	 process (ddr_clk)
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
-		variable sto  : unsigned(0 to lat+1);
---		variable sto   : std_logic;
+		variable sto   : unsigned(0 to lat+1);
 	begin
 		if rising_edge(ddr_clk) then
 			sto(0) := ddr_sto;
@@ -85,7 +84,6 @@ begin
 						start    := '0';
 						step_rdy <= step_req;
 					elsif sto(lat)='1' then
---					elsif ddr_sto='1' then
 						if sto(lat+1)='0' then
 							if dqs_smp=seq and (inv='0' or both) then
 								sync <= sync;
@@ -101,7 +99,6 @@ begin
 						else
 							sync  <= '0';
 						end if;
---					elsif sto='1' then
 					elsif sto(lat+1)='1' then
 						cntr := cntr - 1;
 					end if;
