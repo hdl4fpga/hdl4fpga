@@ -52,7 +52,6 @@ set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90_mmce2 }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 
-set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].DATA_PHASES_g[*].inbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins grahics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
+set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins grahics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
 set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/wrfifo_b.wrfifo_i/ddr_fifo_g[*].outbyte_i/phases_g[*].sr_g.gcntr_g[*].ffd_i/ffd_i/C   ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].gear_g[*].dqo_reg[*]/D ]
 set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/wrfifo_b.wrfifo_i/ddr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK     ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].gear_g[*].dqo_reg[*]/D ]
-set_false_path -from [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/rdfifo_i/sys_do_win_reg/C                                                             ] -to [ get_pins grahics_e/ddrctlr_b.ddrctlr_e/rdfifo_i/bytes_g[*].DATA_PHASES_g[*].inbyte_i/phases_g[*].ar_g.gcntr_g[*].ffd_i/ffd_i/CLR ]
