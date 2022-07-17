@@ -44,11 +44,11 @@ entity xc7a_ddrdqphy is
 		sys_wlrdy : out std_logic;
 		sys_rlreq : in  std_logic;
 		sys_rlrdy : buffer std_logic;
-		read_rdy   : in  std_logic;
-		read_req   : buffer std_logic;
-		read_brst  : out std_logic;
-		write_rdy  : in  std_logic;
-		write_req  : buffer std_logic;
+		read_rdy  : in  std_logic;
+		read_req  : buffer std_logic;
+		read_brst : out std_logic;
+		write_rdy : in  std_logic;
+		write_req : buffer std_logic;
 		sys_dmt   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
 		sys_dmi   : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
 		sys_sti   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
@@ -138,12 +138,12 @@ begin
 	rl_b : block
 	begin
 
-		process (pause_req, sys_clks(0))
+		process (pause_req, clk0)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
-			if rising_edge(sys_clks(0)) then
+			if rising_edge(clk0) then
 				if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(adjsto_rdy);
@@ -226,9 +226,9 @@ begin
 		end if;
 	end process;
 
-	process (sys_clks(0))
+	process (clk0)
 	begin
-		if rising_edge(sys_clks(0)) then
+		if rising_edge(clk0) then
 			imdr_rst <= iod_rst;
 			omdr_rst <= iod_rst;
 		end if;
