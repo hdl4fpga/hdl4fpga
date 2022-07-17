@@ -79,8 +79,8 @@ begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sclk,
-			da   => phy_b(bank_size*0+i),
-			db   => phy_b(bank_size*1+i),
+			da   => phy_b(cmmd_gear*i+0),
+			db   => phy_b(cmmd_gear*i+1),
 			q    => ddr_b(i));
 	end generate;
 
@@ -90,8 +90,8 @@ begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sclk,
-			da   => phy_a(addr_size*0+i),
-			db   => phy_a(addr_size*1+i),
+			da   => phy_a(cmmd_gear*i+0),
+			db   => phy_a(cmmd_gear*i+1),
 			q    => ddr_a(i));
 	end generate;
 

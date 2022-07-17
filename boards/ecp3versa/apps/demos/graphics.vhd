@@ -53,7 +53,7 @@ architecture graphics of ecp3versa is
 	constant app : apps := mii_400MHz_480p24bpp;
 	---------------------------------------------
 
-	constant sys_freq    : real    := 25.0e6;
+	constant sys_freq    : real    := 100.0e6;
 
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
@@ -73,7 +73,7 @@ architecture graphics of ecp3versa is
 	signal ddrphy_rst    : std_logic;
 	signal physys_clk    : std_logic;
 
-	signal ddram_clklck  : std_logic;
+	signal ctlr_lck      : std_logic;
 
 	signal ctlrphy_frm   : std_logic;
 	signal ctlrphy_trdy  : std_logic;
@@ -215,7 +215,7 @@ architecture graphics of ecp3versa is
 
 	constant ddr_tcp : real := 
 		real(ddram_tab(ddram_mode).pll.clki_div)/
-		(real(ddram_tab(ddram_mode).pll.clkok_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+		(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -303,6 +303,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOK : string; 
 
 		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
+		signal xxx : real := 1.0e-6/ddr_tcp;
 
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
@@ -379,7 +380,7 @@ begin
 			clkos            => ddr_eclk,
 			clkok            => ddr_sclk,
 			clkok2           => open,
-			lock             => ddram_clklck);
+			lock             => ctlr_lck);
 		
 		phase_ff_0_i : entity hdl4fpga.ff
 		port map (
@@ -755,10 +756,10 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ddrphy_rst <= not ddram_clklck;
-	process (ddram_clklck, ctlr_clk)
+	ddrphy_rst <= not ctlr_lck;
+	process (ctlr_lck, ctlr_clk)
 	begin
-		if ddram_clklck='0' then
+		if ctlr_lck='0' then
 			ddrsys_rst <= '1';
 		elsif rising_edge(ctlr_clk) then
 			ddrsys_rst <= '0';
