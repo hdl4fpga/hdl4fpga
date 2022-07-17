@@ -121,8 +121,8 @@ begin
 	rl_b : block
 		signal step_req : std_logic;
 		signal step_rdy : std_logic;
-		signal adj_req  : std_logic;
-		signal adj_rdy  : std_logic;
+		signal adjprm_req  : std_logic;
+		signal adjprm_rdy  : std_logic;
 
 	begin
 
@@ -142,8 +142,8 @@ begin
 		adjbrst_e : entity hdl4fpga.adjbrst
 		port map (
 			sclk       => sclk,
-			adj_req    => adj_req,
-			adj_rdy    => adj_rdy,
+			adj_req    => adjprm_req,
+			adj_rdy    => adjprm_rdy,
 			step_req   => step_req,
 			step_rdy   => step_rdy,
 			read       => read,
@@ -153,6 +153,35 @@ begin
 			readclksel => readclksel);
 		phy_sto <= datavalid;
 
+--		rl_e : entity hdl4fpga.phy_rl
+--		port map (
+--			clk        => sclk,
+--			rl_req     => phy_rlreq,
+--			rl_rdy     => phy_rlrdy,
+--			write_req  => write_rdy,
+--			write_rdy  => write_rdy,
+--			read_req   => read_req,
+--			read_rdy   => read_rdy,
+--			burst      => burst,
+--			adjdqs_req => adjdqs_rdy,
+--			adjdqs_rdy => adjdqs_rdy,
+--			adjdqi_req => adjdqi_rdy,
+--			adjdqi_rdy => adjdqi_rdy,
+--			adjsto_req => adjprm_req ,
+--			adjsto_rdy => adjprm_rdy);
+
+--		process (sclk)
+--		begin
+--			if rising_edge(sclk) then
+--				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
+--					if (to_bit(phy_rlreq) xor to_bit(rl_rdy))='0' then
+--						rlpause1_req <= not rlpause1_rdy;
+--						phy_rlrdy <= phyrl_req;
+--					end if;
+--				end if;
+--			end if;
+--		end process;
+
 		process (sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
@@ -161,10 +190,10 @@ begin
 				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
 					case state is
 					when s_start =>
-						adj_req <= not to_stdulogic(to_bit(adj_rdy));
+						adjprm_req <= not to_stdulogic(to_bit(adjprm_rdy));
 						state := s_adj;
 					when s_adj =>
-						if (to_bit(adj_req) xor to_bit(adj_rdy))='0' then
+						if (to_bit(adjprm_req) xor to_bit(adjprm_rdy))='0' then
 							rlpause1_req <= not rlpause1_rdy;
 							state := s_paused;
 						end if;
@@ -186,7 +215,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (to_bit(adj_req) xor to_bit(adj_rdy))='1' then
+				if (to_bit(adjprm_req) xor to_bit(adjprm_rdy))='1' then
 					if (to_bit(step_req) xor to_bit(step_rdy))='1' then
 						case state is
 						when s_start =>

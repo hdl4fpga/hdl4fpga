@@ -112,6 +112,10 @@ HDL4FPGA__sdrbaphy__ecp = $(LIB_HDL4FPGA)/sdrbaphy/ecp.dat
 HDL4FPGA__sdrbaphy = $(LIB_HDL4FPGA)/sdrbaphy/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
+HDL4FPGA__phy_rl__def = $(LIB_HDL4FPGA)/phy_rl/def.dat
+HDL4FPGA__phy_rl = $(LIB_HDL4FPGA)/phy_rl/_primary.dat
+HDL4FPGA__phy_memcycle__def = $(LIB_HDL4FPGA)/phy_memcycle/def.dat
+HDL4FPGA__phy_memcycle = $(LIB_HDL4FPGA)/phy_memcycle/_primary.dat
 HDL4FPGA__phadctor__beh = $(LIB_HDL4FPGA)/phadctor/beh.dat
 HDL4FPGA__phadctor = $(LIB_HDL4FPGA)/phadctor/_primary.dat
 HDL4FPGA__pgm_delay__mix = $(LIB_HDL4FPGA)/pgm_delay/mix.dat
@@ -378,6 +382,10 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__sdrbaphy) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
+    $(HDL4FPGA__phy_rl__def) \
+    $(HDL4FPGA__phy_rl) \
+    $(HDL4FPGA__phy_memcycle__def) \
+    $(HDL4FPGA__phy_memcycle) \
     $(HDL4FPGA__phadctor__beh) \
     $(HDL4FPGA__phadctor) \
     $(HDL4FPGA__pgm_delay__mix) \
@@ -1077,6 +1085,8 @@ $(HDL4FPGA__ecp3_ddrdqphy__lscc) : ../latticesemi/ecp3/ecp3_ddrdqphy.vhd \
 $(HDL4FPGA__ecp3_ddrphy) \
 $(HDL4FPGA__ecp3_ddrphy__lscc) : ../latticesemi/ecp3/ecp3_ddrphy.vhd \
 		$(HDL4FPGA__ecp3_ddrdqphy) \
+		$(HDL4FPGA__ff) \
+		$(HDL4FPGA__aff) \
 		$(HDL4FPGA__clk_start) \
 		$(HDL4FPGA__ecp3_ddrbaphy) \
 		$(HDL4FPGA__ddr_db) \
@@ -1435,6 +1445,24 @@ $(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/phadctor.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/phadctor.vhd
+
+$(HDL4FPGA__phy_memcycle) \
+$(HDL4FPGA__phy_memcycle__def) : ../ddr/phy_memcycle.vhd \
+		$(HDL4FPGA__ddr_db) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__std) \
+		$(HDL4FPGA__ddr_param) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_memcycle.vhd
+
+$(HDL4FPGA__phy_rl) \
+$(HDL4FPGA__phy_rl__def) : ../ddr/phy_rl.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_rl.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
@@ -1919,10 +1947,10 @@ $(HDL4FPGA__xc7a_ddrbaphy__virtex) : ../xilinx/artix7/xc7a_ddrbaphy.vhd \
 $(HDL4FPGA__xc7a_ddrdqphy) \
 $(HDL4FPGA__xc7a_ddrdqphy__virtex7) : ../xilinx/artix7/xc7a_ddrdqphy.vhd \
 		$(HDL4FPGA__omdr) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__adjsto) \
 		$(HDL4FPGA__imdr) \
 		$(HDL4FPGA__adjpha) \
-		$(HDL4FPGA__align) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -1935,7 +1963,6 @@ $(HDL4FPGA__xc7a_ddrphy) \
 $(HDL4FPGA__xc7a_ddrphy__virtex7) : ../xilinx/artix7/xc7a_ddrphy.vhd \
 		$(HDL4FPGA__xc7a_ddrdqphy) \
 		$(HDL4FPGA__xc7a_ddrbaphy) \
-		$(HDL4FPGA__barrel) \
 		$(HDL4FPGA__ddro) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \

@@ -463,7 +463,7 @@ end;
 
 library micron;
 
-configuration ulx4mld_graphic_structure_md of testbench is
+configuration ecp3versa_graphic_structure_md of testbench is
 	for ecp3versa_graphics
 		for all : ecp3versa
 			use entity work.ecp3versa(structure);
@@ -493,7 +493,7 @@ end;
 
 library micron;
 
-configuration ulx4mld_graphic_md of testbench is
+configuration ecp3versa_graphic_md of testbench is
 	for ecp3versa_graphics
 		for all : ecp3versa
 			use entity work.ecp3versa(graphics);

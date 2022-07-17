@@ -375,7 +375,7 @@ begin
 	end generate;
 end;
 
-configuration ml509_structure_md of testbench is
+configuration ml509_graphics_structure_md of testbench is
 	for ml509_graphics
 		for all: ml509
 			use entity work.ml509(structure);

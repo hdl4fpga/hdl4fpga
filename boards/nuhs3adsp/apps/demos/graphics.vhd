@@ -38,7 +38,10 @@ architecture graphics of nuhs3adsp is
 
 	type profiles is (
 		mode480p_ddr166mhz,
+		mode600p_ddr145mhz,
+		mode600p_ddr150mhz,
 		mode600p_ddr166mhz,
+		mode720p_ddr133mhz,
 		mode900p_ddr166mhz,
 		mode1080p_ddr166mhz,
 		mode1080p_ddr200mhz);
@@ -58,12 +61,6 @@ architecture graphics of nuhs3adsp is
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
 
 	constant sys_per       : real    := 50.0;
 
@@ -158,12 +155,23 @@ architecture graphics of nuhs3adsp is
 
 	type ddr_speeds is (
 		ddr133MHz,
+		ddr145MHz,
+		ddr150MHz,
 		ddr166MHz,
 		ddr200MHz);
 
 	type ddram_vector is array (ddr_speeds) of ddr_params;
+	
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --  20     --  25     --  10     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
+
 	constant ddr_tab : ddram_vector := (
 		ddr133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
+		ddr145MHz => (pll => (dcm_mul => 29, dcm_div => 4), cas => "110"),
+		ddr150MHz => (pll => (dcm_mul => 15, dcm_div => 2), cas => "110"),
 		ddr166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
 		ddr200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
 
@@ -177,7 +185,10 @@ architecture graphics of nuhs3adsp is
 	constant profile_tab : profileparam_vector := (
 		mode480p_ddr166mhz  => (ddr166MHz, mode480p,  1),
 		mode600p_ddr166mhz  => (ddr166MHz, mode600p,  1),
+		mode600p_ddr145mhz  => (ddr145MHz, mode600p,  1),
+		mode600p_ddr150mhz  => (ddr150MHz, mode600p,  1),
 		mode900p_ddr166mhz  => (ddr166MHz, mode900p,  1),
+		mode720p_ddr133mhz  => (ddr133MHz, mode720p,  1),
 		mode1080p_ddr166mhz => (ddr166MHz, mode1080p, 1),
 		mode1080p_ddr200mhz => (ddr200MHz, mode1080p, 1));
 

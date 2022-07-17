@@ -301,7 +301,7 @@ end;
 
 library micron;
 
-configuration arty_structure_md of testbench is
+configuration arty_graphics_structure_md of testbench is
 	for arty_graphics
 		for all: arty
 			use entity work.arty(structure);

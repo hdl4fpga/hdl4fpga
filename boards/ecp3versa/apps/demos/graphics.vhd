@@ -109,12 +109,10 @@ architecture graphics of ecp3versa is
 	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	type pll_params is record
-		clkos_div  : natural;
+		clkok_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
 		clki_div   : natural;
-		clkos2_div : natural;
-		clkos3_div : natural;
 	end record;
 
 	type video_modes is (
@@ -137,11 +135,11 @@ architecture graphics of ecp3versa is
 	type videoparams_vector is array (video_modes) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16,    clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
-		mode480p24 => (pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, mode => pclk25_00m640x480at60),
-		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode900p24 => (pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
+		modedebug  => (pll => (clkok_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk_debug),
+		mode480p24 => (pll => (clkok_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk25_00m640x480at60),
+		mode600p16 => (pll => (clkok_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1), pixel => rgb565, mode => pclk40_00m800x600at60),
+		mode600p24 => (pll => (clkok_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk40_00m800x600at60),
+		mode900p24 => (pll => (clkok_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -164,13 +162,11 @@ architecture graphics of ecp3versa is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div =>  8, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		ddram425MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram450MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram500MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
-
-	signal ctlr_clk   : std_logic;
+		ddram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -215,11 +211,11 @@ architecture graphics of ecp3versa is
 
 	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
 		ddram_speed'POS(app_tab(app).speed),
-		ddram_speed'POS(ddram400Mhz)));
+		ddram_speed'POS(ddram475Mhz)));
 
 	constant ddr_tcp : real := 
 		real(ddram_tab(ddram_mode).pll.clki_div)/
-		(real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+		(real(ddram_tab(ddram_mode).pll.clkok_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -229,6 +225,8 @@ architecture graphics of ecp3versa is
 	signal ddr_sclk   : std_logic;
 	signal ddr_sclk2x : std_logic;
 	signal ddr_eclk   : std_logic;
+
+	alias ctlr_clk   : std_logic is ddr_sclk;
 begin
 
 	sys_rst <= '0';
@@ -241,15 +239,15 @@ begin
 
 		constant video_freq  : real :=
 			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div*1e6));
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
 
 		constant video_shift_freq  : real :=
 			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos_div*1e6));
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
 
 		constant videoio_freq  : real :=
 			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div*1e6));
+			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
 
 		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
 		attribute FREQUENCY_PIN_CLKOK  of pll_i : label is ftoa(video_freq,       10);
@@ -276,7 +274,7 @@ begin
 			PHASEADJ         => "0.0", 
 
 --			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
-			CLKOK_DIV       => video_tab(video_mode).pll.clkos3_div,
+			CLKOK_DIV       => video_tab(video_mode).pll.clkok_div,
 			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
 			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
 			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
@@ -326,7 +324,7 @@ begin
 		signal step_rdy   : std_logic;
 
 		signal phase_ff_q : std_logic;
-		signal eclk_rpha  : std_logic_vector(4-1 downto 0);
+		signal eclk_rpha  : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
 
 	begin
@@ -351,8 +349,7 @@ begin
 			DUTY             => 8,
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			PHASEADJ         => "0.0", 
-			CLKOK_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
-	--		CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
+			CLKOK_DIV        => ddram_tab(ddram_mode).pll.clkok_div,
 			CLKOP_DIV        => ddram_tab(ddram_mode).pll.clkop_div,
 			CLKFB_DIV        => ddram_tab(ddram_mode).pll.clkfb_div,
 			CLKI_DIV         => ddram_tab(ddram_mode).pll.clki_div,
@@ -409,7 +406,7 @@ begin
 
 		constant uart_xtal : real := 
 			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
-			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos3_div);
+			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div);
 
 		constant baudrate : natural := setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
@@ -644,7 +641,7 @@ begin
 		profile      => 2,
 
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
-		fpga         => LatticeECP5,
+		fpga         => LatticeECP3,
 		mark         => A4G12,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
@@ -779,9 +776,9 @@ begin
 		byte_size     => byte_size)
 	port map (
 		rst           => ddrphy_rst,
-		sclk          => ctlr_clk,
-		sclk2x        => physys_clk,
-		eclk          => physys_clk,
+		sclk          => ddr_sclk,
+		sclk2x        => ddr_sclk2x,
+		eclk          => ddr_eclk,
 		phy_frm       => ctlrphy_frm,
 		phy_trdy      => ctlrphy_trdy,
 		phy_cmd       => ctlrphy_cmd,
