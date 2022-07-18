@@ -233,7 +233,7 @@ begin
 	videopll_b : block
 
 		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOK : string;
+		attribute FREQUENCY_PIN_CLKOK  : string;
 		attribute FREQUENCY_PIN_CLKI   : string;
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
@@ -249,10 +249,10 @@ begin
 			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
 			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOK  of pll_i : label is ftoa(video_freq,       10);
+		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(video_shift_freq, 10);
+		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(video_freq,       10);
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(videoio_freq,     10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
 
 		signal clkfb : std_logic;
 
@@ -297,19 +297,19 @@ begin
 
 	ctlrpll_b : block
 
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
+		attribute FREQUENCY_PIN_CLKI  : string;
+		attribute FREQUENCY_PIN_FIN   : string;
+		attribute FREQUENCY_PIN_CLKOS : string;
+		attribute FREQUENCY_PIN_CLKOP : string;
 		attribute FREQUENCY_PIN_CLKOK : string; 
 
 		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
-		signal xxx : real := 1.0e-6/ddr_tcp;
 
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_FIN   of pll_i : label is ftoa(ddram_mhz, 10);
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
 		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_mhz, 10);
 		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(ddram_mhz/2.0, 10);
-
 
 		attribute hgroup : string;
 		attribute pbbox  : string;
@@ -318,6 +318,7 @@ begin
 		attribute hgroup of phase_ff_0_i : label is "clk_phase0";
 		
 		signal clkfb      : std_logic;
+		signal lock       : std_logic;
 
 		signal dtct_req   : std_logic;
 		signal dtct_rdy   : std_logic;
@@ -325,6 +326,7 @@ begin
 		signal step_rdy   : std_logic;
 
 		signal phase_ff_q : std_logic;
+		signal smp_q      : std_logic;
 		signal eclk_rpha  : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
 
@@ -356,7 +358,6 @@ begin
 			CLKI_DIV         => ddram_tab(ddram_mode).pll.clki_div,
 
 			FEEDBK_PATH      => "INTERNAL")
---			FIN              => "100.000000")
 		port map (
 			rst              => '0', 
 			rstk             => '0',
@@ -380,27 +381,67 @@ begin
 			clkos            => ddr_eclk,
 			clkok            => ddr_sclk,
 			clkok2           => open,
-			lock             => ctlr_lck);
+			lock             => lock);
 		
-		phase_ff_0_i : entity hdl4fpga.ff
-		port map (
-			clk => ddr_sclk,
-			d   => ddr_eclk,
-			q   => phase_ff_q);
-		
+		process (clk, step_rdy)
+			type states is (s_request, s_ready);
+			variable state : states;
+		begin
+			if rising_edge(clk) then
+				if lock='0' then
+					dtct_req <= to_stdulogic(to_bit(dtct_rdy));
+					ctlr_lck <= '0';
+					state := s_request;
+				else
+					case state is
+					when s_request =>
+						dtct_req <= not to_stdulogic(to_bit(dtct_rdy));
+						ctlr_lck <= '0';
+						state := s_ready;
+					when s_ready =>
+						if (dtct_req xor to_stdulogic(to_bit(dtct_rdy)))='0' then
+							ctlr_lck <= '1';
+						end if;
+					end case;
+				end if;
+			end if;
+		end process;
+
+		process (clk)
+			variable cntr : unsigned(0 to 4-1);
+		begin
+			if rising_edge(clk) then
+				if (to_bit(step_rdy) xor to_bit(step_req))='0' then
+					cntr := (others => '0');
+				elsif cntr(0)='0' then
+					cntr := cntr + 1;
+				else
+					step_rdy <= step_req;
+				end if;
+			end if;
+		end process;
+
 		phadctor_e : entity hdl4fpga.phadctor
 		generic map (
 			taps      => 2**eclk_rpha'length-1)
 		port map (
-			clk       => ddr_sclk,
+			clk       => clk,
 			dtct_req  => dtct_req,
 			dtct_rdy  => dtct_rdy,
 			step_req  => step_req,
 			step_rdy  => step_rdy,
 			edge      => '1',
-			input     => phase_ff_q,
+			input     => smp_q,
 			phase     => eclk_rpha);
 
+		phase_ff_0_i : entity hdl4fpga.ff
+		port map (
+			clk => ddr_sclk,
+			d   => ddr_eclk,
+			q   => phase_ff_q);
+
+		smp_q <= transport phase_ff_q after 1 ns;
+		
 	end block;
 
 	hdlc_g : if io_link=io_hdlc generate
