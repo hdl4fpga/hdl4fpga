@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -141,10 +142,10 @@ architecture graphics of ecp3versa is
 		mode600p24 => (pll => (clkok_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk40_00m800x600at60),
 		mode900p24 => (pll => (clkok_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
 
-	signal video_clk      : std_logic;
-	signal videoio_clk    : std_logic;
-	signal video_lck      : std_logic;
-	signal video_shft_clk : std_logic;
+	signal video_clk      : std_logic := '0';
+	signal videoio_clk    : std_logic := '0';
+	signal video_lck      : std_logic := '0';
+	signal video_shft_clk : std_logic := '0';
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type ddram_speed is (
@@ -179,8 +180,7 @@ architecture graphics of ecp3versa is
 	signal si_end     : std_logic;
 	signal si_data    : std_logic_vector(0 to 8-1);
 
-	signal sio_clk    : std_logic;
-	alias uart_clk    : std_logic is sio_clk;
+	signal uart_clk    : std_logic;
 
 	type io_iface is (
 		io_hdlc,
@@ -211,11 +211,11 @@ architecture graphics of ecp3versa is
 
 	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
 		ddram_speed'POS(app_tab(app).speed),
-		ddram_speed'POS(ddram475Mhz)));
+		ddram_speed'POS(ddram400Mhz)));
 
 	constant ddr_tcp : real := 
 		real(ddram_tab(ddram_mode).pll.clki_div)/
-		(real(ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+		(real(ddram_tab(ddram_mode).pll.clkok_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -226,6 +226,7 @@ architecture graphics of ecp3versa is
 	signal ddr_sclk2x : std_logic;
 	signal ddr_eclk   : std_logic;
 
+		signal  sio_clk    : std_logic;
 	alias ctlr_clk   : std_logic is ddr_sclk;
 begin
 
@@ -287,9 +288,9 @@ begin
 			wrdel            => '0',
 			clki      => clk,
 			CLKFB     => clkfb,
-			CLKOS     => video_shft_clk,
-			CLKOP     => video_clk,
-            CLKOK     => videoio_clk,
+			CLKOS     => open, --video_shft_clk,
+			CLKOP     => open, --video_clk,
+			CLKOK     => open, --videoio_clk,
 			LOCK      => video_lck,
 			CLKINTFB  => open);
 
@@ -447,6 +448,14 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 
+--		block
+--		port (
+--			sio_clk : buffer std_logic);
+--		port map (
+--			sio_clk => sio_clk);
+--		begin
+--		end block;
+
 		constant uart_xtal : real := 
 			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
 			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div);
@@ -565,32 +574,27 @@ begin
 
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
-		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		signal rmii_crs   : std_logic;
 
-		signal rmii_tx_en : std_logic;
-		signal rmii_tx0   : std_logic;
-		signal rmii_tx1   : std_logic;
+	ipoe_b : block
 
-		signal rmii_rx_dv : std_logic;
-		signal rmii_rx0   : std_logic;
-		signal rmii_rx1   : std_logic;
+		port (
+			sio_clk : buffer std_logic);
+		port map (
+			sio_clk => sio_clk);
 
+		alias  mii_rxc    : std_logic is phy1_rxc;
+		alias  mii_rxdv   : std_logic is phy1_rx_dv;
+		alias  mii_rxd    : std_logic_vector(phy1_rx_d'range) is phy1_rx_d;
 
-		signal rmii_nint  : std_logic;
-		signal rmii_mdio  : std_logic;
-		signal rmii_mdc   : std_logic;
-		signal mii_clk   : std_logic;
-
-		signal mii_txen  : std_logic;
-		signal mii_txd   : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv  : std_logic;
-		signal mii_rxd   : std_logic_vector(0 to 2-1);
-
+		alias mii_txc    : std_logic is phy1_gtxclk;
+		signal mii_txd    : std_logic_vector(phy1_tx_d'range);
+		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
+
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -598,52 +602,78 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
+		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
+
 	begin
 
-		sio_clk <= rmii_nint;
-		mii_clk <= rmii_nint;
+		sio_clk <= phy1_rxc;
+		sync_b : block
 
-		process (mii_clk)
+			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
+
 		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
 
-		process (mii_clk)
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					rxc_rxbus <= mii_rxdv & mii_rxd;
+				end if;
+			end process;
+
+			rxc2txc_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 4,
+				latency    => 0,
+				dst_offset => 0,
+				src_offset => 2,
+				check_sov  => false,
+				check_dov  => true,
+				gray_code  => false)
+			port map (
+				src_clk  => mii_rxc,
+				src_data => rxc_rxbus,
+				dst_clk  => mii_txc,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => txc_rxbus);
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
+					miirx_frm  <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
+				end if;
+			end process;
+		end block;
+
+		dhcp_p : process(mii_txc)
 		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_rx_dv;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-		rmii_mdc  <= '0';
-		rmii_mdio <= '0';
-
-		dhcp_p : process(mii_clk)
-		begin
-			if rising_edge(mii_clk) then
+			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
---					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
+			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
 				end if;
 			end if;
 		end process;
-		led(0) <= dhcpcd_rdy;
-		led(7) <= not dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
+			debug         => false,
 			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.1.1"))
+			default_ipv4a => aton("192.168.0.14"))
 		port map (
-			hdplx      => hdplx,
-			sio_clk    => mii_clk,
+			tp         => open,
+
+			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => mii_rxdv,
-			miirx_data => mii_rxd,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => '1', --miirx_irdy,
+			miirx_trdy => open,
+			miirx_data => miirx_data,
 
 			miitx_frm  => miitx_frm,
 			miitx_irdy => miitx_irdy,
@@ -664,7 +694,7 @@ begin
 
 		desser_e: entity hdl4fpga.desser
 		port map (
-			desser_clk => mii_clk,
+			desser_clk => mii_txc,
 
 			des_frm    => miitx_frm,
 			des_irdy   => miitx_irdy,
@@ -675,8 +705,15 @@ begin
 			ser_data   => mii_txd);
 
 		mii_txen <= miitx_frm and not miitx_end;
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				phy1_tx_en <= mii_txen;
+				phy1_tx_d  <= mii_txd;
+			end if;
+		end process;
 
-	end generate;
+	end block;
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -810,7 +847,7 @@ begin
 	
 	ddrphy_e : entity hdl4fpga.ecp3_ddrphy
 	generic map (
-		ddr_tcp       => ddr_tcp,
+		taps          => natural(floor(ddr_tcp/26.0e-12)),
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddr3_ba'length,
@@ -873,20 +910,11 @@ begin
 	-- VGA --
 	---------
 
-	debug_q : if debug generate
-		signal q : bit;
-	begin
-		q <= not q after 1 ns;
-		phy1_gtxclk <= to_stdulogic(q);
-	end generate;
-
-	nodebug_g : if not debug generate
-		phy1_gtxclk_i : oddrxd1
-		port map (
-			sclk => phy1_125clk,
-			da   => '0',
-			db   => '1',
-			q    => phy1_gtxclk);
-	end generate;
+	phy1_gtxclk_i : oddrxd1
+	port map (
+		sclk => phy1_125clk,
+		da   => '0',
+		db   => '1',
+		q    => phy1_gtxclk);
 
 end;

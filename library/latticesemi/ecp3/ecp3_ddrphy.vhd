@@ -34,7 +34,7 @@ use hdl4fpga.ddr_param.all;
 
 entity ecp3_ddrphy is
 	generic (
-		ddr_tcp   : real;
+		taps      : natural := 0;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -254,10 +254,9 @@ architecture lscc of ecp3_ddrphy is
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_clk  : std_logic;
 
+	signal clkstart_rst : std_logic;
 	signal dqsbuf_rst : std_logic;
-	signal uddcntln   : std_logic;
 	signal dqsdel     : std_logic;
-	signal dll_lock   : std_logic;
 
 	attribute hgroup  : string;
 	attribute pbbox   : string;
@@ -299,7 +298,7 @@ begin
 
 	clk_start_i : entity hdl4fpga.clk_start
 	port map (
-		rst        => rst,
+		rst        => clkstart_rst,
 		sclk       => sclk,
 		eclk       => eclk,
 		eclk_stop  => eclksynca_stop,
@@ -337,13 +336,43 @@ begin
 			q => phase_ff_1_q);
 	end block;
 	
-	dqsdllb_i : dqsdllb
-	port map (
-		rst      => rst,
-		clk      => sclk2x,
-		uddcntln => uddcntln,
-		dqsdel   => dqsdel,
-		lock     => dll_lock);
+	dqsdll_b : block
+		signal update   : std_logic;
+		signal uddcntln   : std_logic;
+		signal lock   : std_logic;
+	begin
+
+		process (sclk)
+			variable q : std_logic_vector(0 to 4-1);
+		begin
+			if rising_edge(sclk) then
+				if rst='1' then
+					q := (others => '0');
+				elsif q(0)='0' then
+					if lock='1' then
+						q := inc(gray(q));
+					end if;
+				end if;
+				update       <= not q(0);
+				clkstart_rst <= not q(1);
+			end if;
+		end process;
+
+		process (sclk2x)
+		begin
+			if rising_edge(sclk2x) then
+				uddcntln <= update;
+			end if;
+		end process;
+
+		dqsdllb_i : dqsdllb
+		port map (
+			rst      => rst,
+			clk      => sclk2x,
+			uddcntln => uddcntln,
+			dqsdel   => dqsdel,
+			lock     => lock);
+	end block;
 
 	read_leveling_l_b : block
 		signal leveling : std_logic;
@@ -467,6 +496,7 @@ begin
 		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
 		ddr3phy_i : entity hdl4fpga.ecp3_ddrdqphy
 		generic map (
+			taps      => taps,
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (

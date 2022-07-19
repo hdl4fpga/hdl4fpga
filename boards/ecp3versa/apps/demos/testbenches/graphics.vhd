@@ -69,7 +69,7 @@ architecture ecp3versa_graphics of testbench is
 			phy1_coma   : out   std_logic := 'Z';
 			phy1_mdio   : inout std_logic;
 			phy1_mdc    : out   std_logic;
-			phy1_gtxclk : out   std_logic;
+			phy1_gtxclk : buffer   std_logic;
 			phy1_crs    : out   std_logic;
 			phy1_col    : out   std_logic;
 			phy1_txc    : in    std_logic := '-';
@@ -155,6 +155,8 @@ architecture ecp3versa_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
+	signal phy1_125clk : std_logic := '0';
+
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
@@ -163,7 +165,7 @@ architecture ecp3versa_graphics of testbench is
 	signal mii_rxd    : std_logic_vector(0 to 8-1);
 	signal mii_txd    : std_logic_vector(0 to 8-1);
 	signal mii_txc    : std_logic;
-	signal mii_rxc    : std_logic;
+	alias  mii_rxc    : std_logic is phy1_125clk;
 	signal mii_txen   : std_logic;
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
@@ -173,7 +175,6 @@ architecture ecp3versa_graphics of testbench is
 
 	signal uart_clk : std_logic := '0';
 
-	signal phy1_125clk : std_logic := '0';
 
 begin
 
@@ -350,8 +351,8 @@ begin
 
 	begin
 
-		mii_req  <= '0', '1' after 20 us, '0' after 22 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+		mii_req  <= '0', '1' after 20 us, '0' after 23 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+		mii_req1 <= '0', '1' after 24 us, '0' after 55 us;
 
 		process
 		begin
@@ -366,7 +367,7 @@ begin
 				wait on rep_req;
 			end loop;
 		end process;
-		mii_req1 <= rep_req;
+--		mii_req1 <= rep_req;
 	
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (

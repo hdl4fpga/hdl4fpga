@@ -30,6 +30,7 @@ use ecp3.components.all;
 
 entity ecp3_ddrdqphy is
 	generic (
+		taps      : natural := 0;
 		DATA_GEAR : natural;
 		byte_size : natural);
 	port (
@@ -101,10 +102,6 @@ architecture lscc of ecp3_ddrdqphy is
 	signal adjstep_req  : bit;
 	signal adjstep_rdy  : bit;
 
-	signal rlpause_rdy  : bit;
-	signal rlpause_req  : bit;
-	signal rlpause1_rdy : bit;
-	signal rlpause1_req : bit;
 	signal wlpause_rdy  : bit;
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
@@ -119,127 +116,11 @@ architecture lscc of ecp3_ddrdqphy is
 begin
 
 	rl_b : block
-		signal step_req : std_logic;
-		signal step_rdy : std_logic;
-		signal adjprm_req  : std_logic;
-		signal adjprm_rdy  : std_logic;
-
 	begin
 
-		lat_b : block
-			signal q : std_logic_vector(0 to 5-1);
-		begin
-			q(0) <= phy_sti;
-			process(sclk)
-			begin
-				if rising_edge(sclk) then
-					q(1 to q'right) <= q(0 to q'right-1);
-				end if;
-			end process;
-			read <= word2byte(q(0 to q'right-1), lat, 1)(0);
-		end block;
-
-		adjbrst_e : entity hdl4fpga.adjbrst
-		port map (
-			sclk       => sclk,
-			adj_req    => adjprm_req,
-			adj_rdy    => adjprm_rdy,
-			step_req   => step_req,
-			step_rdy   => step_rdy,
-			read       => read,
-			datavalid  => datavalid,
-			burstdet   => prmbdet,
-			lat        => lat,
-			readclksel => readclksel);
+		read <= phy_sti;
 		phy_sto <= datavalid;
-
---		rl_e : entity hdl4fpga.phy_rl
---		port map (
---			clk        => sclk,
---			rl_req     => phy_rlreq,
---			rl_rdy     => phy_rlrdy,
---			write_req  => write_rdy,
---			write_rdy  => write_rdy,
---			read_req   => read_req,
---			read_rdy   => read_rdy,
---			burst      => burst,
---			adjdqs_req => adjdqs_rdy,
---			adjdqs_rdy => adjdqs_rdy,
---			adjdqi_req => adjdqi_rdy,
---			adjdqi_rdy => adjdqi_rdy,
---			adjsto_req => adjprm_req ,
---			adjsto_rdy => adjprm_rdy);
-
---		process (sclk)
---		begin
---			if rising_edge(sclk) then
---				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
---					if (to_bit(phy_rlreq) xor to_bit(rl_rdy))='0' then
---						rlpause1_req <= not rlpause1_rdy;
---						phy_rlrdy <= phyrl_req;
---					end if;
---				end if;
---			end if;
---		end process;
-
-		process (sclk, read_req)
-			type states is (s_start, s_adj, s_paused);
-			variable state : states;
-		begin
-			if rising_edge(sclk) then
-				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
-					case state is
-					when s_start =>
-						adjprm_req <= not to_stdulogic(to_bit(adjprm_rdy));
-						state := s_adj;
-					when s_adj =>
-						if (to_bit(adjprm_req) xor to_bit(adjprm_rdy))='0' then
-							rlpause1_req <= not rlpause1_rdy;
-							state := s_paused;
-						end if;
-					when s_paused =>
-						if (rlpause1_req xor rlpause1_rdy)='0' then
-							phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-							state := s_start;
-						end if;
-					end case;
-				else
-					rlpause1_req <= rlpause1_rdy;
-					state       := s_start;
-				end if;
-			end if;
-		end process;
-
-		process (sclk, read_req)
-			type states is (s_start, s_pause, s_read);
-			variable state : states;
-		begin
-			if rising_edge(sclk) then
-				if (to_bit(adjprm_req) xor to_bit(adjprm_rdy))='1' then
-					if (to_bit(step_req) xor to_bit(step_rdy))='1' then
-						case state is
-						when s_start =>
-							rlpause_req <= not rlpause_rdy;
-							state := s_pause;
-						when s_pause =>
-							if (rlpause_req xor rlpause_rdy)='0' then
-								read_req <= not to_stdulogic(to_bit(read_rdy));
-								state    := s_read;
-							end if;
-						when s_read =>
-							if (read_req xor to_stdulogic(to_bit(read_rdy)))='0' then
-								step_rdy <= step_req;
-								state    := s_start;
-							end if;
-						end case;
-					end if;
-				else
-					rlpause_req <= rlpause_rdy;
-					read_req    <= to_stdulogic(to_bit(read_rdy));
-					state       := s_start;
-				end if;
-			end if;
-		end process;
+		phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 
 	end block;
 
@@ -250,8 +131,8 @@ begin
 		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			dtaps => 1,
-			taps     => 2**dyndelay'length-1)
+			dtaps    => 1,
+			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),
 			clk      => sclk,
@@ -294,32 +175,8 @@ begin
 			end if;
 		end process;
 
-		process (sclk, pause_rdy )
-			variable q : bit;
-			variable y : bit;
-		begin
-			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
-					if q='1' then
-						pause_req <= not pause_rdy;
-					end if;
-					if y='1' then
-						wlpause_rdy  <= wlpause_req;
-						rlpause1_rdy <= rlpause1_req;
-						rlpause_rdy  <= rlpause_req;
-					else
-						q := 
-							(rlpause_req  xor rlpause_rdy)  or 
-							(rlpause1_req xor rlpause1_rdy) or 
-							(wlpause_req  xor wlpause_rdy);
-					end if;
-					y := '0';
-				else
-					q := '0';
-					y := '1';
-				end if;
-			end if;
-		end process;
+		pause_req   <= wlpause_req;
+		wlpause_rdy <= pause_rdy;
 
 	end block;
 

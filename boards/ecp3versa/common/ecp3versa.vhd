@@ -53,7 +53,7 @@ entity ecp3versa is
 		phy1_coma   : out   std_logic := 'Z';
 		phy1_mdio   : inout std_logic;
 		phy1_mdc    : out   std_logic;
-		phy1_gtxclk : out   std_logic;
+		phy1_gtxclk : buffer std_logic;
 		phy1_crs    : out   std_logic;
 		phy1_col    : out   std_logic;
 		phy1_txc    : in    std_logic := '-';
