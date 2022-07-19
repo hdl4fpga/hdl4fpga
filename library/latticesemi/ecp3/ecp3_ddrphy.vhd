@@ -299,7 +299,7 @@ begin
 
 	clk_start_i : entity hdl4fpga.clk_start
 	port map (
-		rst        => '0',
+		rst        => rst,
 		sclk       => sclk,
 		eclk       => eclk,
 		eclk_stop  => eclksynca_stop,
@@ -319,6 +319,7 @@ begin
 
 		signal dqclk1bar_ff_q : std_logic;
 		signal dqclk1bar_ff_d : std_logic;
+		signal phase_ff_1_q   : std_logic;
 
 	begin
 		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
@@ -333,7 +334,7 @@ begin
 		port map(
 			clk => sclk,
 			d => dqclk1bar_ff_q,
-			q => open);
+			q => phase_ff_1_q);
 	end block;
 	
 	dqsdllb_i : dqsdllb

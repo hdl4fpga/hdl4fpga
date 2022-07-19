@@ -172,11 +172,11 @@ architecture graphics of ulx4m_ld is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div =>  8, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		ddram425MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram450MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram475MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		ddram500MHz => (pll => (clkos_div => 2, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
+		ddram400MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
 
 	signal ctlr_clk   : std_logic;
 
@@ -228,7 +228,7 @@ architecture graphics of ulx4m_ld is
 		video_tab(app_tab(app).mode).pixel=rgb565, 16, setif(
 		video_tab(app_tab(app).mode).pixel=rgb888, 32, 0))-1);
 
-	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
+	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not FALSE,
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
 
@@ -331,8 +331,8 @@ begin
 
 		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
 
+
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
-		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_mhz/2.0, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
@@ -350,11 +350,11 @@ begin
 			STDBY_ENABLE     => "DISABLED",
 			DPHASE_SOURCE    => "DISABLED",
 			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOS",
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => ddram_tab(ddram_mode).pll.clkos_div-1,
+			FEEDBK_PATH      => "CLKOP",
+			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
 			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => ddram_tab(ddram_mode).pll.clkop_div-1,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -362,7 +362,7 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
-			CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
+--			CLKOS_DIV        => ddram_tab(ddram_mode).pll.clkos_div,
 --			CLKOS2_DIV       => ddram_tab(ddram_mode).pll.clkos2_div,
 --			CLKOS3_DIV       => ddram_tab(ddram_mode).pll.clkos3_div,
 			CLKOP_DIV        => ddram_tab(ddram_mode).pll.clkop_div,
@@ -371,7 +371,7 @@ begin
         port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => clkfb,
+			CLKFB     => physys_clk,
             PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
             PHASESTEP => '0', PHASELOADREG => '0',
@@ -381,14 +381,14 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => physys_clk,
-			CLKOS     => clkfb,
+			CLKOS     => open,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => ddram_clklck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
-		
+
 	end block;
 
 	hdlc_g : if io_link=io_hdlc generate

@@ -325,9 +325,10 @@ begin
 		signal step_req   : std_logic;
 		signal step_rdy   : std_logic;
 
-		signal phase_ff_q : std_logic;
-		signal smp_q      : std_logic;
+		signal eclk_smp   : std_logic;
 		signal eclk_rpha  : std_logic_vector(4-1 downto 0) := (others => '0');
+		signal phase_ff_q : std_logic;
+		signal rpha       : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
 
 	begin
@@ -336,7 +337,7 @@ begin
 		report real'image(ddram_mhz)
 		severity NOTE;
 
-		dfpa3 <= not eclk_rpha(3);
+		dfpa3 <= not rpha(3);
 		pll_i : ehxpllf
 		generic map (
 			CLKOS_TRIM_DELAY => 0,
@@ -362,14 +363,14 @@ begin
 			rst              => '0', 
 			rstk             => '0',
 			clki             => clk,
-			drpai3           => eclk_rpha(3),
-			drpai2           => eclk_rpha(2), 
-			drpai1           => eclk_rpha(1), 
-			drpai0           => eclk_rpha(0), 
+			drpai3           => rpha(3),
+			drpai2           => rpha(2), 
+			drpai1           => rpha(1), 
+			drpai0           => rpha(0), 
 			dfpai3           => dfpa3,
-			dfpai2           => eclk_rpha(2), 
-			dfpai1           => eclk_rpha(1), 
-			dfpai0           => eclk_rpha(0), 
+			dfpai2           => rpha(2), 
+			dfpai1           => rpha(1), 
+			dfpai0           => rpha(0), 
 			fda3             => '0',
 			fda2             => '0',
 			fda1             => '0',
@@ -430,17 +431,17 @@ begin
 			dtct_rdy  => dtct_rdy,
 			step_req  => step_req,
 			step_rdy  => step_rdy,
-			edge      => '1',
-			input     => smp_q,
+			edge      => '0',
+			input     => phase_ff_q,
 			phase     => eclk_rpha);
+		rpha <= not eclk_rpha;
 
+		eclk_smp <= transport ddr_eclk after 0 ns;
 		phase_ff_0_i : entity hdl4fpga.ff
 		port map (
 			clk => ddr_sclk,
-			d   => ddr_eclk,
+			d   => eclk_smp,
 			q   => phase_ff_q);
-
-		smp_q <= transport phase_ff_q after 1 ns;
 		
 	end block;
 
