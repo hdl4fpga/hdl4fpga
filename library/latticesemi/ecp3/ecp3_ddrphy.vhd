@@ -502,6 +502,7 @@ begin
 		port map (
 			rst       => dqsbuf_rst,
 			sclk      => sclk,
+			sclk2x      => sclk2x,
 			eclk      => eclksynca_clk,
 			dqsdel    => dqsdel,
 

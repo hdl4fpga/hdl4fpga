@@ -36,6 +36,7 @@ entity ecp3_ddrdqphy is
 	port (
 		rst       : in  std_logic;
 		sclk      : in  std_logic;
+		sclk2x   : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
 		pause     : in  std_logic;
@@ -116,11 +117,41 @@ architecture lscc of ecp3_ddrdqphy is
 begin
 
 	rl_b : block
+		signal  adjdqs_rdy : std_logic;
+		signal  adjdqi_rdy : std_logic;
+		signal  adjprm_req : std_logic;
+		signal  adjprm_rdy : std_logic;
+		signal  lat        : std_logic_vector(0 to 4-1);
 	begin
 
-		read <= phy_sti;
+		process (phy_sti, sclk2x)
+			variable q : std_logic_vector(1 to 4);
+		begin
+			if rising_edge(sclk2x) then
+				read <= not phy_sti;
+				q := unsigned(shift_right(unsigned(q), 1));
+				q(0) := phy_sti;
+			end if;
+			read <= word2byte(phy_sti & std_logic_vector(q), lat);
+		end process;
 		phy_sto <= datavalid;
-		phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+
+		rl_e : entity hdl4fpga.phy_rl
+		port map (
+			clk        => sclk,
+			rl_req     => phy_rlreq,
+			rl_rdy     => phy_rlrdy,
+			write_req  => write_rdy,
+			write_rdy  => write_rdy,
+			read_req   => read_req,
+			read_rdy   => read_rdy,
+			burst      => burst,
+			adjdqs_req => adjdqs_rdy,
+			adjdqs_rdy => adjdqs_rdy,
+			adjdqi_req => adjdqi_rdy,
+			adjdqi_rdy => adjdqi_rdy,
+			adjsto_req => adjprm_req ,
+			adjsto_rdy => adjprm_rdy);
 
 	end block;
 
