@@ -35,7 +35,7 @@ entity phy_rl is
 		read_req   : buffer std_logic;
 		read_rdy   : in  std_logic;
 		burst      : out std_logic;
-		sti        : in  std_logic := '-';
+		sti        : in  std_logic := '1';
 		adjdqs_req : buffer std_logic;
 		adjdqs_rdy : in  std_logic;
 		adjdqi_req : buffer std_logic;

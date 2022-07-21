@@ -47,6 +47,7 @@ entity ecp3_ddrdqphy is
 		phy_rlrdy : buffer std_logic;
 		read_rdy  : in  std_logic;
 		read_req  : buffer std_logic;
+		burst     : out std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
 		phy_dmt   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
@@ -117,41 +118,83 @@ architecture lscc of ecp3_ddrdqphy is
 begin
 
 	rl_b : block
-		signal  adjdqs_rdy : std_logic;
-		signal  adjdqi_rdy : std_logic;
-		signal  adjprm_req : std_logic;
-		signal  adjprm_rdy : std_logic;
-		signal  lat        : std_logic_vector(0 to 4-1);
+		signal lat     : std_logic_vector(2-1 downto 0) := "10";
+		signal prmbdet : std_logic;
+		signal det     : std_logic;
+		signal read_r  : std_logic;
+		signal read_f  : std_logic;
 	begin
 
-		process (phy_sti, sclk2x)
-			variable q : std_logic_vector(1 to 4);
+		process (sclk)
+			variable q : std_logic_vector(0 to 4-1);
 		begin
-			if rising_edge(sclk2x) then
-				read <= not phy_sti;
-				q := unsigned(shift_right(unsigned(q), 1));
+			if rising_edge(sclk) then
+				q    := std_logic_vector(shift_right(unsigned(q), 1));
 				q(0) := phy_sti;
+				read_r <= not word2byte(q, lat(lat'left downto 1));
 			end if;
-			read <= word2byte(phy_sti & std_logic_vector(q), lat);
 		end process;
-		phy_sto <= datavalid;
 
-		rl_e : entity hdl4fpga.phy_rl
-		port map (
-			clk        => sclk,
-			rl_req     => phy_rlreq,
-			rl_rdy     => phy_rlrdy,
-			write_req  => write_rdy,
-			write_rdy  => write_rdy,
-			read_req   => read_req,
-			read_rdy   => read_rdy,
-			burst      => burst,
-			adjdqs_req => adjdqs_rdy,
-			adjdqs_rdy => adjdqs_rdy,
-			adjdqi_req => adjdqi_rdy,
-			adjdqi_rdy => adjdqi_rdy,
-			adjsto_req => adjprm_req ,
-			adjsto_rdy => adjprm_rdy);
+		process (sclk)
+			variable q : std_logic_vector(0 to 4-1);
+		begin
+			if falling_edge(sclk) then
+				read_f <= read_r;
+			end if;
+		end process;
+		read <= word2byte(read_r & read_f, lat(0));
+
+		process (sclk)
+		begin
+			if rising_edge(sclk) then
+				det <= '0';
+				if lat(0)='0' then
+					if read_r='0' then
+						if datavalid='1' then
+							det <= '1';
+						end if;
+					end if;
+				elsif read_r='1' then
+					if datavalid='1' then
+						det <= '1';
+					end if;
+				end if;
+			end if;
+		end process;
+
+		p : process (phy_rlrdy, sclk)
+			type states is (s_start, s_prmb, s2);
+			variable state : states;
+		begin
+			if rising_edge(sclk) then
+				if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					case state is
+					when s_start =>
+						read_req <= not to_stdulogic(to_bit(read_rdy));
+						state := s_prmb;
+					when s_prmb =>
+						if det='1' then
+							state := s2;
+						elsif (read_req xor read_rdy)='0' then
+							state := s2;
+						end if;
+						prmbdet <= '0';
+					when s2 =>
+						if (read_req xor read_rdy)='1' then
+							state := s_start;
+							prmbdet <= '0';
+						elsif datavalid='0' then
+							prmbdet <= '1';
+						end if;
+					end case;
+				else
+					prmbdet <= '0';
+					state := s_start;
+				end if;
+			end if;
+		end process;
+
+		phy_sto <= datavalid;
 
 	end block;
 
