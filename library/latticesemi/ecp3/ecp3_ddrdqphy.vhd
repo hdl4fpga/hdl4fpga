@@ -96,7 +96,6 @@ architecture lscc of ecp3_ddrdqphy is
 	signal eclkdqsr     : std_logic;
 	signal prmbdet      : std_logic;
 	signal dqs_pause    : std_logic;
-	signal readclksel   : std_logic_vector(3-1 downto 0);
 	signal ddrclkpol    : std_logic;
 	signal ddrlat       : std_logic;
 	signal datavalid    : std_logic;
@@ -112,26 +111,30 @@ architecture lscc of ecp3_ddrdqphy is
 	signal wlstep_rdy   : std_logic;
 	signal dqi0         : std_logic;
 
-	constant delay      : time := 5.1 ns;
+	constant delay      : time := 0 ns;
 	signal dqsi         : std_logic;
 
 begin
 
 	rl_b : block
-		signal lat     : std_logic_vector(2-1 downto 0) := "10";
-		signal prmbdet : std_logic;
-		signal det     : std_logic;
+		signal lat     : std_logic_vector(3-1 downto 0);
 		signal read_r  : std_logic;
 		signal read_f  : std_logic;
+		signal prmb_r  : std_logic;
+		signal prmb_f  : std_logic;
 	begin
 
 		process (sclk)
 			variable q : std_logic_vector(0 to 4-1);
+			variable q1 : std_logic;
 		begin
 			if rising_edge(sclk) then
 				q    := std_logic_vector(shift_right(unsigned(q), 1));
 				q(0) := phy_sti;
 				read_r <= not word2byte(q, lat(lat'left downto 1));
+				phy_sto <= q1;
+				q1 := not read_r;
+				prmb_r <= prmbdet;
 			end if;
 		end process;
 
@@ -140,61 +143,64 @@ begin
 		begin
 			if falling_edge(sclk) then
 				read_f <= read_r;
+				prmb_f <= prmbdet;
 			end if;
 		end process;
 		read <= word2byte(read_r & read_f, lat(0));
 
-		process (sclk)
+		adjsto_b : block
+			signal det     : std_logic;
 		begin
-			if rising_edge(sclk) then
-				det <= '0';
-				if lat(0)='0' then
-					if read_r='0' then
+			process (sclk)
+			begin
+				if rising_edge(sclk) then
+					det <= '0';
+					if lat(0)='0' then
+						if read_r='0' then
+							if datavalid='1' then
+								det <= '1';
+							end if;
+						end if;
+					elsif read_r='1' then
 						if datavalid='1' then
 							det <= '1';
 						end if;
 					end if;
-				elsif read_r='1' then
-					if datavalid='1' then
-						det <= '1';
+				end if;
+			end process;
+	
+			process (phy_rlrdy, sclk)
+				type states is (s_idle, s_prmb, s_wait);
+				variable state : states;
+			begin
+				if rising_edge(sclk) then
+					if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+						case state is
+						when s_idle =>
+							lat      <= (others => '0');
+							read_req <= not to_stdulogic(to_bit(read_rdy));
+							state    := s_prmb;
+						when s_prmb =>
+							if det='1' then
+								state := s_wait;
+							elsif (read_req xor read_rdy)='0' then
+								lat      <= std_logic_vector(unsigned(lat) + 1);
+								read_req <= not to_stdulogic(to_bit(read_rdy));
+								state    := s_prmb;
+							end if;
+						when s_wait =>
+							if (read_req xor read_rdy)='0' then
+								phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+								state   := s_idle;
+							end if;
+						end case;
+					else
+						state   := s_idle;
 					end if;
 				end if;
-			end if;
-		end process;
+			end process;
+		end block;
 
-		p : process (phy_rlrdy, sclk)
-			type states is (s_start, s_prmb, s2);
-			variable state : states;
-		begin
-			if rising_edge(sclk) then
-				if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
-					case state is
-					when s_start =>
-						read_req <= not to_stdulogic(to_bit(read_rdy));
-						state := s_prmb;
-					when s_prmb =>
-						if det='1' then
-							state := s2;
-						elsif (read_req xor read_rdy)='0' then
-							state := s2;
-						end if;
-						prmbdet <= '0';
-					when s2 =>
-						if (read_req xor read_rdy)='1' then
-							state := s_start;
-							prmbdet <= '0';
-						elsif datavalid='0' then
-							prmbdet <= '1';
-						end if;
-					end case;
-				else
-					prmbdet <= '0';
-					state := s_start;
-				end if;
-			end if;
-		end process;
-
-		phy_sto <= datavalid;
 
 	end block;
 
@@ -257,6 +263,8 @@ begin
 	dqs_pause <= pause or lv_pause;
 	dqsi <= transport ddr_dqsi after delay;
 	dqsbufd_i : dqsbufd 
+--	generic map (
+--		NRZMODE => "ENABLED")
 	port map (
 		rst       => rst,
 		sclk      => sclk,
