@@ -82,7 +82,7 @@ architecture lscc of ecp3_ddrdqphy is
 	signal dqclk0       : std_logic;
 	signal dqclk1       : std_logic;
 
-	signal dqi          : std_logic_vector(phy_dqi'range);
+	signal dqi          : std_logic_vector(ddr_dqi'range);
 
 	signal dqt          : std_logic_vector(phy_dqt'range);
 	signal dqst         : std_logic_vector(phy_dqst'range);
@@ -111,7 +111,7 @@ architecture lscc of ecp3_ddrdqphy is
 	signal wlstep_rdy   : std_logic;
 	signal dqi0         : std_logic;
 
-	constant delay      : time := 0 ns;
+	constant delay      : time := 7 ns;
 	signal dqsi         : std_logic;
 
 begin
@@ -125,16 +125,18 @@ begin
 	begin
 
 		process (sclk)
-			variable q : std_logic_vector(0 to 4-1);
-			variable q1 : std_logic;
+			variable q : std_logic_vector(0 to 8-1);
 		begin
 			if rising_edge(sclk) then
-				q    := std_logic_vector(shift_right(unsigned(q), 1));
-				q(0) := phy_sti;
+				q      := std_logic_vector(shift_right(unsigned(q), 1));
+				q(0)   := phy_sti;
 				read_r <= not word2byte(q, lat(lat'left downto 1));
-				phy_sto <= q1;
-				q1 := not read_r;
 				prmb_r <= prmbdet;
+				if lat(0)='0' then
+					phy_sto <= word2byte(std_logic_vector(shift_left(unsigned(q),2)),  lat(lat'left downto 1));
+				else
+					phy_sto <= word2byte(std_logic_vector(shift_left(unsigned(q),3)),  lat(lat'left downto 1));
+				end if;
 			end if;
 		end process;
 
@@ -208,7 +210,6 @@ begin
 		signal d : std_logic_vector(0 to 0);
 	begin
 
-		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			dtaps    => 1,
@@ -220,7 +221,7 @@ begin
 			rdy      => phy_wlrdy,
 			step_req => wlstep_req,
 			step_rdy => wlstep_rdy,
-			smp      => d,
+			smp      => dqi(0 downto 0),
 			delay    => dyndelay);
 
 	end block;
@@ -294,14 +295,11 @@ begin
 		dqclk0    => dqclk0,
 		dqclk1    => dqclk1);
 
+	dqi <= transport ddr_dqi after delay;
 	iddr_g : for i in ddr_dqi'range generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
 	begin
-
-		dqi0_g : if i=0 generate
-			dqi0 <= ddr_dqi(i);
-		end generate;
 
 		iddrx2d_i : iddrx2d
 		port map (
@@ -310,7 +308,7 @@ begin
 			eclkdqsr  => eclkdqsr,
 			ddrclkpol => ddrclkpol,
 			ddrlat    => ddrlat,
-			d         => ddr_dqi(i),
+			d         => dqi(i),
 			qa0       => phy_dqo(0*byte_size+i),
 			qb0       => phy_dqo(1*byte_size+i),
 			qa1       => phy_dqo(2*byte_size+i),
