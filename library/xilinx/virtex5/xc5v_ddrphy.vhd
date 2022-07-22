@@ -44,7 +44,10 @@ entity xc5v_ddrphy is
 	port (
 		iod_rst   : in  std_logic;
 		iod_clk   : in  std_logic;
-		sys_clks  : in std_logic_vector(0 to 2-1);
+		clk0      : in  std_logic := '-';
+		clk90     : in  std_logic := '-';
+		clk0x2    : in  std_logic := '-';
+		clk90x2   : in  std_logic := '-';
 		phy_rlreq : in  std_logic := '-';
 		phy_rlrdy : buffer std_logic;
 
@@ -104,11 +107,6 @@ entity xc5v_ddrphy is
 --	alias clk90_rst : std_logic is phy_rsts(1);
 --	alias iod_rst   : std_logic is phy_rsts(2);
 
-	alias clk0    : std_logic is sys_clks(0);
-	alias clk90   : std_logic is sys_clks(1);
---	alias iod_clk : std_logic is sys_clks(2);
---	alias clk0x2  : std_logic is sys_clks(3);
---	alias clk90x2 : std_logic is sys_clks(4);
 
 end;
 
@@ -433,10 +431,9 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clks => sys_clks,
-
 		phy_rst => iod_rst,
-		sys_rst => sys_rst,
+		sys_clks(0) => clk0,
+		sys_clks(1) => clk90,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => ddrphy_b,
@@ -482,7 +479,11 @@ begin
 			read_brst => read_brst(i),
 			write_req => wr_req(i),
 			write_rdy => wr_rdy(i),
-			sys_clks  => sys_clks,
+			iod_clk   => iod_clk,
+			clk0      => clk0,
+			clk90     => clk90,
+			clk0x2    => clk0x2,
+			clk90x2   => clk90x2,
 			sys_sto   => ssto(i),
 			sys_sti   => ssti(i),
 			sys_dmt   => sdmt(i),

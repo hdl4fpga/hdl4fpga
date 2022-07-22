@@ -252,6 +252,16 @@ package std is
 		return std_logic;
 
 	function word2byte (		-- Solve Xilinx XST bug
+		constant word : unsigned;
+		constant addr : std_logic_vector)
+		return std_logic;
+
+	function word2byte (		-- Solve Xilinx XST bug
+		constant word : unsigned;
+		constant addr : unsigned)
+		return std_logic;
+
+	function word2byte (		-- Solve Xilinx XST bug
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic;
@@ -262,10 +272,20 @@ package std is
 		return std_logic_vector;
 
 	function word2byte (
+		constant word : unsigned;
+		constant addr : unsigned)
+		return unsigned;
+
+	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic_vector;
 
+	function word2byte (
+		constant word : unsigned;
+		constant addr : std_logic)
+		return unsigned;
+	
 	function word2byte (
 		constant word : signed;
 		constant addr : std_logic)
@@ -1317,6 +1337,22 @@ package body std is
 	end;
 
 	function word2byte (
+		constant word : unsigned;
+		constant addr : std_logic_vector)
+		return std_logic is
+	begin
+		return word2byte(std_logic_vector(word), addr);
+	end;
+
+	function word2byte (
+		constant word : unsigned;
+		constant addr : unsigned)
+		return std_logic is
+	begin
+		return word2byte(std_logic_vector(word), std_logic_vector(addr));
+	end;
+
+	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic is
@@ -1324,6 +1360,14 @@ package body std is
 	begin
 		retval := word2byte(word, (0 to 0 => addr), 1);
 		return retval(0);
+	end;
+
+	function word2byte (
+		constant word : unsigned;
+		constant addr : std_logic)
+		return unsigned is
+	begin
+		return unsigned(std_logic_vector'(word2byte(std_logic_vector(word), addr)));
 	end;
 
 	function word2byte (
@@ -1346,6 +1390,14 @@ package body std is
 			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
 		end loop;
 		return byte;
+	end;
+
+	function word2byte (
+		constant word : unsigned;
+		constant addr : unsigned)
+		return unsigned is
+	begin
+		return unsigned(std_logic_vector'(word2byte(std_logic_vector(word), std_logic_vector(addr))));
 	end;
 
 	function word2byte (

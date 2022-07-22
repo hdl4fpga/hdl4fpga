@@ -91,7 +91,6 @@ architecture lscc of ecp3_ddrdqphy is
 
 	signal dyndelay     : std_logic_vector(8-1 downto 0);
 	signal read         : std_logic;
-	signal lat          : std_logic_vector(2-1 downto 0);
 
 	signal eclkdqsr     : std_logic;
 	signal prmbdet      : std_logic;
@@ -117,7 +116,7 @@ architecture lscc of ecp3_ddrdqphy is
 begin
 
 	rl_b : block
-		signal lat     : std_logic_vector(3-1 downto 0);
+		signal lat     : unsigned(3-1 downto 0);
 		signal read_r  : std_logic;
 		signal read_f  : std_logic;
 		signal prmb_r  : std_logic;
@@ -125,18 +124,16 @@ begin
 	begin
 
 		process (sclk)
-			variable q : std_logic_vector(0 to 8-1);
+			variable q : unsigned(0 to 8-1);
 		begin
 			if rising_edge(sclk) then
-				q      := std_logic_vector(shift_right(unsigned(q), 1));
+				q      := shift_right(q, 1);
 				q(0)   := phy_sti;
-				read_r <= not word2byte(q, lat(lat'left downto 1));
+				read_r <= not word2byte(q, shift_right(lat, 1));
 				prmb_r <= prmbdet;
-				if lat(0)='0' then
-					phy_sto <= word2byte(std_logic_vector(shift_left(unsigned(q),2)),  lat(lat'left downto 1));
-				else
-					phy_sto <= word2byte(std_logic_vector(shift_left(unsigned(q),3)),  lat(lat'left downto 1));
-				end if;
+				phy_sto <= word2byte(
+					word2byte(shift_left(q,2) & shift_left(q,3), lat(0)),
+					shift_right(lat,1));
 			end if;
 		end process;
 
@@ -186,7 +183,7 @@ begin
 							if det='1' then
 								state := s_wait;
 							elsif (read_req xor read_rdy)='0' then
-								lat      <= std_logic_vector(unsigned(lat) + 1);
+								lat      <= lat + 1;
 								read_req <= not to_stdulogic(to_bit(read_rdy));
 								state    := s_prmb;
 							end if;

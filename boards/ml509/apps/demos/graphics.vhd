@@ -198,7 +198,6 @@ architecture graphics of ml509 is
 	signal so_data        : std_logic_vector(0 to 8-1);
 
 	signal ddrsys_rst     : std_logic;
-	signal ddrsys_clks    : std_logic_vector(0 to 5-1);
 
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
@@ -211,6 +210,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlcal  : std_logic;
 	signal ctlrphy_rlseq  : std_logic;
 
+	signal ddr_clk0  : std_logic;
+	signal ddr_clk90 : std_logic;
 	signal ddr_ba         : std_logic_vector(ddr2_ba'range);
 	signal ddr_a          : std_logic_vector(ddr2_a'range);
 	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
@@ -237,7 +238,6 @@ architecture graphics of ml509 is
 
 	signal sys_clk        : std_logic;
 
-	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
@@ -344,14 +344,10 @@ begin
 		end block;
 	
 		ddr_b : block
-			constant clk0      : natural := 0;
-			constant clk90     : natural := 1;
 
 			signal ddr_clk   : std_logic;
 			signal locked    : std_logic;
 			signal dcm_rst   : std_logic;
-			signal ddr_clk0  : std_logic;
-			signal ddr_clk90 : std_logic;
 			signal ddr_locked : std_logic;
 		begin
 			dfs_b : block
@@ -366,7 +362,7 @@ begin
 					dfs_frequency_mode => "HIGH")
 				port map (
 					rst    => '0',
-					clkfb  => '0',
+					clkfb  => ddr_clk,
 					clkin  => sys_clk,
 					clkfx  => ddr_clkfx_bufg,
 					locked => locked);
@@ -403,7 +399,7 @@ begin
 				port map (
 					rst    => dcm_rst,
 					clkin  => ddr_clk,
-					clkfb  => '0',
+					clkfb  => ddr_clk0,
 					clk0   => ddr_clk0_bufg,
 					clk90  => ddr_clk90_bufg,
 					locked => ddr_locked);
@@ -420,8 +416,7 @@ begin
 
 			end block;
 
-			ddrsys_clks(0 to 2-1) <= (0 => ddr_clk0, 1 => ddr_clk90);
-			ctlrphy_dqsi <= (others => ctlr_clk);
+			ctlrphy_dqsi <= (others => ddr_clk0);
 			ddrsys_rst   <= not ddr_locked or iod_rst;
 
 		end block;
@@ -614,7 +609,8 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks     => ddrsys_clks(0 to 2-1),
+		ctlr_clks(0)  => ddr_clk0,
+		ctlr_clks(1)  => ddr_clk90,
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"0_11",
@@ -696,8 +692,8 @@ begin
 	port map (
 		iod_rst     => phy_iodrst,
 		iod_clk     => iod_clk,
-
-		sys_clks    => ddrsys_clks(0 to 2-1),
+		clk0        => ddr_clk0,
+		clk90       => ddr_clk90,
 		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
 		phy_rw      => ctlrphy_rw,

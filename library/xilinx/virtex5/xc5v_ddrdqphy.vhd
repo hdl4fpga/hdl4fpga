@@ -40,7 +40,11 @@ entity ddrdqphy is
 		byte_size  : natural);
 	port (
 		iod_rst    : in  std_logic;
-		sys_clks   : in  std_logic_vector;
+		iod_clk   : in  std_logic;
+		clk0      : in  std_logic := '-';
+		clk90     : in  std_logic := '-';
+		clk0x2    : in  std_logic := '-';
+		clk90x2   : in  std_logic := '-';
 		sys_rlreq  : in  std_logic;
 		sys_rlrdy  : buffer std_logic;
 		read_rdy   : in  std_logic;
@@ -68,12 +72,6 @@ entity ddrdqphy is
 
 		ddr_dqst   : out std_logic;
 		ddr_dqso   : out std_logic);
-
-	alias clk0     : std_logic is sys_clks(0);
-	alias clk90    : std_logic is sys_clks(1);
-	alias iod_clk  : std_logic is sys_clks(2);
-	alias clk0x2   : std_logic is sys_clks(3);
-	alias clk90x2  : std_logic is sys_clks(4);
 
 end;
 
@@ -253,16 +251,13 @@ begin
 			idatain => dqsi,
 			dataout => dqsi_buf);
 
-		process (sys_clks)
-		begin
-			case data_gear is
-			when 2 =>
-				imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
-			when 4 =>
-				imdr_clk <= (0 => clk0, 1 => clk0x2, 2 => not clk90x2, 3 => not clk0x2, 4 => clk90x2);
-			when others =>
-			end case;
-		end process;
+		data_gear2_g : if data_gear=2 generate
+			imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
+		end generate;
+
+		data_gear4_g : if data_gear=4 generate
+			imdr_clk <= (0 => clk0, 1 => clk0x2, 2 => not clk90x2, 3 => not clk0x2, 4 => clk90x2);
+		end generate;
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -368,16 +363,13 @@ begin
 		end block;
 
 		tp_dqsdly <= delay;
-		process (sys_clks)
-		begin
-			case data_gear is
-			when 2 =>
-				imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
-			when 4 =>
-				imdr_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
-			when others =>
-			end case;
-		end process;
+		data_gear2_g : if data_gear=2 generate
+			imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
+		end generate;
+
+		data_gear4_g : if data_gear=4 generate
+			imdr_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
+		end generate;
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -395,27 +387,16 @@ begin
 		signal clks  : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
-		process (sys_clks)
-		begin
-			case data_gear is
-			when 2 =>
-				dqclk <= (0 => clk90, 1 => clk90);
-				if data_edge then
-					clks <= (0 => clk90, 1 => not clk90);
-				else
-					clks <= (0 => clk90, 1 => clk90);
-				end if;
-			when 4 =>
-				dqclk <= (0 => clk90, 1 => clk90x2);
-				if data_edge then
-					clks <= (0 => clk90, 1 => not clk90);
-				else
-					clks <= (0 => clk90, 1 => clk90);
-				end if;
-			when others =>
-			end case;
-		end process;
-	
+		data_gear2_g : if data_gear=2 generate
+			dqclk <= (0 => clk90, 1 => clk90);
+			clks  <= (0 => clk90, 1 => not clk90) when data_edge else (0 => clk90, 1 => clk90);
+		end generate;
+
+		data_gear4_g : if data_gear=4 generate
+			dqclk <= (0 => clk90, 1 => clk90x2);
+			clks  <= (0 => clk90, 1 => not clk90) when data_edge else (0 => clk90, 1 => clk90);
+		end generate;
+
 		oddr_g : for i in 0 to BYTE_SIZE-1 generate
 			signal dqo   : std_logic_vector(0 to data_gear-1);
 			signal dqt   : std_logic_vector(sys_dqt'range);
@@ -516,16 +497,13 @@ begin
 		end process;
 		dqst <= reverse(sys_dqst);
 
-		process (sys_clks)
-		begin
-			case data_gear is
-			when 2 =>
-				dqsclk <= (0 => clk0, 1 => not clk0);
-			when 4 =>
-				dqsclk <= (0 => clk0, 1 => clk0x2);
-			when others =>
-			end case;
-		end process;
+		data_gear2_g : if data_gear=2 generate
+			dqsclk <= (0 => clk0, 1 => not clk0);
+		end generate;
+
+		data_gear4_g : if data_gear=4 generate
+			dqsclk <= (0 => clk0, 1 => clk0x2);
+		end generate;
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
