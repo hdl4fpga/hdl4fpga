@@ -352,7 +352,7 @@ begin
 	begin
 
 		mii_req  <= '0', '1' after 20 us, '0' after 23 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-		mii_req1 <= '0', '1' after 24 us, '0' after 55 us;
+		mii_req1 <= '0', '1' after 26 us, '0' after 55 us;
 
 		process
 		begin

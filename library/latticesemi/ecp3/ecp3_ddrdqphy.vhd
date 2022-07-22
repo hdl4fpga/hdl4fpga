@@ -111,7 +111,7 @@ architecture lscc of ecp3_ddrdqphy is
 	signal wlstep_rdy   : std_logic;
 	signal dqi0         : std_logic;
 
-	constant delay      : time := 7 ns;
+	constant delay      : time := 5 ns;
 	signal dqsi         : std_logic;
 
 begin
