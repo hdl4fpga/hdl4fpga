@@ -399,7 +399,7 @@ begin
 
 		oddr_g : for i in 0 to BYTE_SIZE-1 generate
 			signal dqo   : std_logic_vector(0 to data_gear-1);
-			signal dqt   : std_logic_vector(sys_dqt'range);
+			signal dqt   : std_logic_vector(sys_dqt'reverse_range);
 		begin
 	
 			registered_g : for j in clks'range generate
@@ -426,7 +426,7 @@ begin
 							dqo(l*data_gear/clks'length+j) <= sys_dqi((l*data_gear/clks'length+j)*BYTE_SIZE+i);
 						end if;
 						if rising_edge(clks(j)) then
-							dqt(l*data_gear/clks'length+j) <= reverse(sys_dqt)(l*data_gear/clks'length+j);
+							dqt(l*data_gear/clks'length+j) <= sys_dqt(l*data_gear/clks'length+j);
 						end if;
 					end process;
 				end generate;

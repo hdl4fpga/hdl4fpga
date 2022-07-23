@@ -21,8 +21,8 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-NET "sys_clk" TNM_NET = sys_clk;
-TIMESPEC ts_sys_clk = PERIOD "sys_clk" 10 ns HIGH 50%;
+NET "user_clk" TNM_NET = user_clk;
+TIMESPEC ts_user_clk = PERIOD "user_clk" 10 ns HIGH 50%;
 
 NET "iod_clk" TNM_NET = iod_clk;
 TIMESPEC ts_iod_clk = PERIOD "iod_clk" 5 ns HIGH 50%;
