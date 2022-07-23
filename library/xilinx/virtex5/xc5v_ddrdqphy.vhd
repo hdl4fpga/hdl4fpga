@@ -233,7 +233,7 @@ begin
 			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
 			edge     => std_logic'('1'),
-			clk      => iod_clk,
+			clk      => clk0, --iod_clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -315,7 +315,7 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal delay : std_logic_vector(6-1 downto 0);
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
-		signal dqii      : std_logic_vector(0 to data_gear-1);
+		signal dqii      : std_logic_vector(data_gear-1 downto 0);
 	begin
 		adjdqi_b : block
 			signal delay    : std_logic_vector(0 to 6-1);
@@ -335,7 +335,7 @@ begin
 				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),
-				clk      => iod_clk,
+				clk      => clk0, --iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),
