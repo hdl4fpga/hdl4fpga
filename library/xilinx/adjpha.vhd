@@ -56,6 +56,7 @@ architecture beh of adjpha is
 	signal rledge   : std_logic;
 	signal phase    : gap_word;
 	signal avrge    : gap_word;
+	signal avrge1    : gap_word;
 	signal saved    : gap_word;
 	signal seq      : std_logic_vector(0 to smp'length-1);
 
@@ -172,6 +173,7 @@ begin
 								if sum <= (taps+1)/2 then
 									sum := sum + (taps+0)/2;
 								else
+							avrge1 <= sum;
 									sum := sum - (taps+1)/2;
 								end if;
 							end if;

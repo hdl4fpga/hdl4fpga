@@ -89,7 +89,6 @@ architecture virtex5 of ddrdqphy is
 	signal adjbrt_req : std_logic;
 	signal adjbrt_rdy : std_logic;
 
-	signal dqsi_buf   : std_logic;
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
 
@@ -116,7 +115,7 @@ architecture virtex5 of ddrdqphy is
 	signal pause_req   : bit;
 	signal pause_rdy   : bit;
 
-	constant dqs_linedelay : time := 7 ns;
+	constant dqs_linedelay : time := 0 ns;
 	constant dqi_linedelay : time := 0 ns; --1.35 ns;
 
 begin
@@ -183,7 +182,7 @@ begin
 			end if;
 		end process;
 
-		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req xor dqipau_rdy)=(dqipau_req'range => '1'));
+		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req)=(dqipau_req'range => '1'));
 
 		process (iod_clk)
 		begin
@@ -223,6 +222,7 @@ begin
 	dqsi_b : block
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
+		signal dqsi_buf : std_logic;
 		signal smp      : std_logic_vector(0 to data_gear-1);
 		signal sto      : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
@@ -233,7 +233,7 @@ begin
 			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
 			edge     => std_logic'('1'),
-			clk      => clk0, --iod_clk,
+			clk      => iod_clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -313,7 +313,6 @@ begin
 	end block;
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		signal delay : std_logic_vector(6-1 downto 0);
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal dqii      : std_logic_vector(data_gear-1 downto 0);
 	begin
@@ -335,7 +334,7 @@ begin
 				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),
-				clk      => clk0, --iod_clk,
+				clk      => clk0,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),
@@ -362,7 +361,6 @@ begin
 
 		end block;
 
-		tp_dqsdly <= delay;
 		data_gear2_g : if data_gear=2 generate
 			imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
 		end generate;
