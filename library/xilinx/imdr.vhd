@@ -27,8 +27,9 @@ use ieee.numeric_std.all;
 
 entity imdr is
 	generic (
-		SIZE : natural;
-		GEAR : natural);
+		SIZE      : natural;
+		GEAR      : natural;
+		DATA_EDGE : string := "SAME_EDGE");
 	port (
 		rst  : in  std_logic := '0';
 		clk  : in  std_logic_vector;
@@ -61,7 +62,7 @@ begin
 		gear2_g : if GEAR=2 generate
 			iddr_i : iddr
 			generic map (
-				DDR_CLK_EDGE => "SAME_EDGE")
+				DDR_CLK_EDGE => DATA_EDGE)
 			port map (
 				c  => clk(0),
 				ce => '1',

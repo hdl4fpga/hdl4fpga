@@ -284,7 +284,7 @@ begin
 			GEAR => data_gear)
 		port map (
 			tp       => tp_dqssel,
-			ddr_clk  => iod_clk,
+			ddr_clk  => clk0,
 			edge     => '0',
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,

@@ -40,6 +40,11 @@ use unisim.vcomponents.all;
 architecture graphics of ml509 is
 
 	type profiles is (
+		mode900p_ddr200MHz,
+		mode900p_ddr225MHz,
+		mode900p_ddr250MHz,
+		mode900p_ddr275MHz,
+		mode900p_ddr300MHz,
 		mode900p_ddr333MHz,
 		mode900p_ddr350MHz,
 		mode900p_ddr375MHz,
@@ -67,6 +72,11 @@ architecture graphics of ml509 is
 	end record;
 
 	type ddr_speeds is (
+		ddr200MHz,
+		ddr225MHz,
+		ddr250MHz,
+		ddr275MHz,
+		ddr300MHz,
 		ddr333MHz,
 		ddr350MHz,
 		ddr375MHz,
@@ -83,6 +93,18 @@ architecture graphics of ml509 is
 	type ddram_vector is array (ddr_speeds) of ddr_params;
 
 	constant ddr_tab : ddram_vector := (
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 300 Mhz -- 275 Mhz -- 250 Mhz -- 225 Mhz -- 200 Mhz --
+		-- Multiply by --   3     --  11     --  15     --   4     --  17     --
+		-- Divide by   --   1     --   4     --   4     --   1     --   4     --
+		------------------------------------------------------------------------
+
+		ddr200MHz => (pll => (dcm_mul =>  2, dcm_div => 1), cl => "001", cwl => "000"),
+		ddr225MHz => (pll => (dcm_mul =>  9, dcm_div => 4), cl => "010", cwl => "000"),
+		ddr250MHz => (pll => (dcm_mul =>  5, dcm_div => 2), cl => "010", cwl => "000"),
+		ddr275MHz => (pll => (dcm_mul => 11, dcm_div => 4), cl => "010", cwl => "000"),
+		ddr300MHz => (pll => (dcm_mul =>  3, dcm_div => 1), cl => "011", cwl => "001"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -129,6 +151,11 @@ architecture graphics of ml509 is
 
 	type profileparam_vector is array (profiles) of profile_param;
 	constant profile_tab : profileparam_vector := (
+		mode900p_ddr200MHz => (ddr200MHz, mode900p, 1),
+		mode900p_ddr225MHz => (ddr225MHz, mode900p, 1),
+		mode900p_ddr250MHz => (ddr250MHz, mode900p, 1),
+		mode900p_ddr275MHz => (ddr275MHz, mode900p, 1),
+		mode900p_ddr300MHz => (ddr300MHz, mode900p, 1),
 		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
 		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
 		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
@@ -362,7 +389,7 @@ begin
 					dfs_frequency_mode => "HIGH")
 				port map (
 					rst    => '0',
-					clkfb  => ddr_clk,
+					clkfb  => sys_clk,
 					clkin  => sys_clk,
 					clkfx  => ddr_clkfx_bufg,
 					locked => locked);
@@ -399,7 +426,7 @@ begin
 				port map (
 					rst    => dcm_rst,
 					clkin  => ddr_clk,
-					clkfb  => ddr_clk0,
+					clkfb  => ddr_clk,
 					clk0   => ddr_clk0_bufg,
 					clk90  => ddr_clk90_bufg,
 					locked => ddr_locked);
@@ -691,7 +718,7 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		iod_rst     => phy_iodrst,
-		iod_clk     => iod_clk,
+		iod_clk     => sys_clk,
 		clk0        => ddr_clk0,
 		clk90       => ddr_clk90,
 		phy_frm     => ctlrphy_frm,
