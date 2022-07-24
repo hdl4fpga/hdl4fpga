@@ -115,8 +115,8 @@ architecture virtex5 of ddrdqphy is
 	signal pause_req   : bit;
 	signal pause_rdy   : bit;
 
-	constant dqs_linedelay : time := 0 ns;
-	constant dqi_linedelay : time := 0 ns; --1.35 ns;
+	constant dqs_linedelay : time := 3 ns;
+	constant dqi_linedelay : time := 3 ns; --1.35 ns;
 
 begin
 
@@ -280,11 +280,11 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			lat  => 1,
+			lat  => 0,
 			GEAR => data_gear)
 		port map (
 			tp       => tp_dqssel,
-			ddr_clk  => clk0,
+			ddr_clk  => iod_clk,
 			edge     => '0',
 			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
@@ -312,9 +312,9 @@ begin
 		process (clk0)
 		begin
 			if rising_edge(clk0) then
+				sys_sto <= (others => sto);
 			end if;
 		end process;
-				sys_sto <= (others => sto);
 
 	end block;
 
@@ -339,8 +339,8 @@ begin
 			generic map (
 				taps     => taps)
 			port map (
-				edge     => std_logic'('0'),
-				clk      => clk0,
+				edge     => std_logic'('1'),
+				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),
