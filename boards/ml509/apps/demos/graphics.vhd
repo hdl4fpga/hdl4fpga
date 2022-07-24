@@ -40,25 +40,25 @@ use unisim.vcomponents.all;
 architecture graphics of ml509 is
 
 	type profiles is (
-		mode900p_ddr200MHz,
-		mode900p_ddr225MHz,
-		mode900p_ddr250MHz,
-		mode900p_ddr275MHz,
-		mode900p_ddr300MHz,
-		mode900p_ddr333MHz,
-		mode900p_ddr350MHz,
-		mode900p_ddr375MHz,
-		mode900p_ddr400MHz,
-		mode900p_ddr425MHz,
-		mode900p_ddr450MHz,
-		mode900p_ddr475MHz,
-		mode900p_ddr500MHz,
-		mode900p_ddr525MHz,
-		mode900p_ddr550MHz,
-		mode900p_ddr575MHz,
-		mode900p_ddr600MHz);
+		mode1080p_ddr200MHz,
+		mode1080p_ddr225MHz,
+		mode1080p_ddr250MHz,
+		mode1080p_ddr275MHz,
+		mode1080p_ddr300MHz,
+		mode1080p_ddr333MHz,
+		mode1080p_ddr350MHz,
+		mode1080p_ddr375MHz,
+		mode1080p_ddr400MHz,
+		mode1080p_ddr425MHz,
+		mode1080p_ddr450MHz,
+		mode1080p_ddr475MHz,
+		mode1080p_ddr500MHz,
+		mode1080p_ddr525MHz,
+		mode1080p_ddr550MHz,
+		mode1080p_ddr575MHz,
+		mode1080p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr333MHz;
+	constant profile : profiles := mode1080p_ddr333MHz;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -141,7 +141,11 @@ architecture graphics of ml509 is
 
 	type video_modes is (
 		modedebug,
-		mode900p);
+		mode480p,
+		mode600p,
+		mode720p,
+		mode900p,
+		mode1080p);
 
 	type profile_param is record
 		ddr_speed  : ddr_speeds;
@@ -151,23 +155,23 @@ architecture graphics of ml509 is
 
 	type profileparam_vector is array (profiles) of profile_param;
 	constant profile_tab : profileparam_vector := (
-		mode900p_ddr200MHz => (ddr200MHz, mode900p, 1),
-		mode900p_ddr225MHz => (ddr225MHz, mode900p, 1),
-		mode900p_ddr250MHz => (ddr250MHz, mode900p, 1),
-		mode900p_ddr275MHz => (ddr275MHz, mode900p, 1),
-		mode900p_ddr300MHz => (ddr300MHz, mode900p, 1),
-		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
-		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
-		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
-		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
-		mode900p_ddr425MHz => (ddr425MHz, mode900p, 1),
-		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
-		mode900p_ddr475MHz => (ddr475MHz, mode900p, 1),
-		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
-		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
-		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1),
-		mode900p_ddr575MHz => (ddr575MHz, mode900p, 1),
-		mode900p_ddr600MHz => (ddr600MHz, mode900p, 1));
+		mode1080p_ddr200MHz => (ddr200MHz, mode1080p, 1),
+		mode1080p_ddr225MHz => (ddr225MHz, mode1080p, 1),
+		mode1080p_ddr250MHz => (ddr250MHz, mode1080p, 1),
+		mode1080p_ddr275MHz => (ddr275MHz, mode1080p, 1),
+		mode1080p_ddr300MHz => (ddr300MHz, mode1080p, 1),
+		mode1080p_ddr333MHz => (ddr333MHz, mode1080p, 1),
+		mode1080p_ddr350MHz => (ddr350MHz, mode1080p, 1),
+		mode1080p_ddr375MHz => (ddr375MHz, mode1080p, 1),
+		mode1080p_ddr400MHz => (ddr400MHz, mode1080p, 1),
+		mode1080p_ddr425MHz => (ddr425MHz, mode1080p, 1),
+		mode1080p_ddr450MHz => (ddr450MHz, mode1080p, 1),
+		mode1080p_ddr475MHz => (ddr475MHz, mode1080p, 1),
+		mode1080p_ddr500MHz => (ddr500MHz, mode1080p, 1),
+		mode1080p_ddr525MHz => (ddr525MHz, mode1080p, 1),
+		mode1080p_ddr550MHz => (ddr550MHz, mode1080p, 1),
+		mode1080p_ddr575MHz => (ddr575MHz, mode1080p, 1),
+		mode1080p_ddr600MHz => (ddr600MHz, mode1080p, 1));
 
 	type video_params is record
 		pll  : pll_params;
@@ -176,8 +180,12 @@ architecture graphics of ml509 is
 
 	type videoparams_vector is array (video_modes) of video_params;
 	constant video_tab : videoparams_vector := (
-		modedebug => (mode => pclk_debug,              pll => (dcm_mul => 1, dcm_div => 32)),
-		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
+		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  1, dcm_div => 32)),
+		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 20)),
+		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)),
+		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 20)),
+		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 25)),
+		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 10)));
 
 	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
