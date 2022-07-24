@@ -223,7 +223,7 @@ begin
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
-		signal smp      : std_logic_vector(0 to data_gear-1);
+		signal smp      : std_logic_vector(data_gear-1 downto 0);
 		signal sto      : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
 	begin
@@ -280,7 +280,7 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			lat  => 1,
+			lat  => 0,
 			GEAR => data_gear)
 		port map (
 			tp       => tp_dqssel,
@@ -308,7 +308,13 @@ begin
 --				q := sto;
 --			end if;
 --		end process;
-		sys_sto <= (others => sto);
+
+		process (clk0)
+		begin
+			if rising_edge(clk0) then
+				sys_sto <= (others => sto);
+			end if;
+		end process;
 
 	end block;
 
