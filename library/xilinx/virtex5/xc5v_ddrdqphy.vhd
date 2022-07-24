@@ -280,7 +280,7 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			lat  => 0,
+			lat  => 1,
 			GEAR => data_gear)
 		port map (
 			tp       => tp_dqssel,
@@ -312,9 +312,9 @@ begin
 		process (clk0)
 		begin
 			if rising_edge(clk0) then
-				sys_sto <= (others => sto);
 			end if;
 		end process;
+				sys_sto <= (others => sto);
 
 	end block;
 
