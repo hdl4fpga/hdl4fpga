@@ -58,7 +58,7 @@ architecture graphics of ml509 is
 		mode1080p_ddr575MHz,
 		mode1080p_ddr600MHz);
 
-	constant profile : profiles := mode1080p_ddr333MHz;
+	constant profile : profiles := mode1080p_ddr200MHz;
 
 	type pll_params is record
 		dcm_mul : natural;
