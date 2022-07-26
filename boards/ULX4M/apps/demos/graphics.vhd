@@ -81,7 +81,7 @@ architecture graphics of ulx4m_ld is
 	signal ddrphy_rst    : std_logic;
 	signal physys_clk    : std_logic;
 
-	signal ddram_clklck  : std_logic;
+	signal dramclk_lck   : std_logic;
 
 	signal ctlrphy_frm   : std_logic;
 	signal ctlrphy_trdy  : std_logic;
@@ -384,7 +384,7 @@ begin
 			CLKOS     => open,
 			CLKOS2    => open,
 			CLKOS3    => open,
-			LOCK      => ddram_clklck,
+			LOCK      => dramclk_lck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
@@ -714,7 +714,9 @@ begin
 	process (clk_25mhz)
 	begin
 		if rising_edge(clk_25mhz) then
-			led(0) <= tp(1);
+			led(0) <= dramclk_lck;
+			led(1) <= tp(4);
+			led(2) <= tp(1);
 		end if;
 	end process;
 
@@ -744,10 +746,10 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ddrphy_rst <= not ddram_clklck;
-	process (ddram_clklck, ctlr_clk)
+	ddrphy_rst <= not dramclk_lck;
+	process (dramclk_lck, ctlr_clk)
 	begin
-		if ddram_clklck='0' then
+		if dramclk_lck='0' then
 			ddrsys_rst <= '1';
 		elsif rising_edge(ctlr_clk) then
 			ddrsys_rst <= '0';

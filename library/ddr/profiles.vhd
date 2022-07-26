@@ -21,14 +21,21 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-package ddr_profiles is
+package profiles is
 	type fpga_devices is (
 		ecp3,
 		ecp5,
 		xc3s,
 		xc5v,
 		xc7a);
+
+	type dram is (
+		sdram,
+		ddr,
+		ddr2,
+		ddr3);
+
 end package;
 
-package body ddr_profiles is
+package body profiles is
 end package;
