@@ -241,6 +241,7 @@ architecture graphics of ulx4m_ld is
 	constant hdplx   : std_logic := setif(debug, '0', '1');
 
 	signal tp : std_logic_vector(1 to 32);
+	signal tp_phy : std_logic_vector(1 to 32);
 begin
 
 	sys_rst <= '0';
@@ -423,8 +424,8 @@ begin
 			variable q1 : std_logic := '0';
 		begin
 			if rising_edge(uart_clk) then
-				led(6) <= q1;
-				led(7) <= q0;
+				-- led(6) <= q1;
+				-- led(7) <= q0;
 				if tp(1)='1' then
 					if tp(2)='1' then
 						q1 := not q1;
@@ -441,11 +442,11 @@ begin
 			variable e : std_logic := '1';
 		begin
 			if rising_edge(uart_clk) then
-				led(5) <= q;
+				-- led(5) <= q;
 				if (so_frm and not e)='1' then
 					q := not q;
 				end if;
-				led(4) <= so_frm;
+				-- led(4) <= so_frm;
 				e := so_frm;
 			end if;
 		end process;
@@ -576,8 +577,8 @@ begin
 				end if;
 			end if;
 		end process;
-		led(0) <= dhcpcd_rdy;
-		led(7) <= not dhcpcd_rdy;
+		-- led(0) <= dhcpcd_rdy;
+		-- led(7) <= not dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
@@ -714,9 +715,9 @@ begin
 	process (clk_25mhz)
 	begin
 		if rising_edge(clk_25mhz) then
-			led(0) <= dramclk_lck;
-			led(1) <= tp(4);
-			led(2) <= tp(1);
+			led(0) <= tp(1);
+			led(1) <= '0';
+			led(7 downto 2) <= tp_phy(1 to 6);
 		end if;
 	end process;
 
@@ -816,7 +817,8 @@ begin
 
 		ddr_dm        => open,
 		ddr_dq        => ddram_dq,
-		ddr_dqs       => ddram_dqs);
+		ddr_dqs       => ddram_dqs,
+		tp => tp_phy);
 	ddram_dm <= (others => '0');
 
 	-- VGA --

@@ -38,4 +38,4 @@ package profiles is
 end package;
 
 package body profiles is
-end package;
+end package body;

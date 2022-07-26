@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -93,7 +94,8 @@ entity ecp5_ddrphy is
 
 		ddr_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq    : inout std_logic_vector(word_size-1 downto 0);
-		ddr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0));
+		ddr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		tp        : out std_logic_vector(1 to 32));
 end;
 
 architecture lscc of ecp5_ddrphy is
@@ -477,10 +479,15 @@ begin
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		signal sto : std_logic;
+		signal tp_dq : std_logic_vector(1 to 32);
 	begin
 		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
+		tp_g : if i=0 generate
+			tp <= tp_dq;
+		end generate;
 		ddr3phy_i : entity hdl4fpga.ecp5_ddrdqphy
 		generic map (
+			taps => natural(floor(ddr_tcp/27.0e-12)),
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
@@ -517,7 +524,8 @@ begin
 
 			ddr_dqsi  => ddr_dqs(i),
 			ddr_dqst  => ddqst(i),
-			ddr_dqso  => ddqsi(i));
+			ddr_dqso  => ddqsi(i),
+			tp  => tp_dq);
 	end generate;
 
 	process (ddqsi, ddqst)

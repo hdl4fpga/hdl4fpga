@@ -118,8 +118,10 @@ begin
 							base(readclksel'length-1 downto 0) <= unsigned(phase);
 							edge  <= '1';
 							state := s_hl;
-						else
+						elsif lat(lat'left)='0'  then
 							base <= base + 2**readclksel'length;
+						else
+							adj_rdy <= adj_req;
 						end if;
 						dtct_req <= not dtct_rdy;
 					end if;

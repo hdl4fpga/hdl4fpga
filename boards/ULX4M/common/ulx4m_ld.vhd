@@ -34,7 +34,7 @@ entity ulx4m_ld is
 
 		clk_25mhz       : in  std_logic := 'Z';
 		btn             : in  std_logic_vector(1 to 3) := (others => '-');
-		led             : out std_logic_vector(0 to 8-1) := (others => 'Z');
+		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
 		sd_clk          : in  std_logic := '-';
 		sd_cmd          : out std_logic; -- sd_cmd=MOSI (out)

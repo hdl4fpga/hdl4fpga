@@ -30,6 +30,7 @@ use ecp5u.components.all;
 
 entity ecp5_ddrdqphy is
 	generic (
+		taps      : natural;
 		data_gear : natural;
 		byte_size : natural);
 	port (
@@ -65,7 +66,8 @@ entity ecp5_ddrdqphy is
 
 		ddr_dqsi  : in  std_logic;
 		ddr_dqst  : out std_logic;
-		ddr_dqso  : out std_logic);
+		ddr_dqso  : out std_logic;
+		tp : out std_logic_vector(1 to 32));
 
 end;
 
@@ -89,7 +91,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wrpntr       : std_logic_vector(3-1 downto 0);
 
 	signal read         : std_logic_vector(0 to 2-1);
-	signal lat          : std_logic_vector(2-1 downto 0);
+	signal lat          : std_logic_vector(3-1 downto 0);
 	signal readclksel   : std_logic_vector(3-1 downto 0);
 	signal wlpha        : std_logic_vector(8-1 downto 0);
 	signal burstdet     : std_logic;
@@ -107,7 +109,7 @@ architecture lscc of ecp5_ddrdqphy is
 	signal wlpause_req  : bit;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 5.1 ns;
+	constant delay      : time := 0.5 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req   : std_logic;
@@ -150,6 +152,7 @@ begin
 			lat        => lat,
 			readclksel => readclksel);
 		phy_sto <= datavalid;
+		tp(1 to 6) <= lat & readclksel;
 
 		process (sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
@@ -220,7 +223,7 @@ begin
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			dtaps => 1,
-			taps     => 2**wlpha'length-1)
+			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),
 			clk      => sclk,
