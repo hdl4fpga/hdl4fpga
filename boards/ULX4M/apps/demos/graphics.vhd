@@ -632,7 +632,7 @@ begin
 
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => LatticeECP5,
-		mark         => A4G12,
+		mark         => M4G107,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,
@@ -663,8 +663,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shft_clk,
+		video_clk    => '0', --video_clk,
+		video_shift_clk => '0', --video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 

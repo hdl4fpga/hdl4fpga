@@ -51,6 +51,7 @@ package ddr_db is
 	constant M1G15E : natural := 2;
 	constant M3   : natural := 3;
 	constant M2G125 : natural := 5;
+	constant M4G107 : natural := 7;
 	constant A4G12  : natural := 6;
 	constant M7E  : natural := 4;
 
@@ -116,6 +117,7 @@ package ddr_db is
 		tmark_record'(mark => M3,   stdr => DDR2),
 		tmark_record'(mark => M1G15E, stdr => DDR3),
 		tmark_record'(mark => M2G125, stdr => DDR3),
+		tmark_record'(mark => M4G107, stdr => DDR3),
 		tmark_record'(mark => A4G12, stdr => DDR3));
 
 	type latency_record is record
@@ -189,6 +191,16 @@ package ddr_db is
 		timing_record'(mark => M2G125, param => tRFC,  value => 160000),
 		timing_record'(mark => M2G125, param => tXPR,  value => 160000 + 10000),
 		timing_record'(mark => M2G125, param => tREFI, value => integer(64.0e9/8192.0)),
+
+		timing_record'(mark => M4G107, param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M4G107, param => tPstRST, value => 500*1_000_000),
+		timing_record'(mark => M4G107, param => tWR,   value => 15000),
+		timing_record'(mark => M4G107, param => tRCD,  value => 13910),
+		timing_record'(mark => M4G107, param => tRP,   value => 13910),
+		timing_record'(mark => M4G107, param => tMRD,  value => 20000),
+		timing_record'(mark => M4G107, param => tRFC,  value => 260000),
+		timing_record'(mark => M4G107, param => tXPR,  value => 260000 + 10000),
+		timing_record'(mark => M4G107, param => tREFI, value => integer(64.0e9/8192.0)),
 
 		timing_record'(mark => A4G12, param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => A4G12, param => tPstRST, value => 500*1_000_000),
