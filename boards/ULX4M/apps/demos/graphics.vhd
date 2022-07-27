@@ -663,8 +663,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
-		video_shift_clk => '0', --video_shft_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
