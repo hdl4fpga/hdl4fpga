@@ -552,7 +552,8 @@
     parameter TWLO             =    9000; // tWLO       ps    Write levelization output delay
     parameter TAA_MIN          =   12500; // TAA        ps    Internal READ command to first data
     parameter CL_TIME          =   12500; // CL         ps    Minimum CAS Latency
-`else `define sg25                        // sg25 is equivalent to the JEDEC DDR3-800E (6-6-6) speed bin
+`else 
+   `define sg25                        // sg25 is equivalent to the JEDEC DDR3-800E (6-6-6) speed bin
     parameter TCK_MIN          =    2500; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =     100; // tJIT(per)  ps    Period JItter
     parameter TJIT_CC          =     200; // tJIT(cc)   ps    Cycle to Cycle jitter

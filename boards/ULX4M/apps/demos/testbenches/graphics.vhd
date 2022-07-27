@@ -154,7 +154,7 @@ architecture ulx4mld_graphics of testbench is
 			cas_n   : in std_logic;
 			we_n    : in std_logic;
 			ba      : in std_logic_vector(3-1 downto 0);
-			addr    : in std_logic_vector(13-1 downto 0);
+			addr    : in std_logic_vector(15-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq      : inout std_logic_vector(16-1 downto 0);
 			dqs     : inout std_logic_vector(2-1 downto 0);
@@ -477,7 +477,7 @@ begin
 		Cas_n => cas_n,
 		We_n  => we_n,
 		Ba    => ba,
-		Addr  => addr(13-1 downto 0),
+		Addr  => addr,
 		Dm_tdqs => dm,
 		Dq    => dq,
 		Dqs   => dqs,
