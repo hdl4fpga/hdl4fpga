@@ -424,7 +424,7 @@ begin
 			variable q1 : std_logic := '0';
 		begin
 			if rising_edge(uart_clk) then
-				-- led(6) <= q1;
+				led(1) <= q1;
 				-- led(7) <= q0;
 				if tp(1)='1' then
 					if tp(2)='1' then
@@ -716,7 +716,6 @@ begin
 	begin
 		if rising_edge(clk_25mhz) then
 			led(0) <= tp(1);
-			led(1) <= '0';
 			led(7 downto 2) <= tp_phy(1 to 6);
 		end if;
 	end process;
