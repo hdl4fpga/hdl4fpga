@@ -53,7 +53,7 @@ entity ddr_ctlr is
 		ctlr_bl      : in std_logic_vector(2 downto 0);
 		ctlr_cl      : in std_logic_vector(2 downto 0);
 		ctlr_cwl     : in std_logic_vector(2 downto 0);
-		ctlr_wr      : in std_logic_vector(2 downto 0);
+		ctlr_wrl     : in std_logic_vector(2 downto 0);
 		ctlr_rtt     : in std_logic_vector;
 
 		ctlr_rst     : in std_logic;
@@ -230,7 +230,7 @@ begin
 		ddr_init_cwl   => ddr_cwl,
 		ddr_init_bt    => "0",
 		ddr_init_ods   => "0",
-		ddr_init_wr    => ctlr_wr,
+		ddr_init_wr    => ctlr_wrl,
 		ddr_init_rtt   => ctlr_rtt,
 
 		ddr_init_clk   => ctlr_clks(0),

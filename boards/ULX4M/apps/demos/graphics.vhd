@@ -514,27 +514,26 @@ begin
 
 	ipoe_e : if io_link=io_ipoe generate
 		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		alias rmii_crs   : std_logic is gpio17;
+		alias rmii_crs    : std_logic is gpio17;
 
-		alias rmii_tx_en : std_logic is gpio6;
-		alias rmii_tx0   : std_logic is gpio7;
-		alias rmii_tx1   : std_logic is gpio8;
+		alias rmii_tx_en  : std_logic is gpio6;
+		alias rmii_tx0    : std_logic is gpio7;
+		alias rmii_tx1    : std_logic is gpio8;
 
-		alias rmii_rx_dv : std_logic is rmii_crs;
-		alias rmii_rx0   : std_logic is gpio9;
-		alias rmii_rx1   : std_logic is gpio11;
+		alias rmii_rx_dv  : std_logic is rmii_crs;
+		alias rmii_rx0    : std_logic is gpio9;
+		alias rmii_rx1    : std_logic is gpio11;
 
+		alias rmii_nint   : std_logic is gpio19;
+		alias rmii_mdio   : std_logic is gpio22;
+		alias rmii_mdc    : std_logic is gpio25;
+		signal mii_clk    : std_logic;
 
-		alias rmii_nint  : std_logic is gpio19;
-		alias rmii_mdio  : std_logic is gpio22;
-		alias rmii_mdc   : std_logic is gpio25;
-		signal mii_clk   : std_logic;
+		signal mii_txen   : std_logic;
+		signal mii_txd    : std_logic_vector(0 to 2-1);
 
-		signal mii_txen  : std_logic;
-		signal mii_txd   : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv  : std_logic;
-		signal mii_rxd   : std_logic_vector(0 to 2-1);
+		signal mii_rxdv   : std_logic;
+		signal mii_rxd    : std_logic_vector(0 to 2-1);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
@@ -673,6 +672,7 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => ddram_tab(ddram_mode).cl,
 		ctlr_cwl     => ddram_tab(ddram_mode).cwl,
+		ctlr_wrl     => "010",
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),

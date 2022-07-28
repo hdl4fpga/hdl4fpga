@@ -422,7 +422,7 @@ begin
 		rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,
 		rgmii_txd    => rgmii_txd,
-		rgmii_rx_clk => rgmii_rxc,
+		rgmii_rx_clk => '0', --rgmii_rxc,
 		rgmii_rx_dv  => rgmii_rxdv,
 		rgmii_rxd    => rgmii_rxd,
 
