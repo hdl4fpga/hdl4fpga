@@ -424,7 +424,7 @@ begin
 			variable q1 : std_logic := '0';
 		begin
 			if rising_edge(uart_clk) then
-				led(1) <= q1;
+				-- led(1) <= q1;
 				-- led(7) <= q0;
 				if tp(1)='1' then
 					if tp(2)='1' then
@@ -757,6 +757,21 @@ begin
 		end if;
 	end process;
 	
+	process (ctlr_clk)
+		variable q : std_logic;
+		variable q1 : std_logic := '0';
+	begin
+		if rising_edge(ctlr_clk) then
+			if ctlrphy_sti(0)='1' then
+				if q='0' then
+					q1 := not q1;
+				end if;
+			end if;
+			q := ctlrphy_sti(0);
+		led(1) <= q1;
+		end if;
+	end process;
+
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
 		ddr_tcp       => ddr_tcp,

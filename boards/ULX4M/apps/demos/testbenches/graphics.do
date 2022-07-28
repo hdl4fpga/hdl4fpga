@@ -84,10 +84,16 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/pause_b/pause_re
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/pause_b/pause_rdy
 add wave -noupdate /testbench/du_e/led
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dev_len
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dev_addr
+add wave -noupdate /testbench/du_e/grahics_e/dev_we
+add wave -noupdate /testbench/du_e/grahics_e/dev_gnt
+add wave -noupdate /testbench/du_e/grahics_e/dev_req
+add wave -noupdate /testbench/du_e/grahics_e/dev_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {244297460 fs} 0} {{Cursor 2} {55971609260 fs} 0}
+WaveRestoreCursors {{Cursor 1} {20915711010 fs} 0} {{Cursor 2} {55971609260 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 828
+configure wave -namecolwidth 290
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -101,4 +107,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {617928870 fs}
+WaveRestoreZoom {0 fs} {31500 ns}
