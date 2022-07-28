@@ -1,4 +1,3 @@
-`define MAX_MEM
 /****************************************************************************************
 *
 *   Disclaimer   This software code and all associated documentation, comments or other 
@@ -26,12 +25,12 @@
 *
 ****************************************************************************************/
 
-    // Timing parameters based on Speed Grade
+    // Timing parameters based on 1Gb_DDR3_SDRAM.cdf - Rev. L 09/12 EN
 
                                           // SYMBOL     UNITS DESCRIPTION
                                           // ------     ----- -----------
 `ifdef sg093                              // sg093  is equivalent to the JEDEC DDR3-2133 (14-14-14) speed bin
-    parameter TCK_MIN          =     935; // tCK        ps    Minimum Clock Cycle Time
+    parameter TCK_MIN          =     938; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =      50; // tJIT(per)  ps    Period JItter
     parameter TJIT_CC          =     100; // tJIT(cc)   ps    Cycle to Cycle jitter
     parameter TERR_2PER        =      74; // tERR(2per) ps    Accumulated Error (2-cycle)
@@ -59,7 +58,7 @@
     parameter TIS              =      35; // tIS        ps    Input Setup Time
     parameter TIH              =      75; // tIH        ps    Input Hold Time
     parameter TRAS_MIN         =   33000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   48090; // tRC        ps    Active to Active/Auto Refresh command time
+    parameter TRC              =   46130; // tRC        ps    Active to Active/Auto Refresh command time
     parameter TRCD             =   13090; // tRCD       ps    Active to Read/Write command time
     parameter TRP              =   13090; // tRP        ps    Precharge command period
     parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
@@ -70,88 +69,8 @@
     parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
     parameter TAA_MIN          =   13090; // TAA        ps    Internal READ command to first data
     parameter CL_TIME          =   13090; // CL         ps    Minimum CAS Latency
-`elsif sg093E                             // sg093E is equivalent to the JEDEC DDR3-2133 (13-13-13) speed bin
-    parameter TCK_MIN          =     935; // tCK        ps    Minimum Clock Cycle Time
-    parameter TJIT_PER         =      50; // tJIT(per)  ps    Period JItter
-    parameter TJIT_CC          =     100; // tJIT(cc)   ps    Cycle to Cycle jitter
-    parameter TERR_2PER        =      74; // tERR(2per) ps    Accumulated Error (2-cycle)
-    parameter TERR_3PER        =      87; // tERR(3per) ps    Accumulated Error (3-cycle)
-    parameter TERR_4PER        =      97; // tERR(4per) ps    Accumulated Error (4-cycle)
-    parameter TERR_5PER        =     105; // tERR(5per) ps    Accumulated Error (5-cycle)
-    parameter TERR_6PER        =     111; // tERR(6per) ps    Accumulated Error (6-cycle)
-    parameter TERR_7PER        =     116; // tERR(7per) ps    Accumulated Error (7-cycle)
-    parameter TERR_8PER        =     121; // tERR(8per) ps    Accumulated Error (8-cycle)
-    parameter TERR_9PER        =     125; // tERR(9per) ps    Accumulated Error (9-cycle)
-    parameter TERR_10PER       =     128; // tERR(10per)ps    Accumulated Error (10-cycle)
-    parameter TERR_11PER       =     132; // tERR(11per)ps    Accumulated Error (11-cycle)
-    parameter TERR_12PER       =     134; // tERR(12per)ps    Accumulated Error (12-cycle)
-    parameter TDS              =       5; // tDS        ps    DQ and DM input setup time relative to DQS
-    parameter TDH              =      20; // tDH        ps    DQ and DM input hold time relative to DQS
-    parameter TDQSQ            =      70; // tDQSQ      ps    DQS-DQ skew, DQS to last DQ valid, per group, per access
-    parameter TDQSS            =    0.27; // tDQSS      tCK   Rising clock edge to DQS/DQS# latching transition
-    parameter TDSS             =    0.18; // tDSS       tCK   DQS falling edge to CLK rising (setup time)
-    parameter TDSH             =    0.18; // tDSH       tCK   DQS falling edge from CLK rising (hold time)
-    parameter TDQSCK           =     175; // tDQSCK     ps    DQS output access time from CK/CK#
-    parameter TQSH             =    0.40; // tQSH       tCK   DQS Output High Pulse Width
-    parameter TQSL             =    0.40; // tQSL       tCK   DQS Output Low Pulse Width
-    parameter TDIPW            =     280; // tDIPW      ps    DQ and DM input Pulse Width
-    parameter TIPW             =     470; // tIPW       ps    Control and Address input Pulse Width  
-    parameter TIS              =      35; // tIS        ps    Input Setup Time
-    parameter TIH              =      75; // tIH        ps    Input Hold Time
-    parameter TRAS_MIN         =   33000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   47155; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   12155; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   12155; // tRP        ps    Precharge command period
-    parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
-    parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     180; // tAON       ps    RTT turn-on from ODTLon reference
-    parameter TWLS             =     122; // tWLS       ps    Setup time for tDQS flop
-    parameter TWLH             =     122; // tWLH       ps    Hold time of tDQS flop
-    parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   12155; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   12155; // CL         ps    Minimum CAS Latency
-`elsif sg093F                             // sg093F is equivalent to the JEDEC DDR3-2133 (12-12-12) speed bin
-    parameter TCK_MIN          =     935; // tCK        ps    Minimum Clock Cycle Time
-    parameter TJIT_PER         =      50; // tJIT(per)  ps    Period JItter
-    parameter TJIT_CC          =     100; // tJIT(cc)   ps    Cycle to Cycle jitter
-    parameter TERR_2PER        =      74; // tERR(2per) ps    Accumulated Error (2-cycle)
-    parameter TERR_3PER        =      87; // tERR(3per) ps    Accumulated Error (3-cycle)
-    parameter TERR_4PER        =      97; // tERR(4per) ps    Accumulated Error (4-cycle)
-    parameter TERR_5PER        =     105; // tERR(5per) ps    Accumulated Error (5-cycle)
-    parameter TERR_6PER        =     111; // tERR(6per) ps    Accumulated Error (6-cycle)
-    parameter TERR_7PER        =     116; // tERR(7per) ps    Accumulated Error (7-cycle)
-    parameter TERR_8PER        =     121; // tERR(8per) ps    Accumulated Error (8-cycle)
-    parameter TERR_9PER        =     125; // tERR(9per) ps    Accumulated Error (9-cycle)
-    parameter TERR_10PER       =     128; // tERR(10per)ps    Accumulated Error (10-cycle)
-    parameter TERR_11PER       =     132; // tERR(11per)ps    Accumulated Error (11-cycle)
-    parameter TERR_12PER       =     134; // tERR(12per)ps    Accumulated Error (12-cycle)
-    parameter TDS              =       5; // tDS        ps    DQ and DM input setup time relative to DQS
-    parameter TDH              =      20; // tDH        ps    DQ and DM input hold time relative to DQS
-    parameter TDQSQ            =      70; // tDQSQ      ps    DQS-DQ skew, DQS to last DQ valid, per group, per access
-    parameter TDQSS            =    0.27; // tDQSS      tCK   Rising clock edge to DQS/DQS# latching transition
-    parameter TDSS             =    0.18; // tDSS       tCK   DQS falling edge to CLK rising (setup time)
-    parameter TDSH             =    0.18; // tDSH       tCK   DQS falling edge from CLK rising (hold time)
-    parameter TDQSCK           =     175; // tDQSCK     ps    DQS output access time from CK/CK#
-    parameter TQSH             =    0.40; // tQSH       tCK   DQS Output High Pulse Width
-    parameter TQSL             =    0.40; // tQSL       tCK   DQS Output Low Pulse Width
-    parameter TDIPW            =     280; // tDIPW      ps    DQ and DM input Pulse Width
-    parameter TIPW             =     470; // tIPW       ps    Control and Address input Pulse Width  
-    parameter TIS              =      35; // tIS        ps    Input Setup Time
-    parameter TIH              =      75; // tIH        ps    Input Hold Time
-    parameter TRAS_MIN         =   33000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   46220; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   11220; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   11220; // tRP        ps    Precharge command period
-    parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
-    parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     180; // tAON       ps    RTT turn-on from ODTLon reference
-    parameter TWLS             =     122; // tWLS       ps    Setup time for tDQS flop
-    parameter TWLH             =     122; // tWLH       ps    Hold time of tDQS flop
-    parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   11220; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   11220; // CL         ps    Minimum CAS Latency
 `elsif sg107                              // sg107 is equivalent to the JEDEC DDR3-1866 (13-13-13) speed bin
-    parameter TCK_MIN          =    1070; // tCK        ps    Minimum Clock Cycle Time
+    parameter TCK_MIN          =    1071; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =      60; // tJIT(per)  ps    Period JItter
     parameter TJIT_CC          =     120; // tJIT(cc)   ps    Cycle to Cycle jitter
     parameter TERR_2PER        =      88; // tERR(2per) ps    Accumulated Error (2-cycle)
@@ -190,126 +109,6 @@
     parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
     parameter TAA_MIN          =   13910; // TAA        ps    Internal READ command to first data
     parameter CL_TIME          =   13910; // CL         ps    Minimum CAS Latency
-`elsif sg107E                             // sg107E is equivalent to the JEDEC DDR3-1866 (12-12-12) speed bin
-    parameter TCK_MIN          =    1070; // tCK        ps    Minimum Clock Cycle Time
-    parameter TJIT_PER         =      60; // tJIT(per)  ps    Period JItter
-    parameter TJIT_CC          =     120; // tJIT(cc)   ps    Cycle to Cycle jitter
-    parameter TERR_2PER        =      88; // tERR(2per) ps    Accumulated Error (2-cycle)
-    parameter TERR_3PER        =     105; // tERR(3per) ps    Accumulated Error (3-cycle)
-    parameter TERR_4PER        =     117; // tERR(4per) ps    Accumulated Error (4-cycle)
-    parameter TERR_5PER        =     126; // tERR(5per) ps    Accumulated Error (5-cycle)
-    parameter TERR_6PER        =     133; // tERR(6per) ps    Accumulated Error (6-cycle)
-    parameter TERR_7PER        =     139; // tERR(7per) ps    Accumulated Error (7-cycle)
-    parameter TERR_8PER        =     145; // tERR(8per) ps    Accumulated Error (8-cycle)
-    parameter TERR_9PER        =     150; // tERR(9per) ps    Accumulated Error (9-cycle)
-    parameter TERR_10PER       =     154; // tERR(10per)ps    Accumulated Error (10-cycle)
-    parameter TERR_11PER       =     158; // tERR(11per)ps    Accumulated Error (11-cycle)
-    parameter TERR_12PER       =     161; // tERR(12per)ps    Accumulated Error (12-cycle)
-    parameter TDS              =      10; // tDS        ps    DQ and DM input setup time relative to DQS
-    parameter TDH              =      20; // tDH        ps    DQ and DM input hold time relative to DQS
-    parameter TDQSQ            =      80; // tDQSQ      ps    DQS-DQ skew, DQS to last DQ valid, per group, per access
-    parameter TDQSS            =    0.27; // tDQSS      tCK   Rising clock edge to DQS/DQS# latching transition
-    parameter TDSS             =    0.18; // tDSS       tCK   DQS falling edge to CLK rising (setup time)
-    parameter TDSH             =    0.18; // tDSH       tCK   DQS falling edge from CLK rising (hold time)
-    parameter TDQSCK           =     200; // tDQSCK     ps    DQS output access time from CK/CK#
-    parameter TQSH             =    0.40; // tQSH       tCK   DQS Output High Pulse Width
-    parameter TQSL             =    0.40; // tQSL       tCK   DQS Output Low Pulse Width
-    parameter TDIPW            =     320; // tDIPW      ps    DQ and DM input Pulse Width
-    parameter TIPW             =     535; // tIPW       ps    Control and Address input Pulse Width  
-    parameter TIS              =      50; // tIS        ps    Input Setup Time
-    parameter TIH              =     100; // tIH        ps    Input Hold Time
-    parameter TRAS_MIN         =   34000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   47840; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   12840; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   12840; // tRP        ps    Precharge command period
-    parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
-    parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     200; // tAON       ps    RTT turn-on from ODTLon reference
-    parameter TWLS             =     140; // tWLS       ps    Setup time for tDQS flop
-    parameter TWLH             =     140; // tWLH       ps    Hold time of tDQS flop
-    parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   12840; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   12840; // CL         ps    Minimum CAS Latency
-`elsif sg107F                             // sg107F  is equivalent to the JEDEC DDR3-1866 (11-11-11) speed bin
-    parameter TCK_MIN          =    1070; // tCK        ps    Minimum Clock Cycle Time
-    parameter TJIT_PER         =      60; // tJIT(per)  ps    Period JItter
-    parameter TJIT_CC          =     120; // tJIT(cc)   ps    Cycle to Cycle jitter
-    parameter TERR_2PER        =      88; // tERR(2per) ps    Accumulated Error (2-cycle)
-    parameter TERR_3PER        =     105; // tERR(3per) ps    Accumulated Error (3-cycle)
-    parameter TERR_4PER        =     117; // tERR(4per) ps    Accumulated Error (4-cycle)
-    parameter TERR_5PER        =     126; // tERR(5per) ps    Accumulated Error (5-cycle)
-    parameter TERR_6PER        =     133; // tERR(6per) ps    Accumulated Error (6-cycle)
-    parameter TERR_7PER        =     139; // tERR(7per) ps    Accumulated Error (7-cycle)
-    parameter TERR_8PER        =     145; // tERR(8per) ps    Accumulated Error (8-cycle)
-    parameter TERR_9PER        =     150; // tERR(9per) ps    Accumulated Error (9-cycle)
-    parameter TERR_10PER       =     154; // tERR(10per)ps    Accumulated Error (10-cycle)
-    parameter TERR_11PER       =     158; // tERR(11per)ps    Accumulated Error (11-cycle)
-    parameter TERR_12PER       =     161; // tERR(12per)ps    Accumulated Error (12-cycle)
-    parameter TDS              =      10; // tDS        ps    DQ and DM input setup time relative to DQS
-    parameter TDH              =      20; // tDH        ps    DQ and DM input hold time relative to DQS
-    parameter TDQSQ            =      80; // tDQSQ      ps    DQS-DQ skew, DQS to last DQ valid, per group, per access
-    parameter TDQSS            =    0.27; // tDQSS      tCK   Rising clock edge to DQS/DQS# latching transition
-    parameter TDSS             =    0.18; // tDSS       tCK   DQS falling edge to CLK rising (setup time)
-    parameter TDSH             =    0.18; // tDSH       tCK   DQS falling edge from CLK rising (hold time)
-    parameter TDQSCK           =     200; // tDQSCK     ps    DQS output access time from CK/CK#
-    parameter TQSH             =    0.40; // tQSH       tCK   DQS Output High Pulse Width
-    parameter TQSL             =    0.40; // tQSL       tCK   DQS Output Low Pulse Width
-    parameter TDIPW            =     320; // tDIPW      ps    DQ and DM input Pulse Width
-    parameter TIPW             =     535; // tIPW       ps    Control and Address input Pulse Width  
-    parameter TIS              =      50; // tIS        ps    Input Setup Time
-    parameter TIH              =     100; // tIH        ps    Input Hold Time
-    parameter TRAS_MIN         =   34000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   46770; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   11770; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   11770; // tRP        ps    Precharge command period
-    parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
-    parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     200; // tAON       ps    RTT turn-on from ODTLon reference
-    parameter TWLS             =     140; // tWLS       ps    Setup time for tDQS flop
-    parameter TWLH             =     140; // tWLH       ps    Hold time of tDQS flop
-    parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   11770; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   11770; // CL         ps    Minimum CAS Latency
-`elsif sg125E                             // sg125E is equivalent to the JEDEC DDR3-1600 (10-10-10) speed bin
-    parameter TCK_MIN          =    1250; // tCK        ps    Minimum Clock Cycle Time
-    parameter TJIT_PER         =      70; // tJIT(per)  ps    Period JItter
-    parameter TJIT_CC          =     140; // tJIT(cc)   ps    Cycle to Cycle jitter
-    parameter TERR_2PER        =     103; // tERR(2per) ps    Accumulated Error (2-cycle)
-    parameter TERR_3PER        =     122; // tERR(3per) ps    Accumulated Error (3-cycle)
-    parameter TERR_4PER        =     136; // tERR(4per) ps    Accumulated Error (4-cycle)
-    parameter TERR_5PER        =     147; // tERR(5per) ps    Accumulated Error (5-cycle)
-    parameter TERR_6PER        =     155; // tERR(6per) ps    Accumulated Error (6-cycle)
-    parameter TERR_7PER        =     163; // tERR(7per) ps    Accumulated Error (7-cycle)
-    parameter TERR_8PER        =     169; // tERR(8per) ps    Accumulated Error (8-cycle)
-    parameter TERR_9PER        =     175; // tERR(9per) ps    Accumulated Error (9-cycle)
-    parameter TERR_10PER       =     180; // tERR(10per)ps    Accumulated Error (10-cycle)
-    parameter TERR_11PER       =     184; // tERR(11per)ps    Accumulated Error (11-cycle)
-    parameter TERR_12PER       =     188; // tERR(12per)ps    Accumulated Error (12-cycle)
-    parameter TDS              =      10; // tDS        ps    DQ and DM input setup time relative to DQS
-    parameter TDH              =      45; // tDH        ps    DQ and DM input hold time relative to DQS
-    parameter TDQSQ            =     100; // tDQSQ      ps    DQS-DQ skew, DQS to last DQ valid, per group, per access
-    parameter TDQSS            =    0.27; // tDQSS      tCK   Rising clock edge to DQS/DQS# latching transition
-    parameter TDSS             =    0.18; // tDSS       tCK   DQS falling edge to CLK rising (setup time)
-    parameter TDSH             =    0.18; // tDSH       tCK   DQS falling edge from CLK rising (hold time)
-    parameter TDQSCK           =     225; // tDQSCK     ps    DQS output access time from CK/CK#
-    parameter TQSH             =    0.40; // tQSH       tCK   DQS Output High Pulse Width
-    parameter TQSL             =    0.40; // tQSL       tCK   DQS Output Low Pulse Width
-    parameter TDIPW            =     360; // tDIPW      ps    DQ and DM input Pulse Width
-    parameter TIPW             =     560; // tIPW       ps    Control and Address input Pulse Width  
-    parameter TIS              =     170; // tIS        ps    Input Setup Time
-    parameter TIH              =     120; // tIH        ps    Input Hold Time
-    parameter TRAS_MIN         =   35000; // tRAS       ps    Minimum Active to Precharge command time
-    parameter TRC              =   47500; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   12500; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   12500; // tRP        ps    Precharge command period
-    parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
-    parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     250; // tAON       ps    RTT turn-on from ODTLon reference
-    parameter TWLS             =     165; // tWLS       ps    Setup time for tDQS flop
-    parameter TWLH             =     165; // tWLH       ps    Hold time of tDQS flop
-    parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   12500; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   12500; // CL         ps    Minimum CAS Latency
 `elsif sg125                              // sg125 is equivalent to the JEDEC DDR3-1600 (11-11-11) speed bin
     parameter TCK_MIN          =    1250; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =      70; // tJIT(per)  ps    Period JItter
@@ -340,16 +139,16 @@
     parameter TIH              =     120; // tIH        ps    Input Hold Time
     parameter TRAS_MIN         =   35000; // tRAS       ps    Minimum Active to Precharge command time
     parameter TRC              =   48750; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   13125; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   13125; // tRP        ps    Precharge command period
+    parameter TRCD             =   13750; // tRCD       ps    Active to Read/Write command time
+    parameter TRP              =   13750; // tRP        ps    Precharge command period
     parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
     parameter TCKE             =    5000; // tCKE       ps    CKE minimum high or low pulse width
     parameter TAON             =     250; // tAON       ps    RTT turn-on from ODTLon reference
     parameter TWLS             =     165; // tWLS       ps    Setup time for tDQS flop
     parameter TWLH             =     165; // tWLH       ps    Hold time of tDQS flop
     parameter TWLO             =    7500; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   13125; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   13125; // CL         ps    Minimum CAS Latency
+    parameter TAA_MIN          =   13750; // TAA        ps    Internal READ command to first data
+    parameter CL_TIME          =   13750; // CL         ps    Minimum CAS Latency
 `elsif sg15E                              // sg15E is equivalent to the JEDEC DDR3-1333H (9-9-9) speed bin
     parameter TCK_MIN          =    1500; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =      80; // tJIT(per)  ps    Period JItter
@@ -380,16 +179,16 @@
     parameter TIH              =     140; // tIH        ps    Input Hold Time
     parameter TRAS_MIN         =   36000; // tRAS       ps    Minimum Active to Precharge command time
     parameter TRC              =   49500; // tRC        ps    Active to Active/Auto Refresh command time
-    parameter TRCD             =   13125; // tRCD       ps    Active to Read/Write command time
-    parameter TRP              =   13125; // tRP        ps    Precharge command period
+    parameter TRCD             =   13500; // tRCD       ps    Active to Read/Write command time
+    parameter TRP              =   13500; // tRP        ps    Precharge command period
     parameter TXP              =    6000; // tXP        ps    Exit power down to a valid command
     parameter TCKE             =    5625; // tCKE       ps    CKE minimum high or low pulse width
     parameter TAON             =     250; // tAON       ps    RTT turn-on from ODTLon reference
     parameter TWLS             =     195; // tWLS       ps    Setup time for tDQS flop
     parameter TWLH             =     195; // tWLH       ps    Hold time of tDQS flop
     parameter TWLO             =    9000; // tWLO       ps    Write levelization output delay
-    parameter TAA_MIN          =   13125; // TAA        ps    Internal READ command to first data
-    parameter CL_TIME          =   13125; // CL         ps    Minimum CAS Latency
+    parameter TAA_MIN          =   13500; // TAA        ps    Internal READ command to first data
+    parameter CL_TIME          =   13500; // CL         ps    Minimum CAS Latency
 `elsif sg15                               // sg15 is equivalent to the JEDEC DDR3-1333J (10-10-10) speed bin
     parameter TCK_MIN          =    1500; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =      80; // tJIT(per)  ps    Period JItter
@@ -544,14 +343,14 @@
     parameter TRP              =   12500; // tRP        ps    Precharge command period
     parameter TXP              =    7500; // tXP        ps    Exit power down to a valid command
     parameter TCKE             =    7500; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     400; // tAON       ps    RTT turn-on from ODTLon reference
+    parameter TAON             =     400; // tAON       ps    RTT turn-on from ODTLon reference
     parameter TWLS             =     325; // tWLS       ps    Setup time for tDQS flop
     parameter TWLH             =     325; // tWLH       ps    Hold time of tDQS flop
     parameter TWLO             =    9000; // tWLO       ps    Write levelization output delay
     parameter TAA_MIN          =   12500; // TAA        ps    Internal READ command to first data
     parameter CL_TIME          =   12500; // CL         ps    Minimum CAS Latency
 `else
-	`define sg25                        // sg25 is equivalent to the JEDEC DDR3-800 (6-6-6) speed bin
+    `define sg25                          // sg25 is equivalent to the JEDEC DDR3-800 (6-6-6) speed bin
     parameter TCK_MIN          =    2500; // tCK        ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =     100; // tJIT(per)  ps    Period JItter
     parameter TJIT_CC          =     200; // tJIT(cc)   ps    Cycle to Cycle jitter
@@ -585,7 +384,7 @@
     parameter TRP              =   15000; // tRP        ps    Precharge command period
     parameter TXP              =    7500; // tXP        ps    Exit power down to a valid command
     parameter TCKE             =    7500; // tCKE       ps    CKE minimum high or low pulse width
-    parameter TAON             =     400; // tAON       ps    RTT turn-on from ODTLon reference
+    parameter TAON             =     400; // tAON       ps    RTT turn-on from ODTLon reference
     parameter TWLS             =     325; // tWLS       ps    Setup time for tDQS flop
     parameter TWLH             =     325; // tWLH       ps    Hold time of tDQS flop
     parameter TWLO             =    9000; // tWLO       ps    Write levelization output delay
@@ -599,24 +398,9 @@
   `ifdef sg093
     parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
-  `elsif sg093E
-    parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
-  `elsif sg093F
-    parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
   `elsif sg107
     parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
-  `elsif sg107E
-    parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
-  `elsif sg107F
-    parameter TRRD             =    6000; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   35000; // tFAW       ps     (2KB page size) Four Bank Activate window
-  `elsif sg125E
-    parameter TRRD             =    7500; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   40000; // tFAW       ps     (2KB page size) Four Bank Activate window
   `elsif sg125
     parameter TRRD             =    7500; // tRRD       ps     (2KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   40000; // tFAW       ps     (2KB page size) Four Bank Activate window
@@ -643,24 +427,9 @@
   `ifdef sg093
     parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
-  `elsif sg093E
-    parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
-  `elsif sg093F
-    parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
   `elsif sg107
     parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
-  `elsif sg107E
-    parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
-  `elsif sg107F
-    parameter TRRD             =    5000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   25000; // tFAW       ps     (1KB page size) Four Bank Activate window
-  `elsif sg125E
-    parameter TRRD             =    6000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
-    parameter TFAW             =   30000; // tFAW       ps     (1KB page size) Four Bank Activate window
   `elsif sg125
     parameter TRRD             =    6000; // tRRD       ps     (1KB page size) Active bank a to Active bank b command time
     parameter TFAW             =   30000; // tFAW       ps     (1KB page size) Four Bank Activate window
@@ -721,9 +490,9 @@
     parameter TWPRE            =    0.90; // tWPRE      tCK   DQS Write Preamble
     parameter TWPST            =    0.30; // tWPST      tCK   DQS Write Postamble
     // Command and Address
-    parameter TZQCS            =      64; // tZQCS      tCK   ZQ Cal (Short) time
-    parameter TZQINIT          =     512; // tZQinit    tCK   ZQ Cal (Long) time
-    parameter TZQOPER          =     256; // tZQoper    tCK   ZQ Cal (Long) time
+    integer   TZQCS;                      // tZQCS      tCK   ZQ Cal (Short) time
+    integer   TZQINIT;                    // tZQinit    tCK   ZQ Cal (Long) time
+    integer   TZQOPER;                    // tZQoper    tCK   ZQ Cal (Long) time
     parameter TCCD             =       4; // tCCD       tCK   Cas to Cas command delay
     parameter TCCD_DG          =       2; // tCCD_DG    tCK   Cas to Cas command delay to different group
     parameter TRAS_MAX         =    60e9; // tRAS       ps    Maximum Active to Precharge command time
@@ -743,7 +512,7 @@
     parameter TDLLK            =     512; // tDLLK      tCK   DLL locking time
     // Refresh - 1Gb
     parameter TRFC_MIN         =  110000; // tRFC       ps    Refresh to Refresh Command interval minimum value
-    parameter TRFC_MAX         =70312500; // tRFC       ps    Refresh to Refresh Command Interval maximum value
+    parameter TRFC_MAX         =70200000; // tRFC       ps    Refresh to Refresh Command Interval maximum value
     // Power Down
     parameter TXP_TCK          =       3; // tXP        tCK   Exit power down to a valid command
     parameter TXPDLL           =   24000; // tXPDLL     ps    Exit precharge power down to READ or WRITE command (DLL-off mode)
@@ -793,7 +562,8 @@
     parameter COL_BITS         =      10; // Set this parameter to control how many Column bits are used
     parameter DQ_BITS          =       8; // Set this parameter to control how many Data bits are used       **Same as part bit width**
     parameter DQS_BITS         =       1; // Set this parameter to control how many Dqs bits are used
-`else `define x16
+`else
+    `define x16
     parameter DM_BITS          =       2; // Set this parameter to control how many Data Mask bits are used
     parameter ADDR_BITS        =      13; // MAX Address Bits
     parameter ROW_BITS         =      13; // Set this parameter to control how many Address bits are used
@@ -828,7 +598,7 @@
     parameter DEBUG            =       1; // Turn on Debug messages
     parameter BUS_DELAY        =       0; // delay in nanoseconds
     parameter RANDOM_OUT_DELAY =       0; // If set to 1, the model will put a random amount of delay on DQ/DQS during reads
-    parameter RANDOM_SEED    = 711689044; //seed value for random generator.
+    parameter RANDOM_SEED      =   31913; //seed value for random generator.
 
     parameter RDQSEN_PRE       =       2; // DQS driving time prior to first read strobe
     parameter RDQSEN_PST       =       1; // DQS driving time after last read strobe
@@ -846,81 +616,24 @@ function valid_cl;
 
     case ({cwl, cl})
 `ifdef sg093
-        {4'd5, 4'd6 },
-        {4'd6, 4'd7 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd9 },
-        {4'd7, 4'd10},
-        {4'd8, 4'd11},
-        {4'd9, 4'd13},
-        {4'd10, 4'd14}: valid_cl = 1;
-`elsif sg093E
-        {4'd5, 4'd5 },
-        {4'd5, 4'd6 },
-        {4'd6, 4'd7 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd9 },
-        {4'd7, 4'd10},
-        {4'd8, 4'd10},
-        {4'd8, 4'd11},
-        {4'd9, 4'd12},
-        {4'd9, 4'd13},
-        {4'd10, 4'd13},
-        {4'd10, 4'd14}: valid_cl = 1;
-`elsif sg093F
-        {4'd5, 4'd5 },
-        {4'd5, 4'd6 },
-        {4'd6, 4'd6 },
-        {4'd6, 4'd7 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd8 },
-        {4'd7, 4'd9 },
-        {4'd7, 4'd10},
-        {4'd8, 4'd9 },
-        {4'd8, 4'd10},
-        {4'd8, 4'd11},
-        {4'd9, 4'd11},
-        {4'd9, 4'd12},
-        {4'd9, 4'd13},
-        {4'd10, 4'd12},
-        {4'd10, 4'd13},
+        {4'd5 , 4'd5 },
+        {4'd5 , 4'd6 },
+        {4'd6 , 4'd7 },
+        {4'd6 , 4'd8 },
+        {4'd7 , 4'd9 },
+        {4'd7 , 4'd10},
+        {4'd8 , 4'd11},
+        {4'd9 , 4'd13},
         {4'd10, 4'd14}: valid_cl = 1;
 `elsif sg107
-        {4'd5, 4'd6 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd10},
-        {4'd9, 4'd13}: valid_cl = 1;
-`elsif sg107E
-        {4'd5, 4'd6 },
-        {4'd6, 4'd7 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd9 },
-        {4'd7, 4'd10},
-        {4'd8, 4'd11},
-        {4'd9, 4'd12},
-        {4'd9, 4'd13}: valid_cl = 1;
-`elsif sg107F
-        {4'd5, 4'd5 },
-        {4'd5, 4'd6 },
-        {4'd6, 4'd7 },
-        {4'd6, 4'd8 },
-        {4'd7, 4'd8 },
-        {4'd7, 4'd9 },
-        {4'd7, 4'd10},
-        {4'd8, 4'd10},
-        {4'd8, 4'd11},
-        {4'd9, 4'd11},
-        {4'd9, 4'd12},
-        {4'd9, 4'd13}: valid_cl = 1;
-`elsif sg125E
         {4'd5, 4'd5 },
         {4'd5, 4'd6 },
         {4'd6, 4'd7 },
         {4'd6, 4'd8 },
         {4'd7, 4'd9 },
         {4'd7, 4'd10},
-        {4'd8, 4'd10},
-        {4'd8, 4'd11}: valid_cl = 1;
+        {4'd8, 4'd11},
+        {4'd9, 4'd13}: valid_cl = 1;
 `elsif sg125
         {4'd5, 4'd5 },
         {4'd5, 4'd6 },
@@ -969,8 +682,8 @@ function [3:0] min_cwl;
               (period >= 1875.0) ? 6:
               (period >= 1500.0) ? 7:
               (period >= 1250.0) ? 8:
-              (period >= 1070.0) ? 9:
-              10; // (period >= 935)
+              (period >= 1071.0) ? 9:
+              10; // (period >= 938)
 endfunction
 
 // find the minimum valid cas latency

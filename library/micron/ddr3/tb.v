@@ -38,9 +38,21 @@
 
 module tb;
 
-`include "ddr3_parameters.vh"
+`ifdef den1024Mb
+    `include "1024Mb_ddr3_parameters.vh"
+`elsif den2048Mb
+    `include "2048Mb_ddr3_parameters.vh"
+`elsif den4096Mb
+    `include "4096Mb_ddr3_parameters.vh"
+`elsif den8192Mb
+    `include "8192Mb_ddr3_parameters.vh"
+`else
+    // NOTE: Intentionally cause a compile fail here to force the users
+    //       to select the correct component density before continuing
+    ERROR: You must specify component density with +define+den____Mb.
+`endif
 
-    // ports
+    // ports
     reg                         rst_n;
     reg                         ck;
     wire                        ck_n = ~ck;
@@ -60,9 +72,7 @@ module tb;
     wire         [DQS_BITS-1:0] tdqs_n;
     wire                        odt;
     
-    reg                 [1 : 0] cs_mux = 2'b11;
-
-    // mode registers
+    // mode registers
     reg         [ADDR_BITS-1:0] mode_reg0;                                 //Mode Register
     reg         [ADDR_BITS-1:0] mode_reg1;                                 //Extended Mode Register
     reg         [ADDR_BITS-1:0] mode_reg2;                                 //Extended Mode Register 2
@@ -74,7 +84,7 @@ module tb;
     wire                  [4:0] rl       = cl + al;                         //Read Latency
     wire                  [4:0] wl       = cwl + al;                        //Write Latency
 
-    // dq transmit
+    // dq transmit
     reg                         dq_en;
     reg           [DM_BITS-1:0] dm_out;
     reg           [DQ_BITS-1:0] dq_out;
@@ -85,21 +95,21 @@ module tb;
     assign                      dq1      = dq_en ? ~dq_out : {DQ_BITS{1'bz}};
     assign                      dqs      = dqs_en ? dqs_out : {DQS_BITS{1'bz}};
     assign                      dqs_n    = dqs_en ? ~dqs_out : {DQS_BITS{1'bz}};
-
-    // dq receive
+
+    // dq receive
     reg           [DM_BITS-1:0] dm_fifo [4*CL_MAX+BL_MAX+2:0];
     reg           [DQ_BITS-1:0] dq_fifo [4*CL_MAX+BL_MAX+2:0];
     wire          [DQ_BITS-1:0] q0, q1, q2, q3;
     reg                         ptr_rst_n;
-    reg                   [1:0] burst_cntr;
-
-    // odt
-    reg                         odt_out;
-    reg     [(AL_MAX+CL_MAX):0] odt_fifo;
+    reg                   [1:0] burst_cntr;
+
+    // odt
+    reg                         odt_out;
+    reg     [(AL_MAX+CL_MAX):0] odt_fifo;
     assign                      odt      = odt_out & !odt_fifo[0];
-
+
     // timing definition in tCK units
-    real                        tck;
+    real                        tck;
     wire                 [11:0] tccd     = TCCD;
     wire                 [11:0] tcke     = max(ceil(TCKE/tck), TCKE_TCK);
     wire                 [11:0] tckesr   = TCKESR_TCK;
@@ -133,30 +143,30 @@ module tb;
     wire                 [11:0] wr       = (twr < 8) ? twr : twr + twr%2;
     wire                 [11:9] mr_wr    = (twr < 8) ? (twr - 4) : twr>>1;
 
-`ifdef TRUEBL4
+`ifdef TRUEBL4
     wire                 [11:0] tccd_dg  = TCCD_DG;
     wire                 [11:0] trrd_dg  = max(ceil(TRRD_DG/tck), TRRD_DG_TCK);
-    wire                 [11:0] twtr_dg  = max(ceil(TWTR_DG/tck), TWTR_DG_TCK);
+    wire                 [11:0] twtr_dg  = max(ceil(TWTR_DG/tck), TWTR_DG_TCK);
 `endif
 
-    initial begin
+    initial begin
         $timeformat (-9, 1, " ns", 1);
 `ifdef period
         tck <= `period; 
 `else
         tck <= ceil(TCK_MIN);
-`endif
+`endif
         ck <= 1'b1;
-        odt_fifo <= 0;
-    end
-
-    // component instantiation
+        odt_fifo <= 0;
+    end
+
+    // component instantiation
     ddr3 sdramddr3_0 (
         rst_n,
         ck, 
         ck_n,
         cke, 
-        cs_mux[0] ? cs_n : 1'b1, 
+        cs_n, 
         ras_n, 
         cas_n, 
         we_n, 
@@ -170,26 +180,7 @@ module tb;
         odt
     );
 
-    ddr3 sdramddr3_1 (
-        rst_n,
-        ck, 
-        ck_n,
-        cke, 
-        cs_mux[1] ? cs_n : 1'b1, 
-        ras_n, 
-        cas_n, 
-        we_n, 
-        dm, 
-        ba, 
-        a, 
-        dq1, 
-        dqs,
-        dqs_n,
-        tdqs_n,
-        odt
-    );
-
-    // clock generator
+    // clock generator
     always @(posedge ck) begin
       ck <= #(tck/2) 1'b0;
       ck <= #(tck) 1'b1;
@@ -362,7 +353,7 @@ module tb;
                 3'bx1x, 3'b001:bl=4;
             endcase
 
-            for (i=0; i<(bl/2 + 2); i=i+1) begin
+            for (i=0; i<(bl/2 + 2); i=i+1) begin
                 odt_fifo[rl-wl + i] = 1'b1;
             end
             @(negedge ck);
@@ -426,7 +417,7 @@ module tb;
             cs_n  <= 1'b0;
             ras_n <= 1'b0;
             cas_n <= 1'b0;
-            we_n  <= 1'b1;
+            we_n  <= 1'b1;
             cs_n  <= #(tck) 1'b1;
             ras_n <= #(tck) 1'b1;
             cas_n <= #(tck) 1'b1;
@@ -435,30 +426,30 @@ module tb;
         end
     endtask
 
-    task pd_change_period;
-        input [31:0] new_period;
-        begin
+    task pd_change_period;
+        input [31:0] new_period;
+        begin
             $display ("%m at time %t: INFO: Changing Clock Period to %08.3f ps", $time, new_period);
             power_down (tcksre+1);
-            tck <= new_period;
-            @(posedge ck);
-            @(negedge ck);
-            repeat(tcksrx) @(negedge ck);
-        end
-    endtask
-
-    task sr_change_period;
-        input [31:0] new_period;
-        begin
+            tck <= new_period;
+            @(posedge ck);
+            @(negedge ck);
+            repeat(tcksrx) @(negedge ck);
+        end
+    endtask
+
+    task sr_change_period;
+        input [31:0] new_period;
+        begin
             $display ("%m at time %t: INFO: Changing Clock Period to %08.3f ps", $time, new_period);
-            self_refresh (tcksre+1);
-            tck <= new_period;
-            @(posedge ck);
-            @(negedge ck);
-            repeat(tcksrx) @(negedge ck);
-        end
-    endtask
-
+            self_refresh (tcksre+1);
+            tck <= new_period;
+            @(posedge ck);
+            @(negedge ck);
+            repeat(tcksrx) @(negedge ck);
+        end
+    endtask
+
     // read with data verification
     task read_verify;
         input   [BA_BITS-1:0] bank;
@@ -471,10 +462,10 @@ module tb;
         begin
             read (bank, col, ap, bc);
             for (i=0; i<bl; i=i+1) begin
-                j = (col ^ i)%bl;
-                if (!bo) begin 
-                    j = (j & -4) + ((col + i) & 3);
-                end
+                j = (col ^ i)%bl;
+                if (!bo) begin 
+                    j = (j & -4) + ((col + i) & 3);
+                end
                 dm_fifo[2*rl + i] = dm>>(i*DM_BITS);
                 dq_fifo[2*rl + i] = dq>>(i*DQ_BITS);
             end
@@ -483,80 +474,92 @@ module tb;
 
     // receiver(s) for data_verify process
     dqrx dqrx[DQS_BITS-1:0] (ptr_rst_n, dqs, dq, q0, q1, q2, q3);
-
-    // perform data verification as a result of read_verify task call
+
+    // perform data verification as a result of read_verify task call
     always @(ck) begin:data_verify
-        integer i;
+        integer i;
         integer j;
-        reg [DQ_BITS-1:0] bit_mask;
-        reg [DM_BITS-1:0] dm_temp;
+        reg [DQ_BITS-1:0] bit_mask;
+        reg [DM_BITS-1:0] dm_temp;
         reg [DQ_BITS-1:0] dq_temp;
         
-        for (i = !ck; (i < 2/(2.0 - !ck)); i=i+1) begin
-            if (dm_fifo[i] === {DM_BITS{1'bx}}) begin
-                burst_cntr = 0;
-            end else begin
-
-                dm_temp = dm_fifo[i];
-                for (j=0; j<DQ_BITS; j=j+1) begin
+        for (i = !ck; (i < 2/(2.0 - !ck)); i=i+1) begin
+            if (dm_fifo[i] === {DM_BITS{1'bx}}) begin
+                burst_cntr = 0;
+            end else begin
+
+                dm_temp = dm_fifo[i];
+                for (j=0; j<DQ_BITS; j=j+1) begin
                     bit_mask[j] = !dm_temp[j/(DQ_BITS/DM_BITS)];
-                end
-
-                case (burst_cntr)
-                    0: dq_temp =  q0;
-                    1: dq_temp =  q1;
-                    2: dq_temp =  q2;
-                    3: dq_temp =  q3;
-                endcase
-                //if (((dq_temp & bit_mask) === (dq_fifo[i] & bit_mask)))
+                end
+
+                case (burst_cntr)
+                    0: dq_temp =  q0;
+                    1: dq_temp =  q1;
+                    2: dq_temp =  q2;
+                    3: dq_temp =  q3;
+                endcase
+                //if (((dq_temp & bit_mask) === (dq_fifo[i] & bit_mask)))
                 //    $display ("%m at time %t: INFO: Successful read data compare.  Expected = %h, Actual = %h, Mask = %h, i = %d", $time, dq_fifo[i], dq_temp, bit_mask, burst_cntr);
-                if ((dq_temp & bit_mask) !== (dq_fifo[i] & bit_mask))
+                if ((dq_temp & bit_mask) !== (dq_fifo[i] & bit_mask))
                     $display ("%m at time %t: ERROR: Read data miscompare.  Expected = %h, Actual = %h, Mask = %h, i = %d", $time, dq_fifo[i], dq_temp, bit_mask, burst_cntr);
-
-                burst_cntr = burst_cntr + 1;
-            end
-        end
-
-        if (!ck) begin
+
+                burst_cntr = burst_cntr + 1;
+            end
+        end
+
+        if (!ck) begin
             ptr_rst_n <= (dm_fifo[4] !== {DM_BITS{1'bx}});
-            for (i=0; i<=(4*CL_MAX+BL_MAX); i=i+1) begin
+            for (i=0; i<=(4*CL_MAX+BL_MAX); i=i+1) begin
                 dm_fifo[i] = dm_fifo[i+2];
-                dq_fifo[i] = dq_fifo[i+2];
-            end
-            odt_fifo = odt_fifo>>1;
-        end
+                dq_fifo[i] = dq_fifo[i+2];
+            end
+            odt_fifo = odt_fifo>>1;
+        end
     end
-
+
     // End-of-test triggered in 'subtest.vh'
-    task test_done;
-        begin
+    task test_done;
+        begin
             $display ("%m at time %t: INFO: Simulation is Complete", $time);
             $finish(0);
-        end
-    endtask
+        end
+    endtask
 
     // Test included from external file
     `include "subtest.vh"
 
 endmodule
-
-module dqrx (
-    ptr_rst_n, dqs, dq, q0, q1, q2, q3
-);
-
-    `include "ddr3_parameters.vh"
-
+
+module dqrx (
+    ptr_rst_n, dqs, dq, q0, q1, q2, q3
+);
+
+`ifdef den1024Mb
+    `include "1024Mb_ddr3_parameters.vh"
+`elsif den2048Mb
+    `include "2048Mb_ddr3_parameters.vh"
+`elsif den4096Mb
+    `include "4096Mb_ddr3_parameters.vh"
+`elsif den8192Mb
+    `include "8192Mb_ddr3_parameters.vh"
+`else
+    // NOTE: Intentionally cause a compile fail here to force the users
+    //       to select the correct component density before continuing
+    ERROR: You must specify component density with +define+den____Mb.
+`endif
+
     input  ptr_rst_n;
-    input  dqs;
-    input  [DQ_BITS/DQS_BITS-1:0] dq;
-    output [DQ_BITS/DQS_BITS-1:0] q0;
-    output [DQ_BITS/DQS_BITS-1:0] q1;
-    output [DQ_BITS/DQS_BITS-1:0] q2;
-    output [DQ_BITS/DQS_BITS-1:0] q3;
-
+    input  dqs;
+    input  [DQ_BITS/DQS_BITS-1:0] dq;
+    output [DQ_BITS/DQS_BITS-1:0] q0;
+    output [DQ_BITS/DQS_BITS-1:0] q1;
+    output [DQ_BITS/DQS_BITS-1:0] q2;
+    output [DQ_BITS/DQS_BITS-1:0] q3;
+
     reg [1:0] ptr;
-    reg [DQ_BITS/DQS_BITS-1:0] q [3:0];
-
+    reg [DQ_BITS/DQS_BITS-1:0] q [3:0];
+
     reg ptr_rst_dly_n;
     always @(ptr_rst_n) ptr_rst_dly_n <= #(TDQSCK + TDQSQ + 2) ptr_rst_n;
 
@@ -571,9 +574,9 @@ module dqrx (
             ptr <= ptr + 1;
         end
     end
-    
+    
     assign q0 = q[0];
     assign q1 = q[1];
     assign q2 = q[2];
     assign q3 = q[3];
-endmodule
+endmodule

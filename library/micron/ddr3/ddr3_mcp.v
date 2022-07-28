@@ -51,7 +51,19 @@ module ddr3_mcp (
     odt
 );
 
-    `include "ddr3_parameters.vh"
+`ifdef den1024Mb
+    `include "1024Mb_ddr3_parameters.vh"
+`elsif den2048Mb
+    `include "2048Mb_ddr3_parameters.vh"
+`elsif den4096Mb
+    `include "4096Mb_ddr3_parameters.vh"
+`elsif den8192Mb
+    `include "8192Mb_ddr3_parameters.vh"
+`else
+    // NOTE: Intentionally cause a compile fail here to force the users
+    //       to select the correct component density before continuing
+    ERROR: You must specify component density with +define+den____Mb.
+`endif
 
     // Declare Ports
     input   rst_n;
@@ -74,6 +86,23 @@ module ddr3_mcp (
     wire [RANKS-1:0] cke_mcp = cke;
     wire [RANKS-1:0] cs_n_mcp = cs_n;
     wire [RANKS-1:0] odt_mcp = odt;
+
+    function integer ceil;
+        input number;
+        real number;
+
+        // LMR 4.1.7
+        // When either operand of a relational expression is a real operand then the other operand shall be converted
+        // to an equivalent real value, and the expression shall be interpreted as a comparison between two real values.
+        if (number > $rtoi(number))
+            ceil = $rtoi(number) + 1;
+        else
+            ceil = number;
+    endfunction
+
+    function int max( input int a, b );
+        max = (a < b) ? b : a;
+    endfunction
 
     ddr3 rank [RANKS-1:0] (
         rst_n,
