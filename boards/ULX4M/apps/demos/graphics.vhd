@@ -757,20 +757,32 @@ begin
 		end if;
 	end process;
 	
-	process (ctlr_clk)
-		variable q : std_logic;
-		variable q1 : std_logic := '0';
+	tp_b : block
+		signal tp_dv : std_logic;
 	begin
-		if rising_edge(ctlr_clk) then
-			if ctlrphy_sti(0)='1' then
-				if q='0' then
-					q1 := not q1;
+		process (ctlr_clk)
+			variable q : std_logic;
+			variable q1 : std_logic := '0';
+		begin
+			if rising_edge(ctlr_clk) then
+				if ctlrphy_sti(0)='1' then
+					if q='0' then
+						q1 := not q1;
+					end if;
 				end if;
+				q := ctlrphy_sti(0);
+			tp_dv <= q1;
 			end if;
-			q := ctlrphy_sti(0);
-		led(1) <= q1;
-		end if;
-	end process;
+		end process;
+		
+		process (clk_25mhz)
+		begin
+			if rising_edge(clk_25mhz) then
+				led(1) <= tp_dv;
+			end if;
+		end process;
+		
+	end block;
 
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
