@@ -832,18 +832,18 @@ begin
 
 	end block;
 
-	-- dev_req <= (0 => dmavideo_req, 1 => dmaio_req);
-	-- dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	dev_len  <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
-	dev_addr <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
-	-- dev_we   <= '0'           & to_stdulogic(to_bit(dmaio_we));
+	dev_req    <= (0 => dmavideo_req,    1 => dmaio_req);
+	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
+	dev_len    <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
+	dev_addr   <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
+	dev_we     <= '0'           & to_stdulogic(to_bit(dmaio_we));
 	(0 => dmacfgvideo_rdy, 1 => dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
-	(0 => dmavideo_rdy,    1 => dmaio_rdy) <= to_stdlogicvector(to_bitvector(dev_rdy));
+	(0 => dmavideo_rdy,    1 => dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
 
-	dev_req    <= (0 => '0', 1 => dmaio_req);
-	dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
-	-- dev_addr <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
-	dev_we   <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
+	-- dev_req    <= (0 => '0', 1 => dmaio_req);
+	-- dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
+	-- dev_addr   <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
+	-- dev_we     <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
 
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
@@ -852,39 +852,39 @@ begin
 		dmactlr_e : entity hdl4fpga.dmactlr
 		generic map (
 			burst_length => burst_length,
-			data_gear   => data_gear,
-			bank_size   => bank_size,
-			addr_size   => addr_size,
-			coln_size   => coln_size)
+			data_gear    => data_gear,
+			bank_size    => bank_size,
+			addr_size    => addr_size,
+			coln_size    => coln_size)
 		port map (
-			devcfg_clk  => sio_clk,
-			devcfg_req  => dmacfg_req,
-			devcfg_rdy  => dmacfg_rdy,
-			dev_len     => dev_len,
-			dev_addr    => dev_addr,
-			dev_we      => dev_we,
+			devcfg_clk   => sio_clk,
+			devcfg_req   => dmacfg_req,
+			devcfg_rdy   => dmacfg_rdy,
+			dev_len      => dev_len,
+			dev_addr     => dev_addr,
+			dev_we       => dev_we,
 
-			dev_req     => dev_req,
-			dev_gnt     => dev_gnt,
-			dev_rdy     => dev_rdy,
-			dev_do_dv   => dev_do_dv,
+			dev_req      => dev_req,
+			dev_gnt      => dev_gnt,
+			dev_rdy      => dev_rdy,
+			dev_do_dv    => dev_do_dv,
 
-			ctlr_clk    => ctlr_clk,
-			ctlr_cl     => ctlr_cl,
-			ctlr_do_dv  => ctlr_do_dv(0),
+			ctlr_clk     => ctlr_clk,
+			ctlr_cl      => ctlr_cl,
+			ctlr_do_dv   => ctlr_do_dv(0),
 
-			ctlr_inirdy => ctlr_inirdy,
-			ctlr_refreq => ctlr_refreq,
+			ctlr_inirdy  => ctlr_inirdy,
+			ctlr_refreq  => ctlr_refreq,
 
-			ctlr_frm    => ctlr_frm,
-			ctlr_trdy   => ctlr_trdy,
-			ctlr_fch    => ctlr_fch,
-			ctlr_cmd    => ctlr_cmd,
-			ctlr_rw     => ctlr_rw,
-			ctlr_alat   => ctlr_alat,
-			ctlr_blat   => ctlr_blat,
-			ctlr_b      => ctlr_b,
-			ctlr_a      => ctlr_a);
+			ctlr_frm     => ctlr_frm,
+			ctlr_trdy    => ctlr_trdy,
+			ctlr_fch     => ctlr_fch,
+			ctlr_cmd     => ctlr_cmd,
+			ctlr_rw      => ctlr_rw,
+			ctlr_alat    => ctlr_alat,
+			ctlr_blat    => ctlr_blat,
+			ctlr_b       => ctlr_b,
+			ctlr_a       => ctlr_a);
 
 		dmadv_e : entity hdl4fpga.align
 		generic map (

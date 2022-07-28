@@ -98,15 +98,15 @@ architecture lscc of ecp5_ddrdqphy is
 	signal dqs_pause    : std_logic;
 	signal datavalid    : std_logic;
 
-	signal adjstep_req  : bit;
-	signal adjstep_rdy  : bit;
+	signal adjstep_req  : std_logic;
+	signal adjstep_rdy  : std_logic;
 
-	signal rlpause_rdy  : bit;
-	signal rlpause_req  : bit;
-	signal rlpause1_rdy : bit;
-	signal rlpause1_req : bit;
-	signal wlpause_rdy  : bit;
-	signal wlpause_req  : bit;
+	signal rlpause_rdy  : std_logic;
+	signal rlpause_req  : std_logic;
+	signal rlpause1_rdy : std_logic;
+	signal rlpause1_req : std_logic;
+	signal wlpause_rdy  : std_logic;
+	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
 	constant delay      : time := 0.5 ns;
@@ -154,30 +154,33 @@ begin
 		phy_sto <= datavalid;
 		tp(1 to 6) <= lat & readclksel;
 
-		process (sclk, read_req)
+		process (rst, sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (to_bit(phy_rlreq) xor to_bit(phy_rlrdy))='1' then
+				if rst='1' then
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					state     := s_start;
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					case state is
 					when s_start =>
-						adj_req <= not to_stdulogic(to_bit(adj_rdy));
-						state := s_adj;
+						adj_req <= not adj_rdy;
+						state   := s_adj;
 					when s_adj =>
-						if (to_bit(adj_req) xor to_bit(adj_rdy))='0' then
+						if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='0' then
 							rlpause1_req <= not rlpause1_rdy;
-							state := s_paused;
+							state        := s_paused;
 						end if;
 					when s_paused =>
 						if (rlpause1_req xor rlpause1_rdy)='0' then
 							phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-							state := s_start;
+							state     := s_start;
 						end if;
 					end case;
 				else
 					rlpause1_req <= rlpause1_rdy;
-					state       := s_start;
+					state        := s_start;
 				end if;
 			end if;
 		end process;
@@ -187,28 +190,27 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (to_bit(adj_req) xor to_bit(adj_rdy))='1' then
-					if (to_bit(step_req) xor to_bit(step_rdy))='1' then
+				if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
+					if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 						case state is
 						when s_start =>
 							rlpause_req <= not rlpause_rdy;
 							state := s_pause;
 						when s_pause =>
-							if (rlpause_req xor rlpause_rdy)='0' then
-								read_req <= not to_stdulogic(to_bit(read_rdy));
+							if (rlpause_rdy xor to_stdulogic(to_bit(rlpause_req)))='0' then
+								read_req <= not read_rdy;
 								state    := s_read;
 							end if;
 						when s_read =>
-							if (read_req xor to_stdulogic(to_bit(read_rdy)))='0' then
+							if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
 								step_rdy <= step_req;
 								state    := s_start;
 							end if;
 						end case;
 					end if;
 				else
-					rlpause_req <= rlpause_rdy;
-					read_req    <= to_stdulogic(to_bit(read_rdy));
-					state       := s_start;
+					step_rdy <= to_stdulogic(to_bit(step_req));
+					state := s_start;
 				end if;
 			end if;
 		end process;
@@ -235,8 +237,8 @@ begin
 			delay    => wlpha);
 
 	end block;
-	wlpause_req <= to_bit(wlstep_req);
-	wlstep_rdy <= to_stdulogic(wlpause_rdy);
+	wlpause_req <= wlstep_req;
+	wlstep_rdy  <= wlpause_rdy;
 
 	pause_b : block
 
@@ -245,11 +247,14 @@ begin
 
 	begin
 
-		process (sclk)
+		pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
+		process (rst, sclk)
 			variable cntr : unsigned(0 to 6);
 		begin
 			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
+				if rst='1' then
+					pause_rdy <= pause_req;
+				elsif (pause_rdy xor pause_req)='0' then
 					lv_pause <= '0';
 					cntr := (others => '0');
 				elsif cntr(0)='0' then
@@ -266,29 +271,17 @@ begin
 			end if;
 		end process;
 
-		process (sclk, pause_rdy )
-			variable q : bit;
-			variable y : bit;
+		process (rst, sclk, pause_rdy )
 		begin
 			if rising_edge(sclk) then
-				if (pause_rdy xor pause_req)='0' then
-					if q='1' then
-						pause_req <= not pause_rdy;
-					end if;
-					if y='1' then
-						wlpause_rdy  <= wlpause_req;
-						rlpause1_rdy <= rlpause1_req;
-						rlpause_rdy  <= rlpause_req;
-					else
-						q := 
-							(rlpause_req  xor rlpause_rdy)  or 
-							(rlpause1_req xor rlpause1_rdy) or 
-							(wlpause_req  xor wlpause_rdy);
-					end if;
-					y := '0';
-				else
-					q := '0';
-					y := '1';
+				if rst='1' then
+					wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
+					rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
+					rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
+				elsif (pause_rdy xor pause_req)='0' then
+					wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
+					rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
+					rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
 				end if;
 			end if;
 		end process;

@@ -72,9 +72,9 @@ begin
 		variable valid : std_logic;
 	begin
 		if rising_edge(sclk) then
-			if (to_bit(dtct_req) xor to_bit(dtct_rdy))='1' then
+			if (dtct_rdy xor to_stdulogic(to_bit(dtct_req)))='1' then
 				if dcted='0' then
-					if (to_bit(step_rdy) xor to_bit(step_req))='1' then
+					if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 						if datavalid='1' then
 							dcted <= burstdet;
 						end if;
@@ -90,13 +90,11 @@ begin
 		variable acc : unsigned(lat'length+readclksel'length-1 downto 0);
 	begin
 		if rising_edge(sclk) then
---			if lat(lat'left)='0' then
-				acc := base + unsigned(phase);
-				acc := rotate_left(acc, lat'length);
-				lat <= std_logic_vector(acc(lat'range));
-				acc := rotate_left(acc, readclksel'length);
-				readclksel <= std_logic_vector(acc(readclksel'range));
---			end if;
+			acc := base + unsigned(phase);
+			acc := rotate_left(acc, lat'length);
+			lat <= std_logic_vector(acc(lat'range));
+			acc := rotate_left(acc, readclksel'length);
+			readclksel <= std_logic_vector(acc(readclksel'range));
 		end if;
 	end process;
 
@@ -105,7 +103,7 @@ begin
 		variable state : states;
 	begin
 		if rising_edge(sclk) then
-			if (to_bit(adj_req) xor to_bit(adj_rdy))='1' then
+			if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
 				case state is
 				when s_start =>
 					dtct_req <= not dtct_rdy;
@@ -134,8 +132,7 @@ begin
 					adj_rdy <= adj_req;
 				end case;
 			else
-				dtct_req <= dtct_rdy;
-				adj_rdy  <= adj_req;
+				adj_rdy  <= to_stdulogic(to_bit(adj_req));
 				edge     <= '-';
 				state    := s_start;
 			end if;

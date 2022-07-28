@@ -220,9 +220,10 @@ architecture graphics of ulx4m_ld is
 		mii_500MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => ddram500MHz));
 
 	constant nodebug_videomode : video_modes := app_tab(app).mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
+	-- constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		-- video_modes'POS(modedebug),
+		-- video_modes'POS(nodebug_videomode)));
+	constant video_mode   : video_modes := nodebug_videomode;
 
     signal video_pixel    : std_logic_vector(0 to setif(
 		video_tab(app_tab(app).mode).pixel=rgb565, 16, setif(
@@ -753,7 +754,7 @@ begin
 		if dramclk_lck='0' then
 			ddrsys_rst <= '1';
 		elsif rising_edge(ctlr_clk) then
-			ddrsys_rst <= '0';
+			ddrsys_rst <= not dramclk_lck;
 		end if;
 	end process;
 	

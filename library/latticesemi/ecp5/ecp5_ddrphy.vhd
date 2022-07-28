@@ -405,43 +405,40 @@ begin
 		readcycle_p : process (sclk, read_rdy)
 			type states is (s_idle, s_start, s_stop);
 			variable state : states;
-			variable z     : std_logic;
 		begin
 			if rising_edge(sclk) then
-
-				z := '0';
-				for i in read_req'reverse_range loop
-					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
-						z := '1';
-					end if;
-				end loop;
-
-				case state is
-				when s_start =>
-					phy_frm  <= '1';
-					leveling <= '1';
-					if ddr_act='1' then
-						phy_frm <= '0';
-						state   := s_stop;
-					end if;
-				when s_stop =>
-					if ddr_idle='1' then
-						phy_frm  <= '0';
-						leveling <= '0';
-						read_rdy <= read_req;
-						state    := s_idle;
-					end if;
-				when s_idle =>
-					leveling <= '0';
-					phy_frm  <= '0';
-					if z='1' then
+				if rst='1' then
+					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
+					state := s_idle;
+				else
+					case state is
+					when s_start =>
 						phy_frm  <= '1';
 						leveling <= '1';
-						state := s_start;
-					end if;
-				end case;
-				phy_rw <= '1';
-
+						if ddr_act='1' then
+							phy_frm <= '0';
+							state   := s_stop;
+						end if;
+					when s_stop =>
+						if ddr_idle='1' then
+							phy_frm  <= '0';
+							leveling <= '0';
+							read_rdy <= to_stdlogicvector(to_bitvector(read_req));
+							state    := s_idle;
+						end if;
+					when s_idle =>
+						leveling <= '0';
+						phy_frm  <= '0';
+						for i in read_req'reverse_range loop
+							if (read_rdy(i) xor to_stdulogic(to_bit(read_req(i))))='1' then
+								phy_frm  <= '1';
+								leveling <= '1';
+								state := s_start;
+							end if;
+						end loop;
+					end case;
+					phy_rw <= '1';
+				end if;
 			end if;
 		end process;
 
@@ -450,22 +447,23 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if rst='1' then
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					phy_ini <= '0';
-				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
-					if z='0' then
-						phy_ini   <= '1';
-						phy_rlrdy <= phy_rlreq;
-					end if;
-					z := '0';
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+					z := '1';
 					for i in rl_req'reverse_range loop
-						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
-							z := '1';
-							rl_req(i) <= phy_rlreq;
+						if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+							z := '0';
 						end if;
 					end loop;
+					if z='1' then
+						phy_ini   <= '1';
+						phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					end if;
 				end if;
 			end if;
 		end process;
+		rl_req <= (others => phy_rlreq);
 
 	end block;
 

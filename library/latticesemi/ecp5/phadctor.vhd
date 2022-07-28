@@ -60,14 +60,14 @@ use hdl4fpga.std.all;
 		severity WARNING;
 
 		if rising_edge(clk) then
-			if (to_bit(dtct_req) xor to_bit(dtct_rdy))='1' then
+			if (dtct_rdy xor to_stdulogic(to_bit(dtct_req)))='1' then
 				if start='0' then
 					saved <= (others => '0');
 					phase <= std_logic_vector(to_unsigned(2**(gap_word'length-1), gap_word'length));
 					step  := to_unsigned(num_of_steps-1, step'length);
-					step_req <= not to_stdulogic(to_bit(step_rdy));
+					step_req <= not step_rdy;
 					start := '1';
-				elsif (to_bit(step_req) xor to_bit(step_rdy))='0' then
+				elsif (step_rdy xor to_stdulogic(to_bit(step_req)))='0' then
 					if input=edge then
 						saved <= unsigned(phase);
 					end if;
@@ -86,10 +86,10 @@ use hdl4fpga.std.all;
 
 					if step(0)='0' then
 						step  := step - 1;
-						step_req <= not to_stdulogic(to_bit(step_rdy));
+						step_req <= not step_rdy;
 					else
 						start := '0';
-						dtct_rdy <= dtct_req;
+						dtct_rdy <= to_stdulogic(to_bit(dtct_req));
 					end if;
 				end if;
 			else

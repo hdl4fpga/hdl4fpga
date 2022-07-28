@@ -124,11 +124,15 @@ begin
 		process (devcfg_clk)
 		begin
 			if rising_edge(devcfg_clk) then
-				for i in dmacfg_gnt'range loop
-					if dmacfg_gnt(i)='1' then
-						devcfg_rdy(i) <= devcfg_req(i);
-					end if;
-				end loop;
+				if ctlr_inirdy='0' then
+					devcfg_rdy <= to_stdlogicvector(to_bitvector(devcfg_req));
+				else
+					for i in dmacfg_gnt'range loop
+						if dmacfg_gnt(i)='1' then
+							devcfg_rdy(i) <= devcfg_req(i);
+						end if;
+					end loop;
+				end if;
 			end if;
 		end process;
 
@@ -185,7 +189,7 @@ begin
 	dmatrans_b : block
 		signal req  : std_logic_vector(dev_req'range);
 	begin
-		req <= to_stdlogicvector(to_bitvector(dev_req)) xor to_stdlogicvector(to_bitvector(dev_rdy));
+		req <= to_stdlogicvector(to_bitvector(dev_req)) xor dev_rdy;
 		dmacfg_e : entity hdl4fpga.arbiter
 		port map (
 			clk  => ctlr_clk,
@@ -196,17 +200,19 @@ begin
 			variable  busy : std_logic;
 		begin
 			if rising_edge(ctlr_clk) then
-				if dev_gnt/=(dev_gnt'range => '0') then
-					if (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='0' then
+				if ctlr_inirdy='0' then
+					dev_rdy <= to_stdlogicvector(to_bitvector(dev_req));
+				elsif dev_gnt/=(dev_gnt'range => '0') then
+					if (dmatrans_rdy xor to_stdulogic(to_bit(dmatrans_req)))='0' then
 						if busy='1' then
 							for i in dev_gnt'range loop
 								if dev_gnt(i)='1' then
-									dev_rdy(i) <= dev_req(i);
+									dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
 								end if;
 							end loop;
 							busy := '0';
 						else
-							dmatrans_req <= not to_stdulogic(to_bit(dmatrans_rdy));
+							dmatrans_req <= not dmatrans_rdy;
 							busy := '1';
 						end if;
 					end if;
