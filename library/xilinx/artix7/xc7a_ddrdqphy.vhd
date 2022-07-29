@@ -38,8 +38,13 @@ entity xc7a_ddrdqphy is
 		tp_sel    : in  std_logic;
 		tp_delay  : out std_logic_vector(8-1 downto 0);
 
-		sys_rsts  : in  std_logic_vector;
-		sys_clks  : in  std_logic_vector;
+		rst       : in  std_logic;
+		iod_clk   : in  std_logic;
+		clk0      : in  std_logic := '-';
+		clk90     : in  std_logic := '-';
+		clk0x2    : in  std_logic := '-';
+		clk90x2   : in  std_logic := '-';
+
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
 		sys_rlreq : in  std_logic;
@@ -69,23 +74,13 @@ entity xc7a_ddrdqphy is
 		ddr_dqst  : out std_logic;
 		ddr_dqso  : out std_logic);
 
-	alias clk0_rst  : std_logic is sys_rsts(0);
-	alias clk90_rst : std_logic is sys_rsts(1);
-	alias iod_rst   : std_logic is sys_rsts(2);
-
-	alias clk0      : std_logic is sys_clks(0);
-	alias clk90     : std_logic is sys_clks(1);
-	alias iod_clk   : std_logic is sys_clks(2);
-
-	alias clk0x2    : std_logic is sys_clks(3);
-	alias clk90x2   : std_logic is sys_clks(4);
-
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture virtex7 of xc7a_ddrdqphy is
+
 
 	signal adjdqs_req  : std_logic;
 	signal adjdqs_rdy  : std_logic;
@@ -112,8 +107,6 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqspau_req  : std_logic;
 	signal dqspau_rdy  : std_logic;
 
-	signal imdr_rst    : std_logic;
-	signal omdr_rst    : std_logic;
 	signal tp_dqidly   : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly   : std_logic_vector(0 to 5-1);
 	signal tp_dqssel   : std_logic_vector(0 to 3-1);
@@ -226,14 +219,6 @@ begin
 		end if;
 	end process;
 
-	process (clk0)
-	begin
-		if rising_edge(clk0) then
-			imdr_rst <= iod_rst;
-			omdr_rst <= iod_rst;
-		end if;
-	end process;
-
 	dqsi_b : block
 		signal delay    : std_logic_vector(0 to 5-1);
 		signal dqsi     : std_logic;
@@ -267,7 +252,7 @@ begin
 			IDELAY_TYPE    => "VAR_LOAD",
 			SIGNAL_PATTERN => "CLOCK")
 		port map (
-			regrst     => iod_rst,
+			regrst     => rst,
 			c          => iod_clk,
 			ld         => '1',
 			cntvaluein => delay,
@@ -293,12 +278,6 @@ begin
 			q    => smp);
 
 		tp_dqsdly <= delay;
-		process (clk0)
-		begin
-			if rising_edge(clk0) then
-				imdr_rst <= clk0_rst;
-			end if;
-		end process;
 
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
@@ -377,7 +356,7 @@ begin
 				DELAY_SRC    => "IDATAIN",
 				IDELAY_TYPE  => "VAR_LOAD")
 			port map (
-				regrst      => iod_rst,
+				regrst      => rst,
 				c           => iod_clk,
 				ld          => '1',
 				cntvaluein  => delay,
@@ -398,7 +377,7 @@ begin
 		begin
 			if rising_edge(clk90) then
 				imdr_rst <= q;
-				q := clk90_rst or not (adjdqs_req xor adjdqs_rdy);
+				q := rst or not (adjdqs_req xor adjdqs_rdy);
 			end if;
 		end process;
 
@@ -508,7 +487,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst   => clk90_rst,
+			rst   => rst,
 			clk   => dqclk,
 			t     => dqt,
 			tq(0) => ddr_dqt(i),
@@ -546,7 +525,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst   => clk90_rst,
+			rst   => rst,
 			clk   => dqclk,
 			t     => (others => '0'),
 			tq(0) => ddr_dmt,
@@ -579,7 +558,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => clk0_rst,
+			rst  => rst,
 			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> ddr_dqst,

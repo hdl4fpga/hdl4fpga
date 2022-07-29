@@ -361,13 +361,13 @@ begin
 		ddr_a   => ddr_a);
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
-		variable aux : bit;
+		variable z : std_logic;
 	begin
-		aux := '1';
+		z := '1';
 		for i in wl_rdy'range loop
-			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
+			z := z and (wl_rdy(i) xor phy_wlreq);
 		end loop;
-		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
+		phy_wlrdy <= z xor phy_wlreq;
 	end process;
 
 	read_leveling_l_b : block

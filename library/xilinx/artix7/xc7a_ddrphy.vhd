@@ -45,7 +45,12 @@ entity xc7a_ddrphy is
 		tp_sel       : in  std_logic := '0';
 		tp1          : out std_logic_vector(6-1 downto 0);
 
-		sys_clks     : in  std_logic_vector(0 to 5-1);
+		rst      : in  std_logic;
+		iod_clk      : in  std_logic;
+		clk0         : in  std_logic := '-';
+		clk90        : in  std_logic := '-';
+		clk0x2       : in  std_logic := '-';
+		clk90x2      : in  std_logic := '-';
 
 		phy_rsts     : in  std_logic_vector(0 to 3-1) := (others => '1');
 		phy_frm      : buffer std_logic;
@@ -99,17 +104,6 @@ entity xc7a_ddrphy is
 		ddr_dqst     : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqsi     : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso     : out std_logic_vector(word_size/byte_size-1 downto 0));
-
-	alias clk0_rst  : std_logic is phy_rsts(0);
-	alias clk90_rst : std_logic is phy_rsts(1);
-	alias iod_rst   : std_logic is phy_rsts(2);
-
-	alias clk0      : std_logic is sys_clks(0);
-	alias clk90     : std_logic is sys_clks(1);
-	alias iod_clk   : std_logic is sys_clks(2);
-
-	alias clk0x2    : std_logic is sys_clks(3);
-	alias clk90x2   : std_logic is sys_clks(4);
 
 end;
 
@@ -335,37 +329,36 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clks(0) => clk0,
-		sys_clks(1) => clk0x2,
-     	phy_rst    => clk0_rst,
-		sys_rst    => sys_rst,
-		sys_cs     => sys_cs,
-		sys_cke    => sys_cke,
-		sys_b      => ddrphy_ba,
-		sys_a      => ddrphy_a,
-		sys_ras    => sys_ras,
-		sys_cas    => sys_cas,
-		sys_we     => sys_we,
-		sys_odt    => sys_odt,
+		clk0    => clk0,
+     	rst     => rst,
+		sys_rst => sys_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => ddrphy_ba,
+		sys_a   => ddrphy_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
 
-		ddr_rst    => ddr_rst,
-		ddr_cke    => ddr_cke,
-		ddr_odt    => ddr_odt,
-		ddr_cs     => ddr_cs,
-		ddr_ras    => ddr_ras,
-		ddr_cas    => ddr_cas,
-		ddr_we     => ddr_we,
-		ddr_b      => ddr_b,
-		ddr_a      => ddr_a);
+		ddr_rst => ddr_rst,
+		ddr_cke => ddr_cke,
+		ddr_odt => ddr_odt,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_b,
+		ddr_a   => ddr_a);
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
-		variable aux : bit;
+		variable z : std_logic;
 	begin
-		aux := '1';
+		z := '0';
 		for i in wl_rdy'range loop
-			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
+			z := z and (wl_rdy(i) xor phy_wlreq);
 		end loop;
-		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
+		phy_wlrdy <= z;
 	end process;
 
 	read_leveling_l_b : block
@@ -468,24 +461,24 @@ begin
 			end if;
 		end process;
 
-		process (clk0_rst, clk0)
+		process (rst, clk0)
 			variable z : std_logic;
 		begin
 			if rising_edge(clk0) then
-				if clk0_rst='1' then
+				if rst='1' then
 					phy_ini <= '0';
-				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
-					if z='0' then
-						phy_ini   <= '1';
-						phy_rlrdy <= phy_rlreq;
-					end if;
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					z := '0';
-					for i in rl_req'reverse_range loop
-						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
+					for i in rl_req'range loop
+						if (phy_rlreq xor to_stdulogic(to_bit(rl_rdy(i))))='1' then
 							z := '1';
 							rl_req(i) <= phy_rlreq;
 						end if;
 					end loop;
+					if z='0' then
+						phy_ini   <= '1';
+						phy_rlrdy <= phy_rlreq;
+					end if;
 				end if;
 			end if;
 		end process;
@@ -511,8 +504,13 @@ begin
 		port map (
 			tp_sel     => tp_sel,
 			tp_delay   => tp_delay(8*(i+1)-1 downto 8*i),
-			sys_clks   => sys_clks,
-			sys_rsts   => phy_rsts,
+
+			rst        => rst,
+			iod_clk    => iod_clk,
+			clk0       => clk0,
+			clk90      => clk90,
+			clk0x2     => clk0x2,
+			clk90x2    => clk90x2,
 			sys_wlreq  => phy_wlreq,
 			sys_wlrdy  => wl_rdy(i),
 			sys_rlreq  => rl_req(i),
