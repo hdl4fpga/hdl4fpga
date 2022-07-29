@@ -299,10 +299,10 @@ architecture virtex7 of xc7a_ddrphy is
 	signal rd_rdy    : std_logic_vector(rd_req'range);
 
 	signal read_brst : std_logic_vector(rd_req'range);
-	signal write_req : bit;
-	signal write_rdy : bit;
-	signal read_req   : std_logic_vector(ddr_dqsi'range);
-	signal read_rdy   : std_logic_vector(ddr_dqsi'range);
+	signal write_req : std_logic;
+	signal write_rdy : std_logic;
+	signal read_req  : std_logic_vector(ddr_dqsi'range);
+	signal read_rdy  : std_logic_vector(ddr_dqsi'range);
 
 	signal ddrphy_ba : std_logic_vector(sys_ba'range);
 	signal ddrphy_a  : std_logic_vector(sys_a'range);
@@ -401,13 +401,6 @@ begin
 		begin
 			if rising_edge(clk0) then
 
-				z := '0';
-				for i in read_req'reverse_range loop
-					if (to_bit(read_req(i)) xor to_bit(read_rdy(i)))='1' then
-						z := '1';
-					end if;
-				end loop;
-
 				case state is
 				when s_start =>
 					phy_frm  <= '1';
@@ -433,12 +426,20 @@ begin
 				when s_idle =>
 					leveling <= '0';
 					phy_frm  <= '0';
+
+					z := '0';
+					for i in read_req'reverse_range loop
+						if (read_rdy(i) xor to_stdulogic(to_bit(read_req(i))))='1' then
+							z := '1';
+						end if;
+					end loop;
+
 					if z='1' then
 						phy_frm  <= '1';
 						phy_rw   <= '1';
 						leveling <= '1';
 						state    := s_start;
-					elsif (write_req xor write_rdy)='1' then
+					elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='1' then
 						phy_frm  <= '1';
 						phy_rw   <= '0';
 						leveling <= '1';
@@ -452,8 +453,8 @@ begin
 					burst := '1';
 				end if;
 
-				if (write_req xor write_rdy)='0' then
-					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
+				if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
+					if wr_rdy = not to_stdlogicvector(to_bitvector(wr_req)) then
 						write_req <= not write_rdy;
 					end if;
 				end if;
@@ -467,6 +468,7 @@ begin
 			if rising_edge(clk0) then
 				if rst='1' then
 					phy_ini <= '0';
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					z := '0';
 					for i in rl_req'range loop
@@ -477,7 +479,7 @@ begin
 					end loop;
 					if z='0' then
 						phy_ini   <= '1';
-						phy_rlrdy <= phy_rlreq;
+						phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					end if;
 				end if;
 			end if;

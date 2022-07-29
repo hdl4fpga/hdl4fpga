@@ -86,10 +86,8 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal adjdqs_rdy  : std_logic;
 	signal adjdqi_req  : std_logic;
 	signal adjdqi_rdy  : std_logic_vector(ddr_dqi'range);
-	signal adjsto_req  : bit;
-	signal adjsto_rdy  : bit;
-	signal adjbrt_req  : std_logic;
-	signal adjbrt_rdy  : std_logic;
+	signal adjsto_req  : std_logic;
+	signal adjsto_rdy  : std_logic;
 
 	signal dqsi_buf    : std_logic;
 	signal dqsiod_inc  : std_logic;
@@ -103,7 +101,7 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal dqf         : std_logic_vector(dq'range);
 
 	signal dqipau_req  : std_logic_vector(ddr_dqi'range);
-	signal dqipau_rdy  : std_logic_vector(ddr_dqi'range);
+	signal dqipau_rdy  : std_logic;
 	signal dqspau_req  : std_logic;
 	signal dqspau_rdy  : std_logic;
 
@@ -111,10 +109,10 @@ architecture virtex7 of xc7a_ddrdqphy is
 	signal tp_dqsdly   : std_logic_vector(0 to 5-1);
 	signal tp_dqssel   : std_logic_vector(0 to 3-1);
 
-	signal rlpause_req : bit;
-	signal rlpause_rdy : bit;
-	signal pause_req   : bit;
-	signal pause_rdy   : bit;
+	signal rlpause_req : std_logic;
+	signal rlpause_rdy : std_logic;
+	signal pause_req   : std_logic;
+	signal pause_rdy   : std_logic;
 
 	constant dqs_linedelay : time := 1.35 ns;
 	constant dqi_linedelay : time := 0 ns; --1.35 ns;
@@ -126,7 +124,7 @@ begin
 		dqs180 & dqspre & std_logic_vector(resize(unsigned(tp_dqidly), tp_delay'length-2)) when '1',
 		std_logic_vector(resize(unsigned(std_logic_vector'(tp_dqssel & tp_dqsdly)), tp_delay'length)) when others;
 
-	sys_wlrdy <= sys_wlreq;
+	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 
 	rl_b : block
 	begin
@@ -134,13 +132,12 @@ begin
 		process (pause_req, iod_clk)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
-			variable aux : std_logic;
+			variable z : std_logic;
 		begin
 			if rising_edge(iod_clk) then
-				if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
-					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
-					adjdqi_req <= to_stdulogic(adjsto_rdy);
-					adjsto_req <= adjsto_rdy;
+				if rst='1' then
+					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
+				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
 					state := s_start;
 				else
 					case state is
@@ -149,7 +146,7 @@ begin
 						read_brst <= '0';
 						state := s_write;
 					when s_write =>
-						if (to_bit(write_req) xor to_bit(write_rdy))='0' then
+						if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
 							read_req <= not to_stdulogic(to_bit(read_rdy));
 							read_brst <= '1';
 							if sys_sti(0)='1' then
@@ -158,30 +155,30 @@ begin
 							end if;
 						end if;
 					when s_dqs =>
-						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
-							adjdqi_req <= not to_stdulogic(adjsto_req);
+						if (adjdqs_rdy xor to_stdulogic(to_bit(adjdqs_req)))='0' then
+							adjdqi_req <= not to_stdulogic(to_bit(adjsto_req));
 							state := s_dqi;
 						end if;
 					when s_dqi =>
-						aux := '0';
+						z := '0';
 						for i in adjdqi_rdy'range loop
-							aux := aux or (adjdqi_rdy(i) xor adjdqi_req);
+							z := z or (adjdqi_rdy(i) xor adjdqi_req);
 						end loop;
-						if aux='0' then
+						if z='0' then
 							read_brst <= '0';
-							if (to_bit(read_req) xor to_bit(read_rdy))='0' then
+							if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
 								read_req   <= not read_rdy;
 								adjsto_req <= not adjsto_rdy;
 								state := s_sto;
 							end if;
 						end if;
 					when s_sto =>
-						if (read_req xor read_rdy)='0' then
-							if (adjsto_req xor adjsto_rdy)='0' then
-								sys_rlrdy <= sys_rlreq;
+						if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+							if (adjsto_rdy xor to_stdulogic(to_bit(adjsto_req)))='0' then
+								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 								state := s_start;
 							else
-								read_req <= not read_rdy;
+								read_req <= not to_stdulogic(to_bit(read_rdy));
 							end if;
 						end if;
 						read_brst <= '0';
@@ -190,14 +187,19 @@ begin
 			end if;
 		end process;
 
-		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req xor dqipau_rdy)=(dqipau_req'range => '1'));
-
-		process (iod_clk)
+		process (dqspau_req, dqipau_req, iod_clk)
+			variable z : std_logic;
 		begin
+			z := '1';
+			for i in dqipau_req'range loop
+				z := z and (dqipau_rdy xor to_stdulogic(to_bit(dqipau_req(i))));
+			end loop;
+			rlpause_req <= to_stdulogic(to_bit(dqspau_req)) xor (z xor dqipau_rdy);
+		
 			if rising_edge(iod_clk) then
 				if (pause_rdy xor pause_req)='0' then
 					dqspau_rdy <= dqspau_req;
-					dqipau_rdy <= dqipau_req;
+					dqipau_rdy <= (z xor dqipau_rdy);
 				end if;
 			end if;
 		end process;
@@ -225,14 +227,11 @@ begin
 		signal ddqsi    : std_logic;
 		signal smp      : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto      : std_logic;
-		signal imdr_rst : std_logic;
 		signal imdr_clk : std_logic_vector(0 to 5-1);
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
---			dtaps   => (taps+7)/8,
---			dtaps   => (taps+3)/4,
 			taps    => taps)
 		port map (
 			edge     => std_logic'('1'),
@@ -272,14 +271,13 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => imdr_rst,
+			rst  => rst,
 			clk  => imdr_clk,
 			d(0) => dqsi,
 			q    => smp);
 
 		tp_dqsdly <= delay;
 
-		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
@@ -291,9 +289,8 @@ begin
 			ddr_sto  => sto,
 			dqs_smp  => smp,
 			dqs_pre  => dqspre,
-			sys_req  => adjbrt_req,
-			sys_rdy  => adjbrt_rdy);
-		adjsto_rdy <= to_bit(adjbrt_rdy);
+			sys_req  => adjsto_req,
+			sys_rdy  => adjsto_rdy);
 
 		process (clk90)
 			variable q : std_logic;
@@ -313,7 +310,6 @@ begin
 	end block;
 
 	iddr_g : for i in ddr_dqi'range generate
-		signal imdr_rst  : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal adjdqi_st : std_logic;
 	begin
@@ -333,16 +329,15 @@ begin
 
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
---				dtaps    => (taps+7)/8,
---				dtaps    => (taps+3)/4,
 				taps     => taps)
 			port map (
 				edge     => std_logic'('0'),
+				rst      => rst,
 				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),
-				step_rdy => dqipau_rdy(i),
+				step_rdy => dqipau_rdy,
 				smp      => dq_smp,
 				delay    => delay);
 
@@ -372,21 +367,12 @@ begin
 
 		imdr_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
 
-		process (clk90)
-			variable q : std_logic;
-		begin
-			if rising_edge(clk90) then
-				imdr_rst <= q;
-				q := rst or not (adjdqs_req xor adjdqs_rdy);
-			end if;
-		end process;
-
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => imdr_rst,
+			rst  => rst,
 			clk  => imdr_clk,
 			d(0) => dqi(i),
 			q(0) => dq(0*BYTE_SIZE+i),

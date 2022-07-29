@@ -142,8 +142,12 @@ architecture graphics of arty is
 	constant word_size     : natural := ddr3_dq'length;
 	constant byte_size     : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
+
+	signal ddr_clk0        : std_logic;
+	signal ddr_clk0x2      : std_logic;
+	signal ddr_clk90x2     : std_logic;
+	signal ddr_clk90       : std_logic;
 	signal ddrsys_rst      : std_logic;
-	signal ddrsys_clks     : std_logic_vector(0 to 5-1);
 
 	signal ctlrphy_frm     : std_logic;
 	signal ctlrphy_trdy    : std_logic;
@@ -228,7 +232,7 @@ architecture graphics of arty is
 	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
-	alias  ctlr_clk       : std_logic is ddrsys_clks(0);
+	alias  ctlr_clk       : std_logic is ddr_clk0;
 	signal video_clk      : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
 	signal video_hs       : std_logic;
@@ -307,11 +311,6 @@ begin
 		constant clk0      : natural := 3;
 		constant clk90     : natural := 4;
 		constant clk270div : natural := 5;
-
-		signal ddr_clk0     : std_logic;
-		signal ddr_clk90    : std_logic;
-		signal ddr_clk0div  : std_logic;
-		signal ddr_clk90div : std_logic;
 	begin
 
 		ioctrl_b : block
@@ -343,12 +342,12 @@ begin
 		end block;
 
 		ddr_b : block
-			signal ddr_lkd            : std_logic;
-			signal ddr_clkfb          : std_logic;
-			signal ddr_clk0_mmce2     : std_logic;
-			signal ddr_clk90_mmce2    : std_logic;
-			signal ddr_clk0div_mmce2  : std_logic;
-			signal ddr_clk90div_mmce2 : std_logic;
+			signal ddr_lkd           : std_logic;
+			signal ddr_clkfb         : std_logic;
+			signal ddr_clk0x2_mmce2  : std_logic;
+			signal ddr_clk90x2_mmce2 : std_logic;
+			signal ddr_clk0_mmce2    : std_logic;
+			signal ddr_clk90_mmce2   : std_logic;
 		begin
 			ddr_i : mmcme2_base
 			generic map (
@@ -367,52 +366,45 @@ begin
 				clkin1   => sys_clk,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,
-				clkout0  => ddr_clk0_mmce2,
-				clkout1  => ddr_clk90_mmce2,
-				clkout2  => ddr_clk0div_mmce2,
-				clkout3  => ddr_clk90div_mmce2,
+				clkout0  => ddr_clk0x2_mmce2,
+				clkout1  => ddr_clk90x2_mmce2,
+				clkout2  => ddr_clk0_mmce2,
+				clkout3  => ddr_clk90_mmce2,
 				locked   => ddr_lkd);
 
 			ddr_clk0_bufg : bufio
 			port map (
+				i => ddr_clk0x2_mmce2,
+				o => ddr_clk0x2);
+
+			ddr_clk90_bufg : bufio
+			port map (
+				i => ddr_clk90x2_mmce2,
+				o => ddr_clk90x2);
+
+			ddr_clk0div_bufg : bufg
+			port map (
 				i => ddr_clk0_mmce2,
 				o => ddr_clk0);
 
-			ddr_clk90_bufg : bufio
+			ddr_clk90div_bufg : bufg
 			port map (
 				i => ddr_clk90_mmce2,
 				o => ddr_clk90);
 
-			ddr_clk0div_bufg : bufg
-			port map (
-				i => ddr_clk0div_mmce2,
-				o => ddr_clk0div);
-
-			ddr_clk90div_bufg : bufg
-			port map (
-				i => ddr_clk90div_mmce2,
-				o => ddr_clk90div);
-
-			ddrsys_clks <= (
-				clk0div  => ddr_clk0div,
-				clk90div => ddr_clk90div,
-				iodclk   => sys_clk,
-				clk0     => ddr_clk0,
-				clk90    => ddr_clk90);
-
-			ctlrphy_dqsi <= (others => ddr_clk90div);
+			ctlrphy_dqsi <= (others => ddr_clk90);
 			ddrsys_rst <= not ddr_lkd;
 
-			process(ddr_clk0div)
+			process(ddr_clk0)
 			begin
-				if rising_edge(ddr_clk0div) then
+				if rising_edge(ddr_clk0) then
 					rst0div_rst <= ddrsys_rst;
 				end if;
 			end process;
 
-			process(ddr_clk90div)
+			process(ddr_clk90)
 			begin
-				if rising_edge(ddr_clk90div) then
+				if rising_edge(ddr_clk90) then
 					rst90div_rst <= ddrsys_rst;
 				end if;
 			end process;
@@ -684,7 +676,13 @@ begin
 		phy_rsts(0) => rst0div_rst,
 		phy_rsts(1) => rst90div_rst,
 		phy_rsts(2) => ioctrl_rst,
-		sys_clks    => ddrsys_clks,
+		rst         => ddrsys_rst,
+		iod_clk     => sys_clk,
+		clk0        => ddr_clk0,
+		clk90       => ddr_clk90,
+		clk0x2      => ddr_clk0x2,
+		clk90x2     => ddr_clk90x2,
+
 		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
 		phy_rw      => ctlrphy_rw,
