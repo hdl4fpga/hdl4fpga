@@ -37,6 +37,7 @@ entity adjpha is
 		taps     : natural);
 	port (
 		clk      : in  std_logic;
+		rst      : in  std_logic := '0';
 		req      : in  std_logic;
 		rdy      : buffer std_logic;
 		step_req : buffer std_logic;
@@ -108,37 +109,45 @@ begin
 		severity WARNING;
 
 		if rising_edge(clk) then
-			if to_bit(edge_req xor edge_rdy)='1' then
-				if start='0' then
-					saved <= (others => '0');
-					phase <= to_unsigned(2**(gap_word'length-1), gap_word'length);
-					step  := to_unsigned(num_of_steps-1, step'length);
-					step_req <= not to_stdulogic(to_bit(step_rdy));
-					start := '1';
-				elsif to_bit(step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
-					if smp=seq then
-						saved <= phase;
+			if rst='1' then
+				step_req <= '0';
+				edge_rdy <= to_stdulogic(to_bit(edge_req));
+			elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
+				if (edge_rdy xor  to_stdulogic(to_bit(edge_req)))='1' then
+					if start='0' then
+						saved <= (others => '0');
+						phase <= to_unsigned(2**(gap_word'length-1), gap_word'length);
+						step  := to_unsigned(num_of_steps-1, step'length);
+						step_req <= not step_rdy;
+						start := '1';
+					elsif (step_rdy xor to_stdulogic(to_bit(step_req)))='0' then
+						if smp=seq then
+							saved <= phase;
+						end if;
+	
+						if step(0)='0' then
+							gap := gaptab(to_integer(step(1 to step'right)));
+						else
+							gap := (others => '0');
+						end if;
+	
+						if smp=seq then
+							phase <= phase + gap;
+						else
+							phase <= saved + gap;
+						end if;
+	
+						if step(0)='0' then
+							step  := step - 1;
+							step_req <= not step_rdy;
+						else
+							start := '0';
+							edge_rdy <= to_stdulogic(to_bit(edge_req));
+						end if;
 					end if;
-
-					if step(0)='0' then
-						gap := gaptab(to_integer(step(1 to step'right)));
-					else
-						gap := (others => '0');
-					end if;
-
-					if smp=seq then
-						phase <= phase + gap;
-					else
-						phase <= saved + gap;
-					end if;
-
-					if step(0)='0' then
-						step  := step - 1;
-						step_req <= not to_stdulogic(to_bit(step_rdy));
-					else
-						start := '0';
-						edge_rdy <= edge_req;
-					end if;
+				else
+					start := '0';
+					edge_rdy <= to_stdulogic(to_bit(edge_req));
 				end if;
 			else
 				start := '0';
@@ -156,7 +165,7 @@ begin
 			variable sum   : gap_word;
 		begin
 			if rising_edge(clk) then
-				if to_bit(req xor rdy)='1' then
+				if (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
 						rledge   <= '0';
 						edge_req <= not to_stdulogic(to_bit(edge_rdy));
@@ -179,14 +188,11 @@ begin
 							end if;
 							redge <= phase;
 							avrge <= sum;
-							edge_req <= edge_rdy;
-							rdy   <= req;
+							rdy   <=  to_stdulogic(to_bit(req));
 							start := '0';
 						end if;
 					end if;
 				else
-					edge_req <= edge_rdy;
-					rdy   <= req;
 					start := '0';
 				end if;
 			end if;
@@ -199,7 +205,10 @@ begin
 			variable sum   : gap_word;
 		begin
 			if rising_edge(clk) then
-				if to_bit(req xor rdy)='1' then
+				if rst='1' then
+					rdy   <=  to_stdulogic(to_bit(req));
+					start := '0';
+				elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
 						edge_req <= not to_stdulogic(to_bit(edge_rdy));
 						start    := '1';
@@ -209,13 +218,10 @@ begin
 							sum := sum - (taps+1);
 						end if;
 						avrge <= sum;
-						edge_req <= edge_rdy;
-						rdy   <= req;
+						rdy   <=  to_stdulogic(to_bit(req));
 						start := '0';
 					end if;
 				else
-					edge_req <= edge_rdy;
-					rdy   <= req;
 					start := '0';
 				end if;
 			end if;

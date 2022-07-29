@@ -94,6 +94,7 @@ use hdl4fpga.std.all;
 				end if;
 			else
 				start := '0';
+				step_req <= '0';
 				dtct_rdy <= to_stdulogic(to_bit(dtct_req));
 			end if;
 		end if;

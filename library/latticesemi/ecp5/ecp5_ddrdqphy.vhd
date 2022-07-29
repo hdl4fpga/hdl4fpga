@@ -162,6 +162,7 @@ begin
 				if rst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state     := s_start;
+					adj_req <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					case state is
 					when s_start =>
@@ -190,7 +191,12 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
+				if rst='1' then
+					read_req <= '0';
+					state := s_start;
+					step_rdy <= to_stdulogic(to_bit(step_req));
+--					rlpause_req <= '0';
+				elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
 					if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 						case state is
 						when s_start =>
@@ -229,6 +235,7 @@ begin
 		port map (
 			edge     => std_logic'('0'),
 			clk      => sclk,
+			rst      => rst,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
 			step_req => wlstep_req,

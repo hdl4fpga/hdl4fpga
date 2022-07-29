@@ -40,7 +40,7 @@ begin
 		variable latch : std_logic;
 	begin
 		if rising_edge(sclk) then
-			if (to_bit(step_rdy) xor to_bit(step_req))='1' then
+			if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 				if latch='0' then
 					if (burstdet and datavalid)='1' then
 						input <= '1';

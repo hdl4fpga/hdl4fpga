@@ -116,7 +116,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_rlreq
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddr3phy_i/phy_rlrdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16921991470 fs} 0} {{Cursor 2} {284921903670 fs} 0}
+WaveRestoreCursors {{Cursor 1} {7736842110 fs} 0} {{Cursor 2} {284921903670 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 290
 configure wave -valuecolwidth 164
@@ -132,4 +132,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {6826191880 fs} {29866047360 fs}
+WaveRestoreZoom {0 fs} {21 us}
