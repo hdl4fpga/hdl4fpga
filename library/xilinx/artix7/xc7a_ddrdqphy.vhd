@@ -187,7 +187,7 @@ begin
 			end if;
 		end process;
 
-		process (dqspau_req, dqipau_req, iod_clk)
+		process (dqspau_req, dqipau_req, dqipau_rdy, iod_clk)
 			variable z : std_logic;
 		begin
 			z := '1';
@@ -198,7 +198,7 @@ begin
 		
 			if rising_edge(iod_clk) then
 				if (pause_rdy xor pause_req)='0' then
-					dqspau_rdy <= dqspau_req;
+					dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
 					dqipau_rdy <= (z xor dqipau_rdy);
 				end if;
 			end if;
@@ -216,7 +216,7 @@ begin
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 			else
-				pause_rdy <= pause_req;
+				pause_rdy <= to_stdulogic(to_bit(pause_req));
 			end if;
 		end if;
 	end process;
@@ -235,6 +235,7 @@ begin
 			taps    => taps)
 		port map (
 			edge     => std_logic'('1'),
+			rst      => rst,
 			clk      => iod_clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,

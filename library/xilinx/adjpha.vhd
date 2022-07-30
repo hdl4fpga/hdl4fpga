@@ -165,7 +165,10 @@ begin
 			variable sum   : gap_word;
 		begin
 			if rising_edge(clk) then
-				if (rdy xor to_stdulogic(to_bit(req)))='1' then
+				if rst='1' then
+					rdy   <=  to_stdulogic(to_bit(req));
+					start := '0';
+				elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
 						rledge   <= '0';
 						edge_req <= not to_stdulogic(to_bit(edge_rdy));
