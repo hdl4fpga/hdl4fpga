@@ -354,11 +354,11 @@ begin
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
 	begin
-		z := '0';
+		z := '1';
 		for i in wl_rdy'range loop
-			z := z and (wl_rdy(i) xor phy_wlreq);
+			z := z and (wl_rdy(i) xor to_stdulogic(to_bit(phy_wlreq)));
 		end loop;
-		phy_wlrdy <= z;
+		phy_wlrdy <= z xor to_stdulogic(to_bit(phy_wlreq));
 	end process;
 
 	read_leveling_l_b : block
@@ -416,8 +416,8 @@ begin
 						leveling  <= '0';
 						rd_rdy    <= rd_req;
 						wr_rdy    <= wr_req;
-						read_rdy  <= read_req;
-						write_rdy <= write_req;
+						read_rdy  <= to_stdlogicvector(to_bitvector(read_req));
+						write_rdy <= to_stdulogic(to_bit(write_req));
 						state    := s_idle;
 					end if;
 					if burst='0' then
@@ -453,7 +453,10 @@ begin
 					burst := '1';
 				end if;
 
-				if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
+				if rst='1' then
+					wr_rdy <= to_stdlogicvector(to_bitvector(wr_req));
+					write_rdy <= to_stdulogic(to_bit(write_req));
+				elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
 					if wr_rdy = not to_stdlogicvector(to_bitvector(wr_req)) then
 						write_req <= not write_rdy;
 					end if;

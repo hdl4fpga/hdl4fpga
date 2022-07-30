@@ -34,7 +34,7 @@ architecture arty_graphics of testbench is
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 14;
+	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 10;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -130,7 +130,7 @@ architecture arty_graphics of testbench is
 			cas_n : in std_logic;
 			we_n  : in std_logic;
 			ba    : in std_logic_vector(3-1 downto 0);
-			addr  : in std_logic_vector(13-1 downto 0);
+			addr  : in std_logic_vector(15-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq    : inout std_logic_vector(16-1 downto 0);
 			dqs   : inout std_logic_vector(2-1 downto 0);
@@ -264,7 +264,7 @@ begin
 		ddr3_cas   => cas_n,
 		ddr3_we    => we_n,
 		ddr3_ba    => ba,
-		ddr3_a     => addr,
+		ddr3_a     => addr(14-1 downto 0),
 		ddr3_dqs_p => dqs_p,
 		ddr3_dqs_n => dqs_n,
 		ddr3_dq    => dq,
@@ -290,7 +290,7 @@ begin
 		Cas_n => cas_n,
 		We_n  => we_n,
 		Ba    => ba,
-		Addr  => addr(13-1 downto 0),
+		Addr  => addr,
 		Dm_tdqs  => dm,
 		Dq    => dq,
 		Dqs   => dqs_p,
@@ -319,7 +319,7 @@ configuration arty_graphics_structure_md of testbench is
 				Cas_n => cas_n,
 				We_n  => we_n,
 				Ba    => ba,
-				Addr  => addr(13-1 downto 0),
+				Addr  => addr,
 				Dm_tdqs  => dm,
 				Dq    => dq,
 				Dqs   => dqs,
