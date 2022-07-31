@@ -110,7 +110,6 @@ begin
 
 		if rising_edge(clk) then
 			if rst='1' then
-				step_req <= '0';
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
 			elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 				if (edge_rdy xor  to_stdulogic(to_bit(edge_req)))='1' then

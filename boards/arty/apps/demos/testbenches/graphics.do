@@ -108,7 +108,6 @@ add wave -noupdate /testbench/du_e/ddrphy_e/read_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlreq
 add wave -noupdate /testbench/du_e/ddrphy_e/phy_wlrdy
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_wlreq
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_wlrdy
 add wave -noupdate -divider {New Divider}
@@ -120,15 +119,28 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/write_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/write_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/rl_b/line__190/z
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/step_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/step_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/edge_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/edge_rdy
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/pause_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/pause_rdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipau_req(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipau_rdy(0)
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqspau_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_brst
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11032078 ps} 0} {{Cursor 2} {24819266 ps} 0}
+WaveRestoreCursors {{Cursor 1} {19753732 ps} 0} {{Cursor 2} {20205107 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
-configure wave -valuecolwidth 256
+configure wave -valuecolwidth 110
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -141,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {10663867 ps} {11156055 ps}
+WaveRestoreZoom {19735009 ps} {20013947 ps}
