@@ -112,6 +112,8 @@ HDL4FPGA__sdrbaphy__ecp = $(LIB_HDL4FPGA)/sdrbaphy/ecp.dat
 HDL4FPGA__sdrbaphy = $(LIB_HDL4FPGA)/sdrbaphy/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
+HDL4FPGA__profiles__body = $(LIB_HDL4FPGA)/profiles/body.dat
+HDL4FPGA__profiles = $(LIB_HDL4FPGA)/profiles/_primary.dat
 HDL4FPGA__phy_rl__def = $(LIB_HDL4FPGA)/phy_rl/def.dat
 HDL4FPGA__phy_rl = $(LIB_HDL4FPGA)/phy_rl/_primary.dat
 HDL4FPGA__phy_memcycle__def = $(LIB_HDL4FPGA)/phy_memcycle/def.dat
@@ -382,6 +384,8 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__sdrbaphy) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
+    $(HDL4FPGA__profiles__body) \
+    $(HDL4FPGA__profiles) \
     $(HDL4FPGA__phy_rl__def) \
     $(HDL4FPGA__phy_rl) \
     $(HDL4FPGA__phy_memcycle__def) \
@@ -1073,7 +1077,6 @@ $(HDL4FPGA__ecp3_ddrbaphy__lscc) : ../latticesemi/ecp3/ecp3_ddrbaphy.vhd \
 $(HDL4FPGA__ecp3_ddrdqphy) \
 $(HDL4FPGA__ecp3_ddrdqphy__lscc) : ../latticesemi/ecp3/ecp3_ddrdqphy.vhd \
 		$(HDL4FPGA__adjpha) \
-		$(HDL4FPGA__adjbrst) \
 		$(ECP3__components) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -1130,6 +1133,7 @@ $(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
 		$(HDL4FPGA__std) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -1463,6 +1467,10 @@ $(HDL4FPGA__phy_rl__def) : ../ddr/phy_rl.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_rl.vhd
+
+$(HDL4FPGA__profiles) \
+$(HDL4FPGA__profiles__body) : ../common/profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../common/profiles.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \

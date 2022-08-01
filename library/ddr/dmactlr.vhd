@@ -89,9 +89,6 @@ architecture def of dmactlr is
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
-	signal dma_req        : std_logic_vector(dev_req'range);
-	signal dma_rdy        : std_logic_vector(dev_req'range);
-
 	signal ctlr_act       : std_logic;
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;

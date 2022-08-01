@@ -35,6 +35,39 @@ package profiles is
 		ddr2,
 		ddr3);
 
+	type video_modes is (
+		modedebug,
+		mode480p,
+		mode600p,
+		mode720p,
+		mode900p,
+		mode1080p);
+
+	type dram_speeds is (
+		dram_133MHz,
+		dram_145MHz,
+		dram_150MHz,
+		dram_166MHz,
+		dram_200MHz,
+		dram_225MHz,
+		dram_233MHz,
+		dram_250MHz,
+		dram_262MHz,
+		dram_275MHz,
+		dram_300MHz,
+		dram_333MHz,
+		dram_350MHz,
+		dram_375MHz,
+		dram_400MHz,
+		dram_425MHz,
+		dram_450MHz,
+		dram_475MHz,
+		dram_500MHz,
+		dram_525MHz,
+		dram_550MHz,
+		dram_575MHz,
+		dram_600MHz);
+
 end package;
 
 package body profiles is

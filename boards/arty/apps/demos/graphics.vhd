@@ -37,7 +37,7 @@ use unisim.vcomponents.all;
 
 architecture graphics of arty is
 
-	type profiles is (
+	type apps is (
 		mode900p_ddr333MHz,
 		mode900p_ddr350MHz,
 		mode900p_ddr375MHz,
@@ -51,7 +51,7 @@ architecture graphics of arty is
 		mode900p_ddr575MHz,
 		mode900p_ddr600MHz);
 
-	constant profile : profiles := mode900p_ddr525MHz;
+	constant app : apps := mode900p_ddr525MHz;
 
 	signal sys_rst : std_logic;
 
@@ -67,6 +67,7 @@ architecture graphics of arty is
 	signal so_data : std_logic_vector(0 to 8-1);
 
 	constant sys_per  : real := 10.0e-9;
+	constant sys_freq : real := 1.0/(sys_per);
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -193,26 +194,30 @@ architecture graphics of arty is
 		modedebug,
 		mode900p);
 
-	type profile_param is record
+	type io_iface is (
+		io_hdlc,
+		io_ipoe);
+
+	type app_record is record
+		iface      : io_iface;
 		ddr_speed  : ddr_speeds;
 		video_mode : video_modes;
-		profile    : natural;
 	end record;
 
-	type profileparam_vector is array (profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		mode900p_ddr333MHz => (ddr333MHz, mode900p, 1),
-		mode900p_ddr350MHz => (ddr350MHz, mode900p, 1),
-		mode900p_ddr375MHz => (ddr375MHz, mode900p, 1),
-		mode900p_ddr400MHz => (ddr400MHz, mode900p, 1),
-		mode900p_ddr425MHz => (ddr425MHz, mode900p, 1),
-		mode900p_ddr450MHz => (ddr450MHz, mode900p, 1),
-		mode900p_ddr475MHz => (ddr475MHz, mode900p, 1),
-		mode900p_ddr500MHz => (ddr500MHz, mode900p, 1),
-		mode900p_ddr525MHz => (ddr525MHz, mode900p, 1),
-		mode900p_ddr550MHz => (ddr550MHz, mode900p, 1),
-		mode900p_ddr575MHz => (ddr575MHz, mode900p, 1),
-		mode900p_ddr600MHz => (ddr600MHz, mode900p, 1));
+	type app_vector is array (apps) of app_record;
+	constant app_tap : app_vector := (
+		mode900p_ddr333MHz => (io_ipoe, ddr333MHz, mode900p),
+		mode900p_ddr350MHz => (io_ipoe, ddr350MHz, mode900p),
+		mode900p_ddr375MHz => (io_ipoe, ddr375MHz, mode900p),
+		mode900p_ddr400MHz => (io_ipoe, ddr400MHz, mode900p),
+		mode900p_ddr425MHz => (io_ipoe, ddr425MHz, mode900p),
+		mode900p_ddr450MHz => (io_ipoe, ddr450MHz, mode900p),
+		mode900p_ddr475MHz => (io_ipoe, ddr475MHz, mode900p),
+		mode900p_ddr500MHz => (io_ipoe, ddr500MHz, mode900p),
+		mode900p_ddr525MHz => (io_ipoe, ddr525MHz, mode900p),
+		mode900p_ddr550MHz => (io_ipoe, ddr550MHz, mode900p),
+		mode900p_ddr575MHz => (io_ipoe, ddr575MHz, mode900p),
+		mode900p_ddr600MHz => (io_ipoe, ddr600MHz, mode900p));
 
 	type video_params is record
 		pll  : pll_params;
@@ -225,15 +230,16 @@ architecture graphics of arty is
 		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
 
 	constant video_mode : video_modes := video_modes'val(
-		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
+		setif(debug, video_modes'pos(modedebug), video_modes'pos(app_tap(app).video_mode)));
 
-	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
+	constant ddr_speed : ddr_speeds := app_tap(app).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddr_clk0;
 	signal video_clk      : std_logic := '0';
+	signal video_lck      : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
@@ -260,10 +266,7 @@ architecture graphics of arty is
 	-- Select link --
 	-----------------
 
-	constant io_hdlc  : natural := 0;
-	constant io_ipoe  : natural := 1;
-
-	constant io_link  : natural := io_hdlc;
+	constant io_link  : io_iface := io_hdlc;
 
 	constant mem_size : natural := 8*(1024*8);
 
@@ -338,6 +341,7 @@ begin
 				clkout2  => open, -- video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
+			video_clk <= ioctrl_lkd;
 
 		end block;
 
@@ -413,7 +417,126 @@ begin
 
 	end block;
 
-	ipoe_b : block
+	hdlc_g : if io_link=io_hdlc generate
+
+		constant uart_xtal : real := 
+			real(video_tab(video_mode).pll.dcm_mul)*sys_freq/
+			real(video_tab(video_mode).pll.dcm_div);
+
+		constant baudrate : natural := setif(
+			uart_xtal >= 32.0e6, 3000000, setif(
+			uart_xtal >= 25.0e6, 2000000,
+                                 115200));
+
+		signal uart_clk   : std_logic;
+		signal uart_rxdv  : std_logic;
+		signal uart_rxd   : std_logic_vector(0 to 8-1);
+		signal uarttx_frm : std_logic;
+		signal uart_idle  : std_logic;
+		signal uart_txen  : std_logic;
+		signal uart_txd   : std_logic_vector(uart_rxd'range);
+
+		signal tp         : std_logic_vector(1 to 32);
+
+		alias ftdi_txd    : std_logic is uart_txd_in;
+		alias ftdi_rxd    : std_logic is uart_rxd_out;
+
+		signal dummy_txd  : std_logic_vector(uart_rxd'range);
+	begin
+
+		process (uart_clk)
+			variable q0 : std_logic := '0';
+			variable q1 : std_logic := '0';
+		begin
+			if rising_edge(uart_clk) then
+--				led(1) <= q1;
+--				led(7) <= q0;
+				if tp(1)='1' then
+					if tp(2)='1' then
+						q1 := not q1;
+					end if;
+				end if;
+				if uart_rxdv='1' then
+					q0 := not q0;
+				end if;
+			end if;
+		end process;
+
+		process (dummy_txd ,uart_clk)
+			variable q : std_logic := '0';
+			variable e : std_logic := '1';
+		begin
+			if rising_edge(uart_clk) then
+--				led(5) <= q;
+				if (so_frm and not e)='1' then
+					q := not q;
+				end if;
+	--			led(4) <= so_frm;
+				e := so_frm;
+			end if;
+		end process;
+
+		nodebug_g : if not debug generate
+			uart_clk <= video_clk;
+		end generate;
+
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		end generate;
+
+		assert FALSE
+			report "BAUDRATE : " & " " & integer'image(baudrate)
+			severity NOTE;
+
+		uartrx_e : entity hdl4fpga.uart_rx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_rxc  => uart_clk,
+			uart_sin  => ftdi_txd,
+			uart_irdy => uart_rxdv,
+			uart_data => uart_rxd);
+
+		uarttx_e : entity hdl4fpga.uart_tx
+		generic map (
+			baudrate => baudrate,
+			clk_rate => uart_xtal)
+		port map (
+			uart_txc  => uart_clk,
+			uart_frm  => video_lck,
+			uart_irdy => uart_txen,
+			uart_trdy => uart_idle,
+			uart_data => uart_txd,
+			uart_sout => ftdi_rxd);
+
+		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
+		generic map (
+			mem_size    => mem_size)
+		port map (
+			uart_clk    => uart_clk,
+			uartrx_irdy => uart_rxdv,
+			uartrx_data => uart_rxd,
+			uarttx_frm  => uarttx_frm,
+			uarttx_trdy => uart_idle,
+			uarttx_data => uart_txd,
+			uarttx_irdy => uart_txen,
+			sio_clk     => sio_clk,
+			so_frm      => so_frm,
+			so_irdy     => so_irdy,
+			so_trdy     => so_trdy,
+			so_data     => so_data,
+
+			si_frm      => si_frm,
+			si_irdy     => si_irdy,
+			si_trdy     => si_trdy,
+			si_end      => si_end,
+			si_data     => si_data,
+			tp          => tp);
+
+	end generate;
+
+	ipoe_e : if io_link=io_ipoe generate
 
 		alias  mii_rxc    : std_logic is eth_rx_clk;
 		alias  mii_rxdv   : std_logic is eth_rx_dv;
@@ -543,12 +666,12 @@ begin
 			end if;
 		end process;
 
-	end block;
+	end generate;
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
-		profile      => profile_tab(profile).profile,
+		profile      => 1,
 		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
 		fpga         => virtex7,
 		mark         => M2G125,
