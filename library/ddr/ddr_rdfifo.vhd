@@ -102,7 +102,7 @@ begin
 	di  <= to_wordvector(ddr_dqi);
 	datadelay_g : if data_delay/=0 generate
 		bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
-			DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+			data_phases_g : for j in 0 to DATA_PHASES-1 generate
 				signal pll_req : std_logic;
 			begin
 	
@@ -140,7 +140,7 @@ begin
 
 	no_datadelay_g : if data_delay=0 generate
 		bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
-			DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+			data_phases_g : for j in 0 to DATA_PHASES-1 generate
 				sys_rdy(i*DATA_PHASES+j) <= ddr_win_dqs(i*DATA_PHASES+j);
 				do(j*WORD_SIZE/BYTE_SIZE+i) <= di(i*DATA_PHASES+j);
 			end generate;

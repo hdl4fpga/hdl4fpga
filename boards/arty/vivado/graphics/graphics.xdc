@@ -35,20 +35,20 @@ set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
 
-set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { sys_clk    }
-set_clock_groups -asynchronous -group { ddr_clk0div_mmce2 } -group { eth_tx_clk }
-set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0div_mmce2 }
+set_clock_groups -asynchronous -group { ddr_clk0_mmce2 } -group { sys_clk    }
+set_clock_groups -asynchronous -group { ddr_clk0_mmce2 } -group { eth_tx_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
-set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk0div_mmce2  }
-set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk90div_mmce2 }
+set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk0_mmce2  }
+set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }
 
 set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
-set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk90_mmce2 }
+set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk90x2_mmce2 }
 
 set_clock_groups -asynchronous -group { dqso1      } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90_mmce2 }
+set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90x2_mmce2 }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 

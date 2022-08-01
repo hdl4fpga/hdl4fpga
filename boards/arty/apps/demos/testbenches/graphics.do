@@ -99,6 +99,8 @@ add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/leveling
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/z
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iod_clk
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iod_clk
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
 add wave -noupdate /testbench/du_e/ddrphy_e/phy_trdy
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/ddr_idle
@@ -114,12 +116,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlreq
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rlrdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/rl_b/line__132/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/write_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/write_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/read_leveling_l_b/readcycle_p/state
-add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/rl_b/line__190/z
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/step_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(7)/adjdqi_b/adjdqi_e/step_rdy
@@ -130,6 +130,10 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/pause_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipau_req(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipau_rdy(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/rl_b/line__134/state
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/rl_b/line__192/z
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipause_req
+add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipause_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqspau_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_req
@@ -137,7 +141,7 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/read_brst
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {19753732 ps} 0} {{Cursor 2} {20205107 ps} 0}
+WaveRestoreCursors {{Cursor 1} {23491665 ps} 0} {{Cursor 2} {26562165 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 110
@@ -153,4 +157,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {19735009 ps} {20013947 ps}
+WaveRestoreZoom {23481411 ps} {23501919 ps}

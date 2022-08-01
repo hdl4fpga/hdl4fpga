@@ -102,6 +102,8 @@ architecture virtex7 of xc7a_ddrdqphy is
 
 	signal dqipau_req  : std_logic_vector(ddr_dqi'range);
 	signal dqipau_rdy  : std_logic_vector(ddr_dqi'range);
+	signal dqipause_req : std_logic;
+	signal dqipause_rdy : std_logic;
 	signal dqspau_req  : std_logic;
 	signal dqspau_rdy  : std_logic;
 
@@ -187,25 +189,34 @@ begin
 			end if;
 		end process;
 
-		process (dqspau_req, dqipau_req, dqipau_rdy, iod_clk)
+		process (iod_clk)
 			variable z : std_logic;
 		begin
+			if rising_edge(iod_clk) then
+				if rst='1' then
+					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
+				elsif (pause_rdy xor pause_req)='0' then
+					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
+				end if;
+			end if;
+
 			z := '1';
 			for i in dqipau_req'range loop
 				z := z and (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))));
 			end loop;
-			rlpause_req <= to_stdulogic(to_bit(dqspau_req)) xor z;
 		
 			if rising_edge(iod_clk) then
-				if rst='1' then
-					dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
-					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
-				elsif (pause_rdy xor pause_req)='0' then
-					dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
-					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+				if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
+					dqipause_req <= dqipause_rdy xor z;
 				end if;
 			end if;
+
 		end process;
+		rlpause_req <= to_stdulogic(to_bit(dqspau_req)) xor dqipause_req;
 
 	end block;
 
