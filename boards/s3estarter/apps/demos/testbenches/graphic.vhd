@@ -25,8 +25,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture s3estarter_graphics of testbench is
-	constant ddr_std  : positive := 1;
-
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -54,19 +52,21 @@ architecture s3estarter_graphics of testbench is
 	signal we_n  : std_logic;
 	signal dm    : std_logic_vector(1 downto 0);
 
-	signal x : std_logic;
-	signal mii_refclk : std_logic;
-	signal mii_treq : std_logic := '0';
-	signal mii_trdy : std_logic := '0';
+	signal mii_refclk : std_logic := '0';
+	signal mii_req  : std_logic := '0';
+	signal mii_req1 : std_logic := '0';
+	signal rep_req  : std_logic := '0';
+	signal ping_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(4-1 downto 0);
-	signal mii_rxc  : std_logic := '0';
+	signal mii_rxd  : std_logic_vector(0 to 4-1);
+	signal mii_txd  : std_logic_vector(0 to 4-1);
+	signal mii_txc  : std_logic;
+	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
 
-	signal ddr3_rst : std_logic;
-	signal ddr_lp_dqs : std_logic;
-
 	component s3estarter is
+		generic (
+			debug : boolean);
 		port (
 			xtal       : in std_logic := '0';
 			sw0        : in std_logic := '1';
@@ -168,107 +168,113 @@ architecture s3estarter_graphics of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
-	component ddr2_model is
-		port (
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_rdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			rdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
 
-	component ddr3_model is
-		port (
-			rst_n : in std_logic;
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(2 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			tdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
+	constant baudrate : natural := 1000000;
 
-	constant delay : time := 1 ns;
+	signal uart_clk : std_logic := '0';
+	signal uart_sin : std_logic;
+
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
+
 begin
 
-	clk <= not clk after 10 ns;
-	process (clk)
-		variable vrst : unsigned(1 to 16) := (others => '1');
+	clk      <= not clk after 10 ns;
+	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
+
+	rst <= '0', '1' after 300 ns;
+
+--	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us,  '0' after 240 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req1 <= '0', '1' after 360 us; -- '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
+	process
+		variable x : natural := 0;
 	begin
-		if rising_edge(clk) then
-			vrst := vrst sll 1;
-			rst <= vrst(1) after 5 ns;
-		end if;
+		wait for 100 us;
+		loop
+			if rep_req='1' then
+				if x > 4 then
+					wait;
+				end if;
+				rep_req <= '0' after 6 us;
+	wait;
+				x := x + 1;
+			else
+				rep_req <= '1' after 80 ns;
+			end if;
+		wait on rep_req;
+		end loop;
 	end process;
+--	mii_req1  <= '0'; --rep_req;
+	ping_req <= '0';
 
-	mii_treq <= '0', '1' after 8 us;
-
-	eth_e: entity hdl4fpga.mii_rom
+	htb_e : entity hdl4fpga.eth_tb
 	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5"  &
-			x"00_40_00_01_02_03"    &
-			x"00_00_00_00_00_00"    &
-			x"0800"                 &
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"00000000"             &    -- IP Source IP address
-			x"00000000"             &    -- IP Destiantion IP Address
-			x"0000" &
-
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"0044dea9"         &    -- UDP Source port, Destination port
-				x"000f"             & -- UDP Length,
-				x"0000"             & -- UPD checksum
-				x"16020001ff"       &
-				x"1702000001"       &
-				x"18" & x"07"       &
-				x"12345678"         &
-				x"9abcdef0")        &
-			x"00000000"
-		,8)
-	)
+		debug =>false)
 	port map (
+		mii_data4 =>
+		x"01007e" &
+		x"18ff"   &
+		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
+		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
+		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
+		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
+		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
+		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
+		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
+		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
+		x"18ff" &
+		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
+		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
+		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
+		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
+		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
+		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
+		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
+		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
+		x"18ff"  &
+		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
+		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
+		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
+		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
+		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
+		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
+		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
+		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
+		x"18ff" &
+		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
+		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
+		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
+		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
+		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
+		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
+		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
+		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
+		x"1702_0003ff_1603_0007_3000",
+		mii_data5 => x"0100" & x"00" & x"1702_0003ff_1603_8007_3000",
+		mii_frm1 => '0',
+		mii_frm2 => ping_req,
+		mii_frm3 => '0',
+		mii_frm4 => mii_req,
+		mii_frm5 => mii_req1,
+
 		mii_txc  => mii_rxc,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txdv => mii_rxdv,
+		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_rxc <= not mii_rxc after 50 ns;
-	mii_refclk <= mii_rxc;
+
+	mii_refclk <= not mii_refclk after 50 ns;
+	mii_rxc <= mii_refclk;
+	mii_txc <= mii_refclk;
 	du_e : s3estarter
+	generic map (
+		debug => true)
 	port map (
 		xtal => clk,
 		btn_west  => rst,
 
 		spi_miso => '-',
 		amp_dout => '-',
-		e_tx_clk => mii_refclk,
+		e_tx_clk => mii_rxc,
 		e_rx_clk => mii_rxc,
 		e_rx_dv => mii_rxdv,
 		e_rxd => mii_rxd,

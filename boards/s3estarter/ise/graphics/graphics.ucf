@@ -76,7 +76,7 @@ NET "sd_dq[*]"  MAXSKEW  = 0.100 ns;
 #OFFSET = IN 0.000 ns VALID 3.000 ns BEFORE sd_dqs[1] RISING;
 #
 # ###################### #
-# DDR 166 Mhz rate clock #
+# DDR 133 Mhz rate clock #
 # ###################### #
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 7.5 ns  HIGH 50% PHASE 0.0 INPUT_JITTER 0.900 ns;

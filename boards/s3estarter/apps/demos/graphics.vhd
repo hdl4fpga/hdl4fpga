@@ -377,6 +377,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug        => debug,
 		profile      => 1,
 		ddr_tcp      => ddr_tcp,
 		fpga         => fpga,
@@ -412,7 +413,7 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
+		video_clk    => '0', --video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
 		video_blank  => video_blank,

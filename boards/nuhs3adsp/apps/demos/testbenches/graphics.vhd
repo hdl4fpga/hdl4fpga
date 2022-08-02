@@ -25,8 +25,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture nuhs3adsp_graphics of testbench is
-	constant ddr_std  : positive := 1;
-
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
