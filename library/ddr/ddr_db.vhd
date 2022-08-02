@@ -35,6 +35,12 @@ package ddr_db is
 
 	constant ANY         : natural := 0;
 
+	type drams is (
+		sdram,
+		ddr,
+		ddr2,
+		ddr3);
+
 	constant SPARTAN3    : natural := 1;
 	constant VIRTEX5     : natural := 2;
 	constant LATTICEECP3 : natural := 3;
@@ -42,10 +48,10 @@ package ddr_db is
 	constant LATTICEECP5 : natural := 5;
 
 
-	constant SDRAM : natural := 0;
-	constant DDR1  : natural := 1;
-	constant DDR2  : natural := 2;
-	constant DDR3  : natural := 3;
+	-- constant SDRAM : natural := 0;
+	-- constant DDR1  : natural := 1;
+	-- constant DDR2  : natural := 2;
+	-- constant DDR3  : natural := 3;
 
 	constant M6T  : natural := 1;
 	constant M1G15E : natural := 2;
@@ -96,7 +102,7 @@ package ddr_db is
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
 	type cnfglat_record is record
-		stdr : natural;
+		stdr : drams;
 		rgtr : natural;
 		lat  : integer;
 		code : code_t;
@@ -106,14 +112,14 @@ package ddr_db is
 
 	type tmark_record is record
 		mark : natural;
-		stdr : natural;
+		stdr : drams;
 	end record;
 
 	type tmark_tab is array (natural range <>) of tmark_record;
 
 	constant tmark_db : tmark_tab := (
 		tmark_record'(mark => M7E,  stdr => SDRAM),
-		tmark_record'(mark => M6T,  stdr => DDR1),
+		tmark_record'(mark => M6T,  stdr => ddr),
 		tmark_record'(mark => M3,   stdr => DDR2),
 		tmark_record'(mark => M1G15E, stdr => DDR3),
 		tmark_record'(mark => M2G125, stdr => DDR3),
@@ -341,19 +347,19 @@ package ddr_db is
 
 		-- CL register --
 
-		cnfglat_record'(stdr => DDR1, rgtr => CL,  lat =>  2*2, code => "010"),
-		cnfglat_record'(stdr => DDR1, rgtr => CL,  lat =>  1*5, code => "110"),
-		cnfglat_record'(stdr => DDR1, rgtr => CL,  lat =>  2*3, code => "011"),
+		cnfglat_record'(stdr => ddr, rgtr => CL,  lat =>  2*2, code => "010"),
+		cnfglat_record'(stdr => ddr, rgtr => CL,  lat =>  1*5, code => "110"),
+		cnfglat_record'(stdr => ddr, rgtr => CL,  lat =>  2*3, code => "011"),
 
 		-- BL register --
 
-		cnfglat_record'(stdr => DDR1, rgtr => BL,  lat =>  2*1, code => "001"),
-		cnfglat_record'(stdr => DDR1, rgtr => BL,  lat =>  2*2, code => "010"),
-		cnfglat_record'(stdr => DDR1, rgtr => BL,  lat =>  2*4, code => "011"),
+		cnfglat_record'(stdr => ddr, rgtr => BL,  lat =>  2*1, code => "001"),
+		cnfglat_record'(stdr => ddr, rgtr => BL,  lat =>  2*2, code => "010"),
+		cnfglat_record'(stdr => ddr, rgtr => BL,  lat =>  2*4, code => "011"),
 
 		-- CWL register --
 
-		cnfglat_record'(stdr => DDR1, rgtr => CWL, lat =>  2*1, code => "000"),
+		cnfglat_record'(stdr => ddr, rgtr => CWL, lat =>  2*1, code => "000"),
 
 		-- DDR2 standard --
 		-------------------
@@ -418,15 +424,15 @@ package ddr_db is
 
 	function ddr_stdr (
 		mark : natural)
-		return natural;
+		return drams;
 
 	function ddr_query_size (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr  : natural)
 		return natural;
 
 	function ddr_cnfglat (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural;
 		constant lat  : natural)
 		return std_logic_vector;
@@ -442,12 +448,12 @@ package ddr_db is
 		return integer;
 
 	function ddr_lattab (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return natural_vector;
 
 	function ddr_schtab (
-		constant stdr  : natural;
+		constant stdr  : drams;
 		constant fpga  : natural;
 		constant tabid : natural)
 		return natural_vector;
@@ -464,12 +470,12 @@ package ddr_db is
 		return natural;
 
 	function ddr_latcod (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return std_logic_vector;
 
 	function ddr_selcwl (
-		constant stdr : natural)
+		constant stdr : drams)
 		return natural;
 
 	function ddr_cntlrcnfg (
@@ -482,18 +488,17 @@ package body ddr_db is
 
 	function ddr_stdr (
 		mark : natural)
-		return natural is
+		return drams is
 	begin
 		for i in tmark_db'range loop
 			if tmark_db(i).mark = mark then
 				return tmark_db(i).stdr;
 			end if;
 		end loop;
-		return 0;
 	end;
 
 	function ddr_query_size (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return natural is
 		variable val : natural := 0;
@@ -509,7 +514,7 @@ package body ddr_db is
 	end;
 
 	function ddr_query_data (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return cnfglat_tab is
 		constant query_size : natural := ddr_query_size(stdr, rgtr);
@@ -528,7 +533,7 @@ package body ddr_db is
 	end;
 
 	function ddr_cnfglat (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural;
 		constant lat  : natural)
 		return std_logic_vector is
@@ -599,7 +604,7 @@ package body ddr_db is
 	end;
 
 	function ddr_lattab (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return natural_vector is
 		constant query_size : natural := ddr_query_size(stdr, rgtr);
@@ -613,7 +618,7 @@ package body ddr_db is
 	end;
 
 	function ddr_schtab (
-		constant stdr  : natural;
+		constant stdr  : drams;
 		constant fpga  : natural;
 		constant tabid : natural)
 		return natural_vector is
@@ -630,7 +635,7 @@ package body ddr_db is
 		case tabid is
 		when WWNL =>
 			case stdr is
-			when SDRAM|DDR1|DDR3 =>
+			when SDRAM|ddr|DDR3 =>
 				for i in cwltab'range loop
 					cwlval(i) := cwltab(i) + lat;
 				end loop;
@@ -649,7 +654,7 @@ package body ddr_db is
 			end loop;
 			return clval;
 		when DQSZL|DQSL|DQZL|CWL =>
-			if stdr=2 then
+			if stdr=ddr2 then
 				lat := lat - 2;
 			end if;
 			for i in cwltab'range loop
@@ -663,7 +668,7 @@ package body ddr_db is
 	end;
 
 	function ddr_latcod (
-		constant stdr : natural;
+		constant stdr : drams;
 		constant rgtr : natural)
 		return std_logic_vector is
 		constant query_size : natural := ddr_query_size(stdr, rgtr);
@@ -678,10 +683,10 @@ package body ddr_db is
 	end;
 
 	function ddr_selcwl (
-		constant stdr : natural)
+		constant stdr : drams)
 		return natural is
 	begin
-		if stdr = 2 then
+		if stdr = ddr2 then
 			return CL;
 		end if;
 		return CWL;

@@ -30,12 +30,6 @@ package profiles is
 		xc5v,
 		xc7a);
 
-	type drams is (
-		sdram,
-		ddr,
-		ddr2,
-		ddr3);
-
 	type video_modes is (
 		modedebug,
 		mode480p,

@@ -1469,8 +1469,8 @@ $(HDL4FPGA__phy_rl__def) : ../ddr/phy_rl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_rl.vhd
 
 $(HDL4FPGA__profiles) \
-$(HDL4FPGA__profiles__body) : ../common/profiles.vhd
-	$(VCOM) -2002 -work hdl4fpga ../common/profiles.vhd
+$(HDL4FPGA__profiles__body) : ../demos/profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../demos/profiles.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
