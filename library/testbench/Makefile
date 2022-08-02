@@ -801,8 +801,8 @@ $(HDL4FPGA__ddr_db__body) : ../ddr/ddr_db.vhd \
 $(HDL4FPGA__ddr_init) \
 $(HDL4FPGA__ddr_init__def) : ../ddr/ddr_init.vhd \
 		$(HDL4FPGA__ddr_timer) \
-		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -1469,8 +1469,8 @@ $(HDL4FPGA__phy_rl__def) : ../ddr/phy_rl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_rl.vhd
 
 $(HDL4FPGA__profiles) \
-$(HDL4FPGA__profiles__body) : ../demos/profiles.vhd
-	$(VCOM) -2002 -work hdl4fpga ../demos/profiles.vhd
+$(HDL4FPGA__profiles__body) : ../demos/demo_profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../demos/demo_profiles.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \

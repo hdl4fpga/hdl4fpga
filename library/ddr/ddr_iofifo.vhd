@@ -28,7 +28,6 @@ use ieee.numeric_std.all;
 entity iofifo is
 	generic (
 		pll2ser : boolean;
-		acntr_delay : boolean := false;
 		DATA_PHASES : natural;
 		WORD_SIZE   : natural;
 		BYTE_SIZE   : natural);

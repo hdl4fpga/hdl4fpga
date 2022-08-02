@@ -31,8 +31,7 @@ entity ddr_rdfifo is
 		DATA_PHASES : natural := 1;
 		DATA_GEAR   : natural := 64;
 		WORD_SIZE   : natural := 16;
-		BYTE_SIZE   : natural := 8;
-		acntr_delay   : boolean := FALSE);
+		BYTE_SIZE   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
 		sys_rdy : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -119,7 +118,6 @@ begin
 	
 				inbyte_i : entity hdl4fpga.iofifo
 				generic map (
-					acntr_delay => acntr_delay,
 					pll2ser => false,
 					DATA_PHASES => 1,
 					WORD_SIZE  => word'length,

@@ -443,6 +443,11 @@ package ddr_db is
 		return natural;
 
 	function ddr_latency (
+		constant stdr  : drams;
+		constant param : natural)
+		return integer;
+
+	function ddr_latency (
 		constant fpga  : natural;
 		constant param : natural)
 		return integer;
@@ -565,6 +570,23 @@ package body ddr_db is
 		end loop;
 
 		return 0;
+	end;
+
+	function ddr_latency (
+		constant stdr  : drams;
+		constant param : natural)
+		return integer is
+	begin
+		case stdr is
+		when sdram =>
+			return ddr_latency(SDRAM, param);
+		when ddr =>
+			return ddr_latency(SPARTAN3, param);
+		when ddr2 =>
+			return ddr_latency(VIRTEX5, param);
+		when ddr3 =>
+			return ddr_latency(LATTICEECP3, param);
+		end case;
 	end;
 
 	function ddr_latency (

@@ -117,7 +117,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of ddr_ctlr is
-	constant stdr         : natural := ddr_stdr(mark);
+	constant stdr         : drams := ddr_stdr(mark);
 
 	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
 	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);
@@ -147,7 +147,6 @@ architecture mix of ddr_ctlr is
 	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
 	constant timers       : natural_vector   := ddr_timers(tcp, mark, debug => debug);
 	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
-	constant rdfifo_delay : boolean          := ddr_cntlrcnfg(fpga, hdl4fpga.ddr_db.rdfifo_delay);
 
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
@@ -216,7 +215,7 @@ begin
 	phy_trdy     <= ddr_mpu_trdy when phy_inirdy='0' else '0';
 	ddr_pgm_frm  <= ctlr_frm     when phy_inirdy='1' else phy_frm;
 	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
-	ddr_cwl      <= ctlr_cl      when stdr=2         else ctlr_cwl;
+	ddr_cwl      <= ctlr_cl      when stdr=ddr2      else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
 	ddr_init_e : entity hdl4fpga.ddr_init
 	generic map (
@@ -259,7 +258,7 @@ begin
 	phy_we      <= ddr_mpu_we   when ddr_mpu_sel='1' else ddr_init_we;
 	phy_a       <= ctlr_a       when ddr_mpu_sel='1' else ddr_init_a;
 	phy_b       <= ctlr_b       when ddr_mpu_sel='1' else ddr_init_b;
-	phy_odt     <= ddr_init_odt when ddr_mpu_sel='0' else ddr_sch_odt(0) when stdr=3 else '1';
+	phy_odt     <= ddr_init_odt when ddr_mpu_sel='0' else ddr_sch_odt(0) when stdr=ddr3 else '1';
 	phy_rlreq   <= init_rdy;
 	ctlr_cfgrdy <= init_rdy;
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
@@ -393,8 +392,7 @@ begin
 		data_gear   => data_gear,
 		word_size   => word_size,
 		byte_size   => byte_size,
-		data_delay  => rdfifo_lat,
-		acntr_delay => rdfifo_delay)
+		data_delay  => rdfifo_lat)
 	port map (
 		sys_clk     => ctlr_clks(0),
 		sys_rdy     => ctlr_do_dv,

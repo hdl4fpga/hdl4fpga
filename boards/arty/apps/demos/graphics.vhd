@@ -266,7 +266,7 @@ architecture graphics of arty is
 	-- Select link --
 	-----------------
 
-	constant io_link  : io_iface := io_hdlc;
+	constant io_link  : io_iface := io_ipoe;
 
 	constant mem_size : natural := 8*(1024*8);
 
