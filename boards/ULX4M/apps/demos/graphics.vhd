@@ -717,7 +717,6 @@ begin
 	begin
 		if rising_edge(clk_25mhz) then
 			led(0) <= tp(1);
-
 			led(7 downto 2) <= tp_phy(1 to 6);
 		end if;
 	end process;
