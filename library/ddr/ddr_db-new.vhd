@@ -149,7 +149,7 @@ package ddr_db is
 		(mark => M7E,    param => tRCD,    value =>  15.0e-9),
 		(mark => M7E,    param => tRFC,    value =>  66.0e-9),
 		(mark => M7E,    param => tMRD,    value =>  15.0e-9),
-		(mark => M7E,    param => tREFI,   value =>  64.0e-3/8192.0),
+		(mark => M7E,    param => tREFI,   value =>  64.0e-3/8192),
 
 		(mark => M6T,    param => tPreRST, value => 200.0e-6),
 		(mark => M6T,    param => tWR,     value =>  15.0e-9),
@@ -157,7 +157,7 @@ package ddr_db is
 		(mark => M6T,    param => tRCD,    value =>  15.0e-9),
 		(mark => M6T,    param => tRFC,    value =>  72.0e-9),
 		(mark => M6T,    param => tMRD,    value =>  12.0e-9),
-		(mark => M6T,    param => tREFI,   value =>  64.0e-3/8192.0),
+		(mark => M6T,    param => tREFI,   value =>  64.0e-3/8192),
 
 		(mark => M3,     param => tPreRST, value => 200.0e-6),
 		(mark => M3,     param => tXPR,    value => 400.0e-6),
@@ -166,7 +166,7 @@ package ddr_db is
 		(mark => M3,     param => tRCD,    value =>  15.0e-9),
 		(mark => M3,     param => tRFC,    value => 130.0e-9),
 		(mark => M3,     param => tRPA,    value =>  15.0e-9),
-		(mark => M3,     param => tREFI,   value =>  64.0e-3/8192.0),
+		(mark => M3,     param => tREFI,   value =>  64.0e-3/8192),
 
 		(mark => M1G15E, param => tPreRST, value => 200.00e-6),
 		(mark => M1G15E, param => tPstRST, value => 500.00e-6),
@@ -176,7 +176,7 @@ package ddr_db is
 		(mark => M1G15E, param => tMRD,    value =>  15.00e-9),
 		(mark => M1G15E, param => tRFC,    value => 110.00e-9),
 		(mark => M1G15E, param => tXPR,    value => 110.00e-9 + 10.0e-9),
-		(mark => M1G15E, param => tREFI,   value =>  64.00e-3/8192.0),
+		(mark => M1G15E, param => tREFI,   value =>  64.00e-3/8192),
 
 		(mark => M2G125, param => tPreRST, value => 200.00e-6),
 		(mark => M2G125, param => tPstRST, value => 500.00e-6),
@@ -186,7 +186,7 @@ package ddr_db is
 		(mark => M2G125, param => tMRD,    value =>  15.00e-9),
 		(mark => M2G125, param => tRFC,    value => 160.00e-9),
 		(mark => M2G125, param => tXPR,    value => 160.00e-9 + 10.0e-9),
-		(mark => M2G125, param => tREFI,   value =>  64.00e-3/8192.0),
+		(mark => M2G125, param => tREFI,   value =>  64.00e-3/8192),
 
 		(mark => M4G107, param => tPreRST, value => 200.00e-6),
 		(mark => M4G107, param => tPstRST, value => 500.00e-6),
@@ -196,7 +196,7 @@ package ddr_db is
 		(mark => M4G107, param => tMRD,    value =>  20.00e-9),
 		(mark => M4G107, param => tRFC,    value => 260.00e-9),
 		(mark => M4G107, param => tXPR,    value => 260.00e-9 + 10.0e-9),
-		(mark => M4G107, param => tREFI,   value =>  64.00e-3/8192.0),
+		(mark => M4G107, param => tREFI,   value =>  64.00e-3/8192),
 
 		(mark => A4G12,  param => tPreRST, value => 200.00e-6),
 		(mark => A4G12,  param => tPstRST, value => 500.00e-6),
@@ -206,7 +206,7 @@ package ddr_db is
 		(mark => A4G12,  param => tMRD,    value =>  15.00e-9),
 		(mark => A4G12,  param => tRFC,    value => 260.00e-9),
 		(mark => A4G12,  param => tXPR,    value => 260.00e-9 + 10.0e-9),
-		(mark => A4G12,  param => tREFI,   value =>  64.00e-3/8192.0));
+		(mark => A4G12,  param => tREFI,   value =>  64.00e-3/8192));
 
 	constant sdram_latency_tab : sdram_latency_vector := (
 		(sdram => ddr, param => cDLL,       value => 200),
@@ -418,7 +418,7 @@ package ddr_db is
 	function ddr_timing (
 		constant mark  : sdram_chips;
 		constant param : sdram_parameters)
-		return natural;
+		return real;
 
 	function ddr_latency (
 		constant sdram : sdrams;
@@ -442,12 +442,12 @@ package ddr_db is
 		return natural_vector;
 
 	function to_ddrlatency (
-		period : natural;
-		timing : natural)
+		constant period : real;
+		constant timing : real)
 		return natural;
 
 	function to_ddrlatency (
-		constant period : natural;
+		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
 		return natural;
@@ -533,7 +533,7 @@ package body ddr_db is
 	function ddr_timing (
 		constant mark  : sdram_chips;
 		constant param : sdram_parameters)
-		return natural is
+		return real is
 	begin
 		for i in timing_tab'range loop
 			if timing_tab(i).mark = mark then
@@ -543,7 +543,10 @@ package body ddr_db is
 			end if;
 		end loop;
 
-		return 0;
+		assert false
+		report "ddr_timing"
+		severity failure;
+		return 0.0;
 	end;
 
 	function ddr_latency (
@@ -576,19 +579,19 @@ package body ddr_db is
 	end;
 
 	function to_ddrlatency (
-		period : natural;
-		timing : natural)
+		period : real;
+		timing : real)
 		return natural is
 	begin
 		if (timing/period)*period < timing then
-			return (timing+period)/period;
+			return natural((timing+period)/period);
 		else
-			return timing/period;
+			return natural(timing/period);
 		end if;
 	end;
 
 	function to_ddrlatency (
-		constant period : natural;
+		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
 		return natural is
@@ -598,11 +601,11 @@ package body ddr_db is
 
 	function ddr_lattab (
 		constant sdram : sdrams;
-		constant rgtr : natural)
+		constant rgtr  : natural)
 		return natural_vector is
 		constant query_size : natural := ddr_query_size(sdram, rgtr);
 		constant query_data : cnfglat_tab(0 to query_size-1) := ddr_query_data(sdram, rgtr);
-		variable lattab : natural_vector(0 to query_size-1);
+		variable lattab     : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
 			lattab(i) := query_data(i).lat;
@@ -611,7 +614,7 @@ package body ddr_db is
 	end;
 
 	function ddr_schtab (
-		constant sdram  : sdrams;
+		constant sdram : sdrams;
 		constant fpga  : fpga_devices;
 		constant tabid : device_latencies)
 		return natural_vector is
@@ -620,7 +623,7 @@ package body ddr_db is
 		constant cltab  : natural_vector := ddr_lattab(sdram, CL);
 		constant cwltab : natural_vector := ddr_lattab(sdram, cwlsel);
 
-		variable lat : integer := ddr_latency(fpga, tabid);
+		variable lat    : integer := ddr_latency(fpga, tabid);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 
@@ -628,12 +631,12 @@ package body ddr_db is
 		case tabid is
 		when WWNL =>
 			case sdram is
-			when sdr|ddr|DDR3 =>
+			when sdr|ddr|ddr3 =>
 				for i in cwltab'range loop
 					cwlval(i) := cwltab(i) + lat;
 				end loop;
 				return cwlval;
-			when DDR2 =>
+			when ddr2 =>
 				for i in cltab'range loop
 					clval(i) := cltab(i) + lat;
 				end loop;
@@ -646,7 +649,7 @@ package body ddr_db is
 				clval(i) := cltab(i) + lat;
 			end loop;
 			return clval;
-		when DQSZL|DQSL|DQZL|CWL =>
+		when DQSZL|DQSL|DQZL => -- |CWL =>
 			if sdram=ddr2 then
 				lat := lat - 2;
 			end if;
