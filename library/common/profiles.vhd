@@ -22,6 +22,7 @@
 --                                                                            --
 
 package profiles is
+
 	type fpga_devices is (
 		ecp3,
 		ecp5,
@@ -29,7 +30,7 @@ package profiles is
 		xc5v,
 		xc7a);
 
-	type dram is (
+	type drams is (
 		sdram,
 		ddr,
 		ddr2,
@@ -67,6 +68,10 @@ package profiles is
 		dram_550MHz,
 		dram_575MHz,
 		dram_600MHz);
+
+	type io_iface is (
+		io_hdlc,
+		io_ipoe);
 
 end package;
 
