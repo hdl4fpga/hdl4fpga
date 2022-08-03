@@ -81,7 +81,6 @@ package ddr_db is
 	constant cDLL   : natural := 1;
 	constant MRD    : natural := 2;
 	constant MODu   : natural := 3;
-	constant XPR    : natural := 4;
 	constant STRL   : natural := 5;
 	constant RWNL   : natural := 6;
 	constant DQSZL  : natural := 7;
@@ -269,7 +268,6 @@ package ddr_db is
 		latency_record'(fpga => latticeECP3, param => ZQINIT,     value => 500),
 		latency_record'(fpga => latticeECP3, param => MRD,        value =>   4),
 		latency_record'(fpga => latticeECP3, param => MODu,       value =>  12),
-		latency_record'(fpga => latticeECP3, param => XPR,        value =>   5),
 		latency_record'(fpga => latticeECP3, param => WIDL,       value =>   4),
 		latency_record'(fpga => latticeECP3, param => RDFIFO_LAT, value =>   0),
 
@@ -289,7 +287,6 @@ package ddr_db is
 		latency_record'(fpga => latticeECP5, param => ZQINIT,     value => 500),
 		latency_record'(fpga => latticeECP5, param => MRD,        value =>   4),
 		latency_record'(fpga => latticeECP5, param => MODu,       value =>  12),
-		latency_record'(fpga => latticeECP5, param => XPR,        value =>   5),
 		latency_record'(fpga => latticeECP5, param => WIDL,       value =>   4),
 		latency_record'(fpga => latticeECP5, param => RDFIFO_LAT, value =>   0),
 
@@ -309,7 +306,6 @@ package ddr_db is
 		latency_record'(fpga => virtex7,     param => ZQINIT,     value => 500),
 		latency_record'(fpga => virtex7,     param => MRD,        value =>   4),
 		latency_record'(fpga => virtex7,     param => MODu,       value =>  12),
-		latency_record'(fpga => virtex7,     param => XPR,        value =>   5),
 		latency_record'(fpga => virtex7,     param => WIDL,       value =>   4),
 		latency_record'(fpga => virtex7,     param => RDFIFO_LAT, value => 4));
 
@@ -676,6 +672,11 @@ package body ddr_db is
 			end loop;
 			return clval;
 		when DQSZL|DQSL|DQZL|CWL =>
+			if tabid=cwl then
+				assert false
+				report "hola ************ ->>>" & integer'image(lat)
+				severity warning;
+			end if;
 			if stdr=ddr2 then
 				lat := lat - 2;
 			end if;

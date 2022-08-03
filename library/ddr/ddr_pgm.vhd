@@ -170,7 +170,7 @@ begin
 
 	ddr_input(0) <= to_bit(ddr_pgm_frm);
 	ddr_input(1) <= to_bit(ddr_pgm_rw);
-	ddr_input(2) <= to_bit(ddr_ref_req) xor to_bit(ddr_ref_rdy);
+	ddr_input(2) <= '0'; -- ddr_ref_rdy xor to_sdtulogic(to_bit(ddr_ref_req));
 
 	process (ctlr_clk)
 	begin
@@ -211,7 +211,7 @@ begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_rst='1' then
 				ctlr_refreq <= '0';
-				ddr_ref_rdy <= '0';
+				ddr_ref_rdy <= to_stdulogic(to_bit(ddr_ref_req));
 				ddr_pgm_cmd <= mpu_nop;
 			else
 				if ddr_mpu_trdy='1' then

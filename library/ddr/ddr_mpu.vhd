@@ -282,6 +282,7 @@ begin
 	ddr_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(ddr_mpu_bl, bl_cod, bl_tab))), ddr_mpu_blat'length));
 	ddr_mpu_p: process (ddr_mpu_clk)
 		variable state_set : boolean;
+		variable id :lat_id ;
 	begin
 		if rising_edge(ddr_mpu_clk) then
 			if ddr_mpu_rst='0' then
@@ -321,6 +322,7 @@ begin
 								ddr_rdy_ena  <= ddr_state_tab(i).ddr_rdy;
 								ddr_rdy_fch  <= ddr_state_tab(i).ddr_fch;
 
+								id := ddr_state_tab(i).ddr_lat;
 								case ddr_state_tab(i).ddr_lat is
 								when id_bl =>
 									lat_timer <= select_lat(ddr_mpu_bl, bl_cod, bl_tab);

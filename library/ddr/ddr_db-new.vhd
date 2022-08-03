@@ -64,10 +64,11 @@ package ddr_db is
 		tREFI,
 		tRPA);
 
-	constant CL  : natural := 1;
-	constant BL  : natural := 2;
-	constant WRL : natural := 3;
-	constant CWL : natural := 4;
+	type is (
+		CL,
+		BL,
+		WRL,
+		CWL);
 
 	type sdram_latencies is (
 		cDLL,
