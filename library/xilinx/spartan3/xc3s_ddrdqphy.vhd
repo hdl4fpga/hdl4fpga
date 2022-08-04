@@ -31,12 +31,13 @@ use unisim.vcomponents.all;
 entity xc3s_ddrdqphy is
 	generic (
 		latency     : natural := 0;
---		rgtr_dout : boolean;
+--		rgtr_dout   : boolean;
 		loopback    : boolean;
 		gear        : natural;
 		byte_size   : natural);
 	port (
-		sys_clks    : in  std_logic_vector(0 to 2-1);
+		clk0        : in std_logic;
+		clk90       : in std_logic;
 		phy_calreq  : in std_logic := '0';
 		phy_dmt     : in  std_logic_vector(0 to gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
@@ -58,8 +59,6 @@ entity xc3s_ddrdqphy is
 		ddr_dqst    : out std_logic;
 		ddr_dqso    : out std_logic);
 
-	constant clk0  : natural := 0;
-	constant clk90 : natural := 1;
 end;
 
 library hdl4fpga;
@@ -79,7 +78,7 @@ begin
 		signal rdqo : std_logic_vector(0 to gear-1);
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
-		clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
+		clks <= (0 => clk90, 1 => not clk90);
 
 		registered_g : for j in clks'range generate
 		begin
@@ -104,13 +103,13 @@ begin
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk90),
+			clk => clk90,
 			d => phy_dqt(0),
 			q => ddr_dqt(i));
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk90),
+			clk => clk90,
 			dr  => dqo(0),
 			df  => dqo(1),
 			q   => ddr_dqo(i));
@@ -123,7 +122,7 @@ begin
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
 
-		clks <= (0 => sys_clks(clk90), 1 => not sys_clks(clk90));
+		clks <= (0 => clk90, 1 => not clk90);
 		registered_g : for i in clks'range generate
 			signal d, t, s : std_logic;
 		begin
@@ -162,13 +161,13 @@ begin
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk90),
+			clk => clk90,
 			d => dmt(0),
 			q => ddr_dmt);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk90),
+			clk => clk90,
 			dr  => dmi(0),
 			df  => dmi(1),
 			q   => ddr_dmo);
@@ -176,7 +175,7 @@ begin
 
 	sto_i : entity hdl4fpga.ddro
 	port map (
-		clk => sys_clks(clk90),
+		clk => clk90,
 		dr  => phy_sti(0),
 		df  => phy_sti(1),
 		q   => ddr_sto);
@@ -188,16 +187,16 @@ begin
 		signal dqso_f : std_logic;
 	begin
 
-		clk_n <= not sys_clks(clk0);
+		clk_n <= not clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clks(clk0),
+			clk => clk0,
 			d => phy_dqst(1),
 			q => ddr_dqst);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clks(clk0),
+			clk => clk0,
 			dr  => '0',
 			df  => phy_dqsi(0),
 			q   => ddr_dqso);

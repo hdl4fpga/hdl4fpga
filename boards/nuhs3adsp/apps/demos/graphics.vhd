@@ -80,9 +80,8 @@ architecture graphics of nuhs3adsp is
 	signal ddrsys_lckd     : std_logic;
 	signal ddrsys_rst      : std_logic;
 
-	constant clk0          : natural := 0;
-	constant clk90         : natural := 1;
-	signal ddrsys_clks     : std_logic_vector(0 to 2-1);
+	signal clk0            : std_logic;
+	signal clk90           : std_logic;
 
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -209,9 +208,6 @@ architecture graphics of nuhs3adsp is
 
 	constant ddr_tcp   : real := real(ddr_param.pll.dcm_div)*sys_per/real(ddr_param.pll.dcm_mul);
 
-	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
-	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
-
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is mii_txc;
 
@@ -235,19 +231,19 @@ begin
 		end if;
 	end process;
 
-	xxx : block
-		signal sys_rst1 : std_logic;
+	videodcm_b : block
+		signal rst : std_logic;
 	begin
-		sys_rst1 <= setif(debug and false, '1', sys_rst);
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => video_tab(video_mode).pll.dcm_mul,
-		dfs_div => video_tab(video_mode).pll.dcm_div)
-	port map(
-		dcm_rst => sys_rst1,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk);
+		rst <= setif(debug, '1', sys_rst);
+		videodcm_e : entity hdl4fpga.dfs
+		generic map (
+			dcm_per => sys_per,
+			dfs_mul => video_tab(video_mode).pll.dcm_mul,
+			dfs_div => video_tab(video_mode).pll.dcm_div)
+		port map(
+			dcm_rst => rst,
+			dcm_clk => sys_clk,
+			dfs_clk => video_clk);
 	end block;
 
 	nodebug_g : if not debug generate
@@ -277,8 +273,8 @@ begin
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ctlr_clk,
-		dfsdcm_clk90 => ddrsys_clks(clk90),
+		dfsdcm_clk0  => clk0,
+		dfsdcm_clk90 => clk90,
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
@@ -452,7 +448,8 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clks    => ctlr_clks,
+		ctlr_clks(0) => clk0,
+		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
 --		ctlr_bl      => "001",				-- Busrt length 2
 --		ctlr_bl      => "010",				-- Busrt length 4
@@ -504,8 +501,9 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clks    => ddrsys_clks,
 		sys_rst     => ddrsys_rst,
+		clk0 => clk0,
+		clk90 => clk90,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,

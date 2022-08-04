@@ -36,11 +36,6 @@ package ddr_db is
 
 	type sdrams is (sdr, ddr, ddr2, ddr3);
 
-	-- constant SDRAM : natural := 0;
-	-- constant DDR1  : natural := 1;
-	-- constant DDR2  : natural := 2;
-	-- constant DDR3  : natural := 3;
-
 	type sdram_chips is (
 		M6T,
 		M1G15E,
@@ -543,13 +538,17 @@ package body ddr_db is
 		end loop;
 
 		assert false
-		report "ddr_timing"
-		severity failure;
+		report ">>> ddr_timing <<<"       & " : " & 
+			sdram_chips'image(mark)       & " : " &
+			sdram_parameters'image(param) & " : " &
+			"not found, returning 0.0"
+		severity warning;
+
 		return 0.0;
 	end;
 
 	function ddr_latency (
-		constant sdram  : sdrams;
+		constant sdram : sdrams;
 		constant param : sdram_latencies)
 		return natural is
 	begin
@@ -560,6 +559,15 @@ package body ddr_db is
 				end if;
 			end if;
 		end loop;
+
+		assert false
+		report ">>> ddr_latency <<<"     & " : " & 
+			sdrams'image(sdram)          & " : " &
+			sdram_latencies'image(param) & " : " &
+			"not found, returning 0"
+		severity warning;
+
+		return 0;
 	end;
 
 	function ddr_latency (

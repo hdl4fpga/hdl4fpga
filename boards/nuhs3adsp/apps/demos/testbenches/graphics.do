@@ -31,20 +31,20 @@ add wave -noupdate -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txc
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txen
 add wave -noupdate -group mii_tx -radix hexadecimal /testbench/du_e/mii_txd
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_ckp
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cs
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cke
-add wave -noupdate -expand -group ddr -divider {New Divider}
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_ras
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_cas
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_we
-add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_ba
-add wave -noupdate -expand -group ddr -radix hexadecimal -childformat {{/testbench/du_e/ddr_a(12) -radix hexadecimal} {/testbench/du_e/ddr_a(11) -radix hexadecimal} {/testbench/du_e/ddr_a(10) -radix hexadecimal} {/testbench/du_e/ddr_a(9) -radix hexadecimal} {/testbench/du_e/ddr_a(8) -radix hexadecimal} {/testbench/du_e/ddr_a(7) -radix hexadecimal} {/testbench/du_e/ddr_a(6) -radix hexadecimal} {/testbench/du_e/ddr_a(5) -radix hexadecimal} {/testbench/du_e/ddr_a(4) -radix hexadecimal} {/testbench/du_e/ddr_a(3) -radix hexadecimal} {/testbench/du_e/ddr_a(2) -radix hexadecimal} {/testbench/du_e/ddr_a(1) -radix hexadecimal} {/testbench/du_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddr_a(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddr_a
-add wave -noupdate -expand -group ddr -divider {New Divider}
-add wave -noupdate -expand -group ddr -expand /testbench/du_e/ddr_dqs
-add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/ddr_dq
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_dqs
-add wave -noupdate -expand -group ddr /testbench/du_e/ddr_st_lp_dqs
+add wave -noupdate -group ddr /testbench/du_e/ddr_ckp
+add wave -noupdate -group ddr /testbench/du_e/ddr_cs
+add wave -noupdate -group ddr /testbench/du_e/ddr_cke
+add wave -noupdate -group ddr -divider {New Divider}
+add wave -noupdate -group ddr /testbench/du_e/ddr_ras
+add wave -noupdate -group ddr /testbench/du_e/ddr_cas
+add wave -noupdate -group ddr /testbench/du_e/ddr_we
+add wave -noupdate -group ddr -radix hexadecimal /testbench/du_e/ddr_ba
+add wave -noupdate -group ddr -radix hexadecimal -childformat {{/testbench/du_e/ddr_a(12) -radix hexadecimal} {/testbench/du_e/ddr_a(11) -radix hexadecimal} {/testbench/du_e/ddr_a(10) -radix hexadecimal} {/testbench/du_e/ddr_a(9) -radix hexadecimal} {/testbench/du_e/ddr_a(8) -radix hexadecimal} {/testbench/du_e/ddr_a(7) -radix hexadecimal} {/testbench/du_e/ddr_a(6) -radix hexadecimal} {/testbench/du_e/ddr_a(5) -radix hexadecimal} {/testbench/du_e/ddr_a(4) -radix hexadecimal} {/testbench/du_e/ddr_a(3) -radix hexadecimal} {/testbench/du_e/ddr_a(2) -radix hexadecimal} {/testbench/du_e/ddr_a(1) -radix hexadecimal} {/testbench/du_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddr_a(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddr_a(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddr_a
+add wave -noupdate -group ddr -divider {New Divider}
+add wave -noupdate -group ddr -expand /testbench/du_e/ddr_dqs
+add wave -noupdate -group ddr -radix hexadecimal /testbench/du_e/ddr_dq
+add wave -noupdate -group ddr /testbench/du_e/ddr_st_dqs
+add wave -noupdate -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_e/mii_frm
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_e/mii_end
@@ -60,83 +60,13 @@ add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mi
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/miirx_irdy
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/miirx_trdy
 add wave -noupdate -group ethrx_e -label miirx_data -radix hexadecimal -childformat {{/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(7) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(6) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(5) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(4) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(3) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(2) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(1) -radix hexadecimal} {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(7) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(6) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(5) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(4) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(3) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(2) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(1) {-radix hexadecimal} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/icmptx_data(0) {-radix hexadecimal}} /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/icmpd_e/xxx
-add wave -noupdate /testbench/du_e/grahics_e/video_hzsync
-add wave -noupdate /testbench/du_e/grahics_e/video_vtsync
-add wave -noupdate /testbench/du_e/grahics_e/video_blank
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_fch
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/ilen
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/leoc
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ceoc
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/state_nop
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/restart
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_trdy
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/cmd_name
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/mpu_state
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/reload
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_frm
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_pgm_e/ddr_pgm_pc
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_state
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_ras
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_cas
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/state_pre
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_bnk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/row
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_row
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_col
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/video_hzsync
-add wave -noupdate /testbench/du_e/grahics_e/video_vtsync
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/sio_dmahdsk_e/dmacfg_clk
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/ctlr_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_iaddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_ilen
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/ilen
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/iaddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_iaddr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_ilen
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmacfg_b/dmacfg_e/req
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/burst_bits
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/burst_length
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/ctlr_a
-add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/coln_align
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_frm
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_trdy
-add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ctlr_rw
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_inirdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di_dv
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(31) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(30) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(29) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(28) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(27) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(26) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(25) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(24) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(23) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(22) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(21) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(20) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(19) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(18) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(17) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(16) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(15) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(14) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(13) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(12) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(11) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(10) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(9) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(8) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(7) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(6) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(5) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(4) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(3) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(2) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(1) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(31) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(30) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(29) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(28) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(27) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(26) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(25) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(24) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(23) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(22) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(21) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(20) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(19) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(18) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(17) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(16) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(15) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(14) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(13) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(12) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(11) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(10) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(9) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(2) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(1) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di(0) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/adapter_b/graphics_e/ctlr_di
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/base_addr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_req
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dmacfg_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_req
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_len
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/dma_addr
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_hzon
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_vton
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel
-add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddrphy_e/clk0
+add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
+add wave -noupdate /testbench/du_e/ddrphy_e/phy_sto(3)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12371000 ps} 1} {{Cursor 2} {15365799 ps} 0} {{Cursor 4} {20468209 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {153527034 ps} 0} {{Cursor 2} {155066000 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 300
 configure wave -valuecolwidth 96
 configure wave -justifyvalue left
@@ -151,4 +81,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {150150 ns}
+WaveRestoreZoom {153522737 ps} {153532351 ps}

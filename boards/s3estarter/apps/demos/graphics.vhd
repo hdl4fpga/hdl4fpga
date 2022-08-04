@@ -75,9 +75,8 @@ architecture graphics of s3estarter is
 	signal ddrsys_lckd     : std_logic;
 	signal ddrsys_rst      : std_logic;
 
-	constant clk0          : natural := 0;
-	constant clk90         : natural := 1;
-	signal ddrsys_clks     : std_logic_vector(0 to 2-1);
+	signal clk0          : std_logic;
+	signal clk90         : std_logic;
 
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -191,8 +190,7 @@ architecture graphics of s3estarter is
 
 	constant ddr_tcp   : real := real(ddr_param.pll.dcm_div)*sys_per/real(ddr_param.pll.dcm_mul);
 
-	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
-	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
+	alias ctlr_clk   : std_logic is clk0;
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is e_tx_clk;
@@ -234,8 +232,8 @@ begin
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => ctlr_clk,
-		dfsdcm_clk90 => ddrsys_clks(clk90),
+		dfsdcm_clk0  => clk0,
+		dfsdcm_clk90 => clk90,
 		dfsdcm_lckd  => ddrsys_lckd);
 	ddrsys_rst <= not ddrsys_lckd;
 
@@ -417,7 +415,8 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clks    => ctlr_clks,
+		ctlr_clks(0) => clk0,
+		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => ddr_param.cas,
@@ -465,7 +464,8 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_clks    => ddrsys_clks,
+		clk0        => clk0,
+		clk90       => clk90,
 		sys_rst     => ddrsys_rst,
 
 		phy_cke     => ctlrphy_cke,
