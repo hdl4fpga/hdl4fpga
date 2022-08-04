@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -62,10 +63,7 @@ architecture graphics of nuhs3adsp is
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
 
-	constant sys_per       : real    := 50.0;
-
-	constant fpga          : natural := spartan3;
-	constant mark          : natural := m6t;
+	constant sys_per       : real    := 50.0e-9;
 
 	constant sclk_phases   : natural := 4;
 	constant sclk_edges    : natural := 2;
@@ -209,7 +207,7 @@ architecture graphics of nuhs3adsp is
 
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 
-	constant ddr_tcp   : natural := (natural(sys_per)*ddr_param.pll.dcm_div*1000)/(ddr_param.pll.dcm_mul); -- 1 ns /1ps
+	constant ddr_tcp   : real := real(ddr_param.pll.dcm_div)*sys_per/real(ddr_param.pll.dcm_mul);
 
 	alias ctlr_clks  : std_logic_vector(ddrsys_clks'range) is ddrsys_clks;
 	alias ctlr_clk   : std_logic is ddrsys_clks(clk0);
@@ -410,8 +408,8 @@ begin
 		debug        => debug,
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => ddr_tcp,
-		fpga         => fpga,
-		mark         => mark,
+		fpga         => xc3s,
+		mark         => m6t,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,

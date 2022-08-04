@@ -136,7 +136,7 @@ architecture mix of ddr_ctlr is
 --	constant wid_lat      : natural          := ddr_latency(stdr, widl);
 	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
 	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
-	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, ddr_selcwl(stdr));
+	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, cwl); --ddr_selcwl(stdr));
 	constant bl_tab       : natural_vector   := ddr_lattab(stdr, bl);
 	constant cl_tab       : natural_vector   := ddr_lattab(stdr, cl);
 	constant cwl_tab      : natural_vector   := ddr_lattab(stdr, cwl);

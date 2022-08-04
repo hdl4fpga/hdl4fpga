@@ -648,7 +648,7 @@ package body ddr_db is
 				clval(i) := cltab(i) + lat;
 			end loop;
 			return clval;
-		when DQSZL|DQSL|DQZL => -- |CWL =>
+		when DQSZL|DQSL|DQZL =>
 			if sdram=ddr2 then
 				lat := lat - 2;
 			end if;

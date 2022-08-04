@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
@@ -672,9 +673,9 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
-		fpga         => virtex7,
-		mark         => M2G125,
+		ddr_tcp      => 2.0*ddr_tcp,
+		fpga         => xc7a,
+		mark         => m2g125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

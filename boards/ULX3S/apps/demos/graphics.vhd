@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -247,9 +248,9 @@ architecture graphics of ulx3s is
 		sdram_speed'POS(app_tab(app).speed),
 		sdram_speed'POS(sdram133Mhz)));
 
-	constant ddr_tcp  : natural := natural(
-		(1.0e12*real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos2_div))/
-		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq));
+	constant ddr_tcp  : real := 
+		real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos2_div)/
+		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq);
 
 	constant io_link : io_iface := app_tab(app).iface;
 
@@ -612,8 +613,8 @@ begin
 		profile      => 0,
 
 		ddr_tcp      => ddr_tcp,
-		fpga         => spartan3,
-		mark         => M7E,
+		fpga         => xc3s,
+		mark         => m7e,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		data_phases  => data_phases,

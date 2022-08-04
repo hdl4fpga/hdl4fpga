@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -630,9 +631,9 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		ddr_tcp      => natural(2.0*ddr_tcp*1.0e12),
-		fpga         => LatticeECP5,
-		mark         => M4G107,
+		ddr_tcp      => 2.0*ddr_tcp,
+		fpga         => ecp5,
+		mark         => m4g107,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

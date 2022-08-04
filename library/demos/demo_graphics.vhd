@@ -27,6 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.ddr_db.all;
 use hdl4fpga.videopkg.all;
 
 entity demo_graphics is
@@ -35,9 +37,9 @@ entity demo_graphics is
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
 
-		ddr_tcp      : natural;
-		fpga         : natural;
-		mark         : natural;
+		ddr_tcp      : real;
+		fpga         : fpga_devices;
+		mark         : sdram_chips;
 		sclk_phases  : natural;
 		sclk_edges   : natural;
 		data_phases  : natural;

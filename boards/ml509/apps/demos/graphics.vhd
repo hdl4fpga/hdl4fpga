@@ -30,6 +30,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
@@ -190,8 +191,8 @@ architecture graphics of ml509 is
 	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
 	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
 
-	constant sys_per  : real := 10.0e-9;
-	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
+	constant sys_per   : real := 10.0e-9;
+	constant ddr_tcp   : real := (real(ddr_param.pll.dcm_div)*sys_per)/real(ddr_param.pll.dcm_mul);
 
 	constant video_mode : video_modes :=profile_tab(profile).video_mode; --'val(
 --		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
@@ -605,8 +606,8 @@ begin
 	generic map (
 		debug => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => natural(ddr_tcp*1.0e12),
-		fpga         => virtex5,
+		ddr_tcp      => ddr_tcp,
+		fpga         => xc5v,
 		mark         => M3,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
