@@ -27,15 +27,16 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ddr_param.all;
 
 entity ddr_ctlr is
 	generic (
 		debug        : boolean := false;
-		fpga         : natural;
-		mark         : natural := m6t;
-		tcp          : natural := 6000;
+		fpga         : fpga_devices;
+		mark         : sdram_chips := m6t;
+		tcp          : real := 0.0;
 
 		cmmd_gear    : natural :=  1;
 		bank_size    : natural :=  2;
@@ -117,7 +118,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of ddr_ctlr is
-	constant stdr         : drams := ddr_stdr(mark);
+	constant stdr         : sdrams := ddr_stdr(mark);
 
 	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
 	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);
@@ -125,7 +126,7 @@ architecture mix of ddr_ctlr is
 	constant dqsx_lat     : natural          := ddr_latency(fpga, dqsxl);
 	constant dqzx_lat     : natural          := ddr_latency(fpga, dqzxl);
 	constant rdfifo_lat   : natural          := ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat);
-	constant tlwr         : natural          := ddr_timing(mark, twr)+ddr_latency(fpga, dqsxl);
+	constant tlwr         : real             := ddr_timing(mark, twr)+tcp*real(ddr_latency(fpga, dqsxl));
 	constant lrcd         : natural          := to_ddrlatency(tcp, mark, trcd);
 	constant lrfc         : natural          := to_ddrlatency(tcp, mark, trfc);
 	constant lwr          : natural          := to_ddrlatency(tcp, tlwr);

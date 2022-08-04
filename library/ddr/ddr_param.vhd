@@ -127,7 +127,7 @@ package ddr_param is
 		return s_out;
 
 	impure function choose_pgm (
-		constant ddr_stdr : drams)
+		constant ddr_stdr : sdrams)
 		return s_table;
 
 
@@ -156,8 +156,8 @@ package ddr_param is
 	constant TMR3_REF     : natural := 9;
 
 	function ddr_timers (
-		constant tCP  : natural;
-		constant mark : natural;
+		constant tCP  : real;
+		constant mark : sdram_chips;
 		constant gear : natural := 2;
 		debug : boolean := false)
 		return natural_vector;
@@ -198,7 +198,7 @@ package ddr_param is
 		return std_logic_vector;
 
 	impure function ddr_mrfile(
-		constant ddr_stdr : drams;
+		constant ddr_stdr : sdrams;
 		constant ddr_mr_addr : ddrmr_addr;
 		constant ddr_mr_srt  : std_logic_vector;
 		constant ddr_mr_bl   : std_logic_vector;
@@ -653,11 +653,11 @@ package body ddr_param is
 	end;
 
 	impure function choose_pgm (
-		constant ddr_stdr : drams)
+		constant ddr_stdr : sdrams)
 		return s_table is
 	begin
 		case ddr_stdr is
-		when SDRAM =>
+		when sdr =>
 			return sdram_pgm;
 		when DDR  =>
 			return ddr1_pgm;
@@ -665,18 +665,16 @@ package body ddr_param is
 			return ddr2_pgm;
 		when DDR3 =>
 			return ddr3_pgm;
-		when others =>
-			return ddr3_pgm;
 		end case;
 	end;
 
 	function ddr_timers (
-		constant tCP  : natural;
-		constant mark : natural;
+		constant tCP  : real;
+		constant mark : sdram_chips;
 		constant gear : natural := 2;
 		debug : boolean := false)
 		return natural_vector  is
-		constant stdr : drams := ddr_stdr(mark);
+		constant stdr : sdrams := ddr_stdr(mark);
 
 		constant ddr1_timer : natural_vector := (
 				TMR_RST  => to_ddrlatency(tCP, mark, tPreRST)/setif(debug, 20, 1),
@@ -715,11 +713,11 @@ package body ddr_param is
 --				TMR3_REF => setif(not debug, to_ddrlatency(tCP, mark, tREFI), 31244));
 	begin
 		case stdr is
-		when SDRAM|DDR =>
+		when sdr|DDR =>
 			return ddr1_timer;
 		when DDR2 =>
 			return ddr2_timer;
-		when others =>
+		when ddr3 =>
 			return ddr3_timer;
 		end case;
 	end;
@@ -955,7 +953,7 @@ package body ddr_param is
 	end;
 
 	impure function ddr_mrfile(
-		constant ddr_stdr : drams;
+		constant ddr_stdr : sdrams;
 
 		constant ddr_mr_addr : ddrmr_addr;
 		constant ddr_mr_srt  : std_logic_vector;
@@ -980,7 +978,7 @@ package body ddr_param is
 		return std_logic_vector is
 	begin
 		case ddr_stdr is
-		when SDRAM =>
+		when sdr =>
 			return sdram_mrfile(
 				ddr_mr_addr => ddr_mr_addr,
 				ddr_mr_bl   => ddr_mr_bl,

@@ -28,10 +28,11 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
+use hdl4fpga.profiles.all;
 
 entity ddr_sch is
 	generic (
-		profile           : natural;
+		profile           : fpga_devices;
 		delay_size        : natural := 64;
 		registered_output : boolean := false;
 		data_phases       : natural := 2;
@@ -155,7 +156,7 @@ begin
 		end loop;
 	end process;
 
-	stpho <= rpho0 when profile=virtex7 else rpho90;
+	stpho <= rpho0 when profile=xc7a else rpho90;
 --	stpho <= rpho90;
 
 	ddr_st <= ddr_task (

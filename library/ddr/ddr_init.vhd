@@ -29,11 +29,12 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.ddr_db.all;
 use hdl4fpga.ddr_param.all;
+use hdl4fpga.profiles.all;
 
 entity ddr_init is
 	generic (
-		ddr_stdr : drams;
-		timers : natural_vector := (0 to 0 => 0);
+		ddr_stdr  : sdrams;
+		timers    : natural_vector := (0 to 0 => 0);
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (

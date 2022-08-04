@@ -8,6 +8,7 @@ quietly virtual signal -install /testbench/du_e/grahics_e { (context /testbench/
 quietly virtual signal -install /testbench/du_e/grahics_e/sio_b/metafifo_e { /testbench/du_e/grahics_e/sio_b/metafifo_e/tx_data(0 to 5)} wm
 quietly virtual signal -install /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i { (context /testbench/du_e/ddrphy_e/byte_g(1)/ddrdqphy_i )(dqs180 & dqspre )} dqss
 quietly WaveActivateNextPane {} 0
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/cwl_tab
 add wave -noupdate /testbench/du_e/btn(0)
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_clk
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_dv
@@ -88,6 +89,7 @@ add wave -noupdate -group ethrx_e -radix hexadecimal /testbench/ethrx_e/mii_rdat
 add wave -noupdate -group ethrx_e /testbench/ethrx_e/fcs_sb
 add wave -noupdate -group ethrx_e /testbench/ethrx_e/fcs_vld
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/ddr_mpu_e/ddr_mpu_p/id
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -154,7 +156,7 @@ add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqipause_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqspau_rdy
 add wave -noupdate /testbench/du_e/ddrphy_e/byte_g(0)/ddrdqphy_i/pause_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2900901 ps} 0} {{Cursor 2} {26562165 ps} 0}
+WaveRestoreCursors {{Cursor 1} {37135099 ps} 0} {{Cursor 2} {37142718 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 110
@@ -170,4 +172,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {31500 ns}
+WaveRestoreZoom {37191553 ps} {37253077 ps}
