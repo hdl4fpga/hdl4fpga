@@ -126,10 +126,9 @@ architecture mix of ddr_ctlr is
 	constant dqsx_lat     : natural          := ddr_latency(fpga, dqsxl);
 	constant dqzx_lat     : natural          := ddr_latency(fpga, dqzxl);
 	constant rdfifo_lat   : natural          := ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat);
-	constant tlwr         : real             := ddr_timing(mark, twr)+tcp*real(ddr_latency(fpga, dqsxl));
+	constant lwr          : natural          := to_ddrlatency(tcp, ddr_timing(mark, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
 	constant lrcd         : natural          := to_ddrlatency(tcp, mark, trcd);
 	constant lrfc         : natural          := to_ddrlatency(tcp, mark, trfc);
-	constant lwr          : natural          := to_ddrlatency(tcp, tlwr);
 	constant lrp          : natural          := to_ddrlatency(tcp, mark, trp);
 	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
 	constant wid_lat      : natural          := ddr_latency(fpga, widl);
@@ -140,7 +139,7 @@ architecture mix of ddr_ctlr is
 	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, ddr_selcwl(stdr));
 	constant bl_tab       : natural_vector   := ddr_lattab(stdr, bl);
 	constant cl_tab       : natural_vector   := ddr_lattab(stdr, cl);
-	constant cwl_tab      : natural_vector   := ddr_schtab(stdr, fpga, cwl);
+	constant cwl_tab      : natural_vector   := ddr_lattab(stdr, cwl);
 	constant strl_tab     : natural_vector   := ddr_schtab(stdr, fpga, strl);
 	constant rwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, rwnl);
 	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
@@ -434,7 +433,7 @@ begin
 		signal dqo    : std_logic_vector(phy_dqo'range);
 		signal dmo    : std_logic_vector(ddr_wr_dm'range);
 	begin
-		bypass <= '1' when stdr=SDRAM else '0';
+		bypass <= '1' when stdr=sdr else '0';
 
 		wrfifo_i : entity hdl4fpga.ddr_wrfifo
 		generic map (
