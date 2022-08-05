@@ -633,7 +633,7 @@ begin
 
 		ddr_tcp      => 2.0*ddr_tcp,
 		fpga         => ecp5,
-		mark         => m4g107,
+		mark         => MT41K4G107,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

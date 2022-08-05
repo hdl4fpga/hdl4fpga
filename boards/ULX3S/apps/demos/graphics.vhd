@@ -614,7 +614,7 @@ begin
 
 		ddr_tcp      => ddr_tcp,
 		fpga         => xc3s,
-		mark         => m7e,
+		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		data_phases  => data_phases,

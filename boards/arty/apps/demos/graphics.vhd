@@ -675,7 +675,7 @@ begin
 		profile      => 1,
 		ddr_tcp      => 2.0*ddr_tcp,
 		fpga         => xc7a,
-		mark         => m2g125,
+		mark         => MT41K2G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

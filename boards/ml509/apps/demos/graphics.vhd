@@ -608,7 +608,7 @@ begin
 		profile      => profile_tab(profile).profile,
 		ddr_tcp      => ddr_tcp,
 		fpga         => xc5v,
-		mark         => m3,
+		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,

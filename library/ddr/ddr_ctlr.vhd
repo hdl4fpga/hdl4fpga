@@ -35,7 +35,7 @@ entity ddr_ctlr is
 	generic (
 		debug        : boolean := false;
 		fpga         : fpga_devices;
-		mark         : sdram_chips := m6t;
+		mark         : sdram_chips;
 		tcp          : real := 0.0;
 
 		cmmd_gear    : natural :=  1;
