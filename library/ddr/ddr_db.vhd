@@ -31,15 +31,16 @@ use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
 
 package ddr_db is
-
-	constant ANY         : natural := 0;
-
-	type sdrams is (sdr, ddr, ddr2, ddr3);
+	type sdrams is (
+		sdr,
+		ddr,
+		ddr2,
+		ddr3);
 
 	type sdram_chips is (
-		M6T,
-		M1G15E,
-		M3,
+		MT46V256M6T,
+		MT41J1G15E,
+		MT47H512M3,
 		M2G125,
 		M4G107,
 		A4G12,
@@ -106,9 +107,9 @@ package ddr_db is
 
 	constant tmark_db : tmark_tab := (
 		(mark => m7e,    sdram => sdr),
-		(mark => m6t,    sdram => ddr),
-		(mark => m3,     sdram => ddr2),
-		(mark => m1g15e, sdram => ddr3),
+		(mark => MT46V256M6T, sdram => ddr),
+		(mark => MT47H512M3,  sdram => ddr2),
+		(mark => MT41J1G15E,  sdram => ddr3),
 		(mark => m2g125, sdram => ddr3),
 		(mark => m4g107, sdram => ddr3),
 		(mark => a4g12,  sdram => ddr3));
@@ -145,32 +146,32 @@ package ddr_db is
 		(mark => M7E,    param => tMRD,    value =>  15.0e-9),
 		(mark => M7E,    param => tREFI,   value =>  64.0e-3/8192),
 
-		(mark => M6T,    param => tPreRST, value => 200.0e-6),
-		(mark => M6T,    param => tWR,     value =>  15.0e-9),
-		(mark => M6T,    param => tRP,     value =>  15.0e-9),
-		(mark => M6T,    param => tRCD,    value =>  15.0e-9),
-		(mark => M6T,    param => tRFC,    value =>  72.0e-9),
-		(mark => M6T,    param => tMRD,    value =>  12.0e-9),
-		(mark => M6T,    param => tREFI,   value =>  64.0e-3/8192),
+		(mark => MT46V256M6T,    param => tPreRST, value => 200.0e-6),
+		(mark => MT46V256M6T,    param => tWR,     value =>  15.0e-9),
+		(mark => MT46V256M6T,    param => tRP,     value =>  15.0e-9),
+		(mark => MT46V256M6T,    param => tRCD,    value =>  15.0e-9),
+		(mark => MT46V256M6T,    param => tRFC,    value =>  72.0e-9),
+		(mark => MT46V256M6T,    param => tMRD,    value =>  12.0e-9),
+		(mark => MT46V256M6T,    param => tREFI,   value =>  64.0e-3/8192),
 
-		(mark => M3,     param => tPreRST, value => 200.0e-6),
-		(mark => M3,     param => tXPR,    value => 400.0e-6),
-		(mark => M3,     param => tWR,     value =>  15.0e-9),
-		(mark => M3,     param => tRP,     value =>  15.0e-9),
-		(mark => M3,     param => tRCD,    value =>  15.0e-9),
-		(mark => M3,     param => tRFC,    value => 130.0e-9),
-		(mark => M3,     param => tRPA,    value =>  15.0e-9),
-		(mark => M3,     param => tREFI,   value =>  64.0e-3/8192),
+		(mark => MT47H512M3,     param => tPreRST, value => 200.0e-6),
+		(mark => MT47H512M3,     param => tXPR,    value => 400.0e-6),
+		(mark => MT47H512M3,     param => tWR,     value =>  15.0e-9),
+		(mark => MT47H512M3,     param => tRP,     value =>  15.0e-9),
+		(mark => MT47H512M3,     param => tRCD,    value =>  15.0e-9),
+		(mark => MT47H512M3,     param => tRFC,    value => 130.0e-9),
+		(mark => MT47H512M3,     param => tRPA,    value =>  15.0e-9),
+		(mark => MT47H512M3,     param => tREFI,   value =>  64.0e-3/8192),
 
-		(mark => M1G15E, param => tPreRST, value => 200.00e-6),
-		(mark => M1G15E, param => tPstRST, value => 500.00e-6),
-		(mark => M1G15E, param => tWR,     value =>  15.00e-9),
-		(mark => M1G15E, param => tRCD,    value =>  13.91e-9),
-		(mark => M1G15E, param => tRP,     value =>  13.91e-9),
-		(mark => M1G15E, param => tMRD,    value =>  15.00e-9),
-		(mark => M1G15E, param => tRFC,    value => 110.00e-9),
-		(mark => M1G15E, param => tXPR,    value => 110.00e-9 + 10.0e-9),
-		(mark => M1G15E, param => tREFI,   value =>  64.00e-3/8192),
+		(mark => MT41J1G15E, param => tPreRST, value => 200.00e-6),
+		(mark => MT41J1G15E, param => tPstRST, value => 500.00e-6),
+		(mark => MT41J1G15E, param => tWR,     value =>  15.00e-9),
+		(mark => MT41J1G15E, param => tRCD,    value =>  13.91e-9),
+		(mark => MT41J1G15E, param => tRP,     value =>  13.91e-9),
+		(mark => MT41J1G15E, param => tMRD,    value =>  15.00e-9),
+		(mark => MT41J1G15E, param => tRFC,    value => 110.00e-9),
+		(mark => MT41J1G15E, param => tXPR,    value => 110.00e-9 + 10.0e-9),
+		(mark => MT41J1G15E, param => tREFI,   value =>  64.00e-3/8192),
 
 		(mark => M2G125, param => tPreRST, value => 200.00e-6),
 		(mark => M2G125, param => tPstRST, value => 500.00e-6),
@@ -214,7 +215,6 @@ package ddr_db is
 		(sdram => ddr3, param => MODu,       value =>  12),
 		(sdram => ddr3, param => XPR,        value =>   5));
 
-
 	constant device_latency_tab : device_latency_vector := (
 		(fpga => xc3s, param => STRL,       value =>   0),
 		(fpga => xc3s, param => RWNL,       value =>   0),
@@ -222,7 +222,6 @@ package ddr_db is
 		(fpga => xc3s, param => DQSL,       value =>   1),
 		(fpga => xc3s, param => DQZL,       value =>   0),
 		(fpga => xc3s, param => WWNL,       value =>   0),
---		(fpga => xc3s, param => STRXL,      value =>   2),
 		(fpga => xc3s, param => STRXL,      value =>   0),
 		(fpga => xc3s, param => RWNXL,      value => 2*0),
 		(fpga => xc3s, param => DQSZXL,     value =>  1),

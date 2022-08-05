@@ -723,7 +723,7 @@ begin
 
 		ddr_tcp      => 2.0*ddr_tcp,
 		fpga         => hdl4fpga.profiles.ecp3,
-		mark         => a4g12,
+		mark         => MT41J1G15E,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

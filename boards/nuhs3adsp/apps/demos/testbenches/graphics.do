@@ -25,9 +25,9 @@ quietly virtual signal -install /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_
 quietly virtual signal -install /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fifo_e { (context /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fifo_e )( tx_data(11) & tx_data(10) & tx_data(9) & tx_data(8) & tx_data(7) & tx_data(6) & tx_data(5) & tx_data(4) & tx_data(3) & tx_data(2) & tx_data(1) & tx_data(0) )} tx_rdata001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxc
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxdv
-add wave -noupdate -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxc
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxdv
+add wave -noupdate -expand -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txc
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txen
 add wave -noupdate -group mii_tx -radix hexadecimal /testbench/du_e/mii_txd
@@ -64,6 +64,18 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddrphy_e/clk0
 add wave -noupdate -radix hexadecimal /testbench/du_e/ddrphy_e/phy_dqo
 add wave -noupdate /testbench/du_e/ddrphy_e/phy_sto(3)
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/strx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/rwnx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/dqszx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/dqsx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/dqzx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/rdfifo_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/lwr
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/lrcd
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/lrfc
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/lrp
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/wwnx_lat
+add wave -noupdate -expand -group ddrctlr /testbench/du_e/grahics_e/ddrctlr_b/ddrctlr_e/wid_lat
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {153527034 ps} 0} {{Cursor 2} {155066000 ps} 0}
 quietly wave cursor active 1
@@ -81,4 +93,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {153522737 ps} {153532351 ps}
+WaveRestoreZoom {0 ps} {47250 ns}
