@@ -616,7 +616,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rstn <= ddrsys_lckd;
+	mii_rstn <= not ddrsys_rst;
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

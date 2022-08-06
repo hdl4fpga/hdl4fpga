@@ -118,7 +118,7 @@ begin
 		check_dov => true,
 		check_sov => true,
 		max_depth => 2**m,
-		latency   => 0)
+		latency   => 1)
 	port map(
 		src_clk   => src_clk,
 		src_irdy  => di_irdy,
@@ -136,7 +136,7 @@ begin
 
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		latency    => 0,
+		latency    => 1,
 		check_sov => true,
 		check_dov => true,
 		max_depth  => 4)
