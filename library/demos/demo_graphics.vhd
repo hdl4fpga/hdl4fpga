@@ -462,7 +462,7 @@ begin
 			acktx_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => 4,
-				latency    => 0,
+				latency    => 1,
 				check_sov  => true,
 				check_dov  => true)
 			port map (
@@ -918,7 +918,7 @@ begin
 		generic map (
 			debug        => debug,
 			fpga         => fpga,
-			mark         => mark,
+			chip         => mark,
 			tcp          => ddr_tcp,
 
 			cmmd_gear    => cmmd_gear,

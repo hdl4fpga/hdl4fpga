@@ -953,7 +953,7 @@ package body ddr_param is
 	end;
 
 	impure function ddr_mrfile(
-		constant ddr_stdr : sdrams;
+		constant ddr_stdr    : sdrams;
 
 		constant ddr_mr_addr : ddrmr_addr;
 		constant ddr_mr_srt  : std_logic_vector;

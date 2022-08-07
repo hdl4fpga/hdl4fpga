@@ -572,7 +572,7 @@ package body ddr_db is
 	function ddr_latency (
 		constant fpga  : fpga_devices;
 		constant param : device_latencies)
-		return natural is
+		return integer is
 	begin
 		for i in device_latency_tab'range loop
 			if device_latency_tab(i).fpga = fpga then
@@ -629,7 +629,7 @@ package body ddr_db is
 		constant cltab  : natural_vector := ddr_lattab(sdram, CL);
 		constant cwltab : natural_vector := ddr_lattab(sdram, cwlsel);
 
-		variable lat    : natural := ddr_latency(fpga, tabid);
+		variable lat    : integer := ddr_latency(fpga, tabid);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 

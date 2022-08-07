@@ -70,7 +70,7 @@ entity ddr_pgm is
 
 	type trans_row is record
 		state   : ddrs_states;
-		input   : bit_vector(0 to 2);
+		input   : std_logic_vector(0 to 2);
 		state_n : ddrs_states;
 		cmd_n   : std_logic_vector(ddro_act'range);
 	end record;
@@ -157,7 +157,7 @@ use hdl4fpga.ddr_param.all;
 
 architecture registered of ddr_pgm is
 
-	signal ddr_input  : bit_vector(0 to 2);
+	signal ddr_input  : std_logic_vector(0 to 2);
 
 	signal ddr_pgm_pc : ddrs_states;
 
@@ -168,9 +168,9 @@ architecture registered of ddr_pgm is
 
 begin
 
-	ddr_input(0) <= to_bit(ddr_pgm_frm);
-	ddr_input(1) <= to_bit(ddr_pgm_rw);
-	ddr_input(2) <= '0'; -- ddr_ref_rdy xor to_sdtulogic(to_bit(ddr_ref_req));
+	ddr_input(0) <= ddr_pgm_frm;
+	ddr_input(1) <= to_stdulogic(to_bit(ddr_pgm_rw));
+	ddr_input(2) <= ddr_ref_rdy xor to_stdulogic(to_bit(ddr_ref_req));
 
 	process (ctlr_clk)
 	begin

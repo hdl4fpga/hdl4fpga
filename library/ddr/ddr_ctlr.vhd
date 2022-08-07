@@ -35,7 +35,7 @@ entity ddr_ctlr is
 	generic (
 		debug        : boolean := false;
 		fpga         : fpga_devices;
-		mark         : sdram_chips;
+		chip         : sdram_chips;
 		tcp          : real := 0.0;
 
 		cmmd_gear    : natural :=  1;
@@ -118,7 +118,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of ddr_ctlr is
-	constant stdr         : sdrams := ddr_stdr(mark);
+	constant stdr         : sdrams := ddr_stdr(chip);
 
 	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
 	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);
@@ -126,26 +126,25 @@ architecture mix of ddr_ctlr is
 	constant dqsx_lat     : natural          := ddr_latency(fpga, dqsxl);
 	constant dqzx_lat     : natural          := ddr_latency(fpga, dqzxl);
 	constant rdfifo_lat   : natural          := ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat);
-	constant lwr          : natural          := to_ddrlatency(tcp, ddr_timing(mark, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
-	constant lrcd         : natural          := to_ddrlatency(tcp, mark, trcd);
-	constant lrfc         : natural          := to_ddrlatency(tcp, mark, trfc);
-	constant lrp          : natural          := to_ddrlatency(tcp, mark, trp);
-	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
-	constant wid_lat      : natural          := ddr_latency(fpga, widl);
---	constant wwnx_lat     : natural          := ddr_latency(stdr, wwnxl);
---	constant wid_lat      : natural          := ddr_latency(stdr, widl);
+	constant lwr          : natural          := to_ddrlatency(tcp, ddr_timing(chip, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
+	constant lrcd         : natural          := to_ddrlatency(tcp, chip, trcd);
+	constant lrfc         : natural          := to_ddrlatency(tcp, chip, trfc);
+	constant lrp          : natural          := to_ddrlatency(tcp, chip, trp);
 	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
 	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
 	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, cwl); --ddr_selcwl(stdr));
 	constant bl_tab       : natural_vector   := ddr_lattab(stdr, bl);
 	constant cl_tab       : natural_vector   := ddr_lattab(stdr, cl);
 	constant cwl_tab      : natural_vector   := ddr_lattab(stdr, cwl);
+	constant timers       : natural_vector   := ddr_timers(tcp, chip, debug => debug);
+
 	constant strl_tab     : natural_vector   := ddr_schtab(stdr, fpga, strl);
 	constant rwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, rwnl);
 	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
 	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
 	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
-	constant timers       : natural_vector   := ddr_timers(tcp, mark, debug => debug);
+	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
+	constant wid_lat      : natural          := ddr_latency(fpga, widl);
 	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
 
 	subtype byte is std_logic_vector(0 to byte_size-1);

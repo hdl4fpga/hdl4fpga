@@ -31,40 +31,40 @@ use hdl4fpga.ddr_param.all;
 
 entity ddr_mpu is
 	generic (
-		gear : natural;
-		lrcd : natural;
-		lrfc : natural;
-		lwr  : natural;
-		lrp  : natural;
+		gear          : natural;
+		lrcd          : natural;
+		lrfc          : natural;
+		lwr           : natural;
+		lrp           : natural;
 
-		bl_cod : std_logic_vector;
-		bl_tab : natural_vector;
+		bl_cod        : std_logic_vector;
+		bl_tab        : natural_vector;
 
-		cl_cod : std_logic_vector;
-		cl_tab : natural_vector;
-		cwl_cod : std_logic_vector;
-		cwl_tab : natural_vector);
+		cl_cod        : std_logic_vector;
+		cl_tab        : natural_vector;
+		cwl_cod       : std_logic_vector;
+		cwl_tab       : natural_vector);
 	port (
-		ddr_mpu_blat : out std_logic_vector;
-		ddr_mpu_bl  : in std_logic_vector;
-		ddr_mpu_cl  : in std_logic_vector;
-		ddr_mpu_cwl : in std_logic_vector;
+		ddr_mpu_blat  : out std_logic_vector;
+		ddr_mpu_bl    : in std_logic_vector;
+		ddr_mpu_cl    : in std_logic_vector;
+		ddr_mpu_cwl   : in std_logic_vector;
 
-		ddr_mpu_rst : in std_logic;
-		ddr_mpu_clk : in std_logic;
-		ddr_mpu_cmd : in std_logic_vector(0 to 2) := (others => '1');
-		ddr_mpu_fch : out std_logic;
-		ddr_mpu_trdy : out std_logic;
-		ddr_mpu_act : out std_logic;
-		ddr_mpu_ras : out std_logic;
-		ddr_mpu_cas : out std_logic;
-		ddr_mpu_we  : out std_logic;
-		ddr_mpu_cen : out std_logic;
+		ddr_mpu_rst   : in std_logic;
+		ddr_mpu_clk   : in std_logic;
+		ddr_mpu_cmd   : in std_logic_vector(0 to 2) := (others => '1');
+		ddr_mpu_fch   : out std_logic;
+		ddr_mpu_trdy  : out std_logic;
+		ddr_mpu_act   : out std_logic;
+		ddr_mpu_ras   : out std_logic;
+		ddr_mpu_cas   : out std_logic;
+		ddr_mpu_we    : out std_logic;
+		ddr_mpu_cen   : out std_logic;
 
-		ddr_mpu_rea  : out std_logic;
-		ddr_mpu_rwin : out std_logic;
-		ddr_mpu_wri  : out std_logic;
-		ddr_mpu_wwin : out std_logic;
+		ddr_mpu_rea   : out std_logic;
+		ddr_mpu_rwin  : out std_logic;
+		ddr_mpu_wri   : out std_logic;
+		ddr_mpu_wwin  : out std_logic;
 		ddr_mpu_rwwin : out std_logic);
 
 end;

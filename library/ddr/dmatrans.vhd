@@ -96,6 +96,7 @@ begin
 		if rising_edge(dmatrans_clk) then
 			if ctlr_inirdy='0' then
 				dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
+				ctlr_frm <= '0';
 			elsif (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
 				if leoc='1' then
 					ctlr_frm <= '0';
