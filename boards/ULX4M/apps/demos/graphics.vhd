@@ -152,6 +152,7 @@ architecture graphics of ulx4m_ld is
 		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, mode => pclk40_00m800x600at60),
 		mode900p24 => (pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
 
+
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
