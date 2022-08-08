@@ -129,7 +129,6 @@ architecture def of ddr_init is
 	-- DDR init --
 	--------------
 
-
 	subtype s_code is std_logic_vector(0 to 4-1);
 
 	type s_out is record
@@ -141,32 +140,31 @@ architecture def of ddr_init is
 	end record;
 
 	type tids is (
-		TMR1_RST,
-		TMR1_CKE,
-		TMR1_MRD,
-		TMR1_RPA,
-		TMR1_RFC,
-		TMR1_DLL,
-		TMR1_REF,
+		tsdr_rst,
+
+		tddr_cke,
+		tddr_mrd,
+		tddr_rpa,
+		tddr_rfc,
+		tddr_dll,
+		tddr_ref,
 	
-		TMR2_RST,
-		TMR2_CKE,
-		TMR2_MRD,
-		TMR2_RPA,
-		TMR2_RFC,
-		TMR2_DLL,
-		TMR2_REF,
+		tddr2_cke,
+		tddr2_mrd,
+		tddr2_rpa,
+		tddr2_rfc,
+		tddr2_dll,
+		tddr2_ref,
 	
-		TMR3_RST,
-		TMR3_WLC,
-		TMR3_WLDQSEN,
-		TMR3_RRDY,
-		TMR3_CKE,
-		TMR3_MRD,
-		TMR3_MOD,
-		TMR3_DLL,
-		TMR3_ZQINIT,
-		TMR3_REF);
+		tddr3_wlc,
+		tddr3_wldqsen,
+		tddr3_rstrdy,
+		tddr3_cke,
+		tddr3_mrd,
+		tddr3_mod,
+		tddr3_dll,
+		tddr3_zqinit,
+		tddr3_ref);
 
 	type s_row is record
 		state   : s_code;
@@ -324,26 +322,26 @@ architecture def of ddr_init is
 	constant sc1_wai  : s_code := "1101";
 
 	constant sdram_pgm : s_table := (
-		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_CKE),
-		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, TMR1_RPA),
-		(sc1_pre1, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, TMR1_RFC),
-		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, TMR1_RFC),
-		(sc1_ref2, sc1_lm1,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, TMR1_MRD),
-		(sc1_lm1,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_REF),
-		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_REF));
+		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_CKE),
+		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, tddr_RPA),
+		(sc1_pre1, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, tddr_RFC),
+		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, tddr_RFC),
+		(sc1_ref2, sc1_lm1,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, tddr_MRD),
+		(sc1_lm1,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_REF),
+		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_REF));
 
 	constant ddr1_pgm : s_table := (
-		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_CKE),
-		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, TMR1_RPA),
-		(sc1_pre1, sc1_lm1,  "0", "0", "11000", ddr_mrs, ddr1mr_setemr, ddr_mr1, TMR1_MRD),
-		(sc1_lm1,  sc1_lm2,  "0", "0", "11000", ddr_mrs, ddr1mr_rstdll, ddr_mr0, TMR1_MRD),
-		(sc1_lm2,  sc1_pre2, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, TMR1_RPA),
-		(sc1_pre2, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, TMR1_RFC),
-		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, TMR1_RFC),
-		(sc1_ref2, sc1_lm3,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, TMR1_MRD),
-		(sc1_lm3,  sc1_wai,  "0", "0", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_DLL),
-		(sc1_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_REF),
-		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, TMR1_REF));
+		(sc_rst,   sc1_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_CKE),
+		(sc1_cke,  sc1_pre1, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, tddr_RPA),
+		(sc1_pre1, sc1_lm1,  "0", "0", "11000", ddr_mrs, ddr1mr_setemr, ddr_mr1, tddr_MRD),
+		(sc1_lm1,  sc1_lm2,  "0", "0", "11000", ddr_mrs, ddr1mr_rstdll, ddr_mr0, tddr_MRD),
+		(sc1_lm2,  sc1_pre2, "0", "0", "11000", ddr_pre, ddr1mr_preall, ddr_mrx, tddr_RPA),
+		(sc1_pre2, sc1_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, tddr_RFC),
+		(sc1_ref1, sc1_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,     ddr_mrx, tddr_RFC),
+		(sc1_ref2, sc1_lm3,  "0", "0", "11001", ddr_mrs, ddr1mr_setmr,  ddr_mr0, tddr_MRD),
+		(sc1_lm3,  sc1_wai,  "0", "0", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_DLL),
+		(sc1_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_REF),
+		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr_REF));
 
 	constant sc2_cke  : s_code := "0001";
 	constant sc2_pre1 : s_code := "0011";
@@ -368,23 +366,23 @@ architecture def of ddr_init is
 	                              --    |||||
                                   --    vvvvv
 	constant ddr2_pgm : s_table := (
-		(sc_rst,   sc2_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, TMR2_CKE),
-		(sc2_cke,  sc2_pre1, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, TMR2_RPA),
-		(sc2_pre1, sc2_lm1,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, TMR2_MRD),
-		(sc2_lm1,  sc2_lm2,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, TMR2_MRD),
-		(sc2_lm2,  sc2_lm3,  "0", "0", "11000", ddr_mrs, ddr2mr_enadll,  ddr_mr1, TMR2_MRD),
-		(sc2_lm3,  sc2_lm4,  "0", "0", "11000", ddr_mrs, ddr2mr_rstdll,  ddr_mr0, TMR2_MRD),
-		(sc2_lm4,  sc2_pre2, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, TMR2_RPA),
-		(sc2_pre2, sc2_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, TMR2_RFC),
-		(sc2_ref1, sc2_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, TMR2_RFC),
-		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, TMR2_MRD),
-		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, TMR2_MRD),
-		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, TMR2_MRD),
-		(sc2_lm7,  sc2_wai,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, TMR2_DLL),
- 		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx,      ddr_mrx, TMR2_REF),
-		(sc_ref,   sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, TMR2_REF));
+		(sc_rst,   sc2_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, tddr2_CKE),
+		(sc2_cke,  sc2_pre1, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, tddr2_RPA),
+		(sc2_pre1, sc2_lm1,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, tddr2_MRD),
+		(sc2_lm1,  sc2_lm2,  "0", "0", "11000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, tddr2_MRD),
+		(sc2_lm2,  sc2_lm3,  "0", "0", "11000", ddr_mrs, ddr2mr_enadll,  ddr_mr1, tddr2_MRD),
+		(sc2_lm3,  sc2_lm4,  "0", "0", "11000", ddr_mrs, ddr2mr_rstdll,  ddr_mr0, tddr2_MRD),
+		(sc2_lm4,  sc2_pre2, "0", "0", "11000", ddr_pre, ddr2mr_preall,  ddr_mrx, tddr2_RPA),
+		(sc2_pre2, sc2_ref1, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, tddr2_RFC),
+		(sc2_ref1, sc2_ref2, "0", "0", "11000", ddr_ref, ddrmr_mrx,      ddr_mrx, tddr2_RFC),
+		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, tddr2_MRD),
+		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, tddr2_MRD),
+		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, tddr2_MRD),
+		(sc2_lm7,  sc2_wai,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, tddr2_DLL),
+ 		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx,      ddr_mrx, tddr2_REF),
+		(sc_ref,   sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, tddr2_REF));
 
- 	constant sc3_rrdy : s_code := "0001";
+ 	constant sc3_rstrdy : s_code := "0001";
  	constant sc3_cke  : s_code := "0011";
  	constant sc3_lmr2 : s_code := "0010";
  	constant sc3_lmr3 : s_code := "0110";
@@ -409,22 +407,22 @@ architecture def of ddr_init is
 	                              --    |||||
                                   --    vvvvv
  	constant ddr3_pgm : s_table := (
- 		(sc_rst,   sc3_rrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_RRDY),
- 		(sc3_rrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_CKE),
- 		(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, TMR3_MRD),
- 		(sc3_lmr2, sc3_lmr3, "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, TMR3_MRD),
- 		(sc3_lmr3, sc3_lmr1, "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, TMR3_MRD),
- 		(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, TMR3_MOD),
- 		(sc3_lmr0, sc3_zqi,  "0", "0", "11000", ddr_zqc, ddr3mr_zqc, ddr_mrx,    TMR3_ZQINIT),
- 		(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl, ddr_mr1,  TMR3_MOD),
- 		(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_WLDQSEN),
- 		(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_WLC),
- 		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_WLC),
- 		(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_MRD),
- 		(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, TMR3_MOD),
- 		(sc3_wlf,  sc3_wai,  "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_DLL),
- 		(sc3_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_REF),
- 		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     TMR3_REF));
+ 		(sc_rst,   sc3_rstrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_rstrdy),
+ 		(sc3_rstrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_cke),
+ 		(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, tddr3_mrd),
+ 		(sc3_lmr2, sc3_lmr3, "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, tddr3_mrd),
+ 		(sc3_lmr3, sc3_lmr1, "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mrd),
+ 		(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, tddr3_mod),
+ 		(sc3_lmr0, sc3_zqi,  "0", "0", "11000", ddr_zqc, ddr3mr_zqc,    ddr_mrx, tddr3_zqinit),
+ 		(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl,  ddr_mr1, tddr3_mod),
+ 		(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wldqsen),
+ 		(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
+ 		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
+ 		(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_mrd),
+ 		(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mod),
+ 		(sc3_wlf,  sc3_wai,  "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_dll),
+ 		(sc3_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref),
+ 		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref));
 
 	function to_sout (
 		constant output : std_logic_vector(0 to 5-1))
@@ -763,61 +761,15 @@ architecture def of ddr_init is
 		end case;
 	end;
 
-		constant stdr : sdrams := ddr_stdr(chip);
-	type xxxx is array(tids) of natural;
-	type xx1  is array(natural range <>) of tids;
-	constant ddr_timers  : xx1 := (TMR1_RST, TMR1_CKE,  TMR1_MRD, TMR1_RPA,     TMR1_RFC, TMR1_DLL, TMR1_REF);
-	constant ddr2_timers : xx1 := (TMR2_RST, TMR2_CKE,  TMR2_MRD, TMR2_RPA,     TMR2_RFC, TMR2_DLL, TMR2_REF);
-	constant ddr3_timers : xx1 := (TMR3_RST, TMR3_RRDY, TMR3_WLC, TMR3_WLDQSEN, TMR3_CKE, TMR3_MRD, TMR3_MOD, TMR3_DLL, TMR3_ZQINIT, TMR3_REF);
-
-	constant sdr_timers : xxxx := (
-		TMR1_RST  => to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1),
-		TMR1_CKE => to_ddrlatency(tCP, chip, tXPR),
-		TMR1_MRD => to_ddrlatency(tCP, chip, tMRD),
-		TMR1_RPA => to_ddrlatency(tCP, chip, tRP),
-		TMR1_RFC => to_ddrlatency(tCP, chip, tRFC),
-		TMR1_DLL => 200,
-		TMR1_REF => setif(not debug, to_ddrlatency(tCP, chip, tREFI), 21740),
-	
-		TMR2_RST  => to_ddrlatency(tCP, chip,  tPreRST)/setif(debug, 100, 1),
-		TMR2_CKE => to_ddrlatency(tCP, chip, tXPR),
-		TMR2_MRD => ddr_latency(stdr, MRD),
-		TMR2_RPA => to_ddrlatency(tCP, chip, tRPA),
-		TMR2_RFC => to_ddrlatency(tCP, chip, tRFC),
-		TMR2_DLL => 200,
-		TMR2_REF => to_ddrlatency(tCP, chip, tREFI),
-
-		TMR3_RST  => to_ddrlatency(tCP, chip,  tPreRST)/setif(debug, 100, 1),
-		TMR3_RRDY => to_ddrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1),
-		TMR3_WLC => ddr_latency(stdr, MODu),
-		TMR3_WLDQSEN => 25,
-		TMR3_CKE => to_ddrlatency(tCP, chip, tXPR),
-		TMR3_MRD => to_ddrlatency(tCP, chip, tMRD),
-		TMR3_MOD => ddr_latency(stdr, MODu),
-		TMR3_DLL => ddr_latency(stdr, cDLL),
-		TMR3_ZQINIT => ddr_latency(DDR3, ZQINIT),
-		TMR3_REF => setif(not debug, to_ddrlatency(tCP, chip, tREFI), 1725));
-
---	begin
---		case stdr is
---		when sdr|DDR =>
---			return ddr1_timer;
---		when DDR2 =>
---			return ddr2_timer;
---		when ddr3 =>
---			return ddr3_timer;
---		end case;
---	end;
-
-	constant timers : natural_vector := ddr_timers(tcp, chip, debug => debug);
+	constant stdr : sdrams := ddr_stdr(chip);
 
 	signal init_rdy : std_logic;
 	constant pgm : s_table := choose_pgm(stdr);
 
 	signal ddr_init_pc   : s_code;
 	signal ddr_timer_id  : tids;
-	signal ddr_timer_rdy : std_logic;
-	signal ddr_timer_req : std_logic;
+	signal timer_rdy : std_logic;
+	signal timer_req : std_logic;
 
 	signal input : std_logic_vector(0 to 0);
 	signal ddr_mr_addr : ddrmr_addr;
@@ -871,7 +823,7 @@ begin
 					cmd     => (cs => '-', ras => '-', cas => '-', we => '-'),
 					bnk     => (others => '-'),
 					mr      => (others => '-'),
-					tid     => to_unsigned(TMR_RST, TMR_SIZE));
+					tid     => tsdr_rst);
 				for i in pgm'range loop
 					if pgm(i).state=ddr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
@@ -879,7 +831,7 @@ begin
 						end if;
 					end if;
 				end loop;
-				if ddr_timer_rdy='1' then
+				if timer_rdy='1' then
 					ddr_init_pc   <= row.state_n;
 					ddr_init_rst  <= to_sout(row.output).rst;
 					init_rdy      <= to_sout(row.output).rdy;
@@ -901,7 +853,7 @@ begin
 				ddr_mr_addr <= row.mr;
 			else
 				ddr_init_pc    <= sc_rst;
-				ddr_timer_id   <= std_logic_vector(to_unsigned(TMR_RST, ddr_timer_id'length));
+				ddr_timer_id   <= tsdr_rst;
 				ddr_init_rst   <= '0';
 				ddr_init_cke   <= '0';
 				init_rdy       <= '0';
@@ -929,7 +881,7 @@ begin
 	begin
 		if rising_edge(ddr_init_clk)then
 			if ddr_init_pc=sc_ref then
-				if ddr_timer_rdy='1' then
+				if timer_rdy='1' then
 					ddr_refi_req <= not ddr_refi_rdy;
 				end if;
 			else
@@ -938,17 +890,156 @@ begin
 		end if;
 	end process;
 
-	ddr_timer_req <=
+	timer_req <=
 		'1' when ddr_init_req='1' else
-		'1' when ddr_timer_rdy='1' else
+		'1' when timer_rdy='1' else
 		'0';
 
-	timer_e : entity hdl4fpga.ddr_timer
-	generic map (
-		timers => timers)
-	port map (
-		sys_clk => ddr_init_clk,
-		tmr_sel => ddr_timer_id,
-		sys_req => ddr_timer_req,
-		sys_rdy => ddr_timer_rdy);
+	sdr_timer_b : block
+
+		type timer is record
+			tid   : tids;
+			value : natural;
+		end record;
+	
+		type timer_vector is array(natural range <>) of timer;
+
+		function timer_set (
+			constant tcp   : real;
+			constant chip  : sdram_chips;
+			constant debug : boolean)
+			return timer_vector is
+		begin
+			case ddr_stdr(chip) is
+			when sdr|ddr =>
+				return (
+					(tsdr_rst, to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1)),
+					(tddr_cke, to_ddrlatency(tCP, chip, tXPR)),
+					(tddr_mrd, to_ddrlatency(tCP, chip, tMRD)),
+					(tddr_rpa, to_ddrlatency(tCP, chip, tRP)),
+					(tddr_rfc, to_ddrlatency(tCP, chip, tRFC)),
+					(tddr_dll, 200),
+					(tddr_ref, setif(not debug, to_ddrlatency(tCP, chip, tREFI), 21740)));
+			when ddr2 =>
+				return (
+					(tsdr_rst,  to_ddrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),
+					(tddr2_cke, to_ddrlatency(tcp, chip, tXPR)),
+					(tddr2_mrd, ddr_latency(stdr, mrd)),
+					(tddr2_rpa, to_ddrlatency(tcp, chip, tRPA)),
+					(tddr2_rfc, to_ddrlatency(tcp, chip, tRFC)),
+					(tddr2_dll, 200),
+					(tddr2_ref, to_ddrlatency(tcp, chip, tREFI)));
+			when ddr3 =>
+				return (
+					(tsdr_rst,  to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
+					(tddr3_rstrdy, to_ddrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
+					(tddr3_wlc, ddr_latency(stdr, MODu)),
+					(tddr3_wldqsen, 25),
+					(tddr3_cke, to_ddrlatency(tCP, chip, tXPR)),
+					(tddr3_mrd, to_ddrlatency(tCP, chip, tMRD)),
+					(tddr3_mod, ddr_latency(stdr, MODu)),
+					(tddr3_dll, ddr_latency(stdr, cDLL)),
+					(tddr3_zqinit, ddr_latency(DDR3, ZQINIT)),
+					(tddr3_ref, setif(not debug, to_ddrlatency(tCP, chip, tREFI), 1725)));
+			end case;
+		end;
+	
+		function timer_tab (
+			constant tab : timer_vector)
+			return natural_vector is
+			variable rval : natural_vector(tab'range);
+		begin
+			for i in tab'range loop
+				rval(i) := tab(i).value;
+			end loop;
+			return rval;
+		end;
+			
+		function timer_pos (
+			constant tid : tids;
+			constant tab : timer_vector)
+			return natural is
+		begin
+			for i in tab'range loop
+				if tab(i).tid = tid then
+					return i;
+				else
+					assert i=tab'right 
+					report "hola"
+					severity failure; 
+				end if;
+			end loop;
+		end;
+		
+		signal timer_sel : std_logic_vector(0 to  0);
+	begin
+--		sdr_timer_sel <= to_unsigned(timer_pos(ddr_timer_id, timer_tab(timer_set(tcp, chip, debug)));
+
+		timer_b : block
+			generic (
+				timers : natural_vector);
+			generic map (
+				timers => timer_tab(timer_set(tcp, chip, debug)));
+			port (
+				sys_clk : in  std_logic;
+				tmr_sel : in  std_logic_vector;
+				sys_req : in  std_logic;
+				sys_rdy : out std_logic);
+			port map(
+				sys_clk => ddr_init_clk,
+				tmr_sel => timer_sel,
+				sys_req => timer_req,
+				sys_rdy => timer_rdy);
+
+			constant stages     : natural := unsigned_num_bits(max(timers))/4;
+			constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
+	
+			function stage_size
+				return natural_vector is
+				variable val : natural_vector(stages downto 0);
+				variable quo : natural := timer_size mod stages;
+			begin
+				val(0) := 0;
+				for i in 1 to stages loop
+					val(i) := timer_size/stages + val(i-1);
+					if i*quo >= stages then
+						val(i) := val(i) + 1;
+						quo := quo - 1;
+					end if;
+				end loop;
+				return val;
+			end;
+
+			signal data : std_logic_vector(timer_size-1 downto 0);
+
+		begin
+
+			process (sys_clk)
+				variable timer : natural; 
+				variable size  : natural;
+				variable data  : std_logic_vector(0 to 0);
+			begin
+				if rising_edge(sys_clk) then
+					data  := (others => '-');
+					timer := timers(to_integer(unsigned(tmr_sel)));
+					for j in stages-1 downto 0 loop
+						size := stage_size(j+1)-stage_size(j);
+						data := std_logic_vector(unsigned(data) sll size);
+						data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(stage_size(j)-j)) mod 2**(size-1)) mod 2**size, size));
+					end loop;
+				end if;
+			end process;
+	
+			timer_e : entity hdl4fpga.timer
+			generic map (
+				stage_size =>  stage_size(stages downto 1))
+			port map (
+				data => data,
+				clk => sys_clk,
+				req => sys_req,
+				rdy => sys_rdy);
+
+		end block;
+
+	end block;
 end;
