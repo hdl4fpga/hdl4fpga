@@ -32,7 +32,10 @@ use hdl4fpga.profiles.all;
 
 entity ddr_sch is
 	generic (
-		profile           : fpga_devices;
+		tcp               : real := 0.0;
+		fpga              : fpga_devices;
+		chip              : sdram_chips;
+
 		delay_size        : natural := 64;
 		registered_output : boolean := false;
 		data_phases       : natural := 2;
@@ -43,22 +46,7 @@ entity ddr_sch is
 		cmmd_gear         : natural := 1;
 
 		cl_cod            : std_logic_vector;
-		cwl_cod           : std_logic_vector;
-
-		strl_tab          : natural_vector;
-		rwnl_tab          : natural_vector;
-		dqszl_tab         : natural_vector;
-		dqsol_tab         : natural_vector;
-		dqzl_tab          : natural_vector;
-		wwnl_tab          : natural_vector;
-
-		strx_lat          : natural;
-		rwnx_lat          : natural;
-		dqszx_lat         : natural;
-		dqsx_lat          : natural;
-		dqzx_lat          : natural;
-		wwnx_lat          : natural;
-		wid_lat           : natural);
+		cwl_cod           : std_logic_vector);
 	port (
 		sys_clks          : in  std_logic_vector(0 to clk_phases/clk_edges-1);
 		sys_cl            : in  std_logic_vector;
@@ -86,6 +74,88 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 architecture def of ddr_sch is
+	function ddr_task (
+		constant clk_phases : natural;
+		constant gear : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural := 0;
+		constant lat_wid : natural := 1)
+		return std_logic_vector is
+
+		subtype word is std_logic_vector(0 to gear-1);
+		type word_vector is array (natural range <>) of word;
+
+		subtype latword is std_logic_vector(0 to lat_val'length-1);
+		type latword_vector is array (natural range <>) of latword;
+
+		function to_latwordvector(
+			constant arg : std_logic_vector)
+			return latword_vector is
+			variable aux : unsigned(0 to arg'length-1);
+			variable val : latword_vector(0 to arg'length/latword'length-1);
+		begin
+			aux := unsigned(arg);
+			for i in val'range loop
+				val(i) := std_logic_vector(aux(latword'range));
+				aux := aux sll latword'length;
+			end loop;
+			return val;
+		end;
+
+		function select_lat (
+			constant lat_val : std_logic_vector;
+			constant lat_cod : latword_vector;
+			constant lat_sch : word_vector)
+			return std_logic_vector is
+			variable val : word;
+		begin
+			val := (others => '-');
+			for i in 0 to lat_tab'length-1 loop
+				if lat_val = lat_cod(i) then
+					for j in word'range loop
+						val(j) := lat_sch(i)(j);
+					end loop;
+				end if;
+			end loop;
+			return val;
+		end;
+
+		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
+		variable sel_sch : word_vector(lat_cod1'range);
+
+	begin
+		sel_sch := (others => (others => '-'));
+		for i in 0 to lat_tab'length-1 loop
+			sel_sch(i) := pulse_delay (
+				clk_phases => clk_phases,
+				phase     => lat_sch,
+				latency   => lat_tab(i),
+				WORD_SIZE => word'length,
+				extension => lat_ext,
+				width     => lat_wid);
+		end loop;
+		return select_lat(lat_val, lat_cod1, sel_sch);
+	end;
+
+	constant stdr         : sdrams := ddr_stdr(chip);
+	constant strl_tab     : natural_vector   := ddr_schtab(stdr, fpga, strl);
+	constant rwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, rwnl);
+	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
+	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
+	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
+	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
+
+	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
+	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);
+	constant dqszx_lat    : natural          := ddr_latency(fpga, dqszxl);
+	constant dqsx_lat     : natural          := ddr_latency(fpga, dqsxl);
+	constant dqzx_lat     : natural          := ddr_latency(fpga, dqzxl);
+	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
+	constant wid_lat      : natural          := ddr_latency(fpga, widl);
+
 	constant ph90 : natural := 1 mod sys_clks'length;
 
 	signal wphi   : std_logic;
@@ -156,7 +226,7 @@ begin
 		end loop;
 	end process;
 
-	stpho <= rpho0 when profile=xc7a else rpho90;
+	stpho <= rpho0 when fpga=xc7a else rpho90;
 --	stpho <= rpho90;
 
 	ddr_st <= ddr_task (

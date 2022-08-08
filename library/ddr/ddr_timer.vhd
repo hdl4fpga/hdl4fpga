@@ -41,7 +41,6 @@ end;
 
 architecture def of ddr_timer is
 
---	constant stages : natural := unsigned_num_bits(max(timers))/4;
 	constant stages : natural := unsigned_num_bits(max(timers))/4;
 	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);

@@ -34,9 +34,10 @@ use hdl4fpga.ddr_param.all;
 entity ddr_ctlr is
 	generic (
 		debug        : boolean := false;
+
+		tcp          : real := 0.0;
 		fpga         : fpga_devices;
 		chip         : sdram_chips;
-		tcp          : real := 0.0;
 
 		cmmd_gear    : natural :=  1;
 		bank_size    : natural :=  2;
@@ -118,34 +119,78 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of ddr_ctlr is
+
+	function ddr_rotval (
+		constant LINE_SIZE : natural;
+		constant WORD_SIZE : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector)
+		return std_logic_vector is
+
+		subtype word is std_logic_vector(unsigned_num_bits(LINE_SIZE/WORD_SIZE-1)-1 downto 0);
+		type word_vector is array(natural range <>) of word;
+
+		subtype latword is std_logic_vector(0 to lat_val'length-1);
+		type latword_vector is array (natural range <>) of latword;
+
+		constant algn : natural := unsigned_num_bits(WORD_SIZE-1);
+
+		function to_latwordvector(
+			constant arg : std_logic_vector)
+			return latword_vector is
+			variable aux : unsigned(0 to arg'length-1);
+			variable val : latword_vector(0 to arg'length/latword'length-1);
+		begin
+			aux := unsigned(arg);
+			for i in val'range loop
+				val(i) := std_logic_vector(aux(latword'range));
+				aux := aux sll latword'length;
+			end loop;
+			return val;
+		end;
+
+		function select_lat (
+			constant lat_val : std_logic_vector;
+			constant lat_cod : latword_vector;
+			constant lat_sch : word_vector)
+			return std_logic_vector is
+			variable val : word;
+		begin
+			val := (others => '-');
+			for i in 0 to lat_tab'length-1 loop
+				if lat_val = lat_cod(i) then
+					for j in word'range loop
+						val(j) := lat_sch(i)(j);
+					end loop;
+				end if;
+			end loop;
+			return val;
+		end;
+
+		constant lc   : latword_vector := to_latwordvector(lat_cod);
+
+		variable sel_sch : word_vector(lc'range);
+		variable val : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
+		variable disp : natural;
+
+	begin
+
+		setup_l : for i in 0 to lat_tab'length-1 loop
+			sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length));
+		end loop;
+
+		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
+		val := val sll algn;
+		return std_logic_vector(val);
+	end;
+
 	constant stdr         : sdrams := ddr_stdr(chip);
 
-	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
-	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);
-	constant dqszx_lat    : natural          := ddr_latency(fpga, dqszxl);
-	constant dqsx_lat     : natural          := ddr_latency(fpga, dqsxl);
-	constant dqzx_lat     : natural          := ddr_latency(fpga, dqzxl);
-	constant rdfifo_lat   : natural          := ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat);
-	constant lwr          : natural          := to_ddrlatency(tcp, ddr_timing(chip, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
-	constant lrcd         : natural          := to_ddrlatency(tcp, chip, trcd);
-	constant lrfc         : natural          := to_ddrlatency(tcp, chip, trfc);
-	constant lrp          : natural          := to_ddrlatency(tcp, chip, trp);
 	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
 	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
 	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, cwl); --ddr_selcwl(stdr));
-	constant bl_tab       : natural_vector   := ddr_lattab(stdr, bl);
-	constant cl_tab       : natural_vector   := ddr_lattab(stdr, cl);
-	constant cwl_tab      : natural_vector   := ddr_lattab(stdr, cwl);
-	constant timers       : natural_vector   := ddr_timers(tcp, chip, debug => debug);
 
-	constant strl_tab     : natural_vector   := ddr_schtab(stdr, fpga, strl);
-	constant rwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, rwnl);
-	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
-	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
-	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
-	constant wwnx_lat     : natural          := ddr_latency(fpga, wwnxl);
-	constant wid_lat      : natural          := ddr_latency(fpga, widl);
-	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
 
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
@@ -208,18 +253,20 @@ architecture mix of ddr_ctlr is
 	signal fifo_bypass : std_logic;
 begin
 
-	ctlr_alat    <= std_logic_vector(to_unsigned(lrcd, ctlr_alat'length));
-
 	ctlr_trdy    <= ddr_mpu_trdy when phy_inirdy='1' else '0';
 	phy_trdy     <= ddr_mpu_trdy when phy_inirdy='0' else '0';
 	ddr_pgm_frm  <= ctlr_frm     when phy_inirdy='1' else phy_frm;
 	ddr_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
 	ddr_cwl      <= ctlr_cl      when stdr=ddr2      else ctlr_cwl;
 	ddr_init_req <= ctlr_rst;
+
 	ddr_init_e : entity hdl4fpga.ddr_init
 	generic map (
-		ddr_stdr       => stdr,
-		timers         => timers,
+		debug          => debug,
+		tcp            => tcp,
+		fpga           => fpga,
+		chip           => chip,
+
 		addr_size      => addr_size,
 		bank_size      => bank_size)
 	port map (
@@ -280,17 +327,14 @@ begin
 	ddr_mpu_sel <= init_rdy;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
-		gear        => data_gear,
-		lrcd        => lrcd,
-		lrfc        => lrfc,
-		lwr         => lwr,
-		lrp         => lrp,
-		bl_cod      => bl_cod,
-		cl_cod      => cl_cod,
-		cwl_cod     => cwl_cod,
-		bl_tab      => bl_tab,
-		cl_tab      => cl_tab,
-		cwl_tab     => cwl_tab)
+		tcp           => tcp,
+		fpga          => fpga,
+		chip          => chip,
+
+		gear          => data_gear,
+		bl_cod        => bl_cod,
+		cl_cod        => cl_cod,
+		cwl_cod       => cwl_cod)
 	port map (
 		ddr_mpu_bl    => ctlr_bl,
 		ddr_mpu_cl    => ctlr_cl,
@@ -304,6 +348,7 @@ begin
 		ddr_mpu_act   => ctlr_act,
 		ddr_mpu_cas   => ddr_mpu_cas,
 		ddr_mpu_ras   => ddr_mpu_ras,
+		ddr_mpu_alat  => ctlr_alat,
 		ddr_mpu_blat  => ctlr_blat,
 		ddr_mpu_we    => ddr_mpu_we,
 		ddr_mpu_rea   => ddr_mpu_rea,
@@ -319,29 +364,17 @@ begin
 
 	ddr_sch_e : entity hdl4fpga.ddr_sch
 	generic map (
-		profile     => fpga,
+		tcp         => tcp,
+		fpga        => fpga,
+		chip        => chip,
+
 		cmmd_gear   => cmmd_gear,
 		data_phases => data_phases,
 		clk_phases  => sclk_phases,
 		clk_edges   => sclk_edges,
 		data_gear   => data_gear,
 		cl_cod      => cl_cod,
-		cwl_cod     => cwl_cod,
-
-		strl_tab    => strl_tab,
-		rwnl_tab    => rwnl_tab,
-		dqszl_tab   => dqszl_tab,
-		dqsol_tab   => dqsol_tab,
-		dqzl_tab    => dqzl_tab,
-		wwnl_tab    => wwnl_tab,
-
-		strx_lat    => strx_lat,
-		rwnx_lat    => rwnx_lat,
-		dqszx_lat   => dqszx_lat,
-		dqsx_lat    => dqsx_lat,
-		dqzx_lat    => dqzx_lat,
-		wwnx_lat    => wwnx_lat,
-		wid_lat     => wid_lat)
+		cwl_cod     => cwl_cod)
 	port map (
 		sys_cl      => ctlr_cl,
 		sys_cwl     => ddr_cwl,
@@ -391,7 +424,7 @@ begin
 		data_gear   => data_gear,
 		word_size   => word_size,
 		byte_size   => byte_size,
-		data_delay  => rdfifo_lat)
+		data_delay  => ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat))
 	port map (
 		sys_clk     => ctlr_clks(0),
 		sys_rdy     => ctlr_do_dv,
@@ -402,12 +435,80 @@ begin
 		ddr_dqsi    => phy_dqsi,
 		ddr_dqi     => phy_dqi);
 
-	rot_val <= ddr_rotval (
-		line_size => data_gear*word_size,
-		word_size => word_size,
-		lat_val => ctlr_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => wwnl_tab);
+	ddr_rotval_p : process(ctlr_cwl)
+		function ddr_rotval (
+			constant LINE_SIZE : natural;
+			constant WORD_SIZE : natural;
+			constant lat_val : std_logic_vector;
+			constant lat_cod : std_logic_vector;
+			constant lat_tab : natural_vector)
+			return std_logic_vector is
+	
+			subtype word is std_logic_vector(unsigned_num_bits(LINE_SIZE/WORD_SIZE-1)-1 downto 0);
+			type word_vector is array(natural range <>) of word;
+	
+			subtype latword is std_logic_vector(0 to lat_val'length-1);
+			type latword_vector is array (natural range <>) of latword;
+	
+			constant algn : natural := unsigned_num_bits(WORD_SIZE-1);
+	
+			function to_latwordvector(
+				constant arg : std_logic_vector)
+				return latword_vector is
+				variable aux : unsigned(0 to arg'length-1);
+				variable val : latword_vector(0 to arg'length/latword'length-1);
+			begin
+				aux := unsigned(arg);
+				for i in val'range loop
+					val(i) := std_logic_vector(aux(latword'range));
+					aux := aux sll latword'length;
+				end loop;
+				return val;
+			end;
+	
+			function select_lat (
+				constant lat_val : std_logic_vector;
+				constant lat_cod : latword_vector;
+				constant lat_sch : word_vector)
+				return std_logic_vector is
+				variable val : word;
+			begin
+				val := (others => '-');
+				for i in 0 to lat_tab'length-1 loop
+					if lat_val = lat_cod(i) then
+						for j in word'range loop
+							val(j) := lat_sch(i)(j);
+						end loop;
+					end if;
+				end loop;
+				return val;
+			end;
+	
+			constant lc   : latword_vector := to_latwordvector(lat_cod);
+	
+			variable sel_sch : word_vector(lc'range);
+			variable val : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
+			variable disp : natural;
+	
+		begin
+	
+			setup_l : for i in 0 to lat_tab'length-1 loop
+				sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length));
+			end loop;
+	
+			val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
+			val := val sll algn;
+			return std_logic_vector(val);
+		end;
+
+	begin
+		rot_val <= ddr_rotval (
+			line_size => data_gear*word_size,
+			word_size => word_size,
+			lat_val   => ctlr_cwl,
+			lat_cod   => cwl_cod,
+			lat_tab   => ddr_schtab(stdr, fpga, wwnl)); --wwnl_tab);
+	end process;
 
 	rotate_i : entity hdl4fpga.barrel
 	port map (

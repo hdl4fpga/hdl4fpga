@@ -27,24 +27,21 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.ddr_db.all;
 use hdl4fpga.ddr_param.all;
 
 entity ddr_mpu is
 	generic (
+		tcp           : real := 0.0;
+		fpga          : fpga_devices;
+		chip          : sdram_chips;
 		gear          : natural;
-		lrcd          : natural;
-		lrfc          : natural;
-		lwr           : natural;
-		lrp           : natural;
-
 		bl_cod        : std_logic_vector;
-		bl_tab        : natural_vector;
-
 		cl_cod        : std_logic_vector;
-		cl_tab        : natural_vector;
-		cwl_cod       : std_logic_vector;
-		cwl_tab       : natural_vector);
+		cwl_cod       : std_logic_vector);
 	port (
+		ddr_mpu_alat  : out std_logic_vector(2 downto 0);
 		ddr_mpu_blat  : out std_logic_vector;
 		ddr_mpu_bl    : in std_logic_vector;
 		ddr_mpu_cl    : in std_logic_vector;
@@ -70,9 +67,20 @@ entity ddr_mpu is
 end;
 
 architecture arch of ddr_mpu is
-	constant ras : natural := 0;
-	constant cas : natural := 1;
-	constant we  : natural := 2;
+
+	constant stdr         : sdrams := ddr_stdr(chip);
+
+	constant lwr  : natural  := to_ddrlatency(tcp, ddr_timing(chip, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
+	constant lrcd : natural  := to_ddrlatency(tcp, chip, trcd);
+	constant lrfc : natural  := to_ddrlatency(tcp, chip, trfc);
+	constant lrp  : natural  := to_ddrlatency(tcp, chip, trp);
+	constant bl_tab  : natural_vector   := ddr_lattab(stdr, bl);
+	constant cl_tab  : natural_vector   := ddr_lattab(stdr, cl);
+	constant cwl_tab : natural_vector   := ddr_lattab(stdr, cwl);
+
+	constant ras  : natural := 0;
+	constant cas  : natural := 1;
+	constant we   : natural := 2;
 
 	function timer_size (
 		constant lrcd : natural;
@@ -279,6 +287,7 @@ architecture arch of ddr_mpu is
 
 begin
 
+	ddr_mpu_alat <= std_logic_vector(to_unsigned(lrcd, ddr_mpu_alat'length));
 	ddr_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(ddr_mpu_bl, bl_cod, bl_tab))), ddr_mpu_blat'length));
 	ddr_mpu_p: process (ddr_mpu_clk)
 		variable state_set : boolean;
