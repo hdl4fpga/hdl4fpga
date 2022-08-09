@@ -52,38 +52,8 @@ package ddr_param is
 	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
---	function select_lat (
---		constant value : std_logic_vector;
---		constant codes : std_logic_vector;
---		constant table : natural_vector)
---		return natural;
-
 end package;
-
-library hdl4fpga;
-use hdl4fpga.std.all;
 
 package body ddr_param is
 
-	function select_lat (
-		constant value : std_logic_vector;
-		constant codes : std_logic_vector;
-		constant table : natural_vector)
-		return natural is
-
-		variable ids : unsigned(0 to codes'length-1);
-	begin
-		ids := unsigned(codes);
-		for i in table'range loop
-			if ids(0 to value'length-1)=unsigned(value) then
-				return table(i);
-			end if;
-			ids := ids rol value'length;
-		end loop;
-
-		assert false
-			report "function : select_lat"
-			severity failure;
-		return 0;
-	end;
 end package body;
