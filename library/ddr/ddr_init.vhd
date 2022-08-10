@@ -981,14 +981,14 @@ begin
 				return val;
 			end;
 
-			signal data : std_logic_vector(timer_size-1 downto 0);
+			signal value : std_logic_vector(timer_size-1 downto 0);
 
 		begin
 
 			process (sys_clk)
 				variable timer : natural; 
 				variable size  : natural;
-				variable data  : std_logic_vector(0 to 0);
+				variable data  : std_logic_vector(value'range);
 			begin
 				if rising_edge(sys_clk) then
 					data  := (others => '-');
@@ -998,14 +998,15 @@ begin
 						data := std_logic_vector(unsigned(data) sll size);
 						data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(stage_size(j)-j)) mod 2**(size-1)) mod 2**size, size));
 					end loop;
+					value <= data;
 				end if;
 			end process;
 	
 			timer_e : entity hdl4fpga.timer
 			generic map (
-				stage_size =>  stage_size(stages downto 1))
+				stage_size => stage_size(stages downto 1))
 			port map (
-				data => data,
+				data => value,
 				clk => sys_clk,
 				req => sys_req,
 				rdy => sys_rdy);

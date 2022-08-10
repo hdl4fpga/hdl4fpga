@@ -222,8 +222,6 @@ HDL4FPGA__ddrdma__def = $(LIB_HDL4FPGA)/ddrdma/def.dat
 HDL4FPGA__ddrdma = $(LIB_HDL4FPGA)/ddrdma/_primary.dat
 HDL4FPGA__ddr_wrfifo__struct = $(LIB_HDL4FPGA)/ddr_wrfifo/struct.dat
 HDL4FPGA__ddr_wrfifo = $(LIB_HDL4FPGA)/ddr_wrfifo/_primary.dat
-HDL4FPGA__ddr_timer__def = $(LIB_HDL4FPGA)/ddr_timer/def.dat
-HDL4FPGA__ddr_timer = $(LIB_HDL4FPGA)/ddr_timer/_primary.dat
 HDL4FPGA__ddr_sch__def = $(LIB_HDL4FPGA)/ddr_sch/def.dat
 HDL4FPGA__ddr_sch = $(LIB_HDL4FPGA)/ddr_sch/_primary.dat
 HDL4FPGA__ddr_rdfifo__struct = $(LIB_HDL4FPGA)/ddr_rdfifo/struct.dat
@@ -494,8 +492,6 @@ whole_library :     $(HDL4FPGA__xc7a_ddrphy__virtex7) \
     $(HDL4FPGA__ddrdma) \
     $(HDL4FPGA__ddr_wrfifo__struct) \
     $(HDL4FPGA__ddr_wrfifo) \
-    $(HDL4FPGA__ddr_timer__def) \
-    $(HDL4FPGA__ddr_timer) \
     $(HDL4FPGA__ddr_sch__def) \
     $(HDL4FPGA__ddr_sch) \
     $(HDL4FPGA__ddr_rdfifo__struct) \
@@ -782,6 +778,7 @@ $(HDL4FPGA__ddr_ctlr__mix) : ../ddr/ddr_ctlr.vhd \
 		$(HDL4FPGA__ddr_init) \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__profiles) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
@@ -791,17 +788,19 @@ $(HDL4FPGA__ddr_ctlr__mix) : ../ddr/ddr_ctlr.vhd \
 
 $(HDL4FPGA__ddr_db) \
 $(HDL4FPGA__ddr_db__body) : ../ddr/ddr_db.vhd \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__std) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../ddr/ddr_db.vhd
 
 $(HDL4FPGA__ddr_init) \
 $(HDL4FPGA__ddr_init__def) : ../ddr/ddr_init.vhd \
-		$(HDL4FPGA__ddr_timer) \
+		$(HDL4FPGA__timer) \
 		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -812,8 +811,9 @@ $(HDL4FPGA__ddr_init__def) : ../ddr/ddr_init.vhd \
 
 $(HDL4FPGA__ddr_mpu) \
 $(HDL4FPGA__ddr_mpu__arch) : ../ddr/ddr_mpu.vhd \
-		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__profiles) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -823,6 +823,7 @@ $(HDL4FPGA__ddr_mpu__arch) : ../ddr/ddr_mpu.vhd \
 
 $(HDL4FPGA__ddr_param) \
 $(HDL4FPGA__ddr_param__body) : ../ddr/ddr_param.vhd \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -833,6 +834,7 @@ $(HDL4FPGA__ddr_param__body) : ../ddr/ddr_param.vhd \
 
 $(HDL4FPGA__ddr_pgm) \
 $(HDL4FPGA__ddr_pgm__registered) : ../ddr/ddr_pgm.vhd \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -864,6 +866,7 @@ $(HDL4FPGA__ddr_rdfifo__struct) : ../ddr/ddr_rdfifo.vhd \
 $(HDL4FPGA__ddr_sch) \
 $(HDL4FPGA__ddr_sch__def) : ../ddr/ddr_sch.vhd \
 		$(HDL4FPGA__ddr_ph) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -872,18 +875,6 @@ $(HDL4FPGA__ddr_sch__def) : ../ddr/ddr_sch.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../ddr/ddr_sch.vhd
-
-$(HDL4FPGA__ddr_timer) \
-$(HDL4FPGA__ddr_timer__def) : ../ddr/ddr_timer.vhd \
-		$(HDL4FPGA__timer) \
-		$(HDL4FPGA__ddr_db) \
-		$(HDL4FPGA__ddr_param) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../ddr/ddr_timer.vhd
 
 $(HDL4FPGA__ddr_wrfifo) \
 $(HDL4FPGA__ddr_wrfifo__struct) : ../ddr/ddr_wrfifo.vhd \
@@ -932,7 +923,6 @@ $(HDL4FPGA__ddrto__spartan3) : ../xilinx/spartan3/ddro.vhd \
 $(HDL4FPGA__demo_graphics) \
 $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__ddr_param) \
-		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(IEEE__std_logic_unsigned) \
@@ -950,6 +940,8 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ddr_db) \
+		$(HDL4FPGA__profiles) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
@@ -1033,6 +1025,7 @@ $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
 
 $(HDL4FPGA__dmactlr) \
 $(HDL4FPGA__dmactlr__def) : ../ddr/dmactlr.vhd \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(HDL4FPGA__dmatrans) \
@@ -1049,6 +1042,7 @@ $(HDL4FPGA__dmatrans) \
 $(HDL4FPGA__dmatrans__def) : ../ddr/dmatrans.vhd \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__ddrdma) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -1092,6 +1086,7 @@ $(HDL4FPGA__ecp3_ddrphy__lscc) : ../latticesemi/ecp3/ecp3_ddrphy.vhd \
 		$(HDL4FPGA__aff) \
 		$(HDL4FPGA__clk_start) \
 		$(HDL4FPGA__ecp3_ddrbaphy) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -1127,6 +1122,7 @@ $(HDL4FPGA__ecp5_ddrphy) \
 $(HDL4FPGA__ecp5_ddrphy__lscc) : ../latticesemi/ecp5/ecp5_ddrphy.vhd \
 		$(HDL4FPGA__ecp5_ddrdqphy) \
 		$(HDL4FPGA__ecp5_ddrbaphy) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(IEEE__std_logic_textio) \
@@ -1452,6 +1448,7 @@ $(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/phadctor.vhd \
 
 $(HDL4FPGA__phy_memcycle) \
 $(HDL4FPGA__phy_memcycle__def) : ../ddr/phy_memcycle.vhd \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
@@ -1469,8 +1466,8 @@ $(HDL4FPGA__phy_rl__def) : ../ddr/phy_rl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../ddr/phy_rl.vhd
 
 $(HDL4FPGA__profiles) \
-$(HDL4FPGA__profiles__body) : ../demos/demo_profiles.vhd
-	$(VCOM) -2002 -work hdl4fpga ../demos/demo_profiles.vhd
+$(HDL4FPGA__profiles__body) : ../common/profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../common/profiles.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../common/rom.vhd \
@@ -1925,6 +1922,7 @@ $(HDL4FPGA__xc5v_ddrphy__virtex5) : ../xilinx/virtex5/xc5v_ddrphy.vhd \
 		$(HDL4FPGA__ddrdqphy) \
 		$(HDL4FPGA__xc5v_ddrbaphy) \
 		$(HDL4FPGA__ddro) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(UNISIM__vcomponents) \
@@ -1972,6 +1970,7 @@ $(HDL4FPGA__xc7a_ddrphy__virtex7) : ../xilinx/artix7/xc7a_ddrphy.vhd \
 		$(HDL4FPGA__xc7a_ddrdqphy) \
 		$(HDL4FPGA__xc7a_ddrbaphy) \
 		$(HDL4FPGA__ddro) \
+		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__ddr_db) \
 		$(HDL4FPGA__ddr_param) \
 		$(UNISIM__vcomponents) \

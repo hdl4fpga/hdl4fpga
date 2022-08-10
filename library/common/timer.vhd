@@ -43,23 +43,24 @@ architecture def of timer is
 	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
+	alias stage_length : natural_vector(stage_size'length-1 downto 0) is stage_size;
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			for i in 0 to stage_size'length-1 loop
+			for i in 0 to stage_length'length-1 loop
 				if req='1' then
 					cy(i+1) <= '0';
-				elsif cy(stage_size'length)='0' then
+				elsif cy(stage_length'length)='0' then
 					cy(i+1) <= q(i) and cy(i);
 				end if;
 			end loop;
 		end if;
 	end process;
-	en <= cy(stage_size'length downto 1) & not cy(stage_size'length);
+	en <= cy(stage_length'length downto 1) & not cy(stage_length'length);
 
-	cntr_g : for i in 0 to stage_size'length-1 generate
+	cntr_g : for i in 0 to stage_length'length-1 generate
 
 		impure function csize (
 			constant i : natural)
@@ -68,17 +69,17 @@ begin
 			if i = 0 then
 				return 0;
 			end if;
-			return stage_size(i-1);
+			return stage_length(i-1);
 		end;
 		constant size : natural := csize(i+1)-csize(i);
 		signal cntr : unsigned(0 to size-1);
 
 	begin
 		cntr_p : process (clk)
-			variable csize : natural_vector(stage_size'length downto 0) := (others => 0);
+			variable csize : natural_vector(stage_length'length downto 0) := (others => 0);
 		begin
 			if rising_edge(clk) then
-				csize(stage_size'length downto 1) := stage_size;
+				csize(stage_length'length downto 1) := stage_length;
 				if req='1' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif en(i)='1' then
@@ -92,5 +93,5 @@ begin
 		end process;
 		q(i) <= cntr(0);
 	end generate;
-	rdy <= cy(stage_size'length);
+	rdy <= cy(stage_length'length);
 end;
