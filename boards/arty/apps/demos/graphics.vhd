@@ -132,64 +132,64 @@ architecture graphics of arty is
 		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
 		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
 
-	constant sclk_phases   : natural := 1;
-	constant sclk_edges    : natural := 1;
-	constant data_edges    : natural := 1;
-	constant cmmd_gear     : natural := 2;
-	constant data_gear     : natural := 4;
+	constant sclk_phases  : natural := 1;
+	constant sclk_edges   : natural := 1;
+	constant data_edges   : natural := 1;
+	constant cmmd_gear    : natural := 2;
+	constant data_gear    : natural := 4;
 
-	constant bank_size     : natural := ddr3_ba'length;
-	constant addr_size     : natural := ddr3_a'length;
-	constant coln_size     : natural := 10;
-	constant word_size     : natural := ddr3_dq'length;
-	constant byte_size     : natural := ddr3_dq'length/ddr3_dqs_p'length;
+	constant bank_size    : natural := ddr3_ba'length;
+	constant addr_size    : natural := ddr3_a'length;
+	constant coln_size    : natural := 10;
+	constant word_size    : natural := ddr3_dq'length;
+	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
 
-	signal ddr_clk0        : std_logic;
-	signal ddr_clk0x2      : std_logic;
-	signal ddr_clk90x2     : std_logic;
-	signal ddr_clk90       : std_logic;
-	signal ddrsys_rst      : std_logic;
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk0x2     : std_logic;
+	signal ddr_clk90x2    : std_logic;
+	signal ddr_clk90      : std_logic;
+	signal ddrsys_rst     : std_logic;
 
-	signal ctlrphy_frm     : std_logic;
-	signal ctlrphy_trdy    : std_logic;
-	signal ctlrphy_ini     : std_logic;
-	signal ctlrphy_rw      : std_logic;
-	signal ctlrphy_wlreq   : std_logic;
-	signal ctlrphy_wlrdy   : std_logic;
-	signal ctlrphy_rlreq   : std_logic;
-	signal ctlrphy_rlrdy   : std_logic;
+	signal ctlrphy_frm    : std_logic;
+	signal ctlrphy_trdy   : std_logic;
+	signal ctlrphy_ini    : std_logic;
+	signal ctlrphy_rw     : std_logic;
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
 
-	signal ddr_ba          : std_logic_vector(ddr3_ba'range);
-	signal ddr_a           : std_logic_vector(ddr3_a'range);
-	signal ctlrphy_rst     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cke     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cs      : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_ras     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cas     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_we      : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_odt     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba      : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
-	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
-	signal ctlrphy_sti     : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
+	signal ddr_a          : std_logic_vector(ddr3_a'range);
+	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_we     : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
+	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-	signal ddr3_clk        : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo        : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt        : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
 	type video_modes is (
 		modedebug,
