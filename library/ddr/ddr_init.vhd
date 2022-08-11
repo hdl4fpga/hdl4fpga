@@ -938,8 +938,9 @@ begin
 			for i in timer_tab'range loop
 				if timer_tab(i).tid = ddr_timer_id then
 					timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
+					exit;
 				else
-					assert i=timer_tab'right 
+					assert i/=timer_tab'right
 					report ">>>timer_sel_p<<< wrong id : " & tids'image(ddr_timer_id)
 					severity failure; 
 				end if;
@@ -947,20 +948,30 @@ begin
 		end process;
 
 		timer_b : block
-			generic (
-				timers : natural_vector);
-			generic map (
-				timers => get_timerset(get_timertab(tcp, chip, debug)));
-			port (
-				sys_clk : in  std_logic;
-				tmr_sel : in  std_logic_vector;
-				sys_req : in  std_logic;
-				sys_rdy : out std_logic);
-			port map(
-				sys_clk => ddr_init_clk,
-				tmr_sel => timer_sel,
-				sys_req => timer_req,
-				sys_rdy => timer_rdy);
+			-- Even block generics and ports were defined in VHDL 88, they stil are not
+			-- implemented on Xilinx ISE and Vivado, likely others tools too
+
+			-- generic (
+				-- timers : natural_vector);
+			-- generic map (
+				-- timers => get_timerset(get_timertab(tcp, chip, debug)));
+			constant timers : natural_vector := get_timerset(get_timertab(tcp, chip, debug));
+
+			-- port (
+				-- sys_clk : in  std_logic;
+				-- tmr_sel : in  std_logic_vector;
+				-- sys_req : in  std_logic;
+				-- sys_rdy : out std_logic);
+			-- port map(
+				-- sys_clk => ddr_init_clk,
+				-- tmr_sel => timer_sel,
+				-- sys_req => timer_req,
+				-- sys_rdy => timer_rdy);
+
+			alias sys_clk : std_logic is ddr_init_clk;
+			alias tmr_sel : std_logic_vector(timer_sel'range) is timer_sel;
+			alias sys_req : std_logic is timer_req;
+			alias sys_rdy : std_logic is timer_rdy;
 
 			constant stages     : natural := unsigned_num_bits(max(timers))/4;
 			constant timer_size : natural := unsigned_num_bits(max(timers))+stages;

@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -589,11 +589,7 @@ package body ddr_db is
 		timing : real)
 		return natural is
 	begin
-		if (timing/period)*period < timing then
-			return natural((timing+period)/period);
-		else
-			return natural(timing/period);
-		end if;
+		return  natural(ceil(timing/period));
 	end;
 
 	function to_ddrlatency (
