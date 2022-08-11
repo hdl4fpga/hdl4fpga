@@ -29,14 +29,9 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
+use hdl4fpga.ddr_param.all;
 
 package ddr_db is
-	type sdrams is (
-		sdr,
-		ddr,
-		ddr2,
-		ddr3);
-
 	type sdram_chips is (
 		MT46V256M6T,
 		MT41J1G15E,
@@ -46,80 +41,12 @@ package ddr_db is
 		AS4CD3LC12,
 		MT48LC256MA27E);
 
-	type sdram_parameters is (
-		tPreRST,
-		tPstRST,
-		tXPR,
-		tWR,
-		tRP,
-		tRCD,
-		tRFC,
-		tMRD,
-		tREFI,
-		tRPA);
-
-	type sdram_latency_rgtr is (
-		CL,
-		BL,
-		WRL,
-		CWL);
-
-	type sdram_latencies is (
-		cDLL,
-		MRD,
-		MODu,
-		XPR,
-		ZQINIT);
-
-	type device_latencies is (
-		STRL,
-		RWNL,
-		DQSZL,
-		DQSL,
-		DQZL,
-		WWNL,
-		STRXL,
-		RWNXL,
-		DQSZXL,
-		DQSXL,
-		DQZXL,
-		WWNXL,
-		WIDL,
-		RDFIFO_LAT);
-
-	constant code_size : natural := 3;
-	subtype code_t is std_logic_vector(0 to code_size-1);
-	type cnfglat_record is record
-		sdram : sdrams;
-		rgtr  : sdram_latency_rgtr;
-		lat   : natural;
-		code  : code_t;
-	end record;
-
-	type cnfglat_tab is array (natural range <>) of cnfglat_record;
-
 	type tmark_record is record
 		mark  : sdram_chips;
 		sdram : sdrams;
 	end record;
 
 	type tmark_tab is array (natural range <>) of tmark_record;
-
-	constant tmark_db : tmark_tab := (
-		(mark => MT48LC256MA27E, sdram => sdr),
-		(mark => MT46V256M6T,    sdram => ddr),
-		(mark => MT47H512M3,     sdram => ddr2),
-		(mark => MT41J1G15E,     sdram => ddr3),
-		(mark => MT41K2G125,     sdram => ddr3),
-		(mark => MT41K4G107,     sdram => ddr3),
-		(mark => AS4CD3LC12,     sdram => ddr3));
-
-	type sdram_latency_record is record
-		sdram : sdrams;
-		param : sdram_latencies;
-		value : natural;
-	end record;
-	type sdram_latency_vector is array (natural range <>) of sdram_latency_record;
 
 	type device_latency_record is record
 		fpga  : fpga_devices;
@@ -136,6 +63,15 @@ package ddr_db is
 	end record;
 
 	type timing_vector is array (natural range <>) of timing_record;
+
+	constant tmark_db : tmark_tab := (
+		(mark => MT48LC256MA27E, sdram => sdr),
+		(mark => MT46V256M6T,    sdram => ddr),
+		(mark => MT47H512M3,     sdram => ddr2),
+		(mark => MT41J1G15E,     sdram => ddr3),
+		(mark => MT41K2G125,     sdram => ddr3),
+		(mark => MT41K4G107,     sdram => ddr3),
+		(mark => AS4CD3LC12,     sdram => ddr3));
 
 	constant timing_tab : timing_vector := (
 		(mark => MT48LC256MA27E,    param => tPreRST, value => 100.0e-6),

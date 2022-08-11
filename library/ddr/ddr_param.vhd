@@ -27,9 +27,73 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_db.all;
 
 package ddr_param is
+
+	type sdram_parameters is (
+		tPreRST,
+		tPstRST,
+		tXPR,
+		tWR,
+		tRP,
+		tRCD,
+		tRFC,
+		tMRD,
+		tREFI,
+		tRPA);
+
+	type sdram_latency_rgtr is (
+		CL,
+		BL,
+		WRL,
+		CWL);
+
+	type sdram_latencies is (
+		cDLL,
+		MRD,
+		MODu,
+		XPR,
+		ZQINIT);
+
+	type device_latencies is (
+		STRL,
+		RWNL,
+		DQSZL,
+		DQSL,
+		DQZL,
+		WWNL,
+		STRXL,
+		RWNXL,
+		DQSZXL,
+		DQSXL,
+		DQZXL,
+		WWNXL,
+		WIDL,
+		RDFIFO_LAT);
+
+	type sdrams is (
+		sdr,
+		ddr,
+		ddr2,
+		ddr3);
+
+	type sdram_latency_record is record
+		sdram : sdrams;
+		param : sdram_latencies;
+		value : natural;
+	end record;
+	type sdram_latency_vector is array (natural range <>) of sdram_latency_record;
+
+	constant code_size : natural := 3;
+	subtype code_t is std_logic_vector(0 to code_size-1);
+	type cnfglat_record is record
+		sdram : sdrams;
+		rgtr  : sdram_latency_rgtr;
+		lat   : natural;
+		code  : code_t;
+	end record;
+
+	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
 	type ddr_cmd is record
 		cs  : std_logic;

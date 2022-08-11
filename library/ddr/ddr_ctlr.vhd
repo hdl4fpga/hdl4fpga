@@ -424,7 +424,7 @@ begin
 		data_gear   => data_gear,
 		word_size   => word_size,
 		byte_size   => byte_size,
-		data_delay  => ddr_latency(fpga, hdl4fpga.ddr_db.rdfifo_lat))
+		data_delay  => ddr_latency(fpga, rdfifo_lat))
 	port map (
 		sys_clk     => ctlr_clks(0),
 		sys_rdy     => ctlr_do_dv,
