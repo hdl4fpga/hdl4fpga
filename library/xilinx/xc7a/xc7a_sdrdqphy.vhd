@@ -301,7 +301,7 @@ begin
 		port map (
 			tp       => tp_dqssel,
 			sdr_clk  => clk0,
-			edge     => '0',
+			edge     => std_logic'('0'),
 			sdr_sti  => sys_sti(0),
 			sdr_sto  => sto,
 			dqs_smp  => smp,
