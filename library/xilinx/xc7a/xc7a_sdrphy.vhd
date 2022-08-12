@@ -311,11 +311,12 @@ architecture xc7a of xc7a_sdrphy is
 begin
 
 	sdr_clk_g : for i in sdr_clk'range generate
-		ck_i : entity hdl4fpga.ddro
+		ck_i :  oddr
 		port map (
-			clk => clk0x2,
-			dr => '0' xor clkinv,
-			df => '1' xor clkinv,
+			c => clk0x2,
+			ce => '1',
+			d1 => '0' xor clkinv,
+			d2 => '1' xor clkinv,
 			q  => sdr_clk(i));
 	end generate;
 

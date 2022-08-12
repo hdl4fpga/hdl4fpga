@@ -116,7 +116,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture virtex5 of xc5v_sdrphy is
+architecture xc5v of xc5v_sdrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -296,11 +296,12 @@ architecture virtex5 of xc5v_sdrphy is
 begin
 
 	sdr_clk_g : for i in sdr_clk'range generate
-		ck_i : entity hdl4fpga.ddro
+		ck_i : oddr
 		port map (
-			clk => clk0,
-			dr => '0' xor clkinv,
-			df => '1' xor clkinv,
+			c => clk0,
+			ce => '1',
+			d1 => '0' xor clkinv,
+			d2 => '1' xor clkinv,
 			q  => sdr_clk(i));
 	end generate;
 

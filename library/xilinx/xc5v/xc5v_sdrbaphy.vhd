@@ -57,7 +57,7 @@ end;
 
 library hdl4fpga;
 
-architecture virtex of xc5v_sdrbaphy is
+architecture xc5v of xc5v_sdrbaphy is
 
 begin
 

@@ -107,12 +107,14 @@ begin
 			d => phy_dqt(0),
 			q => sdr_dqt(i));
 
-		ddro_i : entity hdl4fpga.ddro
+		ddro_i : oddr
 		port map (
-			clk => clk90,
-			dr  => dqo(0),
-			df  => dqo(1),
-			q   => sdr_dqo(i));
+			c  => clk90,
+			ce => '1',
+			d1 => dqo(0),
+			d2 => dqo(1),
+			q  => sdr_dqo(i));
+
 	end generate;
 
 	dmo_g : block
@@ -165,19 +167,22 @@ begin
 			d => dmt(0),
 			q => sdr_dmt);
 
-		ddro_i : entity hdl4fpga.ddro
+		ddro_i : oddr
 		port map (
-			clk => clk90,
-			dr  => dmi(0),
-			df  => dmi(1),
-			q   => sdr_dmo);
+			c  => clk90,
+			ce => '1',
+			d1 => dmi(0),
+			d2 => dmi(1),
+			q  => sdr_dmo);
+
 	end block;
 
-	sto_i : entity hdl4fpga.ddro
+	sto_i : oddr
 	port map (
-		clk => clk90,
-		dr  => phy_sti(0),
-		df  => phy_sti(1),
+		c => clk90,
+		ce => '1',
+		d1  => phy_sti(0),
+		d2  => phy_sti(1),
 		q   => sdr_sto);
 
 	dqso_b : block
@@ -194,12 +199,13 @@ begin
 			d => phy_dqst(1),
 			q => sdr_dqst);
 
-		ddro_i : entity hdl4fpga.ddro
+		ddro_i : oddr
 		port map (
-			clk => clk0,
-			dr  => '0',
-			df  => phy_dqsi(0),
-			q   => sdr_dqso);
+			c  => clk0,
+			ce => '1',
+			d1 => '0',
+			d2 => phy_dqsi(0),
+			q  => sdr_dqso);
 
 	end block;
 end;
