@@ -30,7 +30,7 @@ use ecp3.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_param.all;
+use hdl4fpga.sdr_param.all;
 
 entity ecp3_ddrphy is
 	generic (

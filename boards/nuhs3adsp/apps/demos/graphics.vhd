@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 
@@ -403,7 +403,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => ddr_tcp,
+		sdr_tcp      => ddr_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,

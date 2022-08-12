@@ -21,8 +21,6 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -31,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -606,7 +604,7 @@ begin
 	generic map (
 		debug => debug,
 		profile      => profile_tab(profile).profile,
-		ddr_tcp      => ddr_tcp,
+		sdr_tcp      => ddr_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,

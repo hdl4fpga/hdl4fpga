@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 
@@ -248,7 +248,7 @@ architecture graphics of ulx3s is
 		sdram_speed'POS(app_tab(app).speed),
 		sdram_speed'POS(sdram133Mhz)));
 
-	constant ddr_tcp  : real := 
+	constant sdr_tcp  : real := 
 		real(sdram_tab(sdram_mode).pll.clki_div*sdram_tab(sdram_mode).pll.clkos2_div)/
 		(real(sdram_tab(sdram_mode).pll.clkfb_div*sdram_tab(sdram_mode).pll.clkop_div)*sys_freq);
 
@@ -612,7 +612,7 @@ begin
 	generic map (
 		profile      => 0,
 
-		ddr_tcp      => ddr_tcp,
+		sdr_tcp      => sdr_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
@@ -731,7 +731,7 @@ begin
 	-- VGA --
 	---------
 
-	ddr_g : for i in gpdi_dp'range generate
+	sdr_g : for i in gpdi_dp'range generate
 		signal q : std_logic;
 	begin
 		oddr_i : oddrx1f

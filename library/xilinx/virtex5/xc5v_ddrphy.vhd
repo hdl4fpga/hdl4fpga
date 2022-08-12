@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.ddr_param.all;
+use hdl4fpga.sdr_param.all;
 
 entity xc5v_ddrphy is
 	generic (

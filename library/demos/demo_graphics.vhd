@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.videopkg.all;
 
 entity demo_graphics is
@@ -37,7 +37,7 @@ entity demo_graphics is
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
 
-		ddr_tcp      : real;
+		sdr_tcp      : real;
 		fpga         : fpga_devices;
 		mark         : sdram_chips;
 		sclk_phases  : natural;
@@ -914,12 +914,12 @@ begin
 		signal inirdy    : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
-		ddrctlr_e : entity hdl4fpga.ddr_ctlr
+		ddrctlr_e : entity hdl4fpga.sdr_ctlr
 		generic map (
 			debug        => debug,
 			fpga         => fpga,
 			chip         => mark,
-			tcp          => ddr_tcp,
+			tcp          => sdr_tcp,
 
 			cmmd_gear    => cmmd_gear,
 			bank_size    => bank_size,

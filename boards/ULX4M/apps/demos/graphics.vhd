@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 
@@ -114,8 +114,8 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
-	signal ddr_a         : std_logic_vector(ddram_a'length-1 downto 0);
+	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
+	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -234,7 +234,7 @@ architecture graphics of ulx4m_ld is
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
 
-	constant ddr_tcp : real := 
+	constant sdr_tcp : real := 
 		real(ddram_tab(ddram_mode).pll.clki_div)/
 		(real(ddram_tab(ddram_mode).pll.clkos_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
@@ -332,7 +332,7 @@ begin
 		attribute FREQUENCY_PIN_CLKI   : string;
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
-		constant ddram_mhz : real := 1.0e-6/ddr_tcp;
+		constant ddram_mhz : real := 1.0e-6/sdr_tcp;
 
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
@@ -631,7 +631,7 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		ddr_tcp      => 2.0*ddr_tcp,
+		sdr_tcp      => 2.0*sdr_tcp,
 		fpga         => ecp5,
 		mark         => MT41K4G107,
 		sclk_phases  => sclk_phases,
@@ -696,8 +696,8 @@ begin
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_odt  => ctlrphy_odt(0),
-		ctlrphy_b    => ddr_ba,
-		ctlrphy_a    => ddr_a,
+		ctlrphy_b    => sdr_ba,
+		ctlrphy_a    => sdr_a,
 		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
 		ctlrphy_dso  => ctlrphy_dso,
@@ -722,20 +722,20 @@ begin
 		end if;
 	end process;
 
-	process (ddr_ba)
+	process (sdr_ba)
 	begin
-		for i in ddr_ba'range loop
+		for i in sdr_ba'range loop
 			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+				ctlrphy_ba(i*cmmd_gear+j) <= sdr_ba(i);
 			end loop;
 		end loop;
 	end process;
 
-	process (ddr_a)
+	process (sdr_a)
 	begin
-		for i in ddr_a'range loop
+		for i in sdr_a'range loop
 			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+				ctlrphy_a(i*cmmd_gear+j) <= sdr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -787,7 +787,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
 	generic map (
-		ddr_tcp       => ddr_tcp,
+		ddr_tcp       => sdr_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,

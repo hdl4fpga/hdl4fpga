@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.ddr_db.all;
+use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 
@@ -98,13 +98,13 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_st_dqs_open : std_logic;
+	signal sdr_st_dqs_open : std_logic;
 
-	signal ddr_clk         : std_logic_vector(0 downto 0);
-	signal ddr_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt         : std_logic_vector(sd_dq'range);
-	signal ddr_dqo         : std_logic_vector(sd_dq'range);
+	signal sdr_clk         : std_logic_vector(0 downto 0);
+	signal sdr_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdr_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdr_dqt         : std_logic_vector(sd_dq'range);
+	signal sdr_dqo         : std_logic_vector(sd_dq'range);
 
 	signal mii_clk         : std_logic;
 	signal video_clk       : std_logic;
@@ -138,15 +138,15 @@ architecture graphics of s3estarter is
 		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 2)),
 		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul =>  3, dcm_div => 1)));
 
-	type ddr_params is record
+	type sdr_params is record
 		pll : pll_params;
 		cas : std_logic_vector(0 to 3-1);
 	end record;
 
-	type ddr_speeds is (
-		ddr_133MHz,
-		ddr_166MHz,
-		ddr_200MHz);
+	type sdr_speeds is (
+		sdr_133MHz,
+		sdr_166MHz,
+		sdr_200MHz);
 
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
@@ -154,24 +154,24 @@ architecture graphics of s3estarter is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	type ddram_vector is array (ddr_speeds) of ddr_params;
-	constant ddr_tab : ddram_vector := (
-		ddr_133MHz => (pll => (dcm_mul =>  8, dcm_div => 3), cas => "010"),
-		ddr_166MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
-		ddr_200MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
+	type ddram_vector is array (sdr_speeds) of sdr_params;
+	constant sdr_tab : ddram_vector := (
+		sdr_133MHz => (pll => (dcm_mul =>  8, dcm_div => 3), cas => "010"),
+		sdr_166MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
+		sdr_200MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
 
 	type app_param is record
-		ddr_speed  : ddr_speeds;
+		sdr_speed  : sdr_speeds;
 		video_mode : video_modes;
 	end record;
 
 	type apparam_vector is array (apps) of app_param;
 	constant app_tab : apparam_vector := (
-		mode480p_ddr133mhz  => (ddr_133MHz, mode480p),
-		mode600p_ddr166mhz  => (ddr_166MHz, mode600p),
-		mode1080p_ddr200mhz => (ddr_200MHz, mode1080p));
+		mode480p_ddr133mhz  => (sdr_133MHz, mode480p),
+		mode600p_ddr166mhz  => (sdr_166MHz, mode600p),
+		mode1080p_ddr200mhz => (sdr_200MHz, mode1080p));
 
-	constant ddr_speed  : ddr_speeds  := app_tab(app).ddr_speed;
+	constant sdr_speed  : sdr_speeds  := app_tab(app).sdr_speed;
 
 	function setif (
 		constant expr  : boolean;
@@ -186,9 +186,9 @@ architecture graphics of s3estarter is
 	end;
 	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
 
-	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
+	constant sdr_param : sdr_params := sdr_tab(sdr_speed);
 
-	constant ddr_tcp   : real := real(ddr_param.pll.dcm_div)*sys_per/real(ddr_param.pll.dcm_mul);
+	constant sdr_tcp   : real := real(sdr_param.pll.dcm_div)*sys_per/real(sdr_param.pll.dcm_mul);
 
 	alias ctlr_clk   : std_logic is clk0;
 
@@ -227,8 +227,8 @@ begin
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => ddr_param.pll.dcm_mul,
-		dfs_div => ddr_param.pll.dcm_div)
+		dfs_mul => sdr_param.pll.dcm_mul,
+		dfs_div => sdr_param.pll.dcm_div)
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
@@ -375,7 +375,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		ddr_tcp      => ddr_tcp,
+		sdr_tcp      => sdr_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
@@ -419,7 +419,7 @@ begin
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => ddr_param.cas,
+		ctlr_cl      => sdr_param.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -488,7 +488,7 @@ begin
 		phy_sti     => ctlrphy_sto,
 		phy_sto     => ctlrphy_sti,
 
-		ddr_clk     => ddr_clk,
+		ddr_clk     => sdr_clk,
 		ddr_cke     => sd_cke,
 		ddr_cs      => sd_cs,
 		ddr_ras     => sd_ras,
@@ -498,32 +498,32 @@ begin
 		ddr_a       => sd_a,
 
 		ddr_dm      => sd_dm,
-		ddr_dqt     => ddr_dqt,
+		ddr_dqt     => sdr_dqt,
 		ddr_dqi     => sd_dq,
-		ddr_dqo     => ddr_dqo,
-		ddr_dqst    => ddr_dqst,
+		ddr_dqo     => sdr_dqo,
+		ddr_dqst    => sdr_dqst,
 		ddr_dqsi    => sd_dqs,
-		ddr_dqso    => ddr_dqso);
+		ddr_dqso    => sdr_dqso);
 
-	ddr_dqs_g : for i in sd_dqs'range generate
-		sd_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
+	sdr_dqs_g : for i in sd_dqs'range generate
+		sd_dqs(i) <= sdr_dqso(i) when sdr_dqst(i)='0' else 'Z';
 	end generate;
 
-	process (ddr_dqt, ddr_dqo)
+	process (sdr_dqt, sdr_dqo)
 	begin
 		for i in sd_dq'range loop
 			sd_dq(i) <= 'Z';
-			if ddr_dqt(i)='0' then
-				sd_dq(i) <= ddr_dqo(i);
+			if sdr_dqt(i)='0' then
+				sd_dq(i) <= sdr_dqo(i);
 			end if;
 		end loop;
 	end process;
 
-	ddr_clk_i : obufds
+	sdr_clk_i : obufds
 	generic map (
 		iostandard => "DIFF_SSTL2_I")
 	port map (
-		i  => ddr_clk(0),
+		i  => sdr_clk(0),
 		o  => sd_ck_p,
 		ob => sd_ck_n);
 
