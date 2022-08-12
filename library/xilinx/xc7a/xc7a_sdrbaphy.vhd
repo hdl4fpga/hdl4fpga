@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xc7a_ddrbaphy is
+entity xc7a_sdrbaphy is
 	generic (
 		DATA_EDGE  : string  := "OPPOSITE_EDGE";
 		GEAR       : natural := 2;
@@ -44,20 +44,20 @@ entity xc7a_ddrbaphy is
 		sys_we   : in  std_logic_vector(gear-1 downto 0);
 		sys_odt  : in  std_logic_vector(gear-1 downto 0);
 
-		ddr_rst  : out std_logic;
-		ddr_cs   : out std_logic;
-		ddr_cke  : out std_logic;
-		ddr_odt  : out std_logic;
-		ddr_ras  : out std_logic;
-		ddr_cas  : out std_logic;
-		ddr_we   : out std_logic;
-		ddr_b    : out std_logic_vector(bank_size-1 downto 0);
-		ddr_a    : out std_logic_vector(addr_size-1 downto 0));
+		sdr_rst  : out std_logic;
+		sdr_cs   : out std_logic;
+		sdr_cke  : out std_logic;
+		sdr_odt  : out std_logic;
+		sdr_ras  : out std_logic;
+		sdr_cas  : out std_logic;
+		sdr_we   : out std_logic;
+		sdr_b    : out std_logic_vector(bank_size-1 downto 0);
+		sdr_a    : out std_logic_vector(addr_size-1 downto 0));
 end;
 
 library hdl4fpga;
 
-architecture virtex of xc7a_ddrbaphy is
+architecture xc7a of xc7a_sdrbaphy is
 	signal clks : std_logic_vector(0 to 0);
 begin
 
@@ -71,7 +71,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_rst,
-		q(0)   => ddr_rst);
+		q(0)   => sdr_rst);
 
 	cke_i : entity hdl4fpga.omdr
 	generic map (
@@ -83,7 +83,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_cke,
-		q(0)   => ddr_cke);
+		q(0)   => sdr_cke);
 
 	cs_i : entity hdl4fpga.omdr
 	generic map (
@@ -95,7 +95,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_cs,
-		q(0)   => ddr_cs);
+		q(0)   => sdr_cs);
 
 	ras_i : entity hdl4fpga.omdr
 	generic map (
@@ -107,7 +107,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_ras,
-		q(0)   => ddr_ras);
+		q(0)   => sdr_ras);
 
 	cas_i : entity hdl4fpga.omdr
 	generic map (
@@ -119,7 +119,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_cas,
-		q(0)   => ddr_cas);
+		q(0)   => sdr_cas);
 
 	we_i : entity hdl4fpga.omdr
 	generic map (
@@ -131,7 +131,7 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_we,
-		q(0)   => ddr_we);
+		q(0)   => sdr_we);
 
 	odt_i : entity hdl4fpga.omdr
 	generic map (
@@ -143,30 +143,30 @@ begin
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_odt,
-		q(0)   => ddr_odt);
+		q(0)   => sdr_odt);
 
 	ba_i : entity hdl4fpga.omdr
 	generic map (
 		DATA_EDGE => DATA_EDGE,
-		size   => ddr_b'length,
+		size   => sdr_b'length,
 		gear   => gear)
 	port map (
 		rst    => rst,
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_b,
-		q      => ddr_b);
+		q      => sdr_b);
 
 	a_i : entity hdl4fpga.omdr
 	generic map (
 		DATA_EDGE => DATA_EDGE,
-		size   => ddr_a'length,
+		size   => sdr_a'length,
 		gear   => gear)
 	port map (
 		rst    => rst,
 		clk(0) => clk0,
 		clk(1) => '-',
 		d      => sys_a,
-		q      => ddr_a);
+		q      => sdr_a);
 
 end;

@@ -425,7 +425,7 @@ begin
 
 	end block;
 
-	ddrbaphy_i : entity hdl4fpga.xc5v_sdrbaphy
+	sdrbaphy_i : entity hdl4fpga.xc5v_sdrbaphy
 	generic map (
 		GEAR      => CMMD_GEAR,
 		bank_size => bank_size,
@@ -464,7 +464,7 @@ begin
 	byte_g : for i in sdr_dqsi'range  generate
 	begin
 
-		ddrdqphy_i : entity hdl4fpga.ddrdqphy
+		sdrdqphy_i : entity hdl4fpga.xc5v_sdrdqphy
 		generic map (
 			taps      => taps,
 			data_edge => data_edge,

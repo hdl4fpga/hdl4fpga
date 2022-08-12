@@ -32,7 +32,7 @@ use unisim.vcomponents.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrdqphy is
+entity xc5v_sdrdqphy is
 	generic (
 		taps       : natural;
 		data_gear  : natural;
@@ -78,7 +78,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture virtex5 of ddrdqphy is
+architecture xc5v of xc5v_sdrdqphy is
 
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
