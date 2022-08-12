@@ -68,7 +68,7 @@ end;
 
 architecture arch of ddr_mpu is
 
-	constant stdr         : sdrams := ddr_stdr(chip);
+	constant stdr         : sdr_standards := sdrmark_standard(chip);
 
 	constant lwr  : natural  := to_ddrlatency(tcp, ddr_timing(chip, twr)+tcp*real(ddr_latency(fpga, dqsxl)));
 	constant lrcd : natural  := to_ddrlatency(tcp, chip, trcd);

@@ -140,13 +140,13 @@ architecture def of ddr_sch is
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
-	constant stdr         : sdrams := ddr_stdr(chip);
-	constant strl_tab     : natural_vector   := ddr_schtab(stdr, fpga, strl);
-	constant rwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, rwnl);
-	constant dqszl_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqszl);
-	constant dqsol_tab    : natural_vector   := ddr_schtab(stdr, fpga, dqsl);
-	constant dqzl_tab     : natural_vector   := ddr_schtab(stdr, fpga, dqzl);
-	constant wwnl_tab     : natural_vector   := ddr_schtab(stdr, fpga, wwnl);
+	constant stdr         : sdr_standards  := sdrmark_standard(chip);
+	constant strl_tab     : natural_vector := ddr_schtab(stdr, fpga, strl);
+	constant rwnl_tab     : natural_vector := ddr_schtab(stdr, fpga, rwnl);
+	constant dqszl_tab    : natural_vector := ddr_schtab(stdr, fpga, dqszl);
+	constant dqsol_tab    : natural_vector := ddr_schtab(stdr, fpga, dqsl);
+	constant dqzl_tab     : natural_vector := ddr_schtab(stdr, fpga, dqzl);
+	constant wwnl_tab     : natural_vector := ddr_schtab(stdr, fpga, wwnl);
 
 	constant strx_lat     : natural          := ddr_latency(fpga, strxl);
 	constant rwnx_lat     : natural          := ddr_latency(fpga, rwnxl);

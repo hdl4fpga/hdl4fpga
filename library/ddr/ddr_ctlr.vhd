@@ -185,11 +185,11 @@ architecture mix of ddr_ctlr is
 		return std_logic_vector(val);
 	end;
 
-	constant stdr         : sdrams := ddr_stdr(chip);
+	constant stdr    : sdr_standards    := sdrmark_standard(chip);
 
-	constant bl_cod       : std_logic_vector := ddr_latcod(stdr, bl);
-	constant cl_cod       : std_logic_vector := ddr_latcod(stdr, cl);
-	constant cwl_cod      : std_logic_vector := ddr_latcod(stdr, cwl); --ddr_selcwl(stdr));
+	constant bl_cod  : std_logic_vector := ddr_latcod(stdr, bl);
+	constant cl_cod  : std_logic_vector := ddr_latcod(stdr, cl);
+	constant cwl_cod : std_logic_vector := ddr_latcod(stdr, cwl); --ddr_selcwl(stdr));
 
 
 	subtype byte is std_logic_vector(0 to byte_size-1);

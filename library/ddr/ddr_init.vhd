@@ -140,7 +140,7 @@ architecture def of ddr_init is
 		tddr3_zqinit,
 		tddr3_ref);
 
-	constant stdr : sdrams := ddr_stdr(chip);
+	constant stdr : sdr_standards := sdrmark_standard(chip);
 
 	signal init_rdy : std_logic;
 
@@ -494,7 +494,7 @@ begin
 		end;
 
 		function ddr_mrfile(
-			constant ddr_stdr    : sdrams;
+			constant ddr_stdr    : sdr_standards;
 	
 			constant ddr_mr_addr : ddrmr_addr;
 			constant ddr_mr_srt  : std_logic_vector;
@@ -734,25 +734,25 @@ begin
 									--    |||||
 									--    vvvvv
 		constant ddr3_pgm : s_table := (
-			(sc_rst,   sc3_rstrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx,   ddr_mrx, tddr3_rstrdy),
-			(sc3_rstrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,   ddr_mrx, tddr3_cke),
-			(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, tddr3_mrd),
-			(sc3_lmr2, sc3_lmr3, "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, tddr3_mrd),
-			(sc3_lmr3, sc3_lmr1, "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mrd),
-			(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, tddr3_mod),
-			(sc3_lmr0, sc3_zqi,  "0", "0", "11000", ddr_zqc, ddr3mr_zqc,    ddr_mrx, tddr3_zqinit),
-			(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl,  ddr_mr1, tddr3_mod),
-			(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wldqsen),
-			(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
-			(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
-			(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_mrd),
-			(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mod),
-			(sc3_wlf,  sc3_wai,  "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_dll),
-			(sc3_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref),
-			(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref));
+			(sc_rst,   sc3_rstrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_rstrdy),
+			(sc3_rstrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_cke),
+			(sc3_cke,  sc3_lmr2,   "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, tddr3_mrd),
+			(sc3_lmr2, sc3_lmr3,   "0", "0", "11000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, tddr3_mrd),
+			(sc3_lmr3, sc3_lmr1,   "0", "0", "11000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mrd),
+			(sc3_lmr1, sc3_lmr0,   "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, tddr3_mod),
+			(sc3_lmr0, sc3_zqi,    "0", "0", "11000", ddr_zqc, ddr3mr_zqc,    ddr_mrx, tddr3_zqinit),
+			(sc3_zqi,  sc3_wle,    "0", "0", "11000", ddr_mrs, ddr3mr_enawl,  ddr_mr1, tddr3_mod),
+			(sc3_wle,  sc3_wls,    "0", "0", "11001", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wldqsen),
+			(sc3_wls,  sc3_wlc,    "0", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
+			(sc3_wlc,  sc3_wlc,    "1", "0", "11011", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_wlc),
+			(sc3_wlc,  sc3_wlo,    "1", "1", "11010", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_mrd),
+			(sc3_wlo,  sc3_wlf,    "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, tddr3_mod),
+			(sc3_wlf,  sc3_wai,    "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_dll),
+			(sc3_wai,  sc_ref,     "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref),
+			(sc_ref,   sc_ref,     "0", "0", "11110", ddr_nop, ddrmr_mrx,     ddr_mrx, tddr3_ref));
 
 		function select_pgm (
-			constant ddr_stdr : sdrams)
+			constant ddr_stdr : sdr_standards)
 			return s_table is
 		begin
 			case ddr_stdr is
@@ -884,7 +884,7 @@ begin
 			constant debug : boolean)
 			return timer_vector is
 		begin
-			case ddr_stdr(chip) is
+			case sdrmark_standard(chip) is
 			when sdr|ddr =>
 				return (
 					(tsdr_rst, to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1)),
