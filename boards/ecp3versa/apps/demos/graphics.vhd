@@ -846,7 +846,7 @@ begin
 		end if;
 	end process;
 	
-	ddrphy_e : entity hdl4fpga.ecp3_ddrphy
+	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
 	generic map (
 		taps          => natural(floor(ddr_tcp/26.0e-12)),
 		cmmd_gear     => cmmd_gear,
@@ -893,20 +893,20 @@ begin
 		phy_sti       => ctlrphy_sto,
 		phy_sto       => ctlrphy_sti,
 
-		ddr_rst       => ddr3_rst,
-		ddr_ck        => ddr3_clk,
-		ddr_cke       => ddr3_cke,
-		ddr_cs        => ddr3_cs,
-		ddr_ras       => ddr3_ras,
-		ddr_cas       => ddr3_cas,
-		ddr_we        => ddr3_we,
-		ddr_odt       => ddr3_odt,
-		ddr_b         => ddr3_ba,
-		ddr_a         => ddr3_a,
+		sdr_rst       => ddr3_rst,
+		sdr_ck        => ddr3_clk,
+		sdr_cke       => ddr3_cke,
+		sdr_cs        => ddr3_cs,
+		sdr_ras       => ddr3_ras,
+		sdr_cas       => ddr3_cas,
+		sdr_we        => ddr3_we,
+		sdr_odt       => ddr3_odt,
+		sdr_b         => ddr3_ba,
+		sdr_a         => ddr3_a,
 
-		ddr_dm        => ddr3_dm,
-		ddr_dq        => ddr3_dq,
-		ddr_dqs       => ddr3_dqs);
+		sdr_dm        => ddr3_dm,
+		sdr_dq        => ddr3_dq,
+		sdr_dqs       => ddr3_dqs);
 
 	-- VGA --
 	---------

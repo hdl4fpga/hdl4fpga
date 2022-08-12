@@ -782,7 +782,7 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ddrphy_e : entity hdl4fpga.xc7a_ddrphy
+	sdrphy_e : entity hdl4fpga.xc7a_sdrphy
 	generic map (
 		taps      => natural(floor(ddr_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size => bank_size,
@@ -837,23 +837,23 @@ begin
 		sys_sti   => ctlrphy_sto,
 		sys_sto   => ctlrphy_sti,
 
-		ddr_rst   => ddr3_reset,
-		ddr_clk   => ddr3_clk,
-		ddr_cke   => ddr3_cke,
-		ddr_cs    => ddr3_cs,
-		ddr_ras   => ddr3_ras,
-		ddr_cas   => ddr3_cas,
-		ddr_we    => ddr3_we,
-		ddr_b     => ddr3_ba,
-		ddr_a     => ddr3_a,
-		ddr_odt   => ddr3_odt,
---		ddr_dm    => ddr3_dm,
-		ddr_dqo   => ddr3_dqo,
-		ddr_dqi   => ddr3_dq,
-		ddr_dqt   => ddr3_dqt,
-		ddr_dqst  => ddr3_dqst,
-		ddr_dqsi  => ddr3_dqsi,
-		ddr_dqso  => ddr3_dqso);
+		sdr_rst   => ddr3_reset,
+		sdr_clk   => ddr3_clk,
+		sdr_cke   => ddr3_cke,
+		sdr_cs    => ddr3_cs,
+		sdr_ras   => ddr3_ras,
+		sdr_cas   => ddr3_cas,
+		sdr_we    => ddr3_we,
+		sdr_b     => ddr3_ba,
+		sdr_a     => ddr3_a,
+		sdr_odt   => ddr3_odt,
+--		sdr_dm    => ddr3_dm,
+		sdr_dqo   => ddr3_dqo,
+		sdr_dqi   => ddr3_dq,
+		sdr_dqt   => ddr3_dqt,
+		sdr_dqst  => ddr3_dqst,
+		sdr_dqsi  => ddr3_dqsi,
+		sdr_dqso  => ddr3_dqso);
 
 	ddriob_b : block
 	begin

@@ -714,7 +714,7 @@ begin
 		end if;
 	end process;
 
-	ddrphy_e : entity hdl4fpga.xc5v_ddrphy
+	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
 	generic map (
 		taps        => natural(floor(ddr_tcp*(64.0*200.0e6)))-1,
 		data_edge   => true,
@@ -757,25 +757,25 @@ begin
 		sys_odt     => ctlrphy_odt,
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
-		ddr_clk     => ddr2_clk,
-		ddr_cke     => ddr_cke,
-		ddr_cs      => ddr_cs,
-		ddr_ras     => ddr2_ras,
-		ddr_cas     => ddr2_cas,
-		ddr_we      => ddr2_we,
-		ddr_b       => ddr2_ba,
-		ddr_a       => ddr2_a,
-		ddr_odt     => ddr_odt,
+		sdr_clk     => ddr2_clk,
+		sdr_cke     => ddr_cke,
+		sdr_cs      => ddr_cs,
+		sdr_ras     => ddr2_ras,
+		sdr_cas     => ddr2_cas,
+		sdr_we      => ddr2_we,
+		sdr_b       => ddr2_ba,
+		sdr_a       => ddr2_a,
+		sdr_odt     => ddr_odt,
 
-		ddr_dmt     => ddr_dmt,
-		ddr_dmi     => ddr_dmi,
-		ddr_dmo     => ddr_dmo,
-		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr2_d,
-		ddr_dqt     => ddr2_dqt,
-		ddr_dqst    => ddr2_dqst,
-		ddr_dqsi    => ddr2_dqsi,
-		ddr_dqso    => ddr2_dqso);
+		sdr_dmt     => ddr_dmt,
+		sdr_dmi     => ddr_dmi,
+		sdr_dmo     => ddr_dmo,
+		sdr_dqo     => ddr2_dqo,
+		sdr_dqi     => ddr2_d,
+		sdr_dqt     => ddr2_dqt,
+		sdr_dqst    => ddr2_dqst,
+		sdr_dqsi    => ddr2_dqsi,
+		sdr_dqso    => ddr2_dqso);
 
 	ddr2_cs  <= (others => ddr_cs);
 	ddr2_cke <= (others => ddr_cke);

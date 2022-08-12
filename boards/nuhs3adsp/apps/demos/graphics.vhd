@@ -489,7 +489,7 @@ begin
 		end if;
 	end process;
 
-	ddrphy_e : entity hdl4fpga.xc3s_ddrphy
+	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
 		gate_delay  => 2,
 		loopback    => true,
@@ -525,26 +525,26 @@ begin
 		phy_sti     => ctlrphy_sto,
 		phy_sto     => ctlrphy_sti,
 
-		ddr_sto(0)  => ddr_st_dqs,
-		ddr_sto(1)  => ddr_st_dqs_open,
-		ddr_sti(0)  => ddr_st_lp_dqs,
-		ddr_sti(1)  => ddr_st_lp_dqs,
-		ddr_clk     => ddr_clk,
-		ddr_cke     => ddr_cke,
-		ddr_cs      => ddr_cs,
-		ddr_ras     => ddr_ras,
-		ddr_cas     => ddr_cas,
-		ddr_we      => ddr_we,
-		ddr_b       => ddr_ba,
-		ddr_a       => ddr_a,
+		sdr_sto(0)  => ddr_st_dqs,
+		sdr_sto(1)  => ddr_st_dqs_open,
+		sdr_sti(0)  => ddr_st_lp_dqs,
+		sdr_sti(1)  => ddr_st_lp_dqs,
+		sdr_clk     => ddr_clk,
+		sdr_cke     => ddr_cke,
+		sdr_cs      => ddr_cs,
+		sdr_ras     => ddr_ras,
+		sdr_cas     => ddr_cas,
+		sdr_we      => ddr_we,
+		sdr_b       => ddr_ba,
+		sdr_a       => ddr_a,
 
-		ddr_dm      => ddr_dm,
-		ddr_dqt     => ddr_dqt,
-		ddr_dqi     => ddr_dq,
-		ddr_dqo     => ddr_dqo,
-		ddr_dqst    => ddr_dqst,
-		ddr_dqsi    => ddr_dqs,
-		ddr_dqso    => ddr_dqso);
+		sdr_dm      => ddr_dm,
+		sdr_dqt     => ddr_dqt,
+		sdr_dqi     => ddr_dq,
+		sdr_dqo     => ddr_dqo,
+		sdr_dqst    => ddr_dqst,
+		sdr_dqsi    => ddr_dqs,
+		sdr_dqso    => ddr_dqso);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
@@ -577,11 +577,12 @@ begin
 --		q   => adc_clkab);
 	adc_clkab <= 'Z';
 
-	clk_videodac_e : entity hdl4fpga.ddro
+	clk_videodac_i : oddr
 	port map (
-		clk => video_clk,
-		dr => '0',
-		df => '1',
+		c => video_clk,
+		ce => '1',
+		d1 => '0',
+		d2 => '1',
 		q => clk_videodac);
 
 --	clk_mii_e : entity hdl4fpga.ddro

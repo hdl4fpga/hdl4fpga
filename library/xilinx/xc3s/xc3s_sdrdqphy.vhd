@@ -101,11 +101,13 @@ begin
 				do(0) => dqo(j));
 		end generate;
 
-		ddrto_i : entity hdl4fpga.ddrto
+		ddrto_i : fdce
 		port map (
-			clk => clk90,
-			d => phy_dqt(0),
-			q => sdr_dqt(i));
+			clr => '0',
+			c   => clk90,
+			ce  => '1',
+			d   => phy_dqt(0),
+			q   => sdr_dqt(i));
 
 		ddro_i : oddr
 		port map (
@@ -161,11 +163,13 @@ begin
 
 		end generate;
 
-		ddrto_i : entity hdl4fpga.ddrto
+		ddrto_i : fdce
 		port map (
-			clk => clk90,
-			d => dmt(0),
-			q => sdr_dmt);
+			clr => '0',
+			c   => clk90,
+			ce  => '1',
+			d   => dmt(0),
+			q   => sdr_dmt);
 
 		ddro_i : oddr
 		port map (
@@ -193,11 +197,13 @@ begin
 	begin
 
 		clk_n <= not clk0;
-		ddrto_i : entity hdl4fpga.ddrto
+		ddrto_i : fdce
 		port map (
-			clk => clk0,
-			d => phy_dqst(1),
-			q => sdr_dqst);
+			clr => '0',
+			c   => clk0,
+			ce  => '1',
+			d   => phy_dqst(1),
+			q   => sdr_dqst);
 
 		ddro_i : oddr
 		port map (

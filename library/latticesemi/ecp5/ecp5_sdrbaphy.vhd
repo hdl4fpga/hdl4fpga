@@ -27,7 +27,7 @@ use ieee.std_logic_1164.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity ecp5_ddrbaphy is
+entity ecp5_sdrbaphy is
 	generic (
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
@@ -47,19 +47,19 @@ entity ecp5_ddrbaphy is
 		phy_we  : in  std_logic_vector(0 to cmmd_gear-1);
 		phy_odt : in  std_logic_vector(0 to cmmd_gear-1);
 
-		ddr_rst : out std_logic;
-		ddr_cs  : out std_logic;
-		ddr_ck  : out std_logic;
-		ddr_cke : out std_logic;
-		ddr_odt : out std_logic;
-		ddr_ras : out std_logic;
-		ddr_cas : out std_logic;
-		ddr_we  : out std_logic;
-		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
-		ddr_a   : out std_logic_vector(addr_size-1 downto 0));
+		sdr_rst : out std_logic;
+		sdr_cs  : out std_logic;
+		sdr_ck  : out std_logic;
+		sdr_cke : out std_logic;
+		sdr_odt : out std_logic;
+		sdr_ras : out std_logic;
+		sdr_cas : out std_logic;
+		sdr_we  : out std_logic;
+		sdr_b   : out std_logic_vector(bank_size-1 downto 0);
+		sdr_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
-architecture lscc of ecp5_ddrbaphy is
+architecture ecp5 of ecp5_sdrbaphy is
 begin
 
 	ck_b : block
@@ -80,7 +80,7 @@ begin
 			del_mode => "DQS_CMD_CLK")
 		port map (
 			a => ck,
-			z => ddr_ck);
+			z => sdr_ck);
 
 	end block;
 
@@ -91,7 +91,7 @@ begin
 			sclk => sclk,
 			d0 => phy_b(cmmd_gear*i+0),
 			d1 => phy_b(cmmd_gear*i+1),
-			q  => ddr_b(i));
+			q  => sdr_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
@@ -100,7 +100,7 @@ begin
 			sclk => sclk,
 			d0   => phy_a(cmmd_gear*i+0),
 			d1   => phy_a(cmmd_gear*i+1),
-			q    => ddr_a(i));
+			q    => sdr_a(i));
 	end generate;
 
 	ras_i : oddrx1f
@@ -108,21 +108,21 @@ begin
 		sclk => sclk,
 		d0   => phy_ras(0),
 		d1   => phy_ras(1),
-		q    => ddr_ras);
+		q    => sdr_ras);
 
 	cas_i :oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_cas(0),
 		d1   => phy_cas(1),
-		q    => ddr_cas);
+		q    => sdr_cas);
 
 	we_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_we(0),
 		d1   => phy_we(1),
-		q    => ddr_we);
+		q    => sdr_we);
 
 	cs_b : block
 		signal cs : std_logic;
@@ -142,7 +142,7 @@ begin
 			del_mode => "DQS_ALIGNED_X2")
 		port map (
 			a => cs,
-			z => ddr_cs);
+			z => sdr_cs);
 
 	end block;
 
@@ -151,20 +151,20 @@ begin
 		sclk => sclk,
 		d0   => phy_cke(0),
 		d1   => phy_cke(1),
-		q    => ddr_cke);
+		q    => sdr_cke);
 
 	odt_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_odt(0),
 		d1   => phy_odt(1),
-		q    => ddr_odt);
+		q    => sdr_odt);
 
 	rst_i : oddrx1f
 	port map (
 		sclk => sclk,
 		d0   => phy_rst(0),
 		d1   => phy_rst(1),
-		q    => ddr_rst);
+		q    => sdr_rst);
 
 end;

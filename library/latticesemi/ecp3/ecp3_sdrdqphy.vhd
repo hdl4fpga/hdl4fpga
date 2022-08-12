@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library ecp3;
 use ecp3.components.all;
 
-entity ecp3_ddrdqphy is
+entity ecp3_sdrdqphy is
 	generic (
 		taps      : natural := 0;
 		DATA_GEAR : natural;
@@ -60,29 +60,29 @@ entity ecp3_ddrdqphy is
 		phy_dqst  : in  std_logic_vector(0 to DATA_GEAR-1);
 		phy_wlpha : out std_logic_vector(8-1 downto 0);
 
-		ddr_dmt   : out std_logic;
-		ddr_dmi   : in  std_logic := '-';
-		ddr_dmo   : out std_logic;
-		ddr_dqi   : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqt   : out std_logic_vector(byte_size-1 downto 0);
-		ddr_dqo   : out std_logic_vector(byte_size-1 downto 0);
+		sdr_dmt   : out std_logic;
+		sdr_dmi   : in  std_logic := '-';
+		sdr_dmo   : out std_logic;
+		sdr_dqi   : in  std_logic_vector(byte_size-1 downto 0);
+		sdr_dqt   : out std_logic_vector(byte_size-1 downto 0);
+		sdr_dqo   : out std_logic_vector(byte_size-1 downto 0);
 
-		ddr_dqsi  : in  std_logic;
-		ddr_dqst  : out std_logic;
-		ddr_dqso  : out std_logic);
+		sdr_dqsi  : in  std_logic;
+		sdr_dqst  : out std_logic;
+		sdr_dqso  : out std_logic);
 
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture lscc of ecp3_ddrdqphy is
+architecture ecp3 of ecp3_sdrdqphy is
 	
 	signal dqsw         : std_logic;
 	signal dqclk0       : std_logic;
 	signal dqclk1       : std_logic;
 
-	signal dqi          : std_logic_vector(ddr_dqi'range);
+	signal dqi          : std_logic_vector(sdr_dqi'range);
 
 	signal dqt          : std_logic_vector(phy_dqt'range);
 	signal dqst         : std_logic_vector(phy_dqst'range);
@@ -259,7 +259,7 @@ begin
 	end block;
 
 	dqs_pause <= pause or lv_pause;
-	dqsi <= transport ddr_dqsi after delay;
+	dqsi <= transport sdr_dqsi after delay;
 	dqsbufd_i : dqsbufd 
 --	generic map (
 --		NRZMODE => "ENABLED")
@@ -292,8 +292,8 @@ begin
 		dqclk0    => dqclk0,
 		dqclk1    => dqclk1);
 
-	dqi <= transport ddr_dqi after delay;
-	iddr_g : for i in ddr_dqi'range generate
+	dqi <= transport sdr_dqi after delay;
+	iddr_g : for i in sdr_dqi'range generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
 	begin
@@ -323,7 +323,7 @@ begin
 			eclkdqsr  => eclkdqsr,
 			ddrclkpol => ddrclkpol,
 			ddrlat    => ddrlat,
-			d         => ddr_dmi,
+			d         => sdr_dmi,
 			qa0       => phy_dmo(0),
 			qb0       => phy_dmo(1),
 			qa1       => phy_dmo(2),
@@ -343,7 +343,7 @@ begin
 			ta     => dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			q      => ddr_dqt(i));
+			q      => sdr_dqt(i));
 
 		oddrx2d_i : oddrx2d
 		port map (
@@ -354,7 +354,7 @@ begin
 			db0    => phy_dqi(1*byte_size+i),
 			da1    => phy_dqi(2*byte_size+i),
 			db1    => phy_dqi(3*byte_size+i),
-			q      => ddr_dqo(i));
+			q      => sdr_dqo(i));
 	end generate;
 
 	dm_b : block
@@ -367,7 +367,7 @@ begin
 			ta     => phy_dmt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			q      => ddr_dmt);
+			q      => sdr_dmt);
 
 		oddrx2d_i : oddrx2d
 		port map (
@@ -378,7 +378,7 @@ begin
 			db0    => phy_dmi(1),
 			da1    => phy_dmi(2),
 			db1    => phy_dmi(3),
-			q      => ddr_dmo);
+			q      => sdr_dmo);
 	end block;
 
 	dqst <= phy_dqst when wle='0' else (others => '0');
@@ -397,7 +397,7 @@ begin
 			ta      => dqst(2),
 			dqstclk => dqstclk,
 			dqsw    => dqsw,
-			q       => ddr_dqst);
+			q       => sdr_dqst);
 
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
@@ -408,6 +408,6 @@ begin
 			dqclk0  => dqclk0,
 			dqclk1  => dqclk1,
 			dqstclk => dqstclk,
-			q       => ddr_dqso);
+			q       => sdr_dqso);
 	end block;
 end;

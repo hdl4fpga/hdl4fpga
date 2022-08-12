@@ -785,9 +785,9 @@ begin
 		
 	end block;
 
-	ddrphy_e : entity hdl4fpga.ecp5_ddrphy
+	ddrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		ddr_tcp       => sdr_tcp,
+		sdr_tcp       => sdr_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,
@@ -832,20 +832,20 @@ begin
 		phy_sti       => ctlrphy_sto,
 		phy_sto       => ctlrphy_sti,
 
-		ddr_rst       => ddram_reset_n,
-		ddr_ck        => ddram_clk,
-		ddr_cke       => ddram_cke,
-		ddr_cs        => ddram_cs_n,
-		ddr_ras       => ddram_ras_n,
-		ddr_cas       => ddram_cas_n,
-		ddr_we        => ddram_we_n,
-		ddr_odt       => ddram_odt,
-		ddr_b         => ddram_ba,
-		ddr_a         => ddram_a,
+		sdr_rst       => ddram_reset_n,
+		sdr_ck        => ddram_clk,
+		sdr_cke       => ddram_cke,
+		sdr_cs        => ddram_cs_n,
+		sdr_ras       => ddram_ras_n,
+		sdr_cas       => ddram_cas_n,
+		sdr_we        => ddram_we_n,
+		sdr_odt       => ddram_odt,
+		sdr_b         => ddram_ba,
+		sdr_a         => ddram_a,
 
-		ddr_dm        => open,
-		ddr_dq        => ddram_dq,
-		ddr_dqs       => ddram_dqs,
+		sdr_dm        => open,
+		sdr_dq        => ddram_dq,
+		sdr_dqs       => ddram_dqs,
 		tp => tp_phy);
 	ddram_dm <= (others => '0');
 

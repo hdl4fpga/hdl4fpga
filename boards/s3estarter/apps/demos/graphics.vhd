@@ -452,7 +452,7 @@ begin
 		end if;
 	end process;
 
-	ddrphy_e : entity hdl4fpga.xc3s_ddrphy
+	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
 		gate_delay  => 2,
 		loopback    => false,
@@ -488,22 +488,22 @@ begin
 		phy_sti     => ctlrphy_sto,
 		phy_sto     => ctlrphy_sti,
 
-		ddr_clk     => sdr_clk,
-		ddr_cke     => sd_cke,
-		ddr_cs      => sd_cs,
-		ddr_ras     => sd_ras,
-		ddr_cas     => sd_cas,
-		ddr_we      => sd_we,
-		ddr_b       => sd_ba,
-		ddr_a       => sd_a,
+		sdr_clk     => sdr_clk,
+		sdr_cke     => sd_cke,
+		sdr_cs      => sd_cs,
+		sdr_ras     => sd_ras,
+		sdr_cas     => sd_cas,
+		sdr_we      => sd_we,
+		sdr_b       => sd_ba,
+		sdr_a       => sd_a,
 
-		ddr_dm      => sd_dm,
-		ddr_dqt     => sdr_dqt,
-		ddr_dqi     => sd_dq,
-		ddr_dqo     => sdr_dqo,
-		ddr_dqst    => sdr_dqst,
-		ddr_dqsi    => sd_dqs,
-		ddr_dqso    => sdr_dqso);
+		sdr_dm      => sd_dm,
+		sdr_dqt     => sdr_dqt,
+		sdr_dqi     => sd_dq,
+		sdr_dqo     => sdr_dqo,
+		sdr_dqst    => sdr_dqst,
+		sdr_dqsi    => sd_dqs,
+		sdr_dqso    => sdr_dqso);
 
 	sdr_dqs_g : for i in sd_dqs'range generate
 		sd_dqs(i) <= sdr_dqso(i) when sdr_dqst(i)='0' else 'Z';
