@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -68,12 +69,12 @@ end;
 
 architecture arch of sdr_mpu is
 
-	constant stdr         : sdr_standards := sdrmark_standard(chip);
+	constant stdr    : sdr_standards := sdrmark_standard(chip);
 
-	constant lwr  : natural  := to_sdrlatency(tcp, sdr_timing(chip, twr)+tcp*real(sdr_latency(fpga, dqsxl)));
-	constant lrcd : natural  := to_sdrlatency(tcp, chip, trcd);
-	constant lrfc : natural  := to_sdrlatency(tcp, chip, trfc);
-	constant lrp  : natural  := to_sdrlatency(tcp, chip, trp);
+	constant lwr     : natural          := natural(ceil(tcp, sdr_timing(chip, twr)+tcp*real(sdr_latency(fpga, dqsxl))));
+	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
+	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
+	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
 	constant bl_tab  : natural_vector   := sdr_lattab(stdr, bl);
 	constant cl_tab  : natural_vector   := sdr_lattab(stdr, cl);
 	constant cwl_tab : natural_vector   := sdr_lattab(stdr, cwl);

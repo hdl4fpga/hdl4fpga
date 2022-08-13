@@ -249,11 +249,6 @@ package sdr_db is
 
 	function to_sdrlatency (
 		constant period : real;
-		constant param  : real)
-		return natural;
-
-	function to_sdrlatency (
-		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
 		return natural;
