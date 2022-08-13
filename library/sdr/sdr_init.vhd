@@ -887,34 +887,34 @@ begin
 			case sdrmark_standard(chip) is
 			when sdr|ddr =>
 				return (
-					(tsdr_rst, to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1)),
-					(tddr_cke, to_ddrlatency(tCP, chip, tXPR)),
-					(tddr_mrd, to_ddrlatency(tCP, chip, tMRD)),
-					(tddr_rpa, to_ddrlatency(tCP, chip, tRP)),
-					(tddr_rfc, to_ddrlatency(tCP, chip, tRFC)),
+					(tsdr_rst, to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1)),
+					(tddr_cke, to_sdrlatency(tCP, chip, tXPR)),
+					(tddr_mrd, to_sdrlatency(tCP, chip, tMRD)),
+					(tddr_rpa, to_sdrlatency(tCP, chip, tRP)),
+					(tddr_rfc, to_sdrlatency(tCP, chip, tRFC)),
 					(tddr_dll, 200),
-					(tddr_ref, setif(not debug, to_ddrlatency(tCP, chip, tREFI), 21740)));
+					(tddr_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 21740)));
 			when ddr2 =>
 				return (
-					(tsdr_rst,  to_ddrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),
-					(tddr2_cke, to_ddrlatency(tcp, chip, tXPR)),
+					(tsdr_rst,  to_sdrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),
+					(tddr2_cke, to_sdrlatency(tcp, chip, tXPR)),
 					(tddr2_mrd, sdr_latency(stdr, mrd)),
-					(tddr2_rpa, to_ddrlatency(tcp, chip, tRPA)),
-					(tddr2_rfc, to_ddrlatency(tcp, chip, tRFC)),
+					(tddr2_rpa, to_sdrlatency(tcp, chip, tRPA)),
+					(tddr2_rfc, to_sdrlatency(tcp, chip, tRFC)),
 					(tddr2_dll, 200),
-					(tddr2_ref, to_ddrlatency(tcp, chip, tREFI)));
+					(tddr2_ref, to_sdrlatency(tcp, chip, tREFI)));
 			when ddr3 =>
 				return (
-					(tsdr_rst,  to_ddrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
-					(tddr3_rstrdy, to_ddrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
+					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
+					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
 					(tddr3_wlc, sdr_latency(stdr, MODu)),
 					(tddr3_wldqsen, 25),
-					(tddr3_cke, to_ddrlatency(tCP, chip, tXPR)),
-					(tddr3_mrd, to_ddrlatency(tCP, chip, tMRD)),
+					(tddr3_cke, to_sdrlatency(tCP, chip, tXPR)),
+					(tddr3_mrd, to_sdrlatency(tCP, chip, tMRD)),
 					(tddr3_mod, sdr_latency(stdr, MODu)),
 					(tddr3_dll, sdr_latency(stdr, cDLL)),
 					(tddr3_zqinit, sdr_latency(DDR3, ZQINIT)),
-					(tddr3_ref, setif(not debug, to_ddrlatency(tCP, chip, tREFI), 1725)));
+					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 1725)));
 			end case;
 		end;
 	

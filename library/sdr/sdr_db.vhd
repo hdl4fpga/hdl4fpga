@@ -247,12 +247,12 @@ package sdr_db is
 		constant tabid : device_latencies)
 		return natural_vector;
 
-	function to_ddrlatency (
+	function to_sdrlatency (
 		constant period : real;
-		constant timing : real)
+		constant param  : real)
 		return natural;
 
-	function to_ddrlatency (
+	function to_sdrlatency (
 		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
@@ -330,21 +330,21 @@ package body sdr_db is
 		return 0;
 	end;
 
-	function to_ddrlatency (
-		period : real;
-		timing : real)
+	function to_sdrlatency (
+		constant period : real;
+		constant param  : real)
 		return natural is
 	begin
-		return  natural(ceil(timing/period));
+		return  natural(ceil(param /period));
 	end;
 
-	function to_ddrlatency (
+	function to_sdrlatency (
 		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
 		return natural is
 	begin
-		return to_ddrlatency(period, sdr_timing(mark, param));
+		return to_sdrlatency(period, sdr_timing(mark, param));
 	end;
 
 	function sdr_schtab (

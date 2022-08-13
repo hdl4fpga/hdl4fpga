@@ -70,10 +70,10 @@ architecture arch of sdr_mpu is
 
 	constant stdr         : sdr_standards := sdrmark_standard(chip);
 
-	constant lwr  : natural  := to_ddrlatency(tcp, sdr_timing(chip, twr)+tcp*real(sdr_latency(fpga, dqsxl)));
-	constant lrcd : natural  := to_ddrlatency(tcp, chip, trcd);
-	constant lrfc : natural  := to_ddrlatency(tcp, chip, trfc);
-	constant lrp  : natural  := to_ddrlatency(tcp, chip, trp);
+	constant lwr  : natural  := to_sdrlatency(tcp, sdr_timing(chip, twr)+tcp*real(sdr_latency(fpga, dqsxl)));
+	constant lrcd : natural  := to_sdrlatency(tcp, chip, trcd);
+	constant lrfc : natural  := to_sdrlatency(tcp, chip, trfc);
+	constant lrp  : natural  := to_sdrlatency(tcp, chip, trp);
 	constant bl_tab  : natural_vector   := sdr_lattab(stdr, bl);
 	constant cl_tab  : natural_vector   := sdr_lattab(stdr, cl);
 	constant cwl_tab : natural_vector   := sdr_lattab(stdr, cwl);
