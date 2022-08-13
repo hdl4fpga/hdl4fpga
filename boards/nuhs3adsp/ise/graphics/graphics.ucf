@@ -112,15 +112,15 @@ TIMESPEC TS_ff2ram     = FROM FFS_clk0  TO RAMS_clk90 TIG;
 # Data Byte 0 #
 # ########### #
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y60;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y60;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
+INST "sdrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y60;
+INST "sdrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
+INST "sdrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y60;
+INST "sdrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
 
 # Data Byte 1 #
 # ########### #
 
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y82;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y82;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;
+INST "sdrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y82;
+INST "sdrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
+INST "sdrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y82;
+INST "sdrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;

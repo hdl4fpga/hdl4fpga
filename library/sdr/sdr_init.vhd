@@ -976,7 +976,7 @@ begin
 			constant stages     : natural := unsigned_num_bits(max(timers))/4;
 			constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	
-			function stage_size
+			function slices
 				return natural_vector is
 				variable val : natural_vector(stages downto 0);
 				variable quo : natural := timer_size mod stages;
@@ -1005,9 +1005,9 @@ begin
 					data  := (others => '-');
 					timer := timers(to_integer(unsigned(tmr_sel)));
 					for j in stages-1 downto 0 loop
-						size := stage_size(j+1)-stage_size(j);
+						size := slices(j+1)-slices(j);
 						data := std_logic_vector(unsigned(data) sll size);
-						data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(stage_size(j)-j)) mod 2**(size-1)) mod 2**size, size));
+						data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(slices(j)-j)) mod 2**(size-1)) mod 2**size, size));
 					end loop;
 					value <= data;
 				end if;
@@ -1015,7 +1015,7 @@ begin
 	
 			timer_e : entity hdl4fpga.timer
 			generic map (
-				stage_size => stage_size(stages downto 1))
+				slices => slices(stages downto 1))
 			port map (
 				data => value,
 				clk => sys_clk,

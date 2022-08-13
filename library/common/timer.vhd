@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity timer is
 	generic (
-		stage_size : natural_vector);
+		slices : natural_vector);
 	port (
 		data : in  std_logic_vector;
 		clk  : in  std_logic;
@@ -40,27 +40,27 @@ end;
 
 architecture def of timer is
 
-	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
-	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
-	signal q  : std_logic_vector(stage_size'length-1 downto 0);
-	alias stage_length : natural_vector(stage_size'length-1 downto 0) is stage_size;
+	signal cy : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
+	signal en : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
+	signal q  : std_logic_vector(slices'length-1 downto 0);
+	constant slices0 : natural_vector(slices'length-1 downto 0) := slices;
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			for i in 0 to stage_length'length-1 loop
+			for i in 0 to slices0'length-1 loop
 				if req='1' then
 					cy(i+1) <= '0';
-				elsif cy(stage_length'length)='0' then
+				elsif cy(slices0'length)='0' then
 					cy(i+1) <= q(i) and cy(i);
 				end if;
 			end loop;
 		end if;
 	end process;
-	en <= cy(stage_length'length downto 1) & not cy(stage_length'length);
+	en <= cy(slices0'length downto 1) & not cy(slices0'length);
 
-	cntr_g : for i in 0 to stage_length'length-1 generate
+	cntr_g : for i in 0 to slices0'length-1 generate
 
 		impure function csize (
 			constant i : natural)
@@ -69,17 +69,17 @@ begin
 			if i = 0 then
 				return 0;
 			end if;
-			return stage_length(i-1);
+			return slices0(i-1);
 		end;
 		constant size : natural := csize(i+1)-csize(i);
 		signal cntr : unsigned(0 to size-1);
 
 	begin
 		cntr_p : process (clk)
-			variable csize : natural_vector(stage_length'length downto 0) := (others => 0);
+			variable csize : natural_vector(slices0'length downto 0) := (others => 0);
 		begin
 			if rising_edge(clk) then
-				csize(stage_length'length downto 1) := stage_length;
+				csize(slices0'length downto 1) := slices0;
 				if req='1' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif en(i)='1' then
@@ -93,5 +93,5 @@ begin
 		end process;
 		q(i) <= cntr(0);
 	end generate;
-	rdy <= cy(stage_length'length);
+	rdy <= cy(slices0'length);
 end;

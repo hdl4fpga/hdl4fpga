@@ -262,15 +262,20 @@ architecture xnlx of xc3s_sdrphy is
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
 
+	signal clk0_n : std_logic;
 begin
 
+	clk0_n <= not clk0;
 	sdr_clk_g : for i in sdr_clk'range generate
-		ck_i : oddr
+		oddr_i : oddr2
 		port map (
-			c => clk0,
+			c0 => clk0,
+			c1 => clk0_n,
 			ce => '1',
-			d1 => '0' xor clkinv,
-			d2 => '1' xor clkinv,
+			r  => '0',
+			s  => '0',
+			d0 => '0' xor clkinv,
+			d1 => '1' xor clkinv,
 			q  => sdr_clk(i));
 	end generate;
 

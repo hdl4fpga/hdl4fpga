@@ -65,8 +65,12 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture xilinx of xc3s_sdrdqphy is
+	signal clk0_n  : std_logic;
+	signal clk90_n : std_logic;
 begin
 
+	clk0_n  <= not clk0;
+	clk90_n <= not clk90;
 	iddr_g : for i in 0 to byte_size-1 generate
 		phase_g : for j in  gear-1 downto 0 generate
 			phy_dqo(j*byte_size+i) <= sdr_dqi(i);
@@ -109,13 +113,17 @@ begin
 			d   => phy_dqt(0),
 			q   => sdr_dqt(i));
 
-		ddro_i : oddr
+		oddr_i : oddr2
 		port map (
-			c  => clk90,
+			c0 => clk90,
+			c1 => clk90_n,
 			ce => '1',
-			d1 => dqo(0),
-			d2 => dqo(1),
+			r  => '0',
+			s  => '0',
+			d0 => dqo(0),
+			d1 => dqo(1),
 			q  => sdr_dqo(i));
+
 
 	end generate;
 
@@ -171,32 +179,38 @@ begin
 			d   => dmt(0),
 			q   => sdr_dmt);
 
-		ddro_i : oddr
+		oddr_i : oddr2
 		port map (
-			c  => clk90,
+			c0 => clk90,
+			c1 => clk90_n,
 			ce => '1',
-			d1 => dmi(0),
-			d2 => dmi(1),
+			r  => '0',
+			s  => '0',
+			d0 => dmi(0),
+			d1 => dmi(1),
 			q  => sdr_dmo);
+
 
 	end block;
 
-	sto_i : oddr
+	oddr_i : oddr2
 	port map (
-		c => clk90,
+		c0 => clk90,
+		c1 => clk90_n,
 		ce => '1',
-		d1  => phy_sti(0),
-		d2  => phy_sti(1),
-		q   => sdr_sto);
+		r  => '0',
+		s  => '0',
+		d0 => phy_sti(0),
+		d1 => phy_sti(1),
+		q  => sdr_sto);
+
 
 	dqso_b : block
-		signal clk_n  : std_logic;
 		signal dt     : std_logic;
 		signal dqso_r : std_logic;
 		signal dqso_f : std_logic;
 	begin
 
-		clk_n <= not clk0;
 		ddrto_i : fdce
 		port map (
 			clr => '0',
@@ -205,12 +219,15 @@ begin
 			d   => phy_dqst(1),
 			q   => sdr_dqst);
 
-		ddro_i : oddr
+		oddr_i : oddr2
 		port map (
-			c  => clk0,
+			c0 => clk0,
+			c1 => clk0_n,
 			ce => '1',
-			d1 => '0',
-			d2 => phy_dqsi(0),
+			r  => '0',
+			s  => '0',
+			d0 => '0',
+			d1 => phy_dqsi(0),
 			q  => sdr_dqso);
 
 	end block;

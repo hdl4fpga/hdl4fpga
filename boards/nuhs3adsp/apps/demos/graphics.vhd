@@ -577,13 +577,21 @@ begin
 --		q   => adc_clkab);
 	adc_clkab <= 'Z';
 
-	clk_videodac_i : oddr
-	port map (
-		c => video_clk,
-		ce => '1',
-		d1 => '0',
-		d2 => '1',
-		q => clk_videodac);
+	clk_videodac_b : block
+		signal videoclk_n : std_logic;
+	begin
+		videoclk_n <= not video_clk;
+		clk_videodac_i : oddr2
+		port map (
+			c0 => video_clk,
+			c1 => videoclk_n,
+			ce => '1',
+			r  => '0',
+			s  => '0',
+			d0 => '0',
+			d1 => '1',
+			q => clk_videodac);
+		end block;
 
 --	clk_mii_e : entity hdl4fpga.ddro
 --	port map (
