@@ -331,7 +331,7 @@ package body sdr_db is
 		constant param  : sdram_parameters)
 		return natural is
 	begin
-		return to_sdrlatency(period, natural(ceil(sdr_timing(mark, param)/period)));
+		return natural(ceil(sdr_timing(mark, param)/period));
 	end;
 
 	function sdr_schtab (

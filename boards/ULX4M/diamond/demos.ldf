@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.sio_dmahdsk">
+        <Options def_top="hdl4fpga.phy_rl">
             <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
             <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="ulx4m_ld"/>
@@ -90,9 +90,6 @@
         <Source name="../../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/ddr/ddr_db.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -115,45 +112,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/graphics.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_ctlr.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_iofifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_param.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_rdfifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_sch.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddr_wrfifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/ddrdma.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/dmactlr.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/ddr/dmatrans.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/common/barrel.vhd" type="VHDL" type_short="VHDL">
@@ -291,28 +249,76 @@
         <Source name="../../../library/common/sync_transfer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/latticesemi/ecp5/ecp5_ddrbaphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp5/ecp5_ddrdqphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp5/ecp5_ddrphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">
-            <Options/>
-        </Source>
-        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/rxdll_sync.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ecp5/adjbrst.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ecp5/phadctor.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/dmacntr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/dmactlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/dmatrans.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/phy_memcycle.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/phy_rl.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_ctlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_db.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_init.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_mpu.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_param.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_pgm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_ph.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_rdfifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_sch.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdr/sdr_wrfifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/common/profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">

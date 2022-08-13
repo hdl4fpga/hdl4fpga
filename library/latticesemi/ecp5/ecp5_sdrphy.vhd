@@ -262,10 +262,10 @@ begin
 	mem_sync_b : block
 		component mem_sync
 			port (
-				rst       : in  std_logic;
 				start_clk : in  std_logic;
-				pll_lock  : in  std_logic;
+				rst       : in  std_logic;
 				dll_lock  : in  std_logic;
+				pll_lock  : in  std_logic;
 				update    : in  std_logic;
 				pause     : out std_logic;
 				stop      : out std_logic;
@@ -283,6 +283,7 @@ begin
 		signal dll_lock : std_logic;
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
+		signal ready   : std_logic;
 
 		attribute FREQUENCY_PIN_CDIVX : string;
 		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdr_tcp*2.0), 10);
@@ -293,10 +294,10 @@ begin
 
 		mem_sync_i : mem_sync
 		port map (
-			rst => rst,
 			start_clk => sync_clk,
-			pll_lock  => pll_lock,
+			rst       => rst,
 			dll_lock  => dll_lock,
+			pll_lock  => pll_lock,
 			update    => update,
 			pause     => ms_pause,
 			stop      => stop,
@@ -304,7 +305,7 @@ begin
 			uddcntln  => uddcntln,
 			dll_rst   => dll_rst,
 			sdr_rst   => sdr_reset,
-			ready => open);
+			ready     => ready);
 
 		eclksyncb_i : eclksyncb
 		port map (

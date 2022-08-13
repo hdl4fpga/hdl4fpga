@@ -785,7 +785,7 @@ begin
 		
 	end block;
 
-	ddrphy_e : entity hdl4fpga.ecp5_sdrphy
+	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		sdr_tcp       => sdr_tcp,
 		cmmd_gear     => cmmd_gear,
