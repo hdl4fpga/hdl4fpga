@@ -12,6 +12,9 @@
         <Source name="../common/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx4m_ld"/>
         </Source>
+        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
         <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -313,9 +316,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
         <Source name="../../../library/common/profiles.vhd" type="VHDL" type_short="VHDL">

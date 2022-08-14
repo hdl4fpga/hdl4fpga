@@ -257,9 +257,6 @@ architecture ecp5 of ecp5_sdrphy is
 	signal read_req   : std_logic_vector(sdr_dqs'range);
 	signal read_rdy   : std_logic_vector(sdr_dqs'range);
 
-begin
-
-	mem_sync_b : block
 		component mem_sync
 			port (
 				start_clk : in  std_logic;
@@ -272,10 +269,13 @@ begin
 				freeze    : out std_logic;
 				uddcntln  : out std_logic;
 				dll_rst   : out std_logic;
-				sdr_rst   : out std_logic;
+				ddr_rst   : out std_logic;
 				ready     : out std_logic);
 		end component;
 
+begin
+
+	mem_sync_b : block
 		signal uddcntln : std_logic;
 		signal freeze   : std_logic;
 		signal stop     : std_logic;
@@ -304,7 +304,7 @@ begin
 			freeze    => freeze,
 			uddcntln  => uddcntln,
 			dll_rst   => dll_rst,
-			sdr_rst   => sdr_reset,
+			ddr_rst   => sdr_reset,
 			ready     => ready);
 
 		eclksyncb_i : eclksyncb
