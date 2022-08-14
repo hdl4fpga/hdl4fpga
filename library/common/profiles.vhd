@@ -31,6 +31,3 @@ package profiles is
 		xc7a);
 
 end package;
-
-package body profiles is
-end package body;

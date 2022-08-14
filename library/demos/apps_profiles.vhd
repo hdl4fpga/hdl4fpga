@@ -21,14 +21,7 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-package profiles is
-
-	type fpga_devices is (
-		ecp3,
-		ecp5,
-		xc3s,
-		xc5v,
-		xc7a);
+package apps_profiles is
 
 	type video_modes is (
 		modedebug,
@@ -39,35 +32,32 @@ package profiles is
 		mode1080p);
 
 	type dram_speeds is (
-		dram_133MHz,
-		dram_145MHz,
-		dram_150MHz,
-		dram_166MHz,
-		dram_200MHz,
-		dram_225MHz,
-		dram_233MHz,
-		dram_250MHz,
-		dram_262MHz,
-		dram_275MHz,
-		dram_300MHz,
-		dram_333MHz,
-		dram_350MHz,
-		dram_375MHz,
-		dram_400MHz,
-		dram_425MHz,
-		dram_450MHz,
-		dram_475MHz,
-		dram_500MHz,
-		dram_525MHz,
-		dram_550MHz,
-		dram_575MHz,
-		dram_600MHz);
+		sdram133MHz,
+		sdram145MHz,
+		sdram150MHz,
+		sdram166MHz,
+		sdram200MHz,
+		sdram225MHz,
+		sdram233MHz,
+		sdram250MHz,
+		sdram262MHz,
+		sdram275MHz,
+		sdram300MHz,
+		sdram333MHz,
+		sdram350MHz,
+		sdram375MHz,
+		sdram400MHz,
+		sdram425MHz,
+		sdram450MHz,
+		sdram475MHz,
+		sdram500MHz,
+		sdram525MHz,
+		sdram550MHz,
+		sdram575MHz,
+		sdram600MHz);
 
 	type io_iface is (
 		io_hdlc,
 		io_ipoe);
 
 end package;
-
-package body profiles is
-end package body;
