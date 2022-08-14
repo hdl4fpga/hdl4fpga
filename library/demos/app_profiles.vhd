@@ -36,7 +36,7 @@ package app_profiles is
 		rgb565,
 		rgb888);
 
-	type dram_speeds is (
+	type sdram_speeds is (
 		sdram133MHz,
 		sdram145MHz,
 		sdram150MHz,
@@ -65,77 +65,8 @@ package app_profiles is
 		io_hdlc,
 		io_ipoe);
 
-	type videomodes_vector is array(natural range <>) of video_modes;
-	function videomode_lookup (
-		constant id  : video_modes;
-		constant tab : videomodes_vector)
-		return natural;
-
-	type dramspeeds_vector is array(natural range <>) of dram_speeds;
-	function dramspeed_lookup (
-		constant id  : dram_speeds;
-		constant tab : dramspeeds_vector)
-		return natural;
-
-	type iocomms_vector is array(natural range <>) of io_comms;
-	function iocomm_lookup (
-		constant id  : io_comms;
-		constant tab : iocomms_vector)
-		return natural;
-
 end package;
 
 package body app_profiles is
-
-	function videomode_lookup (
-		constant id  : video_modes;
-		constant tab : videomodes_vector)
-		return natural is
-	begin
-		for i in tab'range loop
-			if tab(i)=id then
-				return i;
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>videomode_lookup<<<< id not found"
-		severity failure;
-		return tab'right+1;
-	end;
-
-	function dramspeed_lookup (
-		constant id  : dram_speeds;
-		constant tab : dramspeeds_vector)
-		return natural is
-	begin
-		for i in tab'range loop
-			if tab(i)=id then
-				return i;
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>dramspeed_lookup<<<< id not found"
-		severity failure;
-		return tab'right+1;
-	end;
-
-	function iocomm_lookup (
-		constant id  : io_comms;
-		constant tab : iocomms_vector)
-		return natural is
-	begin
-		for i in tab'range loop
-			if tab(i)=id then
-				return i;
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>iocomm_lookup<<<< id not found"
-		severity failure;
-		return tab'right+1;
-	end;
 
 end package body;
